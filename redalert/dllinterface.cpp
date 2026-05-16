@@ -939,6 +939,43 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         memcpy(SpecialBackup, &Special, sizeof(SpecialClass));
     }
 
+    // Tiberian Factions debug dump (2026-05-16 v0.2.0-alpha investigation).
+    // One-shot dump of all BuildingTypeClass Ownable masks + the players'
+    // House values to a file in the Proton prefix. Remove once resolved.
+    {
+        FILE* fp = fopen("C:/Users/steamuser/Documents/CnCRemastered/tiberian_factions_debug.log", "w");
+        if (fp != NULL) {
+            fprintf(fp, "=== Tiberian Factions debug dump (CNC_Set_Multiplayer_Data) ===\n");
+            fprintf(fp,
+                    "Macros: HOUSEF_ALLIES=0x%08x HOUSEF_SOVIET=0x%08x HOUSEF_GDI=0x%08x HOUSEF_NOD=0x%08x\n",
+                    HOUSEF_ALLIES,
+                    HOUSEF_SOVIET,
+                    HOUSEF_GDI,
+                    HOUSEF_NOD);
+            fprintf(fp,
+                    "Houses: HOUSE_USSR=%d HOUSE_FRANCE=%d HOUSE_GOOD=%d HOUSE_BAD=%d (so 1<<HOUSE_GOOD=0x%08x)\n",
+                    (int)HOUSE_USSR,
+                    (int)HOUSE_FRANCE,
+                    (int)HOUSE_GOOD,
+                    (int)HOUSE_BAD,
+                    (1L << HOUSE_GOOD));
+            fprintf(fp, "\nPlayers (num=%d, after France->HOUSE_GOOD swap):\n", num_players);
+            for (int pi = 0; pi < num_players; pi++) {
+                fprintf(fp, "  [%d] House=%d Color=%d\n", pi, (int)player_list[pi].House, (int)player_list[pi].ColorIndex);
+            }
+            fprintf(fp, "\nBuildingTypeClass Ownable masks (Struct enum -> Ownable bitmask, IsDoubleOwned):\n");
+            for (int t = STRUCT_FIRST; t < STRUCT_COUNT; t++) {
+                BuildingTypeClass const& bt = BuildingTypeClass::As_Reference((StructType)t);
+                fprintf(fp,
+                        "  Struct[%2d] Ownable=0x%08x IsDoubleOwned=%d\n",
+                        t,
+                        bt.Ownable,
+                        bt.IsDoubleOwned ? 1 : 0);
+            }
+            fclose(fp);
+        }
+    }
+
     return true;
 }
 

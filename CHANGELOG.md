@@ -6,6 +6,19 @@ This project follows a `version_high.version_low.patch` scheme matching the `ccm
 
 ## [Unreleased]
 
+## [0.2.0-beta] — 2026-05-16
+
+### Engine
+
+- Updated `BuildingClass::Unlimbo` in `redalert/building.cpp` to be 4-side-aware. The TD-era dispatch only checked `HOUSEF_GOOD` / `HOUSEF_BAD` for the building's side identity, which collapsed to "Soviet placeholder" for *every* building once GDI/Nod were detached in v0.2.0-alpha. Now dispatches on the RA side bits (`HOUSEF_ALLIES`, `HOUSEF_SOVIET`) plus our new `HOUSEF_GDI` / `HOUSEF_NOD`, and preserves the building's initial `ActLike` (= owner's identity) when the building has no side bits set — letting HOUSE_GOOD / HOUSE_BAD players retain their own side identity through to the sidebar query.
+- Verified end-to-end on the Steam Deck: vanilla Allied (England) and Soviet (USSR) players get their normal tech trees back; France → HOUSE_GOOD player gets an empty / sparse build menu (no buildings carry the HOUSEF_GOOD bit yet — that's v0.2.0 final).
+- Retained the `CNC_Set_Multiplayer_Data` debug dump for the next investigation phase. Will remove once we no longer need per-building Ownable inspection.
+
+### Known issues / next steps
+
+- HOUSE_GOOD has no buildable items. v0.2.0 final will add HOUSEF_GOOD to a starter set (Power Plant, Construction Yard, Refinery, Barracks) so GDI has a real tech tree.
+- Voice prefix issue persists: HouseGood's `'G'` prefix maps to Soviet voicelines (no `'G'`-prefixed RA voice files; falls back to Soviet). Separate fix.
+
 ## [0.2.0-alpha] — 2026-05-16
 
 ### Engine

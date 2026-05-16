@@ -1194,12 +1194,32 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
             Map.Flag_To_Redraw(false);
         }
 
-        if ((Class->Ownable & (HOUSEF_GOOD | HOUSEF_BAD)) != (HOUSEF_GOOD | HOUSEF_BAD)) {
-            if (Class->Ownable & HOUSEF_GOOD) {
-                ActLike = HOUSE_GREECE;
-            } else {
-                ActLike = HOUSE_USSR;
+        // Tiberian Factions mod: this Unlimbo override sets the building's
+        // ActLike based on the building type's natural side, so the sidebar
+        // produces the right tech tree (especially after capture). The TD-era
+        // logic only checked HOUSEF_GOOD/HOUSEF_BAD because in TD, all
+        // buildings had one of those bits set. In RA, Allied buildings have
+        // HOUSEF_ALLIES bits and Soviet have HOUSEF_SOVIET — neither has GOOD
+        // or BAD by default. Vanilla RA happened to work because HOUSEF_GOOD
+        // was bundled into HOUSEF_ALLIES (now detached in our defines.h).
+        // "Universally available" in RA = the building is tagged for both
+        // Allied and Soviet sides (Ownable=0xFF in vanilla numbering). Such
+        // buildings preserve their owner's ActLike rather than getting
+        // forced into a side placeholder.
+        int both_ra_sides = HOUSEF_ALLIES | HOUSEF_SOVIET;
+        if ((Class->Ownable & both_ra_sides) != both_ra_sides) {
+            if (Class->Ownable & HOUSEF_ALLIES) {
+                ActLike = HOUSE_GREECE; // Allied placeholder
+            } else if (Class->Ownable & HOUSEF_SOVIET) {
+                ActLike = HOUSE_USSR; // Soviet placeholder
+            } else if (Class->Ownable & HOUSEF_GDI) {
+                ActLike = HOUSE_GOOD; // GDI
+            } else if (Class->Ownable & HOUSEF_NOD) {
+                ActLike = HOUSE_BAD; // Nod
             }
+            // else: building has no side bits in Ownable — preserve the
+            // initial ActLike (House->ActLike). HOUSE_GOOD / HOUSE_BAD
+            // players landing here keep their own identity.
         }
 
         return (true);
