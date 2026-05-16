@@ -1154,9 +1154,15 @@ inline HousesType operator++(HousesType& ht)
     return ht;
 }
 
+// Tiberian Factions mod: GDI (HOUSE_GOOD) and Nod (HOUSE_BAD) detached from
+// the Allied / Soviet umbrella so they form their own factions. Vanilla RA
+// had HOUSE_GOOD bundled into HOUSEF_ALLIES and HOUSE_BAD into HOUSEF_SOVIET,
+// causing the TD houses to silently inherit RA's tech trees.
 #define HOUSEF_ALLIES                                                                                                  \
-    (HOUSEF_ENGLAND | HOUSEF_SPAIN | HOUSEF_GREECE | HOUSEF_GERMANY | HOUSEF_FRANCE | HOUSEF_TURKEY | HOUSEF_GOOD)
-#define HOUSEF_SOVIET (HOUSEF_USSR | HOUSEF_UKRAINE | HOUSEF_BAD)
+    (HOUSEF_ENGLAND | HOUSEF_SPAIN | HOUSEF_GREECE | HOUSEF_GERMANY | HOUSEF_FRANCE | HOUSEF_TURKEY)
+#define HOUSEF_SOVIET (HOUSEF_USSR | HOUSEF_UKRAINE)
+#define HOUSEF_GDI    (HOUSEF_GOOD)
+#define HOUSEF_NOD    (HOUSEF_BAD)
 #define HOUSEF_OTHERS                                                                                                  \
     (HOUSEF_NEUTRAL | HOUSEF_JP | HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5        \
      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8)

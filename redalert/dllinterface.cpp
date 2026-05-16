@@ -893,6 +893,17 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         NodeNameType* who = new NodeNameType;
         strncpy(who->Name, player_info.Name, MPLAYER_NAME_MAX);
         who->Name[MPLAYER_NAME_MAX - 1] = 0; // Make sure it's terminated
+
+        // Tiberian Factions mod: hijack the France country slot to play as GDI.
+        // The closed-source Remastered launcher only exposes RA's country list
+        // in its picker UI; we route the France selection to HOUSE_GOOD (now
+        // detached from HOUSEF_ALLIES — see defines.h) so the player gets the
+        // GDI faction. The launcher still displays "France" in the radar /
+        // player list; that's a cosmetic limitation we accept for v0.2.
+        if (player_info.House == HOUSE_FRANCE) {
+            player_info.House = HOUSE_GOOD;
+        }
+
         who->Player.House = (HousesType)player_info.House;
         who->Player.Color = (PlayerColorType)player_info.ColorIndex;
         Session.Players.Add(who);
