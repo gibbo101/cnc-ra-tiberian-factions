@@ -3227,7 +3227,7 @@ bool BuildingTypeClass::Create_And_Place(CELL cell, HousesType house) const
 {
     BuildingClass* ptr;
 
-    ptr = new BuildingClass(Type, house);
+    ptr = new BuildingClass(this, house);
     if (ptr != NULL) {
         return (ptr->Unlimbo(Cell_Coord(cell), DIR_N));
     }
@@ -3258,7 +3258,7 @@ ObjectClass* BuildingTypeClass::Create_One_Of(HouseClass* house) const
     if (house != NULL) {
         htype = house->Class->House;
     }
-    return (new BuildingClass(Type, htype));
+    return (new BuildingClass(this, htype));
 }
 
 /***********************************************************************************************

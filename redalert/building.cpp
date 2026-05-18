@@ -1657,9 +1657,9 @@ void BuildingClass::operator delete(void* ptr)
  *   04/21/1994 JLB : Created.                                                                 *
  *   08/07/1995 JLB : Fixed act like value to match expected value.                            *
  *=============================================================================================*/
-BuildingClass::BuildingClass(StructType type, HousesType house)
+BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     : TechnoClass(RTTI_BUILDING, Buildings.ID(this), house)
-    , Class(BuildingTypes.Ptr((int)type))
+    , Class((BuildingTypeClass*)typeptr)
     , Factory(0)
     , ActLike(House->ActLike)
     , IsToRebuild(false)
@@ -1703,6 +1703,18 @@ BuildingClass::BuildingClass(StructType type, HousesType house)
     //	if (Session.Type == GAME_INTERNET) {
     //		House->BuildingTotals->Increment_Unit_Total( (int) type);
     //	}
+}
+
+/*
+**	StructType form delegates to the pointer form via the BuildingTypes heap.
+**	Preserves all existing callsites; new code that already knows the actual
+**	BuildingTypeClass (e.g. Create_One_Of) should call the pointer form so the
+**	resulting BuildingClass::Class is the caller's class — not whatever the
+**	Type enum resolves to (which is the donor for Logic-aliased mod types).
+*/
+BuildingClass::BuildingClass(StructType type, HousesType house)
+    : BuildingClass(BuildingTypes.Ptr((int)type), house)
+{
 }
 
 /***********************************************************************************************

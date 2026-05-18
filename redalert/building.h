@@ -220,6 +220,7 @@ public:
     {
     }
     BuildingClass(StructType type, HousesType house);
+    BuildingClass(BuildingTypeClass const* typeptr, HousesType house);
 #ifdef FIXIT_MULTI_SAVE
     BuildingClass(NoInitClass const& x)
         : TechnoClass(x)
