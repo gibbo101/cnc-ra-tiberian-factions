@@ -2,6 +2,27 @@
 
 Design spec for the new buildings we're adding via the Logic-aliased mod-building pipeline (see `docs/adding-td-buildings.md` for the per-building implementation recipe). Stats below are pulled from `tiberiandawn/bdata.cpp` — TD-authentic by default.
 
+## Session pickup
+
+**Current state (end of 2026-05-19 session):**
+- Branch reconciliation done (3 cherry-picks + CHANGELOG/version on `feature/emc-integration`, pushed).
+- Reconciled DLL Deck-verified end-to-end (detachment proof + GDI-rebuild proof, both phases passed).
+- This catalogue committed as the v0.3 source of truth — all 7 open design questions resolved.
+- Memory note saved: TD passive animations don't play on Logic-aliased mod buildings; fix as one shared pass after ~5+ entries built (see `project-td-passive-animations` memory).
+
+**Where to start next session:** **Phase 1 of v0.3** — GDI catalogue buildout.
+1. Write a helper script (`scripts/add_building.py` or similar) that takes `(IniName, Logic, Cost, Power, Strength, Owner, Faction)` and produces all 5 data-file edits per the 6-step recipe: `CCDATA/rules.ini` append, `Data/XML/TILESETS/RA_STRUCTURES.XML` tile blocks, sprite ZIP extraction from MEG, `redalert/bdata.cpp` Footprint preset append, and `Data/XML/OBJECTS/UNITS/RABUILDABLES.XML` sidebar entry. The 18× repetition makes this worth ~30 minutes upfront.
+2. Use the script to add NUKE first (simplest entry: same footprint as NUK2, no prereq, both factions). Confirms the script works.
+3. Then knock through NUK2 migration (POC values → TD-authentic), PYLE, HQ, WEAP, FIX, GTWR, ATWR, HPAD, EYE.
+
+**Testbed state on the Deck (`Red_Alert/tiberian-factions-emc-test/`):**
+- Reconciled DLL deployed (`27,656,898` bytes; `RedAlert.dll.bak-pre-reconciliation` alongside for rollback).
+- `CCDATA/rules.ini` has NUK2 and TESTFACT with `Owner=GoodGuy` (Phase B test residue — useful for further GDI iteration, not Allied/Soviet testing). Flip back to `Owner=allies` on those two entries if you want the Allied baseline back.
+- Real v0.3 builds will deploy to `Red_Alert/Vanilla_RA/` via `deploy.sh` — the testbed folder stays as a reference. For rapid iteration, deploying into the testbed is fine.
+
+---
+
+
 **Status legend:** ✅ built & verified on Deck · 🔨 implemented, untested · 📝 designed, not yet built · ❓ open design question · 🚧 needs engine work
 
 **Visual reference:** `~/Desktop/cnc-buildings/{TD,RA}/` — idle-frame PNGs.
