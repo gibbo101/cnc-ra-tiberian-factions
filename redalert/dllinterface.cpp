@@ -3409,6 +3409,20 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
 
         if (new_object.Type == BUILDING) {
             BuildingClass* building = (BuildingClass*)object;
+
+            /*
+            **	For Logic-aliased mod buildings (their Type is a donor's StructType,
+            **	so their IniName has no tile registration), route the launcher's
+            **	sprite lookup through the donor. The engine retains the mod class
+            **	identity for cost/name/tooltip; the launcher renders the donor's
+            **	tile, which the mod can repaint via ZIP override at the vanilla path.
+            */
+            BuildingTypeClass const& donor = BuildingTypeClass::As_Reference(building->Class->Type);
+            if (stricmp(donor.IniName, building->Class->IniName) != 0) {
+                strncpy(new_object.TypeName, donor.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
+                strncpy(new_object.AssetName, donor.Graphic_Name(), CNC_OBJECT_ASSET_NAME_LENGTH);
+            }
+
             if (building->BState == BSTATE_CONSTRUCTION) {
                 strncat(new_object.AssetName, "MAKE", CNC_OBJECT_ASSET_NAME_LENGTH);
             }
