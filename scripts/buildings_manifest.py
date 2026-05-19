@@ -11,6 +11,11 @@ Field meanings and source:
   logic        - RA donor IniName for the engine alias (Logic= in rules.ini)
   image        - sprite + buildup asset name (unprefixed TD asset)
   footprint    - named preset in bdata.cpp _presets[] table (unprefixed)
+  shape_size   - (W, H) tuple in pixels for the Remastered launcher render
+                 scale. Convention: W = Width()*24, H = Height()*24. MANDATORY
+                 for every mod entry — without it, w/h=0 falls through to
+                 TGA-native scale, which varies per asset. See ShapeSize block
+                 in bdata.cpp's Read_INI for the override path.
   name         - display name in the sidebar / select tooltip
   tech_level   - TD source "Build level" (sidebar gating)
   prereq       - TD-prefixed prerequisite IniName, or None for no prereq
@@ -46,6 +51,7 @@ TDNUKE = {
     "logic":       "POWR",
     "image":       "NUKE",
     "footprint":   "NUKE",
+    "shape_size":  (48, 48),
     "name":        "Power Plant",
     "tech_level":  0,
     "prereq":      None,
@@ -53,7 +59,7 @@ TDNUKE = {
     "cost":        300,
     "power":       100,
     "points":      50,
-    "sight":       2,
+    "sight":       5,
     "adjacent":    1,
     "strength":    200,
     "armor":       "wood",
@@ -73,6 +79,7 @@ TDNUK2 = {
     "logic":       "APWR",
     "image":       "NUK2",
     "footprint":   "NUK2",
+    "shape_size":  (48, 48),
     "name":        "Advanced Power Plant",
     "tech_level":  5,
     "prereq":      "TDNUKE",
@@ -80,7 +87,7 @@ TDNUK2 = {
     "cost":        700,
     "power":       200,
     "points":      75,
-    "sight":       2,
+    "sight":       5,
     "adjacent":    1,
     "strength":    300,
     "armor":       "wood",

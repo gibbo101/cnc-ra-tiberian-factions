@@ -1020,9 +1020,12 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
                     fprintf(afp, "  [%2d] NULL ptr\n", i);
                 } else {
                     fprintf(afp,
-                            "  [%2d] IniName=%-8s ID=%d Type=%d Level=%d Pre=0x%08x Ownable=0x%08x\n",
+                            "  [%2d] IniName=%-8s ID=%d Type=%d Level=%d "
+                            "Pre=[%d,%d,%d,%d] Ownable=0x%08x\n",
                             i, bt->IniName, (int)bt->ID, (int)bt->Type, (int)bt->Level,
-                            (int)bt->Prerequisite, (int)bt->Ownable);
+                            bt->Prerequisite[0], bt->Prerequisite[1],
+                            bt->Prerequisite[2], bt->Prerequisite[3],
+                            (int)bt->Ownable);
                 }
                 fflush(afp);
             }

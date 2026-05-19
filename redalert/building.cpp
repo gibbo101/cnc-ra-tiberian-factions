@@ -1154,10 +1154,17 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
 
         /*
         **	Ensure that the owning house knows about the
-        **	new object.
+        **	new object. Guard the bitmask shift for mod-defined
+        **	building Types past 31 (the 32-bit BScan/ActiveBScan
+        **	can't represent them, so the prereq path uses the
+        **	heap-sized ActiveBQuantity array instead).
         */
-        House->BScan |= (1L << Class->Type);
-        House->ActiveBScan |= (1L << Class->Type);
+        int btype = (int)Class->Type;
+        if (btype < 32) {
+            House->BScan |= (1L << btype);
+            House->ActiveBScan |= (1L << btype);
+        }
+        House->Active_Building_Add(btype);
 
         /*
         **	Recalculate the center point of the house's base.

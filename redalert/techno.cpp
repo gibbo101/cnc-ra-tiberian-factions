@@ -6682,7 +6682,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         , SightRange(0)
         , Cost(0)
         , Level(-1)
-        , Prerequisite(STRUCTF_NONE)
         , Risk(0)
         , Reward(0)
         , MaxSpeed(MPH_IMMOBILE)
@@ -6702,6 +6701,9 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         , SecondaryLateral(secondarylateral)
         , Points(0)
     {
+        for (int i = 0; i < PREREQUISITE_MAX; i++) {
+            Prerequisite[i] = -1;
+        }
     }
 
     /***********************************************************************************************
@@ -7057,7 +7059,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             IsCrushable = ini.Get_Bool(Name(), "Crushable", IsCrushable);
             IsScanner = ini.Get_Bool(Name(), "Sensors", IsScanner);
             Armor = ini.Get_ArmorType(Name(), "Armor", Armor);
-            Prerequisite = ini.Get_Buildings(Name(), "Prerequisite", Prerequisite);
+            ini.Get_Buildings(Name(), "Prerequisite", Prerequisite, PREREQUISITE_MAX);
             MaxStrength = ini.Get_Int(Name(), "Strength", MaxStrength);
             SightRange = ini.Get_Int(Name(), "Sight", SightRange);
             Level = ini.Get_Int(Name(), "TechLevel", Level);

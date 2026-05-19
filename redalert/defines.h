@@ -1457,6 +1457,20 @@ typedef enum StructType : char
     STRUCT_FIRST = 0
 } StructType;
 
+/*
+**	Upper bound on the BuildingTypes heap (vanilla enum entries + mod heap
+**	slots reserved by `BuildingTypes.Set_Heap()` in init.cpp). Used to size
+**	per-Type counter arrays on HouseClass so mod-defined IniNames index
+**	safely past STRUCT_COUNT. Keep in sync with init.cpp's Set_Heap call.
+*/
+#define MAX_BUILDING_TYPES (STRUCT_COUNT + 50)
+
+/*
+**	Maximum number of comma-separated entries in a Prerequisite= line.
+**	Vanilla never exceeds 2; 4 is comfortable headroom for mods.
+*/
+#define PREREQUISITE_MAX 4
+
 // PG inline StructType operator++(StructType &, int);
 inline StructType operator++(StructType& n)
 {

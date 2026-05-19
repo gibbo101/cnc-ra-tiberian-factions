@@ -48,11 +48,14 @@ def _true_false(v): return "true" if v else "false"
 def _identity(v): return v
 def _str(v): return str(v)
 
+def _shape_size(v): return "%d,%d" % (v[0], v[1])
+
 FIELD_SPEC = [
     # identity
     ("logic",       "Logic",        _identity),
     ("image",       "Image",        _identity),
     ("footprint",   "Footprint",    _identity),
+    ("shape_size",  "ShapeSize",    _shape_size),
     ("name",        "Name",         _identity),
     # build hookup
     ("tech_level",  "TechLevel",    _str),

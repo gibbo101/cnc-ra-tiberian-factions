@@ -58,7 +58,7 @@ public:
     int Save(FileClass& file, bool withdigest) const;
     int Save(Pipe& pipe, bool withdigest) const;
 
-    int Get_Buildings(char const* section, char const* entry, int defvalue) const;
+    bool Get_Buildings(char const* section, char const* entry, int* out, int max) const;
     UnitType Get_UnitType(char const* section, char const* entry, UnitType defvalue) const;
     AnimType Get_AnimType(char const* section, char const* entry, AnimType defvalue) const;
     ArmorType Get_ArmorType(char const* section, char const* entry, ArmorType defvalue) const;

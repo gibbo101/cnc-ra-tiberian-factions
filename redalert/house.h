@@ -584,15 +584,23 @@ private:
     **	Tracks number of each building type owned by this house. Even if the
     **	building is in construction, it will be reflected in this total.
     */
+    /*
+    **	BQuantity / ActiveBQuantity are sized to the BuildingTypes heap
+    **	(MAX_BUILDING_TYPES, defines.h) rather than the vanilla STRUCT_COUNT
+    **	enum, so mod-defined building Types past STRUCT_COUNT have valid
+    **	counter slots. ActiveBQuantity mirrors ActiveBScan semantics
+    **	(unlimbo'd + locked) and is the source of truth for Prerequisite=
+    **	checks that need to resolve mod IniNames (D1.2 phase 1).
+    */
+    int BQuantity[MAX_BUILDING_TYPES];
+    int ActiveBQuantity[MAX_BUILDING_TYPES];
 #ifdef FIXIT_ANTS
-    int BQuantity[STRUCT_COUNT - 3];
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
     int UQuantity[UNIT_RA_COUNT - 3];
 #else
     int UQuantity[UNIT_COUNT - 3];
 #endif
 #else
-    int BQuantity[STRUCT_COUNT];
     int UQuantity[UNIT_COUNT];
 #endif
 
@@ -989,6 +997,29 @@ public:
     int QuantityB(int index)
     {
         return (BQuantity[index]);
+    }
+    /*
+    **	True if this house currently owns at least one fully-built,
+    **	unlimbo'd building of the specified Type. Index is a BuildingTypes
+    **	heap index (StructType enum value for vanilla, beyond STRUCT_COUNT
+    **	for mod entries). Used by Can_Build to resolve Prerequisite= chains
+    **	for mod IniNames that don't fit in the 32-bit ActiveBScan mask.
+    */
+    bool Has_Building_Active(int type_index) const
+    {
+        return (type_index >= 0 && type_index < MAX_BUILDING_TYPES && ActiveBQuantity[type_index] > 0);
+    }
+    /*
+    **	Increment the active-building counter for the specified Type.
+    **	Paired with the BScan/ActiveBScan bitmask writes at building
+    **	Unlimbo time so prereq checks (which iterate ActiveBQuantity)
+    **	see the new building before the next Recalc_Attributes pass.
+    */
+    void Active_Building_Add(int type_index)
+    {
+        if (type_index >= 0 && type_index < MAX_BUILDING_TYPES) {
+            ActiveBQuantity[type_index]++;
+        }
     }
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
     int QuantityU(int index)

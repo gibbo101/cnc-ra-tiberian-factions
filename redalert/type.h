@@ -487,10 +487,14 @@ public:
     unsigned Level;
 
     /*
-    **	This specifies the building prerequisites required before an object
-    **	of this type can be produced.
+    **	Building prerequisites required before an object of this type can be
+    **	produced. Stored as a list of BuildingTypes heap indices (StructType
+    **	for vanilla, beyond STRUCT_COUNT for mod entries). Unused slots are
+    **	set to -1. Was a 32-bit STRUCTF_* bitmask in vanilla; that form
+    **	silently dropped mod-defined Type indices >= 32 from prereq chains.
+    **	See CCINIClass::Get_Buildings and HouseClass::Can_Build.
     */
-    int Prerequisite;
+    int Prerequisite[PREREQUISITE_MAX];
 
     /*
     **	The risk and reward values are used to determine targets and paths

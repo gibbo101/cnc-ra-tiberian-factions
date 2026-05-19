@@ -2,6 +2,30 @@
 
 Design spec for the new buildings we're adding via the Logic-aliased mod-building pipeline (see `docs/adding-td-buildings.md` for the per-building implementation recipe). Stats below are pulled from `tiberiandawn/bdata.cpp` — TD-authentic by default.
 
+## TEMPORARY DEV HACKS — remove before v1.0 / public release
+
+These are local-only diagnostics that must not ship. Each lives behind a `#if 1`
+so disabling is a one-line flip; deletion is also fine.
+
+- **Skirmish reveal-all** — `redalert/scenario.cpp` at the tail of
+  `Start_Scenario` (just before `BEnd(BENCH_SCENARIO); return (true);`).
+  Mirrors `TACTION_REVEAL_ALL` from `taction.cpp`: sets
+  `PlayerPtr->IsVisionary = true` and maps every cell to the player for any
+  non-campaign session. Added 2026-05-19 to observe 7-AI skirmish behaviour
+  during D1.2 Phase 1 validation. Turn off: flip the `#if 1` to `#if 0`, or
+  delete the whole block. Search for `TEMPORARY DEV HACK — reveal the full map`.
+
+- **`Can_Build` diagnostic logger** — `redalert/house.cpp:838-872`.
+  Writes `MOD_DEBUG_CANBUILD.txt` to the user's Documents/CnCRemastered folder
+  whenever `Can_Build` runs against an IniName starting with `TD`. Per
+  [[feedback-keep-diagnostics-until-v1]], stub the body under `if (0)` instead
+  of deleting so re-enable is a one-line flip.
+
+- **`tf_*` log files** — various `fopen` diagnostics under
+  `%USERPROFILE%/Documents/CnCRemastered/` (`tf_draw_intercept.log`,
+  `tf_mod_one_time.log`, `tf_can_build.log`, etc.). Each is per-IniName rate-
+  limited. Same retention policy as Can_Build above.
+
 ## Session pickup
 
 **Current state (end of 2026-05-19, v0.3.0-phase3d committed — D1.1/D1.1b done, D1.2 pending fresh session):**
