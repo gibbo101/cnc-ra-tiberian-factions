@@ -4,21 +4,59 @@ Design spec for the new buildings we're adding via the Logic-aliased mod-buildin
 
 ## Session pickup
 
-**Current state (end of 2026-05-19 evening, v0.3.0-phase3a committed):**
-- v0.3 baseline pulled from Deck into `resources/remaster_mods/Vanilla_RA/` (committed source tree).
-- Manual TDNUKE entry implemented + Deck-verified end-to-end (sidebar icon, cost, TD sprite, 2×2 footprint, buildup → idle animation cycling 0-3 at TD-authentic rate, damaged variant via auto-shift to shapes 4-7, sell/destroy spawns crew).
-- Master flag table below is the v0.3 source of truth with TD-authentic flags per building.
-- Recipe doc (`docs/adding-td-buildings.md`) has v0.3 lessons section covering: IniName collisions, damaged-shape auto-derivation, Anims inheritance gap, Crewed/Repairable per-section requirement.
+**Current state (end of 2026-05-19, v0.3.0-phase3c committed — heading into D1 decouple):**
 
-**Two open threads parked for next session:**
+What works end-to-end on the Deck:
+- **TDNUKE** — sidebar icon, TD sprite, 2×2 footprint, buildup → idle anim cycling, damaged auto-shift, sell/destroy spawns crew, AI targets it (Points=50), prereq chain works
+- **TDNUK2** — sidebar entry, prereq gate (requires power plant), placement, AI targets it (Points=75) — *but renders at wrong scale*
+- `scripts/add_building.py` + `scripts/buildings_manifest.py` — manifest-driven rules.ini emission, idempotent, [NewBuildings] auto-registration. Smoke-tested on TDNUKE round-trip and TDNUK2 first generation.
+- Prereq parser fix: `CCINIClass::Get_Buildings` now uses `BuildingTypeClass::As_Pointer` (heap-aware) instead of `From_Name` (vanilla enum range only), so `Prerequisite=TDxxxx` actually resolves.
+- AI targeting fix: `Points=` mandatory field, all 19 entries in master table populated with TD-authentic RISK/RWRD values.
+- Diagnostic infrastructure committed and live: `Can_Build` logging, `DLL_Draw_Intercept` logging, full BuildingTypes heap dump (mod entries past STRUCT_COUNT included). All use `getenv(USERPROFILE)` so they work on Windows/Wine/CrossOver alike.
+- Deploy target consolidated: only `Mods/Red_Alert/Vanilla_RA/` on the Deck. The dormant `tiberian-factions-emc-test/` folder has been deleted.
 
-1. **AI doesn't target TDNUKE for destruction** (highest priority). Suspected cause: AI threat-assessment / target-eval loops use `STRUCTF_*` enum flags or specific BuildingType heuristics that mod-typed entries (Type past `STRUCT_COUNT`) don't match. Logic= aliases the Type discriminant to POWR's, which *should* make heuristics pick it up — verify by tracing `HouseClass::AI_Building`, `TargetClass` evaluation, and threat-region scoring. Likely a piece of work — could span the whole next session. Worth its own investigation before writing the script (the AI fix may affect catalogue layout decisions).
+### Open thread — TDNUK2 sprite scale (the trigger for D1)
 
-2. **`scripts/add_building.py`** — manifest-driven, keyed off the master table below. Smoke-test on TDNUK2 migration (Phase-1 POC → TD-authentic values per master table). Then run for GDI catalogue: TDPYLE, TDHQ, TDWEAP, TDFIX, TDGTWR, TDATWR, TDHPAD, TDEYE.
+TDNUK2's sprite IS correctly TD NUK2 (`AssetName=NUK2` reaches the launcher via `shape_file_name=null` → `Graphic_Name()` fallback — diagnostic confirmed). But the launcher renders it at ~3×3 scale instead of 2×2, dwarfing the vanilla POWR next to it. Even with `Footprint=NUK2` overriding `Size=BSIZE_22`, the launcher's render pipeline reads dimensions from a code path the Footprint preset doesn't touch — likely an APWR-donor leak via ImageData/Anims that Logic= aliasing inherits but doesn't expose to per-entry override.
 
-**Testbed state on the Deck (`Red_Alert/tiberian-factions-emc-test/`):**
-- v0.3 DLL + TDNUKE deployed and verified.
-- `Red_Alert/Vanilla_RA/` is the intended v0.3 final deploy path; the testbed remains for rapid iteration.
+Investigation paths exhausted:
+- Confirmed AssetName="NUK2" sent correctly (not "APWR")
+- Confirmed TGA dimensions match NUKE's (~256×256 native)
+- Confirmed RA_STRUCTURES.XML has 29 NUK2 tile entries spliced in from TD_STRUCTURES.XML
+- TD-Assets workshop docs mention `ShapeSize=` rules.ini directive — but that's an EMC-DLL feature, not in our Vanilla Conquer fork
+- TD-Assets ships byte-identical TGAs to our raw extract, so the source assets aren't the scaler
+
+This is the 5th distinct workaround pattern we've hit in 2 buildings (Points, From_Name, ImageData inheritance, Footprint preset table, now render scale). With 17 more buildings in the catalogue, we're cutting our losses on Logic= aliasing and moving to full decouple.
+
+### Next session — D1 phase (full decouple, focused 1-day scope)
+
+Decouple TD-prefixed buildings from their `Logic=` donor for **rendering and prereq purposes** specifically. Each TD entry gets its own per-instance `ImageData`/`BuildupData`/`Anims`, and prereqs become literal-name (not Type-bitmask) requirements.
+
+**D1 deliverables (1 day):**
+
+1. **Per-entry ImageData/BuildupData/Anims load** (~half day). For any mod entry past `STRUCT_COUNT`, load its own SHP image data from `Graphic_Name()` instead of inheriting donor's. Add a One_Time-equivalent that runs after [NewBuildings] is parsed, before sidebar populates. **This alone fixes the TDNUK2 scale issue.**
+2. **Prereq bitmask → heap-sized tracker** (~half day). Replace `BScan` 32-bit bitmask with a per-type counter array indexed by Type (size = `BuildingTypes.Count()`). `Can_Build`'s prereq check becomes "for each required type, count > 0" instead of bitwise AND. Prereq parser stores list of StructTypes instead of bitmask.
+3. **Quick AI threat-scoring touch-up** — most paths use `building->Type` to look up Class, so heap-aware. A few Type-equality checks (`if (Type == STRUCT_POWER) {...}`) need either the new `BehavesLike` field (deferred to D2) or to be left alone for now since they're not blocking.
+
+**D2 deliverables (parked, ~1-2 days after v0.3 playable):**
+- `BehavesLike=` rules.ini field for Type-equality special cases (Iron Curtain, MSLO, GPS, etc.)
+- `BQuantity` extension to mod heap
+- Save/load migration
+- Audit and clean up the `Logic=` aliasing code in `bdata.cpp:3731-3759` (most of it becomes obsolete)
+
+**D1 success criteria:**
+- TDNUK2 renders at correct 2×2 scale (matches TDNUKE)
+- `Prerequisite=TDNUKE` literally requires TDNUKE built (not just any STRUCTF_POWER)
+- TDNUKE doesn't regress
+- `Logic=` field remains in rules.ini but its responsibilities shrink to "engine donor for special-case dispatch only"
+
+**Deploy target reminder:** scp to `Mods/Red_Alert/Vanilla_RA/`. The testbed folder no longer exists. If a second folder ever appears, stop and verify which is active before deploying. See [[project-mod-building-pipeline]] memory.
+
+### What we keep vs throw away after D1
+
+Keep: catalogue master tables, script, manifest, sidebar XML pattern, asset extraction recipe, diagnostic hooks, `Owner=`-based faction gating (no full per-faction split — see commit ab7a6f8 discussion).
+
+Throw away (or shrink significantly): the `Logic=` ImageData inheritance, the `Footprint=` preset table workaround (entries define their own footprint via rules.ini), the prereq-as-donor-bitmask semantics.
 
 ---
 
