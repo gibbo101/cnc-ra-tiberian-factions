@@ -824,6 +824,53 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     assert(Houses.ID(this) == ID);
     assert(type != NULL);
 
+    // Diagnostic hook 2026-05-19: log Can_Build calls for mod-defined building
+    // entries so we can see why a freshly-added TDxxxx might not appear in the
+    // sidebar. Filter to TD-prefixed IniNames and rate-limit. Keep in place
+    // until v1.0 per [[feedback-keep-diagnostics-until-v1]]. Stub the body
+    // under `if (0)` to disable; do not delete.
+    //
+    // Path resolution: %USERPROFILE%/Documents/CnCRemastered matches the
+    // game's own save folder convention and resolves correctly on both real
+    // Windows (whatever the user's profile is) and Wine/Proton (where
+    // USERPROFILE points to drive_c/users/steamuser). Falls back to CWD if
+    // the env var is unset.
+    if (type->IniName[0] == 'T' && type->IniName[1] == 'D') {
+        static FILE* s_can_build_log = NULL;
+        static int s_log_count = 0;
+        if (s_log_count < 200) {
+            if (s_can_build_log == NULL) {
+                char path[512];
+                const char* profile = getenv("USERPROFILE");
+                if (profile != NULL && profile[0] != '\0') {
+                    snprintf(path, sizeof(path),
+                             "%s/Documents/CnCRemastered/MOD_DEBUG_CANBUILD.txt",
+                             profile);
+                } else {
+                    strcpy(path, "MOD_DEBUG_CANBUILD.txt");
+                }
+                s_can_build_log = fopen(path, "w");
+            }
+            if (s_can_build_log != NULL) {
+                int level = Control.TechLevel;
+                int flags = ActiveBScan;
+                int pre = ((TechnoTypeClass const*)type)->Prerequisite;
+                int own = type->Get_Ownable();
+                int level_ok = ((TechnoTypeClass const*)type)->Level <= (unsigned)level;
+                int pre_ok = (pre & flags) == pre;
+                int own_ok = ((1L << house) & own) != 0;
+                fprintf(s_can_build_log,
+                        "Can_Build name=%s house=%d level=%d type.Level=%d pre=0x%X "
+                        "flags=0x%X own=0x%X level_ok=%d pre_ok=%d own_ok=%d IsHuman=%d\n",
+                        type->IniName, (int)house, level,
+                        ((TechnoTypeClass const*)type)->Level,
+                        pre, flags, own, level_ok, pre_ok, own_ok, (int)IsHuman);
+                fflush(s_can_build_log);
+                s_log_count++;
+            }
+        }
+    }
+
     /*
     **	An object with a prohibited tech level availability will never be allowed, regardless
     **	of who requests it.

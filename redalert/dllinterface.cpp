@@ -941,9 +941,19 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
 
     // Tiberian Factions debug dump (2026-05-16 v0.2.0-alpha investigation).
     // One-shot dump of all BuildingTypeClass Ownable masks + the players'
-    // House values to a file in the Proton prefix. Remove once resolved.
+    // House values. Keep in place until v1.0 per [[feedback-keep-diagnostics-until-v1]].
+    // Path uses %USERPROFILE% so it works on both real Windows and Wine/Proton.
     {
-        FILE* fp = fopen("C:/Users/steamuser/Documents/CnCRemastered/tiberian_factions_debug.log", "w");
+        char dbg_path[512];
+        const char* profile = getenv("USERPROFILE");
+        if (profile != NULL && profile[0] != '\0') {
+            snprintf(dbg_path, sizeof(dbg_path),
+                     "%s/Documents/CnCRemastered/tiberian_factions_debug.log",
+                     profile);
+        } else {
+            strcpy(dbg_path, "tiberian_factions_debug.log");
+        }
+        FILE* fp = fopen(dbg_path, "w");
         if (fp != NULL) {
             fprintf(fp, "=== Tiberian Factions debug dump (CNC_Set_Multiplayer_Data) ===\n");
             fprintf(fp,
@@ -972,7 +982,52 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
                         bt.Ownable,
                         bt.IsDoubleOwned ? 1 : 0);
             }
+            fprintf(fp, "MARKER-A: after legacy struct loop\n");
+            fflush(fp);
+            fprintf(fp, "MARKER-B: heap count = %d\n", BuildingTypes.Count());
+            fflush(fp);
+
             fclose(fp);
+        }
+    }
+
+    // Append heap dump to the legacy log file (which we know is writable
+    // because the legacy block above already wrote to it). Reopening in
+    // append mode rather than a separate file so any code-path issue is
+    // immediately visible as "missing append section" in the existing file.
+    // Diagnostic 2026-05-19 for TDNUK2 sidebar invisibility.
+    {
+        char append_path[512];
+        const char* append_profile = getenv("USERPROFILE");
+        if (append_profile != NULL && append_profile[0] != '\0') {
+            snprintf(append_path, sizeof(append_path),
+                     "%s/Documents/CnCRemastered/tiberian_factions_debug.log",
+                     append_profile);
+        } else {
+            strcpy(append_path, "tiberian_factions_debug.log");
+        }
+        FILE* afp = fopen(append_path, "a");
+        if (afp != NULL) {
+            fprintf(afp, "\n=== APPEND PROOF: this line means second-block executed ===\n");
+            fflush(afp);
+            int heap_count = BuildingTypes.Count();
+            fprintf(afp, "BuildingTypes.Count()=%d STRUCT_COUNT=%d\n",
+                    heap_count, (int)STRUCT_COUNT);
+            fflush(afp);
+            for (int i = 0; i < heap_count; i++) {
+                BuildingTypeClass const* bt = BuildingTypes.Ptr(i);
+                if (bt == NULL) {
+                    fprintf(afp, "  [%2d] NULL ptr\n", i);
+                } else {
+                    fprintf(afp,
+                            "  [%2d] IniName=%-8s ID=%d Type=%d Level=%d Pre=0x%08x Ownable=0x%08x\n",
+                            i, bt->IniName, (int)bt->ID, (int)bt->Type, (int)bt->Level,
+                            (int)bt->Prerequisite, (int)bt->Ownable);
+                }
+                fflush(afp);
+            }
+            fprintf(afp, "=== end of append ===\n");
+            fclose(afp);
         }
     }
 
@@ -3404,14 +3459,52 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                                         const char* shape_file_name,
                                         char override_owner)
 {
-    // Diagnostic hook removed 2026-05-18. To re-enable per-frame draw logging
-    // for a mod IniName, insert near the function entry:
-    //   if (object && stricmp(object->Class_Of().IniName, "<NAME>") == 0) {
-    //       static int s_log_count = 0; if (s_log_count < 60) { ... fprintf
-    //       to C:\users\steamuser\Documents\CnCRemastered\MOD_DEBUG.txt; ++ }
-    //   }
-    // Logs shape/x/y/w/h/flags/BState/AssetName. Rate-limit to ~60 frames so
-    // we capture spawn + buildup + early idle without blowing log size.
+    // Diagnostic 2026-05-19: log Draw calls for TD-prefixed buildings to
+    // see what AssetName / shape_file_name the engine passes. Keep until
+    // v1.0 per [[feedback-keep-diagnostics-until-v1]]. Rate-limited.
+    if (object != NULL && object->What_Am_I() == RTTI_BUILDING
+        && (stricmp(object->Class_Of().IniName, "TDNUK2") == 0
+            || stricmp(object->Class_Of().IniName, "TDNUKE") == 0)) {
+        static FILE* s_draw_log = NULL;
+        static int s_draw_count = 0;
+        if (s_draw_count < 60) {
+            if (s_draw_log == NULL) {
+                char dpath[512];
+                const char* dprof = getenv("USERPROFILE");
+                if (dprof != NULL && dprof[0] != '\0') {
+                    snprintf(dpath, sizeof(dpath),
+                             "%s/Documents/CnCRemastered/tf_draw_intercept.log", dprof);
+                } else {
+                    strcpy(dpath, "tf_draw_intercept.log");
+                }
+                s_draw_log = fopen(dpath, "w");
+            }
+            if (s_draw_log != NULL) {
+                BuildingTypeClass const* btc = (BuildingTypeClass const*)&object->Class_Of();
+                int dimx = 0, dimy = 0;
+                btc->Dimensions(dimx, dimy);
+                int btc_w = btc->Width();
+                int btc_h = btc->Height();
+                int occ_len = 0;
+                short const* occ = btc->Occupy_List(false);
+                if (occ != NULL) {
+                    while (occ[occ_len] != REFRESH_EOL && occ_len < 32) occ_len++;
+                }
+                fprintf(s_draw_log,
+                        "Draw IniName=%s GraphicName=%s shape_file_name=%s shape#=%d "
+                        "w=%d h=%d scale=%ld | btc.Size=%d btc.W()=%d btc.H()=%d "
+                        "Dim=(%d,%d) Type=%d OccupyLen=%d\n",
+                        btc->IniName,
+                        (btc->Graphic_Name() != NULL ? btc->Graphic_Name() : "(null)"),
+                        (shape_file_name != NULL ? shape_file_name : "(null)"),
+                        shape_number, width, height, scale,
+                        (int)btc->Size, btc_w, btc_h, dimx, dimy,
+                        (int)btc->Type, occ_len);
+                fflush(s_draw_log);
+                s_draw_count++;
+            }
+        }
+    }
     CNCObjectStruct& new_object = ObjectList->Objects[TotalObjectCount + CurrentDrawCount];
     memset(&new_object, 0, sizeof(new_object));
     Convert_Type(object, new_object);
