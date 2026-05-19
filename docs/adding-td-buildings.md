@@ -39,6 +39,14 @@ Per-building TD-authentic values are in the master flag table in `docs/catalogue
 
 Per-building TD-authentic Crewed/Repairable/Capturable values: see master flag table in `docs/catalogue.md`. Notably: SILO/HPAD/SAM are Crew=no (TD canon); GTWR/ATWR/OBLI/GUN/SAM/EYE/TMPL are Capturable=no.
 
+### 5. Points= is mandatory or the AI ignores the building
+
+`TechnoTypeClass::Read_INI` (`redalert/techno.cpp:7067`) sets `Risk = Reward = Points = ini.Get_Int("Points", Points)`. The dynamic ctor initialises Points to 0 (`techno.cpp:6686-6687`). Logic= aliasing does **not** copy Risk/Reward/Points from the donor (`bdata.cpp:3731-3759`). So if you omit `Points=`, the building's `TechnoClass::Value()` (`techno.cpp:5171`) returns 0, and `Evaluate_Object`'s `if (value)` gate (`techno.cpp:1870`) silently rejects the candidate. **Symptom: enemy units walk past the building without engaging it; AI never sends attack waves at it.**
+
+Fix: every TD entry needs `Points=N` where N is the TD-authentic RISK/RWRD value from the donor TD class in `tiberiandawn/bdata.cpp` (look for the `// RISK/RWRD: Risk/reward rating values.` comment in the BuildingTypeClass constructor). The full table is in `docs/catalogue.md`'s master flag table and reproduced in `docs/ai-targeting.md` with source-line citations.
+
+Validated end-to-end 2026-05-19 on the Deck: with `Points=50` on `[TDNUKE]`, the AI sent its first attack wave directly at the player's TDNUKE.
+
 ---
 
 ## What "adding" means here
@@ -80,6 +88,7 @@ TechLevel=1
 Owner=allies           ; or soviet, or eventually good/bad for GDI/Nod
 Cost=350
 Power=100              ; +100 = generates; -N = consumes
+Points=75              ; TD-authentic RISK/RWRD; mandatory or AI can't target it (see lesson 5)
 Sight=3
 Adjacent=1
 Strength=400
