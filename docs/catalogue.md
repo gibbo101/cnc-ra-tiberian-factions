@@ -1,6 +1,6 @@
 # Building catalogue — Tiberian Factions for Red Alert
 
-Design spec for the new buildings we're adding via the Logic-aliased mod-building pipeline (see `docs/adding-td-buildings.md` for the per-building implementation recipe). Stats below are pulled from `tiberiandawn/bdata.cpp` — TD-authentic by default.
+Design spec for the new buildings we're adding via the Logic-aliased mod-building pipeline (see `docs/adding-td-buildings.md` for the per-building implementation recipe). Stats below are pulled from `tiberiandawn/bdata.cpp` — TD-authentic by default. See `docs/manifest-gaps.md` for which engine rules.ini fields the manifest emitter can/can't currently produce, and the recommended add order before the catalogue rollout broadens.
 
 ## TEMPORARY DEV HACKS — remove before v1.0 / public release
 
