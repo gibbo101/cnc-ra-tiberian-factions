@@ -3479,59 +3479,50 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         }
     }
 
-    // Diagnostic 2026-05-19: log Draw calls for TD-prefixed buildings to
-    // see what AssetName / shape_file_name the engine passes. Keep until
-    // v1.0 per [[feedback-keep-diagnostics-until-v1]]. Per-IniName rate
-    // limited so TDNUKE's continuous draws don't starve TDNUK2 entries.
+    // Diagnostic 2026-05-19: log Draw calls for every TD-prefixed building
+    // to see what AssetName / shape_file_name / BState the engine passes per
+    // frame. Used to diagnose the placement → buildup Petroglyph flash —
+    // we suspect the launcher does an asset lookup using something other
+    // than our tileset name for one transitional frame.
+    //
+    // No rate limit so the placement transition is fully captured. Disable
+    // by flipping the `#if 1` to `#if 0`. Per
+    // [[feedback-keep-diagnostics-until-v1]] keep in source.
+#if 1
     if (object != NULL && object->What_Am_I() == RTTI_BUILDING) {
         BuildingTypeClass const* btc = (BuildingTypeClass const*)&object->Class_Of();
-        bool is_nuke = stricmp(btc->IniName, "TDNUKE") == 0;
-        bool is_nuk2 = stricmp(btc->IniName, "TDNUK2") == 0;
-        if (is_nuke || is_nuk2) {
+        bool is_td = (btc->IniName[0] == 'T' && btc->IniName[1] == 'D');
+        if (is_td) {
             static FILE* s_draw_log = NULL;
-            static int s_nuke_count = 0;
-            static int s_nuk2_count = 0;
-            int* count_ptr = is_nuk2 ? &s_nuk2_count : &s_nuke_count;
-            if (*count_ptr < 30) {
-                if (s_draw_log == NULL) {
-                    char dpath[512];
-                    const char* dprof = getenv("USERPROFILE");
-                    if (dprof != NULL && dprof[0] != '\0') {
-                        snprintf(dpath, sizeof(dpath),
-                                 "%s/Documents/CnCRemastered/tf_draw_intercept.log", dprof);
-                    } else {
-                        strcpy(dpath, "tf_draw_intercept.log");
-                    }
-                    s_draw_log = fopen(dpath, "w");
+            if (s_draw_log == NULL) {
+                char dpath[512];
+                const char* dprof = getenv("USERPROFILE");
+                if (dprof != NULL && dprof[0] != '\0') {
+                    snprintf(dpath, sizeof(dpath),
+                             "%s/Documents/CnCRemastered/tf_draw_intercept.log", dprof);
+                } else {
+                    strcpy(dpath, "tf_draw_intercept.log");
                 }
-                if (s_draw_log != NULL) {
-                    int dimx = 0, dimy = 0;
-                    btc->Dimensions(dimx, dimy);
-                    int btc_w = btc->Width();
-                    int btc_h = btc->Height();
-                    int occ_len = 0;
-                    short const* occ = btc->Occupy_List(false);
-                    if (occ != NULL) {
-                        while (occ[occ_len] != REFRESH_EOL && occ_len < 32) occ_len++;
-                    }
-                    fprintf(s_draw_log,
-                            "Draw IniName=%s GraphicName=%s shape_file_name=%s shape#=%d "
-                            "w=%d h=%d scale=%ld | btc.Size=%d btc.W()=%d btc.H()=%d "
-                            "Dim=(%d,%d) Type=%d OccupyLen=%d "
-                            "ImageData=%p BuildupData=%p CameoData=%p\n",
-                            btc->IniName,
-                            (btc->Graphic_Name() != NULL ? btc->Graphic_Name() : "(null)"),
-                            (shape_file_name != NULL ? shape_file_name : "(null)"),
-                            shape_number, width, height, scale,
-                            (int)btc->Size, btc_w, btc_h, dimx, dimy,
-                            (int)btc->Type, occ_len,
-                            btc->Get_Image_Data(), btc->Get_Buildup_Data(), btc->Get_Cameo_Data());
-                    fflush(s_draw_log);
-                    (*count_ptr)++;
-                }
+                s_draw_log = fopen(dpath, "w");
+            }
+            if (s_draw_log != NULL) {
+                BuildingClass const* bld = (BuildingClass const*)object;
+                fprintf(s_draw_log,
+                        "Draw IniName=%s GraphicName=%s shape_file_name=%s "
+                        "BState=%d StrengthRatio=%d shape#=%d w=%d h=%d "
+                        "ImageData=%p BuildupData=%p\n",
+                        btc->IniName,
+                        (btc->Graphic_Name() != NULL ? btc->Graphic_Name() : "(null)"),
+                        (shape_file_name != NULL ? shape_file_name : "(null)"),
+                        (int)bld->BState,
+                        (int)bld->Strength,
+                        shape_number, width, height,
+                        btc->Get_Image_Data(), btc->Get_Buildup_Data());
+                fflush(s_draw_log);
             }
         }
     }
+#endif
     CNCObjectStruct& new_object = ObjectList->Objects[TotalObjectCount + CurrentDrawCount];
     memset(&new_object, 0, sizeof(new_object));
     Convert_Type(object, new_object);
@@ -3603,6 +3594,34 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             if (building->BState == BSTATE_CONSTRUCTION) {
                 strncat(new_object.AssetName, "MAKE", CNC_OBJECT_ASSET_NAME_LENGTH);
             }
+            // Diagnostic 2026-05-19: log the *final* AssetName the launcher
+            // receives for TD-prefixed buildings — this is the tileset name
+            // it will look up. Petroglyph flash on placement is suspected to
+            // be a transient mismatch here.
+#if 1
+            if (building->Class->IniName[0] == 'T' && building->Class->IniName[1] == 'D') {
+                static FILE* s_asset_log = NULL;
+                if (s_asset_log == NULL) {
+                    char dpath[512];
+                    const char* dprof = getenv("USERPROFILE");
+                    if (dprof != NULL && dprof[0] != '\0') {
+                        snprintf(dpath, sizeof(dpath),
+                                 "%s/Documents/CnCRemastered/tf_asset_name.log", dprof);
+                    } else {
+                        strcpy(dpath, "tf_asset_name.log");
+                    }
+                    s_asset_log = fopen(dpath, "w");
+                }
+                if (s_asset_log != NULL) {
+                    fprintf(s_asset_log,
+                            "TypeName=%s AssetName=%s BState=%d shape#=%d Strength=%d\n",
+                            new_object.TypeName, new_object.AssetName,
+                            (int)building->BState, shape_number,
+                            (int)building->Strength);
+                    fflush(s_asset_log);
+                }
+            }
+#endif
             const BuildingTypeClass* building_type = building->Class;
             short const* occupy_list = building_type->Occupy_List();
             if (occupy_list) {

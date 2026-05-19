@@ -6,6 +6,56 @@ This project follows a `version_high.version_low.patch` scheme matching the `ccm
 
 ## [Unreleased]
 
+## [0.3.0-phase5a] — 2026-05-20 — Asset pipeline + TDPYLE + 4 catalogue fixes
+
+End-to-end rebuild of how mod buildings get from the manifest to the Deck. Adds TDPYLE as the first net-new entry that landed right first time after the pipeline was in place. Fixes four engine-edge-case bugs surfaced by extended catalogue use.
+
+### Asset pipeline (one command per building, byte-mirror to Deck)
+
+- **`scripts/bundle_assets.py` (new)** — given a manifest entry, extracts sprite ZIPs from `TEXTURES_TD_SRGB.MEG`, repacks with TD-prefixed internal frame filenames, patches `RA_STRUCTURES.XML` (idle + MAKE tilesets), patches `RABUILDABLES.XML` (sidebar wiring). Idempotent.
+- **`scripts/add_building.py` (extended)** — orchestrates rules.ini emit + `[NewBuildings]` registration + asset bundling. `--skip-assets` flag for rules-only runs.
+- **`deploy.sh` (rewritten)** — `rsync -av --delete` mirror to the Deck. Drift between local and Deck is now impossible.
+- **Manifest schema**: renamed `image` → `td_asset` (source MEG asset name) with rules.ini `Image=` now derived from `ininame` (TD-prefixed uniformly). New fields: `shape_size`, `text_id_name`, `text_id_desc`, `build_icon`.
+
+### Asset convention: TD-prefix uniformly
+
+Renamed all sprite assets to TD-prefix convention:
+- `NUKE.ZIP` → `TDNUKE.ZIP` containing `tdnuke-NNNN.tga`, referenced as `<Frame>tdnuke\tdnuke-0000.tga</Frame>`
+- Same for NUK2, PYLE
+- `Image=TDNUKE` (not `Image=NUKE`) in rules.ini
+- `<Name>TDNUKE</Name>` in tileset XML
+
+Avoids vanilla name collisions when we get to WEAP/FIX/HPAD/SAM which share IniNames with vanilla RA.
+
+### Engine fixes
+
+- **Petroglyph flash on placement → fixed.** TD-source MAKE ZIPs start frames at 0001, not 0000 (TD convention for "empty placement marker"). XML emit now uses `<Frame />` (empty) for shape 0 of MAKE tilesets. Without this fix, the launcher hits a missing TGA for one frame between placement and buildup → Petroglyph fallback. See `bundle_assets.py` `empty_first_shape=True` path.
+- **Unit Z-order under TD buildings → fixed.** `BuildingClass::Sort_Y` (`building.cpp:3505`) now returns `Center_Coord()` for any entry with explicit `ShapeSize=` (i.e., mod entries). Vanilla default Sort_Y adds a south offset that places sort point above units in the building's visual extent, causing buildings to draw over units near their bottom row. Vanilla buildings untouched.
+- **`bdata.cpp` PYLE footprint preset** — top-row occupy + bottom-row overlap (matches TD's `List22_1100`/`List22_0011`). Vanilla RA's BARR donor uses solid 2×2 occupy + NULL overlap; TDPYLE needs the TD-authentic alternative.
+- **TDPYLE Logic=TENT (not BARR)** — Allied barracks donor for GDI. Soviet BARR donor (which we had initially) made TDPYLE engine-side a Soviet factory, so France/HOUSE_GOOD couldn't produce infantry.
+
+### Catalogue: TDPYLE landed end-to-end
+
+- TDPYLE (GDI Barracks) — Logic=TENT, donor TD asset PYLE, ShapeSize=48,48, Sight=5, Cost=300, Power=-20, Points=60, Prereq=TDNUKE, Owner=GoodGuy. Sidebar cameo, tooltip "Barracks", placement, buildup, idle, infantry production all functional on the Deck.
+
+### Interim Owner= bulk patch
+
+Since v0.2.0 decoupled HOUSE_GOOD/HOUSE_BAD from HOUSEF_ALLIES/HOUSEF_SOVIET, France/GDI couldn't build any vanilla Allied units. Bulk-patched every `Owner=allies` unit/infantry/aircraft/vessel entry in `rules.ini` to `Owner=allies,GoodGuy`, and every `Owner=soviet` to `Owner=soviet,BadGuy`. **Buildings explicitly excluded** — the catalogue defines TD-prefixed building entries with explicit single-faction Owner. Interim hack until TD-themed unit catalogue lands; will revert per-entry as TD units replace vanilla.
+
+### Documentation
+
+- `docs/adding-td-buildings.md` — gotchas 6-9 added (MAKE shape 0 must be `<Frame />`, launcher derives ZIP from frame path, mod entries need Center_Coord() Sort_Y, HOUSE_GOOD/allies Owner= patch context).
+- `docs/catalogue.md` — full session pickup with this session's work + unresolved items + next-session pickup priorities.
+- `docs/manifest-gaps.md` — referenced unchanged; still the source of truth for which fields the manifest can/can't emit.
+
+### Known issues parked for next session
+
+- **E3 (Rocket Soldier) not buildable for GDI** despite `Owner=allies,soviet,GoodGuy,BadGuy` + explicit `Prerequisite=tent`. Investigation TBD; may be vanilla `idata.cpp` overriding Ownable at class init before rules.ini override, or some other engine gate.
+
+### NOT committed
+
+- `redalert/scenario.cpp` reveal-all hack remains a working-tree-only diagnostic (per `docs/catalogue.md` "TEMPORARY DEV HACKS").
+
 ## [0.3.0-phase4a] — 2026-05-19 — Literal prerequisites for mod IniNames (D1.2 Phase 1)
 
 Fixes the long-standing bug where `Prerequisite=TDxxxx` in rules.ini didn't actually require the named mod building. Vanilla RA stored prerequisites as a 32-bit `STRUCTF_*` bitmask; mod-defined Types past `STRUCT_COUNT` (e.g. TDNUKE at heap index 91+) couldn't be expressed in 32 bits, and `1L << Type` for those values was undefined behaviour. Result: TDNUK2's `Prerequisite=TDNUKE` either silently passed when it shouldn't, failed when it shouldn't, or aliased to whatever `StructType` happened to share the bottom 5 bits.

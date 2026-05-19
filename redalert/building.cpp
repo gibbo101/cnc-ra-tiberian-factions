@@ -3493,6 +3493,18 @@ COORDINATE BuildingClass::Sort_Y(void) const
     if (*this == STRUCT_REFINERY) {
         return (Center_Coord());
     }
+    /*
+    **  Mod-defined entries with explicit ShapeSize= rules.ini overrides use
+    **  TD-Assets-style sprites that visually extend further south than the
+    **  default Sort_Y offset accounts for, causing units near the building's
+    **  bottom row to render *behind* the building. Forcing the sort point to
+    **  the building's center (no south offset) restores correct unit-on-top
+    **  z-order. Only fires for mod entries; vanilla buildings don't set
+    **  ShapeSize so vanilla Sort_Y behaviour is preserved.
+    */
+    if (Class->ShapeWidth > 0 && Class->ShapeHeight > 0) {
+        return (Center_Coord());
+    }
 
     /*
     **	Mines need to bias their sort location such that they are typically drawn

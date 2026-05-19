@@ -3859,6 +3859,17 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
         */
         static short const List_NUK2_OCCUPY[]  = {0, MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
         static short const List_NUK2_OVERLAP[] = {1, REFRESH_EOL};
+        // PYLE (GDI Barracks) — 2x2 footprint matching tiberiandawn/bdata.cpp's
+        // ClassBarracks. Top-row occupy + bottom-row overlap follows TD's
+        // List22_1100 / List22_0011 pattern.
+        //
+        // NOTE on footprint vs visual: the placement preview includes the
+        // cracked-dirt bib rendered below any `Bib=yes` building (true for
+        // both vanilla RA and TD), so a 2x2 structure with a bib can *look*
+        // like a 3-row footprint. Trust the source's BSIZE_* declaration
+        // over visual impression when sizing entries; the bib is decorative.
+        static short const List_PYLE_OCCUPY[]  = {0, 1, REFRESH_EOL};
+        static short const List_PYLE_OVERLAP[] = {MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
 
         struct FootprintPreset
         {
@@ -3872,6 +3883,7 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
             // Add new entries as we expand the GDI/Nod catalogue.
             {"NUKE", BSIZE_22, List_NUK2_OCCUPY, List_NUK2_OVERLAP},   // shares NUK2's 2x2 L-shape
             {"NUK2", BSIZE_22, List_NUK2_OCCUPY, List_NUK2_OVERLAP},
+            {"PYLE", BSIZE_22, List_PYLE_OCCUPY, List_PYLE_OVERLAP},
         };
 
         if (ini.Get_String(Name(), "Footprint", "", buffer, sizeof(buffer)) > 0) {

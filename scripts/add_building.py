@@ -53,7 +53,11 @@ def _shape_size(v): return "%d,%d" % (v[0], v[1])
 FIELD_SPEC = [
     # identity
     ("logic",       "Logic",        _identity),
-    ("image",       "Image",        _identity),
+    # Image= in rules.ini = the IniName (TD-prefixed) so the launcher's
+    # tileset lookup hits the per-entry <Name>TDxxx</Name> we put in
+    # RA_STRUCTURES.XML. Source asset name (unprefixed) lives in
+    # manifest['td_asset'] and is consumed by bundle_assets.py only.
+    ("ininame",     "Image",        _identity),
     ("footprint",   "Footprint",    _identity),
     ("shape_size",  "ShapeSize",    _shape_size),
     ("name",        "Name",         _identity),
@@ -239,6 +243,9 @@ def main():
     parser.add_argument("--dry-run", action="store_true", help="Print emitted block(s) to stdout; do not modify rules.ini.")
     parser.add_argument("--diff", action="store_true", help="Show unified diff vs current rules.ini; do not modify.")
     parser.add_argument("--rules", default=str(RULES_INI), help="Path to rules.ini (default: mod's CCDATA path).")
+    parser.add_argument("--skip-assets", action="store_true",
+                        help="Only emit rules.ini; don't run the asset bundler "
+                             "(skip ZIP extraction + XML patching).")
     args = parser.parse_args()
 
     if args.all:
@@ -271,12 +278,37 @@ def main():
         return 0
 
     if updated == original:
-        print("[add_building] no changes — %s already up to date" % rules_path)
+        print("[add_building] rules.ini already up to date — %s" % rules_path)
+    else:
+        _atomic_write(rules_path, updated)
+        print("[add_building] wrote %d entr%s to %s"
+              % (len(entries), "y" if len(entries) == 1 else "ies", rules_path))
+
+    # Continue to asset bundling regardless of whether rules.ini changed —
+    # the bundler is responsible for ZIPs + XML state, and those can drift
+    # even when rules.ini is up to date.
+    if args.skip_assets:
         return 0
 
-    _atomic_write(rules_path, updated)
-    print("[add_building] wrote %d entr%s to %s"
-          % (len(entries), "y" if len(entries) == 1 else "ies", rules_path))
+    # Sprite ZIPs + RA_STRUCTURES.XML + RABUILDABLES.XML — delegated to
+    # bundle_assets.py so the binary asset work is testable in isolation
+    # and doesn't pollute the rules.ini emitter with MEG/ZIP/XML concerns.
+    import bundle_assets
+    meg_path = bundle_assets.source_meg_path()
+    for entry in entries:
+        try:
+            summary = bundle_assets.bundle(entry, meg_path=meg_path)
+        except Exception as e:
+            print(f"[add_building] {entry['ininame']}: asset bundling FAILED: {e}",
+                  file=sys.stderr)
+            return 1
+        print(
+            f"[add_building] {entry['ininame']}: assets bundled — "
+            f"main={summary['main_frame_count']}f, "
+            f"make={summary['make_frame_count']}f, "
+            f"structures_xml={'patched' if summary['structures_changed'] else 'unchanged'}, "
+            f"buildables_xml={'patched' if summary['buildables_changed'] else 'unchanged'}"
+        )
     return 0
 
 

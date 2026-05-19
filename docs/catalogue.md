@@ -28,6 +28,89 @@ so disabling is a one-line flip; deletion is also fine.
 
 ## Session pickup
 
+### End of 2026-05-20 — Pipeline rebuild + 3 buildings + GDI playable
+
+**This session's wins (uncommitted at write time; commit imminent):**
+
+- **`scripts/bundle_assets.py` (new ~280 lines)** — end-to-end asset bundler. Extracts sprite ZIPs from `TEXTURES_TD_SRGB.MEG`, repacks with TD-prefixed internal frame filenames, patches `RA_STRUCTURES.XML` tilesets (with empty `<Frame />` for MAKE shape 0), patches `RABUILDABLES.XML` for sidebar wiring. Idempotent — re-running replaces in place.
+- **`scripts/add_building.py` (extended)** — now orchestrates the full pipeline: rules.ini emit → `[NewBuildings]` reg → asset bundling. One command per building, right first time. `--skip-assets` flag for rules-only runs.
+- **`deploy.sh` (rewritten)** — `rsync -av --delete` mirror to the Deck. Drift between local and Deck is now impossible; orphan files on the Deck get cleaned automatically. Confirmation prompt on first run (skip with `--yes`).
+- **Manifest schema extended** — added `td_asset` (was `image`; semantic split: source MEG asset name vs rules.ini `Image=` value, which now uses IniName uniformly). New fields: `shape_size`, `text_id_name`, `text_id_desc`, `build_icon`.
+- **TD-prefix convention applied uniformly** — ZIP filenames, XML tileset `<Name>`, rules.ini `Image=`, internal frame filenames, and frame path prefixes all consistently TD-prefixed (`TDNUKE.ZIP` containing `tdnuke-NNNN.tga`, referenced as `<Frame>tdnuke\tdnuke-0000.tga</Frame>`). Avoids vanilla name collisions for WEAP/FIX/HPAD/SAM when we get to those.
+- **Three buildings landing right first time**: TDNUKE, TDNUK2, TDPYLE all render correctly, correct cameos, correct tooltips ("Power Plant" / "Adv Power Plant" / "Barracks"), buildup animations, idle animations.
+- **TDPYLE infantry production works** — Logic=TENT (Allied barracks, not Soviet BARR — important).
+- **Petroglyph flash on placement → fixed** — TD-source MAKE ZIPs start frames at 0001, not 0000. XML shape 0 must emit `<Frame />` (empty). Documented as gotcha #6 in `docs/adding-td-buildings.md`. Pipeline handles it via `empty_first_shape=True` on MAKE tilesets.
+- **Unit Z-order under TD buildings → fixed** — `BuildingClass::Sort_Y` in `building.cpp` now returns `Center_Coord()` for any entry with explicit `ShapeSize=` (mod entries only; vanilla untouched). TD sprites extend further south than vanilla's default offset accounts for.
+- **Owner= bulk patch** — every vanilla `Owner=allies` unit/infantry now `Owner=allies,GoodGuy`, every `Owner=soviet` now `Owner=soviet,BadGuy`. Buildings explicitly excluded. Interim until we have TD-themed infantry/vehicles; gives GDI/Nod a playable unit roster from vanilla.
+- **D1.2 Phase 1 (literal prereqs for mod IniNames) still landed** — committed earlier (`cddc856` `v0.3.0-phase4a`). TDNUK2 actually requires TDNUKE.
+
+**Working tree state at session end:**
+
+```
+Modified DLL sources:
+  redalert/bdata.cpp           — PYLE footprint preset (top-row occupy + bottom-row overlap)
+  redalert/building.cpp        — Sort_Y mod-entry fix
+  redalert/dllinterface.cpp    — diagnostic logging (TD-prefix Draw + AssetName)
+  redalert/scenario.cpp        — TEMPORARY reveal-all hack, NOT for commit
+
+New scripts:
+  scripts/bundle_assets.py
+  scripts/buildings_manifest.py  (extended)
+  scripts/add_building.py        (extended)
+
+Data:
+  resources/.../rules.ini                   — Owner bulk patch + E3 explicit + TDPYLE entries
+  resources/.../RA_STRUCTURES.XML           — 99 new TD tileset shape entries
+  resources/.../RABUILDABLES.XML            — RA_TDNUKE/TDNUK2/TDPYLE blocks
+  resources/.../STRUCTURES/{TD*}.ZIP        — 6 repacked sprite ZIPs
+
+Other:
+  deploy.sh                    — rewritten as rsync mirror
+  docs/adding-td-buildings.md  — gotchas 6-9 added
+  docs/catalogue.md            — this pickup
+```
+
+### Next session — pick up here
+
+**Unresolved from this session:**
+
+1. **E3 (Rocket Soldier) still not buildable for GDI** despite `Owner=allies,soviet,GoodGuy,BadGuy` and explicit `Prerequisite=tent` in rules.ini, and a TDPYLE built (which has Type=STRUCT_TENT via Logic=TENT). Hypotheses to investigate:
+   - Vanilla `idata.cpp` E3 constructor might set Ownable to HOUSEF_ALLIES at class init, before rules.ini override. Maybe the override path differs for InfantryType vs BuildingType.
+   - Some other engine-level side check (Side=GDI vs Allied?).
+   - Add a Can_Build-style diagnostic for InfantryType to capture pre/own/level decision per frame; see if E3 even gets evaluated.
+
+**Immediate next work — finish GDI building roster:**
+
+Remaining catalogue entries per the master flag table:
+- **TDHQ** (Communication Center) — Logic=DOME. Needs `sensors=true` field in manifest (radar). See `docs/manifest-gaps.md` Priority-2 list.
+- **TDEYE** (Advanced Comm / Ion Cannon host) — Logic=ATEK or similar. `sensors=true`. Superweapon binding TBD.
+- **TDWEAP** (Weapons Factory) — Logic=WEAP. Donor IniName collides — `Image=TDWEAP` (not `WEAP`) is critical here.
+- **TDFIX** (Repair Facility) — Logic=FIX. Same collision concern.
+- **TDGTWR** / **TDATWR** (Guard Tower / Advanced Guard Tower) — Logic=PBOX or TURR. `primary=` weapon needed.
+- **TDHPAD** (Helipad) — Logic=HPAD. Collision.
+- **TDPROC** (Refinery, shared GoodGuy,BadGuy) — Logic=PROC. Needs `storage=N` field.
+- **TDSILO** (Storage, shared) — Logic=SILO. Needs `storage=N`.
+
+**Manifest schema additions needed before that batch:**
+- `sensors` (bool) — for TDHQ, TDEYE
+- `storage` (int) — for TDPROC, TDSILO
+
+Both are simple FIELD_SPEC additions in `scripts/add_building.py`. Per `docs/manifest-gaps.md`.
+
+**Then Nod buildings:**
+- TDHAND (Logic=BARR — Soviet barracks), TDGUN, TDSAM, TDOBLI, TDTMPL. Bib note for TDHAND: per catalogue table it's `2×3 footprint`, needs its own `_presets[]` entry in `bdata.cpp`.
+
+**Then unit catalogue:**
+- TD-themed infantry (TDE1, TDE2, TDE3, etc.) replacing the temporary `Owner=allies,GoodGuy` patch on vanilla units. New `scripts/add_infantry.py` (or extend `add_building.py` for RTTI_INFANTRYTYPE).
+- TD-themed vehicles + aircraft similarly.
+
+**Deferred architectural items still parked:**
+- D1.2 Phase 2 — delete BScan/ActiveBScan/OldBScan, migrate all consumers. See task `#8`.
+- Classic-mode TD SHPs — bundle CONQUER.MIX assets into a mod mixfile for LAN play. See ImageData inheritance note in this file.
+- HOUSE_BAD launcher swap — France→HOUSE_GOOD is wired (dllinterface.cpp:899), but Nod has no equivalent. Probably USSR→HOUSE_BAD or Germany→HOUSE_BAD as the next paired swap.
+
+### End of 2026-05-19 — Pre-pipeline state (archived)
+
 **Current state (end of 2026-05-19, v0.3.0-phase3d committed — D1.1/D1.1b done, D1.2 pending fresh session):**
 
 What works end-to-end on the Deck:

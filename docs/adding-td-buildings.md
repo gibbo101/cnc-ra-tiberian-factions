@@ -47,6 +47,47 @@ Fix: every TD entry needs `Points=N` where N is the TD-authentic RISK/RWRD value
 
 Validated end-to-end 2026-05-19 on the Deck: with `Points=50` on `[TDNUKE]`, the AI sent its first attack wave directly at the player's TDNUKE.
 
+### 6. MAKE-tileset shape 0 must be `<Frame />` (empty)
+
+TD-source `*MAKE.ZIP` archives (the buildup animation) start internal frames at **0001**, not 0000. Frame index 0000 doesn't exist — it's the convention for "the empty placement marker" before construction starts.
+
+If RA_STRUCTURES.XML emits shape 0 of a MAKE tileset pointing at `<Frame>tdfoomake\tdfoomake-0000.tga</Frame>`, the launcher tries to load a non-existent file the moment the building is placed → renders a **Petroglyph "missing asset" placeholder for one frame** → next frame proceeds to shape 1 (which exists) → buildup begins.
+
+`scripts/bundle_assets.py` handles this automatically: MAKE tilesets emit `<Frame />` for shape 0 (`empty_first_shape=True` codepath). Vanilla RA's *MAKE.ZIPs have frame 0000 baked in, so the same XML pattern wouldn't break vanilla — but it would break us. **Anyone hand-editing a MAKE tileset block must use `<Frame />` for shape 0.**
+
+### 7. Launcher derives ZIP filename from frame path's first segment
+
+The launcher's tileset loader doesn't use the tileset `<Name>` to pick which ZIP to open. It uses the frame path's first segment (the part before the backslash):
+
+```xml
+<Frame>tdpyle\tdpyle-0000.tga</Frame>
+```
+
+→ Launcher looks for **TDPYLE.ZIP** in the `STRUCTURES/` folder, then for `tdpyle-0000.tga` inside it.
+
+This has two consequences:
+
+1. The **ZIP filename and the first frame-path segment must match** (case-insensitive on case-folding filesystems like wine, exact-match elsewhere).
+2. **Internal frame filenames must use the same prefix** (`tdpyle-NNNN.tga`, not the original `pyle-NNNN.tga`). The MEG extraction produces unprefixed names, so `bundle_assets.py` repacks the ZIPs to apply the TD-prefix internally.
+
+If you rename the outer ZIP but leave internal filenames untouched, the launcher loads the right ZIP but can't find the TGAs inside → Petroglyph placeholder for every frame.
+
+### 8. Mod entries with TD-style sprites need Center_Coord() Sort_Y
+
+`BuildingClass::Sort_Y` (`building.cpp:3476-3506`) has type-specific overrides for STRUCT_BARRACKS, STRUCT_REFINERY, STRUCT_HELIPAD, STRUCT_AIRSTRIP, STRUCT_REPAIR that return `Center_Coord()` (no south offset). Everything else falls through to a default that adds `Height * 256 / 3` to Y, pushing the sort point south of center.
+
+For vanilla buildings the south offset is fine — their sprites don't extend visually past it. **For TD-style sprites which extend further south (the visual tail / bib), the default offset places the sort point ABOVE units standing in the building's visual extent, so the building draws on top of those units.**
+
+`building.cpp` now has an explicit case: if `Class->ShapeWidth > 0 && Class->ShapeHeight > 0` (i.e. the entry has rules.ini `ShapeSize=`, which only mod entries do), use `Center_Coord()` instead of the offset. Vanilla buildings untouched; mod entries sort correctly.
+
+### 9. HOUSE_GOOD detachment from HOUSEF_ALLIES gates Owner=
+
+Since v0.2.0 detached `HOUSE_GOOD` from the `HOUSEF_ALLIES` bitmask (and same for HOUSE_BAD vs HOUSEF_SOVIET), `Owner=allies` on a vanilla unit no longer grants HOUSE_GOOD ownership. France/HOUSE_GOOD becomes unable to build anything except entries that explicitly include `GoodGuy` in their Owner= field.
+
+For the interim (until we have TD-themed GDI/Nod infantry & vehicles), our mod's rules.ini bulk-patches every `Owner=allies` unit to `Owner=allies,GoodGuy` and every `Owner=soviet` unit to `Owner=soviet,BadGuy`. **Buildings are explicitly NOT patched** — the catalogue defines TD-prefixed building entries with explicit `Owner=GoodGuy` or `Owner=BadGuy`, so vanilla buildings shouldn't appear in either side's sidebar.
+
+When introducing TD-specific infantry/units, revert the per-entry Owner expansion for those slots (remove `GoodGuy`/`BadGuy` from vanilla units that are being replaced by TD equivalents, so GDI/Nod only sees their own roster).
+
 ---
 
 ## What "adding" means here
