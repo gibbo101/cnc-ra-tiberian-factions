@@ -4,59 +4,66 @@ Design spec for the new buildings we're adding via the Logic-aliased mod-buildin
 
 ## Session pickup
 
-**Current state (end of 2026-05-19, v0.3.0-phase3c committed — heading into D1 decouple):**
+**Current state (end of 2026-05-19, v0.3.0-phase3d committed — D1.1/D1.1b done, D1.2 pending fresh session):**
 
 What works end-to-end on the Deck:
-- **TDNUKE** — sidebar icon, TD sprite, 2×2 footprint, buildup → idle anim cycling, damaged auto-shift, sell/destroy spawns crew, AI targets it (Points=50), prereq chain works
-- **TDNUK2** — sidebar entry, prereq gate (requires power plant), placement, AI targets it (Points=75) — *but renders at wrong scale*
-- `scripts/add_building.py` + `scripts/buildings_manifest.py` — manifest-driven rules.ini emission, idempotent, [NewBuildings] auto-registration. Smoke-tested on TDNUKE round-trip and TDNUK2 first generation.
+- **TDNUKE** — sidebar icon, TD sprite, 2×2 footprint, buildup → idle anim cycling, damaged auto-shift, sell/destroy spawns crew, AI targets it (Points=50), prereq chain works, **correct scale (ShapeSize=48,48)**
+- **TDNUK2** — sidebar entry, prereq gate (requires power plant), placement, AI targets it (Points=75), **correct scale matching TDNUKE (ShapeSize=48,48)** — visually verified on Deck 2026-05-19
+- `scripts/add_building.py` + `scripts/buildings_manifest.py` — manifest-driven rules.ini emission, idempotent, [NewBuildings] auto-registration. Smoke-tested on TDNUKE round-trip and TDNUK2 first generation. **Needs ShapeSize column added.**
 - Prereq parser fix: `CCINIClass::Get_Buildings` now uses `BuildingTypeClass::As_Pointer` (heap-aware) instead of `From_Name` (vanilla enum range only), so `Prerequisite=TDxxxx` actually resolves.
 - AI targeting fix: `Points=` mandatory field, all 19 entries in master table populated with TD-authentic RISK/RWRD values.
-- Diagnostic infrastructure committed and live: `Can_Build` logging, `DLL_Draw_Intercept` logging, full BuildingTypes heap dump (mod entries past STRUCT_COUNT included). All use `getenv(USERPROFILE)` so they work on Windows/Wine/CrossOver alike.
-- Deploy target consolidated: only `Mods/Red_Alert/Vanilla_RA/` on the Deck. The dormant `tiberian-factions-emc-test/` folder has been deleted.
+- **ShapeSize override (v0.3.0-phase3d, commit d69d09b):** EMC-style `ShapeSize=W,H` rules.ini directive overrides the `width`/`height` passed to `DLL_Draw_Intercept`. Without it, mod-entry SHPs aren't in `REDALERT.MIX` → `Get_Build_Frame_Width` returns 0 → launcher falls back to TGA-native scale → inconsistent rendering per asset. **Mandatory for every new TD entry**, convention W=Width()×24, H=Height()×24.
+- Diagnostic infrastructure extended: `tf_draw_intercept.log` now per-IniName rate-limited (30 each) and logs `ImageData/BuildupData/CameoData` pointers; new `tf_mod_one_time.log` shows whether `MFCD::Retrieve` returned NULL for each mod entry's SHP. Confirmed `NUKE.SHP` / `NUK2.SHP` are NOT in `REDALERT.MIX` (legacy SHP path is effectively dead for mod entries — launcher uses AssetName+TGA pipeline directly).
+- Deploy target consolidated: only `Mods/Red_Alert/Vanilla_RA/` on the Deck.
 
-### Open thread — TDNUK2 sprite scale (the trigger for D1)
+### What we learned this session about the launcher's render pipeline
 
-TDNUK2's sprite IS correctly TD NUK2 (`AssetName=NUK2` reaches the launcher via `shape_file_name=null` → `Graphic_Name()` fallback — diagnostic confirmed). But the launcher renders it at ~3×3 scale instead of 2×2, dwarfing the vanilla POWR next to it. Even with `Footprint=NUK2` overriding `Size=BSIZE_22`, the launcher's render pipeline reads dimensions from a code path the Footprint preset doesn't touch — likely an APWR-donor leak via ImageData/Anims that Logic= aliasing inherits but doesn't expose to per-entry override.
+The original D1.1 plan assumed "per-entry ImageData/BuildupData load fixes the scale" — that hypothesis was **wrong**. Diagnostic confirmed:
+- After my D1.1 One_Time mod-entry loop: `ImageData=BuildupData=CameoData=NULL` (all `MFCD::Retrieve` calls returned NULL — neither `NUKE.SHP` nor `NUK2.SHP` lives in `REDALERT.MIX`).
+- At Draw_It time, `ImageData`/`BuildupData` are *somehow* non-NULL — different pointers per entry, populated by an unidentified mechanism between One_Time and first draw (not blocking, but worth investigating later).
+- `DLL_Draw_Intercept` receives `w=0 h=0` for **both** TDNUKE and TDNUK2 — same Size/W()/H()/Dim values, yet they rendered at very different scales pre-fix. So **width/height args weren't the scale driver**.
+- The launcher's actual fallback when `w=h=0`: TGA-native pixel mapping. TD-Assets's NUKE and NUK2 TGAs are similar in canvas dimensions (~256×250) and opaque-pixel ratio (~80%), but the **building's bounding box within each TGA** is bigger for NUK2 — making it render ~50% larger on screen at identical CNCObjectStruct values.
+- The fix (D1.1b): force the launcher to use **explicit dimensions** by passing non-zero w/h derived from `ShapeSize=` rather than from SHP data. Validated visually — TDNUKE and TDNUK2 now render at identical 2×2 scale.
 
-Investigation paths exhausted:
-- Confirmed AssetName="NUK2" sent correctly (not "APWR")
-- Confirmed TGA dimensions match NUKE's (~256×256 native)
-- Confirmed RA_STRUCTURES.XML has 29 NUK2 tile entries spliced in from TD_STRUCTURES.XML
-- TD-Assets workshop docs mention `ShapeSize=` rules.ini directive — but that's an EMC-DLL feature, not in our Vanilla Conquer fork
-- TD-Assets ships byte-identical TGAs to our raw extract, so the source assets aren't the scaler
+The TD-Assets workshop docs ([Steam Workshop 3003163891](https://steamcommunity.com/sharedfiles/filedetails/?id=3003163891)) confirm this is the EMC-canonical approach: *"The mod does NOT automatically scale sprites... you must set the dimensions (width, height) manually."* Example shown: `ShapeSize=48,72` for HAND (2×3 foundation). DontCryJustDie's discussion thread has authoritative shape sizes for the full TD catalogue; XCC Mixer can extract the same data from TD's `CONQUER.MIX`. Subscribed to DontCryJustDie's example mod (3003174395) for canonical rules.ini patterns when we do the catalogue rollout.
 
-This is the 5th distinct workaround pattern we've hit in 2 buildings (Points, From_Name, ImageData inheritance, Footprint preset table, now render scale). With 17 more buildings in the catalogue, we're cutting our losses on Logic= aliasing and moving to full decouple.
+### Known limitation — classic graphics mode
 
-### Next session — D1 phase (full decouple, focused 1-day scope)
+Mod entries still render their **donor sprites** in classic mode (POWR for TDNUKE, APWR for TDNUK2) because the legacy SHP renderer reads `ImageData` and our `ImageData` resolves to donor data (or NULL). Real fix would be bundling TD's `NUKE.SHP`/`NUK2.SHP`/etc. in a mod-specific mixfile (extract from `CONQUER.MIX`, register via `new MFCD("tiberian_factions.mix")` in init). **Deferred** — Remastered is the play target, LAN mode forces Remastered, low impact. README/CHANGELOG should note "Remastered graphics mode required for correct TD sprites."
 
-Decouple TD-prefixed buildings from their `Logic=` donor for **rendering and prereq purposes** specifically. Each TD entry gets its own per-instance `ImageData`/`BuildupData`/`Anims`, and prereqs become literal-name (not Type-bitmask) requirements.
+### Next session — D1.2 full BScan replace
 
-**D1 deliverables (1 day):**
+Originally scoped as half-day; grep showed actual surface is bigger (~6 files, 30+ references — `house.cpp` AI/sell/radar/save-load, `building.cpp` construction reg, `cell.cpp` crate spawning, `display.cpp` minimap, `tevent.cpp` event triggers, plus the prereq parser). Worth doing as a clean full session rather than a surgical hack.
 
-1. **Per-entry ImageData/BuildupData/Anims load** (~half day). For any mod entry past `STRUCT_COUNT`, load its own SHP image data from `Graphic_Name()` instead of inheriting donor's. Add a One_Time-equivalent that runs after [NewBuildings] is parsed, before sidebar populates. **This alone fixes the TDNUK2 scale issue.**
-2. **Prereq bitmask → heap-sized tracker** (~half day). Replace `BScan` 32-bit bitmask with a per-type counter array indexed by Type (size = `BuildingTypes.Count()`). `Can_Build`'s prereq check becomes "for each required type, count > 0" instead of bitwise AND. Prereq parser stores list of StructTypes instead of bitmask.
-3. **Quick AI threat-scoring touch-up** — most paths use `building->Type` to look up Class, so heap-aware. A few Type-equality checks (`if (Type == STRUCT_POWER) {...}`) need either the new `BehavesLike` field (deferred to D2) or to be left alone for now since they're not blocking.
+**D1.2 scope:**
 
-**D2 deliverables (parked, ~1-2 days after v0.3 playable):**
+1. **Replace `BScan`/`ActiveBScan`/`OldBScan` 32-bit bitmasks with heap-sized counter arrays** indexed by Type (size = `BuildingTypes.Count()`).
+2. **Update every BScan consumer** to use the new array. Most callers want "do I have any of type X?" — translates to `BuildingsOwned[X] > 0`. Group queries like `BScan & (STRUCTF_REFINERY | STRUCTF_CONST)` become explicit OR checks over the relevant Type slots.
+3. **Prereq parser**: convert `Prerequisite=TDxxxx` from bitmask production to a literal `int PrerequisiteList[N]` of Type indices. `Can_Build` loops: `for each T in list: require BuildingsOwned[T] > 0`.
+4. **Save/load migration** for the new HouseClass field layout (or `#ifdef`-gate the size change until format is bumped).
+5. **Type-equality checks** (`if (building->Type == STRUCT_POWER) {...}`) — D2 territory via `BehavesLike=`, leave as-is for D1.
+
+**Files to touch (verified via grep 2026-05-19):**
+- `redalert/house.h`, `redalert/house.cpp` — HouseClass fields + all consumers
+- `redalert/building.cpp:1159-1160` — registration on construction; corresponding decrement on destroy/sell
+- `redalert/cell.cpp:2312, 2388, 2401, 2518` — crate spawning checks
+- `redalert/display.cpp:4341, 4387` — minimap state checks
+- `redalert/tevent.cpp:347, 357-358, 373, 464, 481` — event trigger predicates
+- `redalert/type.h` — TechnoTypeClass `Prerequisite` field becomes a list
+- `redalert/tdata.cpp` / `redalert/techno.cpp` — prereq parser (locate the actual function)
+
+**D1.2 success criteria:**
+- `Prerequisite=TDNUKE` literally requires TDNUKE built (not just any STRUCTF_POWER) — verify by trying to build TDNUK2 with only a vanilla POWR placed; should be blocked.
+- TDNUKE/TDNUK2 don't regress in any vanilla-coupled path (AI behaviour, sell flow, radar, crate logic).
+- Save/load round-trips cleanly.
+- All vanilla buildings still resolve their own prereqs correctly (Tech Center → ATEK presence, etc.)
+
+**D2 deliverables (parked):**
 - `BehavesLike=` rules.ini field for Type-equality special cases (Iron Curtain, MSLO, GPS, etc.)
 - `BQuantity` extension to mod heap
-- Save/load migration
-- Audit and clean up the `Logic=` aliasing code in `bdata.cpp:3731-3759` (most of it becomes obsolete)
+- Audit and clean up the `Logic=` aliasing code in `bdata.cpp:3731-3759` (most becomes obsolete after D1.2)
 
-**D1 success criteria:**
-- TDNUK2 renders at correct 2×2 scale (matches TDNUKE)
-- `Prerequisite=TDNUKE` literally requires TDNUKE built (not just any STRUCTF_POWER)
-- TDNUKE doesn't regress
-- `Logic=` field remains in rules.ini but its responsibilities shrink to "engine donor for special-case dispatch only"
-
-**Deploy target reminder:** scp to `Mods/Red_Alert/Vanilla_RA/`. The testbed folder no longer exists. If a second folder ever appears, stop and verify which is active before deploying. See [[project-mod-building-pipeline]] memory.
-
-### What we keep vs throw away after D1
-
-Keep: catalogue master tables, script, manifest, sidebar XML pattern, asset extraction recipe, diagnostic hooks, `Owner=`-based faction gating (no full per-faction split — see commit ab7a6f8 discussion).
-
-Throw away (or shrink significantly): the `Logic=` ImageData inheritance, the `Footprint=` preset table workaround (entries define their own footprint via rules.ini), the prereq-as-donor-bitmask semantics.
+**Deploy target reminder:** scp to `Mods/Red_Alert/Vanilla_RA/`. Testbed folder is gone. See [[project-mod-building-pipeline]] memory for build/deploy recipe.
 
 ---
 
