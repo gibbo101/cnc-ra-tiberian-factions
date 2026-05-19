@@ -4,17 +4,17 @@ Design spec for the new buildings we're adding via the Logic-aliased mod-buildin
 
 ## Session pickup
 
-**Current state (end of 2026-05-19 evening session):**
+**Current state (end of 2026-05-19 evening, v0.3.0-phase3a committed):**
 - v0.3 baseline pulled from Deck into `resources/remaster_mods/Vanilla_RA/` (committed source tree).
-- Manual NUKE entry implemented + Deck-verified end-to-end (sidebar icon, cost, TD sprite, 2×2 footprint, buildup → idle animation cycling 0-3, damaged variant via auto-shift to shapes 4-7, sell/destroy spawns crew). See [[v0_3_phase3a_findings]].
-- **Two non-obvious lessons baked in below:**
-  1. **IniName collisions.** Vanilla RA building IniNames (HPAD, GUN, SAM, AFLD, WEAP, FIX, PROC, SILO, FACT) AND warhead/section names (NUKE, etc.) live in the same INI namespace. Using a collision IniName silently skips the mod-entry registration. **Mandatory TD prefix on all catalogue IniNames** (`TDNUKE`, `TDPYLE`, etc.).
-  2. **Damaged-state shapes auto-derive from idle anim.** For `Anims[BSTATE_IDLE].Count == N`, the engine renders shapes `0..N-1` as normal and shapes `N..2N-1` as damaged. So a Count=1 building has shape 1 = damaged (the recipe's original assumption); a Count=4 building has shape 4 = damaged. **Don't remap shape 1 to a damage frame unless the building is static (Count=1).**
+- Manual TDNUKE entry implemented + Deck-verified end-to-end (sidebar icon, cost, TD sprite, 2×2 footprint, buildup → idle animation cycling 0-3 at TD-authentic rate, damaged variant via auto-shift to shapes 4-7, sell/destroy spawns crew).
+- Master flag table below is the v0.3 source of truth with TD-authentic flags per building.
+- Recipe doc (`docs/adding-td-buildings.md`) has v0.3 lessons section covering: IniName collisions, damaged-shape auto-derivation, Anims inheritance gap, Crewed/Repairable per-section requirement.
 
-**Where to start next session:** **Phase 1 of v0.3** — GDI catalogue buildout via `scripts/add_building.py`.
-1. Write the helper script keyed off the master flag table below.
-2. Run for each catalogue entry. NUKE is done (reference implementation).
-3. Then NUK2 (Phase 1 POC value migration), PYLE, HQ, WEAP, FIX, GTWR, ATWR, HPAD, EYE for GDI catalogue.
+**Two open threads parked for next session:**
+
+1. **AI doesn't target TDNUKE for destruction** (highest priority). Suspected cause: AI threat-assessment / target-eval loops use `STRUCTF_*` enum flags or specific BuildingType heuristics that mod-typed entries (Type past `STRUCT_COUNT`) don't match. Logic= aliases the Type discriminant to POWR's, which *should* make heuristics pick it up — verify by tracing `HouseClass::AI_Building`, `TargetClass` evaluation, and threat-region scoring. Likely a piece of work — could span the whole next session. Worth its own investigation before writing the script (the AI fix may affect catalogue layout decisions).
+
+2. **`scripts/add_building.py`** — manifest-driven, keyed off the master table below. Smoke-test on TDNUK2 migration (Phase-1 POC → TD-authentic values per master table). Then run for GDI catalogue: TDPYLE, TDHQ, TDWEAP, TDFIX, TDGTWR, TDATWR, TDHPAD, TDEYE.
 
 **Testbed state on the Deck (`Red_Alert/tiberian-factions-emc-test/`):**
 - v0.3 DLL + TDNUKE deployed and verified.
