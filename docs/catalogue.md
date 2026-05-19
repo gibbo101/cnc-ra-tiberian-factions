@@ -60,21 +60,67 @@ Per-building flags extracted from `tiberiandawn/bdata.cpp`. These are the values
 
 ---
 
+## Master wiring table (engine hookups, v0.3 source of truth)
+
+Values that **must be set in rules.ini per-entry** because the Logic= alias does *not* copy them from the donor (`bdata.cpp:3731-3759` lists what *is* copied — everything below isn't). Omitting any of these reproduces the same class of bug as the `Points=` issue: the building constructs but the engine treats it as a vanilla-default placeholder for the missing field.
+
+| IniName | TechLevel | Prereq (TD-prefixed) | Primary | Secondary | BaseNormal | Owner | TD source line |
+|---|---|---|---|---|---|---|---|
+| TDNUKE | 0  | —      | —         | — | yes | GoodGuy,BadGuy | `bdata.cpp:892` |
+| TDNUK2 | 5  | TDNUKE | —         | — | yes | GoodGuy,BadGuy | `bdata.cpp:943` |
+| TDPROC | 1  | TDNUKE | —         | — | yes | GoodGuy,BadGuy | `bdata.cpp:585` |
+| TDSILO | 1  | TDPROC | —         | — | yes | GoodGuy,BadGuy | `bdata.cpp:636` |
+| TDPYLE | 0  | TDNUKE | —         | — | yes | GoodGuy        | `bdata.cpp:1097` |
+| TDHAND | 0  | TDNUKE | —         | — | yes | BadGuy         | `bdata.cpp:1148` |
+| TDWEAP | 2  | TDPROC | —         | — | yes | GoodGuy        | `bdata.cpp:264` |
+| TDAFLD | 2  | TDPROC | —         | — | yes | BadGuy         | `bdata.cpp:841` |
+| TDHQ   | 2  | TDPROC | —         | — | yes | GoodGuy,BadGuy | `bdata.cpp:739` |
+| TDEYE  | 7  | TDHQ   | —         | — | yes | GoodGuy        | `bdata.cpp:213` |
+| TDTMPL | 7  | TDHQ   | —         | — | yes | BadGuy         | `bdata.cpp:162` |
+| TDFIX  | 5  | TDNUKE | —         | — | yes | GoodGuy,BadGuy | `bdata.cpp:1250` |
+| TDHPAD | 6  | TDPYLE / TDHAND | — | — | yes | GoodGuy,BadGuy | `bdata.cpp:688` |
+| TDGTWR | 2  | TDPYLE | Vulcan    | — | yes | GoodGuy        | `bdata.cpp:320` |
+| TDATWR | 4  | TDHQ   | TurretGun | Nike | yes | GoodGuy      | `bdata.cpp:372` |
+| TDOBLI | 4  | TDHQ   | HellFire  | — | yes | BadGuy         | `bdata.cpp:424` |
+| TDGUN  | 2  | TDHAND | TurretGun | — | yes | BadGuy         | `bdata.cpp:475` |
+| TDSAM  | 6  | TDHAND | Nike      | — | yes | BadGuy         | `bdata.cpp:790` |
+| TDFACT | 99 | —      | —         | — | yes | GoodGuy,BadGuy | `bdata.cpp:534` |
+
+**Column derivation:**
+
+- **TechLevel** — TD source's "Build level" line. Drives sidebar gating. `redalert/techno.cpp:7063` loads from `TechLevel=`.
+- **Prereq** — TD source's STRUCTF_* mapped to the TD-prefixed equivalent. STRUCTF_POWER → TDNUKE; STRUCTF_REFINERY → TDPROC; STRUCTF_RADAR → TDHQ; STRUCTF_BARRACKS → TDPYLE (GDI) / TDHAND (Nod) — split by faction so each side's chain is internally consistent. `techno.cpp:7060` loads from `Prerequisite=`.
+- **Primary / Secondary** — RA donor's weapon name, because TD's `WEAPON_OBELISK_LASER` / `WEAPON_TOW_TWO` / `WEAPON_CHAIN_GUN` don't exist in RA's weapon table. The TD-authentic intent is preserved in the donor choice. `techno.cpp:7052-7055` loads from `Primary=` / `Secondary=`.
+- **BaseNormal** — all 19 entries are real base structures, so `yes` across the board. (Decorative/civilian buildings would be `no`, but none of ours are.) `bdata.cpp:3717` loads from `BaseNormal=`.
+- **Owner** — TD source's HOUSEF_GOOD/HOUSEF_BAD flags mapped to our `Owner=GoodGuy,BadGuy` syntax. GoodGuy = GDI (HOUSE_GOOD), BadGuy = Nod (HOUSE_BAD).
+
+**TD weapon → RA placeholder analogs** (v0.3 — pending proper TD weapon ports; full plan in [[weapon-ports]]):
+
+| TD weapon | v0.3 RA placeholder | Notes |
+|---|---|---|
+| WEAPON_CHAIN_GUN (GTWR) | Vulcan | Anti-infantry chaingun → anti-infantry vulcan. Close match. |
+| WEAPON_TOW_TWO (ATWR) | TurretGun + Nike | TD's ATWR is dual-role anti-armor + anti-air. RA has no single weapon for that, so we use **Primary=TurretGun** (anti-armor from GUN donor) and **Secondary=Nike** (anti-air from Soviet SAM). Engine selects per target type. Closer to authentic than pure-AA AGUN/ZSU-23. |
+| WEAPON_OBELISK_LASER (OBLI) | HellFire | RA has no laser weapon. HellFire is a heavy anti-armor missile — keeps the slow-firing/high-damage feel without the wrong-looking Tesla lightning. Real port covered in [[weapon-ports]]. |
+| WEAPON_TURRET_GUN (GUN) | TurretGun | Same name in both engines. Behaviour identical. |
+| WEAPON_NIKE (SAM) | Nike | Same name in both engines. |
+
+---
+
 
 **Status legend:** ✅ built & verified on Deck · 🔨 implemented, untested · 📝 designed, not yet built · ❓ open design question · 🚧 needs engine work
 
 **Visual reference:** `~/Desktop/cnc-buildings/{TD,RA}/` — idle-frame PNGs.
 
-**TD prereq → RA Prerequisite= mapping:**
+**TD prereq → RA Prerequisite= mapping** (TD-prefixed because our IniNames are prefixed to avoid vanilla collisions):
 
-| TD prereq enum | Means | Our entry uses |
+| TD prereq enum | TD building | Our entry uses |
 |---|---|---|
-| STRUCTF_NONE | nothing | (omit field) |
-| STRUCTF_POWER | NUKE | `Prerequisite=NUKE` |
-| STRUCTF_BARRACKS | PYLE (GDI) / HAND (Nod) | `Prerequisite=PYLE` or `HAND` per faction |
-| STRUCTF_REFINERY | PROC | `Prerequisite=PROC` |
-| STRUCTF_RADAR | HQ | `Prerequisite=HQ` |
-| STRUCTF_HOSPITAL | HOSP | `Prerequisite=HOSP` |
+| STRUCTF_NONE | nothing | (omit `Prerequisite=` line) |
+| STRUCTF_POWER | NUKE | `Prerequisite=TDNUKE` |
+| STRUCTF_BARRACKS | PYLE (GDI) / HAND (Nod) | `Prerequisite=TDPYLE` or `TDHAND` per faction |
+| STRUCTF_REFINERY | PROC | `Prerequisite=TDPROC` |
+| STRUCTF_RADAR | HQ | `Prerequisite=TDHQ` |
+| STRUCTF_HOSPITAL | HOSP | `Prerequisite=TDHOSP` (not in v0.3 catalogue) |
 
 ---
 

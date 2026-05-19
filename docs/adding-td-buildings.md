@@ -79,23 +79,29 @@ In the mod's `CCDATA/rules.ini`:
 1=NUK2
 ; add more here as you build out the faction
 
-[NUK2]
-Logic=POWR             ; engine behaviour donor
+[TDNUK2]
+Logic=APWR             ; engine behaviour donor (RA building class)
 Image=NUK2             ; sprite + buildup asset name (matches the TD IniName)
 Footprint=NUK2         ; named preset; must exist in bdata.cpp's _presets[] table
-Name=GDIPowerPlant     ; display name (case can be styled)
-TechLevel=1
-Owner=allies           ; or soviet, or eventually good/bad for GDI/Nod
-Cost=350
-Power=100              ; +100 = generates; -N = consumes
+Name=Advanced Power Plant
+TechLevel=5            ; TD source "Build level" — sidebar gating
+Prerequisite=TDNUKE    ; STRUCTF_POWER in TD source — chain off our own NUKE, not vanilla
+Owner=GoodGuy,BadGuy   ; HOUSEF_GOOD|HOUSEF_BAD; both factions get the advanced plant
+Cost=700
+Power=200              ; +N = generates; -N = consumes
 Points=75              ; TD-authentic RISK/RWRD; mandatory or AI can't target it (see lesson 5)
-Sight=3
+Sight=2
 Adjacent=1
-Strength=400
+Strength=300
 Armor=wood
-BaseNormal=yes
+BaseNormal=yes         ; counts as a real base structure for AI defense logic
 Capturable=true
+Crewed=true            ; sell/destroy spawns infantry (TD canon — see lesson 4)
+Repairable=yes         ; wrench-tool can target (TD canon — see lesson 4)
 Bib=yes
+; Defensive entries (TDGTWR/TDATWR/TDOBLI/TDGUN/TDSAM) additionally need:
+; Primary=<weapon>     ; RA donor's weapon — TD weapons don't exist in RA's table
+; Secondary=<weapon>   ; only if the donor uses one (AGUN does)
 ```
 
 Notes on field choices:
