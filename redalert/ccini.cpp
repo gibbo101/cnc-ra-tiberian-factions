@@ -1312,9 +1312,18 @@ int CCINIClass::Get_Buildings(char const* section, char const* entry, int defval
         pre = 0;
         char* token = strtok(buffer, ",");
         while (token != NULL && *token != '\0') {
-            StructType building = BuildingTypeClass::From_Name(token);
-            if (building != STRUCT_NONE) {
-                pre |= (1L << building);
+            // Use heap-aware As_Pointer so mod-defined IniNames past STRUCT_COUNT
+            // (e.g. Prerequisite=TDNUKE) resolve correctly. From_Name only walks
+            // the vanilla enum range and silently returns STRUCT_NONE for mod
+            // entries, which leaves the prereq bitmask at 0 and bypasses the
+            // gate entirely. We OR in the resolved entry's Type — for Logic-
+            // aliased mod entries that's the donor's StructType (e.g. TDNUKE's
+            // Type=STRUCT_POWER), which is the same bit a vanilla POWR sets in
+            // ActiveBScan, so the prereq chain works as the entry's author
+            // intended. See [[ai-targeting]] for the analogous Points= gotcha.
+            BuildingTypeClass const* btc = BuildingTypeClass::As_Pointer(token);
+            if (btc != NULL) {
+                pre |= (1L << btc->Type);
             }
             token = strtok(NULL, ",");
         }
