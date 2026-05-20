@@ -3315,7 +3315,59 @@ static void Create_Units(bool official)
             */
             scaleval = 1;
             Reserve_Unit();
-            obj = new UnitClass(UNIT_MCV, house);
+            /*
+            **  HOUSE_GOOD (GDI) starts with a TD-themed MCV (TDMCV) instead of
+            **  the vanilla RA MCV — closes the "wake up as GDI" visual loop
+            **  paired with TDFACT. Faction-membership check must use
+            **  hptr->ActLike rather than hptr->Class->House: for multiplayer
+            **  / skirmish, Class->House is the HOUSE_MULTI1+N slot identity
+            **  while ActLike carries the actual faction the player picked
+            **  (HOUSE_GOOD when the France→HOUSE_GOOD launcher swap fires;
+            **  see dllinterface.cpp:903). techno.cpp:6796 checks both for
+            **  the same reason. TDMCV is a Logic=MCV alias added via
+            **  [NewUnits]; lookup is by IniName because the heap slot is
+            **  rules-load assigned. Fallback to UNIT_MCV if mod entry absent.
+            */
+            UnitType mcv_type = UNIT_MCV;
+            UnitTypeClass const* tdmcv_lookup = UnitTypeClass::As_Pointer("TDMCV");
+            if (hptr->ActLike == HOUSE_GOOD) {
+                if (tdmcv_lookup != NULL) {
+                    mcv_type = (UnitType)UnitTypes.ID(tdmcv_lookup);
+                }
+            }
+            /*
+            **  Diagnostic for v0.3 phase5e — TDMCV scenario-spawn intercept.
+            **  Stubbed (#if 0) after the MAX_UNIT_TYPES heap-sizing fix
+            **  resolved the issue; flip to #if 1 to re-enable. Logs ActLike
+            **  + TDMCV heap presence + chosen mcv_type. See
+            **  feedback-keep-diagnostics-until-v1.
+            */
+#if 0
+            {
+                char dpath[512];
+                const char* dprof = getenv("USERPROFILE");
+                if (dprof != NULL && dprof[0] != '\0') {
+                    snprintf(dpath, sizeof(dpath),
+                             "%s/Documents/CnCRemastered/tf_mcv_spawn.log", dprof);
+                } else {
+                    strcpy(dpath, "tf_mcv_spawn.log");
+                }
+                FILE* dlog = fopen(dpath, "a");
+                if (dlog != NULL) {
+                    fprintf(dlog,
+                            "MCV-spawn slot=%d ActLike=%d Class->House=%d "
+                            "TDMCV_in_heap=%s mcv_type=%d UnitTypes.Count=%d\n",
+                            (int)house,
+                            (int)hptr->ActLike,
+                            (int)hptr->Class->House,
+                            tdmcv_lookup != NULL ? "yes" : "no",
+                            (int)mcv_type,
+                            UnitTypes.Count());
+                    fclose(dlog);
+                }
+            }
+#endif
+            obj = new UnitClass(mcv_type, house);
             if (!obj->Unlimbo(Cell_Coord(centroid), DIR_N)) {
                 if (!Scan_Place_Object(obj, centroid)) {
                     delete obj;

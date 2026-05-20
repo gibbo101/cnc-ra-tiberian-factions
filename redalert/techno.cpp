@@ -6784,15 +6784,15 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         }
 
         /*
-        **  TEMPORARY DEV HACK — collapse build time to ~1 second for GDI / Nod
-        **  players so we can iterate through full base layouts in seconds
-        **  during D1.2 catalogue testing. Mirrors the reveal-all hack in
-        **  scenario.cpp — same on/off convention (flip #if 1 to #if 0 to
-        **  disable). Vanilla houses keep their full TD-authentic / RA build
-        **  times so AI cadence isn't broken. Search for "TEMPORARY DEV HACK
-        **  — instant build" to remove. 15 ticks ≈ 1 second at 15 ticks/sec.
+        **  DEV TOGGLE — instant-build (~1 second) for GDI / Nod players for
+        **  fast catalogue iteration. Disabled by default in v0.3.0-phase5e
+        **  so build times reflect TD-authentic cadence (e.g. Tiberium
+        **  Refinery ≈ 23s from Cost=2000 via the natural formula). Flip
+        **  #if 0 → 1 to re-enable for layout testing. Vanilla houses are
+        **  always on the natural formula so AI cadence isn't broken. Search
+        **  "DEV TOGGLE — instant build" to find. 15 ticks ≈ 1s at 15/sec.
         */
-#if 1
+#if 0
         if (hptr->Class->House == HOUSE_GOOD || hptr->Class->House == HOUSE_BAD
             || hptr->ActLike      == HOUSE_GOOD || hptr->ActLike      == HOUSE_BAD) {
             return 15;

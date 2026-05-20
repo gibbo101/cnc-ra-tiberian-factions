@@ -1052,6 +1052,14 @@ public:
                   int toffset,
                   MissionType order);
 
+    /*
+    **  Dynamic 2-arg constructor for mod-defined unit types. Used by the
+    **  [NewUnits] index in rules.ini — mirrors BuildingTypeClass's 2-arg
+    **  constructor at bdata.cpp:2846. Sets minimal stub state; Logic=
+    **  alias in Read_INI fills in donor stats / IsXxx flags / ImageData.
+    */
+    UnitTypeClass(int utype, char const* ininame);
+
     static void* operator new(size_t) noexcept;
     static void* operator new(size_t, void* ptr)
     {
@@ -1064,6 +1072,12 @@ public:
 
     static void Init_Heap(void);
     static UnitType From_Name(char const* name);
+    /*
+    **  Name-based lookup across the full UnitTypes heap, including mod-
+    **  defined entries past UNIT_COUNT. From_Name only walks the vanilla
+    **  enum range. Mirrors BuildingTypeClass::As_Pointer.
+    */
+    static UnitTypeClass* As_Pointer(char const* name);
     static UnitTypeClass& As_Reference(UnitType type);
     static void Init(TheaterType){};
     static void One_Time(void);

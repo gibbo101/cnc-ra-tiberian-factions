@@ -476,7 +476,9 @@ TDFACT = {
     "prereq":      None,
     "owner":       "GoodGuy,BadGuy",
     "cost":        5000,
-    "power":       -30,
+    # TD/RA-authentic: ConYard neither produces nor consumes power. Vanilla
+    # RA [FACT] is Power=0 in rules.ini. Catalogue's earlier -30 was wrong.
+    "power":       0,
     "storage":     None,
     "points":      70,
     "sight":       3,
@@ -492,7 +494,7 @@ TDFACT = {
     "repairable":  True,
     "bib":         True,
     "idle_anim":   (0, 4, 3),
-    "notes":       "TD Construction Yard. Closing v0.3 slice — paired with TDMCV deploy. Production target: TechLevel=99 (not sidebar-buildable; MCV-deploy only). Shared GoodGuy/BadGuy until per-faction variants split in v0.4. Donor RA FACT is 3x3; vanilla FACT is TechLevel=-1 (uncbuildable) — same semantic as TD lvl 99.",
+    "notes":       "TD Construction Yard. Closing v0.3 slice — paired with TDMCV deploy. Production target: TechLevel=99 (not sidebar-buildable; MCV-deploy only). Shared GoodGuy/BadGuy until per-faction variants split in v0.4. Donor RA FACT is 3x3; vanilla FACT is TechLevel=-1 (uncbuildable) — same semantic as TD lvl 99. Power=0 per vanilla RA [FACT].",
 }
 
 

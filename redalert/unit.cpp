@@ -110,6 +110,34 @@ extern bool Is_Legacy_Render_Enabled(void);
 #define Is_Legacy_Render_Enabled() true
 #endif
 
+/*
+**  Map a deploying unit to the StructType it should produce. Vanilla:
+**  every MCV deploys into STRUCT_CONST. Our mod: HOUSE_GOOD (GDI) MCVs
+**  deploy into the TD-themed Construction Yard (TDFACT) instead, closing
+**  the GDI visual loop. Resolution is by IniName because TDFACT lives in
+**  the BuildingTypes heap past STRUCT_COUNT (Logic=FACT aliases its Type
+**  to STRUCT_CONST, but BuildingClass's StructType ctor param is treated
+**  as a heap index, so we want TDFACT's actual slot here). Returns
+**  STRUCT_CONST as fallback if TDFACT isn't registered (e.g. vanilla
+**  rules.ini load). Kept as a free function alongside the unit.cpp deploy
+**  code rather than a method so the change is reversible by deleting
+**  this block + restoring the literal `STRUCT_CONST` sites.
+*/
+static StructType MCV_Deploy_Building(UnitClass const* unit)
+{
+    // Faction-membership check uses ActLike rather than Class->House so it
+    // works in multiplayer/skirmish, where Class->House is the HOUSE_MULTI1+N
+    // slot identity and ActLike is what the France→HOUSE_GOOD launcher swap
+    // writes (cf. techno.cpp:6796-6797 which checks both for the same reason).
+    if (unit != NULL && unit->House->ActLike == HOUSE_GOOD) {
+        BuildingTypeClass const* tdfact = BuildingTypeClass::As_Pointer("TDFACT");
+        if (tdfact != NULL) {
+            return (StructType)BuildingTypes.ID(tdfact);
+        }
+    }
+    return STRUCT_CONST;
+}
+
 static int _GapShroudXTable[] = {-1, 0, 1,  -2, -1, 0, 1, 2,  -2, -1, 0, 1, 2,  -2, -1, 0,
                                  1,  2, -2, -1, 0,  1, 2, -2, -1, 0,  1, 2, -1, 0,  1};
 static int _GapShroudYTable[] = {-3, -3, -3, -2, -2, -2, -2, -2, -1, -1, -1, -1, -1, 0, 0, 0,
@@ -1433,7 +1461,7 @@ bool UnitClass::Goto_Clear_Spot(void)
 
     Mark(MARK_UP);
     if (!Target_Legal(NavCom)
-        && BuildingTypeClass::As_Reference(STRUCT_CONST)
+        && BuildingTypeClass::As_Reference(MCV_Deploy_Building(this))
                .Legal_Placement(Adjacent_Cell(Coord_Cell(Center_Coord()), FACING_NW))) {
         Mark(MARK_DOWN);
         return (true);
@@ -1491,7 +1519,7 @@ bool UnitClass::Goto_Clear_Spot(void)
         while (*ptr) {
             CELL cell = Coord_Cell(Coord) + *ptr++;
             CELL check_cell = Adjacent_Cell(cell, FACING_NW);
-            if (BuildingTypeClass::As_Reference(STRUCT_CONST).Legal_Placement(check_cell)) {
+            if (BuildingTypeClass::As_Reference(MCV_Deploy_Building(this)).Legal_Placement(check_cell)) {
                 Assign_Destination(::As_Target(cell));
                 break;
             }
@@ -1543,12 +1571,12 @@ bool UnitClass::Try_To_Deploy(void)
             */
             Mark(MARK_UP);
             CELL cell = Coord_Cell(Adjacent_Cell(Center_Coord(), FACING_NW));
-            if (!BuildingTypeClass::As_Reference(STRUCT_CONST).Legal_Placement(cell)) {
+            if (!BuildingTypeClass::As_Reference(MCV_Deploy_Building(this)).Legal_Placement(cell)) {
                 if (PlayerPtr == House) {
                     Speak(VOX_DEPLOY);
                 }
                 if (!House->IsHuman) {
-                    BuildingTypeClass::As_Reference(STRUCT_CONST).Flush_For_Placement(cell, House);
+                    BuildingTypeClass::As_Reference(MCV_Deploy_Building(this)).Flush_For_Placement(cell, House);
                 }
                 Mark(MARK_DOWN);
                 IsDeploying = false;
@@ -1574,7 +1602,7 @@ bool UnitClass::Try_To_Deploy(void)
             **	unit, just mark it as not deploying.
             */
             Mark(MARK_UP);
-            BuildingClass* building = new BuildingClass(STRUCT_CONST, House->Class->House);
+            BuildingClass* building = new BuildingClass(MCV_Deploy_Building(this), House->Class->House);
             if (building != NULL) {
                 if (building->Unlimbo(Adjacent_Cell(Coord, FACING_NW))) {
 
@@ -3592,7 +3620,7 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
             **	deploy at its current location.
             */
             ((ObjectClass&)(*this)).Mark(MARK_UP);
-            if (!BuildingTypeClass::As_Reference(STRUCT_CONST)
+            if (!BuildingTypeClass::As_Reference(MCV_Deploy_Building(this))
                      .Legal_Placement(Coord_Cell(Adjacent_Cell(Center_Coord(), FACING_NW)))) {
                 action = ACTION_NO_DEPLOY;
             }

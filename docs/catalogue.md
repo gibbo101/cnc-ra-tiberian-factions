@@ -287,7 +287,7 @@ Per-building flags extracted from `tiberiandawn/bdata.cpp`. These are the values
 | TDOBLI | Nod   | TSLA | 1500 | -150 | 200  | 5 | 1 | aluminum | no  | **no** | yes | yes | —     | 35  | TD lvl 4, 1×2, ACTIVE 0/4/RATE |
 | TDGUN  | Nod   | GUN  | 600  | -20  | 200  | 5 | 1 | steel    | no  | **no** | yes | yes | —     | 26  | TD lvl 2, 1×1 |
 | TDSAM  | Nod   | SAM  | 750  | -20  | 200  | 3 | 1 | steel    | no  | **no** | **no** | yes | — | 40  | TD lvl 6, 2×1, turret-based |
-| TDFACT | both  | FACT | 5000 | -30  | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/4/3   | 70  | TD lvl 99, ACTIVE 4/20/3 — closing v0.3 slice |
+| TDFACT | both  | FACT | 5000 | **0** | 400  | 3 | 1 | wood     | yes | yes | yes | yes | 0/4/3   | 70  | TD lvl 99, ✅ shipped v0.3.0-phase5e — Power=0 per vanilla RA [FACT] |
 
 **Reading the table:**
 - Empty `Idle` column = no idle animation (engine renders shape 0 statically). Damaged state = shape 1 in that case (the engine's `largest = max(Anims[*].Start + Count) = 1` auto-shift).
@@ -917,8 +917,8 @@ This is one cohesive slice — likely a 1-2 session implementation.
 | TDOBLI | Nod | TSLA | ✓ | 📝 |
 | TDGUN | Nod | GUN | ✓ | 📝 |
 | TDSAM | Nod | SAM | ✓ | 📝 |
-| TDFACT | both (split) | FACT | ✓ | 📝 🚧 v0.3 closing slice |
-| TDGDIMCV / TDNODMCV | per faction | MCV (unit) | — | 📝 🚧 paired with TDFACT |
+| TDFACT | both | FACT | ✓ | ✅ v0.3.0-phase5e (per-faction split deferred to v0.4) |
+| TDMCV | GoodGuy only | MCV (unit) | — | ✅ v0.3.0-phase5e (Nod TDNODMCV deferred to v0.4) |
 | HOSP/BIO/ARCO | — | — | — | skip for v0.3 |
 
 ---

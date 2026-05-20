@@ -1466,6 +1466,15 @@ typedef enum StructType : char
 #define MAX_BUILDING_TYPES (STRUCT_COUNT + 50)
 
 /*
+**  Same as MAX_BUILDING_TYPES but for UnitTypes — gives [NewUnits] entries
+**  in rules.ini room past UNIT_COUNT. Without this, UnitTypes.Set_Heap()
+**  sizes the heap to exactly UNIT_COUNT and Alloc() for a mod entry silently
+**  fails (heap full), making `As_Pointer("TDMCV")` return NULL despite
+**  [NewUnits] parsing the section. Headroom of 50 matches the building side.
+*/
+#define MAX_UNIT_TYPES (UNIT_COUNT + 50)
+
+/*
 **	Maximum number of comma-separated entries in a Prerequisite= line.
 **	Vanilla never exceeds 2; 4 is comfortable headroom for mods.
 */
