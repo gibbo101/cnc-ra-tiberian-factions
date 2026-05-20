@@ -1,5 +1,13 @@
 # Session handoff — GDI TDMCV + TDFACT for son-playtest
 
+> **STATUS: ✅ COMPLETED 2026-05-20 (v0.3.0-phase5e/f).** All 4 scope pieces
+> landed. TDFACT + TDMCV + scenario-spawn intercept + deploy intercept all
+> work end-to-end on the Deck. TD-authentic build times also wired up.
+> See `memory/project-next-session-mcv-conyard.md` (now retitled
+> Workshop-publish goal) for what's next.
+
+
+
 **Goal:** GDI house starts a skirmish with a TD-style MCV that deploys into a TD-style Construction Yard. Authentic "wake up as GDI" feel. Target audience: kids playtest on Steam Deck.
 
 **Previous session (this file written at end of):** GDI building bug round closed — TDPROC/TDSILO storage, TDSILO footprint, TDEYE sprite+buildup, TDATWR weapon (Hellfire) + force-fire fix, Logic= alias weapon copy. See `docs/catalogue.md` "Building bugs found during 2026-05-20 playtest" section for the historical context.

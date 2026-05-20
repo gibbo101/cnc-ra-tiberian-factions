@@ -887,6 +887,36 @@ This is one cohesive slice — likely a 1-2 session implementation.
 
 ---
 
+## Build times (TD-authentic, v0.3.0-phase5f)
+
+For HOUSE_GOOD (GDI) and HOUSE_BAD (Nod) players, build time follows the
+TD-remaster tooltip formula `time_ticks = (Cost - bonus_unit_cost)`
+(15 ticks/sec; the game-speed slider scales ticks → wall-clock seconds
+at display time). The `bonus_unit_cost` subtraction mirrors TD's
+`BuildingTypeClass::Raw_Cost`:
+
+| Building Type   | bonus_unit_cost                            |
+|-----------------|--------------------------------------------|
+| STRUCT_REFINERY | Harvester (UNIT_HARVESTER) cost            |
+| STRUCT_HELIPAD  | Longbow (AIRCRAFT_LONGBOW) cost — RA donor |
+| Other           | 0                                          |
+
+Verified 2026-05-20 against TD-remaster tooltips (Refinery 0:21, Weapons
+Factory 1:07, Comm Center 0:34, Adv Power Plant 0:24, Power Plant 0:11,
+Repair Facility 0:41). All within 1-sec display rounding.
+
+Vanilla allied/soviet houses keep RA's `Cost * 0.9 * BuildSpeedBias`
+formula so AI cadence stays unchanged. Code path:
+`redalert/techno.cpp:TechnoTypeClass::Time_To_Build`.
+
+There's also a `#if 0` dev-toggle at the same site that collapses GDI/Nod
+build time to ~1 second for fast layout iteration — flip to `#if 1` and
+rebuild.
+
+See [[project-td-build-time-formula]] for full derivation.
+
+---
+
 ## Skipped for v0.3 (revisit later)
 
 - **HOSP** — Hospital. TD lvl 99 (not normally buildable). Skip.
