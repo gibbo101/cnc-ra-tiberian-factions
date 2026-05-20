@@ -459,6 +459,43 @@ TDEYE = {
 }
 
 
+TDFACT = {
+    "ininame":     "TDFACT",
+    "logic":       "FACT",
+    "td_asset":    "FACT",
+    "footprint":   None,  # RA FACT donor is BSIZE_33 (3x3); matches TD FACT.
+    "shape_size":  (72, 72),
+    # No DESC variant in launcher localization (sidebar cameo is rarely shown
+    # — TechLevel=99 makes it sidebar-unbuildable; ConYard only spawns via
+    # MCV deploy). Reuse MCV's desc + cameo for the encyclopedia panel.
+    "text_id_name": "TEXT_STRUCTURE_TITLE_GDI_CONSTRUCTION_YARD",
+    "text_id_desc": "TEXT_UNIT_DESC_GDI_MCV",
+    "build_icon":  "BuildIcon_TD_MCV",
+    "name":        "Construction Yard",
+    "tech_level":  99,
+    "prereq":      None,
+    "owner":       "GoodGuy,BadGuy",
+    "cost":        5000,
+    "power":       -30,
+    "storage":     None,
+    "points":      70,
+    "sight":       3,
+    "adjacent":    1,
+    "sensors":     None,
+    "strength":    400,
+    "armor":       "wood",
+    "primary":     None,
+    "secondary":   None,
+    "base_normal": True,
+    "capturable":  True,
+    "crewed":      True,
+    "repairable":  True,
+    "bib":         True,
+    "idle_anim":   (0, 4, 3),
+    "notes":       "TD Construction Yard. Closing v0.3 slice — paired with TDMCV deploy. Production target: TechLevel=99 (not sidebar-buildable; MCV-deploy only). Shared GoodGuy/BadGuy until per-faction variants split in v0.4. Donor RA FACT is 3x3; vanilla FACT is TechLevel=-1 (uncbuildable) — same semantic as TD lvl 99.",
+}
+
+
 TDPYLE = {
     "ininame":     "TDPYLE",
     "logic":       "TENT",
@@ -509,6 +546,7 @@ ALL = [
     TDGTWR,
     TDATWR,
     TDEYE,
+    TDFACT,
 ]
 
 
