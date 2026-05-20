@@ -10,8 +10,6 @@ This repository is a **fork of [Vanilla Conquer](https://github.com/TheAssemblyA
 
 Add `HOUSE_GDI` and `HOUSE_NOD` as new playable houses (sides) in Red Alert Remastered's engine, with their own unit rosters, structures, superweapons (Ion Cannon, Nuke), and AI. The end state is four-faction skirmish: **Allies vs Soviets vs GDI vs Nod**, on the same map, in the same match.
 
-Designed to LAN-play on the kids' Steam Deck setup.
-
 ## Status
 
 - v0.0.x — scaffolding, build pipeline (✅ working: Linux mingw cross-compile + Steam Deck deploy via Tailscale)
