@@ -4,3 +4,9 @@
 /.vscode
 __pycache__/
 *.pyc
+/dist*
+/tools/workshop-uploader/bin
+/tools/workshop-uploader/obj
+/tools/workshop-uploader/lib
+/tools/workshop-uploader/native
+/tools/workshop-uploader/preview.jpg
