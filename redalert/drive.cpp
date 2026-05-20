@@ -696,7 +696,49 @@ bool DriveClass::While_Moving(void)
             offset = ptr[TrackIndex].Offset;
             if (offset || !TrackIndex) {
                 dir = ptr[TrackIndex].Facing;
+                COORDINATE prev_coord_diag = Coord;
                 Coord = Smooth_Turn(offset, dir);
+
+                /*
+                **  TEMPORARY DEV DIAGNOSTIC — log per-tick Coord for vehicles
+                **  emerging from a TDWEAP. The first few logged lines should
+                **  show small smooth increments; a big jump would indicate
+                **  the engine's track snap is producing the visible shift the
+                **  user reports on TDWEAP exit. Per [[feedback-keep-diagnostics-until-v1]].
+                */
+                if ((TrackNumber == DriveClass::OUT_OF_WEAPON_FACTORY
+                     || TrackNumber == DriveClass::OUT_OF_WEAPON_FACTORY_TD)
+                    && In_Radio_Contact()
+                    && Contact_With_Whom()
+                    && Contact_With_Whom()->What_Am_I() == RTTI_BUILDING) {
+                    BuildingClass const* bldg =
+                        (BuildingClass const*)Contact_With_Whom();
+                    if (bldg->Class->IniName[0] == 'T'
+                        && bldg->Class->IniName[1] == 'D') {
+                        static FILE* s_track = NULL;
+                        if (s_track == NULL) {
+                            char p[512];
+                            const char* up = getenv("USERPROFILE");
+                            if (up) snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_weap_track.log", up);
+                            else strcpy(p, "tf_weap_track.log");
+                            s_track = fopen(p, "a");
+                        }
+                        if (s_track) {
+                            fprintf(s_track,
+                                "tick: idx=%d prev=(%u,%u) new=(%u,%u) "
+                                "delta=(%d,%d) offset=(%u,%u) dir=%d head=(%u,%u)\n",
+                                TrackIndex,
+                                Coord_X(prev_coord_diag), Coord_Y(prev_coord_diag),
+                                Coord_X(Coord), Coord_Y(Coord),
+                                (int)Coord_X(Coord) - (int)Coord_X(prev_coord_diag),
+                                (int)Coord_Y(Coord) - (int)Coord_Y(prev_coord_diag),
+                                Coord_X(offset), Coord_Y(offset),
+                                (int)dir,
+                                Coord_X(Head_To_Coord()), Coord_Y(Head_To_Coord()));
+                            fflush(s_track);
+                        }
+                    }
+                }
 
                 PrimaryFacing.Set(dir);
 
@@ -1886,6 +1928,10 @@ DriveClass::TrackType const DriveClass::Track12[] = {{0xFF550060L, DIR_SW_X2},
 
                                                      {0x00000000L, DIR_SW}};
 
+// Track13 = pure-south WEAP exit (vanilla RA Allied War Factory's authored
+// design). Kept active so vanilla Allied AI tanks exit south as they always
+// have. TD entries use the separate SW-direction Track14 below — see
+// docs/adding-td-buildings.md gotcha #14 for the full story.
 #if (1)
 /*
 **	Drive out of weapon's factory.
@@ -1934,11 +1980,32 @@ DriveClass::TrackType const DriveClass::Track13[] = {{XYP_COORD(10, -21), (DirTy
 #endif
 
 /*
+**  Tiberian Factions mod: Track14 = TD-authentic south-west WEAP exit.
+**  Replicates the SW Track13 above (under #if (0)) so we don't disturb
+**  vanilla Allied War Factory exit motion (Track13 stays pure-south).
+**  Used by TD-prefixed buildings (Logic=WEAP) via TrackControl[67] —
+**  OUT_OF_WEAPON_FACTORY_TD. See docs/adding-td-buildings.md gotcha #14.
+*/
+DriveClass::TrackType const DriveClass::Track14[] = {
+    {XYP_COORD(10, -21), (DirType)(DIR_SW - 10)}, {XYP_COORD(10, -21), (DirType)(DIR_SW - 10)},
+    {XYP_COORD(10, -20), (DirType)(DIR_SW - 10)}, {XYP_COORD(10, -20), (DirType)(DIR_SW - 10)},
+    {XYP_COORD(9, -18), (DirType)(DIR_SW - 10)},  {XYP_COORD(9, -18), (DirType)(DIR_SW - 10)},
+    {XYP_COORD(9, -17), (DirType)(DIR_SW - 10)},  {XYP_COORD(8, -16), (DirType)(DIR_SW - 10)},
+    {XYP_COORD(8, -15), (DirType)(DIR_SW - 10)},  {XYP_COORD(7, -14), (DirType)(DIR_SW - 10)},
+    {XYP_COORD(7, -13), (DirType)(DIR_SW - 10)},  {XYP_COORD(6, -12), (DirType)(DIR_SW - 10)},
+    {XYP_COORD(6, -11), (DirType)(DIR_SW - 10)},  {XYP_COORD(5, -10), (DirType)(DIR_SW - 10)},
+    {XYP_COORD(5, -9), (DirType)(DIR_SW - 10)},   {XYP_COORD(4, -8), (DirType)(DIR_SW - 10)},
+    {XYP_COORD(4, -7), (DirType)(DIR_SW - 10)},   {XYP_COORD(3, -6), (DirType)(DIR_SW - 10)},
+    {XYP_COORD(3, -5), (DirType)(DIR_SW - 9)},    {XYP_COORD(2, -4), (DirType)(DIR_SW - 7)},
+    {XYP_COORD(2, -3), (DirType)(DIR_SW - 5)},    {XYP_COORD(1, -2), (DirType)(DIR_SW - 3)},
+    {XYP_COORD(1, -1), (DirType)(DIR_SW - 1)},    {0x00000000L, DIR_SW}};
+
+/*
 **	There are a limited basic number of tracks that a vehicle can follow. These
 **	are they. Each track can be interpreted differently but this is controlled
 **	by the TrackControl structure elaborated elsewhere.
 */
-DriveClass::RawTrackType const DriveClass::RawTracks[13] = {{Track1, -1, 0, -1},
+DriveClass::RawTrackType const DriveClass::RawTracks[14] = {{Track1, -1, 0, -1},
                                                             {Track2, -1, 0, -1},
                                                             {Track3, 37, 12, 22},
                                                             {Track4, 26, 11, 19},
@@ -1950,14 +2017,15 @@ DriveClass::RawTrackType const DriveClass::RawTracks[13] = {{Track1, -1, 0, -1},
                                                             {Track10, -1, 0, -1},
                                                             {Track11, -1, 0, -1},
                                                             {Track12, -1, 0, -1},
-                                                            {Track13, -1, 0, -1}};
+                                                            {Track13, -1, 0, -1},
+                                                            {Track14, -1, 0, -1}};
 
 /***************************************************************************
 **	Smooth turning control table. Given two directions in a path list, this
 **	table determines which track to use and what modifying operations need
 **	be performed on the track data.
 */
-DriveClass::TurnTrackType const DriveClass::TrackControl[67] = {
+DriveClass::TurnTrackType const DriveClass::TrackControl[68] = {
     {1, 0, DIR_N, F_},                                                      //	0-0
     {3, 7, DIR_NE, F_D},                                                    //	0-1 (raw chart)
     {4, 9, DIR_E, F_D},                                                     //	0-2 (raw chart)
@@ -2025,5 +2093,6 @@ DriveClass::TurnTrackType const DriveClass::TrackControl[67] = {
 
     {11, 11, DIR_SW, F_},    // Backup harvester into refinery.
     {12, 12, DIR_SW_X2, F_}, // Drive back into refinery.
-    {13, 13, DIR_SW, F_}     // Drive out of weapons factory.
+    {13, 13, DIR_SW, F_},    // Drive out of weapons factory (vanilla RA, south motion).
+    {14, 14, DIR_SW, F_}     // Drive out of weapons factory (TD-authentic, south-west motion).
 };

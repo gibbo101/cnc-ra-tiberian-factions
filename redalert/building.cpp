@@ -107,6 +107,7 @@
 #include "function.h"
 #include "utracker.h"
 #include "event.h"
+#include <cstdio>
 #include "rules.h"
 
 /*
@@ -504,14 +505,27 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
 
         /*
         **	Draw the weapon factory custom overlay graphic.
+        **
+        **	TD's GDI Weapons Factory is rendered as foundation + door-animated
+        **	roof, same two-layer scheme as RA's Allied War Factory. WEAP.ZIP is
+        **	just the bottom ramp; WEAP2.ZIP is the walls/roof with door-opening
+        **	frames. For our mod-defined TD-prefixed entries, redirect the
+        **	launcher's overlay lookup from vanilla "WEAP2" to "TDWEAP2" so it
+        **	finds our TD-source overlay (bundled via scripts/bundle_assets.py)
+        **	instead of compositing the RA Allied roof onto TD's foundation.
+        **	Vanilla WEAP / FAKEWEAP keep the original "WEAP2" string.
         */
         if ((*this == STRUCT_WEAP || *this == STRUCT_FAKEWEAP)) {
             int shapenum = Door_Stage();
             if (Health_Ratio() <= Rule.ConditionYellow)
                 shapenum += 4;
+            char const* overlay_asset = "WEAP2";
+            if (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') {
+                overlay_asset = "TDWEAP2";
+            }
             // Added override shape file name. ST - 8/1/2019 5:24PM
             // Techno_Draw_Object(Class->WarFactoryOverlay, shapenum, x, y, window);
-            Techno_Draw_Object_Virtual(Class->WarFactoryOverlay, shapenum, x, y, window, DIR_N, 0x0100, "WEAP2");
+            Techno_Draw_Object_Virtual(Class->WarFactoryOverlay, shapenum, x, y, window, DIR_N, 0x0100, overlay_asset);
         }
 
         /*
@@ -1153,10 +1167,17 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
 
         /*
         **	Ensure that the owning house knows about the
-        **	new object.
+        **	new object. Guard the bitmask shift for mod-defined
+        **	building Types past 31 (the 32-bit BScan/ActiveBScan
+        **	can't represent them, so the prereq path uses the
+        **	heap-sized ActiveBQuantity array instead).
         */
-        House->BScan |= (1L << Class->Type);
-        House->ActiveBScan |= (1L << Class->Type);
+        int btype = (int)Class->Type;
+        if (btype < 32) {
+            House->BScan |= (1L << btype);
+            House->ActiveBScan |= (1L << btype);
+        }
+        House->Active_Building_Add(btype);
 
         /*
         **	Recalculate the center point of the house's base.
@@ -1193,12 +1214,32 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
             Map.Flag_To_Redraw(false);
         }
 
-        if ((Class->Ownable & (HOUSEF_GOOD | HOUSEF_BAD)) != (HOUSEF_GOOD | HOUSEF_BAD)) {
-            if (Class->Ownable & HOUSEF_GOOD) {
-                ActLike = HOUSE_GREECE;
-            } else {
-                ActLike = HOUSE_USSR;
+        // Tiberian Factions mod: this Unlimbo override sets the building's
+        // ActLike based on the building type's natural side, so the sidebar
+        // produces the right tech tree (especially after capture). The TD-era
+        // logic only checked HOUSEF_GOOD/HOUSEF_BAD because in TD, all
+        // buildings had one of those bits set. In RA, Allied buildings have
+        // HOUSEF_ALLIES bits and Soviet have HOUSEF_SOVIET — neither has GOOD
+        // or BAD by default. Vanilla RA happened to work because HOUSEF_GOOD
+        // was bundled into HOUSEF_ALLIES (now detached in our defines.h).
+        // "Universally available" in RA = the building is tagged for both
+        // Allied and Soviet sides (Ownable=0xFF in vanilla numbering). Such
+        // buildings preserve their owner's ActLike rather than getting
+        // forced into a side placeholder.
+        int both_ra_sides = HOUSEF_ALLIES | HOUSEF_SOVIET;
+        if ((Class->Ownable & both_ra_sides) != both_ra_sides) {
+            if (Class->Ownable & HOUSEF_ALLIES) {
+                ActLike = HOUSE_GREECE; // Allied placeholder
+            } else if (Class->Ownable & HOUSEF_SOVIET) {
+                ActLike = HOUSE_USSR; // Soviet placeholder
+            } else if (Class->Ownable & HOUSEF_GDI) {
+                ActLike = HOUSE_GOOD; // GDI
+            } else if (Class->Ownable & HOUSEF_NOD) {
+                ActLike = HOUSE_BAD; // Nod
             }
+            // else: building has no side bits in Ownable — preserve the
+            // initial ActLike (House->ActLike). HOUSE_GOOD / HOUSE_BAD
+            // players landing here keep their own identity.
         }
 
         return (true);
@@ -1657,9 +1698,9 @@ void BuildingClass::operator delete(void* ptr)
  *   04/21/1994 JLB : Created.                                                                 *
  *   08/07/1995 JLB : Fixed act like value to match expected value.                            *
  *=============================================================================================*/
-BuildingClass::BuildingClass(StructType type, HousesType house)
+BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     : TechnoClass(RTTI_BUILDING, Buildings.ID(this), house)
-    , Class(BuildingTypes.Ptr((int)type))
+    , Class((BuildingTypeClass*)typeptr)
     , Factory(0)
     , ActLike(House->ActLike)
     , IsToRebuild(false)
@@ -1686,6 +1727,11 @@ BuildingClass::BuildingClass(StructType type, HousesType house)
     , LastStrength(0)
     , PlacementDelay(0)
 {
+    // Diagnostic hook removed 2026-05-18. To re-enable, fprintf here to log
+    // every BuildingClass instantiation with typeptr/IniName/Type/house. Used
+    // for confirming Phase 1d's pointer-based ctor receives the correct
+    // BuildingTypeClass* from Create_One_Of (vs the StructType-based legacy
+    // path that delegates through BuildingTypes.Ptr).
     House->Tracking_Add(this);
     IsSecondShot = !Class->Is_Two_Shooter();
     Strength = Class->MaxStrength;
@@ -1703,6 +1749,18 @@ BuildingClass::BuildingClass(StructType type, HousesType house)
     //	if (Session.Type == GAME_INTERNET) {
     //		House->BuildingTotals->Increment_Unit_Total( (int) type);
     //	}
+}
+
+/*
+**	StructType form delegates to the pointer form via the BuildingTypes heap.
+**	Preserves all existing callsites; new code that already knows the actual
+**	BuildingTypeClass (e.g. Create_One_Of) should call the pointer form so the
+**	resulting BuildingClass::Class is the caller's class — not whatever the
+**	Type enum resolves to (which is the donor for Logic-aliased mod types).
+*/
+BuildingClass::BuildingClass(StructType type, HousesType house)
+    : BuildingClass(BuildingTypes.Ptr((int)type), house)
+{
 }
 
 /***********************************************************************************************
@@ -2103,7 +2161,14 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 return (1); // fail while we're still unloading previous
             }
             ScenarioInit++;
-            if (base->Unlimbo(Exit_Coord(), DIR_S)) {
+            // TD source uses DIR_SW here (tiberiandawn/building.cpp:2273), not
+            // DIR_S. Gated on TD-prefixed IniName so vanilla RA Allied War
+            // Factory keeps its original south-facing exit; mod entries get
+            // TD-authentic SW facing. Spawn position stays at TD-authentic
+            // Exit_Coord() — the visible shift was a track-side problem, not
+            // a spawn-position problem.
+            if (base->Unlimbo(Exit_Coord(),
+                              (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') ? DIR_SW : DIR_S)) {
                 base->Mark(MARK_UP);
                 base->Coord = Exit_Coord();
                 base->Mark(MARK_DOWN);
@@ -2160,8 +2225,56 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 DirType dir = Direction(cell);
                 COORDINATE start = Exit_Coord();
 
+                // Diagnostic 2026-05-20: capture vehicle-exit data for TD-mod
+                // buildings (TD-prefixed IniName) so we can see why TDWEAP's
+                // tank teleports + faces wrong direction. Logs: building cell,
+                // spawn pixel (start), exit cell, dir, plus the unit's actual
+                // Coord + PrimaryFacing immediately after Unlimbo. See
+                // catalogue.md "TEMPORARY DEV HACKS".
+                static FILE* s_exit_log = NULL;
+                bool log_this = (Class->IniName[0] == 'T' && Class->IniName[1] == 'D');
+                if (log_this) {
+                    if (s_exit_log == NULL) {
+                        char dpath[512];
+                        const char* dprof = getenv("USERPROFILE");
+                        if (dprof != NULL && dprof[0] != '\0') {
+                            snprintf(dpath, sizeof(dpath),
+                                     "%s/Documents/CnCRemastered/tf_exit_object.log", dprof);
+                        } else {
+                            strcpy(dpath, "tf_exit_object.log");
+                        }
+                        s_exit_log = fopen(dpath, "w");
+                    }
+                    if (s_exit_log != NULL) {
+                        CELL b_origin = Coord_Cell(Coord);
+                        CELL spawn_cell = Coord_Cell(start);
+                        fprintf(s_exit_log,
+                                "EXIT %s b_origin=cell(%d,%d) spawn_pixel=(%d,%d) "
+                                "spawn_cell=cell(%d,%d) exit_cell=cell(%d,%d) "
+                                "exit_rel=(%d,%d) dir=%d\n",
+                                Class->IniName,
+                                Cell_X(b_origin), Cell_Y(b_origin),
+                                Coord_X(start), Coord_Y(start),
+                                Cell_X(spawn_cell), Cell_Y(spawn_cell),
+                                Cell_X(cell), Cell_Y(cell),
+                                Cell_X(cell) - Cell_X(b_origin),
+                                Cell_Y(cell) - Cell_Y(b_origin),
+                                (int)dir);
+                        fflush(s_exit_log);
+                    }
+                }
+
                 ScenarioInit++;
                 if (base->Unlimbo(start, dir)) {
+
+                    if (log_this && s_exit_log != NULL && base->Is_Techno()) {
+                        TechnoClass* t = (TechnoClass*)base;
+                        fprintf(s_exit_log,
+                                "  POST_UNLIMBO base.Coord=(%d,%d) base.PrimaryFacing=%d\n",
+                                Coord_X(t->Coord), Coord_Y(t->Coord),
+                                (int)t->PrimaryFacing.Current());
+                        fflush(s_exit_log);
+                    }
 
                     base->Assign_Mission(MISSION_MOVE);
 
@@ -2174,6 +2287,17 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                         base->Assign_Mission(MISSION_GUARD_AREA);
                         base->ArchiveTarget = ::As_Target(House->Where_To_Go((FootClass*)base));
                     }
+
+                    if (log_this && s_exit_log != NULL && base->Is_Foot()) {
+                        FootClass* t = (FootClass*)base;
+                        fprintf(s_exit_log,
+                                "  POST_MISSION base.Coord=(%d,%d) base.PrimaryFacing=%d Mission=%d NavCom=0x%X\n",
+                                Coord_X(t->Coord), Coord_Y(t->Coord),
+                                (int)t->PrimaryFacing.Current(),
+                                (int)t->Mission, (unsigned)t->NavCom);
+                        fflush(s_exit_log);
+                    }
+
                     ScenarioInit--;
                     return (2);
                 }
@@ -2271,8 +2395,8 @@ void BuildingClass::Update_Buildables(void)
             int v;
 
         case RTTI_VESSELTYPE:
-            for (v = VESSEL_FIRST; v < VESSEL_COUNT; v++) {
-                if (PlayerPtr->Can_Build(&VesselTypeClass::As_Reference((VesselType)v), ActLike)) {
+            for (v = 0; v < VesselTypes.Count(); v++) {
+                if (PlayerPtr->Can_Build(VesselTypes.Ptr(v), ActLike)) {
                     if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
 #ifdef REMASTER_BUILD
                         Sidebar_Glyphx_Add(RTTI_VESSELTYPE, v, House, buildable_via_capture);
@@ -2285,8 +2409,8 @@ void BuildingClass::Update_Buildables(void)
             break;
 
         case RTTI_BUILDINGTYPE:
-            for (i = STRUCT_FIRST; i < STRUCT_COUNT; i++) {
-                if (PlayerPtr->Can_Build(&BuildingTypeClass::As_Reference((StructType)i), ActLike)) {
+            for (i = 0; i < BuildingTypes.Count(); i++) {
+                if (PlayerPtr->Can_Build(BuildingTypes.Ptr(i), ActLike)) {
                     if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
 #ifdef REMASTER_BUILD
                         Sidebar_Glyphx_Add(RTTI_BUILDINGTYPE, i, House, buildable_via_capture);
@@ -2299,8 +2423,8 @@ void BuildingClass::Update_Buildables(void)
             break;
 
         case RTTI_UNITTYPE:
-            for (u = UNIT_FIRST; u < UNIT_COUNT; u++) {
-                if (PlayerPtr->Can_Build(&UnitTypeClass::As_Reference((UnitType)u), ActLike)) {
+            for (u = 0; u < UnitTypes.Count(); u++) {
+                if (PlayerPtr->Can_Build(UnitTypes.Ptr(u), ActLike)) {
                     if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
 #ifdef REMASTER_BUILD
                         Sidebar_Glyphx_Add(RTTI_UNITTYPE, u, House, buildable_via_capture);
@@ -2313,9 +2437,9 @@ void BuildingClass::Update_Buildables(void)
             break;
 
         case RTTI_INFANTRYTYPE:
-            for (f = INFANTRY_FIRST; f < INFANTRY_COUNT; f++) {
-                if (PlayerPtr->Can_Build(&InfantryTypeClass::As_Reference((InfantryType)f), ActLike)) {
-                    if (InfantryTypeClass::As_Reference((InfantryType)f).IsDog) {
+            for (f = 0; f < InfantryTypes.Count(); f++) {
+                if (PlayerPtr->Can_Build(InfantryTypes.Ptr(f), ActLike)) {
+                    if (InfantryTypes.Ptr(f)->IsDog) {
                         if (*this == STRUCT_KENNEL) {
                             if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
 #ifdef REMASTER_BUILD
@@ -2341,8 +2465,8 @@ void BuildingClass::Update_Buildables(void)
             break;
 
         case RTTI_AIRCRAFTTYPE:
-            for (a = AIRCRAFT_FIRST; a < AIRCRAFT_COUNT; a++) {
-                if (PlayerPtr->Can_Build(&AircraftTypeClass::As_Reference((AircraftType)a), ActLike)) {
+            for (a = 0; a < AircraftTypes.Count(); a++) {
+                if (PlayerPtr->Can_Build(AircraftTypes.Ptr(a), ActLike)) {
                     if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
 #ifdef REMASTER_BUILD
                         Sidebar_Glyphx_Add(RTTI_AIRCRAFTTYPE, a, House, buildable_via_capture);
@@ -2932,9 +3056,16 @@ ActionType BuildingClass::What_Action(ObjectClass const* object) const
     /*
     **	Don't allow targeting of SAM sites, even if the CTRL key
     **	is held down. Also don't allow targeting if the object is too
-    **	far away.
+    **	far away. STRUCT_AAGUN-aliased entries (e.g. Logic=AGUN with
+    **	Primary=Hellfire) only get blocked here if their primary weapon
+    **	is itself anti-air-only — vanilla AGUN's ZSU-23 has
+    **	IsAntiGround=false so it's still excluded, but a mod tower with
+    **	an anti-ground primary can be force-fired at ground targets.
     */
-    if (action == ACTION_ATTACK && (*this == STRUCT_SAM || *this == STRUCT_AAGUN || !In_Range(object, 0))) {
+    bool aa_only_aagun = (*this == STRUCT_AAGUN && Class->PrimaryWeapon != NULL
+                          && Class->PrimaryWeapon->Bullet != NULL
+                          && !Class->PrimaryWeapon->Bullet->IsAntiGround);
+    if (action == ACTION_ATTACK && (*this == STRUCT_SAM || aa_only_aagun || !In_Range(object, 0))) {
         action = ACTION_NONE;
     }
 
@@ -3446,6 +3577,18 @@ COORDINATE BuildingClass::Sort_Y(void) const
         return (Center_Coord());
     }
     if (*this == STRUCT_REFINERY) {
+        return (Center_Coord());
+    }
+    /*
+    **  Mod-defined entries with explicit ShapeSize= rules.ini overrides use
+    **  TD-Assets-style sprites that visually extend further south than the
+    **  default Sort_Y offset accounts for, causing units near the building's
+    **  bottom row to render *behind* the building. Forcing the sort point to
+    **  the building's center (no south offset) restores correct unit-on-top
+    **  z-order. Only fires for mod entries; vanilla buildings don't set
+    **  ShapeSize so vanilla Sort_Y behaviour is preserved.
+    */
+    if (Class->ShapeWidth > 0 && Class->ShapeHeight > 0) {
         return (Center_Coord());
     }
 
@@ -4954,9 +5097,53 @@ int BuildingClass::Mission_Unload(void)
                         unit->Assign_Mission(MISSION_GUARD_AREA);
                         unit->ArchiveTarget = ::As_Target(House->Where_To_Go(unit));
                     }
-                    unit->Force_Track(DriveClass::OUT_OF_WEAPON_FACTORY, coord);
-                    //						unit->Force_Track(DriveClass::OUT_OF_WEAPON_FACTORY,
-                    //Adjacent_Cell(Adjacent_Cell(Center_Coord(), FACING_S), FACING_S));
+                    /*
+                    **  TD-prefixed mod entries (Logic=WEAP TD buildings):
+                    **  skip Track13 entirely and pathfind from spawn to the
+                    **  ExitList[0] cell via plain MISSION_MOVE. Track13's
+                    **  canned animation lands the vehicle inside the SW
+                    **  corner cell of the footprint, and the handoff to a
+                    **  follow-on Assign_Destination produced a visible
+                    **  teleport + a south-then-west route. The plain pathfind
+                    **  from the at-door spawn (Coord set by Unlimbo to
+                    **  Exit_Coord()) is smooth and goes SW directly.
+                    **
+                    **  Vanilla RA WEAP keeps the original Force_Track path so
+                    **  Allied AI behaviour is unchanged.
+                    */
+                    /*
+                    **  TD entries use Force_Track with destination =
+                    **  Adjacent_Cell(Center_Coord(), FACING_SW). The math:
+                    **  Track13[0].Offset = XYP_COORD(10, -21) px = (107, -224)
+                    **  leptons. For 3x3 building, Center_Coord SW = building
+                    **  origin + (128, 640) lep. Track13[0] position =
+                    **  destination + offset = (235, 416) lep — exactly the
+                    **  TD-authentic Exit_Coord (XYP_COORD(22, 39)). So the
+                    **  first track tick sets Coord to the same place the unit
+                    **  was Unlimbo'd — zero snap, smooth drive from spawn.
+                    **
+                    **  Track13 ends at Adjacent_Cell SW (cell (0,2) centre,
+                    **  inside the building's SW corner). After it, an
+                    **  Assign_Destination to ExitList[0] continues path-find
+                    **  fully out. The transition between Track13 end and
+                    **  Track2 start is ~1 lepton snap (imperceptible).
+                    **
+                    **  Vanilla WEAP keeps the original logic for Allied AI.
+                    */
+                    if (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') {
+                        // TD entries: drive Track14 (SW) toward Adjacent_Cell SW
+                        // of building centre. The math: Track14[0] offset
+                        // (10, -21 px) + that destination = the Unlimbo spawn
+                        // exactly, so the first track tick produces zero snap.
+                        // Vanilla WEAP uses the original south Track13 via
+                        // OUT_OF_WEAPON_FACTORY (next branch) — Allied AI exit
+                        // behaviour is unchanged.
+                        COORDINATE td_dest = Adjacent_Cell(Center_Coord(), FACING_SW);
+                        unit->Force_Track(DriveClass::OUT_OF_WEAPON_FACTORY_TD, td_dest);
+                        unit->Assign_Destination(::As_Target(cell));
+                    } else {
+                        unit->Force_Track(DriveClass::OUT_OF_WEAPON_FACTORY, coord);
+                    }
                     unit->Set_Speed(128);
                     Status = LEAVE;
                 } else {

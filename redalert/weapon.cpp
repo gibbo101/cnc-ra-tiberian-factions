@@ -285,6 +285,22 @@ ArmorType Armor_From_Name(char const* name)
         }
     }
 
+    /*
+    **  Tiberian Factions mod: accept TD's internal enum names as aliases for
+    **  RA's `light` / `heavy` strings (ArmorName[] entries 2 and 3). The TD
+    **  source code uses ARMOR_ALUMINUM / ARMOR_STEEL constants; reusing those
+    **  names in the manifest reads more naturally than the RA equivalents.
+    **  Without this alias the parser silently returned ARMOR_NONE for every
+    **  TD entry with armor="aluminum" or "steel" — discovered 2026-05-20 via
+    **  comparison with Reilsss's CnCinRA mod.
+    */
+    if (stricmp(name, "aluminum") == 0) {
+        return (ARMOR_ALUMINUM);
+    }
+    if (stricmp(name, "steel") == 0) {
+        return (ARMOR_STEEL);
+    }
+
     return (ARMOR_NONE);
 }
 

@@ -1154,9 +1154,15 @@ inline HousesType operator++(HousesType& ht)
     return ht;
 }
 
+// Tiberian Factions mod: GDI (HOUSE_GOOD) and Nod (HOUSE_BAD) detached from
+// the Allied / Soviet umbrella so they form their own factions. Vanilla RA
+// had HOUSE_GOOD bundled into HOUSEF_ALLIES and HOUSE_BAD into HOUSEF_SOVIET,
+// causing the TD houses to silently inherit RA's tech trees.
 #define HOUSEF_ALLIES                                                                                                  \
-    (HOUSEF_ENGLAND | HOUSEF_SPAIN | HOUSEF_GREECE | HOUSEF_GERMANY | HOUSEF_FRANCE | HOUSEF_TURKEY | HOUSEF_GOOD)
-#define HOUSEF_SOVIET (HOUSEF_USSR | HOUSEF_UKRAINE | HOUSEF_BAD)
+    (HOUSEF_ENGLAND | HOUSEF_SPAIN | HOUSEF_GREECE | HOUSEF_GERMANY | HOUSEF_FRANCE | HOUSEF_TURKEY)
+#define HOUSEF_SOVIET (HOUSEF_USSR | HOUSEF_UKRAINE)
+#define HOUSEF_GDI    (HOUSEF_GOOD)
+#define HOUSEF_NOD    (HOUSEF_BAD)
 #define HOUSEF_OTHERS                                                                                                  \
     (HOUSEF_NEUTRAL | HOUSEF_JP | HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5        \
      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8)
@@ -1450,6 +1456,29 @@ typedef enum StructType : char
     STRUCT_COUNT,
     STRUCT_FIRST = 0
 } StructType;
+
+/*
+**	Upper bound on the BuildingTypes heap (vanilla enum entries + mod heap
+**	slots reserved by `BuildingTypes.Set_Heap()` in init.cpp). Used to size
+**	per-Type counter arrays on HouseClass so mod-defined IniNames index
+**	safely past STRUCT_COUNT. Keep in sync with init.cpp's Set_Heap call.
+*/
+#define MAX_BUILDING_TYPES (STRUCT_COUNT + 50)
+
+/*
+**  Same as MAX_BUILDING_TYPES but for UnitTypes — gives [NewUnits] entries
+**  in rules.ini room past UNIT_COUNT. Without this, UnitTypes.Set_Heap()
+**  sizes the heap to exactly UNIT_COUNT and Alloc() for a mod entry silently
+**  fails (heap full), making `As_Pointer("TDMCV")` return NULL despite
+**  [NewUnits] parsing the section. Headroom of 50 matches the building side.
+*/
+#define MAX_UNIT_TYPES (UNIT_COUNT + 50)
+
+/*
+**	Maximum number of comma-separated entries in a Prerequisite= line.
+**	Vanilla never exceeds 2; 4 is comfortable headroom for mods.
+*/
+#define PREREQUISITE_MAX 4
 
 // PG inline StructType operator++(StructType &, int);
 inline StructType operator++(StructType& n)

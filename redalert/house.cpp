@@ -731,6 +731,7 @@ HouseClass::HouseClass(HousesType house)
     memset(UnitsKilled, '\0', sizeof(UnitsKilled));
     memset(BuildingsKilled, '\0', sizeof(BuildingsKilled));
     memset(BQuantity, '\0', sizeof(BQuantity));
+    memset(ActiveBQuantity, '\0', sizeof(ActiveBQuantity));
     memset(UQuantity, '\0', sizeof(UQuantity));
     memset(IQuantity, '\0', sizeof(IQuantity));
     memset(AQuantity, '\0', sizeof(AQuantity));
@@ -824,6 +825,71 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     assert(Houses.ID(this) == ID);
     assert(type != NULL);
 
+    // Diagnostic hook 2026-05-19: log Can_Build calls for mod-defined building
+    // entries so we can see why a freshly-added TDxxxx might not appear in the
+    // sidebar. Filter to TD-prefixed IniNames and rate-limit. Keep in place
+    // until v1.0 per [[feedback-keep-diagnostics-until-v1]]. Stub the body
+    // under `if (0)` to disable; do not delete.
+    //
+    // Path resolution: %USERPROFILE%/Documents/CnCRemastered matches the
+    // game's own save folder convention and resolves correctly on both real
+    // Windows (whatever the user's profile is) and Wine/Proton (where
+    // USERPROFILE points to drive_c/users/steamuser). Falls back to CWD if
+    // the env var is unset.
+    // Capture: TD-prefixed buildings (always) + E-prefix infantry (E1..E9,
+    // for the 2026-05-20 GDI roster bring-up where E3 isn't appearing in the
+    // sidebar despite Owner=allies,soviet,GoodGuy,BadGuy + Prerequisite=tent
+    // + TDPYLE built). Logging RTTI distinguishes the two streams.
+    bool log_td = (type->IniName[0] == 'T' && type->IniName[1] == 'D');
+    bool log_einf = (type->What_Am_I() == RTTI_INFANTRYTYPE
+                     && type->IniName[0] == 'E'
+                     && type->IniName[1] >= '0' && type->IniName[1] <= '9');
+    if (log_td || log_einf) {
+        static FILE* s_can_build_log = NULL;
+        static int s_log_count = 0;
+        if (s_log_count < 400) {
+            if (s_can_build_log == NULL) {
+                char path[512];
+                const char* profile = getenv("USERPROFILE");
+                if (profile != NULL && profile[0] != '\0') {
+                    snprintf(path, sizeof(path),
+                             "%s/Documents/CnCRemastered/MOD_DEBUG_CANBUILD.txt",
+                             profile);
+                } else {
+                    strcpy(path, "MOD_DEBUG_CANBUILD.txt");
+                }
+                s_can_build_log = fopen(path, "w");
+            }
+            if (s_can_build_log != NULL) {
+                int level = Control.TechLevel;
+                int const* pre = ((TechnoTypeClass const*)type)->Prerequisite;
+                int own = type->Get_Ownable();
+                int level_ok = ((TechnoTypeClass const*)type)->Level <= (unsigned)level;
+                int pre_ok = 1;
+                for (int i = 0; i < PREREQUISITE_MAX; i++) {
+                    int t = pre[i];
+                    if (t < 0)
+                        break;
+                    if (!Has_Building_Active(t)) {
+                        pre_ok = 0;
+                        break;
+                    }
+                }
+                int own_ok = ((1L << house) & own) != 0;
+                fprintf(s_can_build_log,
+                        "Can_Build rtti=%d name=%s house=%d level=%d type.Level=%d "
+                        "pre=[%d,%d,%d,%d] own=0x%X level_ok=%d pre_ok=%d "
+                        "own_ok=%d IsHuman=%d\n",
+                        (int)type->What_Am_I(), type->IniName, (int)house, level,
+                        ((TechnoTypeClass const*)type)->Level,
+                        pre[0], pre[1], pre[2], pre[3],
+                        own, level_ok, pre_ok, own_ok, (int)IsHuman);
+                fflush(s_can_build_log);
+                s_log_count++;
+            }
+        }
+    }
+
     /*
     **	An object with a prohibited tech level availability will never be allowed, regardless
     **	of who requests it.
@@ -876,52 +942,59 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     }
 
     /*
-    **	Perform some equivalency fixups for the building existence flags.
+    **	Prereq satisfaction: every populated slot in Prerequisite[] must
+    **	correspond to a building Type the house currently owns (active +
+    **	unlimbo'd). ActiveBQuantity is the heap-sized counter that handles
+    **	mod IniNames whose Type exceeds the 32-bit ActiveBScan range.
     */
-    int flags = ActiveBScan;
-
-    /*
-    **	The computer records prerequisite buildings because it can't relay on the
-    **	sidebar to keep track of this information.
-    */
-    if (!IsHuman) {
-        flags = OldBScan;
-    }
-
-    int pre = ((TechnoTypeClass const*)type)->Prerequisite;
-
-    /*
-    **	Advanced power also serves as a prerequisite for normal power.
-    */
-    if (flags & STRUCTF_ADVANCED_POWER)
-        flags |= STRUCTF_POWER;
-
-    /*
-    **	Either tech center counts as a prerequisite.
-    */
-    if (Session.Type != GAME_NORMAL) {
-        if ((flags & (STRUCTF_SOVIET_TECH | STRUCTF_ADVANCED_TECH)) != 0)
-            flags |= STRUCTF_SOVIET_TECH | STRUCTF_ADVANCED_TECH;
-    }
+    int const* pre = ((TechnoTypeClass const*)type)->Prerequisite;
 
     int level = Control.TechLevel;
+    bool skip_prereqs = false;
 #ifdef CHEAT_KEYS
     if (Debug_Cheat) {
         level = 98;
-        pre = 0;
+        skip_prereqs = true;
     }
 #endif
-
     // ST - 8/23/2019 4:53PM
     if (DebugUnlockBuildables) {
         level = 98;
-        pre = 0;
+        skip_prereqs = true;
     }
 
-    /*
-    **	See if the prerequisite requirements have been met.
-    */
-    return ((pre & flags) == pre && ((TechnoTypeClass const*)type)->Level <= (unsigned)level);
+    if (((TechnoTypeClass const*)type)->Level > (unsigned)level) {
+        return (false);
+    }
+    if (skip_prereqs) {
+        return (true);
+    }
+
+    for (int i = 0; i < PREREQUISITE_MAX; i++) {
+        int t = pre[i];
+        if (t < 0)
+            break;
+
+        if (Has_Building_Active(t))
+            continue;
+
+        /*
+        **	Advanced power also serves as a prerequisite for normal power.
+        **	Either tech center counts as a prerequisite in multiplayer.
+        **	These vanilla equivalences are due to be replaced with a
+        **	BehavesLike= rules.ini field in D2; until then, special-case here.
+        */
+        if (t == STRUCT_POWER && Has_Building_Active(STRUCT_ADVANCED_POWER))
+            continue;
+        if (Session.Type != GAME_NORMAL) {
+            if (t == STRUCT_ADVANCED_TECH && Has_Building_Active(STRUCT_SOVIET_TECH))
+                continue;
+            if (t == STRUCT_SOVIET_TECH && Has_Building_Active(STRUCT_ADVANCED_TECH))
+                continue;
+        }
+        return (false);
+    }
+    return (true);
 }
 
 /***************************************************************************
@@ -6732,7 +6805,9 @@ void HouseClass::Tracking_Add(TechnoClass const* techno)
         CurBuildings++;
         building = ((BuildingTypeClass const&)techno->Class_Of()).Type;
         BQuantity[building]++;
-        BScan |= (1L << building);
+        if ((int)building < 32) {
+            BScan |= (1L << building);
+        }
         if (Session.Type == GAME_INTERNET) {
             BuildingTotals.Increment_Unit_Total(techno->Class_Of().ID);
         }
@@ -7025,6 +7100,7 @@ void HouseClass::Recalc_Attributes(void)
         if (house != NULL) {
             house->BScan = 0;
             house->ActiveBScan = 0;
+            memset(house->ActiveBQuantity, '\0', sizeof(house->ActiveBQuantity));
             house->IScan = 0;
             house->ActiveIScan = 0;
             house->UScan = 0;
@@ -7073,13 +7149,19 @@ void HouseClass::Recalc_Attributes(void)
     }
     for (index = 0; index < Buildings.Count(); index++) {
         BuildingClass const* building = Buildings.Ptr(index);
-        if (building->Class->Type < 32) {
-            building->House->BScan |= (1L << building->Class->Type);
-            if (building->IsLocked
-                && (Session.Type != GAME_NORMAL || !building->House->IsHuman || building->IsDiscoveredByPlayer)) {
-                if (!building->IsInLimbo) {
-                    building->House->ActiveBScan |= (1L << building->Class->Type);
-                    building->House->OldBScan |= (1L << building->Class->Type);
+        int btype = building->Class->Type;
+        if (btype < 32) {
+            building->House->BScan |= (1L << btype);
+        }
+        if (building->IsLocked
+            && (Session.Type != GAME_NORMAL || !building->House->IsHuman || building->IsDiscoveredByPlayer)) {
+            if (!building->IsInLimbo) {
+                if (btype < 32) {
+                    building->House->ActiveBScan |= (1L << btype);
+                    building->House->OldBScan |= (1L << btype);
+                }
+                if (btype >= 0 && btype < MAX_BUILDING_TYPES) {
+                    building->House->ActiveBQuantity[btype]++;
                 }
             }
         }

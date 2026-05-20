@@ -2,7 +2,7 @@
 
 A mod for **Command & Conquer: Red Alert Remastered** that adds GDI and Nod as new playable factions alongside Allies and Soviets.
 
-> ⚠️ **Pre-release / under active development.** Engine work is in progress; not yet playable as a faction mod. v0.1.0 will be the first milestone (engine extension only — content differentiation comes after).
+> ⚠️ **Pre-release / under active development.** v0.3.0 is playable end-to-end in skirmish — four sides on one map — but content differentiation (TD-themed rosters, superweapons, AI) is still being filled in. Not yet published to Steam Workshop.
 
 This repository is a **fork of [Vanilla Conquer](https://github.com/TheAssemblyArmada/Vanilla-Conquer)**, which provides the DLL build base. The original Vanilla Conquer README is preserved as [`README-VANILLA-CONQUER.md`](./README-VANILLA-CONQUER.md).
 
@@ -14,9 +14,11 @@ Designed to LAN-play on the kids' Steam Deck setup.
 
 ## Status
 
-- v0.0.x — scaffolding, build pipeline (✅ working: Linux mingw cross-compile + Steam Deck deploy via Tailscale)
-- v0.1.0 — `HOUSE_GDI` and `HOUSE_NOD` selectable as cloned-from-Allies/Soviets variants (engine proof)
-- v0.2.0 onward — differentiate the factions: TD-themed unit rosters, art (via [TD-Assets](https://steamcommunity.com/sharedfiles/filedetails/?id=3003163891)), superweapons, AI
+- v0.0.x — ✅ scaffolding, Linux mingw cross-compile + Steam Deck deploy pipeline.
+- v0.1.0 — ✅ engine extension: `HOUSE_GOOD`/`HOUSE_BAD` selectable as cloned-from-Allies/Soviets variants.
+- v0.2.0 — ✅ engine decoupling: `HOUSE_GOOD`/`HOUSE_BAD` detached from `HOUSEF_ALLIES`/`HOUSEF_SOVIET`; 4-side-aware Unlimbo dispatch; France→`HOUSE_GOOD` launcher swap.
+- v0.3.0 — 🚧 in progress: TD-themed GDI/Nod building catalogues (TDFACT, TDNUKE/NUK2, TDPYLE, TDSILO, TDWEAP, TDMCV…), INI-driven mod-entry registration, asset pipeline (manifest → ZIP repack → rsync to Deck), TD-authentic build times. Playable in skirmish.
+- v0.4.0+ — planned: TD-themed unit rosters, superweapons (Ion Cannon, Nuke), faction-specific AI.
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for detailed progress.
 
@@ -51,7 +53,6 @@ _(Once published.)_ Subscribe via Steam Workshop, then enable "Tiberian Factions
 ## Dependencies
 
 - **[Vanilla Conquer](https://github.com/TheAssemblyArmada/Vanilla-Conquer)** — engine base (this repository is a fork).
-- **[TD-Assets](https://steamcommunity.com/sharedfiles/filedetails/?id=3003163891)** by DontCryJustDie — Tiberian Dawn art and audio (referenced once we start adding TD-themed content).
 
 ## Compatibility
 
@@ -65,6 +66,14 @@ _(Once published.)_ Subscribe via Steam Workshop, then enable "Tiberian Factions
 
 - **EA / Petroglyph** — original Tiberian Dawn (1995) and Red Alert (1996), and the 2020 Remastered Collection.
 - **[The Assembly Armada](https://github.com/TheAssemblyArmada)** — Vanilla Conquer maintainers.
-- **DontCryJustDie** — TD-Assets.
 
 This mod is not endorsed by or affiliated with Electronic Arts.
+
+## Acknowledgements & Inspiration
+
+This project doesn't bundle these mods, but their work shaped how we approached the engine. Thanks to:
+
+- **Reilsss** — [Reilsss's Command & Conquer in Red Alert](https://steamcommunity.com/sharedfiles/filedetails/?id=2853520457) — asset-replacement approach for reimagining RA factions as GDI/Nod.
+- **DontCryJustDie** — [TD-Assets](https://steamcommunity.com/sharedfiles/filedetails/?id=3003163891) — TD art and audio surfaced into the RA engine; reference for the `TD`-prefixed naming convention.
+- **JohnnyJigglez** — [EMC (Enhanced Modding Capabilities)](https://www.nexusmods.com/commandandconquerremastered/mods/21) — INI-driven custom buildings/vehicles patterns informed our extensibility approach.
+- **ChthonVII** — [CFE Patch Redux](https://steamcommunity.com/sharedfiles/filedetails/?id=2268301299) — engine-fix reference.

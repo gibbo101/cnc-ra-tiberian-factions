@@ -6682,7 +6682,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         , SightRange(0)
         , Cost(0)
         , Level(-1)
-        , Prerequisite(STRUCTF_NONE)
         , Risk(0)
         , Reward(0)
         , MaxSpeed(MPH_IMMOBILE)
@@ -6702,6 +6701,9 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         , SecondaryLateral(secondarylateral)
         , Points(0)
     {
+        for (int i = 0; i < PREREQUISITE_MAX; i++) {
+            Prerequisite[i] = -1;
+        }
     }
 
     /***********************************************************************************************
@@ -6779,6 +6781,56 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         HouseClass* hptr = HouseClass::As_Pointer(house);
         if (!hptr || !hptr->IsActive) {
             return time;
+        }
+
+        /*
+        **  DEV TOGGLE — instant-build (~1 second) for GDI / Nod players for
+        **  fast catalogue iteration. Disabled by default in v0.3.0-phase5e.
+        **  Flip #if 0 → 1 to re-enable for layout testing. Search
+        **  "DEV TOGGLE — instant build" to find. 15 ticks ≈ 1s at 15/sec.
+        */
+#if 0
+        if (hptr->Class->House == HOUSE_GOOD || hptr->Class->House == HOUSE_BAD
+            || hptr->ActLike      == HOUSE_GOOD || hptr->ActLike      == HOUSE_BAD) {
+            return 15;
+        }
+#endif
+
+        /*
+        **  TD-authentic build-time formula for HOUSE_GOOD (GDI) / HOUSE_BAD
+        **  (Nod) players. Mirrors TD's `TechnoTypeClass::Time_To_Build`
+        **  (tiberiandawn/techno.cpp:288): `time_ticks = Raw_Cost()`. The
+        **  game-speed slider then scales ticks → displayed seconds; at the
+        **  TD-remaster default game speed this produces Refinery 0:21,
+        **  Weapons Factory 1:07, Power Plant 0:11, Adv PP 0:24, Comm Center
+        **  0:34, Repair Facility 0:41 — all verified vs the TD tooltip on
+        **  2026-05-20.
+        **
+        **  The "bonus_unit_cost" subtraction mirrors TD's
+        **  BuildingTypeClass::Raw_Cost (tiberiandawn/bdata.cpp:4546) —
+        **  Refinery deducts the free Harvester, Helipad the free Orca.
+        **  Our Logic= alias gives TDPROC `Type = STRUCT_REFINERY`, so the
+        **  switch hits cleanly without per-IniName dispatch.
+        **
+        **  Returns early, skipping RA's BuildSpeedBias / unit-build-penalty
+        **  stack, so vanilla allied/soviet AI cadence stays unchanged.
+        */
+        if (hptr->ActLike == HOUSE_GOOD || hptr->ActLike == HOUSE_BAD) {
+            int td_cost = Cost;
+            if (What_Am_I() == RTTI_BUILDINGTYPE) {
+                StructType s = ((BuildingTypeClass const*)this)->Type;
+                if (s == STRUCT_REFINERY) {
+                    td_cost -= UnitTypeClass::As_Reference(UNIT_HARVESTER).Cost;
+                }
+                // RA's helipad donor delivers a free Longbow on construction
+                // — same shape as TD's Orca-included Helipad, so apply the
+                // same subtraction. AIRCRAFT_LONGBOW is the RA donor.
+                if (s == STRUCT_HELIPAD) {
+                    td_cost -= AircraftTypeClass::As_Reference(AIRCRAFT_LONGBOW).Cost;
+                }
+            }
+            if (td_cost < 0) td_cost = 0;
+            return td_cost;
         }
 
 #ifdef FIXIT_VERSION_3
@@ -7057,7 +7109,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             IsCrushable = ini.Get_Bool(Name(), "Crushable", IsCrushable);
             IsScanner = ini.Get_Bool(Name(), "Sensors", IsScanner);
             Armor = ini.Get_ArmorType(Name(), "Armor", Armor);
-            Prerequisite = ini.Get_Buildings(Name(), "Prerequisite", Prerequisite);
+            ini.Get_Buildings(Name(), "Prerequisite", Prerequisite, PREREQUISITE_MAX);
             MaxStrength = ini.Get_Int(Name(), "Strength", MaxStrength);
             SightRange = ini.Get_Int(Name(), "Sight", SightRange);
             Level = ini.Get_Int(Name(), "TechLevel", Level);

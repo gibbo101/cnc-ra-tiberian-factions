@@ -1,0 +1,1471 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ObjectTypeList>
+	<!-- Structures _____________________________________________________________________________________________ -->
+	<!-- Structures _____________________________________________________________________________________________ -->
+	<!-- Structures _____________________________________________________________________________________________ -->
+	<!-- Structures _____________________________________________________________________________________________ -->
+	<!-- Structures _____________________________________________________________________________________________ -->
+	<ObjectTypeClass Name="RA_IRON" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_IRON</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_IRON_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_IronCurtain</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<!-- Does this exist in RA? -->
+	<ObjectTypeClass Name="RA_FCOM" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_FCOM</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_FCOM_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_ATEK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_ATEK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_ATEK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_AlliedTechCenter</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_PDOX" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_PDOX</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_PDOX_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Chronosphere</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_WEAP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_WEAP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_WEAP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_WarFactory</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_SYRD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_SYRD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SYRD_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_NavalYard</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_SPEN" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_SPEN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SPEN_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_SubPen</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+
+	<ObjectTypeClass Name="RA_PBOX" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_PBOX</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_PBOX_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Pillbox</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+
+	<ObjectTypeClass Name="RA_HBOX" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_HBOX</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_HBOX_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_CamoPillbox</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	
+	<ObjectTypeClass Name="RA_TSLA" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_TSLA</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_TSLA_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_TeslaCoil</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_GUN" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_GUN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_GUN_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Turret</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_AGUN" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_AGUN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_AGUN_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_AAGun</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_FTUR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_FTUR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_FTUR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_FlameTower</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_FACT" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_FACT</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_FACT_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_ConYard</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_PROC" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_PROC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_PROC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Refinery</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_SILO" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_SILO</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SILO_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Silo</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+
+	<ObjectTypeClass Name="RA_HPAD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_HPAD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_HPAD_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Helipad</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+
+	<ObjectTypeClass Name="RA_DOME" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_DOME</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_DOME_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_RadarDome</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_GAP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_GAP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_GAP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_GapGenerator</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_SAM" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_SAM</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SAM_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_SamSite</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_MSLO" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_MSLO</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_MSLO_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_MissileSilo</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_AFLD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_AFLD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_AFLD_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Airfield</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_POWR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_POWR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_POWR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_PowerPlant</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_APWR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_APWR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_APWR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_AdvPower</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_STEK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_STEK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_STEK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_SovietTechCenter</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+
+	<ObjectTypeClass Name="RA_BARR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_BARR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_BARR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_SovietBarracks</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+
+	<ObjectTypeClass Name="RA_TENT" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_TENT</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_TENT_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_AlliedBarracks</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+
+	<ObjectTypeClass Name="RA_KENN" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_KENN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_KENN_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Kennel</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_FIX" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_FIX</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_FIX_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_ServiceDepot</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_SBAG" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_SBAG</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SBAG_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Sandbags</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_BRIK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_BRIK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_BRIK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_ConcreteWall</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_FENC" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_FENC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_FENC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_BarbedWire</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<!-- Does this exist in RA? -->
+	<ObjectTypeClass Name="RA_CYCL" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_CYCL</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CYCL_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_ChainLinkFence</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<!-- Does this exist in RA? (Not Sure but it does exist in TD: Funpark Mission 04!-->
+	<ObjectTypeClass Name="RA_BARB" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_BARB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_BARB_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_BarbedWire</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_FACF" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_FACF</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_FACF_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_ConYard_Fake</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_WEAF" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_WEAF</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_WEAF_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_WarFactory_Fake</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_SYRF" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_SYRF</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SYRF_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_NavalYard_Fake</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_DOMF" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_DOMF</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_DOMF_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_RadarDome_Fake</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_SPEF" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_SPEF</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SPEF_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_SubPen_Fake</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_WOOD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_WOOD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_WOOD_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_WoodenFence</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+
+
+	
+	<!-- Units _____________________________________________________________________________________________ -->
+	<!-- Units _____________________________________________________________________________________________ -->
+	<!-- Units _____________________________________________________________________________________________ -->
+	<!-- Units _____________________________________________________________________________________________ -->
+	<!-- Units _____________________________________________________________________________________________ -->
+	<ObjectTypeClass Name="RA_V2RL" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_V2RL</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_V2RL_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_V2Rocket</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_1TNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_1TNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_1TNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_LightTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_3TNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_3TNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_3TNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_HeavyTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_2TNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_2TNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_2TNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_MediumTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_4TNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_4TNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_4TNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_MammothTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_MRJ" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_MRJ</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_MRJ_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_RadarJammer</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_MGG" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_MGG</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_MGG_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_MobilieGapGen</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_ARTY" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_ARTY</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_ARTY_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Artillery</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_HARV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_HARV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_HARV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_OreTruck</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_MCV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_MCV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_MCV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_MCV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_JEEP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_JEEP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_JEEP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Ranger</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_APC" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_APC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_APC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Apc</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_MNLY" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_MNLY</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_MNLY_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_MineLayer</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_SS" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_SS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_SS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Submarine</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_DD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_DD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_DD_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Destroyer</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+
+	<ObjectTypeClass Name="RA_CA" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_CA</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CA_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Cruiser</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_LST" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_LST</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_LST_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Transport</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_PT" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_PT</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_PT_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Gunboat</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_DOG" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_DOG</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_DOG_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_AttackDog</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_E1" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_E1</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_E1_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_RifleInfantry</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+
+	<ObjectTypeClass Name="RA_E2" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_E2</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_E2_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Grenadier</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_E3" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_E3</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_E3_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_RocketSoldier</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_E4" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_E4</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_E4_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Flamethrower</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_E6" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_E6</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_E6_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Engineer</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_SPY" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_SPY</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_SPY_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Spy</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_THF" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_THF</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_THF_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Thief</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_E7" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_E7</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_E7_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Tanya</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_MEDI" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_MEDI</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_MEDI_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Medic</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+
+
+	<ObjectTypeClass Name="RA_BADR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_BADR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_BADR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Badger</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_U2" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_U2</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_U2_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Badger</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_MIG" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_MIG</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_MIG_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Mig</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_YAK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_YAK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_YAK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Yak</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TRAN" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_TRAN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_TRAN_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Chinook</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_HELI" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_HELI</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_HELI_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Longbow</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_HIND" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_HIND</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_HIND_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Hind</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<!-- Aftermath Units -->
+	
+	<ObjectTypeClass Name="RA_DTRK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_DTRK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_DTRK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_DemoTruck</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_MECH" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_MECH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_MECH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Mechanic</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_CTNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_CTNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CTNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_ChronoTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_SHOK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_SHOK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_SHOK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_ShockTrooper</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_TTNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_TTNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_TTNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_TeslaTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_QTNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_QTNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_QTNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_MadTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_MSUB" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_MSUB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_MSUB_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_MissileSub</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_STNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_STNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_STNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_PhaseTransport</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+
+	<!-- Superweapons -->
+	<ObjectTypeClass Name="RA_SW_SPYMISSION" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_SPYPLANE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_SPYPLANE_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_SpyPlane</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_SW_PARAINFANTRY" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_PARATROOPER</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_PARATROOPER_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Paratroopers</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_SW_PARABOMB" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_PARABOMB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_PARABOMB_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Parabombs</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_SW_IRONCURTAIN" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_IRONCURTAIN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_IRONCURTAIN_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Invulnerability</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_SW_NUKE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_NUK2</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_NUKE_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_AtomBomb</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_SW_SONARPULSE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_SONAR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_SONAR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_SonarPulse</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_SW_GPS" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_GPS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_GPS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_GpsSatellite</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_SW_CHRONO" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_CHRONO</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CHRONO_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Chronoshift</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>			
+
+
+		<!-- MISC UNITS-->
+	<ObjectTypeClass Name="RA_ANT1" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_ANT1</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_ANT1_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_ANT2" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_ANT2</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_ANT2_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_ANT3" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_ANT3</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_ANT3_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+
+	<ObjectTypeClass Name="RA_C1" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_CIV1</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_C2" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_CIV2</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_C3" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_CIV3</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_C4" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_CIV4</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_C5" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_CIV5</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_C6" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_CIV6</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_C7" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_CIV7</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_C8" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_CIV8</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_C9" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_CIV9</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_C10" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_SCIENTIST</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_SCIENTIST_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_CHAN" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_CHAN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TITLE_CHAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_DELPHI" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_DELPHI</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_DELPHI_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_EINSTEIN" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_EINSTEIN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_EINSTEIN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_GNRL" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_GNRL</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_GNRL_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_TRUK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_TRUK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_TRUK_DESC</ObjectDescriptionTextID>
+      <BuildIcon>BuildIcon_RA_SupplyTruck</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+  <ObjectTypeClass Name="RA_CARR" Classification="CNCBuildableObject" CanInstantiate="False">
+    <CNCEncyclopediaComponent>
+      <ObjectNameTextID>TEXT_UNIT_RA_CARR</ObjectNameTextID>
+      <ObjectDescriptionTextID>TEXT_UNIT_RA_CARR_DESC</ObjectDescriptionTextID>
+      <BuildIcon>BuildIcon_RA_HeliCarrier</BuildIcon>
+    </CNCEncyclopediaComponent>
+  </ObjectTypeClass>
+
+		<!-- MISC STRUCTURES -->
+		
+	<ObjectTypeClass Name="RA_BARL" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_BARL</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_BARL_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>			
+	<ObjectTypeClass Name="RA_BRL3" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_BRL3</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_BRL3_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_BIO" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_BIO</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_BIO_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_HOSP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_HOSP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_HOSP_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+		<ObjectTypeClass Name="RA_MINP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_MINP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_MINP_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_MINV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_MINV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_MINV_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_MISS" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_MISS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_MISS_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+		
+		
+	<ObjectTypeClass Name="RA_V01" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV1</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V02" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV2</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V03" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV3</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V04" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV4</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V05" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV5</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V06" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV6</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V07" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV7</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V08" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV8</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V09" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV9</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V10" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV10</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+		
+	<ObjectTypeClass Name="RA_V11" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV11</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V12" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_CIVILIAN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V13" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_CIVILIAN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V14" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV13</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V15" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV14</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V16" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV15</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V17" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV16</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V18" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV17</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V19" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_CIVILIAN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V20" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV18</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+		
+	<ObjectTypeClass Name="RA_V21" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV19</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V22" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV20</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V23" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV21</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V24" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV22</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V25" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV1</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V26" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV23</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V27" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV24</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V28" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV25</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V29" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV26</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V30" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV27</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<ObjectTypeClass Name="RA_V31" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV28</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V32" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV29</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V33" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV30</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V34" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV31</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V35" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV32</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V36" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV33</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	<ObjectTypeClass Name="RA_V37" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_CIV34</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CIVILIAN_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	
+	<!--  _____________________________________________________________________________________________ -->
+	<!--  _____________________________________________________________________________________________ -->
+	<!--  __________________________________     Nature Props            ______________________________ -->
+	<!--  _____________________________________________________________________________________________ -->
+	<!--  _____________________________________________________________________________________________ -->	
+	<ObjectTypeClass Name="RA_MINE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_OREMINE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_OREMINE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	
+	<ObjectTypeClass Name="RA_ICE01" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_ICE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_ICE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_ICE02" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_ICE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_ICE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_ICE03" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_ICE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_ICE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_ICE04" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_ICE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_ICE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_ICE05" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_ICE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_ICE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+
+	<ObjectTypeClass Name="RA_BOXES01" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_INT_BOXES</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_INT_BOXES_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_BOXES02" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_INT_BOXES</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_INT_BOXES_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_BOXES03" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_INT_BOXES</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_INT_BOXES_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_BOXES04" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_INT_BOXES</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_INT_BOXES_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_BOXES05" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_INT_BOXES</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_INT_BOXES_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_BOXES06" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_INT_BOXES</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_INT_BOXES_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_BOXES07" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_INT_BOXES</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_INT_BOXES_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_BOXES08" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_INT_BOXES</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_INT_BOXES_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_BOXES09" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_INT_BOXES</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_INT_BOXES_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>		
+	
+	<ObjectTypeClass Name="RA_T01" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T02" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T03" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T05" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T06" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T07" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T08" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T10" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T11" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T12" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T13" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T14" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T15" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T16" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_T17" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>	
+	<ObjectTypeClass Name="RA_TC01" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TC02" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TC03" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TC04" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TC05" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_PROP_TITLE_TREE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_PROP_TITLE_TREE_DESC</ObjectDescriptionTextID>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<!-- v0.3 Tiberian Factions: TD-themed buildings -->
+	<ObjectTypeClass Name="RA_TDNUKE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_POWER_PLANT</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_POWER_PLANT</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_PowerPlant</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDNUK2" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_ADV_POWER_PLANT</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_ADV_POWER_PLANT</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_AdvPowerPlant</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDPROC" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_REFINERY</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_REFINERY</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_Refinery</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDSILO" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_SILO</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_SILO</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_Silo</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDPYLE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_BARRACKS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_BARRACKS</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_Barracks</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDHQ" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_COMM_CENTER</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_COMM_CENTER</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_CommCenter</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDFIX" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_REPAIR_FACILITY</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_REPAIR_FACILITY</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_RepairFacility</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDWEAP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_WEAPONS_FACTORY</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_WEAPONS_FACTORY</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_WeaponsFactory</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDHPAD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_HELIPAD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_HELIPAD</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_Helipad</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDGTWR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_GUARD_TOWER</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_GUARD_TOWER</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_GuardTower</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDATWR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_ADV_GUARD_TOWER</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_ADV_GUARD_TOWER</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_AdvGuardTower</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDEYE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_ADV_COMM_CENTER</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_ADV_COMM_CENTER</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_AdvCommCtr</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDMCV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_MCV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_MCV</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_MCV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDFACT" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_CONSTRUCTION_YARD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_MCV</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_MCV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+</ObjectTypeList>

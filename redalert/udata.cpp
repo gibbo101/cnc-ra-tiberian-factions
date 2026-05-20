@@ -880,6 +880,64 @@ void UnitTypeClass::operator delete(void* pointer)
     UnitTypes.Free((UnitTypeClass*)pointer);
 }
 
+/*
+**  Dynamic constructor for mod-defined unit types. Used by the [NewUnits]
+**  index in rules.ini — counterpart to BuildingTypeClass's 2-arg constructor
+**  at bdata.cpp:2846. Same trick: the heap slot we're being allocated into
+**  is Count() - 1 because operator new has already appended us by the time
+**  this init list runs. Logic=<vanilla-IniName> in Read_INI then aliases
+**  Type + IsXxx flags + ImageData to a vanilla donor.
+*/
+UnitTypeClass::UnitTypeClass(int /*utype*/, char const* ininame)
+    : UnitTypeClass(static_cast<UnitType>(UnitTypes.Count() - 1),
+                    TXT_NONE,
+                    ininame,
+                    ANIM_FBALL1,    // EXPLOSION:	donor will override
+                    REMAP_NORMAL,   // Sidebar remap logic.
+                    0x0000,         // Vertical offset.
+                    0x0000,         // Primary weapon offset.
+                    0x0000,         // Primary weapon lateral offset.
+                    0x0000,         // Secondary weapon offset.
+                    0x0000,         // Secondary weapon lateral offset.
+                    false,          // IsGoodie (crate drop)
+                    false,          // IsNominal
+                    false,          // IsCrusher
+                    false,          // IsToHarvest
+                    false,          // IsStealthy
+                    false,          // IsInsignificant
+                    false,          // IsTurretEquipped
+                    false,          // IsRadarEquipped
+                    false,          // IsFireAnim
+                    false,          // IsLockTurret
+                    false,          // IsGigundo
+                    false,          // IsAnimating
+                    false,          // IsJammer
+                    false,          // IsGapper
+                    32,             // Rotation stages.
+                    0,              // TurretOffset
+                    MISSION_GUARD)  // Default order
+{
+}
+
+/*
+**  Name-based lookup across the full UnitTypes heap, including mod entries
+**  past UNIT_COUNT. From_Name only walks the vanilla enum range and can't
+**  see [NewUnits] entries. Mirrors BuildingTypeClass::As_Pointer.
+*/
+UnitTypeClass* UnitTypeClass::As_Pointer(char const* name)
+{
+    if (name == NULL) {
+        return NULL;
+    }
+    for (int index = 0; index < UnitTypes.Count(); index++) {
+        UnitTypeClass* utc = UnitTypes.Ptr(index);
+        if (utc != NULL && stricmp(utc->IniName, name) == 0) {
+            return utc;
+        }
+    }
+    return NULL;
+}
+
 /***********************************************************************************************
  * UnitTypeClass::Init_Heap -- Initialize the unit type class heap.                            *
  *                                                                                             *
@@ -1299,6 +1357,50 @@ bool UnitTypeClass::Read_INI(CCINIClass& ini)
     if (TechnoTypeClass::Read_INI(ini)) {
         IsNoFireWhileMoving = ini.Get_Bool(IniName, "NoMovingFire", IsNoFireWhileMoving);
         Speed = ini.Get_Bool(IniName, "Tracked", (Speed == SPEED_TRACK)) ? SPEED_TRACK : SPEED_WHEEL;
+
+        /*
+        **  Logic=<vanilla-IniName> aliases this entry's runtime Type discriminant
+        **  to a vanilla UnitType. Engine dispatch (Mission_Unload's `case UNIT_MCV`,
+        **  Try_To_Deploy's `*this == UNIT_MCV`, AI ownership scans, etc.) then
+        **  treats this custom unit as the vanilla type. Mirrors the building-side
+        **  alias at bdata.cpp:3847. ImageData inheritance is critical for mod
+        **  entries — One_Time only loads SHPs for vanilla heap slots, so without
+        **  copying the donor's pointer the launcher renders width=height=0.
+        */
+        char buffer[64];
+        if (ini.Get_String(IniName, "Logic", "", buffer, sizeof(buffer)) > 0) {
+            UnitTypeClass* donor = UnitTypeClass::As_Pointer(buffer);
+            if (donor != NULL && donor != this) {
+                Type = donor->Type;
+                IsCrateGoodie = donor->IsCrateGoodie;
+                IsCrusher = donor->IsCrusher;
+                IsToHarvest = donor->IsToHarvest;
+                IsRadarEquipped = donor->IsRadarEquipped;
+                IsFireAnim = donor->IsFireAnim;
+                IsLockTurret = donor->IsLockTurret;
+                IsGigundo = donor->IsGigundo;
+                IsAnimating = donor->IsAnimating;
+                IsJammer = donor->IsJammer;
+                IsGapper = donor->IsGapper;
+                IsNoFireWhileMoving = donor->IsNoFireWhileMoving;
+                TurretOffset = donor->TurretOffset;
+                Mission = donor->Mission;
+                Explosion = donor->Explosion;
+                MaxSize = donor->MaxSize;
+                Speed = donor->Speed;
+                ((void const*&)ImageData) = donor->ImageData;
+                // Weapon fall-through follows the bdata.cpp pattern: explicit
+                // Primary=/Secondary= in this entry's INI section ran during
+                // TechnoTypeClass::Read_INI above and already populated these
+                // pointers if set. Only fall back to donor when omitted.
+                if (PrimaryWeapon == NULL) {
+                    PrimaryWeapon = donor->PrimaryWeapon;
+                }
+                if (SecondaryWeapon == NULL) {
+                    SecondaryWeapon = donor->SecondaryWeapon;
+                }
+            }
+        }
 
         /*
         **	If this unit can drive over walls, then mark it as recognizing the crusher zone.

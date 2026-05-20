@@ -1302,27 +1302,37 @@ bool CCINIClass::Put_TerrainType(char const* section, char const* entry, Terrain
  * HISTORY:                                                                                    *
  *   07/11/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-int CCINIClass::Get_Buildings(char const* section, char const* entry, int defvalue) const
+/*
+**	Parses a comma-separated `Prerequisite=` line into a list of BuildingTypes
+**	heap indices written to out[]. Indices may exceed STRUCT_COUNT for mod
+**	entries (TDNUKE etc.) — the 32-bit STRUCTF_* bitmask form this function
+**	used to return silently dropped those because (1L << Type) is undefined
+**	when Type >= 32. Unused slots are filled with -1.
+**
+**	If the entry is missing, out[] is left untouched (preserves caller's
+**	defaults) and the function returns false.
+*/
+bool CCINIClass::Get_Buildings(char const* section, char const* entry, int* out, int max) const
 {
     char buffer[128];
-    int pre;
 
-    if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
-
-        pre = 0;
-        char* token = strtok(buffer, ",");
-        while (token != NULL && *token != '\0') {
-            StructType building = BuildingTypeClass::From_Name(token);
-            if (building != STRUCT_NONE) {
-                pre |= (1L << building);
-            }
-            token = strtok(NULL, ",");
-        }
-    } else {
-        pre = defvalue;
+    if (!Get_String(section, entry, "", buffer, sizeof(buffer))) {
+        return (false);
     }
 
-    return (pre);
+    int count = 0;
+    char* token = strtok(buffer, ",");
+    while (token != NULL && *token != '\0' && count < max) {
+        BuildingTypeClass const* btc = BuildingTypeClass::As_Pointer(token);
+        if (btc != NULL) {
+            out[count++] = btc->Type;
+        }
+        token = strtok(NULL, ",");
+    }
+    while (count < max) {
+        out[count++] = -1;
+    }
+    return (true);
 }
 
 /***********************************************************************************************

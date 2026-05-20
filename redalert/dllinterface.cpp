@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <cstdio>
 
 #include "function.h"
 #include "keyframe.h"
@@ -892,6 +893,17 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         NodeNameType* who = new NodeNameType;
         strncpy(who->Name, player_info.Name, MPLAYER_NAME_MAX);
         who->Name[MPLAYER_NAME_MAX - 1] = 0; // Make sure it's terminated
+
+        // Tiberian Factions mod: hijack the France country slot to play as GDI.
+        // The closed-source Remastered launcher only exposes RA's country list
+        // in its picker UI; we route the France selection to HOUSE_GOOD (now
+        // detached from HOUSEF_ALLIES — see defines.h) so the player gets the
+        // GDI faction. The launcher still displays "France" in the radar /
+        // player list; that's a cosmetic limitation we accept for v0.2.
+        if (player_info.House == HOUSE_FRANCE) {
+            player_info.House = HOUSE_GOOD;
+        }
+
         who->Player.House = (HousesType)player_info.House;
         who->Player.Color = (PlayerColorType)player_info.ColorIndex;
         Session.Players.Add(who);
@@ -925,6 +937,101 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
     */
     if (SpecialBackup != NULL) {
         memcpy(SpecialBackup, &Special, sizeof(SpecialClass));
+    }
+
+    // Tiberian Factions debug dump (2026-05-16 v0.2.0-alpha investigation).
+    // One-shot dump of all BuildingTypeClass Ownable masks + the players'
+    // House values. Keep in place until v1.0 per [[feedback-keep-diagnostics-until-v1]].
+    // Path uses %USERPROFILE% so it works on both real Windows and Wine/Proton.
+    {
+        char dbg_path[512];
+        const char* profile = getenv("USERPROFILE");
+        if (profile != NULL && profile[0] != '\0') {
+            snprintf(dbg_path, sizeof(dbg_path),
+                     "%s/Documents/CnCRemastered/tiberian_factions_debug.log",
+                     profile);
+        } else {
+            strcpy(dbg_path, "tiberian_factions_debug.log");
+        }
+        FILE* fp = fopen(dbg_path, "w");
+        if (fp != NULL) {
+            fprintf(fp, "=== Tiberian Factions debug dump (CNC_Set_Multiplayer_Data) ===\n");
+            fprintf(fp,
+                    "Macros: HOUSEF_ALLIES=0x%08x HOUSEF_SOVIET=0x%08x HOUSEF_GDI=0x%08x HOUSEF_NOD=0x%08x\n",
+                    HOUSEF_ALLIES,
+                    HOUSEF_SOVIET,
+                    HOUSEF_GDI,
+                    HOUSEF_NOD);
+            fprintf(fp,
+                    "Houses: HOUSE_USSR=%d HOUSE_FRANCE=%d HOUSE_GOOD=%d HOUSE_BAD=%d (so 1<<HOUSE_GOOD=0x%08x)\n",
+                    (int)HOUSE_USSR,
+                    (int)HOUSE_FRANCE,
+                    (int)HOUSE_GOOD,
+                    (int)HOUSE_BAD,
+                    (1L << HOUSE_GOOD));
+            fprintf(fp, "\nPlayers (num=%d, after France->HOUSE_GOOD swap):\n", num_players);
+            for (int pi = 0; pi < num_players; pi++) {
+                fprintf(fp, "  [%d] House=%d Color=%d\n", pi, (int)player_list[pi].House, (int)player_list[pi].ColorIndex);
+            }
+            fprintf(fp, "\nBuildingTypeClass Ownable masks (Struct enum -> Ownable bitmask, IsDoubleOwned):\n");
+            for (int t = STRUCT_FIRST; t < STRUCT_COUNT; t++) {
+                BuildingTypeClass const& bt = BuildingTypeClass::As_Reference((StructType)t);
+                fprintf(fp,
+                        "  Struct[%2d] Ownable=0x%08x IsDoubleOwned=%d\n",
+                        t,
+                        bt.Ownable,
+                        bt.IsDoubleOwned ? 1 : 0);
+            }
+            fprintf(fp, "MARKER-A: after legacy struct loop\n");
+            fflush(fp);
+            fprintf(fp, "MARKER-B: heap count = %d\n", BuildingTypes.Count());
+            fflush(fp);
+
+            fclose(fp);
+        }
+    }
+
+    // Append heap dump to the legacy log file (which we know is writable
+    // because the legacy block above already wrote to it). Reopening in
+    // append mode rather than a separate file so any code-path issue is
+    // immediately visible as "missing append section" in the existing file.
+    // Diagnostic 2026-05-19 for TDNUK2 sidebar invisibility.
+    {
+        char append_path[512];
+        const char* append_profile = getenv("USERPROFILE");
+        if (append_profile != NULL && append_profile[0] != '\0') {
+            snprintf(append_path, sizeof(append_path),
+                     "%s/Documents/CnCRemastered/tiberian_factions_debug.log",
+                     append_profile);
+        } else {
+            strcpy(append_path, "tiberian_factions_debug.log");
+        }
+        FILE* afp = fopen(append_path, "a");
+        if (afp != NULL) {
+            fprintf(afp, "\n=== APPEND PROOF: this line means second-block executed ===\n");
+            fflush(afp);
+            int heap_count = BuildingTypes.Count();
+            fprintf(afp, "BuildingTypes.Count()=%d STRUCT_COUNT=%d\n",
+                    heap_count, (int)STRUCT_COUNT);
+            fflush(afp);
+            for (int i = 0; i < heap_count; i++) {
+                BuildingTypeClass const* bt = BuildingTypes.Ptr(i);
+                if (bt == NULL) {
+                    fprintf(afp, "  [%2d] NULL ptr\n", i);
+                } else {
+                    fprintf(afp,
+                            "  [%2d] IniName=%-8s ID=%d Type=%d Level=%d "
+                            "Pre=[%d,%d,%d,%d] Ownable=0x%08x\n",
+                            i, bt->IniName, (int)bt->ID, (int)bt->Type, (int)bt->Level,
+                            bt->Prerequisite[0], bt->Prerequisite[1],
+                            bt->Prerequisite[2], bt->Prerequisite[3],
+                            (int)bt->Ownable);
+                }
+                fflush(afp);
+            }
+            fprintf(afp, "=== end of append ===\n");
+            fclose(afp);
+        }
     }
 
     return true;
@@ -3355,6 +3462,74 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                                         const char* shape_file_name,
                                         char override_owner)
 {
+    /*
+    **  ShapeSize override — for mod-defined buildings whose donor SHP
+    **  doesn't exist in the legacy mixfile registry, Get_Build_Frame_Width
+    **  returns 0,0 and the launcher falls back to TGA-native pixel size
+    **  (which differs per asset). If the BTC has ShapeSize= set in
+    **  rules.ini, replace width/height before they go into CNCObjectStruct
+    **  so the launcher scales the TGA to those explicit dimensions
+    **  instead. EMC-equivalent path — see TD-Assets workshop docs.
+    */
+    if (object != NULL && object->What_Am_I() == RTTI_BUILDING) {
+        BuildingTypeClass const* btc_for_size = (BuildingTypeClass const*)&object->Class_Of();
+        if (btc_for_size->ShapeWidth > 0 && btc_for_size->ShapeHeight > 0) {
+            width  = btc_for_size->ShapeWidth;
+            height = btc_for_size->ShapeHeight;
+        }
+    }
+
+    // Diagnostic 2026-05-19: log Draw calls for every TD-prefixed building
+    // to see what AssetName / shape_file_name / BState the engine passes per
+    // frame. Used to diagnose the placement → buildup Petroglyph flash —
+    // we suspect the launcher does an asset lookup using something other
+    // than our tileset name for one transitional frame.
+    //
+    // No rate limit so the placement transition is fully captured. Disable
+    // by flipping the `#if 1` to `#if 0`. Per
+    // [[feedback-keep-diagnostics-until-v1]] keep in source.
+#if 1
+    if (object != NULL && object->What_Am_I() == RTTI_BUILDING) {
+        BuildingTypeClass const* btc = (BuildingTypeClass const*)&object->Class_Of();
+        bool is_td = (btc->IniName[0] == 'T' && btc->IniName[1] == 'D');
+        if (is_td) {
+            static FILE* s_draw_log = NULL;
+            if (s_draw_log == NULL) {
+                char dpath[512];
+                const char* dprof = getenv("USERPROFILE");
+                if (dprof != NULL && dprof[0] != '\0') {
+                    snprintf(dpath, sizeof(dpath),
+                             "%s/Documents/CnCRemastered/tf_draw_intercept.log", dprof);
+                } else {
+                    strcpy(dpath, "tf_draw_intercept.log");
+                }
+                s_draw_log = fopen(dpath, "w");
+            }
+            if (s_draw_log != NULL) {
+                BuildingClass const* bld = (BuildingClass const*)object;
+                char const* pri_name = (btc->PrimaryWeapon != NULL && btc->PrimaryWeapon->Name() != NULL)
+                                           ? btc->PrimaryWeapon->Name() : "(null)";
+                char const* sec_name = (btc->SecondaryWeapon != NULL && btc->SecondaryWeapon->Name() != NULL)
+                                           ? btc->SecondaryWeapon->Name() : "(null)";
+                fprintf(s_draw_log,
+                        "Draw IniName=%s GraphicName=%s shape_file_name=%s "
+                        "BState=%d HP=%d shape#=%d w=%d h=%d "
+                        "ImageData=%p BuildupData=%p Primary=%s Secondary=%s "
+                        "TurretEq=%d Armor=%d TarCom=%lx\n",
+                        btc->IniName,
+                        (btc->Graphic_Name() != NULL ? btc->Graphic_Name() : "(null)"),
+                        (shape_file_name != NULL ? shape_file_name : "(null)"),
+                        (int)bld->BState,
+                        (int)bld->Strength,
+                        shape_number, width, height,
+                        btc->Get_Image_Data(), btc->Get_Buildup_Data(),
+                        pri_name, sec_name, (int)btc->IsTurretEquipped,
+                        (int)btc->Armor, (long)bld->TarCom);
+                fflush(s_draw_log);
+            }
+        }
+    }
+#endif
     CNCObjectStruct& new_object = ObjectList->Objects[TotalObjectCount + CurrentDrawCount];
     memset(&new_object, 0, sizeof(new_object));
     Convert_Type(object, new_object);
@@ -3409,9 +3584,51 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
 
         if (new_object.Type == BUILDING) {
             BuildingClass* building = (BuildingClass*)object;
+
+#if 0
+            // Phase 1e proxy (donor IniName → launcher) — DISABLED 2026-05-18.
+            // The launcher's sprite lookup is cross-tileset on the original IniName,
+            // so a [NewBuildings] entry using a real TD/RA tileset name (e.g. NUKE,
+            // HAND, PYLE) resolves correctly without this override. Keeping the
+            // block under #if 0 in case a future case needs a runtime IniName proxy.
+            BuildingTypeClass const& donor = BuildingTypeClass::As_Reference(building->Class->Type);
+            if (stricmp(donor.IniName, building->Class->IniName) != 0) {
+                strncpy(new_object.TypeName, donor.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
+                strncpy(new_object.AssetName, donor.Graphic_Name(), CNC_OBJECT_ASSET_NAME_LENGTH);
+            }
+#endif
+
             if (building->BState == BSTATE_CONSTRUCTION) {
                 strncat(new_object.AssetName, "MAKE", CNC_OBJECT_ASSET_NAME_LENGTH);
             }
+            // Diagnostic 2026-05-19: log the *final* AssetName the launcher
+            // receives for TD-prefixed buildings — this is the tileset name
+            // it will look up. Petroglyph flash on placement is suspected to
+            // be a transient mismatch here.
+#if 1
+            if (building->Class->IniName[0] == 'T' && building->Class->IniName[1] == 'D') {
+                static FILE* s_asset_log = NULL;
+                if (s_asset_log == NULL) {
+                    char dpath[512];
+                    const char* dprof = getenv("USERPROFILE");
+                    if (dprof != NULL && dprof[0] != '\0') {
+                        snprintf(dpath, sizeof(dpath),
+                                 "%s/Documents/CnCRemastered/tf_asset_name.log", dprof);
+                    } else {
+                        strcpy(dpath, "tf_asset_name.log");
+                    }
+                    s_asset_log = fopen(dpath, "w");
+                }
+                if (s_asset_log != NULL) {
+                    fprintf(s_asset_log,
+                            "TypeName=%s AssetName=%s BState=%d shape#=%d Strength=%d\n",
+                            new_object.TypeName, new_object.AssetName,
+                            (int)building->BState, shape_number,
+                            (int)building->Strength);
+                    fflush(s_asset_log);
+                }
+            }
+#endif
             const BuildingTypeClass* building_type = building->Class;
             short const* occupy_list = building_type->Occupy_List();
             if (occupy_list) {
@@ -4293,6 +4510,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Sidebar_Request(Sidebar
                                                                          short cell_x,
                                                                          short cell_y)
 {
+    // Diagnostic hook removed 2026-05-18. To re-enable, fprintf at function
+    // entry to log every sidebar request (type/buildable_type/buildable_id/cell).
+    // SidebarRequestEnum values: 0=START_CONSTRUCTION 1=MULTI 2=HOLD 3=CANCEL_C
+    // 4=START_PLACEMENT 5=PLACE 6=CANCEL_PLACE. The buildable_id is the heap
+    // index of the BuildingType / UnitType / etc.
     if (!DLLExportClass::Set_Player_Context(player_id)) {
         return;
     }
@@ -5323,6 +5545,10 @@ bool DLLExportClass::Construction_Action(SidebarRequestEnum construction_action,
                                         } else {
 
                                             BuildingClass* builder = pending->Who_Can_Build_Me(false, false);
+                                            // Diagnostic hook removed 2026-05-18 (GAME_NORMAL path mirror
+                                            // of the GLYPHX path diagnostic in Get_Pending_Placement_Object).
+                                            // To re-enable, fprintf pending.Class.IniName/Type + builder
+                                            // + Manual_Place return value to MOD_DEBUG.txt here.
                                             if (!builder) {
                                                 OutList.Add(EventClass(
                                                     EventClass::ABANDON, (RTTIType)buildable_type, buildable_id));
@@ -5928,6 +6154,13 @@ BuildingClass* DLLExportClass::Get_Pending_Placement_Object(uint64 player_id, in
                                             // Map.IsTargettingMode = true;
                                         } else {
                                             BuildingClass* builder = pending->Who_Can_Build_Me(false, false);
+                                            // Diagnostic hook removed 2026-05-18. To re-enable, fprintf to
+                                            // MOD_DEBUG.txt here for: pending.Class pointer + IniName + Type +
+                                            // Ownable, builder pointer, full BuildingTypes heap tail (last 5),
+                                            // and (if builder==NULL) every Building instance candidate with
+                                            // house/ActLike/ToBuild + match flags. Critical for diagnosing
+                                            // Who_Can_Build_Me failures (CCPtr ID resolution, Ownable mismatch,
+                                            // ActLike remap issues).
                                             if (!builder) {
                                                 OutList.Add(
                                                     EventClass(EventClass::ABANDON, buildable_type, buildable_id));

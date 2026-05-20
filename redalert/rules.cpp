@@ -967,6 +967,71 @@ bool RulesClass::Objects(CCINIClass& ini)
         Weapons.Ptr(windex)->Read_INI(ini);
     }
 
+    /*
+    **  Mod-defined unit types: register new entries from the [NewUnits]
+    **  index before per-type Read_INI runs, so freshly-created entries pick
+    **  up their own section data on the same pass. Same pattern as the
+    **  [NewBuildings] block below — see that block's comment for details.
+    */
+    static char const* const NEW_UNITS = "NewUnits";
+#if 0
+    /*
+    **  Diagnostic for v0.3 phase5e — [NewUnits] parse trace. Stubbed after
+    **  the MAX_UNIT_TYPES heap-sizing fix landed (was firing fine; the
+    **  Alloc() was silently failing). Re-enable by flipping #if 0 → 1.
+    */
+    {
+        char dpath[512];
+        const char* dprof = getenv("USERPROFILE");
+        if (dprof != NULL && dprof[0] != '\0') {
+            snprintf(dpath, sizeof(dpath),
+                     "%s/Documents/CnCRemastered/tf_newunits_parse.log", dprof);
+        } else {
+            strcpy(dpath, "tf_newunits_parse.log");
+        }
+        FILE* dlog = fopen(dpath, "a");
+        if (dlog != NULL) {
+            fprintf(dlog,
+                    "NewUnits parse: present=%s entry_count=%d UnitTypes.Count(before)=%d\n",
+                    ini.Is_Present(NEW_UNITS) ? "yes" : "no",
+                    ini.Is_Present(NEW_UNITS) ? ini.Entry_Count(NEW_UNITS) : -1,
+                    UnitTypes.Count());
+            fclose(dlog);
+        }
+    }
+#endif
+    if (ini.Is_Present(NEW_UNITS)) {
+        for (int x = 0; x < ini.Entry_Count(NEW_UNITS); x++) {
+            char const* key = ini.Get_Entry(NEW_UNITS, x);
+            char buffer[64];
+            if (ini.Get_String(NEW_UNITS, key, "", buffer, sizeof(buffer)) > 0) {
+#if 0
+                {
+                    char dpath[512];
+                    const char* dprof = getenv("USERPROFILE");
+                    if (dprof != NULL && dprof[0] != '\0') {
+                        snprintf(dpath, sizeof(dpath),
+                                 "%s/Documents/CnCRemastered/tf_newunits_parse.log", dprof);
+                    } else {
+                        strcpy(dpath, "tf_newunits_parse.log");
+                    }
+                    FILE* dlog = fopen(dpath, "a");
+                    if (dlog != NULL) {
+                        fprintf(dlog,
+                                "  entry key='%s' name='%s' already_in_heap=%s\n",
+                                key, buffer,
+                                UnitTypeClass::As_Pointer(buffer) != NULL ? "yes" : "no");
+                        fclose(dlog);
+                    }
+                }
+#endif
+                if (UnitTypeClass::As_Pointer(buffer) == NULL) {
+                    new UnitTypeClass(atoi(key), buffer);
+                }
+            }
+        }
+    }
+
     for (int uindex = 0; uindex < UnitTypes.Count(); uindex++) {
         UnitTypes.Ptr(uindex)->Read_INI(ini);
     }
@@ -981,6 +1046,26 @@ bool RulesClass::Objects(CCINIClass& ini)
 
     for (int aindex = 0; aindex < AircraftTypes.Count(); aindex++) {
         AircraftTypes.Ptr(aindex)->Read_INI(ini);
+    }
+
+    /*
+    **  Mod-defined building types: register new entries from the [NewBuildings]
+    **  index before per-type Read_INI runs, so freshly-created entries pick up
+    **  their own section data on the same pass. Key format: "<ordinal>=<IniName>".
+    **  Existing IniNames are skipped to make the section idempotent across the
+    **  rules.ini + aftermath.ini pipeline.
+    */
+    static char const* const NEW_BUILDINGS = "NewBuildings";
+    if (ini.Is_Present(NEW_BUILDINGS)) {
+        for (int x = 0; x < ini.Entry_Count(NEW_BUILDINGS); x++) {
+            char const* key = ini.Get_Entry(NEW_BUILDINGS, x);
+            char buffer[64];
+            if (ini.Get_String(NEW_BUILDINGS, key, "", buffer, sizeof(buffer)) > 0) {
+                if (BuildingTypeClass::As_Pointer(buffer) == NULL) {
+                    new BuildingTypeClass(atoi(key), buffer);
+                }
+            }
+        }
     }
 
     for (int bindex = 0; bindex < BuildingTypes.Count(); bindex++) {

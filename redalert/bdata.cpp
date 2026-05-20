@@ -2758,6 +2758,8 @@ BuildingTypeClass::BuildingTypeClass(StructType type,
     , Power(0)
     , Drain(0)
     , Size(size)
+    , ShapeWidth(0)
+    , ShapeHeight(0)
     , OccupyList(sizelist)
     , OverlapList(overlap)
     , BuildupData(0)
@@ -2823,6 +2825,71 @@ void* BuildingTypeClass::operator new(size_t) noexcept
 void BuildingTypeClass::operator delete(void* ptr)
 {
     BuildingTypes.Free((BuildingTypeClass*)ptr);
+}
+
+/*
+**  Dynamic constructor for mod-defined building types. Used by the [NewBuildings]
+**  index in rules.ini to register a heap entry whose only initial state is its
+**  IniName; Read_INI fills in the rest, and a Logic=<vanilla type> field aliases
+**  the runtime Type discriminant to a vanilla StructType for engine dispatch.
+**
+**  The first param (StructType) is passed both to Type and to AbstractTypeClass::ID.
+**  Vanilla entries use their StructType enum value, which equals their heap slot
+**  because Init_Heap allocates in enum order. For mod-defined entries we must use
+**  the actual heap slot we're being allocated into — not the [NewBuildings] key —
+**  because CCPtr<BuildingTypeClass>(this) stores ptr->ID and on deref returns
+**  BuildingTypes[ID]. If ID collides with a vanilla StructType, Class lookups for
+**  this instance silently resolve to the vanilla entry at that index. The slot is
+**  BuildingTypes.Count() - 1 because operator new (Alloc) has already appended us
+**  to ActivePointers by the time the init list runs.
+*/
+BuildingTypeClass::BuildingTypeClass(int /*btype*/, char const* ininame)
+    : BuildingTypeClass(static_cast<StructType>(BuildingTypes.Count() - 1),
+                        TXT_NONE,
+                        ininame,
+                        FACING_NONE,
+                        XYP_COORD(0, 0),
+                        REMAP_NORMAL,
+                        0x0000,
+                        0x0000,
+                        0x0000,
+                        false,
+                        false,
+                        false,
+                        false,
+                        true,
+                        false,
+                        true,
+                        true,
+                        false,
+                        false,
+                        false,
+                        true,
+                        RTTI_NONE,
+                        DIR_N,
+                        BSIZE_11,
+                        NULL,
+                        NULL,
+                        NULL)
+{
+}
+
+/*
+**  Name-based lookup across the full BuildingTypes heap, including mod-defined
+**  entries past STRUCT_COUNT. From_Name(char const*) only walks the vanilla
+**  enum range and therefore can't see mod-defined types.
+*/
+BuildingTypeClass* BuildingTypeClass::As_Pointer(char const* name)
+{
+    if (name == NULL)
+        return (NULL);
+    for (int index = 0; index < BuildingTypes.Count(); index++) {
+        BuildingTypeClass* btc = BuildingTypes.Ptr(index);
+        if (btc != NULL && stricmp(btc->IniName, name) == 0) {
+            return (btc);
+        }
+    }
+    return (NULL);
 }
 
 /***********************************************************************************************
@@ -3063,6 +3130,94 @@ void BuildingTypeClass::One_Time(void)
         As_Reference(_anims[index].Class)
             .Init_Anim(_anims[index].Stage, _anims[index].Start, _anims[index].Length, _anims[index].Rate);
     }
+
+    /*
+    **  D1 decouple — per-entry asset load for mod-defined building types
+    **  past STRUCT_COUNT. These entries were created from [NewBuildings]
+    **  during Rule.Process before One_Time ran; the vanilla loop above
+    **  skipped them, leaving ImageData=NULL (Draw_It early-returns) and
+    **  Get_Build_Frame_Width/Height(ImageData) reading donor dimensions via
+    **  the Logic= inheritance — which is what leaks APWR's 3x3 scale onto
+    **  TDNUK2's 2x2 footprint. Loading each entry's own SHP keyed by
+    **  Graphic_Name() (Image= rules.ini field, fallback IniName) gives the
+    **  launcher's CNCObjectStruct.Width/Height the right per-entry pixel
+    **  dimensions and lets Draw_It find a real shapefile.
+    */
+    /*
+    **  Diagnostic — log what MFCD::Retrieve returns for each mod entry's
+    **  asset lookups. Tells us whether NUK2.SHP / NUKEMAKE.SHP etc. are
+    **  resolvable in the mixfile registry, or coming back NULL.
+    */
+    FILE* mod_log = NULL;
+    {
+        char mpath[512];
+        const char* mprof = getenv("USERPROFILE");
+        if (mprof != NULL && mprof[0] != '\0') {
+            snprintf(mpath, sizeof(mpath),
+                     "%s/Documents/CnCRemastered/tf_mod_one_time.log", mprof);
+        } else {
+            strcpy(mpath, "tf_mod_one_time.log");
+        }
+        mod_log = fopen(mpath, "w");
+        if (mod_log != NULL) {
+            fprintf(mod_log, "BuildingTypes.Count()=%d STRUCT_COUNT=%d\n",
+                    BuildingTypes.Count(), STRUCT_COUNT);
+            fflush(mod_log);
+        }
+    }
+
+    for (int sindex = STRUCT_COUNT; sindex < BuildingTypes.Count(); sindex++) {
+        BuildingTypeClass& building = *BuildingTypes.Ptr(sindex);
+        char fullname[_MAX_FNAME + _MAX_EXT];
+        char buffer[_MAX_FNAME + 4];
+
+        void const* cameo_before = building.CameoData;
+        void const* buildup_before = building.BuildupData;
+        void const* image_before = building.ImageData;
+
+        if (building.Level != -1) {
+            sprintf(buffer, "%sICON", building.Graphic_Name());
+            if (building.IsFake) {
+                buffer[3] = 'F';
+            }
+            _makepath(fullname, NULL, NULL, buffer, ".SHP");
+            ((void const*&)building.CameoData) = MFCD::Retrieve(fullname);
+        }
+
+        sprintf(buffer, "%sMAKE", building.Graphic_Name());
+        _makepath(fullname, NULL, NULL, buffer, ".SHP");
+        void const* dataptr = MFCD::Retrieve(fullname);
+        ((void const*&)building.BuildupData) = dataptr;
+        if (dataptr != NULL) {
+            int timedelay = 1;
+            int count = Get_Build_Frame_Count(dataptr);
+            if (count > 0) {
+                timedelay = (Rule.BuildupTime * TICKS_PER_MINUTE) / count;
+            }
+            building.Init_Anim(BSTATE_CONSTRUCTION, 0, count, timedelay);
+        }
+
+        _makepath(fullname, NULL, NULL, building.Graphic_Name(), ".SHP");
+        ((void const*&)building.ImageData) = MFCD::Retrieve(fullname);
+
+        if (mod_log != NULL) {
+            fprintf(mod_log,
+                    "[%d] IniName=%s GraphicName=%s Type=%d Size=%d "
+                    "ImageData: before=%p after=%p (looking for %s.SHP) | "
+                    "BuildupData: before=%p after=%p (looking for %sMAKE.SHP) | "
+                    "CameoData: before=%p after=%p\n",
+                    sindex, building.IniName, building.Graphic_Name(),
+                    (int)building.Type, (int)building.Size,
+                    image_before, building.ImageData, building.Graphic_Name(),
+                    buildup_before, building.BuildupData, building.Graphic_Name(),
+                    cameo_before, building.CameoData);
+            fflush(mod_log);
+        }
+    }
+
+    if (mod_log != NULL) {
+        fclose(mod_log);
+    }
 }
 
 /***********************************************************************************************
@@ -3172,7 +3327,7 @@ bool BuildingTypeClass::Create_And_Place(CELL cell, HousesType house) const
 {
     BuildingClass* ptr;
 
-    ptr = new BuildingClass(Type, house);
+    ptr = new BuildingClass(this, house);
     if (ptr != NULL) {
         return (ptr->Unlimbo(Cell_Coord(cell), DIR_N));
     }
@@ -3203,7 +3358,7 @@ ObjectClass* BuildingTypeClass::Create_One_Of(HouseClass* house) const
     if (house != NULL) {
         htype = house->Class->House;
     }
-    return (new BuildingClass(Type, htype));
+    return (new BuildingClass(this, htype));
 }
 
 /***********************************************************************************************
@@ -3276,6 +3431,33 @@ void BuildingTypeClass::Init(TheaterType theater)
                         timedelay = (5 * TICKS_PER_SECOND) / count;
                     }
                     classptr->Init_Anim(BSTATE_CONSTRUCTION, 0, count, timedelay);
+                }
+            }
+        }
+
+        /*
+        **  Logic=-aliased mod entries (heap slots past STRUCT_COUNT) inherit
+        **  their donor's ImageData/BuildupData at Read_INI time. For donors
+        **  that are theater-specific (e.g. MSLO → TDEYE), those pointers were
+        **  NULL at Read_INI because Init(theater) hadn't run yet. Now that the
+        **  donor has just been refreshed above, re-copy the pointers to any
+        **  mod entry whose Type matches a vanilla StructType — the Logic=
+        **  block sets Type = donor->Type, so this is the alias relationship.
+        */
+        for (int sindex = STRUCT_COUNT; sindex < BuildingTypes.Count(); sindex++) {
+            BuildingTypeClass const* modptr = &(*BuildingTypes.Ptr(sindex));
+            if (modptr->Type >= STRUCT_FIRST && modptr->Type < STRUCT_COUNT) {
+                BuildingTypeClass const* donor = &As_Reference(modptr->Type);
+                if (donor->IsTheater) {
+                    ((void const*&)modptr->ImageData)   = donor->ImageData;
+                    ((void const*&)modptr->BuildupData) = donor->BuildupData;
+                    // Donor's Anims[BSTATE_CONSTRUCTION] was {0,1,0} at the
+                    // Read_INI alias-copy time because Init_Anim only runs
+                    // here in Init(theater) for theater-specific donors. Now
+                    // that the donor's buildup count/rate is finalized, copy
+                    // it to the mod entry so the buildup animation plays the
+                    // full frame range instead of completing in one tick.
+                    modptr->Anims[BSTATE_CONSTRUCTION] = donor->Anims[BSTATE_CONSTRUCTION];
                 }
             }
         }
@@ -3651,6 +3833,203 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
         IsUnsellable = ini.Get_Bool(Name(), "Unsellable", IsUnsellable);
         IsBase = ini.Get_Bool(Name(), "BaseNormal", IsBase);
         Power = ini.Get_Int(Name(), "Power", (Power > 0) ? Power : -Drain);
+
+        /*
+        **  Logic=<vanilla-IniName> aliases this entry's runtime Type discriminant
+        **  to a vanilla StructType. Engine dispatch (factory placement, sidebar,
+        **  AI heuristics) then treats this custom building as the vanilla type.
+        **  Also inherits the donor's physical footprint (Size + occupy/overlap
+        **  lists) so placement preview, blocking, and adjacency match the donor.
+        **  Only honoured for mod-defined entries; vanilla entries override their
+        **  own Type by re-resolving to themselves, which is harmless.
+        */
+        char buffer[64];
+        if (ini.Get_String(Name(), "Logic", "", buffer, sizeof(buffer)) > 0) {
+            BuildingTypeClass* donor = BuildingTypeClass::As_Pointer(buffer);
+            if (donor != NULL && donor != this) {
+                Type = donor->Type;
+                Size = donor->Size;
+                OccupyList = donor->OccupyList;
+                OverlapList = donor->OverlapList;
+                // Animation + placement state — placement validation and the
+                // buildup/idle/active visual states all key on these. Without
+                // them, Logic-aliased entries build at the wrong tick rate and
+                // Unlimbo() fails because the buildup data is NULL.
+                BuildupData = donor->BuildupData;
+                for (int s = 0; s < BSTATE_COUNT; s++) {
+                    Anims[s] = donor->Anims[s];
+                }
+                FoundationFace = donor->FoundationFace;
+                StartFace = donor->StartFace;
+                ExitCoordinate = donor->ExitCoordinate;
+                ExitList = donor->ExitList;
+                ToBuild = donor->ToBuild;
+                Adjacent = donor->Adjacent;
+                Capacity = donor->Capacity;
+                // ImageData is the post-buildup idle SHP. One_Time() only
+                // loads it for vanilla heap entries; mod entries past
+                // STRUCT_COUNT never get a chance, leaving ImageData=NULL and
+                // the engine drawing with width=height=0 (invisible). Inherit
+                // donor's pointer — Logic= aliases mean engine dispatch is
+                // donor-keyed anyway, so reusing the donor's image is correct.
+                ((void const*&)ImageData) = donor->ImageData;
+                // Weapon pointers — TechnoTypeClass::Read_INI runs before this
+                // block, so an explicit Primary=/Secondary= in the mod entry's
+                // INI section will already have populated these. Only fall
+                // back to the donor when the entry didn't specify, so a
+                // Logic=PBOX tower without an explicit Primary= still fires
+                // the pillbox's weapon.
+                if (PrimaryWeapon == NULL) {
+                    PrimaryWeapon = donor->PrimaryWeapon;
+                }
+                if (SecondaryWeapon == NULL) {
+                    SecondaryWeapon = donor->SecondaryWeapon;
+                }
+                // Do NOT copy IsTurretEquipped from the donor. AGUN/SAM/TURR
+                // donors render their turret as a separate facing-indexed SHP
+                // drawn on top of the base sprite (UnitClass::BodyShape lookup
+                // in Fetch_Stage). Our TD mod entries ship a combined sprite
+                // — flipping the turret flag on makes the engine try to find a
+                // 32-facing turret SHP that doesn't exist and the building
+                // renders as a broken single-cell strip. Without the flag,
+                // Turret_Facing falls back to direction-to-target (building.cpp:2677),
+                // so the weapon still fires and aims correctly; the visual just
+                // doesn't rotate. That matches TD's static-tower aesthetic.
+            }
+        }
+
+        /*
+        **  Footprint= INI field overrides the inherited donor footprint with a
+        **  named TD-style preset. Lets a Logic-aliased building (engine behaves
+        **  like POWR) place with a different physical footprint (the actual TD
+        **  building's shape, not POWR's L-shape). Required because vanilla
+        **  RA's POWR is 2x3 with a specific OccupyList, while TD buildings have
+        **  their own footprints that don't match RA's.
+        */
+        static short const List_NUK2_OCCUPY[]  = {0, MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
+        static short const List_NUK2_OVERLAP[] = {1, REFRESH_EOL};
+        // PYLE (GDI Barracks) — 2x2 footprint matching tiberiandawn/bdata.cpp's
+        // ClassBarracks. Top-row occupy + bottom-row overlap follows TD's
+        // List22_1100 / List22_0011 pattern.
+        //
+        // NOTE on footprint vs visual: the placement preview includes the
+        // cracked-dirt bib rendered below any `Bib=yes` building (true for
+        // both vanilla RA and TD), so a 2x2 structure with a bib can *look*
+        // like a 3-row footprint. Trust the source's BSIZE_* declaration
+        // over visual impression when sizing entries; the bib is decorative.
+        static short const List_PYLE_OCCUPY[]  = {0, 1, REFRESH_EOL};
+        static short const List_PYLE_OVERLAP[] = {MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
+        // WEAP (TD GDI Weapons Factory) — 3×3 footprint, mirroring TD's
+        // ListWeap/OListWeap in tiberiandawn/bdata.cpp:74,103. Bottom 6 cells
+        // (rows 1+2) are the physical foundation; top row (row 0) is overlap
+        // only (visual roof/walls extending up). RA's WEAP donor is 3×2 with
+        // all cells fully occupied — Logic=WEAP alone inherits that, but the
+        // TD sprite's vertical extent is 3 cells, so the foundation overflows
+        // below the cells. Override with this preset gives TD-authentic shape.
+        static short const List_WEAP_OCCUPY[]  = {
+            (MAP_CELL_W * 1), (MAP_CELL_W * 1) + 1, (MAP_CELL_W * 1) + 2,
+            (MAP_CELL_W * 2), (MAP_CELL_W * 2) + 1, (MAP_CELL_W * 2) + 2,
+            REFRESH_EOL
+        };
+        static short const List_WEAP_OVERLAP[] = {0, 1, 2, REFRESH_EOL};
+        // SILO (TD Ore Silo) — TD-authentic BSIZE_21 (2 wide × 1 tall),
+        // both cells occupied, no overlap. Matches tiberiandawn/bdata.cpp:682
+        // ClassStorage + StoreList = {0, 1}. With Bib=yes the placement
+        // preview shows 2×2 (top row foundation, bottom row bib decoration).
+        static short const List_SILO_OCCUPY[] = {0, 1, REFRESH_EOL};
+        // WEAP exit cells — copied verbatim from tiberiandawn/bdata.cpp:89
+        // (TD's ExitWeap array). Order matters: first slot is the preferred
+        // exit cell. The commented-out cells in the TD source (row 0
+        // entries) are not included here either — TD shipped without them
+        // and so do we.
+        static short const Exit_WEAP[] = {
+            XYCELL(-1, 3), XYCELL(0, 3), XYCELL(-1, 2), XYCELL(1, 3),
+            XYCELL(-1, 1), XYCELL(3, 1),
+            REFRESH_EOL
+        };
+
+        struct FootprintPreset
+        {
+            char const* name;
+            BSizeType   size;
+            short const* occupy;
+            short const* overlap;
+            short const* exit_list;   // NULL = keep donor's (Logic= alias copy)
+            COORDINATE   exit_coord;  // 0 = keep donor's
+        };
+        static FootprintPreset const _presets[] = {
+            // TD building footprints — copied from tiberiandawn/bdata.cpp.
+            // Add new entries as we expand the GDI/Nod catalogue.
+            {"NUKE", BSIZE_22, List_NUK2_OCCUPY, List_NUK2_OVERLAP, NULL, 0},   // shares NUK2's 2x2 L-shape
+            {"NUK2", BSIZE_22, List_NUK2_OCCUPY, List_NUK2_OVERLAP, NULL, 0},
+            {"EYE",  BSIZE_22, List_NUK2_OCCUPY, List_NUK2_OVERLAP, NULL, 0},   // TD ComList/OComList = NUK2 L-shape
+            {"PYLE", BSIZE_22, List_PYLE_OCCUPY, List_PYLE_OVERLAP, NULL, 0},
+            {"SILO", BSIZE_21, List_SILO_OCCUPY, NULL,              NULL, 0},   // 2x1 + bib (TD-authentic)
+            {"HQ",   BSIZE_22, List_NUK2_OCCUPY, List_NUK2_OVERLAP, NULL, 0},   // TD ComList/OComList = NUK2 L-shape
+            // WEAP: ExitCoordinate copied verbatim from TD's ClassWeapon
+            // constructor in tiberiandawn/bdata.cpp:266 — pixel (22, 39) in
+            // a 3×3 (72×72 px) building footprint, placing the spawn at the
+            // upper-left interior near the door. If RA's pathfinder ends up
+            // snapping this to the first ExitList cell instead of animating,
+            // the fix belongs in the engine's vehicle-exit code path, not in
+            // these data values.
+            {"WEAP", BSIZE_33, List_WEAP_OCCUPY, List_WEAP_OVERLAP, Exit_WEAP,
+             XYP_COORD(10 + (CELL_PIXEL_W / 2),
+                       ((CELL_PIXEL_H * 3) - (CELL_PIXEL_H / 2)) - 21)},
+        };
+
+        if (ini.Get_String(Name(), "Footprint", "", buffer, sizeof(buffer)) > 0) {
+            for (unsigned int i = 0; i < sizeof(_presets) / sizeof(_presets[0]); i++) {
+                if (stricmp(_presets[i].name, buffer) == 0) {
+                    Size        = _presets[i].size;
+                    OccupyList  = _presets[i].occupy;
+                    OverlapList = _presets[i].overlap;
+                    if (_presets[i].exit_list != NULL) {
+                        ExitList = _presets[i].exit_list;
+                    }
+                    if (_presets[i].exit_coord != 0) {
+                        ExitCoordinate = _presets[i].exit_coord;
+                    }
+                    break;
+                }
+            }
+        }
+
+        /*
+        **  ShapeSize=W,H — EMC-style explicit pixel dimensions for the
+        **  launcher-rendered sprite. Without this, the legacy SHP path
+        **  passes width=height=0 to DLL_Draw_Intercept (because the mod
+        **  entry's SHP isn't in the mixfile registry), and the Remastered
+        **  launcher falls back to TGA-native pixel size — which varies
+        **  per asset since TD-Assets's TGAs were drawn with different
+        **  building-to-canvas ratios. Setting explicit W,H here gives the
+        **  launcher a concrete dim to scale the TGA to, normalising scale
+        **  across the catalogue. Convention: W = Width()*24, H = Height()*24
+        **  to match the legacy ICON_PIXEL_W/H tile size.
+        */
+        if (ini.Get_String(Name(), "ShapeSize", "", buffer, sizeof(buffer)) > 0) {
+            int sw = 0, sh = 0;
+            if (sscanf(buffer, "%d,%d", &sw, &sh) == 2 && sw > 0 && sh > 0) {
+                ShapeWidth  = sw;
+                ShapeHeight = sh;
+            }
+        }
+
+        /*
+        **  Per-building idle-animation override. TD passive animations
+        **  (e.g. NUKE's blinking generator) require Anims[BSTATE_IDLE] to
+        **  cycle multiple frames, but Logic= aliasing inherits the donor's
+        **  Anims which may be static (POWR has no idle anim entry in the
+        **  hardcoded _anims[] table). Setting IdleAnimCount>1 turns on
+        **  cycling for the mod entry without touching the donor.
+        */
+        int idle_count = ini.Get_Int(Name(), "IdleAnimCount", -1);
+        if (idle_count > 0) {
+            int idle_start = ini.Get_Int(Name(), "IdleAnimStart", 0);
+            int idle_rate  = ini.Get_Int(Name(), "IdleAnimRate", 4);
+            Init_Anim(BSTATE_IDLE, idle_start, idle_count, idle_rate);
+        }
+
         if (Power < 0) {
             Drain = -Power;
             Power = 0;

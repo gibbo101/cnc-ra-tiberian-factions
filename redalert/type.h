@@ -487,10 +487,14 @@ public:
     unsigned Level;
 
     /*
-    **	This specifies the building prerequisites required before an object
-    **	of this type can be produced.
+    **	Building prerequisites required before an object of this type can be
+    **	produced. Stored as a list of BuildingTypes heap indices (StructType
+    **	for vanilla, beyond STRUCT_COUNT for mod entries). Unused slots are
+    **	set to -1. Was a 32-bit STRUCTF_* bitmask in vanilla; that form
+    **	silently dropped mod-defined Type indices >= 32 from prereq chains.
+    **	See CCINIClass::Get_Buildings and HouseClass::Can_Build.
     */
-    int Prerequisite;
+    int Prerequisite[PREREQUISITE_MAX];
 
     /*
     **	The risk and reward values are used to determine targets and paths
@@ -762,6 +766,19 @@ public:
     */
     BSizeType Size;
 
+    /*
+    **  Optional explicit pixel dimensions for the building's launcher-rendered
+    **  sprite. When non-zero, these override the SHP-derived width/height that
+    **  would normally be passed to DLL_Draw_Intercept. Needed for mod-defined
+    **  buildings whose donor SHP doesn't exist in the legacy mixfile registry
+    **  (so width/height would be 0,0 and the launcher would fall back to TGA-
+    **  native pixel scaling — which differs per asset and can render buildings
+    **  out-of-proportion to their footprint). Loaded from the `ShapeSize=W,H`
+    **  rules.ini field. EMC-style directive — see TD-Assets workshop docs.
+    */
+    int ShapeWidth;
+    int ShapeHeight;
+
     /**********************************************************************
     **	For each stage that a building may be in, its animation is controlled
     **	by this structure. It dictates the starting and length of the animation
@@ -812,6 +829,8 @@ public:
                       short const* exitlist,
                       short const* sizelist,
                       short const* overlap);
+
+    BuildingTypeClass(int btype, char const* ininame);
     operator StructType(void) const
     {
         return (Type);
@@ -829,6 +848,7 @@ public:
 
     static void Init_Heap(void);
     static BuildingTypeClass& As_Reference(StructType type);
+    static BuildingTypeClass* As_Pointer(char const* name);
     static StructType From_Name(char const* name);
     static void Init(TheaterType theater);
     static void One_Time(void);
@@ -1032,6 +1052,14 @@ public:
                   int toffset,
                   MissionType order);
 
+    /*
+    **  Dynamic 2-arg constructor for mod-defined unit types. Used by the
+    **  [NewUnits] index in rules.ini — mirrors BuildingTypeClass's 2-arg
+    **  constructor at bdata.cpp:2846. Sets minimal stub state; Logic=
+    **  alias in Read_INI fills in donor stats / IsXxx flags / ImageData.
+    */
+    UnitTypeClass(int utype, char const* ininame);
+
     static void* operator new(size_t) noexcept;
     static void* operator new(size_t, void* ptr)
     {
@@ -1044,6 +1072,12 @@ public:
 
     static void Init_Heap(void);
     static UnitType From_Name(char const* name);
+    /*
+    **  Name-based lookup across the full UnitTypes heap, including mod-
+    **  defined entries past UNIT_COUNT. From_Name only walks the vanilla
+    **  enum range. Mirrors BuildingTypeClass::As_Pointer.
+    */
+    static UnitTypeClass* As_Pointer(char const* name);
     static UnitTypeClass& As_Reference(UnitType type);
     static void Init(TheaterType){};
     static void One_Time(void);
