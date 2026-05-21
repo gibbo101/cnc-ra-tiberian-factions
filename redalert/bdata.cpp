@@ -3876,13 +3876,24 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
                 // Weapon pointers — TechnoTypeClass::Read_INI runs before this
                 // block, so an explicit Primary=/Secondary= in the mod entry's
                 // INI section will already have populated these. Only fall
-                // back to the donor when the entry didn't specify, so a
-                // Logic=PBOX tower without an explicit Primary= still fires
-                // the pillbox's weapon.
-                if (PrimaryWeapon == NULL) {
+                // back to the donor when the entry didn't mention the key AT
+                // ALL — Is_Present(section, key) distinguishes "absent"
+                // (inherit donor) from "present but parsed to NULL"
+                // (explicit clear, don't inherit).
+                //
+                // Without this Is_Present check, setting Primary=TowTwo
+                // overrides Primary correctly but Secondary= (unmentioned)
+                // still inherits the donor's secondary weapon — e.g. TDATWR
+                // with Logic=AGUN got AGUN's Secondary=ZSU-23 silently
+                // bound to its secondary slot, and Which_Weapon would prefer
+                // ZSU-23 over TowTwo for any AA-relevant target. Discovered
+                // 2026-05-21 via tf_primary_parse.log diagnostic; user
+                // playtest showed TDATWR firing ZSU-23 despite the parse log
+                // confirming PrimaryWeapon=TowTwo was set correctly.
+                if (PrimaryWeapon == NULL && !ini.Is_Present(Name(), "Primary")) {
                     PrimaryWeapon = donor->PrimaryWeapon;
                 }
-                if (SecondaryWeapon == NULL) {
+                if (SecondaryWeapon == NULL && !ini.Is_Present(Name(), "Secondary")) {
                     SecondaryWeapon = donor->SecondaryWeapon;
                 }
                 // Do NOT copy IsTurretEquipped from the donor. AGUN/SAM/TURR
