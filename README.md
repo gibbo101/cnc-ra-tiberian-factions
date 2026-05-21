@@ -2,7 +2,7 @@
 
 A mod for **Command & Conquer: Red Alert Remastered** that adds GDI and Nod as new playable factions alongside Allies and Soviets.
 
-> ⚠️ **Pre-release / under active development.** v0.3.0 is playable end-to-end in skirmish — four sides on one map — but content differentiation (TD-themed rosters, superweapons, AI) is still being filled in. Not yet published to Steam Workshop.
+> ⚠️ **Early access (v0.4.1).** Published to Steam Workshop (Friends-Only visibility). Both GDI and Nod have complete TD-authentic building catalogues. The Obelisk of Light has its full TD-authentic firing experience (charge animation, warmup sound, visible laser beam). TD units (vehicles, infantry, aircraft), GDI/Nod AI, and pixel-perfect classic-mode rendering are still in development.
 
 This repository is a **fork of [Vanilla Conquer](https://github.com/TheAssemblyArmada/Vanilla-Conquer)**, which provides the DLL build base. The original Vanilla Conquer README is preserved as [`README-VANILLA-CONQUER.md`](./README-VANILLA-CONQUER.md).
 
@@ -14,9 +14,11 @@ Add `HOUSE_GDI` and `HOUSE_NOD` as new playable houses (sides) in Red Alert Rema
 
 - v0.0.x — ✅ scaffolding, Linux mingw cross-compile + Steam Deck deploy pipeline.
 - v0.1.0 — ✅ engine extension: `HOUSE_GOOD`/`HOUSE_BAD` selectable as cloned-from-Allies/Soviets variants.
-- v0.2.0 — ✅ engine decoupling: `HOUSE_GOOD`/`HOUSE_BAD` detached from `HOUSEF_ALLIES`/`HOUSEF_SOVIET`; 4-side-aware Unlimbo dispatch; France→`HOUSE_GOOD` launcher swap.
-- v0.3.0 — 🚧 in progress: TD-themed GDI/Nod building catalogues (TDFACT, TDNUKE/NUK2, TDPYLE, TDSILO, TDWEAP, TDMCV…), INI-driven mod-entry registration, asset pipeline (manifest → ZIP repack → rsync to Deck), TD-authentic build times. Playable in skirmish.
-- v0.4.0+ — planned: TD-themed unit rosters, superweapons (Ion Cannon, Nuke), faction-specific AI.
+- v0.2.0 — ✅ engine decoupling: `HOUSE_GOOD`/`HOUSE_BAD` detached from `HOUSEF_ALLIES`/`HOUSEF_SOVIET`; 4-side-aware Unlimbo dispatch; Spain→`HOUSE_GOOD` / Turkey→`HOUSE_BAD` launcher swaps.
+- v0.3.0 — ✅ TD-themed GDI building catalogue from authentic TD assets, INI-driven mod-entry registration, asset pipeline (manifest → ZIP repack → rsync to Deck), TD-authentic build times.
+- v0.4 — ✅ Nod faction with full building catalogue (Hand of Nod, Airstrip, Gun Turret, SAM Site, Obelisk of Light, Temple of Nod). Nod Airstrip C-17 cargo-plane delivery. Published to Steam Workshop (Friends-Only).
+- v0.4.1 — ✅ TDOBLI fully separated as `STRUCT_TDOBLI` engine type with own laser-beam render, charge animation, OBELPOWR/OBELRAY1 audio. TD audio routing recipe + per-building separation recipe documented. Foundation for scaling separation to remaining 16 buildings.
+- v0.5+ — planned: scale separation to remaining buildings, TD-themed unit rosters, superweapons (Ion Cannon, Nuke), faction-specific AI, pixel-perfect classic-mode rendering.
 
 See [`CHANGELOG.md`](./CHANGELOG.md) for detailed progress.
 

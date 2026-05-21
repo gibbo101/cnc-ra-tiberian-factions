@@ -6,6 +6,73 @@ This project follows a `version_high.version_low.patch` scheme matching the `ccm
 
 ## [Unreleased]
 
+## [0.4.1] — 2026-05-21 — TDOBLI separation + TD audio routing + recipe docs
+
+First fully-separated TD building (Obelisk of Light) shipping the iconic charge-up + laser-beam experience. Also lands the audio-routing infrastructure that brings authentic TD weapon sounds (and building-construction sounds) into the RA engine. Architecturally the bigger story: the per-building separation pattern is validated end-to-end and documented as a canonical recipe, so the remaining 16 buildings + units become bounded engineering against the recipe.
+
+### Obelisk of Light — iconic TD experience
+
+- 4-frame gem charge animation when a target is acquired, played at TD-authentic OBELISK_ANIMATION_RATE.
+- OBELPOWR warmup sound on charge start.
+- Visible 3-line laser beam from gem to target (two thin outer at color 0x7D + bright center at 0x7F), 5 ticks duration.
+- OBELRAY1 fire hum.
+- Scorch smudge stamped at impact via SmudgeClass.
+- Recharge cycle properly resets for the next fire.
+
+### TD audio routing (foundation)
+
+- `docs/td-audio-routing-recipe.md` — canonical recipe for routing TD `.WAV` assets through the Remastered launcher in an RA mod context. Extract from `SFX3D.MEG` → ship in `Data/AUDIO/` → register via `<SFXEvent>` aliases in merged `SFXEVENTSNONLOCALIZED.XML`.
+- All three Phase W1 weapons (TowTwo for TDATWR, TdTurretGun for TDGUN, OblsLaser for TDOBLI) now play their authentic TD audio.
+- TD building construction sound (`CONSTRU2.WAV`) plays for any STRUCT_TDxxxx building via a single range check in `building.cpp`.
+- Reference precedent: Reilsss's CnCinRA workshop mod was the breakthrough source for the SFXEvent alias pattern.
+
+### Engine-level building separation (TDOBLI)
+
+- `STRUCT_TDOBLI` enum + `ClassObelisk` `BuildingTypeClass` + `Init_Heap` registration.
+- `_anims[]` BSTATE_ACTIVE entry: 4 frames at rate 15.
+- Per-type dispatch in `building.cpp` shape selection (line 656), crew spawn offset (line 4093), animation guard (line 6244). Vanilla engine idiom (matches existing `STRUCT_TESLA`, `STRUCT_SAM`, etc. checks).
+- `Charges=yes` on `[TDOblsLaser]` wires the wielder into `BuildingClass::Charging_AI` state machine (same mechanism TD's `tiberiandawn/building.cpp:852-857` uses for the BULLET_LASER case).
+- Per-building charge-start sound: OBELPOWR for STRUCT_TDOBLI, TSLAPOWR for Tesla Coil.
+
+### Laser-beam render port
+
+- `Lines[3][5]` / `LineCount` / `LineFrame` / `LineMaxFrames` as `TechnoClass` members — ported from `tiberiandawn/techno.h:195-198`.
+- Per-frame draw block in `TechnoClass::Draw_It`.
+- Per-tick countdown in `TechnoClass::AI`.
+- `BULLET_LASER` branch in `Fire_At` uses validated `target_coord` (not `As_Coord(target)` — that returns world origin if target dies mid-fire; learned via Deck playtest).
+- `CC_Draw_Line` wrapper in `conquer.cpp` + `DLL_Draw_Line_Intercept` export in `dllinterface.cpp` (RA's DLL didn't expose line drawing previously; we added the boundary).
+- `Electric_Zap` suppression: any IsElectric weapon firing `BULLET_LASER` skips the lightning render. Bullet-type keyed, not building-type keyed — any future TD laser weapon auto-inherits.
+
+### Classic-mode SHP shipping
+
+- `scripts/mix_tools.py` (new) — Westwood MIX format reader/writer (the classic pre-RA-encryption layout). Implements the CRC32-ish filename hash from `common/crc.cpp`. Three commands: `list`, `extract`, `pack`.
+- `resources/remaster_mods/Vanilla_RA/CCDATA/TFASSETS.MIX` (new) — mod-shipped mixfile containing `TDOBLI.SHP` + `TDOBLIMAKE.SHP` extracted from TD's `CONQUER.MIX` and renamed with TD prefix.
+- `init.cpp` registers TFASSETS.MIX with `MFCD` (best-effort cache; missing file degrades gracefully).
+- Removed the `bdata.cpp` `ImageData`/`BuildupData` borrow-from-STRUCT_TESLA stub.
+
+### Country picker labels (description fix)
+
+The v0.4 Workshop description incorrectly stated "France for GDI and Spain/Turkey for Nod". Corrected to **Spain for GDI** and **Turkey for Nod**, matching the actual hijack swap in `dllinterface.cpp:905-910`. France stays vanilla.
+
+### Documentation
+
+- `docs/td-building-separation-recipe.md` (new) — canonical 11-step recipe for porting a TD-themed mod entry from Logic=alias model to fully-separated `STRUCT_TDxxxx`. Distilled from TDOBLI. Per-tier cycle time estimates (1-2h Tier 1 → 4-6h Tier 5). 9 common gotchas.
+- `docs/td-audio-routing-recipe.md` (new) — companion recipe for routing TD audio assets.
+- `docs/building-separation-plan.md` — status header updated: COMMITTED → IN PROGRESS (TDOBLI = M5-tier vertical slice complete). Section 3.1 added covering HouseClass-side work folded into milestones.
+- `docs/session-handoff-weapons-port.md` — rewritten for the TDOBLI milestone.
+- `CHANGELOG.md` — this entry.
+
+### Known limitations carried forward
+
+- **Classic graphics mode**: TD-sourced SHPs render with a mild palette mismatch (TD color indices interpreted through RA palette). Deferred to a one-shot Format80-codec iteration that retrofits every TD SHP at once.
+- **Spacebar classic toggle cannot be disabled from mod side**. Confirmed via two attempts (Legacy_Render_Enabled = false → black screen on toggle; INPUTTRANSLATORCONFIGURATIONS.XML override → launcher ignores mod XML for this binding). Player rebinds in Options → Controls if they want to disable.
+- **OBELPOWR/OBELRAY1 play back-to-back** at fire time rather than warmup-then-fire delayed sequence. Minor polish.
+- **GDI/Nod AI does not work yet** — same as v0.4.
+
+### Tag
+
+`v0.4.1-tdobli-separation`
+
 ## [0.3.0-phase5a] — 2026-05-20 — Asset pipeline + TDPYLE + 4 catalogue fixes
 
 End-to-end rebuild of how mod buildings get from the manifest to the Deck. Adds TDPYLE as the first net-new entry that landed right first time after the pipeline was in place. Fixes four engine-edge-case bugs surfaced by extended catalogue use.
