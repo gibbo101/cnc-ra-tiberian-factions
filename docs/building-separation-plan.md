@@ -1,6 +1,6 @@
 # Building-separation scope — porting TD building classes into the RA DLL
 
-**Status:** **COMMITTED 2026-05-21** — user green-lit the full separation route after weighing alternatives. Implementation begins after Phase W1 weapons port completes.
+**Status:** **IN PROGRESS 2026-05-21** — TDOBLI (Nod Obelisk of Light) shipped as the first fully-separated building, validating the recipe end-to-end (audio routing, charge state machine, laser-beam render, classic-mode SHP via TFASSETS.MIX). Canonical recipe: `docs/td-building-separation-recipe.md`. Remaining 16 buildings + units use the same recipe; cycle time per building is now bounded engineering (1-6 hours per tier).
 
 **Goal:** every TD-themed building (currently 17 entries: TDPYLE, TDNUKE, TDNUK2, TDPROC, TDSILO, TDFIX, TDWEAP, TDHPAD, TDGTWR, TDATWR, TDHQ, TDEYE, TDAFLD, TDHAND, TDGUN, TDSAM, TDOBLI, TDTMPL — note TDAFLD currently rides STRUCT_WEAP) becomes its own `STRUCT_TDxxxx` enum entry with its own `BuildingTypeClass` instance, `_anims[]` array, `_presets[]` footprint, and `Unlimbo()` dispatch. RA's STRUCT_* dispatch and behavior code is never reached for TD entities.
 

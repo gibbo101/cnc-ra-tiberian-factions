@@ -1,142 +1,148 @@
-# Session state — Phase W1 weapons port + audio routing breakthrough
+# Session state — TDOBLI separation milestone
 
-**Last updated:** 2026-05-21 evening
+**Last updated:** 2026-05-21 (evening, ~10h after Phase W1 audio breakthrough)
 **Working tree:** clean (all changes committed)
-**Latest commit:** `f8a6c51 v0.4.1-phase-w1d: TD audio routing PROVEN — Obelisk plays iconic laser`
+**Latest commit:** `classic-mode: ship TD SHPs via TFASSETS.MIX (palette remap deferred)`
+
+---
+
+## What landed since the last handoff
+
+Big arc this session. From "Phase W1 audio working" through "first fully-separated TD building shipped" with all the architectural infrastructure that future buildings will reuse.
+
+### TDOBLI: first fully-separated TD building (TIER 5, hardest in catalogue)
+
+Started as Logic=TSLA-aliased entry, ended as a `STRUCT_TDOBLI` heap entry with own everything. Pieces landed:
+
+- **`STRUCT_TDOBLI` enum** + `ClassObelisk` BuildingTypeClass + `Init_Heap()` registration
+- **Own `_anims[]` BSTATE_ACTIVE** — 4-frame charge at OBELISK_ANIMATION_RATE=15
+- **Charges=yes** wires into the engine's IsCharging/IsCharged state machine (same mechanism TD uses)
+- **OBELPOWR + OBELRAY1 sounds** via the proven SFXEvent recipe (`docs/td-audio-routing-recipe.md`)
+- **TD construction sound** (CONSTRU2) for all STRUCT_TDxxxx buildings via range check in `building.cpp:3940`
+- **3-line laser-beam render** ported from `tiberiandawn/techno.cpp:2481-2514`:
+  - `Lines[3][5]` / `LineCount` / `LineFrame` / `LineMaxFrames` as TechnoClass members
+  - Per-frame draw block in `Draw_It`
+  - Per-tick countdown in `AI()`
+  - `BULLET_LASER` branch in `Fire_At` (uses validated `target_coord` not `As_Coord(target)` — learned via Deck playtest when target deaths caused laser-to-origin)
+  - Scorch smudge stamp on impact
+- **`CC_Draw_Line`** wrapper + **`DLL_Draw_Line_Intercept`** export (RA's DLL didn't expose line drawing; we added it)
+- **Electric_Zap suppression** for any IsElectric weapon firing BULLET_LASER (bullet-type-keyed, not building-type-keyed — auto-applies to future TD laser weapons)
+- **Per-building dispatch** in `building.cpp` lines 656 / 4093 / 6244 — STRUCT_TDOBLI joined the Tesla-pattern checks (vanilla engine idiom, not a hack)
+- **OBELPOWR plays at charge-start** via per-Type branch in `Charging_AI` (replaces TSLAPOWR for STRUCT_TDOBLI; future cleanup: per-weapon `ChargeSound=` field)
+
+### Classic-mode SHP routing
+
+- **`scripts/mix_tools.py`** (new) — Westwood MIX format reader/writer, implementing the CRC32-ish filename hash from `common/crc.cpp`
+- **`Vanilla_RA/CCDATA/TFASSETS.MIX`** — mod-shipped mixfile containing TDOBLI.SHP + TDOBLIMAKE.SHP (extracted from TD's CONQUER.MIX, renamed with TD prefix)
+- **`init.cpp` MFCD registration** — best-effort cache of TFASSETS.MIX
+- **Removed `bdata.cpp` ImageData/BuildupData stub-borrow** from STRUCT_TESLA — was the last "real shortcut" in the TDOBLI separation. Engine now finds the actual TD SHPs.
+
+### What did NOT work (so future sessions don't waste time re-trying)
+
+- **Disabling classic mode via `Legacy_Render_Enabled = false`** → causes black screen when user presses space (launcher's toggle UI is independent of the DLL's legacy-data population)
+- **Overriding `INPUTTRANSLATORCONFIGURATIONS.XML` to remove SPACE → COMMAND_CNC_LEGACY_RENDERING_TOGGLE** → launcher ignores the mod XML for this binding (either hardcoded in launcher binary or merged-with-base-wins)
+- **Remapping SPACE to a different command in the mod XML** → same result, launcher ignored it
+
+Verdict: the spacebar classic-mode toggle is launcher-side, cannot be disabled from the mod. Player must rebind in Options → Controls if they want to disable it.
 
 ---
 
 ## Where we are right now
 
-### Phase W1 weapons port — COMPLETE (data + Obelisk audio)
-
-Three TD weapons ported under the Option B "full data isolation" pattern (own enum, own bullet, own warhead, own sound, own rules.ini section, own everything — no aliasing to vanilla RA assets):
-
-| Weapon | IniName | Used by | Damage / ROF / Range | Sound | Status |
-|---|---|---|---|---|---|
-| TDTowTwo | TowTwo | TDATWR (GDI Adv Guard Tower) | 60 / 40 / 6.5 | ROCKET2 | Fires; sound is RA fallback (audio recipe not applied yet) |
-| TDTurretGun | TdTurretGun | TDGUN (Nod Turret) | 40 / 60 / 6 | TNKFIRE6 | Fires; sound is RA fallback (audio recipe not applied yet) |
-| TDOblsLaser | OblsLaser | TDOBLI (Nod Obelisk of Light) | 200 / 90 / 7.5 | OBELRAY1 + OBELPOWR | **AUDIO WORKING** — both laser hum + warmup pulse play correctly |
-
-The Obelisk audio is the breakthrough — proves the routing recipe works. Other two weapons need the recipe applied (small mechanical work, ~30 min).
-
-### TD audio routing — PROVEN AND DOCUMENTED
-
-Canonical doc: `docs/td-audio-routing-recipe.md`. Memory: `[[project-td-audio-routing-recipe]]`.
-
-**The recipe:**
-
-1. Add `VOC_TD_*` enum + `SoundEffectName[]` entry in audio.cpp with the bare TD asset name
-2. Extract WAV from SFX3D.MEG via `scripts/meg_extract.py`
-3. Ship TDC_/TDR_ WAVs unchanged in `Vanilla_RA/Data/AUDIO/`
-4. MERGE (don't replace) base `SFXEVENTSNONLOCALIZED.XML` from CONFIG.MEG with `RAC_SFX_X` / `RAR_SFX_X` alias SFXEvents
-5. Reference by bare name in rules.ini (`Report=OBELRAY1`)
-
-**Load-bearing gotchas:**
-- MERGE the base XML (578 entries) with our additions — replacing it crashes the launcher
-- No `--` inside XML comments (validates with `python3 -c "import xml.etree.ElementTree as ET; ET.parse(path)"`)
-- Both RAC_ and RAR_ aliases needed (classic vs remastered audio modes)
-- Preserve UTF-8 BOM + CRLF line endings
-
-**Reference precedent:** Reilsss's CnCinRA workshop mod (`2853520457`).
-
-This pipeline unlocks the full TD audio identity for our mod: weapon sounds, building construction loops, EVA voice (different table — VoxType — but same overlay-and-alias mechanism), unit responses.
-
-### TD prefix naming convention — established
-
-All TD-ported entities get a `TD` prefix in their rules.ini IniName, even when no name collision exists. At-a-glance identification of "this is from TD, not vanilla RA". Memory: `[[project-td-prefix-convention]]`.
-
-Applied to: weapons (TDTowTwo, TDTurretGun, TDOblsLaser), bullets (TDSSM, TDLaser), warheads (TDLaser), sound enums (VOC_TD_*), buildings (TDOBLI/TDATWR/etc — pre-existing).
-
-### Building-separation strategic decision — COMMITTED
-
-User green-lit 2026-05-21: every TD building moves to its own `STRUCT_TDxxxx` enum + own `BuildingTypeClass` + own `_anims[]` / `_presets[]`. No more Logic= alias bug-whack-a-mole.
-
-**Plan:** `docs/building-separation-plan.md` — 3-5 weeks across M1-M6 milestones, each a vertical slice keeping v0.4 playable.
-
-**Implication:** alias-leakage bugs (TDPROC dock anim, TDGUN turret rotation, TDEYE missing sprite, TDTMPL buildup snap) defer to milestone work. Don't patch them inline.
-
-### Engine fixes that landed this session
-
-1. **Logic= alias Is_Present check** (`bdata.cpp`) — fixed the Secondary= silent inheritance that made TDATWR fire AGUN's ZSU-23 instead of TowTwo. Mod entries can now explicitly clear donor weapons. Commit `f00e635`.
-
-2. **TDOBLI charge-sound trigger** (`techno.cpp` Fire_At) — IniName-keyed `Sound_Effect(VOC_TD_LASER_POWER)` plays OBELPOWR at fire time alongside the weapon's Report=OBELRAY1. Plays back-to-back rather than warmup-then-fire (which would need BSTATE_AUX1 hook — deferred to M5 STRUCT_TDOBLI separation). Commit `f8a6c51`.
-
-3. **Diagnostic logging** (`techno.cpp`) — `tf_primary_parse.log` confirms Primary=/Secondary= resolution per TD entry. Per `[[feedback-keep-diagnostics-until-v1]]`, kept under `#if 1` for one-line disable. Commit `5374b79`.
+- **Phase W1 audio (3 weapons + recipe doc):** ✅ committed
+- **TD audio routing recipe:** ✅ proven and documented (`docs/td-audio-routing-recipe.md`)
+- **TD prefix convention:** ✅ established (`[[project-td-prefix-convention]]`)
+- **Building separation strategic commitment:** ✅ recorded (`[[project-building-separation-committed]]`)
+- **TDOBLI fully separated (first vertical slice, M5-tier):** ✅ shipped — Remastered mode 100% TD-authentic
+- **TD building separation recipe doc:** ✅ written (`docs/td-building-separation-recipe.md`)
+- **Classic-mode polish for TDOBLI:** 95% — palette mismatch on SHP rendering, deferred to a one-shot Format80-codec iteration that retrofits all TD SHPs at once when classic-mode polish becomes a priority
 
 ---
 
-## Commit history (most recent first)
+## Known limitations (documented, not blocking)
 
-```
-f8a6c51 v0.4.1-phase-w1d: TD audio routing PROVEN — Obelisk plays iconic laser
-f5b7683 refactor: prefix all TD-ported weapon/bullet/warhead IniNames with TD
-5374b79 diagnostic: tf_primary_parse.log for TechnoTypeClass::Read_INI
-f00e635 fix: Logic= alias no longer silently inherits donor Primary/Secondary weapons
-52fe4e6 v0.4.1-phase-w1bc: TdTurretGun + OblsLaser weapon data ports
-deb3f1f docs: commit to full building separation; defer alias bugs to milestones
-3d11b47 v0.4.1-phase-w1a: TOW_TWO weapon port — TDATWR fires TD-authentic AA+AG missile
-f0cf7b3 v0.4: ccmod version + Workshop description for Nod faction release  (← v0.4 baseline)
-```
+1. **Classic graphics mode color mismatch** on TDOBLI (and any future TD-sourced SHP). TD's color indices interpreted through RA's PALETTE.PAL → mild visual mismatch. Fix: implement Westwood Format80 codec + closest-color palette remap in `mix_tools.py`. Estimated 3-4 focused hours. Deferred to a "classic-mode polish" iteration that processes all TD-sourced SHPs in one batch.
+
+2. **Spacebar classic toggle cannot be disabled** from the mod (as documented above). Mod README should recommend Remastered graphics for the cleanest experience.
+
+3. **OBELPOWR/OBELRAY1 still play back-to-back** at fire time, not the TD-authentic "warmup-then-fire" delayed sequence. Could be fixed by hooking the charge animation's completion frame to trigger fire (rather than firing at Fire_At). Minor polish, low priority.
+
+4. **Mid-campaign saves from previous builds will not load** — new STRUCT_TDOBLI enum value changes `BuildingTypeClass` array indices. Not yet a concern (no campaigns shipped); flag for future campaign work.
+
+5. **Country stat modifiers** (France Phase Tank, Germany Demolitionist, Ukraine Parabombs, Turkey +10% build speed) — Turkey/Spain are hijacked by HOUSE_GOOD/HOUSE_BAD launcher swap so their modifiers auto-bypass. The others remain active. Per `[[project-country-modifiers-removal]]`, slated for eventual removal once faction work stabilises.
 
 ---
 
-## Three doors — pick one for next session
+## Three doors for next session
 
-### Door 1: Apply audio recipe to TowTwo + TdTurretGun (~30 min)
+### Door 1: Continue scaling separation — pick the next building
 
-Pure mechanical recipe-application — extract ROCKET2/TNKFIRE6 WAVs from SFX3D.MEG, add alias SFXEvents to our merged XML, deploy. Finishes Phase W1 with all three weapons having full TD audio.
+Recipe is validated. Cycle time per building is bounded (1-6 hours per tier). Recommended order from the building-separation-plan §5:
 
-**Pros:** quick closure on Phase W1, full TD weapon-audio identity for the three v0.4.x weapons. Compounds the audio-recipe doc with two more validated examples.
-**Cons:** none. Cheap win.
+- **Tier 1 first** (TDNUKE, TDNUK2, TDSILO, TDPYLE) — pure data ports, ~1-2h each, builds confidence the recipe is solid
+- Then **Tier 2 defensive turrets** (TDGTWR, TDATWR, TDGUN, TDSAM) — reuse the weapons + audio infrastructure
+- Etc.
 
-### Door 2: Port the Obelisk laser-line visual
+This is the highest-momentum option. Each building shipped = irreversible architectural progress.
 
-The remaining iconic Obelisk piece — the actual visible beam graphic (3-line render from `tiberiandawn/techno.cpp:2481-2514`) + the smudge scorch at the target. RA has none of this rendering infrastructure (`LineCount` exists in RA's `list.cpp` but it's UI-list-widget, unrelated).
+### Door 2: AI base-build order arrays for HOUSE_GOOD / HOUSE_BAD
 
-**Pros:** completes the Obelisk experience (charge sound + laser sound + visible beam). Iconic feature shippable.
-**Cons:** lives more naturally on STRUCT_TDOBLI's BuildingClass override (M5 of separation plan) than wedged into RA's shared techno.cpp. Doing it now means moving the code later.
+Per the separation plan §3.1 H2. RA's AI base-build sequences are STRUCT_*-indexed. Adding parallel sequences referencing STRUCT_TDxxxx would give GDI and Nod proper AI behavior (currently they inherit Allied/Soviet's vanilla build orders, which now reference buildings that don't exist for them).
 
-### Door 3: Start building-separation M1
+Worth ~1-2 days. Doable after a few Tier 1 buildings land.
 
-Vertical slice approach: pick TDOBLI as the proof-of-concept first building, give it its own STRUCT_TDOBLI enum + BuildingTypeClass + _anims[] + _presets[] + ImageData routing. Audio recipe already proven; visual laser-line port lives naturally on the new STRUCT_TDOBLI's BuildingClass. Once TDOBLI is fully separated, document the per-building recipe (parallel to the audio recipe doc), then scale to the other 16 buildings + units.
+### Door 3: Format80 codec + classic-mode SHP pixel-perfect
 
-**Pros:** every future entity ships fully-realized (no half-finished feel). Permanently solves alias-leakage bugs. Sets up the unit catalogue work (TD harvester, MCVs, C-17) on the same separated-entity pattern.
-**Cons:** big lift (estimated 3 days for tier-1 Obelisk single-building work per the separation plan's §5). User-facing progress is slower in the short term.
+Implement WW Format80 LZSS in `mix_tools.py`, add a `--remap-palette` flag to `pack` that decompresses each frame, applies a closest-color remap from TD palette to RA palette, recompresses or stores as Format0. Apply retroactively to all TD-sourced SHPs in TFASSETS.MIX.
+
+Worth ~3-4 hours. Best done as a one-shot after several TD buildings have shipped (so the retroactive pass covers many assets at once).
 
 ### Recommendation
 
-Door 1 first (cheap), then Door 3 (architectural). Door 2 effectively *becomes part of* Door 3's TDOBLI work.
-
-So: short next session = Door 1 (finish Phase W1 audio). Then commit and tee up Door 3 (separation M1 with TDOBLI as first vertical slice — includes laser visual).
+Door 1 first (scale separation, validate recipe across multiple buildings), Door 2 after a handful land (so AI behaviour catches up to the new content), Door 3 when classic-mode polish becomes a player-facing concern.
 
 ---
 
-## Open questions / known limitations
+## Memory entries that anchor this state
 
-- **OBELPOWR timing**: currently plays back-to-back with OBELRAY1 because we hook from Fire_At. TD-authentic is warmup-THEN-fire with a delay between. Proper sequencing lands when STRUCT_TDOBLI gets its own BSTATE_AUX1 anim binding (separation M5).
-- **Classic-mode SHP routing**: classic graphics mode shows RA donor sprite (TSLA for TDOBLI etc.) underneath instead of TD sprite. Resolves with separation M5's mod-mixfile bundling.
-- **TD construction sounds**: not yet ported — applies the same audio recipe (extract from SFX3D.MEG, alias SFXEvents). Pending until the building-separation work surfaces a clean hook for BSTATE_CONSTRUCTION sound.
-- **EVA voice**: VoxType table parallel to VocType (sound effects). Same overlay-and-alias mechanism via a different XML. Faction-aware routing decided in DLL based on player house. Defer until unit-catalogue work begins.
-
----
-
-## Memory entries to load on session pickup
-
-- `[[project-td-audio-routing-recipe]]` — the canonical recipe with load-bearing gotchas
+- `[[project-td-audio-routing-recipe]]` — audio recipe with load-bearing gotchas
 - `[[project-td-prefix-convention]]` — TD prefix on every ported entity
-- `[[project-building-separation-committed]]` — strategic decision to go vertical-slice per-building
-- `[[user-profile]]` / `[[system-layout]]` / `[[build-recipe-linux-mingw]]` — baseline workspace context
-- `[[feedback-no-tradeoffs-with-tools]]` — when infrastructure exists, build the right thing, don't pick a stand-in
-- `[[feedback-review-td-source-first]]` — read TD's implementation as the spec before reverse-engineering RA's dormant scaffolding
+- `[[project-building-separation-committed]]` — strategic decision
+- `[[project-td-building-separation-recipe-validated]]` *(NEW)* — TDOBLI as worked example, the canonical recipe doc
+- `[[feedback-no-tradeoffs-with-tools]]` — when infrastructure exists, build the right thing
+- `[[feedback-review-td-source-first]]` — read TD's implementation as the spec
+- `[[feedback-push-back-on-errors]]` — user has pushed back hard on shortcuts this session; honour that going forward
 
 ---
 
-## Related canonical docs
+## Canonical docs
 
-- `docs/td-audio-routing-recipe.md` — audio pipeline (new this session)
-- `docs/building-separation-plan.md` — 3-5 week M1-M6 plan (revised this session to commit to the route)
-- `docs/catalogue.md` — building catalogue + remaining playtest bugs (deferred to separation milestones)
-- `docs/weapon-ports.md` — Phase W1/W2/W3 weapon scope (W1 now data-complete)
-- `docs/adding-td-buildings.md` — per-building add recipe via the Logic= alias path (still valid; will get a successor doc once separation lands)
-- `docs/cargo-plane-port.md` — TDAFLD reference (shipped in v0.4)
+- `docs/td-building-separation-recipe.md` *(NEW this session)* — per-building port recipe, distilled from TDOBLI
+- `docs/td-audio-routing-recipe.md` — audio pipeline
+- `docs/building-separation-plan.md` — M1-M6 milestone plan (TDOBLI = M5-tier vertical slice complete)
+- `docs/catalogue.md` — building catalogue + bug list (most bugs deferred to separation milestones)
+- `docs/weapon-ports.md` — Phase W1/W2/W3 weapon scope (W1 data-complete + audio-complete)
+- `docs/cargo-plane-port.md` — TDAFLD reference (pre-separation; will migrate)
+- `docs/adding-td-buildings.md` — alias-mode recipe being superseded by the new separation recipe
+
+---
+
+## Commit history this session (most recent first)
+
+```
+classic-mode: ship TD SHPs via TFASSETS.MIX (palette remap deferred)
+fix: wire TDOBLI charge animation via Charging_AI state machine
+v0.4.1-phase-w1f: TDOBLI laser-beam render + charge state machine
+v0.4.1-phase-w1e: STRUCT_TDOBLI — first fully-separated TD building (WIP)
+docs: full session state — Phase W1 + audio routing breakthrough + next steps
+audio: TowTwo + TdTurretGun TD sounds (Phase W1 audio complete)
+v0.4.1-phase-w1d: TD audio routing PROVEN — Obelisk plays iconic laser
+refactor: prefix all TD-ported weapon/bullet/warhead IniNames with TD
+diagnostic: tf_primary_parse.log for TechnoTypeClass::Read_INI
+fix: Logic= alias no longer silently inherits donor Primary/Secondary weapons
+v0.4.1-phase-w1bc: TdTurretGun + OblsLaser weapon data ports
+docs: commit to full building separation; defer alias bugs to milestones
+v0.4.1-phase-w1a: TOW_TWO weapon port — TDATWR fires TD-authentic AA+AG missile
+```
+
+(Plus the recipe doc + handoff updates landing right after this writes.)
