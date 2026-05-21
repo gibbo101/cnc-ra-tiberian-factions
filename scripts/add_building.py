@@ -132,6 +132,26 @@ def emit_block(entry):
     # our TGA pack get truncated. Set count to match the MAKE tileset shape
     # count (= MAKE.ZIP frame count + 1 for the empty shape 0).
     buildup = entry.get("buildup_anim")
+    if buildup is None:
+        # Auto-derive from the bundled MAKE.ZIP frame count when no explicit
+        # override. Every Logic= aliased mod entry needs this — without it the
+        # engine inherits the donor's BSTATE_CONSTRUCTION count, which mis-
+        # matches our TGA pack in either direction (donor longer → mod plays
+        # shapes past tileset end, donor shorter → mod buildup truncates).
+        # Convention: count = TGA frames + 1 for the empty shape-0 placement
+        # marker emitted by bundle_assets.py. Rate=2 ticks/frame approximates
+        # the engine's auto-computed (Rule.BuildupTime * TICKS_PER_MINUTE) /
+        # count for typical 13-35 frame packs.
+        make_zip = REPO_ROOT / (
+            "resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/"
+            "RED_ALERT/STRUCTURES/" + entry["ininame"] + "MAKE.ZIP"
+        )
+        if make_zip.exists():
+            import zipfile
+            with zipfile.ZipFile(make_zip) as zf:
+                tga_count = sum(1 for n in zf.namelist() if n.endswith(".tga"))
+            if tga_count > 0:
+                buildup = (0, tga_count + 1, 2)
     if buildup is not None:
         start, count, rate = buildup
         lines.append("BuildupAnimStart=%d" % start)
