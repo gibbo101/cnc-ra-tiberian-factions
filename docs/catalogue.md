@@ -157,6 +157,27 @@ deferred until the unit catalogue work). Numbers match the user's report:
    doesn't take effect, the deeper issue is `BuildingTypeClass::Read_INI`'s
    weapon-pointer lookup vs. our Logic= ImageData inheritance path.
 
+6. **TDTMPL construction animation feels slow then pops into place.** (Raised
+   2026-05-21 — Luke not happy post v0.3.1-phase1b.) Symptom: buildup plays
+   visibly slowly, then the finished Temple sprite snaps in before the
+   animation has cycled through all frames. Either the rate is too slow and
+   later frames get cut off when the engine ends BSTATE_CONSTRUCTION, or
+   frames are missing from the tileset. **Lead:** phase1b hardcodes
+   `rate=2 ticks/frame` for every entry — for TDTMPL's 36-frame buildup
+   that's ~4.8s, while the engine's natural rate is
+   `(Rule.BuildupTime × TICKS_PER_MINUTE) / count` ≈ 1.5 ticks/frame
+   (~2.4s). Once the engine's timer expires it force-transitions to idle
+   regardless of animation progress, which matches the "pops into place"
+   symptom. Fix candidates, in order: (a) replace the hardcoded `rate=2`
+   in `scripts/add_building.py` with the engine-matched formula
+   `max(1, round(BuildupTime_ticks / count))`; (b) per-entry override
+   `buildup_anim=(0,36,1)` in `scripts/buildings_manifest.py` for TDTMPL
+   only as a stopgap; (c) verify TDTMPLMAKE.ZIP actually contains 35 TGAs
+   (`unzip -l ...TDTMPLMAKE.ZIP | grep -c .tga`) — if fewer, the auto-derive
+   over-counted. Cross-reference TDNUKE/TDFACT buildups which land
+   correctly — both have lower frame counts (19, 32) so their `rate=2`
+   total durations stay inside the engine's BuildupTime budget.
+
 **Immediate next work — finish GDI building roster:**
 
 Remaining catalogue entries per the master flag table:
