@@ -644,8 +644,16 @@ int BuildingClass::Shape_Number(void) const
         /*
         **	The Tesla Coil has a stage value that can be overridden by
         **	its current state.
+        **
+        **	Tiberian Factions mod: STRUCT_TDOBLI shares this charge-pattern
+        **	behavior (target acquired → charging anim → fire → idle). Both
+        **	are driven by Charging_AI which itself is keyed on weapon's
+        **	IsElectric flag (Charges=yes in rules.ini), so the state machine
+        **	bits are already populated; we just need to extend this shape-
+        **	selection branch to read them. Future TD types with charge-fire
+        **	patterns (e.g. SAM, OBLI variants) extend this list.
         */
-        if (*this == STRUCT_TESLA) {
+        if (*this == STRUCT_TESLA || *this == STRUCT_TDOBLI) {
             if (IsCharged) {
                 shapenum = 3;
             } else {
@@ -4080,8 +4088,9 @@ int BuildingClass::Mission_Deconstruction(void)
                         COORDINATE coord = Coord_Add(Center_Coord(), XYP_COORD(0, -12));
 
                         /* extra check to prevent building crew for Tesla Coil spawning
-                           one cell above building foundation */
-                        if (*this == STRUCT_TESLA) {
+                           one cell above building foundation. TDOBLI is also 1x2
+                           (BSIZE_12) so same offset applies. */
+                        if (*this == STRUCT_TESLA || *this == STRUCT_TDOBLI) {
                             coord = Map[coord].Adjacent_Cell(FACING_S)->Cell_Coord();
                         }
                         coord = Map[coord].Closest_Free_Spot(coord, false);
@@ -6232,7 +6241,7 @@ void BuildingClass::Animation_AI(void)
     if (*this == STRUCT_SAM && stagechange)
         Mark(MARK_CHANGE);
 
-    if ((!Class->IsTurretEquipped && *this != STRUCT_TESLA) || Mission == MISSION_CONSTRUCTION
+    if ((!Class->IsTurretEquipped && *this != STRUCT_TESLA && *this != STRUCT_TDOBLI) || Mission == MISSION_CONSTRUCTION
         || Mission == MISSION_DECONSTRUCTION) {
         if (stagechange) {
 
