@@ -180,6 +180,7 @@ void BulletTypeClass::Init_Heap(void)
     // Tiberian Factions mod bullets — keep in enum order (BulletType.h
     // additions appended after BULLET_NUKE_DOWN).
     new BulletTypeClass("SSM");          //	BULLET_SSM (TD TOW/TOMAHAWK)
+    new BulletTypeClass("Laser");        //	BULLET_LASER (TD Obelisk beam)
 }
 
 /***********************************************************************************************

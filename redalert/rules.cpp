@@ -644,6 +644,10 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("Mechanical");
 #endif
 
+    // Tiberian Factions mod warheads — keep in enum order (WarheadType
+    // additions appended after WARHEAD_MECHANICAL).
+    new WarheadTypeClass("Laser"); // WARHEAD_LASER (Obelisk 100%-vs-all)
+
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
     new WeaponTypeClass("ZSU-23");
@@ -699,7 +703,9 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
 
     // Tiberian Factions mod weapons — keep in enum order (WeaponType
     // additions appended after WEAPON_CARRIER).
-    new WeaponTypeClass("TowTwo"); // WEAPON_TOW_TWO (Advanced Guard Tower)
+    new WeaponTypeClass("TowTwo");      // WEAPON_TOW_TWO (Advanced Guard Tower)
+    new WeaponTypeClass("TdTurretGun"); // WEAPON_TD_TURRET_GUN (Nod Turret)
+    new WeaponTypeClass("OblsLaser");   // WEAPON_OBELISK_LASER (Obelisk of Light)
 
     return (true);
 }

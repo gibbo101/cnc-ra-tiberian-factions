@@ -550,7 +550,10 @@ TDGUN = {
     "adjacent":    1,
     "strength":    200,
     "armor":       "steel",
-    "primary":     None,
+    # TD-authentic cannon: ROF=60 (vs RA TurretGun ROF=50), Damage=40, Range=6.
+    # Separate from RA's [TurretGun] so vanilla Allied Turret balance stays
+    # untouched and Nod balance is independently tunable. Phase W1.
+    "primary":     "TdTurretGun",
     "secondary":   None,
     "base_normal": True,
     "capturable":  False,
@@ -559,7 +562,7 @@ TDGUN = {
     "bib":         False,
     "idle_anim":   (0, 1, 0),
     "active_anim": (0, 1, 0),
-    "notes":       "TD Nod Turret (1x1 rotating gun). Donor RA GUN (Soviet Turret) provides matching 1x1 BSIZE_11 footprint + TurretGun primary weapon. Defensive (0,1,0) clamps on idle/active until TGA frame counts verified.",
+    "notes":       "TD Nod Turret (1x1 rotating gun). Donor RA GUN (Soviet Turret) provides matching 1x1 BSIZE_11 footprint. Primary=TdTurretGun for TD-authentic stats. Defensive (0,1,0) clamps on idle/active until TGA frame counts verified.",
 }
 
 
@@ -616,7 +619,13 @@ TDOBLI = {
     "adjacent":    1,
     "strength":    200,
     "armor":       "aluminum",
-    "primary":     None,
+    # TD-authentic OBELISK_LASER ported per Phase W1 (data piece only —
+    # laser-line render lands in separation M5). Replaces the TSLA-donor
+    # inherited TeslaZap stopgap. Damage=200, Range=7.5, Warhead=Laser
+    # (100%-vs-all-armor), Sound=OBELRAY1. Until M5, the projectile is
+    # invisible (Inviso=yes) so the Obelisk looks like it's not firing —
+    # known limitation, accept until visual port lands.
+    "primary":     "OblsLaser",
     "secondary":   None,
     "base_normal": True,
     "capturable":  False,
@@ -625,7 +634,7 @@ TDOBLI = {
     "bib":         False,
     "idle_anim":   (0, 1, 0),
     "active_anim": (0, 4, 15),
-    "notes":       "TD Nod Obelisk of Light (1x2 beam tower). Donor RA TSLA (Tesla Coil) provides matching BSIZE_12 footprint + TeslaZap beam weapon (visually similar to Obelisk beam). TD authentic weapon is HellFire — stopgap inherits TeslaZap. active_anim=(0,4,15) is TD-authentic — OBELISK_ANIMATION_RATE=15 from tiberiandawn/defines.h:323. TSLA donor's BSTATE_ACTIVE was 0/10/2 which walked past our 9-frame sprite into damaged-state territory; TD's 4-frame charge cycle keeps us safe.",
+    "notes":       "TD Nod Obelisk of Light (1x2 beam tower). Donor RA TSLA (Tesla Coil) provides matching BSIZE_12 footprint. Primary=OblsLaser (Phase W1 data port; render in M5). active_anim=(0,4,15) is TD-authentic OBELISK_ANIMATION_RATE=15 — 4-frame charge cycle.",
 }
 
 

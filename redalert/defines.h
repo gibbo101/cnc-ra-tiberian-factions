@@ -1334,7 +1334,8 @@ typedef enum BulletType : char
 
     // Tiberian Factions mod bullets ported from TD (tiberiandawn/defines.h
     // BULLET_*). Each maps to a [Name] section in rules.ini.
-    BULLET_SSM, // Surface-to-surface missile — homing, AA + AG capable.
+    BULLET_SSM,   // Surface-to-surface missile — homing, AA + AG capable.
+    BULLET_LASER, // Obelisk instant-hit beam (Inviso, light_speed, no rotation).
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -2702,6 +2703,11 @@ typedef enum WarheadType : char
 #ifdef FIXIT_CSII         //	checked - ajw 9/28/98
     WARHEAD_MECHANICAL,   // repair weapon for vehicles
 #endif
+
+    // Tiberian Factions mod warheads ported from TD (tiberiandawn/defines.h
+    // WARHEAD_*). Each maps to a [Name] section in rules.ini.
+    WARHEAD_LASER, // 100%-vs-all-armor profile (Obelisk of Light).
+
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
 } WarheadType;
@@ -2769,7 +2775,9 @@ typedef enum WeaponType : char
 
     // Tiberian Factions mod weapons ported from TD (tiberiandawn/defines.h
     // WEAPON_*). Each maps to a [Name] section in rules.ini.
-    WEAPON_TOW_TWO, // Advanced Guard Tower missile (anti-armor + AA).
+    WEAPON_TOW_TWO,        // Advanced Guard Tower missile (anti-armor + AA).
+    WEAPON_TD_TURRET_GUN,  // Nod Turret cannon (TD-authentic ROF/range).
+    WEAPON_OBELISK_LASER,  // Obelisk of Light beam (data piece only; render in M5).
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -3379,7 +3387,10 @@ typedef enum VocType : short
     // Tiberian Factions mod sounds — TD assets re-registered under TD-prefixed
     // VOC enum values so we never alias vanilla RA Report= references. Each
     // maps to a TD .AUD asset name in SoundEffectName[] (audio.cpp).
-    VOC_TD_ROCKET2, // TD rocket launch (light, for TOW_TWO / TOMAHAWK / NIKE)
+    VOC_TD_ROCKET2,     // TD rocket launch (light, for TOW_TWO / TOMAHAWK / NIKE)
+    VOC_TD_TANK4,       // TD big gun tank fire (TURRET_GUN / 120MM)
+    VOC_TD_LASER,       // Obelisk humming laser beam
+    VOC_TD_LASER_POWER, // Obelisk laser warming-up sound
 
     VOC_COUNT,
     VOC_FIRST = 0

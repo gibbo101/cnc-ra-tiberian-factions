@@ -250,7 +250,10 @@ struct SoundEffectNameStruct
     // Tiberian Factions mod sounds — TD asset name in column 1; engine resolves
     // via Voc_From_Name() during rules.ini parse. TD's ROCKET2.AUD ships in
     // CONFIG.MEG; if not found at runtime, mod bundles it in its own mixfile.
-    {"ROCKET2", 1, IN_NOVAR}, // VOC_TD_ROCKET2		TD rocket launch (light)
+    {"ROCKET2", 1, IN_NOVAR},  // VOC_TD_ROCKET2		TD rocket launch (light)
+    {"TNKFIRE6", 1, IN_NOVAR}, // VOC_TD_TANK4			TD big gun tank fire
+    {"OBELRAY1", 1, IN_NOVAR}, // VOC_TD_LASER			Obelisk humming laser beam
+    {"OBELPOWR", 1, IN_NOVAR}, // VOC_TD_LASER_POWER	Obelisk laser warm-up
 };
 
 //
