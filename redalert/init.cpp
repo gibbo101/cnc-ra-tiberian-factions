@@ -2307,6 +2307,21 @@ static void Init_Bootstrap_Mixfiles(void)
     new MFCD("REDALERT.MIX", &FastKey);
 
     /*
+    **  Tiberian Factions mod: TFASSETS.MIX ships TD-origin SHPs (TDOBLI.SHP,
+    **  TDOBLIMAKE.SHP, etc.) renamed with TD-prefix so MFCD::Retrieve picks
+    **  them up for fully-separated STRUCT_TDxxxx buildings. Without this mix
+    **  loaded, classic graphics mode falls back to the borrowed-from-TSLA
+    **  ImageData stub in bdata.cpp One_Time (Tesla Coil sprite). Cache-load
+    **  is best-effort: assert is intentionally absent so the mod still boots
+    **  if the .MIX is missing (e.g. partial deploy), just with the classic-
+    **  mode SHP fallback active.
+    */
+    if (CCFileClass("TFASSETS.MIX").Is_Available()) {
+        new MFCD("TFASSETS.MIX", &FastKey);
+        MFCD::Cache("TFASSETS.MIX");
+    }
+
+    /*
     **	Bootstrap enough of the system so that the error dialog box can successfully
     **	be displayed.
     */

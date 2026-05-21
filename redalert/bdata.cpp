@@ -3176,42 +3176,15 @@ void BuildingTypeClass::One_Time(void)
         ((void const*&)building.ImageData) = MFCD::Retrieve(fullname);
 
         /*
-        **  Tiberian Factions mod: TD building SHPs (TDOBLI.SHP, TDOBLIMAKE.SHP
-        **  etc.) don't exist in REDALERT.MIX or any standard mix file — they're
-        **  not the source of truth for Remastered rendering, where the launcher
-        **  intercepts Draw_It and resolves the actual texture via the TGA
-        **  tileset XML keyed on IniName. But the engine bails before reaching
-        **  the launcher intercept when ImageData/BuildupData is NULL (Draw_It
-        **  draws with width=height=0 → invisible). Borrow a vanilla building's
-        **  ImageData and BuildupData pointers as stubs so the engine reaches
-        **  the intercept, where the launcher then renders our TGA tilesets.
-        **
-        **  Use TSLA's data — matching BSIZE_12 footprint (relevant for hit-test
-        **  bounds pre-intercept). Classic-mode SHP routing (where TSLA's
-        **  actual SHP would render and TD's wouldn't) is a separate concern,
-        **  deferred to mod-mixfile bundling work.
-        **
-        **  Also re-initialise BSTATE_CONSTRUCTION's frame count and rate to
-        **  match the borrowed BuildupData — without this, the engine's auto-
-        **  timing computed at line 3164-3167 would have been NULL-skipped, so
-        **  BSTATE_CONSTRUCTION would stay at its constructor default (1
-        **  frame, rate 0) and the buildup animation would never advance.
+        **  Tiberian Factions mod: TFASSETS.MIX (registered in init.cpp ahead
+        **  of LOCAL.MIX) ships TD-origin SHPs renamed with TD-prefix
+        **  (TDOBLI.SHP / TDOBLIMAKE.SHP etc.) so the MFCD::Retrieve calls
+        **  above resolve them directly. No more borrowing TSLA's ImageData
+        **  pointer as a stub — classic-mode rendering now shows our actual
+        **  TD SHPs, and Remastered-mode keeps using the TGA tileset XML via
+        **  the launcher's Draw_It intercept (which keys on IniName, not on
+        **  the ImageData pointer value).
         */
-        if (building.Type >= STRUCT_TDOBLI && building.Type < STRUCT_COUNT) {
-            BuildingTypeClass const& stub = As_Reference(STRUCT_TESLA);
-            if (building.ImageData == NULL) {
-                ((void const*&)building.ImageData) = stub.ImageData;
-            }
-            if (building.BuildupData == NULL && stub.BuildupData != NULL) {
-                ((void const*&)building.BuildupData) = stub.BuildupData;
-                int count = Get_Build_Frame_Count(stub.BuildupData);
-                int timedelay = 1;
-                if (count > 0) {
-                    timedelay = (Rule.BuildupTime * TICKS_PER_MINUTE) / count;
-                }
-                building.Init_Anim(BSTATE_CONSTRUCTION, 0, count, timedelay);
-            }
-        }
     }
 
     // Try to load weap2.shp and tesla coil's lightning shapes

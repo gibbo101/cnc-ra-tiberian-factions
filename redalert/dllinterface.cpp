@@ -8658,7 +8658,17 @@ bool DLLExportClass::Legacy_Render_Enabled(void)
         return num_humans < 2;
     }
 
-    // return false;
+    // Tiberian Factions mod: classic graphics mode has a known visual gap —
+    // the TD SHPs we ship (extracted from TD's CONQUER.MIX into our own
+    // TFASSETS.MIX) use TD's PALETTE.PAL color indices, while RA's classic
+    // renderer applies RA's PALETTE.PAL → mild color mismatch on TDOBLI and
+    // future STRUCT_TDxxxx buildings. Tried disabling classic entirely
+    // (returning false here) but that just produces a black screen when the
+    // user presses space, because the launcher's classic-mode UI toggle is
+    // independent of this function — our DLL just stops populating the
+    // legacy buffer. Leaving classic enabled so the toggle works, with
+    // documented palette imperfection. Full fix requires Format80 codec +
+    // closest-color SHP remap (deferred to classic-mode polish iteration).
     return true;
 }
 
