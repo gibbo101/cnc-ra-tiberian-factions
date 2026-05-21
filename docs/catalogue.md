@@ -196,14 +196,27 @@ Remaining catalogue entries per the master flag table:
 
 Both are simple FIELD_SPEC additions in `scripts/add_building.py`. Per `docs/manifest-gaps.md`.
 
-**TDAFLD (Nod airstrip) engine work — learning from TDWEAP:**
+**TDAFLD cargo-plane delivery — RESOLVED in v0.3.1-phase2d (2026-05-21):**
 
-The TDWEAP investigation (gotchas #11-15) established a template for any vehicle-producing TD building. TDAFLD will need its own version:
+Final implementation diverged from the original TDWEAP-style plan. The TDWEAP template (gotchas #11-15) assumed a Track-based exit; TDAFLD instead ports TD's reinforcement-style cargo-plane delivery. The split-track / `OUT_OF_AIRSTRIP_TD` enum is **not used** — vehicles are dropped by the cargo plane onto a `Find_Exit_Cell`-picked strip-adjacent cell, not driven out along a Track. Cleaner mechanism, no door-stage XML remap needed.
 
-- Separate `Track15` (or whatever the next slot is) for the airstrip cargo-plane delivery animation, with its own `TrackControl` entry and `OUT_OF_AIRSTRIP_TD` enum. Vanilla doesn't have an `OUT_OF_AIRSTRIP` track — vehicles spawn on the airstrip tile directly in RA. TD's airstrip animates a cargo plane landing → unloading → leaving.
-- Its own STRUCT_WEAP-like case in `BuildingClass::Exit_Object` (or extend the existing case to also fire for TDAFLD).
-- Its own door-stage XML remap if the airstrip-open animation has different frame ranges than RA's.
-- Possibly a custom Unlimbo direction for the cargo plane drop.
+What landed (`docs/cargo-plane-port.md` has the canonical writeup):
+
+- New `AIRCRAFT_TDCARGO` (C-17) aircraft type ported from `tiberiandawn/aadata.cpp:218-257` CargoPlane.
+- TD's fixed-wing `Mission_Unload` state machine ported verbatim into `redalert/aircraft.cpp` (PICK_AIRSTRIP → FLY_TO_AIRSTRIP → BUG_OUT).
+- TD's `Enter_Idle_Mode` in-air cargo branch ported (auto-promotes spawned plane to MISSION_UNLOAD).
+- Vestigial `AIRCRAFT_CARGO` clause in RA's `Edge_Of_World_AI` activated with the new enum.
+- `Find_Docking_Bay` patched to recognize TDAFLD as an airstrip even though it's Logic=WEAP-aliased (Type=STRUCT_WEAP).
+- `BuildingClass::Exit_Object` STRUCT_WEAP case forks for TDAFLD IniName: spawn cargo plane at east map edge, attach produced unit, MISSION_UNLOAD, Commence. Engine drives the rest via the four dormant-mechanic activations above.
+- `[TDC17]` rules.ini section so TechnoTypeClass picks up Speed=16 (MPH_FAST). Without this the plane spawns frozen.
+- `Docking_Coord` IniName check so the plane lands at the visual middle-front of the 4×2 strip.
+
+**Watch-outs documented in `docs/cargo-plane-port.md`:**
+
+- ImageData fallback in `AircraftTypeClass::One_Time` (Badger borrow) — without this Draw_It bails on NULL ImageData.
+- `Dimensions()` branch giving TDCARGO a 256×160 bounding rect — sprite peaks at 245×156.
+- `What_Action` force-attack guard on AIRCRAFT_TDCARGO — IsLegalTarget=false alone doesn't stop ctrl-click on a landed plane.
+- NO pre-NavCom and NO pre-radio handshake from `Exit_Object` — both collide with engine side-effects (`Assign_Destination`'s Status=0 reset, `Enter_Idle_Mode`'s per-tick reassignment). Spawn lean, let PICK_AIRSTRIP own the setup.
 
 Reilsss's CnCinRA mod gave up on this and reused the GDI weapons factory for Nod — we can do better with the split-track pattern we've now proven works. Plan: when we get to Nod, replicate the TDWEAP split (Track14/Track15 + enum + Mission_Unload branch) for the airstrip.
 
@@ -958,7 +971,7 @@ See [[project-td-build-time-formula]] for full derivation.
 | TDHAND | Nod | BARR | ✓ | 📝 |
 | TDHPAD | both | HPAD | ✓ | 📝 |
 | TDWEAP | GDI | WEAP | ✓ | 📝 |
-| TDAFLD | Nod | WEAP | ✓ | 📝 🚧 (cargo-plane engine slice within Nod buildout) |
+| TDAFLD | Nod | WEAP | ✓ | ✅ v0.3.1-phase2d — TDC17 cargo-plane delivery |
 | TDHQ | both | DOME | ✓ | 📝 |
 | TDEYE | GDI | MSLO | ✓ | 📝 🚧 (Ion Cannon visual v0.4) |
 | TDTMPL | Nod | MSLO | ✓ | 📝 🚧 |
