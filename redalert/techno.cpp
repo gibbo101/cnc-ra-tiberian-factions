@@ -7145,6 +7145,48 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 Name(), "Primary", PrimaryWeapon != NULL ? (WeaponType)(PrimaryWeapon->ID) : WEAPON_NONE));
             SecondaryWeapon = WeaponTypeClass::As_Pointer(ini.Get_WeaponType(
                 Name(), "Secondary", SecondaryWeapon != NULL ? (WeaponType)(SecondaryWeapon->ID) : WEAPON_NONE));
+
+#if 1
+            /*
+            ** Tiberian Factions mod: diagnostic — when TechnoTypeClass::Read_INI
+            ** runs for a TD-prefixed mod entry, log what Primary= resolved to.
+            ** Confirms whether Get_WeaponType found our new weapon ("TowTwo"
+            ** etc.) and whether the heap-indexed As_Pointer returned the right
+            ** WeaponTypeClass. Per [[feedback-keep-diagnostics-until-v1]] —
+            ** flip #if 1 to 0 to disable.
+            */
+            if (Name() != NULL && Name()[0] == 'T' && Name()[1] == 'D') {
+                char dpath[512];
+                const char* dprof = getenv("USERPROFILE");
+                if (dprof != NULL && dprof[0] != '\0') {
+                    snprintf(dpath, sizeof(dpath),
+                             "%s/Documents/CnCRemastered/tf_primary_parse.log", dprof);
+                } else {
+                    strcpy(dpath, "tf_primary_parse.log");
+                }
+                FILE* dlog = fopen(dpath, "a");
+                if (dlog != NULL) {
+                    char pbuf[64] = "";
+                    char sbuf[64] = "";
+                    ini.Get_String(Name(), "Primary", "<absent>", pbuf, sizeof(pbuf));
+                    ini.Get_String(Name(), "Secondary", "<absent>", sbuf, sizeof(sbuf));
+                    fprintf(dlog,
+                            "TechnoTypeClass::Read_INI section='%s' "
+                            "raw_primary='%s' resolved_PrimaryWeapon=%s (id=%d) primary_present=%s | "
+                            "raw_secondary='%s' resolved_SecondaryWeapon=%s (id=%d) secondary_present=%s\n",
+                            Name(),
+                            pbuf,
+                            PrimaryWeapon != NULL ? PrimaryWeapon->IniName : "<NULL>",
+                            PrimaryWeapon != NULL ? (int)PrimaryWeapon->ID : -1,
+                            ini.Is_Present(Name(), "Primary") ? "yes" : "no",
+                            sbuf,
+                            SecondaryWeapon != NULL ? SecondaryWeapon->IniName : "<NULL>",
+                            SecondaryWeapon != NULL ? (int)SecondaryWeapon->ID : -1,
+                            ini.Is_Present(Name(), "Secondary") ? "yes" : "no");
+                    fclose(dlog);
+                }
+            }
+#endif
             IsCloakable = ini.Get_Bool(Name(), "Cloakable", IsCloakable);
             IsCrushable = ini.Get_Bool(Name(), "Crushable", IsCrushable);
             IsScanner = ini.Get_Bool(Name(), "Sensors", IsScanner);
