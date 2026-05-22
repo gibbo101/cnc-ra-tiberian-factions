@@ -112,6 +112,14 @@ public:
     unsigned IsElectric : 1;
 
     /*
+    **	Tiberian Factions mod: marker for TD-ported weapons. Per
+    **	[[project-td-port-architecture]] (Option A). When set, Read_INI parses
+    **	`Speed=` as raw MPHType (TD source convention) instead of RA's 0..100
+    **	percentage. Lets TD-source values be copied directly into rules.ini.
+    */
+    unsigned IsTDPort : 1;
+
+    /*
     **	This is the number of shots this weapon first (in rapid succession).
     **	The normal value is 1, but for the case of two shooter weapons such as
     **	the double barreled gun turrets of the Mammoth tank, this value will be

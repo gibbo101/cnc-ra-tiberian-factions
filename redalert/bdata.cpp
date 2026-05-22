@@ -692,6 +692,142 @@ static BuildingTypeClass const ClassTdSilo(STRUCT_TDSILO,
                                            (short const*)NULL
 );
 
+/*
+**  Tiberian Factions mod — M3 Tier 2 defensive turrets.
+**
+**  TDGTWR (GDI Guard Tower) — 1x1 infantry-firing tower, no rotating
+**    turret (frame-cycle hidden). Modeled on ClassPillbox (PBOX).
+**  TDATWR (GDI Advanced Guard Tower) — 1x2 missile tower, rotating turret.
+**    Modeled on ClassAAGun (AGUN); TOW-style missiles fire on ground and
+**    air (Primary=TDTowTwo, dual-role).
+**  TDGUN (Nod Cannon Turret) — 1x1 rotating turret. Modeled on RA's
+**    ClassTurret (GUN), Primary=TDTurretGun.
+**  TDSAM (Nod SAM Site) — 1x2 rotating launcher, AA-only. Modeled on
+**    ClassSAM. Engine dispatch (STRUCT_SAM == TDSAM) below.
+*/
+static BuildingTypeClass const ClassTdGtwr(STRUCT_TDGTWR,
+                                           TXT_NONE,
+                                           "TDGTWR",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0010,          // Vertical offset matches PBOX.
+                                           0x0040,          // Primary weapon offset matches PBOX.
+                                           0x0000,
+                                           false,
+                                           false,
+                                           false,
+                                           false,
+                                           true,            // Simple damage imagery.
+                                           false,
+                                           true,
+                                           true,
+                                           false,
+                                           false,
+                                           false,           // No rotating turret.
+                                           true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL
+);
+
+// TDATWR is a wholesale port of TD's STRUCT_ATOWER — a 1x2 GDI defensive
+// tower with a FIXED missile rack (not a rotating turret). The launched
+// BULLET_SSM missiles home after launch; the rack itself does not pivot.
+// IsTurretEquipped=false is load-bearing: with =true the engine would
+// query 32-frame rotation shapes that TDATWR.ZIP doesn't provide, and
+// Can_Fire would gate on PrimaryFacing-vs-target match that never resolves.
+// See docs/td-atwr-deep-dive.md for the full TD-source citation.
+static BuildingTypeClass const ClassTdAtwr(STRUCT_TDATWR,
+                                           TXT_NONE,
+                                           "TDATWR",
+                                           FACING_S,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0030,          // VerticalOffset — TD ClassATower Fire_Coord (was 0x0000).
+                                           0x0040,          // PrimaryOffset — TD ClassATower Fire_Coord (was 0x0000).
+                                           0x0000,
+                                           false,
+                                           false,
+                                           false,
+                                           false,
+                                           true,            // IsSimpleDamage — TD ClassATower (was false).
+                                           false,
+                                           true,
+                                           true,
+                                           false,
+                                           false,
+                                           false,           // IsTurretEquipped — TD ClassATower fixed missile rack (was true, load-bearing bug).
+                                           true,
+                                           RTTI_NONE,
+                                           DIR_N,           // Initial facing — TD ClassATower (was DIR_NE).
+                                           BSIZE_12,
+                                           NULL,
+                                           (short const*)List12,
+                                           (short const*)OList12
+);
+
+static BuildingTypeClass const ClassTdGun(STRUCT_TDGUN,
+                                          TXT_NONE,
+                                          "TDGUN",
+                                          FACING_NONE,
+                                          XYP_COORD(0, 0),
+                                          REMAP_ALTERNATE,
+                                          0x0030,          // Vertical offset matches TURRET.
+                                          0x0080,          // Primary weapon offset matches TURRET.
+                                          0x0000,
+                                          false,
+                                          false,
+                                          false,
+                                          false,
+                                          false,
+                                          false,
+                                          true,
+                                          true,
+                                          false,
+                                          false,
+                                          true,            // Rotating turret.
+                                          true,
+                                          RTTI_NONE,
+                                          (DirType)208,    // Match TURRET starting facing.
+                                          BSIZE_11,
+                                          NULL,
+                                          (short const*)List1,
+                                          (short const*)NULL
+);
+
+static BuildingTypeClass const ClassTdSam(STRUCT_TDSAM,
+                                          TXT_NONE,
+                                          "TDSAM",
+                                          FACING_NONE,
+                                          XYP_COORD(0, 0),
+                                          REMAP_ALTERNATE,
+                                          0x0030,          // Match SAM.
+                                          0x0080,          // Match SAM.
+                                          0x0000,
+                                          false,
+                                          false,
+                                          false,
+                                          false,
+                                          false,
+                                          false,
+                                          true,
+                                          true,
+                                          false,
+                                          false,
+                                          true,            // Rotating turret (launcher rotates to target).
+                                          true,
+                                          RTTI_NONE,
+                                          DIR_N,
+                                          BSIZE_21,
+                                          NULL,
+                                          (short const*)List21,
+                                          (short const*)OListSAM
+);
+
 static BuildingTypeClass const ClassObelisk(STRUCT_TDOBLI,
                                             TXT_NONE,        // Display name token; rules.ini Name= overrides.
                                             "TDOBLI",        // IniName.
@@ -3190,6 +3326,10 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdNuk2);  // STRUCT_TDNUK2  (Advanced Power Plant)
     new BuildingTypeClass(ClassTdPyle);  // STRUCT_TDPYLE  (GDI Barracks)
     new BuildingTypeClass(ClassTdSilo);  // STRUCT_TDSILO  (Tiberium Silo)
+    new BuildingTypeClass(ClassTdGtwr);  // STRUCT_TDGTWR  (Guard Tower)
+    new BuildingTypeClass(ClassTdAtwr);  // STRUCT_TDATWR  (Advanced Guard Tower)
+    new BuildingTypeClass(ClassTdGun);   // STRUCT_TDGUN   (Nod Turret)
+    new BuildingTypeClass(ClassTdSam);   // STRUCT_TDSAM   (SAM Site)
 }
 
 /***********************************************************************************************

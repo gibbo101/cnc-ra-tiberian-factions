@@ -649,6 +649,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // TD-ported entities get a "TD" prefix in their IniName for visual
     // identification in rules.ini (see [[project-td-prefix-convention]]).
     new WarheadTypeClass("TDLaser"); // WARHEAD_LASER (Obelisk 100%-vs-all)
+    new WarheadTypeClass("TDHE");    // WARHEAD_TDHE (TD high-explosive armor table)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
@@ -710,6 +711,12 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDTowTwo");     // WEAPON_TOW_TWO (Advanced Guard Tower)
     new WeaponTypeClass("TDTurretGun");  // WEAPON_TD_TURRET_GUN (Nod Turret)
     new WeaponTypeClass("TDOblsLaser");  // WEAPON_OBELISK_LASER (Obelisk of Light)
+
+    // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
+    // parses Speed= as raw MPHType (TD source convention) instead of RA's
+    // 0-100 percentage. Per [[project-td-port-architecture]] (Option A).
+    // Cargo E focus: TDTowTwo first; others added once TDATWR is 100% verified.
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TDTowTwo"))->IsTDPort = true;
 
     return (true);
 }

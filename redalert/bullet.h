@@ -117,6 +117,16 @@ public:
     virtual void Draw_It(int x, int y, WindowNumberType window) const;
     virtual bool Mark(MarkType mark = MARK_CHANGE);
     virtual void AI(void);
+
+    /*
+    **  Tiberian Factions mod: verbatim TD ports of BulletClass::Unlimbo and
+    **  BulletClass::AI, used when Class->IsTDPort is true. Per
+    **  [[project-td-port-architecture]] (Option A). TD source:
+    **  reference/vanilla-conquer/tiberiandawn/bullet.cpp:631 (Unlimbo) and
+    **  :293 (AI).
+    */
+    bool Unlimbo_TD(COORDINATE coord, DirType dir);
+    void AI_TD(void);
     virtual short const* Occupy_List(bool = false) const;
     virtual short const* Overlap_List(void) const
     {

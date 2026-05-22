@@ -1594,10 +1594,53 @@ public:
     unsigned IsGigundo : 1;
 
     /*
+    **	Tiberian Factions mod: marker for TD-ported bullets. Per
+    **	[[project-td-port-architecture]] (Option A): runtime methods
+    **	(AI, Unlimbo) dispatch to verbatim TD ports when this is true,
+    **	never running RA's bullet logic for TD entities.
+    */
+    unsigned IsTDPort : 1;
+
+    /*
+    **	Tiberian Factions mod: TD's BulletTypeClass has an explicit IsHoming flag
+    **	(tiberiandawn/type.h:1266). RA derived "is homing" from ROT != 0, but for
+    **	the TD code-path port we need the field explicit. Parsed from `Homing=yes`
+    **	in rules.ini for TD-ported bullets.
+    */
+    unsigned IsHoming : 1;
+
+    /*
     **	This element is a unique identification number for the bullet
     **	type.
     */
     BulletType Type;
+
+    /*
+    **	Tiberian Factions mod: TD's BulletTypeClass has class-level Warhead
+    **	(tiberiandawn/type.h:1342). Some TD AI logic references Class->Warhead
+    **	(e.g. for impact damage selection). RA stores warhead per-instance on
+    **	BulletClass (from the firing weapon); we mirror TD's class-level field
+    **	for the TD port. Parsed from `Warhead=` in rules.ini.
+    */
+    WarheadType ClassWarhead;
+
+    /*
+    **	Tiberian Factions mod: TD's BulletTypeClass has class-level Explosion anim
+    **	(tiberiandawn/type.h:1347). TD's AI spawns this anim at impact. RA's
+    **	impact anim is warhead-driven via Combat_Anim classifier. For the TD code
+    **	path we use this explicit value. Parsed from `ImpactAnim=` in rules.ini
+    **	(name chosen to avoid collision with RA warhead's `Explosion=` field).
+    */
+    AnimType ImpactAnim;
+
+    /*
+    **	Tiberian Factions mod: TD's BulletClass::Unlimbo at tiberiandawn/bullet.cpp:704
+    **	supports an explicit Range override (used when Class->Range != 0; otherwise
+    **	range is computed from distance / speed). Most TD bullets leave it at 0.
+    **	Parsed from `BulletRange=` in rules.ini (name avoids collision with
+    **	WeaponTypeClass `Range=`).
+    */
+    int BulletRange;
 
     /*
     **	This is the rotation speed of the bullet. It only has practical value

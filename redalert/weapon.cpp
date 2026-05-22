@@ -70,6 +70,7 @@ WeaponTypeClass::WeaponTypeClass(char const* name)
     , IsSupressed(false)
     , IsCamera(false)
     , IsElectric(false)
+    , IsTDPort(false)
     , Burst(1)
     , Bullet(NULL)
     , Attack(0)
@@ -197,7 +198,14 @@ bool WeaponTypeClass::Read_INI(CCINIClass& ini)
         IsSupressed = ini.Get_Bool(Name(), "Supress", IsSupressed);
         Burst = ini.Get_Int(Name(), "Burst", Burst);
         Attack = ini.Get_Int(Name(), "Damage", Attack);
-        MaxSpeed = ini.Get_MPHType(Name(), "Speed", MaxSpeed);
+        // Tiberian Factions mod: TD-ported weapons read `Speed=` as raw MPHType
+        // (TD source convention, 0-255) instead of RA's 0-100 percentage.
+        // Per [[reference-ra-mphtype-ini-format]] / [[project-td-port-architecture]].
+        if (IsTDPort) {
+            MaxSpeed = (MPHType)ini.Get_Int(Name(), "Speed", (int)MaxSpeed);
+        } else {
+            MaxSpeed = ini.Get_MPHType(Name(), "Speed", MaxSpeed);
+        }
         ROF = ini.Get_Int(Name(), "ROF", ROF);
         Range = ini.Get_Lepton(Name(), "Range", Range);
         Sound = ini.Get_VocType(Name(), "Report", Sound);

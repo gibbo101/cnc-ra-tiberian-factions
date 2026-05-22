@@ -353,7 +353,8 @@ TDHPAD = {
 
 TDGTWR = {
     "ininame":     "TDGTWR",
-    "logic":       "PBOX",
+    # MIGRATED to STRUCT_TDGTWR in bdata.cpp Init_Heap (M3 Tier 2, 2026-05-21).
+    "logic":       None,
     "td_asset":    "GTWR",
     "footprint":   None,  # RA PBOX donor is 1x1 (BSIZE_11); matches TD.
     "shape_size":  (24, 24),
@@ -390,7 +391,8 @@ TDGTWR = {
 
 TDATWR = {
     "ininame":     "TDATWR",
-    "logic":       "AGUN",
+    # MIGRATED to STRUCT_TDATWR in bdata.cpp Init_Heap (M3 Tier 2, 2026-05-21).
+    "logic":       None,
     "td_asset":    "ATWR",
     "footprint":   None,  # RA AGUN donor is 1x2 (BSIZE_12); matches TD.
     "shape_size":  (24, 48),
@@ -536,7 +538,8 @@ TDPYLE = {
 
 TDGUN = {
     "ininame":     "TDGUN",
-    "logic":       "GUN",
+    # MIGRATED to STRUCT_TDGUN in bdata.cpp Init_Heap (M3 Tier 2, 2026-05-21).
+    "logic":       None,
     "td_asset":    "GUN",
     "footprint":   "",
     "shape_size":  (24, 24),
@@ -572,7 +575,8 @@ TDGUN = {
 
 TDSAM = {
     "ininame":     "TDSAM",
-    "logic":       "SAM",
+    # MIGRATED to STRUCT_TDSAM in bdata.cpp Init_Heap (M3 Tier 2, 2026-05-21).
+    "logic":       None,
     "td_asset":    "SAM",
     "footprint":   "",
     "shape_size":  (48, 24),

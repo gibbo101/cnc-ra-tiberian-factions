@@ -1695,8 +1695,10 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 
     /*
     **	Special case so that SAM site doesn't fire on aircraft that are landed.
+    **  TDSAM (M3) shares this rule via the STRUCT_SAM-paralleling dispatch.
     */
-    if (otype == RTTI_AIRCRAFT && What_Am_I() == RTTI_BUILDING && *((BuildingClass*)this) == STRUCT_SAM) {
+    if (otype == RTTI_AIRCRAFT && What_Am_I() == RTTI_BUILDING
+        && (*((BuildingClass*)this) == STRUCT_SAM || *((BuildingClass*)this) == STRUCT_TDSAM)) {
         if (((AircraftClass*)object)->Height == 0) {
             BEnd(BENCH_EVAL_OBJECT);
             return (false);
@@ -3101,6 +3103,20 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 
         WeaponTypeClass const* weapon =
             (which == 0) ? Techno_Type_Class()->PrimaryWeapon : Techno_Type_Class()->SecondaryWeapon;
+
+        /*
+        **	Tiberian Factions mod: TD-port weapons use TD's Rearm_Delay timing
+        **	(tiberiandawn/techno.cpp:2277): short=9 (first shot in salvo),
+        **	long=ROF+3 (second shot / between salvos). RA's defaults are
+        **	short=3 / long=ROF. Per [[project-td-port-architecture]] (Option A).
+        */
+        if (weapon != NULL && weapon->IsTDPort) {
+            if (second) {
+                return ((int)(weapon->ROF * House->ROFBias) + 3);
+            }
+            return (9);
+        }
+
         if (second && weapon != NULL) {
             return (weapon->ROF * House->ROFBias);
         }
@@ -3373,6 +3389,37 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 Mark(MARK_CHANGE_REDRAW);
             }
 
+            // Tiberian Factions diagnostic: salvo verification (Burst=2 + IsTwoShooter
+            // toggle for TD-ported weapons). Confirmed working 2026-05-22 against
+            // TD ATWR side-by-side. Stub under #if 0 per
+            // [[feedback-keep-diagnostics-until-v1]] — flip to 1 to re-enable.
+#if 0
+            {
+                static FILE* tflog = NULL;
+                if (tflog == NULL) {
+                    char path[512];
+                    const char* home = getenv("USERPROFILE");
+                    if (home == NULL) home = getenv("HOME");
+                    if (home != NULL) {
+                        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_fire_at.log", home);
+                        tflog = fopen(path, "w");
+                    }
+                }
+                if (tflog != NULL) {
+                    fprintf(tflog,
+                        "Fire_At techno=%p which=%d weapon=%s ROF=%d Burst=%d IsTwoShooter=%d "
+                        "IsSecondShot(pre)=%d Arm_now=%d\n",
+                        (void*)this, which,
+                        weapon ? "set" : "NULL",
+                        weapon ? (int)weapon->ROF : -1,
+                        weapon ? (int)weapon->Burst : -1,
+                        tclass.Is_Two_Shooter() ? 1 : 0,
+                        IsSecondShot ? 1 : 0,
+                        (int)Arm);
+                    fflush(tflog);
+                }
+            }
+#endif
             Arm = Rearm_Delay(IsSecondShot, which);
             if (tclass.Is_Two_Shooter()) {
                 IsSecondShot = (IsSecondShot == false);

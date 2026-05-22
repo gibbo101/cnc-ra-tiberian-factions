@@ -1336,6 +1336,7 @@ typedef enum BulletType : char
     // BULLET_*). Each maps to a [Name] section in rules.ini.
     BULLET_SSM,   // Surface-to-surface missile — homing, AA + AG capable.
     BULLET_LASER, // Obelisk instant-hit beam (Inviso, light_speed, no rotation).
+    BULLET_TDAPDS, // TD Nod Turret 120mm shell (visually mirrors [Cannon]).
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -1473,6 +1474,11 @@ typedef enum StructType : char
     STRUCT_TDNUK2,
     STRUCT_TDPYLE,
     STRUCT_TDSILO,
+    // M3 Tier 2 — defensive turrets.
+    STRUCT_TDGTWR,
+    STRUCT_TDATWR,
+    STRUCT_TDGUN,
+    STRUCT_TDSAM,
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0
@@ -2723,6 +2729,7 @@ typedef enum WarheadType : char
     // Tiberian Factions mod warheads ported from TD (tiberiandawn/defines.h
     // WARHEAD_*). Each maps to a [Name] section in rules.ini.
     WARHEAD_LASER, // 100%-vs-all-armor profile (Obelisk of Light).
+    WARHEAD_TDHE,  // TD high-explosive armor table (used by BULLET_SSM via TDTowTwo).
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0

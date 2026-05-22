@@ -397,3 +397,94 @@ M1 alone fixes the user-visible visual + firing issues. Suggested commit shape:
 - **PR 2**: M3 (power gate) + M4 (`Anim=GUNFIRE`) + M5 ([TDSSM] field cross-check) + M6 (crew south-offset) + M7 (manifest notes). TD-authenticity polish.
 
 Both PRs are TDATWR-only; don't pull TDSAM into this commit cargo.
+
+---
+
+## Session 2026-05-22 — TDATWR full TD port (Option A architecture)
+
+The 2026-05-22 session expanded scope from the M1-M7 polish into a **complete TD-port of TDATWR's runtime behavior** per the Option A architecture committed in [[project-td-port-architecture]] (shared class shells, separated `_TD()` code paths gated by `IsTDPort` flag).
+
+### What got built
+
+**`BulletTypeClass` extended** (`redalert/type.h`, `bbdata.cpp`):
+- Added fields: `IsTDPort`, `IsHoming`, `ClassWarhead`, `ImpactAnim`, `BulletRange`
+- TD's `BulletClass::AI`/`Unlimbo` reference these by name; without them the verbatim port doesn't compile
+- Parsed from rules.ini: `Homing=`, `Warhead=`, `ImpactAnim=`, `BulletRange=` for bullet sections
+- `IsTDPort` set in `bbdata.cpp` via `BulletTypes.Ptr((int)BULLET_SSM)->IsTDPort = true` after registration (not parseable from rules.ini — it's an engine-level dispatch gate)
+
+**`BulletClass::Unlimbo_TD()`** (`redalert/bullet.cpp`):
+- Verbatim port of `reference/vanilla-conquer/tiberiandawn/bullet.cpp:631` (TD's `BulletClass::Unlimbo`)
+- Dispatched from `BulletClass::Unlimbo()`: `if (Class->IsTDPort) return Unlimbo_TD(coord, dir);`
+- Key TD-vs-RA differences captured: TD's wider scatter (`Distance/3` cap'd at 0x0200) for homing bullets, firer-range clamp (clamps scattered tcoord back into firer's weapon range — fixes close-range targeting), TD's `Class->Range`/`Class->Arming` direct fields
+- Engine-plumbing additions (`Map.Remove`/`Map.Submit`, `Height` init, `IsFalling`) are RA-side requirements flagged inline
+
+**`BulletClass::AI_TD()`** (`redalert/bullet.cpp`):
+- Verbatim port of `reference/vanilla-conquer/tiberiandawn/bullet.cpp:293` (TD's `BulletClass::AI`)
+- Key TD-vs-RA differences captured: TD's explicit `IsHoming` check (not derived from `ROT != 0`), `ANIM_SMOKE_PUFF` trail spawn (no `FB1` special-case), AA proximity strength bonus (BULLET_TOW → BULLET_SSM in our enum), TD's `Class->Explosion` direct spawn (no warhead-driven Combat_Anim classifier)
+- Symbol renames: `Class->Warhead` → `Class->ClassWarhead`, `Class->Explosion` → `Class->ImpactAnim`, `Altitude` → `Height`, `GRAVITY` → `Rule.Gravity`, `Delete_This()` → `delete this`
+
+**`WeaponTypeClass` extended** (`redalert/weapon.h`, `weapon.cpp`):
+- Added `IsTDPort` field
+- `Read_INI` branches on `IsTDPort`: TD weapons parse `Speed=` as raw `MPHType` (TD source convention, 0-255) via `Get_Int`; RA weapons keep `Get_MPHType` (0-100 percentage scaled to 0-256)
+- `TDTowTwo` flagged `IsTDPort = true` in `rules.cpp` after registration
+
+### The Speed unit-conversion gotcha (root cause of "missiles fly too fast / can't hit walls")
+
+**Symptom:** TDATWR fired missiles that overshot every target — could not hit walls 1 cell away, even with 4-cell separation.
+
+**Root cause:** RA's `Get_MPHType` interprets `Speed=N` as a 0-100 *percentage* and scales via `_Scale_To_256` (val * 256 / 100). TD's source stores `MaxSpeed = MPH_ROCKET` etc. as raw `MPHType` (0-255). We copied TD's source values directly: `[TDTowTwo] Speed=60` → RA parsed as `60% of 255 = raw 153`. Missile moved 2.5× too fast, overshot during the 7-frame arming window, never triggered proximity fuse, detonated harmlessly past target on timer timeout.
+
+**Diagnosed via** `tf_tdport_bullet.log` (per-frame TDSSM flight trace) showing `MaxSpeed=153` at SPAWN and bullets reaching `dist=82` from target at frame 6 while still arming. Fix: `IsTDPort` flag on WeaponTypeClass + raw-int Speed parse → `Speed=60` stays as raw 60 → missile flies at TD-authentic speed → proximity fuse triggers near target (24-89 lepton scatter, all hits).
+
+This conversion catch is captured in [[reference-ra-mphtype-ini-format]].
+
+### TDDRAGON asset port
+
+**Issue:** `[TDSSM] Image=DRAGON` was resolving to RA's vanilla `DRAGON.ZIP` (a different visual than TD's actual `DRAGON.SHP`).
+
+**Fix (asset side):** Extracted vanilla TD's `DRAGON.ZIP` from `~/.steam/.../Data/TEXTURES_TD_SRGB.MEG` via `scripts/meg_extract.py`, repacked with TD-prefixed internal TGAs via `scripts/bundle_assets.py:repack_zip_with_prefix(dragon → tddragon)`. Outputs:
+- `resources/.../Data/ART/TEXTURES/SRGB/RED_ALERT/VFX/TDDRAGON.ZIP` (32 frames, TD-prefixed internally)
+- 32 TDDRAGON shape entries patched into `resources/.../Data/XML/TILESETS/RA_VFX.XML` (CONFIG.MEG-override format, same pattern as `RA_STRUCTURES.XML`)
+- `[TDSSM] Image=TDDRAGON`
+
+This is the vanilla-MEG pipeline pattern used for buildings, applied to bullets. **Did NOT use the TD-Assets workshop content** — our mod is self-contained.
+
+**The hidden trap (engine side):** The asset port above is necessary but NOT sufficient. Bullets / anims / aircraft in RA's gameplay DLL use the legacy `MFCD::Retrieve("<GraphicName>.SHP")` path in `<Type>Class::One_Time` to populate `ImageData`. For a TGA-only TD entity (no `.SHP` in any MIX file), `MFCD::Retrieve` returns `NULL`, and `Draw_It` bails at `if (!shapeptr) return;` — even though the tileset XML is correctly registered. **Symptom**: smoke trail visible (anim spawn happens before render), audio works, damage works, but the missile body is invisible.
+
+**Fix (engine side):** copy a vanilla donor's `ImageData` pointer to the TD entity's `ImageData` slot. The pointer is just a non-NULL placeholder so `Draw_It` proceeds; the launcher's `CC_Draw_Shape` overlay then resolves the actual sprite by name via the tileset XML. Same pattern already in place for `AIRCRAFT_TDCARGO` (TDC17) at `aadata.cpp:442-459`; mirrored for bullets in `bbdata.cpp::BulletTypeClass::One_Time` post-loop:
+
+```cpp
+BulletTypeClass const& donor = As_Reference(BULLET_HEAT_SEEKER);
+BulletTypeClass& tdssm = As_Reference(BULLET_SSM);
+if (tdssm.ImageData == NULL) {
+    ((void const*&)tdssm.ImageData) = donor.ImageData;
+}
+// + TDLaser, TDAPDS
+```
+
+Captured in [[reference-mfcd-donor-imagedata-pattern]] — applies to every new TD-prefixed bullet/anim/aircraft.
+
+### Two-shooter salvo verification
+
+Diagnostic logs confirmed `Burst=2` on `[TDTowTwo]` produces 2 missiles per engagement via RA's `Is_Two_Shooter()` derivation (`PrimaryWeapon->Burst > 1`) + `IsSecondShot` toggle. Salvo timing is ~3-frame gap intra-salvo vs TD's 9 (RA's `Rearm_Delay` returns 3 for short delay; TD's returns 9). Functionally correct, slightly tighter cadence than TD.
+
+### What's still gap
+
+- **`Rearm_Delay` TD-port** — for fully TD-authentic salvo cadence (9 frames between salvo shots, ROF+3 between salvos). Belongs in cargo E full implementation.
+- **`TechnoClass::Fire_At` TD-port** — for any TD-vs-RA divergence in the fire-bullet creation path. Cargo E full.
+- **`BuildingClass::Mission_Attack` sweep** — verify TD parity in mission state machine. Cargo F.
+
+### What's right now (TDATWR runtime)
+
+- TD-source raw values in rules.ini for the TD-port weapon (`Speed=60` reads literally as TD MPH_ROCKET=60)
+- Verbatim TD `BulletClass::AI`/`Unlimbo` for TDSSM (cargo D)
+- TDHE warhead, TD-correct ImpactAnim, IsHoming, etc. all set per TD source
+- TDDRAGON sprite from vanilla TD MEG (no RA fallback)
+- 2-missile salvo via Burst=2 (functionally correct)
+- Close-range targeting works (walls take damage at 1-cell range)
+- Missile damage application at 24-89 lepton scatter (TD-Inaccurate-true scatter, well-within explosion radius)
+
+### Diagnostic logging (to remove)
+
+Per-frame TDSSM/TDLaser/TDAPDS flight trace is currently active in `BulletClass::Unlimbo_TD` and `AI_TD`, writing to `tf_tdport_bullet.log`. Per [[feedback-keep-diagnostics-until-v1]], stub under `#if 0` after final verification rather than deleting — one-line re-enable for future debug.
+

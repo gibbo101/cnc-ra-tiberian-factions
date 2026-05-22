@@ -88,7 +88,12 @@ BulletTypeClass::BulletTypeClass(char const* name)
     , IsSubSurface(false)
     , IsParachuted(false)
     , IsGigundo(false)
+    , IsTDPort(false)
+    , IsHoming(false)
     , Type(BulletType(ID))
+    , ClassWarhead(WARHEAD_NONE)
+    , ImpactAnim(ANIM_NONE)
+    , BulletRange(0)
     , ROT(0)
     , Arming(0)
     , Tumble(0)
@@ -185,6 +190,16 @@ void BulletTypeClass::Init_Heap(void)
     // that this is the TD Obelisk beam, not a hypothetical RA laser).
     new BulletTypeClass("TDSSM");        //	BULLET_SSM (TD TOW/TOMAHAWK)
     new BulletTypeClass("TDLaser");      //	BULLET_LASER (TD Obelisk beam)
+    new BulletTypeClass("TDAPDS");       //	BULLET_TDAPDS (TD Nod Turret 120mm shell)
+
+    // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
+    // Unlimbo dispatch to the verbatim TD code path. Per
+    // [[project-td-port-architecture]] (Option A). Cannot be set via rules.ini —
+    // IsTDPort is an engine-level dispatch gate, not a tunable field.
+    //
+    BulletTypes.Ptr((int)BULLET_SSM)->IsTDPort = true;
+    BulletTypes.Ptr((int)BULLET_LASER)->IsTDPort = true;
+    BulletTypes.Ptr((int)BULLET_TDAPDS)->IsTDPort = true;
 }
 
 /***********************************************************************************************
@@ -227,6 +242,34 @@ void BulletTypeClass::One_Time(void)
             }
 #endif
         }
+    }
+
+    /*
+    **	Tiberian Factions mod: mod-entry ImageData fallback for TD-ported bullets.
+    **	TDSSM/TDLaser/TDAPDS have no legacy SHP in any MIX file — only TGA
+    **	tilesets bundled in resources/.../VFX/<Name>.ZIP and registered in
+    **	RA_VFX.XML. MFCD::Retrieve above returned NULL so BulletClass::Draw_It
+    **	would bail at its `if (!shapeptr) return;` guard, leaving the missile
+    **	body invisible while the smoke trail still renders. Same fix as
+    **	aadata.cpp:442-459 (AIRCRAFT_TDCARGO/TDC17): copy a vanilla donor's
+    **	ImageData pointer — the launcher's CC_Draw_Shape overlay resolves the
+    **	actual TDDRAGON sprite via the RA_VFX.XML tileset by name, regardless
+    **	of which pointer was supplied as the placeholder.
+    **	Donor: BULLET_HEAT_SEEKER (RA's DRAGON-image missile) — closest
+    **	visible homing-missile in the vanilla heap.
+    */
+    BulletTypeClass const& donor = As_Reference(BULLET_HEAT_SEEKER);
+    BulletTypeClass& tdssm = As_Reference(BULLET_SSM);
+    if (tdssm.ImageData == NULL) {
+        ((void const*&)tdssm.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tdlaser = As_Reference(BULLET_LASER);
+    if (tdlaser.ImageData == NULL) {
+        ((void const*&)tdlaser.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tdapds = As_Reference(BULLET_TDAPDS);
+    if (tdapds.ImageData == NULL) {
+        ((void const*&)tdapds.ImageData) = donor.ImageData;
     }
 }
 
@@ -290,6 +333,14 @@ bool BulletTypeClass::Read_INI(CCINIClass& ini)
         IsFaceless = !ini.Get_Bool(Name(), "Rotates", !IsFaceless);
         IsTranslucent = ini.Get_Bool(Name(), "Translucent", IsTranslucent);
         IsGigundo = ini.Get_Bool(Name(), "Gigundo", IsGigundo);
+        // Tiberian Factions mod: TD-port-specific fields. Per
+        // [[project-td-port-architecture]]. IsTDPort gates TD code-path dispatch;
+        // IsHoming/ClassWarhead/ImpactAnim/BulletRange mirror TD's BulletTypeClass
+        // fields that don't exist in vanilla RA's BulletTypeClass.
+        IsHoming = ini.Get_Bool(Name(), "Homing", IsHoming);
+        ClassWarhead = ini.Get_WarheadType(Name(), "Warhead", ClassWarhead);
+        ImpactAnim = ini.Get_AnimType(Name(), "ImpactAnim", ImpactAnim);
+        BulletRange = ini.Get_Int(Name(), "BulletRange", BulletRange);
         ini.Get_String(Name(), "Image", GraphicName, GraphicName, sizeof(GraphicName));
         return (true);
     }

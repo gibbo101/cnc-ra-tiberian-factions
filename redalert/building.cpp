@@ -669,12 +669,13 @@ int BuildingClass::Shape_Number(void) const
         if (Class->IsTurretEquipped) {
             shapenum = UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())];
 
-            if (*this == STRUCT_SAM) {
+            if (*this == STRUCT_SAM || *this == STRUCT_TDSAM) {
 
                 /*
                 **	SAM sites that are free to rotate fetch their animation frame
                 **	from the building's turret facing. All other animation stages
                 **	fetch their frame from the embedded animation sequencer.
+                **  TDSAM (M3) shares the same launcher-rotation pattern.
                 */
                 //				if (Status == SAM_READY || Status == SAM_FIRING || Status == SAM_LOCKING) {
                 //					shapenum = Fetch_Stage();
@@ -707,8 +708,10 @@ int BuildingClass::Shape_Number(void) const
                 /*
                 **	Special render stage for silos. The stage is dependent on the current
                 **	Tiberium collected as it relates to Tiberium capacity.
+                **	TDSILO shares STRUCT_STORAGE's fill-render contract (TD building.cpp:594;
+                **	TDSILO.ZIP has the same 5-level + damaged layout). See docs/td-tier1-verification.md.
                 */
-                if (*this == STRUCT_STORAGE) {
+                if (*this == STRUCT_STORAGE || *this == STRUCT_TDSILO) {
 
                     int level = 0;
                     if (House->Capacity) {
@@ -1074,7 +1077,7 @@ void BuildingClass::AI(void)
     ** Radar facilities and SAMs need to check for the proximity of a mobile
     ** radar jammer.
     */
-    if ((*this == STRUCT_RADAR || *this == STRUCT_SAM) && (Frame % TICKS_PER_SECOND) == 0) {
+    if ((*this == STRUCT_RADAR || *this == STRUCT_SAM || *this == STRUCT_TDSAM) && (Frame % TICKS_PER_SECOND) == 0) {
         IsJammed = false;
         for (int index = 0; index < Units.Count(); index++) {
             UnitClass* obj = Units.Ptr(index);
@@ -1613,7 +1616,7 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
             **	When certain buildings are hit, they "snap out of it" and
             **	return fire if they are able and allowed.
             */
-            if (*this != STRUCT_SAM && *this != STRUCT_AAGUN && !House->Is_Ally(source) && Class->PrimaryWeapon != NULL
+            if (*this != STRUCT_SAM && *this != STRUCT_AAGUN && *this != STRUCT_TDSAM && !House->Is_Ally(source) && Class->PrimaryWeapon != NULL
                 && (!Target_Legal(TarCom) || !In_Range(TarCom))) {
 
                 if (source->What_Am_I() != RTTI_AIRCRAFT && (!House->IsHuman || Rule.IsSmartDefense)) {
@@ -2008,7 +2011,7 @@ void BuildingClass::Assign_Target(TARGET target)
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
-    if (*this != STRUCT_SAM && *this != STRUCT_AAGUN && !In_Range(target, 0)) {
+    if (*this != STRUCT_SAM && *this != STRUCT_AAGUN && *this != STRUCT_TDSAM && !In_Range(target, 0)) {
         target = TARGET_NONE;
     }
 
@@ -2296,6 +2299,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
         case STRUCT_BARRACKS:
         case STRUCT_TENT:
         case STRUCT_KENNEL:
+        case STRUCT_TDPYLE:     // TD GDI Barracks — shares BARRACKS exit-cell pattern (TD building.cpp:2288 aliases STRUCT_BARRACKS||STRUCT_HAND). See docs/td-tier1-verification.md.
 
             cell = Find_Exit_Cell(base);
             if (cell != 0) {
@@ -3177,7 +3181,7 @@ ActionType BuildingClass::What_Action(ObjectClass const* object) const
     bool aa_only_aagun = (*this == STRUCT_AAGUN && Class->PrimaryWeapon != NULL
                           && Class->PrimaryWeapon->Bullet != NULL
                           && !Class->PrimaryWeapon->Bullet->IsAntiGround);
-    if (action == ACTION_ATTACK && (*this == STRUCT_SAM || aa_only_aagun || !In_Range(object, 0))) {
+    if (action == ACTION_ATTACK && (*this == STRUCT_SAM || *this == STRUCT_TDSAM || aa_only_aagun || !In_Range(object, 0))) {
         action = ACTION_NONE;
     }
 
@@ -3361,7 +3365,7 @@ FireErrorType BuildingClass::Can_Fire(TARGET target, int which) const
         if (Class->IsTurretEquipped) {
             int diff = PrimaryFacing.Difference(Direction(TarCom));
             diff = abs(diff);
-            if (ABS(diff) > (*this == STRUCT_SAM ? 64 : 8)) {
+            if (ABS(diff) > ((*this == STRUCT_SAM || *this == STRUCT_TDSAM) ? 64 : 8)) {
                 //			if (ABS(diff) > 8) {
                 return (FIRE_FACING);
             }
@@ -4279,12 +4283,13 @@ int BuildingClass::Mission_Attack(void)
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
-    if (*this == STRUCT_SAM) {
+    if (*this == STRUCT_SAM || *this == STRUCT_TDSAM) {
         switch (Status) {
 
         /*
         **	This is the target tracking state of the launcher. It will rotate
         **	to face the current TarCom of the launcher.
+        **  TDSAM (M3) shares the SAM state machine — same launcher pattern.
         */
         case SAM_READY:
             if ((Class->IsPowered && House->Power_Fraction() < 1) || IsJammed) {
@@ -5420,6 +5425,7 @@ InfantryType BuildingClass::Crew_Type(void) const
 
     case STRUCT_TENT:
     case STRUCT_BARRACKS:
+    case STRUCT_TDPYLE:     // TD GDI Barracks — INFANTRY_E1 crew on death/sell. See docs/td-tier1-verification.md.
         return (INFANTRY_E1);
 
     default:
@@ -6111,7 +6117,16 @@ void BuildingClass::Charging_AI(void)
                     // climbing and shapenum = Fetch_Stage() walks into the
                     // damaged-frame range, making the obelisk visually
                     // "damaged" during charge-up.
-                    int charge_complete_stage = Class->Anims[BSTATE_ACTIVE].Count - 1;
+                    // TD's STRUCT_OBELISK fires when Fetch_Stage() >= Count
+                    // (one stage past the last frame; TD building.cpp:1072).
+                    // RA's Tesla fires at Count - 1 (last frame). Preserve
+                    // per-building semantics.
+                    int charge_complete_stage;
+                    if (*this == STRUCT_TDOBLI) {
+                        charge_complete_stage = Class->Anims[BSTATE_ACTIVE].Count;
+                    } else {
+                        charge_complete_stage = Class->Anims[BSTATE_ACTIVE].Count - 1;
+                    }
                     if (charge_complete_stage < 1) charge_complete_stage = 9;  // safety fallback
                     if (Fetch_Stage() >= charge_complete_stage) {
                         IsCharged = true;
@@ -6123,7 +6138,19 @@ void BuildingClass::Charging_AI(void)
                     IsCharged = false;
                     IsCharging = true;
                     Set_Stage(0);
-                    Set_Rate(3);
+                    // Per-building charge animation rate.
+                    // - Tesla Coil: 3 ticks/stage = RA's vanilla pace
+                    //   (~1.8 sec total across 9 stages).
+                    // - TDOBLI: 15 ticks/stage = TD's OBELISK_ANIMATION_RATE
+                    //   (tiberiandawn/defines.h:323; TD building.cpp:1082
+                    //   uses Set_Rate(OBELISK_ANIMATION_RATE)). TD-authentic
+                    //   ~4 sec charge over 4 stages — the slow charge is part
+                    //   of what makes Obelisk counter-attackable.
+                    if (*this == STRUCT_TDOBLI) {
+                        Set_Rate(15);
+                    } else {
+                        Set_Rate(3);
+                    }
                     // Per-building charge-start sound. Tesla Coil plays its
                     // electrostatic warmup; STRUCT_TDOBLI plays the Obelisk
                     // power-up (OBELPOWR). Future: a per-weapon ChargeSound
@@ -6242,7 +6269,7 @@ void BuildingClass::Animation_AI(void)
     /*
     **	Always refresh the SAM site if it has an animation change.
     */
-    if (*this == STRUCT_SAM && stagechange)
+    if ((*this == STRUCT_SAM || *this == STRUCT_TDSAM) && stagechange)
         Mark(MARK_CHANGE);
 
     if ((!Class->IsTurretEquipped && *this != STRUCT_TESLA && *this != STRUCT_TDOBLI) || Mission == MISSION_CONSTRUCTION

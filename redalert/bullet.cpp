@@ -352,6 +352,15 @@ void BulletClass::AI(void)
     assert(Bullets.ID(this) == ID);
     assert(IsActive);
 
+    /*
+    **	Tiberian Factions mod: TD-ported bullets run TD's verbatim AI body via
+    **	AI_TD(). No RA logic for TD entities per [[project-td-port-architecture]].
+    */
+    if (Class->IsTDPort) {
+        AI_TD();
+        return;
+    }
+
     COORDINATE coord;
 
     ObjectClass::AI();
@@ -732,6 +741,15 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
     assert(IsActive);
 
     /*
+    **	Tiberian Factions mod: TD-ported bullets run TD's verbatim Unlimbo body
+    **	via Unlimbo_TD(). No RA logic for TD entities per
+    **	[[project-td-port-architecture]] (Option A).
+    */
+    if (Class->IsTDPort) {
+        return (Unlimbo_TD(coord, dir));
+    }
+
+    /*
     **	Try to unlimbo the bullet as far as the base class is concerned. Use the already
     **	set direction and strength if the "punt" values were passed in. This allows a bullet
     **	to be setup prior to being launched.
@@ -859,6 +877,430 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
         return (true);
     }
     return (false);
+}
+
+/***********************************************************************************************
+ * BulletClass::Unlimbo_TD -- Verbatim TD port of BulletClass::Unlimbo.                        *
+ *                                                                                             *
+ *    Per [[project-td-port-architecture]] (Option A). Body ported from                        *
+ *    reference/vanilla-conquer/tiberiandawn/bullet.cpp:631 line-for-line.                     *
+ *    Engine-plumbing additions (Map.Remove/Submit, Height init, IsFalling) are RA-side        *
+ *    requirements that don't exist in TD's engine — flagged inline.                            *
+ *    Symbol renames vs TD source:                                                              *
+ *      Class->Warhead          -> Class->ClassWarhead   (rename to avoid RA collision)         *
+ *      Class->Range            -> Class->BulletRange    (rename to avoid weapon Range= collide) *
+ *      Class->MaxSpeed         -> MaxSpeed              (RA stores per-instance, set at fire)  *
+ *      Altitude                -> Height                 (RA's flight-altitude member)         *
+ *      GRAVITY                 -> Rule.Gravity           (RA runtime-config'd gravity)         *
+ *      MIN/MAX                 -> min/max                (RA uses std-style)                   *
+ *      BULLET_GRENADE special  -> commented placeholder  (no TD grenade port yet)              *
+ *=============================================================================================*/
+// Tiberian Factions diagnostic: TDSSM/TDLaser/TDAPDS flight-and-impact trace.
+// Open once, written by Unlimbo_TD (spawn) and AI_TD (per-frame + detonation).
+// Used 2026-05-22 to diagnose TDATWR close-range targeting (root cause: Speed
+// unit conversion mismatch — see [[reference-ra-mphtype-ini-format]]).
+// Disabled per [[feedback-keep-diagnostics-until-v1]] — flip the #if to 1 to
+// re-enable for future TD-port bullet debugging.
+#if 0
+#define TF_TDPORT_LOG_ENABLED 1
+#else
+#define TF_TDPORT_LOG_ENABLED 0
+#endif
+static FILE* TF_TDPortLog = NULL;
+static void TF_OpenTDPortLog()
+{
+#if TF_TDPORT_LOG_ENABLED
+    if (TF_TDPortLog != NULL) return;
+    const char* home = getenv("USERPROFILE");
+    if (home == NULL) home = getenv("HOME");
+    if (home == NULL) return;
+    char path[512];
+    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_tdport_bullet.log", home);
+    TF_TDPortLog = fopen(path, "w");
+#endif
+}
+
+bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
+{
+    assert(Bullets.ID(this) == ID);
+    assert(IsActive);
+
+    TF_OpenTDPortLog();
+
+    // RA engine plumbing: Height bookkeeping (TD's ObjectClass::Unlimbo handles
+    // this internally; RA's doesn't, so initialise here for non-high bullets).
+    if (!Class->IsHigh) {
+        Height = 0;
+    }
+
+    if (ObjectClass::Unlimbo(coord)) {
+        Map.Remove(this, In_Which_Layer());  // RA engine plumbing.
+
+        COORDINATE tcoord = As_Coord(TarCom);
+
+        /*
+        **	Homing projectiles (missiles) do NOT override facing. They just fire in the
+        **	direction specified and let the chips fall where they may.
+        */
+        if (!Class->IsHoming && !Class->IsDropping) {
+            dir = Direction(tcoord);
+        }
+
+        /*
+        **	Possibly adjust the target if this projectile is inaccurate. This occurs whenever
+        **	certain weapons are trained upon targets they were never designed to attack. Example:
+        **	when turrets or anti-tank missiles are fired at infantry. Indirect fire is
+        **	inherently inaccurate.
+        */
+        if (IsInaccurate || Class->IsInaccurate
+            || ((Is_Target_Cell(TarCom) || Is_Target_Infantry(TarCom))
+                && (Class->ClassWarhead == WARHEAD_AP || Class->IsFueled))) {
+
+            /*
+            **	Inaccuracy for low velocity or homing projectiles manifests itself as a standard
+            **	Circular Error of Probability (CEP) algorithm. High speed projectiles usually
+            **	just overshoot the target by extending the straight line flight.
+            */
+            if (Class->IsHoming || Class->IsArcing) {
+                int scatterdist = ::Distance(coord, tcoord) / 3;
+                scatterdist = min(scatterdist, 0x0200);
+
+                // TD's BULLET_GRENADE special-case (Unlimbo:669-672) — narrower
+                // scatter for grenades. No TD grenade port yet; kept as note.
+                // if (*this == BULLET_GRENADE) {
+                //     scatterdist = ::Distance(coord, tcoord) / 4;
+                //     scatterdist = min(scatterdist, 0x0080);
+                // }
+
+                dir = (DirType)((dir + (Random_Pick(0, 10) - 5)) & 0x00FF);
+                tcoord = Coord_Scatter(tcoord, Random_Pick(0, scatterdist));
+            } else {
+                tcoord = Coord_Move(tcoord, dir, Random_Pick(0, 0x0100));
+            }
+
+            /*
+            **	Limit scatter to the weapon range of the firer. Without this, scatter
+            **	at close range can send the target outside the firer's weapon range and
+            **	the projectile flies off-target — the symptom Luke reported for TDATWR
+            **	failing to hit walls 1 cell away.
+            */
+            if (Payback) {
+                if (!Payback->In_Range(tcoord, 0) && !Payback->In_Range(tcoord, 1)) {
+                    tcoord = Coord_Move(tcoord,
+                                        ::Direction(tcoord, Coord),
+                                        Distance(tcoord) - max(Payback->Weapon_Range(0), Payback->Weapon_Range(1)));
+                }
+            }
+        }
+
+        /*
+        **	For very fast and invisible projectiles, just make the projectile exist at the
+        **	target location and dispense with the actual flight.
+        */
+        if (MaxSpeed == MPH_LIGHT_SPEED && Class->IsInvisible) {
+            Coord = tcoord;
+        }
+
+        /*
+        **	Set the range equal to either the class defined range or the calculated
+        **	number of game frames it would take for the projectile to reach the target.
+        */
+        int range = 0xFF;
+        if (!Class->BulletRange) {
+            if (!Class->IsDropping) {
+                range = (::Distance(tcoord, Coord) / MaxSpeed) + 4;
+            }
+        } else {
+            range = Class->BulletRange;
+        }
+
+        /*
+        **	Projectile speed is usually the default value for that projectile, but
+        **	certain projectiles alter speed according to the distance to the target.
+        */
+        int speed = MaxSpeed;
+        if (speed == MPH_LIGHT_SPEED)
+            speed = MPH_IMMOBILE;
+        if (Class->IsArcing) {
+            speed = MaxSpeed + (Distance(tcoord) >> 5);
+            speed = max(speed, 25);
+        }
+        if (!Class->IsDropping) {
+            Fly_Speed(255, (MPHType)speed);
+        }
+
+        /*
+        **	Arm the fuse.
+        */
+        Arm_Fuse(Coord, tcoord, range, ((As_Aircraft(TarCom) != 0) ? 0 : Class->Arming));
+
+        /*
+        **	Projectiles that make a ballistic flight to impact point must determine a
+        **	vertical component for the projectile launch. Crude simulation: bias ground
+        **	speed by distance, then add vertical velocity to keep airborne for the
+        **	desired time. RA uses Height/IsFalling where TD uses Altitude/Riser.
+        */
+        Riser = 0;
+        if (Class->IsArcing) {
+            IsFalling = true;
+            Height = 1;
+            Riser = ((Distance(tcoord) / 2) / (speed + 1)) * Rule.Gravity;
+            Riser = max(Riser, 10);
+        }
+        if (Class->IsDropping) {
+            IsFalling = true;
+            Height = FLIGHT_LEVEL;
+            Riser = 0;
+            if (Class->IsParachuted) {
+                AnimClass* anim = new AnimClass(ANIM_PARA_BOMB, Target_Coord());
+                if (anim) {
+                    anim->Attach_To(this);
+                }
+            }
+        }
+
+        Map.Submit(this, In_Which_Layer());  // RA engine plumbing.
+
+        PrimaryFacing = dir;
+
+#if TF_TDPORT_LOG_ENABLED
+        if (TF_TDPortLog != NULL) {
+            COORDINATE target = As_Coord(TarCom);
+            fprintf(TF_TDPortLog,
+                "SPAWN bullet=%p class=%s spawn=(%d,%d) target=(%d,%d) fuse_target=(%d,%d) dir=%d "
+                "MaxSpeed=%d Arming=%d IsHoming=%d IsAccurate=%d initial_dist=%d\n",
+                (void*)this,
+                Class->IniName,
+                (int)Coord_X(Coord), (int)Coord_Y(Coord),
+                (int)Coord_X(target), (int)Coord_Y(target),
+                (int)Coord_X(tcoord), (int)Coord_Y(tcoord),
+                (int)dir,
+                (int)MaxSpeed, (int)Class->Arming,
+                Class->IsHoming ? 1 : 0,
+                (Class->IsInaccurate || IsInaccurate) ? 0 : 1,
+                (int)::Distance(Coord, target));
+            fflush(TF_TDPortLog);
+        }
+#endif
+        return (true);
+    }
+    return (false);
+}
+
+/***********************************************************************************************
+ * BulletClass::AI_TD -- Verbatim TD port of BulletClass::AI.                                  *
+ *                                                                                             *
+ *    Per [[project-td-port-architecture]] (Option A). Body ported from                        *
+ *    reference/vanilla-conquer/tiberiandawn/bullet.cpp:293 line-for-line.                     *
+ *    Symbol renames vs TD source:                                                              *
+ *      Class->Warhead        -> Class->ClassWarhead                                            *
+ *      Class->Explosion      -> Class->ImpactAnim                                              *
+ *      Altitude              -> Height (RA's projectile altitude member)                       *
+ *      GRAVITY               -> Rule.Gravity                                                    *
+ *      BULLET_TOW            -> BULLET_SSM (our TDSSM is TD's TOW equivalent)                   *
+ *      BULLET_BULLET branch  -> commented placeholder (no TD small-arms port yet)              *
+ *=============================================================================================*/
+void BulletClass::AI_TD(void)
+{
+    assert(Bullets.ID(this) == ID);
+    assert(IsActive);
+
+#if TF_TDPORT_LOG_ENABLED
+    if (TF_TDPortLog != NULL) {
+        COORDINATE target = As_Coord(TarCom);
+        fprintf(TF_TDPortLog,
+            "FRAME bullet=%p class=%s coord=(%d,%d) target=(%d,%d) dist=%d Timer=%d\n",
+            (void*)this, Class->IniName,
+            (int)Coord_X(Coord), (int)Coord_Y(Coord),
+            (int)Coord_X(target), (int)Coord_Y(target),
+            (int)::Distance(Coord, target),
+            (int)Timer);
+        fflush(TF_TDPortLog);
+    }
+#endif
+
+    COORDINATE coord;
+
+    ObjectClass::AI();
+
+    /*
+    **	Ballistic objects (arcing / dropping) are handled here.
+    */
+    bool forced = false; // Forced explosion.
+    if (Class->IsArcing) {
+        Height += Riser;
+        if (Height <= 0) {
+            forced = true;
+        }
+        if (Riser > -100) {
+            Riser -= Rule.Gravity;
+        }
+    }
+    if (Class->IsDropping) {
+        Height += Riser;
+        if (Height <= 0) {
+            forced = true;
+        }
+        if (Riser > -100) {
+            Riser -= 1;
+        }
+    }
+
+    /*
+    **	Homing projectiles constantly change facing to face toward the target but
+    **	they only do so every other game frame (improves game speed and makes
+    **	missiles not so deadly).
+    */
+    if ((Frame & 0x01) && Class->IsHoming && Target_Legal(TarCom)) {
+        PrimaryFacing.Set_Desired(Direction256(Coord, ::As_Coord(TarCom)));
+    }
+
+    /*
+    **	Move the projectile forward according to its speed and direction.
+    */
+    coord = Coord;
+    if (Class->IsFlameEquipped) {
+        if (IsToAnimate) {
+            new AnimClass(ANIM_SMOKE_PUFF, coord, 1);
+        }
+        IsToAnimate = !IsToAnimate;
+    }
+
+    /*
+    **	Handle any body rotation at this time. Must occur every game frame for
+    **	smooth rotation.
+    */
+    if (PrimaryFacing.Is_Rotating()) {
+        PrimaryFacing.Rotation_Adjust(Class->ROT);
+    }
+
+    switch (Physics(coord, PrimaryFacing)) {
+
+    /*
+    **	When a projectile reaches the edge of the world, it vanishes from existence
+    **	-- presumed to explode off map.
+    */
+    case IMPACT_EDGE:
+        Mark();
+        delete this;  // TD source: Delete_This() — RA's idiom is `delete this`.
+        break;
+
+    default:
+    case IMPACT_NONE:
+
+    /*
+    **	The projectile has moved. Check its fuse. If detonation is signaled, then
+    **	do so. Otherwise, just move.
+    */
+    case IMPACT_NORMAL:
+        Mark();
+        if (!Class->IsHigh) {
+            CellClass* cellptr = &Map[Coord_Cell(coord)];
+            if (cellptr->Overlay != OVERLAY_NONE && OverlayTypeClass::As_Reference(cellptr->Overlay).IsHigh) {
+                forced = true;
+                Coord = coord = Cell_Coord(Coord_Cell(coord));
+            }
+        }
+
+        /*
+        **	Bullets are generally more effective when fired at aircraft. TD's
+        **	BULLET_TOW gets 1/3 boost; other AA bullets get 1/2. Our TDSSM is
+        **	the TD-port equivalent of TD's TOW.
+        */
+        if (Class->IsAntiAircraft && As_Aircraft(TarCom) && Distance(TarCom) < 0x0080) {
+            forced = true;
+            if (*this == BULLET_SSM) {  // TD: BULLET_TOW
+                Strength += Strength / 3;
+            } else {
+                Strength += Strength / 2;
+            }
+        }
+
+        if (!forced && (Class->IsDropping || !Fuse_Checkup(coord))) {
+            Coord = coord;
+            Mark();
+
+            /*
+            **	TD's BULLET_BULLET branch — strength decay during flight for the
+            **	small-arms invisible bullet. No TD small-arms port yet; kept as note.
+            **	if (*this == BULLET_BULLET) { if (Strength > 5) Strength--; }
+            */
+
+        } else {
+
+            /*
+            **	When the target is reached, explode and do the damage required of it.
+            **	For homing objects, don't force the explosion to match the target
+            **	position. Non-homing projectiles adjust position so they hit the
+            **	target. This compensates for the error in line of flight logic.
+            */
+            Mark();
+            if (!forced && !Class->IsArcing && !Class->IsHoming && Fuse_Target()) {
+                Coord = Fuse_Target();
+            }
+
+            /*
+            **	Non-aircraft targets apply damage to the ground.
+            */
+#if TF_TDPORT_LOG_ENABLED
+            if (TF_TDPortLog != NULL) {
+                COORDINATE target = As_Coord(TarCom);
+                fprintf(TF_TDPortLog,
+                    "DETONATE bullet=%p class=%s coord=(%d,%d) target=(%d,%d) dist=%d Strength=%d "
+                    "Warhead=%d forced=%d Timer=%d\n",
+                    (void*)this, Class->IniName,
+                    (int)Coord_X(Coord), (int)Coord_Y(Coord),
+                    (int)Coord_X(target), (int)Coord_Y(target),
+                    (int)::Distance(Coord, target),
+                    (int)Strength, (int)Class->ClassWarhead,
+                    forced ? 1 : 0, (int)Timer);
+                fflush(TF_TDPortLog);
+            }
+#endif
+            if (!Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->In_Which_Layer() == LAYER_GROUND) {
+                Explosion_Damage(Coord, Strength, Payback, Class->ClassWarhead);
+            } else {
+
+                /*
+                **	Special damage apply for SAM missiles. This is the only way that
+                **	missile damage affects the aircraft target.
+                */
+                if (Distance(TarCom) < 0x0080) {
+                    AircraftClass* object = As_Aircraft(TarCom);
+
+                    int str = Strength;
+                    if (object)
+                        object->Take_Damage(str, 0, Class->ClassWarhead, Payback);
+                }
+            }
+
+            /*
+            **	For projectiles that are invisible while traveling toward the target,
+            **	allow scatter effect for the impact animation.
+            */
+            if (Class->IsInvisible) {
+                Coord = Coord_Scatter(Coord, 0x0020);
+            }
+            if (Class->ImpactAnim != ANIM_NONE) {
+                AnimClass* newanim = new AnimClass(Class->ImpactAnim, Coord);
+                if (newanim) {
+                    newanim->Sort_Above(TarCom);
+                }
+
+                /*
+                **	Owner tracking for atom blasts so kills credit correctly.
+                */
+                if (newanim && Class->ImpactAnim == ANIM_ATOM_BLAST && newanim->Owner() == HOUSE_NONE) {
+                    if (Payback && Payback->House && Payback->House->Class) {
+                        newanim->Set_Owner(Payback->House->Class->House);
+                    }
+                }
+            }
+            delete this;  // TD source: Delete_This() — RA's idiom is `delete this`.
+            return;
+        }
+        break;
+    }
 }
 
 /***********************************************************************************************
