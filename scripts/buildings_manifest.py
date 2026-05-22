@@ -356,7 +356,7 @@ TDGTWR = {
     # MIGRATED to STRUCT_TDGTWR in bdata.cpp Init_Heap (M3 Tier 2, 2026-05-21).
     "logic":       None,
     "td_asset":    "GTWR",
-    "footprint":   None,  # RA PBOX donor is 1x1 (BSIZE_11); matches TD.
+    "footprint":   None,  # 1x1 (BSIZE_11) — matches TD ClassGTower.
     "shape_size":  (24, 24),
     "text_id_name": "TEXT_STRUCTURE_TITLE_GDI_GUARD_TOWER",
     "text_id_desc": "TEXT_STRUCTURE_DESC_GDI_GUARD_TOWER",
@@ -374,10 +374,9 @@ TDGTWR = {
     "sensors":     None,
     "strength":    200,
     "armor":       "wood",
-    # RA donor weapon (PBOX = M16 / anti-infantry). TD-authentic is
-    # WEAPON_CHAIN_GUN (no RA equivalent yet); donor's MG is close enough
-    # for the GDI anti-infantry tower feel. See docs/weapon-ports.md.
-    "primary":     None,
+    # TD-authentic chain gun (25 dmg / ROF 50 / Range 4 / GUN8 audio).
+    # Fires [TDSpreadfire]. See docs/td-gtwr-gun-verification.md.
+    "primary":     "TDChainGun",
     "secondary":   None,
     "base_normal": True,
     "capturable":  False,
@@ -385,7 +384,7 @@ TDGTWR = {
     "repairable":  True,
     "bib":         False,
     "idle_anim":   None,
-    "notes":       "TD GDI Guard Tower. Logic=PBOX (Allied Pillbox donor). Cap=no, bib=no (1x1 doesn't take bib). Inherits donor weapon — TD-authentic Vulcan port is in weapon-ports.md.",
+    "notes":       "TD GDI Guard Tower (STRUCT_TDGTWR, fully separated M3 Tier 2). Primary=TDChainGun fires [TDSpreadfire] for TD-authentic 25-damage chain-gun behaviour. Cap=no, bib=no (1x1).",
 }
 
 

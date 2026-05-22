@@ -255,6 +255,7 @@ struct SoundEffectNameStruct
     {"OBELRAY1", 1, IN_NOVAR}, // VOC_TD_LASER			Obelisk humming laser beam
     {"OBELPOWR", 1, IN_NOVAR}, // VOC_TD_LASER_POWER	Obelisk laser warm-up
     {"CONSTRU2", 5, IN_NOVAR}, // VOC_TD_CONSTRUCTION	TD building construction loop
+    {"GUN8",     1, IN_NOVAR}, // VOC_TD_MINI			TD chain-gun burst (CHAIN_GUN / TDGTWR)
 };
 
 //

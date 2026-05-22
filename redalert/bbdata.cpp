@@ -188,9 +188,10 @@ void BulletTypeClass::Init_Heap(void)
     // can be visually identified in rules.ini regardless of name collision
     // with vanilla RA (e.g. "Laser" → "TDLaser" so it's clear at a glance
     // that this is the TD Obelisk beam, not a hypothetical RA laser).
-    new BulletTypeClass("TDSSM");        //	BULLET_SSM (TD TOW/TOMAHAWK)
-    new BulletTypeClass("TDLaser");      //	BULLET_LASER (TD Obelisk beam)
-    new BulletTypeClass("TDAPDS");       //	BULLET_TDAPDS (TD Nod Turret 120mm shell)
+    new BulletTypeClass("TDSSM");         //	BULLET_SSM (TD TOW/TOMAHAWK)
+    new BulletTypeClass("TDLaser");       //	BULLET_LASER (TD Obelisk beam)
+    new BulletTypeClass("TDAPDS");        //	BULLET_TDAPDS (TD Nod Turret 120mm shell)
+    new BulletTypeClass("TDSpreadfire");  //	BULLET_TDSPREADFIRE (TD GDI chain-gun pellet)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per
@@ -200,6 +201,7 @@ void BulletTypeClass::Init_Heap(void)
     BulletTypes.Ptr((int)BULLET_SSM)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_LASER)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_TDAPDS)->IsTDPort = true;
+    BulletTypes.Ptr((int)BULLET_TDSPREADFIRE)->IsTDPort = true;
 }
 
 /***********************************************************************************************

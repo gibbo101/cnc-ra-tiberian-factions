@@ -711,6 +711,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDTowTwo");     // WEAPON_TOW_TWO (Advanced Guard Tower)
     new WeaponTypeClass("TDTurretGun");  // WEAPON_TD_TURRET_GUN (Nod Turret)
     new WeaponTypeClass("TDOblsLaser");  // WEAPON_OBELISK_LASER (Obelisk of Light)
+    new WeaponTypeClass("TDChainGun");   // WEAPON_TD_CHAIN_GUN (GDI Guard Tower)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's

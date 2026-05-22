@@ -1337,6 +1337,7 @@ typedef enum BulletType : char
     BULLET_SSM,   // Surface-to-surface missile — homing, AA + AG capable.
     BULLET_LASER, // Obelisk instant-hit beam (Inviso, light_speed, no rotation).
     BULLET_TDAPDS, // TD Nod Turret 120mm shell (visually mirrors [Cannon]).
+    BULLET_TDSPREADFIRE, // TD GDI Guard Tower chain-gun pellet (Inviso, light_speed).
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -2801,6 +2802,7 @@ typedef enum WeaponType : char
     WEAPON_TOW_TWO,        // Advanced Guard Tower missile (anti-armor + AA).
     WEAPON_TD_TURRET_GUN,  // Nod Turret cannon (TD-authentic ROF/range).
     WEAPON_OBELISK_LASER,  // Obelisk of Light beam (data piece only; render in M5).
+    WEAPON_TD_CHAIN_GUN,   // GDI Guard Tower chain gun (TD WEAPON_CHAIN_GUN).
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -3415,6 +3417,7 @@ typedef enum VocType : short
     VOC_TD_LASER,        // Obelisk humming laser beam
     VOC_TD_LASER_POWER,  // Obelisk laser warming-up sound
     VOC_TD_CONSTRUCTION, // TD building construction loop (CONSTRU2.AUD)
+    VOC_TD_MINI,         // TD chain-gun burst (GUN8 — CHAIN_GUN / TDGTWR)
 
     VOC_COUNT,
     VOC_FIRST = 0

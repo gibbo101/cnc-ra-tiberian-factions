@@ -6103,6 +6103,26 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     </SampleNamesList>
   </SFXEvent>
 
+
+  <!-- TDChainGun burst (TDGTWR Guard Tower) -->
+  <SFXEvent Name="RAC_SFX_GUN8" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDC_SFX_GUN8.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_GUN8" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_GUN8.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
 </SFXEvents>
 
 

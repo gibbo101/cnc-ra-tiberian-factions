@@ -711,8 +711,8 @@ static BuildingTypeClass const ClassTdGtwr(STRUCT_TDGTWR,
                                            FACING_NONE,
                                            XYP_COORD(0, 0),
                                            REMAP_ALTERNATE,
-                                           0x0010,          // Vertical offset matches PBOX.
-                                           0x0040,          // Primary weapon offset matches PBOX.
+                                           0x0030,          // VerticalOffset — TD ClassGTower Fire_Coord +0x30 DIR_N (docs/td-gtwr-gun-verification.md).
+                                           0x0040,          // PrimaryOffset — TD ClassGTower Fire_Coord +0x40 forward.
                                            0x0000,
                                            false,
                                            false,
