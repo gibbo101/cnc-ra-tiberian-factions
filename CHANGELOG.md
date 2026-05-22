@@ -6,6 +6,32 @@ This project follows a `version_high.version_low.patch` scheme matching the `ccm
 
 ## [Unreleased]
 
+## [0.4.2] — 2026-05-22 — TDGTWR weapon port + TD-port bullet hardening
+
+GDI Guard Tower now fires the TD-authentic chain gun instead of leaking RA's stronger `[Vulcan]` into the build. Bundles a critical fix for TD-port bullet damage that was silently zeroing TDOBLI and TDGUN hits.
+
+### TDGTWR weapon port — TD-authentic chain gun
+
+- `[TDChainGun]` weapon: Damage=25, ROF=50, Range=4, Warhead=HE (TD's `WEAPON_CHAIN_GUN`). Previously `Primary=Vulcan` was leaking RA's stronger 40/40/5 anti-infantry MG.
+- `[TDSpreadfire]` invisible projectile (TD's `BULLET_SPREADFIRE`), with `ImpactAnim=PIFFPIFF` chain-gun puff.
+- `VOC_TD_MINI` audio routing: `GUN8` chain-gun burst, extracted from `SFX3D.MEG` and aliased via `RAC_SFX_GUN8` / `RAR_SFX_GUN8` SFXEvents.
+- `ClassTdGtwr` `VerticalOffset` corrected from `0x10` → `0x30` to match TD `ClassGTower::Fire_Coord`, so the muzzle is at the top of the lookout structure instead of the waist.
+- Engine registration: `WEAPON_TD_CHAIN_GUN` + `BULLET_TDSPREADFIRE` added to defines.h, `new WeaponTypeClass("TDChainGun")` + `new BulletTypeClass("TDSpreadfire")` in `rules.cpp` / `bbdata.cpp`.
+
+### TD-port bullet damage fix (TDOBLI + TDGUN + TDGTWR)
+
+Three TD-port bullet sections — `[TDLaser]`, `[TDAPDS]`, `[TDSpreadfire]` — were missing the `Warhead=` field. Symptom: bullets visibly impacted but target HP didn't decrement. Root cause: TD's verbatim `BulletClass::AI_TD` detonation path (`bullet.cpp:1261`) uses `Class->ClassWarhead`, which defaults to `WARHEAD_NONE` without an explicit `Warhead=` entry — and `Explosion_Damage` at `combat.cpp:171` early-returns on `WARHEAD_NONE` without applying damage. Vanilla RA bullets don't bite this trap because they use the per-instance Warhead set from the weapon's pointer.
+
+Fix:
+- `[TDLaser] Warhead=TDLaser`
+- `[TDAPDS] Warhead=AP` + `ImpactAnim=VEH-HIT3` (Nod Turret shells now explode on hit)
+- `[TDSpreadfire] Warhead=HE` + `ImpactAnim=PIFFPIFF`
+
+### Verifications + documentation
+
+- TDATWR stats verified against TD source — `Damage=60`, `ROF=40`, `Range=6.5`, `TDHE Verses=87/75/56/25/100%` all TD-authentic per `tiberiandawn/const.cpp:88` + `const.cpp:113`. The "weak vs tanks" feel is TD-by-design (25% vs ARMOR_STEEL) and deferred to the post-v1.0 balance pass.
+- Project memory rules formalised: balance work is post-v1.0; pre-v1 must stay TD-source-authentic.
+
 ## [0.4.1] — 2026-05-21 — TDOBLI separation + TD audio routing + recipe docs
 
 First fully-separated TD building (Obelisk of Light) shipping the iconic charge-up + laser-beam experience. Also lands the audio-routing infrastructure that brings authentic TD weapon sounds (and building-construction sounds) into the RA engine. Architecturally the bigger story: the per-building separation pattern is validated end-to-end and documented as a canonical recipe, so the remaining 16 buildings + units become bounded engineering against the recipe.
