@@ -1695,7 +1695,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 
     /*
     **	Special case so that SAM site doesn't fire on aircraft that are landed.
-    **  TDSAM (M3) shares this rule via the STRUCT_SAM-paralleling dispatch.
+    **	STRUCT_SAM/STRUCT_TDSAM aliased intentionally — both must skip grounded
+    **	aircraft identically. Per docs/td-sam-deep-dive.md M6.
     */
     if (otype == RTTI_AIRCRAFT && What_Am_I() == RTTI_BUILDING
         && (*((BuildingClass*)this) == STRUCT_SAM || *((BuildingClass*)this) == STRUCT_TDSAM)) {

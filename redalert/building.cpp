@@ -121,6 +121,24 @@ enum SAMState
     SAM_FIRING // Stationary while missile is being fired.
 };
 
+// TD-source-ordered SAM states for STRUCT_TDSAM only.
+// Direct port of reference/vanilla-conquer/tiberiandawn/building.cpp:105-116.
+// Stored in the same Status byte as SAMState; never confused because every
+// dispatch site is guarded by STRUCT_SAM vs STRUCT_TDSAM first.
+// TDSAM_UNDERGROUND = 0 aligns with char default-init.
+enum TdSamState
+{
+    TDSAM_NONE = -1,
+    TDSAM_UNDERGROUND, // 0 — hidden, awaiting target
+    TDSAM_RISING,      // door anim frames 0-15
+    TDSAM_READY,       // up, rotating to face TarCom
+    TDSAM_FIRING,      // first shot
+    TDSAM_READY2,      // re-rotate after shot 1
+    TDSAM_FIRING2,     // second shot
+    TDSAM_LOCKING,     // rotating back to DIR_N
+    TDSAM_LOWERING,    // door anim frames 48-63
+};
+
 /***************************************************************************
 **	Center of building offset table.
 */
@@ -669,19 +687,33 @@ int BuildingClass::Shape_Number(void) const
         if (Class->IsTurretEquipped) {
             shapenum = UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())];
 
-            if (*this == STRUCT_SAM || *this == STRUCT_TDSAM) {
+            if (*this == STRUCT_SAM) {
 
                 /*
-                **	SAM sites that are free to rotate fetch their animation frame
-                **	from the building's turret facing. All other animation stages
-                **	fetch their frame from the embedded animation sequencer.
-                **  TDSAM (M3) shares the same launcher-rotation pattern.
+                **	RA's vanilla SAM has a 2-state machine (READY/FIRING) with no
+                **	rise/lower; rotation pulls frames directly via BodyShape[Dir_To_32]
+                **	above. Damaged variants at +35.
                 */
-                //				if (Status == SAM_READY || Status == SAM_FIRING || Status == SAM_LOCKING) {
-                //					shapenum = Fetch_Stage();
-                //				}
                 if (Health_Ratio() <= Rule.ConditionYellow) {
                     shapenum += 35;
+                }
+            } else if (*this == STRUCT_TDSAM) {
+
+                /*
+                **	TDSAM frame layout (direct port of TD building.cpp:548-571):
+                **	  0-15    Rising (door open + launcher up) — driven by Fetch_Stage
+                **	  16-47   Raised, 32 rotation frames — BodyShape[Dir_To_32] + 16
+                **	  48-63   Lowering — driven by Fetch_Stage
+                **	  64+     Damaged variants (+64 offset)
+                */
+                if (Status == TDSAM_READY || Status == TDSAM_FIRING || Status == TDSAM_READY2
+                    || Status == TDSAM_FIRING2 || Status == TDSAM_LOCKING) {
+                    shapenum = UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())] + 16;
+                } else {
+                    shapenum = Fetch_Stage();
+                }
+                if (Health_Ratio() <= Rule.ConditionYellow) {
+                    shapenum += 64;
                 }
             } else {
                 if (IsInRecoilState) {
@@ -1075,7 +1107,8 @@ void BuildingClass::AI(void)
 
     /*
     ** Radar facilities and SAMs need to check for the proximity of a mobile
-    ** radar jammer.
+    ** radar jammer. STRUCT_SAM/STRUCT_TDSAM aliased intentionally — both
+    ** are jammable by identical rules (per docs/td-sam-deep-dive.md M6).
     */
     if ((*this == STRUCT_RADAR || *this == STRUCT_SAM || *this == STRUCT_TDSAM) && (Frame % TICKS_PER_SECOND) == 0) {
         IsJammed = false;
@@ -1322,6 +1355,17 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
         ** Memorize who they used to be in radio contact with.
         */
         TechnoClass* tech = Contact_With_Whom();
+
+        /*
+        **	TDSAM takes half damage while underground — direct port of
+        **	tiberiandawn/building.cpp:1492-1495. RA's vanilla SAM has no
+        **	underground state, so this branch is TDSAM-only.
+        */
+        if (*this == STRUCT_TDSAM && Status == TDSAM_UNDERGROUND) {
+            damage /= 2;
+            damage++; // Never less than 1.
+        }
+
         /*
         **	Perform the low level damage assessment.
         */
@@ -1614,7 +1658,9 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
 
             /*
             **	When certain buildings are hit, they "snap out of it" and
-            **	return fire if they are able and allowed.
+            **	return fire if they are able and allowed. STRUCT_SAM/STRUCT_TDSAM
+            **	aliased intentionally — both are AA-only and must not retaliate
+            **	against ground sources (per docs/td-sam-deep-dive.md M6).
             */
             if (*this != STRUCT_SAM && *this != STRUCT_AAGUN && *this != STRUCT_TDSAM && !House->Is_Ally(source) && Class->PrimaryWeapon != NULL
                 && (!Target_Legal(TarCom) || !In_Range(TarCom))) {
@@ -2011,6 +2057,9 @@ void BuildingClass::Assign_Target(TARGET target)
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
+    // STRUCT_SAM/STRUCT_TDSAM aliased intentionally — both bypass the range
+    // check at assign time (their AA missiles acquire on rise/track, not at
+    // assignment). Per docs/td-sam-deep-dive.md M6.
     if (*this != STRUCT_SAM && *this != STRUCT_AAGUN && *this != STRUCT_TDSAM && !In_Range(target, 0)) {
         target = TARGET_NONE;
     }
@@ -3181,6 +3230,8 @@ ActionType BuildingClass::What_Action(ObjectClass const* object) const
     bool aa_only_aagun = (*this == STRUCT_AAGUN && Class->PrimaryWeapon != NULL
                           && Class->PrimaryWeapon->Bullet != NULL
                           && !Class->PrimaryWeapon->Bullet->IsAntiGround);
+    // STRUCT_SAM/STRUCT_TDSAM aliased intentionally — both veto manual
+    // ground-attack orders identically. Per docs/td-sam-deep-dive.md M6.
     if (action == ACTION_ATTACK && (*this == STRUCT_SAM || *this == STRUCT_TDSAM || aa_only_aagun || !In_Range(object, 0))) {
         action = ACTION_NONE;
     }
@@ -3365,6 +3416,9 @@ FireErrorType BuildingClass::Can_Fire(TARGET target, int which) const
         if (Class->IsTurretEquipped) {
             int diff = PrimaryFacing.Difference(Direction(TarCom));
             diff = abs(diff);
+            // STRUCT_SAM/STRUCT_TDSAM aliased intentionally — both want the
+            // wide ±64 firing arc (vs ±8 for normal turrets) so they can fire
+            // mid-rotation. Per docs/td-sam-deep-dive.md M6.
             if (ABS(diff) > ((*this == STRUCT_SAM || *this == STRUCT_TDSAM) ? 64 : 8)) {
                 //			if (ABS(diff) > 8) {
                 return (FIRE_FACING);
@@ -4283,13 +4337,12 @@ int BuildingClass::Mission_Attack(void)
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
-    if (*this == STRUCT_SAM || *this == STRUCT_TDSAM) {
+    if (*this == STRUCT_SAM) {
         switch (Status) {
 
         /*
         **	This is the target tracking state of the launcher. It will rotate
         **	to face the current TarCom of the launcher.
-        **  TDSAM (M3) shares the SAM state machine — same launcher pattern.
         */
         case SAM_READY:
             if ((Class->IsPowered && House->Power_Fraction() < 1) || IsJammed) {
@@ -4335,6 +4388,174 @@ int BuildingClass::Mission_Attack(void)
                             Status = SAM_READY;
                         }
                     }
+                }
+            }
+            return (1);
+
+        default:
+            break;
+        }
+        return (MissionControl[Mission].AA_Delay() + Random_Pick(0, 2));
+    }
+
+    /*
+    **	TDSAM — TD-source 8-state launcher cycle:
+    **	  UNDERGROUND → RISING → READY → FIRING → READY2 → FIRING2 → LOCKING → LOWERING
+    **	Direct port of tiberiandawn/building.cpp:4281-4439.
+    **	TD's `As_Aircraft(TarCom)->Altitude` is renamed `Height` in RA.
+    */
+    if (*this == STRUCT_TDSAM) {
+        switch (Status) {
+
+        /*
+        **	The launcher is underground and awaiting the acquisition of a target.
+        */
+        case TDSAM_UNDERGROUND:
+            IsReadyToCommence = true;
+            if (Target_Legal(TarCom)) {
+                Set_Rate(2);
+                Set_Stage(0);
+                Status = TDSAM_RISING;
+                return (1);
+            } else {
+                Assign_Mission(MISSION_GUARD);
+            }
+            break;
+
+        /*
+        **	The launcher is rising into the ready position.
+        */
+        case TDSAM_RISING:
+            if (Fetch_Stage() == 15) {
+                Set_Rate(0);
+                PrimaryFacing = DIR_N;
+                if (!Target_Legal(TarCom)) {
+                    Status = TDSAM_LOWERING;
+                } else {
+                    Status = TDSAM_READY;
+                }
+            }
+            return (1);
+
+        /*
+        **	Target tracking — rotate to face TarCom.
+        */
+        case TDSAM_READY:
+            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+                Assign_Target(TARGET_NONE);
+                Status = TDSAM_LOCKING;
+                return (TICKS_PER_SECOND);
+            } else {
+                if (!PrimaryFacing.Is_Rotating()) {
+                    DirType facing = Direction(TarCom);
+                    if (PrimaryFacing.Difference(facing)) {
+                        PrimaryFacing.Set_Desired(facing);
+                    } else {
+                        Status = TDSAM_FIRING;
+                    }
+                }
+            }
+            return (1);
+
+        /*
+        **	First shot.
+        */
+        case TDSAM_FIRING:
+            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+                Assign_Target(TARGET_NONE);
+                Status = TDSAM_LOCKING;
+            } else {
+                FireErrorType error = Can_Fire(TarCom, 0);
+                if (error == FIRE_ILLEGAL || error == FIRE_CANT || error == FIRE_RANGE) {
+                    Assign_Target(TARGET_NONE);
+                    Status = TDSAM_LOCKING;
+                } else {
+                    if (error == FIRE_FACING) {
+                        Status = TDSAM_READY;
+                    } else {
+                        if (error == FIRE_OK) {
+                            Fire_At(TarCom, 0);
+                            Status = TDSAM_READY2;
+                            return (1);
+                        }
+                    }
+                }
+            }
+            return (1);
+
+        /*
+        **	Re-rotate after shot 1.
+        */
+        case TDSAM_READY2:
+            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+                Assign_Target(TARGET_NONE);
+                Status = TDSAM_LOCKING;
+                return (TICKS_PER_SECOND);
+            } else {
+                if (!PrimaryFacing.Is_Rotating()) {
+                    DirType facing = Direction(TarCom);
+                    if (PrimaryFacing.Difference(facing)) {
+                        PrimaryFacing.Set_Desired(facing);
+                    } else {
+                        Status = TDSAM_FIRING2;
+                    }
+                }
+            }
+            return (1);
+
+        /*
+        **	Second shot — also Primary (TDSAM has no secondary weapon).
+        */
+        case TDSAM_FIRING2:
+            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+                Assign_Target(TARGET_NONE);
+                Status = TDSAM_LOCKING;
+            } else {
+                FireErrorType error = Can_Fire(TarCom, 0);
+                if (error == FIRE_ILLEGAL || error == FIRE_CANT || error == FIRE_RANGE) {
+                    Assign_Target(TARGET_NONE);
+                    Status = TDSAM_LOCKING;
+                } else {
+                    if (error == FIRE_FACING) {
+                        Status = TDSAM_READY2;
+                    } else {
+                        if (error == FIRE_OK) {
+                            Fire_At(TarCom, 0);
+                            Status = TDSAM_LOCKING;
+                            return (TICKS_PER_SECOND * 3);
+                        }
+                    }
+                }
+            }
+            return (1);
+
+        /*
+        **	Rotating to face north in preparation for lowering.
+        */
+        case TDSAM_LOCKING:
+            if (!PrimaryFacing.Is_Rotating()) {
+                if (PrimaryFacing == DIR_N) {
+                    Set_Rate(2);
+                    Set_Stage(48);
+                    Status = TDSAM_LOWERING;
+                } else {
+                    PrimaryFacing.Set_Desired(DIR_N);
+                }
+            }
+            return (1);
+
+        /*
+        **	Lowering into the ground to reload.
+        */
+        case TDSAM_LOWERING:
+            if (Fetch_Stage() >= 63) {
+                Set_Rate(0);
+                Set_Stage(0);
+                Status = TDSAM_UNDERGROUND;
+                return (TICKS_PER_SECOND);
+            } else {
+                if (Fetch_Rate() == 0) {
+                    Set_Rate(2);
                 }
             }
             return (1);
@@ -6268,6 +6489,9 @@ void BuildingClass::Animation_AI(void)
 
     /*
     **	Always refresh the SAM site if it has an animation change.
+    **	STRUCT_SAM/STRUCT_TDSAM aliased intentionally — both drive their
+    **	render via Status/Stage transitions that need MARK_CHANGE refresh.
+    **	Per docs/td-sam-deep-dive.md M6.
     */
     if ((*this == STRUCT_SAM || *this == STRUCT_TDSAM) && stagechange)
         Mark(MARK_CHANGE);

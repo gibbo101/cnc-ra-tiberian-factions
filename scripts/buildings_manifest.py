@@ -593,7 +593,7 @@ TDSAM = {
     "adjacent":    1,
     "strength":    200,
     "armor":       "steel",
-    "primary":     None,
+    "primary":     "TDNike",
     "secondary":   None,
     "base_normal": True,
     "capturable":  False,
@@ -602,7 +602,11 @@ TDSAM = {
     "bib":         False,
     "idle_anim":   (0, 1, 0),
     "active_anim": (0, 1, 0),
-    "notes":       "TD Nod SAM Site (2x1 anti-air turret). Donor RA SAM provides matching BSIZE_21 footprint + Nike anti-air missile. Defensive (0,1,0) clamps.",
+    "notes":       "TD Nod SAM Site (BSIZE_21 underground launcher with 8-state "
+                   "rise/rotate/fire/fire/lock/lower cycle). Wholesale port of "
+                   "tiberiandawn/ STRUCT_SAM per docs/td-sam-deep-dive.md. "
+                   "Weapon=TDNike (TD WEAPON_NIKE), projectile=TDPatriot "
+                   "(TD BULLET_SAM/'MISSILE').",
 }
 
 

@@ -702,8 +702,12 @@ static BuildingTypeClass const ClassTdSilo(STRUCT_TDSILO,
 **    air (Primary=TDTowTwo, dual-role).
 **  TDGUN (Nod Cannon Turret) — 1x1 rotating turret. Modeled on RA's
 **    ClassTurret (GUN), Primary=TDTurretGun.
-**  TDSAM (Nod SAM Site) — 1x2 rotating launcher, AA-only. Modeled on
-**    ClassSAM. Engine dispatch (STRUCT_SAM == TDSAM) below.
+**  TDSAM (Nod SAM Site) — 1x2 rotating launcher, AA-only. Wholesale port of
+**    TD's ClassSAM: dedicated TdSamState enum + 8-state Mission_Attack +
+**    Status-aware Shape_Number + underground half-damage + [TDNike]/[TDPatriot]
+**    weapon stack. NOT modeled on RA's ClassSAM. Engine dispatch sites for
+**    STRUCT_TDSAM live in building.cpp (positive ORs split, negative
+**    exclusions aliased with explanatory comments). See docs/td-sam-deep-dive.md.
 */
 static BuildingTypeClass const ClassTdGtwr(STRUCT_TDGTWR,
                                            TXT_NONE,
