@@ -1483,6 +1483,7 @@ typedef enum StructType : char
     STRUCT_TDSAM,
     // M4 Tier 3 — production/economy buildings.
     STRUCT_TDHAND,
+    STRUCT_TDHPAD,
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0

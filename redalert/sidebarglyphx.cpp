@@ -481,6 +481,40 @@ bool SidebarGlyphxClass::StripClass::Recalc(void)
             }
         }
 
+        // Tiberian Factions: sidebar-eviction logging (stubbed). Re-enabled
+        // 2026-05-25 to confirm Recalc was removing HELI from GDI's TDHPAD
+        // sidebar via Who_Can_Build_Me. Root cause + fix: playbook §3.12.
+        // Per [[feedback-keep-diagnostics-until-v1]].
+#if 0
+        if (!ok && tech) {
+            static FILE* s_evict_log = NULL;
+            static int s_n = 0;
+            if (s_n < 50) {
+                if (s_evict_log == NULL) {
+                    char path[512];
+                    const char* prof = getenv("USERPROFILE");
+                    if (prof && prof[0]) {
+                        snprintf(path, sizeof(path),
+                                 "%s/Documents/CnCRemastered/MOD_DEBUG_EVICT.txt", prof);
+                    } else {
+                        strcpy(path, "MOD_DEBUG_EVICT.txt");
+                    }
+                    s_evict_log = fopen(path, "w");
+                }
+                if (s_evict_log) {
+                    fprintf(s_evict_log,
+                            "EVICT name=%s rtti=%d id=%d sidebar_house=%d\n",
+                            tech->IniName,
+                            (int)Buildables[index].BuildableType,
+                            Buildables[index].BuildableID,
+                            (int)ParentSidebar->SidebarPlayerPtr->Class->House);
+                    fflush(s_evict_log);
+                    s_n++;
+                }
+            }
+        }
+#endif
+
         if (!ok) {
 
             /*

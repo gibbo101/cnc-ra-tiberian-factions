@@ -206,6 +206,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             break;
 
         case STRUCT_HELIPAD:
+        case STRUCT_TDHPAD:    // TD Helipad — same rotary-aircraft dock semantics.
             if (from->What_Am_I() == RTTI_AIRCRAFT && !((AircraftClass const*)from)->Class->IsFixedWing) {
                 return (RADIO_ROGER);
             }
@@ -249,6 +250,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
         case STRUCT_AIRSTRIP:
         case STRUCT_HELIPAD:
+        case STRUCT_TDHPAD:    // TD Helipad — repair-on-dock.
             Assign_Mission(MISSION_REPAIR);
             from->Assign_Mission(MISSION_SLEEP);
             return (RADIO_ROGER);
@@ -310,6 +312,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 break;
 
             case STRUCT_HELIPAD:
+            case STRUCT_TDHPAD:    // TD Helipad — dock target is the building itself.
                 param = As_Target();
                 break;
 
@@ -2552,6 +2555,47 @@ void BuildingClass::Update_Buildables(void)
 
     bool buildable_via_capture = (IsCaptured && ActLike != House->ActLike) ? true : false;
 
+    // Tiberian Factions: Update_Buildables entry log (stubbed). Re-enabled
+    // 2026-05-25 to diagnose TDHPAD's missing helicopter cameos. Per
+    // [[feedback-keep-diagnostics-until-v1]] stub bodies under #if 0 so the
+    // flip is one-line.
+#if 0
+    {
+        bool log_this = (Class->IniName[0] == 'T' && Class->IniName[1] == 'D')
+                        || Class->Type == STRUCT_HELIPAD;
+        if (log_this) {
+            static FILE* s_ub_log = NULL;
+            static int s_count = 0;
+            if (s_count < 200) {
+                if (s_ub_log == NULL) {
+                    char path[512];
+                    const char* profile = getenv("USERPROFILE");
+                    if (profile != NULL && profile[0] != '\0') {
+                        snprintf(path, sizeof(path),
+                                 "%s/Documents/CnCRemastered/MOD_DEBUG_UPDATE_BUILDABLES.txt",
+                                 profile);
+                    } else {
+                        strcpy(path, "MOD_DEBUG_UPDATE_BUILDABLES.txt");
+                    }
+                    s_ub_log = fopen(path, "w");
+                }
+                if (s_ub_log != NULL) {
+                    fprintf(s_ub_log,
+                            "Update_Buildables name=%s Type=%d ToBuild=%d "
+                            "IsInLimbo=%d Discovered=%d session=%d "
+                            "PlayerActLike=%d HouseActLike=%d AircraftTypes_n=%d\n",
+                            Class->IniName, (int)Class->Type, (int)Class->ToBuild,
+                            (int)IsInLimbo, Is_Discovered_By_Player() ? 1 : 0,
+                            (int)Session.Type, (int)PlayerPtr->ActLike,
+                            (int)House->ActLike, AircraftTypes.Count());
+                    fflush(s_ub_log);
+                    s_count++;
+                }
+            }
+        }
+    }
+#endif
+
     if (!IsInLimbo && Is_Discovered_By_Player()) {
         switch (Class->ToBuild) {
             int i;
@@ -2631,6 +2675,48 @@ void BuildingClass::Update_Buildables(void)
             break;
 
         case RTTI_AIRCRAFTTYPE:
+            // Tiberian Factions: AIRCRAFTTYPE iteration + Sidebar_Glyphx_Add
+            // result logging (stubbed). Re-enabled 2026-05-25 to diagnose
+            // TDHPAD's missing helicopter cameos. Root cause turned out to be
+            // Who_Can_Build_Me's hardcoded STRUCT_HELIPAD check (object.cpp);
+            // see playbook §3.12. Per [[feedback-keep-diagnostics-until-v1]].
+#if 0
+            {
+                static FILE* s_air_log = NULL;
+                static int s_count = 0;
+                if (s_count < 100) {
+                    if (s_air_log == NULL) {
+                        char path[512];
+                        const char* profile = getenv("USERPROFILE");
+                        if (profile != NULL && profile[0] != '\0') {
+                            snprintf(path, sizeof(path),
+                                     "%s/Documents/CnCRemastered/MOD_DEBUG_AIR_ITER.txt",
+                                     profile);
+                        } else {
+                            strcpy(path, "MOD_DEBUG_AIR_ITER.txt");
+                        }
+                        s_air_log = fopen(path, "w");
+                    }
+                    if (s_air_log != NULL) {
+                        fprintf(s_air_log,
+                                "AirIter from=%s PlayerPtr=%p PlayerActLike=%d "
+                                "PlayerIsHuman=%d HouseIsHuman=%d Aircraft_n=%d "
+                                "ActLike_used=%d\n",
+                                Class->IniName, (void*)PlayerPtr,
+                                (int)PlayerPtr->ActLike, PlayerPtr->IsHuman ? 1 : 0,
+                                House->IsHuman ? 1 : 0,
+                                AircraftTypes.Count(), (int)ActLike);
+                        for (int ai = 0; ai < AircraftTypes.Count(); ai++) {
+                            bool cb = PlayerPtr->Can_Build(AircraftTypes.Ptr(ai), ActLike);
+                            fprintf(s_air_log, "  [%d] %s Can_Build=%d\n",
+                                    ai, AircraftTypes.Ptr(ai)->IniName, cb ? 1 : 0);
+                        }
+                        fflush(s_air_log);
+                        s_count++;
+                    }
+                }
+            }
+#endif
             for (a = 0; a < AircraftTypes.Count(); a++) {
                 if (PlayerPtr->Can_Build(AircraftTypes.Ptr(a), ActLike)) {
                     if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
@@ -2729,7 +2815,7 @@ void BuildingClass::Update_Buildables(void)
                             Map.Add(RTTI_AIRCRAFTTYPE, a);
                         }
                     } else {
-                        if (*this == STRUCT_HELIPAD) {
+                        if (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD) {
                             Map.Add(RTTI_AIRCRAFTTYPE, a);
                         }
                     }
@@ -2988,7 +3074,7 @@ void BuildingClass::Grand_Opening(bool captured)
         /*
         **	Helicopter pads get a free attack helicopter.
         */
-        if (!Rule.IsSeparate && *this == STRUCT_HELIPAD && !captured) {
+        if (!Rule.IsSeparate && (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD) && !captured) {
             ScenarioInit++;
             AircraftClass* air = 0;
             if (House->ActLike == HOUSE_USSR || House->ActLike == HOUSE_BAD || House->ActLike == HOUSE_UKRAINE) {
@@ -3381,7 +3467,7 @@ COORDINATE BuildingClass::Docking_Coord(void) const
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
-    if (*this == STRUCT_HELIPAD) {
+    if (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD) {
         return (Coord_Add(Coord, XYP_COORD(24, 18)));
     }
     if (*this == STRUCT_AIRSTRIP) {
@@ -3763,7 +3849,7 @@ COORDINATE BuildingClass::Sort_Y(void) const
     if (*this == STRUCT_REPAIR) {
         return (Coord);
     }
-    if (*this == STRUCT_HELIPAD) {
+    if (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD) {
         return (Center_Coord());
     }
     if (*this == STRUCT_AIRSTRIP) {
@@ -4918,7 +5004,7 @@ int BuildingClass::Mission_Repair(void)
         return (MissionControl[Mission].Normal_Delay());
     }
 
-    if (*this == STRUCT_HELIPAD || *this == STRUCT_AIRSTRIP) {
+    if (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD || *this == STRUCT_AIRSTRIP) {
         enum
         {
             INITIAL,

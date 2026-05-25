@@ -48,6 +48,8 @@ ENTRIES=(
     # M4 Tier 3 — production buildings.
     "HAND.SHP:TDHAND.SHP"
     "HANDMAKE.SHP:TDHANDMAKE.SHP"
+    "HPAD.SHP:TDHPAD.SHP"
+    "HPADMAKE.SHP:TDHPADMAKE.SHP"
 )
 
 # Extract each SHP from CONQUER.MIX into the temp dir.

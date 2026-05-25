@@ -311,6 +311,46 @@ See [[reference-mfcd-donor-imagedata-pattern]].
 
 The exception is plumbing the launcher requires (e.g. `Map.Submit` for layer system, `Height` init for flight altitude tracking). Flag those inline with comments.
 
+### 3.11 — Separated TD building doesn't satisfy vanilla-RA prerequisites
+
+**Trap:** Aircraft/units that require a vanilla RA building (e.g. helicopters require `STRUCT_HELIPAD`, RA Allied/Soviet infantry require `STRUCT_TENT` / `STRUCT_BARRACKS`, vehicles require `STRUCT_WEAP`) silently disappear from the sidebar when the player builds the TD-separated equivalent (TDHPAD, TDPYLE, TDHAND, TDWEAP/TDAFLD) instead of the vanilla one. The TD building has its own `Type` enum past `STRUCT_COUNT`, so the prereq check `Has_Building_Active(STRUCT_HELIPAD)` returns false even though semantically the player has a helipad.
+
+**Symptom:** Build a TDHPAD, get the free helicopter — but the helicopter cameos never appear in the sidebar. (Or: GDI builds TDPYLE, the Allied infantry roster never unlocks. Etc.)
+
+**Fix:** Extend `HouseClass::Can_Build`'s prerequisite-equivalence block at `house.cpp:986+`. Add a cached IniName→Type lookup for the new TD building plus a `if (t == STRUCT_VANILLA_NAME && tdNNNN_type >= 0 && Has_Building_Active(tdNNNN_type)) continue;` branch. The existing TDPYLE/TDHAND/TDWEAP/TDAFLD/TDHPAD entries are the worked examples.
+
+**Why it's silent:** No engine error, no warning — `Can_Build` just returns false. The cameo is conditionally hidden by the sidebar, so you only notice via "thing I expected to be buildable isn't there."
+
+This will eventually be replaced by a `BehavesLike=` rules.ini field in D2; until then, every new separated TD building that shadows a vanilla RA factory needs one entry here.
+
+### 3.12 — `Who_Can_Build_Me` evicts cameos right after `Can_Build` adds them
+
+**Trap:** §3.11's prereq equivalence makes `Can_Build` return true and `Update_Buildables` calls `Sidebar_Glyphx_Add` successfully — but the cameo still doesn't appear (or appears for one frame then vanishes). The next `Sidebar_Glyphx_Recalc` tick (called every `Glyphx_Queue_AI` from `dllinterface.cpp:1990`) runs `StripClass::Recalc` → `tech->Who_Can_Build_Me(true, false, house) != NULL`. If that returns NULL, the entry is evicted.
+
+`ObjectTypeClass::Who_Can_Build_Me` (`object.cpp:2403+`) iterates buildings and checks `building->Class->ToBuild == RTTI`. That check passes for TD-separated factories. **But** the function then has a "HACK ALERT" branch at `object.cpp:2436-2443` that hardcodes `STRUCT_HELIPAD` and `STRUCT_AIRSTRIP` to restrict aircraft to the matching factory kind:
+
+```cpp
+if (What_Am_I() == RTTI_AIRCRAFTTYPE) {
+    AircraftTypeClass* air = (AircraftTypeClass*)this;
+    if ((*building == STRUCT_HELIPAD && !air->IsFixedWing)
+        || (*building == STRUCT_AIRSTRIP && air->IsFixedWing)) {
+        ...
+    }
+}
+```
+
+A separated `STRUCT_TDHPAD` fails the `*building == STRUCT_HELIPAD` test — Recalc evicts every rotary cameo.
+
+**Symptom:** Cameos appear briefly then disappear, OR (in practice) never visible because Recalc fires before the first paint. Logs show `Sidebar_Glyphx_Add` reporting `added=1` for HELI but the launcher's sidebar stays empty.
+
+**Fix:** Extend the hardcoded check to include the separated equivalent:
+```cpp
+if (((*building == STRUCT_HELIPAD || *building == STRUCT_TDHPAD) && !air->IsFixedWing)
+    || (*building == STRUCT_AIRSTRIP && air->IsFixedWing)) {
+```
+
+**Why it's a sister-bug to §3.11:** Two hardcoded RA-side paths gate cameo visibility — `HouseClass::Can_Build` (add) and `ObjectTypeClass::Who_Can_Build_Me` (don't evict). Adding §3.11's equivalence without §3.12's fix gives you cameos that get added then immediately stripped. Always patch both whenever a TD-separated building shadows a vanilla RA factory role (helipad, airstrip, future barracks/weapon-factory equivalents). TDAFLD hit the same shape of bug and resolved it via `Find_Docking_Bay`'s IniName fallback — the underlying lesson is identical.
+
 ---
 
 ## 4. Templates to copy

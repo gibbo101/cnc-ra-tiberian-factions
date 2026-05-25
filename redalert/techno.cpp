@@ -6502,8 +6502,13 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         // cargo-plane delivery path — Nod's airstrip is the docking target
         // even though the engine treats it as a war factory internally.
         bool looking_for_airstrip = (b == STRUCT_AIRSTRIP);
+        // TD-port: STRUCT_TDHPAD is a fully-separated helipad — when an
+        // aircraft asks for STRUCT_HELIPAD, also accept TDHPAD so rotary
+        // aircraft can dock on our Nod/GDI Helipad variants.
+        bool looking_for_helipad = (b == STRUCT_HELIPAD);
         bool has_candidate = (House->Get_Quantity(b) != 0)
-                             || (looking_for_airstrip && House->Get_Quantity(STRUCT_WEAP) != 0);
+                             || (looking_for_airstrip && House->Get_Quantity(STRUCT_WEAP) != 0)
+                             || (looking_for_helipad && House->Get_Quantity(STRUCT_TDHPAD) != 0);
         if (has_candidate) {
             int bestval = -1;
 
@@ -6517,10 +6522,12 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 if (building == NULL)
                     continue;
 
-                // Match: native StructType, OR TDAFLD-as-airstrip fallback.
+                // Match: native StructType, OR TDAFLD-as-airstrip fallback,
+                // OR TDHPAD-as-helipad fallback (separated TD helipad).
                 bool tdafld_match = looking_for_airstrip
                                     && strncmp(building->Class->IniName, "TDAFLD", 6) == 0;
-                bool type_match = (*building == b) || tdafld_match;
+                bool tdhpad_match = looking_for_helipad && (*building == STRUCT_TDHPAD);
+                bool type_match = (*building == b) || tdafld_match || tdhpad_match;
                 if (!type_match)
                     continue;
 

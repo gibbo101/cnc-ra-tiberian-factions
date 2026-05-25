@@ -319,7 +319,8 @@ TDWEAP = {
 
 TDHPAD = {
     "ininame":     "TDHPAD",
-    "logic":       "HPAD",
+    # MIGRATED to STRUCT_TDHPAD in bdata.cpp Init_Heap (M4 Tier 3, 2026-05-25).
+    "logic":       None,
     "td_asset":    "HPAD",
     "footprint":   None,  # RA HPAD donor matches TD (2x2 BSIZE_22).
     "shape_size":  (48, 48),
@@ -337,7 +338,7 @@ TDHPAD = {
     "sight":       3,
     "adjacent":    1,
     "sensors":     None,
-    "strength":    800,
+    "strength":    400,
     "armor":       "wood",
     "primary":     None,
     "secondary":   None,
@@ -347,7 +348,7 @@ TDHPAD = {
     "repairable":  True,
     "bib":         True,
     "idle_anim":   None,
-    "notes":       "TD Helipad. Shared GDI+Nod per TD canon. Crew=no, no idle anim. Image=TDHPAD shadows vanilla HPAD.",
+    "notes":       "TD Helipad. STRUCT_TDHPAD with own BuildingTypeClass (ClassTdHpad) modeled on TD's ClassHelipad. RTTI_AIRCRAFTTYPE factory, 2x2 BSIZE_22, ARMOR_WOOD, Strength=400 (TD-authentic; RA's HELIPAD has 800 — leaked through Logic=HPAD alias). Engine dispatches: 8 STRUCT_HELIPAD cases in building.cpp updated to accept STRUCT_TDHPAD (Receive_Message x3, sidebar refresh, Grand_Opening free-aircraft, Docking_Coord, Exit_Coord, Mission_Unload). Find_Docking_Bay (techno.cpp:6486) extended with helipad fallback so rotary aircraft find TDHPAD when looking for STRUCT_HELIPAD. Raw_Cost cost-adjust includes TDHPAD. Classic SHP ships via TFASSETS.MIX (TDHPAD.SHP + TDHPADMAKE.SHP).",
 }
 
 

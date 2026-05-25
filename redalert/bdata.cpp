@@ -893,6 +893,44 @@ static BuildingTypeClass const ClassTdHand(STRUCT_TDHAND,
                                            (short const*)OListHand
 );
 
+/*
+**  TDHPAD (Helipad) — 2×2 aircraft factory, ARMOR_WOOD, capturable.
+**    Wholesale port of TD's STRUCT_HELIPAD per tiberiandawn/bdata.cpp:688
+**    (ClassHelipad). Factory of RTTI_AIRCRAFTTYPE; no exit cells (helicopter
+**    docks on the pad itself). TD's HELIPAD has Crew=false, Repair=true,
+**    Capturable=true. ARMOR_WOOD + Strength=400 are TD-authentic; RA's
+**    vanilla HELIPAD has Strength=800 which leaked through the Logic=HPAD
+**    alias era — corrected here.
+*/
+static BuildingTypeClass const ClassTdHpad(STRUCT_TDHPAD,
+                                           TXT_NONE,           // Display name (rules.ini Name= overrides).
+                                           "TDHPAD",           // IniName.
+                                           FACING_NONE,        // Foundation direction from center.
+                                           XYP_COORD(0, 0),    // No exit list — helicopter docks on the pad.
+                                           REMAP_ALTERNATE,    // Sidebar remap logic.
+                                           0x0000,             // Vertical offset.
+                                           0x0000,             // Primary weapon offset.
+                                           0x0000,             // Primary weapon lateral offset.
+                                           false,              // Is this building a fake (decoy?)
+                                           false,              // Animation rate regulated for constant speed?
+                                           false,              // Always use the given name?
+                                           false,              // Is this a wall type structure?
+                                           false,              // Simple (one frame) damage imagery?
+                                           false,              // Is it invisible to radar?
+                                           true,               // Can the player select this?
+                                           true,               // Is this a legal target?
+                                           false,              // Is this an insignificant building?
+                                           false,              // Theater specific graphic image?
+                                           false,              // Does it have a rotating turret?
+                                           true,               // Can the building be color remapped?
+                                           RTTI_AIRCRAFTTYPE,  // Aircraft factory.
+                                           DIR_N,              // Starting idle frame.
+                                           BSIZE_22,           // 2x2 footprint (TD-authentic).
+                                           NULL,               // No preferred exit cell.
+                                           (short const*)List2,
+                                           (short const*)NULL
+);
+
 static BuildingTypeClass const ClassObelisk(STRUCT_TDOBLI,
                                             TXT_NONE,        // Display name token; rules.ini Name= overrides.
                                             "TDOBLI",        // IniName.
@@ -3396,6 +3434,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdGun);   // STRUCT_TDGUN   (Nod Turret)
     new BuildingTypeClass(ClassTdSam);   // STRUCT_TDSAM   (SAM Site)
     new BuildingTypeClass(ClassTdHand);  // STRUCT_TDHAND  (Hand of Nod)
+    new BuildingTypeClass(ClassTdHpad);  // STRUCT_TDHPAD  (Helipad)
 }
 
 /***********************************************************************************************
@@ -3478,6 +3517,10 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TDNUK2, BSTATE_IDLE, 0, 4, 15},
         {STRUCT_TDPYLE, BSTATE_ACTIVE, 0, 10, 3},
         {STRUCT_TDPYLE, BSTATE_IDLE, 0, 10, 3},
+        // M4 Tier 3 — TDHPAD rotor-pad cycle (TD-authentic per
+        // tiberiandawn/bdata.cpp:3795-3796).
+        {STRUCT_TDHPAD, BSTATE_ACTIVE, 0, 7, 4},
+        {STRUCT_TDHPAD, BSTATE_IDLE, 0, 0, 0},
     };
 
     for (int sindex = STRUCT_FIRST; sindex < STRUCT_COUNT; sindex++) {
@@ -4148,7 +4191,7 @@ int BuildingTypeClass::Raw_Cost(void) const
 {
     int cost = TechnoTypeClass::Raw_Cost();
 
-    if (Type == STRUCT_HELIPAD && !Rule.IsSeparate) {
+    if ((Type == STRUCT_HELIPAD || Type == STRUCT_TDHPAD) && !Rule.IsSeparate) {
         cost -=
             (AircraftTypeClass::As_Reference(AIRCRAFT_HIND).Cost + AircraftTypeClass::As_Reference(AIRCRAFT_HIND).Cost)
             / 2;

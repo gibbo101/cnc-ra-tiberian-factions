@@ -2432,10 +2432,15 @@ BuildingClass* ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, Hous
                 /*
                 **	HACK ALERT: Helipads can build aircraft and airstrips can build
                 **	fixed wing craft only.
+                **	Tiberian Factions: STRUCT_TDHPAD (separated TD Helipad) accepted
+                **	alongside STRUCT_HELIPAD so the sidebar Recalc doesn't evict
+                **	rotary aircraft cameos when only TDHPAD is owned. Without this
+                **	extension, BuildableCount drops HELI/HIND immediately after
+                **	Update_Buildables adds them. See [[project-td-port-architecture]].
                 */
                 if (What_Am_I() == RTTI_AIRCRAFTTYPE) {
                     AircraftTypeClass* air = (AircraftTypeClass*)this;
-                    if ((*building == STRUCT_HELIPAD && !air->IsFixedWing)
+                    if (((*building == STRUCT_HELIPAD || *building == STRUCT_TDHPAD) && !air->IsFixedWing)
                         || (*building == STRUCT_AIRSTRIP && air->IsFixedWing)) {
                         if (building->IsLeader)
                             return (building);

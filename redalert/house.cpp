@@ -1013,6 +1013,7 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             static int tdhand_type = -2;
             static int tdweap_type = -2;
             static int tdafld_type = -2;
+            static int tdhpad_type = -2;
             if (tdpyle_type == -2) {
                 BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDPYLE");
                 tdpyle_type = p ? p->Type : -1;
@@ -1028,6 +1029,10 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             if (tdafld_type == -2) {
                 BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDAFLD");
                 tdafld_type = p ? p->Type : -1;
+            }
+            if (tdhpad_type == -2) {
+                BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDHPAD");
+                tdhpad_type = p ? p->Type : -1;
             }
             if (t == STRUCT_TENT && tdpyle_type >= 0 && Has_Building_Active(tdpyle_type))
                 continue;
@@ -1051,6 +1056,14 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                 if (tdweap_type >= 0 && Has_Building_Active(tdweap_type))
                     continue;
                 if (tdafld_type >= 0 && Has_Building_Active(tdafld_type))
+                    continue;
+            }
+            // STRUCT_HELIPAD — satisfied by TDHPAD (separated TD helipad).
+            // RA's Hind/Longbow/etc. all require STRUCTF_HELIPAD; without this
+            // equivalence, players who built a TDHPAD can't see helicopters
+            // in the sidebar because the prereq check rejects them.
+            if (t == STRUCT_HELIPAD) {
+                if (tdhpad_type >= 0 && Has_Building_Active(tdhpad_type))
                     continue;
             }
         }
