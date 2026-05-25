@@ -111,10 +111,13 @@ static short const ListWeap[] = {0, 1, 2, (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 
 static short const ListWestwood[] = {1, 2, 3, MCW + 1, MCW + 2, MCW + 3, REFRESH_EOL};
 static short const OListSAM[] = {-MCW, -(MCW - 1), REFRESH_EOL};
 
-// Tiberian Factions mod — TDHAND (Nod Hand of Nod) foundation. 2 wide × 3
-// tall L-shape, copied verbatim from tiberiandawn/bdata.cpp:143 (ListHand)
-// and :163 (OListHand). Occupy = middle row + bottom-right "thumb"; overlap
-// = top row + bottom-left + middle-left.
+// Tiberian Factions mod — TDHAND (Nod Hand of Nod) foundation. Copied
+// verbatim from tiberiandawn/bdata.cpp:137 (ListHand) and :157 (OListHand).
+// Building proper is 2×2 with the bottom-left corner cut (the L-shape
+// "thumb" sits at bottom-right); the bib renders in row 3 underneath,
+// making the visual placement footprint 2×3 cells. Occupy = middle row
+// both cells + bottom-right thumb (3 cells). Overlap = top row + bottom-
+// left + middle-left (the sprite extends up into row 0 but no foundation).
 static short const ListHand[]  = {MCW, MCW + 1, MCW * 2 + 1, REFRESH_EOL};
 static short const OListHand[] = {0, 1, MCW * 2, MCW, REFRESH_EOL};
 
@@ -852,13 +855,14 @@ static BuildingTypeClass const ClassTdSam(STRUCT_TDSAM,
 /*
 **  Tiberian Factions mod — M4 Tier 3 production buildings.
 **
-**  TDHAND (Nod Hand of Nod) — 2×3 infantry factory, ARMOR_WOOD, capturable.
+**  TDHAND (Nod Hand of Nod) — infantry factory, ARMOR_WOOD, capturable.
 **    Wholesale port of TD's STRUCT_HAND per tiberiandawn/bdata.cpp:1148
 **    (ClassHand). The constructor flags match the TD source verbatim: bib,
 **    regulated animation, factory, capturable, simple damage, selectable,
-**    legal target, repairable, has crew, RTTI_INFANTRYTYPE. ExitCoordinate
-**    is TD's XYP_COORD(36, 63) — door at the bottom-right thumb of the 2x3
-**    footprint so infantry spawn outside the building, not inside.
+**    legal target, repairable, has crew, RTTI_INFANTRYTYPE. BSIZE_23 cell
+**    grid: building proper is 2×2 (L-shape thumb at bottom-right, bottom-
+**    left clipped) plus bib in row 3. ExitCoordinate is TD's XYP_COORD(36,
+**    63) — door at the thumb cell so infantry spawn outside the building.
 */
 static BuildingTypeClass const ClassTdHand(STRUCT_TDHAND,
                                            TXT_NONE,           // Display name (rules.ini Name= overrides).
