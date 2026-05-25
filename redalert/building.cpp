@@ -213,6 +213,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             break;
 
         case STRUCT_REPAIR:
+        case STRUCT_TDFIX:    // TD Service Depot — same vehicle/aircraft repair semantics.
             if (from->What_Am_I() == RTTI_UNIT || (from->What_Am_I() == RTTI_AIRCRAFT)) {
                 if (Transmit_Message(RADIO_ON_DEPOT, from) != RADIO_ROGER) {
                     return (RADIO_ROGER);
@@ -243,6 +244,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         }
         switch (Class->Type) {
         case STRUCT_REPAIR:
+        case STRUCT_TDFIX:    // TD Service Depot — same RADIO_IM_IN repair-bay handshake.
             IsReadyToCommence = true;
             Assign_Mission(MISSION_REPAIR);
             from->Assign_Mission(MISSION_SLEEP);
@@ -285,7 +287,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         **	be able to satisfy the request to load by bumping off any
         **	preoccupying task.
         */
-        if (*this == STRUCT_REPAIR) {
+        if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) {
             if (Contact_With_Whom() != from) {
                 if (Transmit_Message(RADIO_ON_DEPOT) == RADIO_ROGER) {
                     if (Transmit_Message(RADIO_NEED_REPAIR) == RADIO_NEGATIVE) {
@@ -317,6 +319,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 break;
 
             case STRUCT_REPAIR:
+            case STRUCT_TDFIX:    // TD Service Depot — same dock-tether semantics.
                 Transmit_Message(RADIO_TETHER);
                 param = ::As_Target(Coord_Cell(Center_Coord()));
                 break;
@@ -385,7 +388,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
     */
     case RADIO_OVER_OUT:
         Begin_Mode(BSTATE_IDLE);
-        if (*this == STRUCT_REPAIR) {
+        if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) {
             Assign_Mission(MISSION_GUARD);
         }
         TechnoClass::Receive_Message(from, message, param);
@@ -397,13 +400,13 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
     **	this event occurs.
     */
     case RADIO_UNLOADED:
-        if (*this == STRUCT_REPAIR) {
+        if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) {
             if (Distance(from) < 0x0180) {
                 return (RADIO_ROGER);
             }
         }
         TechnoClass::Receive_Message(from, message, param);
-        if (*this == STRUCT_WEAP || *this == STRUCT_AIRSTRIP || *this == STRUCT_REPAIR)
+        if (*this == STRUCT_WEAP || *this == STRUCT_AIRSTRIP || *this == STRUCT_REPAIR || *this == STRUCT_TDFIX)
             return (RADIO_RUN_AWAY);
         return (RADIO_ROGER);
 
@@ -3846,7 +3849,7 @@ COORDINATE BuildingClass::Sort_Y(void) const
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
-    if (*this == STRUCT_REPAIR) {
+    if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) {
         return (Coord);
     }
     if (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD) {
@@ -3955,7 +3958,7 @@ bool BuildingClass::Can_Demolish(void) const
 
 bool BuildingClass::Can_Demolish_Unit(void) const
 {
-    return ((*this == STRUCT_REPAIR || *this == STRUCT_AIRSTRIP) && In_Radio_Contact()
+    return ((*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_AIRSTRIP) && In_Radio_Contact()
             && Distance(Contact_With_Whom()) < 0x0080);
 }
 
@@ -4046,7 +4049,7 @@ int BuildingClass::Mission_Guard(void)
             **	Special case to break out of guard mode if this is a repair
             **	facility and there is a customer waiting at the grease pit.
             */
-            if (*this == STRUCT_REPAIR && In_Radio_Contact() && Contact_With_Whom()->Is_Techno()
+            if ((*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) && In_Radio_Contact() && Contact_With_Whom()->Is_Techno()
                 && ((TechnoClass*)Contact_With_Whom())->Mission == MISSION_ENTER
                 && Distance(Contact_With_Whom()) < 0x0040 && Transmit_Message(RADIO_NEED_TO_MOVE) == RADIO_ROGER) {
 
@@ -4059,7 +4062,7 @@ int BuildingClass::Mission_Guard(void)
             break;
         }
 
-        if (*this == STRUCT_REPAIR) {
+        if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) {
             return (MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
         } else {
             return (MissionControl[Mission].Normal_Delay() * 3 + Random_Pick(0, 2));
@@ -4842,7 +4845,7 @@ int BuildingClass::Mission_Repair(void)
         return (1);
     }
 
-    if (*this == STRUCT_REPAIR) {
+    if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) {
         enum
         {
             INITIAL,

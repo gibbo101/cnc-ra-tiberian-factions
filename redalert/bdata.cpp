@@ -931,6 +931,45 @@ static BuildingTypeClass const ClassTdHpad(STRUCT_TDHPAD,
                                            (short const*)NULL
 );
 
+/*
+**  TDFIX (Service Depot) — 3×3 vehicle/aircraft repair bay, ARMOR_WOOD,
+**    capturable. Wholesale port of TD's STRUCT_REPAIR per
+**    tiberiandawn/bdata.cpp:1250 (ClassRepair). Not a factory
+**    (ToBuild=RTTI_NONE). ListFix/OListFix file-scope arrays already
+**    exist (used by RA's ClassRepair) — the cross-shape foundation:
+**    occupy {1, MCW, MCW+1, MCW+2, MCW*2+1} = top-centre + middle row
+**    + bottom-centre. Strength=400 (TD-authentic; RA's REPAIR has 800
+**    which leaked through the Logic=FIX alias era).
+*/
+static BuildingTypeClass const ClassTdFix(STRUCT_TDFIX,
+                                          TXT_NONE,           // Display name (rules.ini Name= overrides).
+                                          "TDFIX",            // IniName.
+                                          FACING_NONE,        // Foundation direction.
+                                          XYP_COORD(0, 0),    // No produced-unit exit (non-factory).
+                                          REMAP_ALTERNATE,    // Sidebar remap logic.
+                                          0x0000,             // Vertical offset.
+                                          0x0000,             // Primary weapon offset.
+                                          0x0000,             // Primary weapon lateral offset.
+                                          false,              // Is this building a fake?
+                                          true,               // Animation rate regulated for constant speed?
+                                          false,              // Always use the given name?
+                                          false,              // Is this a wall type structure?
+                                          false,              // Simple (one frame) damage imagery?
+                                          false,              // Is it invisible to radar?
+                                          true,               // Can the player select this?
+                                          true,               // Is this a legal target?
+                                          false,              // Is this an insignificant building?
+                                          false,              // Theater specific graphic image?
+                                          false,              // Does it have a rotating turret?
+                                          true,               // Can the building be color remapped?
+                                          RTTI_NONE,          // Not a factory.
+                                          DIR_N,              // Starting idle frame.
+                                          BSIZE_33,           // 3x3 footprint (TD-authentic).
+                                          NULL,               // No preferred exit cell.
+                                          (short const*)ListFix,
+                                          (short const*)OListFix
+);
+
 static BuildingTypeClass const ClassObelisk(STRUCT_TDOBLI,
                                             TXT_NONE,        // Display name token; rules.ini Name= overrides.
                                             "TDOBLI",        // IniName.
@@ -3435,6 +3474,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdSam);   // STRUCT_TDSAM   (SAM Site)
     new BuildingTypeClass(ClassTdHand);  // STRUCT_TDHAND  (Hand of Nod)
     new BuildingTypeClass(ClassTdHpad);  // STRUCT_TDHPAD  (Helipad)
+    new BuildingTypeClass(ClassTdFix);   // STRUCT_TDFIX   (Service Depot)
 }
 
 /***********************************************************************************************
@@ -3521,6 +3561,10 @@ void BuildingTypeClass::One_Time(void)
         // tiberiandawn/bdata.cpp:3795-3796).
         {STRUCT_TDHPAD, BSTATE_ACTIVE, 0, 7, 4},
         {STRUCT_TDHPAD, BSTATE_IDLE, 0, 0, 0},
+        // M4 Tier 3 — TDFIX repair-bay cycle (TD-authentic per
+        // tiberiandawn/bdata.cpp:3806-3807).
+        {STRUCT_TDFIX, BSTATE_ACTIVE, 0, 7, 2},
+        {STRUCT_TDFIX, BSTATE_IDLE, 0, 1, 0},
     };
 
     for (int sindex = STRUCT_FIRST; sindex < STRUCT_COUNT; sindex++) {

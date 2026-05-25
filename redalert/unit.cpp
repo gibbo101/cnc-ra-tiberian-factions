@@ -1768,7 +1768,8 @@ void UnitClass::Per_Cell_Process(PCPType why)
                 TechnoClass* contact = Contact_With_Whom();
                 if (Transmit_Message(RADIO_UNLOADED) == RADIO_RUN_AWAY) {
                     if (*this == UNIT_HARVESTER && contact && contact->What_Am_I() == RTTI_BUILDING
-                        && *((BuildingClass*)contact) != STRUCT_REPAIR) {
+                        && *((BuildingClass*)contact) != STRUCT_REPAIR
+                        && *((BuildingClass*)contact) != STRUCT_TDFIX) {
                         Assign_Mission(MISSION_HARVEST);
                     } else if (!Target_Legal(NavCom)) {
                         Scatter(0, true);
@@ -3334,7 +3335,10 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
             **	authorization from the occupier.
             */
             if (obj == Contact_With_Whom()
-                && (IsTethered || (obj->What_Am_I() == RTTI_BUILDING && *((BuildingClass*)obj) == STRUCT_REPAIR))) {
+                && (IsTethered
+                    || (obj->What_Am_I() == RTTI_BUILDING
+                        && (*((BuildingClass*)obj) == STRUCT_REPAIR
+                            || *((BuildingClass*)obj) == STRUCT_TDFIX)))) {
                 return (MOVE_OK);
             }
 
@@ -3673,12 +3677,17 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
 
     /*
     **	Special return to friendly refinery action.
+    **	Tiberian Factions: gate on action == ACTION_SELECT so Ctrl-force-fire
+    **	(which sets ACTION_ATTACK) on the player's own refinery / repair bay
+    **	/ helipad / airstrip is preserved instead of being demoted to
+    **	ACTION_ENTER. The sister "repair facility" override below already has
+    **	this guard; the dock-anything override here previously didn't.
     */
     bool is_player_controlled = (Session.Type == GAME_NORMAL)
                                     ? (House->IsPlayerControl && object->Owner() != HOUSE_NONE
                                        && HouseClass::As_Pointer(object->Owner())->IsPlayerControl)
                                     : (Is_Owned_By_Player() && House->Class->House == object->Owner());
-    if (is_player_controlled && object->What_Am_I() == RTTI_BUILDING
+    if (is_player_controlled && action == ACTION_SELECT && object->What_Am_I() == RTTI_BUILDING
         && ((UnitClass*)this)->Transmit_Message(RADIO_CAN_LOAD, (TechnoClass*)object) == RADIO_ROGER) {
         action = ACTION_ENTER;
     }
@@ -3688,7 +3697,7 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
     */
     if (is_player_controlled && action == ACTION_SELECT && object->What_Am_I() == RTTI_BUILDING) {
         BuildingClass* building = (BuildingClass*)object;
-        if (building->Class->Type == STRUCT_REPAIR
+        if ((building->Class->Type == STRUCT_REPAIR || building->Class->Type == STRUCT_TDFIX)
             && ((UnitClass*)this)->Transmit_Message(RADIO_CAN_LOAD, building) == RADIO_ROGER
             && !building->In_Radio_Contact() && !building->Is_Something_Attached()) {
             action = ACTION_MOVE;
@@ -4751,17 +4760,17 @@ void UnitClass::Assign_Destination(TARGET target)
                     **	HACK ALERT: The repair bay is counting on the assignment of the NavCom by this routine.
                     **	The refinery must NOT have the navcom assigned by this routine.
                     */
-                    if (*b != STRUCT_REPAIR) {
+                    if (*b != STRUCT_REPAIR && *b != STRUCT_TDFIX) {
                         target = TARGET_NONE;
                     }
                 } else {
                     if (Transmit_Message(RADIO_DOCKING, b) != RADIO_ROGER) {
                         Transmit_Message(RADIO_OVER_OUT);
-                        if (*b == STRUCT_REPAIR) {
+                        if (*b == STRUCT_REPAIR || *b == STRUCT_TDFIX) {
                             ArchiveTarget = target;
                         }
                     }
-                    if (*b != STRUCT_REPAIR) {
+                    if (*b != STRUCT_REPAIR && *b != STRUCT_TDFIX) {
                         ArchiveTarget = target;
                         target = TARGET_NONE;
                     }
@@ -4801,7 +4810,7 @@ void UnitClass::Assign_Destination(TARGET target)
     **	If the player clicked on a friendly repair facility and the repair
     **	facility is currently not involved with some other unit (radio or unloading).
     */
-    if (b != NULL && *b == STRUCT_REPAIR) {
+    if (b != NULL && (*b == STRUCT_REPAIR || *b == STRUCT_TDFIX)) {
         if (b->In_Radio_Contact() && (b->Contact_With_Whom() != this)) {
             //			if (target != NULL) {
             ArchiveTarget = target;

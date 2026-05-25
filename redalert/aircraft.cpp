@@ -2585,12 +2585,18 @@ ActionType AircraftClass::What_Action(ObjectClass const* target) const
         action = ACTION_NONE;
     }
 
-    if (House->IsPlayerControl && House->Is_Ally(target) && target->What_Am_I() == RTTI_BUILDING
+    // Tiberian Factions: gate the friendly-building / aircraft-carrier
+    // dock overrides on action == ACTION_SELECT so Ctrl-force-fire on the
+    // player's own helipad / repair bay / carrier is preserved instead
+    // of being demoted to ACTION_ENTER. Mirrors the unit.cpp:3685 fix.
+    if (House->IsPlayerControl && action == ACTION_SELECT && House->Is_Ally(target)
+        && target->What_Am_I() == RTTI_BUILDING
         && ((AircraftClass*)this)->Transmit_Message(RADIO_CAN_LOAD, (TechnoClass*)target) == RADIO_ROGER) {
         action = ACTION_ENTER;
     }
 #ifdef FIXIT_CARRIER //	checked - ajw 9/28/98
-    if (!Class->IsFixedWing && House->IsPlayerControl && House->Is_Ally(target) && target->What_Am_I() == RTTI_VESSEL
+    if (!Class->IsFixedWing && House->IsPlayerControl && action == ACTION_SELECT && House->Is_Ally(target)
+        && target->What_Am_I() == RTTI_VESSEL
         && *(VesselClass*)target == VESSEL_CARRIER
         && ((AircraftClass*)this)->Transmit_Message(RADIO_CAN_LOAD, (TechnoClass*)target) == RADIO_ROGER) {
         action = ACTION_ENTER;
@@ -2610,7 +2616,8 @@ ActionType AircraftClass::What_Action(ObjectClass const* target) const
     */
     if (House->IsPlayerControl && action == ACTION_SELECT && target->What_Am_I() == RTTI_BUILDING) {
         BuildingClass* building = (BuildingClass*)target;
-        if (building->Class->Type == STRUCT_REPAIR && !building->In_Radio_Contact()
+        if ((building->Class->Type == STRUCT_REPAIR || building->Class->Type == STRUCT_TDFIX)
+            && !building->In_Radio_Contact()
             && !building->Is_Something_Attached()) {
             action = ACTION_ENTER;
         }
@@ -4030,7 +4037,8 @@ int AircraftClass::Mission_Guard(void)
         if (!In_Radio_Contact()
             || (Height == 0
                 && (Contact_With_Whom()->What_Am_I() != RTTI_BUILDING
-                    || *((BuildingClass*)Contact_With_Whom()) != STRUCT_REPAIR))) {
+                    || (*((BuildingClass*)Contact_With_Whom()) != STRUCT_REPAIR
+                        && *((BuildingClass*)Contact_With_Whom()) != STRUCT_TDFIX)))) {
 
             BuildingClass* building = Find_Docking_Bay(STRUCT_REPAIR, true);
             if (building != NULL) {

@@ -247,14 +247,15 @@ TDSILO = {
 
 TDFIX = {
     "ininame":     "TDFIX",
-    "logic":       "FIX",
+    # MIGRATED to STRUCT_TDFIX in bdata.cpp Init_Heap (M4 Tier 3, 2026-05-25).
+    "logic":       None,
     "td_asset":    "FIX",
     "footprint":   None,  # RA FIX donor is 3x3 (BSIZE_33); inherit donor shape.
     "shape_size":  (72, 72),
     "text_id_name": "TEXT_STRUCTURE_TITLE_GDI_REPAIR_FACILITY",
     "text_id_desc": "TEXT_STRUCTURE_DESC_GDI_REPAIR_FACILITY",
     "build_icon":  "BuildIcon_TD_RepairFacility",
-    "name":        "Service Depot",
+    "name":        "Repair Facility",
     "tech_level":  5,
     "prereq":      "TDNUKE",
     "owner":       "GoodGuy,BadGuy",
@@ -265,7 +266,7 @@ TDFIX = {
     "sight":       3,
     "adjacent":    1,
     "sensors":     None,
-    "strength":    800,
+    "strength":    400,
     "armor":       "wood",
     "primary":     None,
     "secondary":   None,
@@ -275,7 +276,7 @@ TDFIX = {
     "repairable":  True,
     "bib":         True,
     "idle_anim":   None,
-    "notes":       "TD Service Depot. Logic=FIX gives vehicle-repair behaviour. Image=TDFIX shadows vanilla RA FIX.",
+    "notes":       "TD Service Depot. STRUCT_TDFIX with own BuildingTypeClass (ClassTdFix) modeled on TD's ClassRepair. Non-factory (ToBuild=RTTI_NONE), BSIZE_33 cross-shape (ListFix+OListFix reused from RA's vanilla FIX), ARMOR_WOOD, Strength=400 (TD-authentic; RA's REPAIR has 800 — leaked through Logic=FIX alias). Engine dispatches: 13 STRUCT_REPAIR cases in building.cpp + 5 unit.cpp + 2 aircraft.cpp updated to accept STRUCT_TDFIX. Find_Docking_Bay (techno.cpp:6486) extended with TDFIX fallback so vehicles/aircraft find TDFIX when looking for STRUCT_REPAIR. Classic SHP ships via TFASSETS.MIX (TDFIX.SHP + TDFIXMAKE.SHP).",
 }
 
 

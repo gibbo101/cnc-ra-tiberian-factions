@@ -3059,8 +3059,14 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
 
     /*
     **	Check to see if it can enter a transporter.
+    **	Tiberian Factions: gate on action == ACTION_SELECT so Ctrl-force-fire
+    **	(ACTION_ATTACK) on the player's own building/transport is preserved
+    **	instead of being demoted to ACTION_ENTER (or ACTION_NO_ENTER, which
+    **	is what shows as "nothing" / red-circle cursor when RADIO_CAN_LOAD
+    **	returns NEGATIVE for buildings like TDFIX). Mirrors unit.cpp:3685 +
+    **	aircraft.cpp:2588 fixes.
     */
-    if (House->Is_Ally(object) && House->IsPlayerControl && object->Is_Techno()) {
+    if (House->Is_Ally(object) && House->IsPlayerControl && action == ACTION_SELECT && object->Is_Techno()) {
 #ifdef FIXIT_CARRIER //	checked - ajw 9/28/98
         if (object->What_Am_I() != RTTI_VESSEL || *(VesselClass*)object != VESSEL_CARRIER) {
 #endif

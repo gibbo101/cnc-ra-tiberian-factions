@@ -6506,9 +6506,13 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         // aircraft asks for STRUCT_HELIPAD, also accept TDHPAD so rotary
         // aircraft can dock on our Nod/GDI Helipad variants.
         bool looking_for_helipad = (b == STRUCT_HELIPAD);
+        // TD-port: STRUCT_TDFIX is a fully-separated Service Depot — when
+        // a unit/aircraft asks for STRUCT_REPAIR, also accept TDFIX.
+        bool looking_for_repair = (b == STRUCT_REPAIR);
         bool has_candidate = (House->Get_Quantity(b) != 0)
                              || (looking_for_airstrip && House->Get_Quantity(STRUCT_WEAP) != 0)
-                             || (looking_for_helipad && House->Get_Quantity(STRUCT_TDHPAD) != 0);
+                             || (looking_for_helipad && House->Get_Quantity(STRUCT_TDHPAD) != 0)
+                             || (looking_for_repair && House->Get_Quantity(STRUCT_TDFIX) != 0);
         if (has_candidate) {
             int bestval = -1;
 
@@ -6523,11 +6527,13 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                     continue;
 
                 // Match: native StructType, OR TDAFLD-as-airstrip fallback,
-                // OR TDHPAD-as-helipad fallback (separated TD helipad).
+                // OR TDHPAD-as-helipad fallback (separated TD helipad),
+                // OR TDFIX-as-repair-bay fallback (separated TD Service Depot).
                 bool tdafld_match = looking_for_airstrip
                                     && strncmp(building->Class->IniName, "TDAFLD", 6) == 0;
                 bool tdhpad_match = looking_for_helipad && (*building == STRUCT_TDHPAD);
-                bool type_match = (*building == b) || tdafld_match || tdhpad_match;
+                bool tdfix_match = looking_for_repair && (*building == STRUCT_TDFIX);
+                bool type_match = (*building == b) || tdafld_match || tdhpad_match || tdfix_match;
                 if (!type_match)
                     continue;
 
