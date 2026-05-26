@@ -57,6 +57,8 @@ ENTRIES=(
     # M5 Tier 4 — superweapon hosts.
     "EYE.SHP:TDEYE.SHP"
     "EYEMAKE.SHP:TDEYEMAKE.SHP"
+    # M5 Phase E2 — Ion Cannon beam-strike anim (ANIM_TD_ION_CANNON).
+    "IONSFX.SHP:TDIONSFX.SHP"
 )
 
 # Extract each SHP from CONQUER.MIX into the temp dir.

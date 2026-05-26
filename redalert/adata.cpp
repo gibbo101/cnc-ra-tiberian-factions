@@ -42,6 +42,46 @@
 
 #include "function.h"
 
+/*
+**  Tiberian Factions mod: TD GDI Ion Cannon beam-strike anim. Verbatim
+**  port of TD's ANIM_ION_CANNON (tiberiandawn/adata.cpp:1874). IniName
+**  is "TDIONSFX" per the TD prefix convention — classic mode reads the
+**  SHP from TFASSETS.MIX (packed as TDIONSFX.SHP); Remastered resolves
+**  via the TDIONSFX tileset entry in RA_VFX.XML which points to the
+**  base game's ionsfx-XXXX.tga frames (TEXTURES_TD_SRGB.MEG).
+**
+**  ChainTo = ANIM_ART_EXP1: when the beam finishes its 15-stage cycle
+**  it chains into RA's artillery explosion at the impact cell. The
+**  damage hit (600 / WARHEAD_TDPB) fires from AnimClass::Middle() —
+**  the engine-side dispatch lives in anim.cpp Middle() and uses the
+**  EYE owner search-loop ported verbatim from TD anim.cpp:1204.
+*/
+static AnimTypeClass const TdIonCannon(ANIM_TD_ION_CANNON, // Animation number.
+                                       "TDIONSFX",         // Data name of animation.
+                                       48,                 // Maximum dimension of animation.
+                                       11,                 // Biggest animation stage.
+                                       false,              // Theater specific art imagery?
+                                       false,              // Normalized animation rate? (TD-source false)
+                                       false,              // Uses white translucent table?
+                                       true,               // Scorches the ground?
+                                       true,               // Forms a crater?
+                                       false,              // Sticks to unit in square?
+                                       false,              // Ground level animation?
+                                       false,              // Translucent colors?
+                                       false,              // Flame thrower animation?
+                                       0x0000,             // Damage per tick (Middle() spawns Explosion_Damage instead).
+                                       1,                  // Delay between frames.
+                                       0,                  // Starting frame.
+                                       0,                  // Loop start.
+                                       0,                  // Loop end.
+                                       15,                 // Number of stages.
+                                       0,                  // Loops.
+                                       VOC_TD_ION1,        // Sound (routed to TDC/TDR_SFX_TDION1).
+                                       ANIM_ART_EXP1,      // Chain-to: artillery explosion at impact.
+                                       32,                 // Virtual stages.
+                                       0x200               // Virtual scale.
+);
+
 static AnimTypeClass const AtomBomb(ANIM_ATOM_BLAST, // Animation number.
                                     "ATOMSFX",       // Data name of animation.
                                     72,              // Maximum dimension of animation.
@@ -2365,6 +2405,10 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(MineExp1);
     new AnimTypeClass(Flag);
     new AnimTypeClass(Beacon);
+
+    // Tiberian Factions mod anims — keep in ANIM_TD_* enum order.
+    new AnimTypeClass(TdIonCannon); // ANIM_TD_ION_CANNON (Ion Cannon strike)
+
 #ifdef FIXIT_ANTS
     new AnimTypeClass(Ant1Death);
     new AnimTypeClass(Ant2Death);

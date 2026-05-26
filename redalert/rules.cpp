@@ -650,6 +650,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // identification in rules.ini (see [[project-td-prefix-convention]]).
     new WarheadTypeClass("TDLaser"); // WARHEAD_LASER (Obelisk 100%-vs-all)
     new WarheadTypeClass("TDHE");    // WARHEAD_TDHE (TD high-explosive armor table)
+    new WarheadTypeClass("TDPB");    // WARHEAD_TDPB (TD particle beam — Ion Cannon)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");

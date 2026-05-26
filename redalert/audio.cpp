@@ -256,6 +256,7 @@ struct SoundEffectNameStruct
     {"OBELPOWR", 1, IN_NOVAR}, // VOC_TD_LASER_POWER	Obelisk laser warm-up
     {"CONSTRU2", 5, IN_NOVAR}, // VOC_TD_CONSTRUCTION	TD building construction loop
     {"GUN8",     1, IN_NOVAR}, // VOC_TD_MINI			TD chain-gun burst (CHAIN_GUN / TDGTWR)
+    {"ION1",     1, IN_NOVAR}, // VOC_TD_ION1			TD Ion Cannon beam strike (ANIM_TD_ION_CANNON). Routed via RAC_SFX_ION1 / RAR_SFX_ION1 SFXEvents in SFXEVENTSNONLOCALIZED.XML.
 };
 
 //

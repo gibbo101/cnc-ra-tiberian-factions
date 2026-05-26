@@ -271,6 +271,17 @@ void AnimClass::Draw_It(int x, int y, WindowNumberType window) const
                 transtable = Map.UnitShadow;
                 break;
 
+            // Tiberian Factions mod: Ion Cannon beam anchors at the cell's
+            // bottom (the strike point) and reaches upward 8 cells. Verbatim
+            // port of TD anim.cpp:247-254 — the Remastered/WINDOW_VIRTUAL
+            // branch maps cleanly to SHAPE_BOTTOM; classic mode gets a
+            // close-enough centered render until the conditional Y-anchor
+            // is re-introduced if needed.
+            case ANIM_TD_ION_CANNON:
+                flags = flags | SHAPE_BOTTOM;
+                y += 12;
+                break;
+
             case ANIM_FLAG:
                 x += (ICON_PIXEL_W / 2) - 2;
                 y += (3 * ICON_PIXEL_H / 4) - Get_Build_Frame_Height(shapefile);
@@ -412,6 +423,20 @@ short const* AnimClass::Overlap_List(void) const
                                         REFRESH_EOL};
     static short const OverlapFlag[] = {0, 1, -MAP_CELL_W, -(MAP_CELL_W - 1), MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
 
+    // Tiberian Factions mod: Ion Cannon beam extends 8 cells north of the
+    // strike point (3 cells wide). Verbatim port of TD anim.cpp:410-433
+    // OverlapIon array. Without this the beam visual gets clipped at the
+    // edge of the anim's bounding box.
+    static short const OverlapTdIon[] = {(-MAP_CELL_W * 7) - 1, (-MAP_CELL_W * 7), (-MAP_CELL_W * 7) + 1,
+                                         (-MAP_CELL_W * 6) - 1, (-MAP_CELL_W * 6), (-MAP_CELL_W * 6) + 1,
+                                         (-MAP_CELL_W * 5) - 1, (-MAP_CELL_W * 5), (-MAP_CELL_W * 5) + 1,
+                                         (-MAP_CELL_W * 4) - 1, (-MAP_CELL_W * 4), (-MAP_CELL_W * 4) + 1,
+                                         (-MAP_CELL_W * 3) - 1, (-MAP_CELL_W * 3), (-MAP_CELL_W * 3) + 1,
+                                         (-MAP_CELL_W * 2) - 1, (-MAP_CELL_W * 2), (-MAP_CELL_W * 2) + 1,
+                                         (-MAP_CELL_W * 1) - 1, (-MAP_CELL_W * 1), (-MAP_CELL_W * 1) + 1,
+                                         (-MAP_CELL_W * 0) - 1, (-MAP_CELL_W * 0), (-MAP_CELL_W * 0) + 1,
+                                         REFRESH_EOL};
+
     if (IsToDelete) {
         static short const _list[] = {REFRESH_EOL};
         return (_list);
@@ -419,6 +444,10 @@ short const* AnimClass::Overlap_List(void) const
 
     if (Class->Type == ANIM_ATOM_BLAST) {
         return (OverlapAtom);
+    }
+
+    if (Class->Type == ANIM_TD_ION_CANNON) {
+        return (OverlapTdIon);
     }
 
     if (Class->Type == ANIM_FLAG) {
@@ -1090,6 +1119,35 @@ void AnimClass::Middle(void)
 
     if (Class->Type == ANIM_ATOM_BLAST) {
         Do_Atom_Damage(OwnerHouse, cell);
+    }
+
+    /*
+    **  Tiberian Factions mod: ANIM_TD_ION_CANNON delivers 600 damage with
+    **  WARHEAD_TDPB at its impact cell. Verbatim port of TD anim.cpp:1204-1224
+    **  — searches the firing house's units for the source TDEYE building
+    **  (falls back to any owned techno) so Explosion_Damage credits kills
+    **  correctly. The damage hit fires at mid-animation rather than on spawn
+    **  so the beam visual leads the explosion (TD-authentic timing).
+    */
+    if (Class->Type == ANIM_TD_ION_CANNON) {
+        BuildingClass* building = NULL;
+        TechnoClass* backup = NULL;
+        if (OwnerHouse != HOUSE_NONE) {
+            for (int index = 0; index < Logic.Count(); index++) {
+                ObjectClass* obj = Logic[index];
+                if (obj && obj->Is_Techno() && obj->Owner() == OwnerHouse && !obj->IsInLimbo) {
+                    backup = (TechnoClass*)obj;
+                    if (obj->What_Am_I() == RTTI_BUILDING && *((BuildingClass*)obj) == STRUCT_TDEYE) {
+                        building = (BuildingClass*)obj;
+                        break;
+                    }
+                }
+            }
+            if (building == NULL) {
+                building = (BuildingClass*)backup;
+            }
+        }
+        Explosion_Damage(Center_Coord(), 600, building, WARHEAD_TDPB);
     }
 
     /*

@@ -3038,6 +3038,26 @@ void BuildingClass::Grand_Opening(bool captured)
         House->Adjust_Capacity(Class->Capacity);
         House->IsRecalcNeeded = true;
 
+        /*
+        **  Tiberian Factions mod — Phase E2 temporary visual+audio smoke
+        **  harness for ANIM_TD_ION_CANNON. When a player completes a TDEYE,
+        **  fire a single Ion Cannon strike 6 cells south of the building so
+        **  we can validate the beam render + ION1 SFX wiring before E3
+        **  lands the real SuperClass dispatch (player-aimed strike + timer).
+        **  REMOVE this block when E3 lands.
+        */
+        if (*this == STRUCT_TDEYE && !ScenarioInit && !captured) {
+            // 6 cells south of the building's center. 0x100 leptons per cell.
+            COORDINATE target = Coord_Move(Center_Coord(), DIR_S, 0x0600);
+            // timedelay=15 ticks = 1 second pre-strike charge gap. Gives us
+            // a feel for the real super's pause-then-fire before E3 wires
+            // the actual charge state machine + VOX_TD_ION_CHARGING voice.
+            AnimClass* anim = new AnimClass(ANIM_TD_ION_CANNON, target, 15, 1);
+            if (anim != NULL) {
+                anim->Set_Owner(House->Class->House);
+            }
+        }
+
 
         /*	SPECIAL CASE:
         **	Tiberium Refineries get a free harvester. Add a harvester to the

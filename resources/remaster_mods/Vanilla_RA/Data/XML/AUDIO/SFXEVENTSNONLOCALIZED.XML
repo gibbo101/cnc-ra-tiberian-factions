@@ -6023,6 +6023,25 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     </SampleNamesList>
   </SFXEvent>
 
+  <!-- TD GDI Ion Cannon: beam strike (ANIM_TD_ION_CANNON / VOC_TD_ION1) -->
+  <SFXEvent Name="RAC_SFX_ION1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDC_SFX_ION1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_ION1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_ION1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
   <!-- Obelisk of Light: warm-up charge -->
   <SFXEvent Name="RAC_SFX_OBELPOWR" Preset="_PRESET_MD_MOBIUS_2D">
     <IsPreset> False </IsPreset>

@@ -2376,6 +2376,10 @@ typedef enum AnimType : char
     ANIM_FLAG,
     ANIM_BEACON,
 
+    // Tiberian Factions mod anims ported from TD (tiberiandawn/defines.h
+    // ANIM_*). Each is the runtime side-effect anim for a TD weapon/super.
+    ANIM_TD_ION_CANNON, // TD GDI Ion Cannon beam strike (TDIONSFX shape).
+
 #ifdef FIXIT_ANTS
     ANIM_ANT1_DEATH,
     ANIM_ANT2_DEATH,
@@ -2739,6 +2743,7 @@ typedef enum WarheadType : char
     // WARHEAD_*). Each maps to a [Name] section in rules.ini.
     WARHEAD_LASER, // 100%-vs-all-armor profile (Obelisk of Light).
     WARHEAD_TDHE,  // TD high-explosive armor table (used by BULLET_SSM via TDTowTwo).
+    WARHEAD_TDPB,  // Particle beam (TD WARHEAD_PB) — Ion Cannon strike. {1.0, 1.0, 0.75, 0.75, 0.75}.
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
@@ -3427,6 +3432,7 @@ typedef enum VocType : short
     VOC_TD_LASER_POWER,  // Obelisk laser warming-up sound
     VOC_TD_CONSTRUCTION, // TD building construction loop (CONSTRU2.AUD)
     VOC_TD_MINI,         // TD chain-gun burst (GUN8 — CHAIN_GUN / TDGTWR)
+    VOC_TD_ION1,         // TD Ion Cannon beam-strike SFX (ION1 — ANIM_TD_ION_CANNON)
 
     VOC_COUNT,
     VOC_FIRST = 0
