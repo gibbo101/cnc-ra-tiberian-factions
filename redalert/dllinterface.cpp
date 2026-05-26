@@ -2588,6 +2588,44 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
         }
         new_event.SoundEffect.SoundEffectPriority = SoundEffectName[sound_effect_index].Priority;
         new_event.SoundEffect.SoundEffectContext = SoundEffectName[sound_effect_index].Where;
+
+        // Tiberian Factions: per-faction radar SFX dispatch. The launcher's
+        // own _SFX_RADARON2 / _SFX_RADARDN1 auto-fire is muted by silent-stub
+        // WAVs shipped at RAC/RAR_SFX_RADARON2/RADARDN1.WAV; the DLL fire
+        // path in radar.cpp is re-enabled and arrives here. Allied/Soviet
+        // route to RAORADON/RAORADOF (preserved original RA radar audio);
+        // GDI/Nod route to TFRADRON/TFRADROF (TD Comm Center / Power Down).
+        // Mirrors the SpeechTD[] pattern in On_Speech.
+        if (sound_effect_index == VOC_RADAR_ON || sound_effect_index == VOC_RADAR_OFF) {
+            bool td_faction = (player_ptr != NULL
+                               && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD));
+            const char* name;
+            if (sound_effect_index == VOC_RADAR_ON) {
+                name = td_faction ? "TFRADRON" : "RAORADON";
+            } else {
+                name = td_faction ? "TFRADROF" : "RAORADOF";
+            }
+            strncpy(new_event.SoundEffect.SoundEffectName, name, 16);
+            new_event.SoundEffect.SoundEffectName[15] = '\0';
+
+            // Diagnostic: confirm dispatch runs + log ActLike at time of call.
+            // Path follows project convention (reference-diagnostic-paths).
+            const char* up = getenv("USERPROFILE");
+            if (up != NULL) {
+                char path[512];
+                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_radar_dispatch.log", up);
+                FILE* f = fopen(path, "a");
+                if (f != NULL) {
+                    fprintf(f, "[radar] sfx_idx=%d player_ptr=%s actlike=%d house=%d -> name=%s\n",
+                            sound_effect_index,
+                            player_ptr ? "yes" : "no",
+                            player_ptr ? (int)player_ptr->ActLike : -1,
+                            (player_ptr && player_ptr->Class) ? (int)player_ptr->Class->House : -1,
+                            name);
+                    fclose(f);
+                }
+            }
+        }
     } else {
         strncpy(new_event.SoundEffect.SoundEffectName, "BADINDEX", 16);
         new_event.SoundEffect.SoundEffectPriority = -1;
@@ -5232,6 +5270,19 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
             strncpy(weapon_name, "SW_IonCannon", 16);
         }
         break;
+    case SPC_TD_NUKE:
+        // Tiberian Factions mod — route Nod Nuclear Strike to SW_NUKE.
+        // SW_NUKE is on the RA launcher's no-$0 cost-suppression whitelist
+        // and shares the mushroom-cloud cameo art with RA's Soviet nuke
+        // (Petroglyph reused TD's ATOMSFX asset). AssetName "SW_TDNuke"
+        // points at RA_SW_TDNUKE in RABUILDABLES.XML so the tooltip text
+        // is Nod-specific ("Nuclear Strike") rather than the Soviet
+        // "Atomic Bomb" label that RA_SW_NUKE carries.
+        dll_weapon_type = SW_NUKE;
+        if (weapon_name != NULL) {
+            strncpy(weapon_name, "SW_TDNuke", 16);
+        }
+        break;
     default:
         dll_weapon_type = SW_UNKNOWN;
         if (weapon_name != NULL) {
@@ -5258,6 +5309,7 @@ void DLLExportClass::Fill_Sidebar_Entry_From_Special_Weapon(CNCSidebarEntryStruc
     case SPC_GPS:
     case SPC_CHRONO2:
     case SPC_TD_ION_CANNON:
+    case SPC_TD_NUKE:
         Convert_Special_Weapon_Type(weapon_type, sidebar_entry_out.SuperWeaponType, sidebar_entry_out.AssetName);
         break;
     default:

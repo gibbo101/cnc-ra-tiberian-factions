@@ -1047,6 +1047,44 @@ static BuildingTypeClass const ClassTdEye(STRUCT_TDEYE,
                                           (short const*)OComList
 );
 
+/*
+**  TDTMPL (Temple of Nod) — 3×3, ARMOR_ALUMINUM, non-capturable, crewed,
+**  no turret. Verbatim port of TD's STRUCT_TEMPLE per
+**  tiberiandawn/bdata.cpp:162 (ClassTemple). Not a factory; hosts the
+**  Nuclear Strike superweapon (wired in Phase T2). Simple damage imagery
+**  per TD source (line 176, single damaged frame rather than per-frame
+**  damage variants). Reuses RA's List000111111 + OListTmpl — same
+**  3×3-with-top-row-overlap pattern as TD's ListTmpl/OListTmpl.
+*/
+static BuildingTypeClass const ClassTdTmpl(STRUCT_TDTMPL,
+                                           TXT_NONE,           // Display name token; rules.ini Name= overrides.
+                                           "TDTMPL",           // IniName.
+                                           FACING_NONE,        // Foundation direction.
+                                           XYP_COORD(0, 0),    // No produced-unit exit.
+                                           REMAP_ALTERNATE,    // Sidebar remap logic.
+                                           0x0000,             // Vertical offset.
+                                           0x0000,             // Primary weapon offset.
+                                           0x0000,             // Primary weapon lateral offset.
+                                           false,              // Is this building a fake?
+                                           false,              // Animation rate regulated? (TD-source false)
+                                           false,              // Always use the given name?
+                                           false,              // Is this a wall type structure?
+                                           true,               // Simple (one frame) damage imagery (TD-authentic).
+                                           false,              // Is it invisible to radar?
+                                           true,               // Can the player select this?
+                                           true,               // Is this a legal target?
+                                           false,              // Is this an insignificant building?
+                                           false,              // Theater specific graphic image?
+                                           false,              // Does it have a rotating turret?
+                                           true,               // Can the building be color remapped?
+                                           RTTI_NONE,          // Not a factory.
+                                           DIR_N,              // Starting idle frame.
+                                           BSIZE_33,           // 3x3 footprint (TD-authentic).
+                                           NULL,               // No preferred exit cell.
+                                           (short const*)List000111111,
+                                           (short const*)OListTmpl
+);
+
 static BuildingTypeClass const ClassObelisk(STRUCT_TDOBLI,
                                             TXT_NONE,        // Display name token; rules.ini Name= overrides.
                                             "TDOBLI",        // IniName.
@@ -3554,6 +3592,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdFix);   // STRUCT_TDFIX   (Service Depot)
     new BuildingTypeClass(ClassTdHq);    // STRUCT_TDHQ    (Communications Center)
     new BuildingTypeClass(ClassTdEye);   // STRUCT_TDEYE   (Advanced Communications Center)
+    new BuildingTypeClass(ClassTdTmpl);  // STRUCT_TDTMPL  (Temple of Nod)
 }
 
 /***********************************************************************************************
@@ -3651,6 +3690,12 @@ void BuildingTypeClass::One_Time(void)
         // tiberiandawn/bdata.cpp:3794). Ion Cannon visual + super wiring
         // lands in Phase E2/E3; this is the structural building only.
         {STRUCT_TDEYE, BSTATE_IDLE, 0, 16, 4},
+        // M5 Tier 4 — TDTMPL idle is a single static frame; BSTATE_ACTIVE
+        // is the 5-frame missile-launch sequence (roof opens, missile rises)
+        // when the Nuclear Strike fires. Values lifted verbatim from
+        // tiberiandawn/bdata.cpp:3808 + :3815.
+        {STRUCT_TDTMPL, BSTATE_IDLE, 0, 1, 0},
+        {STRUCT_TDTMPL, BSTATE_ACTIVE, 0, 5, 1},
     };
 
     for (int sindex = STRUCT_FIRST; sindex < STRUCT_COUNT; sindex++) {

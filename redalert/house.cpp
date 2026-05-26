@@ -747,6 +747,17 @@ HouseClass::HouseClass(HousesType house)
                                                      VOX_NOT_READY,
                                                      VOX_INSUFFICIENT_POWER);
 
+    // Tiberian Factions mod — Nod Nuclear Strike. TD-authentic 14-minute
+    // recharge per tiberiandawn/defines.h NUKE_GONE_TIME (14 *
+    // TICKS_PER_MINUTE). TD has no "charging" voice for the nuke so the
+    // charging slot is VOX_NONE; VOX_TD_NUKE_AVAILABLE plays on ready.
+    new (&SuperWeapon[SPC_TD_NUKE]) SuperClass(TICKS_PER_MINUTE * 14,
+                                               true,
+                                               VOX_NONE,
+                                               VOX_TD_NUKE_AVAILABLE,
+                                               VOX_NOT_READY,
+                                               VOX_INSUFFICIENT_POWER);
+
     memset(UnitsKilled, '\0', sizeof(UnitsKilled));
     memset(BuildingsKilled, '\0', sizeof(BuildingsKilled));
     memset(BQuantity, '\0', sizeof(BQuantity));
@@ -2015,6 +2026,46 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
+    /*
+    **  Tiberian Factions mod — Nod Nuclear Strike (SPC_TD_NUKE). Same shape
+    **  as the Ion Cannon block above, swapped for TDTMPL as the host
+    **  building. Uses Has_Building_Active(STRUCT_TDTMPL) since heap types
+    **  past 31 can't represent themselves in BScan.
+    */
+    if (SuperWeapon[SPC_TD_NUKE].Is_Present()) {
+        if ((!Has_Building_Active(STRUCT_TDTMPL) && !SuperWeapon[SPC_TD_NUKE].Is_One_Time()) || IsDefeated) {
+            if (SuperWeapon[SPC_TD_NUKE].Remove()) {
+                if (this == PlayerPtr) {
+                    if (Map.IsTargettingMode == SPC_TD_NUKE) {
+                        Map.IsTargettingMode = SPC_NONE;
+                    }
+                    Map.Column[1].Flag_To_Redraw();
+                }
+                IsRecalcNeeded = true;
+            }
+        } else {
+            if (SuperWeapon[SPC_TD_NUKE].Is_Ready() && !IsHuman) {
+                Special_Weapon_AI(SPC_TD_NUKE);
+            }
+        }
+    } else {
+        if (Has_Building_Active(STRUCT_TDTMPL) && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
+            SuperWeapon[SPC_TD_NUKE].Enable(false, this == PlayerPtr, Power_Fraction() < 1);
+            if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
+                if (IsHuman) {
+#ifdef REMASTER_BUILD
+                    Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TD_NUKE, this);
+#endif
+                }
+            } else {
+                if (this == PlayerPtr) {
+                    Map.Add(RTTI_SPECIAL, SPC_TD_NUKE);
+                    Map.Column[1].Flag_To_Redraw();
+                }
+            }
+        }
+    }
+
     if (SuperWeapon[SPC_SPY_MISSION].Is_Present()) {
         if ((ActiveBScan & STRUCTF_AIRSTRIP) == 0) {
             if (SuperWeapon[SPC_SPY_MISSION].Remove()) {
@@ -3044,6 +3095,37 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
             if (this == PlayerPtr) {
                 Map.Column[1].Flag_To_Redraw();
                 Map.IsTargettingMode = SPC_NONE;
+            }
+        }
+        break;
+
+    /*
+    **  Tiberian Factions mod — Nod Nuclear Strike discharge. Finds the
+    **  firing house's TDTMPL, assigns it MISSION_MISSILE, and stashes the
+    **  target on House->NukeDest. The TDTMPL-specific branch in
+    **  BuildingClass::Mission_Missile drives the 5-frame BSTATE_ACTIVE
+    **  launch anim, spawns BULLET_NUKE_DOWN over the target, and plays
+    **  VOX_TD_NUKE_LAUNCHED. Mirrors RA's nuke launchsite pattern but with
+    **  the Temple's TD-authentic single-cycle launch (vs MSLO's 4-state
+    **  door open / hold / close machine).
+    */
+    case SPC_TD_NUKE:
+        if (SuperWeapon[SPC_TD_NUKE].Is_Ready()) {
+            launchsite = Find_Building(STRUCT_TDTMPL);
+            if (launchsite) {
+                launchsite->Assign_Mission(MISSION_MISSILE);
+                launchsite->Commence();
+                NukeDest = cell;
+            }
+            if (this == PlayerPtr) {
+                Map.IsTargettingMode = SPC_NONE;
+            }
+            SuperWeapon[SPC_TD_NUKE].Discharged(this == PlayerPtr);
+            IsRecalcNeeded = true;
+            fired = true;
+            what = "TD_NUKE";
+            if (this == PlayerPtr) {
+                Map.Column[1].Flag_To_Redraw();
             }
         }
         break;

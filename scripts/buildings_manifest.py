@@ -667,7 +667,11 @@ TDOBLI = {
 
 TDTMPL = {
     "ininame":     "TDTMPL",
-    "logic":       "MSLO",
+    # MIGRATED to STRUCT_TDTMPL in bdata.cpp Init_Heap (M5 Tier 4, 2026-05-26).
+    # Logic=MSLO previously granted RA AtomBomb as the placeholder super; the
+    # Nuclear Strike (SPC_TD_NUKE) proper lands in Phase T2 via HouseClass.
+    # Phase T1 ships the building structurally only — no super attached.
+    "logic":       None,
     "td_asset":    "TMPL",
     "footprint":   "TMPL",
     "shape_size":  (72, 72),
@@ -695,7 +699,7 @@ TDTMPL = {
     "idle_anim":   (0, 1, 0),
     "active_anim": (0, 5, 1),
     "buildup_anim": (0, 36, 2),
-    "notes":       "TD Nod Temple of Nod (3x3 superweapon host). Donor RA MSLO provides Missile Silo behaviour, but MSLO is 2x1 — needs TMPL footprint preset (added this session) for the authentic 3x3 with top-row overlap. idle_anim=(0,1,0) + active_anim=(0,5,1) match TD-authentic _anims[] values (STRUCT_TEMPLE BSTATE_IDLE 0/1/0, BSTATE_ACTIVE 0/5/1). buildup_anim=(0,36,2) overrides MSLO's shorter BSTATE_CONSTRUCTION — TD-Assets's TDTMPLMAKE.ZIP has 35 TGA frames + empty shape 0 = 36 tileset shapes for the full temple-assembly sequence. Without this, MSLO's ~14-frame donor buildup truncates ours to just the fragment-scatter early phase.",
+    "notes":       "TD Nod Temple of Nod (3x3 superweapon host). MIGRATED to STRUCT_TDTMPL; Logic= dropped. Nuclear Strike super lands in Phase T2 via SPC_TD_NUKE on HouseClass. idle_anim=(0,1,0) + active_anim=(0,5,1) match TD-authentic _anims[] values (STRUCT_TEMPLE BSTATE_IDLE 0/1/0, BSTATE_ACTIVE 0/5/1). buildup_anim=(0,36,2) drives the 36-frame temple-assembly sequence from TDTMPLMAKE.ZIP.",
 }
 
 

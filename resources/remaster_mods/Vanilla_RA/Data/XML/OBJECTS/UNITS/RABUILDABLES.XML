@@ -754,6 +754,21 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<!-- Tiberian Factions mod — Nod Nuclear Strike super (SPC_TD_NUKE).
+	     AssetName "SW_TDNuke" (distinct from RA Soviet's "SW_Nuke") so
+	     the tooltip looks up RA_SW_TDNUKE below for the Nod text strings.
+	     SuperWeaponType = SW_NUKE (set engine-side in
+	     Convert_Special_Weapon_Type) drives the cameo art + no-$0
+	     suppression — same as the Soviet nuke; both share the canonical
+	     TD-derived mushroom-cloud asset. -->
+	<ObjectTypeClass Name="RA_SW_TDNUKE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_NUCLEAR_STRIKE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_NUCLEAR_STRIKE</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_NuclearStrike</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 
 		<!-- MISC UNITS-->
 	<ObjectTypeClass Name="RA_ANT1" Classification="CNCBuildableObject" CanInstantiate="False">

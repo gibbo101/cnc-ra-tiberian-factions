@@ -764,6 +764,7 @@ typedef enum SpecialWeaponType : char
 
     // Tiberian Factions mod superweapons.
     SPC_TD_ION_CANNON, // GDI Ion Cannon strike (ANIM_TD_ION_CANNON, sourced from STRUCT_TDEYE)
+    SPC_TD_NUKE,       // Nod Nuclear Strike (BULLET_NUKE_DOWN + ANIM_ATOM_BLAST, sourced from STRUCT_TDTMPL)
 
     SPC_COUNT,
     SPC_FIRST = 0,
@@ -1491,6 +1492,7 @@ typedef enum StructType : char
     STRUCT_TDHQ,
     // M5 Tier 4 — superweapon hosts.
     STRUCT_TDEYE,
+    STRUCT_TDTMPL,
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0

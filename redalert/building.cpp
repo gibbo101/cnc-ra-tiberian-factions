@@ -5094,6 +5094,107 @@ int BuildingClass::Mission_Missile(void)
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
+    /*
+    **  Tiberian Factions mod — Temple of Nod launch sequence. Simpler than
+    **  STRUCT_MSLO's 4-state machine because TD's Temple uses a single
+    **  5-frame BSTATE_ACTIVE animation (roof retracts + missile rises in
+    **  one cycle, no separate door-hold or door-close phases). Per TD
+    **  source — bdata.cpp:3815 `{STRUCT_TEMPLE, BSTATE_ACTIVE, 0, 5, 1}`.
+    **  When the anim completes, spawn BULLET_NUKE_DOWN at the target
+    **  remembered on House->NukeDest. Plays VOX_TD_NUKE_LAUNCHED (routed
+    **  to Nod EVA) after the missile is in flight.
+    */
+    if (*this == STRUCT_TDTMPL) {
+        enum
+        {
+            INITIAL,
+            ANIM_PLAYING,
+            LAUNCH_UP,
+            DROPPING,
+            DONE_LAUNCH
+        };
+
+        switch (Status) {
+        case INITIAL:
+            IsReadyToCommence = false;
+            Begin_Mode(BSTATE_ACTIVE);
+            Status = ANIM_PLAYING;
+            return (1);
+
+        case ANIM_PLAYING:
+            // Hold here until the 5-frame BSTATE_ACTIVE launch animation
+            // finishes — IsReadyToCommence flips true at the last frame
+            // (see building.cpp:6704 the Fetch_Stage()==Start+Count-1
+            // gate).
+            if (IsReadyToCommence) {
+                Status = LAUNCH_UP;
+            }
+            return (1);
+
+        case LAUNCH_UP: {
+            // Spawn BULLET_NUKE_UP rising from the Temple. WARHEAD_NONE
+            // so the bullet's terminal impact at the top edge of the
+            // map doesn't trigger a visible explosion (RA's MSLO uses
+            // WARHEAD_HE 200 there but their detonation is off-screen).
+            CELL center = Coord_Cell(Center_Coord());
+            CELL cell_up = XY_Cell(Cell_X(center), 1);
+            BulletClass* up = new BulletClass(
+                BULLET_NUKE_UP, ::As_Target(cell_up), this, 1, WARHEAD_NONE, MPH_VERY_FAST);
+            if (up) {
+                // Launch from directly above the Temple's centre (DIR_N
+                // not DirType(28)) — TD's roof opening is centred on the
+                // 3x3 footprint, unlike RA's MSLO which has its tunnel
+                // offset NNE of centre. Tweak distance (0xA0 = ~5/8 cell
+                // up) so the missile origin appears at the roof opening
+                // rather than inside the building.
+                COORDINATE launch = Coord_Move(Center_Coord(), DIR_N, 0xA0);
+                if (!up->Unlimbo(launch, DIR_N)) {
+                    delete up;
+                }
+            }
+            if (House == PlayerPtr) {
+                Speak(VOX_TD_NUKE_LAUNCHED);
+            }
+            Status = DROPPING;
+            // Explicit 4-second pause before NUKE_DOWN. RA's MSLO relies
+            // on the -64 cell offset to naturally space the two bullets,
+            // but on small maps or when targeting near the top edge the
+            // celly clamp at 1 collapses the gap and you see both in
+            // flight together. Pause guarantees the visual sequence.
+            return (4 * TICKS_PER_SECOND);
+        }
+
+        case DROPPING: {
+            // Spawn BULLET_NUKE_DOWN over the target. source = NULL so
+            // Explosion_Damage doesn't skip the firing Temple if it
+            // self-targets (combat.cpp:211). Starts 64 cells above the
+            // target (RA pattern at building.cpp:5229) so the descent is
+            // visibly long; the explicit 4-sec gate above already kept
+            // the timing clean, this just lets the missile fall into
+            // view from a tall offset.
+            BulletClass* down = new BulletClass(
+                BULLET_NUKE_DOWN, ::As_Target(House->NukeDest), NULL, 200, WARHEAD_NUKE, MPH_VERY_FAST);
+            if (down) {
+                int celly = Cell_Y(House->NukeDest);
+                celly -= 64;
+                if (celly < 1)
+                    celly = 1;
+                COORDINATE start = Cell_Coord(XY_Cell(Cell_X(House->NukeDest), celly));
+                if (!down->Unlimbo(start, DIR_S)) {
+                    delete down;
+                }
+            }
+            Status = DONE_LAUNCH;
+            return (4 * TICKS_PER_SECOND);
+        }
+
+        case DONE_LAUNCH:
+            Begin_Mode(BSTATE_IDLE);
+            Assign_Mission(MISSION_GUARD);
+            return (1);
+        }
+    }
+
     if (*this == STRUCT_ADVANCED_TECH) {
         enum
         {
@@ -5166,6 +5267,7 @@ int BuildingClass::Mission_Missile(void)
             INITIAL,
             DOOR_OPENING,
             LAUNCH_UP,
+            DROPPING_NUKE,
             LAUNCH_DOWN,
             DONE_LAUNCH
         };
@@ -5195,8 +5297,15 @@ int BuildingClass::Mission_Missile(void)
             return (1);
 
         /*
-        ** Once the smoke has been going for a little while this
-        ** actually handles launching the missile into the air.
+        ** Spawn BULLET_NUKE_UP rising from the silo. The descending
+        ** BULLET_NUKE_DOWN spawn is deferred to DROPPING_NUKE so it
+        ** doesn't appear on-screen at the same time as the rising
+        ** missile — the original RA code spawned both here and relied
+        ** on a -64 cell starting offset to naturally space them, but
+        ** when targeting near the top of the map the celly clamp at 1
+        ** collapses the gap and both bullets are visible together
+        ** (the bug the Temple's Mission_Missile branch above also
+        ** fixes via the same DROPPING_NUKE split).
         */
         case LAUNCH_UP: {
             CELL center = Coord_Cell(Center_Coord());
@@ -5213,7 +5322,6 @@ int BuildingClass::Mission_Missile(void)
 
             if (bullet) {
                 Speak(VOX_ABOMB_LAUNCH);
-                Status = LAUNCH_DOWN;
                 /*
                 ** Hack: If it's the artificial nukes, don't let the bullets come down (as
                 ** they're the only ones that blow up).  We know it's artificial if you're
@@ -5221,24 +5329,35 @@ int BuildingClass::Mission_Missile(void)
                 ** tech level 15 or so.
                 */
                 if (House->Control.TechLevel <= 10) {
+                    Status = LAUNCH_DOWN;
                     return (6);
                 }
-                bullet = new BulletClass(
-                    BULLET_NUKE_DOWN, ::As_Target(House->NukeDest), this, 200, WARHEAD_NUKE, MPH_VERY_FAST);
-                if (bullet) {
-                    int celly = Cell_Y(House->NukeDest);
-                    celly -= 64;
-                    if (celly < 1)
-                        celly = 1;
-                    COORDINATE start = Cell_Coord(XY_Cell(Cell_X(House->NukeDest), celly));
-                    if (!bullet->Unlimbo(start, DIR_S)) {
-                        delete bullet;
-                    }
-                }
-                return (8 * TICKS_PER_SECOND);
+                Status = DROPPING_NUKE;
+                return (4 * TICKS_PER_SECOND);
             }
         }
             return (1);
+
+        /*
+        ** Now that the rising missile has cleared the screen, spawn
+        ** the descending missile over the target.
+        */
+        case DROPPING_NUKE: {
+            BulletClass* bullet = new BulletClass(
+                BULLET_NUKE_DOWN, ::As_Target(House->NukeDest), this, 200, WARHEAD_NUKE, MPH_VERY_FAST);
+            if (bullet) {
+                int celly = Cell_Y(House->NukeDest);
+                celly -= 64;
+                if (celly < 1)
+                    celly = 1;
+                COORDINATE start = Cell_Coord(XY_Cell(Cell_X(House->NukeDest), celly));
+                if (!bullet->Unlimbo(start, DIR_S)) {
+                    delete bullet;
+                }
+            }
+            Status = LAUNCH_DOWN;
+            return (4 * TICKS_PER_SECOND);
+        }
 
         /*
         ** Once the missile is in the air, this handles waiting for

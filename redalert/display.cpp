@@ -3171,6 +3171,13 @@ int DisplayClass::TacticalClass::Action(unsigned flags, KeyNumType& key)
                 action = ACTION_NUKE_BOMB;
             }
 
+            // Tiberian Factions mod — Nod Nuclear Strike uses RA's nuke
+            // crosshair (same SW_NUKE / ACTION_NUKE_BOMB cursor as the
+            // Soviet nuke). TD canon.
+            if (Map.IsTargettingMode == SPC_TD_NUKE) {
+                action = ACTION_NUKE_BOMB;
+            }
+
             if (Map.IsTargettingMode == SPC_PARA_BOMB) {
                 action = ACTION_PARA_BOMB;
             }
