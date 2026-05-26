@@ -3038,6 +3038,7 @@ void BuildingClass::Grand_Opening(bool captured)
         House->Adjust_Capacity(Class->Capacity);
         House->IsRecalcNeeded = true;
 
+
         /*	SPECIAL CASE:
         **	Tiberium Refineries get a free harvester. Add a harvester to the
         **	reinforcement list at this time.

@@ -629,10 +629,85 @@ int Sound_Effect(VocType voc, fixed volume, int variation, signed short pan_valu
     "AAVAIL1",  //	VOX_ABOMB_AVAILABLE
     "AARRIVE1", //	VOX_ALLIED_REINFORCEMENTS
     "SAVE1",    //	VOX_MISSION_SAVED
-    "LOAD1"     //	VOX_MISSION_LOADED
+    "LOAD1",    //	VOX_MISSION_LOADED
+    // Tiberian Factions mod — TD-only EVA voices. Names match the engine
+    // name we register as RAC_SFX_TD<NAME> / RAR_SFX_TD<NAME> in mod-side
+    // SFXEVENTSLOCALIZED.XML, which map to TDC_SFX_EVA_<NAME>_EN-US.MP3 /
+    // TDR_SFX_EVA_<NAME>_EN-US.MP3 (assets shipped by base game).
+    "TDGDIDEAD1", // VOX_TD_DEAD_GDI       (TD "GDI unit destroyed")
+    "TDNODDEAD1", // VOX_TD_DEAD_NOD       (TD "Nod unit destroyed")
+    "TDCIVDEAD1", // VOX_TD_DEAD_CIV       (TD "civilian killed")
+    "TDINCOME1",  // VOX_TD_INCOMING_MISSILE
+    "TDENEMYA",   // VOX_TD_ENEMY_PLANES   (TD "enemy planes approaching")
+    "TDNUKE1",    // VOX_TD_INCOMING_NUKE
+    "TDNODCAPT1", // VOX_TD_NOD_CAPTURED   (TD "Nod building captured")
+    "TDGDICAPT1", // VOX_TD_GDI_CAPTURED
+    "TDIONCHRG1", // VOX_TD_ION_CHARGING   (Ion Cannon charging)
+    "TDIONREDY1", // VOX_TD_ION_READY
+    "TDNUKAVAIL", // VOX_TD_NUKE_AVAILABLE
+    "TDNUKLNCH1", // VOX_TD_NUKE_LAUNCHED
+    "TDSTRCLOST", // VOX_TD_STRUCTURE_LOST
+    "TDNEEDHARV", // VOX_TD_NEED_HARVESTER
+    "TDAIRREDY1", // VOX_TD_AIRSTRIKE_READY
+    "TDNOREDY1",  // VOX_TD_NOT_READY
+    "TDESTRUCX",  // VOX_TD_ENEMY_STRUCTURE
+    "TDGSTRUC1",  // VOX_TD_GDI_STRUCTURE
+    "TDNSTRUC1",  // VOX_TD_NOD_STRUCTURE
+    "TDENMYUNIT", // VOX_TD_ENEMY_UNIT
 };
 
 static VoxType CurrentVoice = VOX_NONE;
+
+/*
+**  Tiberian Factions mod — TD EVA side-conditional override table.
+**  Indexed by VoxType. For each VOX slot that has a TD-equivalent voice
+**  for the same semantic event, holds the TD-prefixed engine name (e.g.
+**  "TDCONSTRU1"). NULL means "no TD equivalent — fall back to RA Speech[]".
+**
+**  Init_SpeechTD() (audio.cpp, called from Game_Init in init.cpp) fills the
+**  shared-semantic slots. New shared mappings get added there.
+**
+**  On_Speech (dllinterface.cpp) consults this table when the originating
+**  player's ActLike is HOUSE_GOOD or HOUSE_BAD. Allied/Soviet players are
+**  unaffected (Speech[] still wins).
+**
+**  Per session 2026-05-26: GDI + Nod share this table. Future per-side
+**  Nod voice work would add a parallel SpeechNOD[] and branch on actlike
+**  in On_Speech.
+*/
+char const* SpeechTD[VOX_COUNT] = {NULL};
+
+void Init_SpeechTD(void)
+{
+    static bool inited = false;
+    if (inited) return;
+    inited = true;
+
+    SpeechTD[VOX_ACCOMPLISHED]       = "TDACCOM1";
+    SpeechTD[VOX_FAIL]               = "TDFAIL1";
+    SpeechTD[VOX_NO_FACTORY]         = "TDBLDG1";
+    SpeechTD[VOX_CONSTRUCTION]       = "TDCONSTRU1";
+    SpeechTD[VOX_UNIT_READY]         = "TDUNITREDY";
+    SpeechTD[VOX_NEW_CONSTRUCT]      = "TDNEWOPT1";
+    SpeechTD[VOX_DEPLOY]             = "TDDEPLOY1";
+    SpeechTD[VOX_NO_CASH]            = "TDNOCASH1";
+    SpeechTD[VOX_CONTROL_EXIT]       = "TDBATLCON1";
+    SpeechTD[VOX_REINFORCEMENTS]     = "TDREINFOR1";
+    SpeechTD[VOX_CANCELED]           = "TDCANCEL1";
+    SpeechTD[VOX_BUILDING]           = "TDBLDGING1";
+    SpeechTD[VOX_LOW_POWER]          = "TDLOPOWER1";
+    SpeechTD[VOX_INSUFFICIENT_POWER] = "TDNOPOWER1";
+    SpeechTD[VOX_NEED_MO_MONEY]      = "TDMOCASH1";
+    SpeechTD[VOX_BASE_UNDER_ATTACK]  = "TDBASEATK1";
+    SpeechTD[VOX_UNABLE_TO_BUILD]    = "TDNOBUILD1";
+    SpeechTD[VOX_PRIMARY_SELECTED]   = "TDPRIBLDG1";
+    SpeechTD[VOX_UNIT_LOST]          = "TDUNITLOST";
+    SpeechTD[VOX_SELECT_TARGET]      = "TDSELECT1";
+    SpeechTD[VOX_PREPARE]            = "TDENMYAPP1";
+    SpeechTD[VOX_NEED_MO_CAPACITY]   = "TDSILOS1";
+    SpeechTD[VOX_SUSPENDED]          = "TDONHOLD1";
+    SpeechTD[VOX_REPAIRING]          = "TDREPAIR1";
+}
 
 /***********************************************************************************************
  * Speech_Name -- Fetches the name for the voice specified.                                    *

@@ -86,6 +86,10 @@ extern struct SoundEffectNameStruct
 
 // From RedAlert\Audio.cpp
 extern char const* Speech[VOX_COUNT];
+// Tiberian Factions mod — TD EVA side-conditional table. Filled by
+// Init_SpeechTD (audio.cpp). NULL slots fall back to Speech[].
+extern char const* SpeechTD[VOX_COUNT];
+extern void Init_SpeechTD(void);
 
 /*
 ** Misc defines
@@ -2622,7 +2626,19 @@ void DLLExportClass::On_Speech(const HouseClass* player_ptr, int speech_index)
     }
 
     if (speech_index >= VOX_FIRST && speech_index < VOX_COUNT) {
-        strncpy(new_event.Speech.SpeechName, Speech[speech_index], 16);
+        // Tiberian Factions mod: side-conditional TD EVA dispatch. GDI/Nod
+        // players get the TD voice variant (registered in mod-side
+        // SFXEVENTSLOCALIZED.XML as RAC_SFX_TD<NAME> / RAR_SFX_TD<NAME>).
+        // Allied/Soviet keep RA's Speech[]. NULL SpeechTD[] slot also
+        // falls back to RA. Future per-side Nod voice would branch here.
+        Init_SpeechTD();
+        char const* name = Speech[speech_index];
+        if (player_ptr != NULL
+            && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD)
+            && SpeechTD[speech_index] != NULL) {
+            name = SpeechTD[speech_index];
+        }
+        strncpy(new_event.Speech.SpeechName, name, 16);
     } else {
         strncpy(new_event.Speech.SpeechName, "BAD_SPEECH_INDEX", 16);
     }

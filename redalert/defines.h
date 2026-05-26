@@ -3433,7 +3433,9 @@ typedef enum VocType : short
 /*
 **	EVA voices are specified by these identifiers.
 */
-typedef enum VoxType : char
+// Tiberian Factions: backing type bumped char -> short so we can hold the
+// extra VOX_TD_* entries (TD EVA bulk port pushes the enum past 127).
+typedef enum VoxType : short
 {
     VOX_NONE = -1,
     VOX_ACCOMPLISHED,        //	mission accomplished
@@ -3556,6 +3558,43 @@ typedef enum VoxType : char
     VOX_ALLIED_REINFORCEMENTS,
     VOX_SAVE1,
     VOX_LOAD1,
+
+    // Tiberian Factions mod — TD EVA voices. Routing pattern (validated
+    // by pilot 2026-05-26): TD-prefixed engine name (e.g. "TDIONCHRG1") is
+    // sent via On_Speech; mod-side SFXEVENTSLOCALIZED.XML registers
+    // RAC_SFX_TD<NAME> / RAR_SFX_TD<NAME> -> TDC_SFX_EVA_<NAME>_EN-US.MP3 /
+    // TDR_SFX_EVA_<NAME>_EN-US.MP3 (existing assets in SFX2D_EN-US.MEG).
+    //
+    // The VOX_TD_* entries below are for TD-only events that have no RA
+    // semantic equivalent — they're invoked directly by TD-port code
+    // (e.g. TDEYE -> Speak(VOX_TD_ION_CHARGING)). Shared semantic events
+    // (CONSTRUCTION, UNIT_READY, etc.) keep their existing VOX_* slot
+    // and swap to TD via the SpeechTD[] side-conditional table in
+    // audio.cpp + dllinterface.cpp On_Speech dispatch.
+    //
+    // Per session 2026-05-26: GDI + Nod share TD EVA for now; structure
+    // leaves room for a separate Nod voice via a parallel SpeechNOD[]
+    // table when needed.
+    VOX_TD_DEAD_GDI,
+    VOX_TD_DEAD_NOD,
+    VOX_TD_DEAD_CIV,
+    VOX_TD_INCOMING_MISSILE,
+    VOX_TD_ENEMY_PLANES,
+    VOX_TD_INCOMING_NUKE,
+    VOX_TD_NOD_CAPTURED,
+    VOX_TD_GDI_CAPTURED,
+    VOX_TD_ION_CHARGING,
+    VOX_TD_ION_READY,
+    VOX_TD_NUKE_AVAILABLE,
+    VOX_TD_NUKE_LAUNCHED,
+    VOX_TD_STRUCTURE_LOST,
+    VOX_TD_NEED_HARVESTER,
+    VOX_TD_AIRSTRIKE_READY,
+    VOX_TD_NOT_READY,
+    VOX_TD_ENEMY_STRUCTURE,
+    VOX_TD_GDI_STRUCTURE,
+    VOX_TD_NOD_STRUCTURE,
+    VOX_TD_ENEMY_UNIT,
 
     VOX_COUNT,
     VOX_FIRST = 0

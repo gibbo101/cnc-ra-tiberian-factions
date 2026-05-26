@@ -323,6 +323,18 @@ The exception is plumbing the launcher requires (e.g. `Map.Submit` for layer sys
 
 This will eventually be replaced by a `BehavesLike=` rules.ini field in D2; until then, every new separated TD building that shadows a vanilla RA factory needs one entry here.
 
+### 3.11b — Audio override mechanics (mod XML vs WAV-file replacement)
+
+Two distinct override paths, validated 2026-05-26 during TD EVA + radar SFX work:
+
+| Asset class | Override mechanism | Side-conditional? |
+|---|---|---|
+| **VOC sound effects** fired via DLL `Sound_Effect(VOC_TD_*)` | Mod-side `SFXEVENTSNONLOCALIZED.XML` adds new `RAC_SFX_<NAME>` / `RAR_SFX_<NAME>` entries pointing at TD assets. | **Yes** — DLL chooses which VOC enum to fire based on `PlayerPtr->ActLike`. |
+| **VOX EVA speech** fired via `Speak(VOX_*)` → `On_Speech` | Mod-side `SFXEVENTSLOCALIZED.XML` adds `LocalizedSFXEvent` entries (engine sends TD-prefixed name; launcher resolves). | **Yes** — `On_Speech` chooses Speech[]→SpeechTD[] based on `player_ptr->ActLike`. See §3.12 routing recipe below. |
+| **Launcher-owned SFX** (radar on/off, ambient UI) | Mod-side WAV with same filename as launcher's hardcoded sample (case-insensitive) in `DATA/AUDIO/`. Reillsss CnCinRA precedent. | **No.** Launcher's state-driven SFX dispatch happens entirely client-side; DLL's `Radar_Activate()` isn't called in REMASTER_BUILD. SFXEvent XML override of existing same-named entries doesn't load either — mod XML is additive-only for SFXEvents. The WAV-file swap is global (all sides). Side-conditional requires launcher source modification. |
+
+**Test sequence** to identify which class you're dealing with: drop a diagnostic `fprintf` into the DLL hook (Sound_Effect call site, Speak call site, or the state-change function). If the log fires → DLL-driven, side-conditional is achievable. If silent → launcher-driven, WAV-file replacement is your only mod-side lever.
+
 ### 3.12 — `Who_Can_Build_Me` evicts cameos right after `Can_Build` adds them
 
 **Trap:** §3.11's prereq equivalence makes `Can_Build` return true and `Update_Buildables` calls `Sidebar_Glyphx_Add` successfully — but the cameo still doesn't appear (or appears for one frame then vanishes). The next `Sidebar_Glyphx_Recalc` tick (called every `Glyphx_Queue_AI` from `dllinterface.cpp:1990`) runs `StripClass::Recalc` → `tech->Who_Can_Build_Me(true, false, house) != NULL`. If that returns NULL, the entry is evicted.
