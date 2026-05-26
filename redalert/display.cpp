@@ -3161,6 +3161,16 @@ int DisplayClass::TacticalClass::Action(unsigned flags, KeyNumType& key)
                 action = ACTION_NUKE_BOMB;
             }
 
+            // Tiberian Factions mod — reuse ACTION_NUKE_BOMB for the Ion
+            // Cannon's targeting cursor. The launcher's TD Ion Cannon
+            // converging-arrows reticle would require launcher source
+            // changes; ACTION_NUKE_BOMB is the closest cursor we can
+            // reach from the mod side (crosshair-style targeting). If we
+            // ever land launcher-side hooks, this becomes ACTION_TD_ION_CANNON.
+            if (Map.IsTargettingMode == SPC_TD_ION_CANNON) {
+                action = ACTION_NUKE_BOMB;
+            }
+
             if (Map.IsTargettingMode == SPC_PARA_BOMB) {
                 action = ACTION_PARA_BOMB;
             }

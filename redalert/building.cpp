@@ -1116,7 +1116,7 @@ void BuildingClass::AI(void)
     ** radar jammer. STRUCT_SAM/STRUCT_TDSAM aliased intentionally — both
     ** are jammable by identical rules (per docs/td-sam-deep-dive.md M6).
     */
-    if ((*this == STRUCT_RADAR || *this == STRUCT_TDHQ || *this == STRUCT_SAM || *this == STRUCT_TDSAM)
+    if ((*this == STRUCT_RADAR || *this == STRUCT_TDHQ || *this == STRUCT_TDEYE || *this == STRUCT_SAM || *this == STRUCT_TDSAM)
         && (Frame % TICKS_PER_SECOND) == 0) {
         IsJammed = false;
         for (int index = 0; index < Units.Count(); index++) {
@@ -1232,11 +1232,13 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
             House->BScan |= (1L << btype);
             House->ActiveBScan |= (1L << btype);
         }
-        // Tiberian Factions: STRUCT_TDHQ acts as a radar dome — also
-        // contribute STRUCTF_RADAR so HouseClass::AI's radar activation
-        // (~house.cpp:1502) sees it. Heap types past 31 can't represent
-        // themselves in BScan; we shadow the closest vanilla bit instead.
-        if (btype == STRUCT_TDHQ) {
+        // Tiberian Factions: STRUCT_TDHQ + STRUCT_TDEYE both act as radar
+        // facilities — also contribute STRUCTF_RADAR so HouseClass::AI's
+        // radar activation (~house.cpp:1502) sees them. TDEYE is the GDI
+        // Adv Comm Centre and grants radar identically to TDHQ in canon.
+        // Heap types past 31 can't represent themselves in BScan; we
+        // shadow the closest vanilla bit instead.
+        if (btype == STRUCT_TDHQ || btype == STRUCT_TDEYE) {
             House->BScan |= STRUCTF_RADAR;
             House->ActiveBScan |= STRUCTF_RADAR;
         }
@@ -1485,7 +1487,7 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
             if (SpiedBy) {
                 SpiedBy = 0;
                 StructType struc = *this;
-                if (struc == STRUCT_RADAR || struc == STRUCT_TDHQ /* || struc == STRUCT_EYE */) {
+                if (struc == STRUCT_RADAR || struc == STRUCT_TDHQ || struc == STRUCT_TDEYE) {
                     Update_Radar_Spied();
                 }
             }
@@ -3038,26 +3040,6 @@ void BuildingClass::Grand_Opening(bool captured)
         House->Adjust_Capacity(Class->Capacity);
         House->IsRecalcNeeded = true;
 
-        /*
-        **  Tiberian Factions mod — Phase E2 temporary visual+audio smoke
-        **  harness for ANIM_TD_ION_CANNON. When a player completes a TDEYE,
-        **  fire a single Ion Cannon strike 6 cells south of the building so
-        **  we can validate the beam render + ION1 SFX wiring before E3
-        **  lands the real SuperClass dispatch (player-aimed strike + timer).
-        **  REMOVE this block when E3 lands.
-        */
-        if (*this == STRUCT_TDEYE && !ScenarioInit && !captured) {
-            // 6 cells south of the building's center. 0x100 leptons per cell.
-            COORDINATE target = Coord_Move(Center_Coord(), DIR_S, 0x0600);
-            // timedelay=15 ticks = 1 second pre-strike charge gap. Gives us
-            // a feel for the real super's pause-then-fire before E3 wires
-            // the actual charge state machine + VOX_TD_ION_CHARGING voice.
-            AnimClass* anim = new AnimClass(ANIM_TD_ION_CANNON, target, 15, 1);
-            if (anim != NULL) {
-                anim->Set_Owner(House->Class->House);
-            }
-        }
-
 
         /*	SPECIAL CASE:
         **	Tiberium Refineries get a free harvester. Add a harvester to the
@@ -3705,7 +3687,7 @@ bool BuildingClass::Captured(HouseClass* newowner)
         */
         if (SpiedBy & (1 << (newowner->Class->House))) {
             SpiedBy -= (1 << (newowner->Class->House));
-            if (*this == STRUCT_RADAR || *this == STRUCT_TDHQ) {
+            if (*this == STRUCT_RADAR || *this == STRUCT_TDHQ || *this == STRUCT_TDEYE) {
                 Update_Radar_Spied();
             }
         }
@@ -6063,7 +6045,7 @@ void BuildingClass::Update_Radar_Spied(void)
     for (int index = 0; index < Buildings.Count(); index++) {
         BuildingClass* obj = Buildings.Ptr(index);
         if (obj && !obj->IsInLimbo && obj->House == House) {
-            if (*obj == STRUCT_RADAR || *obj == STRUCT_TDHQ /* || *obj == STRUCT_EYE */) {
+            if (*obj == STRUCT_RADAR || *obj == STRUCT_TDHQ || *obj == STRUCT_TDEYE) {
                 House->RadarSpied |= obj->Spied_By();
             }
         }

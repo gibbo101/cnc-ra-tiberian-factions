@@ -736,6 +736,17 @@ HouseClass::HouseClass(HousesType house)
     new (&SuperWeapon[SPC_GPS])
         SuperClass(TICKS_PER_MINUTE * Rule.GPSTime, true, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_INSUFFICIENT_POWER);
 
+    // Tiberian Factions mod — GDI Ion Cannon. TD-authentic 10-minute
+    // recharge per tiberiandawn/defines.h ION_CANNON_GONE_TIME
+    // (10 * TICKS_PER_MINUTE). Powered = true so a power-starved base
+    // suspends the timer (matches RA's nuke / chrono behaviour).
+    new (&SuperWeapon[SPC_TD_ION_CANNON]) SuperClass(TICKS_PER_MINUTE * 10,
+                                                     true,
+                                                     VOX_TD_ION_CHARGING,
+                                                     VOX_TD_ION_READY,
+                                                     VOX_NOT_READY,
+                                                     VOX_INSUFFICIENT_POWER);
+
     memset(UnitsKilled, '\0', sizeof(UnitsKilled));
     memset(BuildingsKilled, '\0', sizeof(BuildingsKilled));
     memset(BQuantity, '\0', sizeof(BQuantity));
@@ -1492,7 +1503,7 @@ void HouseClass::AI(void)
 #else
                 if (building && building->House == PlayerPtr) {
 #endif
-                    if (*building == STRUCT_RADAR || *building == STRUCT_TDHQ /* || *building == STRUCT_EYE */) {
+                    if (*building == STRUCT_RADAR || *building == STRUCT_TDHQ || *building == STRUCT_TDEYE) {
                         if (!building->IsJammed) {
                             jammed = false;
                             break;
@@ -1956,6 +1967,48 @@ void HouseClass::Super_Weapon_Handler(void)
             } else {
                 if (this == PlayerPtr) {
                     Map.Add(RTTI_SPECIAL, SPC_NUCLEAR_BOMB);
+                    Map.Column[1].Flag_To_Redraw();
+                }
+            }
+        }
+    }
+
+    /*
+    **  Tiberian Factions mod — GDI Ion Cannon (SPC_TD_ION_CANNON). Mirrors
+    **  the SPC_NUCLEAR_BOMB block above, swapped for TDEYE as the host
+    **  building. Uses Has_Building_Active(STRUCT_TDEYE) because the heap
+    **  type is past 31 (STRUCT_TDEYE can't fit in the 32-bit BScan mask).
+    **  No side restriction here — any house with a TDEYE gets the super,
+    **  which matches HOUSEF_GOOD ownership on the building itself.
+    */
+    if (SuperWeapon[SPC_TD_ION_CANNON].Is_Present()) {
+        if ((!Has_Building_Active(STRUCT_TDEYE) && !SuperWeapon[SPC_TD_ION_CANNON].Is_One_Time()) || IsDefeated) {
+            if (SuperWeapon[SPC_TD_ION_CANNON].Remove()) {
+                if (this == PlayerPtr) {
+                    if (Map.IsTargettingMode == SPC_TD_ION_CANNON) {
+                        Map.IsTargettingMode = SPC_NONE;
+                    }
+                    Map.Column[1].Flag_To_Redraw();
+                }
+                IsRecalcNeeded = true;
+            }
+        } else {
+            if (SuperWeapon[SPC_TD_ION_CANNON].Is_Ready() && !IsHuman) {
+                Special_Weapon_AI(SPC_TD_ION_CANNON);
+            }
+        }
+    } else {
+        if (Has_Building_Active(STRUCT_TDEYE) && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
+            SuperWeapon[SPC_TD_ION_CANNON].Enable(false, this == PlayerPtr, Power_Fraction() < 1);
+            if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
+                if (IsHuman) {
+#ifdef REMASTER_BUILD
+                    Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TD_ION_CANNON, this);
+#endif
+                }
+            } else {
+                if (this == PlayerPtr) {
+                    Map.Add(RTTI_SPECIAL, SPC_TD_ION_CANNON);
                     Map.Column[1].Flag_To_Redraw();
                 }
             }
@@ -2967,6 +3020,30 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                     sub->PulseCountDown = 15 * TICKS_PER_SECOND;
                     sub->Do_Uncloak();
                 }
+            }
+        }
+        break;
+
+    /*
+    **  Tiberian Factions mod — GDI Ion Cannon discharge. Spawns
+    **  ANIM_TD_ION_CANNON directly at the targeted cell. The anim's
+    **  Middle() callback (anim.cpp) handles the 600 / WARHEAD_TDPB
+    **  Explosion_Damage at impact. No launch site / missile flight stage
+    **  — TD's Ion Cannon strikes instantly from orbit.
+    */
+    case SPC_TD_ION_CANNON:
+        if (SuperWeapon[SPC_TD_ION_CANNON].Is_Ready()) {
+            AnimClass* ion_anim = new AnimClass(ANIM_TD_ION_CANNON, Cell_Coord(cell), 0, 1);
+            if (ion_anim != NULL) {
+                ion_anim->Set_Owner(Class->House);
+            }
+            SuperWeapon[SPC_TD_ION_CANNON].Discharged(this == PlayerPtr);
+            IsRecalcNeeded = true;
+            fired = true;
+            what = "ION_CANNON";
+            if (this == PlayerPtr) {
+                Map.Column[1].Flag_To_Redraw();
+                Map.IsTargettingMode = SPC_NONE;
             }
         }
         break;
@@ -7240,11 +7317,11 @@ void HouseClass::Recalc_Attributes(void)
         if (btype < 32) {
             building->House->BScan |= (1L << btype);
         }
-        // Tiberian Factions: STRUCT_TDHQ shadows STRUCTF_RADAR so the
-        // recomputed bitmask still satisfies the radar-activation tests
-        // at house.cpp:1502+. Mirrors the Unlimbo-time shadow in
-        // BuildingClass::Unlimbo (~building.cpp:1228).
-        if (btype == STRUCT_TDHQ) {
+        // Tiberian Factions: STRUCT_TDHQ + STRUCT_TDEYE both shadow
+        // STRUCTF_RADAR so the recomputed bitmask still satisfies the
+        // radar-activation tests at house.cpp:1502+. Mirrors the
+        // Unlimbo-time shadow in BuildingClass::Unlimbo (~building.cpp:1228).
+        if (btype == STRUCT_TDHQ || btype == STRUCT_TDEYE) {
             building->House->BScan |= STRUCTF_RADAR;
         }
         if (building->IsLocked
@@ -7254,7 +7331,7 @@ void HouseClass::Recalc_Attributes(void)
                     building->House->ActiveBScan |= (1L << btype);
                     building->House->OldBScan |= (1L << btype);
                 }
-                if (btype == STRUCT_TDHQ) {
+                if (btype == STRUCT_TDHQ || btype == STRUCT_TDEYE) {
                     building->House->ActiveBScan |= STRUCTF_RADAR;
                     building->House->OldBScan |= STRUCTF_RADAR;
                 }

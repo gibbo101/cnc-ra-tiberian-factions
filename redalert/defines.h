@@ -762,6 +762,9 @@ typedef enum SpecialWeaponType : char
     SPC_IRON_CURTAIN,  // Bestow invulnerability on a unit/building
     SPC_GPS,           // give allies free unjammable radar.
 
+    // Tiberian Factions mod superweapons.
+    SPC_TD_ION_CANNON, // GDI Ion Cannon strike (ANIM_TD_ION_CANNON, sourced from STRUCT_TDEYE)
+
     SPC_COUNT,
     SPC_FIRST = 0,
     SPC_ANY = 1

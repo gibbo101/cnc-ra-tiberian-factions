@@ -700,7 +700,7 @@ void InfantryClass::Per_Cell_Process(PCPType why)
                         tech->Mark(MARK_OVERLAP_DOWN);
                         if (tech->What_Am_I() == RTTI_BUILDING) {
                             StructType build = *(BuildingClass*)tech;
-                            if (build == STRUCT_RADAR || build == STRUCT_TDHQ /* || build == STRUCT_EYE */) {
+                            if (build == STRUCT_RADAR || build == STRUCT_TDHQ || build == STRUCT_TDEYE) {
                                 tech->House->RadarSpied |= housespy;
                             }
 #ifdef REMASTER_BUILD

@@ -714,7 +714,7 @@
 	</ObjectTypeClass>	
 	<ObjectTypeClass Name="RA_SW_NUKE" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_UNIT_RA_NUK2</ObjectNameTextID>
+			<ObjectNameTextID>TEXT_UNIT_RA_NUKE</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_NUKE_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_RA_AtomBomb</BuildIcon>
 		</CNCEncyclopediaComponent>
@@ -739,7 +739,20 @@
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_CHRONO_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_RA_Chronoshift</BuildIcon>
 		</CNCEncyclopediaComponent>
-	</ObjectTypeClass>			
+	</ObjectTypeClass>
+
+	<!-- Tiberian Factions mod — GDI Ion Cannon super (SPC_TD_ION_CANNON).
+	     AssetName "SW_IonCannon" comes from Convert_Special_Weapon_Type
+	     in dllinterface.cpp. Trying BuildIcon_TD_IonCannon as the launcher's
+	     internal name for the TD Ion Cannon cameo (parallels other TD
+	     BuildIcon_TD_* entries that resolve to bundled TGA frames). -->
+	<ObjectTypeClass Name="RA_SW_IONCANNON" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_IONCANNON</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_IONCANNON</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_IonCannon</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 
 
 		<!-- MISC UNITS-->

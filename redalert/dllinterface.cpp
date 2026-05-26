@@ -5220,6 +5220,18 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
             strncpy(weapon_name, "SW_Chrono2", 16);
         }
         break;
+    case SPC_TD_ION_CANNON:
+        // Tiberian Factions mod — route GDI Ion Cannon to the launcher's
+        // existing TD-side SW_ION_CANNON cameo + targeting cursor.
+        // Diagnostic 2026-05-26 confirmed launcher's $0-vs-no-cost display
+        // is keyed on SuperWeaponType — SW_NUKE/CHRONO/etc. are whitelisted
+        // for cost-suppression in RA context, SW_ION_CANNON is not. Cost
+        // override applied downstream (sidebar entry fill) to compensate.
+        dll_weapon_type = SW_ION_CANNON;
+        if (weapon_name != NULL) {
+            strncpy(weapon_name, "SW_IonCannon", 16);
+        }
+        break;
     default:
         dll_weapon_type = SW_UNKNOWN;
         if (weapon_name != NULL) {
@@ -5245,6 +5257,7 @@ void DLLExportClass::Fill_Sidebar_Entry_From_Special_Weapon(CNCSidebarEntryStruc
     case SPC_IRON_CURTAIN:
     case SPC_GPS:
     case SPC_CHRONO2:
+    case SPC_TD_ION_CANNON:
         Convert_Special_Weapon_Type(weapon_type, sidebar_entry_out.SuperWeaponType, sidebar_entry_out.AssetName);
         break;
     default:

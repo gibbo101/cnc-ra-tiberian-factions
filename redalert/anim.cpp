@@ -1123,31 +1123,31 @@ void AnimClass::Middle(void)
 
     /*
     **  Tiberian Factions mod: ANIM_TD_ION_CANNON delivers 600 damage with
-    **  WARHEAD_TDPB at its impact cell. Verbatim port of TD anim.cpp:1204-1224
-    **  — searches the firing house's units for the source TDEYE building
-    **  (falls back to any owned techno) so Explosion_Damage credits kills
-    **  correctly. The damage hit fires at mid-animation rather than on spawn
-    **  so the beam visual leads the explosion (TD-authentic timing).
+    **  WARHEAD_TDPB at its impact cell + spawns the artillery explosion
+    **  inline. Verbatim port of TD anim.cpp:1204-1224 for the building-
+    **  owner search loop (so Explosion_Damage credits kills correctly).
+    **
+    **  The explosion anim spawns here at mid-anim rather than via Class
+    **  ChainTo at end-of-anim: the laser's logical 15-stage cycle takes
+    **  long enough that an end-chained explosion lands visibly late after
+    **  the beam visual ends. Spawning ART_EXP1 here fires it on the same
+    **  frame as the damage, matching the visual impact moment.
     */
     if (Class->Type == ANIM_TD_ION_CANNON) {
-        BuildingClass* building = NULL;
-        TechnoClass* backup = NULL;
-        if (OwnerHouse != HOUSE_NONE) {
-            for (int index = 0; index < Logic.Count(); index++) {
-                ObjectClass* obj = Logic[index];
-                if (obj && obj->Is_Techno() && obj->Owner() == OwnerHouse && !obj->IsInLimbo) {
-                    backup = (TechnoClass*)obj;
-                    if (obj->What_Am_I() == RTTI_BUILDING && *((BuildingClass*)obj) == STRUCT_TDEYE) {
-                        building = (BuildingClass*)obj;
-                        break;
-                    }
-                }
-            }
-            if (building == NULL) {
-                building = (BuildingClass*)backup;
-            }
+        /*
+        **  Source = NULL deliberately. Explosion_Damage skips any object
+        **  whose pointer matches the source (combat.cpp:211), so if we
+        **  passed the firing house's TDEYE the player wouldn't be able
+        **  to Ion-Cannon their own TDEYE for friendly-fire / target-
+        **  practice. Cost: kill credit isn't attributed to "GDI's Ion
+        **  Cannon" — acceptable trade-off. (TD's source has the same
+        **  loop but presumably this edge case wasn't exercised.)
+        */
+        Explosion_Damage(Center_Coord(), 600, NULL, WARHEAD_TDPB);
+        AnimClass* impact_anim = new AnimClass(ANIM_ART_EXP1, Center_Coord(), 0, 1);
+        if (impact_anim != NULL) {
+            impact_anim->Set_Owner(OwnerHouse);
         }
-        Explosion_Damage(Center_Coord(), 600, building, WARHEAD_TDPB);
     }
 
     /*

@@ -77,7 +77,7 @@ static AnimTypeClass const TdIonCannon(ANIM_TD_ION_CANNON, // Animation number.
                                        15,                 // Number of stages.
                                        0,                  // Loops.
                                        VOC_TD_ION1,        // Sound (routed to TDC/TDR_SFX_TDION1).
-                                       ANIM_ART_EXP1,      // Chain-to: artillery explosion at impact.
+                                       ANIM_NONE,          // ChainTo cleared: ART_EXP1 spawned inline in Middle() so it lands on the same frame as the damage instead of late at end-of-anim.
                                        32,                 // Virtual stages.
                                        0x200               // Virtual scale.
 );
