@@ -363,6 +363,68 @@ if (((*building == STRUCT_HELIPAD || *building == STRUCT_TDHPAD) && !air->IsFixe
 
 **Why it's a sister-bug to §3.11:** Two hardcoded RA-side paths gate cameo visibility — `HouseClass::Can_Build` (add) and `ObjectTypeClass::Who_Can_Build_Me` (don't evict). Adding §3.11's equivalence without §3.12's fix gives you cameos that get added then immediately stripped. Always patch both whenever a TD-separated building shadows a vanilla RA factory role (helipad, airstrip, future barracks/weapon-factory equivalents). TDAFLD hit the same shape of bug and resolved it via `Find_Docking_Bay`'s IniName fallback — the underlying lesson is identical.
 
+### 3.13 — Donor BSIZE/footprint parity check (TDWEAP shortcut trap)
+
+**Trap:** §2.2 of the recipe says "copy the donor's constructor verbatim" with a table mapping TDxxx → RA donor (e.g., TDWEAP → ClassWeapon). The implicit assumption is donor footprint ≈ TD footprint. **For TDWEAP, that's false:** RA's WEAP is `BSIZE_32` (3×2, no overlap), but TD's WEAP is `BSIZE_33` (3×3 with row-0 overlap). Copying RA's `ClassWeapon` verbatim gave a building wearing the wrong-sized footprint — the Remastered TGA tileset is sized for 3×3 and renders partially / mispositioned against a 3×2 engine origin.
+
+**Symptom:** Body sprite renders truncated, displaced, or with the top cut off. Bib draws at the smaller footprint but the launcher's sprite occupies a wider area.
+
+**Fix:** Before copying the donor verbatim, **diff TD source `BSIZE_*` + footprint arrays against the RA donor's**. If they differ, define `TdList<N>` / `TdExitList<N>` arrays locally (mirroring TD source verbatim) and use `BSIZE_xx` from TD source. Worked example: `bdata.cpp` `TdListWeap`/`TdOListWeap`/`TdExitWeap` for STRUCT_TDWEAP, `TdList42`/`TdExitAirstrip` for STRUCT_TDAFLD.
+
+**Audit checklist** (run before any TDxxx building port):
+- `BSIZE_*` in TD ClassXxx == RA donor ClassXxx?
+- `ListXxx` cells in TD's bdata.cpp == RA's?
+- `OListXxx` overlap row in TD's bdata.cpp == RA's (often `NULL` in RA but populated in TD for buildings with roof overhang)?
+- `ExitXxx` exit-cell preference list in TD's bdata.cpp == RA's?
+
+### 3.14 — Overlay SHP (WEAP2-style door layer) shipping gap
+
+**Trap:** §7 of the recipe lists body SHP + buildup SHP (`OBLI.SHP:TDOBLI.SHP` + `OBLIMAKE.SHP:TDOBLIMAKE.SHP`) but doesn't mention overlay SHPs like `WEAP2.SHP`. War-factory-style buildings render in two layers: body (foundation/ramp) + overlay (walls/roof with door animation). RA's engine has a single global `BuildingTypeClass::WarFactoryOverlay` static loaded from `"WEAP2.SHP"` and drawn on top of every STRUCT_WEAP/FAKEWEAP. After STRUCT_TDWEAP separation, that single static still pointed at RA's WEAP2 — drawing RA's hangar roof on top of TD's body in classic mode → looked like a hybrid building.
+
+**Symptom:** Classic-mode rendering shows TD foundation + RA roof (or vice versa). In Remastered mode the launcher tileset XML can swap the asset name, but classic mode uses the raw SHP pointer.
+
+**Fix:** Add a TD-specific static pointer (e.g., `WarFactoryOverlayTd`) loaded from the TD-prefixed SHP in `One_Time`. Ship the TD overlay SHP into TFASSETS.MIX (`WEAP2.SHP:TDWEAP2.SHP`). In `Draw_It`, dispatch the overlay pointer + asset name in lockstep based on building type. Plus: the TGA tileset XML for the overlay must have shape entries matching TD's `Open_Door(rate, stages)` call — see §3.15.
+
+### 3.15 — TGA tileset shape count must match TD's `Open_Door(rate, stages)`
+
+**Trap:** RA's `WEAP2.SHP` is sized for `Open_Door(8, 5)` → 4 stages (Door_Stage returns 0..3) + 4 damaged. Eight XML shape entries total. TD's `WEAP2.SHP` has 20 frames sized for `Open_Door(2, 11)` → 10 stages (Door_Stage 0..9) + 10 damaged. If the XML uses RA's 8-shape mapping but the code calls TD's `Open_Door(2, 11)`, shapes 8/9 + 10..19 fall outside the XML mapping → **launcher renders white squares for those frames**.
+
+**Symptom:** Door animation works for the first few frames, then the top half goes white/transparent during the second half of the open animation and damaged states. Body renders fine — only the overlay breaks.
+
+**Fix:** Build the TDxxx2 XML with shape entries 1:1 to the TGA frame count, matching TD's stages parameter. For an 11-stage door with 20 TGA frames: shapes 0..9 → frames 0000..0009 (normal opening), shapes 10..19 → frames 0010..0019 (damaged variants). Replace any sample-remap from the alias era (gotcha #13 in `docs/adding-td-buildings.md`).
+
+### 3.16 — `Health_Ratio() < 0x0080` is broken on RA's `fixed` type
+
+**Trap:** TD source uses `if (Health_Ratio() < 0x0080) shapenum += N;` (or similar) for damaged-state shape offsets. TD's `Health_Ratio()` returns `int` in 0..0xFF range, so `< 0x80` literally means "below 50%". Copying that line verbatim into RA breaks: RA's `Health_Ratio()` returns `fixed`, and `fixed::operator<(int)` (`common/fixed.h:247`) multiplies the int by `PRECISION = 65536`. So `Health_Ratio() < 0x0080` becomes `Data.Raw < (128 * 65536)` — **always true** for any health ratio between 0 and 1.
+
+**Symptom:** Building always renders as if damaged. Body might still look OK because Door_Stage()=0 + offset=N falls within the SHP range, but you'll see the damaged-variant sprite at full health. Easy to spot in side-by-side TD-vs-our-port comparison.
+
+**Fix:** Translate to RA-idiomatic compare: `if (Health_Ratio() <= Rule.ConditionYellow) shapenum += N;`. `Rule.ConditionYellow = fixed(1, 2) = 0.5` by default (rules.ini-configurable). Semantically equivalent to TD's `< 0x0080`. Already documented in `docs/td-tier1-verification.md:231` by example; codify it here so it's caught earlier.
+
+### 3.17 — `deploy.sh --no-build` can silently skip XML/MIX changes
+
+**Trap:** When you only change an XML or MIX file (no DLL rebuild needed), `./deploy.sh --no-build` may rsync the build artifacts without including the resources tree, or rsync's mtime-based skip can swallow the change. Symptom: code expects updated XML mappings or MIX contents, but the launcher still uses the old version.
+
+**Fix:** After modifying XML/MIX, verify on the Deck with `grep -c '<NewEntryName>'` or `python3 scripts/mix_tools.py list ...` against the deployed path. If the count doesn't match local, force-push with explicit `scp <localpath> deck@steamdeck:<deckpath>`. Worked example: TDWEAP2 XML expansion from 8 to 20 shape entries needed a force-scp when the standard deploy skipped it.
+
+### 3.18 — `#ifdef FIXIT_HELI_LANDING` is INACTIVE — check active branch
+
+**Trap:** `defines.h:106` has `//#define FIXIT_HELI_LANDING` (commented out). Code wrapped in `#ifdef FIXIT_HELI_LANDING` is **dead**. The active branch is `#else`. If you add a fix to the `#ifdef` block and it doesn't take effect, you've patched the wrong branch. Originally caught while debugging the multi-plane TDAFLD convoy: an `intheory=true` retry was added to `Place_Object`'s helicopter fallback under `#ifdef` and the queue stayed blocked until the fix moved to the `#else`.
+
+**Fix:** When editing `HouseClass::Place_Object` or any other code with this guard, **always check whether the `#ifdef` macro is active in defines.h before patching**. For helicopter/aircraft-related Place_Object work, the active branch is currently `#else`.
+
+### 3.19 — Multi-plane convoy needs three independent fixes (TDAFLD-specific)
+
+**Trap:** Naively porting TD's `Create_Special_Reinforcement` Exit_Object case doesn't produce a working back-to-back cargo plane convoy in RA. RA's engine lacks three pieces that TD source has implicitly:
+
+1. **`Place_Object` radio-contact filter** rejects the airstrip while it's tethered to a prior cargo plane. Fix: `intheory=true` retry for vehicles whose house owns a TDAFLD (mirrors helicopter helipad-busy fallback).
+2. **`Do_Reinforcements` SOURCE_AIR override** must spawn AIRCRAFT_TDCARGO at east edge even when Find_Docking_Bay returns NULL (strip busy). Fall back to iterating Buildings list directly to grab any TDAFLD/AIRSTRIP for spawn-position math.
+3. **`PICK_AIRSTRIP` state must NOT circle** when RADIO_HELLO is rejected. Set facing toward strip + Set_Speed(0xFF) every tick; retry RADIO_HELLO; transition to FLY_TO_AIRSTRIP when handshake succeeds. The straight-line convoy is the desired feel — circles are an alias-era leftover.
+
+**Symptom of any one missing fix:** Plane #2 doesn't spawn until plane #1 has delivered (factory blocked by radio-contact filter), or plane #2 spawns at house's default edge (north for Nod) and orbits invisibly off-map.
+
+**See:** worked example in `5c0c17e` commit. `docs/cargo-plane-port.md` is the larger reference for the cargo-plane mechanics; this trap is specifically about the queue/multi-plane behavior layered on top of single-plane delivery.
+
 ---
 
 ## 4. Templates to copy

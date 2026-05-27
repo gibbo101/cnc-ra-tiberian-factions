@@ -1,6 +1,8 @@
 # TD building separation recipe — STRUCT_TDxxxx per-building port
 
-**Status:** **VALIDATED 2026-05-21** via TDOBLI (Nod Obelisk of Light) as the first fully-separated building. Use this doc as the canonical reference for every subsequent STRUCT_TDxxxx port.
+**Status:** **VALIDATED 2026-05-21** via TDOBLI; **M3 Tier 2 + M4 Tier 3 production buildings shipped 2026-05-27** (TDWEAP, TDAFLD with multi-plane convoy). Use this doc as the canonical reference for every subsequent STRUCT_TDxxxx port.
+
+**TDWEAP/TDAFLD-discovered gotchas added to `docs/td-port-playbook.md` §3.13–§3.19** — read those before starting any production-building port. The recipe steps below assume a turret/static building; production buildings (factories, airstrips) layer on the new traps.
 
 **Recipe scope:** taking a TD-themed mod entry from the v0.3-era Logic=alias model (where it rides on a vanilla RA donor type) to a fully-separated `STRUCT_TDxxxx` heap entry with its own `BuildingTypeClass`, own `_anims[]`, own assets, own behavior. Zero engine-time inheritance from vanilla RA donors; vanilla code paths never reach the TD entity.
 
@@ -83,6 +85,8 @@ Copy the donor's constructor verbatim, then change:
 - `TXT_TESLA` → `TXT_NONE` (rules.ini `Name=` overrides)
 - `"TSLA"` → `"TD<NEW>"` (IniName — per `[[project-td-prefix-convention]]`)
 
+**⚠️ BEFORE COPYING VERBATIM: run the donor parity check (playbook §3.13).** RA's donor and TD's source can have **different `BSIZE_*` + footprint arrays** even when they're conceptually the same building (TDWEAP hit this — RA BSIZE_32 vs TD BSIZE_33 with row-0 overlap). If they differ, define `TdList<N>`/`TdOList<N>`/`TdExitList<N>` arrays locally mirroring TD source verbatim, and use TD's `BSIZE_*` value.
+
 ### Step 3 — Register in `Init_Heap()`
 
 `redalert/bdata.cpp`, after the existing TD entries:
@@ -151,6 +155,8 @@ python3 scripts/mix_tools.py pack \
 `MFCD::Retrieve` finds the new SHPs via `Init_Heap()`'s standard load loop (`bdata.cpp:3185-3187`). No engine changes per-building.
 
 **Classic-mode caveat:** TD SHPs use TD's PALETTE.PAL color indices. Rendered with RA's PALETTE.PAL → mild color mismatch (looks ~95% right). Fix is a one-time `mix_tools.py` extension implementing Westwood Format80 codec + closest-color remap; deferred to a "classic-mode SHP polish" iteration. Remastered mode unaffected — launcher intercepts before SHP rendering and uses our TGA tileset.
+
+**Overlay SHPs (war-factory-style door layers):** if the building renders in two layers (body + animated overlay like WEAP+WEAP2), ship BOTH SHPs into TFASSETS.MIX (e.g. `WEAP2.SHP:TDWEAP2.SHP`) **and** add a TD-specific static pointer (`BuildingTypeClass::WarFactoryOverlayTd` or similar) loaded in `One_Time`. RA's existing `WarFactoryOverlay` static is hardcoded to load `WEAP2.SHP` and is drawn for every STRUCT_WEAP-style building — without a per-type dispatch in `Draw_It`, RA's overlay renders on top of TD's body. Plus: the TGA tileset XML for the overlay must have shape entries matching TD's `Open_Door(rate, stages)` call (see playbook §3.15). Worked example: TDWEAP2 in `5c0c17e`.
 
 ### Step 8 — TGA tileset for Remastered mode
 

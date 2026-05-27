@@ -1,7 +1,24 @@
 # Cargo-plane delivery (TDAFLD / TDC17) — port notes
 
 End-to-end recipe for landing TD's cargo-plane vehicle delivery in RA's
-engine. Verified working 2026-05-21 (v0.3.1-phase2d).
+engine. Verified working 2026-05-21 (v0.3.1-phase2d); **building +
+multi-plane convoy shipped 2026-05-27** as part of M4 Tier 3.
+
+> **Update 2026-05-27 (commits `434f2d7` + `5c0c17e`):** TDAFLD is now
+> fully separated as `STRUCT_TDAFLD` (no more Logic=WEAP alias). The
+> Exit_Object cargo-plane dispatch uses TD's verbatim `Create_Special_
+> Reinforcement` (replacing the previous hand-rolled `new AircraftClass +
+> Unlimbo + Attach`). Three additional fixes enable back-to-back
+> multi-plane delivery: (1) `Place_Object` `intheory=true` retry for
+> radio-contact bypass, (2) `Do_Reinforcements` SOURCE_AIR east-edge
+> override with busy-strip fallback iteration, (3) `PICK_AIRSTRIP`
+> straight-line behavior (no random circling). See `docs/td-port-playbook.md`
+> §3.13–§3.19 for the trap catalogue.
+>
+> The "ten dormant mechanics" below remain accurate as a history of the
+> single-plane delivery activation. Items §8 and §9 (`Find_Docking_Bay`
+> + `Docking_Coord` IniName fallbacks) have been cleaned up post-
+> separation — they now use `STRUCT_TDAFLD` type checks directly.
 
 The TD source is the spec. RA's port left several mechanics half-finished
 or commented out; this doc enumerates each dormant slice and the
