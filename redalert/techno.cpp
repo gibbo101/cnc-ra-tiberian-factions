@@ -6501,10 +6501,12 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         bool looking_for_airstrip = (b == STRUCT_AIRSTRIP);  // → STRUCT_TDAFLD
         bool looking_for_helipad = (b == STRUCT_HELIPAD);    // → STRUCT_TDHPAD
         bool looking_for_repair = (b == STRUCT_REPAIR);      // → STRUCT_TDFIX
+        bool looking_for_refinery = (b == STRUCT_REFINERY);  // → STRUCT_TDPROC
         bool has_candidate = (House->Get_Quantity(b) != 0)
                              || (looking_for_airstrip && House->Get_Quantity(STRUCT_TDAFLD) != 0)
                              || (looking_for_helipad && House->Get_Quantity(STRUCT_TDHPAD) != 0)
-                             || (looking_for_repair && House->Get_Quantity(STRUCT_TDFIX) != 0);
+                             || (looking_for_repair && House->Get_Quantity(STRUCT_TDFIX) != 0)
+                             || (looking_for_refinery && House->Get_Quantity(STRUCT_TDPROC) != 0);
         if (has_candidate) {
             int bestval = -1;
 
@@ -6523,7 +6525,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 bool tdafld_match = looking_for_airstrip && (*building == STRUCT_TDAFLD);
                 bool tdhpad_match = looking_for_helipad && (*building == STRUCT_TDHPAD);
                 bool tdfix_match = looking_for_repair && (*building == STRUCT_TDFIX);
-                bool type_match = (*building == b) || tdafld_match || tdhpad_match || tdfix_match;
+                bool tdproc_match = looking_for_refinery && (*building == STRUCT_TDPROC);
+                bool type_match = (*building == b) || tdafld_match || tdhpad_match || tdfix_match || tdproc_match;
                 if (!type_match)
                     continue;
 
@@ -7037,13 +7040,13 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             int td_cost = Cost;
             if (What_Am_I() == RTTI_BUILDINGTYPE) {
                 StructType s = ((BuildingTypeClass const*)this)->Type;
-                if (s == STRUCT_REFINERY) {
+                if (s == STRUCT_REFINERY || s == STRUCT_TDPROC) {
                     td_cost -= UnitTypeClass::As_Reference(UNIT_HARVESTER).Cost;
                 }
                 // RA's helipad donor delivers a free Longbow on construction
                 // — same shape as TD's Orca-included Helipad, so apply the
                 // same subtraction. AIRCRAFT_LONGBOW is the RA donor.
-                if (s == STRUCT_HELIPAD) {
+                if (s == STRUCT_HELIPAD || s == STRUCT_TDHPAD) {
                     td_cost -= AircraftTypeClass::As_Reference(AIRCRAFT_LONGBOW).Cost;
                 }
             }

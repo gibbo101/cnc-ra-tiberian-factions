@@ -6642,7 +6642,7 @@ bool DLLExportClass::Get_Player_Info_State(uint64 player_id, unsigned char* buff
         if ((building != nullptr) && building->IsActive && (building->Spied_By() & (1U << PlayerPtr->Class->House))) {
             if ((*building == STRUCT_POWER) || (*building == STRUCT_ADVANCED_POWER)) {
                 player_info->SpiedPowerFlags |= 1U << building->House->Class->House;
-            } else if ((*building == STRUCT_REFINERY) || (*building == STRUCT_STORAGE)) {
+            } else if ((*building == STRUCT_REFINERY) || (*building == STRUCT_TDPROC) || (*building == STRUCT_STORAGE) || (*building == STRUCT_TDSILO)) {
                 player_info->SpiedMoneyFlags |= 1U << building->House->Class->House;
             }
         }

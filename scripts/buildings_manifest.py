@@ -175,9 +175,9 @@ TDHQ = {
 
 TDPROC = {
     "ininame":     "TDPROC",
-    "logic":       "PROC",
+    "logic":       None,          # M4 Tier 3 separated 2026-05-27 — STRUCT_TDPROC native.
     "td_asset":    "PROC",
-    "footprint":   None,  # RA PROC donor is 3x3 (BSIZE_33); inherit donor shape.
+    "footprint":   None,          # ClassTdProc uses native TdListProc + TdOListProc (TD-source exact shape).
     "shape_size":  (72, 72),
     "text_id_name": "TEXT_STRUCTURE_TITLE_GDI_REFINERY",
     "text_id_desc": "TEXT_STRUCTURE_DESC_GDI_REFINERY",

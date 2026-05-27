@@ -196,7 +196,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         if (!House->Is_Ally(from))
             return (RADIO_STATIC);
         if (Mission == MISSION_CONSTRUCTION || Mission == MISSION_DECONSTRUCTION || BState == BSTATE_CONSTRUCTION
-            || (!ScenarioInit && Class->Type != STRUCT_REFINERY && In_Radio_Contact()))
+            || (!ScenarioInit && Class->Type != STRUCT_REFINERY && Class->Type != STRUCT_TDPROC && In_Radio_Contact()))
             return (RADIO_NEGATIVE);
         switch (Class->Type) {
         case STRUCT_AIRSTRIP:
@@ -223,6 +223,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             return (RADIO_NEGATIVE);
 
         case STRUCT_REFINERY:
+        case STRUCT_TDPROC:    // TD Refinery — same harvester dock semantics.
             if (from->What_Am_I() == RTTI_UNIT && *((UnitClass*)from) == UNIT_HARVESTER
                 && (ScenarioInit || !Is_Something_Attached())) {
 
@@ -260,6 +261,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             return (RADIO_ROGER);
 
         case STRUCT_REFINERY:
+        case STRUCT_TDPROC:    // TD Refinery — assign UNLOAD for the docking harvester.
             Mark(MARK_CHANGE);
             from->Assign_Mission(MISSION_UNLOAD);
             return (RADIO_ROGER);
@@ -280,7 +282,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         **	When in radio contact for loading, the refinery starts
         **	flashing the lights.
         */
-        if (*this == STRUCT_REFINERY && BState != BSTATE_FULL) {
+        if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC) && BState != BSTATE_FULL) {
             Begin_Mode(BSTATE_FULL);
         }
 
@@ -328,6 +330,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 break;
 
             case STRUCT_REFINERY:
+            case STRUCT_TDPROC:    // TD Refinery — same DIR_S docking pad offset.
                 param = ::As_Target(Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_S)));
                 break;
             }
@@ -342,7 +345,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 **	procedure now. If it can't, then tell it to get outta here.
                 */
                 Transmit_Message(RADIO_TETHER);
-                if (*this == STRUCT_REFINERY && Transmit_Message(RADIO_BACKUP_NOW, from) != RADIO_ROGER) {
+                if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC) && Transmit_Message(RADIO_BACKUP_NOW, from) != RADIO_ROGER) {
                     from->Scatter(0, true, true);
                 }
             }
@@ -356,7 +359,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
     */
     case RADIO_ARE_REFINERY:
         if (Is_Something_Attached() || In_Radio_Contact() || IsInLimbo || House->Class->House != from->Owner()
-            || (*this != STRUCT_REFINERY /* && *this != STRUCT_REPAIR*/)) {
+            || ((*this != STRUCT_REFINERY && *this != STRUCT_TDPROC) /* && *this != STRUCT_REPAIR*/)) {
             return (RADIO_NEGATIVE);
         }
         return (RADIO_ROGER);
@@ -407,6 +410,16 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             if (Distance(from) < 0x0180) {
                 return (RADIO_ROGER);
             }
+        }
+        // TD source fix (tiberiandawn/building.cpp:400-403, comment "Turn off
+        // the refinery lights - LLL April 22, 2020"): when the harvester
+        // finishes unloading and transmits RADIO_UNLOADED, transition the
+        // refinery's BState back to IDLE. Without this, BSTATE_FULL (set in
+        // RADIO_CAN_LOAD at line 286) keeps looping its anim cycle after
+        // the harvester leaves. EA's TD branch carries this fix; the RA
+        // branch we ported from never received it.
+        if (*this == STRUCT_REFINERY || *this == STRUCT_TDPROC) {
+            Begin_Mode(BSTATE_IDLE);
         }
         TechnoClass::Receive_Message(from, message, param);
         if (*this == STRUCT_WEAP || *this == STRUCT_AIRSTRIP || *this == STRUCT_REPAIR || *this == STRUCT_TDFIX
@@ -1256,6 +1269,10 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
         if (btype == STRUCT_TDFACT) {
             House->BScan |= STRUCTF_CONST;
             House->ActiveBScan |= STRUCTF_CONST;
+        }
+        if (btype == STRUCT_TDPROC) {
+            House->BScan |= STRUCTF_REFINERY;
+            House->ActiveBScan |= STRUCTF_REFINERY;
         }
         if (btype == STRUCT_TDWEAP) {
             House->BScan |= STRUCTF_WEAP;
@@ -2243,6 +2260,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
     case RTTI_UNIT:
         switch (Class->Type) {
         case STRUCT_REFINERY:
+        case STRUCT_TDPROC:    // TD Refinery — same free-harvester spawn at SW exit cell.
             if (base->What_Am_I() == RTTI_UNIT) {
                 cell = Coord_Cell(Center_Coord());
                 UnitClass* unit = (UnitClass*)base;
@@ -3022,7 +3040,7 @@ void BuildingClass::Grand_Opening(bool captured)
         **	Tiberium Refineries get a free harvester. Add a harvester to the
         **	reinforcement list at this time.
         */
-        if (*this == STRUCT_REFINERY && !ScenarioInit && !captured && !Debug_Map
+        if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC) && !ScenarioInit && !captured && !Debug_Map
             && (!House->IsHuman || PurchasePrice == 0 || PurchasePrice > Class->Raw_Cost())) {
             CELL cell = Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_S));
 
@@ -3847,7 +3865,7 @@ COORDINATE BuildingClass::Sort_Y(void) const
     if (*this == STRUCT_BARRACKS /*|| *this == STRUCT_POWER*/) {
         return (Center_Coord());
     }
-    if (*this == STRUCT_REFINERY) {
+    if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC)) {
         return (Center_Coord());
     }
     /*
@@ -3935,7 +3953,7 @@ bool BuildingClass::Can_Demolish(void) const
 
     if (Class->Get_Buildup_Data() && BState != BSTATE_CONSTRUCTION && Mission != MISSION_DECONSTRUCTION
         && Mission != MISSION_CONSTRUCTION) {
-        if (*this == STRUCT_REFINERY && Is_Something_Attached())
+        if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC) && Is_Something_Attached())
             return (false);
         return (true);
     }
@@ -7011,7 +7029,7 @@ short const* BuildingClass::Overlap_List(bool redraw) const
         if (*this == STRUCT_BARRACKS || *this == STRUCT_TENT) {
             static short const _list[] = {-1, 2, (MAP_CELL_W * 1) - 1, (MAP_CELL_W * 1) + 2, REFRESH_EOL};
             return (_list);
-        } else if (*this == STRUCT_REFINERY) {
+        } else if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC)) {
             static short const _list[] = {
                 0, 2, (MAP_CELL_W * 2) + 0, (MAP_CELL_W * 2) + 1, (MAP_CELL_W * 2) + 2, REFRESH_EOL};
             return (_list);

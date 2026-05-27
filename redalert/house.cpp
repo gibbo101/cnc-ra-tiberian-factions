@@ -7491,6 +7491,9 @@ void HouseClass::Recalc_Attributes(void)
         if (btype == STRUCT_TDFACT) {
             building->House->BScan |= STRUCTF_CONST;
         }
+        if (btype == STRUCT_TDPROC) {
+            building->House->BScan |= STRUCTF_REFINERY;
+        }
         if (btype == STRUCT_TDWEAP) {
             building->House->BScan |= STRUCTF_WEAP;
         }
@@ -7520,6 +7523,10 @@ void HouseClass::Recalc_Attributes(void)
                 if (btype == STRUCT_TDFACT) {
                     building->House->ActiveBScan |= STRUCTF_CONST;
                     building->House->OldBScan |= STRUCTF_CONST;
+                }
+                if (btype == STRUCT_TDPROC) {
+                    building->House->ActiveBScan |= STRUCTF_REFINERY;
+                    building->House->OldBScan |= STRUCTF_REFINERY;
                 }
                 if (btype == STRUCT_TDWEAP) {
                     building->House->ActiveBScan |= STRUCTF_WEAP;

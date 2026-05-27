@@ -1025,6 +1025,55 @@ static BuildingTypeClass const ClassTdWeap(STRUCT_TDWEAP,
 );
 
 /*
+**  TDPROC (Tiberium Refinery) — 3×3 building, ARMOR_WOOD, capturable, crewed.
+**    Wholesale port of TD's STRUCT_REFINERY per tiberiandawn/bdata.cpp:585
+**    (ClassRefinery). Capacity=1000, Power=+10/drain=40 (TD-authentic;
+**    RA's STRUCT_REFINERY has the same baseline but rules.ini can override).
+**
+**    Footprint mirrors TD source exactly (NOT RA's STRUCT_REFINERY shape):
+**    TdListProc = {row 0 middle, row 1 entire} occupy cells.
+**    TdOListProc = {row 0 corners, row 2 entire} overlap (sprite extends
+**    here but pathfinding allows passage). RA's PROC uses List010111100 +
+**    List101000011 which is a different shape — donor parity trap per
+**    playbook §3.13.
+**
+**    Harvester dock state machine (5 BStates): IDLE 0-5 → ACTIVE 12-18
+**    (docking) → AUX1 19-23 (siphoning tiberium) → AUX2 24-29 (undocking).
+**    BSTATE_FULL 6-11 plays when Capacity is reached (flashing lights).
+*/
+static short const TdListProc[] = {1, (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, REFRESH_EOL};
+static short const TdOListProc[] = {0, 2, (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, REFRESH_EOL};
+
+static BuildingTypeClass const ClassTdProc(STRUCT_TDPROC,
+                                           TXT_NONE,           // Display name (rules.ini Name= overrides).
+                                           "TDPROC",           // IniName.
+                                           FACING_NONE,        // Foundation direction.
+                                           XYP_COORD(0, 0),    // Exit point unused (refinery doesn't produce units).
+                                           REMAP_ALTERNATE,    // Sidebar remap logic.
+                                           0x0000,             // Vertical offset.
+                                           0x0000,             // Primary weapon offset.
+                                           0x0000,             // Primary weapon lateral offset.
+                                           false,              // Is this building a fake?
+                                           false,              // Animation rate regulated for constant speed?
+                                           false,              // Always use the given name?
+                                           false,              // Is this a wall type structure?
+                                           false,              // Simple (one frame) damage imagery?
+                                           false,              // Is it invisible to radar?
+                                           true,               // Can the player select this?
+                                           true,               // Is this a legal target?
+                                           false,              // Is this an insignificant building?
+                                           false,              // Theater specific graphic image?
+                                           false,              // Does it have a rotating turret?
+                                           true,               // Can the building be color remapped?
+                                           RTTI_NONE,          // Not a factory — engine grants free harvester at build time.
+                                           DIR_N,              // Starting idle frame.
+                                           BSIZE_33,           // 3x3 footprint (TD-authentic).
+                                           NULL,               // No preferred exit cell.
+                                           (short const*)TdListProc,
+                                           (short const*)TdOListProc
+);
+
+/*
 **  TDFACT (Construction Yard) — 3×2 building, ARMOR_WOOD, capturable, crewed.
 **    Wholesale port of TD's STRUCT_CONST per tiberiandawn/bdata.cpp:534
 **    (ClassConst). NOT a unit factory — RTTI_BUILDINGTYPE (produces other
@@ -3742,6 +3791,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdWeap);  // STRUCT_TDWEAP  (Weapons Factory)
     new BuildingTypeClass(ClassTdAfld);  // STRUCT_TDAFLD  (Nod Airstrip)
     new BuildingTypeClass(ClassTdFact);  // STRUCT_TDFACT  (Construction Yard)
+    new BuildingTypeClass(ClassTdProc);  // STRUCT_TDPROC  (Tiberium Refinery)
     new BuildingTypeClass(ClassTdEye);   // STRUCT_TDEYE   (Advanced Communications Center)
     new BuildingTypeClass(ClassTdTmpl);  // STRUCT_TDTMPL  (Temple of Nod)
 }
@@ -3850,6 +3900,15 @@ void BuildingTypeClass::One_Time(void)
         // TD-authentic per tiberiandawn/bdata.cpp:3792-3793.
         {STRUCT_TDFACT, BSTATE_ACTIVE, 4, 20, 3},
         {STRUCT_TDFACT, BSTATE_IDLE, 0, 4, 3},
+        // M4 Tier 3 — TDPROC harvester dock state machine. TD-authentic per
+        // tiberiandawn/bdata.cpp:3801-3805. IDLE 0-5 normal; FULL 6-11 plays
+        // when Capacity is reached (flashing lights); ACTIVE 12-18 (docking);
+        // AUX1 19-23 (siphoning tiberium); AUX2 24-29 (undocking).
+        {STRUCT_TDPROC, BSTATE_ACTIVE, 12, 7, 4},
+        {STRUCT_TDPROC, BSTATE_AUX1, 19, 5, 4},
+        {STRUCT_TDPROC, BSTATE_AUX2, 24, 6, 4},
+        {STRUCT_TDPROC, BSTATE_IDLE, 0, 6, 4},
+        {STRUCT_TDPROC, BSTATE_FULL, 6, 6, 4},
         // M5 Tier 4 — TDEYE 16-frame idle cycle (TD-authentic per
         // tiberiandawn/bdata.cpp:3794). Ion Cannon visual + super wiring
         // lands in Phase E2/E3; this is the structural building only.
@@ -4540,7 +4599,7 @@ int BuildingTypeClass::Raw_Cost(void) const
             (AircraftTypeClass::As_Reference(AIRCRAFT_HIND).Cost + AircraftTypeClass::As_Reference(AIRCRAFT_HIND).Cost)
             / 2;
     }
-    if (Type == STRUCT_REFINERY) {
+    if (Type == STRUCT_REFINERY || Type == STRUCT_TDPROC) {
         cost -= UnitTypeClass::As_Reference(UNIT_HARVESTER).Cost;
     }
     return (cost);

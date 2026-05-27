@@ -729,7 +729,7 @@ void EventClass::Execute(void)
                 techno->Assign_Destination(Data.MegaMission.Target.As_TARGET());
                 techno->ArchiveTarget = Data.MegaMission.Target.As_TARGET();
             } else if (Data.MegaMission.Mission == MISSION_ENTER && object != NULL
-                       && object->What_Am_I() == RTTI_BUILDING && *((BuildingClass*)object) == STRUCT_REFINERY) {
+                       && object->What_Am_I() == RTTI_BUILDING && (*((BuildingClass*)object) == STRUCT_REFINERY || *((BuildingClass*)object) == STRUCT_TDPROC)) {
                 techno->Transmit_Message(RADIO_HELLO, (BuildingClass*)object);
                 techno->Assign_Destination(TARGET_NONE);
             } else {

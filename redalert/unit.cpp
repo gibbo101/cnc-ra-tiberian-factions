@@ -899,7 +899,7 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
     case RADIO_RUN_AWAY:
         if (Class->IsToHarvest && In_Radio_Contact() && Mission == MISSION_ENTER) {
             TechnoClass* contact = Contact_With_Whom();
-            if (contact->What_Am_I() == RTTI_BUILDING && *((BuildingClass*)contact) == STRUCT_REFINERY) {
+            if (contact->What_Am_I() == RTTI_BUILDING && (*((BuildingClass*)contact) == STRUCT_REFINERY || *((BuildingClass*)contact) == STRUCT_TDPROC)) {
                 // Slight hack; set a target so the harvest mission knows to skip to finding home state
                 Assign_Mission(MISSION_HARVEST);
                 TarCom = As_Target();
