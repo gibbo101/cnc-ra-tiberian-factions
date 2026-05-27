@@ -1559,6 +1559,33 @@ void HouseClass::AI(void)
         } else {
             Radar = (Map.Is_Radar_Active() || Map.Is_Radar_Activating()) ? RADAR_ON : RADAR_OFF;
         }
+
+#ifdef REMASTER_BUILD
+        // Tiberian Factions: fire the radar-on/off sting on edges of the
+        // LOCAL HUMAN's own Radar state. We can't fire from radar.cpp's
+        // Map.Radar_Activate because:
+        //   (a) Map.IsSidebarActive is permanently false in REMASTER_BUILD
+        //       (sidebar.cpp:947 — launcher draws the sidebar), so the
+        //       legacy fire path is gated off, and
+        //   (b) in skirmish each player's HouseClass::AI iteration writes
+        //       to the global Map.IsRadarActive based on their own state,
+        //       so the global flag ping-pongs every tick between players.
+        // Doing the edge-detect here on `this->Radar` + IsHuman gives us
+        // exactly one fire per real local-human transition. Per-faction
+        // routing (Allied/Soviet -> RAORAD*, GDI/Nod -> TFRADR*) is in
+        // DLLExportClass::On_Sound_Effect.
+        if (IsHuman) {
+            static RadarEnum tf_last_local_radar = RADAR_NONE;
+            bool was_on  = (tf_last_local_radar == RADAR_ON);
+            bool now_on  = (Radar == RADAR_ON);
+            if (!was_on && now_on) {
+                Sound_Effect(VOC_RADAR_ON);
+            } else if (was_on && !now_on) {
+                Sound_Effect(VOC_RADAR_OFF);
+            }
+            tf_last_local_radar = Radar;
+        }
+#endif
     }
 
     VisibleCredits.AI(false, this, true);

@@ -6980,16 +6980,56 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             return time;
         }
 
+        // TF DIAGNOSTIC 2026-05-27 (stubbed under #if 0 per
+        // feedback-keep-diagnostics-until-v1): proved that the
+        // everyone-builds-in-1-sec symptom was a stale BuildSpeed=.001
+        // edit left on the Steam Deck's CCDATA/rules.ini by a previous
+        // smoke session, not a code bug. Source rules.ini was always .8.
+        // Re-enable the #if 1 around the per-call fprintf below if a
+        // similar Rule.BuildSpeedBias mystery recurs.
+
         /*
         **  DEV TOGGLE — instant-build (~1 second) for GDI / Nod players for
-        **  fast catalogue iteration. Re-enabled 2026-05-21 for Nod testing.
-        **  Flip #if 1 → 0 to disable. Search "DEV TOGGLE — instant build" to
-        **  find. 15 ticks ≈ 1s at 15/sec.
+        **  fast catalogue iteration. Flip #if 0 → 1 to enable. Search
+        **  "DEV TOGGLE — instant build" to find. 15 ticks ≈ 1s at 15/sec.
+        **
+        **  Disabled 2026-05-27. Default OFF; only flip on for short-lived
+        **  catalogue tests, then revert before deploy/release.
         */
-#if 1
+#if 0
         if (hptr->Class->House == HOUSE_GOOD || hptr->Class->House == HOUSE_BAD
             || hptr->ActLike      == HOUSE_GOOD || hptr->ActLike      == HOUSE_BAD) {
             return 15;
+        }
+#endif
+
+#if 0   // TF DIAGNOSTIC stub — flip to 1 to re-enable per-call buildtime logging
+        {
+            const char* up = getenv("USERPROFILE");
+            if (up != NULL) {
+                char path[512];
+                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_buildtime.log", up);
+                FILE* f = fopen(path, "a");
+                if (f != NULL) {
+                    int step1 = Cost * Rule.BuildSpeedBias;
+                    int step2 = step1 * fixed(TICKS_PER_MINUTE, 1000);
+                    int rule_bsb_x100 = Rule.BuildSpeedBias * 100;
+                    int hptr_bsb_x100 = hptr->BuildSpeedBias * 100;
+                    fprintf(f, "[buildtime] PASTTOGGLE arg=%d ClsH=%d ActLike=%d IsHuman=%d Cost=%d RuleBSB*100=%d HPtrBSB*100=%d TPM=%d step1=%d step2=%d initial_time=%d\n",
+                            (int)house,
+                            (int)hptr->Class->House,
+                            (int)hptr->ActLike,
+                            (int)hptr->IsHuman,
+                            Cost,
+                            rule_bsb_x100,
+                            hptr_bsb_x100,
+                            (int)TICKS_PER_MINUTE,
+                            step1,
+                            step2,
+                            time);
+                    fclose(f);
+                }
+            }
         }
 #endif
 

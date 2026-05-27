@@ -6142,7 +6142,70 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     </SampleNamesList>
   </SFXEvent>
 
+  <!--
+    Tiberian Factions: per-faction radar SFX dispatch (see docs/td-port-playbook.md).
+    The launcher autonomously fires _SFX_RADARON2 / _SFX_RADARDN1 on radar state
+    edges, hardcoded to ALL factions. We silence its auto-fire by shipping
+    44-byte silent stubs at RAC/RAR_SFX_RADARON2/RADARDN1.WAV, then re-enable
+    the DLL fire path (radar.cpp) and route by HousesType in dllinterface.cpp:
+    Allied/Soviet -> RAORAD*, GDI/Nod -> TFRADR*. RAC=Classic audio mode,
+    RAR=Remastered.
+  -->
+  <SFXEvent Name="RAC_SFX_RAORADON" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <SampleNamesList>
+      <entry> RAC_SFX_RAORADON.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
 
+  <SFXEvent Name="RAR_SFX_RAORADON" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <SampleNamesList>
+      <entry> RAR_SFX_RAORADON.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAC_SFX_RAORADOF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <SampleNamesList>
+      <entry> RAC_SFX_RAORADOF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_RAORADOF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <SampleNamesList>
+      <entry> RAR_SFX_RAORADOF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAC_SFX_TFRADRON" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <SampleNamesList>
+      <entry> RAC_SFX_TFRADRON.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_TFRADRON" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <SampleNamesList>
+      <entry> RAR_SFX_TFRADRON.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAC_SFX_TFRADROF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <SampleNamesList>
+      <entry> RAC_SFX_TFRADROF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_TFRADROF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <SampleNamesList>
+      <entry> RAR_SFX_TFRADROF.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
 
 </SFXEvents>
 
