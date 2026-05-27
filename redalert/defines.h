@@ -1699,6 +1699,7 @@ typedef enum UnitType : char
 
     // Tiberian Factions mod — fully-separated TD-source unit ports.
     UNIT_TDMCV,             // TD Mobile Construction Vehicle (deploys to STRUCT_TDFACT).
+    UNIT_TDHARV,            // TD Tiberium Harvester (docks at STRUCT_TDPROC).
 
     UNIT_COUNT,
     UNIT_FIRST = 0

@@ -804,7 +804,7 @@ bool DriveClass::While_Moving(void)
 
                         case MOVE_TEMP:
 #ifdef TOFIX
-                            if (*this == UNIT_HARVESTER || !House->IsHuman) {
+                            if (*this == UNIT_HARVESTER || *this == UNIT_TDHARV || !House->IsHuman) {
 #else
                             if (!House->IsHuman) {
 #endif

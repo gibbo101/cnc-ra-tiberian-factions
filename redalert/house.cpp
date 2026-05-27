@@ -7676,7 +7676,7 @@ TARGET HouseClass::Find_Juicy_Target(COORDINATE coord) const
             if (unit->Anti_Air())
                 val *= 2;
 
-            if (*unit == UNIT_HARVESTER)
+            if (*unit == UNIT_HARVESTER || *unit == UNIT_TDHARV)
                 val /= 2;
 
             if (value == 0 || val < value) {

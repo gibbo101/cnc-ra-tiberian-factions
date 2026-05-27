@@ -4599,8 +4599,12 @@ int BuildingTypeClass::Raw_Cost(void) const
             (AircraftTypeClass::As_Reference(AIRCRAFT_HIND).Cost + AircraftTypeClass::As_Reference(AIRCRAFT_HIND).Cost)
             / 2;
     }
-    if (Type == STRUCT_REFINERY || Type == STRUCT_TDPROC) {
+    if (Type == STRUCT_REFINERY) {
         cost -= UnitTypeClass::As_Reference(UNIT_HARVESTER).Cost;
+    }
+    if (Type == STRUCT_TDPROC) {
+        // TDPROC spawns UNIT_TDHARV via building.cpp's free-harvester block.
+        cost -= UnitTypeClass::As_Reference(UNIT_TDHARV).Cost;
     }
     return (cost);
 }

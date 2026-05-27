@@ -6254,7 +6254,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             ** Check if it's a harvester, to show the right type of pips for the
             ** various minerals it could have harvested.
             */
-            if (What_Am_I() == RTTI_UNIT && *(UnitClass*)this == UNIT_HARVESTER) {
+            if (What_Am_I() == RTTI_UNIT && (*(UnitClass*)this == UNIT_HARVESTER || *(UnitClass*)this == UNIT_TDHARV)) {
                 UnitClass* harv = (UnitClass*)this;
 
                 int iron = harv->Gems;
@@ -7040,8 +7040,11 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             int td_cost = Cost;
             if (What_Am_I() == RTTI_BUILDINGTYPE) {
                 StructType s = ((BuildingTypeClass const*)this)->Type;
-                if (s == STRUCT_REFINERY || s == STRUCT_TDPROC) {
+                if (s == STRUCT_REFINERY) {
                     td_cost -= UnitTypeClass::As_Reference(UNIT_HARVESTER).Cost;
+                }
+                if (s == STRUCT_TDPROC) {
+                    td_cost -= UnitTypeClass::As_Reference(UNIT_TDHARV).Cost;
                 }
                 // RA's helipad donor delivers a free Longbow on construction
                 // — same shape as TD's Orca-included Helipad, so apply the

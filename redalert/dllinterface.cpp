@@ -3865,7 +3865,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         bool is_unit = what_is_object == RTTI_UNIT;
         if (is_unit) {
             const UnitClass* unit = static_cast<const UnitClass*>(object);
-            if (unit->Class->Type == UNIT_HARVESTER) {
+            if (unit->Class->Type == UNIT_HARVESTER || unit->Class->Type == UNIT_TDHARV) {
                 new_object.CanHarvest = true;
             }
 

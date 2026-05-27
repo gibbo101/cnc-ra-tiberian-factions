@@ -1192,7 +1192,7 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
                 /*
                 **	Try to return to base if possible.
                 */
-                if (*this == UNIT_HARVESTER && Pip_Count() && Health_Ratio() <= Rule.ConditionYellow) {
+                if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV) && Pip_Count() && Health_Ratio() <= Rule.ConditionYellow) {
 
                     /*
                     **	Find nearby refinery and head to it?
@@ -1213,7 +1213,7 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
         /*
         **	Computer controlled harvester will radio for help if they are attacked.
         */
-        if (*this == UNIT_HARVESTER && !House->IsHuman && source) {
+        if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV) && !House->IsHuman && source) {
             Base_Is_Attacked(source);
         }
     }
@@ -1755,7 +1755,7 @@ void UnitClass::Per_Cell_Process(PCPType why)
             } else {
                 TechnoClass* contact = Contact_With_Whom();
                 if (Transmit_Message(RADIO_UNLOADED) == RADIO_RUN_AWAY) {
-                    if (*this == UNIT_HARVESTER && contact && contact->What_Am_I() == RTTI_BUILDING
+                    if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV) && contact && contact->What_Am_I() == RTTI_BUILDING
                         && *((BuildingClass*)contact) != STRUCT_REPAIR
                         && *((BuildingClass*)contact) != STRUCT_TDFIX) {
                         Assign_Mission(MISSION_HARVEST);
@@ -1774,7 +1774,7 @@ void UnitClass::Per_Cell_Process(PCPType why)
                         }
                     }
                 } else {
-                    if (*this == UNIT_HARVESTER) {
+                    if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV)) {
                         if (Target_Legal(ArchiveTarget)) {
                             Assign_Mission(MISSION_HARVEST);
                             Assign_Destination(ArchiveTarget);
@@ -2014,20 +2014,32 @@ int UnitClass::Shape_Number(void) const
 #endif
 
         /*
-        **	Fetch the harvesting animation stage as appropriate.
+        **	Fetch the harvesting animation stage as appropriate. Two layouts:
+        **	UNIT_HARVESTER (RA): 32 rotation + 8 dirs × 8 load = 96 frames.
+        **	UNIT_TDHARV (TD): 32 rotation + 8 dirs × 4 load = 64 frames.
+        **	TD-verbatim shape calc per tiberiandawn/unit.cpp:2126-2129.
         */
         if (IsHarvesting && !PrimaryFacing.Is_Rotating() && !NavCom && !IsDriving) {
-            //			static char _hstage[] = {0, 1, 2, 3, 4, 5, 6, 7, 0};
-            unsigned stage = Fetch_Stage();
-            if (stage >= ARRAY_SIZE(Class->Harvester_Load_List))
-                stage = ARRAY_SIZE(Class->Harvester_Load_List) - 1;
-            shapenum = 32 + (((UnitClass::BodyShape[facing] + 2) / 4) * Class->Harvester_Load_Count)
-                       + Class->Harvester_Load_List[stage];
+            if (*this == UNIT_TDHARV) {
+                static char const _td_hstage[6] = {0, 1, 2, 3, 2, 1};
+                shapenum =
+                    32 + (((UnitClass::BodyShape[facing] + 2) / 4) * 4) + _td_hstage[Fetch_Stage() % 6];
+            } else {
+                //			static char _hstage[] = {0, 1, 2, 3, 4, 5, 6, 7, 0};
+                unsigned stage = Fetch_Stage();
+                if (stage >= ARRAY_SIZE(Class->Harvester_Load_List))
+                    stage = ARRAY_SIZE(Class->Harvester_Load_List) - 1;
+                shapenum = 32 + (((UnitClass::BodyShape[facing] + 2) / 4) * Class->Harvester_Load_Count)
+                           + Class->Harvester_Load_List[stage];
+            }
         } else {
             /*
-            ** If the harvester's dumping a load of ore, show that animation
+            ** If the harvester's dumping a load of ore, show that animation.
+            ** Tiberian Factions: UNIT_TDHARV skips the dump-anim shape calc
+            ** for the same reason it skips the load-anim — TD's 64-frame
+            ** harvester sprite doesn't carry the +96 dump frames.
             */
-            if (IsDumping) {
+            if (IsDumping && *this != UNIT_TDHARV) {
                 unsigned stage = Fetch_Stage();
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
                 if (*this == UNIT_MAD) {
@@ -4096,7 +4108,7 @@ int UnitClass::Pip_Count(void) const
         return (retval);
     }
 
-    if (*this == UNIT_HARVESTER) {
+    if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV)) {
         return ((Gold + Gems) / 4);
     }
 
@@ -4481,7 +4493,7 @@ fixed UnitClass::Tiberium_Load(void) const
 {
     assert(IsActive);
 
-    if (*this == UNIT_HARVESTER) {
+    if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV)) {
         return (fixed(Tiberium, Rule.BailCount));
     }
     return (0);

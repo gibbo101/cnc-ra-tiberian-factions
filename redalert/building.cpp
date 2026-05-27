@@ -224,7 +224,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
         case STRUCT_REFINERY:
         case STRUCT_TDPROC:    // TD Refinery — same harvester dock semantics.
-            if (from->What_Am_I() == RTTI_UNIT && *((UnitClass*)from) == UNIT_HARVESTER
+            if (from->What_Am_I() == RTTI_UNIT && (*((UnitClass*)from) == UNIT_HARVESTER || *((UnitClass*)from) == UNIT_TDHARV)
                 && (ScenarioInit || !Is_Something_Attached())) {
 
                 return ((Contact_With_Whom() != from) ? RADIO_ROGER : RADIO_NEGATIVE);
@@ -3044,7 +3044,10 @@ void BuildingClass::Grand_Opening(bool captured)
             && (!House->IsHuman || PurchasePrice == 0 || PurchasePrice > Class->Raw_Cost())) {
             CELL cell = Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_S));
 
-            UnitClass* unit = new UnitClass(UNIT_HARVESTER, House->Class->House);
+            // Tiberian Factions: STRUCT_TDPROC spawns UNIT_TDHARV (TD-art
+            // harvester) instead of RA's UNIT_HARVESTER. Same mechanics.
+            UnitType harv_type = (*this == STRUCT_TDPROC) ? UNIT_TDHARV : UNIT_HARVESTER;
+            UnitClass* unit = new UnitClass(harv_type, House->Class->House);
             if (unit != NULL) {
 
                 /*

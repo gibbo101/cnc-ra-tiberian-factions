@@ -361,6 +361,43 @@ static UnitTypeClass const UnitMCV(UNIT_MCV,
 );
 
 /*
+**  TDHARV (Tiberian Factions Tiberium Harvester) — verbatim port of TD's
+**  UNIT_HARVESTER (tiberiandawn/udata.cpp:585). Behavior identical to
+**  RA's UnitHarvester (same IsToHarvest, MISSION_HARVEST default, etc).
+**  Only difference is the sprite — TDHARV uses TD's bulkier "Harvy"
+**  art. Shared by GDI + Nod (matches TD original). Spawned as the free
+**  unit from STRUCT_TDPROC.
+*/
+static UnitTypeClass const UnitTdHarv(UNIT_TDHARV,
+                                      TXT_HARVESTER,   // NAME:			Text name.
+                                      "TDHARV",        // NAME:			IniName.
+                                      ANIM_FBALL1,     // EXPLOSION:	Explosion when destroyed.
+                                      REMAP_ALTERNATE, // Sidebar remap logic.
+                                      0x0000,          //	Vertical offset.
+                                      0x0000,          // Primary weapon offset.
+                                      0x0000,          // Primary weapon lateral.
+                                      0x0000,          // Secondary weapon offset.
+                                      0x0000,          // Secondary weapon lateral.
+                                      true,            // Can this be a goodie surprise from a crate?
+                                      true,            // Always use the given name?
+                                      true,            // Can this unit squash infantry?
+                                      true,            // Does this unit harvest Tiberium?
+                                      false,           // Is invisible to radar?
+                                      false,           // Is it insignificant?
+                                      false,           // Is it equipped with a combat turret?
+                                      false,           // Does it have a rotating radar dish?
+                                      false,           // Is there an associated firing animation?
+                                      false,           // Must the turret be in a locked down position while moving?
+                                      true,            // Is this a gigundo-rotund-enormous unit?
+                                      false,           // Does the unit have a constant animation?
+                                      false,           // Is the unit capable of jamming radar?
+                                      false,           // Is the unit a mobile gap generator?
+                                      32,              // Rotation stages.
+                                      0,               // Turret center offset along body centerline.
+                                      MISSION_HARVEST  // ORDERS:		Default order.
+);
+
+/*
 **  TDMCV (Tiberian Factions Mobile Construction Vehicle) — verbatim port
 **  of TD's UNIT_MCV (tiberiandawn/udata.cpp:638 UnitMCV). RA's UnitTypeClass
 **  ctor has 21 params vs TD's 27 (RA elides build_level/cost/strength/armor/
@@ -1030,6 +1067,7 @@ void UnitTypeClass::Init_Heap(void)
 #endif
     // Tiberian Factions mod — fully-separated TD-source unit ports.
     new UnitTypeClass(UnitTdMcv);     // UNIT_TDMCV
+    new UnitTypeClass(UnitTdHarv);    // UNIT_TDHARV
 }
 
 /***********************************************************************************************
@@ -1319,7 +1357,7 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
  *=============================================================================================*/
 int UnitTypeClass::Max_Pips(void) const
 {
-    if (Type == UNIT_HARVESTER) {
+    if (Type == UNIT_HARVESTER || Type == UNIT_TDHARV) {
         return (7);
     }
 
