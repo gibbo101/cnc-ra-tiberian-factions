@@ -713,8 +713,7 @@ bool DriveClass::While_Moving(void)
                     && Contact_With_Whom()->What_Am_I() == RTTI_BUILDING) {
                     BuildingClass const* bldg =
                         (BuildingClass const*)Contact_With_Whom();
-                    if (bldg->Class->IniName[0] == 'T'
-                        && bldg->Class->IniName[1] == 'D') {
+                    if (*bldg == STRUCT_TDWEAP) {
                         static FILE* s_track = NULL;
                         if (s_track == NULL) {
                             char p[512];

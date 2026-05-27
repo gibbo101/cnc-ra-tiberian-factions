@@ -406,7 +406,8 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             }
         }
         TechnoClass::Receive_Message(from, message, param);
-        if (*this == STRUCT_WEAP || *this == STRUCT_AIRSTRIP || *this == STRUCT_REPAIR || *this == STRUCT_TDFIX)
+        if (*this == STRUCT_WEAP || *this == STRUCT_AIRSTRIP || *this == STRUCT_REPAIR || *this == STRUCT_TDFIX
+            || *this == STRUCT_TDWEAP)
             return (RADIO_RUN_AWAY);
         return (RADIO_ROGER);
 
@@ -512,7 +513,7 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         /*
         **	A Tethered object is always rendered AFTER the building.
         */
-        if (*this == STRUCT_WEAP && IsTethered && In_Radio_Contact() && !Contact_With_Whom()->IsInLimbo
+        if ((*this == STRUCT_WEAP || *this == STRUCT_TDWEAP) && IsTethered && In_Radio_Contact() && !Contact_With_Whom()->IsInLimbo
             && Contact_With_Whom()->What_Am_I() != RTTI_BUILDING) {
             TechnoClass* contact = Contact_With_Whom();
 
@@ -539,6 +540,21 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         **	instead of compositing the RA Allied roof onto TD's foundation.
         **	Vanilla WEAP / FAKEWEAP keep the original "WEAP2" string.
         */
+        // STRUCT_TDWEAP — port of TD's WEAP2 overlay block
+        // (tiberiandawn/building.cpp:673-680). Differences from RA's WEAP
+        // overlay: gates on Strength > 1 (TD skips overlay on near-dead
+        // building), uses TD's WEAP2.SHP (packed as TDWEAP2.SHP in
+        // TFASSETS.MIX). Damaged-frame offset uses Rule.ConditionYellow
+        // (RA-idiomatic fixed-point compare per docs/td-tier1-verification.md
+        // line 231 — TD's bare `< 0x0080` int compare doesn't work against
+        // RA's `fixed` Health_Ratio() return type per common/fixed.h:247-250).
+        if (*this == STRUCT_TDWEAP && Strength > 1) {
+            int shapenum = Door_Stage();
+            if (Health_Ratio() <= Rule.ConditionYellow)
+                shapenum += 10;
+            Techno_Draw_Object_Virtual(Class->WarFactoryOverlayTd, shapenum, x, y, window, DIR_N, 0x0100, "TDWEAP2");
+        }
+
         // Skip the WEAP2 door/roof overlay for TD-prefixed mod entries that
         // share STRUCT_WEAP via Logic= aliasing but don't actually have a
         // second-layer structure to composite. TDAFLD (Nod Airstrip) is a
@@ -551,13 +567,9 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             int shapenum = Door_Stage();
             if (Health_Ratio() <= Rule.ConditionYellow)
                 shapenum += 4;
-            char const* overlay_asset = "WEAP2";
-            if (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') {
-                overlay_asset = "TDWEAP2";
-            }
             // Added override shape file name. ST - 8/1/2019 5:24PM
             // Techno_Draw_Object(Class->WarFactoryOverlay, shapenum, x, y, window);
-            Techno_Draw_Object_Virtual(Class->WarFactoryOverlay, shapenum, x, y, window, DIR_N, 0x0100, overlay_asset);
+            Techno_Draw_Object_Virtual(Class->WarFactoryOverlay, shapenum, x, y, window, DIR_N, 0x0100, "WEAP2");
         }
 
         /*
@@ -2224,6 +2236,27 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             }
             break;
 
+        case STRUCT_TDWEAP:
+            // STRUCT_TDWEAP — verbatim port of TD's case STRUCT_WEAP
+            // (tiberiandawn/building.cpp:2271-2286). Identical save for two
+            // RA-plumbing additions: Cell coordinate via Exit_Coord() which
+            // wraps `Coord_Add(Coord, Class->ExitPoint)` (functionally same;
+            // RA refactored TD's open-coded call into a TechnoTypeClass
+            // method) and DIR_SW preserved as TD-authentic spawn facing.
+            ScenarioInit++;
+            if (base->Unlimbo(Exit_Coord(), DIR_SW)) {
+                base->Mark(MARK_UP);
+                base->Coord = Exit_Coord();
+                base->Mark(MARK_DOWN);
+                Transmit_Message(RADIO_HELLO, base);
+                Transmit_Message(RADIO_TETHER);
+                Assign_Mission(MISSION_UNLOAD);
+                ScenarioInit--;
+                return (2);
+            }
+            ScenarioInit--;
+            break;
+
         case STRUCT_WEAP:
             // TDAFLD (Nod Airstrip) is Logic=WEAP aliased, so it lands in
             // this case — but its production flow is fundamentally
@@ -2328,7 +2361,11 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             if (Mission == MISSION_UNLOAD) {
                 for (int index = 0; index < Buildings.Count(); index++) {
                     BuildingClass* bldg = Buildings.Ptr(index);
-                    if (bldg->Owner() == Owner() && *bldg == STRUCT_WEAP && bldg != this
+                    // Match the current building's own type: a stalled
+                    // TDWEAP looks for another TDWEAP, a stalled WEAP
+                    // looks for another WEAP. Cross-type handoff would
+                    // route a GDI vehicle through an Allied factory.
+                    if (bldg->Owner() == Owner() && *bldg == Class->Type && bldg != this
                         && bldg->Mission == MISSION_GUARD && !bldg->Factory) {
                         FactoryClass* temp = Factory;
                         bldg->Factory = Factory;
@@ -2342,14 +2379,9 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 return (1); // fail while we're still unloading previous
             }
             ScenarioInit++;
-            // TD source uses DIR_SW here (tiberiandawn/building.cpp:2273), not
-            // DIR_S. Gated on TD-prefixed IniName so vanilla RA Allied War
-            // Factory keeps its original south-facing exit; mod entries get
-            // TD-authentic SW facing. Spawn position stays at TD-authentic
-            // Exit_Coord() — the visible shift was a track-side problem, not
-            // a spawn-position problem.
-            if (base->Unlimbo(Exit_Coord(),
-                              (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') ? DIR_SW : DIR_S)) {
+            // Vanilla RA Allied War Factory: DIR_S exit. STRUCT_TDWEAP gets
+            // TD-authentic DIR_SW from its own case branch above.
+            if (base->Unlimbo(Exit_Coord(), DIR_S)) {
                 base->Mark(MARK_UP);
                 base->Coord = Exit_Coord();
                 base->Mark(MARK_DOWN);
@@ -5621,6 +5653,15 @@ int BuildingClass::Mission_Unload(void)
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
+    /*
+    **  STRUCT_TDWEAP routes to a verbatim port of TD's BuildingClass::
+    **  Mission_Unload (tiberiandawn/building.cpp:5093-5179). 100% TD logic
+    **  — no shared paths with RA's WEAP. See Mission_Unload_TD() below.
+    */
+    if (*this == STRUCT_TDWEAP) {
+        return Mission_Unload_TD();
+    }
+
     if (*this == STRUCT_WEAP) {
         CELL cell = Coord_Cell(Coord) + Class->ExitList[0];
         COORDINATE coord = Cell_Coord(cell);
@@ -5693,53 +5734,10 @@ int BuildingClass::Mission_Unload(void)
                         unit->Assign_Mission(MISSION_GUARD_AREA);
                         unit->ArchiveTarget = ::As_Target(House->Where_To_Go(unit));
                     }
-                    /*
-                    **  TD-prefixed mod entries (Logic=WEAP TD buildings):
-                    **  skip Track13 entirely and pathfind from spawn to the
-                    **  ExitList[0] cell via plain MISSION_MOVE. Track13's
-                    **  canned animation lands the vehicle inside the SW
-                    **  corner cell of the footprint, and the handoff to a
-                    **  follow-on Assign_Destination produced a visible
-                    **  teleport + a south-then-west route. The plain pathfind
-                    **  from the at-door spawn (Coord set by Unlimbo to
-                    **  Exit_Coord()) is smooth and goes SW directly.
-                    **
-                    **  Vanilla RA WEAP keeps the original Force_Track path so
-                    **  Allied AI behaviour is unchanged.
-                    */
-                    /*
-                    **  TD entries use Force_Track with destination =
-                    **  Adjacent_Cell(Center_Coord(), FACING_SW). The math:
-                    **  Track13[0].Offset = XYP_COORD(10, -21) px = (107, -224)
-                    **  leptons. For 3x3 building, Center_Coord SW = building
-                    **  origin + (128, 640) lep. Track13[0] position =
-                    **  destination + offset = (235, 416) lep — exactly the
-                    **  TD-authentic Exit_Coord (XYP_COORD(22, 39)). So the
-                    **  first track tick sets Coord to the same place the unit
-                    **  was Unlimbo'd — zero snap, smooth drive from spawn.
-                    **
-                    **  Track13 ends at Adjacent_Cell SW (cell (0,2) centre,
-                    **  inside the building's SW corner). After it, an
-                    **  Assign_Destination to ExitList[0] continues path-find
-                    **  fully out. The transition between Track13 end and
-                    **  Track2 start is ~1 lepton snap (imperceptible).
-                    **
-                    **  Vanilla WEAP keeps the original logic for Allied AI.
-                    */
-                    if (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') {
-                        // TD entries: drive Track14 (SW) toward Adjacent_Cell SW
-                        // of building centre. The math: Track14[0] offset
-                        // (10, -21 px) + that destination = the Unlimbo spawn
-                        // exactly, so the first track tick produces zero snap.
-                        // Vanilla WEAP uses the original south Track13 via
-                        // OUT_OF_WEAPON_FACTORY (next branch) — Allied AI exit
-                        // behaviour is unchanged.
-                        COORDINATE td_dest = Adjacent_Cell(Center_Coord(), FACING_SW);
-                        unit->Force_Track(DriveClass::OUT_OF_WEAPON_FACTORY_TD, td_dest);
-                        unit->Assign_Destination(::As_Target(cell));
-                    } else {
-                        unit->Force_Track(DriveClass::OUT_OF_WEAPON_FACTORY, coord);
-                    }
+                    // Vanilla RA Allied WEAP: south-facing exit via Track13.
+                    // STRUCT_TDWEAP doesn't reach here — it routes through
+                    // Mission_Unload_TD() at the top of Mission_Unload().
+                    unit->Force_Track(DriveClass::OUT_OF_WEAPON_FACTORY, coord);
                     unit->Set_Speed(128);
                     Status = LEAVE;
                 } else {
@@ -5781,6 +5779,118 @@ int BuildingClass::Mission_Unload(void)
 
     Assign_Mission(MISSION_GUARD);
     return (1);
+}
+
+/***********************************************************************************************
+ * BuildingClass::Mission_Unload_TD -- TD-source-verbatim Mission_Unload for STRUCT_TDWEAP.    *
+ *                                                                                             *
+ *    Verbatim port of TD's BuildingClass::Mission_Unload (tiberiandawn/building.cpp:5093-     *
+ *    5179) for the STRUCT_WEAP path. Differences vs RA's Mission_Unload that this captures:   *
+ *      - Open_Door / Close_Door rate=2, stages=11 (TD's faster door, 22 ticks total) vs       *
+ *        RA's rate=8 stages=5 (40 ticks).                                                     *
+ *      - Scatter origin: Adjacent_Cell(Center_Coord(), FACING_SW) vs RA's                     *
+ *        Coord_Cell(Coord)+ExitList[0].                                                       *
+ *      - CLEAR_BIB scatter skips the unit being unloaded (cellunit != unit) vs RA's broader   *
+ *        cellptr->Cell_Techno() check.                                                        *
+ *      - OPEN state: Force_Track destination = Adjacent_Cell(Center_Coord(), FACING_SW),      *
+ *        no follow-up Assign_Destination. Uses OUT_OF_WEAPON_FACTORY_TD (our Track14 — TD's   *
+ *        OUT_OF_WEAPON_FACTORY is the SW track, our same numbering preserves RA Allied AI).  *
+ *      - Tick return: TICKS_PER_SECOND/2 (~30 ticks) vs RA's Normal_Delay+Random_Pick.        *
+ *                                                                                             *
+ *    No Validate() call (RA-specific debug aid; TD doesn't have it). Cell variables and       *
+ *    enum stages kept structurally identical to TD source for ease of future cross-reference. *
+ *=============================================================================================*/
+int BuildingClass::Mission_Unload_TD(void)
+{
+    assert(Buildings.ID(this) == ID);
+    assert(IsActive);
+
+    COORDINATE coord = Adjacent_Cell(Center_Coord(), FACING_SW);
+    CELL cell = Coord_Cell(coord);
+    CellClass* cellptr = &Map[cell];
+    enum
+    {
+        INITIAL,
+        CLEAR_BIB,
+        OPEN,
+        LEAVE,
+        CLOSE
+    };
+    UnitClass* unit;
+    switch (Status) {
+    case INITIAL:
+        unit = (UnitClass*)Contact_With_Whom();
+        if (unit) {
+            unit->Assign_Mission(MISSION_GUARD);
+            unit->Commence();
+        }
+        Open_Door(2, 11);
+        Status = CLEAR_BIB;
+        break;
+
+    /*
+    **	Now that the occupants can peek out the door, they will tell
+    **	everyone that could be blocking the way, that they should
+    **	scatter away.
+    */
+    case CLEAR_BIB:
+        unit = (UnitClass*)Contact_With_Whom();
+        if (cellptr->Cell_Unit() || cellptr->Cell_Infantry()) {
+            cellptr->Incoming(0, true, true);
+
+            /*
+            **	Scatter everything around the weapon's factory door.
+            */
+            for (FacingType f = FACING_FIRST; f < FACING_COUNT; f++) {
+                CellClass* cptr = cellptr->Adjacent_Cell(f);
+                if (!cptr)
+                    continue;
+                UnitClass* cellunit = cptr->Cell_Unit();
+                if ((cellunit && cellunit != unit) || cptr->Cell_Infantry()) {
+                    cptr->Incoming(coord, true, true);
+                }
+            }
+        } else {
+            Status = OPEN;
+        }
+        break;
+
+    case OPEN:
+        if (Is_Door_Open()) {
+            unit = (UnitClass*)Contact_With_Whom();
+            if (unit) {
+                unit->Assign_Mission(MISSION_MOVE);
+                // TD source: unit->Force_Track(DriveClass::OUT_OF_WEAPON_FACTORY, ...)
+                // — TD's OUT_OF_WEAPON_FACTORY IS the SW track (TD has only the
+                // one weapon-factory exit). In our RA-derived codebase we kept
+                // RA's south-facing track at OUT_OF_WEAPON_FACTORY and added
+                // OUT_OF_WEAPON_FACTORY_TD (Track14) as TD's SW track to leave
+                // RA's Allied AI unchanged. Same destination as TD source.
+                unit->Force_Track(DriveClass::OUT_OF_WEAPON_FACTORY_TD,
+                                  Adjacent_Cell(Center_Coord(), FACING_SW));
+                unit->Set_Speed(128);
+                Status = LEAVE;
+            } else {
+                Close_Door(2, 11);
+                Status = CLOSE;
+            }
+        }
+        break;
+
+    case LEAVE:
+        if (!IsTethered) {
+            Close_Door(2, 11);
+            Status = CLOSE;
+        }
+        break;
+
+    case CLOSE:
+        if (Is_Door_Closed()) {
+            Enter_Idle_Mode();
+        }
+        break;
+    }
+    return (TICKS_PER_SECOND / 2);
 }
 
 /***********************************************************************************************

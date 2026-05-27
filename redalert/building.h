@@ -345,6 +345,7 @@ public:
     bool Flush_For_Placement(TechnoClass* techno, CELL cell);
 
     virtual int Mission_Unload(void);
+    int Mission_Unload_TD(void); // Verbatim port of TD's BuildingClass::Mission_Unload (STRUCT_WEAP path) for STRUCT_TDWEAP. Dispatched from Mission_Unload(). 100% TD logic — no RA leakage.
     virtual int Mission_Repair(void);
     virtual int Mission_Attack(void);
     virtual int Mission_Harvest(void);

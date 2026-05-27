@@ -283,13 +283,9 @@ TDFIX = {
 
 TDWEAP = {
     "ininame":     "TDWEAP",
-    "logic":       "WEAP",
+    "logic":       None,         # M4 Tier 3 separated 2026-05-27 — STRUCT_TDWEAP native, no engine alias.
     "td_asset":    "WEAP",
-    # TD-authentic 3×3 footprint: bottom 6 cells occupied, top row overlap
-    # (matching TD's ListWeap / OListWeap). Also overrides ExitCoordinate +
-    # ExitList to straight-south of the bottom row — RA WEAP donor's exit is
-    # calibrated for 3×2 and would land vehicles inside the new 3rd row.
-    "footprint":   "WEAP",
+    "footprint":   None,         # ClassTdWeap uses RA's ExitWeap/ListWeap/OListWeap (same shape as TD WEAP).
     "shape_size":  (72, 72),
     "text_id_name": "TEXT_STRUCTURE_TITLE_GDI_WEAPONS_FACTORY",
     "text_id_desc": "TEXT_STRUCTURE_DESC_GDI_WEAPONS_FACTORY",
@@ -315,7 +311,7 @@ TDWEAP = {
     "repairable":  True,
     "bib":         True,
     "idle_anim":   None,
-    "notes":       "TD GDI Weapons Factory. Logic=WEAP → vehicle factory. Image=TDWEAP shadows vanilla WEAP (IniName-collision class).",
+    "notes":       "TD GDI Weapons Factory. STRUCT_TDWEAP with own BuildingTypeClass (ClassTdWeap) modeled on RA/TD's ClassWeapon. RTTI_UNITTYPE factory, 3x2 BSIZE_32, ARMOR_ALUMINUM, Strength=1000 (matches both TD ADVANCED and RA). TD-authentic SW vehicle exit via Track14 (drive.cpp) + DIR_SW Unlimbo. Engine dispatches: STRUCT_WEAP|STRUCT_TDWEAP fall-through in Exit_Object + Mission_Unload (building.cpp), Door overlay swap (Draw_It) selects TDWEAP2.ZIP for STRUCT_TDWEAP. Can_Build prereq equivalence (STRUCT_WEAP satisfied by TDWEAP) uses dynamic IniName lookup.",
 }
 
 

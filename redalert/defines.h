@@ -1490,6 +1490,8 @@ typedef enum StructType : char
     STRUCT_TDHPAD,
     STRUCT_TDFIX,
     STRUCT_TDHQ,
+    STRUCT_TDWEAP,
+
     // M5 Tier 4 — superweapon hosts.
     STRUCT_TDEYE,
     STRUCT_TDTMPL,

@@ -888,6 +888,13 @@ public:
     **	Special overlay for the weapons factory.
     */
     static void const* WarFactoryOverlay;
+    /*
+    **  TD-source WEAP2.SHP — packed as TDWEAP2.SHP into TFASSETS.MIX.
+    **  Drawn on top of TDWEAP body (STRUCT_TDWEAP) instead of RA's WEAP2,
+    **  which is sized for RA's 3x2 footprint and shadowed TD's body in
+    **  classic mode. Loaded alongside WarFactoryOverlay in One_Time.
+    */
+    static void const* WarFactoryOverlayTd;
 
 private:
     /*

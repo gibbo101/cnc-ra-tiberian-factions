@@ -4101,7 +4101,8 @@ bool DLLExportClass::Get_Layer_State(uint64 player_id, unsigned char* buffer_in,
                         techno_object->In_Radio_Contact() ? techno_object->Contact_With_Whom() : nullptr;
                     if ((object->What_Am_I() != RTTI_BUILDING) && (contact_object != nullptr)
                         && (contact_object->What_Am_I() == RTTI_BUILDING) && contact_object->IsTethered
-                        && *((BuildingClass*)contact_object) == STRUCT_WEAP) {
+                        && (*((BuildingClass*)contact_object) == STRUCT_WEAP
+                            || *((BuildingClass*)contact_object) == STRUCT_TDWEAP)) {
                         continue;
                     }
 

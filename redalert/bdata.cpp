@@ -971,6 +971,60 @@ static BuildingTypeClass const ClassTdFix(STRUCT_TDFIX,
 );
 
 /*
+**  TDWEAP (Weapons Factory) — 3×3 vehicle factory, ARMOR_ALUMINUM,
+**    capturable, crewed. Wholesale port of TD's STRUCT_WEAP per
+**    tiberiandawn/bdata.cpp:265 (ClassWeapon). RTTI_UNITTYPE factory;
+**    vehicles exit SW (TD-authentic via Track14 + Exit_Coord).
+**
+**    Footprint mirrors TD source exactly (NOT RA's 3×2 WEAP shape — that
+**    leak was caught and reverted 2026-05-27): BSIZE_33 with bottom 6
+**    cells occupied (TdListWeap = rows 1+2) and top row overlap
+**    (TdOListWeap = row 0, sprite extends upward into row 0 but
+**    pathfinding treats it as walkable). TdExitWeap is TD's exit-cell
+**    preference list — vehicles emerge from the south side of row 2.
+**    Image=TDWEAP layered via launcher tileset; door overlay shape comes
+**    from TDWEAP2.ZIP (see building.cpp Draw_It overlay swap).
+*/
+static short const TdExitWeap[] = {XYCELL(-1, 3), XYCELL(0, 3), XYCELL(-1, 2),
+                                   XYCELL(1, 3), XYCELL(-1, 1), XYCELL(3, 1),
+                                   XYCELL(3, 2), XYCELL(3, 3), XYCELL(2, 3),
+                                   REFRESH_EOL};
+static short const TdListWeap[] = {(MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2,
+                                   (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2,
+                                   REFRESH_EOL};
+static short const TdOListWeap[] = {0, 1, 2, REFRESH_EOL};
+
+static BuildingTypeClass const ClassTdWeap(STRUCT_TDWEAP,
+                                           TXT_NONE,           // Display name (rules.ini Name= overrides).
+                                           "TDWEAP",           // IniName.
+                                           FACING_NONE,        // Foundation direction.
+                                           XYP_COORD(10 + (CELL_PIXEL_W / 2),
+                                                     ((CELL_PIXEL_H * 3) - (CELL_PIXEL_H / 2)) - 21), // TD-authentic Exit_Coord (tiberiandawn/bdata.cpp:268-269).
+                                           REMAP_ALTERNATE,    // Sidebar remap logic.
+                                           0x0000,             // Vertical offset.
+                                           0x0000,             // Primary weapon offset.
+                                           0x0000,             // Primary weapon lateral offset.
+                                           false,              // Is this building a fake?
+                                           false,              // Animation rate regulated for constant speed?
+                                           false,              // Always use the given name?
+                                           false,              // Is this a wall type structure?
+                                           false,              // Simple (one frame) damage imagery?
+                                           false,              // Is it invisible to radar?
+                                           true,               // Can the player select this?
+                                           true,               // Is this a legal target?
+                                           false,              // Is this an insignificant building?
+                                           false,              // Theater specific graphic image?
+                                           false,              // Does it have a rotating turret?
+                                           true,               // Can the building be color remapped?
+                                           RTTI_UNITTYPE,      // Vehicle factory.
+                                           DIR_N,              // Starting idle frame.
+                                           BSIZE_33,           // 3x3 footprint (TD-authentic — NOT RA's 3x2).
+                                           (short const*)TdExitWeap,
+                                           (short const*)TdListWeap,
+                                           (short const*)TdOListWeap
+);
+
+/*
 **  TDHQ (Communications Center / Radar) — 2×2 radar dome, ARMOR_WOOD,
 **    capturable, crewed. Wholesale port of TD's STRUCT_RADAR per
 **    tiberiandawn/bdata.cpp:739 (ClassCommand). Not a factory
@@ -3243,6 +3297,7 @@ static BuildingTypeClass const ClassLarva2(STRUCT_LARVA2,
 );
 #endif
 void const* BuildingTypeClass::WarFactoryOverlay;
+void const* BuildingTypeClass::WarFactoryOverlayTd;
 void const* LightningShapes;
 
 /***********************************************************************************************
@@ -3591,6 +3646,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdHpad);  // STRUCT_TDHPAD  (Helipad)
     new BuildingTypeClass(ClassTdFix);   // STRUCT_TDFIX   (Service Depot)
     new BuildingTypeClass(ClassTdHq);    // STRUCT_TDHQ    (Communications Center)
+    new BuildingTypeClass(ClassTdWeap);  // STRUCT_TDWEAP  (Weapons Factory)
     new BuildingTypeClass(ClassTdEye);   // STRUCT_TDEYE   (Advanced Communications Center)
     new BuildingTypeClass(ClassTdTmpl);  // STRUCT_TDTMPL  (Temple of Nod)
 }
@@ -3686,6 +3742,11 @@ void BuildingTypeClass::One_Time(void)
         // M4 Tier 3 — TDHQ radar-dish rotation (TD-authentic per
         // tiberiandawn/bdata.cpp:3800).
         {STRUCT_TDHQ, BSTATE_IDLE, 0, 16, 4},
+        // M4 Tier 3 — TDWEAP body is a static sprite (door animation is the
+        // TDWEAP2 overlay layered by the launcher tileset, not via _anims).
+        // Values lifted verbatim from tiberiandawn/bdata.cpp:3813-3814.
+        {STRUCT_TDWEAP, BSTATE_ACTIVE, 0, 1, 0},
+        {STRUCT_TDWEAP, BSTATE_IDLE, 0, 1, 0},
         // M5 Tier 4 — TDEYE 16-frame idle cycle (TD-authentic per
         // tiberiandawn/bdata.cpp:3794). Ion Cannon visual + super wiring
         // lands in Phase E2/E3; this is the structural building only.
@@ -3756,6 +3817,11 @@ void BuildingTypeClass::One_Time(void)
     char fullname[_MAX_FNAME + _MAX_EXT];
     _makepath(fullname, NULL, NULL, (char const*)"WEAP2", ".SHP");
     WarFactoryOverlay = MFCD::Retrieve(fullname);
+    // TD's WEAP2 (door panel) packed as TDWEAP2.SHP in TFASSETS.MIX. Drawn
+    // on STRUCT_TDWEAP only; classic-mode fallback when the launcher's TGA
+    // overlay isn't used.
+    _makepath(fullname, NULL, NULL, (char const*)"TDWEAP2", ".SHP");
+    WarFactoryOverlayTd = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"LITNING", ".SHP");
     LightningShapes = MFCD::Retrieve(fullname);
 
