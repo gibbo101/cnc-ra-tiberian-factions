@@ -30,12 +30,14 @@ The **structure files** — `RA_ALLIES.XML` (progression), `RA_ALLIES_MISSIONS.X
 | **Always visible** vs progress-gated | `IsUnlockedAtStart` | expansion missions are `true` → always show (never hide) |
 | Whether a mission **launches** | `RA_*_MISSIONS.XML` def + `MapStageUnlock` | removed `RA_ALLIES_14` def → its "Start" did nothing; mission 1 still launched |
 | Which **game's front-end** lists it | `ExternalGameID` | GDI instances are `TiberianDawn` ⇒ don't appear in RA mode |
+| **Add / place** a mission in a tab | new `<Instance>` (target name + `Variant`, `ShowOnMissionSelect=true`, `IsUnlockedAtStart=true`) | ✅ injected `Mobius_Allied_Campaign_99_Map` → "Allies 99" appeared in the Allied tab (no def/`<Stages>` needed; name needs an RA-mode TextID; *launch* untested) |
 
 ### The experiments (base-CONFIG.MEG swap)
 - Truncate all three structure files to 2 missions → **display still showed 14**; mission 14 un-launchable. ⇒ structure = launch, not display.
 - Append expansion missions to `RA_ALLIES` `<Stages>` → **did not appear** under Allied. ⇒ roster isn't built from `<Stages>`.
 - `ShowOnMissionSelect=false` on 3 completed Allied missions → **vanished**. ⇒ `INSTANCES.XML` is the display source, flag overrides progress.
 - Ant tab shows **2 of 4** though all 4 are `ShowOnMissionSelect=true` ⇒ display is **progress-gated** (only unlocked missions show). A per-player completion/unlock record exists — *not* in `Player_RA_settings_1.bin` (no campaign strings); likely Steam cloud/stats.
+- Inject a brand-new instance (`Mobius_Allied_Campaign_99_Map`, Allied variant, `ShowOnMissionSelect=true`, `IsUnlockedAtStart=true`, a deliberately-foreign GDI name TextID) → **a new "Allies 99" row appeared** in the Allied tab (name fell back to a placeholder because the TD TextID doesn't resolve in RA). ⇒ **placement is data-controllable.** So the "move" you want = **add-under-target-tab + hide-original** — both halves now proven. Caveats: name needs an RA-mode string; the *bare* instance displays but its launch isn't wired (no real scenario).
 
 ---
 
