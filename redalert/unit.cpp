@@ -1218,9 +1218,11 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
                 if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV) && Pip_Count() && Health_Ratio() <= Rule.ConditionYellow) {
 
                     /*
-                    **	Find nearby refinery and head to it?
+                    **	Find nearby refinery and head to it? TD harvesters dock only at
+                    **	TD refineries (TDPROC), RA harvesters only at STRUCT_REFINERY.
                     */
-                    BuildingClass* building = Find_Docking_Bay(STRUCT_REFINERY, false);
+                    BuildingClass* building =
+                        Find_Docking_Bay((*this == UNIT_TDHARV) ? STRUCT_TDPROC : STRUCT_REFINERY, false);
 
                     /*
                     **	Since the refinery said it was ok to load, establish radio
@@ -1395,7 +1397,8 @@ void UnitClass::Player_Assign_Mission(MissionType mission, TARGET target, TARGET
         ArchiveTarget = TARGET_NONE;
     } else if (mission == MISSION_ENTER) {
         BuildingClass* building = As_Building(destination);
-        if (building != NULL && *building == STRUCT_REFINERY && building->In_Radio_Contact()) {
+        if (building != NULL && (*building == STRUCT_REFINERY || *building == STRUCT_TDPROC)
+            && building->In_Radio_Contact()) {
             building->Transmit_Message(RADIO_OVER_OUT);
         }
     }
@@ -3962,7 +3965,8 @@ int UnitClass::Mission_Guard(void)
 {
     assert(Units.ID(this) == ID);
     assert(IsActive);
-    if (/*House->IsBaseBuilding &&*/ !House->IsHuman && Class->IsToHarvest && House->Get_Quantity(STRUCT_REFINERY) > 0
+    if (/*House->IsBaseBuilding &&*/ !House->IsHuman && Class->IsToHarvest
+        && House->Get_Quantity((*this == UNIT_TDHARV) ? STRUCT_TDPROC : STRUCT_REFINERY) > 0
         && !House->IsTiberiumShort) {
         Assign_Mission(MISSION_HARVEST);
         return (1);
@@ -4020,7 +4024,8 @@ int UnitClass::Mission_Enter(void)
         if (contact == NULL) {
             contact = As_Techno(ArchiveTarget);
         }
-        if (contact != NULL && contact->What_Am_I() == RTTI_BUILDING && *((BuildingClass*)contact) == STRUCT_REFINERY) {
+        if (contact != NULL && contact->What_Am_I() == RTTI_BUILDING
+            && (*((BuildingClass*)contact) == STRUCT_REFINERY || *((BuildingClass*)contact) == STRUCT_TDPROC)) {
             TiberiumUnloadRefinery = contact->As_Target();
         }
     }
@@ -4336,7 +4341,7 @@ int UnitClass::Mission_Repair(void)
     assert(Units.ID(this) == ID);
     assert(IsActive);
 
-    BuildingClass* nearest = Find_Docking_Bay(STRUCT_REFINERY, true);
+    BuildingClass* nearest = Find_Docking_Bay((*this == UNIT_TDHARV) ? STRUCT_TDPROC : STRUCT_REFINERY, true);
 
     IsHarvesting = false;
 
@@ -4615,12 +4620,19 @@ fixed UnitClass::Tiberium_Load(void) const
 BuildingClass* UnitClass::Find_Best_Refinery(void) const
 {
     /*
+    **	TD harvesters dock only at TD refineries (STRUCT_TDPROC); RA harvesters
+    **	only at STRUCT_REFINERY. No cross-faction docking — dock animations and
+    **	cell offsets are type-specific.
+    */
+    StructType reftype = (*this == UNIT_TDHARV) ? STRUCT_TDPROC : STRUCT_REFINERY;
+
+    /*
     **	Remember our last refinery and prefer that one, if still available and valid.
     */
     if (Target_Legal(TiberiumUnloadRefinery)) {
         BuildingClass* refinery = As_Building(TiberiumUnloadRefinery);
         if (refinery != NULL && refinery->House == House && !refinery->IsInLimbo
-            && refinery->Mission != MISSION_DECONSTRUCTION && *refinery == STRUCT_REFINERY
+            && refinery->Mission != MISSION_DECONSTRUCTION && *refinery == reftype
             && Map[refinery->Center_Coord()].Zones[Techno_Type_Class()->MZone]
                    == Map[Center_Coord()].Zones[Techno_Type_Class()->MZone]) {
             return refinery;
@@ -4632,7 +4644,7 @@ BuildingClass* UnitClass::Find_Best_Refinery(void) const
     /*
     **	Find nearby refinery and head to it?
     */
-    return Find_Docking_Bay(STRUCT_REFINERY, false);
+    return Find_Docking_Bay(reftype, false);
 }
 
 /***********************************************************************************************

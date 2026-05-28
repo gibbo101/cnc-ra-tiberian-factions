@@ -3047,6 +3047,9 @@ bool TechnoClass::Captured(HouseClass* newowner)
  *=============================================================================================*/
 ResultType TechnoClass::Take_Damage(int& damage, int distance, WarheadType warhead, TechnoClass* source)
 {
+    int dbg_dmg_in = damage;       // [TF-DMG-TRACE]
+    int dbg_str_before = Strength; // [TF-DMG-TRACE]
+
     /*
     **	Adjust damage according to house override armor value.
     */
@@ -3054,7 +3057,42 @@ ResultType TechnoClass::Take_Damage(int& damage, int distance, WarheadType warhe
         damage = damage * House->ArmorBias;
     }
 
+    int dbg_dmg_after_bias = damage; // [TF-DMG-TRACE]
+
     ResultType result = ObjectClass::Take_Damage(damage, distance, warhead, source);
+
+    /*
+    ** [TF-DMG-TRACE] Identical format to the RA DLL so the two can be compared
+    ** line-for-line. afterBias/dmgIn = ArmorBias, final/afterBias = armor modifier.
+    */
+    if (dbg_dmg_in != 0) {
+        static FILE* s_dmg_log = NULL;
+        static int s_dmg_count = 0;
+        if (s_dmg_count < 500) {
+            if (s_dmg_log == NULL) {
+                char path[512];
+                const char* profile = getenv("USERPROFILE");
+                if (profile != NULL && profile[0] != '\0') {
+                    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_DAMAGE.txt", profile);
+                } else {
+                    strcpy(path, "MOD_DEBUG_DAMAGE.txt");
+                }
+                s_dmg_log = fopen(path, "w");
+            }
+            if (s_dmg_log != NULL) {
+                const char* tname = Techno_Type_Class() ? Techno_Type_Class()->IniName : "?";
+                int tarmor = Techno_Type_Class() ? (int)Techno_Type_Class()->Armor : -1;
+                const char* sname =
+                    (source && source->Techno_Type_Class()) ? source->Techno_Type_Class()->IniName : "-";
+                fprintf(s_dmg_log,
+                        "TD tgt=%s armor=%d wh=%d src=%s dmgIn=%d afterBias=%d final=%d str %d->%d\n",
+                        tname, tarmor, (int)warhead, sname, dbg_dmg_in, dbg_dmg_after_bias, damage, dbg_str_before,
+                        (int)Strength);
+                fflush(s_dmg_log);
+                s_dmg_count++;
+            }
+        }
+    }
 
     switch (result) {
     case RESULT_DESTROYED:

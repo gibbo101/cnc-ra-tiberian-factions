@@ -223,13 +223,19 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             return (RADIO_NEGATIVE);
 
         case STRUCT_REFINERY:
-        case STRUCT_TDPROC:    // TD Refinery — same harvester dock semantics.
-            if (from->What_Am_I() == RTTI_UNIT && (*((UnitClass*)from) == UNIT_HARVESTER || *((UnitClass*)from) == UNIT_TDHARV)
-                && (ScenarioInit || !Is_Something_Attached())) {
-
+        case STRUCT_TDPROC: { // TD Refinery — same harvester dock semantics.
+            // No cross-faction docking: TDPROC accepts only TD harvesters,
+            // STRUCT_REFINERY only RA harvesters (dock anim/offsets are type-specific).
+            bool right_harvester = false;
+            if (from->What_Am_I() == RTTI_UNIT) {
+                right_harvester = (Class->Type == STRUCT_TDPROC) ? (*((UnitClass*)from) == UNIT_TDHARV)
+                                                                 : (*((UnitClass*)from) == UNIT_HARVESTER);
+            }
+            if (right_harvester && (ScenarioInit || !Is_Something_Attached())) {
                 return ((Contact_With_Whom() != from) ? RADIO_ROGER : RADIO_NEGATIVE);
             }
             break;
+        }
 
         default:
             break;

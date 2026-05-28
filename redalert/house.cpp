@@ -2144,7 +2144,12 @@ void HouseClass::Super_Weapon_Handler(void)
             }
         }
     } else {
-        if ((ActiveBScan & STRUCTF_AIRSTRIP) != 0 && !Scen.IsNoSpyPlane
+        // Tiberian Factions: the TD Airstrip (STRUCT_TDAFLD) shadows
+        // STRUCTF_AIRSTRIP for defeat/production/docking checks, but TD's
+        // airstrip is NOT an RA superweapon host — it must not grant Spy Plane
+        // or Paratroopers. Gate on owning a genuine STRUCT_AIRSTRIP so only RA
+        // factions with a real airstrip get these.
+        if ((ActiveBScan & STRUCTF_AIRSTRIP) != 0 && Has_Building_Active(STRUCT_AIRSTRIP) && !Scen.IsNoSpyPlane
             && Control.TechLevel >= Rule.SpyPlaneTechLevel) {
             SuperWeapon[SPC_SPY_MISSION].Enable(false, this == PlayerPtr, false);
             // Add to Glyphx multiplayer sidebar. ST - 8/7/2019 10:13AM
@@ -2176,8 +2181,8 @@ void HouseClass::Super_Weapon_Handler(void)
             }
         }
     } else {
-        if ((ActiveBScan & STRUCTF_AIRSTRIP) != 0 && Control.TechLevel >= Rule.ParaBombTechLevel
-            && Session.Type == GAME_NORMAL) {
+        if ((ActiveBScan & STRUCTF_AIRSTRIP) != 0 && Has_Building_Active(STRUCT_AIRSTRIP)
+            && Control.TechLevel >= Rule.ParaBombTechLevel && Session.Type == GAME_NORMAL) {
             SuperWeapon[SPC_PARA_BOMB].Enable(false, this == PlayerPtr, false);
             // Add to Glyphx multiplayer sidebar. ST - 8/7/2019 10:13AM
             if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
@@ -2208,7 +2213,8 @@ void HouseClass::Super_Weapon_Handler(void)
             }
         }
     } else {
-        if ((ActiveBScan & STRUCTF_AIRSTRIP) != 0 && Control.TechLevel >= Rule.ParaInfantryTechLevel) {
+        if ((ActiveBScan & STRUCTF_AIRSTRIP) != 0 && Has_Building_Active(STRUCT_AIRSTRIP)
+            && Control.TechLevel >= Rule.ParaInfantryTechLevel) {
             SuperWeapon[SPC_PARA_INFANTRY].Enable(false, this == PlayerPtr, false);
             // Add to Glyphx multiplayer sidebar. ST - 8/7/2019 10:13AM
             if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {

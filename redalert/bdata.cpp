@@ -4692,6 +4692,19 @@ bool BuildingTypeClass::Flush_For_Placement(CELL cell, HouseClass* house) const
 bool BuildingTypeClass::Read_INI(CCINIClass& ini)
 {
     if (TechnoTypeClass::Read_INI(ini)) {
+        /*
+        **  TD buildings carry DOUBLE their listed hit points. TD's
+        **  BuildingTypeClass ctor passes strength*2 to TechnoTypeClass
+        **  (tiberiandawn/bdata.cpp:3706) — a doubling RA's engine does not have,
+        **  and it applies to buildings only (TD units/infantry/aircraft are not
+        **  doubled). Our rules.ini holds the verbatim TD-source STRNTH, so
+        **  replicate the doubling here for TD-port buildings, identified by the
+        **  "TD" IniName-prefix convention. Scoped to BuildingTypeClass::Read_INI,
+        **  so TD units/aircraft (TDMCV/TDHARV/TDC17) correctly stay single-HP.
+        */
+        if (Name()[0] == 'T' && Name()[1] == 'D') {
+            MaxStrength *= 2;
+        }
         Speed = ini.Get_Bool(Name(), "WaterBound", (Speed == SPEED_FLOAT)) ? SPEED_FLOAT : SPEED_NONE;
         Capacity = ini.Get_Int(Name(), "Storage", Capacity);
         Adjacent = ini.Get_Int(Name(), "Adjacent", Adjacent);

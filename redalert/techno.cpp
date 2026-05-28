@@ -4245,6 +4245,9 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 
         ResultType result = RESULT_NONE;
 
+        int dbg_dmg_in = damage;       // [TF-DMG-TRACE]
+        int dbg_str_before = Strength; // [TF-DMG-TRACE]
+
         /*
         **	If not a forced damage condition, adjust damage according to house override armor
         **	value.
@@ -4253,8 +4256,44 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             damage = damage * ArmorBias * House->ArmorBias;
         }
 
+        int dbg_dmg_after_bias = damage; // [TF-DMG-TRACE]
+
         if (IronCurtainCountDown == 0) {
             result = ObjectClass::Take_Damage(damage, distance, warhead, source, forced);
+        }
+
+        /*
+        ** [TF-DMG-TRACE] One line per damage event. Ratios expose every multiplier:
+        **   afterBias/dmgIn = ArmorBias, final/afterBias = warhead-vs-armor modifier,
+        **   dmgIn vs source weapon Attack = FirepowerBias. Line count to str=0 = shots.
+        */
+        if (dbg_dmg_in != 0) {
+            static FILE* s_dmg_log = NULL;
+            static int s_dmg_count = 0;
+            if (s_dmg_count < 500) {
+                if (s_dmg_log == NULL) {
+                    char path[512];
+                    const char* profile = getenv("USERPROFILE");
+                    if (profile != NULL && profile[0] != '\0') {
+                        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_DAMAGE.txt", profile);
+                    } else {
+                        strcpy(path, "MOD_DEBUG_DAMAGE.txt");
+                    }
+                    s_dmg_log = fopen(path, "w");
+                }
+                if (s_dmg_log != NULL) {
+                    const char* tname = Techno_Type_Class() ? Techno_Type_Class()->IniName : "?";
+                    int tarmor = Techno_Type_Class() ? (int)Techno_Type_Class()->Armor : -1;
+                    const char* sname =
+                        (source && source->Techno_Type_Class()) ? source->Techno_Type_Class()->IniName : "-";
+                    fprintf(s_dmg_log,
+                            "RA tgt=%s armor=%d wh=%d src=%s dmgIn=%d afterBias=%d final=%d str %d->%d\n",
+                            tname, tarmor, (int)warhead, sname, dbg_dmg_in, dbg_dmg_after_bias, damage, dbg_str_before,
+                            (int)Strength);
+                    fflush(s_dmg_log);
+                    s_dmg_count++;
+                }
+            }
         }
 
         switch (result) {
@@ -6501,12 +6540,13 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         bool looking_for_airstrip = (b == STRUCT_AIRSTRIP);  // → STRUCT_TDAFLD
         bool looking_for_helipad = (b == STRUCT_HELIPAD);    // → STRUCT_TDHPAD
         bool looking_for_repair = (b == STRUCT_REPAIR);      // → STRUCT_TDFIX
-        bool looking_for_refinery = (b == STRUCT_REFINERY);  // → STRUCT_TDPROC
+        // Refinery is intentionally NOT cross-matched: TD harvesters search
+        // STRUCT_TDPROC explicitly, RA harvesters STRUCT_REFINERY — no crossover
+        // (dock animations/cell offsets are type-specific). See Find_Best_Refinery.
         bool has_candidate = (House->Get_Quantity(b) != 0)
                              || (looking_for_airstrip && House->Get_Quantity(STRUCT_TDAFLD) != 0)
                              || (looking_for_helipad && House->Get_Quantity(STRUCT_TDHPAD) != 0)
-                             || (looking_for_repair && House->Get_Quantity(STRUCT_TDFIX) != 0)
-                             || (looking_for_refinery && House->Get_Quantity(STRUCT_TDPROC) != 0);
+                             || (looking_for_repair && House->Get_Quantity(STRUCT_TDFIX) != 0);
         if (has_candidate) {
             int bestval = -1;
 
@@ -6525,8 +6565,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 bool tdafld_match = looking_for_airstrip && (*building == STRUCT_TDAFLD);
                 bool tdhpad_match = looking_for_helipad && (*building == STRUCT_TDHPAD);
                 bool tdfix_match = looking_for_repair && (*building == STRUCT_TDFIX);
-                bool tdproc_match = looking_for_refinery && (*building == STRUCT_TDPROC);
-                bool type_match = (*building == b) || tdafld_match || tdhpad_match || tdfix_match || tdproc_match;
+                bool type_match = (*building == b) || tdafld_match || tdhpad_match || tdfix_match;
                 if (!type_match)
                     continue;
 

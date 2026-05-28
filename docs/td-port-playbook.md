@@ -451,6 +451,48 @@ Porting TD's BSTATE_ACTIVE → AUX1 → AUX2 refinery cycle requires more than t
 
 ---
 
+### 3.21 — TD building HP is DOUBLED at runtime (the "weak buildings" bug)
+
+**Trap:** TD's `BuildingTypeClass` constructor passes **`strength * 2`** to the `TechnoTypeClass` base (`tiberiandawn/bdata.cpp:3706`; same in EA's shipped `SOURCECODE/TIBERIANDAWN/BDATA.CPP`). So a TD building's listed `STRNTH` in bdata is **half** its real in-game HP. If you copy the raw bdata `STRNTH` into your `[TDxxxx]` rules.ini `Strength=`, the building ships at **half** its authentic durability — the entire faction feels papery.
+
+**RA does NOT double** — `redalert/bdata.cpp` reads `Strength=` literally.
+
+**Scope: buildings ONLY.** `UnitTypeClass`/`InfantryTypeClass`/`AircraftTypeClass` do **not** double; their listed strength is the real HP. (TDMCV/TDHARV/TDC17 were already correct.) This is the only "constructor silently changes the value" transform in TD type data — cost, sight, etc. all pass through.
+
+**Diagnosis (2026-05-28):** Nod Gun Turret (40 dmg AP) took **14** shots to kill a NUKE power plant, not 7. An instrumented `TechnoClass::Take_Damage` damage trace (`MOD_DEBUG_DAMAGE.txt`) showed `str 400->370` — NUKE's listed STRNTH=200 was 400 at runtime. Damage per shot (30 = 40 × 75% AP-vs-wood) was correct; HP was the variable. Verified by building an instrumented `TiberianDawn.dll` from the pristine `tiberiandawn/` tree and running the same test as a TD mod.
+
+**Fix (committed):** replicate the doubling in `redalert/bdata.cpp BuildingTypeClass::Read_INI`, after `TechnoTypeClass::Read_INI`:
+```cpp
+// TD buildings carry 2x listed HP (tiberiandawn/bdata.cpp:3706); RA does not.
+// Keyed on the "TD" IniName prefix; scoped to buildings (units use own Read_INI).
+if (Name()[0] == 'T' && Name()[1] == 'D') { MaxStrength *= 2; }
+```
+rules.ini now holds the **verbatim TD-source STRNTH** and the engine doubles it — consistent with the verbatim-port convention, and auto-applies to every future TD building.
+
+**Sub-trap:** before flipping a blanket multiplier, verify every existing rules.ini value is RAW source. Two buildings were already at the doubled value (TDPROC=900 vs source 450; TDWEAP=1000 vs source 500); the blanket double would have QUADRUPLED them. They were set back to raw (450/500) so the engine lands them at the correct 900/1000.
+
+---
+
+### 3.22 — TD building shadowing a vanilla `STRUCTF_` flag can leak RA-only mechanics
+
+**Trap:** TD-separated buildings (Type > 31) can't represent themselves in the 32-bit `BScan`/`ActiveBScan`, so `building.cpp` shadows each into its closest vanilla `STRUCTF_` bit (e.g. `STRUCT_TDAFLD → STRUCTF_AIRSTRIP`) so defeat/production/urgency checks work. But that same bit may gate an **RA-only mechanic**. TDAFLD's `STRUCTF_AIRSTRIP` shadow unlocked RA's **Spy Plane + Paratroopers** superweapons (`house.cpp Special_Weapons_AI`) — not TD-authentic.
+
+**Fix (committed):** gate the RA-only consumer on owning a *genuine* vanilla building via `Has_Building_Active(STRUCT_AIRSTRIP)` (checks `ActiveBQuantity[type]`, which TDAFLD does NOT increment for STRUCT_AIRSTRIP), not the shadowed bit. Keep the shadow intact for the defeat/production/urgency paths. Note cargo-plane docking never needed the bit — `aircraft.cpp PICK_AIRSTRIP` finds the pad by type (`STRUCT_AIRSTRIP || STRUCT_TDAFLD`).
+
+**General rule:** when you shadow a vanilla `STRUCTF_` flag for a TD building, grep every reader of that flag and ask "does this gate an RA-faction-only feature?" If yes, gate that reader on `Has_Building_Active(<real vanilla type>)`. Relates to §3.11 (BScan-shadow vs ActiveBQuantity prereq split).
+
+---
+
+### 3.23 — Some hotkeys are GlyphX-side and may be unfixable from the DLL (PARKED: MCV deploy)
+
+**Trap:** the in-game **Deploy keyboard shortcut** works for the RA MCV but not `UNIT_TDMCV`, even though every DLL-side deploy path (`What_Action` self, `Try_To_Deploy`, mission AI, `MCV_Deploy_Building`) handles TDMCV. The hotkey lives in the **closed GlyphX C# runtime** (the shipped SOURCECODE only includes the map-editor C#). It is NOT routed through `CNC_Handle_Unit_Request` (no deploy case in our fork or EA's), and `CNCObjectStruct.CanDeploy`/`IsDeployable` are vestigial (never populated by us or EA).
+
+**Status:** PARKED (low priority). Spoofing `CNCObjectStruct.TypeName = "MCV"` for TDMCV did NOT fix it, so GlyphX isn't keying purely on the `TypeName` string. Next spike hypothesis: GlyphX keys on the numeric `DllObjectTypeEnum Type`. Full log in memory `[[project-mcv-deploy-hotkey-spike]]`.
+
+**Lesson:** before chasing a hotkey/UI bug for a TD-ported entity, determine whether the behavior lives in the DLL or GlyphX. If GlyphX, it may be unfixable from the mod side (cf. §3.x classic-mode spacebar limitation). Confirm the keying mechanism before investing time.
+
+---
+
 ## 4. Templates to copy
 
 ### 4.1 — Bullet TD-port: add field, set on registration, dispatch
