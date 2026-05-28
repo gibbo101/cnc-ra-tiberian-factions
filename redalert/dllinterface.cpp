@@ -2627,13 +2627,14 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
             }
         }
 
-        // Tiberian Factions: per-faction unit-voice + credit-tick dispatch.
-        // GDI/Nod (ActLike HOUSE_GOOD/HOUSE_BAD) get TD unit acknowledgments
-        // and the TD credit-counter tick; Allied/Soviet keep RA's voices
-        // (.V0x/.R0x) and CASHUP1/CASHDN1. Mirrors the radar/EVA SpeechTD
+        // Tiberian Factions: per-faction unit-voice dispatch. GDI/Nod (ActLike
+        // HOUSE_GOOD/HOUSE_BAD) get TD unit acknowledgments; Allied/Soviet keep
+        // RA's voices (.V0x infantry / .R0x). Mirrors the radar/EVA SpeechTD
         // pattern. Voice events are registered in SFXEVENTSLOCALIZED.XML as
-        // RAC_/RAR_SFX_TD<NAME>.V0x -> base TDC_/TDR_SFX_UNT_<NAME>.V0x assets;
-        // credit ticks in SFXEVENTSNONLOCALIZED.XML as RAC_/RAR_SFX_TONE15/16.
+        // RAC_/RAR_SFX_TD<NAME>.V0x -> base TDC_/TDR_SFX_UNT_<NAME>.V0x assets
+        // (infantry fire .V01/.V03 direct takes; vehicles fire .V00/.V02 radio
+        // takes via negative variation). Credit-tick routing was reverted (the
+        // launcher owns the tick and the WAV stub didn't silence it).
         if (player_ptr != NULL
             && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD)) {
             const char* td_base = NULL;
@@ -2649,22 +2650,24 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
             case VOC_AFFIRM:     td_base = "TDAFFIRM1"; break;
             case VOC_NO_PROB:    td_base = "TDNOPROB";  break;
             case VOC_TD_MOVEOUT: td_base = "TDMOVOUT1"; break;
+            case VOC_VEHIC:      td_base = "TDVEHIC1";  break;
+            case VOC_TD_UNIT1:   td_base = "TDUNIT1";   break;
             default:             break;
             }
             if (td_base != NULL) {
-                // TD ships only the .V01/.V03 takes; RA fires these responses
-                // with variation = ID+1 (positive). Force the V-variant
-                // (never the .R0x Soviet ext the upstream path computed).
-                const char* vext = ((variation % 2) != 0) ? ".V01" : ".V03";
+                // Infantry fire with positive variation (ID+1) -> direct .V01/.V03
+                // takes. Vehicles fire with NEGATIVE variation -> the radio-filtered
+                // .V00/.V02 "vehicle response table" takes (TD ext convention,
+                // tiberiandawn/audio.cpp). Never the .R0x Soviet ext.
+                const char* vext;
+                if (variation < 0) {
+                    vext = (ABS(variation) % 2) ? ".V00" : ".V02";
+                } else {
+                    vext = (variation % 2) ? ".V01" : ".V03";
+                }
                 char td_name[16];
                 snprintf(td_name, sizeof(td_name), "%s%s", td_base, vext);
                 strncpy(new_event.SoundEffect.SoundEffectName, td_name, 16);
-                new_event.SoundEffect.SoundEffectName[15] = '\0';
-            } else if (sound_effect_index == VOC_MONEY_UP) {
-                strncpy(new_event.SoundEffect.SoundEffectName, "TONE15", 16);
-                new_event.SoundEffect.SoundEffectName[15] = '\0';
-            } else if (sound_effect_index == VOC_MONEY_DOWN) {
-                strncpy(new_event.SoundEffect.SoundEffectName, "TONE16", 16);
                 new_event.SoundEffect.SoundEffectName[15] = '\0';
             }
 

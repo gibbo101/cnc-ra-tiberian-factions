@@ -6207,44 +6207,6 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     </SampleNamesList>
   </SFXEvent>
 
-
-  <!-- Tiberian Factions: TD credit-counter tick for GDI/Nod (HOUSE_GOOD/HOUSE_BAD). DLL routes VOC_MONEY_UP/DOWN to TONE15/TONE16; Allied/Soviet keep CASHUP1/CASHDN1. -->
-  <SFXEvent Name="RAC_SFX_TONE15" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> TDC_SFX_TONE15.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-
-  <SFXEvent Name="RAR_SFX_TONE15" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> TDR_SFX_TONE15.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-
-  <SFXEvent Name="RAC_SFX_TONE16" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> TDC_SFX_TONE16.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-
-  <SFXEvent Name="RAR_SFX_TONE16" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> TDR_SFX_TONE16.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-
 </SFXEvents>
 
 

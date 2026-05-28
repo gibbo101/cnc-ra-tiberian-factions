@@ -258,6 +258,7 @@ struct SoundEffectNameStruct
     {"GUN8",     1, IN_NOVAR}, // VOC_TD_MINI			TD chain-gun burst (CHAIN_GUN / TDGTWR)
     {"ION1",     1, IN_NOVAR}, // VOC_TD_ION1			TD Ion Cannon beam strike (ANIM_TD_ION_CANNON). Routed via RAC_SFX_ION1 / RAR_SFX_ION1 SFXEvents in SFXEVENTSNONLOCALIZED.XML.
     {"MOVOUT1", 20, IN_NOVAR}, // VOC_TD_MOVEOUT - TD "movin out", routed to TDMOVOUT1.V0x for GDI/Nod move orders
+    {"UNIT1", 20, IN_NOVAR},   // VOC_TD_UNIT1 - TD "unit reporting", routed to TDUNIT1.V00/.V02 for GDI/Nod vehicles
 };
 
 //

@@ -1244,6 +1244,54 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
 }
 
 /***********************************************************************************************
+ * UnitClass::Response_Select/Move/Attack -- vehicle voice responses.                          *
+ *                                                                                             *
+ *   GDI/Nod (HOUSE_GOOD/HOUSE_BAD) voice with TD's vehicle takes: the .V00/.V02 samples carry *
+ *   the baked-in radio-comms static, selected via the negative variation the base DriveClass  *
+ *   also uses (On_Sound_Effect routes GDI/Nod to the TD assets). Allied/Soviet MUST defer to  *
+ *   the base DriveClass::Response_* (their normal RA vehicle voices) -- this override shadows  *
+ *   DriveClass, so without the explicit base call RA vehicles go silent.                      *
+ *=============================================================================================*/
+void UnitClass::Response_Select(void)
+{
+    if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
+        if (!AllowVoice) {
+            return;
+        }
+        static VocType _td_vsel[] = {VOC_VEHIC, VOC_TD_UNIT1, VOC_REPORT, VOC_YESSIR, VOC_AWAIT};
+        Sound_Effect(_td_vsel[Sim_Random_Pick(0, ARRAY_SIZE(_td_vsel) - 1)], fixed(1), -(ID + 1), 0, PlayerPtr->ActLike);
+    } else {
+        DriveClass::Response_Select();
+    }
+}
+
+void UnitClass::Response_Move(void)
+{
+    if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
+        if (!AllowVoice) {
+            return;
+        }
+        static VocType _td_vmove[] = {VOC_ACKNOWL, VOC_AFFIRM, VOC_TD_MOVEOUT};
+        Sound_Effect(_td_vmove[Sim_Random_Pick(0, ARRAY_SIZE(_td_vmove) - 1)], fixed(1), -(ID + 1), 0, PlayerPtr->ActLike);
+    } else {
+        DriveClass::Response_Move();
+    }
+}
+
+void UnitClass::Response_Attack(void)
+{
+    if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
+        if (!AllowVoice) {
+            return;
+        }
+        static VocType _td_vattack[] = {VOC_ACKNOWL, VOC_AFFIRM};
+        Sound_Effect(_td_vattack[Sim_Random_Pick(0, ARRAY_SIZE(_td_vattack) - 1)], fixed(1), -(ID + 1), 0, PlayerPtr->ActLike);
+    } else {
+        DriveClass::Response_Attack();
+    }
+}
+
+/***********************************************************************************************
  * UnitClass::Active_Click_With -- Intercepts the active click to see if deployment is possible*
  *                                                                                             *
  *    This routine intercepts the active click operation. It check to see if this is a self    *

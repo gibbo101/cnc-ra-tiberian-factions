@@ -212,6 +212,9 @@ public:
     virtual ActionType What_Action(ObjectClass const* object) const;
     virtual void Active_Click_With(ActionType action, ObjectClass* object);
     virtual void Active_Click_With(ActionType action, CELL cell);
+    virtual void Response_Select(void);
+    virtual void Response_Move(void);
+    virtual void Response_Attack(void);
     virtual void Player_Assign_Mission(MissionType mission, TARGET target, TARGET destination);
 
     /*

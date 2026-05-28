@@ -3448,6 +3448,7 @@ typedef enum VocType : short
     VOC_TD_MINI,         // TD chain-gun burst (GUN8 — CHAIN_GUN / TDGTWR)
     VOC_TD_ION1,         // TD Ion Cannon beam-strike SFX (ION1 — ANIM_TD_ION_CANNON)
     VOC_TD_MOVEOUT,      // TD infantry "movin' out" (MOVOUT1) — GDI/Nod move-order voice
+    VOC_TD_UNIT1,        // TD "unit reporting" (UNIT1) — GDI/Nod vehicle select voice (radio take)
 
     VOC_COUNT,
     VOC_FIRST = 0
