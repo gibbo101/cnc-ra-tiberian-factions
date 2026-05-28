@@ -261,10 +261,25 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             return (RADIO_ROGER);
 
         case STRUCT_REFINERY:
-        case STRUCT_TDPROC:    // TD Refinery — assign UNLOAD for the docking harvester.
             Mark(MARK_CHANGE);
             from->Assign_Mission(MISSION_UNLOAD);
             return (RADIO_ROGER);
+
+        case STRUCT_TDPROC:
+            // Verbatim port of TD's STRUCT_REFINERY RADIO_IM_IN handler
+            // (tiberiandawn/building.cpp:263-269). TD's flow attaches the
+            // harvester as cargo (RADIO_ATTACH) and lets the BUILDING run
+            // its Mission_Harvest state machine (BSTATE_ACTIVE→AUX1 siphon
+            // →AUX2 undock, with bail-by-bail Offload_Tiberium_Bail() at
+            // each MIDDLE-state tick). RA's STRUCT_REFINERY (above) uses
+            // a different flow: harvester runs Mission_Unload and dumps
+            // all credits in one shot.
+            ScenarioInit++;
+            Begin_Mode(BSTATE_ACTIVE);
+            ScenarioInit--;
+            Mark(MARK_CHANGE);
+            Assign_Mission(MISSION_HARVEST);
+            return (RADIO_ATTACH);
 
         default:
             break;
@@ -330,8 +345,22 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 break;
 
             case STRUCT_REFINERY:
-            case STRUCT_TDPROC:    // TD Refinery — same DIR_S docking pad offset.
                 param = ::As_Target(Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_S)));
+                break;
+
+            case STRUCT_TDPROC:
+                /*
+                **	TD-verbatim dock pad — DIR_SW of building center, NOT
+                **	DIR_S (RA's STRUCT_REFINERY). Matters because the
+                **	subsequent Force_Track(BACKUP_INTO_REFINERY) drives the
+                **	harvester N from this pad cell — DIR_SW → N gives the
+                **	building's SW OCCUPY cell (row 1 col 0), aligned under
+                **	the refinery's intake chute. DIR_S → N would land the
+                **	harvester at the building's center cell, visually offset
+                **	one tile east of the chute.
+                **	Reference: tiberiandawn/building.cpp:322.
+                */
+                param = ::As_Target(Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_SW)));
                 break;
             }
 
@@ -2260,7 +2289,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
     case RTTI_UNIT:
         switch (Class->Type) {
         case STRUCT_REFINERY:
-        case STRUCT_TDPROC:    // TD Refinery — same free-harvester spawn at SW exit cell.
             if (base->What_Am_I() == RTTI_UNIT) {
                 cell = Coord_Cell(Center_Coord());
                 UnitClass* unit = (UnitClass*)base;
@@ -2270,6 +2298,42 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 if (unit->Unlimbo(Cell_Coord(Adjacent_Cell(cell, DIR_S)), DIR_SW_X2)) {
                     unit->PrimaryFacing = DIR_S;
                     unit->Assign_Mission(MISSION_HARVEST);
+                }
+                ScenarioInit--;
+            } else {
+                base->Scatter(0, true);
+            }
+            break;
+
+        case STRUCT_TDPROC:
+            /*
+            **	TD-verbatim Exit_Object port (tiberiandawn/building.cpp:2242-2261).
+            **	Diverges from RA's STRUCT_REFINERY in three ways:
+            **	  1. Spawn coord = unit->Coord + (0x0055, 0x0060) leptons,
+            **	     which lands the harvester at the southern OCCUPY cell
+            **	     it was Attach'd in (unit->Coord still holds its pre-
+            **	     Limbo position).
+            **	  2. After Unlimbo, RADIO_HELLO + RADIO_TETHER re-establish
+            **	     building → harvester contact so the building knows the
+            **	     dock is in the exit phase (matters for the OUT_OF_REFINERY
+            **	     track's Force_Track integrity check).
+            **	  3. Force_Track(OUT_OF_REFINERY) drives the harvester south-
+            **	     west out of the building footprint with Set_Speed(128),
+            **	     replacing RA's instant-respawn-at-SW-cell teleport.
+            */
+            if (base->What_Am_I() == RTTI_UNIT) {
+                cell = Coord_Cell(Center_Coord());
+                UnitClass* unit = (UnitClass*)base;
+
+                cell = Adjacent_Cell(cell, FACING_SW);
+                ScenarioInit++;
+                if (unit->Unlimbo(Coord_Add(unit->Coord, 0x00550060L), DIR_SW_X2)) {
+                    unit->PrimaryFacing = DIR_SW_X2;
+                    Transmit_Message(RADIO_HELLO, unit);
+                    Transmit_Message(RADIO_TETHER);
+                    unit->Assign_Mission(MISSION_HARVEST);
+                    unit->Force_Track(DriveClass::OUT_OF_REFINERY, Cell_Coord(cell));
+                    unit->Set_Speed(128);
                 }
                 ScenarioInit--;
             } else {
@@ -4751,6 +4815,18 @@ int BuildingClass::Mission_Harvest(void)
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
+    /*
+    **  STRUCT_TDPROC routes to a verbatim port of TD's
+    **  BuildingClass::Mission_Harvest (tiberiandawn/building.cpp:4488).
+    **  TD's state machine cycles BSTATE_ACTIVE → AUX1 → AUX2 alongside
+    **  bail-by-bail Offload_Tiberium_Bail, and calls Exit_Object on
+    **  WAIT_FOR_UNDOCK completion. RA's state machine (below) skips the
+    **  BState transitions and the Exit_Object call. See Mission_Harvest_TD().
+    */
+    if (*this == STRUCT_TDPROC) {
+        return Mission_Harvest_TD();
+    }
+
     enum
     {
         INITIAL,        // Dock the Tiberium cannister.
@@ -4805,6 +4881,101 @@ int BuildingClass::Mission_Harvest(void)
         break;
 
     default:
+        break;
+    }
+    return (1);
+}
+
+/***********************************************************************************************
+ * BuildingClass::Mission_Harvest_TD -- TD-source-verbatim refinery dock cycle.                *
+ *                                                                                             *
+ *    Verbatim port of TD's BuildingClass::Mission_Harvest                                     *
+ *    (tiberiandawn/building.cpp:4488). 5-state machine:                                       *
+ *      INITIAL          - Begin_Mode(BSTATE_ACTIVE), enter WAIT_FOR_DOCK.                     *
+ *      WAIT_FOR_DOCK    - Hold ACTIVE anim until IsReadyToCommence (cycle end), then          *
+ *                         Begin_Mode(BSTATE_AUX1) and enter MIDDLE.                           *
+ *      MIDDLE           - Each IsReadyToCommence tick offloads one tiberium bail to the       *
+ *                         house. When the harvester's load is empty, Begin_Mode(BSTATE_AUX2)  *
+ *                         and enter WAIT_FOR_UNDOCK.                                          *
+ *      WAIT_FOR_UNDOCK  - Hold AUX2 anim until IsReadyToCommence, then Exit_Object the        *
+ *                         detached harvester and Assign_Mission(MISSION_GUARD).               *
+ *                                                                                             *
+ *    Differs from RA's BuildingClass::Mission_Harvest (above) in three ways:                  *
+ *      1. Explicit BState transitions (ACTIVE → AUX1 → AUX2 — animates the refinery's         *
+ *         5-state anim table for siphoning visuals).                                          *
+ *      2. Exit_Object(Detach_Object()) at undock (RA's version just Assign_Mission(GUARD)     *
+ *         and never explicitly detaches the harvester).                                       *
+ *      3. EXITING enum entry exists but is unused in TD source (left as a marker).            *
+ *=============================================================================================*/
+int BuildingClass::Mission_Harvest_TD(void)
+{
+    assert(Buildings.ID(this) == ID);
+    assert(IsActive);
+
+    enum
+    {
+        INITIAL,         // Dock the Tiberium canister.
+        WAIT_FOR_DOCK,   // Waiting for docking to complete.
+        MIDDLE,          // Offload "bails" of tiberium.
+        WAIT_FOR_UNDOCK, // Waiting for undocking to complete.
+        EXITING          // Cause the harvester to drive away.
+    };
+    switch (Status) {
+    case INITIAL:
+        Begin_Mode(BSTATE_ACTIVE);
+        Status = WAIT_FOR_DOCK;
+        break;
+
+    case WAIT_FOR_DOCK:
+        if (IsReadyToCommence) {
+            IsReadyToCommence = false;
+            Status = MIDDLE;
+            Begin_Mode(BSTATE_AUX1);
+        }
+        break;
+
+    case MIDDLE:
+        if (IsReadyToCommence) {
+            IsReadyToCommence = false;
+
+            /*
+            **	Force any bib squatters to scatter (TD source comment).
+            */
+            Map[Adjacent_Cell(Coord_Cell(Center_Coord()), DIR_SW)].Incoming(0, true, true);
+
+            FootClass* techno = Attached_Object();
+            if (techno) {
+                int bail = techno->Offload_Tiberium_Bail();
+
+                if (bail) {
+                    House->Harvested(bail);
+                    /*
+                    **	Explicit `> 0` comparison forces the fixed::operator>(int)
+                    **	overload which inspects Data.Raw directly. The bare
+                    **	`if (Tiberium_Load())` form would implicit-convert via
+                    **	operator unsigned() which rounds to nearest int — for
+                    **	Rule.BailCount=28 that rounds to 0 once Tiberium <= 13,
+                    **	prematurely exiting the bail loop with ~12 bails
+                    **	(3 of 7 pips) still on the harvester.
+                    */
+                    if (techno->Tiberium_Load() > 0) {
+                        return (1);
+                    }
+                }
+            }
+            Begin_Mode(BSTATE_AUX2);
+            Status = WAIT_FOR_UNDOCK;
+        }
+        break;
+
+    case WAIT_FOR_UNDOCK:
+        if (IsReadyToCommence) {
+            /*
+            **	Detach harvester and go back into idle state (TD verbatim).
+            */
+            Exit_Object(Detach_Object());
+            Assign_Mission(MISSION_GUARD);
+        }
         break;
     }
     return (1);

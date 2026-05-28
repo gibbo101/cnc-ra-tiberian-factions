@@ -413,6 +413,26 @@ if (((*building == STRUCT_HELIPAD || *building == STRUCT_TDHPAD) && !air->IsFixe
 
 **Fix:** When editing `HouseClass::Place_Object` or any other code with this guard, **always check whether the `#ifdef` macro is active in defines.h before patching**. For helicopter/aircraft-related Place_Object work, the active branch is currently `#else`.
 
+### 3.20 — Harvester dock plumbing port (TDPROC) — four-trap composite
+
+Porting TD's BSTATE_ACTIVE → AUX1 → AUX2 refinery cycle requires more than the building-side Mission_Harvest port. Four RA-side gaps trip in sequence:
+
+1. **`UnitClass::Offload_Tiberium_Bail` is an `#ifdef TOFIX` stub.** The return value is wrapped in a never-defined preprocessor block, so it always returns 0 — `Tiberium--` runs (cargo lost) but no credits returned. RA's vanilla refinery uses the one-shot Mission_Unload bulk dump and never calls this method. Fix: port TD's per-bail credit calc, adapted to RA's `Gold`/`Gems` model (`Rule.GemValue` first, then `Rule.GoldValue`; both decrement alongside Tiberium so Gold+Gems == Tiberium stays invariant).
+
+2. **`Per_Cell_Process` RADIO_ATTACH case is empty.** RA's `case RADIO_ATTACH: break;` at `unit.cpp:1742` is a TD-flow stub that never calls `Limbo() + whom->Attach(this)`. For UNIT_TDHARV docking at STRUCT_TDPROC the building's RADIO_IM_IN returns RADIO_ATTACH (TD-verbatim), so this stub keeps the harvester visible at the dock pad with Attached_Object() returning NULL → MIDDLE state has nothing to siphon. Port TD's verbatim `Mark(MARK_UP); Limbo(); whom->Attach(this);` body.
+
+3. **`Cell_Building()` returns NULL for OVERLAP-only cells.** Building registration splits into `Occupy_Down()` (occupier chain — `Cell_Find_Object` walks this) vs `Overlap_Down()` (separate `Overlapper[]` array). RA's IM_IN trigger at `unit.cpp:1737` checks `Map[CELL(cell - MAP_CELL_W)].Cell_Building()` (cell NORTH of harvester) — for the BSIZE_33 TDPROC footprint with row-0 corners as OVERLAP-only, that N-cell hits the Overlapper array and returns NULL. Fix: extend the check for UNIT_TDHARV to use TD's own-cell test (`Map[cell].Cell_Building() == whom`, mirroring `tiberiandawn/unit.cpp:1766`).
+
+4. **`if (Tiberium_Load())` rounds to 0 when ≤13 of 28 bails remain.** RA's `fixed` class has only `operator unsigned()` for implicit numeric conversion — and that operator **rounds to nearest int** (line 114 of `common/fixed.h`). For Rule.BailCount=28, `fixed(13, 28)` rounds to 0, so the bare-conditional bail loop exits with ~12 bails undrained (3 of 7 pips). Same root cause as §3.16's `Health_Ratio()` trap. Fix: explicit `> 0` comparison (`if (techno->Tiberium_Load() > 0)`) — that invokes `fixed::operator>(int)` which inspects `Data.Raw` directly without rounding.
+
+**Symptom of any one missing fix:** Trap 1 + 2 → MIDDLE finds NULL Attached_Object, immediately falls through to AUX2 with no credits. Trap 3 → harvester at dock pad stays visible, IM_IN never sent, same outcome. Trap 4 → trickle starts correctly but stops at ~57% capacity (Tiberium=13). All four must be patched together for a clean TD dock cycle.
+
+**Visual polish (TD-authentic but optional):** UNIT_TDHARV RADIO_BACKUP_NOW handler should do `Force_Track(BACKUP_INTO_REFINERY, Adjacent_Cell(Center_Coord(), FACING_N)) + Set_Speed(128)` rather than RA's instant-IM_IN shortcut, and `Exit_Object` for STRUCT_TDPROC should do `Force_Track(OUT_OF_REFINERY, ...)` rather than instant-respawn. With both, the dock-in back-up and dock-out drive-out animations match TD source exactly.
+
+**See:** TDPROC port worked example in this session (commit at the end of M4 Tier 3). `tiberiandawn/{building.cpp:4488 (Mission_Harvest), building.cpp:2242 (Exit_Object), unit.cpp:557 (RADIO_BACKUP_NOW), unit.cpp:1755-1785 (Per_Cell_Process attach), drive.cpp:1638 (Offload_Tiberium_Bail)}` are the load-bearing TD source sites.
+
+---
+
 ### 3.19 — Multi-plane convoy needs three independent fixes (TDAFLD-specific)
 
 **Trap:** Naively porting TD's `Create_Special_Reinforcement` Exit_Object case doesn't produce a working back-to-back cargo plane convoy in RA. RA's engine lacks three pieces that TD source has implicitly:

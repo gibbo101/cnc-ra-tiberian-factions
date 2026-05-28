@@ -349,6 +349,7 @@ public:
     virtual int Mission_Repair(void);
     virtual int Mission_Attack(void);
     virtual int Mission_Harvest(void);
+    int Mission_Harvest_TD(void); // Verbatim port of TD's BuildingClass::Mission_Harvest (STRUCT_REFINERY path) for STRUCT_TDPROC. ACTIVE → AUX1 → AUX2 BState cycle + bail-by-bail Offload_Tiberium_Bail.
     virtual int Mission_Guard(void);
     virtual int Mission_Construction(void);
     virtual int Mission_Deconstruction(void);

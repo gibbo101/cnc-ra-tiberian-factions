@@ -750,6 +750,29 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
     */
     case RADIO_BACKUP_NOW:
         DriveClass::Receive_Message(from, message, param);
+        /*
+        **	UNIT_TDHARV path — verbatim port of TD's RADIO_BACKUP_NOW handler
+        **	(tiberiandawn/unit.cpp:557-567). Harvester turns DIR_SW (TD-
+        **	authentic facing — RA uses DIR_W which looks wrong for our 64-
+        **	frame harvester sprite), then Force_Tracks BACKUP_INTO_REFINERY
+        **	to drive INTO the building's south-row cell. Per_Cell_Process
+        **	fires RADIO_IM_IN once the harvester reaches a cell whose N
+        **	neighbour is owned by the building, completing the TD-style
+        **	Limbo + Attach handshake. The harvester does NOT transmit IM_IN
+        **	from here — that would short-cut the back-up animation.
+        */
+        if (*this == UNIT_TDHARV) {
+            if (!IsRotating && PrimaryFacing != DIR_SW) {
+                Do_Turn(DIR_SW);
+            } else {
+                if (!IsDriving) {
+                    Force_Track(BACKUP_INTO_REFINERY, Adjacent_Cell(Center_Coord(), FACING_N));
+                    Set_Speed(128);
+                }
+            }
+            return (RADIO_ROGER);
+        }
+
         if (!IsRotating && PrimaryFacing != DIR_W) {
             Do_Turn(DIR_W);
         } else {
@@ -1706,13 +1729,55 @@ void UnitClass::Per_Cell_Process(PCPType why)
         TechnoClass* whom = Contact_With_Whom();
         if (IsTethered && whom != NULL) {
             if (whom->What_Am_I() == RTTI_BUILDING && Mission == MISSION_ENTER) {
-                if (whom == Map[CELL(cell - MAP_CELL_W)].Cell_Building()) {
+                /*
+                **	RA's original check inspects the cell NORTH of the harvester
+                **	(CELL(cell - MAP_CELL_W)) because RA's STRUCT_REFINERY flow
+                **	parks the harvester one cell south of the building's south
+                **	OCCUPY row — N-of-harvester then lands in the OCCUPY chain.
+                **	For UNIT_TDHARV docking at STRUCT_TDPROC, the Force_Track
+                **	BACKUP_INTO_REFINERY animation drives the harvester INTO the
+                **	building's SW OCCUPY cell, so the harvester's own cell is
+                **	the OCCUPY hit — N-of-harvester is the OVERLAP-only corner
+                **	cell (Cell_Building walks the occupier chain only;
+                **	Overlap_Down stores the building in a separate Overlapper[]
+                **	array). Match TD's verbatim check (tiberiandawn/unit.cpp:1766)
+                **	for the TDHARV+TDPROC case.
+                */
+                bool cell_match = (*this == UNIT_TDHARV)
+                    ? (whom == Map[cell].Cell_Building())
+                    : (whom == Map[CELL(cell - MAP_CELL_W)].Cell_Building());
+                if (cell_match) {
                     switch (Transmit_Message(RADIO_IM_IN, whom)) {
                     case RADIO_ROGER:
                         break;
 
                     case RADIO_ATTACH:
-                        break;
+                        /*
+                        **	TD-verbatim absorb (tiberiandawn/unit.cpp:1771-1777).
+                        **	Drives the UNIT_TDHARV → STRUCT_TDPROC dock — once
+                        **	the Force_Track(BACKUP_INTO_REFINERY) animation has
+                        **	parked the harvester on the building's south-row
+                        **	cell, Per_Cell_Process fires RADIO_IM_IN here and
+                        **	STRUCT_TDPROC responds RADIO_ATTACH (building.cpp
+                        **	Receive_Message RADIO_IM_IN). Mark off the map,
+                        **	Limbo to clear the cell, then attach as building
+                        **	cargo so the BSTATE_AUX1 siphon cycle (driven by
+                        **	BuildingClass::Mission_Harvest_TD) can pull bails
+                        **	via Attached_Object(). Detach + re-spawn happens
+                        **	via STRUCT_TDPROC's Exit_Object branch.
+                        **
+                        **	RA's original `case RADIO_ATTACH: break;` was a
+                        **	stub — building->Attach was never called, so a TD-
+                        **	style refinery dock would have left the harvester
+                        **	stranded in radio contact with no cargo binding.
+                        */
+                        Mark(MARK_UP);
+                        SpecialFlag = true;
+                        Limbo();
+                        SpecialFlag = false;
+                        whom->Attach(this);
+                        BEnd(BENCH_PCP);
+                        return;
 
                     default:
                         Scatter(0, true);
@@ -4542,18 +4607,41 @@ int UnitClass::Offload_Tiberium_Bail(void)
 {
     assert(IsActive);
 
-    if (Tiberium) {
-        Tiberium--;
-
-        // MBL 05.15.2020: Note, if the below code is ever reeanbled for some ready, make sure to see fix in
-        // Tiberian Dawn's DriveClass::Offload_Tiberium_Bail() for AI players
-
-#ifdef TOFIX
-        if (House->IsHuman) {
-            return (UnitTypeClass::FULL_LOAD_CREDITS / UnitTypeClass::STEP_COUNT);
+    if (Tiberium > 0) {
+        /*
+        **	TD-source verbatim equivalent (tiberiandawn/drive.cpp:1638).
+        **	TD uses fixed constants FULL_LOAD_CREDITS / STEP_COUNT (700 / 28
+        **	= 25 credits per bail). RA generalised the cargo model — Gold
+        **	and Gems are tracked separately, each with its own per-unit
+        **	credit value (Rule.GoldValue / Rule.GemValue). Each bail in
+        **	the harvester's load is exactly one Gold OR one Gem (see
+        **	UnitClass::Harvesting() — the Gems-overlay branch increments
+        **	Gems and Tiberium in lockstep), so Gold + Gems == Tiberium
+        **	invariantly.
+        **
+        **	Drain Gems first (worth more, ~3× Gold), then Gold. Each call
+        **	pays the per-unit credit value of whatever was offloaded.
+        **	Total dispensed across all calls = initial Credit_Load.
+        **
+        **	The #ifdef TOFIX block this replaces was EA's never-finished
+        **	port stub — Tiberium-- ran (cargo lost) but credits returned
+        **	zero, so any TD-style bail loop saw 0 and skipped the offload
+        **	entirely. Vanilla RA never hit this since it uses the one-shot
+        **	bulk dump at Mission_Unload UNIT_HARVESTER (Credit_Load() →
+        **	House->Harvested() in one tick).
+        */
+        int credits = 0;
+        if (Gems > 0) {
+            Gems--;
+            credits = Rule.GemValue;
+        } else if (Gold > 0) {
+            Gold--;
+            credits = Rule.GoldValue;
+        } else {
+            credits = Rule.GoldValue;
         }
-        return (UnitTypeClass::FULL_LOAD_CREDITS + (UnitTypeClass::FULL_LOAD_CREDITS / 3) / UnitTypeClass::STEP_COUNT);
-#endif
+        Tiberium--;
+        return (credits);
     }
     return (0);
 }
