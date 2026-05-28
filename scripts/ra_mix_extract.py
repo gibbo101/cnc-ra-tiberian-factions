@@ -29,6 +29,12 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 from mix_tools import ww_crc
 
+try:
+    from mix_namedb import resolve as resolve_name
+except Exception:
+    def resolve_name(crc, **kw):
+        return None
+
 # redalert/const.cpp Keys[] "[PublicKey]" 1=...  (DER: 0x02 tag, len, big-endian modulus)
 _PUBKEY_B64 = "AihRvNoIbTn85FZRYNZRcT+i6KpU+maCsEqr3Q5q+LDB5tH7Tz2qQ38V"
 _PK_EXPONENT = 65537
@@ -155,12 +161,26 @@ def find_in_mix(blob, target_crc, _seen=None):
 
 
 def cmd_list(args):
-    count, datasize, entries, data_start, raw = read_encrypted_mix(args[0])
-    print(f'{count} files, {datasize} bytes data, data_start={data_start}')
-    for crc, offset, size in entries[:20]:
-        print(f'  crc={crc:#010x} offset={offset:>10d} size={size:>10d}')
-    if count > 20:
-        print(f'  ... ({count - 20} more)')
+    with open(args[0], 'rb') as f:
+        blob = f.read()
+    parsed = _parse_mix_blob(blob)
+    if parsed is None:
+        print('could not parse as a mix (encrypted or classic)', file=sys.stderr)
+        return 1
+    entries, data_start, raw = parsed
+    known = 0
+    nested = 0
+    for crc, offset, size in entries:
+        name = resolve_name(crc)
+        if name:
+            known += 1
+        label = name if name else '(unknown)'
+        if name and name.lower().endswith('.mix'):
+            nested += 1
+            label += '   <-- nested container'
+        print(f'  crc={crc & 0xFFFFFFFF:#010x} size={size:>9d}  {label}')
+    print(f'  -- {len(entries)} entries, {known} names resolved, {nested} nested .mix',
+          file=sys.stderr)
     return 0
 
 

@@ -30,6 +30,12 @@ import os
 import struct
 import sys
 
+try:
+    from mix_namedb import resolve as resolve_name
+except Exception:
+    def resolve_name(crc, **kw):
+        return None
+
 
 def ww_crc(name: str) -> int:
     '''Compute the CRC32-ish hash Westwood uses for MIX file entries.
@@ -92,9 +98,14 @@ def cmd_list(args):
         return 2
     count, data_size, entries, data_blob = read_mix(args[0])
     print(f'{count} files, {data_size} bytes of data, {len(data_blob)} bytes blob')
+    known = 0
     for crc, offset, size in entries:
-        # We can't reverse the CRC to a filename, so print the raw values.
-        print(f'  crc={crc:#010x} offset={offset:>10d} size={size:>10d}')
+        name = resolve_name(crc)
+        if name:
+            known += 1
+        label = name if name else '(unknown)'
+        print(f'  crc={crc & 0xFFFFFFFF:#010x} size={size:>9d}  {label}')
+    print(f'  -- {known}/{count} names resolved', file=sys.stderr)
     return 0
 
 
