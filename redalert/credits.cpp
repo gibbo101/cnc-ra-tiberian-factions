@@ -100,6 +100,9 @@ void CreditClass::Graphic_Logic(bool forced)
         **	effect was requested.
         */
         if (IsAudible) {
+            // NB: in REMASTER_BUILD this block does not run — GlyphX draws the
+            // credit counter and plays the tick itself, so the credit tick
+            // cannot be faction-routed from the DLL. See building-sound-routing.md.
             if (IsUp) {
                 Sound_Effect(VOC_MONEY_UP, fixed(1, 2));
             } else {
