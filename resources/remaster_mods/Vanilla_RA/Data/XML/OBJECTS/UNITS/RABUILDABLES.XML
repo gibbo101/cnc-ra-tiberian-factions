@@ -1488,6 +1488,14 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<ObjectTypeClass Name="RA_TDHARV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_HARVESTER</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_HARVESTER</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_Harvester</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 	<ObjectTypeClass Name="RA_TDFACT" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_CONSTRUCTION_YARD</ObjectNameTextID>

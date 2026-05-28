@@ -1037,6 +1037,9 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             static int tdafld_type = -2;
             static int tdhpad_type = -2;
             static int tdhq_type   = -2;
+            static int tdproc_type = -2;
+            static int tdeye_type  = -2;
+            static int tdtmpl_type = -2;
             if (tdpyle_type == -2) {
                 BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDPYLE");
                 tdpyle_type = p ? p->Type : -1;
@@ -1060,6 +1063,18 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             if (tdhq_type == -2) {
                 BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDHQ");
                 tdhq_type = p ? p->Type : -1;
+            }
+            if (tdproc_type == -2) {
+                BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDPROC");
+                tdproc_type = p ? p->Type : -1;
+            }
+            if (tdeye_type == -2) {
+                BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDEYE");
+                tdeye_type = p ? p->Type : -1;
+            }
+            if (tdtmpl_type == -2) {
+                BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDTMPL");
+                tdtmpl_type = p ? p->Type : -1;
             }
             if (t == STRUCT_TENT && tdpyle_type >= 0 && Has_Building_Active(tdpyle_type))
                 continue;
@@ -1098,6 +1113,26 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             // Iron Curtain, etc.) become buildable when only TDHQ is owned.
             if (t == STRUCT_RADAR) {
                 if (tdhq_type >= 0 && Has_Building_Active(tdhq_type))
+                    continue;
+            }
+            // STRUCT_REFINERY — satisfied by TDPROC (separated TD refinery).
+            // RA's harvester (Prerequisite=proc) becomes buildable when a TDPROC
+            // is owned (both GDI and Nod build it).
+            if (t == STRUCT_REFINERY) {
+                if (tdproc_type >= 0 && Has_Building_Active(tdproc_type))
+                    continue;
+            }
+            // STRUCT_ADVANCED_TECH — satisfied by the faction high-tech building:
+            // GDI Advanced Comm (TDEYE) or Nod Temple (TDTMPL). TD's UnitMCV
+            // requires STRUCTF_EYE; "atek" maps here and these are the per-faction
+            // equivalents (basic comm TDHQ does NOT count). NOTE: Has_Building_Active
+            // tests ActiveBQuantity[type], not the BScan bitmask — so a per-type
+            // remap like this is required; shadowing STRUCTF_ADVANCED_TECH into
+            // BScan does nothing for prereq checks.
+            if (t == STRUCT_ADVANCED_TECH) {
+                if (tdeye_type >= 0 && Has_Building_Active(tdeye_type))
+                    continue;
+                if (tdtmpl_type >= 0 && Has_Building_Active(tdtmpl_type))
                     continue;
             }
         }

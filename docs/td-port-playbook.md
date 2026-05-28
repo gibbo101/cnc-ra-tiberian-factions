@@ -317,11 +317,15 @@ The exception is plumbing the launcher requires (e.g. `Map.Submit` for layer sys
 
 **Symptom:** Build a TDHPAD, get the free helicopter — but the helicopter cameos never appear in the sidebar. (Or: GDI builds TDPYLE, the Allied infantry roster never unlocks. Etc.)
 
-**Fix:** Extend `HouseClass::Can_Build`'s prerequisite-equivalence block at `house.cpp:986+`. Add a cached IniName→Type lookup for the new TD building plus a `if (t == STRUCT_VANILLA_NAME && tdNNNN_type >= 0 && Has_Building_Active(tdNNNN_type)) continue;` branch. The existing TDPYLE/TDHAND/TDWEAP/TDAFLD/TDHPAD entries are the worked examples.
+**Fix:** Extend `HouseClass::Can_Build`'s prerequisite-equivalence block at `house.cpp:1003+`. Add a cached IniName→Type lookup for the new TD building plus a `if (t == STRUCT_VANILLA_NAME && tdNNNN_type >= 0 && Has_Building_Active(tdNNNN_type)) continue;` branch. Worked examples: STRUCT_TENT→TDPYLE, STRUCT_BARRACKS→TDHAND, STRUCT_WEAP→TDWEAP/TDAFLD, STRUCT_HELIPAD→TDHPAD, STRUCT_RADAR→TDHQ, STRUCT_REFINERY→TDPROC, STRUCT_ADVANCED_TECH→TDEYE(GDI)/TDTMPL(Nod).
 
-**Why it's silent:** No engine error, no warning — `Can_Build` just returns false. The cameo is conditionally hidden by the sidebar, so you only notice via "thing I expected to be buildable isn't there."
+**⚠️ THE TRAP WITHIN THE TRAP (cost a build cycle 2026-05-28):** Do NOT try to satisfy a prereq by shadowing the vanilla `STRUCTF_*` flag into `House->BScan`/`ActiveBScan`. The prereq check calls `Has_Building_Active(type)`, which tests **`ActiveBQuantity[type] > 0`** — a per-building-type *counter* — NOT the BScan bitmask (`house.h:1008`). So a BScan flag shadow does nothing for prerequisites. (The BScan shadow IS still required for *other* engine checks — radar activation, defeat-on-no-scans `house.cpp:1474`, GPS/superweapon gating — just not prereqs.) Prereqs need the explicit per-type remap above, full stop.
 
-This will eventually be replaced by a `BehavesLike=` rules.ini field in D2; until then, every new separated TD building that shadows a vanilla RA factory needs one entry here.
+**Per-faction prereqs:** map one vanilla token to BOTH faction equivalents in the same branch so each side's building satisfies it independently — e.g. `STRUCT_ADVANCED_TECH` (`atek`) is satisfied by GDI's TDEYE *or* Nod's TDTMPL (TD's `UnitMCV` requires `STRUCTF_EYE`; `atek` is the closest RA token, and TDHQ basic comm deliberately does NOT count).
+
+**Diagnostic:** `MOD_DEBUG_CANBUILD.txt` (written by the `Can_Build` hook at `house.cpp:877+` for TD-prefixed + `E#` infantry entries) logs `level_ok` / `pre_ok` / `own_ok` per call. `pre=[N,…]` shows the STRUCT enum each token resolved to. Pull it from the Deck to see exactly which gate fails before changing code. (Watch the house filter — AI houses log too; match the player's house number.)
+
+**Why it's silent:** No engine error — `Can_Build` just returns false and the sidebar hides the cameo. This will eventually be replaced by a `BehavesLike=` rules.ini field in D2; until then, every new separated TD building that shadows a vanilla RA factory needs one entry here.
 
 ### 3.11b — Audio override mechanics (mod XML vs WAV-file replacement)
 
