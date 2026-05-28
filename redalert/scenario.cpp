@@ -562,13 +562,12 @@ bool Read_Scenario(char* name)
     ScenarioInit--;
 
     /*
-    **  TEMPORARY DEV HACK — reveal the full map to the player at scenario
-    **  start so we can observe AI behaviour during D1.2 testing. Mirrors the
-    **  TACTION_REVEAL_ALL trigger action in taction.cpp. Skirmish only (not
-    **  campaign) so single-player mission flow stays intact. Remove once
-    **  Phase 1 validation is signed off.
+    **  TF DEV TOGGLE — reveal-all-map: reveals the full map to the player at
+    **  scenario start (skirmish only) to observe AI behaviour during testing.
+    **  Mirrors the TACTION_REVEAL_ALL trigger. OFF for release; flip to #if 1
+    **  to re-enable. (Grep "TF DEV TOGGLE" to find all such toggles.)
     */
-#if 1
+#if 0
     if (Session.Type != GAME_NORMAL && PlayerPtr != NULL && !PlayerPtr->IsVisionary) {
         PlayerPtr->IsVisionary = true;
         for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
