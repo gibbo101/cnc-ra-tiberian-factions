@@ -6980,7 +6980,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         **  Disabled 2026-05-27. Default OFF; only flip on for short-lived
         **  catalogue tests, then revert before deploy/release.
         */
-#if 0
+#if 1 // TF DEV TOGGLE: instant-build ON for GDI/Nod testing. REVERT to 0 before release.
         if (hptr->Class->House == HOUSE_GOOD || hptr->Class->House == HOUSE_BAD
             || hptr->ActLike      == HOUSE_GOOD || hptr->ActLike      == HOUSE_BAD) {
             return 15;
