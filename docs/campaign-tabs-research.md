@@ -1,114 +1,75 @@
-# Campaign-tabs research — adding GDI / Nod / Covert Ops to Mission Select
+# Mission Select / campaign tabs — how it works (SOLVED 2026-05-28)
 
-Research-only notes from a 2026-05-21 investigation into whether the Remastered
-Mission Select screen can be modified to expose TD campaigns (GDI, Nod, Covert
-Ops, console missions, Dinosaur Fun Park) alongside the existing RA campaigns.
+The 2026-05-21 "research-only" version of this doc had four unresolved unknowns. They're now **resolved** by live testing on the Steam Deck (swapping a repacked base `CONFIG.MEG` and reading the result via screenshots). MEG extraction *and* repacking are solved; the Mission Select display pipeline is mapped.
 
-**No code changes have been made.** This document is decision-support for a
-future implementation pass.
+Tools: `scripts/meg_extract.py` (read), **`scripts/meg_pack.py`** (repack — byte-identical round-trip, no integrity check), `scripts/mix_namedb.py` (CRC→name). Format detail: `mix-file-format.md`. Launcher boundary: `launcher-vs-dll-ownership.md`.
 
-## TL;DR
+---
 
-- The campaign tabs on the Mission Select screen are **XML-driven**, not
-  Unity-baked. Editing data is realistic; editing the side-select screen is not.
-- All TD campaign XMLs already ship in the same `CONFIG.MEG` archive that RA
-  uses. We're not creating campaigns from scratch — we'd be re-pointing or
-  re-exposing existing manifests.
-- The single load-bearing unknown is whether the ccmod system lets us
-  **override** these XMLs from a mod's `ccdata/` folder. If yes, this is an
-  evening's work. If no, we need a MEG repacker.
+## TL;DR — the corrected model
 
-## What's in `CONFIG.MEG`
+**The Mission Select display is built from `DATA/XML/INSTANCES.XML`, not the campaign-structure files.** Each mission is an `<Instance>` carrying:
 
-`Data/CONFIG.MEG` carries (among ~3974 other entries) the following
-campaign-related files:
+- `<LocationNameTextID>` (name) + `<MissionBriefingTextID>` (briefing) → localized strings
+- **`<ShowOnMissionSelect>`** — visibility gate; `false` **hides the mission even if you've completed it** (proven)
+- **`<IsUnlockedAtStart>`** — `true` ⇒ always shown; otherwise gated by player progress
+- `<House>`, `<Mission>N</Mission>`, **`<ExternalGameID>`** (`RedAlert` | `TiberianDawn`), brief/action/win movies, `MissionSelectMapTexture`
+
+The **structure files** — `RA_ALLIES.XML` (progression), `RA_ALLIES_MISSIONS.XML` (mission defs + `MapStageUnlock` chain), `RA_CAMPAIGNMAPS.XML`/`CAMPAIGNMAPS.XML` (`CampaignMapSelectMapClass` per tab + the territory-map-select flow) — control **progression and launch, NOT the displayed roster.** Editing them changes what *launches*, not what *shows*.
+
+`CONFIG.MEG` has **no integrity check**, so a repacked archive with edited XML loads fine, and the game *does* read it (proven: breaking a mission def killed that mission's launch).
+
+---
+
+## What controls what (each row proven on the Deck)
+
+| To change… | Edit | Evidence |
+|---|---|---|
+| Whether a mission **shows** | `INSTANCES.XML` `ShowOnMissionSelect` | set Allied 5A/5B/5C `false` → "Tanya's Tale" vanished despite being completed |
+| Mission **name / briefing** | `INSTANCES.XML` `LocationNameTextID` / `MissionBriefingTextID` | data-confirmed (TextIDs → localized strings) |
+| **Always visible** vs progress-gated | `IsUnlockedAtStart` | expansion missions are `true` → always show (never hide) |
+| Whether a mission **launches** | `RA_*_MISSIONS.XML` def + `MapStageUnlock` | removed `RA_ALLIES_14` def → its "Start" did nothing; mission 1 still launched |
+| Which **game's front-end** lists it | `ExternalGameID` | GDI instances are `TiberianDawn` ⇒ don't appear in RA mode |
+
+### The experiments (base-CONFIG.MEG swap)
+- Truncate all three structure files to 2 missions → **display still showed 14**; mission 14 un-launchable. ⇒ structure = launch, not display.
+- Append expansion missions to `RA_ALLIES` `<Stages>` → **did not appear** under Allied. ⇒ roster isn't built from `<Stages>`.
+- `ShowOnMissionSelect=false` on 3 completed Allied missions → **vanished**. ⇒ `INSTANCES.XML` is the display source, flag overrides progress.
+- Ant tab shows **2 of 4** though all 4 are `ShowOnMissionSelect=true` ⇒ display is **progress-gated** (only unlocked missions show). A per-player completion/unlock record exists — *not* in `Player_RA_settings_1.bin` (no campaign strings); likely Steam cloud/stats.
+
+---
+
+## CONFIG.MEG campaign files (catalogue)
 
 ```
-DATA/XML/CAMPAIGNS.XML                       master campaign manifest
-DATA/XML/CAMPAIGNS/RA_ALLIES.XML             + RA_ALLIES_MISSIONS.XML
-DATA/XML/CAMPAIGNS/RA_USSR.XML               + RA_USSR_MISSIONS.XML
-DATA/XML/CAMPAIGNS/RA_AFTERMATH.XML          + RA_AFTERMATH_MISSIONS.XML
-DATA/XML/CAMPAIGNS/GDI.XML                   + GDI_MISSIONS.XML
-DATA/XML/CAMPAIGNS/NOD.XML                   + NOD_MISSIONS.XML
-DATA/XML/CAMPAIGNS/CONSOLE.XML               + CONSOLE_MISSIONS.XML   (PS missions)
-DATA/XML/CAMPAIGNS/FUNPARK.XML               + FUNPARK_MISSIONS.XML   (Dinosaur)
-DATA/XML/CAMPAIGNS/ANT.XML                   + ANT_MISSIONS.XML       (Giant Ants)
-
-DATA/ART/GUI/UI_CAMPAIGNMENU.BUI             campaign-menu layout (Unity binary)
-DATA/ART/GUI/UI_CAMPAIGNSELECT.BUI           side-select layout (Unity binary)
-DATA/ART/GUI/RA/RA_CAMPAIGN_SELECT.BUI       RA side-select skin
-DATA/ART/GUI/CNC/CNC_CAMPAIGN_SELECT.BUI     TD side-select skin
+DATA/XML/INSTANCES.XML            ~395 KB — MASTER INSTANCE DEFS = the display source
+DATA/XML/CAMPAIGNS.XML            empty wrapper (real lists are the two manifests below)
+DATA/XML/PROGRESSIVECAMPAIGNFILES.XML / PROGRESSIVECAMPAIGNMISSIONFILES.XML  — file manifests
+DATA/XML/CAMPAIGNS/RA_ALLIES.XML  + RA_ALLIES_MISSIONS.XML    progression + defs
+DATA/XML/CAMPAIGNS/RA_USSR.XML    + RA_USSR_MISSIONS.XML
+DATA/XML/CAMPAIGNS/RA_AFTERMATH.XML + RA_AFTERMATH_MISSIONS.XML  (Counterstrike + Aftermath)
+DATA/XML/CAMPAIGNS/GDI.XML  NOD.XML  CONSOLE.XML  FUNPARK.XML  ANT.XML  (+ *_MISSIONS.XML)
+DATA/XML/CAMPAIGNS/CAMPAIGNMAPS.XML + RA_CAMPAIGNMAPS.XML   CampaignMapSelectMapClass per tab (GuiLayer)
+DATA/ART/GUI/.../*_CAMPAIGN_SELECT.BUI, UI_MISSIONSELECT.BUI  UI layout (Unity binary; not edited)
 ```
+Instances cluster by `Variant` (campaign base): 22 `Mobius_Allied_Campaign_Base`, 20 USSR, 8 Allied-Counterstrike, 9 Aftermath-Allied, etc. `Variant` is the **map base** (House, Faction, music), not a clean tab tag. Tabs themselves = `CampaignMapSelectMapClass` `GuiLayer` (`RA_ALLIES`, `RA_USSR`, `TD_GDI`, …).
 
-No `RA_COUNTERSTRIKE.XML` was observed — Counterstrike content likely lives
-inside `RA_ALLIES.XML` / `RA_USSR.XML` rather than its own manifest.
+---
 
-Per-tab game data (the MIX files containing scenarios, briefings, etc.) lives
-under `Data/CNCDATA/RED_ALERT/{CD1, COUNTERSTRIKE, AFTERMATH, COMMUNITY,
-CUSTOMMAPS}/` and `Data/CNCDATA/TIBERIAN_DAWN/{CD1, CD2, CD3, CONSOLE_1,
-CONSOLE_2, COMMUNITY, CUSTOMMAPS}/`. Each tab maps cleanly to one of these
-folders.
+## The engine wall (unchanged, and decisive)
 
-## What we control vs. what we don't
+GDI/Nod **campaign missions are `ExternalGameID=TiberianDawn`** — TD-game instances on a TD-mode tab (`GuiLayer="TD_GDI"`). They will **not** appear in our RA mod's Mission Select. A *playable* GDI/Nod campaign in the RA mod needs **new RA-mode instances**, because the TD scenario format won't run in the RA engine.
 
-| Surface | Format | Editable? |
-|---|---|---|
-| Campaign manifest (`CAMPAIGNS.XML`) | XML | Yes, if we can override |
-| Per-campaign metadata (`GDI.XML` etc.) | XML | Yes, if we can override |
-| Mission lists (`*_MISSIONS.XML`) | XML | Yes, if we can override |
-| Tab icons | Texture in `TEXTURES_*.MEG` | Yes, asset swap |
-| Side-select screen layout (`*_CAMPAIGN_SELECT.BUI`) | Unity binary UI | **No** — would need Unity asset modding |
-| Per-tab game data | `.MIX` files in `Data/CNCDATA/` | Yes, standard mod surface |
+## Path to add GDI/Nod campaign sections
 
-## The repurpose plan (assumes XML override works)
+1. **Author RA-format scenario maps** for the GDI/Nod missions — the real content work.
+2. Add `<Instance>` entries to `INSTANCES.XML`: `ExternalGameID=RedAlert`, `House=GDI`/`Nod` (HOUSE_GOOD/HOUSE_BAD), name/briefing TextIDs, `ShowOnMissionSelect=true`, `IsUnlockedAtStart=true` (or a `MapStageUnlock` chain).
+3. Host them in a tab (`CampaignMapSelectMapClass`) — likely a repurposed RA tab; whether an RA-mode mission can ride a TD `GuiLayer` tab is **untested**.
+4. Repack `CONFIG.MEG` with `meg_pack.py`.
 
-Replace RA's 6 tabs with a 4-faction layout:
+---
 
-| Slot | Stock content | Proposed content |
-|---|---|---|
-| 1 | Allied Campaign | GDI Campaign |
-| 2 | Soviet Campaign | Nod Campaign |
-| 3 | Counterstrike | TD Extras (Covert Ops + Dinosaur + Console) |
-| 4 | Aftermath | Allied Campaign |
-| 5 | (5th tab) | Soviet Campaign |
-| 6 | Custom Missions | RA Extras (Counterstrike + Aftermath) |
+## Two open issues
 
-Trade-off: we lose the Custom Missions slot. Acceptable for a four-faction
-total-conversion mod — players who want Workshop mission content can disable
-the mod.
-
-The side-select screen would still show only two emblems ("Allies" / "Soviet").
-That cosmetic mismatch is the cost of staying out of Unity-asset modding.
-
-## Unresolved
-
-1. **Does ccmod let us override XMLs from `ccdata/`?**
-   The decisive experiment. Drop a hand-modified `CAMPAIGNS.XML` (or one of the
-   per-campaign XMLs) into a test mod's `ccdata/DATA/XML/CAMPAIGNS/` and check
-   whether the shell prefers it over the MEG version. Binary yes/no answer.
-
-2. **Does `CAMPAIGNS.XML` declare a `game_type` per campaign?**
-   Strongly implied yes (clicking "Allies" in RA doesn't list GDI missions, so
-   there's a filter somewhere), but unconfirmed. Requires successful MEG
-   extraction.
-
-3. **MEG file-table format.**
-   The header decodes (magic `0xFFFFFFFF`, seed, data_offset, num_files,
-   filename_table_size). The filename table decodes cleanly. The file-record
-   table (20 bytes/entry × 3974 entries) didn't yield sensible offsets/sizes
-   under the documented MEG v3 layout — possibly partial encryption, possibly
-   a Remastered-specific packing. Look for an existing community tool before
-   reimplementing.
-
-4. **MEG repack path** (only relevant if #1 fails).
-   If the shell ignores ccmod XML overrides, we'd need to repack `CONFIG.MEG`
-   with modified XMLs. Investigate `CnCTDRAMapEditor.exe` (ships next to the
-   install) and the wider Remastered modding community for a known-good
-   round-trip tool.
-
-## Recommended next step
-
-Run experiment #1. It's cheap, definitive, and determines whether the rest of
-this project is "an evening of XML editing" or "a Unity / MEG archaeology
-project". Until that question is answered, no further investigation is the
-best use of time.
+1. **Distribution.** Editing the lists means shipping a modified **base** `CONFIG.MEG` (44 MB). Editing the install file directly is reverted by Steam "verify" and isn't Workshop-clean. Whether a mod's `Data/CONFIG.MEG` overlay **shadows** the base (distributable) or is ignored is **untested** — the loose-XML overlay did *not* work for front-end campaign data (the front-end reads base CONFIG.MEG), so whole-MEG shadow is the open question.
+2. **The RA roster-build wrinkle (native code).** Editing the RA Allied tab's `<Stages>` never moved the displayed roster — only `ShowOnMissionSelect` did. So the exact RA left-panel roster build lives in `ClientG.exe`. Irrelevant for *adding* new instances; relevant only for cleanly *relocating* existing missions between RA tabs (would need more experiments or a targeted Ghidra dive).

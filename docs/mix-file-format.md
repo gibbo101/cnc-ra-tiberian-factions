@@ -123,7 +123,9 @@ An outer mix can contain inner mixes as ordinary entries. The Remastered RA bund
 
 ## 7. MEG (Remastered bundles) — brief
 
-Different lineage, name-based. Reader `scripts/meg_extract.py` (format from `SOURCECODE/CnCTDRAMapEditor/Utility/Megafile.cs`): optional 8-byte magic (`0xFFFFFFFF`/`0x8FFFFFFF` + version), then `num_files / num_strings / string_table_size`, a uint16-length-prefixed string table, a fixed 20-byte-per-entry file table, then blobs at absolute offsets. `CONFIG.MEG` holds the launcher's XML (e.g. `RABUILDABLES.XML`, `SFXEVENTSNONLOCALIZED.XML`); `SFX3D.MEG` holds the remastered WAVs we route TD audio through.
+Different lineage, name-based. Reader `scripts/meg_extract.py` (format from `SOURCECODE/CnCTDRAMapEditor/Utility/Megafile.cs`): optional 8-byte magic (`0xFFFFFFFF`/`0x8FFFFFFF` + version), then `num_files / num_strings / string_table_size`, a uint16-length-prefixed string table, a fixed 20-byte-per-entry file table, then blobs at absolute offsets. `CONFIG.MEG` holds the launcher's XML (e.g. `RABUILDABLES.XML`, `SFXEVENTSNONLOCALIZED.XML`, `INSTANCES.XML`); `SFX3D.MEG` holds the remastered WAVs we route TD audio through.
+
+**Repacking — `scripts/meg_pack.py` (added 2026-05-28).** Mirrors EA's `MegafileBuilder.cs` exactly: a no-change round-trip of the 44 MB `CONFIG.MEG` is **byte-identical** (proven), and the reader validates **nothing** — no checksum, signature, or encryption — so the game loads a repacked MEG without complaint. This is what makes editing *front-end* data possible at all: e.g. the Mission Select campaign roster lives in `CONFIG.MEG`'s `INSTANCES.XML` and is **only** reachable by repacking the MEG (the mod `Data/` overlay does **not** reach front-end campaign data). Verified end-to-end on the Deck (a broken mission def killed that mission's launch; `ShowOnMissionSelect=false` hid a completed mission). Full model: `campaign-tabs-research.md`. Caveat: this edits the **base** archive (Steam "verify" reverts it); whether a mod can *ship* a replacement `CONFIG.MEG` is untested.
 
 ---
 
@@ -135,6 +137,7 @@ Different lineage, name-based. Reader `scripts/meg_extract.py` (format from `SOU
 | `scripts/ra_mix_extract.py` | Py | encrypted + classic | R | resolves | recursive extract; needs `cryptography` |
 | `scripts/mix_namedb.py` | Py | — | resolver | — | parses the 29k XCC table |
 | `scripts/meg_extract.py` | Py | MEG | R | native | Remastered bundles |
+| `scripts/meg_pack.py` | Py | MEG | **R+W** | preserves | byte-identical round-trip; repack `CONFIG.MEG` with edited XML (no integrity check → game accepts it) |
 | `tools/mixtool/` | C++ | both, **incl. encrypted writer** | R+W | uses DB | has private key + `RandomStraw` to author encrypted mixes |
 
 **We ship our own mixes (e.g. `TFASSETS.MIX`) as *classic / unencrypted*** — the engine reads them fine and `mix_tools.py` can write them. Authoring an *encrypted* mix would require the C++ `tools/mixtool` path; we have no reason to.
