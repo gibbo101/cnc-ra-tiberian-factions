@@ -652,6 +652,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TDHE");    // WARHEAD_TDHE (TD high-explosive armor table)
     new WarheadTypeClass("TDPB");    // WARHEAD_TDPB (TD particle beam — Ion Cannon)
     new WarheadTypeClass("TDSA");    // WARHEAD_TDSA (TD small arms — Minigunner/Pistol/M60MG)
+    new WarheadTypeClass("TDAP");    // WARHEAD_TDAP (TD armor-piercing — APDS / SAM / Dragon)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");

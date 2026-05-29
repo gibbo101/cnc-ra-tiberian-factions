@@ -2764,6 +2764,7 @@ typedef enum WarheadType : char
     WARHEAD_TDHE,  // TD high-explosive armor table (used by BULLET_SSM via TDTowTwo).
     WARHEAD_TDPB,  // Particle beam (TD WARHEAD_PB) — Ion Cannon strike. {1.0, 1.0, 0.75, 0.75, 0.75}.
     WARHEAD_TDSA,  // TD small arms (WARHEAD_SA) — Spread 2, verses {1.0,0.5,0.5625,0.25,0.25}, no destroy.
+    WARHEAD_TDAP,  // TD armor-piercing (WARHEAD_AP) — Spread 6, verses {0.25,0.75,0.75,1.0,0.5}, destroys wall+wood (APDS / SAM / Dragon).
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
