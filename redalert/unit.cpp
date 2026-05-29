@@ -3100,6 +3100,16 @@ int UnitClass::Mission_Harvest(void)
         IsHarvesting = false;
         if (Goto_Tiberium(Rule.TiberiumLongScan / CELL_LEPTON_W)) {
             IsHarvesting = true;
+            /*
+            **	Tiberian Factions: clear the house tiberium-short latch -- this harvester
+            **	just found tiberium. Vanilla sets House->IsTiberiumShort = true below (when a
+            **	harvester can't find any) but NEVER resets it anywhere, so one early miss
+            **	latches it true for the whole match -> the AI's hasincome stays false ->
+            **	the `|| hasincome` credit-build dies -> a broke AI can never afford its upper
+            **	tier. Resetting here makes the latch two-way; a genuine shortage (no harvester
+            **	finds tiberium) still latches true correctly.
+            */
+            House->IsTiberiumShort = false;
             Set_Rate(2);
             Set_Stage(0);
             Status = HARVESTING;

@@ -6124,6 +6124,130 @@ int HouseClass::AI_Base_Defense(void)
 #endif
 
 /***********************************************************************************************
+ * Tiberian Factions: skirmish base-builder building substitution.                            *
+ *                                                                                             *
+ *    AI_Building (below) names concrete RA StructTypes for each base role (power, refinery,   *
+ *    barracks, war factory, defence, AA, radar, tech, helipad). GDI (HOUSE_GOOD) and Nod      *
+ *    (HOUSE_BAD) own the *separated* TD building set instead, so every vanilla pick fails     *
+ *    Can_Build and every BQuantity[] presence-count reads an empty RA slot -- the AI plops    *
+ *    its conyard, takes its one free TD harvester, then stalls (a one-building base).         *
+ *                                                                                             *
+ *    These helpers mirror the Allied/Soviet base-build logic onto the faction's TD            *
+ *    buildings: identical ratios / urgency / timing, only the building *type* is swapped.     *
+ *    Resolution is by IniName via the heap-aware As_Pointer, cached after first lookup (the   *
+ *    same idiom as the Can_Build prereq remap earlier in this file). A role with no TD        *
+ *    equivalent returns NULL, so the vanilla pick stands and Can_Build harmlessly skips it    *
+ *    for GDI/Nod. Pre-D2 stopgap; the clean fix is a role tag in rules.ini.                   *
+ *=============================================================================================*/
+static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType actlike)
+{
+    if (actlike != HOUSE_GOOD && actlike != HOUSE_BAD) {
+        return (NULL);
+    }
+
+    static bool resolved = false;
+    static BuildingTypeClass const* c_nuke = NULL; // power plant
+    static BuildingTypeClass const* c_nuk2 = NULL; // advanced power plant
+    static BuildingTypeClass const* c_proc = NULL; // refinery (both factions)
+    static BuildingTypeClass const* c_pyle = NULL; // GDI barracks
+    static BuildingTypeClass const* c_hand = NULL; // Nod barracks (Hand of Nod)
+    static BuildingTypeClass const* c_weap = NULL; // GDI war factory
+    static BuildingTypeClass const* c_afld = NULL; // Nod war factory (Airstrip)
+    static BuildingTypeClass const* c_gtwr = NULL; // GDI light defence (Guard Tower)
+    static BuildingTypeClass const* c_gun = NULL;  // Nod light defence (Gun Turret)
+    static BuildingTypeClass const* c_atwr = NULL; // GDI advanced defence (Adv. Guard Tower)
+    static BuildingTypeClass const* c_obli = NULL; // Nod advanced defence (Obelisk)
+    static BuildingTypeClass const* c_sam = NULL;  // dedicated AA (SAM site)
+    static BuildingTypeClass const* c_hq = NULL;   // radar / comms centre
+    static BuildingTypeClass const* c_eye = NULL;  // GDI tech (Adv. Comm)
+    static BuildingTypeClass const* c_tmpl = NULL; // Nod tech (Temple of Nod)
+    static BuildingTypeClass const* c_hpad = NULL; // helipad (both factions)
+    static BuildingTypeClass const* c_fix = NULL;  // service depot (both factions)
+    if (!resolved) {
+        resolved = true;
+        c_nuke = BuildingTypeClass::As_Pointer("TDNUKE");
+        c_nuk2 = BuildingTypeClass::As_Pointer("TDNUK2");
+        c_proc = BuildingTypeClass::As_Pointer("TDPROC");
+        c_pyle = BuildingTypeClass::As_Pointer("TDPYLE");
+        c_hand = BuildingTypeClass::As_Pointer("TDHAND");
+        c_weap = BuildingTypeClass::As_Pointer("TDWEAP");
+        c_afld = BuildingTypeClass::As_Pointer("TDAFLD");
+        c_gtwr = BuildingTypeClass::As_Pointer("TDGTWR");
+        c_gun = BuildingTypeClass::As_Pointer("TDGUN");
+        c_atwr = BuildingTypeClass::As_Pointer("TDATWR");
+        c_obli = BuildingTypeClass::As_Pointer("TDOBLI");
+        c_sam = BuildingTypeClass::As_Pointer("TDSAM");
+        c_hq = BuildingTypeClass::As_Pointer("TDHQ");
+        c_eye = BuildingTypeClass::As_Pointer("TDEYE");
+        c_tmpl = BuildingTypeClass::As_Pointer("TDTMPL");
+        c_hpad = BuildingTypeClass::As_Pointer("TDHPAD");
+        c_fix = BuildingTypeClass::As_Pointer("TDFIX");
+    }
+
+    bool gdi = (actlike == HOUSE_GOOD);
+
+    switch (ra) {
+    case STRUCT_POWER:
+        return (c_nuke);
+    case STRUCT_ADVANCED_POWER:
+        return (c_nuk2);
+    case STRUCT_REFINERY:
+        return (c_proc);
+    case STRUCT_BARRACKS: // Soviet barracks
+    case STRUCT_TENT:     // Allied barracks
+        return (gdi ? c_pyle : c_hand);
+    case STRUCT_WEAP:
+        return (gdi ? c_weap : c_afld);
+    case STRUCT_PILLBOX: // light base defence
+    case STRUCT_CAMOPILLBOX:
+    case STRUCT_TURRET:
+    case STRUCT_FLAME_TURRET:
+        return (gdi ? c_gtwr : c_gun);
+    case STRUCT_TESLA: // advanced base defence
+        return (gdi ? c_atwr : c_obli);
+    case STRUCT_SAM: // dedicated AA -- GDI has no SAM (relies on its towers), so NULL -> skip
+    case STRUCT_AAGUN:
+        return (gdi ? NULL : c_sam);
+    case STRUCT_RADAR:
+        return (c_hq);
+    case STRUCT_ADVANCED_TECH: // Allied tech
+    case STRUCT_SOVIET_TECH:   // Soviet tech
+        return (gdi ? c_eye : c_tmpl);
+    case STRUCT_HELIPAD:
+        return (c_hpad);
+    case STRUCT_REPAIR:
+        return (c_fix);
+    default:
+        // STRUCT_AIRSTRIP, kennel, gap, sub-pen, etc. have no GDI/Nod
+        // equivalent for the base-builder (Nod's vehicles come from the
+        // TDWEAP/TDAFLD war-factory role above). Leave the vanilla pick;
+        // Can_Build rejects it for GDI/Nod and the slot is simply skipped.
+        return (NULL);
+    }
+}
+
+/*
+**	Returns the building the skirmish AI should actually queue for a base role: the faction's
+**	TD equivalent for GDI/Nod, else the vanilla RA structure. Can_Build still has final say.
+*/
+static BuildingTypeClass const* TF_Skirmish_Pick(StructType ra, HousesType actlike)
+{
+    BuildingTypeClass const* sub = TF_Skirmish_Equivalent(ra, actlike);
+    return (sub != NULL) ? sub : &BuildingTypeClass::As_Reference(ra);
+}
+
+/*
+**	Heap Type of the faction's TD equivalent for a base role, or -1 for vanilla houses /
+**	unmapped roles. The caller adds BQuantity[<this>] to its existing BQuantity[RA-slot]
+**	presence count so the "do I already have one?" gates see the AI's own TD buildings.
+*/
+static int TF_Skirmish_Type(StructType ra, HousesType actlike)
+{
+    BuildingTypeClass const* sub = TF_Skirmish_Equivalent(ra, actlike);
+    return (sub != NULL) ? (int)sub->Type : -1;
+}
+
+/***********************************************************************************************
  * HouseClass::AI_Building -- Determines what building to build.                               *
  *                                                                                             *
  *    This routine handles the general case of determining what building to build next.        *
@@ -6174,7 +6298,57 @@ int HouseClass::AI_Building(void)
         StructType stype = STRUCT_NONE;
         int money = Available_Money();
         int level = Control.TechLevel;
-        bool hasincome = (BQuantity[STRUCT_REFINERY] > 0 && !IsTiberiumShort && UQuantity[UNIT_HARVESTER] > 0);
+        bool tf_td = (ActLike == HOUSE_GOOD || ActLike == HOUSE_BAD);
+        int tf_proc = TF_Skirmish_Type(STRUCT_REFINERY, ActLike);
+        unsigned tf_refqty = BQuantity[STRUCT_REFINERY] + (tf_proc >= 0 ? BQuantity[tf_proc] : 0);
+        // Tiberian Factions: count harvesters the RELIABLE way. UQuantity reads 0 even
+        // with live, earning harvesters because a TD harvester docking at its refinery is
+        // Limbo()'d + Attach()'d into the building as cargo (unit.cpp ~1830) -> dropped
+        // from the active UQuantity count. But it's still a live object in the Units heap,
+        // so we scan that: a docked harvester still counts, while a *destroyed* harvester
+        // is gone from the heap and reads 0. So hasincome stays true while harvesters
+        // merely dock, but correctly goes false if the faction's harvesters are all wiped
+        // out (the UQuantity term couldn't tell those two cases apart -- both read 0).
+        int tf_harv_count = 0;
+        for (int hindex = 0; hindex < Units.Count(); hindex++) {
+            UnitClass const* hu = Units.Ptr(hindex);
+            if (hu != NULL && (HouseClass*)hu->House == this && (*hu == UNIT_TDHARV || *hu == UNIT_HARVESTER)) {
+                tf_harv_count++;
+            }
+        }
+        bool hasincome = (tf_refqty > 0 && !IsTiberiumShort && tf_harv_count > 0);
+
+#if 0 // TF_AI_DIAG -- temporary instrumentation; flip to 1 to re-enable AI economy logging
+        if (tf_td && (Frame % 90) == 0) {
+            static FILE* _tfdbg = NULL;
+            if (_tfdbg == NULL) {
+                const char* _up = getenv("USERPROFILE");
+                char _p[600];
+                snprintf(_p, sizeof(_p), "%s/MOD_DEBUG_AI.txt", _up ? _up : ".");
+                _tfdbg = fopen(_p, "a");
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg, "=== TF_AI_DIAG v1 (harvester-fix build) ===\n");
+                }
+            }
+            if (_tfdbg != NULL) {
+                static char const* _bn[7] = {"TDNUK2", "TDOBLI", "TDFIX", "TDTMPL", "TDHPAD", "TDATWR", "TDEYE"};
+                fprintf(_tfdbg,
+                        "F%ld H%d AL%d Tech=%d $%d Pow=%d Drain=%d CurB=%d hasinc=%d refQ=%d harvQ=%d scanH=%d tibShort=%d |",
+                        (long)Frame, (int)Class->House, (int)ActLike, (int)Control.TechLevel,
+                        (int)Available_Money(), (int)Power, (int)Drain, (int)CurBuildings, (int)hasincome,
+                        (int)tf_refqty, (int)(UQuantity[UNIT_HARVESTER] + UQuantity[UNIT_TDHARV]),
+                        (int)tf_harv_count, (int)IsTiberiumShort);
+                for (int _i = 0; _i < 7; _i++) {
+                    BuildingTypeClass const* _bt = BuildingTypeClass::As_Pointer(_bn[_i]);
+                    fprintf(_tfdbg, " %s(cb=%d,q=%d)", _bn[_i],
+                            _bt != NULL ? (int)Can_Build(_bt, ActLike) : -2,
+                            _bt != NULL ? (int)BQuantity[_bt->Type] : -2);
+                }
+                fprintf(_tfdbg, "\n");
+                fflush(_tfdbg);
+            }
+        }
+#endif
         BuildingTypeClass const* b = NULL;
         HouseClass const* enemy = NULL;
         if (Enemy != HOUSE_NONE) {
@@ -6187,19 +6361,18 @@ int HouseClass::AI_Building(void)
         **	Try to build a power plant if there is insufficient power and there is enough
         **	money available.
         */
-        b = &BuildingTypeClass::As_Reference(STRUCT_ADVANCED_POWER);
-        if (Can_Build(b, ActLike) && Power <= Drain + Rule.PowerSurplus && b->Cost_Of() < money) {
+        b = TF_Skirmish_Pick(STRUCT_ADVANCED_POWER, ActLike);
+        if (Can_Build(b, ActLike) && Power <= Drain + Rule.PowerSurplus && (b->Cost_Of() < money || hasincome)) {
             choiceptr = BuildChoice.Alloc();
             if (choiceptr != NULL) {
-                *choiceptr = BuildChoiceClass(BQuantity[STRUCT_REFINERY] == 0 ? URGENCY_LOW : URGENCY_MEDIUM, b->Type);
+                *choiceptr = BuildChoiceClass(tf_refqty == 0 ? URGENCY_LOW : URGENCY_MEDIUM, b->Type);
             }
         } else {
-            b = &BuildingTypeClass::As_Reference(STRUCT_POWER);
-            if (Can_Build(b, ActLike) && Power <= Drain + Rule.PowerSurplus && b->Cost_Of() < money) {
+            b = TF_Skirmish_Pick(STRUCT_POWER, ActLike);
+            if (Can_Build(b, ActLike) && Power <= Drain + Rule.PowerSurplus && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
-                    *choiceptr =
-                        BuildChoiceClass(BQuantity[STRUCT_REFINERY] == 0 ? URGENCY_LOW : URGENCY_MEDIUM, b->Type);
+                    *choiceptr = BuildChoiceClass(tf_refqty == 0 ? URGENCY_LOW : URGENCY_MEDIUM, b->Type);
                 }
             }
         }
@@ -6207,15 +6380,14 @@ int HouseClass::AI_Building(void)
         /*
         **	Build a refinery if there isn't one already available.
         */
-        unsigned int current = BQuantity[STRUCT_REFINERY];
+        unsigned int current = tf_refqty;
         if (!IsTiberiumShort && current < Round_Up(Rule.RefineryRatio * fixed(CurBuildings))
             && current < (unsigned)Rule.RefineryLimit) {
-            b = &BuildingTypeClass::As_Reference(STRUCT_REFINERY);
+            b = TF_Skirmish_Pick(STRUCT_REFINERY, ActLike);
             if (Can_Build(b, ActLike) && (money > b->Cost_Of() || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
-                    *choiceptr =
-                        BuildChoiceClass(BQuantity[STRUCT_REFINERY] == 0 ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
+                    *choiceptr = BuildChoiceClass(tf_refqty == 0 ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
                 }
             }
         }
@@ -6224,10 +6396,11 @@ int HouseClass::AI_Building(void)
         **	Always make sure there is a barracks available, but only if there
         **	will be sufficient money to train troopers.
         */
-        current = BQuantity[STRUCT_BARRACKS] + BQuantity[STRUCT_TENT];
+        int tf_barr = TF_Skirmish_Type(STRUCT_BARRACKS, ActLike);
+        current = BQuantity[STRUCT_BARRACKS] + BQuantity[STRUCT_TENT] + (tf_barr >= 0 ? BQuantity[tf_barr] : 0);
         if (current < Round_Up(Rule.BarracksRatio * fixed(CurBuildings)) && current < (unsigned)Rule.BarracksLimit
             && (money > 300 || hasincome)) {
-            b = &BuildingTypeClass::As_Reference(STRUCT_BARRACKS);
+            b = TF_Skirmish_Pick(STRUCT_BARRACKS, ActLike);
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
@@ -6276,10 +6449,11 @@ int HouseClass::AI_Building(void)
         **	A source of combat vehicles is always needed, but only if there will
         **	be sufficient money to build vehicles.
         */
-        current = BQuantity[STRUCT_WEAP];
+        int tf_weap = TF_Skirmish_Type(STRUCT_WEAP, ActLike);
+        current = BQuantity[STRUCT_WEAP] + (tf_weap >= 0 ? BQuantity[tf_weap] : 0);
         if (current < Round_Up(Rule.WarRatio * fixed(CurBuildings)) && current < (unsigned)Rule.WarLimit
             && (money > 2000 || hasincome)) {
-            b = &BuildingTypeClass::As_Reference(STRUCT_WEAP);
+            b = TF_Skirmish_Pick(STRUCT_WEAP, ActLike);
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
@@ -6289,12 +6463,54 @@ int HouseClass::AI_Building(void)
         }
 
         /*
+        **  Tiberian Factions: GDI/Nod tech gate. TDHQ (radar/comms) is the
+        **  prerequisite for advanced defence (TDATWR/TDOBLI) and the tech
+        **  centres (TDEYE/TDTMPL), but the vanilla AI builds radar only
+        **  reactively under air threat -- so GDI/Nod never tech up, the whole
+        **  upper tier (incl. superweapon hosts) stays unreachable, and that
+        **  starves CurBuildings and thus every ratio-driven count below. Build
+        **  it proactively (GDI/Nod only) once the refinery (TDHQ's own prereq)
+        **  and power are up.
+        */
+        if (tf_td) {
+            int tf_hq = TF_Skirmish_Type(STRUCT_RADAR, ActLike);
+            current = BQuantity[STRUCT_RADAR] + (tf_hq >= 0 ? BQuantity[tf_hq] : 0);
+            if (current < 1 && Power_Fraction() >= 1) {
+                b = TF_Skirmish_Pick(STRUCT_RADAR, ActLike);
+                if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
+                    choiceptr = BuildChoice.Alloc();
+                    if (choiceptr != NULL) {
+                        *choiceptr = BuildChoiceClass(URGENCY_MEDIUM, b->Type);
+                    }
+                }
+            }
+
+            /*
+            **  Service depot (TDFIX): vehicle repair + prerequisite for the
+            **  GDI Mammoth Tank. Vanilla's repair-bay build is #ifdef OLD, so
+            **  this is the GDI/Nod-only revival.
+            */
+            int tf_repair = TF_Skirmish_Type(STRUCT_REPAIR, ActLike);
+            current = BQuantity[STRUCT_REPAIR] + (tf_repair >= 0 ? BQuantity[tf_repair] : 0);
+            if (current < 1 && Power_Fraction() >= 1) {
+                b = TF_Skirmish_Pick(STRUCT_REPAIR, ActLike);
+                if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
+                    choiceptr = BuildChoice.Alloc();
+                    if (choiceptr != NULL) {
+                        *choiceptr = BuildChoiceClass(URGENCY_LOW, b->Type);
+                    }
+                }
+            }
+        }
+
+        /*
         **	Always build up some base defense.
         */
+        int tf_def = TF_Skirmish_Type(STRUCT_FLAME_TURRET, ActLike);
         current = BQuantity[STRUCT_PILLBOX] + BQuantity[STRUCT_CAMOPILLBOX] + BQuantity[STRUCT_TURRET]
-                  + BQuantity[STRUCT_FLAME_TURRET];
+                  + BQuantity[STRUCT_FLAME_TURRET] + (tf_def >= 0 ? BQuantity[tf_def] : 0);
         if (current < Round_Up(Rule.DefenseRatio * fixed(CurBuildings)) && current < (unsigned)Rule.DefenseLimit) {
-            b = &BuildingTypeClass::As_Reference(STRUCT_FLAME_TURRET);
+            b = TF_Skirmish_Pick(STRUCT_FLAME_TURRET, ActLike);
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
@@ -6324,7 +6540,9 @@ int HouseClass::AI_Building(void)
         /*
         **	Build some air defense.
         */
-        current = BQuantity[STRUCT_SAM] + BQuantity[STRUCT_AAGUN];
+        int tf_aa = TF_Skirmish_Type(STRUCT_SAM, ActLike);
+        int tf_radar = TF_Skirmish_Type(STRUCT_RADAR, ActLike);
+        current = BQuantity[STRUCT_SAM] + BQuantity[STRUCT_AAGUN] + (tf_aa >= 0 ? BQuantity[tf_aa] : 0);
         if (current < Round_Up(Rule.AARatio * fixed(CurBuildings)) && current < (unsigned)Rule.AALimit) {
 
             /*
@@ -6349,8 +6567,8 @@ int HouseClass::AI_Building(void)
 
             if (airthreat) {
 
-                if (BQuantity[STRUCT_RADAR] == 0) {
-                    b = &BuildingTypeClass::As_Reference(STRUCT_RADAR);
+                if ((BQuantity[STRUCT_RADAR] + (tf_radar >= 0 ? BQuantity[tf_radar] : 0)) == 0) {
+                    b = TF_Skirmish_Pick(STRUCT_RADAR, ActLike);
                     if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                         choiceptr = BuildChoice.Alloc();
                         if (choiceptr != NULL) {
@@ -6359,7 +6577,7 @@ int HouseClass::AI_Building(void)
                     }
                 }
 
-                b = &BuildingTypeClass::As_Reference(STRUCT_SAM);
+                b = TF_Skirmish_Pick(STRUCT_SAM, ActLike);
                 if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                     choiceptr = BuildChoice.Alloc();
                     if (choiceptr != NULL) {
@@ -6367,7 +6585,7 @@ int HouseClass::AI_Building(void)
                             (current < (unsigned)threat_quantity) ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
                     }
                 } else {
-                    b = &BuildingTypeClass::As_Reference(STRUCT_AAGUN);
+                    b = TF_Skirmish_Pick(STRUCT_AAGUN, ActLike);
                     if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                         choiceptr = BuildChoice.Alloc();
                         if (choiceptr != NULL) {
@@ -6382,9 +6600,10 @@ int HouseClass::AI_Building(void)
         /*
         **	Advanced base defense would be good.
         */
-        current = BQuantity[STRUCT_TESLA];
+        int tf_adv = TF_Skirmish_Type(STRUCT_TESLA, ActLike);
+        current = BQuantity[STRUCT_TESLA] + (tf_adv >= 0 ? BQuantity[tf_adv] : 0);
         if (current < Round_Up(Rule.TeslaRatio * fixed(CurBuildings)) && current < (unsigned)Rule.TeslaLimit) {
-            b = &BuildingTypeClass::As_Reference(STRUCT_TESLA);
+            b = TF_Skirmish_Pick(STRUCT_TESLA, ActLike);
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome) && Power_Fraction() >= 1) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
@@ -6396,9 +6615,10 @@ int HouseClass::AI_Building(void)
         /*
         **	Build a tech center as soon as possible.
         */
-        current = BQuantity[STRUCT_ADVANCED_TECH] + BQuantity[STRUCT_SOVIET_TECH];
+        int tf_tech = TF_Skirmish_Type(STRUCT_ADVANCED_TECH, ActLike);
+        current = BQuantity[STRUCT_ADVANCED_TECH] + BQuantity[STRUCT_SOVIET_TECH] + (tf_tech >= 0 ? BQuantity[tf_tech] : 0);
         if (current < 1) {
-            b = &BuildingTypeClass::As_Reference(STRUCT_ADVANCED_TECH);
+            b = TF_Skirmish_Pick(STRUCT_ADVANCED_TECH, ActLike);
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome) && Power_Fraction() >= 1) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
@@ -6418,9 +6638,10 @@ int HouseClass::AI_Building(void)
         /*
         **	A helipad would be good.
         */
-        current = BQuantity[STRUCT_HELIPAD];
+        int tf_hpad = TF_Skirmish_Type(STRUCT_HELIPAD, ActLike);
+        current = BQuantity[STRUCT_HELIPAD] + (tf_hpad >= 0 ? BQuantity[tf_hpad] : 0);
         if (current < Round_Up(Rule.HelipadRatio * fixed(CurBuildings)) && current < (unsigned)Rule.HelipadLimit) {
-            b = &BuildingTypeClass::As_Reference(STRUCT_HELIPAD);
+            b = TF_Skirmish_Pick(STRUCT_HELIPAD, ActLike);
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
@@ -6517,10 +6738,26 @@ int HouseClass::AI_Unit(void)
     **	A computer controlled house will try to build a replacement
     **	harvester if possible.
     */
-    if (IQ >= Rule.IQHarvester && !IsTiberiumShort && !IsHuman && BQuantity[STRUCT_REFINERY] > UQuantity[UNIT_HARVESTER]
+    int tf_proc_t = TF_Skirmish_Type(STRUCT_REFINERY, ActLike);
+    unsigned tf_refq = BQuantity[STRUCT_REFINERY] + (tf_proc_t >= 0 ? BQuantity[tf_proc_t] : 0);
+    UnitType tf_harv = (tf_proc_t >= 0) ? UNIT_TDHARV : UNIT_HARVESTER;
+    // Tiberian Factions: count harvesters via the Units heap, not UQuantity. UQuantity
+    // reads 0 for docked TD harvesters (Limbo+Attach into the refinery), so the old
+    // `tf_refq > UQuantity[tf_harv]` was ALWAYS true -> the AI spammed harvesters (e.g.
+    // 11 for 3 refineries) -> broke -> power-starved -> upper tier blocked. The heap scan
+    // counts docked + active (but not destroyed) harvesters, capping production at ~one
+    // per refinery and rebuilding only genuine losses.
+    int tf_harv_owned = 0;
+    for (int hidx = 0; hidx < Units.Count(); hidx++) {
+        UnitClass const* hu = Units.Ptr(hidx);
+        if (hu != NULL && (HouseClass*)hu->House == this && (*hu == UNIT_TDHARV || *hu == UNIT_HARVESTER)) {
+            tf_harv_owned++;
+        }
+    }
+    if (IQ >= Rule.IQHarvester && !IsTiberiumShort && !IsHuman && (int)tf_refq > tf_harv_owned
         && Difficulty != DIFF_HARD) {
-        if (UnitTypeClass::As_Reference(UNIT_HARVESTER).Level <= (unsigned)Control.TechLevel) {
-            BuildUnit = UNIT_HARVESTER;
+        if (UnitTypeClass::As_Reference(tf_harv).Level <= (unsigned)Control.TechLevel) {
+            BuildUnit = tf_harv;
             return (TICKS_PER_SECOND);
         }
     }
@@ -6615,7 +6852,12 @@ int HouseClass::AI_Unit(void)
         UnitType index;
         for (index = UNIT_FIRST; index < UNIT_COUNT; index++) {
             UnitTypeClass const* utype = &UnitTypeClass::As_Reference(index);
-            if (Can_Build(utype, ActLike) && utype->Type != UNIT_HARVESTER) {
+            // Tiberian Factions: exclude the TD harvester too. This loop produces
+            // "combat" units, but GDI/Nod have no buildable combat vehicles yet, so
+            // UNIT_TDHARV is the only candidate that survives the filter and the AI
+            // spams harvesters, burning income. Vanilla only excluded UNIT_HARVESTER.
+            if (Can_Build(utype, ActLike) && utype->Type != UNIT_HARVESTER
+                && utype->Type != UNIT_TDHARV) {
                 if (utype->PrimaryWeapon != NULL) {
                     counter[index] = 20;
                 } else {
