@@ -75,7 +75,7 @@ cp /tmp/CONFIG.MEG build/remaster/Vanilla_RA/Data/CONFIG.MEG
 - **Mission Select roster** — `INSTANCES.XML` (`ShowOnMissionSelect`, `IsUnlockedAtStart`, `ExternalGameID`) — see `campaign-tabs-research.md`.
 - **Any other CONFIG.MEG XML/table** — theatres/tilesets, audio-faction maps, GUI scene lists, etc. *If the data is in CONFIG.MEG, this mechanism reaches it.*
 
-**For a "launcher-locked" feature investigation (e.g. theatres):** first locate where the limit/enum lives. `python3 scripts/meg_extract.py list <CONFIG.MEG> | grep -i <feature>` — if the gating list is a CONFIG.MEG XML, it's moddable by this recipe; if the count is hardcoded in `ClientG.exe` (check `strings ClientG.exe`), it's a code lock and not reachable. The in-game sidebar **emblem** is an example of the latter (per-side, hash-bound in the binary; not in any CONFIG.MEG data).
+**For a "launcher-locked" feature investigation (e.g. theatres):** first locate where the limit/enum lives — there are **three** buckets, not two: (a) a **CONFIG.MEG XML** → moddable by this recipe (`meg_extract.py list <CONFIG.MEG> | grep -i <feature>`); (b) a **texture-atlas image** (e.g. a region in `MT_COMMANDBAR_COMMON.TGA`) → moddable via the loose-atlas override, see **`ui-atlas-modding.md`**; (c) **hardcoded in `ClientG.exe`** (`strings ClientG.exe`) → a true code lock, not reachable. ⚠️ The in-game sidebar **emblem** was first mis-filed as (c) — it's actually (b): `UI_SIDEBAR_FACTIONLOGO_ALLIES`/`_SOVIET` in the atlas, **moddable** (proven 2026-05-29). So "not in CONFIG.MEG" ≠ "locked" — check the atlas before concluding code-lock.
 
 ---
 

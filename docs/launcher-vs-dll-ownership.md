@@ -16,6 +16,8 @@ The Remastered front-end (Petroglyph "Mobius" engine, **native C++**) is **facti
 
 **The DATA lever (added 2026-05-28).** Rules 1–3 are about launcher *code*. The *data the launcher reads from `CONFIG.MEG`* — faction defs (`FACTIONS.XML`), Mission Select (`INSTANCES.XML`), localized strings (`MASTERTEXTFILE`), theatres/tilesets, GUI lists — **is moddable AND Workshop-shippable**: a mod ships its own `Data/CONFIG.MEG` and the launcher loads it over the base (proven on the Deck). So **"launcher-owned" ≠ "unmoddable"** — ask whether a behaviour is driven by CONFIG.MEG **data** (moddable) or hardcoded in `ClientG.exe` **code** (not). Canonical: `config-meg-mod-delivery.md`.
 
+**The UI-image lever (added 2026-05-29).** Launcher 2D UI *images* — the sidebar faction crest, lobby logos, flags, buttons — live in the `MT_COMMANDBAR_COMMON.TGA` atlas and are **moddable** via a byte-edited loose `.TGA` in `Data/ART/TEXTURES/SRGB/` (vanilla, **no EMC**, proven on the Deck). So the real test is a **trichotomy**: CONFIG.MEG *data* and texture-atlas *images* are both moddable; only `ClientG.exe` *code* is the true lock. (The in-game sidebar emblem was first mis-filed as a code lock — it's an atlas image, `UI_SIDEBAR_FACTIONLOGO_ALLIES`.) Canonical: `ui-atlas-modding.md`.
+
 ---
 
 ## Binary facts (so we never re-investigate tooling)
