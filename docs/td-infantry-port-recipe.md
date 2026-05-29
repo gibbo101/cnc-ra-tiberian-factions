@@ -1,6 +1,6 @@
 # TD Infantry Port Recipe
 
-**Worked examples** (all shipped 2026-05-29): `INFANTRY_TDE1` Minigunner — first port, establishes the infantry pipeline the way TDATWR established buildings; `INFANTRY_TDE2` Grenadier (GDI-only) — its visible 8-frame tumbling-bomb bullet white-boxed, so it reuses RA's shared `Projectile=Lobbed`; `INFANTRY_TDE3` Rocket Soldier (GDI+Nod) — its **homing rotating missile is the first own-bullet visible projectile to render clean** (`Image=TDDRAGON`, reuses TDSSM's sprite, no bundling), confirming the playbook §3.25 rotating-renders / tumbling-white-boxes rule.
+**Worked examples** (all shipped 2026-05-29): `INFANTRY_TDE1` Minigunner — first port, establishes the infantry pipeline the way TDATWR established buildings; `INFANTRY_TDE2` Grenadier (GDI-only) — its visible 8-frame tumbling-bomb bullet white-boxed, so it reuses RA's shared `Projectile=Lobbed`; `INFANTRY_TDE3` Rocket Soldier (GDI+Nod) — its **homing rotating missile is the first own-bullet visible projectile to render clean** (`Image=TDDRAGON`, reuses TDSSM's sprite, no bundling), confirming the playbook §3.25 rotating-renders / tumbling-white-boxes rule; `INFANTRY_TDE4` Flamethrower (Nod-only) — first **directional muzzle-anim** weapon: the flame jet is 8 facing-specific `ANIM_FLAME_*` anims (not a projectile), and **HD-only anims render a green placeholder until given a donor `ImageData`** — full sub-recipe in playbook **§3.26**.
 
 **Read first:** `docs/td-port-playbook.md` (architecture + traps). This doc is the infantry-specific companion to `docs/td-building-separation-recipe.md`.
 
@@ -79,10 +79,13 @@ The launcher's `Techno_Draw_Object` overlay then renders the real `TDxx` sprite 
 | **DO_COUNT mismatch** | Compile error / mis-mapped animations | RA's `DoType` = 21 actions, not TD's 34 (hand-to-hand was dead in TD); use RA's order + TD frames |
 | **Borrowed RA weapon** | Wrong range / sound / armor curve | Chain-audit from TD source; port `TDxx` weapon+warhead+bullet+sound |
 | **Visible custom bullet** | Projectile renders as a **white box** | 32-frame rotating missiles port as own bullets; tumbling/arcing bombs reuse RA's `Projectile=Lobbed` (playbook §3.25) |
+| **Muzzle-anim weapon (flame)** | Green placeholder box where the jet should be | HD-only anims have NULL `ImageData` → donor-ImageData in `AnimTypeClass::One_Time`; dispatch directional anim via `Fire_Direction()`; TD-prefix the names (playbook §3.26) |
 | **Atlas only in `build/`** | Crest atlas wiped off Deck on rebuild+deploy | Keep `MT_COMMANDBAR_COMMON.TGA` in `resources/` (gitignored), not just `build/` |
 
 ---
 
 ## The roster ahead
 
-Ready-weapon infantry (no weapon port): **E2 Grenadier** (`Grenade`), **E3 Rocket** (`Dragon`), **Commando** (`M16` + the `VOC_RAMBO_*` on-fire/on-kill voices — pre-staged), **Engineer** (no weapon). Weapon-port-gated: **E4 Flamethrower** (`FLAMETHROWER`), **E5 Chem-warrior** (`CHEMSPRAY`). Each follows steps 1–10; `scripts/bundle_unit.py` + the donor-ImageData fix make the per-unit cost small now that the recipe is proven.
+**Shipped:** E1 Minigunner, E2 Grenadier, E3 Rocket Soldier, **E4 Flamethrower** (the first muzzle-anim weapon — its directional-flame + green-placeholder donor sub-recipe is playbook §3.26).
+
+**Remaining:** **E5 Chem-warrior** (`CHEMSPRAY`) — same directional muzzle-anim mechanism as the flamethrower, so §3.26 is now the proven path (its spray is a `CHEM-*`-style anim set, not a projectile); **Commando** (`M16` + the `VOC_RAMBO_*` on-fire/on-kill voices — pre-staged); **Engineer** (no weapon). Each follows steps 1–10; `scripts/bundle_unit.py` + the donor-ImageData fix make the per-unit cost small now that the recipe is proven.

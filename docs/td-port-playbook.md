@@ -515,6 +515,38 @@ rules.ini now holds the **verbatim TD-source STRNTH** and the engine doubles it 
 
 ---
 
+### 3.26 — Directional muzzle anims (FLAME jet) + the GREEN-PLACEHOLDER donor trap for HD-only anims
+
+The TD flamethrower taught two distinct lessons. Both apply to **any** weapon whose visual is a directional *muzzle animation* rather than a flying projectile (FLAME, the SAM/GUN muzzle flashes, future chem-spray).
+
+**(a) The flame is a muzzle ANIM, not a projectile — and it's directional.** TD's flamethrower fires an **invisible** bullet; the visible jet is one of **8 facing-specific anims** (`FLAME-N … FLAME-NW`) spawned at the muzzle. Do **not** model it on RA's `[Flamer]` (a single visible `Fireball` *projectile* — a completely different mechanism). Port it as TD does:
+- Add 8 contiguous `ANIM_FLAME_N … ANIM_FLAME_NW` in **`Dir_Facing` order** (defines.h), ctors + `Init_Heap` regs in `adata.cpp`.
+- In `techno.cpp::Fire_At`, dispatch the base case to the facing-offset member:
+  ```cpp
+  case ANIM_FLAME_N:  a = AnimType(ANIM_FLAME_N + Dir_Facing(Fire_Direction()));  break;
+  ```
+  **Use `Fire_Direction()`, not `PrimaryFacing.Current()`** — that's what TD does (`TECHNO.CPP:2378`); copying the SAM's `PrimaryFacing` points the jet wrong. The weapon's `Anim=` in rules.ini names only the base member (`Anim=TDFLAME-N`); the `+ Dir_Facing` math selects the rest.
+- The anim is **attached** to the firer (`anim->Attach_To(this)`, `TECHNO.CPP:2389`) — *not* spawned standalone at a fixed coord.
+
+**(b) HD-only anims with NULL `ImageData` render a GREEN PLACEHOLDER → donor-ImageData fix.** This is the §2.7 / §3.24 MFCD pattern, now proven to apply to **anims** too. The `TDFLAME-*` tiles exist only as HD launcher art (no classic SHP in any MIX), so `AnimTypeClass::One_Time` leaves `ImageData == NULL`. Unlike bullets/units (which go *invisible*), a NULL-ImageData **anim** draws a **green placeholder box**. Fix — copy a vanilla anim's `ImageData` under `#ifdef REMASTER_BUILD` (the built-in `ANIM_BEACON_VIRTUAL` does exactly this):
+```cpp
+#ifdef REMASTER_BUILD
+    void const* flame_donor = As_Reference(ANIM_FBALL1).ImageData;
+    for (int fa = ANIM_FLAME_N; fa <= ANIM_FLAME_NW; fa++) {
+        if (As_Reference((AnimType)fa).ImageData == NULL) {
+            ((void const*&)As_Reference((AnimType)fa).ImageData) = flame_donor;
+        }
+    }
+#endif
+```
+The overlay then resolves the real `TDFLAME-<dir>` tile by IniName. **Generalises: any TD anim that is HD-tile-only needs a donor ImageData or it renders green.**
+
+**(c) TD-prefix the anim names** (`FLAME-*` → `TDFLAME-*`: ctor names, `RA_VFX.XML` tiles + frame paths, bundled ZIPs, rules.ini `Anim=`). The base game ships its **own** `FLAME-N` tiles (78 refs in CONFIG.MEG); an unprefixed name resolves to the *base* def, not yours — same trap as `TDIONSFX`/`TDDRAGON`.
+
+**Process note:** this took ~6 speculative deploy cycles before a one-line diagnostic log (`Anim(raw)`, `a(dir)`, `IniName`, spawned-pointer) proved the DLL side was perfect and isolated the bug to the render path — straight to (b). Ship logging in the *first* test of any new entity (see infantry recipe; memory `feedback-logs-first-on-new-units`). Shipped E4 Flamethrower, 2026-05-29.
+
+---
+
 ## 4. Templates to copy
 
 ### 4.1 — Bullet TD-port: add field, set on registration, dispatch
