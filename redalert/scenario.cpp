@@ -3226,7 +3226,20 @@ static void Create_Units(bool official)
         **	wapoint from the existing houses.
         */
 #ifdef REMASTER_BUILD
-        if (!UseGlyphXStartLocations) {
+        // Tiberian Factions fix 2026-05-29: honor this house's
+        // StartLocationOverride whenever it is a valid index into the loaded
+        // waypoints, rather than gating on the global UseGlyphXStartLocations
+        // flag. That flag is computed in GlyphX_Assign_Houses, which runs in
+        // Read_Scenario_INI *before* Map.Read_INI loads the scenario waypoints
+        // (Scen.Waypoint[] is all -1 at that point), so it was always left
+        // false -- every skirmish/MP game then fell through to the random /
+        // furthest-distance assignment and ignored the lobby-selected start
+        // spots (positions visibly shuffled during the loading screen). The
+        // per-house override values arrive correctly from the launcher; we just
+        // have to trust them here, where the waypoints are finally available.
+        bool tf_use_override =
+            (hptr->StartLocationOverride >= 0 && hptr->StartLocationOverride < num_waypts);
+        if (!tf_use_override) {
 #endif
             if (numtaken == 0) {
                 int pick = Random_Pick(0, num_waypts - 1);
@@ -3294,6 +3307,11 @@ static void Create_Units(bool official)
             ** ST - 1/8/2020 3:39PM
             */
             centroid = waypts[hptr->StartLocationOverride];
+            // Mark this spot taken so any house that DOES fall through to the
+            // random/distance path (mixed explicit + random lobbies) won't
+            // collide with an explicitly-chosen position.
+            taken[hptr->StartLocationOverride] = true;
+            numtaken++;
         }
 #endif
         /*
