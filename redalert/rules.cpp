@@ -651,6 +651,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TDLaser"); // WARHEAD_LASER (Obelisk 100%-vs-all)
     new WarheadTypeClass("TDHE");    // WARHEAD_TDHE (TD high-explosive armor table)
     new WarheadTypeClass("TDPB");    // WARHEAD_TDPB (TD particle beam — Ion Cannon)
+    new WarheadTypeClass("TDSA");    // WARHEAD_TDSA (TD small arms — Minigunner/Pistol/M60MG)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
@@ -714,6 +715,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDOblsLaser");  // WEAPON_OBELISK_LASER (Obelisk of Light)
     new WeaponTypeClass("TDChainGun");   // WEAPON_TD_CHAIN_GUN (GDI Guard Tower)
     new WeaponTypeClass("TDNike");       // WEAPON_TDNIKE (TD SAM Site)
+    new WeaponTypeClass("TDM16");        // WEAPON_TDM16 (TD Minigunner rifle, E1)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -725,6 +727,10 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // the impact anim plays on top of the firer instead of on the target.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDTowTwo"))->IsTDPort = true;
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDNike"))->IsTDPort = true;
+    // TDM16 (Minigunner): IsTDPort gives TD's single-shooter cadence — IsSecondShot
+    // stays true for a 1-shot weapon, so Rearm_Delay returns ROF+3 (=23) like TD,
+    // not RA's flat ROF (=20). Also makes Speed= parse as raw MPHType (255=light).
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TDM16"))->IsTDPort = true;
 
     return (true);
 }

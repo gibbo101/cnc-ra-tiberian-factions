@@ -6081,6 +6081,27 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     </SampleNamesList>
   </SFXEvent>
 
+  <!-- M-16 triple burst (TDE1 Minigunner, WEAPON_TDM16 Report=MGUN2). Base game
+       ships the TDC/TDR WAVs in SFX3D.MEG; engine fires VOC_TD_M16 which the
+       launcher resolves via the RAC_/RAR_ prefix. -->
+  <SFXEvent Name="RAC_SFX_MGUN2" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDC_SFX_MGUN2.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_MGUN2" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_MGUN2.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
   <!-- TdTurretGun cannon (TDGUN Nod Turret) -->
   <SFXEvent Name="RAC_SFX_TNKFIRE6" Preset="_PRESET_MD_MOBIUS_2D">
     <IsPreset> False </IsPreset>

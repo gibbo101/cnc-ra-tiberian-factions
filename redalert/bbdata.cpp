@@ -193,6 +193,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TDAPDS");        //	BULLET_TDAPDS (TD Nod Turret 120mm shell)
     new BulletTypeClass("TDSpreadfire");  //	BULLET_TDSPREADFIRE (TD GDI chain-gun pellet)
     new BulletTypeClass("TDPatriot");     //	BULLET_TDPATRIOT (TD SAM Patriot missile)
+    new BulletTypeClass("TD50cal");       //	BULLET_TDBULLET (TD small-arms invisible round — M16/Pistol/M60MG)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per

@@ -528,6 +528,59 @@ static InfantryTypeClass const E1(INFANTRY_E1, // Infantry type number.
                                   0  // pointer to override remap table
 );
 
+// Tiberian Factions — TD Minigunner (INFANTRY_TDE1), ported from TD's E1
+// (tiberiandawn/idata.cpp:100). NOTE: RA's DoType enum has only 21 actions vs
+// TD's 34. The extra TD entries are the hand-to-hand set (DO_ON_GUARD/PUNCH/
+// KICK/etc.) — TD declared them with sprite frames but NEVER triggered them in
+// gameplay (0 refs outside TD's enum/table; dead scaffolding in TD too), so RA
+// omits them losing no real behaviour. This table follows RA's DO_ order with
+// TD's minigunner sprite frame offsets
+// (idle 256/272, gestures 436/460/484/508, deaths 382/398/406/418). It equals
+// RA's E1DoControlsVirtual because RA's E1 *is* the TD minigunner; used for both
+// classic and the GlyphX 'virtual' HD render. Stats (cost/strength/weapon/owner)
+// come from rules.ini [TDE1]; the ctor mirrors RA's E1 (same sprite geometry).
+static DoInfoStruct TdMiniGunnerDoControls[DO_COUNT] = {
+    {0, 1, 1},    // DO_STAND_READY
+    {8, 1, 1},    // DO_STAND_GUARD
+    {192, 1, 8},  // DO_PRONE
+    {16, 6, 6},   // DO_WALK
+    {64, 8, 8},   // DO_FIRE_WEAPON
+    {128, 2, 2},  // DO_LIE_DOWN
+    {144, 4, 4},  // DO_CRAWL
+    {176, 2, 2},  // DO_GET_UP
+    {192, 6, 8},  // DO_FIRE_PRONE
+    {256, 16, 0}, // DO_IDLE1
+    {272, 16, 0}, // DO_IDLE2
+    {382, 8, 0},  // DO_GUN_DEATH
+    {398, 8, 0},  // DO_EXPLOSION_DEATH
+    {398, 8, 0},  // DO_EXPLOSION2_DEATH
+    {406, 12, 0}, // DO_GRENADE_DEATH
+    {418, 18, 0}, // DO_FIRE_DEATH
+    {436, 3, 3},  // DO_GESTURE1
+    {460, 3, 3},  // DO_SALUTE1
+    {484, 3, 3},  // DO_GESTURE2
+    {508, 3, 3},  // DO_SALUTE2
+    {0, 0, 0},    // DO_DOG_MAUL (N/A — RA's DO_ enum drops TD's hand-to-hand actions)
+};
+static InfantryTypeClass const TdE1(INFANTRY_TDE1, // Infantry type number.
+                                    TXT_E1,        // Translate name number (display set via rules.ini Name=).
+                                    "TDE1",        // INI name for infantry.
+                                    0x0035,        // Vertical offset (matches RA's E1 — same minigunner sprite).
+                                    0x0010,        // Primary weapon offset along centerline.
+                                    false,         // Is this a female type?
+                                    true,          // Has crawling animation frames?
+                                    false,         // Is this a civilian?
+                                    false,         // Does this unit use the override remap table?
+                                    false,         // Always use the given name for the infantry?
+                                    false,         // Theater specific graphic image?
+                                    PIP_FULL,      // Transport pip shape/color to use.
+                                    TdMiniGunnerDoControls,
+                                    TdMiniGunnerDoControls,
+                                    2,             // Frame of projectile launch.
+                                    2,             // Frame of projectile launch while prone.
+                                    0              // pointer to override remap table
+);
+
 // Grenadiers
 static InfantryTypeClass const E2(INFANTRY_E2, // Infantry type number.
                                   TXT_E2,      // Translate name number for infantry type.
@@ -1171,6 +1224,10 @@ void InfantryTypeClass::Init_Heap(void)
     new InfantryTypeClass(ShockTrooper);
     new InfantryTypeClass(Mechanic);
 #endif
+
+    // Tiberian Factions — TD Minigunner. Last in the list, matching the enum
+    // (INFANTRY_TDE1 is appended just before INFANTRY_COUNT in defines.h).
+    new InfantryTypeClass(TdE1);
 }
 
 /***********************************************************************************************
@@ -1397,6 +1454,26 @@ void InfantryTypeClass::One_Time(void)
 #else
         ((void const*&)uclass->CameoData) = MFCD::Retrieve(fullname);
 #endif
+    }
+
+    /*
+    **	Tiberian Factions mod — mod-entry ImageData fallback (MFCD donor pattern).
+    **	Our TD-prefixed infantry (TDE1) have no .SHP in any MIX — only the TGA
+    **	tileset bundled in resources/.../UNITS/TDE1.ZIP. MFCD::Retrieve above
+    **	returned NULL, so InfantryClass::Draw_It bails at its NULL-shape guard and
+    **	the unit is invisible (though selectable + voiced). Copy a vanilla infantry
+    **	donor's ImageData/CameoData pointers — the launcher's Techno_Draw_Object
+    **	overlay then renders the actual TDE1 sprite by IniName via the RA_UNITS.XML
+    **	tileset. E1 (RA's minigunner) is the exact donor: identical dimensions, so
+    **	it also supplies the correct render size (no ShapeSize needed). Same pattern
+    **	as aircraft (aadata.cpp:455) / units (udata.cpp:1446).
+    */
+    InfantryTypeClass& tde1 = As_Reference(INFANTRY_TDE1);
+    if (tde1.ImageData == NULL) {
+        ((void const*&)tde1.ImageData) = As_Reference(INFANTRY_E1).ImageData;
+    }
+    if (tde1.CameoData == NULL) {
+        ((void const*&)tde1.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 }
 

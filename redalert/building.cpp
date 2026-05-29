@@ -6147,11 +6147,22 @@ InfantryType BuildingClass::Crew_Type(void) const
 
     case STRUCT_TENT:
     case STRUCT_BARRACKS:
-    case STRUCT_TDPYLE:     // TD GDI Barracks — INFANTRY_E1 crew on death/sell. See docs/td-tier1-verification.md.
         return (INFANTRY_E1);
 
     default:
         break;
+    }
+
+    /*
+    **	Tiberian Factions: every TD-prefixed building spawns the TD Minigunner
+    **	(INFANTRY_TDE1) as its survivor/crew on death or sell — TD's generic
+    **	building crew is the minigunner, not RA's rifle infantry. Keyed on the
+    **	"TD" IniName prefix so it covers all TD buildings (TDPYLE/TDHAND barracks,
+    **	TDNUKE/TDPROC/TDWEAP/etc.). STRUCT_TDFACT keeps its Engineer chance above
+    **	and only reaches here for the non-Engineer roll.
+    */
+    if (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') {
+        return (INFANTRY_TDE1);
     }
     return (TechnoClass::Crew_Type());
 }

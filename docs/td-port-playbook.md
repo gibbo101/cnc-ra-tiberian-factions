@@ -493,6 +493,16 @@ rules.ini now holds the **verbatim TD-source STRNTH** and the engine doubles it 
 
 ---
 
+### 3.24 — TD infantry are INVISIBLE without a donor-ImageData fallback (idata.cpp gap)
+
+**Trap:** §3.3 / [[reference-mfcd-donor-imagedata-pattern]] applies to **infantry too**, but `InfantryTypeClass::One_Time` (idata.cpp) shipped WITHOUT a donor fallback — unlike `aadata.cpp` (aircraft) and `udata.cpp` (units), which both have one. A TD-prefixed infantry's SHP isn't in any MIX → `MFCD::Retrieve` returns NULL → `ImageData == NULL` → `InfantryClass::Draw_It` bails at its NULL-shape guard.
+
+**Symptom:** the unit **builds, is selectable, plays TD voices, and shows its sidebar cameo — but renders nothing on the map.** (Buildings don't hit this; they bypass the SHP path in Remaster. Caught on TDE1 Minigunner, 2026-05-29 — invisible until the fallback was added.)
+
+**Fix:** in `InfantryTypeClass::One_Time` after the load loop, copy a vanilla infantry donor's `ImageData`/`CameoData` (`INFANTRY_E1` for any minigunner-sized unit). The launcher's `Techno_Draw_Object` overlay then renders the real sprite by IniName from `RA_UNITS.XML`. **The donor also supplies correct render dimensions → no `ShapeSize=` is needed for infantry** (vehicles differ — they set their own). Full recipe: `docs/td-infantry-port-recipe.md`.
+
+---
+
 ## 4. Templates to copy
 
 ### 4.1 — Bullet TD-port: add field, set on registration, dispatch

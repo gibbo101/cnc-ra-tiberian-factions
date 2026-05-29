@@ -1343,6 +1343,7 @@ typedef enum BulletType : char
     BULLET_TDAPDS, // TD Nod Turret 120mm shell (visually mirrors [Cannon]).
     BULLET_TDSPREADFIRE, // TD GDI Guard Tower chain-gun pellet (Inviso, light_speed).
     BULLET_TDPATRIOT, // TD SAM Site Patriot missile (Homing, AA-only, MPH_VERY_FAST).
+    BULLET_TDBULLET, // TD small-arms invisible round ("50cal") — Pistol/M16/M60MG; warhead set on the weapon.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -1645,6 +1646,9 @@ typedef enum InfantryType : char
     INFANTRY_SHOCK, // Shock Trooper
     INFANTRY_MECHANIC,
 #endif
+
+    // Tiberian Factions mod infantry ported from TD (tiberiandawn/idata.cpp).
+    INFANTRY_TDE1, // TD Minigunner (E1) — basic rifleman, GDI+Nod, fires TDM16.
 
     INFANTRY_COUNT,
     INFANTRY_FIRST = 0
@@ -2758,6 +2762,7 @@ typedef enum WarheadType : char
     WARHEAD_LASER, // 100%-vs-all-armor profile (Obelisk of Light).
     WARHEAD_TDHE,  // TD high-explosive armor table (used by BULLET_SSM via TDTowTwo).
     WARHEAD_TDPB,  // Particle beam (TD WARHEAD_PB) — Ion Cannon strike. {1.0, 1.0, 0.75, 0.75, 0.75}.
+    WARHEAD_TDSA,  // TD small arms (WARHEAD_SA) — Spread 2, verses {1.0,0.5,0.5625,0.25,0.25}, no destroy.
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
@@ -2831,6 +2836,7 @@ typedef enum WeaponType : char
     WEAPON_OBELISK_LASER,  // Obelisk of Light beam (data piece only; render in M5).
     WEAPON_TD_CHAIN_GUN,   // GDI Guard Tower chain gun (TD WEAPON_CHAIN_GUN).
     WEAPON_TDNIKE,         // TD SAM Site missile (anti-air only, fires BULLET_TDPATRIOT).
+    WEAPON_TDM16,          // TD Minigunner rifle (E1) — Dmg15/ROF20/Range2, BULLET_TDBULLET, WARHEAD_TDSA.
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -3450,6 +3456,7 @@ typedef enum VocType : short
     VOC_TD_MOVEOUT,      // TD infantry "movin' out" (MOVOUT1) — GDI/Nod move-order voice
     VOC_TD_UNIT1,        // TD "unit reporting" (UNIT1) — GDI/Nod vehicle select voice (radio take)
     VOC_TD_PLACE_BUILDING_DOWN, // TD building slam-down (HVYDOOR1) — GDI/Nod placement, replaces RA's PLACBLDG
+    VOC_TD_M16,          // TD Minigunner M-16 triple burst (MGUN2) — WEAPON_TDM16 Report=
 
     VOC_COUNT,
     VOC_FIRST = 0
