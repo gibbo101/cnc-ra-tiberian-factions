@@ -601,6 +601,54 @@ static InfantryTypeClass const E2(INFANTRY_E2, // Infantry type number.
                                   0   // pointer to override remap table
 );
 
+// Tiberian Factions — TD Grenadier (INFANTRY_TDE2), ported from TD's E2
+// (tiberiandawn/idata.cpp:170). GDI-only (TD's E2 is HOUSEF_GOOD). The table is
+// RA's E2DoControlsVirtual values — RA's 21-action DoType order with TD's
+// grenadier frame offsets (RA's E2 IS the TD grenadier, so it's a verbatim
+// match; used for classic + GlyphX HD). Stats from rules.ini [TDE2]; the ctor
+// mirrors RA's E2 (same sprite geometry, firelaunch 14/6). Fires TDGrenade.
+static DoInfoStruct TdGrenadierDoControls[DO_COUNT] = {
+    {0, 1, 1},    // DO_STAND_READY
+    {8, 1, 1},    // DO_STAND_GUARD
+    {288, 1, 12}, // DO_PRONE
+    {16, 6, 6},   // DO_WALK
+    {64, 20, 20}, // DO_FIRE_WEAPON
+    {224, 2, 2},  // DO_LIE_DOWN
+    {240, 4, 4},  // DO_CRAWL
+    {272, 2, 2},  // DO_GET_UP
+    {288, 8, 12}, // DO_FIRE_PRONE
+    {384, 16, 0}, // DO_IDLE1
+    {400, 16, 0}, // DO_IDLE2
+    {510, 8, 0},  // DO_GUN_DEATH
+    {526, 8, 0},  // DO_EXPLOSION_DEATH
+    {526, 8, 0},  // DO_EXPLOSION2_DEATH
+    {534, 12, 0}, // DO_GRENADE_DEATH
+    {546, 18, 0}, // DO_FIRE_DEATH
+    {564, 3, 3},  // DO_GESTURE1
+    {588, 3, 3},  // DO_SALUTE1
+    {612, 3, 3},  // DO_GESTURE2
+    {636, 3, 3},  // DO_SALUTE2
+    {0, 0, 0},    // DO_DOG_MAUL (N/A — RA's DO_ enum drops TD's hand-to-hand actions)
+};
+static InfantryTypeClass const TdE2(INFANTRY_TDE2, // Infantry type number.
+                                    TXT_E2,        // Translate name number (display set via rules.ini Name=).
+                                    "TDE2",        // INI name for infantry.
+                                    0x0035,        // Vertical offset (matches RA's E2 — same grenadier sprite).
+                                    0x0010,        // Primary weapon offset along centerline.
+                                    false,         // Is this a female type?
+                                    true,          // Has crawling animation frames?
+                                    false,         // Is this a civilian?
+                                    false,         // Does this unit use the override remap table?
+                                    false,         // Always use the given name for the infantry?
+                                    false,         // Theater specific graphic image?
+                                    PIP_FULL,      // Transport pip shape/color to use.
+                                    TdGrenadierDoControls,
+                                    TdGrenadierDoControls,
+                                    14,            // Frame of projectile launch (TD E2).
+                                    6,             // Frame of projectile launch while prone (TD E2).
+                                    0              // pointer to override remap table
+);
+
 // Bazooka
 static InfantryTypeClass const E3(INFANTRY_E3, // Infantry type number.
                                   TXT_E3,      // Translate name number for infantry type.
@@ -1225,9 +1273,10 @@ void InfantryTypeClass::Init_Heap(void)
     new InfantryTypeClass(Mechanic);
 #endif
 
-    // Tiberian Factions — TD Minigunner. Last in the list, matching the enum
-    // (INFANTRY_TDE1 is appended just before INFANTRY_COUNT in defines.h).
+    // Tiberian Factions — TD infantry. Last in the list, matching the enum
+    // (INFANTRY_TDE1/TDE2 appended just before INFANTRY_COUNT in defines.h).
     new InfantryTypeClass(TdE1);
+    new InfantryTypeClass(TdE2);
 }
 
 /***********************************************************************************************
@@ -1474,6 +1523,14 @@ void InfantryTypeClass::One_Time(void)
     }
     if (tde1.CameoData == NULL) {
         ((void const*&)tde1.CameoData) = As_Reference(INFANTRY_E1).CameoData;
+    }
+
+    InfantryTypeClass& tde2 = As_Reference(INFANTRY_TDE2);  // TD Grenadier — donor E2 (RA's grenadier).
+    if (tde2.ImageData == NULL) {
+        ((void const*&)tde2.ImageData) = As_Reference(INFANTRY_E2).ImageData;
+    }
+    if (tde2.CameoData == NULL) {
+        ((void const*&)tde2.CameoData) = As_Reference(INFANTRY_E2).CameoData;
     }
 }
 

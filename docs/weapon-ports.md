@@ -1,5 +1,7 @@
 # Weapon, bullet, sound, and anim ports — future task
 
+> ⚠️ **PLANNING SUMMARY — NOT THE SPEC.** This doc has errors (it lists E1's weapon as RIFLE — actually `WEAPON_M16`; the Commando as M16 — actually `WEAPON_RIFLE`, a 125-dmg sniper). Before porting ANY weapon, verify it from `tiberiandawn/const.cpp` `Weapons[]` + the unit's `idata.cpp`/`udata.cpp` ctor and do a full value-by-value comparison vs the RA equivalent (see `docs/td-port-playbook.md` §2.1). Use this doc for *which* ports remain — never for the stats.
+
 Catalogue of TD content that depends on engine assets RA doesn't have. Lists what's missing, who needs it (buildings vs units), and the per-weapon scope so we can plan dedicated phases without blocking catalogue rollout.
 
 **Status as of 2026-05-19:** scoped, not started. v0.3 catalogue uses placeholder RA weapons for the five defensive buildings (see `docs/catalogue.md` master wiring table). Units (v0.4+) will need most of these before any TD-flavoured infantry/vehicle work begins.

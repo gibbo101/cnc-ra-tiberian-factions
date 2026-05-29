@@ -66,7 +66,7 @@ The launcher's `Techno_Draw_Object` overlay then renders the real `TDxx` sprite 
 
 ### 10. Build / deploy / smoke-test
 - Build: mingw remaster preset (CLAUDE.md recipe).
-- Deploy: **`./deploy.sh --no-build`** when only resources/DLL changed and you want to preserve the 184 MB front-end crest atlas — a full `deploy.sh` does `rm -rf build/...` then repackages from `resources/` (which does NOT contain the gitignored atlas), so `rsync --delete` would wipe it off the Deck. `--no-build` rsyncs the existing build output (atlas intact). Verify with a `--dry-run` (expect 0 deletions).
+- Deploy: the 184 MB front-end crest atlas (`MT_COMMANDBAR_COMMON.TGA`) **must live in `resources/.../ART/TEXTURES/SRGB/`** (gitignored, `.gitignore` line 15) — then *both* rebuilds and `deploy.sh` repackage it and `rsync --delete` keeps it. **If it's only in `build/` and not in `resources/`, any rebuild drops it and `deploy.sh --delete` then wipes it off the Deck** (this bit E2 2026-05-29 — restored from `/tmp/atlas_v3.tga`). Always `ls -la resources/.../MT_COMMANDBAR_COMMON.TGA` (≈177 MB) before deploying; regen via `scripts/frontend_atlas_build.py` if absent.
 - Smoke: builds from the barracks (TDPYLE/TDHAND), **renders at correct scale**, fires the TD weapon (sound/range/damage), TD voice on select/move, crew spawn on building death.
 
 ---
@@ -78,7 +78,8 @@ The launcher's `Techno_Draw_Object` overlay then renders the real `TDxx` sprite 
 | **No donor ImageData** | Builds, selectable, voiced — but **invisible** | §8: copy `E1`'s `ImageData`/`CameoData` in `One_Time` |
 | **DO_COUNT mismatch** | Compile error / mis-mapped animations | RA's `DoType` = 21 actions, not TD's 34 (hand-to-hand was dead in TD); use RA's order + TD frames |
 | **Borrowed RA weapon** | Wrong range / sound / armor curve | Chain-audit from TD source; port `TDxx` weapon+warhead+bullet+sound |
-| **Full `deploy.sh`** | Crest atlas wiped off Deck | `deploy.sh --no-build` |
+| **Visible custom bullet** | Projectile renders as a **white box** | 32-frame rotating missiles port as own bullets; tumbling/arcing bombs reuse RA's `Projectile=Lobbed` (playbook §3.25) |
+| **Atlas only in `build/`** | Crest atlas wiped off Deck on rebuild+deploy | Keep `MT_COMMANDBAR_COMMON.TGA` in `resources/` (gitignored), not just `build/` |
 
 ---
 

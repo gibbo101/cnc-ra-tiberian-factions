@@ -49,6 +49,8 @@ Before writing any code, find and read the TD source for:
 
 Per [[feedback-review-td-source-first]]: TD source is the spec. Don't reverse-engineer from RA half-implementations.
 
+**And our own planning docs are NOT the spec.** `weapon-ports.md`, `catalogue.md`, and the manifest tables are convenience summaries that have been WRONG — `weapon-ports.md` listed E1's weapon as RIFLE (it's `WEAPON_M16`) and the Commando's as M16 (it's `WEAPON_RIFLE`, a 125-dmg `BULLET_SNIPER`). **Every entity gets a full source-driven comparison:** build its chain from `tiberiandawn/const.cpp` `Weapons[]` / `Warheads[]` + the entity's own ctor (`idata.cpp` / `udata.cpp` / `bdata.cpp`) + the `BulletTypeClass` in `bbdata.cpp`, then compare *every value* — damage, ROF, range, bullet, warhead, report, speed, ownable, stats — against the RA equivalent. "RA has a weapon/unit by that name" is **never** sufficient (TDGTWR's Vulcan, TDE1's M16-vs-M1Carbine, the Commando's RIFLE all proved it). Default to porting the TD version; reuse only a TD-ported entity you've confirmed byte-identical (TD→TD).
+
 ### 2.2 — Run the chain audit (MANDATORY before any rules.ini edit)
 
 Per [[feedback-td-building-chain-audit-ritual]], dump the full chain visibly:
@@ -500,6 +502,16 @@ rules.ini now holds the **verbatim TD-source STRNTH** and the engine doubles it 
 **Symptom:** the unit **builds, is selectable, plays TD voices, and shows its sidebar cameo — but renders nothing on the map.** (Buildings don't hit this; they bypass the SHP path in Remaster. Caught on TDE1 Minigunner, 2026-05-29 — invisible until the fallback was added.)
 
 **Fix:** in `InfantryTypeClass::One_Time` after the load loop, copy a vanilla infantry donor's `ImageData`/`CameoData` (`INFANTRY_E1` for any minigunner-sized unit). The launcher's `Techno_Draw_Object` overlay then renders the real sprite by IniName from `RA_UNITS.XML`. **The donor also supplies correct render dimensions → no `ShapeSize=` is needed for infantry** (vehicles differ — they set their own). Full recipe: `docs/td-infantry-port-recipe.md`.
+
+### 3.25 — Visible custom-bullet projectiles WHITE-BOX in the Remaster launcher (use a shared RA primitive for tumbling bombs)
+
+**Symptom:** a fully-bundled custom bullet (donor `ImageData` + sprite ZIP + `RA_VFX.XML` tileset block — the complete TDDRAGON pattern) renders as a **white box** in flight, though arc / damage / impact are all correct.
+
+**Root cause:** `BulletClass::Shape_Number` (`bullet.cpp:537`) returns a **facing-based shape 0-31** for any visible (non-`IsFaceless`) bullet. The launcher honors that index, so a **32-frame *rotating* bullet** (`Rotates=yes`, e.g. the TDSSM / TDDRAGON missiles) maps cleanly, but an **8-frame *tumbling* bomb white-boxes for facings 8-31** (only frames 0-7 exist).
+
+**Fix:** match the sprite's frame model to the bullet kind.
+- **Rotating missiles (32-frame):** port as their own `BULLET_TDxxx` with `Rotates=yes` — renders fine.
+- **Tumbling / arcing bombs (8-frame):** **reuse RA's shared `Projectile=Lobbed`** (TD's and RA's grenade are the *same* "BOMB" sprite, so it's visually TD-authentic). Keep the TD-specific stats + `Warhead=TDxx` on the *weapon*; the bullet is non-`IsTDPort` and the impact splash comes from the warhead's `Explosion=`. Same "shared rendering primitive" logic as an invisible small-arms round reusing one `50cal`-style bullet (E2 Grenadier, 2026-05-29).
 
 ---
 

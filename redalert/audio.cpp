@@ -261,6 +261,7 @@ struct SoundEffectNameStruct
     {"UNIT1", 20, IN_NOVAR},   // VOC_TD_UNIT1 - TD "unit reporting", routed to TDUNIT1.V00/.V02 for GDI/Nod vehicles
     {"HVYDOOR1", 10, IN_NOVAR}, // VOC_TD_PLACE_BUILDING_DOWN - TD building slam-down, routed via RAC/RAR_SFX_HVYDOOR1 for GDI/Nod placement
     {"MGUN2", 1, IN_NOVAR},     // VOC_TD_M16 — TD Minigunner M-16 triple burst (WEAPON_TDM16 Report=), routed via RAC/RAR_SFX_MGUN2
+    {"TOSS1", 1, IN_NOVAR},     // VOC_TD_TOSS — TD Grenadier toss (WEAPON_TDGRENADE Report=), routed via RAC/RAR_SFX_TOSS1
 };
 
 //

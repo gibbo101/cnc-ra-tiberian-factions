@@ -716,6 +716,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDChainGun");   // WEAPON_TD_CHAIN_GUN (GDI Guard Tower)
     new WeaponTypeClass("TDNike");       // WEAPON_TDNIKE (TD SAM Site)
     new WeaponTypeClass("TDM16");        // WEAPON_TDM16 (TD Minigunner rifle, E1)
+    new WeaponTypeClass("TDGrenade");    // WEAPON_TDGRENADE (TD Grenadier toss, E2)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -731,6 +732,9 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // stays true for a 1-shot weapon, so Rearm_Delay returns ROF+3 (=23) like TD,
     // not RA's flat ROF (=20). Also makes Speed= parse as raw MPHType (255=light).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDM16"))->IsTDPort = true;
+    // TDGrenade (Grenadier): IsTDPort for TD cadence + raw Speed; its arcing bullet
+    // flies via the ported AI_TD (which handles IsArcing — bullet.cpp:375/827).
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TDGrenade"))->IsTDPort = true;
 
     return (true);
 }

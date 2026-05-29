@@ -1649,6 +1649,7 @@ typedef enum InfantryType : char
 
     // Tiberian Factions mod infantry ported from TD (tiberiandawn/idata.cpp).
     INFANTRY_TDE1, // TD Minigunner (E1) — basic rifleman, GDI+Nod, fires TDM16.
+    INFANTRY_TDE2, // TD Grenadier (E2) — GDI-only, lobs TDGrenade (visible arc).
 
     INFANTRY_COUNT,
     INFANTRY_FIRST = 0
@@ -2837,6 +2838,7 @@ typedef enum WeaponType : char
     WEAPON_TD_CHAIN_GUN,   // GDI Guard Tower chain gun (TD WEAPON_CHAIN_GUN).
     WEAPON_TDNIKE,         // TD SAM Site missile (anti-air only, fires BULLET_TDPATRIOT).
     WEAPON_TDM16,          // TD Minigunner rifle (E1) — Dmg15/ROF20/Range2, BULLET_TDBULLET, WARHEAD_TDSA.
+    WEAPON_TDGRENADE,      // TD Grenadier toss (E2) — Dmg50/ROF60/Range3.25, Projectile=Lobbed (RA bomb), WARHEAD_TDHE.
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -3457,6 +3459,7 @@ typedef enum VocType : short
     VOC_TD_UNIT1,        // TD "unit reporting" (UNIT1) — GDI/Nod vehicle select voice (radio take)
     VOC_TD_PLACE_BUILDING_DOWN, // TD building slam-down (HVYDOOR1) — GDI/Nod placement, replaces RA's PLACBLDG
     VOC_TD_M16,          // TD Minigunner M-16 triple burst (MGUN2) — WEAPON_TDM16 Report=
+    VOC_TD_TOSS,         // TD grenade toss (TOSS1) — WEAPON_TDGRENADE Report=
 
     VOC_COUNT,
     VOC_FIRST = 0
