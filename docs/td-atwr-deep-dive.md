@@ -1,5 +1,7 @@
 # TDATWR port — TD-source-grounded deep dive
 
+> **RESOLVED — separated + shipped (v0.50).** TDATWR now runs its own `ClassTdAtwr` code path and binds `Primary=TDTowTwo` in rules.ini — wholesale TD port, no RA `ClassAAGun` shaping. The body below is retained as TD-source reference / the plan that was executed.
+
 **Status:** STRUCT_TDATWR shipped in M3 Tier 2 separation but is functionally incomplete. The current `ClassTdAtwr` was copy-shaped from RA's `ClassAAGun` — that mismatch is the source of every visible bug. This doc replaces the donor-shaped port with a wholesale port of TD's `STRUCT_ATOWER`.
 
 **Session that produced it:** 2026-05-22, max-effort deep dive paired with [[td-sam-deep-dive]].

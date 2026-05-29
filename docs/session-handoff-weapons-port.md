@@ -1,5 +1,10 @@
 # Session state — TDOBLI separation milestone
 
+> **ARCHIVED — superseded by `building-separation-plan.md` (M2+M3 complete) and
+> `classic-mode-palette-remap.md`.** This is a point-in-time handoff from
+> 2026-05-21; the entire M2–M5 building-separation arc and the classic-mode
+> palette remap have since shipped (v0.50). Retained as a historical record.
+
 **Last updated:** 2026-05-21 (evening, ~10h after Phase W1 audio breakthrough)
 **Working tree:** clean (all changes committed)
 **Latest commit:** `classic-mode: ship TD SHPs via TFASSETS.MIX (palette remap deferred)`

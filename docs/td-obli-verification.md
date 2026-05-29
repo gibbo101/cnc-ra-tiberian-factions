@@ -1,5 +1,7 @@
 # TDOBLI — TD-source verification
 
+> **RESOLVED — separated + shipped (v0.50).** TDOBLI is fully separated and binds `Primary=TDOblsLaser` in rules.ini; the charge-timing fix landed. The body below is retained as TD-source reference / the plan that was executed.
+
 **Status:** Largely TD-authentic. The "validated vertical slice" reputation from M5 is correct — building flags, rules.ini stats, weapon stats, projectile, warhead, audio routing, and engine dispatch are all TD-correct. **One balance-relevant bug**: charge timing is ~6× faster than TD's. **Three cosmetic-tier divergences**: VerticalOffset, missing HorizontalOffset, class naming. No "still bound to RA vanilla weapon" issues — TDOBLI is the cleanest separation in the M3 Tier 2 set.
 
 **Session that produced it:** 2026-05-22, paired with [[td-gtwr-gun-verification]]. Same TD-source-grounded verification pattern.

@@ -1,5 +1,12 @@
 # Manifest field gaps — catalogue readiness
 
+> **SUPERSEDED — all listed fields shipped + in use as of v0.50.** The four gap
+> fields tracked below (`Sensors=`, `Storage=`, `GuardRange=`, `Explodes=`) are
+> all present and in active use in `resources/remaster_mods/Vanilla_RA/CCDATA/rules.ini`,
+> and every catalogue entry this doc gated on (TDHQ/TDEYE/TDPROC/TDSILO/TDGTWR/
+> TDATWR/TDGUN/TDSAM/TDOBLI/TDTMPL) has shipped as a fully-separated `STRUCT_TD*`
+> engine type. Retained for history.
+
 Audit done 2026-05-19 of `buildings_manifest.py` / `add_building.py` FIELD_SPEC vs
 the rules.ini keys the engine actually reads (`TechnoTypeClass::Read_INI`
 techno.cpp:7016+; `BuildingTypeClass::Read_INI` bdata.cpp:3797+).

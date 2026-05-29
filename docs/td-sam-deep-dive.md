@@ -1,5 +1,7 @@
 # TDSAM port — TD-source-grounded deep dive
 
+> **RESOLVED — separated + shipped (v0.50).** TDSAM now runs its own code path and binds `Primary=TDNike` (→ `Projectile=TDPatriot`, `Warhead=TDAP`) in rules.ini — no RA-vanilla `[Nike]` alias. The body below is retained as TD-source reference / the plan that was executed.
+
 **Status:** STRUCT_TDSAM ships in M3 as a *bug-shaped* port — engine + asset work done, but every dispatch piggybacks on RA's `STRUCT_SAM` branch via `(STRUCT_SAM || STRUCT_TDSAM)` aliases, and the rules.ini binds `Primary=Nike` to RA's vanilla weapon. That violates the separation principle: TDSAM should run TD's own building/weapon/projectile code, not RA's nearest-shaped equivalent. This doc is the corrected plan — wholesale port of TD's `STRUCT_SAM`.
 
 **Session that produced it:** 2026-05-22, max-effort deep dive after Luke flagged that the current build was "rendering the RA SAM" with wrong sounds and broken open/turret animation.

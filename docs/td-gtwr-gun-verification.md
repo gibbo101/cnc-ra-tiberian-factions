@@ -1,5 +1,7 @@
 # TDGTWR + TDGUN — TD-source verification
 
+> **RESOLVED — separated + shipped (v0.50).** TDGTWR now binds `Primary=TDChainGun` (Damage=25/ROF=50, TD-authentic — no RA `[Vulcan]` alias); TDGUN runs its own separated chain. The body below is retained as TD-source reference / the plan that was executed.
+
 **Status:** TDGTWR has a balance-affecting weapon mismatch (still bound to RA's vanilla `[Vulcan]`) plus one ClassTdGtwr offset bug. TDGUN is mostly TD-authentic — building flags correct, weapon stats correct — but its projectile binding (`Projectile=Cannon`) reuses RA's vanilla section in violation of the separation principle.
 
 **Session that produced it:** 2026-05-22, paired with [[td-sam-deep-dive]] and [[td-atwr-deep-dive]]. Goal: get all four M3 Tier 2 defensive buildings (TDGTWR/TDATWR/TDGUN/TDSAM) weapon-correct so future balance work has TD-authentic baselines.

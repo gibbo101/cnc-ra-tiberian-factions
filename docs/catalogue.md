@@ -1,5 +1,22 @@
 # Building catalogue — Tiberian Factions for Red Alert
 
+> ## STATUS — design-era catalogue (superseded; retained as reference)
+>
+> **This is the design-era catalogue.** All of the GDI/Nod buildings below are now
+> **fully-separated `STRUCT_TD*` engine types** (TDNUKE/TDNUK2/TDPROC/TDPYLE/TDHAND/
+> TDWEAP/TDAFLD/TDHQ/TDEYE/TDTMPL/TDGTWR/TDATWR/TDGUN/TDSAM/TDOBLI/TDFIX/TDHPAD/
+> TDSILO/TDFACT — see `redalert/defines.h`), **not** Logic-aliased donors, and all
+> shipped in **v0.50**. The TD infantry roster has also shipped: **INFANTRY_TDE1
+> (Minigunner), TDE2 (Grenadier), TDE3 (Rocket Soldier)**. As of commit `f8351de`
+> the GDI/Nod skirmish AI builds full bases.
+>
+> Consequently the **"📝 designed, not built" markers, the "Donor"/"Logic-aliased"
+> framing, and the "v0.3/v0.4" sequencing below are design-era and superseded.**
+> They are retained as the per-entry **stats / design-spec reference** (TD-authentic
+> values pulled from `tiberiandawn/bdata.cpp`), which is still useful — but for
+> *what shipped and how*, see `building-separation-plan.md`, the `td-*` deep-dives,
+> and `td-infantry-port-recipe.md`.
+
 Design spec for the new buildings we're adding via the Logic-aliased mod-building pipeline (see `docs/adding-td-buildings.md` for the per-building implementation recipe). Stats below are pulled from `tiberiandawn/bdata.cpp` — TD-authentic by default. See `docs/manifest-gaps.md` for which engine rules.ini fields the manifest emitter can/can't currently produce, and the recommended add order before the catalogue rollout broadens.
 
 ## TEMPORARY DEV HACKS — remove before v1.0 / public release
@@ -436,7 +453,7 @@ Faction: GDI · Donor: **TENT** (Allied barracks) · TD lvl 0, $300, -20 power, 
 | Capturable | true |
 | Bib | yes |
 
-**Note:** GDI inherits Allied infantry roster (GI, Rocket Soldier, Engineer, Medic, Spy, Tanya) via the TENT donor for v0.3. Custom GDI infantry types are v0.4+.
+**Note:** GDI inherits Allied infantry roster (GI, Rocket Soldier, Engineer, Medic, Spy, Tanya) via the TENT donor for v0.3. *Partly superseded (v0.50+):* custom TD infantry have begun shipping as their own engine types — `INFANTRY_TDE1` Minigunner, `TDE2` Grenadier, `TDE3` Rocket Soldier are in (see `td-infantry-port-recipe.md`); the remaining roles still fall back to the vanilla roster.
 
 ### HPAD — Helipad 📝
 Faction: **both** · Donor: **HPAD** · TD lvl 6, $1500, -10 power, 400 HP, 2×2 wood, prereq Barracks
@@ -934,29 +951,34 @@ See [[project-td-build-time-formula]] for full derivation.
 
 ## Walkthrough status
 
-| IniName | Faction | Donor | Stats? | Status |
+> **Updated for v0.50:** every TD building below shipped as a fully-separated
+> `STRUCT_TD*` engine type — the "Donor" column is **design-era** (the entities no
+> longer alias these RA donors). The "per-faction split / v0.4" deferrals noted in
+> some cells are still accurate forward-looking notes; the **separation itself is done.**
+
+| IniName | Faction | Donor (design-era) | Stats? | Status |
 |---|---|---|---|---|
-| TDNUKE | both | POWR | ✓ | ✅ manual ref impl 2026-05-19 |
-| TDNUK2 | both | APWR | ✓ | ✅ (Phase-1 POC) → 📝 migrate to TD-authentic |
-| TDPROC | both | PROC | ✓ | 📝 |
-| TDSILO | both | SILO | ✓ | ✅ M2 Tier 1 separated + smoke-verified 2026-05-25 |
-| TDPYLE | GDI | TENT | ✓ | 📝 |
-| TDHAND | Nod | BARR | ✓ | 📝 |
-| TDHPAD | both | HPAD | ✓ | 📝 |
-| TDWEAP | GDI | WEAP | ✓ | 📝 |
-| TDAFLD | Nod | WEAP | ✓ | ✅ v0.3.1-phase2d — TDC17 cargo-plane delivery |
-| TDHQ | both | DOME | ✓ | 📝 |
-| TDEYE | GDI | MSLO | ✓ | 📝 🚧 (Ion Cannon visual v0.4) |
-| TDTMPL | Nod | MSLO | ✓ | 📝 🚧 |
-| TDFIX | both | FIX | ✓ | 📝 |
-| TDGTWR | GDI | PBOX | ✓ | ✅ M3 Tier 2 separated, chain gun port v0.4.2 |
-| TDATWR | GDI | AGUN | ✓ | ✅ M3 Tier 2 separated, TDTowTwo + TDSSM port |
-| TDOBLI | Nod | TSLA | ✓ | ✅ M3 Tier 2 separated, laser-line + charge state v0.4.1 |
-| TDGUN | Nod | GUN | ✓ | ✅ M3 Tier 2 separated, TDAPDS damage fix v0.4.2 |
-| TDSAM | Nod | SAM | ✓ | ✅ M3 Tier 2 separated, 8-state launcher 2026-05-25 |
-| TDFACT | both | FACT | ✓ | ✅ v0.3.0-phase5e (per-faction split deferred to v0.4) |
-| TDMCV | GoodGuy only | MCV (unit) | — | ✅ v0.3.0-phase5e (Nod TDNODMCV deferred to v0.4) |
-| HOSP/BIO/ARCO | — | — | — | skip for v0.3 |
+| TDNUKE | both | POWR | ✓ | ✅ separated + shipped (manual ref impl 2026-05-19) |
+| TDNUK2 | both | APWR | ✓ | ✅ separated + shipped (TD-authentic) |
+| TDPROC | both | PROC | ✓ | ✅ separated + shipped (M4 — bail trickle + harvester dock) |
+| TDSILO | both | SILO | ✓ | ✅ separated + shipped (M2 Tier 1, smoke-verified 2026-05-25) |
+| TDPYLE | GDI | TENT | ✓ | ✅ separated + shipped |
+| TDHAND | Nod | BARR | ✓ | ✅ separated + shipped |
+| TDHPAD | both | HPAD | ✓ | ✅ separated + shipped |
+| TDWEAP | GDI | WEAP | ✓ | ✅ separated + shipped (M4 Tier 3) |
+| TDAFLD | Nod | WEAP | ✓ | ✅ separated + shipped (v0.3.1-phase2d — TDC17 cargo-plane delivery) |
+| TDHQ | both | DOME | ✓ | ✅ separated + shipped |
+| TDEYE | GDI | MSLO | ✓ | ✅ separated + shipped (Ion Cannon superweapon host) |
+| TDTMPL | Nod | MSLO | ✓ | ✅ separated + shipped (Nuclear Strike superweapon host) |
+| TDFIX | both | FIX | ✓ | ✅ separated + shipped |
+| TDGTWR | GDI | PBOX | ✓ | ✅ separated + shipped (M3 Tier 2, TDChainGun port) |
+| TDATWR | GDI | AGUN | ✓ | ✅ separated + shipped (M3 Tier 2, TDTowTwo + TDSSM port) |
+| TDOBLI | Nod | TSLA | ✓ | ✅ separated + shipped (M3 Tier 2, laser-line + charge state) |
+| TDGUN | Nod | GUN | ✓ | ✅ separated + shipped (M3 Tier 2, TDTurretGun) |
+| TDSAM | Nod | SAM | ✓ | ✅ separated + shipped (M3 Tier 2, 8-state launcher 2026-05-25) |
+| TDFACT | both | FACT | ✓ | ✅ separated + shipped (per-faction split deferred post-v1) |
+| TDMCV | GoodGuy only | MCV (unit) | — | ✅ separated + shipped (Nod TDNODMCV deferred post-v1) |
+| HOSP/BIO/ARCO | — | — | — | skip (still unbuilt) |
 
 ---
 
@@ -967,7 +989,7 @@ All seven of the original open questions were resolved 2026-05-19:
 1. ✅ **HPAD** — both factions share, Owner=GoodGuy,BadGuy.
 2. ✅ **HQ** — both factions share, Owner=GoodGuy,BadGuy.
 3. ✅ **WEAP/AFLD vehicle factory** — TD-faithful split. GDI=WEAP, Nod=AFLD, both Logic=WEAP. Nod's cargo-plane delivery is a 🚧 sub-task.
-4. ✅ **Infantry rosters** — v0.3 accepts donor rosters (GDI=Allied infantry via TENT, Nod=Soviet infantry via BARR). TD-flavoured infantry types come in v0.4 using the Logic-aliased pipeline extended to InfantryType.
+4. ✅ **Infantry rosters** — v0.3 accepted donor rosters (GDI=Allied infantry via TENT, Nod=Soviet infantry via BARR). **Update (v0.50+):** the first TD-flavoured infantry have since shipped as their own engine types — `INFANTRY_TDE1` Minigunner, `TDE2` Grenadier, `TDE3` Rocket Soldier (not Logic-aliased; full TD weapon chains). See `td-infantry-port-recipe.md`.
 5. ✅ **Vehicle rosters** — same approach as #4. v0.3 uses WEAP donor roster; TD vehicles in v0.4. **Exception: MCV** — needed in v0.3 to pair with the TD CY.
 6. ✅ **GDI superweapon** — Ion Cannon, hosted on EYE (Logic=MSLO). Placeholder mushroom-cloud visual in v0.3; proper Ion Cannon beam in v0.4.
 7. ✅ **Walls** — reuse vanilla RA walls (SBAG/CYCL/BRIK/FENC) for v0.3.
@@ -979,9 +1001,14 @@ All seven of the original open questions were resolved 2026-05-19:
 3. **TD MCV/CY pair (closing slice)** — adds Logic-aliased UnitType support, GDI/Nod MCV variants, faction-aware deploy logic, faction-specific CYs.
 4. **v0.3 release** — TD-themed bases, fully playable skirmish on the Deck, vanilla-RA art only on infantry/non-Nod vehicles. Workshop publish (or wait until v0.4).
 
-## v0.4+ roadmap (not yet specced)
+## v0.4+ roadmap (largely shipped — see note)
 
-- TD-themed infantry per faction (Minigunner, Engineer, Grenadier, Flamethrower, etc.).
+> **Update:** the infantry line below is **partly shipped** — the first three TD
+> infantry (`INFANTRY_TDE1` Minigunner, `TDE2` Grenadier, `TDE3` Rocket Soldier)
+> are **in and Deck-verified** (full TD weapon chains, voices, cameos). See
+> `td-infantry-port-recipe.md`. The remaining items below are still future work.
+
+- TD-themed infantry per faction — **✅ Minigunner / Grenadier / Rocket Soldier shipped**; Engineer, Flamethrower, etc. still to come.
 - TD-themed vehicles per faction (Light Tank, Medium Tank, Mammoth Tank, Buggy, Recon Bike, etc.).
 - Ion Cannon proper visual effect (engine work).
 - TD-themed walls (if v0.3's vanilla-walls compromise feels wrong).
