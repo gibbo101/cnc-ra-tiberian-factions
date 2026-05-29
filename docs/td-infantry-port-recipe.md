@@ -1,6 +1,6 @@
 # TD Infantry Port Recipe
 
-**Worked example:** `INFANTRY_TDE1` Minigunner — first TD infantry port, shipped 2026-05-29. Establishes the infantry pipeline the way TDATWR established buildings.
+**Worked examples** (all shipped 2026-05-29): `INFANTRY_TDE1` Minigunner — first port, establishes the infantry pipeline the way TDATWR established buildings; `INFANTRY_TDE2` Grenadier (GDI-only) — its visible 8-frame tumbling-bomb bullet white-boxed, so it reuses RA's shared `Projectile=Lobbed`; `INFANTRY_TDE3` Rocket Soldier (GDI+Nod) — its **homing rotating missile is the first own-bullet visible projectile to render clean** (`Image=TDDRAGON`, reuses TDSSM's sprite, no bundling), confirming the playbook §3.25 rotating-renders / tumbling-white-boxes rule.
 
 **Read first:** `docs/td-port-playbook.md` (architecture + traps). This doc is the infantry-specific companion to `docs/td-building-separation-recipe.md`.
 

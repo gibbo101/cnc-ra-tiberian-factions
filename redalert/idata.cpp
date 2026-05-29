@@ -649,6 +649,54 @@ static InfantryTypeClass const TdE2(INFANTRY_TDE2, // Infantry type number.
                                     0              // pointer to override remap table
 );
 
+// Tiberian Factions -- TD Rocket Soldier (INFANTRY_TDE3), ported from TD's E3
+// (tiberiandawn/idata.cpp:259). GDI+Nod (TD's E3 is HOUSEF_GOOD|HOUSEF_BAD). The
+// table is RA's E3DoControlsVirtual values -- RA's 21-action DoType order with the
+// rocket-soldier frame offsets (RA's E3 IS the TD rocket soldier, a verbatim match).
+// Stats from rules.ini [TDE3]; ctor mirrors RA's E3 (same geometry, firelaunch 3/3).
+// Fires TDDragon (BULLET_TDTOW homing missile, anti-armor/air).
+static DoInfoStruct TdRocketSoldierDoControls[DO_COUNT] = {
+    {0, 1, 1},     // DO_STAND_READY
+    {8, 1, 1},     // DO_STAND_GUARD
+    {192, 1, 10},  // DO_PRONE
+    {16, 6, 6},    // DO_WALK
+    {64, 8, 8},    // DO_FIRE_WEAPON
+    {128, 2, 2},   // DO_LIE_DOWN
+    {144, 4, 4},   // DO_CRAWL
+    {176, 2, 2},   // DO_GET_UP
+    {192, 10, 10}, // DO_FIRE_PRONE
+    {272, 16, 0},  // DO_IDLE1
+    {288, 16, 0},  // DO_IDLE2
+    {398, 8, 0},   // DO_GUN_DEATH
+    {414, 8, 0},   // DO_EXPLOSION_DEATH
+    {414, 8, 0},   // DO_EXPLOSION2_DEATH
+    {422, 12, 0},  // DO_GRENADE_DEATH
+    {434, 18, 0},  // DO_FIRE_DEATH
+    {452, 3, 3},   // DO_GESTURE1
+    {476, 3, 3},   // DO_SALUTE1
+    {500, 3, 3},   // DO_GESTURE2
+    {524, 3, 3},   // DO_SALUTE2
+    {0, 0, 0},     // DO_DOG_MAUL (N/A -- RA's DO_ enum drops TD's hand-to-hand actions)
+};
+static InfantryTypeClass const TdE3(INFANTRY_TDE3, // Infantry type number.
+                                    TXT_E3,        // Translate name number (display via rules.ini Name=).
+                                    "TDE3",        // INI name for infantry.
+                                    0x0035,        // Vertical offset (matches RA's E3 -- same sprite).
+                                    0x0010,        // Primary weapon offset along centerline.
+                                    false,         // Is this a female type?
+                                    true,          // Has crawling animation frames?
+                                    false,         // Is this a civilian?
+                                    false,         // Does this unit use the override remap table?
+                                    false,         // Always use the given name for the infantry?
+                                    false,         // Theater specific graphic image?
+                                    PIP_FULL,      // Transport pip shape/color to use.
+                                    TdRocketSoldierDoControls,
+                                    TdRocketSoldierDoControls,
+                                    3,             // Frame of projectile launch (TD E3).
+                                    3,             // Frame of projectile launch while prone (TD E3).
+                                    0              // pointer to override remap table
+);
+
 // Bazooka
 static InfantryTypeClass const E3(INFANTRY_E3, // Infantry type number.
                                   TXT_E3,      // Translate name number for infantry type.
@@ -1277,6 +1325,7 @@ void InfantryTypeClass::Init_Heap(void)
     // (INFANTRY_TDE1/TDE2 appended just before INFANTRY_COUNT in defines.h).
     new InfantryTypeClass(TdE1);
     new InfantryTypeClass(TdE2);
+    new InfantryTypeClass(TdE3);
 }
 
 /***********************************************************************************************
@@ -1531,6 +1580,14 @@ void InfantryTypeClass::One_Time(void)
     }
     if (tde2.CameoData == NULL) {
         ((void const*&)tde2.CameoData) = As_Reference(INFANTRY_E2).CameoData;
+    }
+
+    InfantryTypeClass& tde3 = As_Reference(INFANTRY_TDE3);  // TD Rocket Soldier -- donor E3 (RA's rocket soldier).
+    if (tde3.ImageData == NULL) {
+        ((void const*&)tde3.ImageData) = As_Reference(INFANTRY_E3).ImageData;
+    }
+    if (tde3.CameoData == NULL) {
+        ((void const*&)tde3.CameoData) = As_Reference(INFANTRY_E3).CameoData;
     }
 }
 

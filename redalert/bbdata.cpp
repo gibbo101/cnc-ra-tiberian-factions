@@ -194,6 +194,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TDSpreadfire");  //	BULLET_TDSPREADFIRE (TD GDI chain-gun pellet)
     new BulletTypeClass("TDPatriot");     //	BULLET_TDPATRIOT (TD SAM Patriot missile)
     new BulletTypeClass("TD50cal");       //	BULLET_TDBULLET (TD small-arms invisible round — M16/Pistol/M60MG)
+    new BulletTypeClass("TDTOW");         //	BULLET_TDTOW (TD Rocket Soldier Dragon/TOW missile, E3)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per
@@ -205,6 +206,7 @@ void BulletTypeClass::Init_Heap(void)
     BulletTypes.Ptr((int)BULLET_TDAPDS)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_TDSPREADFIRE)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_TDPATRIOT)->IsTDPort = true;
+    BulletTypes.Ptr((int)BULLET_TDTOW)->IsTDPort = true;
 }
 
 /***********************************************************************************************
@@ -275,6 +277,10 @@ void BulletTypeClass::One_Time(void)
     BulletTypeClass& tdapds = As_Reference(BULLET_TDAPDS);
     if (tdapds.ImageData == NULL) {
         ((void const*&)tdapds.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tdtow = As_Reference(BULLET_TDTOW);  // TD Rocket Soldier missile (E3) -- shares RA HeatSeeker's DRAGON sprite.
+    if (tdtow.ImageData == NULL) {
+        ((void const*&)tdtow.ImageData) = donor.ImageData;
     }
 }
 

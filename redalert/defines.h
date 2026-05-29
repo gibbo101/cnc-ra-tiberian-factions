@@ -1344,6 +1344,7 @@ typedef enum BulletType : char
     BULLET_TDSPREADFIRE, // TD GDI Guard Tower chain-gun pellet (Inviso, light_speed).
     BULLET_TDPATRIOT, // TD SAM Site Patriot missile (Homing, AA-only, MPH_VERY_FAST).
     BULLET_TDBULLET, // TD small-arms invisible round ("50cal") — Pistol/M16/M60MG; warhead set on the weapon.
+    BULLET_TDTOW, // TD Rocket Soldier missile (E3 Dragon/TOW) — Homing, visible 32-frame rotating, WARHEAD_TDAP.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -1650,6 +1651,7 @@ typedef enum InfantryType : char
     // Tiberian Factions mod infantry ported from TD (tiberiandawn/idata.cpp).
     INFANTRY_TDE1, // TD Minigunner (E1) — basic rifleman, GDI+Nod, fires TDM16.
     INFANTRY_TDE2, // TD Grenadier (E2) — GDI-only, lobs TDGrenade (visible arc).
+    INFANTRY_TDE3, // TD Rocket Soldier (E3) — GDI+Nod, fires TDDragon homing missile (anti-armor/air).
 
     INFANTRY_COUNT,
     INFANTRY_FIRST = 0
@@ -2840,6 +2842,7 @@ typedef enum WeaponType : char
     WEAPON_TDNIKE,         // TD SAM Site missile (anti-air only, fires BULLET_TDPATRIOT).
     WEAPON_TDM16,          // TD Minigunner rifle (E1) — Dmg15/ROF20/Range2, BULLET_TDBULLET, WARHEAD_TDSA.
     WEAPON_TDGRENADE,      // TD Grenadier toss (E2) — Dmg50/ROF60/Range3.25, Projectile=Lobbed (RA bomb), WARHEAD_TDHE.
+    WEAPON_TDDRAGON,       // TD Rocket Soldier launcher (E3) — Dmg30/ROF60/Range4, BULLET_TDTOW, WARHEAD_TDAP, Report=BAZOOK1.
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -3461,6 +3464,7 @@ typedef enum VocType : short
     VOC_TD_PLACE_BUILDING_DOWN, // TD building slam-down (HVYDOOR1) — GDI/Nod placement, replaces RA's PLACBLDG
     VOC_TD_M16,          // TD Minigunner M-16 triple burst (MGUN2) — WEAPON_TDM16 Report=
     VOC_TD_TOSS,         // TD grenade toss (TOSS1) — WEAPON_TDGRENADE Report=
+    VOC_TD_BAZOOKA,      // TD Rocket Soldier launch (BAZOOK1) — WEAPON_TDDRAGON Report=
 
     VOC_COUNT,
     VOC_FIRST = 0

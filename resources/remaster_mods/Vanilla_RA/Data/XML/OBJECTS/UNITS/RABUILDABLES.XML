@@ -1568,4 +1568,12 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<ObjectTypeClass Name="RA_TDE3" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_ROCKET_SOLDIER</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_ROCKET_SOLDIER</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_RocketSoldier</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 </ObjectTypeList>

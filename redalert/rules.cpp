@@ -718,6 +718,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDNike");       // WEAPON_TDNIKE (TD SAM Site)
     new WeaponTypeClass("TDM16");        // WEAPON_TDM16 (TD Minigunner rifle, E1)
     new WeaponTypeClass("TDGrenade");    // WEAPON_TDGRENADE (TD Grenadier toss, E2)
+    new WeaponTypeClass("TDDragon");     // WEAPON_TDDRAGON (TD Rocket Soldier launcher, E3)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -736,6 +737,10 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // TDGrenade (Grenadier): IsTDPort for TD cadence + raw Speed; its arcing bullet
     // flies via the ported AI_TD (which handles IsArcing — bullet.cpp:375/827).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDGrenade"))->IsTDPort = true;
+    // TDDragon (Rocket Soldier): IsTDPort for raw Speed (MPH_ROCKET=60) + AI_TD homing
+    // dispatch; its visible rotating missile (BULLET_TDTOW) homes + renders through the
+    // ported AI_TD path, same as TDPatriot/TDSSM.
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TDDragon"))->IsTDPort = true;
 
     return (true);
 }

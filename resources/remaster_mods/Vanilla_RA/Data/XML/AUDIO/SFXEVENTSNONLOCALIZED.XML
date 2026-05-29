@@ -6122,6 +6122,27 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     </SampleNamesList>
   </SFXEvent>
 
+  <!-- Rocket Soldier launch (TDE3, WEAPON_TDDRAGON Report=BAZOOK1). Base ships
+       the TDC/TDR WAVs; engine fires VOC_TD_BAZOOKA, launcher resolves via RAC_/RAR_.
+       GDI routes to RAC_ (Allied side), Nod to RAR_ (Soviet side). -->
+  <SFXEvent Name="RAC_SFX_BAZOOK1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDC_SFX_BAZOOK1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_BAZOOK1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_BAZOOK1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
   <!-- TdTurretGun cannon (TDGUN Nod Turret) -->
   <SFXEvent Name="RAC_SFX_TNKFIRE6" Preset="_PRESET_MD_MOBIUS_2D">
     <IsPreset> False </IsPreset>
