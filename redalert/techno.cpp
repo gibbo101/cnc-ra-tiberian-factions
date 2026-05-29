@@ -3438,6 +3438,10 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             case ANIM_SAM_N:
                 a = AnimType(ANIM_SAM_N + Dir_Facing(PrimaryFacing.Current()));
                 break;
+
+            case ANIM_FLAME_N:
+                a = AnimType(ANIM_FLAME_N + Dir_Facing(Fire_Direction())); // TD-faithful (techno.cpp:2378)
+                break;
             }
 
             /*
@@ -3454,6 +3458,21 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 if (anim != NULL) {
                     anim->Attach_To(this);
                 }
+#if 0 // TF DEV: flame-anim diagnostic (stub; flip to 1 to re-enable)
+                if (weapon->IsTDPort) {
+                    static FILE* ff = NULL;
+                    if (ff == NULL) {
+                        const char* h = getenv("USERPROFILE");
+                        if (h == NULL) h = getenv("HOME");
+                        if (h != NULL) { char p[512]; snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_flame.log", h); ff = fopen(p, "w"); }
+                    }
+                    if (ff != NULL) {
+                        fprintf(ff, "Fire_At IsTDPort: Anim(raw)=%d a(dir)=%d IniName=%s anim=%p\n",
+                                (int)weapon->Anim, (int)a, (a != ANIM_NONE) ? AnimTypeClass::As_Reference(a).IniName : "NONE", (void*)anim);
+                        fflush(ff);
+                    }
+                }
+#endif
             }
 
             /*

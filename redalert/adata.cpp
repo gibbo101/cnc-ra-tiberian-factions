@@ -2317,6 +2317,20 @@ void AnimTypeClass::operator delete(void* pointer)
  * HISTORY:                                                                                    *
  *   07/09/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
+// Tiberian Factions -- TD flamethrower directional muzzle jets (ANIM_FLAME_*, E4).
+// Ported from tiberiandawn/adata.cpp FlameN.. (IsFlameThrower=true, 9 stages). RA's
+// AnimTypeClass inserts an IsTheater param after BiggestStage (=false). 8 dirs in
+// Dir_Facing order to match the techno.cpp `ANIM_FLAME_N + Dir_Facing` dispatch; art
+// renders from the base TD FLAME-<dir> SHPs via the RA_VFX.XML tiles (no bundling).
+static AnimTypeClass const FlameN(ANIM_FLAME_N, "TDFLAME-N", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const FlameNE(ANIM_FLAME_NE, "TDFLAME-NE", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const FlameE(ANIM_FLAME_E, "TDFLAME-E", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const FlameSE(ANIM_FLAME_SE, "TDFLAME-SE", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const FlameS(ANIM_FLAME_S, "TDFLAME-S", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const FlameSW(ANIM_FLAME_SW, "TDFLAME-SW", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const FlameW(ANIM_FLAME_W, "TDFLAME-W", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const FlameNW(ANIM_FLAME_NW, "TDFLAME-NW", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+
 void AnimTypeClass::Init_Heap(void)
 {
     /*
@@ -2365,6 +2379,14 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(GUNSW);
     new AnimTypeClass(GUNW);
     new AnimTypeClass(GUNNW);
+    new AnimTypeClass(FlameN);
+    new AnimTypeClass(FlameNE);
+    new AnimTypeClass(FlameE);
+    new AnimTypeClass(FlameSE);
+    new AnimTypeClass(FlameS);
+    new AnimTypeClass(FlameSW);
+    new AnimTypeClass(FlameW);
+    new AnimTypeClass(FlameNW);
     new AnimTypeClass(LZSmoke);
     new AnimTypeClass(CDeviator);
     new AnimTypeClass(CDollar);
@@ -2461,6 +2483,26 @@ void AnimTypeClass::One_Time(void)
 #endif
         }
     }
+
+#ifdef REMASTER_BUILD
+    /*
+    **	Tiberian Factions: the TD Flamethrower's directional muzzle jets (TDFLAME-N..NW)
+    **	are HD-tile-only -- no classic SHP in any MIX -- so the loop above leaves their
+    **	ImageData NULL and the GlyphX overlay draws a green placeholder instead of
+    **	resolving the RA_VFX TDFLAME-<dir> tile. Identical fix to ANIM_BEACON_VIRTUAL
+    **	(Init, below) and our bullet/unit/aircraft MFCD donor-ImageData pattern: hand the
+    **	anim a vanilla donor's ImageData so Draw_It passes its NULL guard; the overlay then
+    **	renders the real TDFLAME-<dir> sprite by IniName from the tileset.
+    */
+    {
+        void const* flame_donor = As_Reference(ANIM_FBALL1).ImageData;
+        for (int fa = ANIM_FLAME_N; fa <= ANIM_FLAME_NW; fa++) {
+            if (As_Reference((AnimType)fa).ImageData == NULL) {
+                ((void const*&)As_Reference((AnimType)fa).ImageData) = flame_donor;
+            }
+        }
+    }
+#endif
 }
 
 /***********************************************************************************************

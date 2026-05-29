@@ -697,6 +697,53 @@ static InfantryTypeClass const TdE3(INFANTRY_TDE3, // Infantry type number.
                                     0              // pointer to override remap table
 );
 
+// Tiberian Factions -- TD Flamethrower (INFANTRY_TDE4), ported from TD's E4
+// (tiberiandawn/idata.cpp:336). NOD-ONLY (TD's E4 = HOUSEF_BAD). The table is RA's
+// E4DoControlsVirtual values (RA's E4 IS the TD flamethrower). Stats from rules.ini
+// [TDE4]; ctor mirrors RA's E4 (firelaunch 2/0). Fires TDFlamethrower -- invisible
+// BULLET_TDFLAME + the directional ANIM_FLAME_N muzzle jet (techno.cpp dispatch).
+static DoInfoStruct TdFlamethrowerDoControls[DO_COUNT] = {
+    {0, 1, 1},     // DO_STAND_READY
+    {8, 1, 1},     // DO_STAND_GUARD
+    {256, 1, 16},  // DO_PRONE
+    {16, 6, 6},    // DO_WALK
+    {64, 16, 16},  // DO_FIRE_WEAPON
+    {192, 2, 2},   // DO_LIE_DOWN
+    {208, 4, 4},   // DO_CRAWL
+    {240, 2, 2},   // DO_GET_UP
+    {256, 16, 16}, // DO_FIRE_PRONE
+    {384, 16, 0},  // DO_IDLE1
+    {400, 16, 0},  // DO_IDLE2
+    {510, 8, 0},   // DO_GUN_DEATH
+    {526, 8, 0},   // DO_EXPLOSION_DEATH
+    {526, 8, 0},   // DO_EXPLOSION2_DEATH
+    {534, 12, 0},  // DO_GRENADE_DEATH
+    {546, 18, 0},  // DO_FIRE_DEATH
+    {564, 3, 3},   // DO_GESTURE1
+    {588, 3, 3},   // DO_SALUTE1
+    {612, 3, 3},   // DO_GESTURE2
+    {636, 3, 3},   // DO_SALUTE2
+    {0, 0, 0},     // DO_DOG_MAUL (N/A)
+};
+static InfantryTypeClass const TdE4(INFANTRY_TDE4, // Infantry type number.
+                                    TXT_E4,        // Translate name number (display via rules.ini Name=).
+                                    "TDE4",        // INI name for infantry.
+                                    0x0035,        // Vertical offset (matches RA's E4 -- same flamethrower sprite).
+                                    0x0010,        // Primary weapon offset along centerline.
+                                    false,         // Is this a female type?
+                                    true,          // Has crawling animation frames?
+                                    false,         // Is this a civilian?
+                                    false,         // Does this unit use the override remap table?
+                                    false,         // Always use the given name for the infantry?
+                                    false,         // Theater specific graphic image?
+                                    PIP_FULL,      // Transport pip shape/color to use.
+                                    TdFlamethrowerDoControls,
+                                    TdFlamethrowerDoControls,
+                                    2,             // Frame of projectile launch (TD E4).
+                                    0,             // Frame of projectile launch while prone (TD E4).
+                                    0              // pointer to override remap table
+);
+
 // Bazooka
 static InfantryTypeClass const E3(INFANTRY_E3, // Infantry type number.
                                   TXT_E3,      // Translate name number for infantry type.
@@ -1326,6 +1373,7 @@ void InfantryTypeClass::Init_Heap(void)
     new InfantryTypeClass(TdE1);
     new InfantryTypeClass(TdE2);
     new InfantryTypeClass(TdE3);
+    new InfantryTypeClass(TdE4);
 }
 
 /***********************************************************************************************
@@ -1588,6 +1636,14 @@ void InfantryTypeClass::One_Time(void)
     }
     if (tde3.CameoData == NULL) {
         ((void const*&)tde3.CameoData) = As_Reference(INFANTRY_E3).CameoData;
+    }
+
+    InfantryTypeClass& tde4 = As_Reference(INFANTRY_TDE4);  // TD Flamethrower -- donor E4 (RA's flamethrower).
+    if (tde4.ImageData == NULL) {
+        ((void const*&)tde4.ImageData) = As_Reference(INFANTRY_E4).ImageData;
+    }
+    if (tde4.CameoData == NULL) {
+        ((void const*&)tde4.CameoData) = As_Reference(INFANTRY_E4).CameoData;
     }
 }
 

@@ -6143,6 +6143,26 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     </SampleNamesList>
   </SFXEvent>
 
+  <!-- Flamethrower jet (TDE4, WEAPON_TDFLAME Report=FLAMER2; TD VOC_FLAMER1 = file
+       FLAMER2). Base ships the TDC/TDR WAVs; Nod (E4) routes to RAR_ (Soviet side). -->
+  <SFXEvent Name="RAC_SFX_FLAMER2" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDC_SFX_FLAMER2.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_FLAMER2" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_FLAMER2.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
   <!-- TdTurretGun cannon (TDGUN Nod Turret) -->
   <SFXEvent Name="RAC_SFX_TNKFIRE6" Preset="_PRESET_MD_MOBIUS_2D">
     <IsPreset> False </IsPreset>

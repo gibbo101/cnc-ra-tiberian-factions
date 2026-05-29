@@ -653,6 +653,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TDPB");    // WARHEAD_TDPB (TD particle beam — Ion Cannon)
     new WarheadTypeClass("TDSA");    // WARHEAD_TDSA (TD small arms — Minigunner/Pistol/M60MG)
     new WarheadTypeClass("TDAP");    // WARHEAD_TDAP (TD armor-piercing — APDS / SAM / Dragon)
+    new WarheadTypeClass("TDFire");   // WARHEAD_TDFIRE (TD incendiary — Flamethrower E4)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
@@ -719,6 +720,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDM16");        // WEAPON_TDM16 (TD Minigunner rifle, E1)
     new WeaponTypeClass("TDGrenade");    // WEAPON_TDGRENADE (TD Grenadier toss, E2)
     new WeaponTypeClass("TDDragon");     // WEAPON_TDDRAGON (TD Rocket Soldier launcher, E3)
+    new WeaponTypeClass("TDFlamethrower"); // WEAPON_TDFLAME (TD Flamethrower, E4)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -741,6 +743,10 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // dispatch; its visible rotating missile (BULLET_TDTOW) homes + renders through the
     // ported AI_TD path, same as TDPatriot/TDSSM.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDDragon"))->IsTDPort = true;
+    // TDFlamethrower (E4): IsTDPort for TD fire cadence + raw Speed (MPH_FAST). Its invisible
+    // BULLET_TDFLAME carries WARHEAD_TDFIRE; the visible jet is the ANIM_FLAME_N directional
+    // muzzle anim (techno.cpp), not a projectile sprite.
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TDFlamethrower"))->IsTDPort = true;
 
     return (true);
 }

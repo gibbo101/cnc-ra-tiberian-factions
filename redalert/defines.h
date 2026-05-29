@@ -1345,6 +1345,7 @@ typedef enum BulletType : char
     BULLET_TDPATRIOT, // TD SAM Site Patriot missile (Homing, AA-only, MPH_VERY_FAST).
     BULLET_TDBULLET, // TD small-arms invisible round ("50cal") — Pistol/M16/M60MG; warhead set on the weapon.
     BULLET_TDTOW, // TD Rocket Soldier missile (E3 Dragon/TOW) — Homing, visible 32-frame rotating, WARHEAD_TDAP.
+    BULLET_TDFLAME, // TD Flamethrower round (E4) — invisible; the visible effect is the ANIM_FLAME_N muzzle jet.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -1652,6 +1653,7 @@ typedef enum InfantryType : char
     INFANTRY_TDE1, // TD Minigunner (E1) — basic rifleman, GDI+Nod, fires TDM16.
     INFANTRY_TDE2, // TD Grenadier (E2) — GDI-only, lobs TDGrenade (visible arc).
     INFANTRY_TDE3, // TD Rocket Soldier (E3) — GDI+Nod, fires TDDragon homing missile (anti-armor/air).
+    INFANTRY_TDE4, // TD Flamethrower (E4) — Nod-only, fires TDFlame (invisible round + directional flame jet).
 
     INFANTRY_COUNT,
     INFANTRY_FIRST = 0
@@ -2356,6 +2358,14 @@ typedef enum AnimType : char
     ANIM_GUN_SW,
     ANIM_GUN_W,
     ANIM_GUN_NW,
+    ANIM_FLAME_N, // TD flamethrower jet (E4) -- directional muzzle anim, 8 dirs in Dir_Facing order.
+    ANIM_FLAME_NE,
+    ANIM_FLAME_E,
+    ANIM_FLAME_SE,
+    ANIM_FLAME_S,
+    ANIM_FLAME_SW,
+    ANIM_FLAME_W,
+    ANIM_FLAME_NW,
     ANIM_LZ_SMOKE,
     ANIM_CRATE_DEVIATOR, // Red finned missile.
     ANIM_CRATE_DOLLAR,   // Dollar sign.
@@ -2767,6 +2777,7 @@ typedef enum WarheadType : char
     WARHEAD_TDPB,  // Particle beam (TD WARHEAD_PB) — Ion Cannon strike. {1.0, 1.0, 0.75, 0.75, 0.75}.
     WARHEAD_TDSA,  // TD small arms (WARHEAD_SA) — Spread 2, verses {1.0,0.5,0.5625,0.25,0.25}, no destroy.
     WARHEAD_TDAP,  // TD armor-piercing (WARHEAD_AP) — Spread 6, verses {0.25,0.75,0.75,1.0,0.5}, destroys wall+wood (APDS / SAM / Dragon).
+    WARHEAD_TDFIRE, // TD incendiary (WARHEAD_FIRE) — Spread 8, verses {0.88,1.0,0.69,0.25,0.5}, destroys wood+tiberium not wall (Flamethrower).
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
@@ -2843,6 +2854,7 @@ typedef enum WeaponType : char
     WEAPON_TDM16,          // TD Minigunner rifle (E1) — Dmg15/ROF20/Range2, BULLET_TDBULLET, WARHEAD_TDSA.
     WEAPON_TDGRENADE,      // TD Grenadier toss (E2) — Dmg50/ROF60/Range3.25, Projectile=Lobbed (RA bomb), WARHEAD_TDHE.
     WEAPON_TDDRAGON,       // TD Rocket Soldier launcher (E3) — Dmg30/ROF60/Range4, BULLET_TDTOW, WARHEAD_TDAP, Report=BAZOOK1.
+    WEAPON_TDFLAME,        // TD Flamethrower (E4, Nod) — Dmg35/ROF50/Range2, BULLET_TDFLAME, WARHEAD_TDFIRE, Anim=FLAME-N.
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -3465,6 +3477,7 @@ typedef enum VocType : short
     VOC_TD_M16,          // TD Minigunner M-16 triple burst (MGUN2) — WEAPON_TDM16 Report=
     VOC_TD_TOSS,         // TD grenade toss (TOSS1) — WEAPON_TDGRENADE Report=
     VOC_TD_BAZOOKA,      // TD Rocket Soldier launch (BAZOOK1) — WEAPON_TDDRAGON Report=
+    VOC_TD_FLAMER,       // TD Flamethrower (FLAMER2) — WEAPON_TDFLAME Report= (TD VOC_FLAMER1 maps to file FLAMER2)
 
     VOC_COUNT,
     VOC_FIRST = 0

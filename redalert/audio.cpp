@@ -263,6 +263,7 @@ struct SoundEffectNameStruct
     {"MGUN2", 1, IN_NOVAR},     // VOC_TD_M16 — TD Minigunner M-16 triple burst (WEAPON_TDM16 Report=), routed via RAC/RAR_SFX_MGUN2
     {"TOSS1", 1, IN_NOVAR},     // VOC_TD_TOSS — TD Grenadier toss (WEAPON_TDGRENADE Report=), routed via RAC/RAR_SFX_TOSS1
     {"BAZOOK1", 1, IN_NOVAR},   // VOC_TD_BAZOOKA — TD Rocket Soldier launch (WEAPON_TDDRAGON Report=), routed via RAC/RAR_SFX_BAZOOK1
+    {"FLAMER2", 1, IN_NOVAR},   // VOC_TD_FLAMER — TD Flamethrower (WEAPON_TDFLAME Report=FLAMER2; TD VOC_FLAMER1 = file FLAMER2), routed via RAC/RAR_SFX_FLAMER2
 };
 
 //

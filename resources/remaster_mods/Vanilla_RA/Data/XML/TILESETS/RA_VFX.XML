@@ -6253,1145 +6253,1145 @@
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-E</Name>
+					<Name>TDFLAME-E</Name>
 					<Shape>0</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-e\flame-e-0000.tga</Frame>
+						<Frame>tdflame-e\tdflame-e-0000.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-E</Name>
+					<Name>TDFLAME-E</Name>
 					<Shape>1</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-e\flame-e-0001.tga</Frame>
+						<Frame>tdflame-e\tdflame-e-0001.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-E</Name>
+					<Name>TDFLAME-E</Name>
 					<Shape>2</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-e\flame-e-0002.tga</Frame>
+						<Frame>tdflame-e\tdflame-e-0002.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-E</Name>
+					<Name>TDFLAME-E</Name>
 					<Shape>3</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-e\flame-e-0003.tga</Frame>
+						<Frame>tdflame-e\tdflame-e-0003.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-E</Name>
+					<Name>TDFLAME-E</Name>
 					<Shape>4</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-e\flame-e-0004.tga</Frame>
+						<Frame>tdflame-e\tdflame-e-0004.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-E</Name>
+					<Name>TDFLAME-E</Name>
 					<Shape>5</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-e\flame-e-0005.tga</Frame>
+						<Frame>tdflame-e\tdflame-e-0005.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-E</Name>
+					<Name>TDFLAME-E</Name>
 					<Shape>6</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-e\flame-e-0006.tga</Frame>
+						<Frame>tdflame-e\tdflame-e-0006.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-E</Name>
+					<Name>TDFLAME-E</Name>
 					<Shape>7</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-e\flame-e-0007.tga</Frame>
+						<Frame>tdflame-e\tdflame-e-0007.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-E</Name>
+					<Name>TDFLAME-E</Name>
 					<Shape>8</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-e\flame-e-0008.tga</Frame>
+						<Frame>tdflame-e\tdflame-e-0008.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-E</Name>
+					<Name>TDFLAME-E</Name>
 					<Shape>9</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-e\flame-e-0009.tga</Frame>
+						<Frame>tdflame-e\tdflame-e-0009.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-E</Name>
+					<Name>TDFLAME-E</Name>
 					<Shape>10</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-e\flame-e-0010.tga</Frame>
+						<Frame>tdflame-e\tdflame-e-0010.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-E</Name>
+					<Name>TDFLAME-E</Name>
 					<Shape>11</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-e\flame-e-0011.tga</Frame>
+						<Frame>tdflame-e\tdflame-e-0011.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-E</Name>
+					<Name>TDFLAME-E</Name>
 					<Shape>12</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-e\flame-e-0012.tga</Frame>
+						<Frame>tdflame-e\tdflame-e-0012.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-N</Name>
+					<Name>TDFLAME-N</Name>
 					<Shape>0</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-n\flame-n-0000.tga</Frame>
+						<Frame>tdflame-n\tdflame-n-0000.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-N</Name>
+					<Name>TDFLAME-N</Name>
 					<Shape>1</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-n\flame-n-0001.tga</Frame>
+						<Frame>tdflame-n\tdflame-n-0001.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-N</Name>
+					<Name>TDFLAME-N</Name>
 					<Shape>2</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-n\flame-n-0002.tga</Frame>
+						<Frame>tdflame-n\tdflame-n-0002.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-N</Name>
+					<Name>TDFLAME-N</Name>
 					<Shape>3</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-n\flame-n-0003.tga</Frame>
+						<Frame>tdflame-n\tdflame-n-0003.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-N</Name>
+					<Name>TDFLAME-N</Name>
 					<Shape>4</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-n\flame-n-0004.tga</Frame>
+						<Frame>tdflame-n\tdflame-n-0004.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-N</Name>
+					<Name>TDFLAME-N</Name>
 					<Shape>5</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-n\flame-n-0005.tga</Frame>
+						<Frame>tdflame-n\tdflame-n-0005.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-N</Name>
+					<Name>TDFLAME-N</Name>
 					<Shape>6</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-n\flame-n-0006.tga</Frame>
+						<Frame>tdflame-n\tdflame-n-0006.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-N</Name>
+					<Name>TDFLAME-N</Name>
 					<Shape>7</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-n\flame-n-0007.tga</Frame>
+						<Frame>tdflame-n\tdflame-n-0007.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-N</Name>
+					<Name>TDFLAME-N</Name>
 					<Shape>8</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-n\flame-n-0008.tga</Frame>
+						<Frame>tdflame-n\tdflame-n-0008.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-N</Name>
+					<Name>TDFLAME-N</Name>
 					<Shape>9</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-n\flame-n-0009.tga</Frame>
+						<Frame>tdflame-n\tdflame-n-0009.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-N</Name>
+					<Name>TDFLAME-N</Name>
 					<Shape>10</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-n\flame-n-0010.tga</Frame>
+						<Frame>tdflame-n\tdflame-n-0010.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-N</Name>
+					<Name>TDFLAME-N</Name>
 					<Shape>11</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-n\flame-n-0011.tga</Frame>
+						<Frame>tdflame-n\tdflame-n-0011.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-N</Name>
+					<Name>TDFLAME-N</Name>
 					<Shape>12</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-n\flame-n-0012.tga</Frame>
+						<Frame>tdflame-n\tdflame-n-0012.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NE</Name>
+					<Name>TDFLAME-NE</Name>
 					<Shape>0</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-ne\flame-ne-0000.tga</Frame>
+						<Frame>tdflame-ne\tdflame-ne-0000.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NE</Name>
+					<Name>TDFLAME-NE</Name>
 					<Shape>1</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-ne\flame-ne-0001.tga</Frame>
+						<Frame>tdflame-ne\tdflame-ne-0001.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NE</Name>
+					<Name>TDFLAME-NE</Name>
 					<Shape>2</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-ne\flame-ne-0002.tga</Frame>
+						<Frame>tdflame-ne\tdflame-ne-0002.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NE</Name>
+					<Name>TDFLAME-NE</Name>
 					<Shape>3</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-ne\flame-ne-0003.tga</Frame>
+						<Frame>tdflame-ne\tdflame-ne-0003.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NE</Name>
+					<Name>TDFLAME-NE</Name>
 					<Shape>4</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-ne\flame-ne-0004.tga</Frame>
+						<Frame>tdflame-ne\tdflame-ne-0004.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NE</Name>
+					<Name>TDFLAME-NE</Name>
 					<Shape>5</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-ne\flame-ne-0005.tga</Frame>
+						<Frame>tdflame-ne\tdflame-ne-0005.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NE</Name>
+					<Name>TDFLAME-NE</Name>
 					<Shape>6</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-ne\flame-ne-0006.tga</Frame>
+						<Frame>tdflame-ne\tdflame-ne-0006.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NE</Name>
+					<Name>TDFLAME-NE</Name>
 					<Shape>7</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-ne\flame-ne-0007.tga</Frame>
+						<Frame>tdflame-ne\tdflame-ne-0007.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NE</Name>
+					<Name>TDFLAME-NE</Name>
 					<Shape>8</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-ne\flame-ne-0008.tga</Frame>
+						<Frame>tdflame-ne\tdflame-ne-0008.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NE</Name>
+					<Name>TDFLAME-NE</Name>
 					<Shape>9</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-ne\flame-ne-0009.tga</Frame>
+						<Frame>tdflame-ne\tdflame-ne-0009.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NE</Name>
+					<Name>TDFLAME-NE</Name>
 					<Shape>10</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-ne\flame-ne-0010.tga</Frame>
+						<Frame>tdflame-ne\tdflame-ne-0010.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NE</Name>
+					<Name>TDFLAME-NE</Name>
 					<Shape>11</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-ne\flame-ne-0011.tga</Frame>
+						<Frame>tdflame-ne\tdflame-ne-0011.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NE</Name>
+					<Name>TDFLAME-NE</Name>
 					<Shape>12</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-ne\flame-ne-0012.tga</Frame>
+						<Frame>tdflame-ne\tdflame-ne-0012.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NW</Name>
+					<Name>TDFLAME-NW</Name>
 					<Shape>0</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-nw\flame-nw-0000.tga</Frame>
+						<Frame>tdflame-nw\tdflame-nw-0000.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NW</Name>
+					<Name>TDFLAME-NW</Name>
 					<Shape>1</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-nw\flame-nw-0001.tga</Frame>
+						<Frame>tdflame-nw\tdflame-nw-0001.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NW</Name>
+					<Name>TDFLAME-NW</Name>
 					<Shape>2</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-nw\flame-nw-0002.tga</Frame>
+						<Frame>tdflame-nw\tdflame-nw-0002.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NW</Name>
+					<Name>TDFLAME-NW</Name>
 					<Shape>3</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-nw\flame-nw-0003.tga</Frame>
+						<Frame>tdflame-nw\tdflame-nw-0003.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NW</Name>
+					<Name>TDFLAME-NW</Name>
 					<Shape>4</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-nw\flame-nw-0004.tga</Frame>
+						<Frame>tdflame-nw\tdflame-nw-0004.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NW</Name>
+					<Name>TDFLAME-NW</Name>
 					<Shape>5</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-nw\flame-nw-0005.tga</Frame>
+						<Frame>tdflame-nw\tdflame-nw-0005.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NW</Name>
+					<Name>TDFLAME-NW</Name>
 					<Shape>6</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-nw\flame-nw-0006.tga</Frame>
+						<Frame>tdflame-nw\tdflame-nw-0006.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NW</Name>
+					<Name>TDFLAME-NW</Name>
 					<Shape>7</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-nw\flame-nw-0007.tga</Frame>
+						<Frame>tdflame-nw\tdflame-nw-0007.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NW</Name>
+					<Name>TDFLAME-NW</Name>
 					<Shape>8</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-nw\flame-nw-0008.tga</Frame>
+						<Frame>tdflame-nw\tdflame-nw-0008.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NW</Name>
+					<Name>TDFLAME-NW</Name>
 					<Shape>9</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-nw\flame-nw-0009.tga</Frame>
+						<Frame>tdflame-nw\tdflame-nw-0009.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NW</Name>
+					<Name>TDFLAME-NW</Name>
 					<Shape>10</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-nw\flame-nw-0010.tga</Frame>
+						<Frame>tdflame-nw\tdflame-nw-0010.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NW</Name>
+					<Name>TDFLAME-NW</Name>
 					<Shape>11</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-nw\flame-nw-0011.tga</Frame>
+						<Frame>tdflame-nw\tdflame-nw-0011.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-NW</Name>
+					<Name>TDFLAME-NW</Name>
 					<Shape>12</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-nw\flame-nw-0012.tga</Frame>
+						<Frame>tdflame-nw\tdflame-nw-0012.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-S</Name>
+					<Name>TDFLAME-S</Name>
 					<Shape>0</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-s\flame-s-0000.tga</Frame>
+						<Frame>tdflame-s\tdflame-s-0000.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-S</Name>
+					<Name>TDFLAME-S</Name>
 					<Shape>1</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-s\flame-s-0001.tga</Frame>
+						<Frame>tdflame-s\tdflame-s-0001.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-S</Name>
+					<Name>TDFLAME-S</Name>
 					<Shape>2</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-s\flame-s-0002.tga</Frame>
+						<Frame>tdflame-s\tdflame-s-0002.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-S</Name>
+					<Name>TDFLAME-S</Name>
 					<Shape>3</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-s\flame-s-0003.tga</Frame>
+						<Frame>tdflame-s\tdflame-s-0003.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-S</Name>
+					<Name>TDFLAME-S</Name>
 					<Shape>4</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-s\flame-s-0004.tga</Frame>
+						<Frame>tdflame-s\tdflame-s-0004.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-S</Name>
+					<Name>TDFLAME-S</Name>
 					<Shape>5</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-s\flame-s-0005.tga</Frame>
+						<Frame>tdflame-s\tdflame-s-0005.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-S</Name>
+					<Name>TDFLAME-S</Name>
 					<Shape>6</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-s\flame-s-0006.tga</Frame>
+						<Frame>tdflame-s\tdflame-s-0006.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-S</Name>
+					<Name>TDFLAME-S</Name>
 					<Shape>7</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-s\flame-s-0007.tga</Frame>
+						<Frame>tdflame-s\tdflame-s-0007.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-S</Name>
+					<Name>TDFLAME-S</Name>
 					<Shape>8</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-s\flame-s-0008.tga</Frame>
+						<Frame>tdflame-s\tdflame-s-0008.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-S</Name>
+					<Name>TDFLAME-S</Name>
 					<Shape>9</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-s\flame-s-0009.tga</Frame>
+						<Frame>tdflame-s\tdflame-s-0009.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-S</Name>
+					<Name>TDFLAME-S</Name>
 					<Shape>10</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-s\flame-s-0010.tga</Frame>
+						<Frame>tdflame-s\tdflame-s-0010.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-S</Name>
+					<Name>TDFLAME-S</Name>
 					<Shape>11</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-s\flame-s-0011.tga</Frame>
+						<Frame>tdflame-s\tdflame-s-0011.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-S</Name>
+					<Name>TDFLAME-S</Name>
 					<Shape>12</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-s\flame-s-0012.tga</Frame>
+						<Frame>tdflame-s\tdflame-s-0012.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SE</Name>
+					<Name>TDFLAME-SE</Name>
 					<Shape>0</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-se\flame-se-0000.tga</Frame>
+						<Frame>tdflame-se\tdflame-se-0000.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SE</Name>
+					<Name>TDFLAME-SE</Name>
 					<Shape>1</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-se\flame-se-0001.tga</Frame>
+						<Frame>tdflame-se\tdflame-se-0001.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SE</Name>
+					<Name>TDFLAME-SE</Name>
 					<Shape>2</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-se\flame-se-0002.tga</Frame>
+						<Frame>tdflame-se\tdflame-se-0002.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SE</Name>
+					<Name>TDFLAME-SE</Name>
 					<Shape>3</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-se\flame-se-0003.tga</Frame>
+						<Frame>tdflame-se\tdflame-se-0003.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SE</Name>
+					<Name>TDFLAME-SE</Name>
 					<Shape>4</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-se\flame-se-0004.tga</Frame>
+						<Frame>tdflame-se\tdflame-se-0004.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SE</Name>
+					<Name>TDFLAME-SE</Name>
 					<Shape>5</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-se\flame-se-0005.tga</Frame>
+						<Frame>tdflame-se\tdflame-se-0005.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SE</Name>
+					<Name>TDFLAME-SE</Name>
 					<Shape>6</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-se\flame-se-0006.tga</Frame>
+						<Frame>tdflame-se\tdflame-se-0006.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SE</Name>
+					<Name>TDFLAME-SE</Name>
 					<Shape>7</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-se\flame-se-0007.tga</Frame>
+						<Frame>tdflame-se\tdflame-se-0007.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SE</Name>
+					<Name>TDFLAME-SE</Name>
 					<Shape>8</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-se\flame-se-0008.tga</Frame>
+						<Frame>tdflame-se\tdflame-se-0008.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SE</Name>
+					<Name>TDFLAME-SE</Name>
 					<Shape>9</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-se\flame-se-0009.tga</Frame>
+						<Frame>tdflame-se\tdflame-se-0009.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SE</Name>
+					<Name>TDFLAME-SE</Name>
 					<Shape>10</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-se\flame-se-0010.tga</Frame>
+						<Frame>tdflame-se\tdflame-se-0010.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SE</Name>
+					<Name>TDFLAME-SE</Name>
 					<Shape>11</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-se\flame-se-0011.tga</Frame>
+						<Frame>tdflame-se\tdflame-se-0011.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SE</Name>
+					<Name>TDFLAME-SE</Name>
 					<Shape>12</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-se\flame-se-0012.tga</Frame>
+						<Frame>tdflame-se\tdflame-se-0012.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SW</Name>
+					<Name>TDFLAME-SW</Name>
 					<Shape>0</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-sw\flame-sw-0000.tga</Frame>
+						<Frame>tdflame-sw\tdflame-sw-0000.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SW</Name>
+					<Name>TDFLAME-SW</Name>
 					<Shape>1</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-sw\flame-sw-0001.tga</Frame>
+						<Frame>tdflame-sw\tdflame-sw-0001.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SW</Name>
+					<Name>TDFLAME-SW</Name>
 					<Shape>2</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-sw\flame-sw-0002.tga</Frame>
+						<Frame>tdflame-sw\tdflame-sw-0002.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SW</Name>
+					<Name>TDFLAME-SW</Name>
 					<Shape>3</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-sw\flame-sw-0003.tga</Frame>
+						<Frame>tdflame-sw\tdflame-sw-0003.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SW</Name>
+					<Name>TDFLAME-SW</Name>
 					<Shape>4</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-sw\flame-sw-0004.tga</Frame>
+						<Frame>tdflame-sw\tdflame-sw-0004.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SW</Name>
+					<Name>TDFLAME-SW</Name>
 					<Shape>5</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-sw\flame-sw-0005.tga</Frame>
+						<Frame>tdflame-sw\tdflame-sw-0005.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SW</Name>
+					<Name>TDFLAME-SW</Name>
 					<Shape>6</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-sw\flame-sw-0006.tga</Frame>
+						<Frame>tdflame-sw\tdflame-sw-0006.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SW</Name>
+					<Name>TDFLAME-SW</Name>
 					<Shape>7</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-sw\flame-sw-0007.tga</Frame>
+						<Frame>tdflame-sw\tdflame-sw-0007.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SW</Name>
+					<Name>TDFLAME-SW</Name>
 					<Shape>8</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-sw\flame-sw-0008.tga</Frame>
+						<Frame>tdflame-sw\tdflame-sw-0008.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SW</Name>
+					<Name>TDFLAME-SW</Name>
 					<Shape>9</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-sw\flame-sw-0009.tga</Frame>
+						<Frame>tdflame-sw\tdflame-sw-0009.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SW</Name>
+					<Name>TDFLAME-SW</Name>
 					<Shape>10</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-sw\flame-sw-0010.tga</Frame>
+						<Frame>tdflame-sw\tdflame-sw-0010.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SW</Name>
+					<Name>TDFLAME-SW</Name>
 					<Shape>11</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-sw\flame-sw-0011.tga</Frame>
+						<Frame>tdflame-sw\tdflame-sw-0011.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-SW</Name>
+					<Name>TDFLAME-SW</Name>
 					<Shape>12</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-sw\flame-sw-0012.tga</Frame>
+						<Frame>tdflame-sw\tdflame-sw-0012.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-W</Name>
+					<Name>TDFLAME-W</Name>
 					<Shape>0</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-w\flame-w-0000.tga</Frame>
+						<Frame>tdflame-w\tdflame-w-0000.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-W</Name>
+					<Name>TDFLAME-W</Name>
 					<Shape>1</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-w\flame-w-0001.tga</Frame>
+						<Frame>tdflame-w\tdflame-w-0001.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-W</Name>
+					<Name>TDFLAME-W</Name>
 					<Shape>2</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-w\flame-w-0002.tga</Frame>
+						<Frame>tdflame-w\tdflame-w-0002.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-W</Name>
+					<Name>TDFLAME-W</Name>
 					<Shape>3</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-w\flame-w-0003.tga</Frame>
+						<Frame>tdflame-w\tdflame-w-0003.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-W</Name>
+					<Name>TDFLAME-W</Name>
 					<Shape>4</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-w\flame-w-0004.tga</Frame>
+						<Frame>tdflame-w\tdflame-w-0004.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-W</Name>
+					<Name>TDFLAME-W</Name>
 					<Shape>5</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-w\flame-w-0005.tga</Frame>
+						<Frame>tdflame-w\tdflame-w-0005.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-W</Name>
+					<Name>TDFLAME-W</Name>
 					<Shape>6</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-w\flame-w-0006.tga</Frame>
+						<Frame>tdflame-w\tdflame-w-0006.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-W</Name>
+					<Name>TDFLAME-W</Name>
 					<Shape>7</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-w\flame-w-0007.tga</Frame>
+						<Frame>tdflame-w\tdflame-w-0007.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-W</Name>
+					<Name>TDFLAME-W</Name>
 					<Shape>8</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-w\flame-w-0008.tga</Frame>
+						<Frame>tdflame-w\tdflame-w-0008.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-W</Name>
+					<Name>TDFLAME-W</Name>
 					<Shape>9</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-w\flame-w-0009.tga</Frame>
+						<Frame>tdflame-w\tdflame-w-0009.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-W</Name>
+					<Name>TDFLAME-W</Name>
 					<Shape>10</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-w\flame-w-0010.tga</Frame>
+						<Frame>tdflame-w\tdflame-w-0010.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-W</Name>
+					<Name>TDFLAME-W</Name>
 					<Shape>11</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-w\flame-w-0011.tga</Frame>
+						<Frame>tdflame-w\tdflame-w-0011.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
 			<Tile>
 				<Key>
-					<Name>FLAME-W</Name>
+					<Name>TDFLAME-W</Name>
 					<Shape>12</Shape>
 				</Key>
 				<Value>
 					<Frames>
-						<Frame>flame-w\flame-w-0012.tga</Frame>
+						<Frame>tdflame-w\tdflame-w-0012.tga</Frame>
 					</Frames>
 				</Value>
 			</Tile>
