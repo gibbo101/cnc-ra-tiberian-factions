@@ -213,6 +213,14 @@ data-driven, and a clean stepping stone to Option 3 if co-op ever outgrows these
    to last-team-standing). Two humans needed — Luke + a second account/Deck.
 4. **First milestone proposal:** Option-1 flag + the two `house.cpp` win/lose gates + a trivial
    test `.mpr` → smoke test. Defer briefing gates + real mission design until that proves out.
+5. **TD story NPCs available for mission scripting.** TD's `InfantryType` enum includes three
+   scripted story characters — **Dr. Moebius** (`INFANTRY_MOEBIUS`), **Agent "Delphi"**
+   (`INFANTRY_DELPHI`), **Dr. Chan** (`INFANTRY_CHAN`) — deliberately out of scope for the
+   buildable faction roster (not faction-buildable, no sidebar entry), but they're ready-made
+   **escort / rescue / capture / VIP mission objectives** if a GDI/Nod campaign is authored.
+   They'd port like any TD infantry (sprite bundle via `bundle_unit.py` + an `idata.cpp` ctor)
+   but be **placed via the Mobius editor (§4), not built**. TD assets exist in the MEG; not yet
+   ported. Their voices/cameos would only matter if a mission surfaces them in the UI.
 
 ---
 
