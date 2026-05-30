@@ -282,6 +282,8 @@ struct SoundEffectNameStruct
     {"TDYEAH1", 20, IN_NOVAR},    // VOC_TD_CMD_YEAH — "yea"
     {"TDYES1", 20, IN_NOVAR},     // VOC_TD_CMD_YES — "yes"
     {"TDYO1", 20, IN_NOVAR},      // VOC_TD_CMD_YO — "yo"
+    {"TNKFIRE4", 1, IN_NOVAR},    // VOC_TD_TANK3 — TD sharp tank fire (WEAPON_TD105MM Report=TNKFIRE4), routed via RAC/RAR_SFX_TNKFIRE4
+    {"XPLOBIG6", 1, IN_NOVAR},    // VOC_TD_XPLOBIG6 — TD big explosion (ANIM_TDFRAG2 vehicle death), routed via RAC/RAR_SFX_XPLOBIG6
 };
 
 //

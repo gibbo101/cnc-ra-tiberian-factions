@@ -1713,6 +1713,7 @@ typedef enum UnitType : char
     // Tiberian Factions mod — fully-separated TD-source unit ports.
     UNIT_TDMCV,             // TD Mobile Construction Vehicle (deploys to STRUCT_TDFACT).
     UNIT_TDHARV,            // TD Tiberium Harvester (docks at STRUCT_TDPROC).
+    UNIT_TDMTNK,            // TD Medium Tank (MTNK) — GDI-only, turret, fires TD105mm. udata.cpp:264.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -2422,6 +2423,7 @@ typedef enum AnimType : char
     // Tiberian Factions mod anims ported from TD (tiberiandawn/defines.h
     // ANIM_*). Each is the runtime side-effect anim for a TD weapon/super.
     ANIM_TD_ION_CANNON, // TD GDI Ion Cannon beam strike (TDIONSFX shape).
+    ANIM_TDFRAG2,       // TD vehicle death frag explosion (FRAG3 shape) -- TD's ANIM_FRAG2, which RA lacks (RA only has ANIM_FRAG1).
 
 #ifdef FIXIT_ANTS
     ANIM_ANT1_DEATH,
@@ -2871,6 +2873,7 @@ typedef enum WeaponType : char
     WEAPON_TDFLAME,        // TD Flamethrower (E4, Nod) — Dmg35/ROF50/Range2, BULLET_TDFLAME, WARHEAD_TDFIRE, Anim=FLAME-N.
     WEAPON_TDCHEM,         // TD Chem Warrior spray (E5, Nod) — Dmg80/ROF70/Range2, BULLET_TDCHEM, WARHEAD_TDHE (bullet warhead), Report=FLAMER2, Anim=CHEM-N.
     WEAPON_TDRIFLE,        // TD Commando sniper (RMBO) — Dmg125/ROF40/Range5.5, BULLET_TDBULLET, WARHEAD_TDHOLLOW, Report=RAMGUN2.
+    WEAPON_TD105MM,        // TD Medium Tank cannon (MTNK) — Dmg30/ROF50/Range4.75, BULLET_TDAPDS (reuse), WARHEAD_TDAP (reuse), Report=TNKFIRE4, Anim=GUNFIRE.
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -3512,6 +3515,8 @@ typedef enum VocType : short
     VOC_TD_CMD_YEAH,     // "yea" (YEAH1)
     VOC_TD_CMD_YES,      // "yes" (YES1)
     VOC_TD_CMD_YO,       // "yo" (YO1)
+    VOC_TD_TANK3,        // TD sharp tank fire (TNKFIRE4) — WEAPON_TD105MM Report= (Medium Tank cannon)
+    VOC_TD_XPLOBIG6,     // TD big explosion (XPLOBIG6) — ANIM_TDFRAG2 detonation sound
 
     VOC_COUNT,
     VOC_FIRST = 0

@@ -437,6 +437,44 @@ static UnitTypeClass const UnitTdMcv(UNIT_TDMCV,
                                      MISSION_HUNT     // ORDERS:		Default order to give new unit.
 );
 
+// Tiberian Factions -- TD Medium Tank (UNIT_TDMTNK), ported from TD's UNIT_MTANK
+// (tiberiandawn/udata.cpp:264). GDI-only (TD MTANK = HOUSEF_GOOD). Flags mapped
+// from TD source: combat turret, crusher (squashes infantry), gigundo, crate-goodie;
+// explosion ANIM_FRAG2; 32 rotation stages; turret-center-offset 0 (TD value).
+// Gameplay stats (Strength 400/Sight 3/Cost 800/Armor steel/Speed=MPH_MEDIUM/dmg30/
+// ROF50/range4.75) all come from rules.ini [TDMTNK]/[TD105mm], TD-source-derived.
+// The vertical/weapon RENDER offsets are RA-only ctor fields (no TD equivalent) --
+// a pixel-calibration of the muzzle flash against the TD MTNK turret sprite; started
+// from RA's same-size 2TNK and tuned in-game. Fires WEAPON_TD105MM (BULLET_TDAPDS).
+static UnitTypeClass const UnitTdMtnk(UNIT_TDMTNK,
+                                      TXT_MTANK2,   // NAME: (RA "Medium Tank"; HD display via rules.ini Name=).
+                                      "TDMTNK",     // NAME: IniName.
+                                      ANIM_TDFRAG2, // EXPLOSION: TD vehicle frag explosion (ported TD ANIM_FRAG2 -> TDFRAG3 / FRAG3 art).
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0030,       // Vertical offset (render calibration, ref 2TNK -- tune to TD sprite).
+                                      0x00C0,       // Primary weapon offset along turret centerline (render calibration).
+                                      0x0000,       // Primary weapon lateral offset.
+                                      0x0000,       // Secondary weapon offset (no secondary weapon).
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      true,         // Can this be a goodie surprise from a crate? (TD: yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (TD: yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      true,         // Is it equipped with a combat turret? (TD: yes)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      true,         // Is this a gigundo-rotund-enormous unit? (TD: yes)
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline (TD: 0).
+                                      MISSION_HUNT  // ORDERS: Default order (TD MTANK default).
+);
+
 // Jeep (hummer)
 static UnitTypeClass const UnitJeep(UNIT_JEEP,
                                     TXT_JEEP,     // NAME:			Text name of this unit type.
@@ -1068,6 +1106,7 @@ void UnitTypeClass::Init_Heap(void)
     // Tiberian Factions mod — fully-separated TD-source unit ports.
     new UnitTypeClass(UnitTdMcv);     // UNIT_TDMCV
     new UnitTypeClass(UnitTdHarv);    // UNIT_TDHARV
+    new UnitTypeClass(UnitTdMtnk);    // UNIT_TDMTNK
 }
 
 /***********************************************************************************************

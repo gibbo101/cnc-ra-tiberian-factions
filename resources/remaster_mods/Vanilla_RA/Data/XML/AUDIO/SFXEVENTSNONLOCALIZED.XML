@@ -6203,6 +6203,47 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     </SampleNamesList>
   </SFXEvent>
 
+  <!-- GDI Medium Tank cannon (TDMTNK, WEAPON_TD105MM Report=TNKFIRE4). Base ships the
+       TDC/TDR_SFX_TNKFIRE4 WAVs in SFX2D/3D.MEG; engine fires VOC_TD_TANK3, launcher
+       resolves via the RAC_/RAR_ prefix. (TD VOC_TANK3; Nod Turret uses TNKFIRE6.) -->
+  <SFXEvent Name="RAC_SFX_TNKFIRE4" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDC_SFX_TNKFIRE4.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_TNKFIRE4" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_TNKFIRE4.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <!-- TD vehicle death frag explosion (ANIM_TDFRAG2, VOC_TD_XPLOBIG6). Base ships the
+       TDC/TDR_SFX_XPLOBIG6 WAVs; engine fires VOC_TD_XPLOBIG6, launcher resolves via RAC_/RAR_. -->
+  <SFXEvent Name="RAC_SFX_XPLOBIG6" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDC_SFX_XPLOBIG6.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_XPLOBIG6" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_XPLOBIG6.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
 
   <!-- TD building construction loop (BSTATE_CONSTRUCTION audio). Plays
        once per building when buildup begins, replacing RAR/C_SFX_BUILD5

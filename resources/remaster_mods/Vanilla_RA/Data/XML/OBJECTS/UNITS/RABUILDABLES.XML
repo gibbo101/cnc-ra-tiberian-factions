@@ -1608,4 +1608,12 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<ObjectTypeClass Name="RA_TDMTNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_MED_TANK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_MED_TANK</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_MediumTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 </ObjectTypeList>

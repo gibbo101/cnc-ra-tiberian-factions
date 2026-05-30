@@ -1100,7 +1100,16 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
             if (Percent_Chance(50)) {
                 InfantryClass* i = 0;
 
-                if (Class->PrimaryWeapon == NULL) {
+                if (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') {
+                    /*
+                    **	Tiberian Factions: EVERY TD vehicle -- armed or not, incl. the
+                    **	MCV and Harvester -- drops the TD Minigunner (INFANTRY_TDE1), not
+                    **	RA's rifle infantry or a technician. This is the ACTUAL death-
+                    **	survivor spawn (it hardcodes the type rather than calling
+                    **	Crew_Type), so the TD-prefix check has to live right here.
+                    */
+                    i = new InfantryClass(INFANTRY_TDE1, House->Class->House);
+                } else if (Class->PrimaryWeapon == NULL) {
                     i = new InfantryClass(INFANTRY_C1, House->Class->House);
                     if (i != NULL)
                         i->IsTechnician = true;

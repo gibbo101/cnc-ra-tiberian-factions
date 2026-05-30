@@ -82,6 +82,39 @@ static AnimTypeClass const TdIonCannon(ANIM_TD_ION_CANNON, // Animation number.
                                        0x200               // Virtual scale.
 );
 
+/*
+**  Tiberian Factions: TD vehicle death frag explosion. Verbatim port of TD's
+**  ANIM_FRAG2 (tiberiandawn/adata.cpp:866) -- RA only ships ANIM_FRAG1. TD's
+**  ANIM_FRAG2 uses the SHP named "FRAG3"; IniName is "TDFRAG3" per the TD prefix
+**  convention -- classic mode reads TDFRAG3.SHP from TFASSETS.MIX, Remastered
+**  resolves the TDFRAG3 tileset in RA_VFX.XML (base FRAG3 frames in
+**  TEXTURES_TD_SRGB.MEG). Used by the GDI Medium Tank's death (UNIT_TDMTNK).
+*/
+static AnimTypeClass const TdFrag2(ANIM_TDFRAG2, // Animation number.
+                                   "TDFRAG3",     // Data name (TD ANIM_FRAG2 SHP = "FRAG3"; TD-prefixed).
+                                   41,            // Maximum dimension of animation (TD FRAG2).
+                                   3,             // Biggest animation stage (TD FRAG2).
+                                   false,         // Theater specific art imagery?
+                                   true,          // Normalized animation rate? (TD-source true)
+                                   false,         // Uses white translucent table?
+                                   false,         // Scorches the ground? (TD FRAG2: no)
+                                   true,          // Forms a crater? (TD FRAG2)
+                                   false,         // Sticks to unit in square? (TD FRAG2: no)
+                                   true,          // Ground level animation? (TD FRAG2)
+                                   false,         // Translucent colors in this animation?
+                                   false,         // Is this a flame thrower animation?
+                                   0x0000,        // Damage to apply per tick.
+                                   1,             // Delay between frames.
+                                   0,             // Starting frame number.
+                                   0,             // Loop start frame number.
+                                   -1,            // Ending frame of loop back.
+                                   -1,            // Number of animation stages.
+                                   1,             // Number of times the animation loops.
+                                   VOC_TD_XPLOBIG6, // Sound (TD VOC_XPLOBIG6; routed RAC/RAR_SFX_XPLOBIG6).
+                                   ANIM_NONE,     // ChainTo.
+                                   29             // Virtual stages (TD FRAG2).
+);
+
 static AnimTypeClass const AtomBomb(ANIM_ATOM_BLAST, // Animation number.
                                     "ATOMSFX",       // Data name of animation.
                                     72,              // Maximum dimension of animation.
@@ -2452,6 +2485,7 @@ void AnimTypeClass::Init_Heap(void)
 
     // Tiberian Factions mod anims — keep in ANIM_TD_* enum order.
     new AnimTypeClass(TdIonCannon); // ANIM_TD_ION_CANNON (Ion Cannon strike)
+    new AnimTypeClass(TdFrag2);     // ANIM_TDFRAG2 (TD vehicle death frag explosion)
 
 #ifdef FIXIT_ANTS
     new AnimTypeClass(Ant1Death);

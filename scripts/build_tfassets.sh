@@ -80,6 +80,9 @@ ENTRIES=(
     "FACTMAKE.SHP:TDFACTMAKE.SHP"
     "MCV.SHP:TDMCV.SHP"
     "HARV.SHP:TDHARV.SHP"
+    # Combat vehicle arc (2026-05-30): GDI Medium Tank (classic SHP for One_Time
+    # ImageData + classic-mode render; HD art is the bundled TDMTNK tileset).
+    "MTNK.SHP:TDMTNK.SHP"
     "PROC.SHP:TDPROC.SHP"
     "PROCMAKE.SHP:TDPROCMAKE.SHP"
     # M5 Tier 4 — superweapon hosts.
@@ -87,6 +90,9 @@ ENTRIES=(
     "EYEMAKE.SHP:TDEYEMAKE.SHP"
     # M5 Phase E2 — Ion Cannon beam-strike anim (ANIM_TD_ION_CANNON).
     "IONSFX.SHP:TDIONSFX.SHP"
+    # Combat vehicle arc — vehicle death frag explosion (ANIM_TDFRAG2; TD ANIM_FRAG2
+    # uses the SHP named FRAG3). Used by the GDI Medium Tank's death.
+    "FRAG3.SHP:TDFRAG3.SHP"
     # M5 Tier 4 — Temple of Nod (Nuclear Strike host).
     "TMPL.SHP:TDTMPL.SHP"
     "TMPLMAKE.SHP:TDTMPLMAKE.SHP"

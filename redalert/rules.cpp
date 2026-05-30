@@ -725,6 +725,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDFlamethrower"); // WEAPON_TDFLAME (TD Flamethrower, E4)
     new WeaponTypeClass("TDChemspray");  // WEAPON_TDCHEM (TD Chem Warrior spray, E5)
     new WeaponTypeClass("TDRifle");      // WEAPON_TDRIFLE (TD Commando sniper, RMBO)
+    new WeaponTypeClass("TD105mm");      // WEAPON_TD105MM (TD Medium Tank cannon, MTNK; non-IsTDPort like TDTurretGun)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
