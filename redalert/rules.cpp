@@ -726,6 +726,9 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDChemspray");  // WEAPON_TDCHEM (TD Chem Warrior spray, E5)
     new WeaponTypeClass("TDRifle");      // WEAPON_TDRIFLE (TD Commando sniper, RMBO)
     new WeaponTypeClass("TD105mm");      // WEAPON_TD105MM (TD Medium Tank cannon, MTNK; non-IsTDPort like TDTurretGun)
+    new WeaponTypeClass("TD75mm");       // WEAPON_TD75MM (TD Light Tank cannon, LTNK; non-IsTDPort)
+    new WeaponTypeClass("TD120mm");      // WEAPON_TD120MM (TD Mammoth Tank primary cannon, HTNK; non-IsTDPort)
+    new WeaponTypeClass("TDTusk");       // WEAPON_TDTUSK (TD Mammoth Tusk AA missiles, HTNK secondary; IsTDPort -- fires TDSSM)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -760,6 +763,9 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // ROF+3) + raw Speed parse. Its invisible BULLET_TDBULLET takes WARHEAD_TDHOLLOW
     // from the weapon (anti-infantry); the round is a reused "50cal" (non-IsTDPort).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDRifle"))->IsTDPort = true;
+    // TDTusk (Mammoth AA secondary): IsTDPort for the TDSSM homing missile (raw Speed +
+    // AI_TD homing dispatch), same as TDTowTwo which also fires TDSSM.
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TDTusk"))->IsTDPort = true;
 
     return (true);
 }

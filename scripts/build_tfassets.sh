@@ -83,6 +83,8 @@ ENTRIES=(
     # Combat vehicle arc (2026-05-30): GDI Medium Tank (classic SHP for One_Time
     # ImageData + classic-mode render; HD art is the bundled TDMTNK tileset).
     "MTNK.SHP:TDMTNK.SHP"
+    "LTNK.SHP:TDLTNK.SHP"
+    "HTNK.SHP:TDHTNK.SHP"
     "PROC.SHP:TDPROC.SHP"
     "PROCMAKE.SHP:TDPROCMAKE.SHP"
     # M5 Tier 4 — superweapon hosts.

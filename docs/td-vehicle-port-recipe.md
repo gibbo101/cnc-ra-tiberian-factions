@@ -55,6 +55,16 @@ TD's vehicle death uses `ANIM_FRAG2`; **RA only has `ANIM_FRAG1`**. Port it as i
 
 ---
 
-## The roster ahead
+## §DUAL — a dual-weapon vehicle with an anti-air secondary (Mammoth)
 
-**Shipped:** GDI Medium Tank (`TDMTNK`). **Next (Luke's naming convention — faction-prefix any TD tank that collides with an RA name):** NOD Light Tank (`UNIT_LTANK`, Nod, RA also has a Light Tank), GDI Mammoth Tank (`UNIT_HTANK`, dual weapon — tusk missiles + 120mm), then Nod Flame Tank / Stealth Tank / Recon Bike / Buggy, MLRS, APC, Artillery.
+The Mammoth Tank carries TWO weapons (cannon + AA tusk missiles). Mapping:
+- **rules.ini:** `Primary=<cannon>` + `Secondary=<AA weapon>`. The RA `UnitTypeClass` ctor has separate primary + secondary weapon offsets (the lateral barrels) — reference RA's own dual-weapon Mammoth `4TNK` (primary `0x00C0/0x0028`, secondary `0x0008/0x0040`).
+- **Anti-air is automatic** when the secondary weapon's bullet is AA-capable: the Mammoth Tusk fires `TDSSM` (`AA=yes,AG=yes`, already ported for the Guard Tower), so the unit engages aircraft with the secondary — RA's secondary-weapon-AA convention. No unit-level AA flag needed.
+- **Multi-shot / double-tap = the weapon `Burst=N` field.** TD's "fires multiple shots in quick succession" (the Mammoth's dual-barrel double-tap) has **no RA unit-level flag** — set `Burst=2` on the weapon instead (like `[TDTowTwo]`). The Mammoth uses `Burst=2` on both cannon and tusks.
+- **Repair-bay prereq:** TD's Mammoth needs `STRUCTF_REPAIR`. Add a `STRUCT_REPAIR → TDFIX` remap in `house.cpp::Can_Build` (the per-type prereq remap, like the existing STRUCT_WEAP/REFINERY/ADVANCED_TECH ones) so `Prerequisite=fix` is satisfied by the GDI service depot.
+
+---
+
+## The roster
+
+**Shipped (turreted-tank trio — establishes the pipeline):** GDI Medium Tank (`TDMTNK`), NOD Light Tank (`TDLTNK`), GDI Mammoth Tank (`TDHTNK` — dual weapon + AA, §DUAL). Naming convention (Luke): faction-prefix any TD tank colliding with an RA name. **Next:** Nod Flame Tank / Stealth Tank / Recon Bike / Buggy (turret-less — simpler, no turret offset), MLRS, APC, Artillery.

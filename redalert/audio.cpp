@@ -284,6 +284,8 @@ struct SoundEffectNameStruct
     {"TDYO1", 20, IN_NOVAR},      // VOC_TD_CMD_YO — "yo"
     {"TNKFIRE4", 1, IN_NOVAR},    // VOC_TD_TANK3 — TD sharp tank fire (WEAPON_TD105MM Report=TNKFIRE4), routed via RAC/RAR_SFX_TNKFIRE4
     {"XPLOBIG6", 1, IN_NOVAR},    // VOC_TD_XPLOBIG6 — TD big explosion (ANIM_TDFRAG2 vehicle death), routed via RAC/RAR_SFX_XPLOBIG6
+    {"TNKFIRE3", 1, IN_NOVAR},    // VOC_TD_TANK2 — TD sharp tank fire (WEAPON_TD75MM Report=TNKFIRE3), routed via RAC/RAR_SFX_TNKFIRE3
+    {"ROCKET1", 1, IN_NOVAR},     // VOC_TD_ROCKET1 — TD rocket launch (WEAPON_TDTUSK Report=ROCKET1, Mammoth Tusk AA), routed via RAC/RAR_SFX_ROCKET1
 };
 
 //

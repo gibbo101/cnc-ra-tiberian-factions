@@ -1040,6 +1040,7 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             static int tdproc_type = -2;
             static int tdeye_type  = -2;
             static int tdtmpl_type = -2;
+            static int tdfix_type  = -2;
             if (tdpyle_type == -2) {
                 BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDPYLE");
                 tdpyle_type = p ? p->Type : -1;
@@ -1075,6 +1076,10 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             if (tdtmpl_type == -2) {
                 BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDTMPL");
                 tdtmpl_type = p ? p->Type : -1;
+            }
+            if (tdfix_type == -2) {
+                BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDFIX");
+                tdfix_type = p ? p->Type : -1;
             }
             if (t == STRUCT_TENT && tdpyle_type >= 0 && Has_Building_Active(tdpyle_type))
                 continue;
@@ -1133,6 +1138,12 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                 if (tdeye_type >= 0 && Has_Building_Active(tdeye_type))
                     continue;
                 if (tdtmpl_type >= 0 && Has_Building_Active(tdtmpl_type))
+                    continue;
+            }
+            // STRUCT_REPAIR — satisfied by TDFIX (GDI service depot). TD's Mammoth
+            // Tank (Prerequisite=fix) needs the repair bay; TDFIX is the GDI equivalent.
+            if (t == STRUCT_REPAIR) {
+                if (tdfix_type >= 0 && Has_Building_Active(tdfix_type))
                     continue;
             }
         }

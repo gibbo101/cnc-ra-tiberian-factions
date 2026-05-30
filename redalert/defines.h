@@ -1714,6 +1714,8 @@ typedef enum UnitType : char
     UNIT_TDMCV,             // TD Mobile Construction Vehicle (deploys to STRUCT_TDFACT).
     UNIT_TDHARV,            // TD Tiberium Harvester (docks at STRUCT_TDPROC).
     UNIT_TDMTNK,            // TD Medium Tank (MTNK) — GDI-only, turret, fires TD105mm. udata.cpp:264.
+    UNIT_TDLTNK,            // TD Light Tank (LTNK) — Nod-only, turret, fires TD75mm. udata.cpp:211.
+    UNIT_TDHTNK,            // TD Mammoth Tank (HTNK) — GDI-only, dual weapon (TD120mm + TDTusk AA), gigundo. udata.cpp:317.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -2874,6 +2876,9 @@ typedef enum WeaponType : char
     WEAPON_TDCHEM,         // TD Chem Warrior spray (E5, Nod) — Dmg80/ROF70/Range2, BULLET_TDCHEM, WARHEAD_TDHE (bullet warhead), Report=FLAMER2, Anim=CHEM-N.
     WEAPON_TDRIFLE,        // TD Commando sniper (RMBO) — Dmg125/ROF40/Range5.5, BULLET_TDBULLET, WARHEAD_TDHOLLOW, Report=RAMGUN2.
     WEAPON_TD105MM,        // TD Medium Tank cannon (MTNK) — Dmg30/ROF50/Range4.75, BULLET_TDAPDS (reuse), WARHEAD_TDAP (reuse), Report=TNKFIRE4, Anim=GUNFIRE.
+    WEAPON_TD75MM,         // TD Light Tank cannon (LTNK) — Dmg25/ROF60/Range4, BULLET_TDAPDS (reuse), WARHEAD_TDAP (reuse), Report=TNKFIRE3, Anim=GUNFIRE.
+    WEAPON_TD120MM,        // TD Mammoth Tank primary cannon (HTNK) — Dmg40/ROF80/Range4.75, BULLET_TDAPDS (reuse), WARHEAD_TDAP (reuse), Report=TNKFIRE6.
+    WEAPON_TDTUSK,         // TD Mammoth Tusk AA missiles (HTNK secondary) — Dmg75/ROF80/Range5, Projectile=TDSSM (reuse, AA+AG homing), WARHEAD_TDHE, Report=ROCKET1.
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -3517,6 +3522,8 @@ typedef enum VocType : short
     VOC_TD_CMD_YO,       // "yo" (YO1)
     VOC_TD_TANK3,        // TD sharp tank fire (TNKFIRE4) — WEAPON_TD105MM Report= (Medium Tank cannon)
     VOC_TD_XPLOBIG6,     // TD big explosion (XPLOBIG6) — ANIM_TDFRAG2 detonation sound
+    VOC_TD_TANK2,        // TD sharp tank fire (TNKFIRE3) — WEAPON_TD75MM Report= (Light Tank cannon)
+    VOC_TD_ROCKET1,      // TD rocket launch #1 (ROCKET1) — WEAPON_TDTUSK Report= (Mammoth Tusk AA missiles)
 
     VOC_COUNT,
     VOC_FIRST = 0

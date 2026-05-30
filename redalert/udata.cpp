@@ -475,6 +475,80 @@ static UnitTypeClass const UnitTdMtnk(UNIT_TDMTNK,
                                       MISSION_HUNT  // ORDERS: Default order (TD MTANK default).
 );
 
+// Tiberian Factions -- TD Light Tank (UNIT_TDLTNK), ported from TD's UNIT_LTANK
+// (tiberiandawn/udata.cpp:211). NOD-ONLY (TD LTANK = HOUSEF_BAD). Nod's mainline
+// tank -- like the GDI Medium Tank but smaller (NOT gigundo) and cheaper. Explosion
+// ANIM_FRAG1, which RA has natively (no FRAG port needed, unlike the MTANK). Gameplay
+// stats (Strength 300/Sight 3/Cost 600/Speed=MPH_MEDIUM/dmg25/ROF60/range4) come from
+// rules.ini [TDLTNK]/[TD75mm], TD-source-derived. Render geometry from RA's same-size
+// 1TNK light tank (vert 0x0020, tune to TD sprite). Fires WEAPON_TD75MM (BULLET_TDAPDS).
+static UnitTypeClass const UnitTdLtnk(UNIT_TDLTNK,
+                                      TXT_LTANK,    // NAME: (RA "Light Tank"; HD display via rules.ini Name=).
+                                      "TDLTNK",     // NAME: IniName.
+                                      ANIM_FRAG1,   // EXPLOSION: TD LTANK death (ANIM_FRAG1 -- RA has it).
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0020,       // Vertical offset (render calibration, ref RA 1TNK -- tune to TD sprite).
+                                      0x00C0,       // Primary weapon offset along turret centerline (render calibration).
+                                      0x0000,       // Primary weapon lateral offset.
+                                      0x0000,       // Secondary weapon offset (no secondary weapon).
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      true,         // Can this be a goodie surprise from a crate? (TD: yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (TD: yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      true,         // Is it equipped with a combat turret? (TD: yes)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit? (TD LTANK: no)
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline (TD: 0).
+                                      MISSION_HUNT  // ORDERS: Default order (TD LTANK default).
+);
+
+// Tiberian Factions -- TD Mammoth Tank (UNIT_TDHTNK), ported from TD's UNIT_HTANK
+// (tiberiandawn/udata.cpp:317). GDI-ONLY (TD HTANK = HOUSEF_GOOD). The iconic GDI
+// heavy: DUAL weapon -- primary TD120mm cannon (anti-ground) + secondary TDTusk AA
+// missiles (TDSSM, AA+AG homing). Gigundo, Strength 600, Cost 1500. Explosion
+// ANIM_ART_EXP1 (RA has it natively). Stats from rules.ini [TDHTNK]/[TD120mm]/[TDTusk];
+// Speed=6 = MPH_MEDIUM_SLOW (MaxSpeed/2). Dual-weapon render geometry from RA's own
+// Mammoth 4TNK (primary 0x00C0/0x0028, secondary 0x0008/0x0040 lateral barrels).
+// TD's "fires multiple shots" (the double-tap) is replicated via Burst=2 on the
+// weapons (rules.ini), since RA has no unit-level two-shooter flag -- same as [TDTowTwo].
+static UnitTypeClass const UnitTdHtnk(UNIT_TDHTNK,
+                                      TXT_HTANK,    // NAME: (RA "Mammoth Tank"; HD display via rules.ini Name=).
+                                      "TDHTNK",     // NAME: IniName.
+                                      ANIM_ART_EXP1,// EXPLOSION: TD HTANK death (ANIM_ART_EXP1 -- RA has it).
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0020,       // Vertical offset (render calibration, ref RA 4TNK -- tune to TD sprite).
+                                      0x00C0,       // Primary weapon offset along turret centerline.
+                                      0x0028,       // Primary weapon lateral offset (left barrel).
+                                      0x0008,       // Secondary weapon offset along turret centerline.
+                                      0x0040,       // Secondary weapon lateral offset (right barrel / tusk pods).
+                                      true,         // Can this be a goodie surprise from a crate? (TD: yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (TD: yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      true,         // Is it equipped with a combat turret? (TD: yes)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      true,         // Is this a gigundo-rotund-enormous unit? (TD HTANK: yes)
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline (TD: 0).
+                                      MISSION_HUNT  // ORDERS: Default order (TD HTANK default).
+);
+
 // Jeep (hummer)
 static UnitTypeClass const UnitJeep(UNIT_JEEP,
                                     TXT_JEEP,     // NAME:			Text name of this unit type.
@@ -1107,6 +1181,8 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTdMcv);     // UNIT_TDMCV
     new UnitTypeClass(UnitTdHarv);    // UNIT_TDHARV
     new UnitTypeClass(UnitTdMtnk);    // UNIT_TDMTNK
+    new UnitTypeClass(UnitTdLtnk);    // UNIT_TDLTNK
+    new UnitTypeClass(UnitTdHtnk);    // UNIT_TDHTNK
 }
 
 /***********************************************************************************************
