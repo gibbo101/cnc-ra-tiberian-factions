@@ -206,8 +206,19 @@ counts). Original notes for reference:
 - Scope note: **faction-blind** by design (this is the mod-wide mix, not the per-faction split —
   that's TODO-2). Deck listen-test to confirm TD tracks actually stream in skirmish.
 
-**TODO-2 — Spike: true per-faction playlists (= ② above).** Determines whether GDI/Nod can get a
-TD-weighted list while Allied/Soviet keep RA.
+**TODO-2 — ✗ TESTED & DEAD 2026-05-30: per-faction `MusicMap` is a no-op for C&C.** Deck-tested
+with a clean probe (global music reverted to pure RA; GDI/Nod `AudioTableName` → custom
+`GDIMUSIC`/`NODMUSIC` tables whose `MusicMap` remapped `RAR_MUS_RA_MULTIPLAYER_MODE` →
+`TDR_MUS_TD_GDI/NOD_MAP_THEME`; all same-size). Result: **GDI played RA** — the faction `MusicMap`
+is not consulted. Confirms C&C fires music events by name and bypasses the generic-engine
+`AudioTableName`→`MusicMap` layer (the empty template + EA's "not used for TD/RA" comment were
+right). Per-faction music is therefore unreachable by ANY lever (DLL dead, data dead). **The
+shipped 50/50 global mix (TODO-1) is the final answer.** Don't re-chase. (Gotcha during testing:
+both dev instances deploy to the same Deck path — a parallel full-mod deploy silently overwrote
+the probe with the committed CONFIG.MEG and produced a false "RA" reading until md5-verified; the
+real test required re-deploying + confirming md5 `a69f41d0…` live before trusting the result.)
+
+Original TODO-2 plan (for the record):
 - Create custom `GDI`/`Nod` audio tables in a mod `AUDIO_FACTIONS.XML` with a populated
   `<MusicMap>` remapping `RA_MULTIPLAYER_MODE` → a TD playlist event (reuse/extend
   `TD_GDI_MAP_THEME`/`TD_NOD_MAP_THEME`, or author a new TD-heavy event).
