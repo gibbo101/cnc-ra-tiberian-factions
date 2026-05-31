@@ -1724,6 +1724,7 @@ typedef enum UnitType : char
     UNIT_TDLTNK,            // TD Light Tank (LTNK) — Nod-only, turret, fires TD75mm. udata.cpp:211.
     UNIT_TDHTNK,            // TD Mammoth Tank (HTNK) — GDI-only, dual weapon (TD120mm + TDTusk AA), gigundo. udata.cpp:317.
     UNIT_TDFTNK,            // TD Flame Tank (FTNK) — Nod-only, turret-less, fires TDFlameTongue (directional flame jet). udata.cpp UnitFTank.
+    UNIT_TDBIKE,            // TD Recon Bike (BIKE) — Nod-only, wheeled, turret-less, fires TDDragon (reuses E3's homing rocket). udata.cpp:797.
 
     UNIT_COUNT,
     UNIT_FIRST = 0

@@ -592,6 +592,49 @@ static UnitTypeClass const UnitTdFtnk(UNIT_TDFTNK,
                                       MISSION_HUNT  // ORDERS: Default order (TD FTANK default).
 );
 
+// Tiberian Factions -- TD Recon Bike (UNIT_TDBIKE), ported from TD's UNIT_BIKE
+// (tiberiandawn/udata.cpp:797 UnitBike). NOD-ONLY (TD BIKE ownable = HOUSEF_BAD|MULTI|JP).
+// Wheeled (SPEED_WHEEL -- so NO Tracked= in rules.ini, the authentic 60%/40% terrain mod) and
+// turret-LESS, a fast light scout. Fires WEAPON_DRAGON -- which we ALREADY ship as [TDDragon]
+// (the E3 Rocket Soldier's launcher: the BULLET_TDTOW homing rocket + WARHEAD_TDAP + Report
+// BAZOOK1). So this port REUSES the whole E3 weapon chain verbatim -- zero new weapon/bullet/
+// warhead/sound. Explosion ANIM_FRAG1 is TD-authentic (TD's BIKE uses FRAG1, NOT the tank
+// FRAG2 -- RA has FRAG1 natively, so no §FRAG anim port). NOT a crusher (TD BIKE squash=false,
+// a light bike can't squash) and NOT gigundo. All-zero weapon offsets follow RA's own wheeled-
+// rocket V2 Launcher (UnitV2Launcher above): the rocket launches from the hull, there's no
+// turret geometry to screenshot-tune. Stats (Strength 160, Cost 500, Speed=16 = MPH_FAST via
+// round(40*100/256), ROT 10, Armor wood, TechLevel 2, Sight 2) all come from rules.ini [TDBIKE].
+// Internal name TXT_LTANK is a never-shown placeholder (RA has no Recon Bike string, same as the
+// Flame Tank); the real "Recon Bike" display name comes from rules.ini Name=.
+static UnitTypeClass const UnitTdBike(UNIT_TDBIKE,
+                                      TXT_LTANK,    // NAME: (RA has no "Recon Bike"; HD display via rules.ini Name=).
+                                      "TDBIKE",     // NAME: IniName.
+                                      ANIM_FRAG1,   // EXPLOSION: TD BIKE death (ANIM_FRAG1 -- RA has it natively).
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0000,       // Vertical offset = 0 (hull level).
+                                      0x0000,       // Primary weapon offset (V2 Launcher precedent: rocket from hull, no turret geometry).
+                                      0x0000,       // Primary weapon lateral.
+                                      0x0000,       // Secondary weapon offset (unused: no Secondary weapon).
+                                      0x0000,       // Secondary weapon lateral (unused).
+                                      true,         // Can this be a goodie surprise from a crate? (TD BIKE: yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      false,        // Can this unit squash infantry? (TD BIKE: NO -- a light scout bike)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      false,        // Is it equipped with a combat turret? (TD BIKE: NO turret)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit? (TD BIKE: no -- small)
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages (32 facings; TD BIKE eight-facings=false).
+                                      0,            // Turret center offset along body centerline (TD: 0).
+                                      MISSION_HUNT  // ORDERS: Default order (TD BIKE default).
+);
+
 // Jeep (hummer)
 static UnitTypeClass const UnitJeep(UNIT_JEEP,
                                     TXT_JEEP,     // NAME:			Text name of this unit type.
@@ -1227,6 +1270,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTdLtnk);    // UNIT_TDLTNK
     new UnitTypeClass(UnitTdHtnk);    // UNIT_TDHTNK
     new UnitTypeClass(UnitTdFtnk);    // UNIT_TDFTNK
+    new UnitTypeClass(UnitTdBike);    // UNIT_TDBIKE
 }
 
 /***********************************************************************************************
