@@ -1103,21 +1103,28 @@ enum ConcreteEnum
 **	Units that move can move at different speeds. These enumerate the
 **	different speeds that a unit can move.
 */
+// The trailing comment on each line is the equivalent rules.ini `Speed=` value.
+// CRITICAL: rules.ini `Speed=` is a 1..100 PERCENTAGE, scaled back to this 0..255
+// MPHType by the engine via _Scale_To_256 (techno.cpp): MaxSpeed = Speed * 256 / 100.
+// So to reproduce a TD MPHType in rules.ini, `Speed = round(MPHType * 100 / 256)`
+// (i.e. divide by ~2.56). Do NOT use MPHType/2 -- that runs every unit ~28% too fast
+// (the original TD-port speed bug, fixed 2026-05-31). The low-value comments below were
+// previously wrong (used /2); corrected here.
 typedef enum MPHType : unsigned char
 {
     MPH_IMMOBILE = 0,
-    MPH_VERY_SLOW = 5,      //	2
-    MPH_KINDA_SLOW = 6,     //	3
-    MPH_SLOW = 8,           //	4
-    MPH_SLOW_ISH = 10,      // 5
-    MPH_MEDIUM_SLOW = 12,   // 6
-    MPH_MEDIUM = 18,        // 9
-    MPH_MEDIUM_FAST = 30,   // 12
-    MPH_MEDIUM_FASTER = 35, // 14
-    MPH_FAST = 40,          // 16
-    MPH_ROCKET = 60,        // 24
-    MPH_VERY_FAST = 100,    // 40
-    MPH_LIGHT_SPEED = 255   // 100
+    MPH_VERY_SLOW = 5,      // Speed=2
+    MPH_KINDA_SLOW = 6,     // Speed=2
+    MPH_SLOW = 8,           // Speed=3
+    MPH_SLOW_ISH = 10,      // Speed=4
+    MPH_MEDIUM_SLOW = 12,   // Speed=5
+    MPH_MEDIUM = 18,        // Speed=7
+    MPH_MEDIUM_FAST = 30,   // Speed=12
+    MPH_MEDIUM_FASTER = 35, // Speed=14
+    MPH_FAST = 40,          // Speed=16
+    MPH_ROCKET = 60,        // Speed=23
+    MPH_VERY_FAST = 100,    // Speed=39
+    MPH_LIGHT_SPEED = 255   // Speed=100
 } MPHType;
 
 /**********************************************************************
@@ -1716,6 +1723,7 @@ typedef enum UnitType : char
     UNIT_TDMTNK,            // TD Medium Tank (MTNK) — GDI-only, turret, fires TD105mm. udata.cpp:264.
     UNIT_TDLTNK,            // TD Light Tank (LTNK) — Nod-only, turret, fires TD75mm. udata.cpp:211.
     UNIT_TDHTNK,            // TD Mammoth Tank (HTNK) — GDI-only, dual weapon (TD120mm + TDTusk AA), gigundo. udata.cpp:317.
+    UNIT_TDFTNK,            // TD Flame Tank (FTNK) — Nod-only, turret-less, fires TDFlameTongue (directional flame jet). udata.cpp UnitFTank.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -2427,6 +2435,21 @@ typedef enum AnimType : char
     ANIM_TD_ION_CANNON, // TD GDI Ion Cannon beam strike (TDIONSFX shape).
     ANIM_TDFRAG2,       // TD vehicle death frag explosion (FRAG3 shape) -- TD's ANIM_FRAG2, which RA lacks (RA only has ANIM_FRAG1).
 
+    // Tiberian Factions -- Flame Tank (UNIT_TDFTNK) directional muzzle jets. SEPARATE
+    // family from the Flamethrower infantry's ANIM_FLAME_* so the sprite anchor can be
+    // tuned to the tank's twin nozzles without moving the trooper's flame (they share no
+    // art now). Same 8-dir Dir_Facing order + IsFlameThrower behaviour as ANIM_FLAME_*;
+    // kept contiguous for the techno.cpp `ANIM_TDFTFLAME_N + Dir_Facing` dispatch and the
+    // adata.cpp donor-ImageData loop.
+    ANIM_TDFTFLAME_N,
+    ANIM_TDFTFLAME_NE,
+    ANIM_TDFTFLAME_E,
+    ANIM_TDFTFLAME_SE,
+    ANIM_TDFTFLAME_S,
+    ANIM_TDFTFLAME_SW,
+    ANIM_TDFTFLAME_W,
+    ANIM_TDFTFLAME_NW,
+
 #ifdef FIXIT_ANTS
     ANIM_ANT1_DEATH,
     ANIM_ANT2_DEATH,
@@ -2879,6 +2902,7 @@ typedef enum WeaponType : char
     WEAPON_TD75MM,         // TD Light Tank cannon (LTNK) — Dmg25/ROF60/Range4, BULLET_TDAPDS (reuse), WARHEAD_TDAP (reuse), Report=TNKFIRE3, Anim=GUNFIRE.
     WEAPON_TD120MM,        // TD Mammoth Tank primary cannon (HTNK) — Dmg40/ROF80/Range4.75, BULLET_TDAPDS (reuse), WARHEAD_TDAP (reuse), Report=TNKFIRE6.
     WEAPON_TDTUSK,         // TD Mammoth Tusk AA missiles (HTNK secondary) — Dmg75/ROF80/Range5, Projectile=TDSSM (reuse, AA+AG homing), WARHEAD_TDHE, Report=ROCKET1.
+    WEAPON_TDFLAMETONGUE,  // TD Flame Tank cannon (FTNK) — Dmg50/ROF50/Range2, BULLET_TDFLAME (reuse), WARHEAD_TDFIRE (reuse), Anim=TDFLAME-N. The stronger FLAME_TONGUE (vs Flamethrower's 35).
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0

@@ -1632,4 +1632,12 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<ObjectTypeClass Name="RA_TDFTNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_FLAME_TANK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_FLAME_TANK</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_FlameTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 </ObjectTypeList>

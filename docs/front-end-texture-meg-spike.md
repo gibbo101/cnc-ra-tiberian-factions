@@ -1,9 +1,34 @@
 # SPIKE: front-end texture delivery via a mod MEG
 
-**Status:** OPEN spike (2026-05-29). Owner: parallel investigation instance.
+**Status:** **CLOSED — spike abandoned (2026-05-29).** Step 0 (static RE of `ClientG.exe`) resolved it: a mod texture MEG *is* read by the front-end, but only as a **whole-file SHADOW** (the mod's `Textures_SRGB.meg` *replaces* base entirely → **2.4 GB**). **No merge-per-file → a tiny atlas-only MEG does NOT work.** Luke's call (2026-05-29): **accept the verdict, use the `CONFIG.MEG` fallback** — Allied/Soviet keep their country flags as side stand-ins; GDI/Nod emblems + all-8 names already ship via `CONFIG.MEG`. No texture MEG shipped; Deck untouched. Detail in "## VERDICT" below.
 **One-line:** Can a mod deliver custom **front-end** (launcher-shell) textures by shipping its own copy of a base texture MEG (e.g. `Data/TEXTURES_SRGB.MEG`), the way a mod already ships `Data/CONFIG.MEG`? If yes, **all** front-end imagery becomes moddable without EMC.
 
 This doc is self-contained — you should not need the originating chat. Read it top to bottom before touching the Deck.
+
+---
+
+## VERDICT (Step 0 — static, 2026-05-29)
+
+**Shadow-whole, not merge. The lightest texture delivery is 2.4 GB. Recommend NOT pursuing it — use the proven `CONFIG.MEG` fallback for Allied/Soviet.**
+
+### How front-end MEG loading actually works (from `ClientG.exe`)
+1. The launcher front-end mounts MEGs through `MegaFileManagerClass::Megafile_Add(const std::string&, MegaFileOpenType, AccessType, OverrideType)` into **one combined FNV-1a `name→entry` hash index** (resolver `Subfile_Find_Data_Image` → helper at `0xa7d7c0` hashes the normalised path with FNV-1a constants `0x811c9dc5`/`0x1000193` and does a single index lookup). Two mount sources, both at base startup: the `Data\MEGAFILES.XML` manifest (Music, **Config**, Shaders, Maps, Movies×6, Models, Textures, **Textures_SRGB**, Textures_Common/TD/RA/Patches_SRGB, UI) and a **hardcoded array** (audio: `SFX2D_*`/`SFX3D`/`Patch_SFX`).
+2. The manager *can* resolve duplicate paths across mounted MEGs (proven: `SFX2D_ALL.MEG` and `SFX3D.MEG` both contain `_TEST_1/2/3.WAV`; the `OverrideType` arg exists) — so per-file override is a real capability, **decided at add-time** by mount order / `OverrideType`.
+3. **But the mod system never uses it.** `ModManagerClass::Load_Mod` (modmanager.cpp) ingests only **loose** files from the mod's `Data\AUDIO\`, `Data\XML\` (`.XML`), `Data\MAPS\` — it makes **zero `Megafile_Add` calls** (none of the 28 `Megafile_Add` call sites fall in the mod-loader code range `0x7ba700–0x7be000`). No mod code mounts any MEG — CONFIG or texture.
+4. The proven `Data/CONFIG.MEG` delivery therefore works via the **generic manifest loader resolving each relative MEG path against the active mod folder first, base install second** (launcher sets its working dir — `Set_Working_Directory`, `SetCurrentDirectoryA/W`; `Init_Mods` builds the `Mods\Red_Alert\…` root). Opening `Data\Config.meg` finds the **mod's whole copy** and mounts it *instead of* base → **shadow-whole by filename**, NOT a merge. (That's why shipping the full repacked 44 MB CONFIG.MEG is what works.)
+
+### Consequences for textures
+- A mod `Data/Textures_SRGB.meg` shadows the base **2.4 GB** MEG **whole**: to avoid breaking the front-end it must contain all **1,358** base entries (incl. the **176 MB** `MT_COMMANDBAR_COMMON.TGA`, edited) → **2.4 GB Workshop payload**.
+- A **tiny** atlas-only `Textures_SRGB.meg` mounts *alone* → the front-end loses the other 1,357 textures → **breakage**, not a clean swap. (That is the predicted result of the Step-1 tiny probe — the CRASH/missing-textures outcome, not SUCCESS.)
+- The atlas lives **only** in `Textures_SRGB.meg`; the five texture MEGs are **fully disjoint** (`PATCHES ∩ base = 0`; PATCHES is purely additive HD content, 23,293 files). So there is **no smaller manifest MEG that already carries the atlas** to shadow instead. (A ~400–580 MB variant — shadow `Textures_Patches_SRGB.meg` whole, inject the atlas, rely on last-mounted-wins for the duplicated path — is *theoretically* possible but unconfirmed and still large.)
+
+### Real-world corroboration
+- **0 of 96** subscribed Workshop mods ship **any** `.meg`. The established texture-override surface is **loose files** (8,587 DDS / 351 TGA across the cache) — which the **front-end shell ignores** (PROVEN #4; matches memory `reference-ui-atlas-modding` "IN-GAME ONLY").
+- The one mod that changes front-end art — **Reilsss CnCinRA** — does it with a **wholesale loose 176 MB atlas TGA** (`184,582,588 B`, ≈ the full base atlas) and ccmod.json **"(Requiers EMC)"**. It routes around the front-end's MEG-only texture read using EMC's DLL hook, which we can't adopt (DLL conflict). So "wholesale" is the only known shape: whole-atlas-loose+EMC, or whole-MEG-shadow.
+
+### Recommendation
+- **Do not pursue the texture-MEG route for Allied/Soviet emblems.** 2.4 GB (or a fragile ~400 MB) per subscriber is wildly disproportionate to two emblems, and GDI/Nod emblems + all-8 faction names already ship via the proven ~42 MB `CONFIG.MEG` path. For Allied/Soviet use the **Fallback** at the bottom of this doc.
+- **Optional confirmation only:** the Step-1 tiny probe would settle merge-vs-shadow empirically, but it is a **Deck write** (needs Luke's OK) and the analysis predicts breakage/no-op, not a win. **Do not ship the 2.4 GB MEG** (Step 2) unless Luke explicitly decides the two emblems justify that payload.
 
 ---
 

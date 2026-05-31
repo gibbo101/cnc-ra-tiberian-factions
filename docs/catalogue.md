@@ -1009,7 +1009,7 @@ All seven of the original open questions were resolved 2026-05-19:
 > `td-infantry-port-recipe.md`. The remaining items below are still future work.
 
 - TD-themed infantry per faction — **✅ ROSTER COMPLETE (2026-05-30):** Minigunner, Grenadier, Rocket Soldier, Flamethrower, Chem Warrior, Engineer (faction-conditional single/multi capture), Commando (sniper + C4 + RAMBO voices). See `td-infantry-port-recipe.md`.
-- TD-themed vehicles per faction — **✅ turreted-tank trio shipped 2026-05-30:** GDI Medium Tank (TDMTNK), NOD Light Tank (TDLTNK), GDI Mammoth Tank (TDHTNK — dual weapon + AA). Pipeline in `td-vehicle-port-recipe.md`. Remaining: Buggy, Recon Bike, Flame/Stealth Tank, MLRS, APC, Artillery. (Deferred: Light Tank classic-mode rendering, post-1.0.)
+- TD-themed vehicles per faction — **✅ turreted-tank trio shipped 2026-05-30:** GDI Medium Tank (TDMTNK), NOD Light Tank (TDLTNK), GDI Mammoth Tank (TDHTNK — dual weapon + AA); **✅ NOD Flame Tank (TDFTNK — turret-less flame jet, §FLAME) 2026-05-30.** Pipeline in `td-vehicle-port-recipe.md`. Remaining: Buggy, Recon Bike, Stealth Tank, MLRS, APC, Artillery. (Deferred: Light Tank classic-mode rendering, post-1.0.)
 - Ion Cannon proper visual effect (engine work).
 - TD-themed walls (if v0.3's vanilla-walls compromise feels wrong).
 - TD-themed Hospital / Bio Lab if there's player demand.

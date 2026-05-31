@@ -2364,6 +2364,20 @@ static AnimTypeClass const FlameSW(ANIM_FLAME_SW, "TDFLAME-SW", 48, 9, false, fa
 static AnimTypeClass const FlameW(ANIM_FLAME_W, "TDFLAME-W", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const FlameNW(ANIM_FLAME_NW, "TDFLAME-NW", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 
+// Tiberian Factions -- TD Flame Tank (UNIT_TDFTNK) directional muzzle jets
+// (ANIM_TDFTFLAME_*). Byte-identical to the Flamethrower's FlameN.. above EXCEPT the
+// IniName -> a SEPARATE TDFTFLAME-<dir> art family whose sprite anchor is reseated onto
+// the tank's twin nozzles (RA_VFX.XML tiles). Decoupled from ANIM_FLAME_* so tuning the
+// tank's flame position no longer drags the trooper's flame off its gun.
+static AnimTypeClass const TdftFlameN(ANIM_TDFTFLAME_N, "FTFLAME-N", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const TdftFlameNE(ANIM_TDFTFLAME_NE, "FTFLAME-NE", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const TdftFlameE(ANIM_TDFTFLAME_E, "FTFLAME-E", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const TdftFlameSE(ANIM_TDFTFLAME_SE, "FTFLAME-SE", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const TdftFlameS(ANIM_TDFTFLAME_S, "FTFLAME-S", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const TdftFlameSW(ANIM_TDFTFLAME_SW, "FTFLAME-SW", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const TdftFlameW(ANIM_TDFTFLAME_W, "FTFLAME-W", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+static AnimTypeClass const TdftFlameNW(ANIM_TDFTFLAME_NW, "FTFLAME-NW", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
+
 // Tiberian Factions -- TD chem-warrior directional spray jets (ANIM_CHEM_*, E5).
 // Ported from tiberiandawn/adata.cpp ChemN.. -- structurally identical to the flame
 // jets above (8 dirs, 13 stages) EXCEPT IsFlameThrower=false (TD's ChemN sets it
@@ -2442,6 +2456,14 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(ChemSW);
     new AnimTypeClass(ChemW);
     new AnimTypeClass(ChemNW);
+    new AnimTypeClass(TdftFlameN);
+    new AnimTypeClass(TdftFlameNE);
+    new AnimTypeClass(TdftFlameE);
+    new AnimTypeClass(TdftFlameSE);
+    new AnimTypeClass(TdftFlameS);
+    new AnimTypeClass(TdftFlameSW);
+    new AnimTypeClass(TdftFlameW);
+    new AnimTypeClass(TdftFlameNW);
     new AnimTypeClass(LZSmoke);
     new AnimTypeClass(CDeviator);
     new AnimTypeClass(CDollar);
@@ -2555,6 +2577,13 @@ void AnimTypeClass::One_Time(void)
     {
         void const* flame_donor = As_Reference(ANIM_FBALL1).ImageData;
         for (int fa = ANIM_FLAME_N; fa <= ANIM_CHEM_NW; fa++) {
+            if (As_Reference((AnimType)fa).ImageData == NULL) {
+                ((void const*&)As_Reference((AnimType)fa).ImageData) = flame_donor;
+            }
+        }
+        // Tiberian Factions -- Flame Tank jets (ANIM_TDFTFLAME_*) are a separate, non-
+        // contiguous family, so donor them with the same FBALL1 ImageData here.
+        for (int fa = ANIM_TDFTFLAME_N; fa <= ANIM_TDFTFLAME_NW; fa++) {
             if (As_Reference((AnimType)fa).ImageData == NULL) {
                 ((void const*&)As_Reference((AnimType)fa).ImageData) = flame_donor;
             }

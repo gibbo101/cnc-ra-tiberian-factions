@@ -65,6 +65,46 @@ The Mammoth Tank carries TWO weapons (cannon + AA tusk missiles). Mapping:
 
 ---
 
+## §FLAME — a turret-less flame-jet vehicle (Flame Tank)
+
+The Nod Flame Tank (`UNIT_TDFTNK`, TD `UnitFTank`) fires `WEAPON_FLAME_TONGUE` — a flame
+jet, not a projectile. **Highest-reuse vehicle so far**: the E4 Flamethrower already built
+every flame primitive — `BULLET_TDFLAME` (invisible round), `WARHEAD_TDFIRE`, the 8 directional
+`ANIM_FLAME_N..NW` muzzle jets, `VOC_TD_FLAMER`. The tank weapon differs from the E4 weapon
+only in **damage (50 vs 35)** — same bullet/warhead/anim/range/ROF/sound. Whole port = one new
+weapon + one ctor + assets.
+
+- **NO techno.cpp change.** The flame-jet dispatch is **anim-keyed**, not weapon-keyed:
+  `techno.cpp` `case ANIM_FLAME_N: a = ANIM_FLAME_N + Dir_Facing(Fire_Direction())` fires for
+  *any* weapon whose rules.ini `Anim=TDFLAME-N`. (First instinct was to add the weapon enum to a
+  `switch(weapon)` — wrong, there's no such switch. Just set `Anim=TDFLAME-N`.)
+- **Turret-less = zero offset tuning.** `is_turret_equipped=false` → no muzzle-flash geometry to
+  screenshot-tune (the §traps "muzzle-flash mis-positioned" trap doesn't apply). The jet draws from
+  the body's `Fire_Coord`; the body rotates to face target (TD tracked-vehicle rule, the non-turret
+  branch of `UnitClass::Rotation_AI`).
+- **`Burst=2`** = TD FTANK's `is_twoshooter` "fires two shots in quick succession" (twin flame jets) —
+  same RA mapping as the Mammoth double-tap (§DUAL); RA has no unit-level two-shooter flag.
+- **New weapon `WEAPON_TDFLAMETONGUE` / `[TDFlameTongue]`** (Dmg50, ROF50, Range2, Projectile=TDFlame,
+  Speed=40, Warhead=TDFire, Report=FLAMER2, Anim=TDFLAME-N, Burst=2); `IsTDPort=true` in rules.cpp
+  (identical treatment to `TDFlamethrower`).
+- **Explosion** `ANIM_NAPALM3` (TD FTANK death; RA has it — a large napalm burst, fitting).
+- **Internal name** `TXT_LTANK` (RA has no Flame Tank string); real "Flame Tank" name from rules.ini
+  `Name=`. Cameo `BuildIcon_TD_FlameTank` + `TEXT_UNIT_TITLE_NOD_FLAME_TANK` (both in the base launcher
+  PAK; nothing shipped).
+- **Assets:** classic `FTNK.SHP:TDFTNK.SHP` in `build_tfassets.sh`; HD via
+  `bundle_unit.py FTNK TDFTNK --tileset-donor APC ...` — a turret-less hull is **32 frames** (half a
+  turreted tank's 64), so the donor is the 32-frame **APC**, not 2TNK.
+
 ## The roster
 
-**Shipped (turreted-tank trio — establishes the pipeline):** GDI Medium Tank (`TDMTNK`), NOD Light Tank (`TDLTNK`), GDI Mammoth Tank (`TDHTNK` — dual weapon + AA, §DUAL). Naming convention (Luke): faction-prefix any TD tank colliding with an RA name. **Next:** Nod Flame Tank / Stealth Tank / Recon Bike / Buggy (turret-less — simpler, no turret offset), MLRS, APC, Artillery.
+**Shipped:** turreted-tank trio — GDI Medium Tank (`TDMTNK`), NOD Light Tank (`TDLTNK`), GDI Mammoth
+Tank (`TDHTNK` — dual weapon + AA, §DUAL); **Nod Flame Tank (`TDFTNK` — turret-less flame jet, §FLAME).**
+Naming convention (Luke): faction-prefix any TD tank colliding with an RA name. **Next:** Stealth Tank /
+Recon Bike / Buggy / MLRS / APC / Artillery.
+
+> **deploy.sh gotcha (hit 2026-05-30):** `deploy.sh` `rm -rf`s `build/remaster/Vanilla_RA/` then runs the
+> workflow, but the repackage is a **RedAlert POST_BUILD step** (`redalert/CMakeLists.txt:213`) that only
+> fires when the DLL *relinks*. If ninja sees the DLL up-to-date (e.g. you already built manually),
+> POST_BUILD is skipped and `Vanilla_RA/` is never recreated → deploy aborts "RedAlert.dll not found".
+> Fix: touch a source file to force a relink, OR manually run the 3 POST_BUILD `cmake -E` copies (note the
+> linked DLL is at `build/remaster/RelWithDebInfo/RedAlert.dll`) then `deploy.sh --no-build`.

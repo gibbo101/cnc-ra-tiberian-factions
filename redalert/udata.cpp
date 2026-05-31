@@ -549,6 +549,49 @@ static UnitTypeClass const UnitTdHtnk(UNIT_TDHTNK,
                                       MISSION_HUNT  // ORDERS: Default order (TD HTANK default).
 );
 
+// Tiberian Factions -- TD Flame Tank (UNIT_TDFTNK), ported from TD's UNIT_FTANK
+// (tiberiandawn/udata.cpp UnitFTank). NOD-ONLY (faction choice, like the Light Tank;
+// TD FTANK source ownable includes GOOD|BAD but we assign it to Nod). Turret-LESS
+// (is_turret_equipped=false): the weapon is a directional flame jet drawn as an 8-dir
+// muzzle anim (ANIM_FLAME_N) in TechnoClass::Fire_At -- same mechanism as the E4
+// Flamethrower. No rotating turret, but the muzzle POSITION still comes from Fire_Coord's
+// PrimaryOffset/PrimaryLateral = TD FTANK's turret.cpp geometry (0x30 fwd + ±0x20 split),
+// so the twin jets seat on the front nozzles. Fires WEAPON_TDFLAMETONGUE
+// (the stronger FLAME_TONGUE: Dmg50 vs the Flamethrower's 35). is_crusher (squashes
+// infantry). TD's "fires two shots in quick succession" double-jet is replicated via
+// Burst=2 on the weapon (rules.ini), as RA has no unit-level two-shooter flag. Explosion
+// ANIM_NAPALM3 (RA has it -- a large napalm burst, fitting). Internal name = TXT_LTANK
+// (RA has no Flame Tank string); the real "Flame Tank" display comes from rules.ini Name=.
+// Stats (Strength 300, Cost 800, Speed=9 = MPH_MEDIUM/2, ROT 5) from rules.ini [TDFTNK].
+static UnitTypeClass const UnitTdFtnk(UNIT_TDFTNK,
+                                      TXT_LTANK,    // NAME: (RA has no "Flame Tank"; HD display via rules.ini Name=).
+                                      "TDFTNK",     // NAME: IniName.
+                                      ANIM_NAPALM3, // EXPLOSION: TD FTANK death (ANIM_NAPALM3 -- RA has it).
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0000,       // Vertical offset = 0 (TD FTANK has no DIR_N pre-move; turret.cpp omits the perspective raise -- the jet sits at hull level).
+                                      0x0030,       // Primary weapon offset = TD FTANK dist=0x30 (forward along body; turret.cpp:430). Carries the twin jets OUT to the front nozzles -- do NOT zero it (forward offset != lateral; zeroing it drops the jets back onto the hull center).
+                                      0x0020,       // Primary weapon lateral = TD FTANK 0x20 (the ±E/W nozzle split; IsSecondShot picks side, turret.cpp:431-435).
+                                      0x0030,       // Secondary weapon offset (unused: Burst=2 keeps which=0; mirror primary for safety).
+                                      0x0020,       // Secondary weapon lateral (unused; mirror primary).
+                                      true,         // Can this be a goodie surprise from a crate? (TD: yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (TD: yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      false,        // Is it equipped with a combat turret? (TD FTANK: NO turret)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit? (TD FTANK: no)
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline (TD: 0).
+                                      MISSION_HUNT  // ORDERS: Default order (TD FTANK default).
+);
+
 // Jeep (hummer)
 static UnitTypeClass const UnitJeep(UNIT_JEEP,
                                     TXT_JEEP,     // NAME:			Text name of this unit type.
@@ -1183,6 +1226,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTdMtnk);    // UNIT_TDMTNK
     new UnitTypeClass(UnitTdLtnk);    // UNIT_TDLTNK
     new UnitTypeClass(UnitTdHtnk);    // UNIT_TDHTNK
+    new UnitTypeClass(UnitTdFtnk);    // UNIT_TDFTNK
 }
 
 /***********************************************************************************************

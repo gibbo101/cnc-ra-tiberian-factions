@@ -729,6 +729,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TD75mm");       // WEAPON_TD75MM (TD Light Tank cannon, LTNK; non-IsTDPort)
     new WeaponTypeClass("TD120mm");      // WEAPON_TD120MM (TD Mammoth Tank primary cannon, HTNK; non-IsTDPort)
     new WeaponTypeClass("TDTusk");       // WEAPON_TDTUSK (TD Mammoth Tusk AA missiles, HTNK secondary; IsTDPort -- fires TDSSM)
+    new WeaponTypeClass("TDFlameTongue"); // WEAPON_TDFLAMETONGUE (TD Flame Tank FTNK; IsTDPort -- stronger Flamethrower, Dmg50)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -766,6 +767,11 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // TDTusk (Mammoth AA secondary): IsTDPort for the TDSSM homing missile (raw Speed +
     // AI_TD homing dispatch), same as TDTowTwo which also fires TDSSM.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDTusk"))->IsTDPort = true;
+    // TDFlameTongue (Flame Tank FTNK): the FLAME_TONGUE weapon -- a stronger Flamethrower
+    // (Dmg50 vs 35). Same invisible BULLET_TDFLAME + WARHEAD_TDFIRE + directional TDFLAME-N
+    // jet as the E4 Flamethrower; IsTDPort for TD fire cadence + raw Speed parse (identical
+    // treatment to TDFlamethrower).
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TDFlameTongue"))->IsTDPort = true;
 
     return (true);
 }

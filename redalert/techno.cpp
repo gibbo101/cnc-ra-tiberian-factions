@@ -550,6 +550,17 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
         lateral = tclass->SecondaryLateral;
     }
 
+    /*
+    **  Tiberian Factions -- Flame Tank (UNIT_TDFTNK) uses the generic path verbatim.
+    **  TD's FTANK (turret.cpp UNIT_FTANK) is just dist=0x30 forward + a symmetric
+    **  ±0x20 lateral split keyed off IsSecondShot. With udata PrimaryOffset=0x30 and
+    **  PrimaryLateral=0x20 (and VerticalOffset/HorizontalOffset = 0, as TD has), the
+    **  generic code below reproduces TD's twin-nozzle geometry byte-for-byte -- no
+    **  special case needed. (An earlier asymmetric FT_CENTRE/FT_BACK fudge tried to
+    **  rebuild the muzzle position on the lateral+backward axes while PrimaryOffset was
+    **  zeroed; the real error was the missing FORWARD offset, so it could never seat on
+    **  the nozzles. Removed 2026-05-30 -- fix PrimaryOffset in udata, no special case.)
+    */
     COORDINATE coord = Coord_Move(Center_Coord(), DIR_N, tclass->VerticalOffset + Height);
     coord = Coord_Move(coord, DIR_E, tclass->HorizontalOffset);
     if (IsSecondShot) {
@@ -3446,6 +3457,10 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             case ANIM_CHEM_N:
                 a = AnimType(ANIM_CHEM_N + Dir_Facing(Fire_Direction())); // TD-faithful (techno.cpp:2376-2378, same dispatch as FLAME/GUN)
                 break;
+
+            case ANIM_TDFTFLAME_N:
+                a = AnimType(ANIM_TDFTFLAME_N + Dir_Facing(Fire_Direction())); // Flame Tank's own jet family (nozzle-reanchored; decoupled from ANIM_FLAME_*)
+                break;
             }
 
             /*
@@ -3462,7 +3477,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 if (anim != NULL) {
                     anim->Attach_To(this);
                 }
-#if 0 // TF DEV: muzzle-anim diagnostic (logs-first per [[feedback-logs-first-on-new-units]]; covers any IsTDPort weapon -- E4 flame + E5 chem). VERIFIED: chem+flame jets dispatch+render in HD. Flip to 1 to re-enable.
+#if 1 // TF DEV: Flame Tank muzzle-geometry diagnostic (TDFTNK nozzle position + nozzle alternation). Flip to 0 before release.
                 if (weapon->IsTDPort) {
                     static FILE* ff = NULL;
                     if (ff == NULL) {
@@ -3471,8 +3486,21 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                         if (h != NULL) { char p[512]; snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_flame.log", h); ff = fopen(p, "w"); }
                     }
                     if (ff != NULL) {
-                        fprintf(ff, "Fire_At IsTDPort: Anim(raw)=%d a(dir)=%d IniName=%s anim=%p\n",
-                                (int)weapon->Anim, (int)a, (a != ANIM_NONE) ? AnimTypeClass::As_Reference(a).IniName : "NONE", (void*)anim);
+                        COORDINATE cen = Center_Coord();
+                        COORDINATE fc  = Fire_Coord(which);
+                        // dX/dY are lepton deltas of the muzzle from the hull center; the
+                        // sign/size tells us whether the two burst shots split to opposite
+                        // nozzles (alternating IsSecondShot) or collapse to one spot.
+                        fprintf(ff,
+                            "Fire_At TDPort Anim=%s which=%d IsSecondShot=%d dir=%d "
+                            "center=(%d,%d) fire=(%d,%d) dX=%d dY=%d anim=%p\n",
+                            (a != ANIM_NONE) ? AnimTypeClass::As_Reference(a).IniName : "NONE",
+                            which, IsSecondShot ? 1 : 0, (int)Turret_Facing(),
+                            (int)Coord_X(cen), (int)Coord_Y(cen),
+                            (int)Coord_X(fc),  (int)Coord_Y(fc),
+                            (int)Coord_X(fc) - (int)Coord_X(cen),
+                            (int)Coord_Y(fc) - (int)Coord_Y(cen),
+                            (void*)anim);
                         fflush(ff);
                     }
                 }
@@ -7047,7 +7075,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         **  Disabled 2026-05-27. Default OFF; only flip on for short-lived
         **  catalogue tests, then revert before deploy/release.
         */
-#if 0 // TF DEV TOGGLE: instant-build for GDI/Nod testing. OFF for release (flip to 1 to re-enable).
+#if 1 // TF DEV TOGGLE: instant-build for GDI/Nod testing. OFF for release (flip to 1 to re-enable).
         if (hptr->Class->House == HOUSE_GOOD || hptr->Class->House == HOUSE_BAD
             || hptr->ActLike      == HOUSE_GOOD || hptr->ActLike      == HOUSE_BAD) {
             return 15;
