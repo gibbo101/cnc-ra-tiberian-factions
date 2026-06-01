@@ -733,6 +733,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDM60mg");      // WEAPON_TDM60MG (TD Hum-vee/Buggy MG, JEEP/BGGY; IsTDPort -- instant MG, raw Speed)
     new WeaponTypeClass("TDStnkDragon"); // WEAPON_TDSTNKDRAGON (TD Stealth Tank STNK; IsTDPort -- TDDragon + Burst=2)
     new WeaponTypeClass("TDMlrsRocket"); // WEAPON_TDMLRS (TD Rocket Launcher MLRS; IsTDPort -- fires BULLET_TDSSM2, Burst=2)
+    new WeaponTypeClass("TDHonestJohn"); // WEAPON_TDHONESTJOHN (TD SSM Launcher MSAM; IsTDPort -- fires BULLET_TDMISSILE, non-homing)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -787,6 +788,9 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // TDMlrsRocket (Rocket Launcher MLRS): TD WEAPON_MLRS -- a long-range (6) homing rocket firing
     // BULLET_TDSSM2. IsTDPort for raw Speed (MPH_ROCKET) + AI_TD homing dispatch (same as TDSSM/TDTusk).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDMlrsRocket"))->IsTDPort = true;
+    // TDHonestJohn (SSM Launcher MSAM): TD WEAPON_HONEST_JOHN -- a fast, NON-homing, long-range (10)
+    // napalm rocket firing BULLET_TDMISSILE. IsTDPort for raw Speed (MPH_FAST) + the AI_TD flight path.
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TDHonestJohn"))->IsTDPort = true;
 
     return (true);
 }
