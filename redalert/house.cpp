@@ -3712,17 +3712,21 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                 if (builder) {
 
                     builder->Transmit_Message(RADIO_HELLO, tech);
+                    // Tiberian Factions mod: TD buildings slam down with TD's
+                    // HVYDOOR1 instead of RA's PLACBLDG (mirrors the
+                    // VOC_TD_CONSTRUCTION dispatch in building.cpp). This MUST be
+                    // computed BEFORE Unlimbo: for wall types, BuildingClass::Unlimbo
+                    // converts the building to an overlay and `delete this`-es it
+                    // (then returns true) — so dereferencing `tech` afterward is a
+                    // use-after-free that CTDs on every wall placement, all factions.
+                    bool td_bldg = (tech->What_Am_I() == RTTI_BUILDING
+                                    && ((BuildingClass*)tech)->Class->Type >= STRUCT_TDOBLI
+                                    && ((BuildingClass*)tech)->Class->Type < STRUCT_COUNT);
                     if (tech->Unlimbo(Cell_Coord(cell))) {
                         factory->Completed();
                         Abandon_Production(type);
 
                         if (PlayerPtr == this) {
-                            // Tiberian Factions mod: TD buildings slam down with
-                            // TD's HVYDOOR1 instead of RA's PLACBLDG (mirrors the
-                            // VOC_TD_CONSTRUCTION dispatch in building.cpp).
-                            bool td_bldg = (tech->What_Am_I() == RTTI_BUILDING
-                                            && ((BuildingClass*)tech)->Class->Type >= STRUCT_TDOBLI
-                                            && ((BuildingClass*)tech)->Class->Type < STRUCT_COUNT);
                             Sound_Effect(td_bldg ? VOC_TD_PLACE_BUILDING_DOWN : VOC_PLACE_BUILDING_DOWN);
                             Map.Set_Cursor_Shape(0);
                             Map.PendingObjectPtr = 0;

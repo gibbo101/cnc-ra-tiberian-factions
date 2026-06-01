@@ -3819,7 +3819,15 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             }
 #endif
 
-            if (building->BState == BSTATE_CONSTRUCTION) {
+            // Tiberian Factions: never append the "MAKE" buildup-anim suffix for
+            // wall buildings. Walls have no <NAME>MAKE asset, so a wall enumerated
+            // to the launcher while in BSTATE_CONSTRUCTION (e.g. the placement
+            // preview) resolves to a non-existent "SBAGMAKE"/"CYCLMAKE"/etc. and
+            // NULL-derefs the launcher's asset lookup (CTD on wall placement).
+            // Vanilla RA never hit this: its walls were Allied/Soviet-only and
+            // converted to overlays before enumeration. Re-enabling walls for
+            // GDI/Nod (and widening SBAG/BRIK ownership) exposed the latent trap.
+            if (building->BState == BSTATE_CONSTRUCTION && !building->Class->IsWall) {
                 strncat(new_object.AssetName, "MAKE", CNC_OBJECT_ASSET_NAME_LENGTH);
             }
             // Diagnostic 2026-05-19: log the *final* AssetName the launcher
