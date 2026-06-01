@@ -1733,6 +1733,7 @@ typedef enum UnitType : char
     UNIT_TDSTNK,            // TD Stealth Tank (STNK) — Nod-only, CLOAKABLE (RA's inherited cloak system), invisible-to-radar, turret-less, fires TDStnkDragon (2-shot). udata.cpp UnitSTank.
     UNIT_TDMLRS,            // TD Rocket Launcher (MLRS, "Rocket Launcher") — GDI-only (EYE-gated), turret + lock-while-moving, 2-shot, fires TDMlrsRocket (BULLET_TDSSM2, range 6). Uses the MSAM sprite (TD cross-wiring). udata.cpp:854.
     UNIT_TDMSAM,            // TD SSM Launcher (MSAM, "S.S.M. Launcher") — Nod-only, Temple-gated, turret + lock-while-moving, fires TDHonestJohn (BULLET_TDMISSILE, non-homing, range 10, fire warhead). Uses the MLRS sprite (TD cross-wiring). udata.cpp:477.
+    UNIT_TDARTY,            // TD Artillery (ARTY, "Nod Artillery") — Nod-only, no prereq (build level 6), turret-less (body aims, slow ROT 2), fires TD155mm (BULLET_TDHESHELL arcing, dmg 150). udata.cpp UnitArty.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -2916,6 +2917,7 @@ typedef enum WeaponType : char
     WEAPON_TDSTNKDRAGON,   // TD Stealth Tank launcher (STNK) — WEAPON_DRAGON + Burst=2 (TD is_twoshooter). Same TDTOW/TDAP/BAZOOK1 chain as TDDragon; separate weapon so the single-shot E3/Bike keep Burst=1.
     WEAPON_TDMLRS,         // TD Rocket Launcher (MLRS) — Dmg75/ROF80/Range6, BULLET_TDSSM2 homing, WARHEAD_TDHE, Report=ROCKET1, Burst=2. Registered as "TDMlrsRocket" (distinct from the [TDMLRS] unit section).
     WEAPON_TDHONESTJOHN,   // TD SSM Launcher (MSAM) — Dmg100/ROF200/Range10, BULLET_TDMISSILE (non-homing), WARHEAD_TDFIRE, Report=ROCKET1. Registered as "TDHonestJohn".
+    WEAPON_TD155MM,        // TD Artillery (ARTY) — Dmg150/ROF65/Range6, BULLET_TDHESHELL (arcing), WARHEAD_TDHE, Report=TNKFIRE2, Anim=GUNFIRE. Registered as "TD155mm".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -3563,6 +3565,7 @@ typedef enum VocType : short
     VOC_TD_ROCKET1,      // TD rocket launch #1 (ROCKET1) — WEAPON_TDTUSK Report= (Mammoth Tusk AA missiles)
     VOC_TD_MGUN11,       // TD heavy machine gun (MGUN11) — WEAPON_TDM60MG Report= (Hum-vee/Buggy); routed via RAC/RAR_SFX_MGUN11
     VOC_TD_CLOAK,        // TD Stealth Tank cloak/decloak (TRANS1) — TD VOC_CLOAK; played by Do_Cloak/Do_Uncloak for TD-prefix units instead of RA's VOC_IRON1. Routed via RAC/RAR_SFX_TRANS1.
+    VOC_TD_TANK1,        // TD Artillery 155mm fire (TNKFIRE2) — WEAPON_TD155MM Report= (VOC_TANK1 "sharp tank fire with recoil"). Routed via RAC/RAR_SFX_TNKFIRE2.
 
     VOC_COUNT,
     VOC_FIRST = 0

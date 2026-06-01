@@ -288,6 +288,7 @@ struct SoundEffectNameStruct
     {"ROCKET1", 1, IN_NOVAR},     // VOC_TD_ROCKET1 — TD rocket launch (WEAPON_TDTUSK Report=ROCKET1, Mammoth Tusk AA), routed via RAC/RAR_SFX_ROCKET1
     {"MGUN11", 1, IN_NOVAR},      // VOC_TD_MGUN11 — TD heavy machine gun (WEAPON_TDM60MG Report=MGUN11, Hum-vee/Buggy), routed via RAC/RAR_SFX_MGUN11
     {"TRANS1", 1, IN_NOVAR},      // VOC_TD_CLOAK — TD Stealth Tank cloak/decloak (TD VOC_CLOAK = file TRANS1), routed via RAC/RAR_SFX_TRANS1
+    {"TNKFIRE2", 1, IN_NOVAR},    // VOC_TD_TANK1 — TD Artillery 155mm fire (WEAPON_TD155MM Report=TNKFIRE2; TD VOC_TANK1), routed via RAC/RAR_SFX_TNKFIRE2
 };
 
 //

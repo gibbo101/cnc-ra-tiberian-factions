@@ -875,6 +875,44 @@ static UnitTypeClass const UnitTdMsam(UNIT_TDMSAM,
                                       MISSION_HUNT   // ORDERS: Default order (TD MSAM default = MISSION_HUNT).
 );
 
+// Tiberian Factions -- TD Artillery (UNIT_TDARTY), ported from TD's UNIT_ARTY
+// (tiberiandawn/udata.cpp UnitArty, TXT_ARTY = "Artillery"). NOD-ONLY (HOUSEF_BAD). Named
+// "Nod Artillery" (rules.ini) to disambiguate from RA's own [ARTY] "Artillery". TURRET-LESS
+// (the body aims; very slow ROT 2). No building prereq beyond the war factory (TD STRUCTF_NONE,
+// build level 6). Cheap (450) and fragile (75 HP) but high damage (150) -- a glass-cannon
+// bombardment unit. Fires TD155mm (BULLET_TDHESHELL -- an ARCING, faceless 155mm HE shell that
+// reuses the 120MM sprite, WARHEAD_TDHE, ANIM_ART_EXP1 impact). Death ANIM_ART_EXP1 (RA-native).
+// Turret-less gun offsets follow the Bike pattern (small forward muzzle; screenshot-tune).
+// Stats in rules.ini [TDARTY]/[TD155mm]/[TDHEShell].
+static UnitTypeClass const UnitTdArty(UNIT_TDARTY,
+                                      TXT_LTANK,     // NAME: placeholder (RA's "Artillery" is its own unit; HD display via rules.ini Name=).
+                                      "TDARTY",      // NAME: IniName.
+                                      ANIM_ART_EXP1, // EXPLOSION: TD ARTY death (ANIM_ART_EXP1 -- RA-native).
+                                      REMAP_NORMAL,  // Sidebar remap logic.
+                                      0x0010,        // Vertical offset (small; turret-less gun, screenshot-tune).
+                                      0x0050,        // Primary weapon offset along body centerline (forward barrel muzzle; screenshot-tune).
+                                      0x0000,        // Primary weapon lateral offset.
+                                      0x0000,        // Secondary weapon offset (no secondary weapon).
+                                      0x0000,        // Secondary weapon lateral offset.
+                                      true,          // Can this be a goodie surprise from a crate? (TD: yes)
+                                      false,         // Always use the given name for the vehicle?
+                                      false,         // Can this unit squash infantry? (TD ARTY: no)
+                                      false,         // Does this unit harvest Tiberium?
+                                      false,         // Is invisible to radar?
+                                      false,         // Is it insignificant (won't be announced)?
+                                      false,         // Is it equipped with a combat turret? (TD ARTY: NO -- body aims)
+                                      false,         // Does it have a rotating radar dish?
+                                      false,         // Is there an associated firing animation?
+                                      false,         // Must the turret be in a locked down position while moving?
+                                      false,         // Is this a gigundo-rotund-enormous unit? (TD ARTY: no)
+                                      false,         // Does the unit have a constant animation?
+                                      false,         // Is the unit capable of jamming radar?
+                                      false,         // Is the unit a mobile gap generator?
+                                      32,            // Rotation stages.
+                                      0,             // Turret center offset along body centerline (TD: 0).
+                                      MISSION_HUNT   // ORDERS: Default order (TD ARTY default = MISSION_HUNT).
+);
+
 // Jeep (hummer)
 static UnitTypeClass const UnitJeep(UNIT_JEEP,
                                     TXT_JEEP,     // NAME:			Text name of this unit type.
@@ -1517,6 +1555,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTdStnk);    // UNIT_TDSTNK
     new UnitTypeClass(UnitTdMlrs);    // UNIT_TDMLRS
     new UnitTypeClass(UnitTdMsam);    // UNIT_TDMSAM
+    new UnitTypeClass(UnitTdArty);    // UNIT_TDARTY
 }
 
 /***********************************************************************************************

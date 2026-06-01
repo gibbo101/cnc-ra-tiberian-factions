@@ -6266,6 +6266,26 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     </SampleNamesList>
   </SFXEvent>
 
+  <!-- NOD Artillery 155mm (TDARTY, WEAPON_TD155MM Report=TNKFIRE2; TD VOC_TANK1). Base
+       ships the TDC/TDR WAVs; route the engine "TNKFIRE2" to them. -->
+  <SFXEvent Name="RAC_SFX_TNKFIRE2" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDC_SFX_TNKFIRE2.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_TNKFIRE2" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_TNKFIRE2.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
   <!-- NOD Light Tank cannon (TDLTNK, WEAPON_TD75MM Report=TNKFIRE3). Base ships the
        TDC/TDR_SFX_TNKFIRE3 WAVs; engine fires VOC_TD_TANK2, launcher resolves via RAC_/RAR_. -->
   <SFXEvent Name="RAC_SFX_TNKFIRE3" Preset="_PRESET_MD_MOBIUS_2D">
