@@ -7405,14 +7405,31 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 
                 /*
                 **	Insert the new name text into the buffer list.
+                **
+                **	Tiberian Factions: dedup by id. Rules are read twice (rules.ini
+                **	then aftermath.ini), so without this each type with a Name=
+                **	override re-registered into a fresh slot on the second pass and
+                **	exhausted the table — overflowing into a NULL OverrideDisplayName
+                **	that crashed the launcher. Reuse this type's existing slot if it
+                **	already has one; otherwise take the first free slot.
                 */
+                int slot = -1;
                 for (int index = 0; index < ARRAY_SIZE(NameOverride); index++) {
-                    if (NameIDOverride[index] == 0) {
-                        NameOverride[index] = strdup(buffer);
-                        NameIDOverride[index] = id;
-                        //					FullName = -(index+1);
+                    if (NameIDOverride[index] == id) {
+                        slot = index;
                         break;
                     }
+                    if (slot < 0 && NameIDOverride[index] == 0) {
+                        slot = index;
+                    }
+                }
+                if (slot >= 0) {
+                    if (NameOverride[slot] != NULL) {
+                        free((void*)NameOverride[slot]);
+                    }
+                    NameOverride[slot] = strdup(buffer);
+                    NameIDOverride[slot] = id;
+                    //					FullName = -(slot+1);
                 }
             }
 #endif

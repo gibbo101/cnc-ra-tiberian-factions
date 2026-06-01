@@ -730,6 +730,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TD120mm");      // WEAPON_TD120MM (TD Mammoth Tank primary cannon, HTNK; non-IsTDPort)
     new WeaponTypeClass("TDTusk");       // WEAPON_TDTUSK (TD Mammoth Tusk AA missiles, HTNK secondary; IsTDPort -- fires TDSSM)
     new WeaponTypeClass("TDFlameTongue"); // WEAPON_TDFLAMETONGUE (TD Flame Tank FTNK; IsTDPort -- stronger Flamethrower, Dmg50)
+    new WeaponTypeClass("TDM60mg");      // WEAPON_TDM60MG (TD Hum-vee/Buggy MG, JEEP/BGGY; IsTDPort -- instant MG, raw Speed)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -772,6 +773,10 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // jet as the E4 Flamethrower; IsTDPort for TD fire cadence + raw Speed parse (identical
     // treatment to TDFlamethrower).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDFlameTongue"))->IsTDPort = true;
+    // TDM60mg (Hum-vee/Buggy): TD's M60 machine gun -- an invisible instant BULLET_TD50cal +
+    // WARHEAD_TDSA (same small-arms primitives as the Minigunner's TDM16). IsTDPort for raw
+    // Speed=255 (MPH_LIGHT_SPEED, instant) + TD single-shooter cadence (identical to TDM16).
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TDM60mg"))->IsTDPort = true;
 
     return (true);
 }

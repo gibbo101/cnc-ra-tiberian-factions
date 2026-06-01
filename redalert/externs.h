@@ -119,8 +119,8 @@ extern int CarrierLaunchDelay;
 #endif
 
 #ifdef FIXIT_NAME_OVERRIDE
-extern char const* NameOverride[25];
-extern int NameIDOverride[25];
+extern char const* NameOverride[128]; // Tiberian Factions: was 25 (see globals.cpp)
+extern int NameIDOverride[128];
 #endif
 
 extern bool GameInFocus;

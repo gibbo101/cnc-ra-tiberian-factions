@@ -892,7 +892,10 @@ inline FacingType Dir_To_8(DirType facing)
 inline char const* Text_String(int string)
 {
 #ifdef FIXIT_NAME_OVERRIDE
-    if (string < 0 && abs(string) < ARRAY_SIZE(NameOverride)) {
+    // Tiberian Factions: was `< ARRAY_SIZE` — an off-by-one that rejected the
+    // last slot (index N-1 → abs == N), falling through to Extract_String with
+    // a negative index → NULL. With <= the full table is reachable.
+    if (string < 0 && abs(string) <= ARRAY_SIZE(NameOverride)) {
         return (NameOverride[-(string + 1)]);
     }
 #endif

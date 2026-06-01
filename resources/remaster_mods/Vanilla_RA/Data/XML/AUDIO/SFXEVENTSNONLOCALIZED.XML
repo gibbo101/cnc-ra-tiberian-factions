@@ -6102,6 +6102,27 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     </SampleNamesList>
   </SFXEvent>
 
+  <!-- Hum-vee / Nod Buggy heavy MG (TDJEEP/TDBGGY, WEAPON_TDM60MG Report=MGUN11). Base ships the
+       TDC/TDR_SFX_MGUN11 WAVs in SFX3D.MEG; engine fires VOC_TD_MGUN11, launcher resolves via the
+       RAC_/RAR_ prefix (same routing as the Minigunner's MGUN2). -->
+  <SFXEvent Name="RAC_SFX_MGUN11" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDC_SFX_MGUN11.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_MGUN11" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_MGUN11.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
   <!-- Commando sniper rifle (TDRMBO, WEAPON_TDRIFLE Report=RAMGUN2). Base ships the
        TDC/TDR_SFX_RAMGUN2 WAVs in SFX3D.MEG; engine fires VOC_TD_SNIPER, launcher
        resolves via the RAC_/RAR_ prefix. -->

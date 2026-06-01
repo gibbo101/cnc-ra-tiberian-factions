@@ -3518,6 +3518,27 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Game_State(GameStateReques
     }
     }
 
+    // Tiberian Factions diag 2026-05-31: log every state query the launcher makes, so the
+    // LAST state_type before the EXE NULL-deref crash (MCV deploy, Hum-vee/Buggy) tells us
+    // WHICH state the launcher choked processing (LAYERS/SIDEBAR/OCCUPIER/...). Flip #if 1 -> 0.
+#if 1
+    {
+        static FILE* s_state_log = NULL;
+        if (s_state_log == NULL) {
+            char spath[512];
+            const char* sp = getenv("USERPROFILE");
+            snprintf(spath, sizeof(spath), "%s/Documents/CnCRemastered/tf_state_query.log",
+                     (sp != NULL && sp[0] != '\0') ? sp : ".");
+            s_state_log = fopen(spath, "w");
+        }
+        if (s_state_log != NULL) {
+            fprintf(s_state_log, "state_type=%d got=%d buf=%u\n",
+                    (int)state_type, (int)got_state, buffer_size);
+            fflush(s_state_log);
+        }
+    }
+#endif
+
     return got_state;
 }
 
@@ -3672,6 +3693,39 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     CNCObjectStruct& new_object = ObjectList->Objects[TotalObjectCount + CurrentDrawCount];
     memset(&new_object, 0, sizeof(new_object));
     Convert_Type(object, new_object);
+
+    // Tiberian Factions diag 2026-05-31: log EVERY object converted into the launcher's
+    // render list (not just TD buildings). The EXE NULL-derefs on MCV deploy after the
+    // Hum-vee/Buggy were added; the last line before the crash names the object whose data
+    // the launcher choked on, and AssetName/ImageData expose the NULL. Flip #if 1 -> 0 to disable.
+#if 1
+    {
+        static FILE* s_obj_log = NULL;
+        if (s_obj_log == NULL) {
+            char opath[512];
+            const char* op = getenv("USERPROFILE");
+            snprintf(opath, sizeof(opath), "%s/Documents/CnCRemastered/tf_objlist.log",
+                     (op != NULL && op[0] != '\0') ? op : ".");
+            s_obj_log = fopen(opath, "w");
+        }
+        if (s_obj_log != NULL) {
+            const char* ini = "(?)";
+            void const* img = NULL;
+            if (object != NULL) {
+                ObjectTypeClass const& otc = object->Class_Of();
+                ini = (otc.IniName != NULL) ? otc.IniName : "(nullini)";
+                img = otc.Get_Image_Data();
+            }
+            fprintf(s_obj_log,
+                    "rtti=%d ini=%s Type=%d Asset='%s' ImageData=%p shape#=%d scale=%ld slot=%d ow=%d oh=%d\n",
+                    (object != NULL ? (int)object->What_Am_I() : -1), ini,
+                    (int)new_object.Type, new_object.AssetName, img, shape_number,
+                    (long)scale, TotalObjectCount + CurrentDrawCount, width, height);
+            fflush(s_obj_log);
+        }
+    }
+#endif
+
     if (new_object.Type == UNKNOWN) {
         return;
     }
@@ -3703,6 +3757,34 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     } else {
         strncpy(new_object.AssetName, object->Class_Of().Graphic_Name(), CNC_OBJECT_ASSET_NAME_LENGTH);
     }
+
+    // Tiberian Factions diag 2026-05-31 (pass 2): log the FINAL AssetName the launcher will
+    // use to resolve each object's render asset. The launcher NULL-derefs on MCV deploy when an
+    // object's AssetName isn't in its asset index; the last line before the crash names it. The
+    // earlier tf_objlist.log logged before AssetName was set (always ''). Flip #if 1 -> 0.
+#if 1
+    {
+        static FILE* s_asset_log = NULL;
+        if (s_asset_log == NULL) {
+            char apath[512];
+            const char* ap = getenv("USERPROFILE");
+            snprintf(apath, sizeof(apath), "%s/Documents/CnCRemastered/tf_assetname.log",
+                     (ap != NULL && ap[0] != '\0') ? ap : ".");
+            s_asset_log = fopen(apath, "w");
+        }
+        if (s_asset_log != NULL) {
+            const char* gname = (object != NULL && object->Class_Of().Graphic_Name() != NULL)
+                                    ? object->Class_Of().Graphic_Name() : "(nullgfx)";
+            fprintf(s_asset_log,
+                    "rtti=%d Type=%d Asset='%s' TypeName='%s' shapefile=%s gfx='%s' slot=%d\n",
+                    (object != NULL ? (int)object->What_Am_I() : -1), (int)new_object.Type,
+                    new_object.AssetName, new_object.TypeName,
+                    (shape_file_name != NULL ? shape_file_name : "(null)"), gname,
+                    TotalObjectCount + CurrentDrawCount);
+            fflush(s_asset_log);
+        }
+    }
+#endif
 
     new_object.Owner = (base_object != NULL) ? ((override_owner != HOUSE_NONE) ? override_owner : base_object->Owner)
                                              : (char)object->Owner();
@@ -3891,7 +3973,13 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
 
             int full_name = techno_object->Full_Name();
             if (full_name < 0) {
-                new_object.OverrideDisplayName = Text_String(full_name);
+                // Tiberian Factions: OverrideDisplayName is a raw char* the
+                // launcher feeds straight to std::string — a NULL here is an
+                // instant CTD. Only override when Text_String actually resolved.
+                const char* override_name = Text_String(full_name);
+                if (override_name != NULL) {
+                    new_object.OverrideDisplayName = override_name;
+                }
             }
 
             HouseClass* old_player_ptr = PlayerPtr;
@@ -4905,6 +4993,29 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
 
                 TechnoTypeClass const* tech = Fetch_Techno_Type(Map.Column[c].Buildables[b].BuildableType,
                                                                 Map.Column[c].Buildables[b].BuildableID);
+
+                // Tiberian Factions diag 2026-05-31: log every sidebar buildable the DLL hands
+                // the launcher (col/type/id + the resolved techno + its IniName). A NULL tech or a
+                // bad entry here would make the launcher NULL-deref. Flip #if 1 -> 0 to disable.
+#if 1
+                {
+                    static FILE* s_sb_log = NULL;
+                    if (s_sb_log == NULL) {
+                        char bpath[512];
+                        const char* bp = getenv("USERPROFILE");
+                        snprintf(bpath, sizeof(bpath), "%s/Documents/CnCRemastered/tf_sidebar_entry.log",
+                                 (bp != NULL && bp[0] != '\0') ? bp : ".");
+                        s_sb_log = fopen(bpath, "w");
+                    }
+                    if (s_sb_log != NULL) {
+                        fprintf(s_sb_log, "col=%d b=%d BType=%d BID=%d tech=%p ini=%s\n",
+                                c, b, (int)Map.Column[c].Buildables[b].BuildableType,
+                                Map.Column[c].Buildables[b].BuildableID, (void const*)tech,
+                                (tech != NULL && tech->IniName != NULL) ? tech->IniName : "(null)");
+                        fflush(s_sb_log);
+                    }
+                }
+#endif
 
                 sidebar_entry.SuperWeaponType = SW_NONE;
 

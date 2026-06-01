@@ -635,6 +635,85 @@ static UnitTypeClass const UnitTdBike(UNIT_TDBIKE,
                                       MISSION_HUNT  // ORDERS: Default order (TD BIKE default).
 );
 
+// Tiberian Factions -- TD Hum-vee (UNIT_TDJEEP), ported from TD's UNIT_JEEP
+// (tiberiandawn/udata.cpp:691 UnitJeep). GDI-ONLY (TD JEEP ownable = HOUSEF_GOOD | MULTI | JP).
+// Wheeled (SPEED_WHEEL -- no Tracked=) light recon car with a small MG TURRET
+// (is_turret_equipped=true, unlike the Recon Bike). Fires TDM60mg -- the TD WEAPON_M60MG port
+// (BULLET_TD50cal invisible round + WARHEAD_TDSA + Report MGUN11 + directional Anim=GUN-N). The
+// turret geometry mirrors RA's OWN small MG car, the Ranger (UnitJeep below): vert 0x30, primary
+// 0x30 forward / 0 lateral -- so the muzzle flash seats on the turret barrel with no screenshot
+// tuning. NOT a crusher (TD JEEP squash=false) and not gigundo. ANIM_FRAG1 death (TD-authentic --
+// RA has it). TD JEEP "lays tracks while moving" (tire marks) has no RA UnitTypeClass param and
+// is dropped (cosmetic; it's SPEED_WHEEL so leaves no RA tracks regardless). Internal name TXT_JEEP
+// is a placeholder (= RA's "Ranger"); the real "Hum-vee" display comes from rules.ini Name=.
+// Stats (Strength 150, Cost 400, Speed=12 = MPH_MEDIUM_FAST, ROT 10, Armor light, TechLevel 2) all
+// from rules.ini [TDJEEP].
+static UnitTypeClass const UnitTdJeep(UNIT_TDJEEP,
+                                      TXT_JEEP,     // NAME: placeholder (= "Ranger"; HD display via rules.ini Name=).
+                                      "TDJEEP",     // NAME: IniName.
+                                      ANIM_FRAG1,   // EXPLOSION: TD JEEP death (ANIM_FRAG1 -- RA has it natively).
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0030,       // Vertical offset (RA Ranger -- small MG car turret height).
+                                      0x0030,       // Primary weapon offset (RA Ranger: muzzle forward on the turret).
+                                      0x0000,       // Primary weapon lateral (RA Ranger: centered).
+                                      0x0030,       // Secondary weapon offset (no Secondary; mirror primary).
+                                      0x0000,       // Secondary weapon lateral.
+                                      true,         // Can this be a goodie surprise from a crate? (TD JEEP: yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      false,        // Can this unit squash infantry? (TD JEEP: NO -- light scout)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      true,         // Is it equipped with a combat turret? (TD JEEP: YES -- small MG turret; Luke confirmed vs TD it rotates, keep visible.)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit? (TD JEEP: no)
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages (32 facings; TD JEEP eight-facings=false).
+                                      0,            // Turret center offset along body centerline (TD: 0).
+                                      MISSION_HUNT  // ORDERS: Default order (TD JEEP default).
+);
+
+// Tiberian Factions -- TD Nod Buggy (UNIT_TDBGGY), ported from TD's UNIT_BUGGY
+// (tiberiandawn/udata.cpp:744 UnitBuggy). NOD-ONLY (TD BGGY ownable = HOUSEF_BAD | MULTI | JP). The
+// Nod mirror of the GDI Hum-vee: structurally IDENTICAL ctor (same MG turret, same RA-Ranger
+// geometry, same TDM60mg, same ANIM_FRAG1, not crusher/gigundo) -- the only TD-source ctor
+// difference is "lays tracks while moving" (Buggy=false vs Jeep=true), which has no RA param, so the
+// two ctors are identical here. All the stat differences (Strength 140, Cost 300, TechLevel 4 vs the
+// Jeep's 150/400/2) live in rules.ini [TDBGGY]. Internal name TXT_JEEP placeholder; real "Nod Buggy"
+// from rules.ini Name=.
+static UnitTypeClass const UnitTdBggy(UNIT_TDBGGY,
+                                      TXT_JEEP,     // NAME: placeholder (HD display via rules.ini Name="Nod Buggy").
+                                      "TDBGGY",     // NAME: IniName.
+                                      ANIM_FRAG1,   // EXPLOSION: TD BGGY death (ANIM_FRAG1 -- RA has it natively).
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0030,       // Vertical offset (RA Ranger geometry, shared with the Hum-vee).
+                                      0x0030,       // Primary weapon offset.
+                                      0x0000,       // Primary weapon lateral.
+                                      0x0030,       // Secondary weapon offset (no Secondary; mirror primary).
+                                      0x0000,       // Secondary weapon lateral.
+                                      true,         // Can this be a goodie surprise from a crate? (TD BGGY: yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      false,        // Can this unit squash infantry? (TD BGGY: NO)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      true,         // Is it equipped with a combat turret? (TD BGGY: YES -- small MG turret; Luke confirmed vs TD it rotates, keep visible.)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit? (TD BGGY: no)
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages (32 facings; TD BGGY eight-facings=false).
+                                      0,            // Turret center offset along body centerline (TD: 0).
+                                      MISSION_HUNT  // ORDERS: Default order (TD BGGY default).
+);
+
 // Jeep (hummer)
 static UnitTypeClass const UnitJeep(UNIT_JEEP,
                                     TXT_JEEP,     // NAME:			Text name of this unit type.
@@ -1271,6 +1350,8 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTdHtnk);    // UNIT_TDHTNK
     new UnitTypeClass(UnitTdFtnk);    // UNIT_TDFTNK
     new UnitTypeClass(UnitTdBike);    // UNIT_TDBIKE
+    new UnitTypeClass(UnitTdJeep);    // UNIT_TDJEEP
+    new UnitTypeClass(UnitTdBggy);    // UNIT_TDBGGY
 }
 
 /***********************************************************************************************
@@ -1606,6 +1687,12 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
     int index = 0;
     switch (Type) {
     case UNIT_JEEP:
+    // Tiberian Factions: the TD Hum-vee/Buggy are small MG cars like RA's Ranger
+    // (UNIT_JEEP) -- seat their turret with the same upward nudge so it sits on
+    // the hull instead of the body centre. Tune the delta by screenshot if the
+    // TD sprite's turret pivot differs from the Ranger's.
+    case UNIT_TDJEEP:
+    case UNIT_TDBGGY:
         y -= 4;
         break;
 

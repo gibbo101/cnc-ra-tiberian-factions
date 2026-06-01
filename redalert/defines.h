@@ -1725,6 +1725,8 @@ typedef enum UnitType : char
     UNIT_TDHTNK,            // TD Mammoth Tank (HTNK) — GDI-only, dual weapon (TD120mm + TDTusk AA), gigundo. udata.cpp:317.
     UNIT_TDFTNK,            // TD Flame Tank (FTNK) — Nod-only, turret-less, fires TDFlameTongue (directional flame jet). udata.cpp UnitFTank.
     UNIT_TDBIKE,            // TD Recon Bike (BIKE) — Nod-only, wheeled, turret-less, fires TDDragon (reuses E3's homing rocket). udata.cpp:797.
+    UNIT_TDJEEP,            // TD Hum-vee (JEEP) — GDI-only, wheeled, MG turret, fires TDM60mg. udata.cpp:691.
+    UNIT_TDBGGY,            // TD Nod Buggy (BGGY) — Nod-only, wheeled, MG turret, fires TDM60mg. udata.cpp:744.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -2904,6 +2906,7 @@ typedef enum WeaponType : char
     WEAPON_TD120MM,        // TD Mammoth Tank primary cannon (HTNK) — Dmg40/ROF80/Range4.75, BULLET_TDAPDS (reuse), WARHEAD_TDAP (reuse), Report=TNKFIRE6.
     WEAPON_TDTUSK,         // TD Mammoth Tusk AA missiles (HTNK secondary) — Dmg75/ROF80/Range5, Projectile=TDSSM (reuse, AA+AG homing), WARHEAD_TDHE, Report=ROCKET1.
     WEAPON_TDFLAMETONGUE,  // TD Flame Tank cannon (FTNK) — Dmg50/ROF50/Range2, BULLET_TDFLAME (reuse), WARHEAD_TDFIRE (reuse), Anim=TDFLAME-N. The stronger FLAME_TONGUE (vs Flamethrower's 35).
+    WEAPON_TDM60MG,        // TD Hum-vee/Buggy MG (JEEP/BGGY) — Dmg15/ROF30/Range4, BULLET_TDBULLET (reuse TD50cal), WARHEAD_TDSA (reuse), Report=MGUN11, Anim=GUN-N. Distinct from RA-vanilla [M60mg] (ROF20/PILLBOX1/MINIGUN).
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -3549,6 +3552,7 @@ typedef enum VocType : short
     VOC_TD_XPLOBIG6,     // TD big explosion (XPLOBIG6) — ANIM_TDFRAG2 detonation sound
     VOC_TD_TANK2,        // TD sharp tank fire (TNKFIRE3) — WEAPON_TD75MM Report= (Light Tank cannon)
     VOC_TD_ROCKET1,      // TD rocket launch #1 (ROCKET1) — WEAPON_TDTUSK Report= (Mammoth Tusk AA missiles)
+    VOC_TD_MGUN11,       // TD heavy machine gun (MGUN11) — WEAPON_TDM60MG Report= (Hum-vee/Buggy); routed via RAC/RAR_SFX_MGUN11
 
     VOC_COUNT,
     VOC_FIRST = 0

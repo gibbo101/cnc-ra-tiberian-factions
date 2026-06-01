@@ -207,8 +207,13 @@ PKey SlowKey;
 /***************************************************************************
 **	This is where the name overrides for the units will reside.
 */
-char const* NameOverride[25];
-int NameIDOverride[25];
+// Tiberian Factions: enlarged from EA's stock 25 — every TD building/unit
+// ships a rules.ini Name= HD-display override, and the rules.ini+aftermath.ini
+// double-pass plus dedup-by-id (techno.cpp) means each type now claims exactly
+// one slot. 25 was exhausted at ~26 overrides and overflowed into a NULL
+// OverrideDisplayName that crashed the launcher (std::string from NULL char*).
+char const* NameOverride[128];
+int NameIDOverride[128];
 #endif
 
 /***************************************************************************
