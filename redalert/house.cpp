@@ -6867,10 +6867,12 @@ int HouseClass::AI_Unit(void)
         UnitType index;
         for (index = UNIT_FIRST; index < UNIT_COUNT; index++) {
             UnitTypeClass const* utype = &UnitTypeClass::As_Reference(index);
-            // Tiberian Factions: exclude the TD harvester too. This loop produces
-            // "combat" units, but GDI/Nod have no buildable combat vehicles yet, so
-            // UNIT_TDHARV is the only candidate that survives the filter and the AI
-            // spams harvesters, burning income. Vanilla only excluded UNIT_HARVESTER.
+            // Tiberian Factions: exclude the TD harvester too. This Can_Build-driven
+            // loop is the skirmish combat-vehicle producer (armed types weighted x20,
+            // random pick) and now fields the full TD vehicle roster for GDI/Nod
+            // automatically. UNIT_TDHARV must stay excluded or it gets lumped in with
+            // combat picks and the AI spams harvesters, burning income. Vanilla only
+            // excluded UNIT_HARVESTER.
             if (Can_Build(utype, ActLike) && utype->Type != UNIT_HARVESTER
                 && utype->Type != UNIT_TDHARV) {
                 if (utype->PrimaryWeapon != NULL) {
@@ -7184,6 +7186,50 @@ int HouseClass::AI_Infantry(void)
                         typetrack[count].Value = 1 - max(IQuantity[index], 0);
                         break;
 
+                    /*
+                    **	Tiberian Factions mod — GDI/Nod can only build the TD infantry
+                    **	roster (their TD barracks gate out the RA E1..E4 above), so every
+                    **	TD type fell through to the default Value=0 and the weighted picker
+                    **	never chose one — the AI fielded tanks but ZERO infantry. Weights
+                    **	mirror the closest RA analog so the mix philosophy is unchanged:
+                    **	  TDE1 minigunner ~ E1(3), TDE2 grenadier ~ E2(5),
+                    **	  TDE3 rocket ~ E3(2), TDE4 flame ~ E4(5), TDE5 chem ~ flame(5),
+                    **	  TDE6 engineer ~ RENOVATOR, TDRMBO commando ~ TANYA.
+                    **	The engineer/commando "1 - count" build-one heuristic uses the
+                    **	clip-safe QuantityI() accessor (raw IQuantity[index] would read
+                    **	past INFANTRY_RA_COUNT for the TD slots). Balance of the resulting
+                    **	mix is a post-v1.0 item (see docs/balance-v1-notes.md).
+                    */
+                    case INFANTRY_TDE1:
+                        typetrack[count].Value = 3;
+                        break;
+
+                    case INFANTRY_TDE2:
+                        typetrack[count].Value = 5;
+                        break;
+
+                    case INFANTRY_TDE3:
+                        typetrack[count].Value = 2;
+                        break;
+
+                    case INFANTRY_TDE4:
+                        typetrack[count].Value = 5;
+                        break;
+
+                    case INFANTRY_TDE5:
+                        typetrack[count].Value = 5;
+                        break;
+
+                    case INFANTRY_TDE6:
+                        if (CurInfantry > 5) {
+                            typetrack[count].Value = 1 - max(QuantityI(index), 0);
+                        }
+                        break;
+
+                    case INFANTRY_TDRMBO:
+                        typetrack[count].Value = 1 - max(QuantityI(index), 0);
+                        break;
+
                     default:
                         typetrack[count].Value = 0;
                         break;
@@ -7241,6 +7287,28 @@ int HouseClass::AI_Aircraft(void)
             return (TICKS_PER_SECOND);
         if (CurAircraft >= Control.MaxAircraft)
             return (TICKS_PER_SECOND);
+
+        /*
+        **	Tiberian Factions mod — GDI/Nod helicopters. The RA cases below only
+        **	know LONGBOW/HIND/MIG/YAK (none of which GDI/Nod can build) and count
+        **	the RA STRUCT_HELIPAD they never own, so the TD factions produced ZERO
+        **	aircraft. GDI flies the Orca (AIRCRAFT_TDORCA), Nod the Apache
+        **	(AIRCRAFT_TDAPACHE); both are built from the TD helipad (STRUCT_TDHPAD).
+        **	Cap one airframe per pad, mirroring the RA "pads > built" gate.
+        */
+        if (Can_Build(&AircraftTypeClass::As_Reference(AIRCRAFT_TDORCA), ActLike)
+            && AircraftTypeClass::As_Reference(AIRCRAFT_TDORCA).Level <= (unsigned)Control.TechLevel
+            && BQuantity[STRUCT_TDHPAD] > AQuantity[AIRCRAFT_TDORCA] + AQuantity[AIRCRAFT_TDAPACHE]) {
+            BuildAircraft = AIRCRAFT_TDORCA;
+            return (TICKS_PER_SECOND);
+        }
+
+        if (Can_Build(&AircraftTypeClass::As_Reference(AIRCRAFT_TDAPACHE), ActLike)
+            && AircraftTypeClass::As_Reference(AIRCRAFT_TDAPACHE).Level <= (unsigned)Control.TechLevel
+            && BQuantity[STRUCT_TDHPAD] > AQuantity[AIRCRAFT_TDORCA] + AQuantity[AIRCRAFT_TDAPACHE]) {
+            BuildAircraft = AIRCRAFT_TDAPACHE;
+            return (TICKS_PER_SECOND);
+        }
 
         if (Can_Build(&AircraftTypeClass::As_Reference(AIRCRAFT_LONGBOW), ActLike)
             && AircraftTypeClass::As_Reference(AIRCRAFT_LONGBOW).Level <= (unsigned)Control.TechLevel
