@@ -714,6 +714,47 @@ static UnitTypeClass const UnitTdBggy(UNIT_TDBGGY,
                                       MISSION_HUNT  // ORDERS: Default order (TD BGGY default).
 );
 
+// Tiberian Factions -- TD APC (UNIT_TDAPC), ported from TD's UNIT_APC
+// (tiberiandawn/udata.cpp:907 UnitAPC). GDI-ONLY by faction-canon: TD source sets BOTH
+// HOUSEF_GOOD and HOUSEF_BAD (a permissive TD-multiplayer quirk), but the APC is iconically
+// GDI in TD gameplay (Nod's mobility roles are the Buggy/Bike/Stealth Tank), so Owner=GoodGuy
+// in rules.ini -- consistent with the Medium-Tank(GDI)/Light-Tank(Nod) faction split.
+// Tracked transport (SPEED_TRACK), NO turret, can squash infantry, fires TDM60mg (the TD M60
+// MG, shared with the Hum-vee/Buggy). Carries 5 (rules.ini Passengers=). Structurally identical
+// to RA's own UnitAPC ctor EXCEPT the explosion: TD's APC = ANIM_FRAG2 -> our ported
+// ANIM_TDFRAG2 (RA's APC uses ANIM_FRAG1). Transport door-load/unload + AI auto-load are gated
+// on the hardcoded UNIT_APC type in unit.cpp/infantry.cpp -- UNIT_TDAPC is added at each of
+// those sites (the §3.27 inert-new-type fix) or it would build but never load passengers.
+// All stats (Strength 200, Cost 700, TechLevel 4, Speed, Points) live in rules.ini [TDAPC].
+static UnitTypeClass const UnitTdApc(UNIT_TDAPC,
+                                     TXT_APC,      // NAME: placeholder (= "APC"; HD display via rules.ini Name=).
+                                     "TDAPC",      // NAME: IniName.
+                                     ANIM_TDFRAG2, // EXPLOSION: TD APC death (TD ctor = ANIM_FRAG2 -> our ported ANIM_TDFRAG2).
+                                     REMAP_NORMAL, // Sidebar remap logic.
+                                     0x0030,       // Vertical offset.
+                                     0x0030,       // Primary weapon offset along turret centerline.
+                                     0x0000,       // Primary weapon lateral offset.
+                                     0x0030,       // Secondary weapon offset (no Secondary; mirror primary).
+                                     0x0000,       // Secondary weapon lateral offset.
+                                     true,         // Can this be a goodie surprise from a crate? (TD APC: yes)
+                                     false,        // Always use the given name for the vehicle?
+                                     true,         // Can this unit squash infantry? (TD APC: yes)
+                                     false,        // Does this unit harvest Tiberium?
+                                     false,        // Is invisible to radar?
+                                     false,        // Is it insignificant (won't be announced)?
+                                     false,        // Is it equipped with a combat turret? (TD APC: NO turret)
+                                     false,        // Does it have a rotating radar dish?
+                                     false,        // Is there an associated firing animation?
+                                     false,        // Must the turret be in a locked down position while moving?
+                                     false,        // Is this a gigundo-rotund-enormous unit?
+                                     false,        // Does the unit have a constant animation?
+                                     false,        // Is the unit capable of jamming radar?
+                                     false,        // Is the unit a mobile gap generator?
+                                     32,           // Rotation stages (32 facings; TD APC eight-facings=false).
+                                     0,            // Turret center offset along body centerline (TD: 0).
+                                     MISSION_HUNT  // ORDERS: Default order (TD APC default = MISSION_HUNT).
+);
+
 // Jeep (hummer)
 static UnitTypeClass const UnitJeep(UNIT_JEEP,
                                     TXT_JEEP,     // NAME:			Text name of this unit type.
@@ -1352,6 +1393,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTdBike);    // UNIT_TDBIKE
     new UnitTypeClass(UnitTdJeep);    // UNIT_TDJEEP
     new UnitTypeClass(UnitTdBggy);    // UNIT_TDBGGY
+    new UnitTypeClass(UnitTdApc);     // UNIT_TDAPC
 }
 
 /***********************************************************************************************

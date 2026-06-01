@@ -485,13 +485,15 @@ rules.ini now holds the **verbatim TD-source STRNTH** and the engine doubles it 
 
 ---
 
-### 3.23 — Some hotkeys are GlyphX-side and may be unfixable from the DLL (PARKED: MCV deploy)
+### 3.23 — The Deploy/Unload keyboard shortcut is GlyphX-side and dead for every new TD unit type (PARKED)
 
 **Trap:** the in-game **Deploy keyboard shortcut** works for the RA MCV but not `UNIT_TDMCV`, even though every DLL-side deploy path (`What_Action` self, `Try_To_Deploy`, mission AI, `MCV_Deploy_Building`) handles TDMCV. The hotkey lives in the **closed GlyphX C# runtime** (the shipped SOURCECODE only includes the map-editor C#). It is NOT routed through `CNC_Handle_Unit_Request` (no deploy case in our fork or EA's), and `CNCObjectStruct.CanDeploy`/`IsDeployable` are vestigial (never populated by us or EA).
 
-**Status:** PARKED (low priority). Spoofing `CNCObjectStruct.TypeName = "MCV"` for TDMCV did NOT fix it, so GlyphX isn't keying purely on the `TypeName` string. Next spike hypothesis: GlyphX keys on the numeric `DllObjectTypeEnum Type`. Full log in memory `[[project-mcv-deploy-hotkey-spike]]`.
+**Confirmed second instance — `UNIT_TDAPC` unload (2026-06-01):** the APC's **unload keyboard shortcut** has the identical failure. The mouse path works fine (click the loaded APC on itself → `ACTION_SELF` → `Player_Assign_Mission(MISSION_UNLOAD)`, fully DLL-routed), so loading/unloading by mouse is 100% functional — but the keyboard *deploy/unload* key does nothing for TDAPC, exactly as for TDMCV. This generalizes the trap: the GlyphX deploy/unload **hotkey gate keys on the unit's type identity and only recognizes the vanilla RA enum values**, so it is dead for *any* TD-separated `UNIT_TD*` that uses the deploy-key affordance (MCV deploy, APC/transport unload, and any future minelayer-style self-action). The DLL-side `ACTION_SELF` (mouse) path always works; only the keyboard shortcut is lost.
 
-**Lesson:** before chasing a hotkey/UI bug for a TD-ported entity, determine whether the behavior lives in the DLL or GlyphX. If GlyphX, it may be unfixable from the mod side (cf. §3.x classic-mode spacebar limitation). Confirm the keying mechanism before investing time.
+**Status:** PARKED (low priority — the mouse affordance is a complete substitute). Spoofing `CNCObjectStruct.TypeName = "MCV"` for TDMCV did NOT fix it, so GlyphX isn't keying purely on the `TypeName` string. Next spike hypothesis: GlyphX keys on the numeric `DllObjectTypeEnum Type`. Full log in memory `[[project-mcv-deploy-hotkey-spike]]`.
+
+**Lesson:** before chasing a hotkey/UI bug for a TD-ported entity, determine whether the behavior lives in the DLL or GlyphX. If GlyphX, it may be unfixable from the mod side (cf. §3.x classic-mode spacebar limitation). Confirm the keying mechanism before investing time. For deploy/unload specifically: don't re-chase per-unit — it's one shared GlyphX gate, dead for all new TD types; document the mouse-click workaround for the player and move on.
 
 ---
 

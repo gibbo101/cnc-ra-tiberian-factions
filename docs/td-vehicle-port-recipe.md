@@ -135,14 +135,49 @@ already shipped before assuming new work** — the Bike fires `WEAPON_DRAGON`, w
   defined buildable in the base `CNCBUILDABLES.XML`; nothing shipped). Internal `Name=TXT_LTANK`
   placeholder (RA has no Recon Bike string; rules.ini `Name=Recon Bike` drives display).
 
+## §APC — a transport vehicle (the first non-combat-role unit)
+
+The GDI APC (`UNIT_TDAPC`, TD `UnitAPC` udata.cpp:907) is the first **transport**. Pure-reuse weapon
+(`TDM60mg`, already shipped for the Hum-vee/Buggy), but transport adds engine work the tanks didn't need.
+
+- **GDI-only by faction-canon, not source.** TD's APC ctor sets BOTH `HOUSEF_GOOD` *and* `HOUSEF_BAD` (a
+  permissive TD-multiplayer quirk — unlike `LTANK`[BAD-only]/`MTANK`[GOOD-only], which are clean). The APC
+  is iconically GDI in gameplay (Nod's mobility = Buggy/Bike/Stealth Tank), so `Owner=GoodGuy`. **Check the
+  ownable bits against faction-canon, not just the raw flags.**
+- **No transporter flag — `Passengers=N` is the whole switch.** RA has no `IsTransporter`; `Max_Passengers() > 0`
+  (set by rules.ini `Passengers=5`) is the sole gate. The passenger *loading* logic, *entry cursor*, and
+  *player-unload trigger* (`ACTION_SELF` → `MISSION_UNLOAD`, unit.cpp:3805) are all **generic** off that.
+- **But four behaviors are hardcoded to `UNIT_APC`** and a new type is inert until added (playbook §3.27 in
+  vehicle form): `Mission_Unload`'s `case UNIT_APC:` state machine (**the critical one** — without it the APC
+  can't eject passengers), the door open/close on load (both `#ifdef FIXIT_PHASETRANSPORT`/`#else` branches),
+  the AI auto-load-empty-APC, and the mechanic force-move cursor. `grep -n UNIT_APC redalert/*.cpp` and add
+  `UNIT_TDAPC` at each (the `case UNIT_MCV:`/`case UNIT_TDMCV:` precedent shows the pattern).
+- **No turret (`is_turret_equipped=false`)** — the M60 is hull-mounted, body rotates to aim (vs the Hum-vee's
+  turret). The 38-frame sprite (32 body + 6 door, **no** turret frames) confirms it; flagging it turreted would
+  draw the door frames as a "turret." Tileset donor = the APC's own 38-frame block (no slicing).
+- **`Crewed=no`** (TD source "crew inside? false") — the 5 passengers spill on death, no extra survivor; the
+  §traps Crew_Type trap doesn't apply.
+- **Deploy/unload keyboard shortcut is dead** (playbook §3.23) — the GlyphX hotkey only knows vanilla enum
+  values, so it no-ops for `UNIT_TDAPC` (same as TDMCV deploy). The **mouse** unload (click loaded APC on
+  itself) works fully. Tell the player to use the mouse; don't re-chase.
+
+> ⚠️ **`build_tfassets.sh` must run BEFORE the DLL build, or the deploy ships a stale MIX** (cost a cycle on
+> the APC, 2026-06-01). The DLL build's POST_BUILD stages `resources/` → `build/`; if you rebuild
+> `TFASSETS.MIX` *after* that, `build/` still holds the **old** MIX, and `deploy.sh --no-build` (which rsyncs
+> `build/`) ships it. Symptom: unit builds with correct name/prereq/cameo but renders **invisible** —
+> `One_Time`'s `MFCD::Retrieve("TD<NAME>.SHP")` returns NULL → `ImageData=0` → width 0 (`tf_objlist.log`
+> shows `ImageData=00000000 ow=0` vs a working unit's `ImageData=<ptr> ow=48`). Fix: run `build_tfassets.sh`
+> first, OR `cp resources/.../TFASSETS.MIX build/.../TFASSETS.MIX` before `deploy.sh --no-build`.
+
 ## The roster
 
 **Shipped:** turreted-tank trio — GDI Medium Tank (`TDMTNK`), NOD Light Tank (`TDLTNK`), GDI Mammoth
-Tank (`TDHTNK` — dual weapon + AA, §DUAL); **Nod Flame Tank (`TDFTNK` — turret-less flame jet, §FLAME);
-Nod Recon Bike (`TDBIKE` — wheeled rocket scout, §BIKE — pure E3-TDDragon reuse).**
-Naming convention (Luke): faction-prefix any TD tank colliding with an RA name. **Next:** Buggy / MLRS /
-APC / Artillery / Stealth Tank (cloak — save for last). The Buggy is the next pure-reuse pick (chain gun
-already shipped, also wheeled/turret-less — clone §BIKE swapping the weapon).
+Tank (`TDHTNK` — dual weapon + AA, §DUAL); Nod Flame Tank (`TDFTNK` — turret-less flame jet, §FLAME);
+Nod Recon Bike (`TDBIKE` — wheeled rocket scout, §BIKE — pure E3-TDDragon reuse); GDI Hum-vee (`TDJEEP`)
++ Nod Buggy (`TDBGGY` — wheeled MG turret); **GDI APC (`TDAPC` — tracked transport, §APC).**
+Naming convention (Luke): faction-prefix any TD unit colliding with an RA name. **Next:** MLRS / Artillery /
+SSM Launcher (MSAM) / Stealth Tank (cloak — save for last). Aircraft (Orca / Apache / Chinook) are a separate
+arc (helipad + the TDCARGO aircraft plumbing already proven).
 
 > **deploy.sh gotcha (hit 2026-05-30):** `deploy.sh` `rm -rf`s `build/remaster/Vanilla_RA/` then runs the
 > workflow, but the repackage is a **RedAlert POST_BUILD step** (`redalert/CMakeLists.txt:213`) that only

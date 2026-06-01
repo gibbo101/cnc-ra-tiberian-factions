@@ -873,9 +873,9 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                         **	to rotate.
                         */
 #ifdef FIXIT_PHASETRANSPORT //	checked - ajw 9/28/98
-                        if (*this == UNIT_APC || *this == UNIT_PHASE) {
+                        if (*this == UNIT_APC || *this == UNIT_PHASE || *this == UNIT_TDAPC) {
 #else
-                        if (*this == UNIT_APC) {
+                        if (*this == UNIT_APC || *this == UNIT_TDAPC) {
 #endif
                             if (IsRotating) {
                                 if (!Is_Door_Closed()) {
@@ -895,9 +895,9 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                         */
                         if (Transmit_Message(RADIO_MOVE_HERE, param, from) == RADIO_YEA_NOW_WHAT) {
 #ifdef FIXIT_PHASETRANSPORT //	checked - ajw 9/28/98
-                            if ((*this != UNIT_APC && *this != UNIT_PHASE) || Is_Door_Open()) {
+                            if ((*this != UNIT_APC && *this != UNIT_PHASE && *this != UNIT_TDAPC) || Is_Door_Open()) {
 #else
-                            if (*this != UNIT_APC || Is_Door_Open()) {
+                            if ((*this != UNIT_APC && *this != UNIT_TDAPC) || Is_Door_Open()) {
 #endif
                                 param = As_Target();
                                 Transmit_Message(RADIO_TETHER);
@@ -2753,6 +2753,7 @@ int UnitClass::Mission_Unload(void)
 #ifdef FIXIT_PHASETRANSPORT //	checked - ajw 9/28/98
     case UNIT_PHASE:
 #endif
+    case UNIT_TDAPC: // Tiberian Factions: TD APC -- same unload state machine as UNIT_APC.
         switch (Status) {
         case INITIAL_CHECK:
             dir = Desired_Load_Dir(NULL, cell);
@@ -5540,9 +5541,9 @@ int UnitClass::Mission_Guard_Area(void)
     */
     if (Session.Type != GAME_NORMAL &&
 #ifdef FIXIT_PHASETRANSPORT //	checked - ajw 9/28/98
-        (*this == UNIT_APC || *this == UNIT_PHASE) &&
+        (*this == UNIT_APC || *this == UNIT_PHASE || *this == UNIT_TDAPC) &&
 #else
-        *this == UNIT_APC &&
+        (*this == UNIT_APC || *this == UNIT_TDAPC) &&
 #endif
         !Target_Legal(TarCom) && !In_Radio_Contact() && House->Which_Zone(this) != ZONE_NONE && !House->IsHuman) {
 

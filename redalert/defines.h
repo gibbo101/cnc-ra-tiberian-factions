@@ -1727,6 +1727,7 @@ typedef enum UnitType : char
     UNIT_TDBIKE,            // TD Recon Bike (BIKE) — Nod-only, wheeled, turret-less, fires TDDragon (reuses E3's homing rocket). udata.cpp:797.
     UNIT_TDJEEP,            // TD Hum-vee (JEEP) — GDI-only, wheeled, MG turret, fires TDM60mg. udata.cpp:691.
     UNIT_TDBGGY,            // TD Nod Buggy (BGGY) — Nod-only, wheeled, MG turret, fires TDM60mg. udata.cpp:744.
+    UNIT_TDAPC,             // TD APC (APC) — GDI-only (faction-canon; TD src bits permissive), tracked transport, no turret, fires TDM60mg, carries 5. udata.cpp:907.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
