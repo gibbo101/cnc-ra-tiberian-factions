@@ -740,6 +740,29 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
     assert(Bullets.ID(this) == ID);
     assert(IsActive);
 
+#if 0 // TF DEV: red-rocket-on-infantry-death diagnostic. Logs EVERY bullet Unlimbo (name + visibility + cell). Flip to 0 before release.
+    {
+        static FILE* tf_bul_log = NULL;
+        if (tf_bul_log == NULL) {
+            const char* h = getenv("USERPROFILE");
+            if (h == NULL) h = getenv("HOME");
+            if (h != NULL) {
+                char p[512];
+                snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_bullet_unlimbo.log", h);
+                tf_bul_log = fopen(p, "w");
+            }
+        }
+        if (tf_bul_log != NULL) {
+            fprintf(tf_bul_log, "BULLET unlimbo: name=%s inviso=%d hasImage=%d tdport=%d cell=(%d,%d) payback=%s\n",
+                    (Class && Class->IniName) ? Class->IniName : "<null>",
+                    (int)Class->IsInvisible, (int)(Class->ImageData != NULL), (int)Class->IsTDPort,
+                    (int)Cell_X(Coord_Cell(coord)), (int)Cell_Y(Coord_Cell(coord)),
+                    (Payback && Payback->Techno_Type_Class()) ? Payback->Techno_Type_Class()->IniName : "<none>");
+            fflush(tf_bul_log);
+        }
+    }
+#endif
+
     /*
     **	Tiberian Factions mod: TD-ported bullets run TD's verbatim Unlimbo body
     **	via Unlimbo_TD(). No RA logic for TD entities per

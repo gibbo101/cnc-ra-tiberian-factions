@@ -2456,14 +2456,6 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(ChemSW);
     new AnimTypeClass(ChemW);
     new AnimTypeClass(ChemNW);
-    new AnimTypeClass(TdftFlameN);
-    new AnimTypeClass(TdftFlameNE);
-    new AnimTypeClass(TdftFlameE);
-    new AnimTypeClass(TdftFlameSE);
-    new AnimTypeClass(TdftFlameS);
-    new AnimTypeClass(TdftFlameSW);
-    new AnimTypeClass(TdftFlameW);
-    new AnimTypeClass(TdftFlameNW);
     new AnimTypeClass(LZSmoke);
     new AnimTypeClass(CDeviator);
     new AnimTypeClass(CDollar);
@@ -2508,6 +2500,19 @@ void AnimTypeClass::Init_Heap(void)
     // Tiberian Factions mod anims — keep in ANIM_TD_* enum order.
     new AnimTypeClass(TdIonCannon); // ANIM_TD_ION_CANNON (Ion Cannon strike)
     new AnimTypeClass(TdFrag2);     // ANIM_TDFRAG2 (TD vehicle death frag explosion)
+    // Flame Tank jets — registration order here MUST match the ANIM_TDFTFLAME_* enum slot in
+    // defines.h (immediately after ANIM_TDFRAG2, before ANIM_ANT1_DEATH). The heap ID == registration
+    // order, so a mismatch shifts every later anim's heap slot vs its enum value — which made
+    // ANIM_CORPSE3 (infantry explosion-death body) resolve to ANIM_CRATE_DEVIATOR ("red finned
+    // missile"). Keep these eight contiguous and in this position.
+    new AnimTypeClass(TdftFlameN);
+    new AnimTypeClass(TdftFlameNE);
+    new AnimTypeClass(TdftFlameE);
+    new AnimTypeClass(TdftFlameSE);
+    new AnimTypeClass(TdftFlameS);
+    new AnimTypeClass(TdftFlameSW);
+    new AnimTypeClass(TdftFlameW);
+    new AnimTypeClass(TdftFlameNW);
 
 #ifdef FIXIT_ANTS
     new AnimTypeClass(Ant1Death);

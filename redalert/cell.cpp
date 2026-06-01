@@ -2442,6 +2442,29 @@ bool CellClass::Goodie_Check(FootClass* object)
         /*
         **	Generate any corresponding animation associated with this crate powerup.
         */
+#if 0 // TF DEV: red-rocket diagnostic -- log every crate REVEAL (powerup + anim + who triggered). Flip to 0 before release.
+        {
+            static FILE* tf_crate_log = NULL;
+            if (tf_crate_log == NULL) {
+                const char* h = getenv("USERPROFILE");
+                if (h == NULL) h = getenv("HOME");
+                if (h != NULL) {
+                    char p[512];
+                    snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_crate.log", h);
+                    tf_crate_log = fopen(p, "w");
+                }
+            }
+            if (tf_crate_log != NULL) {
+                fprintf(tf_crate_log, "CRATE reveal: powerup=%d name=%s anim=%s cell=(%d,%d) by=%s\n",
+                        (int)powerup,
+                        (powerup >= 0 && powerup < CRATE_COUNT) ? CrateNames[powerup] : "?",
+                        (CrateAnims[powerup] != ANIM_NONE) ? AnimTypeClass::As_Reference(CrateAnims[powerup]).IniName : "<none>",
+                        (int)Cell_X(Cell_Number()), (int)Cell_Y(Cell_Number()),
+                        (object && object->Techno_Type_Class()) ? object->Techno_Type_Class()->IniName : "<none>");
+                fflush(tf_crate_log);
+            }
+        }
+#endif
         if (CrateAnims[powerup] != ANIM_NONE) {
             new AnimClass(CrateAnims[powerup], Cell_Coord());
         }

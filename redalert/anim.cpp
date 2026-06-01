@@ -633,6 +633,29 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
 
     VisibleFlags = static_cast<unsigned int>(-1);
 
+#if 0 // TF DEV: red-rocket-on-infantry-death diagnostic. Logs EVERY anim spawn (name + cell). Flip to 0 before release.
+    {
+        static FILE* tf_anim_log = NULL;
+        if (tf_anim_log == NULL) {
+            const char* h = getenv("USERPROFILE");
+            if (h == NULL) h = getenv("HOME");
+            if (h != NULL) {
+                char p[512];
+                snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_anim.log", h);
+                tf_anim_log = fopen(p, "w");
+            }
+        }
+        if (tf_anim_log != NULL) {
+            fprintf(tf_anim_log, "ANIM spawn: type=%d name=%s cell=(%d,%d) stages=%d\n",
+                    (int)animnum,
+                    (Class && Class->IniName) ? Class->IniName : "<null>",
+                    (int)Cell_X(Coord_Cell(coord)), (int)Cell_Y(Coord_Cell(coord)),
+                    (int)Class->Stages);
+            fflush(tf_anim_log);
+        }
+    }
+#endif
+
     /*
     **	Drop zone smoke always reveals the map around itself.
     */

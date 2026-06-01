@@ -3477,6 +3477,27 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 if (anim != NULL) {
                     anim->Attach_To(this);
                 }
+#if 0 // TF DEV: red-rocket diagnostic -- log every MUZZLE anim (shooter + weapon + final anim). Flip to 0 before release.
+                {
+                    static FILE* tf_muzzle_log = NULL;
+                    if (tf_muzzle_log == NULL) {
+                        const char* h = getenv("USERPROFILE");
+                        if (h == NULL) h = getenv("HOME");
+                        if (h != NULL) {
+                            char pp[512];
+                            snprintf(pp, sizeof(pp), "%s/Documents/CnCRemastered/tf_muzzle.log", h);
+                            tf_muzzle_log = fopen(pp, "w");
+                        }
+                    }
+                    if (tf_muzzle_log != NULL) {
+                        fprintf(tf_muzzle_log, "MUZZLE: shooter=%s weapon-anim=%d final-anim=%s\n",
+                                (Techno_Type_Class() ? Techno_Type_Class()->IniName : "<none>"),
+                                (int)weapon->Anim,
+                                AnimTypeClass::As_Reference(a).IniName);
+                        fflush(tf_muzzle_log);
+                    }
+                }
+#endif
 #if 1 // TF DEV: Flame Tank muzzle-geometry diagnostic (TDFTNK nozzle position + nozzle alternation). Flip to 0 before release.
                 if (weapon->IsTDPort) {
                     static FILE* ff = NULL;
