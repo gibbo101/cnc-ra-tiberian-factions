@@ -797,6 +797,45 @@ static UnitTypeClass const UnitTdStnk(UNIT_TDSTNK,
                                       MISSION_HUNT  // ORDERS: Default order (TD STANK default = MISSION_HUNT).
 );
 
+// Tiberian Factions -- TD Rocket Launcher (UNIT_TDMLRS), ported from TD's UNIT_MLRS
+// (tiberiandawn/udata.cpp:854 UnitMLRS, TXT_MLRS = "Rocket Launcher"). GDI-only: TD source sets
+// both ownable bits but the prerequisite is STRUCTF_EYE (the GDI Ion-Cannon comm centre), so only
+// GDI can build it -> Owner=GoodGuy, a top-tier post-Ion-Cannon siege unit (build level 7).
+// TD SOURCE CROSS-WIRING (see docs/td-mlrs-deep-dive.md): UNIT_MLRS renders with the "MSAM" sprite
+// (and UNIT_MSAM, the S.S.M. Launcher, renders with "MLRS") -- so this unit bundles the MSAM asset
+// despite the TDMLRS IniName. Turreted, with the turret LOCKED forward while moving (TD is_lockturret),
+// 2-shooter (Burst=2 on the weapon), tracked. Fires TDMlrsRocket (BULLET_TDSSM2, a long-range homing
+// rocket). Death ANIM_ART_EXP1 (TD MLRS = ANIM_ART_EXP1; RA has it natively, no FRAG port). Default
+// order MISSION_GUARD (TD MLRS, not HUNT). Stats in rules.ini [TDMLRS]/[TDMlrsRocket]/[TDSSM2].
+static UnitTypeClass const UnitTdMlrs(UNIT_TDMLRS,
+                                      TXT_LTANK,     // NAME: placeholder (RA has no "Rocket Launcher" string; HD display via rules.ini Name=).
+                                      "TDMLRS",      // NAME: IniName (sprite bundled from the MSAM asset -- TD cross-wiring).
+                                      ANIM_ART_EXP1, // EXPLOSION: TD MLRS death (ANIM_ART_EXP1 -- RA has it natively).
+                                      REMAP_NORMAL,  // Sidebar remap logic.
+                                      0x0010,        // Vertical offset (render calibration -- small lift; tune to the MSAM launcher).
+                                      0x0000,        // Primary weapon offset along turret centerline (was 0x00C0 = the MTANK gun barrel, far too forward for a rear launcher; spawn at the launcher, screenshot-tune).
+                                      0x0000,        // Primary weapon lateral offset.
+                                      0x0000,        // Secondary weapon offset (no secondary weapon).
+                                      0x0000,        // Secondary weapon lateral offset.
+                                      true,          // Can this be a goodie surprise from a crate? (TD: yes)
+                                      false,         // Always use the given name for the vehicle?
+                                      false,         // Can this unit squash infantry? (TD MLRS: no)
+                                      false,         // Does this unit harvest Tiberium?
+                                      false,         // Is invisible to radar?
+                                      false,         // Is it insignificant (won't be announced)?
+                                      true,          // Is it equipped with a combat turret? (TD MLRS: yes)
+                                      false,         // Does it have a rotating radar dish?
+                                      false,         // Is there an associated firing animation?
+                                      true,          // Must the turret be in a locked down position while moving? (TD MLRS: yes)
+                                      false,         // Is this a gigundo-rotund-enormous unit? (TD MLRS: no)
+                                      false,         // Does the unit have a constant animation?
+                                      false,         // Is the unit capable of jamming radar?
+                                      false,         // Is the unit a mobile gap generator?
+                                      32,            // Rotation stages.
+                                      0,             // Turret center offset along body centerline (TD: 0).
+                                      MISSION_GUARD  // ORDERS: Default order (TD MLRS default = MISSION_GUARD).
+);
+
 // Jeep (hummer)
 static UnitTypeClass const UnitJeep(UNIT_JEEP,
                                     TXT_JEEP,     // NAME:			Text name of this unit type.
@@ -1437,6 +1476,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTdBggy);    // UNIT_TDBGGY
     new UnitTypeClass(UnitTdApc);     // UNIT_TDAPC
     new UnitTypeClass(UnitTdStnk);    // UNIT_TDSTNK
+    new UnitTypeClass(UnitTdMlrs);    // UNIT_TDMLRS
 }
 
 /***********************************************************************************************
@@ -1782,6 +1822,12 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
         break;
 
     case UNIT_MGG:
+    // Tiberian Factions: the _adjust table above is the ORIGINAL TD MLRS/MSAM turret-offset
+    // (see this function's header comment) -- it seats a rear-mounted launcher onto the chassis
+    // per facing. Our TD Rocket Launcher uses the MSAM sprite, so it wants exactly this table;
+    // without it the launcher draws at the body centre (too far forward). Tune by screenshot if
+    // the HD sprite's pivot differs from the classic offsets.
+    case UNIT_TDMLRS:
         index = Dir_To_32(dir);
         x += _adjust[index].X;
         y += _adjust[index].Y;

@@ -1354,6 +1354,7 @@ typedef enum BulletType : char
     BULLET_TDTOW, // TD Rocket Soldier missile (E3 Dragon/TOW) — Homing, visible 32-frame rotating, WARHEAD_TDAP.
     BULLET_TDFLAME, // TD Flamethrower round (E4) — invisible; the visible effect is the ANIM_FLAME_N muzzle jet.
     BULLET_TDCHEM, // TD Chem Warrior spray (E5) — invisible; the visible effect is the ANIM_CHEM_N muzzle jet. Warhead=TDHE.
+    BULLET_TDSSM2, // TD Rocket Launcher missile (MLRS, BULLET_SSM2) — Homing, AA+AG, visible TDDRAGON sprite, WARHEAD_TDHE. = TDSSM but Arm=9/ROT=7.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -1729,6 +1730,7 @@ typedef enum UnitType : char
     UNIT_TDBGGY,            // TD Nod Buggy (BGGY) — Nod-only, wheeled, MG turret, fires TDM60mg. udata.cpp:744.
     UNIT_TDAPC,             // TD APC (APC) — GDI-only (faction-canon; TD src bits permissive), tracked transport, no turret, fires TDM60mg, carries 5. udata.cpp:907.
     UNIT_TDSTNK,            // TD Stealth Tank (STNK) — Nod-only, CLOAKABLE (RA's inherited cloak system), invisible-to-radar, turret-less, fires TDStnkDragon (2-shot). udata.cpp UnitSTank.
+    UNIT_TDMLRS,            // TD Rocket Launcher (MLRS, "Rocket Launcher") — GDI-only (EYE-gated), turret + lock-while-moving, 2-shot, fires TDMlrsRocket (BULLET_TDSSM2, range 6). Uses the MSAM sprite (TD cross-wiring). udata.cpp:854.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -2910,6 +2912,7 @@ typedef enum WeaponType : char
     WEAPON_TDFLAMETONGUE,  // TD Flame Tank cannon (FTNK) — Dmg50/ROF50/Range2, BULLET_TDFLAME (reuse), WARHEAD_TDFIRE (reuse), Anim=TDFLAME-N. The stronger FLAME_TONGUE (vs Flamethrower's 35).
     WEAPON_TDM60MG,        // TD Hum-vee/Buggy MG (JEEP/BGGY) — Dmg15/ROF30/Range4, BULLET_TDBULLET (reuse TD50cal), WARHEAD_TDSA (reuse), Report=MGUN11, Anim=GUN-N. Distinct from RA-vanilla [M60mg] (ROF20/PILLBOX1/MINIGUN).
     WEAPON_TDSTNKDRAGON,   // TD Stealth Tank launcher (STNK) — WEAPON_DRAGON + Burst=2 (TD is_twoshooter). Same TDTOW/TDAP/BAZOOK1 chain as TDDragon; separate weapon so the single-shot E3/Bike keep Burst=1.
+    WEAPON_TDMLRS,         // TD Rocket Launcher (MLRS) — Dmg75/ROF80/Range6, BULLET_TDSSM2 homing, WARHEAD_TDHE, Report=ROCKET1, Burst=2. Registered as "TDMlrsRocket" (distinct from the [TDMLRS] unit section).
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0

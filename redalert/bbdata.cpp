@@ -197,6 +197,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TDTOW");         //	BULLET_TDTOW (TD Rocket Soldier Dragon/TOW missile, E3)
     new BulletTypeClass("TDFlame");       //	BULLET_TDFLAME (TD flamethrower invisible round, E4)
     new BulletTypeClass("TDChem");        //	BULLET_TDCHEM (TD chem warrior invisible spray round, E5)
+    new BulletTypeClass("TDSSM2");        //	BULLET_TDSSM2 (TD Rocket Launcher missile, MLRS — = TDSSM but Arm9/ROT7)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per
@@ -209,6 +210,7 @@ void BulletTypeClass::Init_Heap(void)
     BulletTypes.Ptr((int)BULLET_TDSPREADFIRE)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_TDPATRIOT)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_TDTOW)->IsTDPort = true;
+    BulletTypes.Ptr((int)BULLET_TDSSM2)->IsTDPort = true;
 }
 
 /***********************************************************************************************
@@ -283,6 +285,10 @@ void BulletTypeClass::One_Time(void)
     BulletTypeClass& tdtow = As_Reference(BULLET_TDTOW);  // TD Rocket Soldier missile (E3) -- shares RA HeatSeeker's DRAGON sprite.
     if (tdtow.ImageData == NULL) {
         ((void const*&)tdtow.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tdssm2 = As_Reference(BULLET_TDSSM2);  // TD Rocket Launcher missile (MLRS) -- shares the TDDRAGON sprite (Image=TDDRAGON in rules.ini).
+    if (tdssm2.ImageData == NULL) {
+        ((void const*&)tdssm2.ImageData) = donor.ImageData;
     }
 }
 
