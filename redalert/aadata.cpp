@@ -263,6 +263,35 @@ static AircraftTypeClass const TdApacheHeli(AIRCRAFT_TDAPACHE, // What kind of a
                                             MISSION_HUNT     // Default mission for aircraft.
 );
 
+// Tiberian Factions -- TD Orca (AIRCRAFT_TDORCA), ported from TD's AIRCRAFT_ORCA
+// (tiberiandawn/aadata.cpp OrcaHeli, TXT_ORCA). GDI-ONLY (HOUSEF_GOOD). Same attack-aircraft AI
+// as the Apache but is_rotorequipped=FALSE -- the Orca is a VTOL (fixed jet nacelles, no rotor
+// overlay). Fires TDStnkDragon (the Stealth Tank's TD WEAPON_DRAGON + Burst=2). Ammo 6 (rules.ini
+// [TDORCA]). The ORCA sprite is 64 frames = 32 hover facings (0-31, used by Rotation=32) + 32
+// fast-flight frames (32-63, the #ifdef TOFIX set, unused); Rotation=32 picks the hover facings.
+// Donor ImageData = AIRCRAFT_HIND (NULL-guard only; the 64-frame TDORCA.SHP from TFASSETS.MIX loads
+// over it and Rotation=32 never reads past frame 31). See docs/td-attack-heli-deep-dive.md.
+static AircraftTypeClass const TdOrca(AIRCRAFT_TDORCA, // What kind of aircraft is this.
+                                      TXT_ORCA,        // Translated text (HD name via rules.ini Name=).
+                                      "TDORCA",        // INI name of aircraft (TD-prefixed).
+                                      0x0000,          // Vertical offset.
+                                      0x0040,          // Primary weapon offset (missile launch point).
+                                      0x0000,          // Primary weapon lateral offset.
+                                      false,           // Fixed wing aircraft? (no -- VTOL)
+                                      false,           // Equipped with a rotor? (NO -- Orca is a jet VTOL)
+                                      false,           // Custom rotor sets for each facing?
+                                      false,           // Can this aircraft land on clear terrain? (no -- returns to helipad)
+                                      true,            // Is it invisible on radar?
+                                      true,            // Can the player select it so as to give it orders?
+                                      true,            // Can it be assigned as a target for attack.
+                                      false,           // Is it insignificant (won't be announced)?
+                                      false,           // Is it immune to normal combat damage?
+                                      STRUCT_HELIPAD,  // Preferred landing building (reloads here).
+                                      0xFF,            // Landing speed
+                                      32,              // Number of rotation stages (hover facings 0-31).
+                                      MISSION_HUNT     // Default mission for aircraft.
+);
+
 /***********************************************************************************************
  * AircraftTypeClass::AircraftTypeClass -- Constructor for aircraft objects.                   *
  *                                                                                             *
@@ -404,6 +433,7 @@ void AircraftTypeClass::Init_Heap(void)
     new AircraftTypeClass(OrcaHeli);
     new AircraftTypeClass(TDCargoPlane);
     new AircraftTypeClass(TdApacheHeli);
+    new AircraftTypeClass(TdOrca); // MUST follow TdApacheHeli to match the AIRCRAFT_TDORCA enum slot.
 }
 
 /***********************************************************************************************
@@ -502,6 +532,17 @@ void AircraftTypeClass::One_Time(void)
     }
     if (tdapache.CameoData == NULL) {
         ((void const*&)tdapache.CameoData) = As_Reference(AIRCRAFT_HIND).CameoData;
+    }
+
+    // TD Orca (AIRCRAFT_TDORCA): NULL-guard donor only. The 64-frame TDORCA.SHP (TFASSETS.MIX)
+    // loads over this; Rotation=32 only ever reads frames 0-31 (hover facings), so the 32-frame
+    // HIND donor is safe even if the SHP is missing. is_rotor=false -> no rotor overlay drawn.
+    AircraftTypeClass& tdorca = As_Reference(AIRCRAFT_TDORCA);
+    if (tdorca.ImageData == NULL) {
+        ((void const*&)tdorca.ImageData) = As_Reference(AIRCRAFT_HIND).ImageData;
+    }
+    if (tdorca.CameoData == NULL) {
+        ((void const*&)tdorca.CameoData) = As_Reference(AIRCRAFT_HIND).CameoData;
     }
 
     LRotorData = MFCD::Retrieve("LROTOR.SHP");

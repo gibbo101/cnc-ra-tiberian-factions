@@ -1808,6 +1808,7 @@ typedef enum AircraftType : char
     AIRCRAFT_HIND,      // Soviet attach helicopter.
     AIRCRAFT_TDCARGO,   // TD C-17 cargo plane (Nod airstrip vehicle delivery).
     AIRCRAFT_TDAPACHE,  // TD Apache attack helicopter (HELI) — Nod, single rotor, chain gun (TDApacheGun), Ammo 15, helipad-built. aadata.cpp AttackHeli.
+    AIRCRAFT_TDORCA,    // TD Orca (ORCA) — GDI, NO rotor (VTOL), DRAGON missiles (TDStnkDragon), Ammo 6, helipad-built. aadata.cpp OrcaHeli.
 
     AIRCRAFT_COUNT,
     AIRCRAFT_NONE = -1,
