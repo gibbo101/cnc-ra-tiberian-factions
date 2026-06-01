@@ -6512,7 +6512,15 @@ int HouseClass::AI_Building(void)
                 if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                     choiceptr = BuildChoice.Alloc();
                     if (choiceptr != NULL) {
-                        *choiceptr = BuildChoiceClass(URGENCY_LOW, b->Type);
+                        // The build-choice consumer (~house.cpp:6715) builds only the single
+                        // HIGHEST-urgency pick per cycle, and the defense branch stays MEDIUM
+                        // as long as CurBuildings grows -- so URGENCY_LOW was permanently
+                        // outranked and the repair bay never got built. For GDI that's fatal:
+                        // the Mammoth Tank is prereq-gated on TDFIX, so no repair bay = no
+                        // Mammoths ever. Promote it to HIGH for GDI (unlock the tier promptly;
+                        // current<1 makes it a one-shot, no spam) and MEDIUM for Nod (gets
+                        // built like the radar, but nothing is gated on it).
+                        *choiceptr = BuildChoiceClass(ActLike == HOUSE_GOOD ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
                     }
                 }
             }
