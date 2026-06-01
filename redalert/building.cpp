@@ -3167,7 +3167,12 @@ void BuildingClass::Grand_Opening(bool captured)
         if (!Rule.IsSeparate && (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD) && !captured) {
             ScenarioInit++;
             AircraftClass* air = 0;
-            if (House->ActLike == HOUSE_USSR || House->ActLike == HOUSE_BAD || House->ActLike == HOUSE_UKRAINE) {
+            // Tiberian Factions: the TD factions get their own free attack heli, not RA's Hind/Longbow.
+            // Nod (HOUSE_BAD) -> TD Apache. GDI (HOUSE_GOOD) -> TD Orca (TODO when AIRCRAFT_TDORCA ships;
+            // until then GDI falls to the Longbow branch below). RA factions keep Hind/Longbow.
+            if (House->ActLike == HOUSE_BAD) {
+                air = new AircraftClass(AIRCRAFT_TDAPACHE, House->Class->House);
+            } else if (House->ActLike == HOUSE_USSR || House->ActLike == HOUSE_UKRAINE) {
                 air = new AircraftClass(AIRCRAFT_HIND, House->Class->House);
             } else {
                 air = new AircraftClass(AIRCRAFT_LONGBOW, House->Class->House);

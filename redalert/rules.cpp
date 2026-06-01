@@ -735,6 +735,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDMlrsRocket"); // WEAPON_TDMLRS (TD Rocket Launcher MLRS; IsTDPort -- fires BULLET_TDSSM2, Burst=2)
     new WeaponTypeClass("TDHonestJohn"); // WEAPON_TDHONESTJOHN (TD SSM Launcher MSAM; IsTDPort -- fires BULLET_TDMISSILE, non-homing)
     new WeaponTypeClass("TD155mm");      // WEAPON_TD155MM (TD Artillery ARTY; IsTDPort -- fires BULLET_TDHESHELL, arcing)
+    new WeaponTypeClass("TDApacheGun");  // WEAPON_TDAPACHEGUN (TD Apache HELI; non-IsTDPort like TDChainGun -- + Burst=2)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's

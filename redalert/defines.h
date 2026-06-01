@@ -1807,6 +1807,7 @@ typedef enum AircraftType : char
     AIRCRAFT_LONGBOW,   // Apache gunship.
     AIRCRAFT_HIND,      // Soviet attach helicopter.
     AIRCRAFT_TDCARGO,   // TD C-17 cargo plane (Nod airstrip vehicle delivery).
+    AIRCRAFT_TDAPACHE,  // TD Apache attack helicopter (HELI) — Nod, single rotor, chain gun (TDApacheGun), Ammo 15, helipad-built. aadata.cpp AttackHeli.
 
     AIRCRAFT_COUNT,
     AIRCRAFT_NONE = -1,
@@ -2918,6 +2919,7 @@ typedef enum WeaponType : char
     WEAPON_TDMLRS,         // TD Rocket Launcher (MLRS) — Dmg75/ROF80/Range6, BULLET_TDSSM2 homing, WARHEAD_TDHE, Report=ROCKET1, Burst=2. Registered as "TDMlrsRocket" (distinct from the [TDMLRS] unit section).
     WEAPON_TDHONESTJOHN,   // TD SSM Launcher (MSAM) — Dmg100/ROF200/Range10, BULLET_TDMISSILE (non-homing), WARHEAD_TDFIRE, Report=ROCKET1. Registered as "TDHonestJohn".
     WEAPON_TD155MM,        // TD Artillery (ARTY) — Dmg150/ROF65/Range6, BULLET_TDHESHELL (arcing), WARHEAD_TDHE, Report=TNKFIRE2, Anim=GUNFIRE. Registered as "TD155mm".
+    WEAPON_TDAPACHEGUN,    // TD Apache chain gun (HELI) — TDChainGun + Burst=2 (TD is_twoshooter). Same TDSpreadfire/TDHE/GUN8 chain as TDChainGun; separate so the single-shot GTWR keeps Burst=1.
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0

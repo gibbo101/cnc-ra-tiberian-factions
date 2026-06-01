@@ -233,6 +233,36 @@ static AircraftTypeClass const TDCargoPlane(AIRCRAFT_TDCARGO, // What kind of ai
                                             MISSION_HUNT      // Default mission for aircraft.
 );
 
+// Tiberian Factions -- TD Apache attack helicopter (AIRCRAFT_TDAPACHE), ported from TD's
+// AIRCRAFT_HELICOPTER (tiberiandawn/aadata.cpp AttackHeli, TXT_HELI). NOD-ONLY (HOUSEF_BAD).
+// A genuine TD port (own weapon + sprite, unlike the Chinook). The attack-heli AI -- Ammo,
+// strafe (Good_Fire_Location), reload-at-helipad (MISSION_ENTER) -- is RA-generic (AircraftClass),
+// so this just clones RA's HIND attack-heli template (single rotor, helipad-landing). Single rotor
+// uses the GENERIC Draw_Rotors branch (not the TRANSPORT-gated dual that broke the Chinook), drawn
+// at body-centre. Fires TDApacheGun (TDChainGun + Burst=2 for TD's is_twoshooter). Stats in
+// rules.ini [TDHELI]; donor ImageData = AIRCRAFT_HIND (the matching 32-frame single-rotor heli).
+// See docs/td-attack-heli-deep-dive.md.
+static AircraftTypeClass const TdApacheHeli(AIRCRAFT_TDAPACHE, // What kind of aircraft is this.
+                                            TXT_ORCA,        // Translated text (placeholder -- HD name via rules.ini Name=).
+                                            "TDHELI",        // INI name of aircraft (TD-prefixed; RA's Longbow is "HELI").
+                                            0x0000,          // Vertical offset.
+                                            0x0040,          // Primary weapon offset (chain-gun muzzle, like RA's HIND).
+                                            0x0000,          // Primary weapon lateral offset.
+                                            false,           // Fixed wing aircraft? (no -- helicopter)
+                                            true,            // Equipped with a rotor? (yes -- single)
+                                            false,           // Custom rotor sets for each facing? (no -- single rotor)
+                                            false,           // Can this aircraft land on clear terrain? (no -- returns to helipad)
+                                            true,            // Is it invisible on radar?
+                                            true,            // Can the player select it so as to give it orders?
+                                            true,            // Can it be assigned as a target for attack.
+                                            false,           // Is it insignificant (won't be announced)?
+                                            false,           // Is it immune to normal combat damage?
+                                            STRUCT_HELIPAD,  // Preferred landing building (reloads here).
+                                            0xFF,            // Landing speed
+                                            32,              // Number of rotation stages.
+                                            MISSION_HUNT     // Default mission for aircraft.
+);
+
 /***********************************************************************************************
  * AircraftTypeClass::AircraftTypeClass -- Constructor for aircraft objects.                   *
  *                                                                                             *
@@ -373,6 +403,7 @@ void AircraftTypeClass::Init_Heap(void)
     new AircraftTypeClass(AttackHeli);
     new AircraftTypeClass(OrcaHeli);
     new AircraftTypeClass(TDCargoPlane);
+    new AircraftTypeClass(TdApacheHeli);
 }
 
 /***********************************************************************************************
@@ -460,6 +491,17 @@ void AircraftTypeClass::One_Time(void)
     if (tdcargo.CameoData == NULL) {
         AircraftTypeClass const& donor = As_Reference(AIRCRAFT_BADGER);
         ((void const*&)tdcargo.CameoData) = donor.CameoData;
+    }
+
+    // TD Apache (AIRCRAFT_TDAPACHE): TGA-only TD sprite -> NULL ImageData from the MFCD loop.
+    // Donor = AIRCRAFT_HIND (RA's single-rotor attack heli, matching 32 frames) so dimensions/rotor
+    // align; the launcher's overlay resolves the real "TDHELI" sprite by IniName.
+    AircraftTypeClass& tdapache = As_Reference(AIRCRAFT_TDAPACHE);
+    if (tdapache.ImageData == NULL) {
+        ((void const*&)tdapache.ImageData) = As_Reference(AIRCRAFT_HIND).ImageData;
+    }
+    if (tdapache.CameoData == NULL) {
+        ((void const*&)tdapache.CameoData) = As_Reference(AIRCRAFT_HIND).CameoData;
     }
 
     LRotorData = MFCD::Retrieve("LROTOR.SHP");
