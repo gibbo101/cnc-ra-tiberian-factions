@@ -169,15 +169,63 @@ The GDI APC (`UNIT_TDAPC`, TD `UnitAPC` udata.cpp:907) is the first **transport*
 > shows `ImageData=00000000 ow=0` vs a working unit's `ImageData=<ptr> ow=48`). Fix: run `build_tfassets.sh`
 > first, OR `cp resources/.../TFASSETS.MIX build/.../TFASSETS.MIX` before `deploy.sh --no-build`.
 
+## §STEALTH — a cloaking unit (Stealth Tank), and stealth detection
+
+The Nod Stealth Tank (`UNIT_TDSTNK`, TD `UnitSTank`, IniName **`STNK`**) is the **lowest-engine-effort
+combat vehicle yet** — cloaking is *free*. The whole port = enum + ctor + one new weapon + assets + a
+small audio dispatch. Shipped 2026-06-01 (`000ccc4` unit, `1572b09` detection).
+
+**(a) Cloak is pure data — RA inherited TD's entire cloak system verbatim.** Identical `CloakType` enum
+(`UNCLOAKED→CLOAKING→CLOAKED→UNCLOAKING`), identical `TechnoClass::Cloaking_AI`/`Do_Cloak`/`Do_Uncloak`.
+So a TD cloaker is just rules.ini **`Cloakable=yes`** (parsed `techno.cpp` Read_INI) — **no `_TD()` port,
+no engine code.** Behavior comes for free: auto-cloak when idle (after `Rule.CloakDelay`/`SubmergeDelay`),
+decloak on firing (`FIRE_CLOAKED`→`Do_Uncloak`), shimmer when hit or near a detector, can't fully cloak
+below `ConditionRed`. The launcher renders it (`CNCObjectStruct.Cloak` exported, `dllinterface.cpp`). RA's
+own Phase Transport (`UNIT_PHASE`, Aftermath, `Cloakable=yes`) is the cloaking-*vehicle* precedent.
+
+**(b) Stealth detection — TD and RA are the SAME system.** Driven by rules.ini **`Sensors=yes`**
+(`IsScanner`, `techno.cpp` Read_INI). Mechanism: when a CLOAKED unit *moves adjacent* to an enemy
+`Sensors=yes` techno, `FootClass::Per_Cell_Process` calls `Do_Shimmer()` (brief reveal) — an
+adjacency *tripwire on movement*, not a persistent radar reveal. **TD-canon: detectors are base DEFENSES
+only.** In TD source `is_scanner` is a `BuildingTypeClass`-only ctor param ("detect adjacent cloaked
+objects?") — infantry/unit ctors hardcode it false, so **TD infantry do NOT reveal stealth tanks** (a
+common misconception; only defenses + decloak-on-fire do). The TD `true` buildings map to ours:
+GDI **TDGTWR/TDATWR**, Nod **TDGUN/TDOBLI** — all now carry `Sensors=yes`. Allied (`PBOX/HBOX/GUN/DOME`)
+and Soviet (`TSLA/FTUR/DOME`) defenses already had it from vanilla RA, so the 4-faction web is symmetric.
+RA *can* flag infantry/units as scanners (it does for one infantry type) if you ever want active
+stealth-hunting — just not TD-canon. Detection is **pure rules.ini**, no DLL rebuild.
+
+**(c) The 2-shooter needs its OWN weapon when the base weapon is shared.** TD STANK is
+`is_twoshooter=true` → RA `Burst=2` (the §3.5/§DUAL mapping — no unit-level flag). But it fires
+`WEAPON_DRAGON`, *shared* with the single-shot E3 Rocket Soldier + Recon Bike. Adding `Burst=2` to
+`[TDDragon]` would wrongly double-fire them — so make a **separate weapon** (`TDStnkDragon` = TDDragon's
+stats/bullet/warhead + `Burst=2`), new `WEAPON_` enum + `rules.cpp` registration + `IsTDPort`. General
+rule: clone-with-tweak any shared weapon rather than mutate the shared one.
+
+**(d) TD cloak audio.** RA's `Do_Cloak`/`Do_Uncloak` play `VOC_IRON1` (Iron Curtain) for non-vessels; TD's
+play `VOC_CLOAK` = file **`TRANS1`**. To use TD's sound for TD units without disturbing RA cloakers
+(Phase Transport/Submarine): add `VOC_TD_CLOAK`→`"TRANS1"` (`audio.cpp`), route `RAC/RAR_SFX_TRANS1` →
+base `TDC/TDR_SFX_TRANS1.WAV` (`SFXEVENTSNONLOCALIZED.XML`, BAZOOK1 pattern, no WAV bundling), and in
+`Do_Cloak`/`Do_Uncloak` branch on the **`TD` IniName prefix** → `VOC_TD_CLOAK` else the stock RA sound.
+
+**(e) Other STANK specifics.** Turret-less (all-zero weapon offsets, like the Bike); **invisible-to-radar**
+(ctor param `true` — doesn't show on the minimap); `ANIM_TDFRAG2` death; `Prerequisite=weap,dome` (Nod
+airstrip + radar, matching TD's `STRUCTF_RADAR`); Speed 12 (`MPH_MEDIUM_FAST`, = Hum-vee/Buggy — TD-authentic;
+Luke felt it slightly fast → logged for the v1.0 balance pass, not patched).
+
+**Compile traps hit:** `TXT_STANK` doesn't exist in RA → use the `TXT_LTANK` placeholder (real name from
+rules.ini `Name=`); `Techno_Type_Class()` returns a **pointer** not a reference → `->IniName`.
+
 ## The roster
 
 **Shipped:** turreted-tank trio — GDI Medium Tank (`TDMTNK`), NOD Light Tank (`TDLTNK`), GDI Mammoth
 Tank (`TDHTNK` — dual weapon + AA, §DUAL); Nod Flame Tank (`TDFTNK` — turret-less flame jet, §FLAME);
 Nod Recon Bike (`TDBIKE` — wheeled rocket scout, §BIKE — pure E3-TDDragon reuse); GDI Hum-vee (`TDJEEP`)
-+ Nod Buggy (`TDBGGY` — wheeled MG turret); **GDI APC (`TDAPC` — tracked transport, §APC).**
++ Nod Buggy (`TDBGGY` — wheeled MG turret); GDI APC (`TDAPC` — tracked transport, §APC);
+**Nod Stealth Tank (`TDSTNK` — cloaking, §STEALTH).**
 Naming convention (Luke): faction-prefix any TD unit colliding with an RA name. **Next:** MLRS / Artillery /
-SSM Launcher (MSAM) / Stealth Tank (cloak — save for last). Aircraft (Orca / Apache / Chinook) are a separate
-arc (helipad + the TDCARGO aircraft plumbing already proven).
+SSM Launcher (MSAM) — each needs a new ballistic/rocket weapon port. Aircraft (Orca / Apache / Chinook) are a
+separate arc (helipad + the TDCARGO aircraft plumbing already proven).
 
 > **deploy.sh gotcha (hit 2026-05-30):** `deploy.sh` `rm -rf`s `build/remaster/Vanilla_RA/` then runs the
 > workflow, but the repackage is a **RedAlert POST_BUILD step** (`redalert/CMakeLists.txt:213`) that only
