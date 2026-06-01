@@ -731,6 +731,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDTusk");       // WEAPON_TDTUSK (TD Mammoth Tusk AA missiles, HTNK secondary; IsTDPort -- fires TDSSM)
     new WeaponTypeClass("TDFlameTongue"); // WEAPON_TDFLAMETONGUE (TD Flame Tank FTNK; IsTDPort -- stronger Flamethrower, Dmg50)
     new WeaponTypeClass("TDM60mg");      // WEAPON_TDM60MG (TD Hum-vee/Buggy MG, JEEP/BGGY; IsTDPort -- instant MG, raw Speed)
+    new WeaponTypeClass("TDStnkDragon"); // WEAPON_TDSTNKDRAGON (TD Stealth Tank STNK; IsTDPort -- TDDragon + Burst=2)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -777,6 +778,11 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // WARHEAD_TDSA (same small-arms primitives as the Minigunner's TDM16). IsTDPort for raw
     // Speed=255 (MPH_LIGHT_SPEED, instant) + TD single-shooter cadence (identical to TDM16).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDM60mg"))->IsTDPort = true;
+    // TDStnkDragon (Stealth Tank STNK): the TD WEAPON_DRAGON fired as a 2-shot salvo (TD
+    // is_twoshooter -> Burst=2). Same TDTOW homing missile + WARHEAD_TDAP chain as TDDragon;
+    // a SEPARATE weapon so the single-shot E3 Rocket Soldier / Recon Bike keep Burst=1.
+    // IsTDPort for the raw Speed (MPH_ROCKET=60) + AI_TD homing dispatch (identical to TDDragon).
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TDStnkDragon"))->IsTDPort = true;
 
     return (true);
 }

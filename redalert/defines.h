@@ -1728,6 +1728,7 @@ typedef enum UnitType : char
     UNIT_TDJEEP,            // TD Hum-vee (JEEP) — GDI-only, wheeled, MG turret, fires TDM60mg. udata.cpp:691.
     UNIT_TDBGGY,            // TD Nod Buggy (BGGY) — Nod-only, wheeled, MG turret, fires TDM60mg. udata.cpp:744.
     UNIT_TDAPC,             // TD APC (APC) — GDI-only (faction-canon; TD src bits permissive), tracked transport, no turret, fires TDM60mg, carries 5. udata.cpp:907.
+    UNIT_TDSTNK,            // TD Stealth Tank (STNK) — Nod-only, CLOAKABLE (RA's inherited cloak system), invisible-to-radar, turret-less, fires TDStnkDragon (2-shot). udata.cpp UnitSTank.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -2908,6 +2909,7 @@ typedef enum WeaponType : char
     WEAPON_TDTUSK,         // TD Mammoth Tusk AA missiles (HTNK secondary) — Dmg75/ROF80/Range5, Projectile=TDSSM (reuse, AA+AG homing), WARHEAD_TDHE, Report=ROCKET1.
     WEAPON_TDFLAMETONGUE,  // TD Flame Tank cannon (FTNK) — Dmg50/ROF50/Range2, BULLET_TDFLAME (reuse), WARHEAD_TDFIRE (reuse), Anim=TDFLAME-N. The stronger FLAME_TONGUE (vs Flamethrower's 35).
     WEAPON_TDM60MG,        // TD Hum-vee/Buggy MG (JEEP/BGGY) — Dmg15/ROF30/Range4, BULLET_TDBULLET (reuse TD50cal), WARHEAD_TDSA (reuse), Report=MGUN11, Anim=GUN-N. Distinct from RA-vanilla [M60mg] (ROF20/PILLBOX1/MINIGUN).
+    WEAPON_TDSTNKDRAGON,   // TD Stealth Tank launcher (STNK) — WEAPON_DRAGON + Burst=2 (TD is_twoshooter). Same TDTOW/TDAP/BAZOOK1 chain as TDDragon; separate weapon so the single-shot E3/Bike keep Burst=1.
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -3554,6 +3556,7 @@ typedef enum VocType : short
     VOC_TD_TANK2,        // TD sharp tank fire (TNKFIRE3) — WEAPON_TD75MM Report= (Light Tank cannon)
     VOC_TD_ROCKET1,      // TD rocket launch #1 (ROCKET1) — WEAPON_TDTUSK Report= (Mammoth Tusk AA missiles)
     VOC_TD_MGUN11,       // TD heavy machine gun (MGUN11) — WEAPON_TDM60MG Report= (Hum-vee/Buggy); routed via RAC/RAR_SFX_MGUN11
+    VOC_TD_CLOAK,        // TD Stealth Tank cloak/decloak (TRANS1) — TD VOC_CLOAK; played by Do_Cloak/Do_Uncloak for TD-prefix units instead of RA's VOC_IRON1. Routed via RAC/RAR_SFX_TRANS1.
 
     VOC_COUNT,
     VOC_FIRST = 0

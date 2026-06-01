@@ -1672,4 +1672,12 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<ObjectTypeClass Name="RA_TDSTNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_STEALTH_TANK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_STEALTH_TANK</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_StealthTank</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 </ObjectTypeList>

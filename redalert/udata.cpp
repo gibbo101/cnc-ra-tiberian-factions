@@ -755,6 +755,48 @@ static UnitTypeClass const UnitTdApc(UNIT_TDAPC,
                                      MISSION_HUNT  // ORDERS: Default order (TD APC default = MISSION_HUNT).
 );
 
+// Tiberian Factions -- TD Stealth Tank (UNIT_TDSTNK), ported from TD's UNIT_STANK
+// (tiberiandawn/udata.cpp UnitSTank). NOD-ONLY (TD STANK ownable = HOUSEF_BAD). The iconic
+// Nod cloaking unit. CLOAKING is pure rules.ini (Cloakable=yes) -- RA inherited TD's entire
+// cloak system verbatim (TechnoClass::Cloaking_AI / Do_Cloak / Do_Uncloak / the IsScanner
+// adjacency-reveal), so NO engine port is needed for the cloak; it decloaks on firing and
+// shimmers near an enemy Sensors=yes building (TD-canon defenses). Detection wiring is left at
+// the current vanilla state per Luke (2026-06-01) -- not adding Sensors= to the GDI/Nod defenses
+// in this pass. Fires TDStnkDragon = TD WEAPON_DRAGON (reused TDTOW homing missile + TDAP) with
+// Burst=2 (TD is_twoshooter -- a SEPARATE weapon so the single-shot E3/Bike that share TDDragon
+// stay Burst=1). Turret-less (the launcher fires from the hull, all-zero offsets like the Bike /
+// V2 Launcher). INVISIBLE-TO-RADAR (ctor param true -- TD STANK doesn't show on the minimap).
+// Explosion ANIM_TDFRAG2 (TD STANK = ANIM_FRAG2, same as the tanks). All stats (Strength 110,
+// Cost 900, TechLevel 5, Speed 12) in rules.ini [TDSTNK].
+static UnitTypeClass const UnitTdStnk(UNIT_TDSTNK,
+                                      TXT_LTANK,    // NAME: placeholder (RA has no Stealth Tank string; HD display via rules.ini Name="Stealth Tank").
+                                      "TDSTNK",     // NAME: IniName.
+                                      ANIM_TDFRAG2, // EXPLOSION: TD STANK death (TD ctor = ANIM_FRAG2 -> our ported ANIM_TDFRAG2).
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0000,       // Vertical offset (turret-less rocket -- launches from hull, like the Bike/V2 Launcher).
+                                      0x0000,       // Primary weapon offset.
+                                      0x0000,       // Primary weapon lateral offset.
+                                      0x0000,       // Secondary weapon offset.
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      true,         // Can this be a goodie surprise from a crate? (TD STANK: yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (TD STANK: yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      true,         // Is invisible to radar? (TD STANK: YES -- doesn't show on the minimap)
+                                      false,        // Is it insignificant (won't be announced)?
+                                      false,        // Is it equipped with a combat turret? (TD STANK: NO turret)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages (32 facings; TD STANK eight-facings=false).
+                                      0,            // Turret center offset along body centerline (TD: 0).
+                                      MISSION_HUNT  // ORDERS: Default order (TD STANK default = MISSION_HUNT).
+);
+
 // Jeep (hummer)
 static UnitTypeClass const UnitJeep(UNIT_JEEP,
                                     TXT_JEEP,     // NAME:			Text name of this unit type.
@@ -1394,6 +1436,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTdJeep);    // UNIT_TDJEEP
     new UnitTypeClass(UnitTdBggy);    // UNIT_TDBGGY
     new UnitTypeClass(UnitTdApc);     // UNIT_TDAPC
+    new UnitTypeClass(UnitTdStnk);    // UNIT_TDSTNK
 }
 
 /***********************************************************************************************
