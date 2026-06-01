@@ -3498,7 +3498,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                     }
                 }
 #endif
-#if 1 // TF DEV: Flame Tank muzzle-geometry diagnostic (TDFTNK nozzle position + nozzle alternation). Flip to 0 before release.
+#if 0 // TF DEV: Flame Tank muzzle-geometry diagnostic (TDFTNK nozzle position + nozzle alternation). Flip to 0 before release.
                 if (weapon->IsTDPort) {
                     static FILE* ff = NULL;
                     if (ff == NULL) {

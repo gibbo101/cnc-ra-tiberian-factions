@@ -567,7 +567,7 @@ bool Read_Scenario(char* name)
     **  Mirrors the TACTION_REVEAL_ALL trigger. OFF for release; flip to #if 1
     **  to re-enable. (Grep "TF DEV TOGGLE" to find all such toggles.)
     */
-#if 1
+#if 0
     if (Session.Type != GAME_NORMAL && PlayerPtr != NULL && !PlayerPtr->IsVisionary) {
         PlayerPtr->IsVisionary = true;
         for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {

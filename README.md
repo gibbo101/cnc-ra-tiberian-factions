@@ -1,26 +1,48 @@
 # Tiberian Factions for Red Alert
 
-A mod for **Command & Conquer: Red Alert Remastered** that adds GDI and Nod as new playable factions alongside Allies and Soviets.
+A mod for **Command & Conquer: Red Alert Remastered** that adds **GDI** and **Nod** — the two factions from *Tiberian Dawn* — as fully playable sides alongside the original Allies and Soviets. Pick any of the four in skirmish and fight them all on the same map: **Allies vs Soviets vs GDI vs Nod**.
 
-> ⚠️ **Early access (v0.4.1).** Published to Steam Workshop (Friends-Only visibility). Both GDI and Nod have complete TD-authentic building catalogues. The Obelisk of Light has its full TD-authentic firing experience (charge animation, warmup sound, visible laser beam). TD units (vehicles, infantry, aircraft), GDI/Nod AI, and pixel-perfect classic-mode rendering are still in development.
+## What this mod adds
+
+GDI and Nod aren't reskins — they're complete factions with their own bases, armies, superweapons, and computer opponents, built from authentic Tiberian Dawn art and sound.
+
+**Two new factions, each with their own tech tree:**
+
+- **GDI** — Construction Yard, Power Plants, Tiberium Refinery, Barracks, Weapons Factory, Communications Center, Advanced Communications, Helipad, and a Service Depot that repairs vehicles. Defended by Guard Towers and Advanced Guard Towers.
+- **Nod** — Construction Yard, Power Plants, Tiberium Refinery, Hand of Nod, Airstrip, Communications Center, Temple of Nod, and Helipad. Defended by Gun Turrets, SAM Sites, and the laser-firing Obelisk of Light.
+
+**Full unit rosters:**
+
+- **Infantry** — Minigunner, Grenadier, Rocket Soldier, Flamethrower, Chem Warrior, Engineer, and the Commando.
+- **Vehicles** — Medium Tank, Light Tank, Mammoth Tank, Flame Tank, Recon Bike, Hum-vee, Buggy, APC, MLRS, SSM Launcher, Artillery, plus the Harvester and Mobile Construction Vehicle.
+- **Aircraft** — GDI's Orca and Nod's Apache, flown from the Helipad.
+
+**Superweapons** — GDI's **Ion Cannon** and Nod's **Nuclear Strike**, each hosted by its faction's top-tier building.
+
+**Computer opponents that actually play the factions** — the GDI and Nod AI build a full base, run an economy, tech up through the repair bay and tech centers, and field a combined-arms army of infantry, tanks, and aircraft. You can fill a skirmish with any mix of the four sides.
+
+**Authentic look and sound** — Tiberian Dawn unit and EVA voices, building and weapon sound effects (the Obelisk's charge-up and red laser, the Ion Cannon strike), and a classic-graphics-mode palette fix so the TD sprites render with correct colors.
+
+## How to play
+
+Subscribe on the Steam Workshop, then enable **"Tiberian Factions for Red Alert"** from the mod list when you launch Red Alert in C&C Remastered. Start a skirmish, and GDI and Nod will appear as selectable factions alongside Allies and Soviets — for you and for the AI.
+
+(Alternatively, download the release zip from GitHub and extract it into `Documents/CnCRemastered/Mods/Red_Alert/`.)
+
+## Planned
+
+- **Red Alert balance pass** — the factions currently use Tiberian-Dawn-authentic stats; a future update will tune them for Red Alert's scale and pacing.
+- **Smarter AI** — ongoing improvements to how the computer opponents build, defend, and use their armies and superweapons.
+
+## Compatibility
+
+This is a **DLL mod** — it replaces the game's `RedAlert.dll`. Only one DLL mod can load at a time, so it **won't work alongside any other mod that ships its own DLL** (for example, CFE Patch). Disable other DLL mods when running this one. Mods that only change data or art (no DLL) are generally fine.
+
+## License
+
+**GPL v3**, inherited from Vanilla Conquer (which inherited from EA's 2020 source release). See [`License.txt`](./License.txt).
 
 This repository is a **fork of [Vanilla Conquer](https://github.com/TheAssemblyArmada/Vanilla-Conquer)**, which provides the DLL build base. The original Vanilla Conquer README is preserved as [`README-VANILLA-CONQUER.md`](./README-VANILLA-CONQUER.md).
-
-## Goal
-
-Add `HOUSE_GDI` and `HOUSE_NOD` as new playable houses (sides) in Red Alert Remastered's engine, with their own unit rosters, structures, superweapons (Ion Cannon, Nuke), and AI. The end state is four-faction skirmish: **Allies vs Soviets vs GDI vs Nod**, on the same map, in the same match.
-
-## Status
-
-- v0.0.x — ✅ scaffolding, Linux mingw cross-compile + Steam Deck deploy pipeline.
-- v0.1.0 — ✅ engine extension: `HOUSE_GOOD`/`HOUSE_BAD` selectable as cloned-from-Allies/Soviets variants.
-- v0.2.0 — ✅ engine decoupling: `HOUSE_GOOD`/`HOUSE_BAD` detached from `HOUSEF_ALLIES`/`HOUSEF_SOVIET`; 4-side-aware Unlimbo dispatch; Spain→`HOUSE_GOOD` / Turkey→`HOUSE_BAD` launcher swaps.
-- v0.3.0 — ✅ TD-themed GDI building catalogue from authentic TD assets, INI-driven mod-entry registration, asset pipeline (manifest → ZIP repack → rsync to Deck), TD-authentic build times.
-- v0.4 — ✅ Nod faction with full building catalogue (Hand of Nod, Airstrip, Gun Turret, SAM Site, Obelisk of Light, Temple of Nod). Nod Airstrip C-17 cargo-plane delivery. Published to Steam Workshop (Friends-Only).
-- v0.4.1 — ✅ TDOBLI fully separated as `STRUCT_TDOBLI` engine type with own laser-beam render, charge animation, OBELPOWR/OBELRAY1 audio. TD audio routing recipe + per-building separation recipe documented. Foundation for scaling separation to remaining 16 buildings.
-- v0.5+ — planned: scale separation to remaining buildings, TD-themed unit rosters, superweapons (Ion Cannon, Nuke), faction-specific AI, pixel-perfect classic-mode rendering.
-
-See [`CHANGELOG.md`](./CHANGELOG.md) for detailed progress.
 
 ## Building & deploying (for developers)
 
@@ -30,37 +52,16 @@ This project builds on Linux via mingw-w64 cross-compile.
 # Install build dependencies (Ubuntu 24.04+):
 sudo apt install -y cmake g++-mingw-w64 mingw-w64-tools ninja-build
 
-# Build + deploy to a Steam Deck (over Tailscale, passwordless SSH):
-./deploy.sh
-```
-
-The `deploy.sh` script builds the DLL and SCPs the resulting mod folder to `deck@steamdeck`'s Proton mod path. Override the SSH target with `DECK_HOST=user@hostname ./deploy.sh` if your Deck isn't named `steamdeck` on your Tailnet.
-
-To build without deploying:
-
-```bash
+# Build the DLL + mod folder (lands at build/remaster/Vanilla_RA/):
 CMAKE_TOOLCHAIN_FILE=cmake/i686-mingw-w64-toolchain.cmake \
   VC_CXX_FLAGS="-w;-fpermissive" \
   cmake --workflow --preset remaster
+
+# Or build and deploy to a Steam Deck (over Tailscale, passwordless SSH):
+./deploy.sh
 ```
 
-The resulting mod folder lands at `build/remaster/Vanilla_RA/`.
-
-## Installing (for players)
-
-_(Once published.)_ Subscribe via Steam Workshop, then enable "Tiberian Factions for Red Alert" from C&C Remastered's mod list when launching Red Alert. Or download the release zip from GitHub and extract into `Documents/CnCRemastered/Mods/Red_Alert/`.
-
-## Dependencies
-
-- **[Vanilla Conquer](https://github.com/TheAssemblyArmada/Vanilla-Conquer)** — engine base (this repository is a fork).
-
-## Compatibility
-
-- **CFE Patch Redux**: incompatible — both ship a custom `RedAlert.dll`. Disable CFE when running this mod.
-
-## License
-
-**GPL v3**, inherited from Vanilla Conquer (which inherited from EA's 2020 source release). See [`License.txt`](./License.txt).
+Override the SSH target with `DECK_HOST=user@hostname ./deploy.sh` if your Deck isn't named `steamdeck` on your Tailnet.
 
 ## Credits
 
