@@ -117,3 +117,10 @@ Desert is **feasible** but it is **campaign-arc work** (GDI/Nod missions need it
 arc is down the road. When it comes up: classic-mode desert is a quick additive DLL change;
 HD-mode desert is the interior-slot hijack (DLL + data), with the cheap `CONFIG.MEG`
 re-skin test as the go/no-go gate.
+
+**DECISION 2026-06-03 (Luke): the chosen path is to REPLACE the interior theatre
+slot with desert** (not add a 4th theatre — impossible per the lock above).
+Interior is effectively unused in a GDI/Nod skirmish/campaign mod, so spending its
+slot on desert is an accepted trade. This makes the "interior-slot hijack" the
+committed approach. Triggered by the TD desert skirmish-map import goal — see
+`td-skirmish-map-import.md` for the per-map theatre matrix + conversion breakdown.

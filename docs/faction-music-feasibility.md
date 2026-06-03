@@ -1,8 +1,15 @@
 # Faction-conditional skirmish music — feasibility
 
 **Researched 2026-05-29. Mod-wide path PROVEN ON DECK 2026-05-30 (TD track played in an RA skirmish).**
-- **Mod-wide custom skirmish music (TD-heavy, weighted) = ✅ PROVEN — data-only, no code, Workshop-shippable.** Edit the `RA_MULTIPLAYER_MODE` event playlists in a mod CONFIG.MEG. **CRITICAL: the edit MUST preserve the member's exact byte length (pad to original size) or the launcher CRASHES ON LAUNCH** — see "Same-size rule" below.
-- **Per-faction split (GDI/Nod→TD, Allied/Soviet→RA) = a well-defined CONFIG.MEG spike** (hinges on whether the `MusicMap` faction hook is honored). Not yet tested.
+- **Mod-wide custom skirmish music = ✅ SHIPPED (data-only, no code).** The shipped
+  solution is a **50:50 TD-vs-RA track list** baked into the mod `Data/CONFIG.MEG`
+  (`RA_MULTIPLAYER_MODE` event playlists, randomised). **CRITICAL: the edit MUST preserve
+  the member's exact byte length (pad to original size) or the launcher CRASHES ON LAUNCH**
+  — see "Same-size rule" below.
+- **Per-faction split (GDI/Nod→TD, Allied/Soviet→RA) = ❌ CLOSED, not pursued (Luke,
+  2026-06-03).** The `MusicMap` per-faction hook was judged not worth the effort / not
+  reliably doable; the 50:50 mod-wide playlist above is the accepted answer. Don't
+  re-chase unless the design goal changes.
 - **DLL-driven music = genuinely dead** (kept below — still accurate, rules out the engine-side approach).
 
 ## ⚠️ Same-size rule (CRITICAL — proven by the 2026-05-30 spike crash)
