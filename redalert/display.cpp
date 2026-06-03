@@ -2824,7 +2824,12 @@ bool DisplayClass::Good_Reinforcement_Cell(CELL outcell, CELL incell, SpeedType 
  *=============================================================================================*/
 static bool should_exclude_from_selection(ObjectClass* obj)
 {
-    return (obj->What_Am_I() == RTTI_UNIT) && (((UnitClass*)obj)->Class->IsToHarvest || *((UnitClass*)obj) == UNIT_MCV);
+    // Tiberian Factions: UNIT_TDMCV is the GDI/Nod MCV and must be excluded from
+    // band/select-all just like the RA UNIT_MCV. The TD harvester (UNIT_TDHARV) is
+    // already covered by IsToHarvest below.
+    return (obj->What_Am_I() == RTTI_UNIT)
+           && (((UnitClass*)obj)->Class->IsToHarvest || *((UnitClass*)obj) == UNIT_MCV
+               || *((UnitClass*)obj) == UNIT_TDMCV);
 }
 
 void DisplayClass::Select_These(COORDINATE coord1, COORDINATE coord2, bool additive)

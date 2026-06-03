@@ -967,7 +967,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         } else {
             strcpy(dbg_path, "tiberian_factions_debug.log");
         }
-        FILE* fp = fopen(dbg_path, "w");
+        FILE* fp = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
         if (fp != NULL) {
             fprintf(fp, "=== Tiberian Factions debug dump (CNC_Set_Multiplayer_Data) ===\n");
             fprintf(fp,
@@ -1020,7 +1020,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         } else {
             strcpy(append_path, "tiberian_factions_debug.log");
         }
-        FILE* afp = fopen(append_path, "a");
+        FILE* afp = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
         if (afp != NULL) {
             fprintf(afp, "\n=== APPEND PROOF: this line means second-block executed ===\n");
             fflush(afp);
@@ -2608,6 +2608,7 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
             strncpy(new_event.SoundEffect.SoundEffectName, name, 16);
             new_event.SoundEffect.SoundEffectName[15] = '\0';
 
+#if 0 // TF DIAG — OFF for release (was unguarded; flip to 1 to log radar dispatch).
             // Diagnostic: confirm dispatch runs + log ActLike at time of call.
             // Path follows project convention (reference-diagnostic-paths).
             const char* up = getenv("USERPROFILE");
@@ -2625,6 +2626,7 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
                     fclose(f);
                 }
             }
+#endif
         }
 
         // Tiberian Factions: per-faction unit-voice dispatch. GDI/Nod (ActLike
@@ -3521,7 +3523,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Get_Game_State(GameStateReques
     // Tiberian Factions diag 2026-05-31: log every state query the launcher makes, so the
     // LAST state_type before the EXE NULL-deref crash (MCV deploy, Hum-vee/Buggy) tells us
     // WHICH state the launcher choked processing (LAYERS/SIDEBAR/OCCUPIER/...). Flip #if 1 -> 0.
-#if 1
+#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
     {
         static FILE* s_state_log = NULL;
         if (s_state_log == NULL) {
@@ -3648,7 +3650,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     // No rate limit so the placement transition is fully captured. Disable
     // by flipping the `#if 1` to `#if 0`. Per
     // [[feedback-keep-diagnostics-until-v1]] keep in source.
-#if 1
+#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
     if (object != NULL && object->What_Am_I() == RTTI_BUILDING) {
         BuildingTypeClass const* btc = (BuildingTypeClass const*)&object->Class_Of();
         bool is_td = (btc->IniName[0] == 'T' && btc->IniName[1] == 'D');
@@ -3697,8 +3699,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     // Tiberian Factions diag 2026-05-31: log EVERY object converted into the launcher's
     // render list (not just TD buildings). The EXE NULL-derefs on MCV deploy after the
     // Hum-vee/Buggy were added; the last line before the crash names the object whose data
-    // the launcher choked on, and AssetName/ImageData expose the NULL. Flip #if 1 -> 0 to disable.
-#if 1
+    // the launcher choked on, and AssetName/ImageData expose the NULL. Flip #if 0 -> 1 to re-enable.
+#if 0 // TF DIAG (2026-05-31 MCV-crash hunt) — OFF for release; per-object/per-frame log.
     {
         static FILE* s_obj_log = NULL;
         if (s_obj_log == NULL) {
@@ -3761,8 +3763,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     // Tiberian Factions diag 2026-05-31 (pass 2): log the FINAL AssetName the launcher will
     // use to resolve each object's render asset. The launcher NULL-derefs on MCV deploy when an
     // object's AssetName isn't in its asset index; the last line before the crash names it. The
-    // earlier tf_objlist.log logged before AssetName was set (always ''). Flip #if 1 -> 0.
-#if 1
+    // earlier tf_objlist.log logged before AssetName was set (always ''). Flip #if 0 -> 1 to re-enable.
+#if 0 // TF DIAG (2026-05-31 MCV-crash hunt) — OFF for release; per-object/per-frame log.
     {
         static FILE* s_asset_log = NULL;
         if (s_asset_log == NULL) {
@@ -3834,7 +3836,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             // receives for TD-prefixed buildings — this is the tileset name
             // it will look up. Petroglyph flash on placement is suspected to
             // be a transient mismatch here.
-#if 1
+#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
             if (building->Class->IniName[0] == 'T' && building->Class->IniName[1] == 'D') {
                 static FILE* s_asset_log = NULL;
                 if (s_asset_log == NULL) {
@@ -5005,7 +5007,7 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                 // Tiberian Factions diag 2026-05-31: log every sidebar buildable the DLL hands
                 // the launcher (col/type/id + the resolved techno + its IniName). A NULL tech or a
                 // bad entry here would make the launcher NULL-deref. Flip #if 1 -> 0 to disable.
-#if 1
+#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
                 {
                     static FILE* s_sb_log = NULL;
                     if (s_sb_log == NULL) {

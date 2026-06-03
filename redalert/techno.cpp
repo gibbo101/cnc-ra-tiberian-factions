@@ -4356,7 +4356,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                     } else {
                         strcpy(path, "MOD_DEBUG_DAMAGE.txt");
                     }
-                    s_dmg_log = fopen(path, "w");
+                    s_dmg_log = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
                 }
                 if (s_dmg_log != NULL) {
                     const char* tname = Techno_Type_Class() ? Techno_Type_Class()->IniName : "?";
@@ -7192,6 +7192,32 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 }
             }
             if (td_cost < 0) td_cost = 0;
+
+            /*
+            **  Tiberian Factions: apply RA's multiple-factory build-speed bonus to
+            **  the TD-authentic path as well. RA's tail (below) divides build time
+            **  by the number of factories producing this RTTI category -- owning a
+            **  second war factory halves vehicle build time, a second barracks halves
+            **  infantry time, etc. The early return above skipped it, so GDI/Nod got
+            **  no speed-up from extra factories while Allies/Soviet did (playtest
+            **  2026-06-03). Factory_Count counts the TD production buildings correctly
+            **  (Active_Add bumps the per-RTTI counter via Class->ToBuild, type-agnostic),
+            **  so this is just the missing divide. Mirrors lines ~7247-7260 verbatim,
+            **  including the Aftermath AM-vs-AM 2-factory cap, to keep GDI/Nod symmetric
+            **  with the RA factions.
+            */
+            int td_divisor = hptr->Factory_Count(What_Am_I());
+            if (td_divisor != 0) {
+#ifdef FIXIT_CSII //	checked - ajw 9/28/98
+                if (NewUnitsEnabled) {
+                    td_cost /= min(td_divisor, 2);
+                } else {
+                    td_cost /= td_divisor;
+                }
+#else
+                td_cost /= td_divisor;
+#endif
+            }
             return td_cost;
         }
 
@@ -7485,7 +7511,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             SecondaryWeapon = WeaponTypeClass::As_Pointer(ini.Get_WeaponType(
                 Name(), "Secondary", SecondaryWeapon != NULL ? (WeaponType)(SecondaryWeapon->ID) : WEAPON_NONE));
 
-#if 1
+#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
             /*
             ** Tiberian Factions mod: diagnostic — when TechnoTypeClass::Read_INI
             ** runs for a TD-prefixed mod entry, log what Primary= resolved to.

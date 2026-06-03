@@ -2,6 +2,34 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [1.11] — 2026-06-03
+
+First-playtest fixes (thanks to a GDI/Nod vs Allies/Soviet session).
+
+### Fixed
+- **GDI/Nod unit sight range.** GDI/Nod vehicles and infantry could barely see —
+  the Hum-vee scout in particular got lost in the shroud. Sight ranges are now in
+  line with their Allied/Soviet counterparts.
+- **GDI/Nod building sight range.** Bases now reveal a little more of the
+  surrounding map, matching Red Alert's scale.
+- **Tiberium Harvester now auto-harvests when built.** A harvester produced from
+  the war factory drives off to the nearest ore field on its own, like the Allied
+  and Soviet harvesters — instead of sitting idle outside the factory.
+- **GDI/Nod factory build-speed bonus.** Building a second war factory, barracks,
+  etc. now speeds up production for GDI/Nod the same way it does for Allies/Soviet.
+- **Radar sound.** The radar online/offline sound could repeat endlessly (and in
+  network games). It now plays once when your radar comes online and once when it
+  goes offline, for every faction.
+- **Selection.** Box-selecting your army no longer scoops up the GDI/Nod MCV.
+
+### Changed
+- **GDI APC speed.** The GDI APC was wildly fast — it outran the Hum-vee scout.
+  Brought down to a sensible transport speed.
+
+### Internal
+- Removed leftover debug logging that could write files to your CnCRemastered
+  folder during play.
+
 ## [1.1.0] — 2026-06-03
 
 ### Fixed

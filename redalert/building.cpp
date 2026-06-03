@@ -2498,7 +2498,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                         } else {
                             strcpy(dpath, "tf_exit_object.log");
                         }
-                        s_exit_log = fopen(dpath, "w");
+                        s_exit_log = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
                     }
                     if (s_exit_log != NULL) {
                         CELL b_origin = Coord_Cell(Coord);

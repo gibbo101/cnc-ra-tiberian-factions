@@ -4022,7 +4022,7 @@ void BuildingTypeClass::One_Time(void)
         } else {
             strcpy(mpath, "tf_mod_one_time.log");
         }
-        mod_log = fopen(mpath, "w");
+        mod_log = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
         if (mod_log != NULL) {
             fprintf(mod_log, "BuildingTypes.Count()=%d STRUCT_COUNT=%d\n",
                     BuildingTypes.Count(), STRUCT_COUNT);
@@ -4705,15 +4705,16 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
         if (Name()[0] == 'T' && Name()[1] == 'D') {
             MaxStrength *= 2;
             /*
-            **  Tiberian Factions mod — +2 sight range on every TD building. TD's
+            **  Tiberian Factions mod — +3 sight range on every TD building. TD's
             **  building Sight values are tuned for TD's tighter engagement
             **  distances and read too short on RA's scale (map reveal, radar
-            **  footprint, defensive-structure acquisition). A flat +2-cell bump
-            **  brings them in line with RA expectations. SightRange was already
+            **  footprint, defensive-structure acquisition). A flat +3-cell bump
+            **  brings them in line with RA expectations (playtest 2026-06-03:
+            **  +2 still read a touch short, nudged to +3). SightRange was already
             **  parsed from rules.ini "Sight=" by the TechnoTypeClass::Read_INI
             **  call above, so this layers on top of the per-building value.
             */
-            SightRange += 2;
+            SightRange += 3;
         }
         Speed = ini.Get_Bool(Name(), "WaterBound", (Speed == SPEED_FLOAT)) ? SPEED_FLOAT : SPEED_NONE;
         Capacity = ini.Get_Int(Name(), "Storage", Capacity);

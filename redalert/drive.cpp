@@ -720,7 +720,7 @@ bool DriveClass::While_Moving(void)
                             const char* up = getenv("USERPROFILE");
                             if (up) snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_weap_track.log", up);
                             else strcpy(p, "tf_weap_track.log");
-                            s_track = fopen(p, "a");
+                            s_track = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
                         }
                         if (s_track) {
                             fprintf(s_track,

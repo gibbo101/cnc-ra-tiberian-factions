@@ -888,7 +888,7 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                 } else {
                     strcpy(path, "MOD_DEBUG_CANBUILD.txt");
                 }
-                s_can_build_log = fopen(path, "w");
+                s_can_build_log = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
             }
             if (s_can_build_log != NULL) {
                 int level = Control.TechLevel;
@@ -1607,29 +1607,65 @@ void HouseClass::AI(void)
         }
 
 #ifdef REMASTER_BUILD
-        // Tiberian Factions: fire the radar-on/off sting on edges of the
-        // LOCAL HUMAN's own Radar state. We can't fire from radar.cpp's
-        // Map.Radar_Activate because:
-        //   (a) Map.IsSidebarActive is permanently false in REMASTER_BUILD
-        //       (sidebar.cpp:947 — launcher draws the sidebar), so the
-        //       legacy fire path is gated off, and
-        //   (b) in skirmish each player's HouseClass::AI iteration writes
-        //       to the global Map.IsRadarActive based on their own state,
-        //       so the global flag ping-pongs every tick between players.
-        // Doing the edge-detect here on `this->Radar` + IsHuman gives us
-        // exactly one fire per real local-human transition. Per-faction
-        // routing (Allied/Soviet -> RAORAD*, GDI/Nod -> TFRADR*) is in
-        // DLLExportClass::On_Sound_Effect.
+        // Tiberian Factions: radar on/off sting for the LOCAL player.
+        //
+        // Fire on a STABLE "has a powered radar building" signal -- a Buildings-heap
+        // count of the player's radar structures (STRUCT_RADAR / STRUCT_TDHQ /
+        // STRUCT_TDEYE) AND Power_Fraction() -- NOT the scan bits. This is the crux of
+        // the 2026-06-03 radar-loop saga: ActiveBScan/BScan & STRUCTF_RADAR (and the
+        // derived `this->Radar` / global Map.IsRadarActive) OSCILLATE 1/0 every single
+        // frame at full power -- a Recalc_Attributes rebuild quirk proven by
+        // tf_radar.log -- so every edge-detector polled on the scan state looped the
+        // sting infinitely. The heap count only changes on a real build/destroy, and
+        // Power_Fraction() is steady at steady state, so `functional` below is stable
+        // and fires exactly once on radar-online and once on radar-offline (power up /
+        // down) -- which is the desired behaviour. A short debounce makes it impossible
+        // to machine-gun even if either input ever twitches. The launcher's own
+        // hardcoded radar auto-fire stays muted by the silent RADARON2/RADARDN1 stubs;
+        // per-faction routing (RAORAD*/TFRADR*) is in dllinterface On_Sound_Effect.
+        // Gate on IsHuman, NOT `this == PlayerPtr`: in REMASTER_BUILD HouseClass::AI
+        // calls Logic_Switch_Player_Context(this) at its top (line ~1208), so PlayerPtr
+        // is reassigned to the current house and `this == PlayerPtr` is ALWAYS true ->
+        // the block ran for EVERY house, and radar_count alternated between the human
+        // (1 radar) and the AI (0) each frame, thrashing the shared debounce so nothing
+        // fired (proven by tf_radar2.log). IsHuman is true only for the human house(s);
+        // in skirmish that's the single local player. (Network play with 2+ humans would
+        // still thrash the shared static -> no sting, but no loop; gate on the local
+        // GlyphX player index if per-client MP radar sound is ever wanted.)
         if (IsHuman) {
-            static RadarEnum tf_last_local_radar = RADAR_NONE;
-            bool was_on  = (tf_last_local_radar == RADAR_ON);
-            bool now_on  = (Radar == RADAR_ON);
-            if (!was_on && now_on) {
-                Sound_Effect(VOC_RADAR_ON);
-            } else if (was_on && !now_on) {
-                Sound_Effect(VOC_RADAR_OFF);
+            int radar_count = 0;
+            for (int ri = 0; ri < Buildings.Count(); ri++) {
+                BuildingClass* rb = Buildings.Ptr(ri);
+                // Skip !IsInLimbo: a building being produced in the sidebar exists in
+                // the Buildings heap in LIMBO before it is placed on the map, so without
+                // this guard the sting fired the instant you clicked the radar in the
+                // sidebar instead of when you place it (= when it comes online).
+                if (rb != NULL && !rb->IsInLimbo && rb->House == PlayerPtr
+                    && (*rb == STRUCT_RADAR || *rb == STRUCT_TDHQ || *rb == STRUCT_TDEYE)) {
+                    radar_count++;
+                }
             }
-            tf_last_local_radar = Radar;
+            bool functional = (radar_count > 0 || IsGPSActive) && (IsGPSActive || Power_Fraction() >= 1);
+
+            // Debounce: only commit (and sound) a state that has held for ~0.5s, so a
+            // per-frame twitch in either input can never produce a repeating sting.
+            static bool tf_radar_on = false; // last committed/sounded state
+            static bool tf_pending = false;  // candidate state being timed
+            static int tf_stable = 0;        // frames the candidate has held
+            if (functional != tf_pending) {
+                tf_pending = functional;
+                tf_stable = 0;
+            } else if (tf_stable < 8) {
+                tf_stable++;
+            }
+            if (tf_stable >= 8 && tf_pending != tf_radar_on) {
+                if (tf_pending) {
+                    Sound_Effect(VOC_RADAR_ON);
+                } else {
+                    Sound_Effect(VOC_RADAR_OFF);
+                }
+                tf_radar_on = tf_pending;
+            }
         }
 #endif
     }
@@ -9039,7 +9075,7 @@ void HouseClass::Check_Pertinent_Structures(void)
         // inventory so we can diagnose which check failed (was the TDFACT
         // not in Buildings? Wrong house? IsInLimbo? Strength 0?). Stub
         // under #if 0 once verified per [[feedback-keep-diagnostics-until-v1]].
-#if 1
+#if 0 // TF DIAG — OFF for release (was #if 1; flip to 1 to re-enable logging).
         {
             const char* up = getenv("USERPROFILE");
             char p[512];

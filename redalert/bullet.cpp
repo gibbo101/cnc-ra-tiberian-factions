@@ -939,7 +939,7 @@ static void TF_OpenTDPortLog()
     if (home == NULL) return;
     char path[512];
     snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_tdport_bullet.log", home);
-    TF_TDPortLog = fopen(path, "w");
+    TF_TDPortLog = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
 #endif
 }
 

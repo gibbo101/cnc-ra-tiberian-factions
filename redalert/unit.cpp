@@ -3079,8 +3079,19 @@ int UnitClass::Mission_Harvest(void)
 
     /*
     **	If there are no more refineries, then drop into guard mode.
+    **
+    **	Tiberian Factions: STRUCTF_REFINERY is a <32 bitfield flag and STRUCT_TDPROC
+    **	sits past bit 31, so it has no STRUCTF_ bit -- a GDI/Nod harvester must test
+    **	its own refinery type by quantity instead (mirrors the AI re-task in
+    **	Mission_Guard at ~3994 and the docking-bay lookups at 1234/4369). Without
+    **	this TD branch, a human GDI/Nod harvester built from the war factory finds no
+    **	STRUCTF_REFINERY, bails straight to MISSION_GUARD and sits idle outside the
+    **	factory. The AI was masked from this by the !IsHuman re-task in Mission_Guard;
+    **	the human side has no such re-task, so it stuck.
     */
-    if (!(House->ActiveBScan & STRUCTF_REFINERY)) {
+    bool has_refinery = (*this == UNIT_TDHARV) ? (House->Get_Quantity(STRUCT_TDPROC) > 0)
+                                               : ((House->ActiveBScan & STRUCTF_REFINERY) != 0);
+    if (!has_refinery) {
         Assign_Mission(MISSION_GUARD);
         return (1);
     }

@@ -1192,7 +1192,7 @@ int AircraftClass::Mission_Unload(void)
         if (dprof != NULL && dprof[0] != '\0') {
             snprintf(dpath, sizeof(dpath),
                      "%s\\Documents\\CnCRemastered\\tf_tdcargo_unload.log", dprof);
-            s_unload_log = fopen(dpath, "w");
+            s_unload_log = NULL; // TF DIAG OFF for release (was fopen; restore to re-enable)
         }
     }
     if (s_unload_log && (s_unload_tick++ % 5) == 0) {

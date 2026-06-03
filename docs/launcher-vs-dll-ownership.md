@@ -88,6 +88,34 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 
 ---
 
+## Select-all (`a`) and Deploy (`/`) unit classification — RESOLVED (2026-06-03)
+
+**Question:** the `a` "select all combat units" and `/` "deploy" hotkeys ignore our TD-faction harvester (`TDHARV`) and MCV (`TDMCV`) — recognising only RA's `HARV`/`MCV`. Is there a moddable lever?
+
+**Both levers are closed. The classification is compiled into `ClientG.exe`.**
+
+### The launcher's component-object model (`strings ClientG.exe`)
+`ClientG.exe` runs Petroglyph's Mobius **component model**: it imports each game object from our DLL and maps it into native components via an `ExportBits.*` bitfield. Relevant components: `ResourceHarvesterComponentClass` (harvesters), `LocomotorComponentClass` (move), `TurretComponentBaseClass` (turret), `SelectBaseComponentClass` (selectable), `StructureConstructionComponentClass` (deploy/build). The hotkey commands exist as `COMMAND_CNC_SELECT_ALL_ON_SCREEN` / `_IN_WORLD` and `COMMAND_CNC_DEPLOY_SELECTED_MCV`, dispatched through `RTSInputManagerClass`. **The mapping from our narrow `CNCObjectStruct` fields → these components is hardcoded in the binary** — we control only the `CNCObjectStruct` fields, never the mapping.
+
+### Data lever (CONFIG.MEG): DEAD — proven negative
+Extracted + enumerated CONFIG.MEG (`scripts/meg_extract.py`). The only per-unit table is `DATA/XML/OBJECTS/UNITS/RABUILDABLES.XML`, and **all 189 entries share an identical 3-field schema** — `<CNCEncyclopediaComponent>` with `ObjectNameTextID` / `ObjectDescriptionTextID` / `BuildIcon` only. There is **no role / combat / deployable / harvester / selectable / category field on any entry**: `RA_HARV`, `RA_MCV`, the deployable `RA_MNLY`, and a plain `RA_1TNK` tank are byte-for-byte the same field set. `BUILDABLECATEGORIES.XML` = three sidebar display groups (no per-unit map). `OBJECTSTATES.XML` defines state-type *classes* (`Harvester`, `IsDeployed`, `Refinery`) but **never binds them to specific units** — that binding is made at runtime by the DLL/engine. **Conclusion: select-all/deploy classification is NOT in CONFIG.MEG data; shipping a modded `Data/CONFIG.MEG` cannot reach it.**
+
+### Binary lever: hardcoded by identity, not a settable flag
+The MCV is recognised by IniName/numeric type, not an exported capability bit: `CNCObjectStruct.CanDeploy` / `IsDeployable` are **declared but never populated** by us *or* EA (grepped both trees), yet RA's MCV deploys fine — so the launcher does **not** gate on them; they're vestigial. The MCV-deploy spike already tried the one DLL lever (spoof `TypeName="MCV"` for `TDMCV`) and the deploy key still ignored it ([[project-mcv-deploy-hotkey-spike]]).
+
+### What this means
+- **BOTH the harvester AND the MCV leak on `a`** — Deck-confirmed 2026-06-03 (Luke). This **disproves** the earlier guess that `CanHarvest=true` (exported for `TDHARV`) would get the harvester excluded. The launcher's `a`-exclusion does **not** read the `CanHarvest` bit; it recognises RA's `HARV`/`MCV` by **hardcoded identity** (which is why the RA units don't leak but `TDHARV`/`TDMCV` do). The `ResourceHarvesterComponent` mapping evidently drives other harvester behaviour (resource UI/cursor), not the select-all filter.
+- **`a`-exclusion (both units) and `/`-deploy (MCV) are the closed-launcher wall** — same family as the MCV-deploy hotkey and the classic-mode spacebar.
+- **The DLL-routed drag-box select IS fixed** — `should_exclude_from_selection` (display.cpp ~2827) now lists `UNIT_TDMCV`; `TDHARV` covered by `IsToHarvest`. Only the launcher-driven `a`/`/` army paths remain gated.
+
+### The one untested DLL lever: `TypeName` spoof (render-safe), and why it's marginal
+`CNCObjectStruct.TypeName` (= `Class_Of().IniName`, dllinterface.cpp:3753) is a **separate field from `AssetName`** (= the graphic name, :3756-3758, which drives rendering). So spoofing `TypeName`→`"HARV"`/`"MCV"` for `TDHARV`/`TDMCV` would be **render-safe** (sprite resolves from the untouched `AssetName`). IF the launcher's `a`-exclusion keys on `TypeName`, this would fix the select-all leak.
+- **BUT** the MCV-deploy spike already spoofed `TypeName="MCV"` for `TDMCV` and the **deploy `/` key still did nothing** → deploy keys on numeric type/buildable-ID, not `TypeName`. If `a`-exclusion shares that same MCV classification, the spoof won't help `a` either.
+- The harvester was **never** tested with a `TypeName="HARV"` spoof, so the harvester's `a`-exclusion remains the one genuinely open question. Risk: `TypeName` may also drive cameo/encyclopedia linkage → the TD harvester could show RA harvester name/cameo. Reversible; needs a Deck cycle to confirm. Low expected payoff (the MCV stays walled regardless), so parked unless Luke wants the spike.
+- **A Ghidra decompile of `ClientG.exe`** is the only route that could fully resolve it and is **not worth it** for cosmetic hotkey convenience — see the next section's cost/benefit bar.
+
+---
+
 ## Diagnostic techniques that work here (reusable)
 
 - **"Is this sound DLL- or launcher-driven?"** Drop an `fopen`-append log at the DLL call site; an *empty* file while the game runs proves the launcher owns it. (Used to prove the credit tick. Use `%USERPROFILE%` paths — `reference-diagnostic-paths`.)
