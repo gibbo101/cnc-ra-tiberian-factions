@@ -3022,18 +3022,34 @@ static void Reserve_Unit()
 
 static void Create_Units(bool official)
 {
+    /*
+    **  Tiberian Factions: GdiType/NodType columns added so GDI (ActLike
+    **  HOUSE_GOOD) and Nod (ActLike HOUSE_BAD) start with their own TD units
+    **  instead of falling through to the RA Allied roster. The unit picks are
+    **  lifted from TD's own multiplayer Create_Units table (TD INI.CPP), mapped
+    **  to our STRUCT/UNIT_TD* ports and our per-faction ownership (MLRS=GDI,
+    **  SSM/Arty/Bike/Buggy/Flame/Stealth=Nod). Distributed across RA's four
+    **  tech-gated rows; Ally/Soviet columns are unchanged.
+    */
     static struct
     {
         int MinLevel;
         UnitType AllyType[2];
         UnitType SovietType[2];
-    } utable[] = {{4, {UNIT_MTANK2, UNIT_LTANK}, {UNIT_MTANK, UNIT_NONE}},
-                  {5, {UNIT_APC, UNIT_NONE}, {UNIT_V2_LAUNCHER, UNIT_NONE}},
-                  {8, {UNIT_ARTY, UNIT_JEEP}, {UNIT_MTANK, UNIT_NONE}},
-                  {10, {UNIT_MTANK2, UNIT_MTANK2}, {UNIT_HTANK, UNIT_NONE}}};
+        UnitType GdiType[2];
+        UnitType NodType[2];
+    } utable[] = {{4, {UNIT_MTANK2, UNIT_LTANK}, {UNIT_MTANK, UNIT_NONE}, {UNIT_TDMTNK, UNIT_TDJEEP}, {UNIT_TDLTNK, UNIT_TDBGGY}},
+                  {5, {UNIT_APC, UNIT_NONE}, {UNIT_V2_LAUNCHER, UNIT_NONE}, {UNIT_TDAPC, UNIT_NONE}, {UNIT_TDBIKE, UNIT_NONE}},
+                  {8, {UNIT_ARTY, UNIT_JEEP}, {UNIT_MTANK, UNIT_NONE}, {UNIT_TDMLRS, UNIT_TDJEEP}, {UNIT_TDARTY, UNIT_TDFTNK}},
+                  {10, {UNIT_MTANK2, UNIT_MTANK2}, {UNIT_HTANK, UNIT_NONE}, {UNIT_TDHTNK, UNIT_NONE}, {UNIT_TDSTNK, UNIT_TDMSAM}}};
     static int num_units[ARRAY_SIZE(utable)]; // # of each type of unit to create
     int tot_units;                            // total # units to create
 
+    /*
+    **  Tiberian Factions: Gdi/Nod infantry columns, from TD INI.CPP
+    **  Create_Units. GDI: rifleman -> grenadier -> rocket; Nod: rifleman ->
+    **  rocket -> flamethrower (TDE4 is Nod-only). Ally/Soviet unchanged.
+    */
     static struct
     {
         int MinLevel;
@@ -3041,8 +3057,14 @@ static void Create_Units(bool official)
         InfantryType AllyType;
         int SovietCount;
         InfantryType SovietType;
+        int GdiCount;
+        InfantryType GdiType;
+        int NodCount;
+        InfantryType NodType;
     } itable[] = {
-        {0, 1, INFANTRY_E1, 1, INFANTRY_E1}, {2, 1, INFANTRY_E3, 1, INFANTRY_E2}, {4, 1, INFANTRY_E3, 1, INFANTRY_E4},
+        {0, 1, INFANTRY_E1, 1, INFANTRY_E1, 1, INFANTRY_TDE1, 1, INFANTRY_TDE1},
+        {2, 1, INFANTRY_E3, 1, INFANTRY_E2, 1, INFANTRY_TDE2, 1, INFANTRY_TDE3},
+        {4, 1, INFANTRY_E3, 1, INFANTRY_E4, 1, INFANTRY_TDE3, 1, INFANTRY_TDE4},
 
         // removed because of bug B478 (inappropriate infantry given in a bases off scenario).
         //		{5,	1,INFANTRY_RENOVATOR,	1,INFANTRY_RENOVATOR},
@@ -3422,43 +3444,37 @@ static void Create_Units(bool official)
             for (j = 0; j < num_units[i] * scaleval; j++) {
 
                 /*
-                **	Create an Ally unit
+                **	Pick the starting-unit pair for this house's faction.
+                **	Tiberian Factions: GDI (HOUSE_GOOD) / Nod (HOUSE_BAD) draw
+                **	from the TD rosters; Allies/Soviet keep RA vanilla. (Before
+                **	this, GDI+Nod fell through the "not USSR/UKRAINE" test and
+                **	were handed RA Allied tanks/jeeps -- the bug being fixed.)
                 */
-                if (hptr->ActLike != HOUSE_USSR && hptr->ActLike != HOUSE_UKRAINE) {
-                    for (k = 0; k < 2; k++)
-                        if (utable[i].AllyType[k] != UNIT_NONE) {
-                            Reserve_Unit();
-                            obj = new UnitClass(utable[i].AllyType[k], house);
-                            if (!Scan_Place_Object(obj, centerpt)) {
-                                delete obj;
-                            } else {
-                                if (!hptr->IsHuman) {
-                                    obj->Set_Mission(MISSION_GUARD_AREA);
-                                } else {
-                                    obj->Set_Mission(MISSION_GUARD);
-                                }
-                            }
-                        }
+                const UnitType* upair;
+                if (hptr->ActLike == HOUSE_GOOD) {
+                    upair = utable[i].GdiType;
+                } else if (hptr->ActLike == HOUSE_BAD) {
+                    upair = utable[i].NodType;
+                } else if (hptr->ActLike == HOUSE_USSR || hptr->ActLike == HOUSE_UKRAINE) {
+                    upair = utable[i].SovietType;
                 } else {
+                    upair = utable[i].AllyType;
+                }
 
-                    /*
-                    **	Create a Soviet unit
-                    */
-                    for (k = 0; k < 2; k++)
-                        if (utable[i].SovietType[k] != UNIT_NONE) {
-                            Reserve_Unit();
-                            obj = new UnitClass(utable[i].SovietType[k], house);
-                            if (!Scan_Place_Object(obj, centerpt)) {
-                                delete obj;
+                for (k = 0; k < 2; k++)
+                    if (upair[k] != UNIT_NONE) {
+                        Reserve_Unit();
+                        obj = new UnitClass(upair[k], house);
+                        if (!Scan_Place_Object(obj, centerpt)) {
+                            delete obj;
+                        } else {
+                            if (!hptr->IsHuman) {
+                                obj->Set_Mission(MISSION_GUARD_AREA);
                             } else {
-                                if (!hptr->IsHuman) {
-                                    obj->Set_Mission(MISSION_GUARD_AREA);
-                                } else {
-                                    obj->Set_Mission(MISSION_GUARD);
-                                }
+                                obj->Set_Mission(MISSION_GUARD);
                             }
                         }
-                }
+                    }
             }
         }
 
@@ -3477,40 +3493,38 @@ static void Create_Units(bool official)
             for (j = 0; j < num_infantry[i] * scaleval; j++) {
 
                 /*
-                **	Create Ally infantry (Note: Unlimbo calls Enter_Idle_Mode(), which
-                **	assigns the infantry to HUNT; we must use Set_Mission() to override
-                **	this state.)
+                **	Pick the starting infantry for this house's faction.
+                **	Tiberian Factions: GDI/Nod use the TD infantry roster;
+                **	Allies/Soviet keep RA vanilla. (Note: Unlimbo calls
+                **	Enter_Idle_Mode(), which assigns the infantry to HUNT; we must
+                **	use Set_Mission() to override this state.)
                 */
-                if (hptr->ActLike != HOUSE_USSR && hptr->ActLike != HOUSE_UKRAINE) {
-                    for (k = 0; k < itable[i].AllyCount; k++) {
-                        Reserve_Infantry();
-                        obj = new InfantryClass(itable[i].AllyType, house);
-                        if (!Scan_Place_Object(obj, centerpt)) {
-                            delete obj;
-                        } else {
-                            if (!hptr->IsHuman) {
-                                obj->Set_Mission(MISSION_GUARD_AREA);
-                            } else {
-                                obj->Set_Mission(MISSION_GUARD);
-                            }
-                        }
-                    }
+                int icount;
+                InfantryType itype;
+                if (hptr->ActLike == HOUSE_GOOD) {
+                    icount = itable[i].GdiCount;
+                    itype = itable[i].GdiType;
+                } else if (hptr->ActLike == HOUSE_BAD) {
+                    icount = itable[i].NodCount;
+                    itype = itable[i].NodType;
+                } else if (hptr->ActLike == HOUSE_USSR || hptr->ActLike == HOUSE_UKRAINE) {
+                    icount = itable[i].SovietCount;
+                    itype = itable[i].SovietType;
                 } else {
+                    icount = itable[i].AllyCount;
+                    itype = itable[i].AllyType;
+                }
 
-                    /*
-                    **	Create Soviet infantry
-                    */
-                    for (k = 0; k < itable[i].SovietCount; k++) {
-                        Reserve_Infantry();
-                        obj = new InfantryClass(itable[i].SovietType, house);
-                        if (!Scan_Place_Object(obj, centerpt)) {
-                            delete obj;
+                for (k = 0; k < icount; k++) {
+                    Reserve_Infantry();
+                    obj = new InfantryClass(itype, house);
+                    if (!Scan_Place_Object(obj, centerpt)) {
+                        delete obj;
+                    } else {
+                        if (!hptr->IsHuman) {
+                            obj->Set_Mission(MISSION_GUARD_AREA);
                         } else {
-                            if (!hptr->IsHuman) {
-                                obj->Set_Mission(MISSION_GUARD_AREA);
-                            } else {
-                                obj->Set_Mission(MISSION_GUARD);
-                            }
+                            obj->Set_Mission(MISSION_GUARD);
                         }
                     }
                 }
