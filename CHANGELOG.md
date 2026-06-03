@@ -10,10 +10,13 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
   now start with their own Tiberian Dawn rosters (Medium/Light/Mammoth tanks,
   Hum-vee/Buggy/Bike, APC, MLRS/Artillery/SSM, Flame/Stealth tanks, and the TD
   infantry line), drawn from TD's own multiplayer roster. Allies/Soviet unchanged.
-- **GDI/Nod harvester speed.** The Tiberium Harvester was missing its tracked
-  locomotion flag, leaving it wheeled and noticeably slower than the Allied/Soviet
-  harvester. It now matches the Red Alert harvester's speed, closing the GDI/Nod
-  early-economy gap (the docking unload time is kept as the intended trade-off).
+
+### Changed
+- **GDI/Nod harvester speed — brought to parity with the RA harvester.** The
+  Tiberium Harvester was slower than the Allied/Soviet harvester (it ran its
+  Tiberian Dawn movement values); it has been tuned to match the Red Alert
+  harvester's speed, closing the GDI/Nod early-economy gap. The docking unload
+  time is kept as the intended GDI/Nod trade-off.
 
 ## [1.0.0] — 2026-05-30
 
