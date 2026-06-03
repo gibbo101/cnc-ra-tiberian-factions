@@ -108,11 +108,12 @@ The MCV is recognised by IniName/numeric type, not an exported capability bit: `
 - **`a`-exclusion (both units) and `/`-deploy (MCV) are the closed-launcher wall** — same family as the MCV-deploy hotkey and the classic-mode spacebar.
 - **The DLL-routed drag-box select IS fixed** — `should_exclude_from_selection` (display.cpp ~2827) now lists `UNIT_TDMCV`; `TDHARV` covered by `IsToHarvest`. Only the launcher-driven `a`/`/` army paths remain gated.
 
-### The one untested DLL lever: `TypeName` spoof (render-safe), and why it's marginal
-`CNCObjectStruct.TypeName` (= `Class_Of().IniName`, dllinterface.cpp:3753) is a **separate field from `AssetName`** (= the graphic name, :3756-3758, which drives rendering). So spoofing `TypeName`→`"HARV"`/`"MCV"` for `TDHARV`/`TDMCV` would be **render-safe** (sprite resolves from the untouched `AssetName`). IF the launcher's `a`-exclusion keys on `TypeName`, this would fix the select-all leak.
-- **BUT** the MCV-deploy spike already spoofed `TypeName="MCV"` for `TDMCV` and the **deploy `/` key still did nothing** → deploy keys on numeric type/buildable-ID, not `TypeName`. If `a`-exclusion shares that same MCV classification, the spoof won't help `a` either.
-- The harvester was **never** tested with a `TypeName="HARV"` spoof, so the harvester's `a`-exclusion remains the one genuinely open question. Risk: `TypeName` may also drive cameo/encyclopedia linkage → the TD harvester could show RA harvester name/cameo. Reversible; needs a Deck cycle to confirm. Low expected payoff (the MCV stays walled regardless), so parked unless Luke wants the spike.
-- **A Ghidra decompile of `ClientG.exe`** is the only route that could fully resolve it and is **not worth it** for cosmetic hotkey convenience — see the next section's cost/benefit bar.
+### Per-frame export spoofs are a DEAD END — TESTED & CONFIRMED 2026-06-03
+Both `CNCObjectStruct.TypeName` (= `Class_Of().IniName`, dllinterface.cpp ~3755) and `AssetName` (= graphic name, ~3758-3760) are per-frame export fields. Spoofing them does **not** reach the launcher's `a`/`/` recognition:
+- **`TypeName="MCV"` spoof** (MCV-deploy spike): deploy `/` still did nothing.
+- **`AssetName`+`TypeName`→`"MCV"`/`"HARV"` spoof, Deck-tested 2026-06-03**: **no effect at all** — the GDI/Nod harvester/MCV **still rendered as their TD sprites** AND `a` **still selected them**. The launcher binds a unit's sprite + type identity **once, at object/type registration**, then references it by an internal handle; per-frame export-field overrides are simply ignored for an already-known unit. (This also means `AssetName` only matters at registration, not per-frame.)
+- **Conclusion:** the `a`-exclusion and `/`-deploy recognition live at the registered-type level inside `ClientG.exe`, unreachable from the DLL's per-frame export. There is **no per-frame field we can spoof**. Shipped as a Known Limitation on the Workshop page (v1.11). Don't re-test export-field spoofs.
+- **A Ghidra decompile of `ClientG.exe`** is the only route that could resolve it and is **not worth it** for cosmetic hotkey convenience — see the next section's cost/benefit bar.
 
 ---
 
