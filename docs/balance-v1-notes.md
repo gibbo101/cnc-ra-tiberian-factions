@@ -5,6 +5,12 @@ playtest reports get **logged here** and batched for the v1.0 balance pass, NOT 
 piecemeal in rules.ini). Fidelity bugs (wrong stat vs TD source) are fixed immediately and
 do **not** belong here — only deliberate balance deviations from TD-authentic do.
 
+> **See also `balance-deep-dive.md`** — the analytical cross-faction stat audit
+> (verified v1.0 numbers, matchup tables, ranked findings F1–F6, and the phased
+> v1.x balance plan). This file is the running *playtest-report log*; the
+> deep-dive is the *analysis + plan*. New reports land here; tuning decisions
+> trace back to the deep-dive.
+
 ---
 
 ## Tank movement pace feels too fast (2026-05-31)
