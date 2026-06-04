@@ -168,6 +168,22 @@ For TD entries we override the `coord` (Track13 destination) to `Adjacent_Cell(C
 
 If you add another vehicle-producing TD building (e.g., TDAFLD for Nod), expect to extend the STRUCT_WEAP case and Mission_Unload accordingly, or model the new behaviour after this case.
 
+### 16. `ShapeSize=` must match the footprint: `(width_cells × 24, height_cells × 24)`
+
+`ShapeSize=` is the pixel box the launcher scales the HD overlay sprite into. The convention is **24 px per cell**, so it MUST track the building's actual footprint, not be a guessed square:
+
+| Footprint | Cells | `ShapeSize=` |
+|---|---|---|
+| 1×1 | TDGUN, TDGTWR | `24,24` |
+| 2×1 | TDSILO, TDSAM | `48,24` |
+| 1×2 | TDOBLI, TDATWR | `24,48` |
+| 2×2 | most (power plants, barracks) | `48,48` |
+| **3×2** | **TDFACT (ConYard)** | **`72,48`** |
+| 3×3 | TDPROC, TDFIX, TDWEAP, TDTMPL | `72,72` |
+| 4×2 | TDAFLD (airstrip) | `96,48` |
+
+Get the ratio wrong and the launcher stretches the sprite to fill the wrong box. **TDFACT shipped as `72,72` (a 3×3 square) on a 3×2 footprint** through v1.11 — the ConYard rendered a cell too tall and bulged out of its pad (DontCryJustDie Workshop report, fixed v1.12 with `72,48`). The footprint comes from the `BSIZE_*` + `List**` pair in `bdata.cpp` — count the cells in the `List` array (e.g. `List32 = {0,1,2, MCW,MCW+1,MCW+2}` = 3 wide × 2 tall). 3×2 is the easy one to miss because it's the only non-square footprint among the bigger buildings.
+
 ---
 
 ## What "adding" means here
