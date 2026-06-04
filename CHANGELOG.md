@@ -2,6 +2,21 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [1.12] — 2026-06-04
+
+Fixes from feedback by DontCryJustDie (author of the TD-Assets mod).
+
+### Fixed
+- **Construction Yard graphic distorted.** The GDI/Nod Construction Yard was
+  stretched a cell too tall and bulged out of its concrete pad. Its on-screen
+  size now matches its 3×2 footprint, so it sits properly in place like the
+  Tiberian Dawn original.
+
+### Changed
+- **Much smaller download.** `RedAlert.dll` shrank from 27 MB to ~2 MB. The
+  previous build shipped with embedded debug symbols that did nothing in-game;
+  they're now stripped from the released file. No gameplay change.
+
 ## [1.11] — 2026-06-03
 
 First-playtest fixes (thanks to a GDI/Nod vs Allies/Soviet session).

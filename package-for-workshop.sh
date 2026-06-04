@@ -37,6 +37,24 @@ mkdir -p "$STAGE_DIR/$SUBFOLDER_NAME"
 [[ -L "$STAGE_DIR/$SUBFOLDER_NAME" ]] && rm "$STAGE_DIR/$SUBFOLDER_NAME" && mkdir -p "$STAGE_DIR/$SUBFOLDER_NAME"
 rsync -a --delete "$BUILD_DIR/" "$STAGE_DIR/$SUBFOLDER_NAME/"
 
+# --- Strip debug symbols from the shipped DLL --------------------------------
+# The remaster preset builds RelWithDebInfo, embedding ~25MB of DWARF debug
+# sections (.debug_info/.debug_line/...) that bloat RedAlert.dll from ~2MB to
+# ~27MB. They do nothing in the shipped mod: no debugger is attached to the
+# Proton DLL, and our runtime diagnostics are fprintf-based — compiled into
+# .text, so they survive stripping. Strip ONLY this staged Workshop copy;
+# build/ and the Deck deploy keep full symbols for local debugging.
+# (DontCryJustDie Workshop report 2026-06-04: "27mb when the original is 1.17mb".)
+STRIP_BIN="$(command -v i686-w64-mingw32-strip || true)"
+STAGED_DLL="$STAGE_DIR/$SUBFOLDER_NAME/Data/RedAlert.dll"
+if [[ -n "$STRIP_BIN" && -f "$STAGED_DLL" ]]; then
+    before="$(du -h "$STAGED_DLL" | cut -f1)"
+    "$STRIP_BIN" --strip-all "$STAGED_DLL"
+    echo "✓ Stripped RedAlert.dll: $before → $(du -h "$STAGED_DLL" | cut -f1)"
+elif [[ -z "$STRIP_BIN" ]]; then
+    echo "WARNING: i686-w64-mingw32-strip not found — shipping UNSTRIPPED DLL ($(du -h "$STAGED_DLL" | cut -f1))." >&2
+fi
+
 echo "✓ Workshop staging ready ($(du -sh "$STAGE_DIR/$SUBFOLDER_NAME" | cut -f1)):"
 ls -la "$STAGE_DIR/"
 echo
