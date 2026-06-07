@@ -2,7 +2,7 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
-## [1.16] — unreleased
+## [1.16] — 2026-06-07
 
 ### Changed
 - **Streamlined the main menu.** Removed "Start New Game" and moved "Mission
