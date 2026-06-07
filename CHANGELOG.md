@@ -2,6 +2,15 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [1.16] — unreleased
+
+### Changed
+- **Streamlined the main menu.** Removed "Start New Game" and moved "Mission
+  Select" to the top. "Start New Game" opened Red Alert's original campaign
+  picker — a screen this mod can't customise, and which didn't display correctly
+  alongside the new GDI/Nod faction emblems. Everything is now reached through
+  Mission Select, which is also where future GDI/Nod campaigns will live.
+
 ## [1.15] — 2026-06-07
 
 ### Fixed

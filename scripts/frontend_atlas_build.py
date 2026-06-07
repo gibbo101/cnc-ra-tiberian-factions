@@ -109,6 +109,58 @@ for src, dst in mapselect_copy:
     place(dc, img)
     print("mapselect:", src, "->", dst, dc)
 
+# --- Mission-select campaign tabs (2026-06-07) ------------------------------
+# RA mission-select has 6 tabs: Allied, Soviet, Counterstrike(CS), Aftermath,
+# Ant, Custom. Repurpose the unused-by-this-mod CS (tab 3) and Aftermath (tab 4)
+# as GDI and Nod -> the row reads Allies / Soviets / GDI / Nod. Keep the native
+# RA silver tab frame and composite our GDI/Nod emblem onto it (rather than
+# pasting TD's whole green tab), so the tabs match the Allied/Soviet look.
+# All four campaign tabs get matching faction emblems sliced+keyed from
+# factions_4logo.png (scripts/tab_emblems/). On-screen tab order is Allied,
+# Soviet, AFTERMATH(tab3), CS(tab4) -> GDI on AFTERMATH, Nod on CS, so the row
+# reads Allies / Soviets / GDI / Nod. Composited over the native RA silver
+# frame; the emblems are larger than the old symbols so they fully cover them.
+# PARKED 2026-06-07: the Mission Select page is restored to stock until the
+# campaign-roster work can be tested properly on the Steam Deck (the roster edits
+# crash the desktop launcher -- see memory project-missionselect-roster-poc).
+# Flip this to True to re-apply the GDI/Nod campaign-tab emblems. The art + logic
+# below are preserved intact so it's a one-line re-enable.
+ENABLE_MISSIONSELECT_TABS = False
+
+TABDIR = 'scripts/tab_emblems'
+tab_emblem = {
+    'ALLIED':    f'{TABDIR}/allied.png',
+    'SOVIET':    f'{TABDIR}/soviet.png',
+    'AFTERMATH': f'{TABDIR}/gdi.png',   # tab 3 -> GDI
+    'CS':        f'{TABDIR}/nod.png',   # tab 4 -> Nod
+}
+def erase_symbol(frame, rw, rh):
+    """Wipe the native tab symbol off the silver inset so a smaller emblem can't
+    reveal it (e.g. CS's gold key peeking beside the Nod hex). The inset has
+    horizontal scanlines, so take a symbol-free vertical column at the inset's
+    left edge and stretch it horizontally across the inset -- this preserves the
+    scanline texture exactly (each row keeps its value) with no banding."""
+    bx, by = 11, 10                  # frame-border thickness (px)
+    col = frame.crop((bx, by, bx + 1, rh - by))            # 1px column, full inset height
+    fill = col.resize((rw - 2 * bx, rh - 2 * by), Image.NEAREST)
+    frame.paste(fill, (bx, by))
+    return frame
+
+if ENABLE_MISSIONSELECT_TABS:
+    for ra_tab, logo in tab_emblem.items():
+        for state in ('OFF', 'ON', 'HOVER', 'PRESSED', 'DISABLED'):
+            dc = coords(f'RA_UI_MISSIONSELECT_TABICON_{ra_tab}_{state}')
+            rw, rh = dc[2], dc[3]
+            frame = erase_symbol(crop_clean(dc), rw, rh)   # native RA silver tab, symbol wiped
+            em = fit(logo, int(rh * 0.72), int(rh * 0.72))
+            if state == 'DISABLED':
+                em.putalpha(em.getchannel('A').point(lambda v: int(v * 0.45)))
+            frame.alpha_composite(em, ((rw - em.width) // 2, (rh - em.height) // 2))
+            place(dc, frame)
+        print("tab:", ra_tab, "<- emblem", os.path.basename(logo))
+else:
+    print("mission-select tabs: PARKED (stock) -- set ENABLE_MISSIONSELECT_TABS=True to re-apply")
+
 open('/tmp/atlas_v3.tga', 'wb').write(bytes(atlas))
 print("atlas_v3 written:", len(atlas), "bytes")
 
