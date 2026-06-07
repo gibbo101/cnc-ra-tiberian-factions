@@ -17,7 +17,7 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
 - **GDI/Nod flag on the skirmish map.** When you picked a start position in the
   skirmish lobby, the flag pinned to that spot on the map preview showed the old
   country flag (Spain for GDI, Turkey for Nod) instead of the faction emblem. It
-  now shows the GDI eagle and Nod cobra, matching the player-slot icons.
+  now shows the GDI eagle and Nod scorpion, matching the player-slot icons.
 
 ## [1.14] — 2026-06-07
 
