@@ -2,6 +2,15 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [1.13] — 2026-06-07
+
+### Fixed
+- **GDI/Nod unit build times.** GDI and Nod vehicles, infantry, and aircraft
+  took noticeably longer to build than equal-cost Allied/Soviet units (roughly
+  40% slower) — they used Tiberian Dawn's raw-cost timing, which skipped Red
+  Alert's build-speed scaling. They now build at the same speed as their
+  Allied/Soviet counterparts. Building construction times are unchanged.
+
 ## [1.12] — 2026-06-04
 
 Fixes from feedback by DontCryJustDie (author of the TD-Assets mod).

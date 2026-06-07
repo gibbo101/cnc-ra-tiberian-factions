@@ -7190,6 +7190,20 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 if (s == STRUCT_HELIPAD || s == STRUCT_TDHPAD) {
                     td_cost -= AircraftTypeClass::As_Reference(AIRCRAFT_LONGBOW).Cost;
                 }
+            } else {
+                /*
+                **  Tiberian Factions: GDI/Nod UNITS (vehicles / infantry / aircraft)
+                **  build to RA parity, not TD-raw-cost. TD's `time = Raw_Cost()` ticks
+                **  omits RA's base scaling (`Cost * BuildSpeedBias * TICKS_PER_MINUTE/1000`
+                **  = Cost * 0.8 * 0.9 = Cost * 0.72 in our ruleset), so GDI/Nod units were
+                **  ~1.39x slower to build than equal-cost Allied/Soviet units (playtest
+                **  2026-06-07). Use RA's exact base expression (line ~7098) so the cadence
+                **  matches — UnitBuildPenalty and per-house BuildSpeedBias are both 1 here,
+                **  so this *is* the full RA unit build time before the factory divide. The
+                **  TD-authentic raw-cost path is kept for BUILDINGS (tooltip-verified, and
+                **  not flagged as off).
+                */
+                td_cost = Cost * Rule.BuildSpeedBias * fixed(TICKS_PER_MINUTE, 1000);
             }
             if (td_cost < 0) td_cost = 0;
 
