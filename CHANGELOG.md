@@ -2,6 +2,15 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [1.14] — 2026-06-07
+
+### Fixed
+- **Skirmish start positions could overlap.** When you picked your own start
+  location but left one or more AI players unpicked, an AI could occasionally
+  spawn on the exact cell you had chosen. Every player now gets a distinct start
+  position. (The cause was the order in which start spots were assigned, not
+  anything faction-specific — it was just easiest to notice playing GDI/Nod.)
+
 ## [1.13] — 2026-06-07
 
 ### Fixed

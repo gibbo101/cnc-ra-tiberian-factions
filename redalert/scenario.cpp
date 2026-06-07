@@ -3232,6 +3232,34 @@ static void Create_Units(bool official)
     **	AI logic.)
     */
     int numtaken = 0;
+
+#ifdef REMASTER_BUILD
+    /*
+    **	Tiberian Factions fix 2026-06-07: reserve every house's explicitly chosen
+    **	StartLocationOverride BEFORE handing out random / furthest-distance spots
+    **	to houses left unpicked in the lobby. The assignment loop below marks
+    **	waypoints taken in house-iteration order, and its first unpicked house
+    **	takes a purely random waypoint (Random_Pick, which does NOT consult
+    **	taken[]). So when an unpicked AI is iterated before a house that DID choose
+    **	a spot, the AI could land on the exact cell the other house reserved and
+    **	two players spawned on the same location. Intermittent -- it depends on
+    **	which MULTI slot the human lands in. Pre-marking the chosen spots and
+    **	seeding numtaken with their count forces every unpicked house down the
+    **	furthest-distance branch, which already respects taken[]. (Not
+    **	faction-specific: surfaced while playing GDI, but the cause is slot
+    **	ordering, not HOUSE_GOOD / HOUSE_BAD.)
+    */
+    for (HousesType house = HOUSE_MULTI1; house < (HOUSE_MULTI1 + Session.MaxPlayers); house++) {
+        HouseClass* reserve = HouseClass::As_Pointer(house);
+        if (reserve != NULL && reserve->StartLocationOverride >= 0
+            && reserve->StartLocationOverride < num_waypts
+            && !taken[reserve->StartLocationOverride]) {
+            taken[reserve->StartLocationOverride] = true;
+            numtaken++;
+        }
+    }
+#endif
+
     for (HousesType house = HOUSE_MULTI1; house < (HOUSE_MULTI1 + Session.MaxPlayers); house++) {
 
         /*
@@ -3340,6 +3368,32 @@ static void Create_Units(bool official)
         **	Assign the center of this house to the waypoint location.
         */
         hptr->Center = Cell_Coord(centroid);
+
+#if 0   // TF DIAGNOSTIC 2026-06-07: start-location overlap. Flip to 1 to re-enable. Verified fixed over 9 games (bijection, no collisions).
+        {
+            // Logs every house's final start waypoint. A repeated centroid CELL
+            // (or waypoint index) across two houses == the overlap bug. Path uses
+            // %USERPROFILE% so it works under Proton/Wine and native Windows.
+            const char* up = getenv("USERPROFILE");
+            if (up != NULL) {
+                char path[512];
+                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_startloc.log", up);
+                FILE* f = fopen(path, "a");
+                if (f != NULL) {
+                    fprintf(f,
+                            "[startloc] house=%d ActLike=%d IsHuman=%d wayptIdx=%d centroidCELL=%d num_waypts=%d numtaken=%d\n",
+                            (int)house,
+                            (int)hptr->ActLike,
+                            (int)hptr->IsHuman,
+                            (int)hptr->StartLocationOverride,
+                            (int)centroid,
+                            num_waypts,
+                            numtaken);
+                    fclose(f);
+                }
+            }
+        }
+#endif
 
         /*
         **	If Bases are ON, human & computer houses are treated differently
