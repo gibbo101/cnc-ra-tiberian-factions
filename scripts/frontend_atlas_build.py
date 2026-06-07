@@ -78,6 +78,37 @@ for reg, logo in flagmap.items():
     prev.append((reg, c))
     print("flag:", reg, c, "<-", os.path.basename(logo))
 
+# --- Map-select start-position markers (2026-06-07) -------------------------
+# The skirmish lobby pins a faction marker to each chosen start position on the
+# map preview, drawn from the UI_MAPSELECT_FACTION_NN region set (separate from
+# the RA_UI_FLAG_ICON_<country> regions above). The launcher indexes that marker
+# by the player's ActLike COUNTRY, not the picker faction -- our GDI plays as
+# Spain (_03) and Nod as Turkey (_10), which hold country flags, so the markers
+# showed Spain/Turkey flags instead of the GDI/Nod emblems. The GDI/Nod marker
+# art already lives in the atlas at _01/_02; copy it into the country slots our
+# factions actually use. (No new art; same loose atlas.)
+def crop_clean(region):
+    rx, ry, rw, rh = region
+    rows = []
+    for iy in range(rh):
+        fr = H - 1 - (ry + iy)
+        off = HDR + fr * ROW + rx * 4
+        rows.append(bytes(atlas[off:off + rw * 4]))
+    return Image.frombytes('RGBA', (rw, rh), b''.join(rows), 'raw', 'BGRA')
+
+
+mapselect_copy = [
+    ('UI_MAPSELECT_FACTION_01', 'UI_MAPSELECT_FACTION_03'),  # GDI eagle -> Spain slot
+    ('UI_MAPSELECT_FACTION_02', 'UI_MAPSELECT_FACTION_10'),  # Nod cobra -> Turkey slot
+]
+for src, dst in mapselect_copy:
+    sc, dc = coords(src), coords(dst)
+    img = crop_clean(sc)
+    if (sc[2], sc[3]) != (dc[2], dc[3]):
+        img = img.resize((dc[2], dc[3]), Image.LANCZOS)
+    place(dc, img)
+    print("mapselect:", src, "->", dst, dc)
+
 open('/tmp/atlas_v3.tga', 'wb').write(bytes(atlas))
 print("atlas_v3 written:", len(atlas), "bytes")
 
