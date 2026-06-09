@@ -480,6 +480,26 @@ bool Read_Scenario(char* name)
     BStart(BENCH_SCENARIO);
     Clear_Scenario();
     ScenarioInit++;
+
+#if 0 // TF DIAG: mod-path/scenario-resolution spike (2026-06-09). Flip to 1 to re-enable.
+    {
+        char dbg[512];
+        const char* up = getenv("USERPROFILE");
+        snprintf(dbg, sizeof(dbg), "%s/Documents/CnCRemastered/tf_paths.log", up ? up : ".");
+        FILE* fp = fopen(dbg, "a");
+        if (fp) {
+            CCFileClass cc(name);
+            RawFileClass raw(name);
+            fprintf(fp,
+                    "Read_Scenario: name='%s' CC.avail=%d CC.size=%ld raw(cwd).avail=%d\n",
+                    name,
+                    (int)cc.Is_Available(),
+                    cc.Is_Available() ? (long)cc.Size() : -1L,
+                    (int)raw.Is_Available());
+            fclose(fp);
+        }
+    }
+#endif
     if (Read_Scenario_INI(name)) {
 #ifdef FIXIT_CSII //	ajw - Added runtime check for Aftermath to skirmish mode case.
         bool readini = false;

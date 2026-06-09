@@ -2413,10 +2413,90 @@ void DLLExportClass::Shutdown(void)
  *
  * History: 2/20/2020 2:03PM - ST
  **************************************************************************************************/
+/*
+** Tiberian Factions -- self-install bundled custom maps. A Workshop mod
+** cannot ship files into the user's Documents, and the official skirmish
+** list cannot take new maps (InstanceServerG resolves instances from BASE
+** data; slot-hijacking was rejected over the wrong lobby thumbnail). So
+** bundled map triplets (mpr+tga+json, synthetic UGC names) ship in
+** <mod>/CustomMaps/ and are copied into Local_Custom_Maps/Red_Alert/ when
+** the launcher registers the mod's CCDATA path -- they then appear in the
+** lobby's CUSTOM list with OUR preview art. Existing copies are overwritten
+** (bundled maps stay in sync with the mod version); other filenames are
+** never touched. The maps themselves are vanilla-safe via the [TFTDTiles]
+** side-channel (display.cpp), so they degrade gracefully if the mod is
+** later disabled.
+*/
+static void TF_Install_Bundled_Maps(const char* mod_path)
+{
+    static bool _installed = false;
+    if (_installed || mod_path == NULL) {
+        return;
+    }
+    char root[MAX_PATH];
+    strncpy(root, mod_path, sizeof(root));
+    root[sizeof(root) - 1] = 0;
+    int len = (int)strlen(root);
+    while (len > 0 && (root[len - 1] == '\\' || root[len - 1] == '/')) {
+        root[--len] = 0;
+    }
+    // Only the mod's own registration ends in CCDATA; the launcher also
+    // registers the base game's COMMUNITY folder through this call.
+    if (len < 6 || _stricmp(root + len - 6, "CCDATA") != 0) {
+        return;
+    }
+    root[len - 6] = 0; // now "<mod>\" (keeps the trailing separator)
+    _installed = true;
+
+    const char* profile = getenv("USERPROFILE");
+    if (profile == NULL || profile[0] == 0) {
+        return;
+    }
+    char dst_dir[MAX_PATH];
+    snprintf(dst_dir, sizeof(dst_dir), "%s\\Documents\\CnCRemastered\\Local_Custom_Maps", profile);
+    CreateDirectoryA(dst_dir, NULL);
+    strncat(dst_dir, "\\Red_Alert", sizeof(dst_dir) - strlen(dst_dir) - 1);
+    CreateDirectoryA(dst_dir, NULL);
+
+    char pattern[MAX_PATH];
+    snprintf(pattern, sizeof(pattern), "%sCustomMaps\\*", root);
+    WIN32_FIND_DATAA fd;
+    HANDLE find = FindFirstFileA(pattern, &fd);
+    if (find == INVALID_HANDLE_VALUE) {
+        return;
+    }
+    do {
+        if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) {
+            continue;
+        }
+        char src[MAX_PATH];
+        char dst[MAX_PATH];
+        snprintf(src, sizeof(src), "%sCustomMaps\\%s", root, fd.cFileName);
+        snprintf(dst, sizeof(dst), "%s\\%s", dst_dir, fd.cFileName);
+        CopyFileA(src, dst, FALSE);
+    } while (FindNextFileA(find, &fd));
+    FindClose(find);
+}
+
 void DLLExportClass::Add_Mod_Path(const char* mod_path)
 {
     char* copy_path = strdup(mod_path);
     ModSearchPaths.Add(copy_path);
+
+    TF_Install_Bundled_Maps(mod_path);
+
+#if 0 // TF DIAG: mod-path/scenario-resolution spike (2026-06-09). Flip to 1 to re-enable.
+    {
+        char dbg[512];
+        const char* up = getenv("USERPROFILE");
+        snprintf(dbg, sizeof(dbg), "%s/Documents/CnCRemastered/tf_paths.log", up ? up : ".");
+        FILE* fp = fopen(dbg, "a");
+        if (fp) {
+            fprintf(fp, "Add_Mod_Path: '%s'\n", mod_path ? mod_path : "(null)");
+            fclose(fp);
+        }
+    }
+#endif
 }
 
 /**************************************************************************************************
@@ -2457,6 +2537,22 @@ void DLLExportClass::Set_Content_Directory(const char* content_directory)
     }
 
     CCFileClass::Set_Search_Drives(all_paths);
+
+#if 0 // TF DIAG: mod-path/scenario-resolution spike (2026-06-09). Flip to 1 to re-enable.
+    {
+        char dbg[512];
+        const char* up = getenv("USERPROFILE");
+        snprintf(dbg, sizeof(dbg), "%s/Documents/CnCRemastered/tf_paths.log", up ? up : ".");
+        FILE* fp = fopen(dbg, "a");
+        if (fp) {
+            fprintf(fp,
+                    "Set_Content_Directory: content='%s' -> search drives '%s'\n",
+                    content_directory ? content_directory : "(null)",
+                    all_paths);
+            fclose(fp);
+        }
+    }
+#endif
     delete[] all_paths;
 }
 

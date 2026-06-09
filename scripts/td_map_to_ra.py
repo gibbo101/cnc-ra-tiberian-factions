@@ -257,8 +257,29 @@ def convert(td_ini_path, out_path, display_name):
             dropped_cells += cnt
     unmapped = dropped_cells
 
-    mappack_raw = b"".join(struct.pack("<H", t) for t in ttype) + bytes(ticon)
+    # ---- vanilla-safety split: TD-ported template ids (401+) would crash a
+    # VANILLA DLL reading this map (heap index out of range) -- and self-
+    # installed Local_Custom_Maps persist after the mod is disabled. So the
+    # shipped [MapPack] carries only vanilla-known ids (TD cells -> clear),
+    # and the real TD cells ride in [TFTDTiles] (same MapPack encoding; cells
+    # with TType 0xFFFF = no override). Vanilla ignores the unknown section
+    # (plain shores); our DLL overlays it after MapPack (display.cpp). ----
+    ported_ids = set(ported.values())
+    safe_tt, safe_ic = list(ttype), list(ticon)
+    td_tt, td_ic = [RA_TEMPLATE_NONE] * RA_CELLS, [0] * RA_CELLS
+    td_cells = 0
+    for c in range(RA_CELLS):
+        if ttype[c] in ported_ids:
+            td_tt[c], td_ic[c] = ttype[c], ticon[c]
+            safe_tt[c], safe_ic[c] = RA_TEMPLATE_NONE, 0
+            td_cells += 1
+
+    mappack_raw = b"".join(struct.pack("<H", t) for t in safe_tt) + bytes(safe_ic)
     assert len(mappack_raw) == MAPPACK_RAW
+    tdtiles_raw = None
+    if td_cells:
+        tdtiles_raw = b"".join(struct.pack("<H", t) for t in td_tt) + bytes(td_ic)
+        print(f"  side-channel [TFTDTiles]: {td_cells} TD-tile cells (MapPack kept vanilla-safe)")
 
     # ---- overlay (OverlayPack): tiberium TI1..TI12 -> TIB01 (density 0..11),
     # walls + farm fields carried through by name (OVERLAY_CARRY) ----
@@ -316,14 +337,29 @@ def convert(td_ini_path, out_path, display_name):
             terrain.append((rc, f"{name},None"))
 
     mapx, mapy = offx + tdX, offy + tdY
-    if len(waypts) >= 2:
+    # Waypoints 0-7 are MP start positions only on real multiplayer sources
+    # (which carry [Multi1..] house sections); on SP missions they are
+    # trigger anchors and must not become starts.
+    is_mp_source = bool(get_sec(secs, "Multi1"))
+    if is_mp_source and len(waypts) >= 2:
         starts = [c for _, c in sorted(waypts)]
         src = "source"
     else:
         starts = synth_starts(mapx, mapy, tdWi, tdHe)
         src = "synthesized"
+    # CnCNet-tooled sources carry a rendered preview image ([CnCNetPreview],
+    # base64 PNG) -- bake it into the triplet TGA so the lobby shows the real
+    # TD render instead of the synthetic block map.
+    preview_png = None
+    psec = get_sec(secs, "CnCNetPreview")
+    if psec:
+        try:
+            preview_png = base64.b64decode("".join(v for _, v in psec))
+        except Exception:
+            preview_png = None
     write_triplet(out_path, display_name, theater, mapx, mapy, tdWi, tdHe,
-                  mappack_raw, bytes(overlay), starts, terrain, structures, ttype)
+                  mappack_raw, bytes(overlay), starts, terrain, structures, ttype,
+                  tdtiles_raw, preview_png)
     print(f"  placed {placed} terrain cells ({unmapped} unmapped), {tib} tiberium cells, "
           f"{len(starts)} start positions ({src}), {len(terrain)} terrain objects, "
           f"{len(structures)} blossom trees")
@@ -353,7 +389,8 @@ def synth_starts(mapx, mapy, w, h):
     return pts
 
 def write_triplet(path, name, theater, mapx, mapy, mapw, maph,
-                  mappack_raw, overlay_raw, starts, terrain, structures, ttype):
+                  mappack_raw, overlay_raw, starts, terrain, structures, ttype,
+                  tdtiles_raw=None, preview_png=None):
     L = []
     def sec(title, kvs):
         L.append(f"[{title}]")
@@ -376,6 +413,8 @@ def write_triplet(path, name, theater, mapx, mapy, mapw, maph,
     sec("Waypoints", [(str(i), c) for i, c in enumerate(starts)])
     sec("MapPack", uublock_encode(lcw_block_compress(mappack_raw)))
     sec("OverlayPack", uublock_encode(lcw_block_compress(overlay_raw)))
+    if tdtiles_raw is not None:
+        sec("TFTDTiles", uublock_encode(lcw_block_compress(tdtiles_raw)))
     with open(path, "w", newline="\r\n", encoding="latin-1") as f:
         f.write("\r\n".join(L) + "\r\n")
 
@@ -388,10 +427,14 @@ def write_triplet(path, name, theater, mapx, mapy, mapw, maph,
         json.dump(manifest, f, separators=(",", ":"))
 
     # ---- .tga 512x512 minimap preview ----
-    write_minimap_tga(base + ".tga", ttype, overlay_raw, mapx, mapy, mapw, maph)
+    write_minimap_tga(base + ".tga", ttype, overlay_raw, mapx, mapy, mapw, maph,
+                      preview_png)
 
-def write_minimap_tga(path, ttype, overlay_raw, mapx, mapy, mapw, maph):
-    """Crude top-down 512x512 BGRA preview: 4x4 px per cell, coloured by content."""
+def write_minimap_tga(path, ttype, overlay_raw, mapx, mapy, mapw, maph,
+                      preview_png=None):
+    """512x512 BGRA preview. If the source carried a [CnCNetPreview] PNG it is
+    composited over the playable-bounds region (the authentic TD render);
+    otherwise cells are coloured by content (crude block map)."""
     SCALE = 4  # 128 cells * 4 = 512
     W = H = RA_W * SCALE
     # Per-cell colour (R,G,B).
@@ -419,6 +462,23 @@ def write_minimap_tga(path, ttype, overlay_raw, mapx, mapy, mapw, maph):
                 for dx in range(SCALE):
                     o = base + dx * 4
                     pixels[o] = b; pixels[o + 1] = g; pixels[o + 2] = r; pixels[o + 3] = 255
+    if preview_png is not None:
+        try:
+            import io
+            from PIL import Image
+            im = Image.open(io.BytesIO(preview_png)).convert("RGB")
+            pw, ph = mapw * SCALE, maph * SCALE
+            im = im.resize((pw, ph), Image.LANCZOS)
+            px0, py0 = mapx * SCALE, mapy * SCALE
+            src = im.load()
+            for y in range(ph):
+                base_off = ((py0 + y) * W + px0) * 4
+                for x in range(pw):
+                    r, g, b = src[x, y]
+                    o = base_off + x * 4
+                    pixels[o] = b; pixels[o + 1] = g; pixels[o + 2] = r; pixels[o + 3] = 255
+        except Exception as e:
+            print(f"  WARNING: preview composite failed ({e}); keeping block map")
     header = bytes([0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0]) + struct.pack("<HH", W, H) + bytes([32, 0x20])
     with open(path, "wb") as f:
         f.write(header)

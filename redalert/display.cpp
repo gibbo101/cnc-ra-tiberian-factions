@@ -86,6 +86,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "lcwstraw.h" // Tiberian Factions: [TFTDTiles] side-channel decode in Read_INI
 #include "vortex.h"
 #include "xpipe.h"
 #include "common/fading.h"
@@ -4825,6 +4826,38 @@ void DisplayClass::Read_INI(CCINIClass& ini)
     len = ini.Get_UUBlock(MAPPACK, _staging_buffer, sizeof(_staging_buffer));
     BufferStraw bstraw(_staging_buffer, len);
     Map.Read_Binary(bstraw);
+
+    /*
+    **	Tiberian Factions -- [TFTDTiles] side-channel. Converted TD maps keep
+    **	their [MapPack] vanilla-safe (TD-ported template ids 401+ would index
+    **	past a VANILLA DLL's template heap and crash, and self-installed
+    **	custom maps outlive the mod being enabled). The real TD tile cells
+    **	ride here in the same encoding as a format-3 MapPack: 16384 u16
+    **	TTypes then 16384 u8 TIcons, LCW-block-framed; TType 0xFFFF = no
+    **	override. Vanilla ignores the unknown section entirely.
+    */
+    static char const* const TFTDTILES = "TFTDTiles";
+    len = ini.Get_UUBlock(TFTDTILES, _staging_buffer, sizeof(_staging_buffer));
+    if (len > 0) {
+        BufferStraw tdstraw(_staging_buffer, len);
+        LCWStraw decomp(LCWStraw::DECOMPRESS);
+        decomp.Get_From(&tdstraw);
+        static unsigned short _td_ttype[MAP_CELL_TOTAL];
+        for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
+            decomp.Get(&_td_ttype[cell], sizeof(_td_ttype[cell]));
+            _td_ttype[cell] = le16toh(_td_ttype[cell]);
+        }
+        for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
+            unsigned char icon;
+            decomp.Get(&icon, sizeof(icon));
+            if (_td_ttype[cell] != 0xFFFF && _td_ttype[cell] < TEMPLATE_COUNT) {
+                CellClass& cellref = (*this)[cell];
+                cellref.TType = (TemplateType)_td_ttype[cell];
+                cellref.TIcon = icon;
+                cellref.Recalc_Attributes();
+            }
+        }
+    }
 
     LastTheater = Scen.Theater;
 }
