@@ -2,6 +2,30 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [1.17] — 2026-06-10
+
+### Added
+- **Tiberium.** The real thing, alongside Red Alert's ore: green crystal fields
+  that harvesters collect (same value as ore), that grow and spread over time
+  (when "Ore Regenerates"/"Ore Spreads" are enabled in the lobby), and that
+  damage infantry who walk through them. Infantry who die in a Tiberium field
+  occasionally spawn a visceroid — a hostile mutant creature that attacks
+  everyone. Blossom trees stand at the heart of the fields, shedding spores
+  and seeding fresh Tiberium around them.
+- **A 14-map Tiberian Dawn map pack.** Every temperate multiplayer map from
+  Tiberian Dawn and The Covert Operations, faithfully converted: Green Acres,
+  Lost Arena, River Raid, Pitfall, One Pass Fits All, King Takes Pawn,
+  Tiberium Garden, Emerald Highlands, King of the Mountain, Surgical Incision,
+  Village of the Unfortunate, A Long Way from Home, plus the community maps
+  Elevation and Heavy Metal. Each map keeps its original layout, start
+  positions, Tiberium fields, and blossom trees, with an authentic preview
+  image in the lobby. The maps appear under **Custom Maps** (look for the
+  `[TF]` tag) after your first match with the mod — and they load fine in
+  unmodded Red Alert too, just without the Tiberium and TD scenery.
+- **Tiberian Dawn terrain, remastered.** TD's own coastlines, cliffs, and
+  bridges render in full HD on the converted maps — including animated
+  water lapping along the shorelines, just like the TD remaster.
+
 ## [1.16] — 2026-06-07
 
 ### Changed
