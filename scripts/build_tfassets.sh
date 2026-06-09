@@ -168,6 +168,19 @@ else
     echo "warning: $TEMPERAT_MIX not found; classic TIB01/SPLIT2 art skipped" >&2
 fi
 
+# Tiberian Factions -- ported TD terrain TEMPLATES (build_td_tiles.py). The engine
+# reads each template's dimensions + land-type from its classic iconset via
+# MFCD::Retrieve("TD<NAME>.TEM"); HD render is the loose tileset art. We pack TD's
+# raw .tem UNMODIFIED (the iconset header carries dimensions/land-type, which a SHP
+# palette-remap would corrupt; classic-mode colour fidelity is a later refinement).
+TEM_STAGE="scripts/_td_tems"
+if [[ -d "$TEM_STAGE" ]]; then
+    for tem in "$TEM_STAGE"/*.TEM; do
+        [[ -e "$tem" ]] || continue
+        PACK_ARGS+=("$tem:$(basename "$tem")")
+    done
+fi
+
 # Repack into TFASSETS.MIX with TD-prefix renames.
 python3 scripts/mix_tools.py pack "$OUTMIX" "${PACK_ARGS[@]}"
 echo "TFASSETS.MIX rebuilt with ${#ENTRIES[@]} entries -> $OUTMIX"

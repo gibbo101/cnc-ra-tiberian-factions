@@ -972,6 +972,63 @@ bool CellClass::Get_Template_Info(char* template_name, int& icon, void*& image_d
 {
     TemplateTypeClass const* ttype = NULL;
 
+    /*
+    ** Tiberian Factions -- TD-ported terrain templates (TEMPLATE_TDSH1 and up)
+    ** must not reach the launcher by name: its HD template atlas is preloaded
+    ** from the base MEG only, and an unknown template AssetName NULL-crashes at
+    ** render time (ClientG RVA 0x56A539). This function only feeds the launcher
+    ** (static-map snapshot + radar cell updates), so report a vanilla stand-in;
+    ** the real TD tile art is synthesized per-cell through the dynamic-map path
+    ** in Cell_Class_Draw_It, which resolves loose mod art (the TIB01 pipeline).
+    ** Engine-side state (land-type, pathing, classic render) keeps the real
+    ** template. The stand-in is picked by the ICON'S ART (offline-classified
+    ** into TF_TdTileRadarClass by build_td_tiles.py) because the launcher
+    ** also paints the RADAR from this name: land type is too crude (TD types
+    ** whole bridge blocks as WATER -> blue rectangles bulging past the river)
+    ** and a flat CLEAR spoof drew the ocean as green land. 'W' water-dominant
+    ** icons report W1 (blue radar); 'B' beach/waterline icons report SH02
+    ** icon 9, RA's driest sand piece (the coastline ring, and the visible
+    ** bridge strip over water); 'C' reports CLEAR (land).
+    */
+    if (TType >= TEMPLATE_TDSH1 && TType < TEMPLATE_COUNT) {
+        extern char const* const TF_TdTileRadarClass[];
+        char const* row = TF_TdTileRadarClass[TType - TEMPLATE_TDSH1];
+        char cls = (TIcon < (int)strlen(row)) ? row[TIcon] : 'C';
+        if (cls == 'W') {
+            ttype = &TemplateTypeClass::As_Reference(TEMPLATE_WATER);
+            icon = 0;
+            /*
+            ** River-adjacent water continues the textured rv* radar art:
+            ** flat sea W1 against textured river banks reads as a seam on
+            ** the radar (river-fed lakes, river mouths).
+            */
+            for (int face = FACING_N; face < FACING_COUNT; face++) {
+                CellClass const* adj = Adjacent_Cell((FacingType)face);
+                if (adj != NULL
+                    && ((adj->TType >= TEMPLATE_RIVER01 && adj->TType <= TEMPLATE_RIVER13)
+                        || adj->TType == TEMPLATE_TDBRIDGE1 || adj->TType == TEMPLATE_TDBRIDGE2)) {
+                    ttype = &TemplateTypeClass::As_Reference(TEMPLATE_RIVER13);
+                    icon = 6;
+                    break;
+                }
+            }
+        } else if (cls == 'R') {
+            // river water (bridge spans) -- continues the textured rv* radar
+            // art instead of flat sea W1
+            ttype = &TemplateTypeClass::As_Reference(TEMPLATE_RIVER13);
+            icon = 6;
+        } else if (cls == 'B') {
+            ttype = &TemplateTypeClass::As_Reference(TEMPLATE_SHORE02);
+            icon = 9;
+        } else {
+            ttype = &TemplateTypeClass::As_Reference(TEMPLATE_CLEAR1);
+            icon = Clear_Icon();
+        }
+        strcpy(template_name, ttype->IniName);
+        image_data = (void*)ttype->ImageData;
+        return true;
+    }
+
     if (TType != TEMPLATE_NONE && TType != TEMPLATE_CLEAR1
         && TType != 255) { // Not sure why it's checking for 255 here since that's a valid tile type. ST - 6/4/2019
         ttype = &TemplateTypeClass::As_Reference(TType);

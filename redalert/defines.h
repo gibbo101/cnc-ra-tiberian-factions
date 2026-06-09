@@ -2251,6 +2251,28 @@ typedef enum TemplateType : unsigned short
     TEMPLATE_HILL01,
 #endif
 
+// >>> TF_TD_TILES enum >>>
+    TEMPLATE_TDSH1,  // id 401
+    TEMPLATE_TDSH2,  // id 402
+    TEMPLATE_TDSH3,  // id 403
+    TEMPLATE_TDSH4,  // id 404
+    TEMPLATE_TDSH5,  // id 405
+    TEMPLATE_TDSH6,  // id 406
+    TEMPLATE_TDSH7,  // id 407
+    TEMPLATE_TDSH8,  // id 408
+    TEMPLATE_TDSH9,  // id 409
+    TEMPLATE_TDSH10,  // id 410
+    TEMPLATE_TDSH11,  // id 411
+    TEMPLATE_TDSH12,  // id 412
+    TEMPLATE_TDSH13,  // id 413
+    TEMPLATE_TDSH14,  // id 414
+    TEMPLATE_TDSH15,  // id 415
+    TEMPLATE_TDSH16,  // id 416
+    TEMPLATE_TDSH17,  // id 417
+    TEMPLATE_TDSH18,  // id 418
+    TEMPLATE_TDBRIDGE1,  // id 419
+    TEMPLATE_TDBRIDGE2,  // id 420
+// <<< TF_TD_TILES enum <<<
     TEMPLATE_COUNT,
     TEMPLATE_NONE = 65535,
     TEMPLATE_FIRST = 0

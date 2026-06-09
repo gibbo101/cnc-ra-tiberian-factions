@@ -13,3 +13,4 @@ __pycache__/
 
 # Generated front-end crest atlas (~184MB, exceeds GitHub 100MB limit) — regenerate via scripts/frontend_atlas_build.py
 resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/MT_COMMANDBAR_COMMON.TGA
+scripts/_td_tems/

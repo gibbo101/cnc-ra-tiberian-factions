@@ -1,0 +1,162 @@
+{
+  "sh1": {
+    "ra_name": "TDSH1",
+    "ra_id": 401,
+    "size": [
+      3,
+      3
+    ]
+  },
+  "sh2": {
+    "ra_name": "TDSH2",
+    "ra_id": 402,
+    "size": [
+      3,
+      3
+    ]
+  },
+  "sh3": {
+    "ra_name": "TDSH3",
+    "ra_id": 403,
+    "size": [
+      1,
+      1
+    ]
+  },
+  "sh4": {
+    "ra_name": "TDSH4",
+    "ra_id": 404,
+    "size": [
+      2,
+      1
+    ]
+  },
+  "sh5": {
+    "ra_name": "TDSH5",
+    "ra_id": 405,
+    "size": [
+      3,
+      3
+    ]
+  },
+  "sh6": {
+    "ra_name": "TDSH6",
+    "ra_id": 406,
+    "size": [
+      3,
+      3
+    ]
+  },
+  "sh7": {
+    "ra_name": "TDSH7",
+    "ra_id": 407,
+    "size": [
+      2,
+      2
+    ]
+  },
+  "sh8": {
+    "ra_name": "TDSH8",
+    "ra_id": 408,
+    "size": [
+      3,
+      3
+    ]
+  },
+  "sh9": {
+    "ra_name": "TDSH9",
+    "ra_id": 409,
+    "size": [
+      3,
+      3
+    ]
+  },
+  "sh10": {
+    "ra_name": "TDSH10",
+    "ra_id": 410,
+    "size": [
+      2,
+      2
+    ]
+  },
+  "sh11": {
+    "ra_name": "TDSH11",
+    "ra_id": 411,
+    "size": [
+      3,
+      3
+    ]
+  },
+  "sh12": {
+    "ra_name": "TDSH12",
+    "ra_id": 412,
+    "size": [
+      3,
+      3
+    ]
+  },
+  "sh13": {
+    "ra_name": "TDSH13",
+    "ra_id": 413,
+    "size": [
+      3,
+      3
+    ]
+  },
+  "sh14": {
+    "ra_name": "TDSH14",
+    "ra_id": 414,
+    "size": [
+      3,
+      3
+    ]
+  },
+  "sh15": {
+    "ra_name": "TDSH15",
+    "ra_id": 415,
+    "size": [
+      3,
+      3
+    ]
+  },
+  "sh16": {
+    "ra_name": "TDSH16",
+    "ra_id": 416,
+    "size": [
+      3,
+      2
+    ]
+  },
+  "sh17": {
+    "ra_name": "TDSH17",
+    "ra_id": 417,
+    "size": [
+      2,
+      2
+    ]
+  },
+  "sh18": {
+    "ra_name": "TDSH18",
+    "ra_id": 418,
+    "size": [
+      2,
+      2
+    ]
+  },
+  "bridge1": {
+    "ra_name": "TDBRIDGE1",
+    "ra_id": 419,
+    "size": [
+      4,
+      4
+    ]
+  },
+  "bridge2": {
+    "ra_name": "TDBRIDGE2",
+    "ra_id": 420,
+    "size": [
+      5,
+      5
+    ]
+  }
+}

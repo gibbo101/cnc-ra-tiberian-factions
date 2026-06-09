@@ -6973,7 +6973,10 @@ bool DLLExportClass::Get_Dynamic_Map_State(uint64 player_id, unsigned char* buff
             CELL cell = XY_Cell(map_cell_x + x, map_cell_y + y);
             COORDINATE coord = Cell_Coord(cell) & 0xFF00FF00;
 
-            memory_needed += sizeof(CNCDynamicMapEntryStruct) * 2;
+            // Tiberian Factions -- TD-template cells emit one extra synthesized
+            // terrain entry (see Cell_Class_Draw_It), so reserve 3 for those.
+            bool td_tile = Map[cell].TType >= TEMPLATE_TDSH1 && Map[cell].TType < TEMPLATE_COUNT;
+            memory_needed += sizeof(CNCDynamicMapEntryStruct) * (td_tile ? 3 : 2);
             if (memory_needed >= buffer_size) {
                 return false;
             }
@@ -7051,6 +7054,50 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
     CELL cell = cell_ptr->Cell_Number();
 
     /*
+    ** Tiberian Factions -- TD-ported terrain templates (TEMPLATE_TDSH1 and up,
+    ** placed by converted TD maps) render through the dynamic-map path: the
+    ** launcher's template atlas is base-MEG-only (an unknown template
+    ** AssetName NULL-crashes at render, RVA 0x56A539), but dynamic-map entries
+    ** resolve AssetName + ShapeIndex through loose mod art -- the TIB01
+    ** pipeline, render-proven for TDSH1 (2026-06-09 spike). Get_Template_Info
+    ** reports these cells to the launcher as CLEAR; here the cell's real TD
+    ** tile draws on top: AssetName = template IniName, ShapeIndex = the cell's
+    ** icon (one <Tile> Shape per icon in the loose tileset XML, art in
+    ** TD<NAME>.ZIP). Listed before any smudge/overlay entry so resources and
+    ** craters on a TD tile draw above the ground art. Engine-side state
+    ** (land-type, pathing, classic render) keeps the real template via its
+    ** .tem in TFASSETS.MIX.
+    */
+    if (cell_ptr->TType >= TEMPLATE_TDSH1 && cell_ptr->TType < TEMPLATE_COUNT) {
+        const TemplateTypeClass& td_type = TemplateTypeClass::As_Reference(cell_ptr->TType);
+
+        CNCDynamicMapEntryStruct& td_entry = dynamic_map->Entries[entry_index++];
+
+        strncpy(td_entry.AssetName, td_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
+        td_entry.AssetName[CNC_OBJECT_ASSET_NAME_LENGTH - 1] = 0;
+        // The launcher draws the sprite by AssetName (TIB01 precedent) but keys
+        // radar pips off the vanilla resource Type range -- GOLD1 here painted
+        // shore cells as ore on radar. V12 (haystack farmland) is in-range,
+        // decorative, and pip-free.
+        td_entry.Type = (short)OVERLAY_V12;
+        td_entry.Owner = (char)cell_ptr->Owner;
+        td_entry.DrawFlags = SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST;
+        td_entry.PositionX = xpixel + (CELL_PIXEL_W >> 1);
+        td_entry.PositionY = ypixel + (CELL_PIXEL_H >> 1);
+        td_entry.Width = CELL_PIXEL_W;
+        td_entry.Height = CELL_PIXEL_H;
+        td_entry.CellX = Cell_X(cell);
+        td_entry.CellY = Cell_Y(cell);
+        td_entry.ShapeIndex = (unsigned char)cell_ptr->TIcon;
+        td_entry.IsSmudge = false;
+        td_entry.IsOverlay = true;
+        td_entry.IsResource = false;
+        td_entry.IsSellable = false;
+        td_entry.IsTheaterShape = true;
+        td_entry.IsFlag = false;
+    }
+
+    /*
     **	Redraw any smudge.
     */
     if (cell_ptr->Smudge != SMUDGE_NONE) {
@@ -7119,8 +7166,13 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             // cell Overlay stays OVERLAY_TIB01). EXPERIMENT: if the launcher prefers
             // Type over AssetName for resource sprites this regresses the render to
             // gold; revert if so.
+            // GEMS3 (not GOLD1): radar pip art is per-TYPE -- ore GOLD1..4 = four
+            // gold density shades, gems GEMS1..4 = teal/magenta/GREEN/red. GEMS3
+            // pips tiberium GREEN with no art override and leaves real gems (other
+            // maps' placed GEMS types) untouched. Verified from the RADARMAP
+            // tileset + pip TGA colors, 2026-06-09.
             overlay_entry.Type = (cell_ptr->Overlay == OVERLAY_TIB01)
-                                     ? (short)OVERLAY_GOLD1
+                                     ? (short)OVERLAY_GEMS3
                                      : (short)cell_ptr->Overlay;
             overlay_entry.Owner = (char)cell_ptr->Owner;
             overlay_entry.DrawFlags =

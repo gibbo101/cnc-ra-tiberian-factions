@@ -764,6 +764,57 @@ static void _Watcom_Ugh_Hack(void)
 #endif
 }
 
+// >>> TF_TD_TILES defs >>>
+static TemplateTypeClass const TdTile_TDSH1(TEMPLATE_TDSH1, THEATERF_TEMPERATE, "TDSH1", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH2(TEMPLATE_TDSH2, THEATERF_TEMPERATE, "TDSH2", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH3(TEMPLATE_TDSH3, THEATERF_TEMPERATE, "TDSH3", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH4(TEMPLATE_TDSH4, THEATERF_TEMPERATE, "TDSH4", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH5(TEMPLATE_TDSH5, THEATERF_TEMPERATE, "TDSH5", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH6(TEMPLATE_TDSH6, THEATERF_TEMPERATE, "TDSH6", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH7(TEMPLATE_TDSH7, THEATERF_TEMPERATE, "TDSH7", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH8(TEMPLATE_TDSH8, THEATERF_TEMPERATE, "TDSH8", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH9(TEMPLATE_TDSH9, THEATERF_TEMPERATE, "TDSH9", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH10(TEMPLATE_TDSH10, THEATERF_TEMPERATE, "TDSH10", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH11(TEMPLATE_TDSH11, THEATERF_TEMPERATE, "TDSH11", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH12(TEMPLATE_TDSH12, THEATERF_TEMPERATE, "TDSH12", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH13(TEMPLATE_TDSH13, THEATERF_TEMPERATE, "TDSH13", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH14(TEMPLATE_TDSH14, THEATERF_TEMPERATE, "TDSH14", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH15(TEMPLATE_TDSH15, THEATERF_TEMPERATE, "TDSH15", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH16(TEMPLATE_TDSH16, THEATERF_TEMPERATE, "TDSH16", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH17(TEMPLATE_TDSH17, THEATERF_TEMPERATE, "TDSH17", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH18(TEMPLATE_TDSH18, THEATERF_TEMPERATE, "TDSH18", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDBRIDGE1(TEMPLATE_TDBRIDGE1, THEATERF_TEMPERATE, "TDBRIDGE1", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDBRIDGE2(TEMPLATE_TDBRIDGE2, THEATERF_TEMPERATE, "TDBRIDGE2", TXT_CLEAR);
+// <<< TF_TD_TILES defs <<<
+// >>> TF_TD_TILES radar >>>
+/* Radar stand-in class per LOGICAL icon for TD-ported templates ('W' =
+   water-dominant art -> W1, 'C' = land -> CLEAR1), classified offline from
+   the HD art by build_td_tiles.py. Row index = TType - TEMPLATE_TDSH1.
+   Consumed by CellClass::Get_Template_Info (cell.cpp). 'extern' because
+   namespace-scope const arrays default to INTERNAL linkage in C++. */
+extern char const* const TF_TdTileRadarClass[] = {
+    "CCCBBBWWW", // TEMPLATE_TDSH1
+    "CBBBBBWWW", // TEMPLATE_TDSH2
+    "W", // TEMPLATE_TDSH3
+    "WW", // TEMPLATE_TDSH4
+    "CCCBBBWWW", // TEMPLATE_TDSH5
+    "CCCBBBWWW", // TEMPLATE_TDSH6
+    "BBWW", // TEMPLATE_TDSH7
+    "CCCCBBCBW", // TEMPLATE_TDSH8
+    "CCCBBCWBC", // TEMPLATE_TDSH9
+    "BBWW", // TEMPLATE_TDSH10
+    "CBBCBWWWW", // TEMPLATE_TDSH11
+    "WWWCBBCCC", // TEMPLATE_TDSH12
+    "WWWBBBCCC", // TEMPLATE_TDSH13
+    "WWWBBBCBC", // TEMPLATE_TDSH14
+    "CWWBBCCCC", // TEMPLATE_TDSH15
+    "BWBCBB", // TEMPLATE_TDSH16
+    "WWWW", // TEMPLATE_TDSH17
+    "WWWW", // TEMPLATE_TDSH18
+    "CCCBCCBBCBBCBBCC", // TEMPLATE_TDBRIDGE1
+    "BCCCCBBBRRCBBBCCCBBCCCCBB", // TEMPLATE_TDBRIDGE2
+};
+// <<< TF_TD_TILES radar <<<
 void TemplateTypeClass::Init_Heap(void)
 {
     /*
@@ -986,6 +1037,28 @@ void TemplateTypeClass::Init_Heap(void)
     **	if they are kept together.
     */
     _Watcom_Ugh_Hack();
+// >>> TF_TD_TILES init >>>
+    (void)new TemplateTypeClass(TdTile_TDSH1);
+    (void)new TemplateTypeClass(TdTile_TDSH2);
+    (void)new TemplateTypeClass(TdTile_TDSH3);
+    (void)new TemplateTypeClass(TdTile_TDSH4);
+    (void)new TemplateTypeClass(TdTile_TDSH5);
+    (void)new TemplateTypeClass(TdTile_TDSH6);
+    (void)new TemplateTypeClass(TdTile_TDSH7);
+    (void)new TemplateTypeClass(TdTile_TDSH8);
+    (void)new TemplateTypeClass(TdTile_TDSH9);
+    (void)new TemplateTypeClass(TdTile_TDSH10);
+    (void)new TemplateTypeClass(TdTile_TDSH11);
+    (void)new TemplateTypeClass(TdTile_TDSH12);
+    (void)new TemplateTypeClass(TdTile_TDSH13);
+    (void)new TemplateTypeClass(TdTile_TDSH14);
+    (void)new TemplateTypeClass(TdTile_TDSH15);
+    (void)new TemplateTypeClass(TdTile_TDSH16);
+    (void)new TemplateTypeClass(TdTile_TDSH17);
+    (void)new TemplateTypeClass(TdTile_TDSH18);
+    (void)new TemplateTypeClass(TdTile_TDBRIDGE1);
+    (void)new TemplateTypeClass(TdTile_TDBRIDGE2);
+// <<< TF_TD_TILES init <<<
 }
 
 /***********************************************************************************************
