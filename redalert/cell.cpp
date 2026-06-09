@@ -2151,6 +2151,13 @@ int CellClass::Tiberium_Adjust(bool pregame)
                     Overlay = Random_Pick(OVERLAY_GEMS1, OVERLAY_GEMS4);
                     break;
 
+                // Tiberian Factions -- Tiberium uses the Ore value and the same
+                // 12-step density model (_adj table below). Single visual type,
+                // so no Random_Pick variant shuffle needed.
+                case OVERLAY_TIB01:
+                    value = Rule.GoldValue;
+                    break;
+
                 default:
                     break;
                 }
@@ -3111,7 +3118,10 @@ bool CellClass::Can_Tiberium_Grow(void) const
     if (OverlayData >= 11)
         return (false);
 
-    if (Overlay != OVERLAY_GOLD1 && Overlay != OVERLAY_GOLD2 && Overlay != OVERLAY_GOLD3 && Overlay != OVERLAY_GOLD4)
+    // Tiberian Factions -- TIB01 grows (densifies) like Gold. Gems are excluded
+    // here in vanilla, which is why they stay static; TIB01 joins the Gold set.
+    if (Overlay != OVERLAY_GOLD1 && Overlay != OVERLAY_GOLD2 && Overlay != OVERLAY_GOLD3 && Overlay != OVERLAY_GOLD4
+        && Overlay != OVERLAY_TIB01)
         return (false);
 
     return (true);
@@ -3150,7 +3160,9 @@ bool CellClass::Can_Tiberium_Spread(void) const
     if (OverlayData <= 6)
         return (false);
 
-    if (Overlay != OVERLAY_GOLD1 && Overlay != OVERLAY_GOLD2 && Overlay != OVERLAY_GOLD3 && Overlay != OVERLAY_GOLD4)
+    // Tiberian Factions -- TIB01 spreads to adjacent cells like Gold once dense.
+    if (Overlay != OVERLAY_GOLD1 && Overlay != OVERLAY_GOLD2 && Overlay != OVERLAY_GOLD3 && Overlay != OVERLAY_GOLD4
+        && Overlay != OVERLAY_TIB01)
         return (false);
 
     return (true);
@@ -3207,7 +3219,12 @@ bool CellClass::Spread_Tiberium(bool forced)
         CellClass* newcell = Adjacent_Cell(index + offset);
 
         if (newcell != NULL && newcell->Can_Tiberium_Germinate()) {
-            new OverlayClass(Random_Pick(OVERLAY_GOLD1, OVERLAY_GOLD4), newcell->Cell_Number());
+            // Tiberian Factions -- Tiberium spreads as Tiberium; Ore spreads as
+            // Ore. Match the new field's type to this source cell so TIB01 and
+            // Gold stay distinct resources instead of cross-contaminating.
+            OverlayType spawn =
+                (Overlay == OVERLAY_TIB01) ? OVERLAY_TIB01 : Random_Pick(OVERLAY_GOLD1, OVERLAY_GOLD4);
+            new OverlayClass(spawn, newcell->Cell_Number());
             newcell->OverlayData = 0;
             return (true);
         }

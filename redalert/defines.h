@@ -1511,6 +1511,7 @@ typedef enum StructType : char
     // M5 Tier 4 — superweapon hosts.
     STRUCT_TDEYE,
     STRUCT_TDTMPL,
+    STRUCT_TDBLOSSOM, // TD blossom tree rendered as a building (terrain can't take custom HD art). Neutral, unselectable, invulnerable, seeds Tiberium. bdata.cpp.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0
@@ -1601,6 +1602,13 @@ typedef enum OverlayType : char
     OVERLAY_GEMS2,
     OVERLAY_GEMS3,
     OVERLAY_GEMS4,
+    // Tiberian Factions -- TD-style harvestable Tiberium, coexisting with Ore/Gems.
+    // MUST stay immediately after OVERLAY_GEMS4 so the launcher's contiguous
+    // "is this a resource cell" range check (dllinterface.cpp ~7126,
+    // GOLD1..<last resource>) keeps covering it. Single visual type; the 12
+    // density frames live in the SHP and are indexed by OverlayData (like Gold).
+    // Static by default (NOT added to Can_Tiberium_Grow/Spread). Value = Ore.
+    OVERLAY_TIB01,
     OVERLAY_V12,         // Haystacks
     OVERLAY_V13,         // Haystack
     OVERLAY_V14,         // Wheat field
@@ -1734,6 +1742,7 @@ typedef enum UnitType : char
     UNIT_TDMLRS,            // TD Rocket Launcher (MLRS, "Rocket Launcher") — GDI-only (EYE-gated), turret + lock-while-moving, 2-shot, fires TDMlrsRocket (BULLET_TDSSM2, range 6). Uses the MSAM sprite (TD cross-wiring). udata.cpp:854.
     UNIT_TDMSAM,            // TD SSM Launcher (MSAM, "S.S.M. Launcher") — Nod-only, Temple-gated, turret + lock-while-moving, fires TDHonestJohn (BULLET_TDMISSILE, non-homing, range 10, fire warhead). Uses the MLRS sprite (TD cross-wiring). udata.cpp:477.
     UNIT_TDARTY,            // TD Artillery (ARTY, "Nod Artillery") — Nod-only, no prereq (build level 6), turret-less (body aims, slow ROT 2), fires TD155mm (BULLET_TDHESHELL arcing, dmg 150). udata.cpp UnitArty.
+    UNIT_TDVICE,            // TD Visceroid (VICE) — tiberium creature, NOT buildable; spawns when infantry die in tiberium. Tracked, turret-less, squashes infantry, constant anim, WEAPON_TDCHEM spray, ARMOR_WOOD, STR 150, MISSION_HUNT. HEALS on tiberium. udata.cpp UnitVisceroid.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -2300,6 +2309,12 @@ typedef enum TerrainType : char
     TERRAIN_BOXES09,
 
     TERRAIN_MINE,
+
+    // Tiberian Factions note: the TD blossom tree is NOT a terrain type. Terrain
+    // objects can't take our custom HD art (the launcher preloads terrain textures
+    // from the base MEG and crashes on a new AssetName), so the blossom is a Neutral
+    // BUILDING instead -- STRUCT_TDBLOSSOM (bdata.cpp). Trees mutate into it in
+    // TerrainClass::AI; its spore-shed + Tiberium seeding live in BuildingClass::AI.
 
     TERRAIN_COUNT,
     TERRAIN_FIRST = 0

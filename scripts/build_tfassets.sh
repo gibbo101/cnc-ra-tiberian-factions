@@ -19,6 +19,9 @@ CNCDATA="${HOME}/.steam/steam/steamapps/common/CnCRemastered/Data/CNCDATA"
 CONQUER="${CNCDATA}/TIBERIAN_DAWN/CD1/CONQUER.MIX"
 TD_PAL="${CNCDATA}/TIBERIAN_DAWN/CD1/TEMPERAT.PAL"
 REDALERT="${CNCDATA}/RED_ALERT/CD1/REDALERT.MIX"
+# Theatre mix that holds the Tiberium overlay tiles (ti1.tem is a 12-frame
+# 24x24 SHP = the 12 density stages) for the classic-mode TIB01 overlay.
+TEMPERAT_MIX="${CNCDATA}/TIBERIAN_DAWN/CD1/TEMPERAT.MIX"
 OUTMIX="resources/remaster_mods/Vanilla_RA/CCDATA/TFASSETS.MIX"
 TMPDIR="$(mktemp -d -t tfassets-XXXXXX)"
 trap "rm -rf '$TMPDIR'" EXIT
@@ -96,6 +99,9 @@ ENTRIES=(
     "ARTY.SHP:TDARTY.SHP"
     "HELI.SHP:TDHELI.SHP"
     "ORCA.SHP:TDORCA.SHP"
+    # Tiberium ecosystem -- Visceroid creature (UNIT_TDVICE), spawned when infantry
+    # die in Tiberium. Constant-animation blob; vice.shp carries its anim frames.
+    "VICE.SHP:TDVICE.SHP"
     "PROC.SHP:TDPROC.SHP"
     "PROCMAKE.SHP:TDPROCMAKE.SHP"
     # M5 Tier 4 — superweapon hosts.
@@ -141,6 +147,26 @@ for entry in "${ENTRIES[@]}"; do
     python3 scripts/shptools.py remap "$TMPDIR/$src" "$TMPDIR/remap_$src" "$TD_PAL" "$RA_PAL"
     PACK_ARGS+=("$TMPDIR/remap_$src:$dst")
 done
+
+# Tiberian Factions -- classic-mode Tiberium overlay (OVERLAY_TIB01). The engine
+# loads it as a non-theatre "TIB01.SHP"; TD's ti1.tem IS already a 12-frame 24x24
+# SHP (frame = density 0-11), so we just remap it and pack it under TIB01.SHP.
+# Sourced from TEMPERAT.MIX (theatre mix), not CONQUER.MIX. HD mode uses the
+# separate tileset art built by scripts/build_tiberium_hd.py.
+if [[ -f "$TEMPERAT_MIX" ]]; then
+    python3 scripts/mix_tools.py extract "$TEMPERAT_MIX" "ti1.tem" "$TMPDIR" >/dev/null
+    python3 scripts/shptools.py remap "$TMPDIR/ti1.tem" "$TMPDIR/remap_TIB01.SHP" "$TD_PAL" "$RA_PAL"
+    PACK_ARGS+=("$TMPDIR/remap_TIB01.SHP:TIB01.SHP")
+
+    # Blossom tree rendered as a BUILDING (STRUCT_TDBLOSSOM, IniName "TDBLOSSOM").
+    # Classic building art is a non-theatre "TDBLOSSOM.SHP"; TD's 55-frame
+    # split2.tem IS the blossom sprite, so remap it and pack it under TDBLOSSOM.SHP.
+    python3 scripts/mix_tools.py extract "$TEMPERAT_MIX" "split2.tem" "$TMPDIR" >/dev/null
+    python3 scripts/shptools.py remap "$TMPDIR/split2.tem" "$TMPDIR/remap_TDBLOSSOM.SHP" "$TD_PAL" "$RA_PAL"
+    PACK_ARGS+=("$TMPDIR/remap_TDBLOSSOM.SHP:TDBLOSSOM.SHP")
+else
+    echo "warning: $TEMPERAT_MIX not found; classic TIB01/SPLIT2 art skipped" >&2
+fi
 
 # Repack into TFASSETS.MIX with TD-prefix renames.
 python3 scripts/mix_tools.py pack "$OUTMIX" "${PACK_ARGS[@]}"

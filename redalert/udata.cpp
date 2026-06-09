@@ -913,6 +913,45 @@ static UnitTypeClass const UnitTdArty(UNIT_TDARTY,
                                       MISSION_HUNT   // ORDERS: Default order (TD ARTY default = MISSION_HUNT).
 );
 
+// Tiberian Factions -- TD Visceroid (UNIT_TDVICE), ported from TD's UNIT_VICE
+// (tiberiandawn/udata.cpp UnitVisceroid, TXT_VISCEROID "Visceroid"). NOT a buildable
+// faction unit -- it is a Tiberium creature that SPAWNS when an infantry dies in Tiberium
+// (see the infantry.cpp tiberium-death hook). Tracked, turret-LESS, squashes infantry,
+// INVISIBLE to radar, INSIGNIFICANT (no "unit lost" announce), CONSTANT ANIMATION (a writhing
+// blob), MISSION_HUNT (mindlessly attacks everything nearby). Fires WEAPON_TDCHEM -- we already
+// ship [TDChemspray] (the E5 Chem Warrior spray), so the visceroid reuses that whole weapon
+// chain. HEALS while on a Tiberium cell (unit.cpp AI hook, mirroring TD UNIT.CPP:434). Stats
+// (Strength 150, Cost 800, Sight 4, ARMOR_WOOD, MPH_MEDIUM, ROT 5) live in rules.ini [TDVICE].
+// Death ANIM_NAPALM2 (TD-authentic).
+static UnitTypeClass const UnitTdVice(UNIT_TDVICE,
+                                      TXT_LTANK,    // NAME: placeholder (RA has no "Visceroid"; HD display via rules.ini Name=).
+                                      "TDVICE",     // NAME: IniName.
+                                      ANIM_NAPALM2, // EXPLOSION: TD VICE death (ANIM_NAPALM2).
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0000,       // Vertical offset (blob at hull level).
+                                      0x0000,       // Primary weapon offset (sprays from body centre).
+                                      0x0000,       // Primary weapon lateral offset.
+                                      0x0000,       // Secondary weapon offset (no secondary).
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      false,        // Can this be a goodie surprise from a crate? (we spawn it explicitly)
+                                      true,         // Always use the given name for the vehicle? (TD VICE: yes)
+                                      true,         // Can this unit squash infantry? (TD VICE: yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      true,         // Is invisible to radar? (TD VICE: yes)
+                                      true,         // Is it insignificant (won't be announced)? (TD VICE: yes)
+                                      false,        // Is it equipped with a combat turret? (TD VICE: NO)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      true,         // Does the unit have a constant animation? (TD VICE: YES -- writhing blob)
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline (TD: 0).
+                                      MISSION_HUNT  // ORDERS: Default order (TD VICE default = MISSION_HUNT).
+);
+
 // Jeep (hummer)
 static UnitTypeClass const UnitJeep(UNIT_JEEP,
                                     TXT_JEEP,     // NAME:			Text name of this unit type.
@@ -1556,6 +1595,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTdMlrs);    // UNIT_TDMLRS
     new UnitTypeClass(UnitTdMsam);    // UNIT_TDMSAM
     new UnitTypeClass(UnitTdArty);    // UNIT_TDARTY
+    new UnitTypeClass(UnitTdVice);    // UNIT_TDVICE
 }
 
 /***********************************************************************************************

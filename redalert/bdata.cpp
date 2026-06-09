@@ -3674,6 +3674,42 @@ BuildingTypeClass* BuildingTypeClass::As_Pointer(char const* name)
  * HISTORY:                                                                                    *
  *   07/06/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
+
+// Tiberian Factions -- TD blossom tree rendered as a 1x1 BUILDING (terrain objects
+// can't take custom HD art on our stack; buildings render via the loose RA_STRUCTURES
+// ZIP pipeline like every other TD building). Unselectable + not-a-legal-target +
+// insignificant; the rest of its "harmless scenery" identity (Neutral owner,
+// Unsellable, uncapturable, immune, TechLevel=-1, idle bloom anim, huge HP) is set in
+// rules.ini [TDBLOSSOM]. Art "TDBLOSSOM" = SPLIT2. Seeds Tiberium via BuildingClass::AI.
+static BuildingTypeClass const ClassTdBlossom(STRUCT_TDBLOSSOM,
+                                              TXT_NONE,
+                                              "TDBLOSSOM",
+                                              FACING_NONE,
+                                              XYP_COORD(0, 0),
+                                              REMAP_NORMAL,
+                                              0x0000, // Vertical offset.
+                                              0x0000, // Primary weapon offset (none).
+                                              0x0000, // Primary weapon lateral (none).
+                                              false,  // Is fake?
+                                              false,  // Is regulated (power)?
+                                              false,  // Is nominal?
+                                              false,  // Is a wall?
+                                              false,  // Is simple damage?
+                                              false,  // Is stealthy?
+                                              false,  // Is selectable? NO -- harmless scenery.
+                                              false,  // Is a legal target? NO -- can't be attacked.
+                                              true,   // Is insignificant? YES -- no "lost"/announce.
+                                              false,  // Is theater-specific art?
+                                              false,  // Is turret equipped?
+                                              false,  // Is remappable (house colour)? NO -- neutral scenery.
+                                              RTTI_NONE,
+                                              DIR_N,
+                                              BSIZE_11, // 1x1 footprint.
+                                              NULL,
+                                              (short const*)List1,
+                                              (short const*)NULL
+);
+
 void BuildingTypeClass::Init_Heap(void)
 {
     /*
@@ -3794,6 +3830,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdProc);  // STRUCT_TDPROC  (Tiberium Refinery)
     new BuildingTypeClass(ClassTdEye);   // STRUCT_TDEYE   (Advanced Communications Center)
     new BuildingTypeClass(ClassTdTmpl);  // STRUCT_TDTMPL  (Temple of Nod)
+    new BuildingTypeClass(ClassTdBlossom); // STRUCT_TDBLOSSOM (blossom tree as a building)
 }
 
 /***********************************************************************************************

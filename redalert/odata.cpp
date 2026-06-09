@@ -277,6 +277,30 @@ static OverlayTypeClass const Gems4(OVERLAY_GEMS4, // Overlay type number.
                                     false,         // Is this a wall type?
                                     false          // Is this a crate?
 );
+// Tiberian Factions -- TD-style harvestable Tiberium. Modeled on Gold (same
+// LAND_TIBERIUM + IsTiberium=true => harvested & credited generically), but a
+// single visual type whose 12 density frames live in one cross-theatre SHP
+// (TIB01.SHP), so "Theater specific art?" = false (TD Tiberium looks the same
+// in every theatre). Value is routed to the Ore path in unit.cpp / cell.cpp.
+// Grows + spreads like Gold (added to Can_Tiberium_Grow/Spread; Spread_Tiberium
+// emits TIB01 from a TIB01 source). Display name reuses TXT_GOLD for now
+// (overlays aren't selectable; cosmetic only).
+static OverlayTypeClass const Tib01(OVERLAY_TIB01, // Overlay type number.
+                                    "TIB01",       // INI name of overlay.
+                                    TXT_GOLD,      // Full name of overlay.
+                                    LAND_TIBERIUM, // What kind of ground is it?
+                                    0,             // If this is a wall, how many damage levels?
+                                    0,             // If this is a wall, how many damage points can it take per level?
+                                    true,          // Visible on the radar map?
+                                    false,         // Is it a wooden overlay (affected by fire)?
+                                    false,         // Targetable as a destroyable overlay?
+                                    false,         // Crushable by tracked vehicle?
+                                    true,          // Is this harvestable Tiberium?
+                                    false,         // Stops low level bullets in flight?
+                                    false,         // Theater specific art?
+                                    false,         // Is this a wall type?
+                                    false          // Is this a crate?
+);
 static OverlayTypeClass const V12(OVERLAY_V12, // Overlay type number.
                                   "V12",       // INI name of overlay.
                                   TXT_CIV12,   // Full name of overlay.
@@ -585,6 +609,7 @@ void OverlayTypeClass::Init_Heap(void)
     new OverlayTypeClass(Gems2);      // OVERLAY_GEMS2
     new OverlayTypeClass(Gems3);      // OVERLAY_GEMS3
     new OverlayTypeClass(Gems4);      // OVERLAY_GEMS4
+    new OverlayTypeClass(Tib01);      // OVERLAY_TIB01 (Tiberian Factions)
     new OverlayTypeClass(V12);        //	OVERLAY_V12
     new OverlayTypeClass(V13);        //	OVERLAY_V13
     new OverlayTypeClass(V14);        //	OVERLAY_V14
@@ -864,6 +889,19 @@ void OverlayTypeClass::Init(TheaterType theater)
                 _makepath(fullname, NULL, NULL, overlay.IniName, ".SHP");
             }
             overlay.ImageData = MFCD::Retrieve(fullname);
+
+            // Tiberian Factions -- TIB01 ships HD-only for now: its art is keyed
+            // by IniName in the launcher tileset, and there is no classic
+            // TIB01.SHP yet, so MFCD::Retrieve returns NULL. Both the launcher
+            // overlay export (dllinterface.cpp ~7102) and classic Draw_It skip an
+            // overlay whose ImageData is NULL, so nothing renders even though the
+            // cell harvests fine. Donate Gold's classic image data (identical
+            // 12-frame density layout) so the NULL guard passes; the launcher
+            // then draws the real TIB01 frames by AssetName, and classic mode
+            // shows ore-coloured Tiberium until a real TIB01.SHP is added.
+            if (index == OVERLAY_TIB01 && overlay.ImageData == NULL) {
+                overlay.ImageData = As_Reference(OVERLAY_GOLD1).Get_Image_Data();
+            }
 
             IsTheaterShape = overlay.IsTheater; // Tell Build_Frame if this is a theater specific shape
             if (overlay.RadarIcon != NULL)

@@ -494,6 +494,36 @@ void TerrainClass::AI(void)
     if ((*this == TERRAIN_MINE) && (Frame % (Rule.GrowthRate * TICKS_PER_MINUTE)) == 0) {
         Map[::As_Cell(As_Target())].Spread_Tiberium(true);
     }
+
+    /*
+    **	Tiberian Factions -- a normal tree or clump that becomes mostly surrounded by
+    **	Tiberium blooms into a TD blossom tree (which then seeds more Tiberium itself,
+    **	closing the ecosystem loop). The blossom is a Neutral BUILDING
+    **	(STRUCT_TDBLOSSOM) rather than a terrain object, because terrain can't take our
+    **	custom HD art; the building's AI owns the spore-shed animation + Tiberium
+    **	seeding. We free this tree first, then place the building on the same cell
+    **	(pointer ctor avoids the delegating-ctor IsActive=0 bug). Checked on the
+    **	GrowthRate cadence.
+    */
+    if ((Class->Type >= TERRAIN_TREE1 && Class->Type <= TERRAIN_CLUMP5)
+        && (Frame % (Rule.GrowthRate * TICKS_PER_MINUTE)) == 0) {
+        CELL center = ::As_Cell(As_Target());
+        int tibcount = 0;
+        for (FacingType i = FACING_N; i < FACING_COUNT; i++) {
+            CellClass* nc = Map[center].Adjacent_Cell(i);
+            if (nc != NULL && nc->Land_Type() == LAND_TIBERIUM) {
+                tibcount++;
+            }
+        }
+        if (tibcount >= 6) { // mostly surrounded by Tiberium
+            delete this;     // free the cell (safe: the crumbling path below also delete-this-es)
+            BuildingClass* blossom = new BuildingClass(BuildingTypes.Ptr((int)STRUCT_TDBLOSSOM), HOUSE_NEUTRAL);
+            if (blossom != NULL && !blossom->Unlimbo(Cell_Coord(center))) {
+                delete blossom;
+            }
+            return;
+        }
+    }
     if (StageClass::Graphic_Logic()) {
         Mark();
 

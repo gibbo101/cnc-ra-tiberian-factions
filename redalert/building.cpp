@@ -1195,6 +1195,72 @@ void BuildingClass::AI(void)
     if (*this == STRUCT_CHRONOSPHERE && BState == BSTATE_ACTIVE && QueueBState == BSTATE_NONE && Scen.FadeTimer == 0) {
         Begin_Mode(BSTATE_IDLE);
     }
+
+    /*
+    **	Tiberian Factions -- TD blossom tree. It is rendered as a Neutral building
+    **	because terrain objects can't take our custom HD art, but it is inert scenery
+    **	otherwise (immune, unselectable, untargetable, owns no factory/weapon). It
+    **	drives two blossom behaviours here:
+    **
+    **	  1) A periodic DOUBLE spore-shed. The mature blossom holds on its fully-open
+    **	     frame and, every ~30s, replays the SPLIT2 open-bloom pulse (frames 30-54)
+    **	     twice before settling still again. We drive the displayed frame directly
+    **	     off Frame + a per-building stagger, so it needs no stored state and never
+    **	     fights the (rate-0, static) BState animation machine.
+    **
+    **	  2) Seeding Tiberium (TIB01) into adjacent cells on the GrowthRate cadence,
+    **	     exactly the way an ore mine seeds Gold (terrain.cpp TERRAIN_MINE). This is
+    **	     what makes a blossom tree the living source of a Tiberium field.
+    */
+    if (*this == STRUCT_TDBLOSSOM) {
+        enum
+        {
+            BLOSSOM_IDLE_FRAME = 34, // fully-open mature bloom (the static hold)
+            BLOSSOM_SHED_START = 30, // first open-bloom / spore frame
+            BLOSSOM_SHED_END = 54,   // last frame of the SPLIT2 sprite
+            BLOSSOM_SHED_RATE = 3,   // game frames per sprite frame during the shed
+        };
+        int const shedlen = (BLOSSOM_SHED_END - BLOSSOM_SHED_START + 1) * BLOSSOM_SHED_RATE;
+        int const period = 30 * TICKS_PER_SECOND; // full still->shed->still cycle
+        int phase = (int)((Frame + (long)ID * 37) % period); // stagger so blossoms don't pulse in unison
+        int targetframe = BLOSSOM_IDLE_FRAME;
+        if (phase < shedlen * 2) { // DOUBLE shed at the top of each cycle
+            targetframe = BLOSSOM_SHED_START + ((phase % shedlen) / BLOSSOM_SHED_RATE);
+        }
+        if (Fetch_Stage() != targetframe) {
+            Set_Stage(targetframe);
+            Mark(MARK_CHANGE);
+        }
+
+        /*
+        **	Seed/grow the Tiberium field. Push any adjacent Tiberium edge outward
+        **	first (so the field keeps expanding once the tree's own neighbours have
+        **	filled in); otherwise germinate the first cell. Gated by the lobby
+        **	"Tiberium grows" option, matching Can_Tiberium_Grow/Spread.
+        */
+        if ((Session.Type == GAME_NORMAL || Session.Options.Tiberium)
+            && (Frame % (Rule.GrowthRate * TICKS_PER_MINUTE)) == 0) {
+            CELL center = Coord_Cell(Center_Coord());
+            bool spread = false;
+            for (FacingType i = FACING_N; i < FACING_COUNT; i++) {
+                CellClass* nc = Map[center].Adjacent_Cell(i);
+                if (nc != NULL && nc->Land_Type() == LAND_TIBERIUM && nc->Spread_Tiberium(true)) {
+                    spread = true;
+                    break;
+                }
+            }
+            if (!spread) {
+                for (FacingType i = FACING_N; i < FACING_COUNT; i++) {
+                    CellClass* nc = Map[center].Adjacent_Cell(i);
+                    if (nc != NULL && nc->Can_Tiberium_Germinate()) {
+                        new OverlayClass(OVERLAY_TIB01, nc->Cell_Number());
+                        nc->OverlayData = 0;
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 /***********************************************************************************************

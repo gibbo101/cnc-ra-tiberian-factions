@@ -567,11 +567,68 @@ bool Read_Scenario(char* name)
     **  Mirrors the TACTION_REVEAL_ALL trigger. OFF for release; flip to #if 1
     **  to re-enable. (Grep "TF DEV TOGGLE" to find all such toggles.)
     */
-#if 0
+#if 0 // TF DEV TOGGLE: reveal-all-map. Flip to 1 to re-enable for testing.
     if (Session.Type != GAME_NORMAL && PlayerPtr != NULL && !PlayerPtr->IsVisionary) {
         PlayerPtr->IsVisionary = true;
         for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
             Map.Map_Cell(cell, PlayerPtr);
+        }
+    }
+#endif
+
+    /*
+    **  TF DEV TOGGLE — Tiberium smoke test (skirmish only): paint a small TIB01
+    **  field a few cells from the player's start so we can verify the new
+    **  harvestable Tiberium overlay renders (HD + classic), harvests, credits at
+    **  Ore value, and shows on radar. OFF for release; this is a throwaway
+    **  visual harness ahead of the real OverlayPack/transcoder placement path.
+    **  (Grep "TF DEV TOGGLE" to find all such toggles.)  Real placement of Tiberium
+    **  + blossom trees comes from converted TD skirmish maps, not this harness.
+    */
+#if 0 // TF DEV TOGGLE: blossom + tree smoke-spawn near start. Flip to 1 for testing.
+    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr) {
+                home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                break;
+            }
+        }
+        if (home == 0) {
+            for (int i = 0; i < Buildings.Count(); i++) {
+                if (Buildings.Ptr(i)->House == PlayerPtr) {
+                    home = Coord_Cell(Buildings.Ptr(i)->Center_Coord());
+                    break;
+                }
+            }
+        }
+        if (home != 0) {
+            // Tiberian Factions -- drop a TD blossom-tree BUILDING (STRUCT_TDBLOSSOM,
+            // Neutral) a few cells south of the start to verify it renders the SPLIT2
+            // art (terrain objects can't take custom HD art on our stack; buildings
+            // can). Pointer ctor (BuildingTypes.Ptr) avoids the delegating-ctor
+            // IsActive=0 bug.
+            for (int d = 2; d <= 12; d++) {
+                CELL btcell = home + (d * MAP_CELL_W);
+                if ((unsigned)btcell < MAP_CELL_TOTAL && Map[btcell].Overlay == OVERLAY_NONE
+                    && Map[btcell].Cell_Techno() == NULL && Map[btcell].Cell_Terrain() == NULL
+                    && Map[btcell].Land_Type() == LAND_CLEAR) {
+                    BuildingClass* blossom =
+                        new BuildingClass(BuildingTypes.Ptr((int)STRUCT_TDBLOSSOM), HOUSE_NEUTRAL);
+                    if (blossom != NULL && !blossom->Unlimbo(Cell_Coord(btcell))) {
+                        delete blossom;
+                    }
+                    // Drop a normal tree a few cells east of the blossom for a
+                    // side-by-side size/look comparison. Terrain ctor auto-unlimboes.
+                    CELL treecell = btcell + 3;
+                    if ((unsigned)treecell < MAP_CELL_TOTAL && Map[treecell].Overlay == OVERLAY_NONE
+                        && Map[treecell].Cell_Techno() == NULL && Map[treecell].Cell_Terrain() == NULL
+                        && Map[treecell].Land_Type() == LAND_CLEAR) {
+                        new TerrainClass(TERRAIN_TREE1, treecell);
+                    }
+                    break;
+                }
+            }
         }
     }
 #endif

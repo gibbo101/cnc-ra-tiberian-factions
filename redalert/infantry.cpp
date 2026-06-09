@@ -1303,6 +1303,118 @@ void InfantryClass::AI(void)
     }
 
     /*
+    **	Tiberian Factions -- Tiberium poisons infantry. Classic Tiberian Dawn
+    **	behaviour, absent from Red Alert (ore is harmless) AND from the released
+    **	EA Remastered source, so we recreate it to the well-known design: any
+    **	infantry standing or walking on a Tiberium cell (Ore / Gems / our TIB01
+    **	all resolve to LAND_TIBERIUM) loses a little health on a slow cadence
+    **	(~1s, staggered per unit so a squad doesn't tick in lockstep). The
+    **	Harvester and the unit-type Visceroid are inherently immune because this
+    **	only hooks infantry. Tunable: the cadence mask and the damage value.
+    */
+    if (In_Which_Layer() == LAYER_GROUND && !IsInLimbo
+        && Map[Coord_Cell(Coord)].Land_Type() == LAND_TIBERIUM) {
+        if (((Frame + ID) % 50) == 0) { // TD-calibrated: ~28 tiles to kill a minigunner
+            // Magnitude isn't in the released EA source, so these are the tuning
+            // dials, calibrated against the real TD game where a minigunner
+            // survives ~28 tiles of Tiberium. Tiles-survived scales as
+            // interval/damage; our first pass (every 16 frames, dmg 2) killed in
+            // ~9 tiles, so every 50 frames at dmg 2 (~3.1x gentler) ~= 28 tiles.
+            CELL deathcell = Coord_Cell(Coord);
+            int damage = 2;
+            ResultType res = Take_Damage(damage, 0, WARHEAD_SA, NULL, false);
+#if 0 // TF DIAG -- visceroid spawn-on-tiberium-death. Flip to 1 to re-enable.
+            {
+                const char* up = getenv("USERPROFILE");
+                if (up != NULL) {
+                    char path[512];
+                    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_visceroid.log", up);
+                    FILE* f = fopen(path, "a");
+                    if (f != NULL) {
+                        fprintf(f, "[vice] tick: res=%d strength=%d active=%d cell=%d\n",
+                                (int)res, (int)Strength, (int)IsActive, (int)deathcell);
+                        fclose(f);
+                    }
+                }
+            }
+#endif
+            if (res == RESULT_DESTROYED) {
+                // Tiberian Factions -- classic TD: ~1% of infantry that die IN
+                // Tiberium mutate into a Visceroid. (Was 100% during testing.)
+                if (Random_Pick(0, 99) != 0) {
+                    return;
+                }
+                // Hostile-to-all: like TD, Visceroids belong to HOUSE_JP (the
+                // "creatures" house), at war with everyone. RA skirmish only
+                // creates the playing houses via GlyphX_Assign_Houses, so JP
+                // doesn't exist -- create it on first spawn and put it at war
+                // with every active house (Make_Enemy is mutual via the loop).
+                // Players can't control it (not their house) AND will auto-target
+                // it (not their ally), unlike NEUTRAL which every house allies.
+                HouseClass* jp = HouseClass::As_Pointer(HOUSE_JP);
+                if (jp == NULL) {
+                    jp = new HouseClass(HOUSE_JP);
+                    if (jp != NULL) {
+                        jp->IsActive = true;
+                        jp->Make_Ally(HOUSE_JP); // don't attack other Visceroids
+                        for (HousesType h = HOUSE_FIRST; h < HOUSE_COUNT; h++) {
+                            if (h == HOUSE_JP) {
+                                continue;
+                            }
+                            HouseClass* other = HouseClass::As_Pointer(h);
+                            if (other != NULL) {
+                                jp->Make_Enemy(h);
+                                other->Make_Enemy(HOUSE_JP);
+                            }
+                        }
+                    }
+                }
+                HousesType vh = (jp != NULL) ? HOUSE_JP
+                                : (House.Is_Valid() ? House->Class->House : HOUSE_NEUTRAL);
+                UnitClass* vice = new UnitClass(UNIT_TDVICE, vh);
+                bool alloc = (vice != NULL);
+                bool placed = false;
+                if (vice != NULL) {
+                    // The dying infantry still occupies the death cell (it lingers
+                    // in a death animation -- the log showed active=1 at res=4), so
+                    // a direct Unlimbo there fails. Scan_Place_Object finds the
+                    // nearest free cell and places the Visceroid there instead.
+                    placed = Scan_Place_Object(vice, deathcell) != 0;
+                    if (placed) {
+                        // Scan_Place_Object only unlimboes the unit; without an
+                        // explicit mission it idles and merely scatters a tile now
+                        // and then. Kick it into HUNT so it actively roams toward
+                        // and attacks targets (it's HOUSE_JP, hostile to all).
+                        vice->Assign_Mission(MISSION_HUNT);
+                        vice->Commence();
+                    } else {
+                        delete vice;
+                    }
+                }
+#if 0 // TF DIAG -- flip to 1 to re-enable
+                {
+                    const char* up = getenv("USERPROFILE");
+                    if (up != NULL) {
+                        char path[512];
+                        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_visceroid.log", up);
+                        FILE* f = fopen(path, "a");
+                        if (f != NULL) {
+                            fprintf(f, "[vice] DEATH: house=%d valid_house=%d alloc=%d placed=%d cell=%d\n",
+                                    (int)vh, (int)House.Is_Valid(), (int)alloc, (int)placed, (int)deathcell);
+                            fclose(f);
+                        }
+                    }
+                }
+#endif
+                return;
+            }
+            if (!IsActive) {
+                return;
+            }
+        }
+    }
+
+    /*
     **	Act on new orders if the unit is at a good position to do so.
     */
     if (!IsFiring && !IsFalling && !IsDriving && (Doing == DO_NOTHING || MasterDoControls[Doing].Interrupt)) {

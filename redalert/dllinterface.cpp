@@ -7110,7 +7110,18 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             }
 
             strncpy(overlay_entry.AssetName, overlay_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
-            overlay_entry.Type = (short)cell_ptr->Overlay;
+            // Tiberian Factions -- the launcher's minimap keys resource pips off
+            // the vanilla resource Type range (GOLD1..GEMS4), ignoring our
+            // IsResource flag, so a new type (TIB01) never pips on radar. Present
+            // TIB01 to the launcher AS Gold for the overlay-model/radar Type while
+            // keeping AssetName="TIB01" so the on-map sprite still draws the green
+            // tiberium tile. Harvest/economy are unaffected (all DLL-side; the real
+            // cell Overlay stays OVERLAY_TIB01). EXPERIMENT: if the launcher prefers
+            // Type over AssetName for resource sprites this regresses the render to
+            // gold; revert if so.
+            overlay_entry.Type = (cell_ptr->Overlay == OVERLAY_TIB01)
+                                     ? (short)OVERLAY_GOLD1
+                                     : (short)cell_ptr->Overlay;
             overlay_entry.Owner = (char)cell_ptr->Owner;
             overlay_entry.DrawFlags =
                 SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST; // Looks like overlays are drawn centered and translucent
@@ -7123,7 +7134,10 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             overlay_entry.ShapeIndex = cell_ptr->OverlayData;
             overlay_entry.IsSmudge = false;
             overlay_entry.IsOverlay = true;
-            overlay_entry.IsResource = overlay_entry.Type >= OVERLAY_GOLD1 && overlay_entry.Type <= OVERLAY_GEMS4;
+            // Tiberian Factions -- OVERLAY_TIB01 sits immediately after OVERLAY_GEMS4
+            // in the enum so this contiguous "is a harvestable resource cell" range
+            // (used by the launcher for radar colour / resource handling) covers it.
+            overlay_entry.IsResource = overlay_entry.Type >= OVERLAY_GOLD1 && overlay_entry.Type <= OVERLAY_TIB01;
             overlay_entry.IsSellable =
                 (overlay_entry.Type >= OVERLAY_SANDBAG_WALL && overlay_entry.Type <= OVERLAY_WOOD_WALL)
                 || overlay_entry.Type == OVERLAY_FENCE;

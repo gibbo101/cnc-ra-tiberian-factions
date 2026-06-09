@@ -511,6 +511,7 @@ void TerrainTypeClass::operator delete(void* pointer)
  * HISTORY:                                                                                    *
  *   07/19/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
+
 void TerrainTypeClass::Init_Heap(void)
 {
     /*

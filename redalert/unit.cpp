@@ -413,6 +413,32 @@ void UnitClass::AI(void)
     }
 
     /*
+    **	Tiberian Factions -- the Visceroid feeds on Tiberium and regenerates while
+    **	standing in it (mirrors TD UNIT.CPP:434). Heals 1 HP every 16 frames when
+    **	below full health and on a Tiberium cell.
+    */
+    if (*this == UNIT_TDVICE && (Frame % 16) == 0 && Health_Ratio() < 0x0100
+        && Map[Coord_Cell(Coord)].Land_Type() == LAND_TIBERIUM) {
+        Strength++;
+        Mark(MARK_CHANGE);
+    }
+
+    /*
+    **	Tiberian Factions -- drive the constant animation for IsAnimating units
+    **	(the Visceroid's writhing blob), mirroring TD UNIT.CPP:471. Advance the
+    **	graphic stage and loop back at the end of the SHP.
+    */
+    if (Class->IsAnimating) {
+        if (!Fetch_Rate()) {
+            Set_Rate(2);
+        }
+        StageClass::Graphic_Logic();
+        if (Fetch_Stage() >= Get_Build_Frame_Count(Class->Get_Image_Data()) - 1) {
+            Set_Stage(0);
+        }
+    }
+
+    /*
     **	Hack check to ensure that a harvester won't harvest if it is not harvesting.
     */
     if (Mission != MISSION_HARVEST) {
@@ -2426,6 +2452,7 @@ int UnitClass::Tiberium_Check(CELL& center, int x, int y)
             case OVERLAY_GOLD2:
             case OVERLAY_GOLD3:
             case OVERLAY_GOLD4:
+            case OVERLAY_TIB01: // Tiberian Factions -- Tiberium worth the same as Ore.
                 value = Rule.GoldValue;
                 break;
             case OVERLAY_GEMS1:
@@ -2577,6 +2604,7 @@ bool UnitClass::Harvesting(void)
         case OVERLAY_GOLD2:
         case OVERLAY_GOLD3:
         case OVERLAY_GOLD4:
+        case OVERLAY_TIB01: // Tiberian Factions -- Tiberium banks as Ore (same value).
             Gold += reducer;
             break;
 
