@@ -116,6 +116,14 @@ def section_pack(secs, name):
         return b""
     return lcw_block_decompress(uublock_decode([v for _, v in secs[name]]))
 
+def get_sec(secs, name):
+    """Case-insensitive section lookup: SP sources use [TERRAIN]/[OVERLAY],
+    the community MP maps [Terrain]/[Overlay]."""
+    for k, v in secs.items():
+        if k.lower() == name.lower():
+            return v
+    return []
+
 # ===================================================================== tables
 def parse_templates(cs_path):
     """Parse 'new TemplateType(id, "name", w, h, ...)' -> list of (id,name,w,h)."""
@@ -257,7 +265,7 @@ def convert(td_ini_path, out_path, display_name):
     overlay = bytearray([OVERLAY_NONE]) * RA_CELLS
     tib = 0
     carried = {}
-    for k, v in secs.get("OVERLAY", []):
+    for k, v in get_sec(secs, "Overlay"):
         try:
             cell = int(k)
         except ValueError:
@@ -276,33 +284,49 @@ def convert(td_ini_path, out_path, display_name):
         print(f"  carried overlays: {carried}")
 
     # ---- waypoints (start positions) ----
+    # MP sources carry real start waypoints (0..7); SP missions have none
+    # usable, so only then are starts synthesized around the playable ring.
     waypts = []
-    for k, v in secs.get("Waypoints", []):
+    for k, v in get_sec(secs, "Waypoints"):
         try:
             n = int(k); cell = int(v)
         except ValueError:
             continue
-        if cell < 0:
+        if cell < 0 or not (0 <= n <= 7):
             continue
         x, y = cell % TD_W, cell // TD_W
         waypts.append((n, ra_cell(x + offx, y + offy)))
 
-    # ---- terrain objects (trees) ----
+    # ---- terrain objects (trees); TD blossom trees (split2/split3) become our
+    # neutral STRUCT_TDBLOSSOM building (terrain objects can't take custom HD
+    # art on our stack; the building can, and carries the spore-shed/seeding AI)
     terrain = []
-    for k, v in secs.get("TERRAIN", []):
+    structures = []
+    for k, v in get_sec(secs, "Terrain"):
         try:
             cell = int(k)
         except ValueError:
             continue
         x, y = cell % TD_W, cell // TD_W
-        terrain.append((ra_cell(x + offx, y + offy), v.strip()))
+        rc = ra_cell(x + offx, y + offy)
+        name = v.strip().split(",")[0].upper()
+        if name in ("SPLIT2", "SPLIT3"):
+            structures.append(f"Neutral,TDBLOSSOM,256,{rc},0,None")
+        else:
+            terrain.append((rc, f"{name},None"))
 
     mapx, mapy = offx + tdX, offy + tdY
-    starts = synth_starts(mapx, mapy, tdWi, tdHe)
+    if len(waypts) >= 2:
+        starts = [c for _, c in sorted(waypts)]
+        src = "source"
+    else:
+        starts = synth_starts(mapx, mapy, tdWi, tdHe)
+        src = "synthesized"
     write_triplet(out_path, display_name, theater, mapx, mapy, tdWi, tdHe,
-                  mappack_raw, bytes(overlay), starts, terrain, ttype)
+                  mappack_raw, bytes(overlay), starts, terrain, structures, ttype)
     print(f"  placed {placed} terrain cells ({unmapped} unmapped), {tib} tiberium cells, "
-          f"{len(starts)} start positions, {len(terrain)} terrain objects")
+          f"{len(starts)} start positions ({src}), {len(terrain)} terrain objects, "
+          f"{len(structures)} blossom trees")
     print(f"  -> {out_path} (+ .json + .tga)")
 
 HOUSES = ["Spain", "Greece", "USSR", "England", "Ukraine", "Germany", "France", "Turkey",
@@ -329,7 +353,7 @@ def synth_starts(mapx, mapy, w, h):
     return pts
 
 def write_triplet(path, name, theater, mapx, mapy, mapw, maph,
-                  mappack_raw, overlay_raw, starts, terrain, ttype):
+                  mappack_raw, overlay_raw, starts, terrain, structures, ttype):
     L = []
     def sec(title, kvs):
         L.append(f"[{title}]")
@@ -342,9 +366,10 @@ def write_triplet(path, name, theater, mapx, mapy, mapw, maph,
                   ("Brief", "<none>"), ("Action", "<none>"), ("Author", "TF transcoder")])
     sec("Map", [("Theater", theater.capitalize()), ("X", mapx), ("Y", mapy),
                 ("Width", mapw), ("Height", maph)])
-    for sct in ("SMUDGE", "CellTriggers", "TeamTypes", "INFANTRY", "STRUCTURES",
+    for sct in ("SMUDGE", "CellTriggers", "TeamTypes", "INFANTRY",
                 "Base", "UNITS", "AIRCRAFT", "SHIPS", "Trigs"):
         sec(sct, [])
+    sec("STRUCTURES", [(str(i), s) for i, s in enumerate(structures)])
     sec("TERRAIN", [(str(c), v) for c, v in terrain])
     for hs in HOUSES:
         sec(hs, [("Allies", hs)] + HOUSE_BLOCK)

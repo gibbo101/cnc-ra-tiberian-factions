@@ -79,6 +79,45 @@ cp /tmp/CONFIG.MEG build/remaster/Vanilla_RA/Data/CONFIG.MEG
 
 ---
 
+## ⚠️ THE SAME-SIZE RULE (read before ANY edit — proven 2026-05-30, re-proven the hard way 2026-06-09)
+
+**Every inner file in the mod's CONFIG.MEG must keep its EXACT original byte size.**
+Mechanism: the launcher reads the mod MEG's file *data* at the **base archive's offsets**,
+ignoring the mod MEG's own (correct) offset table. Grow or shrink any member and every file
+after it shifts → the launcher reads some *downstream* file at a stale offset → garbage →
+**crash at boot**. Diagnostics for this failure mode:
+
+- ClientG dies at RVA `0x56A539` with `EXCEPTION_ACCESS_VIOLATION`. That address is the
+  **generic fatal-assert path**, not a specific subsystem — extract the crash-thread stack
+  strings from the minidump (`AppData/Roaming/CnCRemastered/*.dmp`) and you'll find the real
+  assert, e.g. `pglib\xml.cpp(1227): error reading xml header from .\Data\XML\GameConstants.xml`.
+  The file it names is the innocent *downstream* victim, not the file you edited.
+- Recipe: edit in place, then pad back to the exact original size by cannibalizing bytes from
+  XML comments (or padding inside one). Verify member size == original AND total MEG == base.
+- Consequence: a mod CONFIG.MEG can only **override existing files at their exact size** —
+  never grow, shrink, add, or remove members.
+
+## Scope limit: mod CONFIG.MEG feeds the ClientG FRONT-END only (2026-06-09)
+
+`InstanceServerG` (the match-host process) resolves instance definitions, map files, and the
+lobby preview content from **base game data**, not the mod's CONFIG.MEG:
+
+- A renamed/new `<Instance>` **lists** in the skirmish lobby (display name, players, size all
+  come from the mod MEG) but **asserts at match start** — `serveripcmessagehandler.cpp(268)
+  "Creating instance <NAME>"` — because the server can't find the instance name in base data.
+- A same-size in-place edit of an existing instance's `<OverrideMapName>` changes nothing:
+  the map content still resolves base-side (hijacked `Community_2` loaded `SCMC1EA` regardless).
+- The launcher reads `Data/CNCDATA/...` map INIs via CWD-relative paths = **base install
+  only**; a mod's `Data/CNCDATA/` is never searched.
+
+Net: **a Workshop mod cannot add new official-skirmish-list maps.** Converted-map delivery
+options are Workshop *map items* (custom-maps tab, native pipeline, previews from the shipped
+TGA) or a DLL-side content swap (hacky, preview stays wrong). `CNCMAPPREVIEWDATA.XML` (also in
+CONFIG.MEG) is the per-instance preview cache — `INIData` blocks keyed by UPPERCASE instance
+name with bounds/theater/waypoints.
+
+---
+
 ## Related
 
 - `campaign-tabs-research.md` — Mission Select display model (its "Open issue #1: Distribution" is **resolved by this doc**).
