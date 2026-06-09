@@ -48,7 +48,12 @@ TD_CDATA = REPO.parent / "reference/vanilla-conquer/tiberiandawn/cdata.cpp"
 # must come from the ported TD art, never the name+size auto-match.
 TILES = ["sh1", "sh2", "sh3", "sh4", "sh5", "sh6", "sh7", "sh8", "sh9",
          "sh10", "sh11", "sh12", "sh13", "sh14", "sh15", "sh16", "sh17", "sh18",
-         "bridge1", "bridge2"]
+         "bridge1", "bridge2",
+         # extended shore family (classic MP maps: Lost Arena, River Raid,
+         # Pitfall, Tiberium Garden). Appended AFTER the originals: TILES
+         # order defines the engine template ids (401+), which must stay
+         # stable for already-converted maps.
+         "sh32", "sh33", "sh34", "sh35"]
 
 # Water/shore animation: the launcher cycles a <Tile>'s <Frames> list only for
 # templates in its preloaded base-MEG atlas, NOT for dynamic-map entries (our

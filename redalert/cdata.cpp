@@ -785,6 +785,10 @@ static TemplateTypeClass const TdTile_TDSH17(TEMPLATE_TDSH17, THEATERF_TEMPERATE
 static TemplateTypeClass const TdTile_TDSH18(TEMPLATE_TDSH18, THEATERF_TEMPERATE, "TDSH18", TXT_CLEAR);
 static TemplateTypeClass const TdTile_TDBRIDGE1(TEMPLATE_TDBRIDGE1, THEATERF_TEMPERATE, "TDBRIDGE1", TXT_CLEAR);
 static TemplateTypeClass const TdTile_TDBRIDGE2(TEMPLATE_TDBRIDGE2, THEATERF_TEMPERATE, "TDBRIDGE2", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH32(TEMPLATE_TDSH32, THEATERF_TEMPERATE, "TDSH32", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH33(TEMPLATE_TDSH33, THEATERF_TEMPERATE, "TDSH33", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH34(TEMPLATE_TDSH34, THEATERF_TEMPERATE, "TDSH34", TXT_CLEAR);
+static TemplateTypeClass const TdTile_TDSH35(TEMPLATE_TDSH35, THEATERF_TEMPERATE, "TDSH35", TXT_CLEAR);
 // <<< TF_TD_TILES defs <<<
 // >>> TF_TD_TILES radar >>>
 /* Radar stand-in class per LOGICAL icon for TD-ported templates ('W' =
@@ -813,6 +817,10 @@ extern char const* const TF_TdTileRadarClass[] = {
     "WWWW", // TEMPLATE_TDSH18
     "CCCBCCBBCBBCBBCC", // TEMPLATE_TDBRIDGE1
     "BCCCCBBBRRCBBBCCCBBCCCCBB", // TEMPLATE_TDBRIDGE2
+    "WBBBBCCCC", // TEMPLATE_TDSH32
+    "CBWCCBCCC", // TEMPLATE_TDSH33
+    "BBWBBWBBW", // TEMPLATE_TDSH34
+    "WBBWBCWBB", // TEMPLATE_TDSH35
 };
 // <<< TF_TD_TILES radar <<<
 void TemplateTypeClass::Init_Heap(void)
@@ -1058,6 +1066,10 @@ void TemplateTypeClass::Init_Heap(void)
     (void)new TemplateTypeClass(TdTile_TDSH18);
     (void)new TemplateTypeClass(TdTile_TDBRIDGE1);
     (void)new TemplateTypeClass(TdTile_TDBRIDGE2);
+    (void)new TemplateTypeClass(TdTile_TDSH32);
+    (void)new TemplateTypeClass(TdTile_TDSH33);
+    (void)new TemplateTypeClass(TdTile_TDSH34);
+    (void)new TemplateTypeClass(TdTile_TDSH35);
 // <<< TF_TD_TILES init <<<
 }
 

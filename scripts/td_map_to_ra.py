@@ -347,9 +347,10 @@ def convert(td_ini_path, out_path, display_name):
     else:
         starts = synth_starts(mapx, mapy, tdWi, tdHe)
         src = "synthesized"
-    # CnCNet-tooled sources carry a rendered preview image ([CnCNetPreview],
-    # base64 PNG) -- bake it into the triplet TGA so the lobby shows the real
-    # TD render instead of the synthetic block map.
+    # Preview image for the triplet TGA, best source first: (1) CnCNet-tooled
+    # maps carry a rendered [CnCNetPreview] PNG; (2) otherwise render the
+    # authentic look ourselves from the classic theater art (templates +
+    # tiberium + trees + red start dots); (3) block-map fallback.
     preview_png = None
     psec = get_sec(secs, "CnCNetPreview")
     if psec:
@@ -357,6 +358,30 @@ def convert(td_ini_path, out_path, display_name):
             preview_png = base64.b64decode("".join(v for _, v in psec))
         except Exception:
             preview_png = None
+    if preview_png is None:
+        try:
+            import render_td_preview
+            ov = []
+            for k, v in get_sec(secs, "Overlay"):
+                try:
+                    ov.append((int(k), v.strip().split(",")[0].lower()))
+                except ValueError:
+                    pass
+            terr = []
+            for k, v in get_sec(secs, "Terrain"):
+                try:
+                    terr.append((int(k), v.strip().split(",")[0].lower()))
+                except ValueError:
+                    pass
+            td_starts = [c for _, c in sorted(
+                (int(k), int(v)) for k, v in get_sec(secs, "Waypoints")
+                if k.isdigit() and int(v) >= 0 and int(k) <= 7)] if is_mp_source else []
+            preview_png = render_td_preview.render_png(
+                theater, bindata, td_by_id, ov, terr, td_starts,
+                (tdX, tdY, tdWi, tdHe))
+            print("  preview: rendered from classic theater art")
+        except Exception as e:
+            print(f"  preview: classic render unavailable ({e}); block map")
     write_triplet(out_path, display_name, theater, mapx, mapy, tdWi, tdHe,
                   mappack_raw, bytes(overlay), starts, terrain, structures, ttype,
                   tdtiles_raw, preview_png)
@@ -432,57 +457,53 @@ def write_triplet(path, name, theater, mapx, mapy, mapw, maph,
 
 def write_minimap_tga(path, ttype, overlay_raw, mapx, mapy, mapw, maph,
                       preview_png=None):
-    """512x512 BGRA preview. If the source carried a [CnCNetPreview] PNG it is
-    composited over the playable-bounds region (the authentic TD render);
-    otherwise cells are coloured by content (crude block map)."""
-    SCALE = 4  # 128 cells * 4 = 512
-    W = H = RA_W * SCALE
-    # Per-cell colour (R,G,B).
-    def cell_color(c):
-        if overlay_raw[c] == OVERLAY_TIB01:
-            return (60, 200, 60)        # tiberium = bright green
-        t = ttype[c]
-        if t == RA_TEMPLATE_NONE or t == 0:
-            return (40, 70, 40)         # clear ground
-        if t in (1, 2):
-            return (40, 70, 150)        # water
-        return (110, 100, 80)           # other templates = earth/rock
-    # Build pixel rows (top-left origin via descriptor bit 5).
-    row_cache = {}
+    """512x512 BGRA preview. CONVENTION (matched to the game's own custom-map
+    export, e.g. Colosseum 2): the TGA holds the PLAYABLE BOUNDS scaled to
+    fill the full canvas -- the lobby plots start markers at bounds-relative
+    fractions of the pane, so full-canvas art mis-aligns them. A source
+    [CnCNetPreview] PNG (which covers exactly the playable bounds) is used
+    directly; otherwise the block map is rendered from the bounds region."""
+    W = H = 512
     pixels = bytearray(W * H * 4)
-    for cy in range(RA_W):
-        for cx in range(RA_W):
-            r, g, b = cell_color(ra_cell(cx, cy))
-            # dim cells outside the playable bounds
-            if not (mapx <= cx < mapx + mapw and mapy <= cy < mapy + maph):
-                r, g, b = r // 3, g // 3, b // 3
-            for dy in range(SCALE):
-                py = cy * SCALE + dy
-                base = (py * W + cx * SCALE) * 4
-                for dx in range(SCALE):
-                    o = base + dx * 4
-                    pixels[o] = b; pixels[o + 1] = g; pixels[o + 2] = r; pixels[o + 3] = 255
     if preview_png is not None:
         try:
             import io
             from PIL import Image
             im = Image.open(io.BytesIO(preview_png)).convert("RGB")
-            pw, ph = mapw * SCALE, maph * SCALE
-            im = im.resize((pw, ph), Image.LANCZOS)
-            px0, py0 = mapx * SCALE, mapy * SCALE
+            im = im.resize((W, H), Image.LANCZOS)
             src = im.load()
-            for y in range(ph):
-                base_off = ((py0 + y) * W + px0) * 4
-                for x in range(pw):
+            for y in range(H):
+                row = y * W * 4
+                for x in range(W):
                     r, g, b = src[x, y]
-                    o = base_off + x * 4
+                    o = row + x * 4
                     pixels[o] = b; pixels[o + 1] = g; pixels[o + 2] = r; pixels[o + 3] = 255
         except Exception as e:
-            print(f"  WARNING: preview composite failed ({e}); keeping block map")
+            print(f"  WARNING: preview composite failed ({e}); using block map")
+            preview_png = None
+    if preview_png is None:
+        def cell_color(c):
+            if overlay_raw[c] == OVERLAY_TIB01:
+                return (60, 200, 60)        # tiberium = bright green
+            t = ttype[c]
+            if t == RA_TEMPLATE_NONE or t == 0:
+                return (40, 70, 40)         # clear ground
+            if t in (1, 2):
+                return (40, 70, 150)        # water
+            return (110, 100, 80)           # other templates = earth/rock
+        for py in range(H):
+            cy = mapy + py * maph // H
+            row = py * W * 4
+            for px_ in range(W):
+                cx = mapx + px_ * mapw // W
+                r, g, b = cell_color(ra_cell(cx, cy))
+                o = row + px_ * 4
+                pixels[o] = b; pixels[o + 1] = g; pixels[o + 2] = r; pixels[o + 3] = 255
     header = bytes([0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0]) + struct.pack("<HH", W, H) + bytes([32, 0x20])
     with open(path, "wb") as f:
         f.write(header)
         f.write(pixels)
+
 
 # ===================================================================== inspect
 def inspect_ra(path):

@@ -23,23 +23,33 @@ Steam UGC handle or other tool will collide with.
 Usage: python3 scripts/build_map_bundle.py
 Then:  rebuild (cmake workflow) + deploy. Adding a map = add a MAPS row.
 """
-import os, shutil, sys, tempfile
+import os, shutil, subprocess, sys, tempfile
 from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import td_map_to_ra
 
 REPO = Path(__file__).resolve().parent.parent
-TD_COMMUNITY = (Path.home()
-                / ".steam/steam/steamapps/common/CnCRemastered/Data/CNCDATA/TIBERIAN_DAWN/COMMUNITY")
+GAME = Path.home() / ".steam/steam/steamapps/common/CnCRemastered"
+TD_COMMUNITY = GAME / "Data/CNCDATA/TIBERIAN_DAWN/COMMUNITY"
+TD_GENERAL = GAME / "Data/CNCDATA/TIBERIAN_DAWN/CD1/GENERAL.MIX"
 BUNDLE = REPO / "resources/remaster_mods/Vanilla_RA/CustomMaps"
 
-# (TD source ini, bundle index, display name)
+# (source, bundle index, display name). Source = loose COMMUNITY ini stem,
+# or "mix:<stem>" for the classic MP maps inside GENERAL.MIX (ini+bin).
 # Display name shows in the lobby's custom list; keep the player count and
 # the TF tag visible (the maps persist in Documents even without the mod).
+# All TEMPERATE sources; winter/desert wait on their theatre work.
 MAPS = [
     ("SCMC2EA", 1, "TD Elevation (2) [TF]"),
     ("SCMC3EA", 2, "TD Heavy Metal (4) [TF]"),
+    ("mix:scm01ea", 3, "TD Green Acres (8) [TF]"),
+    ("mix:scm03ea", 4, "TD Lost Arena (8) [TF]"),
+    ("mix:scm04ea", 5, "TD River Raid (6) [TF]"),
+    ("mix:scm08ea", 6, "TD Pitfall (8) [TF]"),
+    ("mix:scm71ea", 7, "TD One Pass Fits All (6) [TF]"),
+    ("mix:scm73ea", 8, "TD King Takes Pawn (6) [TF]"),
+    ("mix:scm96ea", 9, "TD Tiberium Garden (6) [TF]"),
 ]
 
 
@@ -52,7 +62,16 @@ def main():
     work = Path(tempfile.mkdtemp())
     for src, index, name in MAPS:
         out = work / f"map{index}.mpr"
-        td_map_to_ra.convert(str(TD_COMMUNITY / f"{src}.INI"), str(out), name)
+        if src.startswith("mix:"):
+            stem = src[4:]
+            for ext in (".ini", ".bin"):
+                subprocess.run([sys.executable, str(REPO / "scripts/mix_tools.py"), "extract",
+                                str(TD_GENERAL), stem + ext, str(work)],
+                               check=True, stdout=subprocess.DEVNULL)
+            src_ini = work / (stem + ".ini")
+        else:
+            src_ini = TD_COMMUNITY / f"{src}.INI"
+        td_map_to_ra.convert(str(src_ini), str(out), name)
         stem = ugc_stem(index)
         for ext_src, ext_dst in ((".mpr", ".MPR"), (".json", ".JSON"), (".tga", ".TGA")):
             shutil.copy(out.with_suffix(ext_src), BUNDLE / (stem + ext_dst))

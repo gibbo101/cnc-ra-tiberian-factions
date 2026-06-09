@@ -2272,6 +2272,10 @@ typedef enum TemplateType : unsigned short
     TEMPLATE_TDSH18,  // id 418
     TEMPLATE_TDBRIDGE1,  // id 419
     TEMPLATE_TDBRIDGE2,  // id 420
+    TEMPLATE_TDSH32,  // id 421
+    TEMPLATE_TDSH33,  // id 422
+    TEMPLATE_TDSH34,  // id 423
+    TEMPLATE_TDSH35,  // id 424
 // <<< TF_TD_TILES enum <<<
     TEMPLATE_COUNT,
     TEMPLATE_NONE = 65535,
