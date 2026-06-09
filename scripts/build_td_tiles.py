@@ -50,6 +50,18 @@ TILES = ["sh1", "sh2", "sh3", "sh4", "sh5", "sh6", "sh7", "sh8", "sh9",
          "sh10", "sh11", "sh12", "sh13", "sh14", "sh15", "sh16", "sh17", "sh18",
          "bridge1", "bridge2"]
 
+# Water/shore animation: the launcher cycles a <Tile>'s <Frames> list only for
+# templates in its preloaded base-MEG atlas, NOT for dynamic-map entries (our
+# render path) -- those always draw frame 0. The proven pattern is FLAGFLY's
+# (dllinterface.cpp): vary ShapeIndex over time. So anim frames are flattened
+# into SHAPES: Shape = icon * ANIM_FRAMES + frame, one <Frame> each. TD's HD
+# terrain anim is uniformly 8 frames where present (verified across the whole
+# sh/bridge family); static icons alias their single TGA across all 8 shapes
+# (XML references only -- the ZIP stores each real frame once) so the DLL can
+# use ONE formula for every icon with no per-icon tables. Cell_Class_Draw_It
+# computes ShapeIndex = TIcon * 8 + (Frame / rate) % 8.
+ANIM_FRAMES = 8
+
 # Markers (idempotent splice). C++-style for code files; XML files MUST use
 # XML comments instead -- a raw '<' in text content (the '<<<' arrows) makes
 # the tileset XML ill-formed and CRASHES ClientG at map load (2026-06-09).
@@ -201,7 +213,11 @@ def build_tile(name, work):
     radar = {}
     with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as zf:
         for icon, entries in icons.items():
-            frames_xml = []
+            if len(entries) not in (1, ANIM_FRAMES):
+                raise SystemExit(f"{name} icon {icon}: {len(entries)} frames "
+                                 f"(expected 1 or {ANIM_FRAMES}) -- stride layout broken")
+            if icon * ANIM_FRAMES + ANIM_FRAMES - 1 > 255:
+                raise SystemExit(f"{name} icon {icon}: flattened ShapeIndex exceeds u8")
             for fi, entry in enumerate(entries):
                 dds = extract_from_meg(TD_TEX_MEG, entry, work)
                 im = Image.open(dds).convert("RGBA")
@@ -212,12 +228,14 @@ def build_tile(name, work):
                 buf = io.BytesIO(); cropped.save(buf, "TGA")
                 zf.writestr(fn + ".tga", buf.getvalue())
                 zf.writestr(fn + ".meta", json.dumps(meta))
-                frames_xml.append(f"\t\t\t\t\t\t<Frame>{stem}\\{fn}.tga</Frame>")
-            xml_tiles.append(
-                "\t\t\t<Tile>\n\t\t\t\t<Key>\n\t\t\t\t\t<Name>{n}</Name>\n\t\t\t\t\t<Shape>{s}</Shape>\n"
-                "\t\t\t\t</Key>\n\t\t\t\t<Value>\n\t\t\t\t\t<Frames>\n{f}\n"
-                "\t\t\t\t\t</Frames>\n\t\t\t\t</Value>\n\t\t\t</Tile>".format(
-                    n=ra, s=icon, f="\n".join(frames_xml)))
+            for f in range(ANIM_FRAMES):
+                fn = f"{stem}-{icon:04d}-{f % len(entries):02d}"
+                xml_tiles.append(
+                    "\t\t\t<Tile>\n\t\t\t\t<Key>\n\t\t\t\t\t<Name>{n}</Name>\n\t\t\t\t\t<Shape>{s}</Shape>\n"
+                    "\t\t\t\t</Key>\n\t\t\t\t<Value>\n\t\t\t\t\t<Frames>\n"
+                    "\t\t\t\t\t\t<Frame>{stem}\\{fn}.tga</Frame>\n"
+                    "\t\t\t\t\t</Frames>\n\t\t\t\t</Value>\n\t\t\t</Tile>".format(
+                        n=ra, s=icon * ANIM_FRAMES + f, stem=stem, fn=fn))
     # classic .tem staged for TFASSETS -- extracted from TD's TEMPERAT.MIX, then
     # CONVERTED to RA's iconset format (TD-format files crash RA's Land_Type).
     TEM_STAGE.mkdir(parents=True, exist_ok=True)

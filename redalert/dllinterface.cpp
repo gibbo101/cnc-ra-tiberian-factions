@@ -7088,7 +7088,21 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
         td_entry.Height = CELL_PIXEL_H;
         td_entry.CellX = Cell_X(cell);
         td_entry.CellY = Cell_Y(cell);
-        td_entry.ShapeIndex = (unsigned char)cell_ptr->TIcon;
+        // Water/shore animation: the launcher cycles <Frames> only for atlas
+        // templates, never for dynamic-map entries, so anim frames are
+        // flattened into shapes by build_td_tiles.py (Shape = icon * 8 + frame,
+        // static icons aliased across all 8) and cycled here by varying
+        // ShapeIndex over time -- the FLAGFLY pattern (Frame % 14, below).
+        // TD's HD terrain anim is uniformly 8 frames; /2 gives a ~1s loop at
+        // normal game speed. Max flattened index = bridge2 icon 24 * 8 + 7 =
+        // 199, inside the u8.
+        enum
+        {
+            TD_TILE_ANIM_FRAMES = 8,
+            TD_TILE_ANIM_RATE = 2 // game frames per animation frame
+        };
+        td_entry.ShapeIndex = (unsigned char)(cell_ptr->TIcon * TD_TILE_ANIM_FRAMES
+                                              + (Frame / TD_TILE_ANIM_RATE) % TD_TILE_ANIM_FRAMES);
         td_entry.IsSmudge = false;
         td_entry.IsOverlay = true;
         td_entry.IsResource = false;
