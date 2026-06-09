@@ -33,6 +33,7 @@ REPO = Path(__file__).resolve().parent.parent
 GAME = Path.home() / ".steam/steam/steamapps/common/CnCRemastered"
 TD_COMMUNITY = GAME / "Data/CNCDATA/TIBERIAN_DAWN/COMMUNITY"
 TD_GENERAL = GAME / "Data/CNCDATA/TIBERIAN_DAWN/CD1/GENERAL.MIX"
+TD_COVERTOPS = GAME / "Data/CNCDATA/TIBERIAN_DAWN/CD1/SC-001.MIX"
 BUNDLE = REPO / "resources/remaster_mods/Vanilla_RA/CustomMaps"
 
 # (source, bundle index, display name). Source = loose COMMUNITY ini stem,
@@ -50,6 +51,12 @@ MAPS = [
     ("mix:scm71ea", 7, "TD One Pass Fits All (6) [TF]"),
     ("mix:scm73ea", 8, "TD King Takes Pawn (6) [TF]"),
     ("mix:scm96ea", 9, "TD Tiberium Garden (6) [TF]"),
+    # Covert Operations additions (SC-001.MIX)
+    ("mix:scm50ea", 10, "TD Emerald Highlands (8) [TF]"),
+    ("mix:scm61ea", 11, "TD King of the Mountain (8) [TF]"),
+    ("mix:scm62ea", 12, "TD Surgical Incision (7) [TF]"),
+    ("mix:scm75ea", 13, "TD Village of the Unfortunate (6) [TF]"),
+    ("mix:scm90ea", 14, "TD A Long Way from Home (6) [TF]"),
 ]
 
 
@@ -65,9 +72,15 @@ def main():
         if src.startswith("mix:"):
             stem = src[4:]
             for ext in (".ini", ".bin"):
-                subprocess.run([sys.executable, str(REPO / "scripts/mix_tools.py"), "extract",
-                                str(TD_GENERAL), stem + ext, str(work)],
-                               check=True, stdout=subprocess.DEVNULL)
+                got = False
+                for mix in (TD_GENERAL, TD_COVERTOPS):
+                    r = subprocess.run([sys.executable, str(REPO / "scripts/mix_tools.py"),
+                                        "extract", str(mix), stem + ext, str(work)],
+                                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                    if r.returncode == 0 and (work / (stem + ext)).exists():
+                        got = True
+                        break
+                assert got, f"{stem}{ext} not found in GENERAL.MIX or SC-001.MIX"
             src_ini = work / (stem + ".ini")
         else:
             src_ini = TD_COMMUNITY / f"{src}.INI"
