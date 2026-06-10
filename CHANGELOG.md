@@ -12,19 +12,31 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
   occasionally spawn a visceroid — a hostile mutant creature that attacks
   everyone. Blossom trees stand at the heart of the fields, shedding spores
   and seeding fresh Tiberium around them.
-- **A 14-map Tiberian Dawn map pack.** Every temperate multiplayer map from
-  Tiberian Dawn and The Covert Operations, faithfully converted: Green Acres,
-  Lost Arena, River Raid, Pitfall, One Pass Fits All, King Takes Pawn,
-  Tiberium Garden, Emerald Highlands, King of the Mountain, Surgical Incision,
-  Village of the Unfortunate, A Long Way from Home, plus the community maps
-  Elevation and Heavy Metal. Each map keeps its original layout, start
-  positions, Tiberium fields, and blossom trees, with an authentic preview
-  image in the lobby. The maps appear under **Custom Maps** (look for the
-  `[TF]` tag) after your first match with the mod — and they load fine in
-  unmodded Red Alert too, just without the Tiberium and TD scenery.
-- **Tiberian Dawn terrain, remastered.** TD's own coastlines, cliffs, and
-  bridges render in full HD on the converted maps — including animated
-  water lapping along the shorelines, just like the TD remaster.
+- **A 31-map Tiberian Dawn map pack** — every multiplayer map from Tiberian
+  Dawn and The Covert Operations, faithfully converted across all three
+  theatres:
+  - *Temperate (14):* Green Acres, Lost Arena, River Raid, Pitfall, One Pass
+    Fits All, King Takes Pawn, Tiberium Garden, Emerald Highlands, King of
+    the Mountain, Surgical Incision, Village of the Unfortunate, A Long Way
+    from Home, plus the community maps Elevation and Heavy Metal.
+  - *Winter (4):* Northern Explosion, Nowhere To Hide, Winter Wonderland,
+    and Tournament Middle Camp — TD's icy-forest winter look, faithfully
+    recreated.
+  - *Desert (13):* Red Sands, Sand Trap, Cactus Valley, Desert Madness,
+    Diverse Region, Eye of the Storm, Four Corners, Lakefront Clash,
+    Marooned, Monkey in the Middle, Moosehead Barrens, Straight and Narrow,
+    and Tournament Desert — the classic TD desert, a theatre Red Alert
+    never had.
+
+  Each map keeps its original layout, start positions, Tiberium fields, and
+  blossom trees, with an authentic preview image in the lobby. The maps
+  appear under **Custom Maps** (look for the `[TF]` tag) after your first
+  match with the mod — and they load fine in unmodded Red Alert too, just
+  without the Tiberium and TD scenery.
+- **Tiberian Dawn terrain, remastered.** TD's own coastlines, cliffs,
+  bridges, winter forests, and desert dunes render in full HD on the
+  converted maps — including animated water lapping along the shorelines,
+  just like the TD remaster.
 
 ## [1.16] — 2026-06-07
 
