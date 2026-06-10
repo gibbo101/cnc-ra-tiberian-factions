@@ -501,8 +501,11 @@ void TerrainClass::AI(void)
     **	closing the ecosystem loop). The blossom is a Neutral BUILDING
     **	(STRUCT_TDBLOSSOM) rather than a terrain object, because terrain can't take our
     **	custom HD art; the building's AI owns the spore-shed animation + Tiberium
-    **	seeding. We free this tree first, then place the building on the same cell
-    **	(pointer ctor avoids the delegating-ctor IsActive=0 bug). Checked on the
+    **	seeding. The neighbour check is the TIB01 overlay specifically, NOT
+    **	LAND_TIBERIUM -- RA's Ore and Gems are engine-Tiberium too and must not
+    **	bloom trees (first-playtest bug: ore fields spawned blossom trees). We
+    **	free this tree first, then place the building on the same cell (pointer
+    **	ctor avoids the delegating-ctor IsActive=0 bug). Checked on the
     **	GrowthRate cadence.
     */
     if ((Class->Type >= TERRAIN_TREE1 && Class->Type <= TERRAIN_CLUMP5)
@@ -511,7 +514,7 @@ void TerrainClass::AI(void)
         int tibcount = 0;
         for (FacingType i = FACING_N; i < FACING_COUNT; i++) {
             CellClass* nc = Map[center].Adjacent_Cell(i);
-            if (nc != NULL && nc->Land_Type() == LAND_TIBERIUM) {
+            if (nc != NULL && nc->Overlay == OVERLAY_TIB01) {
                 tibcount++;
             }
         }

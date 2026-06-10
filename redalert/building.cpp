@@ -1236,7 +1236,10 @@ void BuildingClass::AI(void)
         **	Seed/grow the Tiberium field. Push any adjacent Tiberium edge outward
         **	first (so the field keeps expanding once the tree's own neighbours have
         **	filled in); otherwise germinate the first cell. Gated by the lobby
-        **	"Tiberium grows" option, matching Can_Tiberium_Grow/Spread.
+        **	"Tiberium grows" option, matching Can_Tiberium_Grow/Spread. The edge
+        **	check is the TIB01 overlay specifically, NOT LAND_TIBERIUM -- a
+        **	blossom standing next to RA Ore/Gems (engine-Tiberium too) must not
+        **	push the ORE field outward.
         */
         if ((Session.Type == GAME_NORMAL || Session.Options.Tiberium)
             && (Frame % (Rule.GrowthRate * TICKS_PER_MINUTE)) == 0) {
@@ -1244,7 +1247,7 @@ void BuildingClass::AI(void)
             bool spread = false;
             for (FacingType i = FACING_N; i < FACING_COUNT; i++) {
                 CellClass* nc = Map[center].Adjacent_Cell(i);
-                if (nc != NULL && nc->Land_Type() == LAND_TIBERIUM && nc->Spread_Tiberium(true)) {
+                if (nc != NULL && nc->Overlay == OVERLAY_TIB01 && nc->Spread_Tiberium(true)) {
                     spread = true;
                     break;
                 }

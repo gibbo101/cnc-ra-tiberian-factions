@@ -1306,14 +1306,16 @@ void InfantryClass::AI(void)
     **	Tiberian Factions -- Tiberium poisons infantry. Classic Tiberian Dawn
     **	behaviour, absent from Red Alert (ore is harmless) AND from the released
     **	EA Remastered source, so we recreate it to the well-known design: any
-    **	infantry standing or walking on a Tiberium cell (Ore / Gems / our TIB01
-    **	all resolve to LAND_TIBERIUM) loses a little health on a slow cadence
-    **	(~1s, staggered per unit so a squad doesn't tick in lockstep). The
+    **	infantry standing or walking on a TD Tiberium cell loses a little health
+    **	on a slow cadence (~1s, staggered per unit so a squad doesn't tick in
+    **	lockstep). The check is the TIB01 overlay specifically, NOT
+    **	LAND_TIBERIUM -- RA's Ore and Gems are engine-Tiberium too and must stay
+    **	harmless (first-playtest bug: ore fields poisoned infantry). The
     **	Harvester and the unit-type Visceroid are inherently immune because this
     **	only hooks infantry. Tunable: the cadence mask and the damage value.
     */
     if (In_Which_Layer() == LAYER_GROUND && !IsInLimbo
-        && Map[Coord_Cell(Coord)].Land_Type() == LAND_TIBERIUM) {
+        && Map[Coord_Cell(Coord)].Overlay == OVERLAY_TIB01) {
         if (((Frame + ID) % 50) == 0) { // TD-calibrated: ~28 tiles to kill a minigunner
             // Magnitude isn't in the released EA source, so these are the tuning
             // dials, calibrated against the real TD game where a minigunner
