@@ -2,7 +2,7 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
-## [1.17] — 2026-06-10
+## [1.2.0] — 2026-06-10
 
 ### Added
 - **Tiberium.** The real thing, alongside Red Alert's ore: green crystal fields
@@ -38,7 +38,7 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
   converted maps — including animated water lapping along the shorelines,
   just like the TD remaster.
 
-## [1.16] — 2026-06-07
+## [1.1.6] — 2026-06-07
 
 ### Changed
 - **Streamlined the main menu.** Removed "Start New Game" and moved "Mission
@@ -47,7 +47,7 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
   alongside the new GDI/Nod faction emblems. Everything is now reached through
   Mission Select, which is also where future GDI/Nod campaigns will live.
 
-## [1.15] — 2026-06-07
+## [1.1.5] — 2026-06-07
 
 ### Fixed
 - **GDI/Nod flag on the skirmish map.** When you picked a start position in the
@@ -55,7 +55,7 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
   country flag (Spain for GDI, Turkey for Nod) instead of the faction emblem. It
   now shows the GDI eagle and Nod scorpion, matching the player-slot icons.
 
-## [1.14] — 2026-06-07
+## [1.1.4] — 2026-06-07
 
 ### Fixed
 - **Skirmish start positions could overlap.** When you picked your own start
@@ -64,7 +64,7 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
   position. (The cause was the order in which start spots were assigned, not
   anything faction-specific — it was just easiest to notice playing GDI/Nod.)
 
-## [1.13] — 2026-06-07
+## [1.1.3] — 2026-06-07
 
 ### Fixed
 - **GDI/Nod unit build times.** GDI and Nod vehicles, infantry, and aircraft
@@ -73,7 +73,7 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
   Alert's build-speed scaling. They now build at the same speed as their
   Allied/Soviet counterparts. Building construction times are unchanged.
 
-## [1.12] — 2026-06-04
+## [1.1.2] — 2026-06-04
 
 Fixes from feedback by DontCryJustDie (author of the TD-Assets mod).
 
@@ -88,7 +88,7 @@ Fixes from feedback by DontCryJustDie (author of the TD-Assets mod).
   previous build shipped with embedded debug symbols that did nothing in-game;
   they're now stripped from the released file. No gameplay change.
 
-## [1.11] — 2026-06-03
+## [1.1.1] — 2026-06-03
 
 First-playtest fixes (thanks to a GDI/Nod vs Allies/Soviet session).
 
