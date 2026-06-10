@@ -2,11 +2,12 @@
 """
 Classic-art preview renderer for converted TD maps (Tiberian Factions mod).
 
-The two community TD maps carry an embedded [CnCNetPreview] PNG, but the 14
-classic MP maps (GENERAL.MIX scm*) predate that tooling. This module renders
-an equivalent authentic top-down preview straight from the classic theater
-art: template iconsets + tiberium overlay + terrain SHPs from TEMPERAT.MIX,
-coloured by TEMPERAT.PAL, with red start-position dots -- the same look
+The community TD maps carry an embedded [CnCNetPreview] PNG, but the classic
+MP maps (GENERAL.MIX / SC-001.MIX scm*) predate that tooling. This module
+renders an equivalent authentic top-down preview straight from the classic
+theater art: template iconsets + tiberium overlay + terrain SHPs from the
+theatre MIX (TEMPERAT.MIX / WINTER.MIX), coloured by the theatre palette
+(shipped INSIDE each MIX), with red start-position dots -- the same look
 CnCNet's preview generator produces. Used by td_map_to_ra.convert as the
 preview source when the TD ini has no [CnCNetPreview].
 
@@ -15,14 +16,15 @@ Format notes (verified against common/iconset.cpp + our td_tem_to_ra):
   as i16; size, icons_off, pal_off, remaps_off, trans_off, map_off as i32).
   Icon pixels are raw 8bpp icon_w*icon_h blocks at icons_off; the table at
   map_off maps LOGICAL icon (the .bin TIcon) -> physical block, 0xFF = blank.
-- Overlay ti1..ti12.tem and terrain t01..split2 .tem are SHP-format (LCW
+- Overlay ti1..ti12 and terrain t01..split2 files are SHP-format (LCW
   keyframe chains -- shptools.decode_shp), palette index 0 = transparent.
+- Theatre file extension follows TD's convention: .tem temperate, .win winter.
 """
 import io, os, struct, sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from mix_tools import read_mix, ww_crc
-from shptools import decode_shp, load_pal
+from shptools import decode_shp
 
 GAME = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered")
 TD_CD1 = os.path.join(GAME, "Data/CNCDATA/TIBERIAN_DAWN/CD1")
@@ -34,11 +36,16 @@ _theaters = {}
 
 
 class TheaterArt:
-    def __init__(self, mix_path, pal_path):
+    def __init__(self, mix_path, pal_name, ext):
         _count, _ds, entries, blob = read_mix(mix_path)
         self.index = {crc & 0xFFFFFFFF: (off, size) for crc, off, size in entries}
         self.blob = blob
-        self.pal = [(r << 2, g << 2, b << 2) for r, g, b in load_pal(pal_path)]
+        self.ext = "." + ext
+        raw = self.file(pal_name)
+        if raw is None:
+            raise FileNotFoundError(f"{pal_name} not inside {mix_path}")
+        self.pal = [(raw[i * 3] << 2, raw[i * 3 + 1] << 2, raw[i * 3 + 2] << 2)
+                    for i in range(256)]
         self._cache = {}
 
     def file(self, name):
@@ -51,7 +58,7 @@ class TheaterArt:
     def iconset(self, name):
         """-> (data, icons_off, map_off) or None."""
         if name not in self._cache:
-            data = self.file(name + ".tem")
+            data = self.file(name + self.ext)
             if data is None:
                 self._cache[name] = None
             else:
@@ -64,7 +71,7 @@ class TheaterArt:
         """-> (hdr, frames) or None; cached."""
         key = "shp:" + name
         if key not in self._cache:
-            data = self.file(name + ".tem")
+            data = self.file(name + self.ext)
             if data is None:
                 self._cache[key] = None
             else:
@@ -75,13 +82,22 @@ class TheaterArt:
         return self._cache[key]
 
 
+# theatre -> (MIX, in-mix palette, classic file extension). Both theatres ship
+# their palette INSIDE the MIX (no loose WINTER.PAL exists on the CD data).
+_CFG = {
+    "temperate": ("TEMPERAT.MIX", "temperat.pal", "tem"),
+    "winter": ("WINTER.MIX", "winter.pal", "win"),
+    "desert": ("DESERT.MIX", "desert.pal", "des"),
+}
+
+
 def theater_art(theater):
     t = theater.lower()
     if t not in _theaters:
-        if t != "temperate":
+        if t not in _CFG:
             raise NotImplementedError(f"theater {theater} not wired yet")
-        _theaters[t] = TheaterArt(os.path.join(TD_CD1, "TEMPERAT.MIX"),
-                                  os.path.join(TD_CD1, "TEMPERAT.PAL"))
+        mix, pal, ext = _CFG[t]
+        _theaters[t] = TheaterArt(os.path.join(TD_CD1, mix), pal, ext)
     return _theaters[t]
 
 

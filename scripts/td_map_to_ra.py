@@ -126,21 +126,27 @@ def get_sec(secs, name):
 
 # ===================================================================== tables
 def parse_templates(cs_path):
-    """Parse 'new TemplateType(id, "name", w, h, ...)' -> list of (id,name,w,h)."""
+    """Parse 'new TemplateType(id, "name", w, h, new TheaterType[] {...})' ->
+    list of (id, name, w, h, theaters-string)."""
     txt = open(cs_path, encoding="latin-1").read()
     out = []
-    for m in re.finditer(r'new TemplateType\(\s*(\d+)\s*,\s*"([^"]+)"\s*,\s*(\d+)\s*,\s*(\d+)', txt):
-        out.append((int(m.group(1)), m.group(2).lower(), int(m.group(3)), int(m.group(4))))
+    for m in re.finditer(r'new TemplateType\(\s*(\d+)\s*,\s*"([^"]+)"\s*,\s*(\d+)\s*,\s*(\d+)'
+                         r'\s*,\s*new TheaterType\[\]\s*\{([^}]*)\}', txt):
+        out.append((int(m.group(1)), m.group(2).lower(), int(m.group(3)), int(m.group(4)),
+                    m.group(5)))
     return out
 
-def build_template_map():
-    """TD template id -> RA template id (by name, with the shore/pavement renames).
+def build_template_map(ra_theater_token):
+    """TD template id -> RA template id (by name, with the shore/pavement renames),
+    only accepting RA templates available in the TARGET theatre (a winter map
+    name-matched onto a temperate-only RA template would render missing art).
+    ra_theater_token = "Temperate" | "Snow" (the editor source's TheaterTypes name).
     Returns (tmap, missing, td_by_id, ra_by_id) where *_by_id = {id:(name,w,h)}."""
     td = parse_templates(os.path.join(EDITOR_SRC, "TiberianDawn", "TemplateTypes.cs"))
     ra = parse_templates(os.path.join(EDITOR_SRC, "RedAlert", "TemplateTypes.cs"))
-    ra_by_name = {name: tid for tid, name, w, h in ra}
-    td_by_id = {tid: (name, w, h) for tid, name, w, h in td}
-    ra_by_id = {tid: (name, w, h) for tid, name, w, h in ra}
+    ra_by_name = {name: tid for tid, name, w, h, th in ra if ra_theater_token in th}
+    td_by_id = {tid: (name, w, h) for tid, name, w, h, th in td}
+    ra_by_id = {tid: (name, w, h) for tid, name, w, h, th in ra}
     # Known renames TD -> RA (shores sh1..sh9 -> sh01..sh09).
     def ra_lookup(name):
         if name in ra_by_name:
@@ -150,7 +156,7 @@ def build_template_map():
             return ra_by_name["sh0" + m.group(1)]
         return None
     tmap, missing = {}, []
-    for tid, name, w, h in td:
+    for tid, name, w, h, th in td:
         rid = ra_lookup(name)
         if rid is None:
             missing.append(name)
@@ -176,8 +182,19 @@ def convert(td_ini_path, out_path, display_name):
 
     mp = {k.lower(): v for k, v in secs.get("MAP", secs.get("Map", []))}
     theater = mp.get("theater", "temperate").lower()
-    if theater != "temperate":
-        print(f"WARNING: source theater is '{theater}'; only temperate is supported for now.")
+    # TD theatre -> RA theatre. Winter maps land in RA's TEMPERATE slot (TD
+    # winter is icy-temperate; the TDW* template family carries TD winter art
+    # there, the rest name-map onto RA temperate tiles -- so RA's native
+    # bibs/radar/vanilla-fallback all match the look); desert maps land in the
+    # INTERIOR slot (everything rides the ported TD tiles -- interior has no
+    # outdoor templates to name-map onto).
+    RA_THEATER = {"temperate": ("temperate", "Temperate"),
+                  "winter": ("temperate", "Temperate"),
+                  "desert": ("interior", "Interior")}
+    if theater not in RA_THEATER:
+        print(f"WARNING: source theater '{theater}' unsupported; "
+              f"converting as temperate.")
+    ra_theater, ra_token = RA_THEATER.get(theater, RA_THEATER["temperate"])
     tdX, tdY = int(mp.get("x", 0)), int(mp.get("y", 0))
     tdWi, tdHe = int(mp.get("width", TD_W)), int(mp.get("height", TD_W))
 
@@ -185,56 +202,75 @@ def convert(td_ini_path, out_path, display_name):
     offx = (RA_W - TD_W) // 2
     offy = (RA_W - TD_W) // 2
 
-    tmap, missing, td_by_id, ra_by_id = build_template_map()
+    tmap, missing, td_by_id, ra_by_id = build_template_map(ra_token)
 
     # Ported TD tiles (build_td_tiles.py): TD template NAME -> new RA template id.
     # These map 1:1 with TD's exact size+art, so icons align perfectly -- they take
     # priority over the name+size auto-match and skip the size-gate entirely.
+    # Keyed by the SOURCE TD theatre: a winter map's "sh1" maps to TDWSH1 (TD
+    # winter art hosted in RA's temperate slot), a temperate/desert map's to
+    # TDSH1. Mapping a template onto a map whose RA theatre it isn't
+    # registered for would hit art the engine never loads (Land_Type
+    # div-by-zero crash), so only the matching source-theatre entry is used.
     ported = {}
     mapper_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "td_ra_tile_map.json")
     if os.path.exists(mapper_path):
         import json as _json
         for tdname, info in _json.load(open(mapper_path)).items():
-            ported[tdname] = info["ra_id"]
+            if theater in info:
+                ported[tdname] = info[theater]["ra_id"]
 
-    # ---- terrain (MapPack) ----
-    # We only trust a name-match when TD and RA agree on the template SIZE (WxH) and
-    # the per-cell icon is in range. RA reuses some TD names for differently-sized /
-    # re-laid-out tiles (shores sh1/sh2/sh8/sh10/sh18, bridges) -> a blind copy renders
-    # white "missing" tiles (icon out-of-range) or random coast tiles on land. Those
-    # cells are rendered CLEAR instead, which looks clean (at the cost of dropping the
-    # mismatched shore/bridge pieces -- to be remapped properly later).
-    ttype = [RA_TEMPLATE_NONE] * RA_CELLS
-    ticon = [0] * RA_CELLS
-    placed = 0
-    import collections
+    # ---- terrain: two independent layers per cell ----
+    # [MapPack] (safe_*) = the VANILLA-SAFE fallback: the name+size auto-match
+    #   onto RA's own templates, gated on identical size + in-range icon (RA
+    #   reuses some TD names for differently-sized tiles; a blind copy renders
+    #   white "missing" tiles or random coast tiles). Unmatched -> clear.
+    #   TD-ported ids (401+) NEVER enter MapPack: they would index past a
+    #   vanilla DLL's template heap and crash, and self-installed
+    #   Local_Custom_Maps outlive the mod being enabled.
+    # [TFTDTiles] (td_*) = the authentic layer only our DLL reads: every cell
+    #   with a ported TD template (for WINTER maps that is the ENTIRE tileset
+    #   incl. CLEAR ground -- TD winter art is icy-temperate green, RA snow is
+    #   all-white, so every cell must come from TD art; for temperate only the
+    #   shores/bridges differ). Applied over MapPack at load (display.cpp).
+    safe_tt, safe_ic = [RA_TEMPLATE_NONE] * RA_CELLS, [0] * RA_CELLS
+    td_tt, td_ic = [RA_TEMPLATE_NONE] * RA_CELLS, [0] * RA_CELLS
+    placed = td_cells = 0
     diag = {}  # tid -> [count, maxicon]
     for y in range(TD_W):
         for x in range(TD_W):
             t = bindata[td_cell(x, y) * 2]
             ic = bindata[td_cell(x, y) * 2 + 1]
+            rc = ra_cell(x + offx, y + offy)
             if t == 0xFF:
+                # CLEAR ground. TD renders the theatre's clear1 with a
+                # positional 4x4 icon pattern (cell x/y mod 4 -- offx/offy are
+                # multiples of 4 so RA coords keep TD's pattern). When clear1
+                # is ported (winter), modded clients get TD's green ground via
+                # the side-channel; MapPack stays clear = RA theatre ground.
+                if "clear1" in ported:
+                    td_tt[rc] = ported["clear1"]
+                    td_ic[rc] = ((x + offx) & 3) + ((y + offy) & 3) * 4
+                    td_cells += 1
                 continue
             d = diag.setdefault(t, [0, 0]); d[0] += 1; d[1] = max(d[1], ic)
             tdname = td_by_id[t][0]
-            rc = ra_cell(x + offx, y + offy)
-            # 1) Ported TD tile -> its own RA template (exact size+art, icons align).
+            # authentic layer: ported TD tile (exact size+art, icons align)
             if tdname in ported:
-                ttype[rc] = ported[tdname]
-                ticon[rc] = ic
+                td_tt[rc] = ported[tdname]
+                td_ic[rc] = ic
+                td_cells += 1
                 placed += 1
-                continue
-            # 2) Otherwise the name+size auto-match, gated on matching size/icon range.
+            # vanilla fallback layer: the gated name+size auto-match
             rid = tmap.get(t)
-            if rid is None:
-                continue
-            tw, th = td_by_id[t][1], td_by_id[t][2]
-            rw, rh = ra_by_id[rid][1], ra_by_id[rid][2]
-            if (tw, th) != (rw, rh) or ic >= rw * rh:
-                continue  # size/icon mismatch -> render clear
-            ttype[rc] = rid
-            ticon[rc] = ic
-            placed += 1
+            if rid is not None:
+                tw, th = td_by_id[t][1], td_by_id[t][2]
+                rw, rh = ra_by_id[rid][1], ra_by_id[rid][2]
+                if (tw, th) == (rw, rh) and ic < rw * rh:
+                    safe_tt[rc] = rid
+                    safe_ic[rc] = ic
+                    if tdname not in ported:
+                        placed += 1
 
     # ---- per-template diagnostic log ----
     print("  template report (TD->RA), problem rows flagged:")
@@ -242,7 +278,6 @@ def convert(td_ini_path, out_path, display_name):
     for t, (cnt, mx) in sorted(diag.items(), key=lambda kv: -kv[1][0]):
         nm, tw, th = td_by_id.get(t, ("?", 0, 0))
         if nm in ported:
-            print(f"    {nm:<9} {tw}x{th} x{cnt:<4} -> ported template (id {ported[nm]})")
             continue
         rid = tmap.get(t)
         if rid is None:
@@ -256,30 +291,20 @@ def convert(td_ini_path, out_path, display_name):
             print(f"    {nm:<9} {tw}x{th} -> {rn}({rw}x{rh}) x{cnt:<4} maxicon={mx}  DROPPED [{why}]")
             dropped_cells += cnt
     unmapped = dropped_cells
-
-    # ---- vanilla-safety split: TD-ported template ids (401+) would crash a
-    # VANILLA DLL reading this map (heap index out of range) -- and self-
-    # installed Local_Custom_Maps persist after the mod is disabled. So the
-    # shipped [MapPack] carries only vanilla-known ids (TD cells -> clear),
-    # and the real TD cells ride in [TFTDTiles] (same MapPack encoding; cells
-    # with TType 0xFFFF = no override). Vanilla ignores the unknown section
-    # (plain shores); our DLL overlays it after MapPack (display.cpp). ----
-    ported_ids = set(ported.values())
-    safe_tt, safe_ic = list(ttype), list(ticon)
-    td_tt, td_ic = [RA_TEMPLATE_NONE] * RA_CELLS, [0] * RA_CELLS
-    td_cells = 0
-    for c in range(RA_CELLS):
-        if ttype[c] in ported_ids:
-            td_tt[c], td_ic[c] = ttype[c], ticon[c]
-            safe_tt[c], safe_ic[c] = RA_TEMPLATE_NONE, 0
-            td_cells += 1
+    n_ported = sum(1 for t in diag if td_by_id[t][0] in ported)
+    print(f"    ({n_ported} templates via ported TD tiles)")
 
     mappack_raw = b"".join(struct.pack("<H", t) for t in safe_tt) + bytes(safe_ic)
     assert len(mappack_raw) == MAPPACK_RAW
     tdtiles_raw = None
     if td_cells:
         tdtiles_raw = b"".join(struct.pack("<H", t) for t in td_tt) + bytes(td_ic)
-        print(f"  side-channel [TFTDTiles]: {td_cells} TD-tile cells (MapPack kept vanilla-safe)")
+        print(f"  side-channel [TFTDTiles]: {td_cells} TD-tile cells "
+              f"(MapPack carries the vanilla fallback)")
+
+    # combined view for the block-map preview fallback (TD layer wins)
+    ttype = [td_tt[c] if td_tt[c] != RA_TEMPLATE_NONE else safe_tt[c]
+             for c in range(RA_CELLS)]
 
     # ---- overlay (OverlayPack): tiberium TI1..TI12 -> TIB01 (density 0..11),
     # walls + farm fields carried through by name (OVERLAY_CARRY) ----
@@ -323,6 +348,7 @@ def convert(td_ini_path, out_path, display_name):
     # art on our stack; the building can, and carries the spore-shed/seeding AI)
     terrain = []
     structures = []
+    dropped_terrain = 0
     for k, v in get_sec(secs, "Terrain"):
         try:
             cell = int(k)
@@ -333,6 +359,13 @@ def convert(td_ini_path, out_path, display_name):
         name = v.strip().split(",")[0].upper()
         if name in ("SPLIT2", "SPLIT3"):
             structures.append(f"Neutral,TDBLOSSOM,256,{rc},0,None")
+        elif ra_theater == "interior":
+            # RA interior has NO terrain-object art (trees/rocks all
+            # temperate+snow only) -- a placed object with NULL art is a
+            # render risk. Desert cacti/rocks are dropped for now; rocks are
+            # impassable decor in TD so some chokepoints open up. TODO:
+            # neutral-building port like the blossom if it plays poorly.
+            dropped_terrain += 1
         else:
             terrain.append((rc, f"{name},None"))
 
@@ -382,12 +415,13 @@ def convert(td_ini_path, out_path, display_name):
             print("  preview: rendered from classic theater art")
         except Exception as e:
             print(f"  preview: classic render unavailable ({e}); block map")
-    write_triplet(out_path, display_name, theater, mapx, mapy, tdWi, tdHe,
+    write_triplet(out_path, display_name, ra_theater, mapx, mapy, tdWi, tdHe,
                   mappack_raw, bytes(overlay), starts, terrain, structures, ttype,
                   tdtiles_raw, preview_png)
     print(f"  placed {placed} terrain cells ({unmapped} unmapped), {tib} tiberium cells, "
-          f"{len(starts)} start positions ({src}), {len(terrain)} terrain objects, "
-          f"{len(structures)} blossom trees")
+          f"{len(starts)} start positions ({src}), {len(terrain)} terrain objects"
+          + (f" ({dropped_terrain} dropped, no interior art)" if dropped_terrain else "")
+          + f", {len(structures)} blossom trees")
     print(f"  -> {out_path} (+ .json + .tga)")
 
 HOUSES = ["Spain", "Greece", "USSR", "England", "Ukraine", "Germany", "France", "Turkey",

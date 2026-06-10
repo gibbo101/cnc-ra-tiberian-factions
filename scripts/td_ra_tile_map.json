@@ -1,194 +1,3040 @@
 {
   "sh1": {
-    "ra_name": "TDSH1",
-    "ra_id": 401,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH1",
+      "ra_id": 401,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH1",
+      "ra_id": 402,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh2": {
-    "ra_name": "TDSH2",
-    "ra_id": 402,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH2",
+      "ra_id": 403,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH2",
+      "ra_id": 404,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh3": {
-    "ra_name": "TDSH3",
-    "ra_id": 403,
-    "size": [
-      1,
-      1
-    ]
+    "temperate": {
+      "ra_name": "TDSH3",
+      "ra_id": 405,
+      "size": [
+        1,
+        1
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH3",
+      "ra_id": 406,
+      "size": [
+        1,
+        1
+      ]
+    }
   },
   "sh4": {
-    "ra_name": "TDSH4",
-    "ra_id": 404,
-    "size": [
-      2,
-      1
-    ]
+    "temperate": {
+      "ra_name": "TDSH4",
+      "ra_id": 407,
+      "size": [
+        2,
+        1
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH4",
+      "ra_id": 408,
+      "size": [
+        2,
+        1
+      ]
+    }
   },
   "sh5": {
-    "ra_name": "TDSH5",
-    "ra_id": 405,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH5",
+      "ra_id": 409,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH5",
+      "ra_id": 410,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh6": {
-    "ra_name": "TDSH6",
-    "ra_id": 406,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH6",
+      "ra_id": 411,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH6",
+      "ra_id": 412,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh7": {
-    "ra_name": "TDSH7",
-    "ra_id": 407,
-    "size": [
-      2,
-      2
-    ]
+    "temperate": {
+      "ra_name": "TDSH7",
+      "ra_id": 413,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH7",
+      "ra_id": 414,
+      "size": [
+        2,
+        2
+      ]
+    }
   },
   "sh8": {
-    "ra_name": "TDSH8",
-    "ra_id": 408,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH8",
+      "ra_id": 415,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH8",
+      "ra_id": 416,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh9": {
-    "ra_name": "TDSH9",
-    "ra_id": 409,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH9",
+      "ra_id": 417,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH9",
+      "ra_id": 418,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh10": {
-    "ra_name": "TDSH10",
-    "ra_id": 410,
-    "size": [
-      2,
-      2
-    ]
+    "temperate": {
+      "ra_name": "TDSH10",
+      "ra_id": 419,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH10",
+      "ra_id": 420,
+      "size": [
+        2,
+        2
+      ]
+    }
   },
   "sh11": {
-    "ra_name": "TDSH11",
-    "ra_id": 411,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH11",
+      "ra_id": 421,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH11",
+      "ra_id": 422,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh12": {
-    "ra_name": "TDSH12",
-    "ra_id": 412,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH12",
+      "ra_id": 423,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH12",
+      "ra_id": 424,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh13": {
-    "ra_name": "TDSH13",
-    "ra_id": 413,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH13",
+      "ra_id": 425,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH13",
+      "ra_id": 426,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh14": {
-    "ra_name": "TDSH14",
-    "ra_id": 414,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH14",
+      "ra_id": 427,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH14",
+      "ra_id": 428,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh15": {
-    "ra_name": "TDSH15",
-    "ra_id": 415,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH15",
+      "ra_id": 429,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH15",
+      "ra_id": 430,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh16": {
-    "ra_name": "TDSH16",
-    "ra_id": 416,
-    "size": [
-      3,
-      2
-    ]
+    "temperate": {
+      "ra_name": "TDSH16",
+      "ra_id": 431,
+      "size": [
+        3,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH16",
+      "ra_id": 432,
+      "size": [
+        3,
+        2
+      ]
+    }
   },
   "sh17": {
-    "ra_name": "TDSH17",
-    "ra_id": 417,
-    "size": [
-      2,
-      2
-    ]
+    "temperate": {
+      "ra_name": "TDSH17",
+      "ra_id": 433,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "desert": {
+      "ra_name": "TDSH17",
+      "ra_id": 433,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH17",
+      "ra_id": 434,
+      "size": [
+        2,
+        2
+      ]
+    }
   },
   "sh18": {
-    "ra_name": "TDSH18",
-    "ra_id": 418,
-    "size": [
-      2,
-      2
-    ]
+    "temperate": {
+      "ra_name": "TDSH18",
+      "ra_id": 435,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "desert": {
+      "ra_name": "TDSH18",
+      "ra_id": 435,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH18",
+      "ra_id": 436,
+      "size": [
+        2,
+        2
+      ]
+    }
   },
   "bridge1": {
-    "ra_name": "TDBRIDGE1",
-    "ra_id": 419,
-    "size": [
-      4,
-      4
-    ]
+    "temperate": {
+      "ra_name": "TDBRIDGE1",
+      "ra_id": 437,
+      "size": [
+        4,
+        4
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWBRIDGE1",
+      "ra_id": 438,
+      "size": [
+        4,
+        4
+      ]
+    }
   },
   "bridge2": {
-    "ra_name": "TDBRIDGE2",
-    "ra_id": 420,
-    "size": [
-      5,
-      5
-    ]
+    "temperate": {
+      "ra_name": "TDBRIDGE2",
+      "ra_id": 439,
+      "size": [
+        5,
+        5
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWBRIDGE2",
+      "ra_id": 440,
+      "size": [
+        5,
+        5
+      ]
+    }
   },
   "sh32": {
-    "ra_name": "TDSH32",
-    "ra_id": 421,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH32",
+      "ra_id": 441,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH32",
+      "ra_id": 442,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh33": {
-    "ra_name": "TDSH33",
-    "ra_id": 422,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH33",
+      "ra_id": 443,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH33",
+      "ra_id": 444,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh34": {
-    "ra_name": "TDSH34",
-    "ra_id": 423,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH34",
+      "ra_id": 445,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH34",
+      "ra_id": 446,
+      "size": [
+        3,
+        3
+      ]
+    }
   },
   "sh35": {
-    "ra_name": "TDSH35",
-    "ra_id": 424,
-    "size": [
-      3,
-      3
-    ]
+    "temperate": {
+      "ra_name": "TDSH35",
+      "ra_id": 447,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWSH35",
+      "ra_id": 448,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "p16": {
+    "winter": {
+      "ra_name": "TDWP16",
+      "ra_id": 449,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "p17": {
+    "winter": {
+      "ra_name": "TDWP17",
+      "ra_id": 450,
+      "size": [
+        4,
+        2
+      ]
+    }
+  },
+  "p18": {
+    "winter": {
+      "ra_name": "TDWP18",
+      "ra_id": 451,
+      "size": [
+        4,
+        3
+      ]
+    }
+  },
+  "p19": {
+    "winter": {
+      "ra_name": "TDWP19",
+      "ra_id": 452,
+      "size": [
+        4,
+        3
+      ]
+    }
+  },
+  "p20": {
+    "winter": {
+      "ra_name": "TDWP20",
+      "ra_id": 453,
+      "size": [
+        4,
+        3
+      ]
+    }
+  },
+  "clear1": {
+    "desert": {
+      "ra_name": "TDCLEAR1",
+      "ra_id": 454,
+      "size": [
+        1,
+        1
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWCLEAR1",
+      "ra_id": 455,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "w1": {
+    "desert": {
+      "ra_name": "TDW1",
+      "ra_id": 456,
+      "size": [
+        1,
+        1
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWW1",
+      "ra_id": 457,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "w2": {
+    "winter": {
+      "ra_name": "TDWW2",
+      "ra_id": 458,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s01": {
+    "desert": {
+      "ra_name": "TDS01",
+      "ra_id": 459,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS01",
+      "ra_id": 460,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s02": {
+    "desert": {
+      "ra_name": "TDS02",
+      "ra_id": 461,
+      "size": [
+        2,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS02",
+      "ra_id": 462,
+      "size": [
+        2,
+        3
+      ]
+    }
+  },
+  "s03": {
+    "desert": {
+      "ra_name": "TDS03",
+      "ra_id": 463,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS03",
+      "ra_id": 464,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s04": {
+    "desert": {
+      "ra_name": "TDS04",
+      "ra_id": 465,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS04",
+      "ra_id": 466,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s05": {
+    "desert": {
+      "ra_name": "TDS05",
+      "ra_id": 467,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS05",
+      "ra_id": 468,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s06": {
+    "desert": {
+      "ra_name": "TDS06",
+      "ra_id": 469,
+      "size": [
+        2,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS06",
+      "ra_id": 470,
+      "size": [
+        2,
+        3
+      ]
+    }
+  },
+  "s07": {
+    "desert": {
+      "ra_name": "TDS07",
+      "ra_id": 471,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS07",
+      "ra_id": 472,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s08": {
+    "desert": {
+      "ra_name": "TDS08",
+      "ra_id": 473,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS08",
+      "ra_id": 474,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s09": {
+    "desert": {
+      "ra_name": "TDS09",
+      "ra_id": 475,
+      "size": [
+        3,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS09",
+      "ra_id": 476,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "s10": {
+    "desert": {
+      "ra_name": "TDS10",
+      "ra_id": 477,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS10",
+      "ra_id": 478,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s11": {
+    "desert": {
+      "ra_name": "TDS11",
+      "ra_id": 479,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS11",
+      "ra_id": 480,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s12": {
+    "desert": {
+      "ra_name": "TDS12",
+      "ra_id": 481,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS12",
+      "ra_id": 482,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s13": {
+    "desert": {
+      "ra_name": "TDS13",
+      "ra_id": 483,
+      "size": [
+        3,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS13",
+      "ra_id": 484,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "s14": {
+    "desert": {
+      "ra_name": "TDS14",
+      "ra_id": 485,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS14",
+      "ra_id": 486,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s15": {
+    "desert": {
+      "ra_name": "TDS15",
+      "ra_id": 487,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS15",
+      "ra_id": 488,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s16": {
+    "desert": {
+      "ra_name": "TDS16",
+      "ra_id": 489,
+      "size": [
+        2,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS16",
+      "ra_id": 490,
+      "size": [
+        2,
+        3
+      ]
+    }
+  },
+  "s17": {
+    "desert": {
+      "ra_name": "TDS17",
+      "ra_id": 491,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS17",
+      "ra_id": 492,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s18": {
+    "desert": {
+      "ra_name": "TDS18",
+      "ra_id": 493,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS18",
+      "ra_id": 494,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s19": {
+    "desert": {
+      "ra_name": "TDS19",
+      "ra_id": 495,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS19",
+      "ra_id": 496,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s20": {
+    "desert": {
+      "ra_name": "TDS20",
+      "ra_id": 497,
+      "size": [
+        2,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS20",
+      "ra_id": 498,
+      "size": [
+        2,
+        3
+      ]
+    }
+  },
+  "s21": {
+    "desert": {
+      "ra_name": "TDS21",
+      "ra_id": 499,
+      "size": [
+        1,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS21",
+      "ra_id": 500,
+      "size": [
+        1,
+        2
+      ]
+    }
+  },
+  "s22": {
+    "desert": {
+      "ra_name": "TDS22",
+      "ra_id": 501,
+      "size": [
+        2,
+        1
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS22",
+      "ra_id": 502,
+      "size": [
+        2,
+        1
+      ]
+    }
+  },
+  "s23": {
+    "desert": {
+      "ra_name": "TDS23",
+      "ra_id": 503,
+      "size": [
+        3,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS23",
+      "ra_id": 504,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "s24": {
+    "desert": {
+      "ra_name": "TDS24",
+      "ra_id": 505,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS24",
+      "ra_id": 506,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s25": {
+    "desert": {
+      "ra_name": "TDS25",
+      "ra_id": 507,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS25",
+      "ra_id": 508,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s26": {
+    "desert": {
+      "ra_name": "TDS26",
+      "ra_id": 509,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS26",
+      "ra_id": 510,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s27": {
+    "desert": {
+      "ra_name": "TDS27",
+      "ra_id": 511,
+      "size": [
+        3,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS27",
+      "ra_id": 512,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "s28": {
+    "desert": {
+      "ra_name": "TDS28",
+      "ra_id": 513,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS28",
+      "ra_id": 514,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s29": {
+    "desert": {
+      "ra_name": "TDS29",
+      "ra_id": 515,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS29",
+      "ra_id": 516,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s30": {
+    "desert": {
+      "ra_name": "TDS30",
+      "ra_id": 517,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS30",
+      "ra_id": 518,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s31": {
+    "desert": {
+      "ra_name": "TDS31",
+      "ra_id": 519,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS31",
+      "ra_id": 520,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s32": {
+    "desert": {
+      "ra_name": "TDS32",
+      "ra_id": 521,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS32",
+      "ra_id": 522,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s33": {
+    "desert": {
+      "ra_name": "TDS33",
+      "ra_id": 523,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS33",
+      "ra_id": 524,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s34": {
+    "desert": {
+      "ra_name": "TDS34",
+      "ra_id": 525,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS34",
+      "ra_id": 526,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s35": {
+    "desert": {
+      "ra_name": "TDS35",
+      "ra_id": 527,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS35",
+      "ra_id": 528,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s36": {
+    "desert": {
+      "ra_name": "TDS36",
+      "ra_id": 529,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS36",
+      "ra_id": 530,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s37": {
+    "desert": {
+      "ra_name": "TDS37",
+      "ra_id": 531,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS37",
+      "ra_id": 532,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "s38": {
+    "desert": {
+      "ra_name": "TDS38",
+      "ra_id": 533,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWS38",
+      "ra_id": 534,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "p07": {
+    "desert": {
+      "ra_name": "TDP07",
+      "ra_id": 535,
+      "size": [
+        4,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWP07",
+      "ra_id": 536,
+      "size": [
+        4,
+        2
+      ]
+    }
+  },
+  "p08": {
+    "winter": {
+      "ra_name": "TDWP08",
+      "ra_id": 537,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "p13": {
+    "winter": {
+      "ra_name": "TDWP13",
+      "ra_id": 538,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "p14": {
+    "winter": {
+      "ra_name": "TDWP14",
+      "ra_id": 539,
+      "size": [
+        2,
+        1
+      ]
+    }
+  },
+  "p15": {
+    "winter": {
+      "ra_name": "TDWP15",
+      "ra_id": 540,
+      "size": [
+        4,
+        2
+      ]
+    }
+  },
+  "b1": {
+    "desert": {
+      "ra_name": "TDB1",
+      "ra_id": 541,
+      "size": [
+        1,
+        1
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWB1",
+      "ra_id": 542,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "b2": {
+    "desert": {
+      "ra_name": "TDB2",
+      "ra_id": 543,
+      "size": [
+        2,
+        1
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWB2",
+      "ra_id": 544,
+      "size": [
+        2,
+        1
+      ]
+    }
+  },
+  "b3": {
+    "winter": {
+      "ra_name": "TDWB3",
+      "ra_id": 545,
+      "size": [
+        3,
+        1
+      ]
+    }
+  },
+  "d01": {
+    "desert": {
+      "ra_name": "TDD01",
+      "ra_id": 546,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD01",
+      "ra_id": 547,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d02": {
+    "desert": {
+      "ra_name": "TDD02",
+      "ra_id": 548,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD02",
+      "ra_id": 549,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d03": {
+    "desert": {
+      "ra_name": "TDD03",
+      "ra_id": 550,
+      "size": [
+        1,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD03",
+      "ra_id": 551,
+      "size": [
+        1,
+        2
+      ]
+    }
+  },
+  "d04": {
+    "desert": {
+      "ra_name": "TDD04",
+      "ra_id": 552,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD04",
+      "ra_id": 553,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d05": {
+    "desert": {
+      "ra_name": "TDD05",
+      "ra_id": 554,
+      "size": [
+        3,
+        4
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD05",
+      "ra_id": 555,
+      "size": [
+        3,
+        4
+      ]
+    }
+  },
+  "d06": {
+    "desert": {
+      "ra_name": "TDD06",
+      "ra_id": 556,
+      "size": [
+        2,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD06",
+      "ra_id": 557,
+      "size": [
+        2,
+        3
+      ]
+    }
+  },
+  "d07": {
+    "desert": {
+      "ra_name": "TDD07",
+      "ra_id": 558,
+      "size": [
+        3,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD07",
+      "ra_id": 559,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "d08": {
+    "desert": {
+      "ra_name": "TDD08",
+      "ra_id": 560,
+      "size": [
+        3,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD08",
+      "ra_id": 561,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "d09": {
+    "desert": {
+      "ra_name": "TDD09",
+      "ra_id": 562,
+      "size": [
+        4,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD09",
+      "ra_id": 563,
+      "size": [
+        4,
+        3
+      ]
+    }
+  },
+  "d10": {
+    "desert": {
+      "ra_name": "TDD10",
+      "ra_id": 564,
+      "size": [
+        4,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD10",
+      "ra_id": 565,
+      "size": [
+        4,
+        2
+      ]
+    }
+  },
+  "d11": {
+    "desert": {
+      "ra_name": "TDD11",
+      "ra_id": 566,
+      "size": [
+        2,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD11",
+      "ra_id": 567,
+      "size": [
+        2,
+        3
+      ]
+    }
+  },
+  "d12": {
+    "desert": {
+      "ra_name": "TDD12",
+      "ra_id": 568,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD12",
+      "ra_id": 569,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d13": {
+    "desert": {
+      "ra_name": "TDD13",
+      "ra_id": 570,
+      "size": [
+        4,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD13",
+      "ra_id": 571,
+      "size": [
+        4,
+        3
+      ]
+    }
+  },
+  "d14": {
+    "desert": {
+      "ra_name": "TDD14",
+      "ra_id": 572,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD14",
+      "ra_id": 573,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "d15": {
+    "desert": {
+      "ra_name": "TDD15",
+      "ra_id": 574,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD15",
+      "ra_id": 575,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "d16": {
+    "desert": {
+      "ra_name": "TDD16",
+      "ra_id": 576,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD16",
+      "ra_id": 577,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "d17": {
+    "desert": {
+      "ra_name": "TDD17",
+      "ra_id": 578,
+      "size": [
+        3,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD17",
+      "ra_id": 579,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "d18": {
+    "desert": {
+      "ra_name": "TDD18",
+      "ra_id": 580,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD18",
+      "ra_id": 581,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "d19": {
+    "desert": {
+      "ra_name": "TDD19",
+      "ra_id": 582,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD19",
+      "ra_id": 583,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "d20": {
+    "desert": {
+      "ra_name": "TDD20",
+      "ra_id": 584,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD20",
+      "ra_id": 585,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "d21": {
+    "desert": {
+      "ra_name": "TDD21",
+      "ra_id": 586,
+      "size": [
+        3,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD21",
+      "ra_id": 587,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "d22": {
+    "desert": {
+      "ra_name": "TDD22",
+      "ra_id": 588,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD22",
+      "ra_id": 589,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "d23": {
+    "desert": {
+      "ra_name": "TDD23",
+      "ra_id": 590,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD23",
+      "ra_id": 591,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "d24": {
+    "desert": {
+      "ra_name": "TDD24",
+      "ra_id": 592,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD24",
+      "ra_id": 593,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "d25": {
+    "desert": {
+      "ra_name": "TDD25",
+      "ra_id": 594,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD25",
+      "ra_id": 595,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "d26": {
+    "desert": {
+      "ra_name": "TDD26",
+      "ra_id": 596,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD26",
+      "ra_id": 597,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d27": {
+    "desert": {
+      "ra_name": "TDD27",
+      "ra_id": 598,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD27",
+      "ra_id": 599,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d28": {
+    "desert": {
+      "ra_name": "TDD28",
+      "ra_id": 600,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD28",
+      "ra_id": 601,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d29": {
+    "desert": {
+      "ra_name": "TDD29",
+      "ra_id": 602,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD29",
+      "ra_id": 603,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d30": {
+    "desert": {
+      "ra_name": "TDD30",
+      "ra_id": 604,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD30",
+      "ra_id": 605,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d31": {
+    "desert": {
+      "ra_name": "TDD31",
+      "ra_id": 606,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD31",
+      "ra_id": 607,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d32": {
+    "desert": {
+      "ra_name": "TDD32",
+      "ra_id": 608,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD32",
+      "ra_id": 609,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d33": {
+    "desert": {
+      "ra_name": "TDD33",
+      "ra_id": 610,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD33",
+      "ra_id": 611,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d34": {
+    "desert": {
+      "ra_name": "TDD34",
+      "ra_id": 612,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD34",
+      "ra_id": 613,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "d35": {
+    "desert": {
+      "ra_name": "TDD35",
+      "ra_id": 614,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD35",
+      "ra_id": 615,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "d36": {
+    "desert": {
+      "ra_name": "TDD36",
+      "ra_id": 616,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD36",
+      "ra_id": 617,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d37": {
+    "desert": {
+      "ra_name": "TDD37",
+      "ra_id": 618,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD37",
+      "ra_id": 619,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d38": {
+    "desert": {
+      "ra_name": "TDD38",
+      "ra_id": 620,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD38",
+      "ra_id": 621,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d39": {
+    "desert": {
+      "ra_name": "TDD39",
+      "ra_id": 622,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD39",
+      "ra_id": 623,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d40": {
+    "desert": {
+      "ra_name": "TDD40",
+      "ra_id": 624,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD40",
+      "ra_id": 625,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d41": {
+    "desert": {
+      "ra_name": "TDD41",
+      "ra_id": 626,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD41",
+      "ra_id": 627,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d42": {
+    "desert": {
+      "ra_name": "TDD42",
+      "ra_id": 628,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD42",
+      "ra_id": 629,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "d43": {
+    "desert": {
+      "ra_name": "TDD43",
+      "ra_id": 630,
+      "size": [
+        2,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWD43",
+      "ra_id": 631,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "rv01": {
+    "winter": {
+      "ra_name": "TDWRV01",
+      "ra_id": 632,
+      "size": [
+        5,
+        4
+      ]
+    }
+  },
+  "rv02": {
+    "winter": {
+      "ra_name": "TDWRV02",
+      "ra_id": 633,
+      "size": [
+        5,
+        3
+      ]
+    }
+  },
+  "rv03": {
+    "winter": {
+      "ra_name": "TDWRV03",
+      "ra_id": 634,
+      "size": [
+        4,
+        4
+      ]
+    }
+  },
+  "rv04": {
+    "winter": {
+      "ra_name": "TDWRV04",
+      "ra_id": 635,
+      "size": [
+        4,
+        4
+      ]
+    }
+  },
+  "rv05": {
+    "winter": {
+      "ra_name": "TDWRV05",
+      "ra_id": 636,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "rv06": {
+    "winter": {
+      "ra_name": "TDWRV06",
+      "ra_id": 637,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "rv07": {
+    "winter": {
+      "ra_name": "TDWRV07",
+      "ra_id": 638,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "rv08": {
+    "winter": {
+      "ra_name": "TDWRV08",
+      "ra_id": 639,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "rv09": {
+    "winter": {
+      "ra_name": "TDWRV09",
+      "ra_id": 640,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "rv10": {
+    "winter": {
+      "ra_name": "TDWRV10",
+      "ra_id": 641,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "rv11": {
+    "winter": {
+      "ra_name": "TDWRV11",
+      "ra_id": 642,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "rv12": {
+    "winter": {
+      "ra_name": "TDWRV12",
+      "ra_id": 643,
+      "size": [
+        3,
+        4
+      ]
+    }
+  },
+  "rv13": {
+    "winter": {
+      "ra_name": "TDWRV13",
+      "ra_id": 644,
+      "size": [
+        4,
+        4
+      ]
+    }
+  },
+  "ford1": {
+    "desert": {
+      "ra_name": "TDFORD1",
+      "ra_id": 645,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWFORD1",
+      "ra_id": 646,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "ford2": {
+    "desert": {
+      "ra_name": "TDFORD2",
+      "ra_id": 647,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWFORD2",
+      "ra_id": 648,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "falls1": {
+    "desert": {
+      "ra_name": "TDFALLS1",
+      "ra_id": 649,
+      "size": [
+        3,
+        3
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWFALLS1",
+      "ra_id": 650,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "falls2": {
+    "desert": {
+      "ra_name": "TDFALLS2",
+      "ra_id": 651,
+      "size": [
+        3,
+        2
+      ]
+    },
+    "winter": {
+      "ra_name": "TDWFALLS2",
+      "ra_id": 652,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "bridge1d": {
+    "winter": {
+      "ra_name": "TDWBRIDGE1D",
+      "ra_id": 653,
+      "size": [
+        4,
+        4
+      ]
+    }
+  },
+  "bridge2d": {
+    "winter": {
+      "ra_name": "TDWBRIDGE2D",
+      "ra_id": 654,
+      "size": [
+        5,
+        5
+      ]
+    }
+  },
+  "sh20": {
+    "desert": {
+      "ra_name": "TDSH20",
+      "ra_id": 655,
+      "size": [
+        4,
+        1
+      ]
+    }
+  },
+  "sh21": {
+    "desert": {
+      "ra_name": "TDSH21",
+      "ra_id": 656,
+      "size": [
+        3,
+        1
+      ]
+    }
+  },
+  "sh22": {
+    "desert": {
+      "ra_name": "TDSH22",
+      "ra_id": 657,
+      "size": [
+        6,
+        2
+      ]
+    }
+  },
+  "sh23": {
+    "desert": {
+      "ra_name": "TDSH23",
+      "ra_id": 658,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "br1": {
+    "desert": {
+      "ra_name": "TDBR1",
+      "ra_id": 659,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "br2": {
+    "desert": {
+      "ra_name": "TDBR2",
+      "ra_id": 660,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "br3": {
+    "desert": {
+      "ra_name": "TDBR3",
+      "ra_id": 661,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "br4": {
+    "desert": {
+      "ra_name": "TDBR4",
+      "ra_id": 662,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "br6": {
+    "desert": {
+      "ra_name": "TDBR6",
+      "ra_id": 663,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "br7": {
+    "desert": {
+      "ra_name": "TDBR7",
+      "ra_id": 664,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "br8": {
+    "desert": {
+      "ra_name": "TDBR8",
+      "ra_id": 665,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "br9": {
+    "desert": {
+      "ra_name": "TDBR9",
+      "ra_id": 666,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "p01": {
+    "desert": {
+      "ra_name": "TDP01",
+      "ra_id": 667,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "p02": {
+    "desert": {
+      "ra_name": "TDP02",
+      "ra_id": 668,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "p03": {
+    "desert": {
+      "ra_name": "TDP03",
+      "ra_id": 669,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "p04": {
+    "desert": {
+      "ra_name": "TDP04",
+      "ra_id": 670,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "p05": {
+    "desert": {
+      "ra_name": "TDP05",
+      "ra_id": 671,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "p06": {
+    "desert": {
+      "ra_name": "TDP06",
+      "ra_id": 672,
+      "size": [
+        6,
+        4
+      ]
+    }
+  },
+  "sh19": {
+    "desert": {
+      "ra_name": "TDSH19",
+      "ra_id": 673,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "rv14": {
+    "desert": {
+      "ra_name": "TDRV14",
+      "ra_id": 674,
+      "size": [
+        4,
+        3
+      ]
+    }
+  },
+  "rv15": {
+    "desert": {
+      "ra_name": "TDRV15",
+      "ra_id": 675,
+      "size": [
+        4,
+        3
+      ]
+    }
+  },
+  "rv16": {
+    "desert": {
+      "ra_name": "TDRV16",
+      "ra_id": 676,
+      "size": [
+        6,
+        4
+      ]
+    }
+  },
+  "rv17": {
+    "desert": {
+      "ra_name": "TDRV17",
+      "ra_id": 677,
+      "size": [
+        6,
+        5
+      ]
+    }
+  },
+  "rv18": {
+    "desert": {
+      "ra_name": "TDRV18",
+      "ra_id": 678,
+      "size": [
+        4,
+        4
+      ]
+    }
+  },
+  "rv19": {
+    "desert": {
+      "ra_name": "TDRV19",
+      "ra_id": 679,
+      "size": [
+        4,
+        4
+      ]
+    }
+  },
+  "rv20": {
+    "desert": {
+      "ra_name": "TDRV20",
+      "ra_id": 680,
+      "size": [
+        6,
+        8
+      ]
+    }
+  },
+  "rv21": {
+    "desert": {
+      "ra_name": "TDRV21",
+      "ra_id": 681,
+      "size": [
+        5,
+        8
+      ]
+    }
+  },
+  "rv22": {
+    "desert": {
+      "ra_name": "TDRV22",
+      "ra_id": 682,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "rv23": {
+    "desert": {
+      "ra_name": "TDRV23",
+      "ra_id": 683,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "rv24": {
+    "desert": {
+      "ra_name": "TDRV24",
+      "ra_id": 684,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "rv25": {
+    "desert": {
+      "ra_name": "TDRV25",
+      "ra_id": 685,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "bridge3": {
+    "desert": {
+      "ra_name": "TDBRIDGE3",
+      "ra_id": 686,
+      "size": [
+        6,
+        5
+      ]
+    }
+  },
+  "bridge3d": {
+    "desert": {
+      "ra_name": "TDBRIDGE3D",
+      "ra_id": 687,
+      "size": [
+        6,
+        5
+      ]
+    }
+  },
+  "bridge4": {
+    "desert": {
+      "ra_name": "TDBRIDGE4",
+      "ra_id": 688,
+      "size": [
+        6,
+        4
+      ]
+    }
+  },
+  "bridge4d": {
+    "desert": {
+      "ra_name": "TDBRIDGE4D",
+      "ra_id": 689,
+      "size": [
+        6,
+        4
+      ]
+    }
+  },
+  "sh24": {
+    "desert": {
+      "ra_name": "TDSH24",
+      "ra_id": 690,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "sh25": {
+    "desert": {
+      "ra_name": "TDSH25",
+      "ra_id": 691,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "sh26": {
+    "desert": {
+      "ra_name": "TDSH26",
+      "ra_id": 692,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "sh27": {
+    "desert": {
+      "ra_name": "TDSH27",
+      "ra_id": 693,
+      "size": [
+        4,
+        1
+      ]
+    }
+  },
+  "sh28": {
+    "desert": {
+      "ra_name": "TDSH28",
+      "ra_id": 694,
+      "size": [
+        3,
+        1
+      ]
+    }
+  },
+  "sh29": {
+    "desert": {
+      "ra_name": "TDSH29",
+      "ra_id": 695,
+      "size": [
+        6,
+        2
+      ]
+    }
+  },
+  "sh30": {
+    "desert": {
+      "ra_name": "TDSH30",
+      "ra_id": 696,
+      "size": [
+        2,
+        2
+      ]
+    }
+  },
+  "sh31": {
+    "desert": {
+      "ra_name": "TDSH31",
+      "ra_id": 697,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "sh36": {
+    "desert": {
+      "ra_name": "TDSH36",
+      "ra_id": 698,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "sh37": {
+    "desert": {
+      "ra_name": "TDSH37",
+      "ra_id": 699,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "sh38": {
+    "desert": {
+      "ra_name": "TDSH38",
+      "ra_id": 700,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "sh39": {
+    "desert": {
+      "ra_name": "TDSH39",
+      "ra_id": 701,
+      "size": [
+        1,
+        1
+      ]
+    }
+  },
+  "sh40": {
+    "desert": {
+      "ra_name": "TDSH40",
+      "ra_id": 702,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "sh41": {
+    "desert": {
+      "ra_name": "TDSH41",
+      "ra_id": 703,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "sh42": {
+    "desert": {
+      "ra_name": "TDSH42",
+      "ra_id": 704,
+      "size": [
+        1,
+        2
+      ]
+    }
+  },
+  "sh43": {
+    "desert": {
+      "ra_name": "TDSH43",
+      "ra_id": 705,
+      "size": [
+        1,
+        3
+      ]
+    }
+  },
+  "sh44": {
+    "desert": {
+      "ra_name": "TDSH44",
+      "ra_id": 706,
+      "size": [
+        1,
+        3
+      ]
+    }
+  },
+  "sh45": {
+    "desert": {
+      "ra_name": "TDSH45",
+      "ra_id": 707,
+      "size": [
+        1,
+        2
+      ]
+    }
+  },
+  "sh46": {
+    "desert": {
+      "ra_name": "TDSH46",
+      "ra_id": 708,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "sh47": {
+    "desert": {
+      "ra_name": "TDSH47",
+      "ra_id": 709,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "sh48": {
+    "desert": {
+      "ra_name": "TDSH48",
+      "ra_id": 710,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "sh49": {
+    "desert": {
+      "ra_name": "TDSH49",
+      "ra_id": 711,
+      "size": [
+        3,
+        3
+      ]
+    }
+  },
+  "sh50": {
+    "desert": {
+      "ra_name": "TDSH50",
+      "ra_id": 712,
+      "size": [
+        4,
+        3
+      ]
+    }
+  },
+  "sh51": {
+    "desert": {
+      "ra_name": "TDSH51",
+      "ra_id": 713,
+      "size": [
+        4,
+        3
+      ]
+    }
+  },
+  "sh52": {
+    "desert": {
+      "ra_name": "TDSH52",
+      "ra_id": 714,
+      "size": [
+        4,
+        3
+      ]
+    }
+  },
+  "sh53": {
+    "desert": {
+      "ra_name": "TDSH53",
+      "ra_id": 715,
+      "size": [
+        4,
+        3
+      ]
+    }
+  },
+  "sh54": {
+    "desert": {
+      "ra_name": "TDSH54",
+      "ra_id": 716,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "sh55": {
+    "desert": {
+      "ra_name": "TDSH55",
+      "ra_id": 717,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "sh56": {
+    "desert": {
+      "ra_name": "TDSH56",
+      "ra_id": 718,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "sh57": {
+    "desert": {
+      "ra_name": "TDSH57",
+      "ra_id": 719,
+      "size": [
+        3,
+        2
+      ]
+    }
+  },
+  "sh58": {
+    "desert": {
+      "ra_name": "TDSH58",
+      "ra_id": 720,
+      "size": [
+        2,
+        3
+      ]
+    }
+  },
+  "sh59": {
+    "desert": {
+      "ra_name": "TDSH59",
+      "ra_id": 721,
+      "size": [
+        2,
+        3
+      ]
+    }
+  },
+  "sh60": {
+    "desert": {
+      "ra_name": "TDSH60",
+      "ra_id": 722,
+      "size": [
+        2,
+        3
+      ]
+    }
+  },
+  "sh61": {
+    "desert": {
+      "ra_name": "TDSH61",
+      "ra_id": 723,
+      "size": [
+        2,
+        3
+      ]
+    }
+  },
+  "sh62": {
+    "desert": {
+      "ra_name": "TDSH62",
+      "ra_id": 724,
+      "size": [
+        6,
+        1
+      ]
+    }
+  },
+  "sh63": {
+    "desert": {
+      "ra_name": "TDSH63",
+      "ra_id": 725,
+      "size": [
+        4,
+        1
+      ]
+    }
   }
 }

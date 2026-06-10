@@ -40,7 +40,11 @@ BUNDLE = REPO / "resources/remaster_mods/Vanilla_RA/CustomMaps"
 # or "mix:<stem>" for the classic MP maps inside GENERAL.MIX (ini+bin).
 # Display name shows in the lobby's custom list; keep the player count and
 # the TF tag visible (the maps persist in Documents even without the mod).
-# All TEMPERATE sources; winter/desert wait on their theatre work.
+# TEMPERATE + WINTER sources (winter transcodes into RA's SNOW theatre with
+# TD's authentic icy winter art on the ported tiles); desert waits on the
+# interior-theatre extension. The (N) player count = usable source start
+# waypoints (scm70 ships 7 of 8, scm97 6 -- fewer than the remaster's
+# advertised MaxPlayers; the lobby slots key off our waypoints).
 MAPS = [
     ("SCMC2EA", 1, "TD Elevation (2) [TF]"),
     ("SCMC3EA", 2, "TD Heavy Metal (4) [TF]"),
@@ -57,6 +61,25 @@ MAPS = [
     ("mix:scm62ea", 12, "TD Surgical Incision (7) [TF]"),
     ("mix:scm75ea", 13, "TD Village of the Unfortunate (6) [TF]"),
     ("mix:scm90ea", 14, "TD A Long Way from Home (6) [TF]"),
+    # Winter maps (RA snow theatre, TD winter art)
+    ("mix:scm70ea", 15, "TD Winter Wonderland (7) [TF]"),
+    ("mix:scm74ea", 16, "TD Nowhere To Hide (6) [TF]"),
+    ("mix:scm97ea", 17, "TD Northern Explosion (6) [TF]"),
+    ("SCMC5EA", 18, "TD Tournament Middle Camp (2) [TF]"),
+    # Desert maps (RA interior theatre slot, TD desert art + radar palette)
+    ("mix:scm02ea", 19, "TD Sand Trap (8) [TF]"),
+    ("mix:scm05ea", 20, "TD Eye of the Storm (7) [TF]"),
+    ("mix:scm06ea", 21, "TD Lakefront Clash (7) [TF]"),
+    ("mix:scm07ea", 22, "TD Desert Madness (8) [TF]"),
+    ("mix:scm09ea", 23, "TD Moosehead Barrens (8) [TF]"),
+    ("mix:scm10ea", 24, "TD Red Sands (7) [TF]"),
+    ("mix:scm51ea", 25, "TD Four Corners (7) [TF]"),
+    ("mix:scm52ea", 26, "TD Cactus Valley (7) [TF]"),
+    ("mix:scm60ea", 27, "TD Monkey in the Middle (4) [TF]"),
+    ("mix:scm72ea", 28, "TD Straight and Narrow (6) [TF]"),
+    ("mix:scm77ea", 29, "TD Marooned (7) [TF]"),
+    ("mix:scm98ea", 30, "TD Diverse Region (8) [TF]"),
+    ("SCMC6EA", 31, "TD Tournament Desert (2) [TF]"),
 ]
 
 

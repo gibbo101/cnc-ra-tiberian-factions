@@ -170,14 +170,30 @@ fi
 
 # Tiberian Factions -- ported TD terrain TEMPLATES (build_td_tiles.py). The engine
 # reads each template's dimensions + land-type from its classic iconset via
-# MFCD::Retrieve("TD<NAME>.TEM"); HD render is the loose tileset art. We pack TD's
-# raw .tem UNMODIFIED (the iconset header carries dimensions/land-type, which a SHP
-# palette-remap would corrupt; classic-mode colour fidelity is a later refinement).
+# MFCD::Retrieve("TD<NAME>.<theatre suffix>") -- .TEM temperate, .SNO snow (TD
+# winter art); HD render is the loose tileset art. The staged iconsets
+# (already RA-format-converted by build_td_tiles.py) are packed AS-IS -- no
+# palette remap (it would corrupt the header's dimensions/land-type;
+# classic-mode colour fidelity is a later refinement).
 TEM_STAGE="scripts/_td_tems"
 if [[ -d "$TEM_STAGE" ]]; then
-    for tem in "$TEM_STAGE"/*.TEM; do
+    for tem in "$TEM_STAGE"/*.TEM "$TEM_STAGE"/*.SNO "$TEM_STAGE"/*.INT; do
         [[ -e "$tem" ]] || continue
         PACK_ARGS+=("$tem:$(basename "$tem")")
+    done
+fi
+
+# Tiberian Factions -- desert building bibs (interior slot). The base game
+# ships NO interior bib art, so the engine skips bib smudges on desert maps
+# (NULL classic data). Stage TD desert bibs under the native names as .INT:
+# the engine then emits the smudge entries, and the launcher resolves their
+# HD art from the interior tileset XML (build_tiberium_hd.py BIB* tiles).
+# Packed RAW -- classic-mode desert colour fidelity is globally deferred.
+DESERT_MIX="$HOME/.steam/steam/steamapps/common/CnCRemastered/Data/CNCDATA/TIBERIAN_DAWN/CD1/DESERT.MIX"
+if [[ -f "$DESERT_MIX" ]]; then
+    for b in bib1 bib2 bib3; do
+        python3 scripts/mix_tools.py extract "$DESERT_MIX" "$b.des" "$TMPDIR" >/dev/null
+        PACK_ARGS+=("$TMPDIR/$b.des:$(echo $b | tr a-z A-Z).INT")
     done
 fi
 

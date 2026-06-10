@@ -19,8 +19,10 @@ So this script:
      (Shape 0-11) and writes it into the mod's TILESETS dir (full replacement,
      same delivery pattern as RA_STRUCTURES.XML).
 
-Temperate only for now (the first TD maps we import are temperate); Snow/Interior
-are a later copy. See memory project-tiberium-overlay-implementation.md.
+Theatres: temperate (TD TEMPERATE art -> RA_TERRAIN_TEMPERATE.XML) and snow
+(TD WINTER art -> RA_TERRAIN_SNOW.XML -- TD winter Tiberium for the converted
+winter maps). Interior/desert is a later copy.
+See memory project-tiberium-overlay-implementation.md.
 
 License: GPL v3 (inherited from Vanilla Conquer base).
 '''
@@ -45,10 +47,22 @@ GAME_DATA = Path(os.environ.get(
 TD_TEX_MEG = GAME_DATA / "TEXTURES_TD_SRGB.MEG"
 CONFIG_MEG = GAME_DATA / "CONFIG.MEG"
 
-TD_TERRAIN_TEMP = r"DATA\ART\TEXTURES\SRGB\TIBERIAN_DAWN\TERRAIN\TEMPERATE"
+TD_TERRAIN = r"DATA\ART\TEXTURES\SRGB\TIBERIAN_DAWN\TERRAIN"
+TD_TERRAIN_TEMP = TD_TERRAIN + r"\TEMPERATE"   # imported by build_td_tiles.py
 
-# Temperate terrain HD assets to bundle into RA_TERRAIN_TEMPERATE.XML. Each:
-#   (tileset Name, dot-free asset stem, MEG subdir, frame fmt, frame count)
+# RA theatre -> TD source theatre wiring. The TD MEG's per-tile subdir carries
+# the theatre suffix for WINTER ("TI1.WIN\TI1.WIN-NNNN.DDS") but NOT for
+# TEMPERATE ("TI1\TI1.TEM-NNNN.DDS") -- hence the explicit subdir/frame fmts.
+#   (RA theatre dir, tileset XML, TD MEG theatre dir, TD art suffix)
+# NOTE: no SNOW row -- TD winter maps live in RA's TEMPERATE slot (the TDW
+# template family); RA's snow theatre stays fully vanilla.
+THEATRES = [
+    ("TEMPERATE", "RA_TERRAIN_TEMPERATE.XML", "TEMPERATE", "TEM"),
+    ("INTERIOR", "RA_TERRAIN_INTERIOR.XML", "DESERT", "DES"),
+]
+
+# Terrain HD assets to bundle into each theatre's tileset XML. Each:
+#   (tileset Name, dot-free asset stem, TD template name, frame count, mode)
 # Dot-free stem (mirrors structure assets e.g. "tdobli" -> TDOBLI.ZIP): the
 # launcher derives the ZIP key from the frame path's first component, and a dot
 # there ("tib01.tem") gets truncated -> missing-texture placeholder. So no dot.
@@ -58,18 +72,24 @@ TD_TERRAIN_TEMP = r"DATA\ART\TEXTURES\SRGB\TIBERIAN_DAWN\TERRAIN\TEMPERATE"
 #   "loose" -> Reilsss's terrain method: loose DDS in a <stem>.tem subfolder, frame
 #             ref <stem>.tem\<stem>.tem-NNNN.tga. Required for TERRAIN OBJECTS
 #             (SPLIT2 blossom tree) -- the zip path renders <Missing> for terrain.
+# Last field = which RA theatre dirs the asset ships in (None = all).
 ASSETS = [
-    ("TIB01", "tib01", TD_TERRAIN_TEMP + r"\TI1", "TI1.TEM-{:04d}.DDS", 12, "zip"),
+    ("TIB01", "tib01", "TI1", 12, "zip", None),
+    # Desert building bibs: interior ships NO native bib art (the engine skips
+    # the bib smudge entirely when classic data is NULL), so the bib assets
+    # are ADDED to the interior slot under the native BIB* names -- classic
+    # .INT iconsets staged by build_tfassets.sh make the engine emit the
+    # smudge entries, and these HD tiles let the launcher resolve them.
+    ("BIB1", "bib1", "BIB1", 8, "zip", {"INTERIOR"}),
+    ("BIB2", "bib2", "BIB2", 6, "zip", {"INTERIOR"}),
+    ("BIB3", "bib3", "BIB3", 4, "zip", {"INTERIOR"}),
     # Blossom tree (TERRAIN_TDBLOSSOM, IniName SPLIT2) -- 55-frame bloom lifecycle.
-    # DISABLED: HD custom *terrain* art isn't deliverable on our stack (loose ignored
-    # for terrain, CONFIG.MEG inject crashes, mod texture-MEG not loaded). Re-enable
-    # if a working terrain-art path is found. Keeps the loose-DDS code path intact.
-    # ("SPLIT2", "split2", TD_TERRAIN_TEMP + r"\SPLIT2", "SPLIT2.TEM-{:04d}.DDS", 55, "loose"),
+    # DISABLED: HD custom *terrain* art isn't deliverable on our stack; the
+    # blossom ships as a BUILDING instead (STRUCT_TDBLOSSOM).
+    # ("SPLIT2", "split2", "SPLIT2", 55, "loose", None),
 ]
-TERRAIN_TEX_DIR = MOD_ROOT / "Data/ART/TEXTURES/SRGB/RED_ALERT/TERRAIN/TEMPERATE"
+TEX_ROOT = MOD_ROOT / "Data/ART/TEXTURES/SRGB/RED_ALERT/TERRAIN"
 TILESETS_DIR = MOD_ROOT / "Data/XML/TILESETS"
-TILESET_XML = "RA_TERRAIN_TEMPERATE.XML"
-TILESET_ENTRY_IN_MEG = r"DATA\XML\TILESETS\RA_TERRAIN_TEMPERATE.XML"
 
 
 def run(cmd):
@@ -106,10 +126,10 @@ def crop_to_opaque(im):
     return cropped, meta
 
 
-def build_zip(name, stem, src_dir, src_frame, n_frames, work_dir):
+def build_zip(name, stem, src_dir, src_frame, n_frames, work_dir, tex_dir):
     '''DDS -> cropped TGA(+meta) for all frames, packed into <name>.ZIP.'''
-    TERRAIN_TEX_DIR.mkdir(parents=True, exist_ok=True)
-    out_zip = TERRAIN_TEX_DIR / (name + ".ZIP")
+    tex_dir.mkdir(parents=True, exist_ok=True)
+    out_zip = tex_dir / (name + ".ZIP")
     with zipfile.ZipFile(out_zip, "w", zipfile.ZIP_DEFLATED) as zf:
         for i in range(n_frames):
             dds = extract_from_meg(TD_TEX_MEG, f"{src_dir}\\{src_frame.format(i)}",
@@ -125,11 +145,11 @@ def build_zip(name, stem, src_dir, src_frame, n_frames, work_dir):
     return out_zip
 
 
-def build_loose(name, stem, src_dir, src_frame, n_frames, work_dir):
+def build_loose(name, stem, src_dir, src_frame, n_frames, work_dir, tex_dir):
     '''Reilsss terrain method: extract the source DDS frames LOOSE (no ZIP, no
-    conversion) into <stem>.tem/<stem>.tem-NNNN.DDS under the temperate texture
+    conversion) into <stem>.tem/<stem>.tem-NNNN.DDS under the theatre texture
     dir. Terrain objects resolve their art from these loose DDS at startup.'''
-    out_dir = TERRAIN_TEX_DIR / f"{stem}.tem"
+    out_dir = tex_dir / f"{stem}.tem"
     out_dir.mkdir(parents=True, exist_ok=True)
     for i in range(n_frames):
         dds = extract_from_meg(TD_TEX_MEG, f"{src_dir}\\{src_frame.format(i)}",
@@ -161,19 +181,23 @@ def tile_block(name, stem, shape, mode):
     )
 
 
-def patch_tileset(work_dir):
-    '''Extract base RA_TERRAIN_TEMPERATE.XML, inject all ASSETS' tiles, write to mod.'''
-    base = extract_from_meg(CONFIG_MEG, TILESET_ENTRY_IN_MEG, work_dir / "xml")
+def patch_tileset(work_dir, tileset_xml, ra_dir):
+    '''Extract the base theatre tileset XML, inject the theatre's ASSETS tiles,
+    write to mod.'''
+    base = extract_from_meg(CONFIG_MEG, r"DATA\XML\TILESETS" + "\\" + tileset_xml,
+                            work_dir / "xml")
     text = base.read_text(encoding="utf-8")
     blocks = ""
-    for (name, stem, _src, _fmt, n_frames, mode) in ASSETS:
+    for (name, stem, _td, n_frames, mode, only) in ASSETS:
+        if only is not None and ra_dir not in only:
+            continue
         blocks += "".join(tile_block(name, stem, s, mode) for s in range(n_frames))
     marker = "\t\t</Tiles>"
     if marker not in text:
         marker = "</Tiles>"
     text = text.replace(marker, blocks + marker, 1)
     TILESETS_DIR.mkdir(parents=True, exist_ok=True)
-    out = TILESETS_DIR / TILESET_XML
+    out = TILESETS_DIR / tileset_xml
     # Preserve CRLF line endings -- the base CONFIG.MEG XML is CRLF, and the
     # launcher's CONFIG.MEG XML parser CRASHES (ClientG AV) on LF-only content
     # when this tileset is injected into CONFIG.MEG. read_text() normalised the
@@ -190,13 +214,22 @@ def main():
             sys.exit(f"Source MEG not found: {p}\nSet CNC_REMASTER_DATA.")
     work = Path("/tmp/tib_hd_build")
     work.mkdir(parents=True, exist_ok=True)
-    print("Building temperate terrain HD art...")
-    for (name, stem, src_dir, src_frame, n_frames, mode) in ASSETS:
-        if mode == "loose":
-            build_loose(name, stem, src_dir, src_frame, n_frames, work)
-        else:
-            build_zip(name, stem, src_dir, src_frame, n_frames, work)
-    patch_tileset(work)
+    for (ra_dir, tileset_xml, td_dir, td_suffix) in THEATRES:
+        print(f"Building {ra_dir.lower()} terrain HD art (TD {td_dir.lower()})...")
+        tex_dir = TEX_ROOT / ra_dir
+        for (name, stem, td_name, n_frames, mode, only) in ASSETS:
+            if only is not None and ra_dir not in only:
+                continue
+            # TEMPERATE per-tile subdir is the bare template name; other
+            # theatres include the suffix (TI1 vs TI1.WIN).
+            sub = td_name if td_dir == "TEMPERATE" else f"{td_name}.{td_suffix}"
+            src_dir = f"{TD_TERRAIN}\\{td_dir}\\{sub}"
+            src_frame = td_name + "." + td_suffix + "-{:04d}.DDS"
+            if mode == "loose":
+                build_loose(name, stem, src_dir, src_frame, n_frames, work, tex_dir)
+            else:
+                build_zip(name, stem, src_dir, src_frame, n_frames, work, tex_dir)
+        patch_tileset(work, tileset_xml, ra_dir)
     print("Done. Deploy the mod and run a skirmish to verify rendering.")
 
 

@@ -7164,7 +7164,19 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
     ** (land-type, pathing, classic render) keeps the real template via its
     ** .tem in TFASSETS.MIX.
     */
-    if (cell_ptr->TType >= TEMPLATE_TDSH1 && cell_ptr->TType < TEMPLATE_COUNT) {
+    if (cell_ptr->TType >= TEMPLATE_TDSH1 && cell_ptr->TType < TEMPLATE_COUNT
+        && cell_ptr->Overlay == OVERLAY_NONE && cell_ptr->Smudge == SMUDGE_NONE) {
+        /*
+        ** ^ Overlay/Smudge cells get NO ground entry -- FINAL architecture
+        ** after a long saga: ANY two dynamic entries on one cell z-fight
+        ** (unstable launcher-side ordering; layer flags, pixel biases and
+        ** CellY sort biases all failed to stabilise it -- the "flickering
+        ** tiberium"). One dynamic sprite per contested cell is deterministic
+        ** forever. The static layer beneath shows the VANILLA TWIN template
+        ** (Get_Template_Info), so roads/rivers stay continuous under
+        ** spreading tiberium; the residual is a tone seam on clear ground
+        ** (RA clear vs TD winter clear) -- known cosmetic.
+        */
         const TemplateTypeClass& td_type = TemplateTypeClass::As_Reference(cell_ptr->TType);
 
         CNCDynamicMapEntryStruct& td_entry = dynamic_map->Entries[entry_index++];
@@ -7186,19 +7198,28 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
         td_entry.CellY = Cell_Y(cell);
         // Water/shore animation: the launcher cycles <Frames> only for atlas
         // templates, never for dynamic-map entries, so anim frames are
-        // flattened into shapes by build_td_tiles.py (Shape = icon * 8 + frame,
-        // static icons aliased across all 8) and cycled here by varying
-        // ShapeIndex over time -- the FLAGFLY pattern (Frame % 14, below).
-        // TD's HD terrain anim is uniformly 8 frames; /2 gives a ~1s loop at
-        // normal game speed. Max flattened index = bridge2 icon 24 * 8 + 7 =
-        // 199, inside the u8.
+        // flattened into shapes by build_td_tiles.py (Shape = icon * n + frame)
+        // and cycled here by varying ShapeIndex over time -- the FLAGFLY
+        // pattern. n is PER TEMPLATE (TF_TdTileAnimShapes, generated): 1 for
+        // fully-static templates so their ShapeIndex stays CONSTANT (a value
+        // that churns -- even between aliased identical frames -- makes the
+        // launcher re-create the sprite each cycle, which z-pops above the
+        // cell's overlay entry: the winter "flickering tiberium"); 8 = TD's
+        // HD anim length; 4 for templates whose flattened index would
+        // overflow the u8 ShapeIndex (desert rv20/21, icons to 47).
         enum
         {
-            TD_TILE_ANIM_FRAMES = 8,
             TD_TILE_ANIM_RATE = 2 // game frames per animation frame
         };
-        td_entry.ShapeIndex = (unsigned char)(cell_ptr->TIcon * TD_TILE_ANIM_FRAMES
-                                              + (Frame / TD_TILE_ANIM_RATE) % TD_TILE_ANIM_FRAMES);
+        extern unsigned char const TF_TdTileAnimShapes[];
+        const int td_anim_shapes = TF_TdTileAnimShapes[cell_ptr->TType - TEMPLATE_TDSH1];
+        td_entry.ShapeIndex = (unsigned char)(cell_ptr->TIcon * td_anim_shapes
+                                              + (Frame / TD_TILE_ANIM_RATE) % td_anim_shapes);
+        // OVERLAY layer (NOT smudge: the launcher skips smudge-layer entries
+        // on building-occupied cells -- ground-as-smudge left white RA static
+        // showing through under/around buildings, 2026-06-10 bib report).
+        // The same-cell z-tie against a tiberium/resource overlay entry is
+        // broken by the +1 PositionY bias on the overlay entry below.
         td_entry.IsSmudge = false;
         td_entry.IsOverlay = true;
         td_entry.IsResource = false;
@@ -7215,6 +7236,30 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
 
         const SmudgeTypeClass& smudge_type = SmudgeTypeClass::As_Reference(cell_ptr->Smudge);
 
+#if 0 // TF DIAGNOSTIC stub: bib entries on TD-template cells (~/tf_bib.log). \
+      // Resolved 2026-06-10 (bibs render fine with ground suppression); flip \
+      // to 1 if bib rendering regresses.
+        if (cell_ptr->TType >= TEMPLATE_TDSH1 && cell_ptr->TType < TEMPLATE_COUNT
+            && cell_ptr->Smudge >= SMUDGE_BIB1 && cell_ptr->Smudge <= SMUDGE_BIB3
+            && (Frame % 15) == 0) {
+            const char* up = getenv("USERPROFILE");
+            if (up != NULL) {
+                char path[512];
+                snprintf(path, sizeof(path), "%s/tf_bib.log", up);
+                FILE* f = fopen(path, "a");
+                if (f != NULL) {
+                    fprintf(f,
+                            "frame=%d cell=%d smudge=%d data=%d img=%p asset=%s "
+                            "entry_index=%d\n",
+                            Frame, (int)cell, (int)cell_ptr->Smudge,
+                            (int)cell_ptr->SmudgeData, smudge_type.Get_Image_Data(),
+                            smudge_type.IniName, entry_index);
+                    fclose(f);
+                }
+            }
+        }
+#endif
+
         if (smudge_type.Get_Image_Data() != NULL) {
 
             if (debug_output) {
@@ -7226,6 +7271,16 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             CNCDynamicMapEntryStruct& smudge_entry = dynamic_map->Entries[entry_index++];
 
             strncpy(smudge_entry.AssetName, smudge_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
+            /*
+            ** Tiberian Factions -- bibs render RA's NATIVE per-theatre art on
+            ** TD ground: winter maps live in the TEMPERATE slot (TD winter is
+            ** icy-temperate; RA's brown temperate bib matches), and desert
+            ** maps live in the sacrificed INTERIOR slot whose BIB*.INT art is
+            ** path-shadowed with TD desert bib pixels (the radar-palette
+            ** mechanism, build_desert_radar_palette.py). The earlier per-cell
+            ** BIB->TDBIB AssetName rewrite is retired: dynamic bib entries
+            ** layer unreliably against the synthesized ground entry.
+            */
             smudge_entry.Type = (short)cell_ptr->Smudge;
             smudge_entry.Owner = (char)cell_ptr->Owner;
             smudge_entry.DrawFlags = SHAPE_WIN_REL; // Looks like smudges are drawn top left
@@ -7289,6 +7344,12 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
                 SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST; // Looks like overlays are drawn centered and translucent
             overlay_entry.PositionX = xpixel + (CELL_PIXEL_W >> 1);
             overlay_entry.PositionY = ypixel + (CELL_PIXEL_H >> 1);
+            /*
+            ** Tiberian Factions -- no PositionY bias needed against the TD
+            ** ground entry: overlay cells never get one (suppressed above;
+            ** the launcher's cell-keyed entry sort made same-cell ties
+            ** unstable and a pixel bias couldn't break them).
+            */
             overlay_entry.Width = Get_Build_Frame_Width(overlay_type.Get_Image_Data());
             overlay_entry.Height = Get_Build_Frame_Height(overlay_type.Get_Image_Data());
             overlay_entry.CellX = Cell_X(cell);

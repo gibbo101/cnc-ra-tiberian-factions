@@ -991,6 +991,63 @@ bool CellClass::Get_Template_Info(char* template_name, int& icon, void*& image_d
     ** bridge strip over water); 'C' reports CLEAR (land).
     */
     if (TType >= TEMPLATE_TDSH1 && TType < TEMPLATE_COUNT) {
+        /*
+        ** Interior theatre (TD desert maps): the W1/RV13/SH02 stand-ins below
+        ** do not exist in the interior atlas -- reporting them would hit the
+        ** same unknown-asset NULL-crash the stand-ins exist to avoid. Instead
+        ** the DESERT RADAR PALETTE stands in: interior art is sacrificed
+        ** (nothing multiplayer uses interior) and four interior templates are
+        ** path-shadowed with TD desert pixels by the mod's loose Data/ART
+        ** tree (scripts/build_desert_radar_palette.py) -- CLEAR1 = sand,
+        ** ARRO0001 = water, ARRO0002 = bright coast, ARRO0003 = river. The
+        ** 2026-06-10 W1 spike proved the launcher's radar samples loose
+        ** path-shadowed pixels, so the minimap shows desert-true colours.
+        */
+        if (Scen.Theater == THEATER_INTERIOR) {
+            extern char const* const TF_TdTileRadarClass[];
+            char const* irow = TF_TdTileRadarClass[TType - TEMPLATE_TDSH1];
+            char icls = (TIcon < (int)strlen(irow)) ? irow[TIcon] : 'C';
+            TemplateTypeClass const* stand;
+            icon = 0;
+            switch (icls) {
+            case 'W':
+                stand = &TemplateTypeClass::As_Reference(TEMPLATE_ARRO0001);
+                break;
+            case 'B':
+                stand = &TemplateTypeClass::As_Reference(TEMPLATE_ARRO0002);
+                break;
+            case 'R':
+                stand = &TemplateTypeClass::As_Reference(TEMPLATE_ARRO0003);
+                break;
+            case 'K': // rock/cliff (slopes + boulders, name-classified)
+                stand = &TemplateTypeClass::As_Reference(TEMPLATE_ARRO0004);
+                break;
+            default:
+                stand = &TemplateTypeClass::As_Reference(TEMPLATE_CLEAR1);
+                icon = Clear_Icon();
+                break;
+            }
+            strcpy(template_name, stand->IniName);
+            image_data = (void*)stand->ImageData;
+            return true;
+        }
+        /*
+        ** Same-named same-size VANILLA twin (TF_TdTileVanillaTwin, generated):
+        ** report RA's own template + the SAME icon for the static map + radar.
+        ** Rivers/roads/water/slopes radar as RA's real art (the class
+        ** stand-ins blurred them to texture swatches), and the static ground
+        ** under overlay/smudge cells keeps road/river continuity. Shores and
+        ** bridges have no same-size twin and fall through to the stand-ins.
+        */
+        extern short const TF_TdTileVanillaTwin[];
+        short twin = TF_TdTileVanillaTwin[TType - TEMPLATE_TDSH1];
+        if (twin >= 0) {
+            TemplateTypeClass const* tw = &TemplateTypeClass::As_Reference((TemplateType)twin);
+            strcpy(template_name, tw->IniName);
+            icon = TIcon;
+            image_data = (void*)tw->ImageData;
+            return true;
+        }
         extern char const* const TF_TdTileRadarClass[];
         char const* row = TF_TdTileRadarClass[TType - TEMPLATE_TDSH1];
         char cls = (TIcon < (int)strlen(row)) ? row[TIcon] : 'C';
@@ -1017,6 +1074,11 @@ bool CellClass::Get_Template_Info(char* template_name, int& icon, void*& image_d
             // art instead of flat sea W1
             ttype = &TemplateTypeClass::As_Reference(TEMPLATE_RIVER13);
             icon = 6;
+        } else if (cls == 'K') {
+            // rock/cliff (slopes + boulders) -- RA's own slope art reads as
+            // a cliff band on the radar
+            ttype = &TemplateTypeClass::As_Reference(TEMPLATE_SLOPE01);
+            icon = 0;
         } else if (cls == 'B') {
             ttype = &TemplateTypeClass::As_Reference(TEMPLATE_SHORE02);
             icon = 9;
