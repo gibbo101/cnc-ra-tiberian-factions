@@ -4837,6 +4837,7 @@ void DisplayClass::Read_INI(CCINIClass& ini)
     **	override. Vanilla ignores the unknown section entirely.
     */
     static char const* const TFTDTILES = "TFTDTiles";
+    TF_TDWinterMap = false;
     len = ini.Get_UUBlock(TFTDTILES, _staging_buffer, sizeof(_staging_buffer));
     if (len > 0) {
         BufferStraw tdstraw(_staging_buffer, len);
@@ -4855,6 +4856,10 @@ void DisplayClass::Read_INI(CCINIClass& ini)
                 cellref.TType = (TemplateType)_td_ttype[cell];
                 cellref.TIcon = icon;
                 cellref.Recalc_Attributes();
+                if (!TF_TDWinterMap
+                    && strncmp(TemplateTypeClass::As_Reference(cellref.TType).IniName, "TDW", 3) == 0) {
+                    TF_TDWinterMap = true;
+                }
             }
         }
     }

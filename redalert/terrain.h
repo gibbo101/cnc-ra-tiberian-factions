@@ -90,6 +90,16 @@ public:
     };
 
     /*
+    **	Tiberian Factions -- on converted TD WINTER maps (TF_TDWinterMap),
+    **	trees return TD's snowy winter shapes (TDW<name>.TEM in TFASSETS.MIX)
+    **	instead of the type's green temperate ImageData. Implemented as an
+    **	override (not a TerrainTypeClass::Init mutation) because type init is
+    **	guarded by LastTheater and winter/summer maps share the TEMPERATE
+    **	theatre.
+    */
+    virtual void const* Get_Image_Data(void) const;
+
+    /*
     **	Coordinate inquiry functions. These are used for both display and
     **	combat purposes.
     */

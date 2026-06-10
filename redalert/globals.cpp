@@ -35,6 +35,9 @@
 
 bool IsVQ640 = false;
 unsigned int GameVersion = 0;
+
+// Tiberian Factions -- see externs.h; set per-scenario in DisplayClass::Read_INI.
+bool TF_TDWinterMap = false;
 bool Debug_MotionCapture = false;
 bool Debug_Quiet = false;
 bool Debug_Cheat = false;

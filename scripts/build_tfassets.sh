@@ -183,6 +183,28 @@ if [[ -d "$TEM_STAGE" ]]; then
     done
 fi
 
+# Tiberian Factions -- snowy trees for converted TD WINTER maps. Winter maps
+# run in RA's TEMPERATE theatre, so trees would draw with the green temperate
+# shapes in classic mode. TerrainClass::Get_Image_Data (terrain.cpp) swaps to
+# "TDW<NAME>.TEM" from this mix when TF_TDWinterMap is set; HD gets the snow
+# look via the exported AssetName + the loose tileset entries
+# (scripts/build_winter_trees.py). Source = TD's own winter tree art
+# (WINTER.MIX *.win), remapped from TD's winter palette to RA's temperate
+# palette (the palette classic mode renders these maps with).
+WINTER_MIX="${CNCDATA}/TIBERIAN_DAWN/CD1/WINTER.MIX"
+if [[ -f "$WINTER_MIX" ]]; then
+    python3 scripts/mix_tools.py extract "$WINTER_MIX" "winter.pal" "$TMPDIR" >/dev/null
+    TDW_PAL="$TMPDIR/winter.pal"
+    for t in t01 t02 t03 t05 t06 t07 t08 t10 t11 t12 t13 t14 t15 t16 t17 \
+             tc01 tc02 tc03 tc04 tc05; do
+        python3 scripts/mix_tools.py extract "$WINTER_MIX" "$t.win" "$TMPDIR" >/dev/null
+        python3 scripts/shptools.py remap "$TMPDIR/$t.win" "$TMPDIR/remap_tdw_$t" "$TDW_PAL" "$RA_PAL"
+        PACK_ARGS+=("$TMPDIR/remap_tdw_$t:TDW$(echo $t | tr a-z A-Z).TEM")
+    done
+else
+    echo "warning: $WINTER_MIX not found; classic snowy winter trees skipped" >&2
+fi
+
 # Tiberian Factions -- desert building bibs (interior slot). The base game
 # ships NO interior bib art, so the engine skips bib smudges on desert maps
 # (NULL classic data). Stage TD desert bibs under the native names as .INT:

@@ -76,6 +76,15 @@ typedef MixFileClass<CCFileClass> MFCD;
 
 extern bool IsVQ640;
 extern unsigned int GameVersion;
+
+/*
+**	Tiberian Factions -- true while the loaded scenario is a converted TD
+**	WINTER map (detected by TDW* templates in the [TFTDTiles] side-channel,
+**	display.cpp). Winter maps live in the TEMPERATE theatre, so trees swap
+**	to snowy art: classic via TerrainClass::Get_Image_Data (terrain.cpp),
+**	HD via the exported AssetName (dllinterface.cpp).
+*/
+extern bool TF_TDWinterMap;
 extern bool Debug_MotionCapture;
 extern bool Debug_Rotate;
 extern bool Debug_Quiet;

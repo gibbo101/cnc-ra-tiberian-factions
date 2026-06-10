@@ -37,6 +37,9 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
   bridges, winter forests, and desert dunes render in full HD on the
   converted maps — including animated water lapping along the shorelines,
   just like the TD remaster.
+- **Snowy trees on the winter maps.** Trees on the converted winter maps
+  use Tiberian Dawn's own snow-covered winter art — in HD and classic —
+  instead of green summer trees.
 
 ## [1.1.6] — 2026-06-07
 

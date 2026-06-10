@@ -4183,6 +4183,23 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             if (strncmp(new_object.AssetName, "MINE", CNC_OBJECT_ASSET_NAME_LENGTH) == 0) {
                 strncpy(new_object.AssetName, "OREMINE", CNC_OBJECT_ASSET_NAME_LENGTH);
             }
+            /*
+            ** Tiberian Factions -- converted TD WINTER maps live in the
+            ** TEMPERATE theatre, so trees would render with green summer art.
+            ** Swap the exported name to the TDW* tileset entries (loose
+            ** RA_TERRAIN_TEMPERATE.XML, frames point at the base MEG's snow
+            ** theatre textures -- scripts/build_winter_trees.py). Same
+            ** mechanism as the vanilla MINE -> OREMINE rename above.
+            */
+            if (TF_TDWinterMap
+                && new_object.AssetName[0] == 'T'
+                && (isdigit((unsigned char)new_object.AssetName[1])
+                    || (new_object.AssetName[1] == 'C'
+                        && isdigit((unsigned char)new_object.AssetName[2])))) {
+                char swapped[CNC_OBJECT_ASSET_NAME_LENGTH];
+                snprintf(swapped, sizeof(swapped), "TDW%s", new_object.AssetName);
+                strncpy(new_object.AssetName, swapped, CNC_OBJECT_ASSET_NAME_LENGTH);
+            }
         } break;
         }
 

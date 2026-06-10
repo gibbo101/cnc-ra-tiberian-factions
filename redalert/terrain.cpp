@@ -272,6 +272,43 @@ bool TerrainClass::Mark(MarkType mark)
 }
 
 /***********************************************************************************************
+ * TerrainClass::Get_Image_Data -- Shape data for this tree; snowy on TD winter maps.          *
+ *                                                                                             *
+ *    Tiberian Factions -- converted TD WINTER maps run in the TEMPERATE theatre (the TDW*     *
+ *    template family), so the type's ImageData is the green summer tree. When the winter      *
+ *    flag is set (TF_TDWinterMap, display.cpp), return TD's own snowy shape instead:          *
+ *    TDW<name>.TEM packed into TFASSETS.MIX by scripts/build_tfassets.sh from WINTER.MIX.     *
+ *    TFASSETS.MIX is cached for the life of the process (init.cpp), so the lazy per-type      *
+ *    pointer cache below never goes stale. Missing entries fall through to the temperate      *
+ *    art (best-effort, same policy as the TFASSETS load itself). HD mode gets the same        *
+ *    swap via the exported AssetName in dllinterface.cpp.                                     *
+ *                                                                                             *
+ * OUTPUT:  Pointer to the shape data to render this terrain object with.                      *
+ *=============================================================================================*/
+void const* TerrainClass::Get_Image_Data(void) const
+{
+    if (TF_TDWinterMap) {
+        static void const* _winter_image[TERRAIN_COUNT];
+        static bool _winter_tried[TERRAIN_COUNT];
+        TerrainType type = Class->Type;
+        if ((unsigned)type < TERRAIN_COUNT) {
+            if (!_winter_tried[type]) {
+                _winter_tried[type] = true;
+                char winame[_MAX_FNAME];
+                char fullname[_MAX_FNAME + _MAX_EXT];
+                snprintf(winame, sizeof(winame), "TDW%s", Class->IniName);
+                _makepath(fullname, NULL, NULL, winame, ".TEM");
+                _winter_image[type] = MFCD::Retrieve(fullname);
+            }
+            if (_winter_image[type] != NULL) {
+                return _winter_image[type];
+            }
+        }
+    }
+    return ObjectClass::Get_Image_Data();
+}
+
+/***********************************************************************************************
  * TerrainClass::Draw_It -- Renders the terrain object at the location specified.              *
  *                                                                                             *
  *    This routine is used to render the terrain object at the location specified and          *
