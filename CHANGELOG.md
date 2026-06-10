@@ -2,7 +2,7 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
-## [1.2.0] — 2026-06-10
+## [2.0.0] — 2026-06-10
 
 ### Added
 - **Tiberium.** The real thing, alongside Red Alert's ore: green crystal fields
