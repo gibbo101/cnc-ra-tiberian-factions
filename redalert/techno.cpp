@@ -7111,16 +7111,21 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         // similar Rule.BuildSpeedBias mystery recurs.
 
         /*
-        **  DEV TOGGLE — instant-build (~1 second) for GDI / Nod players for
-        **  fast catalogue iteration. Flip #if 0 → 1 to enable. Search
+        **  DEV TOGGLE — instant-build (~1 second) for the HUMAN player for
+        **  fast iteration. Flip #if 0 → 1 to enable. Search
         **  "DEV TOGGLE — instant build" to find. 15 ticks ≈ 1s at 15/sec.
         **
-        **  Disabled 2026-05-27. Default OFF; only flip on for short-lived
-        **  catalogue tests, then revert before deploy/release.
+        **  2026-06-11 (Luke): extended from GDI/Nod-only to any human-owned
+        **  house (covers Allies/Soviets testing too) and now EXCLUDES AI
+        **  houses — the old GDI/Nod gate also sped up AI opponents of those
+        **  factions. IsHuman is the skirmish-safe check (never PlayerPtr,
+        **  see reference-remaster-playerptr-always-self).
+        **
+        **  Default OFF; only flip on for short-lived tests, then revert
+        **  before deploy/release.
         */
-#if 0 // TF DEV TOGGLE: instant-build for GDI/Nod testing. Flip to 1 to re-enable.
-        if (hptr->Class->House == HOUSE_GOOD || hptr->Class->House == HOUSE_BAD
-            || hptr->ActLike      == HOUSE_GOOD || hptr->ActLike      == HOUSE_BAD) {
+#if 0 // TF DEV TOGGLE: instant-build for human-player testing. Flip to 1 to re-enable.
+        if (hptr->IsHuman) {
             return 15;
         }
 #endif

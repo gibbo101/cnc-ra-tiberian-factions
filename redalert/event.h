@@ -100,6 +100,9 @@ public:
         RETRACT_DRAW,  //	Player retracts proposed draw offer.
 #endif
 
+        // TF: rally points (ported from CFE Patch Redux, GPL v3)
+        SET_RALLY, // Set a factory building's rally point.
+
         LAST_EVENT, // one past the last event
     } EventType;
 

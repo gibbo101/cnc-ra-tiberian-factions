@@ -108,12 +108,29 @@
 #include "utracker.h"
 #include "event.h"
 #include <cstdio>
+#include <cmath>
 #include "rules.h"
 
 /*
 ** New sidebar for GlyphX multiplayer. ST - 8/2/2019 2:35PM
 */
 #include "sidebarglyphx.h"
+
+/*
+** TF: rally points (CFE Patch Redux port) — draw rally markers directly in
+** remastered graphics mode. Defined in conquer.cpp.
+*/
+extern void DLL_Draw_Intercept(int shape_number,
+                               int x,
+                               int y,
+                               int width,
+                               int height,
+                               int flags,
+                               const ObjectClass* object,
+                               DirType rotation,
+                               long scale,
+                               const char* shape_file_name,
+                               char override_owner);
 
 enum SAMState
 {
@@ -457,6 +474,18 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             Begin_Mode(BSTATE_IDLE);
         }
         TechnoClass::Receive_Message(from, message, param);
+
+        /*
+        **	TF: rally points (CFE Patch Redux port). Send the freshly exited
+        **	unit to this factory's rally point. On success the move order is
+        **	already issued, so don't also tell the unit to run away.
+        */
+        if (Can_Have_Rally_Point() && from != NULL && from->Is_Techno()) {
+            if (Rally_Unit(*static_cast<TechnoClass*>(from))) {
+                return (RADIO_ROGER);
+            }
+        }
+
         if (*this == STRUCT_WEAP || *this == STRUCT_AIRSTRIP || *this == STRUCT_REPAIR || *this == STRUCT_TDFIX
             || *this == STRUCT_TDWEAP || *this == STRUCT_TDAFLD)
             return (RADIO_RUN_AWAY);
@@ -624,6 +653,93 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         */
         if (IsRepairing && IsWrenchVisible) {
             CC_Draw_Shape(ObjectTypeClass::SelectShapes, SELECT_WRENCH, x, y, window, SHAPE_CENTER | SHAPE_WIN_REL);
+        }
+    }
+
+    /*
+    **	TF: rally points (CFE Patch Redux port, incl. their long-line dot
+    **	skipping — too many dots crashes the GlyphX client). Draw the rally
+    **	line for the owning player while the building is selected.
+    */
+    if (Can_Have_Rally_Point() && Is_Selected_By_Player(House) && RallyPoint && Target_Legal(RallyPoint)) {
+        int startX, startY, endX, endY;
+        Map.Coord_To_Pixel(Center_Coord(), startX, startY);
+        Map.Coord_To_Pixel(As_Coord(RallyPoint), endX, endY);
+
+        if (window == WINDOW_VIRTUAL) {
+            /*
+            **	Remastered renderer: a dotted line of DOTSML markers. Spacing
+            **	must be at least the diagonal of the marker art or they overlap.
+            */
+            int Xdistance = endX - startX;
+            bool negativeX = (Xdistance < 0);
+            if (negativeX) {
+                Xdistance = -Xdistance;
+            }
+            int Ydistance = endY - startY;
+            bool negativeY = (Ydistance < 0);
+            if (negativeY) {
+                Ydistance = -Ydistance;
+            }
+            float diagonaldistance = sqrtf((float)((Xdistance * Xdistance) + (Ydistance * Ydistance)));
+            int steps = (int)(diagonaldistance / 10.0f);
+            if (steps > 0) {
+                float deltaX = (float)Xdistance / (float)steps;
+                float deltaY = (float)Ydistance / (float)steps;
+                for (int i = 0; i < steps; i++) {
+                    /*
+                    **	If the line is very long, skip dots in the middle so the
+                    **	GlyphX client isn't asked to draw too many shapes.
+                    */
+                    if (steps > 32) {
+                        int togo = steps - i - 1;
+                        if ((i > 16) && (togo > 16) && (i % 2 != 0)) {
+                            continue;
+                        }
+                        if ((i > 32) && (togo > 32) && (i % 4 != 0)) {
+                            continue;
+                        }
+                        if ((i > 64) && (togo > 64) && (i % 8 != 0)) {
+                            continue;
+                        }
+                        if ((i > 128) && (togo > 128) && (i % 16 != 0)) {
+                            continue;
+                        }
+                    }
+                    int diffX = (int)((float)i * deltaX);
+                    if (negativeX) {
+                        diffX = -diffX;
+                    }
+                    int diffY = (int)((float)i * deltaY);
+                    if (negativeY) {
+                        diffY = -diffY;
+                    }
+                    DLL_Draw_Intercept(
+                        0, startX + diffX, startY + diffY, 4, 4, SHAPE_WIN_REL | SHAPE_CENTER, this, DIR_N, 0x0100, "DOTSML", HOUSE_NONE);
+                }
+            }
+            /*
+            **	The big dot at the end gets the owner's faction emblem.
+            **	CFE only had Allied/Soviet art; DOTGDI/DOTNOD are ours
+            **	(from the faction-select emblem set).
+            */
+            const char* enddot;
+            if ((Owner() == HOUSE_GOOD) || (House->ActLike == HOUSE_GOOD)) {
+                enddot = "DOTGDI";
+            } else if ((Owner() == HOUSE_BAD) || (House->ActLike == HOUSE_BAD)) {
+                enddot = "DOTNOD";
+            } else if ((Owner() == HOUSE_USSR) || (Owner() == HOUSE_UKRAINE) || (House->ActLike == HOUSE_USSR)
+                       || (House->ActLike == HOUSE_UKRAINE)) {
+                enddot = "DOTUSSR";
+            } else {
+                enddot = "DOTALLY";
+            }
+            DLL_Draw_Intercept(0, endX, endY, 8, 8, SHAPE_WIN_REL | SHAPE_CENTER, this, DIR_N, 0x0100, enddot, HOUSE_NONE);
+        } else {
+            /*
+            **	Legacy renderer: a plain line reads better at low res.
+            */
+            CC_Draw_Line(startX, startY, endX, endY, LTGREEN, 1, window);
         }
     }
 
@@ -1967,6 +2083,7 @@ BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     , AnimToTrack(TARGET_NONE)
     , LastStrength(0)
     , PlacementDelay(0)
+    , RallyPoint(TARGET_NONE)
 {
     // Diagnostic hook removed 2026-05-18. To re-enable, fprintf here to log
     // every BuildingClass instantiation with typeptr/IniName/Type/house. Used
@@ -2178,6 +2295,104 @@ void BuildingClass::Active_Click_With(ActionType action, ObjectClass* object)
     if (action == ACTION_TOGGLE_PRIMARY && Class->Is_Factory()) {
         OutList.Add(EventClass(EventClass::PRIMARY, TargetClass(this)));
     }
+
+    /*
+    **	TF: rally points (CFE Patch Redux port). Alt+Click (force move) on a
+    **	unit or building rallies onto that object.
+    */
+    if (action == ACTION_MOVE && object != NULL && Can_Have_Rally_Point()) {
+        Player_Set_Rally_Point(object->As_Target());
+    }
+}
+
+/***********************************************************************************************
+ * TF: rally points — ported from CFE Patch Redux (cfehunter/ChthonVII, GPL v3),               *
+ * hard-enabled (no config gate). Repair-bay rally (STRUCT_REPAIR/STRUCT_TDFIX)                *
+ * is deliberately left out until the Smarter Repair Bay port lands — CFE gates               *
+ * it on that feature's exit logic. See docs/cfe-port-plan.md.                                 *
+ *=============================================================================================*/
+
+/***********************************************************************************************
+ * BuildingClass::Can_Have_Rally_Point -- Query if a building can have a rally point.          *
+ *                                                                                             *
+ *    Keys off the RTTI type this factory produces, so TD production buildings                 *
+ *    (TDWEAP/TDPYLE/TDHAND/TDAFLD's unit side etc.) qualify automatically.                    *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   07/06/2020 cfehunter : Created.                                                           *
+ *=============================================================================================*/
+bool BuildingClass::Can_Have_Rally_Point(void) const
+{
+    switch (Class->ToBuild) {
+    case RTTI_INFANTRYTYPE:
+    case RTTI_UNITTYPE:
+    case RTTI_VESSELTYPE:
+        return true;
+
+    default:
+        return false;
+    }
+}
+
+void BuildingClass::Set_Unselected_By_Player(HouseClass* player)
+{
+    TechnoClass::Set_Unselected_By_Player(player);
+
+    if (Can_Have_Rally_Point() && RallyPoint) {
+        Map.Flag_To_Redraw(true);
+    }
+}
+
+/***********************************************************************************************
+ * BuildingClass::Player_Set_Rally_Point -- Queue a networked rally point change.              *
+ *=============================================================================================*/
+void BuildingClass::Player_Set_Rally_Point(TARGET target)
+{
+    OutList.Add(EventClass(EventClass::SET_RALLY, TargetClass(As_Target()), TargetClass(target)));
+}
+
+/***********************************************************************************************
+ * BuildingClass::Target_For_Rally_Point -- Resolve the rally point to a reachable target.     *
+ *                                                                                             *
+ *    Cell rally points resolve to a nearby clear cell for the given movement                  *
+ *    class; object rally points pass through unchanged.                                       *
+ *=============================================================================================*/
+TARGET BuildingClass::Target_For_Rally_Point(const SpeedType speed) const
+{
+    return Target_Legal(RallyPoint)
+               ? (Is_Target_Cell(RallyPoint) ? ::As_Target(Map.Nearby_Location(As_Cell(RallyPoint), speed))
+                                             : RallyPoint)
+               : TARGET_NONE;
+}
+
+/***********************************************************************************************
+ * BuildingClass::Rally_Unit -- Order a unit to the building's rally point.                    *
+ *                                                                                             *
+ * OUTPUT:  true if the unit accepted a move order to the rally point.                         *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   14/06/2020 cfehunter : Created.                                                           *
+ *=============================================================================================*/
+bool BuildingClass::Rally_Unit(TechnoClass& unit)
+{
+    if (Can_Have_Rally_Point() && Target_Legal(RallyPoint)) {
+        /*
+        **	Harvesters skip the rally point and head for the ore instead.
+        */
+        if (unit.What_Am_I() == RTTI_UNIT && ((UnitClass&)unit).Class->IsToHarvest) {
+            return false;
+        }
+
+        const TARGET rallyTarget = Target_For_Rally_Point(unit.Techno_Type_Class()->Speed);
+
+        /*
+        **	Make sure units don't rally to themselves. Only a problem for
+        **	repair/reload pads.
+        */
+        int move_target = (int)(unit.As_Target() != rallyTarget ? rallyTarget : ::As_Target(Nearby_Location()));
+        return Target_Legal(move_target) && Transmit_Message(RADIO_MOVE_HERE, move_target, &unit) == RADIO_ROGER;
+    }
+    return false;
 }
 
 /***********************************************************************************************
@@ -2213,6 +2428,11 @@ void BuildingClass::Active_Click_With(ActionType action, CELL cell)
 
         COORDINATE coord = Map.Pixel_To_Coord(Get_Mouse_X(), Get_Mouse_Y());
         OutList.Add(EventClass(ANIM_MOVE_FLASH, PlayerPtr->Class->House, coord, 1 << PlayerPtr->Class->House));
+    } else if (action == ACTION_MOVE && Can_Have_Rally_Point()) {
+        /*
+        **	TF: rally points (CFE Patch Redux port). Click ground to set.
+        */
+        Player_Set_Rally_Point(::As_Target(cell));
     }
 }
 
@@ -3534,7 +3754,22 @@ ActionType BuildingClass::What_Action(CELL cell) const
 
     ActionType action = TechnoClass::What_Action(cell);
 
-    if (action == ACTION_MOVE && ((*this != STRUCT_CONST && *this != STRUCT_TDFACT) || !Is_MCV_Deploy())) {
+    /*
+    **	TF: rally points (CFE Patch Redux port) — rally-capable factories keep
+    **	the move cursor so the ground click can set a rally point.
+    **
+    **	Improvement over CFE: TechnoClass::What_Action returns ACTION_NOMOVE
+    **	when BuildingClass::Can_Enter_Cell (building-footprint placement
+    **	legality!) rejects the cell — cliffs, shoreline, ore, beside other
+    **	buildings. A rally point is not a placement: Target_For_Rally_Point
+    **	resolves through Map.Nearby_Location to a reachable cell anyway, so
+    **	accept any cell.
+    */
+    if (action == ACTION_NOMOVE && Can_Have_Rally_Point()) {
+        action = ACTION_MOVE;
+    }
+    if (action == ACTION_MOVE && !Can_Have_Rally_Point()
+        && ((*this != STRUCT_CONST && *this != STRUCT_TDFACT) || !Is_MCV_Deploy())) {
         action = ACTION_NONE;
     }
 
@@ -6414,7 +6649,14 @@ bool BuildingClass::Can_Player_Move(void) const
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
-    return ((*this == STRUCT_CONST || *this == STRUCT_TDFACT) && (Mission == MISSION_GUARD) && Special.IsMCVDeploy);
+    /*
+    **	TF: rally points (CFE Patch Redux port). Rally-capable factories must
+    **	answer "yes" here — this is what lets TechnoClass::What_Action(cell)
+    **	produce ACTION_MOVE (and the launcher show a move cursor) so the
+    **	ground click can reach Active_Click_With and set the rally point.
+    */
+    return Can_Have_Rally_Point()
+           || ((*this == STRUCT_CONST || *this == STRUCT_TDFACT) && (Mission == MISSION_GUARD) && Special.IsMCVDeploy);
 }
 
 /***********************************************************************************************

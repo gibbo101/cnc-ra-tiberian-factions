@@ -1335,7 +1335,22 @@ int AircraftClass::Mission_Unload(void)
                                 }
                                 unit->IsALoaner = false;
                                 unit->IsLocked = true;
-                                unit->Scatter(0, true);
+
+                                /*
+                                **	TF: rally points — cargo-delivered vehicles
+                                **	never pass through the factory's
+                                **	RADIO_UNLOADED exit hook, so honor the
+                                **	airstrip's rally point here. Fall back to
+                                **	the usual scatter off the drop cell.
+                                */
+                                bool rallied = false;
+                                TechnoClass* strip = Contact_With_Whom();
+                                if (strip != NULL && strip->What_Am_I() == RTTI_BUILDING) {
+                                    rallied = ((BuildingClass*)strip)->Rally_Unit(*unit);
+                                }
+                                if (!rallied) {
+                                    unit->Scatter(0, true);
+                                }
                             }
                             ScenarioInit--;
                             Transmit_Message(RADIO_OVER_OUT);

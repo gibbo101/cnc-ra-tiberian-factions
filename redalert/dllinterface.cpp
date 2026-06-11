@@ -3730,8 +3730,16 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  instead. EMC-equivalent path — see TD-Assets workshop docs.
     */
     if (object != NULL && object->What_Am_I() == RTTI_BUILDING) {
+        /*
+        **  TF: rally point markers are drawn attributed to the factory
+        **  building but are NOT the building's own art — the ShapeSize
+        **  override must not inflate them to building dimensions (GDI/Nod
+        **  TD buildings set ShapeSize; RA buildings don't, which made the
+        **  dots building-sized for TD factories only).
+        */
+        bool is_rally_marker = (shape_file_name != NULL && strncmp(shape_file_name, "DOT", 3) == 0);
         BuildingTypeClass const* btc_for_size = (BuildingTypeClass const*)&object->Class_Of();
-        if (btc_for_size->ShapeWidth > 0 && btc_for_size->ShapeHeight > 0) {
+        if (!is_rally_marker && btc_for_size->ShapeWidth > 0 && btc_for_size->ShapeHeight > 0) {
             width  = btc_for_size->ShapeWidth;
             height = btc_for_size->ShapeHeight;
         }

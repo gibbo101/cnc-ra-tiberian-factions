@@ -207,6 +207,14 @@ public:
     */
     CDTimerClass<FrameTimerClass> PlacementDelay;
 
+    /*
+    **	TF: rally points (ported from CFE Patch Redux, GPL v3). Where units
+    **	produced by this factory are sent on exit. TARGET_NONE when unset.
+    **	NOTE: grows the class — breaks savegame compatibility with builds
+    **	that lack it (VC dropped the save/load padding CFE stole bytes from).
+    */
+    TARGET RallyPoint;
+
     /*---------------------------------------------------------------------
     **	Constructors, Destructors, and overloaded operators.
     */
@@ -378,8 +386,17 @@ public:
 
     virtual unsigned Spied_By() const;
 
+    /*
+    **	TF: rally points (ported from CFE Patch Redux, GPL v3).
+    */
+    bool Can_Have_Rally_Point(void) const;
+    bool Rally_Unit(TechnoClass& unit);
+    TARGET Target_For_Rally_Point(const SpeedType speed = SPEED_TRACK) const;
+    virtual void Set_Unselected_By_Player(HouseClass* player = NULL);
+
 private:
     void Drop_Debris(TARGET source = TARGET_NONE);
+    void Player_Set_Rally_Point(TARGET target);
 
     /*
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for

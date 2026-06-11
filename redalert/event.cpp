@@ -92,6 +92,7 @@ unsigned char EventClass::EventLength[EventClass::LAST_EVENT] = {
     0,                                         //	PROPOSE_DRAW
     0,                                         //	RETRACT_DRAW
 #endif
+    size_of(EventClass, Data.NavCom),          // SET_RALLY (TF: rally points)
 };
 
 const char* EventClass::EventNames[EventClass::LAST_EVENT] = {
@@ -103,6 +104,7 @@ const char* EventClass::EventNames[EventClass::LAST_EVENT] = {
 #ifdef FIXIT_VERSION_3 //	Stalemate games.
     "PROPOSE_DRAW", "RETRACT_DRAW",
 #endif
+    "SET_RALLY",
 };
 
 /***********************************************************************************************
@@ -1006,6 +1008,24 @@ void EventClass::Execute(void)
         Sound_Effect(VOC_INCOMING_MESSAGE);
         break;
 #endif
+
+    /*
+    **	TF: rally points (ported from CFE Patch Redux). Set or clear a factory
+    **	building's rally point. Clicking the building itself clears it.
+    */
+    case SET_RALLY:
+        if (BuildingClass* const building = Data.NavCom.Whom.As_Building()) {
+            TARGET newTarget = Data.NavCom.Where.As_TARGET();
+            if (building->RallyPoint != newTarget) {
+                if (building->As_Target() != newTarget) {
+                    building->RallyPoint = newTarget;
+                } else {
+                    building->RallyPoint = TARGET_NONE;
+                }
+                Map.Flag_To_Redraw(true);
+            }
+        }
+        break;
 
     /*
     **	Default: do nothing.

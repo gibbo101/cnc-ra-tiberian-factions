@@ -17986,6 +17986,62 @@
 					</Frames>
 				</Value>
 			</Tile>
+				<!-- TF: rally point markers (CFE Patch Redux port, GPL v3) -->
+				<Tile>
+					<Key>
+						<Name>DOTSML</Name>
+						<Shape>0</Shape>
+					</Key>
+					<Value>
+						<Frames>
+							<Frame>dotsml\dotsml-0000.tga</Frame>
+						</Frames>
+					</Value>
+				</Tile>
+				<Tile>
+					<Key>
+						<Name>DOTALLY</Name>
+						<Shape>0</Shape>
+					</Key>
+					<Value>
+						<Frames>
+							<Frame>dotally\dotally-0000.tga</Frame>
+						</Frames>
+					</Value>
+				</Tile>
+				<Tile>
+					<Key>
+						<Name>DOTUSSR</Name>
+						<Shape>0</Shape>
+					</Key>
+					<Value>
+						<Frames>
+							<Frame>dotussr\dotussr-0000.tga</Frame>
+						</Frames>
+					</Value>
+				</Tile>
+				<Tile>
+					<Key>
+						<Name>DOTGDI</Name>
+						<Shape>0</Shape>
+					</Key>
+					<Value>
+						<Frames>
+							<Frame>dotgdi\dotgdi-0000.tga</Frame>
+						</Frames>
+					</Value>
+				</Tile>
+				<Tile>
+					<Key>
+						<Name>DOTNOD</Name>
+						<Shape>0</Shape>
+					</Key>
+					<Value>
+						<Frames>
+							<Frame>dotnod\dotnod-0000.tga</Frame>
+						</Frames>
+					</Value>
+				</Tile>
 		</Tiles>
 	</TilesetTypeClass>
 </Tilesets>
