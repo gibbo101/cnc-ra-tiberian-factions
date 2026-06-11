@@ -37,7 +37,8 @@ Plan for adopting QoL features and bugfixes from **CFE Patch Redux** by ChthonVI
 
 | # | Feature | CFE INI key (locator) | Size | Notes for our port |
 |---|---|---|---|---|
-| 1 | **A\* Pathing** | `ASTAR_PATHING` | LARGE | Replaces "crash and turn" pathfinder. Foundation for #6. 1.8 fixed a crash on paths >200 cells — take the fixed version. Touches core movement; needs the biggest playtest soak. |
+| 0 | **Pixel-Perfect Zoom** | none (static; data-only) | TINY | **PRIORITY 1 (Luke, 2026-06-11).** No DLL code: loose `Data/XML/GAMECONSTANTS.XML` in the mod folder, `<CNCZoomFactors network="client" overwrite="true">` block — 11 factors 0.246875–1.975 (vanilla: 8 factors 1.0–2.0, so this also zooms OUT further). CFE commit `ea2dde5`. Port = extract BASE GAMECONSTANTS.XML from our install, swap in the zoom block only, ship in our `Data/XML/`. Bonus intel: same file carries `CNCTDTheaterTilesets` (theatre→tileset map, relevant to desert) + many other mod-reachable client constants. |
+| 1 | **A\* Pathing** | `ASTAR_PATHING` | LARGE | Replaces "crash and turn" pathfinder. **Stage 1 of the two-stage pathfinding plan — see §1.1.** Foundation for #6. 1.8 fixed a crash on paths >200 cells — take the fixed version. Touches core movement; needs the biggest playtest soak. |
 | 2 | **Attack-Move** (Shift+Click) | `ATTACK_MOVE` | LARGE | Take the post-1.7 LAN-safe rework. Special-case handling: aircraft RTB on empty ammo, boats brief-attack, minelayers, chronotanks. Must verify against OUR units: TD aircraft (Orca/Apache), TDMSAM/TDMLRS, visceroid targeting. |
 | 3 | **Rally Points** | `RALLY_POINTS` | MEDIUM | Buildings + repair bays; Alt+Click rallies onto unit/building. Take 1.7 artwork (owner-only visibility in LAN) + the v1.9 unreleased fix for long rally lines crashing the GlyphX client. Wire up our TD production buildings (TDWEAP/TDPYLE/TDHAND/TDAFLD/TDFIX). |
 | 4 | **Harvester Queue Jumping** | `HARV_QUEUE_JUMP` | SMALL | Independent toggle in CFE; works with #5. Verify against our TDPROC/TDHARV Limbo+Attach dock plumbing — our harvester counting bug (docked harvesters leave UQuantity) is exactly the kind of state this code reads. |
@@ -45,9 +46,25 @@ Plan for adopting QoL features and bugfixes from **CFE Patch Redux** by ChthonVI
 | 6 | **Smarter Repair Bay** | `SMARTER_REPAIR_BAY` | MEDIUM | Queue for occupied bay + fixed RA bay rally + exit logic. Includes their fix for units ignoring collision on the bay. Must cover STRUCT_TDFIX alongside RA's FIX. |
 | 7 | **Infantry Tiberium Aversion** | `TIB_AVERSION` (TD side) | SMALL once #1 lands | TD-only in CFE; we port it against OUR `OVERLAY_TIB01` fields in RA. Requires A*. Exempt visceroids (and decide: do TD-faction infantry path around ore too? No — Tiberium only, ore is harmless). |
 
-Suggested order: 3 → 4+5 → 6 (independent, small-to-medium, immediately felt) while reading
-in for 1; then 1, then 2, then 7. A* and Attack-Move are the two rewrites; everything else is
-bounded.
+Suggested order: 0 first (decided priority 1), then 3 → 4+5 → 6 (independent,
+small-to-medium, immediately felt) while reading in for 1; then 1, then 2, then 7. A* and
+Attack-Move are the two rewrites; everything else is bounded.
+
+### 1.1 Pathfinding strategy (DECIDED 2026-06-11: A* first, refine later)
+
+Reconciled with `docs/ai-improvements.md` §"Pathfinding — options considered", which
+correctly argues the dock-stuck/chokepoint problem is a **traffic/cooperation problem, not a
+path-search problem** — a better search algorithm alone doesn't fix it.
+
+- **Stage 1 (this plan): port CFE's A\*.** Replaces the search layer (`findpath.cpp` greedy
+  "crash and turn"). Battle-tested in this exact engine, LAN-safe, >200-cell crash already
+  fixed. Supersedes ai-improvements.md's "implement JPS" idea — JPS's edge over A* is mostly
+  speed, which RA-sized maps don't need.
+- **Stage 2 (later, ours): reservation table + scatter-the-blocker** on top, per
+  ai-improvements.md's recommendation — reserved cells as soft cost penalties in the A* grid
+  (same mechanism CFE's Tiberium Aversion uses for Tiberium cells, so stage 1 builds the
+  hook). This is the layer that actually fixes dock deadlocks. OpenRA's cooperative
+  pathfinder remains the reference. WHCA*/ORCA stay rejected as overkill/engine-hostile.
 
 ## 2. QoL second wave (candidates, not yet decided)
 
