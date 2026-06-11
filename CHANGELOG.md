@@ -2,6 +2,31 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [2.1.0] — 2026-06-11
+
+Quality of life release, adapted from CFE Patch Redux by ChthonVII (after
+cfehunter and Root-Core), GPL v3. All features work for all four factions.
+
+### Added
+- **Rally points** on production buildings and repair bays. Click ground to
+  set, Alt+Click to rally onto a unit or building, click the building to
+  clear. Cargo-plane deliveries honour it; any spot on the map is valid.
+- **Smarter harvesters.** Spread across refineries by distance and queue
+  length, jump the queue when closer, re-shuffle when a dock frees, head
+  straight home when full.
+- **Smarter repair bays.** Units queue at a busy bay; repaired units drive
+  off to the rally point instead of blocking the pad; aircraft return to a
+  free pad or strip.
+- **More zoom.** 11 pixel-perfect steps instead of 8, including further
+  zoom-out. (By bleid, via CFE.)
+
+### Fixed
+- Docking bugs: queued units disrupting the unit being serviced, and a TD
+  refinery visually losing its docked harvester.
+
+### Notes
+- Saved games from earlier versions are not compatible.
+
 ## [2.0.0] — 2026-06-10
 
 ### Added
