@@ -446,6 +446,19 @@ void UnitClass::AI(void)
     }
 
     /*
+    **	TF: harvester QoL (CFE port) — clear the unload refinery whenever the
+    **	harvester is neither harvesting nor entering a refinery, so stale
+    **	bookings don't inflate other harvesters' wait estimates.
+    */
+    if (Class->IsToHarvest && Mission != MISSION_HARVEST) {
+        if (Mission != MISSION_ENTER || !In_Radio_Contact() || Contact_With_Whom()->What_Am_I() != RTTI_BUILDING
+            || (*((BuildingClass*)Contact_With_Whom()) != STRUCT_REFINERY
+                && *((BuildingClass*)Contact_With_Whom()) != STRUCT_TDPROC)) {
+            TiberiumUnloadRefinery = TARGET_NONE;
+        }
+    }
+
+    /*
     **	Handle combat logic for this unit. It will determine if it has a target and
     **	if so, if conditions are favorable for firing. When conditions permit, the
     **	unit will fire upon its target.
@@ -954,8 +967,31 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                 TarCom = As_Target();
                 return (RADIO_ROGER);
             }
+        } else if (In_Radio_Contact()) {
+            /*
+            **	TF: smarter repair bay (CFE port) — leaving the pad picks a
+            **	sensible exit cell instead of the dumb scatter.
+            */
+            TechnoClass* contact = Contact_With_Whom();
+            if (contact->What_Am_I() == RTTI_BUILDING
+                && (*((BuildingClass*)contact) == STRUCT_REPAIR || *((BuildingClass*)contact) == STRUCT_TDFIX)) {
+                if (DoSmarterRunAway()) {
+                    return (RADIO_ROGER);
+                }
+            }
         }
         return (DriveClass::Receive_Message(from, message, param));
+
+    /*
+    **	TF: harvester QoL (CFE port) — a closer harvester took our dock slot
+    **	(queue jump). Go back to harvest logic; FINDHOME will re-pick.
+    */
+    case RADIO_CANCEL:
+        if ((Mission == MISSION_RETURN || Mission == MISSION_ENTER) && Class->IsToHarvest) {
+            Set_Mission(MISSION_HARVEST);
+            Transmit_Message(RADIO_OVER_OUT);
+        }
+        return (RADIO_ROGER);
 
     /*
     **	When this message is received, it means that the other object
@@ -3131,6 +3167,19 @@ int UnitClass::Mission_Harvest(void)
     */
     case LOOKING:
         /*
+        **	TF: harvester QoL (CFE port) — a full harvester entering LOOKING
+        **	heads straight home instead of hunting for ore it can't carry.
+        **	Clear target + unload refinery so FINDHOME re-runs selection.
+        */
+        if (Tiberium_Load() == 1) {
+            IsHarvesting = false;
+            Status = FINDHOME;
+            Assign_Target(TARGET_NONE);
+            TiberiumUnloadRefinery = TARGET_NONE;
+            return (1);
+        }
+
+        /*
         **	Slightly hacky; if TarCom is set then skip to finding home state.
         */
         if (Target_Legal(TarCom)) {
@@ -3142,6 +3191,7 @@ int UnitClass::Mission_Harvest(void)
         /*
         ** Look for ore where we last found some - mine the same patch
         */
+        TiberiumUnloadRefinery = TARGET_NONE; // TF: re-pick the refinery for every fresh load (CFE optimize mode)
         if (Target_Legal(ArchiveTarget)) {
             Assign_Destination(ArchiveTarget);
             ArchiveTarget = 0;
@@ -3234,25 +3284,30 @@ int UnitClass::Mission_Harvest(void)
         if (!Target_Legal(NavCom)) {
 
             /*
-            **	Find best refinery.
+            **	Find best refinery (TF: CFE optimize mode — selection accounts
+            **	for other inbound harvesters; see Find_Best_Refinery).
             */
             BuildingClass* nearest = Find_Best_Refinery();
 
-            /*
-            **	Since the refinery said it was ok to load, establish radio
-            **	contact with the refinery and then await docking orders.
-            */
-            if (nearest != NULL && Transmit_Message(RADIO_HELLO, nearest) == RADIO_ROGER) {
-                Status = HEADINGHOME;
-                if (nearest->House == PlayerPtr && (PlayerPtr->Capacity - PlayerPtr->Tiberium) < 300
-                    && PlayerPtr->Capacity > 500 && (PlayerPtr->ActiveBScan & (STRUCTF_REFINERY | STRUCTF_CONST))) {
-                    Speak(VOX_NEED_MO_CAPACITY);
-                }
-            } else {
-                ScenarioInit++;
-                nearest = Find_Best_Refinery();
-                ScenarioInit--;
-                if (nearest != NULL) {
+            if (nearest != NULL) {
+                TiberiumUnloadRefinery = nearest->As_Target();
+
+                /*
+                **	Since the refinery said it was ok to load, establish radio
+                **	contact with the refinery and then await docking orders.
+                */
+                if (Transmit_Message(RADIO_HELLO, nearest) == RADIO_ROGER) {
+                    Status = HEADINGHOME;
+                    if (nearest->House == PlayerPtr && (PlayerPtr->Capacity - PlayerPtr->Tiberium) < 300
+                        && PlayerPtr->Capacity > 500 && (PlayerPtr->ActiveBScan & (STRUCTF_REFINERY | STRUCTF_CONST))) {
+                        Speak(VOX_NEED_MO_CAPACITY);
+                    }
+                } else {
+                    /*
+                    **	Refinery busy: queue up near it. (CFE notes RA's
+                    **	Nearby_Location(from) picks a cell near `from`, not
+                    **	near self — which is exactly what we want here.)
+                    */
                     Assign_Destination(::As_Target(Nearby_Location(nearest)));
                 }
             }
@@ -3882,6 +3937,18 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
             && ((UnitClass*)this)->Transmit_Message(RADIO_CAN_LOAD, building) == RADIO_ROGER
             && !building->In_Radio_Contact() && !building->Is_Something_Attached()) {
             action = ACTION_MOVE;
+        }
+    }
+
+    /*
+    **	TF: smarter repair bay (CFE port) — allow ordering a unit to a repair
+    **	bay even while the bay is occupied; the unit queues up and docks when
+    **	the bay frees. (Without this the click is refused outright.)
+    */
+    if (is_player_controlled && action == ACTION_SELECT && object->What_Am_I() == RTTI_BUILDING) {
+        BuildingClass* building = (BuildingClass*)object;
+        if (building->Class->Type == STRUCT_REPAIR || building->Class->Type == STRUCT_TDFIX) {
+            action = ACTION_ENTER;
         }
     }
 
@@ -4681,6 +4748,192 @@ fixed UnitClass::Tiberium_Load(void) const
     return (0);
 }
 
+struct RefineryData
+{
+    BuildingClass* Refinery;
+    int Distance;
+    int Harvesters;
+};
+
+static bool operator==(const RefineryData& lhs, const RefineryData& rhs)
+{
+    return lhs.Refinery == rhs.Refinery;
+}
+
+static bool operator!=(const RefineryData& lhs, const RefineryData& rhs)
+{
+    return !(lhs == rhs);
+}
+
+static int _refinery_compare(const void* left, const void* right)
+{
+    const RefineryData& lhs = *reinterpret_cast<const RefineryData*>(left);
+    const RefineryData& rhs = *reinterpret_cast<const RefineryData*>(right);
+    if (lhs.Distance < rhs.Distance) {
+        return -1;
+    } else if (rhs.Distance < lhs.Distance) {
+        return 1;
+    }
+    return 0;
+}
+
+BuildingClass* UnitClass::Tiberium_Unload_Refinery(void) const
+{
+    return Target_Legal(TiberiumUnloadRefinery) ? As_Building(TiberiumUnloadRefinery) : NULL;
+}
+
+/***********************************************************************************************
+ * UnitClass::ReconsiderRefinery -- Make a queued harvester re-pick its refinery.              *
+ *                                                                                             *
+ *    Called when a refinery finishes an unload: harvesters that are full and                  *
+ *    heading home but NOT first in line (Mission_Harvest FINDHOME state with a                *
+ *    destination already assigned) drop their plan and re-run refinery selection              *
+ *    next tick, so the freed dock gets considered.                                            *
+ *=============================================================================================*/
+void UnitClass::ReconsiderRefinery(void)
+{
+    if (Target_Legal(NavCom) && TiberiumUnloadRefinery != TARGET_NONE && Mission == MISSION_HARVEST
+        && Status == 2 /* FINDHOME in Mission_Harvest's local enum */) {
+        Assign_Destination(TARGET_NONE);
+        Assign_Target(TARGET_NONE);
+        TiberiumUnloadRefinery = TARGET_NONE;
+    }
+}
+
+/***********************************************************************************************
+ * UnitClass::DoSmarterRunAway -- Pick a sensible cell to vacate the repair pad to.            *
+ *                                                                                             *
+ *    TF: smarter repair bay (ported from CFE Patch Redux, GPL v3). Scores the                 *
+ *    cells around the pad (the pad is a plus shape, so cardinal directions                    *
+ *    look one cell further out): empty beats occupied, less rotation beats                    *
+ *    more. Friendly blockers on or beyond the chosen cell are asked to                        *
+ *    scatter. Returns false if no exit cell qualifies (caller falls back to                   *
+ *    the plain scatter).                                                                      *
+ *=============================================================================================*/
+bool UnitClass::DoSmarterRunAway(void)
+{
+    /*
+    **	Bail if already going somewhere.
+    */
+    if (Target_Legal(NavCom) && (Mission == MISSION_MOVE)) {
+        return true;
+    }
+
+    /*
+    **	Bail if we are not on top of the pad already.
+    */
+    BuildingClass* beneathme = Map[Coord].Cell_Building();
+    if (!beneathme || (*beneathme != STRUCT_REPAIR && *beneathme != STRUCT_TDFIX)) {
+        return false;
+    }
+
+    const CELL mycell = Coord_Cell(Coord);
+    int bestscore = 0;
+    CELL bestcell = 0;
+    FacingType bestdirection = FACING_NONE;
+
+    /*
+    **	See if any of the cells adjacent to the pad are suitable.
+    */
+    for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
+        CELL newcell = Adjacent_Cell(mycell, face);
+        if (!Map.In_Radar(newcell)) {
+            continue;
+        }
+        /*
+        **	Since the pad is a + shape, go an extra cell in the cardinal directions.
+        */
+        if (((int)face) % 2 == 0) {
+            newcell = Adjacent_Cell(newcell, face);
+            if (!Map.In_Radar(newcell)) {
+                continue;
+            }
+        }
+        int score = 0;
+        MoveType move = Can_Enter_Cell(newcell, FACING_NONE);
+        /*
+        **	Prefer empty cells to cells we have to ask occupiers to scatter.
+        */
+        if (move == MOVE_OK) {
+            score += 104;
+        } else if (move == MOVE_MOVING_BLOCK) {
+            score += 100;
+        } else if (move == MOVE_TEMP) {
+            score += 10;
+        }
+        if (score) {
+            /*
+            **	Prefer cells that take less rotation to point towards.
+            */
+            int myface = Dir_Facing(PrimaryFacing.Current());
+            int dista = (((int)face - myface) + 8) % 8;
+            int distb = ((myface - (int)face) + 8) % 8;
+            if (dista < distb) {
+                score = score + 4 - dista;
+            } else {
+                score = score + 4 - distb;
+            }
+
+            if (score > bestscore) {
+                bestscore = score;
+                bestcell = newcell;
+                bestdirection = face;
+            }
+        }
+    }
+
+    /*
+    **	If we found a suitable cell, go there.
+    */
+    if (bestscore) {
+        Assign_Destination(::As_Target(bestcell));
+        Assign_Mission(MISSION_MOVE);
+
+        /*
+        **	If the cell wasn't clear, ask the occupiers (and those just beyond,
+        **	to clear 2-deep blockages) to scatter — movement logic won't do it
+        **	for us because we're "close enough".
+        */
+        if (bestscore < 100) {
+            CellClass* cellptr = &Map[bestcell];
+            TechnoClass* blockage = cellptr->Cell_Techno();
+            if (blockage && blockage->IsActive && House->Is_Ally(blockage)) {
+                cellptr->Incoming(Coord, true, true);
+            }
+            for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
+                if ((face == bestdirection) || (face == bestdirection + (FacingType)1)
+                    || (face == bestdirection - (FacingType)1)) {
+                    CELL newcell = Adjacent_Cell(bestcell, face);
+                    if (!Map.In_Radar(newcell)) {
+                        continue;
+                    }
+                    cellptr = &Map[newcell];
+                    blockage = cellptr->Cell_Techno();
+                    if (blockage && blockage->IsActive && House->Is_Ally(blockage)) {
+                        cellptr->Incoming(Coord, true, true);
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    /*
+    **	No suitable cell: let the caller fall back to the plain scatter.
+    */
+    return false;
+}
+
+/***********************************************************************************************
+ * UnitClass::Find_Best_Refinery -- Pick the refinery with the least effective wait.           *
+ *                                                                                             *
+ *    CFE "Harvester Optimization": nearest refinery, where the distance to each                *
+ *    refinery is penalised for every other harvester already bound for it (a                  *
+ *    full unload takes about as long as driving HARV_UNLOAD_WAIT_WEIGHT). A                   *
+ *    harvester much closer to a refinery than an already-counted one discounts               *
+ *    it (communalism: it will queue-jump anyway). Replaces both the vanilla                   *
+ *    remember-last-refinery behaviour and the Sept-16-patch load balancing.                   *
+ *=============================================================================================*/
 BuildingClass* UnitClass::Find_Best_Refinery(void) const
 {
     /*
@@ -4690,25 +4943,84 @@ BuildingClass* UnitClass::Find_Best_Refinery(void) const
     */
     StructType reftype = (*this == UNIT_TDHARV) ? STRUCT_TDPROC : STRUCT_REFINERY;
 
-    /*
-    **	Remember our last refinery and prefer that one, if still available and valid.
-    */
-    if (Target_Legal(TiberiumUnloadRefinery)) {
-        BuildingClass* refinery = As_Building(TiberiumUnloadRefinery);
+    static DynamicVectorClass<RefineryData> _refineries;
+    _refineries.Clear();
+
+    for (int i = 0; i < Buildings.Count(); ++i) {
+        BuildingClass* refinery = Buildings.Ptr(i);
         if (refinery != NULL && refinery->House == House && !refinery->IsInLimbo
             && refinery->Mission != MISSION_DECONSTRUCTION && *refinery == reftype
             && Map[refinery->Center_Coord()].Zones[Techno_Type_Class()->MZone]
                    == Map[Center_Coord()].Zones[Techno_Type_Class()->MZone]) {
-            return refinery;
-        } else {
-            TiberiumUnloadRefinery = TARGET_NONE;
+            _refineries.Add(RefineryData{refinery, Distance(refinery), 0});
         }
     }
 
     /*
-    **	Find nearby refinery and head to it?
+    **	Base case for zero or one refineries.
     */
-    return Find_Docking_Bay(reftype, false);
+    if (_refineries.Count() == 0) {
+        return NULL;
+    } else if (_refineries.Count() == 1) {
+        return _refineries[0].Refinery;
+    }
+
+    /*
+    **	Count harvesters already bound for each refinery. Same-type pairing is
+    **	implicit: a TDHARV's unload refinery can only ever match a TDPROC in
+    **	the list (and vice versa).
+    */
+    for (int i = 0; i < Units.Count(); ++i) {
+        UnitClass* unit = Units.Ptr(i);
+        if (unit != NULL && unit != this && unit->IsActive && !unit->IsInLimbo && unit->Class->IsToHarvest
+            && unit->House == House) {
+            BuildingClass* refinery = unit->Tiberium_Unload_Refinery();
+            if (refinery != NULL) {
+                int index = _refineries.ID(RefineryData{refinery, 0, 0});
+                if (index >= 0) {
+                    /*
+                    **	Communalism: if we are closer to this refinery than the
+                    **	other harvester by a big enough margin (and the other is
+                    **	outside queue-jump range), don't count it — we'd cut in
+                    **	line ahead of it anyway.
+                    */
+                    int other_distance = unit->Distance(refinery);
+                    if ((_refineries[index].Distance + HARV_COMMUNALISM_WEIGHT) < other_distance
+                        && other_distance > HARV_QUEUE_JUMP_CUTOFF) {
+                        continue;
+                    }
+                    _refineries[index].Harvesters++;
+                }
+            }
+        }
+    }
+
+    /*
+    **	Penalise each refinery's distance per inbound harvester (lower penalty
+    **	when already very close, to prevent thrashing between two docks).
+    */
+    for (int i = 0; i < _refineries.Count(); ++i) {
+        if (_refineries[i].Distance < HARV_THRASHING_CUTOFF) {
+            _refineries[i].Distance += _refineries[i].Harvesters * HARV_THRASHING_WEIGHT;
+        } else {
+            _refineries[i].Distance += _refineries[i].Harvesters * HARV_UNLOAD_WAIT_WEIGHT;
+        }
+    }
+
+    /*
+    **	Sort by adjusted distance (single swap suffices for two refineries).
+    */
+    if (_refineries.Count() == 2) {
+        if (_refineries[0].Distance > _refineries[1].Distance) {
+            RefineryData temp = _refineries[0];
+            _refineries[0] = _refineries[1];
+            _refineries[1] = temp;
+        }
+    } else {
+        qsort(&_refineries[0], _refineries.Count(), sizeof(RefineryData), _refinery_compare);
+    }
+
+    return _refineries[0].Refinery;
 }
 
 /***********************************************************************************************

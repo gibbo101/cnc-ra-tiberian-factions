@@ -38,6 +38,17 @@
 #include "drive.h"
 #include "ftimer.h"
 
+/*
+**	TF: harvester QoL tuning (ported from CFE Patch Redux, GPL v3, hard-enabled).
+**	CFE's shipped defaults, converted from cells to leptons (all comparisons
+**	are crow-flies lepton distances until the A* port lands).
+*/
+#define HARV_QUEUE_JUMP_CUTOFF  (4 * CELL_LEPTON_W) // closer harvesters than this are never bumped
+#define HARV_UNLOAD_WAIT_WEIGHT (6 * CELL_LEPTON_W) // one queued unload ~= this much extra driving
+#define HARV_THRASHING_CUTOFF   (5 * CELL_LEPTON_W) // within this range, use the lower wait penalty
+#define HARV_THRASHING_WEIGHT   ((HARV_UNLOAD_WAIT_WEIGHT * 2) / 3)
+#define HARV_COMMUNALISM_WEIGHT ((HARV_UNLOAD_WAIT_WEIGHT * 9) / 4)
+
 class BuildingClass;
 class BulletClass;
 class HouseClass;
@@ -185,6 +196,18 @@ public:
     virtual FireErrorType Can_Fire(TARGET target, int which) const;
     virtual fixed Tiberium_Load(void) const;
     virtual BuildingClass* Find_Best_Refinery(void) const;
+
+    /*
+    **	TF: harvester QoL (ported from CFE Patch Redux, GPL v3).
+    */
+    BuildingClass* Tiberium_Unload_Refinery(void) const;
+    void ReconsiderRefinery(void);
+
+    /*
+    **	TF: smarter repair bay (ported from CFE Patch Redux, GPL v3) —
+    **	pick a sensible cell to vacate the repair pad to.
+    */
+    bool DoSmarterRunAway(void);
 
     /*
     **	Coordinate inquiry functions. These are used for both display and

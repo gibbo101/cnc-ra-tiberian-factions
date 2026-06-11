@@ -119,6 +119,13 @@ public:
     bool Cell_Seems_Ok(CELL cell, bool landing = false) const;
     DirType Pose_Dir(void) const;
     TARGET Good_LZ(void) const;
+
+    /*
+    **	TF: smarter repair bay (ported from CFE Patch Redux, GPL v3) —
+    **	leave the repair pad for a helipad/airstrip (or a nearby LZ).
+    */
+    bool DoSmarterRunAway(void);
+
     virtual DirType Fire_Direction(void) const;
     virtual FireErrorType Can_Fire(TARGET target, int which) const;
 

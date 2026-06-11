@@ -2919,6 +2919,7 @@ typedef enum RadioMessageType : unsigned char
     RADIO_ALL_DONE,       // "I have completed the task."
     RADIO_NEED_REPAIR,    // "Are you in need of service depot work?"
     RADIO_ON_DEPOT,       // "Are you sitting on a service depot?"
+    RADIO_CANCEL,         // "Scratch that." (TF: harvester queue jump, CFE port)
 
     RADIO_COUNT
 } RadioMessageType;

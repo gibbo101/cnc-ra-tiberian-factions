@@ -205,6 +205,46 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
     switch (message) {
 
     /*
+    **	TF: harvester queue jumping (CFE Patch Redux port). A refinery already
+    **	serving one harvester lets a clearly-closer harvester cut in line:
+    **	the current customer is told RADIO_CANCEL (it reverts to harvest logic
+    **	and re-picks) and the newcomer's hello goes through. The cutoff keeps
+    **	docked/almost-docked harvesters from ever being bumped.
+    */
+    case RADIO_HELLO:
+        /*
+        **	TF: a TD refinery with an attached (limbo'd, mid-siphon) harvester
+        **	has NO radio contact — Limbo always breaks radio — so it looks
+        **	free to callers. Refuse hellos while the dock is occupied, or a
+        **	second harvester gets coordinated straight into the occupied dock
+        **	(stomping the siphon animation and double-attaching).
+        */
+        if ((Class->Type == STRUCT_REFINERY || Class->Type == STRUCT_TDPROC) && Is_Something_Attached()) {
+            return (RADIO_NEGATIVE);
+        }
+        if ((Class->Type == STRUCT_REFINERY || Class->Type == STRUCT_TDPROC) && In_Radio_Contact()) {
+            if (from != NULL && from->What_Am_I() == RTTI_UNIT && ((UnitClass*)from)->Class->IsToHarvest
+                && Contact_With_Whom()->What_Am_I() == RTTI_UNIT) {
+
+                UnitClass& currentHarvy = *static_cast<UnitClass*>(Contact_With_Whom());
+                UnitClass& newHarvy = *static_cast<UnitClass*>(from);
+
+                int currentHarvyDistance = currentHarvy.Distance(this);
+                int newHarvyDistance = newHarvy.Distance(this);
+
+                if (currentHarvyDistance > HARV_QUEUE_JUMP_CUTOFF && newHarvyDistance < currentHarvyDistance) {
+
+                    /*
+                    **	Kick the current harvester out and accept the new one.
+                    */
+                    Transmit_Message(RADIO_CANCEL, &currentHarvy);
+                    return (TechnoClass::Receive_Message(from, message, param));
+                }
+            }
+        }
+        break;
+
+    /*
     **	This message is received as a request to attach/load/dock with this building.
     **	Verify that this is allowed and return the appropriate response.
     */
@@ -317,6 +357,20 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         TechnoClass::Receive_Message(from, message, param);
 
         /*
+        **	TF: refuse dock requests from anyone who isn't the current
+        **	customer. Transmit_Message delivers explicit-target messages
+        **	regardless of radio contact, so a queued unit's Mission_Enter
+        **	polls DOCKING into a busy dock every tick — and without this
+        **	guard the coordination below (NEED_TO_MOVE / TETHER / pad-center
+        **	MOVE_HERE) is transmitted at the CURRENT customer, resetting its
+        **	docking dance and overwriting its rally destination each tick.
+        */
+        if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC)
+            && (Is_Something_Attached() || (In_Radio_Contact() && Contact_With_Whom() != from))) {
+            return (RADIO_NEGATIVE);
+        }
+
+        /*
         **	When in radio contact for loading, the refinery starts
         **	flashing the lights.
         */
@@ -337,6 +391,17 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                         Transmit_Message(RADIO_OVER_OUT);
                         return (RADIO_ROGER);
                     }
+                }
+
+                /*
+                **	TF: smarter repair bay — the current customer is being
+                **	served legitimately. Acknowledge the newcomer (it stays
+                **	in MISSION_ENTER, politely polling until the bay frees)
+                **	but do NOT run the docking coordination below — those
+                **	no-target transmits would go to the current customer.
+                */
+                if (In_Radio_Contact() && Contact_With_Whom() != from) {
+                    return (RADIO_ROGER);
                 }
             }
         }
@@ -472,6 +537,22 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         // branch we ported from never received it.
         if (*this == STRUCT_REFINERY || *this == STRUCT_TDPROC) {
             Begin_Mode(BSTATE_IDLE);
+
+            /*
+            **	TF: harvester QoL (CFE port) — this dock just freed up. Tell
+            **	every queued harvester of ours (full, heading home, not first
+            **	in line) to re-run refinery selection so the freed dock gets
+            **	considered.
+            */
+            if (IsActive && !IsInLimbo && HasOpened) {
+                for (int i = 0; i < Units.Count(); ++i) {
+                    UnitClass* unit = Units.Ptr(i);
+                    if (unit != NULL && unit->IsActive && !unit->IsInLimbo && unit->Class->IsToHarvest
+                        && unit->House == House) {
+                        unit->ReconsiderRefinery();
+                    }
+                }
+            }
         }
         TechnoClass::Receive_Message(from, message, param);
 
@@ -2323,6 +2404,14 @@ void BuildingClass::Active_Click_With(ActionType action, ObjectClass* object)
  *=============================================================================================*/
 bool BuildingClass::Can_Have_Rally_Point(void) const
 {
+    /*
+    **	TF: smarter repair bay (CFE port) — repaired units leave toward the
+    **	bay's rally point, so bays take rally points too.
+    */
+    if (Class->Type == STRUCT_REPAIR || Class->Type == STRUCT_TDFIX) {
+        return true;
+    }
+
     switch (Class->ToBuild) {
     case RTTI_INFANTRYTYPE:
     case RTTI_UNITTYPE:
@@ -2380,6 +2469,21 @@ bool BuildingClass::Rally_Unit(TechnoClass& unit)
         **	Harvesters skip the rally point and head for the ore instead.
         */
         if (unit.What_Am_I() == RTTI_UNIT && ((UnitClass&)unit).Class->IsToHarvest) {
+            return false;
+        }
+
+        /*
+        **	TF: smarter repair bay (CFE port) — aircraft leaving a repair bay
+        **	don't drive to the rally point; send them to a helipad/airstrip.
+        **	Always claim success for fixed-wing planes that found no strip so
+        **	the caller doesn't kick them out and force a crash.
+        */
+        if ((*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) && unit.What_Am_I() == RTTI_AIRCRAFT) {
+            if (((AircraftClass*)&unit)->DoSmarterRunAway()) {
+                return true;
+            } else if (((AircraftClass*)&unit)->Class->IsFixedWing) {
+                return true;
+            }
             return false;
         }
 
@@ -2575,7 +2679,13 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             ScenarioInit++;
             cell = Find_Exit_Cell(base);
             if (cell != 0 && base->Unlimbo(Cell_Coord(cell), Direction(Cell_Coord(cell)))) {
-                base->Assign_Mission(MISSION_GUARD);
+                /*
+                **	TF: rally points (CFE port) — naval yards don't use the
+                **	RADIO_UNLOADED exit path, so rally the new vessel here.
+                */
+                if (!Rally_Unit(*static_cast<TechnoClass*>(base))) {
+                    base->Assign_Mission(MISSION_GUARD);
+                }
                 ScenarioInit--;
                 return (2);
             }
@@ -5479,15 +5589,45 @@ int BuildingClass::Mission_Repair(void)
 
                 /*
                 **	The repair step resulted in a completely repaired unit.
+                **
+                **	TF: smarter repair bay (CFE port). The vanilla remaster
+                **	left RADIO_RUN_AWAY commented out, so repaired units sat
+                **	on the pad. Send them to the rally point (or tell them to
+                **	clear off), and always hang up — otherwise they re-dock.
+                **
+                **	Ground units get the move order assigned DIRECTLY: the
+                **	radio path (RADIO_MOVE_HERE) only assigns MISSION_MOVE to
+                **	units in MISSION_GUARD, and a unit on the pad is in
+                **	MISSION_SLEEP — it would receive the destination but
+                **	never drive there.
                 */
-                case RADIO_ALL_DONE:
+                case RADIO_ALL_DONE: {
+                    TechnoClass* customer = Contact_With_Whom();
+                    bool sent = false;
+                    if (customer != NULL) {
+                        if (customer->What_Am_I() == RTTI_AIRCRAFT) {
+                            sent = Rally_Unit(*customer);
+                        } else if (Can_Have_Rally_Point() && Target_Legal(RallyPoint)) {
+                            TARGET rallyTarget = Target_For_Rally_Point(customer->Techno_Type_Class()->Speed);
+                            if (Target_Legal(rallyTarget) && customer->As_Target() != rallyTarget) {
+                                customer->Assign_Target(TARGET_NONE);
+                                customer->Assign_Destination(rallyTarget);
+                                customer->Assign_Mission(MISSION_MOVE);
+                                sent = true;
+                            }
+                        }
+                    }
+                    if (!sent) {
+                        Transmit_Message(RADIO_RUN_AWAY);
+                    }
+                    Transmit_Message(RADIO_OVER_OUT);
+                }
 
                     // MBL 04.27.2020: Make only audible to the correct player
                     // if (IsOwnedByPlayer) Speak(VOX_UNIT_REPAIRED);
                     if (IsOwnedByPlayer)
                         Speak(VOX_UNIT_REPAIRED, House);
 
-                    //							Transmit_Message(RADIO_RUN_AWAY);
                     Begin_Mode(BSTATE_IDLE);
                     Status = IDLE;
                     break;

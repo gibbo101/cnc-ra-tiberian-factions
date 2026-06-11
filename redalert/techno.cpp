@@ -1026,6 +1026,30 @@ RadioMessageType TechnoClass::Receive_Message(RadioClass* from, RadioMessageType
         if (What_Am_I() == RTTI_UNIT && *((UnitClass*)this) == UNIT_MINELAYER
             && ((UnitClass*)this)->Ammo < ((UnitClass*)this)->Class->MaxAmmo) {
             ((UnitClass*)this)->Ammo = ((UnitClass*)this)->Class->MaxAmmo;
+
+            /*
+            **	TF: smarter repair bay (CFE port). If re-arming was all the
+            **	minelayer needed, leave the pad now (rally point first, then
+            **	smart exit, then plain scatter) and hang up — the bay never
+            **	sends RUN_AWAY for a unit that only re-armed.
+            */
+            if ((Health_Ratio() >= Rule.ConditionGreen) && !Target_Legal(((UnitClass*)this)->NavCom) && from != NULL
+                && (from->What_Am_I() == RTTI_BUILDING)
+                && (*((BuildingClass*)from) == STRUCT_REPAIR || *((BuildingClass*)from) == STRUCT_TDFIX)) {
+                TARGET rallyto = ((BuildingClass*)from)->RallyPoint;
+                if (Target_Legal(rallyto) && (As_Target() != rallyto)
+                    && (::As_Target(Coord_Cell(Coord)) != rallyto)) {
+                    Assign_Target(TARGET_NONE);
+                    Assign_Destination(rallyto);
+                    Assign_Mission(MISSION_MOVE);
+                } else if (!((UnitClass*)this)->DoSmarterRunAway()) {
+                    Scatter(0, true, true);
+                }
+                if (In_Radio_Contact() && (Contact_With_Whom() == from)) {
+                    Transmit_Message(RADIO_ALL_DONE);
+                    return (RADIO_OVER_OUT);
+                }
+            }
             return (RADIO_NEGATIVE);
         }
 

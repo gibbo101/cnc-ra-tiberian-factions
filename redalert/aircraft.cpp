@@ -3894,6 +3894,54 @@ TARGET AircraftClass::Good_LZ(void) const
 }
 
 /***********************************************************************************************
+ * AircraftClass::DoSmarterRunAway -- Leave the repair pad for a helipad/airstrip.             *
+ *                                                                                             *
+ *    TF: smarter repair bay (ported from CFE Patch Redux, GPL v3). A repaired                 *
+ *    aircraft heads to a free helipad/airstrip; helicopters with nowhere to                   *
+ *    dock land at a nearby LZ. Returns false for a fixed-wing plane with no                   *
+ *    free strip (it must NOT be kicked off the pad — it would have nowhere                    *
+ *    to land and crash).                                                                      *
+ *=============================================================================================*/
+bool AircraftClass::DoSmarterRunAway(void)
+{
+    /*
+    **	Go to a helipad/airfield if one is open.
+    */
+    BuildingClass* building = Find_Docking_Bay(Class->Building, false);
+    if (Transmit_Message(RADIO_HELLO, building) != RADIO_ROGER) {
+        building = NULL;
+    }
+    if (building != NULL) {
+        Assign_Destination(building->As_Target());
+        Assign_Target(TARGET_NONE);
+        Assign_Mission(MISSION_ENTER);
+        return true;
+    }
+
+    /*
+    **	If we're a helicopter, we can at least land next to a helipad if
+    **	they're all full.
+    */
+    if (!Class->IsFixedWing) {
+        TARGET goodenough = Good_LZ();
+        if (Target_Legal(goodenough) && (goodenough != ::As_Target(Coord_Cell(Coord)))) {
+            Assign_Destination(goodenough);
+            Assign_Target(TARGET_NONE);
+            Assign_Mission(MISSION_MOVE);
+        } else {
+            Scatter(0, true);
+        }
+        return true;
+    }
+
+    /*
+    **	Fixed-wing with no open airfield: stay put — kicking it off the pad
+    **	means a crash.
+    */
+    return false;
+}
+
+/***********************************************************************************************
  * AircraftClass::Set_Speed -- Sets the speed for the aircraft.                                *
  *                                                                                             *
  *    This routine will set the speed for the aircraft. The speed is specified as a fraction   *

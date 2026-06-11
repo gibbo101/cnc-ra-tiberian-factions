@@ -75,7 +75,8 @@ char const* RadioClass::Messages[RADIO_COUNT] = {"static (no message)",
                                                  "Circumstances prevent success.",
                                                  "All done with the request.",
                                                  "Do you need service depot work?",
-                                                 "Are you sitting on service depot?"};
+                                                 "Are you sitting on service depot?",
+                                                 "Scratch that."};
 
 #ifdef CHEAT_KEYS
 /***********************************************************************************************
