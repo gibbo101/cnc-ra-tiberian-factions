@@ -257,6 +257,28 @@ public:
     unsigned int IsDiscoveredByPlayerMask;
 
     /*
+    **	TF: attack-move (ported from CFE Patch Redux, GPL v3). Do NOT initialise these
+    **	here -- RA's savegame load copies the data then placement-news, so defaults
+    **	belong in the constructor (CFE's hard-won lesson). `mutable` because the
+    **	What_Action/AI paths that maintain them are const.
+    **
+    **	RememberedNavCom is the original attack-move destination; it survives any
+    **	number of detour fights. AttackMove is the mode flag. AttackMoveBoatClock
+    **	is the surface-vessel "stop chasing, get moving again" countdown.
+    */
+    mutable TARGET RememberedNavCom;
+    union
+    {
+        mutable unsigned char CFEPatchFlags;
+        struct
+        {
+            mutable unsigned int AttackMove : 1;
+            mutable unsigned int CFEPatchFlagsPadding : 7; // spare bits for future CFE ports
+        };
+    };
+    mutable unsigned char AttackMoveBoatClock;
+
+    /*
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
     *save/load
     */
@@ -487,6 +509,15 @@ public:
     bool Is_Owned_By_Player(HouseClass* player = NULL) const;
 
     virtual unsigned Spied_By() const;
+
+    /*
+    **	TF: attack-move (CFE port). Mode transitions for the move<->attack loop.
+    **	minelayercommand: 0 = just exit attack-move; 1 = lay mines at the
+    **	destination instead of exiting; 2 = exit and send the minelayer home.
+    */
+    void ResetAttackMove(int minelayercommand = 0);
+    void AttackMoveEnterMoveMode();
+    void AttackMoveEnterAttackMode();
 
     /*
     **	Facing translation tables that fix the flaw with 3D studio when

@@ -136,6 +136,14 @@ BulletClass::~BulletClass(void)
                 }
 
                 /*
+                **	Attack-move (CFE port): unlimboing the dog runs Enter_Idle_Mode,
+                **	which would drop it out of attack-move. Save the state now and
+                **	restore it after the dog is back on the map.
+                */
+                unsigned int resumeattackmove = dog->AttackMove;
+                TARGET resumerememberednavcom = dog->RememberedNavCom;
+
+                /*
                 ** Try to put the dog down where the target impacted.  If we can't
                 ** put it in that cell, then scan through the adjacent cells,
                 ** starting with our current heading, until we find a place where
@@ -156,6 +164,12 @@ BulletClass::~BulletClass(void)
                         ScenarioInit--;
 
                         unlimbo = true;
+                        // Attack-move (CFE port): restore the dog into attack-move.
+                        if (resumeattackmove) {
+                            dog->AttackMove = 1;
+                            dog->RememberedNavCom = resumerememberednavcom;
+                            dog->AttackMoveEnterMoveMode();
+                        }
                         break;
                     }
                     ScenarioInit--;

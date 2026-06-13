@@ -98,6 +98,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+
+// TF: attack-move (CFE port) -- launcher-side Shift state, per local player.
+extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
 #include "keyframe.h"
 #include "common/miscasm.h"
 
@@ -297,6 +300,14 @@ UnitClass::UnitClass(UnitType classid, HousesType house)
     , TiberiumUnloadRefinery(TARGET_NONE)
 {
     Reload = 0;
+
+    /*
+    **	TF: attack-move (CFE port). Constructor init, not declaration init --
+    **	savegame load copies the data before placement-new runs.
+    */
+    MLoriginalposition = TARGET_NONE;
+    MLattackmovemode = 0;
+
     House->Tracking_Add(this);
     Ammo = Class->MaxAmmo;
     IsCloakable = Class->IsCloakable;
@@ -499,6 +510,25 @@ void UnitClass::AI(void)
     **	being required to reload between shots.
     */
     Reload_AI();
+
+    /*
+    **	Attack-move (CFE port): backstop in case a minelayer gets stuck mid
+    **	attack-move. If we reached (or got close to) the remembered destination,
+    **	lay mines; otherwise head home. (The CFE veterancy ammo-regen block above
+    **	this point is not ported -- we have no veterancy.)
+    */
+    if (AttackMove && (*this == UNIT_MINELAYER) && !IsDriving && !IsRotating
+        && (Mission != MISSION_MOVE) && (Mission != MISSION_UNLOAD)
+        && (MissionQueue != MISSION_MOVE) && (MissionQueue != MISSION_UNLOAD)) {
+        if (Target_Legal(RememberedNavCom) && (Distance(RememberedNavCom) < 2 * Rule.CloseEnoughDistance)) {
+            MLattackmovemode = 1;
+        }
+        if (Ammo && MLattackmovemode) {
+            MinelayerPoopTime();
+        } else {
+            MinelayerGoHome();
+        }
+    }
 
     /*
     **	Transporters require special logic handled here since there isn't a MISSION_WAIT_FOR_PASSENGERS
@@ -2946,7 +2976,16 @@ int UnitClass::Mission_Unload(void)
                 Status = MANEUVERING;
                 return (1);
             } else {
-                Assign_Mission(MISSION_GUARD);
+                /*
+                **	Attack-move (CFE port): out of mines on arrival -- if in
+                **	attack-move, head home instead of standing guard.
+                */
+                if (AttackMove) {
+                    MinelayerGoHome();
+                    return (1);
+                } else {
+                    Assign_Mission(MISSION_GUARD);
+                }
             }
             break;
 
@@ -3008,7 +3047,20 @@ int UnitClass::Mission_Unload(void)
                 APC_Close_Door();
             }
             if (Is_Door_Closed()) {
-                Assign_Mission(MISSION_GUARD);
+                /*
+                **	Attack-move (CFE port): after laying a mine, look for the next
+                **	spot (if we still have mines) or head home; otherwise guard.
+                */
+                if (AttackMove) {
+                    if (Ammo) {
+                        MinelayerFindSpot();
+                    } else {
+                        MinelayerGoHome();
+                    }
+                    return (1);
+                } else {
+                    Assign_Mission(MISSION_GUARD);
+                }
             }
             break;
         }
@@ -3989,6 +4041,16 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
     if (action == ACTION_NONE)
         action = ACTION_NOMOVE;
 
+    /*
+    **	TF: attack-move (CFE port) -- needed here too so we can attack-move onto
+    **	objects the UnitClass level makes movable (e.g. landmines).
+    */
+    if (action == ACTION_MOVE && Is_Owned_By_Player()
+        && ((Techno_Type_Class()->PrimaryWeapon != NULL) || (*this == UNIT_MINELAYER))
+        && DLL_Export_Get_Input_Key_State(KN_LSHIFT)) {
+        action = ACTION_ATTACKMOVE;
+    }
+
     return (action);
 }
 
@@ -4921,6 +4983,156 @@ bool UnitClass::DoSmarterRunAway(void)
     /*
     **	No suitable cell: let the caller fall back to the plain scatter.
     */
+    return false;
+}
+
+/***********************************************************************************************
+ * UnitClass::MinelayerPoopTime -- Lay a mine at the current spot.                             *
+ *                                                                                             *
+ *    TF: attack-move (ported from CFE Patch Redux, GPL v3). Part of the minelayer's           *
+ *    attack-move logic: drop a mine here, or find a new spot if the cell is taken,            *
+ *    or go home if out of ammo.                                                               *
+ *=============================================================================================*/
+bool UnitClass::MinelayerPoopTime(void)
+{
+    if (!Ammo) {
+        MinelayerGoHome();
+        return false;
+    }
+
+    /*
+    **	Find another spot if there's already a building here (should be impossible...).
+    */
+    BuildingClass* bldng = Map[Coord_Cell(Coord)].Cell_Building();
+    if (bldng) {
+        MinelayerFindSpot();
+        return true;
+    }
+
+    Assign_Mission(MISSION_UNLOAD);
+    return true;
+}
+
+/***********************************************************************************************
+ * UnitClass::MinelayerGoHome -- Done laying; head somewhere sensible.                         *
+ *                                                                                             *
+ *    TF: attack-move (CFE port). Go to the nearest same-zone repair pad if there is           *
+ *    one (FIX or TDFIX -- our TD factions field their own pad), failing that back to          *
+ *    the saved starting position, failing that just stay put. Always exits                    *
+ *    attack-move. CFE scored pads by A* path length; we use crow-flies distance               *
+ *    within the movement zone until the A* port lands.                                        *
+ *=============================================================================================*/
+bool UnitClass::MinelayerGoHome(void)
+{
+    bool returnvalue = false;
+
+    BuildingClass* closestpad = NULL;
+    int bestscore = 0;
+    for (int i = 0; i < Buildings.Count(); ++i) {
+        BuildingClass* pad = Buildings.Ptr(i);
+        if ((pad != NULL) && pad->IsActive && !pad->IsInLimbo && (pad->House == House)
+            && (pad->Mission != MISSION_DECONSTRUCTION) && ((*pad == STRUCT_REPAIR) || (*pad == STRUCT_TDFIX))
+            && (Map[pad->Center_Coord()].Zones[Techno_Type_Class()->MZone]
+                == Map[Center_Coord()].Zones[Techno_Type_Class()->MZone])) {
+            int score = Lepton_To_Cell(Distance(pad));
+            if (!score) {
+                score = 1; // already adjacent; still a valid (best possible) pad
+            }
+            if (!bestscore || (score < bestscore)) {
+                bestscore = score;
+                closestpad = pad;
+            }
+        }
+    }
+    if (closestpad) {
+        Assign_Mission(MISSION_ENTER);
+        Assign_Destination(closestpad->As_Target());
+        returnvalue = true;
+    } else if (Target_Legal(MLoriginalposition)) {
+        Assign_Destination(MLoriginalposition);
+        Assign_Mission(MISSION_MOVE);
+        returnvalue = true;
+    } else {
+        Assign_Mission(MISSION_GUARD);
+    }
+
+    /*
+    **	In any event, exit attack-move, since we're now done with it.
+    */
+    ResetAttackMove(0);
+
+    return returnvalue;
+}
+
+/***********************************************************************************************
+ * UnitClass::MinelayerFindSpot -- Pick a nearby cell to lay the next mine in.                 *
+ *                                                                                             *
+ *    TF: attack-move (CFE port). Scan the 5x5 box around the minelayer and pick a             *
+ *    random enterable same-zone cell, favouring closer ones. CFE weighted by A* path          *
+ *    length; we use straight-line cell distance until the A* port lands.                      *
+ *=============================================================================================*/
+bool UnitClass::MinelayerFindSpot(void)
+{
+    if (!Ammo) {
+        MinelayerGoHome();
+        return false;
+    }
+
+    const CELL cell = Coord_Cell(Coord);
+    const int cellx = Cell_X(cell);
+    const int celly = Cell_Y(cell);
+    int bestscore = 0;
+    CELL bestcell = 0;
+
+    for (int i = -2; i <= 2; i++) {
+        int scanx = cellx + i;
+        if (scanx < 0 || scanx > MAP_CELL_W) {
+            continue;
+        }
+
+        for (int j = -2; j <= 2; j++) {
+            int scany = celly + j;
+            if (scany < 0 || scany > MAP_CELL_H) {
+                continue;
+            }
+
+            CELL newcell = XY_Cell(scanx, scany);
+            if (!Map.In_Radar(newcell)) {
+                continue;
+            }
+            if (cell == newcell) {
+                continue;
+            }
+            if (Map[newcell].Zones[Techno_Type_Class()->MZone] != Map[cell].Zones[Techno_Type_Class()->MZone]) {
+                continue;
+            }
+
+            /*
+            **	Check that we can enter the cell and would be allowed to drop a mine there
+            **	(copied from the deploy/no-deploy cursor logic). This lets minelayers cheat
+            **	a little -- they won't pick a cell with an enemy mine. Oh well.
+            */
+            MoveType move = Can_Enter_Cell(newcell, FACING_NONE);
+            if ((move <= MOVE_MOVING_BLOCK) && !Map[newcell].Cell_Building()
+                && !((Map[newcell].Smudge != SMUDGE_NONE)
+                     && SmudgeTypeClass::As_Reference(Map[newcell].Smudge).IsBib)) {
+                int dist = max(ABS(i), ABS(j));
+                int score = 1000 - (10 * dist) + Random_Pick(0, 10);
+                if (score > bestscore) {
+                    bestscore = score;
+                    bestcell = newcell;
+                }
+            }
+        }
+    }
+
+    if (bestscore) {
+        Assign_Destination(::As_Target(bestcell));
+        Assign_Mission(MISSION_MOVE);
+        return true;
+    }
+
+    MinelayerGoHome();
     return false;
 }
 

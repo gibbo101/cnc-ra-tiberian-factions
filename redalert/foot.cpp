@@ -500,7 +500,32 @@ int FootClass::Mission_Move(void)
     assert(IsActive);
 
     if (!Target_Legal(NavCom) && !IsDriving && MissionQueue == MISSION_NONE) {
-        Enter_Idle_Mode();
+        /*
+        **	Attack-move (CFE port): destination reached. Only snap out of
+        **	attack-move if we forgot the remembered destination, arrived (or got
+        **	close), or can no longer reach it (zone check stands in for CFE's
+        **	Find_Path_AStar until the A* port lands). If there is still a nav queue
+        **	we're in queued attack-move -- advance it via Enter_Idle_Mode without
+        **	resetting the mode. ResetAttackMove(1) lets a minelayer lay at the spot
+        **	and stay in attack-move (so don't go idle in that case).
+        */
+        if (AttackMove) {
+            if (!Target_Legal(RememberedNavCom) || (Distance(RememberedNavCom) < Rule.CloseEnoughDistance)
+                || !Is_In_Same_Zone(As_Cell(RememberedNavCom))) {
+                if (Target_Legal(NavQueue[0])) {
+                    Enter_Idle_Mode();
+                } else {
+                    ResetAttackMove(1);
+                    if (!AttackMove) {
+                        Enter_Idle_Mode();
+                    }
+                }
+            } else {
+                AttackMoveEnterMoveMode();
+            }
+        } else {
+            Enter_Idle_Mode();
+        }
         return (1);
     }
     //	if (!Target_Legal(TarCom) && !House->IsPlayerControl && !House->IsHuman) {
@@ -571,7 +596,16 @@ int FootClass::Mission_Attack(void)
     if (Target_Legal(TarCom)) {
         Approach_Target();
     } else {
-        Enter_Idle_Mode();
+        /*
+        **	Attack-move (CFE port): the target died. If we're in attack-move,
+        **	resume travelling toward the remembered destination instead of idling.
+        */
+        if (AttackMove) {
+            AttackMoveEnterMoveMode();
+            return (1);
+        } else {
+            Enter_Idle_Mode();
+        }
     }
     return (MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
 }
@@ -1280,6 +1314,7 @@ void FootClass::Active_Click_With(ActionType action, ObjectClass* object)
         break;
 
     case ACTION_NOMOVE:
+    case ACTION_ATTACKMOVE: // Attack-move (CFE port) -- falls through into ACTION_MOVE
     case ACTION_MOVE:
         if (Can_Player_Move()) {
 
@@ -1308,7 +1343,12 @@ void FootClass::Active_Click_With(ActionType action, ObjectClass* object)
 #endif
             }
 
-            Player_Assign_Mission(MISSION_MOVE, TARGET_NONE, targ);
+            // Attack-move (CFE port): pass on attack-move when that's the action.
+            if (action == ACTION_ATTACKMOVE) {
+                Player_Assign_Mission(MISSION_ATTACKMOVE, TARGET_NONE, targ);
+            } else {
+                Player_Assign_Mission(MISSION_MOVE, TARGET_NONE, targ);
+            }
         }
         break;
 
@@ -1348,6 +1388,7 @@ void FootClass::Active_Click_With(ActionType action, CELL cell)
         Player_Assign_Mission(MISSION_HARVEST, TARGET_NONE, ::As_Target(cell));
         break;
 
+    case ACTION_ATTACKMOVE: // Attack-move (CFE port) -- falls through into ACTION_MOVE
     case ACTION_MOVE:
         if (AllowVoice) {
             COORDINATE coord = Map.Pixel_To_Coord(Get_Mouse_X(), Get_Mouse_Y());
@@ -1386,7 +1427,12 @@ void FootClass::Active_Click_With(ActionType action, CELL cell)
 #endif
             }
 
-            Player_Assign_Mission(MISSION_MOVE, TARGET_NONE, ::As_Target(cell));
+            // Attack-move (CFE port): pass on attack-move when that's the action.
+            if (action == ACTION_ATTACKMOVE) {
+                Player_Assign_Mission(MISSION_ATTACKMOVE, TARGET_NONE, ::As_Target(cell));
+            } else {
+                Player_Assign_Mission(MISSION_MOVE, TARGET_NONE, ::As_Target(cell));
+            }
         }
         break;
 

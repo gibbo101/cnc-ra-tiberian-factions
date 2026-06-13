@@ -128,6 +128,14 @@ public:
     mutable TARGET TiberiumUnloadRefinery;
 
     /*
+    **	TF: attack-move (ported from CFE Patch Redux, GPL v3). Minelayer-only state:
+    **	where the minelayer started (so it can go home after laying), and whether it
+    **	reached the ordered destination and switched to mine-laying mode.
+    */
+    TARGET MLoriginalposition;
+    unsigned char MLattackmovemode;
+
+    /*
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
     *save/load
     */
@@ -208,6 +216,14 @@ public:
     **	pick a sensible cell to vacate the repair pad to.
     */
     bool DoSmarterRunAway(void);
+
+    /*
+    **	TF: attack-move (CFE port) — minelayer behaviour: lay a mine here, find the
+    **	next free spot nearby, or head back to a repair pad / the starting position.
+    */
+    bool MinelayerPoopTime(void);
+    bool MinelayerGoHome(void);
+    bool MinelayerFindSpot(void);
 
     /*
     **	Coordinate inquiry functions. These are used for both display and

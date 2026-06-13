@@ -539,6 +539,43 @@ to a path and doesn't replan when reality changes.
 
 ---
 
+# Option to pursue — AI attack teams use attack-move (added 2026-06-11)
+
+Our attack-move port (CFE Patch Redux) is purely player-input driven: it enters the
+game only through `What_Action()` and the click handlers, travels as a player event
+(`MISSION_ATTACKMOVE` → converted in `event.cpp` to `MISSION_MOVE` + the per-unit
+`AttackMove` flag + `RememberedNavCom`), and nothing in the AI's mission-assignment
+code ever issues it. The skirmish AI's rough equivalent today is `MISSION_HUNT` /
+guard-area behaviour.
+
+**The option:** have AI attack teams use true attack-move — "fight your way to the
+target instead of beelining, then resume the journey after each fight." The plumbing
+is now in place per-unit; an AI house could set `AttackMove = 1` +
+`RememberedNavCom` directly on team members when dispatching an attack wave (no
+event needed — AI assigns missions directly, and the flag+target pair is the whole
+state machine). Candidate hook points: TeamClass mission scripts (`TMISSION_ATTACK`
+dispatch) or `HouseClass::AI` raid assembly. Benefits: attack waves that don't
+ignore harassment en route, and that regroup toward the original objective after a
+skirmish instead of scattering into hunt mode. Risks: interacts with team
+coordination logic (`Coordinate_Attack`), so needs its own playtest soak; keep it
+behavioural per the difficulty philosophy (no stat biases).
+
+**Why this matters for difficulty (Luke, 2026-06-13):** the player-facing attack-move
+got a threat-response layer during playtest — a unit hammering a passive building
+disengages to deal with defences / enemy units that come into range, then resumes
+(docs/cfe-port-plan.md §1.2). Today the AI's big weakness is the opposite: an AI raid
+that locks onto a building at the back of your base beelines there and soaks every
+turret and counter-attack on the way, so it's trivial to pick off. Reusing the SAME
+`AttackMove` + threat-response machinery for AI raids fixes exactly that — the wave
+fights through your defences instead of feeding itself to them. This is a behavioural
+difficulty win (no stat biases), so it fits the difficulty philosophy cleanly. The
+per-unit plumbing AND the threat-response are already built and player-verified; the
+only new work is the AI dispatch hook.
+
+Status: idea logged at Luke's direction (2026-06-11), reinforced 2026-06-13 after the
+threat-response landed. Not scheduled. Pairs well with the A*-stage-2 reservation-layer
+work since both touch movement cooperation.
+
 # Broad-sweep findings (combat, strategy, difficulty, misc)
 
 Open-ended audit of the AI engine beyond the targeted topics above. These

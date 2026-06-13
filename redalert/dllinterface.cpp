@@ -5448,6 +5448,7 @@ void DLLExportClass::Convert_Action_Type(ActionType type,
     default:
         dll_type = DAT_NONE;
         break;
+    case ACTION_ATTACKMOVE: // Attack-move (CFE port) -- maps to the move cursor
     case ACTION_MOVE:
         dll_type = DAT_MOVE;
         break;

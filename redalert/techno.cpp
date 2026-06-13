@@ -697,6 +697,14 @@ TechnoClass::TechnoClass(RTTIType rtti, int id, HousesType house)
     // IsOwnedByPlayer = (PlayerPtr == House);
     // Added for multiplayer changes. ST - 4/24/2019 10:40AM
     IsDiscoveredByPlayerMask = 0;
+
+    /*
+    **	TF: attack-move (CFE port). Must be initialised here, not in the class
+    **	declaration -- savegame load copies the data before placement-new runs.
+    */
+    RememberedNavCom = TARGET_NONE;
+    CFEPatchFlags = 0;
+    AttackMoveBoatClock = 0;
 #ifdef REMASTER_BUILD
     if (Session.Type == GAME_NORMAL) {
         IsOwnedByPlayer = (PlayerPtr == House);
@@ -1609,6 +1617,18 @@ fixed TechnoClass::Area_Modify(CELL cell) const
  *   10/05/1995 JLB : Gives greater weight to designated enemy house targets.                  *
  *   02/16/1996 JLB : Added additional threat checks.                                          *
  *=============================================================================================*/
+/*
+**	Attack-move (Tiberian Factions enhancement beyond CFE): when set, the target
+**	scan is allowed to consider weaponless (passive) enemy buildings. The
+**	attack-move retarget runs Target_Something_Nearby twice -- once with this
+**	false (armed threats only: defensive structures + enemy units) and, only if
+**	that finds nothing in range, once with it true (passive buildings too). That
+**	gives armed threats strict priority so a tank engages the Tesla coil rather
+**	than plinking a kennel while it dies. Single-threaded engine -> a plain
+**	file-scope flag is safe; it is set and cleared within one scan.
+*/
+static bool _AttackMoveIncludePassiveBuildings = false;
+
 bool TechnoClass::Evaluate_Object(ThreatType method,
                                   int mask,
                                   int range,
@@ -1777,7 +1797,10 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
     */
     if ((!Is_Foot() || !((FootClass*)this)->Team.Is_Valid())
         && (House->IsHuman || (House->IsPlayerControl && Session.Type == GAME_NORMAL)) && otype == RTTI_BUILDING
-        && tclass->PrimaryWeapon == NULL) {
+        && tclass->PrimaryWeapon == NULL
+        // Attack-move enhancement: on the passive pass, a weaponless building IS
+        // a valid target (see _AttackMoveIncludePassiveBuildings above).
+        && !(AttackMove && _AttackMoveIncludePassiveBuildings)) {
 #ifdef OBSOLETE
         if ((!Is_Foot() || ((FootClass*)this)->Team.Is_Valid()) && House->IsHuman && otype == RTTI_BUILDING
             && tclass->PrimaryWeapon == NULL) {
@@ -2552,6 +2575,176 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
     void TechnoClass::AI(void)
     {
         assert(IsActive);
+
+        /*
+        **	Attack-move (CFE Patch Redux port, GPL v3). While a unit is in
+        **	attack-move it ticks here every frame: it grabs targets of opportunity
+        **	along the way, snaps back to MISSION_MOVE when they die, and gives up on
+        **	targets it cannot reach. Minelayers are excluded -- they have their own
+        **	logic. Hard-enabled (no INI gate).
+        */
+        if (AttackMove && Strength && (
+                ((What_Am_I() == RTTI_UNIT) && (*(UnitClass*)this != UNIT_MINELAYER)) ||
+                (What_Am_I() == RTTI_INFANTRY) ||
+                (What_Am_I() == RTTI_AIRCRAFT) ||
+                (What_Am_I() == RTTI_VESSEL)
+            )) {
+
+            /*
+            **	Chronotanks: if charged, trying to move, and a clear landing cell
+            **	exists near the destination, teleport there and (if we've arrived)
+            **	drop out of attack-move. Our Teleport_To resets attack-move
+            **	unconditionally, so we save the state and restore it iff there is
+            **	still queued movement to perform (this replaces CFE's
+            **	SkipNavQueueUpdate flag, which we did not port).
+            */
+            if ((What_Am_I() == RTTI_UNIT) &&
+                (*((UnitClass*)this) == UNIT_CHRONOTANK) &&
+                (Mission == MISSION_MOVE) &&
+                !((UnitClass*)this)->MoebiusCountDown &&
+                Target_Legal(RememberedNavCom)) {
+                bool tpok = false;
+                CELL tpdestination = As_Cell(RememberedNavCom);
+                if (Can_Enter_Cell(tpdestination, FACING_NONE) == MOVE_OK) {
+                    tpok = true;
+                } else {
+                    tpdestination = Map.Nearby_Location(tpdestination, Techno_Type_Class()->Speed);
+                    if (Map.In_Radar(tpdestination) &&
+                        (Can_Enter_Cell(tpdestination, FACING_NONE) == MOVE_OK) &&
+                        (Lepton_To_Cell(::Distance(Cell_Coord(As_Cell(RememberedNavCom)), Cell_Coord(tpdestination))) <= 6)) {
+                        tpok = true;
+                    }
+                }
+                if (tpok) {
+                    ((UnitClass*)this)->MoebiusCell = Coord_Cell(Coord);
+                    Sound_Effect(VOC_CHRONO, Coord);
+                    int saved_attackmove = AttackMove;
+                    TARGET saved_remembered = RememberedNavCom;
+                    ((UnitClass*)this)->Teleport_To(tpdestination);
+                    /*
+                    **	Restore attack-move only if there is still movement queued;
+                    **	otherwise we've reached the destination -- stay reset.
+                    */
+                    if (Target_Legal(((FootClass*)this)->NavQueue[0])) {
+                        AttackMove = saved_attackmove;
+                        RememberedNavCom = saved_remembered;
+                    }
+                    ((UnitClass*)this)->MoebiusCountDown = ChronoTankDuration * TICKS_PER_MINUTE;
+                    Scen.Do_BW_Fade();
+                    Sound_Effect(VOC_CHRONO, Coord);
+                }
+            }
+
+            /*
+            **	Boats: after firing for a while, force a return to moving and don't
+            **	let them shoot again for a bit -- otherwise they get stuck chasing
+            **	targets they can never line up a shot on. Subs are exempt (no
+            **	drive-by shooting).
+            */
+            bool AttackMoveBoatMoveLock = false;
+            if (What_Am_I() == RTTI_VESSEL && (*(VesselClass*)this != VESSEL_SS)) {
+                if (AttackMoveBoatClock > 0) {
+                    AttackMoveBoatClock--;
+                    if (AttackMoveBoatClock > 0 && AttackMoveBoatClock < 91) {
+                        AttackMoveBoatMoveLock = true;
+                        if (Mission != MISSION_MOVE) {
+                            AttackMoveEnterMoveMode();
+                        }
+                    }
+                }
+                /*
+                **	Boats should give up on out-of-range targets rather than chase
+                **	(chasing makes them turn, jam traffic, and beach themselves).
+                **	The missile sub is exempt -- it barely shoots if it can't turn.
+                */
+                if ((!Target_Legal(TarCom) || !In_Range(TarCom)) && (*(VesselClass*)this != VESSEL_MISSILESUB)) {
+                    Assign_Target(TARGET_NONE);
+                    if (!AttackMoveBoatMoveLock && Target_Something_Nearby(THREAT_RANGE)) {
+                        AttackMoveEnterAttackMode();
+                    } else {
+                        AttackMoveEnterMoveMode();
+                    }
+                }
+            }
+
+            /*
+            **	Forget a target that is out of range and not in our zone, unless
+            **	we're an aircraft (which can chase across zones).
+            */
+            if (What_Am_I() != RTTI_AIRCRAFT && Target_Legal(TarCom) && !Is_In_Same_Zone(As_Cell(TarCom))) {
+                int primary = What_Weapon_Should_I_Use(TarCom);
+                if (!In_Range(TarCom, primary)) {
+                    Assign_Target(TARGET_NONE);
+                    if (!AttackMoveBoatMoveLock && Target_Something_Nearby(THREAT_RANGE)) {
+                        AttackMoveEnterAttackMode();
+                    } else {
+                        AttackMoveEnterMoveMode();
+                    }
+                }
+            }
+
+            /*
+            **	Threat response (Tiberian Factions enhancement). If we're currently
+            **	hammering a passive (weaponless) building, don't tunnel-vision on it
+            **	while real threats close in: scan for armed targets in range
+            **	(defensive structures OR enemy units) and disengage to deal with
+            **	them first. Because _AttackMoveIncludePassiveBuildings is false here,
+            **	Greatest_Threat returns only armed candidates, so this fires only
+            **	when there is a genuine threat to switch to and never swaps one
+            **	passive building for another. Aircraft are exempt (constant
+            **	retargeting is disastrous for them); move-locked boats too.
+            */
+            if (Target_Legal(TarCom) && What_Am_I() != RTTI_AIRCRAFT && !AttackMoveBoatMoveLock) {
+                TechnoClass const* curtarg = As_Techno(TarCom);
+                if (curtarg != NULL && curtarg->What_Am_I() == RTTI_BUILDING
+                    && curtarg->Techno_Type_Class()->PrimaryWeapon == NULL) {
+                    TARGET armedthreat = Greatest_Threat(THREAT_RANGE);
+                    if (Target_Legal(armedthreat) && armedthreat != TarCom) {
+                        Assign_Target(armedthreat);
+                        AttackMoveEnterAttackMode();
+                    }
+                }
+            }
+
+            /*
+            **	If we already have a target but it's out of range, try for a closer
+            **	one. Dogs are exempt (they fixate on first target) and so are
+            **	aircraft (constant retargeting is disastrous) and move-locked boats.
+            */
+            if (Target_Legal(TarCom) && !(What_Am_I() == RTTI_INFANTRY && ((InfantryClass*)this)->Class->IsDog) && !(What_Am_I() == RTTI_AIRCRAFT) && !AttackMoveBoatMoveLock) {
+                TARGET oldtarcom = TarCom;
+                if (Target_Something_Nearby(THREAT_RANGE)) {
+                    if (TarCom != oldtarcom) {
+                        AttackMoveEnterAttackMode();
+                    }
+                }
+            }
+
+            /*
+            **	If we had no target to begin with, look for one.
+            */
+            if (!Target_Legal(TarCom) && !AttackMoveBoatMoveLock) {
+                if (Target_Something_Nearby(THREAT_RANGE)) {
+                    AttackMoveEnterAttackMode();
+                }
+            }
+
+            /*
+            **	Backstop: if we somehow ended up in some other mission but still
+            **	have ground to cover toward the remembered destination, resume the
+            **	move. (Aircraft are exempt.)
+            */
+            if ((What_Am_I() != RTTI_AIRCRAFT) &&
+                (Mission != MISSION_MOVE) &&
+                (Mission != MISSION_ATTACK) &&
+                (MissionQueue != MISSION_MOVE) &&
+                (MissionQueue != MISSION_ATTACK) &&
+                RememberedNavCom &&
+                Target_Legal(RememberedNavCom) &&
+                (Distance(RememberedNavCom) >= Rule.CloseEnoughDistance)) {
+                AttackMoveEnterMoveMode();
+            }
+        }
 
         /*
         **	Handle recoil recovery here.
@@ -3773,6 +3966,10 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 && (Keyboard->Down(Options.KeyQueueMove1) || Keyboard->Down(Options.KeyQueueMove2))) {
                 mission = MISSION_QMOVE;
             }
+            if (mission == MISSION_ATTACKMOVE
+                && (Keyboard->Down(Options.KeyQueueMove1) || Keyboard->Down(Options.KeyQueueMove2))) {
+                mission = MISSION_QATTACKMOVE; // TF: attack-move (CFE port)
+            }
 #else
         //
         // MBL 04.14.2020 - Apply the same logic as above, using what is assigned as hotkeys
@@ -3781,6 +3978,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             if (PlayerPtr == House) {
                 if (mission == MISSION_MOVE && PlayerPtr->IsQueuedMovementToggle) {
                     mission = MISSION_QMOVE;
+                } else if (mission == MISSION_ATTACKMOVE && PlayerPtr->IsQueuedMovementToggle) {
+                    mission = MISSION_QATTACKMOVE; // TF: attack-move (CFE port)
                 }
             }
         }
@@ -3847,6 +4046,14 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             */
             if (altdown) {
                 if (House->IsPlayerControl && Can_Player_Move()) {
+                    /*
+                    **	TF: attack-move (CFE port) -- Alt+Shift = attack-move-and-crush.
+                    */
+                    if (shiftdown
+                        && ((Techno_Type_Class()->PrimaryWeapon != NULL)
+                            || ((What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_MINELAYER)))) {
+                        return (ACTION_ATTACKMOVE);
+                    }
                     return (ACTION_MOVE);
                 }
             }
@@ -4019,8 +4226,15 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 
             /*
             **	Special override to force a move regardless of what is occupying the location.
+            **	TF: attack-move (CFE port) -- hijacked for Shift+Click; this is the main way
+            **	attack-move input is picked up. Weaponless units (and buildings -- rally
+            **	points reach here via Can_Player_Move) keep the plain force-move.
             */
             if (shiftdown) {
+                if ((Techno_Type_Class()->PrimaryWeapon != NULL && Is_Foot())
+                    || ((What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_MINELAYER))) {
+                    return (ACTION_ATTACKMOVE);
+                }
                 return (ACTION_MOVE);
             }
 
@@ -6248,7 +6462,20 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         **	the target for this unit.
         */
         if (!Target_Legal(TarCom)) {
+            /*
+            **	Attack-move enhancement (beyond CFE): give armed threats strict
+            **	priority over passive buildings. First scan considers only armed
+            **	targets (the vanilla rule that skips weaponless enemy buildings).
+            **	Only if nothing armed is in range do we scan again allowing passive
+            **	buildings, so a unit always engages a Tesla coil/turret/enemy unit
+            **	before it bothers with a powerless structure.
+            */
             Assign_Target(Greatest_Threat(threat));
+            if (AttackMove && !Target_Legal(TarCom)) {
+                _AttackMoveIncludePassiveBuildings = true;
+                Assign_Target(Greatest_Threat(threat));
+                _AttackMoveIncludePassiveBuildings = false;
+            }
         }
 
         /*
@@ -7782,4 +8009,96 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
     unsigned TechnoClass::Spied_By() const
     {
         return SpiedBy;
+    }
+
+    /***********************************************************************************************
+     * TechnoClass::ResetAttackMove -- Leave attack-move mode.                                     *
+     *                                                                                             *
+     *    TF: attack-move (ported from CFE Patch Redux, GPL v3).                                   *
+     *    minelayercommand: 0 = just exit; 1 = stay in attack-move and lay mines at the            *
+     *    destination; 2 = exit and send the minelayer home.                                       *
+     *=============================================================================================*/
+    void TechnoClass::ResetAttackMove(int minelayercommand)
+    {
+        if ((What_Am_I() == RTTI_UNIT) && (*((UnitClass*)this) == UNIT_MINELAYER)) {
+            /*
+            **	Only process the special minelayer commands if we're in attack-move to start with.
+            */
+            if (AttackMove) {
+                if (minelayercommand == 1) {
+                    /*
+                    **	Lay mines only if we more or less reached the ordered destination
+                    **	(otherwise we got blocked and gave up, so just go home).
+                    */
+                    if (Target_Legal(RememberedNavCom) && (Distance(RememberedNavCom) < 2 * Rule.CloseEnoughDistance)) {
+                        ((UnitClass*)this)->MLattackmovemode = 1;
+                    }
+                    if (Ammo && ((UnitClass*)this)->MLattackmovemode) {
+                        ((UnitClass*)this)->MinelayerPoopTime();
+                    } else {
+                        ((UnitClass*)this)->MinelayerGoHome();
+                    }
+                    return;
+                } else if (minelayercommand == 2) {
+                    ((UnitClass*)this)->MinelayerGoHome(); // calls ResetAttackMove again with command 0
+                    return;
+                }
+            }
+            ((UnitClass*)this)->MLoriginalposition = TARGET_NONE;
+            ((UnitClass*)this)->MLattackmovemode = 0;
+        }
+        RememberedNavCom = TARGET_NONE;
+        AttackMove = 0;
+        AttackMoveBoatClock = 0;
+    }
+
+    /***********************************************************************************************
+     * TechnoClass::AttackMoveEnterMoveMode -- Resume travelling toward the remembered target.     *
+     *                                                                                             *
+     *    TF: attack-move (CFE port). Assign_Mission (not Set_Mission) so Commence() still         *
+     *    works; do NOT call Commence() ourselves -- the movement system needs units to            *
+     *    finish moving into a cell once they've reserved it (CFE's hard-won lesson).              *
+     *    Aircraft are the exception: they may Commence() so status can skip past takeoff.         *
+     *=============================================================================================*/
+    void TechnoClass::AttackMoveEnterMoveMode()
+    {
+        /*
+        **	If we somehow lost the destination, abort attack-move.
+        */
+        if (!Target_Legal(RememberedNavCom)) {
+            ResetAttackMove();
+            Enter_Idle_Mode();
+            return;
+        }
+
+        Assign_Target(TARGET_NONE);
+        Assign_Mission(MISSION_MOVE);
+        Assign_Destination(RememberedNavCom);
+
+        if (What_Am_I() == RTTI_AIRCRAFT) {
+            AircraftClass* meplane = (AircraftClass*)this;
+            if (!meplane->IsLanding && !meplane->IsTakingOff) {
+                Commence();
+                if (meplane->Height == FLIGHT_LEVEL) {
+                    if (meplane->Class->IsFixedWing) {
+                        Status = 1; // FLY_TOWARD_TARGET
+                    }
+                    // helicopters still need to validate the LZ
+                }
+            }
+        }
+    }
+
+    /***********************************************************************************************
+     * TechnoClass::AttackMoveEnterAttackMode -- Engage the target found along the way.            *
+     *                                                                                             *
+     *    TF: attack-move (CFE port). Same Assign_Mission/no-Commence() rules as above.            *
+     *=============================================================================================*/
+    void TechnoClass::AttackMoveEnterAttackMode()
+    {
+        Assign_Destination(TARGET_NONE);
+        Assign_Mission(MISSION_ATTACK);
+        if (What_Am_I() == RTTI_VESSEL) {
+            AttackMoveBoatClock = 180;
+        }
     }

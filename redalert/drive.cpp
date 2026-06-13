@@ -377,6 +377,14 @@ bool DriveClass::Teleport_To(CELL cell)
     Force_Track(-1, 0);
     PrimaryFacing.Set_Current(PrimaryFacing.Desired());
     Transmit_Message(RADIO_OVER_OUT);
+    /*
+    **	Attack-move (CFE port): end attack-move on teleport so the unit doesn't
+    **	drive back off to its prior destination. Unconditional for us -- the
+    **	chronotank attack-move path in TechnoClass::AI saves and restores the
+    **	state across the teleport when there's still queued movement (CFE used a
+    **	SkipNavQueueUpdate flag here instead, which we did not port).
+    */
+    ResetAttackMove();
     Assign_Destination(TARGET_NONE);
     Assign_Target(TARGET_NONE);
     Assign_Mission(MISSION_NONE);

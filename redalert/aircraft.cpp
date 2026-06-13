@@ -93,6 +93,9 @@
 
 #include "function.h"
 
+// TF: attack-move (CFE port) -- launcher-side Shift state, per local player.
+extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
+
 /***********************************************************************************************
  * _Counts_As_Civ_Evac -- Is the specified object a candidate for civilian evac logic?         *
  *                                                                                             *
@@ -861,24 +864,33 @@ int AircraftClass::Mission_Hunt(void)
         /*
         **	Pull away to regroup for possibly another attack or a retreat.
         */
-        case REGROUP:
+        case REGROUP: {
+            /*
+            **	Attack-move (CFE port): the original code could call Enter_Idle_Mode
+            **	twice (once here, once below), so we defer it via a forceidle flag.
+            **	When out of ammo, or in attack-move with a dead target, force idle so
+            **	we get back on track to the remembered destination instead of looping
+            **	around to LOOK_FOR_TARGET.
+            */
+            bool forceidle = false;
             if (Ammo == 0) {
                 AttacksRemaining = 0;
                 if (Team.Is_Valid())
                     Team->Remove(this);
-                Enter_Idle_Mode();
+                forceidle = true;
+            } else if (AttackMove && !Target_Legal(TarCom)) {
+                forceidle = true;
             }
 
-            if (Mission == MISSION_ATTACK || (Class->PrimaryWeapon != NULL && Class->PrimaryWeapon->IsCamera)
+            if (forceidle || Mission == MISSION_ATTACK || (Class->PrimaryWeapon != NULL && Class->PrimaryWeapon->IsCamera)
                 || (!AttacksRemaining && !Is_Something_Attached())) {
 
                 if (IsALoaner) {
                     if (Team)
                         Team->Remove(this);
                     Assign_Mission(MISSION_RETREAT);
-                    Commence();
                 } else {
-                    if (!Team.Is_Valid())
+                    if (forceidle || !Team.Is_Valid())
                         Enter_Idle_Mode();
                 }
                 Commence();
@@ -886,6 +898,7 @@ int AircraftClass::Mission_Hunt(void)
                 Status = LOOK_FOR_TARGET;
             }
             break;
+        }
 
         default:
             break;
@@ -1979,6 +1992,19 @@ int AircraftClass::Mission_Move(void)
         case TAKE_OFF:
 
             /*
+            **	Attack-move (CFE port): a fixed-wing with no ammo to start with has
+            **	nothing to do on an attack-move, so abort it and go idle. (CFE gated
+            **	this on its Smarter-Aircraft option; we include it unconditionally,
+            **	and drop the queue-memorize since q-move loops are not ported.)
+            */
+            if (AttackMove && !IsALoaner && !Ammo) {
+                ResetAttackMove();
+                Clear_Navigation_List();
+                Enter_Idle_Mode();
+                return (1);
+            }
+
+            /*
             **	If the aircraft is high enough to begin its mission, then do so.
             */
             if (Process_Take_Off()) {
@@ -2001,6 +2027,24 @@ int AircraftClass::Mission_Move(void)
             distance = Distance(NavCom);
 
             if (distance < 0x00C0) {
+                /*
+                **	Attack-move (CFE port): if there's still a queued destination,
+                **	advance the queue by entering idle mode.
+                */
+                if (Target_Legal(NavQueue[0])) {
+                    Assign_Destination(TARGET_NONE);
+                    Assign_Target(TARGET_NONE);
+                    Enter_Idle_Mode();
+                    return (1);
+                }
+
+                /*
+                **	Attack-move (CFE port): destination reached -- exit attack-move
+                **	and go home.
+                */
+                if (AttackMove) {
+                    ResetAttackMove();
+                }
                 MissionType mission = MISSION_GUARD;
 
                 if (!IsALoaner) {
@@ -2090,7 +2134,16 @@ int AircraftClass::Mission_Move(void)
     **	Double check and change LZ if necessary.
     */
     case VALIDATE_LZ:
-        if (!Target_Legal(NavCom)) {
+        /*
+        **	Attack-move (CFE port): a helicopter with no ammo to start with has
+        **	nothing to do on an attack-move, so abort it and go idle. (Included
+        **	unconditionally; q-move-loop memorize is not ported.)
+        */
+        if (AttackMove && !IsALoaner && !Ammo) {
+            ResetAttackMove();
+            Clear_Navigation_List();
+            Enter_Idle_Mode();
+        } else if (!Target_Legal(NavCom)) {
             Enter_Idle_Mode();
         } else {
             if (!Is_LZ_Clear(NavCom) || !Cell_Seems_Ok(As_Cell(NavCom))) {
@@ -2135,6 +2188,28 @@ int AircraftClass::Mission_Move(void)
             int distance = Process_Fly_To(true, NavCom);
 
             if (distance < 0x0080) {
+                /*
+                **	Attack-move (CFE port): if there's still a queued destination,
+                **	advance the queue by entering idle mode.
+                */
+                if (Target_Legal(NavQueue[0])) {
+                    Assign_Destination(TARGET_NONE);
+                    Assign_Target(TARGET_NONE);
+                    Enter_Idle_Mode();
+                    return (1);
+                }
+
+                /*
+                **	Attack-move (CFE port): helicopters go home at the end of an
+                **	attack-move rather than landing at the destination.
+                */
+                if (AttackMove) {
+                    Assign_Target(TARGET_NONE);
+                    Assign_Destination(TARGET_NONE);
+                    ResetAttackMove();
+                    Enter_Idle_Mode();
+                    return (1);
+                }
                 if (Target_Legal(TarCom)) {
                     SecondaryFacing.Set_Desired(Direction(TarCom));
                 } else {
@@ -2206,6 +2281,22 @@ void AircraftClass::Enter_Idle_Mode(bool)
 {
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
+
+    /*
+    **	Attack-move (CFE port): if we'd go idle but still have ammo, keep heading
+    **	for the remembered destination instead. Out of ammo -> end attack-move and
+    **	clear the queue, then fall through to the normal idle logic. (CFE's
+    **	queue-memorize for air q-moves is not ported.)
+    */
+    if (AttackMove) {
+        if (Ammo) {
+            AttackMoveEnterMoveMode();
+            return;
+        } else {
+            ResetAttackMove();
+            Clear_Navigation_List();
+        }
+    }
 
     MissionType mission =
         (Class->IsFixedWing && IsALoaner && Class->PrimaryWeapon != NULL) ? MISSION_HUNT : MISSION_GUARD;
@@ -2649,7 +2740,16 @@ ActionType AircraftClass::What_Action(ObjectClass const* target) const
 #endif
 
     if (Class->IsFixedWing && action == ACTION_MOVE) {
-        action = ACTION_NOMOVE;
+        /*
+        **	TF: attack-move (CFE port) -- fixed-wing planes can't plain-move to an
+        **	object, but they can attack-move past it.
+        */
+        if (Is_Owned_By_Player() && Techno_Type_Class()->PrimaryWeapon != NULL
+            && DLL_Export_Get_Input_Key_State(KN_LSHIFT)) {
+            action = ACTION_ATTACKMOVE;
+        } else {
+            action = ACTION_NOMOVE;
+        }
     }
 
     if (action == ACTION_NONE) {
@@ -2696,7 +2796,10 @@ ActionType AircraftClass::What_Action(CELL cell) const
     ActionType action = FootClass::What_Action(cell);
 
     // using function for IsVisible so we have different results for different players - JAS 2019/09/30
-    if ((action == ACTION_MOVE || action == ACTION_ATTACK) && !Map[cell].Is_Visible(PlayerPtr)) {
+    // TF: attack-move (CFE port) -- if you can't move aircraft into gap-covered cells,
+    // attack-move shouldn't work either.
+    if ((action == ACTION_MOVE || action == ACTION_ATTACK || action == ACTION_ATTACKMOVE)
+        && !Map[cell].Is_Visible(PlayerPtr)) {
         action = ACTION_NOMOVE;
     }
 
@@ -2705,7 +2808,16 @@ ActionType AircraftClass::What_Action(CELL cell) const
     }
 
     if (Class->IsFixedWing && action == ACTION_MOVE) {
-        action = ACTION_NOMOVE;
+        /*
+        **	TF: attack-move (CFE port) -- fixed-wing planes can't plain-move, but
+        **	they can attack-move.
+        */
+        if (Is_Owned_By_Player() && Techno_Type_Class()->PrimaryWeapon != NULL
+            && DLL_Export_Get_Input_Key_State(KN_LSHIFT)) {
+            action = ACTION_ATTACKMOVE;
+        } else {
+            action = ACTION_NOMOVE;
+        }
     }
 
     return (action);

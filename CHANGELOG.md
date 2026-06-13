@@ -2,6 +2,26 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [2.2.0] — 2026-06-13
+
+Attack-move, adapted from CFE Patch Redux by ChthonVII (after cfehunter and
+Root-Core), GPL v3. Works for all four factions and every unit type.
+
+### Added
+- **Attack-move.** Shift+click the ground (or a unit) to advance toward a
+  destination while engaging hostiles along the way, then resume the journey
+  after each fight. Covers tanks, infantry, aircraft (return to rearm when out
+  of ammo), boats, minelayers, and chronotanks.
+- Attack-moving units now go after **all** enemy buildings in their path, not
+  only defensive ones, **but prioritise threats**: a unit engages the turret,
+  Tesla coil, or enemy unit shooting at it before bothering with a passive
+  building, and breaks off a passive target the moment a real threat closes in.
+
+### Fixed
+- Z-order on the taller GDI/Nod structures (Advanced Guard Tower, Obelisk,
+  power plants, barracks, comm centers): vehicles parked behind them no longer
+  render in front of the building.
+
 ## [2.1.0] — 2026-06-11
 
 Quality of life release, adapted from CFE Patch Redux by ChthonVII (after

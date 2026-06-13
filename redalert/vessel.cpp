@@ -63,6 +63,9 @@
 
 #include "function.h"
 
+// TF: attack-move (CFE port) -- launcher-side Shift state, per local player.
+extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
+
 /***********************************************************************************************
  * VesselClass::VesselClass -- Constructor for vessel class objects.                           *
  *                                                                                             *
@@ -1298,6 +1301,18 @@ TARGET VesselClass::Greatest_Threat(ThreatType threat) const
         if (*this == VESSEL_CA) {
             threat = (ThreatType)(threat & (~THREAT_INFANTRY));
         }
+
+        /*
+        **	Attack-move (CFE port): an attack-moving ship should be willing to
+        **	shell buildings. Cruisers additionally ignore air -- they can't hit
+        **	padless idling helicopters bobbing up and down anyway.
+        */
+        if (AttackMove && (*this != VESSEL_SS)) {
+            threat = threat | THREAT_BUILDINGS;
+            if (*this == VESSEL_CA) {
+                threat = (ThreatType)(threat & (~THREAT_AIR));
+            }
+        }
     }
 #ifdef FIXIT_CARRIER //	checked - ajw 9/28/98
     if (*this == VESSEL_CARRIER) {
@@ -2237,6 +2252,16 @@ ActionType VesselClass::What_Action(CELL cell) const
         && Map[cell].Is_Bridge_Here()) {
         return (ACTION_ATTACK);
     }
+
+    /*
+    **	TF: attack-move (CFE port) -- needed here so we can attack-move to cells
+    **	the VesselClass level makes movable (e.g. beaches).
+    */
+    if (action == ACTION_MOVE && Is_Owned_By_Player() && Techno_Type_Class()->PrimaryWeapon != NULL
+        && DLL_Export_Get_Input_Key_State(KN_LSHIFT)) {
+        action = ACTION_ATTACKMOVE;
+    }
+
     return (action);
 }
 

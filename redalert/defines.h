@@ -991,6 +991,14 @@ typedef enum MissionType : char
     MISSION_MISSILE,
     MISSION_HARMLESS, // Sit around and don't appear like a threat.
 
+    /*
+    **	TF: attack-move (ported from CFE Patch Redux, GPL v3). Pseudo-missions so the
+    **	attack-move order can ride the multiplayer event queue; event.cpp converts them
+    **	back to MISSION_MOVE plus the per-unit AttackMove flag on receipt.
+    */
+    MISSION_ATTACKMOVE,
+    MISSION_QATTACKMOVE, // attack-move combined with the client's queued-movement toggle
+
     MISSION_COUNT,
     MISSION_FIRST = 0
 } MissionType;
@@ -1055,6 +1063,7 @@ typedef enum ActionType : unsigned char
     ACTION_NO_ENTER,
     ACTION_NO_GREPAIR,
     ACTION_TOGGLE_PRIMARY, // Toggle the primary status of the factory.
+    ACTION_ATTACKMOVE,     // TF: attack-move (CFE port) -- own action so the click-to-mission path stays clean.
 
     ACTION_COUNT
 } ActionType;

@@ -223,7 +223,9 @@ public:
     */
     bool Passenger;
 
-private:
+    // Attack-move (CFE port): these need to be public so TechnoClass methods
+    // (AttackMoveEnterMoveMode) can check them when deciding whether to Commence.
+public:
     /*
     **	Aircraft can be in either state of landing, taking off, or in steady altitude.
     **	These flags are used to control transition between flying and landing. It is
@@ -233,6 +235,7 @@ private:
     unsigned IsLanding : 1;
     unsigned IsTakingOff : 1;
 
+private:
     /*
     **	It is very common for aircraft to be homing in on a target. When this flag is
     **	true, the aircraft will constantly adjust its facing toward the TarCom. When the

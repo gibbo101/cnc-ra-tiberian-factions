@@ -712,9 +712,57 @@ void EventClass::Execute(void)
             **	special queued move mission and there is already a valid navigation
             **	target for this unit.
             */
-            bool q = (Data.MegaMission.Mission == MISSION_QMOVE);
+            bool q = ((Data.MegaMission.Mission == MISSION_QMOVE) || (Data.MegaMission.Mission == MISSION_QATTACKMOVE));
 
-            techno->Assign_Mission(Data.MegaMission.Mission);
+            /*
+            **	Attack-move (CFE Patch Redux port, GPL v3). Now that we are on the
+            **	back side of the multiplayer event, swap MISSION_(Q)ATTACKMOVE back
+            **	to MISSION_MOVE, raise the AttackMove flag, and stash the original
+            **	destination in RememberedNavCom so it survives any detour fights.
+            */
+            if ((Data.MegaMission.Mission == MISSION_ATTACKMOVE) || (Data.MegaMission.Mission == MISSION_QATTACKMOVE)) {
+                techno->Assign_Mission(MISSION_MOVE);
+                techno->AttackMove = 1;
+                if (Data.MegaMission.Mission == MISSION_ATTACKMOVE) {
+                    techno->RememberedNavCom = Data.MegaMission.Destination.As_TARGET();
+                }
+                /*
+                **	Queued attack-move: don't clobber an already-set remembered
+                **	destination. If we're mid-move, adopt the current NavCom as the
+                **	anchor; otherwise this is the first leg, so use the new target.
+                */
+                else if (!Target_Legal(techno->RememberedNavCom)) {
+                    if (techno->Is_Foot() && Target_Legal(((FootClass*)techno)->NavCom)) {
+                        techno->RememberedNavCom = ((FootClass*)techno)->NavCom;
+                    } else {
+                        techno->RememberedNavCom = Data.MegaMission.Destination.As_TARGET();
+                    }
+                }
+                if ((techno->What_Am_I() == RTTI_UNIT) && (*((UnitClass*)techno) == UNIT_MINELAYER)) {
+                    ((UnitClass*)techno)->MLoriginalposition = ::As_Target(Coord_Cell(techno->Coord));
+                    ((UnitClass*)techno)->MLattackmovemode = 0;
+                    /*
+                    **	Ignore the order if out of mines (we have no veterancy regen
+                    **	path, so the CFE VeterancyRank gate is dropped) -- go home.
+                    */
+                    if (!techno->Ammo) {
+                        techno->ResetAttackMove(0);
+                        ((UnitClass*)techno)->MinelayerGoHome();
+                    }
+                }
+            }
+            /*
+            **	Any other mission terminates attack-move. If we're mid-attack on a
+            **	queued attack-move and get a plain q-move, fix the destination up to
+            **	the remembered anchor before tearing the mode down.
+            */
+            else {
+                if (techno->AttackMove && (techno->Mission == MISSION_ATTACK) && techno->Is_Foot() && Target_Legal(((FootClass*)techno)->NavCom) && (Data.MegaMission.Mission == MISSION_QMOVE) && Target_Legal(techno->RememberedNavCom)) {
+                    techno->Assign_Destination(techno->RememberedNavCom);
+                }
+                techno->Assign_Mission(Data.MegaMission.Mission);
+                techno->ResetAttackMove(0);
+            }
 
             if (techno->Is_Foot()) {
                 ((FootClass*)techno)->SuspendedNavCom = TARGET_NONE;
@@ -794,6 +842,11 @@ void EventClass::Execute(void)
         techno = Data.Target.Whom.As_Techno();
         if (techno != NULL && techno->IsActive && !techno->IsInLimbo && !techno->IsTethered
             && techno->What_Am_I() != RTTI_BUILDING) {
+            /*
+            **	Attack-move (CFE port): a stop/idle order ends attack-move. Command 2
+            **	sends an in-progress minelayer home rather than laying at the spot.
+            */
+            techno->ResetAttackMove(2);
             techno->Transmit_Message(RADIO_OVER_OUT);
             techno->Assign_Destination(TARGET_NONE);
             techno->Assign_Target(TARGET_NONE);

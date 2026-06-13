@@ -1760,6 +1760,7 @@ int RadarClass::RTacticalClass::Action(unsigned flags, KeyNumType& key)
                 case ACTION_ENTER:
                 case ACTION_CAPTURE:
                 case ACTION_SABOTAGE:
+                case ACTION_ATTACKMOVE: // Attack-move (CFE port)
                 case ACTION_HARVEST:
                     break;
 

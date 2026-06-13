@@ -83,6 +83,9 @@
 
 #include "function.h"
 
+// TF: attack-move (CFE port) -- launcher-side Shift state, per local player.
+extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
+
 /*
 ** New sidebar for GlyphX multiplayer. ST - 8/7/2019 10:10AM
 */
@@ -1995,6 +1998,22 @@ void InfantryClass::Enter_Idle_Mode(bool)
             }
         }
     }
+    /*
+    **	Attack-move (CFE port): infantry settle into GUARD at the end of an idle
+    **	transition, so the Mission_Move reset path never runs for them -- hence
+    **	this hack. Fall out of attack-move if we forgot the destination, arrived
+    **	(or got close), or can no longer reach it (zone check stands in for CFE's
+    **	Find_Path_AStar until the A* port lands); otherwise resume moving.
+    */
+    if ((order == MISSION_GUARD) && AttackMove) {
+        if (!Target_Legal(RememberedNavCom) || (Distance(RememberedNavCom) < Rule.CloseEnoughDistance)
+            || !Is_In_Same_Zone(As_Cell(RememberedNavCom))) {
+            ResetAttackMove();
+        } else {
+            AttackMoveEnterMoveMode();
+            return;
+        }
+    }
     Assign_Mission(order);
 }
 
@@ -2625,9 +2644,10 @@ TARGET InfantryClass::Greatest_Threat(ThreatType threat) const
     }
 
     /*
-    **	Human controlled infantry don't automatically fire upon buildings.
+    **	Human controlled infantry don't automatically fire upon buildings --
+    **	except in attack-move mode, where buildings are fair game (CFE port).
     */
-    if (Is_Weapon_Equipped() && House->IsHuman) {
+    if (Is_Weapon_Equipped() && House->IsHuman && !AttackMove) {
         threat = threat & ~THREAT_BUILDINGS;
     }
 
@@ -3183,7 +3203,8 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
             }
 #endif
             if (!object->Is_Techno() || !((TechnoClass*)object)->Techno_Type_Class()->Max_Passengers()) {
-                if (action == ACTION_GUARD_AREA || action == ACTION_MOVE) {
+                // Attack-move (CFE port): treat attack-move the same as move here.
+                if (action == ACTION_GUARD_AREA || action == ACTION_MOVE || action == ACTION_ATTACKMOVE) {
                     return (action);
                 }
                 return ((action == ACTION_TOGGLE_SELECT) ? ACTION_TOGGLE_SELECT : ACTION_SELECT);
@@ -3233,8 +3254,18 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
     */
     if (action == ACTION_NONE && object->What_Am_I() == RTTI_BUILDING && House->IsPlayerControl) {
         StructType blah = *((BuildingClass*)object);
-        if (blah == STRUCT_AVMINE || blah == STRUCT_APMINE)
-            return (ACTION_MOVE);
+        if (blah == STRUCT_AVMINE || blah == STRUCT_APMINE) {
+            /*
+            **	Attack-move (CFE port): needed here so we can attack-move onto cells
+            **	the InfantryClass level makes movable (e.g. landmines).
+            */
+            if (Is_Owned_By_Player() && Techno_Type_Class()->PrimaryWeapon != NULL
+                && DLL_Export_Get_Input_Key_State(KN_LSHIFT)) {
+                return (ACTION_ATTACKMOVE);
+            } else {
+                return (ACTION_MOVE);
+            }
+        }
     }
 
     /*
@@ -3377,6 +3408,7 @@ void InfantryClass::Active_Click_With(ActionType action, ObjectClass* object)
     case ACTION_ATTACK:
     case ACTION_GUARD_AREA:
     case ACTION_MOVE:
+    case ACTION_ATTACKMOVE: // Attack-move (CFE port) -- treat like move
         action = action;
         break;
 
@@ -3565,7 +3597,8 @@ ActionType InfantryClass::What_Action(CELL cell) const
     /*
     **	Demolitioners may destroy a bridge
     */
-    if (Class->IsBomber && action == ACTION_MOVE && !Special.IsCaptureTheFlag) {
+    // Attack-move (CFE port): demolitioners can attack-move on the way to a bridge.
+    if (Class->IsBomber && (action == ACTION_MOVE || action == ACTION_ATTACKMOVE) && !Special.IsCaptureTheFlag) {
         switch (Map[cell].TType) {
         case TEMPLATE_BRIDGE1:
         case TEMPLATE_BRIDGE2:

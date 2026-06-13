@@ -39,7 +39,7 @@ Plan for adopting QoL features and bugfixes from **CFE Patch Redux** by ChthonVI
 |---|---|---|---|---|
 | 0 | **Pixel-Perfect Zoom** | none (static; data-only) | TINY | **PRIORITY 1 (Luke, 2026-06-11).** No DLL code: loose `Data/XML/GAMECONSTANTS.XML` in the mod folder, `<CNCZoomFactors network="client" overwrite="true">` block — 11 factors 0.246875–1.975 (vanilla: 8 factors 1.0–2.0, so this also zooms OUT further). CFE commit `ea2dde5`. Port = extract BASE GAMECONSTANTS.XML from our install, swap in the zoom block only, ship in our `Data/XML/`. Bonus intel: same file carries `CNCTDTheaterTilesets` (theatre→tileset map, relevant to desert) + many other mod-reachable client constants. |
 | 1 | **A\* Pathing** | `ASTAR_PATHING` | LARGE | Replaces "crash and turn" pathfinder. **Stage 1 of the two-stage pathfinding plan — see §1.1.** Foundation for #6. 1.8 fixed a crash on paths >200 cells — take the fixed version. Touches core movement; needs the biggest playtest soak. |
-| 2 | **Attack-Move** (Shift+Click) | `ATTACK_MOVE` | LARGE | Take the post-1.7 LAN-safe rework. Special-case handling: aircraft RTB on empty ammo, boats brief-attack, minelayers, chronotanks. Must verify against OUR units: TD aircraft (Orca/Apache), TDMSAM/TDMLRS, visceroid targeting. |
+| 2 | **Attack-Move** (Shift+Click) | `ATTACK_MOVE` | ✅ CODE-COMPLETE 2026-06-13 (in playtest) | Post-1.7 LAN-safe rework, hard-enabled, all special cases (aircraft RTB on empty ammo, boats brief-attack, minelayers, chronotanks). Hard-enabled q-attack-move rides VANILLA's queue (CFE's queue rewrite NOT taken — fallback if flaky: stop converting ATTACKMOVE→QATTACKMOVE). One build fix: `AircraftClass::IsLanding/IsTakingOff` made public. **One deliberate deviation from CFE — see §1.2 (passive-building targeting).** |
 | 3 | **Rally Points** | `RALLY_POINTS` | ✅ DONE 2026-06-11 | Desktop-verified all factions. Incl. v1.9 long-line crash fix + two improvements over CFE: rally to "unplaceable" cells (their Can_Enter_Cell placement-legality dead zones near cliffs/shore/ore) and DOTGDI/DOTNOD faction end-dots. Found + fixed our DLL_Draw_Intercept ShapeSize-override trap (building-attributed named draws inflate to building size for TD buildings). Repair-bay rally (FIX/TDFIX) deferred to #6 as CFE gates it on Smarter Repair Bay exit logic. |
 | 4 | **Harvester Queue Jumping** | `HARV_QUEUE_JUMP` | SMALL | Independent toggle in CFE; works with #5. Verify against our TDPROC/TDHARV Limbo+Attach dock plumbing — our harvester counting bug (docked harvesters leave UQuantity) is exactly the kind of state this code reads. |
 | 5 | **Harvester Optimization** | `HARV_OPTIMIZATION` | SMALL | Nearest-refinery with per-inbound-harvester distance penalty. CFE's recommended choice over the older Load Balancing (which auto-disables when both are on — we just don't port Load Balancing). Same TDPROC caveat as #4. |
@@ -65,6 +65,47 @@ path-search problem** — a better search algorithm alone doesn't fix it.
   (same mechanism CFE's Tiberium Aversion uses for Tiberium cells, so stage 1 builds the
   hook). This is the layer that actually fixes dock deadlocks. OpenRA's cooperative
   pathfinder remains the reference. WHCA*/ORCA stay rejected as overkill/engine-hostile.
+
+### 1.2 Attack-move deviation from CFE: passive-building targeting (Luke, 2026-06-13)
+
+**Deliberate one-feature departure from CFE attack-move behaviour.** Logged here because the
+porting rule is "document deviations."
+
+- **CFE / vanilla behaviour:** the engine hard-codes that a human player's units never
+  auto-target an enemy building with no weapon (`TechnoClass::Evaluate_Object`, the
+  `tclass->PrimaryWeapon == NULL` "not aggressive" filter). CFE kept this filter, so CFE
+  attack-move engages enemy *units* and *defensive structures* (turrets, Tesla, Obelisk, SAM,
+  gun towers — they carry weapons) but drives straight past *passive* buildings (power,
+  refinery, barracks, factory, con yard). Verified: CFE's `Evaluate_Object` is byte-identical
+  to ours here — no attack-move special-casing.
+- **What Luke wanted:** classic-C&C / StarCraft a-move — attack-move shells *everything* in
+  range, **but** prioritises armed threats so a tank engages the Tesla coil rather than
+  plinking a kennel while the coil kills it.
+- **Our implementation (techno.cpp):**
+  1. `Evaluate_Object` weaponless-building filter gains `&& !(AttackMove &&
+     _AttackMoveIncludePassiveBuildings)` so passive buildings become valid targets on the
+     "passive pass" only.
+  2. **Two-pass scan** in `Target_Something_Nearby`: when `AttackMove` is set, scan first for
+     armed targets only (vanilla filter active → defensive structures + enemy units); only if
+     nothing armed is in range, flip `_AttackMoveIncludePassiveBuildings` and scan again
+     including passive buildings. Strict tiering, so armed threats always win when in range.
+  3. `_AttackMoveIncludePassiveBuildings` is a file-scope static (single-threaded engine; set
+     and cleared within one scan) — no class-layout / savegame growth.
+- **Why two-pass and not a value boost:** the final target score is distance-weighted
+  (`value * 32000 / (dist+1)`), so a close kennel out-scores a farther Tesla under any
+  additive boost, and a multiplier large enough to fix that overflows the 32-bit score. Two
+  passes sidestep both. Gated entirely on `AttackMove`, so plain Guard behaviour is untouched
+  (guarding units still ignore passive buildings, as vanilla intends).
+- **Threat response (added same day, after Luke saw tanks tunnel-vision a building while a
+  Tesla coil / enemy units chewed them up):** the two-pass priority above only applied at
+  *initial* acquisition — once locked on an in-range passive building, nothing re-evaluated.
+  Added a block to the `TechnoClass::AI` attack-move retarget: each tick, if the current
+  target is a weaponless building, run an armed-only `Greatest_Threat(THREAT_RANGE)` scan and,
+  if anything armed is in range, disengage and switch to it. Fires only when there's a real
+  threat to switch to (never swaps one passive building for another); aircraft + move-locked
+  boats exempt. Deliberately does *not* switch between two armed targets (avoids dithering) —
+  it only breaks passive-building tunnel-vision. **Luke-verified "attack move is great"
+  2026-06-13.**
 
 ## 2. QoL second wave (candidates, not yet decided)
 

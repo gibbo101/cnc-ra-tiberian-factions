@@ -3746,6 +3746,14 @@ ActionType BuildingClass::What_Action(ObjectClass const* object) const
 
     ActionType action = TechnoClass::What_Action(object);
 
+    /*
+    **	TF: attack-move (CFE port) -- if we somehow passed attack-move to a
+    **	*building*, change it back to move (rally points ride ACTION_MOVE).
+    */
+    if (action == ACTION_ATTACKMOVE) {
+        action = ACTION_MOVE;
+    }
+
     if (action == ACTION_SELF) {
         int index;
         if (Class->Is_Factory() && PlayerPtr == House && *House->Factory_Counter(Class->ToBuild) > 1) {
@@ -3863,6 +3871,14 @@ ActionType BuildingClass::What_Action(CELL cell) const
     assert(IsActive);
 
     ActionType action = TechnoClass::What_Action(cell);
+
+    /*
+    **	TF: attack-move (CFE port) -- if we somehow passed attack-move to a
+    **	*building*, change it back to move (rally points ride ACTION_MOVE).
+    */
+    if (action == ACTION_ATTACKMOVE) {
+        action = ACTION_MOVE;
+    }
 
     /*
     **	TF: rally points (CFE Patch Redux port) — rally-capable factories keep
@@ -4369,14 +4385,29 @@ COORDINATE BuildingClass::Sort_Y(void) const
     }
     /*
     **  Mod-defined entries with explicit ShapeSize= rules.ini overrides use
-    **  TD-Assets-style sprites that visually extend further south than the
-    **  default Sort_Y offset accounts for, causing units near the building's
-    **  bottom row to render *behind* the building. Forcing the sort point to
-    **  the building's center (no south offset) restores correct unit-on-top
-    **  z-order. Only fires for mod entries; vanilla buildings don't set
-    **  ShapeSize so vanilla Sort_Y behaviour is preserved.
+    **  TD-Assets-style sprites. Only WIDE sprites (ShapeWidth > ShapeHeight --
+    **  refineries, war factory, airfield, silo) visually extend further SOUTH
+    **  than the default Sort_Y offset accounts for, causing units near the
+    **  building's bottom row to render *behind* the building; forcing the sort
+    **  point to the building's center (no south offset) restores correct
+    **  unit-on-top z-order for those.
+    **
+    **  SMALL square and tall sprites (<= 2 cells / 48px each way: power plants,
+    **  comm centers, barracks, and defensive towers like the Advanced Guard
+    **  Tower / Obelisk) are the opposite case: they have little south overhang
+    **  and instead extend NORTH (domes, antennas, turrets). Centering them robs
+    **  them of the vanilla height-based south bias, so a vehicle parked behind
+    **  (its Sort_Y biased +0x80 south, vs infantry's smaller +0x30) sorts in
+    **  front and wrongly draws OVER the building. Let those fall through to the
+    **  vanilla height-aware sort below.
+    **
+    **  BIG sprites (any dimension >= 72px / 3 cells -- weapons factory, temple)
+    **  behave like the wide ones (enough south mass to overhang), so they keep
+    **  the centered sort too. Only fires for mod entries; vanilla buildings
+    **  don't set ShapeSize so vanilla Sort_Y behaviour is preserved.
     */
-    if (Class->ShapeWidth > 0 && Class->ShapeHeight > 0) {
+    if (Class->ShapeWidth > 0 && Class->ShapeHeight > 0
+        && (Class->ShapeWidth > Class->ShapeHeight || Class->ShapeWidth >= 72 || Class->ShapeHeight >= 72)) {
         return (Center_Coord());
     }
 
