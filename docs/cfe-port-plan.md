@@ -66,6 +66,37 @@ path-search problem** — a better search algorithm alone doesn't fix it.
   hook). This is the layer that actually fixes dock deadlocks. OpenRA's cooperative
   pathfinder remains the reference. WHCA*/ORCA stay rejected as overkill/engine-hostile.
 
+#### Stage 2 — refined by the v2.2.1 A* playtest (2026-06-14)
+
+The stage-1 A* release shipped with a `TF_DEV_BUILD` diagnostic (`tf_astar.log`: per-fallback
+detail + running success/fallback tally; gated on `TF_DEV_BUILD`, appends per match). Two
+playtests on a snow map produced the concrete spec for stage 2:
+
+- **A* is healthy.** ~74% path success, **zero genuine long-path search failures**. Every single
+  fallback-to-legacy was "the destination cell I was told to enter is occupied by a friendly."
+- **The dominant failure is DESTINATION CONTENTION, not through-traffic.** In one match **78% of
+  fallbacks (252 of 325) targeted a single cell** (`dst=(111,88)`); another magnet was `(30,32)`
+  hit by 6+ distinct unit types. Symptom = the 1-wide jam, units running up/down, tanks tracing a
+  cliff. Root: a whole group is ordered onto **the same cell**; the first unit occupies it, then
+  for every other unit the target is impassable + within 3 cells, so A* bails (`return 0`,
+  Find_Path_AStar's close-impassable rule) → legacy → can't enter the occupied cell → re-path next
+  tick → repeat.
+- **So stage 2 = TWO mechanisms, and destination-spread is the bigger lever here:**
+  1. **Destination spread / formation** — when a group move (or attack-move) is issued, assign each
+     unit a DISTINCT nearby cell instead of all the same cell. FIRST INVESTIGATION STEP for the
+     next session: find where a multi-unit move order assigns destinations (does vanilla RA already
+     do formation spread and our build broke it, or does attack-move funnel everyone to one cell?).
+     Start in the move-order dispatch (`event.cpp` MEGAMISSION / `Assign_Destination`) and the
+     group-select move path; check whether `Coordinate_Move`/formation offsets are being applied.
+  2. **Reservation table + scatter-the-blocker** — the originally-planned through-traffic fix:
+     publish reserved cells as soft cost penalties in the A* grid (the Passable_Cell cost hook
+     stage 1 already exposes), and trigger a stationary friendly blocker's `Scatter()` when it
+     holds a needed cell. Also reconsider Find_Path_AStar's close-impassable bail (straight-line
+     distance ≤3 → give up) — with reservation/spread in place this bail may be doing more harm
+     than good.
+- **Test cases** from the playtest: the contended cells `(30,32)` and `(111,88)` on the snow map;
+  watch the tally drop and the per-cell fallback concentration disappear. Ships as **v2.3.0**.
+
 ### 1.2 Attack-move deviation from CFE: passive-building targeting (Luke, 2026-06-13)
 
 **Deliberate one-feature departure from CFE attack-move behaviour.** Logged here because the
