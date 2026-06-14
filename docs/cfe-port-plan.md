@@ -110,7 +110,61 @@ playtests on a snow map produced the concrete spec for stage 2:
      distance ≤3 → give up) — with reservation/spread in place this bail may be doing more harm
      than good.
 - **Test cases** from the playtest: the contended cells `(30,32)` and `(111,88)` on the snow map;
-  watch the tally drop and the per-cell fallback concentration disappear. Ships as **v2.3.0**.
+  watch the tally drop and the per-cell fallback concentration disappear.
+
+**STATUS: destination spread (mechanism 1) SHIPPED v2.2.2 (2026-06-14), Luke-verified** ("much
+better", tight same-zone clump, fallback ~26%→~12%). Code: `FootClass::Find_Spread_Cell`
+(findpath.cpp, zone-gated to the clicked cell's `Zones[MZone]`) + `do_spread` gate in
+`DisplayClass::Mouse_Left_Release` (display.cpp). The reservation-table idea in point 2 above was
+SUPERSEDED by the playtest — see §1.1.1 for what the chokepoint problem actually is.
+
+### 1.1.1 ⭐ NEXT SESSION START HERE — v2.2.3 "patient queue" chokepoint fix
+
+**Goal:** make a group cross a 1-tile land bridge / narrow pass by **queuing and waiting their turn**,
+instead of giving up and jamming. This is the remaining half of A* stage 2 (the "Known issues" line
+in the 2.2.2 changelog + Workshop "Planned → cooperative traffic handling").
+
+**⚠ DO NOT retry the cooperative-YIELD / back-off approach.** It was built this session
+(`DriveClass::Try_Cooperative_Yield`) and FAILED Luke's solo test + regressed the common case, so it
+was reverted (never committed). Wrong model: it assumed a head-on standoff, but the real jam is a
+**same-direction single-file queue** — backing a unit "away from the blocker" reverses it into the
+unit behind it (log proof: APC at (126,52) backed off to (126,53) = where 1TNK sat → churn). Also do
+NOT port OpenRA's reservation grid (engine-hostile; the engine already reserves cells via occupation
+bits — that's WHY bridge cells read `MOVE_TEMP`). OpenRA is a behaviour reference only.
+
+**ROOT CAUSE (confirmed from tf_astar.log + code read):** units near a friendly-blocked chokepoint
+*abandon the move* instead of *waiting*. Two engine mechanisms cause it:
+1. `FootClass::Basic_Path` / the path-retry loop at **foot.cpp ~388-417**: for a human unit within
+   `Rule.CloseEnoughDistance` of its destination it caps `maxtype` at `MOVE_DESTROYABLE` (enum 3),
+   which is BELOW `MOVE_TEMP` (enum 4 = "friendly occupies this cell"). So the escalation never tries
+   the threshold that would route through a friendly → no path. (This cap is the deliberate "don't
+   shove through your own ranks to sit on an exact cell" rule.) MoveType enum: OK=0 CLOAK=1
+   MOVING_BLOCK=2 DESTROYABLE=3 TEMP=4 NO=5. (The "10" seen elsewhere is the COST weight, not the enum.)
+2. `Find_Path_AStar` close-impassable bail (**findpath.cpp ~555**): if the dest is impassable at the
+   given threshold AND within 3 cells → `return 0` (give up).
+   Then `DriveClass::Start_Of_Move` no-path branch (**drive.cpp ~982-1058**) runs `TryTryAgain` down
+   and finally `Assign_Destination(TARGET_NONE)` + `VOC_SCOLD` = the unit drops its order.
+   **Spread amplifies this** by packing the whole group's destinations right at the choke, so every
+   follower is "close to its (blocked) destination" at once.
+
+**FIRST INVESTIGATION STEP next session:** confirm WHICH of the two mechanisms actually fires for the
+stuck units. Re-run the 1-tile-bridge solo test on the desktop (TF_DEV_BUILD diagnostic is in the
+tree — re-enable/rebuild dev), then for a stuck unit (e.g. the repeated `FALLBACK ... dst=(...)`
+lines) check: is its `Distance(NavCom) < Rule.CloseEnoughDistance` (→ mechanism 1, the maxtype cap),
+or is it the ≤3-cell close-impassable bail (mechanism 2)? Add a one-line diagnostic in the no-path
+branch logging `Distance(NavCom)`, `Rule.CloseEnoughDistance`, and `maxtype` for the stuck unit.
+
+**FIX HYPOTHESIS (validate before coding):** when a unit's path fails and its ONLY obstacle is a
+temporary friendly (`MOVE_TEMP`) on the route, it should HOLD position and retry next tick (wait its
+turn) rather than abandon the order. Likely a narrow change: don't drop to `TARGET_NONE` / don't cap
+`maxtype` below `MOVE_TEMP` in the specific case where the blocking cell(s) are friendly movers (not
+terrain, not enemies, not a permanently-parked unit). Must stay multiplayer-deterministic and must
+NOT regress the "stop politely near a crowded destination" behaviour the cap was protecting — so gate
+the change tightly on "blocker is a friendly that is itself moving / will clear."
+
+**TEST:** the 1-tile bridge, group crossing one way AND a second group crossing back (both
+directions). Want: units file across one at a time and all arrive; tf_astar.log fallback storm on the
+bridge cells gone. Ships as **v2.2.3** (patch). Then: infantry Tiberium aversion (needs A* + OVERLAY_TIB01).
 
 ### 1.2 Attack-move deviation from CFE: passive-building targeting (Luke, 2026-06-13)
 
