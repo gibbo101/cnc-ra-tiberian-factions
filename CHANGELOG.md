@@ -2,6 +2,22 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [2.2.2] — 2026-06-14
+
+Group-move destination spread, building on the 2.2.1 A* pathfinding. GPL v3.
+
+### Changed
+- **Spread-out group moves.** When you send several units to a single spot they
+  now fan out across nearby cells and settle into a tidy group, instead of all
+  piling onto the exact cell you clicked and shuffling for position. Each unit
+  is handed a reachable cell on the same side of any cliff or water, so they no
+  longer trace the long way around terrain to reach a contested spot.
+
+### Known issues
+- A large group crossing a single-cell gap (a one-tile land bridge or narrow
+  pass) can still back up while they file through one at a time. Cooperative
+  traffic handling for these chokepoints is planned for a follow-up release.
+
 ## [2.2.1] — 2026-06-14
 
 Smarter unit pathfinding, adapted from CFE Patch Redux by ChthonVII (A* search
