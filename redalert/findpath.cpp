@@ -48,6 +48,10 @@
  *   Set_Path_Overlap -- Sets the overlap bit for given cell                                   *
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
+#include <algorithm>
+#include <cmath>
+#include <unordered_map>
+#include <vector>
 #include "function.h"
 //#include	<string.h>
 
@@ -413,6 +417,221 @@ bool FootClass::Register_Cell(PathType* path, CELL cell, FacingType dir, int cos
  * HISTORY:                                                                                    *
  *   07/08/1991  CY : Created.                                                                 *
  *=============================================================================================*/
+/***********************************************************************************************
+ * Euclidian_Cell_Distance_Estimate -- Straight-line cell distance, for A* heuristic.          *
+ *                                                                                             *
+ * CFE Patch Redux A* support (ChthonVII / cfehunter). Admissible heuristic for Find_Path_AStar.*
+ *=============================================================================================*/
+float Euclidian_Cell_Distance_Estimate_Sqrd(const CELL source, const CELL dest)
+{
+    const float x = abs(Cell_X(dest) - Cell_X(source));
+    const float y = abs(Cell_Y(dest) - Cell_Y(source));
+    return abs(x * x + y * y);
+}
+
+float Euclidian_Cell_Distance_Estimate(const CELL source, const CELL dest)
+{
+    return sqrtf(Euclidian_Cell_Distance_Estimate_Sqrd(source, dest));
+}
+
+/***********************************************************************************************
+ * FootClass::Find_Passable_Position_Near -- Spiral search for a passable cell near a target.  *
+ *                                                                                             *
+ * CFE Patch Redux A* support. When the A* destination is impassable, look outward in growing  *
+ * rings for the nearest passable cell so the unit can path to an adjacent spot.               *
+ *=============================================================================================*/
+CELL FootClass::Find_Passable_Position_Near(const CELL target, const int maxRadius, const MoveType threshhold, const int threat)
+{
+    if (Passable_Cell(target, FACING_NONE, threat, threshhold)) {
+        return target;
+    }
+
+    const int targetX = Cell_X(target);
+    const int targetY = Cell_Y(target);
+
+    const auto validate_cell = [this, threat, threshhold](const CELL cell) {
+        return Map.In_Radar(cell) && Passable_Cell(cell, FACING_NONE, threat, threshhold);
+    };
+
+    for (int curDistance = 1; curDistance <= maxRadius; ++curDistance) {
+        const int left = targetX - curDistance;
+        const int right = targetX + curDistance;
+        const int top = targetY - curDistance;
+        const int bottom = targetY + curDistance;
+
+        //Test top row
+        for (int x = left; x <= right; ++x) {
+            const CELL currentCell = XY_Cell(x, top);
+            if (validate_cell(currentCell))
+                return currentCell;
+        }
+
+        //Test bottom row
+        for (int x = left; x <= right; ++x) {
+            const CELL currentCell = XY_Cell(x, bottom);
+            if (validate_cell(currentCell))
+                return currentCell;
+        }
+
+        //Test left column
+        for (int y = top + 1; y < bottom; ++y) {
+            const CELL currentCell = XY_Cell(y, left);
+            if (validate_cell(currentCell))
+                return currentCell;
+        }
+
+        //Test the right column
+        for (int y = top + 1; y < bottom; ++y) {
+            const CELL currentCell = XY_Cell(y, right);
+            if (validate_cell(currentCell))
+                return currentCell;
+        }
+    }
+
+    return 0;
+}
+
+/***********************************************************************************************
+ * FootClass::Find_Path_AStar -- A* pathfinder (replaces the legacy "crash and turn" search).  *
+ *                                                                                             *
+ * Ported from CFE Patch Redux (ChthonVII / cfehunter), including the 1.8 path-scrub fix (stop *
+ * one element short of maxLen to avoid an out-of-bounds write of the END terminator) and the  *
+ * lepton-vs-cell distance bugfix in the impassable-target handling. Cost weights come from    *
+ * Passable_Cell (MOVE_OK=1, MOVE_MOVING_BLOCK=3, MOVE_DESTROYABLE=8, MOVE_TEMP=10, 0=impass).  *
+ *                                                                                             *
+ * OUTPUT:  total path length in cells (0 = no path). If resultPath is non-null it is filled    *
+ *          with the move command list (truncated to maxLen) and Optimize_Moves'd.             *
+ *=============================================================================================*/
+int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CELL dest, const int maxLen, const MoveType threshhold, const int threat)
+{
+    struct AStarCell {
+        AStarCell* prev = nullptr;
+        CELL position = 0;
+        int cell_distance_from_start = 0;
+        float cost_from_start = 0;
+        float estimated_cost_to_end = 0;
+    };
+
+    const auto inverse_node_sort = [](const AStarCell* const lhs, const AStarCell* const rhs) {
+        const float lhs_cost = lhs->cost_from_start + lhs->estimated_cost_to_end;
+        const float rhs_cost = rhs->cost_from_start + rhs->estimated_cost_to_end;
+        return lhs_cost > rhs_cost;
+    };
+
+    //General error case early exits
+    if (maxLen <= 0 || source == dest) {
+        return 0;
+    }
+
+    //Target is impassable, try to account for that by finding a position nearby, or staying still if already close
+    if (!Passable_Cell(dest, FACING_NONE, threat, threshhold)) {
+        static const int impassableCloseEnough = 3;
+        // CFE bugfix: Distance() returns leptons here, not cells, so convert before comparing to the cell radius.
+        const int distanceToDest = Lepton_To_Cell(::Distance(Cell_Coord(source), Cell_Coord(dest)));
+        if (distanceToDest > impassableCloseEnough) {
+            const CELL nearbyDest = Find_Passable_Position_Near(dest, impassableCloseEnough, threshhold, threat);
+
+            //Failed to find a passable position at or near the target or nearby position is further away or equidistant to our current position, so just stay put
+            if (nearbyDest == 0 || Lepton_To_Cell(::Distance(Cell_Coord(dest), Cell_Coord(nearbyDest))) >= distanceToDest) {
+                return 0;
+            } else {
+                dest = nearbyDest;
+            }
+        } else {
+            return 0;
+        }
+    }
+
+    std::unordered_map<CELL, AStarCell> visited_cells;
+    static std::vector<AStarCell*> open_list;
+    open_list.clear();
+
+    //Add the source cell to the open list
+    open_list.push_back(&visited_cells.emplace(source, AStarCell()).first->second);
+    open_list.back()->position = source;
+
+    AStarCell* dest_result = nullptr;
+
+    while (!open_list.empty()) {
+        AStarCell& prev_cell = *open_list.back();
+        open_list.pop_back();
+
+        if (prev_cell.position == dest) {
+            dest_result = &prev_cell;
+            break;
+        }
+
+        for (FacingType facing = FACING_FIRST; facing < FACING_COUNT; ++facing) {
+            const CELL adjacent_cell_id = Adjacent_Cell(prev_cell.position, facing);
+
+            //Passable cell returns 0 if the object can't enter the cell from this direction
+            float cell_cost = (float)Passable_Cell(adjacent_cell_id, facing, threat, threshhold);
+            // Ignore friendly units in motion unless they're really close, on the assumption they'll move before we arrive (CFE).
+            if (cell_cost == 3) { //MOVE_MOVING_BLOCK is 3
+                if (prev_cell.cell_distance_from_start > 4) {
+                    cell_cost = 1;
+                } else if (prev_cell.cell_distance_from_start > 2) {
+                    cell_cost = 2;
+                }
+            }
+            // diagonal moves cost more because Pythagoras
+            if ((cell_cost) > 0 && ((facing == FACING_NE) || (facing == FACING_SE) || (facing == FACING_SW) || (facing == FACING_NW))) {
+                cell_cost += 0.41f;
+            }
+
+            if (cell_cost > 0) {
+                cell_cost += prev_cell.cost_from_start;
+                // try_emplace is unavailable on this toolchain's libstdc++; emplace is equivalent here
+                // (AStarCell is cheap to default-construct, and an existing key returns {iter, false}).
+                auto emplace_result = visited_cells.emplace(adjacent_cell_id, AStarCell());
+                AStarCell& current_cell = emplace_result.first->second;
+                if (emplace_result.second || cell_cost < current_cell.cost_from_start) {
+                    current_cell.position = adjacent_cell_id;
+                    current_cell.prev = &prev_cell;
+                    current_cell.cell_distance_from_start = prev_cell.cell_distance_from_start + 1;
+                    current_cell.cost_from_start = cell_cost;
+                    current_cell.estimated_cost_to_end = Euclidian_Cell_Distance_Estimate(adjacent_cell_id, dest);
+
+                    //Insert the new node before the first item that is *NOT* greater than it, leaving lowest-cost nodes at the back.
+                    open_list.insert(std::lower_bound(open_list.begin(), open_list.end(), &current_cell, inverse_node_sort), &current_cell);
+                }
+            }
+        }
+    }
+
+    if (dest_result) {
+        const int total_path_length = dest_result->cell_distance_from_start;
+
+        //If we don't have a path to fill in, then just return here
+        if (resultPath == nullptr)
+            return total_path_length;
+
+        //Cost is used for comparing paths with different threat thresholds, so use the overall cost regardless of truncation
+        resultPath->Cost = (int)(dest_result->cost_from_start + 0.5f); // +0.5 then cast == round (PathType::Cost is int)
+
+        //Scrub back to the max path length to store.
+        // CFE fix: maxLen is the buffer size, so stop 1 short to leave room for the END terminator (else OOB write here
+        // and OOB reads/writes in Optimize_Moves).
+        while (dest_result->prev && dest_result->cell_distance_from_start >= maxLen) {
+            dest_result = dest_result->prev;
+        }
+
+        resultPath->Command[dest_result->cell_distance_from_start] = END;
+        resultPath->Length = dest_result->cell_distance_from_start;
+
+        for (; dest_result->prev != nullptr; dest_result = dest_result->prev) {
+            const AStarCell& prev_node = *dest_result->prev;
+            resultPath->Command[prev_node.cell_distance_from_start] = CELL_FACING(prev_node.position, dest_result->position);
+        }
+
+        Optimize_Moves(resultPath, threshhold);
+
+        return total_path_length;
+    }
+
+    return 0;
+}
+
 PathType* FootClass::Find_Path(CELL dest, FacingType* final_moves, int maxlen, MoveType threshhold)
 {
     CELL source = Coord_Cell(Coord); // Source expressed as cell
@@ -471,6 +690,95 @@ PathType* FootClass::Find_Path(CELL dest, FacingType* final_moves, int maxlen, M
     path.LastFixup = -1;
 
     memset(path.Overlap, 0, sizeof(MainOverlap));
+
+    /*
+    ** A* pathfinding (CFE Patch Redux port, hard-enabled). Try the A* search first, escalating
+    ** through the same threat tolerance stages the legacy pathfinder uses. On success we return
+    ** the optimised path immediately; on failure we fall through to the original "crash and turn"
+    ** edge-follower below as a fallback.
+    */
+    {
+        int asThreat = threat;
+        int as_threat_stage = threat_stage;
+        bool result = false;
+        do {
+            result = Find_Path_AStar(&path, source, dest, maxlen, threshhold, asThreat) != 0;
+
+            if (!result && asThreat != -1) {
+                switch (++as_threat_stage) {
+                case 0:
+                    asThreat = unit_threat >> 1;
+                    break;
+
+                case 1:
+                    asThreat += unit_threat;
+                    break;
+
+                case 2:
+                    asThreat = -1;
+                    break;
+                }
+            }
+        } while (!result && asThreat != -1);
+
+#if TF_DEV_BUILD // TF DEV: A* pathfinding diagnostic. Running success/fallback tally + every fallback logged. Compiled out of release builds.
+        {
+            static FILE* tf_astar_log = NULL;
+            static long tf_astar_success = 0;
+            static long tf_astar_fallback = 0;
+            if (tf_astar_log == NULL) {
+                const char* h = getenv("USERPROFILE");
+                if (h == NULL) h = getenv("HOME");
+                if (h != NULL) {
+                    char p[512];
+                    snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                    // Append, not "w": each match re-inits the DLL and would otherwise wipe the
+                    // prior match's data before it can be read. Marker separates matches.
+                    tf_astar_log = fopen(p, "a");
+                    if (tf_astar_log != NULL) {
+                        fprintf(tf_astar_log, "==== A* log session start (new match / DLL init) ====\n");
+                    }
+                }
+            }
+            const char* who = (Techno_Type_Class() && Techno_Type_Class()->IniName) ? Techno_Type_Class()->IniName : "<?>";
+            if (result) {
+                tf_astar_success++;
+            } else {
+                tf_astar_fallback++;
+            }
+            if (tf_astar_log != NULL) {
+                // Per-fallback detail line (these are the interesting "A* gave up" cases),
+                // plus a running tally so a glance at the tail proves A* is live.
+                if (!result) {
+                    fprintf(tf_astar_log, "A* FALLBACK -> legacy: unit=%s src=(%d,%d) dst=(%d,%d) maxlen=%d [success=%ld fallback=%ld]\n",
+                            who, (int)Cell_X(source), (int)Cell_Y(source), (int)Cell_X(dest), (int)Cell_Y(dest),
+                            maxlen, tf_astar_success, tf_astar_fallback);
+                } else if ((tf_astar_success & 0xFF) == 0) {
+                    fprintf(tf_astar_log, "A* tally: success=%ld fallback=%ld\n", tf_astar_success, tf_astar_fallback);
+                }
+                fflush(tf_astar_log);
+            }
+        }
+#endif
+
+        if (result) {
+            BEnd(BENCH_FINDPATH);
+            return (&path);
+        }
+
+        /*
+        ** A* failed; reset the path structure for the legacy fallback below.
+        */
+        path.Start = source;
+        path.Cost = 0;
+        path.Length = 0;
+        path.Command = final_moves;
+        path.Command[0] = END;
+        path.Overlap = MainOverlap;
+        path.LastOverlap = -1;
+        path.LastFixup = -1;
+        memset(path.Overlap, 0, sizeof(MainOverlap));
+    }
 
     /*
     ** Clear the over lap list and then make sure that our starting position is marked

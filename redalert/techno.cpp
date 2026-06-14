@@ -7372,11 +7372,11 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         **  factions. IsHuman is the skirmish-safe check (never PlayerPtr,
         **  see reference-remaster-playerptr-always-self).
         **
-        **  Default OFF; only flip on for short-lived tests, then revert
-        **  before deploy/release.
+        **  Compiled out of release builds (TF_DEV_BUILD); runtime-gated by
+        **  TF_Dev_Cheats() in dev builds (drop tf_dev_off.flag to disable).
         */
-#if 0 // TF DEV TOGGLE: instant-build for human-player testing. Flip to 1 to re-enable.
-        if (hptr->IsHuman) {
+#if TF_DEV_BUILD
+        if (TF_Dev_Cheats() && hptr->IsHuman) {
             return 15;
         }
 #endif

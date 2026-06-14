@@ -24,11 +24,23 @@ BUILD_DIR="build/remaster/Vanilla_RA"
 STAGE_DIR="dist/workshop-content"
 SUBFOLDER_NAME="Vanilla_RA"
 
+# --- Release build: dev cheats compiled OUT ----------------------------------
+# package-for-workshop ALWAYS rebuilds with -DTF_DEV_BUILD=0, so the shipped DLL
+# never contains dev cheat code (instant-build, reveal-all, A* diagnostic log) no
+# matter what state the local dev build is in. Adding the flag changes the cmake
+# cache, which forces a reconfigure + recompile of the affected files.
+# NOTE: this leaves the build/ cache at TF_DEV_BUILD=0. The standard local build
+# command (VC_CXX_FLAGS="-w;-fpermissive") resets it back to dev (cheats on)
+# because the differing flag string re-triggers a reconfigure. Always pass
+# VC_CXX_FLAGS explicitly for local builds; a bare `cmake --workflow` reuses the
+# cached release flags and would (harmlessly) build a no-cheats local DLL.
+echo "==> Release build (TF_DEV_BUILD=0 — dev cheats compiled out)"
+CMAKE_TOOLCHAIN_FILE=cmake/i686-mingw-w64-toolchain.cmake \
+  VC_CXX_FLAGS="-w;-fpermissive;-DTF_DEV_BUILD=0" \
+  cmake --workflow --preset remaster
+
 if [[ ! -d "$BUILD_DIR" ]]; then
-    echo "ERROR: $BUILD_DIR not found. Run a build first:" >&2
-    echo "  CMAKE_TOOLCHAIN_FILE=cmake/i686-mingw-w64-toolchain.cmake \\" >&2
-    echo "    VC_CXX_FLAGS=\"-w;-fpermissive\" \\" >&2
-    echo "    cmake --workflow --preset remaster" >&2
+    echo "ERROR: $BUILD_DIR not found after the release build." >&2
     exit 1
 fi
 

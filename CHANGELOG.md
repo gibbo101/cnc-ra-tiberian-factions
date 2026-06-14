@@ -2,6 +2,24 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [2.2.1] — 2026-06-14
+
+Smarter unit pathfinding, adapted from CFE Patch Redux by ChthonVII (A* search
+after cfehunter), GPL v3.
+
+### Changed
+- **A\* pathfinding.** Units now plan their routes with an A* search instead of
+  the original "head straight for the target and turn when you hit something"
+  method. The result is more direct, sensible movement around buildings,
+  cliffs, and terrain, for every unit and faction. If no A* route is found the
+  game falls back to the classic pathfinder, so movement is never worse than
+  before.
+
+### Known issues
+- When a large group is ordered onto a single spot or through a one wide gap,
+  units can still bunch up and shuffle while they sort out who goes first. A
+  follow up release will add cooperative traffic handling to smooth this out.
+
 ## [2.2.0] — 2026-06-13
 
 Attack-move, adapted from CFE Patch Redux by ChthonVII (after cfehunter and

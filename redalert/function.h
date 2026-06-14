@@ -131,6 +131,7 @@ CELL Coord_Cell(COORDINATE coord);
 
 extern int Get_CD_Drive(void);
 extern void Fatal(char const* message, ...);
+extern bool TF_Dev_Cheats(void); // TF dev-cheats runtime gate (see defines.h TF_DEV_BUILD)
 
 /*
 ** For WIN32, replace the assert macro so we get an error on the debugger screen

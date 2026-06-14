@@ -36,6 +36,21 @@
 #include "endianness.h"
 
 /**********************************************************************
+**	TF dev-build switch.
+**	  1 (default) = local development build. The dev cheats (instant-build,
+**	      reveal-all) and the A* diagnostic log are compiled in. The cheats
+**	      default ON but can be turned off at runtime by creating the file
+**	      Documents/CnCRemastered/tf_dev_off.flag (read once at startup, so set
+**	      it before launching). See TF_Dev_Cheats().
+**	  0   = release / Workshop build. All of the above are compiled out
+**	      entirely. package-for-workshop.sh builds with -DTF_DEV_BUILD=0, so
+**	      the shipped DLL never contains cheat code. Nothing else to flip.
+*/
+#ifndef TF_DEV_BUILD
+#define TF_DEV_BUILD 1
+#endif
+
+/**********************************************************************
 **	Language control: define the desired language for this build.
 */
 //#define ENGLISH 1

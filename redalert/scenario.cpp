@@ -66,6 +66,39 @@
 #include "carry.h"
 #include "common/framelimit.h"
 
+/***********************************************************************************************
+ * TF_Dev_Cheats -- Runtime gate for the local dev cheats (instant-build, reveal-all).         *
+ *                                                                                             *
+ * In a dev build (TF_DEV_BUILD==1) the cheats default ON; dropping the file                    *
+ * Documents/CnCRemastered/tf_dev_off.flag turns them OFF (read once on first call, so set it   *
+ * before launching the game). In a release build this is hard-false and the cheat call sites   *
+ * are compiled out entirely. Path resolves under the Proton prefix via USERPROFILE.            *
+ *=============================================================================================*/
+bool TF_Dev_Cheats(void)
+{
+#if TF_DEV_BUILD
+    static int cached = -1;
+    if (cached < 0) {
+        cached = 1; // default ON in dev builds
+        const char* h = getenv("USERPROFILE");
+        if (h == NULL)
+            h = getenv("HOME");
+        if (h != NULL) {
+            char p[512];
+            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_dev_off.flag", h);
+            FILE* f = fopen(p, "r");
+            if (f != NULL) {
+                cached = 0; // off-flag present -> cheats disabled
+                fclose(f);
+            }
+        }
+    }
+    return cached != 0;
+#else
+    return false;
+#endif
+}
+
 extern int PreserveVQAScreen;
 
 void Display_Briefing_Text_GlyphX();
@@ -584,11 +617,11 @@ bool Read_Scenario(char* name)
     /*
     **  TF DEV TOGGLE — reveal-all-map: reveals the full map to the player at
     **  scenario start (skirmish only) to observe AI behaviour during testing.
-    **  Mirrors the TACTION_REVEAL_ALL trigger. OFF for release; flip to #if 1
-    **  to re-enable. (Grep "TF DEV TOGGLE" to find all such toggles.)
+    **  Mirrors the TACTION_REVEAL_ALL trigger. Compiled out of release builds
+    **  (TF_DEV_BUILD); runtime-gated by TF_Dev_Cheats() in dev builds.
     */
-#if 0 // TF DEV TOGGLE: reveal-all-map. Flip to 1 to re-enable for testing.
-    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL && !PlayerPtr->IsVisionary) {
+#if TF_DEV_BUILD
+    if (TF_Dev_Cheats() && Session.Type != GAME_NORMAL && PlayerPtr != NULL && !PlayerPtr->IsVisionary) {
         PlayerPtr->IsVisionary = true;
         for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
             Map.Map_Cell(cell, PlayerPtr);
