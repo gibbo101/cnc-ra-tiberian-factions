@@ -83,11 +83,26 @@ playtests on a snow map produced the concrete spec for stage 2:
   tick → repeat.
 - **So stage 2 = TWO mechanisms, and destination-spread is the bigger lever here:**
   1. **Destination spread / formation** — when a group move (or attack-move) is issued, assign each
-     unit a DISTINCT nearby cell instead of all the same cell. FIRST INVESTIGATION STEP for the
-     next session: find where a multi-unit move order assigns destinations (does vanilla RA already
-     do formation spread and our build broke it, or does attack-move funnel everyone to one cell?).
-     Start in the move-order dispatch (`event.cpp` MEGAMISSION / `Assign_Destination`) and the
-     group-select move path; check whether `Coordinate_Move`/formation offsets are being applied.
+     unit a DISTINCT nearby cell instead of all the same cell.
+     **INVESTIGATION RESOLVED (2026-06-14):** the group-move dispatch is
+     `DisplayClass::Mouse_Left_Release` (display.cpp:3920-4047), active in the Remaster build via
+     `INPUT_REQUEST_COMMAND_AT_POSITION` → `TacButton.Command_Object(LEFTRELEASE)`. Vanilla applies
+     spread ONLY for true formation moves — every selected unit in the SAME control group with a
+     stored `XFormOffset != INVALID_FORMATION` (set only by the explicit formation toggle:
+     control-group + F-key, `DLLExportClass::Team_Units_Formation_Toggle_On`). Then
+     `foot->Adjust_Dest(cell)` (foot.cpp:2347) offsets each unit. For an ordinary (non-formation)
+     group move — the overwhelmingly common case — `FormMove == false`, so the loop sets
+     `CELL newmove = cell` for EVERY unit: identical clicked cell, NO spread. So **the contention is
+     inherent vanilla behaviour, NOT a regression our A* introduced.** The legacy crash-and-turn
+     follower MASKED it (it never "fails" — bumps the occupied cell and settles in a neighbour);
+     A* explicitly bails on a close-impassable destination → re-paths every tick → the visible jam.
+     **Implementation hook is clean:** the per-unit destination is computed at click time
+     (display.cpp:4034) and travels inside each unit's MEGAMISSION event, so spreading HERE is
+     multiplayer-safe with zero changes to the synced logic loop. Building blocks already present:
+     `Adjust_Dest` (formation offset) + our ported `FootClass::Find_Passable_Position_Near` (spiral
+     ring search). Plan: in the non-formation branch, for N>1 FootClass units assign each a distinct
+     passable+unclaimed cell from an expanding ring around the clicked cell (track claims in a local
+     set; prefer the free cell nearest each unit's own position to minimise path-crossing).
   2. **Reservation table + scatter-the-blocker** — the originally-planned through-traffic fix:
      publish reserved cells as soft cost penalties in the A* grid (the Passable_Cell cost hook
      stage 1 already exposes), and trigger a stationary friendly blocker's `Scatter()` when it

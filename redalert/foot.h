@@ -360,6 +360,7 @@ public:
     virtual void Override_Mission(MissionType mission, TARGET tarcom, TARGET navcom);
     virtual bool Restore_Mission(void);
     CELL Adjust_Dest(CELL cell) const;
+    CELL Find_Spread_Cell(CELL target, int maxRadius, DynamicVectorClass<CELL>& claimed); // A* stage 2: group-move destination spread
 
     /*
     **	File I/O.

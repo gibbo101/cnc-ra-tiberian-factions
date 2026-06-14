@@ -4018,6 +4018,28 @@ void DisplayClass::Mouse_Left_Release(CELL cell, int x, int y, ObjectClass* obje
                     }
                 }
 
+                /*
+                ** A* stage 2 (Tiberian Factions): destination spread. For an
+                ** ordinary (non-formation) ground move of 2+ foot units, fan them
+                ** across distinct nearby cells instead of sending all of them to
+                ** the identical clicked cell. All-on-one-cell is what makes A* bail
+                ** on the close-occupied destination and jitter (the 1-wide jam).
+                ** Formation moves keep their Adjust_Dest offsets; a single-unit
+                ** move keeps the exact clicked cell (vanilla).
+                */
+                const int SPREAD_MAX_RADIUS = 8;
+                DynamicVectorClass<CELL> spread_claimed;
+                bool do_spread = false;
+                if (object == NULL && !FormMove && (action == ACTION_MOVE || action == ACTION_ATTACKMOVE)) {
+                    int footcount = 0;
+                    for (int i = 0; i < CurrentObject.Count(); i++) {
+                        if (CurrentObject[i]->Is_Foot()) {
+                            footcount++;
+                        }
+                    }
+                    do_spread = (footcount > 1);
+                }
+
                 for (int index = 0; index < CurrentObject.Count(); index++) {
                     ObjectClass* tobject = CurrentObject[index];
 
@@ -4040,6 +4062,16 @@ void DisplayClass::Mouse_Left_Release(CELL cell, int x, int y, ObjectClass* obje
                             foot->IsFormationMove = FormMove;
                             if (FormMove && foot->Group != 255) {
                                 newmove = foot->Adjust_Dest(cell);
+                            } else if (do_spread) {
+                                /*
+                                ** A* stage 2 (TF): give this unit a distinct free
+                                ** cell near the click. Falls back to the raw click
+                                ** if the surrounding area is full.
+                                */
+                                CELL spread = foot->Find_Spread_Cell(cell, SPREAD_MAX_RADIUS, spread_claimed);
+                                if (spread != 0) {
+                                    newmove = spread;
+                                }
                             }
                             foot->IsFormationMove = oldisform;
                         }
@@ -4049,6 +4081,31 @@ void DisplayClass::Mouse_Left_Release(CELL cell, int x, int y, ObjectClass* obje
                 }
                 AllowVoice = true;
                 FormMove = false;
+
+#if TF_DEV_BUILD // TF DEV: A* stage-2 destination-spread diagnostic. Confirms the spread fired DLL-side and shows the distinct cells handed out. Compiled out of release builds.
+                if (do_spread && spread_claimed.Count() > 0) {
+                    static FILE* tf_spread_log = NULL;
+                    if (tf_spread_log == NULL) {
+                        const char* h = getenv("USERPROFILE");
+                        if (h == NULL) {
+                            h = getenv("HOME");
+                        }
+                        if (h != NULL) {
+                            char p[512];
+                            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                            tf_spread_log = fopen(p, "a");
+                        }
+                    }
+                    if (tf_spread_log != NULL) {
+                        fprintf(tf_spread_log, "SPREAD: click=(%d,%d) units=%d cells:", Cell_X(cell), Cell_Y(cell), spread_claimed.Count());
+                        for (int i = 0; i < spread_claimed.Count() && i < 24; i++) {
+                            fprintf(tf_spread_log, " (%d,%d)", Cell_X(spread_claimed[i]), Cell_Y(spread_claimed[i]));
+                        }
+                        fprintf(tf_spread_log, "\n");
+                        fflush(tf_spread_log);
+                    }
+                }
+#endif
 
                 if (action == ACTION_REPAIR && object->What_Am_I() == RTTI_BUILDING) {
                     OutList.Add(EventClass(EventClass::REPAIR, TargetClass(object)));

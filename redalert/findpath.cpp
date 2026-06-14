@@ -492,6 +492,101 @@ CELL FootClass::Find_Passable_Position_Near(const CELL target, const int maxRadi
 }
 
 /***********************************************************************************************
+ * FootClass::Find_Spread_Cell -- Pick a distinct free cell near a group-move destination.      *
+ *                                                                                             *
+ * A* stage 2 (Tiberian Factions, GPL v3). Vanilla RA gives every unit of a non-formation      *
+ * group move the SAME clicked cell; the first unit takes it and the rest find it occupied,    *
+ * A* bails on the close-impassable destination, and they jitter (the 1-wide jam). This fans   *
+ * a group out: spiral from the clicked cell and return the nearest currently-free             *
+ * (Can_Enter_Cell == MOVE_OK), in-radar cell that no earlier unit has already claimed, then   *
+ * record it in `claimed` so the next unit gets a different one. The clicked cell itself is     *
+ * candidate radius 0, so whoever is allocated first keeps the exact destination.              *
+ *                                                                                             *
+ * Per-unit (uses this unit's own Can_Enter_Cell), so a mixed infantry/vehicle group spreads   *
+ * onto cells each member can actually stand on.                                               *
+ *                                                                                             *
+ * INPUT:   target    -- the clicked destination cell.                                         *
+ *          maxRadius -- how far out to spiral before giving up.                               *
+ *          claimed   -- cells already handed to earlier units; the chosen cell is appended.   *
+ *                                                                                             *
+ * OUTPUT:  a distinct free cell, or 0 if none free within maxRadius (caller falls back to     *
+ *          the raw clicked cell = vanilla behaviour for that one unit).                        *
+ *=============================================================================================*/
+CELL FootClass::Find_Spread_Cell(const CELL target, const int maxRadius, DynamicVectorClass<CELL>& claimed)
+{
+    const auto is_claimed = [&claimed](const CELL cell) {
+        for (int i = 0; i < claimed.Count(); ++i) {
+            if (claimed[i] == cell) {
+                return true;
+            }
+        }
+        return false;
+    };
+
+    /*
+    ** Reachability gate: a spread cell is only acceptable if it lies in the SAME
+    ** movement zone as the clicked cell. Without this, on a cliff/maze map the
+    ** nearest free cell can be on the far side of a rock wall, so the assigned
+    ** unit traces all the way around the cliff to reach it (or parks on the wrong
+    ** side). Same idiom used by the A* arrival / attack-move zone checks.
+    */
+    const int mz = Techno_Type_Class()->MZone;
+    const unsigned char destZone = Map[target].Zones[mz];
+
+    const auto validate_cell = [this, &is_claimed, mz, destZone](const CELL cell) {
+        return Map.In_Radar(cell) && Can_Enter_Cell(cell, FACING_NONE) == MOVE_OK
+               && Map[cell].Zones[mz] == destZone && !is_claimed(cell);
+    };
+
+    // Radius 0: the clicked cell itself.
+    if (validate_cell(target)) {
+        claimed.Add(target);
+        return target;
+    }
+
+    const int targetX = Cell_X(target);
+    const int targetY = Cell_Y(target);
+
+    for (int curDistance = 1; curDistance <= maxRadius; ++curDistance) {
+        const int left = targetX - curDistance;
+        const int right = targetX + curDistance;
+        const int top = targetY - curDistance;
+        const int bottom = targetY + curDistance;
+
+        for (int x = left; x <= right; ++x) {
+            const CELL currentCell = XY_Cell(x, top);
+            if (validate_cell(currentCell)) {
+                claimed.Add(currentCell);
+                return currentCell;
+            }
+        }
+        for (int x = left; x <= right; ++x) {
+            const CELL currentCell = XY_Cell(x, bottom);
+            if (validate_cell(currentCell)) {
+                claimed.Add(currentCell);
+                return currentCell;
+            }
+        }
+        for (int y = top + 1; y < bottom; ++y) {
+            const CELL currentCell = XY_Cell(left, y);
+            if (validate_cell(currentCell)) {
+                claimed.Add(currentCell);
+                return currentCell;
+            }
+        }
+        for (int y = top + 1; y < bottom; ++y) {
+            const CELL currentCell = XY_Cell(right, y);
+            if (validate_cell(currentCell)) {
+                claimed.Add(currentCell);
+                return currentCell;
+            }
+        }
+    }
+
+    return 0;
+}
+
+/***********************************************************************************************
  * FootClass::Find_Path_AStar -- A* pathfinder (replaces the legacy "crash and turn" search).  *
  *                                                                                             *
  * Ported from CFE Patch Redux (ChthonVII / cfehunter), including the 1.8 path-scrub fix (stop *
