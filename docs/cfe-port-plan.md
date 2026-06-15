@@ -118,7 +118,17 @@ better", tight same-zone clump, fallback ~26%→~12%). Code: `FootClass::Find_Sp
 `DisplayClass::Mouse_Left_Release` (display.cpp). The reservation-table idea in point 2 above was
 SUPERSEDED by the playtest — see §1.1.1 for what the chokepoint problem actually is.
 
-### 1.1.1 ⭐ NEXT SESSION START HERE — v2.2.3 "patient queue" chokepoint fix
+### 1.1.1 ⭐ NEXT SESSION START HERE — v2.2.3 chokepoint give-way → targeted reservation
+
+> **SUPERSEDED 2026-06-15 — read `docs/chokepoint-reservation-design.md` FIRST.** The "patient queue"
+> framing below was wrong (the jam is a bidirectional head-on `MOVE_NO` deadlock on a 1-wide pinch,
+> not a give-up-instead-of-waiting case). We built a full heuristic vehicle give-way (12 builds,
+> uncommitted in `redalert/drive.cpp`): it makes the 1-wide bridge *clean when one column claims the
+> pinch first* but *stuck on near-simultaneous entry* (boxed-column reversal — the ceiling of a
+> stateless approach). **NEXT JOB (decided with Luke): a targeted CHOKEPOINT RESERVATION** (explicit,
+> atomic, sticky corridor claim — NOT a full WHCA\* space-time grid; MP determinism is not the blocker).
+> Full journey, code map, reservation design, and the MP-desync checklist are in
+> `docs/chokepoint-reservation-design.md`. The text below is kept for history only.
 
 **Goal:** make a group cross a 1-tile land bridge / narrow pass by **queuing and waiting their turn**,
 instead of giving up and jamming. This is the remaining half of A* stage 2 (the "Known issues" line

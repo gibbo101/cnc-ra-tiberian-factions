@@ -231,6 +231,18 @@ public:
         unsigned char Composite;
     } Flag;
 
+    /*
+    **	Chokepoint reservation (TF v2.2.3). When a vehicle commits to a 1-wide terrain pinch it
+    **	stamps the corridor cells with the current Frame and its coarse travel facing. An opposing
+    **	vehicle reading an ACTIVE claim (Frame - ChokeClaimFrame <= TTL) in the opposite direction
+    **	holds on open ground instead of jamming nose-to-nose. The claim is re-asserted every cell-
+    **	crossing while the column traverses and ages out on its own once the lane clears -- no
+    **	refcount to miscount, no pointer to code, all int (lockstep-deterministic). See
+    **	DriveClass::Give_Way_Decision and docs/chokepoint-reservation-design.md.
+    */
+    unsigned int ChokeClaimFrame; // Frame of the last claim assertion (0 = never claimed).
+    unsigned char ChokeClaimDir;  // FacingType (0-7) of the claiming column's travel direction.
+
     //----------------------------------------------------------------
     CellClass(void);
     CellClass(NoInitClass const& x)

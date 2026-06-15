@@ -3658,6 +3658,44 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
                     int face = Dir_Facing(PrimaryFacing);
                     int techface = Dir_Facing(((FootClass const*)obj)->PrimaryFacing) ^ 4;
                     if (face == techface && Distance((AbstractClass const*)obj) <= 0x1FF) {
+#if TF_DEV_BUILD
+                        /*
+                        ** TF DEV: head-on deadlock confirmation (v2.2.3). Two MOVING allied vehicles
+                        ** nose-to-nose (~1 cell apart, facings exactly opposed) -> MOVE_NO, the one
+                        ** threshold A* can never escalate past. On a 1-wide bridge this is THE
+                        ** bidirectional deadlock. Fires only on real nose-to-nose geometry, so it's
+                        ** low-spam. Logs both unit ids (the loser-selection key for the give-way fix).
+                        ** Same tf_astar.log stream. Compiled out of release builds.
+                        */
+                        if (House && House->IsHuman) {
+                            static FILE* tf_headon_log = NULL;
+                            static bool tf_headon_tried = false;
+                            if (!tf_headon_tried) {
+                                tf_headon_tried = true;
+                                const char* h = getenv("USERPROFILE");
+                                if (h == NULL)
+                                    h = getenv("HOME");
+                                if (h != NULL) {
+                                    char hp[512];
+                                    snprintf(hp, sizeof(hp), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                                    tf_headon_log = fopen(hp, "a");
+                                }
+                            }
+                            if (tf_headon_log != NULL) {
+                                CELL mypos = Coord_Cell(Center_Coord());
+                                CELL oppos = Coord_Cell(obj->Center_Coord());
+                                const char* me =
+                                    (Techno_Type_Class() && Techno_Type_Class()->IniName) ? Techno_Type_Class()->IniName : "<?>";
+                                TechnoTypeClass const* ott = ((TechnoClass const*)obj)->Techno_Type_Class();
+                                const char* them = (ott && ott->IniName) ? ott->IniName : "<?>";
+                                fprintf(tf_headon_log,
+                                        "HEADON: me=%s mypos=(%d,%d) testcell=(%d,%d) vs=%s theirpos=(%d,%d) myid=%d theirid=%d\n",
+                                        me, (int)Cell_X(mypos), (int)Cell_Y(mypos), (int)Cell_X(cell), (int)Cell_Y(cell),
+                                        them, (int)Cell_X(oppos), (int)Cell_Y(oppos), (int)As_Target(), (int)obj->As_Target());
+                                fflush(tf_headon_log);
+                            }
+                        }
+#endif
                         return (MOVE_NO);
                     }
                     if (retval < MOVE_MOVING_BLOCK)

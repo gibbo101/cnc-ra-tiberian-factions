@@ -126,6 +126,8 @@ CellClass::CellClass(void)
     , OverrideLand(LAND_NONE)
     , IsMappedByPlayerMask(0)
     , IsVisibleByPlayerMask(0)
+    , ChokeClaimFrame(0)
+    , ChokeClaimDir(0)
     , CTFFlag(NULL)
 {
     for (int zone = MZONE_FIRST; zone < MZONE_COUNT; zone++) {

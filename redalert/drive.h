@@ -187,6 +187,8 @@ private:
     virtual void Fixup_Path(PathType* path);
     bool While_Moving(void);
     bool Start_Of_Move(void);
+    CELL Find_Give_Way_Cell(TechnoClass const* blocker) const;      // v2.2.3 chokepoint give-way
+    int Give_Way_Decision(TechnoClass** winner_out) const;          // v2.2.3: 0 proceed, 1 hold, 2 retreat
     void Lay_Track(void);
     COORDINATE Smooth_Turn(COORDINATE adj, DirType& dir);
 

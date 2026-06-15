@@ -901,6 +901,480 @@ void DriveClass::Per_Cell_Process(PCPType why)
 }
 
 /***********************************************************************************************
+ * DriveClass::Find_Give_Way_Cell -- Nearest free cell to clear a head-on chokepoint deadlock. *
+ *                                                                                             *
+ *    Part of the v2.2.3 1-wide-bridge give-way fix. When two allied vehicles deadlock         *
+ *    nose-to-nose on a chokepoint, the deterministic loser calls this to find a cell to       *
+ *    divert to so the winner can pass. We only accept a genuinely FREE (MOVE_OK) cell that    *
+ *    moves us AWAY from the oncoming unit -- this is what avoids the earlier reverted          *
+ *    attempt's failure mode, where backing straight off the bridge rammed the unit into its   *
+ *    own follower. If nothing free is found (we're boxed in), return 0 and the caller just     *
+ *    holds and retries instead of churning.                                                   *
+ *                                                                                             *
+ * INPUT:   blocker -- the oncoming allied vehicle we are deadlocked against.                  *
+ *                                                                                             *
+ * OUTPUT:  A reachable free cell to divert to, or 0 if none.                                  *
+ *                                                                                             *
+ * WARNINGS:   Must stay deterministic (no Random_Pick) -- runs in the lockstep sim.           *
+ *=============================================================================================*/
+CELL DriveClass::Find_Give_Way_Cell(TechnoClass const* blocker) const
+{
+    if (blocker == NULL) {
+        return (0);
+    }
+
+    const int GIVEWAY_MAX_RADIUS = 3;
+    CELL here = Coord_Cell(Center_Coord());
+    int here_dist = ::Distance(Cell_Coord(here), blocker->Center_Coord());
+
+    CELL best = 0;
+    int best_dist = here_dist; // candidate must beat this (strictly move away from the blocker)
+
+    for (int radius = 1; radius <= GIVEWAY_MAX_RADIUS && best == 0; radius++) {
+        for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
+
+            /*
+            **	Walk 'radius' cells along this facing, bailing if we leave the map.
+            */
+            CELL c = here;
+            bool ok = true;
+            for (int step = 0; step < radius; step++) {
+                CELL nc = Adjacent_Cell(c, face);
+                if (!Map.In_Radar(nc)) {
+                    ok = false;
+                    break;
+                }
+                c = nc;
+            }
+            if (!ok) {
+                continue;
+            }
+
+            /*
+            **	Only a truly empty cell counts -- never divert onto a friendly (that is the
+            **	follower-ramming trap). And it must take us further from the oncoming unit so
+            **	we actually clear its path rather than sidestep into it.
+            */
+            if (Can_Enter_Cell(c, face) != MOVE_OK) {
+                continue;
+            }
+            int d = ::Distance(Cell_Coord(c), blocker->Center_Coord());
+            if (d > best_dist) {
+                best_dist = d;
+                best = c;
+            }
+        }
+    }
+
+    return (best);
+}
+
+/***********************************************************************************************
+ * DriveClass::Give_Way_Decision -- How should this vehicle yield a 1-wide chokepoint?         *
+ *                                                                                             *
+ *    Heart of the v2.2.3 give-way fix. Looks ahead along the route to NavCom and finds the    *
+ *    1-wide (terrain-pinched) corridor we are about to traverse, then decides via two layers: *
+ *      1. RESERVATION (authoritative): when a vehicle commits to the corridor it stamps every  *
+ *         corridor cell with its travel direction + the current Frame (CellClass::ChokeClaim*).*
+ *         An oncoming vehicle that reads an ACTIVE claim in the opposing direction yields BEFORE*
+ *         it enters -- corridor-wide, sticky ownership that the per-tick heuristic lacked, which*
+ *         is what fixes near-simultaneous entry (both leads commit before either is the owner). *
+ *         The claim ages out on its own ~TTL frames after the last unit clears (no refcount to  *
+ *         miscount, no pointer to code/decode, all int -> lockstep-deterministic).             *
+ *      2. LIVE-UNIT id tiebreak (pre-claim fallback): if no claim exists yet, a HIGHER-id      *
+ *         oncoming allied vehicle makes the lower-id unit yield. Synced total order, so exactly *
+ *         one side stamps first; the claim then reinforces the same winner.                     *
+ *                                                                                             *
+ *    The yield FORM depends on where we are, which is what the first (frozen-in-lane) cut got *
+ *    wrong: holding only clears the winner's path if we are NOT in the winner's lane.         *
+ *      - On wide ground (we have not entered the pinch): HOLD here -- waiting is harmless and  *
+ *        keeps us (and the column behind us) off the bridge until the winner passes.          *
+ *      - Already inside the pinch (we ARE blocking the winner): RETREAT -- back out toward our *
+ *        own side so the lane frees; once we reach wide ground this flips to HOLD.             *
+ *                                                                                             *
+ * INPUT:   winner_out -- if non-NULL, receives the oncoming unit we are yielding to.          *
+ *                                                                                             *
+ * OUTPUT:  0 = proceed (no conflict), 1 = hold in place, 2 = retreat to clear the lane.       *
+ *                                                                                             *
+ * WARNINGS:   Must stay deterministic (no Random_Pick) -- runs in the lockstep sim.           *
+ *=============================================================================================*/
+int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
+{
+    if (winner_out != NULL) {
+        *winner_out = NULL;
+    }
+    if (!Target_Legal(NavCom)) {
+        return (0);
+    }
+
+    CELL here = Coord_Cell(Center_Coord());
+
+    /*
+    **	Two distinct directions, and conflating them caused a retreat storm:
+    **	  - navcell/myface: where we are ACTUALLY heading right now (current NavCom). The corridor
+    **	    scan and narrow tests use this, so a unit mid-retreat scans toward its back-off cell and
+    **	    the retreat actually executes (instead of re-deciding "retreat" in place forever).
+    **	  - myintentface: the direction of our REAL queued order (NavQueue[0] while on a give-way
+    **	    detour). Only the opposing-direction test uses this, so a unit that has reversed to yield
+    **	    doesn't misread its own same-direction followers as oncoming traffic (the wedge bug).
+    */
+    CELL navcell = As_Cell(NavCom);
+    if (here == navcell) {
+        return (0);
+    }
+    TARGET my_intent = Target_Legal(NavQueue[0]) ? NavQueue[0] : NavCom;
+
+    const int SCAN_MAX = 28;         // scan far enough to read a claim ACROSS a long single-file lane
+    const int COMMIT_DIST = 18;      // claim the corridor from well out, so ANY owning-direction unit still
+                                     // on the lane keeps the lock alive -- the corridor stays locked to one
+                                     // direction until that WHOLE column has cleared, then hands over. This
+                                     // is the prevention that stops the other column butting in mid-column.
+    const int CHOKE_CLAIM_TTL = 75;  // claim stays active this many frames after its last assertion, so a
+                                     // lagging straggler does not drop the lock mid-column (it hands over a
+                                     // beat after the whole column clears, not between every spaced unit)
+    FacingType myface = Dir_Facing(::Direction(Cell_Coord(here), Cell_Coord(navcell)));
+    FacingType myintentface = (my_intent != NavCom && Target_Legal(my_intent))
+                                  ? Dir_Facing(::Direction(Cell_Coord(here), Cell_Coord(As_Cell(my_intent))))
+                                  : myface;
+
+    /*
+    **	Are we ourselves standing in a 1-wide pinch right now? Decided up front because it drives
+    **	both the yield FORM (hold on open ground vs retreat from inside the lane) and whether a
+    **	rival merely poised at the far mouth can make us yield (it can't once we already own the
+    **	corridor by being inside it).
+    */
+    CELL lh = Adjacent_Cell(here, (FacingType)((myface - 2) & 0x07));
+    CELL rh = Adjacent_Cell(here, (FacingType)((myface + 2) & 0x07));
+    bool here_narrow = (!Map.In_Radar(lh) || Can_Enter_Cell(lh) == MOVE_NO)
+                       && (!Map.In_Radar(rh) || Can_Enter_Cell(rh) == MOVE_NO);
+
+    /*
+    **	Is an opposing-facing vehicle directly in the cell we are about to move into? This is the
+    **	"we are physically blocking the winner head-on" signal, used twice below: (a) the
+    **	both-leads-inside tiebreak, and (b) the yield FORM -- a unit that merely STOPS on the winner's
+    **	exit cell still blocks it, so when we are nose-to-nose with the winner we must STEP ASIDE
+    **	(retreat) to clear the lane, not just halt, even on open ground.
+    */
+    CELL ahead_cell = Adjacent_Cell(here, myface);
+    TechnoClass* front_unit = Map.In_Radar(ahead_cell) ? Map[ahead_cell].Cell_Techno() : NULL;
+    bool head_on_ahead = false;
+    if (front_unit != NULL && front_unit != this && front_unit->What_Am_I() == RTTI_UNIT
+        && House->Is_Ally(front_unit)) {
+        FootClass const* ff = (FootClass const*)front_unit;
+        TARGET fi = Target_Legal(ff->NavQueue[0]) ? ff->NavQueue[0] : ff->NavCom;
+        if (Target_Legal(fi)) {
+            FacingType frontface = Dir_Facing(::Direction(ff->Center_Coord(), As_Coord(fi)));
+            int fdiff = (myintentface - frontface) & 0x07;
+            head_on_ahead = (fdiff >= 3 && fdiff <= 5);
+        }
+    }
+
+    /*
+    **	Walk the route ahead, find the 1-wide corridor we are about to traverse, and decide whether
+    **	an opposing column is laying claim to it -- crucially including rivals still on the FAR
+    **	APPROACH, so we stand down before either group reaches the bridge rather than nose-to-nose
+    **	on it. corridor_start is our distance to the near mouth; corridor_end is the far mouth.
+    */
+    CELL c = here;
+    int corridor_start = -1; // scan index where the narrow run begins (~ our distance to the near mouth)
+    int corridor_end = -1;   // scan index of the first open cell after the narrow run (the far mouth)
+    TechnoClass* yield_to = NULL;
+    bool yield = false;
+    bool opposing_claim = false;      // an active reservation is held against us by an oncoming column
+    bool own_claim = false;           // our own column already owns this corridor -- claim is authoritative
+
+    CELL corridor_cells[SCAN_MAX];    // the narrow cells on our route, to stamp our claim onto
+    int corridor_count = 0;
+
+    const int FAR_APPROACH = 6; // how far past the corridor to keep watching for a rival heading in
+
+    for (int i = 0; i < SCAN_MAX; i++) {
+        /*
+        **	Follow the unit's ACTUAL planned path through the terrain when we have one, instead of a
+        **	straight line to the destination. A route to an off-axis goal (e.g. an inland spread
+        **	cell) often bends down a 1-wide corridor first; a straight-line scan walks diagonally
+        **	off the corridor and misses the pinch entirely. Past the end of the stored path we fall
+        **	back to the straight-line heading.
+        */
+        FacingType f = (i < (int)ARRAY_SIZE(Path) && Path[i] != FACING_NONE)
+                           ? Path[i]
+                           : Dir_Facing(::Direction(Cell_Coord(c), Cell_Coord(navcell)));
+        CELL nc = Adjacent_Cell(c, f);
+        if (!Map.In_Radar(nc)) {
+            break;
+        }
+
+        /*
+        **	Narrow (terrain pinch) test: both cells perpendicular to travel are impassable terrain,
+        **	so two units can't pass abreast. Friendly occupancy reads MOVE_TEMP, not MOVE_NO, so
+        **	this keys on geography, not transient traffic.
+        */
+        CELL lc = Adjacent_Cell(nc, (FacingType)((f - 2) & 0x07));
+        CELL rc = Adjacent_Cell(nc, (FacingType)((f + 2) & 0x07));
+        bool narrow = (!Map.In_Radar(lc) || Can_Enter_Cell(lc) == MOVE_NO)
+                      && (!Map.In_Radar(rc) || Can_Enter_Cell(rc) == MOVE_NO);
+        if (narrow && corridor_start < 0) {
+            corridor_start = i;
+        }
+        if (!narrow && corridor_start >= 0 && corridor_end < 0) {
+            corridor_end = i; // first open cell after the narrow run = far mouth
+        }
+
+        /*
+        **	Chokepoint reservation (v2.2.3). Record each narrow cell so we can stamp our claim on the
+        **	whole corridor below, and -- crucially -- READ any existing claim here. An ACTIVE claim
+        **	(asserted within CHOKE_CLAIM_TTL frames) whose travel direction opposes ours (3-5 eighths
+        **	apart) means an oncoming column already owns the lane: we yield before we ever reach the
+        **	pinch. This is the atomic, corridor-wide, race-free ownership the per-tick live-unit
+        **	heuristic below cannot provide on near-simultaneous entry. A same-direction claim is our
+        **	own column and is ignored.
+        */
+        if (narrow) {
+            if (corridor_count < SCAN_MAX) {
+                corridor_cells[corridor_count++] = nc;
+            }
+            CellClass const& ccell = Map[nc];
+            int age = Frame - (int)ccell.ChokeClaimFrame;
+            if (ccell.ChokeClaimFrame != 0 && age >= 0 && age <= CHOKE_CLAIM_TTL) {
+                int cdiff = (myintentface - (FacingType)ccell.ChokeClaimDir) & 0x07;
+                if (cdiff >= 3 && cdiff <= 5) {
+                    if (here_narrow) {
+                        /*
+                        **	We are physically INSIDE the pinch and an opposing claim lies ahead. Default:
+                        **	the unit already in the lane has priority to EXIT, so push through (own_claim)
+                        **	and the opposing column -- still back at the mouth -- waits. This rescues a unit
+                        **	that nosed in before the claim went up.
+                        **
+                        **	EXCEPTION: if an opposing-facing vehicle is RIGHT IN FRONT of us, then both
+                        **	columns' LEADS are inside head-on and exactly one must give -- if both push,
+                        **	neither moves (the deadlock this exception fixes). Tiebreak by id (synced,
+                        **	total order): the HIGHER id pushes through, the LOWER id backs out one cell so
+                        **	the higher can pass, then re-enters. The cell behind the loser is normally free
+                        **	(its column funnels in from a wider mouth), so Find_Give_Way_Cell succeeds.
+                        */
+                        if (head_on_ahead && As_Target() < front_unit->As_Target()) {
+                            opposing_claim = true; // we lose the tiebreak -> back out so the higher id passes
+                            yield_to = front_unit;
+                            break;
+                        }
+                        own_claim = true;
+                    } else {
+                        opposing_claim = true;
+                        TechnoClass* owner = Map[nc].Cell_Techno();
+                        if (owner != NULL && owner != this && owner->What_Am_I() == RTTI_UNIT
+                            && House->Is_Ally(owner)) {
+                            yield_to = owner; // best-effort blocker for the retreat back-off target
+                        }
+                        break;
+                    }
+                }
+                if (cdiff <= 1 || cdiff == 7) {
+                    /*
+                    **	A SAME-direction claim (within 1 eighth): our own column already owns this lane.
+                    **	The claim is authoritative, so we PROCEED and must IGNORE the live-unit id-tiebreak
+                    **	below. Without this, interleaved id ranges (two groups built alternately, so a
+                    **	column's units do NOT share a contiguous id block) make the id-rule and the claim
+                    **	pick OPPOSITE winners -- the owning column's front units yield to the oncoming
+                    **	column by id while the oncoming column yields to the claim, and every unit holds =
+                    **	stalemate. Keep scanning (do not break) so the whole corridor is re-stamped below.
+                    */
+                    own_claim = true;
+                }
+            }
+        }
+
+        /*
+        **	Is there an opposing allied vehicle here? "Opposing" = heading toward its own queued
+        **	destination roughly opposite ours (facing difference of 3-5 eighths, > 135 degrees). Skipped
+        **	entirely once we own an active claim on this corridor -- the claim is authoritative and the
+        **	id-tiebreak must not be allowed to contradict it (the interleaved-id stalemate).
+        */
+        TechnoClass* t = own_claim ? NULL : Map[nc].Cell_Techno();
+        if (t != NULL && t != this && t->What_Am_I() == RTTI_UNIT && House->Is_Ally(t)) {
+            FootClass const* ft = (FootClass const*)t;
+            TARGET t_intent = Target_Legal(ft->NavQueue[0]) ? ft->NavQueue[0] : ft->NavCom;
+            if (Target_Legal(t_intent)) {
+                FacingType tf = Dir_Facing(::Direction(ft->Center_Coord(), As_Coord(t_intent)));
+                int diff = (myintentface - tf) & 0x07;
+                bool opposing = (diff >= 3 && diff <= 5);
+                if (opposing && narrow) {
+                    /*
+                    **	A rival is INSIDE the corridor. We yield. When we are also inside (a head-on
+                    **	in the pinch) this means BOTH sides back out -- which proved more robust than
+                    **	"only the lower id backs out": both columns reverse together and separate,
+                    **	whereas one-sided yielding just wedges a boxed-in loser while the winner shoves.
+                    */
+                    yield = true;
+                    yield_to = t;
+                    break;
+                }
+                if (opposing && corridor_end >= 0) {
+                    /*
+                    **	A rival is on the FAR approach, heading for the same corridor from the other
+                    **	side, and nobody is inside yet. The lower id stands down so the other side
+                    **	claims it. Id is used here ON PURPOSE rather than "who's closer": a distance
+                    **	test flaps every tick as the columns jostle (a unit yields, edges forward,
+                    **	thinks it's now closer, re-clashes, yields again -- the advance/backtrack
+                    **	churn). Ids don't change, so the owner is STABLE; and because each group's
+                    **	units share a contiguous id range, a whole column yields together. Once a
+                    **	leader actually enters, the occupancy rule above takes over.
+                    */
+                    if (As_Target() < t->As_Target()) {
+                        yield = true;
+                        yield_to = t;
+                    }
+                    break; // the nearest far-side rival settles it
+                }
+            }
+        }
+
+        if ((corridor_end >= 0 && (i - corridor_end) >= FAR_APPROACH) || nc == navcell) {
+            break; // looked far enough past the corridor, or arrived
+        }
+        c = nc;
+    }
+
+    /*
+    **	An ACTIVE opposing claim is authoritative -- an oncoming column owns the lane, so yield. The
+    **	live-unit test above (occupancy + stable-id tiebreak) remains as the pre-claim fallback for
+    **	the brief approach window before anyone has stamped, and for the already-working
+    **	one-column-enters-first case. Either way the FORM is the same.
+    */
+    if (opposing_claim || (yield && !own_claim)) {
+        /*
+        **	If we are nose-to-nose with the winner (head_on_ahead) we are sitting on the cell it must
+        **	move into, so a plain HOLD would keep blocking it. Hand Find_Give_Way_Cell that unit so we
+        **	step aside instead. Fall back to the claim/live owner otherwise.
+        */
+        if (head_on_ahead && front_unit != NULL) {
+            yield_to = front_unit;
+        }
+        if (winner_out != NULL) {
+            *winner_out = yield_to;
+        }
+#if TF_DEV_BUILD
+        if (House && House->IsHuman) {
+            static FILE* tf_hold_log = NULL;
+            static bool tf_hold_tried = false;
+            if (!tf_hold_tried) {
+                tf_hold_tried = true;
+                const char* h = getenv("USERPROFILE");
+                if (h == NULL)
+                    h = getenv("HOME");
+                if (h != NULL) {
+                    char hp[512];
+                    snprintf(hp, sizeof(hp), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                    tf_hold_log = fopen(hp, "a");
+                }
+            }
+            if (tf_hold_log != NULL) {
+                CELL mypos = Coord_Cell(Center_Coord());
+                const char* me =
+                    (Techno_Type_Class() && Techno_Type_Class()->IniName) ? Techno_Type_Class()->IniName : "<?>";
+                fprintf(tf_hold_log, "%s: %s pos=(%d,%d) intentface=%d here_narrow=%d myid=%d\n",
+                        opposing_claim ? "HOLD-claim" : "HOLD-unit", me, (int)Cell_X(mypos), (int)Cell_Y(mypos),
+                        (int)myintentface, (int)here_narrow, (int)As_Target());
+                fflush(tf_hold_log);
+            }
+        }
+#endif
+        /*
+        **	RETREAT (back away from the pinch) whenever a real opposing CLAIM owns the lane -- this is
+        **	the cascade reversal: a boxed lead cannot back up alone, so the WHOLE losing column reverses.
+        **	The rearmost unit has open ground behind it and backs off first, which frees the unit ahead,
+        **	and so on up to the boxed lead; the lane clears front-to-back and the winner flows through.
+        **	Once the winner passes and the claim lapses, the losers stop seeing it and resume forward to
+        **	take their turn. Also retreat when inside the pinch or nose-to-nose (a plain stop would block).
+        **	A pre-claim id-rule yield on open ground still just HOLDs (no winner is committed yet).
+        */
+        return ((opposing_claim || here_narrow || head_on_ahead) ? 2 : 1);
+    }
+
+    /*
+    **	General head-on backstop (covers what the corridor reservation does not): if we are nose-to-
+    **	nose with an opposing-facing ally on OPEN ground -- the approach-funnel collision where a unit
+    **	EXITING the pinch meets one ENTERING, or any two units wanting the same cell head-on -- the
+    **	corridor logic never engages (neither is in a 1-wide cell), so without this both just ram and
+    **	MOVE_NO-lock. The lower id steps aside so the higher proceeds; strict id compare => exactly one
+    **	gives, no mutual jitter. Corridor OWNERS (own_claim) are exempt -- they hold their lane and the
+    **	opponent is the one that gives.
+    */
+    if (head_on_ahead && !own_claim && front_unit != NULL && As_Target() < front_unit->As_Target()) {
+        if (winner_out != NULL) {
+            *winner_out = front_unit;
+        }
+#if TF_DEV_BUILD
+        if (House && House->IsHuman) {
+            static FILE* tf_so_log = NULL;
+            static bool tf_so_tried = false;
+            if (!tf_so_tried) {
+                tf_so_tried = true;
+                const char* h = getenv("USERPROFILE");
+                if (h == NULL)
+                    h = getenv("HOME");
+                if (h != NULL) {
+                    char sp[512];
+                    snprintf(sp, sizeof(sp), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                    tf_so_log = fopen(sp, "a");
+                }
+            }
+            if (tf_so_log != NULL) {
+                CELL mypos = Coord_Cell(Center_Coord());
+                const char* me =
+                    (Techno_Type_Class() && Techno_Type_Class()->IniName) ? Techno_Type_Class()->IniName : "<?>";
+                fprintf(tf_so_log, "SIDESTEP-headon: %s pos=(%d,%d) intentface=%d myid=%d vsid=%d\n", me,
+                        (int)Cell_X(mypos), (int)Cell_Y(mypos), (int)myintentface, (int)As_Target(),
+                        (int)front_unit->As_Target());
+                fflush(tf_so_log);
+            }
+        }
+#endif
+        return (2); // step aside so the higher-id unit can pass, then resume our route
+    }
+
+    /*
+    **	No conflict: commit. Stamp our travel direction onto every corridor cell (Frame-tagged) so an
+    **	oncoming column reads the claim and yields before it enters. Gated on COMMIT_DIST so a unit
+    **	still far from the mouth does not lock a corridor it will not reach for a while; a unit already
+    **	inside (here_narrow) always re-asserts, since it owns the lane it is traversing. Writing to the
+    **	global Map from this const method is fine -- it is shared deterministic cell state, not *this.
+    */
+    if (corridor_count > 0
+        && (here_narrow || own_claim || (corridor_start >= 0 && corridor_start <= COMMIT_DIST))) {
+        for (int k = 0; k < corridor_count; k++) {
+            Map[corridor_cells[k]].ChokeClaimFrame = (unsigned int)Frame;
+            Map[corridor_cells[k]].ChokeClaimDir = (unsigned char)myintentface;
+        }
+#if TF_DEV_BUILD
+        if (House && House->IsHuman) {
+            static FILE* tf_claim_log = NULL;
+            static bool tf_claim_tried = false;
+            if (!tf_claim_tried) {
+                tf_claim_tried = true;
+                const char* h = getenv("USERPROFILE");
+                if (h == NULL)
+                    h = getenv("HOME");
+                if (h != NULL) {
+                    char cp[512];
+                    snprintf(cp, sizeof(cp), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                    tf_claim_log = fopen(cp, "a");
+                }
+            }
+            if (tf_claim_log != NULL) {
+                const char* me =
+                    (Techno_Type_Class() && Techno_Type_Class()->IniName) ? Techno_Type_Class()->IniName : "<?>";
+                fprintf(tf_claim_log, "CLAIM: %s cells=%d dir=%d frame=%d start=%d own=%d myid=%d\n", me,
+                        corridor_count, (int)myintentface, (int)Frame, corridor_start, (int)own_claim,
+                        (int)As_Target());
+                fflush(tf_claim_log);
+            }
+        }
+#endif
+    }
+    return (0);
+}
+
+/***********************************************************************************************
  * DriveClass::Start_Of_Move -- Tries to get a unit to advance toward cell.                    *
  *                                                                                             *
  *    This will try to start a unit advancing toward the cell it is                            *
@@ -948,6 +1422,60 @@ bool DriveClass::Start_Of_Move(void)
     }
 
     /*
+    **	Give-way (v2.2.3): if a higher-id allied vehicle is coming the other way through a 1-wide
+    **	stretch ahead, the lower-id unit yields until the whole oncoming column has passed, then
+    **	advances in one clean run. Stateless and re-checked each tick, so no ping-pong and no
+    **	savegame growth. HOLD if we are still on open ground (stay off the bridge); RETREAT if we
+    **	are already inside the pinch and blocking the winner's lane (back out to free it -- once
+    **	on open ground the decision flips to HOLD and we wait there).
+    */
+    if (Target_Legal(NavCom)) {
+        TechnoClass* gw_winner = NULL;
+        int gw = Give_Way_Decision(&gw_winner);
+        if (gw == 1) {
+            Stop_Driver();
+            return (false);
+        }
+        if (gw == 2) {
+            CELL back = Find_Give_Way_Cell(gw_winner);
+            if (back != 0) {
+                TARGET original = NavCom;
+#if TF_DEV_BUILD
+                if (House && House->IsHuman) {
+                    static FILE* tf_give_log = NULL;
+                    static bool tf_give_tried = false;
+                    if (!tf_give_tried) {
+                        tf_give_tried = true;
+                        const char* h = getenv("USERPROFILE");
+                        if (h == NULL)
+                            h = getenv("HOME");
+                        if (h != NULL) {
+                            char gp[512];
+                            snprintf(gp, sizeof(gp), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                            tf_give_log = fopen(gp, "a");
+                        }
+                    }
+                    if (tf_give_log != NULL) {
+                        CELL mypos = Coord_Cell(Center_Coord());
+                        const char* me = (Techno_Type_Class() && Techno_Type_Class()->IniName)
+                                             ? Techno_Type_Class()->IniName
+                                             : "<?>";
+                        fprintf(tf_give_log, "GIVEWAY-retreat: loser=%s pos=(%d,%d) -> back=(%d,%d) myid=%d theirid=%d\n",
+                                me, (int)Cell_X(mypos), (int)Cell_Y(mypos), (int)Cell_X(back), (int)Cell_Y(back),
+                                (int)As_Target(), (int)gw_winner->As_Target());
+                        fflush(tf_give_log);
+                    }
+                }
+#endif
+                Assign_Destination(::As_Target(back));
+                Queue_Navigation_List(original);
+            }
+            Stop_Driver();
+            return (false);
+        }
+    }
+
+    /*
     **	Reduce the path length if the target is a unit and the
     **	range to the unit is less than the precalculated path steps.
     */
@@ -980,6 +1508,142 @@ bool DriveClass::Start_Of_Move(void)
         }
 
         if (!Basic_Path()) {
+
+#if TF_DEV_BUILD
+            /*
+            ** TF DEV: patient-queue chokepoint diagnostic (v2.2.3 investigation). Logs every time a
+            ** HUMAN move unit hits the no-path branch: which sub-branch will fire, Distance(NavCom)
+            ** vs Rule.CloseEnoughDistance, and the Can_Enter_Cell type of the cell toward the
+            ** destination AND straight ahead. Key discriminator for the choke jam:
+            **   MOVE_TEMP (4)         = a STOPPED friendly is in the way (won't clear on its own)
+            **   MOVE_MOVING_BLOCK (2) = a MOVING friendly (will clear; A* already routes through it)
+            **   MOVE_NO (5)           = terrain / permanent block
+            ** Appends to the same tf_astar.log stream as the A* fallback tally. Compiled out of
+            ** release builds (TF_DEV_BUILD=0). Read NavCom BEFORE any Assign_Destination below.
+            */
+            if (House && House->IsHuman) {
+                static FILE* tf_choke_log = NULL;
+                static bool tf_choke_tried = false;
+                if (!tf_choke_tried) {
+                    tf_choke_tried = true;
+                    const char* h = getenv("USERPROFILE");
+                    if (h == NULL)
+                        h = getenv("HOME");
+                    if (h != NULL) {
+                        char p[512];
+                        snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                        tf_choke_log = fopen(p, "a");
+                    }
+                }
+                if (tf_choke_log != NULL) {
+                    static const char* const move_names[MOVE_COUNT] = {
+                        "OK", "CLOAK", "MOVING_BLOCK", "DESTROYABLE", "TEMP", "NO"};
+                    CELL here = Coord_Cell(Center_Coord());
+                    CELL navcell = As_Cell(NavCom);
+                    int distlep = (int)Distance(NavCom);
+                    int distcell = Lepton_To_Cell((LEPTON)Distance(NavCom));
+                    FacingType navface = Dir_Facing(Direction(NavCom));
+                    CELL towardnav = Adjacent_Cell(here, navface);
+                    MoveType navmove = Map.In_Radar(towardnav) ? Can_Enter_Cell(towardnav, navface) : MOVE_NO;
+                    FacingType aheadface = Dir_Facing(PrimaryFacing);
+                    CELL ahead = Adjacent_Cell(here, aheadface);
+                    MoveType aheadmove = Map.In_Radar(ahead) ? Can_Enter_Cell(ahead, aheadface) : MOVE_NO;
+                    bool closeMove = (!Is_On_Priority_Mission() && Distance(NavCom) < Rule.CloseEnoughDistance
+                                      && (Mission == MISSION_MOVE || Mission == MISSION_GUARD_AREA));
+                    const char* branch =
+                        closeMove ? "ABANDON-close" : (TryTryAgain > 0 ? "RETRY" : "ABANDON-giveup");
+                    const char* who = (Techno_Type_Class() && Techno_Type_Class()->IniName)
+                                          ? Techno_Type_Class()->IniName
+                                          : "<?>";
+                    fprintf(tf_choke_log,
+                            "CHOKE: unit=%s pos=(%d,%d) nav=(%d,%d) dist=%d(cell %d) closeenough=%d "
+                            "towardNav=%s aheadFacing=%s try=%d -> %s\n",
+                            who, (int)Cell_X(here), (int)Cell_Y(here), (int)Cell_X(navcell), (int)Cell_Y(navcell),
+                            distlep, distcell, (int)Rule.CloseEnoughDistance, move_names[navmove],
+                            move_names[aheadmove], TryTryAgain, branch);
+                    fflush(tf_choke_log);
+                }
+            }
+#endif
+
+            /*
+            **	Give-way (v2.2.3): break a 1-wide head-on deadlock. Basic_Path just failed. If the
+            **	cell toward our destination is held by an ONCOMING allied vehicle (the head-on
+            **	MOVE_NO case in UnitClass::Can_Enter_Cell), the deterministic loser -- the unit with
+            **	the lower As_Target() id, which is synced so exactly one side yields and it's
+            **	lockstep-safe -- diverts to a free cell to let the winner pass, then auto-resumes its
+            **	original order via the nav queue. The winner does NOT move; it keeps retrying below
+            **	and flows through the instant the loser clears. Requiring a MOVE_OK divert cell (see
+            **	Find_Give_Way_Cell) is what keeps this from repeating the reverted back-off attempt
+            **	that rammed units into their own followers: a boxed-in loser finds nothing here and
+            **	falls through to hold/retry. Vehicles only (this is DriveClass; infantry stack
+            **	sub-cell and don't deadlock).
+            */
+            if (Target_Legal(NavCom)) {
+                FacingType navface = Dir_Facing(Direction(NavCom));
+                CELL aheadcell = Adjacent_Cell(Coord_Cell(Center_Coord()), navface);
+                if (Map.In_Radar(aheadcell) && Can_Enter_Cell(aheadcell, navface) == MOVE_NO) {
+                    TechnoClass* blocker = Map[aheadcell].Cell_Techno();
+                    if (blocker != NULL && blocker->What_Am_I() == RTTI_UNIT && House->Is_Ally(blocker)
+                        && As_Target() < blocker->As_Target()) {
+                        /*
+                        **	Only give way to genuinely OPPOSING traffic, never a same-direction
+                        **	follower -- judged by each unit's queued destination, not its momentary
+                        **	heading. Same guard as Give_Way_Decision; without it a yielding unit can
+                        **	hand the lane to the unit queued right behind it and wedge the bridge.
+                        */
+                        FootClass const* bf = (FootClass const*)blocker;
+                        TARGET my_intent = Target_Legal(NavQueue[0]) ? NavQueue[0] : NavCom;
+                        TARGET b_intent = Target_Legal(bf->NavQueue[0]) ? bf->NavQueue[0] : bf->NavCom;
+                        int diff = (Target_Legal(my_intent) && Target_Legal(b_intent))
+                                       ? ((Dir_Facing(Direction(my_intent))
+                                           - Dir_Facing(::Direction(bf->Center_Coord(), As_Coord(b_intent))))
+                                          & 0x07)
+                                       : 0;
+                        bool opposing = (diff >= 3 && diff <= 5);
+                        CELL giveway = opposing ? Find_Give_Way_Cell(blocker) : 0;
+                        if (giveway != 0) {
+                            TARGET original = NavCom;
+#if TF_DEV_BUILD
+                            if (House && House->IsHuman) {
+                                static FILE* tf_give_log = NULL;
+                                static bool tf_give_tried = false;
+                                if (!tf_give_tried) {
+                                    tf_give_tried = true;
+                                    const char* h = getenv("USERPROFILE");
+                                    if (h == NULL)
+                                        h = getenv("HOME");
+                                    if (h != NULL) {
+                                        char gp[512];
+                                        snprintf(gp, sizeof(gp), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                                        tf_give_log = fopen(gp, "a");
+                                    }
+                                }
+                                if (tf_give_log != NULL) {
+                                    CELL mypos = Coord_Cell(Center_Coord());
+                                    CELL bpos = Coord_Cell(blocker->Center_Coord());
+                                    const char* me = (Techno_Type_Class() && Techno_Type_Class()->IniName)
+                                                         ? Techno_Type_Class()->IniName
+                                                         : "<?>";
+                                    fprintf(tf_give_log,
+                                            "GIVEWAY: loser=%s pos=(%d,%d) -> yield=(%d,%d) winnerpos=(%d,%d) "
+                                            "myid=%d theirid=%d\n",
+                                            me, (int)Cell_X(mypos), (int)Cell_Y(mypos), (int)Cell_X(giveway),
+                                            (int)Cell_Y(giveway), (int)Cell_X(bpos), (int)Cell_Y(bpos),
+                                            (int)As_Target(), (int)blocker->As_Target());
+                                    fflush(tf_give_log);
+                                }
+                            }
+#endif
+                            Assign_Destination(::As_Target(giveway));
+                            Queue_Navigation_List(original);
+                            Stop_Driver();
+                            TrackNumber = -1;
+                            return (false);
+                        }
+                    }
+                }
+            }
 
             /*
             **	If the unit is close enough to the target then just stop
