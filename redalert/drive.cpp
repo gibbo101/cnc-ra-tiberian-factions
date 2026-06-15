@@ -464,6 +464,8 @@ DriveClass::DriveClass(RTTIType rtti, int id, HousesType house)
     , MoebiusCell(0)
     , TrackNumber(-1)
     , TrackIndex(0)
+    , LastClaimCell(-1)
+    , StuckFrames(0)
 {
 }
 
@@ -1355,9 +1357,18 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
     **	still far from the mouth does not lock a corridor it will not reach for a while; a unit already
     **	inside (here_narrow) always re-asserts, since it owns the lane it is traversing. Writing to the
     **	global Map from this const method is fine -- it is shared deterministic cell state, not *this.
+    **
+    **	CROSSING GATE (v2.2.3 fix): only (re)stamp when we have actually moved into a NEW cell since our
+    **	last stamp. Start_Of_Move is called every tick while a unit is trying to advance, so a unit that
+    **	is STALLED (no path, blocked, waiting on dest contention) used to re-assert its claim every tick,
+    **	keeping it alive forever -- CHOKE_CLAIM_TTL never expired and the whole column behind it locked up
+    **	permanently. By stamping only on a real cell-crossing, a moving column keeps the lane locked (it
+    **	crosses cells well within the TTL) while a HALTED unit's claim ages out and the queue recovers.
     */
     if (corridor_count > 0
+        && here != LastClaimCell
         && (here_narrow || own_claim || (corridor_start >= 0 && corridor_start <= COMMIT_DIST))) {
+        LastClaimCell = here;
         for (int k = 0; k < corridor_count; k++) {
             Map[corridor_cells[k]].ChokeClaimFrame = (unsigned int)Frame;
             Map[corridor_cells[k]].ChokeClaimDir = (unsigned char)corridor_faces[k];
@@ -1770,6 +1781,77 @@ bool DriveClass::Start_Of_Move(void)
                     }
                     if (traffic_blocked) {
                         TryTryAgain = PATH_RETRY; // wait its turn at the pinch; do not abandon
+
+                        /*
+                        **	Deadlock-breaker (v2.2.3). Patient-waiting is correct for a unit queued
+                        **	behind a pinch that WILL clear -- but a SYMMETRIC deadlock the give-way
+                        **	resolver never matched (a clump of units packed at a base, a stationary
+                        **	friendly parked on our only path, two units nose-to-nose that both wait)
+                        **	would wait FOREVER: nobody breaks the symmetry. The head-on log proves it
+                        **	-- ~25k MOVE_NO blocks vs ~36 resolver hits. So once we have been blocked
+                        **	for STUCK_SCATTER_TRIES straight retry cycles, force a scatter into ANY
+                        **	free adjacent cell, then auto-resume the original order via the nav queue
+                        **	(the same proven pattern as the give-way divert above). The neighbour scan
+                        **	is rotated by our unit id so two units boxed against each other pick
+                        **	DIFFERENT escape directions -- that asymmetry is what unwedges the clump,
+                        **	with no RNG (lockstep-safe). StuckFrames resets to 0 the instant we advance
+                        **	a cell (success path below), so a flowing or genuinely-clearing queue never
+                        **	reaches the threshold.
+                        */
+                        const int STUCK_SCATTER_TRIES = 8;
+                        if (StuckFrames < 0xFFFF) {
+                            StuckFrames++;
+                        }
+                        if (StuckFrames >= STUCK_SCATTER_TRIES && Target_Legal(NavCom)) {
+                            CELL hc = Coord_Cell(Center_Coord());
+                            CELL escape = 0;
+                            int seed = As_Target() & 0x07;
+                            for (int n = 0; n < FACING_COUNT; n++) {
+                                FacingType nf = (FacingType)((seed + n) & 0x07);
+                                CELL ncell = Adjacent_Cell(hc, nf);
+                                if (Map.In_Radar(ncell) && Can_Enter_Cell(ncell, nf) == MOVE_OK) {
+                                    escape = ncell;
+                                    break;
+                                }
+                            }
+                            if (escape != 0) {
+                                TARGET original = NavCom;
+#if TF_DEV_BUILD
+                                if (House && House->IsHuman) {
+                                    static FILE* tf_scatter_log = NULL;
+                                    static bool tf_scatter_tried = false;
+                                    if (!tf_scatter_tried) {
+                                        tf_scatter_tried = true;
+                                        const char* h = getenv("USERPROFILE");
+                                        if (h == NULL)
+                                            h = getenv("HOME");
+                                        if (h != NULL) {
+                                            char sp[512];
+                                            snprintf(sp, sizeof(sp), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                                            tf_scatter_log = fopen(sp, "a");
+                                        }
+                                    }
+                                    if (tf_scatter_log != NULL) {
+                                        const char* me = (Techno_Type_Class() && Techno_Type_Class()->IniName)
+                                                             ? Techno_Type_Class()->IniName
+                                                             : "<?>";
+                                        fprintf(tf_scatter_log,
+                                                "SCATTER-deadlock: %s pos=(%d,%d) -> escape=(%d,%d) "
+                                                "stuck=%d myid=%d\n",
+                                                me, (int)Cell_X(hc), (int)Cell_Y(hc), (int)Cell_X(escape),
+                                                (int)Cell_Y(escape), (int)StuckFrames, (int)As_Target());
+                                        fflush(tf_scatter_log);
+                                    }
+                                }
+#endif
+                                Assign_Destination(::As_Target(escape));
+                                Queue_Navigation_List(original);
+                                StuckFrames = 0;
+                                Stop_Driver();
+                                TrackNumber = -1;
+                                return (false);
+                            }
+                        }
                     } else {
                         Assign_Destination(TARGET_NONE);
                         if (!IsActive)
@@ -1920,6 +2002,13 @@ bool DriveClass::Start_Of_Move(void)
             TrackNumber = -1;
             return (true);
         }
+
+        /*
+        **	We are committing to enter the next cell (cando == MOVE_OK) -- real forward progress, so
+        **	clear the deadlock-breaker counter. Only a unit that has made NO progress for
+        **	STUCK_SCATTER_TRIES straight retry cycles ever force-scatters.
+        */
+        StuckFrames = 0;
 
         /*
         **	Determine the speed that the unit can travel to the desired square.

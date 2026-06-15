@@ -862,6 +862,38 @@ PathType* FootClass::Find_Path(CELL dest, FacingType* final_moves, int maxlen, M
         }
 
         /*
+        ** A* failed. Before taking the legacy "crash and turn" edge-follower -- which produces the
+        ** cliff-hugging detours and strands harvesters / infantry that are queued at a busy pinch --
+        ** check whether our route is blocked by a temporary chokepoint CLAIM (a pinch currently owned
+        ** by traffic, NOT permanent terrain). If so, return an EMPTY path so the caller HOLDS and
+        ** re-paths cleanly the instant the lane clears, instead of detouring or churning. Shared by
+        ** infantry, harvesters and vehicles (FootClass). TTL-bounded (75 frames), so a genuinely clear
+        ** route never trips this -- the claim ages out and A* succeeds on the next pass.
+        */
+        if (!result) {
+            CELL probe = source;
+            for (int s = 0; s < 14 && probe != dest; s++) {
+                FacingType pf = Dir_Facing(::Direction(::Cell_Coord(probe), ::Cell_Coord(dest)));
+                CELL nx = Adjacent_Cell(probe, pf);
+                if (!Map.In_Radar(nx)) {
+                    break;
+                }
+                CellClass const& pcell = Map[nx];
+                int cage = Frame - (int)pcell.ChokeClaimFrame;
+                if (pcell.ChokeClaimFrame != 0 && cage >= 0 && cage <= 75) {
+                    path.Start = source;
+                    path.Cost = 0;
+                    path.Length = 0;
+                    path.Command = final_moves;
+                    path.Command[0] = END;
+                    BEnd(BENCH_FINDPATH);
+                    return (&path); // queued behind a busy pinch -> wait, do not cliff-detour
+                }
+                probe = nx;
+            }
+        }
+
+        /*
         ** A* failed; reset the path structure for the legacy fallback below.
         */
         path.Start = source;

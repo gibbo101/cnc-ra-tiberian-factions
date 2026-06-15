@@ -181,6 +181,28 @@ private:
     int TrackNumber;
     int TrackIndex;
 
+    /*
+    **	v2.2.3 chokepoint: the cell from which we last stamped a ChokeClaim. The claim is re-asserted
+    **	ONLY when we have actually crossed into a NEW cell, so a STOPPED/stalled unit stops refreshing
+    **	its claim and it ages out (via CHOKE_CLAIM_TTL) instead of being kept alive every tick. Without
+    **	this, one frozen unit (e.g. a harvester stalled on dest contention) holds the whole lane hostage
+    **	forever and the queue behind it locks up permanently. mutable: written from the const
+    **	Give_Way_Decision; still lockstep-safe (per-unit, computed identically on every client). -1 =
+    **	never stamped. (init in ctor only -- savegame load copies raw data before placement-new.)
+    */
+    mutable CELL LastClaimCell;
+
+    /*
+    **	v2.2.3 deadlock-breaker: consecutive path-retry cycles spent patient-waiting (blocked by
+    **	traffic, unable to advance toward NavCom). When it exceeds STUCK_SCATTER_TRIES the unit forces
+    **	a scatter into any free adjacent cell to break a SYMMETRIC deadlock the give-way resolver never
+    **	matched (clumps packed at a base, a stationary friendly parked on our only path, two units
+    **	nose-to-nose that both just "wait"), then re-paths to its original goal. Reset to 0 the instant
+    **	it advances a cell, so a normally-flowing or genuinely-clearing queue never trips it. Plain int,
+    **	no RNG, per-unit -> lockstep-safe. (init in ctor only; savegame load copies raw data.)
+    */
+    unsigned short StuckFrames;
+
     /*---------------------------------------------------------------------
     **	Member function prototypes.
     */
