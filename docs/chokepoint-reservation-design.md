@@ -141,6 +141,47 @@ format growth.
 
 ---
 
+## DEFERRED ITEM (2026-06-15): A* fallback "cliff-hugging" when crossing a busy pinch
+
+**Status:** known, low-harm, deliberately left for a later pathfinding-refinement pass (Luke's call).
+The deadlock / give-ups / entrance-blocking are all FIXED and committed (`cdedd6c` + `4acaf94`); this is
+the one residual.
+
+**Symptom.** A vehicle ordered to cross a chokepoint while the pinch is momentarily busy/claimed by the
+opposing direction is seen to "lose its pathfinding" and hug the cliff (take a long way around the
+lake), then recover. It is cosmetic-ish: the unit still reaches its destination, it just takes an ugly
+detour for a moment. It does NOT strand or deadlock.
+
+**Root cause.** Pathing and give-way are separate layers. `FootClass::Find_Path` runs A* first; A* will
+not route through a cell that is friendly-occupied head-on (`MOVE_NO` from an opposing moving ally) or
+otherwise blocked, so when the only route is the busy pinch, A* FAILS and `Find_Path` falls back to the
+legacy crash-and-turn edge-follower, which traces around the obstacle (the cliff/lake). The unit then
+follows that legacy path; `Give_Way_Decision` does not redirect it because its route now goes AROUND the
+pinch, not through it, so the give-way never engages to make it simply wait.
+
+**Playtest metrics (the AI-test log, 2026-06-15).** ~211 A* fallbacks / 901 paths (~23%), BUT: the bulk
+is infantry (`E6` 236, `E1` 66, `TDE6` 32, ...) which is the harmless sub-cell destination-contention
+(infantry never deadlock); vehicle fallbacks (`2TNK`/`APC`/`1TNK`/`ARTY`/`JEEP`/`V2RL`/`TDHARV`/`3TNK`)
+are almost all ONE-OFF (a single fallback then the unit proceeds). Only one unit repeated the same
+src→dst (a `2TNK`, twice). So it is brief and self-correcting, not a stuck loop. AI faction units
+(TD-prefixed) show the same one-off behaviour — no AI-specific deadlock.
+
+**Proposed fix (for the later pass).** Make the unit WAIT for the pinch instead of taking a legacy
+detour, when A* failed ONLY because of temporary traffic. Two candidate approaches:
+1. *Clairvoyant A* probe* — when A* fails at the normal threshold, retry treating temporary blockers
+   (ally `MOVE_TEMP`, ally-head-on `MOVE_NO`, and active `ChokeClaim` cells) as passable-but-costly. If
+   that probe finds a path through the pinch but the real one did not, the route is traffic-blocked:
+   return no-path (skip the legacy detour) so `Start_Of_Move`'s no-path branch + the patient-queue holds
+   the unit, and it re-paths cleanly once the lane clears. If the probe also fails, it is genuine no-path
+   → keep the legacy fallback.
+2. *Let A* route through temp-blocked cells at high cost* so the unit heads INTO the pinch and the
+   existing give-way HOLD then makes it wait there — simpler but broader blast radius (units routing
+   through each other elsewhere); needs care.
+Code: `redalert/foot.cpp` `FootClass::Find_Path` (the A*→legacy chain, ~line 365-478, `maxtype`
+escalation), `redalert/findpath.cpp` `Find_Path_AStar`. The patient-queue + no-path branch that the fix
+would hand off to is already in `redalert/drive.cpp` `Start_Of_Move` (the `traffic_blocked` 8-neighbour
+scan). Diagnostic: the `A* FALLBACK -> legacy` tally line in `tf_astar.log` (gated `TF_DEV_BUILD`).
+
 ## Side question: what's left in the CFE first-wave after pathfinding?
 First wave (docs/cfe-port-plan.md §1) is otherwise **complete**: Pixel-Perfect Zoom ✅, A\* ✅,
 Attack-Move ✅, Rally Points ✅, Harvester Queue-Jump ✅, Harvester Optimization ✅, Smarter Repair Bay ✅.
