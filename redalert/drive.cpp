@@ -1083,8 +1083,18 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
     bool opposing_claim = false;      // an active reservation is held against us by an oncoming column
     bool own_claim = false;           // our own column already owns this corridor -- claim is authoritative
 
-    CELL corridor_cells[SCAN_MAX];    // the narrow cells on our route, to stamp our claim onto
+    CELL corridor_cells[SCAN_MAX];        // the narrow cells on our route, to stamp our claim onto
+    FacingType corridor_faces[SCAN_MAX];  // the LOCAL step direction through each (handles a bent pinch)
     int corridor_count = 0;
+
+    /*
+    **	The claim direction is the TRAVERSAL direction THROUGH each pinch cell -- the local step we
+    **	take into it -- NOT the direction to our final destination. Those differ when the goal is off
+    **	the pinch axis: every unit funnelling through an N-S pinch toward a western goal has
+    **	intentface = west, so a uniform per-corridor "west" stamp would make two opposing columns
+    **	invisible to each other. Stamping the LOCAL step per cell is inherently the traversal direction
+    **	and also follows a bent corridor (a lake corner) where the flow direction changes along it.
+    */
 
     const int FAR_APPROACH = 6; // how far past the corridor to keep watching for a rival heading in
 
@@ -1129,14 +1139,22 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
         **	heuristic below cannot provide on near-simultaneous entry. A same-direction claim is our
         **	own column and is ignored.
         */
-        if (narrow) {
-            if (corridor_count < SCAN_MAX) {
-                corridor_cells[corridor_count++] = nc;
-            }
+        if (narrow && corridor_count < SCAN_MAX) {
+            corridor_cells[corridor_count] = nc;
+            corridor_faces[corridor_count] = f; // local step direction through this pinch cell
+            corridor_count++;
+        }
+        /*
+        **	Read any claim on THIS cell -- the 1-wide pinch OR a reserved MOUTH cell just outside it
+        **	(stamped below). Reading the mouths is what makes an opposing column halt one cell back from
+        **	the entrance/exit instead of parking on it. Generic: a cell only carries a claim if it is a
+        **	pinch-or-mouth cell of some corridor.
+        */
+        {
             CellClass const& ccell = Map[nc];
             int age = Frame - (int)ccell.ChokeClaimFrame;
             if (ccell.ChokeClaimFrame != 0 && age >= 0 && age <= CHOKE_CLAIM_TTL) {
-                int cdiff = (myintentface - (FacingType)ccell.ChokeClaimDir) & 0x07;
+                int cdiff = (f - (FacingType)ccell.ChokeClaimDir) & 0x07;
                 if (cdiff >= 3 && cdiff <= 5) {
                     if (here_narrow) {
                         /*
@@ -1279,15 +1297,14 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
         }
 #endif
         /*
-        **	RETREAT (back away from the pinch) whenever a real opposing CLAIM owns the lane -- this is
-        **	the cascade reversal: a boxed lead cannot back up alone, so the WHOLE losing column reverses.
-        **	The rearmost unit has open ground behind it and backs off first, which frees the unit ahead,
-        **	and so on up to the boxed lead; the lane clears front-to-back and the winner flows through.
-        **	Once the winner passes and the claim lapses, the losers stop seeing it and resume forward to
-        **	take their turn. Also retreat when inside the pinch or nose-to-nose (a plain stop would block).
-        **	A pre-claim id-rule yield on open ground still just HOLDs (no winner is committed yet).
+        **	HOLD STILL while waiting: a unit yielding to a claim that is NOT physically blocking the
+        **	lane just stops and waits its turn -- no shuffling. Only STEP ASIDE (retreat) when we are
+        **	actually in the way: inside the pinch (here_narrow) or nose-to-nose with the winner
+        **	(head_on_ahead), where a plain stop would keep blocking it. Prevention (claim the whole
+        **	lane from well out) is what keeps the losing column from ever entering and getting boxed,
+        **	so the heavy whole-column cascade is no longer needed for the common case.
         */
-        return ((opposing_claim || here_narrow || head_on_ahead) ? 2 : 1);
+        return ((here_narrow || head_on_ahead) ? 2 : 1);
     }
 
     /*
@@ -1343,7 +1360,24 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
         && (here_narrow || own_claim || (corridor_start >= 0 && corridor_start <= COMMIT_DIST))) {
         for (int k = 0; k < corridor_count; k++) {
             Map[corridor_cells[k]].ChokeClaimFrame = (unsigned int)Frame;
-            Map[corridor_cells[k]].ChokeClaimDir = (unsigned char)myintentface;
+            Map[corridor_cells[k]].ChokeClaimDir = (unsigned char)corridor_faces[k];
+        }
+        /*
+        **	Also reserve the two MOUTH cells -- one cell before the entrance, one after the exit --
+        **	derived generically from the ends of whatever narrow run we found (any length, any shape).
+        **	Stamped with the flow direction at that end, so an opposing column reads the mouth and halts
+        **	a cell back rather than parking ON the entrance/exit and blocking it (the lead-on-the-mouth
+        **	jam). The reading loop above now consults every scanned cell, so these are honoured.
+        */
+        CELL near_mouth = Adjacent_Cell(corridor_cells[0], (FacingType)((corridor_faces[0] + 4) & 0x07));
+        if (Map.In_Radar(near_mouth)) {
+            Map[near_mouth].ChokeClaimFrame = (unsigned int)Frame;
+            Map[near_mouth].ChokeClaimDir = (unsigned char)corridor_faces[0];
+        }
+        CELL exit_mouth = Adjacent_Cell(corridor_cells[corridor_count - 1], corridor_faces[corridor_count - 1]);
+        if (Map.In_Radar(exit_mouth)) {
+            Map[exit_mouth].ChokeClaimFrame = (unsigned int)Frame;
+            Map[exit_mouth].ChokeClaimDir = (unsigned char)corridor_faces[corridor_count - 1];
         }
 #if TF_DEV_BUILD
         if (House && House->IsHuman) {
@@ -1363,9 +1397,10 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
             if (tf_claim_log != NULL) {
                 const char* me =
                     (Techno_Type_Class() && Techno_Type_Class()->IniName) ? Techno_Type_Class()->IniName : "<?>";
-                fprintf(tf_claim_log, "CLAIM: %s cells=%d dir=%d frame=%d start=%d own=%d myid=%d\n", me,
-                        corridor_count, (int)myintentface, (int)Frame, corridor_start, (int)own_claim,
-                        (int)As_Target());
+                fprintf(tf_claim_log, "CLAIM: %s cells=%d dir0=%d dirN=%d frame=%d start=%d own=%d myid=%d\n", me,
+                        corridor_count, (int)(corridor_count > 0 ? corridor_faces[0] : 0),
+                        (int)(corridor_count > 0 ? corridor_faces[corridor_count - 1] : 0), (int)Frame,
+                        corridor_start, (int)own_claim, (int)As_Target());
                 fflush(tf_claim_log);
             }
         }
@@ -1690,12 +1725,59 @@ bool DriveClass::Start_Of_Move(void)
                 if (TryTryAgain > 0) {
                     TryTryAgain--;
                 } else {
-                    Assign_Destination(TARGET_NONE);
-                    if (!IsActive)
-                        return (false);
-                    if (IsNewNavCom)
-                        Sound_Effect(VOC_SCOLD);
-                    IsNewNavCom = false;
+                    /*
+                    **	Patient queue (v2.2.3): before abandoning the move, check WHY the path failed.
+                    **	If our route ahead is blocked only by TEMPORARY traffic -- a stopped friendly
+                    **	(MOVE_TEMP, which the scatter poke above is already nudging) or oncoming allied
+                    **	traffic at a chokepoint (MOVE_NO held by an ally) -- the lane WILL clear, so we
+                    **	stay patient and keep retrying instead of giving up. Giving up here is the
+                    **	"unit drives off to a cliff-trace detour / scolds and stops" behaviour: a unit
+                    **	queued behind a busy 1-wide pinch should just wait its turn. Only a genuinely
+                    **	path-less block (permanent terrain, no traffic to explain it) still abandons.
+                    */
+                    bool traffic_blocked = false;
+                    {
+                        /*
+                        **	Scan all 8 neighbours, not just the cell toward the goal: for an off-axis
+                        **	destination the toward-goal cell can be terrain (the lake) while the real
+                        **	obstacle -- a busy/claimed pinch -- is off to the side. We stay patient if any
+                        **	neighbour carries an ACTIVE chokepoint claim (we are queued behind a pinch that
+                        **	WILL clear) or holds a stopped friendly (MOVE_TEMP) / oncoming allied traffic.
+                        */
+                        CELL hc = Coord_Cell(Center_Coord());
+                        for (FacingType nf = FACING_N; nf < FACING_COUNT && !traffic_blocked; nf++) {
+                            CELL ncell = Adjacent_Cell(hc, nf);
+                            if (!Map.In_Radar(ncell)) {
+                                continue;
+                            }
+                            CellClass const& nce = Map[ncell];
+                            int cage = Frame - (int)nce.ChokeClaimFrame;
+                            if (nce.ChokeClaimFrame != 0 && cage >= 0 && cage <= 40) {
+                                traffic_blocked = true; // queued behind an active pinch claim
+                                break;
+                            }
+                            MoveType nm = Can_Enter_Cell(ncell, nf);
+                            if (nm == MOVE_TEMP) {
+                                traffic_blocked = true;
+                            } else if (nm == MOVE_NO) {
+                                TechnoClass* occ = nce.Cell_Techno();
+                                if (occ != NULL && occ != this && occ->What_Am_I() == RTTI_UNIT
+                                    && House->Is_Ally(occ)) {
+                                    traffic_blocked = true;
+                                }
+                            }
+                        }
+                    }
+                    if (traffic_blocked) {
+                        TryTryAgain = PATH_RETRY; // wait its turn at the pinch; do not abandon
+                    } else {
+                        Assign_Destination(TARGET_NONE);
+                        if (!IsActive)
+                            return (false);
+                        if (IsNewNavCom)
+                            Sound_Effect(VOC_SCOLD);
+                        IsNewNavCom = false;
+                    }
                 }
             }
 
