@@ -597,8 +597,15 @@ void UnitClass::Rotation_AI(void)
             **	if the vehicle isn't currently moving or facing the correct direction. This
             **	applies only to tracked vehicles. Wheeled vehicles never rotate to face the
             **	target, since they aren't maneuverable enough.
+            **
+            **	Tiberian Factions -- the Recon Bike (UNIT_TDBIKE) is the TD-authentic
+            **	exception: TD special-cases its wheeled bike to rotate its hull to fire
+            **	(tiberiandawn/tarcom.cpp:166, `|| *this == UNIT_BIKE`). RA commented that
+            **	clause out because vanilla RA has no bike; restore it for our TDBIKE so it
+            **	turns to bring its forward-firing TDDragon launcher to bear instead of only
+            **	firing at targets it already happens to face.
             */
-            if ((Class->Speed == SPEED_TRACK /* || *this == UNIT_BIKE */) && !Target_Legal(NavCom) && !IsDriving
+            if ((Class->Speed == SPEED_TRACK || *this == UNIT_TDBIKE) && !Target_Legal(NavCom) && !IsDriving
                 && PrimaryFacing.Difference(dir)) {
                 PrimaryFacing.Set_Desired(dir);
             }

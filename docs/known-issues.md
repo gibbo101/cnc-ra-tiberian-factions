@@ -10,15 +10,15 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Combat / units
 
-### Recon Bike (TDBIKE) won't turn to fire at off-axis targets
-- **Severity:** major (unit is much less effective; affects Nod harass doctrine).
-- **Status:** OPEN, logged 2026-06-16, fix next session.
-- **Detail:** the bike does not fire at an enemy unless already facing it, and won't rotate the chassis
-  to bring its (turretless, forward-firing) weapon to bear. Suspects: `IsTurretEquipped` / fire-arc /
-  `Rot` config for TDBIKE, or the rotate-to-fire path not engaging for a hull-mounted weapon. Compare to
-  TD's BIKE per the TD-port chain-audit ritual; cross-check other hull-fixed TD vehicles (buggy, flame
-  tank) to see if it's bike-specific. NOT visible in `tf_astar.log` (that only logs movement). See
-  cross-session memory `project-bug-recon-bike-no-turn-to-fire`.
+### Recon Bike (TDBIKE) won't turn to fire at off-axis targets — ✅ FIXED 2026-06-16
+- **Severity:** major (unit was much less effective; affected Nod harass doctrine).
+- **Status:** RESOLVED — `UnitClass::Rotation_AI` (unit.cpp:601).
+- **Root cause:** for turretless vehicles, RA only rotates the hull to face a target if the unit is
+  **tracked** ("wheeled vehicles never rotate to face the target — not maneuverable enough"). TDBIKE is
+  wheeled, so it never turned and only fired at whatever it already faced. TD's source special-cases its
+  wheeled bike to rotate anyway (`tiberiandawn/tarcom.cpp:166`, `|| *this == UNIT_BIKE`); RA left that
+  clause commented out (vanilla RA has no bike). Fix = restore the exemption for `UNIT_TDBIKE`. Now uses
+  the same body-rotate-in-place path as the (tracked, turretless) Artillery, which always worked.
 
 ---
 
