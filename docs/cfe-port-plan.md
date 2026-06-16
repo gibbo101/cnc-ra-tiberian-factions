@@ -120,6 +120,14 @@ SUPERSEDED by the playtest — see §1.1.1 for what the chokepoint problem actua
 
 ### 1.1.1 ⭐ NEXT SESSION START HERE — v2.2.3 chokepoint give-way → targeted reservation
 
+> **⭐ 2026-06-16 — read the `CHECKPOINT 2026-06-16` block at the TOP of
+> `docs/chokepoint-reservation-design.md` FIRST.** The reservation is built, the immortal-claim
+> regression is fixed and **committed (`6f35ea9`, local only)**, a deadlock-breaker + infantry-shove are
+> in too. **Next task = the breaker is in the wrong branch** (no-path vs execution-blocked head-on) —
+> full fix plan + 2 test specimens in that checkpoint. Harvester logic, the Recon-Bike fire-arc bug, and
+> a harvester economy-balance idea were spun off to their own workstreams. Everything below this line is
+> superseded history.
+>
 > **SUPERSEDED 2026-06-15 — read `docs/chokepoint-reservation-design.md` FIRST.** The "patient queue"
 > framing below was wrong (the jam is a bidirectional head-on `MOVE_NO` deadlock on a 1-wide pinch,
 > not a give-up-instead-of-waiting case). We built a full heuristic vehicle give-way (12 builds,

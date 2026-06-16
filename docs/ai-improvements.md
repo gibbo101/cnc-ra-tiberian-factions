@@ -449,9 +449,16 @@ units) get stuck around chokepoints — most visibly at refinery docks — when
 friendly units block the planned path. This is a **traffic/cooperation
 problem, not a path-search problem**. A* alone does not fix it.
 
-**Status:** Background research only. Not on the implementation roadmap
-yet — too large a lift to attempt before the four-faction core is stable.
-This section is a reference for when we revisit pathfinding properly.
+**Status (updated 2026-06-16):** NO LONGER background-only — this is now
+active work. A* shipped (v2.2.1), then group-spread (v2.2.2), then the
+v2.2.3 chokepoint give-way/reservation, the claim-on-crossing gridlock fix
+(committed `6f35ea9`), a deadlock-breaker scatter, and an infantry-shove.
+**The live record + the next task is `docs/chokepoint-reservation-design.md`
+→ the `CHECKPOINT 2026-06-16` block.** The cooperation analysis below remains
+the conceptual reference, but the implementation is well underway there.
+NOTE the per-cell collision/dock-contention case is now split into its own
+**harvester-logic workstream** (targeting/claiming/reachability) — see that
+checkpoint.
 
 ## The real problem
 

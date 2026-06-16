@@ -203,6 +203,18 @@ Luke's stated lean (2026-05-30): **lean into it** (slower-economy/cheaper-army
 as GDI/Nod flavour, tune unit costs to net even) with a touch of harvester
 tuning — keep the dock mechanic. Don't auto-dump the TD harvester.
 
+> **⚠ NEW PROPOSAL 2026-06-16 (Luke) — EQUALISE instead of lean-into.** Rather
+> than auto-dumping the TD harvester (speed GDI/Nod *up*), make the **RA
+> harvester also dock** (slow RA *down*): dwell on the RA harvester's
+> tilted-bucket unload frame and drip credits over a matched time `T`, so both
+> sides have the same per-cycle dwell. Equalises the economy *and* slightly cools
+> RA's famously fast tempo (Luke wants the slower pace). **Balance interaction:**
+> this DIRECTLY REMOVES the counterweight above — if the economies are equal,
+> GDI/Nod's cheaper/earlier/faster units (F2/F4) and the GDI Mammoth are no longer
+> offset by a slower bank, so the unit-cost / Mammoth reasoning in this doc must be
+> re-derived if this lands. Decide deliberately. Tracked in the harvester-logic
+> workstream — see `docs/chokepoint-reservation-design.md` CHECKPOINT 2026-06-16.
+
 ---
 
 ## Proposed v1.x balance pass — phased

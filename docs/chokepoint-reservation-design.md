@@ -1,5 +1,93 @@
 # Chokepoint give-way + reservation — design & checkpoint (2026-06-15)
 
+---
+
+## ⭐ CHECKPOINT 2026-06-16 — READ THIS FIRST (supersedes everything below)
+
+Big session. The reservation deployed on 2026-06-15 turned out to be a **net regression** in a fresh
+AI stress test, was root-caused, fixed, and the fix **committed**. A second cooperative fix was added,
+and the remaining gap was pinned down precisely. Diagnosis method all session: live AI skirmish +
+10s `tf_astar.log` polling + Luke's screenshots (correlate cell coords ↔ on-screen units).
+
+### What shipped to the repo — COMMITTED `6f35ea9` (local only, NO release/push)
+1. **Claim-on-crossing fix** (`drive.cpp`/`drive.h`, `mutable CELL LastClaimCell`). **Root cause of the
+   regression:** a stalled unit re-stamped its `ChokeClaim` *every tick* in `Give_Way_Decision`, so the
+   TTL never expired — one stuck unit held the lane forever and the queue behind it locked up; with the
+   AI stress-testing a pinch this cascaded into progressive **whole-map gridlock** (frozen-lead count
+   grew 3→7→9, nothing clearing). Fix: only (re)stamp the claim when the unit has actually crossed into
+   a new cell (`here != LastClaimCell`), so a halted unit's claim ages out. **Validated**: no frozen
+   leads, one-off fallbacks, no 2-minute collapse — across a full ~30k-line late-game match.
+2. **Deadlock-breaker scatter** (`drive.cpp`/`drive.h`, `unsigned short StuckFrames`). In
+   `Start_Of_Move`'s no-path patient branch: after `STUCK_SCATTER_TRIES=8` straight blocked retry
+   cycles, force-scatter into an id-seeded free neighbour (`Assign_Destination(escape)` +
+   `Queue_Navigation_List(original)`), reset on cell-advance. Lockstep-safe (no RNG, per-unit int).
+   Logs `SCATTER-deadlock`. Confirmed firing + doesn't over-fire — but see the GAP below.
+3. (Also in the commit: the `findpath.cpp` A* wait-on-claim — part of the validated working set; it is
+   self-releasing now that claims age out.)
+
+### Uncommitted in the tree on top of `6f35ea9` (built + deployed + soak-tested healthy)
+- **Infantry-shove** inside the breaker: a stuck vehicle force-`Scatter`s a friendly **idle infantry**
+  parked on its path-ahead (give-way is `DriveClass`-only, so infantry never yield on their own — the
+  man-blocks-harvester / `APC`-blocked-by-`E1` cases). `Scatter(threat,true,true)` is deterministic and
+  only moves genuinely idle infantry. Ran in tonight's healthy test but not *specifically* observed
+  firing — validate next session.
+- The 2 dev TEST TOGGLES were reverted for the clean commit, then **re-applied** (Luke: "put the toggles
+  back") for continued AI testing: AI-logging (`House->IsHuman`→`House`, drive.cpp×7 + unit.cpp×1) and
+  AI insta-build (techno.cpp dropped `hptr->IsHuman`). **Revert before the next commit.**
+
+### ⭐ THE KEY NEXT-SESSION FIX (most actionable thing found) — breaker is in the WRONG BRANCH
+The deadlock-breaker lives in `Start_Of_Move`'s **no-path** branch (`Basic_Path` *failed*). But the
+commonest deadlock — two units nose-to-nose — usually has a **valid path**: `Basic_Path` succeeds and
+the unit blocks at **execution**, hitting the vanilla head-on `MOVE_NO` (`unit.cpp:3699`) at
+`drive.cpp ~1882` (`cando != MOVE_OK`), stopping/retrying without ever reaching the patient branch. So
+`StuckFrames` never increments and the breaker stays blind. **Proof:** a GDI/Nod `TDLTNK` pinned at
+`(90,63)` sat at **383 `HEADON` events**, zero `HOLD-claim`, zero `CHOKE`, zero `SCATTER`; likewise an
+Allied `APC(123,65)`↔`2TNK(122,66)` at 155 each. Both breaker-blind. **This is why the breaker only
+fired ~once all match.**
+
+**FIX (left for next session — fresh mind + immediate test; it's lockstep/desync-critical and the
+skirmish quit so it couldn't be tested tonight; NOT a one-liner):**
+1. **Gate head-on vs terrain.** At `drive.cpp ~1882`, `MOVE_NO` is *both* a friendly head-on (transient,
+   scatter helps) *and* terrain/cliff (permanent — scattering = units jiggle against walls = NEW bug).
+   Only increment / scatter when `destcell` holds a friendly **allied unit** (`Cell_Techno()` is
+   `RTTI_UNIT` && `House->Is_Ally`). **Never** on bare `MOVE_NO` terrain.
+2. **Extract a helper** `bool DriveClass::Try_Deadlock_Scatter()` holding the current inline breaker body
+   (infantry-shove + id-seeded self-scatter + log), called from **both** the no-path branch and the new
+   execution-blocked head-on case. One source of truth.
+3. Increment `StuckFrames` in both blocked paths; reset stays on cell-advance. Keep `STUCK_SCATTER_TRIES=8`.
+4. **Two ready test specimens** from tonight: west `TDLTNK(90,63)` and Allied `APC(123,65)`↔`2TNK(122,66)`
+   — after the fix, expect `SCATTER-deadlock` to fire and the knots to clear.
+
+### Spun off to SEPARATE workstreams (NOT chokepoint pathfinding — do not fix with give-way/scatter)
+- **Harvester logic** (the big one): how harvesters target ore/Tiberium, path to it, and **claim a
+  target** + detect **unreachability** and give up / re-select. Symptoms seen: harvesters spin forever
+  on an unreachable resource (AI walled its own gems field with buildings → no path → `ABANDON-giveup`
+  loop, 256 fallbacks); a tank did the same toward a base-blocked cell (`towardNav=OK` but `Basic_Path`
+  fails); 2 Nod harvesters jammed at a refinery (dock contention). **Plus the economy-balance idea**
+  (Luke): give RA + GDI/Nod the same unload dwell — dwell on the RA harvester's *tilted-bucket* unload
+  frame (confirmed it exists) and drip credits over a matched time `T`; equalises economy and slightly
+  slows overall pace (intended). **Diagnostic blind spot for this work:** an idle/abandoned harvester
+  emits NOTHING to `tf_astar.log`, so it needs its own instrument (log idle harvesters holding cargo).
+- **Recon Bike (`TDBIKE`) won't turn to fire** at off-axis targets — combat/facing bug, not pathfinding;
+  check `IsTurretEquipped` / fire-arc vs TD source.
+
+### Soft spots noted (not deadlocks)
+- Recurring west map pinch at ~`x90,y63` (units congest there repeatedly, never escalates to gridlock).
+- The breaker can leave a unit micro-churning if it scatters then re-paths back (a 2TNK did 67×
+  `src==dst`); consider capping re-scatter on a returner. Minor.
+
+### Late-game verdict
+The committed + uncommitted set held up under sustained load: no map-wide gridlock, no frozen leads,
+clusters self-resolve, breaker as a rare backstop. A real step up from the progressive gridlock the
+night started with. Remaining stuck cases are either the breaker-branch gap (above) or the harvester
+workstream.
+
+> Diagnostic helper script: `/tmp/cnc_stuck_digest.sh` (parked / frozen-lead / HEADON-knot / SCATTER /
+> clear-detection digest off `tf_astar.log`; anchors to the latest `session start` marker). NOTE it
+> CANNOT see idle/abandoned units (they stop logging) and mistakes a *docked* harvester for a stuck one.
+
+---
+
 > **UPDATE 2026-06-15 (later):** the targeted reservation described under "NEXT JOB" below is now
 > **IMPLEMENTED, built, and deployed to the desktop prefix — awaiting playtest.** Per-cell claim on
 > `CellClass` (`ChokeClaimFrame` + `ChokeClaimDir`, TTL=24 frames self-healing, COMMIT_DIST=3),
