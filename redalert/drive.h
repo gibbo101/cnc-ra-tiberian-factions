@@ -203,6 +203,16 @@ private:
     */
     unsigned short StuckFrames;
 
+    /*
+    **	v2.2.3 open-ground hold-timeout: consecutive ticks spent in an OPEN-GROUND give-way HOLD
+    **	(Give_Way_Decision == 1 -- not in a pinch, not head-on). A normal yield clears in well under a
+    **	second; a count that climbs into the tens of ticks means we are deferring forever to a blocker
+    **	that never moves (a stalled/idle unit out in the open). Past HOLD_TIMEOUT we stop yielding and
+    **	let normal pathing route AROUND it (there is room on open ground). Corridor holds are exempt.
+    **	Reset the instant we are not open-ground-holding. Per-unit int, no RNG -> lockstep-safe.
+    */
+    unsigned short HoldFrames;
+
     /*---------------------------------------------------------------------
     **	Member function prototypes.
     */
@@ -211,6 +221,8 @@ private:
     bool Start_Of_Move(void);
     CELL Find_Give_Way_Cell(TechnoClass const* blocker) const;      // v2.2.3 chokepoint give-way
     int Give_Way_Decision(TechnoClass** winner_out) const;          // v2.2.3: 0 proceed, 1 hold, 2 retreat
+    bool Try_Deadlock_Scatter(void);                                // v2.2.3: backstop scatter when wedged
+    int Infantry_Give_Way(void);                                    // v2.2.3: 0 none, 1 shoved man(men), 2 wait at mouth
     void Lay_Track(void);
     COORDINATE Smooth_Turn(COORDINATE adj, DirType& dir);
 

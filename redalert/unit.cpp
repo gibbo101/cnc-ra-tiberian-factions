@@ -3657,7 +3657,17 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
                 if (is_moving) {
                     int face = Dir_Facing(PrimaryFacing);
                     int techface = Dir_Facing(((FootClass const*)obj)->PrimaryFacing) ^ 4;
-                    if (face == techface && Distance((AbstractClass const*)obj) <= 0x1FF) {
+                    /*
+                    **	v2.2.3: the head-on MOVE_NO is a VEHICLE-vs-VEHICLE rule (two one-per-cell vehicles
+                    **	nose-to-nose that A* can't escalate past). A moving foot soldier is NOT a vehicle-grade
+                    **	head-on -- but it WAS tripping this and HARD-FREEZING the vehicle on it (in the live log
+                    **	~50:1 over real vehicle head-ons: a rifleman striding through a corridor locked harvesters
+                    **	for thousands of frames). So restrict the lock to RTTI_UNIT blockers; a moving infantryman
+                    **	falls through to MOVE_MOVING_BLOCK (soft: wait / push) and DriveClass::Infantry_Give_Way
+                    **	is what actively clears him out of the pinch.
+                    */
+                    if (face == techface && Distance((AbstractClass const*)obj) <= 0x1FF
+                        && obj->What_Am_I() == RTTI_UNIT) {
 #if TF_DEV_BUILD
                         /*
                         ** TF DEV: head-on deadlock confirmation (v2.2.3). Two MOVING allied vehicles

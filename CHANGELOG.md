@@ -2,6 +2,30 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [2.3.0] — 2026-06-16
+
+Cooperative chokepoint traffic, resolving the single-cell-gap backup noted in 2.2.2,
+and capping the movement arc that began with attack-move and A* pathfinding. GPL v3.
+
+### Changed
+- **Infantry give way to vehicles in narrow corridors.** Foot soldiers no longer
+  block vehicles in a one-tile-wide pass. A vehicle that needs the corridor moves
+  idle infantry out of the way, and a packed column drains out single file then
+  fans out at the far end instead of jamming. Infantry walking into a vehicle are
+  turned back out, while a column already crossing keeps the corridor and the
+  vehicle waits its turn at the mouth, so only one group uses the gap at a time.
+- **Vehicles no longer freeze on a passing infantryman.** A moving foot soldier
+  reads as a soft, temporary block rather than a hard head-on, so vehicles flow
+  past foot traffic instead of locking up against it.
+- **No more endless yielding in the open.** A unit that has been giving way to a
+  stalled neighbour on open ground for too long stops waiting and routes around
+  it, instead of holding its position indefinitely.
+
+### Known issues
+- Two vehicles meeting head-on in a one-tile gap with no room to step aside can
+  still stall until one of them is freed. Cooperative handling for that case is
+  planned for a follow-up.
+
 ## [2.2.2] — 2026-06-14
 
 Group-move destination spread, building on the 2.2.1 A* pathfinding. GPL v3.

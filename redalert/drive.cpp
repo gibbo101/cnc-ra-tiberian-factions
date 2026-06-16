@@ -466,6 +466,7 @@ DriveClass::DriveClass(RTTIType rtti, int id, HousesType house)
     , TrackIndex(0)
     , LastClaimCell(-1)
     , StuckFrames(0)
+    , HoldFrames(0)
 {
 }
 
@@ -1421,6 +1422,364 @@ int DriveClass::Give_Way_Decision(TechnoClass** winner_out) const
 }
 
 /***********************************************************************************************
+ * DriveClass::Infantry_Give_Way -- Make an idle foot soldier yield to us in a 1-wide pinch.   *
+ *                                                                                             *
+ *    The whole give-way / chokepoint-reservation system is DriveClass-only -- infantry are     *
+ *    never party to it. That is fine on open ground (foot soldiers stack five-per-cell and a    *
+ *    vehicle simply paths around them) but it breaks on a 1-wide terrain corridor: a single     *
+ *    idle friendly infantryman standing in the pinch is a PERMANENT rock. The vehicle cannot    *
+ *    pass (one cell wide, no go-around), the man never yields on his own, and vanilla's only    *
+ *    response -- a polite Incoming() nudge -- is ignored by a guarding soldier or has nowhere    *
+ *    to send him. Harvesters are the visible victims (unarmed, so they can't shoot their way     *
+ *    out, and constant mine->refinery traffic hits every corridor) but ANY vehicle wedges.       *
+ *    Confirmed live: a teal rifleman froze a column of teal harvesters until the man happened    *
+ *    to be killed in combat.                                                                    *
+ *                                                                                             *
+ *    Fix: before we even consult the vehicle give-way decision (which would otherwise just      *
+ *    HOLD us behind the man forever), if the next cell toward our goal is a geographic 1-wide    *
+ *    pinch AND a friendly infantryman is standing in it, force-scatter him clear. The threat     *
+ *    coord we pass is our OWN position, so Scatter biases him AWAY from us -- i.e. onward down    *
+ *    the corridor toward its far mouth, where he spills out onto open ground. forced+nokidding    *
+ *    moves only genuinely idle infantry (a man mid-move or mid-uninterruptible-action is left     *
+ *    alone). Infantry never need to yield to each other (sub-cell stacking), so this is purely    *
+ *    infantry-yields-to-vehicle. Lockstep-safe: synced Scatter, deterministic cell math.        *
+ *                                                                                             *
+ * INPUT:   none                                                                                *
+ *                                                                                             *
+ * OUTPUT:  bool; true if a friendly infantryman was shoved this tick.                          *
+ *                                                                                             *
+ * WARNINGS:   Gated on a geographic pinch so open-ground infantry are never disturbed.         *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   06/16/2026 : Created (Luke's "add infantry to the give-way on 1-wide corridors").          *
+ *=============================================================================================*/
+int DriveClass::Infantry_Give_Way(void)
+{
+    if (!Target_Legal(NavCom)) {
+        return (0);
+    }
+
+    CELL here = Coord_Cell(Center_Coord());
+
+    /*
+    **	Aim at the cell we are actually trying to step into: the planned path step when we have one,
+    **	else the straight-line heading to the goal. Path[0] follows a bent corridor correctly where a
+    **	straight line would walk off it.
+    */
+    FacingType navface = (Path[0] != FACING_NONE) ? Path[0] : Dir_Facing(Direction(NavCom));
+    CELL ahead = Adjacent_Cell(here, navface);
+    if (!Map.In_Radar(ahead)) {
+        return (0);
+    }
+
+    /*
+    **	Geographic 1-wide test (same key as Give_Way_Decision): both cells perpendicular to travel are
+    **	impassable TERRAIN. Friendly occupancy reads MOVE_TEMP not MOVE_NO, so this keys on the map
+    **	shape, not on transient traffic -- we only ever shove a man where there is genuinely no room to
+    **	go around him.
+    */
+    CELL lc = Adjacent_Cell(ahead, (FacingType)((navface - 2) & 0x07));
+    CELL rc = Adjacent_Cell(ahead, (FacingType)((navface + 2) & 0x07));
+    bool narrow = (!Map.In_Radar(lc) || Can_Enter_Cell(lc) == MOVE_NO)
+                  && (!Map.In_Radar(rc) || Can_Enter_Cell(rc) == MOVE_NO);
+    if (!narrow) {
+        return (0);
+    }
+
+    const int CORRIDOR_SCAN_MAX = 8;
+
+    /*
+    **	ONE GROUP AT A TIME (reservation). Are WE already inside the pinch? If both cells perpendicular
+    **	to our travel at our OWN cell are impassable terrain, we are in the corridor and we own the lane
+    **	-- we push whatever is ahead. If we are still on open ground at the MOUTH, a friendly infantry
+    **	column already walking through the corridor owns it: butting in and scattering them is the
+    **	scramble-then-lock we saw, so instead WAIT at the mouth until the moving men have cleared, then
+    **	go. (Idle men squatting in the pinch are NOT "using" it -- they fall through to the push below.)
+    */
+    CELL lh = Adjacent_Cell(here, (FacingType)((navface - 2) & 0x07));
+    CELL rh = Adjacent_Cell(here, (FacingType)((navface + 2) & 0x07));
+    bool here_narrow = (!Map.In_Radar(lh) || Can_Enter_Cell(lh) == MOVE_NO)
+                       && (!Map.In_Radar(rh) || Can_Enter_Cell(rh) == MOVE_NO);
+    if (!here_narrow) {
+        CELL s = here;
+        for (int i = 0; i < CORRIDOR_SCAN_MAX; i++) {
+            CELL nc = Adjacent_Cell(s, navface);
+            if (!Map.In_Radar(nc)) {
+                break;
+            }
+            for (ObjectClass* o = Map[nc].Cell_Occupier(); o != NULL; o = o->Next) {
+                if (o->Is_Techno() && o->What_Am_I() == RTTI_INFANTRY && House->Is_Ally(o)
+                    && ((FootClass*)o)->IsDriving) {
+                    return (2); // a friendly column is traversing the pinch -- hold at the mouth, don't butt in
+                }
+            }
+            CELL l2 = Adjacent_Cell(nc, (FacingType)((navface - 2) & 0x07));
+            CELL r2 = Adjacent_Cell(nc, (FacingType)((navface + 2) & 0x07));
+            bool ncn = (!Map.In_Radar(l2) || Can_Enter_Cell(l2) == MOVE_NO)
+                       && (!Map.In_Radar(r2) || Can_Enter_Cell(r2) == MOVE_NO);
+            if (!ncn) {
+                break; // past the far mouth
+            }
+            s = nc;
+        }
+    }
+
+    /*
+    **	Drain the WHOLE corridor, not just the cell against our nose. A single man leapfrogs out fine
+    **	by scattering one cell forward -- but a PACKED COLUMN can't: every forward cell is full of more
+    **	men, so the man we touch has nowhere to step and Scatter no-ops (the "host blocks, one man
+    **	moves" case). The man who CAN move is the one at the far end, next to the open mouth, and no
+    **	vehicle is touching him. So we scatter every idle friendly infantryman along the pinch ahead:
+    **	each tick the man nearest the mouth spills onto open ground (the only one with a free cell),
+    **	freeing his cell; the rest shuffle down; the column drains single-file over a few ticks. The
+    **	threat coord is our own position, so every man is biased AWAY from us -- onward toward the far
+    **	mouth. Scan stops one cell past the pinch (we still scatter that mouth cell so the lead man
+    **	clears). Capped so a long corridor can't blow the loop. forced+nokidding moves only genuinely
+    **	idle men.
+    */
+    bool shoved = false;
+    CELL scan = here;
+    for (int i = 0; i < CORRIDOR_SCAN_MAX; i++) {
+        CELL nc = Adjacent_Cell(scan, navface);
+        if (!Map.In_Radar(nc)) {
+            break;
+        }
+
+        ObjectClass* occ = Map[nc].Cell_Occupier();
+        while (occ != NULL) {
+            ObjectClass* nextocc = occ->Next; // an Assign_Destination may relink the cell chain
+            if (occ->Is_Techno() && occ->What_Am_I() == RTTI_INFANTRY && House->Is_Ally(occ)) {
+                FootClass* man = (FootClass*)occ;
+                /*
+                **	Strict directed push -- step the man ONE cell straight AWAY from us (down-corridor
+                **	toward the far mouth), never sideways or back. Plain Scatter is too loose for a 1-wide
+                **	pinch: its fallback scan grabs ANY free cell, including one back toward the vehicle, so
+                **	men "scatter into the harvester" and churn instead of clearing. Here the heading is
+                **	exactly away-from-us and we move him only if that one cell is open, else he waits (the
+                **	column drains front-first as the mouth man spills onto open ground). We only ever push
+                **	an IDLE man -- one already walking is IsDriving and left to finish -- so re-issuing the
+                **	order every tick can't thrash; it just walks him out a cell at a time.
+                */
+                if (!man->IsTethered) {
+                    CELL mcell = Coord_Cell(man->Center_Coord());
+                    FacingType awayface = Dir_Facing(::Direction(Center_Coord(), man->Center_Coord()));
+
+                    /*
+                    **	We push IDLE men out AND men WALKING INTO us -- the latter is the dominant freeze
+                    **	(a foot soldier striding through the corridor at us trips the engine's head-on rule
+                    **	and the vehicle locks; ~50:1 over vehicle-vs-vehicle in the log). But a man already
+                    **	walking AWAY from us is clearing on his own, so leave his orders alone rather than
+                    **	clip his journey to one-cell hops. "Already clearing" = his destination heading lies
+                    **	within an eighth of straight-away-from-us.
+                    */
+                    bool already_clearing = false;
+                    if (man->IsDriving && Target_Legal(man->NavCom)) {
+                        FacingType movedir = Dir_Facing(::Direction(man->Center_Coord(), As_Coord(man->NavCom)));
+                        int d = (movedir - awayface) & 0x07;
+                        already_clearing = (d <= 1 || d == 7);
+                    }
+
+                    /*
+                    **	Push into the FORWARD ARC -- straight away, or either forward diagonal -- taking the
+                    **	first open cell. Inside a 1-wide pinch the diagonals are walls, so this stays strict
+                    **	single-file and never backward; AT THE FAR MOUTH the diagonals open into the field,
+                    **	so the men fan out sideways and clear instead of piling against the corridor's end
+                    **	("they all moved and got stuck at the end"). The three never include a cell behind us.
+                    **	Re-issue only when his destination isn't already the chosen cell, so a man mid-step
+                    **	isn't restarted every tick (no jitter).
+                    */
+                    if (!already_clearing) {
+                        static const int fwd_arc[3] = {0, 1, -1}; // straight, then the two forward diagonals
+                        for (int k = 0; k < 3; k++) {
+                            FacingType ff = (FacingType)((awayface + fwd_arc[k]) & 0x07);
+                            CELL fwd = Adjacent_Cell(mcell, ff);
+                            if (Map.In_Radar(fwd) && man->Can_Enter_Cell(fwd) == MOVE_OK) {
+                                TARGET fwdtgt = ::As_Target(fwd);
+                                if (man->NavCom != fwdtgt) {
+                                    man->Assign_Mission(MISSION_MOVE);
+                                    man->Assign_Destination(fwdtgt);
+                                }
+                                shoved = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            occ = nextocc;
+        }
+
+        /*
+        **	Stop once this cell is open ground (the mouth) -- we've just scattered the lead man out of
+        **	it, and beyond the pinch the man can dodge sideways on his own.
+        */
+        CELL lc2 = Adjacent_Cell(nc, (FacingType)((navface - 2) & 0x07));
+        CELL rc2 = Adjacent_Cell(nc, (FacingType)((navface + 2) & 0x07));
+        bool nc_narrow = (!Map.In_Radar(lc2) || Can_Enter_Cell(lc2) == MOVE_NO)
+                         && (!Map.In_Radar(rc2) || Can_Enter_Cell(rc2) == MOVE_NO);
+        if (!nc_narrow) {
+            break;
+        }
+        scan = nc;
+    }
+
+#if TF_DEV_BUILD
+    if (shoved && House && House->IsHuman) {
+        static FILE* tf_inf_log = NULL;
+        static bool tf_inf_tried = false;
+        if (!tf_inf_tried) {
+            tf_inf_tried = true;
+            const char* h = getenv("USERPROFILE");
+            if (h == NULL)
+                h = getenv("HOME");
+            if (h != NULL) {
+                char ip[512];
+                snprintf(ip, sizeof(ip), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                tf_inf_log = fopen(ip, "a");
+            }
+        }
+        if (tf_inf_log != NULL) {
+            const char* me =
+                (Techno_Type_Class() && Techno_Type_Class()->IniName) ? Techno_Type_Class()->IniName : "<?>";
+            fprintf(tf_inf_log, "INFGIVEWAY: %s pos=(%d,%d) shoved-man-at=(%d,%d) myid=%d\n", me,
+                    (int)Cell_X(here), (int)Cell_Y(here), (int)Cell_X(ahead), (int)Cell_Y(ahead),
+                    (int)As_Target());
+            fflush(tf_inf_log);
+        }
+    }
+#endif
+
+    return (shoved ? 1 : 0);
+}
+
+/***********************************************************************************************
+ * DriveClass::Try_Deadlock_Scatter -- Backstop scatter to break a symmetric wedge.            *
+ *                                                                                             *
+ *    Patient-waiting is correct for a unit queued behind a pinch that WILL clear -- but a      *
+ *    SYMMETRIC deadlock the give-way resolver never matched (a clump packed at a base, a       *
+ *    stationary friendly parked on our only path, two vehicles nose-to-nose that both just     *
+ *    "wait") would wait FOREVER: nobody breaks the symmetry. The head-on log proves it         *
+ *    (~25k MOVE_NO blocks vs ~36 resolver hits). This is the shared backstop, called from      *
+ *    BOTH the no-path patient branch (Basic_Path failed) AND the execution-blocked head-on     *
+ *    branch (Basic_Path succeeded but the next cell holds a friendly vehicle) -- the latter    *
+ *    being the COMMON nose-to-nose case the breaker was previously blind to.                   *
+ *                                                                                             *
+ *    Each call counts one blocked retry cycle (StuckFrames). Once we have been wedged for      *
+ *    STUCK_SCATTER_TRIES straight cycles it either SHOVES a friendly idle infantryman off our  *
+ *    path-ahead (give-way is DriveClass-only, so infantry never yield on their own) or, lacking *
+ *    that, force-scatters OURSELVES into a free adjacent cell and auto-resumes the original     *
+ *    order via the nav queue. The neighbour scan is rotated by our unit id so two units boxed   *
+ *    against each other pick DIFFERENT escape directions -- that asymmetry is what unwedges the *
+ *    clump, with no RNG (lockstep-safe). StuckFrames resets to 0 the instant we advance a cell  *
+ *    (the cando == MOVE_OK commit point in Start_Of_Move), so a flowing or genuinely-clearing   *
+ *    queue never reaches the threshold.                                                        *
+ *                                                                                             *
+ * INPUT:   none (operates on this unit's state)                                                *
+ *                                                                                             *
+ * OUTPUT:  bool; true if a break action was taken (caller should halt this tick and re-path    *
+ *                next cycle), false if still patiently waiting (caller continues as normal).    *
+ *                                                                                             *
+ * WARNINGS:   Lockstep-critical -- per-unit integer state and synced Scatter only, no RNG.     *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   06/16/2026 : Extracted from Start_Of_Move so both blocked branches share one backstop.     *
+ *=============================================================================================*/
+bool DriveClass::Try_Deadlock_Scatter(void)
+{
+    const int STUCK_SCATTER_TRIES = 8;
+
+    if (StuckFrames < 0xFFFF) {
+        StuckFrames++;
+    }
+    if (StuckFrames < STUCK_SCATTER_TRIES || !Target_Legal(NavCom)) {
+        return (false);
+    }
+
+    CELL hc = Coord_Cell(Center_Coord());
+
+    /*
+    **	Infantry never yield to a blocked vehicle on their own: the give-way and head-on resolvers
+    **	are all DriveClass (RTTI_UNIT), so an idle foot soldier parked on our route just sits there
+    **	forever (the man-blocks-harvester / APC-blocked-by-E1 cases we observed). If the cell toward
+    **	our goal holds a friendly infantryman, SHOVE it aside -- a forced + nokidding Scatter, which
+    **	is deterministic (synced RNG) / lockstep-safe and only moves genuinely idle infantry (driving
+    **	and mid-uninterruptible-action soldiers are left alone). Then stay patient one cycle and
+    **	re-path the instant it clears, rather than scattering OURSELVES around a man we can simply
+    **	ask to step aside.
+    */
+    FacingType navface = Dir_Facing(Direction(NavCom));
+    CELL navcell = Adjacent_Cell(hc, navface);
+    bool shoved = false;
+    if (Map.In_Radar(navcell)) {
+        ObjectClass* occ = Map[navcell].Cell_Occupier();
+        while (occ != NULL) {
+            ObjectClass* nextocc = occ->Next; // Scatter may relink the chain
+            if (occ->Is_Techno() && occ->What_Am_I() == RTTI_INFANTRY && House->Is_Ally(occ)) {
+                occ->Scatter(Center_Coord(), true, true);
+                shoved = true;
+            }
+            occ = nextocc;
+        }
+    }
+    if (shoved) {
+        StuckFrames = 0; // gave the infantry a beat to clear; re-path next cycle
+        Stop_Driver();
+        TrackNumber = -1;
+        return (true);
+    }
+
+    CELL escape = 0;
+    int seed = As_Target() & 0x07;
+    for (int n = 0; n < FACING_COUNT; n++) {
+        FacingType nf = (FacingType)((seed + n) & 0x07);
+        CELL ncell = Adjacent_Cell(hc, nf);
+        if (Map.In_Radar(ncell) && Can_Enter_Cell(ncell, nf) == MOVE_OK) {
+            escape = ncell;
+            break;
+        }
+    }
+    if (escape != 0) {
+        TARGET original = NavCom;
+#if TF_DEV_BUILD
+        if (House && House->IsHuman) {
+            static FILE* tf_scatter_log = NULL;
+            static bool tf_scatter_tried = false;
+            if (!tf_scatter_tried) {
+                tf_scatter_tried = true;
+                const char* h = getenv("USERPROFILE");
+                if (h == NULL)
+                    h = getenv("HOME");
+                if (h != NULL) {
+                    char sp[512];
+                    snprintf(sp, sizeof(sp), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                    tf_scatter_log = fopen(sp, "a");
+                }
+            }
+            if (tf_scatter_log != NULL) {
+                const char* me = (Techno_Type_Class() && Techno_Type_Class()->IniName)
+                                     ? Techno_Type_Class()->IniName
+                                     : "<?>";
+                fprintf(tf_scatter_log,
+                        "SCATTER-deadlock: %s pos=(%d,%d) -> escape=(%d,%d) "
+                        "stuck=%d myid=%d\n",
+                        me, (int)Cell_X(hc), (int)Cell_Y(hc), (int)Cell_X(escape), (int)Cell_Y(escape),
+                        (int)StuckFrames, (int)As_Target());
+                fflush(tf_scatter_log);
+            }
+        }
+#endif
+        Assign_Destination(::As_Target(escape));
+        Queue_Navigation_List(original);
+        StuckFrames = 0;
+        Stop_Driver();
+        TrackNumber = -1;
+        return (true);
+    }
+
+    return (false);
+}
+
+/***********************************************************************************************
  * DriveClass::Start_Of_Move -- Tries to get a unit to advance toward cell.                    *
  *                                                                                             *
  *    This will try to start a unit advancing toward the cell it is                            *
@@ -1468,6 +1827,18 @@ bool DriveClass::Start_Of_Move(void)
     }
 
     /*
+    **	Infantry give-way (v2.2.3): clear a friendly idle foot soldier out of a 1-wide corridor cell
+    **	ahead of us, OR -- if a friendly infantry column is already traversing the pinch and we are
+    **	still at the mouth -- WAIT for them rather than butting in and scattering them (return 2). Done
+    **	FIRST, before the vehicle give-way decision below, which would otherwise HOLD us behind an idle
+    **	man indefinitely (he is invisible to the claim system, so that hold never releases).
+    */
+    if (Infantry_Give_Way() == 2) {
+        Stop_Driver();
+        return (false); // hold at the mouth; the moving column owns the corridor
+    }
+
+    /*
     **	Give-way (v2.2.3): if a higher-id allied vehicle is coming the other way through a 1-wide
     **	stretch ahead, the lower-id unit yields until the whole oncoming column has passed, then
     **	advances in one clean run. Stateless and re-checked each tick, so no ping-pong and no
@@ -1479,8 +1850,26 @@ bool DriveClass::Start_Of_Move(void)
         TechnoClass* gw_winner = NULL;
         int gw = Give_Way_Decision(&gw_winner);
         if (gw == 1) {
-            Stop_Driver();
-            return (false);
+            /*
+            **	OPEN-GROUND hold. Correct as a brief yield, but never defer FOREVER to a blocker that
+            **	never clears (a stalled/idle unit we keep standing down for in the open -- the harvester
+            **	frozen for 1000+ frames at the map edge). After HOLD_TIMEOUT straight open-ground holds,
+            **	stop yielding and fall through to normal pathing, which routes AROUND it (open ground has
+            **	room). Corridor holds (gw==2) are EXEMPT -- the pinch reservation must keep its turn.
+            **	HoldFrames resets the instant we are not open-ground-holding (the else branches + the
+            **	cell-advance commit), so a normal short yield never trips it.
+            */
+            const int HOLD_TIMEOUT = 60;
+            if (HoldFrames < 0xFFFF) {
+                HoldFrames++;
+            }
+            if (HoldFrames < HOLD_TIMEOUT) {
+                Stop_Driver();
+                return (false);
+            }
+            // timed out: stop deferring, fall through and try to path past/around the stuck blocker
+        } else {
+            HoldFrames = 0;
         }
         if (gw == 2) {
             CELL back = Find_Give_Way_Cell(gw_winner);
@@ -1783,74 +2172,13 @@ bool DriveClass::Start_Of_Move(void)
                         TryTryAgain = PATH_RETRY; // wait its turn at the pinch; do not abandon
 
                         /*
-                        **	Deadlock-breaker (v2.2.3). Patient-waiting is correct for a unit queued
-                        **	behind a pinch that WILL clear -- but a SYMMETRIC deadlock the give-way
-                        **	resolver never matched (a clump of units packed at a base, a stationary
-                        **	friendly parked on our only path, two units nose-to-nose that both wait)
-                        **	would wait FOREVER: nobody breaks the symmetry. The head-on log proves it
-                        **	-- ~25k MOVE_NO blocks vs ~36 resolver hits. So once we have been blocked
-                        **	for STUCK_SCATTER_TRIES straight retry cycles, force a scatter into ANY
-                        **	free adjacent cell, then auto-resume the original order via the nav queue
-                        **	(the same proven pattern as the give-way divert above). The neighbour scan
-                        **	is rotated by our unit id so two units boxed against each other pick
-                        **	DIFFERENT escape directions -- that asymmetry is what unwedges the clump,
-                        **	with no RNG (lockstep-safe). StuckFrames resets to 0 the instant we advance
-                        **	a cell (success path below), so a flowing or genuinely-clearing queue never
-                        **	reaches the threshold.
+                        **	Deadlock-breaker (v2.2.3). This is the NO-PATH wedge: Basic_Path failed and we
+                        **	are queued behind a pinch. Count the blocked cycle and let the shared backstop
+                        **	decide whether to scatter (see Try_Deadlock_Scatter for the full rationale). If
+                        **	it acts, halt this tick and re-path next cycle.
                         */
-                        const int STUCK_SCATTER_TRIES = 8;
-                        if (StuckFrames < 0xFFFF) {
-                            StuckFrames++;
-                        }
-                        if (StuckFrames >= STUCK_SCATTER_TRIES && Target_Legal(NavCom)) {
-                            CELL hc = Coord_Cell(Center_Coord());
-                            CELL escape = 0;
-                            int seed = As_Target() & 0x07;
-                            for (int n = 0; n < FACING_COUNT; n++) {
-                                FacingType nf = (FacingType)((seed + n) & 0x07);
-                                CELL ncell = Adjacent_Cell(hc, nf);
-                                if (Map.In_Radar(ncell) && Can_Enter_Cell(ncell, nf) == MOVE_OK) {
-                                    escape = ncell;
-                                    break;
-                                }
-                            }
-                            if (escape != 0) {
-                                TARGET original = NavCom;
-#if TF_DEV_BUILD
-                                if (House && House->IsHuman) {
-                                    static FILE* tf_scatter_log = NULL;
-                                    static bool tf_scatter_tried = false;
-                                    if (!tf_scatter_tried) {
-                                        tf_scatter_tried = true;
-                                        const char* h = getenv("USERPROFILE");
-                                        if (h == NULL)
-                                            h = getenv("HOME");
-                                        if (h != NULL) {
-                                            char sp[512];
-                                            snprintf(sp, sizeof(sp), "%s/Documents/CnCRemastered/tf_astar.log", h);
-                                            tf_scatter_log = fopen(sp, "a");
-                                        }
-                                    }
-                                    if (tf_scatter_log != NULL) {
-                                        const char* me = (Techno_Type_Class() && Techno_Type_Class()->IniName)
-                                                             ? Techno_Type_Class()->IniName
-                                                             : "<?>";
-                                        fprintf(tf_scatter_log,
-                                                "SCATTER-deadlock: %s pos=(%d,%d) -> escape=(%d,%d) "
-                                                "stuck=%d myid=%d\n",
-                                                me, (int)Cell_X(hc), (int)Cell_Y(hc), (int)Cell_X(escape),
-                                                (int)Cell_Y(escape), (int)StuckFrames, (int)As_Target());
-                                        fflush(tf_scatter_log);
-                                    }
-                                }
-#endif
-                                Assign_Destination(::As_Target(escape));
-                                Queue_Navigation_List(original);
-                                StuckFrames = 0;
-                                Stop_Driver();
-                                TrackNumber = -1;
-                                return (false);
-                            }
+                        if (Try_Deadlock_Scatter()) {
+                            return (false);
                         }
                     } else {
                         Assign_Destination(TARGET_NONE);
@@ -1953,6 +2281,31 @@ bool DriveClass::Start_Of_Move(void)
 
         if (cando != MOVE_OK) {
 
+            /*
+            **	Deadlock-breaker, EXECUTION-BLOCKED head-on branch (v2.2.3). This is the common
+            **	nose-to-nose case the no-path breaker above is blind to: Basic_Path SUCCEEDED (so we
+            **	never reached the patient branch), yet we cannot step into the next cell because a
+            **	friendly vehicle holds it -- the vanilla head-on MOVE_NO (unit.cpp Can_Enter_Cell)
+            **	that A* can never escalate past. Left alone, both units retry forever (the ~25k
+            **	HEADON-block log). Funnel it through the SAME shared backstop so a sustained head-on
+            **	scatters after STUCK_SCATTER_TRIES cycles.
+            **
+            **	CRITICAL gate: only count/scatter when destcell actually holds a friendly allied
+            **	VEHICLE. A bare MOVE_NO on terrain/cliff is PERMANENT -- scattering there would just
+            **	jiggle the unit against the wall forever (a NEW bug). Cell_Techno() is NULL for
+            **	terrain, so this never fires on it. MOVE_TEMP / MOVE_MOVING_BLOCK are handled below
+            **	(they clear on their own) and are excluded by the cando == MOVE_NO test.
+            */
+            if (cando == MOVE_NO) {
+                TechnoClass* headon = Map[destcell].Cell_Techno();
+                if (headon != NULL && headon != this && headon->What_Am_I() == RTTI_UNIT
+                    && House->Is_Ally(headon)) {
+                    if (Try_Deadlock_Scatter()) {
+                        return (false);
+                    }
+                }
+            }
+
             if (Mission == MISSION_MOVE /*KO&& House->IsHuman */ && Distance(NavCom) < Rule.CloseEnoughDistance) {
                 Assign_Destination(TARGET_NONE);
                 if (!IsActive)
@@ -2005,10 +2358,11 @@ bool DriveClass::Start_Of_Move(void)
 
         /*
         **	We are committing to enter the next cell (cando == MOVE_OK) -- real forward progress, so
-        **	clear the deadlock-breaker counter. Only a unit that has made NO progress for
-        **	STUCK_SCATTER_TRIES straight retry cycles ever force-scatters.
+        **	clear the deadlock-breaker counter AND the open-ground hold-timeout. Only a unit that has
+        **	made NO progress for STUCK_SCATTER_TRIES straight retry cycles ever force-scatters.
         */
         StuckFrames = 0;
+        HoldFrames = 0;
 
         /*
         **	Determine the speed that the unit can travel to the desired square.
