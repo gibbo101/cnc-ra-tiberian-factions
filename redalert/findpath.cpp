@@ -674,6 +674,30 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
                 cell_cost += 0.41f;
             }
 
+            /*
+            **	Tiberian Factions -- Infantry Tiberium Aversion (ported from CFE Patch
+            **	Redux, ChthonVII). Infantry route AROUND TD Tiberium when a reasonable
+            **	detour exists, because Tiberium poisons them (infantry.cpp). The penalty
+            **	is finite (TIB_AVERSION_COST cells) so they still cross a wide field with
+            **	no shorter way round rather than refuse the order.
+            **
+            **	Two RA-specific deviations from CFE, both deliberate:
+            **	  1. Keyed on OVERLAY_TIB01 specifically, NOT Land_Type()==LAND_TIBERIUM.
+            **	     In RA, Ore and Gems are engine-Tiberium too (they share LAND_TIBERIUM)
+            **	     but are harmless, so the land-type test would wrongly repel infantry
+            **	     from ore fields. Same lesson as the damage hook in infantry.cpp.
+            **	  2. No chem-warrior (E5) exemption. CFE exempts the Tiberium-immune chem
+            **	     soldier, but OUR Tiberium damages ALL infantry, so ALL infantry avoid
+            **	     it -- aversion tracks damage. (If the chem warrior is ever made
+            **	     Tiberium-immune for TD authenticity, exempt it in BOTH places.)
+            **	Vehicles/harvesters (non-RTTI_INFANTRY) are unaffected.
+            */
+            static const float TIB_AVERSION_COST = 2.0f;
+            if (cell_cost > 0 && What_Am_I() == RTTI_INFANTRY
+                && Map[adjacent_cell_id].Overlay == OVERLAY_TIB01) {
+                cell_cost += TIB_AVERSION_COST;
+            }
+
             if (cell_cost > 0) {
                 cell_cost += prev_cell.cost_from_start;
                 // try_emplace is unavailable on this toolchain's libstdc++; emplace is equivalent here

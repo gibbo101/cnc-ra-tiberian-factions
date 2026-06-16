@@ -271,11 +271,13 @@ would hand off to is already in `redalert/drive.cpp` `Start_Of_Move` (the `traff
 scan). Diagnostic: the `A* FALLBACK -> legacy` tally line in `tf_astar.log` (gated `TF_DEV_BUILD`).
 
 ## Side question: what's left in the CFE first-wave after pathfinding?
-First wave (docs/cfe-port-plan.md §1) is otherwise **complete**: Pixel-Perfect Zoom ✅, A\* ✅,
-Attack-Move ✅, Rally Points ✅, Harvester Queue-Jump ✅, Harvester Optimization ✅, Smarter Repair Bay ✅.
-**The only remaining first-wave item is #7 Infantry Tiberium Aversion** — small, and now unblocked
-(it required A\*, which shipped). Port against our `OVERLAY_TIB01` fields; exempt visceroids; ore stays
-harmless (Tiberium-only aversion).
+First wave (docs/cfe-port-plan.md §1) is now **COMPLETE** (2026-06-16): Pixel-Perfect Zoom ✅, A\* ✅,
+Attack-Move ✅, Rally Points ✅, Harvester Queue-Jump ✅, Harvester Optimization ✅, Smarter Repair Bay ✅,
+**Infantry Tiberium Aversion ✅ (code-complete, awaiting playtest)**. The aversion port lives in
+`FootClass::Find_Path_AStar` (findpath.cpp) as a +2-cell cost on `OVERLAY_TIB01` cells for
+`RTTI_INFANTRY` movers — keyed on the overlay (not LAND_TIBERIUM, which RA ore/gems also carry) and
+with no chem-warrior exemption (our Tiberium hurts all infantry). See cfe-port-plan.md §1 row 7.
+Everything remaining is second wave (§2 candidates) + the bugfix-inventory port candidates (§3).
 
 After that, everything left is **second wave (§2, undecided candidates)** — Q-Move Overhaul, TS/RA2
 wall building, Smarter Aircraft, Commando/Tanya Guard, Safe Sabotage, Suspend Building Repairs,
