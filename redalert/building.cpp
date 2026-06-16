@@ -3480,6 +3480,29 @@ TARGET BuildingClass::Greatest_Threat(ThreatType threat) const
 }
 
 /***********************************************************************************************
+ * BuildingClass::TDSAM_Try_Reacquire -- Smarter SAMs: grab another air target before retract. *
+ *                                                                                             *
+ *    Ported behaviour from CFE Patch Redux (ChthonVII), "Smarter SAMs": a SAM site that       *
+ *    loses its target part-way through a surfacing (still has missiles left in this volley)    *
+ *    rescans for another valid airborne target before lowering underground, instead of        *
+ *    wasting the ~2s rise/lower reload cycle. Uses the same THREAT_NORMAL scan the SAM uses    *
+ *    to acquire in Mission_Guard (Greatest_Threat folds in THREAT_AREA|THREAT_AIR for the      *
+ *    TDSAM). The Height!=0 guard rejects landed aircraft, matching the state-machine's own     *
+ *    target-validity test. Deterministic (no RNG) so it is lockstep/MP-safe.                   *
+ *                                                                                             *
+ * OUTPUT:  true if a new legal airborne target was acquired (TarCom reassigned to it).        *
+ *=============================================================================================*/
+bool BuildingClass::TDSAM_Try_Reacquire(void)
+{
+    TARGET newtarget = Greatest_Threat(THREAT_NORMAL);
+    if (Target_Legal(newtarget) && Is_Target_Aircraft(newtarget) && As_Aircraft(newtarget)->Height != 0) {
+        Assign_Target(newtarget);
+        return (true);
+    }
+    return (false);
+}
+
+/***********************************************************************************************
  * BuildingClass::Grand_Opening -- Handles construction completed special operations.          *
  *                                                                                             *
  *    This routine is called when construction has finished. Typically, this enables           *
@@ -5088,6 +5111,12 @@ int BuildingClass::Mission_Attack(void)
         */
         case TDSAM_READY:
             if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+                // Smarter SAMs: volley still loaded (0 shots fired) -- look for another
+                // air target and stay up to engage it before retracting to reload.
+                if (TDSAM_Try_Reacquire()) {
+                    Status = TDSAM_READY;
+                    return (1);
+                }
                 Assign_Target(TARGET_NONE);
                 Status = TDSAM_LOCKING;
                 return (TICKS_PER_SECOND);
@@ -5108,6 +5137,12 @@ int BuildingClass::Mission_Attack(void)
         */
         case TDSAM_FIRING:
             if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+                // Smarter SAMs: volley still loaded (0 shots fired) -- reacquire and
+                // re-rotate onto the new target rather than wasting the surface cycle.
+                if (TDSAM_Try_Reacquire()) {
+                    Status = TDSAM_READY;
+                    return (1);
+                }
                 Assign_Target(TARGET_NONE);
                 Status = TDSAM_LOCKING;
             } else {
@@ -5134,6 +5169,12 @@ int BuildingClass::Mission_Attack(void)
         */
         case TDSAM_READY2:
             if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+                // Smarter SAMs: one missile left in this volley -- reacquire another air
+                // target and stay up to spend it before retracting to reload.
+                if (TDSAM_Try_Reacquire()) {
+                    Status = TDSAM_READY2;
+                    return (1);
+                }
                 Assign_Target(TARGET_NONE);
                 Status = TDSAM_LOCKING;
                 return (TICKS_PER_SECOND);
@@ -5154,6 +5195,12 @@ int BuildingClass::Mission_Attack(void)
         */
         case TDSAM_FIRING2:
             if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+                // Smarter SAMs: one missile left in this volley -- reacquire and re-rotate
+                // onto the new target rather than retracting with a shot still loaded.
+                if (TDSAM_Try_Reacquire()) {
+                    Status = TDSAM_READY2;
+                    return (1);
+                }
                 Assign_Target(TARGET_NONE);
                 Status = TDSAM_LOCKING;
             } else {

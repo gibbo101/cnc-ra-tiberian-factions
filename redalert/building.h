@@ -339,6 +339,7 @@ public:
     **	AI.
     */
     void Charging_AI(void);
+    bool TDSAM_Try_Reacquire(void); // Smarter SAMs (CFE): rescan for another air target before retracting underground.
     void Rotation_AI(void);
     void Factory_AI(void);
     void Repair_AI(void);
