@@ -2,7 +2,7 @@
 
 **PROVEN on the Steam Deck, 2026-05-29** — placed the `COMMAND & CONQUER` logo into the in-game radar-slot faction crest, vanilla, no EMC.
 
-Companion to `config-meg-mod-delivery.md`: that doc is the front-end **data** lever (CONFIG.MEG → factions/missions/text); this is the **image** lever. Together: the launcher front-end (text, layout-data, *and* images) is moddable and Workshop-shippable without EMC.
+Companion to `config-meg-mod-delivery.md`: that doc is the front-end **data** lever (CONFIG.MEG → factions/missions/text); this is the **image** lever for the **in-game** UI. ⚠ **Scope:** the loose atlas override is honored by the **in-game** renderer only — the front-end shell ignores it (see the SCOPE note below + `front-end-texture-meg-spike.md`). So: in-game images via this loose override; front-end *data* via CONFIG.MEG; front-end *pixels* are not mod-deliverable.
 
 ---
 

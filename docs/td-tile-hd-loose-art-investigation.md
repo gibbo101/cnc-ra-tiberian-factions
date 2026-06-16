@@ -93,24 +93,15 @@ overlays) loose art; templates don't get the loose path.
   crossings), awkward for full coastlines.
 - **E. Luke's new idea** — TBD, to explore next session.
 
-## What's in the tree (uncommitted, after this session)
-- `scripts/td_map_to_ra.py` — TD→RA map transcoder (WORKS; ~90% tiles + tiberium + waypoints +
-  minimap .tga + Local_Custom_Maps triplet). The ported-tile mapper is DISABLED
-  (`td_ra_tile_map.json.disabled`) so it size-gate-drops the mismatched shores/bridges → no crash.
-- `scripts/build_td_tiles.py` — the (now-dead-for-HD) tile-port generator: emits HD ZIP + classic
-  `.tem` + DLL enum/cdata/Init_Heap (ids 401-407) + tileset XML + mapper.
-- DLL: `TEMPLATE_TDSH1..TDBRIDGE2` (ids 401-407) in `defines.h`/`cdata.cpp` — UNUSED/unplaced
-  (no crash; the spike proved unplaced new templates load). `TDSH3` spike entry in the tileset
-  XML. Decide: revert these, or keep (harmless) until a path is chosen.
-- `TD*.ZIP` tile art, `scripts/_td_tems/` classic .tem, `build_tfassets.sh` .tem packing.
-- Dev toggles in `scenario.cpp`/`techno.cpp` are flipped **ON** (reveal/smoke-spawn/instabuild)
-  for testing — flip to `#if 0` before any release.
-- Committed earlier this session: the whole Tiberium ecosystem (693bb25).
+## Outcome (SHIPPED v2.0.0)
 
-## Restore actions taken (to get launchable)
-- Removed the S02 override from both copies; reverted the tileset XML S02 repoint.
-- Neutralized the Workshop copy (`workshop/content/.../3729834253/Vanilla_RA/ccmod.json` →
-  `ccmod.json.disabled`) — it had been overwritten with the current build during the load-path
-  test, creating a duplicate-mod conflict. **To fully restore it to the published v1.16, run
-  Steam → Verify integrity of the Workshop item (or unsub/resub).**
-- Dev `Mods/` copy is clean and is the only mod that loads now.
+The work-in-progress tree this section once tracked has all shipped or been superseded:
+- The TD→RA map transcoder (`scripts/td_map_to_ra.py`) shipped the 31-map TD pack via
+  `<mod>/CustomMaps/` — see [[project-td-skirmish-map-import-findings]] and `td-skirmish-map-import.md`.
+- The whole Tiberium ecosystem shipped in v2.0.0 (TIB01 overlay, visceroids, HD blossom tree).
+- Dev cheat toggles are no longer hand-flipped per session — they're gated on the `TF_DEV_BUILD`
+  macro (see the Dev-build switch in the workspace CLAUDE.md / `[[project-dev-build-switch]]`).
+
+The durable takeaway is the **rendering architecture above the banner** (real TD templates +
+dynamic-map synthesis = HD TD tiles, no atlas-name path) plus the forward-looking options A–E for
+the still-open coastline/bridge/desert work.

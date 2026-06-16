@@ -9,6 +9,10 @@ Complements `config-meg-mod-delivery.md` (the data lever / "master key"),
 `launcher-vs-dll-ownership.md` (code-side boundary), `campaign-tabs-research.md`
 (`INSTANCES.XML` roster edits), `classic-mode-palette-remap.md` (classic-mode TD rendering).
 
+> **Newer HD-terrain ground truth (2026-06-09):** since this doc was written we proved out
+> the HD loose-terrain rendering path — see `td-tile-hd-loose-art-investigation.md`. Read that
+> before doing any HD-desert tileset work; it supersedes the HD-rendering assumptions here.
+
 ---
 
 ## TL;DR

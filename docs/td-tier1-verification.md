@@ -1,5 +1,7 @@
 # TDNUKE / TDNUK2 / TDPYLE / TDSILO — TD-source verification
 
+> **RESOLVED — separated + shipped (v0.50).** All four are fully separated `STRUCT_TD*` types; the rules.ini stat fixes, the two TDPYLE engine dispatches, and the TDSILO tiberium-fill render branch all landed. The body below is retained as TD-source reference / the plan that was executed.
+
 **Status:** All four M2 Tier 1 separated buildings (commit a8217c9) are mostly TD-authentic. Building class flags and constructor args match TD field-for-field. The deltas are in **rules.ini values** (4 sight/strength stat divergences) and **two missing STRUCT_TDPYLE engine dispatches** that affect infantry production/death. TDSILO has a third issue: missing tiberium-fill render branch.
 
 **Session that produced it:** 2026-05-22, completion of the M2/M3 verification pass paired with [[td-sam-deep-dive]], [[td-atwr-deep-dive]], [[td-gtwr-gun-verification]], [[td-obli-verification]].

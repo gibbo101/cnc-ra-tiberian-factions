@@ -1,5 +1,12 @@
 # Adding a TD building as a buildable in our RA mod
 
+> **SUPERSEDED for new buildings (2026-06-16).** This describes the early **Logic= alias**
+> model. New buildings should be added as their own separated `STRUCT_TD*` engine type via
+> `td-building-separation-recipe.md` (the approach all 17 shipped buildings now use). Retained
+> for its **gotcha reference** — esp. #16 `ShapeSize=` (launcher scale) and #5 `Points=`
+> (AI targeting), which still apply. Note: gotchas #11–#15 are alias-specific and **obsolete**
+> post-separation.
+
 End-to-end recipe to add a new TD-themed building to the GDI or Nod faction. Verified against `NUK2` (Phase 1f, 2026-05-18) and re-verified against `TDNUKE` (v0.3 phase 3a, 2026-05-19, after the lessons below were absorbed).
 
 ## v0.3 lessons (must read before adding new entries)

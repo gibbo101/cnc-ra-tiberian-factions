@@ -1,4 +1,9 @@
-# Balance feedback log — deferred to v1.0
+# Balance feedback log
+
+> **STATUS (2026-06-16):** v1.0 shipped long ago (now at v2.x). The "defer to v1.0" framing
+> below is historical wording — the standing rule still holds (log playtest *balance* reports
+> here, fix *fidelity* bugs immediately), but the analytical home for the balance pass is now
+> **`balance-deep-dive.md`**. This file remains the raw running playtest-report log that feeds it.
 
 Per the standing rule (pre-v1 stays TD-source-authentic; "feels too strong/weak/fast"
 playtest reports get **logged here** and batched for the v1.0 balance pass, NOT patched

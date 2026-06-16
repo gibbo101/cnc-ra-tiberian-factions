@@ -111,7 +111,11 @@ Caveats:
 
 ---
 
-## ② Per-faction split — a real spike (hinges on `MusicMap`)
+## ② Per-faction split — CLOSED, not pursued (technical record only)
+
+> **Decision (Luke, 2026-06-03): CLOSED.** The per-faction `MusicMap` hook below was judged not
+> worth the effort and is **not being pursued**. The section is retained as the technical record
+> of *how* it would work if ever revisited — it is not open/queued work.
 
 Since MusicEvents has no faction key, per-faction music depends entirely on the one faction-aware
 hook in the data:

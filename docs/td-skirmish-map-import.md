@@ -1,6 +1,13 @@
 # Importing TD skirmish maps into the RA mod — feasibility + plan (2026-06-03)
 
-**Status: feasibility research + agreed direction. No code/maps in flight yet.**
+> **PARTLY SHIPPED (v2.0.0).** The temperate/winter tiers landed — the 31-map TD
+> pack ships via `<mod>/CustomMaps/` (DLL self-installs to `Local_Custom_Maps`; see
+> [[project-td-skirmish-map-import-findings]]). The "no clean importer" framing below
+> is OBE — a transcoder pipeline did the import. **Only the desert/interior-slot tier
+> remains open** (campaign-gated, see `theatre-desert-feasibility.md`). Body retained
+> for the per-map theatre matrix + the open desert work.
+
+**Status (original 2026-06-03):** feasibility research + agreed direction.
 Goal: bring Tiberian Dawn's original skirmish/multiplayer maps into our RA-based
 mod so GDI/Nod can fight on their home terrain. Complements
 `theatre-desert-feasibility.md` (the theatre lock, the decisive evidence) and

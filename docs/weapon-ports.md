@@ -4,7 +4,9 @@
 
 Catalogue of TD content that depends on engine assets RA doesn't have. Lists what's missing, who needs it (buildings vs units), and the per-weapon scope so we can plan dedicated phases without blocking catalogue rollout.
 
-**Status as of 2026-05-19:** scoped, not started. v0.3 catalogue uses placeholder RA weapons for the five defensive buildings (see `docs/catalogue.md` master wiring table). Units (v0.4+) will need most of these before any TD-flavoured infantry/vehicle work begins.
+> **STATUS: all listed weapon/bullet/anim ports SHIPPED (v1.0–v2.0).** Every TD unit and building now binds its own TD-authentic weapon chain (see the per-entity verification docs + `weapon-ports` references in the playbook). This doc is now a **historical mapping of which ports remained as of 2026-05-19** — useful for tracing the arc, never for stats (see the warning above).
+
+**Status as of 2026-05-19 (historical):** scoped, not started. v0.3 catalogue uses placeholder RA weapons for the five defensive buildings (see `docs/catalogue.md` master wiring table). Units (v0.4+) will need most of these before any TD-flavoured infantry/vehicle work begins.
 
 ---
 

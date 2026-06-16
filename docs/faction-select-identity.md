@@ -58,7 +58,14 @@ Per-language: there's a `MASTERTEXTFILE_<lang>.LOC` per language (EN-US, FR-FR, 
 | `FACTIONS.XML` `CampaignType` change | startup crash (genuine-faction route) |
 | loose `Data/ART/TEXTURES` override for the front-end | ignored (in-game only) |
 
-## Open / next
+## Status / open items
+
+> **SHIPPED (39e069b).** GDI/Nod emblems + names ship via the mod `Data/CONFIG.MEG`. The wiring
+> item below is DONE — the CONFIG.MEG is in the build, not `/tmp`. The only genuinely-open item is
+> the texture-only surfaces (Allies/Soviet emblems, marker/loading flags) which need the negative-
+> resolved front-end texture MEG route — see `front-end-texture-meg-spike.md`. ⚠ The 184MB crest
+> atlas is gitignored; regen `scripts/frontend_atlas_build.py` before deploy (see [[project-faction-select-shipped]]).
+
 - **All 8 relabeled (DONE 2026-05-29):** Spain→GDI, Turkey→Nod, Greece/England/Germany/France→Allies, USSR/Ukraine→Soviet — across `NAME_FACTION_NN` + `BONUS_<C>` + `REDALERT_<C>` (22 same-length edits in one pass). The redundant 4 can't be *hidden* (no data flag; `CampaignType` crashes), so the picker is 8 entries reading as the 4 factions (dupes accepted). **USSR caveat:** `NAME_FACTION_5` and `REDALERT_RUSSIA` are only 4-char slots, so "Soviet" (6) won't fit same-length — they stay "USSR" (the lobby overlay `BONUS_RUSSIA`, 43 chars, *does* show "Soviet"). "Soviet" everywhere would need the size-changing rebuild (crashes) — deferred as not worth it.
 - **All remaining icon/flag surfaces are texture-only (CONFIG.MEG can't reach them — confirmed: FACTIONS.XML has only `SmallIconName`, no map/loading field):** Allies/Soviet picker emblems (vs flags), the **map position-select** marker flag, the **loading-screen** flag, and bespoke GDI/Nod art. The launcher picks all of these from the atlas **by the player's country**, so they show e.g. the Spain flag for GDI. One fix for all → `front-end-texture-meg-spike.md`.
-- **Wiring:** the working CONFIG.MEG is currently a `/tmp` build pushed straight to the Deck — it needs adding to the mod `resources/`/build for an actual release.
+- **Wiring (DONE):** the CONFIG.MEG is built into the mod and ships in releases (was a `/tmp` build during the spike).
