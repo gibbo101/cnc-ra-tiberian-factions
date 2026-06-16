@@ -24,12 +24,15 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Pathfinding / AI cooperation
 
-### Deadlock-breaker is in the wrong branch (head-on clumps not caught)
-- **Severity:** major (the breaker rarely fires on the deadlocks it was built for).
-- **Status:** OPEN — diagnosed 2026-06-16, this is the next coding task.
-- **Detail:** the breaker lives in `Start_Of_Move`'s no-path branch, but most head-on deadlocks have a
-  valid path and block at execution (`drive.cpp ~1882`, vanilla head-on `MOVE_NO`), never reaching it.
-  Full fix plan + test specimens: `docs/chokepoint-reservation-design.md` → CHECKPOINT 2026-06-16.
+### Vehicle-vs-vehicle head-on in a 1-tile gap with no escape cell (breaker unreachable from gw==2)
+- **Severity:** minor (self-resolves — the boxed unit eventually dies/clears; never escalates to gridlock).
+- **Status:** OPEN — remaining give-way loose end after v2.3.0.
+- **Detail:** when `Give_Way_Decision` returns gw==2 (RETREAT) but `Find_Give_Way_Cell` finds no free
+  escape cell, the unit holds and never reaches `Try_Deadlock_Scatter`, so the breaker can't fire on
+  that case. Fix = make the breaker reachable from the gw==2 path. NOTE: the original "breaker is in the
+  WRONG BRANCH" issue (it only lived in the no-path branch, missing execution-time head-on `MOVE_NO`
+  clumps) was FIXED in v2.3.0 — `Try_Deadlock_Scatter` is now called from the execution head-on path
+  (`drive.cpp ~2301`) as well as the no-path branch. See `docs/chokepoint-reservation-design.md`.
 
 ### Deadlock-breaker micro-churn on returners
 - **Severity:** minor (cosmetic jiggle; unit not lost).
