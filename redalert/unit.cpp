@@ -3287,10 +3287,22 @@ int UnitClass::Mission_Harvest(void)
                 **	that the archive target points to the last place it harvested at. This might
                 **	solve the case where the harvester gets stuck and can't find Tiberium just because
                 **	it is greater than 32 squares away.
+                **
+                **	Tiberian Factions -- gate the archive reassignment on reachability. When the
+                **	last-mined field has since been walled off / disconnected (the AI fencing its
+                **	own gems is the classic case), ArchiveTarget stays "legal" but is unreachable,
+                **	and -- unlike the sibling site above -- it was never cleared. The result was an
+                **	infinite spin: re-dispatch to the unreachable cell -> A* fails -> NavCom clears
+                **	-> rescan finds nothing reachable -> archive still legal -> repeat (the "256
+                **	fallbacks", economy-dead harvester). Only chase the archive if it is in our
+                **	movement zone; otherwise drop it and idle (it gets re-tasked when the map
+                **	changes). Surgical: in normal harvesting the archive is the cell we just stood
+                **	on, same zone, so this is a no-op.
                 */
-                if (Target_Legal(ArchiveTarget)) {
+                if (Target_Legal(ArchiveTarget) && Is_In_Same_Zone(As_Cell(ArchiveTarget))) {
                     Assign_Destination(ArchiveTarget);
                 } else {
+                    ArchiveTarget = TARGET_NONE;
                     Status = GOINGTOIDLE;
                     IsUseless = true;
                     House->IsTiberiumShort = true;

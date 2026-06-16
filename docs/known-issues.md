@@ -51,13 +51,28 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ### Harvesters spin forever on an unreachable resource
 - **Severity:** major (idle harvesters = dead economy for those units).
-- **Status:** OPEN — own workstream (targeting / pathing / claiming / reachability).
+- **Status:** OPEN — own workstream (deferred to a dedicated segment, Luke 2026-06-16). Targeting /
+  pathing / claiming / reachability.
 - **Detail:** when ore/Tiberium is unreachable (e.g. the AI walls its own gems field with buildings) a
   harvester A*-fails → `ABANDON-giveup` → AI re-orders → loops forever instead of re-selecting a
   reachable field. Same root hit a tank ordered into a base-blocked cell. Also: 2 harvesters jammed at a
   refinery dock (contention). **Diagnostic note:** an idle/abandoned harvester emits NOTHING to
   `tf_astar.log` — this workstream needs its own instrument. See `docs/chokepoint-reservation-design.md`
   CHECKPOINT 2026-06-16 (spun-off workstreams) + memory `project-cfe-port-plan`.
+- **ROOT CAUSE FOUND + FIXED for the walled-field loop (2026-06-16):** the autonomous scan
+  `UnitClass::Tiberium_Check` (unit.cpp:2519) ALREADY zone-filters (`Map[Coord].Zones[MZone] !=
+  Map[center].Zones[MZone] → 0`), so `Goto_Tiberium` correctly finds "no reachable tiberium" when the
+  only field is walled off. The infinite spin was the **`ArchiveTarget` fallback** in `Mission_Harvest`
+  LOOKING (unit.cpp:3291): it re-dispatches the harvester to its last-mined cell **with no reachability
+  check** and (unlike the sibling site at 3256) never clears it. So path-fail → NavCom clears → re-scan
+  finds nothing reachable → archive still legal → re-dispatch to the same unreachable cell → loop (the
+  "256 fallbacks"). **FIX (commit pending):** guard that reassignment with
+  `Is_In_Same_Zone(As_Cell(ArchiveTarget))`; if the archive is gone/unreachable, clear it and fall to
+  GOINGTOIDLE instead of charging it forever. Surgical — only changes behaviour in the exact failure
+  case (archive in a different zone), identical in normal harvesting. **STILL FOR THE SEGMENT:** target
+  CLAIMING (two harvesters picking the same patch), refinery dock contention, the same-zone-but-
+  dynamically-blocked case (a partial wall / unit blocking a reachable-by-zone route), and finding a
+  reachable field beyond TiberiumLongScan range. This fix only kills the walled-off-field spin.
 
 ### Economy asymmetry: GDI/Nod dock (slow) vs RA auto-dump (fast)
 - **Severity:** balance (intended TD-authentic behaviour, not a bug — but a candidate to equalise).
