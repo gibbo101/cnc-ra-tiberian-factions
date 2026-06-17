@@ -4259,7 +4259,20 @@ bool BuildingClass::Captured(HouseClass* newowner)
         */
         tech = Contact_With_Whom();
         if (tech) {
-            if (Transmit_Message(RADIO_NEED_TO_MOVE) == RADIO_ROGER
+            /*
+            **	Tiberian Factions B3 -- capture a docked harvester along with its ore
+            **	refinery, but ONLY while it is actively UNLOADING (IsDumping), never while
+            **	it is merely in radio contact approaching the dock. The harvester now stays
+            **	radio-tethered through the whole B2 dust-loop unload (the premature
+            **	RADIO_UNLOADED at backup time was removed and is sent at unload completion
+            **	instead), so it shows up as Contact_With_Whom() here. Bypass the generic
+            **	NEED_TO_MOVE/distance dance below, which can tell a busy harvester to flee.
+            **	(TD cargo harvesters are handled by the Attached_Object() path above.)
+            */
+            if (tech->What_Am_I() == RTTI_UNIT && ((UnitClass*)tech)->Class->IsToHarvest
+                && ((UnitClass*)tech)->IsDumping) {
+                tech->Captured(newowner);
+            } else if (Transmit_Message(RADIO_NEED_TO_MOVE) == RADIO_ROGER
                 && (::Distance(tech->Center_Coord(), Docking_Coord()) < 0x0040
                     || (tech->What_Am_I() == RTTI_AIRCRAFT && ((AircraftClass*)tech)->Class->IsFixedWing
                         && ((AircraftClass*)tech)->In_Which_Layer() == LAYER_GROUND))) {

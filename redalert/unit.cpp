@@ -935,9 +935,18 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                 TechnoClass* whom = Contact_With_Whom();
                 if (IsTethered && whom != NULL) {
                     if (whom->What_Am_I() == RTTI_BUILDING && Mission == MISSION_ENTER) {
-                        if (Transmit_Message(RADIO_IM_IN, whom) == RADIO_ROGER) {
-                            Transmit_Message(RADIO_UNLOADED, whom);
-                        }
+                        /*
+                        **	Tiberian Factions B2/B3 -- tell the refinery we're docked
+                        **	(RADIO_IM_IN starts MISSION_UNLOAD) but do NOT send
+                        **	RADIO_UNLOADED here. The original RA flow sent it immediately,
+                        **	which freed the dock and dropped radio contact right at unload
+                        **	start. We keep the harvester tethered + in radio contact for the
+                        **	whole dust-loop instead, so the dock reads as occupied (queueing)
+                        **	and an engineer capturing the refinery mid-unload also takes the
+                        **	harvester. RADIO_UNLOADED is sent at completion (Mission_Unload
+                        **	Phase C).
+                        */
+                        Transmit_Message(RADIO_IM_IN, whom);
                     }
                 }
             }
@@ -3026,6 +3035,13 @@ int UnitClass::Mission_Unload(void)
 
         IsDumping = false;
         Tiberium = Gold = Gems = 0; // defensive; AI() already drained the load
+        /*
+        **	Tiberian Factions B2 -- unload finished: tell the refinery now (frees the
+        **	dock + triggers ReconsiderRefinery for queued harvesters), then break radio
+        **	contact and drive off. RADIO_UNLOADED was deferred from backup time to here
+        **	so the dock stayed occupied + the harvester stayed capturable during unload.
+        */
+        Transmit_Message(RADIO_UNLOADED);
         Transmit_Message(RADIO_OVER_OUT);
         Assign_Mission(MISSION_HARVEST);
         break;
