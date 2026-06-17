@@ -168,6 +168,19 @@ Avoid `if (*this == STRUCT_REFINERY)` assumptions inside the dock state machine.
 ---
 
 ## B3 — Engineer capture grabs the docked harvester
+
+> ✅ **DONE + VALIDATED 2026-06-17 (commit `0c5a040`), capture only while unloading.** Key finding:
+> during the B2 dust-loop the RA harvester had **no link at all** to the refinery — not cargo, radio
+> contact dropped at unload start (the RA flow fired `RADIO_UNLOADED` immediately at backup time), and
+> the booking-cleanup cleared `TiberiumUnloadRefinery` every frame (diagnostic confirmed
+> `attached=NULL contact=NULL`). A position-scan workaround was prototyped then rejected in favour of
+> the **proper fix: keep the harvester radio-tethered through the whole unload** (defer `RADIO_UNLOADED`
+> from backup time to `Mission_Unload` Phase C). Then `BuildingClass::Captured` captures the
+> radio-contact harvester directly, **gated on `IsDumping`** so only an actively-unloading harvester
+> transfers (an approaching one in contact does not — Luke's constraint). Bonus: the dock now reads as
+> occupied for the whole unload (helps the B5 multi-harvester queue) and the refinery shows BSTATE_FULL.
+
+### Original plan (below) — superseded by the radio-tether fix above
 **Revised by the visible-dust-loop decision:** the harvester is **never Limbo'd/attached as cargo**
 (it stays visible + radio-tethered during unload), so the free `Attached_Object` capture path does
 NOT apply here. Instead:
@@ -214,7 +227,16 @@ NOT apply here. Instead:
 
 ---
 
-## B4 — Any harvester → any refinery  *(future, separate chunk; notes only)*
+## B4 — Any harvester → any refinery
+
+> 🔨 **RA harv → TD ref IMPLEMENTED + deployed 2026-06-17 (UNCOMMITTED, awaiting last-test verdict).**
+> Opened three gates so a `UNIT_HARVESTER` docks + dust-loops at a `STRUCT_TDPROC`: `Find_Best_Refinery`
+> (RA harv accepts either refinery), `RADIO_CAN_LOAD` (TDPROC accepts RA harv), `RADIO_IM_IN` TDPROC
+> (RA harv → `MISSION_UNLOAD` not `RADIO_ATTACH`; TD building anim NOT fired). RA harvester pulls up to
+> the DIR_SW ramp and runs its normal dust-loop. Plus a TF_DEV `Can_Build` test allowance so any house
+> can build both refineries (test only). **Reverse case (TD harv → RA ref) NOT started** — design
+> decided: back in (visible, no Limbo) + dust AnimType overlay ("pipe siphon"), fallback = pull up +
+> dust. See `harvester-docking-session-handover.md` for the resume checklist.
 
 ### Guiding principle (Luke, 2026-06-17, REVISED): **unload style follows the HARVESTER, not the refinery.**
 - **RA harvester** (`UNIT_HARVESTER`): always runs its **visible dust-loop** (B2), at *any* refinery.

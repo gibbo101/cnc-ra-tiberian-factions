@@ -7315,6 +7315,22 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
      *=============================================================================================*/
     int TechnoTypeClass::Get_Ownable(void) const
     {
+#if TF_DEV_BUILD
+        /*
+        **	TF DEV TEST ONLY (compiled out of release) -- make BOTH ore refineries
+        **	ownable by every house so cross-dock docking (RA harv <-> TD ref) can be
+        **	exercised in a single skirmish. This is THE central ownership lever: it
+        **	widens Who_Can_Build_Me's `(1<<ActLike) & Get_Ownable()` gate AND
+        **	HouseClass::Can_Build's `(1<<house) & own` gate at once. No house builds
+        **	the other side's refinery in a shipped build.
+        */
+        if (What_Am_I() == RTTI_BUILDINGTYPE) {
+            StructType st = ((BuildingTypeClass const*)this)->Type;
+            if (st == STRUCT_REFINERY || st == STRUCT_TDPROC) {
+                return (0x7FFFFFFF);
+            }
+        }
+#endif
         if (IsDoubleOwned && Session.Type != GAME_NORMAL) {
             return (Ownable | HOUSEF_SOVIET | HOUSEF_ALLIES);
         }

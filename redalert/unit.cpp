@@ -5513,11 +5513,12 @@ bool UnitClass::MinelayerFindSpot(void)
 BuildingClass* UnitClass::Find_Best_Refinery(void) const
 {
     /*
-    **	TD harvesters dock only at TD refineries (STRUCT_TDPROC); RA harvesters
-    **	only at STRUCT_REFINERY. No cross-faction docking — dock animations and
-    **	cell offsets are type-specific.
+    **	B4: an RA harvester (UNIT_HARVESTER) can unload at EITHER refinery type -- it
+    **	carries its own visible dust-loop unload, so it works at a TD refinery's ramp
+    **	too (governing rule: unload style follows the harvester). A TD harvester stays
+    **	TDPROC-only until the reverse case (TD harv -> RA ref) is built.
     */
-    StructType reftype = (*this == UNIT_TDHARV) ? STRUCT_TDPROC : STRUCT_REFINERY;
+    bool is_td_harv = (*this == UNIT_TDHARV);
 
     static DynamicVectorClass<RefineryData> _refineries;
     _refineries.Clear();
@@ -5525,7 +5526,9 @@ BuildingClass* UnitClass::Find_Best_Refinery(void) const
     for (int i = 0; i < Buildings.Count(); ++i) {
         BuildingClass* refinery = Buildings.Ptr(i);
         if (refinery != NULL && refinery->House == House && !refinery->IsInLimbo
-            && refinery->Mission != MISSION_DECONSTRUCTION && *refinery == reftype
+            && refinery->Mission != MISSION_DECONSTRUCTION
+            && (is_td_harv ? (*refinery == STRUCT_TDPROC)
+                           : (*refinery == STRUCT_REFINERY || *refinery == STRUCT_TDPROC))
             && Map[refinery->Center_Coord()].Zones[Techno_Type_Class()->MZone]
                    == Map[Center_Coord()].Zones[Techno_Type_Class()->MZone]) {
             _refineries.Add(RefineryData{refinery, Distance(refinery), 0});

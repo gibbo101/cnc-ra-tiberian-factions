@@ -281,12 +281,15 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
         case STRUCT_REFINERY:
         case STRUCT_TDPROC: { // TD Refinery — same harvester dock semantics.
-            // No cross-faction docking: TDPROC accepts only TD harvesters,
-            // STRUCT_REFINERY only RA harvesters (dock anim/offsets are type-specific).
+            // B4: a TD refinery (STRUCT_TDPROC) accepts a TD harvester (TD attach
+            // path) OR an RA harvester (RA visible dust-loop -- governing rule: unload
+            // style follows the harvester). STRUCT_REFINERY stays RA-harv-only until
+            // the reverse case (TD harv -> RA ref) is built.
             bool right_harvester = false;
             if (from->What_Am_I() == RTTI_UNIT) {
-                right_harvester = (Class->Type == STRUCT_TDPROC) ? (*((UnitClass*)from) == UNIT_TDHARV)
-                                                                 : (*((UnitClass*)from) == UNIT_HARVESTER);
+                right_harvester = (Class->Type == STRUCT_TDPROC)
+                                      ? (*((UnitClass*)from) == UNIT_TDHARV || *((UnitClass*)from) == UNIT_HARVESTER)
+                                      : (*((UnitClass*)from) == UNIT_HARVESTER);
             }
             if (right_harvester && (ScenarioInit || !Is_Something_Attached())) {
                 return ((Contact_With_Whom() != from) ? RADIO_ROGER : RADIO_NEGATIVE);
@@ -329,14 +332,23 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             return (RADIO_ROGER);
 
         case STRUCT_TDPROC:
-            // Verbatim port of TD's STRUCT_REFINERY RADIO_IM_IN handler
-            // (tiberiandawn/building.cpp:263-269). TD's flow attaches the
-            // harvester as cargo (RADIO_ATTACH) and lets the BUILDING run
-            // its Mission_Harvest state machine (BSTATE_ACTIVE→AUX1 siphon
-            // →AUX2 undock, with bail-by-bail Offload_Tiberium_Bail() at
-            // each MIDDLE-state tick). RA's STRUCT_REFINERY (above) uses
-            // a different flow: harvester runs Mission_Unload and dumps
-            // all credits in one shot.
+            /*
+            **	B4: an RA harvester docking at a TD refinery uses the RA visible
+            **	dust-loop unload (governing rule: unload style follows the harvester) --
+            **	NOT the TD attach path. Do not Limbo/attach it and do NOT fire the TD
+            **	building animation (which has a TD harvester drawn into it); just put it
+            **	in MISSION_UNLOAD like STRUCT_REFINERY does. It dust-loops at the dock.
+            */
+            if (from != NULL && from->What_Am_I() == RTTI_UNIT && *((UnitClass*)from) == UNIT_HARVESTER) {
+                Mark(MARK_CHANGE);
+                from->Assign_Mission(MISSION_UNLOAD);
+                return (RADIO_ROGER);
+            }
+            // TD harvester -> TD attach path. Verbatim port of TD's STRUCT_REFINERY
+            // RADIO_IM_IN handler (tiberiandawn/building.cpp:263-269): attach the
+            // harvester as cargo (RADIO_ATTACH) and let the BUILDING run its
+            // Mission_Harvest state machine (BSTATE_ACTIVE->AUX1 siphon->AUX2 undock,
+            // bail-by-bail Offload_Tiberium_Bail() each MIDDLE tick).
             ScenarioInit++;
             Begin_Mode(BSTATE_ACTIVE);
             ScenarioInit--;
