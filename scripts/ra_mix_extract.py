@@ -122,6 +122,12 @@ def _parse_mix_blob(blob):
         tf.close()
         try:
             _, _, entries, data_start, raw = read_encrypted_mix(tf.name)
+        except Exception:
+            # A nested data blob can coincidentally start with First==0 &
+            # encrypted-flag but not actually be an encrypted mix (the RSA
+            # "decrypt" then overflows). Treat as not-a-mix so recursion
+            # continues to the real nested containers instead of crashing.
+            return None
         finally:
             os.unlink(tf.name)
         return entries, data_start, raw
