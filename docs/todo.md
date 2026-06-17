@@ -5,6 +5,19 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Idea: track TIB01 (Tiberium) load separately so harvester cargo can be told apart (2026-06-18, Luke)
+
+Today a harvester's cargo is split only into `Gold` (ore) + `Gems` (`UnitClass`, unit.cpp). Our
+Tiberium overlay `OVERLAY_TIB01` **banks as Gold** (unit.cpp:2965 -- "Tiberium banks as Ore, same
+value"), so a harvester carrying real Tiberium is indistinguishable from one carrying ore. To support
+e.g. **green Tiberium fumes ONLY when the harvester actually hauled TIB01** (vs grey/no smoke for plain
+ore), add a per-harvester counter that increments on TIB01 pickup in `Mission_Harvest` (alongside the
+`Gold += reducer` at the `OVERLAY_TIB01` case), and reset it on unload (where `Tiberium = Gold = Gems
+= 0`). Small add (one bitfield member + Save/Load + the two reset sites). Ore-vs-gems is already free
+(`Gold` vs `Gems`). Possible uses: cargo-specific dock smoke colour, or a UI/audio cue.
+
+---
+
 ## Idea: passive chimney smoke on power plants + refineries (2026-06-18, Luke)
 
 Spawn the `SMOKE_M` anim (`ANIM_SMOKE_M` -- a thin smoke column rising from the ground; 91 frames,
