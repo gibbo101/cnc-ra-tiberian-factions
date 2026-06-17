@@ -308,6 +308,19 @@ UnitClass::UnitClass(UnitType classid, HousesType house)
     MLoriginalposition = TARGET_NONE;
     MLattackmovemode = 0;
 
+    /*
+    **	TF harvester unreachable-target recovery -- constructor init (not declaration
+    **	init; savegame load copies the data before placement-new runs).
+    */
+    HarvTargetCell = -1;
+    HarvBestDist = 0;
+    HarvStallFrame = 0;
+    for (int hb = 0; hb < HARV_BLACKLIST_MAX; hb++) {
+        HarvBadMin[hb] = -1;
+        HarvBadMax[hb] = -1;
+        HarvBadExpiry[hb] = 0;
+    }
+
     House->Tracking_Add(this);
     Ammo = Class->MaxAmmo;
     IsCloakable = Class->IsCloakable;
@@ -432,6 +445,42 @@ void UnitClass::AI(void)
         && Map[Coord_Cell(Coord)].Land_Type() == LAND_TIBERIUM) {
         Strength++;
         Mark(MARK_CHANGE);
+    }
+
+    /*
+    **	Tiberian Factions -- harvester unreachable-target recovery (NO-PROGRESS detector).
+    **	A harvester can fail to reach an ore patch even when the movement-zone map says it is
+    **	reachable: placing a BUILDING (a turret, the AI walling its own gems) does NOT recompute
+    **	zones, so the patch reads "reachable", A* fails, and the LEGACY pathfinder keeps handing
+    **	out wandering routes that never arrive -- so the no-path branch never fires (which is why
+    **	hooking the path-failure point missed it). The robust, pathfinder-agnostic signal is the
+    **	symptom itself: we are not getting any closer to our ore. Track the best (closest)
+    **	distance achieved toward the ore NavCom; if it has not improved for HARV_STALL_FRAMES,
+    **	blacklist that patch and drop the target so Mission_Harvest re-scans a reachable field
+    **	(Goto_Tiberium skips the blacklist) or waits the block out. A legitimately far-but-
+    **	reachable patch keeps improving its best distance, so it is never blacklisted.
+    **	Lockstep-safe: per-unit ints + Frame, deterministic, no RNG.
+    */
+    if (Class->IsToHarvest && Mission == MISSION_HARVEST && Target_Legal(NavCom)
+        && Map[As_Cell(NavCom)].Land_Type() == LAND_TIBERIUM) {
+        const long HARV_STALL_FRAMES = TICKS_PER_SECOND * 5; // no progress for 5s == effectively unreachable
+        const int HARV_PROGRESS_MARGIN = 256;                // 1 cell; ignore sub-cell jitter
+        CELL navc = As_Cell(NavCom);
+        int dist = (int)Distance(NavCom);
+        if (HarvTargetCell != navc) {
+            HarvTargetCell = navc; // new target -- start a fresh progress window
+            HarvBestDist = dist;
+            HarvStallFrame = Frame;
+        } else if (dist + HARV_PROGRESS_MARGIN < HarvBestDist) {
+            HarvBestDist = dist; // got meaningfully closer -- reset the stall timer
+            HarvStallFrame = Frame;
+        } else if (Frame - HarvStallFrame >= HARV_STALL_FRAMES) {
+            Blacklist_Harvest_Cell(navc);
+            Assign_Destination(TARGET_NONE);
+            HarvTargetCell = -1;
+        }
+    } else if (HarvTargetCell != -1 && !Target_Legal(NavCom)) {
+        HarvTargetCell = -1; // not pursuing ore right now -- clear tracking
     }
 
     /*
@@ -1503,6 +1552,9 @@ void UnitClass::Player_Assign_Mission(MissionType mission, TARGET target, TARGET
 
     if (mission == MISSION_HARVEST) {
         ArchiveTarget = TARGET_NONE;
+        // TF: a fresh player harvest order gets a clean slate -- reset the unreachable-target
+        // tracking so the new target earns its own progress window before being blacklisted.
+        HarvTargetCell = -1;
     } else if (mission == MISSION_ENTER) {
         BuildingClass* building = As_Building(destination);
         if (building != NULL && (*building == STRUCT_REFINERY || *building == STRUCT_TDPROC)
@@ -2541,6 +2593,158 @@ int UnitClass::Tiberium_Check(CELL& center, int x, int y)
     return (0);
 }
 
+/*
+**	TF harvester unreachable-target recovery tunables (see unit.h member block).
+*/
+static const int HARV_BLACKLIST_MARGIN = 1;                  // cells of slack around a field bbox
+static const long HARV_BLACKLIST_TTL = TICKS_PER_SECOND * 15; // retry a blacklisted patch after this long
+static const int HARV_FLOOD_CAP = 256;                       // max ore cells visited when sizing a field
+
+#if TF_DEV_BUILD // TF DEV: harvester unreachable-target diagnostic (shares tf_astar.log). Compiled out of release.
+static FILE* TF_Harv_Logfile(void)
+{
+    static FILE* f = NULL;
+    static bool tried = false;
+    if (!tried) {
+        tried = true;
+        const char* h = getenv("USERPROFILE");
+        if (h != NULL) {
+            char p[512];
+            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_astar.log", h);
+            f = fopen(p, "a");
+        }
+    }
+    return (f);
+}
+#endif
+
+/***********************************************************************************************
+ * UnitClass::Is_Harvest_Blacklisted -- Is this ore cell in a recently-unreachable patch?      *
+ *=============================================================================================*/
+bool UnitClass::Is_Harvest_Blacklisted(CELL cell) const
+{
+    int cx = Cell_X(cell);
+    int cy = Cell_Y(cell);
+    for (int i = 0; i < HARV_BLACKLIST_MAX; i++) {
+        if (HarvBadMin[i] != -1 && Frame < HarvBadExpiry[i]) {
+            int x1 = Cell_X(HarvBadMin[i]) - HARV_BLACKLIST_MARGIN;
+            int y1 = Cell_Y(HarvBadMin[i]) - HARV_BLACKLIST_MARGIN;
+            int x2 = Cell_X(HarvBadMax[i]) + HARV_BLACKLIST_MARGIN;
+            int y2 = Cell_Y(HarvBadMax[i]) + HARV_BLACKLIST_MARGIN;
+            if (cx >= x1 && cx <= x2 && cy >= y1 && cy <= y2) {
+                return (true);
+            }
+        }
+    }
+    return (false);
+}
+
+/***********************************************************************************************
+ * UnitClass::Has_Active_Harvest_Blacklist -- Are we currently avoiding any blocked patch?     *
+ *    Distinguishes "ore is temporarily blocked, wait it out" from "no ore anywhere, idle".    *
+ *=============================================================================================*/
+bool UnitClass::Has_Active_Harvest_Blacklist(void) const
+{
+    for (int i = 0; i < HARV_BLACKLIST_MAX; i++) {
+        if (HarvBadMin[i] != -1 && Frame < HarvBadExpiry[i]) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
+/***********************************************************************************************
+ * UnitClass::Blacklist_Harvest_Cell -- Mark an ore patch path-unreachable for a while.        *
+ *    TTL-based (never permanent) so a sold/destroyed blocker lets the harvester retry later.   *
+ *=============================================================================================*/
+void UnitClass::Blacklist_Harvest_Cell(CELL cell)
+{
+    /*
+    **	Flood-fill the contiguous ore field from `cell` (8-connectivity, bounded by
+    **	HARV_FLOOD_CAP) and blacklist its whole bounding box. Blacklisting a single cell
+    **	failed on big walled fields: the harvester gave up on one cell, then Goto_Tiberium
+    **	re-picked another ore cell of the SAME dead field a few cells away and span again.
+    **	One detection now covers the entire field. The flood walks only LAND_TIBERIUM, so it
+    **	never escapes the patch; the cap means even a map-spanning field costs a bounded scan.
+    **	Logic-thread only + pure cell reads -> lockstep-deterministic.
+    */
+    CELL flood[HARV_FLOOD_CAP]; // doubles as the visited set (a cell is enqueued at most once)
+    int n = 0;
+    flood[n++] = cell;
+    int minx = Cell_X(cell);
+    int maxx = minx;
+    int miny = Cell_Y(cell);
+    int maxy = miny;
+
+    for (int scan = 0; scan < n; scan++) {
+        CELL cur = flood[scan];
+        int curx = Cell_X(cur);
+        int cury = Cell_Y(cur);
+        for (int dy = -1; dy <= 1; dy++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                if (dx == 0 && dy == 0)
+                    continue;
+                int nx = curx + dx;
+                int ny = cury + dy;
+                if (nx < 0 || nx >= MAP_CELL_W || ny < 0 || ny >= MAP_CELL_H)
+                    continue;
+                CELL nc = XY_Cell(nx, ny);
+                if (Map[nc].Land_Type() != LAND_TIBERIUM)
+                    continue;
+                bool seen = false;
+                for (int k = 0; k < n; k++) {
+                    if (flood[k] == nc) {
+                        seen = true;
+                        break;
+                    }
+                }
+                if (seen)
+                    continue;
+                if (nx < minx)
+                    minx = nx;
+                if (nx > maxx)
+                    maxx = nx;
+                if (ny < miny)
+                    miny = ny;
+                if (ny > maxy)
+                    maxy = ny;
+                if (n < HARV_FLOOD_CAP) {
+                    flood[n++] = nc;
+                }
+            }
+        }
+    }
+
+    int slot = 0;
+    long oldest = HarvBadExpiry[0];
+    for (int i = 0; i < HARV_BLACKLIST_MAX; i++) {
+        if (HarvBadMin[i] == -1 || Frame >= HarvBadExpiry[i]) {
+            slot = i; // reuse an empty / expired slot
+            break;
+        }
+        if (HarvBadExpiry[i] < oldest) { // otherwise evict the soonest-expiring entry
+            oldest = HarvBadExpiry[i];
+            slot = i;
+        }
+    }
+    HarvBadMin[slot] = XY_Cell(minx, miny);
+    HarvBadMax[slot] = XY_Cell(maxx, maxy);
+    HarvBadExpiry[slot] = Frame + HARV_BLACKLIST_TTL;
+#if TF_DEV_BUILD
+    {
+        FILE* lf = TF_Harv_Logfile();
+        if (lf != NULL) {
+            fprintf(lf,
+                    "HARV-BLACKLIST: harvester at (%d,%d) gave up on unreachable ore field "
+                    "seed (%d,%d) bbox (%d,%d)-(%d,%d) %d cells, for %lds\n",
+                    Cell_X(Coord_Cell(Center_Coord())), Cell_Y(Coord_Cell(Center_Coord())), Cell_X(cell),
+                    Cell_Y(cell), minx, miny, maxx, maxy, n, (long)(HARV_BLACKLIST_TTL / TICKS_PER_SECOND));
+            fflush(lf);
+        }
+    }
+#endif
+}
+
 /***********************************************************************************************
  * UnitClass::Goto_Tiberium -- Searches for and heads toward tiberium.                         *
  *                                                                                             *
@@ -2591,32 +2795,19 @@ bool UnitClass::Goto_Tiberium(int rad)
                         memcpy(&corners[i], corner, sizeof(corner));
                     }
 
-                    cell = center;
-                    tiberium = Tiberium_Check(cell, corners[0][0], corners[0][1]);
-                    if (tiberium > besttiberium) {
-                        bestcell = cell;
-                        besttiberium = tiberium;
-                    }
-
-                    cell = center;
-                    tiberium = Tiberium_Check(cell, corners[1][0], corners[1][1]);
-                    if (tiberium > besttiberium) {
-                        bestcell = cell;
-                        besttiberium = tiberium;
-                    }
-
-                    cell = center;
-                    tiberium = Tiberium_Check(cell, corners[2][0], corners[2][1]);
-                    if (tiberium > besttiberium) {
-                        bestcell = cell;
-                        besttiberium = tiberium;
-                    }
-
-                    cell = center;
-                    tiberium = Tiberium_Check(cell, corners[3][0], corners[3][1]);
-                    if (tiberium > besttiberium) {
-                        bestcell = cell;
-                        besttiberium = tiberium;
+                    for (int c = 0; c < 4; c++) {
+                        cell = center;
+                        tiberium = Tiberium_Check(cell, corners[c][0], corners[c][1]);
+                        /*
+                        **	TF: skip ore patches we recently failed to PATH to. The vanilla
+                        **	scan (Tiberium_Check) only zone-filters, but buildings don't
+                        **	update the zone map, so a turret-walled patch still reads
+                        **	"reachable" -- without this the harvester re-picks it forever.
+                        */
+                        if (tiberium > besttiberium && !Is_Harvest_Blacklisted(cell)) {
+                            bestcell = cell;
+                            besttiberium = tiberium;
+                        }
                     }
                 }
                 if (bestcell) {
@@ -3301,6 +3492,39 @@ int UnitClass::Mission_Harvest(void)
                 */
                 if (Target_Legal(ArchiveTarget) && Is_In_Same_Zone(As_Cell(ArchiveTarget))) {
                     Assign_Destination(ArchiveTarget);
+                } else if (Has_Active_Harvest_Blacklist()) {
+                    /*
+                    **	TF: reachable ore exists somewhere, but the field(s) nearby are
+                    **	temporarily blocked (walled by a building). Rather than idle against the
+                    **	wall -- which looks stuck -- pull BACK toward a refinery (known-reachable
+                    **	ground) and re-scan from there. Blacklist entries expire
+                    **	(HARV_BLACKLIST_TTL), so we resume automatically once the blocker is
+                    **	sold/destroyed. Stay in MISSION_HARVEST (not GUARD) so it self-recovers
+                    **	for both human and AI. If already near the refinery (or there is none),
+                    **	just wait + re-scan in place.
+                    */
+                    ArchiveTarget = TARGET_NONE;
+                    IsUseless = false;
+                    BuildingClass* refinery = Find_Best_Refinery();
+                    if (refinery != NULL) {
+                        CELL home = Nearby_Location(refinery);
+                        if (home != 0 && Distance(::As_Target(home)) > (CELL_LEPTON_W * 4)) {
+                            Assign_Destination(::As_Target(home));
+                        }
+                    }
+#if TF_DEV_BUILD
+                    {
+                        FILE* lf = TF_Harv_Logfile();
+                        if (lf != NULL) {
+                            fprintf(lf,
+                                    "HARV-WAIT: harvester at (%d,%d) -- nearby ore blocked, pulling back to "
+                                    "refinery + re-scanning\n",
+                                    Cell_X(Coord_Cell(Center_Coord())), Cell_Y(Coord_Cell(Center_Coord())));
+                            fflush(lf);
+                        }
+                    }
+#endif
+                    return (TICKS_PER_SECOND * 3);
                 } else {
                     ArchiveTarget = TARGET_NONE;
                     Status = GOINGTOIDLE;

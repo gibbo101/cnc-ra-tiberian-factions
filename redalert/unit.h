@@ -136,6 +136,29 @@ public:
     unsigned char MLattackmovemode;
 
     /*
+    **	TF (harvester unreachable-target recovery): a harvester's chosen ore cell can be
+    **	reachable by movement-zone yet impossible to PATH to -- crucially, placing a
+    **	BUILDING (e.g. a turret walling a patch) does NOT trigger a zone recompute, so the
+    **	stale zone map still reports the patch "reachable" and the harvester re-commits to
+    **	it forever (the ABANDON-giveup spin). We track path failures, blacklist a patch
+    **	that keeps failing (with a timeout so a sold turret lets it retry), and wait/re-scan
+    **	instead of spinning. See Mission_Harvest / Goto_Tiberium.
+    */
+    enum
+    {
+        HARV_BLACKLIST_MAX = 4
+    };
+    CELL HarvTargetCell;                    // ore cell currently being pursued (-1 = none)
+    int HarvBestDist;                       // best (closest) distance achieved toward it, in leptons
+    long HarvStallFrame;                    // Frame when HarvBestDist last improved (no-progress stall timer)
+    // Each blacklist slot stores the BOUNDING BOX of a whole contiguous ore field (flood-filled
+    // from the failed cell), not a single cell -- a big walled patch would otherwise let the
+    // harvester give up on one cell and re-pick another cell of the same dead field.
+    CELL HarvBadMin[HARV_BLACKLIST_MAX];    // field bbox top-left  (-1 = empty slot)
+    CELL HarvBadMax[HARV_BLACKLIST_MAX];    // field bbox bottom-right
+    long HarvBadExpiry[HARV_BLACKLIST_MAX]; // Frame each blacklist entry expires
+
+    /*
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
     *save/load
     */
@@ -179,6 +202,10 @@ public:
     bool Flag_Remove(void);
     bool Goto_Tiberium(int radius);
     bool Harvesting(void);
+    // TF harvester unreachable-target recovery (see member block above).
+    bool Is_Harvest_Blacklisted(CELL cell) const;
+    bool Has_Active_Harvest_Blacklist(void) const;
+    void Blacklist_Harvest_Cell(CELL cell);
     void APC_Close_Door(void);
     void APC_Open_Door(void);
 

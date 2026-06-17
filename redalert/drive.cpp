@@ -1992,10 +1992,10 @@ bool DriveClass::Start_Of_Move(void)
                                           : "<?>";
                     fprintf(tf_choke_log,
                             "CHOKE: unit=%s pos=(%d,%d) nav=(%d,%d) dist=%d(cell %d) closeenough=%d "
-                            "towardNav=%s aheadFacing=%s try=%d -> %s\n",
+                            "towardNav=%s aheadFacing=%s try=%d mission=%d status=%d -> %s\n",
                             who, (int)Cell_X(here), (int)Cell_Y(here), (int)Cell_X(navcell), (int)Cell_Y(navcell),
                             distlep, distcell, (int)Rule.CloseEnoughDistance, move_names[navmove],
-                            move_names[aheadmove], TryTryAgain, branch);
+                            move_names[aheadmove], TryTryAgain, (int)Mission, (int)Status, branch);
                     fflush(tf_choke_log);
                 }
             }

@@ -59,7 +59,20 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
   refinery dock (contention). **Diagnostic note:** an idle/abandoned harvester emits NOTHING to
   `tf_astar.log` — this workstream needs its own instrument. See `docs/chokepoint-reservation-design.md`
   CHECKPOINT 2026-06-16 (spun-off workstreams) + memory `project-cfe-port-plan`.
-- **ROOT CAUSE FOUND + FIXED for the walled-field loop (2026-06-16):** the autonomous scan
+- **✅ LARGELY FIXED 2026-06-17 (symptom-patch hardened + playtest-validated; canonical write-up
+  `docs/harvester-recovery-design.md`).** The "fix it properly via zone recompute on building events"
+  plan was **REJECTED** after reading the code: `Zone_Span` ignores buildings *by design* (the
+  `ignorevehicles` mask `0x5F` drops the Building occupy bit `0x80`, cell.cpp:3125), so making buildings
+  call `Zone_Reset` is a no-op, and the building-aware variant that would be needed changes the global
+  meaning of `Zones[]` (AI targeting / A* gate / `Is_In_Same_Zone` / base placement) — MP-determinism-
+  risky, not worth it. **Chosen instead = harden the proven pathfinder-agnostic no-progress detector:**
+  (1) `Blacklist_Harvest_Cell` flood-fills the whole contiguous ore field and blacklists its bounding
+  box (was a single cell ±3, which let big walled fields keep re-spinning); (2) on no reachable ore the
+  harvester pulls back toward a refinery + re-scans instead of idling at the wall. Playtest 2026-06-17:
+  whole-field bboxes captured (28/66/45 cells) and harvesters redirected to a different reachable patch
+  — Luke accepted as-is. Detector is a robust safety net for *any* unreachable-target case (not just
+  buildings). Logs `HARV-BLACKLIST`/`HARV-WAIT` are `TF_DEV_BUILD`-gated (compiled out of release).
+- **(earlier) ROOT CAUSE FOUND + partial fix for the walled-field loop (2026-06-16):** the autonomous scan
   `UnitClass::Tiberium_Check` (unit.cpp:2519) ALREADY zone-filters (`Map[Coord].Zones[MZone] !=
   Map[center].Zones[MZone] → 0`), so `Goto_Tiberium` correctly finds "no reachable tiberium" when the
   only field is walled off. The infinite spin was the **`ArchiveTarget` fallback** in `Mission_Harvest`
