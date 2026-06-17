@@ -229,7 +229,7 @@ NOT apply here. Instead:
 
 ## B4 — Any harvester → any refinery
 
-> 🔨 **RA harv → TD ref IMPLEMENTED + deployed 2026-06-17 (UNCOMMITTED, awaiting last-test verdict).**
+> ✅ **RA harv → TD ref DONE + validated 2026-06-17 ("perfect"), committed `d923511`.**
 > Opened three gates so a `UNIT_HARVESTER` docks + dust-loops at a `STRUCT_TDPROC`: `Find_Best_Refinery`
 > (RA harv accepts either refinery), `RADIO_CAN_LOAD` (TDPROC accepts RA harv), `RADIO_IM_IN` TDPROC
 > (RA harv → `MISSION_UNLOAD` not `RADIO_ATTACH`; TD building anim NOT fired). RA harvester pulls up to

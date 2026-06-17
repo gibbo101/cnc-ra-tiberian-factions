@@ -13,19 +13,18 @@ No more releases until the WHOLE harvester workstream is done → it all ships a
 |---|---|
 | **B2** RA harvester visible dust-loop unload | ✅ DONE + validated, **committed `686efa4`** |
 | **B3** capturing an ore refinery grabs the unloading harvester | ✅ DONE + validated, **committed `0c5a040`** |
-| **B4** RA harvester docks at a TD refinery (RA harv → TD ref) | 🔨 IMPLEMENTED + deployed, **UNCOMMITTED**, awaiting Luke's last-test verdict |
-| TF_DEV test-buildability (any house builds both refineries) | 🔨 in the B4 working set, **UNCOMMITTED**, TF_DEV-only |
-| **Reverse case** TD harvester → RA refinery | ⬜ NOT STARTED (design decided — see below) |
+| **B4** RA harvester docks at a TD refinery (RA harv → TD ref) | ✅ DONE + validated ("perfect"), **committed `d923511`** |
+| TF_DEV test-buildability (any house builds both refineries) | ✅ committed in `d923511` (TF_DEV-only, compiled out of release) |
+| **Reverse case** TD harvester → RA refinery | ⬜ NOT STARTED — **do this first next session** (design decided — see below) |
 | Halve-dock-time dial | ⬜ deferred to the very end (re-eval after all harvester work) |
 
-## ⚠️ UNCOMMITTED working tree (B4) — do this first next session
-`git status` shows modified: `redalert/building.cpp`, `redalert/house.cpp`, `redalert/unit.cpp`,
-`redalert/techno.cpp`, `docs/harvester-docking-rework-plan.md`, `docs/harvester-docking-session-handover.md`.
-This is **B4 + the TF_DEV test-buildability**, built clean and deployed (DLL @ ~20:06). **Get Luke's B4 playtest verdict, then:**
-- If good → commit B4. **Decide on the test-buildability** (TF_DEV-gated): keep as a dev aid (compiled
-  out of release, harmless) or drop. Fine to commit since TF_DEV-only.
-- If the dock *position* at the TD ramp was off → tweak the DIR_SW pad cell (one-line offset in the
-  STRUCT_TDPROC branch of the `RADIO_DOCKING` dock-cell calc, `building.cpp` ~line 439).
+## START HERE next session — reverse case (TD harv → RA ref)
+B2/B3/B4 are all committed (`686efa4`, `0c5a040`, `d923511`); working tree clean. The next piece is the
+**reverse case** (TD harvester → RA refinery) — see the dedicated section below. The TF_DEV
+test-buildability (committed) lets you build both refineries in one skirmish to exercise it (fresh
+skirmish needed — build options set at scenario start).
+- If the B4 dock *position* at the TD ramp ever needs nudging → tweak the DIR_SW pad cell (one-line
+  offset in the STRUCT_TDPROC branch of the `RADIO_DOCKING` dock-cell calc, `building.cpp` ~line 439).
 
 ### What B4 changed (the cross-dock, RA harv → TD ref)
 1. `unit.cpp Find_Best_Refinery` — RA harvester (`!is_td_harv`) now accepts `STRUCT_REFINERY` **or**
