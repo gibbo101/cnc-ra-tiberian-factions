@@ -5,6 +5,28 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Idea: passive chimney smoke on power plants + refineries (2026-06-18, Luke)
+
+Spawn the `SMOKE_M` anim (`ANIM_SMOKE_M` -- a thin smoke column rising from the ground; 91 frames,
+23x23, loops) continuously out of the chimneys/stacks of the **power plants and refineries** for
+ambient life. Not the green Tiberium-fumes art (`SMOKLAND`) -- that's reserved for the harvester dock;
+plain grey `SMOKE_M` for stacks.
+
+Implementation sketch (when picked up):
+- Per-building idle anim. Cleanest hook = spawn from `BuildingClass::AI` on a cadence (every N frames)
+  at a per-building stack offset, OR a one-shot persistent looping anim parented to the building.
+- Stack offset is per building type (the chimney pixel position on each SHP) -- a small table keyed by
+  StructType (STRUCT_POWER/STRUCT_ADVANCED_POWER, STRUCT_REFINERY, and the TD equivalents
+  STRUCT_TDPROC + any TD power). Reuse the `Attach_To(building)` z-order trick so smoke sits in front of
+  the stack but behind anything south.
+- Gate so it doesn't fire while in construction/deconstruction or when low-power/disabled (optional:
+  no smoke when powered down = nice feedback).
+- Cadence + lifetime tuned so stacks read as gently smoking, not belching. Lockstep-safe (no RNG, or
+  seed off Frame+building ID deterministically).
+- Reference art already extracted this session: `~/Desktop/harvester-puff-options/smoke_m.gif`.
+
+---
+
 ## Docs update / prune pass — ✅ DONE 2026-06-16
 
 Full survey (all 4 doc groups) run + acted on. Outcome:
