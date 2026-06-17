@@ -2,6 +2,36 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [2.4.0] — 2026-06-17
+
+Smarter economy and combat AI, plus two CFE Patch Redux ports. GPL v3.
+
+### Added
+- **Infantry avoid Tiberium.** GDI and Nod foot soldiers now treat a Tiberium
+  field as ground to route around rather than wade through, since standing in it
+  hurts them. They path around the edge instead of marching across and taking
+  damage.
+
+### Changed
+- **Harvesters recover from blocked ore fields.** A harvester sent to a patch
+  that has been walled off by buildings (a turret, or the AI fencing its own
+  gems) no longer spins forever trying to reach it. It gives up on the dead
+  field, remembers the whole field for a short while, and redirects to a
+  reachable patch. If nothing reachable is left it pulls back toward a refinery
+  and re-scans from there instead of idling against the wall, and it resumes the
+  field automatically once the blockage is removed.
+- **Smarter SAM sites.** A SAM that loses its target part way through firing now
+  looks for another aircraft in range before standing down, instead of dropping
+  its guard and going dormant while enemy planes are still overhead.
+- **Harvester self-repair.** GDI and Nod harvesters slowly mend themselves back
+  to working order after taking fire, matching the Allied and Soviet harvester
+  behaviour.
+
+### Fixed
+- **Recon Bike fires off-axis targets.** The Nod Recon Bike now turns to shoot a
+  target to its side instead of sitting still and refusing to fire until the
+  target happened to line up with its facing.
+
 ## [2.3.0] — 2026-06-16
 
 Cooperative chokepoint traffic, resolving the single-cell-gap backup noted in 2.2.2,
