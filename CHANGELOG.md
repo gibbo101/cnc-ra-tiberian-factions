@@ -7,10 +7,10 @@ All notable changes to **Tiberian Factions for Red Alert** are documented here.
 Smarter economy and combat AI, plus two CFE Patch Redux ports. GPL v3.
 
 ### Added
-- **Infantry avoid Tiberium.** GDI and Nod foot soldiers now treat a Tiberium
-  field as ground to route around rather than wade through, since standing in it
-  hurts them. They path around the edge instead of marching across and taking
-  damage.
+- **Infantry avoid Tiberium.** Foot soldiers of every faction now treat a
+  Tiberium field as ground to route around rather than wade through, since
+  standing in it hurts them. They path around the edge instead of marching
+  across and taking damage.
 
 ### Changed
 - **Harvesters recover from blocked ore fields.** A harvester sent to a patch
