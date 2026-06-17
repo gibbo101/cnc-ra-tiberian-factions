@@ -437,6 +437,36 @@ void UnitClass::AI(void)
     }
 
     /*
+    **	Tiberian Factions (B2 dust-loop dock). The dump frame counter (StageClass)
+    **	advances every game frame, but Mission_Unload is only called every
+    **	Normal_Delay ticks -- so the dust-loop wrap MUST run here in AI() (every
+    **	frame). Done in Mission_Unload the stage overshoots past the dust window into
+    **	the down-ramp frames between calls = the bucket visibly bobbing up and down.
+    **	While a harvester is unloading with load remaining, once the stage passes the
+    **	last dust frame (13 -> SHP 109) bank one bail and wrap back to the first dust
+    **	frame (8 -> SHP 104): the bucket stays UP and only the dust cloud cycles. When
+    **	the load is empty we stop wrapping and let the stage free-run through the
+    **	down-ramp (Mission_Unload Phase C) so the bucket lowers and it drives off.
+    **	Also a safety net: IsDumping blocks driving (drive.cpp), so clear it if a
+    **	harvester is ever flagged dumping outside MISSION_UNLOAD (force-ordered away
+    **	mid-unload). Scoped to UNIT_HARVESTER so UNIT_MAD's detonation dump is untouched.
+    **	Lockstep-safe: deterministic, no RNG.
+    */
+    if (IsDumping && *this == UNIT_HARVESTER) {
+        if (Mission != MISSION_UNLOAD) {
+            IsDumping = false;
+        } else if (Tiberium > 0 && Fetch_Stage() > 13) {
+            int bail = Offload_Tiberium_Bail();
+            if (bail) {
+                House->Harvested(bail);
+            }
+            if (Tiberium > 0) {
+                Set_Stage(8); // loop the dust frames again (SHP 104-109)
+            }
+        }
+    }
+
+    /*
     **	Tiberian Factions -- the Visceroid feeds on Tiberium and regenerates while
     **	standing in it (mirrors TD UNIT.CPP:434). Heals 1 HP every 16 frames when
     **	below full health and on a Tiberium cell.
@@ -2955,21 +2985,48 @@ int UnitClass::Mission_Unload(void)
         if (!IsDumping) {
             IsDumping = true;
             Set_Stage(0);
-            Set_Rate(Rule.OreDumpRate);
+            /*
+            **	Tiberian Factions B2 -- dust-loop animation/offload speed (ticks per
+            **	frame). Decoupled from the global Rule.OreDumpRate (=2, still used by
+            **	other dump paths) so the dock can be paced without side effects. One
+            **	bail is banked per ~7-frame dust cycle (UnitClass::AI), so total unload
+            **	~= BailCount * 7 * DOCK_DUMP_RATE ticks. At 3 a full 28-bail load runs
+            **	~588 ticks, ~matching the current TD dock time (decided 2026-06-17).
+            **	THE dock-time / animation-speed DIAL -- raise to slow further.
+            */
+            const int DOCK_DUMP_RATE = 3;
+            Set_Rate(DOCK_DUMP_RATE);
             break;
         }
-        if (Fetch_Stage() < ARRAY_SIZE(Class->Harvester_Dump_List) - 1)
-            break;
+
+        /*
+        **	Tiberian Factions B2 -- VISIBLE dust-loop unload (replaces RA's one-shot
+        **	bulk dump). The harvester stays visible the whole time (never Limbo'd):
+        **	  Phase A  stage 0-13 -> SHP 96-109  : bucket tips up (once).
+        **	  Phase B  (load remaining)         : UnitClass::AI() loops the dust frames
+        **	           (SHP 104-109) and banks one bail per cycle EVERY FRAME -- it must
+        **	           live there, not here, because Mission_Unload is only called every
+        **	           Normal_Delay ticks (doing the wrap here overshoots into the
+        **	           down-ramp = bucket bobbing). So while unloading we just wait.
+        **	  Phase C  (load empty)             : let the stage free-run through the
+        **	           down-ramp (SHP 110 -> 96), then finish + drive off.
+        **	The render path (Draw_It, ~unit.cpp:2323) already maps Fetch_Stage() ->
+        **	Harvester_Dump_List[]+96, so no art change. Refinery-agnostic (no
+        **	STRUCT_REFINERY check) so B4 (RA harv -> any refinery) reuses it verbatim.
+        **	DOCK-TIME DIAL (economy balance): cadence = Rule.OreDumpRate (decided
+        **	2026-06-17 = MATCH the current TD full-load time; tune in playtest -- see
+        **	docs/harvester-docking-rework-plan.md).
+        */
+        if (Tiberium > 0) {
+            break; // Phase A/B: AI() runs the dust-loop + per-bail offload
+        }
+        if (Fetch_Stage() < ARRAY_SIZE(Class->Harvester_Dump_List) - 1) {
+            break; // Phase C: load empty -> let the bucket finish lowering
+        }
 
         IsDumping = false;
-        if (Tiberium) {
-            Tiberium = 0;
-            int credits = Credit_Load();
-            House->Harvested(credits);
-            Tiberium = Gold = Gems = 0;
-        }
+        Tiberium = Gold = Gems = 0; // defensive; AI() already drained the load
         Transmit_Message(RADIO_OVER_OUT);
-
         Assign_Mission(MISSION_HARVEST);
         break;
 

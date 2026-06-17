@@ -139,9 +139,11 @@ Both implemented + built clean (details under "What shipped this session" above)
    `HARV(1,41)` re-pick-same-field spin.
 2. ✅ **Pull back toward the refinery + re-scan** instead of waiting in place at the wall.
 
-## Current tree state (UNCOMMITTED — symptom-patch + this session's hardening, NOT yet playtested)
-The **no-progress detector + both hardening refinements** are built (clean cross-compile) and
-**uncommitted** in `redalert/unit.cpp`, `redalert/unit.h`, `redalert/drive.cpp`:
+## Tree state — ✅ COMMITTED + SHIPPED in v2.4.0 (commits `554835d` + `a705ef6`)
+**CORRECTION 2026-06-17:** this section previously said UNCOMMITTED — that was stale. The
+no-progress detector + both hardening refinements were committed (`554835d`) along with the
+ArchiveTarget zone-guard (`a705ef6`) and shipped in **v2.4.0**. Working tree is clean. The code
+lives in `redalert/unit.cpp`, `redalert/unit.h`, `redalert/drive.cpp`:
 - `UnitClass::AI` (unit.cpp ~448): every tick, while a harvester pursues an ore NavCom, track the best
   (closest) distance achieved; if it hasn't improved for `HARV_STALL_FRAMES` (5s), `Blacklist_Harvest_Cell`
   + drop the target. Pathfinder-agnostic. **Proven working** in the log (`HARV-BLACKLIST` fired for the
@@ -159,9 +161,9 @@ The **no-progress detector + both hardening refinements** are built (clean cross
 
 **Status:** the no-progress detector is a cheap, robust **safety net** for *any* unreachable-target case
 (buildings *and* e.g. a same-zone cell blocked by a permanent parked unit). This is now THE approach
-(the zone fix was rejected — see above). **Next step = Deck/desktop playtest** of the two refinements
-(wall an ore field mid-transit; confirm bbox covers the whole field + harvester retreats to base and
-auto-resumes when the wall is sold), then commit. Nothing here is shipped yet.
+(the zone fix was rejected — see above). **Playtested + shipped in v2.4.0.** The broader harvester
+workstream (claiming, dock contention, reachability edge cases, economy-balance docking) continues —
+see `docs/harvester-docking-rework-plan.md` (the economy-balance docking chunk, planned 2026-06-17).
 
 ## Out of scope tonight (already committed + confirmed, NOT in the harvester segment)
 Tiberium aversion `72b3a17`, Smarter SAMs + Harvester Self-Repair `14bcca9`, Recon Bike `bdb7533`,
