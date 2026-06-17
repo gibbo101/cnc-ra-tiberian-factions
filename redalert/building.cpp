@@ -281,15 +281,15 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
         case STRUCT_REFINERY:
         case STRUCT_TDPROC: { // TD Refinery — same harvester dock semantics.
-            // B4: a TD refinery (STRUCT_TDPROC) accepts a TD harvester (TD attach
-            // path) OR an RA harvester (RA visible dust-loop -- governing rule: unload
-            // style follows the harvester). STRUCT_REFINERY stays RA-harv-only until
-            // the reverse case (TD harv -> RA ref) is built.
+            // B4 (both directions): EITHER refinery accepts EITHER harvester. Unload
+            // STYLE follows the harvester (governing rule), so the dock just needs to
+            // recognise it as a harvester here; the actual unload path is chosen at
+            // RADIO_IM_IN / Mission_Unload. (TD-harv->TD-ref = attach/siphon; every
+            // other pairing parks visibly and offloads -- RA harv via the SHP dust-loop,
+            // TD harv at an RA ref via a timer-driven offload + dust puff.)
             bool right_harvester = false;
             if (from->What_Am_I() == RTTI_UNIT) {
-                right_harvester = (Class->Type == STRUCT_TDPROC)
-                                      ? (*((UnitClass*)from) == UNIT_TDHARV || *((UnitClass*)from) == UNIT_HARVESTER)
-                                      : (*((UnitClass*)from) == UNIT_HARVESTER);
+                right_harvester = (*((UnitClass*)from) == UNIT_HARVESTER || *((UnitClass*)from) == UNIT_TDHARV);
             }
             if (right_harvester && (ScenarioInit || !Is_Something_Attached())) {
                 return ((Contact_With_Whom() != from) ? RADIO_ROGER : RADIO_NEGATIVE);
@@ -327,6 +327,13 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             return (RADIO_ROGER);
 
         case STRUCT_REFINERY:
+            /*
+            **	Both harvester types use MISSION_UNLOAD at an RA refinery (never the
+            **	TD attach path -- the RA refinery has no docking animation and we never
+            **	Limbo here). Mission_Unload dispatches on harvester type: UNIT_HARVESTER
+            **	runs the visible SHP dust-loop; UNIT_TDHARV (reverse cross-dock) parks
+            **	visibly and runs a timer-driven offload + dust puff (no SHP dump frames).
+            */
             Mark(MARK_CHANGE);
             from->Assign_Mission(MISSION_UNLOAD);
             return (RADIO_ROGER);
@@ -445,6 +452,14 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 break;
 
             case STRUCT_REFINERY:
+                /*
+                **	RA refinery dock pad = DIR_S (the only FREE cell adjacent to the south
+                **	face -- the refinery's 3x3 footprint occupies its own DIR_SW/center
+                **	cells). A visible (non-Limbo'd) harvester can only stand here, so both
+                **	the RA harvester and the TD harvester (pull-up OR backed orientation)
+                **	dock on this cell. A true reverse-INTO-the-bay would require Limbo
+                **	(harvester disappears), which we don't do for the RA refinery.
+                */
                 param = ::As_Target(Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_S)));
                 break;
 

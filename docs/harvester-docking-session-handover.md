@@ -15,16 +15,47 @@ No more releases until the WHOLE harvester workstream is done → it all ships a
 | **B3** capturing an ore refinery grabs the unloading harvester | ✅ DONE + validated, **committed `0c5a040`** |
 | **B4** RA harvester docks at a TD refinery (RA harv → TD ref) | ✅ DONE + validated ("perfect"), **committed `d923511`** |
 | TF_DEV test-buildability (any house builds both refineries) | ✅ committed in `d923511` (TF_DEV-only, compiled out of release) |
-| **Reverse case** TD harvester → RA refinery | ⬜ NOT STARTED — **do this first next session** (design decided — see below) |
+| **Reverse case** TD harvester → RA refinery | 🟡 IMPLEMENTED + built + deployed (local prefix) — **UNCOMMITTED, awaiting Luke's in-game verdict** |
 | Halve-dock-time dial | ⬜ deferred to the very end (re-eval after all harvester work) |
 
-## START HERE next session — reverse case (TD harv → RA ref)
-B2/B3/B4 are all committed (`686efa4`, `0c5a040`, `d923511`); working tree clean. The next piece is the
-**reverse case** (TD harvester → RA refinery) — see the dedicated section below. The TF_DEV
-test-buildability (committed) lets you build both refineries in one skirmish to exercise it (fresh
-skirmish needed — build options set at scenario start).
+## START HERE next session — VERIFY the reverse case (TD harv → RA ref), then commit
+The reverse case (TD harvester → RA refinery) is **implemented, built, and deployed to the local
+prefix — UNCOMMITTED**. Next session: in-game verify, then commit (or tune). Use the committed
+TF_DEV test-buildability to build BOTH refineries in one skirmish (fresh skirmish needed — build
+options are set at scenario start), get a TD harvester to dock at an RA refinery, and watch the dock.
+
+### What to check in-game
+1. TD harvester drives to the RA refinery, **pulls up to the DIR_S dock cell and stays visible**
+   (never disappears — no Limbo). It faces **DIR_N** (toward the refinery).
+2. A small **dust puff** (`ANIM_SMOKE_PUFF`) pops at the intake each bail; credits tick up.
+3. Total dock time ≈ a full TD load (the `TD_DOCK_OFFLOAD_DELAY = 21` ticks/bail dial in
+   `Mission_Unload` `case UNIT_TDHARV`). Then it drives off and resumes harvesting.
+4. Engineer-capture the RA refinery mid-unload → the docked TD harvester should change owner
+   (B3 path: `IsDumping` + radio-tethered, `building.cpp:4284`).
+5. Multi-harvester queue at one RA refinery doesn't jam.
+
+### Tuning dials if the look/feel is off
+- **Facing:** `RADIO_BACKUP_NOW` UNIT_TDHARV `STRUCT_REFINERY` branch (`unit.cpp` ~line 919) turns
+  `DIR_N`. Change to `DIR_S` for a reversed-in / rear-to-intake look (Luke's "backs in" framing).
+  *(Decision made this session: implemented the visually-safe pull-up — a visible, non-Limbo'd
+  harvester driven INTO the RA refinery footprint would overlap the building sprite, which is exactly
+  the "if back-in looks off" case Luke flagged. Pull-up = his blessed "option 1" fallback.)*
+- **Dock time:** `TD_DOCK_OFFLOAD_DELAY` (ticks/bail) in `Mission_Unload`.
+- **Dust anim:** swap `ANIM_SMOKE_PUFF` for another existing AnimType; spawn coord is
+  `Coord_Add(Coord, XYP_Coord(0, -12))` (just north of the harvester).
 - If the B4 dock *position* at the TD ramp ever needs nudging → tweak the DIR_SW pad cell (one-line
   offset in the STRUCT_TDPROC branch of the `RADIO_DOCKING` dock-cell calc, `building.cpp` ~line 439).
+
+### Files touched this session (reverse case, all uncommitted)
+- `unit.cpp Find_Best_Refinery` — both harvesters now consider both refinery types.
+- `building.cpp RADIO_CAN_LOAD` — both refineries accept both harvesters.
+- `building.cpp RADIO_IM_IN STRUCT_REFINERY` — comment only (TD harv lands in MISSION_UNLOAD too).
+- `unit.cpp RADIO_BACKUP_NOW` — UNIT_TDHARV at a STRUCT_REFINERY uses the RA-style pull-up dock
+  (DIR_N + RADIO_IM_IN), NOT the TD drive-in/attach (which stays for STRUCT_TDPROC).
+- `unit.cpp Mission_Unload` — new `case UNIT_TDHARV`: timer offload (1 bail / `TD_DOCK_OFFLOAD_DELAY`
+  ticks) + `ANIM_SMOKE_PUFF` per bail; `IsDumping` set (capture + park), `RADIO_UNLOADED` at the end.
+- `unit.cpp AI()` safety net — clears `IsDumping` for a force-ordered UNIT_TDHARV (the dust-loop
+  wrap stays HARV-only).
 
 ### What B4 changed (the cross-dock, RA harv → TD ref)
 1. `unit.cpp Find_Best_Refinery` — RA harvester (`!is_td_harv`) now accepts `STRUCT_REFINERY` **or**

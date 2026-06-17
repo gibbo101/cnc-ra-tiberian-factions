@@ -452,10 +452,13 @@ void UnitClass::AI(void)
     **	mid-unload). Scoped to UNIT_HARVESTER so UNIT_MAD's detonation dump is untouched.
     **	Lockstep-safe: deterministic, no RNG.
     */
-    if (IsDumping && *this == UNIT_HARVESTER) {
+    if (IsDumping && (*this == UNIT_HARVESTER || *this == UNIT_TDHARV)) {
         if (Mission != MISSION_UNLOAD) {
+            // Force-ordered away mid-unload: IsDumping blocks driving (drive.cpp), so
+            // clear it. (UNIT_TDHARV at an RA refinery uses the timer-offload path and
+            // is never auto-cleared elsewhere; the dust-loop wrap below stays HARV-only.)
             IsDumping = false;
-        } else if (Tiberium > 0 && Fetch_Stage() > 13) {
+        } else if (*this == UNIT_HARVESTER && Tiberium > 0 && Fetch_Stage() > 13) {
             int bail = Offload_Tiberium_Bail();
             if (bail) {
                 House->Harvested(bail);
@@ -917,6 +920,53 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
         **	from here — that would short-cut the back-up animation.
         */
         if (*this == UNIT_TDHARV) {
+            /*
+            **	Reverse cross-dock (TD harv -> RA refinery). Two looks, switchable via the
+            **	dev flag TF_Harv_BackIn() (tf_harv_backin.flag) so Luke can A/B them:
+            **	  PULL-UP (default): park on the DIR_S dock cell facing DIR_W (sideways --
+            **	    matches the RA harvester's loading pose), then transmit RADIO_IM_IN.
+            **	  BACK-IN (flag on): the TD reverse maneuver -- turn DIR_SW + Force_Track
+            **	    BACKUP_INTO_REFINERY to reverse into the bay -- but the RA refinery
+            **	    answers RADIO_IM_IN with RADIO_ROGER (NOT RADIO_ATTACH), so the
+            **	    harvester is NEVER Limbo'd: it backs in and stays visible.
+            **	Either way the building's STRUCT_REFINERY RADIO_IM_IN puts it in
+            **	MISSION_UNLOAD (timer offload + dust puff). The TD refinery (special case)
+            **	always uses the attach maneuver + Limbo (falls through below).
+            */
+            TechnoClass* rdock = Contact_With_Whom();
+            bool ra_ref = (rdock != NULL && rdock->What_Am_I() == RTTI_BUILDING
+                           && *((BuildingClass*)rdock) == STRUCT_REFINERY);
+            if (ra_ref) {
+                /*
+                **	Both looks dock on the DIR_S apron cell (the only free south cell --
+                **	the SW bay is inside the footprint, so a visible harvester can't enter
+                **	it; that would need Limbo = disappear, which we don't do here). The
+                **	handshake is the reliable DIRECT RADIO_IM_IN (NOT the footprint-
+                **	drive/Per_Cell_Process path, which never completed at the RA refinery
+                **	and left the harvester stuck). Only the FACING differs:
+                **	  pull-up (default): DIR_W -- sideways, RA-harvester loading pose (SS2).
+                **	  back-in (flag on): DIR_SW -- rear angled toward the refinery intake,
+                **	    aligned to the building's isometric face (a "backed up to the dock"
+                **	    orientation; the closest we get to a reverse-in while staying
+                **	    visible). One-line dial.
+                */
+                DirType face = TF_Harv_BackIn() ? DIR_SW : DIR_W;
+                if (!IsRotating && PrimaryFacing != face) {
+                    Do_Turn(face);
+                } else {
+                    if (!IsDriving) {
+                        if (IsTethered && Mission == MISSION_ENTER) {
+                            Transmit_Message(RADIO_IM_IN, rdock);
+                        }
+                    }
+                }
+                return (RADIO_ROGER);
+            }
+            /*
+            **	TD harv -> TD ref (the special case): verbatim TD attach maneuver -- turn
+            **	DIR_SW, then Force_Track BACKUP_INTO_REFINERY into the building's south-row
+            **	cell; Per_Cell_Process completes the Limbo + Attach handshake.
+            */
             if (!IsRotating && PrimaryFacing != DIR_SW) {
                 Do_Turn(DIR_SW);
             } else {
@@ -1414,11 +1464,16 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
                 if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV) && Pip_Count() && Health_Ratio() <= Rule.ConditionYellow) {
 
                     /*
-                    **	Find nearby refinery and head to it? TD harvesters dock only at
-                    **	TD refineries (TDPROC), RA harvesters only at STRUCT_REFINERY.
+                    **	Find a nearby refinery and flee to it. Either harvester can use
+                    **	either refinery type now (cross-dock), so try the native type first
+                    **	then fall back to the other. (In normal play a house owns only one
+                    **	type, so the fallback is inert; it matters in mixed/captured setups.)
                     */
                     BuildingClass* building =
                         Find_Docking_Bay((*this == UNIT_TDHARV) ? STRUCT_TDPROC : STRUCT_REFINERY, false);
+                    if (building == NULL) {
+                        building = Find_Docking_Bay((*this == UNIT_TDHARV) ? STRUCT_REFINERY : STRUCT_TDPROC, false);
+                    }
 
                     /*
                     **	Since the refinery said it was ok to load, establish radio
@@ -3005,6 +3060,20 @@ int UnitClass::Mission_Unload(void)
             */
             const int DOCK_DUMP_RATE = 3;
             Set_Rate(DOCK_DUMP_RATE);
+            /*
+            **	Tiberian Factions B4 visual -- when an RA harvester docks at a TD refinery
+            **	(TDPROC ramp), nudge it a touch EAST so it lines up under the ramp better.
+            **	Gated on STRUCT_TDPROC so the native RA-refinery dock is unchanged. Small,
+            **	stays within the dock cell. Applied once on entering the dump. VISUAL DIAL.
+            */
+            TechnoClass* dockb = Contact_With_Whom();
+            if (dockb != NULL && dockb->What_Am_I() == RTTI_BUILDING
+                && *((BuildingClass*)dockb) == STRUCT_TDPROC) {
+                const int RA_AT_TD_NUDGE_RIGHT = 5; // pixels east
+                Mark(MARK_UP);
+                Coord = Coord_Add(Coord, XYP_Coord(RA_AT_TD_NUDGE_RIGHT, 0));
+                Mark(MARK_DOWN);
+            }
             break;
         }
 
@@ -3045,6 +3114,85 @@ int UnitClass::Mission_Unload(void)
         Transmit_Message(RADIO_OVER_OUT);
         Assign_Mission(MISSION_HARVEST);
         break;
+
+    case UNIT_TDHARV: {
+        /*
+        **	Tiberian Factions -- reverse cross-dock: a TD harvester unloading at an RA
+        **	refinery (STRUCT_REFINERY). It only reaches MISSION_UNLOAD via the RA
+        **	refinery's RADIO_IM_IN; a TD harvester at a TD refinery uses the building's
+        **	attach/siphon path and is never put in MISSION_UNLOAD, so this case is
+        **	unambiguously the RA-refinery pairing.
+        **
+        **	The TD sprite has NO dump frames and the RA refinery has NO docking
+        **	animation, so neither actor can carry the visual (unlike TD-harv->TD-ref,
+        **	where the BUILDING animates, or RA-harv->any-ref, where the harvester
+        **	SHP dust-loops). So it just parks visibly (never Limbo'd, stays
+        **	radio-tethered for B3 capture), offloads one bail per TD_DOCK_OFFLOAD_DELAY
+        **	ticks, and puffs a small dust AnimType at the intake each bail ("a pipe
+        **	siphoning it off"). Timer-driven via this mission's return delay (no
+        **	StageClass), so it is immune to the dust-loop overshoot that forced the RA
+        **	per-bail logic into UnitClass::AI. Lockstep-safe: deterministic, no RNG.
+        */
+        const int TD_DOCK_OFFLOAD_DELAY = 21; // ticks/bail -- matches the RA dust-loop dock time (DOCK_DUMP_RATE 3 * ~7-frame cycle); THE TD-at-RA dock-time dial.
+
+        /*
+        **	One-time dock nudge: shift the parked harvester NORTH-EAST so its rear almost
+        **	touches the refinery's right-side wooden pillars. ~8px each stays within the
+        **	DIR_S apron cell (< half a cell == 12px == 128 leptons), so Coord_Cell is
+        **	unchanged and there is no footprint conflict. Applied once on entering the
+        **	dump; the puff follows for free (spawned relative to Coord). Mark up/down
+        **	re-registers the sub-cell position. VISUAL DIAL.
+        */
+        const int TD_DOCK_NUDGE_RIGHT = 6; // pixels east  (toward the pillars)
+        const int TD_DOCK_NUDGE_UP = 6;    // pixels north (rear toward the intake)
+        if (!IsDumping) {
+            IsDumping = true; // park (blocks driving) + mark "actively unloading" for B3 capture
+            Mark(MARK_UP);
+            Coord = Coord_Add(Coord, XYP_Coord(TD_DOCK_NUDGE_RIGHT, -TD_DOCK_NUDGE_UP));
+            Mark(MARK_DOWN);
+        }
+
+        if (Tiberium > 0) {
+            int bail = Offload_Tiberium_Bail();
+            if (bail) {
+                House->Harvested(bail);
+            }
+            /*
+            **	Dust puff at the intake. Attach it to the refinery so it renders in the
+            **	GROUND layer, sorted ~1 cell south of the refinery -- ABOVE the refinery
+            **	but BELOW the harvester (which sits further south on the apron). A free
+            **	anim lands in LAYER_AIR and draws on top of everything (refinery AND
+            **	harvester). Attach_To keeps the visual position (Coord becomes an offset
+            **	from the building) while inheriting the building's layer + sort order.
+            **	Offset placed just above the harvester so only a small part of the puff
+            **	shows. The Y offset is a VISUAL DIAL (more positive = lower / more hidden
+            **	behind the harvester; more negative = higher above it).
+            */
+            AnimClass* puff = new AnimClass(ANIM_SMOKE_PUFF, Coord_Add(Coord, XYP_Coord(0, -6)));
+            if (puff != NULL) {
+                TechnoClass* refc = Contact_With_Whom();
+                if (refc != NULL && refc->What_Am_I() == RTTI_BUILDING) {
+                    puff->Attach_To(refc);
+                }
+            }
+            if (Tiberium > 0) {
+                return (TD_DOCK_OFFLOAD_DELAY); // hold the dock; next bail after the dial
+            }
+        }
+
+        /*
+        **	Load empty -- finish: clear dumping, tell the refinery (frees the dock +
+        **	ReconsiderRefinery for the queue), drop radio contact, drive off. As with
+        **	the RA path, RADIO_UNLOADED is sent here (not at dock time) so the dock
+        **	stayed occupied + the harvester stayed capturable through the whole unload.
+        */
+        IsDumping = false;
+        Tiberium = Gold = Gems = 0; // defensive
+        Transmit_Message(RADIO_UNLOADED);
+        Transmit_Message(RADIO_OVER_OUT);
+        Assign_Mission(MISSION_HARVEST);
+        break;
+    }
 
     case UNIT_TRUCK:
         switch (Status) {
@@ -3467,17 +3615,18 @@ int UnitClass::Mission_Harvest(void)
     /*
     **	If there are no more refineries, then drop into guard mode.
     **
-    **	Tiberian Factions: STRUCTF_REFINERY is a <32 bitfield flag and STRUCT_TDPROC
-    **	sits past bit 31, so it has no STRUCTF_ bit -- a GDI/Nod harvester must test
-    **	its own refinery type by quantity instead (mirrors the AI re-task in
-    **	Mission_Guard at ~3994 and the docking-bay lookups at 1234/4369). Without
-    **	this TD branch, a human GDI/Nod harvester built from the war factory finds no
-    **	STRUCTF_REFINERY, bails straight to MISSION_GUARD and sits idle outside the
-    **	factory. The AI was masked from this by the !IsHuman re-task in Mission_Guard;
-    **	the human side has no such re-task, so it stuck.
+    **	Tiberian Factions: either harvester can now unload at EITHER refinery type
+    **	(the cross-dock work), so "has a refinery" means EITHER an RA refinery
+    **	(STRUCT_REFINERY, a <32 bitfield flag in ActiveBScan) OR a TD refinery
+    **	(STRUCT_TDPROC, which sits past bit 31 so it has no STRUCTF_ bit and must be
+    **	counted by quantity -- mirrors the AI re-task in Mission_Guard at ~3994 and the
+    **	docking-bay lookups at 1234/4369). Without checking BOTH: a human GDI/Nod
+    **	harvester built from the war factory found no STRUCTF_REFINERY and sat idle
+    **	outside the factory (the AI was masked by the !IsHuman re-task in Mission_Guard);
+    **	and a TD harvester whose last TD refinery is sold/destroyed bailed to GUARD even
+    **	with one of its own RA refineries standing (and vice versa).
     */
-    bool has_refinery = (*this == UNIT_TDHARV) ? (House->Get_Quantity(STRUCT_TDPROC) > 0)
-                                               : ((House->ActiveBScan & STRUCTF_REFINERY) != 0);
+    bool has_refinery = ((House->ActiveBScan & STRUCTF_REFINERY) != 0) || (House->Get_Quantity(STRUCT_TDPROC) > 0);
     if (!has_refinery) {
         Assign_Mission(MISSION_GUARD);
         return (1);
@@ -4523,7 +4672,7 @@ int UnitClass::Mission_Guard(void)
     assert(Units.ID(this) == ID);
     assert(IsActive);
     if (/*House->IsBaseBuilding &&*/ !House->IsHuman && Class->IsToHarvest
-        && House->Get_Quantity((*this == UNIT_TDHARV) ? STRUCT_TDPROC : STRUCT_REFINERY) > 0
+        && (((House->ActiveBScan & STRUCTF_REFINERY) != 0) || House->Get_Quantity(STRUCT_TDPROC) > 0)
         && !House->IsTiberiumShort) {
         Assign_Mission(MISSION_HARVEST);
         return (1);
@@ -5513,13 +5662,14 @@ bool UnitClass::MinelayerFindSpot(void)
 BuildingClass* UnitClass::Find_Best_Refinery(void) const
 {
     /*
-    **	B4: an RA harvester (UNIT_HARVESTER) can unload at EITHER refinery type -- it
-    **	carries its own visible dust-loop unload, so it works at a TD refinery's ramp
-    **	too (governing rule: unload style follows the harvester). A TD harvester stays
-    **	TDPROC-only until the reverse case (TD harv -> RA ref) is built.
+    **	B4 (both directions): EITHER harvester can unload at EITHER refinery type.
+    **	The unload STYLE follows the harvester (governing rule), not the refinery:
+    **	  - RA harvester (UNIT_HARVESTER): visible SHP dust-loop at any refinery.
+    **	  - TD harvester (UNIT_TDHARV): TD attach/siphon at a TD refinery; at an RA
+    **	    refinery it parks visibly and runs a timer-driven offload + dust puff
+    **	    (no SHP dump frames exist for the TD sprite). See Mission_Unload.
+    **	So both consider STRUCT_REFINERY *and* STRUCT_TDPROC.
     */
-    bool is_td_harv = (*this == UNIT_TDHARV);
-
     static DynamicVectorClass<RefineryData> _refineries;
     _refineries.Clear();
 
@@ -5527,8 +5677,7 @@ BuildingClass* UnitClass::Find_Best_Refinery(void) const
         BuildingClass* refinery = Buildings.Ptr(i);
         if (refinery != NULL && refinery->House == House && !refinery->IsInLimbo
             && refinery->Mission != MISSION_DECONSTRUCTION
-            && (is_td_harv ? (*refinery == STRUCT_TDPROC)
-                           : (*refinery == STRUCT_REFINERY || *refinery == STRUCT_TDPROC))
+            && (*refinery == STRUCT_REFINERY || *refinery == STRUCT_TDPROC)
             && Map[refinery->Center_Coord()].Zones[Techno_Type_Class()->MZone]
                    == Map[Center_Coord()].Zones[Techno_Type_Class()->MZone]) {
             _refineries.Add(RefineryData{refinery, Distance(refinery), 0});
@@ -5545,9 +5694,9 @@ BuildingClass* UnitClass::Find_Best_Refinery(void) const
     }
 
     /*
-    **	Count harvesters already bound for each refinery. Same-type pairing is
-    **	implicit: a TDHARV's unload refinery can only ever match a TDPROC in
-    **	the list (and vice versa).
+    **	Count harvesters already bound for each refinery (matched by pointer,
+    **	so cross-type pairings are counted correctly now that either harvester
+    **	can target either refinery).
     */
     for (int i = 0; i < Units.Count(); ++i) {
         UnitClass* unit = Units.Ptr(i);

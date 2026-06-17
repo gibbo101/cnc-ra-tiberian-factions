@@ -99,6 +99,37 @@ bool TF_Dev_Cheats(void)
 #endif
 }
 
+/***********************************************************************************************
+ * TF_Harv_BackIn -- Dev toggle: TD harvester docks at an RA refinery by BACKING IN vs pull-up.*
+ *                                                                                             *
+ * Comparison aid for the reverse cross-dock (TD harv -> RA ref). DEFAULT = pull-up (return    *
+ * false). Dropping Documents/CnCRemastered/tf_harv_backin.flag switches to the TD-style       *
+ * back-in maneuver (turn DIR_SW + Force_Track BACKUP_INTO_REFINERY into the footprint, stay   *
+ * visible -- never Limbo'd). Re-read every call (docking is infrequent) so the flag can be     *
+ * toggled between matches without relaunching. TF_DEV-only; a release build hard-picks the     *
+ * default (pull-up) until Luke locks the choice and this gets hardcoded.                       *
+ *=============================================================================================*/
+bool TF_Harv_BackIn(void)
+{
+#if TF_DEV_BUILD
+    const char* h = getenv("USERPROFILE");
+    if (h == NULL)
+        h = getenv("HOME");
+    if (h != NULL) {
+        char p[512];
+        snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_harv_backin.flag", h);
+        FILE* f = fopen(p, "r");
+        if (f != NULL) {
+            fclose(f);
+            return true; // flag present -> back-in maneuver
+        }
+    }
+    return false; // default -> pull-up
+#else
+    return false;
+#endif
+}
+
 extern int PreserveVQAScreen;
 
 void Display_Briefing_Text_GlyphX();
