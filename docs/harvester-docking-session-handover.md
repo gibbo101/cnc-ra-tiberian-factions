@@ -46,22 +46,38 @@ soak-tested live on the **Linux desktop** prefix; diagnostics in `tf_astar.log` 
 | Infantry never block harvesters (#5) | ✅ give-way + watchdog shove |
 | Dock contention | ✅ Layer A restart + Layer B pad + staging `49f8157` |
 | **Dock-time dial (halve?)** | ⏸ RESOLVED = **keep TD-matched** for now; 1-line re-tune if soak shows economy drags (`DOCK_DUMP_RATE 3→2` + `TD_DOCK_OFFLOAD_DELAY`, unit.cpp ~3430/3505). Luke's call from soak. |
-| **Threat-aware field selection** | ⬜ **NOT BUILT — START HERE NEXT.** See blocker below. |
+| **Threat-aware field selection** | 🟡 **BUILT + deployed (local prefix), UNCOMMITTED — awaiting in-game verify.** See section below. |
 | Genuine AI box-in (turret traps own harvester) | ⛔ OUT OF SCOPE — AI *placement* problem, not harvester logic. Watchdog keeps trying harmlessly; frees it if the trap opens. |
 
-### ⭐ NEXT: threat-aware field selection — DESIGN BLOCKER FOUND
-Goal: don't route a harvester to/through enemy-threatened ore. **Blocker discovered 2026-06-18:** the
-engine's region-threat system (`MapClass::Cell_Threat` → `HouseClass::Regions[].Threat_Value`) is
-populated only via `ObjectClass::Mark` at **`object.cpp:1859`, which is gated on
-`Session.Type == GAME_NORMAL`** (campaign). So in **skirmish the threat map is never filled** →
-`Cell_Threat` returns ~0/1 everywhere → a `Cell_Threat`-based penalty would be **inert in skirmish**
-(same class of GAME_NORMAL-gating as the flat-difficulty issue [[project-skirmish-difficulty-flat]]).
-**Plan for next session:** build threat-aware on a **custom enemy-proximity scan** instead — for each
-candidate field, scan a bounded radius (or walk enemy houses' Units/Infantry heaps) for enemy combat
-technos within N cells; treat the field as threatened and add a tunable penalty to its effective A*
-cost in `Goto_Tiberium`'s candidate loop (mirror the richness two-tier: prefer un-threatened, fall back
-if all threatened). Bounded + only on the infrequent field rescan. Ship a TF_DEV diagnostic logging the
-threat verdict per candidate to tune the radius/penalty. (Do NOT build on `Cell_Threat`.)
+### ⭐ threat-aware field selection — IMPLEMENTED 2026-06-18 (built + deployed, UNCOMMITTED)
+Goal: don't route a harvester to/through enemy-threatened ore. Built on a **custom enemy-proximity
+scan**, NOT the engine region-threat map — that map (`MapClass::Cell_Threat` →
+`HouseClass::Regions[].Threat_Value`) is populated only via `ObjectClass::Mark` at `object.cpp:1859`,
+gated on `Session.Type == GAME_NORMAL` (campaign), so it reads ~0 everywhere in skirmish (same
+GAME_NORMAL gating as [[project-skirmish-difficulty-flat]]).
+
+**What was built (all in `unit.cpp` / `unit.h`):**
+- **`UnitClass::Field_Threat_Level(CELL seed) const`** — walks the `Units`/`Infantry`/`Vessels`/
+  `Buildings` heaps, counts every active, non-limbo, **`Is_Weapon_Equipped()`**, non-ally techno
+  within `HARV_THREAT_RADIUS` (6) cells crow-flies of the field seed. Clamped to `HARV_THREAT_CAP` (8)
+  so one swarm can't dominate. Includes armed **buildings** (a gun turret / obelisk guarding ore is
+  exactly the threat to route around). Pure heap reads + cell maths → lockstep-deterministic.
+- **Integration in `Goto_Tiberium`'s pathcost candidate loop:** `effpath = plen + threat *
+  HARV_THREAT_PENALTY` (penalty = 6 A*-cells per enemy). The penalty rides the **NEAREST comparison
+  only** (both tier-1 nearest-rich and tier-2 richest tiebreak now use `effpath`) — NOT the
+  reachability gate (raw `plen <= 0` still skips) and NOT the richness sum. A **soft** penalty, not a
+  hard veto: better to mine contested ore than idle when every field is threatened (graceful-degrade,
+  mirrors the richness fallback).
+- **TF_DEV diagnostic:** each `HARV-FIELD` candidate line now logs `threat=N eff=M … THREATENED`.
+
+**Dials** (`unit.cpp`, constants block ~line 2811): `HARV_THREAT_RADIUS` (6 cells), `HARV_THREAT_PENALTY`
+(6 A*-cells/enemy), `HARV_THREAT_CAP` (8). Gotcha hit + fixed: local `rad2` collided with a windows.h
+macro → renamed to `threatrad2` (also `seedx`/`seedy`/`tdx`/`tdy`).
+
+**⭐ NEXT: in-game verify, then commit.** Set up a skirmish where ore sits near an enemy push; watch
+`tf_astar.log` `HARV-FIELD` lines — a `threat=N` field should show `eff` = `apath + N*6` and the
+harvester should prefer a clear field unless the threatened one is much closer. Tune radius/penalty if
+it over- or under-avoids, then commit (→ v3.0 with the rest).
 
 ### Build / deploy / soak workflow (unchanged, this machine)
 ```

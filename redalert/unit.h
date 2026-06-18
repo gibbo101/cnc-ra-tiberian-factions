@@ -202,6 +202,7 @@ public:
 
     int Tiberium_Check(CELL& center, int x, int y);
     int Field_Tiberium_Value(CELL seed, int cap) const; // total harvestable value of the field containing seed (early-exits at cap)
+    int Field_Threat_Level(CELL seed) const;            // count of armed enemy technos near a field (skirmish-live, not Cell_Threat)
     bool Flag_Attach(HousesType house);
     bool Flag_Remove(void);
     bool Goto_Tiberium(int radius, bool pathcost = false);

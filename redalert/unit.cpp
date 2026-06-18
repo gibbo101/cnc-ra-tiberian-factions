@@ -2815,6 +2815,13 @@ static const int HARV_FIELD_LOAD_DIVISOR = 2;                // a field must hol
                                                              // lone regrown blocks. Below the bar, the richest reachable field
                                                              // still wins (never a lone block over a fuller one). Tune freely:
                                                              // 4 = quarter load (less roaming), 1 = a full pristine field.
+// Threat-aware field selection (Goto_Tiberium pathcost mode): keep harvesters off ore the enemy is
+// sitting on. Built on a custom enemy-proximity scan, NOT the engine region-threat map -- that map
+// (MapClass::Cell_Threat) is only populated under Session.Type==GAME_NORMAL (campaign), so it reads
+// ~0 everywhere in skirmish (same GAME_NORMAL gating as [[project-skirmish-difficulty-flat]]).
+static const int HARV_THREAT_RADIUS = 6;                     // an armed enemy techno within this many cells "threatens" a field
+static const int HARV_THREAT_PENALTY = 6;                    // A*-cells of extra effective cost added per threatening enemy
+static const int HARV_THREAT_CAP = 8;                        // max enemies counted per field (one swarm can't dominate the pick)
 
 /***********************************************************************************************
  * UnitClass::Field_Tiberium_Value -- Total harvestable value of the field containing a cell.  *
@@ -2893,6 +2900,57 @@ int UnitClass::Field_Tiberium_Value(CELL seed, int cap) const
     }
 
     return ((int)(total > cap ? cap : total));
+}
+
+/***********************************************************************************************
+ * UnitClass::Field_Threat_Level -- Count armed enemy technos sitting near an ore field.        *
+ *                                                                                             *
+ *    Custom enemy-proximity scan for threat-aware field selection. Walks the Units, Infantry,   *
+ *    Vessels and Buildings heaps and counts every ACTIVE, non-limbo, weapon-equipped techno     *
+ *    that this harvester's house is NOT allied with and that sits within HARV_THREAT_RADIUS      *
+ *    cells (crow-flies) of `seed`. The count is clamped to HARV_THREAT_CAP so one swarm can't    *
+ *    dominate the field pick. Pure heap reads + cell-distance maths -> lockstep-deterministic.   *
+ *                                                                                             *
+ *    Deliberately NOT built on MapClass::Cell_Threat / HouseClass::Regions[].Threat_Value: that  *
+ *    region-threat map is only populated via ObjectClass::Mark under Session.Type==GAME_NORMAL   *
+ *    (campaign), so it reads ~0 everywhere in skirmish. A direct heap scan is live in skirmish.  *
+ *                                                                                             *
+ * INPUT:   seed = an ore cell in the candidate field.                                          *
+ * OUTPUT:  number of threatening enemy combat technos near the field (0..HARV_THREAT_CAP).      *
+ *=============================================================================================*/
+int UnitClass::Field_Threat_Level(CELL seed) const
+{
+    int seedx = Cell_X(seed);
+    int seedy = Cell_Y(seed);
+    int threatrad2 = HARV_THREAT_RADIUS * HARV_THREAT_RADIUS;
+    int count = 0;
+
+    /*
+    **	A single lambda body inlined per heap: an enemy is a threat if it is real, on the map,
+    **	armed, hostile to us, and inside the radius. Defensive structures count too -- a gun
+    **	turret or obelisk guarding ore is exactly the threat we want to route around.
+    */
+#define TF_THREAT_SCAN(HEAP)                                                                       \
+    for (int i = 0; i < (HEAP).Count() && count < HARV_THREAT_CAP; i++) {                          \
+        TechnoClass* t = (HEAP).Ptr(i);                                                            \
+        if (t == NULL || !t->IsActive || t->IsInLimbo)                                             \
+            continue;                                                                              \
+        if (!t->Is_Weapon_Equipped() || House->Is_Ally(t))                                         \
+            continue;                                                                              \
+        CELL tc = Coord_Cell(t->Center_Coord());                                                   \
+        int tdx = Cell_X(tc) - seedx;                                                              \
+        int tdy = Cell_Y(tc) - seedy;                                                              \
+        if (tdx * tdx + tdy * tdy <= threatrad2)                                                   \
+            count++;                                                                               \
+    }
+
+    TF_THREAT_SCAN(Units);
+    TF_THREAT_SCAN(Infantry);
+    TF_THREAT_SCAN(Vessels);
+    TF_THREAT_SCAN(Buildings);
+#undef TF_THREAT_SCAN
+
+    return (count);
 }
 
 #if TF_DEV_BUILD // TF DEV: harvester unreachable-target diagnostic (shares tf_astar.log). Compiled out of release.
@@ -3160,6 +3218,7 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
 #if TF_DEV_BUILD
                     int candpath[HARV_FIELD_CANDIDATES];
                     int candfield[HARV_FIELD_CANDIDATES];
+                    int candthreat[HARV_FIELD_CANDIDATES];
 #endif
                     for (int i = 0; i < ncand; i++) {
                         /*
@@ -3172,26 +3231,39 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
                         */
                         int plen = Find_Path_AStar(NULL, src, candidates[i], MAP_CELL_TOTAL, MOVE_MOVING_BLOCK, -1);
                         int fieldval = Field_Tiberium_Value(candidates[i], richthresh);
+                        /*
+                        **	TF: threat-aware penalty. Armed enemies sitting on/near a field add
+                        **	effective road-distance, so a contested field only wins if it is much
+                        **	closer (or the only reachable ore). A soft penalty, not a hard veto:
+                        **	better to mine contested ore than to idle when every field is threatened.
+                        **	Mirrors the richness graceful-degrade -- prefer clear ore, fall back to
+                        **	threatened ore rather than stalling. Penalty rides the NEAREST comparison
+                        **	(effpath), never the reachability gate (raw plen) or the richness sum.
+                        */
+                        int threat = Field_Threat_Level(candidates[i]);
+                        int effpath = plen + threat * HARV_THREAT_PENALTY;
 #if TF_DEV_BUILD
                         candpath[i] = plen;
                         candfield[i] = fieldval;
+                        candthreat[i] = threat;
 #endif
                         if (plen <= 0)
                             continue; // unreachable by road -- skip (also catches walled fields)
                         /*
-                        **	Tier 2: track the richest reachable field, nearest as the tiebreak.
+                        **	Tier 2: track the richest reachable field, nearest (threat-adjusted)
+                        **	as the tiebreak.
                         */
-                        if (fieldval > bestrichval || (fieldval == bestrichval && plen < bestrichpath)) {
+                        if (fieldval > bestrichval || (fieldval == bestrichval && effpath < bestrichpath)) {
                             bestrichval = fieldval;
-                            bestrichpath = plen;
+                            bestrichpath = effpath;
                             bestrich = candidates[i];
                         }
                         /*
-                        **	Tier 1: nearest field that clears the richness bar.
+                        **	Tier 1: nearest (threat-adjusted) field that clears the richness bar.
                         */
                         if (fieldval >= richthresh
-                            && (plen < bestfullpath || (plen == bestfullpath && candvalue[i] > bestfulltib))) {
-                            bestfullpath = plen;
+                            && (effpath < bestfullpath || (effpath == bestfullpath && candvalue[i] > bestfulltib))) {
+                            bestfullpath = effpath;
                             bestfull = candidates[i];
                             bestfulltib = candvalue[i];
                         }
@@ -3222,10 +3294,13 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
                             fprintf(lf, "    richthresh=%d tier=%s\n", richthresh,
                                     bestfull ? "rich(nearest)" : (bestrich ? "fallback(richest)" : "crowflies"));
                             for (int i = 0; i < ncand; i++) {
-                                fprintf(lf, "    cand[%d] (%d,%d) zone=%d val=%d field=%d apath=%d%s\n", i,
+                                fprintf(lf, "    cand[%d] (%d,%d) zone=%d val=%d field=%d apath=%d threat=%d eff=%d%s%s\n", i,
                                         Cell_X(candidates[i]), Cell_Y(candidates[i]),
                                         Map[candidates[i]].Zones[Class->MZone], candvalue[i], candfield[i],
-                                        candpath[i], (candfield[i] >= richthresh) ? " RICH" : "");
+                                        candpath[i], candthreat[i],
+                                        (candpath[i] > 0 ? candpath[i] + candthreat[i] * HARV_THREAT_PENALTY : candpath[i]),
+                                        (candfield[i] >= richthresh) ? " RICH" : "",
+                                        (candthreat[i] > 0) ? " THREATENED" : "");
                             }
                             fflush(lf);
                         }
