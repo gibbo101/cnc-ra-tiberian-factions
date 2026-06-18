@@ -98,5 +98,4 @@ Queue-Jump, Harvester Optimization, Smarter Repair Bay, and **Infantry Tiberium 
 
 ## Active work threads (tracked in detail elsewhere — index only)
 - **Chokepoint / cooperative traffic — ✅ SHIPPED v2.3.0 (2026-06-16):** infantry give-way + vehicle-vs-MOVING-infantry freeze fix + open-ground hold-timeout + execution-branch head-on breaker all landed. **Open thread (minor):** vehicle-vs-vehicle head-on in a 1-tile gap with NO escape cell (gw==2 RETREAT path never reaches the breaker); self-resolves today, no gridlock — make the breaker reachable from the gw==2 path. See `chokepoint-reservation-design.md` + `cfe-port-plan.md`.
-- **Recon Bike won't-turn-to-fire bug** — major combat bug, self-contained; next on the small-wins list. See `known-issues.md`.
 - **Harvester logic workstream:** targeting / pathing / claiming / reachability / idle-stuck + the economy-equalise (tilted-bucket dwell) idea. See the checkpoint's spun-off section + `balance-deep-dive.md`.
