@@ -2,6 +2,53 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [3.0.0] — 2026-06-18
+
+The harvester economy and docking overhaul. Harvesters of either side can now
+dock at either side's refinery, unload visibly, and turn around faster, on top
+of a wide sweep of harvester pathfinding and anti-stuck fixes. GPL v3.
+
+### Added
+- **Cross-faction harvester docking.** A harvester can now unload at the other
+  side's refinery: an Allied or Soviet harvester docks at a GDI or Nod Tiberium
+  refinery, and a GDI or Nod harvester docks at an Allied or Soviet ore
+  refinery. This matters most when a refinery changes hands, since a captured
+  refinery keeps working for its new owner's harvesters.
+- **Capturing a refinery captures the harvester docked at it.** Send an engineer
+  into an enemy refinery while a harvester is unloading and you take the
+  harvester along with the building.
+- **Visible unloading.** Harvesters now play a full unload at the dock instead of
+  dumping their load instantly. Allied and Soviet harvesters run a billowing
+  dust cycle, and a green Tiberium haze vents while a load is siphoned.
+
+### Changed
+- **Faster, balanced harvester economy.** Dock times were cut roughly in half and
+  made equal for every harvester-and-refinery combination. Red Alert's economy
+  was built on near-instant unloading, so this brings that pace back while
+  keeping both sides' economies in step, which keeps unit costs comparable across
+  factions. Income per load is unchanged; harvesters simply turn around quicker.
+- **Harvesters avoid enemy-held ore.** When choosing where to mine, a harvester
+  steers away from fields with enemy units sitting on or near them, preferring
+  clear ore unless the contested field is much closer or the only ore left.
+- **Smarter field choice.** Harvesters pick ore by actual driving distance around
+  water and cliffs rather than straight-line distance, favour a field with a
+  worthwhile amount of ore over a lone regrown speck, and no longer drive across
+  the map past closer patches.
+- **Harvesters get themselves unstuck.** A harvester that stops making progress,
+  whether wedged in traffic or sitting idle after giving up, now recovers on its
+  own: it nudges blocking infantry aside, works free of a jam, and as a last
+  resort restarts its search instead of standing dead.
+- **Refinery docks kept clear.** The dock approach of a refinery is now reserved
+  for harvesters, so the AI can no longer park a tank or a guard on it and block
+  unloading. Harvesters waiting on a busy refinery spread across nearby cells
+  instead of piling onto one, and a harvester queued at a busy refinery switches
+  to another the moment one frees up.
+
+### Fixed
+- **Harvesters keep working when a refinery is lost.** A GDI or Nod harvester no
+  longer goes idle when its last Tiberium refinery is sold or destroyed while an
+  ore refinery still stands; it heads to the refinery that remains.
+
 ## [2.4.0] — 2026-06-17
 
 Smarter economy and combat AI, plus two CFE Patch Redux ports. GPL v3.

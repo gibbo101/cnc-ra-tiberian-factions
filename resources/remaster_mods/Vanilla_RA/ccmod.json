@@ -3,7 +3,7 @@
     "description": "Adds GDI and Nod as new playable factions alongside Allies and Soviets.",
     "author": "lukegibson101",
     "load_order": 1,
-    "version_high": 2,
-    "version_low": 41,
+    "version_high": 3,
+    "version_low": 0,
     "game_type": "RA"
 }
