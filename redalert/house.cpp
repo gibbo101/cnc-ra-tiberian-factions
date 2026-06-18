@@ -964,21 +964,6 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     */
     int own = type->Get_Ownable();
 
-#if TF_DEV_BUILD
-    /*
-    **	TF DEV TEST ONLY (compiled out of release) -- make BOTH refinery types
-    **	buildable by any house so cross-dock docking (RA harv -> TD ref, TD harv ->
-    **	RA ref) can be exercised in a single skirmish. No house builds the other
-    **	side's refinery in a shipped build.
-    */
-    if (type->What_Am_I() == RTTI_BUILDINGTYPE) {
-        StructType st = ((BuildingTypeClass const*)type)->Type;
-        if (st == STRUCT_REFINERY || st == STRUCT_TDPROC) {
-            return (true);
-        }
-    }
-#endif
-
     /*
     **	Check to see if this owner can build the object type specified.
     */
