@@ -315,6 +315,7 @@ UnitClass::UnitClass(UnitType classid, HousesType house)
     HarvTargetCell = -1;
     HarvBestDist = 0;
     HarvStallFrame = 0;
+    HarvReachableResets = 0;
     for (int hb = 0; hb < HARV_BLACKLIST_MAX; hb++) {
         HarvBadMin[hb] = -1;
         HarvBadMax[hb] = -1;
@@ -496,21 +497,45 @@ void UnitClass::AI(void)
     */
     if (Class->IsToHarvest && Mission == MISSION_HARVEST && Target_Legal(NavCom)
         && Map[As_Cell(NavCom)].Land_Type() == LAND_TIBERIUM) {
-        const long HARV_STALL_FRAMES = TICKS_PER_SECOND * 5; // no progress for 5s == effectively unreachable
+        const long HARV_STALL_FRAMES = TICKS_PER_SECOND * 5; // no progress for 5s == suspect unreachable
         const int HARV_PROGRESS_MARGIN = 256;                // 1 cell; ignore sub-cell jitter
+        const int HARV_MAX_REACHABLE_RESETS = 3;             // free stall windows while A* still finds a path (~15s) before giving up
         CELL navc = As_Cell(NavCom);
         int dist = (int)Distance(NavCom);
         if (HarvTargetCell != navc) {
             HarvTargetCell = navc; // new target -- start a fresh progress window
             HarvBestDist = dist;
             HarvStallFrame = Frame;
+            HarvReachableResets = 0;
         } else if (dist + HARV_PROGRESS_MARGIN < HarvBestDist) {
             HarvBestDist = dist; // got meaningfully closer -- reset the stall timer
             HarvStallFrame = Frame;
+            HarvReachableResets = 0;
         } else if (Frame - HarvStallFrame >= HARV_STALL_FRAMES) {
-            Blacklist_Harvest_Cell(navc);
-            Assign_Destination(TARGET_NONE);
-            HarvTargetCell = -1;
+            /*
+            **	TF: stalled 5s toward the ore. The 5s-no-progress symptom matches TWO very
+            **	different situations -- a genuinely WALLED field (A* fails; the case this
+            **	detector was built for) and a field we are merely BLOCKED from for a moment by
+            **	base traffic / parked vehicles / our own buildings. Blacklisting the latter is
+            **	what flung harvesters across the map past base-adjacent ore (the "ignored the
+            **	field by the refinery and drove south" bug). Disambiguate with a direct A*
+            **	query: if A* can still path to the field it is reachable -- just congested -- so
+            **	keep trying and wait it out; only blacklist when A* confirms no path exists.
+            **	A* accounts for buildings (unlike the movement-zone map), so the original
+            **	walled-gems case still blacklists correctly. A bounded number of free passes
+            **	stops a harvester pinned by a never-moving blocker from idling forever.
+            */
+            bool reachable =
+                Find_Path_AStar(NULL, Coord_Cell(Center_Coord()), navc, MAP_CELL_TOTAL, MOVE_MOVING_BLOCK, -1) > 0;
+            if (reachable && HarvReachableResets < HARV_MAX_REACHABLE_RESETS) {
+                HarvReachableResets++;
+                HarvStallFrame = Frame; // congested but reachable -- grant another window
+            } else {
+                Blacklist_Harvest_Cell(navc);
+                Assign_Destination(TARGET_NONE);
+                HarvTargetCell = -1;
+                HarvReachableResets = 0;
+            }
         }
     } else if (HarvTargetCell != -1 && !Target_Legal(NavCom)) {
         HarvTargetCell = -1; // not pursuing ore right now -- clear tracking
@@ -2679,8 +2704,7 @@ static const int HARV_BLACKLIST_MARGIN = 1;                  // cells of slack a
 static const long HARV_BLACKLIST_TTL = TICKS_PER_SECOND * 15; // retry a blacklisted patch after this long
 static const int HARV_FLOOD_CAP = 256;                       // max ore cells visited when sizing a field
 // Travel-distance-aware field selection (Goto_Tiberium pathcost mode):
-static const int HARV_FIELD_CANDIDATES = 6;                  // max fields A*-compared per long-scan rescan
-static const int HARV_FIELD_RING_SPAN = 4;                   // keep scanning this many rings past the first ore-bearing ring
+static const int HARV_FIELD_CANDIDATES = 10;                 // max fields A*-compared per long-scan rescan (nearest rings)
 
 #if TF_DEV_BUILD // TF DEV: harvester unreachable-target diagnostic (shares tf_astar.log). Compiled out of release.
 static FILE* TF_Harv_Logfile(void)
@@ -2860,46 +2884,69 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
             **	The vanilla ring search below returns the densest cell in the FIRST ring
             **	(crow-flies) that holds any ore, so a field that is near in a straight line
             **	but only reachable the long way around water/cliff beats a slightly-farther-
-            **	by-ring field that is a short straight drive. When pathcost is set, collect
-            **	one candidate per ore-bearing ring across a few rings, then choose the one
-            **	with the shortest ACTUAL A* path (Find_Path_AStar's cell length around
-            **	obstacles), not the smallest ring. A null resultPath makes A* return just the
-            **	length cheaply; it consumes no RNG and is the same pathfinder used for real
-            **	movement, so this stays lockstep-deterministic. Bounded to <=
+            **	by-ring field that is a short straight drive. When pathcost is set, gather the
+            **	NEAREST ore cell from each of the closest HARV_FIELD_CANDIDATES rings, then
+            **	choose the one with the shortest ACTUAL A* path (Find_Path_AStar's cell length
+            **	around obstacles), not the smallest ring. A null resultPath makes A* return
+            **	just the length cheaply; it consumes no RNG and is the same pathfinder used for
+            **	real movement, so this stays lockstep-deterministic. Bounded to <=
             **	HARV_FIELD_CANDIDATES A* calls and only on the (infrequent) field rescan.
+            **
+            **	Candidates are chosen by PROXIMITY, never density. An earlier cut picked each
+            **	ring's *densest* cell -- but the near fields a harvester works get mined down
+            **	(low density) while a pristine far/contested field stays full, so the dense-
+            **	cell rule handed every candidate slot to distant fields and skipped the close
+            **	partly-mined ones entirely (harvesters drove across the map / into the enemy
+            **	base past plenty of nearer ore). A* min-path does the real selection; density
+            **	is only a tiebreak between two equally-close-by-road fields.
             */
             if (pathcost) {
                 CELL candidates[HARV_FIELD_CANDIDATES];
                 int candvalue[HARV_FIELD_CANDIDATES];
                 int ncand = 0;
-                int firsthit = -1;
+#if TF_DEV_BUILD
+                int dbg_blskips = 0;     // near ore cells skipped because blacklisted
+                CELL dbg_nearestore = 0; // the single closest ore cell seen, blacklist or not
+                int dbg_nearestd2 = 0x7FFFFFFF;
+                bool dbg_nearestbl = false;
+#endif
                 for (int radius = 1; radius < rad && ncand < HARV_FIELD_CANDIDATES; radius++) {
-                    CELL ringbest = 0;
+                    CELL ringcell = 0;
                     int ringval = 0;
+                    int ringbestdist = 0x7FFFFFFF;
                     for (int x = -radius; x <= radius; x++) {
                         int corners[4][2] = {{x, -radius}, {x, +radius}, {-radius, x}, {+radius, x}};
                         for (int c = 0; c < 4; c++) {
                             CELL cell = center;
                             int tiberium = Tiberium_Check(cell, corners[c][0], corners[c][1]);
-                            if (tiberium > ringval && !Is_Harvest_Blacklisted(cell)) {
-                                ringbest = cell;
-                                ringval = tiberium;
+                            int d2 = corners[c][0] * corners[c][0] + corners[c][1] * corners[c][1];
+                            if (tiberium > 0) {
+                                bool bl = Is_Harvest_Blacklisted(cell);
+#if TF_DEV_BUILD
+                                if (d2 < dbg_nearestd2) {
+                                    dbg_nearestd2 = d2;
+                                    dbg_nearestore = cell;
+                                    dbg_nearestbl = bl;
+                                }
+                                if (bl)
+                                    dbg_blskips++;
+#endif
+                                /*
+                                **	Pick the ore cell nearest the harvester within this ring
+                                **	(squared crow-flies offset) -- proximity, NOT how rich it is.
+                                */
+                                if (!bl && d2 < ringbestdist) {
+                                    ringbestdist = d2;
+                                    ringcell = cell;
+                                    ringval = tiberium;
+                                }
                             }
                         }
                     }
-                    if (ringbest) {
-                        if (firsthit == -1)
-                            firsthit = radius;
-                        candidates[ncand] = ringbest;
+                    if (ringcell) {
+                        candidates[ncand] = ringcell;
                         candvalue[ncand] = ringval;
                         ncand++;
-                        /*
-                        **	Stop a few rings past the first hit -- enough to weigh the
-                        **	nearest-by-crow-flies field against marginally-farther ones,
-                        **	without scanning the whole map.
-                        */
-                        if (radius - firsthit >= HARV_FIELD_RING_SPAN)
-                            break;
                     }
                 }
                 if (ncand > 0) {
@@ -2907,8 +2954,22 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
                     CELL best = 0;
                     int bestpath = 0x7FFFFFFF;
                     int besttiberium = 0;
+#if TF_DEV_BUILD
+                    int candpath[HARV_FIELD_CANDIDATES];
+#endif
                     for (int i = 0; i < ncand; i++) {
-                        int plen = Find_Path_AStar(NULL, src, candidates[i], MAP_CELL_TOTAL, PathThreshhold, -1);
+                        /*
+                        **	MOVE_MOVING_BLOCK, not the harvester's strict PathThreshhold: a field
+                        **	is "reachable" if TERRAIN allows it -- infantry/vehicles standing on
+                        **	the route are transient (they move; give-way pushes them) and must NOT
+                        **	read as a wall, or the harvester skips near ore for distant clear ore
+                        **	(the unit-blocked near field showed apath=0). Walls/buildings/water
+                        **	still block, so a genuinely walled field still scores unreachable.
+                        */
+                        int plen = Find_Path_AStar(NULL, src, candidates[i], MAP_CELL_TOTAL, MOVE_MOVING_BLOCK, -1);
+#if TF_DEV_BUILD
+                        candpath[i] = plen;
+#endif
                         if (plen <= 0)
                             continue; // unreachable by road -- skip (also catches walled fields)
                         if (plen < bestpath || (plen == bestpath && candvalue[i] > besttiberium)) {
@@ -2929,11 +2990,20 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
                         FILE* lf = TF_Harv_Logfile();
                         if (lf != NULL) {
                             fprintf(lf,
-                                    "HARV-FIELD: harvester at (%d,%d) picked field (%d,%d) path=%d cells "
-                                    "from %d candidate(s)%s\n",
-                                    Cell_X(src), Cell_Y(src), Cell_X(best), Cell_Y(best),
+                                    "HARV-FIELD: harvester at (%d,%d) zone=%d picked field (%d,%d) path=%d "
+                                    "from %d cand | nearest-ore (%d,%d) d=%d%s blskips=%d%s\n",
+                                    Cell_X(src), Cell_Y(src), Map[src].Zones[Class->MZone],
+                                    Cell_X(best), Cell_Y(best),
                                     (bestpath == 0x7FFFFFFF ? -1 : bestpath), ncand,
-                                    (best != candidates[0]) ? " [path-cost overrode crow-flies nearest]" : "");
+                                    Cell_X(dbg_nearestore), Cell_Y(dbg_nearestore),
+                                    (dbg_nearestd2 == 0x7FFFFFFF ? -1 : dbg_nearestd2),
+                                    (dbg_nearestbl ? " BLACKLISTED" : ""), dbg_blskips,
+                                    (best != candidates[0]) ? " [override]" : "");
+                            for (int i = 0; i < ncand; i++) {
+                                fprintf(lf, "    cand[%d] (%d,%d) zone=%d val=%d apath=%d\n", i,
+                                        Cell_X(candidates[i]), Cell_Y(candidates[i]),
+                                        Map[candidates[i]].Zones[Class->MZone], candvalue[i], candpath[i]);
+                            }
                             fflush(lf);
                         }
                     }

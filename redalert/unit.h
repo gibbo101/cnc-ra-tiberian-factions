@@ -151,6 +151,7 @@ public:
     CELL HarvTargetCell;                    // ore cell currently being pursued (-1 = none)
     int HarvBestDist;                       // best (closest) distance achieved toward it, in leptons
     long HarvStallFrame;                    // Frame when HarvBestDist last improved (no-progress stall timer)
+    int HarvReachableResets;                // stall windows forgiven because A* still finds a path (bounded backstop)
     // Each blacklist slot stores the BOUNDING BOX of a whole contiguous ore field (flood-filled
     // from the failed cell), not a single cell -- a big walled patch would otherwise let the
     // harvester give up on one cell and re-pick another cell of the same dead field.

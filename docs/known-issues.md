@@ -72,6 +72,33 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
   whole-field bboxes captured (28/66/45 cells) and harvesters redirected to a different reachable patch
   — Luke accepted as-is. Detector is a robust safety net for *any* unreachable-target case (not just
   buildings). Logs `HARV-BLACKLIST`/`HARV-WAIT` are `TF_DEV_BUILD`-gated (compiled out of release).
+- **✅ FIELD SELECTION + BLACKLIST OVER-FIRING 2026-06-18 (commits `2465ae9` + the follow-up, on `main`,
+  v3.0-gated). Desktop-validated across several AI matches.** Three linked fixes to `Goto_Tiberium` /
+  the no-progress detector:
+  1. **Travel-distance field pick.** The ring search returned the densest cell in the FIRST crow-flies
+     ring with ore, so a field near in a straight line but only reachable the long way around water/cliff
+     beat a closer-by-road one (Luke's SS #1). The LOOKING-state pick now gathers the NEAREST ore cell of
+     each of the closest `HARV_FIELD_CANDIDATES`=10 rings and chooses the shortest ACTUAL A* path
+     (`Find_Path_AStar`, null `resultPath` = cheap length-only query), density only a tiebreak.
+  2. **Candidates by PROXIMITY, not density.** First cut picked each ring's *densest* cell — but a thin
+     near field (low value) loses to a thick far/contested one, so harvesters drove across the map past
+     close ore (the "ignored the field by the refinery, went south" reports). Proximity + A*-min-path
+     fixed it; density-as-primary was the bug, NOT depletion (the near fields were full, just lower-value).
+  3. **A* threshold = `MOVE_MOVING_BLOCK`, and the blacklist gated on real reachability.** The v2.4.0
+     no-progress detector blacklisted any field a harvester couldn't approach for 5s — but base traffic /
+     parked vehicles / friendly infantry produce that same symptom, so reachable home fields got
+     blacklisted and harvesters fled (343 blacklists/session). Now the 5s stall consults A*: a path exists
+     (congestion) → don't blacklist, grant up to 3 windows (~15s) then a bounded backstop; A* returns 0
+     (genuinely walled) → blacklist as before. Querying at `MOVE_MOVING_BLOCK` (not the strict
+     `PathThreshhold`) treats units-on-the-route as passable (they move / give-way pushes them) while
+     walls/buildings/water still block — so unit-blocked near fields stop reading `apath=0`. Result:
+     **343 → ~3 blacklists/session, all legitimate** (AI walling its own field with buildings; 1-cell
+     remnant patches). New member `HarvReachableResets` (serialized with the unit). TF_DEV `HARV-FIELD`
+     dumps each candidate's zone/value/apath + the nearest-ore/blacklist state.
+  ⬜ STILL OPEN (follow-ups, not blockers): **exponential blacklist backoff** (a persistently building-
+  walled field un-blacklists every 15s and gets re-poked — give repeat failures a longer TTL);
+  **harvesters blocked by units / AI building on its own ore** (#5 — give-way for a stopped harvester);
+  **threat-aware selection** (don't route through enemy fire).
 - **(earlier) ROOT CAUSE FOUND + partial fix for the walled-field loop (2026-06-16):** the autonomous scan
   `UnitClass::Tiberium_Check` (unit.cpp:2519) ALREADY zone-filters (`Map[Coord].Zones[MZone] !=
   Map[center].Zones[MZone] → 0`), so `Goto_Tiberium` correctly finds "no reachable tiberium" when the
