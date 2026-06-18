@@ -15,8 +15,33 @@ No more releases until the WHOLE harvester workstream is done → it all ships a
 | **B3** capturing an ore refinery grabs the unloading harvester | ✅ DONE + validated, **committed `0c5a040`** |
 | **B4** RA harvester docks at a TD refinery (RA harv → TD ref) | ✅ DONE + validated ("perfect"), **committed `d923511`** |
 | TF_DEV test-buildability (any house builds both refineries) | ✅ committed in `d923511` (TF_DEV-only, compiled out of release) |
-| **Reverse case** TD harvester → RA refinery | 🟡 IMPLEMENTED + built + deployed (local prefix) — **UNCOMMITTED, awaiting Luke's in-game verdict** |
+| **Reverse case** TD harvester → RA refinery | ✅ DONE + Luke-validated, **committed `e058d50`** (+ green fumes `5eafd45`) |
 | Halve-dock-time dial | ⬜ deferred to the very end (re-eval after all harvester work) |
+
+### 2026-06-18 session — reverse case + green fumes SHIPPED (committed, still v3.0-gated)
+All committed on `main` (local, unreleased — workstream still ships together as v3.0):
+- **Reverse cross-dock** `e058d50`: TD harv docks + timer-offloads at an RA refinery. Pull-up dock on
+  the DIR_S apron; **back-in is the chosen look** (faces DIR_SW, rear to the NE pillars) via the
+  TF_DEV `tf_harv_backin.flag` toggle — to be hardcoded as default before v3.0. Position nudged half-ish
+  a cell NE (`TD_DOCK_NUDGE_*`=6px). True reverse-INTO-the-bay is impossible while visible (the SW bay
+  is inside the 3×3 footprint → would need Limbo = disappear); apron + backed-orientation is as close as
+  it gets. RA-harv→TD-ref nudged 5px east (`RA_AT_TD_NUDGE_RIGHT`).
+- **Bug fix** (same commit): a TD harvester no longer bails to GUARD when its last TD refinery is
+  sold/destroyed while an RA refinery stands — `Mission_Harvest has_refinery` + the AI re-task + the
+  flee path now check BOTH refinery types.
+- **Green Tiberium fumes** `5eafd45`: new `ANIM_TIB_FUMES` (reuses SMOKLAND green art, no LZ map-reveal).
+  ONE persistent plume per dock, `Attach_To`'d to the refinery for z-order (above refinery, below
+  harvester), SIZED at dock-in to the unload duration so it ends naturally (no abrupt cut). Position
+  dial = `XYP_Coord(0, -6)`; duration dial = `FUME_RISE_TICKS`/`FUME_LOOP_TICKS` vs the real rate.
+- **Tooling** `0ac2db4`: `ra_mix_extract` skips non-mix blobs during recursive extract (was crashing).
+- **Backlog captured** (`fab685c`, `9ea8c13`, + the cargo-coloured-smoke item): chimney `SMOKE_M`,
+  TIB01-load tracking, and cargo-coloured dock smoke for both harvesters (HD recolour recipe).
+- **Corrected belief:** new HD asset names DO render (loose VFX ZIP + `RA_VFX.XML`, as TDFLAME/TDCHEM
+  prove). The real limit is the FTFLAME install-time-cache gremlin — see [[reference-launcher-new-asset-name-deadend]].
+
+⭐ NEXT (still open in the docking thread): hardcode back-in as default (drop the flag); then the
+backlog (field selection by travel distance / threat, infantry-blocked harvesters, universal idle
+rescan, target claiming, dock contention/queue); then the halve-dock-time dial; all → v3.0.
 
 ## START HERE next session — VERIFY the reverse case (TD harv → RA ref), then commit
 The reverse case (TD harvester → RA refinery) is **implemented, built, and deployed to the local

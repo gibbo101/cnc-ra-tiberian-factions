@@ -5,6 +5,33 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Feature: cargo-coloured dock smoke for BOTH harvesters (2026-06-18, Luke)
+
+Make the unload smoke colour reflect what the harvester is hauling, for **both** the RA harvester
+(at its own refinery dust-loop) and the TD harvester (the `ANIM_TIB_FUMES` plume at an RA refinery):
+- **Tiberium (TIB01) → green** (already what the TD harvester vents today via SMOKLAND).
+- **Ore → grey** (SMOKEY / SMOKE_M).
+- **Gems → (optional) a third tint** (e.g. blue) -- future.
+
+**Prereq:** the TIB01-load-tracking item below (cargo currently can't tell Tiberium from ore -- both
+bank as `Gold`). Ore-vs-gems is already free (`Gold` vs `Gems`).
+
+**HD art is deliverable (corrected 2026-06-18 -- the earlier "new HD asset name never renders" was
+overstated):** the mod already ships brand-new HD anim names as loose VFX ZIPs
+(`Data/ART/TEXTURES/SRGB/RED_ALERT/VFX/TDFLAME-*.ZIP` etc.) registered in `RA_VFX.XML` -- that's how
+the Flame Tank / chem / SAM muzzle anims render in HD. Recipe for a recoloured smoke variant:
+1. Extract the HD frames: `SMOKE_M.ZIP` (TEXTURES_COMMON_SRGB.MEG), `SMOKEY.ZIP` / `SMOKLAND.ZIP`
+   (TEXTURES_RA_SRGB.MEG) -- truecolor TGA, so ANY tint is possible (not limited to existing colours).
+2. Recolour with `scripts/tgautil.py`; repack as a new-named VFX ZIP; drop it loose in the VFX folder.
+3. Add `<Tile>` blocks to `RA_VFX.XML`; add DLL `AnimType`(s) selected by cargo + a donor-`ImageData`
+   so the classic Draw_It NULL-guard is satisfied (we ignore the classic *look* -- HD-only mod).
+⚠️ **Caveat:** a genuinely-new asset name can hit the FTFLAME "launcher caches the asset-name set at
+install time" gremlin (see [[reference-launcher-new-asset-name-deadend]]) -- validate via a CLEAN mod
+(re)install when the new ZIP first goes in, not an incremental DLL copy. Shipped Workshop versions are
+a fresh install per subscriber, so release is unaffected.
+
+---
+
 ## Idea: track TIB01 (Tiberium) load separately so harvester cargo can be told apart (2026-06-18, Luke)
 
 Today a harvester's cargo is split only into `Gold` (ore) + `Gems` (`UnitClass`, unit.cpp). Our
