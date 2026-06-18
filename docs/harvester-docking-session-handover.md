@@ -45,7 +45,7 @@ soak-tested live on the **Linux desktop** prefix; diagnostics in `tf_astar.log` 
 | Universal idle/give-up rescan (#6) | ✅ watchdog `2d46def` |
 | Infantry never block harvesters (#5) | ✅ give-way + watchdog shove |
 | Dock contention | ✅ Layer A restart + Layer B pad + staging `49f8157` |
-| **Dock-time dial (halve?)** | ⏸ RESOLVED = **keep TD-matched** for now; 1-line re-tune if soak shows economy drags (`DOCK_DUMP_RATE 3→2` + `TD_DOCK_OFFLOAD_DELAY`, unit.cpp ~3430/3505). Luke's call from soak. |
+| **Dock-time dial (halve?)** | ✅ **DONE `946b675`** — halved + equalised across ALL FOUR pairings via one shared dial `HARV_DOCK_BAILS_PER_CYCLE` (=2, unit.h). Vanilla RA was insta-dump; rework had TD-paced it. Bank 2 bails/cycle → ~294 ticks everywhere; anim cadence + credits/load unchanged. Equal economies = tractable unit balancing (Luke's rationale). |
 | **Threat-aware field selection** | 🟡 **BUILT + deployed (local prefix), UNCOMMITTED — awaiting in-game verify.** See section below. |
 | Genuine AI box-in (turret traps own harvester) | ⛔ OUT OF SCOPE — AI *placement* problem, not harvester logic. Watchdog keeps trying harmlessly; frees it if the trap opens. |
 
@@ -115,7 +115,7 @@ No more releases until the WHOLE harvester workstream is done → it all ships a
 | **B4** RA harvester docks at a TD refinery (RA harv → TD ref) | ✅ DONE + validated ("perfect"), **committed `d923511`** |
 | TF_DEV test-buildability (any house builds both refineries) | ✅ committed in `d923511` (TF_DEV-only, compiled out of release) |
 | **Reverse case** TD harvester → RA refinery | ✅ DONE + Luke-validated, **committed `e058d50`** (+ green fumes `5eafd45`) |
-| Halve-dock-time dial | ⬜ deferred to the very end (re-eval after all harvester work) |
+| Halve-dock-time dial | ✅ DONE `946b675` — halved + equalised across all 4 pairings (`HARV_DOCK_BAILS_PER_CYCLE`) |
 
 ### 2026-06-18 session — reverse case + green fumes SHIPPED (committed, still v3.0-gated)
 All committed on `main` (local, unreleased — workstream still ships together as v3.0):
