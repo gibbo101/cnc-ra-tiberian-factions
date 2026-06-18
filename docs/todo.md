@@ -5,6 +5,35 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## DEFERRED: AI vehicles stuck in their own base (general pathfinding) (2026-06-18, Luke)
+
+Observed live during harvester testing (blue AI base): several combat vehicles frozen in the base,
+**not harvesters**. Deferred mid-session (focus is the harvester workstream); captured here so the
+diagnostic data isn't lost. **NOT caused by the harvester field-selection/blacklist work** (that only
+touches ore selection + `HARV-BLACKLIST`); this is pre-existing general unit pathing, almost certainly
+the **known open chokepoint thread** (vehicle-vs-vehicle in a 1-tile gap; the gw==2 RETREAT path never
+reaches the deadlock-breaker — see `chokepoint-reservation-design.md` + `cfe-port-plan.md`) plus raw
+base congestion.
+
+**Log evidence** (shared `tf_astar.log`, TF_DEV only; the `A* FALLBACK -> legacy` lines are the CFE-A*
+port's instrumentation, not new):
+- **A\* failing more than succeeding:** counters reached `success=4265 fallback=7860` in one match —
+  units spam the legacy fallback every frame.
+- **Two failure shapes:**
+  1. **Wedged units** — e.g. `2TNK src=(126,52) dst=(123,47)`, `APC src=(126,51) dst=(122,54)` repeating
+     with the **same src every frame** (not moving): trying to shuffle ~4 cells in a packed base, A* fails
+     each frame, legacy doesn't resolve it.
+  2. **src == dst spin** — e.g. `TDE6 src=(114,56) dst=(114,56)`, `src=(89,60) dst=(89,60)`: a unit
+     ordered to its OWN cell; `Find_Path_AStar` returns 0 instantly for src==dest, so it spins in place.
+     Likely a stale idle/guard order that never clears — a self-contained bug worth a look.
+- **Hotspots** (most-failed dst cells): `(118,94)` 1682×, `(123,88)` 1163×, `(119,95)` 554×, `(112,56)`,
+  `(89,59)` — all inside congested AI bases.
+
+**When picked up:** start from the `src==dst` spin (smallest, self-contained) + the gw==2 breaker-gap
+in the chokepoint thread. Reproduce = run a multi-AI skirmish, let bases fill, tail `A* FALLBACK` lines.
+
+---
+
 ## Feature: cargo-coloured dock smoke for BOTH harvesters (2026-06-18, Luke)
 
 Make the unload smoke colour reflect what the harvester is hauling, for **both** the RA harvester
