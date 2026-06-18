@@ -921,38 +921,23 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
         */
         if (*this == UNIT_TDHARV) {
             /*
-            **	Reverse cross-dock (TD harv -> RA refinery). Two looks, switchable via the
-            **	dev flag TF_Harv_BackIn() (tf_harv_backin.flag) so Luke can A/B them:
-            **	  PULL-UP (default): park on the DIR_S dock cell facing DIR_W (sideways --
-            **	    matches the RA harvester's loading pose), then transmit RADIO_IM_IN.
-            **	  BACK-IN (flag on): the TD reverse maneuver -- turn DIR_SW + Force_Track
-            **	    BACKUP_INTO_REFINERY to reverse into the bay -- but the RA refinery
-            **	    answers RADIO_IM_IN with RADIO_ROGER (NOT RADIO_ATTACH), so the
-            **	    harvester is NEVER Limbo'd: it backs in and stays visible.
-            **	Either way the building's STRUCT_REFINERY RADIO_IM_IN puts it in
-            **	MISSION_UNLOAD (timer offload + dust puff). The TD refinery (special case)
-            **	always uses the attach maneuver + Limbo (falls through below).
+            **	Reverse cross-dock (TD harv -> RA refinery). The harvester parks VISIBLE on
+            **	the RA refinery's DIR_S apron cell -- the only free south cell (the SW bay is
+            **	inside the 3x3 footprint, so a visible harvester can't enter it; that would
+            **	need Limbo = disappear). It faces DIR_SW so its rear angles toward the
+            **	intake ("backed up to the dock", aligned to the building's isometric face).
+            **	The handshake is the reliable DIRECT RADIO_IM_IN (NOT the footprint-drive /
+            **	Per_Cell_Process path, which never completed at the RA refinery and left the
+            **	harvester stuck); STRUCT_REFINERY's RADIO_IM_IN then puts it in MISSION_UNLOAD
+            **	(timer offload + green Tiberium fumes). The TD refinery (special case) instead
+            **	uses the attach maneuver + Limbo (falls through below). DIR_SW = one-line dial.
             */
             TechnoClass* rdock = Contact_With_Whom();
             bool ra_ref = (rdock != NULL && rdock->What_Am_I() == RTTI_BUILDING
                            && *((BuildingClass*)rdock) == STRUCT_REFINERY);
             if (ra_ref) {
-                /*
-                **	Both looks dock on the DIR_S apron cell (the only free south cell --
-                **	the SW bay is inside the footprint, so a visible harvester can't enter
-                **	it; that would need Limbo = disappear, which we don't do here). The
-                **	handshake is the reliable DIRECT RADIO_IM_IN (NOT the footprint-
-                **	drive/Per_Cell_Process path, which never completed at the RA refinery
-                **	and left the harvester stuck). Only the FACING differs:
-                **	  pull-up (default): DIR_W -- sideways, RA-harvester loading pose (SS2).
-                **	  back-in (flag on): DIR_SW -- rear angled toward the refinery intake,
-                **	    aligned to the building's isometric face (a "backed up to the dock"
-                **	    orientation; the closest we get to a reverse-in while staying
-                **	    visible). One-line dial.
-                */
-                DirType face = TF_Harv_BackIn() ? DIR_SW : DIR_W;
-                if (!IsRotating && PrimaryFacing != face) {
-                    Do_Turn(face);
+                if (!IsRotating && PrimaryFacing != DIR_SW) {
+                    Do_Turn(DIR_SW);
                 } else {
                     if (!IsDriving) {
                         if (IsTethered && Mission == MISSION_ENTER) {
