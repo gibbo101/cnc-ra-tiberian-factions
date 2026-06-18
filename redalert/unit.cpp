@@ -2678,6 +2678,9 @@ int UnitClass::Tiberium_Check(CELL& center, int x, int y)
 static const int HARV_BLACKLIST_MARGIN = 1;                  // cells of slack around a field bbox
 static const long HARV_BLACKLIST_TTL = TICKS_PER_SECOND * 15; // retry a blacklisted patch after this long
 static const int HARV_FLOOD_CAP = 256;                       // max ore cells visited when sizing a field
+// Travel-distance-aware field selection (Goto_Tiberium pathcost mode):
+static const int HARV_FIELD_CANDIDATES = 6;                  // max fields A*-compared per long-scan rescan
+static const int HARV_FIELD_RING_SPAN = 4;                   // keep scanning this many rings past the first ore-bearing ring
 
 #if TF_DEV_BUILD // TF DEV: harvester unreachable-target diagnostic (shares tf_astar.log). Compiled out of release.
 static FILE* TF_Harv_Logfile(void)
@@ -2841,7 +2844,7 @@ void UnitClass::Blacklist_Harvest_Cell(CELL cell)
  * HISTORY:                                                                                    *
  *   09/22/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool UnitClass::Goto_Tiberium(int rad)
+bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
 {
     assert(Units.ID(this) == ID);
     assert(IsActive);
@@ -2851,6 +2854,94 @@ bool UnitClass::Goto_Tiberium(int rad)
         if (Map[center].Land_Type() == LAND_TIBERIUM) {
             return (true);
         } else {
+
+            /*
+            **	TF: travel-distance-aware field selection (the LOOKING-state field pick).
+            **	The vanilla ring search below returns the densest cell in the FIRST ring
+            **	(crow-flies) that holds any ore, so a field that is near in a straight line
+            **	but only reachable the long way around water/cliff beats a slightly-farther-
+            **	by-ring field that is a short straight drive. When pathcost is set, collect
+            **	one candidate per ore-bearing ring across a few rings, then choose the one
+            **	with the shortest ACTUAL A* path (Find_Path_AStar's cell length around
+            **	obstacles), not the smallest ring. A null resultPath makes A* return just the
+            **	length cheaply; it consumes no RNG and is the same pathfinder used for real
+            **	movement, so this stays lockstep-deterministic. Bounded to <=
+            **	HARV_FIELD_CANDIDATES A* calls and only on the (infrequent) field rescan.
+            */
+            if (pathcost) {
+                CELL candidates[HARV_FIELD_CANDIDATES];
+                int candvalue[HARV_FIELD_CANDIDATES];
+                int ncand = 0;
+                int firsthit = -1;
+                for (int radius = 1; radius < rad && ncand < HARV_FIELD_CANDIDATES; radius++) {
+                    CELL ringbest = 0;
+                    int ringval = 0;
+                    for (int x = -radius; x <= radius; x++) {
+                        int corners[4][2] = {{x, -radius}, {x, +radius}, {-radius, x}, {+radius, x}};
+                        for (int c = 0; c < 4; c++) {
+                            CELL cell = center;
+                            int tiberium = Tiberium_Check(cell, corners[c][0], corners[c][1]);
+                            if (tiberium > ringval && !Is_Harvest_Blacklisted(cell)) {
+                                ringbest = cell;
+                                ringval = tiberium;
+                            }
+                        }
+                    }
+                    if (ringbest) {
+                        if (firsthit == -1)
+                            firsthit = radius;
+                        candidates[ncand] = ringbest;
+                        candvalue[ncand] = ringval;
+                        ncand++;
+                        /*
+                        **	Stop a few rings past the first hit -- enough to weigh the
+                        **	nearest-by-crow-flies field against marginally-farther ones,
+                        **	without scanning the whole map.
+                        */
+                        if (radius - firsthit >= HARV_FIELD_RING_SPAN)
+                            break;
+                    }
+                }
+                if (ncand > 0) {
+                    CELL src = Coord_Cell(Center_Coord());
+                    CELL best = 0;
+                    int bestpath = 0x7FFFFFFF;
+                    int besttiberium = 0;
+                    for (int i = 0; i < ncand; i++) {
+                        int plen = Find_Path_AStar(NULL, src, candidates[i], MAP_CELL_TOTAL, PathThreshhold, -1);
+                        if (plen <= 0)
+                            continue; // unreachable by road -- skip (also catches walled fields)
+                        if (plen < bestpath || (plen == bestpath && candvalue[i] > besttiberium)) {
+                            bestpath = plen;
+                            best = candidates[i];
+                            besttiberium = candvalue[i];
+                        }
+                    }
+                    /*
+                    **	If A* rejected every candidate (all unreachable) fall back to the
+                    **	crow-flies nearest so we never regress to "do nothing".
+                    */
+                    if (!best)
+                        best = candidates[0];
+                    Assign_Destination(::As_Target(best));
+#if TF_DEV_BUILD
+                    {
+                        FILE* lf = TF_Harv_Logfile();
+                        if (lf != NULL) {
+                            fprintf(lf,
+                                    "HARV-FIELD: harvester at (%d,%d) picked field (%d,%d) path=%d cells "
+                                    "from %d candidate(s)%s\n",
+                                    Cell_X(src), Cell_Y(src), Cell_X(best), Cell_Y(best),
+                                    (bestpath == 0x7FFFFFFF ? -1 : bestpath), ncand,
+                                    (best != candidates[0]) ? " [path-cost overrode crow-flies nearest]" : "");
+                            fflush(lf);
+                        }
+                    }
+#endif
+                    return (false);
+                }
+                return (false);
+            }
 
             /*
             **	Perform a ring search outward from the center.
@@ -3674,7 +3765,7 @@ int UnitClass::Mission_Harvest(void)
             ArchiveTarget = 0;
         }
         IsHarvesting = false;
-        if (Goto_Tiberium(Rule.TiberiumLongScan / CELL_LEPTON_W)) {
+        if (Goto_Tiberium(Rule.TiberiumLongScan / CELL_LEPTON_W, true /* TF: travel-distance-aware field pick */)) {
             IsHarvesting = true;
             /*
             **	Tiberian Factions: clear the house tiberium-short latch -- this harvester

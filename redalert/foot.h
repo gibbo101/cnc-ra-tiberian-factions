@@ -374,7 +374,13 @@ public:
 private:
     int Passable_Cell(CELL cell, FacingType face, int threat, MoveType threshhold);
     CELL Find_Passable_Position_Near(CELL target, int maxRadius, MoveType threshhold, int threat);
+
+protected:
+    // TF: exposed to UnitClass::Goto_Tiberium for travel-distance-aware ore-field selection
+    // (pass resultPath=NULL to query just the around-obstacles path length cheaply).
     int Find_Path_AStar(PathType* resultPath, CELL source, CELL dest, int maxLen, MoveType threshhold, int threat);
+
+private:
     PathType* Find_Path(CELL dest, FacingType* final_moves, int maxlen, MoveType threshhold);
     void Debug_Draw_Map(char const* txt, CELL start, CELL dest, bool pause);
     void Debug_Draw_Path(PathType* path);

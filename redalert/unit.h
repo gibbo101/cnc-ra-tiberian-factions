@@ -200,7 +200,7 @@ public:
     int Tiberium_Check(CELL& center, int x, int y);
     bool Flag_Attach(HousesType house);
     bool Flag_Remove(void);
-    bool Goto_Tiberium(int radius);
+    bool Goto_Tiberium(int radius, bool pathcost = false);
     bool Harvesting(void);
     // TF harvester unreachable-target recovery (see member block above).
     bool Is_Harvest_Blacklisted(CELL cell) const;
