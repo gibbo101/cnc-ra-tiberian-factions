@@ -4118,7 +4118,7 @@ int UnitClass::Mission_Harvest(void)
                     IsUseless = false;
                     BuildingClass* refinery = Find_Best_Refinery();
                     if (refinery != NULL) {
-                        CELL home = Nearby_Location(refinery);
+                        CELL home = Nearby_Location(refinery, ID); // per-harvester locationmod -> spread, don't pile up
                         if (home != 0 && Distance(::As_Target(home)) > (CELL_LEPTON_W * 4)) {
                             Assign_Destination(::As_Target(home));
                         }
@@ -4213,8 +4213,12 @@ int UnitClass::Mission_Harvest(void)
                     **	Refinery busy: queue up near it. (CFE notes RA's
                     **	Nearby_Location(from) picks a cell near `from`, not
                     **	near self — which is exactly what we want here.)
+                    **	TF dock staging: pass our heap ID as the locationmod so each queued
+                    **	harvester picks a DIFFERENT one of the refinery's nearby clear cells
+                    **	(Nearby_Location returns topten[(Frame+locationmod) % count]) instead of
+                    **	all piling onto the same cell and wedging the dock approach.
                     */
-                    Assign_Destination(::As_Target(Nearby_Location(nearest)));
+                    Assign_Destination(::As_Target(Nearby_Location(nearest, ID)));
                 }
             }
         }
