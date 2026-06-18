@@ -1525,103 +1525,11 @@ int DriveClass::Infantry_Give_Way(void)
     }
 
     /*
-    **	Drain the WHOLE corridor, not just the cell against our nose. A single man leapfrogs out fine
-    **	by scattering one cell forward -- but a PACKED COLUMN can't: every forward cell is full of more
-    **	men, so the man we touch has nowhere to step and Scatter no-ops (the "host blocks, one man
-    **	moves" case). The man who CAN move is the one at the far end, next to the open mouth, and no
-    **	vehicle is touching him. So we scatter every idle friendly infantryman along the pinch ahead:
-    **	each tick the man nearest the mouth spills onto open ground (the only one with a free cell),
-    **	freeing his cell; the rest shuffle down; the column drains single-file over a few ticks. The
-    **	threat coord is our own position, so every man is biased AWAY from us -- onward toward the far
-    **	mouth. Scan stops one cell past the pinch (we still scatter that mouth cell so the lead man
-    **	clears). Capped so a long corridor can't blow the loop. forced+nokidding moves only genuinely
-    **	idle men.
+    **	Drain the WHOLE corridor (not just the cell against our nose) by shoving every idle friendly
+    **	infantryman along the pinch ahead. The shared Drain_Infantry_Along core does the work; in
+    **	corridor mode it stops one cell past the far mouth so the column spills out single-file.
     */
-    bool shoved = false;
-    CELL scan = here;
-    for (int i = 0; i < CORRIDOR_SCAN_MAX; i++) {
-        CELL nc = Adjacent_Cell(scan, navface);
-        if (!Map.In_Radar(nc)) {
-            break;
-        }
-
-        ObjectClass* occ = Map[nc].Cell_Occupier();
-        while (occ != NULL) {
-            ObjectClass* nextocc = occ->Next; // an Assign_Destination may relink the cell chain
-            if (occ->Is_Techno() && occ->What_Am_I() == RTTI_INFANTRY && House->Is_Ally(occ)) {
-                FootClass* man = (FootClass*)occ;
-                /*
-                **	Strict directed push -- step the man ONE cell straight AWAY from us (down-corridor
-                **	toward the far mouth), never sideways or back. Plain Scatter is too loose for a 1-wide
-                **	pinch: its fallback scan grabs ANY free cell, including one back toward the vehicle, so
-                **	men "scatter into the harvester" and churn instead of clearing. Here the heading is
-                **	exactly away-from-us and we move him only if that one cell is open, else he waits (the
-                **	column drains front-first as the mouth man spills onto open ground). We only ever push
-                **	an IDLE man -- one already walking is IsDriving and left to finish -- so re-issuing the
-                **	order every tick can't thrash; it just walks him out a cell at a time.
-                */
-                if (!man->IsTethered) {
-                    CELL mcell = Coord_Cell(man->Center_Coord());
-                    FacingType awayface = Dir_Facing(::Direction(Center_Coord(), man->Center_Coord()));
-
-                    /*
-                    **	We push IDLE men out AND men WALKING INTO us -- the latter is the dominant freeze
-                    **	(a foot soldier striding through the corridor at us trips the engine's head-on rule
-                    **	and the vehicle locks; ~50:1 over vehicle-vs-vehicle in the log). But a man already
-                    **	walking AWAY from us is clearing on his own, so leave his orders alone rather than
-                    **	clip his journey to one-cell hops. "Already clearing" = his destination heading lies
-                    **	within an eighth of straight-away-from-us.
-                    */
-                    bool already_clearing = false;
-                    if (man->IsDriving && Target_Legal(man->NavCom)) {
-                        FacingType movedir = Dir_Facing(::Direction(man->Center_Coord(), As_Coord(man->NavCom)));
-                        int d = (movedir - awayface) & 0x07;
-                        already_clearing = (d <= 1 || d == 7);
-                    }
-
-                    /*
-                    **	Push into the FORWARD ARC -- straight away, or either forward diagonal -- taking the
-                    **	first open cell. Inside a 1-wide pinch the diagonals are walls, so this stays strict
-                    **	single-file and never backward; AT THE FAR MOUTH the diagonals open into the field,
-                    **	so the men fan out sideways and clear instead of piling against the corridor's end
-                    **	("they all moved and got stuck at the end"). The three never include a cell behind us.
-                    **	Re-issue only when his destination isn't already the chosen cell, so a man mid-step
-                    **	isn't restarted every tick (no jitter).
-                    */
-                    if (!already_clearing) {
-                        static const int fwd_arc[3] = {0, 1, -1}; // straight, then the two forward diagonals
-                        for (int k = 0; k < 3; k++) {
-                            FacingType ff = (FacingType)((awayface + fwd_arc[k]) & 0x07);
-                            CELL fwd = Adjacent_Cell(mcell, ff);
-                            if (Map.In_Radar(fwd) && man->Can_Enter_Cell(fwd) == MOVE_OK) {
-                                TARGET fwdtgt = ::As_Target(fwd);
-                                if (man->NavCom != fwdtgt) {
-                                    man->Assign_Mission(MISSION_MOVE);
-                                    man->Assign_Destination(fwdtgt);
-                                }
-                                shoved = true;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            occ = nextocc;
-        }
-
-        /*
-        **	Stop once this cell is open ground (the mouth) -- we've just scattered the lead man out of
-        **	it, and beyond the pinch the man can dodge sideways on his own.
-        */
-        CELL lc2 = Adjacent_Cell(nc, (FacingType)((navface - 2) & 0x07));
-        CELL rc2 = Adjacent_Cell(nc, (FacingType)((navface + 2) & 0x07));
-        bool nc_narrow = (!Map.In_Radar(lc2) || Can_Enter_Cell(lc2) == MOVE_NO)
-                         && (!Map.In_Radar(rc2) || Can_Enter_Cell(rc2) == MOVE_NO);
-        if (!nc_narrow) {
-            break;
-        }
-        scan = nc;
-    }
+    bool shoved = Drain_Infantry_Along(here, navface, CORRIDOR_SCAN_MAX, true);
 
 #if TF_DEV_BUILD
     if (shoved && House && House->IsHuman) {
@@ -1650,6 +1558,107 @@ int DriveClass::Infantry_Give_Way(void)
 #endif
 
     return (shoved ? 1 : 0);
+}
+
+/***********************************************************************************************
+ * DriveClass::Drain_Infantry_Along -- shove idle friendly infantry out of our way along a line.*
+ *                                                                                             *
+ *    The shared core of two anti-pin behaviours: the corridor give-way (Infantry_Give_Way)     *
+ *    and the harvester anti-pin scatter (UnitClass::AI). It walks up to `maxcells` cells from   *
+ *    `start` along `navface` and, in every cell, force-steps each idle friendly infantryman one  *
+ *    cell into the FORWARD ARC away from us (straight-away or a forward diagonal, first open      *
+ *    cell). A packed column drains front-first: only the man with a free cell ahead moves, the    *
+ *    rest shuffle down over successive ticks. Re-issuing the order each tick can't thrash --      *
+ *    we leave a man already walking away (IsDriving toward away-from-us) alone, and skip a man     *
+ *    whose destination is already the chosen cell. forced+nokidding semantics: tethered or        *
+ *    mid-uninterruptible men are never touched.                                                  *
+ *                                                                                             *
+ *    corridor_only=true  : 1-wide-pinch behaviour -- stop one cell past the far mouth (where the  *
+ *                          lane opens out), so we never disturb open-ground infantry beyond it.   *
+ *    corridor_only=false : open-field behaviour -- scan the full span regardless of terrain (used  *
+ *                          by the pinned harvester, where the blockers sit on open ground).        *
+ *                                                                                             *
+ * INPUT:   start cell, heading, cell cap, corridor-vs-open mode.                                *
+ * OUTPUT:  bool; true if any man was shoved this tick.                                          *
+ * WARNINGS: Lockstep-safe -- synced Assign_Destination, deterministic cell math, no RNG.        *
+ * HISTORY:  06/18/2026 : Extracted from Infantry_Give_Way for the harvester anti-pin reuse.     *
+ *=============================================================================================*/
+bool DriveClass::Drain_Infantry_Along(CELL start, FacingType navface, int maxcells, bool corridor_only)
+{
+    bool shoved = false;
+    CELL scan = start;
+    for (int i = 0; i < maxcells; i++) {
+        CELL nc = Adjacent_Cell(scan, navface);
+        if (!Map.In_Radar(nc)) {
+            break;
+        }
+
+        ObjectClass* occ = Map[nc].Cell_Occupier();
+        while (occ != NULL) {
+            ObjectClass* nextocc = occ->Next; // an Assign_Destination may relink the cell chain
+            if (occ->Is_Techno() && occ->What_Am_I() == RTTI_INFANTRY && House->Is_Ally(occ)) {
+                FootClass* man = (FootClass*)occ;
+                if (!man->IsTethered) {
+                    CELL mcell = Coord_Cell(man->Center_Coord());
+                    FacingType awayface = Dir_Facing(::Direction(Center_Coord(), man->Center_Coord()));
+
+                    /*
+                    **	Leave a man already clearing on his own (walking within an eighth of straight-away
+                    **	from us) alone rather than clip his journey to one-cell hops; push idle men and men
+                    **	walking INTO us (the dominant freeze).
+                    */
+                    bool already_clearing = false;
+                    if (man->IsDriving && Target_Legal(man->NavCom)) {
+                        FacingType movedir = Dir_Facing(::Direction(man->Center_Coord(), As_Coord(man->NavCom)));
+                        int d = (movedir - awayface) & 0x07;
+                        already_clearing = (d <= 1 || d == 7);
+                    }
+
+                    /*
+                    **	Forward arc -- straight away, then the two forward diagonals -- first open cell. In a
+                    **	1-wide pinch the diagonals are walls (strict single-file); in the open the men fan out
+                    **	sideways and clear. Never a cell behind us. Re-issue only when his destination isn't
+                    **	already the chosen cell (no jitter).
+                    */
+                    if (!already_clearing) {
+                        static const int fwd_arc[3] = {0, 1, -1}; // straight, then the two forward diagonals
+                        for (int k = 0; k < 3; k++) {
+                            FacingType ff = (FacingType)((awayface + fwd_arc[k]) & 0x07);
+                            CELL fwd = Adjacent_Cell(mcell, ff);
+                            if (Map.In_Radar(fwd) && man->Can_Enter_Cell(fwd) == MOVE_OK) {
+                                TARGET fwdtgt = ::As_Target(fwd);
+                                if (man->NavCom != fwdtgt) {
+                                    man->Assign_Mission(MISSION_MOVE);
+                                    man->Assign_Destination(fwdtgt);
+                                }
+                                shoved = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            occ = nextocc;
+        }
+
+        /*
+        **	Corridor mode: stop once this cell is open ground (the mouth) -- we've just scattered the
+        **	lead man out of it, and beyond the pinch the man can dodge sideways on his own. Open-field
+        **	mode scans the full span (the blockers are on open ground, no mouth to stop at).
+        */
+        if (corridor_only) {
+            CELL lc2 = Adjacent_Cell(nc, (FacingType)((navface - 2) & 0x07));
+            CELL rc2 = Adjacent_Cell(nc, (FacingType)((navface + 2) & 0x07));
+            bool nc_narrow = (!Map.In_Radar(lc2) || Can_Enter_Cell(lc2) == MOVE_NO)
+                             && (!Map.In_Radar(rc2) || Can_Enter_Cell(rc2) == MOVE_NO);
+            if (!nc_narrow) {
+                break;
+            }
+        }
+        scan = nc;
+    }
+
+    return (shoved);
 }
 
 /***********************************************************************************************

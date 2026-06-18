@@ -316,6 +316,8 @@ UnitClass::UnitClass(UnitType classid, HousesType house)
     HarvBestDist = 0;
     HarvStallFrame = 0;
     HarvReachableResets = 0;
+    HarvStuckCell = -1;
+    HarvStuckFrame = 0;
     for (int hb = 0; hb < HARV_BLACKLIST_MAX; hb++) {
         HarvBadMin[hb] = -1;
         HarvBadMax[hb] = -1;
@@ -421,6 +423,9 @@ COORDINATE UnitClass::Sort_Y(void) const
  * HISTORY:                                                                                    *
  *   05/31/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
+#if TF_DEV_BUILD
+static FILE* TF_Harv_Logfile(void); // fwd decl -- defined later in this TU; shared tf_astar.log
+#endif
 void UnitClass::AI(void)
 {
     assert(Units.ID(this) == ID);
@@ -539,6 +544,114 @@ void UnitClass::AI(void)
         }
     } else if (HarvTargetCell != -1 && !Target_Legal(NavCom)) {
         HarvTargetCell = -1; // not pursuing ore right now -- clear tracking
+    }
+
+    /*
+    **	Tiberian Factions -- harvester ANTI-STUCK watchdog (vanilla dock-contention / idle recovery).
+    **	The ore-blacklist detector above only covers "I have an ore target but can't get closer".
+    **	The embarrassing vanilla failures are broader and state-independent: a full harvester sitting
+    **	idle in a field (gave up finding a refinery), harvesters crowding one refinery's single dock
+    **	cell and wedging each other, a harvester frozen mid-approach. They share one observable symptom
+    **	-- the harvester is NOT PHYSICALLY MOVING and NOT doing productive work. So watch the cell, not
+    **	the target distance, and escalate recovery the longer it stays put:
+    **	  ~3s  -- shove idle friendly infantry off the path ahead (infantry never block a harvester),
+    **	  ~9s  -- hard restart: drop refinery radio, clear targets, re-enter the harvest state machine
+    **	          from LOOKING (re-derives ore/refinery + a fresh path; a loaded harvester auto-routes
+    **	          home). This guarantees nothing stays stuck for more than a few seconds.
+    **	Productive-stationary states (harvesting a cell, dumping at a refinery) are exempt, and ANY real
+    **	movement resets the timer, so normal operation is never disturbed. Per-unit ints + Frame +
+    **	deterministic Scatter/Assign -- lockstep-safe, no RNG.
+    */
+    /*
+    **	Only police the harvester's OWN autonomous economy -- the harvest loop (MISSION_HARVEST) and
+    **	the drive to dock (MISSION_ENTER). A PLAYER-issued order (retreat to base to hide during a raid,
+    **	a manual move/guard) puts it in MISSION_MOVE/MISSION_GUARD/etc; we must never override that --
+    **	no restart, no scatter. While under player command we keep the watchdog state fresh so it can't
+    **	false-fire the instant the harvester is released back to harvesting.
+    */
+    if (Class->IsToHarvest && Mission != MISSION_HARVEST && Mission != MISSION_ENTER) {
+        HarvStuckCell = Coord_Cell(Center_Coord());
+        HarvStuckFrame = Frame;
+    } else if (Class->IsToHarvest) {
+        const long HARV_STUCK_NUDGE = TICKS_PER_SECOND * 3; // shove blocking infantry after 3s stationary
+        const long HARV_STUCK_RESET = TICKS_PER_SECOND * 9; // hard-restart after 9s stationary (well past any legit wait)
+        const int HARV_STUCK_SCAN_CELLS = 6;                // cells of path-ahead to clear of idle infantry
+        CELL mycell = Coord_Cell(Center_Coord());
+        bool productive = IsHarvesting || IsDumping; // legitimately stationary -- don't disturb
+
+        if (productive || mycell != HarvStuckCell) {
+            HarvStuckCell = mycell; // moving or working -- reset the watchdog
+            HarvStuckFrame = Frame;
+        } else {
+            long stuck = Frame - HarvStuckFrame;
+
+            /*
+            **	Direction to clear: the actual next path step when we have one (follows a bent route
+            **	around obstacles), else the bearing to our target, else to the refinery we are tethered
+            **	to. Using Path[0] fixes the off-axis case where the straight-line bearing rounds to the
+            **	wrong eighth and the scan misses a blocker sitting just off-axis.
+            */
+            if (stuck >= HARV_STUCK_NUDGE) {
+                FacingType face = FACING_NONE;
+                if (Path[0] != FACING_NONE) {
+                    face = Path[0];
+                } else if (Target_Legal(NavCom)) {
+                    face = Dir_Facing(Direction(NavCom));
+                } else if (In_Radio_Contact() && Contact_With_Whom() != NULL) {
+                    face = Dir_Facing(Direction(Contact_With_Whom()->Center_Coord()));
+                }
+                if (face != FACING_NONE) {
+                    Drain_Infantry_Along(mycell, face, HARV_STUCK_SCAN_CELLS, false);
+                }
+            }
+
+            if (stuck >= HARV_STUCK_RESET) {
+                /*
+                **	Given up / wedged. If we were failing to reach an ORE field, BLACKLIST it first so
+                **	the restarted LOOKING picks a DIFFERENT patch (Luke: "try a different ore patch if it
+                **	keeps failing"). A* can call a field reachable while the harvester physically can't
+                **	thread the route -- ore buried in a packed base, or a path only through a building
+                **	maze -- and that is precisely the case this catches: 9s wedged with no movement means
+                **	the chosen field is unreachable IN PRACTICE. Blacklist_Harvest_Cell flood-fills the
+                **	whole field bbox and expires after HARV_BLACKLIST_TTL, so a transient block is retried
+                **	later. A refinery target (MISSION_ENTER dock) is NOT ore -- left alone (dock contention,
+                **	handled by the restart itself + Layer B, not a dead field).
+                */
+                if (Target_Legal(NavCom) && Map[As_Cell(NavCom)].Land_Type() == LAND_TIBERIUM) {
+                    Blacklist_Harvest_Cell(As_Cell(NavCom));
+                }
+
+                /*
+                **	Full restart: end any refinery radio session, drop every target, and re-enter the
+                **	harvest state machine at LOOKING (Status 0). LOOKING auto-redirects a loaded harvester
+                **	to FINDHOME (re-runs Find_Best_Refinery) and sends an empty one back to scan for ore --
+                **	skipping the just-blacklisted field -- which also re-engages the normal movement-time
+                **	deadlock breaker. Reset the timer so the restart gets a window to take.
+                */
+                if (In_Radio_Contact()) {
+                    Transmit_Message(RADIO_OVER_OUT);
+                }
+                Assign_Destination(TARGET_NONE);
+                Assign_Target(TARGET_NONE);
+                ArchiveTarget = TARGET_NONE;
+                TiberiumUnloadRefinery = TARGET_NONE;
+                Status = 0; // LOOKING -- top of UnitClass::Mission_Harvest's state machine
+                Assign_Mission(MISSION_HARVEST);
+#if TF_DEV_BUILD
+                {
+                    FILE* lf = TF_Harv_Logfile();
+                    if (lf != NULL) {
+                        fprintf(lf, "HARV-UNSTICK: harvester at (%d,%d) wedged %lds -- dropped contact, "
+                                    "restarted harvest cycle\n",
+                                (int)Cell_X(mycell), (int)Cell_Y(mycell), (long)(stuck / TICKS_PER_SECOND));
+                        fflush(lf);
+                    }
+                }
+#endif
+                HarvStuckCell = mycell;
+                HarvStuckFrame = Frame;
+            }
+        }
     }
 
     /*
@@ -2705,6 +2818,90 @@ static const long HARV_BLACKLIST_TTL = TICKS_PER_SECOND * 15; // retry a blackli
 static const int HARV_FLOOD_CAP = 256;                       // max ore cells visited when sizing a field
 // Travel-distance-aware field selection (Goto_Tiberium pathcost mode):
 static const int HARV_FIELD_CANDIDATES = 10;                 // max fields A*-compared per long-scan rescan (nearest rings)
+static const int HARV_FIELD_LOAD_DIVISOR = 2;                // a field must hold >= a full harvester load / this to be "rich
+                                                             // enough" to prefer over a closer one (=2 -> half a load). Rejects
+                                                             // lone regrown blocks. Below the bar, the richest reachable field
+                                                             // still wins (never a lone block over a fuller one). Tune freely:
+                                                             // 4 = quarter load (less roaming), 1 = a full pristine field.
+
+/***********************************************************************************************
+ * UnitClass::Field_Tiberium_Value -- Total harvestable value of the field containing a cell.  *
+ *                                                                                             *
+ *    Flood-fills the contiguous LAND_TIBERIUM field from `seed` (8-connected, the same walk    *
+ *    as Blacklist_Harvest_Cell) and sums each cell's ore value -- (OverlayData+1) * per-type    *
+ *    value, exactly as Tiberium_Check scores a single cell. Early-exits the instant the running *
+ *    total reaches `cap`, so a rich field costs only a handful of cell reads while a lone        *
+ *    regrown block (a near-empty patch) floods out cheaply on its own. Used by the field picker  *
+ *    to reject near-empty fields in favour of a fuller one. Pure cell reads -> lockstep-safe.    *
+ *                                                                                             *
+ * INPUT:   seed = an ore cell in the field; cap = stop summing once the total reaches this.    *
+ * OUTPUT:  the field's harvestable value, clamped to `cap`.                                    *
+ *=============================================================================================*/
+int UnitClass::Field_Tiberium_Value(CELL seed, int cap) const
+{
+    if (Map[seed].Land_Type() != LAND_TIBERIUM) {
+        return (0);
+    }
+
+    CELL flood[HARV_FLOOD_CAP]; // doubles as the visited set (a cell is enqueued at most once)
+    int n = 0;
+    flood[n++] = seed;
+    long total = 0;
+
+    for (int scan = 0; scan < n && total < cap; scan++) {
+        CELL cur = flood[scan];
+
+        int value = 0;
+        switch (Map[cur].Overlay) {
+        case OVERLAY_GOLD1:
+        case OVERLAY_GOLD2:
+        case OVERLAY_GOLD3:
+        case OVERLAY_GOLD4:
+        case OVERLAY_TIB01:
+            value = Rule.GoldValue;
+            break;
+        case OVERLAY_GEMS1:
+        case OVERLAY_GEMS2:
+        case OVERLAY_GEMS3:
+        case OVERLAY_GEMS4:
+            value = Rule.GemValue * 4;
+            break;
+        default:
+            break;
+        }
+        total += (long)(Map[cur].OverlayData + 1) * value;
+
+        int curx = Cell_X(cur);
+        int cury = Cell_Y(cur);
+        for (int dy = -1; dy <= 1; dy++) {
+            for (int dx = -1; dx <= 1; dx++) {
+                if (dx == 0 && dy == 0)
+                    continue;
+                int nx = curx + dx;
+                int ny = cury + dy;
+                if (nx < 0 || nx >= MAP_CELL_W || ny < 0 || ny >= MAP_CELL_H)
+                    continue;
+                CELL nc = XY_Cell(nx, ny);
+                if (Map[nc].Land_Type() != LAND_TIBERIUM)
+                    continue;
+                bool seen = false;
+                for (int k = 0; k < n; k++) {
+                    if (flood[k] == nc) {
+                        seen = true;
+                        break;
+                    }
+                }
+                if (seen)
+                    continue;
+                if (n < HARV_FLOOD_CAP) {
+                    flood[n++] = nc;
+                }
+            }
+        }
+    }
+
+    return ((int)(total > cap ? cap : total));
+}
 
 #if TF_DEV_BUILD // TF DEV: harvester unreachable-target diagnostic (shares tf_astar.log). Compiled out of release.
 static FILE* TF_Harv_Logfile(void)
@@ -2951,11 +3148,26 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
                 }
                 if (ncand > 0) {
                     CELL src = Coord_Cell(Center_Coord());
-                    CELL best = 0;
-                    int bestpath = 0x7FFFFFFF;
-                    int besttiberium = 0;
+                    /*
+                    **	TF: field-richness gate. Two tiers so a lone regrown block in a mined-out
+                    **	patch never lures a harvester off a fuller field. A field is "rich enough"
+                    **	if it holds at least a fraction of a full harvester load (BailCount bails of
+                    **	gold-equivalent value). TIER 1: among rich-enough reachable fields, take the
+                    **	NEAREST by A* road distance (value as a tiebreak) -- the prior travel-distance
+                    **	behaviour, now restricted to substantial fields. TIER 2 (fallback): if NO
+                    **	field clears the bar, take the RICHEST reachable field (not the nearest), so a
+                    **	near-empty patch only wins when it is genuinely the best ore in reach.
+                    */
+                    const int richthresh = (Rule.BailCount * Rule.GoldValue) / HARV_FIELD_LOAD_DIVISOR;
+                    CELL bestfull = 0; // tier 1: nearest rich-enough field
+                    int bestfullpath = 0x7FFFFFFF;
+                    int bestfulltib = 0;
+                    CELL bestrich = 0; // tier 2: richest reachable field (fallback)
+                    int bestrichval = -1;
+                    int bestrichpath = 0x7FFFFFFF;
 #if TF_DEV_BUILD
                     int candpath[HARV_FIELD_CANDIDATES];
+                    int candfield[HARV_FIELD_CANDIDATES];
 #endif
                     for (int i = 0; i < ncand; i++) {
                         /*
@@ -2967,21 +3179,37 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
                         **	still block, so a genuinely walled field still scores unreachable.
                         */
                         int plen = Find_Path_AStar(NULL, src, candidates[i], MAP_CELL_TOTAL, MOVE_MOVING_BLOCK, -1);
+                        int fieldval = Field_Tiberium_Value(candidates[i], richthresh);
 #if TF_DEV_BUILD
                         candpath[i] = plen;
+                        candfield[i] = fieldval;
 #endif
                         if (plen <= 0)
                             continue; // unreachable by road -- skip (also catches walled fields)
-                        if (plen < bestpath || (plen == bestpath && candvalue[i] > besttiberium)) {
-                            bestpath = plen;
-                            best = candidates[i];
-                            besttiberium = candvalue[i];
+                        /*
+                        **	Tier 2: track the richest reachable field, nearest as the tiebreak.
+                        */
+                        if (fieldval > bestrichval || (fieldval == bestrichval && plen < bestrichpath)) {
+                            bestrichval = fieldval;
+                            bestrichpath = plen;
+                            bestrich = candidates[i];
+                        }
+                        /*
+                        **	Tier 1: nearest field that clears the richness bar.
+                        */
+                        if (fieldval >= richthresh
+                            && (plen < bestfullpath || (plen == bestfullpath && candvalue[i] > bestfulltib))) {
+                            bestfullpath = plen;
+                            bestfull = candidates[i];
+                            bestfulltib = candvalue[i];
                         }
                     }
                     /*
-                    **	If A* rejected every candidate (all unreachable) fall back to the
-                    **	crow-flies nearest so we never regress to "do nothing".
+                    **	Prefer a rich-enough field; else the richest reachable; else (nothing
+                    **	reachable at all) the crow-flies nearest so we never regress to "do nothing".
                     */
+                    CELL best = bestfull ? bestfull : bestrich;
+                    int bestpath = bestfull ? bestfullpath : bestrichpath;
                     if (!best)
                         best = candidates[0];
                     Assign_Destination(::As_Target(best));
@@ -2999,10 +3227,13 @@ bool UnitClass::Goto_Tiberium(int rad, bool pathcost)
                                     (dbg_nearestd2 == 0x7FFFFFFF ? -1 : dbg_nearestd2),
                                     (dbg_nearestbl ? " BLACKLISTED" : ""), dbg_blskips,
                                     (best != candidates[0]) ? " [override]" : "");
+                            fprintf(lf, "    richthresh=%d tier=%s\n", richthresh,
+                                    bestfull ? "rich(nearest)" : (bestrich ? "fallback(richest)" : "crowflies"));
                             for (int i = 0; i < ncand; i++) {
-                                fprintf(lf, "    cand[%d] (%d,%d) zone=%d val=%d apath=%d\n", i,
+                                fprintf(lf, "    cand[%d] (%d,%d) zone=%d val=%d field=%d apath=%d%s\n", i,
                                         Cell_X(candidates[i]), Cell_Y(candidates[i]),
-                                        Map[candidates[i]].Zones[Class->MZone], candvalue[i], candpath[i]);
+                                        Map[candidates[i]].Zones[Class->MZone], candvalue[i], candfield[i],
+                                        candpath[i], (candfield[i] >= richthresh) ? " RICH" : "");
                             }
                             fflush(lf);
                         }

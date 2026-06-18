@@ -152,6 +152,8 @@ public:
     int HarvBestDist;                       // best (closest) distance achieved toward it, in leptons
     long HarvStallFrame;                    // Frame when HarvBestDist last improved (no-progress stall timer)
     int HarvReachableResets;                // stall windows forgiven because A* still finds a path (bounded backstop)
+    CELL HarvStuckCell;                      // last cell the harvester occupied (anti-stuck watchdog; -1 = unset)
+    long HarvStuckFrame;                     // Frame the harvester last moved/worked (position-stagnation timer)
     // Each blacklist slot stores the BOUNDING BOX of a whole contiguous ore field (flood-filled
     // from the failed cell), not a single cell -- a big walled patch would otherwise let the
     // harvester give up on one cell and re-pick another cell of the same dead field.
@@ -199,6 +201,7 @@ public:
     virtual void Scatter(COORDINATE threat, bool forced = false, bool nokidding = false);
 
     int Tiberium_Check(CELL& center, int x, int y);
+    int Field_Tiberium_Value(CELL seed, int cap) const; // total harvestable value of the field containing seed (early-exits at cap)
     bool Flag_Attach(HousesType house);
     bool Flag_Remove(void);
     bool Goto_Tiberium(int radius, bool pathcost = false);

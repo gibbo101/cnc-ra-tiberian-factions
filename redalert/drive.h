@@ -102,6 +102,7 @@ public:
     virtual void Response_Move(void);
     virtual void Response_Attack(void);
     virtual void Scatter(COORDINATE threat, bool forced = false, bool nokidding = false);
+    bool Drain_Infantry_Along(CELL start, FacingType navface, int maxcells, bool corridor_only); // shared idle-infantry shove (give-way + harvester anti-pin)
     virtual bool Limbo(void);
     void Do_Turn(DirType dir);
     virtual void Overrun_Square(CELL, bool = true){};
