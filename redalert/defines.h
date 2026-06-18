@@ -2828,6 +2828,13 @@ typedef enum AnimType : char
     ANIM_TDFTFLAME_W,
     ANIM_TDFTFLAME_NW,
 
+    // Tiberian Factions -- green "Tiberium fumes" venting from a harvester docked at
+    // an RA refinery (reverse cross-dock). Reuses the existing SMOKLAND art (the LZ
+    // drop-zone smoke) so it renders in HD, but is its OWN AnimType so it does NOT
+    // trigger ANIM_LZ_SMOKE's hardcoded map-reveal (Sight_From) and gets a tuned
+    // (non-127) loop count. MUST stay in lockstep with adata.cpp Init_Heap order.
+    ANIM_TIB_FUMES,
+
 #ifdef FIXIT_ANTS
     ANIM_ANT1_DEATH,
     ANIM_ANT2_DEATH,

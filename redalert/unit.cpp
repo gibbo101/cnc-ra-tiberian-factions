@@ -3150,6 +3150,42 @@ int UnitClass::Mission_Unload(void)
             Mark(MARK_UP);
             Coord = Coord_Add(Coord, XYP_Coord(TD_DOCK_NUDGE_RIGHT, -TD_DOCK_NUDGE_UP));
             Mark(MARK_DOWN);
+
+            /*
+            **	Green "Tiberium fumes" venting during the unload -- ONE persistent plume
+            **	spawned at dock start (ANIM_TIB_FUMES loops ~one full unload), NOT a puff
+            **	per bail (which piled up). Attach_To the refinery so it renders in the
+            **	GROUND layer sorted ~1 cell south of the refinery: ABOVE the refinery but
+            **	BELOW the harvester (a free anim would land in LAYER_AIR, on top of
+            **	everything). The Y offset is a VISUAL DIAL (more negative = higher above
+            **	the harvester; more positive = more hidden behind it).
+            */
+            AnimClass* fumes = new AnimClass(ANIM_TIB_FUMES, Coord_Add(Coord, XYP_Coord(0, -6)));
+            if (fumes != NULL) {
+                TechnoClass* refc = Contact_With_Whom();
+                if (refc != NULL && refc->What_Am_I() == RTTI_BUILDING) {
+                    fumes->Attach_To(refc);
+                }
+                /*
+                **	Size the plume so it plays its FULL arc and ENDS NATURALLY ~when the
+                **	unload finishes -- killing it abruptly mid-animation read weird. The
+                **	fume is a 72-frame rise (once) then a 20-frame wisp loop at delay 2,
+                **	so total ~= FUME_RISE_TICKS + loops*FUME_LOOP_TICKS. The unload takes
+                **	~load * TD_DOCK_OFFLOAD_DELAY ticks, so solve for the loop count.
+                **	Set Loops AFTER Attach_To (its Unlimbo resets Loops to the class default).
+                */
+                const int FUME_RISE_TICKS = 72 * 2;
+                const int FUME_LOOP_TICKS = 20 * 2;
+                int unload_ticks = max(Tiberium, 1) * TD_DOCK_OFFLOAD_DELAY;
+                int loops = (unload_ticks - FUME_RISE_TICKS + FUME_LOOP_TICKS / 2) / FUME_LOOP_TICKS;
+                if (loops < 1) {
+                    loops = 1;
+                }
+                if (loops > 120) {
+                    loops = 120; // char field; sanity clamp
+                }
+                fumes->Loops = (char)loops;
+            }
         }
 
         if (Tiberium > 0) {
@@ -3157,34 +3193,18 @@ int UnitClass::Mission_Unload(void)
             if (bail) {
                 House->Harvested(bail);
             }
-            /*
-            **	Dust puff at the intake. Attach it to the refinery so it renders in the
-            **	GROUND layer, sorted ~1 cell south of the refinery -- ABOVE the refinery
-            **	but BELOW the harvester (which sits further south on the apron). A free
-            **	anim lands in LAYER_AIR and draws on top of everything (refinery AND
-            **	harvester). Attach_To keeps the visual position (Coord becomes an offset
-            **	from the building) while inheriting the building's layer + sort order.
-            **	Offset placed just above the harvester so only a small part of the puff
-            **	shows. The Y offset is a VISUAL DIAL (more positive = lower / more hidden
-            **	behind the harvester; more negative = higher above it).
-            */
-            AnimClass* puff = new AnimClass(ANIM_SMOKE_PUFF, Coord_Add(Coord, XYP_Coord(0, -6)));
-            if (puff != NULL) {
-                TechnoClass* refc = Contact_With_Whom();
-                if (refc != NULL && refc->What_Am_I() == RTTI_BUILDING) {
-                    puff->Attach_To(refc);
-                }
-            }
             if (Tiberium > 0) {
                 return (TD_DOCK_OFFLOAD_DELAY); // hold the dock; next bail after the dial
             }
         }
 
         /*
-        **	Load empty -- finish: clear dumping, tell the refinery (frees the dock +
-        **	ReconsiderRefinery for the queue), drop radio contact, drive off. As with
-        **	the RA path, RADIO_UNLOADED is sent here (not at dock time) so the dock
-        **	stayed occupied + the harvester stayed capturable through the whole unload.
+        **	Finish: clear dumping, tell the refinery (frees the dock + ReconsiderRefinery
+        **	for the queue), drop radio contact, drive off. As with the RA path,
+        **	RADIO_UNLOADED is sent here (not at dock time) so the dock stayed occupied +
+        **	the harvester stayed capturable through the whole unload. The fume plume is
+        **	NOT killed here -- it was sized at dock start to end on its own (a clean loop
+        **	boundary) right around now, so it tapers out naturally instead of cutting.
         */
         IsDumping = false;
         Tiberium = Gold = Gems = 0; // defensive

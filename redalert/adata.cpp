@@ -2378,6 +2378,38 @@ static AnimTypeClass const TdftFlameSW(ANIM_TDFTFLAME_SW, "FTFLAME-SW", 48, 9, f
 static AnimTypeClass const TdftFlameW(ANIM_TDFTFLAME_W, "FTFLAME-W", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const TdftFlameNW(ANIM_TDFTFLAME_NW, "FTFLAME-NW", 48, 9, false, false, false, false, false, false, false, false, true, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 
+/*
+**	Tiberian Factions -- green "Tiberium fumes" for the harvester dock at an RA refinery.
+**	Reuses the LZ drop-zone smoke art (SMOKLAND, the green rising plume) but as its OWN
+**	AnimType, so it does NOT fire ANIM_LZ_SMOKE's hardcoded Sight_From map-reveal, and its
+**	loop count is tuned to ~a full unload (rise 0-71 then loop 72-91; 15 loops vs LZ's 127).
+**	Spawned once per dock (UnitClass::Mission_Unload UNIT_TDHARV) and Attach_To'd to the
+**	refinery for z-order. Same params as LZSmoke EXCEPT ground-level=false (we let Attach_To
+**	own the layer/sort, matching the old SmokePuff path) and loops=15.
+*/
+static AnimTypeClass const TibFumes(ANIM_TIB_FUMES, // Animation number.
+                                    "SMOKLAND",     // Data name of animation (green LZ smoke art).
+                                    32,             // Maximum dimension of animation.
+                                    72,             // Biggest animation stage.
+                                    false,          // Theater specific art imagery?
+                                    true,           // Normalized animation rate?
+                                    false,          // Uses white translucent table?
+                                    false,          // Scorches the ground?
+                                    false,          // Forms a crater?
+                                    false,          // Sticks to unit in square?
+                                    false,          // Ground level animation?
+                                    false,          // Translucent colors in this animation?
+                                    false,          // Is this a flame thrower animation?
+                                    0,              // Damage to apply per tick (fixed point).
+                                    2,              // Delay between frames.
+                                    0,              // Starting frame number.
+                                    72,             // Loop start frame number.
+                                    91,             // Ending frame of loop back.
+                                    -1,             // Number of animation stages.
+                                    15,             // Number of times the animation loops (~one full unload).
+                                    VOC_NONE,       // Sound effect to play.
+                                    ANIM_NONE);
+
 // Tiberian Factions -- TD chem-warrior directional spray jets (ANIM_CHEM_*, E5).
 // Ported from tiberiandawn/adata.cpp ChemN.. -- structurally identical to the flame
 // jets above (8 dirs, 13 stages) EXCEPT IsFlameThrower=false (TD's ChemN sets it
@@ -2513,6 +2545,10 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(TdftFlameSW);
     new AnimTypeClass(TdftFlameW);
     new AnimTypeClass(TdftFlameNW);
+
+    // Tiberium fumes (harvester dock at an RA refinery). MUST stay immediately after the
+    // TDFTFLAME block to match the ANIM_TIB_FUMES enum slot (heap ID == registration order).
+    new AnimTypeClass(TibFumes);
 
 #ifdef FIXIT_ANTS
     new AnimTypeClass(Ant1Death);
