@@ -5452,13 +5452,19 @@ int BuildingClass::Mission_Harvest(void)
 
             FootClass* techno = Attached_Object();
             if (techno) {
-                int bail = techno->Offload_Tiberium_Bail();
-
-                if (bail) {
-                    House->Harvested(bail);
-                    if (techno->Tiberium_Load() > 0) {
-                        return (1);
+                /*
+                **	TF economy-pace compromise: bank HARV_DOCK_BAILS_PER_CYCLE bails per
+                **	cycle to keep this dock equal to the other three pairings (see
+                **	HARV_DOCK_BAILS_PER_CYCLE). Mirrors Mission_Harvest_TD's MIDDLE.
+                */
+                for (int b = 0; b < HARV_DOCK_BAILS_PER_CYCLE && techno->Tiberium_Load() > 0; b++) {
+                    int bail = techno->Offload_Tiberium_Bail();
+                    if (bail) {
+                        House->Harvested(bail);
                     }
+                }
+                if (techno->Tiberium_Load() > 0) {
+                    return (1);
                 }
             }
             Status = WAIT_FOR_UNDOCK;
@@ -5540,22 +5546,31 @@ int BuildingClass::Mission_Harvest_TD(void)
 
             FootClass* techno = Attached_Object();
             if (techno) {
-                int bail = techno->Offload_Tiberium_Bail();
-
-                if (bail) {
-                    House->Harvested(bail);
-                    /*
-                    **	Explicit `> 0` comparison forces the fixed::operator>(int)
-                    **	overload which inspects Data.Raw directly. The bare
-                    **	`if (Tiberium_Load())` form would implicit-convert via
-                    **	operator unsigned() which rounds to nearest int — for
-                    **	Rule.BailCount=28 that rounds to 0 once Tiberium <= 13,
-                    **	prematurely exiting the bail loop with ~12 bails
-                    **	(3 of 7 pips) still on the harvester.
-                    */
-                    if (techno->Tiberium_Load() > 0) {
-                        return (1);
+                /*
+                **	TF economy-pace compromise: bank HARV_DOCK_BAILS_PER_CYCLE bails per
+                **	siphon anim cycle (1=old TD-matched, 2=half), halving this dock to match
+                **	the other three pairings so the RA + TD economies stay equal. The
+                **	refinery ANIMATION cadence is untouched (fewer cycles, same speed) and
+                **	credits-per-load are unchanged. See HARV_DOCK_BAILS_PER_CYCLE.
+                **	(`> 0` keeps the fixed::operator>(int) overload -- see below.)
+                */
+                for (int b = 0; b < HARV_DOCK_BAILS_PER_CYCLE && techno->Tiberium_Load() > 0; b++) {
+                    int bail = techno->Offload_Tiberium_Bail();
+                    if (bail) {
+                        House->Harvested(bail);
                     }
+                }
+                /*
+                **	Explicit `> 0` comparison forces the fixed::operator>(int)
+                **	overload which inspects Data.Raw directly. The bare
+                **	`if (Tiberium_Load())` form would implicit-convert via
+                **	operator unsigned() which rounds to nearest int — for
+                **	Rule.BailCount=28 that rounds to 0 once Tiberium <= 13,
+                **	prematurely exiting the bail loop with ~12 bails
+                **	(3 of 7 pips) still on the harvester.
+                */
+                if (techno->Tiberium_Load() > 0) {
+                    return (1);
                 }
             }
             Begin_Mode(BSTATE_AUX2);

@@ -465,9 +465,17 @@ void UnitClass::AI(void)
             // is never auto-cleared elsewhere; the dust-loop wrap below stays HARV-only.)
             IsDumping = false;
         } else if (*this == UNIT_HARVESTER && Tiberium > 0 && Fetch_Stage() > 13) {
-            int bail = Offload_Tiberium_Bail();
-            if (bail) {
-                House->Harvested(bail);
+            /*
+            **	TF economy-pace compromise: bank HARV_DOCK_BAILS_PER_CYCLE bails per dust
+            **	cycle (1=old TD-matched, 2=half). The dust ANIMATION cadence (DOCK_DUMP_RATE)
+            **	is untouched -- identical look, fewer cycles. Same dial drives all four dock
+            **	pairings so the RA + TD economies stay equal. See HARV_DOCK_BAILS_PER_CYCLE.
+            */
+            for (int b = 0; b < HARV_DOCK_BAILS_PER_CYCLE && Tiberium > 0; b++) {
+                int bail = Offload_Tiberium_Bail();
+                if (bail) {
+                    House->Harvested(bail);
+                }
             }
             if (Tiberium > 0) {
                 Set_Stage(8); // loop the dust frames again (SHP 104-109)
@@ -3620,7 +3628,10 @@ int UnitClass::Mission_Unload(void)
                 */
                 const int FUME_RISE_TICKS = 72 * 2;
                 const int FUME_LOOP_TICKS = 20 * 2;
-                int unload_ticks = max(Tiberium, 1) * TD_DOCK_OFFLOAD_DELAY;
+                // N bails bank per delay (HARV_DOCK_BAILS_PER_CYCLE), so cycles = ceil(load/N).
+                int unload_ticks =
+                    ((max(Tiberium, 1) + HARV_DOCK_BAILS_PER_CYCLE - 1) / HARV_DOCK_BAILS_PER_CYCLE)
+                    * TD_DOCK_OFFLOAD_DELAY;
                 int loops = (unload_ticks - FUME_RISE_TICKS + FUME_LOOP_TICKS / 2) / FUME_LOOP_TICKS;
                 if (loops < 1) {
                     loops = 1;
@@ -3633,12 +3644,20 @@ int UnitClass::Mission_Unload(void)
         }
 
         if (Tiberium > 0) {
-            int bail = Offload_Tiberium_Bail();
-            if (bail) {
-                House->Harvested(bail);
+            /*
+            **	TF economy-pace compromise: bank HARV_DOCK_BAILS_PER_CYCLE bails per hold,
+            **	halving this dock to match the other three pairings. Cadence
+            **	(TD_DOCK_OFFLOAD_DELAY) + the fume plume are untouched -- fewer holds, same
+            **	look. Total credits/load unchanged. See HARV_DOCK_BAILS_PER_CYCLE.
+            */
+            for (int b = 0; b < HARV_DOCK_BAILS_PER_CYCLE && Tiberium > 0; b++) {
+                int bail = Offload_Tiberium_Bail();
+                if (bail) {
+                    House->Harvested(bail);
+                }
             }
             if (Tiberium > 0) {
-                return (TD_DOCK_OFFLOAD_DELAY); // hold the dock; next bail after the dial
+                return (TD_DOCK_OFFLOAD_DELAY); // hold the dock; next bail-batch after the dial
             }
         }
 

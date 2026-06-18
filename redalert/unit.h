@@ -49,6 +49,21 @@
 #define HARV_THRASHING_WEIGHT   ((HARV_UNLOAD_WAIT_WEIGHT * 2) / 3)
 #define HARV_COMMUNALISM_WEIGHT ((HARV_UNLOAD_WAIT_WEIGHT * 9) / 4)
 
+/*
+**	TF economy-pace dial (2026-06-18). Bails offloaded per dock cycle, applied IDENTICALLY
+**	to all FOUR harvester/refinery pairings (RA-harv@RA-ref + RA-harv@TD-ref = the visible
+**	dust-loop; TD-harv@TD-ref = the refinery attach/siphon anim cycle; TD-harv@RA-ref = the
+**	timer-driven offload). Each path originally banked 1 bail per cycle, all tuned to the same
+**	~588-tick TD dock time. Vanilla RA dumped a full load in ONE shot (near-instant) -- the
+**	docking rework pulled RA's fast economy fully into TD territory. Banking N bails/cycle
+**	cuts every dock time by N while leaving each path's ANIMATION cadence untouched (fewer
+**	cycles, same speed) and credits-per-load unchanged (only the unload RATE rises). Keeping
+**	the SAME N on all four pairings keeps the RA and TD faction economies equal -- which is the
+**	point: equal economies make cross-faction unit balancing tractable. 1 = full TD-matched
+**	(old), 2 = half (the agreed RA<->TD compromise), 4 = quarter (~RA-insta feel).
+*/
+#define HARV_DOCK_BAILS_PER_CYCLE 2
+
 class BuildingClass;
 class BulletClass;
 class HouseClass;
