@@ -113,7 +113,7 @@ No more releases until the WHOLE harvester workstream is done → it all ships a
 | **B2** RA harvester visible dust-loop unload | ✅ DONE + validated, **committed `686efa4`** |
 | **B3** capturing an ore refinery grabs the unloading harvester | ✅ DONE + validated, **committed `0c5a040`** |
 | **B4** RA harvester docks at a TD refinery (RA harv → TD ref) | ✅ DONE + validated ("perfect"), **committed `d923511`** |
-| TF_DEV test-buildability (any house builds both refineries) | ✅ committed in `d923511` (TF_DEV-only, compiled out of release) |
+| TF_DEV test-buildability (any house builds both refineries) | ✅ committed `d923511`, then **REMOVED `87a4fd2`** (cross-dock validated; scaffold dropped from dev builds too — factions build only their own refinery; cross-dock capability for *captured* refineries unaffected) |
 | **Reverse case** TD harvester → RA refinery | ✅ DONE + Luke-validated, **committed `e058d50`** (+ green fumes `5eafd45`) |
 | Halve-dock-time dial | ✅ DONE `946b675` — halved + equalised across all 4 pairings (`HARV_DOCK_BAILS_PER_CYCLE`) |
 
