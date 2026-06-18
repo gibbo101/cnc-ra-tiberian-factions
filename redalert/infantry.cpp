@@ -1498,6 +1498,15 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType) const
         return (MOVE_NO);
     }
 
+    /*
+    **	TF Layer B: a refinery's dock pad is harvester-only -- keep infantry off it (an idle guard
+    **	parked on the dock blocks the harvester from unloading). Infantry are never harvesters, so
+    **	the pad is always off-limits to them. Skipped at scenario load so pre-placed men are left be.
+    */
+    if (!ScenarioInit && Is_Refinery_Dock_Cell(cell)) {
+        return (MOVE_NO);
+    }
+
     CellClass* cellptr = &Map[cell];
 
     /*

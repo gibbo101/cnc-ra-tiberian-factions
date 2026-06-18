@@ -548,41 +548,39 @@ void UnitClass::AI(void)
 
     /*
     **	Tiberian Factions -- harvester ANTI-STUCK watchdog (vanilla dock-contention / idle recovery).
-    **	The ore-blacklist detector above only covers "I have an ore target but can't get closer".
-    **	The embarrassing vanilla failures are broader and state-independent: a full harvester sitting
-    **	idle in a field (gave up finding a refinery), harvesters crowding one refinery's single dock
-    **	cell and wedging each other, a harvester frozen mid-approach. They share one observable symptom
-    **	-- the harvester is NOT PHYSICALLY MOVING and NOT doing productive work. So watch the cell, not
-    **	the target distance, and escalate recovery the longer it stays put:
-    **	  ~3s  -- shove idle friendly infantry off the path ahead (infantry never block a harvester),
-    **	  ~9s  -- hard restart: drop refinery radio, clear targets, re-enter the harvest state machine
-    **	          from LOOKING (re-derives ore/refinery + a fresh path; a loaded harvester auto-routes
-    **	          home). This guarantees nothing stays stuck for more than a few seconds.
-    **	Productive-stationary states (harvesting a cell, dumping at a refinery) are exempt, and ANY real
-    **	movement resets the timer, so normal operation is never disturbed. Per-unit ints + Frame +
-    **	deterministic Scatter/Assign -- lockstep-safe, no RNG.
+    **	Detector 1 above handles "pursuing ore but not getting closer -> A* check -> blacklist the
+    **	walled field". This watchdog handles the broader PHYSICAL/idle failures that all share one
+    **	symptom: the harvester is NOT moving and NOT doing productive work -- wedged in base traffic,
+    **	crowding a dock, OR having GIVEN UP (dropped to GUARD/HUNT when it found no reachable ore) and
+    **	parked forever. It watches the CELL, not a target, so it works in any mission. Escalate the
+    **	longer it stays put:
+    **	  ~3s  -- shove idle friendly infantry off the path ahead,
+    **	  ~6s  -- Try_Deadlock_Scatter: physically displace us to a free neighbour (breaks a wedge that
+    **	          re-targeting alone never moves -- the harvester literally can't take its first step),
+    **	  ~12s -- hard restart: drop radio, clear targets, re-enter MISSION_HARVEST at LOOKING (a gave-up
+    **	          harvester retries; a loaded one routes home). NO blacklist here -- Detector 1 owns
+    **	          field-blacklisting via real A* reachability; blacklisting on a physical wedge poisons
+    **	          good fields the harvester simply couldn't walk to (observed: blskips=151 churn).
+    **	EXEMPT: productive work (IsHarvesting/IsDumping is reset), and a HUMAN player's manual park
+    **	(MISSION_MOVE/GUARD/GUARD_AREA/STICKY) so a retreat-to-hide order is never overridden. AI
+    **	harvesters get no manual orders, so they are always eligible -- which is what recovers a gave-up
+    **	AI harvester sitting idle. Lockstep-safe: per-unit ints + Frame + deterministic Scatter/Assign.
     */
-    /*
-    **	Only police the harvester's OWN autonomous economy -- the harvest loop (MISSION_HARVEST) and
-    **	the drive to dock (MISSION_ENTER). A PLAYER-issued order (retreat to base to hide during a raid,
-    **	a manual move/guard) puts it in MISSION_MOVE/MISSION_GUARD/etc; we must never override that --
-    **	no restart, no scatter. While under player command we keep the watchdog state fresh so it can't
-    **	false-fire the instant the harvester is released back to harvesting.
-    */
-    if (Class->IsToHarvest && Mission != MISSION_HARVEST && Mission != MISSION_ENTER) {
-        HarvStuckCell = Coord_Cell(Center_Coord());
-        HarvStuckFrame = Frame;
-    } else if (Class->IsToHarvest) {
-        const long HARV_STUCK_NUDGE = TICKS_PER_SECOND * 3; // shove blocking infantry after 3s stationary
-        const long HARV_STUCK_RESET = TICKS_PER_SECOND * 9; // hard-restart after 9s stationary (well past any legit wait)
-        const int HARV_STUCK_SCAN_CELLS = 6;                // cells of path-ahead to clear of idle infantry
-        CELL mycell = Coord_Cell(Center_Coord());
+    if (Class->IsToHarvest) {
+        bool player_parked = House->IsHuman
+                             && (Mission == MISSION_MOVE || Mission == MISSION_GUARD
+                                 || Mission == MISSION_GUARD_AREA || Mission == MISSION_STICKY);
         bool productive = IsHarvesting || IsDumping; // legitimately stationary -- don't disturb
+        CELL mycell = Coord_Cell(Center_Coord());
 
-        if (productive || mycell != HarvStuckCell) {
-            HarvStuckCell = mycell; // moving or working -- reset the watchdog
+        if (player_parked || productive || mycell != HarvStuckCell) {
+            HarvStuckCell = mycell; // moving, working, or under manual command -- reset the watchdog
             HarvStuckFrame = Frame;
         } else {
+            const long HARV_STUCK_NUDGE = TICKS_PER_SECOND * 3;    // shove blocking infantry
+            const long HARV_STUCK_SCATTER = TICKS_PER_SECOND * 6;  // physically displace a wedge
+            const long HARV_STUCK_RESET = TICKS_PER_SECOND * 12;   // re-decide (idle retry / loaded route-home)
+            const int HARV_STUCK_SCAN_CELLS = 6;
             long stuck = Frame - HarvStuckFrame;
 
             /*
@@ -605,28 +603,22 @@ void UnitClass::AI(void)
                 }
             }
 
+            /*
+            **	Physically displace a wedged harvester to a free neighbour (the shared deadlock breaker:
+            **	shoves an idle blocker then id-seed-scatters us onto open ground, re-queuing our goal).
+            **	This frees a harvester that simply can't take its first step. No-ops safely when there is
+            **	no goal or no free cell.
+            */
+            if (stuck >= HARV_STUCK_SCATTER) {
+                Try_Deadlock_Scatter();
+            }
+
             if (stuck >= HARV_STUCK_RESET) {
                 /*
-                **	Given up / wedged. If we were failing to reach an ORE field, BLACKLIST it first so
-                **	the restarted LOOKING picks a DIFFERENT patch (Luke: "try a different ore patch if it
-                **	keeps failing"). A* can call a field reachable while the harvester physically can't
-                **	thread the route -- ore buried in a packed base, or a path only through a building
-                **	maze -- and that is precisely the case this catches: 9s wedged with no movement means
-                **	the chosen field is unreachable IN PRACTICE. Blacklist_Harvest_Cell flood-fills the
-                **	whole field bbox and expires after HARV_BLACKLIST_TTL, so a transient block is retried
-                **	later. A refinery target (MISSION_ENTER dock) is NOT ore -- left alone (dock contention,
-                **	handled by the restart itself + Layer B, not a dead field).
-                */
-                if (Target_Legal(NavCom) && Map[As_Cell(NavCom)].Land_Type() == LAND_TIBERIUM) {
-                    Blacklist_Harvest_Cell(As_Cell(NavCom));
-                }
-
-                /*
-                **	Full restart: end any refinery radio session, drop every target, and re-enter the
-                **	harvest state machine at LOOKING (Status 0). LOOKING auto-redirects a loaded harvester
-                **	to FINDHOME (re-runs Find_Best_Refinery) and sends an empty one back to scan for ore --
-                **	skipping the just-blacklisted field -- which also re-engages the normal movement-time
-                **	deadlock breaker. Reset the timer so the restart gets a window to take.
+                **	Re-decide. End any refinery radio session, drop every target, and re-enter the harvest
+                **	state machine at LOOKING (Status 0): a gave-up/idle harvester retries finding ore, a
+                **	loaded one auto-routes home (LOOKING redirects a full load to FINDHOME). Field selection
+                **	+ blacklisting are left to Detector 1 / Goto_Tiberium -- we only re-kick the cycle.
                 */
                 if (In_Radio_Contact()) {
                     Transmit_Message(RADIO_OVER_OUT);
@@ -641,9 +633,9 @@ void UnitClass::AI(void)
                 {
                     FILE* lf = TF_Harv_Logfile();
                     if (lf != NULL) {
-                        fprintf(lf, "HARV-UNSTICK: harvester at (%d,%d) wedged %lds -- dropped contact, "
-                                    "restarted harvest cycle\n",
-                                (int)Cell_X(mycell), (int)Cell_Y(mycell), (long)(stuck / TICKS_PER_SECOND));
+                        fprintf(lf, "HARV-UNSTICK: harvester at (%d,%d) mission=%d wedged %lds -- restarted\n",
+                                (int)Cell_X(mycell), (int)Cell_Y(mycell), (int)Mission,
+                                (long)(stuck / TICKS_PER_SECOND));
                         fflush(lf);
                     }
                 }
@@ -4414,6 +4406,16 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
     **	this is a loaner vehicle.
     */
     if (!ScenarioInit && !Map.In_Radar(cell) && !Is_Allowed_To_Leave_Map() && IsLocked) {
+        return (MOVE_NO);
+    }
+
+    /*
+    **	TF Layer B: a refinery's dock pad is harvester-only. A non-harvester vehicle treats it as
+    **	impassable so the AI never parks a tank on the dock and blocks unloading. Harvesters
+    **	(IsToHarvest) are exempt -- it's their cell. (Skip during ScenarioInit so pre-placed units
+    **	near a refinery aren't disturbed at load.)
+    */
+    if (!ScenarioInit && !Class->IsToHarvest && Is_Refinery_Dock_Cell(cell)) {
         return (MOVE_NO);
     }
 

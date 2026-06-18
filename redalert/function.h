@@ -102,6 +102,7 @@ extern int LParam;
 
 extern int Frame;
 CELL Coord_Cell(COORDINATE coord);
+bool Is_Refinery_Dock_Cell(CELL cell); // TF Layer B: harvester-only refinery dock pad
 
 #include "palettec.h" //ST 5/13/2019
 #include "dialog.h"

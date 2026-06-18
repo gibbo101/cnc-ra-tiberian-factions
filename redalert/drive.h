@@ -103,6 +103,7 @@ public:
     virtual void Response_Attack(void);
     virtual void Scatter(COORDINATE threat, bool forced = false, bool nokidding = false);
     bool Drain_Infantry_Along(CELL start, FacingType navface, int maxcells, bool corridor_only); // shared idle-infantry shove (give-way + harvester anti-pin)
+    bool Try_Deadlock_Scatter(void);                                // v2.2.3 backstop scatter when wedged (also harvester watchdog)
     virtual bool Limbo(void);
     void Do_Turn(DirType dir);
     virtual void Overrun_Square(CELL, bool = true){};
@@ -222,7 +223,6 @@ private:
     bool Start_Of_Move(void);
     CELL Find_Give_Way_Cell(TechnoClass const* blocker) const;      // v2.2.3 chokepoint give-way
     int Give_Way_Decision(TechnoClass** winner_out) const;          // v2.2.3: 0 proceed, 1 hold, 2 retreat
-    bool Try_Deadlock_Scatter(void);                                // v2.2.3: backstop scatter when wedged
     int Infantry_Give_Way(void);                                    // v2.2.3: 0 none, 1 shoved man(men), 2 wait at mouth
     void Lay_Track(void);
     COORDINATE Smooth_Turn(COORDINATE adj, DirType& dir);

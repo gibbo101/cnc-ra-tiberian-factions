@@ -4486,6 +4486,51 @@ COORDINATE BuildingClass::Sort_Y(void) const
 }
 
 /***********************************************************************************************
+ * Is_Refinery_Dock_Cell -- Is this cell a refinery's harvester dock pad?  (TF Layer B)        *
+ *                                                                                             *
+ *    A refinery's single dock cell is reserved for harvesters: an idle guard infantryman or a *
+ *    parked tank sitting on it blocks unloading and gridlocks the economy (a vanilla failure). *
+ *    UnitClass/InfantryClass::Can_Enter_Cell call this to make a NON-harvester treat the dock  *
+ *    pad as impassable, so the AI never parks anything but a harvester there.                  *
+ *                                                                                             *
+ *    The dock pad is fixed relative to the refinery (see BuildingClass::Receive_Message        *
+ *    RADIO_DOCKING): the RA refinery (STRUCT_REFINERY) docks DIR_S of its centre cell, the TD  *
+ *    refinery (STRUCT_TDPROC) docks DIR_SW. So a cell is a dock pad iff its DIR_N neighbour is  *
+ *    a STRUCT_REFINERY centre, or its DIR_NE neighbour is a STRUCT_TDPROC centre. Pure cell    *
+ *    geometry + a building-pointer read -> cheap and lockstep-deterministic.                   *
+ *=============================================================================================*/
+bool Is_Refinery_Dock_Cell(CELL cell)
+{
+    if ((unsigned)cell >= MAP_CELL_TOTAL) {
+        return (false);
+    }
+
+    /*
+    **	RA refinery: dock pad sits DIR_S of the centre cell -> centre is DIR_N of the pad.
+    */
+    CELL ncell = Adjacent_Cell(cell, FACING_N);
+    if ((unsigned)ncell < MAP_CELL_TOTAL) {
+        BuildingClass const* b = Map[ncell].Cell_Building();
+        if (b != NULL && *b == STRUCT_REFINERY && Coord_Cell(b->Center_Coord()) == ncell) {
+            return (true);
+        }
+    }
+
+    /*
+    **	TD refinery: dock pad sits DIR_SW of the centre cell -> centre is DIR_NE of the pad.
+    */
+    CELL necell = Adjacent_Cell(cell, FACING_NE);
+    if ((unsigned)necell < MAP_CELL_TOTAL) {
+        BuildingClass const* b = Map[necell].Cell_Building();
+        if (b != NULL && *b == STRUCT_TDPROC && Coord_Cell(b->Center_Coord()) == necell) {
+            return (true);
+        }
+    }
+
+    return (false);
+}
+
+/***********************************************************************************************
  * BuildingClass::Can_Enter_Cell -- Determines if building can be placed down.                 *
  *                                                                                             *
  *    This routine will determine if the building can be placed down at the location           *
