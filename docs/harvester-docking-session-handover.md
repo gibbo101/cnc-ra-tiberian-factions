@@ -138,9 +138,20 @@ All committed on `main` (local, unreleased — workstream still ships together a
 - **Corrected belief:** new HD asset names DO render (loose VFX ZIP + `RA_VFX.XML`, as TDFLAME/TDCHEM
   prove). The real limit is the FTFLAME install-time-cache gremlin — see [[reference-launcher-new-asset-name-deadend]].
 
-⭐ NEXT (still open in the docking thread): hardcode back-in as default (drop the flag); then the
-backlog (field selection by travel distance / threat, infantry-blocked harvesters, universal idle
-rescan, target claiming, dock contention/queue); then the halve-dock-time dial; all → v3.0.
+⭐ STATUS 2026-06-18 — HARVESTER WORKSTREAM CODE-COMPLETE, at the precipice of the v3.0 release.
+Everything below is DONE + committed on `main` (unreleased, v3.0-gated):
+- **Back-in default** — DONE. Already hardcoded (`unit.cpp:1077` unconditionally turns `DIR_SW`); no
+  `tf_harv_backin.flag` remains in the code. Earlier "drop the flag before v3.0" note was stale.
+- Field selection by travel distance + richness + **threat** (`2f80f76`), infantry-blocked recovery
+  (give-way + watchdog), universal idle rescan (watchdog), **queue-bail** (`ReconsiderRefinery` +
+  confirm log `b657c28`, soak-verified), dock contention (Layer A/B + staging).
+- **Dock time halved + equalised** across all four pairings (`946b675`, dial `HARV_DOCK_BAILS_PER_CYCLE`).
+- **Test-buildability scaffold removed** (`87a4fd2`) — factions build only their own refinery again
+  (cross-dock capability for *captured* refineries unaffected).
+
+Nothing ship-affecting is open on the harvester front. Remaining items are pure backlog (deferrable
+past v3.0): chimney `SMOKE_M`, TIB01-load tracking, cargo-coloured dock smoke. Release = Luke's call
+(version bump → CHANGELOG → release.sh → Workshop publish, per CLAUDE.md release workflow).
 
 ## START HERE next session — VERIFY the reverse case (TD harv → RA ref), then commit
 The reverse case (TD harvester → RA refinery) is **implemented, built, and deployed to the local
