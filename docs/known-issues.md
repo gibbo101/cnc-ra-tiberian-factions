@@ -97,8 +97,21 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
      dumps each candidate's zone/value/apath + the nearest-ore/blacklist state.
   ⬜ STILL OPEN (follow-ups, not blockers): **exponential blacklist backoff** (a persistently building-
   walled field un-blacklists every 15s and gets re-poked — give repeat failures a longer TTL);
-  **harvesters blocked by units / AI building on its own ore** (#5 — give-way for a stopped harvester);
   **threat-aware selection** (don't route through enemy fire).
+- **⏭️ NEXT HARVESTER PIECE — #5 harvesters pinned by infantry (root cause found 2026-06-18, not yet
+  built).** Live repro: 2–3 orange harvesters wedged bottom-right; the log shows e.g. harvester at
+  (120,95) wanting ore at (120,89) **6 cells straight north** but A* only finds a **24–28 cell detour**
+  (infantry blocking the short route in a terrain-constrained spot), so it stalls, the backstop
+  blacklists, it re-picks the next field, fails, re-blacklists — ping-ponging between two fields it can't
+  reach. **Why give-way doesn't save it:** `DriveClass::Infantry_Give_Way` (drive.cpp:1456) only fires in
+  a 1-wide **terrain** chokepoint (the `narrow` test) AND bails on `!Target_Legal(NavCom)` — which is the
+  exact state after the backstop drops the target. So an open-ish-field infantry pin never triggers it.
+  **PLANNED FIX:** hook the harvester's own no-progress detector — in the stalled-but-A*-reachable branch
+  (the `HarvReachableResets` path in `UnitClass::AI`), actively `Scatter(here, forced, nokidding)` idle
+  **friendly** infantry occupying the next few cells along the path (reuse the give-way drain loop, drop
+  the chokepoint `narrow` gate; scoped to actually-stuck harvesters). ⚠ Confirm first the blockers are
+  friendly idle infantry (the AI parking guards on its own ore), not enemy/terrain — needs an eyes-on
+  screenshot next session (game was quit before one was captured).
 - **(earlier) ROOT CAUSE FOUND + partial fix for the walled-field loop (2026-06-16):** the autonomous scan
   `UnitClass::Tiberium_Check` (unit.cpp:2519) ALREADY zone-filters (`Map[Coord].Zones[MZone] !=
   Map[center].Zones[MZone] → 0`), so `Goto_Tiberium` correctly finds "no reachable tiberium" when the
