@@ -4,6 +4,89 @@ Resume point for the harvester economy workstream. Canonical design = `harvester
 (read it first; it has the governing rule + all four refinery pairings). This file is the live status +
 exact next steps.
 
+---
+
+## ⭐ RESUME HERE — 2026-06-18 session: traffic / recovery / economy pass (COMMITTED, v3.0-gated)
+
+Big session on the *vanilla* harvester-stuck problem (Luke: "harvesters getting stuck is just
+embarrassing"). All committed on `main` (local, unreleased — still ships together as v3.0). Built +
+soak-tested live on the **Linux desktop** prefix; diagnostics in `tf_astar.log` (TF_DEV).
+
+### What SHIPPED this session (commits, newest last)
+- `525910b` **Anti-stuck watchdog + blacklist-retry + field-richness gate.**
+  - **Field-richness gate** (`Goto_Tiberium`): a field must hold ≥ half a harvester load to be
+    preferred over a closer one, else a lone regrown block lures a harvester off a full field. Tier-2
+    fallback = richest *reachable* field (never a lone block over a fuller one). `Field_Tiberium_Value`
+    flood-sums field worth (early-exit at cap). Dial = `HARV_FIELD_LOAD_DIVISOR` (2 = half load).
+  - **`Drain_Infantry_Along`**: extracted the per-tick infantry-shove core out of `Infantry_Give_Way`
+    into a shared `DriveClass` helper (`corridor_only` flag preserves give-way behaviour).
+- `2d46def` **Watchdog rework + Layer B (harvester-only dock cell).**
+  - **Watchdog** (`UnitClass::AI`): position-stagnation detector, runs in ANY mission so a harvester
+    that GAVE UP (dropped to GUARD/HUNT — "stopped, not blocked, not restarting") is recovered. Only a
+    **HUMAN** player's manual park (MOVE/GUARD/GUARD_AREA/STICKY) is exempt; AI harvesters always
+    recover. Escalation: **3s** shove infantry (`Path[0]` dir, off-axis safe) → **6s** `Try_Deadlock_Scatter`
+    (physically displace a wedge) → **12s** hard restart (drop radio, clear targets, `Status=LOOKING`).
+    **Removed the blacklist-on-restart** (it poisoned good fields when a harvester was *physically*
+    wedged → `blskips=151` churn). Field-blacklisting is owned solely by the ore-pursuit detector
+    (Detector 1, real A* reachability). Validated: blacklist events **83 → 4**, no loops, recovers
+    ENTER/MOVE/HARVEST wedges.
+  - **Layer B** (`Is_Refinery_Dock_Cell` in building.cpp; `UnitClass`/`InfantryClass::Can_Enter_Cell`):
+    a refinery's dock pad is **harvester-only**. Pad = DIR_S of a `STRUCT_REFINERY` centre / DIR_SW of a
+    `STRUCT_TDPROC` centre (pure geometry, no new state). Non-harvesters can't path onto it, so the AI
+    can't park a guard/tank on the dock and block unloading. Both `UNIT_HARVESTER` + `UNIT_TDHARV` exempt.
+- `49f8157` **Dock staging**: both FINDHOME staging calls pass the harvester's heap `ID` as
+  `Nearby_Location`'s `locationmod`, so queued harvesters fan out across distinct nearby cells instead
+  of all piling onto `topten[Frame % count]`.
+
+### v3.0 harvester items — STATUS (Luke: "3.0 encompasses all of them")
+| Item | State |
+|---|---|
+| Field selection by travel distance + richness gate | ✅ `525910b` |
+| Universal idle/give-up rescan (#6) | ✅ watchdog `2d46def` |
+| Infantry never block harvesters (#5) | ✅ give-way + watchdog shove |
+| Dock contention | ✅ Layer A restart + Layer B pad + staging `49f8157` |
+| **Dock-time dial (halve?)** | ⏸ RESOLVED = **keep TD-matched** for now; 1-line re-tune if soak shows economy drags (`DOCK_DUMP_RATE 3→2` + `TD_DOCK_OFFLOAD_DELAY`, unit.cpp ~3430/3505). Luke's call from soak. |
+| **Threat-aware field selection** | ⬜ **NOT BUILT — START HERE NEXT.** See blocker below. |
+| Genuine AI box-in (turret traps own harvester) | ⛔ OUT OF SCOPE — AI *placement* problem, not harvester logic. Watchdog keeps trying harmlessly; frees it if the trap opens. |
+
+### ⭐ NEXT: threat-aware field selection — DESIGN BLOCKER FOUND
+Goal: don't route a harvester to/through enemy-threatened ore. **Blocker discovered 2026-06-18:** the
+engine's region-threat system (`MapClass::Cell_Threat` → `HouseClass::Regions[].Threat_Value`) is
+populated only via `ObjectClass::Mark` at **`object.cpp:1859`, which is gated on
+`Session.Type == GAME_NORMAL`** (campaign). So in **skirmish the threat map is never filled** →
+`Cell_Threat` returns ~0/1 everywhere → a `Cell_Threat`-based penalty would be **inert in skirmish**
+(same class of GAME_NORMAL-gating as the flat-difficulty issue [[project-skirmish-difficulty-flat]]).
+**Plan for next session:** build threat-aware on a **custom enemy-proximity scan** instead — for each
+candidate field, scan a bounded radius (or walk enemy houses' Units/Infantry heaps) for enemy combat
+technos within N cells; treat the field as threatened and add a tunable penalty to its effective A*
+cost in `Goto_Tiberium`'s candidate loop (mirror the richness two-tier: prefer un-threatened, fall back
+if all threatened). Bounded + only on the infrequent field rescan. Ship a TF_DEV diagnostic logging the
+threat verdict per candidate to tune the radius/penalty. (Do NOT build on `Cell_Threat`.)
+
+### Build / deploy / soak workflow (unchanged, this machine)
+```
+CMAKE_TOOLCHAIN_FILE=cmake/i686-mingw-w64-toolchain.cmake VC_CXX_FLAGS="-w;-fpermissive" \
+  cmake --workflow --preset remaster
+pgrep -x -i RedAlert >/dev/null || cp build/remaster/Vanilla_RA/Data/RedAlert.dll \
+  ~/.steam/steam/steamapps/compatdata/1213210/pfx/drive_c/users/steamuser/Documents/CnCRemastered/Mods/Red_Alert/Vanilla_RA/Data/RedAlert.dll
+```
+Diagnostics: `…/CnCRemastered/tf_astar.log`. Watchdog logs `HARV-UNSTICK: … mission=N wedged Ns`;
+field picks log `HARV-FIELD … richthresh= tier= … field= RICH`; blacklist `HARV-BLACKLIST`. A new
+skirmish is required to load a freshly-deployed DLL (running game keeps the mapped DLL).
+
+### Key learnings (carry forward)
+- **Two complementary detectors, don't let them fight.** Detector 1 (ore no-progress, unit.cpp ~501)
+  owns field-blacklisting via A* reachability. Detector 2 (position watchdog) owns *physical* un-sticking
+  + idle-restart and must **not** blacklist (it can't tell "field unreachable" from "harvester wedged").
+- **Most harvester "stuck" on these maps = terrain** (cliff/water-separated ore + narrow gaps), not
+  infantry (a 91-event sample: terrain/buildings dominated, ally-infantry pins ≈ 0). The 2026-06-17
+  "scatter idle friendly infantry" hypothesis was wrong for the real maps.
+- **A* (`MOVE_MOVING_BLOCK`) can report a short path the harvester can't physically thread** (through a
+  packed base / building maze). That's why field pick by A* distance alone wedges; the watchdog +
+  blacklist-retry is the recovery, not a smarter pick.
+- **GAME_NORMAL gating bites again** — verify any engine subsystem is actually live in skirmish before
+  building on it (threat map; cf. flat difficulty).
+
 ## Release gating (unchanged)
 No more releases until the WHOLE harvester workstream is done → it all ships as **v3.0**
 (`version_high=3`). Local stays on the 2.4.x dev bump. No interim Workshop pushes.

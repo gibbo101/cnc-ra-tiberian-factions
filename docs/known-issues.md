@@ -98,20 +98,25 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
   ⬜ STILL OPEN (follow-ups, not blockers): **exponential blacklist backoff** (a persistently building-
   walled field un-blacklists every 15s and gets re-poked — give repeat failures a longer TTL);
   **threat-aware selection** (don't route through enemy fire).
-- **⏭️ NEXT HARVESTER PIECE — #5 harvesters pinned by infantry (root cause found 2026-06-18, not yet
-  built).** Live repro: 2–3 orange harvesters wedged bottom-right; the log shows e.g. harvester at
-  (120,95) wanting ore at (120,89) **6 cells straight north** but A* only finds a **24–28 cell detour**
-  (infantry blocking the short route in a terrain-constrained spot), so it stalls, the backstop
-  blacklists, it re-picks the next field, fails, re-blacklists — ping-ponging between two fields it can't
-  reach. **Why give-way doesn't save it:** `DriveClass::Infantry_Give_Way` (drive.cpp:1456) only fires in
-  a 1-wide **terrain** chokepoint (the `narrow` test) AND bails on `!Target_Legal(NavCom)` — which is the
-  exact state after the backstop drops the target. So an open-ish-field infantry pin never triggers it.
-  **PLANNED FIX:** hook the harvester's own no-progress detector — in the stalled-but-A*-reachable branch
-  (the `HarvReachableResets` path in `UnitClass::AI`), actively `Scatter(here, forced, nokidding)` idle
-  **friendly** infantry occupying the next few cells along the path (reuse the give-way drain loop, drop
-  the chokepoint `narrow` gate; scoped to actually-stuck harvesters). ⚠ Confirm first the blockers are
-  friendly idle infantry (the AI parking guards on its own ore), not enemy/terrain — needs an eyes-on
-  screenshot next session (game was quit before one was captured).
+- **✅ ADDRESSED 2026-06-18 — harvester stuck/idle recovery + dock contention (#5, #6, dock).** Shipped
+  (committed, v3.0-gated): `525910b`/`2d46def`/`49f8157`. See `harvester-docking-session-handover.md`
+  (⭐ 2026-06-18 section) for the full write-up. Summary:
+  - **Anti-stuck watchdog** (`UnitClass::AI`, position-stagnation, any mission): recovers wedged AND
+    gave-up/idle harvesters (3s shove infantry → 6s `Try_Deadlock_Scatter` → 12s restart). Exempts only a
+    HUMAN's manual MOVE/GUARD park. **Field-blacklisting stays owned by the ore-pursuit detector** (the
+    watchdog must NOT blacklist — it can't tell "field walled" from "harvester wedged"; that poisoned
+    good fields, `blskips=151`). Validated 83→4 blacklists, no loops.
+  - **Field-richness gate** (`Goto_Tiberium`): prefer a field with ≥ half a load over a closer lone
+    regrown block; tier-2 fallback = richest reachable. `Field_Tiberium_Value` + `HARV_FIELD_LOAD_DIVISOR`.
+  - **Layer B harvester-only dock pad** + **dock staging** (per-harvester `Nearby_Location` locationmod).
+  - **Corrected belief:** on the real maps the dominant "stuck" cause is **terrain** (cliff/water-split
+    ore + narrow gaps) and **the AI walling its own ore/harvester with buildings**, NOT idle infantry
+    (the 2026-06-17 "scatter friendly infantry" hypothesis was wrong — a 91-event sample was
+    terrain/building-dominated, ally-infantry pins ≈ 0). A genuinely AI-box-in harvester (turret placed
+    trapping it against the refinery+water) is OUT OF SCOPE — an AI placement problem.
+  ⬜ STILL OPEN: **threat-aware field selection** (don't route through enemy fire). ⚠ BLOCKER: the engine
+  region-threat map (`Cell_Threat`) is `Session.Type==GAME_NORMAL`-gated (`object.cpp:1859`) so it is
+  INERT in skirmish — must build on a custom enemy-proximity scan instead. Design in the handover doc.
 - **(earlier) ROOT CAUSE FOUND + partial fix for the walled-field loop (2026-06-16):** the autonomous scan
   `UnitClass::Tiberium_Check` (unit.cpp:2519) ALREADY zone-filters (`Map[Coord].Zones[MZone] !=
   Map[center].Zones[MZone] → 0`), so `Goto_Tiberium` correctly finds "no reachable tiberium" when the
