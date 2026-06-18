@@ -256,7 +256,7 @@ public:
     **	TF: harvester QoL (ported from CFE Patch Redux, GPL v3).
     */
     BuildingClass* Tiberium_Unload_Refinery(void) const;
-    void ReconsiderRefinery(void);
+    void ReconsiderRefinery(BuildingClass* freed = NULL);
 
     /*
     **	TF: smarter repair bay (ported from CFE Patch Redux, GPL v3) —

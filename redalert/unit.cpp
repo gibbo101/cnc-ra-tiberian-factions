@@ -5862,13 +5862,44 @@ BuildingClass* UnitClass::Tiberium_Unload_Refinery(void) const
  *    destination already assigned) drop their plan and re-run refinery selection              *
  *    next tick, so the freed dock gets considered.                                            *
  *=============================================================================================*/
-void UnitClass::ReconsiderRefinery(void)
+void UnitClass::ReconsiderRefinery(BuildingClass* freed)
 {
     if (Target_Legal(NavCom) && TiberiumUnloadRefinery != TARGET_NONE && Mission == MISSION_HARVEST
         && Status == 2 /* FINDHOME in Mission_Harvest's local enum */) {
+#if TF_DEV_BUILD
+        // Queue-bail confirm line. `oldref` = the refinery this queued harvester was
+        // headed to; `freed` = the dock that just opened (the trigger). After dropping
+        // the plan, Find_Best_Refinery() (read-only) reports what it WILL re-home to next
+        // tick -- if that is now the freed dock, the harvester bailed its queue for the
+        // opening, which is the behaviour we're confirming. Cost is paid only here (a
+        // queued harvester at the instant a dock frees) and only in TF_DEV builds.
+        BuildingClass* oldref = Tiberium_Unload_Refinery();
+#endif
         Assign_Destination(TARGET_NONE);
         Assign_Target(TARGET_NONE);
         TiberiumUnloadRefinery = TARGET_NONE;
+#if TF_DEV_BUILD
+        {
+            FILE* lf = TF_Harv_Logfile();
+            if (lf != NULL) {
+                CELL me = Coord_Cell(Center_Coord());
+                BuildingClass* now = Find_Best_Refinery();
+                bool bailed = (now != NULL && freed != NULL && now == freed && now != oldref);
+                fprintf(lf,
+                        "HARV-REBAIL: harvester #%d at (%d,%d) -- dock freed at (%d,%d); was->(%d,%d) "
+                        "now best->(%d,%d) %s\n",
+                        ID, Cell_X(me), Cell_Y(me),
+                        freed ? Cell_X(Coord_Cell(freed->Center_Coord())) : -1,
+                        freed ? Cell_Y(Coord_Cell(freed->Center_Coord())) : -1,
+                        oldref ? Cell_X(Coord_Cell(oldref->Center_Coord())) : -1,
+                        oldref ? Cell_Y(Coord_Cell(oldref->Center_Coord())) : -1,
+                        now ? Cell_X(Coord_Cell(now->Center_Coord())) : -1,
+                        now ? Cell_Y(Coord_Cell(now->Center_Coord())) : -1,
+                        bailed ? "[BAILED to freed dock]" : (now == oldref ? "[stayed]" : "[switched]"));
+                fflush(lf);
+            }
+        }
+#endif
     }
 }
 

@@ -576,7 +576,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                     UnitClass* unit = Units.Ptr(i);
                     if (unit != NULL && unit->IsActive && !unit->IsInLimbo && unit->Class->IsToHarvest
                         && unit->House == House) {
-                        unit->ReconsiderRefinery();
+                        unit->ReconsiderRefinery(this); // pass the freed dock for the TF_DEV confirm log
                     }
                 }
             }
