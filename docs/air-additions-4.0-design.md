@@ -5,6 +5,53 @@ additions"** milestone (companion to `navy-4.0-design.md` and the air-balance pl
 `balance-deep-dive.md`). Two air additions that share one mechanism (the Airfield) and resolve
 cleanly via owner-gating.
 
+---
+
+## ⭐ IMPLEMENTATION STATUS (2026-06-19) — A-10 engine side DONE, art PENDING
+
+The **GDI A-10 is implemented engine-side and compiles clean** (built `-fpermissive`, exit 0,
+uncommitted on `main`). Done as its own `AIRCRAFT_TDA10` type (Luke's rule: a TD unit must be its
+own engine type, never an RA plane reskinned):
+
+- **`redalert/defines.h`** — `AIRCRAFT_TDA10` enum slot (after `AIRCRAFT_TDORCA`) + `AIRCRAFTF_TDA10`.
+- **`redalert/aadata.cpp`** — `TdA10` ctor (fixed-wing, `STRUCT_AIRSTRIP` landing, Rotation=32,
+  template = Yak/Mig); `new AircraftTypeClass(TdA10)` appended to `Init_Heap` (after `TdOrca`, slot
+  order locked); One_Time donor block (ImageData/CameoData fallback = `AIRCRAFT_BADGER`, the
+  fixed-wing NULL-guard, mirrors TDCargoPlane).
+- **`rules.ini`** — `[TDA10]` unit (Str 60 / Cost 800 / light / Speed 16 / ROT 5 / Ammo 3 /
+  Owner=GoodGuy / Prerequisite=afld) + `[TDA10Napalm]` weapon (WARHEAD_TDFIRE + Anim=NAPALM2,
+  modeled on RA `[Napalm]` cadence). **`[AFLD]` Owner opened to `soviet,GoodGuy`** (Yak/Mig stay
+  soviet-only; A-10 is GoodGuy-only). GDI reaches AFLD via the `dome`→TDHQ prereq equivalence.
+- **Prereq verified:** `STRUCT_AIRSTRIP` is NOT remapped in `house.cpp` Can_Build, so GDI's
+  `Prerequisite=afld` is satisfied directly by the owner-opened RA AFLD. TDAFLD (Nod, `STRUCT_TDAFLD`)
+  is a distinct struct — no collision.
+
+**✅ HD art + sidebar cameo — DONE (the "96-frame, no donor" blocker was a miscount).** The A-10 is
+**32 frames** (`A10.ZIP` in the vanilla `TEXTURES_TD_SRGB.MEG`), not 96. Bundled with the standard
+pipeline — the `--tileset-donor` is purely structural (any block with ≥ the ZIP's frame count, sliced
+by `--frame-count`; TDORCA was itself a sliced 2TNK):
+```
+scripts/bundle_unit.py A10 TDA10 --tileset-donor 2TNK \
+  --build-icon BuildIcon_TD_Orca --text-name TEXT_UNIT_TITLE_GDI_ORCA --text-desc TEXT_UNIT_DESC_GDI_ORCA
+```
+→ `TDA10.ZIP` (32 frames) + 32 `<TDA10>` tiles in `RA_UNITS.XML` + `RA_TDA10` in `RABUILDABLES.XML`.
+Both XMLs validated well-formed. Classic-SHP `build_tfassets` step skipped (classic unsupported v2.0+);
+HD-only via the One_Time BADGER donor + the bundled tileset.
+
+**Cosmetic follow-ups (non-blocking):**
+- **Cameo = `BuildIcon_TD_Orca` (placeholder)** — no dedicated A-10 cameo exists in the launcher PAK
+  (TD's A-10 wasn't buildable). Reused the nearest GDI aircraft icon; swap if a better one is made.
+- **Sidebar/encyclopedia text = the Orca's IDs (placeholder)** — the in-game unit name is correct via
+  rules.ini `Name=A-10 Warthog`; the launcher tooltip text needs a CONFIG.MEG MASTERTEXTFILE entry
+  for a proper "A-10" label (same recipe as faction-select-identity.md).
+- **Weapon flag:** `[TDA10Napalm]` uses `Projectile=Bomblet` (RA's falling bomb) — the one
+  RA-borrowed sub-component, since no TD napalm-BOMB bullet is ported (TDMissile is a horizontal
+  rocket). Warhead is TD (TDFIRE). Swap to a ported TD napalm bomblet if preferred.
+
+**A-10 = engine + art COMPLETE. Ready for the Deck test.**
+
+---
+
 **Divergence note:** TD's A-10 was a scripted *airstrike support power* (unbuildable, unlocked when
 all enemy SAMs died). We deliberately diverge — like Dawn of the Tiberium Age (DTA), GDI builds the
 A-10 as a real aircraft from an airfield. "We're at the point where we diverge and do what feels

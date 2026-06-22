@@ -874,7 +874,10 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     bool log_einf = (type->What_Am_I() == RTTI_INFANTRYTYPE
                      && type->IniName[0] == 'E'
                      && type->IniName[1] >= '0' && type->IniName[1] <= '9');
-    if (log_td || log_einf) {
+    // v4.0 navy/air debug: also log ALL vessels + aircraft (so we see why GDI/Nod get the RA
+    // rosters from owner-opened SYRD/SPEN/AFLD but not the TD ships/A-10).
+    bool log_navair = (type->What_Am_I() == RTTI_VESSELTYPE || type->What_Am_I() == RTTI_AIRCRAFTTYPE);
+    if (log_td || log_einf || log_navair) {
         static FILE* s_can_build_log = NULL;
         static int s_log_count = 0;
         if (s_log_count < 400) {
@@ -1041,6 +1044,23 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             static int tdeye_type  = -2;
             static int tdtmpl_type = -2;
             static int tdfix_type  = -2;
+            static int tdnuke_type = -2;
+            static int tdnuk2_type = -2;
+            static int tdgyard_type = -2;
+            static int tdnpen_type = -2;
+            static int tdgafld_type = -2;
+            if (tdgyard_type == -2) {
+                BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDGYARD");
+                tdgyard_type = p ? p->Type : -1;
+            }
+            if (tdnpen_type == -2) {
+                BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDNPEN");
+                tdnpen_type = p ? p->Type : -1;
+            }
+            if (tdgafld_type == -2) {
+                BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDGAFLD");
+                tdgafld_type = p ? p->Type : -1;
+            }
             if (tdpyle_type == -2) {
                 BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDPYLE");
                 tdpyle_type = p ? p->Type : -1;
@@ -1080,6 +1100,14 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             if (tdfix_type == -2) {
                 BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDFIX");
                 tdfix_type = p ? p->Type : -1;
+            }
+            if (tdnuke_type == -2) {
+                BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDNUKE");
+                tdnuke_type = p ? p->Type : -1;
+            }
+            if (tdnuk2_type == -2) {
+                BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDNUK2");
+                tdnuk2_type = p ? p->Type : -1;
             }
             if (t == STRUCT_TENT && tdpyle_type >= 0 && Has_Building_Active(tdpyle_type))
                 continue;
@@ -1146,6 +1174,25 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                 if (tdfix_type >= 0 && Has_Building_Active(tdfix_type))
                     continue;
             }
+            // STRUCT_POWER — satisfied by the TD power plants (TDNUKE / TDNUK2). GDI/Nod never build
+            // RA's POWR/APWR (those are allies,soviet), so RA structures keyed to Prerequisite=powr —
+            // e.g. the owner-opened Allied Shipyard (SYRD) for the GDI Gunboat — would otherwise be
+            // unbuildable for GDI. v4.0.
+            if (t == STRUCT_POWER) {
+                if (tdnuke_type >= 0 && Has_Building_Active(tdnuke_type))
+                    continue;
+                if (tdnuk2_type >= 0 && Has_Building_Active(tdnuk2_type))
+                    continue;
+            }
+            // v4.0 separated naval/air production buildings satisfy the RA-token prereqs of the
+            // units they build: syrd->TDGYARD (GDI Gunboat/Hovercraft), spen->TDNPEN (Nod subs/
+            // Hovercraft), afld->TDGAFLD (GDI A-10). Same pattern as hpad->TDHPAD etc.
+            if (t == STRUCT_SHIP_YARD && tdgyard_type >= 0 && Has_Building_Active(tdgyard_type))
+                continue;
+            if (t == STRUCT_SUB_PEN && tdnpen_type >= 0 && Has_Building_Active(tdnpen_type))
+                continue;
+            if (t == STRUCT_AIRSTRIP && tdgafld_type >= 0 && Has_Building_Active(tdgafld_type))
+                continue;
         }
         return (false);
     }
@@ -9046,7 +9093,7 @@ void HouseClass::Check_Pertinent_Structures(void)
             if (!b->Class->IsWall && *b != STRUCT_APMINE && *b != STRUCT_AVMINE) {
                 if (!Special.ModernBalance
                     || (*b != STRUCT_SHIP_YARD && *b != STRUCT_FAKE_YARD && *b != STRUCT_SUB_PEN
-                        && *b != STRUCT_FAKE_PEN)) {
+                        && *b != STRUCT_FAKE_PEN && *b != STRUCT_TDGYARD && *b != STRUCT_TDNPEN)) {
                     if (!b->IsInLimbo && b->Strength > 0) {
                         any_good_buildings = true;
                         break;

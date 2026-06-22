@@ -1728,4 +1728,94 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<ObjectTypeClass Name="RA_TDA10" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_ORCA</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_ORCA</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_Orca</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDBOAT" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_PT</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_PT</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Gunboat</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDLST" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_LST</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_LST</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Transport</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDOBLISUB" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_SS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_SS</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Submarine</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDGYARD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_SYRD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SYRD_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_NavalYard</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDNPEN" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_RA_SPEN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SPEN_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_SubPen</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDGAFLD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_NOD_AIRFIELD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_NOD_AIRFIELD</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_Airstrip</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDNSUB" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_SS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_SS</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Submarine</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<!-- v4.0 GDI surface fleet (separated clones of the Allied PT/DD/CA). Reuse the RA cameos
+	     until item 4 renders bespoke GDI ship cameos. See docs/naval-art-3d-pipeline-handover.md. -->
+	<ObjectTypeClass Name="RA_TDPT" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_PT</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_PT</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Gunboat</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDDD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_DD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_DD</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Destroyer</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDCA" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_CA</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CA</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_Cruiser</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 </ObjectTypeList>

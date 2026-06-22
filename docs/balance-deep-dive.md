@@ -4,7 +4,16 @@
 (`resources/remaster_mods/Vanilla_RA/CCDATA/rules.ini`). **No changes applied
 yet** — this is the data + analysis + proposed plan for the v1.x balance pass.
 
-This document is the analytical companion to `balance-v1-notes.md` (the running
+> **⭐ v4.0 BALANCE PASS APPLIED 2026-06-19 (uncommitted on `main`, DLL built clean).**
+> All locked v4.0 tweaks are now in `rules.ini` (+ one DLL change for F8):
+> **F6** TDORCA+TDHELI `Cost 1200→950`; **F7** Nod SAM `TDNike ROF 50→20`;
+> **F8** new `WARHEAD_TDAGT` (TDHE clone, vs-heavy 25→50) in `defines.h`+`rules.cpp`+`[TDAGT]`,
+> `TDTowTwo` repointed (AGT-only, no collateral); **F3** `TD75mm ROF 60→40`;
+> **F1** GDI Mammoth `Speed 5→4` (Cost kept 1500); GDI APC `Speed 10→8` (Cost kept 700);
+> Minigunner `TDM16 Range 2→3` + `TDE1 Speed 3→4`; Nod Turret `TDTurretGun ROF 60→50`.
+> All target weapons are single-user (zero collateral). Needs playtest to confirm magnitudes.
+>
+> This document is the analytical companion to `balance-v1-notes.md` (the running
 playtest-report log) and operationalises the deferred-balance backlog captured
 in `[[project-balance-deferred-to-v1]]`. Read both before touching a stat.
 

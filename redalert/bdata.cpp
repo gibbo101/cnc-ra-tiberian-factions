@@ -1723,6 +1723,58 @@ static BuildingTypeClass const ClassAirStrip(STRUCT_AIRSTRIP,
                                              (short const*)NULL    // OVERLAPLIST:List of overlap cell offset.
 );
 
+// v4.0 separated faction naval/air production buildings. Clones of the RA SYRD/SPEN/AFLD (same
+// stats + foundation), but OWN STRUCT types so each yields only its faction's roster (the proven
+// TDHPAD pattern) and gives clean capture semantics. Art = independent TD-prefixed copies of the RA
+// sprites (scripts/bundle_ra_building.py); faction-logo reskins later. Owner set in rules.ini.
+// GDI Naval Yard (clone of ClassShipYard).
+static BuildingTypeClass const ClassTdGYard(
+    STRUCT_TDGYARD,
+    TXT_SHIP_YARD, // placeholder name (rules.ini Name= overrides).
+    "TDGYARD",     // IniName (also the Graphic_Name -> loads TDGYARD.SHP/.ZIP, its own art).
+    FACING_NONE,
+    XYP_COORD(22 + (CELL_PIXEL_W / 2), ((CELL_PIXEL_H * 2) - (CELL_PIXEL_H / 2))),
+    REMAP_ALTERNATE,
+    0x0000, 0x0000, 0x0000,
+    false, false, false, false, false, false,
+    true, true, false, false, false, true,
+    RTTI_VESSELTYPE,
+    DIR_N, BSIZE_33,
+    NULL,
+    (short const*)ListSPen, (short const*)OListSPen);
+
+// Nod Sub Pen (clone of ClassSubPen).
+static BuildingTypeClass const ClassTdNPen(
+    STRUCT_TDNPEN,
+    TXT_SUB_PEN,
+    "TDNPEN",
+    FACING_NONE,
+    XYP_COORD(22 + (CELL_PIXEL_W / 2), ((CELL_PIXEL_H * 2) - (CELL_PIXEL_H / 2))),
+    REMAP_ALTERNATE,
+    0x0000, 0x0000, 0x0000,
+    false, false, false, false, false, false,
+    true, true, false, false, false, true,
+    RTTI_VESSELTYPE,
+    DIR_N, BSIZE_33,
+    (short const*)ExitSub,
+    (short const*)ListSPen, (short const*)OListSPen);
+
+// GDI Airfield (clone of ClassAirStrip).
+static BuildingTypeClass const ClassTdGAfld(
+    STRUCT_TDGAFLD,
+    TXT_AIRSTRIP,
+    "TDGAFLD",
+    FACING_S,
+    XYP_COORD(0, 0),
+    REMAP_ALTERNATE,
+    0x0000, 0x0000, 0x0000,
+    false, true, false, false, false, false,
+    true, true, false, false, false, true,
+    RTTI_AIRCRAFTTYPE,
+    DIR_N, BSIZE_32,
+    NULL,
+    (short const*)List32, (short const*)NULL);
+
 static BuildingTypeClass const ClassPower(STRUCT_POWER,
                                           TXT_POWER,       // NAME:			Short name of the structure.
                                           "POWR",          // NAME:			Short name of the structure.
@@ -3831,6 +3883,9 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdEye);   // STRUCT_TDEYE   (Advanced Communications Center)
     new BuildingTypeClass(ClassTdTmpl);  // STRUCT_TDTMPL  (Temple of Nod)
     new BuildingTypeClass(ClassTdBlossom); // STRUCT_TDBLOSSOM (blossom tree as a building)
+    new BuildingTypeClass(ClassTdGYard);   // STRUCT_TDGYARD  (GDI Naval Yard)   — enum order
+    new BuildingTypeClass(ClassTdNPen);    // STRUCT_TDNPEN   (Nod Sub Pen)
+    new BuildingTypeClass(ClassTdGAfld);   // STRUCT_TDGAFLD  (GDI Airfield)
 }
 
 /***********************************************************************************************
@@ -3956,6 +4011,17 @@ void BuildingTypeClass::One_Time(void)
         // tiberiandawn/bdata.cpp:3808 + :3815.
         {STRUCT_TDTMPL, BSTATE_IDLE, 0, 1, 0},
         {STRUCT_TDTMPL, BSTATE_ACTIVE, 0, 5, 1},
+        // v4.0 — GDI Airfield (clone of RA AFLD art, 16-frame rotating radar
+        // dish). Mirror STRUCT_AIRSTRIP exactly so it animates identically to
+        // the RA airfield. STRUCT_SHIP_YARD / STRUCT_SUB_PEN have NO _anims
+        // entries in RA (2-frame static buildings: healthy + damaged), so the
+        // GDI Shipyard (TDGYARD) and Nod Sub Pen (TDNPEN) correctly stay static
+        // — there is no RA animation to clone for those two.
+        {STRUCT_TDGAFLD, BSTATE_IDLE, 0, 0, 0},
+        {STRUCT_TDGAFLD, BSTATE_AUX1, 0, 8, 3},
+#ifdef REMASTER_BUILD
+        {STRUCT_TDGAFLD, BSTATE_IDLE, 0, 8, 3},
+#endif
     };
 
     for (int sindex = STRUCT_FIRST; sindex < STRUCT_COUNT; sindex++) {
@@ -4113,6 +4179,42 @@ void BuildingTypeClass::One_Time(void)
                     buildup_before, building.BuildupData, building.Graphic_Name(),
                     cameo_before, building.CameoData);
             fflush(mod_log);
+        }
+    }
+
+    // v4.0 separated naval/air buildings (TDGYARD/TDNPEN/TDGAFLD): no classic TD*.SHP is shipped
+    // (HD-only, rendered from the bundled TD* tilesets), so the MFCD::Retrieve calls above returned
+    // NULL -> donor the RA building's ImageData/BuildupData/CameoData as the Draw_It NULL-guard.
+    {
+        static const struct { StructType td; StructType ra; } _td_bdonors[] = {
+            {STRUCT_TDGYARD, STRUCT_SHIP_YARD},
+            {STRUCT_TDNPEN, STRUCT_SUB_PEN},
+            {STRUCT_TDGAFLD, STRUCT_AIRSTRIP},
+        };
+        for (int di = 0; di < (int)(sizeof(_td_bdonors) / sizeof(_td_bdonors[0])); di++) {
+            BuildingTypeClass& b = As_Reference(_td_bdonors[di].td);
+            BuildingTypeClass const& d = As_Reference(_td_bdonors[di].ra);
+            if (b.ImageData == NULL)
+                ((void const*&)b.ImageData) = d.ImageData;
+            if (b.BuildupData == NULL)
+                ((void const*&)b.BuildupData) = d.BuildupData;
+            if (b.CameoData == NULL)
+                ((void const*&)b.CameoData) = d.CameoData;
+
+            // Buildup (construction-placement) animation. The STRUCT_FIRST..
+            // STRUCT_COUNT loop above only calls Init_Anim(BSTATE_CONSTRUCTION)
+            // when "<TDname>MAKE.SHP" resolves in the mixfiles — but these
+            // buildings have no classic TD*MAKE.SHP (HD-only, rendered from the
+            // bundled TD*MAKE tileset by IniName). So that loop left their
+            // Anims[BSTATE_CONSTRUCTION] at {0,0,0}, which makes the building
+            // pop in with NO assembly animation on placement. The donor's
+            // construction anim was loaded from its own (identical, cloned)
+            // MAKE art, so copy it across — the launcher then cycles the
+            // TD*MAKE-#### TGA frames as the building assembles.
+            b.Init_Anim(BSTATE_CONSTRUCTION,
+                        d.Anims[BSTATE_CONSTRUCTION].Start,
+                        d.Anims[BSTATE_CONSTRUCTION].Count,
+                        d.Anims[BSTATE_CONSTRUCTION].Rate);
         }
     }
 

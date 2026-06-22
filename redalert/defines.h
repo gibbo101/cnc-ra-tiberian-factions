@@ -1536,6 +1536,12 @@ typedef enum StructType : char
     STRUCT_TDEYE,
     STRUCT_TDTMPL,
     STRUCT_TDBLOSSOM, // TD blossom tree rendered as a building (terrain can't take custom HD art). Neutral, unselectable, invulnerable, seeds Tiberium. bdata.cpp.
+    // v4.0 separated faction naval/air production buildings (clone RA art via Image=; faction-logo
+    // reskins later). Owner-locked so each yields ONLY its faction roster (the proven TDHPAD pattern,
+    // NOT the owner-open shortcut). See docs/navy-4.0-design.md + docs/air-additions-4.0-design.md.
+    STRUCT_TDGYARD,   // GDI Naval Yard (clone of SYRD, Owner=GoodGuy, RTTI_VESSELTYPE) — Gunboat + Hovercraft.
+    STRUCT_TDNPEN,    // Nod Sub Pen (clone of SPEN, Owner=BadGuy, RTTI_VESSELTYPE) — Submarine + Obelisk Sub + Hovercraft.
+    STRUCT_TDGAFLD,   // GDI Airfield (clone of AFLD, Owner=GoodGuy, RTTI_AIRCRAFTTYPE) — A-10.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0
@@ -1809,6 +1815,18 @@ typedef enum VesselType : char
 #ifdef FIXIT_CARRIER //	checked - ajw 9/28/98
     VESSEL_CARRIER,
 #endif
+    VESSEL_TDGUNBOAT, // v4.0: TD Gunboat (GDI) — own vessel type, TD art (TDBOAT), TD missile (TDTomahawk) + DepthCharge ASW + Sensors. First TD vessel port. vdata.cpp VesselTdGunBoat.
+    VESSEL_TDLST,     // v4.0: TD Hovercraft transport (GDI+Nod shared) — own vessel type, TD art (TDLST), 5 passengers. Modeled on VESSEL_TRANSPORT. vdata.cpp VesselTdLST.
+    VESSEL_TDOBLISUB, // v4.0: Nod Obelisk Attack Sub — own vessel type, cloakable SS-like hull + the TD Obelisk laser. Temple-gated. vdata.cpp VesselTdObeliskSub.
+    VESSEL_TDNSUB,    // v4.0: Nod Submarine — own vessel type (clone of SS; NOT the SS owner-opened), own art copy, Owner=BadGuy. vdata.cpp VesselTdNodSub.
+    // v4.0 GDI surface fleet (turret-test): fully-separated CLONES of the three Allied ships, Owner=GoodGuy,
+    // built from the GDI Naval Yard (TDGYARD via the syrd-> remap). They keep IsTurretEquipped=true so they
+    // render with the native spinning turret (MGUN/SSAM/TURR drawn by name via the launcher — global, not
+    // part of the hull ZIP) — this is the path to a GDI warship whose turret spins + fires from the barrel.
+    // Own copied hull art (TDPT/TDDD/TDCA ZIPs). See docs/naval-art-3d-pipeline-handover.md.
+    VESSEL_TDPT,      // GDI gunboat — clone of RA PT (MGUN turret). vdata.cpp VesselTdPT.
+    VESSEL_TDDD,      // GDI destroyer — clone of RA DD (SSAM turret). vdata.cpp VesselTdDD.
+    VESSEL_TDCA,      // GDI cruiser — clone of RA CA (TURR turret). vdata.cpp VesselTdCA.
 
     VESSEL_COUNT,
     VESSEL_FIRST = 0
@@ -1842,6 +1860,7 @@ typedef enum AircraftType : char
     AIRCRAFT_TDCARGO,   // TD C-17 cargo plane (Nod airstrip vehicle delivery).
     AIRCRAFT_TDAPACHE,  // TD Apache attack helicopter (HELI) — Nod, single rotor, chain gun (TDApacheGun), Ammo 15, helipad-built. aadata.cpp AttackHeli.
     AIRCRAFT_TDORCA,    // TD Orca (ORCA) — GDI, NO rotor (VTOL), DRAGON missiles (TDStnkDragon), Ammo 6, helipad-built. aadata.cpp OrcaHeli.
+    AIRCRAFT_TDA10,     // v4.0: TD A-10 Warthog — GDI, fixed-wing napalm strafer, Ammo 3, airfield-built (AFLD owner-opened). DTA-style divergence (TD's A-10 was a support power). aadata.cpp TdA10.
 
     AIRCRAFT_COUNT,
     AIRCRAFT_NONE = -1,
@@ -1856,6 +1875,7 @@ typedef enum AircraftType : char
 #define AIRCRAFTF_LONGBOW   (1L << AIRCRAFT_LONGBOW)
 #define AIRCRAFTF_HIND      (1L << AIRCRAFT_HIND)
 #define AIRCRAFTF_TDCARGO   (1L << AIRCRAFT_TDCARGO)
+#define AIRCRAFTF_TDA10     (1L << AIRCRAFT_TDA10)
 
 // PG inline AircraftType operator++(AircraftType &, int);
 
@@ -3205,6 +3225,7 @@ typedef enum WarheadType : char
     WARHEAD_TDFIRE, // TD incendiary (WARHEAD_FIRE) — Spread 8, verses {0.88,1.0,0.69,0.25,0.5}, destroys wood+tiberium not wall (Flamethrower).
     WARHEAD_TDCHEM, // TD chem spray — HE damage table (== TDHE) but Explosion=0 (TD ClassChem impact = ANIM_NONE). Separate from TDHE so the grenadier keeps its blast.
     WARHEAD_TDHOLLOW, // TD hollow-point (WARHEAD_HOLLOW_POINT) — Commando sniper. Spread 4, verses {1.0,0.03,0.03,0.03,0.03}: one-shots infantry, ~nil vs armor/buildings.
+    WARHEAD_TDAGT, // v4.0 (F8): AGT-only clone of TDHE with vs-heavy 25%->50%. Fires from TDTowTwo (the GDI Advanced Guard Tower) ONLY, so the AGT gets ~90 DPS vs both helis and tanks without buffing the ~12 other TDHE weapons. See docs/balance-deep-dive.md.
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
@@ -3295,6 +3316,8 @@ typedef enum WeaponType : char
     WEAPON_TDHONESTJOHN,   // TD SSM Launcher (MSAM) — Dmg100/ROF200/Range10, BULLET_TDMISSILE (non-homing), WARHEAD_TDFIRE, Report=ROCKET1. Registered as "TDHonestJohn".
     WEAPON_TD155MM,        // TD Artillery (ARTY) — Dmg150/ROF65/Range6, BULLET_TDHESHELL (arcing), WARHEAD_TDHE, Report=TNKFIRE2, Anim=GUNFIRE. Registered as "TD155mm".
     WEAPON_TDAPACHEGUN,    // TD Apache chain gun (HELI) — TDChainGun + Burst=2 (TD is_twoshooter). Same TDSpreadfire/TDHE/GUN8 chain as TDChainGun; separate so the single-shot GTWR keeps Burst=1.
+    WEAPON_TDTOMAHAWK,     // v4.0: GDI Gunboat primary — TD homing missile (BULLET_TDTOW, AG-only), WARHEAD_TDAP, anti-surface/anti-shore. IsTDPort (raw Speed MPH_ROCKET + AI_TD homing). Registered "TDTomahawk".
+    WEAPON_TDOBELISKSUBLASER, // v4.0: Nod Obelisk Attack Sub — TDLaser bolt (clone of the Obelisk's TDOblsLaser, NO Charges since a vessel can't building-charge), short range + slow ROF + high dmg. Registered "TDObeliskSubLaser".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0

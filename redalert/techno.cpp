@@ -1782,9 +1782,12 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
     ** If we're a sub and the subject is a structure, bail if the structure
     ** is other than a sub pen or shipyard.
     */
-    if (otype == RTTI_BUILDING && What_Am_I() == RTTI_VESSEL && *(VesselClass*)this == VESSEL_SS) {
+    if (otype == RTTI_BUILDING && What_Am_I() == RTTI_VESSEL
+        && (*(VesselClass*)this == VESSEL_SS || *(VesselClass*)this == VESSEL_TDNSUB
+            || *(VesselClass*)this == VESSEL_TDOBLISUB)) {
         StructType ostruc = *(BuildingClass*)object;
-        if (ostruc != STRUCT_SUB_PEN && ostruc != STRUCT_SHIP_YARD) {
+        if (ostruc != STRUCT_SUB_PEN && ostruc != STRUCT_SHIP_YARD && ostruc != STRUCT_TDGYARD
+            && ostruc != STRUCT_TDNPEN) {
             BEnd(BENCH_EVAL_OBJECT);
             return (false);
         }

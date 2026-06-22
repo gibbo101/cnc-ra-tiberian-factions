@@ -4,6 +4,47 @@
 additions"** milestone. Navy is the first addition designed. Balance numbers are deliberately
 provisional — "tweak as we go" once it's in skirmish.
 
+> **⭐ DECISION 2026-06-19 (Luke): RA sub hulls ACCEPTED for Nod.** TD never had any submarine
+> (zero sub art — confirmed: TD-Assets has `TDBOAT`/`TDLST` only, no sub), so Nod's subsurface fleet
+> CANNOT be a TD port. Per [[feedback-ra-only-when-no-alternative]] this is the explicit no-TD-
+> alternative exception: Nod Submarine = the Soviet `SS` owner-opened; Obelisk Attack Sub = the RA
+> `MSUB` hull + the TD Obelisk laser. The GDI surface fleet (`TDBOAT` Gunboat + `TDLST` Hovercraft)
+> ARE genuine TD types (art present). This is the ONE place the "own TD type, never an RA unit dressed
+> up" rule is waived, and only because no TD source exists.
+>
+> **Implementation status (2026-06-19):**
+> - ✅ **(1) GDI Gunboat `VESSEL_TDGUNBOAT` — ENGINE SIDE DONE, compiles clean (art pending).** First
+>   vessel port. `defines.h` VesselType enum + `WEAPON_TDTOMAHAWK`; `vdata.cpp` `VesselTdGunBoat` ctor
+>   (turret, template VesselPTBoat) + Init_Heap (after VesselCarrier) + One_Time donor (VESSEL_PT
+>   NULL-guard); `rules.cpp` registers `TDTomahawk` (IsTDPort); `rules.ini` `[TDBOAT]` (700hp/heavy/
+>   Sensors=Yes, Primary=`[TDTomahawk]` = BULLET_TDTOW AG-only homing missile + WARHEAD_TDAP,
+>   Secondary=`DepthCharge` = the Allied Destroyer's anti-sub weapon, Prereq=syrd, Owner=GoodGuy);
+>   `[SYRD] Owner=allies,GoodGuy`. **`house.cpp` Can_Build: added `powr→TDNUKE/TDNUK2` equivalence** so
+>   GDI (which never builds RA POWR/APWR) can satisfy SYRD's `Prerequisite=powr`. **✅ Art-bundle DONE:**
+>   `bundle_unit.py BOAT TDBOAT --tileset-donor E2 --build-icon BuildIcon_RA_Gunboat ...` → `TDBOAT.ZIP`
+>   (192 frames) + 192 `<TDBOAT>` tiles + `RA_TDBOAT` cameo (validated). Cameo `BuildIcon_RA_Gunboat`
+>   (RA's gunboat icon — good fit); text is a placeholder (proper name via CONFIG.MEG later).
+>   ⚠ **Playtest-tune:** RA vessels are 16-frame tilesets at `Rotation=8`, but TDBOAT is 192 frames —
+>   if facings render wrong, bump the `VesselTdGunBoat` ctor `Rotation` (8→32). **Gunboat = engine +
+>   art COMPLETE, ready for the Deck test.** VesselMax=9999, Weapon=100 (rules.ini Maximums) = room.
+> - ✅ **(2) Hovercraft `VESSEL_TDLST`** — own vessel type (template VesselTransport, rotation 0),
+>   `[TDLST]` (350hp, 5 passengers, Owner=GoodGuy,BadGuy), art bundled (`LST`→TDLST, 4 frames,
+>   `BuildIcon_RA_Transport`). Built from either yard.
+> - ✅ **(3) Nod Submarine** — `[SS] Owner=soviet,BadGuy` (data-only owner-open; RA hull, accepted).
+> - ✅ **(4) Nod Obelisk Sub `VESSEL_TDOBLISUB`** — own vessel type, cloakable SS-hull, Temple-gated
+>   (`spen,atek`). **Dedicated clone weapon `[TDObeliskSubLaser]`** (NOT the building's `TDOblsLaser`
+>   — independently tunable for balance, Luke 2026-06-19; new `WEAPON_TDOBELISKSUBLASER`). Art = the
+>   RA submarine sprite (SS tileset cloned to TDOBLISUB keeping `ss\` frames; `BuildIcon_RA_Submarine`).
+>   **⭐ CHARGE WIND-UP IMPLEMENTED** (Luke's ask): the sub surfaces, plays the Obelisk power-up hum
+>   (`VOC_TD_LASER_POWER`), and is **vulnerable for ~3s** before the laser fires. Engine-driven in
+>   `VesselClass::AI` + gated in `VesselClass::Can_Fire` (new `ObeliskCharge` timer + `IsObeliskCharging`
+>   flag on VesselClass) — the building `Charging_AI`/`IsCharging` is BuildingClass-only, so this is the
+>   vessel equivalent. `Arm` auto-resets the wind-up per shot. **Needs Deck playtest** (timing/feel).
+> - ✅ **(5) `[SPEN] Owner=soviet,BadGuy`** — Nod's `powr` prereq covered by the same `powr→TDNUKE`
+>   `house.cpp` equivalence added for the GDI Shipyard.
+>
+> **ALL navy units engine + art COMPLETE, build green, staged in build/remaster. Ready for the Deck.**
+
 **Why this exists / the divergence:** TD only ever had naval units in *scripted missions*
 (`UNIT_GUNBOAT`, `UNIT_HOVER`, neither player-buildable). But Allies and Soviets have full
 buildable navies, and the v5.0 AI upgrade will have the skirmish AI *build* a navy — so GDI/Nod

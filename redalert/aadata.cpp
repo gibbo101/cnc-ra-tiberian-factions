@@ -292,6 +292,37 @@ static AircraftTypeClass const TdOrca(AIRCRAFT_TDORCA, // What kind of aircraft 
                                       MISSION_HUNT     // Default mission for aircraft.
 );
 
+// Tiberian Factions (v4.0) -- TD A-10 Warthog (AIRCRAFT_TDA10), ported from TD's AIRCRAFT_A10
+// (tiberiandawn/aadata.cpp AttackPlane, TXT_A10). GDI-ONLY (HOUSEF_GOOD via rules.ini Owner).
+// DELIBERATE DIVERGENCE: TD's A-10 was a scripted airstrike *support power* (unbuildable); here it
+// is a real player-built fixed-wing aircraft from the (owner-opened) AFLD -- DTA-style. Fixed-wing +
+// STRUCT_AIRSTRIP landing exactly like the Yak/Mig, so it reuses RA's fixed-wing strafe AI (the
+// payload is dropped over the strafing run; Ammo 3 -> 3 napalm runs before rearm). Fires TDA10Napalm
+// (a dedicated incendiary weapon, WARHEAD_TDFIRE + ANIM_NAPALM2) -- stats in rules.ini [TDA10].
+// Donor ImageData = AIRCRAFT_BADGER (the fixed-wing NULL-guard donor, mirrors TDCargoPlane); the
+// 96-frame TDA10 HD tileset (TD-Assets) is resolved by IniName "TDA10" via the launcher overlay,
+// Rotation=32 reading the standard TD-aircraft facings. See docs/air-additions-4.0-design.md.
+static AircraftTypeClass const TdA10(AIRCRAFT_TDA10,  // What kind of aircraft is this.
+                                     TXT_YAK,         // Translated text (placeholder -- HD name via rules.ini Name=).
+                                     "TDA10",         // INI name of aircraft (TD-prefixed; matches the TDA10 tileset).
+                                     0x0000,          // Vertical offset.
+                                     0x0020,          // Primary weapon offset along turret centerline (strafe muzzle, like the Mig).
+                                     0x0020,          // Primary weapon lateral offset.
+                                     true,            // Fixed wing aircraft? (yes -- the A-10 is a plane)
+                                     false,           // Equipped with a rotor? (no)
+                                     false,           // Custom rotor sets for each facing? (no)
+                                     false,           // Can this aircraft land on clear terrain? (no -- returns to airstrip)
+                                     true,            // Is it invisible on radar? (TD A-10 invisible-on-radar=true)
+                                     true,            // Can the player select it so as to give it orders?
+                                     true,            // Can it be assigned as a target for attack.
+                                     false,           // Is it insignificant (won't be announced)?
+                                     false,           // Is it immune to normal combat damage?
+                                     STRUCT_TDGAFLD,  // Preferred landing building = the separated GDI Airfield (rearms here).
+                                     0xFF,            // Landing speed (like the Yak).
+                                     32,              // Number of rotation stages (standard TD-aircraft facings).
+                                     MISSION_HUNT     // Default mission for aircraft.
+);
+
 /***********************************************************************************************
  * AircraftTypeClass::AircraftTypeClass -- Constructor for aircraft objects.                   *
  *                                                                                             *
@@ -434,6 +465,7 @@ void AircraftTypeClass::Init_Heap(void)
     new AircraftTypeClass(TDCargoPlane);
     new AircraftTypeClass(TdApacheHeli);
     new AircraftTypeClass(TdOrca); // MUST follow TdApacheHeli to match the AIRCRAFT_TDORCA enum slot.
+    new AircraftTypeClass(TdA10);  // MUST follow TdOrca to match the AIRCRAFT_TDA10 enum slot.
 }
 
 /***********************************************************************************************
@@ -543,6 +575,18 @@ void AircraftTypeClass::One_Time(void)
     }
     if (tdorca.CameoData == NULL) {
         ((void const*&)tdorca.CameoData) = As_Reference(AIRCRAFT_HIND).CameoData;
+    }
+
+    // TD A-10 (AIRCRAFT_TDA10): TGA-only HD tileset -> NULL ImageData from the MFCD loop. Donor =
+    // AIRCRAFT_BADGER (the fixed-wing NULL-guard donor, as for TDCargoPlane) so Draw_It doesn't bail;
+    // the launcher overlay resolves the real "TDA10" sprite by IniName. CameoData falls back to the
+    // bundled TDA10ICON (RABUILDABLES.XML BuildIcon); BADGER guards the classic path.
+    AircraftTypeClass& tda10 = As_Reference(AIRCRAFT_TDA10);
+    if (tda10.ImageData == NULL) {
+        ((void const*&)tda10.ImageData) = As_Reference(AIRCRAFT_BADGER).ImageData;
+    }
+    if (tda10.CameoData == NULL) {
+        ((void const*&)tda10.CameoData) = As_Reference(AIRCRAFT_BADGER).CameoData;
     }
 
     LRotorData = MFCD::Retrieve("LROTOR.SHP");

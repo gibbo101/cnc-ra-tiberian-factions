@@ -1891,7 +1891,8 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
             ** Destruction of a shipyard or sub pen may cause attached ships
             ** who are repairing themselves to discontinue repairs.
             */
-            if (*this == STRUCT_SHIP_YARD || *this == STRUCT_SUB_PEN) {
+            if (*this == STRUCT_SHIP_YARD || *this == STRUCT_SUB_PEN || *this == STRUCT_TDGYARD
+                || *this == STRUCT_TDNPEN) {
                 for (int index = 0; index < Vessels.Count(); index++) {
                     VesselClass* obj = Vessels.Ptr(index);
                     if (obj && !obj->IsInLimbo && obj->House == House) {
@@ -2703,6 +2704,8 @@ int BuildingClass::Exit_Object(TechnoClass* base)
         switch (Class->Type) {
         case STRUCT_SUB_PEN:
         case STRUCT_SHIP_YARD:
+        case STRUCT_TDGYARD: // v4.0 separated GDI Naval Yard — same vessel-exit semantics.
+        case STRUCT_TDNPEN:  // v4.0 separated Nod Sub Pen.
             ScenarioInit++;
             cell = Find_Exit_Cell(base);
             if (cell != 0 && base->Unlimbo(Cell_Coord(cell), Direction(Cell_Coord(cell)))) {

@@ -656,6 +656,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TDFire");   // WARHEAD_TDFIRE (TD incendiary — Flamethrower E4)
     new WarheadTypeClass("TDChemWar"); // WARHEAD_TDCHEM (TD chem spray — HE table + Explosion=0; E5)
     new WarheadTypeClass("TDHollow");  // WARHEAD_TDHOLLOW (TD hollow-point — Commando sniper; anti-infantry)
+    new WarheadTypeClass("TDAGT");     // WARHEAD_TDAGT (v4.0 F8 — AGT-only TDHE clone, vs-heavy 25->50; fires from TDTowTwo only)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
@@ -736,6 +737,8 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDHonestJohn"); // WEAPON_TDHONESTJOHN (TD SSM Launcher MSAM; IsTDPort -- fires BULLET_TDMISSILE, non-homing)
     new WeaponTypeClass("TD155mm");      // WEAPON_TD155MM (TD Artillery ARTY; IsTDPort -- fires BULLET_TDHESHELL, arcing)
     new WeaponTypeClass("TDApacheGun");  // WEAPON_TDAPACHEGUN (TD Apache HELI; non-IsTDPort like TDChainGun -- + Burst=2)
+    new WeaponTypeClass("TDTomahawk");   // WEAPON_TDTOMAHAWK (v4.0 GDI Gunboat primary -- TD homing missile, BULLET_TDTOW)
+    new WeaponTypeClass("TDObeliskSubLaser"); // WEAPON_TDOBELISKSUBLASER (v4.0 Nod Obelisk Sub laser -- clone of TDOblsLaser, tunable independently)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -796,6 +799,9 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // TD155mm (Artillery ARTY): TD WEAPON_155MM -- a high-damage (150) arcing HE bombardment shell
     // firing BULLET_TDHESHELL. IsTDPort for raw Speed (MPH_MEDIUM_FAST) + the AI_TD arc path.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TD155mm"))->IsTDPort = true;
+    // TDTomahawk (GDI Gunboat primary): IsTDPort for raw Speed (MPH_ROCKET=60) + the AI_TD homing
+    // dispatch of BULLET_TDTOW (same path as TDDragon). WARHEAD_TDAP is set on the weapon in rules.ini.
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TDTomahawk"))->IsTDPort = true;
 
     return (true);
 }

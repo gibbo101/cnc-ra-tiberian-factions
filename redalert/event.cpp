@@ -809,7 +809,9 @@ void EventClass::Execute(void)
                         if (object->What_Am_I() == RTTI_BUILDING && ((BuildingClass*)object)->House->Is_Ally(techno) &&
                             //							if ((RTTIType)Data.MegaMission.Destination == RTTI_BUILDING &&
                             (((BuildingClass*)object)->Class->Type == STRUCT_SHIP_YARD
-                             || ((BuildingClass*)object)->Class->Type == STRUCT_SUB_PEN)) {
+                             || ((BuildingClass*)object)->Class->Type == STRUCT_SUB_PEN
+                             || ((BuildingClass*)object)->Class->Type == STRUCT_TDGYARD
+                             || ((BuildingClass*)object)->Class->Type == STRUCT_TDNPEN)) {
                             ship->IsToSelfRepair = true;
                         } else {
                             ship->IsToSelfRepair = false;

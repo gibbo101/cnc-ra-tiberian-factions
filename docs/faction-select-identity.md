@@ -69,3 +69,52 @@ Per-language: there's a `MASTERTEXTFILE_<lang>.LOC` per language (EN-US, FR-FR, 
 - **All 8 relabeled (DONE 2026-05-29):** Spain→GDI, Turkey→Nod, Greece/England/Germany/France→Allies, USSR/Ukraine→Soviet — across `NAME_FACTION_NN` + `BONUS_<C>` + `REDALERT_<C>` (22 same-length edits in one pass). The redundant 4 can't be *hidden* (no data flag; `CampaignType` crashes), so the picker is 8 entries reading as the 4 factions (dupes accepted). **USSR caveat:** `NAME_FACTION_5` and `REDALERT_RUSSIA` are only 4-char slots, so "Soviet" (6) won't fit same-length — they stay "USSR" (the lobby overlay `BONUS_RUSSIA`, 43 chars, *does* show "Soviet"). "Soviet" everywhere would need the size-changing rebuild (crashes) — deferred as not worth it.
 - **All remaining icon/flag surfaces are texture-only (CONFIG.MEG can't reach them — confirmed: FACTIONS.XML has only `SmallIconName`, no map/loading field):** Allies/Soviet picker emblems (vs flags), the **map position-select** marker flag, the **loading-screen** flag, and bespoke GDI/Nod art. The launcher picks all of these from the atlas **by the player's country**, so they show e.g. the Spain flag for GDI. One fix for all → `front-end-texture-meg-spike.md`.
 - **Wiring (DONE):** the CONFIG.MEG is built into the mod and ships in releases (was a `/tmp` build during the spike).
+
+---
+
+## ⛔ ADDING new master-text strings is IMPOSSIBLE — confirmed via crash dump (2026-06-21)
+
+The `.LOC` format is now fully reverse-engineered (`scripts/loc_edit.py`):
+`u32 count` → `count × [crc32(key):u32 sorted][valLen:u32 chars][keyLen:u32 bytes]`
+→ all values (UTF-16LE, record order) → all keys (ASCII, record order). No offsets/terminators;
+hash = `zlib.crc32(key)`. Serializer round-trips the base file **byte-identical**.
+
+**Spike result: adding records (resizing the .LOC) HARD-CRASHES the launcher at boot.** Added 6
+strings (count 6852→6858, +755 bytes), repacked, deployed → `ClientG.exe` `EXCEPTION_ACCESS_VIOLATION`
+@ `0x0056A539` (`AppData/Roaming/CnCRemastered/_Except_404.txt` + `.dmp`). **Ruled out a repacker bug:**
+diffed the resized MEG vs base — 3973/3974 files byte-identical, only the `.LOC` changed, no region
+overlap, no companion index file exists. So the launcher itself pins the `.LOC` byte-size/layout.
+
+**Therefore: master-text edits are SAME-LENGTH IN-PLACE VALUE OVERWRITES ONLY** (size + record count
+must stay byte-identical). To give a custom building/unit a UNIQUE sidebar name you must hijack an
+existing **dead** key whose value is already ≥ the target length and overwrite it in place (pad with
+trailing spaces, which render invisibly). You cannot add a new key. Fixing this for real would need
+Ghidra on `ClientG.exe` (closed launcher, un-shippable) — do NOT re-chase the add-a-string route.
+Tool kept for the legit same-length path: `scripts/loc_edit.py`.
+
+---
+
+## ✅ CORRECTION 2026-06-22 — custom NAMES *are* possible via Data/ModText.csv (NOT .LOC)
+
+The "adding master-text strings is impossible" conclusion above was chasing the WRONG mechanism
+(editing MASTERTEXTFILE_*.LOC, which the launcher size-pins). The **official, supported way** to add
+custom text is a loose **`Data/ModText.csv`** — proven by DontCryJustDie's official "Nuke Tank Sample
+Mod" (Workshop 3497050142, NO DLL). The launcher MERGES this CSV into its string table at load.
+
+Format: UTF-16 CSV, columns = `TEXT ID, AUDIO TAG, CHARACTER, ENGLISH, UNITED_KINGDOM, GERMAN, …`
+(per-language). Comment rows put `//` in the TEXT ID field. Data row example:
+`TEXT_UNIT_NUKE_TANK,,,Nuke Tank,,,…`  →  resolves the sidebar name.
+
+Full data-only "add a buildable unit + name + cameo" recipe from that sample mod:
+1. `Data/XML/Objects/Units/<X>Buildables.xml` — ObjectTypeClass with ObjectNameTextID /
+   ObjectDescriptionTextID / `<BuildIcon>`.
+2. `Data/ModText.csv` — defines those TEXT IDs (custom names/descriptions, no .LOC).
+3. `Data/Art/Textures/SRGB/BuildIcon_<X>.tga` — LOOSE custom cameo, referenced by name.
+4. `Rules/rules_mod.ini` `[VehicleTypes] 1=<X>` + `[<X>]` stat block (the stock Remaster DLL parses
+   INI-defined vehicles — this sample ships no DLL).
+5. `Data/XML/Tilesets/UNITS.XML` + `Data/Art/.../Units/<X>.ZIP` — unit sprite.
+
+**For OUR mod:** ship a `Data/ModText.csv` to give the gunboat/hovercraft/separated buildings REAL
+sidebar names (GDI Naval Yard, Nod Sub Pen, GDI Airfield, etc.) + LOOSE `BuildIcon_*.tga` cameos
+rendered from 3D models. Retires the "borrow a resolving string" workaround entirely. ModText.csv is
+LAUNCHER-side, so it works regardless of our DLL fork. ⭐ Do this for the naval units next session.

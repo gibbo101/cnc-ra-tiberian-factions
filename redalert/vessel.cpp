@@ -90,6 +90,8 @@ VesselClass::VesselClass(VesselType classid, HousesType house)
     , IsSelfRepairing(false)
     , DoorShutCountDown(0)
     , PulseCountDown(0)
+    , ObeliskCharge(0)
+    , IsObeliskCharging(false)
     , SecondaryFacing(PrimaryFacing)
 {
     House->Tracking_Add(this);
@@ -338,6 +340,17 @@ int VesselClass::Shape_Number(void) const
     int shapenum = UnitClass::BodyShape[Dir_To_16(PrimaryFacing) * 2] >> 1;
 
     /*
+    **	Tiberian Factions: the GDI Gunboat HULL. The 3D-rendered TD hull has the
+    **	gun split OFF into a separate spinning turret (TDBOATTUR, drawn in Draw_It),
+    **	so the body is a plain 16-facing RA vessel: frame s = facing s
+    **	(scripts/render_gunboat_split.py mode=body). The turret tracks its target
+    **	independently and fires from the barrel — see Draw_It's VESSEL_TDGUNBOAT case.
+    */
+    if (*this == VESSEL_TDGUNBOAT) {
+        return ((int)Dir_To_16(PrimaryFacing));
+    }
+
+    /*
     **	Special case code for transport. The north/south facing is in frame
     **	0. The east/west facing is in frame 3.
     */
@@ -404,6 +417,13 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
         DirType rotation = DIR_N;
         int scale = 0x0100;
 
+        // NOTE (v4.0 battlecarrier): draw-`scale` (8.8 fixed: 0x0100=1.0x) is the ONLY lever that
+        // changes a unit's on-screen size in HD -- the launcher normalises art frame-pixel size to a
+        // fixed logical footprint, so a bigger ZIP does nothing. BUT scale is cosmetic only (footprint
+        // stays 1 cell -> worsens unit-overlap), so TDCA stays 1.0x: the helideck is sized to the
+        // native beam (slight realistic overhang) instead of enlarging the hull. See
+        // reference-hd-unit-display-scale memory.
+
         /*
         **	Actually perform the draw. Overlay an optional shimmer effect as necessary.
         */
@@ -425,6 +445,21 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
             DirType turdir = DirType(Dir_To_16(PrimaryFacing) * 16);
 
             switch (Class->Type) {
+            // VESSEL_TDGUNBOAT = GDI Gunboat -- its own gun, split off the 3D TD hull as a
+            // separate 32-facing spinning turret (TDBOATTUR). Direct facing index (NOT the
+            // BodyShape reverse-remap) to match the forward-rendered turret art + the hull's
+            // direct Dir_To_16 body indexing. Donor shapefile = hull image data (just satisfies
+            // the non-NULL guard; the launcher resolves TDBOATTUR pixels by name). Turret_Adjust
+            // seats it on the foredeck gun spot (distance tuned in-game).
+            case VESSEL_TDGUNBOAT:
+                turret_shape_name = "TDBOATTUR";
+                shapefile = Get_Image_Data();
+                shapenum = (int)Dir_To_32(SecondaryFacing);
+                Class->Turret_Adjust(turdir, xx, yy);
+                break;
+
+            // VESSEL_TDCA = GDI cruiser clone -- shares the CA twin-gun turret (TURR).
+            case VESSEL_TDCA:
             case VESSEL_CA:
                 turret_shape_name = "TURR";
                 shapefile = Class->TurretShapes;
@@ -439,6 +474,8 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
                 Class->Turret_Adjust(turdir, xx, yy);
                 break;
 
+            // VESSEL_TDDD = GDI destroyer clone -- shares the DD missile turret (SSAM).
+            case VESSEL_TDDD:
             case VESSEL_DD:
                 turret_shape_name = "SSAM";
                 shapefile = Class->SamShapes;
@@ -446,6 +483,8 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
                 Class->Turret_Adjust(turdir, xx, yy);
                 break;
 
+            // VESSEL_TDPT = GDI gunboat clone -- shares the PT MG turret (MGUN).
+            case VESSEL_TDPT:
             case VESSEL_PT:
                 turret_shape_name = "MGUN";
                 shapefile = Class->MGunShapes;
@@ -639,6 +678,34 @@ void VesselClass::AI(void)
     }
 
     /*
+    **	v4.0 Obelisk Attack Sub (VESSEL_TDOBLISUB) charge wind-up. When the sub is reloaded and has a
+    **	target in laser range it does NOT fire immediately: it surfaces (Do_Uncloak -> vulnerable),
+    **	plays the Obelisk power-up hum once, and holds for OBELISK_SUB_CHARGE_FRAMES while PulseCountDown
+    **	keeps it surfaced. Can_Fire returns FIRE_REARM until the timer expires, then the laser fires.
+    **	This is the vessel equivalent of the building Obelisk's charge (BuildingClass::Charging_AI is
+    **	BuildingClass-only -- IsCharging/IsCharged are building bitfields). Arm (set on firing) flips
+    **	wants_to_fire false next frame, which auto-resets the wind-up for the next shot.
+    */
+    if (*this == VESSEL_TDOBLISUB) {
+        const int OBELISK_SUB_CHARGE_FRAMES = 45; // ~3s wind-up (the vulnerable window before each shot)
+        bool wants_to_fire = Target_Legal(TarCom) && !Arm && In_Range(TarCom, 0);
+        if (wants_to_fire) {
+            if (!IsObeliskCharging) {
+                IsObeliskCharging = true;
+                ObeliskCharge = OBELISK_SUB_CHARGE_FRAMES;
+                Sound_Effect(VOC_TD_LASER_POWER, Coord); // the unique laser-charge hum
+                Do_Uncloak();                            // surface = vulnerable during the wind-up
+            }
+            // Keep the sub surfaced (uncloaked) for the whole wind-up.
+            if ((int)PulseCountDown < (int)ObeliskCharge) {
+                PulseCountDown = ObeliskCharge;
+            }
+        } else {
+            IsObeliskCharging = false; // lost target / fired / reloading -> cancel the wind-up
+        }
+    }
+
+    /*
     **	Handle body and turret rotation.
     */
     Rotation_AI();
@@ -721,7 +788,8 @@ void VesselClass::Per_Cell_Process(PCPType why)
                 CELL cell = Coord_Cell(Adjacent_Cell(Center_Coord(), face));
                 SmartPtr<BuildingClass> whom;
                 whom = Map[cell].Cell_Building();
-                if (whom != nullptr && ((*whom == STRUCT_SHIP_YARD) || (*whom == STRUCT_SUB_PEN))) {
+                if (whom != nullptr && ((*whom == STRUCT_SHIP_YARD) || (*whom == STRUCT_SUB_PEN)
+                                        || (*whom == STRUCT_TDGYARD) || (*whom == STRUCT_TDNPEN))) {
 
                     // MBL 04.27.2020: Make only audible to the correct player
                     // if (IsOwnedByPlayer) Speak(VOX_REPAIRING);
@@ -815,7 +883,7 @@ ActionType VesselClass::What_Action(ObjectClass const* object) const
     }
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
     if (action == ACTION_ATTACK && object->What_Am_I() == RTTI_VESSEL
-        && (*this == VESSEL_MISSILESUB || *this == VESSEL_CA)) {
+        && (*this == VESSEL_MISSILESUB || *this == VESSEL_CA || *this == VESSEL_TDCA)) {
         action = ACTION_NOMOVE;
     }
 #endif
@@ -1051,6 +1119,16 @@ FireErrorType VesselClass::Can_Fire(TARGET target, int which) const
     if (*this == VESSEL_DD) {
         Mono_Set_Cursor(0, 0);
     }
+    /*
+    **	v4.0 Obelisk Sub: hold the laser during the charge wind-up (driven in AI). The shot only
+    **	fires once IsObeliskCharging is set AND ObeliskCharge has expired -- otherwise report
+    **	FIRE_REARM so the sub keeps its target and finishes charging (surfaced + vulnerable).
+    */
+    if (*this == VESSEL_TDOBLISUB && (fire == FIRE_OK || fire == FIRE_CLOAKED)) {
+        if (!IsObeliskCharging || ObeliskCharge != 0) {
+            return (FIRE_REARM);
+        }
+    }
     if (fire == FIRE_OK || fire == FIRE_CLOAKED) {
         WeaponTypeClass const* weapon = (which == 0) ? Class->PrimaryWeapon : Class->SecondaryWeapon;
 
@@ -1190,7 +1268,7 @@ FireDataType VesselClass::Fire_Data(int which) const
 
     COORDINATE coord = Center_Coord();
 
-    if (*this == VESSEL_CA) {
+    if (*this == VESSEL_CA || *this == VESSEL_TDCA) {
         if (IsSecondShot) {
             coord = Coord_Move(coord, PrimaryFacing + DIR_S, 0x0100);
         } else {
@@ -1200,7 +1278,7 @@ FireDataType VesselClass::Fire_Data(int which) const
         return {coord, 0x0040};
     }
 
-    if (*this == VESSEL_PT) {
+    if (*this == VESSEL_PT || *this == VESSEL_TDPT) {
         coord = Coord_Move(coord, PrimaryFacing, 0x0080);
         coord = Coord_Move(coord, DIR_N, 0x0020);
         return {coord, 0x0010};
@@ -1216,7 +1294,7 @@ COORDINATE VesselClass::Fire_Coord(int which) const
 
     COORDINATE coord = Center_Coord();
 
-    if (*this == VESSEL_CA) {
+    if (*this == VESSEL_CA || *this == VESSEL_TDCA) {
         if (IsSecondShot) {
             coord = Coord_Move(coord, PrimaryFacing + DIR_S, 0x0100);
         } else {
@@ -1227,7 +1305,7 @@ COORDINATE VesselClass::Fire_Coord(int which) const
         return (coord);
     }
 
-    if (*this == VESSEL_PT) {
+    if (*this == VESSEL_PT || *this == VESSEL_TDPT) {
         coord = Coord_Move(coord, PrimaryFacing, 0x0080);
         coord = Coord_Move(coord, DIR_N, 0x0020);
         coord = Coord_Move(coord, Turret_Facing(), 0x0010);
@@ -1298,7 +1376,7 @@ TARGET VesselClass::Greatest_Threat(ThreatType threat) const
 
         // Cruisers can never hit infantry anyway, so take 'em out of the list
         // of possible targets.
-        if (*this == VESSEL_CA) {
+        if (*this == VESSEL_CA || *this == VESSEL_TDCA) {
             threat = (ThreatType)(threat & (~THREAT_INFANTRY));
         }
 
@@ -1309,7 +1387,7 @@ TARGET VesselClass::Greatest_Threat(ThreatType threat) const
         */
         if (AttackMove && (*this != VESSEL_SS)) {
             threat = threat | THREAT_BUILDINGS;
-            if (*this == VESSEL_CA) {
+            if (*this == VESSEL_CA || *this == VESSEL_TDCA) {
                 threat = (ThreatType)(threat & (~THREAT_AIR));
             }
         }
