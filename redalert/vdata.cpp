@@ -279,7 +279,7 @@ static VesselTypeClass const VesselTdPT(VESSEL_TDPT,
                                         0x0000,      // Secondary weapon lateral offset.
                                         false,       // Only has eight facings?
                                         true,        // Always use the given name?
-                                        false,       // Combat turret equipped? TEMP-OFF for the art-look run (flip back to true for the turret loop). Native turret = MGUN.
+                                        true,        // Combat turret equipped? YES -- native MGUN turret.
                                         8,           // Rotation stages.
                                         14           // Turret center offset.
 );
@@ -296,7 +296,7 @@ static VesselTypeClass const VesselTdDD(VESSEL_TDDD,
                                         0x0000,      // Secondary weapon lateral offset.
                                         false,       // Only has eight facings?
                                         true,        // Always use the given name?
-                                        false,       // Combat turret equipped? TEMP-OFF for the art-look run (flip back to true for the turret loop). Native turret = SSAM.
+                                        true,        // Combat turret equipped? YES -- native SSAM turret.
                                         8,           // Rotation stages.
                                         14           // Turret center offset.
 );
@@ -313,7 +313,7 @@ static VesselTypeClass const VesselTdCA(VESSEL_TDCA,
                                         0x0000,      // Secondary weapon lateral offset.
                                         false,       // Only has eight facings?
                                         true,        // Always use the given name?
-                                        false,       // Combat turret equipped? TEMP-OFF for the art-look run (flip back to true for the turret loop). Native turret = TURR.
+                                        true,        // Combat turret equipped? YES -- native TURR turret.
                                         8,           // Rotation stages.
                                         14           // Turret center offset.
 );
@@ -822,6 +822,23 @@ void VesselTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
 
     case VESSEL_CA:
         Normal_Move_Point(xx, yy, dir, 22);
+        x = xx;
+        y = yy - 4;
+        break;
+
+    // GDI boat clones: swapped turrets sit at the RA-equivalent ship's turret position.
+    case VESSEL_TDCA: // = CA
+        Normal_Move_Point(xx, yy, dir, 22);
+        x = xx;
+        y = yy - 4;
+        break;
+    case VESSEL_TDPT: // = PT
+        Normal_Move_Point(xx, yy, dir, 14);
+        x = xx;
+        y = yy + 1;
+        break;
+    case VESSEL_TDDD: // = DD (vanilla coord, verified byte-identical to EA source)
+        Normal_Move_Point(xx, yy, dir + DIR_S, 8);
         x = xx;
         y = yy - 4;
         break;

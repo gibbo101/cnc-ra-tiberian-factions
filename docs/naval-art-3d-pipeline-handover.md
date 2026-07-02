@@ -1,5 +1,25 @@
 # Naval unit art — 3D-render pipeline + turret plan (SESSION HANDOVER 2026-06-22)
 
+> **⛔ OUTCOME 2026-06-22: the 3D TD Gunboat (`VESSEL_TDGUNBOAT`) is SHELVED — non-buildable
+> (`rules.ini [TDBOAT] TechLevel=-1`), turret code backed out of `vessel.cpp`/`vdata.cpp`,
+> `IsTurretEquipped=false`. Engine type left DORMANT (removing the enum slot would renumber the
+> other instances' TDPT/TDDD/TDCA/TDOBLISUB). Orphan `TDBOATTUR` XML tiles + ZIP left in place
+> (don't re-edit RA_UNITS.XML — concurrent edits wiped it once this session). GDI's gunboat role is
+> covered by the parallel TDPT (PT-clone) unit instead.**
+>
+> **Why it died (all real tool limits, documented so we don't re-chase):**
+> 1. *Spinning turret seating* — solvable but fiddly: `Turret_Adjust` distance needs in-game
+>    calibration (HD draw scales NMP ~4 screen-px/unit; the hull art was also 180° reversed so the
+>    turret needed `dir+DIR_S`). Was ~1 nudge from seated (dist 15→26) when interrupted.
+> 2. *OG TD turret won't extract cleanly* — the 192-frame sprite has the gun FUSED to the hull; the
+>    base is static (reads as hull to a median) so background-subtraction only isolates the swinging
+>    barrel, plus it's low-res 2D that clashes with the HD 3D hull.
+> 3. *All-direction HD art* — image-gen (ChatGPT) makes nice boats but CANNOT hold precise even
+>    rotations (got clustered angles, no clean south/diagonals); 2D-rotating a 3/4 sprite "lists"
+>    (dead end); Tripo gives precise angles but "toy" geometry Luke disliked. Untried next step if
+>    revived: TRELLIS / Hunyuan3D-2 (often less toy than Tripo) on a clean ChatGPT boat view.
+> Revive only with a proper dedicated 3D GUN model (precise angles) on a nicer hull GLB.
+
 **⭐ RESUME HERE for the GDI Gunboat (and Hovercraft) art.** Where we got to and the two
 options to play with next session.
 

@@ -458,8 +458,34 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
                 Class->Turret_Adjust(turdir, xx, yy);
                 break;
 
-            // VESSEL_TDCA = GDI cruiser clone -- shares the CA twin-gun turret (TURR).
+            // TURRET-SWAP EXPERIMENT: the GDI boats wear the TD MLRS rocket-rack turret
+            // (UNIT_TDMLRS frames 32-63), positioned at each ship's RA-equivalent turret spot
+            // (Turret_Adjust cases TDPT/TDDD/TDCA mirror PT/DD/CA). turret_shape_name left NULL so
+            // the common draw block renders via the MLRS unit shapefile (HD-resolved by that art).
+            // Turret art = the MLRS unit's turret (frames 32-63 of its named "TDMLRS" tileset).
+            // Must go through the VIRTUAL draw by NAME (the plain draw white-boxes); shapefile is
+            // just a non-NULL donor. Position via the per-facing RA-equivalent Turret_Adjust.
+            case VESSEL_TDPT:
+            case VESSEL_TDDD:
+                turret_shape_name = "TDMLRSTUR";
+                shapefile = Get_Image_Data();
+                shapenum = TechnoClass::BodyShape[Dir_To_32(SecondaryFacing)];
+                Class->Turret_Adjust(turdir, xx, yy);
+                break;
+
+            // Cruiser: MLRS turret on BOTH RA turret spots (fore + aft), like the CA's twin TURR.
             case VESSEL_TDCA:
+                turret_shape_name = "TDMLRSTUR";
+                shapefile = Get_Image_Data();
+                shapenum = TechnoClass::BodyShape[Dir_To_32(SecondaryFacing)];
+                Class->Turret_Adjust(turdir, xx, yy);   // forward spot
+                Techno_Draw_Object_Virtual(shapefile, shapenum, xx, yy, window, DIR_N, 0x0100, turret_shape_name);
+                xx = x;
+                yy = y;
+                turdir = DirType(Dir_To_16(PrimaryFacing + DIR_S) * 16);   // aft spot
+                Class->Turret_Adjust(turdir, xx, yy);
+                break;
+
             case VESSEL_CA:
                 turret_shape_name = "TURR";
                 shapefile = Class->TurretShapes;
@@ -474,8 +500,6 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
                 Class->Turret_Adjust(turdir, xx, yy);
                 break;
 
-            // VESSEL_TDDD = GDI destroyer clone -- shares the DD missile turret (SSAM).
-            case VESSEL_TDDD:
             case VESSEL_DD:
                 turret_shape_name = "SSAM";
                 shapefile = Class->SamShapes;
@@ -483,8 +507,6 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
                 Class->Turret_Adjust(turdir, xx, yy);
                 break;
 
-            // VESSEL_TDPT = GDI gunboat clone -- shares the PT MG turret (MGUN).
-            case VESSEL_TDPT:
             case VESSEL_PT:
                 turret_shape_name = "MGUN";
                 shapefile = Class->MGunShapes;
