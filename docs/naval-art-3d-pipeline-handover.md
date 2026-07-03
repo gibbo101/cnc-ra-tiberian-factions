@@ -1,6 +1,47 @@
 # Naval unit art — 3D-render pipeline + turret plan (SESSION HANDOVER 2026-06-22)
 
-> **⛔ OUTCOME 2026-06-22: the 3D TD Gunboat (`VESSEL_TDGUNBOAT`) is SHELVED — non-buildable
+> **⭐ FINAL ROSTER DECISION 2026-07-03 (supersedes everything below on WHAT ships exist):
+> GDI navy = TDPT (TD Light Tank turret, 0.75×) + TDDD (MLRS rack, Allied-DD weapons) + TDCA
+> (TDMSAMTUR twin cruise-missile launchers fore+aft) + the shared RA [LST] transport
+> (owner-opened to GoodGuy,BadGuy). CUT: TD Gunboat, TDLST Hovercraft, Helicarrier — all
+> `TechLevel=-1` dormant, enum slots + art + dot-mark seat tables retained for revival.
+> The gunboat sections below are the historical record of how its art pipeline worked.**
+
+> **SESSION UPDATE 2026-07-03 (evening, in-game iteration with Luke):** hull art went through 4
+> Luke-verified fixes — (1) team-green brightened 1.45× (house-colour yellow was olive; greens were
+> too dark for the launcher's brightness-preserving remap), (2) baked-texture shadow behind the
+> bridge lifted (NOT a render shadow — it's in the GLB texture; `sun.use_shadow=False` changed
+> nothing), (3) the lift capped at deck brightness after v1 drew white halo lines around the cabin
+> (penumbra pixels overshot the deck level), (4) cabin back face lit via a rear fill sun
+> (energy 2.2, azimuth +180°) — re-render, not paint-over. Post chain now scripted:
+> `scripts/tdboat_hull_postprocess.py` (render → postprocess → `pack_render_to_tileset` 258/280).
+> **The engine turret overlay is OFF again (`IsTurretEquipped=false`) — Luke wants the bare
+> turretless hull shipped first and the turret added as its own step.** Turret picking/seating
+> workflow = **Luke marks dots**: `~/Desktop/turret-marking/<SHIP>/{N,NE,E}.png`, pure-red dot at
+> the mount point (TDCA: +pure-blue for aft), `scripts/bake_turret_seats.py` fits the orbit and
+> emits per-facing Turret_Adjust tables. ⚠ Clone-ship HD art frame order is CCW (classic
+> convention): heading→frame = (16−s)%16 — Luke corrected this after my wrong CW read. Empirics:
+> HD draw scales classic px ~×5.33 (128/24); TDBOAT dist-20 measured ≈102 packed px in-game.
+> My procedural full-hull gunboat attempt was REJECTED (under-detailed) — only its turret survives
+> (`scripts/render_tdgunboat.py`, turret mode = 3×2 Tomahawk launcher, unused until turret step).
+
+> **✅ UN-SHELVED 2026-07-03: the TD Gunboat is BACK, buildable (`TechLevel=7`), built + deployed
+> to the local prefix — pending in-game look verdict + turret-seat calibration.** The revival
+> sidestepped all three tool limits below: hull = the recovered turretless GLB
+> (`~/Desktop/gunboat-turretless-glb/v2_green.glb`, re-rendered **bow-north at frame 0** via
+> `render_gunboat_facings.py … -90 0`, so the old 180°-reversed-art `dir+DIR_S` hack is GONE), and
+> the gun = a NEW **procedural Blender turret** (`scripts/render_tdgunboat.py` turret mode — grey
+> 3×2 Tomahawk tube launcher matching the TD-Assets reference, 32 facings, separate by
+> construction; colours sampled from `boat-0000.tga`). Seat offline-calibrated on the composite
+> sweep: R=100 render px (25% of hull length fwd of centre), lift 16 px → packed `TDBOAT.ZIP`
+> (258/280, scale 0.652 — byte-for-byte the old deployed hull scale) + `TDBOATTUR.ZIP`
+> (turret scale 0.685 = 1.05 × 0.652). Engine: `Turret_Adjust` case now plain `dir`, dist 20,
+> `y-3` (STARTING estimate — tune in-game via the screenshot loop). Previews:
+> `~/Desktop/tdgunboat-v2-preview/`. The procedural FULL-hull attempt (also in
+> `render_tdgunboat.py`, body mode) was rejected by Luke as under-detailed — turret mode is the
+> part that shipped. Historical shelve note kept below for the tool-limit record.
+
+> **⛔ OUTCOME 2026-06-22 (superseded by the un-shelve above): the 3D TD Gunboat (`VESSEL_TDGUNBOAT`) is SHELVED — non-buildable
 > (`rules.ini [TDBOAT] TechLevel=-1`), turret code backed out of `vessel.cpp`/`vdata.cpp`,
 > `IsTurretEquipped=false`. Engine type left DORMANT (removing the enum slot would renumber the
 > other instances' TDPT/TDDD/TDCA/TDOBLISUB). Orphan `TDBOATTUR` XML tiles + ZIP left in place

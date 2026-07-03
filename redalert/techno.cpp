@@ -1784,7 +1784,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
     */
     if (otype == RTTI_BUILDING && What_Am_I() == RTTI_VESSEL
         && (*(VesselClass*)this == VESSEL_SS || *(VesselClass*)this == VESSEL_TDNSUB
-            || *(VesselClass*)this == VESSEL_TDOBLISUB)) {
+            || *(VesselClass*)this == VESSEL_TDOBLISUB || *(VesselClass*)this == VESSEL_TDMSUB)) {
         StructType ostruc = *(BuildingClass*)object;
         if (ostruc != STRUCT_SUB_PEN && ostruc != STRUCT_SHIP_YARD && ostruc != STRUCT_TDGYARD
             && ostruc != STRUCT_TDNPEN) {
@@ -2660,7 +2660,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 **	(chasing makes them turn, jam traffic, and beach themselves).
                 **	The missile sub is exempt -- it barely shoots if it can't turn.
                 */
-                if ((!Target_Legal(TarCom) || !In_Range(TarCom)) && (*(VesselClass*)this != VESSEL_MISSILESUB)) {
+                if ((!Target_Legal(TarCom) || !In_Range(TarCom)) && (*(VesselClass*)this != VESSEL_MISSILESUB)
+                    && (*(VesselClass*)this != VESSEL_TDMSUB)) {
                     Assign_Target(TARGET_NONE);
                     if (!AttackMoveBoatMoveLock && Target_Something_Nearby(THREAT_RANGE)) {
                         AttackMoveEnterAttackMode();
@@ -3177,7 +3178,9 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
         if (object != NULL && object->Height == 0
             && (object->What_Am_I() != RTTI_VESSEL
-                || (*((VesselClass*)object) != VESSEL_SS && *((VesselClass*)object) != VESSEL_MISSILESUB))
+                || (*((VesselClass*)object) != VESSEL_SS && *((VesselClass*)object) != VESSEL_MISSILESUB
+                    && *((VesselClass*)object) != VESSEL_TDNSUB && *((VesselClass*)object) != VESSEL_TDOBLISUB
+                    && *((VesselClass*)object) != VESSEL_TDMSUB))
             &&
 #else
     if (object != NULL && object->Height == 0

@@ -172,6 +172,25 @@ static VesselTypeClass const VesselCarrier(VESSEL_CARRIER,
 );
 #endif
 
+// Nod Missile Sub (VESSEL_TDMSUB) -- clone of the Soviet MSUB (Aftermath), Nod's shore-bombardment
+// sub (SubSCUD), Temple-gated, from the Nod Sub Pen. Own art copy (tdmsub tileset). "Nod navy =
+// the Soviet one" (Luke 2026-07-03). All params mirror VesselMissileSubmarine exactly.
+static VesselTypeClass const VesselTdMSub(VESSEL_TDMSUB,
+                                          TXT_MISSILESUB, // Text name (placeholder -- HD name via rules.ini Name=).
+                                          "TDMSUB",       // INI name (own art: tdmsub frames).
+                                          ANIM_FBALL1,    // Explosion when destroyed.
+                                          0x0000,         // Vertical offset.
+                                          0x0000,         // Primary weapon offset.
+                                          0x0000,         // Primary weapon lateral offset.
+                                          0x0000,         // Secondary weapon offset.
+                                          0x0000,         // Secondary weapon lateral offset.
+                                          false,          // Only has eight facings?
+                                          true,           // Always use the given name?
+                                          false,          // Combat turret equipped? (no -- sub)
+                                          8,              // Rotation stages.
+                                          14              // Turret center offset.
+);
+
 // Tiberian Factions (v4.0) -- TD Gunboat (VESSEL_TDGUNBOAT), GDI surface combatant. Its OWN vessel
 // type (NOT RA's PT/DD reskinned), ported from TD's scripted-only UNIT_GUNBOAT. Turret-equipped like
 // the PT/DD. Fires TDTomahawk (a TD homing missile, BULLET_TDTOW + WARHEAD_TDAP) as its anti-surface/
@@ -189,10 +208,10 @@ static VesselTypeClass const VesselTdGunBoat(VESSEL_TDGUNBOAT,
                                              0x0000,      // Secondary weapon lateral offset.
                                              false,       // Only has eight facings?
                                              true,        // Always use the given name?
-                                             true,        // Combat turret equipped? (YES -- the gun is
-                                                          //   split off the 3D TD hull as its own 32-
-                                                          //   facing spinning turret TDBOATTUR; see
-                                                          //   vessel.cpp Draw_It + Turret_Adjust)
+                                             true,        // Combat turret equipped? ON (Luke,
+                                                          //   2026-07-03): wears the RA SSAM missile
+                                                          //   box (Draw_It), seated on the dot-marked
+                                                          //   foredeck mount, firing TDTomahawk.
                                              8,           // Rotation stages.
                                              14           // Turret center offset (overridden by the
                                                           //   explicit VESSEL_TDGUNBOAT Turret_Adjust case).
@@ -463,6 +482,7 @@ void VesselTypeClass::Init_Heap(void)
     new VesselTypeClass(VesselTdPT);         // VESSEL_TDPT  (enum order -- GDI gunboat clone)
     new VesselTypeClass(VesselTdDD);         // VESSEL_TDDD  (enum order -- GDI destroyer clone)
     new VesselTypeClass(VesselTdCA);         // VESSEL_TDCA  (enum order -- GDI cruiser clone)
+    new VesselTypeClass(VesselTdMSub);       // VESSEL_TDMSUB (enum order -- Nod missile sub clone)
 }
 
 /***********************************************************************************************
@@ -773,6 +793,15 @@ void VesselTypeClass::One_Time(void)
         ((void const*&)tdca.CameoData) = As_Reference(VESSEL_CA).CameoData;
     }
 
+    // Nod Missile Sub (VESSEL_TDMSUB): own art copy (tdmsub tileset); MSUB donor = NULL-guard only.
+    VesselTypeClass& tdmsub = As_Reference(VESSEL_TDMSUB);
+    if (tdmsub.ImageData == NULL) {
+        ((void const*&)tdmsub.ImageData) = As_Reference(VESSEL_MISSILESUB).ImageData;
+    }
+    if (tdmsub.CameoData == NULL) {
+        ((void const*&)tdmsub.CameoData) = As_Reference(VESSEL_MISSILESUB).CameoData;
+    }
+
 #ifdef FIXIT_CARRIER
     // v4.0: GDI Helicarrier made buildable (rules.ini [CARR] Owner=GoodGuy). Its HD hull art exists
     // (base CARR.ZIP + CARR tileset in RA_STRUCTURES.XML) so ImageData normally loads; NULL-guard the
@@ -809,45 +838,47 @@ void VesselTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
     short yy = y;
 
     switch (Type) {
-    // VESSEL_TDGUNBOAT: the gun sits on the foredeck, ahead of the bridge. Pushed toward the
-    // bow along the hull heading (`dir + DIR_S` -- the hull's NMP heading is 180 from the art
-    // bow). In-game calibration (2026-06-22): dist 30 (unflipped) floated it ~164px off the
-    // stern; dist 15 (flipped) seated it ON the deck but ~a cabin-width too far aft; bumped to
-    // 26 to slide it forward onto the foredeck gun-well (HD draw scales NMP ~4 screen-px/unit).
-    case VESSEL_TDGUNBOAT:
-        Normal_Move_Point(xx, yy, dir + DIR_S, 26);
-        x = xx;
-        y = yy;
+    // VESSEL_TDGUNBOAT: the gun sits on the foredeck, ahead of the bridge. Per-facing seat
+    // table baked from Luke's dot marks on the hull renders (scripts/bake_turret_seats.py,
+    // 2026-07-03): mount orbit fitted from N/NE/E marks, render px -> pack 0.652 -> classic px.
+    case VESSEL_TDGUNBOAT: {
+        static const signed char _tdboat_seat[16][2] = {
+            {0, -9},  {4, -8},   {8, -6},   {11, -3},  {12, 1},   {11, 5},  {8, 8},   {5, 10},
+            {0, 11},  {-4, 10},  {-8, 8},   {-11, 5},  {-12, 1},  {-11, -3}, {-8, -6}, {-5, -8},
+        };
+        int f = Dir_To_16(dir);
+        x = xx + _tdboat_seat[f][0];
+        y = yy + _tdboat_seat[f][1];
         break;
+    }
 
+    case VESSEL_TDCA: // = CA (native turrets, native seats -- Luke 2026-07-03)
     case VESSEL_CA:
         Normal_Move_Point(xx, yy, dir, 22);
         x = xx;
         y = yy - 4;
         break;
 
-    // GDI boat clones: swapped turrets sit at the RA-equivalent ship's turret position.
-    case VESSEL_TDCA: // = CA
-        Normal_Move_Point(xx, yy, dir, 22);
-        x = xx;
-        y = yy - 4;
-        break;
-    case VESSEL_TDPT: // = PT
-        Normal_Move_Point(xx, yy, dir, 14);
-        x = xx;
-        y = yy + 1;
-        break;
-    case VESSEL_TDDD: // = DD (vanilla coord, verified byte-identical to EA source)
-        Normal_Move_Point(xx, yy, dir + DIR_S, 8);
-        x = xx;
-        y = yy - 4;
-        break;
 
+    case VESSEL_TDPT: // = PT
     case VESSEL_PT:
         Normal_Move_Point(xx, yy, dir, 14);
         x = xx;
         y = yy + 1;
         break;
+
+    // TDDD wears the DD's SSAM turret but at Luke's dot-marked FORE mount ("keep the TDDD
+    // mount position", 2026-07-03) -- not the vanilla DD's aft seat. TDPT/TDCA = RA originals.
+    case VESSEL_TDDD: {
+        static const signed char _tddd_seat[16][2] = {
+            {0, -10},  {6, -10},  {10, -8},  {13, -5},  {14, -1},  {13, 3},  {10, 6},  {6, 8},
+            {0, 8},    {-6, 8},   {-10, 6},  {-13, 3},  {-14, -1}, {-13, -5}, {-10, -8}, {-6, -10},
+        };
+        int f = Dir_To_16(dir);
+        x = xx + _tddd_seat[f][0];
+        y = yy + _tddd_seat[f][1];
+        break;
+    }
 
     case VESSEL_DD:
         Normal_Move_Point(xx, yy, dir + DIR_S, 8);

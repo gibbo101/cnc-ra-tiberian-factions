@@ -443,49 +443,25 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
             */
             int shapenum = TechnoClass::BodyShape[tfacing] + 32;
             DirType turdir = DirType(Dir_To_16(PrimaryFacing) * 16);
+            int turret_scale = 0x0100;   // 8.8 fixed draw scale for the turret overlay
 
             switch (Class->Type) {
-            // VESSEL_TDGUNBOAT = GDI Gunboat -- its own gun, split off the 3D TD hull as a
-            // separate 32-facing spinning turret (TDBOATTUR). Direct facing index (NOT the
-            // BodyShape reverse-remap) to match the forward-rendered turret art + the hull's
-            // direct Dir_To_16 body indexing. Donor shapefile = hull image data (just satisfies
-            // the non-NULL guard; the launcher resolves TDBOATTUR pixels by name). Turret_Adjust
-            // seats it on the foredeck gun spot (distance tuned in-game).
+            // VESSEL_TDGUNBOAT = GDI Gunboat -- wears the RA SSAM missile box (the Allied
+            // Destroyer's turret; global named art, classic CCW frame order so BodyShape
+            // remap applies) firing its TD-authentic Tomahawks. Donor shapefile just
+            // satisfies the non-NULL guard; Turret_Adjust seats it on the dot-marked
+            // foredeck mount. (The earlier Blender TDBOATTUR launcher is retired.)
             case VESSEL_TDGUNBOAT:
-                turret_shape_name = "TDBOATTUR";
-                shapefile = Get_Image_Data();
-                shapenum = (int)Dir_To_32(SecondaryFacing);
-                Class->Turret_Adjust(turdir, xx, yy);
-                break;
-
-            // TURRET-SWAP EXPERIMENT: the GDI boats wear the TD MLRS rocket-rack turret
-            // (UNIT_TDMLRS frames 32-63), positioned at each ship's RA-equivalent turret spot
-            // (Turret_Adjust cases TDPT/TDDD/TDCA mirror PT/DD/CA). turret_shape_name left NULL so
-            // the common draw block renders via the MLRS unit shapefile (HD-resolved by that art).
-            // Turret art = the MLRS unit's turret (frames 32-63 of its named "TDMLRS" tileset).
-            // Must go through the VIRTUAL draw by NAME (the plain draw white-boxes); shapefile is
-            // just a non-NULL donor. Position via the per-facing RA-equivalent Turret_Adjust.
-            case VESSEL_TDPT:
-            case VESSEL_TDDD:
-                turret_shape_name = "TDMLRSTUR";
+                turret_shape_name = "SSAM";
                 shapefile = Get_Image_Data();
                 shapenum = TechnoClass::BodyShape[Dir_To_32(SecondaryFacing)];
+                turret_scale = 0x00B8;   // SSAM is authored at DD proportions -- ~0.72x on this hull
                 Class->Turret_Adjust(turdir, xx, yy);
                 break;
 
-            // Cruiser: MLRS turret on BOTH RA turret spots (fore + aft), like the CA's twin TURR.
+            // GDI clones wear their RA counterparts' native turrets (Luke 2026-07-03:
+            // the turret-swap experiment is over) -- identical art, mounts, fire points.
             case VESSEL_TDCA:
-                turret_shape_name = "TDMLRSTUR";
-                shapefile = Get_Image_Data();
-                shapenum = TechnoClass::BodyShape[Dir_To_32(SecondaryFacing)];
-                Class->Turret_Adjust(turdir, xx, yy);   // forward spot
-                Techno_Draw_Object_Virtual(shapefile, shapenum, xx, yy, window, DIR_N, 0x0100, turret_shape_name);
-                xx = x;
-                yy = y;
-                turdir = DirType(Dir_To_16(PrimaryFacing + DIR_S) * 16);   // aft spot
-                Class->Turret_Adjust(turdir, xx, yy);
-                break;
-
             case VESSEL_CA:
                 turret_shape_name = "TURR";
                 shapefile = Class->TurretShapes;
@@ -500,6 +476,7 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
                 Class->Turret_Adjust(turdir, xx, yy);
                 break;
 
+            case VESSEL_TDDD:
             case VESSEL_DD:
                 turret_shape_name = "SSAM";
                 shapefile = Class->SamShapes;
@@ -507,6 +484,7 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
                 Class->Turret_Adjust(turdir, xx, yy);
                 break;
 
+            case VESSEL_TDPT:
             case VESSEL_PT:
                 turret_shape_name = "MGUN";
                 shapefile = Class->MGunShapes;
@@ -525,7 +503,7 @@ void VesselClass::Draw_It(int x, int y, WindowNumberType window) const
             */
             // Add shape file name forl new shape draw intercept. ST - 8/19/2019 1:42PM
             if (turret_shape_name) {
-                Techno_Draw_Object_Virtual(shapefile, shapenum, xx, yy, window, DIR_N, 0x0100, turret_shape_name);
+                Techno_Draw_Object_Virtual(shapefile, shapenum, xx, yy, window, DIR_N, turret_scale, turret_shape_name);
             } else {
                 Techno_Draw_Object(shapefile, shapenum, xx, yy, window);
             }
@@ -905,7 +883,8 @@ ActionType VesselClass::What_Action(ObjectClass const* object) const
     }
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
     if (action == ACTION_ATTACK && object->What_Am_I() == RTTI_VESSEL
-        && (*this == VESSEL_MISSILESUB || *this == VESSEL_CA || *this == VESSEL_TDCA)) {
+        && (*this == VESSEL_MISSILESUB || *this == VESSEL_CA || *this == VESSEL_TDCA
+            || *this == VESSEL_TDMSUB)) {
         action = ACTION_NOMOVE;
     }
 #endif
@@ -1089,7 +1068,8 @@ ResultType VesselClass::Take_Damage(int& damage, int distance, WarheadType warhe
         */
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
         if (Health_Ratio() <= Rule.ConditionYellow && !IsAnimAttached
-            && (*this != VESSEL_SS && *this != VESSEL_MISSILESUB)) {
+            && (*this != VESSEL_SS && *this != VESSEL_MISSILESUB && *this != VESSEL_TDNSUB
+                && *this != VESSEL_TDOBLISUB && *this != VESSEL_TDMSUB)) {
 #else
         if (Health_Ratio() <= Rule.ConditionYellow && !IsAnimAttached && (*this != VESSEL_SS)) {
 #endif
@@ -1213,7 +1193,9 @@ FireErrorType VesselClass::Can_Fire(TARGET target, int which) const
             } else {
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
                 if (Is_Target_Vessel(target)
-                    && (*As_Vessel(target) != VESSEL_SS && *As_Vessel(target) != VESSEL_MISSILESUB)) {
+                    && (*As_Vessel(target) != VESSEL_SS && *As_Vessel(target) != VESSEL_MISSILESUB
+                        && *As_Vessel(target) != VESSEL_TDNSUB && *As_Vessel(target) != VESSEL_TDOBLISUB
+                        && *As_Vessel(target) != VESSEL_TDMSUB)) {
 #else
                 if (Is_Target_Vessel(target) && *As_Vessel(target) != VESSEL_SS) {
 #endif
@@ -1225,7 +1207,9 @@ FireErrorType VesselClass::Can_Fire(TARGET target, int which) const
         } else {
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
             if (Is_Target_Vessel(target)
-                && (*As_Vessel(target) == VESSEL_SS || *As_Vessel(target) == VESSEL_MISSILESUB)) {
+                && (*As_Vessel(target) == VESSEL_SS || *As_Vessel(target) == VESSEL_MISSILESUB
+                    || *As_Vessel(target) == VESSEL_TDNSUB || *As_Vessel(target) == VESSEL_TDOBLISUB
+                    || *As_Vessel(target) == VESSEL_TDMSUB)) {
 #else
             if (Is_Target_Vessel(target) && *As_Vessel(target) == VESSEL_SS) {
 #endif
@@ -1306,6 +1290,13 @@ FireDataType VesselClass::Fire_Data(int which) const
         return {coord, 0x0010};
     }
 
+    // TDDD: missiles leave the dot-marked FORE mount (see Turret_Adjust).
+    if (*this == VESSEL_TDDD) {
+        coord = Coord_Move(coord, PrimaryFacing, 0x009A);
+        coord = Coord_Move(coord, DIR_N, 0x0028);
+        return {coord, 0x0018};
+    }
+
     return (DriveClass::Fire_Data(which));
 }
 
@@ -1331,6 +1322,14 @@ COORDINATE VesselClass::Fire_Coord(int which) const
         coord = Coord_Move(coord, PrimaryFacing, 0x0080);
         coord = Coord_Move(coord, DIR_N, 0x0020);
         coord = Coord_Move(coord, Turret_Facing(), 0x0010);
+        return (coord);
+    }
+
+    // TDDD: missiles leave the dot-marked FORE mount (see Turret_Adjust).
+    if (*this == VESSEL_TDDD) {
+        coord = Coord_Move(coord, PrimaryFacing, 0x009A);
+        coord = Coord_Move(coord, DIR_N, 0x0028);
+        coord = Coord_Move(coord, Turret_Facing(), 0x0018);
         return (coord);
     }
 
@@ -2386,6 +2385,19 @@ void VesselClass::Rotation_AI(void)
 
         if (Class->IsTurretEquipped) {
             SecondaryFacing.Set_Desired(dir);
+        }
+    } else if (!Target_Legal(TarCom) && Class->IsTurretEquipped) {
+        // GDI TD ships: with no target, the turret settles onto the hull heading so a
+        // cruising ship carries its gun facing the direction of travel (Luke, 2026-07-03).
+        switch (Class->Type) {
+        case VESSEL_TDGUNBOAT:
+        case VESSEL_TDPT:
+        case VESSEL_TDDD:
+        case VESSEL_TDCA:
+            SecondaryFacing.Set_Desired(PrimaryFacing.Current());
+            break;
+        default:
+            break;
         }
     }
 

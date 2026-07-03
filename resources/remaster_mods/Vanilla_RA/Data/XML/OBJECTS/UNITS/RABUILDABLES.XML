@@ -1818,4 +1818,12 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<ObjectTypeClass Name="RA_TDMSUB" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_MSUB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_MSUB</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_RA_MissileSub</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 </ObjectTypeList>

@@ -1827,6 +1827,7 @@ typedef enum VesselType : char
     VESSEL_TDPT,      // GDI gunboat — clone of RA PT (MGUN turret). vdata.cpp VesselTdPT.
     VESSEL_TDDD,      // GDI destroyer — clone of RA DD (SSAM turret). vdata.cpp VesselTdDD.
     VESSEL_TDCA,      // GDI cruiser — clone of RA CA (TURR turret). vdata.cpp VesselTdCA.
+    VESSEL_TDMSUB,    // v4.0: Nod Missile Sub — clone of Soviet MSUB (SubSCUD shore bombardment), Owner=BadGuy, Temple-gated. vdata.cpp VesselTdMSub.
 
     VESSEL_COUNT,
     VESSEL_FIRST = 0
