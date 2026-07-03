@@ -1730,9 +1730,9 @@
 
 	<ObjectTypeClass Name="RA_TDA10" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_ORCA</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_ORCA</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Orca</BuildIcon>
+			<ObjectNameTextID>TEXT_UNIT_TDA10</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TDA10_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TD_A10</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

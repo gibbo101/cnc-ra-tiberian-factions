@@ -757,6 +757,15 @@ int AircraftClass::Mission_Hunt(void)
                     Transmit_Message(RADIO_OVER_OUT);
                 }
 
+                /*
+                **	TD A-10: a fresh sortie gets TD's 3 bombing passes (tiberiandawn
+                **	AircraftClass ctor AttacksRemaining=3); ammo refills between
+                **	passes in DROP_BOMBS, mirroring TD Mission_Hunt.
+                */
+                if (*this == AIRCRAFT_TDA10) {
+                    AttacksRemaining = 3;
+                }
+
                 Status = FLY_TO_TARGET;
             }
             return (1);
@@ -765,6 +774,33 @@ int AircraftClass::Mission_Hunt(void)
         **	Homing in on target stage.
         */
         case FLY_TO_TARGET:
+            /*
+            **	TD A-10 (tiberiandawn Mission_Hunt FLY_TO_TARGET, verbatim): home on the
+            **	target and begin the bombing run only inside 0x0380 (3.5 cells), checked
+            **	at TICKS_PER_SECOND cadence -- so the run starts 3.5..~1.2 cells out and
+            **	the 5-tick bomb stream walks ONTO the target as the plane overflies it.
+            **	(RA's weapon-range gate below would start the run 4.5 cells out and every
+            **	bomb would fall short -- bombs land beneath the release point.)
+            */
+            if (*this == AIRCRAFT_TDA10) {
+                if (!Target_Legal(TarCom)) {
+                    Status = LOOK_FOR_TARGET;
+                    return (1);
+                }
+                if (!Ammo) {
+                    Status = REGROUP;
+                    return (1);
+                }
+                if (!PrimaryFacing.Is_Rotating()) {
+                    PrimaryFacing.Set_Desired(Direction(TarCom));
+                }
+                if (Distance(TarCom) < 0x0380) {
+                    Status = DROP_BOMBS;
+                    return (1);
+                }
+                return (TICKS_PER_SECOND);
+            }
+
             switch (Can_Fire(TarCom, 0)) {
             case FIRE_FACING:
                 /*
@@ -810,6 +846,43 @@ int AircraftClass::Mission_Hunt(void)
         */
         case DROP_BOMBS:
             TARGET targ;
+
+            /*
+            **	TD A-10 bombing run -- verbatim port of TD Mission_Hunt DROP_BOMBS
+            **	(tiberiandawn/aircraft.cpp:672-690): once the run starts, a bomb drops
+            **	every 5 ticks while ammo remains. NO ROF/rearm gate between drops
+            **	(Fire_At resets Arm but TD ignored it) and NO range/facing re-check
+            **	mid-run -- the bombs fall in a line along the overflight, which is the
+            **	TD stream. Ammo out -> REGROUP (RA's path back to the Airfield to
+            **	rearm, our sanctioned divergence from TD's retreat-off-map).
+            */
+            if (*this == AIRCRAFT_TDA10) {
+                if (!Ammo) {
+                    /*
+                    **	TD multi-pass loop (tiberiandawn Mission_Hunt DROP_BOMBS): the
+                    **	payload refills between passes and the plane swings around for
+                    **	another run, 3 passes per sortie. Passes spent -> REGROUP, which
+                    **	sends it home to the Airfield to rearm (our divergence from TD's
+                    **	retreat-off-map, since ours is a buildable unit).
+                    */
+                    AttacksRemaining--;
+                    if (AttacksRemaining > 0) {
+                        Ammo = Class->MaxAmmo;
+                        Status = FLY_TO_TARGET;
+                    } else {
+                        Status = REGROUP;
+                    }
+                    return (1);
+                }
+                if (!Target_Legal(TarCom)) {
+                    Status = LOOK_FOR_TARGET;
+                    return (1);
+                }
+                Map[::As_Cell(TarCom)].Incoming(Coord, true);
+                Fire_At(TarCom, 0);
+                return (5);
+            }
+
             switch (Can_Fire(TarCom, 0)) {
             case FIRE_OK:
                 targ = ::As_Target(Coord_Move(Center_Coord(), SecondaryFacing, Weapon_Range(0) - 0x0200));

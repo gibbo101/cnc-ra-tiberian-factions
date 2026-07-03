@@ -2380,7 +2380,8 @@ BuildingClass* ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, Hous
             BuildingClass* building = Buildings.Ptr(index);
             assert(building != NULL);
 
-            if (!building->IsInLimbo && building->House->Class->House == house && (*building == STRUCT_AIRSTRIP)
+            if (!building->IsInLimbo && building->House->Class->House == house
+                && (*building == STRUCT_AIRSTRIP || *building == STRUCT_TDGAFLD)
                 && building->Mission != MISSION_DECONSTRUCTION && building->MissionQueue != MISSION_DECONSTRUCTION
                 && ((1L << building->ActLike) & Get_Ownable())
                 && (!legal || building->House->Can_Build(this, building->ActLike))) {
@@ -2441,7 +2442,9 @@ BuildingClass* ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, Hous
                 if (What_Am_I() == RTTI_AIRCRAFTTYPE) {
                     AircraftTypeClass* air = (AircraftTypeClass*)this;
                     if (((*building == STRUCT_HELIPAD || *building == STRUCT_TDHPAD) && !air->IsFixedWing)
-                        || ((*building == STRUCT_AIRSTRIP || *building == STRUCT_TDAFLD) && air->IsFixedWing)) {
+                        || ((*building == STRUCT_AIRSTRIP || *building == STRUCT_TDAFLD
+                             || *building == STRUCT_TDGAFLD)
+                            && air->IsFixedWing)) {
                         if (building->IsLeader)
                             return (building);
                         anybuilding = building;

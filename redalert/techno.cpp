@@ -6893,7 +6893,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         // roles. When an aircraft/unit looks for an RA factory type, also
         // accept its TD equivalent. Each `looking_for_X` flag enables a
         // cross-match in the building scan below.
-        bool looking_for_airstrip = (b == STRUCT_AIRSTRIP);  // → STRUCT_TDAFLD
+        bool looking_for_airstrip = (b == STRUCT_AIRSTRIP);  // → STRUCT_TDAFLD / STRUCT_TDGAFLD
         bool looking_for_helipad = (b == STRUCT_HELIPAD);    // → STRUCT_TDHPAD
         bool looking_for_repair = (b == STRUCT_REPAIR);      // → STRUCT_TDFIX
         // Refinery is intentionally NOT cross-matched: TD harvesters search
@@ -6901,6 +6901,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         // (dock animations/cell offsets are type-specific). See Find_Best_Refinery.
         bool has_candidate = (House->Get_Quantity(b) != 0)
                              || (looking_for_airstrip && House->Get_Quantity(STRUCT_TDAFLD) != 0)
+                             || (looking_for_airstrip && House->Get_Quantity(STRUCT_TDGAFLD) != 0)
                              || (looking_for_helipad && House->Get_Quantity(STRUCT_TDHPAD) != 0)
                              || (looking_for_repair && House->Get_Quantity(STRUCT_TDFIX) != 0);
         if (has_candidate) {
@@ -6918,7 +6919,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 
                 // Match: native StructType, OR a separated TD building that
                 // shadows the requested vanilla RA factory role.
-                bool tdafld_match = looking_for_airstrip && (*building == STRUCT_TDAFLD);
+                bool tdafld_match = looking_for_airstrip
+                                    && (*building == STRUCT_TDAFLD || *building == STRUCT_TDGAFLD);
                 bool tdhpad_match = looking_for_helipad && (*building == STRUCT_TDHPAD);
                 bool tdfix_match = looking_for_repair && (*building == STRUCT_TDFIX);
                 bool type_match = (*building == b) || tdafld_match || tdhpad_match || tdfix_match;

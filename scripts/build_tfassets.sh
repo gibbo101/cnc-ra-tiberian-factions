@@ -99,6 +99,7 @@ ENTRIES=(
     "ARTY.SHP:TDARTY.SHP"
     "HELI.SHP:TDHELI.SHP"
     "ORCA.SHP:TDORCA.SHP"
+    "A10.SHP:TDA10.SHP"
     # Tiberium ecosystem -- Visceroid creature (UNIT_TDVICE), spawned when infantry
     # die in Tiberium. Constant-animation blob; vice.shp carries its anim frames.
     "VICE.SHP:TDVICE.SHP"

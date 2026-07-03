@@ -7960,7 +7960,7 @@ void HouseClass::Recalc_Attributes(void)
         if (btype == STRUCT_TDWEAP) {
             building->House->BScan |= STRUCTF_WEAP;
         }
-        if (btype == STRUCT_TDAFLD) {
+        if (btype == STRUCT_TDAFLD || btype == STRUCT_TDGAFLD) {
             building->House->BScan |= STRUCTF_AIRSTRIP;
         }
         if (btype == STRUCT_TDHPAD) {
@@ -7995,7 +7995,7 @@ void HouseClass::Recalc_Attributes(void)
                     building->House->ActiveBScan |= STRUCTF_WEAP;
                     building->House->OldBScan |= STRUCTF_WEAP;
                 }
-                if (btype == STRUCT_TDAFLD) {
+                if (btype == STRUCT_TDAFLD || btype == STRUCT_TDGAFLD) {
                     building->House->ActiveBScan |= STRUCTF_AIRSTRIP;
                     building->House->OldBScan |= STRUCTF_AIRSTRIP;
                 }

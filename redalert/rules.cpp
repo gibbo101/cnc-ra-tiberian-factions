@@ -739,6 +739,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDApacheGun");  // WEAPON_TDAPACHEGUN (TD Apache HELI; non-IsTDPort like TDChainGun -- + Burst=2)
     new WeaponTypeClass("TDTomahawk");   // WEAPON_TDTOMAHAWK (v4.0 GDI Gunboat primary -- TD homing missile, BULLET_TDTOW)
     new WeaponTypeClass("TDObeliskSubLaser"); // WEAPON_TDOBELISKSUBLASER (v4.0 Nod Obelisk Sub laser -- clone of TDOblsLaser, tunable independently)
+    new WeaponTypeClass("TDA10Napalm");  // WEAPON_TDA10NAPALM (v4.0 A-10 strafe -- TD WEAPON_NAPALM verbatim, BULLET_TDNAPALM)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's

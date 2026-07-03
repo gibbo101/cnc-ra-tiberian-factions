@@ -199,6 +199,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TDChem");        //	BULLET_TDCHEM (TD chem warrior invisible spray round, E5)
     new BulletTypeClass("TDSSM2");        //	BULLET_TDSSM2 (TD Rocket Launcher missile, MLRS — = TDSSM but Arm9/ROT7)
     new BulletTypeClass("TDMissile");     //	BULLET_TDMISSILE (TD SSM Launcher Honest John — non-homing, own TDMISSILE sprite)
+    new BulletTypeClass("TDNapalm");      //	BULLET_TDNAPALM (TD A-10 napalm bomblet — ClassNapalm verbatim, BOMBLET sprite)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per
@@ -213,6 +214,7 @@ void BulletTypeClass::Init_Heap(void)
     BulletTypes.Ptr((int)BULLET_TDTOW)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_TDSSM2)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_TDMISSILE)->IsTDPort = true;
+    BulletTypes.Ptr((int)BULLET_TDNAPALM)->IsTDPort = true;
 }
 
 /***********************************************************************************************

@@ -258,6 +258,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         switch (Class->Type) {
         case STRUCT_AIRSTRIP:
         case STRUCT_TDAFLD:    // TD Nod Airstrip — same fixed-wing dock semantics.
+        case STRUCT_TDGAFLD:   // v4.0 GDI Airfield — hosts the buildable A-10 (fixed-wing).
             if (from->What_Am_I() == RTTI_AIRCRAFT && ((AircraftClass const*)from)->Class->IsFixedWing) {
                 return (RADIO_ROGER);
             }
@@ -320,6 +321,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
         case STRUCT_AIRSTRIP:
         case STRUCT_TDAFLD:    // TD Nod Airstrip — repair-on-dock for cargo plane.
+        case STRUCT_TDGAFLD:   // v4.0 GDI Airfield — repair/rearm-on-dock for the A-10.
         case STRUCT_HELIPAD:
         case STRUCT_TDHPAD:    // TD Helipad — repair-on-dock.
             Assign_Mission(MISSION_REPAIR);
@@ -437,6 +439,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             switch (Class->Type) {
             case STRUCT_AIRSTRIP:
             case STRUCT_TDAFLD:    // TD Nod Airstrip — dock target is the building itself.
+            case STRUCT_TDGAFLD:   // v4.0 GDI Airfield — dock target is the building itself.
                 param = As_Target();
                 break;
 
@@ -595,7 +598,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         }
 
         if (*this == STRUCT_WEAP || *this == STRUCT_AIRSTRIP || *this == STRUCT_REPAIR || *this == STRUCT_TDFIX
-            || *this == STRUCT_TDWEAP || *this == STRUCT_TDAFLD)
+            || *this == STRUCT_TDWEAP || *this == STRUCT_TDAFLD || *this == STRUCT_TDGAFLD)
             return (RADIO_RUN_AWAY);
         return (RADIO_ROGER);
 
@@ -1606,7 +1609,7 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
             House->BScan |= STRUCTF_WEAP;
             House->ActiveBScan |= STRUCTF_WEAP;
         }
-        if (btype == STRUCT_TDAFLD) {
+        if (btype == STRUCT_TDAFLD || btype == STRUCT_TDGAFLD) {
             House->BScan |= STRUCTF_AIRSTRIP;
             House->ActiveBScan |= STRUCTF_AIRSTRIP;
         }
@@ -3837,7 +3840,7 @@ ActionType BuildingClass::What_Action(ObjectClass const* object) const
             case RTTI_AIRCRAFTTYPE:
             case RTTI_AIRCRAFT:
                 action = ACTION_NONE;
-                if (*this == STRUCT_AIRSTRIP || *this == STRUCT_TDAFLD) {
+                if (*this == STRUCT_AIRSTRIP || *this == STRUCT_TDAFLD || *this == STRUCT_TDGAFLD) {
                     for (index = 0; index < Buildings.Count(); index++) {
                         BuildingClass* bldg = Buildings.Ptr(index);
                         if (bldg != this && bldg->Owner() == Owner() && *bldg == Class->Type) {
@@ -3849,7 +3852,7 @@ ActionType BuildingClass::What_Action(ObjectClass const* object) const
                     for (index = 0; index < Buildings.Count(); index++) {
                         BuildingClass* bldg = Buildings.Ptr(index);
                         if (bldg != this && bldg->Owner() == Owner() && bldg->Class->ToBuild == RTTI_AIRCRAFTTYPE
-                            && *bldg != STRUCT_AIRSTRIP) {
+                            && *bldg != STRUCT_AIRSTRIP && *bldg != STRUCT_TDAFLD && *bldg != STRUCT_TDGAFLD) {
                             action = ACTION_TOGGLE_PRIMARY;
                             break;
                         }
@@ -4048,7 +4051,8 @@ COORDINATE BuildingClass::Docking_Coord(void) const
     if (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD) {
         return (Coord_Add(Coord, XYP_COORD(24, 18)));
     }
-    if (*this == STRUCT_AIRSTRIP) {
+    if (*this == STRUCT_AIRSTRIP || *this == STRUCT_TDGAFLD) {
+        // TDGAFLD is an art clone of AFLD -- same fixed-wing dock spot.
         return (Coord_Add(Coord, XYP_COORD(ICON_PIXEL_W + ICON_PIXEL_W / 2, 28)));
     }
     if (*this == STRUCT_TDAFLD) {
@@ -4164,10 +4168,16 @@ bool BuildingClass::Toggle_Primary(void)
                         }
                     }
                 } else if (Class->ToBuild == RTTI_AIRCRAFTTYPE) {
-                    if (*building == STRUCT_AIRSTRIP && *this == STRUCT_AIRSTRIP) {
+                    // Fixed-wing strips (AIRSTRIP + the TD ports) form one primary-factory
+                    // group; helipads the other.
+                    bool this_strip = (*this == STRUCT_AIRSTRIP || *this == STRUCT_TDAFLD
+                                       || *this == STRUCT_TDGAFLD);
+                    bool that_strip = (*building == STRUCT_AIRSTRIP || *building == STRUCT_TDAFLD
+                                       || *building == STRUCT_TDGAFLD);
+                    if (that_strip && this_strip) {
                         building->IsLeader = false;
                     } else {
-                        if (*building != STRUCT_AIRSTRIP && *this != STRUCT_AIRSTRIP) {
+                        if (!that_strip && !this_strip) {
                             building->IsLeader = false;
                         }
                     }
@@ -4440,7 +4450,7 @@ COORDINATE BuildingClass::Sort_Y(void) const
     if (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD) {
         return (Center_Coord());
     }
-    if (*this == STRUCT_AIRSTRIP) {
+    if (*this == STRUCT_AIRSTRIP || *this == STRUCT_TDGAFLD) {
         return (Center_Coord());
     }
     if (*this == STRUCT_BARRACKS /*|| *this == STRUCT_POWER*/) {
@@ -4603,8 +4613,9 @@ bool BuildingClass::Can_Demolish(void) const
 
 bool BuildingClass::Can_Demolish_Unit(void) const
 {
-    return ((*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_AIRSTRIP) && In_Radio_Contact()
-            && Distance(Contact_With_Whom()) < 0x0080);
+    return ((*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_AIRSTRIP
+             || *this == STRUCT_TDGAFLD)
+            && In_Radio_Contact() && Distance(Contact_With_Whom()) < 0x0080);
 }
 
 bool BuildingClass::Can_Capture(void) const
@@ -5833,7 +5844,8 @@ int BuildingClass::Mission_Repair(void)
         return (MissionControl[Mission].Normal_Delay());
     }
 
-    if (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD || *this == STRUCT_AIRSTRIP) {
+    if (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD || *this == STRUCT_AIRSTRIP
+        || *this == STRUCT_TDGAFLD) {
         enum
         {
             INITIAL,

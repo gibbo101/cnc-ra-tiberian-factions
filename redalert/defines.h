@@ -1380,6 +1380,7 @@ typedef enum BulletType : char
     BULLET_TDCHEM, // TD Chem Warrior spray (E5) — invisible; the visible effect is the ANIM_CHEM_N muzzle jet. Warhead=TDHE.
     BULLET_TDSSM2, // TD Rocket Launcher missile (MLRS, BULLET_SSM2) — Homing, AA+AG, visible TDDRAGON sprite, WARHEAD_TDHE. = TDSSM but Arm=9/ROT=7.
     BULLET_TDMISSILE, // TD SSM Launcher Honest John (BULLET_HONEST_JOHN) — NON-homing, accurate, visible TDMISSILE sprite (32-frame rotating), WARHEAD_TDFIRE, ANIM_NAPALM3 impact.
+    BULLET_TDNAPALM,  // TD A-10 napalm bomblet (BULLET_NAPALM/ClassNapalm verbatim) — Dropping, Arm 24, BOMBLET sprite, WARHEAD_TDFIRE, ANIM_NAPALM2 impact (bullet ImpactAnim; TDFire warhead Explosion=0).
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -3319,6 +3320,7 @@ typedef enum WeaponType : char
     WEAPON_TDAPACHEGUN,    // TD Apache chain gun (HELI) — TDChainGun + Burst=2 (TD is_twoshooter). Same TDSpreadfire/TDHE/GUN8 chain as TDChainGun; separate so the single-shot GTWR keeps Burst=1.
     WEAPON_TDTOMAHAWK,     // v4.0: GDI Gunboat primary — TD homing missile (BULLET_TDTOW, AG-only), WARHEAD_TDAP, anti-surface/anti-shore. IsTDPort (raw Speed MPH_ROCKET + AI_TD homing). Registered "TDTomahawk".
     WEAPON_TDOBELISKSUBLASER, // v4.0: Nod Obelisk Attack Sub — TDLaser bolt (clone of the Obelisk's TDOblsLaser, NO Charges since a vessel can't building-charge), short range + slow ROF + high dmg. Registered "TDObeliskSubLaser".
+    WEAPON_TDA10NAPALM,    // v4.0: A-10 napalm strafe — TD WEAPON_NAPALM verbatim (Dmg100/ROF20/Range4.5=0x0480, VOC_NONE), BULLET_TDNAPALM. Registered "TDA10Napalm".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
