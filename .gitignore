@@ -14,3 +14,9 @@ __pycache__/
 # Generated front-end crest atlas (~184MB, exceeds GitHub 100MB limit) — regenerate via scripts/frontend_atlas_build.py
 resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/MT_COMMANDBAR_COMMON.TGA
 scripts/_td_tems/
+
+# Regenerable .bui HUD probe output (44MB) — rebuild via scripts/bui_work/hud_probe_build.py
+scripts/bui_work/CONFIG.hud-probe.MEG
+scripts/bui_work/_hud_probe_tmp/
+scripts/bui_work/CONFIG.4logos.MEG
+scripts/bui_work/_4logos_tmp/

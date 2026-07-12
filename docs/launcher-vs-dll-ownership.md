@@ -20,6 +20,31 @@ The Remastered front-end (Petroglyph "Mobius" engine, **native C++**) is **facti
 
 ---
 
+## The process model (runtime-confirmed 2026-07-11)
+
+The Remastered runs **three processes**, and this is the foundation under every row of the ownership map. Confirmed at runtime via `/proc` on the live game (Deck) + static RE + a 3-way adversarial spike ([[spike-launcher-process-model]]):
+
+```
+ClientLauncherG.exe   — outer bootstrap/menu shell; spawns the other two
+        ├── ClientG.exe          — THE "LAUNCHER"/front-end: renderer, UI, input,
+        │                          faction picker, hotkeys. Imports d3d11/d3d9/bink2/mss32.
+        │                          Hosts NO game DLL — its ONLY contact with our RedAlert.dll
+        │                          is a version handshake: LoadLibraryA → GetProcAddress("CNC_Version")
+        │                          → compare 0x102 → FreeLibrary.
+        │        │  loopback TCP :16000 — encrypted + HMAC'd + CRC'd (CryptoPP), fixed message set
+        │        ▼
+        └── InstanceServerG.exe   — the SIM server; the ONLY process that hosts our mod DLL
+                                   (LoadLibrary of .../Mods/Red_Alert/Vanilla_RA/Data/RedAlert.dll +
+                                   the full CNC_Init/Advance_Instance/Get_Game_State/Handle_* interface).
+                                   Maps only our DLL + crypto/ssl/curl/steam_api/tbb — ZERO rendering/UI code.
+```
+
+`ClientG` dials **out** to `InstanceServerG` (the server on `CLIENT_PORT=16000`). The C&C payload on that socket is a **1:1 serialization of the CNC ABI**: the 13-member `EventCallback` union outbound (`GamePluginClass::Event_Callback` → `SERVER_TO_CLIENT_EXTERNAL_GAME_PLUGIN_EVENT`), and the `CNC_Get_Game_State` structs pulled inbound (`Export_State`/`Import_State`). ClientG's receiver (`IncomingExternalGamePluginEventClass::Execute`) is a **fixed compiled switch** over exactly those types — **no passthrough branch**; unknown payloads are dropped.
+
+**Consequence — the CNC ABI *is* the process-boundary wire format, not a soft convention.** Our DLL runs only in `InstanceServerG` and cannot reach `ClientG`'s memory (separate process; no shared game-data segment — the only shared `/dev/shm` objects are Steam-IPC + wine-fsync infra). Our DLL can even patch its own host in-process, but that's inert: the receiver lives in the unmoddable `ClientG` binary and the BitStream is positional (appended fields desync + fail CRC). **Anything the front-end has no compiled handler for cannot be created by the running DLL, no matter what it emits** — new factions, new UI structure, new hotkey classification are all off the table at runtime. To "open up more options" you feed `ClientG` richer **data files at load** (CONFIG.MEG/FACTIONS.XML/textures) — there is no runtime channel. Adversarially verified 2026-07-11: 3 independent break attempts (socket-forge, data-file side-channel, in-process host-patch) all failed. Live lead for shell-UI reshaping: `ClientG`'s front-end is **Lua 5.1 + ClickScript VM + XML/.bui** data-driven — a *data* avenue, not a DLL one, and unprobed.
+
+---
+
 ## Binary facts (so we never re-investigate tooling)
 
 - `ClientG.exe` (34 MB), `ClientLauncherG.exe`, `InstanceServerG.exe` are **native PE32 C++** — no CLR header (`mscoree` / `coreclr` / `hostfxr` all absent). **ILSpy/dnSpy do not apply.**
