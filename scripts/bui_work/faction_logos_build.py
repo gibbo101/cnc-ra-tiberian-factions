@@ -1,115 +1,210 @@
 #!/usr/bin/env python3
 """
-WIP (2026-07-11): build RA_TACTICAL_UI.BUI with 4 distinct per-faction HUD radar
-logos (Allied / GDI / Nod / Soviet). See docs/bui-front-end-modding.md
-"Per-faction HUD logos" section.
+Build RA_TACTICAL_UI.BUI with per-faction HUD sidebar logos (GDI + Nod) and pack
+it into a test CONFIG.MEG. See docs/bui-front-end-modding.md "Per-faction HUD
+logos".
 
-STATUS: builds + fits the size budget, BUT the deployed result makes the WHOLE
-IN-GAME SIDEBAR DISAPPEAR (Deck-tested GDI). The game does NOT crash — it renders
-the tactical view full-screen with no sidebar. Diagnosis: inserting the two new
-widget chunks (+602 bytes) shifts everything after the faction-logo group, and a
-PARENT chunk bounds its children by a size/count field that this script does NOT
-yet update -> ChunkFile mis-parses the rest of Side_Bar_Group and drops it.
+HOW IT WORKS (format cracked 2026-07-12)
+  The .bui payload is a recursive chunk tree:  node = [u32 id][u32 spec];
+  spec MSB set -> container holding (spec & 0x7fffffff) CHILD NODES (a count,
+  not a byte size); MSB clear -> leaf with spec bytes of data. Leaf data is a
+  micro-chunk stream ([u8 tag][u8 size], e.g. 02/10 rect, 03/10 tint) or a
+  [u16 len]-prefixed string. Containers carry NO byte sizes, so inserting a
+  complete element subtree needs exactly ONE structural fixup: +N on the direct
+  parent's child count. (The 2026-07-11 attempt spliced raw bytes mid-node and
+  updated nothing -- that is why the whole sidebar vanished.)
 
-NEXT STEP (the one missing piece): find the parent chunk that encloses the
-faction-logo group (candidates: Side_Bar_Group @864, AspectRatio_Group, Tactical_UI)
-and update its size/child-count field(s) by the inserted byte count (and likely a
-+2 child count). Then re-test. The RE workflow (chunkfile-insertion-format agent)
-was rate-limited before finishing — re-run it next session.
+  Each sidebar widget is an element subtree shaped:
+    C id=1 cnt=2
+      L id=2 sz=6                      (type marker)
+      C id=4 cnt=3
+        C id=11 cnt=5                  (props: micro-stream, name, ...)
+          L id=0 sz=99                 (rect/tint/etc micro-chunks)
+          L id=5  "SideBar_FactionLogo_Allies"
+          L id=19 / L id=20 / L id=39
+        C id=1 cnt=2                   (texture ref block)
+          L id=2  "ui_sidebar_factionlogo_allies"
+          L id=3 sz=6
+        L id=7 sz=15
 
-WHAT WORKS / IS KNOWN (so we don't re-derive):
-- ClientG selects the sidebar logo by widget NAME keyed on the compiled FactionType
-  enum, and looks for FIVE names: SideBar_FactionLogo_{GDI,NOD,Allies,Soviet,DINO}.
-  RA_TACTICAL_UI.BUI only DEFINES _Allies and _Soviet -> GDI/Nod fall back to the
-  generic "COMMAND & CONQUER" wordmark. Populate _GDI/_NOD to fix that.
-- The REAL emblems are ALREADY in the mod's shipped in-game atlas: regions
-  ui_sidebar_factionlogo_gdi (gold eagle) and _nod (red scorpion). So the new
-  widgets just point at them (tint 1,1,1,1) for authentic art -- no new pixels.
-- .bui string property layout: [u32 fieldsize = len+2][u16 len][ascii]. Widget
-  header = '26 10' + 16 zero bytes + '2b 01 01' + '2c 01 01' + '05 00 00 00'
-  (05 = property count). No per-widget total-size field.
-- Same-size rule holds: recompress L9 must be <= 11071 (verified 10725), pad member
-  to exactly 11107 bytes.
-- Retinting the EXISTING _Allies (@4124) / _Soviet (@4439) tints is a safe in-place
-  4-float edit (no size change); _Soviet retint is Deck-PROVEN to render.
+  We copy the complete _Allies element, rewrite its name/texture string leaves
+  (updating each leaf's u32 size and u16 length prefix), insert the GDI and Nod
+  copies immediately after the _Soviet element, and bump their shared parent
+  container's child count by 2. Everything is located by parsing, not by fixed
+  offsets, and the edited payload is re-parsed as validation before packing.
 
-OPEN PUZZLE (blocks confirming the mapping): in an earlier hide-test, editing the
-_Soviet widget changed ONLY the Soviet faction, but editing _Allies changed NOTHING
-(not even the Allies faction). So it's unconfirmed that the mod's Allies faction
-resolves to _Allies, and whether GDI/Nod resolve to _GDI/_NOD. Couldn't observe it
-here because the sidebar didn't render at all. Resolve via the DLL FactionType /
-FACTIONS.XML mapping (faction-to-widget-mapping agent) next session.
+WHY: ClientG picks the sidebar crest by widget name from the compiled
+  FactionType enum -- it looks for SideBar_FactionLogo_{GDI,NOD,Allies,Soviet,
+  DINO} but the base file only defines _Allies/_Soviet, so GDI/Nod fall back to
+  the generic "COMMAND & CONQUER" wordmark. The real emblem art already ships
+  in the mod's atlas (ui_sidebar_factionlogo_gdi / _nod).
 
-USAGE (once the parent-size fixup is added): python3 scripts/bui_work/faction_logos_build.py
-Deploy/recovery: same as scripts/bui_work/hud_probe_build.py docstring.
+USAGE
+  python3 scripts/bui_work/faction_logos_build.py
+    -> writes scripts/bui_work/CONFIG.4logos.MEG (gitignored, 44 MB)
+
+DEPLOY (test): copy over the deployed mod's Data/CONFIG.MEG (Linux prefix or
+  Deck). RECOVERY: redeploy the normal build (rsync build/remaster/Vanilla_RA/).
+  The base install is never touched.
 """
 import os, sys, zlib, struct, subprocess, shutil
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
-MOD_MEG = os.path.join(REPO, 'dist', 'workshop-content', 'Vanilla_RA', 'Data', 'CONFIG.MEG')
+MOD_MEG = os.path.join(REPO, 'resources', 'remaster_mods', 'Vanilla_RA', 'Data', 'CONFIG.MEG')
 EXTRACT = os.path.join(REPO, 'scripts', 'meg_extract.py')
 PACK    = os.path.join(REPO, 'scripts', 'meg_pack.py')
 WORK    = os.path.join(REPO, 'scripts', 'bui_work')
 OUT_MEG = os.path.join(WORK, 'CONFIG.4logos.MEG')
 MEMBER  = 'RA_TACTICAL_UI.BUI'
 
-# per-faction appearance: (widget-name, texture-region, tint RGBA)
+MSB = 0x80000000
+
+# (new widget name, texture region) -- art already in the mod's in-game atlas
 NEW_WIDGETS = [
-    (b'SideBar_FactionLogo_GDI', b'ui_sidebar_factionlogo_gdi', (1.0, 1.0, 1.0, 1.0)),  # real gold eagle
-    (b'SideBar_FactionLogo_NOD', b'ui_sidebar_factionlogo_nod', (1.0, 1.0, 1.0, 1.0)),  # real red scorpion
+    (b'SideBar_FactionLogo_GDI', b'ui_sidebar_factionlogo_gdi'),
+    (b'SideBar_FactionLogo_NOD', b'ui_sidebar_factionlogo_nod'),
 ]
-RETINT = {4124: (0.25, 0.55, 1.0, 1.0),   # existing _Allies -> blue
-          4439: (1.0, 0.42, 0.06, 1.0)}   # existing _Soviet -> orange
 
-def find_str_prop(block, s):
-    i = block.find(s)
-    assert i >= 6 and struct.unpack_from('<H', block, i-2)[0] == len(s) \
-        and struct.unpack_from('<I', block, i-6)[0] == len(s)+2, f'bad str prop {s}'
-    return i-6, i+len(s)
 
-def make_widget(template, name, tex, tint):
-    b = bytearray(template)
-    for old, new in ((b'SideBar_FactionLogo_Allies', name), (b'ui_sidebar_factionlogo_allies', tex)):
-        s, e = find_str_prop(b, old)
-        b[s:e] = struct.pack('<I', len(new)+2) + struct.pack('<H', len(new)) + new
-    # tint tag inside the block
-    t = b.find(b'\x03\x10')
-    struct.pack_into('<4f', b, t+2, *tint)
-    return bytes(b)
+class Node:
+    __slots__ = ('pos', 'id', 'kind', 'spec', 'end', 'parent', 'children')
+
+    def __init__(self, pos, nid, kind, spec, parent):
+        self.pos, self.id, self.kind, self.spec, self.parent = pos, nid, kind, spec, parent
+        self.children = []
+
+
+def parse_tree(raw):
+    """Parse the chunk tree; raises on any structural inconsistency."""
+    nodes = []
+
+    def parse(pos, parent):
+        nid, spec = struct.unpack_from('<II', raw, pos)
+        if spec & MSB:
+            node = Node(pos, nid, 'C', spec & ~MSB, parent)
+            nodes.append(node)
+            p = pos + 8
+            for _ in range(node.spec):
+                p = parse(p, node)
+            node.end = p
+        else:
+            if pos + 8 + spec > len(raw):
+                raise ValueError(f'leaf overrun @{pos}')
+            node = Node(pos, nid, 'L', spec, parent)
+            nodes.append(node)
+            node.end = pos + 8 + spec
+        if parent is not None:
+            parent.children.append(node)
+        return node.end
+
+    p = 0
+    roots = []
+    while p < len(raw):
+        n0 = len(nodes)
+        p = parse(p, None)
+        roots.append(nodes[n0])
+    if p != len(raw):
+        raise ValueError(f'consumed {p} != {len(raw)}')
+    return nodes
+
+
+def str_leaf(raw, node):
+    """Decode a [u16 len][ascii] string leaf; returns bytes or None."""
+    if node.kind != 'L' or node.spec < 2:
+        return None
+    ln = struct.unpack_from('<H', raw, node.pos + 8)[0]
+    if ln != node.spec - 2:
+        return None
+    return raw[node.pos + 10:node.pos + 10 + ln]
+
+
+def find_logo_element(raw, nodes, name):
+    """Return the widget ELEMENT node (C id=1 cnt=2 ancestor) whose subtree
+    holds the given widget-name string leaf."""
+    for n in nodes:
+        if str_leaf(raw, n) == name:
+            el = n.parent            # C id=11 (props)
+            el = el.parent           # C id=4  (body)
+            el = el.parent           # C id=1  (element)
+            assert el.kind == 'C' and el.id == 1 and el.spec == 2, \
+                f'unexpected element shape for {name}'
+            return el
+    raise KeyError(name)
+
+
+def rewrite_strings(blob, replacements):
+    """Rewrite [u32 size][u16 len][ascii] string fields inside a copied element
+    blob, adjusting both prefixes (leaf sizes change; the element's structure
+    -- container COUNTS -- does not)."""
+    out = bytearray(blob)
+    for old, new in replacements:
+        field = struct.pack('<I', len(old) + 2) + struct.pack('<H', len(old)) + old
+        i = out.find(field)
+        assert i >= 0, f'string field not found: {old}'
+        assert out.find(field, i + 1) < 0, f'ambiguous string field: {old}'
+        out[i:i + len(field)] = struct.pack('<I', len(new) + 2) + struct.pack('<H', len(new)) + new
+    return bytes(out)
+
 
 def main():
-    tmp = os.path.join(WORK, '_4logos_tmp'); os.makedirs(tmp, exist_ok=True)
-    subprocess.run([sys.executable, EXTRACT, 'extract', MOD_MEG, MEMBER, tmp], capture_output=True)
-    src = next(os.path.join(r, f) for r, _, fs in os.walk(tmp) for f in fs if f.upper() == MEMBER)
-    d = open(src, 'rb').read(); ORIG = len(d); ORIGC = ORIG - 0x24
-    raw = bytearray(zlib.decompress(d[0x24:]))
+    tmp = os.path.join(WORK, '_4logos_tmp')
+    os.makedirs(tmp, exist_ok=True)
+    subprocess.run([sys.executable, EXTRACT, 'extract', MOD_MEG, MEMBER, tmp],
+                   check=True, capture_output=True)
+    src = next(os.path.join(r, f) for r, _, fs in os.walk(tmp) for f in fs
+               if f.upper() == MEMBER)
+    d = open(src, 'rb').read()
+    ORIG, ORIGC = len(d), len(d) - 0x24
+    raw = zlib.decompress(d[0x24:])
 
-    template = bytes(raw[3868:4175])                      # the _Allies widget block
-    new_blocks = b''.join(make_widget(template, n, t, tint) for n, t, tint in NEW_WIDGETS)
-    for off, tint in RETINT.items():
-        assert raw[off:off+2] == b'\x03\x10'
-        struct.pack_into('<4f', raw, off+2, *tint)
+    nodes = parse_tree(raw)
+    allies = find_logo_element(raw, nodes, b'SideBar_FactionLogo_Allies')
+    soviet = find_logo_element(raw, nodes, b'SideBar_FactionLogo_Soviet')
+    parent = allies.parent
+    assert soviet.parent is parent, 'logo widgets have different parents'
+    assert parent.kind == 'C'
 
-    rm = raw.find(b'RadarMap', 4400)
-    ins = raw.rfind(b'\x26\x10', 4175, rm)                # RadarMap's header = insertion point
-    newraw = bytes(raw[:ins]) + new_blocks + bytes(raw[ins:])
+    template = raw[allies.pos:allies.end]
+    new_blobs = b''.join(
+        rewrite_strings(template, [
+            (b'SideBar_FactionLogo_Allies', name),
+            (b'ui_sidebar_factionlogo_allies', tex),
+        ])
+        for name, tex in NEW_WIDGETS)
 
-    # !!! MISSING: update the enclosing parent chunk size/child-count by len(new_blocks) here !!!
-    # Without it, the sidebar fails to render (see module docstring).
+    ins = soviet.end
+    newraw = bytearray(raw[:ins] + new_blobs + raw[ins:])
+    # the single structural fixup: parent child count +2
+    struct.pack_into('<I', newraw, parent.pos + 4, (parent.spec + 2) | MSB)
+    newraw = bytes(newraw)
+
+    # validate: full reparse + both new widgets present under the same parent
+    nodes2 = parse_tree(newraw)
+    for name, tex in NEW_WIDGETS:
+        el = find_logo_element(newraw, nodes2, name)
+        assert el.parent.pos == parent.pos, f'{name} not under expected parent'
+        assert any(str_leaf(newraw, n) == tex
+                   for n in nodes2 if n.pos >= el.pos and n.end <= el.end), \
+            f'{name} texture ref missing'
+    print(f'payload {len(raw)} -> {len(newraw)} (+{len(new_blobs)}); '
+          f'parent @{parent.pos} count {parent.spec} -> {parent.spec + 2}; reparse OK')
 
     comp = zlib.compress(newraw, 9)
-    assert len(comp) <= ORIGC, f'overflow {len(comp)} > {ORIGC}'
-    hdr = bytearray(d[:0x24]); struct.pack_into('<I', hdr, 0x10, len(comp))
+    assert len(comp) <= ORIGC, f'compressed overflow: {len(comp)} > {ORIGC}'
+    hdr = bytearray(d[:0x24])
+    struct.pack_into('<I', hdr, 0x10, len(comp))          # csize; [0x08] hash stays stale
     body = bytes(hdr) + comp
     edited = os.path.join(tmp, 'RA_TACTICAL_UI.4logos.BUI')
-    open(edited, 'wb').write(body + b'\x00' * (ORIG - len(body)))
+    open(edited, 'wb').write(body + b'\x00' * (ORIG - len(body)))  # pad to exact size
 
     shutil.copyfile(MOD_MEG, OUT_MEG)
-    subprocess.run([sys.executable, PACK, 'repack', OUT_MEG, OUT_MEG + '.tmp', f'{MEMBER}={edited}'], capture_output=True)
+    subprocess.run([sys.executable, PACK, 'repack', OUT_MEG, OUT_MEG + '.tmp',
+                    f'{MEMBER}={edited}'], check=True, capture_output=True)
     os.replace(OUT_MEG + '.tmp', OUT_MEG)
+    assert os.path.getsize(OUT_MEG) == os.path.getsize(MOD_MEG), 'MEG size drifted'
     shutil.rmtree(tmp, ignore_errors=True)
-    print(f'wrote {OUT_MEG} (member {ORIG}B, +{len(new_blocks)}B inserted, comp {len(comp)}/{ORIGC})')
-    print('WARNING: parent chunk-size fixup NOT applied -> sidebar will not render. WIP.')
+    print(f'wrote {OUT_MEG} (member {ORIG}B unchanged, comp {len(comp)}/{ORIGC})')
+
 
 if __name__ == '__main__':
     main()
