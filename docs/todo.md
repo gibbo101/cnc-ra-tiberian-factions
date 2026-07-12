@@ -5,6 +5,20 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## A-10 napalm bombs fall ~4x faster than TD (double falling physics) (2026-07-12)
+
+TD-port Dropping bullets (BULLET_TDNAPALM) get falling physics applied twice per frame:
+RA's `ObjectClass::AI()` integrates Height/Riser with `Rule.Gravity` (3/frame decay) AND
+`BulletClass::AI_TD()`'s TD-verbatim Dropping branch integrates again with TD's 1/frame
+decay. TD intended 1/frame only, so bombs hit the ground much earlier than TD's — the
+bomb stream walks a shorter line along the overflight and units get less scatter time.
+Decision (Luke, 2026-07-12): fix to TD-authentic rather than keep. Fix needs care — the
+base-AI/AI_TD interplay (IsFalling is also read by In_Which_Layer and cleared by the base
+integrator) — plus a Deck playtest of the bombing-run feel. Only affects TDNapalm today
+(the only Dropping TD-port bullet); RA-native Bomblet/Parabomb paths untouched.
+
+---
+
 ## DEFERRED: AI vehicles stuck in their own base (general pathfinding) (2026-06-18, Luke)
 
 Observed live during harvester testing (blue AI base): several combat vehicles frozen in the base,

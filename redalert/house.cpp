@@ -740,7 +740,8 @@ HouseClass::HouseClass(HousesType house)
     // recharge per tiberiandawn/defines.h ION_CANNON_GONE_TIME
     // (10 * TICKS_PER_MINUTE). Powered = true so a power-starved base
     // suspends the timer (matches RA's nuke / chrono behaviour).
-    new (&SuperWeapon[SPC_TD_ION_CANNON]) SuperClass(TICKS_PER_MINUTE * 10,
+    // Dev builds recharge in 1 second (ion-strike anim-placement testing).
+    new (&SuperWeapon[SPC_TD_ION_CANNON]) SuperClass(TF_Dev_Cheats() ? TICKS_PER_SECOND : (TICKS_PER_MINUTE * 10),
                                                      true,
                                                      VOX_TD_ION_CHARGING,
                                                      VOX_TD_ION_READY,
