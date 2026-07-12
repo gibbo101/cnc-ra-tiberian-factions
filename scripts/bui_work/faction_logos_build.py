@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
 """
+GOAL DEAD (2026-07-12) -- RETAINED AS THE .bui STRUCTURAL-INSERT REFERENCE.
+A discriminator probe proved ClientG's compiled faction->logo mapping collapses
+all RA countries to SideBar_FactionLogo_{Allies,Soviet}; the _GDI/_NOD widgets
+this script inserts are structurally valid and render-safe but never queried in
+RA mode. See docs/bui-front-end-modding.md "RESOLVED NEGATIVE". The parse/
+rewrite/insert machinery below is the worked example for any future .bui
+structural edit.
+
 Build RA_TACTICAL_UI.BUI with per-faction HUD sidebar logos (GDI + Nod) and pack
 it into a test CONFIG.MEG. See docs/bui-front-end-modding.md "Per-faction HUD
 logos".

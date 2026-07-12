@@ -85,7 +85,7 @@ Always edit from the **pristine base** member and re-derive offsets against expe
 | **W1 Allied/Soviet picker emblems** | **PARTIAL / weak** | Can retexture existing combo/listbox widgets and repoint `FACTIONS.XML SmallIconName` at **already-preloaded** regions. Cannot supply **new emblem pixels** (front-end custom textures resolved-negative — `front-end-texture-meg-spike.md`). "Add a hidden widget to force-preload `UI_SIDEBAR_FACTIONLOGO_*` then repoint" needs payload growth → blocked by same-size rule + startup-crash risk. |
 | **W2 genuine 5th faction slot** | **DEAD** | `FactionType` is a compiled C++ enum in ClientG; the faction listbox is code-populated keyed by it. No data/`.bui`/script can mint an enum value. |
 | **W3 campaign / map-select UI** | **PARTIAL (cosmetic only)** | Can restyle/reposition/retexture `CNC_MAPSELECT` / `RA_CAMPAIGN_SELECT`. The real prize — a selectable, *playable* GDI/Nod campaign — is DEAD on a separate wall: missions are `ExternalGameID=TiberianDawn` and the roster comes from compiled `TypeManager<CampaignMapSelectMapClass>`. `.bui` only restyles the screen. See `campaign-tabs-research.md`. |
-| **W4 in-game tactical HUD** | **PROVEN LIVE (2026-07-11)** | Deck-confirmed: a hide edit (zero-size + alpha-0) on a `SideBar_FactionLogo` rect in `RA_TACTICAL_UI.BUI`, shipped via the mod `CONFIG.MEG`, removed that faction's radar "COMMAND & CONQUER" logo in-game. So reposition/retint/hide/retexture of existing HUD widgets is real and shippable — e.g. GDI/Nod HUD identity. **Note:** the HUD has **separate per-faction logo widgets** — the test hid only the Soviet one (`@4421`); GDI/Nod/Allies each use a distinct widget, so per-faction HUD work means mapping each faction's own rects. Builder: `scripts/bui_work/` probes. |
+| **W4 in-game tactical HUD** | **PROVEN LIVE (2026-07-11) — but per-faction logos DEAD (2026-07-12)** | Cosmetic edits (reposition/retint/hide/retexture) of existing HUD widgets are real and shippable, and structural widget insertion now works too (format cracked — see the RESOLVED NEGATIVE section). But **per-faction GDI/Nod crests are engine-walled**: ClientG's compiled mapping sends all RA Allied-side countries (incl. our GDI=Spain, Nod=Turkey) to `SideBar_FactionLogo_Allies` and Soviet-side to `_Soviet`; `_GDI`/`_NOD` are TD-mode-only lookups. HUD identity via `.bui` is limited to **side-level or mod-wide** styling. Builder: `scripts/bui_work/faction_logos_build.py`. |
 | **W5 `a` / `/` select-all/deploy hotkey classification** | **DEAD** | Hardcoded in ClientG (`RTSInputManagerClass`, registered-type identity); not expressed in any `.bui` or shipped script. Per-frame export spoofs already Deck-proven no-op. |
 
 **The line to remember:** cosmetic reshape of existing widgets = reachable; new options/structure = not.
@@ -118,7 +118,46 @@ Interpretation: crest shows the Soviet/Nod logo = **W4 proven end-to-end**. No c
 
 ---
 
-## Per-faction HUD logos — structural-add WIP (session handover 2026-07-11)
+## Per-faction HUD logos — RESOLVED NEGATIVE (2026-07-12). Do not re-chase.
+
+**Verdict: per-faction sidebar crests for GDI/Nod are engine-walled in RA mode.**
+ClientG's compiled FactionType→logo-widget mapping collapses ALL RA countries to
+the two side widgets — `SideBar_FactionLogo_Allies` for Allied-side countries
+(incl. Spain = our GDI and Turkey = our Nod) and `_Soviet` for Soviet-side. The
+`_GDI`/`_NOD` widget names (present in ClientG, exact-match verified by strings)
+are only queried for the TD FactionTypes (Faction1/Faction2), which the RA lobby
+can never produce (the W2 wall). The mod's shipped all-factions
+"COMMAND & CONQUER" wordmark is the correct end state.
+
+**Discriminator probe that proved it (Linux, 2026-07-12):** `_Allies` widget
+retextured to the GDI eagle; structurally-valid `_GDI`/`_NOD` widgets inserted
+(cracked format, unique instance IDs — see below) pointing at the Nod scorpion.
+Result: GDI, Nod, AND Allies all showed the eagle (→ all resolve to `_Allies`);
+Soviets showed the wordmark (→ `_Soviet`); the scorpion never appeared (→
+`_GDI`/`_NOD` never queried). This also retro-explains the 2026-07-11 "hide
+`_Allies` changed nothing" puzzle only partially — those offsets were misaligned
+mid-node (see next section); trust only the 2026-07-12 probe.
+
+**What the chase yielded anyway (both real capabilities):**
+1. **The chunk grammar is fully cracked** — `node = [u32 id][u32 spec]`, spec
+   MSB set → container holding `spec & 0x7fffffff` CHILD NODES (a count, not a
+   byte size); else leaf of `spec` data bytes. Validated by exact full-file
+   parse of `RA_TACTICAL_UI.BUI` (6,497 nodes). Widget elements are
+   `C id=1 cnt=2` subtrees; each widget's first micro-chunk (`01 04 <u32>`) is a
+   per-instance unique ID (serialized pointers — monotonic in file order, no
+   cross-references in the payload).
+2. **Structural widget insertion WORKS** (revising this doc's earlier "cannot
+   add widgets" claim): copy a complete element subtree, rewrite its string
+   leaves (u32 size + u16 len prefixes), give it a fresh unique ID, insert as a
+   sibling, and bump the direct parent's child count — the tree parses and the
+   HUD renders normally with the extra widgets present (Linux-verified; they
+   were simply never *queried* for this use case). The same-size compressed
+   budget still applies. Builder/worked example:
+   `scripts/bui_work/faction_logos_build.py`. What remains impossible is making
+   the ENGINE use new widgets it has no compiled lookup for — walls W2/W5
+   unchanged.
+
+## Per-faction HUD logos — the original structural-add WIP (2026-07-11, superseded by the above)
 
 **Goal:** 4 distinct radar-splash logos, one per faction (Allied / GDI / Nod / Soviet). This is the frontier case — it needs a **structural add** (new widgets), not just in-place edits.
 
