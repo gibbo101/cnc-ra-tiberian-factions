@@ -871,8 +871,8 @@ void VesselTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
     // mount position", 2026-07-03) -- not the vanilla DD's aft seat. TDPT/TDCA = RA originals.
     case VESSEL_TDDD: {
         static const signed char _tddd_seat[16][2] = {
-            {0, -10},  {6, -10},  {10, -8},  {13, -5},  {14, -1},  {13, 3},  {10, 6},  {6, 8},
-            {0, 8},    {-6, 8},   {-10, 6},  {-13, 3},  {-14, -1}, {-13, -5}, {-10, -8}, {-6, -10},
+            {0, -10},  {6, -10},  {10, -8},  {13, -5},  {14, -3},  {13, 3},  {10, 2},  {6, 8},
+            {0, 8},    {-6, 8},   {-10, 2},  {-13, 3},  {-14, -1}, {-13, -5}, {-10, -8}, {-6, -10},
         };
         int f = Dir_To_16(dir);
         x = xx + _tddd_seat[f][0];
