@@ -4875,13 +4875,14 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             Cloak = UNCLOAKING;
             CloakingDevice.Set_Stage(0);
             CloakingDevice.Set_Rate(1);
-            // Tiberian Factions: TD-prefix units (the Stealth Tank) use TD's cloak SFX
-            // (VOC_CLOAK = TRANS1, routed via RAC/RAR_SFX_TRANS1) instead of RA's
-            // Iron-Curtain / submarine sound. Gated on the "TD" IniName so RA-faction
-            // cloakers (Phase Transport, Submarine) keep their vanilla cloak audio.
+            // Tiberian Factions: TD-prefix LAND cloakers (the Stealth Tank) use TD's cloak SFX
+            // (VOC_CLOAK = TRANS1, routed via RAC/RAR_SFX_TRANS1) instead of RA's Iron-Curtain
+            // sound. Vessels are excluded so every submarine -- RA (SS) or TD (TDNSUB/TDOBLISUB)
+            // -- surfaces/dives with the submarine sound (VOC_SUBSHOW) below; RA land cloakers
+            // (Phase Transport) keep VOC_IRON1.
             {
                 char const* tf_ini = Techno_Type_Class()->IniName;
-                if (tf_ini != NULL && tf_ini[0] == 'T' && tf_ini[1] == 'D') {
+                if (tf_ini != NULL && tf_ini[0] == 'T' && tf_ini[1] == 'D' && What_Am_I() != RTTI_VESSEL) {
                     Sound_Effect(VOC_TD_CLOAK, Coord);
                 } else {
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
@@ -4926,13 +4927,14 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             Cloak = CLOAKING;
             CloakingDevice.Set_Stage(0);
             CloakingDevice.Set_Rate(1);
-            // Tiberian Factions: TD-prefix units (the Stealth Tank) use TD's cloak SFX
-            // (VOC_CLOAK = TRANS1, routed via RAC/RAR_SFX_TRANS1) instead of RA's
-            // Iron-Curtain / submarine sound. Gated on the "TD" IniName so RA-faction
-            // cloakers (Phase Transport, Submarine) keep their vanilla cloak audio.
+            // Tiberian Factions: TD-prefix LAND cloakers (the Stealth Tank) use TD's cloak SFX
+            // (VOC_CLOAK = TRANS1, routed via RAC/RAR_SFX_TRANS1) instead of RA's Iron-Curtain
+            // sound. Vessels are excluded so every submarine -- RA (SS) or TD (TDNSUB/TDOBLISUB)
+            // -- surfaces/dives with the submarine sound (VOC_SUBSHOW) below; RA land cloakers
+            // (Phase Transport) keep VOC_IRON1.
             {
                 char const* tf_ini = Techno_Type_Class()->IniName;
-                if (tf_ini != NULL && tf_ini[0] == 'T' && tf_ini[1] == 'D') {
+                if (tf_ini != NULL && tf_ini[0] == 'T' && tf_ini[1] == 'D' && What_Am_I() != RTTI_VESSEL) {
                     Sound_Effect(VOC_TD_CLOAK, Coord);
                 } else {
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
