@@ -18,8 +18,14 @@ Nod-paratrooper-drops-minigunners. Open items on top:
   TDC17P). Files: defines.h (AIRCRAFT_TDPARADROP), aadata.cpp (def + ImageData/CameoData donor=Badger),
   rules.ini [TDC17P], RA_UNITS.XML (32-frame alias), house.cpp @PINF Nod plane. Existing TDCARGO stays
   untargetable/vehicle-only.
-- **Nod SAM inaccurate** — can't hit the paradrop plane (or aircraft generally). Investigate TDSAM's
-  missile accuracy/ROT vs fast aircraft.
+- **GDI GPS icon flickers + no tooltip (broken).** Almost certainly the same TDEYE-vs-BScan gap as the
+  grant, but on the REMOVAL side: the "lost the tech centre -> revoke GPS + reshroud" check
+  (house.cpp ~1855, `if (IsGPSActive && !(ActiveBScan & STRUCTF_ADVANCED_TECH))`) keys on the BScan
+  ADVANCED_TECH flag, which GDI never sets (TDEYE is past the 32-bit mask). So GPS is granted via my
+  TDEYE gate, then instantly revoked every frame -> flicker, no stable tooltip. Fix = add
+  `|| Has_Building_Active(STRUCT_TDEYE)` (and TDTMPL if Nod should get it) to that removal check,
+  mirroring the grant. Quick. (Do after stealth gen, per Luke.)
+- **Nod SAM inaccurate** — ROT 10->20 shipped; assume-fixed pending confirm.
 - **AI helis = pads+1.** Free heli per helipad (`SeparateAircraft=no`) races the AI_Aircraft-queued
   heli → stable +1. Fix = don't queue an AI heli while a helipad is still building. Minor.
 - **Nod Stealth Generator (new building) — GPS counter + prelude-to-stealth (Luke spec 2026-07-13).**
