@@ -1863,6 +1863,7 @@ typedef enum AircraftType : char
     AIRCRAFT_TDAPACHE,  // TD Apache attack helicopter (HELI) — Nod, single rotor, chain gun (TDApacheGun), Ammo 15, helipad-built. aadata.cpp AttackHeli.
     AIRCRAFT_TDORCA,    // TD Orca (ORCA) — GDI, NO rotor (VTOL), DRAGON missiles (TDStnkDragon), Ammo 6, helipad-built. aadata.cpp OrcaHeli.
     AIRCRAFT_TDA10,     // v4.0: TD A-10 Warthog — GDI, fixed-wing napalm strafer, Ammo 3, airfield-built (AFLD owner-opened). DTA-style divergence (TD's A-10 was a support power). aadata.cpp TdA10.
+    AIRCRAFT_TDPARADROP, // v4.0: targetable support-drop C-17 (Nod Paratroopers delivery). Twin of TDCARGO but attackable + Passengers=5; reuses the TDC17 sprite via RA_UNITS.XML alias. aadata.cpp TDParaDropPlane.
 
     AIRCRAFT_COUNT,
     AIRCRAFT_NONE = -1,

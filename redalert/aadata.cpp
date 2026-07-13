@@ -233,6 +233,32 @@ static AircraftTypeClass const TDCargoPlane(AIRCRAFT_TDCARGO, // What kind of ai
                                             MISSION_HUNT      // Default mission for aircraft.
 );
 
+// Tiberian Factions (v4.0) -- TD C-17 PARADROP plane (AIRCRAFT_TDPARADROP). The targetable twin of
+// TDCargoPlane, spawned ONLY by the Nod Paratroopers support power to fly the minigunner squad in.
+// Two deliberate differences from TDCARGO: radar-VISIBLE and a legal target, so SAM/AA can shoot it
+// down. Passengers=5 (rules.ini [TDC17P]); reuses the TDC17 sprite via an RA_UNITS.XML "TDC17P" tile
+// alias; ImageData donor = Badger. Unbuildable (TechLevel -1) -- support-drop only.
+static AircraftTypeClass const TDParaDropPlane(AIRCRAFT_TDPARADROP, // What kind of aircraft is this.
+                                               TXT_BADGER,       // Translated text (placeholder -- never shown).
+                                               "TDC17P",         // INI name (own section; shares TDC17 art).
+                                               0x0000,           // Vertical offset.
+                                               0x0000,           // Primary weapon offset along turret centerline.
+                                               0x0000,           // Primary weapon lateral offset along turret centerline.
+                                               true,             // Fixed wing aircraft?
+                                               false,            // Equipped with a rotor?
+                                               false,            // Custom rotor sets for each facing?
+                                               false,            // Can this aircraft land on clear terrain?
+                                               false,            // Is it invisible on radar?  NO -- SAM/AA must see it.
+                                               false,            // Can the player select it so as to give it orders?
+                                               true,             // Can it be assigned as a target for attack?  YES.
+                                               false,            // Is it insignificant (won't be announced)?
+                                               false,            // Is it immune to normal combat damage?
+                                               STRUCT_AIRSTRIP,  // Preferred landing building.
+                                               0xFF,             // Landing speed
+                                               32,               // Number of rotation stages.
+                                               MISSION_HUNT      // Default mission for aircraft.
+);
+
 // Tiberian Factions -- TD Apache attack helicopter (AIRCRAFT_TDAPACHE), ported from TD's
 // AIRCRAFT_HELICOPTER (tiberiandawn/aadata.cpp AttackHeli, TXT_HELI). NOD-ONLY (HOUSEF_BAD).
 // A genuine TD port (own weapon + sprite, unlike the Chinook). The attack-heli AI -- Ammo,
@@ -466,6 +492,7 @@ void AircraftTypeClass::Init_Heap(void)
     new AircraftTypeClass(TdApacheHeli);
     new AircraftTypeClass(TdOrca); // MUST follow TdApacheHeli to match the AIRCRAFT_TDORCA enum slot.
     new AircraftTypeClass(TdA10);  // MUST follow TdOrca to match the AIRCRAFT_TDA10 enum slot.
+    new AircraftTypeClass(TDParaDropPlane); // MUST follow TdA10 to match the AIRCRAFT_TDPARADROP slot.
 }
 
 /***********************************************************************************************
@@ -553,6 +580,14 @@ void AircraftTypeClass::One_Time(void)
     if (tdcargo.CameoData == NULL) {
         AircraftTypeClass const& donor = As_Reference(AIRCRAFT_BADGER);
         ((void const*&)tdcargo.CameoData) = donor.CameoData;
+    }
+
+    // TD C-17 paradrop twin (AIRCRAFT_TDPARADROP): same TGA-only situation as TDCARGO -> Badger donor
+    // ImageData so Draw_It doesn't bail; the launcher overlay resolves the real sprite by its "TDC17P"
+    // IniName via the RA_UNITS.XML alias. No cameo needed (unbuildable).
+    AircraftTypeClass& tdpara = As_Reference(AIRCRAFT_TDPARADROP);
+    if (tdpara.ImageData == NULL) {
+        ((void const*&)tdpara.ImageData) = As_Reference(AIRCRAFT_BADGER).ImageData;
     }
 
     // TD Apache (AIRCRAFT_TDAPACHE): TGA-only TD sprite -> NULL ImageData from the MFCD loop.

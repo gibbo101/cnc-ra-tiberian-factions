@@ -3377,10 +3377,14 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 
             if (ttype != NULL) {
                 ttype->House = Class->House;
-                // Nod drops its own Minigunners (TDE1); Soviet drops RA Rifle Infantry (E1).
-                // Set every fire -- the @PINF team is cached and shared across all houses.
-                ttype->Members[0].Class = &InfantryTypeClass::As_Reference(
-                    (ActLike == HOUSE_BAD) ? INFANTRY_TDE1 : INFANTRY_E1);
+                // Nod drops its own Minigunners (TDE1) from the targetable TD C-17 (TDC17P); Soviet
+                // drops RA Rifle Infantry (E1) from the Badger. Set every fire -- the @PINF team is
+                // cached and shared across all houses. Squad size = the plane's passenger capacity.
+                bool nod = (ActLike == HOUSE_BAD);
+                AircraftType para_plane = nod ? AIRCRAFT_TDPARADROP : AIRCRAFT_BADGER;
+                ttype->Members[0].Class = &InfantryTypeClass::As_Reference(nod ? INFANTRY_TDE1 : INFANTRY_E1);
+                ttype->Members[0].Quantity = AircraftTypeClass::As_Reference(para_plane).Max_Passengers();
+                ttype->Members[1].Class = &AircraftTypeClass::As_Reference(para_plane);
                 Scen.Waypoint[WAYPT_SPECIAL] = Map.Nearby_Location(cell, SPEED_FOOT);
                 Do_Reinforcements(ttype);
             }
