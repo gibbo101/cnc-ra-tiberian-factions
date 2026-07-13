@@ -5,6 +5,60 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## v4.0 air / paratroopers / balance — open threads (2026-07-13, live)
+
+Spun out of the air-AI + power-grants session. Deployed-but-unverified batch: airfield/A-10 AI
+routing, 3 power grants, AI air-responsiveness (max-threat + limit-mirror), MCV/ConYard/AGT,
+Nod-paratrooper-drops-minigunners. Open items on top:
+
+- **Nod paratrooper C-17 delivery plane.** Nod now drops Minigunners (TDE1) but from the RA Badger.
+  Decision (Luke): build a **"TDC17P" support-drop plane** — a targetable twin of the existing
+  TDCARGO ("TDC17"): unbuildable (support-only), **targetable + radar-visible** (so SAMs can hit it),
+  **Passengers=5** (full squad), reuses the tdc17 sprite (alias the 32 RA_UNITS.XML TDC17 tiles under
+  TDC17P). Files: defines.h (AIRCRAFT_TDPARADROP), aadata.cpp (def + ImageData/CameoData donor=Badger),
+  rules.ini [TDC17P], RA_UNITS.XML (32-frame alias), house.cpp @PINF Nod plane. Existing TDCARGO stays
+  untargetable/vehicle-only.
+- **Nod SAM inaccurate** — can't hit the paradrop plane (or aircraft generally). Investigate TDSAM's
+  missile accuracy/ROT vs fast aircraft.
+- **AI helis = pads+1.** Free heli per helipad (`SeparateAircraft=no`) races the AI_Aircraft-queued
+  heli → stable +1. Fix = don't queue an AI heli while a helipad is still building. Minor.
+- **Nod Stealth Generator (new building) — GPS counter + prelude-to-stealth (Luke spec 2026-07-13).**
+  A new Nod building that **reuses the Gap Generator sprite**. Behaviour:
+  - Same radius as the RA Gap Generator.
+  - **Cloaks friendly buildings** within that radius (not shroud).
+  - **Decloaks on proximity:** any non-allied unit within the generator's sight range unstealths the
+    buildings — no stealth-detector needed, just line-of-sight/range.
+  - **Shimmer effect** in the radius (in place of the gap gen's black shroud) as a subtle "something's
+    hidden here" tell.
+  Scope = a real multi-part feature, each with unknowns: (1) new STRUCT_TD* building off the GAP sprite
+  (building-separation recipe); (2) building cloak — BuildingClass inherits TechnoClass cloak members
+  but RA1 never cloaks buildings, so rendering + targetability of cloaked buildings is unverified;
+  (3) per-frame proximity-decloak logic keyed to the generator's sight vs enemy units; (4) shimmer VFX
+  in the radius. Multi-session feature, NOT a quick tweak.
+
+---
+
+## Defences balance — Nod defensive-economy gap + optional Tesla chain (2026-07-13)
+
+Spun out of the v4.0 building balance dive. Building HP is fine (the `MaxStrength*2` at load —
+bdata.cpp Read_INI — equalises TD buildings to RA scale). Two open threads:
+
+- **Nod defensive economy is much worse than GDI's.** GDI's Advanced Guard Tower is a cheap
+  (1000 / −20 power), dual-purpose (AA+AG via TDSSM), **Burst=2** tower that covers ground *and*
+  air in one building. Nod must pay for the Obelisk (1500 / −150, ground-only) **plus** a separate
+  SAM (750 / −20, air) — ~2.25× cost, ~8.5× power for the same coverage — and Nod's light-vehicle +
+  Apache roster is exactly what the AGT eats (1.7 eff DPS vs light, plus AA). **Lever:** AGT cost/power
+  (curb cheap spam), or a Nod defensive-economy buff (cheaper Obelisk/SAM, or a dual-purpose Nod
+  option). NOT the AGT warhead — vs-light is untouched by the reverted F8 buff. Test in a GDI-vs-Nod
+  skirmish before tuning.
+- **Optional: Tesla "chain" to low-HP targets (esp. infantry).** RA1's Tesla does NOT chain in this
+  codebase (single-target, Spread=1); the group-clear feel is the Super warhead one-shotting infantry.
+  Could be added as a code feature (arc to nearby targets) if we want the RA2-style behaviour — parked.
+- **Done this session:** AGT vs-heavy reverted 50%→25% (it was already strong via Burst=2 + AA +
+  cost/power). Obelisk range left at 7.5 (< Tesla 8.5) deliberately — higher damage, shorter reach.
+
+---
+
 ## A-10 napalm bombs fall ~4x faster than TD (double falling physics) — IMPLEMENTED, PENDING PLAYTEST (2026-07-13)
 
 TD-port Dropping bullets (BULLET_TDNAPALM) got falling physics applied twice per frame:
