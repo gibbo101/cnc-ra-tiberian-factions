@@ -1891,13 +1891,16 @@ void HouseClass::Super_Weapon_Handler(void)
         **	If there is no GPS satellite present, but there is a GPS satellite
         **	facility available, then make the GPS satellite available as well.
         */
-        if ((ActiveBScan & STRUCTF_ADVANCED_TECH) != 0 && !IsGPSActive && Control.TechLevel >= Rule.GPSTechLevel
-            && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
+        if (((ActiveBScan & STRUCTF_ADVANCED_TECH) != 0 || Has_Building_Active(STRUCT_TDEYE)) && !IsGPSActive
+            && Control.TechLevel >= Rule.GPSTechLevel && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
 
+            // GDI GPS: the Advanced Comm (TDEYE) is GDI's tech-centre equivalent, so it grants
+            // the GPS satellite exactly as the Allied Tech Center does. TDEYE is past the 32-bit
+            // BScan mask, hence the Has_Building_Active gate above rather than a STRUCTF_ flag.
             bool canfire = false;
             for (int index = 0; index < Buildings.Count(); index++) {
                 BuildingClass* bldg = Buildings.Ptr(index);
-                if (*bldg == STRUCT_ADVANCED_TECH && bldg->House == this && !bldg->IsInLimbo) {
+                if ((*bldg == STRUCT_ADVANCED_TECH || *bldg == STRUCT_TDEYE) && bldg->House == this && !bldg->IsInLimbo) {
                     if (!bldg->HasFired) {
                         canfire = true;
                         break;
@@ -2244,7 +2247,9 @@ void HouseClass::Super_Weapon_Handler(void)
         // airstrip is NOT an RA superweapon host — it must not grant Spy Plane
         // or Paratroopers. Gate on owning a genuine STRUCT_AIRSTRIP so only RA
         // factions with a real airstrip get these.
-        if ((ActiveBScan & STRUCTF_AIRSTRIP) != 0 && Has_Building_Active(STRUCT_AIRSTRIP) && !Scen.IsNoSpyPlane
+        // Nod spy plane: the Nod airstrip (TDAFLD) launches it, as the Soviet airstrip does.
+        if ((ActiveBScan & STRUCTF_AIRSTRIP) != 0
+            && (Has_Building_Active(STRUCT_AIRSTRIP) || Has_Building_Active(STRUCT_TDAFLD)) && !Scen.IsNoSpyPlane
             && Control.TechLevel >= Rule.SpyPlaneTechLevel) {
             SuperWeapon[SPC_SPY_MISSION].Enable(false, this == PlayerPtr, false);
             // Add to Glyphx multiplayer sidebar. ST - 8/7/2019 10:13AM
@@ -2308,7 +2313,11 @@ void HouseClass::Super_Weapon_Handler(void)
             }
         }
     } else {
-        if ((ActiveBScan & STRUCTF_AIRSTRIP) != 0 && Has_Building_Active(STRUCT_AIRSTRIP)
+        // Nod paratroopers: need both the Nod airstrip (TDAFLD, to fly them in) and the Hand
+        // of Nod (TDHAND, the barracks that supplies the infantry). Soviet keeps its airstrip path.
+        if ((ActiveBScan & STRUCTF_AIRSTRIP) != 0
+            && (Has_Building_Active(STRUCT_AIRSTRIP)
+                || (Has_Building_Active(STRUCT_TDAFLD) && Has_Building_Active(STRUCT_TDHAND)))
             && Control.TechLevel >= Rule.ParaInfantryTechLevel) {
             SuperWeapon[SPC_PARA_INFANTRY].Enable(false, this == PlayerPtr, false);
             // Add to Glyphx multiplayer sidebar. ST - 8/7/2019 10:13AM
@@ -3368,6 +3377,10 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 
             if (ttype != NULL) {
                 ttype->House = Class->House;
+                // Nod drops its own Minigunners (TDE1); Soviet drops RA Rifle Infantry (E1).
+                // Set every fire -- the @PINF team is cached and shared across all houses.
+                ttype->Members[0].Class = &InfantryTypeClass::As_Reference(
+                    (ActLike == HOUSE_BAD) ? INFANTRY_TDE1 : INFANTRY_E1);
                 Scen.Waypoint[WAYPT_SPECIAL] = Map.Nearby_Location(cell, SPEED_FOOT);
                 Do_Reinforcements(ttype);
             }
@@ -6261,6 +6274,7 @@ static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType
     static BuildingTypeClass const* c_eye = NULL;  // GDI tech (Adv. Comm)
     static BuildingTypeClass const* c_tmpl = NULL; // Nod tech (Temple of Nod)
     static BuildingTypeClass const* c_hpad = NULL; // helipad (both factions)
+    static BuildingTypeClass const* c_gafld = NULL; // GDI fixed-wing airfield (A-10 host)
     static BuildingTypeClass const* c_fix = NULL;  // service depot (both factions)
     if (!resolved) {
         resolved = true;
@@ -6280,6 +6294,7 @@ static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType
         c_eye = BuildingTypeClass::As_Pointer("TDEYE");
         c_tmpl = BuildingTypeClass::As_Pointer("TDTMPL");
         c_hpad = BuildingTypeClass::As_Pointer("TDHPAD");
+        c_gafld = BuildingTypeClass::As_Pointer("TDGAFLD");
         c_fix = BuildingTypeClass::As_Pointer("TDFIX");
     }
 
@@ -6314,13 +6329,15 @@ static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType
         return (gdi ? c_eye : c_tmpl);
     case STRUCT_HELIPAD:
         return (c_hpad);
+    case STRUCT_AIRSTRIP: // GDI fixed-wing airfield (the A-10 host); Nod flies helis only
+        return (gdi ? c_gafld : NULL);
     case STRUCT_REPAIR:
         return (c_fix);
     default:
-        // STRUCT_AIRSTRIP, kennel, gap, sub-pen, etc. have no GDI/Nod
-        // equivalent for the base-builder (Nod's vehicles come from the
-        // TDWEAP/TDAFLD war-factory role above). Leave the vanilla pick;
-        // Can_Build rejects it for GDI/Nod and the slot is simply skipped.
+        // kennel, gap, sub-pen, etc. have no GDI/Nod equivalent for the
+        // base-builder (Nod's vehicles come from the TDWEAP/TDAFLD war-factory
+        // role above). Leave the vanilla pick; Can_Build rejects it for GDI/Nod
+        // and the slot is simply skipped.
         return (NULL);
     }
 }
@@ -6452,6 +6469,30 @@ int HouseClass::AI_Building(void)
         HouseClass const* enemy = NULL;
         if (Enemy != HOUSE_NONE) {
             enemy = HouseClass::As_Pointer(Enemy);
+        }
+
+        /*
+        **	Tiberian Factions: air-build responsiveness. Vanilla keyed the airfield/helipad
+        **	urgency and the 5-building cap off the single designated Enemy only, so a human (or
+        **	any non-designated opponent) building an air force was invisible to it. Scan every
+        **	non-allied active house (all humans included) and mirror the STRONGEST single air
+        **	opponent -- max aircraft for the urgency threat, max air-structure count for the cap.
+        **	Max (not a sum) on purpose: summing every enemy's aircraft would make each AI chase a
+        **	combined multi-enemy total it can never catch, pinning the urgency at HIGH forever --
+        **	a runaway air arms race. Matching the biggest single opponent settles once drawn level.
+        */
+        int enemy_aircraft = 0;
+        int enemy_airstrips = 0;
+        int enemy_helipads = 0;
+        for (HousesType eh = HOUSE_FIRST; eh < HOUSE_COUNT; eh++) {
+            HouseClass const* ehp = HouseClass::As_Pointer(eh);
+            if (ehp != NULL && ehp->IsActive && !ehp->IsDefeated && !Is_Ally(ehp)) {
+                if (ehp->CurAircraft > enemy_aircraft) enemy_aircraft = ehp->CurAircraft;
+                int afld = ehp->BQuantity[STRUCT_AIRSTRIP] + ehp->BQuantity[STRUCT_TDGAFLD];
+                int hpad = ehp->BQuantity[STRUCT_HELIPAD] + ehp->BQuantity[STRUCT_TDHPAD];
+                if (afld > enemy_airstrips) enemy_airstrips = afld;
+                if (hpad > enemy_helipads) enemy_helipads = hpad;
+            }
         }
 
         level = Control.TechLevel;
@@ -6747,15 +6788,13 @@ int HouseClass::AI_Building(void)
         */
         int tf_hpad = TF_Skirmish_Type(STRUCT_HELIPAD, ActLike);
         current = BQuantity[STRUCT_HELIPAD] + (tf_hpad >= 0 ? BQuantity[tf_hpad] : 0);
-        if (current < Round_Up(Rule.HelipadRatio * fixed(CurBuildings)) && current < (unsigned)Rule.HelipadLimit) {
+        if (current < Round_Up(Rule.HelipadRatio * fixed(CurBuildings))
+            && current < (unsigned)(enemy_helipads > Rule.HelipadLimit ? enemy_helipads : Rule.HelipadLimit)) {
             b = TF_Skirmish_Pick(STRUCT_HELIPAD, ActLike);
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
-                    int threat_quantity = 0;
-                    if (enemy != NULL) {
-                        threat_quantity = enemy->CurAircraft;
-                    }
+                    int threat_quantity = enemy_aircraft;
 
                     *choiceptr = BuildChoiceClass(
                         (CurAircraft < (unsigned)threat_quantity) ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
@@ -6766,16 +6805,15 @@ int HouseClass::AI_Building(void)
         /*
         **	An airstrip would be good.
         */
-        current = BQuantity[STRUCT_AIRSTRIP];
-        if (current < Round_Up(Rule.AirstripRatio * fixed(CurBuildings)) && current < (unsigned)Rule.AirstripLimit) {
-            b = &BuildingTypeClass::As_Reference(STRUCT_AIRSTRIP);
+        int tf_gafld = TF_Skirmish_Type(STRUCT_AIRSTRIP, ActLike);
+        current = BQuantity[STRUCT_AIRSTRIP] + (tf_gafld >= 0 ? BQuantity[tf_gafld] : 0);
+        if (current < Round_Up(Rule.AirstripRatio * fixed(CurBuildings))
+            && current < (unsigned)(enemy_airstrips > Rule.AirstripLimit ? enemy_airstrips : Rule.AirstripLimit)) {
+            b = TF_Skirmish_Pick(STRUCT_AIRSTRIP, ActLike);
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
-                    int threat_quantity = 0;
-                    if (enemy != NULL) {
-                        threat_quantity = enemy->CurAircraft;
-                    }
+                    int threat_quantity = enemy_aircraft;
 
                     *choiceptr = BuildChoiceClass(
                         (CurAircraft < (unsigned)threat_quantity) ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
@@ -7399,6 +7437,19 @@ int HouseClass::AI_Aircraft(void)
             && AircraftTypeClass::As_Reference(AIRCRAFT_TDAPACHE).Level <= (unsigned)Control.TechLevel
             && BQuantity[STRUCT_TDHPAD] > AQuantity[AIRCRAFT_TDORCA] + AQuantity[AIRCRAFT_TDAPACHE]) {
             BuildAircraft = AIRCRAFT_TDAPACHE;
+            return (TICKS_PER_SECOND);
+        }
+
+        /*
+        **	GDI A-10 -- the fixed-wing analog of the Orca case above. RA's MiG/Yak cases
+        **	key on STRUCT_AIRSTRIP, which GDI never owns, so without this the GDI AI built
+        **	no fixed-wing at all. Keyed to the separated GDI Airfield (STRUCT_TDGAFLD);
+        **	one A-10 per airfield, mirroring the RA one-per-airstrip gate.
+        */
+        if (Can_Build(&AircraftTypeClass::As_Reference(AIRCRAFT_TDA10), ActLike)
+            && AircraftTypeClass::As_Reference(AIRCRAFT_TDA10).Level <= (unsigned)Control.TechLevel
+            && BQuantity[STRUCT_TDGAFLD] > AQuantity[AIRCRAFT_TDA10]) {
+            BuildAircraft = AIRCRAFT_TDA10;
             return (TICKS_PER_SECOND);
         }
 
