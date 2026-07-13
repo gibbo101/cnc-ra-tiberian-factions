@@ -1075,17 +1075,21 @@ bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
         **	Projectiles that make a ballistic flight to impact point must determine a
         **	vertical component for the projectile launch. Crude simulation: bias ground
         **	speed by distance, then add vertical velocity to keep airborne for the
-        **	desired time. RA uses Height/IsFalling where TD uses Altitude/Riser.
+        **	desired time. Uses TD's Height/Riser members (TD's Altitude == RA's Height).
+        **
+        **	IsFalling is deliberately left clear: AI_TD integrates the fall itself,
+        **	TD-verbatim (Riser per frame). Setting IsFalling would make ObjectClass::AI
+        **	integrate the same fall a second time each frame (at Rule.Gravity, not TD's
+        **	rate), so the projectile would descend far too fast. AI_TD keeps the map
+        **	layer registration in sync in place of the base falling logic.
         */
         Riser = 0;
         if (Class->IsArcing) {
-            IsFalling = true;
             Height = 1;
             Riser = ((Distance(tcoord) / 2) / (speed + 1)) * Rule.Gravity;
             Riser = max(Riser, 10);
         }
         if (Class->IsDropping) {
-            IsFalling = true;
             Height = FLIGHT_LEVEL;
             Riser = 0;
             if (Class->IsParachuted) {
@@ -1161,9 +1165,13 @@ void BulletClass::AI_TD(void)
     ObjectClass::AI();
 
     /*
-    **	Ballistic objects (arcing / dropping) are handled here.
+    **	Ballistic objects (arcing / dropping) are handled here. This is the sole
+    **	integrator of the ballistic fall for TD-port bullets — IsFalling is left
+    **	clear (see Unlimbo_TD) so ObjectClass::AI does not integrate it a second time.
+    **	The layer sync below stands in for the base falling logic's map bookkeeping.
     */
     bool forced = false; // Forced explosion.
+    LayerType startlayer = In_Which_Layer();
     if (Class->IsArcing) {
         Height += Riser;
         if (Height <= 0) {
@@ -1181,6 +1189,16 @@ void BulletClass::AI_TD(void)
         if (Riser > -100) {
             Riser -= 1;
         }
+    }
+
+    /*
+    **	Keep the map layer registration in step with altitude. ObjectClass::Limbo
+    **	removes the bullet from In_Which_Layer() at detonation, so the layer it is
+    **	submitted to must track Height as it falls or the removal misses.
+    */
+    if ((Class->IsArcing || Class->IsDropping) && In_Which_Layer() != startlayer) {
+        Map.Remove(this, startlayer);
+        Map.Submit(this, In_Which_Layer());
     }
 
     /*

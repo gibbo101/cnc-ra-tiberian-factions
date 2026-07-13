@@ -5,17 +5,28 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
-## A-10 napalm bombs fall ~4x faster than TD (double falling physics) (2026-07-12)
+## A-10 napalm bombs fall ~4x faster than TD (double falling physics) — IMPLEMENTED, PENDING PLAYTEST (2026-07-13)
 
-TD-port Dropping bullets (BULLET_TDNAPALM) get falling physics applied twice per frame:
-RA's `ObjectClass::AI()` integrates Height/Riser with `Rule.Gravity` (3/frame decay) AND
-`BulletClass::AI_TD()`'s TD-verbatim Dropping branch integrates again with TD's 1/frame
-decay. TD intended 1/frame only, so bombs hit the ground much earlier than TD's — the
-bomb stream walks a shorter line along the overflight and units get less scatter time.
-Decision (Luke, 2026-07-12): fix to TD-authentic rather than keep. Fix needs care — the
-base-AI/AI_TD interplay (IsFalling is also read by In_Which_Layer and cleared by the base
-integrator) — plus a Deck playtest of the bombing-run feel. Only affects TDNapalm today
-(the only Dropping TD-port bullet); RA-native Bomblet/Parabomb paths untouched.
+TD-port Dropping bullets (BULLET_TDNAPALM) got falling physics applied twice per frame:
+RA's `ObjectClass::AI()` integrated Height/Riser with `Rule.Gravity` (3/frame decay) AND
+`BulletClass::AI_TD()`'s TD-verbatim Dropping branch integrated again with TD's 1/frame
+decay. TD intended 1/frame only, so bombs hit the ground much earlier than TD's.
+
+**Fix (bullet.cpp, uncommitted):** `Unlimbo_TD` no longer sets `IsFalling` for TD-port
+ballistic bullets, so `ObjectClass::AI()` no longer runs its parallel integrator — the
+`AI_TD` arcing/dropping branch is now the sole (TD-verbatim) integrator, giving TD's exact
+fall (start Height = FLIGHT_LEVEL = 256 = TD's `Pixel_To_Lepton(24)`; 1/frame decay ⇒ ~22
+frames vs the buggy ~9). Because `ObjectClass::Limbo()` removes the bullet from
+`In_Which_Layer()` (Height-based) at detonation, `AI_TD` now mirrors the base's map-layer
+transition (Map.Remove/Submit on layer change) so removal can't miss and dangle a pointer.
+Verified: `In_Which_Layer()` reads only Height (not IsFalling), and TD-port bullets never
+touch the native `AI()` path that keys landing off `IsFalling` — so dropping the flag is
+side-effect-free on the TD path. Only affects TDNapalm today (only Dropping TD-port bullet);
+fix is symmetric so any future Arcing TD-port bullet is covered too.
+
+**Still to do:** Deck/desktop playtest of the bombing-run feel (bomb-stream line length +
+scatter time along the overflight), then commit. Built + deployed to local desktop prefix
+2026-07-13.
 
 ---
 
