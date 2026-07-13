@@ -1754,40 +1754,40 @@
 
 	<ObjectTypeClass Name="RA_TDOBLISUB" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_UNIT_RA_SS</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_UNIT_RA_SS</ObjectDescriptionTextID>
+			<ObjectNameTextID>TEXT_UNIT_TDOBLISUB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TDOBLISUB</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_RA_Submarine</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
 	<ObjectTypeClass Name="RA_TDGYARD" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_STRUCTURE_RA_SYRD</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SYRD_DESC</ObjectDescriptionTextID>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGYARD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGYARD_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_RA_NavalYard</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
 	<ObjectTypeClass Name="RA_TDNPEN" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_STRUCTURE_RA_SPEN</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SPEN_DESC</ObjectDescriptionTextID>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDNPEN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNPEN_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_RA_SubPen</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
 	<ObjectTypeClass Name="RA_TDGAFLD" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_NOD_AIRFIELD</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_NOD_AIRFIELD</ObjectDescriptionTextID>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGAFLD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGAFLD_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TD_Airstrip</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
 	<ObjectTypeClass Name="RA_TDNSUB" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_UNIT_RA_SS</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_UNIT_RA_SS</ObjectDescriptionTextID>
+			<ObjectNameTextID>TEXT_UNIT_TDNSUB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TDNSUB</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_RA_Submarine</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
@@ -1796,32 +1796,32 @@
 	     until item 4 renders bespoke GDI ship cameos. See docs/naval-art-3d-pipeline-handover.md. -->
 	<ObjectTypeClass Name="RA_TDPT" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_UNIT_RA_PT</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_UNIT_RA_PT</ObjectDescriptionTextID>
+			<ObjectNameTextID>TEXT_UNIT_TDPT</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TDPT</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_RA_Gunboat</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
 	<ObjectTypeClass Name="RA_TDDD" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_UNIT_RA_DD</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_UNIT_RA_DD</ObjectDescriptionTextID>
+			<ObjectNameTextID>TEXT_UNIT_TDDD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TDDD</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_RA_Destroyer</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
 	<ObjectTypeClass Name="RA_TDCA" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_UNIT_RA_CA</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_UNIT_RA_CA</ObjectDescriptionTextID>
+			<ObjectNameTextID>TEXT_UNIT_TDCA</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TDCA</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_RA_Cruiser</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
 	<ObjectTypeClass Name="RA_TDMSUB" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_UNIT_RA_MSUB</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_UNIT_RA_MSUB</ObjectDescriptionTextID>
+			<ObjectNameTextID>TEXT_UNIT_TDMSUB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TDMSUB</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_RA_MissileSub</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
