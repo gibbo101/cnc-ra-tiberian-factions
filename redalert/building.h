@@ -349,6 +349,8 @@ public:
     virtual void Sell_Back(int control);
     virtual RadioMessageType Receive_Message(RadioClass* from, RadioMessageType message, int& param);
     virtual void AI(void);
+    // Tiberian Factions: Nod Stealth Generator cloak driver, run once per frame (LogicClass::AI).
+    static void Process_Stealth_Generators(void);
     virtual void Assign_Target(TARGET target);
     virtual bool Toggle_Primary(void);
     bool Flush_For_Placement(TechnoClass* techno, CELL cell);

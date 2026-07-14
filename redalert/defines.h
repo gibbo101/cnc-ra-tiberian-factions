@@ -1543,6 +1543,7 @@ typedef enum StructType : char
     STRUCT_TDGYARD,   // GDI Naval Yard (clone of SYRD, Owner=GoodGuy, RTTI_VESSELTYPE) — Gunboat + Hovercraft.
     STRUCT_TDNPEN,    // Nod Sub Pen (clone of SPEN, Owner=BadGuy, RTTI_VESSELTYPE) — Submarine + Obelisk Sub + Hovercraft.
     STRUCT_TDGAFLD,   // GDI Airfield (clone of AFLD, Owner=GoodGuy, RTTI_AIRCRAFTTYPE) — A-10.
+    STRUCT_TDSTEALTH, // Nod Stealth Generator (reuses GAP sprite; cloaks friendly buildings+units in radius). bdata.cpp / building.cpp driver.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0

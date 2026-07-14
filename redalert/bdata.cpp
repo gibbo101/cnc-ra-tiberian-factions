@@ -1310,6 +1310,40 @@ static BuildingTypeClass const ClassObelisk(STRUCT_TDOBLI,
                                             (short const*)OList12 // OVERLAPLIST.
 );
 
+// Tiberian Factions mod: Nod Stealth Generator (STRUCT_TDSTEALTH). Reuses the RA Gap
+// Generator sprite/footprint (Image=GAP in rules.ini) but drops the gap-shroud behaviour
+// (that logic is keyed on `*this == STRUCT_GAP`, which this type never matches). Instead it
+// hosts a cloak driver that hides friendly buildings+units in radius (see docs/todo.md
+// stealth-gen spec). Modeled verbatim on ClassGapGenerator.
+static BuildingTypeClass const ClassTdStealth(STRUCT_TDSTEALTH,
+                      TXT_NONE,               // Display name token; rules.ini Name= overrides.
+                      "TDSTEAL",              // IniName (art aliases GAP tiles / Image=GAP).
+                      FACING_S,               // Foundation direction from center of building.
+                      XYP_COORD(0, 0),        // Exit point for produced units.
+                      REMAP_ALTERNATE,        // Sidebar remap logic.
+                      0x0000,                 //	Vertical offset.
+                      0x0000,                 // Primary weapon offset along turret centerline.
+                      0x0000,                 // Primary weapon lateral offset along turret centerline.
+                      false,                  // Is this building a fake (decoy?)
+                      true,                   // Animation rate is regulated for constant speed?
+                      false,                  // Always use the given name for the building?
+                      false,                  // Is this a wall type structure?
+                      false,                  // Simple (one frame) damage imagery?
+                      false,                  // Is it invisible to radar?
+                      true,                   // Can the player select this?
+                      true,                   // Is this a legal target for attack or move?
+                      false,                  // Is this an insignificant building?
+                      false,                  // Theater specific graphic image?
+                      false,                  // Does it have a rotating turret?
+                      true,                   // Can the building be color remapped to indicate owner?
+                      RTTI_NONE,              // The object type produced at this factory.
+                      DIR_N,                  // Starting idle frame to match construction.
+                      BSIZE_12,               // SIZE: 1x2, same as the Gap Generator.
+                      NULL,                   // Preferred exit cell list.
+                      (short const*)List0010, // OCCUPYLIST:	List of active foundation squares.
+                      (short const*)List1     // OVERLAPLIST:List of overlap cell offset.
+);
+
 static BuildingTypeClass const ClassTurret(STRUCT_TURRET,
                                            TXT_TURRET,      // NAME:			Short name of the structure.
                                            "GUN",           // NAME:			Short name of the structure.
@@ -3886,6 +3920,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdGYard);   // STRUCT_TDGYARD  (GDI Naval Yard)   — enum order
     new BuildingTypeClass(ClassTdNPen);    // STRUCT_TDNPEN   (Nod Sub Pen)
     new BuildingTypeClass(ClassTdGAfld);   // STRUCT_TDGAFLD  (GDI Airfield)
+    new BuildingTypeClass(ClassTdStealth); // STRUCT_TDSTEALTH (Nod Stealth Generator)
 }
 
 /***********************************************************************************************
@@ -4022,6 +4057,8 @@ void BuildingTypeClass::One_Time(void)
 #ifdef REMASTER_BUILD
         {STRUCT_TDGAFLD, BSTATE_IDLE, 0, 8, 3},
 #endif
+        // Nod Stealth Generator: same 32-frame idle cycle as the Gap Generator sprite.
+        {STRUCT_TDSTEALTH, BSTATE_IDLE, 0, 32, 3},
     };
 
     for (int sindex = STRUCT_FIRST; sindex < STRUCT_COUNT; sindex++) {

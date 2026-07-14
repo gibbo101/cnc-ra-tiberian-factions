@@ -1494,6 +1494,295 @@ void BuildingClass::AI(void)
 }
 
 /***********************************************************************************************
+ * Tiberian Factions -- Nod Stealth Generator cloak driver (STRUCT_TDSTEALTH).                 *
+ *                                                                                             *
+ *   The generator hides friendly buildings + ground units inside its coverage radius by       *
+ *   driving the existing TechnoClass cloak system. The driver does the MINIMUM: it flips       *
+ *   `IsCloakable` on/off and force-reveals when needed; the engine's own `Cloaking_AI` owns    *
+ *   the cloak/recloak transitions. This is deliberate -- forcing `Do_Cloak` every frame        *
+ *   fights `Cloaking_AI` and the fire-then-recloak sequence, which is what caused the earlier   *
+ *   flicker / fire-does-no-damage / reveal-never-fires cluster.                                *
+ *                                                                                             *
+ *   Reveal is not one enemy sighting the field -- the field is invisible to everyone incl.     *
+ *   the AI. A covered object un-hides only when: an enemy stealth-DETECTOR (`IsScanner`) is     *
+ *   within reveal range of it; or it is an armed defensive building that has acquired a legal   *
+ *   in-range target (buildings have no uncloak-before-fire path, so they must ambush); or it    *
+ *   is a building in radio contact (refinery docking a harvester, war factory ejecting a        *
+ *   unit) -- cloaking then would `Detach_All` and sever that link. While revealed we refresh    *
+ *   `CloakDelay` so `Cloaking_AI` will not recloak it until the reason clears, then it re-hides *
+ *   on its own. Natively-cloakable types (the Stealth Tank) are left on their vanilla rules.    *
+ *                                                                                             *
+ *   "Driver-managed" is inferred from `IsCloakable && !Techno_Type_Class()->IsCloakable` --    *
+ *   a non-native cloaker we turned cloakable -- so no per-object saved state is needed and an   *
+ *   object that leaves coverage (or whose generators all die) self-restores.                   *
+ *=============================================================================================*/
+enum
+{
+    TF_STEALTH_RADIUS_CELLS = 10, // coverage radius around the generator (tunable in playtest)
+    TF_STEALTH_DETECT_CELLS = 3, // how close an enemy detector must be to reveal a covered object
+    TF_STEALTH_REVEAL_HOLD = 15  // frames a forced reveal is held before Cloaking_AI may recloak
+};
+
+/*
+**	Is any enemy stealth-detector (a techno whose type has IsScanner: all infantry, the attack
+**	dog, all vessels, and the Sensors=yes Radar Jammer) within reveal range of this object?
+*/
+static bool TF_Stealth_Detector_In_Range(TechnoClass const* obj, int range)
+{
+    COORDINATE oc = obj->Center_Coord();
+    HouseClass* owner = obj->House;
+
+    for (int i = 0; i < Units.Count(); i++) {
+        UnitClass* u = Units.Ptr(i);
+        if (u != NULL && u->IsActive && !u->IsInLimbo && !u->House->Is_Ally(owner)
+            && u->Techno_Type_Class()->IsScanner && ::Distance(u->Center_Coord(), oc) <= range) {
+            return (true);
+        }
+    }
+    for (int i = 0; i < Infantry.Count(); i++) {
+        InfantryClass* u = Infantry.Ptr(i);
+        if (u != NULL && u->IsActive && !u->IsInLimbo && !u->House->Is_Ally(owner)
+            && u->Techno_Type_Class()->IsScanner && ::Distance(u->Center_Coord(), oc) <= range) {
+            return (true);
+        }
+    }
+    for (int i = 0; i < Vessels.Count(); i++) {
+        VesselClass* u = Vessels.Ptr(i);
+        if (u != NULL && u->IsActive && !u->IsInLimbo && !u->House->Is_Ally(owner)
+            && u->Techno_Type_Class()->IsScanner && ::Distance(u->Center_Coord(), oc) <= range) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
+static void TF_Stealth_Drive(TechnoClass* obj, COORDINATE const* gcoord, HouseClass* const* ghouse, int gcount, int radius, int detect)
+{
+    if (obj == NULL || !obj->IsActive || obj->IsInLimbo || obj->Strength <= 0) {
+        return;
+    }
+
+    /*
+    **	Native cloakers (the Stealth Tank) keep their own vanilla rules, and the generator
+    **	itself is always a visible target (its whole balance concession, see the spec).
+    */
+    if (obj->Techno_Type_Class()->IsCloakable) {
+        return;
+    }
+    if (obj->What_Am_I() == RTTI_BUILDING && *(BuildingClass*)obj == STRUCT_TDSTEALTH) {
+        return;
+    }
+
+    /*
+    **	Covered == inside a friendly, powered generator's radius.
+    */
+    bool covered = false;
+    COORDINATE oc = obj->Center_Coord();
+    for (int g = 0; g < gcount; g++) {
+        if (ghouse[g]->Is_Ally(obj->House) && ::Distance(gcoord[g], oc) <= radius) {
+            covered = true;
+            break;
+        }
+    }
+
+    if (!covered) {
+        /*
+        **	Left the field (or all generators gone): restore so nothing stays ghosted.
+        **	Robust, not a one-shot latch -- keep restoring while any driver-cloaked state
+        **	lingers. The type-flag guard identifies "a non-native cloaker we made cloakable".
+        */
+        if (obj->IsCloakable && !obj->Techno_Type_Class()->IsCloakable) {
+            if (obj->Cloak == CLOAKED || obj->Cloak == CLOAKING) {
+                obj->Do_Uncloak();
+            }
+            if (obj->Cloak == UNCLOAKED) {
+                obj->IsCloakable = false;
+            }
+        }
+        return;
+    }
+
+    /*
+    **	Radio contact = an active operation (harvester docking, cargo plane inbound, unit
+    **	ejection, building placement, repair). Beginning a cloak now runs Do_Cloak ->
+    **	Detach_All, which clears the inbound object's NavCom (FootClass::Detach) and would
+    **	strand the harvester / cargo plane. So DON'T initiate a cloak while busy -- but keep an
+    **	already-hidden building hidden: docking with a building that is ALREADY cloaked triggers
+    **	no Detach at all. It cloaks normally once the contact clears. Applies to every building.
+    */
+    if (obj->What_Am_I() == RTTI_BUILDING && ((BuildingClass*)obj)->In_Radio_Contact()
+        && obj->Cloak == UNCLOAKED) {
+        obj->IsCloakable = false;
+        return;
+    }
+
+    /*
+    **	Covered: make it drivable through the cloak system and let Cloaking_AI cloak it on its
+    **	own cadence. The driver never forces Do_Cloak.
+    */
+    obj->IsCloakable = true;
+
+    /*
+    **	Force-reveal reasons. Any one keeps the object visible this frame; refreshing CloakDelay
+    **	blocks Cloaking_AI from recloaking until every reason has cleared for TF_STEALTH_REVEAL_HOLD
+    **	frames, at which point it re-hides itself. Note: an in-progress operation (radio contact)
+    **	is deliberately NOT a reveal reason -- the building stays cloaked through it (see above).
+    */
+    bool reveal = TF_Stealth_Detector_In_Range(obj, detect);
+
+    if (!reveal && obj->What_Am_I() == RTTI_BUILDING) {
+        BuildingClass* b = (BuildingClass*)obj;
+
+        /*
+        **	Ambush: an armed defensive building must uncloak to fire (no FIRE_CLOAKED path for
+        **	buildings) once it has acquired a legal in-range target.
+        */
+        if (b->Is_Weapon_Equipped() && Target_Legal(b->TarCom) && b->In_Range(b->TarCom)) {
+            reveal = true;
+        }
+    }
+
+    if (reveal) {
+        if (obj->Cloak == CLOAKED || obj->Cloak == CLOAKING) {
+            obj->Do_Uncloak();
+        }
+        obj->CloakDelay = TF_STEALTH_REVEAL_HOLD;
+    }
+}
+
+#if TF_DEV_BUILD
+/*
+**	TF DEV diagnostic: dump each computer house's build state once a second to
+**	<prefix>/tf_stealth_ai.log, so we can see empirically whether a stealth-generator
+**	base is actually building or stalled. Logs building count over time (rising == it IS
+**	building), base-build flag, money, power, next queued structure/unit, and how many of
+**	the house's buildings are currently cloaked. Compiled out of release.
+*/
+static void TF_Log_AI_Build_State(void)
+{
+    if ((Frame % 60) != 0) {
+        return;
+    }
+
+    const char* up = getenv("USERPROFILE");
+    if (up == NULL) {
+        return;
+    }
+    char path[512];
+    snprintf(path, sizeof(path), "%s/tf_stealth_ai.log", up);
+    FILE* f = fopen(path, "a");
+    if (f == NULL) {
+        return;
+    }
+
+    for (int h = 0; h < Houses.Count(); h++) {
+        HouseClass* hptr = Houses.Ptr(h);
+        if (hptr == NULL || !hptr->IsActive || hptr->IsHuman) {
+            continue;
+        }
+
+        int total = 0;
+        int cloaked = 0;
+        int conyard = 0;
+        char names[256];
+        names[0] = 0;
+        for (int i = 0; i < Buildings.Count(); i++) {
+            BuildingClass* b = Buildings.Ptr(i);
+            if (b != NULL && b->IsActive && !b->IsInLimbo && b->House == hptr) {
+                total++;
+                if (b->Cloak == CLOAKED || b->Cloak == CLOAKING) {
+                    cloaked++;
+                }
+                if (*b == STRUCT_CONST) {
+                    conyard++;
+                }
+                int len = (int)strlen(names);
+                if (len < (int)sizeof(names) - 12) {
+                    snprintf(names + len, sizeof(names) - len, "%s%s", (len ? "," : ""), b->Class->IniName);
+                }
+            }
+        }
+
+        /*
+        **	Unit census: does the AI still have an undeployed MCV (UNIT_MCV) or a harvester?
+        **	An MCV that never became a Construction Yard == a stuck base.
+        */
+        int units = 0;
+        int mcv = 0;
+        int harv = 0;
+        for (int i = 0; i < Units.Count(); i++) {
+            UnitClass* u = Units.Ptr(i);
+            if (u != NULL && u->IsActive && !u->IsInLimbo && u->House == hptr) {
+                units++;
+                if (u->Class->Type == UNIT_MCV) {
+                    mcv++;
+                }
+                if (u->Class->Type == UNIT_HARVESTER || u->Class->Type == UNIT_TDHARV) {
+                    harv++;
+                }
+            }
+        }
+
+        fprintf(f,
+                "frame=%d house=%s actlike=%d basebuild=%d bldgs=%d conyard=%d cloaked=%d/%d "
+                "credits=%d pwr=%d/%d pfrac=%d%% nextbldg=%d nextunit=%d units=%d mcv=%d harv=%d [%s]\n",
+                Frame, hptr->Class->IniName, (int)hptr->ActLike, (int)hptr->IsBaseBuilding, total, conyard,
+                cloaked, total, hptr->Available_Money(), hptr->Power, hptr->Drain,
+                (int)(hptr->Power_Fraction() * 100), (int)hptr->BuildStructure, (int)hptr->BuildUnit, units, mcv,
+                harv, names);
+    }
+
+    fclose(f);
+}
+#endif
+
+void BuildingClass::Process_Stealth_Generators(void)
+{
+#if TF_DEV_BUILD
+    TF_Log_AI_Build_State();
+#endif
+
+    static bool _had_generators = false;
+
+    enum
+    {
+        MAX_GENS = 64
+    };
+    COORDINATE gcoord[MAX_GENS];
+    HouseClass* ghouse[MAX_GENS];
+    int gcount = 0;
+
+    for (int i = 0; i < Buildings.Count() && gcount < MAX_GENS; i++) {
+        BuildingClass* gen = Buildings.Ptr(i);
+        if (gen != NULL && gen->IsActive && !gen->IsInLimbo && *gen == STRUCT_TDSTEALTH
+            && gen->House->Power_Fraction() >= 1) {
+            gcoord[gcount] = gen->Center_Coord();
+            ghouse[gcount] = gen->House;
+            gcount++;
+        }
+    }
+
+    bool have_gens = (gcount > 0);
+    if (!have_gens && !_had_generators) {
+        return; // no generators and nothing left to restore -- free early-out
+    }
+    _had_generators = have_gens;
+
+    int radius = TF_STEALTH_RADIUS_CELLS * CELL_LEPTON_W;
+    int detect = TF_STEALTH_DETECT_CELLS * CELL_LEPTON_W;
+
+    for (int i = 0; i < Buildings.Count(); i++) {
+        TF_Stealth_Drive(Buildings.Ptr(i), gcoord, ghouse, gcount, radius, detect);
+    }
+    for (int i = 0; i < Units.Count(); i++) {
+        TF_Stealth_Drive(Units.Ptr(i), gcoord, ghouse, gcount, radius, detect);
+    }
+    for (int i = 0; i < Infantry.Count(); i++) {
+        TF_Stealth_Drive(Infantry.Ptr(i), gcoord, ghouse, gcount, radius, detect);
+    }
+}
+
+/***********************************************************************************************
  * BuildingClass::Unlimbo -- Removes a building from limbo state.                              *
  *                                                                                             *
  *    Use this routine to transform a building that has been held in limbo                     *
@@ -2206,6 +2495,12 @@ BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     IsSecondShot = !Class->Is_Two_Shooter();
     Strength = Class->MaxStrength;
     Ammo = Class->MaxAmmo;
+
+    // Tiberian Factions: buildings never copied their type's Cloakable flag to the
+    // instance (unlike units/infantry/vessels), because RA never cloaked a building.
+    // The Stealth Generator drives friendly buildings through the existing cloak system,
+    // so wire it up here to match the other TechnoClass subclasses.
+    IsCloakable = Class->IsCloakable;
 
     /*
     **	If the building could never be built, then it can never be sold either. This

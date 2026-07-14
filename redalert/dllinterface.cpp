@@ -7262,6 +7262,26 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
 
         const SmudgeTypeClass& smudge_type = SmudgeTypeClass::As_Reference(cell_ptr->Smudge);
 
+        /*
+        ** Tiberian Factions -- hide a building's bib while the building is cloaked and
+        ** hidden from the local player (the Nod Stealth Generator field). Bibs are stamped
+        ** into cells independent of the building sprite, so without this they stay on the
+        ** ground and betray a cloaked base to the enemy. A bib sits on the building's bottom
+        ** row (an occupy cell -> Cell_Building resolves here) and one row south (the building
+        ** is then one row north). Owner-side keeps the bib: the building renders as shadowy,
+        ** not VISUAL_HIDDEN, so this guard only trips for a viewer who cannot see it.
+        */
+        bool tf_hide_bib = false;
+        if (smudge_type.IsBib) {
+            BuildingClass* tf_occ = cell_ptr->Cell_Building();
+            if (tf_occ == NULL && cell >= MAP_CELL_W) {
+                tf_occ = Map[(CELL)(cell - MAP_CELL_W)].Cell_Building();
+            }
+            if (tf_occ != NULL && tf_occ->Visual_Character() == VISUAL_HIDDEN) {
+                tf_hide_bib = true;
+            }
+        }
+
 #if 0 // TF DIAGNOSTIC stub: bib entries on TD-template cells (~/tf_bib.log). \
       // Resolved 2026-06-10 (bibs render fine with ground suppression); flip \
       // to 1 if bib rendering regresses.
@@ -7286,7 +7306,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
         }
 #endif
 
-        if (smudge_type.Get_Image_Data() != NULL) {
+        if (!tf_hide_bib && smudge_type.Get_Image_Data() != NULL) {
 
             if (debug_output) {
                 IsTheaterShape = true;

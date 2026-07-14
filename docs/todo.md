@@ -28,31 +28,17 @@ Nod-paratrooper-drops-minigunners. Open items on top:
 - **Nod SAM inaccurate** — ROT 10->20 shipped; assume-fixed pending confirm.
 - **AI helis = pads+1.** Free heli per helipad (`SeparateAircraft=no`) races the AI_Aircraft-queued
   heli → stable +1. Fix = don't queue an AI heli while a helipad is still building. Minor.
-- **Nod Stealth Generator (new building) — GPS counter + prelude-to-stealth (Luke spec 2026-07-13).**
-  A new Nod building that **reuses the Gap Generator sprite**. Behaviour:
-  - Same radius as the RA Gap Generator.
-  - **Cloaks friendly buildings** within that radius (not shroud).
-  - **Decloaks on proximity:** any non-allied unit within the generator's sight range unstealths the
-    buildings — no stealth-detector needed, just line-of-sight/range.
-  - **Shimmer effect** in the radius (in place of the gap gen's black shroud) as a subtle "something's
-    hidden here" tell.
-  Scope = a real multi-part feature. Spike findings (2026-07-13):
-  - **Sprite:** GAP (RA Gap Generator) -- small, thematic, no art port. (TD MISS ruled out: too big +
-    reserved for campaign.)
-  - **Cloak machinery already exists on TechnoClass** (BuildingClass inherits it): Cloak state,
-    Is_Cloaked (hides from non-allies + makes illegal target), and a built-in `Do_Shimmer` == the
-    shimmer tell Luke wanted. So drive the existing cloak system, don't build new rendering. OPEN
-    UNKNOWN: does the building DRAW path actually render a cloaked building (vanilla never cloaks
-    buildings)? -> force-cloak-a-building feasibility test is step 1.
-  - **AI must still attack a cloaked base** (Luke, critical): Is_Cloaked makes buildings illegal
-    targets, so naive cloak = AI never attacks = Nod turtles invisibly. RESOLVED by design: AI attack
-    teams target the enemy house's Center/Zone (tracked internally, cloak-independent), march to the
-    base, and the proximity-decloak reveals buildings on arrival so Greatest_Threat can lock them.
-    REQUIREMENT: decloak radius (generator sight range) generous enough that arriving units trip it
-    before the team gives up; decloak the whole protected radius at once on any enemy-in-range.
-  - Build order: (1) cloak-render feasibility test; (2) Stealth Generator building (GAP sprite);
-    (3) radius-cloak of friendly buildings; (4) proximity-decloak; (5) tune shimmer + decloak radius.
-  Multi-session feature, NOT a quick tweak.
+- **Nod Stealth Generator (new building) — DESIGN LOCKED 2026-07-14, IMPLEMENT NEXT SESSION.**
+  Full locked spec + engine facts + implementation plan: **`docs/stealth-generator-spec.md`**.
+  A new Nod building (STRUCT_TDSTEALTH, reuses the GAP sprite) that cloaks friendly buildings + units
+  in a radius, hidden from everyone incl. the AI, revealed only by fire/damage or enemy `IsScanner`
+  detectors (all infantry/vessels/dog already scanners — no infantry changes; add `Sensors=yes` to the
+  Radar Jammer). Generator itself never cloaks (Power cost dropped 200→100 as the concession); armed
+  defences ambush-uncloak on target; building bibs hide with the building; owner sees a warped
+  un-stealthing look. **Partial WIP is uncommitted on `main`** (STRUCT_TDSTEALTH type + sidebar/art +
+  ctor `IsCloakable` line = keep) but its every-frame-forced-`Do_Cloak` + observer-sight-scan **driver
+  is superseded** — the locked plan rewrites the driver (set `IsCloakable`, let `Cloaking_AI` cloak;
+  driver only force-reveals) which retires the whole prior flicker/reveal/restore bug cluster. See the doc.
 
 ---
 

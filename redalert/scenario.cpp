@@ -630,6 +630,73 @@ bool Read_Scenario(char* name)
 #endif
 
     /*
+    **  TF DEV TOGGLE — Nod Stealth Generator test harness (skirmish only): give every Nod
+    **  computer house (ActLike==HOUSE_BAD, non-human) a prebuilt Advanced Power Plant
+    **  (TDNUK2, to power the field) + Stealth Generator (TDSTEALTH) near its start, so the
+    **  stealth field can be observed against the AI without waiting for it to tech up. The
+    **  generator cloaks the AI's whole base in radius; bring a detector to reveal it. OFF for
+    **  release (TF_DEV_BUILD compiles it out) and runtime-gated by TF_Dev_Cheats().
+    */
+#if TF_DEV_BUILD
+    if (TF_Dev_Cheats() && Session.Type != GAME_NORMAL) {
+        static StructType const _devspawn[] = {STRUCT_TDNUK2, STRUCT_TDSTEALTH};
+
+        for (int h = 0; h < Houses.Count(); h++) {
+            HouseClass* hptr = Houses.Ptr(h);
+            if (hptr == NULL || hptr->IsHuman || hptr->ActLike != HOUSE_BAD) {
+                continue;
+            }
+
+            /*
+            **  Home cell = the AI's first building, else its first unit (the MCV).
+            */
+            CELL home = 0;
+            for (int i = 0; i < Buildings.Count() && home == 0; i++) {
+                if (Buildings.Ptr(i)->House == hptr) {
+                    home = Coord_Cell(Buildings.Ptr(i)->Center_Coord());
+                }
+            }
+            for (int i = 0; i < Units.Count() && home == 0; i++) {
+                if (Units.Ptr(i)->House == hptr) {
+                    home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                }
+            }
+            if (home == 0) {
+                continue;
+            }
+
+            /*
+            **  Spiral out in rings from a couple cells off home for the first spot Unlimbo
+            **  accepts (it validates the full footprint), so we never sit on the MCV.
+            */
+            for (int s = 0; s < (int)(sizeof(_devspawn) / sizeof(_devspawn[0])); s++) {
+                bool placed = false;
+                for (int r = 2; r <= 8 && !placed; r++) {
+                    for (int dy = -r; dy <= r && !placed; dy++) {
+                        for (int dx = -r; dx <= r && !placed; dx++) {
+                            if (!(dx == -r || dx == r || dy == -r || dy == r)) {
+                                continue; // ring perimeter only
+                            }
+                            CELL cell = home + dx + dy * MAP_CELL_W;
+                            if ((unsigned)cell >= MAP_CELL_TOTAL) {
+                                continue;
+                            }
+                            BuildingClass* b =
+                                new BuildingClass(BuildingTypes.Ptr((int)_devspawn[s]), hptr->Class->House);
+                            if (b != NULL && b->Unlimbo(Cell_Coord(cell))) {
+                                placed = true;
+                            } else if (b != NULL) {
+                                delete b;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+#endif
+
+    /*
     **  TF DEV TOGGLE — Tiberium smoke test (skirmish only): paint a small TIB01
     **  field a few cells from the player's start so we can verify the new
     **  harvestable Tiberium overlay renders (HD + classic), harvests, credits at

@@ -6438,7 +6438,7 @@ int HouseClass::AI_Building(void)
         }
         bool hasincome = (tf_refqty > 0 && !IsTiberiumShort && tf_harv_count > 0);
 
-#if 0 // TF_AI_DIAG -- temporary instrumentation; flip to 1 to re-enable AI economy logging
+#if TF_DEV_BUILD // TF_AI_DIAG -- AI economy decision logging (compiled out of release)
         if (tf_td && (Frame % 90) == 0) {
             static FILE* _tfdbg = NULL;
             if (_tfdbg == NULL) {
@@ -6447,18 +6447,18 @@ int HouseClass::AI_Building(void)
                 snprintf(_p, sizeof(_p), "%s/MOD_DEBUG_AI.txt", _up ? _up : ".");
                 _tfdbg = fopen(_p, "a");
                 if (_tfdbg != NULL) {
-                    fprintf(_tfdbg, "=== TF_AI_DIAG v1 (harvester-fix build) ===\n");
+                    fprintf(_tfdbg, "=== TF_AI_DIAG v2 (stealth-gen build) ===\n");
                 }
             }
             if (_tfdbg != NULL) {
-                static char const* _bn[7] = {"TDNUK2", "TDOBLI", "TDFIX", "TDTMPL", "TDHPAD", "TDATWR", "TDEYE"};
+                static char const* _bn[6] = {"TDPROC", "TDHAND", "TDWEAP", "TDNUK", "TDNUK2", "TDFACT"};
                 fprintf(_tfdbg,
-                        "F%ld H%d AL%d Tech=%d $%d Pow=%d Drain=%d CurB=%d hasinc=%d refQ=%d harvQ=%d scanH=%d tibShort=%d |",
-                        (long)Frame, (int)Class->House, (int)ActLike, (int)Control.TechLevel,
+                        "F%ld H%d AL%d base=%d Tech=%d $%d Pow=%d Drain=%d CurB=%d hasinc=%d refQ=%d harvQ=%d "
+                        "tibShort=%d ABScan=%08X |",
+                        (long)Frame, (int)Class->House, (int)ActLike, (int)IsBaseBuilding, (int)Control.TechLevel,
                         (int)Available_Money(), (int)Power, (int)Drain, (int)CurBuildings, (int)hasincome,
-                        (int)tf_refqty, (int)(UQuantity[UNIT_HARVESTER] + UQuantity[UNIT_TDHARV]),
-                        (int)tf_harv_count, (int)IsTiberiumShort);
-                for (int _i = 0; _i < 7; _i++) {
+                        (int)tf_refqty, (int)tf_harv_count, (int)IsTiberiumShort, (unsigned)ActiveBScan);
+                for (int _i = 0; _i < 6; _i++) {
                     BuildingTypeClass const* _bt = BuildingTypeClass::As_Pointer(_bn[_i]);
                     fprintf(_tfdbg, " %s(cb=%d,q=%d)", _bn[_i],
                             _bt != NULL ? (int)Can_Build(_bt, ActLike) : -2,
