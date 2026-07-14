@@ -160,3 +160,8 @@ Likely two causes, both in the driver (`BuildingClass::Process_Stealth_Generator
    **not Aircraft**. So even with the pad fixed, the parked/covered heli stays visible. Fix: extend
    the cover pass to `Aircraft` (at least grounded ones in radius), or accept airborne stays visible
    by design and only cloak while landed.
+
+**Playtest confirmation (2026-07-15):** when the copter *takes off*, the helipad DOES stealth
+(radio tether cleared → gate releases → it cloaks) — proving cause #1. The copter itself stays
+un-stealthed even when landed — proving cause #2 (aircraft not covered). So: fix the gate to let a
+helipad cloak while its craft is docked, AND extend the cover pass to grounded aircraft.
