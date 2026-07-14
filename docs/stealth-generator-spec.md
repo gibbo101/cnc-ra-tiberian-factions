@@ -140,3 +140,23 @@ damage.
 Build/deploy recipe: standard Linux mingw cross-build; on launcher-data-only edits
 `rsync -a resources/remaster_mods/Vanilla_RA/ build/remaster/Vanilla_RA/` (no `--delete`) before
 deploy (see CLAUDE.md build/deploy sections).
+
+---
+
+## Known bug (found in playtest 2026-07-15, fix next session)
+
+**Helipad + its helicopter build and stay UN-stealthed inside a generator's radius.**
+
+Likely two causes, both in the driver (`BuildingClass::Process_Stealth_Generators` /
+`TF_Stealth_Drive`, building.cpp):
+
+1. **Helipad never cloaks** — a helipad is (near-)permanently in **radio contact** with its
+   parked helicopter, and the "don't initiate a cloak while `In_Radio_Contact()`" gate then keeps
+   it UNCLOAKED forever. The gate was meant to protect *transient* ops (harvester docking, cargo
+   plane, unit ejection), not a permanent tether. Fix idea: narrow the gate — e.g. only block
+   cloaking for radio contact tied to an active production/docking transition, or explicitly allow
+   helipads (and other permanently-tethered hosts) to cloak with their tethered craft.
+2. **The helicopter itself never cloaks** — the driver only covers Buildings + Units + Infantry,
+   **not Aircraft**. So even with the pad fixed, the parked/covered heli stays visible. Fix: extend
+   the cover pass to `Aircraft` (at least grounded ones in radius), or accept airborne stays visible
+   by design and only cloak while landed.
