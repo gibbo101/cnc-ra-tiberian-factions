@@ -1556,10 +1556,53 @@ static bool TF_Stealth_Detector_In_Range(TechnoClass const* obj, int range)
     return (false);
 }
 
+/*
+**	A building's concrete bib is stamped into the map cells (a SmudgeClass), not part of the
+**	building sprite -- so a cloaked building still shows its bib as a telltale to the enemy. Keep
+**	the bib in sync with the cloak: remove it while fully CLOAKED, restore it once UNCLOAKED. The
+**	bib type is re-derivable from the building type, so no per-building saved state is needed --
+**	presence is read straight off the anchor cell, making this self-correcting across every
+**	teardown path (leave-radius, low power, sold, destroyed). Uses the exact add/remove calls the
+**	engine already makes in BuildingClass::Mark (MARK_DOWN / MARK_UP).
+*/
+static void TF_Sync_Bib(BuildingClass* b)
+{
+    if (!b->Class->IsBibbed) {
+        return;
+    }
+
+    SmudgeType bib;
+    CELL cell = Coord_Cell(b->Coord);
+    if (!b->Class->Bib_And_Offset(bib, cell)) { // mutates `cell` to the bib's anchor cell
+        return;
+    }
+
+    bool present = (Map[cell].Smudge == bib);
+    bool hidden = (b->Cloak == CLOAKED);
+
+    if (hidden && present) {
+        SmudgeClass* smudge = new SmudgeClass(bib);
+        if (smudge != NULL) {
+            smudge->Disown(cell);
+            delete smudge;
+        }
+    } else if (!hidden && !present && b->Cloak == UNCLOAKED) {
+        new SmudgeClass(bib, Cell_Coord(cell), b->Class->IsBase ? b->House->Class->House : HOUSE_NONE);
+    }
+}
+
 static void TF_Stealth_Drive(TechnoClass* obj, COORDINATE const* gcoord, HouseClass* const* ghouse, int gcount, int radius, int detect)
 {
     if (obj == NULL || !obj->IsActive || obj->IsInLimbo || obj->Strength <= 0) {
         return;
+    }
+
+    /*
+    **	Keep any driver-cloaked building's bib hidden in step with its cloak, on every path.
+    **	Native buildings never reach CLOAKED, so this is a no-op for them.
+    */
+    if (obj->What_Am_I() == RTTI_BUILDING) {
+        TF_Sync_Bib((BuildingClass*)obj);
     }
 
     /*
@@ -1603,17 +1646,23 @@ static void TF_Stealth_Drive(TechnoClass* obj, COORDINATE const* gcoord, HouseCl
     }
 
     /*
-    **	Radio contact = an active operation (harvester docking, cargo plane inbound, unit
-    **	ejection, building placement, repair). Beginning a cloak now runs Do_Cloak ->
-    **	Detach_All, which clears the inbound object's NavCom (FootClass::Detach) and would
-    **	strand the harvester / cargo plane. So DON'T initiate a cloak while busy -- but keep an
-    **	already-hidden building hidden: docking with a building that is ALREADY cloaked triggers
-    **	no Detach at all. It cloaks normally once the contact clears. Applies to every building.
+    **	Radio contact can mean an active operation (harvester docking, cargo plane inbound) OR a
+    **	permanent tether (a helicopter parked on its helipad). Beginning a cloak now runs
+    **	Do_Cloak -> Detach_All, which clears an INBOUND partner's NavCom and would strand it --
+    **	but a partner that has already arrived and gone idle has no NavCom, so cloaking with it
+    **	is harmless. Gate only on the in-transit case: this keeps the harvester/cargo protection
+    **	while letting a helipad hide together with its docked (idle) craft instead of staying a
+    **	permanent giveaway. An already-cloaked building triggers no Detach at all, so only the
+    **	fresh-cloak (UNCLOAKED) transition needs the guard.
     */
-    if (obj->What_Am_I() == RTTI_BUILDING && ((BuildingClass*)obj)->In_Radio_Contact()
-        && obj->Cloak == UNCLOAKED) {
-        obj->IsCloakable = false;
-        return;
+    if (obj->What_Am_I() == RTTI_BUILDING && obj->Cloak == UNCLOAKED
+        && ((BuildingClass*)obj)->In_Radio_Contact()) {
+        TechnoClass* partner = ((BuildingClass*)obj)->Contact_With_Whom();
+        bool in_transit = (partner != NULL && partner->Is_Foot() && Target_Legal(((FootClass*)partner)->NavCom));
+        if (in_transit) {
+            obj->IsCloakable = false;
+            return;
+        }
     }
 
     /*
@@ -1779,6 +1828,9 @@ void BuildingClass::Process_Stealth_Generators(void)
     }
     for (int i = 0; i < Infantry.Count(); i++) {
         TF_Stealth_Drive(Infantry.Ptr(i), gcoord, ghouse, gcount, radius, detect);
+    }
+    for (int i = 0; i < Aircraft.Count(); i++) {
+        TF_Stealth_Drive(Aircraft.Ptr(i), gcoord, ghouse, gcount, radius, detect);
     }
 }
 
