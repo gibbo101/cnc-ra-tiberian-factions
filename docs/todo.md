@@ -11,19 +11,17 @@ Spun out of the air-AI + power-grants session. Deployed-but-unverified batch: ai
 routing, 3 power grants, AI air-responsiveness (max-threat + limit-mirror), MCV/ConYard/AGT,
 Nod-paratrooper-drops-minigunners. Open items on top:
 
-- **GDI GPS icon flickers + no tooltip (broken).** Almost certainly the same TDEYE-vs-BScan gap as the
-  grant, but on the REMOVAL side: the "lost the tech centre -> revoke GPS + reshroud" check
-  (house.cpp ~1855, `if (IsGPSActive && !(ActiveBScan & STRUCTF_ADVANCED_TECH))`) keys on the BScan
-  ADVANCED_TECH flag, which GDI never sets (TDEYE is past the 32-bit mask). So GPS is granted via my
-  TDEYE gate, then instantly revoked every frame -> flicker, no stable tooltip. Fix = add
-  `|| Has_Building_Active(STRUCT_TDEYE)` (and TDTMPL if Nod should get it) to that removal check,
-  mirroring the grant. Quick. (Do after stealth gen, per Luke.)
 - **Nod SAM inaccurate** — ROT 10->20 shipped; assume-fixed pending confirm.
 
 **Done this milestone:** Nod Stealth Generator (shipped 2026-07-15, Gap-Generator art, cloak
 field + bib-hide + helipad/aircraft cloak + teardown restore + 400 HP + organic Nod-AI build —
 see `docs/stealth-generator-spec.md`); Nod paratrooper C-17 plane (`TDC17P`, targetable/radar-
-visible support-drop twin of TDCARGO); AI air-build priority dropped to LOW (war factory first).
+visible support-drop twin of TDCARGO); AI air-build priority dropped to LOW (war factory first);
+Nod Flame Bunker (`STRUCT_TDFBNK`, anti-infantry flame defence, Nod-AI build rule); **GDI GPS
+full Allied parity** — flicker fixed (removal checks recognise TDEYE past the 32-bit BScan mask)
+AND launch fixed (fire loop + `Mission_Missile` now launch the GPS satellite from TDEYE, so it
+reveals + doesn't restart); Ion Cannon reverted to the TD-authentic 10-minute charge (dropped the
+dev 1-second shortcut).
 
 ---
 

@@ -180,6 +180,18 @@ reset, and `Cloaking_AI` re-cloaked it. **Fix:** `TF_Stealth_Drive` now returns 
 is still driver-cloaked, and `Process_Stealth_Generators` keeps the restore pass running (via
 `_restore_pending`) until a full pass finds nothing left to restore.
 
+### Building bibs (#6) — DONE via render-time hide, not cell-redraw
+
+The plan above (#6, "suppress/redraw the bib cells… restore on uncloak") was **not** the shipped
+approach — it turned out to be actively harmful. A `TF_Sync_Bib` implementation that `Disown`ed the
+bib `SmudgeClass` was tried and **removed**: a bib smudge also blocks placement
+(`CellClass::Is_Clear_To_Build`, cell.cpp:494), so clearing it let the (blind) enemy build into a
+cloaked base's bib strip. The correct mechanism already existed in the Remaster draw path
+(`dllinterface.cpp` `tf_hide_bib`, from the original commit `cd8bd17`): it **keeps the smudge**
+(placement stays blocked) and suppresses only the *draw* when the covering building is
+`VISUAL_HIDDEN` — transparent to the enemy, bib still shown to the owner. This is the canonical
+approach; don't reintroduce smudge removal.
+
 ## Balance
 
 **Effective HP = 400** (`Strength=200`, doubled by the TD-prefix rule). Set 2026-07-15 after a
