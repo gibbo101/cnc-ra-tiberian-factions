@@ -621,10 +621,19 @@ def main():
     splice(CDATA_CPP, "anim", anim_block, r"void TemplateTypeClass::Init_Heap\(void\)")
 
     # tileset XMLs: before the closing </Tiles>. XML-comment markers (see MX).
+    # Several theatres share ONE xml file (T temperate + S winter both write
+    # RA_TERRAIN_TEMPERATE.XML), and splice() REPLACES the whole marker block --
+    # so accumulate every letter's tiles per destination path and splice each
+    # file exactly ONCE. A per-letter splice would have the file's last theatre
+    # (S) overwrite the first (T), silently dropping the temperate shore/bridge
+    # family from the temperate slot (only visible on TD temperate coastal maps).
+    xml_by_file = {}
     for letter, th in THEATRES.items():
         if xml_per_theatre[letter]:
-            splice(th["xml"], "xml", "\n".join(xml_per_theatre[letter]),
-                   r"[ \t]*</Tiles>", markers=MX("xml"))
+            xml_by_file.setdefault(th["xml"], []).extend(xml_per_theatre[letter])
+    for xml_path, blocks in xml_by_file.items():
+        splice(xml_path, "xml", "\n".join(blocks),
+               r"[ \t]*</Tiles>", markers=MX("xml"))
 
     MAPPER_JSON.write_text(json.dumps(mapper, indent=2))
     print(f"\nwrote {len(enum_lines)} templates from {len(TILES)} tiles. mapper -> {MAPPER_JSON}")
