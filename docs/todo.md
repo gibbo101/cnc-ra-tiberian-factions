@@ -11,7 +11,8 @@ Spun out of the air-AI + power-grants session. Deployed-but-unverified batch: ai
 routing, 3 power grants, AI air-responsiveness (max-threat + limit-mirror), MCV/ConYard/AGT,
 Nod-paratrooper-drops-minigunners. Open items on top:
 
-- **Nod SAM inaccurate** — ROT 10->20 shipped; assume-fixed pending confirm.
+_(Nod SAM accuracy: ROT 10->20 shipped; no longer tracked as a discrete item — watch it during
+the AI-focus pass.)_
 
 **Done this milestone:** Nod Stealth Generator (shipped 2026-07-15, Gap-Generator art, cloak
 field + bib-hide + helipad/aircraft cloak + teardown restore + 400 HP + organic Nod-AI build —
