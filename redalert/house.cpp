@@ -6590,6 +6590,25 @@ int HouseClass::AI_Building(void)
         }
 
         /*
+        **	Nod: build one Stealth Generator once the Temple of Nod is up (Can_Build enforces
+        **	the TDTMPL prerequisite). The vanilla gap-generator slot above is an Allied building
+        **	a Nod house can't build, so our own STRUCT_TDSTEALTH gets its own slot. Gated on full
+        **	power and income so cloaking the base never comes at the cost of the economy.
+        */
+        if (ActLike == HOUSE_BAD) {
+            current = BQuantity[STRUCT_TDSTEALTH];
+            if (current < 1 && Power_Fraction() >= 1 && hasincome) {
+                b = &BuildingTypeClass::As_Reference(STRUCT_TDSTEALTH);
+                if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
+                    choiceptr = BuildChoice.Alloc();
+                    if (choiceptr != NULL) {
+                        *choiceptr = BuildChoiceClass(URGENCY_MEDIUM, b->Type);
+                    }
+                }
+            }
+        }
+
+        /*
         **	A source of combat vehicles is always needed, but only if there will
         **	be sufficient money to build vehicles.
         */

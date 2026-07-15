@@ -135,11 +135,13 @@ Rewrite `BuildingClass::Process_Stealth_Generators()` (building.cpp), called onc
 7. **Data**: `[TDSTEAL]` Power `-100`; `[MRJ]` (Radar Jammer) `Sensors=yes`; give the generator its
    **own radius** (~5–6 cells) rather than `Rule.GapShroudRadius` (10 cells read as huge in playtest).
 
-### Also outstanding (from the WIP session, do after the driver is player-side-confirmed)
-- **Nod AI build rule**: mirror the `STRUCT_GAP` block (house.cpp ~6581, `ActLike==HOUSE_BAD`) so the
-  Nod AI builds the Stealth Generator organically.
-- **`TF_DEV` force-spawn** (Stealth Gen for Nod AI) + a `TF_DEV` diagnostic log dumping per-covered
-  object `{frame, name, Cloak, detector-in-range, action}` to verify behaviour before tuning.
+### AI (2026-07-15)
+- **Nod AI build rule — DONE.** A `STRUCT_TDSTEALTH` slot mirrors the `STRUCT_GAP` block
+  (house.cpp, `ActLike==HOUSE_BAD`, gated on full power + income); `Can_Build` enforces the
+  `TDTMPL` prerequisite, so the AI builds the Stealth Generator organically after the Temple of
+  Nod. (The Temple itself was already organic — Nod's mapped tech center via `TF_Skirmish_Equivalent`.)
+- **`TF_DEV` force-spawn — REMOVED.** The dev crutch that pre-placed `TDNUK2` + `TDSTEALTH` for
+  every Nod AI at scenario start is gone now that the AI builds it organically.
 
 ### Verify in playtest (each is a distinct path)
 Cloak settles to warped look (owner) / invisible (enemy); enemy AI still attacks (units path in and
