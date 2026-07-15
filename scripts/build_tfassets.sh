@@ -116,15 +116,6 @@ ENTRIES=(
     # M5 Tier 4 — Temple of Nod (Nuclear Strike host).
     "TMPL.SHP:TDTMPL.SHP"
     "TMPLMAKE.SHP:TDTMPLMAKE.SHP"
-    # Nod Stealth Generator (STRUCT_TDSTEALTH) — HD-only building (original art in
-    # TDSTEAL.ZIP tileset). It still needs a NON-NULL classic ImageData so Draw_It
-    # fires and the launcher renders the HD tileset (which keys on IniName, not the
-    # SHP pixels). TMPL is a large donor so the classic Width/Height are generous;
-    # the placeholder pixels are never shown in HD mode. SILO is a 2x1 donor so the
-    # classic Width/Height scale the HD sprite to the SAME 2x1 footprint as the
-    # Tiberium Silo (building is BSIZE_21; bib completes the 2x2 concrete pad).
-    "SILO.SHP:TDSTEAL.SHP"
-    "SILOMAKE.SHP:TDSTEALMAKE.SHP"
     # TD infantry muzzle jets — directional spray anims (E4 Flamethrower / E5 Chem Warrior).
     # Classic SHPs so the jet renders in classic mode too (HD uses the RA_VFX TD<X>-<dir> tiles).
     # 8 dirs each in Dir_Facing order; 13 frames, matching the ANIM_FLAME_*/ANIM_CHEM_* ctor stages.

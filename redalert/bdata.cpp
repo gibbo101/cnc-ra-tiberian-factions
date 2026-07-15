@@ -1338,11 +1338,10 @@ static BuildingTypeClass const ClassTdStealth(STRUCT_TDSTEALTH,
                       true,                   // Can the building be color remapped to indicate owner?
                       RTTI_NONE,              // The object type produced at this factory.
                       DIR_N,                  // Starting idle frame to match construction.
-                      BSIZE_21,               // SIZE: 2x1 building; the bib completes a 2x2
-                                              // concrete pad (matches the Tiberium Silo).
+                      BSIZE_12,               // SIZE: 1x2, same as the Gap Generator.
                       NULL,                   // Preferred exit cell list.
-                      (short const*)List11,      // OCCUPYLIST: 2-wide single row {0,1}.
-                      (short const*)List22_1100  // OVERLAPLIST: top row {0,1} (dome overhang).
+                      (short const*)List0010, // OCCUPYLIST:	List of active foundation squares.
+                      (short const*)List1     // OVERLAPLIST:List of overlap cell offset.
 );
 
 static BuildingTypeClass const ClassTurret(STRUCT_TURRET,
