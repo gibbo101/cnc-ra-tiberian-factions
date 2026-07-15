@@ -6410,11 +6410,23 @@ int BuildingClass::Mission_Missile(void)
                     }
 
                     if (bullet) {
+                        // Launch EXACTLY ONE satellite. The sput animation holds at stage >= 19 for
+                        // several frames and the queued MISSION_GUARD switch is deferred until the
+                        // building can commence -- for GDI's TDEYE that deferral is long enough that
+                        // LAUNCH_UP re-fired every one of those frames (~10 GPS rockets). Advance to
+                        // the terminal state and clear the commence gate so GUARD takes over and this
+                        // case can't re-enter. (Harmless for the Allied ATEK -- still a single launch.)
+                        Status = DONE_LAUNCH;
+                        IsReadyToCommence = true;
                         Assign_Mission(MISSION_GUARD);
                     }
                 }
             }
         }
+            return (1);
+
+        case DONE_LAUNCH:
+            // Satellite already away; wait to be switched to MISSION_GUARD without re-launching.
             return (1);
         }
     }
