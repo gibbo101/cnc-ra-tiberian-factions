@@ -204,14 +204,22 @@ anti-infantry second weapon on top. Both Mammoths are mechanically identical.
 
 | Unit | Faction | Cost | HP | Weapon | Dmg | ROF | Range | Warhead | Note |
 |---|---|---|---|---|---|---|---|---|---|
-| ARTY | Allied | 600 | 75 | 155mm | 150 | 65 | 6 | HE | glass cannon |
-| TDARTY | Nod | 450 | 75 | TD155mm | 150 | 65 | 6 | TDHE | **cheaper** same output |
-| TDMLRS | GDI | 800 | 100 | TDMlrsRocket b2 | 75 | 80 | 6 | TDHE | homing, long, durable |
+| ARTY | Allied | 600 | 75 | 155mm | 150 | 65 | **8** | HE | glass cannon |
+| TDARTY | Nod | 450 | 75 | TD155mm | 150 | 65 | **8** | TDHE | **cheaper** same output |
+| TDMLRS | GDI | 800 | 100 | TDMlrsRocket b2 | 75 | 80 | **7** | TDHE | homing, long, durable |
 | TDMSAM SSM | Nod | 750 | 120 | TDHonestJohn | 100 | 200 | **10** | TDFIRE | napalm siege, huge range |
 | V2RL | Soviet | 700 | 150 | SCUD | 600 | 400 | 10 | HE | one big hit, slow reload |
 
 - **🟢 F5 — Nod artillery (TDARTY) is a cheaper Allied artillery** (450 vs 600,
   identical weapon). Minor Nod economy win on siege. Likely fine.
+- **✅ Artillery range extended and VALIDATED in playtest (2026-07-15, commit `1021b67`).**
+  Cannon arty (Allied `155mm` + Nod `TD155mm`) 6 → **8**; GDI MLRS `TDMlrsRocket` 6 → **7**.
+  Range 6 couldn't out-stand base defence, so artillery failed its siege role. The cannon arty's
+  arcing/inaccurate `Ballistic` shell scatters at the fringe (range-scaled CEP + angular jitter,
+  `bullet.cpp:816-836`), so its effective reliable range stays ~6 and the extra reach is paid for
+  in misses — reach without a pinpoint base-deleter. MLRS held a cell lower at 7 because its homing
+  rocket stays pinpoint at any range; that keeps it below the cannon arty's soft 8 and respecting the
+  Obelisk's 7.5 reach. Playtest confirmed it feels good.
 
 ### Aircraft
 
