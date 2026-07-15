@@ -6476,22 +6476,20 @@ int HouseClass::AI_Building(void)
         }
 
         /*
-        **	Tiberian Factions: air-build responsiveness. Vanilla keyed the airfield/helipad
-        **	urgency and the 5-building cap off the single designated Enemy only, so a human (or
-        **	any non-designated opponent) building an air force was invisible to it. Scan every
-        **	non-allied active house (all humans included) and mirror the STRONGEST single air
-        **	opponent -- max aircraft for the urgency threat, max air-structure count for the cap.
-        **	Max (not a sum) on purpose: summing every enemy's aircraft would make each AI chase a
-        **	combined multi-enemy total it can never catch, pinning the urgency at HIGH forever --
-        **	a runaway air arms race. Matching the biggest single opponent settles once drawn level.
+        **	Tiberian Factions: air-build count cap. Vanilla capped the airfield/helipad count off
+        **	the single designated Enemy only, so a human (or any non-designated opponent) building
+        **	an air force was invisible to it. Scan every non-allied active house (all humans
+        **	included) and mirror the STRONGEST single air opponent's air-structure count for the
+        **	cap. Max (not a sum) on purpose: summing every enemy's structures would make each AI
+        **	chase a combined multi-enemy total it can never catch. Matching the biggest single
+        **	opponent settles once drawn level. (Air-build *urgency* is deliberately LOW below, so
+        **	this governs the eventual amount, not the priority -- see the helipad/airstrip blocks.)
         */
-        int enemy_aircraft = 0;
         int enemy_airstrips = 0;
         int enemy_helipads = 0;
         for (HousesType eh = HOUSE_FIRST; eh < HOUSE_COUNT; eh++) {
             HouseClass const* ehp = HouseClass::As_Pointer(eh);
             if (ehp != NULL && ehp->IsActive && !ehp->IsDefeated && !Is_Ally(ehp)) {
-                if (ehp->CurAircraft > enemy_aircraft) enemy_aircraft = ehp->CurAircraft;
                 int afld = ehp->BQuantity[STRUCT_AIRSTRIP] + ehp->BQuantity[STRUCT_TDGAFLD];
                 int hpad = ehp->BQuantity[STRUCT_HELIPAD] + ehp->BQuantity[STRUCT_TDHPAD];
                 if (afld > enemy_airstrips) enemy_airstrips = afld;
@@ -6817,10 +6815,16 @@ int HouseClass::AI_Building(void)
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
-                    int threat_quantity = enemy_aircraft;
-
-                    *choiceptr = BuildChoiceClass(
-                        (CurAircraft < (unsigned)threat_quantity) ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
+                    /*
+                    **	Air production is LOW priority so it never outranks the core base
+                    **	(war factory, refinery, defence). An AI behind on air was escalating
+                    **	helipads/airstrips to URGENCY_HIGH (the all-enemy air scan finally made
+                    **	the vanilla formula fire against a human air force) and building four of
+                    **	them before it had a war factory. The count is still capped to the
+                    **	strongest air opponent above, so the AI matches the air *amount* -- just
+                    **	not ahead of its ground economy. Retune the escalation in the AI-focus pass.
+                    */
+                    *choiceptr = BuildChoiceClass(URGENCY_LOW, b->Type);
                 }
             }
         }
@@ -6836,10 +6840,13 @@ int HouseClass::AI_Building(void)
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
-                    int threat_quantity = enemy_aircraft;
-
-                    *choiceptr = BuildChoiceClass(
-                        (CurAircraft < (unsigned)threat_quantity) ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
+                    /*
+                    **	LOW priority, same reasoning as the helipad above -- keeps GDI able to
+                    **	build its airfield (STRUCT_AIRSTRIP -> TDGAFLD via TF_Skirmish_Pick) and
+                    **	the count still tracks the strongest air opponent, but the war factory and
+                    **	the rest of the ground base come first.
+                    */
+                    *choiceptr = BuildChoiceClass(URGENCY_LOW, b->Type);
                 }
             }
         }
