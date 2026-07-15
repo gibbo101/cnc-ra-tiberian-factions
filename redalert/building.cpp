@@ -1557,41 +1557,6 @@ static bool TF_Stealth_Detector_In_Range(TechnoClass const* obj, int range)
 }
 
 /*
-**	A building's concrete bib is stamped into the map cells (a SmudgeClass), not part of the
-**	building sprite -- so a cloaked building still shows its bib as a telltale to the enemy. Keep
-**	the bib in sync with the cloak: remove it while fully CLOAKED, restore it once UNCLOAKED. The
-**	bib type is re-derivable from the building type, so no per-building saved state is needed --
-**	presence is read straight off the anchor cell, making this self-correcting across every
-**	teardown path (leave-radius, low power, sold, destroyed). Uses the exact add/remove calls the
-**	engine already makes in BuildingClass::Mark (MARK_DOWN / MARK_UP).
-*/
-static void TF_Sync_Bib(BuildingClass* b)
-{
-    if (!b->Class->IsBibbed) {
-        return;
-    }
-
-    SmudgeType bib;
-    CELL cell = Coord_Cell(b->Coord);
-    if (!b->Class->Bib_And_Offset(bib, cell)) { // mutates `cell` to the bib's anchor cell
-        return;
-    }
-
-    bool present = (Map[cell].Smudge == bib);
-    bool hidden = (b->Cloak == CLOAKED);
-
-    if (hidden && present) {
-        SmudgeClass* smudge = new SmudgeClass(bib);
-        if (smudge != NULL) {
-            smudge->Disown(cell);
-            delete smudge;
-        }
-    } else if (!hidden && !present && b->Cloak == UNCLOAKED) {
-        new SmudgeClass(bib, Cell_Coord(cell), b->Class->IsBase ? b->House->Class->House : HOUSE_NONE);
-    }
-}
-
-/*
 **	Returns true while the object still carries driver-managed cloak state (we made it
 **	cloakable and its type isn't a native cloaker) -- i.e. it is not yet fully restored. The
 **	caller uses this to keep the restore pass running after every generator is gone: uncloak
@@ -1601,14 +1566,6 @@ static bool TF_Stealth_Drive(TechnoClass* obj, COORDINATE const* gcoord, HouseCl
 {
     if (obj == NULL || !obj->IsActive || obj->IsInLimbo || obj->Strength <= 0) {
         return false;
-    }
-
-    /*
-    **	Keep any driver-cloaked building's bib hidden in step with its cloak, on every path.
-    **	Native buildings never reach CLOAKED, so this is a no-op for them.
-    */
-    if (obj->What_Am_I() == RTTI_BUILDING) {
-        TF_Sync_Bib((BuildingClass*)obj);
     }
 
     /*

@@ -8,6 +8,22 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## Stealth field
+
+### Hiding a cloaked building's bib frees its cell for enemy placement — ✅ FIXED 2026-07-15
+- **Severity:** minor (placement exploit; enemy could build one row into a cloaked base's bib strip).
+- **Root cause:** the `TF_Sync_Bib` bib-hide (building.cpp) `Disown`ed the bib `SmudgeClass`, but a bib
+  smudge also **blocks placement** (`CellClass::Is_Clear_To_Build`, cell.cpp:494). Removing it both
+  hid the bib AND opened the cell for the (blind) enemy.
+- **Fix:** removed `TF_Sync_Bib` entirely — it was redundant. A **render-time** bib-hide already exists
+  in the Remaster draw path (`dllinterface.cpp` `tf_hide_bib`, from the original stealth-gen commit
+  `cd8bd17`): it keeps the smudge (placement stays blocked) and suppresses only the *draw* when the
+  covering building is `VISUAL_HIDDEN` (enemy view) — transparent to the enemy, bib still shown to the
+  owner. Now that the cloak driver settles buildings to `CLOAKED` reliably, this handles the hide.
+  Verify in playtest that enemy-side bibs stay hidden.
+
+---
+
 ## Combat / units
 
 ### Recon Bike (TDBIKE) won't turn to fire at off-axis targets — ✅ FIXED 2026-06-16
