@@ -6351,7 +6351,9 @@ int BuildingClass::Mission_Missile(void)
         }
     }
 
-    if (*this == STRUCT_ADVANCED_TECH) {
+    // GDI's Advanced Comm (TDEYE) launches the GPS satellite exactly as the Allied Tech Center
+    // (ADVANCED_TECH) does -- same door/launch/deploy state machine and BULLET_GPS_SATELLITE.
+    if (*this == STRUCT_ADVANCED_TECH || *this == STRUCT_TDEYE) {
         enum
         {
             DOOR_OPENING,

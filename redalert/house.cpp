@@ -740,8 +740,7 @@ HouseClass::HouseClass(HousesType house)
     // recharge per tiberiandawn/defines.h ION_CANNON_GONE_TIME
     // (10 * TICKS_PER_MINUTE). Powered = true so a power-starved base
     // suspends the timer (matches RA's nuke / chrono behaviour).
-    // Dev builds recharge in 1 second (ion-strike anim-placement testing).
-    new (&SuperWeapon[SPC_TD_ION_CANNON]) SuperClass(TF_Dev_Cheats() ? TICKS_PER_SECOND : (TICKS_PER_MINUTE * 10),
+    new (&SuperWeapon[SPC_TD_ION_CANNON]) SuperClass(TICKS_PER_MINUTE * 10,
                                                      true,
                                                      VOX_TD_ION_CHARGING,
                                                      VOX_TD_ION_READY,
@@ -1827,10 +1826,19 @@ void HouseClass::Super_Weapon_Handler(void)
     }
 
     /*
+    ** Does this house still own a GPS-granting tech centre? Mirror the grant test below
+    ** (~line 1912): Allied Advanced Tech (STRUCTF_ADVANCED_TECH) OR GDI's Eye (TDEYE). TDEYE is
+    ** past the 32-bit BScan mask, so the raw STRUCTF_ADVANCED_TECH test never sees it -- without
+    ** this, GDI's GPS was revoked and its sidebar icon removed every frame (flicker, no tooltip).
+    ** Not TDTMPL: Nod gets the targeted Spy Plane, not full-map GPS.
+    */
+    bool has_gps_techcenter = ((ActiveBScan & STRUCTF_ADVANCED_TECH) != 0) || Has_Building_Active(STRUCT_TDEYE);
+
+    /*
     ** Check to see if they have launched the GPS, but subsequently lost their
     ** tech center.  If so, remove the GPS, and shroud the map.
     */
-    if (IsGPSActive && !(ActiveBScan & STRUCTF_ADVANCED_TECH)) {
+    if (IsGPSActive && !has_gps_techcenter) {
         IsGPSActive = false;
 
         /*
@@ -1856,7 +1864,7 @@ void HouseClass::Super_Weapon_Handler(void)
     ** is another good example, because it's a one-shot item.
     */
     if (SuperWeapon[SPC_GPS].Is_Present()) {
-        if (!(ActiveBScan & STRUCTF_ADVANCED_TECH) || IsGPSActive || IsDefeated) {
+        if (!has_gps_techcenter || IsGPSActive || IsDefeated) {
             /*
             **	Remove the missile capability when there is no advanced tech facility.
             */
@@ -1878,7 +1886,10 @@ void HouseClass::Super_Weapon_Handler(void)
                 IsRecalcNeeded = true;
                 for (int index = 0; index < Buildings.Count(); index++) {
                     BuildingClass* bldg = Buildings.Ptr(index);
-                    if (*bldg == STRUCT_ADVANCED_TECH && bldg->House == this) {
+                    // GDI's tech centre is TDEYE, not ADVANCED_TECH -- match both, or a GDI GPS
+                    // never marks HasFired (so the grant re-enables it next frame -> "began again")
+                    // and never gets MISSION_MISSILE (so the satellite never launches -> no reveal).
+                    if ((*bldg == STRUCT_ADVANCED_TECH || *bldg == STRUCT_TDEYE) && bldg->House == this) {
                         bldg->HasFired = true;
                         bldg->Assign_Mission(MISSION_MISSILE);
                         break;
