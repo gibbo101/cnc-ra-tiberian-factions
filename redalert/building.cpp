@@ -1591,10 +1591,16 @@ static void TF_Sync_Bib(BuildingClass* b)
     }
 }
 
-static void TF_Stealth_Drive(TechnoClass* obj, COORDINATE const* gcoord, HouseClass* const* ghouse, int gcount, int radius, int detect)
+/*
+**	Returns true while the object still carries driver-managed cloak state (we made it
+**	cloakable and its type isn't a native cloaker) -- i.e. it is not yet fully restored. The
+**	caller uses this to keep the restore pass running after every generator is gone: uncloak
+**	is a multi-frame transition, so a single restore frame is not enough to reset IsCloakable.
+*/
+static bool TF_Stealth_Drive(TechnoClass* obj, COORDINATE const* gcoord, HouseClass* const* ghouse, int gcount, int radius, int detect)
 {
     if (obj == NULL || !obj->IsActive || obj->IsInLimbo || obj->Strength <= 0) {
-        return;
+        return false;
     }
 
     /*
@@ -1610,10 +1616,10 @@ static void TF_Stealth_Drive(TechnoClass* obj, COORDINATE const* gcoord, HouseCl
     **	itself is always a visible target (its whole balance concession, see the spec).
     */
     if (obj->Techno_Type_Class()->IsCloakable) {
-        return;
+        return false;
     }
     if (obj->What_Am_I() == RTTI_BUILDING && *(BuildingClass*)obj == STRUCT_TDSTEALTH) {
-        return;
+        return false;
     }
 
     /*
@@ -1642,7 +1648,7 @@ static void TF_Stealth_Drive(TechnoClass* obj, COORDINATE const* gcoord, HouseCl
                 obj->IsCloakable = false;
             }
         }
-        return;
+        return (obj->IsCloakable && !obj->Techno_Type_Class()->IsCloakable);
     }
 
     /*
@@ -1661,7 +1667,7 @@ static void TF_Stealth_Drive(TechnoClass* obj, COORDINATE const* gcoord, HouseCl
         bool in_transit = (partner != NULL && partner->Is_Foot() && Target_Legal(((FootClass*)partner)->NavCom));
         if (in_transit) {
             obj->IsCloakable = false;
-            return;
+            return false;
         }
     }
 
@@ -1697,6 +1703,8 @@ static void TF_Stealth_Drive(TechnoClass* obj, COORDINATE const* gcoord, HouseCl
         }
         obj->CloakDelay = TF_STEALTH_REVEAL_HOLD;
     }
+
+    return (obj->IsCloakable && !obj->Techno_Type_Class()->IsCloakable);
 }
 
 #if TF_DEV_BUILD
@@ -1791,7 +1799,14 @@ void BuildingClass::Process_Stealth_Generators(void)
     TF_Log_AI_Build_State();
 #endif
 
-    static bool _had_generators = false;
+    /*
+    **	Stays set while any generator exists, and keeps the restore pass running after the last
+    **	one dies until every driver-cloaked object has fully uncloaked and had IsCloakable reset.
+    **	A single post-death frame is not enough: Do_Uncloak only STARTS a multi-frame transition,
+    **	so cleared too early the object finishes uncloaking with IsCloakable still true and
+    **	Cloaking_AI silently re-cloaks it -- leaving the whole base stealthed after the gen is gone.
+    */
+    static bool _restore_pending = false;
 
     enum
     {
@@ -1812,25 +1827,36 @@ void BuildingClass::Process_Stealth_Generators(void)
     }
 
     bool have_gens = (gcount > 0);
-    if (!have_gens && !_had_generators) {
+    if (have_gens) {
+        _restore_pending = true;
+    }
+    if (!have_gens && !_restore_pending) {
         return; // no generators and nothing left to restore -- free early-out
     }
-    _had_generators = have_gens;
 
     int radius = TF_STEALTH_RADIUS_CELLS * CELL_LEPTON_W;
     int detect = TF_STEALTH_DETECT_CELLS * CELL_LEPTON_W;
 
+    bool remaining = false;
     for (int i = 0; i < Buildings.Count(); i++) {
-        TF_Stealth_Drive(Buildings.Ptr(i), gcoord, ghouse, gcount, radius, detect);
+        remaining |= TF_Stealth_Drive(Buildings.Ptr(i), gcoord, ghouse, gcount, radius, detect);
     }
     for (int i = 0; i < Units.Count(); i++) {
-        TF_Stealth_Drive(Units.Ptr(i), gcoord, ghouse, gcount, radius, detect);
+        remaining |= TF_Stealth_Drive(Units.Ptr(i), gcoord, ghouse, gcount, radius, detect);
     }
     for (int i = 0; i < Infantry.Count(); i++) {
-        TF_Stealth_Drive(Infantry.Ptr(i), gcoord, ghouse, gcount, radius, detect);
+        remaining |= TF_Stealth_Drive(Infantry.Ptr(i), gcoord, ghouse, gcount, radius, detect);
     }
     for (int i = 0; i < Aircraft.Count(); i++) {
-        TF_Stealth_Drive(Aircraft.Ptr(i), gcoord, ghouse, gcount, radius, detect);
+        remaining |= TF_Stealth_Drive(Aircraft.Ptr(i), gcoord, ghouse, gcount, radius, detect);
+    }
+
+    /*
+    **	Once the last generator is gone, stop only after a full pass finds nothing still
+    **	driver-cloaked -- i.e. every object has finished uncloaking and been reset.
+    */
+    if (!have_gens && !remaining) {
+        _restore_pending = false;
     }
 }
 

@@ -1,13 +1,23 @@
 # Nod Stealth Generator — locked design + implementation plan
 
-**Status: DESIGN LOCKED 2026-07-14 (Luke). Implement next session.**
-A partial WIP implementation from the 2026-07-13/14 sessions is **uncommitted on `main`**
-(bdata.cpp, building.cpp driver, defines.h, logic.cpp, rules.ini, RABUILDABLES.XML, ModText.csv).
-That WIP uses the **old** every-frame-forced-cloak + observer-sight-scan model, which produced the
-bug cluster below. **The locked design replaces that driver model** — keep the scaffolding
-(STRUCT_TDSTEALTH type, sidebar/art wiring, ctor `IsCloakable` line) and rewrite the driver.
+**Status: SHIPPED & on `main` (driver rewritten per the locked design).**
+The cloak driver (`BuildingClass::Process_Stealth_Generators` / `TF_Stealth_Drive`, building.cpp)
+is committed and deployed. Behaviour follows the locked design below.
 
-A new Nod building (STRUCT_TDSTEALTH) that reuses the RA **Gap Generator (GAP)** sprite and
+**Art: reverted to the RA Gap Generator sprite (2026-07-15).** A custom HD platform-dome art
+(TDSTEAL.ZIP/TDSTEALMAKE.ZIP) was tried and dropped: the art stood taller than any 2×1 classic
+donor could anchor, so the launcher floated the sprite above its footprint and weapons fired on
+the base cell one below the visible dome. `ShapeSize` correction over-/under-sized it, so the
+building was reverted to `Image=GAP` (native 1×2 footprint, self-anchoring, known-good). The
+cloak field keys on `STRUCT_TDSTEALTH`, not the art, so field behaviour is unchanged. Commit
+`91b88be`.
+
+**Balance: 400 effective HP** — `Strength=200` in rules.ini, doubled to 400 by the TD-prefix
+rule (`BuildingClass::Read_INI`); power-plant/defensive tier, matching the "always-visible weak
+point that collapses the field" intent. (Earlier `Strength=600` read as 1200 in-game because of
+the doubling — far too tanky.)
+
+A Nod building (STRUCT_TDSTEALTH) that reuses the RA **Gap Generator (GAP)** sprite and
 cloaks a friendly area, defeated by bringing stealth-detector units into it.
 
 ---
@@ -143,25 +153,33 @@ deploy (see CLAUDE.md build/deploy sections).
 
 ---
 
-## Known bug (found in playtest 2026-07-15, fix next session)
+## Fixed bugs
 
-**Helipad + its helicopter build and stay UN-stealthed inside a generator's radius.**
+### Helipad + helicopter stayed UN-stealthed in the field — FIXED 2026-07-15
 
-Likely two causes, both in the driver (`BuildingClass::Process_Stealth_Generators` /
-`TF_Stealth_Drive`, building.cpp):
+Two causes, both in the driver (`TF_Stealth_Drive`, building.cpp):
 
-1. **Helipad never cloaks** — a helipad is (near-)permanently in **radio contact** with its
-   parked helicopter, and the "don't initiate a cloak while `In_Radio_Contact()`" gate then keeps
-   it UNCLOAKED forever. The gate was meant to protect *transient* ops (harvester docking, cargo
-   plane, unit ejection), not a permanent tether. Fix idea: narrow the gate — e.g. only block
-   cloaking for radio contact tied to an active production/docking transition, or explicitly allow
-   helipads (and other permanently-tethered hosts) to cloak with their tethered craft.
-2. **The helicopter itself never cloaks** — the driver only covers Buildings + Units + Infantry,
-   **not Aircraft**. So even with the pad fixed, the parked/covered heli stays visible. Fix: extend
-   the cover pass to `Aircraft` (at least grounded ones in radius), or accept airborne stays visible
-   by design and only cloak while landed.
+1. **Helipad never cloaked** — a helipad is (near-)permanently in **radio contact** with its
+   parked helicopter, and the "don't cloak while `In_Radio_Contact()`" gate kept it UNCLOAKED
+   forever. **Fix:** the gate now blocks a fresh cloak only while the tethered partner is
+   *in transit* (`partner->Is_Foot() && Target_Legal(partner->NavCom)`) — an inbound harvester or
+   cargo plane stays protected from a stranding `Detach`, but a parked idle helicopter (no NavCom)
+   lets the pad cloak with it.
+2. **Helicopter itself never cloaked** — the cover pass only iterated Buildings + Units + Infantry.
+   **Fix:** added an `Aircraft` pass in `Process_Stealth_Generators`.
 
-**Playtest confirmation (2026-07-15):** when the copter *takes off*, the helipad DOES stealth
-(radio tether cleared → gate releases → it cloaks) — proving cause #1. The copter itself stays
-un-stealthed even when landed — proving cause #2 (aircraft not covered). So: fix the gate to let a
-helipad cloak while its craft is docked, AND extend the cover pass to grounded aircraft.
+### Whole base stayed stealthed after the generator was destroyed — FIXED 2026-07-15
+
+Killing the generator left previously-cloaked buildings cloaked forever (newly-built ones correctly
+stayed visible). Cause: the restore pass was gated by a single `_had_generators` latch that let it
+run for **exactly one frame** after the last generator died. `Do_Uncloak()` only *starts* a
+multi-frame transition, so the object never reached `UNCLOAKED` that frame, `IsCloakable` was never
+reset, and `Cloaking_AI` re-cloaked it. **Fix:** `TF_Stealth_Drive` now returns whether an object
+is still driver-cloaked, and `Process_Stealth_Generators` keeps the restore pass running (via
+`_restore_pending`) until a full pass finds nothing left to restore.
+
+## Balance
+
+**Effective HP = 400** (`Strength=200`, doubled by the TD-prefix rule). Set 2026-07-15 after a
+playtest showed 4 Apaches only halving it — the old `Strength=600` was silently doubled to 1200,
+far too tanky for the "always-visible weak point." Power-plant/defensive tier now.
