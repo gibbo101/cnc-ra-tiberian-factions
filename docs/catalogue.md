@@ -242,14 +242,13 @@ The original D1.1 plan assumed "per-entry ImageData/BuildupData load fixes the s
 
 The TD-Assets workshop docs ([Steam Workshop 3003163891](https://steamcommunity.com/sharedfiles/filedetails/?id=3003163891)) confirm this is the EMC-canonical approach: *"The mod does NOT automatically scale sprites... you must set the dimensions (width, height) manually."* Example shown: `ShapeSize=48,72` for HAND (2×3 foundation). DontCryJustDie's discussion thread has authoritative shape sizes for the full TD catalogue; XCC Mixer can extract the same data from TD's `CONQUER.MIX`. Subscribed to DontCryJustDie's example mod (3003174395) for canonical rules.ini patterns when we do the catalogue rollout.
 
-### Classic graphics mode — RESOLVED 2026-05-28
+### Classic graphics mode — DROPPED (HD-only)
 
-Separated TD buildings ship their own TD SHPs in `TFASSETS.MIX`, and those SHPs
-are now **palette-remapped** for RA's palette at pack time — see
-`classic-mode-palette-remap.md`. Classic mode renders correct TD sprites with
-house colour following the player; the Obelisk laser is red. (The old donor-sprite
-fallback only applied to entries that were never fully separated.) Remastered mode
-uses the TGA tileset and was always correct.
+Classic mode is unsupported. It was briefly made palette-correct (the 2026-05-28
+`TFASSETS.MIX` remap — historical record in `classic-mode-palette-remap.md`), but once
+the TD theatre tilesets were added there is no classic art path for the mod's content,
+so classic renders broken. HD (the TGA tileset) is the only supported mode; do not do
+classic-mode work for new entities. See memory `feedback-classic-graphics-unsupported`.
 
 ### Next session — D1.2 full BScan replace
 

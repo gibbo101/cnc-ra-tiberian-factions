@@ -5,6 +5,23 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Stood down — not doing (2026-07-15, Luke)
+
+Cleared off the active backlog by decision (not implemented). Design docs retained for reference
+only; do not resume without Luke re-opening.
+
+- **ModText.csv fleet-wide naval naming** (Naval Yard, Sub Pen, Missile Sub) **+ classic SHPs for
+  the RA-art naval clones** (TDPT/TDDD/TDCA/TDNSUB/TDMSUB). Was a navy-session "next candidate".
+- **Harvester docking rework** (economy-balance; converge RA harvester onto the TD attach-dock
+  mechanic). No code was written. Plan doc `harvester-docking-rework-plan.md` kept as reference.
+- **Nod defensive-economy gap** (AGT vs Obelisk+SAM) — stood down; see the Defences-balance section
+  below, left in place for context but not being actioned.
+
+**AI-focus pass is POST-v4.0** (air-build escalation retune + skirmish-AI improvements + the deferred
+stuck-in-base pathfinding) — not part of the current milestone.
+
+---
+
 ## v4.0 air / paratroopers / balance — open threads (2026-07-13, live)
 
 Spun out of the air-AI + power-grants session. Deployed-but-unverified batch: airfield/A-10 AI
@@ -194,4 +211,4 @@ Queue-Jump, Harvester Optimization, Smarter Repair Bay, and **Infantry Tiberium 
 
 ## Active work threads (tracked in detail elsewhere — index only)
 - **Chokepoint / cooperative traffic — ✅ SHIPPED v2.3.0 (2026-06-16):** infantry give-way + vehicle-vs-MOVING-infantry freeze fix + open-ground hold-timeout + execution-branch head-on breaker all landed. **Open thread (minor):** vehicle-vs-vehicle head-on in a 1-tile gap with NO escape cell (gw==2 RETREAT path never reaches the breaker); self-resolves today, no gridlock — make the breaker reachable from the gw==2 path. See `chokepoint-reservation-design.md` + `cfe-port-plan.md`.
-- **Harvester logic workstream:** targeting / pathing / claiming / reachability / idle-stuck + the economy-equalise (tilted-bucket dwell) idea. See the checkpoint's spun-off section + `balance-deep-dive.md`.
+- **Harvester logic workstream:** targeting / pathing / claiming / reachability / idle-stuck + the economy-equalise (tilted-bucket dwell) idea. See the checkpoint's spun-off section + `balance-deep-dive.md`. **(Docking rework STOOD DOWN 2026-07-15 — see top of file.)**

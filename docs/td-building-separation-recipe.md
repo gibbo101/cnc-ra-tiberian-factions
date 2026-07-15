@@ -154,7 +154,7 @@ python3 scripts/mix_tools.py pack \
 
 `MFCD::Retrieve` finds the new SHPs via `Init_Heap()`'s standard load loop (`bdata.cpp:3185-3187`). No engine changes per-building.
 
-**Classic-mode caveat: RESOLVED 2026-05-28 — see `classic-mode-palette-remap.md`.** TD SHPs are now palette-remapped at pack time in `build_tfassets.sh` (TD house range 176–191 → RA 80–95, closest-colour for the rest), so classic mode renders correct colours with house colour following the player. Remastered mode unaffected — launcher uses our TGA tileset.
+**Classic mode is DROPPED (do NOT do classic SHP work for new buildings).** Since the TD tilesets were added there is no classic art path for the mod's content — classic renders broken and is unsupported (HD-only). Skip the `build_tfassets.sh` palette-remap / classic-SHP step entirely; ship only the HD TGA tileset. (Historical technique record: `classic-mode-palette-remap.md`.)
 
 **Overlay SHPs (war-factory-style door layers):** if the building renders in two layers (body + animated overlay like WEAP+WEAP2), ship BOTH SHPs into TFASSETS.MIX (e.g. `WEAP2.SHP:TDWEAP2.SHP`) **and** add a TD-specific static pointer (`BuildingTypeClass::WarFactoryOverlayTd` or similar) loaded in `One_Time`. RA's existing `WarFactoryOverlay` static is hardcoded to load `WEAP2.SHP` and is drawn for every STRUCT_WEAP-style building — without a per-type dispatch in `Draw_It`, RA's overlay renders on top of TD's body. Plus: the TGA tileset XML for the overlay must have shape entries matching TD's `Open_Door(rate, stages)` call (see playbook §3.15). Worked example: TDWEAP2 in `5c0c17e`.
 
@@ -198,7 +198,7 @@ Full game restart on the Deck (DLL has new enum value → new save format).
 - [ ] Sell works, refunds correctly
 - [ ] Save/load preserves the building
 - [ ] AI builds it when appropriate
-- [ ] Classic graphics mode renders the sprite (with documented palette imperfection)
+- [ ] ~~Classic graphics mode renders the sprite~~ — N/A, classic mode dropped (HD-only)
 
 ---
 
@@ -218,7 +218,7 @@ Full game restart on the Deck (DLL has new enum value → new save format).
 
 7. **TD's `IsCharging/IsCharged` flags exist in `tiberiandawn/building.h` but aren't driven by TD's source** (no Charging_AI in TD). The flags are vestigial in TD; RA's Charging_AI drives them. We use RA's mechanism because it works correctly with the BSTATE_ACTIVE animation, same outcome as TD-source behavior would produce if implemented.
 
-8. **Classic-mode spacebar toggle CANNOT be disabled from the mod side.** Tried `Legacy_Render_Enabled` returning false (black screen on toggle) and overriding `DATA/XML/INPUTTRANSLATORCONFIGURATIONS.XML` (launcher ignores the mod XML for this binding). Player must rebind in Options → Controls if they want to disable the toggle. Mod README should document the palette-mismatch limitation in classic mode.
+8. **Classic mode is DROPPED (HD-only) and its spacebar toggle CANNOT be locked from the mod side.** The launcher owns the toggle: it ignores our `DATA/XML/INPUTTRANSLATORCONFIGURATIONS.XML` for that binding, and `Legacy_Render_Enabled` returning false only black-screens the toggled-to state (doesn't disable it). The launcher's own clean lockout applies to *network* games only (`GAME_GLYPHX_MULTIPLAYER` + 2 humans), which can't be spoofed for a local skirmish/campaign. So classic stays reachable but unsupported; players who want it gone rebind space in Options → Controls. See `feedback-classic-graphics-unsupported`.
 
 9. **Save format**: new STRUCT_TDxxxx enum values change `sizeof(BuildingTypeClass)` array indices. Mid-campaign saves from a previous build will not load. We're not shipping campaigns yet so blast radius is skirmish-only, but worth flagging for any future campaign work.
 
@@ -231,5 +231,5 @@ These come up when the catalogue extends past TDOBLI:
 - **Unit types (TD harvester, MCV, C-17, infantry, vehicles)** — same separation philosophy, parallel recipe needed for `UnitTypeClass` / `InfantryTypeClass` / `AircraftTypeClass`. Will fork a sibling recipe doc when unit work starts.
 - **HouseClass build orders** — RA's AI base-build sequences are STRUCT_*-indexed. Adding STRUCT_TDxxxx entries needs parallel AI sequences for HOUSE_GOOD / HOUSE_BAD. Covered in `docs/building-separation-plan.md §3.1 H2`.
 - **EVA voice routing** — faction-aware VoxType (parallel to VocType). Defer to dedicated work after first wave of buildings.
-- **Format80 codec + palette remap** — ✅ DONE 2026-05-28 (`scripts/shptools.py` + `build_tfassets.sh`, see `classic-mode-palette-remap.md`). Classic mode renders correct TD colours with house colour following the player.
+- **Format80 codec + palette remap** — historical (`scripts/shptools.py` + `build_tfassets.sh`, see `classic-mode-palette-remap.md`). Was done for classic mode, now moot: classic dropped (HD-only) once the TD tilesets landed.
 - **Classic-mode TFASSETS.MIX append mode** — `mix_tools.py pack` currently rebuilds; future `--append` would add per-building incrementally.

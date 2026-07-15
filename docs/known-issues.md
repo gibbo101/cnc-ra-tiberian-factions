@@ -165,10 +165,12 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
   the Workshop "Known limitations". MCV deploy hotkey spike resolved-negative (memory
   `project-mcv-deploy-hotkey-spike`).
 
-### Classic graphics mode unsupported (HD-only)
+### Classic graphics mode dropped (HD-only)
 - **Severity:** by-design, player-facing.
-- **Status:** WON'T FIX — official since v2.0.0 (new theatre tiles / some units don't render correctly in
-  Classic). HD is the supported mode. Memory `feedback-classic-graphics-unsupported`.
+- **Status:** WON'T FIX — classic completely dropped once the TD theatre tilesets were added (no classic
+  art path → terrain/units render broken). HD is the only supported mode. The classic spacebar toggle
+  can't be locked from the mod side (launcher-owned; clean lockout is network-games-only). Memory
+  `feedback-classic-graphics-unsupported`.
 
 ---
 
@@ -196,3 +198,11 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 - Immortal-claim whole-map gridlock — FIXED 6f35ea9 (claim-on-crossing). -->
 - Immortal-claim whole-map chokepoint gridlock — FIXED `6f35ea9` (claim-on-crossing). See
   `docs/chokepoint-reservation-design.md` CHECKPOINT 2026-06-16.
+- TD temperate coastal tiles rendered as white squares (shores/bridges) — FIXED `ede7ca1`.
+  The `TDSH*`/`TDBRIDGE*` `<Tile>` blocks were missing from `RA_TERRAIN_TEMPERATE.XML` so the
+  launcher couldn't resolve their AssetNames. Cause: `build_td_tiles.py` spliced the shared
+  `TF_TD_TILES` marker once **per theatre letter**, but `T` (temperate) and `S` (winter) both
+  target the temperate XML and `splice()` replaces the whole block — the winter pass (added with
+  the winter/desert theatres, `7c80fde`) overwrote the temperate shore/bridge block. Only visible
+  on TD temperate coastal maps (e.g. TD Lost Arena); winter/desert maps were unaffected, so it
+  shipped unnoticed. Fix: group the XML splice by destination file + restore the dropped blocks.

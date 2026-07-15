@@ -9207,17 +9207,17 @@ bool DLLExportClass::Legacy_Render_Enabled(void)
         return num_humans < 2;
     }
 
-    // Tiberian Factions mod: classic graphics mode has a known visual gap —
-    // the TD SHPs we ship (extracted from TD's CONQUER.MIX into our own
-    // TFASSETS.MIX) use TD's PALETTE.PAL color indices, while RA's classic
-    // renderer applies RA's PALETTE.PAL → mild color mismatch on TDOBLI and
-    // future STRUCT_TDxxxx buildings. Tried disabling classic entirely
-    // (returning false here) but that just produces a black screen when the
-    // user presses space, because the launcher's classic-mode UI toggle is
-    // independent of this function — our DLL just stops populating the
-    // legacy buffer. Leaving classic enabled so the toggle works, with
-    // documented palette imperfection. Full fix requires Format80 codec +
-    // closest-color SHP remap (deferred to classic-mode polish iteration).
+    // Tiberian Factions mod: classic graphics mode is DROPPED. Once the TD
+    // theatre tilesets were added there is no classic art path for the mod's
+    // content, so classic renders broken (missing/incorrect terrain + units).
+    // HD is the only supported mode. We cannot cleanly lock the classic toggle
+    // out from the mod side: the launcher's spacebar toggle is independent of
+    // this function (it ignores our INPUTTRANSLATORCONFIGURATIONS.XML for that
+    // binding), and returning false here only black-screens the toggled-to
+    // state instead of disabling it. The launcher's own clean lockout applies
+    // to network games only (see Legacy_Render_Enabled's GAME_GLYPHX_MULTIPLAYER
+    // num_humans<2 branch), which we can't spoof for a local skirmish/campaign.
+    // So we leave this true and accept the toggle exposes an unsupported mode.
     return true;
 }
 

@@ -1,9 +1,18 @@
 # Classic-mode palette remap (TD sprites + Obelisk laser)
 
-**Status: SOLVED and shipped 2026-05-28.** This supersedes every earlier note
-that called the classic-graphics-mode palette mismatch "deferred", "~95% right",
-or unavoidable (in `td-building-separation-recipe.md`, `session-handoff-weapons-port.md`,
-`catalogue.md`, `building-separation-plan.md`). It is fixed.
+> ⚠️ **HISTORICAL — classic graphics mode is DROPPED.** Once the TD theatre tilesets
+> were added there is no classic art path for the mod's content, so classic renders
+> broken and is unsupported (HD-only). The SHP palette-remap described below no longer
+> ships/matters for new work — do **not** palette-remap or ship classic SHPs for new
+> entities. **Exception that is still live:** the Obelisk-laser index fix (§ below,
+> `techno.cpp` `0x7D/0x7F → 0xD8/0xE6`) also feeds the **HD** launcher line-intercept
+> (both modes draw the beam through RA's palette), so that one value is still needed.
+> Kept as a record of the technique + the LUT + the laser fix. See memory
+> `feedback-classic-graphics-unsupported`.
+
+**Status (historical): SOLVED and shipped 2026-05-28**, later dropped when the TD
+tilesets landed. It fixed the classic-graphics-mode palette mismatch that earlier notes
+called "deferred", "~95% right", or unavoidable.
 
 ## The problem
 
