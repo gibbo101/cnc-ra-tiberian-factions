@@ -11,13 +11,6 @@ Spun out of the air-AI + power-grants session. Deployed-but-unverified batch: ai
 routing, 3 power grants, AI air-responsiveness (max-threat + limit-mirror), MCV/ConYard/AGT,
 Nod-paratrooper-drops-minigunners. Open items on top:
 
-- **Nod paratrooper C-17 delivery plane.** Nod now drops Minigunners (TDE1) but from the RA Badger.
-  Decision (Luke): build a **"TDC17P" support-drop plane** — a targetable twin of the existing
-  TDCARGO ("TDC17"): unbuildable (support-only), **targetable + radar-visible** (so SAMs can hit it),
-  **Passengers=5** (full squad), reuses the tdc17 sprite (alias the 32 RA_UNITS.XML TDC17 tiles under
-  TDC17P). Files: defines.h (AIRCRAFT_TDPARADROP), aadata.cpp (def + ImageData/CameoData donor=Badger),
-  rules.ini [TDC17P], RA_UNITS.XML (32-frame alias), house.cpp @PINF Nod plane. Existing TDCARGO stays
-  untargetable/vehicle-only.
 - **GDI GPS icon flickers + no tooltip (broken).** Almost certainly the same TDEYE-vs-BScan gap as the
   grant, but on the REMOVAL side: the "lost the tech centre -> revoke GPS + reshroud" check
   (house.cpp ~1855, `if (IsGPSActive && !(ActiveBScan & STRUCTF_ADVANCED_TECH))`) keys on the BScan
@@ -26,19 +19,11 @@ Nod-paratrooper-drops-minigunners. Open items on top:
   `|| Has_Building_Active(STRUCT_TDEYE)` (and TDTMPL if Nod should get it) to that removal check,
   mirroring the grant. Quick. (Do after stealth gen, per Luke.)
 - **Nod SAM inaccurate** — ROT 10->20 shipped; assume-fixed pending confirm.
-- **AI helis = pads+1.** Free heli per helipad (`SeparateAircraft=no`) races the AI_Aircraft-queued
-  heli → stable +1. Fix = don't queue an AI heli while a helipad is still building. Minor.
-- **Nod Stealth Generator (new building) — DESIGN LOCKED 2026-07-14, IMPLEMENT NEXT SESSION.**
-  Full locked spec + engine facts + implementation plan: **`docs/stealth-generator-spec.md`**.
-  A new Nod building (STRUCT_TDSTEALTH, reuses the GAP sprite) that cloaks friendly buildings + units
-  in a radius, hidden from everyone incl. the AI, revealed only by fire/damage or enemy `IsScanner`
-  detectors (all infantry/vessels/dog already scanners — no infantry changes; add `Sensors=yes` to the
-  Radar Jammer). Generator itself never cloaks (Power cost dropped 200→100 as the concession); armed
-  defences ambush-uncloak on target; building bibs hide with the building; owner sees a warped
-  un-stealthing look. **Partial WIP is uncommitted on `main`** (STRUCT_TDSTEALTH type + sidebar/art +
-  ctor `IsCloakable` line = keep) but its every-frame-forced-`Do_Cloak` + observer-sight-scan **driver
-  is superseded** — the locked plan rewrites the driver (set `IsCloakable`, let `Cloaking_AI` cloak;
-  driver only force-reveals) which retires the whole prior flicker/reveal/restore bug cluster. See the doc.
+
+**Done this milestone:** Nod Stealth Generator (shipped 2026-07-15, Gap-Generator art, cloak
+field + bib-hide + helipad/aircraft cloak + teardown restore + 400 HP + organic Nod-AI build —
+see `docs/stealth-generator-spec.md`); Nod paratrooper C-17 plane (`TDC17P`, targetable/radar-
+visible support-drop twin of TDCARGO); AI air-build priority dropped to LOW (war factory first).
 
 ---
 
