@@ -5,6 +5,17 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## NEXT SESSION (2026-07-16): capture media, then release v4.0
+
+v4.0 is feature-complete and validated (artillery range confirmed in playtest). Plan:
+1. Screenshots + videos of the v4.0 content (navy, A-10, GPS/spy/paratroops, stealth gen, flame
+   bunker, artillery) for the Workshop update.
+2. Release v4.0 (bump ccmod.json + CHANGELOG, package with -DTF_DEV_BUILD=0, tag, GitHub release,
+   Workshop publish per workshop-publish-runbook.md; restart Steam first).
+
+---
+
+
 ## Stood down — not doing (2026-07-15, Luke)
 
 Cleared off the active backlog by decision (not implemented). Design docs retained for reference
