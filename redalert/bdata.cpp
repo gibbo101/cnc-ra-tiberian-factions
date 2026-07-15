@@ -1344,6 +1344,40 @@ static BuildingTypeClass const ClassTdStealth(STRUCT_TDSTEALTH,
                       (short const*)List1     // OVERLAPLIST:List of overlap cell offset.
 );
 
+// Tiberian Factions mod: Nod Flame Bunker (STRUCT_TDFBNK). A Pillbox-chassis anti-infantry
+// emplacement firing Nod's TDFire flame weapon (area splash vs swarms) -- the anti-infantry
+// counterpart to the anti-armor Turret that Nod otherwise lacked. Reuses the RA Pillbox sprite
+// (Image=PBOX in rules.ini); own STRUCT type so it doesn't re-weapon the shared Allied Pillbox.
+// Modeled verbatim on ClassPillbox.
+static BuildingTypeClass const ClassFlameBunker(STRUCT_TDFBNK,
+                                            TXT_NONE,        // Display name token; rules.ini Name= overrides.
+                                            "TDFBNK",        // IniName (art aliases PBOX via Image=PBOX).
+                                            FACING_NONE,     // Foundation direction from center of building.
+                                            XYP_COORD(0, 0), // Exit point for produced units.
+                                            REMAP_ALTERNATE, // Sidebar remap logic.
+                                            0x0010,          //	Vertical offset.
+                                            0x0040,          // Primary weapon offset along turret centerline.
+                                            0x0000,          // Primary weapon lateral offset along turret centerline.
+                                            false,           // Is this building a fake (decoy?)
+                                            false,           // Animation rate is regulated for constant speed?
+                                            false,           // Always use the given name for the building?
+                                            false,           // Is this a wall type structure?
+                                            true,            // Simple (one frame) damage imagery?
+                                            false,           // Is it invisible to radar?
+                                            true,            // Can the player select this?
+                                            true,            // Is this a legal target for attack or move?
+                                            false,           // Is this an insignificant building?
+                                            false,           // Theater specific graphic image?
+                                            false,           // Does it have a rotating turret?
+                                            true,            // Can the building be color remapped to indicate owner?
+                                            RTTI_NONE,       // The object type produced at this factory.
+                                            DIR_N,           // Starting idle frame to match construction.
+                                            BSIZE_11,        // SIZE:			Building size.
+                                            NULL,            // Preferred exit cell list.
+                                            (short const*)List1, // OCCUPYLIST:	List of active foundation squares.
+                                            (short const*)NULL   // OVERLAPLIST:List of overlap cell offset.
+);
+
 static BuildingTypeClass const ClassTurret(STRUCT_TURRET,
                                            TXT_TURRET,      // NAME:			Short name of the structure.
                                            "GUN",           // NAME:			Short name of the structure.
@@ -3921,6 +3955,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdNPen);    // STRUCT_TDNPEN   (Nod Sub Pen)
     new BuildingTypeClass(ClassTdGAfld);   // STRUCT_TDGAFLD  (GDI Airfield)
     new BuildingTypeClass(ClassTdStealth); // STRUCT_TDSTEALTH (Nod Stealth Generator)
+    new BuildingTypeClass(ClassFlameBunker); // STRUCT_TDFBNK (Nod Flame Bunker)
 }
 
 /***********************************************************************************************

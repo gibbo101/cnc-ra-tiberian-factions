@@ -1792,6 +1792,14 @@
 			</CNCEncyclopediaComponent>
 		</ObjectTypeClass>
 
+		<ObjectTypeClass Name="RA_TDFBNK" Classification="CNCBuildableObject" CanInstantiate="False">
+			<CNCEncyclopediaComponent>
+				<ObjectNameTextID>TEXT_STRUCTURE_TDFBNK</ObjectNameTextID>
+				<ObjectDescriptionTextID>TEXT_STRUCTURE_TDFBNK_DESC</ObjectDescriptionTextID>
+				<BuildIcon>BuildIcon_RA_Pillbox</BuildIcon>
+			</CNCEncyclopediaComponent>
+		</ObjectTypeClass>
+
 		<ObjectTypeClass Name="RA_TDNSUB" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TDNSUB</ObjectNameTextID>

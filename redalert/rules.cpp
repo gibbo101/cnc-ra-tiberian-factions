@@ -740,6 +740,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDTomahawk");   // WEAPON_TDTOMAHAWK (v4.0 GDI Gunboat primary -- TD homing missile, BULLET_TDTOW)
     new WeaponTypeClass("TDObeliskSubLaser"); // WEAPON_TDOBELISKSUBLASER (v4.0 Nod Obelisk Sub laser -- clone of TDOblsLaser, tunable independently)
     new WeaponTypeClass("TDA10Napalm");  // WEAPON_TDA10NAPALM (v4.0 A-10 strafe -- TD WEAPON_NAPALM verbatim, BULLET_TDNAPALM)
+    new WeaponTypeClass("TDFlameBunker"); // WEAPON_TDFLAMEBUNKER (v4.0 Nod Flame Bunker TDFBNK -- TDFlameTongue clone, Range 4; IsTDPort raw Speed)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -803,6 +804,10 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // TDTomahawk (GDI Gunboat primary): IsTDPort for raw Speed (MPH_ROCKET=60) + the AI_TD homing
     // dispatch of BULLET_TDTOW (same path as TDDragon). WARHEAD_TDAP is set on the weapon in rules.ini.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDTomahawk"))->IsTDPort = true;
+    // TDFlameBunker (Nod Flame Bunker TDFBNK): a TDFlameTongue clone with Range bumped 2->4 so the
+    // static defence outranges buffed range-3 infantry. IsTDPort for raw Speed=40 (same as the flame
+    // tongue it clones); WARHEAD_TDFIRE + BULLET_TDFLAME are set on the weapon in rules.ini.
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TDFlameBunker"))->IsTDPort = true;
 
     return (true);
 }

@@ -6677,9 +6677,26 @@ int HouseClass::AI_Building(void)
         */
         int tf_def = TF_Skirmish_Type(STRUCT_FLAME_TURRET, ActLike);
         current = BQuantity[STRUCT_PILLBOX] + BQuantity[STRUCT_CAMOPILLBOX] + BQuantity[STRUCT_TURRET]
-                  + BQuantity[STRUCT_FLAME_TURRET] + (tf_def >= 0 ? BQuantity[tf_def] : 0);
+                  + BQuantity[STRUCT_FLAME_TURRET] + BQuantity[STRUCT_TDFBNK] + (tf_def >= 0 ? BQuantity[tf_def] : 0);
         if (current < Round_Up(Rule.DefenseRatio * fixed(CurBuildings)) && current < (unsigned)Rule.DefenseLimit) {
-            b = TF_Skirmish_Pick(STRUCT_FLAME_TURRET, ActLike);
+            /*
+            **  Nod fields BOTH its anti-armor Turret (tf_def -> TDGUN) and its anti-infantry
+            **  Flame Bunker. Interleave them: build a Flame Bunker whenever Nod has strictly
+            **  fewer bunkers than turrets, so the defence budget alternates turret, bunker,
+            **  turret, ... Can_Build enforces the Hand of Nod prerequisite; before it's up (or
+            **  for GDI, which can't build the bunker) this falls through to the normal pick.
+            */
+            b = NULL;
+            if (ActLike == HOUSE_BAD && tf_def >= 0
+                && (unsigned)BQuantity[STRUCT_TDFBNK] < (unsigned)BQuantity[tf_def]) {
+                BuildingTypeClass const* fb = &BuildingTypeClass::As_Reference(STRUCT_TDFBNK);
+                if (Can_Build(fb, ActLike)) {
+                    b = fb;
+                }
+            }
+            if (b == NULL) {
+                b = TF_Skirmish_Pick(STRUCT_FLAME_TURRET, ActLike);
+            }
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {

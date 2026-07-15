@@ -1544,6 +1544,7 @@ typedef enum StructType : char
     STRUCT_TDNPEN,    // Nod Sub Pen (clone of SPEN, Owner=BadGuy, RTTI_VESSELTYPE) — Submarine + Obelisk Sub + Hovercraft.
     STRUCT_TDGAFLD,   // GDI Airfield (clone of AFLD, Owner=GoodGuy, RTTI_AIRCRAFTTYPE) — A-10.
     STRUCT_TDSTEALTH, // Nod Stealth Generator (reuses GAP sprite; cloaks friendly buildings+units in radius). bdata.cpp / building.cpp driver.
+    STRUCT_TDFBNK,    // Nod Flame Bunker (clone of PBOX, Owner=BadGuy) — anti-infantry TDFire flame weapon (range 4). bdata.cpp ClassFlameBunker.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0
@@ -3323,6 +3324,7 @@ typedef enum WeaponType : char
     WEAPON_TDTOMAHAWK,     // v4.0: GDI Gunboat primary — TD homing missile (BULLET_TDTOW, AG-only), WARHEAD_TDAP, anti-surface/anti-shore. IsTDPort (raw Speed MPH_ROCKET + AI_TD homing). Registered "TDTomahawk".
     WEAPON_TDOBELISKSUBLASER, // v4.0: Nod Obelisk Attack Sub — TDLaser bolt (clone of the Obelisk's TDOblsLaser, NO Charges since a vessel can't building-charge), short range + slow ROF + high dmg. Registered "TDObeliskSubLaser".
     WEAPON_TDA10NAPALM,    // v4.0: A-10 napalm strafe — TD WEAPON_NAPALM verbatim (Dmg100/ROF20/Range4.5=0x0480, VOC_NONE), BULLET_TDNAPALM. Registered "TDA10Napalm".
+    WEAPON_TDFLAMEBUNKER,  // v4.0: Nod Flame Bunker (TDFBNK) — clone of TDFlameTongue with Range 2->4 (static defence must outrange range-3 infantry). BULLET_TDFLAME/WARHEAD_TDFIRE reused. IsTDPort (raw Speed 40). Registered "TDFlameBunker".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
