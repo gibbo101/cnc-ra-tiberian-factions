@@ -703,3 +703,57 @@ Every time we discover a new trap or refine a pattern, append it to §3 (the tra
 - **Fix:** the code/data change
 
 Living document — keep it ahead of the implementation, not behind.
+
+---
+
+## Traps migrated from cross-session memory (2026-07-15)
+
+### Trap — diagnostic fopen paths MUST use %USERPROFILE%, never hardcoded
+Resolve DLL-side log paths via `getenv("USERPROFILE")`, not `C:/Users/steamuser/...` (that only
+resolves on the Deck's Proton prefix; on real Windows / other Wine prefixes the fopen silently fails
+and the log never appears). `Documents/CnCRemastered/` exists on every platform (the game's own save
+dir); fall back to CWD if the env var is empty.
+
+### Trap — AnimType enum ORDER must match adata.cpp Init_Heap ORDER, element-for-element
+Heap IDs are assigned by registration order; `AnimTypes.Ptr(animType)` looks up by that ID. If a new
+ANIM_ is placed at a different relative position in the enum vs Init_Heap, EVERY later anim shifts to
+the wrong AnimTypeClass. Symptom (the "red rocket" bug): HE infantry death spawned ANIM_CORPSE3 but
+Ptr() returned ANIM_CRATE_DEVIATOR (a red missile). Same invariant applies to unit/building/bullet/
+warhead heaps. Verify: diff enum order vs the `new XxxTypeClass(...)` order — identical, one-for-one.
+
+### Trap — units render OVER a TD building (BuildingClass::Sort_Y)
+Oversized TD-Assets sprites on small footprints lose the vanilla height south-bias if given a bare
+Center_Coord() sort. Fire the Center override only for WIDE (ShapeWidth>ShapeHeight) or BIG
+(ShapeWidth>=72 || ShapeHeight>=72) sprites; small <=48px square/tall buildings fall through to the
+vanilla `Center_Coord()+XY_Coord(0,(Height()*256)/3)` so vehicles (which bias +0x00800000 south) in
+the sprite's northern cells sort behind. If a future building sorts wrong, bias off ShapeHeight or add
+a named per-type case.
+
+### Trap — IsTDPort bullets MUST set Warhead= in rules.ini (else 0 damage)
+TD's verbatim BulletClass::AI_TD detonates via `Class->ClassWarhead` (a TD-only embedded field), not
+the weapon's warhead. Default is WARHEAD_NONE -> Explosion_Damage (combat.cpp:171) early-returns -> the
+bullet visibly impacts but deals NO damage. Set `Warhead=` (AND `ImpactAnim=`, matching the ctor's
+last two args in tiberiandawn/bbdata.cpp) in every `[TDxxx]` bullet section. ImpactAnim= is parsed by
+the adata.cpp Name() string (dashes matter: ANIM_VEH_HIT3 -> "VEH-HIT3").
+
+### Trap — new mod-extensible type category needs MAX_X_TYPES + init.cpp Set_Heap (silent Alloc fail)
+Adding [NewInfantry]/[NewVessels]/[NewAircraft]/etc. requires 3 coordinated changes or the heap sizes
+to exactly the vanilla *_COUNT and `new XTypeClass(...)` silently fails (As_Pointer returns NULL, entry
+never enters the heap): (1) `MAX_X_TYPES (X_COUNT + 50)` in defines.h; (2) `XTypes.Set_Heap(MAX_X_TYPES)`
+in init.cpp's Set_Heap block; (3) the [NewX] parser in rules.cpp RulesClass::Objects(). Symptom: type-
+count never exceeds vanilla; scenario/spawn intercepts fall back to vanilla.
+
+### Trap — delegating BuildingClass ctor leaves IsActive=0 under mingw -O2 at scenario load
+`BuildingClass::operator new` writes IsActive=true BEFORE the ctor runs; the delegating
+`BuildingClass(StructType,HousesType)` ctor's pre-construction Set_Active() doesn't survive -O2 codegen
+at ScenarioInit -> buildings arrive IsActive=0 -> Unlimbo->Mark(MARK_DOWN) bails -> the building is
+deleted. Fix: construct via the POINTER ctor `new BuildingClass(BuildingTypes.Ptr((int)type), house)`
+(matches the known-good Create_One_Of path). Use the pointer ctor for any code that places buildings at
+scenario load or on-demand (the blossom/visceroid placement hit this too).
+
+### Rendering — resizing a unit/vessel in HD = the Techno_Draw_Object `scale` arg, NOT the art frame size
+To render a unit bigger/smaller in HD, change the `scale` param (8.8 fixed: 0x0100=1.0x, 0x0180=1.5x)
+in its Draw_It Techno_Draw_Object call. Scaling the HD art frames in the tileset ZIP does NOTHING — the
+launcher normalises HD art to the unit's fixed logical footprint. scale is COSMETIC only: it does not
+change the logical footprint (still 1 cell), so a scaled-up sprite makes other units appear to overlap
+it. Keep vessel scale ~1.0x and size on-hull overlays to the native beam instead.

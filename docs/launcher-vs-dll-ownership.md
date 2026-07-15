@@ -155,3 +155,29 @@ Both `CNCObjectStruct.TypeName` (= `Class_Of().IniName`, dllinterface.cpp ~3755)
 **Not now.** Source + strings answer every standing question, and the `FactionType` lead dead-ends on a negative a decompile would only re-confirm — at the cost of installing Ghidra and disassembling 34 MB of stripped, optimized native C++.
 
 A decompile becomes worthwhile only if **both** hold: (a) we commit to genuine engine houses, **and** (b) we need the exact `House → FactionType/side` mapping logic — e.g., to learn whether new house slots could ever map to launcher faction/color/audio slots, or to extract the credit-counter animation parameters. Until then the value doesn't clear the cost.
+
+---
+
+## Engine gotchas migrated from cross-session memory (2026-07-15)
+
+### `this == PlayerPtr` is ALWAYS TRUE inside HouseClass::AI (REMASTER_BUILD)
+`HouseClass::AI()` opens with `Logic_Switch_Player_Context(this)` under `#ifdef REMASTER_BUILD`, so
+`PlayerPtr` is reassigned to the current house every tick. Any `if (this == PlayerPtr)` later in
+HouseClass::AI runs for EVERY house, not just the local player. Use `IsHuman` (skirmish) or the GlyphX
+local-player index `DLLExportClass::CurrentLocalPlayerIndex` (MP) instead. Also: `ActiveBScan &
+STRUCTF_RADAR` / `Map.IsRadarActive` oscillate 1/0 every frame (Recalc_Attributes quirk) — never
+edge-detect on the radar scan bit; count the Buildings heap + `Power_Fraction()` and debounce.
+
+### Superweapon $cost line: keyed on AssetName string, not the SW_ enum
+The launcher suppresses the "Cost: $N" line only for AssetNames on its internal RA-context whitelist
+("SW_Nuke","SW_Chrono","SW_GPS","SW_SonarPulse"...). `SW_ION_CANNON` (a TD-side DllSuperweaponTypeEnum
+value) isn't whitelisted -> the Ion Cannon cameo shows $0. Engine-side `CNCSidebarEntryStruct.Cost` is
+IGNORED for supers. Cosmetic, unfixable mod-side (closed ClientG binary). Accept the $0.
+
+### Roster-scaling launcher CTD — NameOverride[25] table exhaustion
+Adding the ~30th unit TYPE crashed the launcher (std::string(NULL) in InstanceServerG) on refinery
+placement/MCV deploy. Root cause: every techno with a rules.ini `Name=` HD override registers into
+`NameOverride[25]`, rules are read TWICE (rules.ini + aftrmath.ini) with no dedup -> the 25-slot table
+exhausts; plus `Text_String` off-by-one rejected the last slot -> NULL -> CTD. Fix (all DLL): tables
+25->128; dedup by id in TechnoTypeClass::Read_INI; inline.h `<`->`<=`; NULL-guard OverrideDisplayName in
+dllinterface.cpp. Only after this could the roster keep growing.

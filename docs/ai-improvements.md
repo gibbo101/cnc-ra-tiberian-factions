@@ -1536,3 +1536,12 @@ Topics 1-3 share file targets and would duplicate exploration.
 - **Implementation order assumes one engineer.** If we ever parallelise
   AI work, the tier list needs dependency annotations (e.g. Problem 17
   focus-fire requires Problem 7 first).
+
+---
+
+## Skirmish difficulty is hardcoded FLAT — IQ is the lever (migrated from memory 2026-07-15)
+CNC_Set_Difficulty (dllinterface.cpp:2159) and Set_Scenario_Difficulty (scenario.cpp:441) are both
+`GAME_NORMAL`-gated -> no-ops in skirmish; Scen.Difficulty stays DIFF_NORMAL for every house; AI IQ is
+pinned to Rule.MaxIQ (dllinterface.cpp:1272). Do NOT route the slider through Assign_Handicap
+(house.cpp:285) — that re-enables the vanilla STAT-bias difficulty the philosophy rejects. Post-v4.0
+behavioural-difficulty pass: set per-AI IQ from GlyphX player data at dllinterface.cpp:1272/1304.

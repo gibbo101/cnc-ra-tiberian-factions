@@ -206,3 +206,15 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
   the winter/desert theatres, `7c80fde`) overwrote the temperate shore/bridge block. Only visible
   on TD temperate coastal maps (e.g. TD Lost Arena); winter/desert maps were unaffected, so it
   shipped unnoticed. Fix: group the XML splice by destination file + restore the dropped blocks.
+
+---
+
+## Skirmish setup
+
+### GDI/Nod skirmish "starting units" bonus gives RA units, not TD
+- **Severity:** minor.
+- **Status:** OPEN (post-1.0, unverified since; migrated from memory 2026-07-15).
+- **Detail:** with UnitCount>0, the MCV spawn is faction-correct (Create_Units spawns UNIT_TDMCV) but
+  the bonus combat units (tot_units = UnitCount*2/3; tot_infantry = remainder, scenario.cpp:3023) fill
+  from RA's unit-selection logic with no TD-faction branch -> GDI/Nod get RA vehicles/infantry. Fix: add
+  a TD-faction branch to the bonus-unit picker, mirroring AI_Unit/AI_Infantry's Can_Build approach.

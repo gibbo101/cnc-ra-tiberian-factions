@@ -105,3 +105,26 @@ The work-in-progress tree this section once tracked has all shipped or been supe
 The durable takeaway is the **rendering architecture above the banner** (real TD templates +
 dynamic-map synthesis = HD TD tiles, no atlas-name path) plus the forward-looking options A–E for
 the still-open coastline/bridge/desert work.
+
+---
+
+## Loose terrain + TILEPATCHES + new-asset-name (migrated from memory 2026-07-15)
+
+### Correction: base launcher DOES load loose terrain DDS overrides for EXISTING template names
+`DATA/ART/TEXTURES/SRGB/RED_ALERT/TERRAIN/<THEATRE>/<NAME>.<SNO|TEM>/...DDS` loose shadows the same-path
+MEG entry — no EMC (Reilsss Desert Biome, item 2833233740, proves it: pure data, no DLL/MEG). LIMIT:
+changes pixels of KNOWN names only, cannot ADD atlas names -> the dynamic-map spoof for new TD-prefixed
+templates stays necessary. The minimap radar SAMPLES the same loose-overridden textures (verified
+in-game) -> theatre-wide reskins get matching radar for free.
+
+### TILEPATCHES (new launcher surface, loose-overridable, escapes the CONFIG.MEG same-size lock)
+`DATA/XML/TILEPATCHES/`: MAPS/<game>/<MAP>_MAPPATCHES.XML (per-map cell placements) + PATCHES/<name>_
+PATCH.XML (animated multi-cell texture blocks, FPS field). Loose copies override without the size lock.
+
+### New HD asset names DO render — but a NEW name added to an already-installed mod may fall back
+Brand-new HD anim/tile names ship fine as loose VFX/tile ZIPs + XML registration (TDFLAME/TDCHEM,
+SAM/gun flashes all render). The narrow failure: adding a genuinely-new AssetName to an ALREADY-
+INSTALLED mod mid-iteration fell back to the donor sprite even with the full pipeline correct + Steam
+restart. Leading theory: launcher caches the asset-name set at install time -> a new name needs a CLEAN
+(re)install. Shipped Workshop versions = fresh install per subscriber, so release is unaffected;
+validate new-name art via a clean reinstall, not an incremental DLL copy.

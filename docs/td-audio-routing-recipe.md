@@ -213,3 +213,13 @@ With the audio routing pipeline proven, every future TD asset port follows the s
 - **EVA voice**: faction-aware ("New Construction Options", "Cannot Deploy Here", etc.) — also `VoxType`, faction routing decided in the DLL based on player house
 
 The audio identity of TD becomes available in RA mode without launcher modification.
+
+---
+
+## EVA voice (VoxType) faction routing — VALIDATED (migrated from memory 2026-07-15)
+44-voice catalogue, GDI+Nod share. Speak(VOX_X) -> On_Speech (dllinterface.cpp) consults `SpeechTD[]`
+(audio.cpp): if `player_ptr->ActLike == HOUSE_GOOD||HOUSE_BAD` and `SpeechTD[X]!=NULL`, send the
+TD-prefixed name (e.g. TDIONCHRG1); else Speech[X]. Launcher resolves `RAC_SFX_TD<NAME>` /
+`RAR_SFX_TD<NAME>` in mod SFXEVENTSLOCALIZED.XML -> base-shipped `TDC_/TDR_SFX_EVA_<NAME>_EN-US.MP3`
+(no WAV reship). Shared semantic VOX: keep enum, set SpeechTD[]. TD-only events: new VOX_TD_* enums,
+Speech[]="TD<NAME>". VoxType backing bumped char->short (>127 entries).
