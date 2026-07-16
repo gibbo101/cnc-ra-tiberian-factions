@@ -1,5 +1,10 @@
 # AI targeting of Logic-aliased buildings
 
+> **OBE (re-audit 2026-07-16).** The Logic= aliasing this doc analyzes no longer governs any TD
+> building — all are first-class engine StructTypes now — and the recommended Option-A fix
+> (per-building `Points=` in rules.ini, TD-authentic values) is implemented (e.g. `[TDNUKE]
+> Points=50`; loader at techno.cpp:7846). Retained as a how-to reference for future buildings.
+
 Findings doc for the v0.3.0 thread: **"AI doesn't target TDNUKE for destruction."**
 Investigation date: 2026-05-19. Code references are paths under `redalert/` on `feature/emc-integration` at `0accffb`.
 
