@@ -12,11 +12,9 @@ CHANGELOG 4.0.0 written, tag `v4.0.0`, GitHub release with `TiberianFactions-v4.
 Workshop item 3729834253 updated (new logo preview, pruned description with 4.0.0 changelog).
 Local dev version bumped to 4.0.1.
 
-1. **ModDB page (Luke, in-browser):** create account + page from `docs/moddb-page-copy.md`
-   (paste-ready fields/summary/description); upload media + the release zip from the Desktop
-   media folder. New ModDB pages need staff authorisation (a day or two).
-2. **Reddit:** update Luke's existing Reddit post (draft the update text; link Workshop + ModDB).
-   Need the post link from Luke.
+1. ~~ModDB page~~ — ✅ UP (Luke, 2026-07-16; page copy archived in `docs/moddb-page-copy.md`).
+   May still pass through staff authorisation before it's publicly visible.
+2. ~~Reddit~~ — ✅ DONE (Luke, 2026-07-16).
 3. **Workshop self-test:** subscribe update + smoke-test headline features (navy, A-10, stealth gen).
 
 **Missed from v4.0 (caught post-release 2026-07-16): Soviet parabombs.** The power-grants batch
