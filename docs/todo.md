@@ -24,6 +24,13 @@ was never implemented — no PARA_BOMB commits since v3.0.0. Queue for the next 
 **Next milestone: the AI-focus pass** (air-build escalation retune + general skirmish-AI
 improvements + the deferred stuck-in-base pathfinding).
 
+- **BUG (Luke, live match 2026-07-16): Nod AI not reaching Temple → Stealth Generator in
+  practice.** Static suspects: both slots gated `Power_Fraction() >= 1` (Nod hovers at marginal
+  power; Obelisks -150) and both URGENCY_MEDIUM in a single-winner-per-cycle build-choice pool, so
+  defence/factory picks starve the Temple indefinitely (house.cpp:6815 tech slot, :6607 stealth
+  slot). Verify with a dev-build diagnostic session (release builds log nothing), then fix as part
+  of the AI build-order rework (same thread as the eco-passivity item).
+
 ---
 
 
