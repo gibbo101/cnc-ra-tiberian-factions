@@ -72,8 +72,8 @@ Pen with attack subs and the Temple-guarded Missile Sub.</li>
 <li>Support powers: GDI GPS satellite, Nod spy plane and paratroopers.</li>
 <li>Balance pass across all four factions: air (Orca and Apache to Longbow/Hind parity,
 A-10 pricing), armor (GDI Mammoth and APC, Nod Light Tank), defences (Nod Gun Turret and
-SAM, Advanced Guard Tower anti-tank back to its TD value), infantry (Minigunner range),
-extended artillery ranges, and GDI/Nod MCV + Construction Yard at RA parity.</li>
+SAM), infantry (Minigunner range), extended artillery ranges, and GDI/Nod MCV +
+Construction Yard at RA parity.</li>
 </ul>
 
 <h2>How to play</h2>

@@ -25,9 +25,9 @@ powers for every side, plus a wide balance pass. GPL v3.
 ### Changed
 - **Balance pass across all four factions:** air (Orca and Apache to
   Longbow/Hind parity, A-10 pricing), armor (GDI Mammoth and APC, Nod Light
-  Tank), defences (Nod Gun Turret and SAM, Advanced Guard Tower anti-tank
-  back to its TD value), infantry (Minigunner range), extended artillery
-  ranges, and GDI/Nod MCV + Construction Yard at RA parity.
+  Tank), defences (Nod Gun Turret and SAM), infantry (Minigunner range),
+  extended artillery ranges, and GDI/Nod MCV + Construction Yard at RA
+  parity.
 - **AI build order:** air production no longer outranks the war factory, so
   an AI behind on air builds its core base first.
 

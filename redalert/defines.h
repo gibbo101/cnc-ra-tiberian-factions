@@ -3230,7 +3230,7 @@ typedef enum WarheadType : char
     WARHEAD_TDFIRE, // TD incendiary (WARHEAD_FIRE) — Spread 8, verses {0.88,1.0,0.69,0.25,0.5}, destroys wood+tiberium not wall (Flamethrower).
     WARHEAD_TDCHEM, // TD chem spray — HE damage table (== TDHE) but Explosion=0 (TD ClassChem impact = ANIM_NONE). Separate from TDHE so the grenadier keeps its blast.
     WARHEAD_TDHOLLOW, // TD hollow-point (WARHEAD_HOLLOW_POINT) — Commando sniper. Spread 4, verses {1.0,0.03,0.03,0.03,0.03}: one-shots infantry, ~nil vs armor/buildings.
-    WARHEAD_TDAGT, // v4.0 (F8): AGT-only clone of TDHE with vs-heavy 25%->50%. Fires from TDTowTwo (the GDI Advanced Guard Tower) ONLY, so the AGT gets ~90 DPS vs both helis and tanks without buffing the ~12 other TDHE weapons. See docs/balance-deep-dive.md.
+    WARHEAD_TDAGT, // AGT-only warhead, fired from TDTowTwo (the GDI Advanced Guard Tower) ONLY. Verses identical to TDHE today; kept separate so the AGT can be tuned without touching the ~12 other TDHE weapons.
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
