@@ -5,19 +5,22 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
-## NEXT SESSION (2026-07-16): capture media, then release v4.0
+## v4.0.0 SHIPPED 2026-07-16 (Workshop + GitHub). Remaining follow-ups:
 
-v4.0 is feature-complete and validated (artillery range confirmed in playtest; A-10 fall fix,
-07-13 air batch, and stealth bib-hide all playtest-verified 2026-07-16). Plan:
-1. Screenshots + videos of the v4.0 content (navy, A-10, GPS/spy/paratroops, stealth gen, flame
-   bunker, artillery) for the Workshop update. Media doubles for ModDB + Reddit below.
-2. Release v4.0 (bump ccmod.json + CHANGELOG, package with -DTF_DEV_BUILD=0, tag, GitHub release,
-   Workshop publish per workshop-publish-runbook.md; restart Steam first).
-3. **ModDB presence (Luke, 2026-07-16):** create a ModDB page for the mod (account + page setup is
-   Luke's in-browser; draft the summary/description/feature list from the Workshop copy, reuse the
-   v4.0 media). New distribution surface alongside Workshop + GitHub.
-4. **Reddit:** once v4.0 + media are out, update Luke's existing Reddit post (draft the update text;
-   link Workshop + ModDB).
+Released: media captured (videos + screenshots in `~/Desktop/TiberianFactionsinRedAlert4.0 media/`),
+CHANGELOG 4.0.0 written, tag `v4.0.0`, GitHub release with `TiberianFactions-v4.0.0.zip` (404MB),
+Workshop item 3729834253 updated (new logo preview, pruned description with 4.0.0 changelog).
+Local dev version bumped to 4.0.1.
+
+1. **ModDB page (Luke, in-browser):** create account + page from `docs/moddb-page-copy.md`
+   (paste-ready fields/summary/description); upload media + the release zip from the Desktop
+   media folder. New ModDB pages need staff authorisation (a day or two).
+2. **Reddit:** update Luke's existing Reddit post (draft the update text; link Workshop + ModDB).
+   Need the post link from Luke.
+3. **Workshop self-test:** subscribe update + smoke-test headline features (navy, A-10, stealth gen).
+
+**Next milestone: the AI-focus pass** (air-build escalation retune + general skirmish-AI
+improvements + the deferred stuck-in-base pathfinding).
 
 ---
 
