@@ -37,6 +37,11 @@
 > attack-launch (relevant to the stuck-in-base thread). Its difficulty levers (economy multiplier
 > on unload, production-speed hack %) are CHEATS — study mechanisms, never port the boost levers
 > ([[feedback-difficulty-philosophy]]). Player-facing tunables ship in an AIBOOST.INI.
+> **Licence verified 2026-07-16:** their License.txt = EA's GPL v3 + Section-7 terms verbatim
+> (formatting-only diff vs EA's LICENSE.md) — port-compatible with this repo. **Attribution:** add
+> Bast75 & xXMini FrankiXx to the Workshop acknowledgements when the FIRST AI Boost port ships
+> (CFE authors already credited; their fork bundles CFE 1.8, so attribute per-feature to the
+> right author).
 
 Investigation of three long-standing AI behaviour gaps in vanilla Red Alert
 Remastered skirmish. All three trace back to the same architectural issue and
