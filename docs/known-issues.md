@@ -20,7 +20,7 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
   `cd8bd17`): it keeps the smudge (placement stays blocked) and suppresses only the *draw* when the
   covering building is `VISUAL_HIDDEN` (enemy view) — transparent to the enemy, bib still shown to the
   owner. Now that the cloak driver settles buildings to `CLOAKED` reliably, this handles the hide.
-  Verify in playtest that enemy-side bibs stay hidden.
+  Playtest-confirmed (Luke, 2026-07-16): enemy-side bibs stay hidden.
 
 ---
 

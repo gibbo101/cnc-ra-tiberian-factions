@@ -35,9 +35,9 @@ stuck-in-base pathfinding) — not part of the current milestone.
 
 ## v4.0 air / paratroopers / balance — open threads (2026-07-13, live)
 
-Spun out of the air-AI + power-grants session. Deployed-but-unverified batch: airfield/A-10 AI
-routing, 3 power grants, AI air-responsiveness (max-threat + limit-mirror), MCV/ConYard/AGT,
-Nod-paratrooper-drops-minigunners. Open items on top:
+Spun out of the air-AI + power-grants session. The 2026-07-13 batch (airfield/A-10 AI routing,
+3 power grants, AI air-responsiveness max-threat + limit-mirror, MCV/ConYard/AGT,
+Nod-paratrooper-drops-minigunners) is **playtest-verified (Luke, 2026-07-16)**. Open items on top:
 
 _(Nod SAM accuracy: ROT 10->20 shipped; no longer tracked as a discrete item — watch it during
 the AI-focus pass.)_
@@ -75,7 +75,7 @@ bdata.cpp Read_INI — equalises TD buildings to RA scale). Two open threads:
 
 ---
 
-## A-10 napalm bombs fall ~4x faster than TD (double falling physics) — IMPLEMENTED, PENDING PLAYTEST (2026-07-13)
+## A-10 napalm bombs fall ~4x faster than TD (double falling physics) — ✅ DONE, playtest-verified (Luke, 2026-07-16)
 
 TD-port Dropping bullets (BULLET_TDNAPALM) got falling physics applied twice per frame:
 RA's `ObjectClass::AI()` integrated Height/Riser with `Rule.Gravity` (3/frame decay) AND
@@ -94,9 +94,7 @@ touch the native `AI()` path that keys landing off `IsFalling` — so dropping t
 side-effect-free on the TD path. Only affects TDNapalm today (only Dropping TD-port bullet);
 fix is symmetric so any future Arcing TD-port bullet is covered too.
 
-**Still to do:** Deck/desktop playtest of the bombing-run feel (bomb-stream line length +
-scatter time along the overflight), then commit. Built + deployed to local desktop prefix
-2026-07-13.
+Committed as `7c07015`; bombing-run feel playtest-confirmed by Luke (2026-07-16).
 
 ---
 
