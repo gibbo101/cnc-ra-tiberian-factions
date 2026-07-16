@@ -47,8 +47,7 @@ defended by Gun Turrets, SAM Sites and the Obelisk of Light.</li>
 Recon Bike to the Mammoth Tank, GDI's Orca and A-10, Nod's Apache, plus each faction's
 Harvester and MCV.</li>
 <li><b>Navies.</b> GDI fields gunboats, destroyers and cruisers from its Naval Yard; Nod
-fields attack and missile submarines from its Sub Pen; both sides share a hovercraft
-transport.</li>
+fields attack and missile submarines from its Sub Pen.</li>
 <li><b>Superweapons and support powers.</b> GDI's Ion Cannon and GPS satellite, Nod's
 Nuclear Strike, spy plane and paratroopers.</li>
 <li><b>The Tiberium ecosystem.</b> Tiberium spreads, converts trees into blossom trees and
@@ -66,18 +65,15 @@ repair bay queueing and extra zoom levels (adapted from CFE Patch Redux, GPL v3)
 <h2>What's new in 4.0</h2>
 <ul>
 <li>Navies for GDI and Nod: GDI Naval Yard with gunboat, destroyer and cruiser; Nod Sub
-Pen with attack subs and the Temple-guarded Missile Sub; shared hovercraft transport.</li>
-<li>GDI Airfield and the A-10 Warthog, flying TD-authentic napalm bombing runs: three
-passes per sortie, then home to rearm.</li>
-<li>Nod Stealth Generator: cloaks nearby friendly buildings and units, with the generator
-itself as the always-visible weak point. Stealth detectors reveal what they pass and
-cloaked defences ambush-fire.</li>
-<li>Nod Flame Bunker: an anti-infantry flame emplacement.</li>
-<li>Support powers: GDI GPS satellite, Nod spy plane and paratroopers (a real,
-shoot-downable C-17 dropping TD minigunners).</li>
-<li>Balance: Orca and Apache at full attack-helicopter parity, artillery ranges extended,
-GDI/Nod MCV and Construction Yard at RA parity, plus an air-aware AI that scales its air
-force to the strongest opponent.</li>
+Pen with attack subs and the Temple-guarded Missile Sub.</li>
+<li>GDI Airfield and the A-10 Warthog, flying TD-authentic napalm bombing runs.</li>
+<li>Nod Stealth Generator: cloaks nearby friendly buildings and units.</li>
+<li>Nod Flame Bunker: anti-infantry flame emplacement.</li>
+<li>Support powers: GDI GPS satellite, Nod spy plane and paratroopers.</li>
+<li>Balance pass across all four factions: air (Orca and Apache to Longbow/Hind parity,
+A-10 pricing), armor (GDI Mammoth and APC, Nod Light Tank), defences (Nod Gun Turret and
+SAM, Advanced Guard Tower anti-tank back to its TD value), infantry (Minigunner range),
+extended artillery ranges, and GDI/Nod MCV + Construction Yard at RA parity.</li>
 </ul>
 
 <h2>How to play</h2>

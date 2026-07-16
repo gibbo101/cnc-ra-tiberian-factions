@@ -19,6 +19,10 @@ Local dev version bumped to 4.0.1.
    Need the post link from Luke.
 3. **Workshop self-test:** subscribe update + smoke-test headline features (navy, A-10, stealth gen).
 
+**Missed from v4.0 (caught post-release 2026-07-16): Soviet parabombs.** The power-grants batch
+shipped GDI GPS + Nod spy plane + Nod paratroopers, but the Soviet parabombs grant (same held-list)
+was never implemented — no PARA_BOMB commits since v3.0.0. Queue for the next release.
+
 **Next milestone: the AI-focus pass** (air-build escalation retune + general skirmish-AI
 improvements + the deferred stuck-in-base pathfinding).
 

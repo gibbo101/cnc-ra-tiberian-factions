@@ -11,44 +11,23 @@ powers for every side, plus a wide balance pass. GPL v3.
 - **Navies for GDI and Nod.** GDI builds a Naval Yard and fields the Gunboat,
   Destroyer, and Cruiser (the Cruiser needs the Advanced Communications
   Center). Nod builds a Sub Pen and fields the Attack Submarine and the
-  Temple-guarded Missile Sub. Both factions share a Hovercraft transport.
-  Ships repair at their yard, subs dock at their pen, and the whole fleet
-  shows faction-correct names in the sidebar.
-- **GDI Airfield and the A-10 Warthog.** The A-10 flies its bombing run
-  exactly as Tiberian Dawn's did: it sweeps in low, walks a stream of napalm
-  across the target, comes around for three passes a sortie, then returns to
-  the Airfield to rearm.
-- **Nod Stealth Generator.** Projects a cloaking field that hides friendly
-  buildings and units, including a helipad with its docked aircraft. Enemy
-  stealth detectors brought into the field reveal what they pass; cloaked
-  defences ambush-fire from hiding; the generator itself never cloaks and is
-  fragile, so the field has a hittable heart. The Nod AI techs up to it.
-- **Nod Flame Bunker.** An anti-infantry emplacement that fires a splashing
-  flame jet, covering the anti-personnel gap in Nod's base defences. The Nod
-  AI mixes it into its turret lines.
-- **Support powers.** GDI gains the GPS satellite from its Advanced
-  Communications Center, matching the Allied one. Nod gains the Spy Plane
-  and Paratroopers from its Airstrip; the paratrooper C-17 is a real,
-  targetable plane that drops TD minigunners, and SAMs are now quick enough
-  to track it.
+  Temple-guarded Missile Sub. Ships repair at their yard, subs dock at their
+  pen, and the whole fleet shows faction-correct names in the sidebar.
+- **GDI Airfield and the A-10 Warthog**, flying TD-authentic napalm bombing
+  runs.
+- **Nod Stealth Generator.** Cloaks nearby friendly buildings and units.
+- **Nod Flame Bunker.** An anti-infantry flame emplacement.
+- **Support powers.** GDI GPS satellite; Nod Spy Plane and Paratroopers.
 - **Air-aware AI.** The GDI AI builds the Airfield and flies A-10s, and every
   AI now scales its air force and anti-air to the strongest air power in the
   match, human or AI.
 
 ### Changed
-- **Air balance:** the Orca and Apache get full attack-helicopter parity with
-  the Longbow and Hind (225 HP, $1200). The A-10 is priced at $1500 for its
-  nine-bomb strike weight.
-- **Artillery range:** Allied and Nod 155mm artillery reach 8 cells (shells
-  scatter at the fringe, so reliable range grows less than the number
-  suggests); GDI MLRS reaches 7, staying pinpoint but respecting the
-  Obelisk's reach.
-- **MCV and Construction Yard parity:** the GDI/Nod MCV now costs the same
-  $2500 as everyone else's and needs only a Weapons Factory and repair
-  facility (it was a $5000 tech-center reward). The GDI/Nod Construction
-  Yard matches the RA one in toughness and cost.
-- **Advanced Guard Tower** anti-tank damage returned to its TD value; it was
-  already strong through its twin-rocket burst, anti-air cover, and low cost.
+- **Balance pass across all four factions:** air (Orca and Apache to
+  Longbow/Hind parity, A-10 pricing), armor (GDI Mammoth and APC, Nod Light
+  Tank), defences (Nod Gun Turret and SAM, Advanced Guard Tower anti-tank
+  back to its TD value), infantry (Minigunner range), extended artillery
+  ranges, and GDI/Nod MCV + Construction Yard at RA parity.
 - **AI build order:** air production no longer outranks the war factory, so
   an AI behind on air builds its core base first.
 
