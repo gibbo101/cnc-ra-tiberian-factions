@@ -7,11 +7,17 @@ maintenance, and queued tasks. Newest at top.
 
 ## NEXT SESSION (2026-07-16): capture media, then release v4.0
 
-v4.0 is feature-complete and validated (artillery range confirmed in playtest). Plan:
+v4.0 is feature-complete and validated (artillery range confirmed in playtest; A-10 fall fix,
+07-13 air batch, and stealth bib-hide all playtest-verified 2026-07-16). Plan:
 1. Screenshots + videos of the v4.0 content (navy, A-10, GPS/spy/paratroops, stealth gen, flame
-   bunker, artillery) for the Workshop update.
+   bunker, artillery) for the Workshop update. Media doubles for ModDB + Reddit below.
 2. Release v4.0 (bump ccmod.json + CHANGELOG, package with -DTF_DEV_BUILD=0, tag, GitHub release,
    Workshop publish per workshop-publish-runbook.md; restart Steam first).
+3. **ModDB presence (Luke, 2026-07-16):** create a ModDB page for the mod (account + page setup is
+   Luke's in-browser; draft the summary/description/feature list from the Workshop copy, reuse the
+   v4.0 media). New distribution surface alongside Workshop + GitHub.
+4. **Reddit:** once v4.0 + media are out, update Luke's existing Reddit post (draft the update text;
+   link Workshop + ModDB).
 
 ---
 
