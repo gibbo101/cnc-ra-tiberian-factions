@@ -19,7 +19,7 @@ creation; this doc holds every field's content so page day is copy-paste only.
 | Development stage | Released |
 | License | GPL v3 (DLL source inherited from EA's 2020 source release) |
 | Homepage | https://github.com/gibbo101/cnc-ra-tiberian-factions |
-| Icon | 512x512 PNG needed. Candidate: the GDI/Nod split emblem, or reuse the Workshop preview cropped square. |
+| Icon | `logo.png` in the Desktop media folder (four-faction emblem grid, 1200x1200; `logo-512.png` is the pre-scaled icon variant). Same image doubles as the Workshop preview. |
 | Tags | command and conquer, red alert, tiberian dawn, gdi, nod, remastered |
 
 ## Summary (short field, keep under ~300 chars)
