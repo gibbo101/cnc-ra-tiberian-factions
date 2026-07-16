@@ -21,8 +21,11 @@ Local dev version bumped to 4.0.1.
 shipped GDI GPS + Nod spy plane + Nod paratroopers, but the Soviet parabombs grant (same held-list)
 was never implemented — no PARA_BOMB commits since v3.0.0. Queue for the next release.
 
-**Next milestone: the AI-focus pass** (air-build escalation retune + general skirmish-AI
-improvements + the deferred stuck-in-base pathfinding).
+**Next milestone: the AI upgrade — plan complete, see `docs/ai-upgrade-plan.md` (2026-07-17).**
+Design locked with Luke (one brain + faction-building separation + heritable capture-tech,
+behavioural difficulty via IQ, intel layer + fog-cheat removal, blob attacks, naval + water
+eval, transports, coordination, directional armour, reservation-table pathfinding). All six
+research reports integrated. Start at the plan's Phase 0.
 
 - **BUG (Luke, live match 2026-07-16): Nod AI not reaching Temple → Stealth Generator in
   practice.** Static suspects: both slots gated `Power_Fraction() >= 1` (Nod hovers at marginal
