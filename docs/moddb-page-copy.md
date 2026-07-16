@@ -64,14 +64,20 @@ repair bay queueing and extra zoom levels (adapted from CFE Patch Redux, GPL v3)
 </ul>
 
 <h2>What's new in 4.0</h2>
-<!-- SYNC with final CHANGELOG 4.0.0 wording before publishing -->
 <ul>
-<li>Navies for GDI and Nod, with naval yards, sub pens and shared hovercraft transports.</li>
-<li>GDI Airfield with the A-10 Warthog flying TD-authentic napalm bombing runs.</li>
-<li>Nod Stealth Generator: a cloak field that hides your base from enemy eyes.</li>
-<li>Nod Flame Bunker: a new anti-infantry base defence.</li>
-<li>Support powers: GDI GPS satellite, Nod spy plane and paratroopers, Soviet parabombs.</li>
-<li>Balance pass across artillery, air and defences.</li>
+<li>Navies for GDI and Nod: GDI Naval Yard with gunboat, destroyer and cruiser; Nod Sub
+Pen with attack subs and the Temple-guarded Missile Sub; shared hovercraft transport.</li>
+<li>GDI Airfield and the A-10 Warthog, flying TD-authentic napalm bombing runs: three
+passes per sortie, then home to rearm.</li>
+<li>Nod Stealth Generator: cloaks nearby friendly buildings and units, with the generator
+itself as the always-visible weak point. Stealth detectors reveal what they pass and
+cloaked defences ambush-fire.</li>
+<li>Nod Flame Bunker: an anti-infantry flame emplacement.</li>
+<li>Support powers: GDI GPS satellite, Nod spy plane and paratroopers (a real,
+shoot-downable C-17 dropping TD minigunners).</li>
+<li>Balance: Orca and Apache at full attack-helicopter parity, artillery ranges extended,
+GDI/Nod MCV and Construction Yard at RA parity, plus an air-aware AI that scales its air
+force to the strongest opponent.</li>
 </ul>
 
 <h2>How to play</h2>
