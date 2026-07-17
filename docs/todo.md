@@ -5,15 +5,15 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
-## ⭐ AI milestone Phase 1 (2026-07-17, later the same day) — CODE COMPLETE on branch `ai-phase1`
+## ⭐ AI milestone Phase 1 (2026-07-17) — CODE COMPLETE, pushed, desktop-deployed, UNSOAKED
 
-All four Phase 1 workstreams implemented + build-verified in the `ai-phase1` worktree branch
-(one commit each): W7 difficulty→IQ plumbing, W1.5 primary-factory, W1.2 fair-fog intel
-layer, W1.3 blind-hunt scouting. Full status + verify list: `ai-upgrade-plan.md` §6 Phase 1
-STATUS block. **NOT merged to main** (the TS-spike instance owns the main working tree's
-uncommitted state) and **NOT deployed/soaked** (desktop owned by the TS session). Merge order
-when free: land or stash the TS spike, then merge `ai-phase1`, then one diagnostic session
-covers BOTH Phase 0 gates below AND the Phase 1 verify list (same match, same log).
+**Full handover: `docs/ai-phase1-handover.md` — START THERE next session.** Branch
+`ai-phase1` (pushed): W7 difficulty→IQ plumbing, W1.5 primary-factory, W1.2 fair-fog intel
+layer, W1.3 blind-hunt scouting. Deployed as separate desktop mod folder `Vanilla_RA_AI1`
+("Tiberian Factions (AI Phase 1 test)") so the TS-spike session's `Vanilla_RA` build stayed
+untouched; both Decks were offline. NOT merged (TS spike was uncommitted on shared engine
+files). One diagnostic session covers BOTH Phase 0 gates below AND the Phase 1 verify list —
+top grep: `CNC_Set_Difficulty` in MOD_DEBUG_AI.txt (absent = difficulty tiers dormant).
 
 ## ⭐ RESUME HERE — AI milestone Phase 0 (2026-07-17)
 
