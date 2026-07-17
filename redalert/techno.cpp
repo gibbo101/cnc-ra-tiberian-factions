@@ -2358,6 +2358,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                         if (Evaluate_Cell(method, mask, newcell, range, &object, value, zone)) {
                             if (bestval < value) {
                                 bestobject = object;
+                                bestval = value;
                             }
                         }
                         if (bestobject == NULL) {
@@ -2374,6 +2375,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                         if (Evaluate_Cell(method, mask, newcell, range, &object, value, zone)) {
                             if (bestval < value) {
                                 bestobject = object;
+                                bestval = value;
                             }
                         }
                         if (bestobject == NULL) {
@@ -2402,6 +2404,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                         if (Evaluate_Cell(method, mask, newcell, range, &object, value, zone)) {
                             if (bestval < value) {
                                 bestobject = object;
+                                bestval = value;
                             }
                         }
                         if (bestobject == NULL) {
@@ -2418,6 +2421,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                         if (Evaluate_Cell(method, mask, newcell, range, &object, value, zone)) {
                             if (bestval < value) {
                                 bestobject = object;
+                                bestval = value;
                             }
                         }
                         if (bestobject == NULL) {

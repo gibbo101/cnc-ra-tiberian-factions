@@ -15,7 +15,7 @@ Local dev version bumped to 4.0.1.
 1. ~~ModDB page~~ — ✅ UP (Luke, 2026-07-16; page copy archived in `docs/moddb-page-copy.md`).
    May still pass through staff authorisation before it's publicly visible.
 2. ~~Reddit~~ — ✅ DONE (Luke, 2026-07-16).
-3. **Workshop self-test:** subscribe update + smoke-test headline features (navy, A-10, stealth gen).
+3. ~~Workshop self-test~~ — ✅ DONE (Luke, 2026-07-17; subscribed 4.0.0 tested fine).
 
 **Missed from v4.0 (caught post-release 2026-07-16): Soviet parabombs.** The power-grants batch
 shipped GDI GPS + Nod spy plane + Nod paratroopers, but the Soviet parabombs grant (same held-list)
@@ -33,6 +33,10 @@ research reports integrated. Start at the plan's Phase 0.
   defence/factory picks starve the Temple indefinitely (house.cpp:6815 tech slot, :6607 stealth
   slot). Verify with a dev-build diagnostic session (release builds log nothing), then fix as part
   of the AI build-order rework (same thread as the eco-passivity item).
+  **Sequencing decided (Luke, 2026-07-17):** the fix rides the W3 build planner (plan §3 W3.1
+  already subsumes it) — no interim Phase-0 patch unless the diagnostic reveals a one-liner. The
+  diagnostic itself stays in Phase 0: it validates the root-cause hypothesis W3's design leans on,
+  and the build-choice decision log it needs is the milestone's day-one instrumentation anyway.
 
 ---
 

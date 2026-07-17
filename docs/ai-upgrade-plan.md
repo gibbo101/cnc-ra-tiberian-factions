@@ -92,6 +92,17 @@ Companion docs: `ai-improvements.md` (problem inventory + re-audit banner),
    `Greatest_Threat` bestval never updated (techno.cpp:2359-2421 — broken target scoring
    engine-wide); power-urgency `|` typo (house.cpp:5762); GOINGTOIDLE fall-through
    (unit.cpp:4334); A-New-1 reinforcement idle (unit.cpp:6737 pattern, low).
+   **STATUS 2026-07-17: first three DONE** (build-verified, awaiting soak). Power-urgency
+   check rewritten, not just `|`→`&`: chronosphere test was meaningless either way (AI never
+   builds one; no STRUCTF bits exist past 32 anyway) — now a generic "armed IsPowered
+   building owned" scan over ActiveBQuantity (catches Tesla today; auto-extends, see §9.5). GOINGTOIDLE
+   resolved (dead REPAIR/HUNT branch deleted, NOT enabled: HUNT = weaponless suicide order,
+   and our reworked unit Mission_Repair docks refineries not repair bays) then upgraded
+   (Luke, same day): idle harvesters now retreat to guard beside Find_Best_Refinery
+   (Nearby_Location spread, 4-cell already-home guard) instead of parking in the open;
+   no-refinery fallback = guard in place. Human + AI both; any order overrides. A-New-1 SKIPPED for now: original audit detail not preserved,
+   pattern also in infantry/vessel Read_INI, zero impact on current map pool (skirmish maps
+   carry no pre-placed units) — re-derive intent before touching.
 2. **Per-house INTEL LAYER** — "what has this house discovered + where last seen". Remaster
    already tracks per-player shroud; route ALL AI reads through it: target evaluation
    (techno.cpp:1713 fog gate), superweapon aiming (house.cpp:3180 — currently fog-blind, and
@@ -308,5 +319,14 @@ attack/coordination/attack-move (W4, W6), directional armour (W8), naval/transpo
 2. Reverse move — after directional-armour playtests.
 3. Free-helicopter-with-pad rule under faction pads — trivially "pad's own faction's bird".
 4. Per-behaviour difficulty tier assignments — review pass during implementation.
+5. ~~Should TD defences be `Powered=true`?~~ **RESOLVED 2026-07-17** (TD-source-verified,
+   Luke correctly refuted the "no shutdown in TD" claim): TD hard-gates AGT fire
+   (building.cpp:3128 STRUCT_ATOWER check) and Obelisk charging (building.cpp:1022, charge
+   dumped on power loss) at Power_Fraction < 1; SAM has no gate. Our TDOBLI was ALREADY
+   TD-correct via Charges=yes → Charging_AI (identical gate + charge-dump semantics);
+   fix applied = `Powered=true` on [TDATWR] only; TDSAM stays unpowered (TD-authentic).
+   Do NOT add Powered to TDOBLI: TD gates only the charge chain, and doubling the gate
+   adds nothing. AI note: Check_Build_Power's armed-powered-building scan now fires for
+   GDI (AGT) and Soviets (Tesla) once W3 revives the strategy layer.
 5. Milestone version: presumably v5.0 (major). Confirm with Luke before first release from
    this line.

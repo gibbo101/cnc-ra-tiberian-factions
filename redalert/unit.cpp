@@ -4331,16 +4331,26 @@ int UnitClass::Mission_Harvest(void)
     **	The harvester has nothing to do. There is no Tiberium nearby and
     **	no where to go.
     */
-    case GOINGTOIDLE:
-        if (IsUseless) {
-            if (House->ActiveBScan & STRUCTF_REPAIR) {
-                Assign_Mission(MISSION_REPAIR);
-            } else {
-                Assign_Mission(MISSION_HUNT);
+    case GOINGTOIDLE: {
+        /*
+        **	Wait out the ore drought on defended ground beside a refinery
+        **	instead of in the open field. Nearby_Location spreads idlers so
+        **	they don't block the dock approach; if already near home (or
+        **	there is no refinery), just guard in place. A player order or
+        **	the AI harvest re-queue overrides the guard as usual.
+        */
+        BuildingClass* refinery = Find_Best_Refinery();
+        if (refinery != NULL) {
+            CELL home = Nearby_Location(refinery, ID);
+            if (home != 0 && Distance(::As_Target(home)) > (CELL_LEPTON_W * 4)) {
+                Assign_Destination(::As_Target(home));
+                Assign_Mission(MISSION_MOVE);
+                break;
             }
         }
         Assign_Mission(MISSION_GUARD);
         break;
+    }
     }
     return (MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
 }

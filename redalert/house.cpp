@@ -5755,12 +5755,17 @@ UrgencyType HouseClass::Check_Build_Power(void) const
             urgency = URGENCY_MEDIUM;
 
         /*
-        **	When under attack and there is a need for power in defense,
+        **	When under attack and there is a need for power in defense
+        **	(an armed building present that cannot fire without power),
         **	then consider power building a higher priority.
         */
         if (State == STATE_THREATENED || State == STATE_ATTACKED) {
-            if (BScan | (STRUCTF_CHRONOSPHERE)) {
-                urgency = URGENCY_HIGH;
+            for (int i = STRUCT_FIRST; i < STRUCT_COUNT; i++) {
+                BuildingTypeClass const& btype = BuildingTypeClass::As_Reference((StructType)i);
+                if (btype.IsPowered && btype.PrimaryWeapon != NULL && ActiveBQuantity[i] > 0) {
+                    urgency = URGENCY_HIGH;
+                    break;
+                }
             }
         }
     }
