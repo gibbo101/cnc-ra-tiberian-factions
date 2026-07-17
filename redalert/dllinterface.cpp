@@ -1269,7 +1269,10 @@ void GlyphX_Assign_Houses(void)
         if (!housep->IsHuman) {
             housep->IsStarted = true;
             strncpy(housep->IniName, Text_String(TXT_COMPUTER), HOUSE_NAME_MAX);
-            housep->IQ = Rule.MaxIQ;
+            // Lobby AI difficulty (stored in Scen.CDifficulty by CNC_Set_Difficulty)
+            // drives the IQ tier; stat handicaps stay at 1.0x. CNC_Set_Difficulty
+            // also retro-applies in case the client sends difficulty after start.
+            housep->IQ = TF_AI_IQ_From_Difficulty(Scen.CDifficulty);
             // housep->Control.TechLevel = _build_tech[BuildLevel];
         } else {
             housep->IQ = 0;
@@ -2158,7 +2161,45 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
 {
     if (GAME_TO_PLAY == GAME_NORMAL) {
         Set_Scenario_Difficulty(difficulty);
+        return;
     }
+
+    /*
+    **	Skirmish/multiplayer: the lobby difficulty used to be silently dropped here.
+    **	It now selects the AI's behavioural tier: stored for houses created later,
+    **	and retro-applied to AI houses that already exist (the client may call this
+    **	either side of match start). IQ is the only thing that changes -- combat and
+    **	economy handicaps are untouched at every difficulty.
+    */
+    DiffType diff = DIFF_NORMAL;
+    if (difficulty == 0) {
+        diff = DIFF_EASY;
+    } else if (difficulty == 2) {
+        diff = DIFF_HARD;
+    }
+    Scen.CDifficulty = diff;
+    TFLobbyAIDifficultySet = true;
+
+    int iq = TF_AI_IQ_From_Difficulty(diff);
+    for (int index = 0; index < Houses.Count(); index++) {
+        HouseClass* housep = Houses.Ptr(index);
+        if (housep != NULL && housep->IsActive && !housep->IsHuman && housep->Class->House >= HOUSE_MULTI1) {
+            housep->IQ = iq;
+        }
+    }
+
+#if TF_DEV_BUILD // TF_AI_DIAG -- confirm the client actually sends lobby difficulty in skirmish.
+    {
+        const char* up = getenv("USERPROFILE");
+        char p[600];
+        snprintf(p, sizeof(p), "%s/MOD_DEBUG_AI.txt", up ? up : ".");
+        FILE* f = fopen(p, "a");
+        if (f != NULL) {
+            fprintf(f, "CNC_Set_Difficulty(%d) -> CDifficulty=%d IQ=%d (AI houses retro-applied)\n", difficulty, (int)diff, iq);
+            fclose(f);
+        }
+    }
+#endif
 }
 
 /**************************************************************************************************
@@ -2246,7 +2287,7 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Player_Switch_To_AI(uin
         if (PlayerPtr) {
             PlayerPtr->WasHuman = true;
             PlayerPtr->IsHuman = false;
-            PlayerPtr->IQ = Rule.MaxIQ;
+            PlayerPtr->IQ = TF_AI_IQ_From_Difficulty(Scen.CDifficulty);
             strcpy(PlayerPtr->IniName, Text_String(TXT_COMPUTER));
 
             PlayerPtr->IsBaseBuilding = true;

@@ -306,6 +306,34 @@ DiffType HouseClass::Assign_Handicap(DiffType handicap)
     return (old);
 }
 
+/*
+**	Lobby AI difficulty -> IQ tier for a computer-controlled house. Difficulty is
+**	behavioural only (stat handicaps stay at DIFF_NORMAL's 1.0x biases): the IQ value
+**	is the single signal every IQ-gated behaviour keys off. Easy loses the
+**	Rule.IQ* >= 4 behaviours (superweapons, aircraft AI, guard-area, content-scan);
+**	Hard gets the full Rule.MaxIQ set including MaxIQ-gated smart behaviours.
+*/
+bool TFLobbyAIDifficultySet = false;
+
+int TF_AI_IQ_From_Difficulty(DiffType diff)
+{
+    /*
+    **	Until the client has actually sent a lobby difficulty this match, keep the
+    **	vanilla behaviour (every AI at MaxIQ) so a silent client can't demote the AI.
+    */
+    if (!TFLobbyAIDifficultySet) {
+        return (Rule.MaxIQ);
+    }
+    switch (diff) {
+    case DIFF_EASY:
+        return (3);
+    case DIFF_HARD:
+        return (Rule.MaxIQ);
+    default:
+        return (4);
+    }
+}
+
 #ifdef CHEAT_KEYS
 
 void HouseClass::Print_Zone_Stats(int x, int y, ZoneType zone, MonoClass* mono) const

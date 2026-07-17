@@ -3270,7 +3270,7 @@ static int Execute_DoList(int max_houses,
                         //
                         if (Session.Play && DoList[j].Type == EventClass::EXIT) {
                             hptr->IsHuman = false;
-                            hptr->IQ = Rule.MaxIQ;
+                            hptr->IQ = TF_AI_IQ_From_Difficulty(Scen.CDifficulty);
                             hptr->Computer_Paranoid();
                             strcpy(hptr->IniName, Text_String(TXT_COMPUTER));
                             Session.NumPlayers--;

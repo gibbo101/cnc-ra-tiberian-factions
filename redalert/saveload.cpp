@@ -1584,7 +1584,7 @@ static int Reconcile_Players(void)
             housep->IsHuman = false;
             housep->IsStarted = true;
             //			housep->Smartness = IQ_MENSA;
-            housep->IQ = Rule.MaxIQ;
+            housep->IQ = TF_AI_IQ_From_Difficulty(Scen.CDifficulty);
             strcpy(housep->IniName, Text_String(TXT_COMPUTER));
 
             Session.NumPlayers--;

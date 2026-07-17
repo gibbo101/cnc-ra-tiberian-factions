@@ -3013,7 +3013,7 @@ void Assign_Houses(void)
         strcpy(housep->IniName, Text_String(TXT_COMPUTER));
 
         if (Session.Type != GAME_NORMAL) {
-            housep->IQ = Rule.MaxIQ;
+            housep->IQ = TF_AI_IQ_From_Difficulty(Scen.CDifficulty);
         }
 
         housep->Init_Data((PlayerColorType)color, pref_house, Session.Options.Credits);
