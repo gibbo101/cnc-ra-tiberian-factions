@@ -172,6 +172,14 @@ split (re-split shared TDFACT/TDMCV into GDI/Nod + add Allied/Soviet, incl. spaw
    - Refinery-near-ore: new tiberium-proximity scan, special-case before the zone loop.
    - Power/economy in ZONE_CORE instead of Random_Pick.
    - Optionally revive AI_Base_Defense (#ifdef NEVER, house.cpp:6169) for defence rebalancing.
+   - **Own-unit ring stunts the base (Luke live observation, confirmed in code 2026-07-17):**
+     Flush_For_Placement (building.cpp:3349 call, bdata.cpp impl) only scatters allied foot
+     units with NO NavCom (stuck-while-pathing units never flushed), does nothing for other
+     occupiers (retaliation commented out), and ANY occupied footprint cell defers the whole
+     placement to a retry — dense unit rings make the footprint never simultaneously clear →
+     placement starves. Fix here: scatter own units regardless of NavCom, and fall back to an
+     alternate Find_Build_Location after N failed flushes. Scatter-on-launch (Phase 0) thins
+     the ring incidentally; watch during soak whether the GUARD_AREA garrison worsens it.
    - NOTE: AI Boost's placement is byte-identical to vanilla — this would be a first for the
      Remastered ecosystem.
 3. **Stage-aware unit valuation + counter-composition** (vs scouted intel only).
@@ -285,6 +293,14 @@ undiscovered high-severity gates (audit 2026-07-17).
 - **Phase 0 (small, ships early):** W1.1 bug fixes + AI Boost cheap borrowings (scatter-on-
   launch, send-percentage) + Temple-starvation/eco build-order fix (verify with dev-build
   diagnostics first — todo.md bug entry).
+  **STATUS 2026-07-17: code COMPLETE, all build-verified.** W1.1 done (see status note in
+  §3 W1.1). Scatter-on-launch + send-percentage ported into AI_Attack (harvesters exempt
+  from scatter — dock-approach hazard; defences counted generically via armed-building scan;
+  thresholds 4/8 → 80/95/100%, internal constants not user INI; unsent armed units stand
+  GUARD_AREA home guard; TDE6 joins RENOVATOR in the engineer hunt clause — faction parity).
+  Build-choice diagnostic upgraded to TF_AI_DIAG v3 (TDTMPL/TDEYE/TDSTEAL watch-list,
+  PF<1 gate flag, per-cycle candidate POOL + WIN dump in MOD_DEBUG_AI.txt). REMAINING:
+  run the Temple-starvation diagnostic session + Phase 0 soak/playtest gate.
 - **Phase 1 (infrastructure):** W1.2 intel layer + W1.3 scouting; W7 difficulty plumbing +
   IQProduction retune; W1.5 primary-factory.
 - **Phase 2 (the enabler):** W2 faction separation + buildability (big, independent of 0/1 —

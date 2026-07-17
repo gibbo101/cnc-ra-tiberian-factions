@@ -5917,12 +5917,41 @@ bool HouseClass::AI_Attack(UrgencyType)
 
     bool shuffle = !((Frame > TICKS_PER_MINUTE && !CurBuildings) || Percent_Chance(33));
     bool forced = (CurBuildings == 0);
+
+    /*
+    **	How much of the army joins the wave scales with how defended the base
+    **	is: a lightly-defended base keeps a real home guard on GUARD_AREA, a
+    **	well-fortified one commits everything. Defences are counted
+    **	generically (any armed building) so all four factions measure
+    **	correctly. (AI Boost 3.2 send-percentage, Bast75 & xXMini FrankiXx.)
+    */
+    enum
+    {
+        TF_SEND_PERCENT_LOW = 80,
+        TF_SEND_PERCENT_HIGH = 95,
+        TF_SEND_SWITCH_LOW_TO_HIGH = 4,
+        TF_SEND_SWITCH_HIGH_TO_ALL = 8
+    };
+    int defences = 0;
+    for (int s = STRUCT_FIRST; s < STRUCT_COUNT; s++) {
+        if (BuildingTypeClass::As_Reference((StructType)s).PrimaryWeapon != NULL) {
+            defences += ActiveBQuantity[s];
+        }
+    }
+    int sendpercent = TF_SEND_PERCENT_LOW;
+    if (defences > TF_SEND_SWITCH_HIGH_TO_ALL) {
+        sendpercent = 100;
+        forced = true;
+    } else if (defences > TF_SEND_SWITCH_LOW_TO_HIGH) {
+        sendpercent = TF_SEND_PERCENT_HIGH;
+    }
+
     int index;
     for (index = 0; index < Aircraft.Count(); index++) {
         AircraftClass* a = Aircraft.Ptr(index);
 
         if (a != NULL && !a->IsInLimbo && a->House == this && a->Strength > 0) {
-            if (!shuffle && a->Is_Weapon_Equipped() && (forced || Percent_Chance(75))) {
+            if (!shuffle && a->Is_Weapon_Equipped() && (forced || Percent_Chance(sendpercent))) {
                 a->Assign_Mission(MISSION_HUNT);
             }
         }
@@ -5931,8 +5960,28 @@ bool HouseClass::AI_Attack(UrgencyType)
         UnitClass* u = Units.Ptr(index);
 
         if (u != NULL && !u->IsInLimbo && u->House == this && u->Strength > 0) {
-            if (!shuffle && u->Is_Weapon_Equipped() && (forced || Percent_Chance(75))) {
+
+            /*
+            **	Nudge every ground unit as the wave launches so anything wedged
+            **	in base congestion breaks free instead of freezing the wave.
+            **	Harvesters are exempt: a forced scatter can yank one off the
+            **	dock approach mid-choreography, and the harvester recovery
+            **	systems already handle their stuck cases.
+            **	(AI Boost 3.2 scatter-on-launch.)
+            */
+            if (!shuffle && !u->Class->IsToHarvest) {
+                u->Scatter(0, true, true);
+            }
+            if (!shuffle && u->Is_Weapon_Equipped() && (forced || Percent_Chance(sendpercent))) {
                 u->Assign_Mission(MISSION_HUNT);
+            } else if (!shuffle && u->Is_Weapon_Equipped()) {
+
+                /*
+                **	Not sent this wave: stand home guard.
+                */
+                if (u->Mission != MISSION_GUARD_AREA) {
+                    u->Assign_Mission(MISSION_GUARD_AREA);
+                }
             } else {
 
                 /*
@@ -5949,8 +5998,27 @@ bool HouseClass::AI_Attack(UrgencyType)
         InfantryClass* i = Infantry.Ptr(index);
 
         if (i != NULL && !i->IsInLimbo && i->House == this && i->Strength > 0) {
-            if (!shuffle && (i->Is_Weapon_Equipped() || *i == INFANTRY_RENOVATOR) && (forced || Percent_Chance(75))) {
+
+            if (!shuffle) {
+                i->Scatter(0, true, true);
+            }
+
+            /*
+            **	Engineers join the wave so Mission_Hunt can dispatch them to
+            **	capture: RENOVATOR is vanilla; TDE6 is the GDI/Nod engineer
+            **	and belongs in the same clause.
+            */
+            if (!shuffle && (i->Is_Weapon_Equipped() || *i == INFANTRY_RENOVATOR || *i == INFANTRY_TDE6)
+                && (forced || Percent_Chance(sendpercent))) {
                 i->Assign_Mission(MISSION_HUNT);
+            } else if (!shuffle && i->Is_Weapon_Equipped()) {
+
+                /*
+                **	Not sent this wave: stand home guard.
+                */
+                if (i->Mission != MISSION_GUARD_AREA) {
+                    i->Assign_Mission(MISSION_GUARD_AREA);
+                }
             } else {
 
                 /*
@@ -6398,6 +6466,25 @@ static int TF_Skirmish_Type(StructType ra, HousesType actlike)
  *   09/29/1995 JLB : Created.                                                                 *
  *   11/03/1996 JLB : Tries to match aircraft of enemy                                         *
  *=============================================================================================*/
+#if TF_DEV_BUILD // TF_AI_DIAG -- shared log file for the AI build-choice diagnostics below.
+static FILE* TF_AI_Diag_File(void)
+{
+    static FILE* f = NULL;
+    static bool tried = false;
+    if (!tried) {
+        tried = true;
+        const char* up = getenv("USERPROFILE");
+        char p[600];
+        snprintf(p, sizeof(p), "%s/MOD_DEBUG_AI.txt", up ? up : ".");
+        f = fopen(p, "a");
+        if (f != NULL) {
+            fprintf(f, "=== TF_AI_DIAG v3 (build-choice pool) ===\n");
+        }
+    }
+    return (f);
+}
+#endif
+
 int HouseClass::AI_Building(void)
 {
     assert(Houses.ID(this) == ID);
@@ -6456,25 +6543,18 @@ int HouseClass::AI_Building(void)
 
 #if TF_DEV_BUILD // TF_AI_DIAG -- AI economy decision logging (compiled out of release)
         if (tf_td && (Frame % 90) == 0) {
-            static FILE* _tfdbg = NULL;
-            if (_tfdbg == NULL) {
-                const char* _up = getenv("USERPROFILE");
-                char _p[600];
-                snprintf(_p, sizeof(_p), "%s/MOD_DEBUG_AI.txt", _up ? _up : ".");
-                _tfdbg = fopen(_p, "a");
-                if (_tfdbg != NULL) {
-                    fprintf(_tfdbg, "=== TF_AI_DIAG v2 (stealth-gen build) ===\n");
-                }
-            }
+            FILE* _tfdbg = TF_AI_Diag_File();
             if (_tfdbg != NULL) {
-                static char const* _bn[6] = {"TDPROC", "TDHAND", "TDWEAP", "TDNUK", "TDNUK2", "TDFACT"};
+                static char const* _bn[9] =
+                    {"TDPROC", "TDHAND", "TDWEAP", "TDNUK", "TDNUK2", "TDFACT", "TDTMPL", "TDEYE", "TDSTEAL"};
                 fprintf(_tfdbg,
-                        "F%ld H%d AL%d base=%d Tech=%d $%d Pow=%d Drain=%d CurB=%d hasinc=%d refQ=%d harvQ=%d "
-                        "tibShort=%d ABScan=%08X |",
+                        "F%ld H%d AL%d base=%d Tech=%d $%d Pow=%d Drain=%d PF<1=%d CurB=%d hasinc=%d refQ=%d "
+                        "harvQ=%d tibShort=%d ABScan=%08X |",
                         (long)Frame, (int)Class->House, (int)ActLike, (int)IsBaseBuilding, (int)Control.TechLevel,
-                        (int)Available_Money(), (int)Power, (int)Drain, (int)CurBuildings, (int)hasincome,
-                        (int)tf_refqty, (int)tf_harv_count, (int)IsTiberiumShort, (unsigned)ActiveBScan);
-                for (int _i = 0; _i < 6; _i++) {
+                        (int)Available_Money(), (int)Power, (int)Drain, (int)(Power_Fraction() < 1),
+                        (int)CurBuildings, (int)hasincome, (int)tf_refqty, (int)tf_harv_count, (int)IsTiberiumShort,
+                        (unsigned)ActiveBScan);
+                for (int _i = 0; _i < 9; _i++) {
                     BuildingTypeClass const* _bt = BuildingTypeClass::As_Pointer(_bn[_i]);
                     fprintf(_tfdbg, " %s(cb=%d,q=%d)", _bn[_i],
                             _bt != NULL ? (int)Can_Build(_bt, ActLike) : -2,
@@ -6914,6 +6994,35 @@ int HouseClass::AI_Building(void)
         if (best != URGENCY_NONE) {
             BuildStructure = BuildChoice.Ptr(bestindex)->Structure;
         }
+
+#if TF_DEV_BUILD // TF_AI_DIAG -- candidate pool + winner, per decision cycle.
+        {
+            FILE* _tfdbg = TF_AI_Diag_File();
+            if (_tfdbg != NULL && (best != URGENCY_NONE || (tf_td && (Frame % 90) == 0))) {
+                fprintf(_tfdbg,
+                        "F%ld H%d AL%d POOL(%d):",
+                        (long)Frame,
+                        (int)Class->House,
+                        (int)ActLike,
+                        (int)BuildChoice.Count());
+                for (int _i = 0; _i < BuildChoice.Count(); _i++) {
+                    fprintf(_tfdbg,
+                            " %s(u%d)",
+                            BuildingTypeClass::As_Reference(BuildChoice.Ptr(_i)->Structure).IniName,
+                            (int)BuildChoice.Ptr(_i)->Urgency);
+                }
+                if (best != URGENCY_NONE) {
+                    fprintf(_tfdbg,
+                            " -> WIN %s(u%d)\n",
+                            BuildingTypeClass::As_Reference(BuildChoice.Ptr(bestindex)->Structure).IniName,
+                            (int)best);
+                } else {
+                    fprintf(_tfdbg, " -> none\n");
+                }
+                fflush(_tfdbg);
+            }
+        }
+#endif
     }
 
     return (TICKS_PER_SECOND);

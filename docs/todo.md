@@ -21,6 +21,13 @@ Local dev version bumped to 4.0.1.
 shipped GDI GPS + Nod spy plane + Nod paratroopers, but the Soviet parabombs grant (same held-list)
 was never implemented — no PARA_BOMB commits since v3.0.0. Queue for the next release.
 
+**Next-release obligations (accrued during AI Phase 0, 2026-07-17):**
+- **Workshop acknowledgements: credit Bast75 & xXMini FrankiXx (AI Boost 3.2)** — first ported
+  code (scatter-on-launch, send-percentage) is now in the tree. Licence verified GPL-compatible.
+- Changelog lines owed: AGT goes offline on low power (TD-canon); AI target selection actually
+  picks best target (bestval fix); idle harvesters retreat to the refinery; AI attack waves
+  keep a home garrison scaled by base defences (AI Boost port); AI wave-launch scatter.
+
 **Next milestone: the AI upgrade — plan complete, see `docs/ai-upgrade-plan.md` (2026-07-17).**
 Design locked with Luke (one brain + faction-building separation + heritable capture-tech,
 behavioural difficulty via IQ, intel layer + fog-cheat removal, blob attacks, naval + water
