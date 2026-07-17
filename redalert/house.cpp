@@ -3238,6 +3238,75 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
 }
 
 /***********************************************************************************************
+ * HouseClass::TF_Knows_Any_Enemy_Building -- Has this house discovered any enemy structure?   *
+ *                                                                                             *
+ *    Feeds the scout-intensity tiers: an Easy computer house stops probing the map once it    *
+ *    has found something to fight; higher tiers keep probing whenever they are blind.         *
+ *=============================================================================================*/
+bool HouseClass::TF_Knows_Any_Enemy_Building(void)
+{
+    for (int index = 0; index < Buildings.Count(); index++) {
+        BuildingClass const* b = Buildings.Ptr(index);
+        if (b != NULL && !b->IsInLimbo && b->Strength > 0 && !Is_Ally(b) && b->House->Class->House != HOUSE_NEUTRAL
+            && b->Is_Discovered_By_Player(this)) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
+/***********************************************************************************************
+ * HouseClass::TF_Scout_Destination -- Pick a map spot worth exploring while hunting blind.    *
+ *                                                                                             *
+ *    Multiplayer start locations are public map knowledge (any human reads them off the       *
+ *    lobby preview), so probing them is fair intel gathering rather than a cheat. Start       *
+ *    points this house has not yet mapped are preferred, nearest first; once everything is    *
+ *    mapped the nearest start point away from home is re-probed so a blind house keeps        *
+ *    looking rather than standing down.                                                       *
+ *                                                                                             *
+ * INPUT:   from -- The cell the scouting unit currently occupies.                             *
+ *                                                                                             *
+ * OUTPUT:  Destination cell, or -1 when there is nothing sensible to probe.                   *
+ *=============================================================================================*/
+CELL HouseClass::TF_Scout_Destination(CELL from)
+{
+    /*
+    **	Start points closer to home than this are considered our own corner of
+    **	the map and are not worth probing.
+    */
+    const int TF_HOME_RADIUS_LEPTONS = CELL_LEPTON_W * 12;
+
+    CELL best_unmapped = -1;
+    int best_unmapped_dist = -1;
+    CELL best_any = -1;
+    int best_any_dist = -1;
+
+    for (int index = 0; index < 26; index++) {
+        CELL waypt = Scen.Waypoint[index];
+        if (waypt <= 0 || (unsigned)waypt >= MAP_CELL_TOTAL) {
+            continue;
+        }
+        COORDINATE wcoord = Cell_Coord(waypt);
+        if (Center != 0 && ::Distance(wcoord, Center) < TF_HOME_RADIUS_LEPTONS) {
+            continue;
+        }
+        int dist = ::Distance(Cell_Coord(from), wcoord);
+        if (!Map[waypt].Is_Mapped(this)) {
+            if (best_unmapped == -1 || dist < best_unmapped_dist) {
+                best_unmapped = waypt;
+                best_unmapped_dist = dist;
+            }
+        }
+        if (best_any == -1 || dist < best_any_dist) {
+            best_any = waypt;
+            best_any_dist = dist;
+        }
+    }
+
+    return (best_unmapped != -1) ? best_unmapped : best_any;
+}
+
+/***********************************************************************************************
  * HouseClass::Place_Special_Blast -- Place a special blast effect at location specified.      *
  *                                                                                             *
  *    This routine will create a blast effect at the cell specified. This is the result of     *

@@ -705,6 +705,28 @@ int FootClass::Mission_Hunt(void)
 {
     assert(IsActive);
     if (!Target_Something_Nearby(THREAT_NORMAL)) {
+
+        /*
+        **	A computer-house ground unit hunting blind explores instead of standing
+        **	down: with the fair-fog intel layer the house must SIGHT the enemy before
+        **	it can fight, so blind hunters probe the map's start locations. Scout
+        **	intensity follows the difficulty tier -- an Easy house (IQ 3) only probes
+        **	until it has found an enemy building, higher tiers re-probe whenever
+        **	their hunt goes blind.
+        */
+        if (!House->IsHuman && Session.Type != GAME_NORMAL && !Target_Legal(NavCom)
+            && (What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_INFANTRY)) {
+            bool probe = true;
+            if (House->IQ <= 3) {
+                probe = !House->TF_Knows_Any_Enemy_Building();
+            }
+            if (probe) {
+                CELL dest = House->TF_Scout_Destination(Coord_Cell(Coord));
+                if (dest > 0) {
+                    Assign_Destination(::As_Target(dest));
+                }
+            }
+        }
 #if (0)
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
         if (What_Am_I() == RTTI_INFANTRY && *(InfantryClass*)this == INFANTRY_GENERAL

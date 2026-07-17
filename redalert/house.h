@@ -711,6 +711,8 @@ public:
     bool Place_Object(RTTIType type, CELL cell);
     bool Manual_Place(BuildingClass* builder, BuildingClass* object);
     void Special_Weapon_AI(SpecialWeaponType id);
+    CELL TF_Scout_Destination(CELL from);
+    bool TF_Knows_Any_Enemy_Building(void);
     bool Place_Special_Blast(SpecialWeaponType id, CELL cell);
     bool Flag_Attach(CELL cell, bool set_home = false);
     bool Flag_Attach(UnitClass* object, bool set_home = false);
