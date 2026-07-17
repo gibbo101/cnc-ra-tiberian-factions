@@ -5,6 +5,16 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## ⭐ AI milestone Phase 1 (2026-07-17, later the same day) — CODE COMPLETE on branch `ai-phase1`
+
+All four Phase 1 workstreams implemented + build-verified in the `ai-phase1` worktree branch
+(one commit each): W7 difficulty→IQ plumbing, W1.5 primary-factory, W1.2 fair-fog intel
+layer, W1.3 blind-hunt scouting. Full status + verify list: `ai-upgrade-plan.md` §6 Phase 1
+STATUS block. **NOT merged to main** (the TS-spike instance owns the main working tree's
+uncommitted state) and **NOT deployed/soaked** (desktop owned by the TS session). Merge order
+when free: land or stash the TS spike, then merge `ai-phase1`, then one diagnostic session
+covers BOTH Phase 0 gates below AND the Phase 1 verify list (same match, same log).
+
 ## ⭐ RESUME HERE — AI milestone Phase 0 (2026-07-17)
 
 **Code COMPLETE + committed** (`bb286b5` W1.1 fixes + AGT power + harvester idle-home;
