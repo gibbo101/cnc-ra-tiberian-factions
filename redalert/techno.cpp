@@ -789,7 +789,14 @@ bool TechnoClass::Revealed(HouseClass* house)
     }
 
     if (house->IsHuman == false) {
-        if (IsDiscoveredByComputer) {
+        /*
+        **	Outside the campaign, computer discovery is tracked per-house in the same
+        **	mask human players use (the AI intel layer reads it), so dedupe runs through
+        **	the mask check above. The single shared computer bit made the SECOND
+        **	computer house skip discovery recording entirely; it is kept in sync only
+        **	for the code paths that still read it. Campaign keeps vanilla semantics.
+        */
+        if (Session.Type == GAME_NORMAL && IsDiscoveredByComputer) {
             return false;
         }
         IsDiscoveredByComputer = true;
@@ -849,9 +856,12 @@ bool TechnoClass::Revealed(HouseClass* house)
 
         } else {
 
-            if (house->IsHuman) {
-                Set_Discovered_By_Player(house);
-            }
+            /*
+            **	Record discovery for computer houses too, not just humans: the AI
+            **	intel layer (target evaluation, superweapon aiming) reads this mask,
+            **	so a computer house only ever acts on what its own house has seen.
+            */
+            Set_Discovered_By_Player(house);
 
             Look();
         }
@@ -1711,6 +1721,17 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
     **	are always considered to be visible.
     */
     if (!object->IsOwnedByPlayer && !object->IsDiscoveredByPlayer && Session.Type == GAME_NORMAL
+        && object->What_Am_I() != RTTI_AIRCRAFT) {
+        BEnd(BENCH_EVAL_OBJECT);
+        return (false);
+    }
+
+    /*
+    **	Fair-fog gate for computer houses outside the campaign: a computer house may
+    **	only evaluate targets its own house has discovered (recorded per-house in
+    **	TechnoClass::Revealed). Aircraft stay exempt, mirroring the campaign gate.
+    */
+    if (Session.Type != GAME_NORMAL && !House->IsHuman && !object->Is_Discovered_By_Player(House)
         && object->What_Am_I() != RTTI_AIRCRAFT) {
         BEnd(BENCH_EVAL_OBJECT);
         return (false);
@@ -4585,6 +4606,16 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 
         if (IronCurtainCountDown == 0) {
             result = ObjectClass::Take_Damage(damage, distance, warhead, source, forced);
+        }
+
+        /*
+        **	Taking fire reveals the attacker to the victim's house. A human watches the
+        **	tracer come out of the fog; the computer's intel layer records the same
+        **	knowledge, so the fair-fog target gate can never block retaliation against
+        **	an attacker the house has not yet sighted.
+        */
+        if (source != NULL && Session.Type != GAME_NORMAL && !House->IsHuman) {
+            source->Set_Discovered_By_Player(House);
         }
 
         /*

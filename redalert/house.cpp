@@ -3213,6 +3213,17 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
         ** being destroyed and not our ally, then we can consider it.
         */
         if (b != NULL && !b->IsInLimbo && b->Strength && !Is_Ally(b)) {
+
+            /*
+            **	Fair-fog superweapon aiming: a computer house may only aim at buildings
+            **	its own house has discovered. Once seen a building stays in the mask,
+            **	so striking where a discovered structure was is remembered intel, not
+            **	an omniscience cheat.
+            */
+            if (!IsHuman && Session.Type != GAME_NORMAL && !b->Is_Discovered_By_Player(this)) {
+                continue;
+            }
+
             if (Percent_Chance(90) && (b->Value() > best || best == -1)) {
                 best = b->Value();
                 bestptr = b;
