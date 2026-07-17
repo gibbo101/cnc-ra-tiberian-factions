@@ -5,6 +5,26 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## ⭐ RESUME HERE — AI milestone Phase 0 (2026-07-17)
+
+**Code COMPLETE + committed** (`bb286b5` W1.1 fixes + AGT power + harvester idle-home;
+`9069392` diag v3 + AI Boost scatter/send-percentage). Full status: `ai-upgrade-plan.md` §6
+Phase 0 + §3 W1.1 STATUS notes. Two verification gates remain:
+
+1. **Temple-starvation diagnostic session** — ATTEMPTED 2026-07-17, held: the game loaded the
+   Workshop 4.0.0 copy (release DLL, no logging) because the Workshop self-test left it
+   enabled. Everything else is staged: dev DLL (TF_AI_DIAG v3) deployed to the desktop
+   prefix, old MOD_DEBUG_AI.txt rotated, lobby remembers GDI vs Nod-MEDIUM/Docklands.
+   Next run: enable the LOCAL mod (Options → Mods → Mods Folder → Vanilla_RA), play/idle
+   any Nod-AI match, read `drive_c/users/steamuser/MOD_DEBUG_AI.txt` (grep TDTMPL/TDSTEAL
+   + POOL/WIN lines). Freshness check: dev DLL recreates tf_astar.log within seconds.
+   Claude can drive it autonomously (recipe + traps in cross-session memory:
+   desktop-diagnostic-run-recipe) — needs Luke's OK to unlock the desktop session.
+2. **Phase 0 soak playtest** — player-visible changes to eyeball: AGT offline on low power,
+   idle harvesters retreating to the refinery, attack waves with home garrison + launch
+   scatter, better AI target picks. Then Phase 1 (intel layer + scouting + difficulty
+   plumbing) per the plan.
+
 ## v4.0.0 SHIPPED 2026-07-16 (Workshop + GitHub). Remaining follow-ups:
 
 Released: media captured (videos + screenshots in `~/Desktop/TiberianFactionsinRedAlert4.0 media/`),
