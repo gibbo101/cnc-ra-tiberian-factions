@@ -121,6 +121,14 @@ Companion docs: `ai-improvements.md` (problem inventory + re-audit banner),
    late-game "sidebar can't build" (rules.cpp:237). Real AI nerf → pairs with W3.
 
 ### W2 — Faction separation + buildability rework *(the one-brain enabler)*
+
+> **DESIGN CONSTRAINT (2026-07-18): build for N factions, not 4.** TS GDI/Nod (and a
+> possible multi-era spin-off: TD+RA+TS+RA2 = 8 factions) are design-feasible via
+> decoupled country houses — see `ts-factions-feasibility.md`. Anywhere W2 encodes
+> "the four factions" (placeholder ActLike tables, prereq remap lists, role-flag
+> dispatch), prefer data/loop-driven over 4-way literals. The role-flag refactor in
+> finding 4 already points this way; this note makes it binding.
+
 Engineering survey COMPLETE (2026-07-17). Load-bearing findings:
 1. **Capture inheritance is already free.** The sidebar buildable list is computed per
    FACTORY BUILDING via `Update_Buildables` (building.cpp:3390) calling
