@@ -42,13 +42,20 @@ IQ 5/4/3/5 on the matching houses, on-screen + log). Scanner + slot map live in
 on-screen via deferred flush, commit `45bf3b0`) print each house's mode tagged
 `[slot n]`/`[global]` and are the standing verification readout. Implementation notes +
 the IniName-rename trap: `docs/lobby-difficulty-ram-spike.md`. Remaining:
-- **Phase B (MP host broadcast):** host resolves difficulties, broadcasts via a custom
-  EventClass in the deterministic queue; 2+ human matches currently keep the
-  determinism guard (default Hard everywhere). Design in spike doc. **Test rig (Luke,
-  2026-07-18): Linux desktop + Luke's Deck + son's Deck** (son's Deck explicitly
-  approved for these MP tests) — 3-peer comp-stomp lobby over Tailscale, assert no
-  desync + identical difficulty lines in every peer's MOD_DEBUG_AI.txt. All three
-  machines need the same DLL build deployed at session start.
+- **Phase B (MP per-slot difficulty) — REDESIGNED 2026-07-18; recon build in tree:**
+  the host-broadcast mechanism is DEAD (verified: GlyphX has no DLL-side event
+  transport — `Glyphx_Queue_AI` is local-only, no packet exports, callbacks are local
+  presentation; determinism = client-side request replay). Replacement design =
+  **mirrored-lobby independent read**: every peer RAM-scans its own ClientG; if all
+  peers hold the host's picks identically, no broadcast is needed. **B1 recon build
+  (in tree):** dev DLL scans in MP but stays log-only (2+ humans guard untouched),
+  emitting a `PHASEB-RECON` line per peer. **Test rig (Luke, 2026-07-18): Linux
+  desktop + Luke's Deck + son's Deck** (son's Deck explicitly approved for these MP
+  tests) — same dev DLL on all three, mixed-difficulty comp-stomp lobbies over
+  Tailscale, several matches; GREEN = identical PHASEB-RECON lines in every peer's
+  MOD_DEBUG_AI.txt, every match. Then decide B2 (apply-in-MP + accept the bounded
+  scan-failure divergence risk) on the reliability data. Full design + verification
+  record: spike doc phase-B section.
 - **Workshop copy at next release:** document per-slot lobby difficulty as a feature
   (and `tf_ai_difficulty.txt` as the fallback lever). DontCryJustDie is already in the
   mod credits (TD-Assets); no new ack needed — though the release notes can mention the
@@ -75,6 +82,28 @@ the IniName-rename trap: `docs/lobby-difficulty-ram-spike.md`. Remaining:
 4. Rotate `MOD_DEBUG_AI.txt` between matches during diagnostic sessions (two matches
    interleaved in one file cost real analysis time; note: the shared diag FILE* stays open
    across matches within one game process, so rotate only at full game restarts).
+
+## A* pathfinding: O(n²) open-list insert + no expansion cap (2026-07-18, from the megamaps spike)
+
+Found while surveying pathfinding for `docs/megamaps-feasibility.md`. **Independent of map size —
+live on the current 128x128 build**, and squarely in the AI milestone's path.
+
+- **Open-list insert is O(n).** `findpath.cpp:715` uses `open_list.insert(std::lower_bound(...))`
+  into a `std::vector` — a sorted-vector priority queue with linear insertion, so the search is
+  O(n²) in nodes expanded. Fix: real binary heap (`std::priority_queue` / `push_heap`).
+- **No node-expansion budget.** On a *failed* search (unreachable destination) it exhausts the
+  entire reachable component — up to ~16K nodes at 128x128, each with an `unordered_map` node
+  allocation. A single long-range failed path can stall a frame. Fix: explicit expansion cap with
+  fallback to the legacy path.
+
+Not yet reproduced in-game — flagged by static reading, so **confirm with a diagnostic run before
+optimising** (unreachable-destination order across water/walls is the likely repro). The
+`unordered_map` choice itself is correct and should stay: `prev` pointers into it must survive
+rehashing.
+
+Also spotted, harmless today: `defines.h:589` — `MAP_REGION_HEIGHT` uses `REGION_WIDTH` in its
+rounding term instead of `REGION_HEIGHT`. Only masked because both are 4; a landmine if regions
+ever go non-square.
 
 ## TS asset spike — CLOSED (2026-07-18); no follow-up work queued
 

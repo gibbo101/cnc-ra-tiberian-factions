@@ -2,7 +2,10 @@
 
 **Status: phase A SHIPPED + LIVE-VERIFIED 2026-07-18 (commit `3e156a0`).** A mixed
 Hard/Medium/Easy/Hard lobby produced IQ 5/4/3/5 on the matching houses, confirmed
-on-screen and in MOD_DEBUG_AI.txt. Phase B (MP host broadcast) not started.
+on-screen and in MOD_DEBUG_AI.txt. Phase B redesigned 2026-07-18: the host-broadcast
+mechanism is DEAD (GlyphX has no DLL-side event transport — see the phase-B section);
+replacement = mirrored-lobby independent read, recon build in tree awaiting the
+3-peer rig run.
 Companion findings and session narrative: `todo.md` Phase 1 block, `ai-upgrade-plan.md`
 §6 Phase 1 STATUS.
 
@@ -100,24 +103,54 @@ difficulty read can also run lazily on first AI tick — retro-apply already exi
 to allocate the array above 4 GB on some machines, use `NtWow64ReadVirtualMemory64`.
 Check `IsWow64Process` on ClientG during implementation.
 
-### Multiplayer with AI (phase B — host broadcast)
+### Multiplayer with AI (phase B — mirrored-lobby read; broadcast design DEAD)
 
 MP is deterministic lockstep: AI IQ is sim state, so every peer must apply identical
-difficulties on the same frame. Per-machine reads (RAM or flag file) would desync.
+difficulties on the same frame. Per-machine reads (RAM or flag file) would desync —
+unless every peer's read provably yields the same values.
 
-1. Only the **host** (`Session.Am_I_Master()`) resolves difficulties (RAM scan of its
-   own ClientG — the host configured the lobby — else host's flag file, else default).
-2. Host injects a **custom EventClass type** carrying (slot → difficulty) into the
-   deterministic command queue; all peers (host included) apply on event execution.
-   All players run the same mod DLL by definition, so a new event type is fine.
-   TO VERIFY: the GlyphX transport moves DLL event bytes opaquely (expected — the DLL
-   owns event serialization; confirm in dllinterface event path).
-3. Until phase B ships: **interim guard** (SHIPPED with this doc) — with 2+ human
-   players the DLL ignores the local flag file and RAM entirely and uses default Hard
-   on all peers, which is deterministic by construction.
+**Host-broadcast design VERIFIED DEAD (2026-07-18).** The original plan (host injects a
+custom EventClass, peers apply on execution) assumed the GlyphX transport moves DLL
+event bytes. It does not:
 
-Test plan for phase B: desktop + Deck over Tailscale, comp-stomp lobby, assert no
-desync and identical MOD_DEBUG_AI difficulty lines both sides.
+- In `GAME_GLYPHX_MULTIPLAYER`, `DLLExportClass::Glyphx_Queue_AI` moves `OutList` →
+  `DoList` **locally only**; the legacy `Send_Packets`/`Extract_Uncompressed_Events`
+  networking in queue.cpp never runs.
+- The DLL export table has no packet/event-bytes function, and every DLL→client
+  callback (`CALLBACK_EVENT_*`) is local presentation. EventClass bytes never leave
+  the machine.
+- GlyphX determinism comes from the **client replaying every player's requests**
+  (`CNC_Handle_*` tagged with the originating player id) into every peer's DLL at the
+  same frame boundary. The DLL has no send channel of any kind. (`SET_RALLY` works in
+  MP only because its *triggering request* is replayed on all peers.)
+
+**Replacement design — mirrored-lobby independent read.** Every client in the lobby
+renders the AI slots' Easy/Medium/Hard pickers, so every peer's ClientG plausibly
+holds the same `AIPLAYERn` records the phase-A scanner reads. If that mirroring holds,
+each peer independently scanning its **own** client yields identical values →
+deterministic with no broadcast needed. Two things must be proven on the 3-peer rig,
+and one hazard bounded:
+
+1. **Mirroring:** do non-host peers' ClientG processes hold the records at all, and
+   with the host's picks (not defaults)?
+2. **Reliability:** does the strict scanner (all candidates must agree) succeed on
+   every peer every match, including both Decks under Proton?
+3. **Divergence hazard:** if one peer's scan fails while others succeed, fallbacks
+   differ → desync. There is no channel to cross-check agreement, so this can only be
+   bounded empirically (rig reliability data), never eliminated. Ship/no-ship is a
+   judgement call on that data.
+
+**Recon build (B1, code in tree):** dev builds now run the RAM scan in MP too but keep
+the 2+ humans guard fully applied — log-only. Each peer appends a `PHASEB-RECON
+ram_slots=N s1..s8` line to its own `MOD_DEBUG_AI.txt` at match start. Release builds
+skip the MP scan entirely (guard unchanged, no wasted sweep).
+
+Test plan (3-peer rig: desktop + both Decks over Tailscale, son's Deck approved):
+same dev DLL on all three, comp-stomp lobby with **mixed** AI difficulties, several
+matches (vary host if possible). GREEN = every peer's PHASEB-RECON line identical,
+every match. Then decide phase B2 (apply per-slot in MP when the scan succeeds) on the
+reliability data; the guard remains the fallback for any scan failure, accepting the
+bounded divergence risk or rejecting it.
 
 ## RAM reconnaissance — what else is extractable (survey 2026-07-18)
 

@@ -2516,13 +2516,20 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
     }
 
     // Per-slot difficulty from the client process, when available: overrides the
-    // global source house-by-house. Solo only until the phase-B host broadcast
-    // lands (per-machine reads would desync MP lockstep).
+    // global source house-by-house. Applied in solo play only; with 2+ humans the
+    // scan still runs (read-only) so every peer logs what its own client holds --
+    // if all peers mirror the host's lobby records identically, MP can adopt the
+    // per-slot values without any broadcast (docs/lobby-difficulty-ram-spike.md
+    // phase B: GlyphX has no DLL-side event transport, so determinism must come
+    // from every peer reading the same values, and that mirroring is what the
+    // recon log verifies).
     int slot_diff[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
-    int slots_read = 0;
-    if (TF_HumanPlayerCount < 2) {
-        slots_read = TF_Read_Lobby_AI_Difficulties(slot_diff);
-    }
+    bool apply_per_slot = TF_HumanPlayerCount < 2;
+    bool run_scan = apply_per_slot;
+#if TF_DEV_BUILD // recon builds scan in MP too, purely to log what this peer's client holds
+    run_scan = true;
+#endif
+    int slots_read = run_scan ? TF_Read_Lobby_AI_Difficulties(slot_diff) : 0;
 
     Scen.CDifficulty = diff;
     TFLobbyAIDifficultySet = true;
@@ -2543,7 +2550,7 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
             bool per_slot = false;
             int house_index = (int)housep->Class->House - (int)HOUSE_MULTI1;
             int slot_number = (house_index >= 0 && house_index < MAX_PLAYERS) ? TF_AILobbySlotByHouse[house_index] : 0;
-            if (slots_read > 0 && slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS
+            if (apply_per_slot && slots_read > 0 && slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS
                 && slot_diff[slot_number] != 0) {
                 house_diff = (slot_diff[slot_number] == 1)   ? DIFF_EASY
                              : (slot_diff[slot_number] == 2) ? DIFF_NORMAL
@@ -2603,10 +2610,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
         FILE* f = fopen(p, "a");
         if (f != NULL) {
             fprintf(f,
-                    "CNC_Set_Difficulty(%d) -> CDifficulty=%d IQ=%d source=%s ram_slots=%d",
+                    "CNC_Set_Difficulty(%d) -> CDifficulty=%d IQ=%d humans=%d source=%s ram_slots=%d",
                     difficulty,
                     (int)diff,
                     iq,
+                    TF_HumanPlayerCount,
                     tf_diff_source == 'f'   ? "tf_ai_difficulty.txt"
                     : tf_diff_source == 'm' ? "default-hard (MP determinism guard: 2+ humans)"
                                             : "default-hard (client value ignored)",
@@ -2615,6 +2623,17 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
                 fprintf(f, " s%d=%d", s, slot_diff[s]);
             }
             fprintf(f, " (AI houses retro-applied)\n");
+            // Phase-B recon line: with 2+ humans the scan result above was NOT
+            // applied. One line per peer, formatted for a cross-machine diff --
+            // identical lines on every peer = the client mirrors the host's
+            // lobby records = per-slot MP difficulty needs no broadcast.
+            if (TF_HumanPlayerCount >= 2) {
+                fprintf(f, "PHASEB-RECON ram_slots=%d", slots_read);
+                for (int s = 1; s <= TF_LOBBY_MAX_AI_SLOTS; s++) {
+                    fprintf(f, " s%d=%d", s, slot_diff[s]);
+                }
+                fprintf(f, " (log-only, guard kept per-slot unapplied)\n");
+            }
             fclose(f);
         }
     }
