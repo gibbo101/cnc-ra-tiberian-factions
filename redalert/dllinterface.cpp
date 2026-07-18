@@ -1903,6 +1903,13 @@ bool Debug_Write_Shape(const char* file_name, void const* shapefile, int shapenu
     return true;
 }
 
+#if TF_DEV_BUILD // TF_AI_DIAG -- on-screen copies of the HELLO difficulty announcements,
+                 // queued at difficulty-set time (client not rendering yet) and flushed
+                 // from CNC_Advance_Instance once the match is on screen.
+static char TFHelloPending[MAX_PLAYERS][128];
+static int TFHelloPendingCount = 0;
+#endif
+
 /**************************************************************************************************
  * CNC_Advance_Instance -- Process one logic frame
  *
@@ -1932,6 +1939,16 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
     } else {
         DLLExportClass::Set_Player_Context(DLLExportClass::GlyphxPlayerIDs[0]);
     }
+
+#if TF_DEV_BUILD // TF_AI_DIAG -- flush the queued HELLO announcements once the match is
+                 // actually rendering (messages sent at difficulty-set time are dropped).
+    if (TFHelloPendingCount > 0 && Frame >= 30) {
+        for (int hello_index = 0; hello_index < TFHelloPendingCount; hello_index++) {
+            On_Message(TFHelloPending[hello_index], 30.0f, -1);
+        }
+        TFHelloPendingCount = 0;
+    }
+#endif
 
     /*
     ** Restore special from backup
@@ -2272,6 +2289,9 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
     TFLobbyAIDifficultySet = true;
 
     int iq = TF_AI_IQ_From_Difficulty(diff);
+#if TF_DEV_BUILD
+    TFHelloPendingCount = 0;
+#endif
     for (int index = 0; index < Houses.Count(); index++) {
         HouseClass* housep = Houses.Ptr(index);
         if (housep != NULL && housep->IsActive && !housep->IsHuman && housep->Class->House >= HOUSE_MULTI1) {
@@ -2283,16 +2303,26 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
             // docs/lobby-difficulty-ram-spike.md) assigns each house its own tier ->
             // this line then prints each slot's real lobby pick.
             {
+                const char* mode = (diff == DIFF_EASY) ? "EASY" : (diff == DIFF_HARD) ? "HARD" : "MEDIUM";
+                char hello[128];
+                snprintf(hello,
+                         sizeof(hello),
+                         "HELLO IM H%d (ActLike=%d) IN %s MODE (IQ=%d)",
+                         (int)housep->Class->House,
+                         (int)housep->ActLike,
+                         mode,
+                         iq);
                 FILE* _tfdbg = TF_AI_Diag_File();
                 if (_tfdbg != NULL) {
-                    const char* mode = (diff == DIFF_EASY) ? "EASY" : (diff == DIFF_HARD) ? "HARD" : "MEDIUM";
-                    fprintf(_tfdbg,
-                            "HELLO IM H%d (ActLike=%d) IN %s MODE (IQ=%d)\n",
-                            (int)housep->Class->House,
-                            (int)housep->ActLike,
-                            mode,
-                            iq);
+                    fprintf(_tfdbg, "%s\n", hello);
                     fflush(_tfdbg);
+                }
+                // Sent now, the client drops the message (match not rendering yet);
+                // queued here and flushed to screen from CNC_Advance_Instance.
+                if (TFHelloPendingCount < ARRAY_SIZE(TFHelloPending)) {
+                    strncpy(TFHelloPending[TFHelloPendingCount], hello, sizeof(TFHelloPending[0]) - 1);
+                    TFHelloPending[TFHelloPendingCount][sizeof(TFHelloPending[0]) - 1] = '\0';
+                    TFHelloPendingCount++;
                 }
             }
 #endif
