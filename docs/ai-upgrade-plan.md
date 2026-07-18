@@ -311,6 +311,23 @@ undiscovered high-severity gates (audit 2026-07-17).
   run the Temple-starvation diagnostic session + Phase 0 soak/playtest gate.
 - **Phase 1 (infrastructure):** W1.2 intel layer + W1.3 scouting; W7 difficulty plumbing +
   IQProduction retune; W1.5 primary-factory.
+  **STATUS 2026-07-17: code COMPLETE on branch `ai-phase1`, all build-verified, UNSOAKED.**
+  Four commits, one per workstream. W7: lobby difficulty -> IQ tier (Easy=3/Normal=4/
+  Hard=MaxIQ) via TF_AI_IQ_From_Difficulty; CNC_Set_Difficulty un-gated for skirmish
+  (stores Scen.CDifficulty + retro-applies, TF_AI_DIAG-logged); falls back to vanilla
+  MaxIQ until the client actually sends a value; stat handicaps stay 1.0x; IQProduction
+  5->3 (engine + rules.ini). W1.5: Factory_AI gate = one AI order per factory category
+  (kills the parallel-build cheat, which was quadratic - Time_To_Build already divides
+  by Factory_Count - and the FactoryMax heap exhaustion). W1.2: per-house discovery
+  recorded for AI houses in IsDiscoveredByPlayerMask (Revealed rework); Evaluate_Object
+  + Special_Weapon_AI (all six supers) gated on own-house discovery; Take_Damage reveals
+  the attacker to the victim's house. Residual: once-seen enemy UNITS stay evaluable
+  while fogged (mask is positionless; buildings fully fair). W1.3: blind Mission_Hunt
+  ground units probe start-location waypoints (unmapped-first, nearest-first; Easy stops
+  after first enemy-building contact). VERIFY NEXT: desktop diagnostic run must confirm
+  (a) the client sends CNC_Set_Difficulty in skirmish (grep MOD_DEBUG_AI.txt for it,
+  else Hard/Easy tiers never engage and everything runs vanilla-MaxIQ), (b) AI still
+  finds + attacks the enemy under fair fog, (c) no early-game stall.
 - **Phase 2 (the enabler):** W2 faction separation + buildability (big, independent of 0/1 —
   can run in parallel if sessions allow).
 - **Phase 3 (the brain):** W3 build planner + placement; W4 attack quality (Route A spike

@@ -5,6 +5,23 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## ⭐ AI milestone Phase 1 (2026-07-17) — MERGED to main 2026-07-18, UNSOAKED
+
+**Full handover: `docs/ai-phase1-handover.md`.** W7 difficulty→IQ plumbing, W1.5
+primary-factory, W1.2 fair-fog intel layer, W1.3 blind-hunt scouting. Merged into main
+2026-07-18; the interim `Vanilla_RA_AI1` desktop mod is consolidated back into the single
+`Vanilla_RA` local mod. One diagnostic session covers BOTH Phase 0 gates below AND the
+Phase 1 verify list.
+
+**W7 difficulty channel — community intel (DontCryJustDie, Workshop comments 2026-07-18):**
+GlyphX reportedly never sends skirmish difficulty to the DLL (per-slot difficulty was only
+implemented client-side). Interface trace confirms the structs carry no per-slot difficulty
+field. NOT yet accepted as final: `CNC_Set_Multiplayer_Data` now TF_AI_DIAG-dumps every
+slot's fields incl. Name text+hex — if the lobby's Easy/Medium/Hard label leaks into the
+AI slot names, that's a per-slot channel nobody has used. Verify run: one lobby with one
+Easy + one Medium + one Hard AI, then grep `CNC_Set_Difficulty` + `CNC_Set_Multiplayer_Data`
+in MOD_DEBUG_AI.txt. Fallback if no channel: flag-file setting (tf_dev_off.flag pattern).
+
 ## TS asset spike — shipped in one live session (2026-07-18); TSPOWR art pass owed
 
 The Tiberian Sun import spike is DONE and player-signed-off (see

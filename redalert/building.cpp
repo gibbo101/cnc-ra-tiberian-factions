@@ -7764,6 +7764,32 @@ void BuildingClass::Factory_AI(void)
                 **	production can never complete -- don't bother starting it.
                 */
                 if (House->IsStarted && House->Available_Money() > 10) {
+
+                    /*
+                    **	Primary-factory rule: a computer house runs at most one production
+                    **	order per factory category, exactly like a human's sidebar strip.
+                    **	Every factory of a category starting its own parallel order was an
+                    **	AI-only cheat -- and a compounding one, since Time_To_Build already
+                    **	divides by Factory_Count, so N factories meant N orders each built
+                    **	N times faster. It also let a big AI base exhaust the shared
+                    **	FactoryClass heap (FactoryMax), starving the human sidebar. Extra
+                    **	factories still pay off through the build-speed divisor.
+                    */
+                    if (!House->IsHuman) {
+                        bool category_busy = false;
+                        for (int index = 0; index < Buildings.Count(); index++) {
+                            BuildingClass const* b = Buildings.Ptr(index);
+                            if (b != NULL && b != this && !b->IsInLimbo && b->House == House
+                                && b->Class->ToBuild == Class->ToBuild && b->Factory.Is_Valid()) {
+                                category_busy = true;
+                                break;
+                            }
+                        }
+                        if (category_busy) {
+                            return;
+                        }
+                    }
+
                     TechnoTypeClass const* techno = House->Suggest_New_Object(Class->ToBuild, *this == STRUCT_KENNEL);
 
                     /*

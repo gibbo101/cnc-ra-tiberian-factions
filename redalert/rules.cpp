@@ -136,7 +136,9 @@ RulesClass::RulesClass(void)
     , ParaBombTechLevel(10)
     , MaxIQ(5)
     , IQSuperWeapons(4)
-    , IQProduction(5)
+    // Base production must be reachable by every difficulty tier (Easy AI = IQ 3);
+    // the vanilla 5 only worked because all AIs ran at MaxIQ.
+    , IQProduction(3)
     , IQGuardArea(4)
     , IQRepairSell(3)
     , IQCrush(2)

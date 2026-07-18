@@ -306,6 +306,34 @@ DiffType HouseClass::Assign_Handicap(DiffType handicap)
     return (old);
 }
 
+/*
+**	Lobby AI difficulty -> IQ tier for a computer-controlled house. Difficulty is
+**	behavioural only (stat handicaps stay at DIFF_NORMAL's 1.0x biases): the IQ value
+**	is the single signal every IQ-gated behaviour keys off. Easy loses the
+**	Rule.IQ* >= 4 behaviours (superweapons, aircraft AI, guard-area, content-scan);
+**	Hard gets the full Rule.MaxIQ set including MaxIQ-gated smart behaviours.
+*/
+bool TFLobbyAIDifficultySet = false;
+
+int TF_AI_IQ_From_Difficulty(DiffType diff)
+{
+    /*
+    **	Until the client has actually sent a lobby difficulty this match, keep the
+    **	vanilla behaviour (every AI at MaxIQ) so a silent client can't demote the AI.
+    */
+    if (!TFLobbyAIDifficultySet) {
+        return (Rule.MaxIQ);
+    }
+    switch (diff) {
+    case DIFF_EASY:
+        return (3);
+    case DIFF_HARD:
+        return (Rule.MaxIQ);
+    default:
+        return (4);
+    }
+}
+
 #ifdef CHEAT_KEYS
 
 void HouseClass::Print_Zone_Stats(int x, int y, ZoneType zone, MonoClass* mono) const
@@ -3185,6 +3213,17 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
         ** being destroyed and not our ally, then we can consider it.
         */
         if (b != NULL && !b->IsInLimbo && b->Strength && !Is_Ally(b)) {
+
+            /*
+            **	Fair-fog superweapon aiming: a computer house may only aim at buildings
+            **	its own house has discovered. Once seen a building stays in the mask,
+            **	so striking where a discovered structure was is remembered intel, not
+            **	an omniscience cheat.
+            */
+            if (!IsHuman && Session.Type != GAME_NORMAL && !b->Is_Discovered_By_Player(this)) {
+                continue;
+            }
+
             if (Percent_Chance(90) && (b->Value() > best || best == -1)) {
                 best = b->Value();
                 bestptr = b;
@@ -3196,6 +3235,75 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
         CELL cell = Coord_Cell(bestptr->Center_Coord());
         Place_Special_Blast(id, cell);
     }
+}
+
+/***********************************************************************************************
+ * HouseClass::TF_Knows_Any_Enemy_Building -- Has this house discovered any enemy structure?   *
+ *                                                                                             *
+ *    Feeds the scout-intensity tiers: an Easy computer house stops probing the map once it    *
+ *    has found something to fight; higher tiers keep probing whenever they are blind.         *
+ *=============================================================================================*/
+bool HouseClass::TF_Knows_Any_Enemy_Building(void)
+{
+    for (int index = 0; index < Buildings.Count(); index++) {
+        BuildingClass const* b = Buildings.Ptr(index);
+        if (b != NULL && !b->IsInLimbo && b->Strength > 0 && !Is_Ally(b) && b->House->Class->House != HOUSE_NEUTRAL
+            && b->Is_Discovered_By_Player(this)) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
+/***********************************************************************************************
+ * HouseClass::TF_Scout_Destination -- Pick a map spot worth exploring while hunting blind.    *
+ *                                                                                             *
+ *    Multiplayer start locations are public map knowledge (any human reads them off the       *
+ *    lobby preview), so probing them is fair intel gathering rather than a cheat. Start       *
+ *    points this house has not yet mapped are preferred, nearest first; once everything is    *
+ *    mapped the nearest start point away from home is re-probed so a blind house keeps        *
+ *    looking rather than standing down.                                                       *
+ *                                                                                             *
+ * INPUT:   from -- The cell the scouting unit currently occupies.                             *
+ *                                                                                             *
+ * OUTPUT:  Destination cell, or -1 when there is nothing sensible to probe.                   *
+ *=============================================================================================*/
+CELL HouseClass::TF_Scout_Destination(CELL from)
+{
+    /*
+    **	Start points closer to home than this are considered our own corner of
+    **	the map and are not worth probing.
+    */
+    const int TF_HOME_RADIUS_LEPTONS = CELL_LEPTON_W * 12;
+
+    CELL best_unmapped = -1;
+    int best_unmapped_dist = -1;
+    CELL best_any = -1;
+    int best_any_dist = -1;
+
+    for (int index = 0; index < 26; index++) {
+        CELL waypt = Scen.Waypoint[index];
+        if (waypt <= 0 || (unsigned)waypt >= MAP_CELL_TOTAL) {
+            continue;
+        }
+        COORDINATE wcoord = Cell_Coord(waypt);
+        if (Center != 0 && ::Distance(wcoord, Center) < TF_HOME_RADIUS_LEPTONS) {
+            continue;
+        }
+        int dist = ::Distance(Cell_Coord(from), wcoord);
+        if (!Map[waypt].Is_Mapped(this)) {
+            if (best_unmapped == -1 || dist < best_unmapped_dist) {
+                best_unmapped = waypt;
+                best_unmapped_dist = dist;
+            }
+        }
+        if (best_any == -1 || dist < best_any_dist) {
+            best_any = waypt;
+            best_any_dist = dist;
+        }
+    }
+
+    return (best_unmapped != -1) ? best_unmapped : best_any;
 }
 
 /***********************************************************************************************
