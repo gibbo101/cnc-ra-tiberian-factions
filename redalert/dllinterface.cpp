@@ -515,6 +515,18 @@ int TF_HumanPlayerCount = 1;
 // the per-slot difficulty read in CNC_Set_Difficulty keys off it.
 static int TF_AILobbySlotByHouse[MAX_PLAYERS];
 
+// Per-slot lobby AI difficulty RAM scan (see the block above CNC_Set_Difficulty).
+#define TF_LOBBY_MAX_AI_SLOTS 16
+#define TF_LOBBY_RECORD_STRIDE 0xA8
+#define TF_LOBBY_OFF_SLOT 0x50
+#define TF_LOBBY_OFF_DIFF 0x64
+#define TF_LOBBY_OFF_SLOT2 0x68
+
+// Bit n set = the current lobby contains an AI named AIPLAYERn (client AI numbering
+// persists across lobbies, so n rarely starts at 1 after a session's first lobby).
+// Captured at CNC_Set_Multiplayer_Data; anchors the per-slot difficulty RAM scan.
+static unsigned TF_LobbyAIRosterMask = 0;
+
 bool MPSuperWeaponDisable = false;
 bool ShareAllyVisibility = true;
 bool UseGlyphXStartLocations = true;
@@ -920,10 +932,22 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
     }
 
     memset(TF_AILobbySlotByHouse, 0, sizeof(TF_AILobbySlotByHouse));
+    TF_LobbyAIRosterMask = 0;
 
     int humans = 0;
     for (int i = 0; i < num_players; i++) {
         CNCPlayerInfoStruct& player_info = player_list[i];
+
+        // Roster mask for the RAM scan: which AIPLAYERn names this lobby actually
+        // contains (client AI numbering persists across lobbies, so n rarely starts
+        // at 1 after the first lobby of a session).
+        if (player_info.IsAI) {
+            int roster_n = 0;
+            if (sscanf(player_info.Name, "AIPLAYER%d", &roster_n) == 1 && roster_n >= 1
+                && roster_n <= TF_LOBBY_MAX_AI_SLOTS) {
+                TF_LobbyAIRosterMask |= (1u << roster_n);
+            }
+        }
 
         NodeNameType* who = new NodeNameType;
         strncpy(who->Name, player_info.Name, MPLAYER_NAME_MAX);
@@ -2297,28 +2321,39 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save,
 **	difficulty source. Full design: docs/lobby-difficulty-ram-spike.md.
 */
 
-#define TF_LOBBY_MAX_AI_SLOTS 8
-#define TF_LOBBY_RECORD_STRIDE 0xA8
-#define TF_LOBBY_OFF_SLOT 0x50
-#define TF_LOBBY_OFF_DIFF 0x64
-#define TF_LOBBY_OFF_SLOT2 0x68
-
 /*
 **	Validates a prospective record array (`len` bytes already read into `rec`) and fills
-**	diff_by_slot[1..] with each valid slot's difficulty. Returns how many consecutive
-**	records validate starting from AIPLAYER1; 0 means this is not the array.
+**	diff_by_n[] keyed by each record's own AIPLAYERn number. Records must be exactly
+**	"AIPLAYER<n>" at the record stride with strictly ascending n and an in-range
+**	difficulty. The +0x50/+0x68 slot ints are logged (PHASEB-CAND) but only checked for
+**	self-consistency: with persistent AI names it is unproven whether they renumber
+**	positionally, so name n is the key. Returns validated record count; found_mask gets
+**	bit n per validated record.
 */
-static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* diff_by_slot)
+static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* diff_by_n, unsigned* found_mask)
 {
     int count = 0;
+    int prev_n = 0;
+    *found_mask = 0;
     for (int k = 0; k < TF_LOBBY_MAX_AI_SLOTS; k++) {
         SIZE_T base = (SIZE_T)k * TF_LOBBY_RECORD_STRIDE;
         if (base + TF_LOBBY_RECORD_STRIDE > len) {
             break;
         }
         const unsigned char* r = rec + base;
+        char name[16];
+        memcpy(name, r, sizeof(name) - 1);
+        name[sizeof(name) - 1] = 0;
+        int n = 0;
+        char tail = 0;
+        if (sscanf(name, "AIPLAYER%d%c", &n, &tail) != 1) {
+            break;
+        }
+        if (n < 1 || n > TF_LOBBY_MAX_AI_SLOTS || n <= prev_n) {
+            break;
+        }
         char expected[16];
-        int name_len = snprintf(expected, sizeof(expected), "AIPLAYER%d", k + 1);
+        int name_len = snprintf(expected, sizeof(expected), "AIPLAYER%d", n);
         if (memcmp(r, expected, name_len + 1) != 0) {
             break;
         }
@@ -2326,10 +2361,12 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
         memcpy(&slot, r + TF_LOBBY_OFF_SLOT, sizeof(slot));
         memcpy(&diff, r + TF_LOBBY_OFF_DIFF, sizeof(diff));
         memcpy(&slot2, r + TF_LOBBY_OFF_SLOT2, sizeof(slot2));
-        if (slot != k + 1 || slot2 != k + 1 || diff < 1 || diff > 3) {
+        if (slot != slot2 || diff < 1 || diff > 3) {
             break;
         }
-        diff_by_slot[k + 1] = diff;
+        diff_by_n[n] = diff;
+        *found_mask |= (1u << n);
+        prev_n = n;
         count++;
     }
     return count;
@@ -2347,7 +2384,19 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                                                  unsigned char* scratch,
                                                  SIZE_T scratch_size)
 {
-    const SIZE_T sig_len = 10; // "AIPLAYER1" + NUL
+    // Anchor on the current roster's lowest-numbered AI name: an array holding the
+    // roster can start there, or hold it mid-array (a stale wider array from an
+    // earlier lobby edit) -- both produce a signature hit and get validated.
+    unsigned roster = TF_LobbyAIRosterMask;
+    if (roster == 0) {
+        return;
+    }
+    int anchor_n = 1;
+    while ((roster & (1u << anchor_n)) == 0 && anchor_n < TF_LOBBY_MAX_AI_SLOTS) {
+        anchor_n++;
+    }
+    char sig[16];
+    SIZE_T sig_len = (SIZE_T)snprintf(sig, sizeof(sig), "AIPLAYER%d", anchor_n) + 1; // include NUL
     const SIZE_T overlap = 16; // signature must not straddle a chunk boundary
     SIZE_T addr = 0;
     MEMORY_BASIC_INFORMATION mbi;
@@ -2370,7 +2419,7 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                     continue;
                 }
                 for (SIZE_T i = 0; i + sig_len <= got; i++) {
-                    if (memcmp(scratch + i, "AIPLAYER1\0", sig_len) != 0) {
+                    if (memcmp(scratch + i, sig, sig_len) != 0) {
                         continue;
                     }
                     // Candidate hit: re-read the full prospective array straight from
@@ -2382,15 +2431,58 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                         continue;
                     }
                     int cand[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
-                    int cand_count = TF_Validate_Lobby_Records(rec, rec_got, cand);
+                    unsigned cand_mask = 0;
+                    int cand_count = TF_Validate_Lobby_Records(rec, rec_got, cand, &cand_mask);
+#if TF_DEV_BUILD // PHASEB-CAND -- raw record dump per signature hit, validated or not.
+                    // Logs what the records actually hold (name, slot, diff, slot2 per
+                    // stride) so the MP record shape and stale-array churn are visible.
+                    {
+                        FILE* _tfdbg = TF_AI_Diag_File();
+                        if (_tfdbg != NULL) {
+                            fprintf(_tfdbg, "PHASEB-CAND @%08lx", (unsigned long)(region_base + off + i));
+                            for (int k = 0; k < 8; k++) {
+                                if ((SIZE_T)(k + 1) * TF_LOBBY_RECORD_STRIDE > rec_got) {
+                                    break;
+                                }
+                                const unsigned char* r = rec + (SIZE_T)k * TF_LOBBY_RECORD_STRIDE;
+                                char name[16];
+                                memcpy(name, r, sizeof(name) - 1);
+                                name[sizeof(name) - 1] = 0;
+                                for (char* c = name; *c; c++) {
+                                    if (*c < 32 || *c > 126) {
+                                        *c = '?';
+                                    }
+                                }
+                                int slot, dif, slot2;
+                                memcpy(&slot, r + TF_LOBBY_OFF_SLOT, sizeof(slot));
+                                memcpy(&dif, r + TF_LOBBY_OFF_DIFF, sizeof(dif));
+                                memcpy(&slot2, r + TF_LOBBY_OFF_SLOT2, sizeof(slot2));
+                                fprintf(_tfdbg, " [%d]'%s' s=%d d=%d s2=%d;", k, name, slot, dif, slot2);
+                            }
+                            fprintf(_tfdbg, " valid=%d mask=%03x roster=%03x\n", cand_count, cand_mask, TF_LobbyAIRosterMask);
+                            fflush(_tfdbg);
+                        }
+                    }
+#endif
                     if (cand_count <= 0) {
                         continue;
                     }
+                    // A voting candidate must cover the whole roster; partial or stale
+                    // fragments are logged above but don't participate.
+                    if ((cand_mask & TF_LobbyAIRosterMask) != TF_LobbyAIRosterMask) {
+                        continue;
+                    }
+                    // Agreement is judged on the roster's slots only -- non-roster
+                    // leftovers in a wider array carry no signal.
                     if (*best_count == 0) {
-                        memcpy(best, cand, sizeof(cand));
+                        memcpy(best, cand, (TF_LOBBY_MAX_AI_SLOTS + 1) * sizeof(int));
                         *best_count = cand_count;
-                    } else if (*best_count != cand_count || memcmp(best, cand, sizeof(cand)) != 0) {
-                        *ambiguous = true;
+                    } else {
+                        for (int n = 1; n <= TF_LOBBY_MAX_AI_SLOTS; n++) {
+                            if ((TF_LobbyAIRosterMask & (1u << n)) && best[n] != cand[n]) {
+                                *ambiguous = true;
+                            }
+                        }
                     }
                 }
             }
@@ -2442,10 +2534,14 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
     if (ambiguous || best_count <= 0) {
         return 0;
     }
+    int roster_read = 0;
     for (int s = 1; s <= TF_LOBBY_MAX_AI_SLOTS; s++) {
         diff_by_slot[s] = best[s];
+        if (TF_LobbyAIRosterMask & (1u << s)) {
+            roster_read++;
+        }
     }
-    return best_count;
+    return roster_read;
 }
 
 /**************************************************************************************************
@@ -2619,8 +2715,10 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
                     : tf_diff_source == 'm' ? "default-hard (MP determinism guard: 2+ humans)"
                                             : "default-hard (client value ignored)",
                     slots_read);
-            for (int s = 1; s <= slots_read; s++) {
-                fprintf(f, " s%d=%d", s, slot_diff[s]);
+            for (int s = 1; s <= TF_LOBBY_MAX_AI_SLOTS; s++) {
+                if (slot_diff[s] != 0) {
+                    fprintf(f, " s%d=%d", s, slot_diff[s]);
+                }
             }
             fprintf(f, " (AI houses retro-applied)\n");
             // Phase-B recon line: with 2+ humans the scan result above was NOT
@@ -2628,9 +2726,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
             // identical lines on every peer = the client mirrors the host's
             // lobby records = per-slot MP difficulty needs no broadcast.
             if (TF_HumanPlayerCount >= 2) {
-                fprintf(f, "PHASEB-RECON ram_slots=%d", slots_read);
+                fprintf(f, "PHASEB-RECON roster=%03x ram_slots=%d", TF_LobbyAIRosterMask, slots_read);
                 for (int s = 1; s <= TF_LOBBY_MAX_AI_SLOTS; s++) {
-                    fprintf(f, " s%d=%d", s, slot_diff[s]);
+                    if ((TF_LobbyAIRosterMask & (1u << s)) || slot_diff[s] != 0) {
+                        fprintf(f, " s%d=%d", s, slot_diff[s]);
+                    }
                 }
                 fprintf(f, " (log-only, guard kept per-slot unapplied)\n");
             }
