@@ -1935,9 +1935,9 @@ int CellClass::Reduce_Wall(int damage)
                     **	travellers.
                     */
                     if (wall.IsCrushable) {
-                        Map.Zone_Reset(MZONEF_NORMAL);
+                        Map.Zone_Reset(MZONEF_NORMAL | MZONEF_HOVER);
                     } else {
-                        Map.Zone_Reset(MZONEF_CRUSHER | MZONEF_NORMAL);
+                        Map.Zone_Reset(MZONEF_CRUSHER | MZONEF_NORMAL | MZONEF_HOVER);
                     }
                     return (true);
                 }

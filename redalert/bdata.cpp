@@ -1317,8 +1317,8 @@ static BuildingTypeClass const ClassObelisk(STRUCT_TDOBLI,
 // stealth-gen spec). Modeled verbatim on ClassGapGenerator.
 static BuildingTypeClass const ClassTdStealth(STRUCT_TDSTEALTH,
                       TXT_NONE,               // Display name token; rules.ini Name= overrides.
-                      "TDSTEAL",              // IniName (art aliases GAP tiles / Image=GAP).
-                      FACING_S,               // Foundation direction from center of building.
+                      "TDSTEAL",              // IniName (own TS NASTLH-derived art: TDSTEAL tileset).
+                      FACING_NONE,            // Foundation direction: NONE -> Target_Coord aims at the true center. (FACING_S, inherited from the GAP-clone era, made attackers aim one cell SOUTH -- the "tanks shoot the bib" bug on the 2x1 footprint.)
                       XYP_COORD(0, 0),        // Exit point for produced units.
                       REMAP_ALTERNATE,        // Sidebar remap logic.
                       0x0000,                 //	Vertical offset.
@@ -1338,10 +1338,10 @@ static BuildingTypeClass const ClassTdStealth(STRUCT_TDSTEALTH,
                       true,                   // Can the building be color remapped to indicate owner?
                       RTTI_NONE,              // The object type produced at this factory.
                       DIR_N,                  // Starting idle frame to match construction.
-                      BSIZE_12,               // SIZE: 1x2, same as the Gap Generator.
+                      BSIZE_21,               // SIZE: 2x1 silo-style (Luke's call; TS's 3x2 felt too fat).
                       NULL,                   // Preferred exit cell list.
-                      (short const*)List0010, // OCCUPYLIST:	List of active foundation squares.
-                      (short const*)List1     // OVERLAPLIST:List of overlap cell offset.
+                      (short const*)List21,   // OCCUPYLIST: both cells of the 2x1 strip (StoreList={0} left a phantom 1x1 footprint).
+                      (short const*)NULL      // OVERLAPLIST:List of overlap cell offset.
 );
 
 // Tiberian Factions mod: Nod Flame Bunker (STRUCT_TDFBNK). A Pillbox-chassis anti-infantry
@@ -1842,6 +1842,40 @@ static BuildingTypeClass const ClassTdGAfld(
     DIR_N, BSIZE_32,
     NULL,
     (short const*)List32, (short const*)NULL);
+
+// TS-spike -- Tiberian Sun GDI Power Plant (STRUCT_TSPOWR, TS rules [GAPOWR]).
+// Clone of ClassPower (same 2x2 static power building); art = the TS GTPOWR SHP
+// upscaled to an HD tileset (TSPOWR.ZIP/TSPOWRMAKE.ZIP). No classic SHP -- the
+// One_Time _td_bdonors block donors POWR's ImageData/BuildupData/construction anim.
+// Stats (Cost 300 / Power 100 / Strength 750 real, no TD-prefix doubling) in rules.ini.
+static BuildingTypeClass const ClassTsPowr(STRUCT_TSPOWR,
+                                           TXT_POWER,       // NAME: placeholder (rules.ini Name= overrides).
+                                           "TSPOWR",        // NAME: IniName (launcher tileset key).
+                                           FACING_S,        // Foundation direction from center of building.
+                                           XYP_COORD(0, 0), // Exit point for produced units.
+                                           REMAP_ALTERNATE, // Sidebar remap logic.
+                                           0x0000,          // Vertical offset.
+                                           0x0000,          // Primary weapon offset along turret centerline.
+                                           0x0000,          // Primary weapon lateral offset along turret centerline.
+                                           false,           // Is this building a fake (decoy?)
+                                           true,            // Animation rate is regulated for constant speed?
+                                           false,           // Always use the given name for the building?
+                                           false,           // Is this a wall type structure?
+                                           true,            // Simple (one frame) damage imagery?
+                                           false,           // Is it invisible to radar?
+                                           true,            // Can the player select this?
+                                           true,            // Is this a legal target for attack or move?
+                                           false,           // Is this an insignificant building?
+                                           false,           // Theater specific graphic image?
+                                           false,           // Does it have a rotating turret?
+                                           true,            // Can the building be color remapped to indicate owner?
+                                           RTTI_NONE,       // The object type produced at this factory.
+                                           DIR_N,           // Starting idle frame to match construction.
+                                           BSIZE_22,        // SIZE: Building size.
+                                           NULL,            // Preferred exit cell list.
+                                           (short const*)List22,     // OCCUPYLIST: List of active foundation squares.
+                                           (short const*)List22_1100 // OVERLAPLIST: List of overlap cell offset.
+);
 
 static BuildingTypeClass const ClassPower(STRUCT_POWER,
                                           TXT_POWER,       // NAME:			Short name of the structure.
@@ -3956,6 +3990,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdGAfld);   // STRUCT_TDGAFLD  (GDI Airfield)
     new BuildingTypeClass(ClassTdStealth); // STRUCT_TDSTEALTH (Nod Stealth Generator)
     new BuildingTypeClass(ClassFlameBunker); // STRUCT_TDFBNK (Nod Flame Bunker)
+    new BuildingTypeClass(ClassTsPowr);      // STRUCT_TSPOWR (TS-spike GDI Power Plant)
 }
 
 /***********************************************************************************************
@@ -4092,8 +4127,9 @@ void BuildingTypeClass::One_Time(void)
 #ifdef REMASTER_BUILD
         {STRUCT_TDGAFLD, BSTATE_IDLE, 0, 8, 3},
 #endif
-        // Nod Stealth Generator: same 32-frame idle cycle as the Gap Generator sprite.
-        {STRUCT_TDSTEALTH, BSTATE_IDLE, 0, 32, 3},
+        // Nod Stealth Generator: 16-frame TS NASTLH_A ring animation (composited into
+        // the TDSTEAL tileset; frames 16-31 are the damaged-state run).
+        {STRUCT_TDSTEALTH, BSTATE_IDLE, 0, 16, 3},
     };
 
     for (int sindex = STRUCT_FIRST; sindex < STRUCT_COUNT; sindex++) {
@@ -4262,6 +4298,8 @@ void BuildingTypeClass::One_Time(void)
             {STRUCT_TDGYARD, STRUCT_SHIP_YARD},
             {STRUCT_TDNPEN, STRUCT_SUB_PEN},
             {STRUCT_TDGAFLD, STRUCT_AIRSTRIP},
+            {STRUCT_TSPOWR, STRUCT_POWER}, // TS-spike power plant (HD-only TS art)
+            {STRUCT_TDSTEALTH, STRUCT_TDSILO}, // Stealth Generator: TS NASTLH art, 2x1 silo-shaped -> TDSILO's classic dims (48x24) + its full TDSILOMAKE construction anim
         };
         for (int di = 0; di < (int)(sizeof(_td_bdonors) / sizeof(_td_bdonors[0])); di++) {
             BuildingTypeClass& b = As_Reference(_td_bdonors[di].td);
@@ -4288,6 +4326,7 @@ void BuildingTypeClass::One_Time(void)
                         d.Anims[BSTATE_CONSTRUCTION].Count,
                         d.Anims[BSTATE_CONSTRUCTION].Rate);
         }
+
     }
 
     if (mod_log != NULL) {

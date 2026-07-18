@@ -1530,6 +1530,42 @@ UnitTypeClass* UnitTypeClass::As_Pointer(char const* name)
     return NULL;
 }
 
+// TS-spike -- Tiberian Sun Hover MLRS (UNIT_TSHVR), TS rules [HVR]. GDI-only.
+// Turreted (the rotating missile rack; TS Turret=yes) but light: NOT a crusher,
+// NOT gigundo. Explosion ANIM_FRAG1 (light-vehicle death, RA-native). Render
+// geometry starts from the 2TNK reference (vert 0x0030, primary 0x00C0) -- tune
+// against the voxel-rendered sprite by screenshot. Art is the first voxel-rendered
+// HD tileset (TSHVR.ZIP, 32 body + 32 turret frames); no classic SHP exists, so
+// One_Time donors 2TNK's ImageData. Fires WEAPON_TSHOVERMISSILE (TDSSM AA+AG chain).
+static UnitTypeClass const UnitTsHvr(UNIT_TSHVR,
+                                     TXT_LTANK,    // NAME: placeholder (RA has no Hover MLRS string; HD display via rules.ini Name=).
+                                     "TSHVR",      // NAME: IniName.
+                                     ANIM_FRAG1,   // EXPLOSION: light-vehicle frag (RA-native).
+                                     REMAP_NORMAL, // Sidebar remap logic.
+                                     0x0030,       // Vertical offset (render calibration, ref 2TNK).
+                                     0x0040,       // Primary weapon offset: small forward nudge from the rack (Fire_Coord shifts to the aft rack first).
+                                     0x0000,       // Primary weapon lateral offset.
+                                     0x0000,       // Secondary weapon offset (no secondary).
+                                     0x0000,       // Secondary weapon lateral offset.
+                                     true,         // Can this be a goodie surprise from a crate? (TS CrateGoodie=yes)
+                                     false,        // Always use the given name for the vehicle?
+                                     false,        // Can this unit squash infantry? (TS Crusher=no)
+                                     false,        // Does this unit harvest Tiberium?
+                                     false,        // Is invisible to radar?
+                                     false,        // Is it insignificant (won't be announced)?
+                                     true,         // Is it equipped with a combat turret? (TS Turret=yes)
+                                     false,        // Does it have a rotating radar dish?
+                                     false,        // Is there an associated firing animation?
+                                     false,        // Must the turret be in a locked down position while moving?
+                                     false,        // Is this a gigundo-rotund-enormous unit?
+                                     false,        // Does the unit have a constant animation?
+                                     false,        // Is the unit capable of jamming radar?
+                                     false,        // Is the unit a mobile gap generator?
+                                     32,           // Rotation stages.
+                                     0,            // Turret center offset along body centerline.
+                                     MISSION_HUNT  // ORDERS: Default order.
+);
+
 /***********************************************************************************************
  * UnitTypeClass::Init_Heap -- Initialize the unit type class heap.                            *
  *                                                                                             *
@@ -1596,6 +1632,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTdMsam);    // UNIT_TDMSAM
     new UnitTypeClass(UnitTdArty);    // UNIT_TDARTY
     new UnitTypeClass(UnitTdVice);    // UNIT_TDVICE
+    new UnitTypeClass(UnitTsHvr);     // UNIT_TSHVR (TS-spike Hover MLRS)
 }
 
 /***********************************************************************************************
@@ -1754,6 +1791,17 @@ void UnitTypeClass::One_Time(void)
         }
 
         ((int&)uclass.MaxSize) = max(largest, 8);
+    }
+
+    // TS-spike: TSHVR ships no classic SHP (HD-only, voxel-rendered tileset).
+    // A NULL ImageData makes Draw_It bail with width=height=0, so donor 2TNK's
+    // pointer; the launcher then renders the real TSHVR frames by IniName from
+    // RA_UNITS.XML (the same NULL-guard pattern as bdata's _td_bdonors block).
+    {
+        UnitTypeClass& hvr = As_Reference(UNIT_TSHVR);
+        if (hvr.ImageData == NULL) {
+            ((void const*&)hvr.ImageData) = As_Reference(UNIT_MTANK2).ImageData;
+        }
     }
 
     /*
@@ -1953,6 +2001,27 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
         y += _adjust[index].Y;
         break;
 
+    case UNIT_TSHVR: { // TS Hover MLRS: rack rides aft on the long hover platform.
+                       // Geometric seat (the naval turret pattern): push straight
+                       // rearward along the hull axis with tilt compensation --
+                       // consistent at every facing, unlike the MSAM hand table
+                       // (whose lateral components suit the classic chassis only).
+        // Precomputed aft push (ground distance 18) projected with the voxel render
+        // camera's own foreshortening (13/16 vertical), so the seat is identical
+        // relative to the hull at all 32 facings. (Normal_Move_Point's classic
+        // vertical halving overshot E/W relative to N/S against this art.)
+        static const signed char _aft_x[32] = {0,  -2, -3, -5, -6, -7, -8, -9, -9, -9, -8,
+                                               -7, -6, -5, -3, -2, 0,  2,  3,  5,  6,  7,
+                                               8,  9,  9,  9,  8,  7,  6,  5,  3,  2};
+        static const signed char _aft_y[32] = {7,  7,  7,  6,  5,  4,  3,  1,  0,  -1, -3,
+                                               -4, -5, -6, -7, -7, -7, -7, -7, -6, -5, -4,
+                                               -3, -1, 0,  1,  3,  4,  5,  6,  7,  7};
+        index = Dir_To_32(dir);
+        x += _aft_x[index];
+        y += _aft_y[index];
+        break;
+    }
+
     default:
         break;
     }
@@ -1978,6 +2047,11 @@ bool UnitTypeClass::Read_INI(CCINIClass& ini)
     if (TechnoTypeClass::Read_INI(ini)) {
         IsNoFireWhileMoving = ini.Get_Bool(IniName, "NoMovingFire", IsNoFireWhileMoving);
         Speed = ini.Get_Bool(IniName, "Tracked", (Speed == SPEED_TRACK)) ? SPEED_TRACK : SPEED_WHEEL;
+        // TS-spike: Hover=yes overrides the binary Tracked choice with the amphibious
+        // hover locomotor (land + water passability from the ground table's Hover= row).
+        if (ini.Get_Bool(IniName, "Hover", (Speed == SPEED_HOVER))) {
+            Speed = SPEED_HOVER;
+        }
 
         /*
         **  Logic=<vanilla-IniName> aliases this entry's runtime Type discriminant

@@ -644,6 +644,7 @@ typedef enum MZoneType : unsigned char
     MZONE_CRUSHER,   // Can crush crushable wall types.
     MZONE_DESTROYER, // Can destroy walls.
     MZONE_WATER,     //	Water based objects.
+    MZONE_HOVER,     // Hover objects (TS-spike): flood-filled with SPEED_HOVER passability, so one zone spans land AND water. NOTE: grows CellClass::Zones[] — breaks old skirmish saves (accepted, same as any enum addition).
 
     MZONE_COUNT,
     MZONE_FIRST = 0
@@ -653,7 +654,8 @@ typedef enum MZoneType : unsigned char
 #define MZONEF_CRUSHER   (1 << MZONE_CRUSHER)
 #define MZONEF_DESTROYER (1 << MZONE_DESTROYER)
 #define MZONEF_WATER     (1 << MZONE_WATER)
-#define MZONEF_ALL       (MZONEF_NORMAL | MZONEF_CRUSHER | MZONEF_DESTROYER | MZONEF_WATER)
+#define MZONEF_HOVER     (1 << MZONE_HOVER)
+#define MZONEF_ALL       (MZONEF_NORMAL | MZONEF_CRUSHER | MZONEF_DESTROYER | MZONEF_WATER | MZONEF_HOVER)
 
 /**********************************************************************
 **	This records the current state of the computer controlled base. The
@@ -1545,6 +1547,7 @@ typedef enum StructType : char
     STRUCT_TDGAFLD,   // GDI Airfield (clone of AFLD, Owner=GoodGuy, RTTI_AIRCRAFTTYPE) — A-10.
     STRUCT_TDSTEALTH, // Nod Stealth Generator (reuses GAP sprite; cloaks friendly buildings+units in radius). bdata.cpp / building.cpp driver.
     STRUCT_TDFBNK,    // Nod Flame Bunker (clone of PBOX, Owner=BadGuy) — anti-infantry TDFire flame weapon (range 4). bdata.cpp ClassFlameBunker.
+    STRUCT_TSPOWR,    // TS-spike: Tiberian Sun GDI Power Plant (GAPOWR art) — clone of ClassPower (2x2, Power in rules.ini). HD-only art from the TS SHP; POWR donor ImageData/BuildupData.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0
@@ -1776,6 +1779,7 @@ typedef enum UnitType : char
     UNIT_TDMSAM,            // TD SSM Launcher (MSAM, "S.S.M. Launcher") — Nod-only, Temple-gated, turret + lock-while-moving, fires TDHonestJohn (BULLET_TDMISSILE, non-homing, range 10, fire warhead). Uses the MLRS sprite (TD cross-wiring). udata.cpp:477.
     UNIT_TDARTY,            // TD Artillery (ARTY, "Nod Artillery") — Nod-only, no prereq (build level 6), turret-less (body aims, slow ROT 2), fires TD155mm (BULLET_TDHESHELL arcing, dmg 150). udata.cpp UnitArty.
     UNIT_TDVICE,            // TD Visceroid (VICE) — tiberium creature, NOT buildable; spawns when infantry die in tiberium. Tracked, turret-less, squashes infantry, constant anim, WEAPON_TDCHEM spray, ARMOR_WOOD, STR 150, MISSION_HUNT. HEALS on tiberium. udata.cpp UnitVisceroid.
+    UNIT_TSHVR,             // TS-spike: Tiberian Sun Hover MLRS (HVR) — GDI, turreted missile rack, fires TSHoverMissile (TDSSM AA+AG chain). Art = voxel-rendered HD tileset (tools/ts_extract.py + vxl_render.py pipeline); no classic SHP (2TNK donor ImageData).
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -3325,6 +3329,7 @@ typedef enum WeaponType : char
     WEAPON_TDOBELISKSUBLASER, // v4.0: Nod Obelisk Attack Sub — TDLaser bolt (clone of the Obelisk's TDOblsLaser, NO Charges since a vessel can't building-charge), short range + slow ROF + high dmg. Registered "TDObeliskSubLaser".
     WEAPON_TDA10NAPALM,    // v4.0: A-10 napalm strafe — TD WEAPON_NAPALM verbatim (Dmg100/ROF20/Range4.5=0x0480, VOC_NONE), BULLET_TDNAPALM. Registered "TDA10Napalm".
     WEAPON_TDFLAMEBUNKER,  // v4.0: Nod Flame Bunker (TDFBNK) — clone of TDFlameTongue with Range 2->4 (static defence must outrange range-3 infantry). BULLET_TDFLAME/WARHEAD_TDFIRE reused. IsTDPort (raw Speed 40). Registered "TDFlameBunker".
+    WEAPON_TSHOVERMISSILE, // TS-spike: Hover MLRS missile — TS [HoverMissile] stats (Dmg30/ROF68/Range8/Burst2) on the TDSSM AA+AG homing chain (TDTusk pattern). IsTDPort (raw Speed). Registered "TSHoverMissile".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -3732,6 +3737,7 @@ typedef enum SpeedType : char
     SPEED_WHEEL,  // Balloon tires.
     SPEED_WINGED, // Lifter's, 'thopters, and rockets.
     SPEED_FLOAT,  // Ships.
+    SPEED_HOVER,  // Hover craft (TS-spike): amphibious ground locomotor — passable on land AND water, blocked by rock/wall. TD had this slot; RA dropped it. Appended so existing indices keep their values.
 
     SPEED_COUNT,
     SPEED_FIRST = SPEED_FOOT
@@ -3973,6 +3979,7 @@ typedef enum VocType : short
     VOC_TD_MGUN11,       // TD heavy machine gun (MGUN11) — WEAPON_TDM60MG Report= (Hum-vee/Buggy); routed via RAC/RAR_SFX_MGUN11
     VOC_TD_CLOAK,        // TD Stealth Tank cloak/decloak (TRANS1) — TD VOC_CLOAK; played by Do_Cloak/Do_Uncloak for TD-prefix units instead of RA's VOC_IRON1. Routed via RAC/RAR_SFX_TRANS1.
     VOC_TD_TANK1,        // TD Artillery 155mm fire (TNKFIRE2) — WEAPON_TD155MM Report= (VOC_TANK1 "sharp tank fire with recoil"). Routed via RAC/RAR_SFX_TNKFIRE2.
+    VOC_TS_HOVRMIS1,     // TS Hover MLRS missile launch (HOVRMIS1, decoded from TS SOUNDS.MIX AUD) — WEAPON_TSHOVERMISSILE Report=. Routed via RAC/RAR_SFX_HOVRMIS1 + bundled TSHOVRMIS1.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0

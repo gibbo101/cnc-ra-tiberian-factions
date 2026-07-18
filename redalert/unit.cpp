@@ -2628,6 +2628,19 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
     DirType rotation = DIR_N;
     int scale = 0x0100;
 
+    // (TS-spike note: TSHVR's on-screen size comes from its 64x64 classic stub SHP
+    // in TFASSETS.MIX -- a real classic-dims bump, so the health bar / selection box
+    // scale too. The earlier draw-scale hack sheared the turret off its hull because
+    // scale is applied about the ground anchor per-draw; keep scale at 1.0.)
+    //
+    // Hover bob (TS-authentic): the hull gently rides up and down over its baked
+    // drop shadow. Applied to y before both hull and turret draw (turret copies y),
+    // so the rack rides with the hull.
+    if (Class->Type == UNIT_TSHVR) {
+        static const int _hover_bob[8] = {0, -1, -2, -2, -1, 0, 1, 1};
+        y += _hover_bob[(Frame >> 2) & 7];
+    }
+
     /*
     **	Verify the legality of the unit class.
     */
@@ -2715,8 +2728,9 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
 
             /*
             **	Actually perform the draw. Overlay an optional shimmer effect as necessary.
+            **	(Pass the body's draw scale so a scaled unit's turret matches its hull.)
             */
-            Techno_Draw_Object(shapefile, shapenum, xx, yy, window);
+            Techno_Draw_Object(shapefile, shapenum, xx, yy, window, rotation, scale);
         }
     }
 

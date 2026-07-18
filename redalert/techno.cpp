@@ -331,8 +331,13 @@ bool TechnoClass::Can_Teleport_Here(CELL cell) const
     **	cell is impassable, then it can't be teleported there.
     */
     TechnoTypeClass const* ttype = Techno_Type_Class();
-    if (!Map[cell].Is_Clear_To_Move(
-            ttype->Speed, true, true, -1, ttype->Speed == SPEED_FLOAT ? MZONE_WATER : MZONE_NORMAL)) {
+    if (!Map[cell].Is_Clear_To_Move(ttype->Speed,
+                                    true,
+                                    true,
+                                    -1,
+                                    ttype->Speed == SPEED_FLOAT
+                                        ? MZONE_WATER
+                                        : (ttype->Speed == SPEED_HOVER ? MZONE_HOVER : MZONE_NORMAL))) {
         return (false);
     }
 
@@ -563,6 +568,17 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
     */
     COORDINATE coord = Coord_Move(Center_Coord(), DIR_N, tclass->VerticalOffset + Height);
     coord = Coord_Move(coord, DIR_E, tclass->HorizontalOffset);
+
+    /*
+    **  Tiberian Factions -- TS Hover MLRS: the rack is drawn aft of the hull centre
+    **  (the draw-side Turret_Adjust seat). Launch rockets from the rack, not the
+    **  hull centre: apply the same ground offset along the BODY facing before the
+    **  turret-relative muzzle offsets. 0x0060 leptons ~= the draw table's seat.
+    */
+    if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_TSHVR) {
+        coord = Coord_Move(coord, (DirType)(PrimaryFacing.Current() + DIR_S), 0x0060);
+    }
+
     if (IsSecondShot) {
         coord = Coord_Move(coord, (DirType)(dir + DIR_E), lateral);
     } else {
@@ -7873,6 +7889,11 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             }
             if (Speed == SPEED_FLOAT) {
                 MZone = MZONE_WATER;
+            }
+            // TS-spike: hover units use the land+water spanning zone map so
+            // cross-shoreline move orders / targeting / AI pass the zone gates.
+            if (Speed == SPEED_HOVER) {
+                MZone = MZONE_HOVER;
             }
 
             return (true);

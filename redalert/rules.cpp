@@ -741,6 +741,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDObeliskSubLaser"); // WEAPON_TDOBELISKSUBLASER (v4.0 Nod Obelisk Sub laser -- clone of TDOblsLaser, tunable independently)
     new WeaponTypeClass("TDA10Napalm");  // WEAPON_TDA10NAPALM (v4.0 A-10 strafe -- TD WEAPON_NAPALM verbatim, BULLET_TDNAPALM)
     new WeaponTypeClass("TDFlameBunker"); // WEAPON_TDFLAMEBUNKER (v4.0 Nod Flame Bunker TDFBNK -- TDFlameTongue clone, Range 4; IsTDPort raw Speed)
+    new WeaponTypeClass("TSHoverMissile"); // WEAPON_TSHOVERMISSILE (TS-spike Hover MLRS -- TS [HoverMissile] stats on the TDSSM homing chain)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -798,6 +799,9 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // TDHonestJohn (SSM Launcher MSAM): TD WEAPON_HONEST_JOHN -- a fast, NON-homing, long-range (10)
     // napalm rocket firing BULLET_TDMISSILE. IsTDPort for raw Speed (MPH_FAST) + the AI_TD flight path.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TDHonestJohn"))->IsTDPort = true;
+    // TSHoverMissile (TS-spike Hover MLRS): TS [HoverMissile] stats fired through the TDSSM
+    // AA+AG homing missile (the TDTusk pattern). IsTDPort for raw Speed + AI_TD homing dispatch.
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TSHoverMissile"))->IsTDPort = true;
     // TD155mm (Artillery ARTY): TD WEAPON_155MM -- a high-damage (150) arcing HE bombardment shell
     // firing BULLET_TDHESHELL. IsTDPort for raw Speed (MPH_MEDIUM_FAST) + the AI_TD arc path.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TD155mm"))->IsTDPort = true;
@@ -957,6 +961,8 @@ bool RulesClass::Land_Types(CCINIClass& ini)
             gptr->Cost[SPEED_WHEEL] = ini.Get_Fixed(_lands[land], "Wheel", 1);
             gptr->Cost[SPEED_WINGED] = fixed(1);
             gptr->Cost[SPEED_FLOAT] = ini.Get_Fixed(_lands[land], "Float", 1);
+            // TS-spike hover locomotor: amphibious; rules.ini gives [Rock]/[Wall] Hover=0.
+            gptr->Cost[SPEED_HOVER] = ini.Get_Fixed(_lands[land], "Hover", 1);
             gptr->Build = ini.Get_Bool(_lands[land], "Buildable", false);
         }
     }

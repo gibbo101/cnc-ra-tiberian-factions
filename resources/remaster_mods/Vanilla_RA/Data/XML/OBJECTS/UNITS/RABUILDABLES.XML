@@ -1788,7 +1788,7 @@
 			<CNCEncyclopediaComponent>
 				<ObjectNameTextID>TEXT_STRUCTURE_TDSTEAL</ObjectNameTextID>
 				<ObjectDescriptionTextID>TEXT_STRUCTURE_TDSTEAL_DESC</ObjectDescriptionTextID>
-				<BuildIcon>BuildIcon_RA_GapGenerator</BuildIcon>
+				<BuildIcon>BuildIcon_TS_StealthGen</BuildIcon>
 			</CNCEncyclopediaComponent>
 		</ObjectTypeClass>
 
@@ -1839,6 +1839,21 @@
 			<ObjectNameTextID>TEXT_UNIT_TDMSUB</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TDMSUB</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_RA_MissileSub</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSHVR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSHVR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSHVR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_HoverMLRS</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSPOWR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPOWR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPOWR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_PowerPlant</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

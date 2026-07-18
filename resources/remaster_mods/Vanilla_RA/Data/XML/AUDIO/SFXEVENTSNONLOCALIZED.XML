@@ -6468,6 +6468,29 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     </SampleNamesList>
   </SFXEvent>
 
+
+  <!-- TS Hover MLRS missile launch (TSHVR, WEAPON_TSHOVERMISSILE Report=HOVRMIS1).
+       The launcher can only resolve SFXEvent samples that exist in its audio MEGs
+       (a novel loose sample name CRASHED ClientG in SOUND_EFFECT_EVENT, 2026-07-18);
+       loose Data/AUDIO WAVs can only OVERRIDE same-named MEG samples. So both events
+       reference TDR_SFX_BONUS_UNLOCK.WAV (the TD bonus-gallery jingle, never fired
+       in RA context) and Data/AUDIO ships our TS HOVRMIS1 decode under that name. -->
+  <SFXEvent Name="RAC_SFX_HOVRMIS1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_BONUS_UNLOCK.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_HOVRMIS1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_BONUS_UNLOCK.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
 </SFXEvents>
 
 

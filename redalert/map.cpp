@@ -1816,6 +1816,9 @@ bool MapClass::Zone_Reset(int method)
         if (method & MZONEF_WATER) {
             Array[index].Zones[MZONE_WATER] = 0;
         }
+        if (method & MZONEF_HOVER) {
+            Array[index].Zones[MZONE_HOVER] = 0;
+        }
     }
 
     /*
@@ -1861,6 +1864,18 @@ bool MapClass::Zone_Reset(int method)
         int zone = 1; // Starting zone number.
         for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
             if (Zone_Span(cell, zone, MZONE_WATER)) {
+                zone++;
+            }
+        }
+    }
+
+    /*
+    **	Hover zone recalculation (TS-spike): spans land AND water in one zone.
+    */
+    if (method & MZONEF_HOVER) {
+        int zone = 1; // Starting zone number.
+        for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
+            if (Zone_Span(cell, zone, MZONE_HOVER)) {
                 zone++;
             }
         }
@@ -1914,7 +1929,9 @@ int MapClass::Zone_Span(CELL cell, int zone, MZoneType check)
     for (; xbegin >= MapCellX; xbegin--) {
         CellClass* cellptr = &(*this)[XY_Cell(xbegin, y)];
         if (cellptr->Zones[check] != 0
-            || (!cellptr->Is_Clear_To_Move(check == MZONE_WATER ? SPEED_FLOAT : SPEED_TRACK, true, true, -1, check))) {
+            || (!cellptr->Is_Clear_To_Move(check == MZONE_WATER ? SPEED_FLOAT
+                                      : (check == MZONE_HOVER ? SPEED_HOVER : SPEED_TRACK),
+                 true, true, -1, check))) {
 
             /*
             **	Special short circuit code to bail from this entire routine if
@@ -1941,7 +1958,9 @@ int MapClass::Zone_Span(CELL cell, int zone, MZoneType check)
     for (; xend < MapCellX + MapCellWidth; xend++) {
         CellClass* cellptr = &(*this)[XY_Cell(xend, y)];
         if (cellptr->Zones[check] != 0
-            || (!cellptr->Is_Clear_To_Move(check == MZONE_WATER ? SPEED_FLOAT : SPEED_TRACK, true, true, -1, check))) {
+            || (!cellptr->Is_Clear_To_Move(check == MZONE_WATER ? SPEED_FLOAT
+                                      : (check == MZONE_HOVER ? SPEED_HOVER : SPEED_TRACK),
+                 true, true, -1, check))) {
             xend--;
             break;
         }

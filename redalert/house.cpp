@@ -5090,9 +5090,9 @@ void HouseClass::Sell_Wall(CELL cell)
                     Detach_This_From_All(::As_Target(cell), true);
 
                     if (optr.IsCrushable) {
-                        Map.Zone_Reset(MZONEF_NORMAL);
+                        Map.Zone_Reset(MZONEF_NORMAL | MZONEF_HOVER);
                     } else {
-                        Map.Zone_Reset(MZONEF_CRUSHER | MZONEF_NORMAL);
+                        Map.Zone_Reset(MZONEF_CRUSHER | MZONEF_NORMAL | MZONEF_HOVER);
                     }
                 }
             }

@@ -220,6 +220,13 @@ if [[ -f "$DESERT_MIX" ]]; then
     done
 fi
 
+# TS-spike -- TSHVR (Hover MLRS) classic stub. HD-only unit (voxel-rendered
+# tileset, no classic art); this 64x64 transparent stub declares its classic
+# dimensions so the launcher sizes the sprite, health bar and selection box
+# for a large platform (vs the 48x48 tank default a donor ImageData gives).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tshvr_stub.shp" 48 48 64
+PACK_ARGS+=("$TMPDIR/tshvr_stub.shp:TSHVR.SHP")
+
 # Repack into TFASSETS.MIX with TD-prefix renames.
 python3 scripts/mix_tools.py pack "$OUTMIX" "${PACK_ARGS[@]}"
 echo "TFASSETS.MIX rebuilt with ${#ENTRIES[@]} entries -> $OUTMIX"

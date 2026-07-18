@@ -289,6 +289,7 @@ struct SoundEffectNameStruct
     {"MGUN11", 1, IN_NOVAR},      // VOC_TD_MGUN11 — TD heavy machine gun (WEAPON_TDM60MG Report=MGUN11, Hum-vee/Buggy), routed via RAC/RAR_SFX_MGUN11
     {"TRANS1", 1, IN_NOVAR},      // VOC_TD_CLOAK — TD Stealth Tank cloak/decloak (TD VOC_CLOAK = file TRANS1), routed via RAC/RAR_SFX_TRANS1
     {"TNKFIRE2", 1, IN_NOVAR},    // VOC_TD_TANK1 — TD Artillery 155mm fire (WEAPON_TD155MM Report=TNKFIRE2; TD VOC_TANK1), routed via RAC/RAR_SFX_TNKFIRE2
+    {"HOVRMIS1", 1, IN_NOVAR},    // VOC_TS_HOVRMIS1 — TS Hover MLRS missile launch (WEAPON_TSHOVERMISSILE Report=HOVRMIS1), routed via RAC/RAR_SFX_HOVRMIS1 (bundled WAV)
 };
 
 //

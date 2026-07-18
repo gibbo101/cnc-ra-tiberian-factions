@@ -574,7 +574,7 @@ void TerrainClass::AI(void)
         if (IsCrumbling && Fetch_Stage() == Get_Build_Frame_Count(Class->Get_Image_Data()) - 1) {
             delete this;
 
-            Map.Zone_Reset(MZONEF_NORMAL | MZONEF_CRUSHER | MZONEF_DESTROYER);
+            Map.Zone_Reset(MZONEF_NORMAL | MZONEF_CRUSHER | MZONEF_DESTROYER | MZONEF_HOVER);
         }
     }
 }

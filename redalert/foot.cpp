@@ -633,8 +633,11 @@ int FootClass::Mission_Guard(void)
     **	If this unit is on an impassable cell for any reason, it needs to scatter immediately
     */
     if (What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_UNIT) {
+        // Impassability is per-locomotor, not per-land-type: ask the ground
+        // table so an amphibious (hover) unit may legally idle on water while
+        // a tracked unit stranded there still scatters to safety.
         LandType land = Map[Coord].Land_Type();
-        if (!Target_Legal(NavCom) && (land == LAND_ROCK || land == LAND_WATER || land == LAND_RIVER)) {
+        if (!Target_Legal(NavCom) && ::Ground[land].Cost[Techno_Type_Class()->Speed] == 0) {
             Scatter(0, true, true);
             Shorten_Mission_Timer();
         }
@@ -1041,8 +1044,11 @@ int FootClass::Mission_Guard_Area(void)
     **	If this unit is on an impassable cell for any reason, it needs to scatter immediately
     */
     if (What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_UNIT) {
+        // Impassability is per-locomotor, not per-land-type: ask the ground
+        // table so an amphibious (hover) unit may legally idle on water while
+        // a tracked unit stranded there still scatters to safety.
         LandType land = Map[Coord].Land_Type();
-        if (!Target_Legal(NavCom) && (land == LAND_ROCK || land == LAND_WATER || land == LAND_RIVER)) {
+        if (!Target_Legal(NavCom) && ::Ground[land].Cost[Techno_Type_Class()->Speed] == 0) {
             Scatter(0, true, true);
             Shorten_Mission_Timer();
         }
