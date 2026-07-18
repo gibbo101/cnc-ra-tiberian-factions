@@ -328,6 +328,25 @@ undiscovered high-severity gates (audit 2026-07-17).
   (a) the client sends CNC_Set_Difficulty in skirmish (grep MOD_DEBUG_AI.txt for it,
   else Hard/Easy tiers never engage and everything runs vanilla-MaxIQ), (b) AI still
   finds + attacks the enemy under fair fog, (c) no early-game stall.
+  **STATUS 2026-07-18: MERGED to main + LIVE-VERIFIED (desktop session; commit `e01bc35`).**
+  Verification answers: (a) MEASURED FALSE-ish — the client calls CNC_Set_Difficulty(1)
+  unconditionally (5 lobbies: mixed / all-Easy x2 / all-Hard / campaign-option-Hard all
+  sent 1; slot dump proves no per-slot channel in the structs). W7 input lever is now
+  `Documents/CnCRemastered/tf_ai_difficulty.txt` (easy|normal|hard, re-read per match;
+  absent = hard/MaxIQ = shipped v4.0 strength; release feature, NOT dev-gated) — both
+  paths live-verified. (b)+(c) FAILED as designed, FIXED same-session: fair fog produced
+  a four-way turtle (AI_Attack shuffles 67% of calls and was the only hunter source →
+  blind house never scouts → never discovers → never attacks). Fix: Expert_AI blind-scout
+  dispatcher — while a house knows no enemy building it keeps a 2-unit scout detail on
+  MISSION_HUNT (MCV/harvester excluded); Mission_Hunt probe routes them. Live-verified:
+  all four AIs scouting by ~F2500, real waves post-contact, player-confirmed fighting.
+  W1.2 residual sharpened by the session: zero blind probes ever fired — enemy UNITS
+  appear evaluable from match start (verify the mask seeding; buildings fog correctly).
+  Temple-starvation mechanism also confirmed live at the pool level: winner = first
+  candidate at max urgency in scan order (TDTMPL 0 wins in ~40k frames; TDOBLI won only
+  once its scan predecessors left the pool) — general tie-break rotation is the fix,
+  still to implement. See todo.md Phase 1 block for the full open-follow-ups list
+  (per-slot settings-file long-shot, APWR loop observation, diag-log rotation).
 - **Phase 2 (the enabler):** W2 faction separation + buildability (big, independent of 0/1 —
   can run in parallel if sessions allow).
 - **Phase 3 (the brain):** W3 build planner + placement; W4 attack quality (Route A spike

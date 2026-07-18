@@ -5,22 +5,46 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
-## ⭐ AI milestone Phase 1 (2026-07-17) — MERGED to main 2026-07-18, UNSOAKED
+## ⭐ AI milestone Phase 1 — MERGED to main + LIVE-VERIFIED 2026-07-18 (commit `e01bc35`)
 
-**Full handover: `docs/ai-phase1-handover.md`.** W7 difficulty→IQ plumbing, W1.5
-primary-factory, W1.2 fair-fog intel layer, W1.3 blind-hunt scouting. Merged into main
-2026-07-18; the interim `Vanilla_RA_AI1` desktop mod is consolidated back into the single
-`Vanilla_RA` local mod. One diagnostic session covers BOTH Phase 0 gates below AND the
-Phase 1 verify list.
+**Full handover: `docs/ai-phase1-handover.md`.** W7 difficulty→IQ, W1.5 primary-factory,
+W1.2 fair-fog intel, W1.3 scouting. Merged 2026-07-18; `Vanilla_RA_AI1` desktop mod
+consolidated back into the single `Vanilla_RA` local mod. Live desktop diagnostic session
+(2026-07-18) verified the headline paths and root-caused two design holes, both fixed
+same-session:
 
-**W7 difficulty channel — community intel (DontCryJustDie, Workshop comments 2026-07-18):**
-GlyphX reportedly never sends skirmish difficulty to the DLL (per-slot difficulty was only
-implemented client-side). Interface trace confirms the structs carry no per-slot difficulty
-field. NOT yet accepted as final: `CNC_Set_Multiplayer_Data` now TF_AI_DIAG-dumps every
-slot's fields incl. Name text+hex — if the lobby's Easy/Medium/Hard label leaks into the
-AI slot names, that's a per-slot channel nobody has used. Verify run: one lobby with one
-Easy + one Medium + one Hard AI, then grep `CNC_Set_Difficulty` + `CNC_Set_Multiplayer_Data`
-in MOD_DEBUG_AI.txt. Fallback if no channel: flag-file setting (tf_dev_off.flag pattern).
+- **W7 verdict (measured, 5 lobbies):** GlyphX sends `CNC_Set_Difficulty(1)` in skirmish
+  UNCONDITIONALLY — per-slot lobby settings, all-Easy/all-Hard lobbies and the campaign
+  difficulty option all still send 1. Slot dump confirms the interface structs carry no
+  per-slot channel (AI names are bare `AIPLAYER1..4`, hex-verified). **Shipped lever:
+  `Documents/CnCRemastered/tf_ai_difficulty.txt`** (`easy|normal|hard`, re-read each match
+  start; ABSENT = hard/MaxIQ = shipped v4.0 strength). Both paths live-verified
+  (default-hard IQ5; file-easy IQ3). NOT dev-gated — release feature; document in Workshop
+  copy at next release.
+- **Fair-fog turtle deadlock FIXED:** AI never attacked (player-observed + screenshot).
+  Root cause: `AI_Attack` shuffles (no-ops) 67% of calls and was the only hunter source, so
+  blind houses never scouted → never discovered → never attacked. Fix: `Expert_AI` keeps a
+  2-unit scout detail on hunt while the house knows no enemy building. Live-verified: all
+  four AIs scouting by ~F2500, real `WAVE-LAUNCH` after contact, player confirmed fighting.
+- **Build-choice starvation mechanism CONFIRMED live (temple gate):** winner is always the
+  FIRST pool entry at max urgency (scan order). TDTMPL never won a tie in ~40k frames;
+  TDOBLI won only once its scan-order blockers left the pool; GDI mirrors (TDATWR/TDEYE
+  starve behind TDGTWR). Fix direction: rotate/randomise same-urgency ties (general, not
+  temple-specific). NOT yet implemented.
+
+**Open follow-ups from the session:**
+1. **Per-slot difficulty long-shot:** the lobby REMEMBERS per-slot settings between
+   sessions → persisted client-side somewhere. If that file is findable/readable from the
+   DLL at match start, the lobby UI becomes a real per-slot lever (flip-a-slot + mtime
+   sweep of the prefix was staged but not run).
+2. **W1.2 unit-visibility leak suspicion:** zero blind-hunt SCOUT probe lines ever fired —
+   dispatched scouts always found targets instantly, suggesting enemy UNITS are evaluable
+   from match start (mask positionless / pre-seeded?). Buildings fog correctly. Verify.
+3. **H14 APWR loop observation:** USSR AI won `APWR(u2)` 20+ consecutive build decisions
+   (turtle match). Legit power-hunger or overbuild loop — check base for APWR farms.
+4. Rotate `MOD_DEBUG_AI.txt` between matches during diagnostic sessions (two matches
+   interleaved in one file cost real analysis time; note: the shared diag FILE* stays open
+   across matches within one game process, so rotate only at full game restarts).
 
 ## TS asset spike — shipped in one live session (2026-07-18); TSPOWR art pass owed
 
