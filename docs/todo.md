@@ -33,10 +33,15 @@ same-session:
   temple-specific). NOT yet implemented.
 
 **Open follow-ups from the session:**
-1. **Per-slot difficulty long-shot:** the lobby REMEMBERS per-slot settings between
-   sessions → persisted client-side somewhere. If that file is findable/readable from the
-   DLL at match start, the lobby UI becomes a real per-slot lever (flip-a-slot + mtime
-   sweep of the prefix was staged but not run).
+1. **Per-slot difficulty long-shot: RESOLVED NEGATIVE (2026-07-18, measured).** The
+   client's persisted settings (`userdata/<id>/1213210/remote/Player_RA_settings_1.bin`,
+   ChunkFile + zlib@0x24, TLV property stream — same family as .bui) contain NO per-slot
+   difficulty; the one byte that moved during flips (tag 0x31 int32) is a match-start
+   counter (14→15→16 across launches). Per-slot picker state is ClientG memory only,
+   confirmed by an Easy/Medium/Hard lobby leaving zero difficulty bytes on disk.
+   `tf_ai_difficulty.txt` is THE lever; only ClientG process-memory scraping could ever do
+   per-slot (rejected: fragile, not shippable). Don't re-chase. Document the flag file in
+   Workshop copy at next release.
 2. **W1.2 unit-visibility leak suspicion:** zero blind-hunt SCOUT probe lines ever fired —
    dispatched scouts always found targets instantly, suggesting enemy UNITS are evaluable
    from match start (mask positionless / pre-seeded?). Buildings fog correctly. Verify.
