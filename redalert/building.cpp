@@ -4449,6 +4449,23 @@ FireErrorType BuildingClass::Can_Fire(TARGET target, int which) const
         **	Certain buildings cannot fire if there is insufficient power.
         */
         if (Class->IsPowered && House->Power_Fraction() < 1) {
+#if TF_DEV_BUILD // TF_AI_DIAG -- powered defence held offline by low power (~30s heartbeat per building).
+            if (((Frame + ID) % 450) == 0) {
+                extern FILE* TF_AI_Diag_File(void);
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg,
+                            "F%ld H%d DEF-OFFLINE %s#%d (power %d/%d)\n",
+                            (long)Frame,
+                            (int)House->Class->House,
+                            Class->IniName,
+                            (int)ID,
+                            (int)House->Power,
+                            (int)House->Drain);
+                    fflush(_tfdbg);
+                }
+            }
+#endif
             return (FIRE_BUSY);
         }
 
@@ -7805,6 +7822,25 @@ void BuildingClass::Factory_AI(void)
                             } else {
                                 House->Production_Begun(Factory->Get_Object());
                                 Factory->Start();
+#if TF_DEV_BUILD // TF_AI_DIAG -- primary-factory: every AI production start, to verify
+                                // one-order-per-category cadence from the log timeline alone.
+                                if (!House->IsHuman) {
+                                    extern FILE* TF_AI_Diag_File(void);
+                                    FILE* _tfdbg = TF_AI_Diag_File();
+                                    if (_tfdbg != NULL) {
+                                        fprintf(_tfdbg,
+                                                "F%ld H%d AL%d PROD start %s (cat=%d) at factory %s#%d\n",
+                                                (long)Frame,
+                                                (int)House->Class->House,
+                                                (int)House->ActLike,
+                                                techno->IniName,
+                                                (int)Class->ToBuild,
+                                                Class->IniName,
+                                                (int)ID);
+                                        fflush(_tfdbg);
+                                    }
+                                }
+#endif
                             }
                         }
                     }

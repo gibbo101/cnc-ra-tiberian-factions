@@ -2200,17 +2200,45 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
     }
 
     /*
-    **	Skirmish/multiplayer: the lobby difficulty used to be silently dropped here.
-    **	It now selects the AI's behavioural tier: stored for houses created later,
-    **	and retro-applied to AI houses that already exist (the client may call this
-    **	either side of match start). IQ is the only thing that changes -- combat and
-    **	economy handicaps are untouched at every difficulty.
+    **	Skirmish/multiplayer: the GlyphX client always sends 1 (Normal) here no
+    **	matter what the lobby slots or the campaign difficulty option are set to --
+    **	per-AI difficulty only ever existed client-side. The player's real choice
+    **	therefore comes from an optional settings file, re-read at every match
+    **	start so it can be changed between matches without restarting the game:
+    **
+    **	  Documents/CnCRemastered/tf_ai_difficulty.txt   containing one word:
+    **	  easy | normal | hard        (also accepts 0 | 1 | 2)
+    **
+    **	No file means hard -- the strength skirmish AIs shipped with (MaxIQ);
+    **	the file only ever opts the AI downward. The selected tier is stored for
+    **	houses created later and retro-applied to AI houses that already exist
+    **	(the client may call this either side of match start). IQ is the only
+    **	thing that changes -- combat and economy handicaps are untouched at
+    **	every difficulty.
     */
-    DiffType diff = DIFF_NORMAL;
-    if (difficulty == 0) {
-        diff = DIFF_EASY;
-    } else if (difficulty == 2) {
-        diff = DIFF_HARD;
+    DiffType diff = DIFF_HARD;
+    char tf_diff_source = 'd'; // d=default, f=file
+    {
+        const char* up = getenv("USERPROFILE");
+        char p[600];
+        snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_ai_difficulty.txt", up ? up : ".");
+        FILE* f = fopen(p, "r");
+        if (f != NULL) {
+            char word[32] = {0};
+            if (fscanf(f, "%31s", word) == 1) {
+                if (stricmp(word, "easy") == 0 || strcmp(word, "0") == 0) {
+                    diff = DIFF_EASY;
+                    tf_diff_source = 'f';
+                } else if (stricmp(word, "normal") == 0 || stricmp(word, "medium") == 0 || strcmp(word, "1") == 0) {
+                    diff = DIFF_NORMAL;
+                    tf_diff_source = 'f';
+                } else if (stricmp(word, "hard") == 0 || strcmp(word, "2") == 0) {
+                    diff = DIFF_HARD;
+                    tf_diff_source = 'f';
+                }
+            }
+            fclose(f);
+        }
     }
     Scen.CDifficulty = diff;
     TFLobbyAIDifficultySet = true;
@@ -2230,7 +2258,12 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
         snprintf(p, sizeof(p), "%s/MOD_DEBUG_AI.txt", up ? up : ".");
         FILE* f = fopen(p, "a");
         if (f != NULL) {
-            fprintf(f, "CNC_Set_Difficulty(%d) -> CDifficulty=%d IQ=%d (AI houses retro-applied)\n", difficulty, (int)diff, iq);
+            fprintf(f,
+                    "CNC_Set_Difficulty(%d) -> CDifficulty=%d IQ=%d source=%s (AI houses retro-applied)\n",
+                    difficulty,
+                    (int)diff,
+                    iq,
+                    tf_diff_source == 'f' ? "tf_ai_difficulty.txt" : "default-hard (client value ignored)");
             fclose(f);
         }
     }

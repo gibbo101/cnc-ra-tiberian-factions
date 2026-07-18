@@ -5573,6 +5573,86 @@ int HouseClass::Expert_AI(void)
     }
 
     /*
+    **	Blind-scout dispatcher: with the fair-fog intel layer a house that has
+    **	sighted no enemy building would otherwise wait forever -- AI_Attack sends
+    **	hunters only rarely (and usually reshuffles instead), and the blind-hunt
+    **	probe in Mission_Hunt can't run without hunters. So while blind, keep a
+    **	small scout detail on MISSION_HUNT; the probe walks them across the map's
+    **	start locations until contact is made, after which the normal attack
+    **	pipeline has real targets to work with. MCVs (whose hunt order deploys
+    **	the base!) and harvesters never scout.
+    */
+    if (Session.Type != GAME_NORMAL && IsStarted && !TF_Knows_Any_Enemy_Building()) {
+        enum
+        {
+            TF_SCOUT_DETAIL = 2
+        };
+        int hunters = 0;
+        int index;
+        for (index = 0; index < Units.Count() && hunters < TF_SCOUT_DETAIL; index++) {
+            UnitClass* u = Units.Ptr(index);
+            if (u != NULL && !u->IsInLimbo && u->House == this && u->Strength > 0 && u->Mission == MISSION_HUNT) {
+                hunters++;
+            }
+        }
+        for (index = 0; index < Infantry.Count() && hunters < TF_SCOUT_DETAIL; index++) {
+            InfantryClass* i = Infantry.Ptr(index);
+            if (i != NULL && !i->IsInLimbo && i->House == this && i->Strength > 0 && i->Mission == MISSION_HUNT) {
+                hunters++;
+            }
+        }
+        for (index = 0; index < Units.Count() && hunters < TF_SCOUT_DETAIL; index++) {
+            UnitClass* u = Units.Ptr(index);
+            if (u != NULL && !u->IsInLimbo && u->House == this && u->Strength > 0 && u->Is_Weapon_Equipped()
+                && !u->Class->IsToHarvest && *u != UNIT_MCV && *u != UNIT_TDMCV
+                && (u->Mission == MISSION_GUARD || u->Mission == MISSION_GUARD_AREA)) {
+                u->Assign_Mission(MISSION_HUNT);
+                hunters++;
+#if TF_DEV_BUILD // TF_AI_DIAG
+                {
+                    extern FILE* TF_AI_Diag_File(void);
+                    FILE* _tfdbg = TF_AI_Diag_File();
+                    if (_tfdbg != NULL) {
+                        fprintf(_tfdbg,
+                                "F%ld H%d AL%d SCOUT-DISPATCH unit %s#%d\n",
+                                (long)Frame,
+                                (int)Class->House,
+                                (int)ActLike,
+                                u->Class->IniName,
+                                (int)u->ID);
+                        fflush(_tfdbg);
+                    }
+                }
+#endif
+            }
+        }
+        for (index = 0; index < Infantry.Count() && hunters < TF_SCOUT_DETAIL; index++) {
+            InfantryClass* i = Infantry.Ptr(index);
+            if (i != NULL && !i->IsInLimbo && i->House == this && i->Strength > 0 && i->Is_Weapon_Equipped()
+                && (i->Mission == MISSION_GUARD || i->Mission == MISSION_GUARD_AREA)) {
+                i->Assign_Mission(MISSION_HUNT);
+                hunters++;
+#if TF_DEV_BUILD // TF_AI_DIAG
+                {
+                    extern FILE* TF_AI_Diag_File(void);
+                    FILE* _tfdbg = TF_AI_Diag_File();
+                    if (_tfdbg != NULL) {
+                        fprintf(_tfdbg,
+                                "F%ld H%d AL%d SCOUT-DISPATCH infantry %s#%d\n",
+                                (long)Frame,
+                                (int)Class->House,
+                                (int)ActLike,
+                                i->Class->IniName,
+                                (int)i->ID);
+                        fflush(_tfdbg);
+                    }
+                }
+#endif
+            }
+        }
+    }
+
+    /*
     **	If there is no enemy assigned to this house, then assign one now. The
     **	enemy that is closest is picked. However, don't pick an enemy if the
     **	base has not been established yet.
@@ -6053,6 +6133,25 @@ bool HouseClass::AI_Attack(UrgencyType)
     } else if (defences > TF_SEND_SWITCH_LOW_TO_HIGH) {
         sendpercent = TF_SEND_PERCENT_HIGH;
     }
+
+#if TF_DEV_BUILD // TF_AI_DIAG -- attack-wave launch: home-defence count drives the send percentage.
+    {
+        extern FILE* TF_AI_Diag_File(void);
+        FILE* _tfdbg = TF_AI_Diag_File();
+        if (_tfdbg != NULL) {
+            fprintf(_tfdbg,
+                    "F%ld H%d AL%d WAVE-%s defences=%d sendpercent=%d forced=%d\n",
+                    (long)Frame,
+                    (int)Class->House,
+                    (int)ActLike,
+                    shuffle ? "SHUFFLE (nothing sent)" : "LAUNCH",
+                    defences,
+                    sendpercent,
+                    (int)forced);
+            fflush(_tfdbg);
+        }
+    }
+#endif
 
     int index;
     for (index = 0; index < Aircraft.Count(); index++) {
@@ -6574,8 +6673,8 @@ static int TF_Skirmish_Type(StructType ra, HousesType actlike)
  *   09/29/1995 JLB : Created.                                                                 *
  *   11/03/1996 JLB : Tries to match aircraft of enemy                                         *
  *=============================================================================================*/
-#if TF_DEV_BUILD // TF_AI_DIAG -- shared log file for the AI build-choice diagnostics below.
-static FILE* TF_AI_Diag_File(void)
+#if TF_DEV_BUILD // TF_AI_DIAG -- shared log file for the AI diagnostics (also used from foot.cpp).
+FILE* TF_AI_Diag_File(void)
 {
     static FILE* f = NULL;
     static bool tried = false;

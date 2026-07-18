@@ -728,6 +728,24 @@ int FootClass::Mission_Hunt(void)
                 if (dest > 0) {
                     Assign_Destination(::As_Target(dest));
                 }
+#if TF_DEV_BUILD // TF_AI_DIAG -- blind-hunt scouting: every probe decision, incl. dead-ends.
+                extern FILE* TF_AI_Diag_File(void);
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg,
+                            "F%ld H%d AL%d SCOUT rtti=%d id=%d IQ=%d from=%d dest=%d%s\n",
+                            (long)Frame,
+                            (int)House->Class->House,
+                            (int)House->ActLike,
+                            (int)What_Am_I(),
+                            (int)ID,
+                            (int)House->IQ,
+                            (int)Coord_Cell(Coord),
+                            (int)dest,
+                            dest > 0 ? "" : " (no destination)");
+                    fflush(_tfdbg);
+                }
+#endif
             }
         }
 #if (0)
