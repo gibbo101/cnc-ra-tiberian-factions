@@ -1,8 +1,24 @@
 # Per-slot AI difficulty via ClientG RAM — spike record + implementation design
 
-**Status: PoC PROVEN 2026-07-18 (live, desktop). Implementation NOT started.**
+**Status: phase A SHIPPED + LIVE-VERIFIED 2026-07-18 (commit `3e156a0`).** A mixed
+Hard/Medium/Easy/Hard lobby produced IQ 5/4/3/5 on the matching houses, confirmed
+on-screen and in MOD_DEBUG_AI.txt. Phase B (MP host broadcast) not started.
 Companion findings and session narrative: `todo.md` Phase 1 block, `ai-upgrade-plan.md`
 §6 Phase 1 STATUS.
+
+**Implementation notes (what shipped, all in `redalert/dllinterface.cpp`):**
+- Scanner: `TF_Read_Lobby_AI_Difficulties` + helpers, directly above
+  `CNC_Set_Difficulty`. Signature scan per the design below; every validated
+  candidate array must agree or the read fails (stale lobby copies exist in memory).
+- **Trap found during GREEN:** the GlyphX house-assign loop renames AI houses'
+  `IniName` from `AIPLAYERn` to the "Computer" display name before
+  `CNC_Set_Difficulty` runs, and `InitialName` is compiled out (`WOLAPI_INTEGRATION`
+  undefined). Slot mapping therefore uses `TF_AILobbySlotByHouse`, captured in the
+  assign loop at the moment the name is destroyed (reset each match in
+  `CNC_Set_Multiplayer_Data`).
+- The TF_AI_DIAG HELLO lines (log + on-screen via the deferred
+  `CNC_Advance_Instance` flush) print each house's mode tagged `[slot n]` (RAM) or
+  `[global]` (fallback) — the standing per-match verification readout.
 
 ## Why RAM
 
