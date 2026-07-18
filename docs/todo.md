@@ -5,6 +5,19 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## TS asset spike — shipped in one live session (2026-07-18); TSPOWR art pass owed
+
+The Tiberian Sun import spike is DONE and player-signed-off (see
+`docs/ts-asset-import-spike.md` for recipes + the launcher-contract trap list):
+Hover MLRS ("the golden child") + Stealth Generator TS reskin + hover locomotion
++ TS audio port. **Owed next session: the Tiberian Power Plant (TSPOWR) needs an
+art pass** — placeholder-quality next to the MLRS bar; revisit scale/crop/anchor
+and possibly re-source frames. Also queued from the session: cloaked buildings
+show their bibs (the spec'd "bib-hide" refinement), TS hover bob for other future
+hover units, and the Temple-starvation AI fix now has captured diagnostic
+evidence (MOD_DEBUG_AI.txt, F17025-F21312: TDTMPL loses every same-urgency pool
+tie to defence picks — the Phase 0 diagnostic gate is CLOSED).
+
 ## ⭐ RESUME HERE — AI milestone Phase 0 (2026-07-17)
 
 **Code COMPLETE + committed** (`bb286b5` W1.1 fixes + AGT power + harvester idle-home;
