@@ -26,11 +26,13 @@ same-session:
   blind houses never scouted → never discovered → never attacked. Fix: `Expert_AI` keeps a
   2-unit scout detail on hunt while the house knows no enemy building. Live-verified: all
   four AIs scouting by ~F2500, real `WAVE-LAUNCH` after contact, player confirmed fighting.
-- **Build-choice starvation mechanism CONFIRMED live (temple gate):** winner is always the
-  FIRST pool entry at max urgency (scan order). TDTMPL never won a tie in ~40k frames;
-  TDOBLI won only once its scan-order blockers left the pool; GDI mirrors (TDATWR/TDEYE
-  starve behind TDGTWR). Fix direction: rotate/randomise same-urgency ties (general, not
-  temple-specific). NOT yet implemented.
+- **Build-choice starvation: FIXED + LIVE-VERIFIED 2026-07-18 (commit `d4f3da7`).**
+  Winner scan took the first pool entry at max urgency, starving late entries (TDTMPL
+  zero tie wins in ~40k frames; TDOBLI/TDATWR/TDEYE similar). Top-urgency ties now break
+  uniformly (reservoir pick on the synced RNG, MP-deterministic). Verified with 6 Hard
+  AIs: 98/123 decisions were real ties, every starved building won cycles (TDTMPL 5,
+  TDOBLI 12, TDATWR 2, TDEYE 1), temples confirmed standing in-game; economy priorities
+  intact. Diag WIN lines print `ties=N`.
 
 **✅ RAM per-slot difficulty phase A — SHIPPED + LIVE-VERIFIED 2026-07-18 (commit
 `3e156a0`):** solo skirmish now applies each lobby slot's real Easy/Medium/Hard pick to
