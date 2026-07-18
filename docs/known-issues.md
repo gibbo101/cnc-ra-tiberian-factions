@@ -8,7 +8,19 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
-## Stealth field
+## AI difficulty
+
+### Per-slot difficulty applies stale values in 1-human LAN lobbies — OPEN 2026-07-19
+- **Severity:** minor (wrong AI difficulty tier applied; no crash/desync — 2+ human lobbies are
+  protected by the determinism guard).
+- **Cause:** the phase-A apply gate is `humans < 2`, which covers hosting a LAN lobby alone as well
+  as real solo skirmish. The scanned `AIPLAYERn` records are the account's **saved skirmish config**,
+  which matches the live lobby only in real solo skirmish — in a LAN lobby the applied values can be
+  from a previous lobby entirely (proven on the 2026-07-18 rig; `docs/lobby-difficulty-ram-spike.md`
+  phase-B section).
+- **Fix path:** rides scanner v4 (read the live lobby model once probe v3 locates it); interim
+  option if v4 stalls: gate per-slot apply out of LAN lobbies if they're distinguishable from solo
+  skirmish DLL-side.
 
 ### Hiding a cloaked building's bib frees its cell for enemy placement — ✅ FIXED 2026-07-15
 - **Severity:** minor (placement exploit; enemy could build one row into a cloaked base's bib strip).
