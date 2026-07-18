@@ -492,6 +492,13 @@ bool MPlayerIsHuman[MAX_PLAYERS];
 int MPlayerTeamIDs[MAX_PLAYERS];
 int MPlayerStartLocations[MAX_PLAYERS];
 
+#if TF_DEV_BUILD
+// Shared AI diagnostic log handle (defined with C++ linkage in house.cpp). Declared at
+// file scope so references from the extern "C" export functions below resolve to the
+// C++ symbol rather than picking up C linkage from the enclosing linkage-specification.
+extern FILE* TF_AI_Diag_File(void);
+#endif
+
 // Tiberian Factions -- number of human players in the current match, set by
 // CNC_Set_Multiplayer_Data. Used to keep AI difficulty deterministic in
 // multiplayer: with 2+ humans every peer must derive the same AI IQ or the
@@ -2269,6 +2276,26 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
         HouseClass* housep = Houses.Ptr(index);
         if (housep != NULL && housep->IsActive && !housep->IsHuman && housep->Class->House >= HOUSE_MULTI1) {
             housep->IQ = iq;
+
+#if TF_DEV_BUILD // TF_AI_DIAG -- per-house difficulty announcement (RED/GREEN test).
+            // RED today: every AI house prints the SAME mode because `diff` is one
+            // global value. GREEN once the ClientG-RAM per-slot read (phase A,
+            // docs/lobby-difficulty-ram-spike.md) assigns each house its own tier ->
+            // this line then prints each slot's real lobby pick.
+            {
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    const char* mode = (diff == DIFF_EASY) ? "EASY" : (diff == DIFF_HARD) ? "HARD" : "MEDIUM";
+                    fprintf(_tfdbg,
+                            "HELLO IM H%d (ActLike=%d) IN %s MODE (IQ=%d)\n",
+                            (int)housep->Class->House,
+                            (int)housep->ActLike,
+                            mode,
+                            iq);
+                    fflush(_tfdbg);
+                }
+            }
+#endif
         }
     }
 

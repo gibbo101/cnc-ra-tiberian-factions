@@ -32,6 +32,27 @@ same-session:
   starve behind TDGTWR). Fix direction: rotate/randomise same-urgency ties (general, not
   temple-specific). NOT yet implemented.
 
+**⭐ NEXT SESSION — RAM per-slot difficulty (RED/GREEN, phase A):** The lobby's per-slot
+difficulty IS recoverable — proven by live PoC reading it out of ClientG.exe RAM
+(`AIPLAYERn` record array, difficulty int32 at record+0x64: 1=Easy/2=Med/3=Hard;
+signature-scanned, no hardcoded offsets; read Medium/Easy/Hard matching the lobby exactly
+mid-match). Full design + recon survey: `docs/lobby-difficulty-ram-spike.md`.
+- **RED test is IN the code (commit after this):** `HELLO IM H<n> IN <MODE>` logs per AI
+  house at match start, on the exact IQ-assignment loop in `CNC_Set_Difficulty`. Today
+  every house prints the SAME mode (global `diff`) = RED. Verify RED next session: mixed
+  lobby → grep `HELLO` in MOD_DEBUG_AI.txt → all-same is the correct failing state.
+- **GREEN = phase A:** implement the in-DLL ClientG RAM read (OpenProcess + VirtualQueryEx
+  + ReadProcessMemory, signature-validate the record array, map `AIPLAYERn`→house, set
+  per-house IQ). The same HELLO line then prints each slot's real pick. Fallback chain:
+  RAM → `tf_ai_difficulty.txt` → default Hard. Recommended over an external-helper/file
+  approach (zero user friction; sidecar can't auto-launch from Workshop).
+- **MP:** the determinism guard is SHIPPED (2+ humans → flag file ignored → default on all
+  peers). Phase B = host scans + broadcasts difficulty via a custom EventClass (design in
+  spike doc); test desktop+Deck over Tailscale.
+- **RAM is an extraction channel, NOT a launcher unblocker** (survey confirmed): reads
+  lobby selections (faction-per-slot, map, difficulty); does not move compiled-behaviour
+  walls. Don't over-scope it.
+
 **Open follow-ups from the session:**
 1. **Per-slot difficulty long-shot: RESOLVED NEGATIVE (2026-07-18, measured).** The
    client's persisted settings (`userdata/<id>/1213210/remote/Player_RA_settings_1.bin`,
