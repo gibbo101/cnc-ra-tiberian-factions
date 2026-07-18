@@ -30,6 +30,7 @@
 #include <cstdio>
 
 #include "function.h"
+#include <tlhelp32.h>
 #include "keyframe.h"
 #include "utracker.h"
 #include "carry.h"
@@ -507,6 +508,13 @@ extern FILE* TF_AI_Diag_File(void);
 // docs/lobby-difficulty-ram-spike.md (host-broadcast design supersedes this guard).
 int TF_HumanPlayerCount = 1;
 
+// Tiberian Factions -- lobby AI slot number per multiplayer house (index =
+// house - HOUSE_MULTI1, value = n from the client's "AIPLAYERn" slot name,
+// 0 = none). The house-assign loop replaces the AI houses' IniName with the
+// "Computer" display name, so the slot key is captured here before it is lost;
+// the per-slot difficulty read in CNC_Set_Difficulty keys off it.
+static int TF_AILobbySlotByHouse[MAX_PLAYERS];
+
 bool MPSuperWeaponDisable = false;
 bool ShareAllyVisibility = true;
 bool UseGlyphXStartLocations = true;
@@ -910,6 +918,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         delete Session.Players[0];
         Session.Players.Delete(Session.Players[0]);
     }
+
+    memset(TF_AILobbySlotByHouse, 0, sizeof(TF_AILobbySlotByHouse));
 
     int humans = 0;
     for (int i = 0; i < num_players; i++) {
@@ -1324,6 +1334,12 @@ void GlyphX_Assign_Houses(void)
 
         if (!housep->IsHuman) {
             housep->IsStarted = true;
+            {
+                int slot_number = 0;
+                if (sscanf(Session.Players[index]->Name, "AIPLAYER%d", &slot_number) == 1) {
+                    TF_AILobbySlotByHouse[i] = slot_number;
+                }
+            }
             strncpy(housep->IniName, Text_String(TXT_COMPUTER), HOUSE_NAME_MAX);
             // Lobby AI difficulty (stored in Scen.CDifficulty by CNC_Set_Difficulty)
             // drives the IQ tier; stat handicaps stay at 1.0x. CNC_Set_Difficulty
@@ -2219,6 +2235,178 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save,
     return result;
 }
 
+/*
+**	---------------- Per-slot lobby AI difficulty (client-process read) ----------------
+**
+**	The GlyphX client never passes the lobby's per-slot Easy/Medium/Hard picks into the
+**	DLL: CNC_Set_Difficulty receives one global value (always 1 in skirmish) and the
+**	player-info structs carry no difficulty field. The picker state does live in the
+**	client process's heap for the whole match, one record per AI slot:
+**
+**	    +0x00  ASCII "AIPLAYERn\0"  (the same name the AI house gets as IniName)
+**	    +0x50  int32 slot index, 1-based
+**	    +0x64  int32 difficulty     1=Easy 2=Medium 3=Hard
+**	    +0x68  int32 slot index, repeated
+**	    record stride 0xA8, slots ascending from AIPLAYER1
+**
+**	The array is located by signature scan over the client's private writable memory --
+**	heap addresses differ every run, only the record shape is stable. The scan is
+**	read-only, runs once per match start, and any failure (no client process, no
+**	validated array, conflicting candidates) leaves the caller on the global
+**	difficulty source. Full design: docs/lobby-difficulty-ram-spike.md.
+*/
+
+#define TF_LOBBY_MAX_AI_SLOTS 8
+#define TF_LOBBY_RECORD_STRIDE 0xA8
+#define TF_LOBBY_OFF_SLOT 0x50
+#define TF_LOBBY_OFF_DIFF 0x64
+#define TF_LOBBY_OFF_SLOT2 0x68
+
+/*
+**	Validates a prospective record array (`len` bytes already read into `rec`) and fills
+**	diff_by_slot[1..] with each valid slot's difficulty. Returns how many consecutive
+**	records validate starting from AIPLAYER1; 0 means this is not the array.
+*/
+static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* diff_by_slot)
+{
+    int count = 0;
+    for (int k = 0; k < TF_LOBBY_MAX_AI_SLOTS; k++) {
+        SIZE_T base = (SIZE_T)k * TF_LOBBY_RECORD_STRIDE;
+        if (base + TF_LOBBY_RECORD_STRIDE > len) {
+            break;
+        }
+        const unsigned char* r = rec + base;
+        char expected[16];
+        int name_len = snprintf(expected, sizeof(expected), "AIPLAYER%d", k + 1);
+        if (memcmp(r, expected, name_len + 1) != 0) {
+            break;
+        }
+        int slot, diff, slot2;
+        memcpy(&slot, r + TF_LOBBY_OFF_SLOT, sizeof(slot));
+        memcpy(&diff, r + TF_LOBBY_OFF_DIFF, sizeof(diff));
+        memcpy(&slot2, r + TF_LOBBY_OFF_SLOT2, sizeof(slot2));
+        if (slot != k + 1 || slot2 != k + 1 || diff < 1 || diff > 3) {
+            break;
+        }
+        diff_by_slot[k + 1] = diff;
+        count++;
+    }
+    return count;
+}
+
+/*
+**	Scans one process's private writable regions for the record array. Every validated
+**	candidate must agree; disagreement flags the whole read as ambiguous (memory can
+**	hold stale copies of lobby data -- agreement is the safety condition).
+*/
+static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
+                                                 int* best,
+                                                 int* best_count,
+                                                 bool* ambiguous,
+                                                 unsigned char* scratch,
+                                                 SIZE_T scratch_size)
+{
+    const SIZE_T sig_len = 10; // "AIPLAYER1" + NUL
+    const SIZE_T overlap = 16; // signature must not straddle a chunk boundary
+    SIZE_T addr = 0;
+    MEMORY_BASIC_INFORMATION mbi;
+
+    while (VirtualQueryEx(proc, (LPCVOID)addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
+        SIZE_T region_base = (SIZE_T)mbi.BaseAddress;
+        SIZE_T region_size = mbi.RegionSize;
+        bool scannable = (mbi.State == MEM_COMMIT) && (mbi.Type == MEM_PRIVATE)
+                         && (mbi.Protect == PAGE_READWRITE || mbi.Protect == PAGE_EXECUTE_READWRITE)
+                         && region_size <= ((SIZE_T)512 << 20);
+        if (scannable) {
+            for (SIZE_T off = 0; off < region_size; off += scratch_size - overlap) {
+                SIZE_T want = region_size - off;
+                if (want > scratch_size) {
+                    want = scratch_size;
+                }
+                SIZE_T got = 0;
+                ReadProcessMemory(proc, (LPCVOID)(region_base + off), scratch, want, &got);
+                if (got < sig_len) {
+                    continue;
+                }
+                for (SIZE_T i = 0; i + sig_len <= got; i++) {
+                    if (memcmp(scratch + i, "AIPLAYER1\0", sig_len) != 0) {
+                        continue;
+                    }
+                    // Candidate hit: re-read the full prospective array straight from
+                    // the process so validation never depends on chunk boundaries.
+                    unsigned char rec[TF_LOBBY_MAX_AI_SLOTS * TF_LOBBY_RECORD_STRIDE];
+                    SIZE_T rec_got = 0;
+                    ReadProcessMemory(proc, (LPCVOID)(region_base + off + i), rec, sizeof(rec), &rec_got);
+                    if (rec_got < TF_LOBBY_RECORD_STRIDE) {
+                        continue;
+                    }
+                    int cand[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
+                    int cand_count = TF_Validate_Lobby_Records(rec, rec_got, cand);
+                    if (cand_count <= 0) {
+                        continue;
+                    }
+                    if (*best_count == 0) {
+                        memcpy(best, cand, sizeof(cand));
+                        *best_count = cand_count;
+                    } else if (*best_count != cand_count || memcmp(best, cand, sizeof(cand)) != 0) {
+                        *ambiguous = true;
+                    }
+                }
+            }
+        }
+        SIZE_T next = region_base + region_size;
+        if (next <= addr) {
+            break;
+        }
+        addr = next;
+    }
+}
+
+/*
+**	Reads the lobby's per-slot AI difficulties out of the client process(es). Fills
+**	diff_by_slot[1..TF_LOBBY_MAX_AI_SLOTS] (1=Easy 2=Medium 3=Hard, 0=unknown) and
+**	returns the number of slots read; 0 = scan failed, caller stays on the global
+**	difficulty source. Read-only against the target process.
+*/
+static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
+{
+    int best[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
+    int best_count = 0;
+    bool ambiguous = false;
+
+    // 1 MB scan chunk; static so repeated match starts reuse one allocation.
+    static unsigned char scratch[1 << 20];
+
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) {
+        return 0;
+    }
+    PROCESSENTRY32W pe;
+    pe.dwSize = sizeof(pe);
+    if (Process32FirstW(snap, &pe)) {
+        do {
+            if (_wcsicmp(pe.szExeFile, L"ClientG.exe") != 0) {
+                continue;
+            }
+            HANDLE proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, pe.th32ProcessID);
+            if (proc == NULL) {
+                continue;
+            }
+            TF_Scan_Process_For_Lobby_Difficulty(proc, best, &best_count, &ambiguous, scratch, sizeof(scratch));
+            CloseHandle(proc);
+        } while (Process32NextW(snap, &pe));
+    }
+    CloseHandle(snap);
+
+    if (ambiguous || best_count <= 0) {
+        return 0;
+    }
+    for (int s = 1; s <= TF_LOBBY_MAX_AI_SLOTS; s++) {
+        diff_by_slot[s] = best[s];
+    }
+    return best_count;
+}
+
 /**************************************************************************************************
  * CNC_Set_Difficulty -- Set game difficulty
  *
@@ -2285,6 +2473,16 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
             fclose(f);
         }
     }
+
+    // Per-slot difficulty from the client process, when available: overrides the
+    // global source house-by-house. Solo only until the phase-B host broadcast
+    // lands (per-machine reads would desync MP lockstep).
+    int slot_diff[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
+    int slots_read = 0;
+    if (TF_HumanPlayerCount < 2) {
+        slots_read = TF_Read_Lobby_AI_Difficulties(slot_diff);
+    }
+
     Scen.CDifficulty = diff;
     TFLobbyAIDifficultySet = true;
 
@@ -2295,23 +2493,46 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
     for (int index = 0; index < Houses.Count(); index++) {
         HouseClass* housep = Houses.Ptr(index);
         if (housep != NULL && housep->IsActive && !housep->IsHuman && housep->Class->House >= HOUSE_MULTI1) {
-            housep->IQ = iq;
+            // Each AI house's lobby slot number was captured at house-assign time
+            // (TF_AILobbySlotByHouse -- IniName itself is renamed to "Computer"),
+            // keying it to the client's per-slot record regardless of the
+            // color-order house assignment. Houses without a slot record use the
+            // global tier.
+            DiffType house_diff = diff;
+            bool per_slot = false;
+            int house_index = (int)housep->Class->House - (int)HOUSE_MULTI1;
+            int slot_number = (house_index >= 0 && house_index < MAX_PLAYERS) ? TF_AILobbySlotByHouse[house_index] : 0;
+            if (slots_read > 0 && slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS
+                && slot_diff[slot_number] != 0) {
+                house_diff = (slot_diff[slot_number] == 1)   ? DIFF_EASY
+                             : (slot_diff[slot_number] == 2) ? DIFF_NORMAL
+                                                             : DIFF_HARD;
+                per_slot = true;
+            }
+            housep->IQ = TF_AI_IQ_From_Difficulty(house_diff);
 
 #if TF_DEV_BUILD // TF_AI_DIAG -- per-house difficulty announcement (RED/GREEN test).
-            // RED today: every AI house prints the SAME mode because `diff` is one
-            // global value. GREEN once the ClientG-RAM per-slot read (phase A,
-            // docs/lobby-difficulty-ram-spike.md) assigns each house its own tier ->
-            // this line then prints each slot's real lobby pick.
+            // GREEN = a mixed lobby prints mixed modes tagged [slot n]; houses on the
+            // global source print [global]. Phase A of
+            // docs/lobby-difficulty-ram-spike.md.
             {
-                const char* mode = (diff == DIFF_EASY) ? "EASY" : (diff == DIFF_HARD) ? "HARD" : "MEDIUM";
+                const char* mode =
+                    (house_diff == DIFF_EASY) ? "EASY" : (house_diff == DIFF_HARD) ? "HARD" : "MEDIUM";
+                char source_tag[16];
+                if (per_slot) {
+                    snprintf(source_tag, sizeof(source_tag), "slot %d", slot_number);
+                } else {
+                    strcpy(source_tag, "global");
+                }
                 char hello[128];
                 snprintf(hello,
                          sizeof(hello),
-                         "HELLO IM H%d (ActLike=%d) IN %s MODE (IQ=%d)",
+                         "HELLO IM H%d (ActLike=%d) IN %s MODE (IQ=%d) [%s]",
                          (int)housep->Class->House,
                          (int)housep->ActLike,
                          mode,
-                         iq);
+                         housep->IQ,
+                         source_tag);
                 FILE* _tfdbg = TF_AI_Diag_File();
                 if (_tfdbg != NULL) {
                     fprintf(_tfdbg, "%s\n", hello);
@@ -2337,13 +2558,18 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
         FILE* f = fopen(p, "a");
         if (f != NULL) {
             fprintf(f,
-                    "CNC_Set_Difficulty(%d) -> CDifficulty=%d IQ=%d source=%s (AI houses retro-applied)\n",
+                    "CNC_Set_Difficulty(%d) -> CDifficulty=%d IQ=%d source=%s ram_slots=%d",
                     difficulty,
                     (int)diff,
                     iq,
                     tf_diff_source == 'f'   ? "tf_ai_difficulty.txt"
                     : tf_diff_source == 'm' ? "default-hard (MP determinism guard: 2+ humans)"
-                                            : "default-hard (client value ignored)");
+                                            : "default-hard (client value ignored)",
+                    slots_read);
+            for (int s = 1; s <= slots_read; s++) {
+                fprintf(f, " s%d=%d", s, slot_diff[s]);
+            }
+            fprintf(f, " (AI houses retro-applied)\n");
             fclose(f);
         }
     }
