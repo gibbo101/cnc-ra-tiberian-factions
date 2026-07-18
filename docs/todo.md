@@ -55,7 +55,10 @@ the IniName-rename trap: `docs/lobby-difficulty-ram-spike.md`. Remaining:
   Tailscale, several matches; GREEN = identical PHASEB-RECON lines in every peer's
   MOD_DEBUG_AI.txt, every match. Then decide B2 (apply-in-MP + accept the bounded
   scan-failure divergence risk) on the reliability data. Full design + verification
-  record: spike doc phase-B section.
+  record: spike doc phase-B section. **Rig amended 2026-07-18: 2-peer for now**
+  (desktop as Luke + Luke's Deck on daughter's account; son's Deck temporarily out) —
+  2 peers fully answer the mirroring question, the third peer is extra reliability
+  data to collect later.
 - **Workshop copy at next release:** document per-slot lobby difficulty as a feature
   (and `tf_ai_difficulty.txt` as the fallback lever). DontCryJustDie is already in the
   mod credits (TD-Assets); no new ack needed — though the release notes can mention the
