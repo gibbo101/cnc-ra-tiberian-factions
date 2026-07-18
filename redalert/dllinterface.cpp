@@ -941,6 +941,41 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         }
     }
 
+#if TF_DEV_BUILD // TF_AI_DIAG -- dump everything the client sends per lobby slot.
+    // Hunting a per-slot difficulty channel: the struct has no difficulty field, but the
+    // client authors the AI slot Name strings, which may carry the lobby's Easy/Medium/Hard
+    // label. Log names both as text and hex so a non-printable encoding can't hide.
+    {
+        const char* up = getenv("USERPROFILE");
+        char p[600];
+        snprintf(p, sizeof(p), "%s/MOD_DEBUG_AI.txt", up ? up : ".");
+        FILE* f = fopen(p, "a");
+        if (f != NULL) {
+            fprintf(f, "CNC_Set_Multiplayer_Data: scenario=%d num_players=%d\n", scenario_index, num_players);
+            for (int i = 0; i < num_players; i++) {
+                CNCPlayerInfoStruct& pi = player_list[i];
+                fprintf(f,
+                        "  slot[%d] Name='%s' House=%d Color=%d Team=%d StartLoc=%d IsAI=%d GlyphxID=%llu AllyFlags=%08x\n",
+                        i,
+                        pi.Name,
+                        (int)pi.House,
+                        pi.ColorIndex,
+                        pi.Team,
+                        pi.StartLocationIndex,
+                        (int)pi.IsAI,
+                        (unsigned long long)pi.GlyphxPlayerID,
+                        pi.AllyFlags);
+                fprintf(f, "  slot[%d] NameHex=", i);
+                for (int b = 0; b < 64; b++) {
+                    fprintf(f, "%02x", (unsigned char)pi.Name[b]);
+                }
+                fprintf(f, "\n");
+            }
+            fclose(f);
+        }
+    }
+#endif
+
     /*
     ** Force smart defense always on for multiplayer/skirmish
     */
