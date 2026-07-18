@@ -73,18 +73,19 @@ the IniName-rename trap: `docs/lobby-difficulty-ram-spike.md`. Remaining:
    interleaved in one file cost real analysis time; note: the shared diag FILE* stays open
    across matches within one game process, so rotate only at full game restarts).
 
-## TS asset spike — shipped in one live session (2026-07-18); TSPOWR art pass owed
+## TS asset spike — CLOSED (2026-07-18); no follow-up work queued
 
 The Tiberian Sun import spike is DONE and player-signed-off (see
 `docs/ts-asset-import-spike.md` for recipes + the launcher-contract trap list):
 Hover MLRS ("the golden child") + Stealth Generator TS reskin + hover locomotion
-+ TS audio port. **Owed next session: the Tiberian Power Plant (TSPOWR) needs an
-art pass** — placeholder-quality next to the MLRS bar; revisit scale/crop/anchor
-and possibly re-source frames. Also queued from the session: cloaked buildings
-show their bibs (the spec'd "bib-hide" refinement), TS hover bob for other future
-hover units, and the Temple-starvation AI fix now has captured diagnostic
-evidence (MOD_DEBUG_AI.txt, F17025-F21312: TDTMPL loses every same-urgency pool
-tie to defence picks — the Phase 0 diagnostic gate is CLOSED).
++ TS audio port. **Spike outcomes are parked, not in-flight (Luke, 2026-07-18):**
+TSHVR + TSPOWR are off the build menus (TechLevel=-1, commit `adfca77`) and stay
+in as a working TS-pipeline reference + map-maker easter egg. The TSPOWR art
+pass is DROPPED from lined-up work — not to be picked up before mod completion
+at the earliest; a real TS mod would revisit it via `ts-factions-feasibility.md`.
+TS hover bob likewise waits for a real second hover unit. Resolved from the
+spike session since: the cloaked-bib leak (fixed `58ae18f`) and the
+Temple-starvation fix (`d4f3da7`).
 
 ## ⭐ RESUME HERE — AI milestone Phase 0 (2026-07-17)
 
