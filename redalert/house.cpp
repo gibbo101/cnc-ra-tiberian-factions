@@ -7188,14 +7188,26 @@ int HouseClass::AI_Building(void)
 #endif
 
         /*
-        **	Pick the choice that is the most urgent.
+        **	Pick the choice that is the most urgent. Choices sharing the top urgency
+        **	tie-break uniformly (reservoir pick, synced RNG): first-entry-wins let a
+        **	candidate's pool scan order starve it outright -- a temple could sit at max
+        **	urgency for tens of thousands of frames and never win a tie. Equal urgency
+        **	now means an equal chance to be built this cycle.
         */
         UrgencyType best = URGENCY_NONE;
-        int bestindex;
+        int bestindex = -1;
+        int ties = 0;
         for (int index = 0; index < BuildChoice.Count(); index++) {
-            if (BuildChoice.Ptr(index)->Urgency > best) {
+            UrgencyType u = BuildChoice.Ptr(index)->Urgency;
+            if (u > best) {
+                best = u;
                 bestindex = index;
-                best = BuildChoice.Ptr(index)->Urgency;
+                ties = 1;
+            } else if (u == best && best != URGENCY_NONE) {
+                ties++;
+                if (Random_Pick(1, ties) == 1) {
+                    bestindex = index;
+                }
             }
         }
         if (best != URGENCY_NONE) {
@@ -7220,9 +7232,10 @@ int HouseClass::AI_Building(void)
                 }
                 if (best != URGENCY_NONE) {
                     fprintf(_tfdbg,
-                            " -> WIN %s(u%d)\n",
+                            " -> WIN %s(u%d ties=%d)\n",
                             BuildingTypeClass::As_Reference(BuildChoice.Ptr(bestindex)->Structure).IniName,
-                            (int)best);
+                            (int)best,
+                            ties);
                 } else {
                     fprintf(_tfdbg, " -> none\n");
                 }
