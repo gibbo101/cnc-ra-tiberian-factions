@@ -42,23 +42,33 @@ IQ 5/4/3/5 on the matching houses, on-screen + log). Scanner + slot map live in
 on-screen via deferred flush, commit `45bf3b0`) print each house's mode tagged
 `[slot n]`/`[global]` and are the standing verification readout. Implementation notes +
 the IniName-rename trap: `docs/lobby-difficulty-ram-spike.md`. Remaining:
-- **Phase B (MP per-slot difficulty) — REDESIGNED 2026-07-18; recon build in tree:**
-  the host-broadcast mechanism is DEAD (verified: GlyphX has no DLL-side event
-  transport — `Glyphx_Queue_AI` is local-only, no packet exports, callbacks are local
-  presentation; determinism = client-side request replay). Replacement design =
-  **mirrored-lobby independent read**: every peer RAM-scans its own ClientG; if all
-  peers hold the host's picks identically, no broadcast is needed. **B1 recon build
-  (in tree):** dev DLL scans in MP but stays log-only (2+ humans guard untouched),
-  emitting a `PHASEB-RECON` line per peer. **Test rig (Luke, 2026-07-18): Linux
-  desktop + Luke's Deck + son's Deck** (son's Deck explicitly approved for these MP
-  tests) — same dev DLL on all three, mixed-difficulty comp-stomp lobbies over
-  Tailscale, several matches; GREEN = identical PHASEB-RECON lines in every peer's
-  MOD_DEBUG_AI.txt, every match. Then decide B2 (apply-in-MP + accept the bounded
-  scan-failure divergence risk) on the reliability data. Full design + verification
-  record: spike doc phase-B section. **Rig amended 2026-07-18: 2-peer for now**
-  (desktop as Luke + Luke's Deck on daughter's account; son's Deck temporarily out) —
-  2 peers fully answer the mirroring question, the third peer is extra reliability
-  data to collect later.
+- **⭐ Phase B (MP per-slot difficulty) — RESUME HERE (rig night 2026-07-18, full
+  findings in the spike doc phase-B section):**
+  1. Host-broadcast design DEAD (verified: GlyphX has no DLL-side event transport —
+     `Glyphx_Queue_AI` is local-only, no packet exports, callbacks are local
+     presentation; MP determinism = client-side request replay).
+  2. Mirrored-lobby read as scanned is ALSO DEAD: the `AIPLAYERn` record array is each
+     account's **saved skirmish config**, not the live lobby. Proven on the 2-peer LAN
+     rig — joiner read its own stale config 4 matches straight, and the host's read
+     contradicted its own lobby UI (which both screens rendered identically and
+     correctly, so a **live lobby model exists in every peer's client** — that's the
+     real target). Scanner v2 (roster-name anchor, commit `4f2a1a1`) is still right
+     for the solo path.
+  3. **NEXT ACTION: run one probe-v3 match** — build `8ae684f6` (commit `c036d59`)
+     is ALREADY DEPLOYED on desktop + Luke's Deck. Deck hosts LAN lobby, fresh
+     difficulty mix (e.g. Hard/Easy/Med/Hard), desktop joins, start, quit. The probe
+     dumps hex context around each AI GlyphxID (name-hash, identical cross-peer) in
+     both clients → diff host-vs-joiner `PHASEB-ID` lines in the two
+     `MOD_DEBUG_AI.txt` files → derive the live model's difficulty-int offset →
+     scanner v4 reads the live model on every peer (deterministic, no broadcast).
+  4. **BUG (shipped phase A, found by rig reasoning):** the per-slot apply gate is
+     `humans < 2`, which includes a 1-human LAN lobby — there the saved-config records
+     mismatch the live lobby, so stale difficulties get applied. Fix rides the v4
+     live-model read (or gate solo-apply out of LAN lobbies if distinguishable).
+  Rig: 2-peer (desktop Luke + Luke's Deck on daughter aimee101; son's Deck approved
+  but benched). Watch the twin-mod trap: Workshop copy and local mod are both named
+  the same — local shows the higher version (4.1). Daughter's playtime limit ended
+  the night; extend it before the next rig session.
 - **Workshop copy at next release:** document per-slot lobby difficulty as a feature
   (and `tf_ai_difficulty.txt` as the fallback lever). DontCryJustDie is already in the
   mod credits (TD-Assets); no new ack needed — though the release notes can mention the

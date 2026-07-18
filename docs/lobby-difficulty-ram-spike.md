@@ -2,10 +2,12 @@
 
 **Status: phase A SHIPPED + LIVE-VERIFIED 2026-07-18 (commit `3e156a0`).** A mixed
 Hard/Medium/Easy/Hard lobby produced IQ 5/4/3/5 on the matching houses, confirmed
-on-screen and in MOD_DEBUG_AI.txt. Phase B redesigned 2026-07-18: the host-broadcast
-mechanism is DEAD (GlyphX has no DLL-side event transport — see the phase-B section);
-replacement = mirrored-lobby independent read, recon build in tree awaiting the
-3-peer rig run.
+on-screen and in MOD_DEBUG_AI.txt. Phase B state after the 2026-07-18 rig night:
+host-broadcast DEAD (no DLL-side event transport in GlyphX) AND the scanned records
+turned out to be saved skirmish config, not the live lobby — see the phase-B section
+for the full verification trail. Next: run probe v3 (deployed both machines) to
+locate the live lobby model via AI GlyphxID needles; also fixes a phase-A regression
+(stale apply in 1-human LAN lobbies).
 Companion findings and session narrative: `todo.md` Phase 1 block, `ai-upgrade-plan.md`
 §6 Phase 1 STATUS.
 
@@ -124,33 +126,54 @@ event bytes. It does not:
   same frame boundary. The DLL has no send channel of any kind. (`SET_RALLY` works in
   MP only because its *triggering request* is replayed on all peers.)
 
-**Replacement design — mirrored-lobby independent read.** Every client in the lobby
-renders the AI slots' Easy/Medium/Hard pickers, so every peer's ClientG plausibly
-holds the same `AIPLAYERn` records the phase-A scanner reads. If that mirroring holds,
-each peer independently scanning its **own** client yields identical values →
-deterministic with no broadcast needed. Two things must be proven on the 3-peer rig,
-and one hazard bounded:
+**Mirrored-lobby read, as scanned: ALSO DEAD (2-peer LAN rig, 2026-07-18).** The
+`AIPLAYERn` record array phase A reads is each account's **persisted skirmish-lobby
+config** (survives client restarts, loaded from disk per account), NOT the live MP
+lobby model. Rig evidence, desktop (Luke) + Luke's Deck (daughter aimee101), LAN
+lobbies, scanner v2 (roster-name anchor, commit `4f2a1a1`):
 
-1. **Mirroring:** do non-host peers' ClientG processes hold the records at all, and
-   with the host's picks (not defaults)?
-2. **Reliability:** does the strict scanner (all candidates must agree) succeed on
-   every peer every match, including both Decks under Proton?
-3. **Divergence hazard:** if one peer's scan fails while others succeed, fallbacks
-   differ → desync. There is no channel to cross-check agreement, so this can only be
-   bounded empirically (rig reliability data), never eliminated. Ship/no-ship is a
-   judgement call on that data.
+- The joiner read its own saved config — the same `1,2,2,3` — in 4 consecutive
+  matches regardless of what the host set.
+- The host's read contradicted its own lobby UI in the screenshot-verified match
+  (UI Med/Easy/Hard/Med vs read Easy/Med/Hard/Easy — different multisets, not an
+  ordering artifact).
+- Phase A's solo GREEN was the special case where the skirmish config IS the lobby.
 
-**Recon build (B1, code in tree):** dev builds now run the RAM scan in MP too but keep
-the 2+ humans guard fully applied — log-only. Each peer appends a `PHASEB-RECON
-ram_slots=N s1..s8` line to its own `MOD_DEBUG_AI.txt` at match start. Release builds
-skip the MP scan entirely (guard unchanged, no wasted sweep).
+**Live-model facts established by the rig:**
 
-Test plan (3-peer rig: desktop + both Decks over Tailscale, son's Deck approved):
-same dev DLL on all three, comp-stomp lobby with **mixed** AI difficulties, several
-matches (vary host if possible). GREEN = every peer's PHASEB-RECON line identical,
-every match. Then decide phase B2 (apply per-slot in MP when the scan succeeds) on the
-reliability data; the guard remains the fallback for any scan failure, accepting the
-bounded divergence risk or rejecting it.
+- Both host AND joiner UIs render the host's real per-slot difficulties → a **live
+  lobby model exists in every peer's client**; it is simply not the record array we
+  scan. Finding it revives the no-broadcast design intact.
+- `AIPLAYERn` names are per-client local labels (numbering persists per account and
+  can differ across peers for the same lobby: 1..4 vs 2..5 observed). AI GlyphxIDs
+  are name-hashes — identical across peers **when** names agree, but not a synced
+  identity either.
+- `CNC_Set_Multiplayer_Data` player lists are peer-relative views: each peer lists
+  the remote human at slot[0] with the remote's color normalized differently. Human
+  colors/teams in that struct are NOT directly comparable across peers; AI slot
+  colors did agree.
+- The record's +0x50/+0x68 slot ints renumber positionally (1..4 against names
+  AIPLAYER2..5) — v1's `slot==n` check was wrong even solo; v2 keys by name n.
+
+**Probe v3 (commit `c036d59`, build `8ae684f6` — deployed to both rig machines,
+NOT yet run):** dumps bounded hex+ascii context around every client-RAM occurrence
+of each AI slot GlyphxID (`PHASEB-ID` lines, MP recon only). Next session: one LAN
+match, fresh difficulty mix, diff host-vs-joiner dumps → derive the live model's
+difficulty-int offset → scanner v4 reads the live model on every peer. Divergence
+hazard from the earlier design still applies (peers that fail the scan fall back
+differently — bounded empirically, never eliminated).
+
+**Phase-A regression found by the rig (open):** the solo apply gate (`humans < 2`)
+also covers 1-human LAN lobbies, where the saved-config records mismatch the live
+lobby → stale difficulties actually get applied. Fix rides the v4 live-model read.
+
+Recon plumbing (in tree): dev builds scan in MP but stay log-only (`PHASEB-RECON
+roster=… s<n>=…` per peer; 2+ humans guard untouched); release builds skip the MP
+scan. `PHASEB-CAND` logs every candidate array raw. Rig traps: the Workshop copy and
+the local mod share a display name (local = higher version, 4.1); a game relaunched
+during a deploy keeps the old DLL inode (rsync replaces by rename — verify with the
+freshness tells: fresh `tf_astar.log` + `MOD_DEBUG_AI.txt` within seconds of match
+start).
 
 ## RAM reconnaissance — what else is extractable (survey 2026-07-18)
 
