@@ -192,6 +192,15 @@ cloaked base's bib strip. The correct mechanism already existed in the Remaster 
 `VISUAL_HIDDEN` — transparent to the enemy, bib still shown to the owner. This is the canonical
 approach; don't reintroduce smudge removal.
 
+**Covering-building resolution hardened 2026-07-18 (`58ae18f`), first AI-built generator in the
+wild:** the original this-cell-or-one-north probe missed TD foundations — TDPROC's entire bottom
+row is overlap-only (`TdOListProc`), so cloaked TD refineries kept floating bibs. The probe now
+reconstructs the bib rectangle from `SmudgeData` (col + row·Width; top row is the owner's bottom
+foundation row, column-aligned per `Bib_And_Offset`) and walks north through candidate foundation
+rows, resolving at the first row holding any building, probing every column per row (per-cell
+holes: dock notch, hand of Nod). `TF_BIB_DIAG` (dev builds) logs any bib that still draws with
+what it resolved to.
+
 ## Balance
 
 **Effective HP = 400** (`Strength=200`, doubled by the TD-prefix rule). Set 2026-07-15 after a
