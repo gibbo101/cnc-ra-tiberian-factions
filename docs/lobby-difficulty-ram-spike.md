@@ -47,6 +47,13 @@ DLL needs it. Addresses are per-run (heap); only the record SHAPE is stable.
 Other AIPLAYER hits in memory (log strings, render/debug copies, a TLV message block
 with per-slot tags) exist — the scanner must validate candidates, not take the first hit.
 
+## Reference tooling
+
+`scripts/read_lobby_difficulty.py <pid>` — the proven host-side reader (signature scan +
+record walk, offsets baked in). Get the stable pid with
+`pgrep -f "ClientG.exe GAME_INDEX=0 REDALERT"` while a match is loaded. This is the
+reference the in-DLL phase-A read reimplements via ReadProcessMemory.
+
 ## Implementation design
 
 ### Solo skirmish (phase A)
