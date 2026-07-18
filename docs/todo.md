@@ -44,8 +44,11 @@ on-screen via deferred flush, commit `45bf3b0`) print each house's mode tagged
 the IniName-rename trap: `docs/lobby-difficulty-ram-spike.md`. Remaining:
 - **Phase B (MP host broadcast):** host resolves difficulties, broadcasts via a custom
   EventClass in the deterministic queue; 2+ human matches currently keep the
-  determinism guard (default Hard everywhere). Design in spike doc; test desktop+Deck
-  over Tailscale.
+  determinism guard (default Hard everywhere). Design in spike doc. **Test rig (Luke,
+  2026-07-18): Linux desktop + Luke's Deck + son's Deck** (son's Deck explicitly
+  approved for these MP tests) — 3-peer comp-stomp lobby over Tailscale, assert no
+  desync + identical difficulty lines in every peer's MOD_DEBUG_AI.txt. All three
+  machines need the same DLL build deployed at session start.
 - **Workshop copy at next release:** document per-slot lobby difficulty as a feature
   (and `tf_ai_difficulty.txt` as the fallback lever). DontCryJustDie is already in the
   mod credits (TD-Assets); no new ack needed — though the release notes can mention the
