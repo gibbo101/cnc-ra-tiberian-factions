@@ -492,6 +492,14 @@ bool MPlayerIsHuman[MAX_PLAYERS];
 int MPlayerTeamIDs[MAX_PLAYERS];
 int MPlayerStartLocations[MAX_PLAYERS];
 
+// Tiberian Factions -- number of human players in the current match, set by
+// CNC_Set_Multiplayer_Data. Used to keep AI difficulty deterministic in
+// multiplayer: with 2+ humans every peer must derive the same AI IQ or the
+// lockstep sim desyncs, so the per-machine difficulty lever (tf_ai_difficulty.txt)
+// is ignored and all peers fall to the built-in default. See
+// docs/lobby-difficulty-ram-spike.md (host-broadcast design supersedes this guard).
+int TF_HumanPlayerCount = 1;
+
 bool MPSuperWeaponDisable = false;
 bool ShareAllyVisibility = true;
 bool UseGlyphXStartLocations = true;
@@ -896,6 +904,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         Session.Players.Delete(Session.Players[0]);
     }
 
+    int humans = 0;
     for (int i = 0; i < num_players; i++) {
         CNCPlayerInfoStruct& player_info = player_list[i];
 
@@ -932,6 +941,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         MPlayerIsHuman[i] = !player_info.IsAI;
         MPlayerTeamIDs[i] = player_info.Team;
         MPlayerStartLocations[i] = player_info.StartLocationIndex;
+        if (!player_info.IsAI) {
+            humans++;
+        }
 
         /*
         ** Temp fix for custom maps that don't have valid start positions set from matchmaking
@@ -940,6 +952,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
             MPlayerStartLocations[i] = i;
         }
     }
+
+    TF_HumanPlayerCount = (humans > 0) ? humans : 1;
 
 #if TF_DEV_BUILD // TF_AI_DIAG -- dump everything the client sends per lobby slot.
     // Hunting a per-slot difficulty channel: the struct has no difficulty field, but the
@@ -2217,8 +2231,15 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
     **	every difficulty.
     */
     DiffType diff = DIFF_HARD;
-    char tf_diff_source = 'd'; // d=default, f=file
-    {
+    char tf_diff_source = 'd'; // d=default, f=file, m=multiplayer-guard
+
+    // Multiplayer determinism guard: with 2+ human players the AI IQ must be
+    // identical on every peer or the lockstep sim desyncs. The flag file is
+    // per-machine, so it is only honoured in solo play; MP forces the default
+    // until the host-broadcast path lands (docs/lobby-difficulty-ram-spike.md).
+    if (TF_HumanPlayerCount >= 2) {
+        tf_diff_source = 'm';
+    } else {
         const char* up = getenv("USERPROFILE");
         char p[600];
         snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_ai_difficulty.txt", up ? up : ".");
@@ -2263,7 +2284,9 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
                     difficulty,
                     (int)diff,
                     iq,
-                    tf_diff_source == 'f' ? "tf_ai_difficulty.txt" : "default-hard (client value ignored)");
+                    tf_diff_source == 'f'   ? "tf_ai_difficulty.txt"
+                    : tf_diff_source == 'm' ? "default-hard (MP determinism guard: 2+ humans)"
+                                            : "default-hard (client value ignored)");
             fclose(f);
         }
     }
