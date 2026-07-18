@@ -7726,20 +7726,85 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
         ** Tiberian Factions -- hide a building's bib while the building is cloaked and
         ** hidden from the local player (the Nod Stealth Generator field). Bibs are stamped
         ** into cells independent of the building sprite, so without this they stay on the
-        ** ground and betray a cloaked base to the enemy. A bib sits on the building's bottom
-        ** row (an occupy cell -> Cell_Building resolves here) and one row south (the building
-        ** is then one row north). Owner-side keeps the bib: the building renders as shadowy,
-        ** not VISUAL_HIDDEN, so this guard only trips for a viewer who cannot see it.
+        ** ground and betray a cloaked base to the enemy. The covering building is resolved
+        ** exactly: SmudgeData encodes this cell's position within the bib (col + row*Width),
+        ** and the bib's top row is the building's bottom foundation row, column-aligned
+        ** (Bib_And_Offset). Every top-row column is probed because foundations can have
+        ** occupy-list holes (refinery dock, hand of Nod) -- a single straight-north probe
+        ** can miss the building and leave its bib floating on the enemy's screen.
+        ** Owner-side keeps the bib: the building renders as shadowy, not VISUAL_HIDDEN,
+        ** so this guard only trips for a viewer who cannot see it.
         */
         bool tf_hide_bib = false;
-        if (smudge_type.IsBib) {
-            BuildingClass* tf_occ = cell_ptr->Cell_Building();
-            if (tf_occ == NULL && cell >= MAP_CELL_W) {
-                tf_occ = Map[(CELL)(cell - MAP_CELL_W)].Cell_Building();
+        if (smudge_type.IsBib && smudge_type.Width > 0) {
+            int tf_col = cell_ptr->SmudgeData % smudge_type.Width;
+            int tf_row = cell_ptr->SmudgeData / smudge_type.Width;
+            int tf_top_left = (int)cell - tf_col - tf_row * MAP_CELL_W;
+            /*
+            **	The bib's top row coincides with the owner's bottom foundation row, but
+            **	that row can be entirely occupy-free (TDPROC's bottom row is overlap-only),
+            **	so the probe walks north through the candidate foundation rows and resolves
+            **	at the first row holding any building. Column-by-column within a row because
+            **	foundations also have per-cell holes (refinery dock, hand of Nod).
+            */
+            BuildingClass* tf_owner = NULL;
+            int tf_owner_row = -1;
+            for (int tf_r = 0; tf_r < 4 && tf_owner == NULL; tf_r++) {
+                for (int tf_c = 0; tf_c < smudge_type.Width; tf_c++) {
+                    int tf_probe = tf_top_left - tf_r * MAP_CELL_W + tf_c;
+                    if (tf_probe < 0 || tf_probe >= MAP_CELL_TOTAL) {
+                        continue;
+                    }
+                    BuildingClass* tf_occ = Map[(CELL)tf_probe].Cell_Building();
+                    if (tf_occ == NULL) {
+                        continue;
+                    }
+                    if (tf_owner == NULL) {
+                        tf_owner = tf_occ;
+                        tf_owner_row = tf_r;
+                    }
+                    if (tf_occ->Visual_Character() == VISUAL_HIDDEN) {
+                        tf_owner = tf_occ;
+                        tf_hide_bib = true;
+                        break;
+                    }
+                }
             }
-            if (tf_occ != NULL && tf_occ->Visual_Character() == VISUAL_HIDDEN) {
-                tf_hide_bib = true;
+
+#if TF_DEV_BUILD // TF_BIB_DIAG -- every drawn (non-hidden) bib cell: what did it resolve to?
+            if (!tf_hide_bib && (Frame % 60) == 0) {
+                const char* up = getenv("USERPROFILE");
+                char path[600];
+                snprintf(path, sizeof(path), "%s/tf_bib.log", up ? up : ".");
+                FILE* bf = fopen(path, "a");
+                if (bf != NULL) {
+                    if (tf_owner != NULL) {
+                        fprintf(bf,
+                                "F%ld cell=%d (x=%d y=%d) %s data=%d -> %s(vc=%d,H%d) at row -%d\n",
+                                (long)Frame,
+                                (int)cell,
+                                Cell_X(cell),
+                                Cell_Y(cell),
+                                smudge_type.IniName,
+                                (int)cell_ptr->SmudgeData,
+                                tf_owner->Class->IniName,
+                                (int)tf_owner->Visual_Character(),
+                                (int)tf_owner->Owner(),
+                                tf_owner_row);
+                    } else {
+                        fprintf(bf,
+                                "F%ld cell=%d (x=%d y=%d) %s data=%d -> UNRESOLVED\n",
+                                (long)Frame,
+                                (int)cell,
+                                Cell_X(cell),
+                                Cell_Y(cell),
+                                smudge_type.IniName,
+                                (int)cell_ptr->SmudgeData);
+                    }
+                    fclose(bf);
+                }
             }
+#endif
         }
 
 #if 0 // TF DIAGNOSTIC stub: bib entries on TD-template cells (~/tf_bib.log). \
