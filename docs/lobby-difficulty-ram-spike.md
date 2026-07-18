@@ -96,6 +96,38 @@ difficulties on the same frame. Per-machine reads (RAM or flag file) would desyn
 Test plan for phase B: desktop + Deck over Tailscale, comp-stomp lobby, assert no
 desync and identical MOD_DEBUG_AI difficulty lines both sides.
 
+## RAM reconnaissance — what else is extractable (survey 2026-07-18)
+
+Question posed: is reading ClientG RAM a general "launcher unblocker"? **No — it is a
+lobby-SELECTION extraction channel, not a capability unlocker.** The distinction is
+read vs write:
+
+- **Reading** ClientG surfaces values the client computed but won't pass the DLL
+  (difficulty is the proven case). Good for "the client knows X, the DLL needs X, no
+  official pipe."
+- The launcher WALLS (5th faction, playable campaign, hotkey classes, front-end
+  textures — see `bui-front-end-modding.md`, `front-end-texture-meg-spike.md`) are
+  limits of the client's COMPILED BEHAVIOUR, not hidden data. Reading can't change them;
+  writing (`WriteProcessMemory`) can't add code paths that don't exist and is the
+  fragile/AV-triggering/crash-prone route we deliberately avoid. RAM does NOT move these.
+
+Token survey of a live in-match ClientG (3-AI skirmish):
+
+| Token | Hits | What it is |
+|---|---|---|
+| `AIPLAYERn` | array | per-slot AI record — difficulty at +0x64 (THE win) |
+| `FACTION5` | 21 | faction-type registry object (`FACTION5\0NTTYPEI` + index) — slot faction assignments are readable |
+| `Docklands` | 17 | selected map name |
+| `CASUAL` | 25 | difficulty label strings (Casual/Normal/Brutal-family UI text) |
+| `EnableSuperweaponsGroup` | 2 | asset GROUP NAME, not the live toggle value |
+| `FirepowerBias`, `MPlayerCredits`, `UnitCount`, `BRUTAL` | 0 | rules/option VALUES are not string-tagged in RAM (credits/unitcount already arrive via CNC_Set_Multiplayer_Data anyway) |
+
+Takeaway: extractable = lobby's **named selections/definitions** (faction-per-slot, map,
+difficulty). NOT extractable as tagged data = numeric rule values (they reach the DLL
+legitimately or exist only as raw untagged numbers). So the practical yield beyond
+difficulty is thin — most lobby data the DLL needs, it already gets. Difficulty was the
+one real gap, and it's solved.
+
 ## Risks / caveats
 
 - **AV heuristics (Windows players):** a game DLL calling `ReadProcessMemory` on a
