@@ -1924,6 +1924,47 @@ bool Debug_Write_Shape(const char* file_name, void const* shapefile, int shapenu
                  // from CNC_Advance_Instance once the match is on screen.
 static char TFHelloPending[MAX_PLAYERS][128];
 static int TFHelloPendingCount = 0;
+
+// Player-facing side name for the on-screen difficulty readout.
+static const char* TF_Side_Name(HousesType act_like)
+{
+    switch (act_like) {
+    case HOUSE_GOOD:
+        return "GDI";
+    case HOUSE_BAD:
+        return "Nod";
+    case HOUSE_USSR:
+    case HOUSE_UKRAINE:
+        return "Soviet";
+    default:
+        return "Allied";
+    }
+}
+
+// Lobby color name for the on-screen difficulty readout.
+static const char* TF_Color_Name(PlayerColorType color)
+{
+    switch (color) {
+    case PCOLOR_GOLD:
+        return "Gold";
+    case PCOLOR_LTBLUE:
+        return "Teal";
+    case PCOLOR_RED:
+        return "Red";
+    case PCOLOR_GREEN:
+        return "Green";
+    case PCOLOR_ORANGE:
+        return "Orange";
+    case PCOLOR_GREY:
+        return "Grey";
+    case PCOLOR_BLUE:
+        return "Blue";
+    case PCOLOR_BROWN:
+        return "Brown";
+    default:
+        return "Unknown";
+    }
+}
 #endif
 
 /**************************************************************************************************
@@ -2524,25 +2565,29 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
                 } else {
                     strcpy(source_tag, "global");
                 }
-                char hello[128];
-                snprintf(hello,
-                         sizeof(hello),
-                         "HELLO IM H%d (ActLike=%d) IN %s MODE (IQ=%d) [%s]",
-                         (int)housep->Class->House,
-                         (int)housep->ActLike,
-                         mode,
-                         housep->IQ,
-                         source_tag);
                 FILE* _tfdbg = TF_AI_Diag_File();
                 if (_tfdbg != NULL) {
-                    fprintf(_tfdbg, "%s\n", hello);
+                    fprintf(_tfdbg,
+                            "HELLO IM H%d (ActLike=%d) IN %s MODE (IQ=%d) [%s]\n",
+                            (int)housep->Class->House,
+                            (int)housep->ActLike,
+                            mode,
+                            housep->IQ,
+                            source_tag);
                     fflush(_tfdbg);
                 }
+                // On-screen copy is the readable form (full detail stays in the log).
                 // Sent now, the client drops the message (match not rendering yet);
                 // queued here and flushed to screen from CNC_Advance_Instance.
                 if (TFHelloPendingCount < ARRAY_SIZE(TFHelloPending)) {
-                    strncpy(TFHelloPending[TFHelloPendingCount], hello, sizeof(TFHelloPending[0]) - 1);
-                    TFHelloPending[TFHelloPendingCount][sizeof(TFHelloPending[0]) - 1] = '\0';
+                    const char* mode_nice =
+                        (house_diff == DIFF_EASY) ? "Easy" : (house_diff == DIFF_HARD) ? "Hard" : "Medium";
+                    snprintf(TFHelloPending[TFHelloPendingCount],
+                             sizeof(TFHelloPending[0]),
+                             "Enemy AI: %s (%s) - %s",
+                             TF_Side_Name(housep->ActLike),
+                             TF_Color_Name(housep->RemapColor),
+                             mode_nice);
                     TFHelloPendingCount++;
                 }
             }
