@@ -527,6 +527,13 @@ static int TF_AILobbySlotByHouse[MAX_PLAYERS];
 // Captured at CNC_Set_Multiplayer_Data; anchors the per-slot difficulty RAM scan.
 static unsigned TF_LobbyAIRosterMask = 0;
 
+// Each AI slot's GlyphxID (a hash of the AIPLAYERn name, so identical on every peer
+// whose client agrees on the name). Needles for the phase-B live-lobby-model probe:
+// the AIPLAYERn record array turned out to be the per-account SAVED skirmish config,
+// not the live MP lobby -- the live model (which the lobby UI renders on host and
+// joiner alike) must hold these IDs somewhere else in client memory.
+static unsigned long long TF_LobbyAIGlyphxID[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
+
 bool MPSuperWeaponDisable = false;
 bool ShareAllyVisibility = true;
 bool UseGlyphXStartLocations = true;
@@ -933,6 +940,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
 
     memset(TF_AILobbySlotByHouse, 0, sizeof(TF_AILobbySlotByHouse));
     TF_LobbyAIRosterMask = 0;
+    memset(TF_LobbyAIGlyphxID, 0, sizeof(TF_LobbyAIGlyphxID));
 
     int humans = 0;
     for (int i = 0; i < num_players; i++) {
@@ -946,6 +954,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
             if (sscanf(player_info.Name, "AIPLAYER%d", &roster_n) == 1 && roster_n >= 1
                 && roster_n <= TF_LOBBY_MAX_AI_SLOTS) {
                 TF_LobbyAIRosterMask |= (1u << roster_n);
+                TF_LobbyAIGlyphxID[roster_n] = (unsigned long long)player_info.GlyphxPlayerID;
             }
         }
 
@@ -2544,6 +2553,125 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
     return roster_read;
 }
 
+#if TF_DEV_BUILD
+/*
+**	Phase-B live-lobby-model probe (recon, log-only). The AIPLAYERn record array is the
+**	per-account SAVED skirmish config, not the live MP lobby -- yet host and joiner UIs
+**	both display the host's real per-slot difficulties, so a live model exists in every
+**	peer's client. Hunt it by its only known synced handle: each AI slot's GlyphxID
+**	(hash of the slot name). Dumps bounded context around every RAM occurrence of each
+**	ID so the difficulty int's offset can be derived by diffing dumps across peers and
+**	across lobbies with different picks.
+*/
+static void TF_PhaseB_GlyphxID_Probe(void)
+{
+    FILE* dbg = TF_AI_Diag_File();
+    if (dbg == NULL || TF_LobbyAIRosterMask == 0) {
+        return;
+    }
+
+    unsigned long long needles[TF_LOBBY_MAX_AI_SLOTS];
+    int needle_n[TF_LOBBY_MAX_AI_SLOTS];
+    int needle_count = 0;
+    for (int n = 1; n <= TF_LOBBY_MAX_AI_SLOTS; n++) {
+        if ((TF_LobbyAIRosterMask & (1u << n)) && TF_LobbyAIGlyphxID[n] != 0) {
+            needles[needle_count] = TF_LobbyAIGlyphxID[n];
+            needle_n[needle_count] = n;
+            needle_count++;
+        }
+    }
+    if (needle_count == 0) {
+        return;
+    }
+
+    static unsigned char scratch[1 << 20];
+    const SIZE_T overlap = 16;
+    int lines = 0;
+    const int lines_max = 48; // bounded dump; enough hits to triangulate an offset
+
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) {
+        return;
+    }
+    PROCESSENTRY32W pe;
+    pe.dwSize = sizeof(pe);
+    if (Process32FirstW(snap, &pe)) {
+        do {
+            if (_wcsicmp(pe.szExeFile, L"ClientG.exe") != 0) {
+                continue;
+            }
+            HANDLE proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, pe.th32ProcessID);
+            if (proc == NULL) {
+                continue;
+            }
+            SIZE_T addr = 0;
+            MEMORY_BASIC_INFORMATION mbi;
+            while (lines < lines_max && VirtualQueryEx(proc, (LPCVOID)addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
+                SIZE_T region_base = (SIZE_T)mbi.BaseAddress;
+                SIZE_T region_size = mbi.RegionSize;
+                bool scannable = (mbi.State == MEM_COMMIT) && (mbi.Type == MEM_PRIVATE)
+                                 && (mbi.Protect == PAGE_READWRITE || mbi.Protect == PAGE_EXECUTE_READWRITE)
+                                 && region_size <= ((SIZE_T)512 << 20);
+                if (scannable) {
+                    for (SIZE_T off = 0; off < region_size && lines < lines_max; off += sizeof(scratch) - overlap) {
+                        SIZE_T want = region_size - off;
+                        if (want > sizeof(scratch)) {
+                            want = sizeof(scratch);
+                        }
+                        SIZE_T got = 0;
+                        ReadProcessMemory(proc, (LPCVOID)(region_base + off), scratch, want, &got);
+                        if (got < sizeof(unsigned long long)) {
+                            continue;
+                        }
+                        for (SIZE_T i = 0; i + sizeof(unsigned long long) <= got && lines < lines_max; i += 4) {
+                            unsigned long long v;
+                            memcpy(&v, scratch + i, sizeof(v));
+                            for (int q = 0; q < needle_count; q++) {
+                                if (v != needles[q]) {
+                                    continue;
+                                }
+                                // Context re-read straight from the process: 0x40 before
+                                // the ID through 0x80 after, hex + printable ascii.
+                                unsigned char ctx[0xC0];
+                                SIZE_T hit = region_base + off + i;
+                                SIZE_T base = (hit >= 0x40) ? hit - 0x40 : 0;
+                                SIZE_T ctx_got = 0;
+                                ReadProcessMemory(proc, (LPCVOID)base, ctx, sizeof(ctx), &ctx_got);
+                                fprintf(dbg,
+                                        "PHASEB-ID n=%d id=%llu @%08lx base=%08lx hex=",
+                                        needle_n[q],
+                                        needles[q],
+                                        (unsigned long)hit,
+                                        (unsigned long)base);
+                                for (SIZE_T b = 0; b < ctx_got; b++) {
+                                    fprintf(dbg, "%02x", ctx[b]);
+                                }
+                                fprintf(dbg, " ascii=");
+                                for (SIZE_T b = 0; b < ctx_got; b++) {
+                                    fputc((ctx[b] >= 32 && ctx[b] <= 126) ? ctx[b] : '.', dbg);
+                                }
+                                fputc('\n', dbg);
+                                lines++;
+                                break;
+                            }
+                        }
+                    }
+                }
+                SIZE_T next = region_base + region_size;
+                if (next <= addr) {
+                    break;
+                }
+                addr = next;
+            }
+            CloseHandle(proc);
+        } while (Process32NextW(snap, &pe));
+    }
+    CloseHandle(snap);
+    fprintf(dbg, "PHASEB-ID done lines=%d (cap=%d)\n", lines, lines_max);
+    fflush(dbg);
+}
+#endif
+
 /**************************************************************************************************
  * CNC_Set_Difficulty -- Set game difficulty
  *
@@ -2735,6 +2863,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
                 fprintf(f, " (log-only, guard kept per-slot unapplied)\n");
             }
             fclose(f);
+            // Live-lobby-model hunt: dump context around each AI GlyphxID occurrence
+            // (writes via TF_AI_Diag_File, so the direct handle is closed first).
+            if (TF_HumanPlayerCount >= 2) {
+                TF_PhaseB_GlyphxID_Probe();
+            }
         }
     }
 #endif
