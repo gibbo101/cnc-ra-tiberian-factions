@@ -247,6 +247,16 @@ Research complete (agent report, §7). Two routes for staging-then-blob:
 3. **Superweapons for RA factions:** Iron Curtain + Chronosphere AI dispatch + AI-aware
    targeting (P3b/3c — currently reads the mouse; AI Boost has working IC/Chrono usage as
    reference); parabomb ungate (P3d) — delivers the MISSED Soviet parabombs item from v4.0.
+   - **AI builds the Missile Silo (RA nuke host):** the firing path already exists and is
+     fair-fog-aware (`Special_Weapon_AI(SPC_NUCLEAR_BOMB)`, gated on active MSLO +
+     IQ >= Rule.IQSuperWeapons) — the AI just never queues the host, exactly the TDTMPL
+     starvation shape (fixed 2026-07-18). Fix = one AI_Building pool entry modeled on the
+     Stealth Generator slot (one silo, full power + income gates). Soviets work immediately.
+     **Allied blocker:** `[MSLO] Prerequisite=stek` (Soviet tech center), so Allied AI (and
+     players) can't build one without a captured STEK under current rules — resolves when
+     the W2 buildability rework generalizes the Missile Silo to the "fully generic" prereq
+     class (§2.1: any faction's tech center satisfies). Do the pool entry together with
+     that, or accept Soviet-only if shipped earlier.
 4. **Special units:** Spy/Thief/Dog AI production + usage (currently Value=0, never built);
    AI Boost engineer/spy/MAD-tank handling as reference.
 

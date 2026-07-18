@@ -47,7 +47,10 @@ the IniName-rename trap: `docs/lobby-difficulty-ram-spike.md`. Remaining:
   determinism guard (default Hard everywhere). Design in spike doc; test desktop+Deck
   over Tailscale.
 - **Workshop copy at next release:** document per-slot lobby difficulty as a feature
-  (and `tf_ai_difficulty.txt` as the fallback lever).
+  (and `tf_ai_difficulty.txt` as the fallback lever). Credit DontCryJustDie in the acks:
+  they pointed at client process memory as the channel, and later built their own
+  implementation from our published `lobby-difficulty-ram-spike.md` (Workshop thread,
+  2026-07-18) — the design doc is now shared community reference.
 - **RAM is an extraction channel, NOT a launcher unblocker** (survey confirmed): reads
   lobby selections (faction-per-slot, map, difficulty); does not move compiled-behaviour
   walls. Don't over-scope it.
