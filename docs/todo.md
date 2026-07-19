@@ -33,6 +33,17 @@ capture testing is done (dev-build-only either way).
 
 ---
 
+## Wishlist: "Unholy Alliance" mode — start with every faction's ConYard (Luke, 2026-07-20)
+
+Start each player with all four factions' construction yards (or MCVs). **The mechanics are
+already proven:** the `tf_mcv_test.flag` dev lever spawns one MCV of each faction and every
+one deploys its own faction's yard/tree (b3's type-carries-faction). What's missing is a
+player-facing switch — the lobby UI is launcher-owned (no new checkboxes), so delivery
+candidates: a rules.ini toggle (`[MultiplayerDefaults]`-style, users edit a shipped file),
+a `.flag`-file option documented on the Workshop page, or an "Unholy Alliance" CustomMaps
+variant that carries the flag per map. Decide the vehicle when picking it up; the spawn code
+generalises straight from `TF_Dev_MCV_Test` in scenario.cpp.
+
 ## Faction paratroops split (Luke, 2026-07-20 — queued; ride 4.1 if testing is quick, else 4.1.1)
 
 **Observed:** owning the Soviet airfield AND Nod airstrip+Hand still gives ONE paratroop
