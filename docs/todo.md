@@ -11,8 +11,9 @@ maintenance, and queued tasks. Newest at top.
 thrown in.** 96 commits since v4.0.0. Headline content: separated tech trees (W2 b2/b3/(c)/(d):
 per-faction construction yards, MCVs, war factories, helipads; capture carries the full tree),
 the locked prerequisite policy (shared low-tier infrastructure, faction-identity everything
-else, dome ≠ TDHQ), ~40 faction-badged sidebar cameos (mod-logo emblems), per-slot AI lobby
-difficulty incl. LAN, AI Phase 0/1 fixes (blind-scout dispatcher, temple starvation, economy
+else, dome ≠ TDHQ), owner-set badges on ALL 126 buildable cameos (mod-logo emblems; shared
+entries show every owning faction), the faction-block sidebar sort (shared first, then
+Allied/Soviet/GDI/Nod, tech-ordered), per-slot AI lobby difficulty incl. LAN, AI Phase 0/1 fixes (blind-scout dispatcher, temple starvation, economy
 gates, harvester idle-home), the A* heap + expansion budget, and the Stealth Generator work.
 
 **Before shipping (test pass):** (d) helipad behaviour in play (free heli per pad, universal
