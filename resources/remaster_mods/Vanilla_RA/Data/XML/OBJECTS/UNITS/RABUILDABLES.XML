@@ -161,7 +161,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_SAM</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SAM_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_SamSite</BuildIcon>
+			<BuildIcon>BuildIcon_SAM</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -1532,7 +1532,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_NOD_SAM_SITE</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_NOD_SAM_SITE</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_SamSite</BuildIcon>
+			<BuildIcon>BuildIcon_TDSAM</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
