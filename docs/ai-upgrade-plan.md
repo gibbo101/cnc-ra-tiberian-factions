@@ -166,6 +166,36 @@ Engineering survey COMPLETE (2026-07-17). Load-bearing findings:
 split (re-split shared TDFACT/TDMCV into GDI/Nod + add Allied/Soviet, incl. spawn work);
 (c) War Factory; (d) Helipad last (dual-nature). Role-flag refactor lands with (b).
 
+**Naming spec (decided 2026-07-19, Luke).** Every type W2 splits is today a SHARED entry
+with no per-faction name, so the split silently produces duplicate cameos. Rule: **the
+Allied/Soviet axis ALWAYS needs prefixing** — RA served both sides from one entry, so the
+halves share a name *and* a sprite. The **GDI/Nod axis usually does not** — TD gave them
+genuinely different buildings. Set `Name=` at split time, not as an afterthought:
+
+| Step | Shared entry today | Split into | Names |
+|---|---|---|---|
+| (b) | `[FACT]` `allies,soviet` + `[TDFACT]` `GoodGuy,BadGuy`, all "Construction Yard" | 4 | Allied / Soviet / GDI / Nod Construction Yard |
+| (b) | `[MCV]` `allies,soviet` + `[TDMCV]` `GoodGuy,BadGuy`, all "Mobile Construction Vehicle" | 4 | Allied / Soviet / GDI / Nod MCV |
+| (c) | `[WEAP]` `soviet,allies` "War Factory" | 2 | Allied / Soviet War Factory |
+| (d) | `[HELIPAD]` `allies,soviet` + `[TDHPAD]` `GoodGuy,BadGuy`, all "Helipad" | 4 | Allied / Soviet / GDI / Nod Helipad |
+
+- (c) is 2-way only: GDI's `[TDWEAP]` is already "Weapons Factory" and Nod builds
+  `[TDAFLD]` "Airstrip" — distinct names AND distinct art, leave both alone.
+- MCV/ConYard/Helipad are the four-way cases: within each pair the sprite is identical, so
+  the name is the ONLY discriminator. The MCV matters most — it is a buildable cameo, so a
+  captured factory can offer two visually identical MCVs.
+- Faction-prefixed names DEVIATE from TD/RA-authentic naming (TD called them plain
+  "Construction Yard"). Deliberate, per the balance guardrails — record it in
+  `balance-deep-dive.md` when (b) lands.
+- `[PROC]` and `[DOME]` are also shared `allies,soviet` but W2 does NOT split them; leave.
+
+**Splitting DELETES Can_Build remaps, it doesn't only add them.** The `house.cpp:1036-1196`
+equivalence clauses exist partly because entities are shared: `[TDHPAD]`'s
+`Prerequisite=TDPYLE` is why the TDPYLE↔TDHAND mutual-equivalence clause is load-bearing
+(Nod owns a Hand of Nod, not a barracks). Per-faction pads take their own prereq directly,
+retiring that need. Each of (b)/(c)/(d) should check whether it removes a remap before
+adding one.
+
 ### W3 — The brain: build planner + placement
 1. **Staged build planner** replacing the shouting-urgency-slots model: coherent opening
    (economy first — fixes GDI/Nod eco passivity), then production, tech when affordable
