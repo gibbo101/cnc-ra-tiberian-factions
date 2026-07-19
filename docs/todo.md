@@ -5,6 +5,19 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Campaign ("The Inheritance War") — pipeline PROVEN, authoring DEFERRED behind the AI pass
+
+**Decision (Luke, 2026-07-19): no mission authoring until the AI milestone is done.** The
+research risk is now zero — hijacked CS/AM slots launch our own scenario INIs via CCDATA,
+verified on desktop AND Deck (`docs/campaign-tabs-research.md`); `INSTANCES.XML` drives the
+roster; the Mobius fork is mod-aware for authoring; desert theatre works if TD terrain is
+wanted. What remains is content, and it waits.
+
+**First task when it resumes:** author GDI mission 1 ("First Light") for real in an Aftermath
+slot — proper map, briefing, win/lose conditions — before committing to all 9. The throwaway
+probe (empty map, instant win) did NOT exercise triggers, teamtypes, or how the briefing and
+mission title present on screen; those are the unknowns a real first mission would settle.
+
 ## ⭐ AI milestone Phase 1 — MERGED to main + LIVE-VERIFIED 2026-07-18 (commit `e01bc35`)
 
 **Full handover: `docs/ai-phase1-handover.md`.** W7 difficulty→IQ, W1.5 primary-factory,
