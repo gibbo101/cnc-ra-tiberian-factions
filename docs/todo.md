@@ -24,15 +24,20 @@ built the GDI/Nod naval units and which produces genuinely independent entities.
 [[feedback-check-repo-docs-first]].
 
 **Pick up by (Luke's direction):**
-1. Read `td-port-playbook.md` + both bundling scripts END TO END before coding.
-2. Resolve the open question in postmortem §4 — **why pipeline-built entities display their
-   `Name=` on the sidebar and hand-edited ones do not.** Diff `TDGYARD`/`TDFBNK` against
-   `RA_AMCV` across every layer. Do NOT test one hypothesis per game launch (4 failed that way).
-3. Build **all four MCVs and all four yards as fresh, fully independent entities** through the
-   pipeline — own art, own tileset keys, own `BuildIcon`, own object class, no `Image=` sharing.
-   Vanilla `MCV`/`FACT` stay in the enum for stock-campaign compat only.
-4. Badged cameos (Luke's idea) — emblems already exist at
-   `Data/ART/TEXTURES/SRGB/RED_ALERT/VFX/dot{ally,ussr,gdi,nod}/`.
+1. ~~Read `td-port-playbook.md` + both bundling scripts END TO END before coding.~~ ✅ DONE 2026-07-19.
+2. ~~Resolve the open question in postmortem §4.~~ ✅ **RESOLVED 2026-07-19: `Data/ModText.csv`.**
+   The launcher merges that CSV into its string table; pipeline entities have rows there, the
+   MCVs/yards don't, and both hand-edited MCV IDs happen to resolve to the literal string 'MCV'
+   in the base text. Full chain in postmortem §4. Naming for the 8 new entities = bundler
+   `--text-name`/`--text-desc` + ModText.csv rows.
+3. ~~Build all four MCVs and all four yards as fresh, fully independent entities.~~ ✅ **DONE
+   2026-07-19 (built + staged, awaiting in-game verify + commit).** Vanilla
+   `FACT`/`MCV`/`TDFACT`/`TDMCV` identities restored (From_Name aliases gone); 8 fresh types
+   (`AFACT`/`SFACT`/`TDGFACT`/`TDNFACT`, `AMCV`/`SMCV`/`TDGMCV`/`TDNMCV`) with own pipeline
+   art, tileset keys, RABUILDABLES blocks, ModText.csv names, rules.ini sections; all inert
+   until b3. `bundle_unit.py` gained `--source ra`.
+4. ~~Badged cameos.~~ ✅ **DONE 2026-07-19** — `BuildIcon_{AMCV,SMCV,TDGMCV,TDNMCV}.tga`
+   (base MCV cameo cropped from the commandbar atlas + dot emblem badge, bottom-right).
 5. THEN b3 functional split (`Owner=` narrowing, `TechLevel=7`, four-way deploy/undeploy/spawn),
    b4 bonus-unit picker, then (c) War Factory — (c) closes the headline capture case.
 

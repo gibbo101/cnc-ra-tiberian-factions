@@ -235,6 +235,10 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 - **Workaround:** drag-box to select army; click the MCV with the deploy cursor to deploy. Documented in
   the Workshop "Known limitations". MCV deploy hotkey spike resolved-negative (memory
   `project-mcv-deploy-hotkey-spike`).
+- **Scope widens at W2 b3 (accepted by Luke, 2026-07-19):** the MCV split replaces the vanilla
+  `MCV`/`TDMCV` with four faction MCV types (`AMCV`/`SMCV`/`TDGMCV`/`TDNMCV`) in skirmish, so
+  the deploy hotkey stops working for **Allied and Soviet too** — the GlyphX gate keys on
+  vanilla enum identity and no new type can have it. Mouse self-click deploy remains for all.
 
 ### Classic graphics mode dropped (HD-only)
 - **Severity:** by-design, player-facing.

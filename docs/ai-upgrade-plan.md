@@ -169,8 +169,8 @@ evictions in ~10k frames. NOTE its capture-side effect is LATENT — narrow `Own
 (`[TDMTNK] Owner=GoodGuy`) still do the discriminating, so the exploit only materializes
 once (b)/(c) widen `Owner=`. That is why it lands first. Diagnostic left live under
 `TF_DEV_BUILD`: `MOD_DEBUG_EVICT.txt`, `rule=prereq` = changed behaviour, `rule=factory` =
-vanilla. Then: (b) ConYard split
-(4 yards; MCVs NOT split — see naming spec); (c) War Factory; (d) Helipad last
+vanilla. Then: (b) ConYard + MCV split (4 yards + 4 MCVs, all fresh pipeline-built
+entities — corrected plan, postmortem §5); (c) War Factory; (d) Helipad last
 (dual-nature). Role-flag refactor lands with (b).
 
 **(b) internal order + status (2026-07-19).** **b1 DONE** (`5055f1f`, `c0fbae0`, `a40b828`,
@@ -179,31 +179,30 @@ built, NOT yet playtested): `Is_Construction_Yard()` role predicate + 10 site co
 `TF_Building_Scan_Bit()` (bdata.cpp) so b2's new yards are one table row, not 6 hand-edits;
 `STRUCT_TIBERIAN_LAST` marker bounding the TD/TS enum block so appended RA-side types don't
 inherit TD audio; AI-census diagnostic counting GDI/Nod yards + MCVs. No behaviour change
-except the dev-only census. **b2** = 2 new enum values (Soviet + Nod yards; `STRUCT_CONST`
-becomes Allied-only, `STRUCT_TDFACT` GDI-only) — reuse over 8 fresh types, which would
-re-point every map and site. `Image=` reuse means NO art work. **b3** = the 3 identity
-tables go 4-way on `ActLike` (deploy unit.cpp:124, undeploy building.cpp:5297, spawn
-scenario.cpp:3530) + `Owner=` narrows per yard and WIDENS on TD units, which is what
-finally activates W2(a) — re-run the capture-and-sell test there and expect `rule=prereq`.
-**b4** = the bonus-unit picker (scenario.cpp:3023), the known-issues fold-in.
+except the dev-only census. **b2 (corrected 2026-07-19, rebuilt as fresh entities)** = all
+8 as new pipeline-built types — `STRUCT_AFACT/SFACT/TDGFACT/TDNFACT` +
+`UNIT_AMCV/SMCV/TDGMCV/TDNMCV`, each with own IniName, own art ZIPs + tileset keys
+(`bundle_ra_building.py` / `bundle_unit.py --source ra|td`), own RABUILDABLES block,
+ModText.csv names, badged `BuildIcon_<IniName>.tga` cameos. Vanilla
+`FACT`/`MCV`/`TDFACT`/`TDMCV` keep their identities for stock-campaign content; skirmish
+stops using them at b3. All 8 inert (`TechLevel=-1`/99, `Owner=` still shared) until b3.
+**b3** = the 3 identity tables go 4-way on the TYPE (deploy unit.cpp:124, undeploy
+building.cpp:5297, spawn scenario.cpp:3530) + `Owner=` narrows per faction and WIDENS on TD
+units, which is what finally activates W2(a) — re-run the capture-and-sell test there and
+expect `rule=prereq`. Faction `Name=`/text lands WITH the narrowing (already staged in
+rules.ini + ModText). **b4** = the bonus-unit picker (scenario.cpp:3023), the known-issues
+fold-in.
 
-> **b3 dispatches on the UNIT's ActLike, not the house's (decided 2026-07-19, Luke).**
-> `UnitClass` gains an `ActLike` mirroring `BuildingClass::ActLike` (building.h:74 — *"the
-> house that originally owned this factory... regardless of who the current owner is"*),
-> stamped from the PRODUCING BUILDING's `ActLike` when a factory completes an MCV — the same
-> rule `Update_Buildables` already uses to pick the roster. `MCV_Deploy_Building` then reads
-> `unit->ActLike`.
-> **Why, not house-ActLike dispatch:** capture inheritance is the POINT of W2, and an MCV is
-> how a tech tree propagates. Owner dispatch re-introduces owner-beats-lineage one level
-> above the yard, so the captured tree dies at the last step. **Across eras it already works
-> via the type** (a captured GDI factory offers TDMCV → TDFACT). **The gap is WITHIN an era**
-> — Allied capturing Soviet, GDI capturing Nod — i.e. exactly the two pairs b2 creates, which
-> is why the unit field and the yard split belong in the same milestone.
-> **Why not 4 MCV types:** the deploy hotkey keys on vanilla enum identity, so new values lose
-> it for Soviet while Allied (reusing `UNIT_MCV`) keeps it — an asymmetric regression on
-> vanilla factions. Instance state costs a save-layout change, same category as b2's enum
-> additions, skirmish-only.
-> **Unlocks:** crate-granted enemy MCVs (stamp the `ActLike`) — backlogged in todo.md.
+> **b3 dispatches on the UNIT's TYPE (corrected 2026-07-19).** With 4 real MCV types the
+> type itself carries the faction — an MCV built by a captured factory IS that faction's
+> MCV type (factories produce their own roster via `Update_Buildables`' building-ActLike
+> rule), so capture lineage propagates with no instance field. The earlier
+> `UnitClass::ActLike` design existed only to avoid splitting the MCVs and is dead.
+> **Cost (accepted by Luke):** the GlyphX deploy hotkey keys on vanilla enum identity, so
+> ALL four factions lose it in skirmish (mouse self-click deploy works; playbook §3.23).
+> **Unlocks:** crate-granted enemy MCVs (hand out the faction MCV type) — backlogged in
+> todo.md (the crate mechanism note there predates the MCV split; the TYPE now carries
+> the faction, no ActLike stamp needed).
 
 ⚠️ **Survey claims that did NOT survive verification** (2026-07-19) — do not re-fix:
 `house.cpp:6430` AI never suicide-sells its ConYard (`URGENCY_CRITICAL` means "only at max
@@ -219,43 +218,35 @@ the unit Type with NO `< 32` guard, so `UNIT_TDSTNK`..`UNIT_TSHVR` alias onto bi
 naively adding the guard risks a spurious defeat via the `!UScan` check, so it needs a unit
 shadow table, not a one-liner.
 
-> ⚠️ **SUPERSEDED IN PART (2026-07-19 evening) — read
-> `docs/w2b-conyard-split-postmortem.md` before using anything below.** Three claims in this
-> W2 block are now known wrong: (1) the naming spec assumes rules.ini `Name=` controls the
-> SIDEBAR label — it does not, it drives only the in-world tooltip, and 4 separate attempts to
-> control the cameo label failed in-game; (2) the "reuse `UNIT_MCV`/`STRUCT_CONST` as the
-> Allied pair" decision is reversed — Luke's call is **all four as fresh pipeline-built
-> entities**, like the GDI/Nod naval units; (3) the b3 `UnitClass::ActLike` note below is
-> superseded by that same decision (it only existed to avoid splitting the MCVs). The
-> postmortem carries the corrected plan and the falsified-theory list.
+> ℹ️ **This block was corrected 2026-07-19 (late evening).** The earlier claims — `Name=`
+> drives the sidebar label, reuse vanilla slots for the Allied pair, don't split the MCVs,
+> `UnitClass::ActLike` — were all superseded; `docs/w2b-conyard-split-postmortem.md` has the
+> falsified-theory list and the corrected plan (which the text here now reflects).
 
-**Naming spec (decided 2026-07-19, Luke).** Every type W2 splits is today a SHARED entry
-with no per-faction name, so the split silently produces duplicate cameos. Rule: **the
-Allied/Soviet axis ALWAYS needs prefixing** — RA served both sides from one entry, so the
-halves share a name *and* a sprite. The **GDI/Nod axis usually does not** — TD gave them
-genuinely different buildings. Set `Name=` at split time, not as an afterthought:
+**Naming spec (decided 2026-07-19, Luke; mechanism corrected same day).** Every type W2
+splits is today a SHARED entry with no per-faction name, so the split silently produces
+duplicate cameos. Rule: **the Allied/Soviet axis ALWAYS needs prefixing** — RA served both
+sides from one entry, so the halves share a name *and* a sprite. The **GDI/Nod axis usually
+does not** — TD gave them genuinely different buildings. Mechanism: the SIDEBAR label is
+the RABUILDABLES `ObjectNameTextID` resolved through the launcher string table (base `.LOC`
+merged with the mod's **`Data/ModText.csv`** — postmortem §4); rules.ini `Name=` drives only
+the in-world hover tooltip. Set BOTH at split time, not as an afterthought:
 
 | Step | Shared entry today | Split into | Names |
 |---|---|---|---|
-| (b) | `[FACT]` `allies,soviet` + `[TDFACT]` `GoodGuy,BadGuy`, all "Construction Yard" | 4 | Allied / Soviet / GDI / Nod Construction Yard |
+| (b) | `[FACT]` `allies,soviet` + `[TDFACT]` `GoodGuy,BadGuy`, all "Construction Yard" | 4 | Allied / Soviet / GDI / Nod Construction Yard — **DONE (staged, inert until b3)** |
+| (b) | `[MCV]` `allies,soviet` + `[TDMCV]` `GoodGuy,BadGuy`, all "MCV" | 4 | Allied / Soviet / GDI / Nod MCV — **DONE (staged, inert until b3)** |
 | (c) | `[WEAP]` `soviet,allies` "War Factory" | 2 | Allied / Soviet War Factory |
 | (d) | `[HELIPAD]` `allies,soviet` + `[TDHPAD]` `GoodGuy,BadGuy`, all "Helipad" | 4 | Allied / Soviet / GDI / Nod Helipad |
 
 - (c) is 2-way only: GDI's `[TDWEAP]` is already "Weapons Factory" and Nod builds
   `[TDAFLD]` "Airstrip" — distinct names AND distinct art, leave both alone.
-- ConYard/Helipad are the four-way cases: within each pair the sprite is identical, so the
-  name is the ONLY discriminator.
-- ⚠️ **The MCV row is GONE — MCVs are NOT split (decided 2026-07-19, Luke).** An earlier
-  revision of this spec called the MCV the case that mattered most. It is moot: the deploy
-  hotkey (`COMMAND_CNC_DEPLOY_SELECTED_MCV`, `RTSInputManagerClass` in `ClientG.exe`) keys
-  on vanilla enum identity, so **a new MCV enum value would lose the deploy hotkey for
-  Soviet players, who have it today** — trading a working affordance on a vanilla faction
-  for cosmetic naming. Instead `UNIT_MCV` stays shared Allied+Soviet, `UNIT_TDMCV` stays
-  shared GDI+Nod, and `MCV_Deploy_Building` (unit.cpp:124) dispatches on the house's
-  `ActLike` to pick one of the 4 yards — restoring the idiom that site used before TDMCV
-  became a real enum entry. Costs: an MCV built from a captured enemy factory deploys YOUR
-  faction's yard, not the captured faction's. Accepted. Saves 2 enum values, all of
-  `udata.cpp`, and the duplicate-cameo problem entirely (still one MCV cameo per side).
+- ConYard/Helipad/MCV are the four-way cases: within each pair the sprite is near-identical,
+  so the name + badged cameo are the discriminators (MCV cameos carry the
+  `dot{ally,ussr,gdi,nod}` faction badges — `BuildIcon_<IniName>.tga` loose files).
+- The MCV split costs the GlyphX deploy hotkey for all four factions in skirmish (it keys
+  on vanilla enum identity — playbook §3.23; mouse self-click deploy still works). Luke
+  accepted this deliberately; `known-issues.md` records it.
 - **Harvesters stay as they are** (Luke, 2026-07-19) — the same question was asked for the
   `a` select-all hotkey and the answer is different, because there the faction-varying part
   IS the entity: `[TDHARV]` carries `Image=TDHARV` and `Image=` is per-type, so merging to

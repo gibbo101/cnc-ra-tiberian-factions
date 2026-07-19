@@ -122,25 +122,45 @@ base. Names must land **with** the `Owner=` narrowing that makes them true, not 
 
 ---
 
-## 4. The open question that blocks naming
+## 4. The open question that blocks naming — ✅ RESOLVED 2026-07-19 (data diff, zero game launches)
 
 **Why do pipeline-built entities display their `rules.ini` `Name=` on the sidebar, when their
 `ObjectNameTextID`s are absent from the master text?**
 
-Confirmed absent from our `CONFIG.MEG`: `TEXT_STRUCTURE_TDFBNK`, `TEXT_STRUCTURE_TDGYARD`,
-`TEXT_STRUCTURE_TDGAFLD`, `TEXT_STRUCTURE_TDNPEN`, `TEXT_STRUCTURE_TDSTEAL`, `TEXT_UNIT_TDA10`,
-`TEXT_UNIT_TDDD`, `TEXT_UNIT_TSHVR` and others. Those entities **work**. `RA_AMCV` with an
-equally absent ID **does not**.
+**Answer: they don't display `Name=` at all — they display `Data/ModText.csv`.** The launcher
+merges that loose UTF-16 CSV into its string table at load (the official mod-text mechanism,
+proven 2026-06-22 via DontCryJustDie's Nuke Tank Sample Mod and recorded in
+`faction-select-identity.md` §"CORRECTION 2026-06-22" — and even cited in `ai-upgrade-plan.md`
+§2.1: "names via ModText.csv (proven)"). Every "mysteriously working" entity has its rows there:
+`TEXT_STRUCTURE_TDGYARD` = "GDI Shipyard", `TEXT_STRUCTURE_TDFBNK` = "Flame Bunker",
+`TEXT_UNIT_TSHVR` = "Hover MLRS", etc. Their strings merely *match* their `Name=` values, which
+made the CSV invisible as a mechanism.
+
+The full resolution chain, verified against the actual files with `loc_edit.py get` (the
+correct ASCII-key decoder):
+
+- **Sidebar label = string-table lookup of `ObjectNameTextID`**, where the table = base
+  `MASTERTEXTFILE_*.LOC` ⊕ mod `Data/ModText.csv`. Unresolvable in both → raw ID renders
+  (theory 2's observation, now explained).
+- **`RA_AMCV` shows "MCV" because its ID `TEXT_UNIT_RA_MCV` resolves to exactly `'MCV'`** in
+  the base master text. `RA_TDGMCV`'s `TEXT_UNIT_TITLE_GDI_MCV` *also* resolves to `'MCV'`
+  (the base TD MCV title). Both cameos were displaying precisely what their IDs said — the
+  system was never broken.
+- **`ModText.csv` has no MCV/yard rows** — the W2(b) session hand-edited RABUILDABLES without
+  adding them, so every renaming attempt only re-pointed between IDs that either resolved to
+  "MCV" or resolved to nothing.
+
+**The naming lever for the 8 new entities:** `--text-name`/`--text-desc` via the bundlers +
+matching rows in `Data/ModText.csv` (e.g. `TEXT_UNIT_AMCV,,,Allied MCV,…`). No `.LOC` edit, no
+`CONFIG.MEG` repack, launcher-side so DLL-independent.
+
+*(Historical note: the section below is the pre-resolution state, kept for the method lesson —
+it was solved by a pure data diff, no in-game hypothesis testing needed.)*
 
 So there is a real difference between an entity created by `bundle_ra_building.py` /
 `bundle_unit.py` and one hand-edited, and it was never found — four hypotheses were tested one
-per game launch instead.
-
-**Next session: stop hypothesis-testing. Read `scripts/bundle_ra_building.py` and
-`scripts/bundle_unit.py` end to end, then diff a known-good entity (`TDGYARD` or `TDFBNK`)
-against `RA_AMCV` across EVERY layer** — rules.ini, `RA_STRUCTURES`/`RA_UNITS` tilesets,
-`RABUILDABLES`, the art archives under `Data/ART/TEXTURES/SRGB/`, `BuildIcon_*.tga`, and
-`buildings_manifest.py` — until the difference is identified. It is a diff, not a guess.
+per game launch instead. The difference was `ModText.csv` coverage, found by diffing
+`RABUILDABLES` text IDs against the decoded master text + the mod `Data/` tree.
 
 ---
 
