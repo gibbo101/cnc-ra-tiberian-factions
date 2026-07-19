@@ -75,6 +75,32 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Pathfinding / AI cooperation
 
+### Units livelock re-pathing to the cell they already occupy (`src==dst`) — FIX WRITTEN, UNVERIFIED 2026-07-19
+- **Severity:** major (each affected unit sits out the entire match; engineers worst hit, and it is
+  the dominant source of A* fallbacks — ~88% of all failures in the matches measured).
+- **Status:** root-caused 2026-07-19, fix written in `redalert/foot.cpp`, **not yet playtested**.
+- **Symptom:** `tf_astar.log` fills with fallbacks whose source and destination are the same cell,
+  repeating on a fixed cell indefinitely: `unit=TDE6 src=(58,76) dst=(58,76)`. Measured live at
+  164/193 fallbacks on desktop and reproduced independently on the Deck on a different map. Old
+  pre-heap logs show the same pattern (1452 `E6` occurrences), so it long predates the A* work.
+- **Cause (two parts):**
+  1. `FootClass::Basic_Path` accepts a path only `if (path && path->Cost)` — a path from a cell to
+     itself is legal but **zero-cost**, so it is read as failure. The severity loop then escalates
+     `PathThreshhold` through every level, each returning the same zero-cost path, and gives up.
+  2. `Stop_Driver()` clears `HeadToCoord` but **not `NavCom`**, so the unit re-enters `Basic_Path`
+     every `PathDelay` (`0.016 * 900` ≈ 14 ticks) with the identical destination, forever.
+  The degenerate destination is manufactured by `Map.Nearby_Location()` at `foot.cpp:334`: when the
+  target cell is impassable it substitutes a nearby passable cell in the unit's movement zone, and
+  the unit's own cell trivially qualifies. Engineers hit it hardest because a capture target is a
+  building, i.e. always an impassable cell.
+- **Fix:** reject the unit's own cell as a `Nearby_Location` substitute, and treat a destination
+  equal to the current cell as arrival (`Stop_Driver` + `Assign_Destination(TARGET_NONE)`) instead
+  of retrying. Touches `FootClass`, so it affects every ground unit — playtest accordingly.
+- **Success signal:** the `src==dst` share of A* fallbacks drops to ~0 while genuine `src!=dst`
+  failures stay flat.
+- **Probably the same root cause as "Deadlock-breaker micro-churn on returners" below** (a `2TNK`
+  observed doing 67× `src==dst`); re-check that entry once this fix has a match behind it.
+
 ### Vehicle-vs-vehicle head-on in a 1-tile gap with no escape cell (breaker unreachable from gw==2)
 - **Severity:** minor (self-resolves — the boxed unit eventually dies/clears; never escalates to gridlock).
 - **Status:** OPEN — remaining give-way loose end after v2.3.0.

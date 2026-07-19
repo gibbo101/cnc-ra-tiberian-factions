@@ -18,6 +18,39 @@ slot — proper map, briefing, win/lose conditions — before committing to all 
 probe (empty map, instant win) did NOT exercise triggers, teamtypes, or how the briefing and
 mission title present on screen; those are the unknowns a real first mission would settle.
 
+## ⭐ SESSION 2026-07-19 (evening) — A* budget measured, economy gates SHIPPED, engineer livelock root-caused
+
+**1. A* expansion budget: `captrips=0`, but only a WEAK pass.** Measured live on desktop
+(4 GDI AI) and Deck simultaneously, both on the post-`23203d2` build: zero cap trips across
+thousands of searches. So the 4096 budget never fires in normal play and there is no case for
+raising it. **It has NOT been tested against the case it exists to bound** — a target that
+looks reachable but is not. The engineer `src==dst` spam does not stress it (`dest==source`
+breaks on the first loop iteration, costing zero expansions), and AIs on one connected
+landmass always have reachable targets. **To actually close item 1: run DOCKLANDS with the
+human isolated across the river**, so AI attack orders target something with no land route,
+then read `captrips=`. Non-zero there is the GOOD outcome; act only if caps coincide with
+units failing routes they should make.
+
+**2. Economy gate for GDI/Nod tier-2 — SHIPPED `04d3ef4`, verified in play.** Comm centre,
+tech centre and repair bay now share one condition (2 refineries + a war factory, with a
+tiberium-short escape hatch). Fixes both player reports: repair bay built before any
+refinery, and teching to TDEYE with no war factory. The tech centre was the worst offender —
+a bare `current < 1` commented "as soon as possible", racing the war factory at equal
+urgency. Playtest confirmed: war factory first, repair bays still built, **and a Mammoth was
+produced** (the starvation canary on the stricter gate). RA houses keep vanilla timing.
+
+**3. Engineer/unit livelock root-caused — fix written, UNCOMMITTED + UNVERIFIED.** ~88% of
+all A* fallbacks are units re-pathing to the cell they already stand in, forever. Full
+write-up in `known-issues.md` § Pathfinding. Two-line cause: `Basic_Path` treats a legal
+zero-cost self-path as failure, and `Stop_Driver()` never clears `NavCom` so it retries every
+~14 ticks. Fix sits in `redalert/foot.cpp` (working tree). **Next step: deploy, play a match,
+confirm the `src==dst` share collapses while genuine failures stay flat.** It touches
+`FootClass`, so every ground unit is in scope — do not ship it without a real playtest.
+
+**Diagnostic gap worth closing:** build order is not logged anywhere, so verifying build-order
+changes needs a human watching. If more build-order work is coming, a small
+`TF_AI_DIAG` line on building completion would pay for itself.
+
 ## ⭐ SESSION 2026-07-19 (afternoon) — phase B RESOLVED, next session resumes AI work
 
 **Per-slot AI difficulty now works in LAN multiplayer.** Verified end to end:
