@@ -597,6 +597,13 @@ CELL FootClass::Find_Spread_Cell(const CELL target, const int maxRadius, Dynamic
  * OUTPUT:  total path length in cells (0 = no path). If resultPath is non-null it is filled    *
  *          with the move command list (truncated to maxLen) and Optimize_Moves'd.             *
  *=============================================================================================*/
+#if TF_DEV_BUILD
+// TF DEV: how many A* searches gave up on the expansion budget rather than on an
+// exhausted open list. Reported alongside the success/fallback tally in Find_Path so a
+// glance at the log says whether ASTAR_MAX_EXPANSIONS is set sanely.
+static long TF_AStar_Cap_Trips = 0;
+#endif
+
 int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CELL dest, const int maxLen, const MoveType threshhold, const int threat)
 {
     struct AStarCell {
@@ -641,18 +648,42 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
     static std::vector<AStarCell*> open_list;
     open_list.clear();
 
-    //Add the source cell to the open list
+    //Add the source cell to the open list (a single element is already a valid heap)
     open_list.push_back(&visited_cells.emplace(source, AStarCell()).first->second);
     open_list.back()->position = source;
 
     AStarCell* dest_result = nullptr;
 
+    /*
+    **	Tiberian Factions -- node-expansion budget. Without it, a search for an
+    **	unreachable destination exhausts the entire reachable component (~16K cells at
+    **	128x128), and Find_Path retries the whole search up to four times with escalating
+    **	threat tolerance -- so one stuck unit costs four full map floods per order, every
+    **	order. The cap turns that worst case into a bounded miss that falls through to the
+    **	legacy edge-follower, which is the same outcome the search was heading for anyway.
+    **
+    **	A pure node count is deterministic, so every peer caps on the same node and the
+    **	result stays MP-safe. The budget is generous relative to any legitimate route on a
+    **	128x128 map; if the diagnostic log ever shows caps tripping on paths that should
+    **	have succeeded, raise it rather than removing it.
+    */
+    static const int ASTAR_MAX_EXPANSIONS = 4096;
+    int expansions = 0;
+
     while (!open_list.empty()) {
+        std::pop_heap(open_list.begin(), open_list.end(), inverse_node_sort);
         AStarCell& prev_cell = *open_list.back();
         open_list.pop_back();
 
         if (prev_cell.position == dest) {
             dest_result = &prev_cell;
+            break;
+        }
+
+        if (++expansions > ASTAR_MAX_EXPANSIONS) {
+#if TF_DEV_BUILD
+            TF_AStar_Cap_Trips++;
+#endif
             break;
         }
 
@@ -711,8 +742,18 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
                     current_cell.cost_from_start = cell_cost;
                     current_cell.estimated_cost_to_end = Euclidian_Cell_Distance_Estimate(adjacent_cell_id, dest);
 
-                    //Insert the new node before the first item that is *NOT* greater than it, leaving lowest-cost nodes at the back.
-                    open_list.insert(std::lower_bound(open_list.begin(), open_list.end(), &current_cell, inverse_node_sort), &current_cell);
+                    /*
+                    **	Push onto a binary heap ordered so the cheapest node sits at the
+                    **	back after pop_heap. The previous sorted-vector insert was O(n) per
+                    **	node, making the whole search O(n^2); this is O(log n).
+                    **
+                    **	Re-relaxing a node already on the heap leaves a stale duplicate
+                    **	entry behind (classic lazy decrease-key). That was equally true of
+                    **	the sorted-vector version and is harmless: the duplicate is simply
+                    **	re-expanded later against its already-improved cost.
+                    */
+                    open_list.push_back(&current_cell);
+                    std::push_heap(open_list.begin(), open_list.end(), inverse_node_sort);
                 }
             }
         }
@@ -869,11 +910,12 @@ PathType* FootClass::Find_Path(CELL dest, FacingType* final_moves, int maxlen, M
                 // Per-fallback detail line (these are the interesting "A* gave up" cases),
                 // plus a running tally so a glance at the tail proves A* is live.
                 if (!result) {
-                    fprintf(tf_astar_log, "A* FALLBACK -> legacy: unit=%s src=(%d,%d) dst=(%d,%d) maxlen=%d [success=%ld fallback=%ld]\n",
+                    fprintf(tf_astar_log, "A* FALLBACK -> legacy: unit=%s src=(%d,%d) dst=(%d,%d) maxlen=%d [success=%ld fallback=%ld captrips=%ld]\n",
                             who, (int)Cell_X(source), (int)Cell_Y(source), (int)Cell_X(dest), (int)Cell_Y(dest),
-                            maxlen, tf_astar_success, tf_astar_fallback);
+                            maxlen, tf_astar_success, tf_astar_fallback, TF_AStar_Cap_Trips);
                 } else if ((tf_astar_success & 0xFF) == 0) {
-                    fprintf(tf_astar_log, "A* tally: success=%ld fallback=%ld\n", tf_astar_success, tf_astar_fallback);
+                    fprintf(tf_astar_log, "A* tally: success=%ld fallback=%ld captrips=%ld\n",
+                            tf_astar_success, tf_astar_fallback, TF_AStar_Cap_Trips);
                 }
                 fflush(tf_astar_log);
             }
