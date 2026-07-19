@@ -636,7 +636,7 @@ void Keyboard_Process(KeyNumType& input)
                 BuildingClass* building = Buildings.Ptr(index);
 
                 if (building != NULL && !building->IsInLimbo && building->House == PlayerPtr
-                    && (*building == STRUCT_CONST || *building == STRUCT_TDFACT)) {
+                    && (*building == STRUCT_AFACT || *building == STRUCT_TDGFACT)) {
                     Unselect_All();
                     building->Select();
                     if (building->IsLeader)
@@ -648,7 +648,7 @@ void Keyboard_Process(KeyNumType& input)
             for (index = 0; index < Units.Count(); index++) {
                 UnitClass* unit = Units.Ptr(index);
 
-                if (unit != NULL && !unit->IsInLimbo && unit->House == PlayerPtr && *unit == UNIT_MCV) {
+                if (unit != NULL && !unit->IsInLimbo && unit->House == PlayerPtr && *unit == UNIT_AMCV) {
                     Unselect_All();
                     unit->Select();
                     break;

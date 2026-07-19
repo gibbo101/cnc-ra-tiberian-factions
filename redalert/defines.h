@@ -1413,7 +1413,7 @@ typedef enum StructType : char
     STRUCT_TURRET,
     STRUCT_AAGUN,
     STRUCT_FLAME_TURRET,
-    STRUCT_CONST,
+    STRUCT_AFACT, // Allied Construction Yard (IniName still "FACT" until the IniName migration).
     STRUCT_REFINERY,
     STRUCT_STORAGE,
     STRUCT_HELIPAD,
@@ -1532,7 +1532,7 @@ typedef enum StructType : char
     STRUCT_TDHQ,
     STRUCT_TDWEAP,
     STRUCT_TDAFLD,
-    STRUCT_TDFACT,
+    STRUCT_TDGFACT, // GDI Construction Yard (IniName still "TDFACT" until the IniName migration).
     STRUCT_TDPROC,
 
     // M5 Tier 4 — superweapon hosts.
@@ -1608,7 +1608,7 @@ inline StructType operator++(StructType& n)
 #define STRUCTF_TURRET         (1L << STRUCT_TURRET)
 #define STRUCTF_AAGUN          (1L << STRUCT_AAGUN)
 #define STRUCTF_FLAME_TURRET   (1L << STRUCT_FLAME_TURRET)
-#define STRUCTF_CONST          (1L << STRUCT_CONST)
+#define STRUCTF_AFACT          (1L << STRUCT_AFACT)
 #define STRUCTF_REFINERY       (1L << STRUCT_REFINERY)
 #define STRUCTF_STORAGE        (1L << STRUCT_STORAGE)
 #define STRUCTF_HELIPAD        (1L << STRUCT_HELIPAD)
@@ -1755,7 +1755,7 @@ typedef enum UnitType : char
     UNIT_ARTY,        // Artillery unit.
     UNIT_MRJ,         // Mobile Radar Jammer.
     UNIT_MGG,         // Mobile Gap Generator
-    UNIT_MCV,         // Mobile construction vehicle.
+    UNIT_AMCV,         // Allied MCV (deploys to STRUCT_AFACT; IniName still "MCV" until the IniName migration).
     UNIT_V2_LAUNCHER, // V2 rocket launcher.
     UNIT_TRUCK,       // Convoy truck
 
@@ -1777,7 +1777,7 @@ typedef enum UnitType : char
 #endif
 
     // Tiberian Factions mod — fully-separated TD-source unit ports.
-    UNIT_TDMCV,             // TD Mobile Construction Vehicle (deploys to STRUCT_TDFACT).
+    UNIT_TDGMCV,             // GDI MCV (deploys to STRUCT_TDGFACT; IniName still "TDMCV" until the IniName migration).
     UNIT_TDHARV,            // TD Tiberium Harvester (docks at STRUCT_TDPROC).
     UNIT_TDMTNK,            // TD Medium Tank (MTNK) — GDI-only, turret, fires TD105mm. udata.cpp:264.
     UNIT_TDLTNK,            // TD Light Tank (LTNK) — Nod-only, turret, fires TD75mm. udata.cpp:211.
@@ -1814,7 +1814,7 @@ typedef enum UnitType : char
 #define UNITF_JEEP      (1L << UNIT_JEEP)
 #define UNITF_HARVESTER (1L << UNIT_HARVESTER)
 #define UNITF_ARTY      (1L << UNIT_ARTY)
-#define UNITF_MCV       (1L << UNIT_MCV)
+#define UNITF_AMCV       (1L << UNIT_AMCV)
 
 /**********************************************************************
 **	The naval vessels are enumerated below.

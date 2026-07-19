@@ -331,7 +331,7 @@ static UnitTypeClass const UnitHarvester(UNIT_HARVESTER,
 );
 
 // Mobile construction vehicle
-static UnitTypeClass const UnitMCV(UNIT_MCV,
+static UnitTypeClass const UnitMCV(UNIT_AMCV,
                                    TXT_MCV,         // NAME:			Text name of this unit type.
                                    "MCV",           // NAME:			Text name of this unit type.
                                    ANIM_FBALL1,     // EXPLOSION:	Type of explosion when destroyed.
@@ -399,16 +399,16 @@ static UnitTypeClass const UnitTdHarv(UNIT_TDHARV,
 
 /*
 **  TDMCV (Tiberian Factions Mobile Construction Vehicle) — verbatim port
-**  of TD's UNIT_MCV (tiberiandawn/udata.cpp:638 UnitMCV). RA's UnitTypeClass
+**  of TD's UNIT_AMCV (tiberiandawn/udata.cpp:638 UnitMCV). RA's UnitTypeClass
 **  ctor has 21 params vs TD's 27 (RA elides build_level/cost/strength/armor/
 **  weapons/ownable — those come from rules.ini). Field values mirror RA's
 **  UnitMCV with one philosophical difference: TDMCV is conceptually shared
 **  by HOUSE_GOOD + HOUSE_BAD (matching TD original — both factions use the
 **  same MCV sprite), but the rules.ini [TDMCV] Owner= field controls
-**  ownability at runtime. Deploy creates STRUCT_TDFACT (not STRUCT_CONST)
+**  ownability at runtime. Deploy creates STRUCT_TDGFACT (not STRUCT_AFACT)
 **  — see UnitClass::Try_To_Deploy per-type extension.
 */
-static UnitTypeClass const UnitTdMcv(UNIT_TDMCV,
+static UnitTypeClass const UnitTdMcv(UNIT_TDGMCV,
                                      TXT_MCV,         // NAME:			Text name of this unit type.
                                      "TDMCV",         // NAME:			IniName.
                                      ANIM_FBALL1,     // EXPLOSION:	Type of explosion when destroyed.
@@ -1598,7 +1598,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitArty);        //	UNIT_ARTY
     new UnitTypeClass(UnitMRJammer);    //	UNIT_MRJ
     new UnitTypeClass(UnitMGG);         //	UNIT_MGG
-    new UnitTypeClass(UnitMCV);         // UNIT_MCV
+    new UnitTypeClass(UnitMCV);         // UNIT_AMCV
     new UnitTypeClass(UnitV2Launcher);  //	UNIT_V2_LAUNCHER
     new UnitTypeClass(UnitConvoyTruck); // UNIT_TRUCK
 #ifdef FIXIT_ANTS
@@ -1617,7 +1617,7 @@ void UnitTypeClass::Init_Heap(void)
 #endif
 #endif
     // Tiberian Factions mod — fully-separated TD-source unit ports.
-    new UnitTypeClass(UnitTdMcv);     // UNIT_TDMCV
+    new UnitTypeClass(UnitTdMcv);     // UNIT_TDGMCV
     new UnitTypeClass(UnitTdHarv);    // UNIT_TDHARV
     new UnitTypeClass(UnitTdMtnk);    // UNIT_TDMTNK
     new UnitTypeClass(UnitTdLtnk);    // UNIT_TDLTNK
@@ -2055,8 +2055,8 @@ bool UnitTypeClass::Read_INI(CCINIClass& ini)
 
         /*
         **  Logic=<vanilla-IniName> aliases this entry's runtime Type discriminant
-        **  to a vanilla UnitType. Engine dispatch (Mission_Unload's `case UNIT_MCV`,
-        **  Try_To_Deploy's `*this == UNIT_MCV`, AI ownership scans, etc.) then
+        **  to a vanilla UnitType. Engine dispatch (Mission_Unload's `case UNIT_AMCV`,
+        **  Try_To_Deploy's `*this == UNIT_AMCV`, AI ownership scans, etc.) then
         **  treats this custom unit as the vanilla type. Mirrors the building-side
         **  alias at bdata.cpp:3847. ImageData inheritance is critical for mod
         **  entries — One_Time only loads SHPs for vanilla heap slots, so without

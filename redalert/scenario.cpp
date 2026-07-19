@@ -3519,17 +3519,17 @@ static void Create_Units(bool official)
             scaleval = 1;
             Reserve_Unit();
             /*
-            **  Tiberian Factions: GDI + Nod both spawn UNIT_TDMCV (the TD
-            **  Mobile Construction Vehicle), which deploys into STRUCT_TDFACT
+            **  Tiberian Factions: GDI + Nod both spawn UNIT_TDGMCV (the TD
+            **  Mobile Construction Vehicle), which deploys into STRUCT_TDGFACT
             **  per UnitClass::Try_To_Deploy. Matches TD original — both
             **  factions used the same MCV/ConYard sprites. Faction check uses
             **  hptr->ActLike (not Class->House) so multiplayer/skirmish slot
             **  identity doesn't matter — the launcher's France→HOUSE_GOOD /
             **  Spain/Turkey→HOUSE_BAD swap sets ActLike correctly.
             */
-            UnitType mcv_type = UNIT_MCV;
+            UnitType mcv_type = UNIT_AMCV;
             if (hptr->ActLike == HOUSE_GOOD || hptr->ActLike == HOUSE_BAD) {
-                mcv_type = UNIT_TDMCV;
+                mcv_type = UNIT_TDGMCV;
             }
             /*
             **  Diagnostic for v0.3 phase5e — TDMCV scenario-spawn intercept.

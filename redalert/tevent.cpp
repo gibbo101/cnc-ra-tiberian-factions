@@ -344,7 +344,7 @@ bool TEventClass::operator()(TDEventClass& td,
         **	Ensure that there are no more factories left.
         */
         case TEVENT_NOFACTORIES:
-            if (hptr->BScan & (STRUCTF_AIRSTRIP | STRUCTF_TENT | STRUCTF_WEAP | STRUCTF_BARRACKS | STRUCTF_CONST))
+            if (hptr->BScan & (STRUCTF_AIRSTRIP | STRUCTF_TENT | STRUCTF_WEAP | STRUCTF_BARRACKS | STRUCTF_AFACT))
                 return (false);
             break;
 

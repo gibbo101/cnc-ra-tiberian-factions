@@ -1075,18 +1075,18 @@ static BuildingTypeClass const ClassTdProc(STRUCT_TDPROC,
 
 /*
 **  TDFACT (Construction Yard) — 3×2 building, ARMOR_WOOD, capturable, crewed.
-**    Wholesale port of TD's STRUCT_CONST per tiberiandawn/bdata.cpp:534
+**    Wholesale port of TD's STRUCT_AFACT per tiberiandawn/bdata.cpp:534
 **    (ClassConst). NOT a unit factory — RTTI_BUILDINGTYPE (produces other
 **    buildings, not vehicles). Shared by HOUSE_GOOD + HOUSE_BAD, matching
 **    TD's original (one MCV/ConYard type for both factions).
 **
 **    Footprint mirrors TD source exactly: BSIZE_32 + List32 (3×2 = 6 cells,
-**    no overlap row). RA's STRUCT_CONST is BSIZE_33 with ListFactory (3×3,
+**    no overlap row). RA's STRUCT_AFACT is BSIZE_33 with ListFactory (3×3,
 **    9 cells) — a different shape per playbook §3.13 donor-parity trap.
 **    Worked example of why "copy donor verbatim" fails for buildings whose
 **    TD/RA donor footprints diverge.
 */
-static BuildingTypeClass const ClassTdFact(STRUCT_TDFACT,
+static BuildingTypeClass const ClassTdFact(STRUCT_TDGFACT,
                                            TXT_NONE,           // Display name (rules.ini Name= overrides).
                                            "TDFACT",           // IniName.
                                            FACING_NONE,        // Foundation direction.
@@ -1465,7 +1465,7 @@ static BuildingTypeClass const ClassFlameTurret(STRUCT_FLAME_TURRET,
                                                 (short const*)NULL   // OVERLAPLIST:List of overlap cell offset.
 );
 
-static BuildingTypeClass const ClassConst(STRUCT_CONST,
+static BuildingTypeClass const ClassConst(STRUCT_AFACT,
                                           TXT_CONST_YARD,    // NAME:			Short name of the structure.
                                           "FACT",            // NAME:			Short name of the structure.
                                           FACING_NONE,       // Foundation direction from center of building.
@@ -3872,7 +3872,7 @@ static BuildingTypeClass const ClassTdBlossom(STRUCT_TDBLOSSOM,
  *=============================================================================================*/
 bool BuildingTypeClass::Is_Construction_Yard(void) const
 {
-    return (Type == STRUCT_CONST || Type == STRUCT_TDFACT);
+    return (Type == STRUCT_AFACT || Type == STRUCT_TDGFACT);
 }
 
 /***********************************************************************************************
@@ -3916,8 +3916,8 @@ long TF_Building_Scan_Bit(int btype)
     case STRUCT_TDEYE:
         return (STRUCTF_RADAR);
 
-    case STRUCT_TDFACT:
-        return (STRUCTF_CONST);
+    case STRUCT_TDGFACT:
+        return (STRUCTF_AFACT);
 
     case STRUCT_TDPROC:
         return (STRUCTF_REFINERY);
@@ -3962,7 +3962,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTurret);        //	STRUCT_TURRET
     new BuildingTypeClass(ClassAAGun);         // STRUCT_AAGUN
     new BuildingTypeClass(ClassFlameTurret);   //	STRUCT_FLAME_TURRET
-    new BuildingTypeClass(ClassConst);         //	STRUCT_CONST
+    new BuildingTypeClass(ClassConst);         //	STRUCT_AFACT
     new BuildingTypeClass(ClassRefinery);      //	STRUCT_REFINERY
     new BuildingTypeClass(ClassStorage);       //	STRUCT_STORAGE
     new BuildingTypeClass(ClassHelipad);       //	STRUCT_HELIPAD
@@ -4060,7 +4060,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdHq);    // STRUCT_TDHQ    (Communications Center)
     new BuildingTypeClass(ClassTdWeap);  // STRUCT_TDWEAP  (Weapons Factory)
     new BuildingTypeClass(ClassTdAfld);  // STRUCT_TDAFLD  (Nod Airstrip)
-    new BuildingTypeClass(ClassTdFact);  // STRUCT_TDFACT  (Construction Yard)
+    new BuildingTypeClass(ClassTdFact);  // STRUCT_TDGFACT  (Construction Yard)
     new BuildingTypeClass(ClassTdProc);  // STRUCT_TDPROC  (Tiberium Refinery)
     new BuildingTypeClass(ClassTdEye);   // STRUCT_TDEYE   (Advanced Communications Center)
     new BuildingTypeClass(ClassTdTmpl);  // STRUCT_TDTMPL  (Temple of Nod)
@@ -4117,7 +4117,7 @@ void BuildingTypeClass::One_Time(void)
 #ifdef FIXIT_ANTS
         {STRUCT_QUEEN, BSTATE_IDLE, 0, 10, 3},
 #endif
-        {STRUCT_CONST, BSTATE_ACTIVE, 0, 26, 3},
+        {STRUCT_AFACT, BSTATE_ACTIVE, 0, 26, 3},
         {STRUCT_FAKECONST, BSTATE_ACTIVE, 0, 26, 3},
         {STRUCT_HELIPAD, BSTATE_ACTIVE, 0, 7, 4},
         {STRUCT_HELIPAD, BSTATE_IDLE, 0, 0, 0},
@@ -4175,8 +4175,8 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TDAFLD, BSTATE_AUX1, 0, 8, 3},
         // M4 Tier 3 — TDFACT 20-frame deploy/active cycle + 4-frame idle.
         // TD-authentic per tiberiandawn/bdata.cpp:3792-3793.
-        {STRUCT_TDFACT, BSTATE_ACTIVE, 4, 20, 3},
-        {STRUCT_TDFACT, BSTATE_IDLE, 0, 4, 3},
+        {STRUCT_TDGFACT, BSTATE_ACTIVE, 4, 20, 3},
+        {STRUCT_TDGFACT, BSTATE_IDLE, 0, 4, 3},
         // M4 Tier 3 — TDPROC harvester dock state machine. TD-authentic per
         // tiberiandawn/bdata.cpp:3801-3805. IDLE 0-5 normal; FULL 6-11 plays
         // when Capacity is reached (flashing lights); ACTIVE 12-18 (docking);

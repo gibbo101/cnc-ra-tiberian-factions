@@ -2517,7 +2517,7 @@ bool CellClass::Goodie_Check(FootClass* object)
                 && object->House->Available_Money() > ((BuildingTypeClass::As_Reference(STRUCT_REFINERY).Cost
                                                         + BuildingTypeClass::As_Reference(STRUCT_POWER).Cost)
                                                        * object->House->CostBias)
-                && Session.Options.Bases && !(object->House->UScan & UNITF_MCV)) {
+                && Session.Options.Bases && !(object->House->UScan & UNITF_AMCV)) {
                 powerup = CRATE_UNIT;
                 force_mcv = true;
             }
@@ -2526,7 +2526,7 @@ bool CellClass::Goodie_Check(FootClass* object)
             **	If the powerup is money but there is insufficient money to build a refinery but there is a construction
             **	yard available, then force the money to be enough to rebuild the refinery.
             */
-            if (powerup == CRATE_MONEY && (object->House->BScan & (STRUCTF_CONST | STRUCTF_REFINERY)) == STRUCTF_CONST
+            if (powerup == CRATE_MONEY && (object->House->BScan & (STRUCTF_AFACT | STRUCTF_REFINERY)) == STRUCTF_AFACT
                 && object->House->Available_Money()
                        < BuildingTypeClass::As_Reference(STRUCT_REFINERY).Cost * object->House->CostBias) {
 
@@ -2659,7 +2659,7 @@ bool CellClass::Goodie_Check(FootClass* object)
             **	give him another one.
             */
             if (force_mcv) {
-                utp = &UnitTypeClass::As_Reference(UNIT_MCV);
+                utp = &UnitTypeClass::As_Reference(UNIT_AMCV);
             }
 
             /*
@@ -2690,7 +2690,7 @@ bool CellClass::Goodie_Check(FootClass* object)
 #else
                 UnitType utype = Random_Pick(UNIT_FIRST, (UnitType)(UNIT_COUNT - 1));
 #endif
-                if (utype != UNIT_MCV || Session.Options.Bases) {
+                if (utype != UNIT_AMCV || Session.Options.Bases) {
                     utp = &UnitTypeClass::As_Reference(utype);
                     if (utp->IsCrateGoodie
                         && (utp->Ownable & (1 << HouseClass::As_Pointer(object->Owner())->ActLike))) {

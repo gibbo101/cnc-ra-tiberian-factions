@@ -114,19 +114,19 @@ extern bool Is_Legacy_Render_Enabled(void);
 #endif
 
 /*
-**  Map a deploying MCV to the StructType it should produce. UNIT_TDMCV
+**  Map a deploying MCV to the StructType it should produce. UNIT_TDGMCV
 **  (Tiberian Factions MCV, shared by GDI + Nod) deploys into the
-**  TD-source Construction Yard STRUCT_TDFACT. Vanilla UNIT_MCV deploys
-**  into STRUCT_CONST as RA always did. Now a clean type dispatch
+**  TD-source Construction Yard STRUCT_TDGFACT. Vanilla UNIT_AMCV deploys
+**  into STRUCT_AFACT as RA always did. Now a clean type dispatch
 **  (post-separation) — was previously an IniName-string lookup gated
 **  on ActLike==HOUSE_GOOD, before TDMCV/TDFACT became real enum entries.
 */
 static StructType MCV_Deploy_Building(UnitClass const* unit)
 {
-    if (unit != NULL && *unit == UNIT_TDMCV) {
-        return STRUCT_TDFACT;
+    if (unit != NULL && *unit == UNIT_TDGMCV) {
+        return STRUCT_TDGFACT;
     }
-    return STRUCT_CONST;
+    return STRUCT_AFACT;
 }
 
 static int _GapShroudXTable[] = {-1, 0, 1,  -2, -1, 0, 1, 2,  -2, -1, 0, 1, 2,  -2, -1, 0,
@@ -1533,7 +1533,7 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
             House->Flag_To_Die();
         }
 
-        if (*this == UNIT_MCV || *this == UNIT_TDMCV) {
+        if (*this == UNIT_AMCV || *this == UNIT_TDGMCV) {
             if (House) {
                 House->Check_Pertinent_Structures();
             }
@@ -2002,7 +2002,7 @@ bool UnitClass::Try_To_Deploy(void)
     assert(IsActive);
 
     if (!Target_Legal(NavCom) && !IsRotating) {
-        if (*this == UNIT_MCV || *this == UNIT_TDMCV) {
+        if (*this == UNIT_AMCV || *this == UNIT_TDGMCV) {
 
             /*
             **	Determine if it is legal to deploy at this location. If not, tell the
@@ -3849,8 +3849,8 @@ int UnitClass::Mission_Unload(void)
         }
         break;
 
-    case UNIT_MCV:
-    case UNIT_TDMCV:    // TD MCV — same deploy AI as UNIT_MCV.
+    case UNIT_AMCV:
+    case UNIT_TDGMCV:    // TD MCV — same deploy AI as UNIT_AMCV.
         switch (Status) {
         case 0:
             Path[0] = FACING_NONE;
@@ -4312,7 +4312,7 @@ int UnitClass::Mission_Harvest(void)
                 if (Transmit_Message(RADIO_HELLO, nearest) == RADIO_ROGER) {
                     Status = HEADINGHOME;
                     if (nearest->House == PlayerPtr && (PlayerPtr->Capacity - PlayerPtr->Tiberium) < 300
-                        && PlayerPtr->Capacity > 500 && (PlayerPtr->ActiveBScan & (STRUCTF_REFINERY | STRUCTF_CONST))) {
+                        && PlayerPtr->Capacity > 500 && (PlayerPtr->ActiveBScan & (STRUCTF_REFINERY | STRUCTF_AFACT))) {
                         Speak(VOX_NEED_MO_CAPACITY);
                     }
                 } else {
@@ -4389,7 +4389,7 @@ int UnitClass::Mission_Hunt(void)
     assert(Units.ID(this) == ID);
     assert(IsActive);
 
-    if (*this == UNIT_MCV || *this == UNIT_TDMCV) {
+    if (*this == UNIT_AMCV || *this == UNIT_TDGMCV) {
         enum
         {
             FIND_SPOT,
@@ -4938,7 +4938,7 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
     **	Don't allow special deploy action unless there is something to deploy.
     */
     if (action == ACTION_SELF) {
-        if (*this == UNIT_MCV || *this == UNIT_TDMCV) {
+        if (*this == UNIT_AMCV || *this == UNIT_TDGMCV) {
 
             /*
             **	The MCV will get the no-deploy cursor if it couldn't
@@ -5199,7 +5199,7 @@ int UnitClass::Mission_Guard(void)
         //		return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
     }
 
-    if ((*this == UNIT_MCV || *this == UNIT_TDMCV) && House->IsBaseBuilding) {
+    if ((*this == UNIT_AMCV || *this == UNIT_TDGMCV) && House->IsBaseBuilding) {
         Assign_Mission(MISSION_UNLOAD);
         return (MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
     }

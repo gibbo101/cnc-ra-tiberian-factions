@@ -2965,7 +2965,7 @@ int TeamClass::TMission_Deploy(void)
 
         if (_Is_It_Playing(unit)) {
 
-            if (unit->What_Am_I() == RTTI_UNIT && *(UnitClass*)unit == UNIT_MCV) {
+            if (unit->What_Am_I() == RTTI_UNIT && *(UnitClass*)unit == UNIT_AMCV) {
                 if (unit->Mission != MISSION_UNLOAD) {
                     unit->Assign_Destination(TARGET_NONE);
                     unit->Assign_Target(TARGET_NONE);

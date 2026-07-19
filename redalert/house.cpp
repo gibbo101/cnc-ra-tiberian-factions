@@ -1458,13 +1458,13 @@ void HouseClass::AI(void)
 
         if (SpeakMaxedDelay == 0 && IsMaxedOut) {
             IsMaxedOut = false;
-            if ((Capacity - Tiberium) < 300 && Capacity > 500 && (ActiveBScan & (STRUCTF_REFINERY | STRUCTF_CONST))) {
+            if ((Capacity - Tiberium) < 300 && Capacity > 500 && (ActiveBScan & (STRUCTF_REFINERY | STRUCTF_AFACT))) {
                 Speak(VOX_NEED_MO_CAPACITY);
                 SpeakMaxedDelay = Options.Normalize_Delay(TICKS_PER_MINUTE * Rule.SpeakDelay);
             }
         }
         if (SpeakPowerDelay == 0 && Power_Fraction() < 1) {
-            if (ActiveBScan & STRUCTF_CONST) {
+            if (ActiveBScan & STRUCTF_AFACT) {
                 Speak(VOX_LOW_POWER);
                 SpeakPowerDelay = Options.Normalize_Delay(TICKS_PER_MINUTE * Rule.SpeakDelay);
                 Map.Flash_Power();
@@ -5603,7 +5603,7 @@ int HouseClass::Expert_AI(void)
         for (index = 0; index < Units.Count() && hunters < TF_SCOUT_DETAIL; index++) {
             UnitClass* u = Units.Ptr(index);
             if (u != NULL && !u->IsInLimbo && u->House == this && u->Strength > 0 && u->Is_Weapon_Equipped()
-                && !u->Class->IsToHarvest && *u != UNIT_MCV && *u != UNIT_TDMCV
+                && !u->Class->IsToHarvest && *u != UNIT_AMCV && *u != UNIT_TDGMCV
                 && (u->Mission == MISSION_GUARD || u->Mission == MISSION_GUARD_AREA)) {
                 u->Assign_Mission(MISSION_HUNT);
                 hunters++;
@@ -6023,7 +6023,7 @@ UrgencyType HouseClass::Check_Fire_Sale(void) const
     */
     if (State != STATE_ATTACKED && CurBuildings
         && !(ActiveBScan
-             & (STRUCTF_TENT | STRUCTF_BARRACKS | STRUCTF_CONST | STRUCTF_AIRSTRIP | STRUCTF_WEAP | STRUCTF_HELIPAD))) {
+             & (STRUCTF_TENT | STRUCTF_BARRACKS | STRUCTF_AFACT | STRUCTF_AIRSTRIP | STRUCTF_WEAP | STRUCTF_HELIPAD))) {
         return (URGENCY_CRITICAL);
     }
     return (URGENCY_NONE);
@@ -6088,7 +6088,7 @@ UrgencyType HouseClass::Check_Raise_Power(void) const
     UrgencyType urgency = URGENCY_NONE;
 
     if (Power_Fraction() < Rule.PowerEmergencyFraction && Power < Drain - 400) {
-        //	if (Power_Fraction() < Rule.PowerEmergencyFraction && (BQuantity[STRUCT_CONST] == 0 || Available_Money() <
+        //	if (Power_Fraction() < Rule.PowerEmergencyFraction && (BQuantity[STRUCT_AFACT] == 0 || Available_Money() <
         //200 || Power < Drain-400)) {
         urgency = URGENCY_MEDIUM;
         if (State == STATE_ATTACKED) {
@@ -6426,7 +6426,7 @@ bool HouseClass::AI_Raise_Money(UrgencyType urgency) const
                   //		{STRUCT_WEAP,URGENCY_HIGH},
                   //		{STRUCT_BARRACKS,URGENCY_HIGH},
                   //		{STRUCT_TENT,URGENCY_HIGH},
-                  {STRUCT_CONST, URGENCY_CRITICAL}};
+                  {STRUCT_AFACT, URGENCY_CRITICAL}};
     BuildingClass* b = 0;
 
     /*
@@ -9501,7 +9501,7 @@ void HouseClass::Check_Pertinent_Structures(void)
         for (int index = 0; index < Units.Count(); index++) {
             UnitClass* unit = Units.Ptr(index);
 
-            if (unit && unit->IsActive && (*unit == UNIT_MCV || *unit == UNIT_TDMCV) && unit->House == this) {
+            if (unit && unit->IsActive && (*unit == UNIT_AMCV || *unit == UNIT_TDGMCV) && unit->House == this) {
                 if (!unit->IsInLimbo && unit->Strength > 0) {
                     any_good_buildings = true;
                     break;
