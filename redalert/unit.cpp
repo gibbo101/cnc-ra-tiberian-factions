@@ -2052,8 +2052,7 @@ bool UnitClass::Try_To_Deploy(void)
                     if (building->House == PlayerPtr) {
                         // Tiberian Factions mod: TD con-yard (TDFACT etc.) slams
                         // down with TD's HVYDOOR1 instead of RA's PLACBLDG.
-                        bool td_bldg = (building->Class->Type >= STRUCT_TDOBLI
-                                        && building->Class->Type < STRUCT_COUNT);
+                        bool td_bldg = building->Class->Is_Tiberian_Era();
                         Sound_Effect(td_bldg ? VOC_TD_PLACE_BUILDING_DOWN : VOC_PLACE_BUILDING_DOWN,
                                      Center_Coord());
                     } else {

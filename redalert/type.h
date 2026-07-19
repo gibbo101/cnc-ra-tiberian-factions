@@ -870,6 +870,12 @@ public:
     */
     bool Is_Construction_Yard(void) const;
 
+    /*
+    **	Is this a Tiberian-era building (a TD port or the TS spike) rather than a Red Alert
+    **	one? Drives the TD construction and place-down audio.
+    */
+    bool Is_Tiberian_Era(void) const;
+
     virtual int Full_Name(void) const;
     virtual bool Read_INI(CCINIClass& ini);
     bool Flush_For_Placement(CELL cell, HouseClass* house) const;

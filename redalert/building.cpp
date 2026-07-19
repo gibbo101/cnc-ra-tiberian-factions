@@ -5073,7 +5073,7 @@ int BuildingClass::Mission_Construction(void)
             // when more separated buildings land, this check stays as a
             // range comparison so we don't have to per-IniName special-
             // case here.
-            if (Class->Type >= STRUCT_TDOBLI && Class->Type < STRUCT_COUNT) {
+            if (Class->Is_Tiberian_Era()) {
                 Sound_Effect(VOC_TD_CONSTRUCTION, Coord);
             } else {
                 Sound_Effect(VOC_CONSTRUCTION, Coord);

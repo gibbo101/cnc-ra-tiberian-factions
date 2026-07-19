@@ -3876,6 +3876,18 @@ bool BuildingTypeClass::Is_Construction_Yard(void) const
 }
 
 /***********************************************************************************************
+ * BuildingTypeClass::Is_Tiberian_Era -- Is this a TD/TS building rather than a Red Alert one?  *
+ *                                                                                              *
+ *    The Tiberian-era entities occupy one unbroken run of the enum, so this is a range test.   *
+ *    See STRUCT_TIBERIAN_LAST in defines.h for why the block is bounded by a marker rather     *
+ *    than by STRUCT_COUNT, and why an IniName test would be wrong.                             *
+ *=============================================================================================*/
+bool BuildingTypeClass::Is_Tiberian_Era(void) const
+{
+    return (Type >= STRUCT_TDOBLI && Type <= STRUCT_TIBERIAN_LAST);
+}
+
+/***********************************************************************************************
  * TF_Building_Scan_Bit -- Maps a building Type to the scan-mask bit it contributes.            *
  *                                                                                              *
  *    BScan / ActiveBScan / OldBScan are 32-bit masks, so a Type can only represent itself      *

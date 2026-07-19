@@ -3940,8 +3940,7 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                     // (then returns true) — so dereferencing `tech` afterward is a
                     // use-after-free that CTDs on every wall placement, all factions.
                     bool td_bldg = (tech->What_Am_I() == RTTI_BUILDING
-                                    && ((BuildingClass*)tech)->Class->Type >= STRUCT_TDOBLI
-                                    && ((BuildingClass*)tech)->Class->Type < STRUCT_COUNT);
+                                    && ((BuildingClass*)tech)->Class->Is_Tiberian_Era());
                     if (tech->Unlimbo(Cell_Coord(cell))) {
                         factory->Completed();
                         Abandon_Production(type);

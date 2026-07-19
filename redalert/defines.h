@@ -1550,7 +1550,20 @@ typedef enum StructType : char
     STRUCT_TSPOWR,    // TS-spike: Tiberian Sun GDI Power Plant (GAPOWR art) — clone of ClassPower (2x2, Power in rules.ini). HD-only art from the TS SHP; POWR donor ImageData/BuildupData.
 
     STRUCT_COUNT,
-    STRUCT_FIRST = 0
+    STRUCT_FIRST = 0,
+
+    /*
+    **	Last entry of the Tiberian-era block (the TD ports plus the TS spike), which runs
+    **	unbroken from STRUCT_TDOBLI. Tiberian-era buildings share TD's construction and
+    **	place-down audio; see BuildingTypeClass::Is_Tiberian_Era.
+    **
+    **	Enum values may only ever be APPENDED (Type numbers are serialized raw and there is
+    **	no save-version constant), so anything added later lands past this marker and is NOT
+    **	Tiberian-era by default -- which is what an Allied or Soviet addition wants. Move this
+    **	marker only when appending another TD/TS entity. Testing the block by IniName prefix
+    **	instead would be wrong: RA's own Tesla coil is "TSLA".
+    */
+    STRUCT_TIBERIAN_LAST = STRUCT_TSPOWR
 } StructType;
 
 /*
