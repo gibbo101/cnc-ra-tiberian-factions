@@ -331,9 +331,9 @@ static UnitTypeClass const UnitHarvester(UNIT_HARVESTER,
 );
 
 // Mobile construction vehicle
-static UnitTypeClass const UnitMCV(UNIT_AMCV,
+static UnitTypeClass const UnitMCV(UNIT_MCV,
                                    TXT_MCV,         // NAME:			Text name of this unit type.
-                                   "AMCV",          // IniName (was "MCV" -- see From_Name legacy alias).
+                                   "MCV",           // NAME:			Text name of this unit type.
                                    ANIM_FBALL1,     // EXPLOSION:	Type of explosion when destroyed.
                                    REMAP_ALTERNATE, // Sidebar remap logic.
                                    0x0000,          //	Vertical offset.
@@ -399,18 +399,18 @@ static UnitTypeClass const UnitTdHarv(UNIT_TDHARV,
 
 /*
 **  TDMCV (Tiberian Factions Mobile Construction Vehicle) — verbatim port
-**  of TD's UNIT_AMCV (tiberiandawn/udata.cpp:638 UnitMCV). RA's UnitTypeClass
+**  of TD's UNIT_MCV (tiberiandawn/udata.cpp:638 UnitMCV). RA's UnitTypeClass
 **  ctor has 21 params vs TD's 27 (RA elides build_level/cost/strength/armor/
 **  weapons/ownable — those come from rules.ini). Field values mirror RA's
 **  UnitMCV with one philosophical difference: TDMCV is conceptually shared
 **  by HOUSE_GOOD + HOUSE_BAD (matching TD original — both factions use the
 **  same MCV sprite), but the rules.ini [TDMCV] Owner= field controls
-**  ownability at runtime. Deploy creates STRUCT_TDGFACT (not STRUCT_AFACT)
+**  ownability at runtime. Deploy creates STRUCT_TDFACT (not STRUCT_CONST)
 **  — see UnitClass::Try_To_Deploy per-type extension.
 */
-static UnitTypeClass const UnitTdMcv(UNIT_TDGMCV,
+static UnitTypeClass const UnitTdMcv(UNIT_TDMCV,
                                      TXT_MCV,         // NAME:			Text name of this unit type.
-                                     "TDGMCV",        // IniName (was "TDMCV").
+                                     "TDMCV",         // NAME:			IniName.
                                      ANIM_FBALL1,     // EXPLOSION:	Type of explosion when destroyed.
                                      REMAP_ALTERNATE, // Sidebar remap logic.
                                      0x0000,          //	Vertical offset.
@@ -1567,11 +1567,11 @@ static UnitTypeClass const UnitTsHvr(UNIT_TSHVR,
 );
 
 /*
-**  SMCV (Soviet MCV) and TDNMCV (Nod MCV) — twins of the Allied and GDI MCVs. Neither source
-**  game drew a second MCV sprite, so both take their art from the twin via Image= in
-**  rules.ini. They exist as their own types so the MCV carries the faction it will deploy
-**  into: an MCV built from a captured enemy factory is that faction's MCV, and deploys that
-**  faction's construction yard, which is what carries a captured tech tree forward.
+**  AMCV/SMCV (Allied/Soviet MCVs) and TDGMCV/TDNMCV (GDI/Nod MCVs) — the four faction MCVs.
+**  Each exists as its own type so the MCV carries the faction it will deploy into: an MCV
+**  built from a captured enemy factory is that faction's MCV, and deploys that faction's
+**  construction yard, which is what carries a captured tech tree forward. Each carries its
+**  own pipeline-built art under its IniName keys (no Image= sharing).
 */
 static UnitTypeClass const UnitSovietMcv(UNIT_SMCV,
                                          TXT_MCV,         // NAME:			Text name of this unit type.
@@ -1631,6 +1631,64 @@ static UnitTypeClass const UnitNodMcv(UNIT_TDNMCV,
                                       MISSION_HUNT     // ORDERS:		Default order to give new unit.
 );
 
+static UnitTypeClass const UnitGdiMcv(UNIT_TDGMCV,
+                                      TXT_MCV,         // NAME:			Text name of this unit type.
+                                      "TDGMCV",        // NAME:			IniName.
+                                      ANIM_FBALL1,     // EXPLOSION:	Type of explosion when destroyed.
+                                      REMAP_ALTERNATE, // Sidebar remap logic.
+                                      0x0000,          //	Vertical offset.
+                                      0x0000,          // Primary weapon offset along turret centerline.
+                                      0x0000,          // Primary weapon lateral offset along turret centerline.
+                                      0x0000,          // Secondary weapon offset along turret centerline.
+                                      0x0000,          // Secondary weapon lateral offset along turret centerling.
+                                      true,            // Can this be a goodie surprise from a crate?
+                                      false,           // Always use the given name for the vehicle?
+                                      true,            // Can this unit squash infantry?
+                                      false,           // Does this unit harvest Tiberium?
+                                      false,           // Is invisible to radar?
+                                      false,           // Is it insignificant (won't be announced)?
+                                      false,           // Is it equipped with a combat turret?
+                                      false,           // Does it have a rotating radar dish?
+                                      false,           // Is there an associated firing animation?
+                                      false,           // Must the turret be in a locked down position while moving?
+                                      true,            // Is this a gigundo-rotund-enormous unit?
+                                      false,           // Does the unit have a constant animation?
+                                      false,           // Is the unit capable of jamming radar?
+                                      false,           // Is the unit a mobile gap generator?
+                                      32,              // Rotation stages.
+                                      0,               // Turret center offset along body centerline.
+                                      MISSION_HUNT     // ORDERS:		Default order to give new unit.
+);
+
+static UnitTypeClass const UnitAlliedMcv(UNIT_AMCV,
+                                         TXT_MCV,         // NAME:			Text name of this unit type.
+                                         "AMCV",          // NAME:			IniName.
+                                         ANIM_FBALL1,     // EXPLOSION:	Type of explosion when destroyed.
+                                         REMAP_ALTERNATE, // Sidebar remap logic.
+                                         0x0000,          //	Vertical offset.
+                                         0x0000,          // Primary weapon offset along turret centerline.
+                                         0x0000,          // Primary weapon lateral offset along turret centerline.
+                                         0x0000,          // Secondary weapon offset along turret centerline.
+                                         0x0000,          // Secondary weapon lateral offset along turret centerling.
+                                         true,            // Can this be a goodie surprise from a crate?
+                                         false,           // Always use the given name for the vehicle?
+                                         true,            // Can this unit squash infantry?
+                                         false,           // Does this unit harvest Tiberium?
+                                         false,           // Is invisible to radar?
+                                         false,           // Is it insignificant (won't be announced)?
+                                         false,           // Is it equipped with a combat turret?
+                                         false,           // Does it have a rotating radar dish?
+                                         false,           // Is there an associated firing animation?
+                                         false,           // Must the turret be in a locked down position while moving?
+                                         true,            // Is this a gigundo-rotund-enormous unit?
+                                         false,           // Does the unit have a constant animation?
+                                         false,           // Is the unit capable of jamming radar?
+                                         false,           // Is the unit a mobile gap generator?
+                                         32,              // Rotation stages.
+                                         0,               // Turret center offset along body centerline.
+                                         MISSION_HUNT     // ORDERS:		Default order to give new unit.
+);
+
 /***********************************************************************************************
  * UnitTypeClass::Init_Heap -- Initialize the unit type class heap.                            *
  *                                                                                             *
@@ -1663,7 +1721,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitArty);        //	UNIT_ARTY
     new UnitTypeClass(UnitMRJammer);    //	UNIT_MRJ
     new UnitTypeClass(UnitMGG);         //	UNIT_MGG
-    new UnitTypeClass(UnitMCV);         // UNIT_AMCV
+    new UnitTypeClass(UnitMCV);         // UNIT_MCV
     new UnitTypeClass(UnitV2Launcher);  //	UNIT_V2_LAUNCHER
     new UnitTypeClass(UnitConvoyTruck); // UNIT_TRUCK
 #ifdef FIXIT_ANTS
@@ -1682,7 +1740,7 @@ void UnitTypeClass::Init_Heap(void)
 #endif
 #endif
     // Tiberian Factions mod — fully-separated TD-source unit ports.
-    new UnitTypeClass(UnitTdMcv);     // UNIT_TDGMCV
+    new UnitTypeClass(UnitTdMcv);     // UNIT_TDMCV
     new UnitTypeClass(UnitTdHarv);    // UNIT_TDHARV
     new UnitTypeClass(UnitTdMtnk);    // UNIT_TDMTNK
     new UnitTypeClass(UnitTdLtnk);    // UNIT_TDLTNK
@@ -1700,6 +1758,8 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTsHvr);     // UNIT_TSHVR (TS-spike Hover MLRS)
     new UnitTypeClass(UnitSovietMcv); // UNIT_SMCV  (Soviet MCV)
     new UnitTypeClass(UnitNodMcv);    // UNIT_TDNMCV (Nod MCV)
+    new UnitTypeClass(UnitGdiMcv);    // UNIT_TDGMCV (GDI MCV)
+    new UnitTypeClass(UnitAlliedMcv); // UNIT_AMCV  (Allied MCV)
 }
 
 /***********************************************************************************************
@@ -1722,15 +1782,6 @@ void UnitTypeClass::Init_Heap(void)
 UnitType UnitTypeClass::From_Name(char const* name)
 {
     if (name != NULL) {
-        /*
-        **	Legacy alias: Red Alert's MCV shipped as "MCV" and is now the Allied one, "AMCV".
-        **	Stock RA scenario files place "MCV" by name and we do not own that content, so the
-        **	old spelling has to keep resolving.
-        */
-        if (stricmp(name, "MCV") == 0) {
-            return (UNIT_AMCV);
-        }
-
         for (UnitType classid = UNIT_FIRST; classid < UNIT_COUNT; classid++) {
             if (stricmp(As_Reference(classid).IniName, name) == 0) {
                 return (classid);
@@ -2131,8 +2182,8 @@ bool UnitTypeClass::Read_INI(CCINIClass& ini)
 
         /*
         **  Logic=<vanilla-IniName> aliases this entry's runtime Type discriminant
-        **  to a vanilla UnitType. Engine dispatch (Mission_Unload's `case UNIT_AMCV`,
-        **  Try_To_Deploy's `*this == UNIT_AMCV`, AI ownership scans, etc.) then
+        **  to a vanilla UnitType. Engine dispatch (Mission_Unload's `case UNIT_MCV`,
+        **  Try_To_Deploy's `*this == UNIT_MCV`, AI ownership scans, etc.) then
         **  treats this custom unit as the vanilla type. Mirrors the building-side
         **  alias at bdata.cpp:3847. ImageData inheritance is critical for mod
         **  entries — One_Time only loads SHPs for vanilla heap slots, so without

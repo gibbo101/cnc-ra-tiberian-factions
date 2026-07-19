@@ -1718,7 +1718,7 @@ static void TF_Log_AI_Build_State(void)
         }
 
         /*
-        **	Unit census: does the AI still have an undeployed MCV (UNIT_AMCV) or a harvester?
+        **	Unit census: does the AI still have an undeployed MCV (UNIT_MCV) or a harvester?
         **	An MCV that never became a Construction Yard == a stuck base.
         */
         int units = 0;
@@ -1728,7 +1728,7 @@ static void TF_Log_AI_Build_State(void)
             UnitClass* u = Units.Ptr(i);
             if (u != NULL && u->IsActive && !u->IsInLimbo && u->House == hptr) {
                 units++;
-                if (u->Class->Type == UNIT_AMCV || u->Class->Type == UNIT_TDGMCV) {
+                if (u->Class->Type == UNIT_MCV || u->Class->Type == UNIT_TDMCV) {
                     mcv++;
                 }
                 if (u->Class->Type == UNIT_HARVESTER || u->Class->Type == UNIT_TDHARV) {
@@ -5290,11 +5290,11 @@ int BuildingClass::Mission_Deconstruction(void)
             **	to an MCV.
             */
             if (Target_Legal(ArchiveTarget) && Class->Is_Construction_Yard() && House->IsHuman && Strength > 0) {
-                // Tiberian Factions: STRUCT_TDGFACT undeploys to UNIT_TDGMCV
-                // (the TD MCV), which will re-deploy into STRUCT_TDGFACT via
-                // MCV_Deploy_Building. Vanilla STRUCT_AFACT keeps UNIT_AMCV
-                // → STRUCT_AFACT round-trip unchanged.
-                UnitType mcv_type = (*this == STRUCT_TDGFACT) ? UNIT_TDGMCV : UNIT_AMCV;
+                // Tiberian Factions: STRUCT_TDFACT undeploys to UNIT_TDMCV
+                // (the TD MCV), which will re-deploy into STRUCT_TDFACT via
+                // MCV_Deploy_Building. Vanilla STRUCT_CONST keeps UNIT_MCV
+                // → STRUCT_CONST round-trip unchanged.
+                UnitType mcv_type = (*this == STRUCT_TDFACT) ? UNIT_TDMCV : UNIT_MCV;
                 ScenarioInit++;
                 UnitClass* unit = new UnitClass(mcv_type, House->Class->House);
                 ScenarioInit--;
@@ -7125,7 +7125,7 @@ InfantryType BuildingClass::Crew_Type(void) const
     **	(INFANTRY_TDE1) as its survivor/crew on death or sell — TD's generic
     **	building crew is the minigunner, not RA's rifle infantry. Keyed on the
     **	"TD" IniName prefix so it covers all TD buildings (TDPYLE/TDHAND barracks,
-    **	TDNUKE/TDPROC/TDWEAP/etc.). STRUCT_TDGFACT keeps its Engineer chance above
+    **	TDNUKE/TDPROC/TDWEAP/etc.). STRUCT_TDFACT keeps its Engineer chance above
     **	and only reaches here for the non-Engineer roll.
     */
     if (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') {
@@ -8181,8 +8181,8 @@ int BuildingClass::Value(void) const
                     + BuildingTypeClass::As_Reference(STRUCT_WEAP).Risk);
 
         case STRUCT_FAKECONST:
-            return (BuildingTypeClass::As_Reference(STRUCT_AFACT).Reward
-                    + BuildingTypeClass::As_Reference(STRUCT_AFACT).Risk);
+            return (BuildingTypeClass::As_Reference(STRUCT_CONST).Reward
+                    + BuildingTypeClass::As_Reference(STRUCT_CONST).Risk);
 
         case STRUCT_FAKE_YARD:
             return (BuildingTypeClass::As_Reference(STRUCT_SHIP_YARD).Reward

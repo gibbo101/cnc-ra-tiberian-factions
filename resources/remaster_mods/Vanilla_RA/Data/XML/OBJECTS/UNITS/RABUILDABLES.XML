@@ -109,7 +109,7 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
-	<ObjectTypeClass Name="RA_AFACT" Classification="CNCBuildableObject" CanInstantiate="False">
+	<ObjectTypeClass Name="RA_FACT" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_FACT</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_FACT_DESC</ObjectDescriptionTextID>
@@ -407,7 +407,7 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
-	<ObjectTypeClass Name="RA_AMCV" Classification="CNCBuildableObject" CanInstantiate="False">
+	<ObjectTypeClass Name="RA_MCV" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_MCV</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_MCV_DESC</ObjectDescriptionTextID>
@@ -1480,23 +1480,7 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
-	<ObjectTypeClass Name="RA_SMCV" Classification="CNCBuildableObject" CanInstantiate="False">
-		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_UNIT_RA_MCV</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_UNIT_RA_MCV_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_MCV</BuildIcon>
-		</CNCEncyclopediaComponent>
-	</ObjectTypeClass>
-
-	<ObjectTypeClass Name="RA_TDNMCV" Classification="CNCBuildableObject" CanInstantiate="False">
-		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_MCV</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_MCV</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_MCV</BuildIcon>
-		</CNCEncyclopediaComponent>
-	</ObjectTypeClass>
-
-	<ObjectTypeClass Name="RA_TDGMCV" Classification="CNCBuildableObject" CanInstantiate="False">
+	<ObjectTypeClass Name="RA_TDMCV" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_MCV</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_MCV</ObjectDescriptionTextID>
@@ -1512,23 +1496,7 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
-	<ObjectTypeClass Name="RA_SFACT" Classification="CNCBuildableObject" CanInstantiate="False">
-		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_STRUCTURE_SFACT</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_STRUCTURE_SFACT_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_MCV</BuildIcon>
-		</CNCEncyclopediaComponent>
-	</ObjectTypeClass>
-
-	<ObjectTypeClass Name="RA_TDNFACT" Classification="CNCBuildableObject" CanInstantiate="False">
-		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_STRUCTURE_TDNFACT</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNFACT_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_MCV</BuildIcon>
-		</CNCEncyclopediaComponent>
-	</ObjectTypeClass>
-
-	<ObjectTypeClass Name="RA_TDGFACT" Classification="CNCBuildableObject" CanInstantiate="False">
+	<ObjectTypeClass Name="RA_TDFACT" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_CONSTRUCTION_YARD</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_MCV</ObjectDescriptionTextID>
@@ -1886,6 +1854,70 @@
 			<ObjectNameTextID>TEXT_STRUCTURE_TSPOWR</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPOWR_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TS_PowerPlant</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDGFACT" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGFACT</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGFACT_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDGMCV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDNFACT" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDNFACT</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNFACT_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDNMCV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_AFACT" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_AFACT</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_AFACT_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_AMCV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_SFACT" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_SFACT</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_SFACT_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SMCV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDGMCV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TDGMCV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TDGMCV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDGMCV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDNMCV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TDNMCV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TDNMCV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDNMCV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_AMCV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_AMCV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_AMCV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_AMCV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_SMCV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_SMCV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_SMCV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SMCV</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

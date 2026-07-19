@@ -1075,20 +1075,20 @@ static BuildingTypeClass const ClassTdProc(STRUCT_TDPROC,
 
 /*
 **  TDFACT (Construction Yard) — 3×2 building, ARMOR_WOOD, capturable, crewed.
-**    Wholesale port of TD's STRUCT_AFACT per tiberiandawn/bdata.cpp:534
+**    Wholesale port of TD's STRUCT_CONST per tiberiandawn/bdata.cpp:534
 **    (ClassConst). NOT a unit factory — RTTI_BUILDINGTYPE (produces other
 **    buildings, not vehicles). Shared by HOUSE_GOOD + HOUSE_BAD, matching
 **    TD's original (one MCV/ConYard type for both factions).
 **
 **    Footprint mirrors TD source exactly: BSIZE_32 + List32 (3×2 = 6 cells,
-**    no overlap row). RA's STRUCT_AFACT is BSIZE_33 with ListFactory (3×3,
+**    no overlap row). RA's STRUCT_CONST is BSIZE_33 with ListFactory (3×3,
 **    9 cells) — a different shape per playbook §3.13 donor-parity trap.
 **    Worked example of why "copy donor verbatim" fails for buildings whose
 **    TD/RA donor footprints diverge.
 */
-static BuildingTypeClass const ClassTdFact(STRUCT_TDGFACT,
+static BuildingTypeClass const ClassTdFact(STRUCT_TDFACT,
                                            TXT_NONE,           // Display name (rules.ini Name= overrides).
-                                           "TDGFACT",          // IniName (was "TDFACT").
+                                           "TDFACT",           // IniName.
                                            FACING_NONE,        // Foundation direction.
                                            XYP_COORD(0, 0),    // Exit point unused (not a vehicle factory).
                                            REMAP_ALTERNATE,    // Sidebar remap logic.
@@ -1116,15 +1116,44 @@ static BuildingTypeClass const ClassTdFact(STRUCT_TDGFACT,
 );
 
 /*
-**  TDNFACT (Nod Construction Yard) — identical to the GDI yard in every respect; TD drew one
-**  construction yard and both its factions used it. It exists as its own type purely so the
-**  BUILDING can carry the faction, which is what drives the sidebar roster (Update_Buildables
-**  reads the building's ActLike) and therefore what makes a captured yard offer its original
-**  owner's tech tree. Art comes from Image=TDFACT in rules.ini -- one sprite, two types.
+**  TDNFACT / TDGFACT (Nod / GDI Construction Yards) — TD drew one construction yard and both
+**  its factions used it. Each exists as its own type purely so the BUILDING can carry the
+**  faction, which is what drives the sidebar roster (Update_Buildables reads the building's
+**  ActLike) and therefore what makes a captured yard offer its original owner's tech tree.
+**  Each carries its own pipeline-built art under its IniName keys (no Image= sharing).
 */
 static BuildingTypeClass const ClassTdNodFact(STRUCT_TDNFACT,
                                               TXT_NONE,           // Display name (rules.ini Name= overrides).
                                               "TDNFACT",          // IniName.
+                                              FACING_NONE,        // Foundation direction.
+                                              XYP_COORD(0, 0),    // Exit point unused (not a vehicle factory).
+                                              REMAP_ALTERNATE,    // Sidebar remap logic.
+                                              0x0000,             // Vertical offset.
+                                              0x0000,             // Primary weapon offset.
+                                              0x0000,             // Primary weapon lateral offset.
+                                              false,              // Is this building a fake?
+                                              false,              // Animation rate regulated for constant speed?
+                                              false,              // Always use the given name?
+                                              false,              // Is this a wall type structure?
+                                              false,              // Simple (one frame) damage imagery?
+                                              false,              // Is it invisible to radar?
+                                              true,               // Can the player select this?
+                                              true,               // Is this a legal target?
+                                              false,              // Is this an insignificant building?
+                                              false,              // Theater specific graphic image?
+                                              false,              // Does it have a rotating turret?
+                                              true,               // Can the building be color remapped?
+                                              RTTI_BUILDINGTYPE,  // Produces buildings.
+                                              DIR_N,              // Starting idle frame.
+                                              BSIZE_32,           // 3x2 footprint (TD-authentic — NOT RA's 3x3).
+                                              NULL,               // No preferred exit cell.
+                                              (short const*)List32,
+                                              (short const*)NULL  // No overlap row.
+);
+
+static BuildingTypeClass const ClassTdGdiFact(STRUCT_TDGFACT,
+                                              TXT_NONE,           // Display name (rules.ini Name= overrides).
+                                              "TDGFACT",          // IniName.
                                               FACING_NONE,        // Foundation direction.
                                               XYP_COORD(0, 0),    // Exit point unused (not a vehicle factory).
                                               REMAP_ALTERNATE,    // Sidebar remap logic.
@@ -1501,9 +1530,9 @@ static BuildingTypeClass const ClassFlameTurret(STRUCT_FLAME_TURRET,
                                                 (short const*)NULL   // OVERLAPLIST:List of overlap cell offset.
 );
 
-static BuildingTypeClass const ClassConst(STRUCT_AFACT,
+static BuildingTypeClass const ClassConst(STRUCT_CONST,
                                           TXT_CONST_YARD,    // NAME:			Short name of the structure.
-                                          "AFACT",           // IniName (was "FACT" -- see From_Name legacy alias).
+                                          "FACT",            // NAME:			Short name of the structure.
                                           FACING_NONE,       // Foundation direction from center of building.
                                           XYP_COORD(0, 0),   // Exit point for produced units.
                                           REMAP_ALTERNATE,   // Sidebar remap logic.
@@ -1531,14 +1560,43 @@ static BuildingTypeClass const ClassConst(STRUCT_AFACT,
 );
 
 /*
-**  SFACT (Soviet Construction Yard) — a copy of the Allied yard, for the same reason TDNFACT
-**  is a copy of the GDI one: Red Alert drew a single construction yard because it only ever
-**  needed the owner's identity, and the split exists so the BUILDING carries the faction.
-**  Art comes from Image=FACT in rules.ini.
+**  SFACT / AFACT (Soviet / Allied Construction Yards) — Red Alert drew a single construction
+**  yard because it only ever needed the owner's identity; the split exists so the BUILDING
+**  carries the faction (see the TDNFACT/TDGFACT comment for the capture rationale). Each
+**  carries its own pipeline-built art under its IniName keys (no Image= sharing).
 */
 static BuildingTypeClass const ClassSovietFact(STRUCT_SFACT,
                                                TXT_NONE,          // Display name (rules.ini Name= overrides).
                                                "SFACT",           // IniName.
+                                               FACING_NONE,       // Foundation direction from center of building.
+                                               XYP_COORD(0, 0),   // Exit point for produced units.
+                                               REMAP_ALTERNATE,   // Sidebar remap logic.
+                                               0x0000,            //	Vertical offset.
+                                               0x0000,            // Primary weapon offset along turret centerline.
+                                               0x0000,            // Primary weapon lateral offset along turret centerline.
+                                               false,             // Is this building a fake (decoy?)
+                                               false,             // Animation rate is regulated for constant speed?
+                                               false,             // Always use the given name for the building?
+                                               false,             // Is this a wall type structure?
+                                               false,             // Simple (one frame) damage imagery?
+                                               false,             // Is it invisible to radar?
+                                               true,              // Can the player select this?
+                                               true,              // Is this a legal target for attack or move?
+                                               false,             // Is this an insignificant building?
+                                               false,             // Theater specific graphic image?
+                                               false,             // Does it have a rotating turret?
+                                               true,              // Can the building be color remapped to indicate owner?
+                                               RTTI_BUILDINGTYPE, // The object type produced at this factory.
+                                               DIR_N,             // Starting idle frame to match construction.
+                                               BSIZE_33,          // SIZE:			Building size.
+                                               NULL,              // Preferred exit cell list.
+                                               (short const*)ListFactory, // OCCUPYLIST:	List of active foundation squares.
+                                               (short const*)NULL         // OVERLAPLIST:List of overlap cell offset.
+);
+
+static BuildingTypeClass const ClassAlliedFact(STRUCT_AFACT,
+                                               TXT_NONE,          // Display name (rules.ini Name= overrides).
+                                               "AFACT",           // IniName.
                                                FACING_NONE,       // Foundation direction from center of building.
                                                XYP_COORD(0, 0),   // Exit point for produced units.
                                                REMAP_ALTERNATE,   // Sidebar remap logic.
@@ -3943,7 +4001,8 @@ static BuildingTypeClass const ClassTdBlossom(STRUCT_TDBLOSSOM,
  *=============================================================================================*/
 bool BuildingTypeClass::Is_Construction_Yard(void) const
 {
-    return (Type == STRUCT_AFACT || Type == STRUCT_SFACT || Type == STRUCT_TDGFACT || Type == STRUCT_TDNFACT);
+    return (Type == STRUCT_CONST || Type == STRUCT_AFACT || Type == STRUCT_SFACT || Type == STRUCT_TDFACT
+            || Type == STRUCT_TDGFACT || Type == STRUCT_TDNFACT);
 }
 
 /***********************************************************************************************
@@ -3987,10 +4046,12 @@ long TF_Building_Scan_Bit(int btype)
     case STRUCT_TDEYE:
         return (STRUCTF_RADAR);
 
-    case STRUCT_TDGFACT:
+    case STRUCT_TDFACT:
     case STRUCT_TDNFACT:
+    case STRUCT_TDGFACT:
     case STRUCT_SFACT:
-        return (STRUCTF_AFACT);
+    case STRUCT_AFACT:
+        return (STRUCTF_CONST);
 
     case STRUCT_TDPROC:
         return (STRUCTF_REFINERY);
@@ -4035,7 +4096,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTurret);        //	STRUCT_TURRET
     new BuildingTypeClass(ClassAAGun);         // STRUCT_AAGUN
     new BuildingTypeClass(ClassFlameTurret);   //	STRUCT_FLAME_TURRET
-    new BuildingTypeClass(ClassConst);         //	STRUCT_AFACT
+    new BuildingTypeClass(ClassConst);         //	STRUCT_CONST
     new BuildingTypeClass(ClassRefinery);      //	STRUCT_REFINERY
     new BuildingTypeClass(ClassStorage);       //	STRUCT_STORAGE
     new BuildingTypeClass(ClassHelipad);       //	STRUCT_HELIPAD
@@ -4133,7 +4194,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdHq);    // STRUCT_TDHQ    (Communications Center)
     new BuildingTypeClass(ClassTdWeap);  // STRUCT_TDWEAP  (Weapons Factory)
     new BuildingTypeClass(ClassTdAfld);  // STRUCT_TDAFLD  (Nod Airstrip)
-    new BuildingTypeClass(ClassTdFact);  // STRUCT_TDGFACT  (Construction Yard)
+    new BuildingTypeClass(ClassTdFact);  // STRUCT_TDFACT  (Construction Yard)
     new BuildingTypeClass(ClassTdProc);  // STRUCT_TDPROC  (Tiberium Refinery)
     new BuildingTypeClass(ClassTdEye);   // STRUCT_TDEYE   (Advanced Communications Center)
     new BuildingTypeClass(ClassTdTmpl);  // STRUCT_TDTMPL  (Temple of Nod)
@@ -4145,7 +4206,9 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassFlameBunker); // STRUCT_TDFBNK (Nod Flame Bunker)
     new BuildingTypeClass(ClassTsPowr);      // STRUCT_TSPOWR (TS-spike GDI Power Plant)
     new BuildingTypeClass(ClassTdNodFact);   // STRUCT_TDNFACT (Nod Construction Yard)
+    new BuildingTypeClass(ClassTdGdiFact);   // STRUCT_TDGFACT (GDI Construction Yard)
     new BuildingTypeClass(ClassSovietFact);  // STRUCT_SFACT   (Soviet Construction Yard)
+    new BuildingTypeClass(ClassAlliedFact);  // STRUCT_AFACT   (Allied Construction Yard)
 }
 
 /***********************************************************************************************
@@ -4192,7 +4255,7 @@ void BuildingTypeClass::One_Time(void)
 #ifdef FIXIT_ANTS
         {STRUCT_QUEEN, BSTATE_IDLE, 0, 10, 3},
 #endif
-        {STRUCT_AFACT, BSTATE_ACTIVE, 0, 26, 3},
+        {STRUCT_CONST, BSTATE_ACTIVE, 0, 26, 3},
         {STRUCT_FAKECONST, BSTATE_ACTIVE, 0, 26, 3},
         {STRUCT_HELIPAD, BSTATE_ACTIVE, 0, 7, 4},
         {STRUCT_HELIPAD, BSTATE_IDLE, 0, 0, 0},
@@ -4250,8 +4313,8 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TDAFLD, BSTATE_AUX1, 0, 8, 3},
         // M4 Tier 3 — TDFACT 20-frame deploy/active cycle + 4-frame idle.
         // TD-authentic per tiberiandawn/bdata.cpp:3792-3793.
-        {STRUCT_TDGFACT, BSTATE_ACTIVE, 4, 20, 3},
-        {STRUCT_TDGFACT, BSTATE_IDLE, 0, 4, 3},
+        {STRUCT_TDFACT, BSTATE_ACTIVE, 4, 20, 3},
+        {STRUCT_TDFACT, BSTATE_IDLE, 0, 4, 3},
         // Faction twins share their original's animation timings -- same sprite, same frames.
         {STRUCT_TDNFACT, BSTATE_ACTIVE, 4, 20, 3},
         {STRUCT_TDNFACT, BSTATE_IDLE, 0, 4, 3},
@@ -4513,15 +4576,6 @@ void BuildingTypeClass::One_Time(void)
 StructType BuildingTypeClass::From_Name(char const* name)
 {
     if (name != NULL) {
-        /*
-        **	Legacy alias: Red Alert's construction yard shipped as "FACT" and is now the
-        **	Allied one, "AFACT". Stock RA scenario files place "FACT" by name and we do not
-        **	own that content, so the old spelling has to keep resolving.
-        */
-        if (stricmp(name, "FACT") == 0) {
-            return (STRUCT_AFACT);
-        }
-
         for (int classid = STRUCT_FIRST; classid < STRUCT_COUNT; classid++) {
             if (stricmp(As_Reference((StructType)classid).IniName, name) == 0) {
                 return ((StructType)classid);

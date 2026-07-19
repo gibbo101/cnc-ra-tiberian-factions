@@ -118,9 +118,15 @@ def main():
     ap.add_argument("--tileset-donor", default=None,
                     help="RA_UNITS.XML block to clone when the TD asset has no RA "
                          "equivalent (e.g. E4 for E5 chem warrior). Defaults to td_asset.")
+    ap.add_argument("--source", choices=["td", "ra"], default="td",
+                    help="Which vanilla MEG the asset ZIP comes from: td = "
+                         "TEXTURES_TD_SRGB.MEG (default), ra = TEXTURES_RA_SRGB.MEG "
+                         "(for independent copies of RA units, e.g. the faction MCVs).")
     args = ap.parse_args()
 
     meg = source_meg_path()
+    if args.source == "ra":
+        meg = meg.with_name("TEXTURES_RA_SRGB.MEG")
     zip_dest, frames = repack_zip(args.td_asset, args.ininame, meg)
     tiles = clone_tileset_block(args.td_asset, args.ininame, donor=args.tileset_donor,
                                 frame_count=frames)

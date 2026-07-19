@@ -1413,7 +1413,7 @@ typedef enum StructType : char
     STRUCT_TURRET,
     STRUCT_AAGUN,
     STRUCT_FLAME_TURRET,
-    STRUCT_AFACT, // Allied Construction Yard (IniName still "FACT" until the IniName migration).
+    STRUCT_CONST, // RA Construction Yard "FACT" — stock-campaign type; skirmish uses the faction yards (AFACT/SFACT) after the W2 split.
     STRUCT_REFINERY,
     STRUCT_STORAGE,
     STRUCT_HELIPAD,
@@ -1532,7 +1532,7 @@ typedef enum StructType : char
     STRUCT_TDHQ,
     STRUCT_TDWEAP,
     STRUCT_TDAFLD,
-    STRUCT_TDGFACT, // GDI Construction Yard (IniName still "TDFACT" until the IniName migration).
+    STRUCT_TDFACT, // TD Construction Yard "TDFACT" — classic shared GDI/Nod type; skirmish uses the faction yards (TDGFACT/TDNFACT) after the W2 split.
     STRUCT_TDPROC,
 
     // M5 Tier 4 — superweapon hosts.
@@ -1548,13 +1548,15 @@ typedef enum StructType : char
     STRUCT_TDSTEALTH, // Nod Stealth Generator (reuses GAP sprite; cloaks friendly buildings+units in radius). bdata.cpp / building.cpp driver.
     STRUCT_TDFBNK,    // Nod Flame Bunker (clone of PBOX, Owner=BadGuy) — anti-infantry TDFire flame weapon (range 4). bdata.cpp ClassFlameBunker.
     STRUCT_TSPOWR,    // TS-spike: Tiberian Sun GDI Power Plant (GAPOWR art) — clone of ClassPower (2x2, Power in rules.ini). HD-only art from the TS SHP; POWR donor ImageData/BuildupData.
-    STRUCT_TDNFACT,   // Nod Construction Yard. Twin of STRUCT_TDGFACT (Image=TDFACT, one sprite); separate type so the BUILDING carries the faction. LAST Tiberian-era entry — see STRUCT_TIBERIAN_LAST.
+    STRUCT_TDNFACT,   // Nod Construction Yard — own pipeline-built art (TDNFACT keys); separate type so the BUILDING carries the faction.
+    STRUCT_TDGFACT,   // GDI Construction Yard — sibling of STRUCT_TDNFACT. LAST Tiberian-era entry — see STRUCT_TIBERIAN_LAST.
 
     /*
     **	Red Alert side additions go BELOW the Tiberian-era marker, so they do not inherit
     **	TD construction/place-down audio by enum position.
     */
-    STRUCT_SFACT, // Soviet Construction Yard. Twin of STRUCT_AFACT (Image=FACT, one sprite).
+    STRUCT_SFACT, // Soviet Construction Yard — own pipeline-built art (SFACT keys); separate type so the BUILDING carries the faction.
+    STRUCT_AFACT, // Allied Construction Yard — sibling of STRUCT_SFACT.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
@@ -1570,7 +1572,7 @@ typedef enum StructType : char
     **	marker only when appending another TD/TS entity. Testing the block by IniName prefix
     **	instead would be wrong: RA's own Tesla coil is "TSLA".
     */
-    STRUCT_TIBERIAN_LAST = STRUCT_TDNFACT
+    STRUCT_TIBERIAN_LAST = STRUCT_TDGFACT
 } StructType;
 
 /*
@@ -1615,7 +1617,7 @@ inline StructType operator++(StructType& n)
 #define STRUCTF_TURRET         (1L << STRUCT_TURRET)
 #define STRUCTF_AAGUN          (1L << STRUCT_AAGUN)
 #define STRUCTF_FLAME_TURRET   (1L << STRUCT_FLAME_TURRET)
-#define STRUCTF_AFACT          (1L << STRUCT_AFACT)
+#define STRUCTF_CONST          (1L << STRUCT_CONST)
 #define STRUCTF_REFINERY       (1L << STRUCT_REFINERY)
 #define STRUCTF_STORAGE        (1L << STRUCT_STORAGE)
 #define STRUCTF_HELIPAD        (1L << STRUCT_HELIPAD)
@@ -1762,7 +1764,7 @@ typedef enum UnitType : char
     UNIT_ARTY,        // Artillery unit.
     UNIT_MRJ,         // Mobile Radar Jammer.
     UNIT_MGG,         // Mobile Gap Generator
-    UNIT_AMCV,         // Allied MCV (deploys to STRUCT_AFACT; IniName still "MCV" until the IniName migration).
+    UNIT_MCV,         // RA MCV "MCV" (deploys to STRUCT_CONST) — stock-campaign type; skirmish uses the faction MCVs (AMCV/SMCV) after the W2 split.
     UNIT_V2_LAUNCHER, // V2 rocket launcher.
     UNIT_TRUCK,       // Convoy truck
 
@@ -1784,7 +1786,7 @@ typedef enum UnitType : char
 #endif
 
     // Tiberian Factions mod — fully-separated TD-source unit ports.
-    UNIT_TDGMCV,             // GDI MCV (deploys to STRUCT_TDGFACT; IniName still "TDMCV" until the IniName migration).
+    UNIT_TDMCV,             // TD MCV "TDMCV" (deploys to STRUCT_TDFACT) — classic shared GDI/Nod type; skirmish uses the faction MCVs (TDGMCV/TDNMCV) after the W2 split.
     UNIT_TDHARV,            // TD Tiberium Harvester (docks at STRUCT_TDPROC).
     UNIT_TDMTNK,            // TD Medium Tank (MTNK) — GDI-only, turret, fires TD105mm. udata.cpp:264.
     UNIT_TDLTNK,            // TD Light Tank (LTNK) — Nod-only, turret, fires TD75mm. udata.cpp:211.
@@ -1800,8 +1802,10 @@ typedef enum UnitType : char
     UNIT_TDARTY,            // TD Artillery (ARTY, "Nod Artillery") — Nod-only, no prereq (build level 6), turret-less (body aims, slow ROT 2), fires TD155mm (BULLET_TDHESHELL arcing, dmg 150). udata.cpp UnitArty.
     UNIT_TDVICE,            // TD Visceroid (VICE) — tiberium creature, NOT buildable; spawns when infantry die in tiberium. Tracked, turret-less, squashes infantry, constant anim, WEAPON_TDCHEM spray, ARMOR_WOOD, STR 150, MISSION_HUNT. HEALS on tiberium. udata.cpp UnitVisceroid.
     UNIT_TSHVR,             // TS-spike: Tiberian Sun Hover MLRS (HVR) — GDI, turreted missile rack, fires TSHoverMissile (TDSSM AA+AG chain). Art = voxel-rendered HD tileset (tools/ts_extract.py + vxl_render.py pipeline); no classic SHP (2TNK donor ImageData).
-    UNIT_SMCV,              // Soviet MCV (deploys to STRUCT_SFACT). Twin of UNIT_AMCV, Image=MCV — RA drew one MCV sprite for both sides.
-    UNIT_TDNMCV,            // Nod MCV (deploys to STRUCT_TDNFACT). Twin of UNIT_TDGMCV, Image=TDMCV — TD drew one MCV sprite for both sides.
+    UNIT_SMCV,              // Soviet MCV (deploys to STRUCT_SFACT) — own pipeline-built art (SMCV keys); separate type so the UNIT carries the faction.
+    UNIT_TDNMCV,            // Nod MCV (deploys to STRUCT_TDNFACT) — own pipeline-built art (TDNMCV keys).
+    UNIT_TDGMCV,            // GDI MCV (deploys to STRUCT_TDGFACT) — sibling of UNIT_TDNMCV.
+    UNIT_AMCV,              // Allied MCV (deploys to STRUCT_AFACT) — sibling of UNIT_SMCV.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -1823,7 +1827,7 @@ typedef enum UnitType : char
 #define UNITF_JEEP      (1L << UNIT_JEEP)
 #define UNITF_HARVESTER (1L << UNIT_HARVESTER)
 #define UNITF_ARTY      (1L << UNIT_ARTY)
-#define UNITF_AMCV       (1L << UNIT_AMCV)
+#define UNITF_MCV       (1L << UNIT_MCV)
 
 /**********************************************************************
 **	The naval vessels are enumerated below.

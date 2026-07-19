@@ -468,7 +468,7 @@ TDEYE = {
 
 
 TDFACT = {
-    "ininame":     "TDGFACT",
+    "ininame":     "TDFACT",
     "logic":       None,         # M4 Tier 3 separated 2026-05-27 — STRUCT_TDFACT native.
     "td_asset":    "FACT",
     "footprint":   None,         # ClassTdFact uses native BSIZE_32 + List32 (TD-authentic 3x2; RA's STRUCT_CONST is BSIZE_33).
@@ -503,6 +503,74 @@ TDFACT = {
     "bib":         True,
     "idle_anim":   (0, 4, 3),
     "notes":       "TD Construction Yard. Closing v0.3 slice — paired with TDMCV deploy. Production target: TechLevel=99 (not sidebar-buildable; MCV-deploy only). Shared GoodGuy/BadGuy until per-faction variants split in v0.4. Donor RA FACT is 3x3; vanilla FACT is TechLevel=-1 (uncbuildable) — same semantic as TD lvl 99. Power=0 per vanilla RA [FACT].",
+}
+
+
+TDGFACT = {
+    "ininame":     "TDGFACT",
+    "logic":       None,         # W2(b) faction split — STRUCT_TDGFACT native (bdata.cpp Init_Heap).
+    "td_asset":    "FACT",
+    "footprint":   None,         # BSIZE_32 + List32, same as TDFACT.
+    "shape_size":  (72, 48),
+    "text_id_name": "TEXT_STRUCTURE_TDGFACT",
+    "text_id_desc": "TEXT_STRUCTURE_TDGFACT_DESC",
+    "build_icon":  "BuildIcon_TDGMCV",
+    "name":        "GDI Construction Yard",
+    "tech_level":  99,
+    "prereq":      None,
+    "owner":       "GoodGuy,BadGuy",   # narrows to GoodGuy at b3
+    "cost":        2500,
+    "power":       0,
+    "storage":     None,
+    "points":      70,
+    "sight":       3,
+    "adjacent":    1,
+    "sensors":     None,
+    "strength":    500,
+    "armor":       "heavy",
+    "primary":     None,
+    "secondary":   None,
+    "base_normal": True,
+    "capturable":  True,
+    "crewed":      True,
+    "repairable":  True,
+    "bib":         True,
+    "idle_anim":   (0, 4, 3),
+    "notes":       "GDI Construction Yard — W2(b) faction split. Own pipeline art (TD FACT source), own type so the building carries the faction. See docs/w2b-conyard-split-postmortem.md section 5.",
+}
+
+
+TDNFACT = {
+    "ininame":     "TDNFACT",
+    "logic":       None,         # W2(b) faction split — STRUCT_TDNFACT native (bdata.cpp Init_Heap).
+    "td_asset":    "FACT",
+    "footprint":   None,         # BSIZE_32 + List32, same as TDFACT.
+    "shape_size":  (72, 48),
+    "text_id_name": "TEXT_STRUCTURE_TDNFACT",
+    "text_id_desc": "TEXT_STRUCTURE_TDNFACT_DESC",
+    "build_icon":  "BuildIcon_TDNMCV",
+    "name":        "Nod Construction Yard",
+    "tech_level":  99,
+    "prereq":      None,
+    "owner":       "GoodGuy,BadGuy",   # narrows to BadGuy at b3
+    "cost":        2500,
+    "power":       0,
+    "storage":     None,
+    "points":      70,
+    "sight":       3,
+    "adjacent":    1,
+    "sensors":     None,
+    "strength":    500,
+    "armor":       "heavy",
+    "primary":     None,
+    "secondary":   None,
+    "base_normal": True,
+    "capturable":  True,
+    "crewed":      True,
+    "repairable":  True,
+    "bib":         True,
+    "idle_anim":   (0, 4, 3),
+    "notes":       "Nod Construction Yard — W2(b) faction split, sibling of TDGFACT.",
 }
 
 
@@ -791,6 +859,8 @@ ALL = [
     TDATWR,
     TDEYE,
     TDFACT,
+    TDGFACT,
+    TDNFACT,
 ]
 
 
