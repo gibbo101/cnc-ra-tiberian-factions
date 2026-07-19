@@ -18,6 +18,51 @@ slot — proper map, briefing, win/lose conditions — before committing to all 
 probe (empty map, instant win) did NOT exercise triggers, teamtypes, or how the briefing and
 mission title present on screen; those are the unknowns a real first mission would settle.
 
+## ⭐ SESSION 2026-07-19 (afternoon) — phase B RESOLVED, next session resumes AI work
+
+**Per-slot AI difficulty now works in LAN multiplayer.** Verified end to end:
+Easy/Easy/Easy/Hard applied as IQ 3/3/3/5, `[slot n]` tagged, on screen on both peers.
+
+**The finding that did it: only the HOST simulates a LAN match.** A joiner's client
+renders streamed state and never executes the game DLL (proven by role swap on one
+machine: silent for a full 10-min match as joiner, logging within 10s of hosting; the
+sim lives in `InstanceServerG.exe`, which on a joiner has no game DLL mapped). So there
+is no second sim to diverge from — the fix was deleting the `humans < 2` guard, not
+building a mechanism. Retired: host-broadcast, mirrored-lobby read, live-model hex hunt,
+the `PHASEB-ID` probe. `tf_ai_difficulty.txt` now applies in MP for the same reason.
+Detail: `docs/lobby-difficulty-ram-spike.md` status block, [[reference-lan-mp-host-only-sim]].
+
+Commits: `bb69419` (guard), `23203d2` (A*), `06ca30a` (probe removal), `f03c06f` +
+`a4a6182` (flag file + docs), `7277705` (W3 note), `3447491` + `0eb83eb` (classic-mode).
+
+**RESUME HERE next session — in priority order:**
+1. **A* soak (UNVERIFIED).** `23203d2` swapped the O(n^2) sorted-vector open list for a
+   binary heap and added a 4096-node expansion budget. It shipped in every build played
+   2026-07-19 but was never soaked. Check `captrips=` in `tf_astar.log`: caps tripping on
+   routes that should have succeeded means raise the budget. Use DOCKLANDS with the human
+   isolated across the river for a long unattended run.
+2. **Repair bay builds far too early** (player-observed). GDI sometimes builds it before
+   its first refinery; both factions before vehicle production and a second refinery.
+   Small fix: gate eligibility on having an economy at `house.cpp:6959` rather than
+   lowering urgency (LOW = never built = no GDI Mammoths). See `ai-upgrade-plan.md` §W3.6.
+3. **Then Phase 2 (W2 faction separation)** — the next real milestone chunk.
+
+**Known limitation shipped with the difficulty work:** only the session's FIRST LAN lobby
+reads difficulties reliably. A LAN match can't return to a lobby — you re-host, and each
+re-host leaves stale `AIPLAYERn` records behind, so later lobbies read stale values or
+bail to global Hard (graceful; = shipped v4.0 behaviour). Workaround: relaunch between
+LAN matches. Fix: prefer the newest candidate array instead of requiring unanimity;
+restore the `PHASEB-CAND` dump from `06ca30a` to see what the arrays hold.
+Tracked in `known-issues.md`.
+
+**Classic-graphics warning: PARKED (Luke, 2026-07-19).** Three routes proven dead —
+refusing the page lets the launcher switch anyway and render an empty viewport; the page
+is requested every frame regardless of displayed mode so call patterns carry no signal;
+the spacebar never reaches the DLL. A RAM probe for the render-mode flag also failed
+(6 snapshots -> 33 candidates -> all changed 100+ times against 4 real toggles). Only
+options left are an unconditional match-start line or nothing. See
+`launcher-vs-dll-ownership.md`.
+
 ## ⭐ AI milestone Phase 1 — MERGED to main + LIVE-VERIFIED 2026-07-18 (commit `e01bc35`)
 
 **Full handover: `docs/ai-phase1-handover.md`.** W7 difficulty→IQ, W1.5 primary-factory,
