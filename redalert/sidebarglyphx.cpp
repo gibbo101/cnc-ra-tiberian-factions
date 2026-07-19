@@ -467,11 +467,20 @@ bool SidebarGlyphxClass::StripClass::Recalc(void)
     **	Sweep through all objects listed in the sidebar. If any of those object can
     **	not be created -- even in theory -- then they must be removed form the sidebar and
     **	any current production must be abandoned.
+    **
+    **	Tiberian Factions: eviction is prereq-aware (legal=true). A cameo survives only
+    **	while a factory that could LEGALLY build it still stands -- the same test
+    **	Update_Buildables uses to offer it, evaluated against that factory's ActLike.
+    **	With legal=false the check degenerated to "any factory of the right RTTI", so a
+    **	cameo offered by a captured faction factory stayed live after that factory was
+    **	lost (an RA war factory kept building TD units), and losing a prerequisite never
+    **	withdrew anything. Symmetric add/evict is what makes captured-factory rosters
+    **	behave; it also withdraws vanilla cameos when their prerequisite dies.
     */
     for (int index = 0; index < BuildableCount; index++) {
         TechnoTypeClass const* tech = Fetch_Techno_Type(Buildables[index].BuildableType, Buildables[index].BuildableID);
         if (tech) {
-            ok = tech->Who_Can_Build_Me(true, false, ParentSidebar->SidebarPlayerPtr->Class->House) != NULL;
+            ok = tech->Who_Can_Build_Me(true, true, ParentSidebar->SidebarPlayerPtr->Class->House) != NULL;
         } else {
 
             if ((unsigned)Buildables[index].BuildableID < SPC_COUNT) {
@@ -481,15 +490,16 @@ bool SidebarGlyphxClass::StripClass::Recalc(void)
             }
         }
 
-        // Tiberian Factions: sidebar-eviction logging (stubbed). Re-enabled
-        // 2026-05-25 to confirm Recalc was removing HELI from GDI's TDHPAD
-        // sidebar via Who_Can_Build_Me. Root cause + fix: playbook §3.12.
-        // Per [[feedback-keep-diagnostics-until-v1]].
-#if 0
+        // Tiberian Factions: sidebar-eviction logging. Live for the prereq-liveness
+        // work -- `rule=prereq` marks a cameo the old lenient check would have kept,
+        // which is exactly the set of player-visible behaviour changes; `rule=factory`
+        // is the vanilla "last factory died" eviction. Per
+        // [[feedback-logs-first-on-new-units]] / [[feedback-keep-diagnostics-until-v1]].
+#if TF_DEV_BUILD
         if (!ok && tech) {
             static FILE* s_evict_log = NULL;
             static int s_n = 0;
-            if (s_n < 50) {
+            if (s_n < 200) {
                 if (s_evict_log == NULL) {
                     char path[512];
                     const char* prof = getenv("USERPROFILE");
@@ -502,12 +512,17 @@ bool SidebarGlyphxClass::StripClass::Recalc(void)
                     s_evict_log = fopen(path, "w");
                 }
                 if (s_evict_log) {
+                    bool lenient_ok =
+                        tech->Who_Can_Build_Me(true, false, ParentSidebar->SidebarPlayerPtr->Class->House) != NULL;
                     fprintf(s_evict_log,
-                            "EVICT name=%s rtti=%d id=%d sidebar_house=%d\n",
+                            "F%ld EVICT name=%s rtti=%d id=%d sidebar_house=%d via_capture=%d rule=%s\n",
+                            (long)Frame,
                             tech->IniName,
                             (int)Buildables[index].BuildableType,
                             Buildables[index].BuildableID,
-                            (int)ParentSidebar->SidebarPlayerPtr->Class->House);
+                            (int)ParentSidebar->SidebarPlayerPtr->Class->House,
+                            Buildables[index].BuildableViaCapture ? 1 : 0,
+                            lenient_ok ? "prereq" : "factory");
                     fflush(s_evict_log);
                     s_n++;
                 }
