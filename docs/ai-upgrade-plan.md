@@ -162,7 +162,14 @@ Engineering survey COMPLETE (2026-07-17). Load-bearing findings:
    factories); skirmish MCV spawn 4-way switch at scenario.cpp:3530 + fold in the
    known-issues "starting-units bonus gives RA units" fix (same region); heap headroom
    exists (STRUCT_COUNT+50); mid-game saves break per enum addition (skirmish-only risk).
-**Internal phasing:** (a) prereq-liveness fix FIRST, standalone + testable; (b) ConYard+MCV
+**Internal phasing:** (a) **SHIPPED 2026-07-19 `2017ce3`** — `sidebarglyphx.cpp:474` now
+passes `legal=true`, making offer and eviction symmetric. Live-verified: prereq-gated AND
+capture-offered (`TDGAFLD`) cameos withdraw on loss, return on rebuild, zero spurious
+evictions in ~10k frames. NOTE its capture-side effect is LATENT — narrow `Owner=` lists
+(`[TDMTNK] Owner=GoodGuy`) still do the discriminating, so the exploit only materializes
+once (b)/(c) widen `Owner=`. That is why it lands first. Diagnostic left live under
+`TF_DEV_BUILD`: `MOD_DEBUG_EVICT.txt`, `rule=prereq` = changed behaviour, `rule=factory` =
+vanilla. Then: (b) ConYard+MCV
 split (re-split shared TDFACT/TDMCV into GDI/Nod + add Allied/Soviet, incl. spawn work);
 (c) War Factory; (d) Helipad last (dual-nature). Role-flag refactor lands with (b).
 
