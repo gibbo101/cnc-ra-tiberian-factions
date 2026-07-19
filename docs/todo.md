@@ -38,8 +38,22 @@ built the GDI/Nod naval units and which produces genuinely independent entities.
    until b3. `bundle_unit.py` gained `--source ra`.
 4. ~~Badged cameos.~~ ✅ **DONE 2026-07-19** — `BuildIcon_{AMCV,SMCV,TDGMCV,TDNMCV}.tga`
    (base MCV cameo cropped from the commandbar atlas + dot emblem badge, bottom-right).
-5. THEN b3 functional split (`Owner=` narrowing, `TechLevel=7`, four-way deploy/undeploy/spawn),
-   b4 bonus-unit picker, then (c) War Factory — (c) closes the headline capture case.
+5. ~~b3 functional split.~~ ✅ **SHIPPED 2026-07-19 late, live-verified on desktop** — `Owner=`
+   narrowed per faction, faction MCVs `TechLevel=7`, six-way deploy/undeploy + four-way spawn,
+   `Is_MCV()` role predicate (15 sites), skirmish↔campaign session gate in `Can_Build`
+   (vanilla pair campaign-only, faction quartet skirmish-only), `[POWR]`'s
+   `Prerequisite=fact` remapped to any-yard, crate MCV faction-correct + `UNITF_MCV`
+   bit-test fixed. **Plus (same session):** cross-era infrastructure prereqs (either era's
+   power/refinery/radar satisfies both eras' tokens; tech centres deliberately stay
+   faction-unique — vanilla MP atek↔stek equivalence REMOVED, Luke's call), donor
+   ImageData/MaxSize wiring for all 8 (the invisible-entity + tiny-selection-box fixes),
+   `tf_mcv_test.flag` dev lever (one MCV of each faction at skirmish start), faction-badge
+   cameos (mod-logo emblems, top-left) on 18 entries incl. war factories/airfields/naval +
+   colliding tank pairs. Litmus test PASSED except Soviet-MCV-via-capture, which is the
+   known (c) gap.
+6. **NEXT: (c) War Factory split** (AWEAP/SWEAP fresh pipeline entities — closes the headline
+   capture case; survey ~46 STRUCT_WEAP sites incl. AI base queues + WEAP2 overlay), then
+   b4 bonus-unit picker, then (d) Helipad (badges for helipads + RA WF land with their splits).
 
 ⚠️ `ai-upgrade-plan.md` §W2 still contains superseded claims (the `Name=`-drives-sidebar naming
 spec, the reuse-not-split MCV decision, the `UnitClass::ActLike` b3 note). Postmortem §6 lists
@@ -97,6 +111,15 @@ human isolated across the river**, so AI attack orders target something with no 
 then read `captrips=`. Non-zero there is the GOOD outcome; act only if caps coincide with
 units failing routes they should make.
 
+> **Weak pass RE-CONFIRMED at larger scale, 2026-07-19 late (live human skirmish, b2 build):**
+> `captrips=0` on all **8,728** fallback samples in an active play session. Fallback census
+> matches the known livelock profile, nothing new: 1,890 are the literal `src==dst` shape
+> (`path-failure-livelock-design.md`), and the top 8 wedged-repeat tuples (E2/TDE1/TDE6
+> infantry re-running one route) account for ~38% of all fallbacks across only 725 distinct
+> (unit,src,dst) tuples. Verdict: heap + budget healthy in normal play, no truncation, no
+> budget raise warranted. The DOCKLANDS unreachable-target run remains the outstanding
+> STRONG test before the item fully closes.
+
 **2. Economy gate for GDI/Nod tier-2 — SHIPPED `04d3ef4`, verified in play.** Comm centre,
 tech centre and repair bay now share one condition (2 refineries + a war factory, with a
 tiberium-short escape hatch). Fixes both player reports: repair bay built before any
@@ -151,11 +174,12 @@ Commits: `bb69419` (guard), `23203d2` (A*), `06ca30a` (probe removal), `f03c06f`
 `a4a6182` (flag file + docs), `7277705` (W3 note), `3447491` + `0eb83eb` (classic-mode).
 
 **RESUME HERE next session — in priority order:**
-1. **A* soak (UNVERIFIED).** `23203d2` swapped the O(n^2) sorted-vector open list for a
-   binary heap and added a 4096-node expansion budget. It shipped in every build played
-   2026-07-19 but was never soaked. Check `captrips=` in `tf_astar.log`: caps tripping on
-   routes that should have succeeded means raise the budget. Use DOCKLANDS with the human
-   isolated across the river for a long unattended run.
+1. **A* soak — WEAK PASS ×2, strong test outstanding.** `23203d2` (heap + 4096-node
+   budget): `captrips=0` in the dual desktop/Deck measurement AND across 8,728 fallback
+   samples in a live human skirmish (2026-07-19 late — census in the session block above;
+   fallbacks = the known livelock profile, nothing new). No budget raise warranted. Left to
+   fully close: the DOCKLANDS unreachable-target run (human isolated across the river) —
+   the one case the budget exists to bound.
 2. **Repair bay builds far too early** (player-observed). GDI sometimes builds it before
    its first refinery; both factions before vehicle production and a second refinery.
    Small fix: gate eligibility on having an economy at `house.cpp:6959` rather than
