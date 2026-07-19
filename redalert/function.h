@@ -133,6 +133,7 @@ bool Is_Refinery_Dock_Cell(CELL cell); // TF Layer B: harvester-only refinery do
 extern int Get_CD_Drive(void);
 extern void Fatal(char const* message, ...);
 extern bool TF_Dev_Cheats(void); // TF dev-cheats runtime gate (see defines.h TF_DEV_BUILD)
+extern long TF_Building_Scan_Bit(int btype); // building Type -> its BScan/ActiveBScan/OldBScan bit
 extern int TF_AI_IQ_From_Difficulty(DiffType diff); // lobby difficulty -> AI house IQ tier (behavioural difficulty)
 extern bool TFLobbyAIDifficultySet; // true once CNC_Set_Difficulty has delivered a lobby value this match
 

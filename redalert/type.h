@@ -857,6 +857,19 @@ public:
     int Width(void) const;
     int Height(bool bib = false) const;
 
+    /*
+    **	Does this building act as a construction yard -- the structure an MCV deploys into and
+    **	can undeploy back out of, and the anchor of a base? Faction-specific yards each answer
+    **	true, so behaviour keyed to the ROLE stays in one place while the deploy/undeploy
+    **	mapping (which must name a particular faction's yard) keeps its explicit type compares.
+    **
+    **	STRUCT_FAKECONST answers FALSE on purpose. The fake yard is a decoy: it is Allied-only,
+    **	ships TechLevel=-1 so nothing can build it, and has never participated in any of the
+    **	behaviour below. Answering true here would, among other things, let it undeploy into a
+    **	real MCV -- turning a cheap decoy into a free construction yard.
+    */
+    bool Is_Construction_Yard(void) const;
+
     virtual int Full_Name(void) const;
     virtual bool Read_INI(CCINIClass& ini);
     bool Flush_For_Placement(CELL cell, HouseClass* house) const;

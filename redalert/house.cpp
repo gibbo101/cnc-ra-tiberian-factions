@@ -8399,79 +8399,13 @@ void HouseClass::Recalc_Attributes(void)
     for (index = 0; index < Buildings.Count(); index++) {
         BuildingClass const* building = Buildings.Ptr(index);
         int btype = building->Class->Type;
-        if (btype < 32) {
-            building->House->BScan |= (1L << btype);
-        }
-        // Tiberian Factions: TD-separated buildings live at enum slots
-        // past 31, so `1L << btype` would overflow the 32-bit BScan
-        // bitmask (and the `if (btype < 32)` guard above skips them).
-        // Shadow each TD building into its closest vanilla RA equivalent
-        // so the defeat-on-no-scans check at house.cpp:1474 still sees
-        // a non-zero bitmask when a player has only TD-separated buildings.
-        // Also matters for radar-activation, MCV-deploy gating, etc.
-        if (btype == STRUCT_TDHQ || btype == STRUCT_TDEYE) {
-            building->House->BScan |= STRUCTF_RADAR;
-        }
-        if (btype == STRUCT_TDFACT) {
-            building->House->BScan |= STRUCTF_CONST;
-        }
-        if (btype == STRUCT_TDPROC) {
-            building->House->BScan |= STRUCTF_REFINERY;
-        }
-        if (btype == STRUCT_TDWEAP) {
-            building->House->BScan |= STRUCTF_WEAP;
-        }
-        if (btype == STRUCT_TDAFLD || btype == STRUCT_TDGAFLD) {
-            building->House->BScan |= STRUCTF_AIRSTRIP;
-        }
-        if (btype == STRUCT_TDHPAD) {
-            building->House->BScan |= STRUCTF_HELIPAD;
-        }
-        if (btype == STRUCT_TDFIX) {
-            building->House->BScan |= STRUCTF_REPAIR;
-        }
-        if (btype == STRUCT_TDPYLE || btype == STRUCT_TDHAND) {
-            building->House->BScan |= STRUCTF_BARRACKS;
-        }
+        long scanbit = TF_Building_Scan_Bit(btype);
+        building->House->BScan |= scanbit;
         if (building->IsLocked
             && (Session.Type != GAME_NORMAL || !building->House->IsHuman || building->IsDiscoveredByPlayer)) {
             if (!building->IsInLimbo) {
-                if (btype < 32) {
-                    building->House->ActiveBScan |= (1L << btype);
-                    building->House->OldBScan |= (1L << btype);
-                }
-                if (btype == STRUCT_TDHQ || btype == STRUCT_TDEYE) {
-                    building->House->ActiveBScan |= STRUCTF_RADAR;
-                    building->House->OldBScan |= STRUCTF_RADAR;
-                }
-                if (btype == STRUCT_TDFACT) {
-                    building->House->ActiveBScan |= STRUCTF_CONST;
-                    building->House->OldBScan |= STRUCTF_CONST;
-                }
-                if (btype == STRUCT_TDPROC) {
-                    building->House->ActiveBScan |= STRUCTF_REFINERY;
-                    building->House->OldBScan |= STRUCTF_REFINERY;
-                }
-                if (btype == STRUCT_TDWEAP) {
-                    building->House->ActiveBScan |= STRUCTF_WEAP;
-                    building->House->OldBScan |= STRUCTF_WEAP;
-                }
-                if (btype == STRUCT_TDAFLD || btype == STRUCT_TDGAFLD) {
-                    building->House->ActiveBScan |= STRUCTF_AIRSTRIP;
-                    building->House->OldBScan |= STRUCTF_AIRSTRIP;
-                }
-                if (btype == STRUCT_TDHPAD) {
-                    building->House->ActiveBScan |= STRUCTF_HELIPAD;
-                    building->House->OldBScan |= STRUCTF_HELIPAD;
-                }
-                if (btype == STRUCT_TDFIX) {
-                    building->House->ActiveBScan |= STRUCTF_REPAIR;
-                    building->House->OldBScan |= STRUCTF_REPAIR;
-                }
-                if (btype == STRUCT_TDPYLE || btype == STRUCT_TDHAND) {
-                    building->House->ActiveBScan |= STRUCTF_BARRACKS;
-                    building->House->OldBScan |= STRUCTF_BARRACKS;
-                }
+                building->House->ActiveBScan |= scanbit;
+                building->House->OldBScan |= scanbit;
                 if (btype >= 0 && btype < MAX_BUILDING_TYPES) {
                     building->House->ActiveBQuantity[btype]++;
                 }

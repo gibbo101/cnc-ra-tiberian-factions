@@ -3864,6 +3864,74 @@ static BuildingTypeClass const ClassTdBlossom(STRUCT_TDBLOSSOM,
                                               (short const*)NULL
 );
 
+/***********************************************************************************************
+ * BuildingTypeClass::Is_Construction_Yard -- Does this building act as a construction yard?    *
+ *                                                                                              *
+ *    Role test for the base-anchor structure an MCV deploys into. See the declaration in       *
+ *    type.h for why STRUCT_FAKECONST is excluded.                                              *
+ *=============================================================================================*/
+bool BuildingTypeClass::Is_Construction_Yard(void) const
+{
+    return (Type == STRUCT_CONST || Type == STRUCT_TDFACT);
+}
+
+/***********************************************************************************************
+ * TF_Building_Scan_Bit -- Maps a building Type to the scan-mask bit it contributes.            *
+ *                                                                                              *
+ *    BScan / ActiveBScan / OldBScan are 32-bit masks, so a Type can only represent itself      *
+ *    while it fits below bit 31. Vanilla RA Types all do. TD-separated Types do not (they sit  *
+ *    around slot 100), so each shadows onto the closest vanilla equivalent -- the bit that      *
+ *    engine checks such as radar activation, MCV deploy and the defeat-on-no-scans test at      *
+ *    house.cpp actually look for. A Type with no vanilla counterpart contributes nothing, and   *
+ *    is reached only through the heap-sized ActiveBQuantity array (which is what Prerequisite=  *
+ *    resolution uses -- see Has_Building_Active).                                              *
+ *                                                                                              *
+ *    STRUCT_FAKECONST deliberately contributes nothing: it is above bit 31, is not shadowed,    *
+ *    and vanilla RA never gave it a scan presence either.                                      *
+ *                                                                                              *
+ * INPUT:   btype -- the building Type to map.                                                  *
+ *                                                                                              *
+ * OUTPUT:  The mask bit to OR into a house's scan fields, or 0 for none.                       *
+ *=============================================================================================*/
+long TF_Building_Scan_Bit(int btype)
+{
+    if (btype >= 0 && btype < 32) {
+        return (1L << btype);
+    }
+
+    switch (btype) {
+    case STRUCT_TDHQ:
+    case STRUCT_TDEYE:
+        return (STRUCTF_RADAR);
+
+    case STRUCT_TDFACT:
+        return (STRUCTF_CONST);
+
+    case STRUCT_TDPROC:
+        return (STRUCTF_REFINERY);
+
+    case STRUCT_TDWEAP:
+        return (STRUCTF_WEAP);
+
+    case STRUCT_TDAFLD:
+    case STRUCT_TDGAFLD:
+        return (STRUCTF_AIRSTRIP);
+
+    case STRUCT_TDHPAD:
+        return (STRUCTF_HELIPAD);
+
+    case STRUCT_TDFIX:
+        return (STRUCTF_REPAIR);
+
+    case STRUCT_TDPYLE:
+    case STRUCT_TDHAND:
+        return (STRUCTF_BARRACKS);
+
+    default:
+        return (0);
+    }
+}
+
 void BuildingTypeClass::Init_Heap(void)
 {
     /*
