@@ -5,6 +5,30 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Crate idea: enemy-faction construction yards (Luke, 2026-07-19) — BLOCKED on W2(b3)
+
+Three extra crate types granting the OTHER factions' construction yards, so a wiped player
+can come back as a different faction. **Mechanism (only works after b3):** hand out a normal
+`UNIT_MCV`/`UNIT_TDMCV` with its instance `ActLike` stamped to the target faction —
+`MCV_Deploy_Building` reads the unit's `ActLike` (see `ai-upgrade-plan.md` §W2 b3 note), so
+it deploys that faction's yard, and `BuildingClass::Unlimbo`'s existing `Owner=`-driven
+pinning gives the player that faction's sidebar for the rest of the match.
+
+- **Does NOT work before b3** — with owner dispatch any MCV deploys YOUR yard, so the crate
+  would silently do nothing.
+- `CrateType` (defines.h:740) is a plain enum, extensible; needs weighting + the pick site.
+- Art is automatically right: the TYPE carries the era/sprite (`MCV` vs `TDMCV`), the
+  instance `ActLike` carries the faction within it, where the sprite is shared anyway.
+- **Separate, decided:** the existing `force_mcv` crate (`cell.cpp:2662`) must be
+  FACTION-CORRECT, not random — it fires when a player is already wiped, a poor moment for a
+  coin flip. Its companion bug: the `UNITF_MCV` test at `cell.cpp:2520` only sees bit 11, so
+  a GDI/Nod player who already owns a TDMCV still trips `force_mcv` and is gifted a
+  redundant second MCV. Both are small and carry no design content.
+- Deliberately NOT folded into W2(b) — it is a feature, it cannot work until b3 lands, and
+  (b) is already 4 sub-steps + 2 enum values + the `Owner=` renarrowing.
+
+---
+
 ## Campaign ("The Inheritance War") — pipeline PROVEN, authoring DEFERRED behind the AI pass
 
 **Decision (Luke, 2026-07-19): no mission authoring until the AI milestone is done.** The

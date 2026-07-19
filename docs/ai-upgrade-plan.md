@@ -187,6 +187,24 @@ scenario.cpp:3530) + `Owner=` narrows per yard and WIDENS on TD units, which is 
 finally activates W2(a) — re-run the capture-and-sell test there and expect `rule=prereq`.
 **b4** = the bonus-unit picker (scenario.cpp:3023), the known-issues fold-in.
 
+> **b3 dispatches on the UNIT's ActLike, not the house's (decided 2026-07-19, Luke).**
+> `UnitClass` gains an `ActLike` mirroring `BuildingClass::ActLike` (building.h:74 — *"the
+> house that originally owned this factory... regardless of who the current owner is"*),
+> stamped from the PRODUCING BUILDING's `ActLike` when a factory completes an MCV — the same
+> rule `Update_Buildables` already uses to pick the roster. `MCV_Deploy_Building` then reads
+> `unit->ActLike`.
+> **Why, not house-ActLike dispatch:** capture inheritance is the POINT of W2, and an MCV is
+> how a tech tree propagates. Owner dispatch re-introduces owner-beats-lineage one level
+> above the yard, so the captured tree dies at the last step. **Across eras it already works
+> via the type** (a captured GDI factory offers TDMCV → TDFACT). **The gap is WITHIN an era**
+> — Allied capturing Soviet, GDI capturing Nod — i.e. exactly the two pairs b2 creates, which
+> is why the unit field and the yard split belong in the same milestone.
+> **Why not 4 MCV types:** the deploy hotkey keys on vanilla enum identity, so new values lose
+> it for Soviet while Allied (reusing `UNIT_MCV`) keeps it — an asymmetric regression on
+> vanilla factions. Instance state costs a save-layout change, same category as b2's enum
+> additions, skirmish-only.
+> **Unlocks:** crate-granted enemy MCVs (stamp the `ActLike`) — backlogged in todo.md.
+
 ⚠️ **Survey claims that did NOT survive verification** (2026-07-19) — do not re-fix:
 `house.cpp:6430` AI never suicide-sells its ConYard (`URGENCY_CRITICAL` means "only at max
 urgency", `Check_Raise_Money` tops out at MEDIUM, and `Check_Fire_Sale`'s condition requires
