@@ -2,12 +2,41 @@
 
 **Status: phase A SHIPPED + LIVE-VERIFIED 2026-07-18 (commit `3e156a0`).** A mixed
 Hard/Medium/Easy/Hard lobby produced IQ 5/4/3/5 on the matching houses, confirmed
-on-screen and in MOD_DEBUG_AI.txt. Phase B state after the 2026-07-18 rig night:
-host-broadcast DEAD (no DLL-side event transport in GlyphX) AND the scanned records
-turned out to be saved skirmish config, not the live lobby — see the phase-B section
-for the full verification trail. Next: run probe v3 (deployed both machines) to
-locate the live lobby model via AI GlyphxID needles; also fixes a phase-A regression
-(stale apply in 1-human LAN lobbies).
+on-screen and in MOD_DEBUG_AI.txt.
+
+**⭐ PHASE B RESOLVED 2026-07-19 — and the problem it was solving does not exist.**
+Two rig measurements collapsed the whole design space:
+
+1. **In a LAN match only the host simulates.** The joiner's client renders streamed
+   state and never executes the game DLL at all. Proven by role swap on ONE machine:
+   Luke's desktop wrote zero diagnostic bytes across a full 10-minute match as joiner,
+   then wrote its first log line within ~10s of hosting. Same mod, same DLL, same
+   binary — only the role changed. The sim lives in `InstanceServerG.exe`, a separate
+   process from the `ClientG.exe` shell, and on a joiner that process has **no game
+   DLL mapped at all**.
+2. **The host reads its own live lobby correctly.** With cached values `3,1,2,3` in
+   memory, a fresh lobby set to Easy/Hard/Hard/Medium scanned as `s2=1 s3=3 s4=3
+   s5=2` — every slot tracked the change.
+
+**Therefore there is nothing to synchronise.** One sim, running on the machine that
+owns the lobby, reading the authoritative values directly. No broadcast, no
+cross-peer mirroring, no scanner v4, no live-model hex hunt. The `PHASEB-ID` GlyphxID
+probe was built to find a live model we did not need.
+
+**The resulting fix is the removal of a guard, not an implementation:** the
+`TF_HumanPlayerCount < 2` gate on `apply_per_slot` was protecting against a
+divergence that cannot occur. Since a joiner never executes the DLL, *any* execution
+of this code is by definition the host — so per-slot difficulty applies
+unconditionally.
+
+**Scope note:** mods load in **LAN games only**, so LAN is the entire modded
+multiplayer surface. There is no internet/quickmatch case to cover.
+
+⚠️ **Retracted by this result:** the "phase-A regression — stale apply in 1-human LAN
+lobbies" previously recorded here was diagnosed on the assumption that the scanned
+array was saved config. That assumption is wrong (measurement 2), so the reasoning
+behind that bug does not hold. Re-test before treating it as real.
+
 Companion findings and session narrative: `todo.md` Phase 1 block, `ai-upgrade-plan.md`
 §6 Phase 1 STATUS.
 
@@ -31,7 +60,7 @@ Every other route to the lobby's per-slot AI difficulty is measured dead (2026-0
 
 | Route | Verdict |
 |---|---|
-| `CNC_Set_Difficulty` | Client sends `1` unconditionally in skirmish (5 lobbies measured: mixed, all-Easy ×2, all-Hard, campaign-option-Hard). `1` = the client's default MEDIUM slot concept, disconnected from the picker. |
+| `CNC_Set_Difficulty` | Client sends `1` unconditionally in skirmish (5 lobbies measured: mixed, all-Easy ×2, all-Hard, campaign-option-Hard) and `-1` in LAN MP. Either way it is disconnected from the picker. |
 | Interface structs | No per-slot difficulty field anywhere; AI `Name` = bare `AIPLAYER1..4` (hex-verified). |
 | Persisted settings (`userdata/<id>/1213210/remote/Player_RA_settings_1.bin`) | ChunkFile+zlib TLV; holds map/faction/mode but NO difficulty. The byte that moves at launches (tag 0x31) is a match-start counter. |
 | Wine registry / exit-time writes | Nothing difficulty-related. |
@@ -105,76 +134,17 @@ difficulty read can also run lazily on first AI tick — retro-apply already exi
 to allocate the array above 4 GB on some machines, use `NtWow64ReadVirtualMemory64`.
 Check `IsWow64Process` on ClientG during implementation.
 
-### Multiplayer with AI (phase B — mirrored-lobby read; broadcast design DEAD)
+### Multiplayer with AI (phase B) — RESOLVED 2026-07-19
 
-MP is deterministic lockstep: AI IQ is sim state, so every peer must apply identical
-difficulties on the same frame. Per-machine reads (RAM or flag file) would desync —
-unless every peer's read provably yields the same values.
+Nothing to build. Only the host simulates (see the status block at the top of this
+file), so per-slot difficulty applies unconditionally — the fix was removing the
+`TF_HumanPlayerCount < 2` guard on `apply_per_slot`.
 
-**Host-broadcast design VERIFIED DEAD (2026-07-18).** The original plan (host injects a
-custom EventClass, peers apply on execution) assumed the GlyphX transport moves DLL
-event bytes. It does not:
-
-- In `GAME_GLYPHX_MULTIPLAYER`, `DLLExportClass::Glyphx_Queue_AI` moves `OutList` →
-  `DoList` **locally only**; the legacy `Send_Packets`/`Extract_Uncompressed_Events`
-  networking in queue.cpp never runs.
-- The DLL export table has no packet/event-bytes function, and every DLL→client
-  callback (`CALLBACK_EVENT_*`) is local presentation. EventClass bytes never leave
-  the machine.
-- GlyphX determinism comes from the **client replaying every player's requests**
-  (`CNC_Handle_*` tagged with the originating player id) into every peer's DLL at the
-  same frame boundary. The DLL has no send channel of any kind. (`SET_RALLY` works in
-  MP only because its *triggering request* is replayed on all peers.)
-
-**Mirrored-lobby read, as scanned: ALSO DEAD (2-peer LAN rig, 2026-07-18).** The
-`AIPLAYERn` record array phase A reads is each account's **persisted skirmish-lobby
-config** (survives client restarts, loaded from disk per account), NOT the live MP
-lobby model. Rig evidence, desktop (Luke) + Luke's Deck (daughter aimee101), LAN
-lobbies, scanner v2 (roster-name anchor, commit `4f2a1a1`):
-
-- The joiner read its own saved config — the same `1,2,2,3` — in 4 consecutive
-  matches regardless of what the host set.
-- The host's read contradicted its own lobby UI in the screenshot-verified match
-  (UI Med/Easy/Hard/Med vs read Easy/Med/Hard/Easy — different multisets, not an
-  ordering artifact).
-- Phase A's solo GREEN was the special case where the skirmish config IS the lobby.
-
-**Live-model facts established by the rig:**
-
-- Both host AND joiner UIs render the host's real per-slot difficulties → a **live
-  lobby model exists in every peer's client**; it is simply not the record array we
-  scan. Finding it revives the no-broadcast design intact.
-- `AIPLAYERn` names are per-client local labels (numbering persists per account and
-  can differ across peers for the same lobby: 1..4 vs 2..5 observed). AI GlyphxIDs
-  are name-hashes — identical across peers **when** names agree, but not a synced
-  identity either.
-- `CNC_Set_Multiplayer_Data` player lists are peer-relative views: each peer lists
-  the remote human at slot[0] with the remote's color normalized differently. Human
-  colors/teams in that struct are NOT directly comparable across peers; AI slot
-  colors did agree.
-- The record's +0x50/+0x68 slot ints renumber positionally (1..4 against names
-  AIPLAYER2..5) — v1's `slot==n` check was wrong even solo; v2 keys by name n.
-
-**Probe v3 (commit `c036d59`, build `8ae684f6` — deployed to both rig machines,
-NOT yet run):** dumps bounded hex+ascii context around every client-RAM occurrence
-of each AI slot GlyphxID (`PHASEB-ID` lines, MP recon only). Next session: one LAN
-match, fresh difficulty mix, diff host-vs-joiner dumps → derive the live model's
-difficulty-int offset → scanner v4 reads the live model on every peer. Divergence
-hazard from the earlier design still applies (peers that fail the scan fall back
-differently — bounded empirically, never eliminated).
-
-**Phase-A regression found by the rig (open):** the solo apply gate (`humans < 2`)
-also covers 1-human LAN lobbies, where the saved-config records mismatch the live
-lobby → stale difficulties actually get applied. Fix rides the v4 live-model read.
-
-Recon plumbing (in tree): dev builds scan in MP but stay log-only (`PHASEB-RECON
-roster=… s<n>=…` per peer; 2+ humans guard untouched); release builds skip the MP
-scan. `PHASEB-CAND` logs every candidate array raw. Rig traps: the Workshop copy and
-the local mod share a display name (local = higher version, 4.1); a game relaunched
-during a deploy keeps the old DLL inode (rsync replaces by rename — verify with the
-freshness tells: fresh `tf_astar.log` + `MOD_DEBUG_AI.txt` within seconds of match
-start).
-
+**Retired, do not rebuild:** host-broadcast EventClass, mirrored-lobby read across
+peers, live-model hex hunt / scanner v4, the `PHASEB-ID` GlyphxID probe. Each was
+sound reasoning from `queue.cpp` / `Glyphx_Queue_AI` (no DLL-side event transport —
+still true), resting on a false premise: that both peers simulate. Measure the role;
+do not re-derive MP constraints from transport code.
 ## RAM reconnaissance — what else is extractable (survey 2026-07-18)
 
 Question posed: is reading ClientG RAM a general "launcher unblocker"? **No — it is a

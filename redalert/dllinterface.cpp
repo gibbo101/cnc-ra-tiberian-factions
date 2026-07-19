@@ -2739,21 +2739,18 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
         }
     }
 
-    // Per-slot difficulty from the client process, when available: overrides the
-    // global source house-by-house. Applied in solo play only; with 2+ humans the
-    // scan still runs (read-only) so every peer logs what its own client holds --
-    // if all peers mirror the host's lobby records identically, MP can adopt the
-    // per-slot values without any broadcast (docs/lobby-difficulty-ram-spike.md
-    // phase B: GlyphX has no DLL-side event transport, so determinism must come
-    // from every peer reading the same values, and that mirroring is what the
-    // recon log verifies).
+    // Per-slot difficulty read from the client process, overriding the global
+    // source house-by-house. Applies in solo and multiplayer alike.
+    //
+    // No cross-peer agreement is needed. Mods load in LAN games only, and a LAN
+    // match runs a single simulation, hosted by the machine that owns the lobby --
+    // a joiner's client renders streamed state and never executes this DLL at all.
+    // So whenever this code runs it is running on the host, reading the host's own
+    // live lobby, which is by definition the authoritative one. There is no second
+    // sim to diverge from and therefore nothing to broadcast or reconcile.
     int slot_diff[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
-    bool apply_per_slot = TF_HumanPlayerCount < 2;
-    bool run_scan = apply_per_slot;
-#if TF_DEV_BUILD // recon builds scan in MP too, purely to log what this peer's client holds
-    run_scan = true;
-#endif
-    int slots_read = run_scan ? TF_Read_Lobby_AI_Difficulties(slot_diff) : 0;
+    const bool apply_per_slot = true;
+    int slots_read = TF_Read_Lobby_AI_Difficulties(slot_diff);
 
     Scen.CDifficulty = diff;
     TFLobbyAIDifficultySet = true;
