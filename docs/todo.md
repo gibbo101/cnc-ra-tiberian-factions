@@ -39,13 +39,29 @@ a bare `current < 1` commented "as soon as possible", racing the war factory at 
 urgency. Playtest confirmed: war factory first, repair bays still built, **and a Mammoth was
 produced** (the starvation canary on the stricter gate). RA houses keep vanilla timing.
 
-**3. Engineer/unit livelock root-caused — fix written, UNCOMMITTED + UNVERIFIED.** ~88% of
-all A* fallbacks are units re-pathing to the cell they already stand in, forever. Full
-write-up in `known-issues.md` § Pathfinding. Two-line cause: `Basic_Path` treats a legal
-zero-cost self-path as failure, and `Stop_Driver()` never clears `NavCom` so it retries every
-~14 ticks. Fix sits in `redalert/foot.cpp` (working tree). **Next step: deploy, play a match,
-confirm the `src==dst` share collapses while genuine failures stay flat.** It touches
-`FootClass`, so every ground unit is in scope — do not ship it without a real playtest.
+**3. Path-failure livelock — ROOT CAUSE CONFIRMED, NO FIX. One attempt CRASHED both
+machines.** Full design note: **`docs/path-failure-livelock-design.md`** — read it before
+touching this. Summary: units retry a doomed path forever because the give-up branch
+(`infantry.cpp:4346`) aborts only when the destination is in a DIFFERENT movement zone, and
+zones ignore buildings — so anything walled off never aborts, and a destination equal to the
+unit's own cell can never mismatch at all. Vehicles have the same defect via the patient
+queue (`drive.cpp:2180`) resetting `TryTryAgain` every cycle.
+
+⚠️ **Two dead ends recorded so the next session does not repeat them:**
+- Calling `Assign_Destination(TARGET_NONE)` from inside `Basic_Path()` **crashes the game**
+  (desktop AND Deck, minutes in). It is virtual; the overrides run radio/mission logic that
+  assumes an order-issuing context. Clear caller-side, where the engine already does
+  (`drive.cpp:2192`).
+- The `Nearby_Location` own-cell guard is **falsified** — shipped alone, self-cell came back
+  at 790 (vs 706 before). The degenerate destination does not originate there.
+
+**Framing correction:** self-cell (`src==dst`) was never the disease. The biggest livelocks
+are ordinary destinations (`TDE1 (40,40)->(35,33)` x598 in one match). Both are the same bug:
+a total path failure never clears `NavCom`.
+
+**Next step is DESIGN, not code** — the open questions (retry threshold vs the v2.2.3 patient
+queue, what a unit does after giving up) decide whether a fix is a win, and this code moves
+every ground unit in the game. All surfaces are currently on clean `HEAD`.
 
 **Diagnostic gap worth closing:** build order is not logged anywhere, so verifying build-order
 changes needs a human watching. If more build-order work is coming, a small
