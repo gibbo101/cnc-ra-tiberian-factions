@@ -1937,4 +1937,36 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<ObjectTypeClass Name="RA_TDGHPAD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGHPAD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGHPAD_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDGHPAD</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TDNHPAD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDNHPAD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNHPAD_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDNHPAD</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_AHPAD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_AHPAD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_AHPAD_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_AHPAD</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_SHPAD" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_SHPAD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_SHPAD_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SHPAD</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 </ObjectTypeList>

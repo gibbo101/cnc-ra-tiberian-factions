@@ -6956,6 +6956,10 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                              || (looking_for_airstrip && House->Get_Quantity(STRUCT_TDAFLD) != 0)
                              || (looking_for_airstrip && House->Get_Quantity(STRUCT_TDGAFLD) != 0)
                              || (looking_for_helipad && House->Get_Quantity(STRUCT_TDHPAD) != 0)
+                             || (looking_for_helipad
+                                 && (House->Get_Quantity(STRUCT_AHPAD) != 0 || House->Get_Quantity(STRUCT_SHPAD) != 0
+                                     || House->Get_Quantity(STRUCT_TDGHPAD) != 0
+                                     || House->Get_Quantity(STRUCT_TDNHPAD) != 0))
                              || (looking_for_repair && House->Get_Quantity(STRUCT_TDFIX) != 0);
         if (has_candidate) {
             int bestval = -1;
@@ -6974,7 +6978,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 // shadows the requested vanilla RA factory role.
                 bool tdafld_match = looking_for_airstrip
                                     && (*building == STRUCT_TDAFLD || *building == STRUCT_TDGAFLD);
-                bool tdhpad_match = looking_for_helipad && (*building == STRUCT_TDHPAD);
+                bool tdhpad_match = looking_for_helipad && building->Class->Is_Helipad();
                 bool tdfix_match = looking_for_repair && (*building == STRUCT_TDFIX);
                 bool type_match = (*building == b) || tdafld_match || tdhpad_match || tdfix_match;
                 if (!type_match)
@@ -7504,7 +7508,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 // RA's helipad donor delivers a free Longbow on construction
                 // — same shape as TD's Orca-included Helipad, so apply the
                 // same subtraction. AIRCRAFT_LONGBOW is the RA donor.
-                if (s == STRUCT_HELIPAD || s == STRUCT_TDHPAD) {
+                if (BuildingTypeClass::As_Reference(s).Is_Helipad()) {
                     td_cost -= AircraftTypeClass::As_Reference(AIRCRAFT_LONGBOW).Cost;
                 }
             } else {

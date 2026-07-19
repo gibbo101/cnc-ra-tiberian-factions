@@ -1549,7 +1549,9 @@ typedef enum StructType : char
     STRUCT_TDFBNK,    // Nod Flame Bunker (clone of PBOX, Owner=BadGuy) — anti-infantry TDFire flame weapon (range 4). bdata.cpp ClassFlameBunker.
     STRUCT_TSPOWR,    // TS-spike: Tiberian Sun GDI Power Plant (GAPOWR art) — clone of ClassPower (2x2, Power in rules.ini). HD-only art from the TS SHP; POWR donor ImageData/BuildupData.
     STRUCT_TDNFACT,   // Nod Construction Yard — own pipeline-built art (TDNFACT keys); separate type so the BUILDING carries the faction.
-    STRUCT_TDGFACT,   // GDI Construction Yard — sibling of STRUCT_TDNFACT. LAST Tiberian-era entry — see STRUCT_TIBERIAN_LAST.
+    STRUCT_TDGFACT,   // GDI Construction Yard — sibling of STRUCT_TDNFACT.
+    STRUCT_TDGHPAD,   // GDI Helipad — W2 (d) split of the shared TDHPAD.
+    STRUCT_TDNHPAD,   // Nod Helipad — sibling of STRUCT_TDGHPAD. LAST Tiberian-era entry — see STRUCT_TIBERIAN_LAST.
 
     /*
     **	Red Alert side additions go BELOW the Tiberian-era marker, so they do not inherit
@@ -1559,6 +1561,8 @@ typedef enum StructType : char
     STRUCT_AFACT, // Allied Construction Yard — sibling of STRUCT_SFACT.
     STRUCT_AWEAP, // Allied War Factory — W2 (c) split of the shared WEAP; own pipeline art (AWEAP/AWEAP2 keys).
     STRUCT_SWEAP, // Soviet War Factory — sibling of STRUCT_AWEAP.
+    STRUCT_AHPAD, // Allied Helipad — W2 (d) split of the shared HPAD.
+    STRUCT_SHPAD, // Soviet Helipad — sibling of STRUCT_AHPAD.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
@@ -1574,7 +1578,7 @@ typedef enum StructType : char
     **	marker only when appending another TD/TS entity. Testing the block by IniName prefix
     **	instead would be wrong: RA's own Tesla coil is "TSLA".
     */
-    STRUCT_TIBERIAN_LAST = STRUCT_TDGFACT
+    STRUCT_TIBERIAN_LAST = STRUCT_TDNHPAD
 } StructType;
 
 /*

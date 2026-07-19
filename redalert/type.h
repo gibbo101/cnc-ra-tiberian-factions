@@ -871,6 +871,12 @@ public:
     bool Is_Construction_Yard(void) const;
 
     /*
+    **	Role test for a rotary-wing aircraft factory/pad of any faction (the
+    **	two shared legacy types plus the four W2 (d) faction helipads).
+    */
+    bool Is_Helipad(void) const;
+
+    /*
     **	Is this a Tiberian-era building (a TD port or the TS spike) rather than a Red Alert
     **	one? Drives the TD construction and place-down audio.
     */

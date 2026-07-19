@@ -839,6 +839,74 @@ TDHAND = {
 # Order = rules.ini emission order when running with --all.
 # ---------------------------------------------------------------------------
 
+
+TDGHPAD = {
+    "ininame":     "TDGHPAD",
+    "logic":       None,         # W2 (d) faction split — STRUCT_TDGHPAD native (bdata.cpp Init_Heap).
+    "td_asset":    "HPAD",
+    "footprint":   None,
+    "shape_size":  (48, 48),
+    "text_id_name": "TEXT_STRUCTURE_TDGHPAD",
+    "text_id_desc": "TEXT_STRUCTURE_TDGHPAD_DESC",
+    "build_icon":  "BuildIcon_TDGHPAD",
+    "name":        "GDI Helipad",
+    "tech_level":  6,
+    "prereq":      "TDPYLE",
+    "owner":       "GoodGuy",
+    "cost":        1500,
+    "power":       -10,
+    "storage":     None,
+    "points":      65,
+    "sight":       3,
+    "adjacent":    1,
+    "sensors":     None,
+    "strength":    400,
+    "armor":       "wood",
+    "primary":     None,
+    "secondary":   None,
+    "base_normal": True,
+    "capturable":  True,
+    "crewed":      False,
+    "repairable":  True,
+    "bib":         True,
+    "idle_anim":   None,
+    "notes":       "GDI Helipad — W2 (d) faction split of TDHPAD. Own pipeline art.",
+}
+
+
+TDNHPAD = {
+    "ininame":     "TDNHPAD",
+    "logic":       None,         # W2 (d) faction split — STRUCT_TDNHPAD native (bdata.cpp Init_Heap).
+    "td_asset":    "HPAD",
+    "footprint":   None,
+    "shape_size":  (48, 48),
+    "text_id_name": "TEXT_STRUCTURE_TDNHPAD",
+    "text_id_desc": "TEXT_STRUCTURE_TDNHPAD_DESC",
+    "build_icon":  "BuildIcon_TDNHPAD",
+    "name":        "Nod Helipad",
+    "tech_level":  6,
+    "prereq":      "TDPYLE",
+    "owner":       "BadGuy",
+    "cost":        1500,
+    "power":       -10,
+    "storage":     None,
+    "points":      65,
+    "sight":       3,
+    "adjacent":    1,
+    "sensors":     None,
+    "strength":    400,
+    "armor":       "wood",
+    "primary":     None,
+    "secondary":   None,
+    "base_normal": True,
+    "capturable":  True,
+    "crewed":      False,
+    "repairable":  True,
+    "bib":         True,
+    "idle_anim":   None,
+    "notes":       "Nod Helipad — W2 (d) faction split, sibling of TDGHPAD.",
+}
+
 ALL = [
     TDNUKE,
     TDNUK2,
@@ -861,6 +929,8 @@ ALL = [
     TDFACT,
     TDGFACT,
     TDNFACT,
+    TDGHPAD,
+    TDNHPAD,
 ]
 
 

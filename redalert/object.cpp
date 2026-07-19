@@ -2441,7 +2441,7 @@ BuildingClass* ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, Hous
                 */
                 if (What_Am_I() == RTTI_AIRCRAFTTYPE) {
                     AircraftTypeClass* air = (AircraftTypeClass*)this;
-                    if (((*building == STRUCT_HELIPAD || *building == STRUCT_TDHPAD) && !air->IsFixedWing)
+                    if ((building->Class->Is_Helipad() && !air->IsFixedWing)
                         || ((*building == STRUCT_AIRSTRIP || *building == STRUCT_TDAFLD
                              || *building == STRUCT_TDGAFLD)
                             && air->IsFixedWing)) {

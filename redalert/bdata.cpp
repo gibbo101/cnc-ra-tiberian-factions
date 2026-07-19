@@ -970,6 +970,64 @@ static BuildingTypeClass const ClassTdHand(STRUCT_TDHAND,
 **    vanilla HELIPAD has Strength=800 which leaked through the Logic=HPAD
 **    alias era — corrected here.
 */
+static BuildingTypeClass const ClassTdGdiHpad(STRUCT_TDGHPAD,
+                                              TXT_NONE,           // Display name (rules.ini Name= overrides).
+                                              "TDGHPAD",          // IniName.
+                                              FACING_NONE,        // Foundation direction from center.
+                                              XYP_COORD(0, 0),    // No exit list — helicopter docks on the pad.
+                                              REMAP_ALTERNATE,    // Sidebar remap logic.
+                                              0x0000,             // Vertical offset.
+                                              0x0000,             // Primary weapon offset.
+                                              0x0000,             // Primary weapon lateral offset.
+                                              false,              // Is this building a fake (decoy?)
+                                              false,              // Animation rate regulated for constant speed?
+                                              false,              // Always use the given name?
+                                              false,              // Is this a wall type structure?
+                                              false,              // Simple (one frame) damage imagery?
+                                              false,              // Is it invisible to radar?
+                                              true,               // Can the player select this?
+                                              true,               // Is this a legal target?
+                                              false,              // Is this an insignificant building?
+                                              false,              // Theater specific graphic image?
+                                              false,              // Does it have a rotating turret?
+                                              true,               // Can the building be color remapped?
+                                              RTTI_AIRCRAFTTYPE,  // Aircraft factory.
+                                              DIR_N,              // Starting idle frame.
+                                              BSIZE_22,           // 2x2 footprint (TD-authentic).
+                                              NULL,               // No preferred exit cell.
+                                              (short const*)List2,
+                                              (short const*)NULL
+);
+
+static BuildingTypeClass const ClassTdNodHpad(STRUCT_TDNHPAD,
+                                              TXT_NONE,           // Display name (rules.ini Name= overrides).
+                                              "TDNHPAD",          // IniName.
+                                              FACING_NONE,        // Foundation direction from center.
+                                              XYP_COORD(0, 0),    // No exit list — helicopter docks on the pad.
+                                              REMAP_ALTERNATE,    // Sidebar remap logic.
+                                              0x0000,             // Vertical offset.
+                                              0x0000,             // Primary weapon offset.
+                                              0x0000,             // Primary weapon lateral offset.
+                                              false,              // Is this building a fake (decoy?)
+                                              false,              // Animation rate regulated for constant speed?
+                                              false,              // Always use the given name?
+                                              false,              // Is this a wall type structure?
+                                              false,              // Simple (one frame) damage imagery?
+                                              false,              // Is it invisible to radar?
+                                              true,               // Can the player select this?
+                                              true,               // Is this a legal target?
+                                              false,              // Is this an insignificant building?
+                                              false,              // Theater specific graphic image?
+                                              false,              // Does it have a rotating turret?
+                                              true,               // Can the building be color remapped?
+                                              RTTI_AIRCRAFTTYPE,  // Aircraft factory.
+                                              DIR_N,              // Starting idle frame.
+                                              BSIZE_22,           // 2x2 footprint (TD-authentic).
+                                              NULL,               // No preferred exit cell.
+                                              (short const*)List2,
+                                              (short const*)NULL
+);
+
 static BuildingTypeClass const ClassTdHpad(STRUCT_TDHPAD,
                                            TXT_NONE,           // Display name (rules.ini Name= overrides).
                                            "TDHPAD",           // IniName.
@@ -1838,6 +1896,70 @@ static BuildingTypeClass const ClassHelipad(STRUCT_HELIPAD,
                                             NULL,              // Preferred exit cell list.
                                             (short const*)List2, // OCCUPYLIST:	List of active foundation squares.
                                             (short const*)NULL   // OVERLAPLIST:List of overlap cell offset.
+);
+
+/*
+**  AHPAD / SHPAD (Allied / Soviet Helipads) — W2 (d) split of the shared RA
+**  helipad, completing the production-building set (yards b2/b3, war
+**  factories (c)). The building carries the faction; each pad's free
+**  helicopter and roster follow the pad's type, not the owner.
+*/
+static BuildingTypeClass const ClassAlliedHelipad(STRUCT_AHPAD,
+                                                  TXT_NONE,          // Display name (rules.ini Name= overrides).
+                                                  "AHPAD",           // IniName.
+                                                  FACING_NONE,       // Foundation direction from center of building.
+                                                  XYP_COORD(0, 0),   // Exit point for produced units.
+                                                  REMAP_ALTERNATE,   // Sidebar remap logic.
+                                                  0x0000,            //	Vertical offset.
+                                                  0x0000,            // Primary weapon offset along turret centerline.
+                                                  0x0000,            // Primary weapon lateral offset along turret centerline.
+                                                  false,             // Is this building a fake (decoy?)
+                                                  false,             // Animation rate is regulated for constant speed?
+                                                  false,             // Always use the given name for the building?
+                                                  false,             // Is this a wall type structure?
+                                                  false,             // Simple (one frame) damage imagery?
+                                                  false,             // Is it invisible to radar?
+                                                  true,              // Can the player select this?
+                                                  true,              // Is this a legal target for attack or move?
+                                                  false,             // Is this an insignificant building?
+                                                  false,             // Theater specific graphic image?
+                                                  false,             // Does it have a rotating turret?
+                                                  true,              // Can the building be color remapped to indicate owner?
+                                                  RTTI_AIRCRAFTTYPE, // The object type produced at this factory.
+                                                  DIR_N,             // Starting idle frame to match construction.
+                                                  BSIZE_22,          // SIZE:			Building size.
+                                                  NULL,              // Preferred exit cell list.
+                                                  (short const*)List2, // OCCUPYLIST:	List of active foundation squares.
+                                                  (short const*)NULL   // OVERLAPLIST:List of overlap cell offset.
+);
+
+static BuildingTypeClass const ClassSovietHelipad(STRUCT_SHPAD,
+                                                  TXT_NONE,          // Display name (rules.ini Name= overrides).
+                                                  "SHPAD",           // IniName.
+                                                  FACING_NONE,       // Foundation direction from center of building.
+                                                  XYP_COORD(0, 0),   // Exit point for produced units.
+                                                  REMAP_ALTERNATE,   // Sidebar remap logic.
+                                                  0x0000,            //	Vertical offset.
+                                                  0x0000,            // Primary weapon offset along turret centerline.
+                                                  0x0000,            // Primary weapon lateral offset along turret centerline.
+                                                  false,             // Is this building a fake (decoy?)
+                                                  false,             // Animation rate is regulated for constant speed?
+                                                  false,             // Always use the given name for the building?
+                                                  false,             // Is this a wall type structure?
+                                                  false,             // Simple (one frame) damage imagery?
+                                                  false,             // Is it invisible to radar?
+                                                  true,              // Can the player select this?
+                                                  true,              // Is this a legal target for attack or move?
+                                                  false,             // Is this an insignificant building?
+                                                  false,             // Theater specific graphic image?
+                                                  false,             // Does it have a rotating turret?
+                                                  true,              // Can the building be color remapped to indicate owner?
+                                                  RTTI_AIRCRAFTTYPE, // The object type produced at this factory.
+                                                  DIR_N,             // Starting idle frame to match construction.
+                                                  BSIZE_22,          // SIZE:			Building size.
+                                                  NULL,              // Preferred exit cell list.
+                                                  (short const*)List2, // OCCUPYLIST:	List of active foundation squares.
+                                                  (short const*)NULL   // OVERLAPLIST:List of overlap cell offset.
 );
 
 static BuildingTypeClass const ClassCommand(STRUCT_RADAR,
@@ -4074,6 +4196,18 @@ bool BuildingTypeClass::Is_Construction_Yard(void) const
 }
 
 /***********************************************************************************************
+ * BuildingTypeClass::Is_Helipad -- Does this building act as a rotary-wing pad/factory?        *
+ *                                                                                              *
+ *    Role test for the W2 (d) helipad family: the two shared legacy types plus the four        *
+ *    faction pads. Fixed-wing factories (AIRSTRIP/TDAFLD/TDGAFLD) are deliberately excluded.   *
+ *=============================================================================================*/
+bool BuildingTypeClass::Is_Helipad(void) const
+{
+    return (Type == STRUCT_HELIPAD || Type == STRUCT_TDHPAD || Type == STRUCT_AHPAD || Type == STRUCT_SHPAD
+            || Type == STRUCT_TDGHPAD || Type == STRUCT_TDNHPAD);
+}
+
+/***********************************************************************************************
  * BuildingTypeClass::Is_Tiberian_Era -- Is this a TD/TS building rather than a Red Alert one?  *
  *                                                                                              *
  *    The Tiberian-era entities occupy one unbroken run of the enum, so this is a range test.   *
@@ -4134,6 +4268,10 @@ long TF_Building_Scan_Bit(int btype)
         return (STRUCTF_AIRSTRIP);
 
     case STRUCT_TDHPAD:
+    case STRUCT_TDGHPAD:
+    case STRUCT_TDNHPAD:
+    case STRUCT_AHPAD:
+    case STRUCT_SHPAD:
         return (STRUCTF_HELIPAD);
 
     case STRUCT_TDFIX:
@@ -4277,10 +4415,14 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsPowr);      // STRUCT_TSPOWR (TS-spike GDI Power Plant)
     new BuildingTypeClass(ClassTdNodFact);   // STRUCT_TDNFACT (Nod Construction Yard)
     new BuildingTypeClass(ClassTdGdiFact);   // STRUCT_TDGFACT (GDI Construction Yard)
+    new BuildingTypeClass(ClassTdGdiHpad);   // STRUCT_TDGHPAD (GDI Helipad)
+    new BuildingTypeClass(ClassTdNodHpad);   // STRUCT_TDNHPAD (Nod Helipad)
     new BuildingTypeClass(ClassSovietFact);  // STRUCT_SFACT   (Soviet Construction Yard)
     new BuildingTypeClass(ClassAlliedFact);  // STRUCT_AFACT   (Allied Construction Yard)
     new BuildingTypeClass(ClassAlliedWeapon); // STRUCT_AWEAP  (Allied War Factory)
     new BuildingTypeClass(ClassSovietWeapon); // STRUCT_SWEAP  (Soviet War Factory)
+    new BuildingTypeClass(ClassAlliedHelipad); // STRUCT_AHPAD (Allied Helipad)
+    new BuildingTypeClass(ClassSovietHelipad); // STRUCT_SHPAD (Soviet Helipad)
 }
 
 /***********************************************************************************************
@@ -4371,6 +4513,14 @@ void BuildingTypeClass::One_Time(void)
         // tiberiandawn/bdata.cpp:3795-3796).
         {STRUCT_TDHPAD, BSTATE_ACTIVE, 0, 7, 4},
         {STRUCT_TDHPAD, BSTATE_IDLE, 0, 0, 0},
+        {STRUCT_TDGHPAD, BSTATE_ACTIVE, 0, 7, 4},
+        {STRUCT_TDGHPAD, BSTATE_IDLE, 0, 0, 0},
+        {STRUCT_TDNHPAD, BSTATE_ACTIVE, 0, 7, 4},
+        {STRUCT_TDNHPAD, BSTATE_IDLE, 0, 0, 0},
+        {STRUCT_AHPAD, BSTATE_ACTIVE, 0, 7, 4},
+        {STRUCT_AHPAD, BSTATE_IDLE, 0, 0, 0},
+        {STRUCT_SHPAD, BSTATE_ACTIVE, 0, 7, 4},
+        {STRUCT_SHPAD, BSTATE_IDLE, 0, 0, 0},
         // M4 Tier 3 — TDFIX repair-bay cycle (TD-authentic per
         // tiberiandawn/bdata.cpp:3806-3807).
         {STRUCT_TDFIX, BSTATE_ACTIVE, 0, 7, 2},
@@ -4608,6 +4758,11 @@ void BuildingTypeClass::One_Time(void)
             // W2 (c) faction war factories — pipeline art under AWEAP/SWEAP keys.
             {STRUCT_AWEAP, STRUCT_WEAP},
             {STRUCT_SWEAP, STRUCT_WEAP},
+            // W2 (d) faction helipads.
+            {STRUCT_AHPAD, STRUCT_HELIPAD},
+            {STRUCT_SHPAD, STRUCT_HELIPAD},
+            {STRUCT_TDGHPAD, STRUCT_TDHPAD},
+            {STRUCT_TDNHPAD, STRUCT_TDHPAD},
         };
         for (int di = 0; di < (int)(sizeof(_td_bdonors) / sizeof(_td_bdonors[0])); di++) {
             BuildingTypeClass& b = As_Reference(_td_bdonors[di].td);
@@ -5152,7 +5307,7 @@ int BuildingTypeClass::Raw_Cost(void) const
 {
     int cost = TechnoTypeClass::Raw_Cost();
 
-    if ((Type == STRUCT_HELIPAD || Type == STRUCT_TDHPAD) && !Rule.IsSeparate) {
+    if (Is_Helipad() && !Rule.IsSeparate) {
         cost -=
             (AircraftTypeClass::As_Reference(AIRCRAFT_HIND).Cost + AircraftTypeClass::As_Reference(AIRCRAFT_HIND).Cost)
             / 2;
@@ -5183,7 +5338,7 @@ int BuildingTypeClass::Raw_Cost(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Cost_Of(void) const
 {
-    if (Rule.IsSeparate && Type == STRUCT_HELIPAD) {
+    if (Rule.IsSeparate && Is_Helipad()) {
         return (Raw_Cost());
     }
     return (TechnoTypeClass::Cost_Of());

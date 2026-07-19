@@ -1022,9 +1022,10 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     */
     if (type->What_Am_I() == RTTI_BUILDINGTYPE) {
         StructType st = (StructType)((BuildingTypeClass const*)type)->Type;
-        bool vanilla_weap = (st == STRUCT_WEAP);
-        bool faction_weap = (st == STRUCT_AWEAP || st == STRUCT_SWEAP);
-        if ((vanilla_weap && Session.Type != GAME_NORMAL) || (faction_weap && Session.Type == GAME_NORMAL)) {
+        bool vanilla_b = (st == STRUCT_WEAP || st == STRUCT_HELIPAD || st == STRUCT_TDHPAD);
+        bool faction_b = (st == STRUCT_AWEAP || st == STRUCT_SWEAP || st == STRUCT_AHPAD || st == STRUCT_SHPAD
+                          || st == STRUCT_TDGHPAD || st == STRUCT_TDNHPAD);
+        if ((vanilla_b && Session.Type != GAME_NORMAL) || (faction_b && Session.Type == GAME_NORMAL)) {
             return (false);
         }
     }
@@ -1208,6 +1209,10 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             // in the sidebar because the prereq check rejects them.
             if (t == STRUCT_HELIPAD) {
                 if (tdhpad_type >= 0 && Has_Building_Active(tdhpad_type))
+                    continue;
+                // W2 (d): the faction helipads satisfy the 'hpad' token.
+                if (Has_Building_Active(STRUCT_AHPAD) || Has_Building_Active(STRUCT_SHPAD)
+                    || Has_Building_Active(STRUCT_TDGHPAD) || Has_Building_Active(STRUCT_TDNHPAD))
                     continue;
             }
             // STRUCT_RADAR — satisfied by TDHQ (separated TD Communications
@@ -6612,9 +6617,12 @@ static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType
         **	factory in place of the vanilla shared WEAP (which Can_Build now
         **	gates to campaign). Everything else stays vanilla for RA houses.
         */
+        bool sov = (actlike == HOUSE_USSR || actlike == HOUSE_UKRAINE);
         if (ra == STRUCT_WEAP) {
-            bool sov = (actlike == HOUSE_USSR || actlike == HOUSE_UKRAINE);
             return (&BuildingTypeClass::As_Reference(sov ? STRUCT_SWEAP : STRUCT_AWEAP));
+        }
+        if (ra == STRUCT_HELIPAD) {
+            return (&BuildingTypeClass::As_Reference(sov ? STRUCT_SHPAD : STRUCT_AHPAD));
         }
         return (NULL);
     }
@@ -6690,7 +6698,9 @@ static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType
     case STRUCT_SOVIET_TECH:   // Soviet tech
         return (gdi ? c_eye : c_tmpl);
     case STRUCT_HELIPAD:
-        return (c_hpad);
+        // W2 (d): each TD faction builds its own pad now.
+        return (gdi ? &BuildingTypeClass::As_Reference(STRUCT_TDGHPAD)
+                    : &BuildingTypeClass::As_Reference(STRUCT_TDNHPAD));
     case STRUCT_AIRSTRIP: // GDI fixed-wing airfield (the A-10 host); Nod flies helis only
         return (gdi ? c_gafld : NULL);
     case STRUCT_REPAIR:
@@ -6872,7 +6882,9 @@ int HouseClass::AI_Building(void)
             HouseClass const* ehp = HouseClass::As_Pointer(eh);
             if (ehp != NULL && ehp->IsActive && !ehp->IsDefeated && !Is_Ally(ehp)) {
                 int afld = ehp->BQuantity[STRUCT_AIRSTRIP] + ehp->BQuantity[STRUCT_TDGAFLD];
-                int hpad = ehp->BQuantity[STRUCT_HELIPAD] + ehp->BQuantity[STRUCT_TDHPAD];
+                int hpad = ehp->BQuantity[STRUCT_HELIPAD] + ehp->BQuantity[STRUCT_TDHPAD]
+                           + ehp->BQuantity[STRUCT_AHPAD] + ehp->BQuantity[STRUCT_SHPAD]
+                           + ehp->BQuantity[STRUCT_TDGHPAD] + ehp->BQuantity[STRUCT_TDNHPAD];
                 if (afld > enemy_airstrips) enemy_airstrips = afld;
                 if (hpad > enemy_helipads) enemy_helipads = hpad;
             }
@@ -7904,14 +7916,16 @@ int HouseClass::AI_Aircraft(void)
         */
         if (Can_Build(&AircraftTypeClass::As_Reference(AIRCRAFT_TDORCA), ActLike)
             && AircraftTypeClass::As_Reference(AIRCRAFT_TDORCA).Level <= (unsigned)Control.TechLevel
-            && BQuantity[STRUCT_TDHPAD] > AQuantity[AIRCRAFT_TDORCA] + AQuantity[AIRCRAFT_TDAPACHE]) {
+            && BQuantity[STRUCT_TDHPAD] + BQuantity[STRUCT_TDGHPAD]
+                   > AQuantity[AIRCRAFT_TDORCA] + AQuantity[AIRCRAFT_TDAPACHE]) {
             BuildAircraft = AIRCRAFT_TDORCA;
             return (TICKS_PER_SECOND);
         }
 
         if (Can_Build(&AircraftTypeClass::As_Reference(AIRCRAFT_TDAPACHE), ActLike)
             && AircraftTypeClass::As_Reference(AIRCRAFT_TDAPACHE).Level <= (unsigned)Control.TechLevel
-            && BQuantity[STRUCT_TDHPAD] > AQuantity[AIRCRAFT_TDORCA] + AQuantity[AIRCRAFT_TDAPACHE]) {
+            && BQuantity[STRUCT_TDHPAD] + BQuantity[STRUCT_TDNHPAD]
+                   > AQuantity[AIRCRAFT_TDORCA] + AQuantity[AIRCRAFT_TDAPACHE]) {
             BuildAircraft = AIRCRAFT_TDAPACHE;
             return (TICKS_PER_SECOND);
         }
@@ -7931,14 +7945,16 @@ int HouseClass::AI_Aircraft(void)
 
         if (Can_Build(&AircraftTypeClass::As_Reference(AIRCRAFT_LONGBOW), ActLike)
             && AircraftTypeClass::As_Reference(AIRCRAFT_LONGBOW).Level <= (unsigned)Control.TechLevel
-            && BQuantity[STRUCT_HELIPAD] > AQuantity[AIRCRAFT_LONGBOW] + AQuantity[AIRCRAFT_HIND]) {
+            && BQuantity[STRUCT_HELIPAD] + BQuantity[STRUCT_AHPAD]
+                   > AQuantity[AIRCRAFT_LONGBOW] + AQuantity[AIRCRAFT_HIND]) {
             BuildAircraft = AIRCRAFT_LONGBOW;
             return (TICKS_PER_SECOND);
         }
 
         if (Can_Build(&AircraftTypeClass::As_Reference(AIRCRAFT_HIND), ActLike)
             && AircraftTypeClass::As_Reference(AIRCRAFT_HIND).Level <= (unsigned)Control.TechLevel
-            && BQuantity[STRUCT_HELIPAD] > AQuantity[AIRCRAFT_LONGBOW] + AQuantity[AIRCRAFT_HIND]) {
+            && BQuantity[STRUCT_HELIPAD] + BQuantity[STRUCT_SHPAD]
+                   > AQuantity[AIRCRAFT_LONGBOW] + AQuantity[AIRCRAFT_HIND]) {
             BuildAircraft = AIRCRAFT_HIND;
             return (TICKS_PER_SECOND);
         }

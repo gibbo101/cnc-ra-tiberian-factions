@@ -266,6 +266,10 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
         case STRUCT_HELIPAD:
         case STRUCT_TDHPAD:    // TD Helipad — same rotary-aircraft dock semantics.
+        case STRUCT_AHPAD:     // W2 (d) faction helipads — identical dock semantics.
+        case STRUCT_SHPAD:
+        case STRUCT_TDGHPAD:
+        case STRUCT_TDNHPAD:
             if (from->What_Am_I() == RTTI_AIRCRAFT && !((AircraftClass const*)from)->Class->IsFixedWing) {
                 return (RADIO_ROGER);
             }
@@ -324,6 +328,10 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         case STRUCT_TDGAFLD:   // v4.0 GDI Airfield — repair/rearm-on-dock for the A-10.
         case STRUCT_HELIPAD:
         case STRUCT_TDHPAD:    // TD Helipad — repair-on-dock.
+        case STRUCT_AHPAD:     // W2 (d) faction helipads.
+        case STRUCT_SHPAD:
+        case STRUCT_TDGHPAD:
+        case STRUCT_TDNHPAD:
             Assign_Mission(MISSION_REPAIR);
             from->Assign_Mission(MISSION_SLEEP);
             return (RADIO_ROGER);
@@ -445,6 +453,10 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
             case STRUCT_HELIPAD:
             case STRUCT_TDHPAD:    // TD Helipad — dock target is the building itself.
+            case STRUCT_AHPAD:     // W2 (d) faction helipads.
+            case STRUCT_SHPAD:
+            case STRUCT_TDGHPAD:
+            case STRUCT_TDNHPAD:
                 param = As_Target();
                 break;
 
@@ -3637,7 +3649,7 @@ void BuildingClass::Update_Buildables(void)
                             Map.Add(RTTI_AIRCRAFTTYPE, a);
                         }
                     } else {
-                        if (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD) {
+                        if (Class->Is_Helipad()) {
                             Map.Add(RTTI_AIRCRAFTTYPE, a);
                         }
                     }
@@ -3923,18 +3935,36 @@ void BuildingClass::Grand_Opening(bool captured)
         /*
         **	Helicopter pads get a free attack helicopter.
         */
-        if (!Rule.IsSeparate && (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD) && !captured) {
+        if (!Rule.IsSeparate && Class->Is_Helipad() && !captured) {
             ScenarioInit++;
             AircraftClass* air = 0;
-            // Tiberian Factions: the TD helipad (STRUCT_TDHPAD) gives a TD attack heli by side --
-            // Nod (HOUSE_BAD) -> Apache, GDI -> Orca. The RA helipad keeps Hind (Soviet) / Longbow.
-            if (*this == STRUCT_TDHPAD) {
+            // The free helicopter follows the PAD's faction (W2 (d)): each
+            // faction pad grants its own airframe regardless of who built it,
+            // and the shared legacy pads keep their owner-ActLike pick.
+            switch (Class->Type) {
+            case STRUCT_TDGHPAD:
+                air = new AircraftClass(AIRCRAFT_TDORCA, House->Class->House);
+                break;
+            case STRUCT_TDNHPAD:
+                air = new AircraftClass(AIRCRAFT_TDAPACHE, House->Class->House);
+                break;
+            case STRUCT_AHPAD:
+                air = new AircraftClass(AIRCRAFT_LONGBOW, House->Class->House);
+                break;
+            case STRUCT_SHPAD:
+                air = new AircraftClass(AIRCRAFT_HIND, House->Class->House);
+                break;
+            case STRUCT_TDHPAD:
                 air = new AircraftClass(House->ActLike == HOUSE_BAD ? AIRCRAFT_TDAPACHE : AIRCRAFT_TDORCA,
                                         House->Class->House);
-            } else if (House->ActLike == HOUSE_USSR || House->ActLike == HOUSE_UKRAINE) {
-                air = new AircraftClass(AIRCRAFT_HIND, House->Class->House);
-            } else {
-                air = new AircraftClass(AIRCRAFT_LONGBOW, House->Class->House);
+                break;
+            default:
+                if (House->ActLike == HOUSE_USSR || House->ActLike == HOUSE_UKRAINE) {
+                    air = new AircraftClass(AIRCRAFT_HIND, House->Class->House);
+                } else {
+                    air = new AircraftClass(AIRCRAFT_LONGBOW, House->Class->House);
+                }
+                break;
             }
             if (air) {
                 air->Height = 0;
@@ -4352,7 +4382,7 @@ COORDINATE BuildingClass::Docking_Coord(void) const
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
-    if (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD) {
+    if (Class->Is_Helipad()) {
         return (Coord_Add(Coord, XYP_COORD(24, 18)));
     }
     if (*this == STRUCT_AIRSTRIP || *this == STRUCT_TDGAFLD) {
@@ -4768,7 +4798,7 @@ COORDINATE BuildingClass::Sort_Y(void) const
     if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) {
         return (Coord);
     }
-    if (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD) {
+    if (Class->Is_Helipad()) {
         return (Center_Coord());
     }
     if (*this == STRUCT_AIRSTRIP || *this == STRUCT_TDGAFLD) {
@@ -6184,8 +6214,7 @@ int BuildingClass::Mission_Repair(void)
         return (MissionControl[Mission].Normal_Delay());
     }
 
-    if (*this == STRUCT_HELIPAD || *this == STRUCT_TDHPAD || *this == STRUCT_AIRSTRIP
-        || *this == STRUCT_TDGAFLD) {
+    if (Class->Is_Helipad() || *this == STRUCT_AIRSTRIP || *this == STRUCT_TDGAFLD) {
         enum
         {
             INITIAL,
