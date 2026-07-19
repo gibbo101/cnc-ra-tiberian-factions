@@ -4,7 +4,7 @@
 
 **Status:** All four M2 Tier 1 separated buildings (commit a8217c9) are mostly TD-authentic. Building class flags and constructor args match TD field-for-field. The deltas are in **rules.ini values** (4 sight/strength stat divergences) and **two missing STRUCT_TDPYLE engine dispatches** that affect infantry production/death. TDSILO has a third issue: missing tiberium-fill render branch.
 
-**Session that produced it:** 2026-05-22, completion of the M2/M3 verification pass paired with [[td-sam-deep-dive]], [[td-atwr-deep-dive]], [[td-gtwr-gun-verification]], [[td-obli-verification]].
+**Session that produced it:** 2026-05-22, completion of the M2/M3 verification pass paired with `td-sam-deep-dive.md`, `td-atwr-deep-dive.md`, `td-gtwr-gun-verification.md`, `td-obli-verification.md`.
 
 **Guiding principle:** wholesale port of TD source. No donor framing. Per [[feedback-no-donor-for-td-separation]] / [[project-building-separation-committed]].
 
@@ -185,7 +185,7 @@ case STRUCT_TDPYLE:     // ← add
     return (INFANTRY_E1);
 ```
 
-(Or per separation principle, return `INFANTRY_E1` in a dedicated STRUCT_TDPYLE branch. The alias-with-vanilla is acceptable here because the behavior — return E1 — is identical across all three buildings. Same pattern as the negative-exclusion aliases in [[td-sam-deep-dive]] M6.)
+(Or per separation principle, return `INFANTRY_E1` in a dedicated STRUCT_TDPYLE branch. The alias-with-vanilla is acceptable here because the behavior — return E1 — is identical across all three buildings. Same pattern as the negative-exclusion aliases in `td-sam-deep-dive.md` M6.)
 
 ---
 
@@ -253,7 +253,7 @@ if (*this == STRUCT_STORAGE || *this == STRUCT_TDSILO) {
 }
 ```
 
-This is a positive-dispatch alias of two buildings with **identical** behavior (both are Tiberium silos with the same fill-render contract). The alias is legitimate per the [[td-sam-deep-dive]] M6 rule: "identical behavior across two TD entities can share a comment-tagged branch" — and here both TD and RA conceive of silos identically, so it's even more justified. Tag with a comment pointing at this doc.
+This is a positive-dispatch alias of two buildings with **identical** behavior (both are Tiberium silos with the same fill-render contract). The alias is legitimate per the `td-sam-deep-dive.md` M6 rule: "identical behavior across two TD entities can share a comment-tagged branch" — and here both TD and RA conceive of silos identically, so it's even more justified. Tag with a comment pointing at this doc.
 
 ---
 
@@ -354,7 +354,7 @@ Update the four dict `"notes"` fields to reference this doc. No structural chang
 
 ## Decisions
 
-- **No donor.** All TD-source-grounded. The aliased dispatches (STRUCT_TDPYLE with STRUCT_BARRACKS; STRUCT_TDSILO with STRUCT_STORAGE) are *identical-behavior positive-dispatch aliases* between TD and RA buildings that conceive of barracks/silo the same way. This is the legitimate aliasing pattern per [[project-building-separation-committed]] / [[td-sam-deep-dive]] M6 — not "modeling on" RA.
+- **No donor.** All TD-source-grounded. The aliased dispatches (STRUCT_TDPYLE with STRUCT_BARRACKS; STRUCT_TDSILO with STRUCT_STORAGE) are *identical-behavior positive-dispatch aliases* between TD and RA buildings that conceive of barracks/silo the same way. This is the legitimate aliasing pattern per [[project-building-separation-committed]] / `td-sam-deep-dive.md` M6 — not "modeling on" RA.
 - **TDSILO Strength=150 is the only balance-affecting change.** TD-authentic value. If playtest reveals silos die too easily, balance via warhead Verses table or armor type, never by reverting to a non-TD strength.
 - **Sight value corrections are pure data.** No code change, no risk to other buildings.
 - **TDPYLE exit-point `XYP_COORD(24, 47)` left alone for now.** TD uses `(30, 33)`. Difference is cosmetic in practice — Find_Exit_Cell handles the actual cell pathfinding. Worth fixing for full TD parity, but lower priority than the engine dispatch gaps.
@@ -375,9 +375,9 @@ All three independent — any order.
 
 ## Cross-reference
 
-- TDSAM: [[td-sam-deep-dive]]
-- TDATWR: [[td-atwr-deep-dive]]
-- TDGTWR + TDGUN: [[td-gtwr-gun-verification]]
-- TDOBLI: [[td-obli-verification]]
+- TDSAM: `td-sam-deep-dive.md`
+- TDATWR: `td-atwr-deep-dive.md`
+- TDGTWR + TDGUN: `td-gtwr-gun-verification.md`
+- TDOBLI: `td-obli-verification.md`
 
 This doc closes the verification pass over all **9 fully-separated** STRUCT_TDxxxx buildings. The remaining 7 Logic=-aliased entries (TDHQ, TDPROC, TDFIX, TDWEAP, TDHPAD, TDEYE, TDFACT) are *known not separated* per [[project-building-separation-committed]] — verifying them produces redundant findings until they're individually separated through the M3-M5 plan.

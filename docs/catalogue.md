@@ -316,7 +316,7 @@ Per-building flags extracted from `tiberiandawn/bdata.cpp`. These are the values
 - Empty `Idle` column = no idle animation (engine renders shape 0 statically). Damaged state = shape 1 in that case (the engine's `largest = max(Anims[*].Start + Count) = 1` auto-shift).
 - `Crew=no` means selling/destroying spawns zero infantry (TD canon for SILO/HPAD/SAM).
 - `Cap=no` (bold) marks entries where TD authentic differs from the original catalogue spec — defensive structures and superweapon hosts can't be captured. **TMPL and EYE are NOT capturable per TD.**
-- `Points` is the TD-authentic Risk/Reward value extracted from `tiberiandawn/bdata.cpp` per-class constructor (the line commented `// RISK/RWRD: Risk/reward rating values`). Both `Risk` and `Reward` fields are set from the rules.ini `Points=` key (`redalert/techno.cpp:7067`), and the value feeds `TechnoClass::Value()` (`redalert/techno.cpp:5171`). Without it the AI can't see the building — see [[ai-targeting]] for the full path. **Mandatory field for every TD entry.**
+- `Points` is the TD-authentic Risk/Reward value extracted from `tiberiandawn/bdata.cpp` per-class constructor (the line commented `// RISK/RWRD: Risk/reward rating values`). Both `Risk` and `Reward` fields are set from the rules.ini `Points=` key (`redalert/techno.cpp:7067`), and the value feeds `TechnoClass::Value()` (`redalert/techno.cpp:5171`). Without it the AI can't see the building — see `ai-targeting.md` for the full path. **Mandatory field for every TD entry.**
 - `Sight` values are TD-authentic (extracted from each `tiberiandawn/bdata.cpp` class's `// SIGHTRANGE: Range of sighting.` line). **TD buildings have systematically smaller sight radii than RA equivalents** (roughly -2 cells across the board — e.g., NUKE=2 vs POWR=4, PYLE=3 vs TENT=5). This is by design while we stay vanilla-faithful; expect GDI/Nod bases to feel "shrouded" next to Allied/Soviet ones until scouting units are deployed. Revisit if balance demands it.
 - Logic= aliases the engine donor; field overrides come via rules.ini per the recipe.
 
@@ -358,13 +358,13 @@ Values that **must be set in rules.ini per-entry** because the Logic= alias does
 - **BaseNormal** — all 19 entries are real base structures, so `yes` across the board. (Decorative/civilian buildings would be `no`, but none of ours are.) `bdata.cpp:3717` loads from `BaseNormal=`.
 - **Owner** — TD source's HOUSEF_GOOD/HOUSEF_BAD flags mapped to our `Owner=GoodGuy,BadGuy` syntax. GoodGuy = GDI (HOUSE_GOOD), BadGuy = Nod (HOUSE_BAD).
 
-**TD weapon → RA placeholder analogs** (v0.3 — pending proper TD weapon ports; full plan in [[weapon-ports]]):
+**TD weapon → RA placeholder analogs** (v0.3 — pending proper TD weapon ports; full plan in `weapon-ports.md`):
 
 | TD weapon | v0.3 RA placeholder | Notes |
 |---|---|---|
 | WEAPON_CHAIN_GUN (GTWR) | Vulcan | Anti-infantry chaingun → anti-infantry vulcan. Close match. |
 | WEAPON_TOW_TWO (ATWR) | TurretGun + Nike | TD's ATWR is dual-role anti-armor + anti-air. RA has no single weapon for that, so we use **Primary=TurretGun** (anti-armor from GUN donor) and **Secondary=Nike** (anti-air from Soviet SAM). Engine selects per target type. Closer to authentic than pure-AA AGUN/ZSU-23. |
-| WEAPON_OBELISK_LASER (OBLI) | HellFire | RA has no laser weapon. HellFire is a heavy anti-armor missile — keeps the slow-firing/high-damage feel without the wrong-looking Tesla lightning. Real port covered in [[weapon-ports]]. |
+| WEAPON_OBELISK_LASER (OBLI) | HellFire | RA has no laser weapon. HellFire is a heavy anti-armor missile — keeps the slow-firing/high-damage feel without the wrong-looking Tesla lightning. Real port covered in `weapon-ports.md`. |
 | WEAPON_TURRET_GUN (GUN) | TurretGun | Same name in both engines. Behaviour identical. |
 | WEAPON_NIKE (SAM) | Nike | Same name in both engines. |
 

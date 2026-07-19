@@ -110,10 +110,19 @@ GDI/Nod **campaign missions are `ExternalGameID=TiberianDawn`** — TD-game inst
 
 ## Path to add GDI/Nod campaign sections
 
-1. **Author RA-format scenario maps** for the GDI/Nod missions — the real content work.
-2. Add `<Instance>` entries to `INSTANCES.XML`: `ExternalGameID=RedAlert`, `House=GDI`/`Nod` (HOUSE_GOOD/HOUSE_BAD), name/briefing TextIDs, `ShowOnMissionSelect=true`, `IsUnlockedAtStart=true` (or a `MapStageUnlock` chain).
-3. Host them in a tab (`CampaignMapSelectMapClass`) — likely a repurposed RA tab; whether an RA-mode mission can ride a TD `GuiLayer` tab is **untested**.
-4. Repack `CONFIG.MEG` with `meg_pack.py`.
+> **⚠️ SUPERSEDED 2026-07-19 — this "add new instances" route is NOT the chosen path.**
+> New instances **display but cannot launch** (`InstanceServerG` resolves the scenario from
+> the BASE install), which is why the shipped approach is the **hijack**: reuse an existing
+> Counterstrike/Aftermath slot and shadow its scenario INI from the mod's `CCDATA/`. That is
+> proven on desktop AND Deck (see the re-verification section above) and needs **no
+> `INSTANCES.XML` edit and no CONFIG.MEG repack** for the mission content itself — CONFIG.MEG
+> is only needed for cosmetics (mission titles/briefing text via same-length master-text
+> edits). Steps 2–4 below are retained as the record of the route that was mapped but not taken.
+
+1. **Author RA-format scenario maps** for the GDI/Nod missions — the real content work (still true).
+2. ~~Add `<Instance>` entries to `INSTANCES.XML`~~: `ExternalGameID=RedAlert`, `House=GDI`/`Nod` (HOUSE_GOOD/HOUSE_BAD), name/briefing TextIDs, `ShowOnMissionSelect=true`, `IsUnlockedAtStart=true` (or a `MapStageUnlock` chain). — *unnecessary under the hijack; a new instance can't launch anyway.*
+3. ~~Host them in a tab (`CampaignMapSelectMapClass`)~~ — *moot: the hijack inherits the existing slot's tab, so the "can an RA-mode mission ride a TD `GuiLayer` tab" question never has to be answered.*
+4. ~~Repack `CONFIG.MEG`~~ with `meg_pack.py` — *only for cosmetic title/briefing text, not for mission content.*
 
 ---
 

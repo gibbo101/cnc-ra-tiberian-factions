@@ -4,7 +4,7 @@
 
 **Status:** TDGTWR has a balance-affecting weapon mismatch (still bound to RA's vanilla `[Vulcan]`) plus one ClassTdGtwr offset bug. TDGUN is mostly TD-authentic — building flags correct, weapon stats correct — but its projectile binding (`Projectile=Cannon`) reuses RA's vanilla section in violation of the separation principle.
 
-**Session that produced it:** 2026-05-22, paired with [[td-sam-deep-dive]] and [[td-atwr-deep-dive]]. Goal: get all four M3 Tier 2 defensive buildings (TDGTWR/TDATWR/TDGUN/TDSAM) weapon-correct so future balance work has TD-authentic baselines.
+**Session that produced it:** 2026-05-22, paired with `td-sam-deep-dive.md` and `td-atwr-deep-dive.md`. Goal: get all four M3 Tier 2 defensive buildings (TDGTWR/TDATWR/TDGUN/TDSAM) weapon-correct so future balance work has TD-authentic baselines.
 
 **Guiding principle:** wholesale port of TD's building + weapon + projectile + audio. No donor. No "modeled on Vulcan" / "modeled on Cannon." Per [[feedback-no-donor-for-td-separation]] / [[project-building-separation-committed]].
 
@@ -457,6 +457,6 @@ Both TDGTWR and TDGUN cargos are independent of the TDSAM and TDATWR work in the
 
 ## Cross-reference
 
-- TDSAM: [[td-sam-deep-dive]] / `docs/td-sam-deep-dive.md`
-- TDATWR: [[td-atwr-deep-dive]] / `docs/td-atwr-deep-dive.md`
+- TDSAM: `td-sam-deep-dive.md` / `docs/td-sam-deep-dive.md`
+- TDATWR: `td-atwr-deep-dive.md` / `docs/td-atwr-deep-dive.md`
 - TDOBLI: already-validated TD-port (uses `[TDOblsLaser]` weapon, no shared RA bindings) — keep as reference template for what "fully separated, all TD-prefixed" looks like.

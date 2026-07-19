@@ -4,7 +4,7 @@
 
 **Status:** Largely TD-authentic. The "validated vertical slice" reputation from M5 is correct — building flags, rules.ini stats, weapon stats, projectile, warhead, audio routing, and engine dispatch are all TD-correct. **One balance-relevant bug**: charge timing is ~6× faster than TD's. **Three cosmetic-tier divergences**: VerticalOffset, missing HorizontalOffset, class naming. No "still bound to RA vanilla weapon" issues — TDOBLI is the cleanest separation in the M3 Tier 2 set.
 
-**Session that produced it:** 2026-05-22, paired with [[td-gtwr-gun-verification]]. Same TD-source-grounded verification pattern.
+**Session that produced it:** 2026-05-22, paired with `td-gtwr-gun-verification.md`. Same TD-source-grounded verification pattern.
 
 **Guiding principle:** wholesale port of TD's building + weapon + projectile + audio. Per [[feedback-no-donor-for-td-separation]] / [[project-building-separation-committed]] / [[project-td-prefix-convention]].
 
@@ -443,8 +443,8 @@ Look for: `WARHEAD_LASER` entry in TD's Warheads table at `const.cpp` (after WAR
 
 ## Cross-reference
 
-- TDSAM: [[td-sam-deep-dive]] / `docs/td-sam-deep-dive.md`
-- TDATWR: [[td-atwr-deep-dive]] / `docs/td-atwr-deep-dive.md`
-- TDGTWR + TDGUN: [[td-gtwr-gun-verification]] / `docs/td-gtwr-gun-verification.md`
+- TDSAM: `td-sam-deep-dive.md` / `docs/td-sam-deep-dive.md`
+- TDATWR: `td-atwr-deep-dive.md` / `docs/td-atwr-deep-dive.md`
+- TDGTWR + TDGUN: `td-gtwr-gun-verification.md` / `docs/td-gtwr-gun-verification.md`
 
 TDOBLI is the **cleanest of the five** in terms of separation: own weapon, own projectile, own warhead, own audio entries, dedicated dispatch sites. The other four still have weapon-binding or building-flag work to do. This doc closes the M3 Tier 2 verification pass.

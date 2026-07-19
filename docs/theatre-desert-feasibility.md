@@ -116,19 +116,24 @@ A 4th HD theatre is code-locked, so **repurpose the least-used existing slot (in
 and the breakage objection is removed by step 3. **Workshop-clean — no binary patch:** the
 DLL is ours; `CONFIG.MEG` + `INSTANCES.XML` ship via the master key.
 
-### Cheapest validation (do first, before the DLL template port)
-Repoint `RA_Terrain_Interior.xml` textures to desert art, repack with `meg_pack.py`, ship
-in the mod folder, load an existing interior map in HD on the Deck, screenshot. Confirms
-the HD slot-hijack at the data layer before investing in DLL template work.
+### ~~Cheapest validation (do first, before the DLL template port)~~ — OBE, the real thing shipped
+This proposed a texture-repoint smoke test as a go/no-go gate before investing in DLL
+template work. **Both the gate and the work it was gating are done:** the full template
+port landed 2026-06-10 (ids 541+, `.INT` classic art, radar palette) and a real converted
+TD desert map rendered correctly in-game 2026-07-19. Nothing to validate — convert a map
+and load it.
 
 ---
 
 ## Bottom line for the roadmap
 
-Desert is **feasible** but it is **campaign-arc work** (GDI/Nod missions need it), and that
-arc is down the road. When it comes up: classic-mode desert is a quick additive DLL change;
-HD-mode desert is the interior-slot hijack (DLL + data), with the cheap `CONFIG.MEG`
-re-skin test as the go/no-go gate.
+**Superseded by events — desert is DONE as engine work.** This section originally called
+desert "feasible but down the road, gated behind the campaign arc". In practice the DLL +
+data work shipped quietly on 2026-06-10 with the TD tileset batch, and 2026-07-19 confirmed
+a converted TD desert map renders correctly in HD. What remains is content and curation
+(batch-convert the desert maps, keep interior maps out of the MP pool), not feasibility.
+Classic-mode desert (Option A) was never needed and stays unbuilt — classic is unsupported
+from v2.0.0 anyway.
 
 **DECISION 2026-06-03 (Luke): the chosen path is to REPLACE the interior theatre
 slot with desert** (not add a 4th theatre — impossible per the lock above).

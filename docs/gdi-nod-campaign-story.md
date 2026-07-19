@@ -127,17 +127,25 @@ from the shadows… We estimated the Brotherhood would tire of the USSR by the e
 
 ## 6. Implementation constraints (recap — don't violate)
 
-- **Hijack only**: re-style existing CS/AM instances; new instances list but cannot
-  launch (InstanceServerG resolves from BASE). GDI uses the 9 `Mobius_Aftermath_Allied_Map_Base`
-  slots; Nod the 8 `Mobius_Allied_Counterstrike_Map_Base` slots. The USSR-variant groups
-  (9 + 8) stay in reserve — bonus missions, interludes, or a second act.
+- **Hijack only — ✅ NOW PROVEN, not just assumed (2026-07-19, desktop AND Deck).** Re-style
+  existing CS/AM instances; new instances list but cannot launch (InstanceServerG resolves
+  from BASE). GDI uses the 9 `Mobius_Aftermath_Allied_Map_Base` slots; Nod the 8
+  `Mobius_Allied_Counterstrike_Map_Base` slots. The USSR-variant groups (9 + 8) stay in
+  reserve — bonus missions, interludes, or a second act. **Mechanics confirmed in-game:
+  drop the mission as `<mod>/CCDATA/<scenario>.ini` and the engine loads ours over the
+  stock one; filename = the instance's `<Mission>` number + house letter (43+Allied →
+  `scg43ea.ini`). TRAP: strip the `[Digest]` section** — `RELEASE_VERSION` makes a wrong
+  digest abort the load, a missing one skips validation. Recipe + evidence:
+  `campaign-tabs-research.md`.
 - **CONFIG.MEG same-size rule** for every inner-file edit; compensate bytes via XML
   comments. Mission Select display names = master-text same-length in-place — choose
   titles **no longer than the original mission's name** and pad with spaces. Map each
   title to its slot at implementation time and check lengths then.
 - **In-game briefings are free**: the engine reads campaign scenario INIs and the mod's
-  CCDATA shadows them by name ([[project-td-skirmish-map-import-findings]]) — all story
-  text above fits in `[Briefing]` with no size constraint.
+  CCDATA shadows them by name (**verified in-game 2026-07-19** — `campaign-tabs-research.md`;
+  the former citation pointed at a memory deleted in the 2026-07-15 reset) — all story
+  text above fits in `[Briefing]` with no size constraint. Note the *select-screen* briefing
+  panel is a separate, master-text path and still obeys the same-size rule.
 - **Theatres**: temperate + snow only (desert pending the interior-slot swap) — hence no
   Africa missions despite Nod's canon strongholds there; revisit if desert lands.
 - **Win/lose/briefing gates**: the 4 confirmed DLL gates (house.cpp:1213/1225,

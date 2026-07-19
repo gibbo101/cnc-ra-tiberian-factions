@@ -4,7 +4,7 @@
 
 **Status:** STRUCT_TDATWR shipped in M3 Tier 2 separation but is functionally incomplete. The current `ClassTdAtwr` was copy-shaped from RA's `ClassAAGun` — that mismatch is the source of every visible bug. This doc replaces the donor-shaped port with a wholesale port of TD's `STRUCT_ATOWER`.
 
-**Session that produced it:** 2026-05-22, max-effort deep dive paired with [[td-sam-deep-dive]].
+**Session that produced it:** 2026-05-22, max-effort deep dive paired with `td-sam-deep-dive.md`.
 
 **Guiding principle (this session's pushback from Luke):** the *whole point* of full STRUCT_TD-prefixed separation is that TD entities run TD's own building, weapon, and projectile code paths — not RA's nearest-shaped equivalent dressed up to look TD. No donor. No "modeled on PBOX." Port wholesale from `reference/vanilla-conquer/tiberiandawn/`. Per [[feedback-no-donor-for-td-separation]] / [[project-building-separation-committed]].
 
@@ -321,7 +321,7 @@ if (*this == STRUCT_TDATWR || *this == STRUCT_TDOBLI) {
 }
 ```
 
-(The TD source aliases `STRUCT_ATOWER || STRUCT_OBELISK` because both buildings share the south-offset rule. Our port aliases `STRUCT_TDATWR || STRUCT_TDOBLI` for the same reason. This is a *positive-dispatch* alias that's identical behavior for two TD buildings — acceptable per the M6 rule in [[td-sam-deep-dive]]: identical behavior across two TD entities can share a comment-tagged branch.)
+(The TD source aliases `STRUCT_ATOWER || STRUCT_OBELISK` because both buildings share the south-offset rule. Our port aliases `STRUCT_TDATWR || STRUCT_TDOBLI` for the same reason. This is a *positive-dispatch* alias that's identical behavior for two TD buildings — acceptable per the M6 rule in `td-sam-deep-dive.md`: identical behavior across two TD entities can share a comment-tagged branch.)
 
 If RA's `Drop_Debris` already has the south-offset adjustment for some vanilla buildings, slot ours into that same place. If not, add the check before the `Unlimbo` call for the crew infantry.
 
