@@ -169,9 +169,37 @@ evictions in ~10k frames. NOTE its capture-side effect is LATENT — narrow `Own
 (`[TDMTNK] Owner=GoodGuy`) still do the discriminating, so the exploit only materializes
 once (b)/(c) widen `Owner=`. That is why it lands first. Diagnostic left live under
 `TF_DEV_BUILD`: `MOD_DEBUG_EVICT.txt`, `rule=prereq` = changed behaviour, `rule=factory` =
-vanilla. Then: (b) ConYard+MCV
-split (re-split shared TDFACT/TDMCV into GDI/Nod + add Allied/Soviet, incl. spawn work);
-(c) War Factory; (d) Helipad last (dual-nature). Role-flag refactor lands with (b).
+vanilla. Then: (b) ConYard split
+(4 yards; MCVs NOT split — see naming spec); (c) War Factory; (d) Helipad last
+(dual-nature). Role-flag refactor lands with (b).
+
+**(b) internal order + status (2026-07-19).** **b1 DONE** (`5055f1f`, `c0fbae0`, `a40b828`,
+built, NOT yet playtested): `Is_Construction_Yard()` role predicate + 10 site conversions +
+`Crew_Type` switch hoist; the triplicated BScan shadow table unified into
+`TF_Building_Scan_Bit()` (bdata.cpp) so b2's new yards are one table row, not 6 hand-edits;
+`STRUCT_TIBERIAN_LAST` marker bounding the TD/TS enum block so appended RA-side types don't
+inherit TD audio; AI-census diagnostic counting GDI/Nod yards + MCVs. No behaviour change
+except the dev-only census. **b2** = 2 new enum values (Soviet + Nod yards; `STRUCT_CONST`
+becomes Allied-only, `STRUCT_TDFACT` GDI-only) — reuse over 8 fresh types, which would
+re-point every map and site. `Image=` reuse means NO art work. **b3** = the 3 identity
+tables go 4-way on `ActLike` (deploy unit.cpp:124, undeploy building.cpp:5297, spawn
+scenario.cpp:3530) + `Owner=` narrows per yard and WIDENS on TD units, which is what
+finally activates W2(a) — re-run the capture-and-sell test there and expect `rule=prereq`.
+**b4** = the bonus-unit picker (scenario.cpp:3023), the known-issues fold-in.
+
+⚠️ **Survey claims that did NOT survive verification** (2026-07-19) — do not re-fix:
+`house.cpp:6430` AI never suicide-sells its ConYard (`URGENCY_CRITICAL` means "only at max
+urgency", `Check_Raise_Money` tops out at MEDIUM, and `Check_Fire_Sale`'s condition requires
+already having no yard); `team.cpp:2968` unreachable (all 93 shipped maps have empty
+`[TeamTypes]`); `conquer.cpp:651` dead code (launcher owns input, `Keyboard_Process`
+commented out in dllinterface.cpp); `TF_Skirmish_Equivalent`'s missing yard case is CORRECT
+(`AI_Building` never queues a ConYard). Also **units are NOT past bit 31** — `UNIT_MCV`=11,
+`UNIT_TDMCV`=22, first overflow is `UNIT_TDSTNK`=32; only BUILDINGS overflow
+(`STRUCT_TDFACT`=102). Two real finds left open: the crate MCV is faction-blind
+(`cell.cpp:2662` + the `UNITF_MCV` test at `:2520`), and `house.cpp:8371` shifts `UScan` by
+the unit Type with NO `< 32` guard, so `UNIT_TDSTNK`..`UNIT_TSHVR` alias onto bits 0-5 —
+naively adding the guard risks a spurious defeat via the `!UScan` check, so it needs a unit
+shadow table, not a one-liner.
 
 **Naming spec (decided 2026-07-19, Luke).** Every type W2 splits is today a SHARED entry
 with no per-faction name, so the split silently produces duplicate cameos. Rule: **the
@@ -182,15 +210,29 @@ genuinely different buildings. Set `Name=` at split time, not as an afterthought
 | Step | Shared entry today | Split into | Names |
 |---|---|---|---|
 | (b) | `[FACT]` `allies,soviet` + `[TDFACT]` `GoodGuy,BadGuy`, all "Construction Yard" | 4 | Allied / Soviet / GDI / Nod Construction Yard |
-| (b) | `[MCV]` `allies,soviet` + `[TDMCV]` `GoodGuy,BadGuy`, all "Mobile Construction Vehicle" | 4 | Allied / Soviet / GDI / Nod MCV |
 | (c) | `[WEAP]` `soviet,allies` "War Factory" | 2 | Allied / Soviet War Factory |
 | (d) | `[HELIPAD]` `allies,soviet` + `[TDHPAD]` `GoodGuy,BadGuy`, all "Helipad" | 4 | Allied / Soviet / GDI / Nod Helipad |
 
 - (c) is 2-way only: GDI's `[TDWEAP]` is already "Weapons Factory" and Nod builds
   `[TDAFLD]` "Airstrip" — distinct names AND distinct art, leave both alone.
-- MCV/ConYard/Helipad are the four-way cases: within each pair the sprite is identical, so
-  the name is the ONLY discriminator. The MCV matters most — it is a buildable cameo, so a
-  captured factory can offer two visually identical MCVs.
+- ConYard/Helipad are the four-way cases: within each pair the sprite is identical, so the
+  name is the ONLY discriminator.
+- ⚠️ **The MCV row is GONE — MCVs are NOT split (decided 2026-07-19, Luke).** An earlier
+  revision of this spec called the MCV the case that mattered most. It is moot: the deploy
+  hotkey (`COMMAND_CNC_DEPLOY_SELECTED_MCV`, `RTSInputManagerClass` in `ClientG.exe`) keys
+  on vanilla enum identity, so **a new MCV enum value would lose the deploy hotkey for
+  Soviet players, who have it today** — trading a working affordance on a vanilla faction
+  for cosmetic naming. Instead `UNIT_MCV` stays shared Allied+Soviet, `UNIT_TDMCV` stays
+  shared GDI+Nod, and `MCV_Deploy_Building` (unit.cpp:124) dispatches on the house's
+  `ActLike` to pick one of the 4 yards — restoring the idiom that site used before TDMCV
+  became a real enum entry. Costs: an MCV built from a captured enemy factory deploys YOUR
+  faction's yard, not the captured faction's. Accepted. Saves 2 enum values, all of
+  `udata.cpp`, and the duplicate-cameo problem entirely (still one MCV cameo per side).
+- **Harvesters stay as they are** (Luke, 2026-07-19) — the same question was asked for the
+  `a` select-all hotkey and the answer is different, because there the faction-varying part
+  IS the entity: `[TDHARV]` carries `Image=TDHARV` and `Image=` is per-type, so merging to
+  regain the hotkey would render GDI/Nod harvesters with RA art. Splitting is always
+  art-safe (N types can share one `Image=`); MERGING is what costs a sprite.
 - Faction-prefixed names DEVIATE from TD/RA-authentic naming (TD called them plain
   "Construction Yard"). Deliberate, per the balance guardrails — record it in
   `balance-deep-dive.md` when (b) lands.
