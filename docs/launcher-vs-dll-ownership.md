@@ -93,7 +93,7 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 | Radar on/off SFX | DLL emits by name | **Yes (shipped)** | `dllinterface.cpp:2553` (`VOC_RADAR_ON/OFF` branch) |
 | Unit acknowledgment voices | DLL emits by name | **Yes (shipped)** | `dllinterface.cpp:2638` |
 | **Credit counter + tick** | **Launcher** | **No** — global; launcher fires `RAR_SFX_CASHUP1` itself | `credits.cpp:102`; strings `GUI_Credits_Up_Tick`, `RAR_SFX_CASHUP1`; `building-sound-routing.md` |
-| **Classic/remaster view toggle (spacebar)** | **Launcher** | **No** — DLL only gates *availability* | `Legacy_Render_Enabled` `dllinterface.cpp:8792`; no input enum |
+| **Classic/remaster view toggle (spacebar)** | **Launcher** | **No** — and the DLL cannot even *observe* it (see below) | `Legacy_Render_Enabled`; no input enum |
 | Sidebar build icons / cost / progress | DLL supplies per-entry; launcher renders | **Partial** — DLL owns `AssetName`/cost/etc. | `CNCSidebarEntryStruct` |
 | HUD credit/power/timer **values** | DLL supplies values; launcher renders | Values yes, rendering no | `CNCSidebarStruct` |
 | Superweapon `$cost` line suppression | Launcher (`SW_` whitelist) | No | `reference-launcher-superweapon-cost-suppression` |
@@ -181,3 +181,30 @@ placement/MCV deploy. Root cause: every techno with a rules.ini `Name=` HD overr
 exhausts; plus `Text_String` off-by-one rejected the last slot -> NULL -> CTD. Fix (all DLL): tables
 25->128; dedup by id in TechnoTypeClass::Read_INI; inline.h `<`->`<=`; NULL-guard OverrideDisplayName in
 dllinterface.cpp. Only after this could the roster keep growing.
+
+### Classic-mode toggle: the DLL cannot detect it AT ALL (measured 2026-07-19)
+
+Previously recorded as "launcher-owned, DLL only gates availability". In-game testing
+hardened that considerably — a mod cannot even tell whether classic mode is on screen,
+let alone react to it.
+
+- **Refusing the page does not suppress the toggle.** Returning false from
+  `CNC_Get_Visible_Page` makes the launcher switch to classic and render an empty
+  viewport (HUD still drawn over it). The launcher decides toggle availability from its
+  own lobby data and never consults us; EA simply implemented the same `num_humans < 2`
+  rule independently on both sides, which is why it looks like one gate in MP.
+- **The page is requested EVERY FRAME regardless of displayed mode** — the launcher
+  keeps it warm so toggling is instant. So "is the page being asked for?" carries no
+  information about what the player is looking at. Any heuristic built on call
+  frequency, gaps, or streaks will fire during normal HD play.
+- **The spacebar never reaches the DLL.** `DLLExportClass::Get_Input_Key_State` handles
+  only `KN_LCTRL` / `KN_LSHIFT` / `KN_LALT` and returns false for everything else;
+  `INPUT_REQUEST_SPECIAL_KEYS` carries the same three modifiers.
+
+**Consequence:** a notice shown only when the player enters classic mode is not
+implementable from a mod. The available options are an unconditional match-start
+message, or nothing. Anything drawn INTO the classic page is also map-positioned
+(`view_port_width = Map.MapCellWidth * CELL_PIXEL_W`), so it scrolls with the terrain
+rather than sitting on screen; launcher messages via `On_Message` are screen-fixed, but
+`On_Message` only lands when issued from `CNC_Advance_Instance` after the player context
+is set.
