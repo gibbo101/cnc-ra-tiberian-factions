@@ -75,40 +75,41 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Pathfinding / AI cooperation
 
-### Units livelock re-pathing to the cell they already occupy (`src==dst`) — FIX WRITTEN, UNVERIFIED 2026-07-19
-- **Severity:** minor-to-major, not yet pinned (see the measurement caveat below).
-- **Measurement caveat — read before acting on any share figure.** Early in a match the self-cell
-  fallbacks dominate (164/193, ~85%), which is where the "this is most of our pathing failures"
-  read came from. Over a FULL match that inverts: the self-cell count plateaus (706, flat across
-  successive samples) while genuine `src!=dst` failures keep climbing (2975 -> 3014 and rising).
-  So the livelock is real and worth fixing, but it is a minority of total fallbacks over a match,
-  and the plateau suggests affected units stop spinning eventually (killed, or re-tasked) rather
-  than hanging for the whole game. **Sample a full match before quoting a share.**
-- **The bigger open question this surfaced:** genuine `src!=dst` failures run into the thousands per
-  match (harvesters prominent on the Deck: `TDHARV` fallbacks at 1584 and climbing). That is a
-  separate and probably larger issue than the livelock. Not yet investigated.
-- **Status:** root-caused 2026-07-19, fix written in `redalert/foot.cpp`, **not yet playtested**.
-- **Symptom:** `tf_astar.log` fills with fallbacks whose source and destination are the same cell,
-  repeating on a fixed cell indefinitely: `unit=TDE6 src=(58,76) dst=(58,76)`. Measured live at
-  164/193 fallbacks on desktop and reproduced independently on the Deck on a different map. Old
-  pre-heap logs show the same pattern (1452 `E6` occurrences), so it long predates the A* work.
-- **Cause (two parts):**
-  1. `FootClass::Basic_Path` accepts a path only `if (path && path->Cost)` — a path from a cell to
-     itself is legal but **zero-cost**, so it is read as failure. The severity loop then escalates
-     `PathThreshhold` through every level, each returning the same zero-cost path, and gives up.
-  2. `Stop_Driver()` clears `HeadToCoord` but **not `NavCom`**, so the unit re-enters `Basic_Path`
-     every `PathDelay` (`0.016 * 900` ≈ 14 ticks) with the identical destination, forever.
-  The degenerate destination is manufactured by `Map.Nearby_Location()` at `foot.cpp:334`: when the
-  target cell is impassable it substitutes a nearby passable cell in the unit's movement zone, and
-  the unit's own cell trivially qualifies. Engineers hit it hardest because a capture target is a
-  building, i.e. always an impassable cell.
-- **Fix:** reject the unit's own cell as a `Nearby_Location` substitute, and treat a destination
-  equal to the current cell as arrival (`Stop_Driver` + `Assign_Destination(TARGET_NONE)`) instead
-  of retrying. Touches `FootClass`, so it affects every ground unit — playtest accordingly.
-- **Success signal:** the `src==dst` share of A* fallbacks drops to ~0 while genuine `src!=dst`
-  failures stay flat.
+### Units livelock retrying a doomed path forever — ROOT-CAUSED, NO FIX 2026-07-19
+- **Severity:** major (an affected unit stops contributing until killed or re-tasked).
+- **Status:** root cause CONFIRMED. **No fix.** One attempt crashed the game on both machines and
+  was reverted; a second, safer attempt was falsified. All surfaces back on clean `HEAD`.
+- **⭐ Full detail: `docs/path-failure-livelock-design.md`. Read it before touching this** — it
+  records both dead ends, and both are easy to walk straight back into.
+- **Symptom:** the same `(unit, src, dst)` triple repeats in `tf_astar.log` hundreds of times in
+  one match: `TDE1 src=(40,40) dst=(35,33)` x598, `TDE6 src=(28,77) dst=(28,77)` x260. Retry
+  cadence is `PathDelay` ≈ 14 ticks, so ~4 attempts/second/unit. Predates the A* heap work
+  (visible in pre-heap logs).
+- **Cause:** the give-up branch at `infantry.cpp:4346` clears `NavCom` **only when the destination
+  is in a different movement zone**. Movement zones ignore buildings by design, so anything walled
+  off is "same zone" but unreachable and never aborts — and a cell is always in its own zone, so
+  the `src==dst` case can never satisfy the test at all. Vehicles have the same defect by a
+  different route: the patient queue at `drive.cpp:2180` resets `TryTryAgain` every cycle whenever
+  a neighbour holds traffic, which inside a busy base is ~always.
+- **Framing correction (important):** `src==dst` is NOT the bug, just its most visible subtype.
+  The largest livelocks are ordinary reachable-looking destinations. Anything scoped only to
+  self-cell addresses a minority of the problem.
+- **Recommended cure:** a no-progress detector (N consecutive identical failures -> abort
+  regardless of zone), the same pattern already shipped in `harvester-recovery-design.md`. Not a
+  zone fix — zones ignoring buildings is by design and was rejected as a target once already.
+- **Success signal:** repeated-`(unit,src,dst)` counts collapse to single digits while total
+  `src!=dst` failures stay near baseline (~2800-3200/match desktop, ~1500 Deck).
 - **Probably the same root cause as "Deadlock-breaker micro-churn on returners" below** (a `2TNK`
-  observed doing 67× `src==dst`); re-check that entry once this fix has a match behind it.
+  observed doing 67× `src==dst`); re-check that entry when this is fixed.
+
+### Thousands of genuine path failures per match — UNINVESTIGATED 2026-07-19
+- **Severity:** unknown, potentially major (larger in volume than the livelock above).
+- **Detail:** with livelock cases excluded, genuine `src!=dst` path failures still run ~2800-3200
+  per desktop match and ~1500 per Deck match, harvesters prominent (`TDHARV` at 1584 and climbing
+  in one Deck match). Surfaced while measuring the livelock; never investigated on its own.
+  Unclear how much is normal churn (a fallback to the legacy edge-follower is not automatically a
+  failure to move) versus real lost unit-time. **Establish that baseline before treating it as a
+  bug.**
 
 ### Vehicle-vs-vehicle head-on in a 1-tile gap with no escape cell (breaker unreachable from gw==2)
 - **Severity:** minor (self-resolves — the boxed unit eventually dies/clears; never escalates to gridlock).
