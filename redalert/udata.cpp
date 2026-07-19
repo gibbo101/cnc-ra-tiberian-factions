@@ -1566,6 +1566,71 @@ static UnitTypeClass const UnitTsHvr(UNIT_TSHVR,
                                      MISSION_HUNT  // ORDERS: Default order.
 );
 
+/*
+**  SMCV (Soviet MCV) and TDNMCV (Nod MCV) — twins of the Allied and GDI MCVs. Neither source
+**  game drew a second MCV sprite, so both take their art from the twin via Image= in
+**  rules.ini. They exist as their own types so the MCV carries the faction it will deploy
+**  into: an MCV built from a captured enemy factory is that faction's MCV, and deploys that
+**  faction's construction yard, which is what carries a captured tech tree forward.
+*/
+static UnitTypeClass const UnitSovietMcv(UNIT_SMCV,
+                                         TXT_MCV,         // NAME:			Text name of this unit type.
+                                         "SMCV",          // NAME:			IniName.
+                                         ANIM_FBALL1,     // EXPLOSION:	Type of explosion when destroyed.
+                                         REMAP_ALTERNATE, // Sidebar remap logic.
+                                         0x0000,          //	Vertical offset.
+                                         0x0000,          // Primary weapon offset along turret centerline.
+                                         0x0000,          // Primary weapon lateral offset along turret centerline.
+                                         0x0000,          // Secondary weapon offset along turret centerline.
+                                         0x0000,          // Secondary weapon lateral offset along turret centerling.
+                                         true,            // Can this be a goodie surprise from a crate?
+                                         false,           // Always use the given name for the vehicle?
+                                         true,            // Can this unit squash infantry?
+                                         false,           // Does this unit harvest Tiberium?
+                                         false,           // Is invisible to radar?
+                                         false,           // Is it insignificant (won't be announced)?
+                                         false,           // Is it equipped with a combat turret?
+                                         false,           // Does it have a rotating radar dish?
+                                         false,           // Is there an associated firing animation?
+                                         false,           // Must the turret be in a locked down position while moving?
+                                         true,            // Is this a gigundo-rotund-enormous unit?
+                                         false,           // Does the unit have a constant animation?
+                                         false,           // Is the unit capable of jamming radar?
+                                         false,           // Is the unit a mobile gap generator?
+                                         32,              // Rotation stages.
+                                         0,               // Turret center offset along body centerline.
+                                         MISSION_HUNT     // ORDERS:		Default order to give new unit.
+);
+
+static UnitTypeClass const UnitNodMcv(UNIT_TDNMCV,
+                                      TXT_MCV,         // NAME:			Text name of this unit type.
+                                      "TDNMCV",        // NAME:			IniName.
+                                      ANIM_FBALL1,     // EXPLOSION:	Type of explosion when destroyed.
+                                      REMAP_ALTERNATE, // Sidebar remap logic.
+                                      0x0000,          //	Vertical offset.
+                                      0x0000,          // Primary weapon offset along turret centerline.
+                                      0x0000,          // Primary weapon lateral offset along turret centerline.
+                                      0x0000,          // Secondary weapon offset along turret centerline.
+                                      0x0000,          // Secondary weapon lateral offset along turret centerling.
+                                      true,            // Can this be a goodie surprise from a crate?
+                                      false,           // Always use the given name for the vehicle?
+                                      true,            // Can this unit squash infantry?
+                                      false,           // Does this unit harvest Tiberium?
+                                      false,           // Is invisible to radar?
+                                      false,           // Is it insignificant (won't be announced)?
+                                      false,           // Is it equipped with a combat turret?
+                                      false,           // Does it have a rotating radar dish?
+                                      false,           // Is there an associated firing animation?
+                                      false,           // Must the turret be in a locked down position while moving?
+                                      true,            // Is this a gigundo-rotund-enormous unit?
+                                      false,           // Does the unit have a constant animation?
+                                      false,           // Is the unit capable of jamming radar?
+                                      false,           // Is the unit a mobile gap generator?
+                                      32,              // Rotation stages.
+                                      0,               // Turret center offset along body centerline.
+                                      MISSION_HUNT     // ORDERS:		Default order to give new unit.
+);
+
 /***********************************************************************************************
  * UnitTypeClass::Init_Heap -- Initialize the unit type class heap.                            *
  *                                                                                             *
@@ -1633,6 +1698,8 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTdArty);    // UNIT_TDARTY
     new UnitTypeClass(UnitTdVice);    // UNIT_TDVICE
     new UnitTypeClass(UnitTsHvr);     // UNIT_TSHVR (TS-spike Hover MLRS)
+    new UnitTypeClass(UnitSovietMcv); // UNIT_SMCV  (Soviet MCV)
+    new UnitTypeClass(UnitNodMcv);    // UNIT_TDNMCV (Nod MCV)
 }
 
 /***********************************************************************************************

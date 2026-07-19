@@ -1548,6 +1548,13 @@ typedef enum StructType : char
     STRUCT_TDSTEALTH, // Nod Stealth Generator (reuses GAP sprite; cloaks friendly buildings+units in radius). bdata.cpp / building.cpp driver.
     STRUCT_TDFBNK,    // Nod Flame Bunker (clone of PBOX, Owner=BadGuy) — anti-infantry TDFire flame weapon (range 4). bdata.cpp ClassFlameBunker.
     STRUCT_TSPOWR,    // TS-spike: Tiberian Sun GDI Power Plant (GAPOWR art) — clone of ClassPower (2x2, Power in rules.ini). HD-only art from the TS SHP; POWR donor ImageData/BuildupData.
+    STRUCT_TDNFACT,   // Nod Construction Yard. Twin of STRUCT_TDGFACT (Image=TDFACT, one sprite); separate type so the BUILDING carries the faction. LAST Tiberian-era entry — see STRUCT_TIBERIAN_LAST.
+
+    /*
+    **	Red Alert side additions go BELOW the Tiberian-era marker, so they do not inherit
+    **	TD construction/place-down audio by enum position.
+    */
+    STRUCT_SFACT, // Soviet Construction Yard. Twin of STRUCT_AFACT (Image=FACT, one sprite).
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
@@ -1563,7 +1570,7 @@ typedef enum StructType : char
     **	marker only when appending another TD/TS entity. Testing the block by IniName prefix
     **	instead would be wrong: RA's own Tesla coil is "TSLA".
     */
-    STRUCT_TIBERIAN_LAST = STRUCT_TSPOWR
+    STRUCT_TIBERIAN_LAST = STRUCT_TDNFACT
 } StructType;
 
 /*
@@ -1793,6 +1800,8 @@ typedef enum UnitType : char
     UNIT_TDARTY,            // TD Artillery (ARTY, "Nod Artillery") — Nod-only, no prereq (build level 6), turret-less (body aims, slow ROT 2), fires TD155mm (BULLET_TDHESHELL arcing, dmg 150). udata.cpp UnitArty.
     UNIT_TDVICE,            // TD Visceroid (VICE) — tiberium creature, NOT buildable; spawns when infantry die in tiberium. Tracked, turret-less, squashes infantry, constant anim, WEAPON_TDCHEM spray, ARMOR_WOOD, STR 150, MISSION_HUNT. HEALS on tiberium. udata.cpp UnitVisceroid.
     UNIT_TSHVR,             // TS-spike: Tiberian Sun Hover MLRS (HVR) — GDI, turreted missile rack, fires TSHoverMissile (TDSSM AA+AG chain). Art = voxel-rendered HD tileset (tools/ts_extract.py + vxl_render.py pipeline); no classic SHP (2TNK donor ImageData).
+    UNIT_SMCV,              // Soviet MCV (deploys to STRUCT_SFACT). Twin of UNIT_AMCV, Image=MCV — RA drew one MCV sprite for both sides.
+    UNIT_TDNMCV,            // Nod MCV (deploys to STRUCT_TDNFACT). Twin of UNIT_TDGMCV, Image=TDMCV — TD drew one MCV sprite for both sides.
 
     UNIT_COUNT,
     UNIT_FIRST = 0

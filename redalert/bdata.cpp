@@ -1116,6 +1116,42 @@ static BuildingTypeClass const ClassTdFact(STRUCT_TDGFACT,
 );
 
 /*
+**  TDNFACT (Nod Construction Yard) — identical to the GDI yard in every respect; TD drew one
+**  construction yard and both its factions used it. It exists as its own type purely so the
+**  BUILDING can carry the faction, which is what drives the sidebar roster (Update_Buildables
+**  reads the building's ActLike) and therefore what makes a captured yard offer its original
+**  owner's tech tree. Art comes from Image=TDFACT in rules.ini -- one sprite, two types.
+*/
+static BuildingTypeClass const ClassTdNodFact(STRUCT_TDNFACT,
+                                              TXT_NONE,           // Display name (rules.ini Name= overrides).
+                                              "TDNFACT",          // IniName.
+                                              FACING_NONE,        // Foundation direction.
+                                              XYP_COORD(0, 0),    // Exit point unused (not a vehicle factory).
+                                              REMAP_ALTERNATE,    // Sidebar remap logic.
+                                              0x0000,             // Vertical offset.
+                                              0x0000,             // Primary weapon offset.
+                                              0x0000,             // Primary weapon lateral offset.
+                                              false,              // Is this building a fake?
+                                              false,              // Animation rate regulated for constant speed?
+                                              false,              // Always use the given name?
+                                              false,              // Is this a wall type structure?
+                                              false,              // Simple (one frame) damage imagery?
+                                              false,              // Is it invisible to radar?
+                                              true,               // Can the player select this?
+                                              true,               // Is this a legal target?
+                                              false,              // Is this an insignificant building?
+                                              false,              // Theater specific graphic image?
+                                              false,              // Does it have a rotating turret?
+                                              true,               // Can the building be color remapped?
+                                              RTTI_BUILDINGTYPE,  // Produces buildings.
+                                              DIR_N,              // Starting idle frame.
+                                              BSIZE_32,           // 3x2 footprint (TD-authentic — NOT RA's 3x3).
+                                              NULL,               // No preferred exit cell.
+                                              (short const*)List32,
+                                              (short const*)NULL  // No overlap row.
+);
+
+/*
 **  TDAFLD (Nod Airstrip) — 4×2 flat tile, ARMOR_STEEL, capturable, crewed.
 **    Wholesale port of TD's STRUCT_AIRSTRIP per tiberiandawn/bdata.cpp:841
 **    (ClassAirStrip). RTTI_UNITTYPE factory; vehicles delivered via cargo
@@ -1492,6 +1528,41 @@ static BuildingTypeClass const ClassConst(STRUCT_AFACT,
                                           NULL,              // Preferred exit cell list.
                                           (short const*)ListFactory, // OCCUPYLIST:	List of active foundation squares.
                                           (short const*)NULL         // OVERLAPLIST:List of overlap cell offset.
+);
+
+/*
+**  SFACT (Soviet Construction Yard) — a copy of the Allied yard, for the same reason TDNFACT
+**  is a copy of the GDI one: Red Alert drew a single construction yard because it only ever
+**  needed the owner's identity, and the split exists so the BUILDING carries the faction.
+**  Art comes from Image=FACT in rules.ini.
+*/
+static BuildingTypeClass const ClassSovietFact(STRUCT_SFACT,
+                                               TXT_NONE,          // Display name (rules.ini Name= overrides).
+                                               "SFACT",           // IniName.
+                                               FACING_NONE,       // Foundation direction from center of building.
+                                               XYP_COORD(0, 0),   // Exit point for produced units.
+                                               REMAP_ALTERNATE,   // Sidebar remap logic.
+                                               0x0000,            //	Vertical offset.
+                                               0x0000,            // Primary weapon offset along turret centerline.
+                                               0x0000,            // Primary weapon lateral offset along turret centerline.
+                                               false,             // Is this building a fake (decoy?)
+                                               false,             // Animation rate is regulated for constant speed?
+                                               false,             // Always use the given name for the building?
+                                               false,             // Is this a wall type structure?
+                                               false,             // Simple (one frame) damage imagery?
+                                               false,             // Is it invisible to radar?
+                                               true,              // Can the player select this?
+                                               true,              // Is this a legal target for attack or move?
+                                               false,             // Is this an insignificant building?
+                                               false,             // Theater specific graphic image?
+                                               false,             // Does it have a rotating turret?
+                                               true,              // Can the building be color remapped to indicate owner?
+                                               RTTI_BUILDINGTYPE, // The object type produced at this factory.
+                                               DIR_N,             // Starting idle frame to match construction.
+                                               BSIZE_33,          // SIZE:			Building size.
+                                               NULL,              // Preferred exit cell list.
+                                               (short const*)ListFactory, // OCCUPYLIST:	List of active foundation squares.
+                                               (short const*)NULL         // OVERLAPLIST:List of overlap cell offset.
 );
 
 static BuildingTypeClass const
@@ -3872,7 +3943,7 @@ static BuildingTypeClass const ClassTdBlossom(STRUCT_TDBLOSSOM,
  *=============================================================================================*/
 bool BuildingTypeClass::Is_Construction_Yard(void) const
 {
-    return (Type == STRUCT_AFACT || Type == STRUCT_TDGFACT);
+    return (Type == STRUCT_AFACT || Type == STRUCT_SFACT || Type == STRUCT_TDGFACT || Type == STRUCT_TDNFACT);
 }
 
 /***********************************************************************************************
@@ -3917,6 +3988,8 @@ long TF_Building_Scan_Bit(int btype)
         return (STRUCTF_RADAR);
 
     case STRUCT_TDGFACT:
+    case STRUCT_TDNFACT:
+    case STRUCT_SFACT:
         return (STRUCTF_AFACT);
 
     case STRUCT_TDPROC:
@@ -4071,6 +4144,8 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdStealth); // STRUCT_TDSTEALTH (Nod Stealth Generator)
     new BuildingTypeClass(ClassFlameBunker); // STRUCT_TDFBNK (Nod Flame Bunker)
     new BuildingTypeClass(ClassTsPowr);      // STRUCT_TSPOWR (TS-spike GDI Power Plant)
+    new BuildingTypeClass(ClassTdNodFact);   // STRUCT_TDNFACT (Nod Construction Yard)
+    new BuildingTypeClass(ClassSovietFact);  // STRUCT_SFACT   (Soviet Construction Yard)
 }
 
 /***********************************************************************************************
@@ -4177,6 +4252,10 @@ void BuildingTypeClass::One_Time(void)
         // TD-authentic per tiberiandawn/bdata.cpp:3792-3793.
         {STRUCT_TDGFACT, BSTATE_ACTIVE, 4, 20, 3},
         {STRUCT_TDGFACT, BSTATE_IDLE, 0, 4, 3},
+        // Faction twins share their original's animation timings -- same sprite, same frames.
+        {STRUCT_TDNFACT, BSTATE_ACTIVE, 4, 20, 3},
+        {STRUCT_TDNFACT, BSTATE_IDLE, 0, 4, 3},
+        {STRUCT_SFACT, BSTATE_ACTIVE, 0, 26, 3},
         // M4 Tier 3 — TDPROC harvester dock state machine. TD-authentic per
         // tiberiandawn/bdata.cpp:3801-3805. IDLE 0-5 normal; FULL 6-11 plays
         // when Capacity is reached (flashing lights); ACTIVE 12-18 (docking);
