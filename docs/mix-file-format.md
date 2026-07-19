@@ -135,12 +135,34 @@ Different lineage, name-based. Reader `scripts/meg_extract.py` (format from `SOU
 |---|---|---|---|---|---|
 | `scripts/mix_tools.py` | Py | classic | **R+W** | resolves | packs `TFASSETS.MIX`; `ww_crc` lives here |
 | `scripts/ra_mix_extract.py` | Py | encrypted + classic | R | resolves | recursive extract; needs `cryptography` |
+| `scripts/mix_plain_alt.py` | Py | **alt header, unencrypted** | R | resolves | the third flavour — see the note below; how RA campaign scenario INIs come out |
 | `scripts/mix_namedb.py` | Py | — | resolver | — | parses the 29k XCC table |
 | `scripts/meg_extract.py` | Py | MEG | R | native | Remastered bundles |
 | `scripts/meg_pack.py` | Py | MEG | **R+W** | preserves | byte-identical round-trip; repack `CONFIG.MEG` with edited XML (no integrity check → game accepts it) |
 | `tools/mixtool/` | C++ | both, **incl. encrypted writer** | R+W | uses DB | has private key + `RandomStraw` to author encrypted mixes |
 
 **We ship our own mixes (e.g. `TFASSETS.MIX`) as *classic / unencrypted*** — the engine reads them fine and `mix_tools.py` can write them. Authoring an *encrypted* mix would require the C++ `tools/mixtool` path; we have no reason to.
+
+### 8.1 The third flavour: alt header with the encryption bit CLEAR (found 2026-07-19)
+
+There are **three** shapes in the wild, not two, and the middle one had no reader until the
+campaign spike needed it:
+
+| Shape | Header | Reader |
+|---|---|---|
+| classic | count first, no flag word | `mix_tools.py` |
+| **alt header, plaintext** | `first=0`, flags **without** `0x02` | **`mix_plain_alt.py`** |
+| alt header, encrypted | `first=0`, flags **with** `0x02` | `ra_mix_extract.py` |
+
+The Remastered RA campaign archives are the middle shape:
+`Data/CNCDATA/RED_ALERT/{CD1,AFTERMATH,COUNTERSTRIKE}/MAIN.MIX`. Both existing readers fail
+on them and the failure is *misleading* — the classic reader reports `0 files` (it reads the
+zero `first` field as a count) and `ra_mix_extract.py` says "could not parse as a mix
+(encrypted or classic)". Neither means the archive is broken.
+
+**Campaign scenario INIs live two levels down:** `MAIN.MIX` → `general.mix` → `scg43ea.ini`.
+That is the extraction path for hijacking a Counterstrike/Aftermath slot
+(`campaign-tabs-research.md`), so this tool is a campaign-work dependency, not a one-off.
 
 ---
 
