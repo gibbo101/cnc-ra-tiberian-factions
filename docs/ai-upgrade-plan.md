@@ -193,6 +193,23 @@ split (re-split shared TDFACT/TDMCV into GDI/Nod + add Allied/Soviet, incl. spaw
 3. **Stage-aware unit valuation + counter-composition** (vs scouted intel only).
 4. **Counter-building** (AI Boost mechanism, generalized 4-faction, intel-filtered).
 5. **Power management** (sell-excess / build-ahead margins — AI Boost pattern).
+6. **Build order has no economic staging — repair bay lands far too early**
+   (player-observed 2026-07-19). GDI sometimes builds the service depot **before its
+   first refinery**; both GDI and Nod build it before vehicle production and before a
+   second refinery.
+   - **Cause (house.cpp ~6957):** the TDFIX build choice is emitted at `URGENCY_HIGH`
+     for GDI / `URGENCY_MEDIUM` for Nod. It was originally `URGENCY_LOW` and therefore
+     never built at all — fatal for GDI, whose Mammoth Tank is prereq-gated on TDFIX —
+     so it was promoted. That fixed "never" and produced "immediately": HIGH outranks
+     the refinery, and Nod's MEDIUM still beats a second refinery. Likely more visible
+     since the uniform top-urgency tie-break (`d4f3da7`), which lets it win cycles it
+     previously lost by scan order.
+   - **Fix direction: gate on economy, don't just lower urgency.** Dropping back to LOW
+     re-breaks the Mammoth tier. Instead make eligibility conditional — require a
+     refinery (ideally a war factory and/or second refinery) before the choice is
+     emitted at all, then keep it high so it unlocks promptly once the economy justifies
+     it. Generalises to the wider W3 point: the build planner has urgency but no notion
+     of *stage*, so any promotion becomes "build it first".
 
 ### W4 — Attack quality
 Research complete (agent report, §7). Two routes for staging-then-blob:
