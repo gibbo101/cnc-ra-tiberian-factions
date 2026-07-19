@@ -6731,6 +6731,17 @@ int HouseClass::AI_Building(void)
         bool tf_td = (ActLike == HOUSE_GOOD || ActLike == HOUSE_BAD);
         int tf_proc = TF_Skirmish_Type(STRUCT_REFINERY, ActLike);
         unsigned tf_refqty = BQuantity[STRUCT_REFINERY] + (tf_proc >= 0 ? BQuantity[tf_proc] : 0);
+        // GDI/Nod tier-2 economy gate, shared by the comm centre, the tech centre and the
+        // repair bay. Each is affordable long before it is affordable *and* worth having,
+        // and the vanilla urgencies race them against the war factory, so a house can tech
+        // up while still on one harvester's income and never field an army. Requiring an
+        // expanded economy first orders the build as refinery -> production -> tech.
+        // The refinery branch below is hard-blocked while tiberium is short, so a house on
+        // a depleted map can never reach the second refinery. Treat that as satisfying the
+        // economy requirement rather than locking the upper tier away for the whole match.
+        int tf_weap_t = TF_Skirmish_Type(STRUCT_WEAP, ActLike);
+        unsigned tf_weapqty = BQuantity[STRUCT_WEAP] + (tf_weap_t >= 0 ? BQuantity[tf_weap_t] : 0);
+        bool tf_economy_ready = ((tf_refqty >= 2 || IsTiberiumShort) && tf_weapqty >= 1);
         // Tiberian Factions: count harvesters the RELIABLE way. UQuantity reads 0 even
         // with live, earning harvesters because a TD harvester docking at its refinery is
         // Limbo()'d + Attach()'d into the building as cargo (unit.cpp ~1830) -> dropped
@@ -6939,7 +6950,7 @@ int HouseClass::AI_Building(void)
         if (tf_td) {
             int tf_hq = TF_Skirmish_Type(STRUCT_RADAR, ActLike);
             current = BQuantity[STRUCT_RADAR] + (tf_hq >= 0 ? BQuantity[tf_hq] : 0);
-            if (current < 1 && Power_Fraction() >= 1) {
+            if (current < 1 && tf_economy_ready && Power_Fraction() >= 1) {
                 b = TF_Skirmish_Pick(STRUCT_RADAR, ActLike);
                 if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                     choiceptr = BuildChoice.Alloc();
@@ -6956,7 +6967,12 @@ int HouseClass::AI_Building(void)
             */
             int tf_repair = TF_Skirmish_Type(STRUCT_REPAIR, ActLike);
             current = BQuantity[STRUCT_REPAIR] + (tf_repair >= 0 ? BQuantity[tf_repair] : 0);
-            if (current < 1 && Power_Fraction() >= 1) {
+            // A repair bay only pays for itself once there are vehicles to repair, so it
+            // shares the economy gate above. That gate lives here rather than in the
+            // urgency because URGENCY_LOW is never reached at all (the consumer builds one
+            // highest-urgency pick per cycle and the defense branch holds MEDIUM), which
+            // would strand the GDI Mammoth behind a prerequisite that never gets built.
+            if (current < 1 && tf_economy_ready && Power_Fraction() >= 1) {
                 b = TF_Skirmish_Pick(STRUCT_REPAIR, ActLike);
                 if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                     choiceptr = BuildChoice.Alloc();
@@ -7102,11 +7118,12 @@ int HouseClass::AI_Building(void)
         }
 
         /*
-        **	Build a tech center as soon as possible.
+        **	Build a tech center as soon as possible -- but for GDI/Nod, not before the
+        **	economy that pays for what the tech unlocks. RA houses keep vanilla timing.
         */
         int tf_tech = TF_Skirmish_Type(STRUCT_ADVANCED_TECH, ActLike);
         current = BQuantity[STRUCT_ADVANCED_TECH] + BQuantity[STRUCT_SOVIET_TECH] + (tf_tech >= 0 ? BQuantity[tf_tech] : 0);
-        if (current < 1) {
+        if (current < 1 && (!tf_td || tf_economy_ready)) {
             b = TF_Skirmish_Pick(STRUCT_ADVANCED_TECH, ActLike);
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome) && Power_Fraction() >= 1) {
                 choiceptr = BuildChoice.Alloc();
