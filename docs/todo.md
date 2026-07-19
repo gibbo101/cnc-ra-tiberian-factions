@@ -51,9 +51,22 @@ built the GDI/Nod naval units and which produces genuinely independent entities.
    cameos (mod-logo emblems, top-left) on 18 entries incl. war factories/airfields/naval +
    colliding tank pairs. Litmus test PASSED except Soviet-MCV-via-capture, which is the
    known (c) gap.
-6. **NEXT: (c) War Factory split** (AWEAP/SWEAP fresh pipeline entities — closes the headline
-   capture case; survey ~46 STRUCT_WEAP sites incl. AI base queues + WEAP2 overlay), then
-   b4 bonus-unit picker, then (d) Helipad (badges for helipads + RA WF land with their splits).
+6. ~~(c) War Factory split.~~ ✅ **SHIPPED + PLAYER-VERIFIED 2026-07-19/20** (`5ffa98d`) —
+   AWEAP/SWEAP fresh pipeline entities incl. AWEAP2/SWEAP2 door overlays; captured
+   yard → faction war factory → faction MCV verified in play ("everything works well").
+7. ~~(d) Helipad split.~~ ✅ **SHIPPED 2026-07-20 (`3492bf1`), deployed, awaiting play-verify** —
+   AHPAD/SHPAD/TDGHPAD/TDNHPAD; free heli follows the PAD's faction; universal landing kept;
+   `Is_Helipad()` predicate. **Every production building is now faction-split** — the capture
+   chain runs yard → war factory → helipad in all four directions.
+8. **Cameo badge wave (same sessions):** mod-logo emblems top-left on 32 cameos — 4 MCVs,
+   yards' buildables, war factories, airstrips/airfields, naval, helipads, turret pair,
+   pillbox/flame-bunker pair, tank pairs (Mammoth/Light/Medium). Rule: faction-unique
+   entries only, shared entries stay clean. On-map sprite badges tried and REVERTED
+   (Luke's call; `scripts/badge_sprite_art.py` kept for reuse).
+9. **NEXT: b4 bonus-unit picker** (scenario.cpp:3023 known-issues fold-in), the W2 docs
+   pass (rewrite ai-upgrade-plan §W2 b-blocks to match shipped reality), and the
+   DOCKLANDS A* strong test. The four-MCV dev lever (`tf_mcv_test.flag`) is still ON in
+   the desktop prefix — delete the flag file when capture testing is done.
 
 ⚠️ `ai-upgrade-plan.md` §W2 still contains superseded claims (the `Name=`-drives-sidebar naming
 spec, the reuse-not-split MCV decision, the `UnitClass::ActLike` b3 note). Postmortem §6 lists
