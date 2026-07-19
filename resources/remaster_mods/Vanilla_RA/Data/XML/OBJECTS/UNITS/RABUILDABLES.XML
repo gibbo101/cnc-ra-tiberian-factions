@@ -9,7 +9,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_IRON</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_IRON_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_IronCurtain</BuildIcon>
+			<BuildIcon>BuildIcon_IRON</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -25,7 +25,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_ATEK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_ATEK_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_AlliedTechCenter</BuildIcon>
+			<BuildIcon>BuildIcon_ATEK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -33,7 +33,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_PDOX</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_PDOX_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Chronosphere</BuildIcon>
+			<BuildIcon>BuildIcon_PDOX</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -41,7 +41,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_WEAP</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_WEAP_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_WarFactory</BuildIcon>
+			<BuildIcon>BuildIcon_WEAP</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -73,7 +73,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_HBOX</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_HBOX_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_CamoPillbox</BuildIcon>
+			<BuildIcon>BuildIcon_HBOX</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>		
 	
@@ -81,7 +81,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_TSLA</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_TSLA_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_TeslaCoil</BuildIcon>
+			<BuildIcon>BuildIcon_TSLA</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -97,7 +97,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_AGUN</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_AGUN_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_AAGun</BuildIcon>
+			<BuildIcon>BuildIcon_AGUN</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -105,7 +105,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_FTUR</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_FTUR_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_FlameTower</BuildIcon>
+			<BuildIcon>BuildIcon_FTUR</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -121,7 +121,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_PROC</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_PROC_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Refinery</BuildIcon>
+			<BuildIcon>BuildIcon_PROC</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -129,7 +129,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_SILO</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SILO_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Silo</BuildIcon>
+			<BuildIcon>BuildIcon_SILO</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 
@@ -137,7 +137,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_HPAD</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_HPAD_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Helipad</BuildIcon>
+			<BuildIcon>BuildIcon_HPAD</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 
@@ -145,7 +145,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_DOME</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_DOME_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_RadarDome</BuildIcon>
+			<BuildIcon>BuildIcon_DOME</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -153,7 +153,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_GAP</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_GAP_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_GapGenerator</BuildIcon>
+			<BuildIcon>BuildIcon_GAP</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -169,7 +169,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_MSLO</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_MSLO_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_MissileSilo</BuildIcon>
+			<BuildIcon>BuildIcon_MSLO</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -185,7 +185,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_POWR</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_POWR_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_PowerPlant</BuildIcon>
+			<BuildIcon>BuildIcon_POWR</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -193,7 +193,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_APWR</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_APWR_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_AdvPower</BuildIcon>
+			<BuildIcon>BuildIcon_APWR</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -201,7 +201,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_STEK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_STEK_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_SovietTechCenter</BuildIcon>
+			<BuildIcon>BuildIcon_STEK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 
@@ -209,7 +209,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_BARR</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_BARR_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_SovietBarracks</BuildIcon>
+			<BuildIcon>BuildIcon_BARR</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 
@@ -217,7 +217,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_TENT</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_TENT_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_AlliedBarracks</BuildIcon>
+			<BuildIcon>BuildIcon_TENT</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>		
 
@@ -225,7 +225,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_KENN</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_KENN_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Kennel</BuildIcon>
+			<BuildIcon>BuildIcon_KENN</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -233,7 +233,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_FIX</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_FIX_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_ServiceDepot</BuildIcon>
+			<BuildIcon>BuildIcon_FIX</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -241,7 +241,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_SBAG</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SBAG_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Sandbags</BuildIcon>
+			<BuildIcon>BuildIcon_SBAG</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -249,7 +249,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_BRIK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_BRIK_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_ConcreteWall</BuildIcon>
+			<BuildIcon>BuildIcon_BRIK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -257,7 +257,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_FENC</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_FENC_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_BarbedWire</BuildIcon>
+			<BuildIcon>BuildIcon_FENC</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -266,7 +266,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_CYCL</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_CYCL_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_ChainLinkFence</BuildIcon>
+			<BuildIcon>BuildIcon_CYCL</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -339,7 +339,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_V2RL</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_V2RL_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_V2Rocket</BuildIcon>
+			<BuildIcon>BuildIcon_V2RL</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -355,7 +355,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_3TNK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_3TNK_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_HeavyTank</BuildIcon>
+			<BuildIcon>BuildIcon_3TNK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -379,7 +379,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_MRJ</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_MRJ_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_RadarJammer</BuildIcon>
+			<BuildIcon>BuildIcon_MRJ</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -387,7 +387,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_MGG</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_MGG_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_MobilieGapGen</BuildIcon>
+			<BuildIcon>BuildIcon_MGG</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -395,7 +395,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_ARTY</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_ARTY_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Artillery</BuildIcon>
+			<BuildIcon>BuildIcon_ARTY</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -403,7 +403,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_HARV</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_HARV_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_OreTruck</BuildIcon>
+			<BuildIcon>BuildIcon_HARV</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -411,7 +411,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_MCV</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_MCV_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_MCV</BuildIcon>
+			<BuildIcon>BuildIcon_MCV</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -419,7 +419,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_JEEP</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_JEEP_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Ranger</BuildIcon>
+			<BuildIcon>BuildIcon_JEEP</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -427,7 +427,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_APC</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_APC_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Apc</BuildIcon>
+			<BuildIcon>BuildIcon_APC</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -435,7 +435,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_MNLY</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_MNLY_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_MineLayer</BuildIcon>
+			<BuildIcon>BuildIcon_MNLY</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -467,7 +467,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_LST</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_LST_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Transport</BuildIcon>
+			<BuildIcon>BuildIcon_LST</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -483,7 +483,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_DOG</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_DOG_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_AttackDog</BuildIcon>
+			<BuildIcon>BuildIcon_DOG</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -491,7 +491,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_E1</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_E1_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_RifleInfantry</BuildIcon>
+			<BuildIcon>BuildIcon_E1</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 
@@ -499,7 +499,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_E2</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_E2_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Grenadier</BuildIcon>
+			<BuildIcon>BuildIcon_E2</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -507,7 +507,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_E3</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_E3_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_RocketSoldier</BuildIcon>
+			<BuildIcon>BuildIcon_E3</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -515,7 +515,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_E4</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_E4_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Flamethrower</BuildIcon>
+			<BuildIcon>BuildIcon_E4</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -523,7 +523,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_E6</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_E6_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Engineer</BuildIcon>
+			<BuildIcon>BuildIcon_E6</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -531,7 +531,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_SPY</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_SPY_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Spy</BuildIcon>
+			<BuildIcon>BuildIcon_SPY</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -539,7 +539,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_THF</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_THF_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Thief</BuildIcon>
+			<BuildIcon>BuildIcon_THF</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -547,7 +547,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_E7</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_E7_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Tanya</BuildIcon>
+			<BuildIcon>BuildIcon_E7</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -555,7 +555,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_MEDI</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_MEDI_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Medic</BuildIcon>
+			<BuildIcon>BuildIcon_MEDI</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -581,7 +581,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_MIG</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_MIG_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Mig</BuildIcon>
+			<BuildIcon>BuildIcon_MIG</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -589,7 +589,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_YAK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_YAK_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Yak</BuildIcon>
+			<BuildIcon>BuildIcon_YAK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -597,7 +597,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_TRAN</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_TRAN_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Chinook</BuildIcon>
+			<BuildIcon>BuildIcon_TRAN</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -605,7 +605,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_HELI</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_HELI_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Longbow</BuildIcon>
+			<BuildIcon>BuildIcon_HELI</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -613,7 +613,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_HIND</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_HIND_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Hind</BuildIcon>
+			<BuildIcon>BuildIcon_HIND</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -1388,7 +1388,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_POWER_PLANT</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_POWER_PLANT</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_PowerPlant</BuildIcon>
+			<BuildIcon>BuildIcon_TDNUKE</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1396,7 +1396,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_ADV_POWER_PLANT</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_ADV_POWER_PLANT</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_AdvPowerPlant</BuildIcon>
+			<BuildIcon>BuildIcon_TDNUK2</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1404,7 +1404,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_REFINERY</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_REFINERY</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Refinery</BuildIcon>
+			<BuildIcon>BuildIcon_TDPROC</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1412,7 +1412,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_SILO</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_SILO</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Silo</BuildIcon>
+			<BuildIcon>BuildIcon_TDSILO</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1420,7 +1420,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_BARRACKS</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_BARRACKS</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Barracks</BuildIcon>
+			<BuildIcon>BuildIcon_TDPYLE</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1428,7 +1428,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_COMM_CENTER</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_COMM_CENTER</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_CommCenter</BuildIcon>
+			<BuildIcon>BuildIcon_TDHQ</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1436,7 +1436,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_REPAIR_FACILITY</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_REPAIR_FACILITY</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_RepairFacility</BuildIcon>
+			<BuildIcon>BuildIcon_TDFIX</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1452,7 +1452,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_HELIPAD</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_HELIPAD</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Helipad</BuildIcon>
+			<BuildIcon>BuildIcon_TDHPAD</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1460,7 +1460,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_GUARD_TOWER</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_GUARD_TOWER</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_GuardTower</BuildIcon>
+			<BuildIcon>BuildIcon_TDGTWR</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1468,7 +1468,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_ADV_GUARD_TOWER</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_ADV_GUARD_TOWER</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_AdvGuardTower</BuildIcon>
+			<BuildIcon>BuildIcon_TDATWR</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1476,7 +1476,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_ADV_COMM_CENTER</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_ADV_COMM_CENTER</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_AdvCommCtr</BuildIcon>
+			<BuildIcon>BuildIcon_TDEYE</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1484,7 +1484,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_MCV</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_MCV</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_MCV</BuildIcon>
+			<BuildIcon>BuildIcon_TDMCV</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1492,7 +1492,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_HARVESTER</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_HARVESTER</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Harvester</BuildIcon>
+			<BuildIcon>BuildIcon_TDHARV</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1508,7 +1508,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_NOD_HAND_OF_NOD</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_NOD_HAND_OF_NOD</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_HandOfNod</BuildIcon>
+			<BuildIcon>BuildIcon_TDHAND</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1540,7 +1540,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_NOD_OBELISK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_NOD_OBELISK</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Obelisk</BuildIcon>
+			<BuildIcon>BuildIcon_TDOBLI</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1548,7 +1548,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_NOD_TEMPLE_OF_NOD</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_NOD_TEMPLE_OF_NOD</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_TempleOfNod</BuildIcon>
+			<BuildIcon>BuildIcon_TDTMPL</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1556,7 +1556,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_MINIGUNNER</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_MINIGUNNER</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Minigunner</BuildIcon>
+			<BuildIcon>BuildIcon_TDE1</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1564,7 +1564,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_GRENADIER</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_GRENADIER</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Grenadier</BuildIcon>
+			<BuildIcon>BuildIcon_TDE2</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1572,7 +1572,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_ROCKET_SOLDIER</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_ROCKET_SOLDIER</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_RocketSoldier</BuildIcon>
+			<BuildIcon>BuildIcon_TDE3</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1580,7 +1580,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_FLAMETHROWER</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_FLAMETHROWER</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Flamethrower</BuildIcon>
+			<BuildIcon>BuildIcon_TDE4</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1588,7 +1588,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_CHEM_WARRIOR</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_CHEM_WARRIOR</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_ChemWarrior</BuildIcon>
+			<BuildIcon>BuildIcon_TDE5</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1596,7 +1596,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_ENGINEER</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_ENGINEER</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Engineer</BuildIcon>
+			<BuildIcon>BuildIcon_TDE6</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1604,7 +1604,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_COMMANDO</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_COMMANDO</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Commando</BuildIcon>
+			<BuildIcon>BuildIcon_TDRMBO</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1636,7 +1636,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_FLAME_TANK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_FLAME_TANK</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_FlameTank</BuildIcon>
+			<BuildIcon>BuildIcon_TDFTNK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1644,7 +1644,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_RECON_BIKE</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_RECON_BIKE</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_ReconBike</BuildIcon>
+			<BuildIcon>BuildIcon_TDBIKE</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1652,7 +1652,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_HUMVEE</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_HUMVEE</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Jeep</BuildIcon>
+			<BuildIcon>BuildIcon_TDJEEP</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1660,7 +1660,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_NOD_BUGGY</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_NOD_BUGGY</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_NodBuggy</BuildIcon>
+			<BuildIcon>BuildIcon_TDBGGY</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1668,7 +1668,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_APC</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_APC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_APC</BuildIcon>
+			<BuildIcon>BuildIcon_TDAPC</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1676,7 +1676,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_STEALTH_TANK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_STEALTH_TANK</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_StealthTank</BuildIcon>
+			<BuildIcon>BuildIcon_TDSTNK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1684,7 +1684,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_MLRS</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_MLRS</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_RocketLauncher</BuildIcon>
+			<BuildIcon>BuildIcon_TDMLRS</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1692,7 +1692,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_SSM_LAUNCHER</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_SSM_LAUNCHER</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_SsmLauncher</BuildIcon>
+			<BuildIcon>BuildIcon_TDMSAM</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1700,7 +1700,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_ARTILLERY</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_ARTILLERY</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Artillery</BuildIcon>
+			<BuildIcon>BuildIcon_TDARTY</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1708,7 +1708,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_HELICOPTER</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_HELICOPTER</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Apache</BuildIcon>
+			<BuildIcon>BuildIcon_TDHELI</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1716,7 +1716,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_ORCA</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_ORCA</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Orca</BuildIcon>
+			<BuildIcon>BuildIcon_TDORCA</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1732,7 +1732,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TDA10</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TDA10_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_A10</BuildIcon>
+			<BuildIcon>BuildIcon_TDA10</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1788,7 +1788,7 @@
 			<CNCEncyclopediaComponent>
 				<ObjectNameTextID>TEXT_STRUCTURE_TDSTEAL</ObjectNameTextID>
 				<ObjectDescriptionTextID>TEXT_STRUCTURE_TDSTEAL_DESC</ObjectDescriptionTextID>
-				<BuildIcon>BuildIcon_TS_StealthGen</BuildIcon>
+				<BuildIcon>BuildIcon_TDSTEAL</BuildIcon>
 			</CNCEncyclopediaComponent>
 		</ObjectTypeClass>
 
