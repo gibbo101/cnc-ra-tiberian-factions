@@ -87,9 +87,13 @@ the IniName-rename trap: `docs/lobby-difficulty-ram-spike.md`. Remaining:
    state is ClientG memory only — which the phase-A RAM read (shipped same day, see block
    above) now extracts; `tf_ai_difficulty.txt` is the fallback lever. Don't re-chase the
    settings file.
-2. **W1.2 unit-visibility leak suspicion:** zero blind-hunt SCOUT probe lines ever fired —
-   dispatched scouts always found targets instantly, suggesting enemy UNITS are evaluable
-   from match start (mask positionless / pre-seeded?). Buildings fog correctly. Verify.
+2. **W1.2 unit-visibility leak suspicion — ✅ DOES NOT REPRODUCE (overnight 2026-07-19,
+   4 desktop matches):** blind-hunt scouting fired healthily every match (83 SCOUT-DISPATCH,
+   130 blind probe moves; first dispatches ~F2290, probes to undiscovered dests). Enemy units
+   are NOT evaluable at match start; the fair-fog gate behaves as designed. The 2026-07-18
+   zero-probe observation was that session only — plausibly its lobby/stale-roster state (see
+   the stale-apply note below). Documented residual stands (once-seen units stay evaluable
+   while fogged — positionless mask); no new leak.
 3. **H14 APWR loop observation:** USSR AI won `APWR(u2)` 20+ consecutive build decisions
    (turtle match). Legit power-hunger or overbuild loop — check base for APWR farms.
 4. Rotate `MOD_DEBUG_AI.txt` between matches during diagnostic sessions (two matches
@@ -100,6 +104,24 @@ the IniName-rename trap: `docs/lobby-difficulty-ram-spike.md`. Remaining:
 
 Found while surveying pathfinding for `docs/megamaps-feasibility.md`. **Independent of map size —
 live on the current 128x128 build**, and squarely in the AI milestone's path.
+
+> **Live data (overnight diagnostic, 2026-07-19, 4 desktop matches — partial repro):**
+> - **The wedged-repeat shape reproduces:** E6 engineers dominate the fallback log (1,180 of
+>   ~1,300 fallback lines), with the SAME unit+src failing up to **196 consecutive times** at
+>   fixed cells ((105,57), (91,118), (96,21), (99,23), (9,70)) — repeated failed searches from
+>   stuck units, i.e. exactly the input the missing expansion cap makes expensive. Worth
+>   asking WHY AI engineers path-fail on repeat (capture-target unreachable?) as its own lead.
+> - Failure rates ran 12–47% of all A* searches per match (best on the small desert map,
+>   worst in the final session: success=578 / fallback=518).
+> - **No `src==dst` spins** (0 across all matches) and no harvester blacklists — but matches
+>   only reached early-game: **a solo diagnostic match ends when the human is eliminated, and
+>   post-Phase-1 Hard AIs rush an idle human inside 2–4 minutes** (Destroy Structures; razed
+>   ConYard = match over, leading AI declared winner). **Fix for future long runs (Luke,
+>   2026-07-19): use DOCKLANDS with the human alone on one side of the river and all AIs on
+>   the other** — the water barrier is what let the July 17–18 sessions reach 40k+ frames
+>   unattended. These runs used a fresh Super Bridgehead lobby (open land routes), which is
+>   why they died early; that's a lobby-setup mistake, not a change in AI behaviour.
+> - Full logs archived: session scratchpad `tf_astar.overnight.log` / `MOD_DEBUG_AI.overnight.txt`.
 
 - **Open-list insert is O(n).** `findpath.cpp:715` uses `open_list.insert(std::lower_bound(...))`
   into a `std::vector` — a sorted-vector priority queue with linear insertion, so the search is

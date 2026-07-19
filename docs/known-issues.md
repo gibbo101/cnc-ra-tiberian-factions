@@ -21,6 +21,15 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 - **Fix path:** rides scanner v4 (read the live lobby model once probe v3 locates it); interim
   option if v4 stalls: gate per-slot apply out of LAN lobbies if they're distinguishable from solo
   skirmish DLL-side.
+- **Scope update (overnight desktop session 2026-07-19): the stale record also hits the FIRST
+  SOLO SKIRMISH after a LAN session, then self-corrects.** Match 1 of the night launched with the
+  rig-night roster in `CNC_Set_Multiplayer_Data` (8 slots: 2 human Steam IDs incl. a ghost second
+  human, 6 AIPLAYERs vs the actual 1+5 lobby) → `humans=2` tripped the determinism guard,
+  `ram_slots=0`, my Medium slot pick ignored, ALL 6 AIs default-Hard, and 6 AI houses spawned
+  (one more than the lobby had). Matches 3–4 the same night were clean (`humans=1 ram_slots=5`,
+  per-slot Medium+Hard applied correctly) — so the poisoned record is served once and refreshed
+  by the next lobby write. Evidence: scratchpad `MOD_DEBUG_AI.overnight.txt` (slot dumps + HELLO
+  lines per match).
 
 ### Hiding a cloaked building's bib frees its cell for enemy placement — ✅ FIXED 2026-07-15
 - **Severity:** minor (placement exploit; enemy could build one row into a cloaked base's bib strip).

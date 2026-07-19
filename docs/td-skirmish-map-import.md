@@ -3,9 +3,13 @@
 > **PARTLY SHIPPED (v2.0.0).** The temperate/winter tiers landed — the 31-map TD
 > pack ships via `<mod>/CustomMaps/` (DLL self-installs to `Local_Custom_Maps`; see
 > [[project-td-skirmish-map-import-findings]]). The "no clean importer" framing below
-> is OBE — a transcoder pipeline did the import. **Only the desert/interior-slot tier
-> remains open** (campaign-gated, see `theatre-desert-feasibility.md`). Body retained
-> for the per-map theatre matrix + the open desert work.
+> is OBE — a transcoder pipeline did the import. **Desert/interior-slot tier: the
+> pipeline is PROVEN end-to-end in-game (2026-07-19** — `scm05ea` transcoded
+> Theater=INTERIOR, 0 unmapped, rendered full HD desert in a live skirmish; see the
+> proof banner in `theatre-desert-feasibility.md`). Remaining for the tier: batch-convert
+> the desert-matrix maps + curate interior out of the MP pool + decide shipping shape
+> (cacti/rocks still dropped — no interior terrain-object art). Body retained for the
+> per-map theatre matrix.
 
 **Status (original 2026-06-03):** feasibility research + agreed direction.
 Goal: bring Tiberian Dawn's original skirmish/multiplayer maps into our RA-based

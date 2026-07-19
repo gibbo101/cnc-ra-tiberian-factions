@@ -1,9 +1,17 @@
 # Theatres & desert in RA Remastered — feasibility (mapped 2026-05-29)
 
-**Status: feasibility research, NOT queued work.** Desert matters for the GDI/Nod
-*campaign* arc (TD missions use a desert theatre), and that arc is **a while down the
-road**. This doc captures the findings so the future arc doesn't re-derive them. Nothing
-is in flight.
+> **✅ OPTION B PROVEN IN-GAME 2026-07-19 (overnight desktop session).** The interior-slot
+> hijack renders full HD desert in a live RA skirmish: TD `scm05ea` transcoded with
+> `td_map_to_ra.py` (Theater=INTERIOR, 0 unmapped, 73 templates via ported TD tiles),
+> dropped as a `Local_Custom_Maps/Red_Alert/` triplet, picked from the lobby Custom tab —
+> sand, mesa cliff chains, desert shores, rivers, dirt roads, Tiberium all correct
+> (screenshot `ra2-desert-ingame.png`, session scratchpad; radar/minimap desert too).
+> **The infrastructure was already fully shipped** (build_td_tiles.py Phase 6 2026-06-10:
+> desert `<Tile>` splice in `RA_TERRAIN_INTERIOR.XML`, desert-only templates ids 541+ in
+> cdata.cpp, `.INT` classic art in TFASSETS.MIX, desert radar palette) — the only missing
+> piece was a converted map. Remaining for the desert map tier: convert the desert-matrix
+> maps + curate interior out of the MP pool (step 3 below). Known cosmetic gap: TD desert
+> terrain-objects (cacti/rocks) are dropped by the transcoder (no interior art entries).
 
 Complements `config-meg-mod-delivery.md` (the data lever / "master key"),
 `launcher-vs-dll-ownership.md` (code-side boundary), `campaign-tabs-research.md`

@@ -37,7 +37,45 @@ The **structure files** — `RA_ALLIES.XML` (progression), `RA_ALLIES_MISSIONS.X
 - Append expansion missions to `RA_ALLIES` `<Stages>` → **did not appear** under Allied. ⇒ roster isn't built from `<Stages>`.
 - `ShowOnMissionSelect=false` on 3 completed Allied missions → **vanished**. ⇒ `INSTANCES.XML` is the display source, flag overrides progress.
 - Ant tab shows **2 of 4** though all 4 are `ShowOnMissionSelect=true` ⇒ display is **progress-gated** (only unlocked missions show). A per-player completion/unlock record exists — *not* in `Player_RA_settings_1.bin` (no campaign strings); likely Steam cloud/stats.
-- Inject a brand-new instance (`Mobius_Allied_Campaign_99_Map`, Allied variant, `ShowOnMissionSelect=true`, `IsUnlockedAtStart=true`, a deliberately-foreign GDI name TextID) → **a new "Allies 99" row appeared** in the Allied tab (name fell back to a placeholder because the TD TextID doesn't resolve in RA). ⇒ **placement is data-controllable.** So the "move" you want = **add-under-target-tab + hide-original** — both halves now proven. Caveats: name needs an RA-mode string; the *bare* instance displays but its launch isn't wired (no real scenario).
+- Inject a brand-new instance (`Mobius_Allied_Campaign_99_Map`, Allied variant, `ShowOnMissionSelect=true`, `IsUnlockedAtStart=true`, a deliberately-foreign GDI name TextID) → **a new "Allies 99" row appeared** in the Allied tab (name fell back to a placeholder because the TD TextID doesn't resolve in RA). ⇒ **placement is data-controllable.** So the "move" you want = **add-under-target-tab + hide-original** — both halves now proven. Caveats: name needs an RA-mode string; the *bare* instance displays but its launch isn't wired (no real scenario). For the launch half of the HIJACK path (existing slot, custom scenario), see the next section.
+
+### Launch through a hijacked slot — ✅ RE-VERIFIED 2026-07-19 (desktop, current build)
+
+**A CS/AM mission slot launches OUR scenario INI via plain CCDATA shadow-by-name. Proven
+end to end on the current v4.0.1 dev build** (overnight session 2026-07-19; Luke had
+recalled an earlier untracked test — the recollection was right, and it now has a record).
+
+**The probe:** stock `scg43ea.ini` (Aftermath Allied M1 "ITALY: Harbor Reclamation" —
+instance `Mobius_Allied_Aftermath_Campaign_43_Map`, `<Mission>43</Mission>` → filename
+`scg43ea.ini`) extracted from `CNCDATA/RED_ALERT/AFTERMATH/MAIN.MIX` → `general.mix`,
+edited to wipe all 90 enemy entities (USSR + BadGuy across UNITS/SHIPS/INFANTRY/
+STRUCTURES, indices renumbered), **`[Digest]` section REMOVED**, dropped as
+`<mod>/CCDATA/scg43ea.ini` in the local Vanilla_RA mod. No CONFIG.MEG change at all.
+
+**Result, reproduced twice:** mission launches from the Aftermath tab, loads our INI, and
+**self-wins in ~30 s** (zero enemies → "destroy all" win trigger fires at start; DPTHCHRG
+win movie plays, campaign advances to "In the Nick of Time", completion shield appears on
+the roster). Dev-DLL freshness confirmed via live `tf_astar.log` writes; the probe INI
+existed only in the local mod's CCDATA, so no other copy could have supplied the content.
+Stock mission cannot be won unattended in seconds → the engine read our file. Desktop
+surface, no crash (the `535197b` desktop crash was INSTANCES.XML roster edits, not
+scenario INIs). Probe INI removed after the test; copies + screenshots in the session
+scratchpad (`campaign-probe/`, `ra-harbor-*.png`).
+
+**Traps for the campaign implementation:**
+- **`[Digest]`: strip it, don't leave it stale.** `RELEASE_VERSION` is defined
+  (defines.h:72), so a WRONG digest aborts campaign scenario load (scenario.cpp:2282
+  result==2 → return false). A MISSING digest skips validation entirely
+  (ccini.cpp Load: `if (len > 0)`); community maps rely on the same hole.
+- Scenario filename derives from the instance's `<Mission>` number + house letter
+  (43 + Allied → `scg43ea.ini`); the display name lives in master-text, not the INI.
+- In-engine briefing text comes from the launcher TextID path, not the INI `[Briefing]`,
+  for the select-screen panel; the INI `[Briefing]` feeds the in-game briefing screen.
+
+**Consequence for the campaign arc:** the hijack delivery = per-slot scenario INIs in
+CCDATA (mod-shippable, no same-size rule) + cosmetic restyle (titles/briefings) via
+CONFIG.MEG master-text where wanted. The unproven last mile is CLOSED; remaining work is
+content (author the 17 RA-format missions) + presentation.
 
 ---
 
