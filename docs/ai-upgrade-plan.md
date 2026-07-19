@@ -219,6 +219,16 @@ the unit Type with NO `< 32` guard, so `UNIT_TDSTNK`..`UNIT_TSHVR` alias onto bi
 naively adding the guard risks a spurious defeat via the `!UScan` check, so it needs a unit
 shadow table, not a one-liner.
 
+> ⚠️ **SUPERSEDED IN PART (2026-07-19 evening) — read
+> `docs/w2b-conyard-split-postmortem.md` before using anything below.** Three claims in this
+> W2 block are now known wrong: (1) the naming spec assumes rules.ini `Name=` controls the
+> SIDEBAR label — it does not, it drives only the in-world tooltip, and 4 separate attempts to
+> control the cameo label failed in-game; (2) the "reuse `UNIT_MCV`/`STRUCT_CONST` as the
+> Allied pair" decision is reversed — Luke's call is **all four as fresh pipeline-built
+> entities**, like the GDI/Nod naval units; (3) the b3 `UnitClass::ActLike` note below is
+> superseded by that same decision (it only existed to avoid splitting the MCVs). The
+> postmortem carries the corrected plan and the falsified-theory list.
+
 **Naming spec (decided 2026-07-19, Luke).** Every type W2 splits is today a SHARED entry
 with no per-faction name, so the split silently produces duplicate cameos. Rule: **the
 Allied/Soviet axis ALWAYS needs prefixing** — RA served both sides from one entry, so the

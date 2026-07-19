@@ -5,6 +5,43 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## ⭐ RESUME HERE — W2(b) construction-yard split (2026-07-19)
+
+**READ FIRST: `docs/w2b-conyard-split-postmortem.md`.** It has the full session record, the
+falsified theories (do not re-chase), and the corrected plan. Summary:
+
+**Nothing needs reverting.** Tree is clean, builds, deployed to the desktop prefix. The only
+regression of the session (invisible MCV + construction yard, caused by renaming tileset
+`<Name>` keys) was already fixed in `66af6c7`. Eight commits shipped and are good — W2(a)
+prereq-aware eviction, b1 role predicate + unified BScan shadow table, the Tiberian-era enum
+marker, 4 new types (`SFACT`/`TDNFACT`/`SMCV`/`TDNMCV`, inert at `TechLevel=-1`), IniName
+migration.
+
+**What was wrong was the APPROACH, not the code.** The split was hand-built (reused types,
+`Image=` sharing, hand-edited XML) instead of going through
+`scripts/bundle_ra_building.py` / `bundle_unit.py` + `td-port-playbook.md` — the pipeline that
+built the GDI/Nod naval units and which produces genuinely independent entities. See
+[[feedback-check-repo-docs-first]].
+
+**Pick up by (Luke's direction):**
+1. Read `td-port-playbook.md` + both bundling scripts END TO END before coding.
+2. Resolve the open question in postmortem §4 — **why pipeline-built entities display their
+   `Name=` on the sidebar and hand-edited ones do not.** Diff `TDGYARD`/`TDFBNK` against
+   `RA_AMCV` across every layer. Do NOT test one hypothesis per game launch (4 failed that way).
+3. Build **all four MCVs and all four yards as fresh, fully independent entities** through the
+   pipeline — own art, own tileset keys, own `BuildIcon`, own object class, no `Image=` sharing.
+   Vanilla `MCV`/`FACT` stay in the enum for stock-campaign compat only.
+4. Badged cameos (Luke's idea) — emblems already exist at
+   `Data/ART/TEXTURES/SRGB/RED_ALERT/VFX/dot{ally,ussr,gdi,nod}/`.
+5. THEN b3 functional split (`Owner=` narrowing, `TechLevel=7`, four-way deploy/undeploy/spawn),
+   b4 bonus-unit picker, then (c) War Factory — (c) closes the headline capture case.
+
+⚠️ `ai-upgrade-plan.md` §W2 still contains superseded claims (the `Name=`-drives-sidebar naming
+spec, the reuse-not-split MCV decision, the `UnitClass::ActLike` b3 note). Postmortem §6 lists
+them; fix when picking up.
+
+---
+
 ## Crate idea: enemy-faction construction yards (Luke, 2026-07-19) — BLOCKED on W2(b3)
 
 Three extra crate types granting the OTHER factions' construction yards, so a wiped player
