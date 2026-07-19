@@ -39,7 +39,7 @@ The **structure files** — `RA_ALLIES.XML` (progression), `RA_ALLIES_MISSIONS.X
 - Ant tab shows **2 of 4** though all 4 are `ShowOnMissionSelect=true` ⇒ display is **progress-gated** (only unlocked missions show). A per-player completion/unlock record exists — *not* in `Player_RA_settings_1.bin` (no campaign strings); likely Steam cloud/stats.
 - Inject a brand-new instance (`Mobius_Allied_Campaign_99_Map`, Allied variant, `ShowOnMissionSelect=true`, `IsUnlockedAtStart=true`, a deliberately-foreign GDI name TextID) → **a new "Allies 99" row appeared** in the Allied tab (name fell back to a placeholder because the TD TextID doesn't resolve in RA). ⇒ **placement is data-controllable.** So the "move" you want = **add-under-target-tab + hide-original** — both halves now proven. Caveats: name needs an RA-mode string; the *bare* instance displays but its launch isn't wired (no real scenario). For the launch half of the HIJACK path (existing slot, custom scenario), see the next section.
 
-### Launch through a hijacked slot — ✅ RE-VERIFIED 2026-07-19 (desktop, current build)
+### Launch through a hijacked slot — ✅ RE-VERIFIED 2026-07-19 (desktop AND Steam Deck)
 
 **A CS/AM mission slot launches OUR scenario INI via plain CCDATA shadow-by-name. Proven
 end to end on the current v4.0.1 dev build** (overnight session 2026-07-19; Luke had
@@ -57,10 +57,18 @@ STRUCTURES, indices renumbered), **`[Digest]` section REMOVED**, dropped as
 win movie plays, campaign advances to "In the Nick of Time", completion shield appears on
 the roster). Dev-DLL freshness confirmed via live `tf_astar.log` writes; the probe INI
 existed only in the local mod's CCDATA, so no other copy could have supplied the content.
-Stock mission cannot be won unattended in seconds → the engine read our file. Desktop
-surface, no crash (the `535197b` desktop crash was INSTANCES.XML roster edits, not
-scenario INIs). Probe INI removed after the test; copies + screenshots in the session
-scratchpad (`campaign-probe/`, `ra-harbor-*.png`).
+Stock mission cannot be won unattended in seconds → the engine read our file. No crash on
+either surface (the `535197b` desktop crash was INSTANCES.XML roster edits, not scenario
+INIs).
+
+**Confirmed on BOTH playtest surfaces (2026-07-19):** the Linux desktop (Claude, 2 runs)
+and **Luke's Steam Deck** (Luke + son on aimee101's account) — same instant
+mission-accomplished. The Deck result is the one that counts: vanilla Proton on the real
+play hardware, so the hijack is not a desktop-prefix artefact. Deck delivery was nothing
+more than an `scp` of the INI into the mod's `CCDATA/` (local v4.1 dev mod, no relaunch
+needed — the file is read at scenario load). Probe INI removed from both machines after
+the test; copies + desktop screenshots in the session scratchpad (`campaign-probe/`,
+`ra-harbor-*.png`).
 
 **Traps for the campaign implementation:**
 - **`[Digest]`: strip it, don't leave it stale.** `RELEASE_VERSION` is defined
