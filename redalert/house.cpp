@@ -1017,6 +1017,19 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     }
 
     /*
+    **	W2 (c): the same quartet-swap for the war factory — skirmish builds the
+    **	faction pair (AWEAP/SWEAP), campaign the shared vanilla WEAP.
+    */
+    if (type->What_Am_I() == RTTI_BUILDINGTYPE) {
+        StructType st = (StructType)((BuildingTypeClass const*)type)->Type;
+        bool vanilla_weap = (st == STRUCT_WEAP);
+        bool faction_weap = (st == STRUCT_AWEAP || st == STRUCT_SWEAP);
+        if ((vanilla_weap && Session.Type != GAME_NORMAL) || (faction_weap && Session.Type == GAME_NORMAL)) {
+            return (false);
+        }
+    }
+
+    /*
     **	Prereq satisfaction: every populated slot in Prerequisite[] must
     **	correspond to a building Type the house currently owns (active +
     **	unlimbo'd). ActiveBQuantity is the heap-sized counter that handles
@@ -1183,6 +1196,10 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                 if (tdweap_type >= 0 && Has_Building_Active(tdweap_type))
                     continue;
                 if (tdafld_type >= 0 && Has_Building_Active(tdafld_type))
+                    continue;
+                // W2 (c): the faction war factories satisfy the 'weap' token
+                // (the MCVs' Prerequisite=weap,fix and every vehicle behind it).
+                if (Has_Building_Active(STRUCT_AWEAP) || Has_Building_Active(STRUCT_SWEAP))
                     continue;
             }
             // STRUCT_HELIPAD — satisfied by TDHPAD (separated TD helipad).
@@ -6590,6 +6607,15 @@ int HouseClass::AI_Base_Defense(void)
 static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType actlike)
 {
     if (actlike != HOUSE_GOOD && actlike != HOUSE_BAD) {
+        /*
+        **	W2 (c): Allied/Soviet skirmish AIs build their own faction's war
+        **	factory in place of the vanilla shared WEAP (which Can_Build now
+        **	gates to campaign). Everything else stays vanilla for RA houses.
+        */
+        if (ra == STRUCT_WEAP) {
+            bool sov = (actlike == HOUSE_USSR || actlike == HOUSE_UKRAINE);
+            return (&BuildingTypeClass::As_Reference(sov ? STRUCT_SWEAP : STRUCT_AWEAP));
+        }
         return (NULL);
     }
 

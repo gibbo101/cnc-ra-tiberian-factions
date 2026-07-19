@@ -417,6 +417,74 @@ static BuildingTypeClass const ClassWeapon(STRUCT_WEAP,
                                            (short const*)OListWeap // OVERLAPLIST:List of overlap cell offset.
 );
 
+/*
+**  AWEAP / SWEAP (Allied / Soviet War Factories) — W2 (c) split of the shared
+**  RA War Factory, for the same reason the yards split: the BUILDING carries
+**  the faction (ActLike pinned from the narrowed Owner= at Unlimbo), so a
+**  factory built from a captured yard produces the captured faction's units —
+**  including its MCV, which is how a captured tech tree survives. Own
+**  pipeline-built art under AWEAP/SWEAP (+ AWEAP2/SWEAP2 door overlays).
+*/
+static BuildingTypeClass const ClassAlliedWeapon(STRUCT_AWEAP,
+                                                 TXT_NONE, // Display name (rules.ini Name= overrides).
+                                                 "AWEAP",  // IniName.
+                                                 FACING_NONE, // Foundation direction from center of building.
+                                                 XY_Coord(CELL_LEPTON_W + (CELL_LEPTON_W / 2),
+                                                          CELL_LEPTON_H), // Exit point for produced units.
+                                                 REMAP_ALTERNATE,         // Sidebar remap logic.
+                                                 0x0000,                  //	Vertical offset.
+                                                 0x0000,        // Primary weapon offset along turret centerline.
+                                                 0x0000,        // Primary weapon lateral offset along turret centerline.
+                                                 false,         // Is this building a fake (decoy?)
+                                                 false,         // Animation rate is regulated for constant speed?
+                                                 false,         // Always use the given name for the building?
+                                                 false,         // Is this a wall type structure?
+                                                 false,         // Simple (one frame) damage imagery?
+                                                 false,         // Is it invisible to radar?
+                                                 true,          // Can the player select this?
+                                                 true,          // Is this a legal target for attack or move?
+                                                 false,         // Is this an insignificant building?
+                                                 false,         // Theater specific graphic image?
+                                                 false,         // Does it have a rotating turret?
+                                                 true,          // Can the building be color remapped to indicate owner?
+                                                 RTTI_UNITTYPE, // The object type produced at this factory.
+                                                 DIR_N,         // Starting idle frame to match construction.
+                                                 BSIZE_32,      // SIZE:			Building size.
+                                                 (short const*)ExitWeap, // Preferred exit cell list.
+                                                 (short const*)ListWeap, // OCCUPYLIST:	List of active foundation squares.
+                                                 (short const*)OListWeap // OVERLAPLIST:List of overlap cell offset.
+);
+
+static BuildingTypeClass const ClassSovietWeapon(STRUCT_SWEAP,
+                                                 TXT_NONE, // Display name (rules.ini Name= overrides).
+                                                 "SWEAP",  // IniName.
+                                                 FACING_NONE, // Foundation direction from center of building.
+                                                 XY_Coord(CELL_LEPTON_W + (CELL_LEPTON_W / 2),
+                                                          CELL_LEPTON_H), // Exit point for produced units.
+                                                 REMAP_ALTERNATE,         // Sidebar remap logic.
+                                                 0x0000,                  //	Vertical offset.
+                                                 0x0000,        // Primary weapon offset along turret centerline.
+                                                 0x0000,        // Primary weapon lateral offset along turret centerline.
+                                                 false,         // Is this building a fake (decoy?)
+                                                 false,         // Animation rate is regulated for constant speed?
+                                                 false,         // Always use the given name for the building?
+                                                 false,         // Is this a wall type structure?
+                                                 false,         // Simple (one frame) damage imagery?
+                                                 false,         // Is it invisible to radar?
+                                                 true,          // Can the player select this?
+                                                 true,          // Is this a legal target for attack or move?
+                                                 false,         // Is this an insignificant building?
+                                                 false,         // Theater specific graphic image?
+                                                 false,         // Does it have a rotating turret?
+                                                 true,          // Can the building be color remapped to indicate owner?
+                                                 RTTI_UNITTYPE, // The object type produced at this factory.
+                                                 DIR_N,         // Starting idle frame to match construction.
+                                                 BSIZE_32,      // SIZE:			Building size.
+                                                 (short const*)ExitWeap, // Preferred exit cell list.
+                                                 (short const*)ListWeap, // OCCUPYLIST:	List of active foundation squares.
+                                                 (short const*)OListWeap // OVERLAPLIST:List of overlap cell offset.
+);
+
 static BuildingTypeClass const ClassShipYard(
     STRUCT_SHIP_YARD,
     TXT_SHIP_YARD, // NAME:			Short name of the structure.
@@ -4057,6 +4125,8 @@ long TF_Building_Scan_Bit(int btype)
         return (STRUCTF_REFINERY);
 
     case STRUCT_TDWEAP:
+    case STRUCT_AWEAP:
+    case STRUCT_SWEAP:
         return (STRUCTF_WEAP);
 
     case STRUCT_TDAFLD:
@@ -4209,6 +4279,8 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTdGdiFact);   // STRUCT_TDGFACT (GDI Construction Yard)
     new BuildingTypeClass(ClassSovietFact);  // STRUCT_SFACT   (Soviet Construction Yard)
     new BuildingTypeClass(ClassAlliedFact);  // STRUCT_AFACT   (Allied Construction Yard)
+    new BuildingTypeClass(ClassAlliedWeapon); // STRUCT_AWEAP  (Allied War Factory)
+    new BuildingTypeClass(ClassSovietWeapon); // STRUCT_SWEAP  (Soviet War Factory)
 }
 
 /***********************************************************************************************
@@ -4269,6 +4341,10 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_V23, BSTATE_IDLE, 0, 3, 3},
         {STRUCT_WEAP, BSTATE_ACTIVE, 0, 1, 0},
         {STRUCT_WEAP, BSTATE_IDLE, 0, 1, 0},
+        {STRUCT_AWEAP, BSTATE_ACTIVE, 0, 1, 0},
+        {STRUCT_AWEAP, BSTATE_IDLE, 0, 1, 0},
+        {STRUCT_SWEAP, BSTATE_ACTIVE, 0, 1, 0},
+        {STRUCT_SWEAP, BSTATE_IDLE, 0, 1, 0},
         {STRUCT_FAKEWEAP, BSTATE_ACTIVE, 0, 1, 0},
         {STRUCT_FAKEWEAP, BSTATE_IDLE, 0, 1, 0},
         {STRUCT_IRON_CURTAIN, BSTATE_ACTIVE, 0, 11, 3},
@@ -4529,6 +4605,9 @@ void BuildingTypeClass::One_Time(void)
             {STRUCT_SFACT, STRUCT_CONST},
             {STRUCT_TDGFACT, STRUCT_TDFACT},
             {STRUCT_TDNFACT, STRUCT_TDFACT},
+            // W2 (c) faction war factories — pipeline art under AWEAP/SWEAP keys.
+            {STRUCT_AWEAP, STRUCT_WEAP},
+            {STRUCT_SWEAP, STRUCT_WEAP},
         };
         for (int di = 0; di < (int)(sizeof(_td_bdonors) / sizeof(_td_bdonors[0])); di++) {
             BuildingTypeClass& b = As_Reference(_td_bdonors[di].td);

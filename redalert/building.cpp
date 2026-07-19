@@ -597,8 +597,9 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             }
         }
 
-        if (*this == STRUCT_WEAP || *this == STRUCT_AIRSTRIP || *this == STRUCT_REPAIR || *this == STRUCT_TDFIX
-            || *this == STRUCT_TDWEAP || *this == STRUCT_TDAFLD || *this == STRUCT_TDGAFLD)
+        if (*this == STRUCT_WEAP || *this == STRUCT_AWEAP || *this == STRUCT_SWEAP || *this == STRUCT_AIRSTRIP
+            || *this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TDWEAP || *this == STRUCT_TDAFLD
+            || *this == STRUCT_TDGAFLD)
             return (RADIO_RUN_AWAY);
         return (RADIO_ROGER);
 
@@ -704,7 +705,8 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         /*
         **	A Tethered object is always rendered AFTER the building.
         */
-        if ((*this == STRUCT_WEAP || *this == STRUCT_TDWEAP) && IsTethered && In_Radio_Contact() && !Contact_With_Whom()->IsInLimbo
+        if ((*this == STRUCT_WEAP || *this == STRUCT_AWEAP || *this == STRUCT_SWEAP || *this == STRUCT_TDWEAP)
+            && IsTethered && In_Radio_Contact() && !Contact_With_Whom()->IsInLimbo
             && Contact_With_Whom()->What_Am_I() != RTTI_BUILDING) {
             TechnoClass* contact = Contact_With_Whom();
 
@@ -750,13 +752,22 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         // gets its own TDWEAP2 overlay block above; STRUCT_TDAFLD is a flat
         // 4×2 strip with no second-layer art and routes through its own
         // case STRUCT_TDAFLD in Exit_Object — neither needs this branch.
-        if (*this == STRUCT_WEAP || *this == STRUCT_FAKEWEAP) {
+        if (*this == STRUCT_WEAP || *this == STRUCT_FAKEWEAP || *this == STRUCT_AWEAP || *this == STRUCT_SWEAP) {
             int shapenum = Door_Stage();
             if (Health_Ratio() <= Rule.ConditionYellow)
                 shapenum += 4;
+            // W2 (c): the faction war factories carry their own cloned door
+            // overlays so the launcher resolves them by their own keys; the
+            // classic-mode pointer is the shared WarFactoryOverlay either way.
+            const char* overlay_name = "WEAP2";
+            if (*this == STRUCT_AWEAP) {
+                overlay_name = "AWEAP2";
+            } else if (*this == STRUCT_SWEAP) {
+                overlay_name = "SWEAP2";
+            }
             // Added override shape file name. ST - 8/1/2019 5:24PM
             // Techno_Draw_Object(Class->WarFactoryOverlay, shapenum, x, y, window);
-            Techno_Draw_Object_Virtual(Class->WarFactoryOverlay, shapenum, x, y, window, DIR_N, 0x0100, "WEAP2");
+            Techno_Draw_Object_Virtual(Class->WarFactoryOverlay, shapenum, x, y, window, DIR_N, 0x0100, overlay_name);
         }
 
         /*
@@ -3121,6 +3132,8 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             return (0);
 
         case STRUCT_WEAP:
+        case STRUCT_AWEAP: // W2 (c): same stalled-factory handoff; the body
+        case STRUCT_SWEAP: // matches this building's own type, so no cross-type routing.
             if (Mission == MISSION_UNLOAD) {
                 for (int index = 0; index < Buildings.Count(); index++) {
                     BuildingClass* bldg = Buildings.Ptr(index);
@@ -6797,7 +6810,7 @@ int BuildingClass::Mission_Unload(void)
         return Mission_Unload_TD();
     }
 
-    if (*this == STRUCT_WEAP) {
+    if (*this == STRUCT_WEAP || *this == STRUCT_AWEAP || *this == STRUCT_SWEAP) {
         CELL cell = Coord_Cell(Coord) + Class->ExitList[0];
         COORDINATE coord = Cell_Coord(cell);
         CellClass* cellptr = &Map[cell];

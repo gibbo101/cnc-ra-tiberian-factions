@@ -65,7 +65,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_PBOX</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_PBOX_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Pillbox</BuildIcon>
+			<BuildIcon>BuildIcon_PBOX</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 
@@ -89,7 +89,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_GUN</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_GUN_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Turret</BuildIcon>
+			<BuildIcon>BuildIcon_GUN</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -1524,7 +1524,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_NOD_TURRET</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_NOD_TURRET</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Turret</BuildIcon>
+			<BuildIcon>BuildIcon_TDGUN</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1796,7 +1796,7 @@
 			<CNCEncyclopediaComponent>
 				<ObjectNameTextID>TEXT_STRUCTURE_TDFBNK</ObjectNameTextID>
 				<ObjectDescriptionTextID>TEXT_STRUCTURE_TDFBNK_DESC</ObjectDescriptionTextID>
-				<BuildIcon>BuildIcon_RA_Pillbox</BuildIcon>
+				<BuildIcon>BuildIcon_TDFBNK</BuildIcon>
 			</CNCEncyclopediaComponent>
 		</ObjectTypeClass>
 
@@ -1918,6 +1918,22 @@
 			<ObjectNameTextID>TEXT_UNIT_SMCV</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_SMCV_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_SMCV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_AWEAP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_AWEAP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_AWEAP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_AWEAP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_SWEAP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_SWEAP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_SWEAP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SWEAP</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

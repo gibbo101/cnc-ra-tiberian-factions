@@ -1557,6 +1557,8 @@ typedef enum StructType : char
     */
     STRUCT_SFACT, // Soviet Construction Yard — own pipeline-built art (SFACT keys); separate type so the BUILDING carries the faction.
     STRUCT_AFACT, // Allied Construction Yard — sibling of STRUCT_SFACT.
+    STRUCT_AWEAP, // Allied War Factory — W2 (c) split of the shared WEAP; own pipeline art (AWEAP/AWEAP2 keys).
+    STRUCT_SWEAP, // Soviet War Factory — sibling of STRUCT_AWEAP.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0,

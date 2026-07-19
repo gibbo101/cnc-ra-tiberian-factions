@@ -4912,6 +4912,8 @@ bool DLLExportClass::Get_Layer_State(uint64 player_id, unsigned char* buffer_in,
                     if ((object->What_Am_I() != RTTI_BUILDING) && (contact_object != nullptr)
                         && (contact_object->What_Am_I() == RTTI_BUILDING) && contact_object->IsTethered
                         && (*((BuildingClass*)contact_object) == STRUCT_WEAP
+                            || *((BuildingClass*)contact_object) == STRUCT_AWEAP
+                            || *((BuildingClass*)contact_object) == STRUCT_SWEAP
                             || *((BuildingClass*)contact_object) == STRUCT_TDWEAP)) {
                         continue;
                     }
