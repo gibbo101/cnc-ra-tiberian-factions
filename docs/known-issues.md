@@ -13,18 +13,21 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 ### Per-slot difficulty goes stale or fails when lobby difficulties change within a session — OPEN 2026-07-19
 - **Severity:** minor (either a wrong difficulty tier or a clean fall back to global Hard; no crash,
   and no desync is possible — only the host simulates a LAN match).
-- **Repro:** play a match, return to the lobby, change the AI difficulties, start again **without
-  relaunching the game**. Difficulties can only be changed pre-start, so this is the normal
-  play/tweak/replay flow.
+- **Repro: the FIRST LAN lobby after launching the game reads correctly; later ones may not.**
+  A LAN match cannot be returned to a lobby — when it ends you re-host, and the new lobby starts
+  blank (host player, open slots, no AI). So every subsequent match in a session is a freshly
+  built lobby, and that is where the bad reads appear. Playing two LAN matches back to back can
+  give correct difficulties in the first and stale-or-none in the second.
 - **Cause:** the scanner requires every validated `AIPLAYERn` candidate array in client memory to
-  agree, and older record copies survive within a game process. When the new lobby differs from
-  what those copies hold, the read either takes the stale values or bails with `ram_slots=0`.
-  Both observed 2026-07-19: lobby `1,2,2,3` read as the cached `2,2,3,1` (stale, applied), then a
-  lobby of `1,1,1,3` produced `ram_slots=0`.
+  agree. Each re-hosted lobby builds fresh records while the previous lobby's copies linger in the
+  process, so the candidates disagree and the read either takes stale values or bails with
+  `ram_slots=0`. Both observed 2026-07-19 in re-hosted lobbies: one read the previous lobby's
+  `2,2,3,1` (stale, applied), the next produced `ram_slots=0`. The lobby run immediately after a
+  game launch read `1,1,1,3` correctly.
 - **Failure is graceful:** `ram_slots=0` falls back to global Hard, which is shipped v4.0 behaviour.
   Worst case is "no per-slot difficulty", never a broken or desynced match.
-- **Workaround:** relaunch the game after changing lobby difficulties. A fresh launch reads
-  correctly every time (verified: Easy/Easy/Easy/Hard → IQ 3/3/3/5 with 2 humans).
+- **Workaround:** relaunch the game between LAN matches, so each match runs in the session's first
+  lobby (verified: Easy/Easy/Easy/Hard → IQ 3/3/3/5 with 2 humans, immediately after a launch).
 - **Fix path:** stop demanding unanimity — prefer the newest/most-specific candidate array. The
   `PHASEB-CAND` raw dump shows what the competing arrays hold; it was removed in `06ca30a` and
   should be restored from history to do this work.

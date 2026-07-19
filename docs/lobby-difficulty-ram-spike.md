@@ -30,16 +30,17 @@ cached `{1,2,2,3}`, so this is unambiguously a live read rather than a stale one
 (The joiner displaying host-generated messages is itself further confirmation of the
 host-only model: its own DLL never ran.)
 
-⚠️ **Known limitation — stale records within a game session.** The scanner requires
-every validated candidate array to agree and bails otherwise. Returning to the lobby
-between matches, changing difficulties and starting again (without relaunching the
-game) leaves older record copies in memory, and the read then either takes stale
-values or fails with `ram_slots=0`. Both observed 2026-07-19. **Failure is graceful**
-— it falls back to global Hard, i.e. shipped v4.0 behaviour — so the worst case is
-"no per-slot difficulty", never a broken match. Workaround: relaunch the game after
-changing lobby difficulties. Real fix: stop demanding unanimity and prefer the
-newest/most-specific candidate array; the `PHASEB-CAND` raw dump (removed in
-`06ca30a`, restore from history) is the tool for that.
+⚠️ **Known limitation — only the session's FIRST LAN lobby reads reliably.** A LAN match
+cannot be returned to a lobby: when it ends you re-host, and the new lobby starts blank.
+Each re-host builds fresh `AIPLAYERn` records while the previous lobby's copies linger in
+the process, so the scanner (which requires every validated candidate array to agree)
+either takes stale values or bails with `ram_slots=0`. Both observed 2026-07-19 in
+re-hosted lobbies; the lobby run immediately after a game launch read correctly.
+**Failure is graceful** — it falls back to global Hard, i.e. shipped v4.0 behaviour — so
+the worst case is "no per-slot difficulty", never a broken match. Workaround: relaunch
+between LAN matches. Real fix: stop demanding unanimity and prefer the newest/most-specific
+candidate array; the `PHASEB-CAND` raw dump (removed in `06ca30a`, restore from history)
+is the tool for that.
 
 **`tf_ai_difficulty.txt` now applies in multiplayer too.** It was previously solo-only
 on the reasoning that a per-machine file would desync peers. Only the host simulates,
