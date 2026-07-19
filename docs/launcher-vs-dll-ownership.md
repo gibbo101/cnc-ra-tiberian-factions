@@ -208,3 +208,20 @@ message, or nothing. Anything drawn INTO the classic page is also map-positioned
 rather than sitting on screen; launcher messages via `On_Message` are screen-fixed, but
 `On_Message` only lands when issued from `CNC_Advance_Instance` after the player context
 is set.
+
+**RAM route also tried and abandoned (2026-07-19).** ClientG's memory IS readable
+cross-process (the difficulty scanner already does it), so the render-mode flag is in
+principle findable by toggling and keeping bytes that track it. Attempted with 3 HD +
+3 classic snapshots (~1.1GB each) of private writable regions: 13,515 bytes tracked the
+toggle, 3,856 survived three pairs, 33 were isolated and boolean-shaped. Live-polling
+those candidates while the player toggled 4 times showed **every one changing 100+ times
+in 75 seconds** — all high-churn render state that coincidentally aligned. **No flag
+found.**
+
+The method is sound but misapplied: value-narrowing assumes a mostly-static process
+between samples, and a running RTS changes vast amounts of memory for unrelated reasons,
+so coincidental survivors swamp the signal. Doing it properly needs live iterative
+filtering (hold the candidate set in memory, re-filter on every toggle, ~a dozen rounds)
+rather than offline diffing of a few snapshots. Not worth it for a cosmetic notice;
+revisit only if classic-mode detection is ever needed for something substantial.
+Tooling kept: session scratchpad `ram_toggle_probe.py` + `watch_candidates.py`.
