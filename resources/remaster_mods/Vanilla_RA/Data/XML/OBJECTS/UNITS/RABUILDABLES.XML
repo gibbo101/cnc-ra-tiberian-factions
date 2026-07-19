@@ -443,7 +443,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_SS</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_SS_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Submarine</BuildIcon>
+			<BuildIcon>BuildIcon_SS</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -451,7 +451,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_DD</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_DD_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Destroyer</BuildIcon>
+			<BuildIcon>BuildIcon_DD</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 
@@ -459,7 +459,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_CA</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_CA_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Cruiser</BuildIcon>
+			<BuildIcon>BuildIcon_CA</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -475,7 +475,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_PT</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_PT_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Gunboat</BuildIcon>
+			<BuildIcon>BuildIcon_PT</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -1804,7 +1804,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TDNSUB</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TDNSUB</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Submarine</BuildIcon>
+			<BuildIcon>BuildIcon_TDNSUB</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1814,7 +1814,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TDPT</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TDPT</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Gunboat</BuildIcon>
+			<BuildIcon>BuildIcon_TDPT</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1822,7 +1822,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TDDD</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TDDD</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Destroyer</BuildIcon>
+			<BuildIcon>BuildIcon_TDDD</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1830,7 +1830,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TDCA</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TDCA</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Cruiser</BuildIcon>
+			<BuildIcon>BuildIcon_TDCA</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1838,7 +1838,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TDMSUB</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TDMSUB</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_MissileSub</BuildIcon>
+			<BuildIcon>BuildIcon_TDMSUB</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

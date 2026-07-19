@@ -1175,15 +1175,23 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                 BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDNUK2");
                 tdnuk2_type = p ? p->Type : -1;
             }
-            if (t == STRUCT_TENT && tdpyle_type >= 0 && Has_Building_Active(tdpyle_type))
+            // PRODUCTION tokens are faction identity (Luke, 2026-07-20): each
+            // equivalence below is scoped to entities the substitute's faction
+            // can own, so a GDI barracks never satisfies 'tent' for an Allied
+            // pillbox, an Allied war factory never satisfies 'weap' for a
+            // Tesla coil, and so on. INFRASTRUCTURE tokens (powr/proc/fix/
+            // dome) stay cross-era both ways — see the block further down.
+            if (t == STRUCT_TENT && (own & HOUSEF_GDI) && tdpyle_type >= 0 && Has_Building_Active(tdpyle_type))
                 continue;
-            if (t == STRUCT_BARRACKS && tdhand_type >= 0 && Has_Building_Active(tdhand_type))
+            if (t == STRUCT_BARRACKS && (own & HOUSEF_NOD) && tdhand_type >= 0 && Has_Building_Active(tdhand_type))
                 continue;
-            // TDPYLE ↔ TDHAND mutual equivalence. Catalogue master table notes
-            // shared-prereq buildings (TDHPAD = "TDPYLE / TDHAND") which were
-            // emitted with Prerequisite=TDPYLE only. Without this, Nod players
-            // can't satisfy TDHPAD's prereq because they own TDHAND, not TDPYLE.
-            if (tdpyle_type >= 0 && tdhand_type >= 0) {
+            // TDPYLE ↔ TDHAND mutual equivalence — for SHARED entities only
+            // (Luke, 2026-07-20): an entity both TD factions can build (the
+            // legacy TDHPAD, Prerequisite=TDPYLE) accepts either barracks; a
+            // single-faction entity requires its own (GDI guard tower needs
+            // TDPYLE, the Nod turret/SAM/flame bunker TDHAND, the faction
+            // helipads their own — the GDI-barracks-unlocks-Nod-helipad leak).
+            if (tdpyle_type >= 0 && tdhand_type >= 0 && (own & HOUSEF_GDI) && (own & HOUSEF_NOD)) {
                 if (t == tdpyle_type && Has_Building_Active(tdhand_type))
                     continue;
                 if (t == tdhand_type && Has_Building_Active(tdpyle_type))
@@ -1194,13 +1202,13 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             // vehicle-factory behaviour, but its heap Type is past STRUCT_COUNT
             // so it doesn't match STRUCT_WEAP automatically.
             if (t == STRUCT_WEAP) {
-                if (tdweap_type >= 0 && Has_Building_Active(tdweap_type))
+                if ((own & HOUSEF_GDI) && tdweap_type >= 0 && Has_Building_Active(tdweap_type))
                     continue;
-                if (tdafld_type >= 0 && Has_Building_Active(tdafld_type))
+                if ((own & HOUSEF_NOD) && tdafld_type >= 0 && Has_Building_Active(tdafld_type))
                     continue;
-                // W2 (c): the faction war factories satisfy the 'weap' token
-                // (the MCVs' Prerequisite=weap,fix and every vehicle behind it).
-                if (Has_Building_Active(STRUCT_AWEAP) || Has_Building_Active(STRUCT_SWEAP))
+                if ((own & HOUSEF_ALLIES) && Has_Building_Active(STRUCT_AWEAP))
+                    continue;
+                if ((own & HOUSEF_SOVIET) && Has_Building_Active(STRUCT_SWEAP))
                     continue;
             }
             // STRUCT_HELIPAD — satisfied by TDHPAD (separated TD helipad).
@@ -1208,20 +1216,23 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             // equivalence, players who built a TDHPAD can't see helicopters
             // in the sidebar because the prereq check rejects them.
             if (t == STRUCT_HELIPAD) {
-                if (tdhpad_type >= 0 && Has_Building_Active(tdhpad_type))
+                if ((own & (HOUSEF_GDI | HOUSEF_NOD)) && tdhpad_type >= 0 && Has_Building_Active(tdhpad_type))
                     continue;
-                // W2 (d): the faction helipads satisfy the 'hpad' token.
-                if (Has_Building_Active(STRUCT_AHPAD) || Has_Building_Active(STRUCT_SHPAD)
-                    || Has_Building_Active(STRUCT_TDGHPAD) || Has_Building_Active(STRUCT_TDNHPAD))
+                // W2 (d): each faction's helipad satisfies 'hpad' for that
+                // faction's entities only.
+                if ((own & HOUSEF_ALLIES) && Has_Building_Active(STRUCT_AHPAD))
+                    continue;
+                if ((own & HOUSEF_SOVIET) && Has_Building_Active(STRUCT_SHPAD))
+                    continue;
+                if ((own & HOUSEF_GDI) && Has_Building_Active(STRUCT_TDGHPAD))
+                    continue;
+                if ((own & HOUSEF_NOD) && Has_Building_Active(STRUCT_TDNHPAD))
                     continue;
             }
-            // STRUCT_RADAR — satisfied by TDHQ (separated TD Communications
-            // Center). RA structures keyed to Prerequisite=dome (Chronosphere,
-            // Iron Curtain, etc.) become buildable when only TDHQ is owned.
-            if (t == STRUCT_RADAR) {
-                if (tdhq_type >= 0 && Has_Building_Active(tdhq_type))
-                    continue;
-            }
+            // STRUCT_RADAR ('dome') and TDHQ are SEPARATE (Luke, 2026-07-20):
+            // radar is faction tech like the tech centres, not shared
+            // infrastructure — no cross-equivalence in either direction. TD
+            // entities carry explicit TDHQ tokens in rules.ini.
             // STRUCT_REFINERY — satisfied by TDPROC (separated TD refinery).
             // RA's harvester (Prerequisite=proc) becomes buildable when a TDPROC
             // is owned (both GDI and Nod build it).
@@ -1236,7 +1247,14 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             // tests ActiveBQuantity[type], not the BScan bitmask — so a per-type
             // remap like this is required; shadowing STRUCTF_ADVANCED_TECH into
             // BScan does nothing for prereq checks.
-            if (t == STRUCT_ADVANCED_TECH) {
+            // Tech centres are FACTION IDENTITY (Luke, 2026-07-20): 'atek' on an
+            // RA entity means the Allied tech centre and nothing else (the GDI
+            // Adv Comm satisfying an Allied Cruiser was the reported leak).
+            // Single-faction TD entities carry explicit TDEYE/TDTMPL tokens in
+            // rules.ini; this equivalence remains ONLY for TD-era entities still
+            // on 'atek' (TDRMBO — shared by both TD factions, and a prereq list
+            // is AND-only so "either TD tech centre" can't be spelled there).
+            if (t == STRUCT_ADVANCED_TECH && type->IniName[0] == 'T' && type->IniName[1] == 'D') {
                 if (tdeye_type >= 0 && Has_Building_Active(tdeye_type))
                     continue;
                 if (tdtmpl_type >= 0 && Has_Building_Active(tdtmpl_type))
@@ -1261,11 +1279,11 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             // v4.0 separated naval/air production buildings satisfy the RA-token prereqs of the
             // units they build: syrd->TDGYARD (GDI Gunboat/Hovercraft), spen->TDNPEN (Nod subs/
             // Hovercraft), afld->TDGAFLD (GDI A-10). Same pattern as hpad->TDHPAD etc.
-            if (t == STRUCT_SHIP_YARD && tdgyard_type >= 0 && Has_Building_Active(tdgyard_type))
+            if (t == STRUCT_SHIP_YARD && (own & HOUSEF_GDI) && tdgyard_type >= 0 && Has_Building_Active(tdgyard_type))
                 continue;
-            if (t == STRUCT_SUB_PEN && tdnpen_type >= 0 && Has_Building_Active(tdnpen_type))
+            if (t == STRUCT_SUB_PEN && (own & HOUSEF_NOD) && tdnpen_type >= 0 && Has_Building_Active(tdnpen_type))
                 continue;
-            if (t == STRUCT_AIRSTRIP && tdgafld_type >= 0 && Has_Building_Active(tdgafld_type))
+            if (t == STRUCT_AIRSTRIP && (own & HOUSEF_GDI) && tdgafld_type >= 0 && Has_Building_Active(tdgafld_type))
                 continue;
             // Cross-era infrastructure equivalence (Luke, 2026-07-19): either
             // era's power plant or refinery satisfies BOTH eras' tokens, so a
@@ -1282,8 +1300,6 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                     || (tdnuk2_type >= 0 && Has_Building_Active(tdnuk2_type))))
                 continue;
             if (t == tdproc_type && Has_Building_Active(STRUCT_REFINERY))
-                continue;
-            if (t == tdhq_type && Has_Building_Active(STRUCT_RADAR))
                 continue;
         }
         return (false);
