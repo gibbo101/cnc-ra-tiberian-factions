@@ -5,6 +5,33 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## ⭐ NEXT SESSION: v4.1.0 release (decided by Luke 2026-07-20, ship after a testing pass)
+
+**The release story: "the groundwork update" — pre-AI-milestone foundations with a little AI
+thrown in.** 96 commits since v4.0.0. Headline content: separated tech trees (W2 b2/b3/(c)/(d):
+per-faction construction yards, MCVs, war factories, helipads; capture carries the full tree),
+the locked prerequisite policy (shared low-tier infrastructure, faction-identity everything
+else, dome ≠ TDHQ), ~40 faction-badged sidebar cameos (mod-logo emblems), per-slot AI lobby
+difficulty incl. LAN, AI Phase 0/1 fixes (blind-scout dispatcher, temple starvation, economy
+gates, harvester idle-home), the A* heap + expansion budget, and the Stealth Generator work.
+
+**Before shipping (test pass):** (d) helipad behaviour in play (free heli per pad, universal
+landing), the prereq scoping matrix (each faction's defenses/AA need their own chain), AI
+still builds faction WFs + pads and fields helicopters, one stock-campaign regression check
+(vanilla MCV/WEAP/HPAD present, no faction types visible).
+
+**Release steps** (per workspace CLAUDE.md): ccmod.json high=4 low=10; `## [4.1.0]` CHANGELOG
+section; commit; `package-for-workshop.sh` (TF_DEV_BUILD=0 — dev cheats + the tf_mcv_test
+lever compile out); Workshop publish per `workshop-publish-runbook.md` (restart Steam first);
+GitHub release + tag v4.1.0; post-release local bump to 4.1.1.
+**Don't forget:** credit Bast75 + xXMini FrankiXx in the Workshop acknowledgments (AI Phase 0
+ideas); update Workshop "Known limitations" — the deploy hotkey is now lost for ALL four
+factions in skirmish (mouse self-click deploys); no em dashes in any user-facing copy.
+**Housekeeping before packaging:** delete `tf_mcv_test.flag` from the desktop prefix when
+capture testing is done (dev-build-only either way).
+
+---
+
 ## ⭐ RESUME HERE — W2(b) construction-yard split (2026-07-19)
 
 **READ FIRST: `docs/w2b-conyard-split-postmortem.md`.** It has the full session record, the
