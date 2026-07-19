@@ -49,7 +49,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_SYRD</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SYRD_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_NavalYard</BuildIcon>
+			<BuildIcon>BuildIcon_SYRD</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -57,7 +57,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_SPEN</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_SPEN_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_SubPen</BuildIcon>
+			<BuildIcon>BuildIcon_SPEN</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 
@@ -177,7 +177,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_RA_AFLD</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_RA_AFLD_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Airfield</BuildIcon>
+			<BuildIcon>BuildIcon_AFLD</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	
@@ -347,7 +347,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_1TNK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_1TNK_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_LightTank</BuildIcon>
+			<BuildIcon>BuildIcon_1TNK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -363,7 +363,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_2TNK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_2TNK_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_MediumTank</BuildIcon>
+			<BuildIcon>BuildIcon_2TNK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	
@@ -371,7 +371,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_4TNK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_4TNK_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_MammothTank</BuildIcon>
+			<BuildIcon>BuildIcon_4TNK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1444,7 +1444,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_GDI_WEAPONS_FACTORY</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_GDI_WEAPONS_FACTORY</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_WeaponsFactory</BuildIcon>
+			<BuildIcon>BuildIcon_TDWEAP</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1516,7 +1516,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TITLE_NOD_AIRFIELD</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_DESC_NOD_AIRFIELD</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Airstrip</BuildIcon>
+			<BuildIcon>BuildIcon_TDAFLD</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1612,7 +1612,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_MED_TANK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_MED_TANK</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_MediumTank</BuildIcon>
+			<BuildIcon>BuildIcon_TDMTNK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1620,7 +1620,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_LIGHT_TANK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_LIGHT_TANK</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_LightTank</BuildIcon>
+			<BuildIcon>BuildIcon_TDLTNK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1628,7 +1628,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_MAMMOTH_TANK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_MAMMOTH_TANK</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_MammothTank</BuildIcon>
+			<BuildIcon>BuildIcon_TDHTNK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1764,7 +1764,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TDGYARD</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGYARD_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_NavalYard</BuildIcon>
+			<BuildIcon>BuildIcon_TDGYARD</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1772,7 +1772,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TDNPEN</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNPEN_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_SubPen</BuildIcon>
+			<BuildIcon>BuildIcon_TDNPEN</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -1780,7 +1780,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TDGAFLD</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGAFLD_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_Airstrip</BuildIcon>
+			<BuildIcon>BuildIcon_TDGAFLD</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
