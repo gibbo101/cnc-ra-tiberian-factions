@@ -4522,6 +4522,13 @@ void BuildingTypeClass::One_Time(void)
             {STRUCT_TDGAFLD, STRUCT_AIRSTRIP},
             {STRUCT_TSPOWR, STRUCT_POWER}, // TS-spike power plant (HD-only TS art)
             {STRUCT_TDSTEALTH, STRUCT_TDSILO}, // Stealth Generator: TS NASTLH art, 2x1 silo-shaped -> TDSILO's classic dims (48x24) + its full TDSILOMAKE construction anim
+            // W2 b3 faction yards: HD-only pipeline art under their own keys
+            // (AFACT/SFACT/TDGFACT/TDNFACT), no classic SHP shipped — donor
+            // the era original's classic dims + construction anim.
+            {STRUCT_AFACT, STRUCT_CONST},
+            {STRUCT_SFACT, STRUCT_CONST},
+            {STRUCT_TDGFACT, STRUCT_TDFACT},
+            {STRUCT_TDNFACT, STRUCT_TDFACT},
         };
         for (int di = 0; di < (int)(sizeof(_td_bdonors) / sizeof(_td_bdonors[0])); di++) {
             BuildingTypeClass& b = As_Reference(_td_bdonors[di].td);

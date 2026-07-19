@@ -99,6 +99,37 @@ bool TF_Dev_Cheats(void)
 #endif
 }
 
+#if TF_DEV_BUILD
+/***********************************************************************************************
+ * TF_Dev_MCV_Test -- Opt-in test lever: one MCV of every faction at skirmish start.            *
+ *                                                                                              *
+ *    Gated on Documents/CnCRemastered/tf_mcv_test.flag (read once, like tf_dev_off.flag).      *
+ *    Deploying an off-faction MCV runs the same type-carries-lineage path as an MCV built      *
+ *    from a captured factory, so all four yards/sidebars can be exercised in one match         *
+ *    without engineering captures. Dev builds only; compiled out of release.                   *
+ *=============================================================================================*/
+static bool TF_Dev_MCV_Test(void)
+{
+    static int cached = -1;
+    if (cached < 0) {
+        cached = 0;
+        const char* h = getenv("USERPROFILE");
+        if (h == NULL)
+            h = getenv("HOME");
+        if (h != NULL) {
+            char p[512];
+            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_mcv_test.flag", h);
+            FILE* f = fopen(p, "r");
+            if (f != NULL) {
+                cached = 1;
+                fclose(f);
+            }
+        }
+    }
+    return cached != 0;
+}
+#endif
+
 extern int PreserveVQAScreen;
 
 void Display_Briefing_Text_GlyphX();
@@ -3519,17 +3550,26 @@ static void Create_Units(bool official)
             scaleval = 1;
             Reserve_Unit();
             /*
-            **  Tiberian Factions: GDI + Nod both spawn UNIT_TDMCV (the TD
-            **  Mobile Construction Vehicle), which deploys into STRUCT_TDFACT
-            **  per UnitClass::Try_To_Deploy. Matches TD original — both
-            **  factions used the same MCV/ConYard sprites. Faction check uses
+            **  W2 b3: each faction spawns its OWN MCV type — the type carries
+            **  the faction, so deploy lineage is automatic. Faction check uses
             **  hptr->ActLike (not Class->House) so multiplayer/skirmish slot
             **  identity doesn't matter — the launcher's France→HOUSE_GOOD /
             **  Spain/Turkey→HOUSE_BAD swap sets ActLike correctly.
             */
-            UnitType mcv_type = UNIT_MCV;
-            if (hptr->ActLike == HOUSE_GOOD || hptr->ActLike == HOUSE_BAD) {
-                mcv_type = UNIT_TDMCV;
+            UnitType mcv_type = UNIT_AMCV;
+            switch (hptr->ActLike) {
+            case HOUSE_GOOD:
+                mcv_type = UNIT_TDGMCV;
+                break;
+            case HOUSE_BAD:
+                mcv_type = UNIT_TDNMCV;
+                break;
+            case HOUSE_USSR:
+            case HOUSE_UKRAINE:
+                mcv_type = UNIT_SMCV;
+                break;
+            default:
+                break;
             }
             /*
             **  Diagnostic for v0.3 phase5e — TDMCV scenario-spawn intercept.
@@ -3576,6 +3616,27 @@ static void Create_Units(bool official)
                     hptr->Flag_Attach((UnitClass*)obj, true);
                 }
             }
+#if TF_DEV_BUILD
+            /*
+            **	Dev test lever (tf_mcv_test.flag): the human also gets one MCV
+            **	of each OTHER faction, to exercise every deploy lineage.
+            */
+            if (TF_Dev_Cheats() && TF_Dev_MCV_Test() && hptr->IsHuman) {
+                static const UnitType _all_mcvs[] = {UNIT_AMCV, UNIT_SMCV, UNIT_TDGMCV, UNIT_TDNMCV};
+                for (int m = 0; m < (int)ARRAY_SIZE(_all_mcvs); m++) {
+                    if (_all_mcvs[m] == mcv_type) {
+                        continue;
+                    }
+                    Reserve_Unit();
+                    UnitClass* extra = new UnitClass(_all_mcvs[m], house);
+                    if (!Scan_Place_Object(extra, centroid)) {
+                        delete extra;
+                    } else {
+                        extra->Set_Mission(MISSION_GUARD);
+                    }
+                }
+            }
+#endif
         } else {
 
             /*

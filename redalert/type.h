@@ -1117,6 +1117,13 @@ public:
 
     void Turret_Adjust(DirType dir, int& x, int& y) const;
 
+    /*
+    **	Role test for a mobile construction vehicle of any faction (the two
+    **	stock-campaign types plus the four faction MCVs). The MCV-vs-yard
+    **	pairing itself lives in MCV_Deploy_Building / the undeploy table.
+    */
+    bool Is_MCV(void) const;
+
 #ifdef SCENARIO_EDITOR
     virtual void Display(int x, int y, WindowNumberType window, HousesType house) const;
 #endif

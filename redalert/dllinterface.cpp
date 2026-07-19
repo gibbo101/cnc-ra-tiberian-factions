@@ -2786,7 +2786,7 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Player_Switch_To_AI(uin
                 UnitClass* obj = Units.Ptr(index);
 
                 if (obj && !obj->IsInLimbo && obj->House == PlayerPtr) {
-                    if (*obj == UNIT_MCV) {
+                    if (obj->Class->Is_MCV()) {
                         obj->Assign_Mission(MISSION_GUARD);
                         obj->Assign_Target(TARGET_NONE);
                         obj->Assign_Destination(TARGET_NONE);

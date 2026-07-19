@@ -1728,7 +1728,7 @@ static void TF_Log_AI_Build_State(void)
             UnitClass* u = Units.Ptr(i);
             if (u != NULL && u->IsActive && !u->IsInLimbo && u->House == hptr) {
                 units++;
-                if (u->Class->Type == UNIT_MCV || u->Class->Type == UNIT_TDMCV) {
+                if (u->Class->Is_MCV()) {
                     mcv++;
                 }
                 if (u->Class->Type == UNIT_HARVESTER || u->Class->Type == UNIT_TDHARV) {
@@ -5290,11 +5290,30 @@ int BuildingClass::Mission_Deconstruction(void)
             **	to an MCV.
             */
             if (Target_Legal(ArchiveTarget) && Class->Is_Construction_Yard() && House->IsHuman && Strength > 0) {
-                // Tiberian Factions: STRUCT_TDFACT undeploys to UNIT_TDMCV
-                // (the TD MCV), which will re-deploy into STRUCT_TDFACT via
-                // MCV_Deploy_Building. Vanilla STRUCT_CONST keeps UNIT_MCV
-                // → STRUCT_CONST round-trip unchanged.
-                UnitType mcv_type = (*this == STRUCT_TDFACT) ? UNIT_TDMCV : UNIT_MCV;
+                // W2 b3: each yard undeploys to its own faction's MCV, the
+                // exact inverse of MCV_Deploy_Building, so the round-trip
+                // preserves lineage. Stock STRUCT_CONST/TDFACT keep their
+                // vanilla pairs.
+                UnitType mcv_type = UNIT_MCV;
+                switch (Class->Type) {
+                case STRUCT_AFACT:
+                    mcv_type = UNIT_AMCV;
+                    break;
+                case STRUCT_SFACT:
+                    mcv_type = UNIT_SMCV;
+                    break;
+                case STRUCT_TDGFACT:
+                    mcv_type = UNIT_TDGMCV;
+                    break;
+                case STRUCT_TDNFACT:
+                    mcv_type = UNIT_TDNMCV;
+                    break;
+                case STRUCT_TDFACT:
+                    mcv_type = UNIT_TDMCV;
+                    break;
+                default:
+                    break;
+                }
                 ScenarioInit++;
                 UnitClass* unit = new UnitClass(mcv_type, House->Class->House);
                 ScenarioInit--;

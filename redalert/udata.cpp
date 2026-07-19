@@ -1690,6 +1690,18 @@ static UnitTypeClass const UnitAlliedMcv(UNIT_AMCV,
 );
 
 /***********************************************************************************************
+ * UnitTypeClass::Is_MCV -- Is this unit a mobile construction vehicle of any faction?          *
+ *                                                                                              *
+ *    Role test mirroring BuildingTypeClass::Is_Construction_Yard. Covers the stock-campaign    *
+ *    pair (MCV / TDMCV) and the four faction MCVs the W2 split created.                        *
+ *=============================================================================================*/
+bool UnitTypeClass::Is_MCV(void) const
+{
+    return (Type == UNIT_MCV || Type == UNIT_AMCV || Type == UNIT_SMCV || Type == UNIT_TDMCV
+            || Type == UNIT_TDGMCV || Type == UNIT_TDNMCV);
+}
+
+/***********************************************************************************************
  * UnitTypeClass::Init_Heap -- Initialize the unit type class heap.                            *
  *                                                                                             *
  *    This initializes the unit type class heap by pre-allocated all the known unit types.     *
@@ -1920,14 +1932,32 @@ void UnitTypeClass::One_Time(void)
         ((int&)uclass.MaxSize) = max(largest, 8);
     }
 
-    // TS-spike: TSHVR ships no classic SHP (HD-only, voxel-rendered tileset).
-    // A NULL ImageData makes Draw_It bail with width=height=0, so donor 2TNK's
-    // pointer; the launcher then renders the real TSHVR frames by IniName from
+    // HD-only units (no classic SHP in any MIX): a NULL ImageData makes
+    // Draw_It bail with width=height=0, so donor a same-size vanilla unit's
+    // pointer; the launcher then renders the real frames by IniName from
     // RA_UNITS.XML (the same NULL-guard pattern as bdata's _td_bdonors block).
+    // TSHVR = TS-spike voxel art; the four W2 b3 faction MCVs carry pipeline
+    // art under their own keys (AMCV/SMCV/TDGMCV/TDNMCV).
     {
-        UnitTypeClass& hvr = As_Reference(UNIT_TSHVR);
-        if (hvr.ImageData == NULL) {
-            ((void const*&)hvr.ImageData) = As_Reference(UNIT_MTANK2).ImageData;
+        static const struct { UnitType hd; UnitType donor; } _hd_udonors[] = {
+            {UNIT_TSHVR, UNIT_MTANK2},
+            {UNIT_AMCV, UNIT_MCV},
+            {UNIT_SMCV, UNIT_MCV},
+            {UNIT_TDGMCV, UNIT_TDMCV},
+            {UNIT_TDNMCV, UNIT_TDMCV},
+        };
+        for (int di = 0; di < (int)(sizeof(_hd_udonors) / sizeof(_hd_udonors[0])); di++) {
+            UnitTypeClass& u = As_Reference(_hd_udonors[di].hd);
+            UnitTypeClass const& d = As_Reference(_hd_udonors[di].donor);
+            if (u.ImageData == NULL) {
+                ((void const*&)u.ImageData) = d.ImageData;
+            }
+            // The frame loop above floored MaxSize at 8 (no readable frames),
+            // which shrinks the selection box to a sliver — take the donor's
+            // real dimensions (rules.ini ShapeSize=, parsed later, still wins).
+            if (u.MaxSize <= 8) {
+                ((int&)u.MaxSize) = d.MaxSize;
+            }
         }
     }
 

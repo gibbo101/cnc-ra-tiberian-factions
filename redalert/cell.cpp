@@ -2314,6 +2314,23 @@ int CellClass::Tiberium_Adjust(bool pregame)
 extern bool MPSuperWeaponDisable;
 
 /***********************************************************************************************
+ * House_Has_MCV -- Does this house own any MCV (stock or faction)?                            *
+ *                                                                                              *
+ *    The UScan bitmask can only represent the first 32 unit Types, so the faction MCVs         *
+ *    (past that range) are invisible to a UNITF_MCV test; scan the unit heap instead.          *
+ *=============================================================================================*/
+static bool House_Has_MCV(HouseClass const* house)
+{
+    for (int i = 0; i < Units.Count(); i++) {
+        UnitClass const* u = Units.Ptr(i);
+        if (u != NULL && u->IsActive && !u->IsInLimbo && u->House == house && u->Class->Is_MCV()) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
+/***********************************************************************************************
  * CellClass::Goodie_Check -- Performs crate discovery logic.                                  *
  *                                                                                             *
  *    Call this routine whenever an object enters a cell. It will check for the existence      *
@@ -2517,7 +2534,7 @@ bool CellClass::Goodie_Check(FootClass* object)
                 && object->House->Available_Money() > ((BuildingTypeClass::As_Reference(STRUCT_REFINERY).Cost
                                                         + BuildingTypeClass::As_Reference(STRUCT_POWER).Cost)
                                                        * object->House->CostBias)
-                && Session.Options.Bases && !(object->House->UScan & UNITF_MCV)) {
+                && Session.Options.Bases && !House_Has_MCV(object->House)) {
                 powerup = CRATE_UNIT;
                 force_mcv = true;
             }
@@ -2659,7 +2676,31 @@ bool CellClass::Goodie_Check(FootClass* object)
             **	give him another one.
             */
             if (force_mcv) {
-                utp = &UnitTypeClass::As_Reference(UNIT_MCV);
+                /*
+                **	W2 b3: a comeback MCV must be the recipient's OWN faction's —
+                **	this fires when the player is already wiped, the one moment an
+                **	off-faction yard would be unrecoverable. Campaign keeps the
+                **	stock MCV.
+                */
+                UnitType mcv_type = UNIT_MCV;
+                if (Session.Type != GAME_NORMAL) {
+                    switch (object->House->ActLike) {
+                    case HOUSE_GOOD:
+                        mcv_type = UNIT_TDGMCV;
+                        break;
+                    case HOUSE_BAD:
+                        mcv_type = UNIT_TDNMCV;
+                        break;
+                    case HOUSE_USSR:
+                    case HOUSE_UKRAINE:
+                        mcv_type = UNIT_SMCV;
+                        break;
+                    default:
+                        mcv_type = UNIT_AMCV;
+                        break;
+                    }
+                }
+                utp = &UnitTypeClass::As_Reference(mcv_type);
             }
 
             /*
@@ -2690,7 +2731,7 @@ bool CellClass::Goodie_Check(FootClass* object)
 #else
                 UnitType utype = Random_Pick(UNIT_FIRST, (UnitType)(UNIT_COUNT - 1));
 #endif
-                if (utype != UNIT_MCV || Session.Options.Bases) {
+                if (!UnitTypeClass::As_Reference(utype).Is_MCV() || Session.Options.Bases) {
                     utp = &UnitTypeClass::As_Reference(utype);
                     if (utp->IsCrateGoodie
                         && (utp->Ownable & (1 << HouseClass::As_Pointer(object->Owner())->ActLike))) {

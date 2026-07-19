@@ -1003,6 +1003,20 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     }
 
     /*
+    **	W2 b3: skirmish/multiplayer builds the four faction MCVs; the vanilla
+    **	pair (UNIT_MCV / UNIT_TDMCV) is stock-campaign-only. Gate both
+    **	directions on session type so a campaign sidebar never shows a faction
+    **	MCV and a skirmish sidebar never shows a vanilla one.
+    */
+    if (type->What_Am_I() == RTTI_UNITTYPE && ((UnitTypeClass const*)type)->Is_MCV()) {
+        UnitType ut = ((UnitTypeClass const*)type)->Type;
+        bool vanilla = (ut == UNIT_MCV || ut == UNIT_TDMCV);
+        if (vanilla == (Session.Type != GAME_NORMAL)) {
+            return (false);
+        }
+    }
+
+    /*
     **	Prereq satisfaction: every populated slot in Prerequisite[] must
     **	correspond to a building Type the house currently owns (active +
     **	unlimbo'd). ActiveBQuantity is the heap-sized counter that handles
@@ -1041,18 +1055,28 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
 
         /*
         **	Advanced power also serves as a prerequisite for normal power.
-        **	Either tech center counts as a prerequisite in multiplayer.
         **	These vanilla equivalences are due to be replaced with a
         **	BehavesLike= rules.ini field in D2; until then, special-case here.
+        **
+        **	DELIBERATE VANILLA DEVIATION (Luke, 2026-07-19): the multiplayer
+        **	either-tech-center-counts rule (atek<->stek) is REMOVED. Tech
+        **	centers are faction identity — Soviet Mammoths need the Soviet
+        **	tech center, Chronosphere tech the Allied one. Capture still
+        **	works: a captured tech center satisfies its own faction's token.
         */
         if (t == STRUCT_POWER && Has_Building_Active(STRUCT_ADVANCED_POWER))
             continue;
-        if (Session.Type != GAME_NORMAL) {
-            if (t == STRUCT_ADVANCED_TECH && Has_Building_Active(STRUCT_SOVIET_TECH))
-                continue;
-            if (t == STRUCT_SOVIET_TECH && Has_Building_Active(STRUCT_ADVANCED_TECH))
-                continue;
-        }
+        /*
+        **	W2 b3: any construction yard satisfies the vanilla 'fact' token
+        **	([POWR]'s Prerequisite=fact) — post-split a house owns its faction's
+        **	yard, never STRUCT_CONST, and without this the whole Allied/Soviet
+        **	tech tree dies at the power plant.
+        */
+        if (t == STRUCT_CONST
+            && (Has_Building_Active(STRUCT_AFACT) || Has_Building_Active(STRUCT_SFACT)
+                || Has_Building_Active(STRUCT_TDFACT) || Has_Building_Active(STRUCT_TDGFACT)
+                || Has_Building_Active(STRUCT_TDNFACT)))
+            continue;
         /*
         **  Tiberian Factions: TD-themed barracks satisfy vanilla barracks
         **  prereqs so HOUSE_GOOD (TDPYLE) and HOUSE_BAD (TDHAND) can build
@@ -1220,6 +1244,24 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             if (t == STRUCT_SUB_PEN && tdnpen_type >= 0 && Has_Building_Active(tdnpen_type))
                 continue;
             if (t == STRUCT_AIRSTRIP && tdgafld_type >= 0 && Has_Building_Active(tdgafld_type))
+                continue;
+            // Cross-era infrastructure equivalence (Luke, 2026-07-19): either
+            // era's power plant or refinery satisfies BOTH eras' tokens, so a
+            // captured tech tree never demands a duplicate of a basic the
+            // house already runs. The RA-token direction (powr/proc ->
+            // satisfied by TD buildings) is above; this is the TD-token
+            // direction (TDNUKE/TDPROC <- satisfied by RA buildings). The
+            // advanced plants count as power on both sides, mirroring the
+            // vanilla POWER<-ADVANCED_POWER rule. (Repair bay needs no clause:
+            // nothing requires "TDFIX" by name — all repair-bay gating uses
+            // the vanilla 'fix' token, remapped above.)
+            if (t == tdnuke_type
+                && (Has_Building_Active(STRUCT_POWER) || Has_Building_Active(STRUCT_ADVANCED_POWER)
+                    || (tdnuk2_type >= 0 && Has_Building_Active(tdnuk2_type))))
+                continue;
+            if (t == tdproc_type && Has_Building_Active(STRUCT_REFINERY))
+                continue;
+            if (t == tdhq_type && Has_Building_Active(STRUCT_RADAR))
                 continue;
         }
         return (false);
@@ -5603,7 +5645,7 @@ int HouseClass::Expert_AI(void)
         for (index = 0; index < Units.Count() && hunters < TF_SCOUT_DETAIL; index++) {
             UnitClass* u = Units.Ptr(index);
             if (u != NULL && !u->IsInLimbo && u->House == this && u->Strength > 0 && u->Is_Weapon_Equipped()
-                && !u->Class->IsToHarvest && *u != UNIT_MCV && *u != UNIT_TDMCV
+                && !u->Class->IsToHarvest && !u->Class->Is_MCV()
                 && (u->Mission == MISSION_GUARD || u->Mission == MISSION_GUARD_AREA)) {
                 u->Assign_Mission(MISSION_HUNT);
                 hunters++;
@@ -9501,7 +9543,7 @@ void HouseClass::Check_Pertinent_Structures(void)
         for (int index = 0; index < Units.Count(); index++) {
             UnitClass* unit = Units.Ptr(index);
 
-            if (unit && unit->IsActive && (*unit == UNIT_MCV || *unit == UNIT_TDMCV) && unit->House == this) {
+            if (unit && unit->IsActive && unit->Class->Is_MCV() && unit->House == this) {
                 if (!unit->IsInLimbo && unit->Strength > 0) {
                     any_good_buildings = true;
                     break;

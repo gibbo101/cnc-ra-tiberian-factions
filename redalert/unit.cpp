@@ -114,17 +114,28 @@ extern bool Is_Legacy_Render_Enabled(void);
 #endif
 
 /*
-**  Map a deploying MCV to the StructType it should produce. UNIT_TDMCV
-**  (Tiberian Factions MCV, shared by GDI + Nod) deploys into the
-**  TD-source Construction Yard STRUCT_TDFACT. Vanilla UNIT_MCV deploys
-**  into STRUCT_CONST as RA always did. Now a clean type dispatch
-**  (post-separation) — was previously an IniName-string lookup gated
-**  on ActLike==HOUSE_GOOD, before TDMCV/TDFACT became real enum entries.
+**  Map a deploying MCV to the StructType it should produce. The MCV TYPE
+**  carries the faction (W2 b3), so an MCV built from a captured factory
+**  deploys the capturing lineage's yard with no extra state. The
+**  stock-campaign pair keeps its vanilla round-trip.
 */
 static StructType MCV_Deploy_Building(UnitClass const* unit)
 {
-    if (unit != NULL && *unit == UNIT_TDMCV) {
-        return STRUCT_TDFACT;
+    if (unit != NULL) {
+        switch (unit->Class->Type) {
+        case UNIT_AMCV:
+            return STRUCT_AFACT;
+        case UNIT_SMCV:
+            return STRUCT_SFACT;
+        case UNIT_TDGMCV:
+            return STRUCT_TDGFACT;
+        case UNIT_TDNMCV:
+            return STRUCT_TDNFACT;
+        case UNIT_TDMCV:
+            return STRUCT_TDFACT;
+        default:
+            break;
+        }
     }
     return STRUCT_CONST;
 }
@@ -1533,7 +1544,7 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
             House->Flag_To_Die();
         }
 
-        if (*this == UNIT_MCV || *this == UNIT_TDMCV) {
+        if (Class->Is_MCV()) {
             if (House) {
                 House->Check_Pertinent_Structures();
             }
@@ -2002,7 +2013,7 @@ bool UnitClass::Try_To_Deploy(void)
     assert(IsActive);
 
     if (!Target_Legal(NavCom) && !IsRotating) {
-        if (*this == UNIT_MCV || *this == UNIT_TDMCV) {
+        if (Class->Is_MCV()) {
 
             /*
             **	Determine if it is legal to deploy at this location. If not, tell the
@@ -3851,6 +3862,10 @@ int UnitClass::Mission_Unload(void)
 
     case UNIT_MCV:
     case UNIT_TDMCV:    // TD MCV — same deploy AI as UNIT_MCV.
+    case UNIT_AMCV:     // W2 b3 faction MCVs — same deploy AI, different yard
+    case UNIT_SMCV:     // via MCV_Deploy_Building.
+    case UNIT_TDGMCV:
+    case UNIT_TDNMCV:
         switch (Status) {
         case 0:
             Path[0] = FACING_NONE;
@@ -4389,7 +4404,7 @@ int UnitClass::Mission_Hunt(void)
     assert(Units.ID(this) == ID);
     assert(IsActive);
 
-    if (*this == UNIT_MCV || *this == UNIT_TDMCV) {
+    if (Class->Is_MCV()) {
         enum
         {
             FIND_SPOT,
@@ -4938,7 +4953,7 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
     **	Don't allow special deploy action unless there is something to deploy.
     */
     if (action == ACTION_SELF) {
-        if (*this == UNIT_MCV || *this == UNIT_TDMCV) {
+        if (Class->Is_MCV()) {
 
             /*
             **	The MCV will get the no-deploy cursor if it couldn't
@@ -5199,7 +5214,7 @@ int UnitClass::Mission_Guard(void)
         //		return(MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
     }
 
-    if ((*this == UNIT_MCV || *this == UNIT_TDMCV) && House->IsBaseBuilding) {
+    if (Class->Is_MCV() && House->IsBaseBuilding) {
         Assign_Mission(MISSION_UNLOAD);
         return (MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
     }
