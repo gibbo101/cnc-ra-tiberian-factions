@@ -333,7 +333,7 @@ static UnitTypeClass const UnitHarvester(UNIT_HARVESTER,
 // Mobile construction vehicle
 static UnitTypeClass const UnitMCV(UNIT_AMCV,
                                    TXT_MCV,         // NAME:			Text name of this unit type.
-                                   "MCV",           // NAME:			Text name of this unit type.
+                                   "AMCV",          // IniName (was "MCV" -- see From_Name legacy alias).
                                    ANIM_FBALL1,     // EXPLOSION:	Type of explosion when destroyed.
                                    REMAP_ALTERNATE, // Sidebar remap logic.
                                    0x0000,          //	Vertical offset.
@@ -410,7 +410,7 @@ static UnitTypeClass const UnitTdHarv(UNIT_TDHARV,
 */
 static UnitTypeClass const UnitTdMcv(UNIT_TDGMCV,
                                      TXT_MCV,         // NAME:			Text name of this unit type.
-                                     "TDMCV",         // NAME:			IniName.
+                                     "TDGMCV",        // IniName (was "TDMCV").
                                      ANIM_FBALL1,     // EXPLOSION:	Type of explosion when destroyed.
                                      REMAP_ALTERNATE, // Sidebar remap logic.
                                      0x0000,          //	Vertical offset.
@@ -1722,6 +1722,15 @@ void UnitTypeClass::Init_Heap(void)
 UnitType UnitTypeClass::From_Name(char const* name)
 {
     if (name != NULL) {
+        /*
+        **	Legacy alias: Red Alert's MCV shipped as "MCV" and is now the Allied one, "AMCV".
+        **	Stock RA scenario files place "MCV" by name and we do not own that content, so the
+        **	old spelling has to keep resolving.
+        */
+        if (stricmp(name, "MCV") == 0) {
+            return (UNIT_AMCV);
+        }
+
         for (UnitType classid = UNIT_FIRST; classid < UNIT_COUNT; classid++) {
             if (stricmp(As_Reference(classid).IniName, name) == 0) {
                 return (classid);

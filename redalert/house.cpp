@@ -6763,7 +6763,7 @@ int HouseClass::AI_Building(void)
             FILE* _tfdbg = TF_AI_Diag_File();
             if (_tfdbg != NULL) {
                 static char const* _bn[9] =
-                    {"TDPROC", "TDHAND", "TDWEAP", "TDNUK", "TDNUK2", "TDFACT", "TDTMPL", "TDEYE", "TDSTEAL"};
+                    {"TDPROC", "TDHAND", "TDWEAP", "TDNUK", "TDNUK2", "TDGFACT", "TDTMPL", "TDEYE", "TDSTEAL"};
                 fprintf(_tfdbg,
                         "F%ld H%d AL%d base=%d Tech=%d $%d Pow=%d Drain=%d PF<1=%d CurB=%d hasinc=%d refQ=%d "
                         "harvQ=%d tibShort=%d ABScan=%08X |",

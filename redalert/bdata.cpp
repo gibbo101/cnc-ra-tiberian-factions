@@ -1088,7 +1088,7 @@ static BuildingTypeClass const ClassTdProc(STRUCT_TDPROC,
 */
 static BuildingTypeClass const ClassTdFact(STRUCT_TDGFACT,
                                            TXT_NONE,           // Display name (rules.ini Name= overrides).
-                                           "TDFACT",           // IniName.
+                                           "TDGFACT",          // IniName (was "TDFACT").
                                            FACING_NONE,        // Foundation direction.
                                            XYP_COORD(0, 0),    // Exit point unused (not a vehicle factory).
                                            REMAP_ALTERNATE,    // Sidebar remap logic.
@@ -1503,7 +1503,7 @@ static BuildingTypeClass const ClassFlameTurret(STRUCT_FLAME_TURRET,
 
 static BuildingTypeClass const ClassConst(STRUCT_AFACT,
                                           TXT_CONST_YARD,    // NAME:			Short name of the structure.
-                                          "FACT",            // NAME:			Short name of the structure.
+                                          "AFACT",           // IniName (was "FACT" -- see From_Name legacy alias).
                                           FACING_NONE,       // Foundation direction from center of building.
                                           XYP_COORD(0, 0),   // Exit point for produced units.
                                           REMAP_ALTERNATE,   // Sidebar remap logic.
@@ -4513,6 +4513,15 @@ void BuildingTypeClass::One_Time(void)
 StructType BuildingTypeClass::From_Name(char const* name)
 {
     if (name != NULL) {
+        /*
+        **	Legacy alias: Red Alert's construction yard shipped as "FACT" and is now the
+        **	Allied one, "AFACT". Stock RA scenario files place "FACT" by name and we do not
+        **	own that content, so the old spelling has to keep resolving.
+        */
+        if (stricmp(name, "FACT") == 0) {
+            return (STRUCT_AFACT);
+        }
+
         for (int classid = STRUCT_FIRST; classid < STRUCT_COUNT; classid++) {
             if (stricmp(As_Reference((StructType)classid).IniName, name) == 0) {
                 return ((StructType)classid);

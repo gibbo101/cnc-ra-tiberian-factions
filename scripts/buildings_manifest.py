@@ -468,7 +468,7 @@ TDEYE = {
 
 
 TDFACT = {
-    "ininame":     "TDFACT",
+    "ininame":     "TDGFACT",
     "logic":       None,         # M4 Tier 3 separated 2026-05-27 — STRUCT_TDFACT native.
     "td_asset":    "FACT",
     "footprint":   None,         # ClassTdFact uses native BSIZE_32 + List32 (TD-authentic 3x2; RA's STRUCT_CONST is BSIZE_33).
