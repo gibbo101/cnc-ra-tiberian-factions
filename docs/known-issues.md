@@ -76,8 +76,17 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 ## Pathfinding / AI cooperation
 
 ### Units livelock re-pathing to the cell they already occupy (`src==dst`) — FIX WRITTEN, UNVERIFIED 2026-07-19
-- **Severity:** major (each affected unit sits out the entire match; engineers worst hit, and it is
-  the dominant source of A* fallbacks — ~88% of all failures in the matches measured).
+- **Severity:** minor-to-major, not yet pinned (see the measurement caveat below).
+- **Measurement caveat — read before acting on any share figure.** Early in a match the self-cell
+  fallbacks dominate (164/193, ~85%), which is where the "this is most of our pathing failures"
+  read came from. Over a FULL match that inverts: the self-cell count plateaus (706, flat across
+  successive samples) while genuine `src!=dst` failures keep climbing (2975 -> 3014 and rising).
+  So the livelock is real and worth fixing, but it is a minority of total fallbacks over a match,
+  and the plateau suggests affected units stop spinning eventually (killed, or re-tasked) rather
+  than hanging for the whole game. **Sample a full match before quoting a share.**
+- **The bigger open question this surfaced:** genuine `src!=dst` failures run into the thousands per
+  match (harvesters prominent on the Deck: `TDHARV` fallbacks at 1584 and climbing). That is a
+  separate and probably larger issue than the livelock. Not yet investigated.
 - **Status:** root-caused 2026-07-19, fix written in `redalert/foot.cpp`, **not yet playtested**.
 - **Symptom:** `tf_astar.log` fills with fallbacks whose source and destination are the same cell,
   repeating on a fixed cell indefinitely: `unit=TDE6 src=(58,76) dst=(58,76)`. Measured live at
