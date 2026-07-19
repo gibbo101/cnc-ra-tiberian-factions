@@ -336,6 +336,37 @@ void SidebarGlyphxClass::StripClass::Init_Clear(void)
  * HISTORY:                                                                                    *
  *   12/31/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
+/*
+**	Sidebar grouping key (Luke, 2026-07-20): shared entries first, then one
+**	block per faction (Allied, Soviet, GDI, Nod), each block in tech-level
+**	order. Keyed off Ownable side bits, so an entry's place is stable — a
+**	captured tree's cameos cluster into their faction's block instead of
+**	appending wherever the recalc found them.
+*/
+static int TF_Sidebar_Sort_Key(RTTIType type, int id)
+{
+    TechnoTypeClass const* tech = Fetch_Techno_Type(type, id);
+    if (tech == NULL) {
+        return (0);
+    }
+    int own = tech->Get_Ownable();
+    int sides = ((own & HOUSEF_ALLIES) ? 1 : 0) + ((own & HOUSEF_SOVIET) ? 1 : 0) + ((own & HOUSEF_GDI) ? 1 : 0)
+                + ((own & HOUSEF_NOD) ? 1 : 0);
+    int group;
+    if (sides >= 2) {
+        group = 0; // shared block leads
+    } else if (own & HOUSEF_ALLIES) {
+        group = 1;
+    } else if (own & HOUSEF_SOVIET) {
+        group = 2;
+    } else if (own & HOUSEF_GDI) {
+        group = 3;
+    } else {
+        group = 4; // Nod
+    }
+    return (group * 100 + min((unsigned)99, tech->Level));
+}
+
 bool SidebarGlyphxClass::StripClass::Add(RTTIType type, int id, bool via_capture)
 {
     if (BuildableCount <= MAX_BUILDABLES) {
@@ -347,10 +378,23 @@ bool SidebarGlyphxClass::StripClass::Add(RTTIType type, int id, bool via_capture
         if (!ScenarioInit && type != RTTI_SPECIAL) {
             Speak(VOX_NEW_CONSTRUCT);
         }
-        Buildables[BuildableCount].BuildableType = type;
-        Buildables[BuildableCount].BuildableID = id;
-        Buildables[BuildableCount].Factory = -1;
-        Buildables[BuildableCount].BuildableViaCapture = via_capture;
+        /*
+        **	Sorted insertion by the grouping key. Entries move as whole
+        **	structs (the Factory ref travels along), and clicks reference
+        **	Type/ID rather than positions, so mid-game inserts are safe.
+        */
+        int key = TF_Sidebar_Sort_Key(type, id);
+        int at = BuildableCount;
+        while (at > 0 && TF_Sidebar_Sort_Key(Buildables[at - 1].BuildableType, Buildables[at - 1].BuildableID) > key) {
+            at--;
+        }
+        for (int move = BuildableCount; move > at; move--) {
+            Buildables[move] = Buildables[move - 1];
+        }
+        Buildables[at].BuildableType = type;
+        Buildables[at].BuildableID = id;
+        Buildables[at].Factory = -1;
+        Buildables[at].BuildableViaCapture = via_capture;
         BuildableCount++;
         return (true);
     }
