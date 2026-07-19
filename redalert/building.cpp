@@ -1707,7 +1707,7 @@ static void TF_Log_AI_Build_State(void)
                 if (b->Cloak == CLOAKED || b->Cloak == CLOAKING) {
                     cloaked++;
                 }
-                if (*b == STRUCT_CONST) {
+                if (b->Class->Is_Construction_Yard()) {
                     conyard++;
                 }
                 int len = (int)strlen(names);
@@ -1728,7 +1728,7 @@ static void TF_Log_AI_Build_State(void)
             UnitClass* u = Units.Ptr(i);
             if (u != NULL && u->IsActive && !u->IsInLimbo && u->House == hptr) {
                 units++;
-                if (u->Class->Type == UNIT_MCV) {
+                if (u->Class->Type == UNIT_MCV || u->Class->Type == UNIT_TDMCV) {
                     mcv++;
                 }
                 if (u->Class->Type == UNIT_HARVESTER || u->Class->Type == UNIT_TDHARV) {
