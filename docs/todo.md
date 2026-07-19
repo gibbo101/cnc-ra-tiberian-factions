@@ -33,6 +33,32 @@ capture testing is done (dev-build-only either way).
 
 ---
 
+## Faction paratroops split (Luke, 2026-07-20 — queued; ride 4.1 if testing is quick, else 4.1.1)
+
+**Observed:** owning the Soviet airfield AND Nod airstrip+Hand still gives ONE paratroop
+option. Not a regression — superweapons are house-level singletons (one `SuperWeapon[SPC_*]`
+slot per type; `SPC_PARA_INFANTRY` just has two grant paths, house.cpp:2437).
+
+**The fix is the Temple-nuke pattern** (`SPC_TD_NUKE` coexisting with `SPC_NUCLEAR_BOMB`):
+1. New `SPC_TD_PARA_INFANTRY` in defines.h (before `SPC_COUNT`; note `SPC_CHRONO2 = SPC_COUNT`
+   alias shifts — check its users).
+2. `HouseClass::Init_Data`: SuperClass init line (copy the para one).
+3. Grant split at house.cpp:2437: existing `SPC_PARA_INFANTRY` becomes Soviet-airfield-only;
+   the Nod path (TDAFLD+TDHAND) enables the new special.
+4. Firing path: find the `SPC_PARA_INFANTRY` case in the special-fired dispatch; TD variant
+   drops TD infantry (TDE1s) — ideally from the C-17 (`AIRCRAFT_TDCARGO`), Badger acceptable
+   for v1.
+5. `Convert_Special_Weapon_Type`: new case → `SW_PARA_INFANTRY` dll enum + a distinct asset
+   name (e.g. `SW_TDParaInf`); matching `RA_SW_TDPARAINF` RABUILDABLES block (Nod-badged
+   cameo, ModText name) — the launcher renders by AssetName, which is how the two nukes
+   coexist today.
+6. Sidebar sort table in `TF_Sidebar_Sort_Key` (`sidebarglyphx.cpp`): existing para-inf moves
+   to the Soviet block, the new one to Nod.
+7. Related 4.0 leftover in memory: "missed Soviet parabombs" rides the AI milestone's
+   superweapon work — same neighborhood, maybe the same session.
+
+---
+
 ## ⭐ RESUME HERE — W2(b) construction-yard split (2026-07-19)
 
 **READ FIRST: `docs/w2b-conyard-split-postmortem.md`.** It has the full session record, the

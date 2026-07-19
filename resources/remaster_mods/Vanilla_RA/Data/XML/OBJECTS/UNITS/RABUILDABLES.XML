@@ -688,56 +688,56 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_SPYPLANE</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_SPYPLANE_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_SpyPlane</BuildIcon>
+			<BuildIcon>BuildIcon_SW_SPYMISSION</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	<ObjectTypeClass Name="RA_SW_PARAINFANTRY" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_PARATROOPER</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_PARATROOPER_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Paratroopers</BuildIcon>
+			<BuildIcon>BuildIcon_SW_PARAINFANTRY</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	<ObjectTypeClass Name="RA_SW_PARABOMB" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_PARABOMB</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_PARABOMB_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Parabombs</BuildIcon>
+			<BuildIcon>BuildIcon_SW_PARABOMB</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	<ObjectTypeClass Name="RA_SW_IRONCURTAIN" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_IRONCURTAIN</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_IRONCURTAIN_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Invulnerability</BuildIcon>
+			<BuildIcon>BuildIcon_SW_IRONCURTAIN</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	<ObjectTypeClass Name="RA_SW_NUKE" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_NUKE</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_NUKE_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_AtomBomb</BuildIcon>
+			<BuildIcon>BuildIcon_SW_NUKE</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	<ObjectTypeClass Name="RA_SW_SONARPULSE" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_SONAR</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_SONAR_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_SonarPulse</BuildIcon>
+			<BuildIcon>BuildIcon_SW_SONARPULSE</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	<ObjectTypeClass Name="RA_SW_GPS" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_GPS</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_GPS_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_GpsSatellite</BuildIcon>
+			<BuildIcon>BuildIcon_SW_GPS</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>	
 	<ObjectTypeClass Name="RA_SW_CHRONO" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_CHRONO</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_RA_CHRONO_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_RA_Chronoshift</BuildIcon>
+			<BuildIcon>BuildIcon_SW_CHRONO</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -750,7 +750,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_IONCANNON</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_IONCANNON</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_IonCannon</BuildIcon>
+			<BuildIcon>BuildIcon_SW_IONCANNON</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
@@ -765,7 +765,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_NUCLEAR_STRIKE</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_NUCLEAR_STRIKE</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TD_NuclearStrike</BuildIcon>
+			<BuildIcon>BuildIcon_SW_TDNUKE</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

@@ -345,6 +345,33 @@ void SidebarGlyphxClass::StripClass::Init_Clear(void)
 */
 static int TF_Sidebar_Sort_Key(RTTIType type, int id)
 {
+    /*
+    **	Superweapons have no TechnoTypeClass; their faction set comes from the
+    **	grant sites in house.cpp (ATEK/TDEYE for GPS, the airfields for the
+    **	drops, etc.) — keep this table in step with those.
+    */
+    if (type == RTTI_SPECIAL) {
+        switch ((SpecialWeaponType)id) {
+        case SPC_NUCLEAR_BOMB: // MSLO — Allied+Soviet
+        case SPC_GPS:          // ATEK or TDEYE — Allied+GDI
+        case SPC_PARA_INFANTRY: // Soviet airfield or Nod airstrip+Hand
+        case SPC_SPY_MISSION:   // Soviet airfield or Nod airstrip
+            return (0); // shared block
+        case SPC_SONAR_PULSE:
+        case SPC_CHRONOSPHERE:
+            return (100); // Allied
+        case SPC_PARA_BOMB:
+        case SPC_IRON_CURTAIN:
+            return (200); // Soviet
+        case SPC_TD_ION_CANNON:
+            return (300); // GDI
+        case SPC_TD_NUKE:
+            return (400); // Nod
+        default:
+            return (0);
+        }
+    }
+
     TechnoTypeClass const* tech = Fetch_Techno_Type(type, id);
     if (tech == NULL) {
         return (0);
