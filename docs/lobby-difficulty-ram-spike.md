@@ -23,6 +23,28 @@ owns the lobby, reading the authoritative values directly. No broadcast, no
 cross-peer mirroring, no scanner v4, no live-model hex hunt. The `PHASEB-ID` GlyphxID
 probe was built to find a live model we did not need.
 
+**LIVE-VERIFIED in LAN MP 2026-07-19.** Lobby Easy/Easy/Easy/Hard with two humans read
+`s2=1 s3=1 s4=1 s5=3` and applied IQ 3/3/3/5, each house tagged `[slot n]`, shown
+on screen on **both** peers. The multiset `{1,1,1,3}` is not a permutation of the
+cached `{1,2,2,3}`, so this is unambiguously a live read rather than a stale one.
+(The joiner displaying host-generated messages is itself further confirmation of the
+host-only model: its own DLL never ran.)
+
+⚠️ **Known limitation — stale records within a game session.** The scanner requires
+every validated candidate array to agree and bails otherwise. Returning to the lobby
+between matches, changing difficulties and starting again (without relaunching the
+game) leaves older record copies in memory, and the read then either takes stale
+values or fails with `ram_slots=0`. Both observed 2026-07-19. **Failure is graceful**
+— it falls back to global Hard, i.e. shipped v4.0 behaviour — so the worst case is
+"no per-slot difficulty", never a broken match. Workaround: relaunch the game after
+changing lobby difficulties. Real fix: stop demanding unanimity and prefer the
+newest/most-specific candidate array; the `PHASEB-CAND` raw dump (removed in
+`06ca30a`, restore from history) is the tool for that.
+
+**`tf_ai_difficulty.txt` now applies in multiplayer too.** It was previously solo-only
+on the reasoning that a per-machine file would desync peers. Only the host simulates,
+so the host's file is the only one that reaches the sim. Not yet live-verified in MP.
+
 **The resulting fix is the removal of a guard, not an implementation:** the
 `TF_HumanPlayerCount < 2` gate on `apply_per_slot` was protecting against a
 divergence that cannot occur. Since a joiner never executes the DLL, *any* execution

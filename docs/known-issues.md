@@ -10,17 +10,28 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## AI difficulty
 
-### Per-slot difficulty applies stale values in 1-human LAN lobbies — OPEN 2026-07-19
-- **Severity:** minor (wrong AI difficulty tier applied; no crash/desync — 2+ human lobbies are
-  protected by the determinism guard).
-- **Cause:** the phase-A apply gate is `humans < 2`, which covers hosting a LAN lobby alone as well
-  as real solo skirmish. The scanned `AIPLAYERn` records are the account's **saved skirmish config**,
-  which matches the live lobby only in real solo skirmish — in a LAN lobby the applied values can be
-  from a previous lobby entirely (proven on the 2026-07-18 rig; `docs/lobby-difficulty-ram-spike.md`
-  phase-B section).
-- **Fix path:** rides scanner v4 (read the live lobby model once probe v3 locates it); interim
-  option if v4 stalls: gate per-slot apply out of LAN lobbies if they're distinguishable from solo
-  skirmish DLL-side.
+### Per-slot difficulty goes stale or fails when lobby difficulties change within a session — OPEN 2026-07-19
+- **Severity:** minor (either a wrong difficulty tier or a clean fall back to global Hard; no crash,
+  and no desync is possible — only the host simulates a LAN match).
+- **Repro:** play a match, return to the lobby, change the AI difficulties, start again **without
+  relaunching the game**. Difficulties can only be changed pre-start, so this is the normal
+  play/tweak/replay flow.
+- **Cause:** the scanner requires every validated `AIPLAYERn` candidate array in client memory to
+  agree, and older record copies survive within a game process. When the new lobby differs from
+  what those copies hold, the read either takes the stale values or bails with `ram_slots=0`.
+  Both observed 2026-07-19: lobby `1,2,2,3` read as the cached `2,2,3,1` (stale, applied), then a
+  lobby of `1,1,1,3` produced `ram_slots=0`.
+- **Failure is graceful:** `ram_slots=0` falls back to global Hard, which is shipped v4.0 behaviour.
+  Worst case is "no per-slot difficulty", never a broken or desynced match.
+- **Workaround:** relaunch the game after changing lobby difficulties. A fresh launch reads
+  correctly every time (verified: Easy/Easy/Easy/Hard → IQ 3/3/3/5 with 2 humans).
+- **Fix path:** stop demanding unanimity — prefer the newest/most-specific candidate array. The
+  `PHASEB-CAND` raw dump shows what the competing arrays hold; it was removed in `06ca30a` and
+  should be restored from history to do this work.
+- **Superseded reasoning:** this entry previously blamed the `humans < 2` apply gate and described
+  the records as the account's saved skirmish config. Both are wrong — the gate is gone
+  (`bb69419`) and the records do track the live lobby on a fresh launch. See
+  `docs/lobby-difficulty-ram-spike.md` status block.
 - **Scope update (overnight desktop session 2026-07-19): the stale record also hits the FIRST
   SOLO SKIRMISH after a LAN session, then self-corrects.** Match 1 of the night launched with the
   rig-night roster in `CNC_Set_Multiplayer_Data` (8 slots: 2 human Steam IDs incl. a ghost second

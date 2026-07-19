@@ -2549,15 +2549,13 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
     **	every difficulty.
     */
     DiffType diff = DIFF_HARD;
-    char tf_diff_source = 'd'; // d=default, f=file, m=multiplayer-guard
+    char tf_diff_source = 'd'; // d=default, f=file
 
-    // Multiplayer determinism guard: with 2+ human players the AI IQ must be
-    // identical on every peer or the lockstep sim desyncs. The flag file is
-    // per-machine, so it is only honoured in solo play; MP forces the default
-    // until the host-broadcast path lands (docs/lobby-difficulty-ram-spike.md).
-    if (TF_HumanPlayerCount >= 2) {
-        tf_diff_source = 'm';
-    } else {
+    // Global difficulty fallback, used when the per-slot lobby read is unavailable.
+    // Honoured in multiplayer as well as solo: only the host simulates a LAN match,
+    // so the host's flag file is the only one that can reach the simulation and there
+    // is no second peer to disagree with it.
+    {
         const char* up = getenv("USERPROFILE");
         char p[600];
         snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_ai_difficulty.txt", up ? up : ".");
@@ -2677,9 +2675,7 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
                     (int)diff,
                     iq,
                     TF_HumanPlayerCount,
-                    tf_diff_source == 'f'   ? "tf_ai_difficulty.txt"
-                    : tf_diff_source == 'm' ? "default-hard (MP determinism guard: 2+ humans)"
-                                            : "default-hard (client value ignored)",
+                    tf_diff_source == 'f' ? "tf_ai_difficulty.txt" : "default-hard (client value ignored)",
                     slots_read);
             for (int s = 1; s <= TF_LOBBY_MAX_AI_SLOTS; s++) {
                 if (slot_diff[s] != 0) {
