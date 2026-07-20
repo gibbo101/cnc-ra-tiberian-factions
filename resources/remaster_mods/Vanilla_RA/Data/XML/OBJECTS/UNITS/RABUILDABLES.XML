@@ -1993,6 +1993,7 @@
 
 
 
+
 	<!-- BEGIN generated cameo mask variants (scripts/cameo_variants_build.py) -->
 	<ObjectTypeClass Name="RA_IRON_0" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
@@ -5086,7 +5087,7 @@
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TDFBNK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDFBNK_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TDFBNK</BuildIcon>
+			<BuildIcon>BuildIcon_RA_Pillbox</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
