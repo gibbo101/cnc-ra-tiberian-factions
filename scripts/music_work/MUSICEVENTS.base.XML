@@ -1,0 +1,2912 @@
+<?xml version="1.0"?>
+
+<MusicEvents>
+	
+	<MusicEvent Name="TIBERIAN_DAWN_CREDITS_MUSIC">
+		<PlayList>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry> 
+			<Entry> TDB_MUS_CC_Credits_Outtakes.WAV </Entry>  
+			<Entry> TDR_MUS_Airstrike.WAV </Entry> 
+			<Entry> RAB_MUS_Hell_March_FKTS.WAV </Entry> 
+			<Entry> RAR_MUS_Reload_Fire.WAV </Entry> 
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="RED_ALERT_CREDITS_MUSIC">
+		<PlayList>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry> 
+			<Entry> TDB_MUS_CC_Credits_Outtakes.WAV </Entry>  
+			<Entry> TDR_MUS_Airstrike.WAV </Entry> 
+			<Entry> RAB_MUS_Hell_March_FKTS.WAV </Entry> 
+			<Entry> RAR_MUS_Reload_Fire.WAV </Entry> 
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+
+	<!-- ******************************************* -->
+	<!--   C&C TIBERIAN DAWN "CLASSIC" MUSIC EVENTS  -->
+	<!-- ******************************************* -->
+
+	<MusicEvent Name="TDC_MUS_TD_MAIN_MENU">
+		<PlayList>
+			<Entry> TDC_MUS_GDI_MAP_THEME.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_GDI_MAP_THEME">
+		<PlayList>
+			<Entry> TDC_MUS_GDI_MAP_THEME.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_NOD_MAP_THEME">
+		<PlayList>
+			<Entry> TDC_MUS_NOD_MAP_THEME.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+
+	<!--
+	<MusicEvent Name="TDC_MUS_TD_GDI_SCORE_SCREEN">
+		<PlayList>
+			<Entry> TDC_MUS_GREAT_SHOT.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+	-->
+	<!--
+	<MusicEvent Name="TDC_MUS_TD_NOD_SCORE_SCREEN">
+		<PlayList>
+			<Entry> TDC_MUS_GREAT_SHOT.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+	-->
+	<MusicEvent Name="TDC_MUS_TD_SCORE_SCREEN">
+		<PlayList>
+			<Entry> TDC_MUS_GREAT_SHOT.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_01">
+		<PlayList>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_02">
+		<PlayList>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_03">
+		<PlayList>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_04">
+		<PlayList>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_05">
+		<PlayList>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_06">
+		<PlayList>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_07">
+		<PlayList>
+			<Entry> TDC_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDC_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_08">
+		<PlayList>
+			<Entry> TDC_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDC_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDC_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_09">
+		<PlayList>
+			<Entry> TDC_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDC_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDC_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDC_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_10">
+		<PlayList>
+			<Entry> TDC_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDC_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDC_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDC_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDC_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_11">
+		<PlayList>
+			<Entry> TDC_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDC_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDC_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDC_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDC_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_12">
+		<PlayList>
+			<Entry> TDC_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDC_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDC_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDC_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDC_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDC_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_13">
+		<PlayList>
+			<Entry> TDC_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDC_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDC_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDC_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDC_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDC_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDC_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_14">
+		<PlayList>
+			<Entry> TDC_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDC_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDC_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDC_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDC_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDC_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDC_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MISSION_15">
+		<PlayList>
+			<Entry> TDC_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDC_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDC_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDC_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDC_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDC_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDC_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_FUNPARK">
+		<PlayList>
+			<Entry> TDC_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDC_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDC_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDC_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDC_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDC_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDC_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDC_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDC_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDC_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDC_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDC_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_COVERT_OPS">
+		<PlayList>
+			<Entry> TDC_MUS_Creeping_Upon.WAV </Entry>
+			<Entry> TDC_MUS_Drill.WAV </Entry>
+			<Entry> TDC_MUS_Depth_Charge.WAV </Entry>
+			<Entry> TDC_MUS_Drone.WAV </Entry>
+			<Entry> TDC_MUS_Recon.WAV </Entry>
+			<Entry> TDC_MUS_Iron_Fist.WAV </Entry>
+			<Entry> TDC_MUS_Voice_Rhythm.WAV </Entry>
+			<Entry> TDC_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDC_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDC_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDC_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDC_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDC_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDC_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_PSX">
+		<PlayList>
+			<Entry> TDR_MUS_Creeping_Upon.WAV </Entry>
+			<Entry> TDR_MUS_Drill.WAV </Entry>
+			<Entry> TDR_MUS_Depth_Charge.WAV </Entry>
+			<Entry> TDR_MUS_Drone.WAV </Entry>
+			<Entry> TDR_MUS_Recon.WAV </Entry>
+			<Entry> TDR_MUS_Iron_Fist.WAV </Entry>
+			<Entry> TDR_MUS_Voice_Rhythm.WAV </Entry>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDR_MUS_Just_Do_It_Up_OST_Version.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble_OST_Version.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy_OST_Version.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct_OST_Version.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception_OST_Version.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDC_MUS_TD_MULTIPLAYER_MODE">
+		<PlayList>
+			<Entry> TDC_MUS_Creeping_Upon.WAV </Entry>
+			<Entry> TDC_MUS_Drill.WAV </Entry>
+			<Entry> TDC_MUS_Depth_Charge.WAV </Entry>
+			<Entry> TDC_MUS_Drone.WAV </Entry>
+			<Entry> TDC_MUS_Recon.WAV </Entry>
+			<Entry> TDC_MUS_Iron_Fist.WAV </Entry>
+			<Entry> TDC_MUS_Voice_Rhythm.WAV </Entry>
+			<Entry> TDC_MUS_Reaching_Out.WAV </Entry>
+			<Entry> TDC_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDC_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDC_MUS_CC_80s_Mix.WAV </Entry>
+			<Entry> TDC_MUS_Die.WAV </Entry>
+			<Entry> TDC_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDC_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDC_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDC_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDC_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+			<Entry> TDC_MUS_Heartbreak.WAV </Entry>
+			<Entry> TDC_MUS_Airstrike.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>	
+
+	<!-- JUKEBOX list is Built by <MusicJukeboxTracksList> in Audio_System_Constants.xml -->
+
+
+
+
+
+	<!-- ******************************************* -->
+	<!-- C&C TIBERIAN DAWN "REMASTERED" MUSIC EVENTS -->
+	<!-- ******************************************* -->
+
+	<MusicEvent Name="TDR_MUS_TD_MAIN_MENU">
+		<PlayList>
+			<Entry> TDR_MUS_GDI_MAP_THEME.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_GDI_MAP_THEME">
+		<PlayList>
+			<Entry> TDR_MUS_GDI_MAP_THEME.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_NOD_MAP_THEME">
+		<PlayList>
+			<Entry> TDR_MUS_NOD_MAP_THEME.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+
+	<!--
+	<MusicEvent Name="TDR_MUS_TD_GDI_SCORE_SCREEN">
+		<PlayList>
+			<Entry> TDR_MUS_GREAT_SHOT.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+	-->
+	<!--
+	<MusicEvent Name="TDR_MUS_TD_NOD_SCORE_SCREEN">
+		<PlayList>
+			<Entry> TDR_MUS_GREAT_SHOT.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>	
+	-->
+	<MusicEvent Name="TDR_MUS_TD_SCORE_SCREEN">
+		<PlayList>
+			<Entry> TDR_MUS_GREAT_SHOT.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+	
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_01">
+		<PlayList>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_02">
+		<PlayList>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_03">
+		<PlayList>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_04">
+		<PlayList>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_05">
+		<PlayList>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_06">
+		<PlayList>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_07">
+		<PlayList>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_08">
+		<PlayList>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_09">
+		<PlayList>
+			<Entry> TDR_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_10">
+		<PlayList>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDR_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_11">
+		<PlayList>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDR_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_12">
+		<PlayList>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDR_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_13">
+		<PlayList>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDR_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_14">
+		<PlayList>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDR_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_MISSION_15">
+		<PlayList>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDR_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_FUNPARK">
+		<PlayList>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDR_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_COVERT_OPS">
+		<PlayList>
+			<Entry> TDR_MUS_Creeping_Upon.WAV </Entry>
+			<Entry> TDR_MUS_Drill.WAV </Entry>
+			<Entry> TDR_MUS_Depth_Charge.WAV </Entry>
+			<Entry> TDR_MUS_Drone.WAV </Entry>
+			<Entry> TDR_MUS_Recon.WAV </Entry>
+			<Entry> TDR_MUS_Iron_Fist.WAV </Entry>
+			<Entry> TDR_MUS_Voice_Rhythm.WAV </Entry>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDR_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDR_MUS_TD_PSX">
+		<PlayList>
+			<Entry> TDR_MUS_Creeping_Upon.WAV </Entry>
+			<Entry> TDR_MUS_Drill.WAV </Entry>
+			<Entry> TDR_MUS_Depth_Charge.WAV </Entry>
+			<Entry> TDR_MUS_Drone.WAV </Entry>
+			<Entry> TDR_MUS_Recon.WAV </Entry>
+			<Entry> TDR_MUS_Iron_Fist.WAV </Entry>
+			<Entry> TDR_MUS_Voice_Rhythm.WAV </Entry>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDR_MUS_Just_Do_It_Up_OST_Version.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble_OST_Version.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy_OST_Version.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct_OST_Version.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception_OST_Version.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<!-- MBL 07.29.2020 - Added for TDB Bonus asset mode -->
+	<MusicEvent Name="TDB_MUS_TD_PSX">
+		<PlayList>
+			<Entry> TDR_MUS_Creeping_Upon.WAV </Entry>
+			<Entry> TDR_MUS_Drill.WAV </Entry>
+			<Entry> TDR_MUS_Depth_Charge.WAV </Entry>
+			<Entry> TDR_MUS_Drone.WAV </Entry>
+			<Entry> TDR_MUS_Recon.WAV </Entry>
+			<Entry> TDR_MUS_Iron_Fist.WAV </Entry>
+			<Entry> TDR_MUS_Voice_Rhythm.WAV </Entry>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDB_MUS_Just_Do_It_Up_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble_OST_Version.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception_OST_Version.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+
+	<MusicEvent Name="TDR_MUS_TD_MULTIPLAYER_MODE">
+		<PlayList>
+			<Entry> TDR_MUS_Creeping_Upon.WAV </Entry>
+			<Entry> TDR_MUS_Drill.WAV </Entry>
+			<Entry> TDR_MUS_Depth_Charge.WAV </Entry>
+			<Entry> TDR_MUS_Drone.WAV </Entry>
+			<Entry> TDR_MUS_Recon.WAV </Entry>
+			<Entry> TDR_MUS_Iron_Fist.WAV </Entry>
+			<Entry> TDR_MUS_Voice_Rhythm.WAV </Entry>
+			<Entry> TDR_MUS_Reaching_Out.WAV </Entry>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_CC_80s_Mix.WAV </Entry>
+			<Entry> TDR_MUS_Die.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDR_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+			<Entry> TDR_MUS_Heartbreak.WAV </Entry>
+			<Entry> TDR_MUS_Airstrike.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	
+	<!-- JUKEBOX list is Built by <MusicJukeboxTracksList> in Audio_System_Constants.xml -->
+	
+
+
+
+
+	<!-- ****************************************** -->
+	<!--   C&C TIBERIAN DAWN "BONUS" MUSIC EVENTS   -->
+	<!-- ****************************************** -->
+
+	<MusicEvent Name="TDB_MUS_TD_MAIN_MENU">
+		<PlayList>
+			<Entry> TDR_MUS_GDI_MAP_THEME.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_GDI_MAP_THEME">
+		<PlayList>
+			<Entry> TDR_MUS_GDI_MAP_THEME.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_NOD_MAP_THEME">
+		<PlayList>
+			<Entry> TDR_MUS_NOD_MAP_THEME.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+
+	<!--
+	<MusicEvent Name="TDB_MUS_TD_GDI_SCORE_SCREEN">
+		<PlayList>
+			<Entry> TDR_MUS_GREAT_SHOT_EXTENDED.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+	-->
+	<!--
+	<MusicEvent Name="TDB_MUS_TD_NOD_SCORE_SCREEN">
+		<PlayList>
+			<Entry> TDR_MUS_NOD_SCORE.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+	-->
+	<MusicEvent Name="TDB_MUS_TD_SCORE_SCREEN">
+		<PlayList>
+			<Entry> TDR_MUS_GREAT_SHOT.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_01">
+		<PlayList>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_02">
+		<PlayList>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_03">
+		<PlayList>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_04">
+		<PlayList>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_05">
+		<PlayList>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_06">
+		<PlayList>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_07">
+		<PlayList>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_08">
+		<PlayList>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_09">
+		<PlayList>
+			<Entry> TDB_MUS_Just_Do_It_Up_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_10">
+		<PlayList>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDB_MUS_Just_Do_It_Up_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_11">
+		<PlayList>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDB_MUS_Just_Do_It_Up_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_12">
+		<PlayList>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDB_MUS_Just_Do_It_Up_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_13">
+		<PlayList>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDB_MUS_Just_Do_It_Up_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_14">
+		<PlayList>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDB_MUS_Just_Do_It_Up_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_MISSION_15">
+		<PlayList>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDB_MUS_Just_Do_It_Up_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_FUNPARK">
+		<PlayList>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDB_MUS_Just_Do_It_Up_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Untamed_Land.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_COVERT_OPS">
+		<PlayList>
+			<Entry> TDR_MUS_Creeping_Upon.WAV </Entry>
+			<Entry> TDR_MUS_Drill.WAV </Entry>
+			<Entry> TDR_MUS_Depth_Charge.WAV </Entry>
+			<Entry> TDR_MUS_Drone.WAV </Entry>
+			<Entry> TDR_MUS_Recon.WAV </Entry>
+			<Entry> TDR_MUS_Iron_Fist.WAV </Entry>
+			<Entry> TDR_MUS_Voice_Rhythm.WAV </Entry>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDB_MUS_Just_Do_It_Up_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="TDB_MUS_TD_CONSOLE">
+		<PlayList>
+			<Entry> TDR_MUS_Creeping_Upon.WAV </Entry>
+			<Entry> TDR_MUS_Drill.WAV </Entry>
+			<Entry> TDR_MUS_Depth_Charge.WAV </Entry>
+			<Entry> TDR_MUS_Drone.WAV </Entry>
+			<Entry> TDR_MUS_Recon.WAV </Entry>
+			<Entry> TDR_MUS_Iron_Fist.WAV </Entry>
+			<Entry> TDR_MUS_Voice_Rhythm.WAV </Entry>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDR_MUS_Just_Do_It_Up_OST_Version.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble_OST_Version.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy_OST_Version.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct_OST_Version.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception_OST_Version.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>	
+
+	<MusicEvent Name="TDB_MUS_TD_MULTIPLAYER_MODE">
+		<PlayList>
+			<Entry> TDR_MUS_Creeping_Upon.WAV </Entry>
+			<Entry> TDR_MUS_Drill.WAV </Entry>
+			<Entry> TDR_MUS_Depth_Charge.WAV </Entry>
+			<Entry> TDR_MUS_Drone.WAV </Entry>
+			<Entry> TDR_MUS_Recon.WAV </Entry>
+			<Entry> TDR_MUS_Iron_Fist.WAV </Entry>
+			<Entry> TDR_MUS_Voice_Rhythm.WAV </Entry>
+			<Entry> TDR_MUS_Reaching_Out.WAV </Entry>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> TDR_MUS_CC_80s_Mix.WAV </Entry>
+			<Entry> TDR_MUS_Die.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> TDB_MUS_Just_Do_It_Up_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+			<Entry> TDR_MUS_Heartbreak.WAV </Entry>
+			<Entry> TDR_MUS_Airstrike.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<!-- JUKEBOX list is Built by <MusicJukeboxTracksList> in Audio_System_Constants.xml -->
+	
+
+
+
+
+
+
+	<!-- ************************************** -->
+	<!-- ************************************** -->
+	
+	<!--   C&C RED ALERT CLASSIC MUSIC EVENTS   -->
+	
+	<!-- ************************************** -->
+	<!-- ************************************** -->
+
+	<MusicEvent Name="RAC_MUS_RA_MAIN_MENU">
+		<PlayList>
+			<Entry> RAC_MUS_INTRO_MENU.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="RAC_MUS_RA_MAP_THEME">
+		<PlayList>
+			<Entry> RAC_MUS_MAP_THEME.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="RAC_MUS_RA_SCORE_SCREEN">
+		<PlayList>
+			<Entry> RAC_MUS_MILITANT_FORCE.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="RAC_MUS_RA_CREDITS">
+		<PlayList>
+			<Entry> RAC_MUS_RELOAD_FIRE.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="RAC_MUS_RA_CAMPAIGN">
+		<PlayList>
+			<Entry> RAC_MUS_Big_Foot.WAV </Entry>
+			<Entry> RAC_MUS_Crush.WAV </Entry>
+			<Entry> RAC_MUS_Face_The_Enemy_1.WAV </Entry>
+			<Entry> RAC_MUS_Face_The_Enemy_2.WAV </Entry>
+			<Entry> RAC_MUS_Hell_March.WAV </Entry>
+			<Entry> RAC_MUS_Run.WAV </Entry>
+			<Entry> RAC_MUS_Smash.WAV </Entry>
+			<Entry> RAC_MUS_Trenches.WAV </Entry>
+			<Entry> RAC_MUS_Workmen.WAV </Entry>
+			<Entry> RAC_MUS_Awaiting.WAV </Entry>
+			<Entry> RAC_MUS_Dense.WAV </Entry>
+			<Entry> RAC_MUS_Fogger.WAV </Entry>
+			<Entry> RAC_MUS_Mud.WAV </Entry>
+			<Entry> RAC_MUS_Radio_2.WAV </Entry>
+			<Entry> RAC_MUS_Roll_Out.WAV </Entry>
+			<Entry> RAC_MUS_Snake.WAV </Entry>
+			<Entry> RAC_MUS_Terminate.WAV </Entry>
+			<Entry> RAC_MUS_Twin_Cannon.WAV </Entry>
+			<Entry> RAC_MUS_Vector.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+
+	<MusicEvent Name="RAC_MUS_RA_EXPANSIONS">
+		<PlayList>
+			<Entry> RAC_MUS_Big_Foot.WAV </Entry>
+			<Entry> RAC_MUS_Crush_Retaliation_Remix.WAV </Entry>
+			<Entry> RAC_MUS_Face_The_Enemy_1.WAV </Entry>
+			<Entry> RAC_MUS_Face_The_Enemy_2.WAV </Entry>			
+			<Entry> RAC_MUS_Hell_March_Retaliation_Remix.WAV </Entry>			
+			<Entry> RAC_MUS_Run.WAV </Entry>			
+			<Entry> RAC_MUS_Smash.WAV </Entry>			
+			<Entry> RAC_MUS_Trenches.WAV </Entry>			
+			<Entry> RAC_MUS_Workmen_Retaliation_Remix.WAV </Entry>			
+			<Entry> RAC_MUS_Awaiting.WAV </Entry>			
+			<Entry> RAC_MUS_Dense.WAV </Entry>			
+			<Entry> RAC_MUS_Fogger.WAV </Entry>			
+			<Entry> RAC_MUS_Mud_Retaliation_Remix.WAV </Entry>			
+			<Entry> RAC_MUS_Radio_2_Retaliation_Remix.WAV </Entry>			
+			<Entry> RAC_MUS_Roll_Out.WAV </Entry>			
+			<Entry> RAC_MUS_Snake.WAV </Entry>			
+			<Entry> RAC_MUS_Terminate.WAV </Entry>			
+			<Entry> RAC_MUS_Twin_Cannon_Retaliation_Remix.WAV </Entry>			
+			<Entry> RAC_MUS_Vector.WAV </Entry>			
+			<Entry> RAC_MUS_Arazoid.WAV </Entry>
+			<Entry> RAC_MUS_Backstab.WAV </Entry>
+			<Entry> RAC_MUS_Bog.WAV </Entry>
+			<Entry> RAC_MUS_Chaos.WAV </Entry>
+			<Entry> RAC_MUS_Crush.WAV </Entry>
+			<Entry> RAC_MUS_Floating.WAV </Entry>
+			<Entry> RAC_MUS_Gloom.WAV </Entry>
+			<Entry> RAC_MUS_Groundwire.WAV </Entry>
+			<Entry> RAC_MUS_Hell_March.WAV </Entry>
+			<Entry> RAC_MUS_Mud.WAV </Entry>
+			<Entry> RAC_MUS_No_Mercy_Retaliation_Remix.WAV </Entry>
+			<Entry> RAC_MUS_Radio_2.WAV </Entry>
+			<Entry> RAC_MUS_Running_Through_Pipes.WAV </Entry>
+			<Entry> RAC_MUS_Shut_It.WAV </Entry>
+			<Entry> RAC_MUS_The_Search.WAV </Entry>
+			<Entry> RAC_MUS_The_Second_Hand.WAV </Entry>
+			<Entry> RAC_MUS_Traction.WAV </Entry>
+			<Entry> RAC_MUS_Twin_Cannon.WAV </Entry>
+			<Entry> RAC_MUS_Underlying_Thoughts.WAV </Entry>
+			<Entry> RAC_MUS_Voice_Rhythm_2.WAV </Entry>
+			<Entry> RAC_MUS_Wasteland.WAV </Entry>
+			<Entry> RAC_MUS_Workmen.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>	
+	
+
+	<MusicEvent Name="RAC_MUS_RA_MULTIPLAYER_MODE">
+				<PlayList>
+			<Entry> RAC_MUS_Arazoid.WAV </Entry>
+			<Entry> TDC_MUS_Creeping_Upon.WAV </Entry>
+			<Entry> RAC_MUS_Awaiting.WAV </Entry>
+			<Entry> TDC_MUS_Drill.WAV </Entry>
+			<Entry> RAC_MUS_Backstab.WAV </Entry>
+			<Entry> TDC_MUS_Depth_Charge.WAV </Entry>
+			<Entry> RAC_MUS_Big_Foot.WAV </Entry>
+			<Entry> TDC_MUS_Drone.WAV </Entry>
+			<Entry> RAC_MUS_Bog.WAV </Entry>
+			<Entry> TDC_MUS_Recon.WAV </Entry>
+			<Entry> RAC_MUS_Chaos.WAV </Entry>
+			<Entry> TDC_MUS_Iron_Fist.WAV </Entry>
+			<Entry> RAC_MUS_Crush.WAV </Entry>
+			<Entry> TDC_MUS_Voice_Rhythm.WAV </Entry>
+			<Entry> RAC_MUS_Crush_Retaliation_Remix.WAV </Entry>
+			<Entry> TDC_MUS_Reaching_Out.WAV </Entry>
+			<Entry> RAC_MUS_Dense.WAV </Entry>
+			<Entry> TDC_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> RAC_MUS_Face_The_Enemy_1.WAV </Entry>
+			<Entry> TDC_MUS_CC_Thang.WAV </Entry>
+			<Entry> RAC_MUS_Face_The_Enemy_2.WAV </Entry>
+			<Entry> TDC_MUS_CC_80s_Mix.WAV </Entry>
+			<Entry> RAC_MUS_Floating.WAV </Entry>
+			<Entry> TDC_MUS_Die.WAV </Entry>
+			<Entry> RAC_MUS_Fogger.WAV </Entry>
+			<Entry> TDC_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> RAC_MUS_Gloom.WAV </Entry>
+			<Entry> TDC_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> RAC_MUS_Groundwire.WAV </Entry>
+			<Entry> TDC_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> RAC_MUS_Hell_March.WAV </Entry>
+			<Entry> TDC_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> RAC_MUS_Hell_March_Retaliation_Remix.WAV </Entry>
+			<Entry> TDC_MUS_March_To_Doom.WAV </Entry>
+			<Entry> RAC_MUS_Mud.WAV </Entry>
+			<Entry> TDC_MUS_In_Trouble.WAV </Entry>
+			<Entry> RAC_MUS_Mud_Retaliation_Remix.WAV </Entry>
+			<Entry> TDC_MUS_Radio.WAV </Entry>
+			<Entry> RAC_MUS_No_Mercy_Retaliation_Remix.WAV </Entry>
+			<Entry> TDC_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> RAC_MUS_Radio_2.WAV </Entry>
+			<Entry> TDC_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> RAC_MUS_Radio_2_Retaliation_Remix.WAV </Entry>
+			<Entry> TDC_MUS_No_Mercy.WAV </Entry>
+			<Entry> RAC_MUS_Reload_Fire.WAV </Entry>
+			<Entry> TDC_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> RAC_MUS_Roll_Out.WAV </Entry>
+			<Entry> TDC_MUS_Industrial.WAV </Entry>
+			<Entry> RAC_MUS_Run.WAV </Entry>
+			<Entry> TDC_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> RAC_MUS_Running_Through_Pipes.WAV </Entry>
+			<Entry> TDC_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> RAC_MUS_Shut_It.WAV </Entry>
+			<Entry> TDC_MUS_Demolition.WAV </Entry>
+			<Entry> RAC_MUS_Smash.WAV </Entry>
+			<Entry> TDC_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> RAC_MUS_Snake.WAV </Entry>
+			<Entry> TDC_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> RAC_MUS_Terminate.WAV </Entry>
+			<Entry> TDC_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+			<Entry> RAC_MUS_The_Search.WAV </Entry>
+			<Entry> TDC_MUS_Heartbreak.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+
+	<!-- JUKEBOX list is Built by <MusicJukeboxTracksList> in Audio_System_Constants.xml -->
+
+	
+	<!-- ************************************** -->
+	<!-- C&C RED ALERT REMASTERED MUSIC EVENTS -->
+	<!-- ************************************** -->
+
+	<MusicEvent Name="RAR_MUS_RA_MAIN_MENU">
+		<PlayList>
+			<Entry> RAR_MUS_INTRO_MENU.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="RAR_MUS_RA_MAP_THEME">
+		<PlayList>
+			<Entry> RAR_MUS_MAP_THEME.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="RAR_MUS_RA_SCORE_SCREEN">
+		<PlayList>
+			<Entry> RAR_MUS_MILITANT_FORCE.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="RAR_MUS_RA_CREDITS">
+		<PlayList>
+			<Entry> RAR_MUS_RELOAD_FIRE.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="RAR_MUS_RA_CAMPAIGN">
+		<PlayList>
+			<Entry> RAR_MUS_Big_Foot.WAV </Entry>
+			<Entry> RAR_MUS_Crush.WAV </Entry>
+			<Entry> RAR_MUS_Face_The_Enemy_1.WAV </Entry>
+			<Entry> RAR_MUS_Face_The_Enemy_2.WAV </Entry>
+			<Entry> RAR_MUS_Hell_March.WAV </Entry>
+			<Entry> RAR_MUS_Run.WAV </Entry>
+			<Entry> RAR_MUS_Smash.WAV </Entry>
+			<Entry> RAR_MUS_Trenches.WAV </Entry>
+			<Entry> RAR_MUS_Workmen.WAV </Entry>
+			<Entry> RAR_MUS_Awaiting.WAV </Entry>
+			<Entry> RAR_MUS_Dense.WAV </Entry>
+			<Entry> RAR_MUS_Fogger.WAV </Entry>
+			<Entry> RAR_MUS_Mud.WAV </Entry>
+			<Entry> RAR_MUS_Radio_2.WAV </Entry>
+			<Entry> RAR_MUS_Roll_Out.WAV </Entry>
+			<Entry> RAR_MUS_Snake.WAV </Entry>
+			<Entry> RAR_MUS_Terminate.WAV </Entry>
+			<Entry> RAR_MUS_Twin_Cannon.WAV </Entry>
+			<Entry> RAR_MUS_Vector.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+
+	<MusicEvent Name="RAR_MUS_RA_EXPANSIONS">
+		<PlayList>
+			<Entry> RAR_MUS_Big_Foot.WAV </Entry>
+			<Entry> RAR_MUS_Crush_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Face_The_Enemy_1.WAV </Entry>
+			<Entry> RAR_MUS_Face_The_Enemy_2.WAV </Entry>
+			<Entry> RAR_MUS_Hell_March_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Run.WAV </Entry>
+			<Entry> RAR_MUS_Smash.WAV </Entry>
+			<Entry> RAR_MUS_Trenches.WAV </Entry>
+			<Entry> RAR_MUS_Workmen_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Awaiting.WAV </Entry>
+			<Entry> RAR_MUS_Dense.WAV </Entry>
+			<Entry> RAR_MUS_Fogger.WAV </Entry>
+			<Entry> RAR_MUS_Mud_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Radio_2_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Roll_Out.WAV </Entry>
+			<Entry> RAR_MUS_Snake.WAV </Entry>
+			<Entry> RAR_MUS_Terminate.WAV </Entry>
+			<Entry> RAR_MUS_Twin_Cannon_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Vector.WAV </Entry>
+			<Entry> RAR_MUS_Arazoid.WAV </Entry>
+			<Entry> RAR_MUS_Backstab.WAV </Entry>
+			<Entry> RAR_MUS_Bog.WAV </Entry>
+			<Entry> RAR_MUS_Chaos.WAV </Entry>
+			<Entry> RAR_MUS_Crush.WAV </Entry>
+			<Entry> RAR_MUS_Floating.WAV </Entry>
+			<Entry> RAR_MUS_Gloom.WAV </Entry>
+			<Entry> RAR_MUS_Groundwire.WAV </Entry>
+			<Entry> RAR_MUS_Hell_March.WAV </Entry>
+			<Entry> RAR_MUS_Mud.WAV </Entry>
+			<Entry> RAR_MUS_No_Mercy_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Radio_2.WAV </Entry>
+			<Entry> RAR_MUS_Running_Through_Pipes.WAV </Entry>
+			<Entry> RAR_MUS_Shut_It.WAV </Entry>
+			<Entry> RAR_MUS_The_Search.WAV </Entry>
+			<Entry> RAR_MUS_The_Second_Hand.WAV </Entry>
+			<Entry> RAR_MUS_Traction.WAV </Entry>
+			<Entry> RAR_MUS_Twin_Cannon.WAV </Entry>
+			<Entry> RAR_MUS_Underlying_Thoughts.WAV </Entry>
+			<Entry> RAR_MUS_Voice_Rhythm_2.WAV </Entry>
+			<Entry> RAR_MUS_Wasteland.WAV </Entry>
+			<Entry> RAR_MUS_Workmen.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+
+	<MusicEvent Name="RAR_MUS_RA_MULTIPLAYER_MODE">
+				<PlayList>
+			<Entry> RAR_MUS_Arazoid.WAV </Entry>
+			<Entry> TDR_MUS_Creeping_Upon.WAV </Entry>
+			<Entry> RAR_MUS_Awaiting.WAV </Entry>
+			<Entry> TDR_MUS_Drill.WAV </Entry>
+			<Entry> RAR_MUS_Backstab.WAV </Entry>
+			<Entry> TDR_MUS_Depth_Charge.WAV </Entry>
+			<Entry> RAR_MUS_Big_Foot.WAV </Entry>
+			<Entry> TDR_MUS_Drone.WAV </Entry>
+			<Entry> RAR_MUS_Bog.WAV </Entry>
+			<Entry> TDR_MUS_Recon.WAV </Entry>
+			<Entry> RAR_MUS_Chaos.WAV </Entry>
+			<Entry> TDR_MUS_Iron_Fist.WAV </Entry>
+			<Entry> RAR_MUS_Crush.WAV </Entry>
+			<Entry> TDR_MUS_Voice_Rhythm.WAV </Entry>
+			<Entry> RAR_MUS_Crush_Retaliation_Remix.WAV </Entry>
+			<Entry> TDR_MUS_Reaching_Out.WAV </Entry>
+			<Entry> RAR_MUS_Dense.WAV </Entry>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> RAR_MUS_Face_The_Enemy_1.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> RAR_MUS_Face_The_Enemy_2.WAV </Entry>
+			<Entry> TDR_MUS_CC_80s_Mix.WAV </Entry>
+			<Entry> RAR_MUS_Floating.WAV </Entry>
+			<Entry> TDR_MUS_Die.WAV </Entry>
+			<Entry> RAR_MUS_Fogger.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> RAR_MUS_Gloom.WAV </Entry>
+			<Entry> TDR_MUS_Just_Do_It_Up.WAV </Entry>
+			<Entry> RAR_MUS_Groundwire.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> RAR_MUS_Hell_March.WAV </Entry>
+			<Entry> TDR_MUS_Rain_In_The_Night.WAV </Entry>
+			<Entry> RAR_MUS_Hell_March_Retaliation_Remix.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> RAR_MUS_Mud.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> RAR_MUS_Mud_Retaliation_Remix.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> RAR_MUS_No_Mercy_Retaliation_Remix.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> RAR_MUS_Radio_2.WAV </Entry>
+			<Entry> TDR_MUS_Prepare_For_Battle.WAV </Entry>
+			<Entry> RAR_MUS_Radio_2_Retaliation_Remix.WAV </Entry>
+			<Entry> TDR_MUS_No_Mercy.WAV </Entry>
+			<Entry> RAR_MUS_Reload_Fire.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> RAR_MUS_Roll_Out.WAV </Entry>
+			<Entry> TDR_MUS_Industrial.WAV </Entry>
+			<Entry> RAR_MUS_Run.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> RAR_MUS_Running_Through_Pipes.WAV </Entry>
+			<Entry> TDR_MUS_Act_On_Instinct.WAV </Entry>
+			<Entry> RAR_MUS_Shut_It.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> RAR_MUS_Smash.WAV </Entry>
+			<Entry> TDR_MUS_Target_Mechanical_Man.WAV </Entry>
+			<Entry> RAR_MUS_Snake.WAV </Entry>
+			<Entry> TDR_MUS_Warfare_Full_Stop.WAV </Entry>
+			<Entry> RAR_MUS_Terminate.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+			<Entry> RAR_MUS_The_Search.WAV </Entry>
+			<Entry> TDR_MUS_Heartbreak.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+	
+	<!-- JUKEBOX list is Built by <MusicJukeboxTracksList> in Audio_System_Constants.xml -->
+
+
+	<!-- ************************************** -->
+	<!-- C&C RED ALERT BONUS MUSIC EVENTS -->
+	<!-- ************************************** -->
+
+	<MusicEvent Name="RAB_MUS_RA_MAIN_MENU">
+		<PlayList>
+			<Entry> RAR_MUS_INTRO_MENU.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="RAB_MUS_RA_MAP_THEME">
+		<PlayList>
+			<Entry> RAR_MUS_MAP_THEME.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="RAB_MUS_RA_SCORE_SCREEN">
+		<PlayList>
+			<Entry> RAB_MUS_MILITANT_FORCE_FKTS.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="RAB_MUS_RA_CREDITS">
+		<PlayList>
+			<Entry> RAR_MUS_RELOAD_FIRE.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+	<MusicEvent Name="RAB_MUS_RA_CAMPAIGN">
+		<PlayList>
+			<Entry> RAB_MUS_Big_Foot_FKTS.WAV </Entry>
+			<Entry> RAB_MUS_Crush_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Face_The_Enemy_1.WAV </Entry>
+			<Entry> RAR_MUS_Face_The_Enemy_2.WAV </Entry>
+			<Entry> RAB_MUS_Hell_March_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Run.WAV </Entry>
+			<Entry> RAR_MUS_Smash.WAV </Entry>
+			<Entry> RAR_MUS_Trenches.WAV </Entry>
+			<Entry> RAB_MUS_Workmen_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Awaiting.WAV </Entry>
+			<Entry> RAR_MUS_Dense.WAV </Entry>
+			<Entry> RAR_MUS_Fogger.WAV </Entry>
+			<Entry> RAR_MUS_Mud.WAV </Entry>
+			<Entry> RAR_MUS_Radio_2.WAV </Entry>
+			<Entry> RAR_MUS_Roll_Out.WAV </Entry>
+			<Entry> RAR_MUS_Snake.WAV </Entry>
+			<Entry> RAR_MUS_Terminate.WAV </Entry>
+			<Entry> RAR_MUS_Twin_Cannon.WAV </Entry>
+			<Entry> RAR_MUS_Vector.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+
+	<MusicEvent Name="RAB_MUS_RA_EXPANSIONS">
+		<PlayList>
+			<Entry> RAB_MUS_Big_Foot_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Crush_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Face_The_Enemy_1.WAV </Entry>
+			<Entry> RAR_MUS_Face_The_Enemy_2.WAV </Entry>
+			<Entry> RAR_MUS_Hell_March_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Run.WAV </Entry>
+			<Entry> RAR_MUS_Smash.WAV </Entry>
+			<Entry> RAR_MUS_Trenches.WAV </Entry>
+			<Entry> RAR_MUS_Workmen_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Awaiting.WAV </Entry>
+			<Entry> RAR_MUS_Dense.WAV </Entry>
+			<Entry> RAR_MUS_Fogger.WAV </Entry>
+			<Entry> RAR_MUS_Mud_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Radio_2_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Roll_Out.WAV </Entry>
+			<Entry> RAR_MUS_Snake.WAV </Entry>
+			<Entry> RAR_MUS_Terminate.WAV </Entry>
+			<Entry> RAR_MUS_Twin_Cannon_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Vector.WAV </Entry>
+			<Entry> RAR_MUS_Arazoid.WAV </Entry>
+			<Entry> RAR_MUS_Backstab.WAV </Entry>
+			<Entry> RAR_MUS_Bog.WAV </Entry>
+			<Entry> RAR_MUS_Chaos.WAV </Entry>
+			<Entry> RAB_MUS_Crush_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Floating.WAV </Entry>
+			<Entry> RAR_MUS_Gloom.WAV </Entry>
+			<Entry> RAR_MUS_Groundwire.WAV </Entry>
+			<Entry> RAB_MUS_Hell_March_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Mud.WAV </Entry>
+			<Entry> RAR_MUS_No_Mercy_Retaliation_Remix.WAV </Entry>
+			<Entry> RAR_MUS_Radio_2.WAV </Entry>
+			<Entry> RAR_MUS_Running_Through_Pipes.WAV </Entry>
+			<Entry> RAR_MUS_Shut_It.WAV </Entry>
+			<Entry> RAR_MUS_The_Search.WAV </Entry>
+			<Entry> RAR_MUS_The_Second_Hand.WAV </Entry>
+			<Entry> RAR_MUS_Traction.WAV </Entry>
+			<Entry> RAR_MUS_Twin_Cannon.WAV </Entry>
+			<Entry> RAR_MUS_Underlying_Thoughts.WAV </Entry>
+			<Entry> RAR_MUS_Voice_Rhythm_2.WAV </Entry>
+			<Entry> RAR_MUS_Wasteland.WAV </Entry>
+			<Entry> RAB_MUS_Workmen_FKTS.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+
+
+	<MusicEvent Name="RAB_MUS_RA_MULTIPLAYER_MODE">
+				<PlayList>
+			<Entry> RAR_MUS_Arazoid.WAV </Entry>
+			<Entry> TDR_MUS_Creeping_Upon.WAV </Entry>
+			<Entry> RAR_MUS_Awaiting.WAV </Entry>
+			<Entry> TDR_MUS_Drill.WAV </Entry>
+			<Entry> RAR_MUS_Backstab.WAV </Entry>
+			<Entry> TDR_MUS_Depth_Charge.WAV </Entry>
+			<Entry> RAB_MUS_Big_Foot_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Drone.WAV </Entry>
+			<Entry> RAR_MUS_Bog.WAV </Entry>
+			<Entry> TDR_MUS_Recon.WAV </Entry>
+			<Entry> RAR_MUS_Chaos.WAV </Entry>
+			<Entry> TDR_MUS_Iron_Fist.WAV </Entry>
+			<Entry> RAB_MUS_Crush_FKTS.WAV </Entry>
+			<Entry> TDR_MUS_Voice_Rhythm.WAV </Entry>
+			<Entry> RAR_MUS_Crush_Retaliation_Remix.WAV </Entry>
+			<Entry> TDR_MUS_Reaching_Out.WAV </Entry>
+			<Entry> RAR_MUS_Dense.WAV </Entry>
+			<Entry> TDR_MUS_To_Be_Feared.WAV </Entry>
+			<Entry> RAR_MUS_Face_The_Enemy_1.WAV </Entry>
+			<Entry> TDR_MUS_CC_Thang.WAV </Entry>
+			<Entry> RAR_MUS_Face_The_Enemy_2.WAV </Entry>
+			<Entry> TDR_MUS_CC_80s_Mix.WAV </Entry>
+			<Entry> RAR_MUS_Floating.WAV </Entry>
+			<Entry> TDR_MUS_Die.WAV </Entry>
+			<Entry> RAR_MUS_Fogger.WAV </Entry>
+			<Entry> TDR_MUS_Fight_Win_Prevail.WAV </Entry>
+			<Entry> RAR_MUS_Gloom.WAV </Entry>
+			<Entry> TDB_MUS_Just_Do_It_Up_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Groundwire.WAV </Entry>
+			<Entry> TDR_MUS_In_The_Line_Of_Fire.WAV </Entry>
+			<Entry> RAB_MUS_Hell_March_FKTS.WAV </Entry>
+			<Entry> TDB_MUS_Rain_In_The_Night_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Hell_March_Retaliation_Remix.WAV </Entry>
+			<Entry> TDR_MUS_March_To_Doom.WAV </Entry>
+			<Entry> RAR_MUS_Mud.WAV </Entry>
+			<Entry> TDR_MUS_In_Trouble.WAV </Entry>
+			<Entry> RAR_MUS_Mud_Retaliation_Remix.WAV </Entry>
+			<Entry> TDR_MUS_Radio.WAV </Entry>
+			<Entry> RAR_MUS_No_Mercy_Retaliation_Remix.WAV </Entry>
+			<Entry> TDR_MUS_Take_Em_Out.WAV </Entry>
+			<Entry> RAR_MUS_Radio_2.WAV </Entry>
+			<Entry> TDB_MUS_Prepare_For_Battle_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Radio_2_Retaliation_Remix.WAV </Entry>
+			<Entry> TDB_MUS_No_Mercy_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Reload_Fire.WAV </Entry>
+			<Entry> TDR_MUS_On_The_Prowl.WAV </Entry>
+			<Entry> RAR_MUS_Roll_Out.WAV </Entry>
+			<Entry> TDB_MUS_Industrial_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Run.WAV </Entry>
+			<Entry> TDR_MUS_Canyon_Chase.WAV </Entry>
+			<Entry> RAR_MUS_Running_Through_Pipes.WAV </Entry>
+			<Entry> TDB_MUS_Act_On_Instinct_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Shut_It.WAV </Entry>
+			<Entry> TDR_MUS_Demolition.WAV </Entry>
+			<Entry> RAR_MUS_Smash.WAV </Entry>
+			<Entry> TDB_MUS_Target_Mechanical_Man_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Snake.WAV </Entry>
+			<Entry> TDB_MUS_Warfare_Full_Stop_FKTS.WAV </Entry>
+			<Entry> RAR_MUS_Terminate.WAV </Entry>
+			<Entry> TDR_MUS_We_Will_Stop_Them_Deception.WAV </Entry>
+			<Entry> RAR_MUS_The_Search.WAV </Entry>
+			<Entry> TDR_MUS_Heartbreak.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 40 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> True </RandomizePlayList>
+	</MusicEvent>
+	
+	<!-- JUKEBOX list is Built by <MusicJukeboxTracksList> in Audio_System_Constants.xml -->
+
+
+<!-- pad                                                                                                                                                                --></MusicEvents>
