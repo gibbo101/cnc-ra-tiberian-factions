@@ -20,3 +20,9 @@ scripts/bui_work/CONFIG.hud-probe.MEG
 scripts/bui_work/_hud_probe_tmp/
 scripts/bui_work/CONFIG.4logos.MEG
 scripts/bui_work/_4logos_tmp/
+
+# Cameo badge pipeline: large launcher-atlas artifacts (regenerable via
+# meg_extract from TEXTURES_SRGB.MEG). The small recovered maps are kept.
+scripts/cameo_work/MT_COMMANDBAR_COMMON.TGA
+scripts/cameo_work/MT_COMMANDBAR_COMMON.MTD
+scripts/cameo_work/pristine/

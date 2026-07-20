@@ -337,61 +337,26 @@ void SidebarGlyphxClass::StripClass::Init_Clear(void)
  *   12/31/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
 /*
-**	Sidebar grouping key (Luke, 2026-07-20): shared entries first, then one
-**	block per faction (Allied, Soviet, GDI, Nod), each block in tech-level
-**	order. Keyed off Ownable side bits, so an entry's place is stable — a
-**	captured tree's cameos cluster into their faction's block instead of
-**	appending wherever the recalc found them.
+**	Sidebar ordering key (Luke, 2026-07-20): every entry ordered by price,
+**	cheapest first. Keyed off the type's Cost so an entry's place is stable
+**	across sidebar recalcs — a captured tree's cameo lands at its price slot
+**	instead of appending wherever the recalc found it.
 */
 static int TF_Sidebar_Sort_Key(RTTIType type, int id)
 {
     /*
-    **	Superweapons have no TechnoTypeClass; their faction set comes from the
-    **	grant sites in house.cpp (ATEK/TDEYE for GPS, the airfields for the
-    **	drops, etc.) — keep this table in step with those.
+    **	Superweapons have no TechnoTypeClass and no build cost, so they sort
+    **	ahead of the priced entries in a stable, arbitrary order.
     */
     if (type == RTTI_SPECIAL) {
-        switch ((SpecialWeaponType)id) {
-        case SPC_NUCLEAR_BOMB: // MSLO — Allied+Soviet
-        case SPC_GPS:          // ATEK or TDEYE — Allied+GDI
-        case SPC_PARA_INFANTRY: // Soviet airfield or Nod airstrip+Hand
-        case SPC_SPY_MISSION:   // Soviet airfield or Nod airstrip
-            return (0); // shared block
-        case SPC_SONAR_PULSE:
-        case SPC_CHRONOSPHERE:
-            return (100); // Allied
-        case SPC_PARA_BOMB:
-        case SPC_IRON_CURTAIN:
-            return (200); // Soviet
-        case SPC_TD_ION_CANNON:
-            return (300); // GDI
-        case SPC_TD_NUKE:
-            return (400); // Nod
-        default:
-            return (0);
-        }
+        return (0);
     }
 
     TechnoTypeClass const* tech = Fetch_Techno_Type(type, id);
     if (tech == NULL) {
         return (0);
     }
-    int own = tech->Get_Ownable();
-    int sides = ((own & HOUSEF_ALLIES) ? 1 : 0) + ((own & HOUSEF_SOVIET) ? 1 : 0) + ((own & HOUSEF_GDI) ? 1 : 0)
-                + ((own & HOUSEF_NOD) ? 1 : 0);
-    int group;
-    if (sides >= 2) {
-        group = 0; // shared block leads
-    } else if (own & HOUSEF_ALLIES) {
-        group = 1;
-    } else if (own & HOUSEF_SOVIET) {
-        group = 2;
-    } else if (own & HOUSEF_GDI) {
-        group = 3;
-    } else {
-        group = 4; // Nod
-    }
-    return (group * 100 + min((unsigned)99, tech->Level));
+    return (tech->Cost < 0 ? 0 : tech->Cost);
 }
 
 bool SidebarGlyphxClass::StripClass::Add(RTTIType type, int id, bool via_capture)
