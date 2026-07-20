@@ -91,7 +91,39 @@
 	</MusicEvent>
 
 
-			<MusicEvent Name="TDC_MUS_TD_SCORE_SCREEN">
+	<!--
+	<MusicEvent Name="TDC_MUS_TD_GDI_SCORE_SCREEN">
+		<PlayList>
+			<Entry> TDC_MUS_GREAT_SHOT.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+	-->
+	<!--
+	<MusicEvent Name="TDC_MUS_TD_NOD_SCORE_SCREEN">
+		<PlayList>
+			<Entry> TDC_MUS_GREAT_SHOT.WAV </Entry>
+		</PlayList>
+		<VolumePercent> 50 </VolumePercent>
+		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<ContinueLastSample> No </ContinueLastSample>
+		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
+		<FadeOutPrevSeconds> 0.0 </FadeOutPrevSeconds>
+		<GapDelayMinSeconds> 5.0 </GapDelayMinSeconds>
+		<GapDelayMaxSeconds> 5.0 </GapDelayMaxSeconds>
+		<LoopInfinitely> Yes </LoopInfinitely>
+		<RandomizePlayList> False </RandomizePlayList>
+	</MusicEvent>
+	-->
+	<MusicEvent Name="TDC_MUS_TD_SCORE_SCREEN">
 		<PlayList>
 			<Entry> TDC_MUS_GREAT_SHOT.WAV </Entry>
 		</PlayList>
@@ -2612,36 +2644,6 @@
 			<Entry> RAR_MUS_WASTELAND.WAV </Entry>
 			<Entry> RAR_MUS_WORKMEN.WAV </Entry>
 			<Entry> RAR_MUS_WORKMEN_RETALIATION_REMIX.WAV </Entry>
-			<Entry> RAB_MUS_BIG_FOOT_FKTS.WAV </Entry>
-			<Entry> RAB_MUS_BLOW_IT_UP_FKTS.WAV </Entry>
-			<Entry> RAB_MUS_BRAIN_FREEZE_FKTS.WAV </Entry>
-			<Entry> RAB_MUS_CONCRETE_AM.WAV </Entry>
-			<Entry> RAB_MUS_CRUSH_FKTS.WAV </Entry>
-			<Entry> RAB_MUS_GRINDER_1_2_MEDLEY_FKTS.WAV </Entry>
-			<Entry> RAB_MUS_HELL_MARCH_FKTS.WAV </Entry>
-			<Entry> RAB_MUS_HELL_MARCH_ORIGINAL_DEMO.WAV </Entry>
-			<Entry> RAB_MUS_HM_2_3_MEDLEY_FKTS.WAV </Entry>
-			<Entry> RAB_MUS_JOURNEY_CS.WAV </Entry>
-			<Entry> RAB_MUS_MILITANT_FORCE_FKTS.WAV </Entry>
-			<Entry> RAB_MUS_SURF_NO_MERCY.WAV </Entry>
-			<Entry> RAB_MUS_THE_PLAN_AM.WAV </Entry>
-			<Entry> RAB_MUS_THE_TRUTH_IS_A_LIE.WAV </Entry>
-			<Entry> RAB_MUS_WORKMEN_FKTS.WAV </Entry>
-			<Entry> TDB_MUS_ACT_ON_INSTINCT_FKTS.WAV </Entry>
-			<Entry> TDB_MUS_CC_CREDITS_OUTTAKES.WAV </Entry>
-			<Entry> TDB_MUS_COMMAND_AND_CONQUER_FKTS.WAV </Entry>
-			<Entry> TDB_MUS_DUSK_HOUR_FKTS.WAV </Entry>
-			<Entry> TDB_MUS_GOT_A_PRESENT_FOR_YA_FKTS.WAV </Entry>
-			<Entry> TDB_MUS_INDUSTRIAL_FKTS.WAV </Entry>
-			<Entry> TDB_MUS_JUST_DO_IT_UP_FKTS.WAV </Entry>
-			<Entry> TDB_MUS_MAD_RAP_FKTS.WAV </Entry>
-			<Entry> TDB_MUS_NO_MERCY_FKTS.WAV </Entry>
-			<Entry> TDB_MUS_PREPARE_FOR_BATTLE_FKTS.WAV </Entry>
-			<Entry> TDB_MUS_RAIN_IN_THE_NIGHT_FKTS.WAV </Entry>
-			<Entry> TDB_MUS_SLAVE_TO_THE_SYSTEM_FKTS.WAV </Entry>
-			<Entry> TDB_MUS_TANK_BATTLE_CO.WAV </Entry>
-			<Entry> TDB_MUS_TARGET_MECHANICAL_MAN_FKTS.WAV </Entry>
-			<Entry> TDB_MUS_WARFARE_FULL_STOP_FKTS.WAV </Entry>
 		</PlayList>
 		<VolumePercent> 40 </VolumePercent>
 		<FadeInSeconds> 0.0 </FadeInSeconds>
@@ -2890,4 +2892,4 @@
 	<!-- JUKEBOX list is Built by <MusicJukeboxTracksList> in Audio_System_Constants.xml -->
 
 
-<!-- pad                                                                                                                                                                --><!--            --></MusicEvents>
+<!-- pad                                                                                                                                                                --><!--                                                                                                                                                                                                                                                                                                                                                                                      --></MusicEvents>

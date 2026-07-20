@@ -54,24 +54,27 @@ def track_names(music_meg_listing, prefix):
 
 
 def build_playlist(listing):
-    """The ordered track list for the remastered skirmish rotation."""
+    """The ordered track list for the remastered skirmish rotation.
+
+    Remastered RA and TD tracks only. Bonus-mode tracks (RAB_/TDB_) are
+    deliberately excluded: they play but never appear in the in-game jukebox,
+    which put unlisted oddities like the credits-outtakes bloopers reel into a
+    live match.
+    """
     ra = track_names(listing, "RAR_")
     td = track_names(listing, "TDR_")
-    rab = track_names(listing, "RAB_")
-    tdb = track_names(listing, "TDB_")
 
     keep_ra = sorted(t for t in ra if t.upper().replace("RAR_MUS_", "") not in RA_EXCLUDED)
     keep_td = sorted(t for t in td if t.upper().replace("TDR_MUS_", "") not in TD_EXCLUDED)
 
-    # Interleave RA and TD so the rotation alternates eras, then append the
-    # bonus arrangements.
+    # Interleave RA and TD so the rotation alternates eras.
     woven = []
     for i in range(max(len(keep_ra), len(keep_td))):
         if i < len(keep_ra):
             woven.append(keep_ra[i])
         if i < len(keep_td):
             woven.append(keep_td[i])
-    return woven + sorted(rab) + sorted(tdb)
+    return woven
 
 
 def render_block(base_block, tracks, eol):
