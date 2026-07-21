@@ -1566,6 +1566,78 @@ static UnitTypeClass const UnitTsHvr(UNIT_TSHVR,
                                      MISSION_HUNT  // ORDERS: Default order.
 );
 
+// TS Titan walker (UNIT_TSTITN), TS rules [MMCH]. GDI-only, turreted (TS
+// Turret=yes), Crusher=yes, fires TS120mm. Art = TS MMCH.SHP: 8 body facings
+// (first frame of each 15-frame walk cycle) duplicated to 32 shapes + the
+// 32-facing turret run, packed by scripts/ts_pack_walkers.py with ONE shared
+// source-canvas transform — the turret mount position is baked into the TS
+// frames, so the turret needs NO Turret_Adjust seat (draw both centered).
+// Classic = transparent 48x48 stub in TFASSETS.MIX (TSTITN.SHP).
+static UnitTypeClass const UnitTsTitn(UNIT_TSTITN,
+                                      TXT_LTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                      "TSTITN",     // NAME: IniName.
+                                      ANIM_FBALL1,  // EXPLOSION: big fireball (TS TWLT070-scale death).
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0030,       // Vertical offset (render calibration, ref 2TNK).
+                                      0x00A8,       // Primary weapon offset: the cannon muzzle (~0.66 cell forward, measured from the packed art).
+                                      0x0018,       // Primary weapon lateral offset: cannon rides the right flank (18 HD px).
+                                      0x0000,       // Secondary weapon offset (no secondary).
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      true,         // Can this be a goodie surprise from a crate? (TS CrateGoodie=yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (TS Crusher=yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      true,         // Is it equipped with a combat turret? (TS Turret=yes)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline (mount baked into the art).
+                                      MISSION_HUNT  // ORDERS: Default order.
+);
+
+// TS Mammoth Mk. II (UNIT_TSHMEC), TS rules [HMEC]. GDI-only, NO rotating
+// turret (the twin railguns are hull-fixed — the walker turns to fire, which
+// is also what makes the railgun line-shot read correctly). Primary =
+// MechRailgun (piercing line), Secondary = MammothTusk (RA-native AA missiles,
+// same weapon the RA 4TNK carries). Art = HMEC.VXL rendered in the HVA
+// frame-0 standing pose (13 sections placed by their animation matrices —
+// scripts/vxl_render.py --hva). Classic = transparent 56x56 stub (TSHMEC.SHP).
+static UnitTypeClass const UnitTsHmec(UNIT_TSHMEC,
+                                      TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                      "TSHMEC",     // NAME: IniName.
+                                      ANIM_FBALL1,  // EXPLOSION: big fireball.
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0030,       // Vertical offset (render calibration).
+                                      0x00C0,       // Primary weapon offset: railgun muzzles forward of the hull.
+                                      0x0028,       // Primary weapon lateral offset (twin barrels, 4TNK convention).
+                                      0x0008,       // Secondary weapon offset (missile pods, aft).
+                                      0x0040,       // Secondary weapon lateral offset.
+                                      true,         // Can this be a goodie surprise from a crate?
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (TS Crusher=yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      false,        // Is it equipped with a combat turret? (hull-fixed guns)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      true,         // Must the turret be in a locked down position while moving? (REQUIRED for hull-fixed shooters: the FIRE_FACING handler only turns the BODY when this is set — ARTY/V2 convention; without it the unit "aims" its nonexistent turret forever and never fires)
+                                      true,         // Is this a gigundo-rotund-enormous unit? (4TNK-class hulk)
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline.
+                                      MISSION_HUNT  // ORDERS: Default order.
+);
+
 /*
 **  AMCV/SMCV (Allied/Soviet MCVs) and TDGMCV/TDNMCV (GDI/Nod MCVs) — the four faction MCVs.
 **  Each exists as its own type so the MCV carries the faction it will deploy into: an MCV
@@ -1768,6 +1840,8 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTdArty);    // UNIT_TDARTY
     new UnitTypeClass(UnitTdVice);    // UNIT_TDVICE
     new UnitTypeClass(UnitTsHvr);     // UNIT_TSHVR (TS-spike Hover MLRS)
+    new UnitTypeClass(UnitTsTitn);    // UNIT_TSTITN (TS Titan walker)
+    new UnitTypeClass(UnitTsHmec);    // UNIT_TSHMEC (TS Mammoth Mk. II)
     new UnitTypeClass(UnitSovietMcv); // UNIT_SMCV  (Soviet MCV)
     new UnitTypeClass(UnitNodMcv);    // UNIT_TDNMCV (Nod MCV)
     new UnitTypeClass(UnitGdiMcv);    // UNIT_TDGMCV (GDI MCV)
@@ -1941,6 +2015,8 @@ void UnitTypeClass::One_Time(void)
     {
         static const struct { UnitType hd; UnitType donor; } _hd_udonors[] = {
             {UNIT_TSHVR, UNIT_MTANK2},
+            {UNIT_TSTITN, UNIT_MTANK2},
+            {UNIT_TSHMEC, UNIT_HTANK},
             {UNIT_AMCV, UNIT_MCV},
             {UNIT_SMCV, UNIT_MCV},
             {UNIT_TDGMCV, UNIT_TDMCV},
@@ -2203,6 +2279,9 @@ bool UnitTypeClass::Read_INI(CCINIClass& ini)
 {
     if (TechnoTypeClass::Read_INI(ini)) {
         IsNoFireWhileMoving = ini.Get_Bool(IniName, "NoMovingFire", IsNoFireWhileMoving);
+        WalkFrames = ini.Get_Int(IniName, "WalkFrames", WalkFrames);
+        WalkFacings = ini.Get_Int(IniName, "WalkFacings", WalkFacings);
+        WalkRate = max(1, ini.Get_Int(IniName, "WalkRate", WalkRate));
         Speed = ini.Get_Bool(IniName, "Tracked", (Speed == SPEED_TRACK)) ? SPEED_TRACK : SPEED_WHEEL;
         // TS-spike: Hover=yes overrides the binary Tracked choice with the amphibious
         // hover locomotor (land + water passability from the ground table's Hover= row).

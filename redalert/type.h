@@ -1004,6 +1004,24 @@ public:
     unsigned IsAnimating : 1;
 
     /*
+    **  Tiberian Factions — TS walker animation. When WalkFrames > 1 the body
+    **  tileset is laid out as WalkFacings blocks of WalkFrames each
+    **  (shape = facing_index * WalkFrames + stage); the walk stage advances
+    **  while driving and rests at 0 when stopped. The turret block (if any)
+    **  starts at WalkFacings * WalkFrames instead of 32. Parsed from
+    **  `WalkFrames=` / `WalkFacings=` in rules.ini (defaults 1/32 = the
+    **  standard 32-frame vehicle layout, untouched).
+    */
+    int WalkFrames = 1;
+    int WalkFacings = 32;
+
+    /*
+    **  Game ticks per walk-animation frame (TS WalkRate semantics; bigger =
+    **  slower gait). Parsed from `WalkRate=`.
+    */
+    int WalkRate = 2;
+
+    /*
     ** Does this unit have the ability to jam radar facilities?
     */
     unsigned IsJammer : 1;

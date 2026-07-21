@@ -120,6 +120,21 @@ public:
     unsigned IsTDPort : 1;
 
     /*
+    **	Tiberian Factions mod: TS railgun behavior (TS rules `IsRailgun=true`).
+    **	The shot applies AmbientDamage to EVERY object along the source->target
+    **	line (piercing), renders a beam + particle helix instead of the Obelisk
+    **	red laser, and the projectile's own payload stays 0 (TS convention:
+    **	`Damage=0` -- the line pass is the damage).
+    */
+    unsigned IsRailgun : 1;
+
+    /*
+    **	Tiberian Factions mod: TS `AmbientDamage=` -- the per-object damage the
+    **	railgun line pass applies. Only meaningful when IsRailgun is set.
+    */
+    int AmbientDamage;
+
+    /*
     **	This is the number of shots this weapon first (in rapid succession).
     **	The normal value is 1, but for the case of two shooter weapons such as
     **	the double barreled gun turrets of the Mammoth tank, this value will be

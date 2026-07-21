@@ -15,18 +15,31 @@ table-free.
 Usage:
   vxl_render.py <model.vxl> <outdir> [--frames N] [--px-per-voxel P]
                 [--yaw0 DEG] [--team-green R,G,B] [--z-lift N]
+                [--hva FILE] [--hva-frame N]
+
+Multi-section models (walkers): section voxel grids are local — pass --hva to
+position each section with the given animation frame's 3x4 matrix (rotation
+applied to the bounds-mapped position, translation scaled by the section
+scale, per the XCC/OpenRA convention). Without --hva, sections are placed by
+their bounds alone, which flat-packs articulated models.
 """
 import math, os, struct, sys
 import numpy as np
 from PIL import Image
 
-ELEV = math.radians(54.0)
+ELEV = math.radians(54.0)  # overridable via --elev (e.g. TS walkers read better lower)
 SIN_E, COS_E = math.sin(ELEV), math.cos(ELEV)
+
+
+def set_elevation(deg):
+    global ELEV, SIN_E, COS_E
+    ELEV = math.radians(deg)
+    SIN_E, COS_E = math.sin(ELEV), math.cos(ELEV)
 SS = 4  # supersample factor
 
 LIGHT = np.array([-0.5, 0.6, 0.75])  # top, slightly NW
 LIGHT = LIGHT / np.linalg.norm(LIGHT)
-AMBIENT = 0.35
+AMBIENT = 0.35  # overridable via --ambient (side-heavy low-elevation renders read dark)
 
 
 def parse_vxl(path):
@@ -77,6 +90,22 @@ def parse_vxl(path):
                 remap=(remap_start, remap_end))
 
 
+def parse_hva(path):
+    """Return per-frame lists of 3x4 section matrices: hva[frame][section]."""
+    data = open(path, 'rb').read()
+    n_frames, n_sections = struct.unpack_from('<II', data, 16)
+    off = 24 + n_sections * 16
+    frames = []
+    for f in range(n_frames):
+        mats = []
+        for s in range(n_sections):
+            m = struct.unpack_from('<12f', data, off)
+            off += 48
+            mats.append(np.array(m, dtype=np.float32).reshape(3, 4))
+        frames.append(mats)
+    return frames
+
+
 def compute_normals(occ):
     """Normal per voxel = normalized sum of directions toward empty neighbors."""
     sx, sy, sz = occ.shape
@@ -105,12 +134,13 @@ def team_ramp(palette, remap, team_green):
     return pal
 
 
-def render_frame(model, yaw_deg, px_per_voxel, team_green, z_lift, canvas=None):
+def render_frame(model, yaw_deg, px_per_voxel, team_green, z_lift, canvas=None,
+                 hva_mats=None):
     pal = team_ramp(model['palette'], model['remap'], team_green)
     yaw = math.radians(yaw_deg)
     cy, sy_ = math.cos(yaw), math.sin(yaw)
     pts_all, cols_all, shade_all = [], [], []
-    for sec in model['sections']:
+    for si, sec in enumerate(model['sections']):
         occ, colv = sec['occ'], sec['col']
         sx, sy, sz = sec['size']
         normals = compute_normals(occ)
@@ -123,6 +153,11 @@ def render_frame(model, yaw_deg, px_per_voxel, team_green, z_lift, canvas=None):
         # model space (x east, y north-ish, z up), centered
         pos = min_b + (idx + 0.5) * step
         nrm = normals[idx[:, 0], idx[:, 1], idx[:, 2]]
+        if hva_mats is not None:
+            m = hva_mats[si]
+            rot, trans = m[:, :3], m[:, 3] * sec['scale']
+            pos = pos @ rot.T + trans
+            nrm = nrm @ rot.T
         pts_all.append(pos)
         cols_all.append(colv[idx[:, 0], idx[:, 1], idx[:, 2]])
         shade_all.append(nrm)
@@ -185,7 +220,8 @@ def main():
     args = sys.argv[1:]
     vxl_path, outdir = args[0], args[1]
     opts = {'--frames': '32', '--px-per-voxel': '6', '--yaw0': '0',
-            '--team-green': '0,200,0', '--z-lift': '0', '--canvas': '0'}
+            '--team-green': '0,200,0', '--z-lift': '0', '--canvas': '0',
+            '--hva': '', '--hva-frame': '0', '--elev': '54', '--ambient': '0.35'}
     i = 2
     while i < len(args):
         opts[args[i]] = args[i + 1]
@@ -197,18 +233,25 @@ def main():
     tg = tuple(int(x) for x in opts['--team-green'].split(','))
     canvas = int(opts['--canvas']) or None
 
+    set_elevation(float(opts['--elev']))
+    global AMBIENT
+    AMBIENT = float(opts['--ambient'])
     model = parse_vxl(vxl_path)
+    hva_mats = None
+    if opts['--hva']:
+        hva_mats = parse_hva(opts['--hva'])[int(opts['--hva-frame'])]
     os.makedirs(outdir, exist_ok=True)
     # first pass with fixed canvas: find biggest extent over all frames
     if canvas is None:
         worst = 0
         for f in (0, frames // 4):
-            _, c = render_frame(model, yaw0 + f * (360.0 / frames), ppv, tg, zlift)
+            _, c = render_frame(model, yaw0 + f * (360.0 / frames), ppv, tg, zlift,
+                                hva_mats=hva_mats)
             worst = max(worst, c)
         canvas = worst
     for f in range(frames):
         yaw = yaw0 + f * (360.0 / frames)  # CCW per classic frame order
-        img, _ = render_frame(model, yaw, ppv, tg, zlift, canvas)
+        img, _ = render_frame(model, yaw, ppv, tg, zlift, canvas, hva_mats=hva_mats)
         img.save(os.path.join(outdir, f'frame-{f:04d}.png'))
     print(f'rendered {frames} frames, canvas {canvas}px -> {outdir}')
 

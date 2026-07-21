@@ -290,6 +290,9 @@ struct SoundEffectNameStruct
     {"TRANS1", 1, IN_NOVAR},      // VOC_TD_CLOAK — TD Stealth Tank cloak/decloak (TD VOC_CLOAK = file TRANS1), routed via RAC/RAR_SFX_TRANS1
     {"TNKFIRE2", 1, IN_NOVAR},    // VOC_TD_TANK1 — TD Artillery 155mm fire (WEAPON_TD155MM Report=TNKFIRE2; TD VOC_TANK1), routed via RAC/RAR_SFX_TNKFIRE2
     {"HOVRMIS1", 1, IN_NOVAR},    // VOC_TS_HOVRMIS1 — TS Hover MLRS missile launch (WEAPON_TSHOVERMISSILE Report=HOVRMIS1), routed via RAC/RAR_SFX_HOVRMIS1 (bundled WAV)
+    {"RAILUSE5", 1, IN_NOVAR},    // VOC_TS_RAILUSE5 — TS heavy mech railgun (WEAPON_MECHRAILGUN Report=RAILUSE5), routed via RAC/RAR_SFX_RAILUSE5 (bundled WAV under TDR_SFX_DINOATK1)
+    {"TSMISL1", 1, IN_NOVAR},     // VOC_TS_MISL1 — TS missile launch (WEAPON_TSMKTUSK Report=TSMISL1), routed via RAC/RAR_SFX_TSMISL1 (bundled WAV under TDR_SFX_DINODIE1)
+    {"TS120MMF", 1, IN_NOVAR},    // VOC_TS_120MMF — TS Titan cannon fire (WEAPON_TS120MM Report=TS120MMF), routed via RAC/RAR_SFX_TS120MMF (bundled WAV under TDR_SFX_DINOMOUT)
 };
 
 //

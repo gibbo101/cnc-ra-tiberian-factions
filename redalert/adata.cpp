@@ -2424,6 +2424,14 @@ static AnimTypeClass const ChemSW(ANIM_CHEM_SW, "TDCHEM-SW", 48, 9, false, false
 static AnimTypeClass const ChemW(ANIM_CHEM_W, "TDCHEM-W", 48, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const ChemNW(ANIM_CHEM_NW, "TDCHEM-NW", 48, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 
+// Tiberian Factions -- TS railgun particle spark (ANIM_RAILFX). TS renders the
+// railgun as a laser line plus particles spiraling around it; the beam is the
+// 3-line Lines[] draw (launcher ABI cap), so the spiral is a swarm of these
+// short-lived blue sparks spawned along a helix by the IsRailgun branch in
+// TechnoClass::Fire_At. Art = pipeline-generated 6-frame glow (RAILFX tiles in
+// RA_VFX.XML); classic = transparent stub in TFASSETS.MIX (dims only).
+static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 6, 0, VOC_NONE, ANIM_NONE, 6, 0x100);
+
 void AnimTypeClass::Init_Heap(void)
 {
     /*
@@ -2549,6 +2557,7 @@ void AnimTypeClass::Init_Heap(void)
     // Tiberium fumes (harvester dock at an RA refinery). MUST stay immediately after the
     // TDFTFLAME block to match the ANIM_TIB_FUMES enum slot (heap ID == registration order).
     new AnimTypeClass(TibFumes);
+    // (RailFx is registered at the very end of this function — see below.)
 
 #ifdef FIXIT_ANTS
     new AnimTypeClass(Ant1Death);
@@ -2562,6 +2571,10 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(Fire4Virtual);
     new AnimTypeClass(BeaconVirtual);
 #endif
+
+    // MUST stay last: matches the ANIM_RAILFX enum slot after the virtual
+    // anims (heap ID == registration order).
+    new AnimTypeClass(RailFx);
 }
 
 /***********************************************************************************************

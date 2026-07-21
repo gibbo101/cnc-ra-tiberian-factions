@@ -6491,6 +6491,66 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> TDR_SFX_BONUS_UNLOCK.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+
+  <!-- TS Mammoth Mk. II railgun fire (TSHMEC, WEAPON_MECHRAILGUN Report=RAILUSE5).
+       Same dormant-MEG-sample trick as HOVRMIS1 above: novel loose sample names
+       crash ClientG, so the TS RAILUSE5 decode ships as Data/AUDIO/
+       TDR_SFX_DINOATK1.WAV (the TD secret-dinosaur-mission roar — its own
+       TDC_/TDR_ events never fire in RA context) and both events point there. -->
+  <SFXEvent Name="RAC_SFX_RAILUSE5" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_DINOATK1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_RAILUSE5" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_DINOATK1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <!-- TS Mammoth Mk. II AA missile launch (WEAPON_TSMKTUSK Report=TSMISL1;
+       TS [MammothTusk] Report=MISL1). Dormant host: TDR_SFX_DINODIE1.WAV. -->
+  <SFXEvent Name="RAC_SFX_TSMISL1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_DINODIE1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSMISL1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_DINODIE1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <!-- TS Titan 120mm cannon fire (TSTITN, WEAPON_TS120MM Report=TS120MMF;
+       TS [120mm] Report=120MMF). Dormant host: TDR_SFX_DINOMOUT.WAV. -->
+  <SFXEvent Name="RAC_SFX_TS120MMF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_DINOMOUT.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TS120MMF" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_DINOMOUT.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
 </SFXEvents>
 
 

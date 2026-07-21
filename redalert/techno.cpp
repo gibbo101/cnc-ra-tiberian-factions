@@ -131,6 +131,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "tstitn_muzzle.h"
 #include "utracker.h"
 
 /***************************************************************************
@@ -577,6 +578,17 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
     */
     if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_TSHVR) {
         coord = Coord_Move(coord, (DirType)(PrimaryFacing.Current() + DIR_S), 0x0060);
+    }
+
+    /*
+    **  Tiberian Factions -- Titan (UNIT_TSTITN): the cannon is hand-anchored
+    **  per facing in the packed art, so no single rotated offset can track the
+    **  muzzle. Use the packer-generated per-facing muzzle table instead
+    **  (leptons east/south of the unit center, same frame space as the draw).
+    */
+    if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_TSTITN) {
+        int fi = TechnoClass::BodyShape[Dir_To_32(dir)];
+        return XY_Coord(Coord_X(coord) + _tstitn_muzzle[fi][0], Coord_Y(coord) + _tstitn_muzzle[fi][1]);
     }
 
     if (IsSecondShot) {
@@ -3902,6 +3914,132 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 
 #endif
         }
+
+        /*
+        **  Tiberian Factions mod: TS railgun (IsRailgun=true, the Mammoth Mk. II
+        **  MechRailgun). TS semantics: the projectile's own payload is 0 — the
+        **  shot applies AmbientDamage to EVERY object along the source->target
+        **  line (piercing), friend or foe, firer excluded. Visual = the TS
+        **  composite: a blue 3-line beam (Lines[] — the launcher ABI caps lines
+        **  per object at 3) plus ANIM_RAILFX sparks spawned along a helix
+        **  around the line (TS SpiralRadius). Takes precedence over the
+        **  BULLET_LASER obelisk-red branch below (the railgun fires the same
+        **  instant TDLaser projectile for its hit semantics).
+        */
+        if (weapon->IsRailgun) {
+            COORDINATE source = Fire_Coord(which);
+            COORDINATE dest = target_coord; // validated earlier in Fire_At (see laser note below)
+            int sx = (int)Coord_X(source), sy = (int)Coord_Y(source);
+            int ddx = (int)Coord_X(dest) - sx, ddy = (int)Coord_Y(dest) - sy;
+            int dist = ::Distance(source, dest);
+
+            if (dist > 0) {
+                /*
+                **  Piercing damage sweep: walk the line in quarter-cell steps,
+                **  collect every techno occupying a crossed cell (deduped —
+                **  buildings occupy many cells), then apply AmbientDamage to
+                **  each through the RailShot warhead.
+                */
+                ObjectClass* victims[48];
+                int vcount = 0;
+                CELL lastcell = (CELL)-1;
+                for (int step = 0; step <= dist; step += 64) {
+                    COORDINATE c = XY_Coord(sx + ddx * step / dist, sy + ddy * step / dist);
+                    CELL cell = Coord_Cell(c);
+                    if (cell == lastcell) {
+                        continue;
+                    }
+                    lastcell = cell;
+                    ObjectClass* occ = Map[cell].Cell_Occupier();
+                    while (occ != NULL) {
+                        if (occ != this && occ->Is_Techno()) {
+                            bool seen = false;
+                            for (int v = 0; v < vcount; v++) {
+                                if (victims[v] == occ) {
+                                    seen = true;
+                                    break;
+                                }
+                            }
+                            if (!seen && vcount < (int)(sizeof(victims) / sizeof(victims[0]))) {
+                                victims[vcount++] = occ;
+                            }
+                        }
+                        occ = occ->Next;
+                    }
+                }
+                WarheadType wh = (weapon->WarheadPtr != NULL) ? WarheadType(weapon->WarheadPtr->ID) : WARHEAD_AP;
+                for (int v = 0; v < vcount; v++) {
+                    if (victims[v]->IsActive) {
+                        int dmg = weapon->AmbientDamage;
+                        victims[v]->Take_Damage(dmg, 0, wh, this);
+                    }
+                }
+
+                /*
+                **  The beam: near-white core between two blue outers (TS
+                **  LaserColor 25,20,255 -> RA palette 0x0A; core 0xA0).
+                */
+                int x, y, x1, y1;
+                Map.Coord_To_Pixel(source, x, y);
+                Map.Coord_To_Pixel(dest, x1, y1);
+                x += Map.TacPixelX;
+                x1 += Map.TacPixelX;
+                y += Map.TacPixelY;
+                y1 += Map.TacPixelY;
+                // TS railgun blue (LaserColor 25,20,255): dark-blue outers
+                // (0x0B = 0,0,168) under a bright pure-blue core (0x0A =
+                // 80,80,252). The launcher renders only the core line in the
+                // virtual window, so the core carries the look.
+                Lines[0][0] = x + 1; Lines[0][1] = y; Lines[0][2] = x1; Lines[0][3] = y1; Lines[0][4] = 0x0B;
+                Lines[1][0] = x - 1; Lines[1][1] = y; Lines[1][2] = x1; Lines[1][3] = y1; Lines[1][4] = 0x0B;
+                Lines[2][0] = x;     Lines[2][1] = y; Lines[2][2] = x1; Lines[2][3] = y1; Lines[2][4] = 0x0A;
+                LineCount = 3;
+                LineFrame = 0;
+                // 5, NOT more: the launcher's line renderer only supports
+                // animation frames 0-4 (the obelisk's proven envelope) —
+                // frames >= 5 draw as giant endpoint boxes in the line color
+                // (the railgun white/red-box bug; frame values 5-6 from the
+                // original LineMaxFrames=7 overran the launcher's table).
+                LineMaxFrames = 5;
+                Map.Flag_To_Redraw(true);
+
+                /*
+                **  The spiral: RAILFX sparks stepped along the line, offset
+                **  perpendicular by a sine (one turn per ~1.4 cells, amplitude
+                **  ~24 leptons ≈ TS SpiralRadius=15 scaled up for readability).
+                **  Spawn delay grows with distance so the helix ripples from
+                **  muzzle to target.
+                */
+                static const signed char _helix[32] = {0,   5,   9,   13,  17,  20,  22,  24,  24, 24, 22,
+                                                       20,  17,  13,  9,   5,   0,   -5,  -9,  -13, -17,
+                                                       -20, -22, -24, -24, -24, -22, -20, -17, -13, -9, -5};
+                int px = -ddy, py = ddx; // beam-perpendicular (unnormalized; /dist normalizes)
+                // Start/stop the helix a full cell clear of the endpoints: a
+                // spark spawned inside the firer's or the target's own cell
+                // attaches itself to that object and exports through the
+                // launcher's sub-object path, which renders it as the white
+                // placeholder box (the endpoint-box bug).
+                for (int d = 300; d < dist - 300; d += 44) {
+                    int amp = _helix[(d / 11) & 31];
+                    COORDINATE c = XY_Coord(sx + ddx * d / dist + px * amp / dist,
+                                            sy + ddy * d / dist + py * amp / dist);
+                    // ANIM_PIFFPIFF: a stock anim the launcher provably renders.
+                    // Both custom-art spark attempts (new ANIM_RAILFX type, and
+                    // vanilla TWINKLE2 with repointed tiles) drew the launcher's
+                    // white placeholder — how mod anims reach launcher-side art
+                    // is still unsolved (TDIONSFX manages it; mechanism TBD, see
+                    // the pipeline-traps memory). Sparkle puffs along the helix
+                    // read fine until the blue spark art can be delivered.
+                    // NO spawn delay: vanilla never delays these anims, and a
+                    // delayed anim exports to the launcher in its pre-start
+                    // state (suspected source of the endpoint placeholder
+                    // boxes). The muzzle->target ripple was cosmetic only.
+                    new AnimClass(ANIM_PIFFPIFF, c);
+                }
+
+                new SmudgeClass(Random_Pick(SMUDGE_SCORCH1, SMUDGE_SCORCH6), dest);
+            }
+        } else
 
         /*
         **  Tiberian Factions mod: Obelisk laser beam render. Ported from TD

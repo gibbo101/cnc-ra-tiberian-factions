@@ -659,6 +659,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TDChemWar"); // WARHEAD_TDCHEM (TD chem spray — HE table + Explosion=0; E5)
     new WarheadTypeClass("TDHollow");  // WARHEAD_TDHOLLOW (TD hollow-point — Commando sniper; anti-infantry)
     new WarheadTypeClass("TDAGT");     // WARHEAD_TDAGT (v4.0 F8 — AGT-only TDHE clone, vs-heavy 25->50; fires from TDTowTwo only)
+    new WarheadTypeClass("RailShot");  // WARHEAD_RAILSHOT (TS MechRailgun line damage — TS [RailShot] verses)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
@@ -744,6 +745,9 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TDA10Napalm");  // WEAPON_TDA10NAPALM (v4.0 A-10 strafe -- TD WEAPON_NAPALM verbatim, BULLET_TDNAPALM)
     new WeaponTypeClass("TDFlameBunker"); // WEAPON_TDFLAMEBUNKER (v4.0 Nod Flame Bunker TDFBNK -- TDFlameTongue clone, Range 4; IsTDPort raw Speed)
     new WeaponTypeClass("TSHoverMissile"); // WEAPON_TSHOVERMISSILE (TS-spike Hover MLRS -- TS [HoverMissile] stats on the TDSSM homing chain)
+    new WeaponTypeClass("TS120mm");        // WEAPON_TS120MM (TS Titan cannon -- TS [120mm] stats on the TDAPDS chain)
+    new WeaponTypeClass("MechRailgun");    // WEAPON_MECHRAILGUN (TS Mammoth Mk. II railgun -- IsRailgun piercing line, instant TDLaser projectile)
+    new WeaponTypeClass("TSMammothTusk");  // WEAPON_TSMKTUSK (TS Mk. II AA missiles -- MammothTusk stats on the AA-only AAMissile projectile)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -804,6 +808,8 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     // TSHoverMissile (TS-spike Hover MLRS): TS [HoverMissile] stats fired through the TDSSM
     // AA+AG homing missile (the TDTusk pattern). IsTDPort for raw Speed + AI_TD homing dispatch.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TSHoverMissile"))->IsTDPort = true;
+    // TS120mm (Titan): TS [120mm] stats through the TDAPDS instant shell (TDMTNK's chain).
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TS120mm"))->IsTDPort = true;
     // TD155mm (Artillery ARTY): TD WEAPON_155MM -- a high-damage (150) arcing HE bombardment shell
     // firing BULLET_TDHESHELL. IsTDPort for raw Speed (MPH_MEDIUM_FAST) + the AI_TD arc path.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TD155mm"))->IsTDPort = true;

@@ -71,6 +71,8 @@ WeaponTypeClass::WeaponTypeClass(char const* name)
     , IsCamera(false)
     , IsElectric(false)
     , IsTDPort(false)
+    , IsRailgun(false)
+    , AmbientDamage(0)
     , Burst(1)
     , Bullet(NULL)
     , Attack(0)
@@ -213,6 +215,8 @@ bool WeaponTypeClass::Read_INI(CCINIClass& ini)
         IsCamera = ini.Get_Bool(Name(), "Camera", IsCamera);
         IsElectric = ini.Get_Bool(Name(), "Charges", IsElectric);
         IsTurboBoosted = ini.Get_Bool(Name(), "TurboBoost", IsTurboBoosted);
+        IsRailgun = ini.Get_Bool(Name(), "IsRailgun", IsRailgun);
+        AmbientDamage = ini.Get_Int(Name(), "AmbientDamage", AmbientDamage);
 
         WarheadType wtype = (WarheadPtr != NULL) ? WarheadType(WarheadPtr->ID) : WARHEAD_NONE;
         wtype = ini.Get_WarheadType(Name(), "Warhead", wtype);

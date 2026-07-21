@@ -1808,6 +1808,8 @@ typedef enum UnitType : char
     UNIT_TDARTY,            // TD Artillery (ARTY, "Nod Artillery") — Nod-only, no prereq (build level 6), turret-less (body aims, slow ROT 2), fires TD155mm (BULLET_TDHESHELL arcing, dmg 150). udata.cpp UnitArty.
     UNIT_TDVICE,            // TD Visceroid (VICE) — tiberium creature, NOT buildable; spawns when infantry die in tiberium. Tracked, turret-less, squashes infantry, constant anim, WEAPON_TDCHEM spray, ARMOR_WOOD, STR 150, MISSION_HUNT. HEALS on tiberium. udata.cpp UnitVisceroid.
     UNIT_TSHVR,             // TS-spike: Tiberian Sun Hover MLRS (HVR) — GDI, turreted missile rack, fires TSHoverMissile (TDSSM AA+AG chain). Art = voxel-rendered HD tileset (tools/ts_extract.py + vxl_render.py pipeline); no classic SHP (2TNK donor ImageData).
+    UNIT_TSTITN,            // TS Titan walker (MMCH) — GDI, turreted, fires TS120mm. Art = TS MMCH.SHP standing frames (8 body facings duplicated to 32) + 32-facing turret, one shared canvas transform (turret registration baked). Classic = transparent stub in TFASSETS.MIX.
+    UNIT_TSHMEC,            // TS Mammoth Mk. II (HMEC) — GDI, NO turret (hull-fixed guns), Primary=MechRailgun (piercing line), Secondary=MammothTusk (AA). Art = HMEC.VXL rendered in the HVA frame-0 standing pose (vxl_render.py --hva).
     UNIT_SMCV,              // Soviet MCV (deploys to STRUCT_SFACT) — own pipeline-built art (SMCV keys); separate type so the UNIT carries the faction.
     UNIT_TDNMCV,            // Nod MCV (deploys to STRUCT_TDNFACT) — own pipeline-built art (TDNMCV keys).
     UNIT_TDGMCV,            // GDI MCV (deploys to STRUCT_TDGFACT) — sibling of UNIT_TDNMCV.
@@ -2910,6 +2912,8 @@ typedef enum AnimType : char
     ANIM_BEACON_VIRTUAL,     // Beacon (virtual).
 #endif
 
+    ANIM_RAILFX, // TS railgun particle: small blue spark, spawned in a helix along the MechRailgun beam line (TS draws the railgun as laser line + spiraling particles; the launcher's 3-line cap forces the particles to be anims).
+
     ANIM_COUNT,
     ANIM_FIRST = 0
 } AnimType;
@@ -3267,6 +3271,7 @@ typedef enum WarheadType : char
     WARHEAD_TDCHEM, // TD chem spray — HE damage table (== TDHE) but Explosion=0 (TD ClassChem impact = ANIM_NONE). Separate from TDHE so the grenadier keeps its blast.
     WARHEAD_TDHOLLOW, // TD hollow-point (WARHEAD_HOLLOW_POINT) — Commando sniper. Spread 4, verses {1.0,0.03,0.03,0.03,0.03}: one-shots infantry, ~nil vs armor/buildings.
     WARHEAD_TDAGT, // AGT-only warhead, fired from TDTowTwo (the GDI Advanced Guard Tower) ONLY. Verses identical to TDHE today; kept separate so the AGT can be tuned without touching the ~12 other TDHE weapons.
+    WARHEAD_RAILSHOT, // TS railgun warhead (MechRailgun ambient line damage). TS [RailShot]: Spread 1, verses 200/175/160/100/25%.
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
@@ -3362,6 +3367,9 @@ typedef enum WeaponType : char
     WEAPON_TDA10NAPALM,    // v4.0: A-10 napalm strafe — TD WEAPON_NAPALM verbatim (Dmg100/ROF20/Range4.5=0x0480, VOC_NONE), BULLET_TDNAPALM. Registered "TDA10Napalm".
     WEAPON_TDFLAMEBUNKER,  // v4.0: Nod Flame Bunker (TDFBNK) — clone of TDFlameTongue with Range 2->4 (static defence must outrange range-3 infantry). BULLET_TDFLAME/WARHEAD_TDFIRE reused. IsTDPort (raw Speed 40). Registered "TDFlameBunker".
     WEAPON_TSHOVERMISSILE, // TS-spike: Hover MLRS missile — TS [HoverMissile] stats (Dmg30/ROF68/Range8/Burst2) on the TDSSM AA+AG homing chain (TDTusk pattern). IsTDPort (raw Speed). Registered "TSHoverMissile".
+    WEAPON_TS120MM,        // TS Titan cannon — TS [120mm] stats (Dmg70/ROF80) on the TDAPDS chain. IsTDPort. Registered "TS120mm".
+    WEAPON_MECHRAILGUN,    // TS Mammoth Mk. II railgun — Damage=0 + AmbientDamage=200 applied along the whole line (IsRailgun path in Fire_At), instant TDLaser projectile, WARHEAD_RAILSHOT. Registered "MechRailgun".
+    WEAPON_TSMKTUSK,       // TS Mammoth Mk. II AA missiles — RA MammothTusk stats on the STRICTLY anti-air AAMissile projectile (TS tusks never fire at ground). Registered "TSMammothTusk".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -4012,6 +4020,9 @@ typedef enum VocType : short
     VOC_TD_CLOAK,        // TD Stealth Tank cloak/decloak (TRANS1) — TD VOC_CLOAK; played by Do_Cloak/Do_Uncloak for TD-prefix units instead of RA's VOC_IRON1. Routed via RAC/RAR_SFX_TRANS1.
     VOC_TD_TANK1,        // TD Artillery 155mm fire (TNKFIRE2) — WEAPON_TD155MM Report= (VOC_TANK1 "sharp tank fire with recoil"). Routed via RAC/RAR_SFX_TNKFIRE2.
     VOC_TS_HOVRMIS1,     // TS Hover MLRS missile launch (HOVRMIS1, decoded from TS SOUNDS.MIX AUD) — WEAPON_TSHOVERMISSILE Report=. Routed via RAC/RAR_SFX_HOVRMIS1 + bundled TSHOVRMIS1.WAV.
+    VOC_TS_RAILUSE5,     // TS heavy mech railgun fire (RAILUSE5, decoded from TS SOUNDS.MIX AUD) — WEAPON_MECHRAILGUN Report=. Routed via RAC/RAR_SFX_RAILUSE5 → bundled TDR_SFX_DINOATK1.WAV (dormant-sample host).
+    VOC_TS_MISL1,        // TS missile launch (MISL1, TS MammothTusk Report) — WEAPON_TSMKTUSK Report=TSMISL1. Routed via RAC/RAR_SFX_TSMISL1 → bundled TDR_SFX_DINODIE1.WAV (dormant-sample host).
+    VOC_TS_120MMF,       // TS Titan 120mm cannon fire (120MMF) — WEAPON_TS120MM Report=TS120MMF. Routed via RAC/RAR_SFX_TS120MMF → bundled TDR_SFX_DINOMOUT.WAV (dormant-sample host).
 
     VOC_COUNT,
     VOC_FIRST = 0

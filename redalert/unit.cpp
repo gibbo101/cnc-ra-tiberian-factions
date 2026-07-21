@@ -2522,6 +2522,23 @@ int UnitClass::Shape_Number(void) const
 #endif
 
         /*
+        **  Tiberian Factions — TS walker gait. Body tileset = WalkFacings
+        **  blocks of WalkFrames (see type.h). Stage runs off the global frame
+        **  counter (offset by ID so a formation doesn't march in lockstep)
+        **  while the unit is actually driving; a standing walker rests on the
+        **  first frame of its facing's cycle. Cadence /2 ≈ TS WalkRate=2.
+        */
+        if (Class->WalkFrames > 1) {
+            // BodyShape maps the clockwise DirType index into CCW frame space
+            // (0=N advancing CCW) — the same space every 32-frame tileset and
+            // the turret draw use. The walker tilesets are packed CCW too.
+            int wfacing =
+                ((TechnoClass::BodyShape[Dir_To_32(PrimaryFacing)] * Class->WalkFacings + 16) / 32) % Class->WalkFacings;
+            int stage = (IsDriving && !IsRotating) ? ((::Frame + ID) / Class->WalkRate) % Class->WalkFrames : 0;
+            return (wfacing * Class->WalkFrames + stage);
+        }
+
+        /*
         **	Fetch the harvesting animation stage as appropriate. Two layouts:
         **	UNIT_HARVESTER (RA): 32 rotation + 8 dirs × 8 load = 96 frames.
         **	UNIT_TDHARV (TD): 32 rotation + 8 dirs × 4 load = 64 frames.
@@ -2721,7 +2738,9 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
             **	Determine which turret shape to use. This depends on if there
             **	is any firing animation in progress.
             */
-            shapenum = TechnoClass::BodyShape[tfacing] + 32;
+            // TS walkers put their turret block after the walk frames, not at 32.
+            int turret_base = (Class->WalkFrames > 1) ? (Class->WalkFacings * Class->WalkFrames) : 32;
+            shapenum = TechnoClass::BodyShape[tfacing] + turret_base;
 #ifdef FIXIT_PHASETRANSPORT //	checked - ajw 9/28/98
             if (*this == UNIT_PHASE) {
                 shapenum += 6;

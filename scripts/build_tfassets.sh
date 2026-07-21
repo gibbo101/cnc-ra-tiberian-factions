@@ -227,6 +227,17 @@ fi
 python3 scripts/gen_stub_shp.py "$TMPDIR/tshvr_stub.shp" 48 48 64
 PACK_ARGS+=("$TMPDIR/tshvr_stub.shp:TSHVR.SHP")
 
+# TS walkers (Titan + Mammoth Mk. II) -- same HD-only stub pattern. Titan gets
+# the tank box; the Mk. II's larger 56x56 box makes it render, select and
+# health-bar as the hulk it is. RAILFX is the railgun helix spark anim (dims
+# only; 6 frames).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tstitn_stub.shp" 56 56 128
+PACK_ARGS+=("$TMPDIR/tstitn_stub.shp:TSTITN.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tshmec_stub.shp" 60 60 256
+PACK_ARGS+=("$TMPDIR/tshmec_stub.shp:TSHMEC.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/railfx_stub.shp" 24 24 12
+PACK_ARGS+=("$TMPDIR/railfx_stub.shp:RAILFX.SHP")
+
 # Repack into TFASSETS.MIX with TD-prefix renames.
 python3 scripts/mix_tools.py pack "$OUTMIX" "${PACK_ARGS[@]}"
 echo "TFASSETS.MIX rebuilt with ${#ENTRIES[@]} entries -> $OUTMIX"
