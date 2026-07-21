@@ -7248,15 +7248,16 @@ int HouseClass::AI_Building(void)
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
                     /*
-                    **	Air production is LOW priority so it never outranks the core base
-                    **	(war factory, refinery, defence). An AI behind on air was escalating
-                    **	helipads/airstrips to URGENCY_HIGH (the all-enemy air scan finally made
-                    **	the vanilla formula fire against a human air force) and building four of
-                    **	them before it had a war factory. The count is still capped to the
-                    **	strongest air opponent above, so the AI matches the air *amount* -- just
-                    **	not ahead of its ground economy. Retune the escalation in the AI-focus pass.
+                    **	Air production holds behind the ground base, then competes normally.
+                    **	A pick resolves among the highest urgency present and power, refinery
+                    **	and defence keep a MEDIUM candidate available indefinitely, so a
+                    **	permanent LOW is never merely deprioritised -- it is unreachable, and
+                    **	the house fields no aircraft for the whole match. Staying LOW until the
+                    **	refineries and war factory are up is what keeps air from outranking the
+                    **	core base; promoting afterwards is what lets it happen at all. The
+                    **	count above still caps to the strongest air opponent.
                     */
-                    *choiceptr = BuildChoiceClass(URGENCY_LOW, b->Type);
+                    *choiceptr = BuildChoiceClass(tf_economy_ready ? URGENCY_MEDIUM : URGENCY_LOW, b->Type);
                 }
             }
         }
@@ -7273,12 +7274,12 @@ int HouseClass::AI_Building(void)
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
                     /*
-                    **	LOW priority, same reasoning as the helipad above -- keeps GDI able to
-                    **	build its airfield (STRUCT_AIRSTRIP -> TDGAFLD via TF_Skirmish_Pick) and
-                    **	the count still tracks the strongest air opponent, but the war factory and
-                    **	the rest of the ground base come first.
+                    **	Same escalation as the helipad above, and for the same reason: the
+                    **	ground base comes first, but air has to become reachable once it
+                    **	exists. Covers GDI's airfield (STRUCT_AIRSTRIP -> TDGAFLD via
+                    **	TF_Skirmish_Pick) as well as the RA airfields.
                     */
-                    *choiceptr = BuildChoiceClass(URGENCY_LOW, b->Type);
+                    *choiceptr = BuildChoiceClass(tf_economy_ready ? URGENCY_MEDIUM : URGENCY_LOW, b->Type);
                 }
             }
         }
