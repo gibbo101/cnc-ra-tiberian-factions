@@ -1516,6 +1516,35 @@ void GlyphX_Assign_Houses(void)
             }
         }
     }
+
+#if TF_DEV_BUILD // TF_AI_DIAG -- resolved alliances, so lobby teams can be checked against the sim.
+    {
+        FILE* f = TF_AI_Diag_File();
+        if (f != NULL) {
+            for (i = 0; i < Session.Players.Count(); i++) {
+                housep = HouseClass::As_Pointer(Session.Players[i]->Player.ID);
+                if (housep == NULL) {
+                    continue;
+                }
+                // Mask over lobby slots, not houses: bit j = this slot counts slot j an ally.
+                unsigned ally_mask = 0;
+                for (int j = 0; j < Session.Players.Count(); j++) {
+                    HouseClass* other = HouseClass::As_Pointer(Session.Players[j]->Player.ID);
+                    if (other != NULL && housep->Is_Ally(other)) {
+                        ally_mask |= (1u << j);
+                    }
+                }
+                fprintf(f,
+                        "  TEAMS slot=%d house=H%d team=%d allyslots=%02x\n",
+                        i,
+                        (int)housep->Class->House,
+                        MPlayerTeamIDs[i],
+                        ally_mask);
+            }
+            fflush(f);
+        }
+    }
+#endif
 }
 
 /**************************************************************************************************
@@ -2390,9 +2419,10 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save,
 **	client process's heap for the whole match, one record per AI slot:
 **
 **	    +0x00  ASCII "AIPLAYERn\0"  (the same name the AI house gets as IniName)
-**	    +0x50  int32 slot index, 1-based
+**	    +0x50  int32 slot index, ZERO-based (AIPLAYER1 reads 0)
+**	    +0x54  int32 house / faction, client numbering
 **	    +0x64  int32 difficulty     1=Easy 2=Medium 3=Hard
-**	    +0x68  int32 slot index, repeated
+**	    +0x68  int32 lobby colour   0-7
 **	    record stride 0xA8, slots ascending from AIPLAYER1
 **
 **	The array is located by signature scan over the client's private writable memory --
@@ -2411,6 +2441,39 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save,
 **	the key. Returns validated record count; found_mask gets
 **	bit n per validated record.
 */
+#if TF_DEV_BUILD // TF_AI_DIAG -- raw record dump.
+/*
+**	Per-scan budget for the raw record dump below. Every candidate the signature scan
+**	walks is logged with the gate that rejected it, so an array that is correct but
+**	discarded is visible in the log rather than silently dropped. Reset per scan.
+*/
+static int TF_LobbyDiagBudget = 0;
+static int TF_LobbyDiagHits = 0;
+
+static void TF_Log_Lobby_Record(int k, int n, int slot, int diff, int color, int rec_house, const char* verdict)
+{
+    if (TF_LobbyDiagBudget <= 0) {
+        return;
+    }
+    TF_LobbyDiagBudget--;
+    FILE* f = TF_AI_Diag_File();
+    if (f == NULL) {
+        return;
+    }
+    fprintf(f,
+            "  LOBBYREC k=%d n=%d slot=%d diff=%d color=%d house=%d expect_color=%d -> %s\n",
+            k,
+            n,
+            slot,
+            diff,
+            color,
+            rec_house,
+            (n >= 1 && n <= TF_LOBBY_MAX_AI_SLOTS) ? TF_LobbyAIColorBySlot[n] : -1,
+            verdict);
+    fflush(f);
+}
+#endif
+
 static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* diff_by_n, unsigned* found_mask)
 {
     int count = 0;
@@ -2431,6 +2494,9 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
             break;
         }
         if (n < 1 || n > TF_LOBBY_MAX_AI_SLOTS || n <= prev_n) {
+#if TF_DEV_BUILD
+            TF_Log_Lobby_Record(k, n, -1, -1, -1, -1, "REJECT name-order");
+#endif
             break;
         }
         char expected[16];
@@ -2442,20 +2508,32 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
         memcpy(&slot, r + TF_LOBBY_OFF_SLOT, sizeof(slot));
         memcpy(&diff, r + TF_LOBBY_OFF_DIFF, sizeof(diff));
         memcpy(&color, r + TF_LOBBY_OFF_COLOR, sizeof(color));
+        int rec_house = 0;
+        memcpy(&rec_house, r + TF_LOBBY_OFF_HOUSE, sizeof(rec_house));
         // Range checks only. Today's lesson is that an equality test on a field whose
         // meaning is assumed (slot == slot2) silently rejects good arrays the moment the
         // assumption breaks; identity is established by colour against the roster below.
-        if (slot < 1 || slot > TF_LOBBY_MAX_AI_SLOTS || diff < 1 || diff > 3 || color < 0
+        // +0x50 counts from ZERO (AIPLAYER1 reads slot=0), so a `slot < 1` floor rejects
+        // the first record of every array and, because validation stops at the first bad
+        // record, the whole read with it. Only the upper bound carries information here.
+        if (slot < 0 || slot > TF_LOBBY_MAX_AI_SLOTS || diff < 1 || diff > 3 || color < 0
             || color >= TF_LOBBY_MAX_COLORS) {
+#if TF_DEV_BUILD
+            TF_Log_Lobby_Record(k, n, slot, diff, color, rec_house, "REJECT range");
+#endif
             break;
         }
         // Colour is what ties an array to THIS match rather than a lobby that has been
         // and gone, so where the roster gave us a colour for this slot it must agree.
         if (TF_LobbyAIColorBySlot[n] >= 0 && TF_LobbyAIColorBySlot[n] != color) {
+#if TF_DEV_BUILD
+            TF_Log_Lobby_Record(k, n, slot, diff, color, rec_house, "REJECT colour-mismatch");
+#endif
             break;
         }
-        int rec_house = 0;
-        memcpy(&rec_house, r + TF_LOBBY_OFF_HOUSE, sizeof(rec_house));
+#if TF_DEV_BUILD
+        TF_Log_Lobby_Record(k, n, slot, diff, color, rec_house, "accept");
+#endif
         TF_LobbyRecHouseBySlot[n] = rec_house;
 
         diff_by_n[n] = diff;
@@ -2526,6 +2604,9 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                     }
                     int cand[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
                     unsigned cand_mask = 0;
+#if TF_DEV_BUILD
+                    TF_LobbyDiagHits++;
+#endif
                     int cand_count = TF_Validate_Lobby_Records(rec, rec_got, cand, &cand_mask);
                     if (cand_count <= 0) {
                         continue;
@@ -2533,6 +2614,15 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                     // A voting candidate must cover the whole roster; partial or stale
                     // fragments are logged above but don't participate.
                     if ((cand_mask & TF_LobbyAIRosterMask) != TF_LobbyAIRosterMask) {
+#if TF_DEV_BUILD
+                        TF_Log_Lobby_Record(-1,
+                                            cand_count,
+                                            (int)cand_mask,
+                                            (int)TF_LobbyAIRosterMask,
+                                            -1,
+                                            -1,
+                                            "DROP partial-roster");
+#endif
                         continue;
                     }
                     // Agreement is judged on the roster's slots only -- non-roster
@@ -2573,26 +2663,53 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
     // 1 MB scan chunk; static so repeated match starts reuse one allocation.
     static unsigned char scratch[1 << 20];
 
+#if TF_DEV_BUILD
+    TF_LobbyDiagBudget = 48;
+    TF_LobbyDiagHits = 0;
+#endif
+
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (snap == INVALID_HANDLE_VALUE) {
         return 0;
     }
     PROCESSENTRY32W pe;
     pe.dwSize = sizeof(pe);
+    int procs_seen = 0;
+    int procs_opened = 0;
     if (Process32FirstW(snap, &pe)) {
         do {
             if (_wcsicmp(pe.szExeFile, L"ClientG.exe") != 0) {
                 continue;
             }
+            procs_seen++;
             HANDLE proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, pe.th32ProcessID);
             if (proc == NULL) {
                 continue;
             }
+            procs_opened++;
             TF_Scan_Process_For_Lobby_Difficulty(proc, best, &best_count, &ambiguous, scratch, sizeof(scratch));
             CloseHandle(proc);
         } while (Process32NextW(snap, &pe));
     }
     CloseHandle(snap);
+
+#if TF_DEV_BUILD // TF_AI_DIAG -- scan outcome, logged whether or not anything was read.
+    {
+        FILE* f = TF_AI_Diag_File();
+        if (f != NULL) {
+            fprintf(f,
+                    "  LOBBYSCAN frame=%d procs=%d/%d sighits=%d best_count=%d ambiguous=%d roster=%08x\n",
+                    (int)Frame,
+                    procs_opened,
+                    procs_seen,
+                    TF_LobbyDiagHits,
+                    best_count,
+                    (int)ambiguous,
+                    TF_LobbyAIRosterMask);
+            fflush(f);
+        }
+    }
+#endif
 
     if (ambiguous || best_count <= 0) {
         return 0;

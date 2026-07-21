@@ -108,14 +108,41 @@ constant so only difficulty varies).
 Found: a 4-record array (one per AI slot), record stride **0xA8**, each record starting
 with the ASCII slot name:
 
-| Record offset | Field | PoC values |
-|---|---|---|
-| `0x00` | `AIPLAYERn\0` name string | AIPLAYER1..4 |
-| `0x50` | slot index int32 | 1, 2, 3, 4 |
-| `0x64` | **difficulty int32** | **3, 2, 1, 3** |
-| `0x68` | slot index again (team?) | 1, 2, 3, 4 |
+| Record offset | Field | PoC values | Corrected 2026-07-21 |
+|---|---|---|---|
+| `0x00` | `AIPLAYERn\0` name string | AIPLAYER1..4 | unchanged |
+| `0x50` | *assumed* slot index int32 | 1, 2, 3, 4 | **not a slot index, do not key off it** |
+| `0x54` | house / faction int32 | not read | **not dependably the house** |
+| `0x64` | **difficulty int32** | **3, 2, 1, 3** | unchanged, the one reliable payload |
+| `0x68` | *assumed* slot index again | 1, 2, 3, 4 | **lobby colour 0-7** |
 
 **Difficulty enum: 1 = Easy, 2 = Medium, 3 = Hard** (matched the lobby exactly).
+
+### Corrections proven in game, 2026-07-21
+
+The PoC lobby used default colours, which are handed out in slot order. That made
+`0x50`, `0x68` and the slot index numerically identical, so all three read as "the slot
+index" and any of them looked usable as a key. They are not the same field.
+
+- **`0x68` is the lobby colour** (DontCryJustDie). Changing an AI's colour in the lobby
+  breaks any `0x50 == 0x68` test immediately. It is the **only** reliable identity key,
+  because it is the one value the DLL can independently corroborate: the colours for the
+  current match arrive in `CNC_Set_Multiplayer_Data`, so an array carrying them belongs to
+  this match and not to a lobby that has been and gone.
+- **`0x50` counts from ZERO and is not an identity at all.** AIPLAYER1 reads `slot=0`, and
+  a three AI lobby read `0, 1, 1` across its records. The PoC's tidy `1, 2, 3, 4` does not
+  reproduce. Range check it if you like; never key off it.
+- **`0x54` is not dependably the house/ActLike.** An all-Soviet lobby read `4, 4, 4`; a
+  mixed GDI / Nod / Allied lobby read `2, 9, 3`. Logged only, never gated on.
+
+**The bug this caused.** The validator's range gate was `slot < 1`, so every array's first
+record was rejected. Validation stops at the first bad record and a candidate must cover the
+whole AI roster, so one rejected record discarded the entire array and the read returned
+zero slots, silently falling every AI back to the global tier. It appeared intermittent
+rather than broken because a single AI, or a first AI at a non-zero index, happened to pass.
+The fix is `slot < 1` becoming `slot < 0` in `TF_Validate_Lobby_Records`
+(`redalert/dllinterface.cpp`); the read then succeeds on the first scan at frame 0 with no
+retries, verified with four AIs and with colours deliberately set to break slot ordering.
 Re-read mid-match: array intact, values unchanged — readable at match time, when the
 DLL needs it. Addresses are per-run (heap); only the record SHAPE is stable.
 
@@ -141,11 +168,17 @@ difficulty read can also run lazily on first AI tick — retro-apply already exi
 2. `OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION)`.
 3. Region walk via `VirtualQueryEx` (private, committed, RW), read with
    `ReadProcessMemory`.
-4. **Signature scan**: find `AIPLAYER1\0` (ASCII). Candidate validates iff:
-   - `+0x50` int32 == 1 and `+0x68` int32 == 1;
+4. **Signature scan**: find `AIPLAYERn\0` (ASCII) for the roster's lowest AI number.
+   Candidate validates iff, for each record at `+0xA8·k`:
+   - the name is exactly `AIPLAYER{n}` with n strictly ascending;
    - `+0x64` int32 in [1..3];
-   - records at `+0xA8·k` (k = 1..numAI−1) repeat the pattern with name `AIPLAYER{k+1}`,
-     `+0x50` == k+1, difficulty in range.
+   - `+0x50` int32 in [0..15] — **range only**, it is neither 1-based nor an identity;
+   - `+0x68` int32 in [0..7] **and equal to the colour `CNC_Set_Multiplayer_Data` gave us
+     for that AI**, which is the check that proves the array belongs to this match.
+
+   A candidate must cover the whole AI roster. Equality tests against any field whose
+   meaning is merely assumed are what broke this twice (`slot == slot2` first, then the
+   1-based floor on `+0x50`); colour is the only field corroborated from outside the scan.
    All checks must pass for exactly ONE candidate array; ambiguity or zero hits =
    scan failure.
 5. Map `AIPLAYERn` → the n-th AI entry in the `CNC_Set_Multiplayer_Data` player list
