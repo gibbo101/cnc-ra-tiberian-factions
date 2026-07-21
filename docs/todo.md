@@ -25,14 +25,12 @@ still builds faction WFs + pads and fields helicopters, one stock-campaign regre
 (vanilla MCV/WEAP/HPAD present, no faction types visible).
 
 **Release steps** (per workspace CLAUDE.md): ccmod.json high=4 low=10; `## [4.1.0]` CHANGELOG
-section; commit; `package-for-workshop.sh` (TF_DEV_BUILD=0 — dev cheats + the tf_mcv_test
-lever compile out); Workshop publish per `workshop-publish-runbook.md` (restart Steam first);
+section; commit; `package-for-workshop.sh` (TF_DEV_BUILD=0 — dev cheats
+compile out); Workshop publish per `workshop-publish-runbook.md` (restart Steam first);
 GitHub release + tag v4.1.0; post-release local bump to 4.1.1.
 **Don't forget:** credit Bast75 + xXMini FrankiXx in the Workshop acknowledgments (AI Phase 0
 ideas); update Workshop "Known limitations" — the deploy hotkey is now lost for ALL four
 factions in skirmish (mouse self-click deploys); no em dashes in any user-facing copy.
-**Housekeeping before packaging:** delete `tf_mcv_test.flag` from the desktop prefix when
-capture testing is done (dev-build-only either way).
 
 ---
 
@@ -127,12 +125,21 @@ alongside the per-house IQ. If that selection feeds `Rule.Diff[]` at any point, 
 lobby difficulty work is already pulling stat multipliers in through the back door, which nobody
 has verified either way.
 
-## Wishlist: "Unholy Alliance" mode — start with every faction's ConYard (Luke, 2026-07-20)
+## "Unholy Alliance" mode — BUILT 2026-07-21, awaiting a verification pass
 
-Start each player with all four factions' construction yards (or MCVs). **The mechanics are
-already proven:** the `tf_mcv_test.flag` dev lever spawns one MCV of each faction and every
-one deploys its own faction's yard/tree (b3's type-carries-faction). The spawn code generalises
-straight from `TF_Dev_MCV_Test` in scenario.cpp.
+Every player (AI included) starts with one MCV of all four factions, each deploying its own
+faction's yard and tree. Carried by the lobby's Capture the Flag game type, relabelled in
+MASTERTEXTFILE; `TF_UnholyAlliance` in scenario.cpp does the spawn.
+
+**The `tf_mcv_test.flag` dev lever is gone** — flag file deleted and its code removed, since
+this mode gives the same four-MCV start through a real lobby option. It also cost a test: the
+lever spawns for the HUMAN only, so four yards for you and one for the AI means the lever fired,
+not the mode. That ambiguity is why it was removed rather than left alongside.
+
+**Still to verify:** whether choosing this game type leaves bases ON. The extra MCVs spawn in
+the bases-on branch, so if the launcher pairs Capture the Flag with bases off, the mode does
+nothing and the carrier moves back to a default-off checkbox (Shroud Regrows, label capped at
+14 chars — though loc_relabel.py can now grow a slot, so the full name is available either way).
 
 **⭐ DELIVERY SOLVED (2026-07-21) — it can be a real lobby option, no UI additions needed.**
 The earlier framing ("lobby UI is launcher-owned, so pick between a rules.ini toggle, a flag
@@ -252,8 +259,8 @@ built the GDI/Nod naval units and which produces genuinely independent entities.
    (Luke's call; `scripts/badge_sprite_art.py` kept for reuse).
 9. **NEXT: b4 bonus-unit picker** (scenario.cpp:3023 known-issues fold-in), the W2 docs
    pass (rewrite ai-upgrade-plan §W2 b-blocks to match shipped reality), and the
-   DOCKLANDS A* strong test. The four-MCV dev lever (`tf_mcv_test.flag`) is still ON in
-   the desktop prefix — delete the flag file when capture testing is done.
+   DOCKLANDS A* strong test. (The four-MCV dev lever was removed 2026-07-21; Unholy
+   Alliance replaces it.)
 
 ⚠️ `ai-upgrade-plan.md` §W2 still contains superseded claims (the `Name=`-drives-sidebar naming
 spec, the reuse-not-split MCV decision, the `UnitClass::ActLike` b3 note). Postmortem §6 lists

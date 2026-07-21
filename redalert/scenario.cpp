@@ -99,37 +99,6 @@ bool TF_Dev_Cheats(void)
 #endif
 }
 
-#if TF_DEV_BUILD
-/***********************************************************************************************
- * TF_Dev_MCV_Test -- Opt-in test lever: one MCV of every faction at skirmish start.            *
- *                                                                                              *
- *    Gated on Documents/CnCRemastered/tf_mcv_test.flag (read once, like tf_dev_off.flag).      *
- *    Deploying an off-faction MCV runs the same type-carries-lineage path as an MCV built      *
- *    from a captured factory, so all four yards/sidebars can be exercised in one match         *
- *    without engineering captures. Dev builds only; compiled out of release.                   *
- *=============================================================================================*/
-static bool TF_Dev_MCV_Test(void)
-{
-    static int cached = -1;
-    if (cached < 0) {
-        cached = 0;
-        const char* h = getenv("USERPROFILE");
-        if (h == NULL)
-            h = getenv("HOME");
-        if (h != NULL) {
-            char p[512];
-            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_mcv_test.flag", h);
-            FILE* f = fopen(p, "r");
-            if (f != NULL) {
-                cached = 1;
-                fclose(f);
-            }
-        }
-    }
-    return cached != 0;
-}
-#endif
-
 extern int PreserveVQAScreen;
 
 void Display_Briefing_Text_GlyphX();
@@ -3619,14 +3588,9 @@ static void Create_Units(bool official)
             /*
             **	Unholy Alliance (lobby game type): every house -- human and AI alike --
             **	also gets one MCV of each OTHER faction, so all four tech trees are
-            **	available from the start. The dev test lever grants the same thing to
-            **	the human only, for exercising every deploy lineage.
+            **	available from the start.
             */
-            bool extra_faction_mcvs = TF_UnholyAlliance;
-#if TF_DEV_BUILD
-            extra_faction_mcvs = extra_faction_mcvs || (TF_Dev_Cheats() && TF_Dev_MCV_Test() && hptr->IsHuman);
-#endif
-            if (extra_faction_mcvs) {
+            if (TF_UnholyAlliance) {
                 static const UnitType _all_mcvs[] = {UNIT_AMCV, UNIT_SMCV, UNIT_TDGMCV, UNIT_TDNMCV};
                 for (int m = 0; m < (int)ARRAY_SIZE(_all_mcvs); m++) {
                     if (_all_mcvs[m] == mcv_type) {
