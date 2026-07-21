@@ -44,6 +44,17 @@ a `.flag`-file option documented on the Workshop page, or an "Unholy Alliance" C
 variant that carries the flag per map. Decide the vehicle when picking it up; the spawn code
 generalises straight from `TF_Dev_MCV_Test` in scenario.cpp.
 
+## TS-walker leftovers (2026-07-21 — low priority; units are hidden behind DevTechLevel anyway)
+
+Shipped and signed off in-game: Titan + Mk. II ports, muzzle table, railgun, MLRS balance +
+shadow. Titan turret-seam and Mk. II E-facing top-clip checks CLOSED (Luke verified in play).
+Still open:
+- **Blue railgun spark art** — currently ANIM_PIFFPIFF stand-in; real TS-blue sparks blocked
+  on understanding how TDIONSFX gets custom anim art past the launcher
+  (launcher-render-contracts.md #4).
+- **Audit older custom anims** (TibFumes, TDCHEM-*, TDFTFLAME-*) for the same launcher-dead
+  rendering contract #4 describes — they may be drawing white placeholders in-game.
+
 ## Faction paratroops split (Luke, 2026-07-20 — queued; ride 4.1 if testing is quick, else 4.1.1)
 
 **Observed:** owning the Soviet airfield AND Nod airstrip+Hand still gives ONE paratroop
