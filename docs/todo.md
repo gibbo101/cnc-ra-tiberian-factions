@@ -5,6 +5,96 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## ⭐ 2026-07-21 (evening) — AI teams VERIFIED, per-slot difficulty ROOT-CAUSED AND FIXED
+
+Four desktop runs, Docklands, human + 3 AI. **All changes UNCOMMITTED, awaiting Luke's review.**
+
+**1. AI lobby teams work. Proven, not inferred.** A new `TEAMS` diagnostic dumps each slot's
+resolved ally mask after the `Make_Ally` pass (`dllinterface.cpp`, end of the team loop). Lobby
+Team 1/Team 1/Team 2/Team 2 produced:
+
+```
+TEAMS slot=0 house=H12 team=0 allyslots=03      <- human + AIPLAYER1
+TEAMS slot=1 house=H13 team=0 allyslots=03
+TEAMS slot=2 house=H14 team=1 allyslots=0c      <- AIPLAYER2 + AIPLAYER3
+TEAMS slot=3 house=H15 team=1 allyslots=0c
+```
+
+Lobby "Team N" arrives as `Team = N-1`; pairing is exact and mutual. `AllyFlags` in
+`CNCPlayerInfoStruct` is always 0 and carries nothing — `Team` is the whole channel. The
+lobby also has **no "no team" state**: every slot defaults to its own distinct team
+(Team 1..8 or RANDOM), so the "everyone accidentally allied" failure mode cannot arise.
+
+**2. THE PER-SLOT DIFFICULTY BUG — FOUND AND FIXED.** `+0x50` is **ZERO-based**
+(AIPLAYER1 reads `slot=0`), but the validator's range gate was `slot < 1`. Since validation
+stops at the first bad record and a candidate must cover the whole roster, the first record
+being rejected threw away the entire array. Evidence, the record sitting there correct and
+discarded:
+
+```
+LOBBYREC k=0 n=1 slot=0 diff=2 color=1 house=4 expect_color=1 -> REJECT range
+LOBBYSCAN frame=0 procs=1/1 sighits=3 best_count=0 ambiguous=0 roster=0000000e
+```
+
+Fix = `slot < 1` becomes `slot < 0`. One character of intent, and the same lobby now reads
+first scan, frame 0, no retries, with a colour deliberately changed to break slot order and
+with mixed GDI/Nod/Allied factions:
+
+```
+HELLO IM H13 (ActLike=8) IN MEDIUM MODE (IQ=4) [slot 1]
+HELLO IM H14 (ActLike=9) IN EASY   MODE (IQ=3) [slot 2]
+HELLO IM H15 (ActLike=1) IN HARD   MODE (IQ=5) [slot 3]
+ram_slots=3 s1=2 s2=1 s3=3
+```
+
+**Why it looked "unreliable" rather than broken.** With ONE AI the roster is a single record,
+and a lobby whose only AI sat at a non-zero index passed the `>= 1` floor, so it worked. Add
+AIs, or put an AI first, and it fails. That is DCJD's intermittency exactly.
+
+**Corrections to the offset map** (`dllinterface.cpp` header comment updated):
+- `+0x50` is zero-based AND not a usable identity: the three records read `slot = 0, 1, 1`.
+  Range-check it, never key off it. This is the same trap as the old `slot == slot2` test.
+- `+0x68` is the lobby colour (DCJD, confirmed here) and is the only reliable identity key.
+- `+0x54` is **NOT** dependably the house. All-Soviet lobby: all three read 4. Mixed
+  GDI/Nod/Allied lobby: 2 / 9 / 3. Stays logged-only; do not promote it to a validator.
+
+**3. Unholy Alliance works.** Mode is a real fourth entry in the lobby's Mode dropdown
+(Bases On - Destroy Structures / Bases On - Destroy All / Bases Off / Unholy Alliance), the
+MASTERTEXTFILE relabel shows in both the summary panel and the dropdown, and **bases are ON**:
+four MCVs spawned for the human, and the three AIs each deployed a yard of a faction other
+than their own (`AFACT#0` for the GDI AI, `SFACT#2` for Nod, `TDNFACT#3` for Allied), so the
+AI got its quartet too. The open question from the design note is closed.
+
+**New diagnostics added (all `TF_DEV_BUILD`-gated, compile out of release):** `TEAMS`,
+`LOBBYREC` (per-record dump with the rejecting gate named), `LOBBYSCAN` (per-scan outcome:
+processes opened, signature hits, best_count, ambiguous, roster mask). The old failure was
+invisible because a failed re-scan logged nothing at all; `LOBBYSCAN` now always logs.
+
+**4. AI never built ANY air production — live since v4.0.0, now fixed.** Four AIs over ~33,000
+frames built zero helipads and zero airstrips, so no house ever fielded a helicopter or a
+plane. Not a prerequisite fault and **not** caused by the faction separation: each faction's
+own pad was correctly offered and no foreign pad ever appeared. `7ee075e` (in `v4.0.0`) set
+both the helipad and airstrip choices to `URGENCY_LOW` to stop air burying the war factory. But
+a pick resolves among the highest urgency present, and power/refinery/defence keep a
+`URGENCY_MEDIUM` candidate available indefinitely, so LOW is not deprioritised, it is
+unreachable. Fix = escalate rather than demote: hold at LOW until `tf_economy_ready` (the
+existing two-refineries-plus-war-factory predicate already computed in `AI_Building`), then
+MEDIUM. Applied to both the helipad and airstrip blocks; the enemy-air count cap is untouched,
+so the AI still only matches the strongest air opponent. **Built and deployed, NOT yet verified
+in a match** — first run should confirm all four factions reach a pad and field aircraft, and
+that nobody builds four pads before a war factory again.
+
+**Still to do on the 4.1 test pass:** the faction-split AI items are NOT yet verified in a
+clean run — Unholy Alliance was left on, which hands every AI all four trees and makes "does
+the AI build its own faction's war factory / helipad" unreadable. Re-run on **Bases On -
+Destroy All** for: AI builds own-faction WF + helipad and fields helicopters, (d) helipad
+behaviour in play, and the stock-campaign regression check. The prereq scoping matrix was
+audited statically this session and is clean against the locked policy (every production-token
+equivalence in `Can_Build` is `own &`-scoped; only power/refinery/repair cross factions; the
+legacy shared `HPAD`/`TDHPAD` are session-gated to campaign at `house.cpp:1025`).
+
+---
+
 ## ⭐ NEXT SESSION: v4.1.0 release (decided by Luke 2026-07-20, ship after a testing pass)
 
 **The release story: "the groundwork update" — pre-AI-milestone foundations with a little AI
