@@ -2719,6 +2719,17 @@ bool CellClass::Goodie_Check(FootClass* object)
             }
 
             /*
+            **  Tiberian Factions -- the TS units ride the unit crate as rare
+            **  finds: hidden from the sidebar (TechLevel=-1), but a lucky crate
+            **  can field one for ANY faction. 1-in-8 unit crates rolls the TS
+            **  table (Hover MLRS / Titan / Mammoth Mk. II).
+            */
+            if (utp == NULL && Session.Type != GAME_NORMAL && Random_Pick(0, 7) == 0) {
+                static UnitType const _ts_goodies[] = {UNIT_TSHVR, UNIT_TSTITN, UNIT_TSHMEC};
+                utp = &UnitTypeClass::As_Reference(_ts_goodies[Random_Pick(0, 2)]);
+            }
+
+            /*
             **	If no unit type has been determined, then pick one at random.
             */
             while (utp == NULL) {
