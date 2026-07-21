@@ -16,6 +16,10 @@ TEXT_FACTION_BONUS_UKRAINE=Soviet
 TEXT_FACTION_NAME_FACTION_10=Nod
 TEXT_FACTION_NAME_FACTION_3=GDI
 TEXT_FACTION_NAME_FACTION_4=Allies
+# USSR's two 4-character slots. Deferred in May as needing a file-resizing rebuild that
+# crashes; that was the wrong reading -- a value may outgrow its slot as long as the file
+# does not grow, so these take their bytes from the slack string below.
+TEXT_FACTION_NAME_FACTION_5=Soviet
 TEXT_FACTION_NAME_FACTION_6=Allies
 TEXT_FACTION_NAME_FACTION_7=Soviet
 TEXT_FACTION_NAME_FACTION_8=Allies
@@ -24,16 +28,21 @@ TEXT_FACTION_REDALERT_ENGLAND=Allies
 TEXT_FACTION_REDALERT_FRANCE=Allies
 TEXT_FACTION_REDALERT_GERMANY=Allies
 TEXT_FACTION_REDALERT_GREECE=Allies
+TEXT_FACTION_REDALERT_RUSSIA=Soviet
 TEXT_FACTION_REDALERT_SPAIN=GDI
 TEXT_FACTION_REDALERT_TURKEY=Nod
 TEXT_FACTION_REDALERT_UKRAINE=Soviet
 TEXT_UNIT_TITLE_GDI_MLRS=MLRS
 TEXT_UNIT_TITLE_NOD_HELICOPTER=Apache
 
-# The Shroud Regrows checkbox carries Unholy Alliance (see externs.h). Chosen because it
-# is one of the few that ships OFF: every existing profile inherits its saved state, so a
-# carrier that ships ON would switch the mode on for players who never asked for it.
-# The label now grows past its 14-character slot: loc_relabel.py rewrites the length
-# table and takes the bytes back from the tooltip, so the FILE stays the same size.
-TEXT_MULTIPLAYER_DETAILS_SHROUD_REGROWS=Unholy Alliance
-TEXT_MULTIPLAYER_DETAILS_TOOLTIP_SHROUD_REGROWS=Start with an MCV and tech tree from all four factions.
+# Unholy Alliance rides the Capture the Flag GAME TYPE rather than a checkbox. The Mode
+# list is exclusive, so the mode cannot be selected alongside a bases-off game and then
+# sit there doing nothing -- which a checkbox could, since the launcher only greys out
+# options it was compiled to know about. Capture the Flag is unsupported here anyway:
+# our maps carry no flag spots.
+TEXT_GAMETYPE_CF=Unholy Alliance
+TEXT_MULTIPLAYER_DETAILS_TOOLTIP_MODE_CAPTURE_FLAG=Start with an MCV and tech tree from all four factions.
+
+# Bytes for any grown value come from here: it holds "GDI" in a 53-character slot, so it
+# is almost entirely trailing space.
+!slack=TEXT_FACTION_BONUS_SPAIN

@@ -949,16 +949,18 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
     // MPlayerSolo			= game_options.MPlayerSolo;			// 1 = allows a single-player net game
     Session.Options.UnitCount = game_options.MPlayerUnitCount; // # units for non-base multiplayer scenarios
 
-    Special.IsCaptureTheFlag = game_options.CaptureTheFlag;
+    Special.IsShadowGrow = game_options.MPlayerShadowRegrow;
 
-    // The lobby's Shroud Regrows checkbox carries Unholy Alliance instead (relabelled in
-    // MASTERTEXTFILE). A checkbox rather than a game type so the mode composes with any
-    // win condition and either rule set, and THIS checkbox because it is one of the few
-    // that ships off: a carrier that ships on would arrive already ticked in every
-    // existing player profile and switch the mode on for people who never chose it.
-    // Shroud regrowth is forced off in exchange, which is also its vanilla default.
-    TF_UnholyAlliance = game_options.MPlayerShadowRegrow;
-    Special.IsShadowGrow = false;
+    // The lobby's Capture the Flag GAME TYPE carries Unholy Alliance (relabelled in
+    // MASTERTEXTFILE). A game type rather than a checkbox because the Mode list is
+    // exclusive: the mode cannot be chosen alongside a bases-off game and then sit there
+    // doing nothing, which a checkbox could -- the launcher only greys out options it was
+    // compiled to know about, and it has no reason to grey ours.
+    //
+    // The flag game is switched off wholesale rather than gated at each of its call
+    // sites, so no flag spots, flag attachment or truck spawns can half-run underneath.
+    TF_UnholyAlliance = game_options.CaptureTheFlag;
+    Special.IsCaptureTheFlag = false;
 
     if (Session.Options.Tiberium) {
         Special.IsTGrowth = 1;

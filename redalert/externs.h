@@ -88,13 +88,13 @@ extern bool TF_TDWinterMap;
 
 /*
 **	Tiberian Factions -- Unholy Alliance mode: every player starts with one MCV of all
-**	four factions and may build all four tech trees. Carried by the lobby's Shroud
-**	Regrows checkbox, relabelled "Unholy Allies" (its 14-character text slot is why the
-**	name is shortened). A checkbox rather than a game type so the mode composes with any
-**	win condition and either rule set, and that checkbox because it ships OFF -- profiles
-**	inherit their saved state, so a carrier that ships ON would enable the mode for
-**	players who never chose it. Shroud regrowth is forced off in exchange (its vanilla
-**	default anyway). Set in CNC_Set_Multiplayer_Data.
+**	four factions and may build all four tech trees. Carried by the lobby's Capture the
+**	Flag game type, which this mod relabels and repurposes (the flag game is unsupported
+**	here -- our maps carry no flag spots), so CTF's own behaviour is switched off wherever
+**	this is on. A game type rather than a checkbox because the Mode list is exclusive: a
+**	checkbox could be ticked alongside a bases-off game and silently do nothing, since the
+**	launcher only greys out options it was compiled to know about. Applies to AI houses
+**	too. Set in CNC_Set_Multiplayer_Data.
 */
 extern bool TF_UnholyAlliance;
 extern bool Debug_MotionCapture;

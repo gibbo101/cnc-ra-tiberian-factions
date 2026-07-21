@@ -122,8 +122,15 @@ if __name__ == "__main__":
         if arg.startswith("@"):
             for line in open(arg[1:], encoding="utf-8"):
                 line = line.rstrip("\n")
-                if line.strip() and not line.lstrip().startswith("#"):
-                    expanded.append(line)
+                if not line.strip() or line.lstrip().startswith("#"):
+                    continue
+                # `!slack=KEY` names the string that gives up (or takes on) trailing space
+                # so growth stays byte-neutral. Kept in the edits file so the whole recipe
+                # lives in one reviewable place.
+                if line.startswith("!slack="):
+                    slack_key = line.split("=", 1)[1].strip()
+                    continue
+                expanded.append(line)
         else:
             expanded.append(arg)
     pairs = []
