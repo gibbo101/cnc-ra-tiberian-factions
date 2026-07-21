@@ -84,6 +84,16 @@ so the AI still only matches the strongest air opponent. **Built and deployed, N
 in a match** — first run should confirm all four factions reach a pad and field aircraft, and
 that nobody builds four pads before a war factory again.
 
+**5. TS units are crate-only, in dev builds too (Luke's call, release-blocking).** The GDI AI
+was fielding Titans, Mammoth Mk. IIs and Hover MLRS in testing. Release was never at risk
+(`TF_Dev_Cheats()` is `return false` under `#else`, so the `DevTechLevel=` override could not
+run and `Level` stayed -1), but a dev build that behaves unlike the shipping one hides exactly
+this class of question and skews AI observation, since a GDI AI spends its money on walkers
+instead of its own roster. The `DevTechLevel=` lines are gone from rules.ini and the lever
+itself is gone from `techno.cpp`; `TF_Dev_Cheats()` stays for instant-build and reveal-all.
+The units keep their existing delivery: a 1-in-8 roll on the unit crate, any faction, skirmish
+only (`cell.cpp`).
+
 **Still to do on the 4.1 test pass:** the faction-split AI items are NOT yet verified in a
 clean run — Unholy Alliance was left on, which hands every AI all four trees and makes "does
 the AI build its own faction's war factory / helipad" unreadable. Re-run on **Bases On -
@@ -252,7 +262,7 @@ the Flag. The text IDs and `CNCCaptureTheFlagDefault` are shared between RA and 
 presence is not proof RA shows the option. If it does not, `SpawnVisceroids` (TD-only, inert in
 RA) is the fallback carrier — same technique, less honest label space.
 
-## TS-walker leftovers (2026-07-21 — low priority; units are hidden behind DevTechLevel anyway)
+## TS-walker leftovers (2026-07-21 — low priority; units are crate-only finds anyway)
 
 Shipped and signed off in-game: Titan + Mk. II ports, muzzle table, railgun, MLRS balance +
 shadow. Titan turret-seam and Mk. II E-facing top-clip checks CLOSED (Luke verified in play).

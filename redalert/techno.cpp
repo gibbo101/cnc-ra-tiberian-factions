@@ -8033,14 +8033,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             MaxStrength = ini.Get_Int(Name(), "Strength", MaxStrength);
             SightRange = ini.Get_Int(Name(), "Sight", SightRange);
             Level = ini.Get_Int(Name(), "TechLevel", Level);
-            /*
-            **  Tiberian Factions -- DevTechLevel=: dev-mode tech tier for entries
-            **  shipped hidden (TechLevel=-1). Dev builds get them buildable at this
-            **  tier; release builds (and tf_dev_off.flag) never see them.
-            */
-            if (TF_Dev_Cheats()) {
-                Level = ini.Get_Int(Name(), "DevTechLevel", Level);
-            }
             MaxSpeed = MPHType(_Scale_To_256(ini.Get_Int(Name(), "Speed", fixed(MaxSpeed, 256) * 100)));
             Cost = ini.Get_Int(Name(), "Cost", Cost);
             MaxAmmo = ini.Get_Int(Name(), "Ammo", MaxAmmo);

@@ -125,7 +125,7 @@ and that yard unlocks the TS roster — for whoever found it, whatever side they
 | MCV type carries its own lineage | **Live** — W2 b3, four MCVs deploy four different yards and trees |
 | Capture inherits the tree | **Live** — heritable lineage, no special case |
 | TS art pipeline | **Proven** — voxel + TS-SHP, `ts-asset-import-spike.md` |
-| Marquee units | **Ported** — Titan, Mammoth Mk. II, Hover MLRS, plus TSPOWR; all `TechLevel=-1` + `DevTechLevel=` |
+| Marquee units | **Ported** — Titan, Mammoth Mk. II, Hover MLRS, plus TSPOWR; all `TechLevel=-1`, unbuildable by anyone, reachable only as a 1-in-8 unit-crate find (`cell.cpp`) |
 
 **Implementation shape:** ship the TS types with a broad `Owner=` (all sides) and
 `Prerequisite=TSFACT`, so the yard alone discriminates — the pattern finding 3 of
