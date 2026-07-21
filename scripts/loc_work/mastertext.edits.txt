@@ -33,6 +33,7 @@ TEXT_UNIT_TITLE_NOD_HELICOPTER=Apache
 # The Shroud Regrows checkbox carries Unholy Alliance (see externs.h). Chosen because it
 # is one of the few that ships OFF: every existing profile inherits its saved state, so a
 # carrier that ships ON would switch the mode on for players who never asked for it.
-# The 14-character slot is why the label reads "Unholy Allies".
-TEXT_MULTIPLAYER_DETAILS_SHROUD_REGROWS=Unholy Allies
+# The label now grows past its 14-character slot: loc_relabel.py rewrites the length
+# table and takes the bytes back from the tooltip, so the FILE stays the same size.
+TEXT_MULTIPLAYER_DETAILS_SHROUD_REGROWS=Unholy Alliance
 TEXT_MULTIPLAYER_DETAILS_TOOLTIP_SHROUD_REGROWS=Start with an MCV and tech tree from all four factions.
