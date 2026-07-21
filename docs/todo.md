@@ -13,8 +13,11 @@ per-faction construction yards, MCVs, war factories, helipads; capture carries t
 the locked prerequisite policy (shared low-tier infrastructure, faction-identity everything
 else, dome ≠ TDHQ), owner-set badges on ALL 126 buildable cameos (mod-logo emblems; shared
 entries show every owning faction), the faction-block sidebar sort (shared first, then
-Allied/Soviet/GDI/Nod, tech-ordered), per-slot AI lobby difficulty incl. LAN, AI Phase 0/1 fixes (blind-scout dispatcher, temple starvation, economy
-gates, harvester idle-home), the A* heap + expansion budget, and the Stealth Generator work.
+Allied/Soviet/GDI/Nod, tech-ordered), per-slot AI lobby difficulty incl. LAN (and the
+mid-rebuild read bug that made it fall back to all-Hard after the first match), AI Phase 0/1
+fixes (blind-scout dispatcher, temple starvation, economy gates, harvester idle-home), the A*
+heap + expansion budget, the Stealth Generator work, and **classic graphics now locked out**
+so the HD-only mod can no longer be dropped into a renderer its content has no art for.
 
 **Before shipping (test pass):** (d) helipad behaviour in play (free heli per pad, universal
 landing), the prereq scoping matrix (each faction's defenses/AA need their own chain), AI
@@ -32,6 +35,50 @@ factions in skirmish (mouse self-click deploys); no em dashes in any user-facing
 capture testing is done (dev-build-only either way).
 
 ---
+
+## ⭐ Mod hotkeys are AVAILABLE — the chain is complete, only our handler is missing (2026-07-21)
+
+Audit of the launcher's own data (`docs/config-meg-lever-audit.md`, written after the
+classic-graphics lockout) found EA's mod hotkey path fully built and never connected:
+`CNCEnableModHotKeyGameCommands` → four prepared `GAME_COMMAND_CNC_MOD_COMMAND_1..4` bindings
+with empty `<Key></Key>` slots in `INPUTTRANSLATORCONFIGURATIONS.XML` (CONFIG.MEG, which we
+already repack) → `INPUT_REQUEST_MOD_GAME_COMMAND_n_AT_POSITION` cases sitting in
+`dllinterface.cpp` ~5374 with EA's own `// TBD: For our ever-awesome Community Modders!`
+placeholder and a suggested `Handle_Mod_Game_Command(cell, index)`. The launcher hands us the
+key press **and the map cell**.
+
+**First target: the MCV deploy hotkey**, currently a shipped known limitation (lost for all four
+factions; players click the MCV to deploy). Then any other command wanting a key.
+
+**Test the binding half FIRST** — our edits to `INPUTTRANSLATORCONFIGURATIONS.XML` have never
+been proven to take effect (the one attempt, rebinding the classic-mode spacebar, failed; that
+key is client-hardcoded, so it is not evidence either way). Bind one key to command 1, log from
+the DLL case, confirm the press arrives, and only then build a real handler.
+
+**The rest of the sweep** (all 230 CONFIG.MEG XML members profiled): `docs/config-meg-lever-audit.md`.
+Other actionable levers found — campaigns are a faction-bound data layer (`ANT.XML` at 461 bytes
+may be a cleaner hijack than borrowing Aftermath mission slots), team colours, mouse cursors,
+lobby dropdown value lists, the bonus-content gallery. Three cheap unknowns queued there too
+(slash-command permissions, the UI hint system, whether `CNCRULES.XML`'s launcher-side difficulty
+multiplier table is consulted at all).
+
+## Flatten the difficulty stat multipliers — DECIDED (Luke, 2026-07-21), do it with the campaign work
+
+Difficulty is meant to be behavioural (IQ, timing, aggression), never firepower/armour/cost
+biases — see `feedback-difficulty-philosophy`. The stat-multiplier layer still exists and
+contradicts that, so it gets knocked down when campaign work starts (campaigns are where the
+difficulty picker is actually player-facing).
+
+**The live lever is our own `CCDATA/rules.ini`,** whose `[Easy]` / `[Normal]` / `[Difficult]`
+sections the DLL reads into `Rule.Diff[]` — currently the stock spread (`[Easy]` Firepower 1.2 /
+Armor 1.2 / ROF .8 / Cost .8 / BuildTime .8, `[Difficult]` the mirror). `CNCRULES.XML` in
+CONFIG.MEG holds the same table launcher-side (`network="server"`) and is probably an unused
+server-build artifact; flatten it too if it turns out to be consulted.
+
+**Check while doing it:** `CNC_Set_Difficulty` currently assigns `Scen.CDifficulty = diff`
+alongside the per-house IQ. If that selection feeds `Rule.Diff[]` at any point, the per-slot
+lobby difficulty work is already pulling stat multipliers in through the back door, which nobody
+has verified either way.
 
 ## Wishlist: "Unholy Alliance" mode — start with every faction's ConYard (Luke, 2026-07-20)
 
@@ -275,21 +322,26 @@ Commits: `bb69419` (guard), `23203d2` (A*), `06ca30a` (probe removal), `f03c06f`
    lowering urgency (LOW = never built = no GDI Mammoths). See `ai-upgrade-plan.md` §W3.6.
 3. **Then Phase 2 (W2 faction separation)** — the next real milestone chunk.
 
-**Known limitation shipped with the difficulty work:** only the session's FIRST LAN lobby
-reads difficulties reliably. A LAN match can't return to a lobby — you re-host, and each
-re-host leaves stale `AIPLAYERn` records behind, so later lobbies read stale values or
-bail to global Hard (graceful; = shipped v4.0 behaviour). Workaround: relaunch between
-LAN matches. Fix: prefer the newest candidate array instead of requiring unanimity;
-restore the `PHASEB-CAND` dump from `06ca30a` to see what the arrays hold.
-Tracked in `known-issues.md`.
+**Per-slot AI difficulty: root-caused and FIXED 2026-07-21 (needs a verification pass).** Matches
+after a session's first one usually fell back to global Hard: the client rebuilds its `AIPLAYERn`
+records at match launch and the scan was landing mid-rebuild. Fixed with a deferred re-scan
+requiring two consecutive agreeing scans (`TF_Lobby_Difficulty_Retry`). Full account in
+`known-issues.md`. **To verify:** two solo skirmishes in one launch, the second with the
+difficulty dropdowns untouched — expect a `(deferred re-scan)` line and `[slot n retry]` tags
+within ~10s, and watch for a stutter at the retry points (the scan runs on the game thread).
 
-**Classic-graphics warning: PARKED (Luke, 2026-07-19).** Three routes proven dead —
-refusing the page lets the launcher switch anyway and render an empty viewport; the page
-is requested every frame regardless of displayed mode so call patterns carry no signal;
-the spacebar never reaches the DLL. A RAM probe for the render-mode flag also failed
-(6 snapshots -> 33 candidates -> all changed 100+ times against 4 real toggles). Only
-options left are an unconditional match-start line or nothing. See
+**⭐ CLASSIC GRAPHICS: LOCKED OUT FOR GOOD (2026-07-21) — the parked item below is CLOSED, and
+not by any of the routes it lists.** `GAMECONSTANTS.XML` carries EA's own mod switch,
+`CNCDisableLegacyGraphicsOption`; set `True` it removes the Options entry **and kills the
+spacebar toggle** (verified in-game on the desktop). Shipped through the existing
+`gameconstants_build.py` → loose `Data/XML/` + `Data/CONFIG.MEG` path, byte-length-neutral so
+the same-size MEG rule holds. Credit: DontCryJustDie flagged the constant on the Workshop page.
+No warning message is needed now — there is nothing to warn about. Details:
 `launcher-vs-dll-ownership.md`.
+
+**Lesson worth keeping:** the DLL-side conclusions were all correct and all irrelevant. Four
+attempts went into detecting a mode we could simply deny, because "launcher-owned" was read as
+"unmoddable". For any launcher behaviour, grep `CONFIG.MEG` before spending a spike.
 
 ## ⭐ AI milestone Phase 1 — MERGED to main + LIVE-VERIFIED 2026-07-18 (commit `e01bc35`)
 

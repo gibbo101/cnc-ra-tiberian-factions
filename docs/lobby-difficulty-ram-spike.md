@@ -30,17 +30,18 @@ cached `{1,2,2,3}`, so this is unambiguously a live read rather than a stale one
 (The joiner displaying host-generated messages is itself further confirmation of the
 host-only model: its own DLL never ran.)
 
-⚠️ **Known limitation — only the session's FIRST LAN lobby reads reliably.** A LAN match
-cannot be returned to a lobby: when it ends you re-host, and the new lobby starts blank.
-Each re-host builds fresh `AIPLAYERn` records while the previous lobby's copies linger in
-the process, so the scanner (which requires every validated candidate array to agree)
-either takes stale values or bails with `ram_slots=0`. Both observed 2026-07-19 in
-re-hosted lobbies; the lobby run immediately after a game launch read correctly.
-**Failure is graceful** — it falls back to global Hard, i.e. shipped v4.0 behaviour — so
-the worst case is "no per-slot difficulty", never a broken match. Workaround: relaunch
-between LAN matches. Real fix: stop demanding unanimity and prefer the newest/most-specific
-candidate array; the `PHASEB-CAND` raw dump (removed in `06ca30a`, restore from history)
-is the tool for that.
+⭐ **READ TIMING RESOLVED 2026-07-21 — the scan is fine, the moment was wrong.** The client
+tears down and rebuilds its `AIPLAYERn` records as a match launches. A scan landing inside
+that window finds nothing, or finds a fresh array disagreeing with a not-yet-freed stale one,
+and reports failure — so the match falls back to global Hard. This is **not** LAN-specific:
+plain solo skirmish hits it from the second match of a session onward. Fix = a deferred
+re-scan from `CNC_Advance_Instance` (`TF_Lobby_Difficulty_Retry`, 4 attempts 90 frames apart)
+that requires **two consecutive agreeing scans**, because the rebuild passes through
+half-written states that are briefly self-consistent (`E M H M` was caught reading `E M M M`).
+Evidence and the failure census: `known-issues.md` "Per-slot difficulty goes stale".
+
+**`GlyphxID` cannot discriminate live from stale arrays** — the IDs are fixed per slot index
+(slot 1 read `1055504538` in two sessions hours apart), not generated per lobby.
 
 **`tf_ai_difficulty.txt` now applies in multiplayer too.** It was previously solo-only
 on the reasoning that a per-machine file would desync peers. Only the host simulates,
@@ -67,6 +68,7 @@ Companion findings and session narrative: `todo.md` Phase 1 block, `ai-upgrade-p
 - Scanner: `TF_Read_Lobby_AI_Difficulties` + helpers, directly above
   `CNC_Set_Difficulty`. Signature scan per the design below; every validated
   candidate array must agree or the read fails (stale lobby copies exist in memory).
+  A failed read arms the deferred re-scan described in the status block.
 - **Trap found during GREEN:** the GlyphX house-assign loop renames AI houses'
   `IniName` from `AIPLAYERn` to the "Computer" display name before
   `CNC_Set_Difficulty` runs, and `InitialName` is compiled out (`WOLAPI_INTEGRATION`

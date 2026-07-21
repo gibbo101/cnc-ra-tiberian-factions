@@ -8,6 +8,46 @@ design record for the GDI/Nod co-op campaign arc. Supersedes the scattered notes
 Allies, CPU = Soviets — with a pre-placed enemy base, triggered attack waves, a briefing,
 and real objectives. NOT just "skirmish with a friend" (that already works; see Tier 1 below).
 
+**The launcher's own co-op campaign feature exists as CODE ONLY and is not usable (measured
+2026-07-21).** Worth knowing before anyone finds the traces and gets hopeful:
+
+- `ClientG.exe` contains a compiled co-op campaign implementation — `CoopCampaignMenuImplementationClass`,
+  `Button_CoopCampaign`, `CoOp_MissionDetails_Group`, `Faction5CoOpCampaign1Star..3Star`, and a
+  hosting path `CoordinatorMultiplayerManagerClass::Host_Coop_Campaign_Lobby(ClientProgressiveCampaignMissionTypeClass*, ProgressiveCampaignDifficultyTypeEnum, ...)`
+  with match-settings / player-ready / launch RPCs.
+- `FACTIONS.XML` carries the matching data field, `<CoopCampaignType>`, as a sibling of
+  `<CampaignType>` — **empty on all 11 factions.**
+- **No co-op data ships.** `UI_CampaignMenu_CoOp` (the screen the menu class would load) is
+  absent from our CONFIG.MEG *and* from the pristine base archive — zero members match "coop" in
+  either. No co-op campaign is defined in `PROGRESSIVECAMPAIGNFILES.XML`.
+
+So it is a cut feature: code without content.
+
+**Can we finish it? No — three independent walls, and two are things already proven impossible:**
+
+1. **The screen cannot be supplied.** `UI_CampaignMenu_CoOp` is not a member of either archive, and
+   a mod cannot add one. A loose `Data/ART/GUI/*.bui` is unproven and unlikely (the front-end
+   shell is known to ignore loose *texture* overrides — `front-end-texture-meg-spike.md`), and
+   even if it loaded we would be authoring a whole ChunkFile scene graph from scratch to match
+   what the compiled class expects.
+2. **The entry point does not ship either.** The campaign menu that *does* ship
+   (`UI_CAMPAIGNMENU.BUI`, decompressed and inspected) contains no `Button_CoopCampaign` and no
+   `CoOp_MissionDetails_Group` — those names live only in `ClientG.exe`. Adding a widget is
+   adding structure, which `bui-front-end-modding.md` proves dead. There is also no slash command
+   that could host a co-op lobby directly (all 203 checked), so there is no UI-less bypass.
+3. **It would launch the wrong thing anyway.** Hosting runs through EA's online coordinator, and
+   mods load in LAN games only — so a working co-op button would start an *unmodded* match.
+
+**And we do not need it.** Tier 2 below reaches the same gameplay through a LAN skirmish plus a
+map flag plus opening the win/lose and briefing gates in our own DLL — entirely in code we
+control. **This closes the "maybe there is a built-in co-op we can switch on" question.**
+
+One encouraging signal, though not an actionable one: the hosting signature is
+`Host_Coop_Campaign_Lobby(ClientProgressiveCampaignMissionTypeClass*, ...)` — a **campaign
+mission launched through the multiplayer lobby path**. That is exactly Tier 2's shape, which
+suggests the sim was expected to cope with a campaign scenario inside an MP session rather than
+Path B fighting the engine's grain.
+
 ---
 
 ## 1. Two tiers — and why only Tier 2 is a feature

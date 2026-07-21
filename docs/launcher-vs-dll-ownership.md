@@ -182,7 +182,26 @@ exhausts; plus `Text_String` off-by-one rejected the last slot -> NULL -> CTD. F
 25->128; dedup by id in TechnoTypeClass::Read_INI; inline.h `<`->`<=`; NULL-guard OverrideDisplayName in
 dllinterface.cpp. Only after this could the roster keep growing.
 
-### Classic-mode toggle: the DLL cannot detect it AT ALL (measured 2026-07-19)
+### Classic-mode toggle: DENIABLE via launcher DATA (proven in-game 2026-07-21)
+
+**`GAMECONSTANTS.XML` → `<CNCDisableLegacyGraphicsOption network="client"> True </...>`
+removes classic graphics from the game.** EA added it as a mod option in 2020 ("Community-
+requested Mod option so that players can't access legacy graphics"). Verified on the desktop:
+the toggle is gone from the Options menu **and the spacebar no longer switches modes**.
+
+Delivery is the channel the pixel-perfect zoom factors already use — the edit is applied by
+`scripts/gameconstants_build.py`, shipped both as loose `Data/XML/GAMECONSTANTS.XML` and inside
+the mod's `Data/CONFIG.MEG`, under the same-size rule (the replacement is byte-length-neutral:
+` False ` → ` True  `).
+
+**This is the trichotomy in action, and a caution about how the section below reads.** Every
+finding under it remains true — the *DLL* still cannot detect, suppress, or even observe the
+classic toggle. But "the DLL can't" was allowed to harden into "a mod can't", and three
+DLL-side routes plus a RAM probe were spent before anyone checked the launcher's own data for
+a switch that had been sitting there since 2020. When a behaviour is launcher-owned, search
+`CONFIG.MEG` **first**; `ClientG.exe` code is the only real lock.
+
+### The DLL still cannot detect classic mode AT ALL (measured 2026-07-19)
 
 Previously recorded as "launcher-owned, DLL only gates availability". In-game testing
 hardened that considerably — a mod cannot even tell whether classic mode is on screen,

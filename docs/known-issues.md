@@ -10,40 +10,36 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## AI difficulty
 
-### Per-slot difficulty goes stale or fails when lobby difficulties change within a session — OPEN 2026-07-19
-- **Severity:** minor (either a wrong difficulty tier or a clean fall back to global Hard; no crash,
-  and no desync is possible — only the host simulates a LAN match).
-- **Repro: the FIRST LAN lobby after launching the game reads correctly; later ones may not.**
-  A LAN match cannot be returned to a lobby — when it ends you re-host, and the new lobby starts
-  blank (host player, open slots, no AI). So every subsequent match in a session is a freshly
-  built lobby, and that is where the bad reads appear. Playing two LAN matches back to back can
-  give correct difficulties in the first and stale-or-none in the second.
-- **Cause:** the scanner requires every validated `AIPLAYERn` candidate array in client memory to
-  agree. Each re-hosted lobby builds fresh records while the previous lobby's copies linger in the
-  process, so the candidates disagree and the read either takes stale values or bails with
-  `ram_slots=0`. Both observed 2026-07-19 in re-hosted lobbies: one read the previous lobby's
-  `2,2,3,1` (stale, applied), the next produced `ram_slots=0`. The lobby run immediately after a
-  game launch read `1,1,1,3` correctly.
-- **Failure is graceful:** `ram_slots=0` falls back to global Hard, which is shipped v4.0 behaviour.
-  Worst case is "no per-slot difficulty", never a broken or desynced match.
-- **Workaround:** relaunch the game between LAN matches, so each match runs in the session's first
-  lobby (verified: Easy/Easy/Easy/Hard → IQ 3/3/3/5 with 2 humans, immediately after a launch).
-- **Fix path:** stop demanding unanimity — prefer the newest/most-specific candidate array. The
-  `PHASEB-CAND` raw dump shows what the competing arrays hold; it was removed in `06ca30a` and
-  should be restored from history to do this work.
-- **Superseded reasoning:** this entry previously blamed the `humans < 2` apply gate and described
-  the records as the account's saved skirmish config. Both are wrong — the gate is gone
-  (`bb69419`) and the records do track the live lobby on a fresh launch. See
-  `docs/lobby-difficulty-ram-spike.md` status block.
-- **Scope update (overnight desktop session 2026-07-19): the stale record also hits the FIRST
-  SOLO SKIRMISH after a LAN session, then self-corrects.** Match 1 of the night launched with the
-  rig-night roster in `CNC_Set_Multiplayer_Data` (8 slots: 2 human Steam IDs incl. a ghost second
-  human, 6 AIPLAYERs vs the actual 1+5 lobby) → `humans=2` tripped the determinism guard,
-  `ram_slots=0`, my Medium slot pick ignored, ALL 6 AIs default-Hard, and 6 AI houses spawned
-  (one more than the lobby had). Matches 3–4 the same night were clean (`humans=1 ram_slots=5`,
-  per-slot Medium+Hard applied correctly) — so the poisoned record is served once and refreshed
-  by the next lobby write. Evidence: scratchpad `MOD_DEBUG_AI.overnight.txt` (slot dumps + HELLO
-  lines per match).
+### Per-slot AI difficulty fell back to global Hard on most matches — ✅ FIXED 2026-07-21 (verification pass outstanding)
+- **Symptom:** a mixed-difficulty lobby produced all-Hard AIs, logging `ram_slots=0` and HELLO
+  lines tagged `[global]` instead of `[slot n]`. Affected solo skirmish and LAN alike, from the
+  second match of a session onward; the first match after launching the game was always correct.
+  Changing any difficulty dropdown before starting made it work, which is what made the failures
+  look alternating and random.
+- **Root cause: the read landed mid-rebuild.** The client tears down and rebuilds its `AIPLAYERn`
+  records as a match launches. A scan inside that window finds nothing, or finds a fresh array
+  that disagrees with a not-yet-freed stale one, and the unanimity requirement correctly rejects
+  it. The values are correct and unanimous either side of the window — a match that logged
+  `ram_slots=0` had three resident copies all agreeing on the right values a minute later.
+  Touching a dropdown makes the client write the records during lobby editing, so the rebuild is
+  settled before launch rather than racing it.
+- **Fix:** a failed read arms a deferred re-scan from `CNC_Advance_Instance`
+  (`TF_Lobby_Difficulty_Retry`, 4 attempts 90 frames apart) which re-tiers the AI houses on
+  success. `TF_Read_Lobby_AI_Difficulties` and its validation are unchanged.
+- **Two consecutive scans must agree before a re-scan is applied.** The rebuild passes through
+  half-written states that are briefly self-consistent — a lobby set to `E M H M` was caught
+  reading `E M M M` — so one confident-looking read is not enough. The final attempt accepts an
+  unconfirmed read rather than discarding it.
+- **Evidence:** five back-to-back solo matches on the desktop (correct / `ram_slots=0` / correct /
+  `ram_slots=0` / correct), plus live candidate dumps from ClientG (`dump_candidates.py`,
+  `poll_candidates.py`) showing the arrays vanish and reappear across a match launch. No stale
+  values were ever applied in those runs — every failure was a clean bail.
+- **Falsified:** `GlyphxID` cannot discriminate live from stale arrays; the IDs are fixed per slot
+  index (slot 1 read `1055504538` in two sessions hours apart), not generated per lobby.
+- **Related, still unexplained:** the first solo skirmish after a LAN session once received a
+  roster in `CNC_Set_Multiplayer_Data` describing the *previous* LAN lobby (8 slots, 6 AIPLAYERs
+  against an actual 1+5 lobby) and spawned 6 AI houses. Same rebuild-lag family, but on the
+  roster the client hands us rather than on the RAM read; re-test if it recurs.
 
 ### Hiding a cloaked building's bib frees its cell for enemy placement — ✅ FIXED 2026-07-15
 - **Severity:** minor (placement exploit; enemy could build one row into a cloaked base's bib strip).
