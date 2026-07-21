@@ -23,34 +23,36 @@ EDIT_BUI="scripts/bui_work/RA_MAIN_MENU.edited.BUI"
 BASE_GC="scripts/gc_work/GAMECONSTANTS.base.XML"
 EDIT_GC="scripts/gc_work/GAMECONSTANTS.edited.XML"
 LOOSE_GC="resources/remaster_mods/Vanilla_RA/Data/XML/GAMECONSTANTS.XML"
+LOOSE_INP="resources/remaster_mods/Vanilla_RA/Data/XML/INPUTTRANSLATORCONFIGURATIONS.XML"
 BASE_MUS="scripts/music_work/MUSICEVENTS.base.XML"
 EDIT_MUS="scripts/music_work/MUSICEVENTS.edited.XML"
 MUS_LIST="scripts/music_work/MUSIC.listing.txt"
+BASE_INP="scripts/input_work/INPUTTRANSLATORCONFIGURATIONS.base.XML"
+EDIT_INP="scripts/input_work/INPUTTRANSLATORCONFIGURATIONS.edited.XML"
+BASE_LOC="scripts/loc_work/MASTERTEXTFILE_EN-US.base.LOC"
+EDIT_LOC="scripts/loc_work/MASTERTEXTFILE_EN-US.edited.LOC"
 
 echo "==> Rebuilding edited RA_MAIN_MENU.BUI from base"
 python3 scripts/bui_mainmenu_build.py "$BASE_BUI" "$EDIT_BUI"
 
-echo "==> Rebuilding edited GAMECONSTANTS.XML from base (pixel-perfect zoom)"
-python3 scripts/gameconstants_build.py "$BASE_GC" "$EDIT_GC"
-
 echo "==> Rebuilding edited MUSICEVENTS.XML from base (skirmish playlist)"
 python3 scripts/musicevents_build.py "$BASE_MUS" "$MUS_LIST" "$EDIT_MUS"
 
-echo "==> Repacking $MEG with the edited BUI + GAMECONSTANTS + MUSICEVENTS (in place)"
+echo "==> Rebuilding edited MASTERTEXTFILE_EN-US.LOC from base (Unholy Alliance checkbox)"
+python3 scripts/loc_relabel.py "$BASE_LOC" "$EDIT_LOC" @scripts/loc_work/mastertext.edits.txt
+
+echo "==> Repacking $MEG with the edited BUI + MUSICEVENTS + MASTERTEXT (in place)"
 python3 scripts/meg_pack.py repack "$MEG" "$MEG.tmp" \
-    "RA_MAIN_MENU.BUI=$EDIT_BUI" "GAMECONSTANTS.XML=$EDIT_GC" \
-    "MUSICEVENTS.XML=$EDIT_MUS"
+    "RA_MAIN_MENU.BUI=$EDIT_BUI" \
+    "MUSICEVENTS.XML=$EDIT_MUS" "MASTERTEXTFILE_EN-US.LOC=$EDIT_LOC"
 mv "$MEG.tmp" "$MEG"
 
-echo "==> Staging loose Data/XML/GAMECONSTANTS.XML"
-cp "$EDIT_GC" "$LOOSE_GC"
 
 echo "==> Verifying the edited files inside the MEG"
 python3 scripts/meg_extract.py extract "$MEG" "RA_MAIN_MENU.BUI" /tmp/_megverify >/dev/null
 cmp "/tmp/_megverify/RA_MAIN_MENU.BUI" "$EDIT_BUI" && echo "OK: BUI in CONFIG.MEG matches edited BUI"
-python3 scripts/meg_extract.py extract "$MEG" "GAMECONSTANTS.XML" /tmp/_megverify >/dev/null
-cmp "/tmp/_megverify/GAMECONSTANTS.XML" "$EDIT_GC" && echo "OK: GAMECONSTANTS in CONFIG.MEG matches edited copy"
-cmp "$LOOSE_GC" "$EDIT_GC" && echo "OK: loose GAMECONSTANTS matches edited copy"
 python3 scripts/meg_extract.py extract "$MEG" "MUSICEVENTS.XML" /tmp/_megverify >/dev/null
 cmp "/tmp/_megverify/MUSICEVENTS.XML" "$EDIT_MUS" && echo "OK: MUSICEVENTS in CONFIG.MEG matches edited copy"
+python3 scripts/meg_extract.py extract "$MEG" "MASTERTEXTFILE_EN-US.LOC" /tmp/_megverify >/dev/null
+cmp "/tmp/_megverify/MASTERTEXTFILE_EN-US.LOC" "$EDIT_LOC" && echo "OK: MASTERTEXT in CONFIG.MEG matches edited copy"
 echo "==> Done. Rebuild the mod (cmake workflow) to stage it into build output."

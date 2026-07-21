@@ -520,12 +520,50 @@ static int TF_AILobbySlotByHouse[MAX_PLAYERS];
 #define TF_LOBBY_RECORD_STRIDE 0xA8
 #define TF_LOBBY_OFF_SLOT 0x50
 #define TF_LOBBY_OFF_DIFF 0x64
-#define TF_LOBBY_OFF_SLOT2 0x68
+/*
+**	+0x68 is the slot's COLOUR, not a second copy of the slot index (DontCryJustDie,
+**	2026-07-21): changing an AI's lobby colour breaks a `slot == slot2` match while a
+**	colour-range test keeps working. Default lobbies hand out colours in slot order,
+**	which is why the two were indistinguishable at first and why reads failed once
+**	anyone touched a colour. It doubles as the liveness key -- CNC_Set_Multiplayer_Data
+**	gives us this match's colours, so only the array carrying them is the live one.
+*/
+#define TF_LOBBY_OFF_COLOR 0x68
+#define TF_LOBBY_MAX_COLORS 8
 
 // Bit n set = the current lobby contains an AI named AIPLAYERn (client AI numbering
 // persists across lobbies, so n rarely starts at 1 after a session's first lobby).
 // Captured at CNC_Set_Multiplayer_Data; anchors the per-slot difficulty RAM scan.
 static unsigned TF_LobbyAIRosterMask = 0;
+
+// Lobby colour per AI slot for the CURRENT match, captured alongside the roster mask.
+// -1 = unknown, in which case the scan falls back to a plain range check.
+static int TF_LobbyAIColorBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
+
+/*
+**	Deferred re-scan state. The client tears down and rebuilds its AIPLAYERn records
+**	as a match launches, so a scan can land in a window where they are absent or only
+**	half-rewritten -- the read then finds nothing, or finds a fresh array that
+**	disagrees with a surviving stale one, and reports failure. The values are correct
+**	and unanimous either side of that window, so a failed read is retried on a later
+**	frame rather than abandoned to the global tier.
+**
+**	A re-scan is only trusted once two consecutive scans agree: the rebuild passes
+**	through half-written states that are briefly self-consistent (a lobby set to
+**	Easy/Medium/Hard/Medium was observed reading Easy/Medium/Medium/Medium mid-write),
+**	and settled values never change again for the life of the match. The last attempt
+**	accepts an unconfirmed read rather than discarding it -- an unconfirmed read is
+**	still better evidence of the player's choice than the default tier.
+*/
+#define TF_LOBBY_RETRY_ATTEMPTS 4
+#define TF_LOBBY_RETRY_FRAME_GAP 90
+static DiffType TFLobbyGlobalDiff = DIFF_HARD;
+static char TFLobbyGlobalSource = 'd';
+static int TFLobbyClientDifficulty = 0;
+static int TFLobbyRetriesLeft = 0;
+static long TFLobbyRetryFrame = 0;
+static int TFLobbyPrevSlots[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
+static int TFLobbyPrevRead = 0;
 
 bool MPSuperWeaponDisable = false;
 bool ShareAllyVisibility = true;
@@ -900,6 +938,12 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
     Special.IsShadowGrow = game_options.MPlayerShadowRegrow;
     Special.IsCaptureTheFlag = game_options.CaptureTheFlag;
 
+    // The lobby's Aftermath Units checkbox carries Unholy Alliance instead (relabelled in
+    // MASTERTEXTFILE). A checkbox rather than a game type so the mode composes with any
+    // win condition and either rule set. Aftermath units are enabled unconditionally in
+    // exchange -- they were on by default, so the trade costs players nothing they used.
+    TF_UnholyAlliance = game_options.MPlayerAftermathUnits;
+
     if (Session.Options.Tiberium) {
         Special.IsTGrowth = 1;
         Special.IsTSpread = 1;
@@ -922,9 +966,10 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
     Special.ModernBalance = game_options.ModernBalance;
 
     /*
-    ** Enable Counterstrike/Aftermath units
+    ** Enable Counterstrike/Aftermath units -- always, since that lobby checkbox now
+    ** carries Unholy Alliance (see TF_UnholyAlliance below).
     */
-    OverrideNewUnitsEnabled = game_options.MPlayerAftermathUnits;
+    OverrideNewUnitsEnabled = true;
 
     while (Session.Players.Count() > 0) {
         delete Session.Players[0];
@@ -933,6 +978,12 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
 
     memset(TF_AILobbySlotByHouse, 0, sizeof(TF_AILobbySlotByHouse));
     TF_LobbyAIRosterMask = 0;
+    for (int slot_index = 0; slot_index <= TF_LOBBY_MAX_AI_SLOTS; slot_index++) {
+        TF_LobbyAIColorBySlot[slot_index] = -1;
+    }
+    TFLobbyRetriesLeft = 0;
+    TFLobbyPrevRead = 0;
+    memset(TFLobbyPrevSlots, 0, sizeof(TFLobbyPrevSlots));
 
     int humans = 0;
     for (int i = 0; i < num_players; i++) {
@@ -946,6 +997,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
             if (sscanf(player_info.Name, "AIPLAYER%d", &roster_n) == 1 && roster_n >= 1
                 && roster_n <= TF_LOBBY_MAX_AI_SLOTS) {
                 TF_LobbyAIRosterMask |= (1u << roster_n);
+                // The client's record for this AI carries its lobby colour, so the colours
+                // we are handed here identify which resident array belongs to THIS match.
+                TF_LobbyAIColorBySlot[roster_n] = player_info.ColorIndex;
             }
         }
 
@@ -1943,6 +1997,10 @@ bool Debug_Write_Shape(const char* file_name, void const* shapefile, int shapenu
     return true;
 }
 
+// Deferred re-scan of the lobby's per-slot AI difficulties; defined with the rest of
+// the difficulty code below, driven per-frame from CNC_Advance_Instance.
+static void TF_Lobby_Difficulty_Retry();
+
 #if TF_DEV_BUILD // TF_AI_DIAG -- on-screen copies of the HELLO difficulty announcements,
                  // queued at difficulty-set time (client not rendering yet) and flushed
                  // from CNC_Advance_Instance once the match is on screen.
@@ -2020,6 +2078,11 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
     } else {
         DLLExportClass::Set_Player_Context(DLLExportClass::GlyphxPlayerIDs[0]);
     }
+
+    // Re-read the lobby's per-slot AI difficulties if the match-start read failed.
+    // Runs before the HELLO flush so a successful re-scan's announcements reach the
+    // screen on the same frame they are queued.
+    TF_Lobby_Difficulty_Retry();
 
 #if TF_DEV_BUILD // TF_AI_DIAG -- flush the queued HELLO announcements once the match is
                  // actually rendering (messages sent at difficulty-set time are dropped).
@@ -2357,11 +2420,20 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
         if (memcmp(r, expected, name_len + 1) != 0) {
             break;
         }
-        int slot, diff, slot2;
+        int slot, diff, color;
         memcpy(&slot, r + TF_LOBBY_OFF_SLOT, sizeof(slot));
         memcpy(&diff, r + TF_LOBBY_OFF_DIFF, sizeof(diff));
-        memcpy(&slot2, r + TF_LOBBY_OFF_SLOT2, sizeof(slot2));
-        if (slot != slot2 || diff < 1 || diff > 3) {
+        memcpy(&color, r + TF_LOBBY_OFF_COLOR, sizeof(color));
+        // Range checks only. Today's lesson is that an equality test on a field whose
+        // meaning is assumed (slot == slot2) silently rejects good arrays the moment the
+        // assumption breaks; identity is established by colour against the roster below.
+        if (slot < 1 || slot > TF_LOBBY_MAX_AI_SLOTS || diff < 1 || diff > 3 || color < 0
+            || color >= TF_LOBBY_MAX_COLORS) {
+            break;
+        }
+        // Colour is what ties an array to THIS match rather than a lobby that has been
+        // and gone, so where the roster gave us a colour for this slot it must agree.
+        if (TF_LobbyAIColorBySlot[n] >= 0 && TF_LobbyAIColorBySlot[n] != color) {
             break;
         }
         diff_by_n[n] = diff;
@@ -2513,6 +2585,142 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
     return roster_read;
 }
 
+/*
+**	Applies a difficulty set to every AI house: per-slot where the lobby read supplied
+**	a tier for that house's slot, the global tier otherwise. Safe to call again later
+**	in a match -- houses are simply re-tiered, which is what the deferred re-scan does.
+*/
+static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff, int slots_read, bool is_retry)
+{
+    Scen.CDifficulty = global_diff;
+    TFLobbyAIDifficultySet = true;
+
+#if TF_DEV_BUILD
+    TFHelloPendingCount = 0;
+#endif
+    for (int index = 0; index < Houses.Count(); index++) {
+        HouseClass* housep = Houses.Ptr(index);
+        if (housep != NULL && housep->IsActive && !housep->IsHuman && housep->Class->House >= HOUSE_MULTI1) {
+            // Each AI house's lobby slot number was captured at house-assign time
+            // (TF_AILobbySlotByHouse -- IniName itself is renamed to "Computer"),
+            // keying it to the client's per-slot record regardless of the
+            // color-order house assignment. Houses without a slot record use the
+            // global tier.
+            DiffType house_diff = global_diff;
+            bool per_slot = false;
+            int house_index = (int)housep->Class->House - (int)HOUSE_MULTI1;
+            int slot_number = (house_index >= 0 && house_index < MAX_PLAYERS) ? TF_AILobbySlotByHouse[house_index] : 0;
+            if (slots_read > 0 && slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS
+                && slot_diff[slot_number] != 0) {
+                house_diff = (slot_diff[slot_number] == 1)   ? DIFF_EASY
+                             : (slot_diff[slot_number] == 2) ? DIFF_NORMAL
+                                                             : DIFF_HARD;
+                per_slot = true;
+            }
+            housep->IQ = TF_AI_IQ_From_Difficulty(house_diff);
+
+#if TF_DEV_BUILD // TF_AI_DIAG -- per-house difficulty announcement (RED/GREEN test).
+            // GREEN = a mixed lobby prints mixed modes tagged [slot n]; houses on the
+            // global source print [global]. Phase A of
+            // docs/lobby-difficulty-ram-spike.md.
+            {
+                const char* mode =
+                    (house_diff == DIFF_EASY) ? "EASY" : (house_diff == DIFF_HARD) ? "HARD" : "MEDIUM";
+                char source_tag[24];
+                if (per_slot) {
+                    snprintf(source_tag, sizeof(source_tag), "slot %d%s", slot_number, is_retry ? " retry" : "");
+                } else {
+                    strcpy(source_tag, is_retry ? "global retry" : "global");
+                }
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg,
+                            "HELLO IM H%d (ActLike=%d) IN %s MODE (IQ=%d) [%s]\n",
+                            (int)housep->Class->House,
+                            (int)housep->ActLike,
+                            mode,
+                            housep->IQ,
+                            source_tag);
+                    fflush(_tfdbg);
+                }
+                // On-screen copy is the readable form (full detail stays in the log).
+                // Sent now, the client drops the message (match not rendering yet);
+                // queued here and flushed to screen from CNC_Advance_Instance.
+                if (TFHelloPendingCount < ARRAY_SIZE(TFHelloPending)) {
+                    const char* mode_nice =
+                        (house_diff == DIFF_EASY) ? "Easy" : (house_diff == DIFF_HARD) ? "Hard" : "Medium";
+                    snprintf(TFHelloPending[TFHelloPendingCount],
+                             sizeof(TFHelloPending[0]),
+                             "Enemy AI: %s (%s) - %s",
+                             TF_Side_Name(housep->ActLike),
+                             TF_Color_Name(housep->RemapColor),
+                             mode_nice);
+                    TFHelloPendingCount++;
+                }
+            }
+#endif
+        }
+    }
+
+#if TF_DEV_BUILD // TF_AI_DIAG -- confirm the client actually sends lobby difficulty in skirmish.
+    {
+        const char* up = getenv("USERPROFILE");
+        char p[600];
+        snprintf(p, sizeof(p), "%s/MOD_DEBUG_AI.txt", up ? up : ".");
+        FILE* f = fopen(p, "a");
+        if (f != NULL) {
+            fprintf(f,
+                    "CNC_Set_Difficulty(%d) -> CDifficulty=%d IQ=%d humans=%d source=%s ram_slots=%d",
+                    TFLobbyClientDifficulty,
+                    (int)global_diff,
+                    TF_AI_IQ_From_Difficulty(global_diff),
+                    TF_HumanPlayerCount,
+                    TFLobbyGlobalSource == 'f' ? "tf_ai_difficulty.txt" : "default-hard (client value ignored)",
+                    slots_read);
+            for (int s = 1; s <= TF_LOBBY_MAX_AI_SLOTS; s++) {
+                if (slot_diff[s] != 0) {
+                    fprintf(f, " s%d=%d", s, slot_diff[s]);
+                }
+            }
+            fprintf(f, is_retry ? " (deferred re-scan)\n" : " (AI houses retro-applied)\n");
+            fclose(f);
+        }
+    }
+#endif
+}
+
+/*
+**	Runs a deferred re-scan when the match-start read failed. Called every frame;
+**	does nothing unless a retry is owed and its frame has arrived. A successful
+**	re-scan re-tiers the AI houses and disarms; running out of attempts leaves the
+**	houses on the global tier, which is the shipped fallback behaviour.
+*/
+static void TF_Lobby_Difficulty_Retry()
+{
+    if (TFLobbyRetriesLeft <= 0 || Frame < TFLobbyRetryFrame) {
+        return;
+    }
+
+    int slot_diff[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
+    int slots_read = TF_Read_Lobby_AI_Difficulties(slot_diff);
+
+    TFLobbyRetriesLeft--;
+    TFLobbyRetryFrame = Frame + TF_LOBBY_RETRY_FRAME_GAP;
+
+    if (slots_read > 0) {
+        bool confirmed = (TFLobbyPrevRead == slots_read)
+                         && memcmp(TFLobbyPrevSlots, slot_diff, sizeof(TFLobbyPrevSlots)) == 0;
+        if (confirmed || TFLobbyRetriesLeft <= 0) {
+            TFLobbyRetriesLeft = 0;
+            TF_Apply_AI_Difficulties(TFLobbyGlobalDiff, slot_diff, slots_read, true);
+            return;
+        }
+    }
+
+    memcpy(TFLobbyPrevSlots, slot_diff, sizeof(TFLobbyPrevSlots));
+    TFLobbyPrevRead = slots_read;
+}
+
 /**************************************************************************************************
  * CNC_Set_Difficulty -- Set game difficulty
  *
@@ -2588,105 +2796,21 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
     // live lobby, which is by definition the authoritative one. There is no second
     // sim to diverge from and therefore nothing to broadcast or reconcile.
     int slot_diff[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
-    const bool apply_per_slot = true;
     int slots_read = TF_Read_Lobby_AI_Difficulties(slot_diff);
 
-    Scen.CDifficulty = diff;
-    TFLobbyAIDifficultySet = true;
+    TFLobbyGlobalDiff = diff;
+    TFLobbyGlobalSource = tf_diff_source;
+    TFLobbyClientDifficulty = difficulty;
+    TFLobbyRetriesLeft = 0;
 
-    int iq = TF_AI_IQ_From_Difficulty(diff);
-#if TF_DEV_BUILD
-    TFHelloPendingCount = 0;
-#endif
-    for (int index = 0; index < Houses.Count(); index++) {
-        HouseClass* housep = Houses.Ptr(index);
-        if (housep != NULL && housep->IsActive && !housep->IsHuman && housep->Class->House >= HOUSE_MULTI1) {
-            // Each AI house's lobby slot number was captured at house-assign time
-            // (TF_AILobbySlotByHouse -- IniName itself is renamed to "Computer"),
-            // keying it to the client's per-slot record regardless of the
-            // color-order house assignment. Houses without a slot record use the
-            // global tier.
-            DiffType house_diff = diff;
-            bool per_slot = false;
-            int house_index = (int)housep->Class->House - (int)HOUSE_MULTI1;
-            int slot_number = (house_index >= 0 && house_index < MAX_PLAYERS) ? TF_AILobbySlotByHouse[house_index] : 0;
-            if (apply_per_slot && slots_read > 0 && slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS
-                && slot_diff[slot_number] != 0) {
-                house_diff = (slot_diff[slot_number] == 1)   ? DIFF_EASY
-                             : (slot_diff[slot_number] == 2) ? DIFF_NORMAL
-                                                             : DIFF_HARD;
-                per_slot = true;
-            }
-            housep->IQ = TF_AI_IQ_From_Difficulty(house_diff);
+    TF_Apply_AI_Difficulties(diff, slot_diff, slots_read, false);
 
-#if TF_DEV_BUILD // TF_AI_DIAG -- per-house difficulty announcement (RED/GREEN test).
-            // GREEN = a mixed lobby prints mixed modes tagged [slot n]; houses on the
-            // global source print [global]. Phase A of
-            // docs/lobby-difficulty-ram-spike.md.
-            {
-                const char* mode =
-                    (house_diff == DIFF_EASY) ? "EASY" : (house_diff == DIFF_HARD) ? "HARD" : "MEDIUM";
-                char source_tag[16];
-                if (per_slot) {
-                    snprintf(source_tag, sizeof(source_tag), "slot %d", slot_number);
-                } else {
-                    strcpy(source_tag, "global");
-                }
-                FILE* _tfdbg = TF_AI_Diag_File();
-                if (_tfdbg != NULL) {
-                    fprintf(_tfdbg,
-                            "HELLO IM H%d (ActLike=%d) IN %s MODE (IQ=%d) [%s]\n",
-                            (int)housep->Class->House,
-                            (int)housep->ActLike,
-                            mode,
-                            housep->IQ,
-                            source_tag);
-                    fflush(_tfdbg);
-                }
-                // On-screen copy is the readable form (full detail stays in the log).
-                // Sent now, the client drops the message (match not rendering yet);
-                // queued here and flushed to screen from CNC_Advance_Instance.
-                if (TFHelloPendingCount < ARRAY_SIZE(TFHelloPending)) {
-                    const char* mode_nice =
-                        (house_diff == DIFF_EASY) ? "Easy" : (house_diff == DIFF_HARD) ? "Hard" : "Medium";
-                    snprintf(TFHelloPending[TFHelloPendingCount],
-                             sizeof(TFHelloPending[0]),
-                             "Enemy AI: %s (%s) - %s",
-                             TF_Side_Name(housep->ActLike),
-                             TF_Color_Name(housep->RemapColor),
-                             mode_nice);
-                    TFHelloPendingCount++;
-                }
-            }
-#endif
-        }
+    // A failed read here is usually the client rebuilding its records as the match
+    // launches rather than a lobby with nothing to read, so arm a deferred re-scan.
+    if (slots_read <= 0 && TF_LobbyAIRosterMask != 0) {
+        TFLobbyRetriesLeft = TF_LOBBY_RETRY_ATTEMPTS;
+        TFLobbyRetryFrame = Frame + TF_LOBBY_RETRY_FRAME_GAP;
     }
-
-#if TF_DEV_BUILD // TF_AI_DIAG -- confirm the client actually sends lobby difficulty in skirmish.
-    {
-        const char* up = getenv("USERPROFILE");
-        char p[600];
-        snprintf(p, sizeof(p), "%s/MOD_DEBUG_AI.txt", up ? up : ".");
-        FILE* f = fopen(p, "a");
-        if (f != NULL) {
-            fprintf(f,
-                    "CNC_Set_Difficulty(%d) -> CDifficulty=%d IQ=%d humans=%d source=%s ram_slots=%d",
-                    difficulty,
-                    (int)diff,
-                    iq,
-                    TF_HumanPlayerCount,
-                    tf_diff_source == 'f' ? "tf_ai_difficulty.txt" : "default-hard (client value ignored)",
-                    slots_read);
-            for (int s = 1; s <= TF_LOBBY_MAX_AI_SLOTS; s++) {
-                if (slot_diff[s] != 0) {
-                    fprintf(f, " s%d=%d", s, slot_diff[s]);
-                }
-            }
-            fprintf(f, " (AI houses retro-applied)\n");
-            fclose(f);
-        }
-    }
-#endif
 }
 
 /**************************************************************************************************
@@ -5293,13 +5417,56 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
         Keyboard->MouseQX = x1;
         Keyboard->MouseQY = y1;
 
-        COORDINATE coord = Map.Pixel_To_Coord(x1, y1);
-        CELL cell = Coord_Cell(coord);
+        /*
+        **	Mod command 1 -- the deploy key. It owns the binding the launcher's
+        **	COMMAND_CNC_DEPLOY_SELECTED_MCV used to hold, because that command cannot reach
+        **	our faction MCV types, which is why the deploy hotkey went missing for all four
+        **	factions.
+        **
+        **	Deliberately generic rather than MCV-specific: every selected object is asked
+        **	for its own self-action and acted on only if the answer is ACTION_SELF, which
+        **	is the same question a self-click asks. So MCVs deploy, APCs, transports and
+        **	Chinooks unload, and anything deployable added later is covered without
+        **	touching this code. The rule also excludes what it should -- infantry answer
+        **	ACTION_NONE, factories with siblings answer ACTION_TOGGLE_PRIMARY, and an MCV
+        **	that cannot fit its yard where it stands answers ACTION_NO_DEPLOY.
+        **
+        **	The action is issued through the ordinary queued mission path, so multiplayer
+        **	stays in step.
+        */
+        if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_1_AT_POSITION) {
+            int deployed = 0;
+            for (int index = 0; index < CurrentObject.Count(); index++) {
+                ObjectClass* object = CurrentObject[index];
+                if (object == NULL || !object->IsActive) {
+                    continue;
+                }
+                if (object->What_Action(object) != ACTION_SELF) {
+                    continue;
+                }
+                object->Active_Click_With(ACTION_SELF, object);
+                deployed++;
+            }
 
-        if (Map.Pixel_To_Coord(x1, y1)) {
-            // TBD: For our ever-awesome Community Modders!
-            //
-            // PlayerPtr->Handle_Mod_Game_Command(cell, input_event - INPUT_REQUEST_MOD_GAME_COMMAND_1_AT_POSITION);
+#if TF_DEV_BUILD // TF_DIAG -- first-test instrumentation for the mod hotkey chain.
+            {
+                const char* up = getenv("USERPROFILE");
+                char p[600];
+                snprintf(p, sizeof(p), "%s/MOD_DEBUG_HOTKEY.txt", up ? up : ".");
+                FILE* f = fopen(p, "a");
+                if (f != NULL) {
+                    fprintf(f,
+                            "MOD_COMMAND_1 frame=%ld selected=%d deployed=%d\n",
+                            (long)Frame,
+                            CurrentObject.Count(),
+                            deployed);
+                    fclose(f);
+                }
+                char msg[80];
+                snprintf(msg, sizeof(msg), "Deploy key: %d of %d selected", deployed, CurrentObject.Count());
+                On_Message(msg, 5.0f, -1);
+            }
+#endif
         }
 
         break;

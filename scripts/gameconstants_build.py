@@ -1,9 +1,18 @@
 #!/usr/bin/env python3
 """Build our edited GAMECONSTANTS.XML from the pristine base copy.
 
-Currently applies one edit: CFE Patch Redux's "Pixel-Perfect Zoom" factors
-(11 zoom steps, 0.246875-1.975, vs vanilla's 8 steps 1.0-2.0). Values are
-bleid's, incorporated by ChthonVII in CFE commit ea2dde5. GPL v3.
+Four edits are applied:
+
+1. CFE Patch Redux's "Pixel-Perfect Zoom" factors (11 zoom steps,
+   0.246875-1.975, vs vanilla's 8 steps 1.0-2.0). Values are bleid's,
+   incorporated by ChthonVII in CFE commit ea2dde5. GPL v3.
+2. `CNCDisableLegacyGraphicsOption` True — EA's mod-facing switch that denies
+   players the legacy (classic) renderer. The mod is HD-only; its TD content
+   has no classic art path.
+3. `CNCEnableModHotKeyGameCommands` True — turns on the four modder hotkey
+   commands bound by scripts/inputtranslator_build.py.
+4. `CNCAllowAftermathDefault` false — that lobby checkbox carries Unholy
+   Alliance, which should start unticked.
 
 The output is kept at EXACTLY the base byte size so the same artifact can be
 repacked into the mod's CONFIG.MEG (launcher reads inner files at base
@@ -23,10 +32,32 @@ ZOOM_FACTORS = [
     "1.234375", "1.48", "1.728125", "1.85", "1.975",
 ]
 
+# Whitespace inside the element is padding: the replacement is byte-for-byte
+# the same length as the original, so it costs nothing against the size budget.
+LEGACY_OPTION_OLD = b'<CNCDisableLegacyGraphicsOption network="client"> False </CNCDisableLegacyGraphicsOption>'
+LEGACY_OPTION_NEW = b'<CNCDisableLegacyGraphicsOption network="client"> True  </CNCDisableLegacyGraphicsOption>'
+
+# Enables GAME_COMMAND_CNC_MOD_COMMAND_1..4, which scripts/inputtranslator_build.py binds
+# to keys and dllinterface.cpp handles.
+MODKEYS_OPTION_OLD = b'<CNCEnableModHotKeyGameCommands network="client"> False </CNCEnableModHotKeyGameCommands>'
+MODKEYS_OPTION_NEW = b'<CNCEnableModHotKeyGameCommands network="client"> True  </CNCEnableModHotKeyGameCommands>'
+
+# That lobby checkbox is Unholy Alliance here, which is a novelty mode -- it starts
+# unticked so a default lobby is an ordinary game.
+AFTERMATH_DEFAULT_OLD = b"<CNCAllowAftermathDefault> true </CNCAllowAftermathDefault>"
+AFTERMATH_DEFAULT_NEW = b"<CNCAllowAftermathDefault> false</CNCAllowAftermathDefault>"
+
 
 def main(base_path, out_path):
     data = open(base_path, "rb").read()
     base_len = len(data)
+
+    for old, new, what in ((LEGACY_OPTION_OLD, LEGACY_OPTION_NEW, "legacy-graphics"),
+                           (MODKEYS_OPTION_OLD, MODKEYS_OPTION_NEW, "mod-hotkey"),
+                           (AFTERMATH_DEFAULT_OLD, AFTERMATH_DEFAULT_NEW, "aftermath-default")):
+        assert len(new) == len(old)
+        assert data.count(old) == 1, f"{what} option not found in base"
+        data = data.replace(old, new)
 
     start = data.find(b'<CNCZoomFactors network="client">')
     assert start != -1, "zoom block not found in base"
@@ -64,10 +95,14 @@ def main(base_path, out_path):
     # game's parser tolerates), so validate only the block we inserted.
     minidom.parseString(new_block)
     assert data.count(b"<ZoomFactor>") == len(ZOOM_FACTORS)
+    assert data.count(LEGACY_OPTION_NEW) == 1
+    assert data.count(MODKEYS_OPTION_NEW) == 1
+    assert data.count(AFTERMATH_DEFAULT_NEW) == 1
 
     open(out_path, "wb").write(data)
     print(f"wrote {out_path}: {len(data)} bytes (== base), "
-          f"{len(ZOOM_FACTORS)} zoom factors")
+          f"{len(ZOOM_FACTORS)} zoom factors, legacy graphics off, mod hotkeys on, "
+          f"Unholy Alliance unticked by default")
 
 
 if __name__ == "__main__":

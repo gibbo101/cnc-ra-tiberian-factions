@@ -16,7 +16,21 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
   second match of a session onward; the first match after launching the game was always correct.
   Changing any difficulty dropdown before starting made it work, which is what made the failures
   look alternating and random.
-- **Root cause: the read landed mid-rebuild.** The client tears down and rebuilds its `AIPLAYERn`
+- **⭐ PRIMARY ROOT CAUSE (DontCryJustDie, 2026-07-21): the record field at `+0x68` is the
+  slot's COLOUR, not a second copy of the slot index.** Our validator required
+  `slot == slot2`, so it threw away perfectly good arrays whenever an AI's colour did not
+  happen to equal its slot number. Default lobbies assign colours in slot order, which is
+  exactly why it worked at first and failed once anyone touched a colour. His evidence: with
+  `slot == slot2` he gets no hits after changing an AI's colour, while a colour-range test
+  keeps working. Corroborated on our side -- a Python dump that checked only names and
+  difficulty found healthy candidate arrays during a match the DLL had rejected.
+  - **Fix:** range-check the field as a colour, and require it to match the colours
+    `CNC_Set_Multiplayer_Data` hands us for the current match. That doubles as the liveness
+    key -- an array carrying another lobby's colours is stale by definition, which is the
+    discriminator the falsified `GlyphxID` idea was reaching for.
+  - Awaiting a verification pass (mixed lobby, then a second match with an AI's colour
+    changed).
+- **Secondary: the read can also land mid-rebuild.** The client tears down and rebuilds its `AIPLAYERn`
   records as a match launches. A scan inside that window finds nothing, or finds a fresh array
   that disagrees with a not-yet-freed stale one, and the unanimity requirement correctly rejects
   it. The values are correct and unanimous either side of the window — a match that logged

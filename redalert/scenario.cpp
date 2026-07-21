@@ -3616,12 +3616,17 @@ static void Create_Units(bool official)
                     hptr->Flag_Attach((UnitClass*)obj, true);
                 }
             }
-#if TF_DEV_BUILD
             /*
-            **	Dev test lever (tf_mcv_test.flag): the human also gets one MCV
-            **	of each OTHER faction, to exercise every deploy lineage.
+            **	Unholy Alliance (lobby game type): every house -- human and AI alike --
+            **	also gets one MCV of each OTHER faction, so all four tech trees are
+            **	available from the start. The dev test lever grants the same thing to
+            **	the human only, for exercising every deploy lineage.
             */
-            if (TF_Dev_Cheats() && TF_Dev_MCV_Test() && hptr->IsHuman) {
+            bool extra_faction_mcvs = TF_UnholyAlliance;
+#if TF_DEV_BUILD
+            extra_faction_mcvs = extra_faction_mcvs || (TF_Dev_Cheats() && TF_Dev_MCV_Test() && hptr->IsHuman);
+#endif
+            if (extra_faction_mcvs) {
                 static const UnitType _all_mcvs[] = {UNIT_AMCV, UNIT_SMCV, UNIT_TDGMCV, UNIT_TDNMCV};
                 for (int m = 0; m < (int)ARRAY_SIZE(_all_mcvs); m++) {
                     if (_all_mcvs[m] == mcv_type) {
@@ -3636,7 +3641,6 @@ static void Create_Units(bool official)
                     }
                 }
             }
-#endif
         } else {
 
             /*

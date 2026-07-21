@@ -85,6 +85,15 @@ extern unsigned int GameVersion;
 **	HD via the exported AssetName (dllinterface.cpp).
 */
 extern bool TF_TDWinterMap;
+
+/*
+**	Tiberian Factions -- Unholy Alliance mode: every player starts with one MCV of all
+**	four factions and may build all four tech trees. Carried by the lobby's Aftermath
+**	Units checkbox, which this mod relabels and repurposes; a checkbox rather than a
+**	game type so the mode composes with any win condition and either rule set. Aftermath
+**	units are enabled unconditionally in exchange. Set in CNC_Set_Multiplayer_Data.
+*/
+extern bool TF_UnholyAlliance;
 extern bool Debug_MotionCapture;
 extern bool Debug_Rotate;
 extern bool Debug_Quiet;

@@ -36,7 +36,40 @@ capture testing is done (dev-build-only either way).
 
 ---
 
-## ⭐ Mod hotkeys are AVAILABLE — the chain is complete, only our handler is missing (2026-07-21)
+## ⭐ Mod hotkeys — handler WORKS; delivery of a default binding UNSOLVED. Investigate again before 4.1 ships (Luke, 2026-07-21)
+
+**Proven end to end (2026-07-21):** `CNCEnableModHotKeyGameCommands` True exposes Mod Command
+1-4 in Options > Controls; a player-bound key reaches
+`INPUT_REQUEST_MOD_GAME_COMMAND_1_AT_POSITION` in `dllinterface.cpp` with a map cell; our
+handler acted (`MOD_COMMAND_1 frame=110 selected=1 deployed=1`). The handler is deliberately
+generic -- it asks each selected object for its own self-action and acts only on ACTION_SELF,
+so MCVs deploy, APCs / transports / Chinooks unload, infantry (ACTION_NONE) and factories
+(ACTION_TOGGLE_PRIMARY) are skipped, and future deployables are covered for free.
+
+**The wall: we cannot ship a default binding.** Measured, in this order, all failures:
+- binding written into `INPUTTRANSLATORCONFIGURATIONS.XML` inside the mod's CONFIG.MEG
+- the same file shipped loose in `Data/XML/` (the path that works for GameConstants)
+- after Options > Controls "Restore Defaults" (restores the client's compiled defaults)
+- on a **freshly created profile** (settings .bin moved aside) -- still empty
+Our *unbind* of the launcher's own deploy command was ignored too, which is the proof the
+client reads none of it: the deploy key stayed on backslash (`#` on a UK layout) throughout.
+
+**Independently confirmed as by-design.** Kushan's PPM guide (ppmforums.com/topic-54809, 2020)
+describes exactly this: enable via `GameConstants_Mod.xml`, then *"if you just want to bind some
+commands in the bindings screen, they'll be sent through as
+INPUT_REQUEST_MOD_GAME_COMMAND_x_AT_POSITION"*. Player-bound is the intended flow.
+
+**Shipped state:** the constant and the handler ship; the input-config edits do NOT (reverted in
+both the MEG and loose, so nobody's deploy key is touched by a dormant unbind).
+
+**Remaining route to investigate before release:** write the binding into
+`Player_RA_settings_1.bin` (ChunkFile+zlib TLV, partly decoded by the difficulty spike). A clean
+unbound profile was created and discarded during testing -- recreate it, bind one command, and
+diff the two files to find the encoding. Caveats to weigh: our DLL only runs during a match, so
+a write would apply from the *next* launch; the file is Steam Cloud synced; and corrupting a
+player's settings is a worse outcome than a one-time manual bind. Fallback if it is not clean:
+a one-off in-game message at first match telling the player to bind Mod Command 1 (people do
+read what is on screen mid-game, unlike a Workshop page).
 
 Audit of the launcher's own data (`docs/config-meg-lever-audit.md`, written after the
 classic-graphics lockout) found EA's mod hotkey path fully built and never connected:

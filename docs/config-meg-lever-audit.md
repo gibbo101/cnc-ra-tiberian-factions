@@ -21,6 +21,23 @@ paid for from padding or comment text inside the same file.
 
 ---
 
+## ⭐ Delivery: `GameConstants_Mod.xml` beats editing the member (2026-07-21)
+
+`ClientG.exe` contains the literal `\XML\GameConstants_Mod.xml` and merges that file over the
+base GameConstants. It is **additive**, so it needs no same-size juggling and no CONFIG.MEG
+repack at all — a mod ships a dozen lines in `Data/XML/`. `overwrite="true"` on an element
+replaces a list rather than appending to it. Documented by Kushan (ppmforums.com/topic-54809,
+2020) and used by Vanilla Conquer's TD sample to switch on megamaps.
+
+**Our constants moved to it** (classic-graphics lockout, mod hotkeys, the Unholy Alliance
+default, CFE's zoom factors), retiring a 128KB same-size rewrite plus a repack of that member.
+Fewer moving parts, and one less member that a rebuild can silently clobber — the failure mode
+that cost the faction names earlier the same day.
+
+**It is the only `_Mod` overlay.** No `InputTranslatorConfigurations_Mod.xml` exists in the
+binary, which is the independent confirmation that mod hotkey *bindings* cannot be shipped and
+must be bound by the player. See `todo.md`.
+
 ## Tier 1 — actionable levers
 
 ### 1. Mod hotkey commands (the big one; chain complete, untested)

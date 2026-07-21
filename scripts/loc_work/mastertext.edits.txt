@@ -1,0 +1,35 @@
+# Master-text edits applied over the pristine MASTERTEXTFILE_EN-US.LOC.
+# Values are padded to the record's own length by loc_relabel.py; a longer
+# replacement is rejected outright (the .LOC value table is length-indexed).
+#
+# Faction naming (countries relabelled to sides) and TD unit titles were
+# previously hand-edited straight into the shipped archive; this file is the
+# reproducible source of truth for them.
+TEXT_FACTION_BONUS_ENGLAND=Allies
+TEXT_FACTION_BONUS_FRANCE=Allies
+TEXT_FACTION_BONUS_GERMANY=Allies
+TEXT_FACTION_BONUS_GREECE=Allies
+TEXT_FACTION_BONUS_RUSSIA=Soviet
+TEXT_FACTION_BONUS_SPAIN=GDI
+TEXT_FACTION_BONUS_TURKEY=Nod
+TEXT_FACTION_BONUS_UKRAINE=Soviet
+TEXT_FACTION_NAME_FACTION_10=Nod
+TEXT_FACTION_NAME_FACTION_3=GDI
+TEXT_FACTION_NAME_FACTION_4=Allies
+TEXT_FACTION_NAME_FACTION_6=Allies
+TEXT_FACTION_NAME_FACTION_7=Soviet
+TEXT_FACTION_NAME_FACTION_8=Allies
+TEXT_FACTION_NAME_FACTION_9=Allies
+TEXT_FACTION_REDALERT_ENGLAND=Allies
+TEXT_FACTION_REDALERT_FRANCE=Allies
+TEXT_FACTION_REDALERT_GERMANY=Allies
+TEXT_FACTION_REDALERT_GREECE=Allies
+TEXT_FACTION_REDALERT_SPAIN=GDI
+TEXT_FACTION_REDALERT_TURKEY=Nod
+TEXT_FACTION_REDALERT_UKRAINE=Soviet
+TEXT_UNIT_TITLE_GDI_MLRS=MLRS
+TEXT_UNIT_TITLE_NOD_HELICOPTER=Apache
+
+# The Aftermath Units checkbox carries Unholy Alliance (see externs.h).
+TEXT_MULTIPLAYER_DETAILS_AFTERMATH_UNITS=Unholy Alliance
+TEXT_MULTIPLAYER_DETAILS_TOOLTIP_AFTERMATH_UNITS=Every player starts with one MCV from each of the four factions. Build any tree.
