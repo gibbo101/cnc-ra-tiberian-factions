@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <!--
-    Tiberian Factions -- client constant overrides.
+    Tiberian Factions: client constant overrides.
 
     ClientG.exe looks for DATA\XML\GameConstants_Mod.xml by name (the literal is in the
     binary) and merges it over the base GameConstants. Additive, so there is no same-size
@@ -17,7 +17,7 @@
         <CNCDisableLegacyGraphicsOption network="client"> True </CNCDisableLegacyGraphicsOption>
 
         <!-- Exposes Mod Command 1-4 in Options > Controls, handled in dllinterface.cpp.
-             Players must bind them themselves -- there is no file-based default binding
+             Players must bind them themselves; there is no file-based default binding
              (measured 2026-07-21: the client ignores InputTranslatorConfigurations.xml
              from a mod, in the MEG, loose, and on a freshly created profile). -->
         <CNCEnableModHotKeyGameCommands network="client"> True </CNCEnableModHotKeyGameCommands>

@@ -531,6 +531,15 @@ static int TF_AILobbySlotByHouse[MAX_PLAYERS];
 #define TF_LOBBY_OFF_COLOR 0x68
 #define TF_LOBBY_MAX_COLORS 8
 
+/*
+**	+0x54 is reportedly the AI's house / ActLike (DontCryJustDie, 2026-07-21). It is in the
+**	CLIENT's numbering, not ours: the slot that read 4 here was House=2 (HOUSE_USSR) to the
+**	DLL, so it looks like the FactionN index rather than a HousesType. LOGGED ONLY, never
+**	gated on -- an equality test against an inferred field is exactly what broke the read in
+**	the first place. Promote it to a validator once the mapping is confirmed from real logs.
+*/
+#define TF_LOBBY_OFF_HOUSE 0x54
+
 // Bit n set = the current lobby contains an AI named AIPLAYERn (client AI numbering
 // persists across lobbies, so n rarely starts at 1 after a session's first lobby).
 // Captured at CNC_Set_Multiplayer_Data; anchors the per-slot difficulty RAM scan.
@@ -539,6 +548,11 @@ static unsigned TF_LobbyAIRosterMask = 0;
 // Lobby colour per AI slot for the CURRENT match, captured alongside the roster mask.
 // -1 = unknown, in which case the scan falls back to a plain range check.
 static int TF_LobbyAIColorBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
+
+// Diagnostic only: the +0x54 field of the last validated record per slot, so the client's
+// house/faction numbering can be mapped against ours from real logs before anything relies
+// on it. Never used to accept or reject a candidate.
+static int TF_LobbyRecHouseBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
 
 /*
 **	Deferred re-scan state. The client tears down and rebuilds its AIPLAYERn records
@@ -980,6 +994,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
     TF_LobbyAIRosterMask = 0;
     for (int slot_index = 0; slot_index <= TF_LOBBY_MAX_AI_SLOTS; slot_index++) {
         TF_LobbyAIColorBySlot[slot_index] = -1;
+        TF_LobbyRecHouseBySlot[slot_index] = -1;
     }
     TFLobbyRetriesLeft = 0;
     TFLobbyPrevRead = 0;
@@ -2436,6 +2451,10 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
         if (TF_LobbyAIColorBySlot[n] >= 0 && TF_LobbyAIColorBySlot[n] != color) {
             break;
         }
+        int rec_house = 0;
+        memcpy(&rec_house, r + TF_LOBBY_OFF_HOUSE, sizeof(rec_house));
+        TF_LobbyRecHouseBySlot[n] = rec_house;
+
         diff_by_n[n] = diff;
         *found_mask |= (1u << n);
         prev_n = n;
@@ -2634,13 +2653,21 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
                 }
                 FILE* _tfdbg = TF_AI_Diag_File();
                 if (_tfdbg != NULL) {
+                    // rec_house/rec_color are the client's own values for this slot, printed
+                    // beside ours so the two numbering systems can be mapped from real logs.
                     fprintf(_tfdbg,
-                            "HELLO IM H%d (ActLike=%d) IN %s MODE (IQ=%d) [%s]\n",
+                            "HELLO IM H%d (ActLike=%d) IN %s MODE (IQ=%d) [%s]"
+                            " rec_house=%d rec_color=%d ours_color=%d\n",
                             (int)housep->Class->House,
                             (int)housep->ActLike,
                             mode,
                             housep->IQ,
-                            source_tag);
+                            source_tag,
+                            (slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS)
+                                ? TF_LobbyRecHouseBySlot[slot_number] : -1,
+                            (slot_number >= 1 && slot_number <= TF_LOBBY_MAX_AI_SLOTS)
+                                ? TF_LobbyAIColorBySlot[slot_number] : -1,
+                            (int)housep->RemapColor);
                     fflush(_tfdbg);
                 }
                 // On-screen copy is the readable form (full detail stays in the log).

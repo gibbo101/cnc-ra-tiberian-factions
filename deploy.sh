@@ -84,6 +84,12 @@ if [[ "$DRY_RUN" -eq 1 ]]; then
     echo "==> DRY RUN — no files will be transferred"
 fi
 
+# A malformed XML override does not get skipped by the launcher -- it asserts and the
+# game dies at startup, so it must never reach a device. Plain resources are copied
+# rather than built, which is how a `--` inside an XML comment shipped once already.
+echo "==> Validating shipped XML"
+python3 scripts/validate_shipped_xml.py "$LOCAL_OUTPUT"
+
 echo "==> rsync -av $DELETE_FLAG $DRY_FLAG $LOCAL_OUTPUT → $DECK_TARGET"
 rsync -av $DELETE_FLAG $DRY_FLAG "$LOCAL_OUTPUT" "$DECK_TARGET"
 
