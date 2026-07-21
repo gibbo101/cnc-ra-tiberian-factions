@@ -62,6 +62,20 @@ lobby dropdown value lists, the bonus-content gallery. Three cheap unknowns queu
 (slash-command permissions, the UI hint system, whether `CNCRULES.XML`'s launcher-side difficulty
 multiplier table is consulted at all).
 
+## Faction-agnostic AI + the TS easter-egg tree (Luke, 2026-07-21 — designed, not started)
+
+Two linked ideas from the AI discussion, both documented rather than built:
+
+- **Faction-agnostic base builder with a home-faction weight** → `ai-upgrade-plan.md` §W2.9.
+  The AI currently only ever builds its own lineage, so **captured factories are invisible to
+  it today** — a live bug, not just an Unholy Alliance gap. Unit/infantry/aircraft selection is
+  already capability-filtered, so the work is the building side: aggregate role counts across
+  all lineages (miss one → four barracks), then weight the home tree ahead of the rest.
+- **TS tech tree as an ownership-gated easter egg** → `ts-factions-feasibility.md`. A rare crate
+  drops a TS MCV; deploying it unlocks the TS roster for whoever found it, any side. Needs **no
+  faction, no house, no picker slot** — the yard is the gate. Most of the machinery already
+  ships. Only lands as a *tree* worth having once the AI above can see it.
+
 ## Flatten the difficulty stat multipliers — DECIDED (Luke, 2026-07-21), do it with the campaign work
 
 Difficulty is meant to be behavioural (IQ, timing, aggression), never firepower/armour/cost
@@ -84,12 +98,29 @@ has verified either way.
 
 Start each player with all four factions' construction yards (or MCVs). **The mechanics are
 already proven:** the `tf_mcv_test.flag` dev lever spawns one MCV of each faction and every
-one deploys its own faction's yard/tree (b3's type-carries-faction). What's missing is a
-player-facing switch — the lobby UI is launcher-owned (no new checkboxes), so delivery
-candidates: a rules.ini toggle (`[MultiplayerDefaults]`-style, users edit a shipped file),
-a `.flag`-file option documented on the Workshop page, or an "Unholy Alliance" CustomMaps
-variant that carries the flag per map. Decide the vehicle when picking it up; the spawn code
-generalises straight from `TF_Dev_MCV_Test` in scenario.cpp.
+one deploys its own faction's yard/tree (b3's type-carries-faction). The spawn code generalises
+straight from `TF_Dev_MCV_Test` in scenario.cpp.
+
+**⭐ DELIVERY SOLVED (2026-07-21) — it can be a real lobby option, no UI additions needed.**
+The earlier framing ("lobby UI is launcher-owned, so pick between a rules.ini toggle, a flag
+file, or a CustomMaps variant") missed that **the lobby's existing options already reach the
+DLL**: `CNCMultiplayerOptionsStruct` (dllinterface.h:729) carries 8 booleans and 5 ints, and
+`CaptureTheFlag` lands at `dllinterface.cpp:926` as `Special.IsCaptureTheFlag`.
+
+So: **hijack a game mode we do not support.** Capture the Flag is the candidate — it needs flag
+placement our maps never provide, and the text strings show the lobby has a game-mode selector
+(`..._TOOLTIP_MODE_BASES_ON_DESTROY_ALL`, `..._TOOLTIP_MODE_CAPTURE_*`, `..._TOOLTIP_MODE_MOBILE_HQ`).
+
+1. Relabel it: `Capture The Flag` is a 16-character string in `MASTERTEXTFILE`, and same-length
+   in-place edits are proven (`faction-select-identity.md`). `Unholy Alliance` is 15 — it fits
+   with one pad character. The mode tooltip wants the same treatment, under the same constraint.
+2. In the DLL, treat `Special.IsCaptureTheFlag` as the Unholy Alliance switch: spawn the four
+   faction MCVs, and gate off the real CTF behaviour so the old mode cannot half-run.
+
+**Verify first (one glance at a lobby):** that the RA game-mode selector actually offers Capture
+the Flag. The text IDs and `CNCCaptureTheFlagDefault` are shared between RA and TD, so their
+presence is not proof RA shows the option. If it does not, `SpawnVisceroids` (TD-only, inert in
+RA) is the fallback carrier — same technique, less honest label space.
 
 ## TS-walker leftovers (2026-07-21 — low priority; units are hidden behind DevTechLevel anyway)
 

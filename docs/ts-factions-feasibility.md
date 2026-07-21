@@ -105,10 +105,62 @@ forwarding, mirage disguise, chrono/IFV logic are the hard tail. Tiberian
 Factions itself is the base to fork from — it already carries the TD rosters,
 the TS pipeline, and (post-AI-milestone) the faction-separated AI.
 
+## ⭐ The cheap alternative: an ownership-gated TS tree (Luke, 2026-07-21)
+
+**A TS tech tree does not have to be a faction.** Everything above solves "make TS GDI
+selectable in the lobby" — country-house decoupling, picker ceilings, campaign exposure.
+An easter-egg tree skips all of it: **the gate is owning the TS construction yard, not
+being a TS player.** No new house, no `ActLike` value, no picker slot, no CONFIG.MEG
+change. Pure DLL + rules.ini.
+
+**The idea:** a rare crate drops a TS MCV. Deploy it and you get a TS construction yard,
+and that yard unlocks the TS roster — for whoever found it, whatever side they are.
+
+**Why it is close to free.** Every mechanism it needs already ships:
+
+| Piece | Status |
+|---|---|
+| TS units on the crate table | **Live** — `cell.cpp` `CRATE_UNIT`, 1-in-8 rolls Hover MLRS / Titan / Mammoth Mk. II |
+| Crates ignore faction | **Live** — crate spawns bypass `Owner=` and `Can_Build` entirely, so any side can already field a Mk. II |
+| MCV type carries its own lineage | **Live** — W2 b3, four MCVs deploy four different yards and trees |
+| Capture inherits the tree | **Live** — heritable lineage, no special case |
+| TS art pipeline | **Proven** — voxel + TS-SHP, `ts-asset-import-spike.md` |
+| Marquee units | **Ported** — Titan, Mammoth Mk. II, Hover MLRS, plus TSPOWR; all `TechLevel=-1` + `DevTechLevel=` |
+
+**Implementation shape:** ship the TS types with a broad `Owner=` (all sides) and
+`Prerequisite=TSFACT`, so the yard alone discriminates — the pattern finding 3 of
+`ai-upgrade-plan.md` §W2 already calls the rule ("`Owner=` is not deleted, it's widened;
+the faction-specific PREREQ building is the sole discriminator"). `Prerequisite` is an
+array (`PREREQUISITE_MAX`), not the legacy 32-bit mask, so there is room. Every new
+prereq token needs its `Can_Build` remap `continue` or the tree is silently unbuildable —
+the known trap, same file.
+
+**⚠️ The TS MCV must ride the RANDOM crate path only, never the comeback path.** The
+`force_mcv` branch in `cell.cpp` deliberately hands a wiped player *their own* faction's
+MCV, because at that moment an off-faction yard would be unrecoverable. A TS yard there
+would be a punishment; as a lucky find it is a bonus.
+
+**It needs the faction-agnostic AI to matter.** An AI that finds the crate today would
+deploy the yard and then ignore the tree entirely — the same blindness it has to captured
+factories. See `ai-upgrade-plan.md` §W2 "faction-agnostic base builder". Conversely TS is
+the strongest argument for doing that work data-driven: it is the *fifth* lineage, and it
+breaks any 4-way literal.
+
+**Open decisions before building:**
+- **Scope.** "TS GDI in its entirety" is a content project. Yard + power + refinery + war
+  factory + four units is a genuine easter egg and is much nearer.
+- **MP fairness.** A crate handing one player a whole *tree* compounds in a way a single
+  Mk. II does not. Levers: rarity, crates-on only, Unholy Alliance only, or another
+  hijacked lobby toggle (`SpawnVisceroids` is unclaimed).
+- **Balanced or awesome?** TS units are a generation ahead by design. As a rare find,
+  overpowered may be the point — but decide it rather than discover it.
+
 ## Sequencing
 
 1. Finish the AI milestone — **design the faction-separation layer for N factions
    (6–8), not 4** (flagged in `ai-upgrade-plan.md` context; cheap now, expensive
    to retrofit).
-2. TS factions (or the multi-era fork) as a later major, v5.0-scale, comparable
+2. **The ownership-gated TS tree above is the cheap first taste** — it needs no faction
+   work at all, only the AI's role table to be lineage-agnostic.
+3. TS factions (or the multi-era fork) as a later major, v5.0-scale, comparable
    to the original GDI/Nod arc.

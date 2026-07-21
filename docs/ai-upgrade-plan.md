@@ -162,6 +162,51 @@ Engineering survey COMPLETE (2026-07-17). Load-bearing findings:
    factories); skirmish MCV spawn 4-way switch at scenario.cpp:3530 + fold in the
    known-issues "starting-units bonus gives RA units" fix (same region); heap headroom
    exists (STRUCT_COUNT+50); mid-game saves break per enum addition (skirmish-only risk).
+### W2.9 — Faction-agnostic base builder with a home-faction weight (Luke, 2026-07-21)
+
+**The AI half of the one-brain design.** Today there is exactly one brain: every house runs
+`Expert_AI` then `AI_Building` / `AI_Unit` / `AI_Infantry` / `AI_Aircraft` (`house.cpp:1834`),
+and faction enters only as vocabulary — `TF_Skirmish_Pick(role, ActLike)` swaps the concrete
+type per base role. Ratios, urgency and timing are identical for all four. **Target: the
+builder stops asking "what am I?" and asks "which trees can I build from?", with its own
+faction weighted slightly ahead.**
+
+**Already free:** units, infantry and aircraft are never substituted — the AI walks the type
+lists filtering on `Can_Build(type, ActLike)`. Mixed production appears the moment prereqs
+exist. The building side is the whole job.
+
+**This fixes a live bug, not just Unholy Alliance.** Capture carries tech four ways (shipped),
+but `TF_Skirmish_Pick` names only the home faction's types and the presence counts read
+`BQuantity[STRUCT_BARRACKS] + BQuantity[STRUCT_TENT] + BQuantity[tf_barr]` — home faction
+only. So an AI that captures a war factory gets a tree it will never build into, and the
+captured factory does not count toward the role, so it may build a redundant one of its own.
+Happening now, in ordinary skirmish, on every capture.
+
+**The one rule that must hold everywhere:** role presence counts must aggregate across *all*
+lineages. Miss a single role and the AI builds one barracks per tree, because each individual
+type's count is zero. The ad-hoc sums above are the pattern to lift into a role table — which
+is the "role tag in rules.ini" the substitution comment at `house.cpp:6615` already calls the
+clean fix, and matches finding 4's role-flag refactor.
+
+**The home-faction bias is a weight, not a gate** (keeps difficulty behavioural —
+`feedback-difficulty-philosophy`). Useful emergent property: with aggregate role counting the
+AI fills each role *once*, and the weight decides which lineage fills it — so "GDI builds GDI
+first" falls out without an explicit phase. Cross-tree picks then appear naturally at the
+margins: second factories, defences it lacks, roles its own tree cannot fill.
+
+**Two cautions:**
+- **Do not let defences mix uniformly.** Best-of-four converges on the same Obelisk/AGT wall
+  every match: variety dies, and a single-faction human cannot answer a best-of-four line.
+  Per-role candidate weights with personality/randomness per AI house.
+- **Gate tree expansion on economy.** Teching four trees is expensive and the urgency system
+  does not know it. Use the existing pattern (`Power_Fraction() >= 1 && hasincome`, the Nod
+  Stealth Generator branch) or the AI over-extends — a bigger version of the repair-bay-before-
+  refinery bug.
+
+**Build it for N lineages, not 4** (the standing constraint above). The ownership-gated TS
+tree in `ts-factions-feasibility.md` is the fifth lineage and the reason this matters: it is
+what breaks 4-way literals, and it is inert to the AI until this lands.
+
 **Internal phasing:** (a) **SHIPPED 2026-07-19 `2017ce3`** — `sidebarglyphx.cpp:474` now
 passes `legal=true`, making offer and eviction symmetric. Live-verified: prereq-gated AND
 capture-offered (`TDGAFLD`) cameos withdraw on loss, return on rebuild, zero spurious
