@@ -25,7 +25,7 @@ The faction display name is **`TEXT_FACTION_NAME_FACTION_NN`**, and the **in-gam
 
 Country→keys: SPAIN/GREECE/RUSSIA(=USSR)/TURKEY/ENGLAND/GERMANY/FRANCE/UKRAINE for `_BONUS_`; `_NAME_FACTION_3/4/5/6/7/8/9/10` for the names.
 
-⚠️ **Edit SAME-LENGTH, IN-PLACE only.** Overwrite the value's bytes, pad shorter names with trailing spaces, keep `valLen` and total file size **unchanged**. A size-changing **rebuild crashes the launcher** even though it's structurally self-consistent — do not resize the `.LOC`. (Trailing spaces render invisibly.) The bonus strings are long (16–53 chars) so any faction name fits; the `NAME_FACTION_5`="USSR" slot is only 4 chars so "Soviet" won't fit *there* — but the overlay you actually see is `BONUS_RUSSIA` (43 chars), which fits "Soviet" fine.
+⚠️ **The FILE's size is fixed; an individual string's is not (corrected 2026-07-21).** Keep the total byte length unchanged — resizing the `.LOC` crashes the launcher at boot. But a value may **outgrow its slot** provided the length table is rewritten and the bytes are taken back from another string in the same file: the format locates each value by summing the lengths ahead of it, so a byte-neutral redistribution stays consistent. **Proven in-game 2026-07-21** (a 14-char slot grew to hold "Unholy Alliance", one character reclaimed from a neighbouring tooltip). `scripts/loc_relabel.py` does this: values that still fit keep their slot, one that outgrows it is stored at its true length, and a nominated slack string absorbs the difference. The older tooling (`loc_edit.py`) only does the in-place path. (Trailing spaces render invisibly.) The bonus strings are long (16–53 chars) so any faction name fits; the `NAME_FACTION_5`="USSR" slot is only 4 chars so "Soviet" won't fit *there* — but the overlay you actually see is `BONUS_RUSSIA` (43 chars), which fits "Soviet" fine.
 
 ### 3. Delivery — mod `Data/CONFIG.MEG`
 Repack the base CONFIG.MEG with the two edited files and ship it as the mod's `Data/CONFIG.MEG`; the launcher loads it over base (front-end reads it — proven). No EMC.
@@ -53,8 +53,9 @@ Per-language: there's a `MASTERTEXTFILE_<lang>.LOC` per language (EN-US, FR-FR, 
 | Action | Result |
 |---|---|
 | `SmallIconName` → a non-preloaded region (FACTIONLOGO / MP-LOGO) | startup crash |
-| `.LOC` size-changing rebuild | startup crash |
+| `.LOC` rebuild that CHANGES THE FILE SIZE | startup crash |
 | `.LOC` **same-length** in-place edit | ✅ safe |
+| `.LOC` table rewrite, file size unchanged (a string grows, another gives bytes back) | ✅ safe, proven 2026-07-21 |
 | `FACTIONS.XML` `CampaignType` change | startup crash (genuine-faction route) |
 | loose `Data/ART/TEXTURES` override for the front-end | ignored (in-game only) |
 
@@ -66,7 +67,7 @@ Per-language: there's a `MASTERTEXTFILE_<lang>.LOC` per language (EN-US, FR-FR, 
 > resolved front-end texture MEG route — see `front-end-texture-meg-spike.md`. ⚠ The 184MB crest
 > atlas is gitignored; regen `scripts/frontend_atlas_build.py` before deploy (see [[project-faction-select-shipped]]).
 
-- **All 8 relabeled (DONE 2026-05-29):** Spain→GDI, Turkey→Nod, Greece/England/Germany/France→Allies, USSR/Ukraine→Soviet — across `NAME_FACTION_NN` + `BONUS_<C>` + `REDALERT_<C>` (22 same-length edits in one pass). The redundant 4 can't be *hidden* (no data flag; `CampaignType` crashes), so the picker is 8 entries reading as the 4 factions (dupes accepted). **USSR caveat:** `NAME_FACTION_5` and `REDALERT_RUSSIA` are only 4-char slots, so "Soviet" (6) won't fit same-length — they stay "USSR" (the lobby overlay `BONUS_RUSSIA`, 43 chars, *does* show "Soviet"). "Soviet" everywhere would need the size-changing rebuild (crashes) — deferred as not worth it.
+- **All 8 relabeled (DONE 2026-05-29):** Spain→GDI, Turkey→Nod, Greece/England/Germany/France→Allies, USSR/Ukraine→Soviet — across `NAME_FACTION_NN` + `BONUS_<C>` + `REDALERT_<C>` (22 same-length edits in one pass). The redundant 4 can't be *hidden* (no data flag; `CampaignType` crashes), so the picker is 8 entries reading as the 4 factions (dupes accepted). **USSR caveat:** `NAME_FACTION_5` and `REDALERT_RUSSIA` are only 4-char slots, so "Soviet" (6) won't fit same-length — they stay "USSR" (the lobby overlay `BONUS_RUSSIA`, 43 chars, *does* show "Soviet"). "Soviet" everywhere was deferred as needing a size-changing rebuild; that reasoning is now wrong — `loc_relabel.py` can grow those two slots byte-neutrally (2026-07-21). Cheap to finish if it ever matters.
 - **All remaining icon/flag surfaces are texture-only (CONFIG.MEG can't reach them — confirmed: FACTIONS.XML has only `SmallIconName`, no map/loading field):** Allies/Soviet picker emblems (vs flags), the **map position-select** marker flag, the **loading-screen** flag, and bespoke GDI/Nod art. The launcher picks all of these from the atlas **by the player's country**, so they show e.g. the Spain flag for GDI. One fix for all → `front-end-texture-meg-spike.md`.
 - **Wiring (DONE):** the CONFIG.MEG is built into the mod and ships in releases (was a `/tmp` build during the spike).
 
