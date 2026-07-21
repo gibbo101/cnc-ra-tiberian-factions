@@ -949,14 +949,16 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
     // MPlayerSolo			= game_options.MPlayerSolo;			// 1 = allows a single-player net game
     Session.Options.UnitCount = game_options.MPlayerUnitCount; // # units for non-base multiplayer scenarios
 
-    Special.IsShadowGrow = game_options.MPlayerShadowRegrow;
     Special.IsCaptureTheFlag = game_options.CaptureTheFlag;
 
-    // The lobby's Aftermath Units checkbox carries Unholy Alliance instead (relabelled in
+    // The lobby's Shroud Regrows checkbox carries Unholy Alliance instead (relabelled in
     // MASTERTEXTFILE). A checkbox rather than a game type so the mode composes with any
-    // win condition and either rule set. Aftermath units are enabled unconditionally in
-    // exchange -- they were on by default, so the trade costs players nothing they used.
-    TF_UnholyAlliance = game_options.MPlayerAftermathUnits;
+    // win condition and either rule set, and THIS checkbox because it is one of the few
+    // that ships off: a carrier that ships on would arrive already ticked in every
+    // existing player profile and switch the mode on for people who never chose it.
+    // Shroud regrowth is forced off in exchange, which is also its vanilla default.
+    TF_UnholyAlliance = game_options.MPlayerShadowRegrow;
+    Special.IsShadowGrow = false;
 
     if (Session.Options.Tiberium) {
         Special.IsTGrowth = 1;
@@ -980,10 +982,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
     Special.ModernBalance = game_options.ModernBalance;
 
     /*
-    ** Enable Counterstrike/Aftermath units -- always, since that lobby checkbox now
-    ** carries Unholy Alliance (see TF_UnholyAlliance below).
+    ** Enable Counterstrike/Aftermath units
     */
-    OverrideNewUnitsEnabled = true;
+    OverrideNewUnitsEnabled = game_options.MPlayerAftermathUnits;
 
     while (Session.Players.Count() > 0) {
         delete Session.Players[0];

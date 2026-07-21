@@ -22,8 +22,10 @@
              from a mod, in the MEG, loose, and on a freshly created profile). -->
         <CNCEnableModHotKeyGameCommands network="client"> True </CNCEnableModHotKeyGameCommands>
 
-        <!-- That lobby checkbox carries Unholy Alliance, so it starts unticked. -->
-        <CNCAllowAftermathDefault> false </CNCAllowAftermathDefault>
+        <!-- Unholy Alliance rides the Shroud Regrows checkbox, which vanilla already
+             ships unticked, so no default needs overriding here. Aftermath Units keeps
+             its own meaning and its vanilla default. -->
+
 
         <!-- Pixel-perfect zoom: 11 steps rather than vanilla's 8, and zooms further out.
              bleid's values via CFE Patch Redux commit ea2dde5, GPL v3. -->
