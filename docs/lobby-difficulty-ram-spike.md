@@ -122,6 +122,22 @@ with an empty name and difficulty 0; anchoring the scan on `AIPLAYERn` skips the
 
 ### Field identities
 
+**Both gates live-verified 2026-07-22** over two desktop skirmishes, colours deliberately
+shuffled out of slot order so no coincidence could carry the read:
+
+- Fixed lobby (GDI/Nod/Allies/Soviet, Hard/Easy/Medium/Hard, teams 2,2,3,3): all four
+  records accepted, every `house` decoding to the roster's country, all four houses tagged
+  `[slot n]`, IQ 5/3/4/5 on screen. Teams read 1,1,2,2, i.e. the lobby's team number minus 1.
+- Random lobby (AI 3 random faction, AI 4 random team): the random faction's record still
+  read **42** while the roster had already resolved that AI to Greece, and the random team
+  read **8**. Both accepted via their skips.
+
+The random case is why neither skip is optional. Validation stops at the first bad record
+and a candidate must cover the whole roster, so gating hard on 42 would have discarded the
+entire array and dropped every AI to the global tier whenever one player picked a random
+faction. Gating team as `[0..7]` on a literal reading of "0-7 for valid teams" would do the
+same to a random team.
+
 The PoC lobby used default colours, which are handed out in slot order. That made
 `0x50`, `0x68` and the slot index numerically identical, so all three read as "the slot
 index" and any of them looked usable as a key. They are three different fields.
