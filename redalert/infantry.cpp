@@ -3286,14 +3286,41 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
 
     /*
     **	Check to see if it can enter a transporter.
-    **	Tiberian Factions: gate on action == ACTION_SELECT so Ctrl-force-fire
-    **	(ACTION_ATTACK) on the player's own building/transport is preserved
-    **	instead of being demoted to ACTION_ENTER (or ACTION_NO_ENTER, which
-    **	is what shows as "nothing" / red-circle cursor when RADIO_CAN_LOAD
-    **	returns NEGATIVE for buildings like TDFIX). Mirrors unit.cpp:3685 +
-    **	aircraft.cpp:2588 fixes.
+    **	Tiberian Factions: exclude ONLY action == ACTION_ATTACK so Ctrl-force-fire
+    **	on the player's own building/transport is preserved instead of being
+    **	demoted to ACTION_ENTER (or ACTION_NO_ENTER -- the red-circle cursor when
+    **	RADIO_CAN_LOAD returns NEGATIVE for buildings like TDFIX). The earlier
+    **	`action == ACTION_SELECT` form was too strict: FootClass::What_Action
+    **	returns ACTION_SELECT for a SAME-house techno but ACTION_NONE for an
+    **	ALLIED (different-house) one, so it silently blocked the enter cursor for
+    **	e.g. Tanya boarding a campaign evac transport owned by an allied house
+    **	(the mission Chinook is HOUSE_GOOD, the player is Greece). Excluding just
+    **	ACTION_ATTACK keeps the force-fire fix and restores vanilla enter for every
+    **	other hover state. Mirrors unit.cpp + aircraft.cpp.
     */
-    if (House->Is_Ally(object) && House->IsPlayerControl && action == ACTION_SELECT && object->Is_Techno()) {
+#if 0 // TF ENTERCHK -- why does a transport refuse a passenger (Tanya evac diag). Flip to TF_DEV_BUILD to re-enable.
+    if (object != NULL && object->Is_Techno() && object->What_Am_I() == RTTI_AIRCRAFT && Is_Owned_By_Player()) {
+        int _ally = House->Is_Ally(object) ? 1 : 0;
+        int _canload = _ally ? (int)((InfantryClass*)this)->Transmit_Message(RADIO_CAN_LOAD, (TechnoClass*)object) : -1;
+        static int _lastkey = 0x7fffffff;
+        int _kk = ((int)Owner()) | (_ally << 8) | ((_canload & 0xf) << 12) | (((int)object->Owner()) << 16);
+        if (_kk != _lastkey) {
+            _lastkey = _kk;
+            extern FILE* TF_AI_Diag_File(void);
+            FILE* _f = TF_AI_Diag_File();
+            if (_f != NULL) {
+                fprintf(_f,
+                        "ENTERCHK unit=%s myowner=%d objowner=%d isally=%d canload=%d "
+                        "(ROGER=%d NEG=%d STATIC=%d) playerctl=%d action=%d\n",
+                        Class->IniName, (int)Owner(), (int)object->Owner(), _ally, _canload,
+                        (int)RADIO_ROGER, (int)RADIO_NEGATIVE, (int)RADIO_STATIC,
+                        (int)House->IsPlayerControl, (int)action);
+                fflush(_f);
+            }
+        }
+    }
+#endif
+    if (House->Is_Ally(object) && House->IsPlayerControl && action != ACTION_ATTACK && object->Is_Techno()) {
 #ifdef FIXIT_CARRIER //	checked - ajw 9/28/98
         if (object->What_Am_I() != RTTI_VESSEL || *(VesselClass*)object != VESSEL_CARRIER) {
 #endif
