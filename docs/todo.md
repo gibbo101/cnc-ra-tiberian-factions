@@ -41,7 +41,7 @@ intact. Full detail: `docs/known-issues.md` → Campaign section; memory `projec
    AND confirm skirmish AIs (esp. Easy) still base-build normally (the reason IQProduction=3 exists).
    **Player side FINE:** campaign player builds Allied-only tech (verified); both-faction logos on
    campaign cameos are a cosmetic badge bug (separate minor item, not a tech-tree leak).
-3+4. **Tanya evac fails — ✅ FIXED + VERIFIED 2026-07-22 (autonomous session, UNCOMMITTED).**
+3+4. **Tanya evac fails — ✅ FIXED + VERIFIED 2026-07-22 (shipped 4.1.0, `8c69c3b`).**
    ROOT CAUSE: our `action == ACTION_SELECT` gate in `InfantryClass::What_Action` (`infantry.cpp`)
    blocked the enter cursor when the base action was `ACTION_NONE` -- which `FootClass::What_Action`
    returns for an armed unit over an ALLIED (different-house) transport. Campaign evac Chinook is
@@ -79,7 +79,7 @@ Staged uncommitted: ccmod `version_low`→10, `## [4.1.0]` CHANGELOG (date needs
 
 ## ⭐ 2026-07-21 (evening) — AI teams VERIFIED, per-slot difficulty ROOT-CAUSED AND FIXED
 
-Four desktop runs, Docklands, human + 3 AI. **All changes UNCOMMITTED, awaiting Luke's review.**
+Four desktop runs, Docklands, human + 3 AI. **All changes shipped in 4.1.0.**
 
 **1. AI lobby teams work. Proven, not inferred.** A new `TEAMS` diagnostic dumps each slot's
 resolved ally mask after the `Make_Ally` pass (`dllinterface.cpp`, end of the team loop). Lobby

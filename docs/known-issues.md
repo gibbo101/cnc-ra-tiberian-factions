@@ -71,7 +71,7 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Campaign (mod enabled over stock missions)
 
-### Tanya can't board / evac a campaign transport (no enter cursor) — ✅ FIXED 2026-07-22 (verified in-game; UNCOMMITTED)
+### Tanya can't board / evac a campaign transport (no enter cursor) — ✅ FIXED 2026-07-22 (verified in-game; shipped 4.1.0, `8c69c3b`)
 - **Symptom:** in stock campaigns (Tanya's Tale 5a; also Allied 1) Tanya could not be ordered
   into the evac Chinook -- no green enter cursor appeared. Einstein evac'd from the same Chinook
   fine; Tanya boarded a Chinook fine in skirmish. So: Tanya-specific, campaign-specific.
@@ -89,8 +89,8 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
   state. Vanilla has no action gate here at all. **Verified in-game 2026-07-22:** loaded the
   mission-1 save, selected Tanya, ordered her into the allied Chinook, she boarded (gone from map).
   Diagnostic left dormant under `#if 0` in `infantry.cpp`.
-- **Sibling gates (aircraft.cpp) — FIXED 2026-07-22, UNCOMMITTED, needs a skirmish heli-dock
-  eyeball.** The two `Is_Ally`-gated dock overrides (helipad building ~2801, aircraft carrier
+- **Sibling gates (aircraft.cpp) — FIXED 2026-07-22, shipped 4.1.0 (`46f01f3`); a skirmish
+  heli-dock eyeball is still owed.** The two `Is_Ally`-gated dock overrides (helipad building ~2801, aircraft carrier
   ~2807) had the identical flaw and blocked docking at an allied different-house pad -- against the
   agreed universal-landing design (`docs/ai-upgrade-plan.md`: ANY heli may land/rearm/repair at
   ANY pad). Changed both to `!= ACTION_ATTACK`. Same-house docking (all of skirmish, any faction
@@ -102,7 +102,7 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
   helipad before committing.
 
 
-### Stock campaign enemy plays like a skirmish AI (over-produces, sells buildings) — ✅ FIXED 2026-07-22 (5a + skirmish-Easy-AI both verified; UNCOMMITTED)
+### Stock campaign enemy plays like a skirmish AI (over-produces, sells buildings) — ✅ FIXED 2026-07-22 (5a + skirmish-Easy-AI both verified; shipped 4.1.0, `5414de6`)
 - **ROOT CAUSE:** `[IQ] Production` lowered from vanilla 5 to 3 (for skirmish Easy AIs) is global,
   so campaign enemies with a modest scenario IQ tripped the master wake-up at `house.cpp:1370`
   (`IsBaseBuilding/IsStarted/IsAlerted = true`) — waking the whole AI (build + produce + power
@@ -145,12 +145,12 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
   owner-set ({Allied, Soviet} for shared vanilla buildings) with no campaign-context awareness.
   Cosmetic only. Fix when the campaign-AI work lands.
 
-### Overlay index shift turns stock-campaign fences into crates — ✅ FIXED 2026-07-21 (verified in-game; UNCOMMITTED, Mobius-fork renumber still pending)
+### Overlay index shift turns stock-campaign fences into crates — ✅ FIXED 2026-07-21 (verified in-game; shipped 4.1.0, `e2ce6d6`; Mobius-fork renumber still pending)
 - **Fix shipped in code:** `OVERLAY_TIB01` moved to the enum END (25), vanilla indices 0-24
   restored; `odata.cpp` heap init reordered to match; `dllinterface.cpp` resource check explicit;
   `td_map_to_ra.py` synced (`TIB01=25`) and all 31 TD maps re-transcoded + redeployed. Verified
   in-game: stock fences render as fences (no heal-crate), our maps' Tiberium still renders/harvests.
-- **Remaining:** commit (currently uncommitted); renumber the Mobius editor fork
+- **Remaining:** renumber the Mobius editor fork
   (`../mobius-editor` `RedAlert/OverlayTypes.cs`, `TIB01=13`→25, V-fields back to vanilla) so
   hand-authored maps aren't misread. Below is the original diagnosis, retained for reference.
 - **Severity:** minor (campaign not a supported surface; pre-existing since v2.0.0, shipped in

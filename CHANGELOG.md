@@ -2,7 +2,7 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
-## [4.1.0] — 2026-07-21
+## [4.1.0] — 2026-07-22
 
 The groundwork update: separated tech trees for all four factions, a locked
 prerequisite policy, a full sidebar identity pass, and a wave of skirmish AI
