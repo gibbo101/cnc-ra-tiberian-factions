@@ -2,6 +2,63 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [4.1.0] — 2026-07-21
+
+The groundwork update: separated tech trees for all four factions, a locked
+prerequisite policy, a full sidebar identity pass, and a wave of skirmish AI
+fixes ahead of the AI milestone. GPL v3.
+
+### Added
+- **Separated faction tech trees.** GDI, Nod, Allies and Soviets each build
+  their own Construction Yard, MCV, War Factory and Helipad as distinct engine
+  types. Capturing one of these buildings hands the captor that faction's full
+  tech tree, so a captured yard really lets you build the other side's arsenal.
+- **Unholy Alliance skirmish mode.** A fourth entry in the lobby Mode dropdown
+  that starts every player, human and AI, with all four factions' construction
+  yards at once.
+- **Faction badges on every cameo.** All 126 buildable cameos and the
+  superweapon cameos now carry a mod emblem showing which faction owns them;
+  shared entries show every owning faction.
+- **The Tiberian Sun walkers as rare crate finds.** The Titan, Mammoth Mk. II
+  and Hover MLRS can drop from the unit crate in skirmish (a 1-in-8 roll, any
+  faction). They are an easter egg, not a buildable part of any roster.
+- **Expanded skirmish music rotation** to 107 tracks.
+
+### Changed
+- **Prerequisite policy locked.** Only low-tier infrastructure (power,
+  refinery, repair) is shared across factions. Barracks, War Factory, Helipad,
+  naval, airfield, radar and tech centres are faction identity and no longer
+  cross the divide; the Allied Dome and the GDI/Nod HQ no longer substitute for
+  each other.
+- **Sidebar sorted into faction blocks.** Shared buildables first, then Allied,
+  Soviet, GDI and Nod, each block in tech order, on every tab.
+- **Classic graphics mode locked out.** The mod is HD-only, so its content can
+  no longer be dropped into the classic renderer it has no art for.
+- **Hover MLRS** now carries the armour-piercing punch its price implied.
+
+### Fixed
+- **Per-slot AI difficulty.** Each AI now takes its own lobby Easy/Medium/Hard
+  pick, in skirmish and LAN alike, instead of falling back to all-Hard from the
+  second match of a session onward.
+- **AI air power.** The AI builds air production once its ground economy is
+  established and fields helicopters and planes again; it had built no helipads
+  or airstrips since v4.0.0.
+- **Smarter AI base logic:** fair-fog blind-scout dispatcher, a fix for Nod
+  Temple and Stealth Generator build starvation, tier-2 buildings held behind
+  an established economy, and harvesters that retreat home when idle.
+- **Pathfinding.** A* is now bounded by a heap and an expansion budget, cutting
+  stalls on large maps.
+- **Stock campaign compatibility.** Playing the original Allied and Soviet
+  campaigns with the mod enabled no longer misbehaves: wire fences on stock maps
+  render correctly instead of turning into goodie crates, enemy bases pace as the
+  missions intended rather than building and attacking like a skirmish AI, and
+  commandos such as Tanya can board an allied evacuation transport again.
+
+### Known limitations
+- The one-key MCV deploy hotkey is unavailable for all four factions in
+  skirmish. Deploy by clicking the MCV as usual. A default key binding cannot
+  currently be shipped from a mod; this is queued for a future release.
+
 ## [4.0.0] — 2026-07-16
 
 The faction arsenal expansion: navies, GDI air power, Nod stealth, and support
