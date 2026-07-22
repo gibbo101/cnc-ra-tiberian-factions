@@ -67,6 +67,19 @@ Schema (matches EA's original `.workshop.json` format so existing tutorials rema
 
 Change note is NOT persisted in JSON — passed on the command line per submission.
 
+**⚠️ The `description` field has a hard 8000-character limit.** Exceed it and the submission
+uploads content and preview normally, then fails at the commit step with
+`EResult.k_EResultInvalidParam (8)` — the error names no field, so it reads like a content
+problem. Steam rejects the whole update rather than truncating. Check before publishing:
+
+```bash
+python3 -c "import json;print(len(json.load(open('tools/workshop-uploader/workshop.json'))['description']))"
+```
+
+Hit 2026-07-22 on the 4.1.0 publish at 8660 characters. When a new version block pushes it over,
+collapse the oldest per-version changelog blocks to a one-line summary each; the listing already
+links the full changelog on GitHub.
+
 ### 3. (Optional) Refresh preview screenshot
 
 Pull a fresh in-game shot from the Deck:
