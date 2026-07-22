@@ -2794,17 +2794,23 @@ ActionType AircraftClass::What_Action(ObjectClass const* target) const
         action = ACTION_NONE;
     }
 
-    // Tiberian Factions: gate the friendly-building / aircraft-carrier
-    // dock overrides on action == ACTION_SELECT so Ctrl-force-fire on the
-    // player's own helipad / repair bay / carrier is preserved instead
-    // of being demoted to ACTION_ENTER. Mirrors the unit.cpp:3685 fix.
-    if (House->IsPlayerControl && action == ACTION_SELECT && House->Is_Ally(target)
+    // Tiberian Factions: exclude ONLY action == ACTION_ATTACK from the
+    // friendly-building / aircraft-carrier dock overrides so Ctrl-force-fire on
+    // the player's own helipad / repair bay / carrier is preserved. The earlier
+    // `action == ACTION_SELECT` form silently blocked docking at an ALLIED,
+    // different-house pad: FootClass::What_Action returns ACTION_SELECT only for
+    // a same-house target, ACTION_NONE for an allied one. That broke the agreed
+    // universal-landing design (any helicopter may land/rearm/repair at ANY pad)
+    // for campaign/co-op allied pads. Same-house docking (all of skirmish, any
+    // faction pad type) still yields ACTION_SELECT and is unchanged. Mirrors the
+    // infantry What_Action fix.
+    if (House->IsPlayerControl && action != ACTION_ATTACK && House->Is_Ally(target)
         && target->What_Am_I() == RTTI_BUILDING
         && ((AircraftClass*)this)->Transmit_Message(RADIO_CAN_LOAD, (TechnoClass*)target) == RADIO_ROGER) {
         action = ACTION_ENTER;
     }
 #ifdef FIXIT_CARRIER //	checked - ajw 9/28/98
-    if (!Class->IsFixedWing && House->IsPlayerControl && action == ACTION_SELECT && House->Is_Ally(target)
+    if (!Class->IsFixedWing && House->IsPlayerControl && action != ACTION_ATTACK && House->Is_Ally(target)
         && target->What_Am_I() == RTTI_VESSEL
         && *(VesselClass*)target == VESSEL_CARRIER
         && ((AircraftClass*)this)->Transmit_Message(RADIO_CAN_LOAD, (TechnoClass*)target) == RADIO_ROGER) {

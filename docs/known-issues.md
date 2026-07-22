@@ -89,11 +89,17 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
   state. Vanilla has no action gate here at all. **Verified in-game 2026-07-22:** loaded the
   mission-1 save, selected Tanya, ordered her into the allied Chinook, she boarded (gone from map).
   Diagnostic left dormant under `#if 0` in `infantry.cpp`.
-- **Follow-up (unverified, review before relying on):** the sibling `action == ACTION_SELECT`
-  gates in `aircraft.cpp` (~2801/2807, aircraft docking an allied helipad/carrier -- `Is_Ally`
-  based, so same latent flaw) may need the same `!= ACTION_ATTACK` treatment; `unit.cpp` (~5045+)
-  is **same-house** gated (`House->Class->House == object->Owner()`) so it is NOT affected. Left
-  untouched tonight to avoid changing the skirmish-verified docking surface blind.
+- **Sibling gates (aircraft.cpp) — FIXED 2026-07-22, UNCOMMITTED, needs a skirmish heli-dock
+  eyeball.** The two `Is_Ally`-gated dock overrides (helipad building ~2801, aircraft carrier
+  ~2807) had the identical flaw and blocked docking at an allied different-house pad -- against the
+  agreed universal-landing design (`docs/ai-upgrade-plan.md`: ANY heli may land/rearm/repair at
+  ANY pad). Changed both to `!= ACTION_ATTACK`. Same-house docking (all of skirmish, any faction
+  pad type) is unchanged (still `ACTION_SELECT`); only allied-house docking is newly enabled.
+  ⚠️ The **repair-factory gate (~2841) was deliberately LEFT as `== ACTION_SELECT`**: it has NO
+  `Is_Ally` check and relies on `ACTION_SELECT` as its implicit same-house restriction -- relaxing
+  it to `!= ACTION_ATTACK` would let an unarmed aircraft dock an *enemy* repair bay. `unit.cpp`
+  (~5045+) is same-house gated, not affected. Verify a skirmish helicopter still docks its own
+  helipad before committing.
 
 
 ### Stock campaign enemy plays like a skirmish AI (over-produces, sells buildings) — ✅ FIXED 2026-07-22 (5a + skirmish-Easy-AI both verified; UNCOMMITTED)
