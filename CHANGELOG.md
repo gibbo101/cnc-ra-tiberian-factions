@@ -16,9 +16,12 @@ fixes ahead of the AI milestone. GPL v3.
 - **Unholy Alliance skirmish mode.** A fourth entry in the lobby Mode dropdown
   that starts every player, human and AI, with all four factions' construction
   yards at once.
-- **Faction badges on every cameo.** All 126 buildable cameos and the
-  superweapon cameos now carry a mod emblem showing which faction owns them;
-  shared entries show every owning faction.
+- **Faction badges on the cameos, once you build from more than one faction.**
+  Capture a rival construction yard or war factory and the cameos in that
+  category start carrying emblems showing which of your factions builds each
+  entry. While you produce a category from a single faction every badge would
+  say the same thing, so the plain cameo is shown instead. The ten superweapon
+  cameos always carry their owner emblems.
 - **The Tiberian Sun walkers as rare crate finds.** The Titan, Mammoth Mk. II
   and Hover MLRS can drop from the unit crate in skirmish (a 1-in-8 roll, any
   faction). They are an easter egg, not a buildable part of any roster.
