@@ -67,6 +67,10 @@ Schema (matches EA's original `.workshop.json` format so existing tutorials rema
 
 Change note is NOT persisted in JSON — passed on the command line per submission.
 
+**Changelog heading style in the description:** underline is for **major** releases only.
+`[b][u]Version 4.0.0[/u][/b]` for a major, `[b]Version 4.1.0[/b]` for a minor or patch. Getting
+this wrong makes a point release read as a milestone in the listing.
+
 **⚠️ The `description` field has a hard 8000-character limit.** Exceed it and the submission
 uploads content and preview normally, then fails at the commit step with
 `EResult.k_EResultInvalidParam (8)` — the error names no field, so it reads like a content

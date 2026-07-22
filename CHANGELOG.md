@@ -22,9 +22,6 @@ fixes ahead of the AI milestone. GPL v3.
   entry. While you produce a category from a single faction every badge would
   say the same thing, so the plain cameo is shown instead. The ten superweapon
   cameos always carry their owner emblems.
-- **The Tiberian Sun walkers as rare crate finds.** The Titan, Mammoth Mk. II
-  and Hover MLRS can drop from the unit crate in skirmish (a 1-in-8 roll, any
-  faction). They are an easter egg, not a buildable part of any roster.
 - **Expanded skirmish music rotation** to 107 tracks.
 
 ### Changed
@@ -37,7 +34,6 @@ fixes ahead of the AI milestone. GPL v3.
   Soviet, GDI and Nod, each block in tech order, on every tab.
 - **Classic graphics mode locked out.** The mod is HD-only, so its content can
   no longer be dropped into the classic renderer it has no art for.
-- **Hover MLRS** now carries the armour-piercing punch its price implied.
 
 ### Fixed
 - **Per-slot AI difficulty.** Each AI now takes its own lobby Easy/Medium/Hard
@@ -53,11 +49,6 @@ fixes ahead of the AI milestone. GPL v3.
   an established economy, and harvesters that retreat home when idle.
 - **Pathfinding.** A* is now bounded by a heap and an expansion budget, cutting
   stalls on large maps.
-- **Stock campaign compatibility.** Playing the original Allied and Soviet
-  campaigns with the mod enabled no longer misbehaves: wire fences on stock maps
-  render correctly instead of turning into goodie crates, enemy bases pace as the
-  missions intended rather than building and attacking like a skirmish AI, and
-  commandos such as Tanya can board an allied evacuation transport again.
 
 ### Known limitations
 - The one-key MCV deploy hotkey is unavailable for all four factions in
