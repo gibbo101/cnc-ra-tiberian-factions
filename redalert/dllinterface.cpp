@@ -518,7 +518,15 @@ static int TF_AILobbySlotByHouse[MAX_PLAYERS];
 // Per-slot lobby AI difficulty RAM scan (see the block above CNC_Set_Difficulty).
 #define TF_LOBBY_MAX_AI_SLOTS 16
 #define TF_LOBBY_RECORD_STRIDE 0xA8
-#define TF_LOBBY_OFF_SLOT 0x50
+/*
+**	+0x50 is the slot's TEAM (DontCryJustDie, 2026-07-22): 0-7 for a real team, 8 for
+**	"random". It is not a slot index and never was -- that misreading is what made the
+**	first record of every array fail a `< 1` floor. Range-checked only; the roster's own
+**	Team values are not a safe equality test because a random pick resolves before we
+**	see it.
+*/
+#define TF_LOBBY_OFF_TEAM 0x50
+#define TF_LOBBY_MAX_TEAM 8
 #define TF_LOBBY_OFF_DIFF 0x64
 /*
 **	+0x68 is the slot's COLOUR, not a second copy of the slot index (DontCryJustDie,
@@ -532,13 +540,16 @@ static int TF_AILobbySlotByHouse[MAX_PLAYERS];
 #define TF_LOBBY_MAX_COLORS 8
 
 /*
-**	+0x54 is reportedly the AI's house / ActLike (DontCryJustDie, 2026-07-21). It is in the
-**	CLIENT's numbering, not ours: the slot that read 4 here was House=2 (HOUSE_USSR) to the
-**	DLL, so it looks like the FactionN index rather than a HousesType. LOGGED ONLY, never
-**	gated on -- an equality test against an inferred field is exactly what broke the read in
-**	the first place. Promote it to a validator once the mapping is confirmed from real logs.
+**	+0x54 is the AI's house / ActLike in the CLIENT's numbering, which in RA is our
+**	HousesType plus 2 (DontCryJustDie, 2026-07-22); 42 means the lobby pick was "random".
+**	Confirmed against both logged samples: an all-Soviet lobby read 4,4,4 (HOUSE_USSR) and
+**	a GDI/Nod/Allied lobby read 2,9,3 (Spain/Turkey/Greece, our two hijacked country slots
+**	plus Greece). That makes it a second liveness key alongside colour -- a stale array from
+**	a lobby whose colours happened to match is still rejected if its factions do not.
 */
 #define TF_LOBBY_OFF_HOUSE 0x54
+#define TF_LOBBY_HOUSE_BIAS 2
+#define TF_LOBBY_HOUSE_RANDOM 42
 
 // Bit n set = the current lobby contains an AI named AIPLAYERn (client AI numbering
 // persists across lobbies, so n rarely starts at 1 after a session's first lobby).
@@ -549,9 +560,13 @@ static unsigned TF_LobbyAIRosterMask = 0;
 // -1 = unknown, in which case the scan falls back to a plain range check.
 static int TF_LobbyAIColorBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
 
-// Diagnostic only: the +0x54 field of the last validated record per slot, so the client's
-// house/faction numbering can be mapped against ours from real logs before anything relies
-// on it. Never used to accept or reject a candidate.
+// Lobby country per AI slot for the CURRENT match, captured alongside the colour and
+// BEFORE the Spain/Turkey hijack rewrites it, so it can be checked against the client's
+// own +0x54 numbering. -1 = unknown, in which case that gate is skipped.
+static int TF_LobbyAIHouseBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
+
+// Diagnostic: the raw +0x54 field of the last validated record per slot, logged so the
+// client's numbering stays checkable against ours in real logs.
 static int TF_LobbyRecHouseBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
 
 /*
@@ -997,6 +1012,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
     TF_LobbyAIRosterMask = 0;
     for (int slot_index = 0; slot_index <= TF_LOBBY_MAX_AI_SLOTS; slot_index++) {
         TF_LobbyAIColorBySlot[slot_index] = -1;
+        TF_LobbyAIHouseBySlot[slot_index] = -1;
         TF_LobbyRecHouseBySlot[slot_index] = -1;
     }
     TFLobbyRetriesLeft = 0;
@@ -1015,9 +1031,12 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
             if (sscanf(player_info.Name, "AIPLAYER%d", &roster_n) == 1 && roster_n >= 1
                 && roster_n <= TF_LOBBY_MAX_AI_SLOTS) {
                 TF_LobbyAIRosterMask |= (1u << roster_n);
-                // The client's record for this AI carries its lobby colour, so the colours
-                // we are handed here identify which resident array belongs to THIS match.
+                // The client's record for this AI carries its lobby colour and country, so
+                // the values we are handed here identify which resident array belongs to
+                // THIS match. The country must be read before the hijack below rewrites
+                // Spain/Turkey, because the client's record holds the country as picked.
                 TF_LobbyAIColorBySlot[roster_n] = player_info.ColorIndex;
+                TF_LobbyAIHouseBySlot[roster_n] = player_info.House;
             }
         }
 
@@ -2450,7 +2469,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save,
 static int TF_LobbyDiagBudget = 0;
 static int TF_LobbyDiagHits = 0;
 
-static void TF_Log_Lobby_Record(int k, int n, int slot, int diff, int color, int rec_house, const char* verdict)
+static void TF_Log_Lobby_Record(int k, int n, int team, int diff, int color, int rec_house, const char* verdict)
 {
     if (TF_LobbyDiagBudget <= 0) {
         return;
@@ -2461,14 +2480,16 @@ static void TF_Log_Lobby_Record(int k, int n, int slot, int diff, int color, int
         return;
     }
     fprintf(f,
-            "  LOBBYREC k=%d n=%d slot=%d diff=%d color=%d house=%d expect_color=%d -> %s\n",
+            "  LOBBYREC k=%d n=%d team=%d diff=%d color=%d house=%d expect_color=%d "
+            "expect_house=%d -> %s\n",
             k,
             n,
-            slot,
+            team,
             diff,
             color,
             rec_house,
             (n >= 1 && n <= TF_LOBBY_MAX_AI_SLOTS) ? TF_LobbyAIColorBySlot[n] : -1,
+            (n >= 1 && n <= TF_LOBBY_MAX_AI_SLOTS) ? TF_LobbyAIHouseBySlot[n] : -1,
             verdict);
     fflush(f);
 }
@@ -2504,22 +2525,21 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
         if (memcmp(r, expected, name_len + 1) != 0) {
             break;
         }
-        int slot, diff, color;
-        memcpy(&slot, r + TF_LOBBY_OFF_SLOT, sizeof(slot));
+        int team, diff, color;
+        memcpy(&team, r + TF_LOBBY_OFF_TEAM, sizeof(team));
         memcpy(&diff, r + TF_LOBBY_OFF_DIFF, sizeof(diff));
         memcpy(&color, r + TF_LOBBY_OFF_COLOR, sizeof(color));
         int rec_house = 0;
         memcpy(&rec_house, r + TF_LOBBY_OFF_HOUSE, sizeof(rec_house));
-        // Range checks only. Today's lesson is that an equality test on a field whose
-        // meaning is assumed (slot == slot2) silently rejects good arrays the moment the
-        // assumption breaks; identity is established by colour against the roster below.
-        // +0x50 counts from ZERO (AIPLAYER1 reads slot=0), so a `slot < 1` floor rejects
-        // the first record of every array and, because validation stops at the first bad
-        // record, the whole read with it. Only the upper bound carries information here.
-        if (slot < 0 || slot > TF_LOBBY_MAX_AI_SLOTS || diff < 1 || diff > 3 || color < 0
+        // Range checks only, and only on fields whose meaning is established. An equality
+        // test against an assumed field is what broke this read twice; identity comes from
+        // the roster-corroborated gates below. Team counts from ZERO and reaches 8 for a
+        // random pick, so any floor above 0 rejects the first record of an array and, since
+        // validation stops at the first bad record, discards the whole array with it.
+        if (team < 0 || team > TF_LOBBY_MAX_TEAM || diff < 1 || diff > 3 || color < 0
             || color >= TF_LOBBY_MAX_COLORS) {
 #if TF_DEV_BUILD
-            TF_Log_Lobby_Record(k, n, slot, diff, color, rec_house, "REJECT range");
+            TF_Log_Lobby_Record(k, n, team, diff, color, rec_house, "REJECT range");
 #endif
             break;
         }
@@ -2527,12 +2547,26 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
         // and gone, so where the roster gave us a colour for this slot it must agree.
         if (TF_LobbyAIColorBySlot[n] >= 0 && TF_LobbyAIColorBySlot[n] != color) {
 #if TF_DEV_BUILD
-            TF_Log_Lobby_Record(k, n, slot, diff, color, rec_house, "REJECT colour-mismatch");
+            TF_Log_Lobby_Record(k, n, team, diff, color, rec_house, "REJECT colour-mismatch");
+#endif
+            break;
+        }
+        // Country is the second liveness key: a stale array whose colours happen to match
+        // this match's is still rejected if its factions do not. Skipped when the pick was
+        // random (the client resolves that before handing us the roster, so the record and
+        // the roster legitimately disagree) or when the value is outside RA's range, so an
+        // unexpected encoding degrades to the colour-only gate rather than failing the read.
+        if (TF_LobbyAIHouseBySlot[n] >= 0 && rec_house != TF_LOBBY_HOUSE_RANDOM
+            && rec_house >= TF_LOBBY_HOUSE_BIAS
+            && rec_house <= TF_LOBBY_HOUSE_BIAS + (int)HOUSE_TURKEY
+            && rec_house - TF_LOBBY_HOUSE_BIAS != TF_LobbyAIHouseBySlot[n]) {
+#if TF_DEV_BUILD
+            TF_Log_Lobby_Record(k, n, team, diff, color, rec_house, "REJECT house-mismatch");
 #endif
             break;
         }
 #if TF_DEV_BUILD
-        TF_Log_Lobby_Record(k, n, slot, diff, color, rec_house, "accept");
+        TF_Log_Lobby_Record(k, n, team, diff, color, rec_house, "accept");
 #endif
         TF_LobbyRecHouseBySlot[n] = rec_house;
 
