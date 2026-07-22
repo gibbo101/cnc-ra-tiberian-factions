@@ -1,5 +1,9 @@
 # ModDB page copy (current: v4.1.0)
 
+**Live page: https://www.moddb.com/mods/tiberian-factions-for-red-alert**
+(ModDB serves 403 to automated fetches, so the page state cannot be checked from here. Luke is
+the only one who can see what is currently published.)
+
 Paste-ready content for the mod's ModDB page. Luke does everything in-browser; this doc holds
 every field's content so page day is copy-paste only. Updated per release.
 
