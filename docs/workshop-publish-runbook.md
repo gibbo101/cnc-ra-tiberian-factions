@@ -29,6 +29,18 @@ Don't try to skip this. The symptom is silent — no error, just an indefinite h
 
 ## Per-release procedure
 
+### 0. Get the release copy approved — BEFORE anything is published
+
+Luke reviews and OKs the full public text first: the Workshop description changelog block, the
+`CHANGELOG.md` section, and the GitHub release notes. Present the actual text, not a summary.
+
+Ask explicitly whether anything should stay **unannounced**. That is not derivable from the
+CHANGELOG: easter eggs are meant to stay quiet, and some fixed surfaces are ones he would rather
+not draw attention to. The changelog is the engineering record; the listing is the shopfront.
+
+Publishing first and correcting after means editing live on a public page. It happened on 4.1.0
+and cost six edits across five re-uploads.
+
 ### 1. Build the mod
 
 ```bash
