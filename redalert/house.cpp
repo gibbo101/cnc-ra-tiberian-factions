@@ -1366,8 +1366,16 @@ void HouseClass::AI(void)
     **	If base building has been turned on by a trigger, then force the house to begin
     **	production and team creation as well. This is also true if the IQ is high enough to
     **	being base building.
+    **
+    **	Tiberian Factions: rules.ini lowers IQProduction to 3 so skirmish Easy AIs (IQ 3)
+    **	still base-build -- a skirmish/MP tuning only. Stock campaigns are balanced around
+    **	vanilla's threshold (MaxIQ), where a scripted enemy with a modest IQ stays static
+    **	until a trigger sets IsBaseBuilding. In campaign, use the vanilla threshold so we
+    **	don't wake enemies EA meant to sit still (they were producing units and base-
+    **	building far too early otherwise).
     */
-    if (!IsHuman && (IsBaseBuilding || IQ >= Rule.IQProduction)) {
+    int iq_production = (Session.Type == GAME_NORMAL) ? Rule.MaxIQ : Rule.IQProduction;
+    if (!IsHuman && (IsBaseBuilding || IQ >= iq_production)) {
         IsBaseBuilding = true;
         IsStarted = true;
         IsAlerted = true;
