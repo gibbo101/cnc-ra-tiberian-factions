@@ -5,6 +5,78 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## ⛔ 2026-07-21 (late) — 4.1 BLOCKED: stock campaigns are broken with the mod on
+
+The stock-campaign regression check failed several ways. Luke: don't ship broken. **4.1 does not
+ship until stock campaigns work.** Breakage is already live in Public v4.0.0 (structural, predates
+4.1). Verified our 4.1 code touches none of the trigger/spy/transport/enter paths; infantry enum
+intact. Full detail: `docs/known-issues.md` → Campaign section; memory `project-4-1-verification-pending`.
+
+**The workstream, ordered:**
+1. **Overlay renumber (fence→crate)** — CODE DONE 2026-07-21 (uncommitted, DLL builds clean):
+   `OVERLAY_TIB01` moved to enum END (now 25, vanilla indices 0-24 restored) in `defines.h`;
+   heap init reordered to match in `odata.cpp` (As_Reference is positional); resource check
+   `dllinterface.cpp:8525` made explicit `(>=GOLD1 && <=GEMS4) || ==TIB01`; `td_map_to_ra.py`
+   updated (`TIB01=25`, `OVERLAY_CARRY` back to vanilla `V12=13`…). Launcher export verified safe
+   (draws by AssetName; TIB01 already exported as GEMS3). Art scripts clean (AssetName only).
+   **STILL TO DO:** (a) **re-transcode + reverify all 31 TD maps in-game** — Tiberium must still
+   render; needs the game CLOSED to deploy (never deploy over the live game). (b) **Mobius editor
+   fork** (`../mobius-editor` `RedAlert/OverlayTypes.cs`) hardcodes `TIB01=13` + shifted V-fields
+   — renumber to match (`TIB01=25`, `V12..V18`=13..19) so authored maps aren't misread; separate
+   C# repo, doesn't block the shipped-map regen.
+2. **Campaign AI parity — ROOT-CAUSED + FIXED + VERIFIED 2026-07-22 (5a campaign + skirmish Easy AI both good).**
+   Luke refuted the "aggression" theory: the campaign enemy is *building units it shouldn't*, not
+   attacking. TRUE ROOT: we lowered `[IQ] Production` from vanilla 5 to **3** (rules.ini +
+   rules.cpp default) so skirmish Easy AIs (IQ 3) base-build. But `Rule.IQProduction` is global,
+   and `house.cpp:1370` `if (!IsHuman && (IsBaseBuilding || IQ >= Rule.IQProduction))` sets
+   `IsBaseBuilding/IsStarted/IsAlerted` = true — the **master wake-up switch** for the whole AI
+   (base-build + produce + power manage/**sell** + attack). Campaign enemies with a modest scenario
+   IQ (3-4) that EA meant to sit static (IsBaseBuilding=false) were tripping it and waking into full
+   skirmish-AI mode. That one switch explains production + refinery/flame-towers + power-plant
+   selling + civilian-hunting together. FIX (`house.cpp:1370`): `int iq_production =
+   (Session.Type == GAME_NORMAL) ? Rule.MaxIQ : Rule.IQProduction;` — campaign uses the vanilla
+   threshold (MaxIQ), skirmish keeps 3. `RepairSell=1` is stock RA (not ours); no separate fix.
+   The `AI_Attack` 75%-vs-boost gate was NOT the issue and was reverted. **VERIFY:** replay 5a
+   (Tanya's Tale) — enemy should sit as EA scripted (no autonomous base-building/production/selling),
+   AND confirm skirmish AIs (esp. Easy) still base-build normally (the reason IQProduction=3 exists).
+   **Player side FINE:** campaign player builds Allied-only tech (verified); both-faction logos on
+   campaign cameos are a cosmetic badge bug (separate minor item, not a tech-tree leak).
+3+4. **Tanya evac fails — ✅ FIXED + VERIFIED 2026-07-22 (autonomous session, UNCOMMITTED).**
+   ROOT CAUSE: our `action == ACTION_SELECT` gate in `InfantryClass::What_Action` (`infantry.cpp`)
+   blocked the enter cursor when the base action was `ACTION_NONE` -- which `FootClass::What_Action`
+   returns for an armed unit over an ALLIED (different-house) transport. Campaign evac Chinook is
+   `HOUSE_GOOD`, player Greece: allied not same-house -> Tanya (armed) got `ACTION_NONE` -> gate
+   skipped enter. Einstein (unarmed) + skirmish (own-house Chinook) yield `ACTION_SELECT` -> fine.
+   Proven with an ENTERCHK diag (isally=1, canload=ROGER, action=0). FIX: gate on
+   `action != ACTION_ATTACK` (preserves the force-fire exclusion, restores vanilla enter otherwise).
+   VERIFIED in-game: loaded the mission-1 save, ordered Tanya into the allied Chinook, she boarded.
+   Diag left dormant `#if 0`. **REVIEW:** `aircraft.cpp` sibling gates (allied helipad/carrier dock,
+   Is_Ally-based) may share the flaw -- left untouched (skirmish-verified surface); `unit.cpp` is
+   same-house-gated, not affected. Full detail: `known-issues.md` Campaign section.
+   --- original diagnosis below, retained ---
+   ~~DISCRIMINATOR (2026-07-22):~~
+   in the same mission Einstein evacs fine, Tanya (E7) does not. Not a stat change (E7/Einstein
+   rules untouched; both Speed=5 foot). Live tf_astar.log: **only Tanya generates A\* fallback**
+   (Einstein: zero) — she inches toward the evac (96,49→92,50→91,49) but never completes the
+   final cell to (91,50); "A\* FALLBACK -> legacy" means A\* already handed her to the vanilla
+   pathfinder and she's STILL stuck, captrips=0. Two unsplit hypotheses: (a) reaches it, won't
+   board = transport-house/enter-order issue (stands beside it); (b) never completes last cell =
+   occupied transport cell unreachable, legacy livelock (jitters one short). Blue/France Chinook
+   is EXPECTED per Luke (scripted land-and-walk-to-it), so not itself the bug. NEXT SESSION:
+   diagnostic build logging the evac order type (ENTER vs MOVE), the transport's house, and the
+   pathing block; get Luke's walk-up-vs-jitter visual to pre-narrow. Note: the A\* heap/budget is
+   our only 4.1 change touching Tanya's movement, but it falls back to legacy here so legacy
+   pathing / the documented src==dst livelock (`path-failure-livelock-design.md`) is in frame.
+5. **(latent) difficulty-state leak** — reset `TFLobbyAIDifficultySet` + restore `Scen.CDifficulty`
+   at match start.
+
+**Verification gate before ship:** a representative sweep of stock missions (Allied + Soviet,
+early + base-builder), mod enabled, confirmed playable start-to-win. THEN the release steps below.
+
+Staged uncommitted: ccmod `version_low`→10, `## [4.1.0]` CHANGELOG (date needs bump at ship).
+
+---
+
 ## ⭐ 2026-07-21 (evening) — AI teams VERIFIED, per-slot difficulty ROOT-CAUSED AND FIXED
 
 Four desktop runs, Docklands, human + 3 AI. **All changes UNCOMMITTED, awaiting Luke's review.**
@@ -134,7 +206,7 @@ factions in skirmish (mouse self-click deploys); no em dashes in any user-facing
 
 ---
 
-## ⭐ Mod hotkeys — handler WORKS; delivery of a default binding UNSOLVED. Investigate again before 4.1 ships (Luke, 2026-07-21)
+## ⭐ Mod hotkeys — handler WORKS; delivery of a default binding UNSOLVED. Deferred to 4.2 (Luke, 2026-07-21)
 
 **Proven end to end (2026-07-21):** `CNCEnableModHotKeyGameCommands` True exposes Mod Command
 1-4 in Options > Controls; a player-bound key reaches

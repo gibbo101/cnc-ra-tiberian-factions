@@ -69,6 +69,120 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## Campaign (mod enabled over stock missions)
+
+### Tanya can't board / evac a campaign transport (no enter cursor) — ✅ FIXED 2026-07-22 (verified in-game; UNCOMMITTED)
+- **Symptom:** in stock campaigns (Tanya's Tale 5a; also Allied 1) Tanya could not be ordered
+  into the evac Chinook -- no green enter cursor appeared. Einstein evac'd from the same Chinook
+  fine; Tanya boarded a Chinook fine in skirmish. So: Tanya-specific, campaign-specific.
+- **ROOT CAUSE:** our Tiberian Factions gate in `InfantryClass::What_Action` (`infantry.cpp`)
+  restricted the enter path to `action == ACTION_SELECT`. `FootClass::What_Action` returns
+  `ACTION_SELECT` for a **same-house** techno but `ACTION_NONE` for an **allied, different-house**
+  one. The campaign evac Chinook is `HOUSE_GOOD` (owner 8) while the player is Greece (owner 1) --
+  allied, not same house -- so for armed Tanya the base action was `ACTION_NONE` and the gate
+  silently skipped the enter path. Einstein (unarmed) and skirmish (player owns the Chinook) both
+  yield `ACTION_SELECT`, so they were unaffected. Proven with an `ENTERCHK` diag:
+  `unit=E7 myowner=1 objowner=8 isally=1 canload=1(ROGER) action=0(NONE)` -- everything green
+  except the action state the gate demanded.
+- **FIX:** gate on `action != ACTION_ATTACK` instead of `== ACTION_SELECT` -- preserves the
+  Ctrl-force-fire exclusion the gate was added for, restores vanilla enter for every other hover
+  state. Vanilla has no action gate here at all. **Verified in-game 2026-07-22:** loaded the
+  mission-1 save, selected Tanya, ordered her into the allied Chinook, she boarded (gone from map).
+  Diagnostic left dormant under `#if 0` in `infantry.cpp`.
+- **Follow-up (unverified, review before relying on):** the sibling `action == ACTION_SELECT`
+  gates in `aircraft.cpp` (~2801/2807, aircraft docking an allied helipad/carrier -- `Is_Ally`
+  based, so same latent flaw) may need the same `!= ACTION_ATTACK` treatment; `unit.cpp` (~5045+)
+  is **same-house** gated (`House->Class->House == object->Owner()`) so it is NOT affected. Left
+  untouched tonight to avoid changing the skirmish-verified docking surface blind.
+
+
+### Stock campaign enemy plays like a skirmish AI (over-produces, sells buildings) — ✅ FIXED 2026-07-22 (5a + skirmish-Easy-AI both verified; UNCOMMITTED)
+- **ROOT CAUSE:** `[IQ] Production` lowered from vanilla 5 to 3 (for skirmish Easy AIs) is global,
+  so campaign enemies with a modest scenario IQ tripped the master wake-up at `house.cpp:1370`
+  (`IsBaseBuilding/IsStarted/IsAlerted = true`) — waking the whole AI (build + produce + power
+  manage/sell + attack). One switch = all the symptoms.
+- **FIX:** `house.cpp:1370` uses the vanilla threshold (`Rule.MaxIQ`) in campaign
+  (`Session.Type == GAME_NORMAL`), `Rule.IQProduction` (3) in skirmish. Verified in 5a: enemy sits
+  as EA scripted. Skirmish path is byte-identical to before (else branch), sanity-check pending.
+  `RepairSell=1` is stock RA, not ours. The AI_Attack aggression theory was wrong (reverted).
+  Original diagnosis retained below for reference.
+- **Severity:** minor (campaign is not a supported surface with the mod enabled; the mod ships
+  no campaigns). Observed in **Tanya's Tale (Allied 5a)** by Luke 2026-07-21.
+- **Symptoms (all "didn't used to do this"):** the Soviet enemy mass-produces infantry from
+  frame 2, builds a refinery + flame towers (verified screenshot), sold power plants, and hunts
+  **civilians** (neutral house) in 5a. All consistent with the campaign house running full
+  skirmish-grade AI (build economy → produce → hunt everything). Only base-builder-enemy missions
+  affected (5b/5c looked ok).
+- **Fix approach:** our AI *enhancements* (build-choice tie-break + economy gates in
+  `AI_Building`/`house.cpp` ~5897-7282; Phase-0 hunt-dispatch send-percentage + scatter; targeting)
+  run for all non-human houses incl. campaign fixed houses. Gate them on
+  `Session.Type != GAME_NORMAL` so campaign defers to vanilla AI. ⚠️ Do NOT disable base-building
+  wholesale — some campaigns rely on the enemy rebuilding; the goal is *vanilla parity*, not a
+  dormant enemy. Needs multi-mission in-game verification. NOT a blind one-line gate.
+- **Diagnosis (partial):** `MOD_DEBUG_AI.txt` shows the campaign Soviet/Nod houses
+  (`H2 AL2` = `HOUSE_USSR`, `H9` = `HOUSE_BAD`) running our AI build-choice pool
+  (`POOL(9) -> WIN ...`) and continuous `PROD start` from frame 2, on a **fresh launch**
+  (ruled out the cross-match difficulty-state leak below). NOT an IQ-forcing bug: both houses
+  are below `HOUSE_MULTI1`, so `TF_Apply_AI_Difficulties` (which only touches `>= HOUSE_MULTI1`)
+  never re-tiers them; they keep their scenario `Read_INI` IQ. The building-sale itself is
+  **not instrumented** (zero sell/paranoid events logged), so that half is unconfirmed.
+- **Why only one mission:** unknown; points to something scenario-specific in Tanya's Tale
+  rather than a blanket campaign regression. Investigate under the campaign milestone.
+- **Related latent defect:** our difficulty globals (`TFLobbyAIDifficultySet`, `Scen.CDifficulty`)
+  are set by a skirmish match and **never reset**, so a campaign started in the same game session
+  after a skirmish inherits polluted difficulty state. Not the cause here (fresh launch still
+  reproduces) but worth a match-start reset.
+
+### Campaign sidebar cameos show both faction logos — ⏳ OPEN (cosmetic, low priority)
+- Deploying the vanilla campaign yard shows Allied+Soviet badges on the buildable cameos. The
+  tech tree is correct (Allied-only, verified); the badge just paints each building's full
+  owner-set ({Allied, Soviet} for shared vanilla buildings) with no campaign-context awareness.
+  Cosmetic only. Fix when the campaign-AI work lands.
+
+### Overlay index shift turns stock-campaign fences into crates — ✅ FIXED 2026-07-21 (verified in-game; UNCOMMITTED, Mobius-fork renumber still pending)
+- **Fix shipped in code:** `OVERLAY_TIB01` moved to the enum END (25), vanilla indices 0-24
+  restored; `odata.cpp` heap init reordered to match; `dllinterface.cpp` resource check explicit;
+  `td_map_to_ra.py` synced (`TIB01=25`) and all 31 TD maps re-transcoded + redeployed. Verified
+  in-game: stock fences render as fences (no heal-crate), our maps' Tiberium still renders/harvests.
+- **Remaining:** commit (currently uncommitted); renumber the Mobius editor fork
+  (`../mobius-editor` `RedAlert/OverlayTypes.cs`, `TIB01=13`→25, V-fields back to vanilla) so
+  hand-authored maps aren't misread. Below is the original diagnosis, retained for reference.
+- **Severity:** minor (campaign not a supported surface; pre-existing since v2.0.0, shipped in
+  v4.0.0 — NOT a 4.1 regression). Observed in a stock Soviet mission 2026-07-21.
+- **Symptom:** wire-fence lines render and behave as goodie crates in stock campaign maps.
+- **Root cause:** `OVERLAY_TIB01` (Tiberium ecosystem, commit `693bb25`, v2.0.0) was inserted
+  after `OVERLAY_GEMS4`, pushing every later overlay up by one. Stock maps store overlays by
+  index, so a map's `OVERLAY_FENCE` (vanilla 23) is read by our engine as index 23 =
+  `OVERLAY_STEEL_CRATE`. Same shift misreads haystacks/fields/other crates.
+- **Fix (Luke wants this resolved, 2026-07-21):** move `OVERLAY_TIB01` to the end of the enum
+  (fresh index, unused by stock maps), restoring vanilla alignment, and change the resource-range
+  check at `dllinterface.cpp:8525` to
+  `(Type >= OVERLAY_GOLD1 && Type <= OVERLAY_GEMS4) || Type == OVERLAY_TIB01`.
+- **⚠️ Blast radius CONFIRMED — not a code-only fix.** `scripts/td_map_to_ra.py` hardcodes
+  `OVERLAY_TIB01 = 13` and `OVERLAY_CARRY = {"V12": 14, ...}` (the shifted indices), so the
+  **31 shipped TD maps** were transcoded against index 13. The fix therefore also requires:
+  update the transcoder (TIB01 → new index, `OVERLAY_CARRY` back to vanilla `V12=13`…),
+  **re-transcode and re-verify all shipped TD maps** (Tiberium fields must still render), check
+  `build_tiberium_hd.py` / `build_td_tiles.py` for index deps, and check the mod-aware Mobius
+  editor fork (may also write `TIB01=13`). Its own dedicated task, not a release-eve patch.
+
+---
+
+## UI / interaction
+
+### Deploy cursor appears when hovering the faction construction yards — ⏳ OPEN (queued for 4.2)
+- **Severity:** minor (cosmetic/interaction; no functional effect).
+- **Status:** OPEN — observed by Luke 2026-07-21, deferred to 4.2.
+- **Symptom:** hovering the mouse over one of our new faction construction yards (the
+  W2-split GDI/Nod/Soviet yards) shows a **deploy cursor that does nothing** when clicked. The
+  vanilla yard does not do this.
+- **Suspected cause (unconfirmed):** the split yard types inherited an `ACTION_SELF` /
+  deployable trait path that the vanilla construction yard does not expose, so the cursor logic
+  offers deploy but there is no deploy action to run. Investigate the new `STRUCT_*FACT`
+  entities' action/self-action wiring against the vanilla `STRUCT_CONST`.
+
+---
+
 ## Combat / units
 
 ### Recon Bike (TDBIKE) won't turn to fire at off-axis targets — ✅ FIXED 2026-06-16
