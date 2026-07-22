@@ -2,6 +2,16 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [4.2.0] — 2026-07-22
+
+### Added
+- **On-screen AI difficulty readout.** Match start now shows one line per enemy
+  AI with its side, colour and the difficulty actually applied, for example
+  "Enemy AI: Nod (Red) - Hard". Previously this readout existed only in dev
+  builds. If the per-slot lobby difficulty read ever fails and the AIs fall
+  back to the default tier, that is now visible the moment the match starts
+  instead of silent.
+
 ## [4.1.0] — 2026-07-22
 
 The groundwork update: separated tech trees for all four factions, a locked

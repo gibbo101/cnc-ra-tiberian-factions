@@ -2067,9 +2067,9 @@ bool Debug_Write_Shape(const char* file_name, void const* shapefile, int shapenu
 // the difficulty code below, driven per-frame from CNC_Advance_Instance.
 static void TF_Lobby_Difficulty_Retry();
 
-#if TF_DEV_BUILD // TF_AI_DIAG -- on-screen copies of the HELLO difficulty announcements,
-                 // queued at difficulty-set time (client not rendering yet) and flushed
-                 // from CNC_Advance_Instance once the match is on screen.
+// Player-facing announcements of the tier each AI actually got, queued at
+// difficulty-set time (client not rendering yet) and flushed from
+// CNC_Advance_Instance once the match is on screen.
 static char TFHelloPending[MAX_PLAYERS][128];
 static int TFHelloPendingCount = 0;
 
@@ -2113,7 +2113,6 @@ static const char* TF_Color_Name(PlayerColorType color)
         return "Unknown";
     }
 }
-#endif
 
 /**************************************************************************************************
  * CNC_Advance_Instance -- Process one logic frame
@@ -2150,15 +2149,14 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
     // screen on the same frame they are queued.
     TF_Lobby_Difficulty_Retry();
 
-#if TF_DEV_BUILD // TF_AI_DIAG -- flush the queued HELLO announcements once the match is
-                 // actually rendering (messages sent at difficulty-set time are dropped).
+    // Flush the queued difficulty announcements once the match is actually
+    // rendering (messages sent at difficulty-set time are dropped).
     if (TFHelloPendingCount > 0 && Frame >= 30) {
         for (int hello_index = 0; hello_index < TFHelloPendingCount; hello_index++) {
             On_Message(TFHelloPending[hello_index], 30.0f, -1);
         }
         TFHelloPendingCount = 0;
     }
-#endif
 
     /*
     ** Restore special from backup
@@ -2768,9 +2766,7 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
     Scen.CDifficulty = global_diff;
     TFLobbyAIDifficultySet = true;
 
-#if TF_DEV_BUILD
     TFHelloPendingCount = 0;
-#endif
     for (int index = 0; index < Houses.Count(); index++) {
         HouseClass* housep = Houses.Ptr(index);
         if (housep != NULL && housep->IsActive && !housep->IsHuman && housep->Class->House >= HOUSE_MULTI1) {
@@ -2824,22 +2820,21 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
                             (int)housep->RemapColor);
                     fflush(_tfdbg);
                 }
-                // On-screen copy is the readable form (full detail stays in the log).
-                // Sent now, the client drops the message (match not rendering yet);
-                // queued here and flushed to screen from CNC_Advance_Instance.
-                if (TFHelloPendingCount < ARRAY_SIZE(TFHelloPending)) {
-                    const char* mode_nice =
-                        (house_diff == DIFF_EASY) ? "Easy" : (house_diff == DIFF_HARD) ? "Hard" : "Medium";
-                    snprintf(TFHelloPending[TFHelloPendingCount],
-                             sizeof(TFHelloPending[0]),
-                             "Enemy AI: %s (%s) - %s",
-                             TF_Side_Name(housep->ActLike),
-                             TF_Color_Name(housep->RemapColor),
-                             mode_nice);
-                    TFHelloPendingCount++;
-                }
             }
 #endif
+            // On-screen readout of each AI's applied tier, so a fallback to the
+            // global difficulty is visible to the player rather than silent.
+            if (TFHelloPendingCount < ARRAY_SIZE(TFHelloPending)) {
+                const char* mode_nice =
+                    (house_diff == DIFF_EASY) ? "Easy" : (house_diff == DIFF_HARD) ? "Hard" : "Medium";
+                snprintf(TFHelloPending[TFHelloPendingCount],
+                         sizeof(TFHelloPending[0]),
+                         "Enemy AI: %s (%s) - %s",
+                         TF_Side_Name(housep->ActLike),
+                         TF_Color_Name(housep->RemapColor),
+                         mode_nice);
+                TFHelloPendingCount++;
+            }
         }
     }
 
