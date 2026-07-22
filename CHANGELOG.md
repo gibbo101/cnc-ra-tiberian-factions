@@ -39,7 +39,9 @@ fixes ahead of the AI milestone. GPL v3.
 ### Fixed
 - **Per-slot AI difficulty.** Each AI now takes its own lobby Easy/Medium/Hard
   pick, in skirmish and LAN alike, instead of falling back to all-Hard from the
-  second match of a session onward.
+  second match of a session onward. Each AI's faction and colour are checked
+  against the lobby before its difficulty is applied, so a stale reading from an
+  earlier lobby cannot be mistaken for the current one.
 - **AI air power.** The AI builds air production once its ground economy is
   established and fields helicopters and planes again; it had built no helipads
   or airstrips since v4.0.0.
