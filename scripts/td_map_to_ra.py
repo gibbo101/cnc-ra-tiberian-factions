@@ -12,7 +12,7 @@ Formats (all reverse-engineered from our own DLL + the shipped Mobius editor C#)
 - TD .INI  : [MAP] theater+bounds, [Waypoints], [TERRAIN], [OVERLAY] (cell=name).
 - RA .mpr  : INIFormat3 INI. [MapPack] = base64(UUBlock) of LCW-block-framed
              (16384 x TType u16 LE) ++ (16384 x TIcon u8). [OverlayPack] = same
-             framing over 16384 signed-char overlay-per-cell (0xFF none, 13=TIB01).
+             framing over 16384 signed-char overlay-per-cell (0xFF none, 25=TIB01).
              UUBlock = base64 split into 70-char lines keyed "1=","2=",...  CRLF.
              LCW block frame = [CompCount u16 LE][UncompCount u16 LE][comp bytes],
              blocks of <=8192 uncompressed bytes (LCWPipe default).
@@ -39,16 +39,18 @@ BLOCK = 8192                      # LCWPipe default uncompressed block size
 
 RA_TEMPLATE_NONE = 0xFFFF         # "no template" = engine renders theater clear
 OVERLAY_NONE = 0xFF
-OVERLAY_TIB01 = 13                # must match redalert/defines.h OVERLAY_TIB01
+OVERLAY_TIB01 = 25                # must match redalert/defines.h OVERLAY_TIB01
 
 # TD overlays RA understands natively, under the SAME INI names. Ids match OUR
-# DLL's OverlayType enum (defines.h) -- TIB01 at 13 shifts V12+ up by one vs
-# vanilla RA. V12-V18 are decorative farm fields. WALLS (SBAG/CYCL/BRIK/BARB/
-# WOOD) are intentionally NOT carried: in SP source maps they are the campaign
-# bases' perimeter fences, which read as abandoned fortifications in skirmish
-# (Luke 2026-06-09). Crates and TD's ROAD overlay are dropped too.
-OVERLAY_CARRY = {"V12": 14, "V13": 15, "V14": 16, "V15": 17, "V16": 18,
-                 "V17": 19, "V18": 20}
+# DLL's OverlayType enum (defines.h). TIB01 now lives at the END of the enum
+# (index 25) so V12-V18 and the crate/fence/flag overlays keep their VANILLA RA
+# index values -- required so stock campaign maps read correctly. V12-V18 are
+# decorative farm fields. WALLS (SBAG/CYCL/BRIK/BARB/WOOD) are intentionally NOT
+# carried: in SP source maps they are the campaign bases' perimeter fences, which
+# read as abandoned fortifications in skirmish (Luke 2026-06-09). Crates and TD's
+# ROAD overlay are dropped too.
+OVERLAY_CARRY = {"V12": 13, "V13": 14, "V14": 15, "V15": 16, "V16": 17,
+                 "V17": 18, "V18": 19}
 
 EDITOR_SRC = os.path.expanduser(
     "~/.steam/steam/steamapps/common/CnCRemastered/SOURCECODE/CnCTDRAMapEditor")

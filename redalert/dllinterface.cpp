@@ -8519,10 +8519,16 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             overlay_entry.ShapeIndex = cell_ptr->OverlayData;
             overlay_entry.IsSmudge = false;
             overlay_entry.IsOverlay = true;
-            // Tiberian Factions -- OVERLAY_TIB01 sits immediately after OVERLAY_GEMS4
-            // in the enum so this contiguous "is a harvestable resource cell" range
-            // (used by the launcher for radar colour / resource handling) covers it.
-            overlay_entry.IsResource = overlay_entry.Type >= OVERLAY_GOLD1 && overlay_entry.Type <= OVERLAY_TIB01;
+            // Tiberian Factions -- OVERLAY_TIB01 now lives at the END of the overlay
+            // enum (so vanilla overlays keep their stock indices for campaign maps),
+            // so it is no longer contiguous with the ore/gems block. Test the vanilla
+            // resource range plus TIB01 explicitly. Note: TIB01 is exported to the
+            // launcher AS OVERLAY_GEMS3 above, so overlay_entry.Type never actually
+            // equals OVERLAY_TIB01 here -- the explicit term is kept for correctness
+            // in case that export remap changes.
+            overlay_entry.IsResource =
+                (overlay_entry.Type >= OVERLAY_GOLD1 && overlay_entry.Type <= OVERLAY_GEMS4)
+                || overlay_entry.Type == OVERLAY_TIB01;
             overlay_entry.IsSellable =
                 (overlay_entry.Type >= OVERLAY_SANDBAG_WALL && overlay_entry.Type <= OVERLAY_WOOD_WALL)
                 || overlay_entry.Type == OVERLAY_FENCE;

@@ -1666,13 +1666,6 @@ typedef enum OverlayType : char
     OVERLAY_GEMS2,
     OVERLAY_GEMS3,
     OVERLAY_GEMS4,
-    // Tiberian Factions -- TD-style harvestable Tiberium, coexisting with Ore/Gems.
-    // MUST stay immediately after OVERLAY_GEMS4 so the launcher's contiguous
-    // "is this a resource cell" range check (dllinterface.cpp ~7126,
-    // GOLD1..<last resource>) keeps covering it. Single visual type; the 12
-    // density frames live in the SHP and are indexed by OverlayData (like Gold).
-    // Static by default (NOT added to Can_Tiberium_Grow/Spread). Value = Ore.
-    OVERLAY_TIB01,
     OVERLAY_V12,         // Haystacks
     OVERLAY_V13,         // Haystack
     OVERLAY_V14,         // Wheat field
@@ -1685,6 +1678,20 @@ typedef enum OverlayType : char
     OVERLAY_STEEL_CRATE, //	Steel goodie crate.
     OVERLAY_FENCE,       // New fangled fence.
     OVERLAY_WATER_CRATE, //	Water goodie crate.
+    // Tiberian Factions -- TD-style harvestable Tiberium, coexisting with Ore/Gems.
+    // Placed at the END of the overlay enum (after the vanilla types) so
+    // OVERLAY_SANDBAG_WALL..OVERLAY_WATER_CRATE keep their vanilla index values.
+    // Stock campaign maps store overlays by index; inserting TIB01 mid-enum (its
+    // old position, right after GEMS4) shifted every later overlay up by one and
+    // misread their fences/crates/fields (e.g. a fence at vanilla index 23 read
+    // as OVERLAY_STEEL_CRATE). The launcher resource-range check that used to rely
+    // on TIB01 being contiguous with the ore/gems block is now explicit (see
+    // dllinterface.cpp Get_Map_Cell IsResource). Single visual type; the 12
+    // density frames live in the SHP and are indexed by OverlayData (like Gold).
+    // Static by default (NOT added to Can_Tiberium_Grow/Spread). Value = Ore.
+    // NOTE: any map data or tool that writes TIB01 by index must use the new
+    // value -- scripts/td_map_to_ra.py is kept in sync.
+    OVERLAY_TIB01,
 
     OVERLAY_COUNT,
     OVERLAY_FIRST = 0

@@ -609,7 +609,6 @@ void OverlayTypeClass::Init_Heap(void)
     new OverlayTypeClass(Gems2);      // OVERLAY_GEMS2
     new OverlayTypeClass(Gems3);      // OVERLAY_GEMS3
     new OverlayTypeClass(Gems4);      // OVERLAY_GEMS4
-    new OverlayTypeClass(Tib01);      // OVERLAY_TIB01 (Tiberian Factions)
     new OverlayTypeClass(V12);        //	OVERLAY_V12
     new OverlayTypeClass(V13);        //	OVERLAY_V13
     new OverlayTypeClass(V14);        //	OVERLAY_V14
@@ -622,6 +621,9 @@ void OverlayTypeClass::Init_Heap(void)
     new OverlayTypeClass(SteelCrate); // OVERLAY_STEEL_CRATE
     new OverlayTypeClass(Fence);      // OVERLAY_FENCE
     new OverlayTypeClass(WaterCrate); // OVERLAY_WATER_CRATE
+    // OVERLAY_TIB01 is last in the enum (see defines.h) -- keep this submission
+    // last so the positional heap (As_Reference = OverlayTypes.Ptr(type)) matches.
+    new OverlayTypeClass(Tib01);      // OVERLAY_TIB01 (Tiberian Factions)
 }
 
 /***********************************************************************************************
