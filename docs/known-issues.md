@@ -205,29 +205,59 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## AI base building
 
-### War factory / repair bay thrash — the economy gate counts buildings that don't exist yet (2026-07-23)
-- **Severity:** major. GDI's war factory landed around **F10,000 instead of ~F1,000**, so the GDI
-  AI had no vehicle production for the first ten thousand frames and fielded near-infantry-only
-  armies (82 infantry produced against ~9 vehicles in the measured match).
-- **Status:** root-caused and confirmed in code. **Fix identified, NOT applied.**
-- **Symptom:** `MOD_DEBUG_AI.txt` shows `PROD start` alternating between `TDWEAP` and `TDFIX`
-  every decision cycle, each new order replacing the in-flight one so neither completes. H13 spent
-  **6 `TDWEAP` starts and 10 `TDFIX` starts** to finish roughly two buildings, with `CurB` frozen
-  at 10-11 for ~6,000 frames. The `ROLE` field flips in lockstep: `weap=1/1 fix=0/0` on the cycles
-  where TDWEAP is in flight, `weap=0/0 fix=1/1` where TDFIX is.
+### A house that cannot place a building retries the same doomed search forever (2026-07-23)
+- **Severity:** major. GDI repeatedly fails to place `TDPROC` / `TDWEAP` / `TDFIX` while holding
+  thousands of credits. In the measured match it started `TDFIX` **16 times and completed it zero
+  times**, and its base stalled around `CurB=10` while the other house grew past 20. This is the
+  bulk of the "sluggish GDI" feel: the faction cannot grow its base, so everything downstream
+  (vehicle production, tech, army composition) is starved.
+- **Status:** measured, not yet root-caused to a single predicate. **No fix applied.** Next step is
+  per-predicate rejection counters (`Legal_Placement` vs proximity vs `Which_Zone`) plus the base
+  `Center`/`Radius`, since three plausible theories have already been falsified (see below).
+- **Diagnostics:** `PLACE-FAIL <type> reason=no-location|unlimbo-refused` (`building.cpp`, the
+  placement fall-through) and `PROD abandon <type> pct= cash= completed=` (`building.cpp:7795`).
+  Both dev-build only, added `4507a10`.
+- **The two failure modes are distinct and split by house:**
+  - **Placement** (GDI): `PLACE-FAIL ... no-location` with $3.6k-9.4k banked. Has money, no room.
+  - **Funding** (Nod): `PROD abandon TDPROC pct=0 cash=24`. A stalled factory is **scrapped
+    outright rather than paused** at `building.cpp:7795`, so a temporarily broke house throws away
+    the order instead of waiting for income.
+- **Why it never recovers — two stacked defects in the fallback path:**
+  1. `Find_Cell_In_Zone` (`house.cpp:9783`) takes a `zone` argument but **never filters by it** —
+     it scans all `MAP_CELL_TOTAL` cells and uses the zone only to pick a distance reference. So
+     the 5-zone "try anywhere" loop in `Find_Build_Location` re-scans an identical candidate set
+     five more times and can only fail identically. Six full map scans per failed attempt.
+  2. That same loop does `return (zcell)` — a raw `CELL` where the caller expects a `COORDINATE`.
+     The preferred-zone path correctly wraps it in `Cell_Coord()`. **This is EA's own bug**,
+     present verbatim in `CnC_Remastered_Collection/REDALERT/HOUSE.CPP:4669` and never touched by
+     us, so the fallback has been broken since 1996. One-word fix, benefits all four factions,
+     worth contributing upstream to Vanilla Conquer.
+- **FALSIFIED — do not re-chase:**
+  - *"TD buildings aren't valid proximity anchors."* No: the ownership test needs
+    `base->Class->IsBase`, `IsBase` defaults true, and `TDPROC`/`TDWEAP`/`TDFIX` all set
+    `BaseNormal=yes` explicitly.
+  - *"Infantry spam starves the expensive builds of funds."* No: GDI's failures are all placement
+    with healthy cash, and `PROD abandon` never fired for GDI.
+  - *"The search area is too small."* No: `Which_Zone` admits candidates out to **4x** the base
+    radius (`house.cpp:8779`).
+  - *"`PROD start` means a build completed."* No — it only means an order began. Reading it as
+    completion produced three wrong conclusions in one session; always confirm against `CurB`,
+    the `ROLE` counts, or the player's eyes.
+
+### The economy gate counts buildings that are still in limbo (2026-07-23)
+- **Severity:** minor on its own, but it decides *which* building gets thrashed above.
+- **Status:** root-caused, confirmed in code, **not fixed** (it is the passenger, not the driver).
 - **Cause:** `house.cpp:7143/7152` gate `tf_economy_ready` on `TF_Role_Quantity(BQuantity, ...)`.
-  `BQuantity[]` increments in `Tracking_Add` when the object is **created in limbo** — i.e. the
-  moment production starts — whereas `ActiveBQuantity` "mirrors ActiveBScan semantics (unlimbo'd +
-  locked)" per its declaration comment in `house.h`. So starting a war factory immediately reads
-  as *owning* one, which unlocks TDFIX at a higher urgency; TDFIX replaces it; the count drops back
-  to zero; TDWEAP wins again. A clean two-state oscillator. `CurBuildings` has the same property,
-  which is why `CurB` counted buildings that were never placed.
-- **Fix direction:** gate `tf_economy_ready` on `ActiveBQuantity` (completed buildings only) and
-  leave the "do I need another one of these" counts at 7310/7381/7421/7599/7624 on `BQuantity`,
-  since those *should* see in-flight orders or the AI will queue duplicates.
-- **Not the whole story:** the deeper defect is that choosing a new `BuildStructure` replaces an
-  in-flight factory order at all. Stabilising the choice avoids the thrash; it does not make
-  build orders atomic.
+  `BQuantity[]` increments in `Tracking_Add` when the object is **created in limbo** — the moment
+  production starts — whereas `ActiveBQuantity` "mirrors ActiveBScan semantics (unlimbo'd +
+  locked)" per its declaration comment in `house.h`. So starting a war factory immediately reads as
+  *owning* one, which unlocks `TDFIX` at a higher urgency; when `TDFIX` takes over the count drops
+  back to zero and `TDWEAP` wins again. A two-state oscillator, visible in the log as `ROLE`
+  flipping `weap=1/1 fix=0/0` <-> `weap=0/0 fix=1/1` every decision cycle. `CurBuildings` shares the
+  property, which is why `CurB` counts buildings that were never placed.
+- **Fix direction:** gate `tf_economy_ready` on `ActiveBQuantity` (completed only); leave the
+  "do I need another one of these" counts at 7310/7381/7421/7599/7624 on `BQuantity`, since those
+  *should* see in-flight orders or the AI will queue duplicates.
 
 ## Pathfinding / AI cooperation
 
