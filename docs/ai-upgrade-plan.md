@@ -1,6 +1,9 @@
 # AI Upgrade Plan — the post-v4.0 milestone
 
-**Status: DESIGN + RESEARCH COMPLETE (2026-07-17). Not yet started.** This is the master plan
+**Status: Phase 0 + Phase 1 SHIPPED, Phase 2 (W2 faction separation) SHIPPED, W2.9 IN PROGRESS
+(2026-07-23).** Step 1 of W2.9 (role counting across lineages, own-faction-yard gate, build-order
+restoration) is committed and verified in play; see `todo.md` for the live state and the two open
+findings it surfaced (attack cadence, scout destinations). This is the master plan
 for the AI-focus milestone, assembled from Luke's wishlist session (2026-07-16/17), the
 re-audit of `ai-improvements.md` (all statuses verified against HEAD), six targeted research
 agents, and the AI Boost 3.2 reference source (`reference/ai-boost2/`, GPL, licence verified).
