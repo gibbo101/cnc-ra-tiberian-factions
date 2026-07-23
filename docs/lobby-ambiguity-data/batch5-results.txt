@@ -1,0 +1,177 @@
+===CYCLE 0 v2=hard gt=33
+  LOBBYCAND site=1 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=33 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f3e0000/1368K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2f9d4778 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=1
+  CAND a=3 addr=2f9d5738 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=3
+  LOBBYCAND site=0 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=33 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f3e0000/1368K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2f9d4778 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=1
+  CAND a=3 addr=2f9d5738 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=3
+===CYCLE 1 v2=easy gt=13
+  LOBBYCAND site=1 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ba000/176K prot=4 diff=13 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f3fc000/1256K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2f8949b8 region=2f888000/728K prot=4 diff=13 refs=0 refwin=2
+  CAND a=3 addr=2f9a1738 region=2f994000/248K prot=4 diff=13 refs=0 refwin=2
+  LOBBYCAND site=0 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ba000/176K prot=4 diff=13 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f3fc000/1256K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2f8949b8 region=2f888000/728K prot=4 diff=13 refs=0 refwin=2
+  CAND a=3 addr=2f9a1738 region=2f994000/248K prot=4 diff=13 refs=0 refwin=2
+===CYCLE 2 v2=med gt=23
+  LOBBYCAND site=1 count=4 disagree=0 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=1 addr=2f4938f8 region=2f404000/1224K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=2 addr=2f96e938 region=2f960000/152K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=3 addr=2f9a2278 region=2f9a0000/200K prot=4 diff=23 refs=-1 refwin=-1
+  LOBBYCAND site=0 count=4 disagree=0 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=1 addr=2f4938f8 region=2f404000/1224K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=2 addr=2f96e938 region=2f960000/152K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=3 addr=2f9a2278 region=2f9a0000/200K prot=4 diff=23 refs=-1 refwin=-1
+===CYCLE 3 v2=hard gt=33
+  LOBBYCAND site=1 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=33 refs=0 refwin=1
+  CAND a=1 addr=2f4938f8 region=2f404000/1224K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2f96c9b8 region=2f960000/152K prot=4 diff=33 refs=0 refwin=3
+  CAND a=3 addr=2f9d4538 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=1
+  LOBBYCAND site=0 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=33 refs=0 refwin=1
+  CAND a=1 addr=2f4938f8 region=2f404000/1224K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2f96c9b8 region=2f960000/152K prot=4 diff=33 refs=0 refwin=3
+  CAND a=3 addr=2f9d4538 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=1
+===CYCLE 4 v2=easy gt=13
+  LOBBYCAND site=1 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=13 refs=0 refwin=1
+  CAND a=1 addr=2f4938f8 region=2f404000/1224K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2f937b38 region=2f870000/824K prot=4 diff=13 refs=0 refwin=12
+  CAND a=3 addr=2fae12b8 region=2fae0000/336K prot=4 diff=13 refs=0 refwin=3
+  LOBBYCAND site=0 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=13 refs=0 refwin=1
+  CAND a=1 addr=2f4938f8 region=2f404000/1224K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2f937b38 region=2f870000/824K prot=4 diff=13 refs=0 refwin=12
+  CAND a=3 addr=2fae12b8 region=2fae0000/336K prot=4 diff=13 refs=0 refwin=3
+===CYCLE 5 v2=med gt=23
+  LOBBYCAND site=1 count=4 disagree=0 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=1 addr=2f4938f8 region=2f3e0000/1368K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=2 addr=2fae02f8 region=2fae0000/256K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=3 addr=2fae1df8 region=2fae0000/256K prot=4 diff=23 refs=-1 refwin=-1
+  LOBBYCAND site=0 count=4 disagree=0 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=1 addr=2f4938f8 region=2f3e0000/1368K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=2 addr=2fae02f8 region=2fae0000/256K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=3 addr=2fae1df8 region=2fae0000/256K prot=4 diff=23 refs=-1 refwin=-1
+===CYCLE 6 v2=hard gt=33
+  LOBBYCAND site=1 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=33 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f40c000/1192K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2faad078 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=3
+  CAND a=3 addr=2faae278 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=2
+  LOBBYCAND site=0 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=33 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f40c000/1192K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2faad078 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=3
+  CAND a=3 addr=2faae278 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=2
+===CYCLE 7 v2=med gt=23
+  LOBBYCAND site=1 count=4 disagree=0 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=1 addr=2f4938f8 region=2f40c000/1192K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=2 addr=2faac538 region=2f9d4000/1064K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=3 addr=2fae1738 region=2fae0000/272K prot=4 diff=23 refs=-1 refwin=-1
+  LOBBYCAND site=0 count=4 disagree=0 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=1 addr=2f4938f8 region=2f40c000/1192K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=2 addr=2faac538 region=2f9d4000/1064K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=3 addr=2fae1738 region=2fae0000/272K prot=4 diff=23 refs=-1 refwin=-1
+===CYCLE 8 v2=easy gt=13
+  LOBBYCAND site=1 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=13 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f40c000/1192K prot=4 diff=23 refs=0 refwin=37
+  CAND a=2 addr=2faaf8f8 region=2f9d4000/1064K prot=4 diff=13 refs=0 refwin=3
+  CAND a=3 addr=2fae2278 region=2fae0000/272K prot=4 diff=13 refs=0 refwin=3
+  LOBBYCAND site=0 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=13 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f40c000/1192K prot=4 diff=23 refs=0 refwin=37
+  CAND a=2 addr=2faaf8f8 region=2f9d4000/1064K prot=4 diff=13 refs=0 refwin=3
+  CAND a=3 addr=2fae2278 region=2fae0000/272K prot=4 diff=13 refs=0 refwin=3
+===CYCLE 9 v2=hard gt=33
+  LOBBYCAND site=1 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=33 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f404000/1224K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2fa438f8 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=5
+  CAND a=3 addr=2fa780b8 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=8
+  LOBBYCAND site=0 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=33 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f404000/1224K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2fa438f8 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=5
+  CAND a=3 addr=2fa780b8 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=8
+===CYCLE 10 v2=med gt=23
+  LOBBYCAND site=1 count=4 disagree=0 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ba000/176K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=1 addr=2f4938f8 region=2f3e0000/1344K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=2 addr=2fa412b8 region=2f9d4000/1064K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=3 addr=2fa42038 region=2f9d4000/1064K prot=4 diff=23 refs=-1 refwin=-1
+  LOBBYCAND site=0 count=4 disagree=0 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ba000/176K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=1 addr=2f4938f8 region=2f3e0000/1344K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=2 addr=2fa412b8 region=2f9d4000/1064K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=3 addr=2fa42038 region=2f9d4000/1064K prot=4 diff=23 refs=-1 refwin=-1
+===CYCLE 11 v2=easy gt=13
+  LOBBYCAND site=1 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ba000/176K prot=4 diff=13 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f3e0000/1344K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2fa06b78 region=2f9d4000/1064K prot=4 diff=13 refs=0 refwin=1
+  CAND a=3 addr=2fa07478 region=2f9d4000/1064K prot=4 diff=13 refs=0 refwin=3
+  LOBBYCAND site=0 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ba000/176K prot=4 diff=13 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f3e0000/1344K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2fa06b78 region=2f9d4000/1064K prot=4 diff=13 refs=0 refwin=1
+  CAND a=3 addr=2fa07478 region=2f9d4000/1064K prot=4 diff=13 refs=0 refwin=3
+===CYCLE 12 v2=med gt=23
+  LOBBYCAND site=1 count=4 disagree=0 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ba000/176K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=1 addr=2f4938f8 region=2f3e0000/1344K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=2 addr=2fa06db8 region=2f9d4000/1064K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=3 addr=2fb878f8 region=2fae0000/912K prot=4 diff=23 refs=-1 refwin=-1
+  LOBBYCAND site=0 count=4 disagree=0 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ba000/176K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=1 addr=2f4938f8 region=2f3e0000/1344K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=2 addr=2fa06db8 region=2f9d4000/1064K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=3 addr=2fb878f8 region=2fae0000/912K prot=4 diff=23 refs=-1 refwin=-1
+===CYCLE 13 v2=easy gt=13
+  LOBBYCAND site=1 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ba000/176K prot=4 diff=13 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f3e0000/1528K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2fb854f8 region=2fb2c000/608K prot=4 diff=13 refs=0 refwin=2
+  CAND a=3 addr=2fbc12b8 region=2fb2c000/608K prot=4 diff=13 refs=0 refwin=2
+  LOBBYCAND site=0 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ba000/176K prot=4 diff=13 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f3e0000/1528K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2fb854f8 region=2fb2c000/608K prot=4 diff=13 refs=0 refwin=2
+  CAND a=3 addr=2fbc12b8 region=2fb2c000/608K prot=4 diff=13 refs=0 refwin=2
+===CYCLE 14 v2=hard gt=33
+  LOBBYCAND site=1 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ba000/176K prot=4 diff=33 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f404000/1216K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2fa412b8 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=1
+  CAND a=3 addr=2fb84e38 region=2fb2c000/608K prot=4 diff=33 refs=0 refwin=4
+  LOBBYCAND site=0 count=4 disagree=1 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ba000/176K prot=4 diff=33 refs=1 refwin=2
+  CAND a=1 addr=2f4938f8 region=2f404000/1216K prot=4 diff=23 refs=0 refwin=35
+  CAND a=2 addr=2fa412b8 region=2f9d4000/1064K prot=4 diff=33 refs=0 refwin=1
+  CAND a=3 addr=2fb84e38 region=2fb2c000/608K prot=4 diff=33 refs=0 refwin=4
+===CYCLE 15 v2=med gt=23
+  LOBBYCAND site=1 count=4 disagree=0 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=1 addr=2f4938f8 region=2f404000/1200K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=2 addr=2fa40e38 region=2f9d4000/1064K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=3 addr=2fb55978 region=2fb2c000/400K prot=4 diff=23 refs=-1 refwin=-1
+  LOBBYCAND site=0 count=4 disagree=0 roster=00000006 frame=0
+  CAND a=0 addr=2b1cc6f8 region=2b1ca000/112K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=1 addr=2f4938f8 region=2f404000/1200K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=2 addr=2fa40e38 region=2f9d4000/1064K prot=4 diff=23 refs=-1 refwin=-1
+  CAND a=3 addr=2fb55978 region=2fb2c000/400K prot=4 diff=23 refs=-1 refwin=-1
+===BATCH5 DONE

@@ -569,6 +569,15 @@ static int TF_LobbyAIHouseBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
 // client's numbering stays checkable against ours in real logs.
 static int TF_LobbyRecHouseBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
 
+#if TF_DEV_BUILD
+// Which call site invoked the forensic scan: 0 = CNC_Set_Difficulty (the shipped
+// scan site, post-consolidation), 1 = CNC_Set_Multiplayer_Data (earlier in the
+// match-start sequence; DontCryJustDie's scan site). Printed in the scan log so the
+// ambiguity present at each site can be compared directly.
+static int TF_LobbyProbeTag = 0;
+static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot); // fwd decl for the early probe
+#endif
+
 /*
 **	Deferred re-scan state. The client tears down and rebuilds its AIPLAYERn records
 **	as a match launches, so a scan can land in a window where they are absent or only
@@ -1119,6 +1128,17 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
             }
             fclose(f);
         }
+    }
+
+    // Forensic probe at DontCryJustDie's earlier scan site: the roster mask, colours
+    // and countries are now populated, so run the same read here to see whether the
+    // ambiguity he reports at CNC_Set_Multiplayer_Data is present this early, and gone
+    // by CNC_Set_Difficulty. Result discarded -- application still happens later.
+    {
+        int probe[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
+        TF_LobbyProbeTag = 1;
+        TF_Read_Lobby_AI_Difficulties(probe);
+        TF_LobbyProbeTag = 0;
     }
 #endif
 
@@ -2576,6 +2596,177 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
     return count;
 }
 
+#if TF_DEV_BUILD // TF_AI_DIAG -- ambiguity forensics (docs/lobby-ambiguity-work-order.md).
+/*
+**	Registry of every validated FULL-ROSTER candidate a scan finds, with enough raw
+**	context to tell the live array from stale copies offline:
+**	  Route A -- the full 168-byte anchor record (+ the next record + 32 preceding
+**	             bytes). We only ever PARSE 5 fields; a generation counter / session id
+**	             / active flag in the other ~100 bytes would separate live from stale.
+**	  Route B -- refs: how many aligned 32-bit pointers in the client's writable memory
+**	             point AT this candidate's base. The live array is referenced by the
+**	             client code that reads it; stale copies are orphaned. Exactly one
+**	             referenced candidate == positive identification.
+**	Read-only; dev builds only; never ships.
+*/
+#define TF_LOBBY_MAX_CANDIDATES 24
+#define TF_LOBBY_PRE_BYTES 32
+struct TF_LobbyCandRec {
+    DWORD pid;
+    SIZE_T address; // abs addr of the anchor "AIPLAYERn" signature = candidate base
+    SIZE_T region_base;
+    SIZE_T region_size;
+    DWORD protect;
+    int diff[TF_LOBBY_MAX_AI_SLOTS + 1];
+    bool pre_ok;
+    unsigned char pre[TF_LOBBY_PRE_BYTES];
+    unsigned char rec2[2 * TF_LOBBY_RECORD_STRIDE]; // anchor record + the one after it
+};
+static TF_LobbyCandRec TF_LobbyCands[TF_LOBBY_MAX_CANDIDATES];
+static int TF_LobbyCandN = 0;
+static DWORD TF_LobbyScanPid = 0; // pid of the process currently being scanned
+
+// Route B: count aligned 32-bit words in `pid`'s writable private memory that equal
+// the half-open window [lo, hi). The client process is 32-bit, so a genuine pointer
+// is a 4-byte aligned word. A pointer to the array lands near the anchor record but
+// not necessarily ON it -- human player records precede AIPLAYER1, so the array base
+// sits some strides before the anchor. Widening to a window catches that reference.
+// Returns -1 if the process can't be opened. Once-per-match, dev only.
+static int TF_Count_Referrers(DWORD pid, SIZE_T lo, SIZE_T hi, unsigned char* scratch, SIZE_T scratch_size)
+{
+    HANDLE proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, pid);
+    if (proc == NULL) {
+        return -1;
+    }
+    unsigned int wlo = (unsigned int)lo;
+    unsigned int whi = (unsigned int)hi;
+    int refs = 0;
+    SIZE_T addr = 0;
+    MEMORY_BASIC_INFORMATION mbi;
+    while (VirtualQueryEx(proc, (LPCVOID)addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
+        SIZE_T region_base = (SIZE_T)mbi.BaseAddress;
+        SIZE_T region_size = mbi.RegionSize;
+        bool scannable = (mbi.State == MEM_COMMIT) && (mbi.Type == MEM_PRIVATE)
+                         && (mbi.Protect == PAGE_READWRITE || mbi.Protect == PAGE_EXECUTE_READWRITE)
+                         && region_size <= ((SIZE_T)512 << 20);
+        if (scannable) {
+            for (SIZE_T off = 0; off < region_size; off += scratch_size) {
+                SIZE_T want_bytes = region_size - off;
+                if (want_bytes > scratch_size) {
+                    want_bytes = scratch_size;
+                }
+                SIZE_T got = 0;
+                ReadProcessMemory(proc, (LPCVOID)(region_base + off), scratch, want_bytes, &got);
+                for (SIZE_T i = 0; i + 4 <= got; i += 4) {
+                    unsigned int v;
+                    memcpy(&v, scratch + i, 4);
+                    if (v >= wlo && v < whi) {
+                        refs++;
+                    }
+                }
+            }
+        }
+        SIZE_T next = region_base + region_size;
+        if (next <= addr) {
+            break;
+        }
+        addr = next;
+    }
+    CloseHandle(proc);
+    return refs;
+}
+
+// Do two registered candidates carry the same difficulty over the roster slots?
+static bool TF_Cand_Same_Vec(int a, int b, unsigned roster)
+{
+    for (int n = 1; n <= TF_LOBBY_MAX_AI_SLOTS; n++) {
+        if ((roster & (1u << n)) && TF_LobbyCands[a].diff[n] != TF_LobbyCands[b].diff[n]) {
+            return false;
+        }
+    }
+    return true;
+}
+
+/*
+**	SHADOW-MODE ambiguity resolver (docs/lobby-ambiguity-work-order.md). Given the
+**	registered candidates that disagree on difficulty, decide which one is LIVE, or
+**	report undecided. Currently only LOGS its decision -- the caller still fails closed,
+**	so shipped behaviour is unchanged until this is validated and promoted.
+**	Branches, in order (each requires internal agreement; never picks a stale over live
+**	in any recorded sample; worst case 'U' == today's fail-closed):
+**	  R  exact referrer  -- the client keeps one pointer to the LIVE array's base;
+**	                        a unique difficulty among refeq>0 candidates is live.
+**	  F  freshness       -- a stale copy is a previously-ACTIVE array carrying many more
+**	                        neighbourhood pointers (refwin) than a freshly-made live one;
+**	                        the low-refwin cluster is live.
+**	  M  strict majority -- plurality difficulty vector (no other vector ties it).
+**	  U  undecided       -- caller fails closed.
+**	Returns the branch letter; fills out[] (roster slots) when decided.
+*/
+static char TF_Resolve_Lobby_Ambiguity(const int* refeq, const int* refwin, int ncand,
+                                       unsigned roster, int* out)
+{
+    // 1. exact referrer
+    int rep = -1;
+    bool conflict = false;
+    for (int c = 0; c < ncand; c++) {
+        if (refeq[c] > 0) {
+            if (rep < 0) {
+                rep = c;
+            } else if (!TF_Cand_Same_Vec(rep, c, roster)) {
+                conflict = true;
+            }
+        }
+    }
+    if (rep >= 0 && !conflict) {
+        for (int n = 1; n <= TF_LOBBY_MAX_AI_SLOTS; n++) out[n] = TF_LobbyCands[rep].diff[n];
+        return 'R';
+    }
+
+    // 2. freshness cluster (low refwin = freshly allocated = live)
+    int minrw = 0x7fffffff;
+    for (int c = 0; c < ncand; c++) if (refwin[c] < minrw) minrw = refwin[c];
+    int thresh = minrw * 4 + 2;
+    int frep = -1;
+    bool fconf = false;
+    for (int c = 0; c < ncand; c++) {
+        if (refwin[c] <= thresh) {
+            if (frep < 0) {
+                frep = c;
+            } else if (!TF_Cand_Same_Vec(frep, c, roster)) {
+                fconf = true;
+            }
+        }
+    }
+    if (frep >= 0 && !fconf) {
+        for (int n = 1; n <= TF_LOBBY_MAX_AI_SLOTS; n++) out[n] = TF_LobbyCands[frep].diff[n];
+        return 'F';
+    }
+
+    // 3. strict majority
+    int bestc = -1, bestn = 0;
+    for (int c = 0; c < ncand; c++) {
+        int cnt = 0;
+        for (int d = 0; d < ncand; d++) if (TF_Cand_Same_Vec(c, d, roster)) cnt++;
+        if (cnt > bestn) { bestn = cnt; bestc = c; }
+    }
+    if (bestc >= 0) {
+        bool tie = false;
+        for (int c = 0; c < ncand && !tie; c++) {
+            if (TF_Cand_Same_Vec(bestc, c, roster)) continue;
+            int cnt = 0;
+            for (int d = 0; d < ncand; d++) if (TF_Cand_Same_Vec(c, d, roster)) cnt++;
+            if (cnt >= bestn) tie = true;
+        }
+        if (!tie) {
+            for (int n = 1; n <= TF_LOBBY_MAX_AI_SLOTS; n++) out[n] = TF_LobbyCands[bestc].diff[n];
+            return 'M';
+        }
+    }
+    return 'U';
+}
+#endif
+
 /*
 **	Scans one process's private writable regions for the record array. Every validated
 **	candidate must agree; disagreement flags the whole read as ambiguous (memory can
@@ -2657,6 +2848,30 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
 #endif
                         continue;
                     }
+#if TF_DEV_BUILD // TF_AI_DIAG -- register the candidate for ambiguity forensics.
+                    if (TF_LobbyCandN < TF_LOBBY_MAX_CANDIDATES) {
+                        TF_LobbyCandRec& c = TF_LobbyCands[TF_LobbyCandN++];
+                        c.pid = TF_LobbyScanPid;
+                        c.address = region_base + off + i;
+                        c.region_base = region_base;
+                        c.region_size = region_size;
+                        c.protect = mbi.Protect;
+                        memcpy(c.diff, cand, sizeof(c.diff));
+                        memcpy(c.rec2, rec, sizeof(c.rec2));
+                        c.pre_ok = false;
+                        if (c.address >= TF_LOBBY_PRE_BYTES) {
+                            SIZE_T pre_got = 0;
+                            if (ReadProcessMemory(proc,
+                                                  (LPCVOID)(c.address - TF_LOBBY_PRE_BYTES),
+                                                  c.pre,
+                                                  TF_LOBBY_PRE_BYTES,
+                                                  &pre_got)
+                                && pre_got == TF_LOBBY_PRE_BYTES) {
+                                c.pre_ok = true;
+                            }
+                        }
+                    }
+#endif
                     // Agreement is judged on the roster's slots only -- non-roster
                     // leftovers in a wider array carry no signal.
                     if (*best_count == 0) {
@@ -2698,6 +2913,7 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
 #if TF_DEV_BUILD
     TF_LobbyDiagBudget = 48;
     TF_LobbyDiagHits = 0;
+    TF_LobbyCandN = 0;
 #endif
 
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
@@ -2719,6 +2935,9 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
                 continue;
             }
             procs_opened++;
+#if TF_DEV_BUILD
+            TF_LobbyScanPid = pe.th32ProcessID;
+#endif
             TF_Scan_Process_For_Lobby_Difficulty(proc, best, &best_count, &ambiguous, scratch, sizeof(scratch));
             CloseHandle(proc);
         } while (Process32NextW(snap, &pe));
@@ -2730,7 +2949,8 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
         FILE* f = TF_AI_Diag_File();
         if (f != NULL) {
             fprintf(f,
-                    "  LOBBYSCAN frame=%d procs=%d/%d sighits=%d best_count=%d ambiguous=%d roster=%08x\n",
+                    "  LOBBYSCAN site=%d frame=%d procs=%d/%d sighits=%d best_count=%d ambiguous=%d roster=%08x\n",
+                    TF_LobbyProbeTag,
                     (int)Frame,
                     procs_opened,
                     procs_seen,
@@ -2738,6 +2958,100 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
                     best_count,
                     (int)ambiguous,
                     TF_LobbyAIRosterMask);
+            fflush(f);
+        }
+    }
+#endif
+
+#if TF_DEV_BUILD // TF_AI_DIAG -- ambiguity forensics dump (Route A record bytes + Route B refs).
+    {
+        FILE* f = TF_AI_Diag_File();
+        if (f != NULL) {
+            // Disagreement among full-roster candidates == the ambiguity we're chasing.
+            bool disagree = false;
+            for (int a = 1; a < TF_LobbyCandN; a++) {
+                for (int n = 1; n <= TF_LOBBY_MAX_AI_SLOTS; n++) {
+                    if ((TF_LobbyAIRosterMask & (1u << n))
+                        && TF_LobbyCands[a].diff[n] != TF_LobbyCands[0].diff[n]) {
+                        disagree = true;
+                    }
+                }
+            }
+            fprintf(f,
+                    "  LOBBYCAND site=%d count=%d disagree=%d roster=%08x frame=%d\n",
+                    TF_LobbyProbeTag,
+                    TF_LobbyCandN,
+                    (int)disagree,
+                    TF_LobbyAIRosterMask,
+                    (int)Frame);
+            static int cand_refeq[TF_LOBBY_MAX_CANDIDATES];
+            static int cand_refwin[TF_LOBBY_MAX_CANDIDATES];
+            for (int a = 0; a < TF_LobbyCandN; a++) {
+                TF_LobbyCandRec& c = TF_LobbyCands[a];
+                char dv[80];
+                int p = 0;
+                for (int n = 1; n <= TF_LOBBY_MAX_AI_SLOTS && p < (int)sizeof(dv) - 2; n++) {
+                    if (TF_LobbyAIRosterMask & (1u << n)) {
+                        p += snprintf(dv + p, sizeof(dv) - p, "%d", c.diff[n]);
+                    }
+                }
+                // Route B only when candidates actually disagree (a full address-space
+                // sweep per candidate is not free; no signal to extract otherwise).
+                // refeq = pointers exactly ON the anchor record; refwin = pointers into
+                // a window from 4 records before the anchor (to cover human records that
+                // precede AIPLAYER1) through the roster span.
+                int refeq = -1, refwin = -1;
+                if (disagree) {
+                    refeq = TF_Count_Referrers(c.pid, c.address, c.address + 1, scratch, sizeof(scratch));
+                    SIZE_T lo = (c.address > (SIZE_T)4 * TF_LOBBY_RECORD_STRIDE)
+                                    ? c.address - (SIZE_T)4 * TF_LOBBY_RECORD_STRIDE
+                                    : 0;
+                    SIZE_T hi = c.address + (SIZE_T)2 * TF_LOBBY_RECORD_STRIDE;
+                    refwin = TF_Count_Referrers(c.pid, lo, hi, scratch, sizeof(scratch));
+                }
+                cand_refeq[a] = refeq;
+                cand_refwin[a] = refwin;
+                fprintf(f,
+                        "  CAND a=%d addr=%08x region=%08x/%uK prot=%x diff=%s refs=%d refwin=%d\n",
+                        a,
+                        (unsigned)c.address,
+                        (unsigned)c.region_base,
+                        (unsigned)(c.region_size >> 10),
+                        (unsigned)c.protect,
+                        dv,
+                        refeq,
+                        refwin);
+                if (c.pre_ok) {
+                    fprintf(f, "    PRE ");
+                    for (int b = 0; b < TF_LOBBY_PRE_BYTES; b++) {
+                        fprintf(f, "%02x", c.pre[b]);
+                    }
+                    fprintf(f, "\n");
+                }
+                for (int rr = 0; rr < 2; rr++) {
+                    fprintf(f, "    REC%d ", rr);
+                    for (int b = 0; b < TF_LOBBY_RECORD_STRIDE; b++) {
+                        fprintf(f, "%02x", c.rec2[rr * TF_LOBBY_RECORD_STRIDE + b]);
+                    }
+                    fprintf(f, "\n");
+                }
+            }
+            // Shadow-mode resolver: log the difficulty it WOULD apply (and which branch
+            // decided it) without changing behaviour. Validated against ground truth in
+            // the overnight batches; promote to the applied path once signed off.
+            if (disagree && TF_LobbyCandN > 0) {
+                int resolved[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
+                char branch = TF_Resolve_Lobby_Ambiguity(cand_refeq, cand_refwin,
+                                                         TF_LobbyCandN, TF_LobbyAIRosterMask, resolved);
+                char rv[80];
+                int rp = 0;
+                for (int n = 1; n <= TF_LOBBY_MAX_AI_SLOTS && rp < (int)sizeof(rv) - 2; n++) {
+                    if (TF_LobbyAIRosterMask & (1u << n)) {
+                        rp += snprintf(rv + rp, sizeof(rv) - rp, "%d", (branch == 'U') ? 0 : resolved[n]);
+                    }
+                }
+                fprintf(f, "  RESOLVE site=%d branch=%c decided=%s\n", TF_LobbyProbeTag, branch, rv);
+            }
             fflush(f);
         }
     }
