@@ -5,6 +5,41 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## ⭐ AI passivity: first attack wave at frame ~27,500 (2026-07-23, observed)
+
+Unholy Alliance run, 1 GDI + 1 Nod, both `IQ=4` (Normal). Both houses produced real armies (73
+and 55 combat units) and had found each other, yet sat passive for half an hour of game time:
+
+```
+F7517  H14 WAVE-SHUFFLE (nothing sent) defences=0 sendpercent=80
+F11192 H13 WAVE-SHUFFLE (nothing sent) defences=1 sendpercent=80
+...  nine consecutive opportunities, all "nothing sent"  ...
+F27502 H13 WAVE-LAUNCH              defences=8 sendpercent=95
+```
+
+`AI_Attack` shuffles ~67% of calls (plan, W4), so most opportunities do nothing, and the gap
+between opportunities is long enough that the first wave lands ~27.5k frames in. Player verdict:
+"both ais feeling sluggish and nothing like the vanilla ai." This is the largest single gap
+between our AI and vanilla's feel, and it is independent of the build-order work. → W4 attack
+quality in `ai-upgrade-plan.md`. Worth checking whether the shuffle rate should scale with
+difficulty, and whether an army over some size should force a launch regardless.
+
+## Scouting sends every unit to the same cell (2026-07-23, observed)
+
+582 `SCOUT` dispatches in one match, and the recent ones are all the same destination from
+different units:
+
+```
+H13 SCOUT id=9  ... dest=7641
+H13 SCOUT id=19 ... dest=7641
+H13 SCOUT id=36 ... dest=7641
+```
+
+`TF_Scout_Destination` hands out one cell rather than spreading scouts over unexplored ground, so
+a house re-walks the same waypoint instead of widening its map knowledge. Did NOT prevent contact
+in this run (the houses found each other), so it is inefficiency rather than a blocker — but it
+wastes the blind-scout dispatcher and matters more on big maps. → W1.3.
+
 ## Minelayer (MNLY) — broken prerequisite + needs its own AI brain (2026-07-23)
 
 **1. Malformed prereq, shipped.** `resources/remaster_mods/Vanilla_RA/CCDATA/rules.ini` line 738

@@ -7508,11 +7508,20 @@ int HouseClass::AI_Building(void)
         **	a strike, and once it has taken enough it jumps the queue for one cycle. Ordinary
         **	priority holds, and nothing starves forever.
         */
+        /*
+        **	Starvation rescue is a LAST RESORT, not a rotation. Measure the wait in frames
+        **	rather than decision cycles: with most branches offering URGENCY_MEDIUM there are
+        **	half a dozen tied candidates, so a small cycle count lets the late-scan-order
+        **	entries -- which is exactly what the defences are -- take turns jumping the queue,
+        **	and the house spends its economy on guard towers instead of refineries. The case
+        **	this exists for is a temple sitting unbuilt for tens of thousands of frames, so
+        **	the threshold belongs on that scale.
+        */
         enum
         {
-            STARVE_LIMIT = 10
+            STARVE_FRAMES = 7500
         };
-        static unsigned char _passed_over[HOUSE_COUNT][STRUCT_COUNT] = {{0}};
+        static int _waiting_since[HOUSE_COUNT][STRUCT_COUNT] = {{0}};
         int hidx = (int)Class->House;
         bool track = (hidx >= 0 && hidx < HOUSE_COUNT);
 
@@ -7528,7 +7537,7 @@ int HouseClass::AI_Building(void)
         int winner_age = 0;
         if (best != URGENCY_NONE) {
             int starved = -1;
-            int strikes = STARVE_LIMIT - 1;
+            int longest = STARVE_FRAMES - 1;
             for (int index = 0; index < BuildChoice.Count(); index++) {
                 if (BuildChoice.Ptr(index)->Urgency != best) {
                     continue;
@@ -7537,19 +7546,17 @@ int HouseClass::AI_Building(void)
                     bestindex = index; // scan order is the default priority
                 }
                 StructType s = BuildChoice.Ptr(index)->Structure;
-                if (track && s >= 0 && s < STRUCT_COUNT && _passed_over[hidx][s] > strikes) {
-                    strikes = _passed_over[hidx][s];
-                    starved = index;
+                if (track && s >= 0 && s < STRUCT_COUNT && _waiting_since[hidx][s] > 0) {
+                    int waited = (int)Frame - _waiting_since[hidx][s];
+                    if (waited > longest) {
+                        longest = waited;
+                        starved = index;
+                    }
                 }
             }
             if (starved >= 0) {
                 bestindex = starved;
-            }
-
-            // Capture before the reset below, or the winner always reads zero.
-            StructType _ws = BuildChoice.Ptr(bestindex)->Structure;
-            if (track && _ws >= 0 && _ws < STRUCT_COUNT) {
-                winner_age = (int)_passed_over[hidx][_ws];
+                winner_age = longest;
             }
 
             if (track) {
@@ -7562,9 +7569,9 @@ int HouseClass::AI_Building(void)
                         continue;
                     }
                     if (index == bestindex) {
-                        _passed_over[hidx][s] = 0;
-                    } else if (_passed_over[hidx][s] < 250) {
-                        _passed_over[hidx][s]++;
+                        _waiting_since[hidx][s] = 0; // built, stop the clock
+                    } else if (_waiting_since[hidx][s] == 0) {
+                        _waiting_since[hidx][s] = (int)Frame; // start the clock
                     }
                 }
             }
