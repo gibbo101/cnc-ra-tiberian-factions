@@ -413,6 +413,14 @@ adding one.
      of *stage*, so any promotion becomes "build it first".
 
 ### W4 — Attack quality
+
+**LIVE MEASUREMENT 2026-07-23 — this is the biggest felt gap.** Unholy Alliance, 1 GDI + 1 Nod,
+both Medium (IQ=4), both with armies (73 and 55 combat units) and aware of each other: nine
+consecutive attack opportunities logged `WAVE-SHUFFLE (nothing sent)` and the first
+`WAVE-LAUNCH` did not come until **frame ~27,500**. Player verdict: "both ais feeling sluggish
+and nothing like the vanilla ai." The 67% shuffle rate plus the interval between opportunities
+is the cause. Open questions for this workstream: should the shuffle rate scale with difficulty,
+and should an army past some size force a launch regardless? Full log evidence in `todo.md`.
 Research complete (agent report, §7). Two routes for staging-then-blob:
 - **Route A (preferred, higher fidelity):** revive the TeamClass campaign machinery — the
   gather/formation/blob logic ALREADY EXISTS (Coordinate_Regroup team.cpp:1729, full-strength
