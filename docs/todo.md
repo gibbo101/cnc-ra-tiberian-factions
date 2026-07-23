@@ -181,14 +181,32 @@ INPUT_REQUEST_MOD_GAME_COMMAND_x_AT_POSITION"*. Player-bound is the intended flo
 **Shipped state:** the constant and the handler ship; the input-config edits do NOT (reverted in
 both the MEG and loose, so nobody's deploy key is touched by a dormant unbind).
 
-**Remaining route to investigate before release:** write the binding into
-`Player_RA_settings_1.bin` (ChunkFile+zlib TLV, partly decoded by the difficulty spike). A clean
-unbound profile was created and discarded during testing -- recreate it, bind one command, and
-diff the two files to find the encoding. Caveats to weigh: our DLL only runs during a match, so
-a write would apply from the *next* launch; the file is Steam Cloud synced; and corrupting a
-player's settings is a worse outcome than a one-time manual bind. Fallback if it is not clean:
-a one-off in-game message at first match telling the player to bind Mod Command 1 (people do
-read what is on screen mid-game, unlike a Workshop page).
+**The settings-file route was diagnosed 2026-07-23 and is NOT worth taking.** Captured a
+baseline of `~/.steam/steam/userdata/42346487/1213210/remote/Player_RA_settings_1.bin`, had
+Luke bind Mod Command 1 to F8 in Options > Controls, and diffed. What the format is:
+
+- `CH 02 01` ChunkFile header (36 bytes) + one zlib stream. Header `[0x10]` = compressed
+  length; `[0x08]` = a hash that **changed with content** (`cb7566fb` -> `c9e813f0`) and
+  matches **no** standard algorithm tried (crc32, crc32 inverted, adler32, FNV-1, FNV-1a,
+  over either the raw payload or the compressed stream).
+- The 8812-byte decompressed payload contains a **nested `CH`+zlib chunk** — compression
+  inside compression, each layer with its own header hash.
+- Binding for the first time **grew the payload by 64 bytes**: it is an insert, so the
+  same-size trick that makes CONFIG.MEG/`.bui` edits work does not apply here.
+
+So injection means cracking an unknown nested hash, handling nested compression, and
+getting the binding-record TLV byte-exact — and even done perfectly it writes the
+**global** RA settings file (shared with vanilla RA, Steam Cloud synced, persists after
+unsubscribe, can clobber the player's own binds). Wrong file to write from a mod.
+
+**Decision (Luke, 2026-07-23): parked** until ppmforums is reachable again — the thread
+(ppmforums.com/viewtopic.php?t=54809) 500s on every fetch and the Wayback copy is blocked,
+so we have not been able to re-read whether Kushan documented anything beyond the
+player-binds flow. Our notes say he did not, and our own four failed delivery attempts are
+the real evidence, but the thread is worth one read before we settle on the fallback.
+**Fallback when we do settle:** a one-off in-game message at first match telling the player
+to bind Mod Command 1 (people read what is on screen mid-game, unlike a Workshop page).
+Raw evidence: `baseline_before.bin` / `after_f8.bin` in the session scratchpad (not kept).
 
 Audit of the launcher's own data (`docs/config-meg-lever-audit.md`, written after the
 classic-graphics lockout) found EA's mod hotkey path fully built and never connected:
