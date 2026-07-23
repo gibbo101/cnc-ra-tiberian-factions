@@ -5,6 +5,27 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Minelayer (MNLY) — broken prerequisite + needs its own AI brain (2026-07-23)
+
+**1. Malformed prereq, shipped.** `resources/remaster_mods/Vanilla_RA/CCDATA/rules.ini` line 738
+reads `Prerequisite=Prerequisite=weap,fix` — the key is duplicated, so the value parses as a
+building named `Prerequisite=weap` plus `fix`. Whatever the minelayer's gate is meant to be, it
+is not what is in the file. Found during the building-prerequisite audit; fix and confirm the
+intended chain is war factory + service depot.
+
+**2. The minelayer needs bespoke AI handling** (Luke, 2026-07-23). Mine laying is not a behaviour
+the vanilla base/attack logic models at all — a minelayer treated as an ordinary combat vehicle
+either drives it into a fight or parks it. Wants its own brain: where to lay (approaches to the
+base, chokepoints, its own defensive ring rather than random cells), when to reload at a depot,
+and not walking its own minefield. Belongs with the special-unit work in
+`ai-upgrade-plan.md` W5 (capabilities), after the Phase 3 brain lands.
+
+That audit also produced the finding behind the own-yard gate: **no TD building requires a
+construction yard** — the whole TD tree roots at `[TDNUKE]`, which carries no `Prerequisite`
+line at all. Worth re-reading the full prereq table if any tech-gating question comes up.
+
+---
+
 ## ✅ 2026-07-22 — 4.1 campaign blocker CLEARED (was: stock campaigns broken with the mod on)
 
 All four stock-campaign breaks from the 2026-07-21 regression check are fixed, verified in-game,

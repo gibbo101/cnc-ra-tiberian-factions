@@ -1031,6 +1031,60 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     }
 
     /*
+    **	A house builds from its OWN faction's construction yard. Another lineage's yard does
+    **	not unlock this faction's tree -- no prerequisite, no build.
+    **
+    **	This cannot be expressed in rules.ini. The TD chain roots at TDNUKE, which names no
+    **	prerequisite at all, so every TD structure was reachable with nothing but a power
+    **	plant; and TDNUKE / TDPROC / TDHQ / TDFIX are shared by GDI and Nod, so an AND-only
+    **	token list can never say "GDI yard OR Nod yard". Hence the gate lives here.
+    **
+    **	It shows in Unholy Alliance, where a house holds a yard of every faction from the
+    **	start: a Nod house must wait for its own yard before the Hand of Nod is legal instead
+    **	of inheriting the tree from whichever yard deployed first.
+    **
+    **	Skirmish and multiplayer only -- the stock campaigns own the pre-split shared yards
+    **	(STRUCT_CONST, STRUCT_TDFACT) and have to keep teching from them.
+    */
+    if (type->What_Am_I() == RTTI_BUILDINGTYPE && Session.Type != GAME_NORMAL) {
+        BuildingTypeClass const* btype = (BuildingTypeClass const*)type;
+        /*
+        **	Yards themselves arrive by MCV deploy rather than construction, so exempt them:
+        **	gating a yard on owning a yard would be circular.
+        */
+        if (!btype->Is_Construction_Yard()) {
+            /*
+            **	A yard opens the tree of the faction it belongs to. So the test is not "do I
+            **	own MY yard" but "do I own a yard belonging to a faction that can build this"
+            **	-- which lets the shared structures through on either yard while keeping the
+            **	faction-exclusive ones shut. [TDNUKE] is Owner=GoodGuy,BadGuy, so a GDI yard
+            **	provides the power plant; [TDHAND] is Owner=BadGuy, so it does not provide
+            **	the Hand of Nod.
+            */
+            int const factions = HOUSEF_GDI | HOUSEF_NOD | HOUSEF_ALLIES | HOUSEF_SOVIET;
+            int ownable = type->Get_Ownable();
+            if ((ownable & factions) != 0) {
+                int yards = 0;
+                if (Has_Building_Active(STRUCT_TDGFACT)) {
+                    yards |= HOUSEF_GDI;
+                }
+                if (Has_Building_Active(STRUCT_TDNFACT)) {
+                    yards |= HOUSEF_NOD;
+                }
+                if (Has_Building_Active(STRUCT_AFACT)) {
+                    yards |= HOUSEF_ALLIES;
+                }
+                if (Has_Building_Active(STRUCT_SFACT)) {
+                    yards |= HOUSEF_SOVIET;
+                }
+                if ((ownable & yards) == 0) {
+                    return (false);
+                }
+            }
+        }
+    }
+
+    /*
     **	Prereq satisfaction: every populated slot in Prerequisite[] must
     **	correspond to a building Type the house currently owns (active +
     **	unlimbo'd). ActiveBQuantity is the heap-sized counter that handles
@@ -1081,10 +1135,15 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         if (t == STRUCT_POWER && Has_Building_Active(STRUCT_ADVANCED_POWER))
             continue;
         /*
-        **	W2 b3: any construction yard satisfies the vanilla 'fact' token
-        **	([POWR]'s Prerequisite=fact) — post-split a house owns its faction's
-        **	yard, never STRUCT_CONST, and without this the whole Allied/Soviet
-        **	tech tree dies at the power plant.
+        **	The vanilla 'fact' token ([POWR]'s Prerequisite=fact). Post-split a house owns
+        **	its faction's yard, never STRUCT_CONST, so without a remap the whole tech tree
+        **	dies at the power plant.
+        **
+        **	Only the house's OWN faction yard counts. Another lineage's yard does not unlock
+        **	this faction's tree -- no prerequisite, no build. It matters in Unholy Alliance,
+        **	where a house holds a yard of every faction from the start: a Nod house must wait
+        **	for its Nod yard before the Hand of Nod becomes legal, rather than inheriting the
+        **	tree from whichever yard happened to deploy first.
         */
         if (t == STRUCT_CONST
             && (Has_Building_Active(STRUCT_AFACT) || Has_Building_Active(STRUCT_SFACT)
@@ -6648,6 +6707,9 @@ static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType
         if (ra == STRUCT_HELIPAD) {
             return (&BuildingTypeClass::As_Reference(sov ? STRUCT_SHPAD : STRUCT_AHPAD));
         }
+        if (ra == STRUCT_CONST) {
+            return (&BuildingTypeClass::As_Reference(sov ? STRUCT_SFACT : STRUCT_AFACT));
+        }
         return (NULL);
     }
 
@@ -6729,6 +6791,12 @@ static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType
         return (gdi ? c_gafld : NULL);
     case STRUCT_REPAIR:
         return (c_fix);
+    case STRUCT_CONST:
+        // The base builder never queues a construction yard, so this exists for the role
+        // table: in Unholy Alliance a house owns one yard of every lineage from the start,
+        // which makes the yard the one role where cross-lineage ownership is normal.
+        return (gdi ? &BuildingTypeClass::As_Reference(STRUCT_TDGFACT)
+                    : &BuildingTypeClass::As_Reference(STRUCT_TDNFACT));
     default:
         // kennel, gap, sub-pen, etc. have no GDI/Nod equivalent for the
         // base-builder (Nod's vehicles come from the TDWEAP/TDAFLD war-factory
@@ -6939,14 +7007,27 @@ int HouseClass::AI_Building(void)
         bool hasincome = (tf_refqty > 0 && !IsTiberiumShort && tf_harv_count > 0);
 
 #if TF_DEV_BUILD // TF_AI_DIAG -- AI economy decision logging (compiled out of release)
-        if (tf_td && (Frame % 90) == 0) {
+        /*
+        **	Sample on a per-house schedule rather than `Frame % 90`. AI_Building runs on its
+        **	own returned delay, so a frame-modulo test only fires when the two happen to
+        **	coincide -- which yielded 3 samples in a whole match. Track the next due frame
+        **	per house so every house reports at a steady interval whatever its call cadence.
+        */
+        static int _tf_diag_due[HOUSE_COUNT] = {0};
+        int _tf_h = (int)Class->House;
+        bool _tf_diag_now = tf_td && _tf_h >= 0 && _tf_h < HOUSE_COUNT && (int)Frame >= _tf_diag_due[_tf_h];
+        if (_tf_diag_now) {
+            _tf_diag_due[_tf_h] = (int)Frame + 450; // ~30s of game time
+        }
+        if (_tf_diag_now) {
             FILE* _tfdbg = TF_AI_Diag_File();
             if (_tfdbg != NULL) {
                 static char const* _bn[9] =
                     {"TDPROC", "TDHAND", "TDWEAP", "TDNUK", "TDNUK2", "TDFACT", "TDTMPL", "TDEYE", "TDSTEAL"};
                 fprintf(_tfdbg,
                         "F%ld H%d AL%d base=%d Tech=%d $%d Pow=%d Drain=%d PF<1=%d CurB=%d hasinc=%d refQ=%d "
-                        "harvQ=%d tibShort=%d ABScan=%08X | ROLE weap=%d/%d barr=%d/%d hpad=%d/%d fix=%d/%d |",
+                        "harvQ=%d tibShort=%d ABScan=%08X | ROLE yard=%d/%d weap=%d/%d barr=%d/%d hpad=%d/%d "
+                        "fix=%d/%d |",
                         (long)Frame, (int)Class->House, (int)ActLike, (int)IsBaseBuilding, (int)Control.TechLevel,
                         (int)Available_Money(), (int)Power, (int)Drain, (int)(Power_Fraction() < 1),
                         (int)CurBuildings, (int)hasincome, (int)tf_refqty, (int)tf_harv_count, (int)IsTiberiumShort,
@@ -6957,6 +7038,11 @@ int HouseClass::AI_Building(void)
                         **	another lineage (captured, or an Unholy Alliance start) -- exactly
                         **	the case that used to go unseen and provoke a redundant build.
                         */
+                        (int)TF_Role_Quantity(BQuantity, STRUCT_CONST),
+                        (int)(BQuantity[STRUCT_CONST]
+                              + (TF_Skirmish_Type(STRUCT_CONST, ActLike) >= 0
+                                     ? BQuantity[TF_Skirmish_Type(STRUCT_CONST, ActLike)]
+                                     : 0)),
                         (int)TF_Role_Quantity(BQuantity, STRUCT_WEAP),
                         (int)(BQuantity[STRUCT_WEAP]
                               + (TF_Skirmish_Type(STRUCT_WEAP, ActLike) >= 0
@@ -7408,25 +7494,78 @@ int HouseClass::AI_Building(void)
 #endif
 
         /*
-        **	Pick the choice that is the most urgent. Choices sharing the top urgency
-        **	tie-break uniformly (reservoir pick, synced RNG): first-entry-wins let a
-        **	candidate's pool scan order starve it outright -- a temple could sit at max
-        **	urgency for tens of thousands of frames and never win a tie. Equal urgency
-        **	now means an equal chance to be built this cycle.
+        **	Pick the most urgent choice. Among equal urgency the EARLIER candidate wins: the
+        **	pool is assembled in a deliberate order -- advanced power, power, refinery,
+        **	barracks, war factory -- and that scan order is the intended build priority, which
+        **	is what produces the familiar opening. Ties are the normal case rather than the
+        **	exception here (most branches emit URGENCY_MEDIUM), so resolving them at random
+        **	hands the whole opening build order to a coin flip, and a house can open with a
+        **	repair bay it has no army to use.
+        **
+        **	Scan order alone can starve a candidate outright, though -- a temple that always
+        **	sits last at the winning urgency never wins, for tens of thousands of frames. So
+        **	age the losers: a candidate passed over while it was AT the winning urgency takes
+        **	a strike, and once it has taken enough it jumps the queue for one cycle. Ordinary
+        **	priority holds, and nothing starves forever.
         */
+        enum
+        {
+            STARVE_LIMIT = 10
+        };
+        static unsigned char _passed_over[HOUSE_COUNT][STRUCT_COUNT] = {{0}};
+        int hidx = (int)Class->House;
+        bool track = (hidx >= 0 && hidx < HOUSE_COUNT);
+
         UrgencyType best = URGENCY_NONE;
-        int bestindex = -1;
-        int ties = 0;
         for (int index = 0; index < BuildChoice.Count(); index++) {
             UrgencyType u = BuildChoice.Ptr(index)->Urgency;
             if (u > best) {
                 best = u;
-                bestindex = index;
-                ties = 1;
-            } else if (u == best && best != URGENCY_NONE) {
-                ties++;
-                if (Random_Pick(1, ties) == 1) {
-                    bestindex = index;
+            }
+        }
+
+        int bestindex = -1;
+        int winner_age = 0;
+        if (best != URGENCY_NONE) {
+            int starved = -1;
+            int strikes = STARVE_LIMIT - 1;
+            for (int index = 0; index < BuildChoice.Count(); index++) {
+                if (BuildChoice.Ptr(index)->Urgency != best) {
+                    continue;
+                }
+                if (bestindex < 0) {
+                    bestindex = index; // scan order is the default priority
+                }
+                StructType s = BuildChoice.Ptr(index)->Structure;
+                if (track && s >= 0 && s < STRUCT_COUNT && _passed_over[hidx][s] > strikes) {
+                    strikes = _passed_over[hidx][s];
+                    starved = index;
+                }
+            }
+            if (starved >= 0) {
+                bestindex = starved;
+            }
+
+            // Capture before the reset below, or the winner always reads zero.
+            StructType _ws = BuildChoice.Ptr(bestindex)->Structure;
+            if (track && _ws >= 0 && _ws < STRUCT_COUNT) {
+                winner_age = (int)_passed_over[hidx][_ws];
+            }
+
+            if (track) {
+                for (int index = 0; index < BuildChoice.Count(); index++) {
+                    if (BuildChoice.Ptr(index)->Urgency != best) {
+                        continue;
+                    }
+                    StructType s = BuildChoice.Ptr(index)->Structure;
+                    if (s < 0 || s >= STRUCT_COUNT) {
+                        continue;
+                    }
+                    if (index == bestindex) {
+                        _passed_over[hidx][s] = 0;
+                    } else if (_passed_over[hidx][s] < 250) {
+                        _passed_over[hidx][s]++;
+                    }
                 }
             }
         }
@@ -7451,11 +7590,14 @@ int HouseClass::AI_Building(void)
                             (int)BuildChoice.Ptr(_i)->Urgency);
                 }
                 if (best != URGENCY_NONE) {
+                    // strikes = how many cycles the winner had been passed over at the
+                    // winning urgency; non-zero means the anti-starvation age let it jump
+                    // the scan order rather than winning on priority.
                     fprintf(_tfdbg,
-                            " -> WIN %s(u%d ties=%d)\n",
+                            " -> WIN %s(u%d aged=%d)\n",
                             BuildingTypeClass::As_Reference(BuildChoice.Ptr(bestindex)->Structure).IniName,
                             (int)best,
-                            ties);
+                            winner_age);
                 } else {
                     fprintf(_tfdbg, " -> none\n");
                 }
