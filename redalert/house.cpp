@@ -6759,6 +6759,86 @@ static int TF_Skirmish_Type(StructType ra, HousesType actlike)
     return (sub != NULL) ? (int)sub->Type : -1;
 }
 
+/*
+**	The vanilla RA sibling that fills the same base role as `ra`, where RA splits a role
+**	across two structures. STRUCT_NONE when the role is a single vanilla type.
+*/
+static StructType TF_Role_Vanilla_Sibling(StructType ra)
+{
+    switch (ra) {
+    case STRUCT_BARRACKS:
+        return (STRUCT_TENT);
+    case STRUCT_TENT:
+        return (STRUCT_BARRACKS);
+    case STRUCT_ADVANCED_TECH:
+        return (STRUCT_SOVIET_TECH);
+    case STRUCT_SOVIET_TECH:
+        return (STRUCT_ADVANCED_TECH);
+    default:
+        return (STRUCT_NONE);
+    }
+}
+
+/*
+**	How many buildings this house owns that fill a base ROLE, counted across EVERY faction
+**	lineage rather than just its own. A captured enemy war factory is interchangeable
+**	production capacity -- Time_To_Build divides by Factory_Count, so three factories really
+**	do build faster than two -- and it must therefore count against what the AI builds for
+**	itself. Counting only the home faction's type is why an AI that captures a factory
+**	cannot see it and queues a redundant one of its own; in Unholy Alliance, where every
+**	house starts with all four MCVs, that misread is continuous.
+**
+**	CAPACITY ROLES ONLY. An unlock role (tech centre, radar) must NOT come through here:
+**	prerequisite clauses are side-scoped on the owner mask, so a captured Nod Temple
+**	satisfies none of GDI's clauses. Counting it would fill the "tech centre" role and
+**	suppress the AI's own Eye for the rest of the match -- a worse bug than the one this
+**	fixes. The test for any role is whether a captured copy does the job the AI would have
+**	built its own for: throughput yes, unlocking its own tree no.
+*/
+static unsigned TF_Role_Quantity(unsigned const* bquantity, StructType ra)
+{
+    /*
+    **	One representative ActLike per lineage. TF_Skirmish_Equivalent keys GDI off
+    **	HOUSE_GOOD and Nod off HOUSE_BAD, and maps the RA houses onto their own split
+    **	types (AWEAP/SWEAP, AHPAD/SHPAD), so these four cover every tree we can own.
+    */
+    static const HousesType _lineages[] = {HOUSE_GOOD, HOUSE_BAD, HOUSE_ENGLAND, HOUSE_USSR};
+
+    int seen[8];
+    int nseen = 0;
+    unsigned total = 0;
+
+    seen[nseen++] = (int)ra;
+    total += bquantity[ra];
+
+    StructType sibling = TF_Role_Vanilla_Sibling(ra);
+    if (sibling != STRUCT_NONE) {
+        seen[nseen++] = (int)sibling;
+        total += bquantity[sibling];
+    }
+
+    for (int i = 0; i < (int)ARRAY_SIZE(_lineages); i++) {
+        int type = TF_Skirmish_Type(ra, _lineages[i]);
+        if (type < 0) {
+            continue;
+        }
+        // Roles that share one building across factions (refinery, service depot) resolve
+        // to the same type for several lineages -- count each distinct type once.
+        bool dup = false;
+        for (int s = 0; s < nseen; s++) {
+            if (seen[s] == type) {
+                dup = true;
+                break;
+            }
+        }
+        if (!dup && nseen < (int)ARRAY_SIZE(seen)) {
+            seen[nseen++] = type;
+            total += bquantity[type];
+        }
+    }
+    return (total);
+}
+
 /***********************************************************************************************
  * HouseClass::AI_Building -- Determines what building to build.                               *
  *                                                                                             *
@@ -6830,8 +6910,7 @@ int HouseClass::AI_Building(void)
         int money = Available_Money();
         int level = Control.TechLevel;
         bool tf_td = (ActLike == HOUSE_GOOD || ActLike == HOUSE_BAD);
-        int tf_proc = TF_Skirmish_Type(STRUCT_REFINERY, ActLike);
-        unsigned tf_refqty = BQuantity[STRUCT_REFINERY] + (tf_proc >= 0 ? BQuantity[tf_proc] : 0);
+        unsigned tf_refqty = TF_Role_Quantity(BQuantity, STRUCT_REFINERY);
         // GDI/Nod tier-2 economy gate, shared by the comm centre, the tech centre and the
         // repair bay. Each is affordable long before it is affordable *and* worth having,
         // and the vanilla urgencies race them against the war factory, so a house can tech
@@ -6840,8 +6919,7 @@ int HouseClass::AI_Building(void)
         // The refinery branch below is hard-blocked while tiberium is short, so a house on
         // a depleted map can never reach the second refinery. Treat that as satisfying the
         // economy requirement rather than locking the upper tier away for the whole match.
-        int tf_weap_t = TF_Skirmish_Type(STRUCT_WEAP, ActLike);
-        unsigned tf_weapqty = BQuantity[STRUCT_WEAP] + (tf_weap_t >= 0 ? BQuantity[tf_weap_t] : 0);
+        unsigned tf_weapqty = TF_Role_Quantity(BQuantity, STRUCT_WEAP);
         bool tf_economy_ready = ((tf_refqty >= 2 || IsTiberiumShort) && tf_weapqty >= 1);
         // Tiberian Factions: count harvesters the RELIABLE way. UQuantity reads 0 even
         // with live, earning harvesters because a TD harvester docking at its refinery is
@@ -6868,11 +6946,37 @@ int HouseClass::AI_Building(void)
                     {"TDPROC", "TDHAND", "TDWEAP", "TDNUK", "TDNUK2", "TDFACT", "TDTMPL", "TDEYE", "TDSTEAL"};
                 fprintf(_tfdbg,
                         "F%ld H%d AL%d base=%d Tech=%d $%d Pow=%d Drain=%d PF<1=%d CurB=%d hasinc=%d refQ=%d "
-                        "harvQ=%d tibShort=%d ABScan=%08X |",
+                        "harvQ=%d tibShort=%d ABScan=%08X | ROLE weap=%d/%d barr=%d/%d hpad=%d/%d fix=%d/%d |",
                         (long)Frame, (int)Class->House, (int)ActLike, (int)IsBaseBuilding, (int)Control.TechLevel,
                         (int)Available_Money(), (int)Power, (int)Drain, (int)(Power_Fraction() < 1),
                         (int)CurBuildings, (int)hasincome, (int)tf_refqty, (int)tf_harv_count, (int)IsTiberiumShort,
-                        (unsigned)ActiveBScan);
+                        (unsigned)ActiveBScan,
+                        /*
+                        **	Aggregate role count vs the home-faction-only count it replaced.
+                        **	A gap between the two means this house holds a role building from
+                        **	another lineage (captured, or an Unholy Alliance start) -- exactly
+                        **	the case that used to go unseen and provoke a redundant build.
+                        */
+                        (int)TF_Role_Quantity(BQuantity, STRUCT_WEAP),
+                        (int)(BQuantity[STRUCT_WEAP]
+                              + (TF_Skirmish_Type(STRUCT_WEAP, ActLike) >= 0
+                                     ? BQuantity[TF_Skirmish_Type(STRUCT_WEAP, ActLike)]
+                                     : 0)),
+                        (int)TF_Role_Quantity(BQuantity, STRUCT_BARRACKS),
+                        (int)(BQuantity[STRUCT_BARRACKS] + BQuantity[STRUCT_TENT]
+                              + (TF_Skirmish_Type(STRUCT_BARRACKS, ActLike) >= 0
+                                     ? BQuantity[TF_Skirmish_Type(STRUCT_BARRACKS, ActLike)]
+                                     : 0)),
+                        (int)TF_Role_Quantity(BQuantity, STRUCT_HELIPAD),
+                        (int)(BQuantity[STRUCT_HELIPAD]
+                              + (TF_Skirmish_Type(STRUCT_HELIPAD, ActLike) >= 0
+                                     ? BQuantity[TF_Skirmish_Type(STRUCT_HELIPAD, ActLike)]
+                                     : 0)),
+                        (int)TF_Role_Quantity(BQuantity, STRUCT_REPAIR),
+                        (int)(BQuantity[STRUCT_REPAIR]
+                              + (TF_Skirmish_Type(STRUCT_REPAIR, ActLike) >= 0
+                                     ? BQuantity[TF_Skirmish_Type(STRUCT_REPAIR, ActLike)]
+                                     : 0)));
                 for (int _i = 0; _i < 9; _i++) {
                     BuildingTypeClass const* _bt = BuildingTypeClass::As_Pointer(_bn[_i]);
                     fprintf(_tfdbg, " %s(cb=%d,q=%d)", _bn[_i],
@@ -6955,8 +7059,7 @@ int HouseClass::AI_Building(void)
         **	Always make sure there is a barracks available, but only if there
         **	will be sufficient money to train troopers.
         */
-        int tf_barr = TF_Skirmish_Type(STRUCT_BARRACKS, ActLike);
-        current = BQuantity[STRUCT_BARRACKS] + BQuantity[STRUCT_TENT] + (tf_barr >= 0 ? BQuantity[tf_barr] : 0);
+        current = TF_Role_Quantity(BQuantity, STRUCT_BARRACKS);
         if (current < Round_Up(Rule.BarracksRatio * fixed(CurBuildings)) && current < (unsigned)Rule.BarracksLimit
             && (money > 300 || hasincome)) {
             b = TF_Skirmish_Pick(STRUCT_BARRACKS, ActLike);
@@ -7027,8 +7130,7 @@ int HouseClass::AI_Building(void)
         **	A source of combat vehicles is always needed, but only if there will
         **	be sufficient money to build vehicles.
         */
-        int tf_weap = TF_Skirmish_Type(STRUCT_WEAP, ActLike);
-        current = BQuantity[STRUCT_WEAP] + (tf_weap >= 0 ? BQuantity[tf_weap] : 0);
+        current = TF_Role_Quantity(BQuantity, STRUCT_WEAP);
         if (current < Round_Up(Rule.WarRatio * fixed(CurBuildings)) && current < (unsigned)Rule.WarLimit
             && (money > 2000 || hasincome)) {
             b = TF_Skirmish_Pick(STRUCT_WEAP, ActLike);
@@ -7068,8 +7170,7 @@ int HouseClass::AI_Building(void)
             **  GDI Mammoth Tank. Vanilla's repair-bay build is #ifdef OLD, so
             **  this is the GDI/Nod-only revival.
             */
-            int tf_repair = TF_Skirmish_Type(STRUCT_REPAIR, ActLike);
-            current = BQuantity[STRUCT_REPAIR] + (tf_repair >= 0 ? BQuantity[tf_repair] : 0);
+            current = TF_Role_Quantity(BQuantity, STRUCT_REPAIR);
             // A repair bay only pays for itself once there are vehicles to repair, so it
             // shares the economy gate above. That gate lives here rather than in the
             // urgency because URGENCY_LOW is never reached at all (the consumer builds one
@@ -7247,8 +7348,7 @@ int HouseClass::AI_Building(void)
         /*
         **	A helipad would be good.
         */
-        int tf_hpad = TF_Skirmish_Type(STRUCT_HELIPAD, ActLike);
-        current = BQuantity[STRUCT_HELIPAD] + (tf_hpad >= 0 ? BQuantity[tf_hpad] : 0);
+        current = TF_Role_Quantity(BQuantity, STRUCT_HELIPAD);
         if (current < Round_Up(Rule.HelipadRatio * fixed(CurBuildings))
             && current < (unsigned)(enemy_helipads > Rule.HelipadLimit ? enemy_helipads : Rule.HelipadLimit)) {
             b = TF_Skirmish_Pick(STRUCT_HELIPAD, ActLike);
@@ -7273,8 +7373,7 @@ int HouseClass::AI_Building(void)
         /*
         **	An airstrip would be good.
         */
-        int tf_gafld = TF_Skirmish_Type(STRUCT_AIRSTRIP, ActLike);
-        current = BQuantity[STRUCT_AIRSTRIP] + (tf_gafld >= 0 ? BQuantity[tf_gafld] : 0);
+        current = TF_Role_Quantity(BQuantity, STRUCT_AIRSTRIP);
         if (current < Round_Up(Rule.AirstripRatio * fixed(CurBuildings))
             && current < (unsigned)(enemy_airstrips > Rule.AirstripLimit ? enemy_airstrips : Rule.AirstripLimit)) {
             b = TF_Skirmish_Pick(STRUCT_AIRSTRIP, ActLike);

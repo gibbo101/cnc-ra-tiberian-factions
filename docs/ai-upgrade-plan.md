@@ -188,6 +188,64 @@ type's count is zero. The ad-hoc sums above are the pattern to lift into a role 
 is the "role tag in rules.ini" the substitution comment at `house.cpp:6615` already calls the
 clean fix, and matches finding 4's role-flag refactor.
 
+#### Counting rules — CORRECTED 2026-07-23 (Luke)
+
+That rule is too blunt. Applied literally it introduces a worse bug than the one it fixes.
+There are two kinds of role and they count differently:
+
+- **Capacity roles** (war factory, barracks, helipad, refinery, power): **aggregate across
+  every lineage.** A captured factory is interchangeable throughput — `Time_To_Build` divides
+  by `Factory_Count` — so it must count against what the AI builds for itself. This is the
+  redundant-build fix.
+- **Unlock roles** (tech centres TDEYE/TDTMPL/atek/stek, radar TDHQ/dome): **count only types
+  that satisfy this house's own prereq chain.** Prereq clauses are side-scoped on the owner
+  mask (`house.cpp:1184`–`1286`, `(own & HOUSEF_GDI)` etc.) under the locked prereq policy, so
+  a captured Nod Temple satisfies none of GDI's clauses. Aggregate it and the Temple fills the
+  "tech centre" role, permanently suppressing the AI's own Eye — no Ion Cannon, no top tier,
+  for the rest of the match.
+
+The test for any role: **does a captured copy do the job I would have built mine for?**
+Throughput yes; unlocking my own tree no.
+
+**Per-lineage caps ("2 GDI + 2 Nod + 2 Allied + 2 Soviet") were considered and rejected.** They
+do not fix the bug at all — a GDI AI with 1 own factory that captures a Nod one still reads
+"GDI 1, cap 2" and builds another. Separate buckets *are* the current defect; four buckets is
+still four buckets. They also discard the economy-aware `WarRatio * CurBuildings` target for a
+fixed ceiling that does not care what the AI can afford.
+
+**Frequency.** In ordinary skirmish captures are rare, so the redundant build is an edge case
+there. In **Unholy Alliance** every house, AI included, starts with an MCV of all four factions
+(`scenario.cpp:3593`), so all four lineages are live from frame 0 and the counting is wrong
+continuously on every role. That mode is also where the AI is most broken today: home-only
+`TF_Skirmish_Pick` means three of its four MCVs are dead weight.
+
+#### Where the cap comes from — AI Boost, re-surveyed 2026-07-23
+
+AI Boost already solved the cap question; port its shape rather than inventing one
+(`reference/ai-boost2/WorkshopContent/AIBoost/CCDATA/AIBOOST.INI`):
+
+- **One limit per ROLE, not per faction** — `AIWarFactoryLimitBasic=4` is four war factories,
+  whoever built them. Independent confirmation of aggregate counting.
+- **×2 when a construction yard is built *or captured*** — capacity earned by holding more
+  production bases. This is the "harder AI keeps redundancy" idea, scaled by what the house
+  actually owns instead of a flat difficulty bonus.
+- **`AIAllowDynamicBaseGrow`** — if the enemy average exceeds my cap, raise mine to match
+  (barracks, war factory, naval, helipads, airfields, defences). Redundancy that answers the
+  opponent, so a turtling human faces a bigger AI base.
+- **`AIStrategyMode`** — a per-house strategy roll (naval / air / infantry / tank rush, or
+  defender, which caps every factory at 1 and spends on defences). Directly serves the
+  "personality/randomness per AI house" caution above.
+- **`AllowTechStealing`** — their cross-side capture-tech switch; worth reading before we
+  extend ours, and it documents a human-side quirk (yard must be re-deployed to unlock).
+
+**Difficulty attaches to the mechanism, not to a number** ([[feedback-difficulty-philosophy]]):
+the tier decides whether dynamic growth engages at all — Easy pinned to a low fixed limit, Hard
+scaling to the enemy average — rather than handing Hard +2 factories. The AI still pays full
+price for every building; no cost/armour/firepower bias. Assign in W7.
+
+Our policy stays lobby difficulty + `rules.ini` dials: take AI Boost's mechanism, not its INI
+surface.
+
 **The home-faction bias is a weight, not a gate** (keeps difficulty behavioural —
 `feedback-difficulty-philosophy`). Useful emergent property: with aggregate role counting the
 AI fills each role *once*, and the weight decides which lineage fills it — so "GDI builds GDI
