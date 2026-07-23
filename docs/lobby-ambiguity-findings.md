@@ -1,9 +1,12 @@
 # Lobby difficulty ambiguity — overnight findings (2026-07-23)
 
 **Status: discriminator FOUND and validated over 28 ambiguous reproductions (0 wrong, 0
-undecided). Resolver implemented in SHADOW MODE (logs its decision, does not yet change
-behaviour). Not committed, not shipped — awaiting Luke's review. All work uncommitted in
-the tree; dev DLL deployed to the desktop prefix only.**
+undecided). Resolver is APPLIED on `main` (2026-07-23) — an ambiguous read now resolves
+instead of falling back, with branch U keeping the old fail-closed behaviour. NOT yet
+released: it rides the AI milestone release rather than its own patch, because 4.2.0's
+on-screen readout already made the fallback visible and the difficulty tiers do not carry
+much behavioural weight until W7 lands (Luke, 2026-07-23). That gives it a long local soak
+and a Windows confirmation window before it reaches players.**
 
 Companion to `lobby-ambiguity-work-order.md` (the plan) and `lobby-difficulty-ram-spike.md`
 (the subsystem). Everything below was measured under Proton on the desktop prefix, dev DLL,
@@ -88,13 +91,17 @@ freshness, same outcome.)
 
 ## Implementation status
 
-- `redalert/dllinterface.cpp`: `TF_Resolve_Lobby_Ambiguity()` (dev-only) + the forensic
-  probe (candidate registry, refeq/refwin counts, `RESOLVE` log line). SHADOW MODE: it logs
-  the difficulty it WOULD apply and the branch, but `TF_Read_Lobby_AI_Difficulties` still
-  returns 0 (fail-closed) on ambiguity, so shipped behaviour is unchanged.
-- To PROMOTE to a real fix: on ambiguity, call the resolver; if it returns R/F/M, apply its
-  vector instead of returning 0; if U, keep failing closed. One localized change, plus
-  moving the resolver + referrer scan out of `#if TF_DEV_BUILD`. NEEDS LUKE'S SIGN-OFF.
+- `redalert/dllinterface.cpp`: the candidate registry, `TF_Count_Referrers()` and
+  `TF_Resolve_Lobby_Ambiguity()` all build in release. On an ambiguous read
+  `TF_Read_Lobby_AI_Difficulties` counts refeq/refwin per candidate, resolves, and applies
+  the resolved vector; branch `U` returns 0 exactly as before.
+- The referrer sweep runs **only when the read is actually ambiguous** — it is a full
+  address-space scan per candidate, and there is no signal to extract otherwise. In the
+  common (unambiguous) case nothing extra runs.
+- The raw record dump (`PRE`/`REC` bytes) and the `LOBBYCAND` / `CAND` / `RESOLVE` log
+  lines stay `#if TF_DEV_BUILD`. The resolver reads none of those bytes — Route A is dead,
+  they are kept only so a future ambiguity can be re-examined offline.
+- Both configurations build clean (dev and `-DTF_DEV_BUILD=0`).
 
 ## Honesty / residual risk
 
@@ -110,9 +117,14 @@ freshness, same outcome.)
 - The freshness (F) and majority (M) branches are empirical (allocator behaviour); the
   fail-closed backstop bounds the risk — the fix is never wrong, only occasionally deferring.
 
-## Recommendation
+## Outcome
 
-Promote the resolver from shadow to applied, keeping fail-closed as branch U, with the
-on-screen readout (shipped 4.2.0) still surfacing any residual fallback. If cross-platform
-caution is wanted, ship only branch R (exact referrer) + fail-closed first — principled,
-never wrong, ~70% coverage — and add F/M later once confirmed on Windows.
+Promoted with all three branches (Luke, 2026-07-23), keeping fail-closed as branch U and
+the 4.2.0 on-screen readout surfacing any residual fallback. All-branches rather than
+R-only was judged safe because no branch can pick a stale over a live copy — the worst
+case is the fallback we already shipped — and because holding the release until the AI
+milestone buys a long soak in which a wrong pick would surface locally first.
+
+**Owed before it ships:** one confirming run on a live ambiguous scan (the resolver build
+never saw one — the night it was written, sessions stayed clean), and ideally a Windows
+observation, since every measurement here is under Proton.
