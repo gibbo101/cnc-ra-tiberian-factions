@@ -1072,4 +1072,24 @@ public:
     */
 };
 
+#if TF_DEV_BUILD
+/*
+**	Per-predicate tally from the most recent Find_Cell_In_Zone sweep. A placement
+**	failure only reports that nowhere was legal; these counts say which test did
+**	the rejecting, which distinguishes "the base has no physical room" from "a
+**	predicate is wrong". Overwritten by every scan -- read it immediately.
+*/
+struct TFPlaceScanStruct
+{
+    int Radar;      // outside the radar map
+    int Zone;       // outside the base zones (beyond 4x Radius)
+    int Legal;      // failed Legal_Placement (terrain, occupancy, footprint)
+    int Proximity;  // legal, but not adjacent to a friendly base building
+    int Ok;         // passed everything
+    COORDINATE Center;
+    int Radius;
+};
+extern TFPlaceScanStruct TF_PlaceScan;
+#endif
+
 #endif

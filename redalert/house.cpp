@@ -7085,6 +7085,8 @@ static unsigned TF_Role_Quantity(unsigned const* bquantity, StructType ra)
  *   11/03/1996 JLB : Tries to match aircraft of enemy                                         *
  *=============================================================================================*/
 #if TF_DEV_BUILD // TF_AI_DIAG -- shared log file for the AI diagnostics (also used from foot.cpp).
+TFPlaceScanStruct TF_PlaceScan = {0, 0, 0, 0, 0, 0, 0};
+
 FILE* TF_AI_Diag_File(void)
 {
     static FILE* f = NULL;
@@ -9799,23 +9801,57 @@ CELL HouseClass::Find_Cell_In_Zone(TechnoClass const* techno, ZoneType zone) con
         list = techno->Occupy_List(true);
     }
 
+#if TF_DEV_BUILD // TF_AI_DIAG -- record which predicate rejected every cell, so a placement
+                 // failure says WHY there was nowhere to build rather than just that there was.
+    TF_PlaceScan.Radar = 0;
+    TF_PlaceScan.Zone = 0;
+    TF_PlaceScan.Legal = 0;
+    TF_PlaceScan.Proximity = 0;
+    TF_PlaceScan.Ok = 0;
+    TF_PlaceScan.Center = Center;
+    TF_PlaceScan.Radius = Radius;
+#endif
+
     /*
     **	Find a legal placement position as close as possible to the picked location while still
     **	remaining within the zone.
     */
     for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
         //		if (Map.In_Radar(cell)) {
-        if (Map.In_Radar(cell) && Which_Zone(cell) != ZONE_NONE) {
+        if (!Map.In_Radar(cell)) {
+#if TF_DEV_BUILD
+            TF_PlaceScan.Radar++;
+#endif
+            continue;
+        }
+        if (Which_Zone(cell) == ZONE_NONE) {
+#if TF_DEV_BUILD
+            TF_PlaceScan.Zone++;
+#endif
+            continue;
+        }
+        {
             bool ok = ttype->Legal_Placement(cell);
+#if TF_DEV_BUILD
+            if (!ok) {
+                TF_PlaceScan.Legal++;
+            }
+#endif
 
             /*
             **	Another (adjacency) check is required for buildings.
             */
             if (ok && list != NULL && !Map.Passes_Proximity_Check(ttype, techno->House->Class->House, list, cell)) {
                 ok = false;
+#if TF_DEV_BUILD
+                TF_PlaceScan.Proximity++;
+#endif
             }
 
             if (ok) {
+#if TF_DEV_BUILD
+                TF_PlaceScan.Ok++;
+#endif
                 int dist = Distance(Cell_Coord(cell), Cell_Coord(trycell));
                 if (bestval == -1 || dist < bestval) {
                     bestval = dist;

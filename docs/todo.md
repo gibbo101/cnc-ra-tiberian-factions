@@ -5,17 +5,22 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
-## ⭐ AI passivity: first attack wave at frame ~27,500 (2026-07-23) — FIX BUILT, NEEDS A RUN
+## ⭐ RESUME HERE — GDI cannot place buildings (2026-07-23)
 
-**Cadence fix implemented same day (W4.1 in `ai-upgrade-plan.md`), built clean, NOT yet played.**
-The decline is now conditioned on committable army size (floor / ceiling / mid-band roll) and a
-declined opportunity costs 30–90 s instead of 1.5–6 min. Verify in the next run:
-- `WAVE-` lines now carry `why= army= floor= ceiling= iq=` — check `why=massing` early, then
-  `why=ceiling` or `why=roll` for the first launch, and that first launch lands **far** before
-  frame 27,500.
-- Watch the home guard does not jitter (the reposition rate gate).
-- Also unverified in the same build: `feab517`'s frame-based ageing — confirm defences stop
-  jumping the build queue ahead of a war factory / second refinery.
+**⭐ Full handover: `docs/ai-placement-session-handover.md`.** Build with reject counters is
+already deployed to the desktop prefix — launch a skirmish and read the first `PLACE-FAIL`
+(lands ~F700) to find out which predicate rejects every cell. Decision owed on EA's one-word
+`Cell_Coord` fix. Four falsified theories listed there; don't re-chase them.
+
+## ✅ AI passivity: first attack wave at frame ~27,500 — FIXED AND VERIFIED (2026-07-23)
+
+W4.1 cadence work shipped in `0b168df` and verified live the same day: **first wave F3640 against
+the F27,502 baseline (7.6x earlier)**, recheck-on-decline measured at 943/946 frames against 900
+designed, and `roll` / `roll-declined` / `ceiling` / floor-decay all exercised across both
+difficulty tiers. `feab517`'s frame-based ageing also verified in the same runs (starved
+candidates aged in at 8,087-9,402 frames and won late, not as an early bloc). Detail in
+`ai-upgrade-plan.md` W4.1. Only `why=massing` remains unexercised, both houses being past the
+floor at first contact.
 
 Original observation below.
 

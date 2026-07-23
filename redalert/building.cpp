@@ -3352,13 +3352,21 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 FILE* _tfdbg = TF_AI_Diag_File();
                 if (_tfdbg != NULL) {
                     fprintf(_tfdbg,
-                            "F%ld H%d AL%d PLACE-FAIL %s reason=%s cell=%d\n",
+                            "F%ld H%d AL%d PLACE-FAIL %s reason=%s cell=%d | rejects radar=%d zone=%d "
+                            "legal=%d prox=%d ok=%d | center=%d radius=%d\n",
                             (long)Frame,
                             (int)House->Class->House,
                             (int)House->ActLike,
                             base->Class_Of().IniName,
                             coord ? "unlimbo-refused" : "no-location",
-                            coord ? (int)Coord_Cell(coord) : -1);
+                            coord ? (int)Coord_Cell(coord) : -1,
+                            TF_PlaceScan.Radar,
+                            TF_PlaceScan.Zone,
+                            TF_PlaceScan.Legal,
+                            TF_PlaceScan.Proximity,
+                            TF_PlaceScan.Ok,
+                            (int)Coord_Cell(TF_PlaceScan.Center),
+                            TF_PlaceScan.Radius);
                     fflush(_tfdbg);
                 }
             }
