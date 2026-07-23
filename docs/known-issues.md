@@ -203,6 +203,32 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## AI base building
+
+### War factory / repair bay thrash — the economy gate counts buildings that don't exist yet (2026-07-23)
+- **Severity:** major. GDI's war factory landed around **F10,000 instead of ~F1,000**, so the GDI
+  AI had no vehicle production for the first ten thousand frames and fielded near-infantry-only
+  armies (82 infantry produced against ~9 vehicles in the measured match).
+- **Status:** root-caused and confirmed in code. **Fix identified, NOT applied.**
+- **Symptom:** `MOD_DEBUG_AI.txt` shows `PROD start` alternating between `TDWEAP` and `TDFIX`
+  every decision cycle, each new order replacing the in-flight one so neither completes. H13 spent
+  **6 `TDWEAP` starts and 10 `TDFIX` starts** to finish roughly two buildings, with `CurB` frozen
+  at 10-11 for ~6,000 frames. The `ROLE` field flips in lockstep: `weap=1/1 fix=0/0` on the cycles
+  where TDWEAP is in flight, `weap=0/0 fix=1/1` where TDFIX is.
+- **Cause:** `house.cpp:7143/7152` gate `tf_economy_ready` on `TF_Role_Quantity(BQuantity, ...)`.
+  `BQuantity[]` increments in `Tracking_Add` when the object is **created in limbo** — i.e. the
+  moment production starts — whereas `ActiveBQuantity` "mirrors ActiveBScan semantics (unlimbo'd +
+  locked)" per its declaration comment in `house.h`. So starting a war factory immediately reads
+  as *owning* one, which unlocks TDFIX at a higher urgency; TDFIX replaces it; the count drops back
+  to zero; TDWEAP wins again. A clean two-state oscillator. `CurBuildings` has the same property,
+  which is why `CurB` counted buildings that were never placed.
+- **Fix direction:** gate `tf_economy_ready` on `ActiveBQuantity` (completed buildings only) and
+  leave the "do I need another one of these" counts at 7310/7381/7421/7599/7624 on `BQuantity`,
+  since those *should* see in-flight orders or the AI will queue duplicates.
+- **Not the whole story:** the deeper defect is that choosing a new `BuildStructure` replaces an
+  in-flight factory order at all. Stabilising the choice avoids the thrash; it does not make
+  build orders atomic.
+
 ## Pathfinding / AI cooperation
 
 ### Units livelock retrying a doomed path forever — ROOT-CAUSED, NO FIX 2026-07-19

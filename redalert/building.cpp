@@ -3343,6 +3343,26 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                     return (2);
                 }
             }
+
+#if TF_DEV_BUILD // TF_AI_DIAG -- reaching here means the finished building could not be put
+                 // down, and the caller abandons it. Distinguishes "no legal cell was found"
+                 // from "a cell was found but Unlimbo refused it".
+            if (!House->IsHuman) {
+                extern FILE* TF_AI_Diag_File(void);
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg,
+                            "F%ld H%d AL%d PLACE-FAIL %s reason=%s cell=%d\n",
+                            (long)Frame,
+                            (int)House->Class->House,
+                            (int)House->ActLike,
+                            base->Class_Of().IniName,
+                            coord ? "unlimbo-refused" : "no-location",
+                            coord ? (int)Coord_Cell(coord) : -1);
+                    fflush(_tfdbg);
+                }
+            }
+#endif
         }
         break;
 
@@ -7793,6 +7813,30 @@ void BuildingClass::Factory_AI(void)
                 **	funds available for something else.
                 */
                 if (PlacementDelay == 0 && !Factory->Is_Building()) {
+#if TF_DEV_BUILD // TF_AI_DIAG -- a stalled order is scrapped here rather than paused, so an
+                 // item that repeatedly reaches PROD start and never appears died on this
+                 // line. Records what was lost, how far it got, and whether the house could
+                 // actually afford to continue.
+                    if (!House->IsHuman) {
+                        extern FILE* TF_AI_Diag_File(void);
+                        FILE* _tfdbg = TF_AI_Diag_File();
+                        TechnoClass* _obj = Factory->Get_Object();
+                        if (_tfdbg != NULL) {
+                            fprintf(_tfdbg,
+                                    "F%ld H%d AL%d PROD abandon %s pct=%d cash=%d completed=%d at %s#%d\n",
+                                    (long)Frame,
+                                    (int)House->Class->House,
+                                    (int)House->ActLike,
+                                    _obj != NULL ? _obj->Class_Of().IniName : "(none)",
+                                    Factory->Completion(),
+                                    House->Available_Money(),
+                                    (int)Factory->Has_Completed(),
+                                    Class->IniName,
+                                    (int)ID);
+                            fflush(_tfdbg);
+                        }
+                    }
+#endif
                     Factory->Abandon();
                     delete (FactoryClass*)Factory;
                     Factory = 0;
