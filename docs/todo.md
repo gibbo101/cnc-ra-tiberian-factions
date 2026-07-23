@@ -5,7 +5,21 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
-## ⭐ AI passivity: first attack wave at frame ~27,500 (2026-07-23, observed)
+## ⭐ AI passivity: first attack wave at frame ~27,500 (2026-07-23) — FIX BUILT, NEEDS A RUN
+
+**Cadence fix implemented same day (W4.1 in `ai-upgrade-plan.md`), built clean, NOT yet played.**
+The decline is now conditioned on committable army size (floor / ceiling / mid-band roll) and a
+declined opportunity costs 30–90 s instead of 1.5–6 min. Verify in the next run:
+- `WAVE-` lines now carry `why= army= floor= ceiling= iq=` — check `why=massing` early, then
+  `why=ceiling` or `why=roll` for the first launch, and that first launch lands **far** before
+  frame 27,500.
+- Watch the home guard does not jitter (the reposition rate gate).
+- Also unverified in the same build: `feab517`'s frame-based ageing — confirm defences stop
+  jumping the build queue ahead of a war factory / second refinery.
+
+Original observation below.
+
+
 
 Unholy Alliance run, 1 GDI + 1 Nod, both `IQ=4` (Normal). Both houses produced real armies (73
 and 55 combat units) and had found each other, yet sat passive for half an hour of game time:

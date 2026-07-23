@@ -6245,12 +6245,155 @@ UrgencyType HouseClass::Check_Raise_Power(void) const
     return (urgency);
 }
 
+/*
+**	Counts the units this house could actually commit to an attack wave: armed
+**	ground units, armed infantry and armed aircraft. Harvesters and MCVs are
+**	excluded because sending either is never an attack, and engineers are
+**	excluded because they carry no combat power even though a launching wave
+**	does take them along.
+*/
+int HouseClass::TF_Committable_Army(void) const
+{
+    assert(Houses.ID(this) == ID);
+
+    int army = 0;
+    int index;
+
+    for (index = 0; index < Units.Count(); index++) {
+        UnitClass const* u = Units.Ptr(index);
+        if (u != NULL && !u->IsInLimbo && u->House == this && u->Strength > 0 && u->Is_Weapon_Equipped()
+            && !u->Class->IsToHarvest && !u->Class->Is_MCV()) {
+            army++;
+        }
+    }
+    for (index = 0; index < Infantry.Count(); index++) {
+        InfantryClass const* i = Infantry.Ptr(index);
+        if (i != NULL && !i->IsInLimbo && i->House == this && i->Strength > 0 && i->Is_Weapon_Equipped()) {
+            army++;
+        }
+    }
+    for (index = 0; index < Aircraft.Count(); index++) {
+        AircraftClass const* a = Aircraft.Ptr(index);
+        if (a != NULL && !a->IsInLimbo && a->House == this && a->Strength > 0 && a->Is_Weapon_Equipped()) {
+            army++;
+        }
+    }
+
+    return (army);
+}
+
+/*
+**	Attack-wave pacing dials, keyed off the house IQ (Easy 3, Medium 4,
+**	Hard 5). Difficulty moves frequency and responsiveness ONLY: a harder AI
+**	looks again sooner, commits more readily and rebuilds its wave faster, so
+**	it is more aggressive at every stage of the match rather than merely later
+**	and bigger. The floor is deliberately NOT a difficulty dial -- attacking
+**	with a token force is incompetence rather than mercy, and since IQ does
+**	not gate production (rules.ini [IQ] Production=3) every tier reaches a
+**	given army size at much the same minute, so a lower floor would only make
+**	the easier AI attack FIRST.
+*/
+struct TFWaveDialsStruct
+{
+    int Floor;         // Never launch below this many committable units.
+    int Ceiling;       // Always launch at or above this many.
+    int MidChance;     // Percent chance of launching between the two.
+    int Recheck;       // Frames to wait after declining.
+    int IntervalScale; // Percent scale on the post-launch interval.
+};
+
+static TFWaveDialsStruct TF_Wave_Dials(int iq)
+{
+    TFWaveDialsStruct dials;
+
+    if (iq <= 3) {
+        dials.Floor = 10;
+        dials.Ceiling = 32;
+        dials.MidChance = 25;
+        dials.Recheck = TICKS_PER_SECOND * 90;
+        dials.IntervalScale = 133;
+    } else if (iq == 4) {
+        dials.Floor = 10;
+        dials.Ceiling = 30;
+        dials.MidChance = 40;
+        dials.Recheck = TICKS_PER_SECOND * 60;
+        dials.IntervalScale = 100;
+    } else {
+        dials.Floor = 10;
+        dials.Ceiling = 26;
+        dials.MidChance = 60;
+        dials.Recheck = TICKS_PER_SECOND * 30;
+        dials.IntervalScale = 67;
+    }
+
+    return (dials);
+}
+
 bool HouseClass::AI_Attack(UrgencyType)
 {
     assert(Houses.ID(this) == ID);
 
-    bool shuffle = !((Frame > TICKS_PER_MINUTE && !CurBuildings) || Percent_Chance(33));
+    /*
+    **	Decide whether this opportunity becomes a wave. Vanilla rolled a flat
+    **	33% here and, win or lose, then slept for the full attack interval --
+    **	so a declined roll cost minutes and the first wave routinely landed
+    **	tens of thousands of frames in. The decision is now conditioned on the
+    **	size of the army that could actually be committed: below the floor the
+    **	house deliberately holds rather than feeding units in piecemeal, at or
+    **	above the ceiling it must commit rather than hoard, and only between
+    **	the two does the roll decide. A declined opportunity costs seconds
+    **	instead of minutes, because it was declined for a reason that will
+    **	change shortly.
+    */
+    TFWaveDialsStruct dials = TF_Wave_Dials(IQ);
+    int army = TF_Committable_Army();
+
+    /*
+    **	A house whose economy has been crippled might never reach the floor and
+    **	would then sit passive for the rest of the match. Past the decay mark
+    **	the floor gives way a unit at a time so that whatever force it has left
+    **	eventually commits.
+    */
+    enum
+    {
+        TF_WAVE_FLOOR_MIN = 4,
+        TF_WAVE_FLOOR_DECAY_START = TICKS_PER_MINUTE * 20,
+        TF_WAVE_FLOOR_DECAY_PERIOD = TICKS_PER_MINUTE * 2
+    };
+    int floor = dials.Floor;
+    if (Frame > TF_WAVE_FLOOR_DECAY_START) {
+        floor -= (int)((Frame - TF_WAVE_FLOOR_DECAY_START) / TF_WAVE_FLOOR_DECAY_PERIOD);
+        if (floor < TF_WAVE_FLOOR_MIN) {
+            floor = TF_WAVE_FLOOR_MIN;
+        }
+    }
+
+    char const* reason;
+    bool launch;
+    if (Frame > TICKS_PER_MINUTE && !CurBuildings) {
+        launch = true;
+        reason = "desperation";
+    } else if (army >= dials.Ceiling) {
+        launch = true;
+        reason = "ceiling";
+    } else if (army < floor) {
+        launch = false;
+        reason = "massing";
+    } else {
+        launch = Percent_Chance(dials.MidChance);
+        reason = launch ? "roll" : "roll-declined";
+    }
+    bool shuffle = !launch;
     bool forced = (CurBuildings == 0);
+
+    /*
+    **	Declining now costs seconds rather than minutes, so this routine runs
+    **	several times more often than it used to. The idle-guard repositioning
+    **	below must not speed up with it: it walks Nearby_Location per unit, and
+    **	at recheck cadence the home guard would visibly jitter. Gate it so it
+    **	keeps happening about every two minutes whatever the recheck period is.
+    */
+    bool reposition = launch || Percent_Chance((dials.Recheck * 100) / (TICKS_PER_SECOND * 120));
 
     /*
     **	How much of the army joins the wave scales with how defended the base
@@ -6286,11 +6429,17 @@ bool HouseClass::AI_Attack(UrgencyType)
         FILE* _tfdbg = TF_AI_Diag_File();
         if (_tfdbg != NULL) {
             fprintf(_tfdbg,
-                    "F%ld H%d AL%d WAVE-%s defences=%d sendpercent=%d forced=%d\n",
+                    "F%ld H%d AL%d WAVE-%s why=%s army=%d floor=%d ceiling=%d iq=%d defences=%d sendpercent=%d "
+                    "forced=%d\n",
                     (long)Frame,
                     (int)Class->House,
                     (int)ActLike,
                     shuffle ? "SHUFFLE (nothing sent)" : "LAUNCH",
+                    reason,
+                    army,
+                    floor,
+                    dials.Ceiling,
+                    IQ,
                     defences,
                     sendpercent,
                     (int)forced);
@@ -6341,7 +6490,8 @@ bool HouseClass::AI_Attack(UrgencyType)
                 **	If this unit is guarding the base, then cause it to shuffle
                 **	location instead.
                 */
-                if (Percent_Chance(20) && u->Mission == MISSION_GUARD_AREA && Which_Zone(u) != ZONE_NONE) {
+                if (reposition && Percent_Chance(20) && u->Mission == MISSION_GUARD_AREA
+                    && Which_Zone(u) != ZONE_NONE) {
                     u->ArchiveTarget = ::As_Target(Where_To_Go(u));
                 }
             }
@@ -6378,13 +6528,25 @@ bool HouseClass::AI_Attack(UrgencyType)
                 **	If this soldier is guarding the base, then cause it to shuffle
                 **	location instead.
                 */
-                if (Percent_Chance(20) && i->Mission == MISSION_GUARD_AREA && Which_Zone(i) != ZONE_NONE) {
+                if (reposition && Percent_Chance(20) && i->Mission == MISSION_GUARD_AREA
+                    && Which_Zone(i) != ZONE_NONE) {
                     i->ArchiveTarget = ::As_Target(Where_To_Go(i));
                 }
             }
         }
     }
-    Attack = Rule.AttackInterval * Random_Pick(TICKS_PER_MINUTE / 2, TICKS_PER_MINUTE * 2);
+    /*
+    **	A launched wave takes the full interval to rebuild; a declined one is
+    **	rechecked shortly, since the army it was waiting on is still growing.
+    **	The launch interval stays keyed to Rule.AttackInterval so the rules.ini
+    **	value keeps its authority, scaled by difficulty rather than replaced.
+    */
+    if (launch) {
+        int interval = Rule.AttackInterval * Random_Pick(TICKS_PER_MINUTE / 2, TICKS_PER_MINUTE * 2);
+        Attack = (interval * dials.IntervalScale) / 100;
+    } else {
+        Attack = dials.Recheck;
+    }
     return (true);
 }
 

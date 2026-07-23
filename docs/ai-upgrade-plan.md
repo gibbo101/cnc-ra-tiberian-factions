@@ -422,8 +422,52 @@ both Medium (IQ=4), both with armies (73 and 55 combat units) and aware of each 
 consecutive attack opportunities logged `WAVE-SHUFFLE (nothing sent)` and the first
 `WAVE-LAUNCH` did not come until **frame ~27,500**. Player verdict: "both ais feeling sluggish
 and nothing like the vanilla ai." The 67% shuffle rate plus the interval between opportunities
-is the cause. Open questions for this workstream: should the shuffle rate scale with difficulty,
-and should an army past some size force a launch regardless? Full log evidence in `todo.md`.
+is the cause. Full log evidence in `todo.md`.
+
+**W4.1 CADENCE — IMPLEMENTED 2026-07-23, awaiting first play verification.** The measured cause
+is arithmetic, and all of it was EA's original (`REDALERT/HOUSE.CPP:5295` and `:5343`):
+`AttackDelay(5) × [450..1800]` seeds the first opportunity 2,250–9,000 frames in; each
+opportunity is a flat `Percent_Chance(33)`; and **a declined roll reset the timer to the same
+full `AttackInterval(3) × [450..1800]` a launch did**, so declining cost 1.5–6 minutes. Expected
+first wave ≈ 12,400 frames, with a fat tail — nine straight declines is `0.67⁹ ≈ 2.7%` per house,
+which is what was observed. Vanilla masks this with campaign TeamTypes that skirmish never gets.
+
+Both open questions resolved:
+- **The decline is now a reason, not a coin toss.** `TF_Committable_Army()` counts armed units,
+  infantry and aircraft (harvesters, MCVs and engineers excluded). Below a **floor** the house
+  holds deliberately rather than feeding units in piecemeal; at or above a **ceiling** it must
+  commit rather than hoard; only between the two does the roll decide.
+- **A decline costs seconds, not minutes** — the timer reset is split, full interval on launch,
+  short recheck on decline. ⚠️ **This is only safe with the floor in place**: a fast recheck
+  against a blind 33% roll launches almost immediately every time, which deletes the pacing
+  rather than fixing it. Never port the recheck split without the band.
+
+Difficulty rides on **frequency and responsiveness only**, and the floor is deliberately NOT a
+difficulty dial — attacking with a token force is incompetence, not mercy, and since
+rules.ini `[IQ] Production=3` means IQ does not gate production, every tier reaches a given army
+size at much the same minute, so a lower floor on Easy would only make the easier AI attack
+*first*. Dials (`TF_Wave_Dials`, house.cpp):
+
+| IQ | floor | ceiling | mid-band | recheck | post-launch interval |
+|---|---|---|---|---|---|
+| 3 Easy | 10 | 32 | 25% | 90 s | 133% |
+| 4 Medium | 10 | 30 | 40% | 60 s | 100% (vanilla) |
+| 5 Hard | 10 | 26 | 60% | 30 s | 67% |
+
+Hard is more aggressive at every stage rather than merely later and bigger. Interval stays keyed
+to `Rule.AttackInterval` so rules.ini keeps authority. Two safety valves: the floor decays one
+unit per 2 min past the 20 min mark (floor 4) so a strangled economy still commits, and the idle
+guard reposition is rate-gated to ~2 min regardless of recheck cadence (it walks
+`Nearby_Location` per unit and would otherwise jitter the home guard).
+
+**Not fixed by W4.1:** a launch is still N individual `Assign_Mission(MISSION_HUNT)` calls from
+wherever each unit stands, so a bigger held army is still a longer trickle. Staging is below.
+**Deferred, wanted (Luke, 2026-07-23):** per-house **personality** (`AIStrategyMode`, W2.9
+borrowings) — roll each AI a character at match start (pressure / balanced / massing) where a
+massing house raises its own floor and ceiling. Keep it OFF the difficulty axis: difficulty says
+how well the AI plays, personality says how, so two Hard AIs in one match can differ. Tune it
+after the W4.1 baseline is measured.
+
 Research complete (agent report, §7). Two routes for staging-then-blob:
 - **Route A (preferred, higher fidelity):** revive the TeamClass campaign machinery — the
   gather/formation/blob logic ALREADY EXISTS (Coordinate_Regroup team.cpp:1729, full-strength
