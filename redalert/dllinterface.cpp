@@ -6496,6 +6496,94 @@ static void TF_Apply_Cameo_Badge(char* asset_name, int entry_owner_mask, int hel
     }
 }
 
+/*
+** The faction a special's cameo is badged with in a mixed-faction game,
+** resolved from the buildings that grant it -- the specials-column analogue of
+** "which of my factions makes this". Shared hosts resolve to a concrete side:
+** the missile silo to the house's own side when it is an owner (a foreign
+** capturer shows both), GPS to whichever comm-tech centre the house holds.
+*/
+static int TF_Special_Display_Mask(SpecialWeaponType id, HouseClass* house)
+{
+    switch (id) {
+    case SPC_SONAR_PULSE:
+    case SPC_CHRONOSPHERE:
+        return (TF_FACTION_ALLIES);
+    case SPC_PARA_BOMB:
+    case SPC_PARA_INFANTRY:
+    case SPC_SPY_MISSION:
+    case SPC_IRON_CURTAIN:
+        return (TF_FACTION_SOVIET);
+    case SPC_TD_ION_CANNON:
+        return (TF_FACTION_GDI);
+    case SPC_TD_NUKE:
+    case SPC_TD_PARA_INFANTRY:
+    case SPC_TD_SPY_MISSION:
+        return (TF_FACTION_NOD);
+    case SPC_NUCLEAR_BOMB: {
+        long side = (1L << house->ActLike);
+        if (side & HOUSEF_ALLIES) {
+            return (TF_FACTION_ALLIES);
+        }
+        if (side & HOUSEF_SOVIET) {
+            return (TF_FACTION_SOVIET);
+        }
+        return (TF_FACTION_ALLIES | TF_FACTION_SOVIET);
+    }
+    case SPC_GPS: {
+        int mask = 0;
+        if (house->Has_Building_Active(STRUCT_ADVANCED_TECH)) {
+            mask |= TF_FACTION_ALLIES;
+        }
+        if (house->Has_Building_Active(STRUCT_TDEYE)) {
+            mask |= TF_FACTION_GDI;
+        }
+        return (mask ? mask : (TF_FACTION_ALLIES | TF_FACTION_GDI));
+    }
+    default:
+        return (0);
+    }
+}
+
+/*
+** Rewrite a special's asset key to its faction-badge variant, mirroring
+** TF_Apply_Cameo_Badge for buildables: pristine cameos while every special the
+** house holds comes from one faction, badges once the specials span two or
+** more. The key swaps the "SW_" prefix for "S<hex>_", staying inside
+** AssetName[16], and the launcher resolves it to the baked variant entry.
+*/
+static void TF_Apply_Special_Badge(char* asset_name, SpecialWeaponType id, HouseClass* house)
+{
+    if (asset_name == NULL || strncmp(asset_name, "SW_", 3) != 0 || house == NULL) {
+        return;
+    }
+
+    int held = 0;
+    for (int s = SPC_FIRST; s < SPC_COUNT; s++) {
+        if (house->SuperWeapon[s].Is_Present()) {
+            held |= TF_Special_Display_Mask((SpecialWeaponType)s, house);
+        }
+    }
+    int held_count = 0;
+    for (int bit = 0x1; bit <= 0x8; bit <<= 1) {
+        if (held & bit) {
+            held_count++;
+        }
+    }
+    if (held_count < 2) {
+        return;
+    }
+
+    int badge = TF_Special_Display_Mask(id, house);
+    if (badge == 0) {
+        return;
+    }
+    char rest[CNC_OBJECT_ASSET_NAME_LENGTH];
+    strncpy(rest, asset_name + 3, sizeof(rest) - 1);
+    rest[sizeof(rest) - 1] = '\0';
+    snprintf(asset_name, CNC_OBJECT_ASSET_NAME_LENGTH, "S%X_%s", badge & 0xF, rest);
+}
+
 /**************************************************************************************************
  * DLLExportClass::Get_Layer_State -- Get a snapshot of the sidebar state
  *
@@ -6717,6 +6805,9 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                 case RTTI_SPECIAL:
                     Fill_Sidebar_Entry_From_Special_Weapon(
                         sidebar_entry, super_weapon, (SpecialWeaponType)Map.Column[c].Buildables[b].BuildableID);
+                    TF_Apply_Special_Badge(sidebar_entry.AssetName,
+                                           (SpecialWeaponType)Map.Column[c].Buildables[b].BuildableID,
+                                           PlayerPtr);
                     break;
                 }
 
@@ -6892,6 +6983,8 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     case RTTI_SPECIAL:
                         Fill_Sidebar_Entry_From_Special_Weapon(
                             sidebar_entry, super_weapon, (SpecialWeaponType)sidebar_entry.BuildableID);
+                        TF_Apply_Special_Badge(
+                            sidebar_entry.AssetName, (SpecialWeaponType)sidebar_entry.BuildableID, PlayerPtr);
                         break;
                     }
 

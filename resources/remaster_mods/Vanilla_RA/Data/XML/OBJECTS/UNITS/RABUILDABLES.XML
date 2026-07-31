@@ -2020,6 +2020,121 @@
 
 
 
+	<!-- BEGIN generated superweapon badge variants (scratchpad/sw_badge_variants.py) -->
+	<ObjectTypeClass Name="RA_S1_SONARPULSE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_SONAR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_SONAR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S1_SONARPULSE</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S1_CHRONO" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_CHRONO</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_CHRONO_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S1_CHRONO</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S1_NUKE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_NUKE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_NUKE_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S1_NUKE</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S2_NUKE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_NUKE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_NUKE_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S2_NUKE</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S3_NUKE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_NUKE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_NUKE_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S3_NUKE</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S2_PARABOMB" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_PARABOMB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_PARABOMB_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S2_PARABOMB</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S2_PARAINFANTRY" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_PARATROOPER</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_PARATROOPER_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S2_PARAINFANTRY</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S2_SPYMISSION" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_SPYPLANE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_SPYPLANE_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S2_SPYMISSION</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S2_IRONCURTAIN" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_IRONCURTAIN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_IRONCURTAIN_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S2_IRONCURTAIN</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S1_GPS" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_GPS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_GPS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S1_GPS</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S4_GPS" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_GPS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_GPS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S4_GPS</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S5_GPS" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_RA_GPS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_RA_GPS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S5_GPS</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S4_IONCANNON" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_IONCANNON</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_IONCANNON</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S4_IONCANNON</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S8_TDNUKE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_NUCLEAR_STRIKE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_NUCLEAR_STRIKE</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S8_TDNUKE</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S8_TDPARAINF" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_PARATROOPERS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_PARATROOPERS</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S8_TDPARAINF</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_S8_TDSPYPLANE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_RECON</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_RECON</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_S8_TDSPYPLANE</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<!-- END generated superweapon badge variants -->
+
 	<!-- BEGIN generated cameo mask variants (scripts/cameo_variants_build.py) -->
 	<ObjectTypeClass Name="RA_IRON_0" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
