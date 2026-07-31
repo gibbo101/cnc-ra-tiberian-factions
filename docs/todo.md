@@ -521,6 +521,13 @@ units failing routes they should make.
 > (unit,src,dst) tuples. Verdict: heap + budget healthy in normal play, no truncation, no
 > budget raise warranted. The DOCKLANDS unreachable-target run remains the outstanding
 > STRONG test before the item fully closes.
+>
+> **STRONG TEST RUN 2026-08-01 — A\* budget PASSES and the item CLOSES.** DOCKLANDS, 3 teamed
+> AIs vs the human isolated across the river: `captrips=0` across ~8,000 genuinely-unreachable
+> searches — every impossible search terminated by clean exhaustion, no truncation of good
+> routes observed. The run ALSO crashed the sim (`EXCEPTION_STACK_OVERFLOW` at ~F12,770) — that
+> defect is the legacy-fallback retry storm, i.e. the path-failure LIVELOCK escalated to crash
+> severity; see `known-issues.md` § livelock for the repro and next step (no-progress detector).
 
 **2. Economy gate for GDI/Nod tier-2 — SHIPPED `04d3ef4`, verified in play.** Comm centre,
 tech centre and repair bay now share one condition (2 refineries + a war factory, with a

@@ -230,11 +230,10 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 - **Verified 2026-07-31** (full skirmish to F11,944, log `MOD_DEBUG_AI.radius-after.txt` vs
   `.radius-before.txt`): **0 `PLACE-FAIL`, 0 `PROD abandon`**; at 7 buildings radius read
   850-950 instead of 518; GDI peaked `CurB=14`, `Rad=2111`, past the old stall.
-- **Zone filter made real in `85883e1` (2026-08-01, deployed, verification pending):**
-  `Find_Cell_In_Zone` now restricts the sweep to the requested zone, so the defence-rated zone
-  is the actual placement target and each fallback pass searches fresh ground. Watch the next
-  skirmish runs: `PLACE-FAIL` must stay at zero (the fallback still covers all five zones, but
-  this is the first behaviour change on top of the radius fix).
+- **Zone filter made real in `85883e1` and VERIFIED (2026-08-01):** `Find_Cell_In_Zone` now
+  restricts the sweep to the requested zone, so the defence-rated zone is the actual placement
+  target and each fallback pass searches fresh ground. Verified on the DOCKLANDS run: zero
+  `PLACE-FAIL` across ~12,800 frames, radii healthy to 1,756 leptons.
 - **FALSIFIED — do not re-chase:**
   - *"TD buildings aren't valid proximity anchors."* No: the ownership test needs
     `base->Class->IsBase`, `IsBase` defaults true, and `TDPROC`/`TDWEAP`/`TDFIX` all set
@@ -265,7 +264,14 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 ## Pathfinding / AI cooperation
 
 ### Units livelock retrying a doomed path forever — ROOT-CAUSED, NO FIX 2026-07-19
-- **Severity:** major (an affected unit stops contributing until killed or re-tasked).
+- **Severity: ESCALATED TO CRASH (2026-08-01).** The DOCKLANDS A* strong test (teamed AIs, human
+  isolated across the river — every ground target unreachable) drove ~8,000 legacy-pathfinder
+  fallbacks by F12,770 and the sim process died with `EXCEPTION_STACK_OVERFLOW`
+  (`InstanceServerG.exe`, `_Except_424.txt`, dump saved in AppData). A* itself stayed clean
+  (`captrips=0` throughout — the budget item below PASSED); the stack death is in the legacy
+  fallback under retry-storm volume. **Repro:** DOCKLANDS, 3 teamed AIs vs isolated human,
+  ~10-15 min. The no-progress cure below is now crash-prevention, not just efficiency —
+  first candidate for the next session.
 - **Status:** root cause CONFIRMED. **No fix.** One attempt crashed the game on both machines and
   was reverted; a second, safer attempt was falsified. All surfaces back on clean `HEAD`.
 - **⭐ Full detail: `docs/path-failure-livelock-design.md`. Read it before touching this** — it
