@@ -3456,6 +3456,19 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
     if (bestptr) {
         CELL cell = Coord_Cell(bestptr->Center_Coord());
         Place_Special_Blast(id, cell);
+    } else if (id == SPC_SPY_MISSION || id == SPC_TD_SPY_MISSION) {
+        /*
+        **	Recon powers exist to find the enemy, so a house with nothing
+        **	discovered fires them at unexplored start positions -- the same
+        **	rotation its blind ground scouts walk -- rather than never firing.
+        **	The shared rotation also stamps the probed point, so plane and
+        **	scouts naturally divide the map. Destructive specials stay
+        **	discovered-targets-only.
+        */
+        CELL cell = TF_Scout_Destination(Coord_Cell(Center));
+        if (cell > 0) {
+            Place_Special_Blast(id, cell);
+        }
     }
 }
 
