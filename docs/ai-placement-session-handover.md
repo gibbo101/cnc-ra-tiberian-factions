@@ -1,8 +1,16 @@
 # AI session handover — W4 cadence SHIPPED, base placement is the next bug (2026-07-23)
 
-**Resume here.** Two AI workstreams closed this session and a third opened. The build in the
-desktop Proton prefix is current and carries the diagnostics needed for the next step, so the
-next session can launch a skirmish immediately and read the answer.
+> **2026-07-31 UPDATE — ROOT CAUSE FOUND AND FIXED, verification pending.** The reject counters
+> ran live and named the culprit: **`Recalc_Center` divides the unweighted distance sum by the
+> cost-weighted count** (EA-original, 1995), so an expensive base computes a Radius 2-3x too
+> small; `Which_Zone` rejects past `Radius*4`, collapsing the whole build-site search to a disc
+> the base itself fills. Live proof: Nod at 7 buildings had `radius=518` (the 512-lepton floor)
+> and its TDAFLD scan rejected all 16,384 cells (`zone=7888`, the 176 in-zone all
+> footprint-blocked, `prox=0 ok=0`). Fixed in `6604354` (divide by building quantity); the
+> `Cell_Coord` fallback bug below fixed in `eb5d6d8`. In the one pre-fix observation run with
+> `eb5d6d8` only, GDI logged ZERO place-fails to F4600 (vs 12 in the baseline) — suggestive but
+> not conclusive (different map, GDI got rushed). **Next: a full skirmish on the `6604354` build,
+> confirm radius values look sane and `PLACE-FAIL` stays at zero for a growing base.**
 
 ---
 
