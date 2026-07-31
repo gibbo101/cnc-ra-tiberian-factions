@@ -230,9 +230,11 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 - **Verified 2026-07-31** (full skirmish to F11,944, log `MOD_DEBUG_AI.radius-after.txt` vs
   `.radius-before.txt`): **0 `PLACE-FAIL`, 0 `PROD abandon`**; at 7 buildings radius read
   850-950 instead of 518; GDI peaked `CurB=14`, `Rad=2111`, past the old stall.
-- **Still open (minor):** `Find_Cell_In_Zone` (`house.cpp:9785`) never filters by its `zone`
-  argument, so the 5-zone fallback re-scans an identical candidate set — six full map scans
-  per genuinely-impossible placement. Pure waste now rather than a correctness bug.
+- **Zone filter made real in `85883e1` (2026-08-01, deployed, verification pending):**
+  `Find_Cell_In_Zone` now restricts the sweep to the requested zone, so the defence-rated zone
+  is the actual placement target and each fallback pass searches fresh ground. Watch the next
+  skirmish runs: `PLACE-FAIL` must stay at zero (the fallback still covers all five zones, but
+  this is the first behaviour change on top of the radius fix).
 - **FALSIFIED — do not re-chase:**
   - *"TD buildings aren't valid proximity anchors."* No: the ownership test needs
     `base->Class->IsBase`, `IsBase` defaults true, and `TDPROC`/`TDWEAP`/`TDFIX` all set
