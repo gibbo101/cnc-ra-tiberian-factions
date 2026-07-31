@@ -5589,6 +5589,7 @@ void HouseClass::Recalc_Center(void)
         int x = 0;
         int y = 0;
         int count = 0;
+        int quantity = 0;
         int index;
 
         for (index = 0; index < Buildings.Count(); index++) {
@@ -5607,6 +5608,7 @@ void HouseClass::Recalc_Center(void)
                     y += Coord_Y(b->Center_Coord());
                     count++;
                 }
+                quantity++;
             }
         }
 
@@ -5645,9 +5647,11 @@ void HouseClass::Recalc_Center(void)
         /*
         **	If there were any buildings discovered as legal to consider as part of the base,
         **	then figure out the general average radius of the building disposition as it
-        **	relates to the center of the base.
+        **	relates to the center of the base. The cost weighting applies to the center
+        **	only — the radius is a plain mean over the buildings, so it is divided by the
+        **	building quantity, not the weighted count.
         */
-        if (count > 1) {
+        if (quantity > 1) {
             int radius = 0;
 
             for (index = 0; index < Buildings.Count(); index++) {
@@ -5657,7 +5661,7 @@ void HouseClass::Recalc_Center(void)
                     radius += Distance(Center, b->Center_Coord());
                 }
             }
-            Radius = max(radius / count, 2 * CELL_LEPTON_W);
+            Radius = max(radius / quantity, 2 * CELL_LEPTON_W);
 
             /*
             **	Determine the relative strength of each base defense zone.
