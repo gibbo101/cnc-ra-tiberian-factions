@@ -7818,9 +7818,39 @@ void BuildingClass::Factory_AI(void)
 
                 /*
                 **	If production has halted, then just abort production and make the
-                **	funds available for something else.
+                **	funds available for something else. A computer house's unstarted
+                **	order is held instead while the house still has income -- Start()
+                **	refuses an order the house cannot afford this instant, but income
+                **	will cover the per-tick cost soon, and the human sidebar pauses a
+                **	broke order rather than deleting it. The order is only scrapped
+                **	once the economy is genuinely dead.
                 */
                 if (PlacementDelay == 0 && !Factory->Is_Building()) {
+                    if (!House->IsHuman && !Factory->Has_Completed()
+                        && (Factory->Start() || House->TF_Has_Income())) {
+                        PlacementDelay = TICKS_PER_SECOND * 3;
+#if TF_DEV_BUILD // TF_AI_DIAG -- the order survived the stall check: held (or resumed) rather
+                 // than scrapped. At most one line per 3-second retry window.
+                        extern FILE* TF_AI_Diag_File(void);
+                        FILE* _tfdbg = TF_AI_Diag_File();
+                        TechnoClass* _obj = Factory->Get_Object();
+                        if (_tfdbg != NULL) {
+                            fprintf(_tfdbg,
+                                    "F%ld H%d AL%d PROD %s %s pct=%d cash=%d at %s#%d\n",
+                                    (long)Frame,
+                                    (int)House->Class->House,
+                                    (int)House->ActLike,
+                                    Factory->Is_Building() ? "resume" : "hold",
+                                    _obj != NULL ? _obj->Class_Of().IniName : "(none)",
+                                    Factory->Completion(),
+                                    House->Available_Money(),
+                                    Class->IniName,
+                                    (int)ID);
+                            fflush(_tfdbg);
+                        }
+#endif
+                        return;
+                    }
 #if TF_DEV_BUILD // TF_AI_DIAG -- a stalled order is scrapped here rather than paused, so an
                  // item that repeatedly reaches PROD start and never appears died on this
                  // line. Records what was lost, how far it got, and whether the house could

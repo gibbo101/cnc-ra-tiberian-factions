@@ -7073,6 +7073,29 @@ static unsigned TF_Role_Quantity(unsigned const* bquantity, StructType ra)
     return (total);
 }
 
+/*
+**	Whether this house can still expect credits to arrive: a working refinery,
+**	tiberium on the map, and at least one live harvester. Harvesters are counted
+**	from the Units heap rather than UQuantity because a docked TD harvester is
+**	limboed into its refinery as cargo and drops out of the active count while
+**	still earning.
+*/
+bool HouseClass::TF_Has_Income(void) const
+{
+    assert(Houses.ID(this) == ID);
+
+    if (IsTiberiumShort || TF_Role_Quantity(BQuantity, STRUCT_REFINERY) == 0) {
+        return (false);
+    }
+    for (int index = 0; index < Units.Count(); index++) {
+        UnitClass const* u = Units.Ptr(index);
+        if (u != NULL && (HouseClass*)u->House == this && (*u == UNIT_TDHARV || *u == UNIT_HARVESTER)) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
 /***********************************************************************************************
  * HouseClass::AI_Building -- Determines what building to build.                               *
  *                                                                                             *
