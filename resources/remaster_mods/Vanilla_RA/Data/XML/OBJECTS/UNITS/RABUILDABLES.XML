@@ -783,6 +783,18 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<!-- Tiberian Factions mod — Nod recon flight (SPC_TD_SPY_MISSION).
+	     AssetName "SW_TDSpyPlane"; SuperWeaponType = SW_SPY_MISSION
+	     engine-side. Split from the Soviet spy plane so each airstrip's
+	     special carries a single faction badge. -->
+	<ObjectTypeClass Name="RA_SW_TDSPYPLANE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_RECON</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_RECON</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SW_TDSPYPLANE</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 
 		<!-- MISC UNITS-->
 	<ObjectTypeClass Name="RA_ANT1" Classification="CNCBuildableObject" CanInstantiate="False">

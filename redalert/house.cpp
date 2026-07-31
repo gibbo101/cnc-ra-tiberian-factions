@@ -791,6 +791,11 @@ HouseClass::HouseClass(HousesType house)
     new (&SuperWeapon[SPC_TD_PARA_INFANTRY])
         SuperClass(TICKS_PER_MINUTE * Rule.ParaInfantryTime, false, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_NOT_READY);
 
+    // Tiberian Factions mod — Nod recon flight, split from the Soviet spy
+    // plane so each era's airstrip carries its own single-badged special.
+    new (&SuperWeapon[SPC_TD_SPY_MISSION])
+        SuperClass(TICKS_PER_MINUTE * Rule.SpyTime, false, VOX_NONE, VOX_SPY_PLANE, VOX_NOT_READY, VOX_NOT_READY);
+
     memset(UnitsKilled, '\0', sizeof(UnitsKilled));
     memset(BuildingsKilled, '\0', sizeof(BuildingsKilled));
     memset(BQuantity, '\0', sizeof(BQuantity));
@@ -2417,8 +2422,12 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
+    // The recon flight is a per-era special like the paratroop drops: the Soviet
+    // airfield grants the RA spy plane, the Nod airstrip its own recon flight, and
+    // a house holding both flies both on separate timers. Concrete-building tests
+    // throughout, since the Nod airstrip shadows STRUCTF_AIRSTRIP in the scan.
     if (SuperWeapon[SPC_SPY_MISSION].Is_Present()) {
-        if ((ActiveBScan & STRUCTF_AIRSTRIP) == 0) {
+        if (!Has_Building_Active(STRUCT_AIRSTRIP)) {
             if (SuperWeapon[SPC_SPY_MISSION].Remove()) {
                 if (this == PlayerPtr)
                     Map.Column[1].Flag_To_Redraw();
@@ -2433,14 +2442,7 @@ void HouseClass::Super_Weapon_Handler(void)
             }
         }
     } else {
-        // Tiberian Factions: the TD Airstrip (STRUCT_TDAFLD) shadows
-        // STRUCTF_AIRSTRIP for defeat/production/docking checks, but TD's
-        // airstrip is NOT an RA superweapon host — it must not grant Spy Plane
-        // or Paratroopers. Gate on owning a genuine STRUCT_AIRSTRIP so only RA
-        // factions with a real airstrip get these.
-        // Nod spy plane: the Nod airstrip (TDAFLD) launches it, as the Soviet airstrip does.
-        if ((ActiveBScan & STRUCTF_AIRSTRIP) != 0
-            && (Has_Building_Active(STRUCT_AIRSTRIP) || Has_Building_Active(STRUCT_TDAFLD)) && !Scen.IsNoSpyPlane
+        if (Has_Building_Active(STRUCT_AIRSTRIP) && !Scen.IsNoSpyPlane
             && Control.TechLevel >= Rule.SpyPlaneTechLevel) {
             SuperWeapon[SPC_SPY_MISSION].Enable(false, this == PlayerPtr, false);
             // Add to Glyphx multiplayer sidebar. ST - 8/7/2019 10:13AM
@@ -2453,6 +2455,40 @@ void HouseClass::Super_Weapon_Handler(void)
             } else {
                 if (this == PlayerPtr) {
                     Map.Add(RTTI_SPECIAL, SPC_SPY_MISSION);
+                    Map.Column[1].Flag_To_Redraw();
+                }
+            }
+        }
+    }
+
+    if (SuperWeapon[SPC_TD_SPY_MISSION].Is_Present()) {
+        if (!Has_Building_Active(STRUCT_TDAFLD)) {
+            if (SuperWeapon[SPC_TD_SPY_MISSION].Remove()) {
+                if (this == PlayerPtr)
+                    Map.Column[1].Flag_To_Redraw();
+                IsRecalcNeeded = true;
+            }
+        } else {
+            if (this == PlayerPtr && !SuperWeapon[SPC_TD_SPY_MISSION].Is_Ready()) {
+                Map.Column[1].Flag_To_Redraw();
+            }
+            if (SuperWeapon[SPC_TD_SPY_MISSION].Is_Ready() && !IsHuman) {
+                Special_Weapon_AI(SPC_TD_SPY_MISSION);
+            }
+        }
+    } else {
+        if (Has_Building_Active(STRUCT_TDAFLD) && !Scen.IsNoSpyPlane
+            && Control.TechLevel >= Rule.SpyPlaneTechLevel) {
+            SuperWeapon[SPC_TD_SPY_MISSION].Enable(false, this == PlayerPtr, false);
+            if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
+                if (IsHuman) {
+#ifdef REMASTER_BUILD
+                    Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TD_SPY_MISSION, this);
+#endif
+                }
+            } else {
+                if (this == PlayerPtr) {
+                    Map.Add(RTTI_SPECIAL, SPC_TD_SPY_MISSION);
                     Map.Column[1].Flag_To_Redraw();
                 }
             }
@@ -3735,13 +3771,16 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
         }
         break;
 
+    // Both eras' recon flights fly the same U2 flyover (TD has no recon plane to
+    // port); the split exists so each airstrip's special has its own timer and badge.
     case SPC_SPY_MISSION:
-        if (SuperWeapon[SPC_SPY_MISSION].Is_Ready()) {
+    case SPC_TD_SPY_MISSION:
+        if (SuperWeapon[id].Is_Ready()) {
             Create_Air_Reinforcement(this, AIRCRAFT_U2, 1, MISSION_HUNT, ::As_Target(cell), ::As_Target(cell));
             if (this == PlayerPtr) {
                 Map.IsTargettingMode = SPC_NONE;
             }
-            SuperWeapon[SPC_SPY_MISSION].Discharged(this == PlayerPtr);
+            SuperWeapon[id].Discharged(this == PlayerPtr);
             IsRecalcNeeded = true;
             fired = true;
             what = "SPY";

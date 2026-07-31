@@ -7133,6 +7133,14 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
             strncpy(weapon_name, "SW_TDParaInf", 16);
         }
         break;
+    case SPC_TD_SPY_MISSION:
+        // Tiberian Factions mod — the Nod recon flight rides SW_SPY_MISSION
+        // plumbing with its own AssetName for the Nod-badged cameo + text.
+        dll_weapon_type = SW_SPY_MISSION;
+        if (weapon_name != NULL) {
+            strncpy(weapon_name, "SW_TDSpyPlane", 16);
+        }
+        break;
     default:
         dll_weapon_type = SW_UNKNOWN;
         if (weapon_name != NULL) {
@@ -7161,6 +7169,7 @@ void DLLExportClass::Fill_Sidebar_Entry_From_Special_Weapon(CNCSidebarEntryStruc
     case SPC_TD_ION_CANNON:
     case SPC_TD_NUKE:
     case SPC_TD_PARA_INFANTRY:
+    case SPC_TD_SPY_MISSION:
         Convert_Special_Weapon_Type(weapon_type, sidebar_entry_out.SuperWeaponType, sidebar_entry_out.AssetName);
         break;
     default:

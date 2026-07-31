@@ -74,6 +74,7 @@
  "RA_SW_SPYMISSION": "BuildIcon_RA_SpyPlane",
  "RA_SW_TDNUKE": "BuildIcon_TD_NuclearStrike",
  "RA_SW_TDPARAINF": "BuildIcon_RA_Paratroopers",
+ "RA_SW_TDSPYPLANE": "BuildIcon_RA_SpyPlane",
  "RA_SYRD": "BuildIcon_RA_NavalYard",
  "RA_TDA10": "BuildIcon_TD_A10",
  "RA_TDAFLD": "BuildIcon_TD_Airstrip",
