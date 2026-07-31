@@ -2020,7 +2020,8 @@
 
 
 
-	<!-- BEGIN generated superweapon badge variants (scratchpad/sw_badge_variants.py) -->
+
+	<!-- BEGIN generated superweapon badge variants (scripts/sw_badge_variants.py) -->
 	<ObjectTypeClass Name="RA_S1_SONARPULSE" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_RA_SONAR</ObjectNameTextID>
