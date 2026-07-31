@@ -43,7 +43,9 @@ PLACE-FAIL TDFIX reason=no-location cell=-1 | rejects radar=N zone=N legal=N pro
    `CnC_Remastered_Collection/REDALERT/HOUSE.CPP:4669`, never touched by us, **broken since 1996**.
    So whenever the preferred zone is full, the AI gets a malformed coordinate and discards the
    building instead of placing it elsewhere. Worth contributing back to Vanilla Conquer.
-   **NOT APPLIED — needs Luke's yes (behaviour change).**
+   **FIXED in `eb5d6d8` (2026-07-31, Luke's call)** — not yet deployed or observed in-game;
+   re-run the reject-counter diagnosis on a build that includes it, since it may change the
+   placement picture on its own.
 
 2. **The 5-zone fallback is a no-op.** `Find_Cell_In_Zone` (`house.cpp:9783`) takes a `zone`
    argument but **never filters by it** — it scans all `MAP_CELL_TOTAL` cells and uses the zone
