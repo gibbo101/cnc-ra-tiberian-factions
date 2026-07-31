@@ -9958,7 +9958,13 @@ CELL HouseClass::Find_Cell_In_Zone(TechnoClass const* techno, ZoneType zone) con
 #endif
             continue;
         }
-        if (Which_Zone(cell) == ZONE_NONE) {
+        /*
+        **	Restrict the sweep to the requested zone, so the zone the defence
+        **	rating picked is where the building actually lands and each pass of
+        **	the try-any-zone fallback searches fresh ground instead of
+        **	re-scanning one identical candidate set.
+        */
+        if (Which_Zone(cell) != zone) {
 #if TF_DEV_BUILD
             TF_PlaceScan.Zone++;
 #endif
