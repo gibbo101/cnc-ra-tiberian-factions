@@ -377,7 +377,11 @@ Still open:
 - **Audit older custom anims** (TibFumes, TDCHEM-*, TDFTFLAME-*) for the same launcher-dead
   rendering contract #4 describes — they may be drawing white placeholders in-game.
 
-## ✅ Faction paratroops split — SHIPPED (2026-07-31, `ec3324a`; in-game verify owed)
+## ✅ Faction paratroops split — SHIPPED + grant VERIFIED in play (2026-07-31, `ec3324a`)
+
+Verified in an Unholy Alliance match: Nod airstrip+Hand alone showed only the Nod drop, and
+building a Soviet airfield brought in the second, independent option — both directions of the
+grant proven. Delivery payloads (TDE1/C-17 vs E1/Badger) still to be eyeballed on a fire.
 
 Implemented on the Temple-nuke pattern as designed: `SPC_TD_PARA_INFANTRY` granted by
 airstrip+Hand (Soviet airfield keeps `SPC_PARA_INFANTRY`), delivery keyed off which special
