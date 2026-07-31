@@ -205,41 +205,42 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## AI base building
 
-### A house that cannot place a building retries the same doomed search forever (2026-07-23)
-- **Severity:** major. GDI repeatedly fails to place `TDPROC` / `TDWEAP` / `TDFIX` while holding
-  thousands of credits. In the measured match it started `TDFIX` **16 times and completed it zero
-  times**, and its base stalled around `CurB=10` while the other house grew past 20. This is the
-  bulk of the "sluggish GDI" feel: the faction cannot grow its base, so everything downstream
-  (vehicle production, tech, army composition) is starved.
-- **Status:** measured, not yet root-caused to a single predicate. **No fix applied.** Next step is
-  per-predicate rejection counters (`Legal_Placement` vs proximity vs `Which_Zone`) plus the base
-  `Center`/`Radius`, since three plausible theories have already been falsified (see below).
-- **Diagnostics:** `PLACE-FAIL <type> reason=no-location|unlimbo-refused` (`building.cpp`, the
-  placement fall-through) and `PROD abandon <type> pct= cash= completed=` (`building.cpp:7795`).
-  Both dev-build only, added `4507a10`.
-- **The two failure modes are distinct and split by house:**
-  - **Placement** (GDI): `PLACE-FAIL ... no-location` with $3.6k-9.4k banked. Has money, no room.
-  - **Funding** (Nod): `PROD abandon TDPROC pct=0 cash=24`. A stalled factory is **scrapped
-    outright rather than paused** at `building.cpp:7795`, so a temporarily broke house throws away
-    the order instead of waiting for income.
-- **Why it never recovers — two stacked defects in the fallback path:**
-  1. `Find_Cell_In_Zone` (`house.cpp:9783`) takes a `zone` argument but **never filters by it** —
-     it scans all `MAP_CELL_TOTAL` cells and uses the zone only to pick a distance reference. So
-     the 5-zone "try anywhere" loop in `Find_Build_Location` re-scans an identical candidate set
-     five more times and can only fail identically. Six full map scans per failed attempt.
-  2. That same loop does `return (zcell)` — a raw `CELL` where the caller expects a `COORDINATE`.
-     The preferred-zone path correctly wraps it in `Cell_Coord()`. **This is EA's own bug**,
-     present verbatim in `CnC_Remastered_Collection/REDALERT/HOUSE.CPP:4669` and never touched by
-     us, so the fallback has been broken since 1996. One-word fix, benefits all four factions,
-     worth contributing upstream to Vanilla Conquer.
+### A house that cannot place a building retries the same doomed search forever — ✅ FIXED 2026-07-31
+- **Was:** major. GDI repeatedly failed to place `TDPROC` / `TDWEAP` / `TDFIX` while holding
+  thousands of credits (one match: `TDFIX` started 16 times, completed zero; base stalled at
+  `CurB≈10`). The bulk of the "sluggish GDI" feel. Nod showed a second mode: a broke order
+  logged `PROD abandon TDPROC pct=0 cash=24` and vanished.
+- **Root cause (named by the per-predicate reject counters, `b3152de`):** `Recalc_Center`
+  (`house.cpp`) divides the **unweighted** sum of building distances by the **cost-weighted**
+  count it builds for the centroid, so an expensive base computes a `Radius` 2-3x too small —
+  a live Nod base of 7 buildings sat at `radius=518` leptons, the 512 floor. `Which_Zone`
+  returns `ZONE_NONE` past `Radius * 4`, so the whole build-site search collapsed to a disc
+  the base itself filled (airfield scan: 16,384 cells, 7,888 out-of-zone, the 176 in-zone all
+  footprint-blocked, `ok=0`). EA-original 1995 arithmetic; worst for expensive wide-footprint
+  TD bases.
+- **Fixes (all three EA-original defects):**
+  1. `6604354` — Radius divides by the building quantity; cost weighting stays centroid-only.
+  2. `eb5d6d8` — the try-any-zone fallback in `Find_Build_Location` returned a raw `CELL`
+     where the caller expects a `COORDINATE`; now wrapped in `Cell_Coord()` like the
+     preferred-zone path (broken since 1996, `REDALERT/HOUSE.CPP:4669`).
+  3. `265d632` — an unstarted computer order (Start() refuses when the first tick is
+     unaffordable) is held on the 3-second retry timer while the house has income
+     (`TF_Has_Income`: refinery + live harvester + tiberium), instead of being scrapped on
+     the next pass. Mirrors the human sidebar, where a broke order pauses.
+- **Verified 2026-07-31** (full skirmish to F11,944, log `MOD_DEBUG_AI.radius-after.txt` vs
+  `.radius-before.txt`): **0 `PLACE-FAIL`, 0 `PROD abandon`**; at 7 buildings radius read
+  850-950 instead of 518; GDI peaked `CurB=14`, `Rad=2111`, past the old stall.
+- **Still open (minor):** `Find_Cell_In_Zone` (`house.cpp:9785`) never filters by its `zone`
+  argument, so the 5-zone fallback re-scans an identical candidate set — six full map scans
+  per genuinely-impossible placement. Pure waste now rather than a correctness bug.
 - **FALSIFIED — do not re-chase:**
   - *"TD buildings aren't valid proximity anchors."* No: the ownership test needs
     `base->Class->IsBase`, `IsBase` defaults true, and `TDPROC`/`TDWEAP`/`TDFIX` all set
     `BaseNormal=yes` explicitly.
-  - *"Infantry spam starves the expensive builds of funds."* No: GDI's failures are all placement
-    with healthy cash, and `PROD abandon` never fired for GDI.
-  - *"The search area is too small."* No: `Which_Zone` admits candidates out to **4x** the base
-    radius (`house.cpp:8779`).
+  - *"Infantry spam starves the expensive builds of funds."* No: GDI's failures were all
+    placement with healthy cash, and `PROD abandon` never fired for GDI.
+  - *"The 4x zone multiplier is too narrow."* The multiplier is fine — the **Radius feeding
+    it** was collapsed (see root cause).
   - *"`PROD start` means a build completed."* No — it only means an order began. Reading it as
     completion produced three wrong conclusions in one session; always confirm against `CurB`,
     the `ROLE` counts, or the player's eyes.

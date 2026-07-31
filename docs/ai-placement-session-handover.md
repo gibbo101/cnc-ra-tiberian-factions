@@ -1,16 +1,16 @@
 # AI session handover — W4 cadence SHIPPED, base placement is the next bug (2026-07-23)
 
-> **2026-07-31 UPDATE — ROOT CAUSE FOUND AND FIXED, verification pending.** The reject counters
-> ran live and named the culprit: **`Recalc_Center` divides the unweighted distance sum by the
+> **2026-07-31 — ROOT CAUSE FOUND, FIXED AND VERIFIED. This workstream is CLOSED.** The reject
+> counters named the culprit: **`Recalc_Center` divides the unweighted distance sum by the
 > cost-weighted count** (EA-original, 1995), so an expensive base computes a Radius 2-3x too
 > small; `Which_Zone` rejects past `Radius*4`, collapsing the whole build-site search to a disc
-> the base itself fills. Live proof: Nod at 7 buildings had `radius=518` (the 512-lepton floor)
-> and its TDAFLD scan rejected all 16,384 cells (`zone=7888`, the 176 in-zone all
-> footprint-blocked, `prox=0 ok=0`). Fixed in `6604354` (divide by building quantity); the
-> `Cell_Coord` fallback bug below fixed in `eb5d6d8`. In the one pre-fix observation run with
-> `eb5d6d8` only, GDI logged ZERO place-fails to F4600 (vs 12 in the baseline) — suggestive but
-> not conclusive (different map, GDI got rushed). **Next: a full skirmish on the `6604354` build,
-> confirm radius values look sane and `PLACE-FAIL` stays at zero for a growing base.**
+> the base itself fills (live: Nod at 7 buildings, `radius=518` = the 512 floor, TDAFLD scan
+> rejected all 16,384 cells). All three defects below are fixed and pushed: Radius `6604354`,
+> `Cell_Coord` fallback `eb5d6d8`, broke-order hold `265d632`. **Verified in a full skirmish to
+> F11,944 on the radius build: 0 `PLACE-FAIL`, 0 `PROD abandon`, radius 850-950 at 7 buildings,
+> GDI peaked `CurB=14`/`Rad=2111`.** Closed record + remaining minor item (the zone-filter
+> no-op, now pure waste): `known-issues.md` § AI base building. The rest of this doc is the
+> historical investigation record.
 
 ---
 
