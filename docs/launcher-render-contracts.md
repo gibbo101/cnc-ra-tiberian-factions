@@ -133,12 +133,17 @@ highest quality the pipeline can produce.** Concretely:
 - **Audio policy (Luke, 2026-07-20): every TS unit ships its AUTHENTIC TS
   sounds** — weapon reports, and eventually voices — via the dormant-sample
   recipe (`td-audio-routing-recipe.md` + the HOVRMIS1 trap notes).
-- **Dormant-sample audio hosts — 176 slots available** (censused 2026-07-20:
-  221 TD-side samples in SFX3D.MEG, 47 referenced by RA-side events = in use).
-  Rule: a TD?_SFX_* sample is a valid host iff no RAC_/RAR_ event in our
-  shipped SFXEVENTSNONLOCALIZED.XML references it — TDC_/TDR_-named events
-  only fire in TD game context, never in our mod. New sample names are
-  IMPOSSIBLE (novel names crash ClientG); overriding is the only channel.
+- **Dormant-sample audio hosts — ~176 slots, count needs a re-census**
+  (2026-07-20: 221 TD-side samples in SFX3D.MEG, 47 referenced by RA-side
+  events; the true free count is lower because that census missed
+  GUI-referenced samples — see the rule below).
+  Rule: a TD?_SFX_* sample is a valid host iff no RAC_/RAR_ **and no
+  SFX_GUI_*** event in our shipped SFXEVENTSNONLOCALIZED.XML references it —
+  TDC_/TDR_-named events only fire in TD game context, never in our mod, but
+  GUI events are game-agnostic and DO fire in RA mode (proven 2026-07-22:
+  SFX_GUI_Generic_Bad_Sound plays SCOLD1, which the RAC_/RAR_-only census had
+  marked dormant). New sample names are IMPOSSIBLE (novel names crash
+  ClientG); overriding is the only channel.
   Used so far: `BONUS_UNLOCK` (hover missile), `DINOATK1` (railgun),
   `DINODIE1` (Mk. II tusks), `DINOMOUT` (Titan 120mm). One host per sound;
   prefer clearly TD-gameplay names over generic UI-ish ones (BUTTON, BLEEP)
