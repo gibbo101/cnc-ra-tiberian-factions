@@ -5,12 +5,12 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
-## ⭐ RESUME HERE — GDI cannot place buildings (2026-07-23)
+## ✅ AI base placement — FIXED AND VERIFIED (2026-07-31)
 
-**⭐ Full handover: `docs/ai-placement-session-handover.md`.** Build with reject counters is
-already deployed to the desktop prefix — launch a skirmish and read the first `PLACE-FAIL`
-(lands ~F700) to find out which predicate rejects every cell. Decision owed on EA's one-word
-`Cell_Coord` fix. Four falsified theories listed there; don't re-chase them.
+Root cause was `Recalc_Center`'s collapsed Radius (cost-weighted divisor); fixed together with
+the `Cell_Coord` fallback and the broke-order scrap (`6604354` / `eb5d6d8` / `265d632`), verified
+over two full skirmishes (0 `PLACE-FAIL`, 0 `PROD abandon`, TD houses to `CurB=17`). Closed
+record: `known-issues.md` § AI base building (one minor left: the zone-filter no-op, waste only).
 
 ## ✅ AI passivity: first attack wave at frame ~27,500 — FIXED AND VERIFIED (2026-07-23)
 
@@ -43,21 +43,11 @@ between our AI and vanilla's feel, and it is independent of the build-order work
 quality in `ai-upgrade-plan.md`. Worth checking whether the shuffle rate should scale with
 difficulty, and whether an army over some size should force a launch regardless.
 
-## Scouting sends every unit to the same cell (2026-07-23, observed)
+## ✅ Scouting sent every unit to the same cell — FIXED AND VERIFIED (2026-07-31)
 
-582 `SCOUT` dispatches in one match, and the recent ones are all the same destination from
-different units:
-
-```
-H13 SCOUT id=9  ... dest=7641
-H13 SCOUT id=19 ... dest=7641
-H13 SCOUT id=36 ... dest=7641
-```
-
-`TF_Scout_Destination` hands out one cell rather than spreading scouts over unexplored ground, so
-a house re-walks the same waypoint instead of widening its map knowledge. Did NOT prevent contact
-in this run (the houses found each other), so it is inefficiency rather than a blocker — but it
-wastes the blind-scout dispatcher and matters more on big maps. → W1.3.
+W1.3: `TF_Scout_Destination` now stamps each start waypoint per house and hands out the
+least-recently-probed one, distance breaking ties (`5a79af5`). Verified in play: 157 dispatches
+spread over 8 distinct destinations, against the old 582-to-one-cell.
 
 ## Minelayer (MNLY) — broken prerequisite + needs its own AI brain (2026-07-23)
 
