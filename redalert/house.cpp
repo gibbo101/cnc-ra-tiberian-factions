@@ -7193,13 +7193,13 @@ int HouseClass::AI_Building(void)
                 static char const* _bn[9] =
                     {"TDPROC", "TDHAND", "TDWEAP", "TDNUK", "TDNUK2", "TDFACT", "TDTMPL", "TDEYE", "TDSTEAL"};
                 fprintf(_tfdbg,
-                        "F%ld H%d AL%d base=%d Tech=%d $%d Pow=%d Drain=%d PF<1=%d CurB=%d hasinc=%d refQ=%d "
+                        "F%ld H%d AL%d base=%d Tech=%d $%d Pow=%d Drain=%d PF<1=%d CurB=%d Rad=%d hasinc=%d refQ=%d "
                         "harvQ=%d tibShort=%d ABScan=%08X | ROLE yard=%d/%d weap=%d/%d barr=%d/%d hpad=%d/%d "
                         "fix=%d/%d |",
                         (long)Frame, (int)Class->House, (int)ActLike, (int)IsBaseBuilding, (int)Control.TechLevel,
                         (int)Available_Money(), (int)Power, (int)Drain, (int)(Power_Fraction() < 1),
-                        (int)CurBuildings, (int)hasincome, (int)tf_refqty, (int)tf_harv_count, (int)IsTiberiumShort,
-                        (unsigned)ActiveBScan,
+                        (int)CurBuildings, (int)Radius, (int)hasincome, (int)tf_refqty, (int)tf_harv_count,
+                        (int)IsTiberiumShort, (unsigned)ActiveBScan,
                         /*
                         **	Aggregate role count vs the home-faction-only count it replaced.
                         **	A gap between the two means this house holds a role building from
