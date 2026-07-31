@@ -2459,8 +2459,12 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
+    // Parabombs are the Soviet airfield's support power in every session type, not
+    // just campaign (air-additions design: each faction's airstrip is its offensive
+    // air hub). The concrete-building test also replaces the STRUCTF_AIRSTRIP scan
+    // bit, which the Nod airstrip shadows, so only a real Soviet airfield qualifies.
     if (SuperWeapon[SPC_PARA_BOMB].Is_Present()) {
-        if ((ActiveBScan & STRUCTF_AIRSTRIP) == 0) {
+        if (!Has_Building_Active(STRUCT_AIRSTRIP)) {
             if (SuperWeapon[SPC_PARA_BOMB].Remove()) {
                 if (this == PlayerPtr)
                     Map.Column[1].Flag_To_Redraw();
@@ -2472,8 +2476,7 @@ void HouseClass::Super_Weapon_Handler(void)
             }
         }
     } else {
-        if ((ActiveBScan & STRUCTF_AIRSTRIP) != 0 && Has_Building_Active(STRUCT_AIRSTRIP)
-            && Control.TechLevel >= Rule.ParaBombTechLevel && Session.Type == GAME_NORMAL) {
+        if (Has_Building_Active(STRUCT_AIRSTRIP) && Control.TechLevel >= Rule.ParaBombTechLevel) {
             SuperWeapon[SPC_PARA_BOMB].Enable(false, this == PlayerPtr, false);
             // Add to Glyphx multiplayer sidebar. ST - 8/7/2019 10:13AM
             if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
