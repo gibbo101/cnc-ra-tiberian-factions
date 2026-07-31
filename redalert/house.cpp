@@ -5541,7 +5541,7 @@ COORDINATE HouseClass::Find_Build_Location(BuildingClass* building) const
         ZoneType tryzone = _zones[(zz + start) % ARRAY_SIZE(_zones)];
         zcell = Find_Cell_In_Zone(building, tryzone);
         if (zcell)
-            return (zcell);
+            return (Cell_Coord(zcell));
     }
 
     return (0);
