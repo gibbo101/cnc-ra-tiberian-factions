@@ -2631,8 +2631,11 @@ static DWORD TF_LobbyScanPid = 0; // pid of the process currently being scanned
 // is a 4-byte aligned word. A pointer to the array lands near the anchor record but
 // not necessarily ON it -- human player records precede AIPLAYER1, so the array base
 // sits some strides before the anchor. Widening to a window catches that reference.
-// Returns -1 if the process can't be opened. Once-per-match, dev only.
-static int TF_Count_Referrers(DWORD pid, SIZE_T lo, SIZE_T hi, unsigned char* scratch, SIZE_T scratch_size)
+// When hit_addrs is given, the address of each matching word is recorded (up to
+// max_hits) so the caller can inspect the referrer's neighbours; counting continues
+// past the cap. Returns -1 if the process can't be opened.
+static int TF_Count_Referrers(DWORD pid, SIZE_T lo, SIZE_T hi, unsigned char* scratch, SIZE_T scratch_size,
+                              SIZE_T* hit_addrs = NULL, int max_hits = 0, int* hit_count = NULL)
 {
     HANDLE proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, pid);
     if (proc == NULL) {
@@ -2661,6 +2664,9 @@ static int TF_Count_Referrers(DWORD pid, SIZE_T lo, SIZE_T hi, unsigned char* sc
                     unsigned int v;
                     memcpy(&v, scratch + i, 4);
                     if (v >= wlo && v < whi) {
+                        if (hit_addrs != NULL && hit_count != NULL && *hit_count < max_hits) {
+                            hit_addrs[(*hit_count)++] = region_base + off + i;
+                        }
                         refs++;
                     }
                 }
@@ -2674,6 +2680,57 @@ static int TF_Count_Referrers(DWORD pid, SIZE_T lo, SIZE_T hi, unsigned char* sc
     }
     CloseHandle(proc);
     return refs;
+}
+
+/*
+**	Route B upgrade (DontCryJustDie, 2026-07-25): the client's stable referrers to the
+**	LIVE array are vector triples -- at referrer address R, [R] is the begin pointer,
+**	[R+4] the end pointer, [R+8] the capacity pointer, and (end - begin) / 168 is the
+**	number of players in the match. They point at the ARRAY BASE (the first HUMAN
+**	record), which sits TF_HumanPlayerCount strides before the AIPLAYER anchor. A raw
+**	value hit is a coincidence-prone integer match; a hit whose neighbours form a
+**	triple sized to this match's roster is a structural identification of the live
+**	array, and no stale copy can carry one.
+*/
+#define TF_LOBBY_MAX_TRIPLES 8
+struct TF_VecTriple {
+    SIZE_T ref;              // address of the begin-pointer word inside the client
+    unsigned int begin;
+    unsigned int end;
+    unsigned int cap;
+    int nplayers;            // (end - begin) / stride; -1 = not stride-aligned
+    bool ok;                 // structurally valid AND sized to this match's roster
+};
+
+// Reads the 12 bytes at `ref` and judges them as a vector triple over `base`.
+// Fills `out` with whatever was read (for the forensic log) even on a reject;
+// returns out->ok. `expected_players` = humans + roster AIs for THIS match.
+static bool TF_Read_Vector_Triple(HANDLE proc, SIZE_T ref, SIZE_T base, int expected_players, TF_VecTriple* out)
+{
+    out->ref = ref;
+    out->begin = 0;
+    out->end = 0;
+    out->cap = 0;
+    out->nplayers = -1;
+    out->ok = false;
+    unsigned int trip[3];
+    SIZE_T got = 0;
+    if (!ReadProcessMemory(proc, (LPCVOID)ref, trip, sizeof(trip), &got) || got != sizeof(trip)) {
+        return false;
+    }
+    out->begin = trip[0];
+    out->end = trip[1];
+    out->cap = trip[2];
+    if (out->begin != (unsigned int)base || out->end <= out->begin || out->cap < out->end) {
+        return false;
+    }
+    unsigned int span = out->end - out->begin;
+    if (span % TF_LOBBY_RECORD_STRIDE != 0) {
+        return false;
+    }
+    out->nplayers = (int)(span / TF_LOBBY_RECORD_STRIDE);
+    out->ok = (out->nplayers == expected_players);
+    return out->ok;
 }
 
 // Do two registered candidates carry the same difficulty over the roster slots?
@@ -2694,6 +2751,10 @@ static bool TF_Cand_Same_Vec(int a, int b, unsigned roster)
 **	that disagree, decide which one is LIVE, or report undecided.
 **	Branches, in order (each requires its survivors to agree, so a stale is never picked
 **	over a live one; worst case 'U' == the fail-closed fallback this replaced):
+**	  V  vector triple   -- a referrer at the candidate's array base whose begin/end/
+**	                        capacity neighbours form a vector sized to this match's
+**	                        roster. Structural identification, not a value coincidence;
+**	                        a stale copy can never carry one.
 **	  R  exact referrer  -- the client keeps one pointer to the LIVE array's base;
 **	                        a unique difficulty among refeq>0 candidates is live.
 **	  F  freshness       -- a stale copy is a previously-ACTIVE array carrying many more
@@ -2703,10 +2764,27 @@ static bool TF_Cand_Same_Vec(int a, int b, unsigned roster)
 **	  U  undecided       -- caller fails closed.
 **	Returns the branch letter; fills out[] (roster slots) when decided.
 */
-static char TF_Resolve_Lobby_Ambiguity(const int* refeq, const int* refwin, int ncand,
-                                       unsigned roster, int* out)
+static char TF_Resolve_Lobby_Ambiguity(const int* vecref, const int* refeq, const int* refwin,
+                                       int ncand, unsigned roster, int* out)
 {
-    // 1. exact referrer
+    // 1. validated vector triple at the array base
+    int vrep = -1;
+    bool vconflict = false;
+    for (int c = 0; c < ncand; c++) {
+        if (vecref[c] > 0) {
+            if (vrep < 0) {
+                vrep = c;
+            } else if (!TF_Cand_Same_Vec(vrep, c, roster)) {
+                vconflict = true;
+            }
+        }
+    }
+    if (vrep >= 0 && !vconflict) {
+        for (int n = 1; n <= TF_LOBBY_MAX_AI_SLOTS; n++) out[n] = TF_LobbyCands[vrep].diff[n];
+        return 'V';
+    }
+
+    // 2. exact referrer
     int rep = -1;
     bool conflict = false;
     for (int c = 0; c < ncand; c++) {
@@ -2723,7 +2801,7 @@ static char TF_Resolve_Lobby_Ambiguity(const int* refeq, const int* refwin, int 
         return 'R';
     }
 
-    // 2. freshness cluster (low refwin = freshly allocated = live)
+    // 3. freshness cluster (low refwin = freshly allocated = live)
     int minrw = 0x7fffffff;
     for (int c = 0; c < ncand; c++) if (refwin[c] < minrw) minrw = refwin[c];
     int thresh = minrw * 4 + 2;
@@ -2743,7 +2821,7 @@ static char TF_Resolve_Lobby_Ambiguity(const int* refeq, const int* refwin, int 
         return 'F';
     }
 
-    // 3. strict majority
+    // 4. strict majority
     int bestc = -1, bestn = 0;
     for (int c = 0; c < ncand; c++) {
         int cnt = 0;
@@ -2968,20 +3046,63 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
     **	it between matches. Identify the live copy from its referrer profile instead;
     **	an undecided verdict still falls back.
     */
+    static int cand_vecref[TF_LOBBY_MAX_CANDIDATES];
     static int cand_refeq[TF_LOBBY_MAX_CANDIDATES];
     static int cand_refwin[TF_LOBBY_MAX_CANDIDATES];
+    static SIZE_T cand_base[TF_LOBBY_MAX_CANDIDATES];
+    static TF_VecTriple cand_trip[TF_LOBBY_MAX_CANDIDATES][TF_LOBBY_MAX_TRIPLES];
+    static int cand_ntrip[TF_LOBBY_MAX_CANDIDATES];
     int resolved[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
     char branch = 'U';
     for (int a = 0; a < TF_LOBBY_MAX_CANDIDATES; a++) {
+        cand_vecref[a] = -1;
         cand_refeq[a] = -1;
         cand_refwin[a] = -1;
+        cand_base[a] = 0;
+        cand_ntrip[a] = 0;
     }
     if (ambiguous && TF_LobbyCandN > 0) {
+        // The live array's referrers are vector triples over its BASE (the first
+        // human record, TF_HumanPlayerCount strides before the AIPLAYER anchor),
+        // sized humans + roster AIs. See TF_Read_Vector_Triple.
+        int roster_ais = 0;
+        for (int n = 1; n <= TF_LOBBY_MAX_AI_SLOTS; n++) {
+            if (TF_LobbyAIRosterMask & (1u << n)) {
+                roster_ais++;
+            }
+        }
+        int expected_players = TF_HumanPlayerCount + roster_ais;
         for (int a = 0; a < TF_LobbyCandN; a++) {
             TF_LobbyCandRec& c = TF_LobbyCands[a];
-            // refeq = pointers landing exactly ON the anchor record. refwin = pointers
-            // into a window running from 4 records before the anchor (human records
-            // precede AIPLAYER1, so the array base sits behind it) through the roster.
+            // vecref = referrers at the array base whose neighbours validate as a
+            // vector triple. refeq = pointers landing exactly ON the anchor record.
+            // refwin = pointers into a window running from 4 records before the
+            // anchor through the roster.
+            SIZE_T back = (SIZE_T)TF_HumanPlayerCount * TF_LOBBY_RECORD_STRIDE;
+            cand_vecref[a] = 0;
+            if (c.address > back) {
+                cand_base[a] = c.address - back;
+                SIZE_T hits[TF_LOBBY_MAX_TRIPLES];
+                int nhits = 0;
+                int base_refs = TF_Count_Referrers(c.pid, cand_base[a], cand_base[a] + 1,
+                                                   scratch, sizeof(scratch),
+                                                   hits, TF_LOBBY_MAX_TRIPLES, &nhits);
+                if (base_refs < 0) {
+                    cand_vecref[a] = -1;
+                } else if (nhits > 0) {
+                    HANDLE tproc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, c.pid);
+                    if (tproc != NULL) {
+                        for (int h = 0; h < nhits; h++) {
+                            TF_VecTriple& t = cand_trip[a][cand_ntrip[a]];
+                            if (TF_Read_Vector_Triple(tproc, hits[h], cand_base[a], expected_players, &t)) {
+                                cand_vecref[a]++;
+                            }
+                            cand_ntrip[a]++;
+                        }
+                        CloseHandle(tproc);
+                    }
+                }
+            }
             cand_refeq[a] = TF_Count_Referrers(c.pid, c.address, c.address + 1, scratch, sizeof(scratch));
             SIZE_T lo = (c.address > (SIZE_T)4 * TF_LOBBY_RECORD_STRIDE)
                             ? c.address - (SIZE_T)4 * TF_LOBBY_RECORD_STRIDE
@@ -2989,7 +3110,7 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
             SIZE_T hi = c.address + (SIZE_T)2 * TF_LOBBY_RECORD_STRIDE;
             cand_refwin[a] = TF_Count_Referrers(c.pid, lo, hi, scratch, sizeof(scratch));
         }
-        branch = TF_Resolve_Lobby_Ambiguity(cand_refeq, cand_refwin,
+        branch = TF_Resolve_Lobby_Ambiguity(cand_vecref, cand_refeq, cand_refwin,
                                             TF_LobbyCandN, TF_LobbyAIRosterMask, resolved);
     }
 
@@ -3014,7 +3135,7 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
                     }
                 }
                 fprintf(f,
-                        "  CAND a=%d addr=%08x region=%08x/%uK prot=%x diff=%s refs=%d refwin=%d\n",
+                        "  CAND a=%d addr=%08x region=%08x/%uK prot=%x diff=%s refs=%d refwin=%d base=%08x vecref=%d ntrip=%d\n",
                         a,
                         (unsigned)c.address,
                         (unsigned)c.region_base,
@@ -3022,7 +3143,21 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
                         (unsigned)c.protect,
                         dv,
                         cand_refeq[a],
-                        cand_refwin[a]);
+                        cand_refwin[a],
+                        (unsigned)cand_base[a],
+                        cand_vecref[a],
+                        cand_ntrip[a]);
+                for (int t = 0; t < cand_ntrip[a]; t++) {
+                    const TF_VecTriple& vt = cand_trip[a][t];
+                    fprintf(f,
+                            "    TRIPLE ref=%08x begin=%08x end=%08x cap=%08x nplayers=%d ok=%d\n",
+                            (unsigned)vt.ref,
+                            vt.begin,
+                            vt.end,
+                            vt.cap,
+                            vt.nplayers,
+                            (int)vt.ok);
+                }
                 if (c.pre_ok) {
                     fprintf(f, "    PRE ");
                     for (int b = 0; b < TF_LOBBY_PRE_BYTES; b++) {
@@ -6988,6 +7123,16 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
             strncpy(weapon_name, "SW_TDNuke", 16);
         }
         break;
+    case SPC_TD_PARA_INFANTRY:
+        // Tiberian Factions mod — Nod paratroops share the launcher's
+        // SW_PARA_INFANTRY plumbing (cursor, cost suppression) but carry
+        // their own AssetName so RA_SW_TDPARAINF in RABUILDABLES.XML can
+        // give them a Nod-badged cameo and TD-specific tooltip text.
+        dll_weapon_type = SW_PARA_INFANTRY;
+        if (weapon_name != NULL) {
+            strncpy(weapon_name, "SW_TDParaInf", 16);
+        }
+        break;
     default:
         dll_weapon_type = SW_UNKNOWN;
         if (weapon_name != NULL) {
@@ -7015,6 +7160,7 @@ void DLLExportClass::Fill_Sidebar_Entry_From_Special_Weapon(CNCSidebarEntryStruc
     case SPC_CHRONO2:
     case SPC_TD_ION_CANNON:
     case SPC_TD_NUKE:
+    case SPC_TD_PARA_INFANTRY:
         Convert_Special_Weapon_Type(weapon_type, sidebar_entry_out.SuperWeaponType, sidebar_entry_out.AssetName);
         break;
     default:

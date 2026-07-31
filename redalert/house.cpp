@@ -786,6 +786,11 @@ HouseClass::HouseClass(HousesType house)
                                                VOX_NOT_READY,
                                                VOX_INSUFFICIENT_POWER);
 
+    // Tiberian Factions mod — Nod paratroops. Same cadence and voice
+    // handling as the RA paratroop drop it splits from.
+    new (&SuperWeapon[SPC_TD_PARA_INFANTRY])
+        SuperClass(TICKS_PER_MINUTE * Rule.ParaInfantryTime, false, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_NOT_READY);
+
     memset(UnitsKilled, '\0', sizeof(UnitsKilled));
     memset(BuildingsKilled, '\0', sizeof(BuildingsKilled));
     memset(BQuantity, '\0', sizeof(BQuantity));
@@ -2486,8 +2491,12 @@ void HouseClass::Super_Weapon_Handler(void)
         }
     }
 
+    // Paratroops are per-era specials: the Soviet airfield grants the RA drop, the Nod
+    // airstrip + Hand of Nod grant the TD drop, and a house holding both eras' buildings
+    // fields both. The Nod airstrip (TDAFLD) shadows STRUCTF_AIRSTRIP in the scan, so
+    // presence and removal both test the concrete building, never the scan bit.
     if (SuperWeapon[SPC_PARA_INFANTRY].Is_Present()) {
-        if ((ActiveBScan & STRUCTF_AIRSTRIP) == 0) {
+        if (!Has_Building_Active(STRUCT_AIRSTRIP)) {
             if (SuperWeapon[SPC_PARA_INFANTRY].Remove()) {
                 if (this == PlayerPtr)
                     Map.Column[1].Flag_To_Redraw();
@@ -2499,12 +2508,7 @@ void HouseClass::Super_Weapon_Handler(void)
             }
         }
     } else {
-        // Nod paratroopers: need both the Nod airstrip (TDAFLD, to fly them in) and the Hand
-        // of Nod (TDHAND, the barracks that supplies the infantry). Soviet keeps its airstrip path.
-        if ((ActiveBScan & STRUCTF_AIRSTRIP) != 0
-            && (Has_Building_Active(STRUCT_AIRSTRIP)
-                || (Has_Building_Active(STRUCT_TDAFLD) && Has_Building_Active(STRUCT_TDHAND)))
-            && Control.TechLevel >= Rule.ParaInfantryTechLevel) {
+        if (Has_Building_Active(STRUCT_AIRSTRIP) && Control.TechLevel >= Rule.ParaInfantryTechLevel) {
             SuperWeapon[SPC_PARA_INFANTRY].Enable(false, this == PlayerPtr, false);
             // Add to Glyphx multiplayer sidebar. ST - 8/7/2019 10:13AM
             if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
@@ -2516,6 +2520,38 @@ void HouseClass::Super_Weapon_Handler(void)
             } else {
                 if (this == PlayerPtr) {
                     Map.Add(RTTI_SPECIAL, SPC_PARA_INFANTRY);
+                    Map.Column[1].Flag_To_Redraw();
+                }
+            }
+        }
+    }
+
+    if (SuperWeapon[SPC_TD_PARA_INFANTRY].Is_Present()) {
+        if (!Has_Building_Active(STRUCT_TDAFLD) || !Has_Building_Active(STRUCT_TDHAND)) {
+            if (SuperWeapon[SPC_TD_PARA_INFANTRY].Remove()) {
+                if (this == PlayerPtr)
+                    Map.Column[1].Flag_To_Redraw();
+                IsRecalcNeeded = true;
+            }
+        } else {
+            if (SuperWeapon[SPC_TD_PARA_INFANTRY].Is_Ready() && !IsHuman) {
+                Special_Weapon_AI(SPC_TD_PARA_INFANTRY);
+            }
+        }
+    } else {
+        // The airstrip flies them in; the Hand of Nod supplies the infantry.
+        if (Has_Building_Active(STRUCT_TDAFLD) && Has_Building_Active(STRUCT_TDHAND)
+            && Control.TechLevel >= Rule.ParaInfantryTechLevel) {
+            SuperWeapon[SPC_TD_PARA_INFANTRY].Enable(false, this == PlayerPtr, false);
+            if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
+                if (IsHuman) {
+#ifdef REMASTER_BUILD
+                    Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TD_PARA_INFANTRY, this);
+#endif
+                }
+            } else {
+                if (this == PlayerPtr) {
+                    Map.Add(RTTI_SPECIAL, SPC_TD_PARA_INFANTRY);
                     Map.Column[1].Flag_To_Redraw();
                 }
             }
@@ -3647,7 +3683,8 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
         break;
 
     case SPC_PARA_INFANTRY:
-        if (SuperWeapon[SPC_PARA_INFANTRY].Is_Ready()) {
+    case SPC_TD_PARA_INFANTRY:
+        if (SuperWeapon[id].Is_Ready()) {
 
             TeamTypeClass* ttype = TeamTypeClass::As_Pointer("@PINF");
             if (ttype == NULL) {
@@ -3671,27 +3708,27 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 
             if (ttype != NULL) {
                 ttype->House = Class->House;
-                // Nod drops its own Minigunners (TDE1) from the targetable TD C-17 (TDC17P); Soviet
-                // drops RA Rifle Infantry (E1) from the Badger. Set every fire -- the @PINF team is
-                // cached and shared across all houses. Squad size = the plane's passenger capacity.
-                bool nod = (ActLike == HOUSE_BAD);
-                AircraftType para_plane = nod ? AIRCRAFT_TDPARADROP : AIRCRAFT_BADGER;
-                ttype->Members[0].Class = &InfantryTypeClass::As_Reference(nod ? INFANTRY_TDE1 : INFANTRY_E1);
+                // Which special fired decides the delivery, not house identity, so a
+                // captured cross-era pair drops that era's troops: the TD special drops
+                // Minigunners (TDE1) from the targetable TD C-17 (TDC17P), the RA one
+                // Rifle Infantry (E1) from the Badger. Set every fire -- the @PINF team
+                // is cached and shared. Squad size = the plane's passenger capacity.
+                bool td = (id == SPC_TD_PARA_INFANTRY);
+                AircraftType para_plane = td ? AIRCRAFT_TDPARADROP : AIRCRAFT_BADGER;
+                ttype->Members[0].Class = &InfantryTypeClass::As_Reference(td ? INFANTRY_TDE1 : INFANTRY_E1);
                 ttype->Members[0].Quantity = AircraftTypeClass::As_Reference(para_plane).Max_Passengers();
                 ttype->Members[1].Class = &AircraftTypeClass::As_Reference(para_plane);
                 Scen.Waypoint[WAYPT_SPECIAL] = Map.Nearby_Location(cell, SPEED_FOOT);
                 Do_Reinforcements(ttype);
             }
 
-            //				Create_Air_Reinforcement(this, AIRCRAFT_BADGER, 1, MISSION_HUNT, ::As_Target(cell), TARGET_NONE,
-            //INFANTRY_E1);
             if (this == PlayerPtr) {
                 Map.IsTargettingMode = SPC_NONE;
             }
-            SuperWeapon[SPC_PARA_INFANTRY].Discharged(this == PlayerPtr);
+            SuperWeapon[id].Discharged(this == PlayerPtr);
             IsRecalcNeeded = true;
             fired = true;
-            what = "PARA";
+            what = (id == SPC_TD_PARA_INFANTRY) ? "TDPARA" : "PARA";
         }
         break;
 

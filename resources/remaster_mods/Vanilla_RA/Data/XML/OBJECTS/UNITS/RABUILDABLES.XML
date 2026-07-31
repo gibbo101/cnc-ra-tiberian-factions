@@ -769,6 +769,20 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<!-- Tiberian Factions mod — Nod paratroops super (SPC_TD_PARA_INFANTRY).
+	     AssetName "SW_TDParaInf" (distinct from the Soviet drop's
+	     "SW_ParaInfantry") so the tooltip resolves the Nod strings below and
+	     the cameo carries the Nod badge. Same pristine paratroopers art;
+	     SuperWeaponType = SW_PARA_INFANTRY engine-side for cursor and cost
+	     suppression. -->
+	<ObjectTypeClass Name="RA_SW_TDPARAINF" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_NOD_PARATROOPERS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_NOD_PARATROOPERS</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SW_TDPARAINF</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 
 		<!-- MISC UNITS-->
 	<ObjectTypeClass Name="RA_ANT1" Classification="CNCBuildableObject" CanInstantiate="False">
