@@ -3423,10 +3423,25 @@ CELL HouseClass::TF_Scout_Destination(CELL from)
     */
     const int TF_HOME_RADIUS_LEPTONS = CELL_LEPTON_W * 12;
 
+    /*
+    **	The frame each start point was last handed to one of this house's scouts.
+    **	Every pick stamps its waypoint and later picks prefer the least-recently
+    **	probed one, so scouts dispatched together fan out over the start points
+    **	instead of all computing the same nearest cell. Distance only breaks
+    **	ties. Kept outside the class so the savegame layout is untouched; a
+    **	stamp from a previous match reads as newer than the young frame counter
+    **	and is treated as never-probed.
+    */
+    static long _probed[HOUSE_COUNT][26];
+
     CELL best_unmapped = -1;
     int best_unmapped_dist = -1;
+    long best_unmapped_probed = 0;
+    int best_unmapped_index = -1;
     CELL best_any = -1;
     int best_any_dist = -1;
+    long best_any_probed = 0;
+    int best_any_index = -1;
 
     for (int index = 0; index < 26; index++) {
         CELL waypt = Scen.Waypoint[index];
@@ -3438,18 +3453,31 @@ CELL HouseClass::TF_Scout_Destination(CELL from)
             continue;
         }
         int dist = ::Distance(Cell_Coord(from), wcoord);
+        long probed = _probed[Class->House][index];
+        if (probed > (long)Frame) {
+            probed = 0;
+        }
         if (!Map[waypt].Is_Mapped(this)) {
-            if (best_unmapped == -1 || dist < best_unmapped_dist) {
+            if (best_unmapped == -1 || probed < best_unmapped_probed
+                || (probed == best_unmapped_probed && dist < best_unmapped_dist)) {
                 best_unmapped = waypt;
                 best_unmapped_dist = dist;
+                best_unmapped_probed = probed;
+                best_unmapped_index = index;
             }
         }
-        if (best_any == -1 || dist < best_any_dist) {
+        if (best_any == -1 || probed < best_any_probed || (probed == best_any_probed && dist < best_any_dist)) {
             best_any = waypt;
             best_any_dist = dist;
+            best_any_probed = probed;
+            best_any_index = index;
         }
     }
 
+    int chosen = (best_unmapped != -1) ? best_unmapped_index : best_any_index;
+    if (chosen != -1) {
+        _probed[Class->House][chosen] = (long)Frame;
+    }
     return (best_unmapped != -1) ? best_unmapped : best_any;
 }
 
