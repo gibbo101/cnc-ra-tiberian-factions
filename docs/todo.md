@@ -121,7 +121,16 @@ shore defences), warship escorts dispatched ahead of the crossing (`FERRY-ESCORT
      through the remote anchor). Chronoshift delivery variant designed, gated on
      Chronosphere AI dispatch (P3b/3c).
 
-**Next-match verify list (deployed = through `782a310`):** fleets actually REACH cap
+7. **Second front on connected maps — SHIPPED `ef7c875` (Luke: only one map is truly
+   water-split).** `TF_Ferry_Assault` carries both doctrines: split map = invasion at
+   every difficulty, shortest crossing; connected map with shared sea = **Hard-tier-only**
+   opportunistic landing (difficulty stays behavioural), gated on fair-fog enemycoastal +
+   18 surplus idle units (land waves keep first claim), landing near the ENEMY base at
+   the weakest threat-scored coast. Beachhead membership on a shared landmass = within 10
+   cells of the rally (zone identity can't distinguish there). MCV expansion stays
+   split-map-only by design.
+
+**Next-match verify list (deployed = through `ef7c875`):** fleets actually REACH cap
 (watch `YARD-EXIT blocked` — should appear then clear, curV rising after), LST spawns →
 `FERRY-START/SAIL/UNLOAD` chain, units gather at rally then `FERRY-WAVE release`, convoy
 scales (2nd–4th LST as idle army grows), escorts precede landings, then `FERRY-MCV
