@@ -1853,6 +1853,10 @@ typedef enum UnitType : char
     UNIT_TDGMCV,            // GDI MCV (deploys to STRUCT_TDGFACT) — sibling of UNIT_TDNMCV.
     UNIT_AMCV,              // Allied MCV (deploys to STRUCT_AFACT) — sibling of UNIT_SMCV.
     UNIT_TSMCV,             // TS MCV "TSMCV" (deploys to STRUCT_TSFACT) — the rare-crate find that opens the ownership-gated TS tree (docs/ts-gdi-tree-plan.md). Art = TS MCV.VXL voxel render.
+    UNIT_TSHARV,            // TS Harvester (HARV) — RA-harvester mechanics docked at STRUCT_TSPROC (RA-refinery family); voxel render, 32 facings, no dump-anim frames (draw skips the dump shape calc like TDHARV). Free unit of the TS refinery.
+    UNIT_TSSMEC,            // TS Wolverine (SMECH) — light scout mech, no turret, fires AssaultCannon (instant hitscan). Art = SMECH.SHP walk frames (12x8, Titan walker pipeline); guns are in the sprite, no barrel compositing.
+    UNIT_TSSONIC,           // TS Disruptor (SONIC) — turreted sonic tank, fires SonicZap (IsSonic piercing line: railgun mechanics, green beam, no helix). Art = SONIC.VXL body 0-31 + SONICTUR.VXL turret 32-63.
+    UNIT_TSAPC,             // TS Amphibious APC (APC) — unarmed hover transport (SPEED_HOVER stands in for TS amphibious float, plan-approved deviation), Passengers=5, door logic alongside UNIT_APC/UNIT_TDAPC.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -3311,6 +3315,7 @@ typedef enum WarheadType : char
     WARHEAD_TDHOLLOW, // TD hollow-point (WARHEAD_HOLLOW_POINT) — Commando sniper. Spread 4, verses {1.0,0.03,0.03,0.03,0.03}: one-shots infantry, ~nil vs armor/buildings.
     WARHEAD_TDAGT, // AGT-only warhead, fired from TDTowTwo (the GDI Advanced Guard Tower) ONLY. Verses identical to TDHE today; kept separate so the AGT can be tuned without touching the ~12 other TDHE weapons.
     WARHEAD_RAILSHOT, // TS railgun warhead (MechRailgun ambient line damage). TS [RailShot]: Spread 1, verses 200/175/160/100/25%.
+    WARHEAD_SONIC,    // TS sonic warhead (Disruptor SonicZap line damage). TS [SonicWarhead]: Spread 2, verses 100/100/100/80/60%, Wood=yes. Registered "SonicWarhead".
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
@@ -3409,6 +3414,8 @@ typedef enum WeaponType : char
     WEAPON_TS120MM,        // TS Titan cannon — TS [120mm] stats (Dmg70/ROF80) on the TDAPDS chain. IsTDPort. Registered "TS120mm".
     WEAPON_MECHRAILGUN,    // TS Mammoth Mk. II railgun — Damage=0 + AmbientDamage=200 applied along the whole line (IsRailgun path in Fire_At), instant TDLaser projectile, WARHEAD_RAILSHOT. Registered "MechRailgun".
     WEAPON_TSMKTUSK,       // TS Mammoth Mk. II AA missiles — RA MammothTusk stats on the STRICTLY anti-air AAMissile projectile (TS tusks never fire at ground). Registered "TSMammothTusk".
+    WEAPON_ASSAULTCANNON,  // TS Wolverine assault cannon — TS [AssaultCannon] verbatim (Dmg40/ROF50/Range5, instant Invisible projectile, SA warhead). Registered "AssaultCannon".
+    WEAPON_SONICZAP,       // TS Disruptor sonic beam — IsSonic piercing line (railgun sweep mechanics, green beam, no helix) through WARHEAD_SONIC. TS per-frame wave damage translated to one AmbientDamage application per object on the line. Registered "SonicZap".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0

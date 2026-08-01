@@ -235,6 +235,17 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tstitn_stub.shp" 56 56 128
 PACK_ARGS+=("$TMPDIR/tstitn_stub.shp:TSTITN.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tshmec_stub.shp" 60 60 256
 PACK_ARGS+=("$TMPDIR/tshmec_stub.shp:TSHMEC.SHP")
+# TS units wave (Harvester / Wolverine / Disruptor / Amphibious APC) -- same
+# HD-only stub pattern; frame counts match the HD zips (rot-only, walk, or
+# body+turret) and dims match each unit's rules.ini ShapeSize.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsharv_stub.shp" 64 64 32
+PACK_ARGS+=("$TMPDIR/tsharv_stub.shp:TSHARV.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssmec_stub.shp" 48 48 96
+PACK_ARGS+=("$TMPDIR/tssmec_stub.shp:TSSMEC.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssonic_stub.shp" 56 56 64
+PACK_ARGS+=("$TMPDIR/tssonic_stub.shp:TSSONIC.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsapc_stub.shp" 48 48 32
+PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
 # TS-tree buildings with TS-authentic footprints (docs/ts-gdi-tree-plan.md):
 # classic stubs declare each one's canvas dims (dims x5.33 = HD canvas); the
 # MAKE stubs carry the 19-frame construction count the HD buildup zips ship.

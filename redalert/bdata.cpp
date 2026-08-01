@@ -5564,6 +5564,10 @@ int BuildingTypeClass::Raw_Cost(void) const
         // TDPROC spawns UNIT_TDHARV via building.cpp's free-harvester block.
         cost -= UnitTypeClass::As_Reference(UNIT_TDHARV).Cost;
     }
+    if (Type == STRUCT_TSPROC) {
+        // TSPROC spawns UNIT_TSHARV via the same free-harvester block.
+        cost -= UnitTypeClass::As_Reference(UNIT_TSHARV).Cost;
+    }
     return (cost);
 }
 

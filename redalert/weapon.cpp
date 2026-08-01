@@ -72,6 +72,7 @@ WeaponTypeClass::WeaponTypeClass(char const* name)
     , IsElectric(false)
     , IsTDPort(false)
     , IsRailgun(false)
+    , IsSonic(false)
     , AmbientDamage(0)
     , Burst(1)
     , Bullet(NULL)
@@ -216,6 +217,7 @@ bool WeaponTypeClass::Read_INI(CCINIClass& ini)
         IsElectric = ini.Get_Bool(Name(), "Charges", IsElectric);
         IsTurboBoosted = ini.Get_Bool(Name(), "TurboBoost", IsTurboBoosted);
         IsRailgun = ini.Get_Bool(Name(), "IsRailgun", IsRailgun);
+        IsSonic = ini.Get_Bool(Name(), "IsSonic", IsSonic);
         AmbientDamage = ini.Get_Int(Name(), "AmbientDamage", AmbientDamage);
 
         WarheadType wtype = (WarheadPtr != NULL) ? WarheadType(WarheadPtr->ID) : WARHEAD_NONE;

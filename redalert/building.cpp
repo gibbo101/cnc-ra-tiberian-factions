@@ -287,6 +287,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             return (RADIO_NEGATIVE);
 
         case STRUCT_REFINERY:
+        case STRUCT_TSPROC:   // TS Refinery — RA-refinery clone, same dock semantics.
         case STRUCT_TDPROC: { // TD Refinery — same harvester dock semantics.
             // B4 (both directions): EITHER refinery accepts EITHER harvester. Unload
             // STYLE follows the harvester (governing rule), so the dock just needs to
@@ -296,7 +297,8 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             // TD harv at an RA ref via a timer-driven offload + dust puff.)
             bool right_harvester = false;
             if (from->What_Am_I() == RTTI_UNIT) {
-                right_harvester = (*((UnitClass*)from) == UNIT_HARVESTER || *((UnitClass*)from) == UNIT_TDHARV);
+                right_harvester = (*((UnitClass*)from) == UNIT_HARVESTER || *((UnitClass*)from) == UNIT_TDHARV
+                                   || *((UnitClass*)from) == UNIT_TSHARV);
             }
             if (right_harvester && (ScenarioInit || !Is_Something_Attached())) {
                 return ((Contact_With_Whom() != from) ? RADIO_ROGER : RADIO_NEGATIVE);
@@ -338,13 +340,15 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             from->Assign_Mission(MISSION_SLEEP);
             return (RADIO_ROGER);
 
+        case STRUCT_TSPROC: // TS refinery: RA-refinery clone, same MISSION_UNLOAD hand-off.
         case STRUCT_REFINERY:
             /*
             **	Both harvester types use MISSION_UNLOAD at an RA refinery (never the
             **	TD attach path -- the RA refinery has no docking animation and we never
             **	Limbo here). Mission_Unload dispatches on harvester type: UNIT_HARVESTER
-            **	runs the visible SHP dust-loop; UNIT_TDHARV (reverse cross-dock) parks
-            **	visibly and runs a timer-driven offload + dust puff (no SHP dump frames).
+            **	runs the visible SHP dust-loop; UNIT_TDHARV (reverse cross-dock) and
+            **	UNIT_TSHARV park visibly and run a timer-driven offload + fume plume
+            **	(no SHP dump frames on either sprite).
             */
             Mark(MARK_CHANGE);
             from->Assign_Mission(MISSION_UNLOAD);
@@ -1756,7 +1760,8 @@ static void TF_Log_AI_Build_State(void)
                 if (u->Class->Is_MCV()) {
                     mcv++;
                 }
-                if (u->Class->Type == UNIT_HARVESTER || u->Class->Type == UNIT_TDHARV) {
+                if (u->Class->Type == UNIT_HARVESTER || u->Class->Type == UNIT_TDHARV
+                    || u->Class->Type == UNIT_TSHARV) {
                     harv++;
                 }
             }
@@ -3918,14 +3923,36 @@ void BuildingClass::Grand_Opening(bool captured)
         **	Tiberium Refineries get a free harvester. Add a harvester to the
         **	reinforcement list at this time.
         */
-        if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC) && !ScenarioInit && !captured && !Debug_Map
+        if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC) && !ScenarioInit
+            && !captured && !Debug_Map
             && (!House->IsHuman || PurchasePrice == 0 || PurchasePrice > Class->Raw_Cost())) {
             CELL cell = Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_S));
 
             // Tiberian Factions: STRUCT_TDPROC spawns UNIT_TDHARV (TD-art
-            // harvester) instead of RA's UNIT_HARVESTER. Same mechanics.
-            UnitType harv_type = (*this == STRUCT_TDPROC) ? UNIT_TDHARV : UNIT_HARVESTER;
+            // harvester) instead of RA's UNIT_HARVESTER; STRUCT_TSPROC spawns
+            // UNIT_TSHARV. Same mechanics.
+            UnitType harv_type = (*this == STRUCT_TDPROC)   ? UNIT_TDHARV
+                                 : (*this == STRUCT_TSPROC) ? UNIT_TSHARV
+                                                            : UNIT_HARVESTER;
             UnitClass* unit = new UnitClass(harv_type, House->Class->House);
+#if TF_DEV_BUILD
+            // Logs-first (first TSHARV test): record the TS refinery's free-unit grant.
+            if (*this == STRUCT_TSPROC) {
+                char dpath[512];
+                const char* dprof = getenv("USERPROFILE");
+                if (dprof != NULL && dprof[0] != '\0') {
+                    snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
+                } else {
+                    strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
+                }
+                FILE* dlog = fopen(dpath, "a");
+                if (dlog != NULL) {
+                    fprintf(dlog, "frame=%d FREE-HARV grant house=%s spawned=%s\n", Frame,
+                            House->Class->IniName, (unit != NULL) ? "yes" : "NO (heap)");
+                    fclose(dlog);
+                }
+            }
+#endif
             if (unit != NULL) {
 
                 /*

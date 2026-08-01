@@ -660,6 +660,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TDHollow");  // WARHEAD_TDHOLLOW (TD hollow-point — Commando sniper; anti-infantry)
     new WarheadTypeClass("TDAGT");     // WARHEAD_TDAGT (v4.0 F8 — AGT-only TDHE clone, vs-heavy 25->50; fires from TDTowTwo only)
     new WarheadTypeClass("RailShot");  // WARHEAD_RAILSHOT (TS MechRailgun line damage — TS [RailShot] verses)
+    new WarheadTypeClass("SonicWarhead"); // WARHEAD_SONIC (TS Disruptor SonicZap line damage — TS [SonicWarhead] verses)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
@@ -748,6 +749,8 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TS120mm");        // WEAPON_TS120MM (TS Titan cannon -- TS [120mm] stats on the TDAPDS chain)
     new WeaponTypeClass("MechRailgun");    // WEAPON_MECHRAILGUN (TS Mammoth Mk. II railgun -- IsRailgun piercing line, instant TDLaser projectile)
     new WeaponTypeClass("TSMammothTusk");  // WEAPON_TSMKTUSK (TS Mk. II AA missiles -- MammothTusk stats on the AA-only AAMissile projectile)
+    new WeaponTypeClass("AssaultCannon");  // WEAPON_ASSAULTCANNON (TS Wolverine -- TS [AssaultCannon] verbatim, instant Invisible/SA chain)
+    new WeaponTypeClass("SonicZap");       // WEAPON_SONICZAP (TS Disruptor -- IsSonic piercing line through WARHEAD_SONIC)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's

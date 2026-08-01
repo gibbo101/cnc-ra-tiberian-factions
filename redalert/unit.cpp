@@ -471,7 +471,7 @@ void UnitClass::AI(void)
     **	mid-unload). Scoped to UNIT_HARVESTER so UNIT_MAD's detonation dump is untouched.
     **	Lockstep-safe: deterministic, no RNG.
     */
-    if (IsDumping && (*this == UNIT_HARVESTER || *this == UNIT_TDHARV)) {
+    if (IsDumping && (*this == UNIT_HARVESTER || *this == UNIT_TDHARV || *this == UNIT_TSHARV)) {
         if (Mission != MISSION_UNLOAD) {
             // Force-ordered away mid-unload: IsDumping blocks driving (drive.cpp), so
             // clear it. (UNIT_TDHARV at an RA refinery uses the timer-offload path and
@@ -1223,9 +1223,9 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                         **	to rotate.
                         */
 #ifdef FIXIT_PHASETRANSPORT //	checked - ajw 9/28/98
-                        if (*this == UNIT_APC || *this == UNIT_PHASE || *this == UNIT_TDAPC) {
+                        if (*this == UNIT_APC || *this == UNIT_PHASE || *this == UNIT_TDAPC || *this == UNIT_TSAPC) {
 #else
-                        if (*this == UNIT_APC || *this == UNIT_TDAPC) {
+                        if (*this == UNIT_APC || *this == UNIT_TDAPC || *this == UNIT_TSAPC) {
 #endif
                             if (IsRotating) {
                                 if (!Is_Door_Closed()) {
@@ -1245,9 +1245,11 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                         */
                         if (Transmit_Message(RADIO_MOVE_HERE, param, from) == RADIO_YEA_NOW_WHAT) {
 #ifdef FIXIT_PHASETRANSPORT //	checked - ajw 9/28/98
-                            if ((*this != UNIT_APC && *this != UNIT_PHASE && *this != UNIT_TDAPC) || Is_Door_Open()) {
+                            if ((*this != UNIT_APC && *this != UNIT_PHASE && *this != UNIT_TDAPC
+                                 && *this != UNIT_TSAPC)
+                                || Is_Door_Open()) {
 #else
-                            if ((*this != UNIT_APC && *this != UNIT_TDAPC) || Is_Door_Open()) {
+                            if ((*this != UNIT_APC && *this != UNIT_TDAPC && *this != UNIT_TSAPC) || Is_Door_Open()) {
 #endif
                                 param = As_Target();
                                 Transmit_Message(RADIO_TETHER);
@@ -1597,18 +1599,27 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
                 /*
                 **	Try to return to base if possible.
                 */
-                if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV) && Pip_Count() && Health_Ratio() <= Rule.ConditionYellow) {
+                if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV || *this == UNIT_TSHARV) && Pip_Count()
+                    && Health_Ratio() <= Rule.ConditionYellow) {
 
                     /*
-                    **	Find a nearby refinery and flee to it. Either harvester can use
-                    **	either refinery type now (cross-dock), so try the native type first
-                    **	then fall back to the other. (In normal play a house owns only one
+                    **	Find a nearby refinery and flee to it. Any harvester can use
+                    **	any refinery type now (cross-dock), so try the native type first
+                    **	then fall back to the others. (In normal play a house owns only one
                     **	type, so the fallback is inert; it matters in mixed/captured setups.)
                     */
-                    BuildingClass* building =
-                        Find_Docking_Bay((*this == UNIT_TDHARV) ? STRUCT_TDPROC : STRUCT_REFINERY, false);
-                    if (building == NULL) {
-                        building = Find_Docking_Bay((*this == UNIT_TDHARV) ? STRUCT_REFINERY : STRUCT_TDPROC, false);
+                    StructType native = (*this == UNIT_TDHARV)   ? STRUCT_TDPROC
+                                        : (*this == UNIT_TSHARV) ? STRUCT_TSPROC
+                                                                 : STRUCT_REFINERY;
+                    BuildingClass* building = Find_Docking_Bay(native, false);
+                    if (building == NULL && native != STRUCT_REFINERY) {
+                        building = Find_Docking_Bay(STRUCT_REFINERY, false);
+                    }
+                    if (building == NULL && native != STRUCT_TDPROC) {
+                        building = Find_Docking_Bay(STRUCT_TDPROC, false);
+                    }
+                    if (building == NULL && native != STRUCT_TSPROC) {
+                        building = Find_Docking_Bay(STRUCT_TSPROC, false);
                     }
 
                     /*
@@ -1625,7 +1636,7 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
         /*
         **	Computer controlled harvester will radio for help if they are attacked.
         */
-        if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV) && !House->IsHuman && source) {
+        if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV || *this == UNIT_TSHARV) && !House->IsHuman && source) {
             Base_Is_Attacked(source);
         }
     }
@@ -2265,7 +2276,8 @@ void UnitClass::Per_Cell_Process(PCPType why)
             } else {
                 TechnoClass* contact = Contact_With_Whom();
                 if (Transmit_Message(RADIO_UNLOADED) == RADIO_RUN_AWAY) {
-                    if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV) && contact && contact->What_Am_I() == RTTI_BUILDING
+                    if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV || *this == UNIT_TSHARV) && contact
+                        && contact->What_Am_I() == RTTI_BUILDING
                         && *((BuildingClass*)contact) != STRUCT_REPAIR
                         && *((BuildingClass*)contact) != STRUCT_TDFIX) {
                         Assign_Mission(MISSION_HARVEST);
@@ -2284,7 +2296,7 @@ void UnitClass::Per_Cell_Process(PCPType why)
                         }
                     }
                 } else {
-                    if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV)) {
+                    if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV || *this == UNIT_TSHARV)) {
                         if (Target_Legal(ArchiveTarget)) {
                             Assign_Mission(MISSION_HARVEST);
                             Assign_Destination(ArchiveTarget);
@@ -2546,7 +2558,10 @@ int UnitClass::Shape_Number(void) const
         **	UNIT_TDHARV (TD): 32 rotation + 8 dirs × 4 load = 64 frames.
         **	TD-verbatim shape calc per tiberiandawn/unit.cpp:2126-2129.
         */
-        if (IsHarvesting && !PrimaryFacing.Is_Rotating() && !NavCom && !IsDriving) {
+        // UNIT_TSHARV: the voxel render is 32 rotation frames ONLY — no load or
+        // dump anim shapes exist, so both anim branches below are skipped and the
+        // body facing frame draws throughout harvest/unload.
+        if (IsHarvesting && !PrimaryFacing.Is_Rotating() && !NavCom && !IsDriving && *this != UNIT_TSHARV) {
             if (*this == UNIT_TDHARV) {
                 static char const _td_hstage[6] = {0, 1, 2, 3, 2, 1};
                 shapenum =
@@ -2566,7 +2581,7 @@ int UnitClass::Shape_Number(void) const
             ** for the same reason it skips the load-anim — TD's 64-frame
             ** harvester sprite doesn't carry the +96 dump frames.
             */
-            if (IsDumping && *this != UNIT_TDHARV) {
+            if (IsDumping && *this != UNIT_TDHARV && *this != UNIT_TSHARV) {
                 unsigned stage = Fetch_Stage();
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
                 if (*this == UNIT_MAD) {
@@ -3612,6 +3627,8 @@ int UnitClass::Mission_Unload(void)
         Assign_Mission(MISSION_HARVEST);
         break;
 
+    case UNIT_TSHARV: // TS harvester: no dump frames on the voxel sprite either -- same
+                      // park + timer offload + fume plume as the TD harvester below.
     case UNIT_TDHARV: {
         /*
         **	Tiberian Factions -- reverse cross-dock: a TD harvester unloading at an RA
@@ -3647,6 +3664,32 @@ int UnitClass::Mission_Unload(void)
             Mark(MARK_UP);
             Coord = Coord_Add(Coord, XYP_Coord(TD_DOCK_NUDGE_RIGHT, -TD_DOCK_NUDGE_UP));
             Mark(MARK_DOWN);
+
+#if TF_DEV_BUILD
+            // Logs-first (first TSHARV test): record each park-offload dock start
+            // with harvester type, load and refinery type -- the 4x3 TSPROC dock
+            // geometry is the flagged risk on the units-wave checklist.
+            {
+                char dpath[512];
+                const char* dprof = getenv("USERPROFILE");
+                if (dprof != NULL && dprof[0] != '\0') {
+                    snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
+                } else {
+                    strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
+                }
+                FILE* dlog = fopen(dpath, "a");
+                if (dlog != NULL) {
+                    TechnoClass* refc = Contact_With_Whom();
+                    fprintf(dlog, "frame=%d DOCK-START harv=%s load=%d ref=%s cell=%d\n", Frame,
+                            Class->IniName, Tiberium,
+                            (refc != NULL && refc->What_Am_I() == RTTI_BUILDING)
+                                ? ((BuildingClass*)refc)->Class->IniName
+                                : "none",
+                            Coord_Cell(Coord));
+                    fclose(dlog);
+                }
+            }
+#endif
 
             /*
             **	Green "Tiberium fumes" venting during the unload -- ONE persistent plume
@@ -5489,7 +5532,7 @@ int UnitClass::Pip_Count(void) const
         return (retval);
     }
 
-    if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV)) {
+    if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV || *this == UNIT_TSHARV)) {
         return ((Gold + Gems) / 4);
     }
 
@@ -5604,7 +5647,10 @@ int UnitClass::Mission_Repair(void)
     assert(Units.ID(this) == ID);
     assert(IsActive);
 
-    BuildingClass* nearest = Find_Docking_Bay((*this == UNIT_TDHARV) ? STRUCT_TDPROC : STRUCT_REFINERY, true);
+    BuildingClass* nearest = Find_Docking_Bay((*this == UNIT_TDHARV)   ? STRUCT_TDPROC
+                                              : (*this == UNIT_TSHARV) ? STRUCT_TSPROC
+                                                                       : STRUCT_REFINERY,
+                                              true);
 
     IsHarvesting = false;
 
@@ -6265,7 +6311,7 @@ BuildingClass* UnitClass::Find_Best_Refinery(void) const
         BuildingClass* refinery = Buildings.Ptr(i);
         if (refinery != NULL && refinery->House == House && !refinery->IsInLimbo
             && refinery->Mission != MISSION_DECONSTRUCTION
-            && (*refinery == STRUCT_REFINERY || *refinery == STRUCT_TDPROC)
+            && (*refinery == STRUCT_REFINERY || *refinery == STRUCT_TDPROC || *refinery == STRUCT_TSPROC)
             && Map[refinery->Center_Coord()].Zones[Techno_Type_Class()->MZone]
                    == Map[Center_Coord()].Zones[Techno_Type_Class()->MZone]) {
             _refineries.Add(RefineryData{refinery, Distance(refinery), 0});
@@ -7208,9 +7254,9 @@ int UnitClass::Mission_Guard_Area(void)
     */
     if (Session.Type != GAME_NORMAL &&
 #ifdef FIXIT_PHASETRANSPORT //	checked - ajw 9/28/98
-        (*this == UNIT_APC || *this == UNIT_PHASE || *this == UNIT_TDAPC) &&
+        (*this == UNIT_APC || *this == UNIT_PHASE || *this == UNIT_TDAPC || *this == UNIT_TSAPC) &&
 #else
-        (*this == UNIT_APC || *this == UNIT_TDAPC) &&
+        (*this == UNIT_APC || *this == UNIT_TDAPC || *this == UNIT_TSAPC) &&
 #endif
         !Target_Legal(TarCom) && !In_Radio_Contact() && House->Which_Zone(this) != ZONE_NONE && !House->IsHuman) {
 

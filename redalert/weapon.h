@@ -129,8 +129,16 @@ public:
     unsigned IsRailgun : 1;
 
     /*
+    **	Tiberian Factions mod: TS sonic behavior (TS rules `IsSonic=Yes`, the
+    **	Disruptor's SonicZap). Same piercing-line damage sweep as IsRailgun,
+    **	but rendered as the green sonic beam with no spark helix.
+    */
+    unsigned IsSonic : 1;
+
+    /*
     **	Tiberian Factions mod: TS `AmbientDamage=` -- the per-object damage the
-    **	railgun line pass applies. Only meaningful when IsRailgun is set.
+    **	railgun/sonic line pass applies. Only meaningful when IsRailgun or
+    **	IsSonic is set.
     */
     int AmbientDamage;
 

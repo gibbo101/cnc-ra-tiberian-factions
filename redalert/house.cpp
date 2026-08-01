@@ -935,7 +935,7 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     // for the 2026-05-20 GDI roster bring-up where E3 isn't appearing in the
     // sidebar despite Owner=allies,soviet,GoodGuy,BadGuy + Prerequisite=tent
     // + TDPYLE built). Logging RTTI distinguishes the two streams.
-    bool log_td = (type->IniName[0] == 'T' && type->IniName[1] == 'D');
+    bool log_td = (type->IniName[0] == 'T' && (type->IniName[1] == 'D' || type->IniName[1] == 'S'));
     bool log_einf = (type->What_Am_I() == RTTI_INFANTRYTYPE
                      && type->IniName[0] == 'E'
                      && type->IniName[1] >= '0' && type->IniName[1] <= '9');
@@ -7246,7 +7246,8 @@ bool HouseClass::TF_Has_Income(void) const
     }
     for (int index = 0; index < Units.Count(); index++) {
         UnitClass const* u = Units.Ptr(index);
-        if (u != NULL && (HouseClass*)u->House == this && (*u == UNIT_TDHARV || *u == UNIT_HARVESTER)) {
+        if (u != NULL && (HouseClass*)u->House == this
+            && (*u == UNIT_TDHARV || *u == UNIT_HARVESTER || *u == UNIT_TSHARV)) {
             return (true);
         }
     }
@@ -7348,7 +7349,8 @@ int HouseClass::AI_Building(void)
         int tf_harv_count = 0;
         for (int hindex = 0; hindex < Units.Count(); hindex++) {
             UnitClass const* hu = Units.Ptr(hindex);
-            if (hu != NULL && (HouseClass*)hu->House == this && (*hu == UNIT_TDHARV || *hu == UNIT_HARVESTER)) {
+            if (hu != NULL && (HouseClass*)hu->House == this
+                && (*hu == UNIT_TDHARV || *hu == UNIT_HARVESTER || *hu == UNIT_TSHARV)) {
                 tf_harv_count++;
             }
         }
@@ -8004,7 +8006,8 @@ int HouseClass::AI_Unit(void)
     int tf_harv_owned = 0;
     for (int hidx = 0; hidx < Units.Count(); hidx++) {
         UnitClass const* hu = Units.Ptr(hidx);
-        if (hu != NULL && (HouseClass*)hu->House == this && (*hu == UNIT_TDHARV || *hu == UNIT_HARVESTER)) {
+        if (hu != NULL && (HouseClass*)hu->House == this
+            && (*hu == UNIT_TDHARV || *hu == UNIT_HARVESTER || *hu == UNIT_TSHARV)) {
             tf_harv_owned++;
         }
     }
@@ -8113,7 +8116,7 @@ int HouseClass::AI_Unit(void)
             // combat picks and the AI spams harvesters, burning income. Vanilla only
             // excluded UNIT_HARVESTER.
             if (Can_Build(utype, ActLike) && utype->Type != UNIT_HARVESTER
-                && utype->Type != UNIT_TDHARV) {
+                && utype->Type != UNIT_TDHARV && utype->Type != UNIT_TSHARV) {
                 if (utype->PrimaryWeapon != NULL) {
                     counter[index] = 20;
                 } else {
@@ -9238,7 +9241,7 @@ TARGET HouseClass::Find_Juicy_Target(COORDINATE coord) const
             if (unit->Anti_Air())
                 val *= 2;
 
-            if (*unit == UNIT_HARVESTER || *unit == UNIT_TDHARV)
+            if (*unit == UNIT_HARVESTER || *unit == UNIT_TDHARV || *unit == UNIT_TSHARV)
                 val /= 2;
 
             if (value == 0 || val < value) {

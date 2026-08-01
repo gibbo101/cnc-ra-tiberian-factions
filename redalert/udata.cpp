@@ -1638,6 +1638,147 @@ static UnitTypeClass const UnitTsHmec(UNIT_TSHMEC,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
+// TS Harvester (UNIT_TSHARV), TS rules [HARV]. RA-harvester mechanics
+// (IsToHarvest + MISSION_HARVEST; capacity = Rule.BailCount, which matches
+// TS Storage=28 exactly) docked at STRUCT_TSPROC — the TS refinery is an
+// RA-refinery clone, so TSHARV joins every UNIT_HARVESTER dispatch site.
+// TS: Strength=1000, Armor=heavy, TechLevel=1, Sight=4, Speed=5, Cost=1400,
+// Points=55, Crusher=yes, Crewed=yes, SelfHealing=yes. Art = HARV.VXL voxel
+// render, 32 facings, NO dump-anim frames — the draw path skips the dump
+// shape calc like UNIT_TDHARV.
+static UnitTypeClass const UnitTsHarv(UNIT_TSHARV,
+                                      TXT_HARVESTER, // NAME: placeholder (HD display via rules.ini Name=).
+                                      "TSHARV",      // NAME: IniName.
+                                      ANIM_FBALL1,   // EXPLOSION: big fireball (TS TWLT070-scale death).
+                                      REMAP_NORMAL,  // Sidebar remap logic.
+                                      0x0000,        // Vertical offset.
+                                      0x0000,        // Primary weapon offset (unarmed).
+                                      0x0000,        // Primary weapon lateral offset.
+                                      0x0000,        // Secondary weapon offset.
+                                      0x0000,        // Secondary weapon lateral offset.
+                                      true,          // Can this be a goodie surprise from a crate? (TS CrateGoodie=yes)
+                                      true,          // Always use the given name for the vehicle?
+                                      true,          // Can this unit squash infantry? (TS Crusher=yes)
+                                      true,          // Does this unit harvest Tiberium?
+                                      false,         // Is invisible to radar?
+                                      false,         // Is it insignificant (won't be announced)?
+                                      false,         // Is it equipped with a combat turret?
+                                      false,         // Does it have a rotating radar dish?
+                                      false,         // Is there an associated firing animation?
+                                      false,         // Must the turret be in a locked down position while moving?
+                                      true,          // Is this a gigundo-rotund-enormous unit?
+                                      false,         // Does the unit have a constant animation?
+                                      false,         // Is the unit capable of jamming radar?
+                                      false,         // Is the unit a mobile gap generator?
+                                      32,            // Rotation stages.
+                                      0,             // Turret center offset along body centerline.
+                                      MISSION_HARVEST // ORDERS: Default order.
+);
+
+// TS Wolverine (UNIT_TSSMEC), TS rules [SMECH]. Light scout mech, no turret
+// (guns are drawn in the SHP frames), fires AssaultCannon (instant hitscan).
+// TS: Strength=175, Armor=light, TechLevel=2, Sight=6, Speed=7, Cost=500,
+// Points=25, ROT=5. Art = SMECH.SHP walk frames (12 steps x 8 facings, the
+// Titan walker layout; rules.ini WalkFrames=12 WalkFacings=8). Classic =
+// transparent stub in TFASSETS.MIX.
+static UnitTypeClass const UnitTsSmec(UNIT_TSSMEC,
+                                      TXT_LTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                      "TSSMEC",     // NAME: IniName.
+                                      ANIM_FRAG1,   // EXPLOSION: light-vehicle fragment burst.
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0030,       // Vertical offset (render calibration, walker convention).
+                                      0x0060,       // Primary weapon offset: arm guns forward of the hull.
+                                      0x0010,       // Primary weapon lateral offset (right arm leads the burst).
+                                      0x0000,       // Secondary weapon offset (no secondary).
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      true,         // Can this be a goodie surprise from a crate? (TS CrateGoodie=yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      false,        // Can this unit squash infantry? (TS Crusher unset — too light)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      false,        // Is it equipped with a combat turret? (TS Turret=no)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      true,         // Must the turret be in a locked down position while moving? (hull-fixed guns: FIRE_FACING turns the body — the TSHMEC convention)
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline.
+                                      MISSION_HUNT  // ORDERS: Default order.
+);
+
+// TS Disruptor (UNIT_TSSONIC), TS rules [SONIC]. Turreted sonic tank (TS
+// Turret=yes; SONICTUR.VXL), fires SonicZap — the IsSonic piercing line
+// (railgun damage sweep, green beam, no spark helix) through WARHEAD_SONIC.
+// TS: Strength=500, Armor=heavy, TechLevel=9, Sight=7, Speed=4, Cost=1300,
+// Points=25, ROT=4, Crusher=yes. Art = SONIC.VXL body 0-31 + turret 32-63.
+static UnitTypeClass const UnitTsSonic(UNIT_TSSONIC,
+                                       TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                       "TSSONIC",    // NAME: IniName.
+                                       ANIM_FBALL1,  // EXPLOSION: big fireball.
+                                       REMAP_NORMAL, // Sidebar remap logic.
+                                       0x0030,       // Vertical offset (render calibration).
+                                       0x00C0,       // Primary weapon offset: emitter muzzle forward of the turret.
+                                       0x0000,       // Primary weapon lateral offset (centerline emitter).
+                                       0x0000,       // Secondary weapon offset (no secondary).
+                                       0x0000,       // Secondary weapon lateral offset.
+                                       true,         // Can this be a goodie surprise from a crate? (TS CrateGoodie=yes)
+                                       false,        // Always use the given name for the vehicle?
+                                       true,         // Can this unit squash infantry? (TS Crusher=yes)
+                                       false,        // Does this unit harvest Tiberium?
+                                       false,        // Is invisible to radar?
+                                       false,        // Is it insignificant (won't be announced)?
+                                       true,         // Is it equipped with a combat turret? (TS Turret=yes)
+                                       false,        // Does it have a rotating radar dish?
+                                       false,        // Is there an associated firing animation?
+                                       false,        // Must the turret be in a locked down position while moving?
+                                       false,        // Is this a gigundo-rotund-enormous unit?
+                                       false,        // Does the unit have a constant animation?
+                                       false,        // Is the unit capable of jamming radar?
+                                       false,        // Is the unit a mobile gap generator?
+                                       32,           // Rotation stages.
+                                       0,            // Turret center offset along body centerline (TS art TurretOffset=-64 is baked centered; the field is unused by the RA draw path).
+                                       MISSION_HUNT  // ORDERS: Default order.
+);
+
+// TS Amphibious APC (UNIT_TSAPC), TS rules [APC]. Unarmed hover transport —
+// SPEED_HOVER stands in for the TS amphibious float (plan-approved deviation),
+// so it crosses water like the Hover MLRS. Passengers=5 via rules.ini; door
+// logic joins the UNIT_APC/UNIT_TDAPC sites. TS: Strength=200, Armor=heavy,
+// TechLevel=6, Sight=5, Speed=8, Cost=800, Points=25, ROT=5, Crusher=yes.
+// Art = APC.VXL voxel render, 32 facings.
+static UnitTypeClass const UnitTsApc(UNIT_TSAPC,
+                                     TXT_APC,      // NAME: placeholder (HD display via rules.ini Name=).
+                                     "TSAPC",      // NAME: IniName.
+                                     ANIM_FBALL1,  // EXPLOSION: big fireball.
+                                     REMAP_NORMAL, // Sidebar remap logic.
+                                     0x0000,       // Vertical offset.
+                                     0x0000,       // Primary weapon offset (unarmed).
+                                     0x0000,       // Primary weapon lateral offset.
+                                     0x0000,       // Secondary weapon offset.
+                                     0x0000,       // Secondary weapon lateral offset.
+                                     true,         // Can this be a goodie surprise from a crate? (TS CrateGoodie=yes)
+                                     false,        // Always use the given name for the vehicle?
+                                     true,         // Can this unit squash infantry? (TS Crusher=yes)
+                                     false,        // Does this unit harvest Tiberium?
+                                     false,        // Is invisible to radar?
+                                     false,        // Is it insignificant (won't be announced)?
+                                     false,        // Is it equipped with a combat turret?
+                                     false,        // Does it have a rotating radar dish?
+                                     false,        // Is there an associated firing animation?
+                                     false,        // Must the turret be in a locked down position while moving?
+                                     false,        // Is this a gigundo-rotund-enormous unit?
+                                     false,        // Does the unit have a constant animation?
+                                     false,        // Is the unit capable of jamming radar?
+                                     false,        // Is the unit a mobile gap generator?
+                                     32,           // Rotation stages.
+                                     0,            // Turret center offset along body centerline.
+                                     MISSION_HUNT  // ORDERS: Default order.
+);
+
 /*
 **  AMCV/SMCV (Allied/Soviet MCVs) and TDGMCV/TDNMCV (GDI/Nod MCVs) — the four faction MCVs.
 **  Each exists as its own type so the MCV carries the faction it will deploy into: an MCV
@@ -1882,9 +2023,13 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitNodMcv);    // UNIT_TDNMCV (Nod MCV)
     new UnitTypeClass(UnitGdiMcv);    // UNIT_TDGMCV (GDI MCV)
     new UnitTypeClass(UnitAlliedMcv); // UNIT_AMCV  (Allied MCV)
+    new UnitTypeClass(UnitTsMcv);     // UNIT_TSMCV (TS MCV)
+    new UnitTypeClass(UnitTsHarv);    // UNIT_TSHARV (TS Harvester)
+    new UnitTypeClass(UnitTsSmec);    // UNIT_TSSMEC (TS Wolverine)
+    new UnitTypeClass(UnitTsSonic);   // UNIT_TSSONIC (TS Disruptor)
     // Heap slot index must equal the Type enum value (As_Reference indexes the
     // heap directly) -- register strictly in enum order, append new types HERE.
-    new UnitTypeClass(UnitTsMcv);     // UNIT_TSMCV (TS MCV)
+    new UnitTypeClass(UnitTsApc);     // UNIT_TSAPC (TS Amphibious APC)
 }
 
 /***********************************************************************************************
@@ -2206,7 +2351,7 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
  *=============================================================================================*/
 int UnitTypeClass::Max_Pips(void) const
 {
-    if (Type == UNIT_HARVESTER || Type == UNIT_TDHARV) {
+    if (Type == UNIT_HARVESTER || Type == UNIT_TDHARV || Type == UNIT_TSHARV) {
         return (7);
     }
 

@@ -3926,7 +3926,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         **  BULLET_LASER obelisk-red branch below (the railgun fires the same
         **  instant TDLaser projectile for its hit semantics).
         */
-        if (weapon->IsRailgun) {
+        if (weapon->IsRailgun || weapon->IsSonic) {
             COORDINATE source = Fire_Coord(which);
             COORDINATE dest = target_coord; // validated earlier in Fire_At (see laser note below)
             int sx = (int)Coord_X(source), sy = (int)Coord_Y(source);
@@ -3990,9 +3990,14 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 // (0x0B = 0,0,168) under a bright pure-blue core (0x0A =
                 // 80,80,252). The launcher renders only the core line in the
                 // virtual window, so the core carries the look.
-                Lines[0][0] = x + 1; Lines[0][1] = y; Lines[0][2] = x1; Lines[0][3] = y1; Lines[0][4] = 0x0B;
-                Lines[1][0] = x - 1; Lines[1][1] = y; Lines[1][2] = x1; Lines[1][3] = y1; Lines[1][4] = 0x0B;
-                Lines[2][0] = x;     Lines[2][1] = y; Lines[2][2] = x1; Lines[2][3] = y1; Lines[2][4] = 0x0A;
+                // Sonic (Disruptor) draws the same 3-line beam in green:
+                // dark-green outers (0x7E = 0,141,0) under a pure-green
+                // core (0x7C = 0,255,0).
+                int outer_c = weapon->IsSonic ? 0x7E : 0x0B;
+                int core_c = weapon->IsSonic ? 0x7C : 0x0A;
+                Lines[0][0] = x + 1; Lines[0][1] = y; Lines[0][2] = x1; Lines[0][3] = y1; Lines[0][4] = outer_c;
+                Lines[1][0] = x - 1; Lines[1][1] = y; Lines[1][2] = x1; Lines[1][3] = y1; Lines[1][4] = outer_c;
+                Lines[2][0] = x;     Lines[2][1] = y; Lines[2][2] = x1; Lines[2][3] = y1; Lines[2][4] = core_c;
                 LineCount = 3;
                 LineFrame = 0;
                 // 5, NOT more: the launcher's line renderer only supports
@@ -4014,6 +4019,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                                                        20,  17,  13,  9,   5,   0,   -5,  -9,  -13, -17,
                                                        -20, -22, -24, -24, -24, -22, -20, -17, -13, -9, -5};
                 int px = -ddy, py = ddx; // beam-perpendicular (unnormalized; /dist normalizes)
+                if (weapon->IsRailgun)
                 // Start/stop the helix a full cell clear of the endpoints: a
                 // spark spawned inside the firer's or the target's own cell
                 // attaches itself to that object and exports through the
@@ -6840,7 +6846,9 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             ** Check if it's a harvester, to show the right type of pips for the
             ** various minerals it could have harvested.
             */
-            if (What_Am_I() == RTTI_UNIT && (*(UnitClass*)this == UNIT_HARVESTER || *(UnitClass*)this == UNIT_TDHARV)) {
+            if (What_Am_I() == RTTI_UNIT
+                && (*(UnitClass*)this == UNIT_HARVESTER || *(UnitClass*)this == UNIT_TDHARV
+                    || *(UnitClass*)this == UNIT_TSHARV)) {
                 UnitClass* harv = (UnitClass*)this;
 
                 int iron = harv->Gems;
@@ -7639,6 +7647,9 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 StructType s = ((BuildingTypeClass const*)this)->Type;
                 if (s == STRUCT_REFINERY) {
                     td_cost -= UnitTypeClass::As_Reference(UNIT_HARVESTER).Cost;
+                }
+                if (s == STRUCT_TSPROC) {
+                    td_cost -= UnitTypeClass::As_Reference(UNIT_TSHARV).Cost;
                 }
                 if (s == STRUCT_TDPROC) {
                     td_cost -= UnitTypeClass::As_Reference(UNIT_TDHARV).Cost;

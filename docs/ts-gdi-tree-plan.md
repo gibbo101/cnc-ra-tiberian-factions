@@ -1,6 +1,43 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐ RESUME HERE — session 2026-08-01 state + Luke's test checklist
+## ⭐ RESUME HERE — units wave SHIPPED 2026-08-01 evening (on top of the building tree)
+
+**Deployed to the Deck (DLL 17:59). The vehicle wave is in: TSHARV (Harvester),
+TSSMEC (Wolverine), TSSONIC (Disruptor), TSAPC (Amphibious APC) — all TS-stat
+verbatim from the extracted TS RULES.INI, all behind the TS tree prereqs, none
+play-tested yet.** Packer: `scripts/ts_pack_units_wave.py` (worktree-relative MOD
+path — never the absolute repo path; ⚠ `ts_pack_art.py`/`ts_pack_walkers.py`/
+`ts_stealth_hq.py` still hardcode the MAIN repo and must not be run from the
+worktree as-is). Diagnostics land in `MOD_DEBUG_TSUNITS.txt` (free-harv grant +
+every dock start) and `MOD_DEBUG_CANBUILD.txt` (filter now takes TS-prefixed too).
+
+**Units-wave test additions to the checklist below (test with the buildings pass):**
+1. TSPROC finishes → a TS Harvester drives out (grant now wired; it did NOT
+   exist this morning). It harvests, returns, parks at the refinery, vents the
+   green fume plume, credits tick in, then re-harvests. `DOCK-START` lines
+   appear in MOD_DEBUG_TSUNITS.txt. ⚠ 4x3 dock geometry is still the risk.
+2. Wolverine from TSWEAP: 12-step walk anim reads at all 8 facings, MG report
+   on firing (placeholder MGUN11 until the TS audio wave), dies fast (175 HP).
+3. Disruptor from TSWEAP (needs TSTECH): turret tracks, GREEN piercing beam,
+   damages everything along the line incl. friendlies (TS-authentic), no
+   spark helix (that stays railgun-only).
+4. APC from TSWEAP (needs TSPILE): loads 5 infantry, crosses water (hover
+   stand-in), unloads on the far shore.
+5. Crate rolls unchanged: TS marquee table still Hover MLRS/Titan/Mk. II;
+   the new four can appear only via the generic goodie pool like any unit.
+
+**Known deviations (documented in rules.ini comments):** SonicZap per-frame
+wave damage translated to one 140 AmbientDamage application per object
+(TS 1/3-per-frame is meaningless under RA's one-shot line sweep); APC hover
+locomotor for TS amphibious; weapon reports are TD placeholders (MGUN11 /
+OBELRAY1) pending the TS audio wave; Disruptor turret baked centered (engine
+TurretOffset field is unused by the RA draw path).
+
+**Still queued after this:** component towers (Vulcan/RPG/SAM — turreted
+TDGTWR pattern), infantry (E1/E2/Ghost), Orcas, TS audio wave, NTREFN_C
+refinery anim offset compositing, TS GDI/Nod badge emblems (Luke supplies).
+
+## Building-tree state + Luke's original test checklist (2026-08-01 morning)
 
 **Deployed to the Deck (DLL 12:59, branch `ts-units`, worktree `../tf-ts-units-worktree`,
 all committed through `dd0d18a`). NOT yet play-verified past the war factory.**
