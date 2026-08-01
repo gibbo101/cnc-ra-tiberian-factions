@@ -133,6 +133,8 @@ static StructType MCV_Deploy_Building(UnitClass const* unit)
             return STRUCT_TDNFACT;
         case UNIT_TDMCV:
             return STRUCT_TDFACT;
+        case UNIT_TSMCV:
+            return STRUCT_TSFACT;
         default:
             break;
         }

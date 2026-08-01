@@ -2725,8 +2725,20 @@ bool CellClass::Goodie_Check(FootClass* object)
             **  table (Hover MLRS / Titan / Mammoth Mk. II).
             */
             if (utp == NULL && Session.Type != GAME_NORMAL && Random_Pick(0, 7) == 0) {
-                static UnitType const _ts_goodies[] = {UNIT_TSHVR, UNIT_TSTITN, UNIT_TSHMEC};
-                utp = &UnitTypeClass::As_Reference(_ts_goodies[Random_Pick(0, 2)]);
+                /*
+                **  1-in-4 of TS rolls (1-in-32 of unit crates) is the TS MCV: it
+                **  deploys the TS construction yard, opening the ownership-gated
+                **  TS tree for whoever found it (docs/ts-gdi-tree-plan.md). Only
+                **  on this RANDOM path — the force_mcv comeback branch must keep
+                **  handing a wiped player their own faction's MCV — and only with
+                **  bases on, matching the generic roll's Is_MCV guard.
+                */
+                if (Session.Options.Bases && Random_Pick(0, 3) == 0) {
+                    utp = &UnitTypeClass::As_Reference(UNIT_TSMCV);
+                } else {
+                    static UnitType const _ts_goodies[] = {UNIT_TSHVR, UNIT_TSTITN, UNIT_TSHMEC};
+                    utp = &UnitTypeClass::As_Reference(_ts_goodies[Random_Pick(0, 2)]);
+                }
             }
 
             /*

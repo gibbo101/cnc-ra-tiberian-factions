@@ -1566,6 +1566,15 @@ typedef enum StructType : char
     STRUCT_AHPAD, // Allied Helipad — W2 (d) split of the shared HPAD.
     STRUCT_SHPAD, // Soviet Helipad — sibling of STRUCT_AHPAD.
 
+    /*
+    **	TS GDI tree (ownership-gated: Prerequisite=TSFACT is the sole discriminator —
+    **	docs/ts-gdi-tree-plan.md). Appended past the RA additions because enum values
+    **	are serialized raw; the block gets its own contiguous range and markers, and
+    **	Is_Tiberian_Era covers it as a second range. Keep new TS buildings inside
+    **	this run and move STRUCT_TS_TREE_LAST when appending.
+    */
+    STRUCT_TSFACT, // TS Construction Yard "TSFACT" (TS GACNST, 3x3) — deployed from UNIT_TSMCV; the gate on the TS tree. Not sidebar-buildable.
+
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
 
@@ -1580,7 +1589,14 @@ typedef enum StructType : char
     **	marker only when appending another TD/TS entity. Testing the block by IniName prefix
     **	instead would be wrong: RA's own Tesla coil is "TSLA".
     */
-    STRUCT_TIBERIAN_LAST = STRUCT_TDNHPAD
+    STRUCT_TIBERIAN_LAST = STRUCT_TDNHPAD,
+
+    /*
+    **	Bounds of the TS-tree block appended past the RA additions (see STRUCT_TSFACT).
+    **	Second range of BuildingTypeClass::Is_Tiberian_Era.
+    */
+    STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
+    STRUCT_TS_TREE_LAST = STRUCT_TSFACT
 } StructType;
 
 /*
@@ -1823,6 +1839,7 @@ typedef enum UnitType : char
     UNIT_TDNMCV,            // Nod MCV (deploys to STRUCT_TDNFACT) — own pipeline-built art (TDNMCV keys).
     UNIT_TDGMCV,            // GDI MCV (deploys to STRUCT_TDGFACT) — sibling of UNIT_TDNMCV.
     UNIT_AMCV,              // Allied MCV (deploys to STRUCT_AFACT) — sibling of UNIT_SMCV.
+    UNIT_TSMCV,             // TS MCV "TSMCV" (deploys to STRUCT_TSFACT) — the rare-crate find that opens the ownership-gated TS tree (docs/ts-gdi-tree-plan.md). Art = TS MCV.VXL voxel render.
 
     UNIT_COUNT,
     UNIT_FIRST = 0

@@ -1307,6 +1307,42 @@ static BuildingTypeClass const ClassTdGdiFact(STRUCT_TDGFACT,
 );
 
 /*
+**  TSFACT (TS Construction Yard, TS rules [GACNST]) — the gate on the ownership-gated
+**  TS GDI tree (docs/ts-gdi-tree-plan.md). Deployed only from UNIT_TSMCV (a rare crate
+**  find); never sidebar-buildable, so no cameo. TS-authentic 3x3 footprint. Art = TS
+**  GTCNST SHP + GTCNSTMK buildup under TSFACT tileset keys; classic dims from the RA
+**  FACT donor (same 3x3).
+*/
+static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
+                                           TXT_NONE,           // Display name (rules.ini Name= overrides).
+                                           "TSFACT",           // IniName.
+                                           FACING_NONE,        // Foundation direction.
+                                           XYP_COORD(0, 0),    // Exit point unused (not a vehicle factory).
+                                           REMAP_ALTERNATE,    // Sidebar remap logic.
+                                           0x0000,             // Vertical offset.
+                                           0x0000,             // Primary weapon offset.
+                                           0x0000,             // Primary weapon lateral offset.
+                                           false,              // Is this building a fake?
+                                           false,              // Animation rate regulated for constant speed?
+                                           false,              // Always use the given name?
+                                           false,              // Is this a wall type structure?
+                                           false,              // Simple (one frame) damage imagery?
+                                           false,              // Is it invisible to radar?
+                                           true,               // Can the player select this?
+                                           true,               // Is this a legal target?
+                                           false,              // Is this an insignificant building?
+                                           false,              // Theater specific graphic image?
+                                           false,              // Does it have a rotating turret?
+                                           true,               // Can the building be color remapped?
+                                           RTTI_BUILDINGTYPE,  // Produces buildings.
+                                           DIR_N,              // Starting idle frame.
+                                           BSIZE_33,           // 3x3 footprint (TS-authentic).
+                                           NULL,               // No preferred exit cell.
+                                           (short const*)ListFactory,
+                                           (short const*)NULL  // No overlap row.
+);
+
+/*
 **  TDAFLD (Nod Airstrip) — 4×2 flat tile, ARMOR_STEEL, capturable, crewed.
 **    Wholesale port of TD's STRUCT_AIRSTRIP per tiberiandawn/bdata.cpp:841
 **    (ClassAirStrip). RTTI_UNITTYPE factory; vehicles delivered via cargo
@@ -4192,7 +4228,7 @@ static BuildingTypeClass const ClassTdBlossom(STRUCT_TDBLOSSOM,
 bool BuildingTypeClass::Is_Construction_Yard(void) const
 {
     return (Type == STRUCT_CONST || Type == STRUCT_AFACT || Type == STRUCT_SFACT || Type == STRUCT_TDFACT
-            || Type == STRUCT_TDGFACT || Type == STRUCT_TDNFACT);
+            || Type == STRUCT_TDGFACT || Type == STRUCT_TDNFACT || Type == STRUCT_TSFACT);
 }
 
 /***********************************************************************************************
@@ -4216,7 +4252,8 @@ bool BuildingTypeClass::Is_Helipad(void) const
  *=============================================================================================*/
 bool BuildingTypeClass::Is_Tiberian_Era(void) const
 {
-    return (Type >= STRUCT_TDOBLI && Type <= STRUCT_TIBERIAN_LAST);
+    return (Type >= STRUCT_TDOBLI && Type <= STRUCT_TIBERIAN_LAST)
+           || (Type >= STRUCT_TS_TREE_FIRST && Type <= STRUCT_TS_TREE_LAST);
 }
 
 /***********************************************************************************************
@@ -4253,6 +4290,7 @@ long TF_Building_Scan_Bit(int btype)
     case STRUCT_TDGFACT:
     case STRUCT_SFACT:
     case STRUCT_AFACT:
+    case STRUCT_TSFACT:
         return (STRUCTF_CONST);
 
     case STRUCT_TDPROC:
@@ -4415,6 +4453,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsPowr);      // STRUCT_TSPOWR (TS-spike GDI Power Plant)
     new BuildingTypeClass(ClassTdNodFact);   // STRUCT_TDNFACT (Nod Construction Yard)
     new BuildingTypeClass(ClassTdGdiFact);   // STRUCT_TDGFACT (GDI Construction Yard)
+    new BuildingTypeClass(ClassTsFact);      // STRUCT_TSFACT (TS Construction Yard)
     new BuildingTypeClass(ClassTdGdiHpad);   // STRUCT_TDGHPAD (GDI Helipad)
     new BuildingTypeClass(ClassTdNodHpad);   // STRUCT_TDNHPAD (Nod Helipad)
     new BuildingTypeClass(ClassSovietFact);  // STRUCT_SFACT   (Soviet Construction Yard)
@@ -4763,6 +4802,9 @@ void BuildingTypeClass::One_Time(void)
             {STRUCT_SHPAD, STRUCT_HELIPAD},
             {STRUCT_TDGHPAD, STRUCT_TDHPAD},
             {STRUCT_TDNHPAD, STRUCT_TDHPAD},
+            // TS tree: TS GTCNST art under TSFACT keys, classic dims + construction
+            // anim from the RA yard (same 3x3).
+            {STRUCT_TSFACT, STRUCT_CONST},
         };
         for (int di = 0; di < (int)(sizeof(_td_bdonors) / sizeof(_td_bdonors[0])); di++) {
             BuildingTypeClass& b = As_Reference(_td_bdonors[di].td);

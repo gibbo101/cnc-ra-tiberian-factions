@@ -1761,6 +1761,42 @@ static UnitTypeClass const UnitAlliedMcv(UNIT_AMCV,
                                          MISSION_HUNT     // ORDERS:		Default order to give new unit.
 );
 
+/*
+**  TSMCV (TS MCV, TS rules [MCV]) — deploys STRUCT_TSFACT, the gate on the
+**  ownership-gated TS tree (docs/ts-gdi-tree-plan.md). Reaches play as a rare
+**  unit-crate find (cell.cpp, random path only — never the comeback path); also
+**  buildable inside an established TS tree. Art = TS MCV.VXL voxel render under
+**  TSMCV tileset keys; classic dims from the RA MCV donor.
+*/
+static UnitTypeClass const UnitTsMcv(UNIT_TSMCV,
+                                     TXT_MCV,         // NAME:			Text name of this unit type.
+                                     "TSMCV",         // NAME:			IniName.
+                                     ANIM_FBALL1,     // EXPLOSION:	Type of explosion when destroyed.
+                                     REMAP_ALTERNATE, // Sidebar remap logic.
+                                     0x0000,          //	Vertical offset.
+                                     0x0000,          // Primary weapon offset along turret centerline.
+                                     0x0000,          // Primary weapon lateral offset along turret centerline.
+                                     0x0000,          // Secondary weapon offset along turret centerline.
+                                     0x0000,          // Secondary weapon lateral offset along turret centerling.
+                                     true,            // Can this be a goodie surprise from a crate?
+                                     false,           // Always use the given name for the vehicle?
+                                     true,            // Can this unit squash infantry?
+                                     false,           // Does this unit harvest Tiberium?
+                                     false,           // Is invisible to radar?
+                                     false,           // Is it insignificant (won't be announced)?
+                                     false,           // Is it equipped with a combat turret?
+                                     false,           // Does it have a rotating radar dish?
+                                     false,           // Is there an associated firing animation?
+                                     false,           // Must the turret be in a locked down position while moving?
+                                     true,            // Is this a gigundo-rotund-enormous unit?
+                                     false,           // Does the unit have a constant animation?
+                                     false,           // Is the unit capable of jamming radar?
+                                     false,           // Is the unit a mobile gap generator?
+                                     32,              // Rotation stages.
+                                     0,               // Turret center offset along body centerline.
+                                     MISSION_HUNT     // ORDERS:		Default order to give new unit.
+);
+
 /***********************************************************************************************
  * UnitTypeClass::Is_MCV -- Is this unit a mobile construction vehicle of any faction?          *
  *                                                                                              *
@@ -1770,7 +1806,7 @@ static UnitTypeClass const UnitAlliedMcv(UNIT_AMCV,
 bool UnitTypeClass::Is_MCV(void) const
 {
     return (Type == UNIT_MCV || Type == UNIT_AMCV || Type == UNIT_SMCV || Type == UNIT_TDMCV
-            || Type == UNIT_TDGMCV || Type == UNIT_TDNMCV);
+            || Type == UNIT_TDGMCV || Type == UNIT_TDNMCV || Type == UNIT_TSMCV);
 }
 
 /***********************************************************************************************
@@ -1845,6 +1881,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitSovietMcv); // UNIT_SMCV  (Soviet MCV)
     new UnitTypeClass(UnitNodMcv);    // UNIT_TDNMCV (Nod MCV)
     new UnitTypeClass(UnitGdiMcv);    // UNIT_TDGMCV (GDI MCV)
+    new UnitTypeClass(UnitTsMcv);     // UNIT_TSMCV (TS MCV)
     new UnitTypeClass(UnitAlliedMcv); // UNIT_AMCV  (Allied MCV)
 }
 
@@ -2021,6 +2058,7 @@ void UnitTypeClass::One_Time(void)
             {UNIT_SMCV, UNIT_MCV},
             {UNIT_TDGMCV, UNIT_TDMCV},
             {UNIT_TDNMCV, UNIT_TDMCV},
+            {UNIT_TSMCV, UNIT_MCV}, // TS tree: MCV.VXL render under TSMCV keys
         };
         for (int di = 0; di < (int)(sizeof(_hd_udonors) / sizeof(_hd_udonors[0])); di++) {
             UnitTypeClass& u = As_Reference(_hd_udonors[di].hd);
