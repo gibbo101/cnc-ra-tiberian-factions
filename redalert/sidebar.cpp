@@ -1347,7 +1347,9 @@ void SidebarClass::StripClass::Deactivate(void)
  *=============================================================================================*/
 bool SidebarClass::StripClass::Add(RTTIType type, int id, bool via_capture)
 {
-    if (BuildableCount <= MAX_BUILDABLES) {
+    /* < not <=: at count==MAX the write lands out of bounds (EA off-by-one,
+    ** first hit when a multi-tree game pushed a column past 75 entries). */
+    if (BuildableCount < MAX_BUILDABLES) {
         for (int index = 0; index < BuildableCount; index++) {
             if (Buildables[index].BuildableType == type && Buildables[index].BuildableID == id) {
                 return (false);

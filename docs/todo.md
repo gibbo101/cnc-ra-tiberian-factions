@@ -5,7 +5,28 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
-## ⭐ W5.1 Naval AI — steps 1-3 IN, AWAITING LIVE VERIFY; then step 4
+## ⚠️ NEXT SESSION FIRST: walk the match-2 crash minidump
+
+InstanceServerG (the sim) crashed ~F79,733 in the GDI-vs-Allies naval match (2026-08-01
+~13:16, client survived). Evidence preserved:
+- Minidump: `<pfx>/drive_c/users/steamuser/AppData/Roaming/CnCRemastered/InstanceServerG.exe_2026-08-01_13-16-53_T476.dmp`
+- AI diag: `<pfx>/drive_c/users/steamuser/MOD_DEBUG_AI.match2-naval-crash.txt` (ends F79733,
+  nothing anomalous at the tail — SCOUT dispatch lines)
+- A* tail: `<pfx>/.../CnCRemastered/tf_astar.match2-naval-crash-tail.log` — the parked
+  unreachable-target fallback storm was running HOT (216,985 fallbacks vs 66,635 successes,
+  `captrips=0` so the budget held; repeating 2TNK legs + a NOPROG abort at the tail).
+- Crashed DLL = `82510bc` build (naval steps 2+3 + sell fix; patrol/tier commits NOT in it).
+- **Suspects, in order:** (1) EA's sidebar off-by-one — `StripClass::Add` writes
+  `Buildables[75]` OOB when a column hits exactly 75; found + fixed on `ts-units` by the
+  parallel instance, big-roster games qualify, and our naval work grew the roster — the fix
+  is NOW APPLIED ON MAIN (guard `<` + MAX_BUILDABLES 120, both sidebar.cpp and
+  sidebarglyphx.cpp); (2) something in the new vessel/yard paths (first match ever with
+  live vessels — check the dump stack against vessel.cpp/exit code); (3) the fallback storm
+  interacting with either. The 07-31 minidump-walk method is in
+  `project-session-2026-08-01-crash-fix-and-detector.md`.
+- If the dump blames the sidebar OOB: crash class closed by the applied fix; re-soak.
+
+## ⭐ W5.1 Naval AI — steps 1-3 SHIPPED + LIVE-VERIFIED; patrol + gates evolving
 
 Step 1 (water census + `TF_Naval_Assessment`) shipped `c01202e`, live-verified on Docklands.
 Steps 2+3 implemented 2026-08-01 (this commit), deployed to the desktop prefix, NOT yet
@@ -23,16 +44,28 @@ observed in a live match:
    W5.2 ferry controller exists), gated on yard-role owned + assessment + `enemycoastal`,
    interim fleet cap `TF_NAVAL_FLEET_CAP=6` until step 4.
 
-**Verified live 2026-08-01 (2 Allied AIs across the river, Docklands):** full chain fired —
-`enemycoastal=1` at F21059 (via GPS reveal, as predicted for all-Allied cross-water),
-`NAVAL-PLACE SYRD cell=(52,69) ontarget=1 ok=313`, `NAVAL-PICK PT/DD`, ships produced.
-**Found live: vanilla sell-table loop** — `AI_Raise_Money`/`AI_Raise_Power` list SYRD/SPEN
-at URGENCY_LOW (top of the fire-sale order, EA 1996, predates any yard-building skirmish
-AI), and LOW fires on any sub-100 cash dip, so the AI built, half-price-sold and rebuilt
-its yard every ~90s (player-observed, log-confirmed at F22623-F28234). Fixed: money table
-LOW→MEDIUM (economy collapse only), power table LOW→HIGH (attacked emergency only);
-`EXPERT-SELL` diag line added on every Expert_AI emergency sell. Re-verify next match:
-yard persists, fleet reaches cap, no EXPERT-SELL of a yard at LOW.
+**Match 1 (2 Allied AIs, Docklands):** full chain verified — GPS flip F21059, SYRD placed
+`ontarget=1`, PT/DD produced. Caught the **vanilla sell-table loop** (SYRD/SPEN at
+URGENCY_LOW top of the fire-sale order; LOW fires on any sub-100 cash dip → build/
+half-price-sell/rebuild every ~90s). Fixed `82510bc` + `EXPERT-SELL` diag.
+**Match 2 (GDI vs Allies):** sell fix VERIFIED (TDGYARD placed F45554 `ontarget=1 ok=421`,
+persisted for the rest of the match, fleet reached curV=4+: TDPT/TDDD/TDCA×2/TDPT; Allied
+SYRD placed F62231 + PT/DD). Caught TWO more issues live: (a) `EXPERT-SELL ATEK` — the
+tech-centre/repair-bay churn, same table, fixed in `1b1dda1` (pool-rebuilt buildings can't
+sell at LOW); (b) **parked fleets never fight** (Luke) — patrol made lifetime-long in
+`e9d415f`. Ended in the sim crash logged above.
+
+**Committed + built + pushed, NOT yet live-verified (deploys on next full game start):**
+- `1b1dda1` — yard decoupled from discovery (Luke's call: recon-special factions otherwise
+  get a standing naval head start; on water-split maps the navy IS the scout). Fleet size
+  scales instead: 2-ship blind patrol → 6 after discovery. Naval patrol dispatcher in
+  Expert_AI (water-zone-only legs, storm-safe by construction) + tech-centre/repair-bay
+  sell-tier fix.
+- `e9d415f` — patrol runs for the life of the fleet (not just while blind).
+- sidebar off-by-one from `ts-units` applied to main (see crash block above).
+**Next-match verify list:** yards at economy-ready (~F6-8k, before discovery), NAVAL-PATROL
+legs from first ship, blind fleet holds at 2 → 6 after flip, tech centre built ONCE and
+kept, ships actually roaming, battles when fleets cross.
 
 4. **Build gates (remaining)** — don't out-build the enemy navy (intel-filtered, mirror the
    air-cap pattern at house.cpp ~7495); naval-war detection rescales limits; replaces the
