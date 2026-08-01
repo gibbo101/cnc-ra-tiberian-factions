@@ -23,14 +23,27 @@ observed in a live match:
    W5.2 ferry controller exists), gated on yard-role owned + assessment + `enemycoastal`,
    interim fleet cap `TF_NAVAL_FLEET_CAP=6` until step 4.
 
-**Verify (any 2-AI coastal match, e.g. Docklands):** `MOD_DEBUG_AI.txt` should show
-`NAVAL ok=1 ... enemycoastal=1` → the yard in a `POOL`/`WIN` line → `NAVAL-PLACE <yard>
-cell=(x,y) ontarget=1` → `NAVAL-PICK <vessel>` lines, and ships visibly on the water.
-A `PLACE-FAIL` on a yard now carries real reject counters (zone = pond rejects).
+**Verified live 2026-08-01 (2 Allied AIs across the river, Docklands):** full chain fired —
+`enemycoastal=1` at F21059 (via GPS reveal, as predicted for all-Allied cross-water),
+`NAVAL-PLACE SYRD cell=(52,69) ontarget=1 ok=313`, `NAVAL-PICK PT/DD`, ships produced.
+**Found live: vanilla sell-table loop** — `AI_Raise_Money`/`AI_Raise_Power` list SYRD/SPEN
+at URGENCY_LOW (top of the fire-sale order, EA 1996, predates any yard-building skirmish
+AI), and LOW fires on any sub-100 cash dip, so the AI built, half-price-sold and rebuilt
+its yard every ~90s (player-observed, log-confirmed at F22623-F28234). Fixed: money table
+LOW→MEDIUM (economy collapse only), power table LOW→HIGH (attacked emergency only);
+`EXPERT-SELL` diag line added on every Expert_AI emergency sell. Re-verify next match:
+yard persists, fleet reaches cap, no EXPERT-SELL of a yard at LOW.
 
 4. **Build gates (remaining)** — don't out-build the enemy navy (intel-filtered, mirror the
    air-cap pattern at house.cpp ~7495); naval-war detection rescales limits; replaces the
    fixed fleet cap.
+   - **Water-separated-map bootstrap (Luke's observation, 2026-08-01):** when the AIs have
+     no land route to any enemy, `enemycoastal` can only flip via GPS/spy-plane reveal, so
+     the navy arrives mid-game at the earliest — but on such maps the navy IS the scouting
+     tool a human would use first. Refinement: if no land zone connects the base to any
+     enemy start, allow the yard + a scout vessel BEFORE discovery (naval counterpart of
+     the blind-scout dispatcher). Two all-Allied AIs across the river is the worst case:
+     no spy plane, ground scouts blocked, flip waits on GPS.
 
 Then W5.2 sea-transport ferrying (research complete, see plan) — the piece that actually
 unblocks the cliff-massing verdict from the livelock closure.

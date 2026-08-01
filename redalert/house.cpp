@@ -6816,8 +6816,12 @@ bool HouseClass::AI_Raise_Power(UrgencyType urgency) const
         StructType Structure;
         UrgencyType Urgency;
     } _types[] = {{STRUCT_CHRONOSPHERE, URGENCY_LOW},
-                  {STRUCT_SHIP_YARD, URGENCY_LOW},
-                  {STRUCT_SUB_PEN, URGENCY_LOW},
+                  // Naval yards LOW -> HIGH: they are production buildings, and the vanilla
+                  // table predates any skirmish AI that could build them -- at LOW, every
+                  // mild power dip liquidated a working navy for 30 power. HIGH = attacked
+                  // during a power emergency, the genuinely desperate case.
+                  {STRUCT_SHIP_YARD, URGENCY_HIGH},
+                  {STRUCT_SUB_PEN, URGENCY_HIGH},
                   {STRUCT_ADVANCED_TECH, URGENCY_LOW},
                   {STRUCT_FORWARD_COM, URGENCY_LOW},
                   {STRUCT_SOVIET_TECH, URGENCY_LOW},
@@ -6834,6 +6838,18 @@ bool HouseClass::AI_Raise_Power(UrgencyType urgency) const
         if (urgency >= _types[i].Urgency) {
             BuildingClass* b = Find_Building(_types[i].Structure);
             if (b != NULL) {
+#if TF_DEV_BUILD // TF_AI_DIAG -- every Expert_AI emergency sell, so a vanishing building
+                 // is attributable from the log alone.
+                {
+                    extern FILE* TF_AI_Diag_File(void);
+                    FILE* _tfdbg = TF_AI_Diag_File();
+                    if (_tfdbg != NULL) {
+                        fprintf(_tfdbg, "F%ld H%d AL%d EXPERT-SELL %s reason=power urgency=%d\n", (long)Frame,
+                                (int)Class->House, (int)ActLike, b->Class->IniName, (int)urgency);
+                        fflush(_tfdbg);
+                    }
+                }
+#endif
                 b->Sell_Back(1);
                 return (true);
             }
@@ -6870,8 +6886,14 @@ bool HouseClass::AI_Raise_Money(UrgencyType urgency) const
         StructType Structure;
         UrgencyType Urgency;
     } _types[] = {{STRUCT_CHRONOSPHERE, URGENCY_LOW},
-                  {STRUCT_SHIP_YARD, URGENCY_LOW},
-                  {STRUCT_SUB_PEN, URGENCY_LOW},
+                  // Naval yards LOW -> MEDIUM: LOW fires on any sub-100 cash dip, which a
+                  // producing house hits between every harvester dump -- the skirmish AI's
+                  // new yard was being built, sold at half price and rebuilt in a loop.
+                  // MEDIUM = broke AND unable to make money, the economy-collapse fire
+                  // sale, in the same spirit as the war factory/barracks EA commented out
+                  // of this table below.
+                  {STRUCT_SHIP_YARD, URGENCY_MEDIUM},
+                  {STRUCT_SUB_PEN, URGENCY_MEDIUM},
                   {STRUCT_ADVANCED_TECH, URGENCY_LOW},
                   {STRUCT_FORWARD_COM, URGENCY_LOW},
                   {STRUCT_SOVIET_TECH, URGENCY_LOW},
@@ -6895,6 +6917,18 @@ bool HouseClass::AI_Raise_Money(UrgencyType urgency) const
         if (urgency >= _types[i].Urgency) {
             b = Find_Building(_types[i].Structure);
             if (b != NULL) {
+#if TF_DEV_BUILD // TF_AI_DIAG -- every Expert_AI emergency sell, so a vanishing building
+                 // is attributable from the log alone.
+                {
+                    extern FILE* TF_AI_Diag_File(void);
+                    FILE* _tfdbg = TF_AI_Diag_File();
+                    if (_tfdbg != NULL) {
+                        fprintf(_tfdbg, "F%ld H%d AL%d EXPERT-SELL %s reason=money urgency=%d\n", (long)Frame,
+                                (int)Class->House, (int)ActLike, b->Class->IniName, (int)urgency);
+                        fflush(_tfdbg);
+                    }
+                }
+#endif
                 b->Sell_Back(1);
                 return (true);
             }
