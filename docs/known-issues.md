@@ -191,6 +191,24 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Combat / units
 
+### Endgame auto-sonar doesn't know the TD subs exist (found 2026-08-01, unfixed)
+- Vanilla's endgame stall-breaker (`house.cpp` FIXIT_VERSION_3 block, `AutoSonarTimer` 40s
+  cadence): when a house owns nothing but submarines, every sub is force-uncloaked for 15s so
+  opponents can find and finish it. Both halves are hardcoded to the RA hulls only:
+  - The trigger gate is `VQuantity[VESSEL_SS] > 0` (SS/MSUB share the slot count) — a Nod
+    house reduced to only TDNSUB/TDOBLISUB/TDMSUB never trips it, so a cloaked TD sub can
+    stall the endgame FOREVER (the exact stall the mechanism exists to prevent).
+  - The "nothing but subs" census loops run over the RA-era ranges (`UNIT_RA_COUNT`,
+    `VESSEL_RA_COUNT`), so TD ground units aren't counted either — a Soviet-teamed house
+    with TD remnants could get pinged while it still has an army.
+- Fix shape when picked up: treat all five sub hulls (SS/MSUB/TDNSUB/TDOBLISUB/TDMSUB) as
+  subs in both the gate and the ping loop, and run the census over the full type ranges.
+- Related context: sub concealment is the standard cloak system (`Cloakable=yes` on all five
+  hulls); the only passive detection in the engine is the 1-cell adjacency shimmer
+  (`foot.cpp` scanner check — all vessels and infantry are `IsScanner`), which is cosmetic
+  and never acted on by the AI. Sub-detection improvements are a design discussion
+  (2026-08-01), not yet a workstream.
+
 ### AI built A-10s at helipads (parked-on-pad / fly-in-and-explode) — ✅ FIXED 2026-08-01
 - **Symptoms (both player-observed, Docklands skirmishes):** a GDI A-10 parked dead-center on
   a helipad; later the same day, an AI A-10 "flying in like a helicopter" to a loaded helipad
