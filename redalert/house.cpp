@@ -7994,8 +7994,9 @@ bool HouseClass::TF_Ferry_Wants_MCV(void) const
     if (hidx < 0 || hidx >= HOUSE_COUNT || _tf_beach_rally[hidx] == 0) {
         return (false);
     }
-    int enemyland = 0;
-    if (!TF_Ferry_Route_Blocked(&enemyland)) {
+    int targetland = 0;
+    bool second_front = false;
+    if (!TF_Ferry_Assault(targetland, second_front)) {
         return (false);
     }
     /*
@@ -8007,14 +8008,25 @@ bool HouseClass::TF_Ferry_Wants_MCV(void) const
             return (false);
         }
     }
+    /*
+    **	Expansion already planted? On a split map the target landmass identifies it;
+    **	on a shared landmass (Hard-tier second front, where the main yard shares the
+    **	zone) it's a yard standing at the beachhead.
+    */
     for (int index = 0; index < Buildings.Count(); index++) {
         BuildingClass const* b = Buildings.Ptr(index);
         if (b != NULL && !b->IsInLimbo && (HouseClass const*)b->House == this && b->Strength > 0) {
             StructType t = b->Class->Type;
-            if ((t == STRUCT_CONST || t == STRUCT_AFACT || t == STRUCT_SFACT || t == STRUCT_TDFACT
-                 || t == STRUCT_TDGFACT || t == STRUCT_TDNFACT)
-                && Map[Coord_Cell(b->Center_Coord())].Zones[MZONE_NORMAL] == enemyland) {
-                return (false);
+            if (t == STRUCT_CONST || t == STRUCT_AFACT || t == STRUCT_SFACT || t == STRUCT_TDFACT
+                || t == STRUCT_TDGFACT || t == STRUCT_TDNFACT) {
+                if (second_front) {
+                    if (::Distance(b->Center_Coord(), Cell_Coord(_tf_beach_rally[hidx]))
+                        <= TF_FERRY_BEACH_RADIUS * CELL_LEPTON_W) {
+                        return (false);
+                    }
+                } else if (Map[Coord_Cell(b->Center_Coord())].Zones[MZONE_NORMAL] == targetland) {
+                    return (false);
+                }
             }
         }
     }
@@ -8258,10 +8270,10 @@ void HouseClass::TF_Ferry_AI(void)
             /*
             **	W5.3: once the beachhead is holding, the next ride carries the base --
             **	the MCV takes the first berth and the rest of the load is its escort.
-            **	Split maps only: a forward yard on a SHARED landmass is a separate
-            **	decision, not an accident of a stray MCV wandering onto the roster.
+            **	On a shared landmass this is the Hard tier's forward fortress (Luke's
+            **	call, 2026-08-01); the Assault gate upstream keeps lower tiers out.
             */
-            if (_tf_beach_rally[hidx] != 0 && !second_front) {
+            if (_tf_beach_rally[hidx] != 0) {
                 for (int index = 0; index < Units.Count(); index++) {
                     UnitClass* u = Units.Ptr(index);
                     if (u != NULL && (HouseClass*)u->House == this && !u->IsInLimbo && u->Strength > 0
