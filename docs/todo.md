@@ -5,26 +5,24 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
-## ⚠️ NEXT SESSION FIRST: walk the match-2 crash minidump
+## ✅ Match-2 crash ROOT-CAUSED same day: the sidebar off-by-one (fix already on main)
 
-InstanceServerG (the sim) crashed ~F79,733 in the GDI-vs-Allies naval match (2026-08-01
-~13:16, client survived). Evidence preserved:
-- Minidump: `<pfx>/drive_c/users/steamuser/AppData/Roaming/CnCRemastered/InstanceServerG.exe_2026-08-01_13-16-53_T476.dmp`
-- AI diag: `<pfx>/drive_c/users/steamuser/MOD_DEBUG_AI.match2-naval-crash.txt` (ends F79733,
-  nothing anomalous at the tail — SCOUT dispatch lines)
-- A* tail: `<pfx>/.../CnCRemastered/tf_astar.match2-naval-crash-tail.log` — the parked
-  unreachable-target fallback storm was running HOT (216,985 fallbacks vs 66,635 successes,
-  `captrips=0` so the budget held; repeating 2TNK legs + a NOPROG abort at the tail).
-- Crashed DLL = `82510bc` build (naval steps 2+3 + sell fix; patrol/tier commits NOT in it).
-- **Suspects, in order:** (1) EA's sidebar off-by-one — `StripClass::Add` writes
-  `Buildables[75]` OOB when a column hits exactly 75; found + fixed on `ts-units` by the
-  parallel instance, big-roster games qualify, and our naval work grew the roster — the fix
-  is NOW APPLIED ON MAIN (guard `<` + MAX_BUILDABLES 120, both sidebar.cpp and
-  sidebarglyphx.cpp); (2) something in the new vessel/yard paths (first match ever with
-  live vessels — check the dump stack against vessel.cpp/exit code); (3) the fallback storm
-  interacting with either. The 07-31 minidump-walk method is in
-  `project-session-2026-08-01-crash-fix-and-detector.md`.
-- If the dump blames the sidebar OOB: crash class closed by the applied fix; re-soak.
+InstanceServerG crashed ~F79,733 in the GDI-vs-Allies naval match. **Minidump walked
+(rawwalk.py + addr2line against a `82510bc` worktree build): AV 0xc0000005 at
+`LinkClass::Add` (common/link.cpp:266) — the gadget/linked-list plumbing the sidebar
+buttons live on, dying on a corrupted pointer.** That is the signature of EA's
+`StripClass::Add` off-by-one (`Buildables[75]` OOB write smashes the adjacent sidebar
+state; next gadget link-in follows the garbage pointer). Cause and effect line up: the
+sidebar's units column holds infantry+vehicles+aircraft+VESSELS, and the naval work made
+GDI's column cross 75 entries for the first time — same bug the parallel TS instance found
+independently the same day (their symptom: empty sidebar). Fix `cf8ad1f` (guard `<`,
+MAX_BUILDABLES 120, both sidebar implementations) was applied to main before the walk and
+is in the deployed DLL. **Closed pending a re-soak match; if any new sim crash appears,
+re-walk before assuming this.** Evidence kept: dump
+`.../AppData/Roaming/CnCRemastered/InstanceServerG.exe_2026-08-01_13-16-53_T476.dmp`,
+logs `MOD_DEBUG_AI.match2-naval-crash.txt` + `tf_astar.match2-naval-crash-tail.log`
+(fallback storm hot at crash: 216,985 fallbacks, captrips=0 — budget held, storm NOT the
+cause this time).
 
 ## ⭐ W5.1 Naval AI — steps 1-3 SHIPPED + LIVE-VERIFIED; patrol + gates evolving
 
