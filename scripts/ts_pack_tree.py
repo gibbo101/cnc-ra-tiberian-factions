@@ -1,30 +1,65 @@
 #!/usr/bin/env python3
-"""Package TS GDI tree art into the mod tree (docs/ts-gdi-tree-plan.md).
+"""Package TS GDI tree art into the mod tree (docs/ts-gdi-tree-plan.md §Stealth Recipe).
 
-Per-entity sections accumulate as the tree grows; each guards on its render
-inputs so the script can be re-run for any subset. Contracts honored
-(docs/launcher-render-contracts.md + ts-asset-import-spike.md traps):
-  - HD canvas = classic donor frame dims x 5.33 (FACT 72x72 -> 384, MCV 48 -> 384 @8x)
-  - TGAs cropped to content; meta size = virtual canvas, crop = corner bounds
-  - shape count mirrors the classic donor (FACT 52, FACTMAKE 32)
-  - hq4x for TS-SHP buildings, voxel renders land pre-scaled from vxl_render.py
+Per-building compositor: healthy run = base + active anims cycling (N = LCM of
+anim lengths; TS anim SHPs carry N real frames + N EMPTY frames — damaged
+buildings stop animating), damaged run = static damaged composite x N. One
+affine per building (union content box -> scaled to the TD counterpart's
+content size, centered on the donor-derived canvas). Buildup ships real frames
+only (empties render as the launcher's purple placeholder), resampled to the
+donor's construction-anim count.
 
-Inputs: $TS_ART_DIR holding shp_gtcnst/, shp_gtcnstmk/, shp_mcvicon/,
-renders_tsmcv/ (ts_shp.py + vxl_render.py outputs).
+Inputs: $TS_ART_DIR holding shp_* dirs from ts_shp.py + renders_* from
+vxl_render.py.
 """
-import io, json, os, zipfile
+import io, json, math, os, zipfile
 from PIL import Image
 import hqx
 
 ART = os.environ.get("TS_ART_DIR")
 if not ART:
     raise SystemExit("set TS_ART_DIR")
-MOD = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
-                   "resources/remaster_mods/Vanilla_RA")
-MOD = os.path.abspath(MOD)
+MOD = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                                   "resources/remaster_mods/Vanilla_RA"))
 UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
 STRUCT_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/STRUCTURES"
 ICON_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB"
+
+
+def load(dirname, i):
+    return Image.open(f"{ART}/{dirname}/frame-{i:04d}.png").convert("RGBA")
+
+
+def frame_count(dirname):
+    return len([f for f in os.listdir(f"{ART}/{dirname}") if f.endswith(".png")])
+
+
+def real_frames(dirname):
+    """Indices of frames with substantive content (skips empties/fragments)."""
+    out = []
+    for i in range(frame_count(dirname)):
+        im = load(dirname, i)
+        n = sum(1 for p in im.getdata() if p[3] > 0)
+        if n > 800:
+            out.append(i)
+    return out
+
+
+def anim_len(dirname):
+    """Usable loop length: TS anim SHPs are N real + N empty frames."""
+    n = 0
+    for i in range(frame_count(dirname)):
+        if load(dirname, i).getbbox() is not None:
+            n = i + 1
+    return n
+
+
+def composite(base_img, anims, i):
+    out = base_img.copy()
+    for dirname, length in anims:
+        f = load(dirname, i % length)
+        out.paste(f, (0, 0), f)
+    return out
 
 
 def tga_bytes(img):
@@ -34,8 +69,6 @@ def tga_bytes(img):
 
 
 def hq_scale(img, factor):
-    """hq4x the color (over black), NEAREST+LANCZOS the alpha, downsample to
-    target factor (the ts_stealth_hq.py recipe)."""
     rgb = Image.new("RGB", img.size, (0, 0, 0))
     rgb.paste(img, (0, 0), img)
     up = hqx.hq4x(rgb)
@@ -48,11 +81,19 @@ def hq_scale(img, factor):
     return out
 
 
-def scale_center(img, factor, canvas):
-    nw, nh = round(img.width * factor), round(img.height * factor)
-    scaled = img.resize((nw, nh), Image.LANCZOS)
-    out = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
-    out.paste(scaled, ((canvas - nw) // 2, (canvas - nh) // 2), scaled)
+def place(img, factor, canvas_w, canvas_h, src_cx, src_cy):
+    """Apply the building's single affine: hq-scale, then position so the
+    (pre-scale) anchor point lands at the canvas center."""
+    scaled = hq_scale(img, factor)
+    out = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
+    ox = round(canvas_w / 2 - src_cx * factor)
+    oy = round(canvas_h / 2 - src_cy * factor)
+    src = scaled
+    x0, y0 = max(0, -ox), max(0, -oy)
+    if x0 or y0:
+        src = scaled.crop((x0, y0, scaled.width, scaled.height))
+        ox, oy = max(0, ox), max(0, oy)
+    out.paste(src, (ox, oy), src)
     return out
 
 
@@ -67,54 +108,101 @@ def write_zip(path, name, frames):
     print(f"wrote {path} ({len(frames)} frames)")
 
 
-def tile_block(name, shape, frame_path):
+def tile_block(name, shape):
     return ("\t<Tile>\n\t\t<Key>\n\t\t\t<Name>%s</Name>\n\t\t\t<Shape>%d</Shape>\n\t\t</Key>\n"
-            "\t\t<Value>\n\t\t\t<Frames>\n\t\t\t\t<Frame>%s</Frame>\n\t\t\t</Frames>\n\t\t</Value>\n\t</Tile>\n"
-            % (name, shape, frame_path))
+            "\t\t<Value>\n\t\t\t<Frames>\n\t\t\t\t<Frame>%s\\%s-%04d.tga</Frame>\n\t\t\t</Frames>\n\t\t</Value>\n\t</Tile>\n"
+            % (name, shape, name.lower(), name.lower(), shape))
 
 
 def patch_tileset(xml_path, name, count):
+    """Install exactly `count` tile entries for `name`, replacing any existing run."""
+    import re
     xml = open(xml_path, encoding="utf-8").read()
-    if f"<Name>{name}</Name>" in xml:
-        print(f"{name} already in {os.path.basename(xml_path)}, skipping")
-        return
-    blocks = "".join(tile_block(name, s, f"{name.lower()}\\{name.lower()}-{s:04d}.tga") for s in range(count))
+    pat = re.compile(r"\t<Tile>\n\t\t<Key>\n\t\t\t<Name>" + re.escape(name) + r"</Name>.*?</Tile>\n", re.S)
+    xml, removed = pat.subn("", xml)
+    blocks = "".join(tile_block(name, s) for s in range(count))
     idx = xml.rindex("</Tiles>")
     xml = xml[:idx] + blocks + xml[idx:]
     open(xml_path, "w", encoding="utf-8").write(xml)
-    print(f"patched {os.path.basename(xml_path)}: +{count} {name} tiles")
+    print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles (replaced {removed})")
 
 
-# ---- TSFACT (TS Construction Yard, GTCNST 144-canvas -> 384) ----
-# GTCNST frames: 0 healthy, 1 damaged, 2 wrecked (unused), 3-5 palette-anim
-# overlays (unused). Donor FACT = 52 shapes (26 healthy anim + 26 damaged) --
-# the crane loop collapses to statics (custom launcher anims are dead anyway).
+def resample(indices, target):
+    return [indices[min(len(indices) - 1, round(i * (len(indices) - 1) / (target - 1)))] for i in range(target)]
+
+
+def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count,
+                    canvas_w, canvas_h, target_w):
+    """The Stealth Recipe compositor. anims = [(dirname, loop_len), ...]."""
+    n = 1
+    for _, ln in anims:
+        n = n * ln // math.gcd(n, ln)
+    base_h = load(base_dir, healthy_f)
+    base_d = load(base_dir, damaged_f)
+
+    healthy = [composite(base_h, anims, i) for i in range(n)]
+    damaged = composite(base_d, [], 0)
+
+    # One affine for every frame: union content box of everything drawn.
+    boxes = [f.getbbox() for f in healthy + [damaged]] + \
+            [load(mk_dir, i).getbbox() for i in real_frames(mk_dir)]
+    boxes = [b for b in boxes if b]
+    ux0, uy0 = min(b[0] for b in boxes), min(b[1] for b in boxes)
+    ux1, uy1 = max(b[2] for b in boxes), max(b[3] for b in boxes)
+    factor = float(target_w) / (ux1 - ux0)
+    cx, cy = (ux0 + ux1) / 2.0, (uy0 + uy1) / 2.0
+
+    frames = [place(f, factor, canvas_w, canvas_h, cx, cy) for f in healthy]
+    frames += [place(damaged, factor, canvas_w, canvas_h, cx, cy)] * n
+    write_zip(f"{STRUCT_DIR}/{ini}.ZIP", ini.lower(), frames)
+
+    mk = [place(load(mk_dir, i), factor, canvas_w, canvas_h, cx, cy)
+          for i in resample(real_frames(mk_dir), mk_count)]
+    write_zip(f"{STRUCT_DIR}/{ini}MAKE.ZIP", f"{ini.lower()}make", mk)
+
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", ini, 2 * n)
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}MAKE", mk_count)
+    print(f"{ini}: N={n} (idle anim count for the _anims[] entry)")
+    return n
+
+
+# ---- TSFACT: TS Construction Yard (3x2, TDFACT donor 72x48 -> 384x256).
+# Content scaled to the TD yard (TDGFACT content 381px). Anims: _A crane 20,
+# _B light 10, _C crane-2 30 -> N=60. Damaged base = GTCNST frame 1.
 if os.path.isdir(f"{ART}/shp_gtcnst"):
-    F = 384.0 / 144.0
-    healthy = hq_scale(Image.open(f"{ART}/shp_gtcnst/frame-0000.png").convert("RGBA"), F)
-    damaged = hq_scale(Image.open(f"{ART}/shp_gtcnst/frame-0001.png").convert("RGBA"), F)
-    write_zip(f"{STRUCT_DIR}/TSFACT.ZIP", "tsfact", [healthy] * 26 + [damaged] * 26)
+    build_structure("TSFACT", "shp_gtcnst", 0, 1,
+                    [("shp_gtcnst_a", anim_len("shp_gtcnst_a")),
+                     ("shp_gtcnst_b", anim_len("shp_gtcnst_b")),
+                     ("shp_gtcnst_c", anim_len("shp_gtcnst_c"))],
+                    "shp_gtcnstmk", 32, 384, 256, 381)
 
-    picks = [round(i * 47 / 31) for i in range(32)]  # 48 TS buildup frames -> donor's 32
-    mk = [hq_scale(Image.open(f"{ART}/shp_gtcnstmk/frame-{p:04d}.png").convert("RGBA"), F) for p in picks]
-    write_zip(f"{STRUCT_DIR}/TSFACTMAKE.ZIP", "tsfactmake", mk)
-
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSFACT", 52)
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSFACTMAKE", 32)
+# ---- TSPOWR: TS Power Plant (2x2, POWR donor 48x48 -> 256x256).
+# Content scaled to TDNUKE (content 256 full-width). Anims: _A fan 24, _B 12
+# -> N=24. Damaged base = GTPOWR frame 2 (spike-established layout).
+if os.path.isdir(f"{ART}/shp_gtpowr"):
+    build_structure("TSPOWR", "shp_gtpowr", 0, 2,
+                    [("shp_gtpowr_a", anim_len("shp_gtpowr_a")),
+                     ("shp_gtpowr_b", anim_len("shp_gtpowr_b"))],
+                    "shp_gtpowrmk", 13, 256, 256, 252)
 
 # ---- TSMCV (MCV.VXL render, 32 facings, canvas 384 = classic 48 x 8) ----
-if os.path.isdir(f"{ART}/renders_tsmcv"):
-    CANVAS = 384
+if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(f"{UNITS_DIR}/TSMCV.ZIP"):
+    def scale_center(img, factor, canvas):
+        nw, nh = round(img.width * factor), round(img.height * factor)
+        scaled = img.resize((nw, nh), Image.LANCZOS)
+        out = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
+        out.paste(scaled, ((canvas - nw) // 2, (canvas - nh) // 2), scaled)
+        return out
     side = Image.open(f"{ART}/renders_tsmcv/frame-0008.png")
     b = side.getbbox()
-    factor = 280.0 / (b[2] - b[0])  # hull ~73% of canvas, the MLRS proportion
-    frames = [scale_center(Image.open(f"{ART}/renders_tsmcv/frame-{i:04d}.png"), factor, CANVAS)
+    factor = 280.0 / (b[2] - b[0])
+    frames = [scale_center(Image.open(f"{ART}/renders_tsmcv/frame-{i:04d}.png"), factor, 384)
               for i in range(32)]
     write_zip(f"{UNITS_DIR}/TSMCV.ZIP", "tsmcv", frames)
     patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSMCV", 32)
 
 # ---- BuildIcon for the (future-buildable) TSMCV ----
-if os.path.isdir(f"{ART}/shp_mcvicon"):
+if os.path.isdir(f"{ART}/shp_mcvicon") and not os.path.exists(f"{ICON_DIR}/BuildIcon_TS_MCV.tga"):
     icon = Image.open(f"{ART}/shp_mcvicon/frame-0000.png")
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
     big.save(f"{ICON_DIR}/BuildIcon_TS_MCV.tga")

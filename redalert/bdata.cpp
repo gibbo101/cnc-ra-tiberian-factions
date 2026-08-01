@@ -1336,9 +1336,9 @@ static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
                                            true,               // Can the building be color remapped?
                                            RTTI_BUILDINGTYPE,  // Produces buildings.
                                            DIR_N,              // Starting idle frame.
-                                           BSIZE_33,           // 3x3 footprint (TS-authentic).
+                                           BSIZE_32,           // 3x2 — TD-yard parity (TS's 3x3 dropped for size match, Luke 2026-08-01).
                                            NULL,               // No preferred exit cell.
-                                           (short const*)ListFactory,
+                                           (short const*)List32,
                                            (short const*)NULL  // No overlap row.
 );
 
@@ -4619,6 +4619,10 @@ void BuildingTypeClass::One_Time(void)
         // Nod Stealth Generator: 16-frame TS NASTLH_A ring animation (composited into
         // the TDSTEAL tileset; frames 16-31 are the damaged-state run).
         {STRUCT_TDSTEALTH, BSTATE_IDLE, 0, 16, 3},
+        // TS tree (Stealth Recipe): composited TS active anims; damaged run =
+        // second half of the tileset (generic +largest offset in Shape_Number).
+        {STRUCT_TSFACT, BSTATE_IDLE, 0, 60, 3},  // GACNST _A(20)+_B(10)+_C(30) -> LCM 60
+        {STRUCT_TSPOWR, BSTATE_IDLE, 0, 24, 3},  // GAPOWR _A(24)+_B(12) -> LCM 24
     };
 
     for (int sindex = STRUCT_FIRST; sindex < STRUCT_COUNT; sindex++) {
@@ -4805,8 +4809,8 @@ void BuildingTypeClass::One_Time(void)
             {STRUCT_TDGHPAD, STRUCT_TDHPAD},
             {STRUCT_TDNHPAD, STRUCT_TDHPAD},
             // TS tree: TS GTCNST art under TSFACT keys, classic dims + construction
-            // anim from the RA yard (same 3x3).
-            {STRUCT_TSFACT, STRUCT_CONST},
+            // anim from the TD yard (same 3x2, TD-parity scale).
+            {STRUCT_TSFACT, STRUCT_TDFACT},
         };
         for (int di = 0; di < (int)(sizeof(_td_bdonors) / sizeof(_td_bdonors[0])); di++) {
             BuildingTypeClass& b = As_Reference(_td_bdonors[di].td);
