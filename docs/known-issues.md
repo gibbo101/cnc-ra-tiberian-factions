@@ -191,19 +191,22 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Combat / units
 
-### Fixed-wing plane parked on a helipad — ⏳ OPEN (observed 2026-08-01, mechanism unknown)
-- **Severity:** minor-looking but worth understanding (dock/rearm semantics may be off for the
-  parked plane).
-- **Detail:** Docklands skirmish, HD: an RA fixed-wing plane (YAK-type) sitting centered on a
-  round helipad pad. First-pass source audit found the radio chain CORRECT everywhere: helipad
-  `RADIO_CAN_LOAD` answers ROGER only to non-fixed-wing (all 6 pad types), `Find_Docking_Bay`
-  is type-matched + CAN_LOAD-gated, `DoSmarterRunAway` keeps fixed-wing on the repair pad, and
-  all helipad types occupy their full 2x2 footprint (`List2`), so a cell-target landing on the
-  pad should be rejected by `Is_LZ_Clear`. So the observed state should be unreachable — needs
-  ground truth from the next sighting: whose plane/pad, ordered or automatic, and whether the
-  plane is truly ON the pad cell (can the pad be clicked under it?) or on an adjacent cell with
-  the sprite overlapping. The `46f01f3` What_Action relaxation was audited in passing and does
-  not explain it (CAN_LOAD still gates ENTER).
+### Fixed-wing (GDI A-10) parked on a "helipad" — ⏳ OPEN, likely-benign explanation found (2026-08-01)
+- **Severity:** likely none (probably intended behaviour misread), instrumented to confirm.
+- **Detail:** Docklands skirmish, HD: a GDI A-10 sitting centered on a round pad (player first
+  read it as a YAK, corrected to A-10). Full source audit: every dock chain is type-correct —
+  helipad `RADIO_CAN_LOAD` refuses fixed-wing (all 6 pad types), `Who_Can_Build_Me`
+  discriminates pads vs strips, the Place_Object completion path never falls back to a pad for
+  fixed-wing, all pads occupy their full 2x2 (`List2`), and a fixed-wing touching down outside
+  `MISSION_ENTER` self-destructs. **Leading theory: it was the TDFIX Service Depot, not a
+  helipad** — the TD depot is a round pad, it accepts aircraft at `RADIO_CAN_LOAD`, and
+  `Mission_Guard` deliberately sends a damaged AI aircraft there `MISSION_ENTER` (lands on the
+  pad, alive, by design). The `FIXEDWING-LAND` touchdown census (TF_DEV_BUILD, tf_astar.log)
+  now records `under=`/`contact=` per fixed-wing touchdown; the next sighting closes this.
+- **Real bug found during the audit, FIXED (`0c12624`):** the out-of-ammo rearm search was
+  hardcoded `Find_Docking_Bay(STRUCT_HELIPAD)`, which fixed-wing can never satisfy — an AI
+  A-10 with empty ammo never found its airfield and flew disarmed forever. Now searches the
+  aircraft's home-building family (airstrip family matching made symmetric).
 
 ### AI superweapon targeting ignores stealth-generator cloak — ⏳ OPEN (2026-08-01)
 - **Severity:** major for the stealth generator's value proposition.
