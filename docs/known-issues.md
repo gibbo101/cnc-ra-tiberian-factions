@@ -298,7 +298,13 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Pathfinding / AI cooperation
 
-### Units livelock retrying a doomed path forever — FIX IMPLEMENTED 2026-08-01, verification in progress
+### Units livelock retrying a doomed path forever — ✅ CLOSED 2026-08-01 (crash fixed+verified; wedges cured; storm deferred to naval)
+- **Final status:** the give-way recursion CRASH is fixed and verified (two long matches, no
+  artifacts). The in-base wedge livelock is cured by the no-progress detector. The
+  unreachable-target retry storm is NOT curable by give-up logic (measured 8.96 vs 8.4
+  fallbacks/frame with detector v2 + scan-limit) — those units simply have no ground route;
+  the cure is AI naval transport (`ai-upgrade-plan.md`), Luke's call 2026-08-01. Full verdict
+  + falsification history: `path-failure-livelock-design.md`.
 - **The 2026-08-01 DOCKLANDS `EXCEPTION_STACK_OVERFLOW` was a SEPARATE defect the livelock merely
   fed.** Walking the crash minidump (`InstanceServerG.exe_2026-08-01_00-17-47_T472.dmp`, raw
   stack scan + addr2line) showed ~1,500 repetitions of one cycle: `Start_Of_Move` give-way

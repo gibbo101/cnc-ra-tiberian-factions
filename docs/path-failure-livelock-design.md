@@ -51,13 +51,26 @@ self-cell TDE6 runs are interleaved (runs of ~5). The design doc's "598x same tu
 were per-match TOTALS, not consecutive runs — the pair-keyed window can essentially never trip
 on AI units. (It may still catch human-ordered units, which don't rotate targets.)
 
-**Iteration 2 (next):** key on the SOURCE CELL only — a unit accumulating Basic_Path failures
-from the same cell for a sustained window is stuck regardless of which doomed destination the
-mission logic is currently offering. On trip: abort destination AND apply the engine's own
-scan-limit idea (`IsScanLimited` / `Team->Scan_Limit()`, exactly what `drive.cpp`'s abandon
-branch already does) so target selection stops handing back unreachable prey. The infantry hunt
-abort (`infantry.cpp:4334`) clears NavCom/TarCom every failure but never scan-limits — that
-unthrottled re-pick loop IS the storm's engine.
+**Iteration 2 (shipped same day):** key on the SOURCE CELL only — a unit accumulating
+Basic_Path failures from the same cell for a sustained window is stuck regardless of which
+doomed destination the mission logic is currently offering. On trip: abort destination AND
+apply the engine's own scan-limit throttle (`IsScanLimited` / `Team->Scan_Limit()`).
+
+## FINAL VERDICT (2026-08-01, live Luke-played Docklands match) — workstream CLOSED
+
+- **The crash is fixed and verified** (the recursion guard; F51,760 and F40,300+ matches, no
+  artifacts, under storms up to 427k fallbacks).
+- **The in-base wedge livelock — the bug this doc was opened for — is cured**: short-range
+  wedges (`TDLTNK (60,79)→(61,78)`, the v1 batch of 743 base-traffic aborts) now abort and
+  re-task instead of retrying forever.
+- **The unreachable-target storm is NOT collapsible by give-up logic, and we stop trying.**
+  v2 + scan-limit measured 8.96 fallbacks/frame against the 8.4 baseline: `IsScanLimited`
+  self-lifts by design, hunt re-picks immediately, and a cliff-parked unit re-trips its
+  already-expired window every few frames (same unit logged `stuck=9796f` and climbing).
+  The units mass on the shore because they genuinely have no ground route to the enemy —
+  the correct cure is GIVING THEM A ROUTE (naval transports, `ai-upgrade-plan.md`), not
+  ever-cleverer surrender. Luke's call, 2026-08-01: park this until the AI can use naval.
+  The storm's costs after the crash fix are CPU + dev-log volume only.
 
 Sibling doc: `harvester-recovery-design.md`. Same underlying engine truth (movement zones
 ignore buildings), same recommended shape of cure (a no-progress detector, not a zone fix).
