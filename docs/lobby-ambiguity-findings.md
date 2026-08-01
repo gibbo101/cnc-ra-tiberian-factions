@@ -128,3 +128,58 @@ milestone buys a long soak in which a wrong pick would surface locally first.
 **Owed before it ships:** one confirming run on a live ambiguous scan (the resolver build
 never saw one — the night it was written, sessions stayed clean), and ideally a Windows
 observation, since every measurement here is under Proton.
+
+## 2026-07-31 addendum — DCJD replication + the std::vector identification
+
+DCJD implemented the pointer-scan approach independently (forum posts #5–#6, 24–25 Jul)
+and reported two things that upgrade the resolver:
+
+1. **Target the ARRAY BASE, not the AIPLAYER1 record.** They aimed the exact-referrer
+   scan at `anchor − human_count × 168` (the human record precedes AIPLAYER1) and got
+   `ExactReferrer` on **every** sample (~30 across both updates, zero failures). This
+   explains our 20/28 refeq coverage: our refeq window sits on the AIPLAYER1 record,
+   one stride past where the client's canonical pointer actually points.
+2. **The stable referrers are vector triples.** At a hit address R: `[R]` = begin,
+   `[R+4]` = end, `[R+8]` = capacity, and `(end − begin) / 168 == num_players`. Two
+   such stable triples exist. (Two owning `std::vector`s can't share a buffer, so at
+   least one is a copied triple or non-owning view — irrelevant to us; the shape is
+   the signal.)
+
+**IMPLEMENTED 2026-07-31 (same day, on top of the addendum plan):**
+- New resolver branch **V — validated vector triple**, ahead of R. Per candidate the
+  sweep now scans for referrers at the candidate's array base
+  (`anchor − TF_HumanPlayerCount × 168`), records hit addresses
+  (`TF_Count_Referrers` grew optional hit recording), and validates each hit's
+  neighbours as a triple (`TF_Read_Vector_Triple`): `begin == base`,
+  `begin < end <= capacity`, `(end − begin) % 168 == 0`, and
+  `(end − begin) / 168 == humans + roster AIs`. Any candidate with a validated
+  triple is a structural positive ID; survivors must still agree (same fail-safe
+  shape as every other branch). R/F/M/U untouched as fallbacks.
+- Dev-build forensics: `CAND` lines carry `base=/vecref=/ntrip=`, and each referrer
+  hit dumps a `TRIPLE ref=/begin=/end=/cap=/nplayers=/ok=` line — including
+  rejects, so a live run shows whether strict size equality is right.
+- `test_resolver.c` mirrors the new resolver verbatim (parses `vecref=` when
+  present, 0 on the old corpus). Re-run over all recorded batches:
+  **46/46 PASS, 0 wrong, V=0, branch split identical to the pre-change harness**
+  (R=20 F=10 M=16) — legacy routing provably unchanged.
+- Dev build compiled + linked clean; release config (`-DTF_DEV_BUILD=0`)
+  syntax-checked clean against the real cross-compile flags.
+- **Verification constraint stands:** the recorded corpus stores refeq/refwin
+  *counts* only, so the triple check cannot fire on old data by construction. It
+  needs a live ambiguous scan; until one reproduces, V's correctness rests on
+  DCJD's ~30-sample replication plus the fail-safe branch shape.
+
+**Overnight live soak 2026-08-01 (full record:
+`lobby-ambiguity-data/overnight-2026-08-01-results.md`):** 43 scripted play → 
+difficulty-only-flip → relaunch cycles on the resolver build. **43/43 reads correct,
+0 ambiguous** — the client consolidated every copy in place every time (double-flip
+and post-F11.5k-match flips included), so the V branch has still never fired live.
+Scripted single-session cycling does not provoke the ambiguity under Proton; the
+corpus stands as a base-path regression result, and one live stale TEAM-field copy
+was observed (Luke's session), proving stale survival without difficulty divergence.
+Note: the V-branch DLL code was swept into commit `ec3324a` (unrelated message) by
+the parallel session on 07-31 and is pushed; this doc + the harness stayed uncommitted.
+
+**Windows caveat:** DCJD's replication is believed to be native Windows — Luke is
+asking them to confirm in the next reply (`lobby-ambiguity-data/dcjd-forum-reply-2-draft.md`).
+If confirmed, the "Windows observation" owed above is discharged by their samples.

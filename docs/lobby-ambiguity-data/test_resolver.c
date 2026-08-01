@@ -12,7 +12,10 @@ static bool TF_Cand_Same_Vec(int a,int b,unsigned roster){
     if((roster&(1u<<n))&&TF_LobbyCands[a].diff[n]!=TF_LobbyCands[b].diff[n]) return false;
   return true;
 }
-static char TF_Resolve_Lobby_Ambiguity(const int*refeq,const int*refwin,int ncand,unsigned roster,int*out){
+static char TF_Resolve_Lobby_Ambiguity(const int*vecref,const int*refeq,const int*refwin,int ncand,unsigned roster,int*out){
+  int vrep=-1; bool vconflict=false;
+  for(int c=0;c<ncand;c++) if(vecref[c]>0){ if(vrep<0)vrep=c; else if(!TF_Cand_Same_Vec(vrep,c,roster))vconflict=true; }
+  if(vrep>=0&&!vconflict){ for(int n=1;n<=TF_LOBBY_MAX_AI_SLOTS;n++)out[n]=TF_LobbyCands[vrep].diff[n]; return 'V'; }
   int rep=-1; bool conflict=false;
   for(int c=0;c<ncand;c++) if(refeq[c]>0){ if(rep<0)rep=c; else if(!TF_Cand_Same_Vec(rep,c,roster))conflict=true; }
   if(rep>=0&&!conflict){ for(int n=1;n<=TF_LOBBY_MAX_AI_SLOTS;n++)out[n]=TF_LobbyCands[rep].diff[n]; return 'R'; }
@@ -30,18 +33,18 @@ static char TF_Resolve_Lobby_Ambiguity(const int*refeq,const int*refwin,int ncan
 }
 /* ---- test driver: parse batch results, run resolver per ambiguous cycle ---- */
 int main(int argc,char**argv){
-  int pass=0,wrong=0,undec=0,total=0; int R=0,F=0,M=0;
+  int pass=0,wrong=0,undec=0,total=0; int V=0,R=0,F=0,M=0;
   for(int f=1;f<argc;f++){
     FILE*fp=fopen(argv[f],"r"); if(!fp)continue; char line[512];
-    char gt[16]={0}; int nc=0; int refeq[TF_LOBBY_MAX_CANDIDATES],refwin[TF_LOBBY_MAX_CANDIDATES];
+    char gt[16]={0}; int nc=0; int vecref[TF_LOBBY_MAX_CANDIDATES],refeq[TF_LOBBY_MAX_CANDIDATES],refwin[TF_LOBBY_MAX_CANDIDATES];
     char cdiff[TF_LOBBY_MAX_CANDIDATES][16]; unsigned roster=6; int inblock=0;
     void(*flush)()=0; // placeholder
     #define RUN() do{ if(nc>0){ total++; \
       for(int c=0;c<nc;c++){ /* map cdiff string to slots (2-AI: slots 1,2) */ \
         TF_LobbyCands[c].diff[1]=cdiff[c][0]-'0'; TF_LobbyCands[c].diff[2]=cdiff[c][1]-'0'; } \
       int out[TF_LOBBY_MAX_AI_SLOTS+1]={0}; \
-      char br=TF_Resolve_Lobby_Ambiguity(refeq,refwin,nc,roster,out); \
-      if(br=='R')R++; else if(br=='F')F++; else if(br=='M')M++; \
+      char br=TF_Resolve_Lobby_Ambiguity(vecref,refeq,refwin,nc,roster,out); \
+      if(br=='V')V++; else if(br=='R')R++; else if(br=='F')F++; else if(br=='M')M++; \
       char dec[16]; if(br=='U'){undec++; strcpy(dec,"U");} \
       else{ snprintf(dec,sizeof(dec),"%d%d",out[1],out[2]); \
         if(strcmp(dec,gt)==0)pass++; else {wrong++; printf("WRONG %s: got %s exp %s (branch %c)\n",argv[f],dec,gt,br);} } \
@@ -50,12 +53,13 @@ int main(int argc,char**argv){
       char*p;
       if((p=strstr(line,"gt="))){ RUN(); sscanf(p,"gt=%15s",gt); inblock=0; continue; }
       if(strstr(line,"LOBBYCAND")){ if(strstr(line,"site=0")) {RUN(); inblock=0;} else inblock=1; continue; }
-      if(inblock && (p=strstr(line,"diff="))){ int eq=0,rw=0; char d[16];
+      if(inblock && (p=strstr(line,"diff="))){ int eq=0,rw=0,vr=0; char d[16];
         sscanf(p,"diff=%15s refs=%d refwin=%d",d,&eq,&rw);
-        if(nc<TF_LOBBY_MAX_CANDIDATES){ strncpy(cdiff[nc],d,15); refeq[nc]=eq; refwin[nc]=rw; nc++; } }
+        if((p=strstr(line,"vecref="))) sscanf(p,"vecref=%d",&vr); /* absent in pre-triple logs -> 0, V never fires */
+        if(nc<TF_LOBBY_MAX_CANDIDATES){ strncpy(cdiff[nc],d,15); vecref[nc]=vr; refeq[nc]=eq; refwin[nc]=rw; nc++; } }
     }
     RUN(); fclose(fp);
   }
-  printf("\nCOMPILED-C RESOLVER: total=%d PASS=%d WRONG=%d UNDECIDED=%d | R=%d F=%d M=%d\n",total,pass,wrong,undec,R,F,M);
+  printf("\nCOMPILED-C RESOLVER: total=%d PASS=%d WRONG=%d UNDECIDED=%d | V=%d R=%d F=%d M=%d\n",total,pass,wrong,undec,V,R,F,M);
   return wrong?1:0;
 }

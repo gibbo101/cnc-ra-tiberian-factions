@@ -233,7 +233,10 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 - **Zone filter made real in `85883e1` and VERIFIED (2026-08-01):** `Find_Cell_In_Zone` now
   restricts the sweep to the requested zone, so the defence-rated zone is the actual placement
   target and each fallback pass searches fresh ground. Verified on the DOCKLANDS run: zero
-  `PLACE-FAIL` across ~12,800 frames, radii healthy to 1,756 leptons.
+  `PLACE-FAIL` across ~12,800 frames, radii healthy to 1,756 leptons. Corroborated the same
+  night by the autonomous soak: **zero `PLACE-FAIL` across 43 matches** (Docklands + Deep Six
+  Mega, GDI at Easy/Medium/Hard, deepest F11,507 with GDI at 22,400 gathered) —
+  `docs/lobby-ambiguity-data/overnight-2026-08-01-results.md`.
 - **FALSIFIED — do not re-chase:**
   - *"TD buildings aren't valid proximity anchors."* No: the ownership test needs
     `base->Class->IsBase`, `IsBase` defaults true, and `TDPROC`/`TDWEAP`/`TDFIX` all set
