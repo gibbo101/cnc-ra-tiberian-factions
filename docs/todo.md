@@ -91,11 +91,27 @@ kept, ships actually roaming, battles when fleets cross.
    v1): op state is per-match statics (a mid-op save/load resets to IDLE, transport keeps
    cargo idle); a second LST can slip through the production-lag window (bounded at 2).
 
-**Next-match verify list (batch `1b1dda1`+`e9d415f`+`cf8ad1f`+`76bfcc0`+ferry):** yards at
-economy-ready (~F6-8k, before discovery), NAVAL-PATROL legs from first ship, blind fleet
-holds at 2 → scales to enemy navy after flip (`NAVAL-PICK ... cap= enavy=`), tech centre
-built ONCE and kept, ships roaming + fighting, no sidebar crash; on a water-split map:
-`NAVAL-PICK LST ferry` → `FERRY-START/SAIL/UNLOAD/HUNT/DONE` chain, landed units attack.
+**Match 3 (2026-08-01 evening, 3 AIs, water-split):** step-4 gate VERIFIED live (blind
+cap held at 2, scaled to `cap=4 enavy=2` on discovery, sell fix held, no crash to F137k+).
+But Luke's read was right — "no big naval battles, green naval stuck, no army transport":
+**44 vessel `PROD start`s produced a 3-ship fleet and the ferry LST never spawned.** Root
+cause found + FIXED (`0593113`): `Exit_Object`'s vessel case returned 0 ("abort + refund")
+whenever `Find_Exit_Cell` found the one-cell exit ring occupied — every completed ship
+whose slipway was momentarily blocked (usually by the house's own dockside hulls) was
+silently deleted. Vanilla never hit it (no skirmish navy). Now: blocked slipway = the
+temporary-blockage retry (3s), own parked ships scattered off the ring, `YARD-EXIT` diag.
+Ferry v2 shipped same evening (`2a9e504`): up to 3 concurrent LST ops sharing a beachhead,
+transport demand scales with idle army, threat-scored landing picks (avoid discovered
+shore defences), warship escorts dispatched ahead of the crossing (`FERRY-ESCORT`).
+
+**Next-match verify list (deployed = through `0593113`):** fleets actually REACH cap
+(watch `YARD-EXIT blocked` — should appear then clear, curV rising after), LST spawns →
+`FERRY-START/SAIL/UNLOAD/HUNT/DONE` chain on water-split maps, convoy scales (2nd/3rd LST
+as idle army grows), escorts precede landings, landed units HUNT. Watch items: vessel
+funding starves vs tank spam (H15 sat at cash=11 with WEAP churning — naval may need a
+funding priority look), one early `SYRD no-location` PLACE-FAIL self-recovered 8k frames
+later, and whether matched 4-ship fleets ever concentrate enough for real battles (fleet
+massing doctrine is the likely follow-on if not).
 
 Same-day context: livelock workstream CLOSED (`98a7177`), A-10 factory + rearm fixes
 (`9b6d486`/`0c12624`) awaiting regression eyes in normal play.
