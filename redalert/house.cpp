@@ -5709,6 +5709,24 @@ COORDINATE HouseClass::Find_Build_Location(BuildingClass* building) const
  * HISTORY:                                                                                    *
  *   09/28/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
+/*
+**	W5.3 expansion bases: which of the house's construction yards does a position
+**	belong to? A building is a member of the cluster around its nearest yard.
+*/
+static int TF_Nearest_Yard(COORDINATE pos, COORDINATE const* yards, int count)
+{
+    int best = 0;
+    int bestd = INT_MAX;
+    for (int j = 0; j < count; j++) {
+        int d = ::Distance(pos, yards[j]);
+        if (d < bestd) {
+            bestd = d;
+            best = j;
+        }
+    }
+    return (best);
+}
+
 void HouseClass::Recalc_Center(void)
 {
     assert(Houses.ID(this) == ID);
@@ -5737,10 +5755,51 @@ void HouseClass::Recalc_Center(void)
         int quantity = 0;
         int index;
 
+        /*
+        **	W5.3 expansion bases: with construction yards on two landmasses, averaging
+        **	EVERY building drags Center into the sea between the bases and the zone
+        **	rings collapse for both (the collapsed-geometry class of placement
+        **	failure). The base brain therefore tracks only the DOMINANT cluster --
+        **	each building belongs to its nearest yard, the heaviest cluster is the
+        **	main base, and everything in the other clusters is invisible to Center/
+        **	Radius/zone math. A remote yard places its own products around itself
+        **	(see the remote-anchor branch in building.cpp).
+        */
+        COORDINATE yardpos[8];
+        int yardcount = 0;
+        for (index = 0; index < Buildings.Count() && yardcount < 8; index++) {
+            BuildingClass const* b = Buildings.Ptr(index);
+            if (b != NULL && !b->IsInLimbo && (HouseClass*)b->House == this && b->Strength > 0
+                && (b->Class->Type == STRUCT_CONST || b->Class->Type == STRUCT_TDGFACT
+                    || b->Class->Type == STRUCT_TDNFACT)) {
+                yardpos[yardcount++] = b->Center_Coord();
+            }
+        }
+        int dominant = -1;
+        if (yardcount > 1) {
+            int mass[8] = {0};
+            for (index = 0; index < Buildings.Count(); index++) {
+                BuildingClass const* b = Buildings.Ptr(index);
+                if (b != NULL && !b->IsInLimbo && (HouseClass*)b->House == this && b->Strength > 0) {
+                    mass[TF_Nearest_Yard(b->Center_Coord(), yardpos, yardcount)] +=
+                        (b->Class->Cost_Of() / 1000) + 1;
+                }
+            }
+            dominant = 0;
+            for (int j = 1; j < yardcount; j++) {
+                if (mass[j] > mass[dominant]) {
+                    dominant = j;
+                }
+            }
+        }
+
         for (index = 0; index < Buildings.Count(); index++) {
             BuildingClass const* b = Buildings.Ptr(index);
 
             if (b != NULL && !b->IsInLimbo && (HouseClass*)b->House == this && b->Strength > 0) {
+                if (dominant >= 0 && TF_Nearest_Yard(b->Center_Coord(), yardpos, yardcount) != dominant) {
+                    continue;
+                }
 
                 /*
                 **	Give more "weight" to buildings that cost more. The presumption is that cheap
@@ -5803,6 +5862,9 @@ void HouseClass::Recalc_Center(void)
                 BuildingClass const* b = Buildings.Ptr(index);
 
                 if (b != NULL && !b->IsInLimbo && (HouseClass*)b->House == this && b->Strength > 0) {
+                    if (dominant >= 0 && TF_Nearest_Yard(b->Center_Coord(), yardpos, yardcount) != dominant) {
+                        continue;
+                    }
                     radius += Distance(Center, b->Center_Coord());
                 }
             }
@@ -5815,6 +5877,9 @@ void HouseClass::Recalc_Center(void)
                 BuildingClass const* b = Buildings.Ptr(index);
 
                 if (b != NULL && !b->IsInLimbo && (HouseClass*)b->House == this && b->Strength > 0) {
+                    if (dominant >= 0 && TF_Nearest_Yard(b->Center_Coord(), yardpos, yardcount) != dominant) {
+                        continue;
+                    }
                     ZoneType z = Which_Zone(b);
 
                     if (z != ZONE_NONE) {

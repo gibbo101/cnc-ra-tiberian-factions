@@ -2960,6 +2960,40 @@ void BuildingClass::Init(void)
  *   04/10/1995 JLB : Handles building production by computer.                                 *
  *   06/17/1995 JLB : Handles refinery exit.                                                   *
  *=============================================================================================*/
+/*
+**	W5.3 expansion bases: legal placement cell nearest a REMOTE construction yard.
+**	The zone-ring scan is anchored to the one house Center back at the main base, so
+**	an expansion yard's products go through this whole-map nearest-first scan instead
+**	-- same predicate pair as Find_Cell_In_Zone (Legal_Placement + proximity), with a
+**	hard range so the expansion stays a compact fortress rather than a sprawl.
+*/
+static CELL TF_Find_Cell_Near_Yard(BuildingClass const* product, BuildingClass const* yard)
+{
+    TechnoTypeClass const* ttype = product->Techno_Type_Class();
+    short const* list = product->Occupy_List(true);
+    COORDINATE anchor = yard->Center_Coord();
+    CELL best = 0;
+    int bestd = INT_MAX;
+    for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
+        if (!Map.In_Radar(cell)) {
+            continue;
+        }
+        int d = ::Distance(Cell_Coord(cell), anchor);
+        if (d >= bestd || d > 14 * CELL_LEPTON_W) {
+            continue;
+        }
+        if (!ttype->Legal_Placement(cell)) {
+            continue;
+        }
+        if (list != NULL && !Map.Passes_Proximity_Check(ttype, product->House->Class->House, list, cell)) {
+            continue;
+        }
+        best = cell;
+        bestd = d;
+    }
+    return (best);
+}
+
 int BuildingClass::Exit_Object(TechnoClass* base)
 {
     assert(Buildings.ID(this) == ID);
@@ -3356,9 +3390,29 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             } else {
 
                 /*
+                **	W5.3 expansion bases: a construction yard standing far outside the
+                **	main base's rings (deployed from a ferried or chronoshifted MCV) is
+                **	invisible to the base brain -- Recalc_Center tracks the dominant
+                **	cluster only, and every zone the ring scan knows is back home. So a
+                **	remote yard anchors its own products: nearest legal cell to itself,
+                **	which packs the expansion tight around the yard. Water-bound
+                **	products still route through the naval scan below.
+                */
+                if (House->Center != 0 && ((BuildingClass*)base)->Class->Speed != SPEED_FLOAT
+                    && ::Distance(Center_Coord(), House->Center)
+                           > House->Radius + 10 * CELL_LEPTON_W) {
+                    CELL nearcell = TF_Find_Cell_Near_Yard((BuildingClass*)base, this);
+                    if (nearcell != 0) {
+                        coord = Cell_Coord(nearcell);
+                    }
+                }
+
+                /*
                 **	Find a suitable new spot to place.
                 */
-                coord = House->Find_Build_Location((BuildingClass*)base);
+                if (coord == 0) {
+                    coord = House->Find_Build_Location((BuildingClass*)base);
+                }
             }
 
             if (coord) {
