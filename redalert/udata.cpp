@@ -1881,8 +1881,10 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitSovietMcv); // UNIT_SMCV  (Soviet MCV)
     new UnitTypeClass(UnitNodMcv);    // UNIT_TDNMCV (Nod MCV)
     new UnitTypeClass(UnitGdiMcv);    // UNIT_TDGMCV (GDI MCV)
-    new UnitTypeClass(UnitTsMcv);     // UNIT_TSMCV (TS MCV)
     new UnitTypeClass(UnitAlliedMcv); // UNIT_AMCV  (Allied MCV)
+    // Heap slot index must equal the Type enum value (As_Reference indexes the
+    // heap directly) -- register strictly in enum order, append new types HERE.
+    new UnitTypeClass(UnitTsMcv);     // UNIT_TSMCV (TS MCV)
 }
 
 /***********************************************************************************************

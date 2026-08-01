@@ -4453,7 +4453,6 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsPowr);      // STRUCT_TSPOWR (TS-spike GDI Power Plant)
     new BuildingTypeClass(ClassTdNodFact);   // STRUCT_TDNFACT (Nod Construction Yard)
     new BuildingTypeClass(ClassTdGdiFact);   // STRUCT_TDGFACT (GDI Construction Yard)
-    new BuildingTypeClass(ClassTsFact);      // STRUCT_TSFACT (TS Construction Yard)
     new BuildingTypeClass(ClassTdGdiHpad);   // STRUCT_TDGHPAD (GDI Helipad)
     new BuildingTypeClass(ClassTdNodHpad);   // STRUCT_TDNHPAD (Nod Helipad)
     new BuildingTypeClass(ClassSovietFact);  // STRUCT_SFACT   (Soviet Construction Yard)
@@ -4462,6 +4461,9 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassSovietWeapon); // STRUCT_SWEAP  (Soviet War Factory)
     new BuildingTypeClass(ClassAlliedHelipad); // STRUCT_AHPAD (Allied Helipad)
     new BuildingTypeClass(ClassSovietHelipad); // STRUCT_SHPAD (Soviet Helipad)
+    // Heap slot index must equal the Type enum value (As_Reference indexes the
+    // heap directly) -- register strictly in enum order, append new types HERE.
+    new BuildingTypeClass(ClassTsFact);        // STRUCT_TSFACT (TS Construction Yard)
 }
 
 /***********************************************************************************************
