@@ -5948,20 +5948,24 @@ int HouseClass::Expert_AI(void)
     }
 
     /*
-    **	W5.1 naval patrol dispatcher: while no enemy shore is known, idle armed ships
-    **	sail to random cells of the assessed water zone -- the naval counterpart of
-    **	the blind-scout detail above, and the mechanism that lets a navy DISCOVER the
-    **	enemy coast on maps where ground scouts can't cross. The land dispatcher's
-    **	hunt waypoints must never be used here: a ship ordered to a land cell is a
-    **	permanently unreachable destination (the pathfinder-storm profile), while any
-    **	cell of the ship's own water zone is reachable by what a zone id means.
-    **	Ships go idle on arrival, so each Expert_AI pass deals the next leg.
+    **	W5.1 naval patrol dispatcher: idle armed ships sail to random cells of the
+    **	assessed water zone -- the naval counterpart of the blind-scout detail
+    **	above. While blind it is the mechanism that DISCOVERS the enemy coast on
+    **	maps ground scouts can't cross; after discovery it keeps the fleet moving
+    **	across contested water, which is what brings guard-mode weapons within
+    **	range of enemy hulls and shore targets -- a parked navy never fights.
+    **	The land dispatcher's hunt waypoints must never be used here: a ship
+    **	ordered to a land cell is a permanently unreachable destination (the
+    **	pathfinder-storm profile), while any cell of the ship's own water zone is
+    **	reachable by what a zone id means. Ships go idle on arrival, so each
+    **	Expert_AI pass deals the next leg. Dedicated naval attack doctrine
+    **	(concentrating on the enemy fleet, shore bombardment) is later W5 work.
     */
     if (Session.Type != GAME_NORMAL && IsStarted && Vessels.Count() > 0) {
         int pzone = 0;
         int psize = 0;
         bool pcoastal = false;
-        if (TF_Naval_Assessment(pzone, psize, pcoastal) && !pcoastal) {
+        if (TF_Naval_Assessment(pzone, psize, pcoastal)) {
             for (int vindex = 0; vindex < Vessels.Count(); vindex++) {
                 VesselClass* v = Vessels.Ptr(vindex);
                 if (v != NULL && !v->IsInLimbo && v->House == this && v->Strength > 0 && v->Is_Weapon_Equipped()
