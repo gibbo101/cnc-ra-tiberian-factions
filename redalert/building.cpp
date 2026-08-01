@@ -171,6 +171,8 @@ COORDINATE const BuildingClass::CenterOffset[BSIZE_COUNT] = {
     0x00FF0200L,
 
     0x02800280L,
+
+    0x01800200L, // BSIZE_43 (4x3): x = 2 cells, y = 1.5 cells.
 };
 
 /***********************************************************************************************

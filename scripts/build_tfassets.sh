@@ -235,6 +235,25 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tstitn_stub.shp" 56 56 128
 PACK_ARGS+=("$TMPDIR/tstitn_stub.shp:TSTITN.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tshmec_stub.shp" 60 60 256
 PACK_ARGS+=("$TMPDIR/tshmec_stub.shp:TSHMEC.SHP")
+# TS-tree buildings with TS-authentic footprints (docs/ts-gdi-tree-plan.md):
+# classic stubs declare each one's canvas dims (dims x5.33 = HD canvas); the
+# MAKE stubs carry the 19-frame construction count the HD buildup zips ship.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 96 72 2
+PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 96 72 19
+PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 96 72 2
+PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 96 72 19
+PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tstech_stub.shp" 72 48 2
+PACK_ARGS+=("$TMPDIR/tstech_stub.shp:TSTECH.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tstechmk_stub.shp" 72 48 19
+PACK_ARGS+=("$TMPDIR/tstechmk_stub.shp:TSTECHMAKE.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssilo_stub.shp" 48 48 2
+PACK_ARGS+=("$TMPDIR/tssilo_stub.shp:TSSILO.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssilomk_stub.shp" 48 48 19
+PACK_ARGS+=("$TMPDIR/tssilomk_stub.shp:TSSILOMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/railfx_stub.shp" 24 24 12
 PACK_ARGS+=("$TMPDIR/railfx_stub.shp:RAILFX.SHP")
 

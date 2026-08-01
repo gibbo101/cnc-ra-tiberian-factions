@@ -1349,6 +1349,18 @@ static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
 **  under the TS* tileset keys with classic dims donated from the TD
 **  counterpart (see _td_bdonors).
 */
+/* 4x3 lists for the TS-authentic wide footprints: art row 0 is overlap
+** (visual overhang), rows 1-2 are the occupied plot; exits ring the south
+** and east edges (war factory). */
+static short const TsList43[] = {(MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
+                                 (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
+                                 REFRESH_EOL};
+static short const TsOList43[] = {0, 1, 2, 3, REFRESH_EOL};
+static short const TsExitWeap43[] = {XYCELL(-1, 3), XYCELL(0, 3), XYCELL(1, 3),
+                                     XYCELL(2, 3), XYCELL(3, 3), XYCELL(4, 3),
+                                     XYCELL(4, 2), XYCELL(4, 1), XYCELL(-1, 2),
+                                     REFRESH_EOL};
+
 static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            TXT_NONE,
                                            "TSPILE",
@@ -1380,10 +1392,10 @@ static BuildingTypeClass const ClassTsProc(STRUCT_TSPROC,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,          // Engine grants free harvester at build time.
                                            DIR_N,
-                                           BSIZE_33,
+                                           BSIZE_43,           // TS-authentic 4x3.
                                            NULL,
-                                           (short const*)TdListProc,
-                                           (short const*)TdOListProc);
+                                           (short const*)TsList43,
+                                           (short const*)TsOList43);
 
 static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            TXT_NONE,
@@ -1400,9 +1412,9 @@ static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_21,           // TDSILO parity (2x1).
+                                           BSIZE_22,           // TS-authentic 2x2.
                                            NULL,
-                                           (short const*)StoreList,
+                                           (short const*)List22,
                                            (short const*)NULL);
 
 static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
@@ -1419,10 +1431,10 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory.
                                            DIR_N,
-                                           BSIZE_33,           // TDWEAP parity (TS's 4x3 collapsed).
-                                           (short const*)TdExitWeap,
-                                           (short const*)TdListWeap,
-                                           (short const*)TdOListWeap);
+                                           BSIZE_43,           // TS-authentic 4x3.
+                                           (short const*)TsExitWeap43,
+                                           (short const*)TsList43,
+                                           (short const*)TsOList43);
 
 static BuildingTypeClass const ClassTsRadr(STRUCT_TSRADR,
                                            TXT_NONE,
@@ -1473,10 +1485,10 @@ static BuildingTypeClass const ClassTsTech(STRUCT_TSTECH,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_22,           // TDEYE parity.
+                                           BSIZE_32,           // TS-authentic 3x2.
                                            NULL,
-                                           (short const*)ComList,
-                                           (short const*)OComList);
+                                           (short const*)List32,
+                                           NULL);
 
 static BuildingTypeClass const ClassTsDept(STRUCT_TSDEPT,
                                            TXT_NONE,
@@ -5420,7 +5432,7 @@ short const* BuildingTypeClass::Overlap_List(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Width(void) const
 {
-    static int width[BSIZE_COUNT] = {1, 2, 1, 2, 2, 3, 3, 4, 5};
+    static int width[BSIZE_COUNT] = {1, 2, 1, 2, 2, 3, 3, 4, 5, 4};
     return (width[Size]);
 }
 
@@ -5440,7 +5452,7 @@ int BuildingTypeClass::Width(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Height(bool bib) const
 {
-    static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5};
+    static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5, 3};
     return (height[Size] + ((bib && IsBibbed) ? 1 : 0));
 }
 
