@@ -104,14 +104,32 @@ Ferry v2 shipped same evening (`2a9e504`): up to 3 concurrent LST ops sharing a 
 transport demand scales with idle army, threat-scored landing picks (avoid discovered
 shore defences), warship escorts dispatched ahead of the crossing (`FERRY-ESCORT`).
 
-**Next-match verify list (deployed = through `0593113`):** fleets actually REACH cap
+6. **Beachhead assembly + W5.3 amphibious expansion — SHIPPED 2026-08-01 late (Luke's
+   directives: "15 units isn't gonna cut it", "imagine a base with teslas/obelisks at the
+   landing zone"), not yet live-verified.**
+   - Beachhead doctrine (`3062228`): landed units rally inland and hold (guard-area)
+     instead of hunting piecemeal; whole force releases at 15 ashore (`FERRY-WAVE`);
+     stall-release (5+ ashore, no delivery 3 min). Convoy cap 3→4 LSTs.
+   - Cluster brain (`ffe940d` + yard-list fix in `782a310`): `Recalc_Center` tracks only
+     the dominant yard cluster (Center can't drift into the sea between two bases); a
+     remote yard places its own products via nearest-first whole-map scan around itself
+     (14-cell range, same Legal+proximity predicates). Single-yard houses byte-identical.
+   - MCV pipeline (`782a310`): force first, base second — once a load is ashore,
+     `FERRY-MCV queued` (faction MCV jumps the combat pick), first berth on the next
+     ride, `FERRY-DEPLOY` walks it to the rally and MISSION_UNLOAD deploys it; expansion
+     yard then grows a defended forward base (power/defences via the normal pool routed
+     through the remote anchor). Chronoshift delivery variant designed, gated on
+     Chronosphere AI dispatch (P3b/3c).
+
+**Next-match verify list (deployed = through `782a310`):** fleets actually REACH cap
 (watch `YARD-EXIT blocked` — should appear then clear, curV rising after), LST spawns →
-`FERRY-START/SAIL/UNLOAD/HUNT/DONE` chain on water-split maps, convoy scales (2nd/3rd LST
-as idle army grows), escorts precede landings, landed units HUNT. Watch items: vessel
-funding starves vs tank spam (H15 sat at cash=11 with WEAP churning — naval may need a
-funding priority look), one early `SYRD no-location` PLACE-FAIL self-recovered 8k frames
-later, and whether matched 4-ship fleets ever concentrate enough for real battles (fleet
-massing doctrine is the likely follow-on if not).
+`FERRY-START/SAIL/UNLOAD` chain, units gather at rally then `FERRY-WAVE release`, convoy
+scales (2nd–4th LST as idle army grows), escorts precede landings, then `FERRY-MCV
+queued` → `FERRY-DEPLOY` → expansion yard building defences at the beachhead. Watch
+items: vessel funding starves vs tank spam (H15 sat at cash=11 — naval may need a funding
+priority look), one early `SYRD no-location` PLACE-FAIL self-recovered, matched fleets
+concentrating into real battles (massing doctrine is the follow-on if not), MCV deploy
+retry-loop if the rally terrain can't fit a 3x3 yard.
 
 Same-day context: livelock workstream CLOSED (`98a7177`), A-10 factory + rearm fixes
 (`9b6d486`/`0c12624`) awaiting regression eyes in normal play.
