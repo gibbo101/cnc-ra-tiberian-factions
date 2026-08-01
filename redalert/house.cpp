@@ -7623,6 +7623,8 @@ static int const TF_FERRY_THREAT_RANGE = 8;    // cells; a defended stretch of c
 static int const TF_FERRY_WAVE_MIN = 15;       // beachhead strength that releases the attack wave.
 static int const TF_FERRY_WAVE_STALL = 3000;   // no fresh delivery for this long forces a release...
 static int const TF_FERRY_WAVE_STALL_MIN = 5;  // ...provided at least this many made it ashore.
+static int const TF_FERRY_SECOND_FRONT_MIN = 18; // surplus idle army before opening a second front.
+static int const TF_FERRY_BEACH_RADIUS = 10;   // cells; beachhead membership on a SHARED landmass.
 
 struct TFFerryOpStruct
 {
@@ -7841,6 +7843,73 @@ bool HouseClass::TF_Ferry_Route_Blocked(int* enemyland) const
 }
 
 /***********************************************************************************************
+ * HouseClass::TF_Ferry_Assault -- Should this house be running amphibious ops, and where?     *
+ *                                                                                             *
+ *    Two doctrines share the ferry machinery. On a water-SPLIT map (designated enemy on a     *
+ *    different landmass) invasion is the only delivery mechanism, so it runs whatever the     *
+ *    army size. On a CONNECTED map with a shared sea, an amphibious landing is a second       *
+ *    front: it only opens once the enemy is known to be coastal on our water (the fair-fog    *
+ *    assessment) and the house has a surplus idle army -- the land waves keep first claim     *
+ *    on a small force. `targetland` is the zone to invade (on connected maps: our own).       *
+ *=============================================================================================*/
+bool HouseClass::TF_Ferry_Assault(int& targetland, bool& second_front) const
+{
+    assert(Houses.ID(this) == ID);
+
+    targetland = 0;
+    second_front = false;
+    if (Session.Type == GAME_NORMAL) {
+        return (false);
+    }
+    if (TF_Ferry_Route_Blocked(&targetland)) {
+        return (true);
+    }
+    /*
+    **	The opportunistic landing is a Hard-tier behaviour (difficulty is
+    **	behavioural, never stats): lower tiers keep the single-front game on
+    **	connected maps. On split maps the ferry stays available to every tier
+    **	above -- there it is basic functioning, not cleverness.
+    */
+    if (IQ < Rule.MaxIQ) {
+        return (false);
+    }
+    HouseClass const* ehp = (Enemy != HOUSE_NONE) ? HouseClass::As_Pointer(Enemy) : NULL;
+    if (ehp == NULL || !ehp->IsActive || ehp->IsDefeated) {
+        return (false);
+    }
+    CELL myc = Coord_Cell(Center);
+    if (myc <= 0) {
+        return (false);
+    }
+    int ourland = Map[myc].Zones[MZONE_NORMAL];
+    if (ourland <= 0) {
+        return (false);
+    }
+    int azone = 0;
+    int asize = 0;
+    bool acoastal = false;
+    if (!TF_Naval_Assessment(azone, asize, acoastal) || !acoastal) {
+        return (false);
+    }
+    int waiting = 0;
+    for (int heap = 0; heap < 2; heap++) {
+        int count = heap ? Infantry.Count() : Units.Count();
+        for (int index = 0; index < count; index++) {
+            FootClass const* f = heap ? (FootClass const*)Infantry.Ptr(index) : (FootClass const*)Units.Ptr(index);
+            if (TF_Ferry_Eligible(f, this, ourland)) {
+                waiting++;
+            }
+        }
+    }
+    if (waiting < TF_FERRY_SECOND_FRONT_MIN) {
+        return (false);
+    }
+    targetland = ourland;
+    second_front = true;
+    return (true);
+}
+
+/***********************************************************************************************
  * HouseClass::TF_Ferry_Wants_Transport -- Should AI_Vessel queue an LST?                      *
  *                                                                                             *
  *    True when ferrying is the only way to deliver ground force (route blocked) and the       *
@@ -7852,7 +7921,9 @@ bool HouseClass::TF_Ferry_Wants_Transport(void) const
 {
     assert(Houses.ID(this) == ID);
 
-    if (!TF_Ferry_Route_Blocked()) {
+    int tland = 0;
+    bool sfront = false;
+    if (!TF_Ferry_Assault(tland, sfront)) {
         return (false);
     }
     CELL myc = Coord_Cell(Center);
@@ -7987,18 +8058,33 @@ void HouseClass::TF_Ferry_AI(void)
     CELL myc = Coord_Cell(Center);
     int ourland = (myc > 0) ? Map[myc].Zones[MZONE_NORMAL] : 0;
     int enemyland = 0;
-    bool blocked = TF_Ferry_Route_Blocked(&enemyland);
+    bool second_front = false;
+    bool assault = TF_Ferry_Assault(enemyland, second_front);
+    /*
+    **	Beachhead membership differs by doctrine: on a split map the enemy landmass
+    **	zone identifies landed units (and adopts strays anywhere ashore); on a shared
+    **	landmass everything is one zone, so membership is proximity to the rally.
+    */
+    CELL rally = _tf_beach_rally[hidx];
     if (myc > 0 && ourland > 0 && enemyland > 0) {
         int beach = 0;
         for (int heap = 0; heap < 2; heap++) {
             int count = heap ? Infantry.Count() : Units.Count();
             for (int index = 0; index < count; index++) {
                 FootClass const* f = heap ? (FootClass const*)Infantry.Ptr(index) : (FootClass const*)Units.Ptr(index);
-                if (f != NULL && (HouseClass const*)f->House == this && !f->IsInLimbo && f->Strength > 0
-                    && f->Is_Weapon_Equipped()
-                    && Map[Coord_Cell(f->Center_Coord())].Zones[MZONE_NORMAL] == enemyland) {
-                    beach++;
+                if (f == NULL || (HouseClass const*)f->House != this || f->IsInLimbo || f->Strength == 0
+                    || !f->Is_Weapon_Equipped()) {
+                    continue;
                 }
+                if (second_front) {
+                    if (rally == 0
+                        || ::Distance(f->Center_Coord(), Cell_Coord(rally)) > TF_FERRY_BEACH_RADIUS * CELL_LEPTON_W) {
+                        continue;
+                    }
+                } else if (Map[Coord_Cell(f->Center_Coord())].Zones[MZONE_NORMAL] != enemyland) {
+                    continue;
+                }
+                beach++;
             }
         }
         bool release = (beach >= TF_FERRY_WAVE_MIN)
@@ -8014,7 +8100,6 @@ void HouseClass::TF_Ferry_AI(void)
             }
         }
 #endif
-        CELL rally = _tf_beach_rally[hidx];
         for (int heap = 0; heap < 2; heap++) {
             int count = heap ? Infantry.Count() : Units.Count();
             for (int index = 0; index < count; index++) {
@@ -8023,7 +8108,12 @@ void HouseClass::TF_Ferry_AI(void)
                     || f->Team.Is_Valid()) {
                     continue;
                 }
-                if (Map[Coord_Cell(f->Center_Coord())].Zones[MZONE_NORMAL] != enemyland) {
+                if (second_front) {
+                    if (rally == 0
+                        || ::Distance(f->Center_Coord(), Cell_Coord(rally)) > TF_FERRY_BEACH_RADIUS * CELL_LEPTON_W) {
+                        continue;
+                    }
+                } else if (Map[Coord_Cell(f->Center_Coord())].Zones[MZONE_NORMAL] != enemyland) {
                     continue;
                 }
                 /*
@@ -8111,7 +8201,7 @@ void HouseClass::TF_Ferry_AI(void)
         switch (op.State) {
         default:
         case TFF_IDLE: {
-            if (!blocked || ourland <= 0) {
+            if (!assault || ourland <= 0) {
                 break;
             }
             int pzone = 0;
@@ -8147,7 +8237,19 @@ void HouseClass::TF_Ferry_AI(void)
                 }
             }
             if (land == 0) {
-                land = TF_Ferry_Shore_Cell(pzone, enemyland, Center, 0, this);
+                /*
+                **	Split map: land at the shortest crossing and drive. Second front:
+                **	land near the ENEMY base -- the threat scoring steers the actual
+                **	cell to the weakest stretch of their coast.
+                */
+                COORDINATE lnear = Center;
+                if (second_front) {
+                    HouseClass const* ehp = HouseClass::As_Pointer(Enemy);
+                    if (ehp != NULL && ehp->IsActive) {
+                        lnear = ehp->Center;
+                    }
+                }
+                land = TF_Ferry_Shore_Cell(pzone, enemyland, lnear, 0, this);
             }
             if (pick == 0 || land == 0) {
                 break; // enemy landmass doesn't touch our water -- no beachhead exists.
@@ -8156,8 +8258,10 @@ void HouseClass::TF_Ferry_AI(void)
             /*
             **	W5.3: once the beachhead is holding, the next ride carries the base --
             **	the MCV takes the first berth and the rest of the load is its escort.
+            **	Split maps only: a forward yard on a SHARED landmass is a separate
+            **	decision, not an accident of a stray MCV wandering onto the roster.
             */
-            if (_tf_beach_rally[hidx] != 0) {
+            if (_tf_beach_rally[hidx] != 0 && !second_front) {
                 for (int index = 0; index < Units.Count(); index++) {
                     UnitClass* u = Units.Ptr(index);
                     if (u != NULL && (HouseClass*)u->House == this && !u->IsInLimbo && u->Strength > 0

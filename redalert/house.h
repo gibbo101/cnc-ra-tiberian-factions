@@ -718,6 +718,7 @@ public:
     bool TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) const;
     int TF_Naval_Fleet_Cap(bool enemy_coastal, int* enemy_navy = NULL) const;
     bool TF_Ferry_Route_Blocked(int* enemyland = NULL) const;
+    bool TF_Ferry_Assault(int& targetland, bool& second_front) const;
     bool TF_Ferry_Wants_Transport(void) const;
     UnitType TF_Ferry_MCV_Type(void) const;
     bool TF_Ferry_Wants_MCV(void) const;
