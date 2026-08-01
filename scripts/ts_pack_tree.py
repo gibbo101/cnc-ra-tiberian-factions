@@ -140,20 +140,25 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     base_h = load(base_dir, healthy_f)
     base_d = load(base_dir, damaged_f)
 
+    # Damaged run keeps the anims cycling over the damaged base — TS itself
+    # freezes damaged buildings (the anim SHPs' damaged halves are empty),
+    # but the mod's stealth-gen baseline animates damaged, and Luke prefers
+    # that (2026-08-01).
     healthy = [composite(base_h, anims, i) for i in range(n)]
-    damaged = composite(base_d, [], 0)
+    damaged_frames = [composite(base_d, anims, i) for i in range(n)]
 
-    # One affine for every frame: union content box of everything drawn.
-    boxes = [f.getbbox() for f in healthy + [damaged]] + \
-            [load(mk_dir, i).getbbox() for i in real_frames(mk_dir)]
-    boxes = [b for b in boxes if b]
-    ux0, uy0 = min(b[0] for b in boxes), min(b[1] for b in boxes)
-    ux1, uy1 = max(b[2] for b in boxes), max(b[3] for b in boxes)
-    factor = float(target_w) / (ux1 - ux0)
-    cx, cy = (ux0 + ux1) / 2.0, (uy0 + uy1) / 2.0
+    # One affine for every frame, keyed to the HEALTHY BASE content only:
+    # buildup scaffolding is often wider than the finished building, and a
+    # union-box scale shrinks the built state to make room for it (the
+    # "powerplant needs beefing up" bug). Base-keyed scale + base-centered
+    # anchor keeps registration (all frames share the source canvas); MK
+    # frames that overflow the canvas clip harmlessly in place().
+    bb = base_h.getbbox()
+    factor = float(target_w) / (bb[2] - bb[0])
+    cx, cy = (bb[0] + bb[2]) / 2.0, (bb[1] + bb[3]) / 2.0
 
     frames = [place(f, factor, canvas_w, canvas_h, cx, cy) for f in healthy]
-    frames += [place(damaged, factor, canvas_w, canvas_h, cx, cy)] * n
+    frames += [place(f, factor, canvas_w, canvas_h, cx, cy) for f in damaged_frames]
     write_zip(f"{STRUCT_DIR}/{ini}.ZIP", ini.lower(), frames)
 
     mk = [place(load(mk_dir, i), factor, canvas_w, canvas_h, cx, cy)

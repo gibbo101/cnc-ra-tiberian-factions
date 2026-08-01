@@ -1071,9 +1071,28 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             **	provides the power plant; [TDHAND] is Owner=BadGuy, so it does not provide
             **	the Hand of Nod.
             */
+            /*
+            **	TS-tree buildings (Prerequisite= names the TS yard) are faction-
+            **	agnostic by design: the TS yard itself is the gate, enforced by
+            **	the normal prerequisite check below. Demanding a faction yard
+            **	here would relock the tree for a house whose ONLY yard is the
+            **	TS one (the crate-find case).
+            */
+            bool ts_tree = false;
+            int const* tspre = ((TechnoTypeClass const*)type)->Prerequisite;
+            for (int pi = 0; pi < PREREQUISITE_MAX; pi++) {
+                if (tspre[pi] < 0) {
+                    break;
+                }
+                if (tspre[pi] == STRUCT_TSFACT) {
+                    ts_tree = true;
+                    break;
+                }
+            }
+
             int const factions = HOUSEF_GDI | HOUSEF_NOD | HOUSEF_ALLIES | HOUSEF_SOVIET;
             int ownable = type->Get_Ownable();
-            if ((ownable & factions) != 0) {
+            if (!ts_tree && (ownable & factions) != 0) {
                 int yards = 0;
                 if (Has_Building_Active(STRUCT_TDGFACT)) {
                     yards |= HOUSEF_GDI;
