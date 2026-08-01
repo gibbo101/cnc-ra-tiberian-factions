@@ -7551,9 +7551,12 @@ static int const TF_FERRY_ROSTER_MAX = 5;
 static int const TF_FERRY_MIN_LOAD = 3;
 static int const TF_FERRY_TIMEOUT = 4500;      // pickup / load / unload stall limit (~5 min).
 static int const TF_FERRY_SAIL_TIMEOUT = 9000; // crossing limit before the op re-plans.
-static int const TF_FERRY_OPS_MAX = 3;         // concurrent transports per house -- the convoy.
+static int const TF_FERRY_OPS_MAX = 4;         // concurrent transports per house -- the convoy.
 static int const TF_FERRY_ESCORTS = 3;         // warships sent ahead to suppress the beach.
 static int const TF_FERRY_THREAT_RANGE = 8;    // cells; a defended stretch of coast scores worse.
+static int const TF_FERRY_WAVE_MIN = 15;       // beachhead strength that releases the attack wave.
+static int const TF_FERRY_WAVE_STALL = 3000;   // no fresh delivery for this long forces a release...
+static int const TF_FERRY_WAVE_STALL_MIN = 5;  // ...provided at least this many made it ashore.
 
 struct TFFerryOpStruct
 {
@@ -7575,6 +7578,13 @@ enum
     TFF_UNLOAD
 };
 static TFFerryOpStruct _tf_ferry[HOUSE_COUNT][TF_FERRY_OPS_MAX];
+
+/*
+**	Beachhead assembly state: where landed units rally, and when the last load was
+**	put ashore (drives the stall-release so a sunk shuttle can't freeze the wave).
+*/
+static CELL _tf_beach_rally[HOUSE_COUNT];
+static int _tf_beach_delivered[HOUSE_COUNT];
 
 /*
 **	Roster eligibility, shared by the candidate census, the roster pick and the
@@ -7824,36 +7834,67 @@ void HouseClass::TF_Ferry_AI(void)
 #endif
 
     /*
-    **	Expedition sweep: any of our idle ground fighters standing on a landmass that
-    **	isn't ours goes hunting. This is what turns a delivered load into an attack,
-    **	and it also rescues units landed by ops that later lost their transport.
+    **	Beachhead sweep. Landed fighters don't attack piecemeal -- five units a lift
+    **	fed one at a time into a defended base just die in detail. They assemble at
+    **	the rally point instead (guard-area, so they defend the lodgement) while the
+    **	shuttle pipeline keeps delivering, and the WHOLE force releases as one wave
+    **	once it reaches wave strength. The stall clause releases a partial wave when
+    **	deliveries stop (shuttles sunk) rather than freezing the beachhead forever.
+    **	The sweep also adopts survivors of ops whose transport died.
     */
     CELL myc = Coord_Cell(Center);
     int ourland = (myc > 0) ? Map[myc].Zones[MZONE_NORMAL] : 0;
     int enemyland = 0;
     bool blocked = TF_Ferry_Route_Blocked(&enemyland);
-    if (myc > 0 && ourland > 0) {
+    if (myc > 0 && ourland > 0 && enemyland > 0) {
+        int beach = 0;
+        for (int heap = 0; heap < 2; heap++) {
+            int count = heap ? Infantry.Count() : Units.Count();
+            for (int index = 0; index < count; index++) {
+                FootClass const* f = heap ? (FootClass const*)Infantry.Ptr(index) : (FootClass const*)Units.Ptr(index);
+                if (f != NULL && (HouseClass const*)f->House == this && !f->IsInLimbo && f->Strength > 0
+                    && f->Is_Weapon_Equipped()
+                    && Map[Coord_Cell(f->Center_Coord())].Zones[MZONE_NORMAL] == enemyland) {
+                    beach++;
+                }
+            }
+        }
+        bool release = (beach >= TF_FERRY_WAVE_MIN)
+                       || (beach >= TF_FERRY_WAVE_STALL_MIN && _tf_beach_delivered[hidx] > 0
+                           && (int)Frame - _tf_beach_delivered[hidx] > TF_FERRY_WAVE_STALL);
+#if TF_DEV_BUILD // TF_AI_DIAG
+        if (release && beach > 0) {
+            FILE* _tfdbg = TF_AI_Diag_File();
+            if (_tfdbg != NULL) {
+                fprintf(_tfdbg, "F%ld H%d AL%d FERRY-WAVE release beach=%d\n", (long)Frame, (int)Class->House,
+                        (int)ActLike, beach);
+                fflush(_tfdbg);
+            }
+        }
+#endif
+        CELL rally = _tf_beach_rally[hidx];
         for (int heap = 0; heap < 2; heap++) {
             int count = heap ? Infantry.Count() : Units.Count();
             for (int index = 0; index < count; index++) {
                 FootClass* f = heap ? (FootClass*)Infantry.Ptr(index) : (FootClass*)Units.Ptr(index);
-                if (f == NULL || (HouseClass*)f->House != this || f->IsInLimbo || f->Strength == 0 || !f->Is_Weapon_Equipped()
-                    || f->Team.Is_Valid() || f->Mission != MISSION_GUARD) {
+                if (f == NULL || (HouseClass*)f->House != this || f->IsInLimbo || f->Strength == 0
+                    || !f->Is_Weapon_Equipped() || f->Team.Is_Valid()) {
                     continue;
                 }
-                int fz = Map[Coord_Cell(f->Center_Coord())].Zones[MZONE_NORMAL];
-                if (fz != 0 && fz != ourland && fz == enemyland) {
-                    f->Assign_Mission(MISSION_HUNT);
-#if TF_DEV_BUILD // TF_AI_DIAG
-                    {
-                        FILE* _tfdbg = TF_AI_Diag_File();
-                        if (_tfdbg != NULL) {
-                            fprintf(_tfdbg, "F%ld H%d AL%d FERRY-HUNT %s#%d zone=%d\n", (long)Frame,
-                                    (int)Class->House, (int)ActLike, f->Class_Of().IniName, (int)f->ID, fz);
-                            fflush(_tfdbg);
-                        }
+                if (Map[Coord_Cell(f->Center_Coord())].Zones[MZONE_NORMAL] != enemyland) {
+                    continue;
+                }
+                if (release) {
+                    if (f->Mission != MISSION_HUNT) {
+                        f->Assign_Mission(MISSION_HUNT);
                     }
-#endif
+                } else if (f->Mission == MISSION_GUARD) {
+                    if (rally != 0 && ::Distance(f->Center_Coord(), Cell_Coord(rally)) > 3 * CELL_LEPTON_W) {
+                        f->Assign_Mission(MISSION_MOVE);
+                        f->Assign_Destination(::As_Target(rally));
+                    } else {
+                        f->Assign_Mission(MISSION_GUARD_AREA);
+                    }
                 }
             }
         }
@@ -8087,6 +8128,19 @@ void HouseClass::TF_Ferry_AI(void)
 
         case TFF_UNLOAD:
             if (trans->How_Many() == 0 && trans->Mission != MISSION_UNLOAD) {
+                /*
+                **	Load ashore. Stamp the delivery (feeds the stall-release) and plant
+                **	the beachhead rally on the land side of this landing so the sweep
+                **	gathers arrivals in one place.
+                */
+                _tf_beach_delivered[hidx] = (int)Frame;
+                for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
+                    CELL adj = Adjacent_Cell(op.Landing, face);
+                    if (Map.In_Radar(adj) && Map[adj].Zones[MZONE_NORMAL] == enemyland) {
+                        _tf_beach_rally[hidx] = adj;
+                        break;
+                    }
+                }
                 op = TFFerryOpStruct();
 #if TF_DEV_BUILD // TF_AI_DIAG
                 {
