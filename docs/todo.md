@@ -5,22 +5,32 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
-## ⭐ W5.1 Naval AI — step 1 SHIPPED 2026-08-01 (`c01202e`), RESUME AT STEP 2
+## ⭐ W5.1 Naval AI — steps 1-3 IN, AWAITING LIVE VERIFY; then step 4
 
-Water evaluation is in and live-verified on Docklands (census `z1=2499 z2=19 z3=54` correct,
-pond filter works, coastal spawn `ok=1`, inland spawn `ok=0`; `enemycoastal` flip verifies
-passively in any 2-AI match — an Allied AI can't discover an isolated human's shore).
-`HouseClass::TF_Naval_Assessment` + `TF_WaterZoneSize[]` are the API; `NAVAL`/`NAVAL-CENSUS`
-diag lines on the 30s cadence. Remaining steps (plan `ai-upgrade-plan.md` §W5.1):
+Step 1 (water census + `TF_Naval_Assessment`) shipped `c01202e`, live-verified on Docklands.
+Steps 2+3 implemented 2026-08-01 (this commit), deployed to the desktop prefix, NOT yet
+observed in a live match:
 
-2. **Naval yard queue + coastal placement bias** — AI_Building pool entry for the faction's
-   yard, gated on `TF_Naval_Assessment` ok + enemycoastal; placement biased to the nearest
-   coastal cell of the chosen zone (Find_Cell_In_Zone searches rings around the LAND center
-   and can silently fail — the known W3.2 gap).
-3. **AI_Vessel skirmish branch** — replace the `IsBaseBuilding` clear (house.cpp ~8221) with
-   an AI_Unit-style weighted-random pick over Can_Build's roster, gated on the assessment.
-4. **Build gates** — don't out-build the enemy navy (intel-filtered, mirror the air-cap
-   pattern at house.cpp ~7495); naval-war detection rescales limits.
+2. **Naval yard queue + coastal placement** — `AI_Building` pool entry for the faction's
+   yard (role = `STRUCT_SHIP_YARD`: SYRD/SPEN/TDGYARD/TDNPEN via `TF_Skirmish_Equivalent`),
+   gated on economy + assessment ok + enemycoastal, one yard, MEDIUM urgency (ageing brings
+   it up). Placement: `Find_Build_Location` branches on `Speed == SPEED_FLOAT` into
+   `TF_Find_Naval_Cell` — whole-map scan, same Legal/Proximity predicates, no zone-ring
+   restriction (that was the silent-fail gap), prefers the assessment's water zone, never
+   accepts ponds, picks the legal cell nearest the base centre.
+3. **AI_Vessel skirmish branch** — the `IsBaseBuilding` clear now falls through to an
+   AI_Unit-style uniform pick over Can_Build's ARMED vessels (transports excluded until the
+   W5.2 ferry controller exists), gated on yard-role owned + assessment + `enemycoastal`,
+   interim fleet cap `TF_NAVAL_FLEET_CAP=6` until step 4.
+
+**Verify (any 2-AI coastal match, e.g. Docklands):** `MOD_DEBUG_AI.txt` should show
+`NAVAL ok=1 ... enemycoastal=1` → the yard in a `POOL`/`WIN` line → `NAVAL-PLACE <yard>
+cell=(x,y) ontarget=1` → `NAVAL-PICK <vessel>` lines, and ships visibly on the water.
+A `PLACE-FAIL` on a yard now carries real reject counters (zone = pond rejects).
+
+4. **Build gates (remaining)** — don't out-build the enemy navy (intel-filtered, mirror the
+   air-cap pattern at house.cpp ~7495); naval-war detection rescales limits; replaces the
+   fixed fleet cap.
 
 Then W5.2 sea-transport ferrying (research complete, see plan) — the piece that actually
 unblocks the cliff-massing verdict from the livelock closure.

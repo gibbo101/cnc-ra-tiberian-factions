@@ -5577,6 +5577,20 @@ COORDINATE HouseClass::Find_Build_Location(BuildingClass* building) const
 {
     assert(Houses.ID(this) == ID);
 
+    /*
+    **	Water-bound buildings can't use the defence-zone rings below: the zones are
+    **	land rings around the base centre, and on most maps every legal coastal cell
+    **	lies outside all of them, so the ring scan fails without saying why. Place
+    **	on the assessed water directly instead. W5.1.
+    */
+    if (building->Class->Speed == SPEED_FLOAT) {
+        CELL navalcell = TF_Find_Naval_Cell(building);
+        if (navalcell) {
+            return (Cell_Coord(navalcell));
+        }
+        return (0);
+    }
+
     int zonerating[ZONE_COUNT];
     struct
     {
@@ -7007,6 +7021,9 @@ static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType
         if (ra == STRUCT_CONST) {
             return (&BuildingTypeClass::As_Reference(sov ? STRUCT_SFACT : STRUCT_AFACT));
         }
+        if (ra == STRUCT_SHIP_YARD || ra == STRUCT_SUB_PEN) {
+            return (&BuildingTypeClass::As_Reference(sov ? STRUCT_SUB_PEN : STRUCT_SHIP_YARD));
+        }
         return (NULL);
     }
 
@@ -7029,6 +7046,8 @@ static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType
     static BuildingTypeClass const* c_hpad = NULL; // helipad (both factions)
     static BuildingTypeClass const* c_gafld = NULL; // GDI fixed-wing airfield (A-10 host)
     static BuildingTypeClass const* c_fix = NULL;  // service depot (both factions)
+    static BuildingTypeClass const* c_gyard = NULL; // GDI naval yard
+    static BuildingTypeClass const* c_npen = NULL;  // Nod sub pen
     if (!resolved) {
         resolved = true;
         c_nuke = BuildingTypeClass::As_Pointer("TDNUKE");
@@ -7049,6 +7068,8 @@ static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType
         c_hpad = BuildingTypeClass::As_Pointer("TDHPAD");
         c_gafld = BuildingTypeClass::As_Pointer("TDGAFLD");
         c_fix = BuildingTypeClass::As_Pointer("TDFIX");
+        c_gyard = BuildingTypeClass::As_Pointer("TDGYARD");
+        c_npen = BuildingTypeClass::As_Pointer("TDNPEN");
     }
 
     bool gdi = (actlike == HOUSE_GOOD);
@@ -7088,6 +7109,9 @@ static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType
         return (gdi ? c_gafld : NULL);
     case STRUCT_REPAIR:
         return (c_fix);
+    case STRUCT_SHIP_YARD: // naval yard role -- W5.1
+    case STRUCT_SUB_PEN:
+        return (gdi ? c_gyard : c_npen);
     case STRUCT_CONST:
         // The base builder never queues a construction yard, so this exists for the role
         // table: in Unholy Alliance a house owns one yard of every lineage from the start,
@@ -7139,6 +7163,10 @@ static StructType TF_Role_Vanilla_Sibling(StructType ra)
         return (STRUCT_SOVIET_TECH);
     case STRUCT_SOVIET_TECH:
         return (STRUCT_ADVANCED_TECH);
+    case STRUCT_SHIP_YARD:
+        return (STRUCT_SUB_PEN);
+    case STRUCT_SUB_PEN:
+        return (STRUCT_SHIP_YARD);
     default:
         return (STRUCT_NONE);
     }
@@ -7227,6 +7255,16 @@ bool HouseClass::TF_Has_Income(void) const
     return (false);
 }
 
+/*
+**	W5.1 naval tuning. A base further than the coast radius from any shore has no
+**	business building a navy, and water smaller than the pond minimum is a pond,
+**	not a theatre. The fleet cap is an interim ceiling so the navy stays modest
+**	until the build-gate step scales it to the opponent's.
+*/
+static int const TF_NAVAL_COAST_RADIUS = 20;
+static int const TF_NAVAL_POND_MIN = 80;
+static int const TF_NAVAL_FLEET_CAP = 6;
+
 /***********************************************************************************************
  * HouseClass::TF_Naval_Assessment -- Is a navy worth building from this base?                 *
  *                                                                                             *
@@ -7243,13 +7281,6 @@ bool HouseClass::TF_Has_Income(void) const
 bool HouseClass::TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) const
 {
     assert(Houses.ID(this) == ID);
-
-    /*
-    **	A base further than this from any shore has no business building a navy,
-    **	and water smaller than this is a pond, not a theatre.
-    */
-    const int TF_NAVAL_COAST_RADIUS = 20;
-    const int TF_NAVAL_POND_MIN = 80;
 
     zone = 0;
     size = 0;
@@ -7938,6 +7969,31 @@ int HouseClass::AI_Building(void)
             }
         }
 
+        /*
+        **	W5.1: a naval yard, once the water evaluation says a navy can matter here.
+        **	Both conditions are required: qualifying water within reach of THIS base,
+        **	and a discovered enemy building coastal on that same water -- a yard on a
+        **	lake the enemy never touches is money sunk in it. Economy first for the
+        **	same reason as air production above, and one yard fills the role until
+        **	the build-gate step scales the navy to the opponent's. Scan order puts
+        **	this behind the core base; the anti-starvation ageing brings it up.
+        */
+        current = TF_Role_Quantity(BQuantity, STRUCT_SHIP_YARD);
+        if (current < 1 && tf_economy_ready) {
+            int tf_nzone = 0;
+            int tf_nsize = 0;
+            bool tf_ncoastal = false;
+            if (TF_Naval_Assessment(tf_nzone, tf_nsize, tf_ncoastal) && tf_ncoastal) {
+                b = TF_Skirmish_Pick(STRUCT_SHIP_YARD, ActLike);
+                if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
+                    choiceptr = BuildChoice.Alloc();
+                    if (choiceptr != NULL) {
+                        *choiceptr = BuildChoiceClass(URGENCY_MEDIUM, b->Type);
+                    }
+                }
+            }
+        }
+
 #ifdef OLD
         /*
         **	Build a repair bay if there isn't one already available.
@@ -8359,6 +8415,61 @@ int HouseClass::AI_Vessel(void)
 
     if (IsBaseBuilding) {
         BuildVessel = VESSEL_NONE;
+
+        /*
+        **	W5.1 step 3: skirmish vessel production. Vanilla unconditionally cleared any
+        **	pick here, so a skirmish AI never built a navy at all. Same weighted-random
+        **	shape as AI_Unit's combat-vehicle block: every armed vessel Can_Build allows
+        **	for the house's faction, picked uniformly. Unarmed transports are excluded
+        **	until the ferry controller exists -- an LST with no loading logic just sits
+        **	against the yard. The fleet only grows while the naval assessment still says
+        **	the water matters (the enemy may have lost its coastal base since the yard
+        **	went down), and holds at a fixed modest size until the build-gate step
+        **	scales it to the opponent's navy.
+        */
+        if (Session.Type != GAME_NORMAL && CurVessels < TF_NAVAL_FLEET_CAP
+            && TF_Role_Quantity(BQuantity, STRUCT_SHIP_YARD) > 0) {
+            int tzone = 0;
+            int tsize = 0;
+            bool tcoastal = false;
+            if (TF_Naval_Assessment(tzone, tsize, tcoastal) && tcoastal) {
+                int counter[VESSEL_COUNT];
+                int total = 0;
+                VesselType vtype;
+                for (vtype = VESSEL_FIRST; vtype < VESSEL_COUNT; vtype++) {
+                    VesselTypeClass const* vt = &VesselTypeClass::As_Reference(vtype);
+                    if (Can_Build(vt, ActLike) && vt->PrimaryWeapon != NULL) {
+                        counter[vtype] = 1;
+                    } else {
+                        counter[vtype] = 0;
+                    }
+                    total += counter[vtype];
+                }
+                if (total > 0) {
+                    int choice = Random_Pick(0, total - 1);
+                    for (vtype = VESSEL_FIRST; vtype < VESSEL_COUNT; vtype++) {
+                        if (choice < counter[vtype]) {
+                            BuildVessel = vtype;
+                            break;
+                        }
+                        choice -= counter[vtype];
+                    }
+                }
+#if TF_DEV_BUILD // TF_AI_DIAG -- one line per vessel pick (the non-NONE early-out above means
+                 // this fires once per production start, not per frame).
+                if (BuildVessel != VESSEL_NONE) {
+                    FILE* _tfdbg = TF_AI_Diag_File();
+                    if (_tfdbg != NULL) {
+                        fprintf(_tfdbg, "F%ld H%d AL%d NAVAL-PICK %s curV=%d cap=%d\n", (long)Frame,
+                                (int)Class->House, (int)ActLike,
+                                VesselTypeClass::As_Reference(BuildVessel).IniName, (int)CurVessels,
+                                (int)TF_NAVAL_FLEET_CAP);
+                        fflush(_tfdbg);
+                    }
+                }
+#endif
+            }
+        }
     }
 
     return (TICKS_PER_SECOND);
@@ -10167,6 +10278,105 @@ CELL HouseClass::Find_Cell_In_Zone(TechnoClass const* techno, ZoneType zone) con
     /*
     **	Return the best location to move to.
     */
+    return (bestcell);
+}
+
+/***********************************************************************************************
+ * HouseClass::TF_Find_Naval_Cell -- Finds a coastal placement cell for a water-bound building.*
+ *                                                                                             *
+ *    Visits the whole map with the same legality + proximity predicates as the zone scan and  *
+ *    picks the legal cell nearest the base centre, preferring cells on the water zone the     *
+ *    naval assessment chose (the water that reaches the enemy) over any other qualifying      *
+ *    water. Ponds are never accepted: a yard whose ships can't leave their puddle is dead     *
+ *    money however close it is.                                                               *
+ *                                                                                             *
+ * OUTPUT:  The cell to place at, or 0 if no legal coastal cell exists.                        *
+ *=============================================================================================*/
+CELL HouseClass::TF_Find_Naval_Cell(BuildingClass const* building) const
+{
+    assert(Houses.ID(this) == ID);
+
+    if (building == NULL) {
+        return (0);
+    }
+    TechnoTypeClass const* ttype = building->Techno_Type_Class();
+    short const* list = building->Occupy_List(true);
+    CELL center = Coord_Cell(Center);
+    if (center <= 0) {
+        return (0);
+    }
+
+    int tzone = 0;
+    int tsize = 0;
+    bool tcoastal = false;
+    TF_Naval_Assessment(tzone, tsize, tcoastal);
+
+#if TF_DEV_BUILD // TF_AI_DIAG -- feed the PLACE-FAIL reject counters from this scan too, so a
+                 // failed naval placement reports its predicate breakdown like a land one.
+    TF_PlaceScan.Radar = 0;
+    TF_PlaceScan.Zone = 0; // pond rejects, this scan having no zone-ring predicate
+    TF_PlaceScan.Legal = 0;
+    TF_PlaceScan.Proximity = 0;
+    TF_PlaceScan.Ok = 0;
+    TF_PlaceScan.Center = Center;
+    TF_PlaceScan.Radius = Radius;
+#endif
+
+    CELL bestcell = 0;
+    int bestval = -1;
+    bool bestontarget = false;
+    for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
+        if (!Map.In_Radar(cell)) {
+#if TF_DEV_BUILD
+            TF_PlaceScan.Radar++;
+#endif
+            continue;
+        }
+        if (!ttype->Legal_Placement(cell)) {
+#if TF_DEV_BUILD
+            TF_PlaceScan.Legal++;
+#endif
+            continue;
+        }
+        if (list != NULL && !Map.Passes_Proximity_Check(ttype, Class->House, list, cell)) {
+#if TF_DEV_BUILD
+            TF_PlaceScan.Proximity++;
+#endif
+            continue;
+        }
+        int wz = Map[cell].Zones[MZONE_WATER];
+        bool ontarget = (tzone != 0 && wz == tzone);
+        if (!ontarget
+            && (wz <= 0 || wz >= (int)ARRAY_SIZE(TF_WaterZoneSize) || TF_WaterZoneSize[wz] < TF_NAVAL_POND_MIN)) {
+#if TF_DEV_BUILD
+            TF_PlaceScan.Zone++;
+#endif
+            continue;
+        }
+#if TF_DEV_BUILD
+        TF_PlaceScan.Ok++;
+#endif
+        int dist = Distance(Cell_Coord(cell), Cell_Coord(center));
+        if (bestcell == 0 || (ontarget && !bestontarget) || (ontarget == bestontarget && dist < bestval)) {
+            bestcell = cell;
+            bestval = dist;
+            bestontarget = ontarget;
+        }
+    }
+
+#if TF_DEV_BUILD // TF_AI_DIAG -- one line per naval placement attempt; failures also surface
+                 // through the caller's PLACE-FAIL line with the counters set above.
+    {
+        FILE* _tfdbg = TF_AI_Diag_File();
+        if (_tfdbg != NULL) {
+            fprintf(_tfdbg, "F%ld H%d NAVAL-PLACE %s cell=(%d,%d) ontarget=%d dist=%d tzone=%d ok=%d\n", (long)Frame,
+                    (int)Class->House, building->Class->IniName, (int)Cell_X(bestcell), (int)Cell_Y(bestcell),
+                    (int)bestontarget, bestval, tzone, TF_PlaceScan.Ok);
+            fflush(_tfdbg);
+        }
+    }
+#endif
+
     return (bestcell);
 }
 

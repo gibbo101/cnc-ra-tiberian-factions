@@ -716,6 +716,7 @@ public:
     int TF_Committable_Army(void) const;
     bool TF_Has_Income(void) const;
     bool TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) const;
+    CELL TF_Find_Naval_Cell(BuildingClass const* building) const;
     bool Place_Special_Blast(SpecialWeaponType id, CELL cell);
     bool Flag_Attach(CELL cell, bool set_home = false);
     bool Flag_Attach(UnitClass* object, bool set_home = false);
