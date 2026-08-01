@@ -3037,7 +3037,36 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 return (2);
             }
             ScenarioInit--;
-            break;
+
+            /*
+            **	A blocked slipway is a TEMPORARY condition, not a failed order. The
+            **	exit ring is one cell wide, so a couple of friendly hulls loitering
+            **	dockside block it completely -- and the 0-return below scraps a
+            **	fully-paid completed vessel with no trace (vanilla never hit this:
+            **	its skirmish AI built no ships, and a human's blocked sidebar just
+            **	re-queues). Hold the order for the normal 3-second retry instead,
+            **	and shoo our own parked ships off the ring so it actually clears.
+            */
+            for (int index = 0; index < Vessels.Count(); index++) {
+                VesselClass* v = Vessels.Ptr(index);
+                if (v != NULL && !v->IsInLimbo && v->Strength > 0 && v->House == House
+                    && ::Distance(Center_Coord(), v->Center_Coord()) < 0x0300) {
+                    v->Scatter(0, true);
+                }
+            }
+#if TF_DEV_BUILD // TF_AI_DIAG
+            if (!House->IsHuman) {
+                extern FILE* TF_AI_Diag_File(void);
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg, "F%ld H%d AL%d YARD-EXIT blocked %s at %s#%d\n", (long)Frame,
+                            (int)House->Class->House, (int)House->ActLike, base->Class_Of().IniName,
+                            Class->IniName, (int)ID);
+                    fflush(_tfdbg);
+                }
+            }
+#endif
+            return (1);
 
         default:
             break;
