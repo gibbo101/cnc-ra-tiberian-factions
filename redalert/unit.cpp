@@ -3887,6 +3887,7 @@ int UnitClass::Mission_Unload(void)
     case UNIT_SMCV:     // via MCV_Deploy_Building.
     case UNIT_TDGMCV:
     case UNIT_TDNMCV:
+    case UNIT_TSMCV:    // TS MCV — deploys STRUCT_TSFACT (the TS-tree gate).
         switch (Status) {
         case 0:
             Path[0] = FACING_NONE;

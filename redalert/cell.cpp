@@ -2539,18 +2539,6 @@ bool CellClass::Goodie_Check(FootClass* object)
                 force_mcv = true;
             }
 
-#if TF_DEV_BUILD
-            /*
-            **  Dev-build TS-tree test cadence (Luke, 2026-08-01): force every
-            **  goodie crate to BE a unit crate -- the crate-type share table
-            **  rolls money most of the time, which starves the TS MCV override
-            **  in the unit branch below. The comeback path keeps force_mcv.
-            */
-            if (!force_mcv && TF_Dev_Cheats() && Session.Type != GAME_NORMAL && Session.Options.Bases) {
-                powerup = CRATE_UNIT;
-            }
-#endif
-
             /*
             **	If the powerup is money but there is insufficient money to build a refinery but there is a construction
             **	yard available, then force the money to be enough to rebuild the refinery.
@@ -2736,16 +2724,6 @@ bool CellClass::Goodie_Check(FootClass* object)
             **  can field one for ANY faction. 1-in-8 unit crates rolls the TS
             **  table (Hover MLRS / Titan / Mammoth Mk. II).
             */
-#if TF_DEV_BUILD
-            /*
-            **  Dev-build TS-tree test cadence (Luke, 2026-08-01): every unit
-            **  crate is the TS MCV so the tree can be exercised without luck.
-            **  Compiled out of release builds, which keep the rare roll below.
-            */
-            if (utp == NULL && Session.Type != GAME_NORMAL && Session.Options.Bases && TF_Dev_Cheats()) {
-                utp = &UnitTypeClass::As_Reference(UNIT_TSMCV);
-            }
-#endif
             if (utp == NULL && Session.Type != GAME_NORMAL && Random_Pick(0, 7) == 0) {
                 /*
                 **  1-in-4 of TS rolls (1-in-32 of unit crates) is the TS MCV: it
