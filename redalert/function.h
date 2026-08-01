@@ -134,6 +134,7 @@ extern int Get_CD_Drive(void);
 extern void Fatal(char const* message, ...);
 extern bool TF_Dev_Cheats(void); // TF dev-cheats runtime gate (see defines.h TF_DEV_BUILD)
 extern long TF_Building_Scan_Bit(int btype); // building Type -> its BScan/ActiveBScan/OldBScan bit
+extern bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type); // Prerequisite= names a TS-tree building (house.cpp)
 extern int TF_AI_IQ_From_Difficulty(DiffType diff); // lobby difficulty -> AI house IQ tier (behavioural difficulty)
 extern bool TFLobbyAIDifficultySet; // true once CNC_Set_Difficulty has delivered a lobby value this match
 

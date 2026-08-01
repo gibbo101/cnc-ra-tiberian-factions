@@ -888,6 +888,33 @@ HouseStaticClass::HouseStaticClass(void)
  *   10/23/1996 JLB : Hack to allow Tanya to both sides in multiplay.                          *
  *   11/04/1996 JLB : Computer uses prerequisite record.                                       *
  *=============================================================================================*/
+/*
+**  Tiberian Factions -- is this type part of the ownership-gated TS tree?
+**  Membership = its Prerequisite= names a TS-tree building (the TS yard, or
+**  anything in the TS enum block, or the TS power plant which predates the
+**  block). TS-tree types are faction-agnostic: Can_Build's faction-yard gate
+**  skips them and the sidebar never faction-badges their cameos
+**  (docs/ts-gdi-tree-plan.md).
+*/
+bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type)
+{
+    if (type == NULL) {
+        return false;
+    }
+    int const* pre = type->Prerequisite;
+    for (int i = 0; i < PREREQUISITE_MAX; i++) {
+        int t = pre[i];
+        if (t < 0) {
+            break;
+        }
+        if (t == STRUCT_TSFACT || t == STRUCT_TSPOWR
+            || (t >= STRUCT_TS_TREE_FIRST && t <= STRUCT_TS_TREE_LAST)) {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
 {
     assert(Houses.ID(this) == ID);
@@ -1063,6 +1090,7 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         **	gating a yard on owning a yard would be circular.
         */
         if (!btype->Is_Construction_Yard()) {
+            /* (TS-tree test defined below at TF_Is_TS_Tree_Type.) */
             /*
             **	A yard opens the tree of the faction it belongs to. So the test is not "do I
             **	own MY yard" but "do I own a yard belonging to a faction that can build this"
@@ -1072,23 +1100,13 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             **	the Hand of Nod.
             */
             /*
-            **	TS-tree buildings (Prerequisite= names the TS yard) are faction-
-            **	agnostic by design: the TS yard itself is the gate, enforced by
-            **	the normal prerequisite check below. Demanding a faction yard
-            **	here would relock the tree for a house whose ONLY yard is the
-            **	TS one (the crate-find case).
+            **	TS-tree buildings (Prerequisite= names a TS-tree building) are
+            **	faction-agnostic by design: the TS yard itself is the gate,
+            **	enforced by the normal prerequisite check below. Demanding a
+            **	faction yard here would relock the tree for a house whose ONLY
+            **	yard is the TS one (the crate-find case).
             */
-            bool ts_tree = false;
-            int const* tspre = ((TechnoTypeClass const*)type)->Prerequisite;
-            for (int pi = 0; pi < PREREQUISITE_MAX; pi++) {
-                if (tspre[pi] < 0) {
-                    break;
-                }
-                if (tspre[pi] == STRUCT_TSFACT) {
-                    ts_tree = true;
-                    break;
-                }
-            }
+            bool ts_tree = TF_Is_TS_Tree_Type((TechnoTypeClass const*)type);
 
             int const factions = HOUSEF_GDI | HOUSEF_NOD | HOUSEF_ALLIES | HOUSEF_SOVIET;
             int ownable = type->Get_Ownable();
