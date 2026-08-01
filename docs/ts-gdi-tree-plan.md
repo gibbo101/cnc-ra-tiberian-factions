@@ -1,5 +1,47 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐ RESUME HERE — session 2026-08-01 state + Luke's test checklist
+
+**Deployed to the Deck (DLL 12:59, branch `ts-units`, worktree `../tf-ts-units-worktree`,
+all committed through `dd0d18a`). NOT yet play-verified past the war factory.**
+
+**Shipped:** the complete GDI TS building tree — TSFACT yard + TSMCV (rare crate
+1-in-32 in release; dev builds spawn one beside the human start) and all nine
+buildable structures via the Stealth Recipe: TS idle anims + animated damaged
+states, real-frame buildups, TS bib aprons (PROC/WEAP/HPAD/DEPT), real TS cameo
+icons, full tree prereqs (vehicles+MCV on the TSWEAP chain). Footprints are
+TS-authentic with TD mass as baseline: PROC/WEAP 4x3 (new BSIZE_43), TECH 3x2,
+SILO 2x2, others as-was; changed ones declare classic dims via TFASSETS stubs.
+Engine fixes en route: heap-order invariant (bdata/udata tail comments),
+StructType char→short, **EA's sidebar off-by-one (Buildables[75] OOB write —
+UPSTREAM THIS TO MAIN, it can hit any big-roster game) + MAX_BUILDABLES 75→120**,
+TS types exempt from cameo badging + producer masks (TF_Is_TS_Tree_Type),
+TS yard⇄TS MCV round-trip both directions.
+
+**Luke's pre-work test checklist (~15 min, fresh crates-on skirmish):**
+1. TS MCV beside start → deploy → yard up, buildup clean (no purple).
+2. Sidebar: every TS entry shows its TS icon (no blank tiles, with AND without
+   owning a second faction's yard — the badge bugs bit both ways).
+3. Walk the whole tree: power→barracks→refinery→silo→WF→radar→helipad→tech→depot.
+   Each building: buildup anim, idle anim runs (crane/fans/dish/flag), bib present.
+4. Sizes vs TD counterparts: refinery + WF (4x3), tech (3x2), silo (2x2).
+5. ⚠️ Harvester docking at the 4x3 refinery — dock offsets were tuned on 3x3
+   shapes; watch for misaligned/dancing harvesters. Likeliest thing to be broken.
+6. Build Titan/Hover MLRS/Mk. II/TS MCV from the 4x3 WF — clean exits.
+7. Damage a few buildings — damaged art + anims still cycling.
+8. Sell all non-TS yards → TS tree stays buildable; undeploy yard → TS MCV back.
+9. Long game with two trees → sidebar survives past 75 entries (the off-by-one).
+
+**Next work queued (in order):** component towers (Vulcan/RPG/SAM — turreted
+TDGTWR-style ports, NOT the static recipe), TSHARV + Wolverine + Disruptor +
+APC (units wave), infantry (E1/E2/Ghost), Orcas, TS audio wave (dormant-sample
+hosts), NTREFN_C refinery anim (offset compositing). Badge art: Luke supplies
+TS GDI/Nod emblems later — cameos stay pristine until then. Refinery grants an
+RA harvester until TSHARV lands. AI use of the tree waits on W2.9 (other
+instance's lane).
+
+
+
 **Goal (Luke, 2026-08-01): the full GDI Tiberian Sun tech tree in the mod**, as the
 ownership-gated easter-egg tree designed in `ts-factions-feasibility.md` §"The cheap
 alternative": a rare crate drops a **TS MCV**; deploying it produces the **TS
