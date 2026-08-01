@@ -7228,6 +7228,104 @@ bool HouseClass::TF_Has_Income(void) const
 }
 
 /***********************************************************************************************
+ * HouseClass::TF_Naval_Assessment -- Is a navy worth building from this base?                 *
+ *                                                                                             *
+ *    Finds the best water zone within reach of the base: scans a box around the base center   *
+ *    for water cells, keeps the largest zone that is big enough to matter (a pond that can    *
+ *    hold a couple of gunboats is not a navy theatre), and reports whether a DISCOVERED       *
+ *    enemy building sits coastal on that same water -- the fair-fog signal that ships built   *
+ *    there can actually reach something worth shooting. All inputs are deterministic          *
+ *    (zones, building positions, the discovery mask), so this is lockstep-safe to consult    *
+ *    from AI decision code.                                                                   *
+ *                                                                                             *
+ * OUTPUT:  true if a qualifying zone exists; zone/size/enemy_coastal describe it.             *
+ *=============================================================================================*/
+bool HouseClass::TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) const
+{
+    assert(Houses.ID(this) == ID);
+
+    /*
+    **	A base further than this from any shore has no business building a navy,
+    **	and water smaller than this is a pond, not a theatre.
+    */
+    const int TF_NAVAL_COAST_RADIUS = 20;
+    const int TF_NAVAL_POND_MIN = 80;
+
+    zone = 0;
+    size = 0;
+    enemy_coastal = false;
+
+    CELL center = Coord_Cell(Center);
+    if (center <= 0) {
+        return (false);
+    }
+    int cx = Cell_X(center);
+    int cy = Cell_Y(center);
+
+    for (int y = cy - TF_NAVAL_COAST_RADIUS; y <= cy + TF_NAVAL_COAST_RADIUS; y++) {
+        for (int x = cx - TF_NAVAL_COAST_RADIUS; x <= cx + TF_NAVAL_COAST_RADIUS; x++) {
+            CELL cell = XY_Cell(x, y);
+            if (!Map.In_Radar(cell)) {
+                continue;
+            }
+            int wz = Map[cell].Zones[MZONE_WATER];
+            if (wz > 0 && wz < ARRAY_SIZE(TF_WaterZoneSize) && TF_WaterZoneSize[wz] >= TF_NAVAL_POND_MIN
+                && TF_WaterZoneSize[wz] > size) {
+                zone = wz;
+                size = TF_WaterZoneSize[wz];
+            }
+        }
+    }
+    if (zone == 0) {
+        /*
+        **	No qualifying water in reach. Distinguish "inland base" from "only ponds
+        **	nearby" for the caller's diagnostics: report the largest pond seen (if
+        **	any) as a negative size so logs can tell the two apart at a glance.
+        */
+        int pond = 0;
+        for (int y = cy - TF_NAVAL_COAST_RADIUS; y <= cy + TF_NAVAL_COAST_RADIUS; y++) {
+            for (int x = cx - TF_NAVAL_COAST_RADIUS; x <= cx + TF_NAVAL_COAST_RADIUS; x++) {
+                CELL cell = XY_Cell(x, y);
+                if (Map.In_Radar(cell)) {
+                    int wz = Map[cell].Zones[MZONE_WATER];
+                    if (wz > 0 && wz < ARRAY_SIZE(TF_WaterZoneSize) && TF_WaterZoneSize[wz] > pond) {
+                        pond = TF_WaterZoneSize[wz];
+                    }
+                }
+            }
+        }
+        size = -pond;
+        return (false);
+    }
+
+    /*
+    **	Does a discovered enemy building border the chosen water? Check the ring of
+    **	cells around each candidate building's foundation for the zone id. Buildings
+    **	are few and foundations small, so this stays cheap at the AI's cadence.
+    */
+    for (int index = 0; index < Buildings.Count() && !enemy_coastal; index++) {
+        BuildingClass const* b = Buildings.Ptr(index);
+        if (b == NULL || b->IsInLimbo || b->Strength == 0 || Is_Ally(b)
+            || b->House->Class->House == HOUSE_NEUTRAL || !b->Is_Discovered_By_Player(this)) {
+            continue;
+        }
+        CELL bcell = Coord_Cell(b->Center_Coord());
+        int bx = Cell_X(bcell);
+        int by = Cell_Y(bcell);
+        for (int y = by - 2; y <= by + 2 && !enemy_coastal; y++) {
+            for (int x = bx - 2; x <= bx + 2; x++) {
+                CELL cell = XY_Cell(x, y);
+                if (Map.In_Radar(cell) && Map[cell].Zones[MZONE_WATER] == zone) {
+                    enemy_coastal = true;
+                    break;
+                }
+            }
+        }
+    }
+    return (true);
+}
+
+/***********************************************************************************************
  * HouseClass::AI_Building -- Determines what building to build.                               *
  *                                                                                             *
  *    This routine handles the general case of determining what building to build next.        *
@@ -7393,6 +7491,47 @@ int HouseClass::AI_Building(void)
                 }
                 fprintf(_tfdbg, "\n");
                 fflush(_tfdbg);
+            }
+        }
+
+        /*
+        **	W5.1 naval groundwork diag: what the water evaluation would tell the
+        **	(future) naval production code, on its own 30s schedule and for EVERY
+        **	computer house -- the RA factions are the naval-heavy ones, and the
+        **	economy diag above is TD-era-gated. Verifies the zone census + coastal
+        **	assessment from logs alone, before any behaviour is wired to it.
+        */
+        {
+            static int _tf_nav_due[HOUSE_COUNT] = {0};
+            int _tf_nh = (int)Class->House;
+            if (!IsHuman && _tf_nh >= 0 && _tf_nh < HOUSE_COUNT && (int)Frame >= _tf_nav_due[_tf_nh]) {
+                _tf_nav_due[_tf_nh] = (int)Frame + 450;
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    /*
+                    **	One census line per match (the DLL reloads per match, so the
+                    **	static resets): every water zone's size, to sanity-check the
+                    **	histogram against the visible map before trusting ok=0 lines.
+                    */
+                    static bool _tf_census_done = false;
+                    if (!_tf_census_done) {
+                        _tf_census_done = true;
+                        fprintf(_tfdbg, "NAVAL-CENSUS wzones=%d", (int)TF_WaterZoneCount);
+                        for (int _z = 1; _z <= TF_WaterZoneCount && _z < 256; _z++) {
+                            fprintf(_tfdbg, " z%d=%d", _z, TF_WaterZoneSize[_z]);
+                        }
+                        fprintf(_tfdbg, "\n");
+                    }
+                    int _nz = 0, _nsz = 0;
+                    bool _nec = false;
+                    bool _nok = TF_Naval_Assessment(_nz, _nsz, _nec);
+                    CELL _nc = Coord_Cell(Center);
+                    fprintf(_tfdbg,
+                            "F%ld H%d AL%d NAVAL ok=%d zone=%d size=%d enemycoastal=%d center=(%d,%d) wzones=%d\n",
+                            (long)Frame, (int)Class->House, (int)ActLike, (int)_nok, _nz, _nsz, (int)_nec,
+                            (int)Cell_X(_nc), (int)Cell_Y(_nc), (int)TF_WaterZoneCount);
+                    fflush(_tfdbg);
+                }
             }
         }
 #endif

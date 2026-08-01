@@ -38,6 +38,16 @@
 #include "gscreen.h"
 #include "crate.h"
 
+/*
+**	Tiberian Factions -- water-zone census for the naval AI. Filled by
+**	MapClass::Zone_Reset alongside the MZONE_WATER flood fill (the fill count was
+**	always computed, just discarded). Indexed by the cell's Zones[MZONE_WATER] id
+**	(1-based; id 0 = not water). Water zones ignore buildings, so these are stable
+**	for the whole match. Recomputed from the map on load -- never saved.
+*/
+extern int TF_WaterZoneSize[256];
+extern int TF_WaterZoneCount;
+
 class MapClass : public GScreenClass
 {
 public:
