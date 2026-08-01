@@ -1401,7 +1401,12 @@ inline BulletType operator++(BulletType& n)
 **	All game buildings (structures) are enumerated here. This includes
 **	civilian structures as well.
 */
-typedef enum StructType : char
+/*
+**	Widened from char 2026-08-01: the TS-tree wave pushed the enum past 127.
+**	Not part of the launcher ABI (dllinterface.h carries its own int fields);
+**	old saves break, the standard accepted consequence of enum growth.
+*/
+typedef enum StructType : short
 {
     STRUCT_NONE = -1,
     STRUCT_ADVANCED_TECH,
@@ -1573,7 +1578,15 @@ typedef enum StructType : char
     **	Is_Tiberian_Era covers it as a second range. Keep new TS buildings inside
     **	this run and move STRUCT_TS_TREE_LAST when appending.
     */
-    STRUCT_TSFACT, // TS Construction Yard "TSFACT" (TS GACNST, 3x3) — deployed from UNIT_TSMCV; the gate on the TS tree. Not sidebar-buildable.
+    STRUCT_TSFACT, // TS Construction Yard "TSFACT" (TS GACNST; 3x2 TD-parity) — deployed from UNIT_TSMCV; the gate on the TS tree. Not sidebar-buildable.
+    STRUCT_TSPILE, // TS Barracks "TSPILE" (GAPILE, 2x2) — infantry factory.
+    STRUCT_TSPROC, // TS Tiberium Refinery "TSPROC" (PROC/NAREFN art, 3x3 TD-parity) — free harvester at build.
+    STRUCT_TSSILO, // TS Silo "TSSILO" (GASILO; 2x1 TD-parity).
+    STRUCT_TSWEAP, // TS War Factory "TSWEAP" (GAWEAP; 3x3 TD-parity) — vehicle factory.
+    STRUCT_TSRADR, // TS Radar "TSRADR" (GARADR, 2x2).
+    STRUCT_TSHPAD, // TS Helipad "TSHPAD" (GAHPAD, 2x2) — aircraft factory.
+    STRUCT_TSTECH, // TS Tech Center "TSTECH" (GATECH, 2x2 TD-parity).
+    STRUCT_TSDEPT, // TS Service Depot "TSDEPT" (GADEPT, 3x3) — repair bay.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
@@ -1596,7 +1609,7 @@ typedef enum StructType : char
     **	Second range of BuildingTypeClass::Is_Tiberian_Era.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TSFACT
+    STRUCT_TS_TREE_LAST = STRUCT_TSDEPT
 } StructType;
 
 /*

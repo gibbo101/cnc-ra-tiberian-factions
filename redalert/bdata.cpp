@@ -1343,6 +1343,160 @@ static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
 );
 
 /*
+**  TS GDI tree production/economy buildings (docs/ts-gdi-tree-plan.md §Stealth
+**  Recipe). Each mirrors its TD counterpart's footprint/RTTI/lists for size
+**  parity; stats live in rules.ini (TS-authentic); art = composited TS SHPs
+**  under the TS* tileset keys with classic dims donated from the TD
+**  counterpart (see _td_bdonors).
+*/
+static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
+                                           TXT_NONE,
+                                           "TSPILE",
+                                           FACING_NONE,
+                                           XYP_COORD(24, 47),  // Match TDPYLE/TENT.
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,              // fake
+                                           true,               // anim regulated
+                                           false, false, false, false,
+                                           true, true, false, false, false, true,
+                                           RTTI_INFANTRYTYPE,  // Infantry factory.
+                                           DIR_N,
+                                           BSIZE_22,
+                                           (short const*)ExitPyle,
+                                           (short const*)List22,
+                                           NULL);
+
+static BuildingTypeClass const ClassTsProc(STRUCT_TSPROC,
+                                           TXT_NONE,
+                                           "TSPROC",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           false,              // anim regulated
+                                           false, false, false, false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,          // Engine grants free harvester at build time.
+                                           DIR_N,
+                                           BSIZE_33,
+                                           NULL,
+                                           (short const*)TdListProc,
+                                           (short const*)TdOListProc);
+
+static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
+                                           TXT_NONE,
+                                           "TSSILO",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           false,
+                                           false, false,
+                                           true,               // simple damage imagery
+                                           false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_21,           // TDSILO parity (2x1).
+                                           NULL,
+                                           (short const*)StoreList,
+                                           (short const*)NULL);
+
+static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
+                                           TXT_NONE,
+                                           "TSWEAP",
+                                           FACING_NONE,
+                                           XYP_COORD(10 + (CELL_PIXEL_W / 2),
+                                                     ((CELL_PIXEL_H * 3) - (CELL_PIXEL_H / 2)) - 21), // TDWEAP exit.
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           false,
+                                           false, false, false, false,
+                                           true, true, false, false, false, true,
+                                           RTTI_UNITTYPE,      // Vehicle factory.
+                                           DIR_N,
+                                           BSIZE_33,           // TDWEAP parity (TS's 4x3 collapsed).
+                                           (short const*)TdExitWeap,
+                                           (short const*)TdListWeap,
+                                           (short const*)TdOListWeap);
+
+static BuildingTypeClass const ClassTsRadr(STRUCT_TSRADR,
+                                           TXT_NONE,
+                                           "TSRADR",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           true,               // anim regulated (dish loop)
+                                           false, false, false, false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_22,
+                                           NULL,
+                                           (short const*)ComList,
+                                           (short const*)OComList);
+
+static BuildingTypeClass const ClassTsHpad(STRUCT_TSHPAD,
+                                           TXT_NONE,
+                                           "TSHPAD",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),    // Helicopter docks on the pad.
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           false,
+                                           false, false, false, false,
+                                           true, true, false, false, false, true,
+                                           RTTI_AIRCRAFTTYPE,  // Aircraft factory.
+                                           DIR_N,
+                                           BSIZE_22,
+                                           NULL,
+                                           (short const*)List2,
+                                           (short const*)NULL);
+
+static BuildingTypeClass const ClassTsTech(STRUCT_TSTECH,
+                                           TXT_NONE,
+                                           "TSTECH",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           true,               // anim regulated
+                                           false, false, false, false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_22,           // TDEYE parity.
+                                           NULL,
+                                           (short const*)ComList,
+                                           (short const*)OComList);
+
+static BuildingTypeClass const ClassTsDept(STRUCT_TSDEPT,
+                                           TXT_NONE,
+                                           "TSDEPT",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           true,               // anim regulated
+                                           false, false, false, false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,          // Repair bay (not a factory).
+                                           DIR_N,
+                                           BSIZE_33,           // TDFIX parity.
+                                           NULL,
+                                           (short const*)ListFix,
+                                           (short const*)OListFix);
+
+/*
 **  TDAFLD (Nod Airstrip) — 4×2 flat tile, ARMOR_STEEL, capturable, crewed.
 **    Wholesale port of TD's STRUCT_AIRSTRIP per tiberiandawn/bdata.cpp:841
 **    (ClassAirStrip). RTTI_UNITTYPE factory; vehicles delivered via cargo
@@ -4240,7 +4394,7 @@ bool BuildingTypeClass::Is_Construction_Yard(void) const
 bool BuildingTypeClass::Is_Helipad(void) const
 {
     return (Type == STRUCT_HELIPAD || Type == STRUCT_TDHPAD || Type == STRUCT_AHPAD || Type == STRUCT_SHPAD
-            || Type == STRUCT_TDGHPAD || Type == STRUCT_TDNHPAD);
+            || Type == STRUCT_TDGHPAD || Type == STRUCT_TDNHPAD || Type == STRUCT_TSHPAD);
 }
 
 /***********************************************************************************************
@@ -4283,6 +4437,8 @@ long TF_Building_Scan_Bit(int btype)
     switch (btype) {
     case STRUCT_TDHQ:
     case STRUCT_TDEYE:
+    case STRUCT_TSRADR:
+    case STRUCT_TSTECH:
         return (STRUCTF_RADAR);
 
     case STRUCT_TDFACT:
@@ -4294,11 +4450,13 @@ long TF_Building_Scan_Bit(int btype)
         return (STRUCTF_CONST);
 
     case STRUCT_TDPROC:
+    case STRUCT_TSPROC:
         return (STRUCTF_REFINERY);
 
     case STRUCT_TDWEAP:
     case STRUCT_AWEAP:
     case STRUCT_SWEAP:
+    case STRUCT_TSWEAP:
         return (STRUCTF_WEAP);
 
     case STRUCT_TDAFLD:
@@ -4310,13 +4468,16 @@ long TF_Building_Scan_Bit(int btype)
     case STRUCT_TDNHPAD:
     case STRUCT_AHPAD:
     case STRUCT_SHPAD:
+    case STRUCT_TSHPAD:
         return (STRUCTF_HELIPAD);
 
     case STRUCT_TDFIX:
+    case STRUCT_TSDEPT:
         return (STRUCTF_REPAIR);
 
     case STRUCT_TDPYLE:
     case STRUCT_TDHAND:
+    case STRUCT_TSPILE:
         return (STRUCTF_BARRACKS);
 
     default:
@@ -4464,6 +4625,14 @@ void BuildingTypeClass::Init_Heap(void)
     // Heap slot index must equal the Type enum value (As_Reference indexes the
     // heap directly) -- register strictly in enum order, append new types HERE.
     new BuildingTypeClass(ClassTsFact);        // STRUCT_TSFACT (TS Construction Yard)
+    new BuildingTypeClass(ClassTsPile);        // STRUCT_TSPILE (TS Barracks)
+    new BuildingTypeClass(ClassTsProc);        // STRUCT_TSPROC (TS Refinery)
+    new BuildingTypeClass(ClassTsSilo);        // STRUCT_TSSILO (TS Silo)
+    new BuildingTypeClass(ClassTsWeap);        // STRUCT_TSWEAP (TS War Factory)
+    new BuildingTypeClass(ClassTsRadr);        // STRUCT_TSRADR (TS Radar)
+    new BuildingTypeClass(ClassTsHpad);        // STRUCT_TSHPAD (TS Helipad)
+    new BuildingTypeClass(ClassTsTech);        // STRUCT_TSTECH (TS Tech Center)
+    new BuildingTypeClass(ClassTsDept);        // STRUCT_TSDEPT (TS Service Depot)
 }
 
 /***********************************************************************************************
@@ -4623,6 +4792,14 @@ void BuildingTypeClass::One_Time(void)
         // second half of the tileset (generic +largest offset in Shape_Number).
         {STRUCT_TSFACT, BSTATE_IDLE, 0, 60, 3},  // GACNST _A(20)+_B(10)+_C(30) -> LCM 60
         {STRUCT_TSPOWR, BSTATE_IDLE, 0, 24, 3},  // GAPOWR _A(24)+_B(12) -> LCM 24
+        {STRUCT_TSPILE, BSTATE_IDLE, 0, 56, 3},  // GAPILE _A(8)+_B(8)+_C(14) -> LCM 56
+        {STRUCT_TSPROC, BSTATE_IDLE, 0, 20, 3},  // NAREFN _B(20)
+        {STRUCT_TSWEAP, BSTATE_IDLE, 0, 16, 3},  // GAWEAP _A(16)+_B(8)+_C(4) -> LCM 16
+        {STRUCT_TSRADR, BSTATE_IDLE, 0, 30, 3},  // GARADR _A(30) dish loop
+        {STRUCT_TSHPAD, BSTATE_IDLE, 0, 16, 3},  // GAHPAD _A(16)
+        {STRUCT_TSTECH, BSTATE_IDLE, 0, 16, 3},  // GATECH _A(16)
+        {STRUCT_TSDEPT, BSTATE_IDLE, 0, 70, 3},  // GADEPT _A(10)+_B(7) -> LCM 70
+        // TSSILO is static (no TS idle anim): shape 0 healthy, 1 damaged.
     };
 
     for (int sindex = STRUCT_FIRST; sindex < STRUCT_COUNT; sindex++) {
@@ -4808,9 +4985,17 @@ void BuildingTypeClass::One_Time(void)
             {STRUCT_SHPAD, STRUCT_HELIPAD},
             {STRUCT_TDGHPAD, STRUCT_TDHPAD},
             {STRUCT_TDNHPAD, STRUCT_TDHPAD},
-            // TS tree: TS GTCNST art under TSFACT keys, classic dims + construction
-            // anim from the TD yard (same 3x2, TD-parity scale).
+            // TS tree: composited TS art under TS* keys, classic dims +
+            // construction anim from the TD counterpart (TD-parity scale).
             {STRUCT_TSFACT, STRUCT_TDFACT},
+            {STRUCT_TSPILE, STRUCT_TDPYLE},
+            {STRUCT_TSPROC, STRUCT_TDPROC},
+            {STRUCT_TSSILO, STRUCT_TDSILO},
+            {STRUCT_TSWEAP, STRUCT_TDWEAP},
+            {STRUCT_TSRADR, STRUCT_TDHQ},
+            {STRUCT_TSHPAD, STRUCT_TDHPAD},
+            {STRUCT_TSTECH, STRUCT_TDEYE},
+            {STRUCT_TSDEPT, STRUCT_TDFIX},
         };
         for (int di = 0; di < (int)(sizeof(_td_bdonors) / sizeof(_td_bdonors[0])); di++) {
             BuildingTypeClass& b = As_Reference(_td_bdonors[di].td);

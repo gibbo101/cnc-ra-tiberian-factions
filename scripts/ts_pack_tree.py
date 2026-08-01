@@ -171,6 +171,80 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     return n
 
 
+def emit_sidebar_data(ini, display, desc, icon_dir):
+    """BuildIcon TGA from the TS cameo + RABUILDABLES (name + pristine _0) +
+    ModText rows. TS-tree entries are never faction-badged, so only _0 exists."""
+    import re
+    icon_name = f"BuildIcon_TS_{ini[2:].title()}"
+    icon = Image.open(f"{ART}/{icon_dir}/frame-0000.png")
+    big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
+    big.save(f"{ICON_DIR}/{icon_name}.tga")
+
+    RAB = f"{MOD}/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
+    xml = open(RAB, encoding="utf-8").read()
+    text_id = f"TEXT_STRUCTURE_{ini}"
+    added = ""
+    for key in (f"RA_{ini}", f"RA_{ini}_0"):
+        if f'"{key}"' not in xml:
+            added += ('\t<ObjectTypeClass Name="%s" Classification="CNCBuildableObject" CanInstantiate="False">\n'
+                      "\t\t<CNCEncyclopediaComponent>\n"
+                      "\t\t\t<ObjectNameTextID>%s</ObjectNameTextID>\n"
+                      "\t\t\t<ObjectDescriptionTextID>%s_DESC</ObjectDescriptionTextID>\n"
+                      "\t\t\t<BuildIcon>%s</BuildIcon>\n"
+                      "\t\t</CNCEncyclopediaComponent>\n"
+                      "\t</ObjectTypeClass>\n" % (key, text_id, text_id, icon_name))
+    if added:
+        idx = xml.rindex("</ObjectTypeClass>") + len("</ObjectTypeClass>")
+        xml = xml[:idx] + "\n\n" + added.rstrip("\n") + xml[idx:]
+        open(RAB, "w", encoding="utf-8").write(xml)
+
+    CSV = f"{MOD}/Data/ModText.csv"
+    raw = open(CSV, "rb").read()
+    text = raw.decode("utf-16")
+    eol = "\r\n" if "\r\n" in text else "\n"
+    sample = next(l for l in text.splitlines() if l.startswith('"TEXT_UNIT_TDA10"'))
+    tail = sample.split('"A-10 Warthog"', 1)[1]
+    new = ""
+    for key, val in ((text_id, display), (text_id + "_DESC", desc)):
+        if f'"{key}"' not in text:
+            new += f'"{key}",,,"{val}"{tail}{eol}'
+    if new:
+        if not text.endswith(eol):
+            text += eol
+        text += new
+        open(CSV, "wb").write(text.encode("utf-16"))
+    print(f"{ini}: sidebar data emitted ({icon_name})")
+
+
+# ---- TS GDI tree wave 2: the eight production/economy buildings ----
+# (ini, base_dir, anims_dirs, mk_dir, mk_count, canvas, target_w, cameo_dir, name, desc)
+WAVE2 = [
+    ("TSPILE", "shp_gtpile", ["shp_gtpile_a", "shp_gtpile_b", "shp_gtpile_c"],
+     "shp_gtpilemk", 19, (256, 256), 256, "shp_brrkicon", "TS Barracks", "Trains Tiberian-era infantry."),
+    ("TSPROC", "shp_ntrefn", ["shp_ntrefn_b"],  # NTREFN_C is a 144-canvas anim on a 192x168 building; needs offset compositing -- deferred
+     "shp_ntrefnmk", 19, (384, 384), 384, "shp_reficon", "TS Tiberium Refinery", "Processes Tiberium into credits."),
+    ("TSSILO", "shp_gtsilo", [],
+     "shp_gtsilomk", 19, (256, 128), 250, "shp_siloicon", "TS Tiberium Silo", "Stores excess Tiberium."),
+    ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
+     "shp_gtweapmk", 19, (384, 384), 376, "shp_weapicon", "TS War Factory", "Produces Tiberian-era vehicles."),
+    ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
+     "shp_gtradrmk", 20, (256, 256), 252, "shp_radricon", "TS Radar", "Provides radar coverage."),
+    ("TSHPAD", "shp_gthpad", ["shp_gthpad_a"],
+     "shp_gthpadmk", 19, (256, 256), 256, "shp_heliicon", "TS Helipad", "Rearms Tiberian-era aircraft."),
+    ("TSTECH", "shp_gttech", ["shp_gttech_a"],
+     "shp_gttechmk", 19, (256, 256), 251, "shp_techicon", "TS Tech Center", "Unlocks advanced Tiberian technology."),
+    ("TSDEPT", "shp_gtdept", ["shp_gtdept_a", "shp_gtdept_b"],
+     "shp_gtdeptmk", 19, (384, 384), 382, "shp_fixicon", "TS Service Depot", "Repairs vehicles and aircraft."),
+]
+
+for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
+    if not os.path.isdir(f"{ART}/{base}"):
+        print(f"{ini}: SKIP (no {base})")
+        continue
+    anims = [(d, anim_len(d)) for d in anim_dirs]
+    build_structure(ini, base, 0, 1, anims, mk, mkc, cw, ch, tw)
+    emit_sidebar_data(ini, disp, desc, cameo)
+
 # ---- TSFACT: TS Construction Yard (3x2, TDFACT donor 72x48 -> 384x256).
 # Content scaled to the TD yard (TDGFACT content 381px). Anims: _A crane 20,
 # _B light 10, _C crane-2 30 -> N=60. Damaged base = GTCNST frame 1.
