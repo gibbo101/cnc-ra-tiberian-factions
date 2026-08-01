@@ -5948,6 +5948,48 @@ int HouseClass::Expert_AI(void)
     }
 
     /*
+    **	W5.1 naval patrol dispatcher: while no enemy shore is known, idle armed ships
+    **	sail to random cells of the assessed water zone -- the naval counterpart of
+    **	the blind-scout detail above, and the mechanism that lets a navy DISCOVER the
+    **	enemy coast on maps where ground scouts can't cross. The land dispatcher's
+    **	hunt waypoints must never be used here: a ship ordered to a land cell is a
+    **	permanently unreachable destination (the pathfinder-storm profile), while any
+    **	cell of the ship's own water zone is reachable by what a zone id means.
+    **	Ships go idle on arrival, so each Expert_AI pass deals the next leg.
+    */
+    if (Session.Type != GAME_NORMAL && IsStarted && Vessels.Count() > 0) {
+        int pzone = 0;
+        int psize = 0;
+        bool pcoastal = false;
+        if (TF_Naval_Assessment(pzone, psize, pcoastal) && !pcoastal) {
+            for (int vindex = 0; vindex < Vessels.Count(); vindex++) {
+                VesselClass* v = Vessels.Ptr(vindex);
+                if (v != NULL && !v->IsInLimbo && v->House == this && v->Strength > 0 && v->Is_Weapon_Equipped()
+                    && (v->Mission == MISSION_GUARD || v->Mission == MISSION_GUARD_AREA)
+                    && Map[Coord_Cell(v->Center_Coord())].Zones[MZONE_WATER] == pzone) {
+                    CELL pcell = TF_Naval_Patrol_Cell(pzone);
+                    if (pcell) {
+                        v->Assign_Mission(MISSION_MOVE);
+                        v->Assign_Destination(::As_Target(pcell));
+#if TF_DEV_BUILD // TF_AI_DIAG
+                        {
+                            extern FILE* TF_AI_Diag_File(void);
+                            FILE* _tfdbg = TF_AI_Diag_File();
+                            if (_tfdbg != NULL) {
+                                fprintf(_tfdbg, "F%ld H%d AL%d NAVAL-PATROL %s#%d dest=(%d,%d)\n", (long)Frame,
+                                        (int)Class->House, (int)ActLike, v->Class->IniName, (int)v->ID,
+                                        (int)Cell_X(pcell), (int)Cell_Y(pcell));
+                                fflush(_tfdbg);
+                            }
+                        }
+#endif
+                    }
+                }
+            }
+        }
+    }
+
+    /*
     **	If there is no enemy assigned to this house, then assign one now. The
     **	enemy that is closest is picked. However, don't pick an enemy if the
     **	base has not been established yet.
@@ -6894,11 +6936,16 @@ bool HouseClass::AI_Raise_Money(UrgencyType urgency) const
                   // of this table below.
                   {STRUCT_SHIP_YARD, URGENCY_MEDIUM},
                   {STRUCT_SUB_PEN, URGENCY_MEDIUM},
-                  {STRUCT_ADVANCED_TECH, URGENCY_LOW},
+                  // Tech centres and the repair bay share the yards' reasoning: the build
+                  // pool REBUILDS all of them, so LOW (any sub-100 cash dip) is a
+                  // sell-at-half/rebuy-at-full churn loop -- the first EXPERT-SELL diag
+                  // line ever logged was an Allied AI selling its tech centre. Buildings
+                  // the pool never rebuilds (Chronosphere, forward com, silo) stay LOW.
+                  {STRUCT_ADVANCED_TECH, URGENCY_MEDIUM},
                   {STRUCT_FORWARD_COM, URGENCY_LOW},
-                  {STRUCT_SOVIET_TECH, URGENCY_LOW},
+                  {STRUCT_SOVIET_TECH, URGENCY_MEDIUM},
                   {STRUCT_STORAGE, URGENCY_LOW},
-                  {STRUCT_REPAIR, URGENCY_LOW},
+                  {STRUCT_REPAIR, URGENCY_MEDIUM},
                   {STRUCT_TESLA, URGENCY_MEDIUM},
                   {STRUCT_HELIPAD, URGENCY_MEDIUM},
                   {STRUCT_POWER, URGENCY_HIGH},
@@ -7298,6 +7345,7 @@ bool HouseClass::TF_Has_Income(void) const
 static int const TF_NAVAL_COAST_RADIUS = 20;
 static int const TF_NAVAL_POND_MIN = 80;
 static int const TF_NAVAL_FLEET_CAP = 6;
+static int const TF_NAVAL_PATROL_CAP = 2;
 
 /***********************************************************************************************
  * HouseClass::TF_Naval_Assessment -- Is a navy worth building from this base?                 *
@@ -8005,19 +8053,21 @@ int HouseClass::AI_Building(void)
 
         /*
         **	W5.1: a naval yard, once the water evaluation says a navy can matter here.
-        **	Both conditions are required: qualifying water within reach of THIS base,
-        **	and a discovered enemy building coastal on that same water -- a yard on a
-        **	lake the enemy never touches is money sunk in it. Economy first for the
-        **	same reason as air production above, and one yard fills the role until
-        **	the build-gate step scales the navy to the opponent's. Scan order puts
-        **	this behind the core base; the anti-starvation ageing brings it up.
+        **	Deliberately NOT gated on having discovered an enemy shore: naval presence
+        **	is map control a human takes proactively, the patrol the yard enables is
+        **	itself the discovery vector on water-split maps, and a discovery gate
+        **	would hand recon-special factions (spy plane / recon flight) a standing
+        **	naval head start over GPS-era ones. Fleet SIZE scales with discovery
+        **	instead -- see AI_Vessel. Economy first for the same reason as air
+        **	production above; scan order puts this behind the core base and the
+        **	anti-starvation ageing brings it up.
         */
         current = TF_Role_Quantity(BQuantity, STRUCT_SHIP_YARD);
         if (current < 1 && tf_economy_ready) {
             int tf_nzone = 0;
             int tf_nsize = 0;
             bool tf_ncoastal = false;
-            if (TF_Naval_Assessment(tf_nzone, tf_nsize, tf_ncoastal) && tf_ncoastal) {
+            if (TF_Naval_Assessment(tf_nzone, tf_nsize, tf_ncoastal)) {
                 b = TF_Skirmish_Pick(STRUCT_SHIP_YARD, ActLike);
                 if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                     choiceptr = BuildChoice.Alloc();
@@ -8456,17 +8506,18 @@ int HouseClass::AI_Vessel(void)
         **	shape as AI_Unit's combat-vehicle block: every armed vessel Can_Build allows
         **	for the house's faction, picked uniformly. Unarmed transports are excluded
         **	until the ferry controller exists -- an LST with no loading logic just sits
-        **	against the yard. The fleet only grows while the naval assessment still says
-        **	the water matters (the enemy may have lost its coastal base since the yard
-        **	went down), and holds at a fixed modest size until the build-gate step
-        **	scales it to the opponent's navy.
+        **	against the yard. Fleet size scales with what the house knows: a small
+        **	patrol while no enemy shore has been discovered (the patrol is the
+        **	discovery vector -- see the dispatcher in Expert_AI), the full fleet once
+        **	the water demonstrably leads somewhere, a fixed cap standing in until the
+        **	build-gate step scales it to the opponent's navy.
         */
-        if (Session.Type != GAME_NORMAL && CurVessels < TF_NAVAL_FLEET_CAP
-            && TF_Role_Quantity(BQuantity, STRUCT_SHIP_YARD) > 0) {
+        if (Session.Type != GAME_NORMAL && TF_Role_Quantity(BQuantity, STRUCT_SHIP_YARD) > 0) {
             int tzone = 0;
             int tsize = 0;
             bool tcoastal = false;
-            if (TF_Naval_Assessment(tzone, tsize, tcoastal) && tcoastal) {
+            if (TF_Naval_Assessment(tzone, tsize, tcoastal)
+                && CurVessels < (tcoastal ? TF_NAVAL_FLEET_CAP : TF_NAVAL_PATROL_CAP)) {
                 int counter[VESSEL_COUNT];
                 int total = 0;
                 VesselType vtype;
@@ -8497,7 +8548,7 @@ int HouseClass::AI_Vessel(void)
                         fprintf(_tfdbg, "F%ld H%d AL%d NAVAL-PICK %s curV=%d cap=%d\n", (long)Frame,
                                 (int)Class->House, (int)ActLike,
                                 VesselTypeClass::As_Reference(BuildVessel).IniName, (int)CurVessels,
-                                (int)TF_NAVAL_FLEET_CAP);
+                                (int)(tcoastal ? TF_NAVAL_FLEET_CAP : TF_NAVAL_PATROL_CAP));
                         fflush(_tfdbg);
                     }
                 }
@@ -10412,6 +10463,42 @@ CELL HouseClass::TF_Find_Naval_Cell(BuildingClass const* building) const
 #endif
 
     return (bestcell);
+}
+
+/***********************************************************************************************
+ * HouseClass::TF_Naval_Patrol_Cell -- Picks a random cell of the given water zone.            *
+ *                                                                                             *
+ *    Destination source for the blind naval patrol: any cell of the zone is reachable by      *
+ *    every ship already on that zone (connectedness is what a zone id means), so patrol       *
+ *    orders can never feed the unreachable-target pathfinder storm that land waypoints        *
+ *    would. Two passes -- count then fetch -- so only one synced random number is consumed.   *
+ *                                                                                             *
+ * OUTPUT:  A cell of the zone, or 0 if the zone id matches no radar cell.                     *
+ *=============================================================================================*/
+CELL HouseClass::TF_Naval_Patrol_Cell(int wzone) const
+{
+    if (wzone <= 0) {
+        return (0);
+    }
+    int count = 0;
+    CELL cell;
+    for (cell = 0; cell < MAP_CELL_TOTAL; cell++) {
+        if (Map.In_Radar(cell) && Map[cell].Zones[MZONE_WATER] == wzone) {
+            count++;
+        }
+    }
+    if (count == 0) {
+        return (0);
+    }
+    int want = Random_Pick(0, count - 1);
+    for (cell = 0; cell < MAP_CELL_TOTAL; cell++) {
+        if (Map.In_Radar(cell) && Map[cell].Zones[MZONE_WATER] == wzone) {
+            if (want-- == 0) {
+                return (cell);
+            }
+        }
+    }
+    return (0);
 }
 
 /***********************************************************************************************
