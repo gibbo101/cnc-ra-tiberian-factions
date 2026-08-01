@@ -2724,6 +2724,16 @@ bool CellClass::Goodie_Check(FootClass* object)
             **  can field one for ANY faction. 1-in-8 unit crates rolls the TS
             **  table (Hover MLRS / Titan / Mammoth Mk. II).
             */
+#if TF_DEV_BUILD
+            /*
+            **  Dev-build TS-tree test cadence (Luke, 2026-08-01): every unit
+            **  crate is the TS MCV so the tree can be exercised without luck.
+            **  Compiled out of release builds, which keep the rare roll below.
+            */
+            if (utp == NULL && Session.Type != GAME_NORMAL && Session.Options.Bases && TF_Dev_Cheats()) {
+                utp = &UnitTypeClass::As_Reference(UNIT_TSMCV);
+            }
+#endif
             if (utp == NULL && Session.Type != GAME_NORMAL && Random_Pick(0, 7) == 0) {
                 /*
                 **  1-in-4 of TS rolls (1-in-32 of unit crates) is the TS MCV: it
