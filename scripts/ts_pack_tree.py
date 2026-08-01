@@ -132,13 +132,21 @@ def resample(indices, target):
 
 
 def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count,
-                    canvas_w, canvas_h, target_w):
+                    canvas_w, canvas_h, target_w, bib_dir=None):
     """The Stealth Recipe compositor. anims = [(dirname, loop_len), ...]."""
     n = 1
     for _, ln in anims:
         n = n * ln // math.gcd(n, ln)
     base_h = load(base_dir, healthy_f)
     base_d = load(base_dir, damaged_f)
+    if bib_dir is not None:
+        # TS bib (concrete apron) is a separate *BB SHP drawn UNDER the
+        # building -- the buildup includes it, so the built sprite must too.
+        for base, bf in ((base_h, healthy_f), (base_d, damaged_f)):
+            bib = load(bib_dir, bf)
+            under = bib.copy()
+            under.paste(base, (0, 0), base)
+            base.paste(under, (0, 0))
 
     # Damaged run keeps the anims cycling over the damaged base — TS itself
     # freezes damaged buildings (the anim SHPs' damaged halves are empty),
@@ -155,7 +163,16 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     # frames that overflow the canvas clip harmlessly in place().
     bb = base_h.getbbox()
     factor = float(target_w) / (bb[2] - bb[0])
-    cx, cy = (bb[0] + bb[2]) / 2.0, (bb[1] + bb[3]) / 2.0
+    # Clamp so the union of EVERYTHING drawn (anims can rise above the base --
+    # radar dish, barracks flag -- and MK scaffolds spread wider) still fits
+    # the canvas; anchor at the union center so nothing clips.
+    boxes = [f.getbbox() for f in healthy + damaged_frames]
+    boxes += [load(mk_dir, i).getbbox() for i in real_frames(mk_dir)]
+    boxes = [b for b in boxes if b]
+    ux0, uy0 = min(b[0] for b in boxes), min(b[1] for b in boxes)
+    ux1, uy1 = max(b[2] for b in boxes), max(b[3] for b in boxes)
+    factor = min(factor, float(canvas_w) / (ux1 - ux0), float(canvas_h) / (uy1 - uy0))
+    cx, cy = (ux0 + ux1) / 2.0, (uy0 + uy1) / 2.0
 
     frames = [place(f, factor, canvas_w, canvas_h, cx, cy) for f in healthy]
     frames += [place(f, factor, canvas_w, canvas_h, cx, cy) for f in damaged_frames]
@@ -237,12 +254,15 @@ WAVE2 = [
      "shp_gtdeptmk", 19, (384, 384), 382, "shp_fixicon", "TS Service Depot", "Repairs vehicles and aircraft."),
 ]
 
+BIBS = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb",
+        "TSHPAD": "shp_gthpadbb", "TSDEPT": "shp_gtdeptbb"}
+
 for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
     if not os.path.isdir(f"{ART}/{base}"):
         print(f"{ini}: SKIP (no {base})")
         continue
     anims = [(d, anim_len(d)) for d in anim_dirs]
-    build_structure(ini, base, 0, 1, anims, mk, mkc, cw, ch, tw)
+    build_structure(ini, base, 0, 1, anims, mk, mkc, cw, ch, tw, bib_dir=BIBS.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSFACT: TS Construction Yard (3x2, TDFACT donor 72x48 -> 384x256).

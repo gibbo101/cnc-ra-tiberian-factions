@@ -361,7 +361,9 @@ static int TF_Sidebar_Sort_Key(RTTIType type, int id)
 
 bool SidebarGlyphxClass::StripClass::Add(RTTIType type, int id, bool via_capture)
 {
-    if (BuildableCount <= MAX_BUILDABLES) {
+    /* < not <=: at count==MAX the write lands out of bounds (EA off-by-one,
+    ** first hit when the TS tree pushed a column past 75 entries). */
+    if (BuildableCount < MAX_BUILDABLES) {
         for (int index = 0; index < BuildableCount; index++) {
             if (Buildables[index].BuildableType == type && Buildables[index].BuildableID == id) {
                 return (false);

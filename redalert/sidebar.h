@@ -192,7 +192,7 @@ public:
             BUTTON_UP = 200,
             BUTTON_DOWN = 210,
             BUTTON_SELECT = 220,
-            MAX_BUILDABLES = 75, // Maximum number of object types in sidebar.
+            MAX_BUILDABLES = 120, // Raised from 75: multi-tree games (faction + TS) overflow a column.
             OBJECT_HEIGHT = 24,  // Pixel height of each buildable object.
             OBJECT_WIDTH = 32,   // Pixel width of each buildable object.
             STRIP_WIDTH = 35,    // Width of strip (not counting border lines).
