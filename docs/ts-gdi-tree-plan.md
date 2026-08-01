@@ -15,8 +15,10 @@ the desktop prefix).
 - **TS MCV rides the RANDOM unit-crate path only, never the `force_mcv` comeback path**
   (a wiped player must get their own faction's MCV — doc'd trap).
 - Existing 1-in-8 TS crate roll stays; the MCV joins it as a rarer sub-roll
-  (proposed: 1-in-4 within the TS roll ≈ 1-in-32 of unit crates — **rarity dial open
-  for Luke**).
+  (1-in-4 within the TS roll ≈ 1-in-32 of unit crates — **rarity approved by Luke
+  2026-08-01**). Dev builds override to 100% (every unit crate = TS MCV, gated on
+  `TF_DEV_BUILD` + `TF_Dev_Cheats()`) for tree testing; revert to the rare roll is
+  automatic in release builds. AI use of the tree comes later with W2.9.
 - All TS types ship broad `Owner=` (all sides) + `Prerequisite=TSFACT` chain; every
   new prereq token gets its `Can_Build` remap `continue` (the known silent-unbuildable
   trap).
