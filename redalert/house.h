@@ -719,6 +719,8 @@ public:
     int TF_Naval_Fleet_Cap(bool enemy_coastal, int* enemy_navy = NULL) const;
     bool TF_Ferry_Route_Blocked(int* enemyland = NULL) const;
     bool TF_Ferry_Wants_Transport(void) const;
+    UnitType TF_Ferry_MCV_Type(void) const;
+    bool TF_Ferry_Wants_MCV(void) const;
     void TF_Ferry_AI(void);
     void TF_Ferry_Escort(CELL landing);
     CELL TF_Find_Naval_Cell(BuildingClass const* building) const;

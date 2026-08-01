@@ -5770,8 +5770,9 @@ void HouseClass::Recalc_Center(void)
         for (index = 0; index < Buildings.Count() && yardcount < 8; index++) {
             BuildingClass const* b = Buildings.Ptr(index);
             if (b != NULL && !b->IsInLimbo && (HouseClass*)b->House == this && b->Strength > 0
-                && (b->Class->Type == STRUCT_CONST || b->Class->Type == STRUCT_TDGFACT
-                    || b->Class->Type == STRUCT_TDNFACT)) {
+                && (b->Class->Type == STRUCT_CONST || b->Class->Type == STRUCT_AFACT
+                    || b->Class->Type == STRUCT_SFACT || b->Class->Type == STRUCT_TDFACT
+                    || b->Class->Type == STRUCT_TDGFACT || b->Class->Type == STRUCT_TDNFACT)) {
                 yardpos[yardcount++] = b->Center_Coord();
             }
         }
@@ -7726,6 +7727,15 @@ static CELL TF_Ferry_Shore_Cell(int wzone, int landzone, COORDINATE nearto, CELL
 }
 
 /*
+**	W5.3: every MCV hull, RA and TD lineages both.
+*/
+static bool TF_Is_MCV(UnitClass const* u)
+{
+    return (*u == UNIT_MCV || *u == UNIT_TDMCV || *u == UNIT_AMCV || *u == UNIT_SMCV || *u == UNIT_TDGMCV
+            || *u == UNIT_TDNMCV);
+}
+
+/*
 **	Is this vessel or foot already committed to another of the house's convoy slots?
 */
 static bool TF_Ferry_Claimed(int hidx, int oi, TARGET what)
@@ -7874,6 +7884,73 @@ bool HouseClass::TF_Ferry_Wants_Transport(void) const
 }
 
 /***********************************************************************************************
+ * HouseClass::TF_Ferry_MCV_Type -- Which MCV hull should this house field?                    *
+ *                                                                                             *
+ *    The W2 split gave every faction its own MCV; Can_Build picks the right one from the      *
+ *    house's tech position. UNIT_NONE when the house can't build one at all (no war           *
+ *    factory yet, or tech too low) -- the expansion simply waits.                             *
+ *=============================================================================================*/
+UnitType HouseClass::TF_Ferry_MCV_Type(void) const
+{
+    assert(Houses.ID(this) == ID);
+
+    static UnitType const _mcvs[] = {UNIT_AMCV, UNIT_SMCV, UNIT_TDGMCV, UNIT_TDNMCV};
+    for (int i = 0; i < (int)ARRAY_SIZE(_mcvs); i++) {
+        if (Can_Build(&UnitTypeClass::As_Reference(_mcvs[i]), ActLike)) {
+            return (_mcvs[i]);
+        }
+    }
+    return (UNIT_NONE);
+}
+
+/***********************************************************************************************
+ * HouseClass::TF_Ferry_Wants_MCV -- Should AI_Unit queue the expansion MCV?                   *
+ *                                                                                             *
+ *    W5.3 trigger: force first, base second. Only once a beachhead exists (a load has been    *
+ *    put ashore, so the rally is planted) does the house queue ONE MCV; the ferry gives it    *
+ *    the first berth on the next ride and the beachhead sweep deploys it at the rally into    *
+ *    the yard that turns the lodgement into a defended forward base. Goes quiet as soon as    *
+ *    an MCV exists anywhere (including aboard a transport) or the expansion yard is down.     *
+ *=============================================================================================*/
+bool HouseClass::TF_Ferry_Wants_MCV(void) const
+{
+    assert(Houses.ID(this) == ID);
+
+    if (Session.Type == GAME_NORMAL || !IsBaseBuilding) {
+        return (false);
+    }
+    int hidx = (int)Class->House;
+    if (hidx < 0 || hidx >= HOUSE_COUNT || _tf_beach_rally[hidx] == 0) {
+        return (false);
+    }
+    int enemyland = 0;
+    if (!TF_Ferry_Route_Blocked(&enemyland)) {
+        return (false);
+    }
+    /*
+    **	An MCV in limbo is one riding a transport -- still ours, still counts.
+    */
+    for (int index = 0; index < Units.Count(); index++) {
+        UnitClass const* u = Units.Ptr(index);
+        if (u != NULL && (HouseClass const*)u->House == this && u->Strength > 0 && TF_Is_MCV(u)) {
+            return (false);
+        }
+    }
+    for (int index = 0; index < Buildings.Count(); index++) {
+        BuildingClass const* b = Buildings.Ptr(index);
+        if (b != NULL && !b->IsInLimbo && (HouseClass const*)b->House == this && b->Strength > 0) {
+            StructType t = b->Class->Type;
+            if ((t == STRUCT_CONST || t == STRUCT_AFACT || t == STRUCT_SFACT || t == STRUCT_TDFACT
+                 || t == STRUCT_TDGFACT || t == STRUCT_TDNFACT)
+                && Map[Coord_Cell(b->Center_Coord())].Zones[MZONE_NORMAL] == enemyland) {
+                return (false);
+            }
+        }
+    }
+    return (TF_Ferry_MCV_Type() != UNIT_NONE);
+}
+
+/***********************************************************************************************
  * HouseClass::TF_Ferry_AI -- Runs this house's ferry op state machine.                        *
  *                                                                                             *
  *    Called from Expert_AI each pass. Owns one op at a time: pick shore points, gather a      *
@@ -7943,10 +8020,41 @@ void HouseClass::TF_Ferry_AI(void)
             for (int index = 0; index < count; index++) {
                 FootClass* f = heap ? (FootClass*)Infantry.Ptr(index) : (FootClass*)Units.Ptr(index);
                 if (f == NULL || (HouseClass*)f->House != this || f->IsInLimbo || f->Strength == 0
-                    || !f->Is_Weapon_Equipped() || f->Team.Is_Valid()) {
+                    || f->Team.Is_Valid()) {
                     continue;
                 }
                 if (Map[Coord_Cell(f->Center_Coord())].Zones[MZONE_NORMAL] != enemyland) {
+                    continue;
+                }
+                /*
+                **	W5.3: an MCV ashore drives to the rally and deploys -- the expansion
+                **	yard that turns the lodgement into a defended forward base. It never
+                **	joins the attack wave.
+                */
+                if (heap == 0 && TF_Is_MCV((UnitClass*)f)) {
+                    if (f->Mission == MISSION_GUARD) {
+                        if (rally != 0 && ::Distance(f->Center_Coord(), Cell_Coord(rally)) > 2 * CELL_LEPTON_W) {
+                            f->Assign_Mission(MISSION_MOVE);
+                            f->Assign_Destination(::As_Target(rally));
+                        } else {
+                            f->Assign_Mission(MISSION_UNLOAD);
+#if TF_DEV_BUILD // TF_AI_DIAG
+                            {
+                                FILE* _tfdbg = TF_AI_Diag_File();
+                                if (_tfdbg != NULL) {
+                                    fprintf(_tfdbg, "F%ld H%d AL%d FERRY-DEPLOY %s#%d at=(%d,%d)\n", (long)Frame,
+                                            (int)Class->House, (int)ActLike, f->Class_Of().IniName, (int)f->ID,
+                                            (int)Cell_X(Coord_Cell(f->Center_Coord())),
+                                            (int)Cell_Y(Coord_Cell(f->Center_Coord())));
+                                    fflush(_tfdbg);
+                                }
+                            }
+#endif
+                        }
+                    }
+                    continue;
+                }
+                if (!f->Is_Weapon_Equipped()) {
                     continue;
                 }
                 if (release) {
@@ -8045,6 +8153,22 @@ void HouseClass::TF_Ferry_AI(void)
                 break; // enemy landmass doesn't touch our water -- no beachhead exists.
             }
             op.RosterCount = 0;
+            /*
+            **	W5.3: once the beachhead is holding, the next ride carries the base --
+            **	the MCV takes the first berth and the rest of the load is its escort.
+            */
+            if (_tf_beach_rally[hidx] != 0) {
+                for (int index = 0; index < Units.Count(); index++) {
+                    UnitClass* u = Units.Ptr(index);
+                    if (u != NULL && (HouseClass*)u->House == this && !u->IsInLimbo && u->Strength > 0
+                        && TF_Is_MCV(u) && !u->Team.Is_Valid() && u->Mission == MISSION_GUARD
+                        && Map[Coord_Cell(u->Center_Coord())].Zones[MZONE_NORMAL] == ourland
+                        && !TF_Ferry_Claimed(hidx, oi, u->As_Target())) {
+                        op.Roster[op.RosterCount++] = u->As_Target();
+                        break;
+                    }
+                }
+            }
             for (int heap = 0; heap < 2 && op.RosterCount < TF_FERRY_ROSTER_MAX; heap++) {
                 int count = heap ? Infantry.Count() : Units.Count();
                 for (int index = 0; index < count && op.RosterCount < TF_FERRY_ROSTER_MAX; index++) {
@@ -9182,6 +9306,29 @@ int HouseClass::AI_Unit(void)
     }
 
     if (IsBaseBuilding) {
+
+        /*
+        **	W5.3: a beachhead that is holding gets a base. The expansion MCV jumps the
+        **	ordinary combat pick -- the ferry gives it the first berth on the next ride
+        **	and the beachhead sweep deploys it at the rally.
+        */
+        if (TF_Ferry_Wants_MCV()) {
+            UnitType mcv = TF_Ferry_MCV_Type();
+            if (mcv != UNIT_NONE) {
+                BuildUnit = mcv;
+#if TF_DEV_BUILD // TF_AI_DIAG
+                {
+                    FILE* _tfdbg = TF_AI_Diag_File();
+                    if (_tfdbg != NULL) {
+                        fprintf(_tfdbg, "F%ld H%d AL%d FERRY-MCV queued %s\n", (long)Frame, (int)Class->House,
+                                (int)ActLike, UnitTypeClass::As_Reference(mcv).IniName);
+                        fflush(_tfdbg);
+                    }
+                }
+#endif
+                return (TICKS_PER_SECOND);
+            }
+        }
 
         int counter[UNIT_COUNT];
         int total = 0;
