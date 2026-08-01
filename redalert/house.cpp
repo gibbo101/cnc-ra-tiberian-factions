@@ -5994,6 +5994,12 @@ int HouseClass::Expert_AI(void)
     }
 
     /*
+    **	W5.2: the ferry op state machine -- delivers ground force across water when
+    **	the designated enemy is land-unreachable. Gates itself on session/type.
+    */
+    TF_Ferry_AI();
+
+    /*
     **	If there is no enemy assigned to this house, then assign one now. The
     **	enemy that is closest is picked. However, don't pick an enemy if the
     **	base has not been established yet.
@@ -7533,6 +7539,460 @@ int HouseClass::TF_Naval_Fleet_Cap(bool enemy_coastal, int* enemy_navy) const
     return (biggest);
 }
 
+/*
+**	W5.2 sea-transport ferrying. One op at a time per house: a transport collects a
+**	handful of idle combat units at the home shore, sails them to the enemy's landmass
+**	and unloads. Ferrying only engages when the designated enemy is land-unreachable
+**	(different MZONE_NORMAL zone) -- on connected maps the ordinary attack waves are
+**	the delivery mechanism and a ferry would just be a slower wave. Ops are minimum
+**	three passengers: shipping one rifleman across is a waste of a transport's life.
+*/
+static int const TF_FERRY_ROSTER_MAX = 5;
+static int const TF_FERRY_MIN_LOAD = 3;
+static int const TF_FERRY_TIMEOUT = 4500;      // pickup / load / unload stall limit (~5 min).
+static int const TF_FERRY_SAIL_TIMEOUT = 9000; // crossing limit before the op re-plans.
+
+struct TFFerryOpStruct
+{
+    TARGET Transport;
+    int State;
+    CELL Pickup;
+    CELL Landing;
+    TARGET Roster[5];
+    int RosterCount;
+    int Since;
+    bool Retried;
+};
+enum
+{
+    TFF_IDLE,
+    TFF_PICKUP,
+    TFF_LOAD,
+    TFF_SAIL,
+    TFF_UNLOAD
+};
+static TFFerryOpStruct _tf_ferry[HOUSE_COUNT];
+
+/*
+**	Best water cell of `wzone` that touches land of `landzone`: the shore point a
+**	transport can load or unload across. `nearto` picks among candidates (nearest
+**	wins); `avoid` rejects cells near a landing that already failed, so a retry
+**	actually tries somewhere else.
+*/
+static CELL TF_Ferry_Shore_Cell(int wzone, int landzone, COORDINATE nearto, CELL avoid)
+{
+    CELL best = 0;
+    int bestd = INT_MAX;
+    for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
+        if (!Map.In_Radar(cell) || Map[cell].Zones[MZONE_WATER] != wzone) {
+            continue;
+        }
+        if (avoid != 0 && ::Distance(Cell_Coord(cell), Cell_Coord(avoid)) < 6 * CELL_LEPTON_W) {
+            continue;
+        }
+        bool touches = false;
+        for (FacingType f = FACING_N; f < FACING_COUNT; f++) {
+            CELL adj = Adjacent_Cell(cell, f);
+            if (Map.In_Radar(adj) && Map[adj].Zones[MZONE_NORMAL] == landzone) {
+                touches = true;
+                break;
+            }
+        }
+        if (!touches) {
+            continue;
+        }
+        int d = ::Distance(Cell_Coord(cell), nearto);
+        if (d < bestd) {
+            bestd = d;
+            best = cell;
+        }
+    }
+    return (best);
+}
+
+/***********************************************************************************************
+ * HouseClass::TF_Ferry_Route_Blocked -- Is the designated enemy land-unreachable?             *
+ *                                                                                             *
+ *    The ferry trigger: true when this house has a designated enemy whose base sits on a      *
+ *    different MZONE_NORMAL landmass, so no ground wave can ever arrive -- the exact          *
+ *    condition behind the cliff-massing verdict from the livelock closure. Optionally         *
+ *    reports the enemy's land zone for landing-site selection.                                *
+ *=============================================================================================*/
+bool HouseClass::TF_Ferry_Route_Blocked(int* enemyland) const
+{
+    assert(Houses.ID(this) == ID);
+
+    if (Enemy == HOUSE_NONE) {
+        return (false);
+    }
+    HouseClass const* ehp = HouseClass::As_Pointer(Enemy);
+    if (ehp == NULL || !ehp->IsActive || ehp->IsDefeated) {
+        return (false);
+    }
+    CELL mycell = Coord_Cell(Center);
+    CELL ecell = Coord_Cell(ehp->Center);
+    if (mycell <= 0 || ecell <= 0) {
+        return (false);
+    }
+    int ours = Map[mycell].Zones[MZONE_NORMAL];
+    int theirs = Map[ecell].Zones[MZONE_NORMAL];
+    if (ours == theirs) {
+        return (false);
+    }
+    if (enemyland != NULL) {
+        *enemyland = theirs;
+    }
+    return (true);
+}
+
+/***********************************************************************************************
+ * HouseClass::TF_Ferry_Wants_Transport -- Should AI_Vessel queue an LST?                      *
+ *                                                                                             *
+ *    True when ferrying is the only way to deliver ground force (route blocked) and the       *
+ *    house doesn't already own a transport. One transport is enough: the op loop reuses it    *
+ *    for wave after wave, and a second hull only doubles the loss when a landing goes bad.    *
+ *=============================================================================================*/
+bool HouseClass::TF_Ferry_Wants_Transport(void) const
+{
+    assert(Houses.ID(this) == ID);
+
+    if (!TF_Ferry_Route_Blocked()) {
+        return (false);
+    }
+    if (VQuantity[VESSEL_TRANSPORT] > 0) {
+        return (false);
+    }
+    return (Can_Build(&VesselTypeClass::As_Reference(VESSEL_TRANSPORT), ActLike));
+}
+
+/***********************************************************************************************
+ * HouseClass::TF_Ferry_AI -- Runs this house's ferry op state machine.                        *
+ *                                                                                             *
+ *    Called from Expert_AI each pass. Owns one op at a time: pick shore points, gather a      *
+ *    roster of idle combat units, board them via the campaign RADIO_DOCKING handshake (one    *
+ *    passenger assigned per pass while the transport is out of radio contact, mirroring      *
+ *    TMission_Load), sail, unload on the enemy landmass. Landed units are swept into         *
+ *    MISSION_HUNT here too -- that sweep also adopts survivors of any earlier op, so a lost   *
+ *    transport never strands a beachhead in guard mode.                                       *
+ *=============================================================================================*/
+void HouseClass::TF_Ferry_AI(void)
+{
+    assert(Houses.ID(this) == ID);
+
+    if (Session.Type == GAME_NORMAL || !IsStarted) {
+        return;
+    }
+    int hidx = (int)Class->House;
+    if (hidx < 0 || hidx >= HOUSE_COUNT) {
+        return;
+    }
+    TFFerryOpStruct& op = _tf_ferry[hidx];
+
+#if TF_DEV_BUILD // TF_AI_DIAG
+    extern FILE* TF_AI_Diag_File(void);
+#endif
+
+    /*
+    **	Expedition sweep: any of our idle ground fighters standing on a landmass that
+    **	isn't ours goes hunting. This is what turns a delivered load into an attack,
+    **	and it also rescues units landed by ops that later lost their transport.
+    */
+    CELL myc = Coord_Cell(Center);
+    int ourland = (myc > 0) ? Map[myc].Zones[MZONE_NORMAL] : 0;
+    int enemyland = 0;
+    bool blocked = TF_Ferry_Route_Blocked(&enemyland);
+    if (myc > 0 && ourland > 0) {
+        for (int heap = 0; heap < 2; heap++) {
+            int count = heap ? Infantry.Count() : Units.Count();
+            for (int index = 0; index < count; index++) {
+                FootClass* f = heap ? (FootClass*)Infantry.Ptr(index) : (FootClass*)Units.Ptr(index);
+                if (f == NULL || (HouseClass*)f->House != this || f->IsInLimbo || f->Strength == 0 || !f->Is_Weapon_Equipped()
+                    || f->Team.Is_Valid() || f->Mission != MISSION_GUARD) {
+                    continue;
+                }
+                int fz = Map[Coord_Cell(f->Center_Coord())].Zones[MZONE_NORMAL];
+                if (fz != 0 && fz != ourland && fz == enemyland) {
+                    f->Assign_Mission(MISSION_HUNT);
+#if TF_DEV_BUILD // TF_AI_DIAG
+                    {
+                        FILE* _tfdbg = TF_AI_Diag_File();
+                        if (_tfdbg != NULL) {
+                            fprintf(_tfdbg, "F%ld H%d AL%d FERRY-HUNT %s#%d zone=%d\n", (long)Frame,
+                                    (int)Class->House, (int)ActLike, f->Class_Of().IniName, (int)f->ID, fz);
+                            fflush(_tfdbg);
+                        }
+                    }
+#endif
+                }
+            }
+        }
+    }
+
+    /*
+    **	A lost transport voids the op wherever it stood; stragglers still walking to
+    **	the dock are released back to guard duty.
+    */
+    VesselClass* trans = As_Vessel(op.Transport);
+    if (op.State != TFF_IDLE
+        && (trans == NULL || trans->IsInLimbo || trans->Strength == 0 || (HouseClass*)trans->House != this)) {
+        for (int i = 0; i < op.RosterCount; i++) {
+            FootClass* f = (FootClass*)As_Techno(op.Roster[i]);
+            if (f != NULL && !f->IsInLimbo && f->House == this && f->Mission == MISSION_ENTER) {
+                f->Assign_Mission(MISSION_GUARD);
+            }
+        }
+#if TF_DEV_BUILD // TF_AI_DIAG
+        {
+            FILE* _tfdbg = TF_AI_Diag_File();
+            if (_tfdbg != NULL) {
+                fprintf(_tfdbg, "F%ld H%d AL%d FERRY-ABORT transport-lost state=%d\n", (long)Frame,
+                        (int)Class->House, (int)ActLike, op.State);
+                fflush(_tfdbg);
+            }
+        }
+#endif
+        op = TFFerryOpStruct();
+        trans = NULL;
+    }
+
+    switch (op.State) {
+    default:
+    case TFF_IDLE: {
+        if (!blocked || ourland <= 0) {
+            break;
+        }
+        int pzone = 0;
+        int psize = 0;
+        bool pcoastal = false;
+        if (!TF_Naval_Assessment(pzone, psize, pcoastal)) {
+            break;
+        }
+        VesselClass* lst = NULL;
+        for (int index = 0; index < Vessels.Count(); index++) {
+            VesselClass* v = Vessels.Ptr(index);
+            if (v != NULL && v->House == this && *v == VESSEL_TRANSPORT && !v->IsInLimbo && v->Strength > 0
+                && !v->In_Radio_Contact() && (v->Mission == MISSION_GUARD || v->Mission == MISSION_GUARD_AREA)) {
+                lst = v;
+                break;
+            }
+        }
+        if (lst == NULL) {
+            break; // TF_Ferry_Wants_Transport has AI_Vessel queueing one.
+        }
+        CELL pick = TF_Ferry_Shore_Cell(pzone, ourland, Center, 0);
+        CELL land = TF_Ferry_Shore_Cell(pzone, enemyland, Center, 0);
+        if (pick == 0 || land == 0) {
+            break; // enemy landmass doesn't touch our water -- no beachhead exists.
+        }
+        op.RosterCount = 0;
+        for (int heap = 0; heap < 2 && op.RosterCount < TF_FERRY_ROSTER_MAX; heap++) {
+            int count = heap ? Infantry.Count() : Units.Count();
+            for (int index = 0; index < count && op.RosterCount < TF_FERRY_ROSTER_MAX; index++) {
+                FootClass* f = heap ? (FootClass*)Infantry.Ptr(index) : (FootClass*)Units.Ptr(index);
+                if (f != NULL && f->House == this && !f->IsInLimbo && f->Strength > 0 && f->Is_Weapon_Equipped()
+                    && !f->Team.Is_Valid() && f->Mission == MISSION_GUARD
+                    && Map[Coord_Cell(f->Center_Coord())].Zones[MZONE_NORMAL] == ourland) {
+                    op.Roster[op.RosterCount++] = f->As_Target();
+                }
+            }
+        }
+        if (op.RosterCount < TF_FERRY_MIN_LOAD) {
+            op.RosterCount = 0;
+            break;
+        }
+        op.Transport = lst->As_Target();
+        op.Pickup = pick;
+        op.Landing = land;
+        op.Since = (int)Frame;
+        op.Retried = false;
+        op.State = TFF_PICKUP;
+        lst->Assign_Mission(MISSION_MOVE);
+        lst->Assign_Destination(::As_Target(pick));
+#if TF_DEV_BUILD // TF_AI_DIAG
+        {
+            FILE* _tfdbg = TF_AI_Diag_File();
+            if (_tfdbg != NULL) {
+                fprintf(_tfdbg, "F%ld H%d AL%d FERRY-START roster=%d pickup=(%d,%d) landing=(%d,%d)\n",
+                        (long)Frame, (int)Class->House, (int)ActLike, op.RosterCount, (int)Cell_X(pick),
+                        (int)Cell_Y(pick), (int)Cell_X(land), (int)Cell_Y(land));
+                fflush(_tfdbg);
+            }
+        }
+#endif
+        break;
+    }
+
+    case TFF_PICKUP:
+        if (trans->Distance(Cell_Coord(op.Pickup)) <= 2 * CELL_LEPTON_W || trans->Mission == MISSION_GUARD) {
+            op.State = TFF_LOAD;
+            op.Since = (int)Frame;
+        } else if ((int)Frame - op.Since > TF_FERRY_TIMEOUT) {
+            op = TFFerryOpStruct();
+#if TF_DEV_BUILD // TF_AI_DIAG
+            {
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg, "F%ld H%d AL%d FERRY-ABORT pickup-stall\n", (long)Frame, (int)Class->House,
+                            (int)ActLike);
+                    fflush(_tfdbg);
+                }
+            }
+#endif
+        }
+        break;
+
+    case TFF_LOAD: {
+        int outside = 0;
+        if (!trans->In_Radio_Contact()) {
+            /*
+            **	One boarding assignment per pass while the transport's radio is free --
+            **	the TMission_Load discipline. The rest of the roster holds until the
+            **	dock clears.
+            */
+            for (int i = 0; i < op.RosterCount; i++) {
+                FootClass* f = (FootClass*)As_Techno(op.Roster[i]);
+                if (f == NULL || f->IsInLimbo || (HouseClass*)f->House != this || f->Strength == 0) {
+                    continue;
+                }
+                outside++;
+                if (f->Mission != MISSION_ENTER) {
+                    f->Assign_Mission(MISSION_ENTER);
+                    f->Assign_Target(TARGET_NONE);
+                    f->Assign_Destination(op.Transport);
+                    break;
+                }
+            }
+        } else {
+            for (int i = 0; i < op.RosterCount; i++) {
+                FootClass* f = (FootClass*)As_Techno(op.Roster[i]);
+                if (f != NULL && !f->IsInLimbo && f->House == this && f->Strength > 0) {
+                    outside++;
+                }
+            }
+        }
+        int aboard = trans->How_Many();
+        bool done = (aboard > 0 && outside == 0);
+        bool stalled = ((int)Frame - op.Since > TF_FERRY_TIMEOUT);
+        if (done || (stalled && aboard >= 1)) {
+            for (int i = 0; i < op.RosterCount; i++) {
+                FootClass* f = (FootClass*)As_Techno(op.Roster[i]);
+                if (f != NULL && !f->IsInLimbo && f->House == this && f->Mission == MISSION_ENTER) {
+                    f->Assign_Mission(MISSION_GUARD);
+                }
+            }
+            trans->Assign_Mission(MISSION_MOVE);
+            trans->Assign_Destination(::As_Target(op.Landing));
+            op.State = TFF_SAIL;
+            op.Since = (int)Frame;
+#if TF_DEV_BUILD // TF_AI_DIAG
+            {
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg, "F%ld H%d AL%d FERRY-SAIL aboard=%d stragglers=%d\n", (long)Frame,
+                            (int)Class->House, (int)ActLike, aboard, outside);
+                    fflush(_tfdbg);
+                }
+            }
+#endif
+        } else if (stalled) {
+            op = TFFerryOpStruct();
+#if TF_DEV_BUILD // TF_AI_DIAG
+            {
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg, "F%ld H%d AL%d FERRY-ABORT load-stall\n", (long)Frame, (int)Class->House,
+                            (int)ActLike);
+                    fflush(_tfdbg);
+                }
+            }
+#endif
+        }
+        break;
+    }
+
+    case TFF_SAIL:
+        if (trans->Distance(Cell_Coord(op.Landing)) <= 3 * CELL_LEPTON_W || trans->Mission == MISSION_GUARD) {
+            trans->Assign_Mission(MISSION_UNLOAD);
+            op.State = TFF_UNLOAD;
+            op.Since = (int)Frame;
+#if TF_DEV_BUILD // TF_AI_DIAG
+            {
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg, "F%ld H%d AL%d FERRY-UNLOAD at=(%d,%d)\n", (long)Frame, (int)Class->House,
+                            (int)ActLike, (int)Cell_X(op.Landing), (int)Cell_Y(op.Landing));
+                    fflush(_tfdbg);
+                }
+            }
+#endif
+        } else if ((int)Frame - op.Since > TF_FERRY_SAIL_TIMEOUT) {
+            trans->Assign_Mission(MISSION_MOVE);
+            trans->Assign_Destination(::As_Target(op.Landing));
+            op.Since = (int)Frame;
+        }
+        break;
+
+    case TFF_UNLOAD:
+        if (trans->How_Many() == 0 && trans->Mission != MISSION_UNLOAD) {
+            op = TFFerryOpStruct();
+#if TF_DEV_BUILD // TF_AI_DIAG
+            {
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg, "F%ld H%d AL%d FERRY-DONE\n", (long)Frame, (int)Class->House, (int)ActLike);
+                    fflush(_tfdbg);
+                }
+            }
+#endif
+        } else if ((int)Frame - op.Since > TF_FERRY_TIMEOUT) {
+            if (!op.Retried) {
+                /*
+                **	Beach blocked (Desired_Load_Dir keeps finding no free cell). Re-plan
+                **	toward the enemy base instead of toward home -- a different metric
+                **	lands a genuinely different stretch of coast -- and steer clear of
+                **	the failed spot.
+                */
+                op.Retried = true;
+                HouseClass const* ehp = HouseClass::As_Pointer(Enemy);
+                COORDINATE nearto = (ehp != NULL && ehp->IsActive) ? ehp->Center : Center;
+                CELL land = TF_Ferry_Shore_Cell(Map[Coord_Cell(trans->Center_Coord())].Zones[MZONE_WATER],
+                                                enemyland, nearto, op.Landing);
+                if (land != 0) {
+                    op.Landing = land;
+                    trans->Assign_Mission(MISSION_MOVE);
+                    trans->Assign_Destination(::As_Target(land));
+                    op.State = TFF_SAIL;
+                    op.Since = (int)Frame;
+#if TF_DEV_BUILD // TF_AI_DIAG
+                    {
+                        FILE* _tfdbg = TF_AI_Diag_File();
+                        if (_tfdbg != NULL) {
+                            fprintf(_tfdbg, "F%ld H%d AL%d FERRY-RELAND to=(%d,%d)\n", (long)Frame,
+                                    (int)Class->House, (int)ActLike, (int)Cell_X(land), (int)Cell_Y(land));
+                            fflush(_tfdbg);
+                        }
+                    }
+#endif
+                    break;
+                }
+            }
+            trans->Assign_Mission(MISSION_GUARD);
+            op = TFFerryOpStruct();
+#if TF_DEV_BUILD // TF_AI_DIAG
+            {
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg, "F%ld H%d AL%d FERRY-ABORT unload-stuck\n", (long)Frame, (int)Class->House,
+                            (int)ActLike);
+                    fflush(_tfdbg);
+                }
+            }
+#endif
+        }
+        break;
+    }
+}
+
 /***********************************************************************************************
  * HouseClass::AI_Building -- Determines what building to build.                               *
  *                                                                                             *
@@ -8612,8 +9072,25 @@ int HouseClass::AI_Vessel(void)
             int tsize = 0;
             bool tcoastal = false;
             int tenavy = 0;
-            if (TF_Naval_Assessment(tzone, tsize, tcoastal)
-                && CurVessels < (unsigned)TF_Naval_Fleet_Cap(tcoastal, &tenavy)) {
+            /*
+            **	W5.2: the ferry transport rides outside the armed-fleet cap -- it is
+            **	logistics, not fleet strength, and on a water-split map it is the only
+            **	way any ground unit ever reaches the enemy.
+            */
+            bool tok = TF_Naval_Assessment(tzone, tsize, tcoastal);
+            if (tok && TF_Ferry_Wants_Transport()) {
+                BuildVessel = VESSEL_TRANSPORT;
+#if TF_DEV_BUILD // TF_AI_DIAG
+                {
+                    FILE* _tfdbg = TF_AI_Diag_File();
+                    if (_tfdbg != NULL) {
+                        fprintf(_tfdbg, "F%ld H%d AL%d NAVAL-PICK LST ferry curV=%d\n", (long)Frame,
+                                (int)Class->House, (int)ActLike, (int)CurVessels);
+                        fflush(_tfdbg);
+                    }
+                }
+#endif
+            } else if (tok && CurVessels < (unsigned)TF_Naval_Fleet_Cap(tcoastal, &tenavy)) {
                 int counter[VESSEL_COUNT];
                 int total = 0;
                 VesselType vtype;

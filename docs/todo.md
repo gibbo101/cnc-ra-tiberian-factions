@@ -65,19 +65,37 @@ sell at LOW); (b) **parked fleets never fight** (Luke) — patrol made lifetime-
 legs from first ship, blind fleet holds at 2 → 6 after flip, tech centre built ONCE and
 kept, ships actually roaming, battles when fleets cross.
 
-4. **Build gates (remaining)** — don't out-build the enemy navy (intel-filtered, mirror the
-   air-cap pattern at house.cpp ~7495); naval-war detection rescales limits; replaces the
-   fixed fleet cap.
-   - **Water-separated-map bootstrap (Luke's observation, 2026-08-01):** when the AIs have
-     no land route to any enemy, `enemycoastal` can only flip via GPS/spy-plane reveal, so
-     the navy arrives mid-game at the earliest — but on such maps the navy IS the scouting
-     tool a human would use first. Refinement: if no land zone connects the base to any
-     enemy start, allow the yard + a scout vessel BEFORE discovery (naval counterpart of
-     the blind-scout dispatcher). Two all-Allied AIs across the river is the worst case:
-     no spy plane, ground scouts blocked, flip waits on GPS.
+4. **Build gates — SHIPPED `76bfcc0` (2026-08-01), not yet live-verified.** The fixed
+   `TF_NAVAL_FLEET_CAP=6` is replaced by `TF_Naval_Fleet_Cap`: match the STRONGEST single
+   opponent's observed navy (max not sum, margin 0 so matching settles — the air-cap
+   shape), intel-filtered via `Is_Discovered_By_Player`; a scouted enemy yard counts as a
+   fleet on the way; transports count as invasion threat; floor 4 (shore-bombardment
+   presence vs navy-less opponents), ceiling 12. Blind patrol stays 2.
+   - Water-separated-map bootstrap (Luke's observation): already covered — `1b1dda1`
+     decoupled the yard from discovery and gives every coastal AI the 2-ship blind patrol,
+     a superset of "yard + scout vessel before discovery". No further work.
 
-Then W5.2 sea-transport ferrying (research complete, see plan) — the piece that actually
-unblocks the cliff-massing verdict from the livelock closure.
+5. **W5.2 sea-transport ferrying — SHIPPED (2026-08-01), not yet live-verified.** The piece
+   that unblocks the cliff-massing verdict from the livelock closure. `TF_Ferry_AI` in
+   Expert_AI: one op per house, engages only when the designated Enemy is land-unreachable
+   (`TF_Ferry_Route_Blocked`, MZONE_NORMAL zone mismatch). AI_Vessel queues ONE LST outside
+   the armed-fleet cap (`TF_Ferry_Wants_Transport`; all four factions use the RA LST — the
+   TDLST hull stayed cut, no transport-switch wiring needed). State machine: pick shore
+   points (`TF_Ferry_Shore_Cell` whole-map scan, pickup near own base, landing on the
+   enemy landmass nearest our base = shortest crossing), gather 3–5 idle teamless armed
+   ground units, board via the TMission_Load handshake (one ENTER assignment per pass while
+   the transport's radio is free), sail, MISSION_UNLOAD; blocked-beach retry re-plans
+   toward the enemy base avoiding the failed spot, timeouts abort cleanly and release
+   stragglers. Expedition sweep: idle armed units standing on the enemy landmass get
+   MISSION_HUNT — also adopts survivors of ops whose transport died. Known gaps (accepted
+   v1): op state is per-match statics (a mid-op save/load resets to IDLE, transport keeps
+   cargo idle); a second LST can slip through the production-lag window (bounded at 2).
+
+**Next-match verify list (batch `1b1dda1`+`e9d415f`+`cf8ad1f`+`76bfcc0`+ferry):** yards at
+economy-ready (~F6-8k, before discovery), NAVAL-PATROL legs from first ship, blind fleet
+holds at 2 → scales to enemy navy after flip (`NAVAL-PICK ... cap= enavy=`), tech centre
+built ONCE and kept, ships roaming + fighting, no sidebar crash; on a water-split map:
+`NAVAL-PICK LST ferry` → `FERRY-START/SAIL/UNLOAD/HUNT/DONE` chain, landed units attack.
 
 Same-day context: livelock workstream CLOSED (`98a7177`), A-10 factory + rearm fixes
 (`9b6d486`/`0c12624`) awaiting regression eyes in normal play.
