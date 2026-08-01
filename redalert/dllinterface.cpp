@@ -6453,6 +6453,16 @@ static TF_ProducerMasks TF_Compute_Producer_Masks(HouseClass const* house)
         if (building == NULL || building->IsInLimbo || building->House != house) {
             continue;
         }
+        /*
+        ** TS-tree factories are faction-agnostic (Owner= all four sides), so
+        ** counting their Ownable here would claim the player produces from
+        ** every faction at once -- activating badges with combinations no art
+        ** was baked for (the <Missing> TSPOWR_F tooltip). They contribute
+        ** nothing to the faction-producer picture.
+        */
+        if (building->Class->Type >= STRUCT_TS_TREE_FIRST && building->Class->Type <= STRUCT_TS_TREE_LAST) {
+            continue;
+        }
         RTTIType makes = building->Class->ToBuild;
         if (makes > RTTI_NONE && makes < RTTI_COUNT) {
             masks.by_rtti[makes] |= TF_Faction_Mask_From_Ownable(building->Class->Get_Ownable());
@@ -7003,9 +7013,13 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     */
                     if (super_weapon == nullptr && tech != NULL) {
                         RTTIType const category = context_sidebar->Column[c].Buildables[b].BuildableType;
-                        int const held = (category > RTTI_NONE && category < RTTI_COUNT)
-                                             ? producer_masks.by_rtti[category]
-                                             : 0;
+                        int held = (category > RTTI_NONE && category < RTTI_COUNT)
+                                       ? producer_masks.by_rtti[category]
+                                       : 0;
+                        /* TS-tree entries never badge (see the solo path). */
+                        if (TF_Is_TS_Tree_Type((TechnoTypeClass const*)tech)) {
+                            held = 0;
+                        }
                         TF_Apply_Cameo_Badge(sidebar_entry.AssetName,
                                              TF_Faction_Mask_From_Ownable(tech->Get_Ownable()), held);
                     }

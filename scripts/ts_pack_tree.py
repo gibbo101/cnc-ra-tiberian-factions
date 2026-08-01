@@ -166,8 +166,11 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     # Clamp so the union of EVERYTHING drawn (anims can rise above the base --
     # radar dish, barracks flag -- and MK scaffolds spread wider) still fits
     # the canvas; anchor at the union center so nothing clips.
+    # MK frames are EXCLUDED from the fit: buildup scaffolding is wider than
+    # the finished building, and letting it drive the clamp shrinks the built
+    # state (the TS-refinery-smaller-than-TD bug). A transient buildup frame
+    # clipping at the canvas edge is harmless; the built state must not.
     boxes = [f.getbbox() for f in healthy + damaged_frames]
-    boxes += [load(mk_dir, i).getbbox() for i in real_frames(mk_dir)]
     boxes = [b for b in boxes if b]
     ux0, uy0 = min(b[0] for b in boxes), min(b[1] for b in boxes)
     ux1, uy1 = max(b[2] for b in boxes), max(b[3] for b in boxes)
