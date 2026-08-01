@@ -720,6 +720,7 @@ public:
     bool TF_Ferry_Route_Blocked(int* enemyland = NULL) const;
     bool TF_Ferry_Wants_Transport(void) const;
     void TF_Ferry_AI(void);
+    void TF_Ferry_Escort(CELL landing);
     CELL TF_Find_Naval_Cell(BuildingClass const* building) const;
     CELL TF_Naval_Patrol_Cell(int wzone) const;
     bool Place_Special_Blast(SpecialWeaponType id, CELL cell);
