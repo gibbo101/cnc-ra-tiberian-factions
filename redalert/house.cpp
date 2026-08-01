@@ -7343,13 +7343,16 @@ bool HouseClass::TF_Has_Income(void) const
 /*
 **	W5.1 naval tuning. A base further than the coast radius from any shore has no
 **	business building a navy, and water smaller than the pond minimum is a pond,
-**	not a theatre. The fleet cap is an interim ceiling so the navy stays modest
-**	until the build-gate step scales it to the opponent's.
+**	not a theatre. Fleet size is governed by TF_Naval_Fleet_Cap: a scouting patrol
+**	while no enemy shore is known, then a fleet scaled to the strongest observed
+**	enemy navy between the floor (enough presence to bombard a navy-less
+**	opponent's shoreline) and the ceiling (where a naval arms race stops paying).
 */
 static int const TF_NAVAL_COAST_RADIUS = 20;
 static int const TF_NAVAL_POND_MIN = 80;
-static int const TF_NAVAL_FLEET_CAP = 6;
 static int const TF_NAVAL_PATROL_CAP = 2;
+static int const TF_NAVAL_FLEET_FLOOR = 4;
+static int const TF_NAVAL_FLEET_MAX = 12;
 
 /***********************************************************************************************
  * HouseClass::TF_Naval_Assessment -- Is a navy worth building from this base?                 *
@@ -7440,6 +7443,94 @@ bool HouseClass::TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) 
         }
     }
     return (true);
+}
+
+/***********************************************************************************************
+ * HouseClass::TF_Naval_Fleet_Cap -- How many vessels this house should keep afloat.           *
+ *                                                                                             *
+ *    W5.1 step 4, the naval build gate. While no enemy shore is known the fleet stays a       *
+ *    scouting patrol. Once the water demonstrably leads to an enemy, the fleet matches the    *
+ *    STRONGEST single opponent's navy -- the same shape as the air-structure cap in           *
+ *    AI_Building: max rather than sum, so a multi-enemy game never chases an uncatchable      *
+ *    combined total, and matching (no margin) settles once drawn level instead of two AIs     *
+ *    ratcheting each other to the ceiling. Only vessels and yards this house has actually     *
+ *    discovered count (fair fog); a discovered enemy naval yard is treated as a small fleet   *
+ *    on the way, so the response starts when the yard is scouted rather than when its ships   *
+ *    arrive. Enemy transports count too -- a ferry fleet is an invasion threat and warships   *
+ *    are the counter. The floor keeps enough presence for shore bombardment against a         *
+ *    navy-less opponent; the ceiling stops a naval war from eating the whole economy.         *
+ *                                                                                             *
+ * INPUT:   enemy_coastal -- the TF_Naval_Assessment discovery flag for this house's water;    *
+ *          enemy_navy    -- optional out: the strongest single opponent's observed strength.  *
+ *                                                                                             *
+ * OUTPUT:  Maximum vessels to hold at (compare against CurVessels).                           *
+ *=============================================================================================*/
+int HouseClass::TF_Naval_Fleet_Cap(bool enemy_coastal, int* enemy_navy) const
+{
+    assert(Houses.ID(this) == ID);
+
+    if (enemy_navy != NULL) {
+        *enemy_navy = 0;
+    }
+    if (!enemy_coastal) {
+        return (TF_NAVAL_PATROL_CAP);
+    }
+
+    int navy[HOUSE_COUNT];
+    bool yard[HOUSE_COUNT];
+    memset(navy, 0, sizeof(navy));
+    memset(yard, 0, sizeof(yard));
+
+    for (int index = 0; index < Vessels.Count(); index++) {
+        VesselClass const* v = Vessels.Ptr(index);
+        if (v != NULL && !v->IsInLimbo && v->Strength > 0 && !Is_Ally(v)
+            && v->House->Class->House != HOUSE_NEUTRAL && v->Is_Discovered_By_Player(this)) {
+            int h = (int)v->House->Class->House;
+            if (h >= 0 && h < HOUSE_COUNT) {
+                navy[h]++;
+            }
+        }
+    }
+    for (int index = 0; index < Buildings.Count(); index++) {
+        BuildingClass const* b = Buildings.Ptr(index);
+        if (b == NULL || b->IsInLimbo || b->Strength == 0 || Is_Ally(b)
+            || b->House->Class->House == HOUSE_NEUTRAL || !b->Is_Discovered_By_Player(this)) {
+            continue;
+        }
+        StructType t = b->Class->Type;
+        if (t == STRUCT_SHIP_YARD || t == STRUCT_SUB_PEN || t == STRUCT_TDGYARD || t == STRUCT_TDNPEN) {
+            int h = (int)b->House->Class->House;
+            if (h >= 0 && h < HOUSE_COUNT) {
+                yard[h] = true;
+            }
+        }
+    }
+
+    int biggest = 0;
+    for (HousesType eh = HOUSE_FIRST; eh < HOUSE_COUNT; eh++) {
+        HouseClass const* ehp = HouseClass::As_Pointer(eh);
+        if (ehp == NULL || !ehp->IsActive || ehp->IsDefeated || Is_Ally(ehp)) {
+            continue;
+        }
+        int fleet = navy[(int)eh];
+        if (yard[(int)eh] && fleet < TF_NAVAL_PATROL_CAP) {
+            fleet = TF_NAVAL_PATROL_CAP;
+        }
+        if (fleet > biggest) {
+            biggest = fleet;
+        }
+    }
+
+    if (enemy_navy != NULL) {
+        *enemy_navy = biggest;
+    }
+    if (biggest < TF_NAVAL_FLEET_FLOOR) {
+        biggest = TF_NAVAL_FLEET_FLOOR;
+    }
+    if (biggest > TF_NAVAL_FLEET_MAX) {
+        biggest = TF_NAVAL_FLEET_MAX;
+    }
+    return (biggest);
 }
 
 /***********************************************************************************************
@@ -8512,16 +8603,17 @@ int HouseClass::AI_Vessel(void)
         **	until the ferry controller exists -- an LST with no loading logic just sits
         **	against the yard. Fleet size scales with what the house knows: a small
         **	patrol while no enemy shore has been discovered (the patrol is the
-        **	discovery vector -- see the dispatcher in Expert_AI), the full fleet once
-        **	the water demonstrably leads somewhere, a fixed cap standing in until the
-        **	build-gate step scales it to the opponent's navy.
+        **	discovery vector -- see the dispatcher in Expert_AI), then a fleet scaled
+        **	to the strongest opponent navy this house has actually seen once the
+        **	water demonstrably leads somewhere (TF_Naval_Fleet_Cap).
         */
         if (Session.Type != GAME_NORMAL && TF_Role_Quantity(BQuantity, STRUCT_SHIP_YARD) > 0) {
             int tzone = 0;
             int tsize = 0;
             bool tcoastal = false;
+            int tenavy = 0;
             if (TF_Naval_Assessment(tzone, tsize, tcoastal)
-                && CurVessels < (tcoastal ? TF_NAVAL_FLEET_CAP : TF_NAVAL_PATROL_CAP)) {
+                && CurVessels < (unsigned)TF_Naval_Fleet_Cap(tcoastal, &tenavy)) {
                 int counter[VESSEL_COUNT];
                 int total = 0;
                 VesselType vtype;
@@ -8549,10 +8641,10 @@ int HouseClass::AI_Vessel(void)
                 if (BuildVessel != VESSEL_NONE) {
                     FILE* _tfdbg = TF_AI_Diag_File();
                     if (_tfdbg != NULL) {
-                        fprintf(_tfdbg, "F%ld H%d AL%d NAVAL-PICK %s curV=%d cap=%d\n", (long)Frame,
+                        fprintf(_tfdbg, "F%ld H%d AL%d NAVAL-PICK %s curV=%d cap=%d enavy=%d\n", (long)Frame,
                                 (int)Class->House, (int)ActLike,
                                 VesselTypeClass::As_Reference(BuildVessel).IniName, (int)CurVessels,
-                                (int)(tcoastal ? TF_NAVAL_FLEET_CAP : TF_NAVAL_PATROL_CAP));
+                                TF_Naval_Fleet_Cap(tcoastal), tenavy);
                         fflush(_tfdbg);
                     }
                 }
