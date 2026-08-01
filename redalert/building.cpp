@@ -7917,6 +7917,24 @@ void BuildingClass::Factory_AI(void)
                     TechnoTypeClass const* techno = House->Suggest_New_Object(Class->ToBuild, *this == STRUCT_KENNEL);
 
                     /*
+                    **	Aircraft are host-specific: helipads host rotary craft, the
+                    **	airstrip family fixed-wing. The house-level suggestion
+                    **	(BuildAircraft) does not know which factory is asking, so the
+                    **	wrong host must DECLINE the order and leave it for a sibling of
+                    **	the right family. Otherwise a helipad accepts an A-10: it spawns
+                    **	parked on the pad if the pad is free, or flies in helicopter-
+                    **	style and self-destructs on touchdown when it cannot dock.
+                    */
+                    if (techno != NULL && Class->ToBuild == RTTI_AIRCRAFTTYPE) {
+                        bool fixed_wing = ((AircraftTypeClass const*)techno)->IsFixedWing;
+                        bool strip_host = (*this == STRUCT_AIRSTRIP || *this == STRUCT_TDAFLD
+                                           || *this == STRUCT_TDGAFLD);
+                        if (fixed_wing != strip_host) {
+                            techno = NULL;
+                        }
+                    }
+
+                    /*
                     **	If a suitable object type was selected for production, then start
                     **	producing it now.
                     */

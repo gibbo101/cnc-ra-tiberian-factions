@@ -191,31 +191,37 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Combat / units
 
-### Fixed-wing (GDI A-10) parked on a "helipad" — ⏳ OPEN, likely-benign explanation found (2026-08-01)
-- **Severity:** likely none (probably intended behaviour misread), instrumented to confirm.
-- **Detail:** Docklands skirmish, HD: a GDI A-10 sitting centered on a round pad (player first
-  read it as a YAK, corrected to A-10). Full source audit: every dock chain is type-correct —
-  helipad `RADIO_CAN_LOAD` refuses fixed-wing (all 6 pad types), `Who_Can_Build_Me`
-  discriminates pads vs strips, the Place_Object completion path never falls back to a pad for
-  fixed-wing, all pads occupy their full 2x2 (`List2`), and a fixed-wing touching down outside
-  `MISSION_ENTER` self-destructs. **Leading theory: it was the TDFIX Service Depot, not a
-  helipad** — the TD depot is a round pad, it accepts aircraft at `RADIO_CAN_LOAD`, and
-  `Mission_Guard` deliberately sends a damaged AI aircraft there `MISSION_ENTER` (lands on the
-  pad, alive, by design). The `FIXEDWING-LAND` touchdown census (TF_DEV_BUILD, tf_astar.log)
-  now records `under=`/`contact=` per fixed-wing touchdown; the next sighting closes this.
-- **Real bug found during the audit, FIXED (`0c12624`):** the out-of-ammo rearm search was
-  hardcoded `Find_Docking_Bay(STRUCT_HELIPAD)`, which fixed-wing can never satisfy — an AI
-  A-10 with empty ammo never found its airfield and flew disarmed forever. Now searches the
-  aircraft's home-building family (airstrip family matching made symmetric).
+### AI built A-10s at helipads (parked-on-pad / fly-in-and-explode) — ✅ FIXED 2026-08-01
+- **Symptoms (both player-observed, Docklands skirmishes):** a GDI A-10 parked dead-center on
+  a helipad; later the same day, an AI A-10 "flying in like a helicopter" to a loaded helipad
+  and self-destructing on arrival. AI economy bleed: money spent on aircraft that explode.
+- **Root cause (proven by TF_AI_DIAG):** `PROD start TDA10 ... at factory TDGHPAD#86` — the
+  per-building factory logic asks `Suggest_New_Object(RTTI_AIRCRAFTTYPE)`, and the house-level
+  `BuildAircraft` choice does not know which factory is asking, so whichever aircraft factory
+  ticks first takes the order — including a helipad taking a fixed-wing. `Exit_Object` then
+  spawns it parked on a free pad (`Docking_Coord`, Height=0), or map-edge-flies it in when the
+  pad is tethered; an undockable fixed-wing self-destructs at touchdown (`Landing_Takeoff_AI`).
+  All the docking/`Who_Can_Build_Me` chains were audited type-correct — production assignment
+  was the one unguarded path.
+- **Fix:** the wrong-family factory DECLINES the order (helipads take rotary only, the
+  airstrip family fixed-wing only) and leaves it for a sibling; an order cannot strand because
+  `Can_Build` already requires the airfield prerequisite for fixed-wing types.
+- **Related fix, same session (`0c12624`):** the out-of-ammo rearm search was hardcoded
+  `Find_Docking_Bay(STRUCT_HELIPAD)`, which fixed-wing can never satisfy — an AI A-10 with
+  empty ammo never found its airfield and flew disarmed forever. Now searches the aircraft's
+  home-building family (airstrip family matching made symmetric).
+- `FIXEDWING-LAND` touchdown census (TF_DEV_BUILD) left in for regression-watching.
 
-### AI superweapon targeting ignores stealth-generator cloak — ⏳ OPEN (2026-08-01)
-- **Severity:** major for the stealth generator's value proposition.
-- **Detail:** GDI AI ion-cannoned the player's airfield while it sat inside a Nod stealth
+### AI superweapon targeting ignores stealth-generator cloak — ✅ FIXED + PLAYER-VERIFIED 2026-08-01
+- **Was:** GDI AI ion-cannoned the player's airfield while it sat inside a Nod stealth
   generator field. Vanilla AI superweapon target selection predates building cloak and never
-  checks visibility, so a cloaked building is picked as freely as a visible one. Fix shape: the
-  ion/nuke/parabomb AI target scans should skip technos the firing house cannot currently see
-  (cloak state + detector coverage per `stealth-generator-spec.md`), so cloak forces target
-  displacement the way it does for direct-fire units.
+  checked visibility.
+- **Fix (`0164b7f`):** `Special_Weapon_AI` skips any building `Is_Cloaked(this)` — discovery
+  stays sticky intel, but the live cloak veils the strike, forcing target displacement exactly
+  like direct fire. Cloak state already encodes detector coverage (a detector forces the
+  uncloak), so no separate detector check is needed.
+- **Verified in play the same day:** "enemy going for the unstealthed stuff" (Luke, live
+  Docklands match with stealth generator up).
 
 ### Recon Bike (TDBIKE) won't turn to fire at off-axis targets — ✅ FIXED 2026-06-16
 - **Severity:** major (unit was much less effective; affected Nod harass doctrine).
