@@ -121,6 +121,17 @@ census needs re-running before the roster's sound count is committed.
 
 ## Known interactions / cautions
 
+- **Heap registration must be strictly enum-ordered** (heap slot index == Type;
+  `As_Reference` indexes the heap directly). Append new `new XTypeClass(...)`
+  calls at the marked tail of Init_Heap, never beside a related type mid-list.
+  Violating this shipped once (2026-08-01): the GDI Helipad slot held the TS
+  yard, AI MCVs deployed helipads. Fixed in `82aec6d`; the tail comment anchors it.
+- **`MT_COMMANDBAR_COMMON.TGA` (the C&C-logo crest atlas, ~176MB) is NOT in git**
+  — it rides in `build/remaster/Vanilla_RA/` and the Workshop package only. A
+  fresh worktree build dir lacks it, and `rsync --delete` then strips it from
+  the deploy target (symptom: vanilla Allied eagle in the radar). Recovery copy:
+  the Workshop cache `~/.steam/.../workshop/content/1213210/3729834253/`.
+
 - **AI blindness:** until the faction-agnostic builder (W2.9, other instance's lane)
   can see non-home lineages, an AI that finds the TS MCV deploys a yard it never
   uses. Accepted for now; TS is the fifth lineage that breaks any 4-way literal —
