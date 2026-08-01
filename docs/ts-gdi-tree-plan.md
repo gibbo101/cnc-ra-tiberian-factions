@@ -148,6 +148,25 @@ Per building:
    ModText rows, BuildIcon TGA from the TS cameo (NEAREST 8x → LANCZOS 341×256,
    `BuildIcon_TS_<X>.tga`) — Luke wants the real TS icons on the sidebar.
 
+### Asset inventory — extracted + decoded 2026-08-01 (scratchpad `ts-extracted/`, regenerate via ts_extract.py + ts_shp.py if the scratchpad is gone)
+
+| Building | Base (canvas) | Anims (frames incl. empty halves) | MK | Cameo |
+|---|---|---|---|---|
+| TSPILE | GTPILE 96 | _A 16, _B 16, _C 28 | 40 | BRRKICON |
+| TSPROC | NTREFN 192x168 (TS refinery uses NOD art, 4x3) | _B 40, _C 32 (144-canvas!), + production anims _A/_AR deferred | 40 | REFICON |
+| TSSILO | GTSILO 96 | _B 64 (fill-level frames? verify vs STORAGE contract) | 38 | SILOICON |
+| TSWEAP | GTWEAP 192x168 | _A 32, _B 16, _C 8 | 40 | WEAPICON |
+| TSRADR | GTRADR 144 | _A 60 (dish) | 40 | RADRICON |
+| TSTECH | GTTECH 192x120 | _A 32 | 40 | TECHICON |
+| TSHPAD | GTHPAD 96 | _A 32 | 38 | HELIICON |
+| TSDEPT | GTDEPT 144 | _A 20, _B 14 | 20 | FIXICON |
+| TSVULC/TSROCK/TSCSAM | GTCTWR_B 64 / _C 96 / _D 64 (48-canvas, TURRET rotation frames — port like the TDGTWR turret pattern, not the static recipe) | GTCTWRMK 22 | TWR1/TWR2/TWR3ICON |
+
+⚠️ NTREFN_C is a 144-canvas anim on a 192x168 building — needs offset compositing,
+not the same-canvas paste. Anim usable length = first half (second halves are EMPTY
+= damaged buildings don't animate). Silo has no idle anim; its _B 64 frames likely
+map to the STORAGE fill-level contract (5 levels + damaged — verify before packing).
+
 ## Sequencing
 
 1. **Skeleton** — TSFACT + TSMCV + crate roll + `Can_Build` token + rewire the four
