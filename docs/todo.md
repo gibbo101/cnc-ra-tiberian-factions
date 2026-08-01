@@ -5,6 +5,31 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## ⭐ W5.1 Naval AI — step 1 SHIPPED 2026-08-01 (`c01202e`), RESUME AT STEP 2
+
+Water evaluation is in and live-verified on Docklands (census `z1=2499 z2=19 z3=54` correct,
+pond filter works, coastal spawn `ok=1`, inland spawn `ok=0`; `enemycoastal` flip verifies
+passively in any 2-AI match — an Allied AI can't discover an isolated human's shore).
+`HouseClass::TF_Naval_Assessment` + `TF_WaterZoneSize[]` are the API; `NAVAL`/`NAVAL-CENSUS`
+diag lines on the 30s cadence. Remaining steps (plan `ai-upgrade-plan.md` §W5.1):
+
+2. **Naval yard queue + coastal placement bias** — AI_Building pool entry for the faction's
+   yard, gated on `TF_Naval_Assessment` ok + enemycoastal; placement biased to the nearest
+   coastal cell of the chosen zone (Find_Cell_In_Zone searches rings around the LAND center
+   and can silently fail — the known W3.2 gap).
+3. **AI_Vessel skirmish branch** — replace the `IsBaseBuilding` clear (house.cpp ~8221) with
+   an AI_Unit-style weighted-random pick over Can_Build's roster, gated on the assessment.
+4. **Build gates** — don't out-build the enemy navy (intel-filtered, mirror the air-cap
+   pattern at house.cpp ~7495); naval-war detection rescales limits.
+
+Then W5.2 sea-transport ferrying (research complete, see plan) — the piece that actually
+unblocks the cliff-massing verdict from the livelock closure.
+
+Same-day context: livelock workstream CLOSED (`98a7177`), A-10 factory + rearm fixes
+(`9b6d486`/`0c12624`) awaiting regression eyes in normal play.
+
+---
+
 ## ✅ AI base placement — FIXED AND VERIFIED (2026-07-31)
 
 Root cause was `Recalc_Center`'s collapsed Radius (cost-weighted divisor); fixed together with
