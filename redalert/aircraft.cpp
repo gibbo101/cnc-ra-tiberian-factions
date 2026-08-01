@@ -4638,6 +4638,41 @@ bool AircraftClass::Landing_Takeoff_AI(void)
                 IsLanding = false;
                 Set_Speed(0);
 
+#if TF_DEV_BUILD
+                /*
+                ** TF DEV: fixed-wing touchdown census (known-issues "fixed-wing parked on a
+                ** helipad", 2026-08-01). A live parked plane implies MISSION_ENTER at touchdown
+                ** (any other mission self-destructs just below), i.e. a dock contract existed or
+                ** was lost mid-landing. Log every fixed-wing touchdown with what is under the
+                ** wheels and who the radio contact is, so the next sighting explains itself.
+                */
+                if (Class->IsFixedWing) {
+                    static FILE* tf_land_log = NULL;
+                    if (tf_land_log == NULL) {
+                        const char* h = getenv("USERPROFILE");
+                        if (h == NULL)
+                            h = getenv("HOME");
+                        if (h != NULL) {
+                            char p[512];
+                            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                            tf_land_log = fopen(p, "a");
+                        }
+                    }
+                    if (tf_land_log != NULL) {
+                        CELL mc = Coord_Cell(Center_Coord());
+                        BuildingClass* under = Map[mc].Cell_Building();
+                        TechnoClass* contact = In_Radio_Contact() ? Contact_With_Whom() : NULL;
+                        fprintf(tf_land_log,
+                                "FIXEDWING-LAND: unit=%s cell=(%d,%d) mission=%d under=%s contact=%s navcom=%d\n",
+                                Class->IniName, (int)Cell_X(mc), (int)Cell_Y(mc), (int)Mission,
+                                under ? under->Class->IniName : "<ground>",
+                                contact ? contact->Techno_Type_Class()->IniName : "<none>",
+                                (int)NavCom);
+                        fflush(tf_land_log);
+                    }
+                }
+#endif
+
                 /*
                 **	If the NavCom now equals the destination, then clear out the NavCom.
                 */

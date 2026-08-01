@@ -3446,6 +3446,17 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
                 continue;
             }
 
+            /*
+            **	A cloaked building displaces superweapon fire the same way it
+            **	displaces direct fire: only what the firing house can currently
+            **	see may be struck. Discovery is sticky by design (intel memory);
+            **	the cloak is the live veil over it -- a stealth-generator field
+            **	protects exactly until a detector or shimmer breaks the cloak.
+            */
+            if (b->Is_Cloaked(this)) {
+                continue;
+            }
+
             if (Percent_Chance(90) && (b->Value() > best || best == -1)) {
                 best = b->Value();
                 bestptr = b;
