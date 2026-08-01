@@ -35,13 +35,26 @@ upward, per the Obelisk's observed layout: canvas bottom = footprint bottom).
 Rework TSPROC/TSWEAP/TSRADR (and TSFACT, or take TSFACT to its TS-authentic
 4x3 footprint) through `ts_pack_tree.py` with per-building stub growth.
 
-**Bib decision owed (Luke's question: "the TS refinery has the concrete plate
-at its entrance, does it need the bib?"):** the baked TS NTREFNBB plate is
-part of what squeezed the building. Options: (a) drop the baked plate, keep
-engine `Bib=` (RA slab + reserved pathing row); (b) keep the plate and give
-the canvas a bottom bib row too — but the Obelisk precedent only proves
-UPWARD extension, so (b) needs its own probe. Verify whether TSPROC rules
-currently sets Bib= at all (double-apron risk). Decide with Luke.
+**Bib design DECIDED (Luke, 2026-08-01 late): TS-authentic passable aprons.**
+In Tiberian Sun the war factory and refinery carry their concrete aprons IN
+THE ART, units drive over them, and there is no separate engine bib. Match
+that: TSPROC and TSWEAP go **bibless on the engine side** (`Bib=` off, no RA
+slab) and their art **expands into the bib row** — structure on the top 3
+rows at full 4-cell width, baked NTREFNBB/GTWEAPBB apron on the bottom row.
+Mechanics sketch:
+- Occupancy/placement/docking stay 4x3 (BSIZE_43 unchanged) — the apron row
+  is passable, exactly like TS. The 4x3 occupancy under a 4-row visual is
+  the existing BSIZE_43 cell list; no new occupancy machinery needed.
+- Render box grows one row: TFASSETS stub 96x96, HD canvas 512x512.
+- ⚠ ONE CONTRACT PROBE FIRST: the Obelisk precedent proves extra canvas rows
+  extend UPWARD (canvas bottom = footprint bottom). The apron needs one row
+  DOWNWARD. Ship a probe canvas (e.g. TSPROC with a marker row) and see
+  where the launcher lands it before committing the pass; if extra rows only
+  go up, anchor the composite one row higher (structure top rows + apron in
+  the bottom footprint row) or bias with an asymmetric stub.
+- Radar/conyard don't carry aprons: radar gets the UPWARD Obelisk treatment
+  (tall stub, full 2-cell width, dish tower rising); conyard gets upward
+  headroom too, or the TS-authentic 4x3 footprint — decide during the pass.
 
 **Then the sign-off walk (units wave included):** the two checklists below —
 all nine buildings + the four new units, with special attention to the
