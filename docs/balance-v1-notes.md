@@ -18,7 +18,19 @@ do **not** belong here — only deliberate balance deviations from TD-authentic 
 
 ---
 
-## Tank movement pace feels too fast (2026-05-31)
+## Nod SAM sites weak vs RA jets (2026-08-01)
+
+**Report:** Docklands skirmish (Luke as Nod-era player vs 4 AIs): four SAM sites let an
+attacking MIG complete **three attack runs** before finally dying. "Nod sams still pretty
+bad."
+
+**Context to check before tuning:** TDSAM was ported TD-authentic (`td-sam-deep-dive.md`),
+where it was tuned against TD's slow helicopters (Orca/Apache); RA's MIG/YAK are much faster
+targets with standoff missile release, so an authentic TDSAM may be structurally under-tuned
+against RA-era air. Compare projectile speed / ROF / range vs RA's own SAM and AA gun, and
+whether the open-close animation (firing window) is eating engagement time. Related ranked
+finding: F6 "fragile TD air" in `balance-deep-dive.md` — this is the mirror case (TD ground AA
+vs RA air).
 
 **Report:** Playtest race of Nod Light Tank vs Flame Tank — the tracked speed felt "waaay
 too fast"; the (buggy) wheeled pace felt better.

@@ -191,6 +191,29 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Combat / units
 
+### Fixed-wing plane parked on a helipad — ⏳ OPEN (observed 2026-08-01, mechanism unknown)
+- **Severity:** minor-looking but worth understanding (dock/rearm semantics may be off for the
+  parked plane).
+- **Detail:** Docklands skirmish, HD: an RA fixed-wing plane (YAK-type) sitting centered on a
+  round helipad pad. First-pass source audit found the radio chain CORRECT everywhere: helipad
+  `RADIO_CAN_LOAD` answers ROGER only to non-fixed-wing (all 6 pad types), `Find_Docking_Bay`
+  is type-matched + CAN_LOAD-gated, `DoSmarterRunAway` keeps fixed-wing on the repair pad, and
+  all helipad types occupy their full 2x2 footprint (`List2`), so a cell-target landing on the
+  pad should be rejected by `Is_LZ_Clear`. So the observed state should be unreachable — needs
+  ground truth from the next sighting: whose plane/pad, ordered or automatic, and whether the
+  plane is truly ON the pad cell (can the pad be clicked under it?) or on an adjacent cell with
+  the sprite overlapping. The `46f01f3` What_Action relaxation was audited in passing and does
+  not explain it (CAN_LOAD still gates ENTER).
+
+### AI superweapon targeting ignores stealth-generator cloak — ⏳ OPEN (2026-08-01)
+- **Severity:** major for the stealth generator's value proposition.
+- **Detail:** GDI AI ion-cannoned the player's airfield while it sat inside a Nod stealth
+  generator field. Vanilla AI superweapon target selection predates building cloak and never
+  checks visibility, so a cloaked building is picked as freely as a visible one. Fix shape: the
+  ion/nuke/parabomb AI target scans should skip technos the firing house cannot currently see
+  (cloak state + detector coverage per `stealth-generator-spec.md`), so cloak forces target
+  displacement the way it does for direct-fire units.
+
 ### Recon Bike (TDBIKE) won't turn to fire at off-axis targets — ✅ FIXED 2026-06-16
 - **Severity:** major (unit was much less effective; affected Nod harass doctrine).
 - **Status:** RESOLVED — `UnitClass::Rotation_AI` (unit.cpp:601).
@@ -266,17 +289,25 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Pathfinding / AI cooperation
 
-### Units livelock retrying a doomed path forever — ROOT-CAUSED, NO FIX 2026-07-19
-- **Severity: ESCALATED TO CRASH (2026-08-01).** The DOCKLANDS A* strong test (teamed AIs, human
-  isolated across the river — every ground target unreachable) drove ~8,000 legacy-pathfinder
-  fallbacks by F12,770 and the sim process died with `EXCEPTION_STACK_OVERFLOW`
-  (`InstanceServerG.exe`, `_Except_424.txt`, dump saved in AppData). A* itself stayed clean
-  (`captrips=0` throughout — the budget item below PASSED); the stack death is in the legacy
-  fallback under retry-storm volume. **Repro:** DOCKLANDS, 3 teamed AIs vs isolated human,
-  ~10-15 min. The no-progress cure below is now crash-prevention, not just efficiency —
-  first candidate for the next session.
-- **Status:** root cause CONFIRMED. **No fix.** One attempt crashed the game on both machines and
-  was reverted; a second, safer attempt was falsified. All surfaces back on clean `HEAD`.
+### Units livelock retrying a doomed path forever — FIX IMPLEMENTED 2026-08-01, verification in progress
+- **The 2026-08-01 DOCKLANDS `EXCEPTION_STACK_OVERFLOW` was a SEPARATE defect the livelock merely
+  fed.** Walking the crash minidump (`InstanceServerG.exe_2026-08-01_00-17-47_T472.dmp`, raw
+  stack scan + addr2line) showed ~1,500 repetitions of one cycle: `Start_Of_Move` give-way
+  RETREAT (`drive.cpp` gw==2) → `Assign_Destination(back)` → nested `Start_Of_Move` (engine calls
+  it for a stationary unit) → RETREAT again — unbounded mutual recursion in OUR v2.2.3 give-way
+  code whenever a pinch is so jammed the retreat decision repeats. The earlier "stack death is in
+  the legacy fallback under retry-storm volume" reading was wrong (the legacy pathfinder is
+  iterative). Fixed with a call-stack re-entrancy guard: a retreat-triggered nested
+  `Start_Of_Move` skips give-way evaluation and paths straight to the retreat cell.
+- **Status:** livelock root cause CONFIRMED 2026-07-19; **both fixes implemented 2026-08-01**
+  (recursion guard above + the no-progress detector below, `FootClass::TF_Path_No_Progress`:
+  infantry give-up branch aborts after 8s of zero progress on the same (cell, destination) pair;
+  the vehicle patient queue yields to the abandon branch after 60s of literally zero movement —
+  a genuinely queued column advances cells, which restarts the window). Old savegames break
+  (FootClass grew), accepted like the SuperWeapon-enum growth. Two earlier dead ends are recorded
+  in the design doc: never call the virtual `Assign_Destination()` from inside `Basic_Path()`
+  (crashed both machines), and the `Nearby_Location` guard alone (falsified).
+  **Verification pending:** DOCKLANDS-style rerun on the fixed build.
 - **⭐ Full detail: `docs/path-failure-livelock-design.md`. Read it before touching this** — it
   records both dead ends, and both are easy to walk straight back into.
 - **Symptom:** the same `(unit, src, dst)` triple repeats in `tf_astar.log` hundreds of times in

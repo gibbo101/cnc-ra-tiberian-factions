@@ -1,7 +1,63 @@
 # Path-failure livelock — root cause & design (2026-07-19)
 
-**Status:** root cause CONFIRMED from live logs + source. No fix written. One fix attempt
-CRASHED the game and was reverted (see "Failed attempt" below — read it before coding).
+**Status (2026-08-01): FIX IMPLEMENTED — no-progress detector in both give-up branches
+(`FootClass::TF_Path_No_Progress`), verification in progress.** Root cause was CONFIRMED from
+live logs + source 2026-07-19. One earlier fix attempt CRASHED the game and was reverted (see
+"Failed attempt" below — read it before touching this code).
+
+**The 2026-08-01 DOCKLANDS stack-overflow crash was NOT this bug.** The strong test's
+`EXCEPTION_STACK_OVERFLOW` was initially pinned on the livelock's legacy-fallback retry storm;
+walking the minidump disproved that (the legacy pathfinder is iterative). The real defect was
+unbounded mutual recursion in the v2.2.3 give-way RETREAT: `Start_Of_Move` → gw==2 →
+`Assign_Destination(back)` → nested `Start_Of_Move` (the engine re-enters it for a stationary
+unit) → RETREAT again, ~1,500 frames deep in the dump. Fixed the same day with a call-stack
+re-entrancy guard in `Start_Of_Move` (`giveway_retreat_depth`): while a retreat assignment is on
+the stack, the nested pass skips give-way evaluation and paths straight to the retreat cell.
+The livelock still FED that crash (the retry storm piles units into the jammed pinch), so the
+detector below is congestion relief for it as well as the livelock cure.
+
+## Implemented fix (2026-08-01)
+
+Exactly the recommended shape below. `FootClass` tracks the failing (current cell, `NavCom`)
+pair plus the frame it started failing (`TF_NoProgSrc/Dst/Frame`, reset on any successful path,
+any movement, or any new destination — savegame-breaking growth, accepted):
+
+- **Infantry** (`infantry.cpp` give-up branch, entered every post-exhaustion failure): after
+  **8 s** of zero progress on the same pair, abort `NavCom` regardless of zone; also drop a
+  `TarCom` we cannot reach AND cannot already shoot (`!In_Range`). A target in range is kept —
+  movement is not needed to be useful.
+- **Vehicles** (`drive.cpp` give-up branch): the patient queue keeps priority, but after
+  **60 s** at the SAME cell pursuing the SAME destination the "queued behind traffic" reading is
+  falsified and the engine's own abandon branch runs (scan-limit handling included). A genuinely
+  queued column advances a cell now and then, restarting the window, as does a deadlock-breaker
+  scatter.
+- Both aborts are **caller-side** — never from inside `Basic_Path()` (see the failed attempt).
+- `TF_DEV_BUILD` diag: `NOPROG abort (inf|veh): unit=... src=... dst=... stuck=...f` in
+  `tf_astar.log`.
+
+Open-question answers: N is a frame window, not a retry count (cadence-independent); the patient
+queue is distinguished from permanent boxing by *zero cell movement for a full minute*; scope is
+both infantry and vehicles; a tripped unit goes idle and its mission/team logic re-tasks it
+(the AI hunt path already had its own abort).
+
+## Live finding (2026-08-01 verification run): pair-keying is blind to TARGET ROTATION
+
+First fixed-build DOCKLANDS run (4 AIs vs isolated human): recursion guard HELD far past the
+crash point, but `NOPROG abort` fired **zero** times against a 200k+ fallback storm. The live
+tuple stream shows why — the dominant livelock is not one frozen (src,dst) pair but a
+**rotation**: a wedged 3TNK cycles dst=(121,37) → (113,91) → (112,58) every 4-8 attempts (hunt
+logic re-picks among unreachable targets, each re-pick resets the pair window). Even the
+self-cell TDE6 runs are interleaved (runs of ~5). The design doc's "598x same tuple" figures
+were per-match TOTALS, not consecutive runs — the pair-keyed window can essentially never trip
+on AI units. (It may still catch human-ordered units, which don't rotate targets.)
+
+**Iteration 2 (next):** key on the SOURCE CELL only — a unit accumulating Basic_Path failures
+from the same cell for a sustained window is stuck regardless of which doomed destination the
+mission logic is currently offering. On trip: abort destination AND apply the engine's own
+scan-limit idea (`IsScanLimited` / `Team->Scan_Limit()`, exactly what `drive.cpp`'s abandon
+branch already does) so target selection stops handing back unreachable prey. The infantry hunt
+abort (`infantry.cpp:4334`) clears NavCom/TarCom every failure but never scan-limits — that
+unthrottled re-pick loop IS the storm's engine.
 
 Sibling doc: `harvester-recovery-design.md`. Same underlying engine truth (movement zones
 ignore buildings), same recommended shape of cure (a no-progress detector, not a zone fix).
@@ -118,7 +174,7 @@ destination does not originate from `Nearby_Location`. Guard reverted; do not re
 
 ---
 
-## Recommended shape of the fix (NOT yet implemented — needs review)
+## Recommended shape of the fix (implemented 2026-08-01 as described — see top of doc)
 
 **A no-progress detector, not a zone test.** If a unit fails to path from the same cell to the
 same destination N consecutive times, abort the destination regardless of zone.
