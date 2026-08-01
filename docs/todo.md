@@ -5,6 +5,61 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## ⭐ NEXT SESSION — RESUME HERE: verify the W5 invasion stack (written 2026-08-01 end-of-day)
+
+Deployed to the desktop prefix = main through `4e88713` (md5-verified). Six unverified layers
+shipped 2026-08-01 evening on top of the verified fleet gate: yard-exit fix `0593113`, ferry
+v1 `5acc124`, convoys/escorts/threat-scored landings `2a9e504`, beachhead assembly `3062228`,
+cluster brain + MCV pipeline `ffe940d`+`782a310`, Hard-only second front `ef7c875` + forward
+fortress on connected maps `4e88713`. Logs to watch: `MOD_DEBUG_AI.txt` in the prefix
+(Claude baselines the byte offset and polls; full game exit before any deploy — pgrep
+`InstanceServerG[.]exe`, never bare `-f InstanceServer`, it self-matches).
+
+**Match A — the big one: 1+ HARD AI on a regular coastal map (shared sea + land route).**
+This exercises the second front, which fires on almost every map now. Pass criteria in order:
+1. **Naval re-soak (carry-over):** yard placed at economy-ready (~F6-8k, before discovery);
+   `NAVAL-PATROL` legs from the first ship; tech centre built ONCE and kept (no
+   `EXPERT-SELL ATEK` churn); no sidebar crash (fix went in before match 2 ended early).
+2. **Yard-exit fix:** `YARD-EXIT blocked` lines may appear but CLEAR (curV rises after);
+   fleet actually REACHES cap — `NAVAL-PICK ... curV=` climbing to `cap=` instead of match
+   3's 44-starts-3-ships. Eyeball: are there real naval battles now? (If fleets still
+   wander past each other piecemeal, fleet-massing doctrine is the queued follow-on.)
+3. **Second front (Hard only):** once enemycoastal flips AND the AI has 18+ idle spare
+   units: `NAVAL-PICK LST ferry` → `FERRY-START` (roster/pickup/landing cells) →
+   `FERRY-ESCORT` warships ordered ahead → `FERRY-SAIL` → `FERRY-UNLOAD` near the ENEMY
+   base at a weak stretch of coast.
+4. **Beachhead doctrine:** landed units do NOT attack piecemeal — they gather at the rally
+   (guard-area) while shuttles keep delivering (`FERRY-START op=1/2/3` as the convoy
+   scales); at 15 ashore one `FERRY-WAVE release beach=N` line and the whole force attacks
+   as a single wave. Stall-release: 5+ ashore with no delivery for ~3 min also releases.
+5. **Forward fortress:** after the first load is ashore — `FERRY-MCV queued` → MCV takes
+   the first berth next ride → `FERRY-DEPLOY` at the rally → yard deploys → **expansion
+   buildings (power, defences) place AROUND the beachhead yard**, not back home, and the
+   MAIN base keeps building normally (the cluster-brain guarantee — any PLACE-FAIL storm
+   or main-base placement weirdness after the expansion deploys = cluster regression,
+   grab the log).
+6. **Difficulty gate:** if a Medium/Easy AI is in the match, it must produce ZERO FERRY-*
+   lines on a connected map (single-front classic game preserved).
+
+**Match B — split map (Docklands), mixed difficulties:** ferry + MCV expansion must run at
+EVERY difficulty there (it's the only delivery route), landing at the shortest crossing;
+beachhead membership is zone-based there so stray survivors get adopted anywhere ashore.
+
+**Known watch items (log even if the match passes):**
+- Naval funding starves vs tank spam (match 3: H15 pinned at cash=11; `PROD hold ... cash=`
+  lines at the yard). Likely fix: naval funding priority — design question for Luke.
+- MCV deploy retry-loop: `FERRY-DEPLOY` repeating with no yard appearing = rally terrain
+  can't fit the 3x3 yard; needs a nudge-and-retry.
+- One transient `SYRD no-location` PLACE-FAIL self-recovered in match 3 — recheck.
+- A-10 factory/rearm fixes (`9b6d486`/`0c12624`) still awaiting regression eyes.
+
+**Queued next after verify:** sub-detection improvements (Luke has the options writeup:
+recommended B = real sonar radius via Is_Cloaked hook + C = detector hull in every fleet —
+awaiting his pick); endgame auto-sonar TD-sub gap fix (known-issues); fleet-massing doctrine
+if battles stay piecemeal; chrono-MCV delivery once Chronosphere AI dispatch (P3b/3c) exists.
+
+---
+
 ## ✅ Match-2 crash ROOT-CAUSED same day: the sidebar off-by-one (fix already on main)
 
 InstanceServerG crashed ~F79,733 in the GDI-vs-Allies naval match. **Minidump walked
