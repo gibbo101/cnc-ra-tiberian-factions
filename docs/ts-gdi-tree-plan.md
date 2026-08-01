@@ -108,6 +108,46 @@ BONUS_UNLOCK, DINOATK1, DINODIE1, DINOMOUT. Each new sound needs a host with no
 RAC_/RAR_ **and no SFX_GUI_*** reference (the SCOLD1 correction). The free-host
 census needs re-running before the roster's sound count is committed.
 
+## ⭐ The Stealth Recipe — canonical per-building port (Luke's challenge, 2026-08-01)
+
+**Luke's spec:** all TS GDI buildings in place, tech tree correct, sized to match
+their TD counterparts, TS-authentic built animations AND damaged states, TS sidebar
+icons. Baseline = the Nod Stealth Generator ("that works really well").
+
+Per building:
+1. **Extract** (temperate 'T' names): base `GT<X>.SHP`, active anims `GT<X>_A/_B/_C.SHP`
+   (art.ini `ActiveAnim*=`; `_AD` damaged variants are usually the second half of the
+   same SHP, not separate files), buildup `GT<X>MK.SHP` (ISOTEMP.MIX), cameo per
+   art.ini `Cameo=` (CONQUER.MIX or SIDEC01.MIX, decode with CAMEO.PAL). Bases/anims
+   decode with UNITTEM.PAL.
+2. **Compose** the stealth-gen layout: N healthy frames = healthy base + anim frame i
+   (shorter anims loop), then N damaged frames = damaged base + anim damaged-half (or
+   same anim frames if no damaged half). ⚠️ Buildup SHPs contain EMPTY + fragment
+   frames past the real run (GTCNSTMK: real 0–23, empty 24–31, fragments 32–47) —
+   the launcher renders missing/blank content as the PURPLE placeholder; ship real
+   frames only, resampled to the donor's construction-anim count.
+3. **One affine for every frame** of a building (base, anims, MK) — content-anchored:
+   scale so the healthy composite's content matches the TD counterpart's content
+   proportions (measure the TD ZIP frame-0 meta), centered on the canvas
+   (canvas-center anchoring, launcher-render-contracts rule 1). Canvas = classic
+   donor dims × 5.33. NEVER full-canvas scale (TSFACT v1 drew low + small).
+4. **Donor = the TD counterpart** (matching footprint AND construction-anim count):
+   TSFACT→TDFACT? no — donor stays RA FACT (3x3; TD yards are 3x2) — measure and
+   match TDGFACT content scale instead. TSPOWR→TDNUKE(2x2), TSPILE→TDPYLE,
+   TSPROC→TDPROC, TSWEAP→TDWEAP(3x3; TS 4x3 collapses to TD footprint for parity),
+   TSRADR→TDHQ, TSHPAD→TDHPAD, TSTECH→TDEYE, TSDEPT→TDFIX(3x3), TSSILO→TDSILO,
+   TSVULC/TSCSAM/TSROCK→TDGTWR/TDSAM/TDATWR-class 1x1s.
+5. **Engine:** enum append INSIDE the TS block tail (move `STRUCT_TS_TREE_LAST`),
+   heap `new` at the marked Init_Heap tail (slot==Type invariant), `_td_bdonors`
+   entry, `TF_Building_Scan_Bit` shadow (proc→REFINERY, weap→WEAP, radar→RADAR…),
+   role tests (`Is_Helipad` for TSHPAD; factory RTTI for TSWEAP incl. Exit_Object),
+   and an `_anims[]` entry `{STRUCT_TSX, BSTATE_IDLE, 0, N, 3}` — the stealth-gen
+   line at bdata.cpp:4621 is the template; damaged run = shapes N..2N-1 by the
+   engine's +count convention.
+6. **Data:** rules.ini section (TS stats, tree prereqs), RABUILDABLES entry,
+   ModText rows, BuildIcon TGA from the TS cameo (NEAREST 8x → LANCZOS 341×256,
+   `BuildIcon_TS_<X>.tga`) — Luke wants the real TS icons on the sidebar.
+
 ## Sequencing
 
 1. **Skeleton** — TSFACT + TSMCV + crate roll + `Can_Build` token + rewire the four
