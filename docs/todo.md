@@ -127,8 +127,9 @@ shore defences), warship escorts dispatched ahead of the crossing (`FERRY-ESCORT
    opportunistic landing (difficulty stays behavioural), gated on fair-fog enemycoastal +
    18 surplus idle units (land waves keep first claim), landing near the ENEMY base at
    the weakest threat-scored coast. Beachhead membership on a shared landmass = within 10
-   cells of the rally (zone identity can't distinguish there). MCV expansion stays
-   split-map-only by design.
+   cells of the rally (zone identity can't distinguish there). MCV forward base enabled
+   on connected maps too (`4e88713`, Luke's call) — Hard tier via the Assault gate;
+   "already planted" = yard within 10 cells of rally on shared landmasses.
 
 **Next-match verify list (deployed = through `ef7c875`):** fleets actually REACH cap
 (watch `YARD-EXIT blocked` — should appear then clear, curV rising after), LST spawns →
