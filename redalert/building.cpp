@@ -5382,6 +5382,9 @@ int BuildingClass::Mission_Deconstruction(void)
                 case STRUCT_TDFACT:
                     mcv_type = UNIT_TDMCV;
                     break;
+                case STRUCT_TSFACT:
+                    mcv_type = UNIT_TSMCV;
+                    break;
                 default:
                     break;
                 }
