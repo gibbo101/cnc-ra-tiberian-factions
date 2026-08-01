@@ -1,6 +1,54 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐ RESUME HERE — units wave SHIPPED 2026-08-01 evening (on top of the building tree)
+## ⭐ RESUME HERE — NEXT JOB (Luke, 2026-08-01 late): building size pass, then the
+## full building walk + sign-off INCLUDING harvester + docking mechanics
+
+**Luke's in-game verdicts from the first Deck look (ground truth, sign-off
+withheld):** TS refinery "ridiculously small" vs the TD one, TS conyard too
+small, TS radar "pathetically small, with broken animation", TS war factory
+same. Screenshot pulled and analysed; measurements below are from the shipped
+ZIPs, not guesses.
+
+**Measured root causes (2026-08-01 evening):**
+- TSPROC: content 367px on the 512-wide 4-cell canvas (71%) — NARROWER than
+  TDPROC's 384px on 3 cells despite the bigger footprint. The single-affine
+  union clamp shrank the base; the composited NTREFNBB bib plate inside the
+  footprint-only canvas is the likely height clamper.
+- TSRADR: content 184/256 (71%), height-full — the tall dish anim clamps the
+  union fit. Also "broken animation": bdata plays `{0, 30, 3}` but GTRADR_A
+  is 60 frames with the damaged loop in the second half — audit the ZIP frame
+  layout against the engine's damaged-run (shapes N..2N-1) convention first.
+- TSWEAP: content 500/512 — canvas-bound, cannot get bigger inside the
+  footprint box. TS art carries a big flat iso ground plate, so even a
+  full-width fit reads small next to TD's chunky 3x3 art.
+- TSFACT: full canvas, but the footprint is 3x2 TD-parity — small beside the
+  3x3 RA yard. TS GACNST is authentically 4x3 (BSIZE_43 infra now exists).
+
+**⭐ THE PROVEN UNLOCK — art may exceed the footprint box vertically.**
+TDOBLI ships classic dims 24x48 on a 1x1 footprint (HD canvas 128x256,
+content bottom-anchored, tower rising a full row ABOVE the cell) and TDATWR
+is 24x48 on 1x1 — both rendering correctly since v1.0. So the resize recipe
+is: taller TFASSETS stub (extra rows), taller HD canvas at the same 5.33
+px/classic-px density, content scaled to FULL footprint width and anchored
+so its base sits on the footprint bottom (the extra canvas rows extend
+upward, per the Obelisk's observed layout: canvas bottom = footprint bottom).
+Rework TSPROC/TSWEAP/TSRADR (and TSFACT, or take TSFACT to its TS-authentic
+4x3 footprint) through `ts_pack_tree.py` with per-building stub growth.
+
+**Bib decision owed (Luke's question: "the TS refinery has the concrete plate
+at its entrance, does it need the bib?"):** the baked TS NTREFNBB plate is
+part of what squeezed the building. Options: (a) drop the baked plate, keep
+engine `Bib=` (RA slab + reserved pathing row); (b) keep the plate and give
+the canvas a bottom bib row too — but the Obelisk precedent only proves
+UPWARD extension, so (b) needs its own probe. Verify whether TSPROC rules
+currently sets Bib= at all (double-apron risk). Decide with Luke.
+
+**Then the sign-off walk (units wave included):** the two checklists below —
+all nine buildings + the four new units, with special attention to the
+TSHARV harvest → dock → fume-plume → credits loop at the 4x3 TSPROC
+(`MOD_DEBUG_TSUNITS.txt` logs FREE-HARV grants and every DOCK-START).
+
+## Units wave SHIPPED 2026-08-01 evening (on top of the building tree)
 
 **Deployed to the Deck (DLL 17:59). The vehicle wave is in: TSHARV (Harvester),
 TSSMEC (Wolverine), TSSONIC (Disruptor), TSAPC (Amphibious APC) — all TS-stat
