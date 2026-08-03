@@ -43,6 +43,24 @@ anywhere — ClientG AND InstanceServer both gone; ask Luke crash-vs-freeze).**
    refinery is a wide flat disc — the overscale + full-width is the honest
    maximum without clipping structure; revisit only if Luke still objects).
 
+**BATCH 4 (2026-08-04 small hours, `3c7d3350`, Deck-deployed): THE PLACEMENT
+RULE, locked by Luke — art matches the build grid; the GRID grows to fit big
+art, never the art shrinking; the standard RA slab spans the full building
+width (this also settles the pads: no baked apron, full-width bib).**
+- TSPROC: disc at FULL 4-cell width (96x96 stub, 512x512), BSIZE_43 with the
+  RA dock-lane pattern translated to 4-wide (`TsProcList43`: row-2 centre
+  cells free, pad one south of the centre cell — stock dock flow +
+  Is_Refinery_Dock_Cell work unchanged), Bib=yes → BIB1.
+- TSWEAP: art UNTOUCHED (Luke: "finally the right size"); footprint 4x3 so
+  the grid matches the hangar, BIB1 spans it, TsExitWeap43 restored.
+- TSPILE: 3x2 grid under the 72-wide art (was spilling over 2x2).
+- WF exit-door anim: GTWEAP frame 1 is the door-open healthy variant —
+  queued as future polish (swap base frame / overlay during Exit_Object,
+  RA WEAP2-style).
+- Size-saga honesty note: the sprite only actually grew in batch 3 (hangar
+  73→91 classic) and batch 4 (disc 72→94); the earlier "size pass" mostly
+  removed dilution, which is why Luke kept reporting no change.
+
 **BATCH 3 (2026-08-03 latest, `7df1314`, Deck-deployed): Luke's round-3
 verdicts — the wide-footprint design is DEAD, long live TD-style 3x3.**
 - **TSPROC = RA-refinery geometry clone** (BSIZE_33 + RA occupy/overlap lists
