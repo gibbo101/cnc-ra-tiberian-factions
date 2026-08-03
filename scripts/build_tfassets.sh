@@ -251,15 +251,17 @@ PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
 # MAKE stubs carry the construction frame count the HD buildup zips ship.
 # Size pass 2026-08-03: the launcher maps the canvas onto the stub box
 # CENTERED on the BSIZE box, so stub height beyond the box splits into equal
-# art halos above and below it. 96x120 on the 4x3 box = 1 row headroom above
-# + the passable TS apron row below (engine Bib=no; apron baked in the art).
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 96 120 2
+# art halos above and below it — and the launcher's SELECTION BOX is the stub
+# box, so the stub must HUG the art (a roomy 96x120 put floating brackets in
+# empty headroom). TSPROC 96x102 / TSWEAP 96x96: halo above the 3-row box +
+# the passable TS apron row below (engine Bib=no; apron baked in the art).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 96 102 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 96 120 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 96 102 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 96 120 2
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 96 96 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 96 120 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 96 96 19
 PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
 # TSRADR 48x96 on the 2x2 plot: Obelisk treatment, the dish tower rises a
 # full row above the box (was donor-TDHQ 48x48 = the "pathetically small").

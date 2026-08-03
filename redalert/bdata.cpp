@@ -4808,7 +4808,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 56, 3},  // GAPILE _A(8)+_B(8)+_C(14) -> LCM 56
         {STRUCT_TSPROC, BSTATE_IDLE, 0, 20, 3},  // NAREFN _B(20)
         {STRUCT_TSWEAP, BSTATE_IDLE, 0, 16, 3},  // GAWEAP _A(16)+_B(8)+_C(4) -> LCM 16
-        {STRUCT_TSRADR, BSTATE_IDLE, 0, 15, 3},  // GARADR _A: frames 0-14 healthy dish loop, 15-29 torn-dish damaged loop
+        {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 16, 3},  // GAHPAD _A(16)
         {STRUCT_TSTECH, BSTATE_IDLE, 0, 16, 3},  // GATECH _A(16)
         {STRUCT_TSDEPT, BSTATE_IDLE, 0, 70, 3},  // GADEPT _A(10)+_B(7) -> LCM 70
@@ -5013,6 +5013,12 @@ void BuildingTypeClass::One_Time(void)
         for (int di = 0; di < (int)(sizeof(_td_bdonors) / sizeof(_td_bdonors[0])); di++) {
             BuildingTypeClass& b = As_Reference(_td_bdonors[di].td);
             BuildingTypeClass const& d = As_Reference(_td_bdonors[di].ra);
+            // A building with its OWN TFASSETS MAKE stub already got the right
+            // construction anim (count = its stub's frame count) in the main
+            // loop; the donor copy below must not clobber it, or the count
+            // plays past the building's HD tile list (TSPROC ships 19 buildup
+            // tiles, donor TDPROC counts 20 -> purple placeholder final frame).
+            bool had_own_buildup = (b.BuildupData != NULL);
             if (b.ImageData == NULL)
                 ((void const*&)b.ImageData) = d.ImageData;
             if (b.BuildupData == NULL)
@@ -5030,10 +5036,12 @@ void BuildingTypeClass::One_Time(void)
             // construction anim was loaded from its own (identical, cloned)
             // MAKE art, so copy it across — the launcher then cycles the
             // TD*MAKE-#### TGA frames as the building assembles.
-            b.Init_Anim(BSTATE_CONSTRUCTION,
-                        d.Anims[BSTATE_CONSTRUCTION].Start,
-                        d.Anims[BSTATE_CONSTRUCTION].Count,
-                        d.Anims[BSTATE_CONSTRUCTION].Rate);
+            if (!had_own_buildup) {
+                b.Init_Anim(BSTATE_CONSTRUCTION,
+                            d.Anims[BSTATE_CONSTRUCTION].Start,
+                            d.Anims[BSTATE_CONSTRUCTION].Count,
+                            d.Anims[BSTATE_CONSTRUCTION].Rate);
+            }
         }
 
     }

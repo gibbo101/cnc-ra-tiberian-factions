@@ -1,7 +1,54 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐ RESUME HERE — SIZE PASS SHIPPED TO THE DECK (2026-08-03); NEXT: Luke's
-## full building walk + sign-off INCLUDING harvester + docking mechanics
+## ⭐ RESUME HERE — WALK ROUND 1 FINDINGS ALL FIXED + REDEPLOYED (2026-08-03
+## late); NEXT: walk round 2 (same checklists + the round-1 regression list)
+
+**Luke's first walk (2026-08-03 evening) surfaced 7 issues; all fixed, rebuilt,
+Deck-deployed the same night. The game also crashed once (~F14200, no minidump
+anywhere — ClientG AND InstanceServer both gone; ask Luke crash-vs-freeze).**
+
+1. **Harvesters never docked at TSPROC (DOCK-START=0) — the likely
+   crash/livelock trigger.** The refinery radio protocol gates on literal
+   `STRUCT_REFINERY || STRUCT_TDPROC` in ~15 sites (ARE_REFINERY returned
+   NEGATIVE for TSPROC; RADIO_DOCKING had no TSPROC pad case so MOVE_HERE got
+   a garbage target; the busy-dock guard let queued harvesters thrash the
+   current customer — matching the endless A* fallback storm in tf_astar.log).
+   ALL sites now take TSPROC. Pad = the passable APRON-row cell two south of
+   the centre cell (`Coord + 3*MAP_CELL_W + 2` — RA's DIR_S-of-centre lands
+   inside our occupied 4x2 plot). N-of-pad = plot south row, so the PCP_END
+   arrival check and the direct BACKUP_NOW → IM_IN handshake work unchanged;
+   the harvester unloads standing ON the apron, as in TS.
+   `Is_Refinery_Dock_Cell` (Layer B pad reservation) got the TSPROC clause.
+2. **TSRADR gave static, not radar:** the scan-bit shadow activated the radar
+   but the jam loop (`STRUCT_RADAR||TDHQ||TDEYE` chains) didn't know TSRADR →
+   permanently "jammed" → static. TSRADR added to all 7 radar-facility chains
+   (radar-on, sting count, jammable-by-MRJ, destroy/capture spied, infiltrate).
+3. **Dish anim snapped back:** GTRADR_A's 15 healthy frames are HALF a sweep.
+   Baked forward+reverse ping-pong (28 frames, bdata `{0,28,3}`, ZIP 56) —
+   the TS dish scans back and forth.
+4. **Purple flash in radar buildup:** GTRADRMK carries debris FRAGMENT frames
+   after the real run; the >800px `real_frames` filter passed them (buildup
+   snapped to a shard at the end). Post-peak area cut added (all four MAKE
+   ZIPs verified fragment-free).
+5. **Buildup count mismatch:** the `_td_bdonors` loop unconditionally
+   overwrote construction anims with the donor's count (TSPROC/TSWEAP ship 19
+   tiles, donors count 20 → purple final frame). Donor Init_Anim now applies
+   only when the building had no own MAKE stub.
+6. **Selection box floated in empty headroom** (launcher selection box = the
+   classic stub box): stubs tightened to hug the art — TSPROC 96x102,
+   TSWEAP 96x96 (apron halo kept below the plot).
+7. **Scale verdicts:** TSRADR bib restored (`Bib=yes`, barracks look — Luke).
+   TSWEAP +10% overscale (Titan-vs-WF mass complaint), TSPROC +8% (still
+   "too small" after round 1; it IS authentically low-profile — the TS
+   refinery is a wide flat disc — the overscale + full-width is the honest
+   maximum without clipping structure; revisit only if Luke still objects).
+
+**Walk round 2 = the same two checklists below PLUS:** TSHARV full loop at
+TSPROC (approach → park on apron pad under the ramp → fume plume → credits →
+DOCK-START lines in MOD_DEBUG_TSUNITS.txt), radar minimap actually renders
+(not static), dish ping-pong, clean buildups on all four (no purple, no
+shard), tight selection boxes, undeploy/redeploy TSFACT, and whether the
+crash reproduces (grab `pgrep` + logs immediately if it does).
 
 **The size pass is implemented, built and Deck-deployed (md5-verified), NOT
 yet play-verified.** All four rejected buildings rebuilt:

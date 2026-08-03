@@ -221,10 +221,12 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         **	second harvester gets coordinated straight into the occupied dock
         **	(stomping the siphon animation and double-attaching).
         */
-        if ((Class->Type == STRUCT_REFINERY || Class->Type == STRUCT_TDPROC) && Is_Something_Attached()) {
+        if ((Class->Type == STRUCT_REFINERY || Class->Type == STRUCT_TDPROC || Class->Type == STRUCT_TSPROC)
+            && Is_Something_Attached()) {
             return (RADIO_NEGATIVE);
         }
-        if ((Class->Type == STRUCT_REFINERY || Class->Type == STRUCT_TDPROC) && In_Radio_Contact()) {
+        if ((Class->Type == STRUCT_REFINERY || Class->Type == STRUCT_TDPROC || Class->Type == STRUCT_TSPROC)
+            && In_Radio_Contact()) {
             if (from != NULL && from->What_Am_I() == RTTI_UNIT && ((UnitClass*)from)->Class->IsToHarvest
                 && Contact_With_Whom()->What_Am_I() == RTTI_UNIT) {
 
@@ -255,7 +257,8 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         if (!House->Is_Ally(from))
             return (RADIO_STATIC);
         if (Mission == MISSION_CONSTRUCTION || Mission == MISSION_DECONSTRUCTION || BState == BSTATE_CONSTRUCTION
-            || (!ScenarioInit && Class->Type != STRUCT_REFINERY && Class->Type != STRUCT_TDPROC && In_Radio_Contact()))
+            || (!ScenarioInit && Class->Type != STRUCT_REFINERY && Class->Type != STRUCT_TDPROC
+                && Class->Type != STRUCT_TSPROC && In_Radio_Contact()))
             return (RADIO_NEGATIVE);
         switch (Class->Type) {
         case STRUCT_AIRSTRIP:
@@ -400,7 +403,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         **	MOVE_HERE) is transmitted at the CURRENT customer, resetting its
         **	docking dance and overwriting its rally destination each tick.
         */
-        if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC)
+        if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC)
             && (Is_Something_Attached() || (In_Radio_Contact() && Contact_With_Whom() != from))) {
             return (RADIO_NEGATIVE);
         }
@@ -409,7 +412,8 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         **	When in radio contact for loading, the refinery starts
         **	flashing the lights.
         */
-        if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC) && BState != BSTATE_FULL) {
+        if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC)
+            && BState != BSTATE_FULL) {
             Begin_Mode(BSTATE_FULL);
         }
 
@@ -484,6 +488,18 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 param = ::As_Target(Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_S)));
                 break;
 
+            case STRUCT_TSPROC:
+                /*
+                **	TS refinery (4x3 box, plot = rows 1-2): the pad is the passable
+                **	apron-row cell under the striped dock ramp — TWO cells south of
+                **	the centre cell (RA's DIR_S-of-centre would land inside the
+                **	occupied plot on this footprint). N-of-pad is the plot's south
+                **	row, so the PCP_END arrival check fires unchanged, and the
+                **	harvester unloads standing ON the apron, as in TS.
+                */
+                param = ::As_Target((CELL)(Coord_Cell(Coord) + 3 * MAP_CELL_W + 2));
+                break;
+
             case STRUCT_TDPROC:
                 /*
                 **	TD-verbatim dock pad — DIR_SW of building center, NOT
@@ -510,7 +526,8 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 **	procedure now. If it can't, then tell it to get outta here.
                 */
                 Transmit_Message(RADIO_TETHER);
-                if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC) && Transmit_Message(RADIO_BACKUP_NOW, from) != RADIO_ROGER) {
+                if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC)
+                    && Transmit_Message(RADIO_BACKUP_NOW, from) != RADIO_ROGER) {
                     from->Scatter(0, true, true);
                 }
             }
@@ -524,7 +541,8 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
     */
     case RADIO_ARE_REFINERY:
         if (Is_Something_Attached() || In_Radio_Contact() || IsInLimbo || House->Class->House != from->Owner()
-            || ((*this != STRUCT_REFINERY && *this != STRUCT_TDPROC) /* && *this != STRUCT_REPAIR*/)) {
+            || ((*this != STRUCT_REFINERY && *this != STRUCT_TDPROC && *this != STRUCT_TSPROC)
+                /* && *this != STRUCT_REPAIR*/)) {
             return (RADIO_NEGATIVE);
         }
         return (RADIO_ROGER);
@@ -583,7 +601,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         // RADIO_CAN_LOAD at line 286) keeps looping its anim cycle after
         // the harvester leaves. EA's TD branch carries this fix; the RA
         // branch we ported from never received it.
-        if (*this == STRUCT_REFINERY || *this == STRUCT_TDPROC) {
+        if (*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC) {
             Begin_Mode(BSTATE_IDLE);
 
             /*
@@ -1431,7 +1449,8 @@ void BuildingClass::AI(void)
     ** radar jammer. STRUCT_SAM/STRUCT_TDSAM aliased intentionally — both
     ** are jammable by identical rules (per docs/td-sam-deep-dive.md M6).
     */
-    if ((*this == STRUCT_RADAR || *this == STRUCT_TDHQ || *this == STRUCT_TDEYE || *this == STRUCT_SAM || *this == STRUCT_TDSAM)
+    if ((*this == STRUCT_RADAR || *this == STRUCT_TDHQ || *this == STRUCT_TDEYE || *this == STRUCT_TSRADR
+         || *this == STRUCT_SAM || *this == STRUCT_TDSAM)
         && (Frame % TICKS_PER_SECOND) == 0) {
         IsJammed = false;
         for (int index = 0; index < Units.Count(); index++) {
@@ -2192,7 +2211,7 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
             if (SpiedBy) {
                 SpiedBy = 0;
                 StructType struc = *this;
-                if (struc == STRUCT_RADAR || struc == STRUCT_TDHQ || struc == STRUCT_TDEYE) {
+                if (struc == STRUCT_RADAR || struc == STRUCT_TDHQ || struc == STRUCT_TDEYE || struc == STRUCT_TSRADR) {
                     Update_Radar_Spied();
                 }
             }
@@ -4665,7 +4684,7 @@ bool BuildingClass::Captured(HouseClass* newowner)
         */
         if (SpiedBy & (1 << (newowner->Class->House))) {
             SpiedBy -= (1 << (newowner->Class->House));
-            if (*this == STRUCT_RADAR || *this == STRUCT_TDHQ || *this == STRUCT_TDEYE) {
+            if (*this == STRUCT_RADAR || *this == STRUCT_TDHQ || *this == STRUCT_TDEYE || *this == STRUCT_TSRADR) {
                 Update_Radar_Spied();
             }
         }
@@ -4864,7 +4883,7 @@ COORDINATE BuildingClass::Sort_Y(void) const
     if (*this == STRUCT_BARRACKS /*|| *this == STRUCT_POWER*/) {
         return (Center_Coord());
     }
-    if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC)) {
+    if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC)) {
         return (Center_Coord());
     }
     /*
@@ -4948,6 +4967,18 @@ bool Is_Refinery_Dock_Cell(CELL cell)
         }
     }
 
+    /*
+    **	TS refinery: pad sits on the apron row, TWO cells south of the centre cell
+    **	(see the STRUCT_TSPROC RADIO_DOCKING case) -> centre is two north of the pad.
+    */
+    CELL n2cell = (CELL)(cell - MAP_CELL_W * 2);
+    if ((unsigned)n2cell < MAP_CELL_TOTAL) {
+        BuildingClass const* b = Map[n2cell].Cell_Building();
+        if (b != NULL && *b == STRUCT_TSPROC && Coord_Cell(b->Center_Coord()) == n2cell) {
+            return (true);
+        }
+    }
+
     return (false);
 }
 
@@ -5012,7 +5043,7 @@ bool BuildingClass::Can_Demolish(void) const
 
     if (Class->Get_Buildup_Data() && BState != BSTATE_CONSTRUCTION && Mission != MISSION_DECONSTRUCTION
         && Mission != MISSION_CONSTRUCTION) {
-        if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC) && Is_Something_Attached())
+        if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC) && Is_Something_Attached())
             return (false);
         return (true);
     }
@@ -7533,7 +7564,7 @@ void BuildingClass::Update_Radar_Spied(void)
     for (int index = 0; index < Buildings.Count(); index++) {
         BuildingClass* obj = Buildings.Ptr(index);
         if (obj && !obj->IsInLimbo && obj->House == House) {
-            if (*obj == STRUCT_RADAR || *obj == STRUCT_TDHQ || *obj == STRUCT_TDEYE) {
+            if (*obj == STRUCT_RADAR || *obj == STRUCT_TDHQ || *obj == STRUCT_TDEYE || *obj == STRUCT_TSRADR) {
                 House->RadarSpied |= obj->Spied_By();
             }
         }

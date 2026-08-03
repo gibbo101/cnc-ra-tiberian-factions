@@ -35,11 +35,22 @@ def frame_count(dirname):
 
 
 def real_frames(dirname):
-    """Indices of frames with substantive content (skips empties/fragments)."""
-    out = []
+    """Indices of frames with substantive content. TS buildup SHPs carry the
+    real run, then EMPTY frames, then debris FRAGMENTS (GTCNSTMK: real 0-23,
+    empty 24-31, fragments 32-47). The pixel-count floor drops the empties;
+    the post-peak area cut drops the fragment tail (a fragment is a small
+    corner piece appearing after the fully-built peak frame — shipping one
+    made the radar buildup 'snap to a shard' at the end, 2026-08-03)."""
+    counts = []
     for i in range(frame_count(dirname)):
         im = load(dirname, i)
-        n = sum(1 for p in im.getdata() if p[3] > 0)
+        counts.append(sum(1 for p in im.getdata() if p[3] > 0))
+    peak = max(counts)
+    peak_i = counts.index(peak)
+    out = []
+    for i, n in enumerate(counts):
+        if i > peak_i and n < peak * 2 // 5:
+            break
         if n > 800:
             out.append(i)
     return out
@@ -143,7 +154,7 @@ def resample(indices, target):
 
 def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count,
                     canvas_w, canvas_h, target_w=None, bib_dir=None,
-                    bottom_margin=None):
+                    bottom_margin=None, overscale=1.0):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -185,7 +196,9 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     if bottom_margin is not None:
         # Size-pass fit: composite union spans the full canvas width, anchored
         # low. MK frames share the affine and may clip — harmless transients.
-        factor = float(canvas_w) / (ux1 - ux0)
+        # overscale > 1 trades the apron's side tips (clipped at the canvas
+        # edge) for a beefier structure — the WF-vs-Titan mass fix.
+        factor = float(canvas_w) / (ux1 - ux0) * overscale
         cx, cy = (ux0 + ux1) / 2.0, float(uy1)
         dst_x, dst_y = canvas_w / 2.0, canvas_h - bottom_margin * 16.0 / 3.0
     else:
@@ -301,26 +314,27 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
 # ---- Size pass (2026-08-03, docs/ts-gdi-tree-plan.md top block): the four
 # buildings Luke rejected as too small, rebuilt with taller classic stubs and
 # the width-fit + bottom-anchor mode. Stubs (build_tfassets.sh) must match:
-# TSPROC/TSWEAP 96x120 (1 headroom row above the 3-row BSIZE_43 box + the TS
-# apron row below it, Bib=no engine-side), TSRADR 48x96 (Obelisk treatment:
+# TSPROC 96x102 / TSWEAP 96x96 (art halo above the 3-row BSIZE_43 box + the
+# passable TS apron row below it, Bib=no engine-side; stubs hug the art so
+# the launcher's selection box does too), TSRADR 48x96 (Obelisk treatment:
 # dish rises ~1 row over the 2x2 plot), TSFACT 96x72 (TS-authentic BSIZE_43).
 # bottom_margin = classic px from canvas bottom up to the composite's bottom.
-# (ini, base, anims, mk, mkc, canvas, bottom_margin, cameo, name, desc)
+# (ini, base, anims, mk, mkc, canvas, bottom_margin, overscale, cameo, name, desc)
 SIZEPASS = [
     # NTREFN_C is a 144-canvas anim on a 192x168 building; needs offset
     # compositing -- still deferred.
     ("TSPROC", "shp_ntrefn", ["shp_ntrefn_b"],
-     "shp_ntrefnmk", 19, (512, 640), 2, "shp_reficon",
+     "shp_ntrefnmk", 19, (512, 544), 0, 1.08, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
-     "shp_gtweapmk", 19, (512, 640), 2, "shp_weapicon",
+     "shp_gtweapmk", 19, (512, 512), 0, 1.10, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
     ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
-     "shp_gtradrmk", 20, (256, 512), 26, "shp_radricon",
+     "shp_gtradrmk", 20, (256, 512), 26, 1.0, "shp_radricon",
      "TS Radar", "Provides radar coverage."),
 ]
 
-for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, cameo, disp, desc in SIZEPASS:
+for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc in SIZEPASS:
     if not os.path.isdir(f"{ART}/{base}"):
         print(f"{ini}: SKIP (no {base})")
         continue
@@ -328,12 +342,17 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, cameo, disp, desc in SIZEPA
         # GTRADR_A packs 15 healthy rotation frames + 15 torn-dish damaged
         # frames in its 30-frame usable window (the engine's shapes-N..2N-1
         # damaged convention applied inside the anim SHP). Cycling all 30 as
-        # the healthy idle was Luke's "broken animation".
-        anims = [("shp_gtradr_a", list(range(0, 15)), list(range(15, 30)))]
+        # the healthy idle was Luke's "broken animation". The 15 frames are
+        # HALF a sweep (frame 14 = opposite extreme of frame 0), so bake the
+        # return sweep too — forward + reverse = a seamless 28-frame ping-pong
+        # (the TS dish scans back and forth; a plain loop teleports the dish).
+        fwd, back = list(range(0, 15)), list(range(13, 0, -1))
+        dfwd, dback = list(range(15, 30)), list(range(28, 15, -1))
+        anims = [("shp_gtradr_a", fwd + back, dfwd + dback)]
     else:
         anims = [loop(d) for d in anim_dirs]
     build_structure(ini, base, 0, 1, anims, mk, mkc, cw, ch,
-                    bib_dir=BIBS.get(ini), bottom_margin=margin)
+                    bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale)
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSFACT: TS Construction Yard, size pass: TS-authentic 4x3 (BSIZE_43,

@@ -1829,7 +1829,8 @@ void HouseClass::AI(void)
 #else
                 if (building && building->House == PlayerPtr) {
 #endif
-                    if (*building == STRUCT_RADAR || *building == STRUCT_TDHQ || *building == STRUCT_TDEYE) {
+                    if (*building == STRUCT_RADAR || *building == STRUCT_TDHQ || *building == STRUCT_TDEYE
+                        || *building == STRUCT_TSRADR) {
                         if (!building->IsJammed) {
                             jammed = false;
                             break;
@@ -1910,7 +1911,7 @@ void HouseClass::AI(void)
                 // this guard the sting fired the instant you clicked the radar in the
                 // sidebar instead of when you place it (= when it comes online).
                 if (rb != NULL && !rb->IsInLimbo && rb->House == PlayerPtr
-                    && (*rb == STRUCT_RADAR || *rb == STRUCT_TDHQ || *rb == STRUCT_TDEYE)) {
+                    && (*rb == STRUCT_RADAR || *rb == STRUCT_TDHQ || *rb == STRUCT_TDEYE || *rb == STRUCT_TSRADR)) {
                     radar_count++;
                 }
             }

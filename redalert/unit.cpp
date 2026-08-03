@@ -697,7 +697,8 @@ void UnitClass::AI(void)
     if (Class->IsToHarvest && Mission != MISSION_HARVEST) {
         if (Mission != MISSION_ENTER || !In_Radio_Contact() || Contact_With_Whom()->What_Am_I() != RTTI_BUILDING
             || (*((BuildingClass*)Contact_With_Whom()) != STRUCT_REFINERY
-                && *((BuildingClass*)Contact_With_Whom()) != STRUCT_TDPROC)) {
+                && *((BuildingClass*)Contact_With_Whom()) != STRUCT_TDPROC
+                && *((BuildingClass*)Contact_With_Whom()) != STRUCT_TSPROC)) {
             TiberiumUnloadRefinery = TARGET_NONE;
         }
     }
@@ -1085,7 +1086,8 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
             */
             TechnoClass* rdock = Contact_With_Whom();
             bool ra_ref = (rdock != NULL && rdock->What_Am_I() == RTTI_BUILDING
-                           && *((BuildingClass*)rdock) == STRUCT_REFINERY);
+                           && (*((BuildingClass*)rdock) == STRUCT_REFINERY
+                               || *((BuildingClass*)rdock) == STRUCT_TSPROC));
             if (ra_ref) {
                 if (!IsRotating && PrimaryFacing != DIR_SW) {
                     Do_Turn(DIR_SW);
@@ -1274,7 +1276,9 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
     case RADIO_RUN_AWAY:
         if (Class->IsToHarvest && In_Radio_Contact() && Mission == MISSION_ENTER) {
             TechnoClass* contact = Contact_With_Whom();
-            if (contact->What_Am_I() == RTTI_BUILDING && (*((BuildingClass*)contact) == STRUCT_REFINERY || *((BuildingClass*)contact) == STRUCT_TDPROC)) {
+            if (contact->What_Am_I() == RTTI_BUILDING
+                && (*((BuildingClass*)contact) == STRUCT_REFINERY || *((BuildingClass*)contact) == STRUCT_TDPROC
+                    || *((BuildingClass*)contact) == STRUCT_TSPROC)) {
                 // Slight hack; set a target so the harvest mission knows to skip to finding home state
                 Assign_Mission(MISSION_HARVEST);
                 TarCom = As_Target();
@@ -1798,7 +1802,8 @@ void UnitClass::Player_Assign_Mission(MissionType mission, TARGET target, TARGET
         HarvTargetCell = -1;
     } else if (mission == MISSION_ENTER) {
         BuildingClass* building = As_Building(destination);
-        if (building != NULL && (*building == STRUCT_REFINERY || *building == STRUCT_TDPROC)
+        if (building != NULL
+            && (*building == STRUCT_REFINERY || *building == STRUCT_TDPROC || *building == STRUCT_TSPROC)
             && building->In_Radio_Contact()) {
             building->Transmit_Message(RADIO_OVER_OUT);
         }
@@ -5331,7 +5336,8 @@ int UnitClass::Mission_Enter(void)
             contact = As_Techno(ArchiveTarget);
         }
         if (contact != NULL && contact->What_Am_I() == RTTI_BUILDING
-            && (*((BuildingClass*)contact) == STRUCT_REFINERY || *((BuildingClass*)contact) == STRUCT_TDPROC)) {
+            && (*((BuildingClass*)contact) == STRUCT_REFINERY || *((BuildingClass*)contact) == STRUCT_TDPROC
+                || *((BuildingClass*)contact) == STRUCT_TSPROC)) {
             TiberiumUnloadRefinery = contact->As_Target();
         }
     }
