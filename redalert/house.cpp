@@ -6099,6 +6099,22 @@ int HouseClass::Expert_AI(void)
                 bool vidle = (v->Mission == MISSION_GUARD || v->Mission == MISSION_GUARD_AREA);
                 bool vzone = (Map[Coord_Cell(v->Center_Coord())].Zones[MZONE_WATER] == pzone);
                 if (!vidle || !vzone) {
+                    /*
+                    **	Hunt supervision: MISSION_HUNT is terminal -- a ship whose chosen
+                    **	target no water route or weapon range can ever reach parks at the
+                    **	shore forever, invisible to a dispatcher that only deals to guard
+                    **	ships, and the fleet bleeds out of rotation one wave at a time
+                    **	("naval gone dead", verify match 2). A hunter that is not moving
+                    **	and cannot hit its target goes back to guard: it re-scans,
+                    **	re-masses and sails with the next wave instead of statue duty.
+                    */
+                    if (v->Mission == MISSION_HUNT && !v->IsDriving
+                        && (!Target_Legal(v->TarCom)
+                            || !v->In_Range(v->TarCom, v->What_Weapon_Should_I_Use(v->TarCom)))) {
+                        v->Assign_Mission(MISSION_GUARD);
+                        v->Assign_Destination(TARGET_NONE);
+                        continue;
+                    }
 #if TF_DEV_BUILD // TF_AI_DIAG -- a warship the dispatcher can't see: idle-but-off-zone
                  // (invisible forever) or stalled inside some other mission. One line per
                  // house per ~minute; a healthy moving fleet stays quiet.
