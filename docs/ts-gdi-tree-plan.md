@@ -17,6 +17,21 @@ the batch blocks below.** Final state:
 - NOT yet re-verified after the 4-wide refinery: one dock cycle (lane
   moved cells, stock flow), TSHARV auto-return (Tiberium_Load fix),
   depot repairs, halved idle anims, damaged states (frame 2), sizes above.
+- FIRST-LOOK VERDICTS (Luke, session close), both for next session:
+  **(a) power plant slightly OVERdone — dial the art down a touch** (keep
+  the 3x2 grid; stub ~66x66 so the art sits just inside the grid; one-number
+  change in build_tfassets.sh + packer canvas 352x352).
+  **(b) conyard (TSFACT) reads SMALL — Luke's spec: make it a FULL 4x3 plot
+  WITH a bib** (currently rows 1-2 occupied + overlap row, Bib=no). Recipe
+  ready to apply: `TsFactList43` = all 12 cells + overlap NULL; rules
+  `Bib=yes` (4-wide → BIB1); art up via stub 102x72 / canvas 544x384
+  (f≈0.80 → 102x69 classic, ±3px side overhang). MCV deploy/undeploy
+  geometry unchanged (NW-origin/SE-return; 12-cell clear check).
+  **(c) radar TOP-OF-SPRITE CUT-OFF: FIXED LOCALLY, UNCOMMITTED-at-first,
+  now committed but NOT DEPLOYED** — canvas was 20px too short for the
+  100-classic-tall dish (stub 72x108 → 72x150, canvas 384x800, margin 48;
+  meta top margin 11 confirms intact). **Deploy this first thing next
+  session** — the Deck build still shows the clipped dish.
 - QUEUED NEXT: TSHARV movement facing (voxel facing order, (8-f)%8 rule),
   WF exit-door anim (GTWEAP frame 1 = door-open variant), remaining
   checklists below, then component towers/infantry/Orcas/audio per plan.

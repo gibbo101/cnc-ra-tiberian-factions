@@ -370,7 +370,7 @@ SIZEPASS = [
      "shp_gtpilemk", 19, (320, 256), 0, 1.0, "shp_brrkicon",
      "TS Barracks", "Trains Tiberian-era infantry."),
     ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
-     "shp_gtradrmk", 20, (384, 576), 28, 1.0, "shp_radricon",
+     "shp_gtradrmk", 20, (384, 800), 48, 1.0, "shp_radricon",
      "TS Radar", "Provides radar coverage."),
 ]
 
@@ -404,7 +404,7 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
 if os.path.isdir(f"{ART}/shp_gtcnst"):
     build_structure("TSFACT", "shp_gtcnst", 0, 2,
                     [loop("shp_gtcnst_a"), loop("shp_gtcnst_b"), loop("shp_gtcnst_c")],
-                    "shp_gtcnstmk", 32, 512, 384, bottom_margin=2)
+                    "shp_gtcnstmk", 32, 544, 384, bottom_margin=2)
 
 # ---- TSPOWR: TS Power Plant (2x2, POWR donor 48x48 -> 256x256).
 # Content scaled to TDNUKE (content 256 full-width). Anims: _A fan 24, _B 12

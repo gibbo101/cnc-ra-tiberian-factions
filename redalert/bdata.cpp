@@ -1315,6 +1315,11 @@ static BuildingTypeClass const ClassTdGdiFact(STRUCT_TDGFACT,
 ** unchanged on the 4-wide grid. */
 static short const TsProcList43[] = {(MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
                                      (MCW * 2), (MCW * 2) + 3, REFRESH_EOL};
+/* Full 4x3 plot for the conyard (Luke, 2026-08-04: "4x3 with a bib"). */
+static short const TsFactList43[] = {0, 1, 2, 3,
+                                     (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
+                                     (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
+                                     REFRESH_EOL};
 static short const TsProcOList43[] = {0, 1, 2, 3, (MCW * 2) + 1, (MCW * 2) + 2, REFRESH_EOL};
 static short const TsExitWeap43[] = {XYCELL(-1, 3), XYCELL(0, 3), XYCELL(1, 3),
                                      XYCELL(2, 3), XYCELL(3, 3), XYCELL(4, 3),
@@ -1356,10 +1361,10 @@ static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
                                            true,               // Can the building be color remapped?
                                            RTTI_BUILDINGTYPE,  // Produces buildings.
                                            DIR_N,              // Starting idle frame.
-                                           BSIZE_43,           // TS-authentic 4x3 (size pass 2026-08-03).
+                                           BSIZE_43,           // Full 4x3 plot + bib (Luke, 2026-08-04).
                                            NULL,               // No preferred exit cell.
-                                           (short const*)TsList43,
-                                           (short const*)TsOList43);
+                                           (short const*)TsFactList43,
+                                           (short const*)NULL);
 
 /*
 **  TS GDI tree production/economy buildings (docs/ts-gdi-tree-plan.md §Stealth
