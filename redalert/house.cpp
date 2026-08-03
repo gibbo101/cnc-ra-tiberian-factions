@@ -10088,7 +10088,24 @@ int HouseClass::AI_Vessel(void)
                     }
                 }
 #endif
-            } else if (tok && CurVessels < (unsigned)TF_Naval_Fleet_Cap(tcoastal, &tenavy)) {
+            } else if (tok) {
+                /*
+                **	The armed-fleet cap gates ARMED hulls only. Transports ride outside
+                **	the cap by design, but CurVessels counts them -- a house holding a
+                **	four-LST convoy read as "at cap" and never built another warship
+                **	(final verify match: "a lack of ship building, only transports").
+                */
+                int armedv = 0;
+                for (int avi = 0; avi < Vessels.Count(); avi++) {
+                    VesselClass const* av = Vessels.Ptr(avi);
+                    if (av != NULL && !av->IsInLimbo && (HouseClass const*)av->House == this && av->Strength > 0
+                        && av->Is_Weapon_Equipped()) {
+                        armedv++;
+                    }
+                }
+                if (armedv >= TF_Naval_Fleet_Cap(tcoastal, &tenavy)) {
+                    return (TICKS_PER_SECOND);
+                }
                 int counter[VESSEL_COUNT];
                 int total = 0;
                 VesselType vtype;
