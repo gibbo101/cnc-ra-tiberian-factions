@@ -13,17 +13,30 @@ same-session, each fix live-verified or staged within one match of its finding:
 `d3c0bec` `72c33f3` `b5c466c` `98719e7` `f9b86ad1`. Desktop prefix = through `98719e7`;
 **`f9b86ad1` (armed-cap fix) built but NOT yet deployed — deploy first thing.**
 
-**VERIFIED LIVE across the matches:**
-- Fleet doctrine end to end, both AIs: blind patrol → NAVAL-MASS rally → NAVAL-WAVE
-  release at 3/4 cap → re-mass after wipe (rotation loop held all night).
-- The FULL ferry arc at tempo (final match, H14): conscripted rosters → beach staging →
-  `FERRY-SAIL aboard=5 stragglers=0` repeatedly → escorted crossings → sustained
-  MULTI-BEACHHEAD invasion (97,68) + (53,71) + (48,84) + a landing inside the enemy
-  harbor. First AI amphibious landing in the mod's history happened this session.
-- FERRY-WAIT / load-stall diagnostics: named every silent gate; `aboard=0 outside=5
-  dist=1` pinpointed the boarding-walk failure in one line.
-- Stop-to-engage + engaged-skip (subs fight from guard; no drive-by destroyer deaths
-  reported after the fix); EXPERT-SELL only at designed fire-sale tiers.
+**HONEST STATUS (Luke's correction, 2026-08-04: "but it didn't, did it"):** the ferry
+PIPELINE now emits the full event chain in the log and the plumbing bugs found were
+real and fixed — but as a GAME FEATURE the invasion does not work yet. Player-visible
+reality across all six matches: ONE match (the "FIRST LANDING!" one) where the AI made
+some small landings — token forces (2 heavy tanks; a solitary V2) that died
+pointlessly. The FINAL match, on the most-fixed build, produced ZERO visible
+amphibious assaults: the AI massed ~5 transports, stopped building warships entirely
+(armed-cap bug, fixed but undeployed until session end), and its `aboard=5` sails
+never became landings the player could see (unload-stuck aborts + attrition — the
+delivery end still fails in reality even when boarding succeeds). H13's convoy was
+fully blocked all match (harbor seal). NO beachhead ever assembled, NO wave ever
+released, NO forward base ever built, all night. Log events != a working feature; the
+feature bar is a match where Luke WATCHES a real force land, hold a beach, and build
+on it.
+
+**Mechanics verified in the LOG (not yet as gameplay):**
+- Fleet doctrine cycle: blind patrol → NAVAL-MASS → NAVAL-WAVE → re-mass repeated all
+  night. (Luke never confirmed satisfying massed fleet battles on screen — check.)
+- Boarding after the staging fix: `FERRY-SAIL aboard=5 stragglers=0` repeatedly
+  (final match, H14 side only).
+- FERRY-WAIT / load-stall diagnostics named every silent gate (`aboard=0 outside=5
+  dist=1` pinpointed the boarding-walk failure in one line).
+- EXPERT-SELL only at designed fire-sale tiers; stop-to-engage ended the reported
+  drive-by destroyer deaths (sub combat itself never visually confirmed — check).
 
 **STILL UNVERIFIED (the two remaining arcs):**
 1. **FERRY-WAVE release never observed** — beachheads took heavy deliveries but no
