@@ -43,6 +43,31 @@ anywhere — ClientG AND InstanceServer both gone; ask Luke crash-vs-freeze).**
    refinery is a wide flat disc — the overscale + full-width is the honest
    maximum without clipping structure; revisit only if Luke still objects).
 
+**BATCH 3 (2026-08-03 latest, `7df1314`, Deck-deployed): Luke's round-3
+verdicts — the wide-footprint design is DEAD, long live TD-style 3x3.**
+- **TSPROC = RA-refinery geometry clone** (BSIZE_33 + RA occupy/overlap lists
+  incl. the passable dock lane, DIR_S pad, RA free-harv spawn, Bib=yes; the
+  special apron-pad dock geometry and Is_Refinery_Dock_Cell clause reverted).
+  **TSWEAP = TDWEAP parity** (3x3, rows 1-2 + row-0 overlap, TD exit ring,
+  Bib=yes, joins the factory RUN_AWAY chain). Both drop the baked apron
+  plates; art fills the box — the plate-passability complaint dissolves
+  (the plate no longer exists; the RA slab below is passable as normal).
+  **TSPILE 72x48 stub** (infantry were taller than the barracks).
+- **UNIVERSAL anim convention found: every TS anim SHP packs healthy frames
+  then DAMAGED frames inside its usable window** (dish 15+15, tech dome 8+8,
+  depot pad 5+5, barracks flag 7+7 — all confirmed visually). `loop()` splits
+  even windows; ALL `_anims[]` counts halved (PILE 28, PROC 10, WEAP 8,
+  HPAD 8, TECH 8, DEPT 35, FACT 30, POWR 12, RADR 28 ping-pong). This was
+  Luke's "tech centre / repair bay animation broken".
+- **TSDEPT was missing from every `STRUCT_REPAIR||STRUCT_TDFIX` chain** (~17
+  sites: dock/IM_IN/CAN_LOAD, rally, sell-refund contact, aircraft repair,
+  Find_Docking_Bay cross-match) — that was "can't send units for repair".
+- **`Tiberium_Load()` returned 0 for UNIT_TSHARV** — a full TS harvester
+  never read as full, so it sat idle instead of heading home (Luke's report).
+- Map-right-edge apron clipping: MOOT (aprons gone with the 3x3 art).
+- STILL QUEUED: TSHARV movement facing + any residual dock-spot polish;
+  GTWEAP frame 1 (door-open) as a future exit anim.
+
 **ROUND 2 LIVE FINDINGS (2026-08-03 very late, all fixed in `95d64e1`,
 Deck-deployed):**
 - **THE CRASH = give-way recursion stack overflow (0xC00000FD), minidump-
