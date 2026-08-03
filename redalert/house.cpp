@@ -8718,7 +8718,15 @@ void HouseClass::TF_Ferry_AI(void)
         }
 
         case TFF_SAIL:
-            if (trans->Distance(Cell_Coord(op.Landing)) <= 3 * CELL_LEPTON_W || trans->Mission == MISSION_GUARD) {
+            /*
+            **	Hand off to MISSION_UNLOAD only on actual arrival. The unload mission
+            **	unloads onto cells ADJACENT to the hull and silently does nothing when
+            **	none of them is beach -- a transport switched over three cells offshore
+            **	parks there forever with its cargo, in easy range of the shore defences
+            **	(both convoy losses, verify match 3). The landing cell itself touches
+            **	the beach by construction, so arrival is the unload condition.
+            */
+            if (trans->Distance(Cell_Coord(op.Landing)) <= 1 * CELL_LEPTON_W || trans->Mission == MISSION_GUARD) {
                 trans->Assign_Mission(MISSION_UNLOAD);
                 op.State = TFF_UNLOAD;
                 op.Since = (int)Frame;
