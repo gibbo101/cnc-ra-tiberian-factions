@@ -154,7 +154,7 @@ def resample(indices, target):
 
 def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count,
                     canvas_w, canvas_h, target_w=None, bib_dir=None,
-                    bottom_margin=None, overscale=1.0):
+                    bottom_margin=None, overscale=1.0, mk_mask_dir=None):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -223,8 +223,37 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     frames += [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in damaged_frames]
     write_zip(f"{STRUCT_DIR}/{ini}.ZIP", ini.lower(), frames)
 
-    mk = [place(load(mk_dir, i), factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
-          for i in resample(real_frames(mk_dir), mk_count)]
+    # TS buildups pour the concrete pad first and keep it throughout; with
+    # the pad dropped from the finished art (grid-sized buildings + RA slab),
+    # mask the pad's silhouette (its *BB sprite, same source canvas) out of
+    # every buildup frame or construction shows a pad that then vanishes.
+    if mk_mask_dir is not None:
+        from PIL import ImageChops
+        msk = load(mk_mask_dir, 0)
+        m2 = load(mk_mask_dir, 2)
+        msk.paste(m2, (0, 0), m2)
+        msk = msk.split()[3].point(lambda a: 255 if a > 0 else 0)
+
+        def mk_load(i):
+            img = load(mk_dir, i)
+            img.putalpha(ImageChops.subtract(img.split()[3], msk))
+            return img
+
+        imgs = [mk_load(i) for i in range(frame_count(mk_dir))]
+        counts = [sum(1 for p in im.getdata() if p[3] > 0) for im in imgs]
+        peak = max(counts)
+        peak_i = counts.index(peak)
+        real = []
+        for i, cnt2 in enumerate(counts):
+            if i > peak_i and cnt2 < peak * 2 // 5:
+                break
+            if cnt2 > 800:
+                real.append(i)
+        mk = [place(imgs[i], factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
+              for i in resample(real, mk_count)]
+    else:
+        mk = [place(load(mk_dir, i), factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
+              for i in resample(real_frames(mk_dir), mk_count)]
     write_zip(f"{STRUCT_DIR}/{ini}MAKE.ZIP", f"{ini.lower()}make", mk)
 
     patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", ini, 2 * n)
@@ -341,7 +370,7 @@ SIZEPASS = [
      "shp_gtpilemk", 19, (320, 256), 0, 1.0, "shp_brrkicon",
      "TS Barracks", "Trains Tiberian-era infantry."),
     ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
-     "shp_gtradrmk", 20, (256, 512), 26, 1.0, "shp_radricon",
+     "shp_gtradrmk", 20, (384, 576), 28, 1.0, "shp_radricon",
      "TS Radar", "Provides radar coverage."),
 ]
 
@@ -362,8 +391,10 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
         anims = [("shp_gtradr_a", fwd + back, dfwd + dback)]
     else:
         anims = [loop(d) for d in anim_dirs]
+    masks = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb"}
     build_structure(ini, base, 0, 2, anims, mk, mkc, cw, ch,
-                    bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale)
+                    bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale,
+                    mk_mask_dir=masks.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSFACT: TS Construction Yard, size pass: TS-authentic 4x3 (BSIZE_43,
@@ -381,7 +412,7 @@ if os.path.isdir(f"{ART}/shp_gtcnst"):
 if os.path.isdir(f"{ART}/shp_gtpowr"):
     build_structure("TSPOWR", "shp_gtpowr", 0, 2,
                     [loop("shp_gtpowr_a"), loop("shp_gtpowr_b")],
-                    "shp_gtpowrmk", 13, 256, 256, 252)
+                    "shp_gtpowrmk", 13, 384, 384, bottom_margin=0)
 
 # ---- TSMCV (MCV.VXL render, 32 facings, canvas 384 = classic 48 x 8) ----
 if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(f"{UNITS_DIR}/TSMCV.ZIP"):

@@ -1457,10 +1457,10 @@ static BuildingTypeClass const ClassTsRadr(STRUCT_TSRADR,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_22,
+                                           BSIZE_32,           // 3x2 grid sized to the art; dish rides above (Luke, 2026-08-04).
                                            NULL,
-                                           (short const*)ComList,
-                                           (short const*)OComList);
+                                           (short const*)List32,
+                                           (short const*)NULL);
 
 static BuildingTypeClass const ClassTsHpad(STRUCT_TSHPAD,
                                            TXT_NONE,
@@ -2400,10 +2400,10 @@ static BuildingTypeClass const ClassTsPowr(STRUCT_TSPOWR,
                                            true,            // Can the building be color remapped to indicate owner?
                                            RTTI_NONE,       // The object type produced at this factory.
                                            DIR_N,           // Starting idle frame to match construction.
-                                           BSIZE_22,        // SIZE: Building size.
+                                           BSIZE_32,        // 3x2 grid sized to the art (Luke, 2026-08-04).
                                            NULL,            // Preferred exit cell list.
-                                           (short const*)List22,     // OCCUPYLIST: List of active foundation squares.
-                                           (short const*)List22_1100 // OVERLAPLIST: List of overlap cell offset.
+                                           (short const*)List32,     // OCCUPYLIST: List of active foundation squares.
+                                           (short const*)NULL        // OVERLAPLIST: art halo only.
 );
 
 static BuildingTypeClass const ClassPower(STRUCT_POWER,

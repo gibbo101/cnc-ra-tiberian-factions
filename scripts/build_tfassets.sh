@@ -272,9 +272,14 @@ PACK_ARGS+=("$TMPDIR/tspilemk_stub.shp:TSPILEMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
 # TSRADR 48x96 on the 2x2 plot: Obelisk treatment, the dish tower rises a
 # full row above the box (was donor-TDHQ 48x48 = the "pathetically small").
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsradr_stub.shp" 48 96 2
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsradr_stub.shp" 72 108 2
 PACK_ARGS+=("$TMPDIR/tsradr_stub.shp:TSRADR.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsradrmk_stub.shp" 48 96 20
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsradrmk_stub.shp" 72 108 20
+# TSPOWR 72x72 on its 3x2 grid: art at 3-cell width, stacks rise above.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspowr_stub.shp" 72 72 2
+PACK_ARGS+=("$TMPDIR/tspowr_stub.shp:TSPOWR.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspowrmk_stub.shp" 72 72 13
+PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")
 # TSFACT 96x72 = the full TS-authentic 4x3 box (BSIZE_43), content inside it.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsfact_stub.shp" 96 72 2
