@@ -43,6 +43,34 @@ anywhere — ClientG AND InstanceServer both gone; ask Luke crash-vs-freeze).**
    refinery is a wide flat disc — the overscale + full-width is the honest
    maximum without clipping structure; revisit only if Luke still objects).
 
+**ROUND 2 LIVE FINDINGS (2026-08-03 very late, all fixed in `95d64e1`,
+Deck-deployed):**
+- **THE CRASH = give-way recursion stack overflow (0xC00000FD), minidump-
+  PROVEN on both InstanceServer dumps** (22:40 + 23:18; EIP in Can_Enter_Cell
+  under the Assign_Destination → Start_Of_Move → Give_Way/Infantry_Give_Way →
+  another unit's Assign_Destination cycle; scan-walker: scratchpad
+  `dumpwalk.py`, worth keeping in tools/). Fix: the immediate Start_Of_Move
+  in DriveClass::Assign_Destination is optimisation-only (mission AI reruns
+  it every tick) and is now depth-capped at 8. Dumps land in the prefix's
+  `AppData/Roaming/CnCRemastered/` — check there FIRST next crash.
+- **Dock fix VERIFIED live before the crash:** TDHARV and TSHARV both logged
+  DOCK-START at TSPROC.
+- **Damaged-frame convention discovered: TS building SHPs = frame 0 healthy,
+  frame 1 healthy VARIANT (WF door-open, radar mast up), frame 2 DAMAGED,
+  3-5 rubble fragments.** All nine shipped damaged=1 → damaged buildings
+  rendered pristine. All now use frame 2 (bib plates too). The WF door-open
+  frame 1 is a future lever for an exit-door anim.
+- TSWEAP stub 96x84 (canvas hugs the squat hangar; brackets were floating).
+- Luke: TS WF vs TD WF — TS is authentically squat/wide vs TD's tall box;
+  +10% overscale applied earlier stands.
+- **OPEN: "units can't travel over the TS refinery/WF plate."** Sim-side the
+  row below the plot is plain passable ground (nothing occupies it; only the
+  single TSPROC dock-pad cell is harvester-reserved, same as RA's pad rule).
+  Suspicion: the launcher hit-tests the sprite, so clicks on the apron art
+  select the building instead of issuing a move. TEST in round 3: order a
+  unit PAST the plate (path crossing the apron row) — does it drive across?
+  And click directly on the plate — move order or building selection?
+
 **Walk round 2 = the same two checklists below PLUS:** TSHARV full loop at
 TSPROC (approach → park on apron pad under the ramp → fume plume → credits →
 DOCK-START lines in MOD_DEBUG_TSUNITS.txt), radar minimap actually renders
