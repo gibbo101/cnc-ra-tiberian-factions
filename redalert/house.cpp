@@ -7777,7 +7777,9 @@ static int const TF_FERRY_ROSTER_MAX = 5;
 static int const TF_FERRY_MIN_LOAD = 3;
 static int const TF_FERRY_TIMEOUT = 4500;      // pickup / load / unload stall limit (~5 min).
 static int const TF_FERRY_SAIL_TIMEOUT = 9000; // crossing limit before the op re-plans.
-static int const TF_FERRY_SAIL_REPATH = 900;   // no closing on the landing for this long -> fresh path.
+static int const TF_FERRY_SAIL_REPATH = 300;   // no closing on the landing for ~20s -> fresh path. Short
+                                               // enough to matter under fire; long enough not to thrash
+                                               // the pathfinder over ordinary congestion pauses.
 static int const TF_FERRY_OPS_MAX = 4;         // concurrent transports per house -- the convoy.
 static int const TF_FERRY_ESCORTS = 3;         // warships sent ahead to suppress the beach.
 static int const TF_FERRY_THREAT_RANGE = 8;    // cells; a defended stretch of coast scores worse.
