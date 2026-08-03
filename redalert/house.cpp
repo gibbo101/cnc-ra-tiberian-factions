@@ -8602,6 +8602,23 @@ void HouseClass::TF_Ferry_AI(void)
             **	pickup point lets boarding finish inside the timer.
             */
             {
+                /*
+                **	Draftees march to the beach IMMEDIATELY. Leaving them parked at
+                **	their draft spot meant each one only started walking when the
+                **	loader's one-at-a-time boarding handed it an enter order -- the
+                **	load timer expired with the transport AT the shore and the whole
+                **	roster still inland (load-stall aboard=0 outside=5 dist=1, verify
+                **	match 5). Staged at the water's edge, the sequential handoffs each
+                **	take seconds.
+                */
+                CELL stage = 0;
+                for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
+                    CELL adj = Adjacent_Cell(pick, face);
+                    if (Map.In_Radar(adj) && Map[adj].Zones[MZONE_NORMAL] == ourland) {
+                        stage = adj;
+                        break;
+                    }
+                }
                 FootClass* cand[48];
                 int ncand = 0;
                 for (int heap = 0; heap < 2 && ncand < 48; heap++) {
@@ -8622,6 +8639,10 @@ void HouseClass::TF_Ferry_AI(void)
                         }
                     }
                     TF_Ferry_Draft(cand[best]);
+                    if (stage != 0) {
+                        cand[best]->Assign_Mission(MISSION_MOVE);
+                        cand[best]->Assign_Destination(::As_Target(stage));
+                    }
                     op.Roster[op.RosterCount++] = cand[best]->As_Target();
                     cand[best] = cand[--ncand];
                 }
