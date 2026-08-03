@@ -63,6 +63,14 @@ Deck-deployed):**
 - TSWEAP stub 96x84 (canvas hugs the squat hangar; brackets were floating).
 - Luke: TS WF vs TD WF — TS is authentically squat/wide vs TD's tall box;
   +10% overscale applied earlier stands.
+- **QUEUED AFTER THE BUILDING ISSUES (Luke, 2026-08-03): TSHARV dock polish**
+  — (a) dock LOCATION tuning at TSPROC (park spot vs the ramp art; the pad
+  cell is `Coord+3*MCW+2`, sub-cell nudge is the dial — see the TDHARV
+  NUDGE constants in unit.cpp Mission_Unload), (b) **TSHARV faces the wrong
+  direction when MOVING** — likely the voxel-render facing order vs RA's
+  32-facing convention (check `renders_tsharv` frame order / the (8-f)%8
+  reorder rule from the walker ports); dock facing dial = DIR_SW turn in
+  RADIO_BACKUP_NOW.
 - **OPEN: "units can't travel over the TS refinery/WF plate."** Sim-side the
   row below the plot is plain passable ground (nothing occupies it; only the
   single TSPROC dock-pad cell is harvester-reserved, same as RA's pad rule).
