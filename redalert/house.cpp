@@ -7799,8 +7799,9 @@ struct TFFerryOpStruct
     int RosterCount;
     int Since;
     bool Retried;
-    int BestDist;  // closest approach to the landing so far (SAIL progress watchdog).
-    int BestFrame; // when that closest approach was set.
+    int BestDist;   // closest approach to the landing so far (SAIL progress watchdog).
+    int BestFrame;  // when that closest approach was set.
+    int StallFrame; // first frame seen parked mid-move (the patient-queue signature).
 };
 enum
 {
@@ -8776,6 +8777,37 @@ void HouseClass::TF_Ferry_AI(void)
                 **	a minute forces a fresh move order, which recomputes the path
                 **	around what is actually in the water now.
                 */
+                /*
+                **	Fast trigger: a transport PARKED while still holding its move order
+                **	is the patient-queue signature -- it is waiting for a blocking hull
+                **	to move aside, and an enemy hull never will. That state is
+                **	unambiguous, so it reroutes within seconds (Luke: "1-2 seconds is
+                **	reacting under fire, not 20"). The distance watchdog below stays as
+                **	the outer net for creeping-without-closing cases.
+                */
+                if (!trans->IsDriving && trans->Mission == MISSION_MOVE) {
+                    if (op.StallFrame == 0) {
+                        op.StallFrame = (int)Frame;
+                    } else if ((int)Frame - op.StallFrame > 60) {
+                        trans->Assign_Mission(MISSION_MOVE);
+                        trans->Assign_Destination(::As_Target(op.Landing));
+                        op.StallFrame = 0;
+#if TF_DEV_BUILD // TF_AI_DIAG
+                        {
+                            FILE* _tfdbg = TF_AI_Diag_File();
+                            if (_tfdbg != NULL) {
+                                fprintf(_tfdbg, "F%ld H%d AL%d FERRY-REPATH parked dist=%d\n", (long)Frame,
+                                        (int)Class->House, (int)ActLike,
+                                        trans->Distance(Cell_Coord(op.Landing)) / CELL_LEPTON_W);
+                                fflush(_tfdbg);
+                            }
+                        }
+#endif
+                        break;
+                    }
+                } else {
+                    op.StallFrame = 0;
+                }
                 int d = trans->Distance(Cell_Coord(op.Landing));
                 if (op.BestDist == 0 || d < op.BestDist) {
                     op.BestDist = d;
