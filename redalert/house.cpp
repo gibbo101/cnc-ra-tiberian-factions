@@ -8656,10 +8656,41 @@ void HouseClass::TF_Ferry_AI(void)
         }
 
         case TFF_PICKUP:
-            if (trans->Distance(Cell_Coord(op.Pickup)) <= 2 * CELL_LEPTON_W || trans->Mission == MISSION_GUARD) {
+            if (trans->Distance(Cell_Coord(op.Pickup)) <= 2 * CELL_LEPTON_W) {
                 op.State = TFF_LOAD;
                 op.Since = (int)Frame;
-            } else if ((int)Frame - op.Since > TF_FERRY_TIMEOUT) {
+                op.StallFrame = 0;
+            } else if (trans->Mission == MISSION_GUARD || (!trans->IsDriving && trans->Mission == MISSION_MOVE)) {
+                /*
+                **	Short of the pickup but idle or parked: the harbor mouth is choked
+                **	(own yard footprint + the massed fleet, per the live report) or the
+                **	move order died. Never start LOAD from here -- boarding units can't
+                **	reach a hull that isn't at the shore -- re-order and let the drive
+                **	layer thread whatever gap exists now. The stage timeout below still
+                **	aborts a transport that is genuinely sealed in.
+                */
+                if (op.StallFrame == 0) {
+                    op.StallFrame = (int)Frame;
+                } else if ((int)Frame - op.StallFrame > 60) {
+                    trans->Assign_Mission(MISSION_MOVE);
+                    trans->Assign_Destination(::As_Target(op.Pickup));
+                    op.StallFrame = 0;
+#if TF_DEV_BUILD // TF_AI_DIAG
+                    {
+                        FILE* _tfdbg = TF_AI_Diag_File();
+                        if (_tfdbg != NULL) {
+                            fprintf(_tfdbg, "F%ld H%d AL%d FERRY-REPATH pickup dist=%d\n", (long)Frame,
+                                    (int)Class->House, (int)ActLike,
+                                    trans->Distance(Cell_Coord(op.Pickup)) / CELL_LEPTON_W);
+                            fflush(_tfdbg);
+                        }
+                    }
+#endif
+                }
+            } else {
+                op.StallFrame = 0;
+            }
+            if ((int)Frame - op.Since > TF_FERRY_TIMEOUT) {
                 op = TFFerryOpStruct();
 #if TF_DEV_BUILD // TF_AI_DIAG
                 {
@@ -8729,13 +8760,15 @@ void HouseClass::TF_Ferry_AI(void)
                 }
 #endif
             } else if (stalled) {
+                int stalldist = trans->Distance(Cell_Coord(op.Pickup)) / CELL_LEPTON_W;
                 op = TFFerryOpStruct();
-#if TF_DEV_BUILD // TF_AI_DIAG
+#if TF_DEV_BUILD // TF_AI_DIAG -- aboard/outside/dist tell WHICH half failed: hull never
+                 // reached the shore (dist high) or troops never reached the hull.
                 {
                     FILE* _tfdbg = TF_AI_Diag_File();
                     if (_tfdbg != NULL) {
-                        fprintf(_tfdbg, "F%ld H%d AL%d FERRY-ABORT load-stall\n", (long)Frame, (int)Class->House,
-                                (int)ActLike);
+                        fprintf(_tfdbg, "F%ld H%d AL%d FERRY-ABORT load-stall aboard=%d outside=%d dist=%d\n",
+                                (long)Frame, (int)Class->House, (int)ActLike, aboard, outside, stalldist);
                         fflush(_tfdbg);
                     }
                 }
