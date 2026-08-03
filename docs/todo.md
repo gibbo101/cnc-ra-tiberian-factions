@@ -10,8 +10,9 @@ maintenance, and queued tasks. Newest at top.
 SIX verify matches played 2026-08-03 evening (islands map). 12 code commits shipped
 same-session, each fix live-verified or staged within one match of its finding:
 `05f2436` `b2b502c` `7a11419` `6806881` `3843c75` `5969e90` `a42e5d2` `569e3d1`
-`d3c0bec` `72c33f3` `b5c466c` `98719e7` `f9b86ad1`. Desktop prefix = through `98719e7`;
-**`f9b86ad1` (armed-cap fix) built but NOT yet deployed — deploy first thing.**
+`d3c0bec` `72c33f3` `b5c466c` `98719e7` `f9b86ad1`. Desktop prefix = through
+`f9b86ad1`, md5 `bb074dc6` verified post-session (incl. the armed-cap fix — so the
+"only transports" bug is fixed but UNVERIFIED in play).
 
 **HONEST STATUS (Luke's correction, 2026-08-04: "but it didn't, did it"):** the ferry
 PIPELINE now emits the full event chain in the log and the plumbing bugs found were
