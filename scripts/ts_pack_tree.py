@@ -307,7 +307,9 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
     if not os.path.isdir(f"{ART}/{base}"):
         print(f"{ini}: SKIP (no {base})")
         continue
-    build_structure(ini, base, 0, 1, [loop(d) for d in anim_dirs], mk, mkc, cw, ch, tw,
+    # Damaged base = frame 2: TS building SHPs are 0 healthy, 1 a healthy
+    # VARIANT (WF door-open, radar mast), 2 damaged, 3-5 rubble fragments.
+    build_structure(ini, base, 0, 2, [loop(d) for d in anim_dirs], mk, mkc, cw, ch, tw,
                     bib_dir=BIBS.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
@@ -327,7 +329,7 @@ SIZEPASS = [
      "shp_ntrefnmk", 19, (512, 544), 0, 1.08, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
-     "shp_gtweapmk", 19, (512, 512), 0, 1.10, "shp_weapicon",
+     "shp_gtweapmk", 19, (512, 448), 0, 1.10, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
     ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
      "shp_gtradrmk", 20, (256, 512), 26, 1.0, "shp_radricon",
@@ -351,16 +353,16 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
         anims = [("shp_gtradr_a", fwd + back, dfwd + dback)]
     else:
         anims = [loop(d) for d in anim_dirs]
-    build_structure(ini, base, 0, 1, anims, mk, mkc, cw, ch,
+    build_structure(ini, base, 0, 2, anims, mk, mkc, cw, ch,
                     bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale)
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSFACT: TS Construction Yard, size pass: TS-authentic 4x3 (BSIZE_43,
 # stub 96x72 = the full 3-row box; content fits inside it, no halo needed).
 # Anims: _A crane 20, _B light 10, _C crane-2 30 -> N=60. Damaged base =
-# GTCNST frame 1.
+# GTCNST frame 2.
 if os.path.isdir(f"{ART}/shp_gtcnst"):
-    build_structure("TSFACT", "shp_gtcnst", 0, 1,
+    build_structure("TSFACT", "shp_gtcnst", 0, 2,
                     [loop("shp_gtcnst_a"), loop("shp_gtcnst_b"), loop("shp_gtcnst_c")],
                     "shp_gtcnstmk", 32, 512, 384, bottom_margin=2)
 

@@ -259,9 +259,9 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 96 102 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 96 102 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 96 96 2
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 96 84 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 96 96 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 96 84 19
 PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
 # TSRADR 48x96 on the 2x2 plot: Obelisk treatment, the dish tower rises a
 # full row above the box (was donor-TDHQ 48x48 = the "pathetically small").

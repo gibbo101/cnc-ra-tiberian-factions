@@ -616,8 +616,23 @@ void DriveClass::Assign_Destination(TARGET target)
     FootClass::Assign_Destination(target);
 
     Path[0] = FACING_NONE; // Force recalculation of path.
-    if (!IsDriving && Mission != MISSION_UNLOAD) {
+
+    /*
+    **	The immediate Start_Of_Move is an optimisation only — the mission AI
+    **	calls it every tick anyway. It must be DEPTH-CAPPED: Start_Of_Move runs
+    **	the give-way machinery, which Assign_Destination's OTHER units, which
+    **	re-enters here — and a packed knot of mutually-yielding vehicles (e.g.
+    **	a harvester queue jamming at a refinery) cycles that chain until the
+    **	stack overflows (two InstanceServer 0xC00000FD crashes, 2026-08-03,
+    **	both EIP in Can_Enter_Cell under Give_Way/Start_Of_Move recursion).
+    **	Past the cap the unit simply starts moving on its next tick.
+    **	Deterministic static — lockstep-safe.
+    */
+    static int _chain_depth = 0;
+    if (!IsDriving && Mission != MISSION_UNLOAD && _chain_depth < 8) {
+        _chain_depth++;
         Start_Of_Move();
+        _chain_depth--;
     }
 }
 
