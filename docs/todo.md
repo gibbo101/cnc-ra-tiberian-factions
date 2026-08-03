@@ -5,7 +5,73 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
-## ⭐ NEXT SESSION — RESUME HERE: verify naval doctrine v2 + the ferry draft (written 2026-08-03)
+## ⭐ NEXT SESSION — RESUME HERE: harbor-seal design pass + the last two unverified arcs (written 2026-08-04 ~00:15)
+
+SIX verify matches played 2026-08-03 evening (islands map). 12 code commits shipped
+same-session, each fix live-verified or staged within one match of its finding:
+`05f2436` `b2b502c` `7a11419` `6806881` `3843c75` `5969e90` `a42e5d2` `569e3d1`
+`d3c0bec` `72c33f3` `b5c466c` `98719e7` `f9b86ad1`. Desktop prefix = through `98719e7`;
+**`f9b86ad1` (armed-cap fix) built but NOT yet deployed — deploy first thing.**
+
+**VERIFIED LIVE across the matches:**
+- Fleet doctrine end to end, both AIs: blind patrol → NAVAL-MASS rally → NAVAL-WAVE
+  release at 3/4 cap → re-mass after wipe (rotation loop held all night).
+- The FULL ferry arc at tempo (final match, H14): conscripted rosters → beach staging →
+  `FERRY-SAIL aboard=5 stragglers=0` repeatedly → escorted crossings → sustained
+  MULTI-BEACHHEAD invasion (97,68) + (53,71) + (48,84) + a landing inside the enemy
+  harbor. First AI amphibious landing in the mod's history happened this session.
+- FERRY-WAIT / load-stall diagnostics: named every silent gate; `aboard=0 outside=5
+  dist=1` pinpointed the boarding-walk failure in one line.
+- Stop-to-engage + engaged-skip (subs fight from guard; no drive-by destroyer deaths
+  reported after the fix); EXPERT-SELL only at designed fire-sale tiers.
+
+**STILL UNVERIFIED (the two remaining arcs):**
+1. **FERRY-WAVE release never observed** — beachheads took heavy deliveries but no
+   release line all night. Either defenders eat arrivals below the 15 threshold, or the
+   threshold is too high for contested beaches. Consider: scale wave threshold to
+   deliveries-so-far, or count cumulative-landed instead of currently-alive.
+2. **FERRY-MCV / FERRY-DEPLOY forward fortress** — depots+MCVs for RA factions only
+   unlocked mid-session (`3843c75`); no MCV ride observed yet. Needs one match where a
+   beachhead holds.
+
+**THE structural item — harbor seal (screenshot evidence 2026-08-03 23:59):**
+H13-Allied repeatedly died at `pickup-stall` ×3: its conscripts staged at the beach
+(staging fix working) while its LSTs idled across the channel, zone-legal but physically
+unable to reach the pickup — the naval yard footprint + parked fleet seal the channel,
+and **zones ignore buildings** so no zone check can see it. One red LST also wedged
+against a mid-channel islet. Design pass needed:
+- Naval yard placement must not seal its own channel (W5 placement criterion).
+- Pickup shore selection should verify transport reachability (path check or
+  give-up-and-repick after N pickup-stalls at the same cell).
+- The islet wedge suggests landing/pickup cells adjacent to micro-islands score as
+  valid; filter by landmass size.
+
+**Queued (design questions for Luke, evidence in hand):**
+- Air doctrine vs siege hulls (CA/TDCA/MSUB/TDMSUB): Luke leaning yes 2026-08-03 —
+  weighted aircraft target bias when intel has seen one. Slots after this verify cycle.
+- Gap-generator fairness: AI aircraft attacked things hidden under a gap field; target
+  evaluation ignores shroud entirely. Investigation item (per-house jam state in threat
+  eval).
+- Naval funding floor (H14 fire-sold yard+ATEK in a genuine cash collapse while
+  fielding a fleet).
+- Suppress land attack teams at land-unreachable enemies (the 63k-fallback storm;
+  ferry draft harvests some units but teams still burn pathfinder budget).
+- Transient `SYRD/APWR no-location` PLACE-FAIL (~1 per match, always self-recovered;
+  zone=0 in the reject line each time).
+- Sub-detection improvements (Luke's pick pending: B sonar radius + C detector hull);
+  endgame auto-sonar TD-sub gap; chrono-MCV delivery post-P3b/3c.
+- A-10 factory/rearm fixes (`9b6d486`/`0c12624`) still awaiting regression eyes.
+- Difficulty gate still owed a CONNECTED-map check: Medium AI must show zero FERRY
+  lines there (on split maps every tier ferries by design — that part verified).
+
+Logs: `MOD_DEBUG_AI.txt` — ⚠ lands at `pfx/drive_c/users/steamuser/` some runs (NOT
+Documents/CnCRemastered/ — CWD-dependent, check both). Full game exit before any deploy —
+pgrep `InstanceServerG[.]exe`, never bare `-f InstanceServer`, it self-matches. A match
+RESTART is not an exit: InstanceServerG persists and one deploy attempt was lost to it.
+
+---
+
+## ✅ CONSUMED 2026-08-03: the naval-doctrine-v2 verify (kept for the session record)
 
 Two verify matches played 2026-08-03 (islands map; match 1 = 2 Mediums, match 2 = 2 Hards).
 Batch `05f2436` + `b2b502c` + `7a11419` built and deploys on next full game exit. What the
