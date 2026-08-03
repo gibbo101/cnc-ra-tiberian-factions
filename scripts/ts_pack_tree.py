@@ -332,13 +332,13 @@ SIZEPASS = [
     # NTREFN_C is a 144-canvas anim on a 192x168 building; needs offset
     # compositing -- still deferred.
     ("TSPROC", "shp_ntrefn", ["shp_ntrefn_b"],
-     "shp_ntrefnmk", 19, (384, 384), 0, 1.0, "shp_reficon",
+     "shp_ntrefnmk", 19, (512, 512), 0, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
      "shp_gtweapmk", 19, (512, 384), 2, 1.0, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
     ("TSPILE", "shp_gtpile", ["shp_gtpile_a", "shp_gtpile_b", "shp_gtpile_c"],
-     "shp_gtpilemk", 19, (384, 256), 0, 1.0, "shp_brrkicon",
+     "shp_gtpilemk", 19, (320, 256), 0, 1.0, "shp_brrkicon",
      "TS Barracks", "Trains Tiberian-era infantry."),
     ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
      "shp_gtradrmk", 20, (256, 512), 26, 1.0, "shp_radricon",

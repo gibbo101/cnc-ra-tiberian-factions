@@ -1306,9 +1306,20 @@ static BuildingTypeClass const ClassTdGdiFact(STRUCT_TDGFACT,
                                               (short const*)NULL  // No overlap row.
 );
 
-/* 4x3 lists for the TS-authentic wide footprints: art row 0 is overlap
-** (visual overhang), rows 1-2 are the occupied plot; exits ring the south
-** and east edges (war factory). */
+/* 4x3 lists for the wide TS footprints (grid sized to the art, Luke
+** 2026-08-04: full-width BIB1 slabs span the building): art row 0 is
+** overlap, rows 1-2 are the occupied plot; exits ring the south and east
+** edges (war factory). The refinery variant leaves the two centre cells of
+** row 2 unoccupied — the RA-pattern dock lane, one south of the centre
+** cell, so the stock refinery dock flow and Is_Refinery_Dock_Cell work
+** unchanged on the 4-wide grid. */
+static short const TsProcList43[] = {(MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
+                                     (MCW * 2), (MCW * 2) + 3, REFRESH_EOL};
+static short const TsProcOList43[] = {0, 1, 2, 3, (MCW * 2) + 1, (MCW * 2) + 2, REFRESH_EOL};
+static short const TsExitWeap43[] = {XYCELL(-1, 3), XYCELL(0, 3), XYCELL(1, 3),
+                                     XYCELL(2, 3), XYCELL(3, 3), XYCELL(4, 3),
+                                     XYCELL(4, 2), XYCELL(4, 1), XYCELL(-1, 2),
+                                     REFRESH_EOL};
 static short const TsList43[] = {(MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
                                  (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
                                  REFRESH_EOL};
@@ -1371,9 +1382,9 @@ static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            true, true, false, false, false, true,
                                            RTTI_INFANTRYTYPE,  // Infantry factory.
                                            DIR_N,
-                                           BSIZE_22,
+                                           BSIZE_32,           // 3x2 grid sized to the 72-wide art (Luke, 2026-08-04).
                                            (short const*)ExitPyle,
-                                           (short const*)List22,
+                                           (short const*)List32,
                                            NULL);
 
 static BuildingTypeClass const ClassTsProc(STRUCT_TSPROC,
@@ -1389,10 +1400,10 @@ static BuildingTypeClass const ClassTsProc(STRUCT_TSPROC,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,          // Engine grants free harvester at build time.
                                            DIR_N,
-                                           BSIZE_33,           // 3x3, RA-refinery geometry clone (Luke, 2026-08-03 late:
-                                           NULL,               // the 4x3+apron read small and confused passability).
-                                           (short const*)List010111100,  // RA refinery occupy: dock lane stays passable.
-                                           (short const*)List101000011); // RA refinery overlap.
+                                           BSIZE_43,           // 4-wide grid sized to the full-width disc (Luke, 2026-08-04).
+                                           NULL,
+                                           (short const*)TsProcList43,   // Rows 1-2 + RA-pattern dock lane holes.
+                                           (short const*)TsProcOList43);
 
 static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            TXT_NONE,
@@ -1428,10 +1439,10 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory.
                                            DIR_N,
-                                           BSIZE_33,           // 3x3, TDWEAP parity (Luke, 2026-08-03 late).
-                                           (short const*)TdExitWeap,
-                                           (short const*)TdListWeap,
-                                           (short const*)TdOListWeap);
+                                           BSIZE_43,           // 4-wide grid so the slab spans the hangar (Luke, 2026-08-04).
+                                           (short const*)TsExitWeap43,
+                                           (short const*)TsList43,
+                                           (short const*)TsOList43);
 
 static BuildingTypeClass const ClassTsRadr(STRUCT_TSRADR,
                                            TXT_NONE,
