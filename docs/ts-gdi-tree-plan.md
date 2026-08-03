@@ -1,5 +1,26 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐ SESSION END 2026-08-04 ~01:00 — RESUME HERE
+**Deck build = `2d8a5dbb` (md5-verified, deployed as Luke quit). The whole
+night was the building size/geometry saga — 5 fix batches; full record in
+the batch blocks below.** Final state:
+- SIZE SIGN-OFFS: WF ✓ ("finally the right size"), tech centre ✓, repair
+  bay ✓, TSFACT ✓ (4x3 since batch 1). AWAITING FIRST LOOK: refinery at
+  full 4-cell width, radar + power plant at their new 3-wide/3x2 size
+  (grid steps are quantized — if they read too big there is no smaller
+  grid-matched step; discuss before touching), barracks on its 3x2 grid,
+  masked (pad-free) WF/refinery buildups.
+- THE PLACEMENT RULE (Luke): art matches the build grid; grow the GRID to
+  fit big art; full-width RA slab spans the building. No baked pads.
+- VERIFIED WORKING tonight: TSPROC dock (TDHARV + TSHARV DOCK-STARTs),
+  radar minimap, give-way crash fix (no recurrence after `95d64e1`).
+- NOT yet re-verified after the 4-wide refinery: one dock cycle (lane
+  moved cells, stock flow), TSHARV auto-return (Tiberium_Load fix),
+  depot repairs, halved idle anims, damaged states (frame 2), sizes above.
+- QUEUED NEXT: TSHARV movement facing (voxel facing order, (8-f)%8 rule),
+  WF exit-door anim (GTWEAP frame 1 = door-open variant), remaining
+  checklists below, then component towers/infantry/Orcas/audio per plan.
+
 ## ⭐ RESUME HERE — WALK ROUND 1 FINDINGS ALL FIXED + REDEPLOYED (2026-08-03
 ## late); NEXT: walk round 2 (same checklists + the round-1 regression list)
 
