@@ -7918,6 +7918,42 @@ static void TF_Ferry_Draft(FootClass* f)
 }
 
 /*
+**	The landmass a house's army stands on. Center is a shifting average of the
+**	base footprint and regularly lands on a cell with no ground zone at all --
+**	water, or under a building -- which zeroed `ourland` and shut the whole
+**	ferry pipeline off mid-match (FERRY-WAIT no-assault a=1 b=0, 2026-08-03).
+**	Ring-search outward for the first cell with a real ground zone.
+*/
+static int TF_House_Landmass(COORDINATE center)
+{
+    CELL c = Coord_Cell(center);
+    if (c <= 0) {
+        return (0);
+    }
+    int z = Map[c].Zones[MZONE_NORMAL];
+    if (z > 0) {
+        return (z);
+    }
+    for (int r = 1; r <= 6; r++) {
+        for (int dy = -r; dy <= r; dy++) {
+            for (int dx = -r; dx <= r; dx++) {
+                if (ABS(dx) != r && ABS(dy) != r) {
+                    continue;
+                }
+                CELL c2 = XY_Cell(Cell_X(c) + dx, Cell_Y(c) + dy);
+                if (Map.In_Radar(c2)) {
+                    z = Map[c2].Zones[MZONE_NORMAL];
+                    if (z > 0) {
+                        return (z);
+                    }
+                }
+            }
+        }
+    }
+    return (0);
+}
+
+/*
 **	Best water cell of `wzone` that touches land of `landzone`: the shore point a
 **	transport can load or unload across. `nearto` picks among candidates (nearest
 **	wins); `avoid` rejects cells near a landing that already failed, so a retry
@@ -8132,7 +8168,7 @@ bool HouseClass::TF_Ferry_Assault(int& targetland, bool& second_front) const
     if (myc <= 0) {
         return (false);
     }
-    int ourland = Map[myc].Zones[MZONE_NORMAL];
+    int ourland = TF_House_Landmass(Center);
     if (ourland <= 0) {
         return (false);
     }
@@ -8181,7 +8217,7 @@ bool HouseClass::TF_Ferry_Wants_Transport(void) const
     if (myc <= 0) {
         return (false);
     }
-    int ourland = Map[myc].Zones[MZONE_NORMAL];
+    int ourland = TF_House_Landmass(Center);
     int waiting = 0;
     for (int heap = 0; heap < 2; heap++) {
         int count = heap ? Infantry.Count() : Units.Count();
@@ -8319,7 +8355,7 @@ void HouseClass::TF_Ferry_AI(void)
     **	The sweep also adopts survivors of ops whose transport died.
     */
     CELL myc = Coord_Cell(Center);
-    int ourland = (myc > 0) ? Map[myc].Zones[MZONE_NORMAL] : 0;
+    int ourland = TF_House_Landmass(Center);
     int enemyland = 0;
     bool second_front = false;
     bool assault = TF_Ferry_Assault(enemyland, second_front);
