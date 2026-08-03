@@ -8591,15 +8591,36 @@ void HouseClass::TF_Ferry_AI(void)
                     }
                 }
             }
-            for (int heap = 0; heap < 2 && op.RosterCount < TF_FERRY_ROSTER_MAX; heap++) {
-                int count = heap ? Infantry.Count() : Units.Count();
-                for (int index = 0; index < count && op.RosterCount < TF_FERRY_ROSTER_MAX; index++) {
-                    FootClass* f = heap ? (FootClass*)Infantry.Ptr(index) : (FootClass*)Units.Ptr(index);
-                    if (TF_Ferry_Eligible(f, this, ourland, second_front ? TF_DRAFT_STAGING : TF_DRAFT_DOOMED)
-                        && !TF_Ferry_Claimed(hidx, oi, f->As_Target())) {
-                        TF_Ferry_Draft(f);
-                        op.Roster[op.RosterCount++] = f->As_Target();
+            /*
+            **	Nearest-first roster. Heap-order drafting conscripted units from the
+            **	far side of the island; the load timer expired before they arrived and
+            **	the stall-sail shipped whatever was aboard -- one-tank and one-V2
+            **	landings (verify match 3). Picking the closest eligible units to the
+            **	pickup point lets boarding finish inside the timer.
+            */
+            {
+                FootClass* cand[48];
+                int ncand = 0;
+                for (int heap = 0; heap < 2 && ncand < 48; heap++) {
+                    int count = heap ? Infantry.Count() : Units.Count();
+                    for (int index = 0; index < count && ncand < 48; index++) {
+                        FootClass* f = heap ? (FootClass*)Infantry.Ptr(index) : (FootClass*)Units.Ptr(index);
+                        if (TF_Ferry_Eligible(f, this, ourland, second_front ? TF_DRAFT_STAGING : TF_DRAFT_DOOMED)
+                            && !TF_Ferry_Claimed(hidx, oi, f->As_Target())) {
+                            cand[ncand++] = f;
+                        }
                     }
+                }
+                while (op.RosterCount < TF_FERRY_ROSTER_MAX && ncand > 0) {
+                    int best = 0;
+                    for (int i = 1; i < ncand; i++) {
+                        if (cand[i]->Distance(Cell_Coord(pick)) < cand[best]->Distance(Cell_Coord(pick))) {
+                            best = i;
+                        }
+                    }
+                    TF_Ferry_Draft(cand[best]);
+                    op.Roster[op.RosterCount++] = cand[best]->As_Target();
+                    cand[best] = cand[--ncand];
                 }
             }
             if (op.RosterCount < TF_FERRY_MIN_LOAD) {
