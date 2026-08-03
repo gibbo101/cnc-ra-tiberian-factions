@@ -5,15 +5,59 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
-## ⭐ NEXT SESSION — RESUME HERE: verify the W5 invasion stack (written 2026-08-01 end-of-day)
+## ⭐ NEXT SESSION — RESUME HERE: verify naval doctrine v2 + the ferry draft (written 2026-08-03)
 
-Deployed to the desktop prefix = main through `4e88713` (md5-verified). Six unverified layers
-shipped 2026-08-01 evening on top of the verified fleet gate: yard-exit fix `0593113`, ferry
-v1 `5acc124`, convoys/escorts/threat-scored landings `2a9e504`, beachhead assembly `3062228`,
-cluster brain + MCV pipeline `ffe940d`+`782a310`, Hard-only second front `ef7c875` + forward
-fortress on connected maps `4e88713`. Logs to watch: `MOD_DEBUG_AI.txt` in the prefix
-(Claude baselines the byte offset and polls; full game exit before any deploy — pgrep
-`InstanceServerG[.]exe`, never bare `-f InstanceServer`, it self-matches).
+Two verify matches played 2026-08-03 (islands map; match 1 = 2 Mediums, match 2 = 2 Hards).
+Batch `05f2436` + `b2b502c` + `7a11419` built and deploys on next full game exit. What the
+matches PROVED and what they FOUND:
+
+**VERIFIED live (match 2):** fleet cap scaling on discovery (2 blind → 4, enavy tracked);
+NAVAL-MASS rally + NAVAL-WAVE release full cycle for BOTH Hard AIs; re-massing after fleet
+wipe; FERRY-WAIT diags named every silent gate; EXPERT-SELL fires only at the designed
+fire-sale tiers (SYRD+ATEK at urgency=2 during a real economy collapse, no churn loop).
+
+**FOUND + FIXED (in the pending build, all pushed):**
+- Subs never fought: Can_Fire returns FIRE_MOVING for any turretless hull with a NavCom,
+  and the lifetime patrol kept every ship permanently destined → stop-to-engage in
+  VesselClass::Combat_AI (AI ships drop NavCom when target in range) + dispatcher never
+  re-orders an engaged ship (`05f2436`).
+- No massing "like land armies" → W5.4 fleet doctrine: blind patrol → mass at rally →
+  release as one hunting wave at 3/4 cap (`05f2436`).
+- No AI air power ever: RA factions only built radar REACTIVELY (enemy already flies) →
+  proactive dome for every faction, unlocks helipad/airstrip branches (`05f2436`).
+- Ferry NEVER sailed at any difficulty: eligibility wanted idle TEAMLESS guard units,
+  Hard teams claim everything instantly (both AIs at roster=0 all match; H13's land teams
+  burned 63k+ A* fallbacks marching at an unreachable island) → 3-level draft:
+  census=staged-only, second-front roster drafts staged troops from teams, route-blocked
+  roster conscripts freely incl. hunt/move (the ferry IS the attack wave there). Drafted
+  units leave their team and stand by in guard (`b2b502c`).
+- "Naval gone dead" post-wave: MISSION_HUNT is terminal, stalled hunters (unreachable
+  target) park at shore forever, invisible to the guard-only dispatcher, CurVessels pins
+  at cap and production stops → hunt supervision returns non-moving can't-hit hunters to
+  guard (`7a11419`).
+- Cross-match static leak: ferry ops/beach rally/fleet rally survived into the next match
+  of a session (stale beach rally can satisfy the MCV gate) → reset in HouseClass::Init.
+
+**NEXT MATCH checklist (any 2-AI water map, at least one Hard):**
+1. FERRY-START with roster=3-5 (the draft working) → FERRY-SAIL → FERRY-UNLOAD →
+   beachhead → FERRY-MCV/FERRY-DEPLOY forward fortress. THE headline item.
+2. Repeating NAVAL-WAVE cycles all match (hunt supervision keeping rotation alive);
+   NAVAL-HUNT lines followed by NAVAL-IDLE = a hunter stalling, grab context.
+3. Subs visibly fighting (stop-to-engage); NAVAL-IDLE names any parked-warship state
+   (the match-2 blind-phase parked subs were never explained — this tracer exists for it).
+4. Radar domes from ALL factions mid-game, then helicopters/aircraft.
+5. Difficulty gate still owed: a Medium AI on a CONNECTED map must show zero FERRY lines.
+
+**Design questions for Luke (live evidence in hand):**
+- Naval funding priority: H14 fire-sold its yard+ATEK in a real cash collapse while
+  fielding a fleet; should naval production hold below some cash floor?
+- Land waves at an unreachable enemy: teams still burn the whole army pathing at the sea
+  on route-blocked maps (the 63k-fallback storm). Ferry draft harvests some of it, but
+  should Expert_AI suppress land attack teams entirely when the enemy is unreachable?
+
+Logs: `MOD_DEBUG_AI.txt` — ⚠ THIS RUN it appeared at `pfx/drive_c/users/steamuser/` (NOT
+Documents/CnCRemastered/ — CWD-dependent, check both). Full game exit before any deploy —
+pgrep `InstanceServerG[.]exe`, never bare `-f InstanceServer`, it self-matches.
 
 **Match A — the big one: 1+ HARD AI on a regular coastal map (shared sea + land route).**
 This exercises the second front, which fires on almost every map now. Pass criteria in order:
