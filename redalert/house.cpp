@@ -9202,11 +9202,13 @@ int HouseClass::AI_Building(void)
             }
         }
 
-        if (tf_td) {
+        {
             /*
-            **  Service depot (TDFIX): vehicle repair + prerequisite for the
-            **  GDI Mammoth Tank. Vanilla's repair-bay build is #ifdef OLD, so
-            **  this is the GDI/Nod-only revival.
+            **  Service depot, every faction: vehicle repair + a PREREQUISITE twice
+            **  over -- the GDI Mammoth Tank (TDFIX) and the RA sides' MCV (FIX),
+            **  which the ferry's forward-fortress ride needs to exist at all.
+            **  Vanilla's repair-bay build is #ifdef OLD, so without this branch the
+            **  RA factions never field a depot or an MCV.
             */
             current = TF_Role_Quantity(BQuantity, STRUCT_REPAIR);
             // A repair bay only pays for itself once there are vehicles to repair, so it
