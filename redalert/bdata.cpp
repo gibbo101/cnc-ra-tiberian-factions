@@ -1357,10 +1357,6 @@ static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
 **  under the TS* tileset keys with classic dims donated from the TD
 **  counterpart (see _td_bdonors).
 */
-static short const TsExitWeap43[] = {XYCELL(-1, 3), XYCELL(0, 3), XYCELL(1, 3),
-                                     XYCELL(2, 3), XYCELL(3, 3), XYCELL(4, 3),
-                                     XYCELL(4, 2), XYCELL(4, 1), XYCELL(-1, 2),
-                                     REFRESH_EOL};
 
 static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            TXT_NONE,
@@ -1393,10 +1389,10 @@ static BuildingTypeClass const ClassTsProc(STRUCT_TSPROC,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,          // Engine grants free harvester at build time.
                                            DIR_N,
-                                           BSIZE_43,           // TS-authentic 4x3.
-                                           NULL,
-                                           (short const*)TsList43,
-                                           (short const*)TsOList43);
+                                           BSIZE_33,           // 3x3, RA-refinery geometry clone (Luke, 2026-08-03 late:
+                                           NULL,               // the 4x3+apron read small and confused passability).
+                                           (short const*)List010111100,  // RA refinery occupy: dock lane stays passable.
+                                           (short const*)List101000011); // RA refinery overlap.
 
 static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            TXT_NONE,
@@ -1432,10 +1428,10 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory.
                                            DIR_N,
-                                           BSIZE_43,           // TS-authentic 4x3.
-                                           (short const*)TsExitWeap43,
-                                           (short const*)TsList43,
-                                           (short const*)TsOList43);
+                                           BSIZE_33,           // 3x3, TDWEAP parity (Luke, 2026-08-03 late).
+                                           (short const*)TdExitWeap,
+                                           (short const*)TdListWeap,
+                                           (short const*)TdOListWeap);
 
 static BuildingTypeClass const ClassTsRadr(STRUCT_TSRADR,
                                            TXT_NONE,
@@ -4803,15 +4799,15 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TDSTEALTH, BSTATE_IDLE, 0, 16, 3},
         // TS tree (Stealth Recipe): composited TS active anims; damaged run =
         // second half of the tileset (generic +largest offset in Shape_Number).
-        {STRUCT_TSFACT, BSTATE_IDLE, 0, 60, 3},  // GACNST _A(20)+_B(10)+_C(30) -> LCM 60
-        {STRUCT_TSPOWR, BSTATE_IDLE, 0, 24, 3},  // GAPOWR _A(24)+_B(12) -> LCM 24
-        {STRUCT_TSPILE, BSTATE_IDLE, 0, 56, 3},  // GAPILE _A(8)+_B(8)+_C(14) -> LCM 56
-        {STRUCT_TSPROC, BSTATE_IDLE, 0, 20, 3},  // NAREFN _B(20)
-        {STRUCT_TSWEAP, BSTATE_IDLE, 0, 16, 3},  // GAWEAP _A(16)+_B(8)+_C(4) -> LCM 16
+        {STRUCT_TSFACT, BSTATE_IDLE, 0, 30, 3},  // GACNST halved windows _A(10)+_B(5)+_C(15) -> LCM 30
+        {STRUCT_TSPOWR, BSTATE_IDLE, 0, 12, 3},  // GAPOWR halved windows _A(12)+_B(6) -> LCM 12
+        {STRUCT_TSPILE, BSTATE_IDLE, 0, 28, 3},  // GAPILE halved windows _A(4)+_B(4)+_C(7 flag) -> LCM 28
+        {STRUCT_TSPROC, BSTATE_IDLE, 0, 10, 3},  // NAREFN _B halved (10 healthy + 10 damaged)
+        {STRUCT_TSWEAP, BSTATE_IDLE, 0, 8, 3},   // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8
         {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
-        {STRUCT_TSHPAD, BSTATE_IDLE, 0, 16, 3},  // GAHPAD _A(16)
-        {STRUCT_TSTECH, BSTATE_IDLE, 0, 16, 3},  // GATECH _A(16)
-        {STRUCT_TSDEPT, BSTATE_IDLE, 0, 70, 3},  // GADEPT _A(10)+_B(7) -> LCM 70
+        {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)
+        {STRUCT_TSTECH, BSTATE_IDLE, 0, 8, 3},   // GATECH _A halved (8 healthy + 8 damage-pocked dome)
+        {STRUCT_TSDEPT, BSTATE_IDLE, 0, 35, 3},  // GADEPT _A halved(5)+_B whole(7, odd=no damaged half) -> LCM 35
         // TSSILO is static (no TS idle anim): shape 0 healthy, 1 damaged.
     };
 

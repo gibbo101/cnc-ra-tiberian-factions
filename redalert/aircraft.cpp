@@ -2840,7 +2840,8 @@ ActionType AircraftClass::What_Action(ObjectClass const* target) const
     */
     if (House->IsPlayerControl && action == ACTION_SELECT && target->What_Am_I() == RTTI_BUILDING) {
         BuildingClass* building = (BuildingClass*)target;
-        if ((building->Class->Type == STRUCT_REPAIR || building->Class->Type == STRUCT_TDFIX)
+        if ((building->Class->Type == STRUCT_REPAIR || building->Class->Type == STRUCT_TDFIX
+             || building->Class->Type == STRUCT_TSDEPT)
             && !building->In_Radio_Contact()
             && !building->Is_Something_Attached()) {
             action = ACTION_ENTER;
@@ -4322,7 +4323,8 @@ int AircraftClass::Mission_Guard(void)
             || (Height == 0
                 && (Contact_With_Whom()->What_Am_I() != RTTI_BUILDING
                     || (*((BuildingClass*)Contact_With_Whom()) != STRUCT_REPAIR
-                        && *((BuildingClass*)Contact_With_Whom()) != STRUCT_TDFIX)))) {
+                        && *((BuildingClass*)Contact_With_Whom()) != STRUCT_TDFIX
+                        && *((BuildingClass*)Contact_With_Whom()) != STRUCT_TSDEPT)))) {
 
             BuildingClass* building = Find_Docking_Bay(STRUCT_REPAIR, true);
             if (building != NULL) {

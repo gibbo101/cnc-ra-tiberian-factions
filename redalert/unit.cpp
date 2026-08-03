@@ -1291,7 +1291,8 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
             */
             TechnoClass* contact = Contact_With_Whom();
             if (contact->What_Am_I() == RTTI_BUILDING
-                && (*((BuildingClass*)contact) == STRUCT_REPAIR || *((BuildingClass*)contact) == STRUCT_TDFIX)) {
+                && (*((BuildingClass*)contact) == STRUCT_REPAIR || *((BuildingClass*)contact) == STRUCT_TDFIX
+                    || *((BuildingClass*)contact) == STRUCT_TSDEPT)) {
                 if (DoSmarterRunAway()) {
                     return (RADIO_ROGER);
                 }
@@ -2284,7 +2285,8 @@ void UnitClass::Per_Cell_Process(PCPType why)
                     if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV || *this == UNIT_TSHARV) && contact
                         && contact->What_Am_I() == RTTI_BUILDING
                         && *((BuildingClass*)contact) != STRUCT_REPAIR
-                        && *((BuildingClass*)contact) != STRUCT_TDFIX) {
+                        && *((BuildingClass*)contact) != STRUCT_TDFIX
+                        && *((BuildingClass*)contact) != STRUCT_TSDEPT) {
                         Assign_Mission(MISSION_HARVEST);
                     } else if (!Target_Legal(NavCom)) {
                         Scatter(0, true);
@@ -4696,7 +4698,8 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
                 && (IsTethered
                     || (obj->What_Am_I() == RTTI_BUILDING
                         && (*((BuildingClass*)obj) == STRUCT_REPAIR
-                            || *((BuildingClass*)obj) == STRUCT_TDFIX)))) {
+                            || *((BuildingClass*)obj) == STRUCT_TDFIX
+                            || *((BuildingClass*)obj) == STRUCT_TSDEPT)))) {
                 return (MOVE_OK);
             }
 
@@ -5103,7 +5106,8 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
     */
     if (is_player_controlled && action == ACTION_SELECT && object->What_Am_I() == RTTI_BUILDING) {
         BuildingClass* building = (BuildingClass*)object;
-        if ((building->Class->Type == STRUCT_REPAIR || building->Class->Type == STRUCT_TDFIX)
+        if ((building->Class->Type == STRUCT_REPAIR || building->Class->Type == STRUCT_TDFIX
+             || building->Class->Type == STRUCT_TSDEPT)
             && ((UnitClass*)this)->Transmit_Message(RADIO_CAN_LOAD, building) == RADIO_ROGER
             && !building->In_Radio_Contact() && !building->Is_Something_Attached()) {
             action = ACTION_MOVE;
@@ -5117,7 +5121,8 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
     */
     if (is_player_controlled && action == ACTION_SELECT && object->What_Am_I() == RTTI_BUILDING) {
         BuildingClass* building = (BuildingClass*)object;
-        if (building->Class->Type == STRUCT_REPAIR || building->Class->Type == STRUCT_TDFIX) {
+        if (building->Class->Type == STRUCT_REPAIR || building->Class->Type == STRUCT_TDFIX
+            || building->Class->Type == STRUCT_TSDEPT) {
             action = ACTION_ENTER;
         }
     }
@@ -5926,7 +5931,7 @@ fixed UnitClass::Tiberium_Load(void) const
 {
     assert(IsActive);
 
-    if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV)) {
+    if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV || *this == UNIT_TSHARV)) {
         return (fixed(Tiberium, Rule.BailCount));
     }
     return (0);
@@ -6038,7 +6043,7 @@ bool UnitClass::DoSmarterRunAway(void)
     **	Bail if we are not on top of the pad already.
     */
     BuildingClass* beneathme = Map[Coord].Cell_Building();
-    if (!beneathme || (*beneathme != STRUCT_REPAIR && *beneathme != STRUCT_TDFIX)) {
+    if (!beneathme || (*beneathme != STRUCT_REPAIR && *beneathme != STRUCT_TDFIX && *beneathme != STRUCT_TSDEPT)) {
         return false;
     }
 
@@ -6184,7 +6189,8 @@ bool UnitClass::MinelayerGoHome(void)
     for (int i = 0; i < Buildings.Count(); ++i) {
         BuildingClass* pad = Buildings.Ptr(i);
         if ((pad != NULL) && pad->IsActive && !pad->IsInLimbo && (pad->House == House)
-            && (pad->Mission != MISSION_DECONSTRUCTION) && ((*pad == STRUCT_REPAIR) || (*pad == STRUCT_TDFIX))
+            && (pad->Mission != MISSION_DECONSTRUCTION)
+            && ((*pad == STRUCT_REPAIR) || (*pad == STRUCT_TDFIX) || (*pad == STRUCT_TSDEPT))
             && (Map[pad->Center_Coord()].Zones[Techno_Type_Class()->MZone]
                 == Map[Center_Coord()].Zones[Techno_Type_Class()->MZone])) {
             int score = Lepton_To_Cell(Distance(pad));
@@ -6653,17 +6659,17 @@ void UnitClass::Assign_Destination(TARGET target)
                     **	HACK ALERT: The repair bay is counting on the assignment of the NavCom by this routine.
                     **	The refinery must NOT have the navcom assigned by this routine.
                     */
-                    if (*b != STRUCT_REPAIR && *b != STRUCT_TDFIX) {
+                    if (*b != STRUCT_REPAIR && *b != STRUCT_TDFIX && *b != STRUCT_TSDEPT) {
                         target = TARGET_NONE;
                     }
                 } else {
                     if (Transmit_Message(RADIO_DOCKING, b) != RADIO_ROGER) {
                         Transmit_Message(RADIO_OVER_OUT);
-                        if (*b == STRUCT_REPAIR || *b == STRUCT_TDFIX) {
+                        if (*b == STRUCT_REPAIR || *b == STRUCT_TDFIX || *b == STRUCT_TSDEPT) {
                             ArchiveTarget = target;
                         }
                     }
-                    if (*b != STRUCT_REPAIR && *b != STRUCT_TDFIX) {
+                    if (*b != STRUCT_REPAIR && *b != STRUCT_TDFIX && *b != STRUCT_TSDEPT) {
                         ArchiveTarget = target;
                         target = TARGET_NONE;
                     }
@@ -6703,7 +6709,7 @@ void UnitClass::Assign_Destination(TARGET target)
     **	If the player clicked on a friendly repair facility and the repair
     **	facility is currently not involved with some other unit (radio or unloading).
     */
-    if (b != NULL && (*b == STRUCT_REPAIR || *b == STRUCT_TDFIX)) {
+    if (b != NULL && (*b == STRUCT_REPAIR || *b == STRUCT_TDFIX || *b == STRUCT_TSDEPT)) {
         if (b->In_Radio_Contact() && (b->Contact_With_Whom() != this)) {
             //			if (target != NULL) {
             ArchiveTarget = target;

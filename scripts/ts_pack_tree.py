@@ -279,8 +279,14 @@ def emit_sidebar_data(ini, display, desc, icon_dir):
 
 
 def loop(d):
-    """Whole usable window as both healthy and damaged cycle."""
-    idx = list(range(anim_len(d)))
+    """TS anims pack HEALTHY frames then DAMAGED frames inside the usable
+    window (radar dish, tech dome, depot pad, barracks flag all confirmed
+    2026-08-03). Even count -> split halves; odd -> no damaged half, same
+    window both runs."""
+    ln = anim_len(d)
+    if ln % 2 == 0:
+        return (d, list(range(ln // 2)), list(range(ln // 2, ln)))
+    idx = list(range(ln))
     return (d, idx, idx)
 
 
@@ -288,8 +294,6 @@ def loop(d):
 # moved to SIZEPASS below) ----
 # (ini, base_dir, anims_dirs, mk_dir, mk_count, canvas, target_w, cameo_dir, name, desc)
 WAVE2 = [
-    ("TSPILE", "shp_gtpile", ["shp_gtpile_a", "shp_gtpile_b", "shp_gtpile_c"],
-     "shp_gtpilemk", 19, (256, 256), 256, "shp_brrkicon", "TS Barracks", "Trains Tiberian-era infantry."),
     ("TSSILO", "shp_gtsilo", [],
      "shp_gtsilomk", 19, (256, 256), 250, "shp_siloicon", "TS Tiberium Silo", "Stores excess Tiberium."),
     ("TSHPAD", "shp_gthpad", ["shp_gthpad_a"],
@@ -300,8 +304,10 @@ WAVE2 = [
      "shp_gtdeptmk", 19, (384, 384), 382, "shp_fixicon", "TS Service Depot", "Repairs vehicles and aircraft."),
 ]
 
-BIBS = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb",
-        "TSHPAD": "shp_gthpadbb", "TSDEPT": "shp_gtdeptbb"}
+# TSPROC/TSWEAP apron plates dropped with the 3x3 conversion (2026-08-03
+# late): structure-only composites fill the box, engine Bib=yes lays the RA
+# slab like every other refinery/factory.
+BIBS = {"TSHPAD": "shp_gthpadbb", "TSDEPT": "shp_gtdeptbb"}
 
 for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
     if not os.path.isdir(f"{ART}/{base}"):
@@ -316,21 +322,24 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
 # ---- Size pass (2026-08-03, docs/ts-gdi-tree-plan.md top block): the four
 # buildings Luke rejected as too small, rebuilt with taller classic stubs and
 # the width-fit + bottom-anchor mode. Stubs (build_tfassets.sh) must match:
-# TSPROC 96x102 / TSWEAP 96x96 (art halo above the 3-row BSIZE_43 box + the
-# passable TS apron row below it, Bib=no engine-side; stubs hug the art so
-# the launcher's selection box does too), TSRADR 48x96 (Obelisk treatment:
-# dish rises ~1 row over the 2x2 plot), TSFACT 96x72 (TS-authentic BSIZE_43).
+# TSPROC 72x72 (RA-refinery 3x3 geometry clone), TSWEAP 96x72 (TDWEAP-parity
+# 3x3, hangar art overhangs the box sides), TSPILE 72x48 (2x2 plot, wide
+# stub for mass), TSRADR 48x96 (Obelisk treatment: dish rises ~1 row over
+# the 2x2 plot), TSFACT 96x72 (TS-authentic BSIZE_43).
 # bottom_margin = classic px from canvas bottom up to the composite's bottom.
 # (ini, base, anims, mk, mkc, canvas, bottom_margin, overscale, cameo, name, desc)
 SIZEPASS = [
     # NTREFN_C is a 144-canvas anim on a 192x168 building; needs offset
     # compositing -- still deferred.
     ("TSPROC", "shp_ntrefn", ["shp_ntrefn_b"],
-     "shp_ntrefnmk", 19, (512, 544), 0, 1.08, "shp_reficon",
+     "shp_ntrefnmk", 19, (384, 384), 0, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
-     "shp_gtweapmk", 19, (512, 448), 0, 1.10, "shp_weapicon",
+     "shp_gtweapmk", 19, (512, 384), 2, 1.0, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
+    ("TSPILE", "shp_gtpile", ["shp_gtpile_a", "shp_gtpile_b", "shp_gtpile_c"],
+     "shp_gtpilemk", 19, (384, 256), 0, 1.0, "shp_brrkicon",
+     "TS Barracks", "Trains Tiberian-era infantry."),
     ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
      "shp_gtradrmk", 20, (256, 512), 26, 1.0, "shp_radricon",
      "TS Radar", "Provides radar coverage."),

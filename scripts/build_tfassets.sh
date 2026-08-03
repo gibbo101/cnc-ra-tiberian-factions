@@ -255,13 +255,19 @@ PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
 # box, so the stub must HUG the art (a roomy 96x120 put floating brackets in
 # empty headroom). TSPROC 96x102 / TSWEAP 96x96: halo above the 3-row box +
 # the passable TS apron row below (engine Bib=no; apron baked in the art).
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 96 102 2
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 72 72 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 96 102 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 72 72 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 96 84 2
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 96 72 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 96 84 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 96 72 19
+# TSPILE 72x48 on the 2x2 plot: wide stub so the barracks reads as a real
+# building instead of an infantry-height bunker.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspile_stub.shp" 72 48 2
+PACK_ARGS+=("$TMPDIR/tspile_stub.shp:TSPILE.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspilemk_stub.shp" 72 48 19
+PACK_ARGS+=("$TMPDIR/tspilemk_stub.shp:TSPILEMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
 # TSRADR 48x96 on the 2x2 plot: Obelisk treatment, the dish tower rises a
 # full row above the box (was donor-TDHQ 48x48 = the "pathetically small").

@@ -1081,7 +1081,8 @@ RadioMessageType TechnoClass::Receive_Message(RadioClass* from, RadioMessageType
             */
             if ((Health_Ratio() >= Rule.ConditionGreen) && !Target_Legal(((UnitClass*)this)->NavCom) && from != NULL
                 && (from->What_Am_I() == RTTI_BUILDING)
-                && (*((BuildingClass*)from) == STRUCT_REPAIR || *((BuildingClass*)from) == STRUCT_TDFIX)) {
+                && (*((BuildingClass*)from) == STRUCT_REPAIR || *((BuildingClass*)from) == STRUCT_TDFIX
+                    || *((BuildingClass*)from) == STRUCT_TSDEPT)) {
                 TARGET rallyto = ((BuildingClass*)from)->RallyPoint;
                 if (Target_Legal(rallyto) && (As_Target() != rallyto)
                     && (::As_Target(Coord_Cell(Coord)) != rallyto)) {
@@ -7106,7 +7107,9 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                                  && (House->Get_Quantity(STRUCT_AHPAD) != 0 || House->Get_Quantity(STRUCT_SHPAD) != 0
                                      || House->Get_Quantity(STRUCT_TDGHPAD) != 0
                                      || House->Get_Quantity(STRUCT_TDNHPAD) != 0))
-                             || (looking_for_repair && House->Get_Quantity(STRUCT_TDFIX) != 0);
+                             || (looking_for_repair
+                                 && (House->Get_Quantity(STRUCT_TDFIX) != 0
+                                     || House->Get_Quantity(STRUCT_TSDEPT) != 0));
         if (has_candidate) {
             int bestval = -1;
 
@@ -7125,7 +7128,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 bool tdafld_match = looking_for_airstrip
                                     && (*building == STRUCT_TDAFLD || *building == STRUCT_TDGAFLD);
                 bool tdhpad_match = looking_for_helipad && building->Class->Is_Helipad();
-                bool tdfix_match = looking_for_repair && (*building == STRUCT_TDFIX);
+                bool tdfix_match = looking_for_repair
+                                   && (*building == STRUCT_TDFIX || *building == STRUCT_TSDEPT);
                 bool type_match = (*building == b) || tdafld_match || tdhpad_match || tdfix_match;
                 if (!type_match)
                     continue;

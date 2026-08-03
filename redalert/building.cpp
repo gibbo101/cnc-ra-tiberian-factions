@@ -282,6 +282,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
         case STRUCT_REPAIR:
         case STRUCT_TDFIX:    // TD Service Depot — same vehicle/aircraft repair semantics.
+        case STRUCT_TSDEPT:   // TS Service Depot — same repair-bay semantics.
             if (from->What_Am_I() == RTTI_UNIT || (from->What_Am_I() == RTTI_AIRCRAFT)) {
                 if (Transmit_Message(RADIO_ON_DEPOT, from) != RADIO_ROGER) {
                     return (RADIO_ROGER);
@@ -325,6 +326,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         switch (Class->Type) {
         case STRUCT_REPAIR:
         case STRUCT_TDFIX:    // TD Service Depot — same RADIO_IM_IN repair-bay handshake.
+        case STRUCT_TSDEPT:   // TS Service Depot.
             IsReadyToCommence = true;
             Assign_Mission(MISSION_REPAIR);
             from->Assign_Mission(MISSION_SLEEP);
@@ -422,7 +424,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         **	be able to satisfy the request to load by bumping off any
         **	preoccupying task.
         */
-        if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) {
+        if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TSDEPT) {
             if (Contact_With_Whom() != from) {
                 if (Transmit_Message(RADIO_ON_DEPOT) == RADIO_ROGER) {
                     if (Transmit_Message(RADIO_NEED_REPAIR) == RADIO_NEGATIVE) {
@@ -472,10 +474,12 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
             case STRUCT_REPAIR:
             case STRUCT_TDFIX:    // TD Service Depot — same dock-tether semantics.
+            case STRUCT_TSDEPT:   // TS Service Depot.
                 Transmit_Message(RADIO_TETHER);
                 param = ::As_Target(Coord_Cell(Center_Coord()));
                 break;
 
+            case STRUCT_TSPROC:   // TS refinery, 3x3 RA-geometry clone — same DIR_S pad.
             case STRUCT_REFINERY:
                 /*
                 **	RA refinery dock pad = DIR_S (the only FREE cell adjacent to the south
@@ -486,18 +490,6 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 **	(harvester disappears), which we don't do for the RA refinery.
                 */
                 param = ::As_Target(Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_S)));
-                break;
-
-            case STRUCT_TSPROC:
-                /*
-                **	TS refinery (4x3 box, plot = rows 1-2): the pad is the passable
-                **	apron-row cell under the striped dock ramp — TWO cells south of
-                **	the centre cell (RA's DIR_S-of-centre would land inside the
-                **	occupied plot on this footprint). N-of-pad is the plot's south
-                **	row, so the PCP_END arrival check fires unchanged, and the
-                **	harvester unloads standing ON the apron, as in TS.
-                */
-                param = ::As_Target((CELL)(Coord_Cell(Coord) + 3 * MAP_CELL_W + 2));
                 break;
 
             case STRUCT_TDPROC:
@@ -577,7 +569,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
     */
     case RADIO_OVER_OUT:
         Begin_Mode(BSTATE_IDLE);
-        if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) {
+        if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TSDEPT) {
             Assign_Mission(MISSION_GUARD);
         }
         TechnoClass::Receive_Message(from, message, param);
@@ -589,7 +581,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
     **	this event occurs.
     */
     case RADIO_UNLOADED:
-        if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) {
+        if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TSDEPT) {
             if (Distance(from) < 0x0180) {
                 return (RADIO_ROGER);
             }
@@ -634,8 +626,8 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         }
 
         if (*this == STRUCT_WEAP || *this == STRUCT_AWEAP || *this == STRUCT_SWEAP || *this == STRUCT_AIRSTRIP
-            || *this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TDWEAP || *this == STRUCT_TDAFLD
-            || *this == STRUCT_TDGAFLD)
+            || *this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TSDEPT || *this == STRUCT_TDWEAP
+            || *this == STRUCT_TDAFLD || *this == STRUCT_TDGAFLD || *this == STRUCT_TSWEAP)
             return (RADIO_RUN_AWAY);
         return (RADIO_ROGER);
 
@@ -2779,7 +2771,7 @@ bool BuildingClass::Can_Have_Rally_Point(void) const
     **	TF: smarter repair bay (CFE port) — repaired units leave toward the
     **	bay's rally point, so bays take rally points too.
     */
-    if (Class->Type == STRUCT_REPAIR || Class->Type == STRUCT_TDFIX) {
+    if (Class->Type == STRUCT_REPAIR || Class->Type == STRUCT_TDFIX || Class->Type == STRUCT_TSDEPT) {
         return true;
     }
 
@@ -2849,7 +2841,8 @@ bool BuildingClass::Rally_Unit(TechnoClass& unit)
         **	Always claim success for fixed-wing planes that found no strip so
         **	the caller doesn't kick them out and force a crash.
         */
-        if ((*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) && unit.What_Am_I() == RTTI_AIRCRAFT) {
+        if ((*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TSDEPT)
+            && unit.What_Am_I() == RTTI_AIRCRAFT) {
             if (((AircraftClass*)&unit)->DoSmarterRunAway()) {
                 return true;
             } else if (((AircraftClass*)&unit)->Class->IsFixedWing) {
@@ -3073,6 +3066,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
     case RTTI_INFANTRY:
     case RTTI_UNIT:
         switch (Class->Type) {
+        case STRUCT_TSPROC:   // TS refinery — RA-style free-harvester spawn.
         case STRUCT_REFINERY:
             if (base->What_Am_I() == RTTI_UNIT) {
                 cell = Coord_Cell(Center_Coord());
@@ -4871,7 +4865,7 @@ COORDINATE BuildingClass::Sort_Y(void) const
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
-    if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) {
+    if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TSDEPT) {
         return (Coord);
     }
     if (Class->Is_Helipad()) {
@@ -4951,7 +4945,8 @@ bool Is_Refinery_Dock_Cell(CELL cell)
     CELL ncell = Adjacent_Cell(cell, FACING_N);
     if ((unsigned)ncell < MAP_CELL_TOTAL) {
         BuildingClass const* b = Map[ncell].Cell_Building();
-        if (b != NULL && *b == STRUCT_REFINERY && Coord_Cell(b->Center_Coord()) == ncell) {
+        if (b != NULL && (*b == STRUCT_REFINERY || *b == STRUCT_TSPROC)
+            && Coord_Cell(b->Center_Coord()) == ncell) {
             return (true);
         }
     }
@@ -4967,17 +4962,6 @@ bool Is_Refinery_Dock_Cell(CELL cell)
         }
     }
 
-    /*
-    **	TS refinery: pad sits on the apron row, TWO cells south of the centre cell
-    **	(see the STRUCT_TSPROC RADIO_DOCKING case) -> centre is two north of the pad.
-    */
-    CELL n2cell = (CELL)(cell - MAP_CELL_W * 2);
-    if ((unsigned)n2cell < MAP_CELL_TOTAL) {
-        BuildingClass const* b = Map[n2cell].Cell_Building();
-        if (b != NULL && *b == STRUCT_TSPROC && Coord_Cell(b->Center_Coord()) == n2cell) {
-            return (true);
-        }
-    }
 
     return (false);
 }
@@ -5052,8 +5036,8 @@ bool BuildingClass::Can_Demolish(void) const
 
 bool BuildingClass::Can_Demolish_Unit(void) const
 {
-    return ((*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_AIRSTRIP
-             || *this == STRUCT_TDGAFLD)
+    return ((*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TSDEPT
+             || *this == STRUCT_AIRSTRIP || *this == STRUCT_TDGAFLD)
             && In_Radio_Contact() && Distance(Contact_With_Whom()) < 0x0080);
 }
 
@@ -5144,7 +5128,8 @@ int BuildingClass::Mission_Guard(void)
             **	Special case to break out of guard mode if this is a repair
             **	facility and there is a customer waiting at the grease pit.
             */
-            if ((*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) && In_Radio_Contact() && Contact_With_Whom()->Is_Techno()
+            if ((*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TSDEPT)
+                && In_Radio_Contact() && Contact_With_Whom()->Is_Techno()
                 && ((TechnoClass*)Contact_With_Whom())->Mission == MISSION_ENTER
                 && Distance(Contact_With_Whom()) < 0x0040 && Transmit_Message(RADIO_NEED_TO_MOVE) == RADIO_ROGER) {
 
@@ -5157,7 +5142,7 @@ int BuildingClass::Mission_Guard(void)
             break;
         }
 
-        if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) {
+        if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TSDEPT) {
             return (MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
         } else {
             return (MissionControl[Mission].Normal_Delay() * 3 + Random_Pick(0, 2));
@@ -6113,7 +6098,7 @@ int BuildingClass::Mission_Repair(void)
         return (1);
     }
 
-    if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX) {
+    if (*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TSDEPT) {
         enum
         {
             INITIAL,
