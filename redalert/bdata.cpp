@@ -1306,12 +1306,21 @@ static BuildingTypeClass const ClassTdGdiFact(STRUCT_TDGFACT,
                                               (short const*)NULL  // No overlap row.
 );
 
+/* 4x3 lists for the TS-authentic wide footprints: art row 0 is overlap
+** (visual overhang), rows 1-2 are the occupied plot; exits ring the south
+** and east edges (war factory). */
+static short const TsList43[] = {(MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
+                                 (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
+                                 REFRESH_EOL};
+static short const TsOList43[] = {0, 1, 2, 3, REFRESH_EOL};
+
 /*
 **  TSFACT (TS Construction Yard, TS rules [GACNST]) — the gate on the ownership-gated
 **  TS GDI tree (docs/ts-gdi-tree-plan.md). Deployed only from UNIT_TSMCV (a rare crate
-**  find); never sidebar-buildable, so no cameo. TS-authentic 3x3 footprint. Art = TS
-**  GTCNST SHP + GTCNSTMK buildup under TSFACT tileset keys; classic dims from the RA
-**  FACT donor (same 3x3).
+**  find); never sidebar-buildable, so no cameo. TS-authentic 4x3 footprint (GACNST;
+**  size pass 2026-08-03 — the 3x2 TD-parity read too small beside the 3x3 RA yard).
+**  Art = TS GTCNST SHP + GTCNSTMK buildup under TSFACT tileset keys; classic dims
+**  from its own 96x72 TFASSETS stub.
 */
 static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
                                            TXT_NONE,           // Display name (rules.ini Name= overrides).
@@ -1336,11 +1345,10 @@ static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
                                            true,               // Can the building be color remapped?
                                            RTTI_BUILDINGTYPE,  // Produces buildings.
                                            DIR_N,              // Starting idle frame.
-                                           BSIZE_32,           // 3x2 — TD-yard parity (TS's 3x3 dropped for size match, Luke 2026-08-01).
+                                           BSIZE_43,           // TS-authentic 4x3 (size pass 2026-08-03).
                                            NULL,               // No preferred exit cell.
-                                           (short const*)List32,
-                                           (short const*)NULL  // No overlap row.
-);
+                                           (short const*)TsList43,
+                                           (short const*)TsOList43);
 
 /*
 **  TS GDI tree production/economy buildings (docs/ts-gdi-tree-plan.md §Stealth
@@ -1349,13 +1357,6 @@ static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
 **  under the TS* tileset keys with classic dims donated from the TD
 **  counterpart (see _td_bdonors).
 */
-/* 4x3 lists for the TS-authentic wide footprints: art row 0 is overlap
-** (visual overhang), rows 1-2 are the occupied plot; exits ring the south
-** and east edges (war factory). */
-static short const TsList43[] = {(MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
-                                 (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
-                                 REFRESH_EOL};
-static short const TsOList43[] = {0, 1, 2, 3, REFRESH_EOL};
 static short const TsExitWeap43[] = {XYCELL(-1, 3), XYCELL(0, 3), XYCELL(1, 3),
                                      XYCELL(2, 3), XYCELL(3, 3), XYCELL(4, 3),
                                      XYCELL(4, 2), XYCELL(4, 1), XYCELL(-1, 2),
@@ -4807,7 +4808,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 56, 3},  // GAPILE _A(8)+_B(8)+_C(14) -> LCM 56
         {STRUCT_TSPROC, BSTATE_IDLE, 0, 20, 3},  // NAREFN _B(20)
         {STRUCT_TSWEAP, BSTATE_IDLE, 0, 16, 3},  // GAWEAP _A(16)+_B(8)+_C(4) -> LCM 16
-        {STRUCT_TSRADR, BSTATE_IDLE, 0, 30, 3},  // GARADR _A(30) dish loop
+        {STRUCT_TSRADR, BSTATE_IDLE, 0, 15, 3},  // GARADR _A: frames 0-14 healthy dish loop, 15-29 torn-dish damaged loop
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 16, 3},  // GAHPAD _A(16)
         {STRUCT_TSTECH, BSTATE_IDLE, 0, 16, 3},  // GATECH _A(16)
         {STRUCT_TSDEPT, BSTATE_IDLE, 0, 70, 3},  // GADEPT _A(10)+_B(7) -> LCM 70

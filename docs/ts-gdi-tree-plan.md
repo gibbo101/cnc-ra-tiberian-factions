@@ -1,65 +1,61 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐ RESUME HERE — NEXT JOB (Luke, 2026-08-01 late): building size pass, then the
+## ⭐ RESUME HERE — SIZE PASS SHIPPED TO THE DECK (2026-08-03); NEXT: Luke's
 ## full building walk + sign-off INCLUDING harvester + docking mechanics
 
-**Luke's in-game verdicts from the first Deck look (ground truth, sign-off
-withheld):** TS refinery "ridiculously small" vs the TD one, TS conyard too
-small, TS radar "pathetically small, with broken animation", TS war factory
-same. Screenshot pulled and analysed; measurements below are from the shipped
-ZIPs, not guesses.
+**The size pass is implemented, built and Deck-deployed (md5-verified), NOT
+yet play-verified.** All four rejected buildings rebuilt:
 
-**Measured root causes (2026-08-01 evening):**
-- TSPROC: content 367px on the 512-wide 4-cell canvas (71%) — NARROWER than
-  TDPROC's 384px on 3 cells despite the bigger footprint. The single-affine
-  union clamp shrank the base; the composited NTREFNBB bib plate inside the
-  footprint-only canvas is the likely height clamper.
-- TSRADR: content 184/256 (71%), height-full — the tall dish anim clamps the
-  union fit. Also "broken animation": bdata plays `{0, 30, 3}` but GTRADR_A
-  is 60 frames with the damaged loop in the second half — audit the ZIP frame
-  layout against the engine's damaged-run (shapes N..2N-1) convention first.
-- TSWEAP: content 500/512 — canvas-bound, cannot get bigger inside the
-  footprint box. TS art carries a big flat iso ground plate, so even a
-  full-width fit reads small next to TD's chunky 3x3 art.
-- TSFACT: full canvas, but the footprint is 3x2 TD-parity — small beside the
-  3x3 RA yard. TS GACNST is authentically 4x3 (BSIZE_43 infra now exists).
+- **TSPROC** — stub 96x120, canvas 512x640: composite (base + NTREFNBB apron)
+  spans the full 4-cell width (~40% linear bigger than the rejected build),
+  structure over the plot, apron dipping into the passable row below.
+  `Bib=no` (the doubled RA slab is gone).
+- **TSWEAP** — same 96x120 treatment, `Bib=no`. TS-authentically squat; if it
+  still reads small in the walk, the lever is overscale + clipping the apron's
+  side tips (noted, not applied).
+- **TSRADR** — stub 48x96 (was donor-TDHQ 48x48): full 2-cell width, dish
+  rising a row above the plot, Obelisk-style. **Broken-anim ROOT CAUSE:
+  GTRADR_A's 30 usable frames are 15 healthy rotation + 15 TORN-DISH damaged
+  frames** (the engine's shapes-N..2N-1 damaged convention applied *inside*
+  the anim SHP) — the old pack cycled all 30 as the healthy idle. Now healthy
+  cycles 0-14, damaged run cycles 15-29, bdata `{0, 15, 3}`, ZIP 30 frames.
+  `Bib=no`.
+- **TSFACT** — TS-authentic **4x3** (BSIZE_43 + TsList43/TsOList43, own 96x72
+  stub; fills the box, reads bigger than the RA yard). Deploy/undeploy round
+  trip is geometrically consistent (deploy origin = MCV NW-adjacent; undeploy
+  MCV = Coord SE-adjacent — same cell), but 4-wide deploy is NEW ground:
+  test deploy → undeploy → redeploy in the walk. `Bib=no`.
 
-**⭐ THE PROVEN UNLOCK — art may exceed the footprint box vertically.**
-TDOBLI ships classic dims 24x48 on a 1x1 footprint (HD canvas 128x256,
-content bottom-anchored, tower rising a full row ABOVE the cell) and TDATWR
-is 24x48 on 1x1 — both rendering correctly since v1.0. So the resize recipe
-is: taller TFASSETS stub (extra rows), taller HD canvas at the same 5.33
-px/classic-px density, content scaled to FULL footprint width and anchored
-so its base sits on the footprint bottom (the extra canvas rows extend
-upward, per the Obelisk's observed layout: canvas bottom = footprint bottom).
-Rework TSPROC/TSWEAP/TSRADR (and TSFACT, or take TSFACT to its TS-authentic
-4x3 footprint) through `ts_pack_tree.py` with per-building stub growth.
+**⭐ RENDER CONTRACT (settled 2026-08-03, supersedes the "canvas bottom =
+footprint bottom" Obelisk inference):** the launcher maps the HD canvas onto
+the classic-stub-dims box **CENTERED (both axes) on the BSIZE box center**
+(`CenterOffset` geometry + launcher-render-contracts rule 1). Stub height
+beyond the box splits into EQUAL art halos above and below — content placed
+low in the canvas renders below the plot. That's how the apron row works with
+zero DLL draw changes; classic C&C tall art (Tesla/Obelisk, content flush to
+frame bottom) always drew its base slightly into the row below and reads
+naturally in iso. No probe deploy was needed.
 
-**Bib design DECIDED (Luke, 2026-08-01 late): TS-authentic passable aprons.**
-In Tiberian Sun the war factory and refinery carry their concrete aprons IN
-THE ART, units drive over them, and there is no separate engine bib. Match
-that: TSPROC and TSWEAP go **bibless on the engine side** (`Bib=` off, no RA
-slab) and their art **expands into the bib row** — structure on the top 3
-rows at full 4-cell width, baked NTREFNBB/GTWEAPBB apron on the bottom row.
-Mechanics sketch:
-- Occupancy/placement/docking stay 4x3 (BSIZE_43 unchanged) — the apron row
-  is passable, exactly like TS. The 4x3 occupancy under a 4-row visual is
-  the existing BSIZE_43 cell list; no new occupancy machinery needed.
-- Render box grows one row: TFASSETS stub 96x96, HD canvas 512x512.
-- ⚠ ONE CONTRACT PROBE FIRST: the Obelisk precedent proves extra canvas rows
-  extend UPWARD (canvas bottom = footprint bottom). The apron needs one row
-  DOWNWARD. Ship a probe canvas (e.g. TSPROC with a marker row) and see
-  where the launcher lands it before committing the pass; if extra rows only
-  go up, anchor the composite one row higher (structure top rows + apron in
-  the bottom footprint row) or bias with an asymmetric stub.
-- Radar/conyard don't carry aprons: radar gets the UPWARD Obelisk treatment
-  (tall stub, full 2-cell width, dish tower rising); conyard gets upward
-  headroom too, or the TS-authentic 4x3 footprint — decide during the pass.
+Pipeline notes: `ts_pack_tree.py` gained a size-pass fit mode (union
+width-fit + bottom-margin anchor, `SIZEPASS` table) and per-run anim windows
+(healthy/damaged index lists — the GTRADR_A split). Stubs for all four (incl.
+new TSRADR/TSFACT + MAKE stubs at donor-matching frame counts 20/32) are in
+`build_tfassets.sh`. Grid-overlay previews validated offline before deploy.
 
 **Then the sign-off walk (units wave included):** the two checklists below —
 all nine buildings + the four new units, with special attention to the
 TSHARV harvest → dock → fume-plume → credits loop at the 4x3 TSPROC
 (`MOD_DEBUG_TSUNITS.txt` logs FREE-HARV grants and every DOCK-START).
+Size-pass-specific additions:
+1. The four resized buildings vs TD counterparts — and TSPROC/TSWEAP apron:
+   units should drive OVER the apron row (it's the unoccupied row below the
+   plot; the art just paints it).
+2. TSRADR dish loop stays clean when healthy; torn dish appears ONLY damaged.
+3. TSFACT: TS MCV deploy → 4x3 yard up → undeploy → MCV back → redeploy.
+4. Buildup anims on all four (MAKE canvases changed with the stubs).
+5. Placement UI on TSPROC/TSWEAP/TSFACT: the proposed-building footprint
+   overlay should still show the right cells (BSIZE box unchanged for
+   PROC/WEAP; TSFACT now 4x3).
 
 ## Units wave SHIPPED 2026-08-01 evening (on top of the building tree)
 

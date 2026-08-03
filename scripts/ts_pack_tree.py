@@ -54,10 +54,15 @@ def anim_len(dirname):
     return n
 
 
-def composite(base_img, anims, i):
+def composite(base_img, anims, i, which):
+    """anims = [(dirname, healthy_indices, damaged_indices), ...]; `which`
+    selects the window (1=healthy, 2=damaged). Most TS anims only carry a
+    healthy loop, but GTRADR_A packs a torn-dish damaged loop in its second
+    half — cycling the right window per run keeps the healthy idle clean."""
     out = base_img.copy()
-    for dirname, length in anims:
-        f = load(dirname, i % length)
+    for spec in anims:
+        idx = spec[which]
+        f = load(spec[0], idx[i % len(idx)])
         out.paste(f, (0, 0), f)
     return out
 
@@ -81,13 +86,18 @@ def hq_scale(img, factor):
     return out
 
 
-def place(img, factor, canvas_w, canvas_h, src_cx, src_cy):
+def place(img, factor, canvas_w, canvas_h, src_cx, src_cy, dst_x=None, dst_y=None):
     """Apply the building's single affine: hq-scale, then position so the
-    (pre-scale) anchor point lands at the canvas center."""
+    (pre-scale) anchor point lands at (dst_x, dst_y) — canvas center by
+    default."""
+    if dst_x is None:
+        dst_x = canvas_w / 2
+    if dst_y is None:
+        dst_y = canvas_h / 2
     scaled = hq_scale(img, factor)
     out = Image.new("RGBA", (canvas_w, canvas_h), (0, 0, 0, 0))
-    ox = round(canvas_w / 2 - src_cx * factor)
-    oy = round(canvas_h / 2 - src_cy * factor)
+    ox = round(dst_x - src_cx * factor)
+    oy = round(dst_y - src_cy * factor)
     src = scaled
     x0, y0 = max(0, -ox), max(0, -oy)
     if x0 or y0:
@@ -132,10 +142,22 @@ def resample(indices, target):
 
 
 def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count,
-                    canvas_w, canvas_h, target_w, bib_dir=None):
-    """The Stealth Recipe compositor. anims = [(dirname, loop_len), ...]."""
+                    canvas_w, canvas_h, target_w=None, bib_dir=None,
+                    bottom_margin=None):
+    """The Stealth Recipe compositor.
+    anims = [(dirname, healthy_indices, damaged_indices), ...].
+    Two fit modes:
+    - legacy (target_w): base-keyed scale clamped to the canvas, union-centered.
+    - size-pass (bottom_margin, classic px): scale = full canvas width for the
+      composite union, union bottom anchored bottom_margin above the canvas
+      bottom, x-centered. The launcher maps the canvas onto the classic stub
+      box CENTERED on the BSIZE box (launcher-render-contracts rule 1 +
+      CenterOffset geometry), so a stub taller than the box extends the art
+      symmetrically — content placed low lands on the passable row below the
+      plot (the TS apron row)."""
     n = 1
-    for _, ln in anims:
+    for spec in anims:
+        ln = len(spec[1])
         n = n * ln // math.gcd(n, ln)
     base_h = load(base_dir, healthy_f)
     base_d = load(base_dir, damaged_f)
@@ -152,36 +174,43 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     # freezes damaged buildings (the anim SHPs' damaged halves are empty),
     # but the mod's stealth-gen baseline animates damaged, and Luke prefers
     # that (2026-08-01).
-    healthy = [composite(base_h, anims, i) for i in range(n)]
-    damaged_frames = [composite(base_d, anims, i) for i in range(n)]
+    healthy = [composite(base_h, anims, i, 1) for i in range(n)]
+    damaged_frames = [composite(base_d, anims, i, 2) for i in range(n)]
 
-    # One affine for every frame, keyed to the HEALTHY BASE content only:
-    # buildup scaffolding is often wider than the finished building, and a
-    # union-box scale shrinks the built state to make room for it (the
-    # "powerplant needs beefing up" bug). Base-keyed scale + base-centered
-    # anchor keeps registration (all frames share the source canvas); MK
-    # frames that overflow the canvas clip harmlessly in place().
-    bb = base_h.getbbox()
-    factor = float(target_w) / (bb[2] - bb[0])
-    # Clamp so the union of EVERYTHING drawn (anims can rise above the base --
-    # radar dish, barracks flag -- and MK scaffolds spread wider) still fits
-    # the canvas; anchor at the union center so nothing clips.
-    # MK frames are EXCLUDED from the fit: buildup scaffolding is wider than
-    # the finished building, and letting it drive the clamp shrinks the built
-    # state (the TS-refinery-smaller-than-TD bug). A transient buildup frame
-    # clipping at the canvas edge is harmless; the built state must not.
     boxes = [f.getbbox() for f in healthy + damaged_frames]
     boxes = [b for b in boxes if b]
     ux0, uy0 = min(b[0] for b in boxes), min(b[1] for b in boxes)
     ux1, uy1 = max(b[2] for b in boxes), max(b[3] for b in boxes)
-    factor = min(factor, float(canvas_w) / (ux1 - ux0), float(canvas_h) / (uy1 - uy0))
-    cx, cy = (ux0 + ux1) / 2.0, (uy0 + uy1) / 2.0
 
-    frames = [place(f, factor, canvas_w, canvas_h, cx, cy) for f in healthy]
-    frames += [place(f, factor, canvas_w, canvas_h, cx, cy) for f in damaged_frames]
+    if bottom_margin is not None:
+        # Size-pass fit: composite union spans the full canvas width, anchored
+        # low. MK frames share the affine and may clip — harmless transients.
+        factor = float(canvas_w) / (ux1 - ux0)
+        cx, cy = (ux0 + ux1) / 2.0, float(uy1)
+        dst_x, dst_y = canvas_w / 2.0, canvas_h - bottom_margin * 16.0 / 3.0
+    else:
+        # One affine for every frame, keyed to the HEALTHY BASE content only:
+        # buildup scaffolding is often wider than the finished building, and a
+        # union-box scale shrinks the built state to make room for it (the
+        # "powerplant needs beefing up" bug). Base-keyed scale + base-centered
+        # anchor keeps registration (all frames share the source canvas); MK
+        # frames that overflow the canvas clip harmlessly in place().
+        # Clamp so the union of EVERYTHING drawn (anims can rise above the
+        # base -- radar dish, barracks flag) still fits the canvas; anchor at
+        # the union center so nothing clips. MK frames are EXCLUDED from the
+        # fit: letting scaffolding drive the clamp shrinks the built state
+        # (the TS-refinery-smaller-than-TD bug).
+        bb = base_h.getbbox()
+        factor = float(target_w) / (bb[2] - bb[0])
+        factor = min(factor, float(canvas_w) / (ux1 - ux0), float(canvas_h) / (uy1 - uy0))
+        cx, cy = (ux0 + ux1) / 2.0, (uy0 + uy1) / 2.0
+        dst_x = dst_y = None
+
+    frames = [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in healthy]
+    frames += [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in damaged_frames]
     write_zip(f"{STRUCT_DIR}/{ini}.ZIP", ini.lower(), frames)
 
-    mk = [place(load(mk_dir, i), factor, canvas_w, canvas_h, cx, cy)
+    mk = [place(load(mk_dir, i), factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
           for i in resample(real_frames(mk_dir), mk_count)]
     write_zip(f"{STRUCT_DIR}/{ini}MAKE.ZIP", f"{ini.lower()}make", mk)
 
@@ -236,19 +265,20 @@ def emit_sidebar_data(ini, display, desc, icon_dir):
     print(f"{ini}: sidebar data emitted ({icon_name})")
 
 
-# ---- TS GDI tree wave 2: the eight production/economy buildings ----
+def loop(d):
+    """Whole usable window as both healthy and damaged cycle."""
+    idx = list(range(anim_len(d)))
+    return (d, idx, idx)
+
+
+# ---- TS GDI tree wave 2: the legacy-fit buildings (size-pass buildings
+# moved to SIZEPASS below) ----
 # (ini, base_dir, anims_dirs, mk_dir, mk_count, canvas, target_w, cameo_dir, name, desc)
 WAVE2 = [
     ("TSPILE", "shp_gtpile", ["shp_gtpile_a", "shp_gtpile_b", "shp_gtpile_c"],
      "shp_gtpilemk", 19, (256, 256), 256, "shp_brrkicon", "TS Barracks", "Trains Tiberian-era infantry."),
-    ("TSPROC", "shp_ntrefn", ["shp_ntrefn_b"],  # NTREFN_C is a 144-canvas anim on a 192x168 building; needs offset compositing -- deferred
-     "shp_ntrefnmk", 19, (512, 384), 500, "shp_reficon", "TS Tiberium Refinery", "Processes Tiberium into credits."),
     ("TSSILO", "shp_gtsilo", [],
      "shp_gtsilomk", 19, (256, 256), 250, "shp_siloicon", "TS Tiberium Silo", "Stores excess Tiberium."),
-    ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
-     "shp_gtweapmk", 19, (512, 384), 500, "shp_weapicon", "TS War Factory", "Produces Tiberian-era vehicles."),
-    ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
-     "shp_gtradrmk", 20, (256, 256), 252, "shp_radricon", "TS Radar", "Provides radar coverage."),
     ("TSHPAD", "shp_gthpad", ["shp_gthpad_a"],
      "shp_gthpadmk", 19, (256, 256), 256, "shp_heliicon", "TS Helipad", "Rearms Tiberian-era aircraft."),
     ("TSTECH", "shp_gttech", ["shp_gttech_a"],
@@ -264,27 +294,63 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
     if not os.path.isdir(f"{ART}/{base}"):
         print(f"{ini}: SKIP (no {base})")
         continue
-    anims = [(d, anim_len(d)) for d in anim_dirs]
-    build_structure(ini, base, 0, 1, anims, mk, mkc, cw, ch, tw, bib_dir=BIBS.get(ini))
+    build_structure(ini, base, 0, 1, [loop(d) for d in anim_dirs], mk, mkc, cw, ch, tw,
+                    bib_dir=BIBS.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
-# ---- TSFACT: TS Construction Yard (3x2, TDFACT donor 72x48 -> 384x256).
-# Content scaled to the TD yard (TDGFACT content 381px). Anims: _A crane 20,
-# _B light 10, _C crane-2 30 -> N=60. Damaged base = GTCNST frame 1.
+# ---- Size pass (2026-08-03, docs/ts-gdi-tree-plan.md top block): the four
+# buildings Luke rejected as too small, rebuilt with taller classic stubs and
+# the width-fit + bottom-anchor mode. Stubs (build_tfassets.sh) must match:
+# TSPROC/TSWEAP 96x120 (1 headroom row above the 3-row BSIZE_43 box + the TS
+# apron row below it, Bib=no engine-side), TSRADR 48x96 (Obelisk treatment:
+# dish rises ~1 row over the 2x2 plot), TSFACT 96x72 (TS-authentic BSIZE_43).
+# bottom_margin = classic px from canvas bottom up to the composite's bottom.
+# (ini, base, anims, mk, mkc, canvas, bottom_margin, cameo, name, desc)
+SIZEPASS = [
+    # NTREFN_C is a 144-canvas anim on a 192x168 building; needs offset
+    # compositing -- still deferred.
+    ("TSPROC", "shp_ntrefn", ["shp_ntrefn_b"],
+     "shp_ntrefnmk", 19, (512, 640), 2, "shp_reficon",
+     "TS Tiberium Refinery", "Processes Tiberium into credits."),
+    ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
+     "shp_gtweapmk", 19, (512, 640), 2, "shp_weapicon",
+     "TS War Factory", "Produces Tiberian-era vehicles."),
+    ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
+     "shp_gtradrmk", 20, (256, 512), 26, "shp_radricon",
+     "TS Radar", "Provides radar coverage."),
+]
+
+for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, cameo, disp, desc in SIZEPASS:
+    if not os.path.isdir(f"{ART}/{base}"):
+        print(f"{ini}: SKIP (no {base})")
+        continue
+    if ini == "TSRADR":
+        # GTRADR_A packs 15 healthy rotation frames + 15 torn-dish damaged
+        # frames in its 30-frame usable window (the engine's shapes-N..2N-1
+        # damaged convention applied inside the anim SHP). Cycling all 30 as
+        # the healthy idle was Luke's "broken animation".
+        anims = [("shp_gtradr_a", list(range(0, 15)), list(range(15, 30)))]
+    else:
+        anims = [loop(d) for d in anim_dirs]
+    build_structure(ini, base, 0, 1, anims, mk, mkc, cw, ch,
+                    bib_dir=BIBS.get(ini), bottom_margin=margin)
+    emit_sidebar_data(ini, disp, desc, cameo)
+
+# ---- TSFACT: TS Construction Yard, size pass: TS-authentic 4x3 (BSIZE_43,
+# stub 96x72 = the full 3-row box; content fits inside it, no halo needed).
+# Anims: _A crane 20, _B light 10, _C crane-2 30 -> N=60. Damaged base =
+# GTCNST frame 1.
 if os.path.isdir(f"{ART}/shp_gtcnst"):
     build_structure("TSFACT", "shp_gtcnst", 0, 1,
-                    [("shp_gtcnst_a", anim_len("shp_gtcnst_a")),
-                     ("shp_gtcnst_b", anim_len("shp_gtcnst_b")),
-                     ("shp_gtcnst_c", anim_len("shp_gtcnst_c"))],
-                    "shp_gtcnstmk", 32, 384, 256, 381)
+                    [loop("shp_gtcnst_a"), loop("shp_gtcnst_b"), loop("shp_gtcnst_c")],
+                    "shp_gtcnstmk", 32, 512, 384, bottom_margin=2)
 
 # ---- TSPOWR: TS Power Plant (2x2, POWR donor 48x48 -> 256x256).
 # Content scaled to TDNUKE (content 256 full-width). Anims: _A fan 24, _B 12
 # -> N=24. Damaged base = GTPOWR frame 2 (spike-established layout).
 if os.path.isdir(f"{ART}/shp_gtpowr"):
     build_structure("TSPOWR", "shp_gtpowr", 0, 2,
-                    [("shp_gtpowr_a", anim_len("shp_gtpowr_a")),
-                     ("shp_gtpowr_b", anim_len("shp_gtpowr_b"))],
+                    [loop("shp_gtpowr_a"), loop("shp_gtpowr_b")],
                     "shp_gtpowrmk", 13, 256, 256, 252)
 
 # ---- TSMCV (MCV.VXL render, 32 facings, canvas 384 = classic 48 x 8) ----

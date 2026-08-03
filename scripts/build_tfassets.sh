@@ -248,15 +248,30 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsapc_stub.shp" 48 48 32
 PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
 # TS-tree buildings with TS-authentic footprints (docs/ts-gdi-tree-plan.md):
 # classic stubs declare each one's canvas dims (dims x5.33 = HD canvas); the
-# MAKE stubs carry the 19-frame construction count the HD buildup zips ship.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 96 72 2
+# MAKE stubs carry the construction frame count the HD buildup zips ship.
+# Size pass 2026-08-03: the launcher maps the canvas onto the stub box
+# CENTERED on the BSIZE box, so stub height beyond the box splits into equal
+# art halos above and below it. 96x120 on the 4x3 box = 1 row headroom above
+# + the passable TS apron row below (engine Bib=no; apron baked in the art).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 96 120 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 96 72 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 96 120 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 96 72 2
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 96 120 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 96 72 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 96 120 19
 PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
+# TSRADR 48x96 on the 2x2 plot: Obelisk treatment, the dish tower rises a
+# full row above the box (was donor-TDHQ 48x48 = the "pathetically small").
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsradr_stub.shp" 48 96 2
+PACK_ARGS+=("$TMPDIR/tsradr_stub.shp:TSRADR.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsradrmk_stub.shp" 48 96 20
+PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")
+# TSFACT 96x72 = the full TS-authentic 4x3 box (BSIZE_43), content inside it.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfact_stub.shp" 96 72 2
+PACK_ARGS+=("$TMPDIR/tsfact_stub.shp:TSFACT.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfactmk_stub.shp" 96 72 32
+PACK_ARGS+=("$TMPDIR/tsfactmk_stub.shp:TSFACTMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tstech_stub.shp" 72 48 2
 PACK_ARGS+=("$TMPDIR/tstech_stub.shp:TSTECH.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tstechmk_stub.shp" 72 48 19
