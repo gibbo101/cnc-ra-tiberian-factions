@@ -5910,6 +5910,9 @@ void HouseClass::Recalc_Center(void)
 static int const TF_NAVAL_WAVE_MIN = 3;     // smallest fleet worth releasing as a wave.
 static int const TF_NAVAL_RALLY_RADIUS = 4; // cells; counts as massed at the rally.
 static CELL _tf_fleet_rally[HOUSE_COUNT];
+#if TF_DEV_BUILD // TF_AI_DIAG
+static int _tf_naval_idle_due[HOUSE_COUNT]; // rate limit for the stuck-warship tracer.
+#endif
 
 /***********************************************************************************************
  * HouseClass::Expert_AI -- Handles expert AI processing.                                      *
@@ -6090,9 +6093,39 @@ int HouseClass::Expert_AI(void)
 #endif
             for (int vindex = 0; vindex < Vessels.Count(); vindex++) {
                 VesselClass* v = Vessels.Ptr(vindex);
-                if (v != NULL && !v->IsInLimbo && v->House == this && v->Strength > 0 && v->Is_Weapon_Equipped()
-                    && (v->Mission == MISSION_GUARD || v->Mission == MISSION_GUARD_AREA)
-                    && Map[Coord_Cell(v->Center_Coord())].Zones[MZONE_WATER] == pzone) {
+                if (v == NULL || v->IsInLimbo || !(v->House == this) || v->Strength == 0 || !v->Is_Weapon_Equipped()) {
+                    continue;
+                }
+                bool vidle = (v->Mission == MISSION_GUARD || v->Mission == MISSION_GUARD_AREA);
+                bool vzone = (Map[Coord_Cell(v->Center_Coord())].Zones[MZONE_WATER] == pzone);
+                if (!vidle || !vzone) {
+#if TF_DEV_BUILD // TF_AI_DIAG -- a warship the dispatcher can't see: idle-but-off-zone
+                 // (invisible forever) or stalled inside some other mission. One line per
+                 // house per ~minute; a healthy moving fleet stays quiet.
+                    if ((vidle && !vzone) || (!vidle && !v->IsDriving)) {
+                        int dhidx = (int)Class->House;
+                        if (dhidx >= 0 && dhidx < HOUSE_COUNT && (int)Frame >= _tf_naval_idle_due[dhidx]) {
+                            _tf_naval_idle_due[dhidx] = (int)Frame + 900;
+                            extern FILE* TF_AI_Diag_File(void);
+                            FILE* _tfdbg = TF_AI_Diag_File();
+                            if (_tfdbg != NULL) {
+                                fprintf(_tfdbg,
+                                        "F%ld H%d AL%d NAVAL-IDLE %s#%d mission=%d cell=(%d,%d) zone=%d/%d "
+                                        "radio=%d tarcom=%d navcom=%d\n",
+                                        (long)Frame, (int)Class->House, (int)ActLike, v->Class->IniName, (int)v->ID,
+                                        (int)v->Mission, (int)Cell_X(Coord_Cell(v->Center_Coord())),
+                                        (int)Cell_Y(Coord_Cell(v->Center_Coord())),
+                                        (int)Map[Coord_Cell(v->Center_Coord())].Zones[MZONE_WATER], pzone,
+                                        v->In_Radio_Contact() ? 1 : 0, Target_Legal(v->TarCom) ? 1 : 0,
+                                        Target_Legal(v->NavCom) ? 1 : 0);
+                                fflush(_tfdbg);
+                            }
+                        }
+                    }
+#endif
+                    continue;
+                }
+                {
                     /*
                     **	Fighting ships fight on; ships with an enemy already in weapon
                     **	range pick it up and fight instead of sailing.
@@ -6125,6 +6158,18 @@ int HouseClass::Expert_AI(void)
                     }
                     if (frelease) {
                         v->Assign_Mission(MISSION_HUNT);
+#if TF_DEV_BUILD // TF_AI_DIAG -- one line per hull per wave; hunts that then stall show
+                 // up as NAVAL-IDLE lines (not driving, mission!=guard) right after these.
+                        {
+                            extern FILE* TF_AI_Diag_File(void);
+                            FILE* _tfdbg = TF_AI_Diag_File();
+                            if (_tfdbg != NULL) {
+                                fprintf(_tfdbg, "F%ld H%d AL%d NAVAL-HUNT %s#%d\n", (long)Frame, (int)Class->House,
+                                        (int)ActLike, v->Class->IniName, (int)v->ID);
+                                fflush(_tfdbg);
+                            }
+                        }
+#endif
                         continue;
                     }
                     /*
@@ -7794,20 +7839,66 @@ void TF_Skirmish_Naval_Reset(void)
         _tf_fleet_rally[h] = 0;
 #if TF_DEV_BUILD // TF_AI_DIAG
         _tf_ferry_wait_due[h] = 0;
+        _tf_naval_idle_due[h] = 0;
 #endif
     }
 }
 
 /*
 **	Roster eligibility, shared by the candidate census, the roster pick and the
-**	transport-demand gate so they can never drift apart: an idle, teamless, armed
-**	ground fighter standing on the house's own landmass.
+**	transport-demand gate so they can never drift apart. Three draft levels,
+**	because "an idle, teamless guard unit" turned out to be a unit class that a
+**	HARD house never has: team recruitment claims every fresh fighter instantly,
+**	so a spare-only ferry starved at roster=0 forever (verify match 2026-08-03).
+**
+**	TF_DRAFT_SPARE   -- teamless guard units only: the second-front CENSUS, where
+**	                    the land waves keep first claim on the army.
+**	TF_DRAFT_STAGING -- also units standing in guard/guard-area WITH a team: the
+**	                    second-front ROSTER may pull staged troops, but never
+**	                    units already marching on an attack.
+**	TF_DRAFT_DOOMED  -- also units on hunt/move orders: the route-BLOCKED case.
+**	                    Their land orders path at an enemy no ground route
+**	                    reaches (the A* fallback storm), so the ferry conscripts
+**	                    freely -- there, the ferry IS the attack wave.
 */
-static bool TF_Ferry_Eligible(FootClass const* f, HouseClass const* house, int ourland)
+enum
 {
-    return (f != NULL && (HouseClass const*)f->House == house && !f->IsInLimbo && f->Strength > 0
-            && f->Is_Weapon_Equipped() && !f->Team.Is_Valid() && f->Mission == MISSION_GUARD
-            && Map[Coord_Cell(f->Center_Coord())].Zones[MZONE_NORMAL] == ourland);
+    TF_DRAFT_SPARE,
+    TF_DRAFT_STAGING,
+    TF_DRAFT_DOOMED
+};
+static bool TF_Ferry_Eligible(FootClass const* f, HouseClass const* house, int ourland, int draft = TF_DRAFT_SPARE)
+{
+    if (f == NULL || (HouseClass const*)f->House != house || f->IsInLimbo || f->Strength == 0
+        || !f->Is_Weapon_Equipped() || Map[Coord_Cell(f->Center_Coord())].Zones[MZONE_NORMAL] != ourland) {
+        return (false);
+    }
+    if (!f->Team.Is_Valid() && f->Mission == MISSION_GUARD) {
+        return (true);
+    }
+    if (draft >= TF_DRAFT_STAGING && (f->Mission == MISSION_GUARD || f->Mission == MISSION_GUARD_AREA)) {
+        return (true);
+    }
+    if (draft >= TF_DRAFT_DOOMED && (f->Mission == MISSION_HUNT || f->Mission == MISSION_MOVE)) {
+        return (true);
+    }
+    return (false);
+}
+
+/*
+**	Pulls a drafted unit out of its team and parks it so it stands by for
+**	boarding instead of resuming the doomed land order it was conscripted from.
+*/
+static void TF_Ferry_Draft(FootClass* f)
+{
+    if (f->Team.Is_Valid()) {
+        f->Team->Remove(f);
+    }
+    if (f->Mission != MISSION_GUARD) {
+        f->Assign_Mission(MISSION_GUARD);
+        f->Assign_Destination(TARGET_NONE);
+        f->Assign_Target(TARGET_NONE);
+    }
 }
 
 /*
@@ -8040,7 +8131,7 @@ bool HouseClass::TF_Ferry_Assault(int& targetland, bool& second_front) const
         int count = heap ? Infantry.Count() : Units.Count();
         for (int index = 0; index < count; index++) {
             FootClass const* f = heap ? (FootClass const*)Infantry.Ptr(index) : (FootClass const*)Units.Ptr(index);
-            if (TF_Ferry_Eligible(f, this, ourland)) {
+            if (TF_Ferry_Eligible(f, this, ourland, TF_DRAFT_STAGING)) {
                 waiting++;
             }
         }
@@ -8080,7 +8171,7 @@ bool HouseClass::TF_Ferry_Wants_Transport(void) const
         int count = heap ? Infantry.Count() : Units.Count();
         for (int index = 0; index < count; index++) {
             FootClass const* f = heap ? (FootClass const*)Infantry.Ptr(index) : (FootClass const*)Units.Ptr(index);
-            if (TF_Ferry_Eligible(f, this, ourland)) {
+            if (TF_Ferry_Eligible(f, this, ourland, sfront ? TF_DRAFT_STAGING : TF_DRAFT_DOOMED)) {
                 waiting++;
             }
         }
@@ -8449,7 +8540,9 @@ void HouseClass::TF_Ferry_AI(void)
                 int count = heap ? Infantry.Count() : Units.Count();
                 for (int index = 0; index < count && op.RosterCount < TF_FERRY_ROSTER_MAX; index++) {
                     FootClass* f = heap ? (FootClass*)Infantry.Ptr(index) : (FootClass*)Units.Ptr(index);
-                    if (TF_Ferry_Eligible(f, this, ourland) && !TF_Ferry_Claimed(hidx, oi, f->As_Target())) {
+                    if (TF_Ferry_Eligible(f, this, ourland, second_front ? TF_DRAFT_STAGING : TF_DRAFT_DOOMED)
+                        && !TF_Ferry_Claimed(hidx, oi, f->As_Target())) {
+                        TF_Ferry_Draft(f);
                         op.Roster[op.RosterCount++] = f->As_Target();
                     }
                 }
