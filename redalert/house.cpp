@@ -1399,6 +1399,9 @@ void HouseClass::Init(void)
     for (HousesType index = HOUSE_FIRST; index < HOUSE_COUNT; index++) {
         HouseTriggers[index].Clear();
     }
+
+    extern void TF_Skirmish_Naval_Reset(void);
+    TF_Skirmish_Naval_Reset();
 }
 
 // Object selection list is switched with player context for GlyphX. ST - 8/7/2019 10:11AM
@@ -5897,6 +5900,17 @@ void HouseClass::Recalc_Center(void)
     }
 }
 
+/*
+**	W5.4 fleet doctrine state: once the enemy coast is discovered the fleet stops
+**	trickling onto patrol one hull at a time (each ship met the shore defences
+**	alone and died alone) and masses at a rally instead -- the naval mirror of the
+**	land attack wave. The rally is wherever the first massing ship happens to
+**	stand, and it clears when the wave releases so each new wave gathers fresh.
+*/
+static int const TF_NAVAL_WAVE_MIN = 3;     // smallest fleet worth releasing as a wave.
+static int const TF_NAVAL_RALLY_RADIUS = 4; // cells; counts as massed at the rally.
+static CELL _tf_fleet_rally[HOUSE_COUNT];
+
 /***********************************************************************************************
  * HouseClass::Expert_AI -- Handles expert AI processing.                                      *
  *                                                                                             *
@@ -6032,29 +6046,114 @@ int HouseClass::Expert_AI(void)
         int psize = 0;
         bool pcoastal = false;
         if (TF_Naval_Assessment(pzone, psize, pcoastal)) {
+            int fhidx = (int)Class->House;
+            /*
+            **	W5.4: while the fleet is BLIND (no enemy coast discovered) every idle
+            **	warship patrols -- the patrol IS the discovery vector, and the blind
+            **	fleet cap keeps it to a couple of hulls. Once the enemy coast is
+            **	known, patrol wandering stops: the fleet masses at a rally and
+            **	releases as one hunting wave at strength. An ENGAGED ship is never
+            **	re-ordered either way -- guard-mode combat keeps Mission == GUARD,
+            **	and a fresh NavCom re-arms the FIRE_MOVING gate on turretless hulls
+            **	(a sub ripped off its target sails past enemies forever).
+            */
+            int massed = 0;
+            if (pcoastal && fhidx >= 0 && fhidx < HOUSE_COUNT && _tf_fleet_rally[fhidx] != 0) {
+                for (int vindex = 0; vindex < Vessels.Count(); vindex++) {
+                    VesselClass const* v = Vessels.Ptr(vindex);
+                    if (v != NULL && !v->IsInLimbo && (HouseClass const*)v->House == this && v->Strength > 0
+                        && v->Is_Weapon_Equipped()
+                        && (v->Mission == MISSION_GUARD || v->Mission == MISSION_GUARD_AREA)
+                        && ::Distance(v->Center_Coord(), Cell_Coord(_tf_fleet_rally[fhidx]))
+                               <= TF_NAVAL_RALLY_RADIUS * CELL_LEPTON_W) {
+                        massed++;
+                    }
+                }
+            }
+            int fenavy = 0;
+            int fcap = TF_Naval_Fleet_Cap(pcoastal, &fenavy);
+            int fwave = (fcap * 3) / 4;
+            if (fwave < TF_NAVAL_WAVE_MIN) {
+                fwave = TF_NAVAL_WAVE_MIN;
+            }
+            bool frelease = pcoastal && massed >= fwave;
+#if TF_DEV_BUILD // TF_AI_DIAG
+            if (frelease) {
+                extern FILE* TF_AI_Diag_File(void);
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg, "F%ld H%d AL%d NAVAL-WAVE release massed=%d wave=%d cap=%d\n", (long)Frame,
+                            (int)Class->House, (int)ActLike, massed, fwave, fcap);
+                    fflush(_tfdbg);
+                }
+            }
+#endif
             for (int vindex = 0; vindex < Vessels.Count(); vindex++) {
                 VesselClass* v = Vessels.Ptr(vindex);
                 if (v != NULL && !v->IsInLimbo && v->House == this && v->Strength > 0 && v->Is_Weapon_Equipped()
                     && (v->Mission == MISSION_GUARD || v->Mission == MISSION_GUARD_AREA)
                     && Map[Coord_Cell(v->Center_Coord())].Zones[MZONE_WATER] == pzone) {
-                    CELL pcell = TF_Naval_Patrol_Cell(pzone);
-                    if (pcell) {
-                        v->Assign_Mission(MISSION_MOVE);
-                        v->Assign_Destination(::As_Target(pcell));
+                    /*
+                    **	Fighting ships fight on; ships with an enemy already in weapon
+                    **	range pick it up and fight instead of sailing.
+                    */
+                    if (Target_Legal(v->TarCom) || v->Target_Something_Nearby(THREAT_RANGE)) {
+                        continue;
+                    }
+                    if (!pcoastal) {
+                        CELL pcell = TF_Naval_Patrol_Cell(pzone);
+                        if (pcell) {
+                            v->Assign_Mission(MISSION_MOVE);
+                            v->Assign_Destination(::As_Target(pcell));
+#if TF_DEV_BUILD // TF_AI_DIAG
+                            {
+                                extern FILE* TF_AI_Diag_File(void);
+                                FILE* _tfdbg = TF_AI_Diag_File();
+                                if (_tfdbg != NULL) {
+                                    fprintf(_tfdbg, "F%ld H%d AL%d NAVAL-PATROL %s#%d dest=(%d,%d)\n", (long)Frame,
+                                            (int)Class->House, (int)ActLike, v->Class->IniName, (int)v->ID,
+                                            (int)Cell_X(pcell), (int)Cell_Y(pcell));
+                                    fflush(_tfdbg);
+                                }
+                            }
+#endif
+                        }
+                        continue;
+                    }
+                    if (fhidx < 0 || fhidx >= HOUSE_COUNT) {
+                        continue;
+                    }
+                    if (frelease) {
+                        v->Assign_Mission(MISSION_HUNT);
+                        continue;
+                    }
+                    /*
+                    **	Massing: the first holder plants the rally where it stands;
+                    **	everyone else closes on it and waits in guard.
+                    */
+                    if (_tf_fleet_rally[fhidx] == 0) {
+                        _tf_fleet_rally[fhidx] = Coord_Cell(v->Center_Coord());
 #if TF_DEV_BUILD // TF_AI_DIAG
                         {
                             extern FILE* TF_AI_Diag_File(void);
                             FILE* _tfdbg = TF_AI_Diag_File();
                             if (_tfdbg != NULL) {
-                                fprintf(_tfdbg, "F%ld H%d AL%d NAVAL-PATROL %s#%d dest=(%d,%d)\n", (long)Frame,
-                                        (int)Class->House, (int)ActLike, v->Class->IniName, (int)v->ID,
-                                        (int)Cell_X(pcell), (int)Cell_Y(pcell));
+                                fprintf(_tfdbg, "F%ld H%d AL%d NAVAL-MASS rally=(%d,%d) wave=%d\n", (long)Frame,
+                                        (int)Class->House, (int)ActLike, (int)Cell_X(_tf_fleet_rally[fhidx]),
+                                        (int)Cell_Y(_tf_fleet_rally[fhidx]), fwave);
                                 fflush(_tfdbg);
                             }
                         }
 #endif
+                    } else if (::Distance(v->Center_Coord(), Cell_Coord(_tf_fleet_rally[fhidx]))
+                               > TF_NAVAL_RALLY_RADIUS * CELL_LEPTON_W) {
+                        v->Assign_Mission(MISSION_MOVE);
+                        v->Assign_Destination(::As_Target(_tf_fleet_rally[fhidx]));
                     }
                 }
+            }
+            if (frelease && fhidx >= 0 && fhidx < HOUSE_COUNT) {
+                _tf_fleet_rally[fhidx] = 0;
             }
         }
     }
@@ -7654,6 +7753,51 @@ static TFFerryOpStruct _tf_ferry[HOUSE_COUNT][TF_FERRY_OPS_MAX];
 static CELL _tf_beach_rally[HOUSE_COUNT];
 static int _tf_beach_delivered[HOUSE_COUNT];
 
+#if TF_DEV_BUILD // TF_AI_DIAG
+/*
+**	TFF_IDLE holds an op back for one of four reasons, and every one of them used
+**	to break SILENTLY -- an LST parked against the pen for a whole match was
+**	unattributable from the log. One rate-limited line per house names the gate.
+*/
+static int _tf_ferry_wait_due[HOUSE_COUNT];
+static void TF_Ferry_Wait_Diag(HouseClass const* h, char const* reason, int a, int b)
+{
+    extern FILE* TF_AI_Diag_File(void);
+    int hidx = (int)h->Class->House;
+    if (hidx < 0 || hidx >= HOUSE_COUNT || (int)Frame < _tf_ferry_wait_due[hidx]) {
+        return;
+    }
+    _tf_ferry_wait_due[hidx] = (int)Frame + 900;
+    FILE* _tfdbg = TF_AI_Diag_File();
+    if (_tfdbg != NULL) {
+        fprintf(_tfdbg, "F%ld H%d AL%d FERRY-WAIT %s a=%d b=%d\n", (long)Frame, (int)h->Class->House,
+                (int)h->ActLike, reason, a, b);
+        fflush(_tfdbg);
+    }
+}
+#endif
+
+/*
+**	Ferry ops, beachhead rallies and the fleet rally live in file statics, so a
+**	SECOND match in the same session inherited the first match's state -- a stale
+**	beach rally is enough to satisfy the MCV-expansion gate on a map with no
+**	beachhead at all. Cleared from HouseClass::Init on every scenario load.
+*/
+void TF_Skirmish_Naval_Reset(void)
+{
+    for (int h = 0; h < HOUSE_COUNT; h++) {
+        for (int o = 0; o < TF_FERRY_OPS_MAX; o++) {
+            _tf_ferry[h][o] = TFFerryOpStruct();
+        }
+        _tf_beach_rally[h] = 0;
+        _tf_beach_delivered[h] = 0;
+        _tf_fleet_rally[h] = 0;
+#if TF_DEV_BUILD // TF_AI_DIAG
+        _tf_ferry_wait_due[h] = 0;
+#endif
+    }
+}
+
 /*
 **	Roster eligibility, shared by the candidate census, the roster pick and the
 **	transport-demand gate so they can never drift apart: an idle, teamless, armed
@@ -8214,6 +8358,16 @@ void HouseClass::TF_Ferry_AI(void)
         default:
         case TFF_IDLE: {
             if (!assault || ourland <= 0) {
+#if TF_DEV_BUILD // TF_AI_DIAG -- only interesting when a transport exists to strand.
+                for (int index = 0; index < Vessels.Count(); index++) {
+                    VesselClass const* v = Vessels.Ptr(index);
+                    if (v != NULL && (HouseClass const*)v->House == this && !v->IsInLimbo
+                        && *v == VESSEL_TRANSPORT && v->Strength > 0) {
+                        TF_Ferry_Wait_Diag(this, "no-assault", assault ? 1 : 0, ourland);
+                        break;
+                    }
+                }
+#endif
                 break;
             }
             int pzone = 0;
@@ -8233,6 +8387,9 @@ void HouseClass::TF_Ferry_AI(void)
                 }
             }
             if (lst == NULL) {
+#if TF_DEV_BUILD // TF_AI_DIAG
+                TF_Ferry_Wait_Diag(this, "no-idle-lst", 0, 0);
+#endif
                 break; // TF_Ferry_Wants_Transport has AI_Vessel queueing one.
             }
             CELL pick = TF_Ferry_Shore_Cell(pzone, ourland, Center, 0, NULL);
@@ -8264,6 +8421,9 @@ void HouseClass::TF_Ferry_AI(void)
                 land = TF_Ferry_Shore_Cell(pzone, enemyland, lnear, 0, this);
             }
             if (pick == 0 || land == 0) {
+#if TF_DEV_BUILD // TF_AI_DIAG
+                TF_Ferry_Wait_Diag(this, "no-shore", (int)pick, (int)land);
+#endif
                 break; // enemy landmass doesn't touch our water -- no beachhead exists.
             }
             op.RosterCount = 0;
@@ -8295,6 +8455,9 @@ void HouseClass::TF_Ferry_AI(void)
                 }
             }
             if (op.RosterCount < TF_FERRY_MIN_LOAD) {
+#if TF_DEV_BUILD // TF_AI_DIAG
+                TF_Ferry_Wait_Diag(this, "roster", op.RosterCount, TF_FERRY_MIN_LOAD);
+#endif
                 op.RosterCount = 0;
                 break;
             }
@@ -8872,16 +9035,15 @@ int HouseClass::AI_Building(void)
         }
 
         /*
-        **  Tiberian Factions: GDI/Nod tech gate. TDHQ (radar/comms) is the
-        **  prerequisite for advanced defence (TDATWR/TDOBLI) and the tech
-        **  centres (TDEYE/TDTMPL), but the vanilla AI builds radar only
-        **  reactively under air threat -- so GDI/Nod never tech up, the whole
-        **  upper tier (incl. superweapon hosts) stays unreachable, and that
-        **  starves CurBuildings and thus every ratio-driven count below. Build
-        **  it proactively (GDI/Nod only) once the refinery (TDHQ's own prereq)
-        **  and power are up.
+        **  Radar, proactively, for EVERY faction once the refinery and power are
+        **  up. TDHQ is GDI/Nod's tech gate (advanced defence, tech centres, the
+        **  superweapon tier). For the RA sides the dome is the helipad/airstrip
+        **  prerequisite -- and vanilla built it only REACTIVELY, in the
+        **  air-defense branch below, gated on an enemy that ALREADY flies. In an
+        **  AI-vs-AI match nobody ever flies first, so no house ever built a dome
+        **  and no house ever fielded air power at all.
         */
-        if (tf_td) {
+        {
             int tf_hq = TF_Skirmish_Type(STRUCT_RADAR, ActLike);
             current = BQuantity[STRUCT_RADAR] + (tf_hq >= 0 ? BQuantity[tf_hq] : 0);
             if (current < 1 && tf_economy_ready && Power_Fraction() >= 1) {
@@ -8893,7 +9055,9 @@ int HouseClass::AI_Building(void)
                     }
                 }
             }
+        }
 
+        if (tf_td) {
             /*
             **  Service depot (TDFIX): vehicle repair + prerequisite for the
             **  GDI Mammoth Tank. Vanilla's repair-bay build is #ifdef OLD, so
