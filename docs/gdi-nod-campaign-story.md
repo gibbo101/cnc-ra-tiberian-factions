@@ -159,3 +159,19 @@ from the shadows… We estimated the Brotherhood would tire of the USSR by the e
 3. Do we want scripted FMV-substitute beats (text crawls / EVA voice) for the stingers,
    or keep everything in briefings?
 4. Names "Red Vanguard" / "Marshal Orlov" / "Field Marshal Wessler" — happy, or rename?
+
+---
+
+## The finale — the Temporal Rift (Luke, 2026-08-04)
+
+**The final mission of the campaign arc: a temporal rift opens and Tiberian
+Sun forces slip back in time — the player literally fights a future army.**
+This is the TS tree's canonical purpose (the skirmish TS-MCV crate find is
+its foreshadowing/temporal echo), and it retroactively grounds the TS
+balance stance: TS-authentic stats "a generation ahead by design" is the
+mission's premise, not a balance problem. Lore hook available: RA already
+has Chronosphere time travel — the rift can be a Chrono experiment gone
+wrong. Mechanically all on proven ground: hijacked mission slot + CCDATA
+scenario INI (campaign-tabs-research.md), TS tree ownable by any house, no
+new engine work. Design detail TBD when campaign authoring resumes
+(deferred behind the AI milestone).
