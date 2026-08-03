@@ -7777,6 +7777,7 @@ static int const TF_FERRY_ROSTER_MAX = 5;
 static int const TF_FERRY_MIN_LOAD = 3;
 static int const TF_FERRY_TIMEOUT = 4500;      // pickup / load / unload stall limit (~5 min).
 static int const TF_FERRY_SAIL_TIMEOUT = 9000; // crossing limit before the op re-plans.
+static int const TF_FERRY_SAIL_REPATH = 900;   // no closing on the landing for this long -> fresh path.
 static int const TF_FERRY_OPS_MAX = 4;         // concurrent transports per house -- the convoy.
 static int const TF_FERRY_ESCORTS = 3;         // warships sent ahead to suppress the beach.
 static int const TF_FERRY_THREAT_RANGE = 8;    // cells; a defended stretch of coast scores worse.
@@ -7796,6 +7797,8 @@ struct TFFerryOpStruct
     int RosterCount;
     int Since;
     bool Retried;
+    int BestDist;  // closest approach to the landing so far (SAIL progress watchdog).
+    int BestFrame; // when that closest approach was set.
 };
 enum
 {
@@ -8730,6 +8733,7 @@ void HouseClass::TF_Ferry_AI(void)
                 trans->Assign_Mission(MISSION_UNLOAD);
                 op.State = TFF_UNLOAD;
                 op.Since = (int)Frame;
+                op.BestDist = 0;
 #if TF_DEV_BUILD // TF_AI_DIAG
                 {
                     FILE* _tfdbg = TF_AI_Diag_File();
@@ -8740,10 +8744,39 @@ void HouseClass::TF_Ferry_AI(void)
                     }
                 }
 #endif
-            } else if ((int)Frame - op.Since > TF_FERRY_SAIL_TIMEOUT) {
-                trans->Assign_Mission(MISSION_MOVE);
-                trans->Assign_Destination(::As_Target(op.Landing));
-                op.Since = (int)Frame;
+            } else {
+                /*
+                **	Crossing progress watchdog. The drive layer queues politely behind
+                **	whatever hull blocks the lane, and an ENEMY ship never moves aside
+                **	-- a transport nose-to-nose with a parked cruiser sat there until
+                **	something sank it (verify match 3). No closing on the landing for
+                **	a minute forces a fresh move order, which recomputes the path
+                **	around what is actually in the water now.
+                */
+                int d = trans->Distance(Cell_Coord(op.Landing));
+                if (op.BestDist == 0 || d < op.BestDist) {
+                    op.BestDist = d;
+                    op.BestFrame = (int)Frame;
+                } else if ((int)Frame - op.BestFrame > TF_FERRY_SAIL_REPATH) {
+                    trans->Assign_Mission(MISSION_MOVE);
+                    trans->Assign_Destination(::As_Target(op.Landing));
+                    op.BestFrame = (int)Frame;
+#if TF_DEV_BUILD // TF_AI_DIAG
+                    {
+                        FILE* _tfdbg = TF_AI_Diag_File();
+                        if (_tfdbg != NULL) {
+                            fprintf(_tfdbg, "F%ld H%d AL%d FERRY-REPATH dist=%d\n", (long)Frame, (int)Class->House,
+                                    (int)ActLike, d / CELL_LEPTON_W);
+                            fflush(_tfdbg);
+                        }
+                    }
+#endif
+                }
+                if ((int)Frame - op.Since > TF_FERRY_SAIL_TIMEOUT) {
+                    trans->Assign_Mission(MISSION_MOVE);
+                    trans->Assign_Destination(::As_Target(op.Landing));
+                    op.Since = (int)Frame;
+                }
             }
             break;
 
