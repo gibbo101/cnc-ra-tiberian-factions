@@ -43,10 +43,16 @@ with Luke (strict era separation vs deliberate cross-era production), then
 audit BOTH directions: TD yards building TS units too, and what the sidebar
 offers when mixed-era factories coexist.
 
-**NEXT SESSION = HARVESTERS (Luke's pick at session close):** verify
-nose-first driving (the +8 fix), one full watched dock cycle at TSPROC
-(approach, tip-up, unload, credits tick, exit), TSHARV auto-return when
-full (Tiberium_Load fix), then any residual dock-spot polish (pad =
+**NEXT SESSION = HARVESTERS (Luke's pick at session close). Scope (Luke):
+dock ALL 3 harvesters at the TS refinery, and the TS harvester at the TD
+and RA refineries — visual alignment worked out together in Aseprite from
+`~/Desktop/docking-art/` (prepared: all 3 harvesters full-canvas-aligned
+facings, RA unload run = harv-ra 96-110, all 3 refineries incl. TDPROC's
+attach-dock anims; see its INDEX.txt; RA HARV/PROC re-extractable from
+TEXTURES_RA_SRGB.MEG via meg_extract.py).** Also: verify nose-first
+driving (the +8 fix), one full watched dock cycle at TSPROC (approach,
+tip-up, unload, credits tick, exit), TSHARV auto-return when full
+(Tiberium_Load fix), then any residual dock-spot polish (pad =
 `Coord+3*MCW+2`, sub-cell nudge dial = the TDHARV NUDGE constants in
 unit.cpp Mission_Unload; dock facing dial = DIR_SW turn in
 RADIO_BACKUP_NOW). Logs-first: MOD_DEBUG_TSUNITS.txt DOCK-START lines
