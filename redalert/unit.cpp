@@ -3510,6 +3510,17 @@ bool UnitClass::Harvesting(void)
         Set_Stage(0);
         Set_Rate(Rule.OreDumpRate);
 
+        /*
+        **	TS shows a small smoke puff at the harvester's intake while it
+        **	eats (engine-spawned in TS; its rules/art carry no hook). The TS
+        **	harvester voxel has no harvest frames, so the puff carries the
+        **	in-field feedback; TD/RA harvesters animate via their own baked
+        **	harvest frames instead.
+        */
+        if (*this == UNIT_TSHARV && reducer > 0) {
+            new AnimClass(ANIM_SMOKE_PUFF, Coord_Move(Center_Coord(), PrimaryFacing.Current(), 0x0080), 1);
+        }
+
     } else {
 
         /*
