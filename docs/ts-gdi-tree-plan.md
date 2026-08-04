@@ -1,6 +1,55 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐ 2026-08-04 daytime — TODAY'S SURFACE = LINUX DESKTOP PREFIX
+## ⭐ SESSION END 2026-08-04 evening — RESUME HERE
+**Surface = LINUX DESKTOP prefix, deployed + md5-verified at `1e93a870` as
+Luke quit ("nice one"). ⚠ The Deck is STALE at `2d8a5dbb` (clipped dish, old
+sizes, sideways harvester) — push there before any Deck play. ⚠ The desktop
+prefix no longer holds the AI instance's build (today's TS deploys overwrote
+it) — re-deploy from main before resuming AI work there.**
+
+**Landed today (all committed on `ts-units`, live-fix loop with Luke):**
+- Power plant → TS-authentic 2x2 (RA POWR plot, 48 art) — **SIGNED OFF**.
+- Conyard: full 4x3+bib kept; art grid-matched then 6% inside the plot
+  (overscale 0.94) after "still slightly big"; rotating light = FULL-CYCLE
+  anim (first convention-breaker). AWAITING VERDICT on the 0.94 size.
+- Refinery: plume unclipped for real — the no-bib union runs the width fit
+  at 5.45x (composite 643 HD px tall); canvas 512x928, stub 96x174 sized so
+  the disc bottom sits ON the plot's south edge (the 126-stub version draped
+  the bib and Luke rejected it). NTREFN_B = second convention-breaker (one
+  20-frame plume cycle, `_anims[]` 10→20).
+- TSHARV/TSAPC drove 90° off heading: voxel renders start at E (CCW); RA
+  frame space 0=N — ZIPs rotated +8 in place, packer bakes it for regens.
+  Disruptor untouched (turret tracking play-verified 08-01).
+- **Selection boxes: launcher sizes them from DimensionX/Y = FOUNDATION
+  cells −20% (bdata Dimensions()), art never consulted — the old "box =
+  stub box" note was a MISREAD.** Art-sized-dims experiment FAILED (box
+  centres on the plot → brackets float a square below the bib, clicks got
+  worse) and is REVERTED (`c49f5242`/`eadc900e`). Foundation box = the
+  accepted default; don't re-chase without a new mechanism.
+- Verify traps learned: packed TGAs are content-cropped → clearance must be
+  read from meta crop[1], NOT the TGA bbox; razor-thin canvas margins die to
+  ~2px hq_scale silhouette bleed — leave real headroom.
+- TS art re-extraction recipe (scratchpad was gone): TIBSUN.MIX →
+  `tools/ts_extract.py` (TEMPERAT/ISOTEMP/CACHE/SIDEC01 members) →
+  `ts_shp.py` → TS_ART_DIR; packer skips absent art dirs, XML/CSV emits
+  idempotent, so partial repacks are safe.
+
+**NEXT SESSION = HARVESTERS (Luke's pick at session close):** verify
+nose-first driving (the +8 fix), one full watched dock cycle at TSPROC
+(approach, tip-up, unload, credits tick, exit), TSHARV auto-return when
+full (Tiberium_Load fix), then any residual dock-spot polish (pad =
+`Coord+3*MCW+2`, sub-cell nudge dial = the TDHARV NUDGE constants in
+unit.cpp Mission_Unload; dock facing dial = DIR_SW turn in
+RADIO_BACKUP_NOW). Logs-first: MOD_DEBUG_TSUNITS.txt DOCK-START lines
+(⚠ log sometimes lands in pfx/drive_c/users/steamuser/ instead of
+Documents/CnCRemastered).
+
+**Also unverified in-game:** conyard 0.94 size verdict, refinery
+bib/plume/smoke-cycle look, radar dish top, depot repairs, conyard light
+rotation. **QUEUED AFTER:** WF exit-door anim (GTWEAP frame 1), component
+towers / infantry / Orcas / audio per plan below.
+
+## Superseded same-day block (2026-08-04 daytime)
 Both session-close verdicts are implemented, built, and deployed to the
 DESKTOP prefix (md5-verified; Deck still on `2d8a5dbb` with the clipped
 dish — push there when switching back):
