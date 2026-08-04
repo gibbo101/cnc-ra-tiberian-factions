@@ -480,22 +480,27 @@ if os.path.isdir(f"{ART}/shp_ntrefn") and os.path.isdir(f"{ART}/renders_horv"):
     _cx, _cy = (_ux0 + _ux1) / 2.0, float(_uy1)
     _dx, _dy = 736 / 2.0, 672 - 27 * 16.0 / 3.0
 
-    # Docked HORV: packed-f20 pose (render frame 28), density-matched.
+    # Docked truck poses (packed-f20 SE = render frame 28), density-matched.
+    # HARV = loaded bed (arrival/departure), HORV = TS's UnloadingHarvester
+    # empty-open bed; the swap between them IS the "back lowers" moment.
     _hs = (6.4 / 12.0) * 0.80 * (2.0 / 3.0)
-    _hv = Image.open(f"{ART}/renders_horv/frame-0028.png").convert("RGBA")
-    _hv = _hv.resize((round(_hv.width * _hs), round(_hv.height * _hs)), Image.LANCZOS)
-    _sil = _hv.split()[3].point(lambda a: 130 if a > 0 else 0)
-    _sh = Image.new("RGBA", _hv.size, (0, 0, 0, 0))
-    _sh.paste(Image.new("RGBA", _hv.size, (0, 0, 0, 255)), (7, 9), _sil)
-    _sh.alpha_composite(_hv)
-    _hv = _sh
+    def _pose(dirname):
+        im = Image.open(f"{ART}/{dirname}/frame-0028.png").convert("RGBA")
+        im = im.resize((round(im.width * _hs), round(im.height * _hs)), Image.LANCZOS)
+        sil = im.split()[3].point(lambda a: 130 if a > 0 else 0)
+        sh = Image.new("RGBA", im.size, (0, 0, 0, 0))
+        sh.paste(Image.new("RGBA", im.size, (0, 0, 0, 255)), (7, 9), sil)
+        sh.alpha_composite(im)
+        return sh
+    _hv = _pose("renders_horv")
+    _hv_full = _pose("renders_harv")
     _hb = _hv.getbbox()
     _hpos = (round(524 - (_hb[0] + _hb[2]) / 2.0), round(500 - (_hb[1] + _hb[3]) / 2.0))
 
-    def _tsproc_frame(which, plume_i=None, horv=False, transfer=None):
+    def _tsproc_frame(which, plume_i=None, horv=None, transfer=None):
         fr = place(_apron[which], _factor, 736, 672, _cx, _cy, _dx, _dy)
-        if horv:
-            fr.alpha_composite(_hv, _hpos)
+        if horv is not None:
+            fr.alpha_composite(_hv if horv == "empty" else _hv_full, _hpos)
         b = _base[which].copy()
         if plume_i is not None and which == 1:
             b.paste(_pn[plume_i], (0, 0), _pn[plume_i])
@@ -507,10 +512,17 @@ if os.path.isdir(f"{ART}/shp_ntrefn") and os.path.isdir(f"{ART}/renders_horv"):
     _out = []
     for w in (1, 2):
         _out += [_tsproc_frame(w, plume_i=i) for i in range(2, 17)]       # idle (specks dropped)
-        _out += [_tsproc_frame(w, horv=True) for _ in range(7)]           # ACTIVE
-        _out += [_tsproc_frame(w, horv=True, transfer=i) for i in range(5)]  # AUX1
-        _out += [_tsproc_frame(w, horv=True, transfer=i) for i in (3, 2, 1, 0)] \
-              + [_tsproc_frame(w, horv=True), _tsproc_frame(w, horv=True)]   # AUX2
+        # ACTIVE (dock-in): loaded truck arrives, then TS's NAREFN_A canister
+        # sinks into the intake ONCE (LoopCount=1 in TS art.ini -- looping it
+        # read as a "white pulse", Luke 23:30) as the bed opens to the HORV
+        # empty pose: the load visibly leaves the truck.
+        _out += [_tsproc_frame(w, horv="full"), _tsproc_frame(w, horv="full")] \
+              + [_tsproc_frame(w, horv="empty", transfer=i) for i in range(5)]
+        # AUX1 (siphon): empty-bed truck holds while bails bank.
+        _out += [_tsproc_frame(w, horv="empty") for _ in range(5)]
+        # AUX2 (undock): back closes, ready to leave.
+        _out += [_tsproc_frame(w, horv="empty") for _ in range(2)] \
+              + [_tsproc_frame(w, horv="full") for _ in range(4)]
     # reorder: all healthy (w=1) first, then damaged -- already in that order.
     write_zip(f"{STRUCT_DIR}/TSPROC.ZIP", "tsproc", _out)
     patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPROC", len(_out))
