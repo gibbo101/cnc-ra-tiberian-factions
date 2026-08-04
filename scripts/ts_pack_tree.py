@@ -483,11 +483,13 @@ if os.path.isdir(f"{ART}/shp_ntrefn") and os.path.isdir(f"{ART}/renders_horv"):
     _cx, _cy = (_ux0 + _ux1) / 2.0, float(_uy1)
     _dx, _dy = 304.0, 672 - 27 * 16.0 / 3.0  # 4x3 box: building in the west 3 cols
 
-    # Docked truck poses (packed-f20 SE = render frame 28). Unit and
-    # building canvases render 1:1 (proven by the docked-shrink episode,
-    # 2026-08-05), so the baked truck uses the live pack scale VERBATIM --
-    # docked == live, no size jump either way.
-    _hs = (6.4 / 12.0) * 0.70
+    # Docked truck poses (packed-f20 SE = render frame 28). Building canvas
+    # px render 1.5x unit canvas px (unit 8x-classic vs building 16/3), so
+    # equal ON-SCREEN size = live pack scale x 2/3. (The round-one "docked
+    # shrink" that sent this factor on a walkabout was the HORV empty-bed
+    # MODEL reading smaller, not a scale difference. Single dial: change the
+    # 0.70 here and in ts_pack_units_wave.py together.)
+    _hs = (6.4 / 12.0) * 0.70 * (2.0 / 3.0)
     def _pose(dirname):
         im = Image.open(f"{ART}/{dirname}/frame-0028.png").convert("RGBA")
         im = im.resize((round(im.width * _hs), round(im.height * _hs)), Image.LANCZOS)
