@@ -503,15 +503,14 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 **	here: the TS truck attaches from it, TD/RA trucks unload visibly
                 **	on it.
                 */
-                param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W + 1));
                 /*
-                **	The RA ore truck unloads one cell further SOUTH (Luke's pose:
-                **	the E-facing tip-up with the raised bed against the intake --
-                **	on the pad cell itself its bed climbs into the building).
+                **	All three harvester eras approach the SOUTH apron cell (one
+                **	below the dock pad; 4x3 centre cell = origin + MCW + 2, pad =
+                **	centre + MCW). The RA ore truck unloads there (E-facing
+                **	tip-up); the TD/TS trucks then REVERSE north onto the pad,
+                **	TD-refinery style (Luke: trucks back into the TS refinery).
                 */
-                if (from != NULL && from->What_Am_I() == RTTI_UNIT && *((UnitClass*)from) == UNIT_HARVESTER) {
-                    param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W * 2 + 1));
-                }
+                param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W * 2));
                 break;
 
             case STRUCT_REFINERY:
@@ -3109,7 +3108,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             */
             if (base->What_Am_I() == RTTI_UNIT) {
                 UnitClass* unit = (UnitClass*)base;
-                cell = (CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W + 1);
+                cell = (CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W);
                 ScenarioInit++;
                 // +5/+7 px = the seated-on-ramp point the baked HORV occupies.
                 if (unit->Unlimbo(Coord_Add(Cell_Coord(cell), XYP_Coord(5, 7)), DIR_SE)) {
@@ -5006,13 +5005,14 @@ bool Is_Refinery_Dock_Cell(CELL cell)
     }
 
     /*
-    **	TS refinery: dock pad = the SE dock-lane hole (centre + MCW + 1) ->
-    **	centre is the pad's NW diagonal neighbour.
+    **	TS refinery: dock pad = the dock-lane hole one cell S of the 4x3
+    **	centre cell -> centre is the pad's N neighbour (type-gated, so no
+    **	clash with the RA refinery's identical N-relation).
     */
-    CELL nwcell = Adjacent_Cell(cell, FACING_NW);
-    if ((unsigned)nwcell < MAP_CELL_TOTAL) {
-        BuildingClass const* b = Map[nwcell].Cell_Building();
-        if (b != NULL && *b == STRUCT_TSPROC && Coord_Cell(b->Center_Coord()) == nwcell) {
+    CELL tsncell = Adjacent_Cell(cell, FACING_N);
+    if ((unsigned)tsncell < MAP_CELL_TOTAL) {
+        BuildingClass const* b = Map[tsncell].Cell_Building();
+        if (b != NULL && *b == STRUCT_TSPROC && Coord_Cell(b->Center_Coord()) == tsncell) {
             return (true);
         }
     }
@@ -5029,6 +5029,37 @@ bool Is_Refinery_Dock_Cell(CELL cell)
     }
 
 
+    return (false);
+}
+
+/***********************************************************************************************
+ * Is_Refinery_Dock_Busy -- Is this dock pad's refinery mid-attach-unload?                     *
+ *                                                                                             *
+ *    True while the refinery that owns this dock pad has a harvester ATTACHED (limbo'd,       *
+ *    unloading). Used to close the pad to ALL units -- including queued harvesters -- so      *
+ *    nothing drives across the baked docked-truck visuals.                                    *
+ *=============================================================================================*/
+bool Is_Refinery_Dock_Busy(CELL cell)
+{
+    if ((unsigned)cell >= MAP_CELL_TOTAL) {
+        return (false);
+    }
+    struct
+    {
+        FacingType facing;
+        StructType type;
+    } const _pads[] = {{FACING_N, STRUCT_REFINERY}, {FACING_N, STRUCT_TSPROC}, {FACING_NE, STRUCT_TDPROC}};
+    for (int i = 0; i < (int)(sizeof(_pads) / sizeof(_pads[0])); i++) {
+        CELL rcell = Adjacent_Cell(cell, _pads[i].facing);
+        if ((unsigned)rcell >= MAP_CELL_TOTAL) {
+            continue;
+        }
+        BuildingClass const* b = Map[rcell].Cell_Building();
+        if (b != NULL && *b == _pads[i].type && Coord_Cell(b->Center_Coord()) == rcell
+            && b->Is_Something_Attached()) {
+            return (true);
+        }
+    }
     return (false);
 }
 
@@ -5056,13 +5087,14 @@ bool Is_TS_Apron_Cell(CELL cell)
     **	Offsets from the candidate cell BACK to where a TSPROC centre would be
     **	if this cell were part of its apron (centre = the pad's reference).
     */
-    static short const _to_centre[] = {(MAP_CELL_W * 2) - 1, // south row, col 0
-                                       (MAP_CELL_W * 2),     // south row, col 1
-                                       (MAP_CELL_W * 2) + 1, // south row, col 2
-                                       (MAP_CELL_W * 2) + 2, // south row, col 3
-                                       2,                    // east col, row 1
-                                       MAP_CELL_W + 2,       // east col, row 2
-                                       MAP_CELL_W + 1,       // the dock pad itself (occupy hole)
+    static short const _to_centre[] = {(MAP_CELL_W * 2) - 2, // south row, col 0   (4x3 centre = origin+MCW+2)
+                                       (MAP_CELL_W * 2) - 1, // south row, col 1
+                                       (MAP_CELL_W * 2),     // south row, col 2
+                                       (MAP_CELL_W * 2) + 1, // south row, col 3
+                                       1 - MAP_CELL_W,       // east col, row 0
+                                       1,                    // east col, row 1
+                                       MAP_CELL_W + 1,       // east col, row 2
+                                       MAP_CELL_W,           // the dock pad itself (occupy hole)
                                        0};
 
     for (short const* off = _to_centre; *off != 0; off++) {
@@ -6098,6 +6130,31 @@ int BuildingClass::Mission_Harvest_TD(void)
     switch (Status) {
     case INITIAL:
         Begin_Mode(BSTATE_ACTIVE);
+        /*
+        **	TS refinery: green Tiberium fumes rise from the dock while the
+        **	attached truck unloads (Luke, 2026-08-04: the fumes carry the
+        **	unload feedback; the baked windows only tell the truck-pose
+        **	story). One persistent plume at the intake, sized to end with
+        **	the unload -- the same recipe as the visible park-offload path.
+        */
+        if (*this == STRUCT_TSPROC) {
+            CELL padcell = (CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W);
+            AnimClass* fumes = new AnimClass(ANIM_TIB_FUMES, Coord_Add(Cell_Coord(padcell), XYP_Coord(5, -2)));
+            if (fumes != NULL) {
+                fumes->Attach_To(this);
+                const int FUME_RISE_TICKS = 72 * 2;
+                const int FUME_LOOP_TICKS = 20 * 2;
+                int load = 1;
+                FootClass* cargo = Attached_Object();
+                if (cargo != NULL) {
+                    load = max((int)cargo->Tiberium_Load() * Rule.BailCount, 1);
+                }
+                int cycles = (load + HARV_DOCK_BAILS_PER_CYCLE - 1) / HARV_DOCK_BAILS_PER_CYCLE;
+                int unload_ticks = cycles * ((5 * 4) + 4); // AUX1 window: 5 frames at rate 4
+                int loops = (unload_ticks - FUME_RISE_TICKS + FUME_LOOP_TICKS / 2) / FUME_LOOP_TICKS;
+                fumes->Loops = (char)Bound(loops, 1, 120);
+            }
+        }
         Status = WAIT_FOR_DOCK;
         break;
 
@@ -6118,7 +6175,7 @@ int BuildingClass::Mission_Harvest_TD(void)
             **	differs per refinery: TD = DIR_SW of centre, TS = the SE
             **	dock-lane hole.
             */
-            Map[(*this == STRUCT_TSPROC) ? (CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W + 1)
+            Map[(*this == STRUCT_TSPROC) ? (CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W)
                                          : Adjacent_Cell(Coord_Cell(Center_Coord()), DIR_SW)]
                 .Incoming(0, true, true);
 

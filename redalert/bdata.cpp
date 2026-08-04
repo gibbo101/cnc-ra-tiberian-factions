@@ -102,7 +102,7 @@ static short const List101000011[] = {0, 2, (MCW * 2) + 1, (MCW * 2) + 2, REFRES
 static short const TsProcList33[] = {0, 1,           2,
                                      (MCW * 1),     (MCW * 1) + 1, (MCW * 1) + 2,
                                      (MCW * 2),     (MCW * 2) + 1, REFRESH_EOL};
-static short const TsProcOList33[] = {(MCW * 2) + 2, REFRESH_EOL};
+static short const TsProcOList33[] = {(MCW * 2) + 2, 3, MCW + 3, (MCW * 2) + 3, REFRESH_EOL};
 static short const List1100[] = {0, 1, REFRESH_EOL};
 static short const List1101[] = {0, 1, (MCW * 1) + 1, REFRESH_EOL};
 static short const List11[] = {0, 1, REFRESH_EOL};
@@ -1396,10 +1396,10 @@ static BuildingTypeClass const ClassTsProc(STRUCT_TSPROC,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,          // Engine grants free harvester at build time.
                                            DIR_N,
-                                           BSIZE_33,           // RA-refinery clone plot: stock dock geometry (Luke, 2026-08-04).
+                                           BSIZE_43,           // 4x3 incl. the apron column (Luke: "should be a 4*3").
                                            NULL,
-                                           (short const*)TsProcList33,   // 3x3 minus the SE dock pad.
-                                           (short const*)TsProcOList33); // Overlap: the pad cell (art redraw).
+                                           (short const*)TsProcList33,   // Blocking: the 3x3 building minus the dock pad.
+                                           (short const*)TsProcOList33); // Overlap: pad + apron column (art redraw).
 
 static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            TXT_NONE,

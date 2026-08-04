@@ -1078,6 +1078,17 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                     Do_Turn(DIR_SE);
                 } else {
                     if (!IsDriving && IsTethered && Mission == MISSION_ENTER) {
+                        CELL tspad = (CELL)(Coord_Cell(((BuildingClass*)tsdock)->Center_Coord()) + MAP_CELL_W);
+                        if (Coord_Cell(Coord) != tspad) {
+                            /*
+                            **	Reverse NORTH onto the ramp from the south apron
+                            **	cell, TD-refinery style (Luke: trucks BACK into
+                            **	the TS refinery).
+                            */
+                            Force_Track(BACKUP_INTO_REFINERY, Adjacent_Cell(Center_Coord(), FACING_N));
+                            Set_Speed(128);
+                            return (RADIO_ROGER);
+                        }
                         /*
                         **	Seat on the ramp (Luke's point, +5/+7 from the pad
                         **	cell centre) BEFORE the swap so the baked HORV
@@ -1128,11 +1139,17 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                                || *((BuildingClass*)rdock) == STRUCT_TSPROC));
             if (ra_ref) {
                 // At the TS refinery the visible park matches Luke's Aseprite
-                // pose: SE on the hazard ramp. RA refinery keeps DIR_SW.
-                DirType dockdir =
-                    (*((BuildingClass*)rdock) == STRUCT_TSPROC) ? DIR_SE : DIR_SW;
+                // pose: SE on the hazard ramp, REVERSED onto the pad from the
+                // south apron cell. RA refinery keeps DIR_SW.
+                bool ts_pad = (*((BuildingClass*)rdock) == STRUCT_TSPROC);
+                DirType dockdir = ts_pad ? DIR_SE : DIR_SW;
                 if (!IsRotating && PrimaryFacing != dockdir) {
                     Do_Turn(dockdir);
+                } else if (ts_pad && !IsDriving
+                           && Coord_Cell(Coord)
+                                  != (CELL)(Coord_Cell(((BuildingClass*)rdock)->Center_Coord()) + MAP_CELL_W)) {
+                    Force_Track(BACKUP_INTO_REFINERY, Adjacent_Cell(Center_Coord(), FACING_N));
+                    Set_Speed(128);
                 } else {
                     if (!IsDriving) {
                         if (IsTethered && Mission == MISSION_ENTER) {
@@ -3754,8 +3771,9 @@ int UnitClass::Mission_Unload(void)
             bool ts_dock = (nref != NULL && nref->What_Am_I() == RTTI_BUILDING
                             && *((BuildingClass*)nref) == STRUCT_TSPROC);
             Mark(MARK_UP);
+            // TS ramp: rear deeper into the intake (Luke's TD mark, +3/-10).
             Coord = Coord_Add(Coord,
-                              ts_dock ? XYP_Coord(5, 7)
+                              ts_dock ? XYP_Coord(3, -10)
                                       : XYP_Coord(TD_DOCK_NUDGE_RIGHT, -TD_DOCK_NUDGE_UP));
             Mark(MARK_DOWN);
 
@@ -4710,7 +4728,14 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
     **	(IsToHarvest) are exempt -- it's their cell. (Skip during ScenarioInit so pre-placed units
     **	near a refinery aren't disturbed at load.)
     */
-    if (!ScenarioInit && !Class->IsToHarvest && Is_Refinery_Dock_Cell(cell)) {
+    /*
+    **	The dock pad is reserved for harvesters -- and while a truck is
+    **	ATTACHED (TS/TD attach-dock in progress) it is closed to everyone,
+    **	or a queued harvester drives across the baked docked truck (Luke,
+    **	2026-08-04 23:36).
+    */
+    if (!ScenarioInit && Is_Refinery_Dock_Cell(cell)
+        && (!Class->IsToHarvest || Is_Refinery_Dock_Busy(cell))) {
         return (MOVE_NO);
     }
 

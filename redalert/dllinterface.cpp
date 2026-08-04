@@ -5247,6 +5247,18 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
 #endif
             const BuildingTypeClass* building_type = building->Class;
             short const* occupy_list = building_type->Occupy_List();
+            /*
+            **	TSPROC displays a SOLID 4x3 footprint (Luke: "should be a 4*3")
+            **	-- the engine's blocking list keeps the dock pad + apron column
+            **	as walkable holes, but the launcher grid draws this export.
+            */
+            static short const _tsproc_display[] = {0, 1, 2, 3,
+                                                    MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2, MAP_CELL_W + 3,
+                                                    MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2,
+                                                    MAP_CELL_W * 2 + 3, REFRESH_EOL};
+            if (building_type->Type == STRUCT_TSPROC) {
+                occupy_list = _tsproc_display;
+            }
             if (occupy_list) {
                 while (*occupy_list != REFRESH_EOL && new_object.OccupyListLength < MAX_OCCUPY_CELLS) {
                     new_object.OccupyList[new_object.OccupyListLength] = *occupy_list;

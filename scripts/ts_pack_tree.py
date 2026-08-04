@@ -155,7 +155,7 @@ def resample(indices, target):
 def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count,
                     canvas_w, canvas_h, target_w=None, bib_dir=None,
                     bottom_margin=None, overscale=1.0, mk_mask_dir=None,
-                    overlay_dir=None, fit_w=None):
+                    overlay_dir=None, fit_w=None, dst_x_px=None):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -203,7 +203,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # the canvas is widened to carry a ground overlay (TSPROC apron).
         factor = float(fit_w or canvas_w) / (ux1 - ux0) * overscale
         cx, cy = (ux0 + ux1) / 2.0, float(uy1)
-        dst_x, dst_y = canvas_w / 2.0, canvas_h - bottom_margin * 16.0 / 3.0
+        dst_x, dst_y = (dst_x_px or canvas_w / 2.0), canvas_h - bottom_margin * 16.0 / 3.0
     else:
         # One affine for every frame, keyed to the HEALTHY BASE content only:
         # buildup scaffolding is often wider than the finished building, and a
@@ -404,11 +404,11 @@ SIZEPASS = [
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
      "shp_gtweapmk", 19, (384, 416), 0, 1.0, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
-    # Grid-matched 2x2 width again (256 = 48 classic; the 320/60-overhang
-    # compromise predates the tier-wide size drop, Luke 2026-08-04). Flat
-    # art sits ON the bib like the TD buildings (margin 0).
+    # 2x1 plot + bib: the 48-tall stub centres on the 24-tall box, so the
+    # canvas bottom is 12 classic below the plot edge. Margin 12 = building
+    # ON the top (plot) row, slab owns the entire bottom row (Luke, 23:40).
     ("TSPILE", "shp_gtpile", ["shp_gtpile_a", "shp_gtpile_b", "shp_gtpile_c"],
-     "shp_gtpilemk", 19, (256, 256), 0, 1.0, "shp_brrkicon",
+     "shp_gtpilemk", 19, (256, 256), 12, 1.0, "shp_brrkicon",
      "TS Barracks", "Trains Tiberian-era infantry."),
     # Back to the TS-authentic 2x2 plot (stub 48x96, Obelisk treatment);
     # the 3x2 size-up made the 2x2 power plant "look like a toy" (Luke,
@@ -444,7 +444,10 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     build_structure(ini, base, 0, 2, anims, mk, mkc, cw, ch,
                     bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale,
                     mk_mask_dir=masks.get(ini), overlay_dir=overlays.get(ini),
-                    fit_w=384 if ini == "TSPROC" else None)
+                    fit_w=384 if ini == "TSPROC" else None,
+                    # 4x3 foundation, building occupies the WEST 3 columns:
+                    # anchor half a cell (64 px) west of the box centre.
+                    dst_x_px=304 if ini == "TSPROC" else None)
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSPROC attach-dock windows (Luke's docking session, 2026-08-04) ----
@@ -478,7 +481,7 @@ if os.path.isdir(f"{ART}/shp_ntrefn") and os.path.isdir(f"{ART}/renders_horv"):
     _ux1 = max(b[2] for b in _boxes)
     _factor = 384.0 / (_ux1 - _ux0)
     _cx, _cy = (_ux0 + _ux1) / 2.0, float(_uy1)
-    _dx, _dy = 736 / 2.0, 672 - 27 * 16.0 / 3.0
+    _dx, _dy = 304.0, 672 - 27 * 16.0 / 3.0  # 4x3 box: building in the west 3 cols
 
     # Docked truck poses (packed-f20 SE = render frame 28), density-matched.
     # HARV = loaded bed (arrival/departure), HORV = TS's UnloadingHarvester
@@ -495,7 +498,8 @@ if os.path.isdir(f"{ART}/shp_ntrefn") and os.path.isdir(f"{ART}/renders_horv"):
     _hv = _pose("renders_horv")
     _hv_full = _pose("renders_harv")
     _hb = _hv.getbbox()
-    _hpos = (round(524 - (_hb[0] + _hb[2]) / 2.0), round(500 - (_hb[1] + _hb[3]) / 2.0))
+    # Luke's ramp point, shifted 64 px west with the 4x3 anchor.
+    _hpos = (round(460 - (_hb[0] + _hb[2]) / 2.0), round(500 - (_hb[1] + _hb[3]) / 2.0))
 
     def _tsproc_frame(which, plume_i=None, horv=None, transfer=None):
         fr = place(_apron[which], _factor, 736, 672, _cx, _cy, _dx, _dy)
@@ -512,17 +516,16 @@ if os.path.isdir(f"{ART}/shp_ntrefn") and os.path.isdir(f"{ART}/renders_horv"):
     _out = []
     for w in (1, 2):
         _out += [_tsproc_frame(w, plume_i=i) for i in range(2, 17)]       # idle (specks dropped)
-        # ACTIVE (dock-in): loaded truck arrives, then TS's NAREFN_A canister
-        # sinks into the intake ONCE (LoopCount=1 in TS art.ini -- looping it
-        # read as a "white pulse", Luke 23:30) as the bed opens to the HORV
-        # empty pose: the load visibly leaves the truck.
-        _out += [_tsproc_frame(w, horv="full"), _tsproc_frame(w, horv="full")] \
-              + [_tsproc_frame(w, horv="empty", transfer=i) for i in range(5)]
-        # AUX1 (siphon): empty-bed truck holds while bails bank.
-        _out += [_tsproc_frame(w, horv="empty") for _ in range(5)]
-        # AUX2 (undock): back closes, ready to leave.
+        # Dock windows carry only the truck pose story (Luke, 23:38: the
+        # canister anim is ditched -- live green Tiberium fumes spawned by
+        # the engine carry the unload feedback instead): loaded bed arrives,
+        # back opens to the empty HORV pose, holds through the siphon, back
+        # closes before undock.
+        _out += [_tsproc_frame(w, horv="full") for _ in range(3)] \
+              + [_tsproc_frame(w, horv="empty") for _ in range(4)]            # ACTIVE
+        _out += [_tsproc_frame(w, horv="empty") for _ in range(5)]            # AUX1
         _out += [_tsproc_frame(w, horv="empty") for _ in range(2)] \
-              + [_tsproc_frame(w, horv="full") for _ in range(4)]
+              + [_tsproc_frame(w, horv="full") for _ in range(4)]             # AUX2
     # reorder: all healthy (w=1) first, then damaged -- already in that order.
     write_zip(f"{STRUCT_DIR}/TSPROC.ZIP", "tsproc", _out)
     patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPROC", len(_out))
