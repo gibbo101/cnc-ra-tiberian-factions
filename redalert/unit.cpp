@@ -1116,9 +1116,11 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
         **	Limbo + Attach handshake. The harvester does NOT transmit IM_IN
         **	from here — that would short-cut the back-up animation.
         */
-        if (*this == UNIT_TDHARV) {
+        if (*this == UNIT_TDHARV || *this == UNIT_TSHARV) {
             /*
-            **	Reverse cross-dock (TD harv -> RA refinery). The harvester parks VISIBLE on
+            **	Reverse cross-dock (TD or TS harv -> RA refinery; the TS truck
+            **	follows the TD logic verbatim here -- Luke, 2026-08-05 00:45).
+            **	The harvester parks VISIBLE on
             **	the RA refinery's DIR_S apron cell -- the only free south cell (the SW bay is
             **	inside the 3x3 footprint, so a visible harvester can't enter it; that would
             **	need Limbo = disappear). It faces DIR_SW so its rear angles toward the
@@ -1153,8 +1155,13 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
             /*
             **	TD harv -> TD ref (the special case): verbatim TD attach maneuver -- turn
             **	DIR_SW, then Force_Track BACKUP_INTO_REFINERY into the building's south-row
-            **	cell; Per_Cell_Process completes the Limbo + Attach handshake.
+            **	cell; Per_Cell_Process completes the Limbo + Attach handshake. The TS
+            **	harvester never takes this path (at the TD refinery it keeps the plain
+            **	visible park via the generic branch below).
             */
+            if (*this == UNIT_TSHARV) {
+                return (RADIO_ROGER);
+            }
             if (!IsRotating && PrimaryFacing != DIR_SW) {
                 Do_Turn(DIR_SW);
             } else {
