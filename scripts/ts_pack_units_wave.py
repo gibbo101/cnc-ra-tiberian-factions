@@ -97,7 +97,7 @@ def crisp_place(img, factor, canvas, anchor_src, anchor_dst):
     return out
 
 
-def vox_frames(dirname, canvas, count=32, shadow=None):
+def vox_frames(dirname, canvas, count=32, shadow=None, scale=1.0):
     """Model-space placement: each render canvas (center = voxel origin)
     scaled by F_VOX and centered -- the launcher anchors the canvas center at
     the draw position, so the model rides where the voxel data puts it
@@ -106,7 +106,8 @@ def vox_frames(dirname, canvas, count=32, shadow=None):
     clipped = 0
     for i in range(count):
         im = Image.open(f"{ART}/{dirname}/frame-{i:04d}.png").convert("RGBA")
-        scaled = im.resize((round(im.width * F_VOX), round(im.height * F_VOX)), Image.LANCZOS)
+        f = F_VOX * scale
+        scaled = im.resize((round(im.width * f), round(im.height * f)), Image.LANCZOS)
         fr = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
         ox, oy = round(canvas / 2 - scaled.width / 2), round(canvas / 2 - scaled.height / 2)
         b = scaled.getbbox()
@@ -152,53 +153,73 @@ def recenter_orbit(frames):
         safe_paste(fr, f, round(f.width / 2 - fx(i)), round(f.height / 2 - fy(i)))
         out.append(fr)
     return out
-# TSHARV: recentred 384/ShapeSize 48 (same 8x world scale as 512/64; the
-# orbit fix pulls the rotation envelope back inside the 48-class canvas).
-write_zip(f"{UNITS_DIR}/TSHARV.ZIP", "tsharv", recenter_orbit(face_fix(vox_frames("renders_harv", 384, shadow=(10, 13)))))
-write_zip(f"{UNITS_DIR}/TSAPC.ZIP", "tsapc", face_fix(vox_frames("renders_apc", 384, shadow=(10, 13))))
+# TSHARV: recentred 384/ShapeSize 48 (the orbit fix pulls the rotation
+# envelope back inside the 48-class canvas). Renders = vxl_render.py
+# --elev 32 (Luke's angle pick, 2026-08-04 — the 54-default read top-down
+# next to the TD harvester) and pack scale 0.85 (his size pick: TD-harv
+# class, not the 8x-classic house factor).
+if os.path.isdir(f"{ART}/renders_harv"):
+    write_zip(f"{UNITS_DIR}/TSHARV.ZIP", "tsharv",
+              recenter_orbit(face_fix(vox_frames("renders_harv", 384, shadow=(10, 13), scale=0.85))))
+else:
+    print("TSHARV: SKIP (no renders_harv)")
+if os.path.isdir(f"{ART}/renders_apc"):
+    write_zip(f"{UNITS_DIR}/TSAPC.ZIP", "tsapc", face_fix(vox_frames("renders_apc", 384, shadow=(10, 13))))
+else:
+    print("TSAPC: SKIP (no renders_apc)")
 
 # ---- TSSONIC: body 0-31 + turret 32-63, one shared scale ----
-sonic = vox_frames("renders_sonic", 448, shadow=(12, 15))
-sonic += vox_frames("renders_sonictur", 448)  # turret: no shadow, canvas-centered
-write_zip(f"{UNITS_DIR}/TSSONIC.ZIP", "tssonic", sonic)
+if os.path.isdir(f"{ART}/renders_sonic"):
+    sonic = vox_frames("renders_sonic", 448, shadow=(12, 15))
+    sonic += vox_frames("renders_sonictur", 448)  # turret: no shadow, canvas-centered
+    write_zip(f"{UNITS_DIR}/TSSONIC.ZIP", "tssonic", sonic)
+else:
+    print("TSSONIC: SKIP (no renders_sonic)")
 
 # ---- TSSMEC: SHP walker, 12-step walk x 8 facings ----
 # SMECH.SHP: walk 0-95 (12/facing, CW facing blocks, 0=N), standing 96-103,
 # firing 104-135, shadows 136-271 (unused). Engine frame space is CCW 0=N:
 # out facing f <- src block (8-f)%8 (the MMCH reorder).
 CANVAS_S = 384
-sm = lambda i: Image.open(f"{ART}/shp_smech/frame-{i:04d}.png").convert("RGBA")
-ux0, uy0, ux1, uy1 = 1e9, 1e9, -1e9, -1e9
-for i in range(96):
-    b = sm(i).getbbox()
-    if b:
-        ux0, uy0 = min(ux0, b[0]), min(uy0, b[1])
-        ux1, uy1 = max(ux1, b[2]), max(uy1, b[3])
-# Feet-row anchoring (no per-frame bob jitter): union feet row lands so the
-# union content box centers on the canvas center.
-feet_src = uy1
-content_h = (uy1 - uy0) * F_SHP
-feet_dst = CANVAS_S / 2 + content_h / 2
-frames = []
-for f in range(8):
-    src_block = (8 - f) % 8
-    for s in range(12):
-        fr = crisp_place(sm(src_block * 12 + s), F_SHP, CANVAS_S,
-                         (47.5, feet_src), (CANVAS_S / 2, feet_dst))
-        frames.append(drop_shadow(fr, 12, 15))
-write_zip(f"{UNITS_DIR}/TSSMEC.ZIP", "tssmec", frames)
+if os.path.isdir(f"{ART}/shp_smech"):
+    sm = lambda i: Image.open(f"{ART}/shp_smech/frame-{i:04d}.png").convert("RGBA")
+    ux0, uy0, ux1, uy1 = 1e9, 1e9, -1e9, -1e9
+    for i in range(96):
+        b = sm(i).getbbox()
+        if b:
+            ux0, uy0 = min(ux0, b[0]), min(uy0, b[1])
+            ux1, uy1 = max(ux1, b[2]), max(uy1, b[3])
+    # Feet-row anchoring (no per-frame bob jitter): union feet row lands so the
+    # union content box centers on the canvas center.
+    feet_src = uy1
+    content_h = (uy1 - uy0) * F_SHP
+    feet_dst = CANVAS_S / 2 + content_h / 2
+    frames = []
+    for f in range(8):
+        src_block = (8 - f) % 8
+        for s in range(12):
+            fr = crisp_place(sm(src_block * 12 + s), F_SHP, CANVAS_S,
+                             (47.5, feet_src), (CANVAS_S / 2, feet_dst))
+            frames.append(drop_shadow(fr, 12, 15))
+    write_zip(f"{UNITS_DIR}/TSSMEC.ZIP", "tssmec", frames)
+else:
+    print("TSSMEC: SKIP (no shp_smech)")
 
 # ---- BuildIcons (CAMEO.PAL decodes) ----
-pal = ts_shp.load_pal(f"{ART}/CAMEO.PAL")
-for shp, out in [("HARVICON", "BuildIcon_TS_Harvester"),
-                 ("SMCHICON", "BuildIcon_TS_Wolverine"),
-                 ("SONIICON", "BuildIcon_TS_Disruptor"),
-                 ("APCICON", "BuildIcon_TS_AmphAPC")]:
-    size, frs = ts_shp.decode_shp(f"{ART}/{shp}.SHP")
-    icon = ts_shp.frame_to_rgba(frs[0], pal, (16, 31), (0, 200, 0))
-    big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(f"{ICON_DIR}/{out}.tga")
-    print(f"wrote {ICON_DIR}/{out}.tga")
+if os.path.exists(f"{ART}/CAMEO.PAL"):
+    pal = ts_shp.load_pal(f"{ART}/CAMEO.PAL")
+    for shp, out in [("HARVICON", "BuildIcon_TS_Harvester"),
+                     ("SMCHICON", "BuildIcon_TS_Wolverine"),
+                     ("SONIICON", "BuildIcon_TS_Disruptor"),
+                     ("APCICON", "BuildIcon_TS_AmphAPC")]:
+        if not os.path.exists(f"{ART}/{shp}.SHP"):
+            print(f"{shp}: SKIP (absent)")
+            continue
+        size, frs = ts_shp.decode_shp(f"{ART}/{shp}.SHP")
+        icon = ts_shp.frame_to_rgba(frs[0], pal, (16, 31), (0, 200, 0))
+        big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
+        big.save(f"{ICON_DIR}/{out}.tga")
+        print(f"wrote {ICON_DIR}/{out}.tga")
 
 # ---- Tileset XML (replace-capable) ----
 def tile_block(name, shape, frame_path):
