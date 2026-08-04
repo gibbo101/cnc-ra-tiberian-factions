@@ -7363,6 +7363,26 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
         for (int x = 0; x < map_cell_width; x++) {
             CELL cell = (CELL)map_cell_x + x + ((map_cell_y + y) << _map_width_shift_bits);
             BuildingClass* base = (BuildingClass*)Map[cell].Cell_Find_Object(RTTI_BUILDING);
+            if (base == NULL) {
+                /*
+                **	TSPROC's walkable holes (dock pad + apron column) carry no
+                **	building object but ARE part of its 4x3 footprint -- seed
+                **	them too, or placement reach ends a square short past the
+                **	pad (Luke, 2026-08-05 00:33).
+                */
+                static short const _ts_holes[] = {MAP_CELL_W, 1 - MAP_CELL_W, 1, MAP_CELL_W + 1, 0};
+                for (short const* off = _ts_holes; *off != 0; off++) {
+                    CELL c2 = (CELL)(cell - *off);
+                    if (!Map.In_Radar(c2)) {
+                        continue;
+                    }
+                    BuildingClass* b2 = (BuildingClass*)Map[c2].Cell_Find_Object(RTTI_BUILDING);
+                    if (b2 != NULL && *b2 == STRUCT_TSPROC && Coord_Cell(b2->Center_Coord()) == c2) {
+                        base = b2;
+                        break;
+                    }
+                }
+            }
             if ((base && base->House->Class->House == PlayerPtr->Class->House && base->Class->IsBase)
                 || ((placement_type->IsWall
                      || ((Map[cell].Smudge != SMUDGE_NONE) && SmudgeTypeClass::As_Reference(Map[cell].Smudge).IsBib))
