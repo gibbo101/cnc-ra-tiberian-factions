@@ -1376,9 +1376,9 @@ static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            true, true, false, false, false, true,
                                            RTTI_INFANTRYTYPE,  // Infantry factory.
                                            DIR_N,
-                                           BSIZE_32,           // 3x2 grid sized to the 72-wide art (Luke, 2026-08-04).
+                                           BSIZE_22,           // Grid re-matched to the 48-wide art (tier size drop).
                                            (short const*)ExitPyle,
-                                           (short const*)List32,
+                                           (short const*)List22,
                                            NULL);
 
 static BuildingTypeClass const ClassTsProc(STRUCT_TSPROC,
