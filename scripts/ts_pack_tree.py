@@ -376,10 +376,11 @@ SIZEPASS = [
      "shp_ntrefnmk", 19, (384, 672), 27, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
     # TDWEAP-parity 3x3, apron dropped, RA slab (Luke, 2026-08-04 — "same
-    # as ts ref"). Flat art sits ON the bib like its TD counterpart
-    # (margin 0; the flat-trio centring experiment was reverted, 22:03).
+    # as ts ref"). Stub 72x78 = 3-classic-px halo below the plot; margin 0
+    # tucks the art 3px INTO the slab so the exit door sits fully on the
+    # bib (Luke, 22:07 SS; radar has the same tuck).
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
-     "shp_gtweapmk", 19, (384, 384), 0, 1.0, "shp_weapicon",
+     "shp_gtweapmk", 19, (384, 416), 0, 1.0, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
     # Grid-matched 2x2 width again (256 = 48 classic; the 320/60-overhang
     # compromise predates the tier-wide size drop, Luke 2026-08-04). Flat
