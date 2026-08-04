@@ -154,7 +154,8 @@ def resample(indices, target):
 
 def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count,
                     canvas_w, canvas_h, target_w=None, bib_dir=None,
-                    bottom_margin=None, overscale=1.0, mk_mask_dir=None):
+                    bottom_margin=None, overscale=1.0, mk_mask_dir=None,
+                    overlay_dir=None, fit_w=None):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -198,7 +199,9 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # low. MK frames share the affine and may clip — harmless transients.
         # overscale > 1 trades the apron's side tips (clipped at the canvas
         # edge) for a beefier structure — the WF-vs-Titan mass fix.
-        factor = float(canvas_w) / (ux1 - ux0) * overscale
+        # fit_w decouples the building's width target from the canvas when
+        # the canvas is widened to carry a ground overlay (TSPROC apron).
+        factor = float(fit_w or canvas_w) / (ux1 - ux0) * overscale
         cx, cy = (ux0 + ux1) / 2.0, float(uy1)
         dst_x, dst_y = canvas_w / 2.0, canvas_h - bottom_margin * 16.0 / 3.0
     else:
@@ -218,6 +221,20 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         factor = min(factor, float(canvas_w) / (ux1 - ux0), float(canvas_h) / (uy1 - uy0))
         cx, cy = (ux0 + ux1) / 2.0, (uy0 + uy1) / 2.0
         dst_x = dst_y = None
+
+    if overlay_dir is not None:
+        # Ground overlay (TS concrete apron / dock bay): drawn UNDER the
+        # building but EXCLUDED from the fit, so it rides into the canvas
+        # halo at the building's scale without inflating the building's
+        # size read (the reason aprons were dropped in the first place).
+        # Passability is untouched -- sprite pixels are not occupancy.
+        for base, bf in ((base_h, healthy_f), (base_d, damaged_f)):
+            ov = load(overlay_dir, bf)
+            under = ov.copy()
+            under.paste(base, (0, 0), base)
+            base.paste(under, (0, 0))
+        healthy = [composite(base_h, anims, i, 1) for i in range(n)]
+        damaged_frames = [composite(base_d, anims, i, 2) for i in range(n)]
 
     frames = [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in healthy]
     frames += [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in damaged_frames]
@@ -370,10 +387,13 @@ SIZEPASS = [
     # wide -> full-width factor 5.45x -> 643 HD px tall: the canvas must be
     # 672 or the plume tip clips (512/544/576 all did).
     # Width-fit to the full 3x3 PLOT (72 classic; the 4-cell/512 fit read
-    # oversized next to the 2x2 tier -- Luke, 2026-08-04). Stub 72x126,
-    # disc bottom on the plot's south edge (margin = the 27 below-plot halo).
+    # oversized next to the 2x2 tier -- Luke, 2026-08-04). Stub 138x126:
+    # building keyed to the plot as before (margin 27 = disc bottom on the
+    # south edge); the wide canvas carries the NTREFNBB apron OVERLAY (dock
+    # bay incl. the hazard-striped ramp, Luke's TS screenshot) riding east/
+    # south into the halo -- fit-excluded, so the building size is unchanged.
     ("TSPROC", "shp_ntrefn", [("shp_ntrefn_b", list(range(20)), list(range(20)))],
-     "shp_ntrefnmk", 19, (384, 672), 27, 1.0, "shp_reficon",
+     "shp_ntrefnmk", 19, (736, 672), 27, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
     # TDWEAP-parity 3x3, apron dropped, RA slab (Luke, 2026-08-04 — "same
     # as ts ref"). Stub 72x78 = 3-classic-px halo below the plot; margin 0
@@ -414,10 +434,15 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
         anims = [("shp_gtradr_a", fwd + back, dfwd + dback)]
     else:
         anims = [loop(d) for d in anim_dirs]
-    masks = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb"}
+    # TSPROC keeps its apron in the BUILT art now (overlay, fit-excluded),
+    # so its buildup keeps the pad too -- only TSWEAP still masks the pad
+    # out of construction.
+    masks = {"TSWEAP": "shp_gtweapbb"}
+    overlays = {"TSPROC": "shp_ntrefnbb"}
     build_structure(ini, base, 0, 2, anims, mk, mkc, cw, ch,
                     bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale,
-                    mk_mask_dir=masks.get(ini))
+                    mk_mask_dir=masks.get(ini), overlay_dir=overlays.get(ini),
+                    fit_w=384 if ini == "TSPROC" else None)
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSFACT: TS Construction Yard on the RA-conyard 3x3 plot (BSIZE_33 +

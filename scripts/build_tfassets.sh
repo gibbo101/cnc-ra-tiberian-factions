@@ -261,9 +261,9 @@ PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
 # ~90 classic px tall at that scale. The stub is sized so the DISC BOTTOM
 # lands exactly on the plot's south edge (bottom margin = the 27px
 # below-plot halo) -- a small-margin stub sinks the disc over the bib slab.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 72 126 2
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 138 126 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 72 126 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 138 126 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 72 78 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
