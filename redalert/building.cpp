@@ -347,23 +347,12 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
         case STRUCT_TSPROC:
             /*
-            **	TS harvester at its own refinery = the TS attach-dock (Luke's
-            **	docking session, 2026-08-04): the truck settles SE on the hazard
-            **	ramp, Limbos as attached cargo, and the BUILDING plays the
-            **	HORV-baked unload windows (ACTIVE dock-in -> AUX1 siphon with the
-            **	NAREFN_A transfer -> AUX2 undock) via Mission_Harvest_TD. TD/RA
-            **	harvesters at this refinery keep the visible park + MISSION_UNLOAD
-            **	below.
+            **	All harvesters at the TS refinery unload VISIBLY on the ramp
+            **	(Luke, 2026-08-05: the attach-dock's baked duplicate truck is
+            **	ditched -- one live sprite, one size). Same park path as the
+            **	RA refinery below; the SE facing + ramp seat come from the
+            **	harvester-side dock handlers.
             */
-            if (from != NULL && from->What_Am_I() == RTTI_UNIT && *((UnitClass*)from) == UNIT_TSHARV) {
-                ScenarioInit++;
-                Begin_Mode(BSTATE_ACTIVE);
-                ScenarioInit--;
-                Mark(MARK_CHANGE);
-                Assign_Mission(MISSION_HARVEST);
-                return (RADIO_ATTACH);
-            }
-            // fall through -- non-TS harvesters use the RA visible unload.
         case STRUCT_REFINERY:
             /*
             **	MISSION_UNLOAD at an RA-style refinery (no Limbo). Mission_Unload
@@ -6025,9 +6014,7 @@ int BuildingClass::Mission_Harvest(void)
     **  WAIT_FOR_UNDOCK completion. RA's state machine (below) skips the
     **  BState transitions and the Exit_Object call. See Mission_Harvest_TD().
     */
-    if (*this == STRUCT_TDPROC || *this == STRUCT_TSPROC) {
-        // TSPROC joined the attach-dock club 2026-08-04 (TS harvester only;
-        // its RADIO_IM_IN branch decides which harvesters attach).
+    if (*this == STRUCT_TDPROC) {
         return Mission_Harvest_TD();
     }
 

@@ -1061,51 +1061,6 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
     case RADIO_BACKUP_NOW:
         DriveClass::Receive_Message(from, message, param);
         /*
-        **	UNIT_TSHARV at its own refinery -- the TS attach-dock (Luke's docking
-        **	session, 2026-08-04). Settle facing SE on the hazard ramp (the baked
-        **	HORV pose in the refinery's unload windows faces SE at this exact
-        **	cell), then the direct RADIO_IM_IN handshake; the building answers
-        **	RADIO_ATTACH and the truck Limbos as attached cargo -- from here the
-        **	BUILDING's Mission_Harvest_TD drives the visuals and the bail
-        **	offload. At TD/RA refineries the TS harvester falls through to the
-        **	generic visible park below.
-        */
-        if (*this == UNIT_TSHARV) {
-            TechnoClass* tsdock = Contact_With_Whom();
-            if (tsdock != NULL && tsdock->What_Am_I() == RTTI_BUILDING
-                && *((BuildingClass*)tsdock) == STRUCT_TSPROC) {
-                /*
-                **	Pull onto the pad, swing the tail NW into the bay (turn in
-                **	place to SE), dock. The reversed-approach experiments are
-                **	dead: BACKUP_INTO_REFINERY's curve only exists for TD's SW
-                **	geometry (any other facing snaps), and a detour approach
-                **	cell makes the dock coordination fight the truck. Luke's
-                **	line-up-then-reverse spec (00:08 SS) needs a mirrored track
-                **	table entry -- queued as the next dock-polish item.
-                */
-                if (!IsRotating && PrimaryFacing != DIR_SE) {
-                    Do_Turn(DIR_SE);
-                } else if (!IsDriving && IsTethered && Mission == MISSION_ENTER) {
-                    /*
-                    **	Seat on the ramp (Luke's point, +5/+7 from the pad cell
-                    **	centre) BEFORE the swap so the baked HORV appears exactly
-                    **	where the live truck vanished.
-                    */
-                    Mark(MARK_UP);
-                    Coord = Coord_Add(Coord, XYP_Coord(5, 7));
-                    Mark(MARK_DOWN);
-                    if (Transmit_Message(RADIO_IM_IN, tsdock) == RADIO_ATTACH) {
-                        Mark(MARK_UP);
-                        SpecialFlag = true;
-                        Limbo();
-                        SpecialFlag = false;
-                        tsdock->Attach(this);
-                    }
-                }
-                return (RADIO_ROGER);
-            }
-        }
-        /*
         **	UNIT_TDHARV path — verbatim port of TD's RADIO_BACKUP_NOW handler
         **	(tiberiandawn/unit.cpp:557-567). Harvester turns DIR_SW (TD-
         **	authentic facing — RA uses DIR_W which looks wrong for our 64-
