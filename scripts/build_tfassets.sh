@@ -275,10 +275,11 @@ PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsradr_stub.shp" 72 150 2
 PACK_ARGS+=("$TMPDIR/tsradr_stub.shp:TSRADR.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsradrmk_stub.shp" 72 150 20
-# TSPOWR 72x72 on its 3x2 grid: art at 3-cell width, stacks rise above.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tspowr_stub.shp" 72 72 2
+# TSPOWR 66x66 on its 3x2 grid: art sits just inside the 3-cell width
+# (72 read slightly overdone -- Luke, 2026-08-04), stacks rise above.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspowr_stub.shp" 66 66 2
 PACK_ARGS+=("$TMPDIR/tspowr_stub.shp:TSPOWR.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tspowrmk_stub.shp" 72 72 13
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspowrmk_stub.shp" 66 66 13
 PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")
 # TSFACT 96x72 = the full TS-authentic 4x3 box (BSIZE_43), content inside it.

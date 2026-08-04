@@ -412,7 +412,7 @@ if os.path.isdir(f"{ART}/shp_gtcnst"):
 if os.path.isdir(f"{ART}/shp_gtpowr"):
     build_structure("TSPOWR", "shp_gtpowr", 0, 2,
                     [loop("shp_gtpowr_a"), loop("shp_gtpowr_b")],
-                    "shp_gtpowrmk", 13, 384, 384, bottom_margin=0)
+                    "shp_gtpowrmk", 13, 352, 352, bottom_margin=0)
 
 # ---- TSMCV (MCV.VXL render, 32 facings, canvas 384 = classic 48 x 8) ----
 if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(f"{UNITS_DIR}/TSMCV.ZIP"):

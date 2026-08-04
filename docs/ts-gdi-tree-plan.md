@@ -1,5 +1,24 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐ 2026-08-04 daytime — TODAY'S SURFACE = LINUX DESKTOP PREFIX
+Both session-close verdicts are implemented, built, and deployed to the
+DESKTOP prefix (md5-verified; Deck still on `2d8a5dbb` with the clipped
+dish — push there when switching back):
+- **(a) power plant dialled down**: stub 66x66, packer canvas 352x352,
+  3x2 grid unchanged.
+- **(b) conyard full 4x3+bib**: the bdata/rules/stub/canvas edits were
+  ALREADY in `caf2153e` — but its TSFACT ZIPs were packed BEFORE the
+  544-canvas edit (byte sizes unchanged = stale 512 art). Regenerated at
+  544x384. Art re-extraction needed (scratchpad was gone): TIBSUN.MIX →
+  `tools/ts_extract.py` (TEMPERAT/ISOTEMP/CACHE members) → `ts_shp.py`
+  → `TS_ART_DIR` scratchpad; packer skips buildings without art dirs and
+  the XML/CSV emits are idempotent, so a 2-building repack is safe.
+- **(c) radar 72x150 canvas fix deployed** (desktop) — verify dish top.
+TEST LIST for the desktop walk: conyard now a full 4x3 plot with BIB1 +
+bigger art (MCV deploy/undeploy geometry unchanged); power plant reads a
+touch smaller inside its grid; radar dish un-clipped; plus the round-2
+regression list below.
+
 ## ⭐ SESSION END 2026-08-04 ~01:00 — RESUME HERE
 **Deck build = `2d8a5dbb` (md5-verified, deployed as Luke quit). The whole
 night was the building size/geometry saga — 5 fix batches; full record in
