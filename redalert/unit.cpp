@@ -1074,17 +1074,21 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
             TechnoClass* tsdock = Contact_With_Whom();
             if (tsdock != NULL && tsdock->What_Am_I() == RTTI_BUILDING
                 && *((BuildingClass*)tsdock) == STRUCT_TSPROC) {
-                if (!IsRotating && PrimaryFacing != DIR_SE) {
-                    Do_Turn(DIR_SE);
-                } else {
-                    if (!IsDriving && IsTethered && Mission == MISSION_ENTER) {
-                        CELL tspad = (CELL)(Coord_Cell(((BuildingClass*)tsdock)->Center_Coord()) + MAP_CELL_W);
-                        if (Coord_Cell(Coord) != tspad) {
-                            /*
-                            **	Reverse NORTH onto the ramp from the south apron
-                            **	cell, TD-refinery style (Luke: trucks BACK into
-                            **	the TS refinery).
-                            */
+                {
+                    CELL tspad = (CELL)(Coord_Cell(((BuildingClass*)tsdock)->Center_Coord()) + MAP_CELL_W);
+                    bool on_pad = (Coord_Cell(Coord) == tspad);
+                    /*
+                    **	The BACKUP_INTO_REFINERY track is keyed to the SW facing
+                    **	(TD's dock) -- fired at any other facing the unit SNAPS to
+                    **	the destination (Luke's teleport video, 23:50). So: back
+                    **	in facing SW like TD, then rotate to the SE docked pose
+                    **	ON the pad.
+                    */
+                    DirType wantdir = on_pad ? DIR_SE : DIR_SW;
+                    if (!IsRotating && PrimaryFacing != wantdir) {
+                        Do_Turn(wantdir);
+                    } else if (!IsDriving && IsTethered && Mission == MISSION_ENTER) {
+                        if (!on_pad) {
                             Force_Track(BACKUP_INTO_REFINERY, Adjacent_Cell(Center_Coord(), FACING_N));
                             Set_Speed(128);
                             return (RADIO_ROGER);
@@ -1138,16 +1142,18 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                            && (*((BuildingClass*)rdock) == STRUCT_REFINERY
                                || *((BuildingClass*)rdock) == STRUCT_TSPROC));
             if (ra_ref) {
-                // At the TS refinery the visible park matches Luke's Aseprite
-                // pose: SE on the hazard ramp, REVERSED onto the pad from the
-                // south apron cell. RA refinery keeps DIR_SW.
+                // At the TS refinery: reverse onto the ramp facing SW (the
+                // only facing the BACKUP track supports -- any other snaps),
+                // then rotate to Luke's SE docked pose on the pad. RA
+                // refinery keeps the plain DIR_SW park.
                 bool ts_pad = (*((BuildingClass*)rdock) == STRUCT_TSPROC);
-                DirType dockdir = ts_pad ? DIR_SE : DIR_SW;
+                bool on_pad =
+                    ts_pad
+                    && Coord_Cell(Coord) == (CELL)(Coord_Cell(((BuildingClass*)rdock)->Center_Coord()) + MAP_CELL_W);
+                DirType dockdir = (ts_pad && on_pad) ? DIR_SE : DIR_SW;
                 if (!IsRotating && PrimaryFacing != dockdir) {
                     Do_Turn(dockdir);
-                } else if (ts_pad && !IsDriving
-                           && Coord_Cell(Coord)
-                                  != (CELL)(Coord_Cell(((BuildingClass*)rdock)->Center_Coord()) + MAP_CELL_W)) {
+                } else if (ts_pad && !on_pad && !IsDriving) {
                     Force_Track(BACKUP_INTO_REFINERY, Adjacent_Cell(Center_Coord(), FACING_N));
                     Set_Speed(128);
                 } else {
