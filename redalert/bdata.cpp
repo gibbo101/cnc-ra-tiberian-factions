@@ -1306,18 +1306,9 @@ static BuildingTypeClass const ClassTdGdiFact(STRUCT_TDGFACT,
                                               (short const*)NULL  // No overlap row.
 );
 
-/* 4x3 lists for the wide TSWEAP footprint (grid sized to the art): art
-** row 0 is overlap, rows 1-2 are the occupied plot; exits ring the south
-** and east edges. (TSPROC/TSFACT went back to the RA 3x3 plots — stock
-** PROC/FACT lists — when the 4x3 tier read oversized, Luke 2026-08-04.) */
-static short const TsExitWeap43[] = {XYCELL(-1, 3), XYCELL(0, 3), XYCELL(1, 3),
-                                     XYCELL(2, 3), XYCELL(3, 3), XYCELL(4, 3),
-                                     XYCELL(4, 2), XYCELL(4, 1), XYCELL(-1, 2),
-                                     REFRESH_EOL};
-static short const TsList43[] = {(MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
-                                 (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
-                                 REFRESH_EOL};
-static short const TsOList43[] = {0, 1, 2, 3, REFRESH_EOL};
+/* (The 4x3 TS lists are gone: the whole TS tier returned to its 3x3/2x2
+** grids — stock or TD-parity lists — when the 4x3 tier read oversized,
+** Luke 2026-08-04.) */
 
 /*
 **  TSFACT (TS Construction Yard, TS rules [GACNST]) — the gate on the ownership-gated
@@ -1433,10 +1424,10 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory.
                                            DIR_N,
-                                           BSIZE_43,           // 4-wide grid so the slab spans the hangar (Luke, 2026-08-04).
-                                           (short const*)TsExitWeap43,
-                                           (short const*)TsList43,
-                                           (short const*)TsOList43);
+                                           BSIZE_33,           // TDWEAP-parity 3x3, RA slab, apron dropped (Luke, 2026-08-04).
+                                           (short const*)TdExitWeap,
+                                           (short const*)TdListWeap,
+                                           (short const*)TdOListWeap);
 
 static BuildingTypeClass const ClassTsRadr(STRUCT_TSRADR,
                                            TXT_NONE,

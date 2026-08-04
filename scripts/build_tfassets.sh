@@ -265,9 +265,9 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 72 126 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 72 126 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 96 72 2
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 72 72 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 96 72 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 72 72 19
 # TSPILE 48x48: back to the grid-matched 2x2 plot width (the 60-overhang
 # compromise predates the tier-wide size drop, Luke 2026-08-04).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tspile_stub.shp" 48 48 2

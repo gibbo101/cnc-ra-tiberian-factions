@@ -375,13 +375,18 @@ SIZEPASS = [
     ("TSPROC", "shp_ntrefn", [("shp_ntrefn_b", list(range(20)), list(range(20)))],
      "shp_ntrefnmk", 19, (384, 672), 27, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
+    # TDWEAP-parity 3x3, apron dropped, RA slab (Luke, 2026-08-04 — "same
+    # as ts ref"). Flat art (union h/w 0.71 -> ~51 classic tall) CENTRED in
+    # the 72-box: margin 10. Bottom-anchoring flat TS art sinks it under
+    # the foundation selection box (the conyard bracket bug).
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
-     "shp_gtweapmk", 19, (512, 384), 2, 1.0, "shp_weapicon",
+     "shp_gtweapmk", 19, (384, 384), 10, 1.0, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
     # Grid-matched 2x2 width again (256 = 48 classic; the 320/60-overhang
-    # compromise predates the tier-wide size drop, Luke 2026-08-04).
+    # compromise predates the tier-wide size drop, Luke 2026-08-04). Flat
+    # art (~32 classic tall) centred in the 48-box: margin 8.
     ("TSPILE", "shp_gtpile", ["shp_gtpile_a", "shp_gtpile_b", "shp_gtpile_c"],
-     "shp_gtpilemk", 19, (256, 256), 0, 1.0, "shp_brrkicon",
+     "shp_gtpilemk", 19, (256, 256), 8, 1.0, "shp_brrkicon",
      "TS Barracks", "Trains Tiberian-era infantry."),
     # Back to the TS-authentic 2x2 plot (stub 48x96, Obelisk treatment);
     # the 3x2 size-up made the 2x2 power plant "look like a toy" (Luke,
@@ -427,9 +432,12 @@ if os.path.isdir(f"{ART}/shp_gtcnst"):
     # SHP. Halving it played half a rotation + snap-back — the radar-dish
     # symptom. _A (crane) and _C (roof lights) halves ARE damaged variants.
     light = ("shp_gtcnst_b", list(range(10)), list(range(10)))
+    # Flat art (~48 classic tall) CENTRED in the 72-box (margin 12):
+    # bottom-anchoring sank the yard under its foundation selection box
+    # (Luke's bracket screenshot, 21:55).
     build_structure("TSFACT", "shp_gtcnst", 0, 2,
                     [loop("shp_gtcnst_a"), light, loop("shp_gtcnst_c")],
-                    "shp_gtcnstmk", 32, 384, 384, bottom_margin=0,
+                    "shp_gtcnstmk", 32, 384, 384, bottom_margin=12,
                     overscale=1.0)
 
 # ---- TSPOWR: TS Power Plant (2x2, POWR donor 48x48 -> 256x256).
