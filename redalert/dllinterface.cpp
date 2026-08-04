@@ -5297,10 +5297,15 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         if (object->What_Am_I() == RTTI_BUILDING) {
             switch (((BuildingTypeClass const&)object->Class_Of()).Type) {
             case STRUCT_TSFACT:
+                // Height trimmed to the art rows too (48cl art - the usual
+                // 20% trim) or the box still rides half a row high (Luke,
+                // 00:29).
                 new_object.CenterCoordY += (12 * 256) / 24;
+                dimy = 38;
                 break;
             case STRUCT_TSWEAP:
                 new_object.CenterCoordY += (14 * 256) / 24;
+                dimy = 41;
                 break;
             case STRUCT_TSPILE:
                 new_object.CenterCoordY += (8 * 256) / 24;
