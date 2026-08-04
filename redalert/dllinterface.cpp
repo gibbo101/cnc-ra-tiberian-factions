@@ -5261,6 +5261,21 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         int dimx, dimy;
         object->Class_Of().Dimensions(dimx, dimy);
 
+        /*
+        **  TF: the launcher sizes the selection box from Dimension X/Y =
+        **  foundation cells - 20%, so a building whose art towers far above
+        **  its plot (TS radar dish, TS refinery chimney) gets a box hugging
+        **  only the base. For those, report the classic shape box instead
+        **  (same -20% trim) so the brackets cover the art.
+        */
+        if (object->What_Am_I() == RTTI_BUILDING) {
+            StructType tf_st = ((BuildingTypeClass const&)object->Class_Of()).Type;
+            if (tf_st == STRUCT_TSRADR || tf_st == STRUCT_TSPROC) {
+                dimx = width - width / 5;
+                dimy = height - height / 5;
+            }
+        }
+
         new_object.PositionX = x;
         new_object.PositionY = y;
         new_object.Width = width;
