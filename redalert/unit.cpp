@@ -3750,12 +3750,16 @@ int UnitClass::Mission_Unload(void)
             TechnoClass* nref = Contact_With_Whom();
             bool ts_dock = (nref != NULL && nref->What_Am_I() == RTTI_BUILDING
                             && *((BuildingClass*)nref) == STRUCT_TSPROC);
-            Mark(MARK_UP);
-            // TS ramp: rear deeper into the intake (Luke's TD mark, +3/-10).
-            Coord = Coord_Add(Coord,
-                              ts_dock ? XYP_Coord(3, -10)
-                                      : XYP_Coord(TD_DOCK_NUDGE_RIGHT, -TD_DOCK_NUDGE_UP));
-            Mark(MARK_DOWN);
+            /*
+            **	No seat nudge at the TS ramp: the one-tick shift read as a
+            **	teleport (Luke's video, 00:30), and the pad cell IS the ramp
+            **	now. TD refinery keeps its subtle pillar nudge.
+            */
+            if (!ts_dock) {
+                Mark(MARK_UP);
+                Coord = Coord_Add(Coord, XYP_Coord(TD_DOCK_NUDGE_RIGHT, -TD_DOCK_NUDGE_UP));
+                Mark(MARK_DOWN);
+            }
 
 #if TF_DEV_BUILD
             // Logs-first (first TSHARV test): record each park-offload dock start
