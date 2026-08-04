@@ -408,9 +408,12 @@ if os.path.isdir(f"{ART}/shp_gtcnst"):
     # SHP. Halving it played half a rotation + snap-back — the radar-dish
     # symptom. _A (crane) and _C (roof lights) halves ARE damaged variants.
     light = ("shp_gtcnst_b", list(range(10)), list(range(10)))
+    # overscale 0.94: full grid width read "still slightly big" (Luke,
+    # 2026-08-04) -- the hangar sits just inside the 4-cell plot.
     build_structure("TSFACT", "shp_gtcnst", 0, 2,
                     [loop("shp_gtcnst_a"), light, loop("shp_gtcnst_c")],
-                    "shp_gtcnstmk", 32, 512, 384, bottom_margin=2)
+                    "shp_gtcnstmk", 32, 512, 384, bottom_margin=2,
+                    overscale=0.94)
 
 # ---- TSPOWR: TS Power Plant (2x2, POWR donor 48x48 -> 256x256).
 # Content scaled to TDNUKE (content 256 full-width). Anims: _A fan 24, _B 12
