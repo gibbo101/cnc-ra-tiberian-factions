@@ -6130,31 +6130,6 @@ int BuildingClass::Mission_Harvest_TD(void)
     switch (Status) {
     case INITIAL:
         Begin_Mode(BSTATE_ACTIVE);
-        /*
-        **	TS refinery: green Tiberium fumes rise from the dock while the
-        **	attached truck unloads (Luke, 2026-08-04: the fumes carry the
-        **	unload feedback; the baked windows only tell the truck-pose
-        **	story). One persistent plume at the intake, sized to end with
-        **	the unload -- the same recipe as the visible park-offload path.
-        */
-        if (*this == STRUCT_TSPROC) {
-            CELL padcell = (CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W);
-            AnimClass* fumes = new AnimClass(ANIM_TIB_FUMES, Coord_Add(Cell_Coord(padcell), XYP_Coord(5, -2)));
-            if (fumes != NULL) {
-                fumes->Attach_To(this);
-                const int FUME_RISE_TICKS = 72 * 2;
-                const int FUME_LOOP_TICKS = 20 * 2;
-                int load = 1;
-                FootClass* cargo = Attached_Object();
-                if (cargo != NULL) {
-                    load = max((int)cargo->Tiberium_Load() * Rule.BailCount, 1);
-                }
-                int cycles = (load + HARV_DOCK_BAILS_PER_CYCLE - 1) / HARV_DOCK_BAILS_PER_CYCLE;
-                int unload_ticks = cycles * ((5 * 4) + 4); // AUX1 window: 5 frames at rate 4
-                int loops = (unload_ticks - FUME_RISE_TICKS + FUME_LOOP_TICKS / 2) / FUME_LOOP_TICKS;
-                fumes->Loops = (char)Bound(loops, 1, 120);
-            }
-        }
         Status = WAIT_FOR_DOCK;
         break;
 

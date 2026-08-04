@@ -5371,6 +5371,30 @@ BuildingTypeClass& BuildingTypeClass::As_Reference(StructType type)
  *=============================================================================================*/
 short const* BuildingTypeClass::Occupy_List(bool placement) const
 {
+    /*
+    **	TSPROC placement footprint = the SOLID 4x3 (Luke: "should be a 4*3").
+    **	This is the list the sidebar PlacementList export (the launcher's
+    **	ghost grid), Legal_Placement and placement proximity all consume.
+    **	The non-placement (blocking) list keeps the dock pad + apron column
+    **	as walkable holes.
+    */
+    if (placement && Type == STRUCT_TSPROC) {
+        static short const _tsproc_place[] = {0,
+                                              1,
+                                              2,
+                                              3,
+                                              MAP_CELL_W,
+                                              MAP_CELL_W + 1,
+                                              MAP_CELL_W + 2,
+                                              MAP_CELL_W + 3,
+                                              MAP_CELL_W * 2,
+                                              MAP_CELL_W * 2 + 1,
+                                              MAP_CELL_W * 2 + 2,
+                                              MAP_CELL_W * 2 + 3,
+                                              REFRESH_EOL};
+        return (_tsproc_place);
+    }
+
     SmudgeType bib = SMUDGE_NONE;
     CELL cell = 0;
 
