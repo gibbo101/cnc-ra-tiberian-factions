@@ -1074,40 +1074,32 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
             TechnoClass* tsdock = Contact_With_Whom();
             if (tsdock != NULL && tsdock->What_Am_I() == RTTI_BUILDING
                 && *((BuildingClass*)tsdock) == STRUCT_TSPROC) {
-                {
-                    CELL tspad = (CELL)(Coord_Cell(((BuildingClass*)tsdock)->Center_Coord()) + MAP_CELL_W);
-                    bool on_pad = (Coord_Cell(Coord) == tspad);
+                /*
+                **	Pull onto the pad, swing the tail NW into the bay (turn in
+                **	place to SE), dock. The reversed-approach experiments are
+                **	dead: BACKUP_INTO_REFINERY's curve only exists for TD's SW
+                **	geometry (any other facing snaps), and a detour approach
+                **	cell makes the dock coordination fight the truck. Luke's
+                **	line-up-then-reverse spec (00:08 SS) needs a mirrored track
+                **	table entry -- queued as the next dock-polish item.
+                */
+                if (!IsRotating && PrimaryFacing != DIR_SE) {
+                    Do_Turn(DIR_SE);
+                } else if (!IsDriving && IsTethered && Mission == MISSION_ENTER) {
                     /*
-                    **	The BACKUP_INTO_REFINERY track is keyed to the SW facing
-                    **	(TD's dock) -- fired at any other facing the unit SNAPS to
-                    **	the destination (Luke's teleport video, 23:50). So: back
-                    **	in facing SW like TD, then rotate to the SE docked pose
-                    **	ON the pad.
+                    **	Seat on the ramp (Luke's point, +5/+7 from the pad cell
+                    **	centre) BEFORE the swap so the baked HORV appears exactly
+                    **	where the live truck vanished.
                     */
-                    DirType wantdir = on_pad ? DIR_SE : DIR_SW;
-                    if (!IsRotating && PrimaryFacing != wantdir) {
-                        Do_Turn(wantdir);
-                    } else if (!IsDriving && IsTethered && Mission == MISSION_ENTER) {
-                        if (!on_pad) {
-                            Force_Track(BACKUP_INTO_REFINERY, Adjacent_Cell(Center_Coord(), FACING_N));
-                            Set_Speed(128);
-                            return (RADIO_ROGER);
-                        }
-                        /*
-                        **	Seat on the ramp (Luke's point, +5/+7 from the pad
-                        **	cell centre) BEFORE the swap so the baked HORV
-                        **	appears exactly where the live truck vanished.
-                        */
+                    Mark(MARK_UP);
+                    Coord = Coord_Add(Coord, XYP_Coord(5, 7));
+                    Mark(MARK_DOWN);
+                    if (Transmit_Message(RADIO_IM_IN, tsdock) == RADIO_ATTACH) {
                         Mark(MARK_UP);
-                        Coord = Coord_Add(Coord, XYP_Coord(5, 7));
-                        Mark(MARK_DOWN);
-                        if (Transmit_Message(RADIO_IM_IN, tsdock) == RADIO_ATTACH) {
-                            Mark(MARK_UP);
-                            SpecialFlag = true;
-                            Limbo();
-                            SpecialFlag = false;
-                            tsdock->Attach(this);
-                        }
+                        SpecialFlag = true;
+                        Limbo();
+                        SpecialFlag = false;
+                        tsdock->Attach(this);
                     }
                 }
                 return (RADIO_ROGER);
@@ -1142,20 +1134,13 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                            && (*((BuildingClass*)rdock) == STRUCT_REFINERY
                                || *((BuildingClass*)rdock) == STRUCT_TSPROC));
             if (ra_ref) {
-                // At the TS refinery: reverse onto the ramp facing SW (the
-                // only facing the BACKUP track supports -- any other snaps),
-                // then rotate to Luke's SE docked pose on the pad. RA
-                // refinery keeps the plain DIR_SW park.
-                bool ts_pad = (*((BuildingClass*)rdock) == STRUCT_TSPROC);
-                bool on_pad =
-                    ts_pad
-                    && Coord_Cell(Coord) == (CELL)(Coord_Cell(((BuildingClass*)rdock)->Center_Coord()) + MAP_CELL_W);
-                DirType dockdir = (ts_pad && on_pad) ? DIR_SE : DIR_SW;
+                // At the TS refinery: pull onto the ramp and swing the tail in
+                // (turn in place to SE, Luke's docked pose). RA refinery keeps
+                // the plain DIR_SW park. (True reverse-in = queued custom track.)
+                DirType dockdir =
+                    (*((BuildingClass*)rdock) == STRUCT_TSPROC) ? DIR_SE : DIR_SW;
                 if (!IsRotating && PrimaryFacing != dockdir) {
                     Do_Turn(dockdir);
-                } else if (ts_pad && !on_pad && !IsDriving) {
-                    Force_Track(BACKUP_INTO_REFINERY, Adjacent_Cell(Center_Coord(), FACING_N));
-                    Set_Speed(128);
                 } else {
                     if (!IsDriving) {
                         if (IsTethered && Mission == MISSION_ENTER) {
@@ -3586,17 +3571,6 @@ bool UnitClass::Harvesting(void)
         }
         Set_Stage(0);
         Set_Rate(Rule.OreDumpRate);
-
-        /*
-        **	TS shows a small smoke puff at the harvester's intake while it
-        **	eats (engine-spawned in TS; its rules/art carry no hook). The TS
-        **	harvester voxel has no harvest frames, so the puff carries the
-        **	in-field feedback; TD/RA harvesters animate via their own baked
-        **	harvest frames instead.
-        */
-        if (*this == UNIT_TSHARV && reducer > 0) {
-            new AnimClass(ANIM_SMOKE_PUFF, Coord_Move(Center_Coord(), PrimaryFacing.Current(), 0x0080), 1);
-        }
 
     } else {
 

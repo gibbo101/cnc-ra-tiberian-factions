@@ -516,16 +516,12 @@ if os.path.isdir(f"{ART}/shp_ntrefn") and os.path.isdir(f"{ART}/renders_horv"):
     _out = []
     for w in (1, 2):
         _out += [_tsproc_frame(w, plume_i=i) for i in range(2, 17)]       # idle (specks dropped)
-        # Dock windows carry only the truck pose story (Luke, 23:38: the
-        # canister anim is ditched -- live green Tiberium fumes spawned by
-        # the engine carry the unload feedback instead): loaded bed arrives,
-        # back opens to the empty HORV pose, holds through the siphon, back
-        # closes before undock.
-        _out += [_tsproc_frame(w, horv="full") for _ in range(3)] \
-              + [_tsproc_frame(w, horv="empty") for _ in range(4)]            # ACTIVE
-        _out += [_tsproc_frame(w, horv="empty") for _ in range(5)]            # AUX1
-        _out += [_tsproc_frame(w, horv="empty") for _ in range(2)] \
-              + [_tsproc_frame(w, horv="full") for _ in range(4)]             # AUX2
+        # Docked truck = the plain loaded HARV pose throughout (Luke, 00:14:
+        # no canister anim, no fumes, no HORV bed-swap -- the truck must not
+        # "collapse to a different pixel model" while docked).
+        _out += [_tsproc_frame(w, horv="full") for _ in range(7)]             # ACTIVE
+        _out += [_tsproc_frame(w, horv="full") for _ in range(5)]             # AUX1
+        _out += [_tsproc_frame(w, horv="full") for _ in range(6)]             # AUX2
     # reorder: all healthy (w=1) first, then damaged -- already in that order.
     write_zip(f"{STRUCT_DIR}/TSPROC.ZIP", "tsproc", _out)
     patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPROC", len(_out))

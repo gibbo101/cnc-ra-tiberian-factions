@@ -504,13 +504,14 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 **	on it.
                 */
                 /*
-                **	All three harvester eras approach the SOUTH apron cell (one
-                **	below the dock pad; 4x3 centre cell = origin + MCW + 2, pad =
-                **	centre + MCW). The RA ore truck unloads there (E-facing
-                **	tip-up); the TD/TS trucks then REVERSE north onto the pad,
-                **	TD-refinery style (Luke: trucks back into the TS refinery).
+                **	TD/TS trucks dock ON the pad (the ramp cell, centre + MCW on
+                **	the 4x3); the RA ore truck unloads from the south apron cell
+                **	(its E-facing tip-up seats against the intake from there).
                 */
-                param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W * 2));
+                param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W));
+                if (from != NULL && from->What_Am_I() == RTTI_UNIT && *((UnitClass*)from) == UNIT_HARVESTER) {
+                    param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W * 2));
+                }
                 break;
 
             case STRUCT_REFINERY:
