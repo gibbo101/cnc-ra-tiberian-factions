@@ -2405,9 +2405,9 @@ static BuildingTypeClass const ClassTsPowr(STRUCT_TSPOWR,
                                            true,            // Can the building be color remapped to indicate owner?
                                            RTTI_NONE,       // The object type produced at this factory.
                                            DIR_N,           // Starting idle frame to match construction.
-                                           BSIZE_32,        // 3x2 grid sized to the art (Luke, 2026-08-04).
+                                           BSIZE_22,        // TS-authentic 2x2, same plot as RA POWR (Luke, 2026-08-04).
                                            NULL,            // Preferred exit cell list.
-                                           (short const*)List32,     // OCCUPYLIST: List of active foundation squares.
+                                           (short const*)List22,     // OCCUPYLIST: List of active foundation squares.
                                            (short const*)NULL        // OVERLAPLIST: art halo only.
 );
 

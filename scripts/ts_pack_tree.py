@@ -361,7 +361,7 @@ SIZEPASS = [
     # NTREFN_C is a 144-canvas anim on a 192x168 building; needs offset
     # compositing -- still deferred.
     ("TSPROC", "shp_ntrefn", ["shp_ntrefn_b"],
-     "shp_ntrefnmk", 19, (512, 512), 0, 1.0, "shp_reficon",
+     "shp_ntrefnmk", 19, (512, 544), 0, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
      "shp_gtweapmk", 19, (512, 384), 2, 1.0, "shp_weapicon",
@@ -402,8 +402,14 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
 # Anims: _A crane 20, _B light 10, _C crane-2 30 -> N=60. Damaged base =
 # GTCNST frame 2.
 if os.path.isdir(f"{ART}/shp_gtcnst"):
+    # GTCNST_B (rotating light) breaks the healthy+damaged half convention:
+    # its 10 content frames are ONE full rotation (equal 614px every frame,
+    # continuous sweep) and its damaged form is the empty second half of the
+    # SHP. Halving it played half a rotation + snap-back — the radar-dish
+    # symptom. _A (crane) and _C (roof lights) halves ARE damaged variants.
+    light = ("shp_gtcnst_b", list(range(10)), list(range(10)))
     build_structure("TSFACT", "shp_gtcnst", 0, 2,
-                    [loop("shp_gtcnst_a"), loop("shp_gtcnst_b"), loop("shp_gtcnst_c")],
+                    [loop("shp_gtcnst_a"), light, loop("shp_gtcnst_c")],
                     "shp_gtcnstmk", 32, 512, 384, bottom_margin=2)
 
 # ---- TSPOWR: TS Power Plant (2x2, POWR donor 48x48 -> 256x256).
@@ -412,7 +418,7 @@ if os.path.isdir(f"{ART}/shp_gtcnst"):
 if os.path.isdir(f"{ART}/shp_gtpowr"):
     build_structure("TSPOWR", "shp_gtpowr", 0, 2,
                     [loop("shp_gtpowr_a"), loop("shp_gtpowr_b")],
-                    "shp_gtpowrmk", 13, 352, 352, bottom_margin=0)
+                    "shp_gtpowrmk", 13, 256, 256, bottom_margin=0)
 
 # ---- TSMCV (MCV.VXL render, 32 facings, canvas 384 = classic 48 x 8) ----
 if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(f"{UNITS_DIR}/TSMCV.ZIP"):

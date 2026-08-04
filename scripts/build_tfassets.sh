@@ -255,9 +255,11 @@ PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
 # box, so the stub must HUG the art (a roomy 96x120 put floating brackets in
 # empty headroom). TSPROC 96x102 / TSWEAP 96x96: halo above the 3-row box +
 # the passable TS apron row below (engine Bib=no; apron baked in the art).
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 96 96 2
+# TSPROC 96x102: the chimney anim rises 25 classic px above the roof; a 96x96
+# stub clipped its top 23 HD px (proven from the source union, 2026-08-04).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 96 102 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 96 96 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 96 102 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 96 72 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
@@ -275,11 +277,11 @@ PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsradr_stub.shp" 72 150 2
 PACK_ARGS+=("$TMPDIR/tsradr_stub.shp:TSRADR.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsradrmk_stub.shp" 72 150 20
-# TSPOWR 66x66 on its 3x2 grid: art sits just inside the 3-cell width
-# (72 read slightly overdone -- Luke, 2026-08-04), stacks rise above.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tspowr_stub.shp" 66 66 2
+# TSPOWR 48x48 on the TS-authentic 2x2 grid, same plot as RA POWR (66-on-3x2
+# still read oversized -- Luke, 2026-08-04).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspowr_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tspowr_stub.shp:TSPOWR.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tspowrmk_stub.shp" 66 66 13
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspowrmk_stub.shp" 48 48 13
 PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")
 # TSFACT 96x72 = the full TS-authentic 4x3 box (BSIZE_43), content inside it.
