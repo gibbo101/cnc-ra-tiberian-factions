@@ -445,6 +445,76 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     fit_w=384 if ini == "TSPROC" else None)
     emit_sidebar_data(ini, disp, desc, cameo)
 
+# ---- TSPROC attach-dock windows (Luke's docking session, 2026-08-04) ----
+# Rewrites TSPROC.ZIP with the TS attach-dock layout:
+#   healthy: [0-19 idle plume] [20-26 ACTIVE dock-in] [27-31 AUX1 siphon]
+#            [32-37 AUX2 undock]  -> largest = 38; damaged mirror at +38.
+# bdata rows must match: IDLE {0,20,3} ACTIVE {20,7,4} AUX1 {27,5,4}
+# AUX2 {32,6,4}. Dock frames layer: apron -> docked HORV -> building
+# (-> NAREFN_A transfer during siphon). The HORV (TS's empty-bed unloading
+# model, rules UnloadingHarvester=) sits at Luke's Aseprite point (524,500)
+# scaled x2/3 -- unit art is 8x-classic, building art 16/3x, so matching the
+# live truck's on-screen size needs the density ratio. Rear tucks under the
+# building layer = "inside the refinery". No plume in dock windows (the
+# window lengths mirror TDPROC's so the offload cadence = the tuned TD dock
+# time; a 20-frame plume can't fit a 5-frame siphon loop).
+if os.path.isdir(f"{ART}/shp_ntrefn") and os.path.isdir(f"{ART}/renders_horv"):
+    _pn = [f for f in (load("shp_ntrefn_b", i) for i in range(20))]
+    _apron = {1: load("shp_ntrefnbb", 0), 2: load("shp_ntrefnbb", 2)}
+    _base = {1: load("shp_ntrefn", 0), 2: load("shp_ntrefn", 2)}
+    _tr = [load("shp_ntrefn_a", i) for i in range(5)]
+    # Affine: identical to the SIZEPASS build (no-overlay union, fit 384).
+    _boxes = []
+    for w in (1, 2):
+        for i in range(20):
+            c = _base[w].copy()
+            c.paste(_pn[i], (0, 0), _pn[i])
+            _boxes.append(c.getbbox())
+    _ux0 = min(b[0] for b in _boxes)
+    _uy1 = max(b[3] for b in _boxes)
+    _ux1 = max(b[2] for b in _boxes)
+    _factor = 384.0 / (_ux1 - _ux0)
+    _cx, _cy = (_ux0 + _ux1) / 2.0, float(_uy1)
+    _dx, _dy = 736 / 2.0, 672 - 27 * 16.0 / 3.0
+
+    # Docked HORV: packed-f20 pose (render frame 28), density-matched.
+    _hs = (6.4 / 12.0) * 0.80 * (2.0 / 3.0)
+    _hv = Image.open(f"{ART}/renders_horv/frame-0028.png").convert("RGBA")
+    _hv = _hv.resize((round(_hv.width * _hs), round(_hv.height * _hs)), Image.LANCZOS)
+    _sil = _hv.split()[3].point(lambda a: 130 if a > 0 else 0)
+    _sh = Image.new("RGBA", _hv.size, (0, 0, 0, 0))
+    _sh.paste(Image.new("RGBA", _hv.size, (0, 0, 0, 255)), (7, 9), _sil)
+    _sh.alpha_composite(_hv)
+    _hv = _sh
+    _hb = _hv.getbbox()
+    _hpos = (round(524 - (_hb[0] + _hb[2]) / 2.0), round(500 - (_hb[1] + _hb[3]) / 2.0))
+
+    def _tsproc_frame(which, plume_i=None, horv=False, transfer=None):
+        fr = place(_apron[which], _factor, 736, 672, _cx, _cy, _dx, _dy)
+        if horv:
+            fr.alpha_composite(_hv, _hpos)
+        b = _base[which].copy()
+        if plume_i is not None and which == 1:
+            b.paste(_pn[plume_i], (0, 0), _pn[plume_i])
+        if transfer is not None:
+            b.paste(_tr[transfer], (0, 0), _tr[transfer])
+        fr.alpha_composite(place(b, _factor, 736, 672, _cx, _cy, _dx, _dy))
+        return fr
+
+    _out = []
+    for w in (1, 2):
+        _out += [_tsproc_frame(w, plume_i=i) for i in range(20)]          # idle
+        _out += [_tsproc_frame(w, horv=True) for _ in range(7)]           # ACTIVE
+        _out += [_tsproc_frame(w, horv=True, transfer=i) for i in range(5)]  # AUX1
+        _out += [_tsproc_frame(w, horv=True, transfer=i) for i in (3, 2, 1, 0)] \
+              + [_tsproc_frame(w, horv=True), _tsproc_frame(w, horv=True)]   # AUX2
+    # reorder: all healthy (w=1) first, then damaged -- already in that order.
+    write_zip(f"{STRUCT_DIR}/TSPROC.ZIP", "tsproc", _out)
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPROC", len(_out))
+    print(f"TSPROC: attach-dock windows baked ({len(_out)} frames; largest=38)")
+else:
+    print("TSPROC dock windows: SKIP (need shp_ntrefn + renders_horv)")
+
 # ---- TSFACT: TS Construction Yard on the RA-conyard 3x3 plot (BSIZE_33 +
 # bib, stub 72x72; the 4x3 tier read oversized -- Luke, 2026-08-04). Art
 # union h/w = 0.67, so the plot-width fit stands ~48 classic inside the

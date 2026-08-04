@@ -345,15 +345,31 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             from->Assign_Mission(MISSION_SLEEP);
             return (RADIO_ROGER);
 
-        case STRUCT_TSPROC: // TS refinery: RA-refinery clone, same MISSION_UNLOAD hand-off.
+        case STRUCT_TSPROC:
+            /*
+            **	TS harvester at its own refinery = the TS attach-dock (Luke's
+            **	docking session, 2026-08-04): the truck settles SE on the hazard
+            **	ramp, Limbos as attached cargo, and the BUILDING plays the
+            **	HORV-baked unload windows (ACTIVE dock-in -> AUX1 siphon with the
+            **	NAREFN_A transfer -> AUX2 undock) via Mission_Harvest_TD. TD/RA
+            **	harvesters at this refinery keep the visible park + MISSION_UNLOAD
+            **	below.
+            */
+            if (from != NULL && from->What_Am_I() == RTTI_UNIT && *((UnitClass*)from) == UNIT_TSHARV) {
+                ScenarioInit++;
+                Begin_Mode(BSTATE_ACTIVE);
+                ScenarioInit--;
+                Mark(MARK_CHANGE);
+                Assign_Mission(MISSION_HARVEST);
+                return (RADIO_ATTACH);
+            }
+            // fall through -- non-TS harvesters use the RA visible unload.
         case STRUCT_REFINERY:
             /*
-            **	Both harvester types use MISSION_UNLOAD at an RA refinery (never the
-            **	TD attach path -- the RA refinery has no docking animation and we never
-            **	Limbo here). Mission_Unload dispatches on harvester type: UNIT_HARVESTER
-            **	runs the visible SHP dust-loop; UNIT_TDHARV (reverse cross-dock) and
-            **	UNIT_TSHARV park visibly and run a timer-driven offload + fume plume
-            **	(no SHP dump frames on either sprite).
+            **	MISSION_UNLOAD at an RA-style refinery (no Limbo). Mission_Unload
+            **	dispatches on harvester type: UNIT_HARVESTER runs the visible SHP
+            **	dust-loop; UNIT_TDHARV (reverse cross-dock) parks visibly and runs
+            **	a timer-driven offload + fume plume (no SHP dump frames).
             */
             Mark(MARK_CHANGE);
             from->Assign_Mission(MISSION_UNLOAD);
@@ -479,7 +495,17 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 param = ::As_Target(Coord_Cell(Center_Coord()));
                 break;
 
-            case STRUCT_TSPROC:   // TS refinery, 3x3 RA-geometry clone — same DIR_S pad.
+            case STRUCT_TSPROC:
+                /*
+                **	TS refinery dock = the SE dock-lane hole (occupy row 2 col 2 is
+                **	deliberately unoccupied), the cell under the apron's hazard-striped
+                **	ramp -- Luke's Aseprite dock point. All three harvester eras park
+                **	here: the TS truck attaches from it, TD/RA trucks unload visibly
+                **	on it.
+                */
+                param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W + 1));
+                break;
+
             case STRUCT_REFINERY:
                 /*
                 **	RA refinery dock pad = DIR_S (the only FREE cell adjacent to the south
@@ -3066,7 +3092,27 @@ int BuildingClass::Exit_Object(TechnoClass* base)
     case RTTI_INFANTRY:
     case RTTI_UNIT:
         switch (Class->Type) {
-        case STRUCT_TSPROC:   // TS refinery — RA-style free-harvester spawn.
+        case STRUCT_TSPROC:
+            /*
+            **	TS refinery: both the free-harvester spawn and the attach-dock
+            **	undock exit reappear ON the hazard ramp (the SE dock-lane hole,
+            **	same cell the truck limbo'd from) facing SE -- the baked HORV
+            **	pose hands off to the live truck with no positional jump.
+            */
+            if (base->What_Am_I() == RTTI_UNIT) {
+                UnitClass* unit = (UnitClass*)base;
+                cell = (CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W + 1);
+                ScenarioInit++;
+                if (unit->Unlimbo(Cell_Coord(cell), DIR_SE)) {
+                    unit->PrimaryFacing = DIR_SE;
+                    unit->Assign_Mission(MISSION_HARVEST);
+                }
+                ScenarioInit--;
+            } else {
+                base->Scatter(0, true);
+            }
+            break;
+
         case STRUCT_REFINERY:
             if (base->What_Am_I() == RTTI_UNIT) {
                 cell = Coord_Cell(Center_Coord());
@@ -4945,8 +4991,19 @@ bool Is_Refinery_Dock_Cell(CELL cell)
     CELL ncell = Adjacent_Cell(cell, FACING_N);
     if ((unsigned)ncell < MAP_CELL_TOTAL) {
         BuildingClass const* b = Map[ncell].Cell_Building();
-        if (b != NULL && (*b == STRUCT_REFINERY || *b == STRUCT_TSPROC)
-            && Coord_Cell(b->Center_Coord()) == ncell) {
+        if (b != NULL && *b == STRUCT_REFINERY && Coord_Cell(b->Center_Coord()) == ncell) {
+            return (true);
+        }
+    }
+
+    /*
+    **	TS refinery: dock pad = the SE dock-lane hole (centre + MCW + 1) ->
+    **	centre is the pad's NW diagonal neighbour.
+    */
+    CELL nwcell = Adjacent_Cell(cell, FACING_NW);
+    if ((unsigned)nwcell < MAP_CELL_TOTAL) {
+        BuildingClass const* b = Map[nwcell].Cell_Building();
+        if (b != NULL && *b == STRUCT_TSPROC && Coord_Cell(b->Center_Coord()) == nwcell) {
             return (true);
         }
     }
@@ -4963,6 +5020,51 @@ bool Is_Refinery_Dock_Cell(CELL cell)
     }
 
 
+    return (false);
+}
+
+/***********************************************************************************************
+ * Is_TS_Apron_Cell -- Is this cell covered by a TS building's concrete apron?                 *
+ *                                                                                             *
+ *    The TS refinery ships its TS apron (dock bay + east concrete skirt) as pure ground ART   *
+ *    riding outside the 3x3 foundation. Those cells stay fully passable for units, but        *
+ *    buildings must never be placed on them (a pillbox on the dock ramp both looks wrong and  *
+ *    blocks the harvester's approach). With the RA bib slab suppressed (rules Bib=no), this   *
+ *    veto also carries the placement-blocking the slab used to provide on the south row.      *
+ *    Consulted from TechnoTypeClass::Legal_Placement for building-type placements only.       *
+ *                                                                                             *
+ *    Apron cells relative to a TSPROC origin cell (3x3 plot, centre = origin+MCW+1):          *
+ *    the whole south row below the plot (row 3, cols 0-3) plus the east column (col 3,        *
+ *    rows 1-2).                                                                               *
+ *=============================================================================================*/
+bool Is_TS_Apron_Cell(CELL cell)
+{
+    if ((unsigned)cell >= MAP_CELL_TOTAL) {
+        return (false);
+    }
+
+    /*
+    **	Offsets from the candidate cell BACK to where a TSPROC centre would be
+    **	if this cell were part of its apron (centre = the pad's reference).
+    */
+    static short const _to_centre[] = {(MAP_CELL_W * 2) - 1, // south row, col 0
+                                       (MAP_CELL_W * 2),     // south row, col 1
+                                       (MAP_CELL_W * 2) + 1, // south row, col 2 (dock pad)
+                                       (MAP_CELL_W * 2) + 2, // south row, col 3
+                                       2,                    // east col, row 1
+                                       MAP_CELL_W + 2,       // east col, row 2
+                                       0};
+
+    for (short const* off = _to_centre; *off != 0; off++) {
+        CELL centre = (CELL)(cell - *off);
+        if ((unsigned)centre >= MAP_CELL_TOTAL) {
+            continue;
+        }
+        BuildingClass const* b = Map[centre].Cell_Building();
+        if (b != NULL && *b == STRUCT_TSPROC && Coord_Cell(b->Center_Coord()) == centre) {
+            return (true);
+        }
+    }
     return (false);
 }
 
@@ -5878,7 +5980,9 @@ int BuildingClass::Mission_Harvest(void)
     **  WAIT_FOR_UNDOCK completion. RA's state machine (below) skips the
     **  BState transitions and the Exit_Object call. See Mission_Harvest_TD().
     */
-    if (*this == STRUCT_TDPROC) {
+    if (*this == STRUCT_TDPROC || *this == STRUCT_TSPROC) {
+        // TSPROC joined the attach-dock club 2026-08-04 (TS harvester only;
+        // its RADIO_IM_IN branch decides which harvesters attach).
         return Mission_Harvest_TD();
     }
 
@@ -6000,9 +6104,13 @@ int BuildingClass::Mission_Harvest_TD(void)
             IsReadyToCommence = false;
 
             /*
-            **	Force any bib squatters to scatter (TD source comment).
+            **	Force any bib squatters to scatter (TD source comment). The pad
+            **	differs per refinery: TD = DIR_SW of centre, TS = the SE
+            **	dock-lane hole.
             */
-            Map[Adjacent_Cell(Coord_Cell(Center_Coord()), DIR_SW)].Incoming(0, true, true);
+            Map[(*this == STRUCT_TSPROC) ? (CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W + 1)
+                                         : Adjacent_Cell(Coord_Cell(Center_Coord()), DIR_SW)]
+                .Incoming(0, true, true);
 
             FootClass* techno = Attached_Object();
             if (techno) {

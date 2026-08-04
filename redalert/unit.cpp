@@ -1061,6 +1061,36 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
     case RADIO_BACKUP_NOW:
         DriveClass::Receive_Message(from, message, param);
         /*
+        **	UNIT_TSHARV at its own refinery -- the TS attach-dock (Luke's docking
+        **	session, 2026-08-04). Settle facing SE on the hazard ramp (the baked
+        **	HORV pose in the refinery's unload windows faces SE at this exact
+        **	cell), then the direct RADIO_IM_IN handshake; the building answers
+        **	RADIO_ATTACH and the truck Limbos as attached cargo -- from here the
+        **	BUILDING's Mission_Harvest_TD drives the visuals and the bail
+        **	offload. At TD/RA refineries the TS harvester falls through to the
+        **	generic visible park below.
+        */
+        if (*this == UNIT_TSHARV) {
+            TechnoClass* tsdock = Contact_With_Whom();
+            if (tsdock != NULL && tsdock->What_Am_I() == RTTI_BUILDING
+                && *((BuildingClass*)tsdock) == STRUCT_TSPROC) {
+                if (!IsRotating && PrimaryFacing != DIR_SE) {
+                    Do_Turn(DIR_SE);
+                } else {
+                    if (!IsDriving && IsTethered && Mission == MISSION_ENTER) {
+                        if (Transmit_Message(RADIO_IM_IN, tsdock) == RADIO_ATTACH) {
+                            Mark(MARK_UP);
+                            SpecialFlag = true;
+                            Limbo();
+                            SpecialFlag = false;
+                            tsdock->Attach(this);
+                        }
+                    }
+                }
+                return (RADIO_ROGER);
+            }
+        }
+        /*
         **	UNIT_TDHARV path — verbatim port of TD's RADIO_BACKUP_NOW handler
         **	(tiberiandawn/unit.cpp:557-567). Harvester turns DIR_SW (TD-
         **	authentic facing — RA uses DIR_W which looks wrong for our 64-
@@ -1089,8 +1119,12 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                            && (*((BuildingClass*)rdock) == STRUCT_REFINERY
                                || *((BuildingClass*)rdock) == STRUCT_TSPROC));
             if (ra_ref) {
-                if (!IsRotating && PrimaryFacing != DIR_SW) {
-                    Do_Turn(DIR_SW);
+                // At the TS refinery the visible park matches Luke's Aseprite
+                // pose: SE on the hazard ramp. RA refinery keeps DIR_SW.
+                DirType dockdir =
+                    (*((BuildingClass*)rdock) == STRUCT_TSPROC) ? DIR_SE : DIR_SW;
+                if (!IsRotating && PrimaryFacing != dockdir) {
+                    Do_Turn(dockdir);
                 } else {
                     if (!IsDriving) {
                         if (IsTethered && Mission == MISSION_ENTER) {
@@ -1116,9 +1150,21 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
             return (RADIO_ROGER);
         }
 
-        if (!IsRotating && PrimaryFacing != DIR_W) {
-            Do_Turn(DIR_W);
-        } else {
+        {
+            // RA harvester at the TS refinery parks facing E -- its tip-up dump
+            // run is E-facing art and Luke's pose has the bed against the
+            // intake. Everywhere else keeps the vanilla DIR_W.
+            TechnoClass* gdock = Contact_With_Whom();
+            DirType gdir = (gdock != NULL && gdock->What_Am_I() == RTTI_BUILDING
+                            && *((BuildingClass*)gdock) == STRUCT_TSPROC)
+                               ? DIR_E
+                               : DIR_W;
+            if (!IsRotating && PrimaryFacing != gdir) {
+                Do_Turn(gdir);
+                return (RADIO_ROGER);
+            }
+        }
+        {
             if (!IsDriving) {
                 TechnoClass* whom = Contact_With_Whom();
                 if (IsTethered && whom != NULL) {

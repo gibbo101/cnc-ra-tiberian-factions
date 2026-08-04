@@ -4799,6 +4799,12 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSPOWR, BSTATE_IDLE, 0, 12, 3},  // GAPOWR halved windows _A(12)+_B(6) -> LCM 12
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 28, 3},  // GAPILE halved windows _A(4)+_B(4)+_C(7 flag) -> LCM 28
         {STRUCT_TSPROC, BSTATE_IDLE, 0, 20, 3},  // NAREFN _B = one 20-frame plume cycle (no damaged half)
+        // TS attach-dock windows (2026-08-04): HORV-baked docked truck;
+        // window lengths mirror TDPROC's so the bail cadence matches the
+        // tuned TD dock time. Damaged mirror at +38 (largest window end).
+        {STRUCT_TSPROC, BSTATE_ACTIVE, 20, 7, 4}, // dock-in: truck settles on the ramp
+        {STRUCT_TSPROC, BSTATE_AUX1, 27, 5, 4},   // siphon: NAREFN_A tiberium transfer loop
+        {STRUCT_TSPROC, BSTATE_AUX2, 32, 6, 4},   // undock: transfer drains, truck ready to leave
         {STRUCT_TSWEAP, BSTATE_IDLE, 0, 8, 3},   // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8
         {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)

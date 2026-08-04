@@ -8110,6 +8110,13 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 if (!Map[cell].Is_Clear_To_Build(Speed)) {
                     return (0);
                 }
+                /*
+                **	TS apron cells (refinery dock bay / concrete skirt): walkable
+                **	ground art, but never buildable -- see Is_TS_Apron_Cell.
+                */
+                if (Is_TS_Apron_Cell(cell)) {
+                    return (0);
+                }
             } else {
                 if (!Map[cell].Is_Clear_To_Move(Speed, false, false)) {
                     return (0);
