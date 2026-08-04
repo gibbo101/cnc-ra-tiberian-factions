@@ -311,7 +311,11 @@ def loop(d):
     """TS anims pack HEALTHY frames then DAMAGED frames inside the usable
     window (radar dish, tech dome, depot pad, barracks flag all confirmed
     2026-08-03). Even count -> split halves; odd -> no damaged half, same
-    window both runs."""
+    window both runs. Convention-breakers (GTCNST_B light, NTREFN_B plume:
+    one continuous cycle, damaged form = the empty half) pass a pre-built
+    (dir, healthy, damaged) tuple instead, returned untouched."""
+    if isinstance(d, tuple):
+        return d
     ln = anim_len(d)
     if ln % 2 == 0:
         return (d, list(range(ln // 2)), list(range(ln // 2, ln)))
@@ -360,8 +364,13 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
 SIZEPASS = [
     # NTREFN_C is a 144-canvas anim on a 192x168 building; needs offset
     # compositing -- still deferred.
-    ("TSPROC", "shp_ntrefn", ["shp_ntrefn_b"],
-     "shp_ntrefnmk", 19, (512, 544), 0, 1.0, "shp_reficon",
+    # NTREFN_B = one continuous 20-frame smoke-puff cycle (forms, rises,
+    # dissipates -- NO damaged half; convention-breaker like GTCNST_B), so
+    # the full window plays in both runs. The no-bib union is only 94 src px
+    # wide -> full-width factor 5.45x -> 643 HD px tall: the canvas must be
+    # 672 or the plume tip clips (512/544/576 all did).
+    ("TSPROC", "shp_ntrefn", [("shp_ntrefn_b", list(range(20)), list(range(20)))],
+     "shp_ntrefnmk", 19, (512, 672), 3, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
      "shp_gtweapmk", 19, (512, 384), 2, 1.0, "shp_weapicon",

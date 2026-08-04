@@ -255,11 +255,13 @@ PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
 # box, so the stub must HUG the art (a roomy 96x120 put floating brackets in
 # empty headroom). TSPROC 96x102 / TSWEAP 96x96: halo above the 3-row box +
 # the passable TS apron row below (engine Bib=no; apron baked in the art).
-# TSPROC 96x102: the chimney anim rises 25 classic px above the roof; a 96x96
-# stub clipped its top 23 HD px (proven from the source union, 2026-08-04).
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 96 102 2
+# TSPROC 96x126: the building content is only 94 src px wide (the TS concrete
+# apron is not drawn), so the full-4-cell-width fit runs at 5.45x -- the disc
+# plus chimney plus smoke is ~121 classic px tall at that scale. Anything
+# shorter clips the plume tip (96/102/108 all did).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 96 126 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 96 102 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 96 126 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 96 72 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
