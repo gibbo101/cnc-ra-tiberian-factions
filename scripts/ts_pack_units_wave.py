@@ -122,14 +122,39 @@ def vox_frames(dirname, canvas, count=32, shadow=None):
 
 
 # ---- TSHARV / TSAPC: plain 32-facing voxel bodies ----
-# TSHARV at 512/ShapeSize 64: the scoop arm reaches ~235 canvas px from the
-# voxel origin (the model is origin-offset), overflowing smaller canvases.
 # These renders start at EAST and advance CCW; RA frame space is 0=N CCW,
 # so rotate by +8 (cardinal-verified 2026-08-04: without it the hull drives
 # 90 degrees off its heading).
 def face_fix(frames):
     return [frames[(i + 8) % 32] for i in range(32)]
-write_zip(f"{UNITS_DIR}/TSHARV.ZIP", "tsharv", face_fix(vox_frames("renders_harv", 512, shadow=(10, 13))))
+
+
+def recenter_orbit(frames):
+    """The HARV voxel model is origin-offset, so origin-at-centre placement
+    makes the hull ORBIT the front cab across facings instead of turning in
+    place. Fit the per-facing bbox centres to c + (A cos t, B sin t) and
+    shift each frame onto the fitted circle — smooth (no bbox-noise jitter,
+    the MLRS trap) yet exactly rigid-body. Run scripts/ts_recenter_tsharv.py
+    for the zip-level equivalent when render sources are absent."""
+    import math
+    n = len(frames)
+    boxes = [f.getbbox() for f in frames]
+    def fit(vals):
+        a = sum(vals) / n
+        b = sum(v * math.cos(2 * math.pi * i / n) for i, v in enumerate(vals)) * 2 / n
+        c = sum(v * math.sin(2 * math.pi * i / n) for i, v in enumerate(vals)) * 2 / n
+        return lambda i: a + b * math.cos(2 * math.pi * i / n) + c * math.sin(2 * math.pi * i / n)
+    fx = fit([(b[0] + b[2]) / 2 for b in boxes])
+    fy = fit([(b[1] + b[3]) / 2 for b in boxes])
+    out = []
+    for i, f in enumerate(frames):
+        fr = Image.new("RGBA", f.size, (0, 0, 0, 0))
+        safe_paste(fr, f, round(f.width / 2 - fx(i)), round(f.height / 2 - fy(i)))
+        out.append(fr)
+    return out
+# TSHARV: recentred 384/ShapeSize 48 (same 8x world scale as 512/64; the
+# orbit fix pulls the rotation envelope back inside the 48-class canvas).
+write_zip(f"{UNITS_DIR}/TSHARV.ZIP", "tsharv", recenter_orbit(face_fix(vox_frames("renders_harv", 384, shadow=(10, 13)))))
 write_zip(f"{UNITS_DIR}/TSAPC.ZIP", "tsapc", face_fix(vox_frames("renders_apc", 384, shadow=(10, 13))))
 
 # ---- TSSONIC: body 0-31 + turret 32-63, one shared scale ----
