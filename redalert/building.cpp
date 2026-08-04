@@ -5087,9 +5087,11 @@ bool Is_TS_Apron_Cell(CELL cell)
     **	Offsets from the candidate cell BACK to where a TSPROC centre would be
     **	if this cell were part of its apron (centre = the pad's reference).
     */
-    static short const _to_centre[] = {(MAP_CELL_W * 2) - 2, // south row, col 0   (4x3 centre = origin+MCW+2)
-                                       (MAP_CELL_W * 2) - 1, // south row, col 1
-                                       (MAP_CELL_W * 2),     // south row, col 2
+    /*
+    **	Only cells the apron ART actually covers (with Bib=no the south-west
+    **	cells are bare ground and stay placeable -- Luke, 2026-08-05 00:06).
+    */
+    static short const _to_centre[] = {(MAP_CELL_W * 2),     // south row, col 2 (ramp foot)
                                        (MAP_CELL_W * 2) + 1, // south row, col 3
                                        1 - MAP_CELL_W,       // east col, row 0
                                        1,                    // east col, row 1

@@ -1352,8 +1352,8 @@ static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
                                            DIR_N,              // Starting idle frame.
                                            BSIZE_33,           // RA-conyard plot: 3x3 + bib (Luke, 2026-08-04).
                                            NULL,               // No preferred exit cell.
-                                           (short const*)ListFactory,
-                                           (short const*)NULL);
+                                           (short const*)TdListWeap,  // Rows 1-2: flat art top row stays
+                                           (short const*)TdOListWeap); // placeable/walkable (overlap only).
 
 /*
 **  TS GDI tree production/economy buildings (docs/ts-gdi-tree-plan.md §Stealth
