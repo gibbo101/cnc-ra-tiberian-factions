@@ -5285,6 +5285,30 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.CellY = (CurrentDrawCount > 0) ? root_object.CellY : Cell_Y(cell);
         new_object.CenterCoordX = Coord_X(object->Center_Coord());
         new_object.CenterCoordY = Coord_Y(object->Center_Coord());
+        /*
+        **  TF: flat TS buildings (side-on iso art, ~0.7 h/w) sit in the SOUTH
+        **  of their square plot, so a plot-centred selection box rides over
+        **  empty ground to the north. Bias the exported centre south onto the
+        **  art's visual centre; render/UI-only — the game-side Center_Coord
+        **  (targeting, pathing, dock geometry) is untouched. 1 classic px =
+        **  256/24 leptons. Conyard art 48cl in the 72cl plot -> +12cl; WF
+        **  51cl tucked 3 into the slab -> +14cl; barracks 32cl in 48 -> +8cl.
+        */
+        if (object->What_Am_I() == RTTI_BUILDING) {
+            switch (((BuildingTypeClass const&)object->Class_Of()).Type) {
+            case STRUCT_TSFACT:
+                new_object.CenterCoordY += (12 * 256) / 24;
+                break;
+            case STRUCT_TSWEAP:
+                new_object.CenterCoordY += (14 * 256) / 24;
+                break;
+            case STRUCT_TSPILE:
+                new_object.CenterCoordY += (8 * 256) / 24;
+                break;
+            default:
+                break;
+            }
+        }
         new_object.DimensionX = dimx;
         new_object.DimensionY = dimy;
         new_object.SimLeptonX = (CurrentDrawCount > 0) ? root_object.SimLeptonX : 0;
