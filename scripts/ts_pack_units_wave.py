@@ -124,8 +124,13 @@ def vox_frames(dirname, canvas, count=32, shadow=None):
 # ---- TSHARV / TSAPC: plain 32-facing voxel bodies ----
 # TSHARV at 512/ShapeSize 64: the scoop arm reaches ~235 canvas px from the
 # voxel origin (the model is origin-offset), overflowing smaller canvases.
-write_zip(f"{UNITS_DIR}/TSHARV.ZIP", "tsharv", vox_frames("renders_harv", 512, shadow=(10, 13)))
-write_zip(f"{UNITS_DIR}/TSAPC.ZIP", "tsapc", vox_frames("renders_apc", 384, shadow=(10, 13)))
+# These renders start at EAST and advance CCW; RA frame space is 0=N CCW,
+# so rotate by +8 (cardinal-verified 2026-08-04: without it the hull drives
+# 90 degrees off its heading).
+def face_fix(frames):
+    return [frames[(i + 8) % 32] for i in range(32)]
+write_zip(f"{UNITS_DIR}/TSHARV.ZIP", "tsharv", face_fix(vox_frames("renders_harv", 512, shadow=(10, 13))))
+write_zip(f"{UNITS_DIR}/TSAPC.ZIP", "tsapc", face_fix(vox_frames("renders_apc", 384, shadow=(10, 13))))
 
 # ---- TSSONIC: body 0-31 + turret 32-63, one shared scale ----
 sonic = vox_frames("renders_sonic", 448, shadow=(12, 15))
