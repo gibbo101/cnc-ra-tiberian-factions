@@ -34,6 +34,15 @@ it) — re-deploy from main before resuming AI work there.**
   `ts_shp.py` → TS_ART_DIR; packer skips absent art dirs, XML/CSV emits
   idempotent, so partial repacks are safe.
 
+**ALSO NEXT SESSION (Luke, session close): TD units are buildable from the
+TS barracks and TS war factory.** Tech-tree leak: TSPILE/TSWEAP are being
+accepted as production sources for TD-era units — likely the TD units'
+prereq/`own &` masks or the factory role checks treat any same-RTTI factory
+as era-valid rather than gating on the era building set. Decide the rule
+with Luke (strict era separation vs deliberate cross-era production), then
+audit BOTH directions: TD yards building TS units too, and what the sidebar
+offers when mixed-era factories coexist.
+
 **NEXT SESSION = HARVESTERS (Luke's pick at session close):** verify
 nose-first driving (the +8 fix), one full watched dock cycle at TSPROC
 (approach, tip-up, unload, credits tick, exit), TSHARV auto-return when
