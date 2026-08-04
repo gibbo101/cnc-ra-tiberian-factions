@@ -3701,6 +3701,25 @@ int UnitClass::Mission_Unload(void)
         */
         const int TD_DOCK_NUDGE_RIGHT = 6; // pixels east  (toward the pillars)
         const int TD_DOCK_NUDGE_UP = 6;    // pixels north (rear toward the intake)
+        {
+            /*
+            **	TS ramp settle: ease 1px south per tick until 4px clear of the
+            **	cell centre -- the un-nudged park's rear brushed the bay-mouth
+            **	art (Luke, 01:05), and any single-tick jump reads as a slide.
+            **	Stateless: the offset from the snapped cell centre is the
+            **	progress counter.
+            */
+            TechnoClass* sref = Contact_With_Whom();
+            if (sref != NULL && sref->What_Am_I() == RTTI_BUILDING
+                && *((BuildingClass*)sref) == STRUCT_TSPROC) {
+                int dy = (int)Coord_Y(Coord) - (int)Coord_Y(Coord_Snap(Coord));
+                if (dy < (4 * 256) / 24) {
+                    Mark(MARK_UP);
+                    Coord = Coord_Add(Coord, XYP_Coord(0, 1));
+                    Mark(MARK_DOWN);
+                }
+            }
+        }
         if (!IsDumping) {
             IsDumping = true; // park (blocks driving) + mark "actively unloading" for B3 capture
             /*
