@@ -156,11 +156,11 @@ def recenter_orbit(frames):
 # TSHARV: recentred 384/ShapeSize 48 (the orbit fix pulls the rotation
 # envelope back inside the 48-class canvas). Renders = vxl_render.py
 # --elev 32 (Luke's angle pick, 2026-08-04 — the 54-default read top-down
-# next to the TD harvester) and pack scale 0.70 (0.533 read ridiculously
+# next to the TD harvester) and pack scale 0.75 (Luke, final size call 2026-08-05; 0.533 read ridiculously
 # small in the field; 0.80 read big — Luke's split, 2026-08-05).
 if os.path.isdir(f"{ART}/renders_harv"):
     write_zip(f"{UNITS_DIR}/TSHARV.ZIP", "tsharv",
-              recenter_orbit(face_fix(vox_frames("renders_harv", 384, shadow=(10, 13), scale=0.70))))
+              recenter_orbit(face_fix(vox_frames("renders_harv", 384, shadow=(10, 13), scale=0.75))))
 else:
     print("TSHARV: SKIP (no renders_harv)")
 if os.path.isdir(f"{ART}/renders_apc"):
