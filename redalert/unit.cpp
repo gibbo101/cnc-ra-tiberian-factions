@@ -3665,6 +3665,23 @@ int UnitClass::Mission_Unload(void)
         **	so the dock stayed occupied + the harvester stayed capturable during unload.
         */
         Transmit_Message(RADIO_UNLOADED);
+#if TF_DEV_BUILD
+        {
+            char dpath[512];
+            const char* dprof = getenv("USERPROFILE");
+            if (dprof != NULL && dprof[0] != '\0') {
+                snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
+            } else {
+                strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
+            }
+            FILE* dlog = fopen(dpath, "a");
+            if (dlog != NULL) {
+                fprintf(dlog, "frame=%d DOCK-EXIT harv=%s tib=%d cell=%d -> MISSION_HARVEST\n", Frame,
+                        Class->IniName, Tiberium, Coord_Cell(Coord));
+                fclose(dlog);
+            }
+        }
+#endif
         Transmit_Message(RADIO_OVER_OUT);
         Assign_Mission(MISSION_HARVEST);
         break;
@@ -3846,6 +3863,23 @@ int UnitClass::Mission_Unload(void)
         IsDumping = false;
         Tiberium = Gold = Gems = 0; // defensive
         Transmit_Message(RADIO_UNLOADED);
+#if TF_DEV_BUILD
+        {
+            char dpath[512];
+            const char* dprof = getenv("USERPROFILE");
+            if (dprof != NULL && dprof[0] != '\0') {
+                snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
+            } else {
+                strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
+            }
+            FILE* dlog = fopen(dpath, "a");
+            if (dlog != NULL) {
+                fprintf(dlog, "frame=%d DOCK-EXIT harv=%s tib=%d cell=%d -> MISSION_HARVEST\n", Frame,
+                        Class->IniName, Tiberium, Coord_Cell(Coord));
+                fclose(dlog);
+            }
+        }
+#endif
         Transmit_Message(RADIO_OVER_OUT);
         Assign_Mission(MISSION_HARVEST);
         break;
