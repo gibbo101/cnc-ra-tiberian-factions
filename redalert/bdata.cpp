@@ -94,6 +94,15 @@ static short const List010111100[] = {1, (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2
 static short const List0111[] = {1, (MCW * 1), (MCW * 1) + 1, REFRESH_EOL};
 static short const List1000[] = {0, REFRESH_EOL};
 static short const List101000011[] = {0, 2, (MCW * 2) + 1, (MCW * 2) + 2, REFRESH_EOL};
+/* TSPROC: full 3x3 minus ONLY the SE dock pad (the cell under the apron's
+** hazard ramp -- must stay enterable for docking harvesters). RA PROC's
+** dock-lane-holes list drew a broken tetris-piece placement grid in the
+** launcher (Luke, 2026-08-04 23:15); occupying all but the pad gives a
+** clean grid whose one missing corner IS the dock bay. */
+static short const TsProcList33[] = {0, 1,           2,
+                                     (MCW * 1),     (MCW * 1) + 1, (MCW * 1) + 2,
+                                     (MCW * 2),     (MCW * 2) + 1, REFRESH_EOL};
+static short const TsProcOList33[] = {(MCW * 2) + 2, REFRESH_EOL};
 static short const List1100[] = {0, 1, REFRESH_EOL};
 static short const List1101[] = {0, 1, (MCW * 1) + 1, REFRESH_EOL};
 static short const List11[] = {0, 1, REFRESH_EOL};
@@ -1367,9 +1376,11 @@ static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            true, true, false, false, false, true,
                                            RTTI_INFANTRYTYPE,  // Infantry factory.
                                            DIR_N,
-                                           BSIZE_22,           // Grid re-matched to the 48-wide art (tier size drop).
+                                           BSIZE_21,           // 2x1 + bib row = the 2x2 (incl bib) the bib-seated art
+                                                                // actually covers; the 2x2 plot's top row was dead grid
+                                                                // over empty ground (Luke, 2026-08-04 23:25).
                                            (short const*)ExitPyle,
-                                           (short const*)List22,
+                                           (short const*)List21,
                                            NULL);
 
 static BuildingTypeClass const ClassTsProc(STRUCT_TSPROC,
@@ -1387,8 +1398,8 @@ static BuildingTypeClass const ClassTsProc(STRUCT_TSPROC,
                                            DIR_N,
                                            BSIZE_33,           // RA-refinery clone plot: stock dock geometry (Luke, 2026-08-04).
                                            NULL,
-                                           (short const*)List010111100,  // RA PROC occupy: dock lane holes.
-                                           (short const*)List101000011); // RA PROC overlap.
+                                           (short const*)TsProcList33,   // 3x3 minus the SE dock pad.
+                                           (short const*)TsProcOList33); // Overlap: the pad cell (art redraw).
 
 static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            TXT_NONE,
@@ -4798,13 +4809,14 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSFACT, BSTATE_IDLE, 0, 30, 3},  // GACNST halved windows _A(10)+_B(5)+_C(15) -> LCM 30
         {STRUCT_TSPOWR, BSTATE_IDLE, 0, 12, 3},  // GAPOWR halved windows _A(12)+_B(6) -> LCM 12
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 28, 3},  // GAPILE halved windows _A(4)+_B(4)+_C(7 flag) -> LCM 28
-        {STRUCT_TSPROC, BSTATE_IDLE, 0, 20, 3},  // NAREFN _B = one 20-frame plume cycle (no damaged half)
+        {STRUCT_TSPROC, BSTATE_IDLE, 0, 15, 3}, // NAREFN _B plume, speck frames dropped (src 2-16)
+        {STRUCT_TSPROC, BSTATE_FULL, 0, 15, 3}, // customer approaching: keep the plume running
         // TS attach-dock windows (2026-08-04): HORV-baked docked truck;
         // window lengths mirror TDPROC's so the bail cadence matches the
-        // tuned TD dock time. Damaged mirror at +38 (largest window end).
-        {STRUCT_TSPROC, BSTATE_ACTIVE, 20, 7, 4}, // dock-in: truck settles on the ramp
-        {STRUCT_TSPROC, BSTATE_AUX1, 27, 5, 4},   // siphon: NAREFN_A tiberium transfer loop
-        {STRUCT_TSPROC, BSTATE_AUX2, 32, 6, 4},   // undock: transfer drains, truck ready to leave
+        // tuned TD dock time. Damaged mirror at +33 (largest window end).
+        {STRUCT_TSPROC, BSTATE_ACTIVE, 15, 7, 4}, // dock-in: truck settles on the ramp
+        {STRUCT_TSPROC, BSTATE_AUX1, 22, 5, 4},   // siphon: NAREFN_A tiberium transfer loop
+        {STRUCT_TSPROC, BSTATE_AUX2, 27, 6, 4},   // undock: transfer drains, truck ready to leave
         {STRUCT_TSWEAP, BSTATE_IDLE, 0, 8, 3},   // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8
         {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)

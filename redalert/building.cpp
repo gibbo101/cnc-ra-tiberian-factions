@@ -504,6 +504,14 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 **	on it.
                 */
                 param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W + 1));
+                /*
+                **	The RA ore truck unloads one cell further SOUTH (Luke's pose:
+                **	the E-facing tip-up with the raised bed against the intake --
+                **	on the pad cell itself its bed climbs into the building).
+                */
+                if (from != NULL && from->What_Am_I() == RTTI_UNIT && *((UnitClass*)from) == UNIT_HARVESTER) {
+                    param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W * 2 + 1));
+                }
                 break;
 
             case STRUCT_REFINERY:
@@ -3103,7 +3111,8 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 UnitClass* unit = (UnitClass*)base;
                 cell = (CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W + 1);
                 ScenarioInit++;
-                if (unit->Unlimbo(Cell_Coord(cell), DIR_SE)) {
+                // +5/+7 px = the seated-on-ramp point the baked HORV occupies.
+                if (unit->Unlimbo(Coord_Add(Cell_Coord(cell), XYP_Coord(5, 7)), DIR_SE)) {
                     unit->PrimaryFacing = DIR_SE;
                     unit->Assign_Mission(MISSION_HARVEST);
                 }
@@ -5049,10 +5058,11 @@ bool Is_TS_Apron_Cell(CELL cell)
     */
     static short const _to_centre[] = {(MAP_CELL_W * 2) - 1, // south row, col 0
                                        (MAP_CELL_W * 2),     // south row, col 1
-                                       (MAP_CELL_W * 2) + 1, // south row, col 2 (dock pad)
+                                       (MAP_CELL_W * 2) + 1, // south row, col 2
                                        (MAP_CELL_W * 2) + 2, // south row, col 3
                                        2,                    // east col, row 1
                                        MAP_CELL_W + 2,       // east col, row 2
+                                       MAP_CELL_W + 1,       // the dock pad itself (occupy hole)
                                        0};
 
     for (short const* off = _to_centre; *off != 0; off++) {

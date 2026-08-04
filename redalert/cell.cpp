@@ -464,6 +464,18 @@ bool CellClass::Is_Clear_To_Build(SpeedType loco) const
         return (true);
 
     /*
+    **	TS building aprons (refinery dock bay + concrete skirt): walkable
+    **	ground art, never buildable. This is the choke point BOTH the
+    **	launcher's placement preview (Get_Placement_State) and the game-side
+    **	placement legality share -- a veto anywhere higher misses the
+    **	preview, and the preview's green cells were honoured at click time
+    **	(Luke placed a building on the pad, 2026-08-04 23:16).
+    */
+    if (Is_TS_Apron_Cell(Cell_Number())) {
+        return (false);
+    }
+
+    /*
     **	If there is an object there, then don't allow building.
     */
     if (Cell_Object() != NULL) {

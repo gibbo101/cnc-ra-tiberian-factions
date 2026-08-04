@@ -1078,6 +1078,14 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                     Do_Turn(DIR_SE);
                 } else {
                     if (!IsDriving && IsTethered && Mission == MISSION_ENTER) {
+                        /*
+                        **	Seat on the ramp (Luke's point, +5/+7 from the pad
+                        **	cell centre) BEFORE the swap so the baked HORV
+                        **	appears exactly where the live truck vanished.
+                        */
+                        Mark(MARK_UP);
+                        Coord = Coord_Add(Coord, XYP_Coord(5, 7));
+                        Mark(MARK_DOWN);
                         if (Transmit_Message(RADIO_IM_IN, tsdock) == RADIO_ATTACH) {
                             Mark(MARK_UP);
                             SpecialFlag = true;
@@ -3650,6 +3658,17 @@ int UnitClass::Mission_Unload(void)
                 Coord = Coord_Add(Coord, XYP_Coord(RA_AT_TD_NUDGE_RIGHT, 0));
                 Mark(MARK_DOWN);
             }
+            /*
+            **	RA harvester at the TS refinery: seat the tip-up against the
+            **	intake from the south pad cell (Luke's Aseprite pose 467,548 --
+            **	5 px west, 8 px north of the cell centre). VISUAL DIAL.
+            */
+            if (dockb != NULL && dockb->What_Am_I() == RTTI_BUILDING
+                && *((BuildingClass*)dockb) == STRUCT_TSPROC) {
+                Mark(MARK_UP);
+                Coord = Coord_Add(Coord, XYP_Coord(-5, -8));
+                Mark(MARK_DOWN);
+            }
             break;
         }
 
@@ -3725,8 +3744,19 @@ int UnitClass::Mission_Unload(void)
         const int TD_DOCK_NUDGE_UP = 6;    // pixels north (rear toward the intake)
         if (!IsDumping) {
             IsDumping = true; // park (blocks driving) + mark "actively unloading" for B3 capture
+            /*
+            **	Park nudge per refinery: at the TD refinery the rear noses NE
+            **	toward the pillars; at the TS refinery the truck seats SE onto
+            **	the hazard ramp (Luke's Aseprite point, +5/+7 from the pad cell
+            **	centre). VISUAL DIALS.
+            */
+            TechnoClass* nref = Contact_With_Whom();
+            bool ts_dock = (nref != NULL && nref->What_Am_I() == RTTI_BUILDING
+                            && *((BuildingClass*)nref) == STRUCT_TSPROC);
             Mark(MARK_UP);
-            Coord = Coord_Add(Coord, XYP_Coord(TD_DOCK_NUDGE_RIGHT, -TD_DOCK_NUDGE_UP));
+            Coord = Coord_Add(Coord,
+                              ts_dock ? XYP_Coord(5, 7)
+                                      : XYP_Coord(TD_DOCK_NUDGE_RIGHT, -TD_DOCK_NUDGE_UP));
             Mark(MARK_DOWN);
 
 #if TF_DEV_BUILD

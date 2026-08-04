@@ -8107,14 +8107,9 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             if (!Map.In_Radar(cell))
                 return (false);
             if (build) {
+                // The TS apron veto lives inside Is_Clear_To_Build (the choke
+                // point the launcher's placement preview also uses).
                 if (!Map[cell].Is_Clear_To_Build(Speed)) {
-                    return (0);
-                }
-                /*
-                **	TS apron cells (refinery dock bay / concrete skirt): walkable
-                **	ground art, but never buildable -- see Is_TS_Apron_Cell.
-                */
-                if (Is_TS_Apron_Cell(cell)) {
                     return (0);
                 }
             } else {

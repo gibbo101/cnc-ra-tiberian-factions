@@ -392,7 +392,9 @@ SIZEPASS = [
     # south edge); the wide canvas carries the NTREFNBB apron OVERLAY (dock
     # bay incl. the hazard-striped ramp, Luke's TS screenshot) riding east/
     # south into the halo -- fit-excluded, so the building size is unchanged.
-    ("TSPROC", "shp_ntrefn", [("shp_ntrefn_b", list(range(20)), list(range(20)))],
+    # Plume cycle = frames 2-16 only: 0-1/17-19 carry 10-57 src px and
+    # scale to "dead pixel" specks at the chimney tip (Luke, 23:17 SS).
+    ("TSPROC", "shp_ntrefn", [("shp_ntrefn_b", list(range(2, 17)), list(range(2, 17)))],
      "shp_ntrefnmk", 19, (736, 672), 27, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
     # TDWEAP-parity 3x3, apron dropped, RA slab (Luke, 2026-08-04 — "same
@@ -447,10 +449,11 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
 
 # ---- TSPROC attach-dock windows (Luke's docking session, 2026-08-04) ----
 # Rewrites TSPROC.ZIP with the TS attach-dock layout:
-#   healthy: [0-19 idle plume] [20-26 ACTIVE dock-in] [27-31 AUX1 siphon]
-#            [32-37 AUX2 undock]  -> largest = 38; damaged mirror at +38.
-# bdata rows must match: IDLE {0,20,3} ACTIVE {20,7,4} AUX1 {27,5,4}
-# AUX2 {32,6,4}. Dock frames layer: apron -> docked HORV -> building
+#   healthy: [0-14 idle plume (src 2-16; specks dropped)] [15-21 ACTIVE]
+#            [22-26 AUX1 siphon] [27-32 AUX2 undock] -> largest = 33;
+#            damaged mirror at +33.
+# bdata rows must match: IDLE/FULL {0,15,3} ACTIVE {15,7,4} AUX1 {22,5,4}
+# AUX2 {27,6,4}. Dock frames layer: apron -> docked HORV -> building
 # (-> NAREFN_A transfer during siphon). The HORV (TS's empty-bed unloading
 # model, rules UnloadingHarvester=) sits at Luke's Aseprite point (524,500)
 # scaled x2/3 -- unit art is 8x-classic, building art 16/3x, so matching the
@@ -503,7 +506,7 @@ if os.path.isdir(f"{ART}/shp_ntrefn") and os.path.isdir(f"{ART}/renders_horv"):
 
     _out = []
     for w in (1, 2):
-        _out += [_tsproc_frame(w, plume_i=i) for i in range(20)]          # idle
+        _out += [_tsproc_frame(w, plume_i=i) for i in range(2, 17)]       # idle (specks dropped)
         _out += [_tsproc_frame(w, horv=True) for _ in range(7)]           # ACTIVE
         _out += [_tsproc_frame(w, horv=True, transfer=i) for i in range(5)]  # AUX1
         _out += [_tsproc_frame(w, horv=True, transfer=i) for i in (3, 2, 1, 0)] \
@@ -511,7 +514,7 @@ if os.path.isdir(f"{ART}/shp_ntrefn") and os.path.isdir(f"{ART}/renders_horv"):
     # reorder: all healthy (w=1) first, then damaged -- already in that order.
     write_zip(f"{STRUCT_DIR}/TSPROC.ZIP", "tsproc", _out)
     patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPROC", len(_out))
-    print(f"TSPROC: attach-dock windows baked ({len(_out)} frames; largest=38)")
+    print(f"TSPROC: attach-dock windows baked ({len(_out)} frames; largest=33)")
 else:
     print("TSPROC dock windows: SKIP (need shp_ntrefn + renders_horv)")
 
