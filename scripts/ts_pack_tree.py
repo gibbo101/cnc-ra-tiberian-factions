@@ -370,7 +370,7 @@ SIZEPASS = [
     # wide -> full-width factor 5.45x -> 643 HD px tall: the canvas must be
     # 672 or the plume tip clips (512/544/576 all did).
     ("TSPROC", "shp_ntrefn", [("shp_ntrefn_b", list(range(20)), list(range(20)))],
-     "shp_ntrefnmk", 19, (512, 672), 3, 1.0, "shp_reficon",
+     "shp_ntrefnmk", 19, (512, 928), 51, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
      "shp_gtweapmk", 19, (512, 384), 2, 1.0, "shp_weapicon",
