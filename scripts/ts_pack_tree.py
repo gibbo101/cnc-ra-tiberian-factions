@@ -369,17 +369,26 @@ SIZEPASS = [
     # the full window plays in both runs. The no-bib union is only 94 src px
     # wide -> full-width factor 5.45x -> 643 HD px tall: the canvas must be
     # 672 or the plume tip clips (512/544/576 all did).
+    # Width-fit to the full 3x3 PLOT (72 classic; the 4-cell/512 fit read
+    # oversized next to the 2x2 tier -- Luke, 2026-08-04). Stub 72x126,
+    # disc bottom on the plot's south edge (margin = the 27 below-plot halo).
     ("TSPROC", "shp_ntrefn", [("shp_ntrefn_b", list(range(20)), list(range(20)))],
-     "shp_ntrefnmk", 19, (512, 928), 51, 1.0, "shp_reficon",
+     "shp_ntrefnmk", 19, (384, 672), 27, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
      "shp_gtweapmk", 19, (512, 384), 2, 1.0, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
+    # Grid-matched 2x2 width again (256 = 48 classic; the 320/60-overhang
+    # compromise predates the tier-wide size drop, Luke 2026-08-04).
     ("TSPILE", "shp_gtpile", ["shp_gtpile_a", "shp_gtpile_b", "shp_gtpile_c"],
-     "shp_gtpilemk", 19, (320, 256), 0, 1.0, "shp_brrkicon",
+     "shp_gtpilemk", 19, (256, 256), 0, 1.0, "shp_brrkicon",
      "TS Barracks", "Trains Tiberian-era infantry."),
+    # Back to the TS-authentic 2x2 plot (stub 48x96, Obelisk treatment);
+    # the 3x2 size-up made the 2x2 power plant "look like a toy" (Luke,
+    # 2026-08-04). Margin 21 = art bottom 3 classic below the plot's south
+    # edge, same tuck as the 3x2 tuning had.
     ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
-     "shp_gtradrmk", 20, (384, 800), 48, 1.0, "shp_radricon",
+     "shp_gtradrmk", 20, (256, 512), 21, 1.0, "shp_radricon",
      "TS Radar", "Provides radar coverage."),
 ]
 
@@ -406,10 +415,11 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     mk_mask_dir=masks.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
-# ---- TSFACT: TS Construction Yard, size pass: TS-authentic 4x3 (BSIZE_43,
-# stub 96x72 = the full 3-row box; content fits inside it, no halo needed).
-# Anims: _A crane 20, _B light 10, _C crane-2 30 -> N=60. Damaged base =
-# GTCNST frame 2.
+# ---- TSFACT: TS Construction Yard on the RA-conyard 3x3 plot (BSIZE_33 +
+# bib, stub 72x72; the 4x3 tier read oversized -- Luke, 2026-08-04). Art
+# union h/w = 0.67, so the plot-width fit stands ~48 classic inside the
+# 72-box. Anims: _A crane 20, _B light 10, _C crane-2 30 -> N=60. Damaged
+# base = GTCNST frame 2.
 if os.path.isdir(f"{ART}/shp_gtcnst"):
     # GTCNST_B (rotating light) breaks the healthy+damaged half convention:
     # its 10 content frames are ONE full rotation (equal 614px every frame,
@@ -417,12 +427,10 @@ if os.path.isdir(f"{ART}/shp_gtcnst"):
     # SHP. Halving it played half a rotation + snap-back — the radar-dish
     # symptom. _A (crane) and _C (roof lights) halves ARE damaged variants.
     light = ("shp_gtcnst_b", list(range(10)), list(range(10)))
-    # overscale 0.94: full grid width read "still slightly big" (Luke,
-    # 2026-08-04) -- the hangar sits just inside the 4-cell plot.
     build_structure("TSFACT", "shp_gtcnst", 0, 2,
                     [loop("shp_gtcnst_a"), light, loop("shp_gtcnst_c")],
-                    "shp_gtcnstmk", 32, 512, 384, bottom_margin=2,
-                    overscale=0.94)
+                    "shp_gtcnstmk", 32, 384, 384, bottom_margin=0,
+                    overscale=1.0)
 
 # ---- TSPOWR: TS Power Plant (2x2, POWR donor 48x48 -> 256x256).
 # Content scaled to TDNUKE (content 256 full-width). Anims: _A fan 24, _B 12

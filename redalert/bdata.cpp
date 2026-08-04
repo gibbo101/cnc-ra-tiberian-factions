@@ -1306,21 +1306,10 @@ static BuildingTypeClass const ClassTdGdiFact(STRUCT_TDGFACT,
                                               (short const*)NULL  // No overlap row.
 );
 
-/* 4x3 lists for the wide TS footprints (grid sized to the art, Luke
-** 2026-08-04: full-width BIB1 slabs span the building): art row 0 is
-** overlap, rows 1-2 are the occupied plot; exits ring the south and east
-** edges (war factory). The refinery variant leaves the two centre cells of
-** row 2 unoccupied — the RA-pattern dock lane, one south of the centre
-** cell, so the stock refinery dock flow and Is_Refinery_Dock_Cell work
-** unchanged on the 4-wide grid. */
-static short const TsProcList43[] = {(MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
-                                     (MCW * 2), (MCW * 2) + 3, REFRESH_EOL};
-/* Full 4x3 plot for the conyard (Luke, 2026-08-04: "4x3 with a bib"). */
-static short const TsFactList43[] = {0, 1, 2, 3,
-                                     (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
-                                     (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
-                                     REFRESH_EOL};
-static short const TsProcOList43[] = {0, 1, 2, 3, (MCW * 2) + 1, (MCW * 2) + 2, REFRESH_EOL};
+/* 4x3 lists for the wide TSWEAP footprint (grid sized to the art): art
+** row 0 is overlap, rows 1-2 are the occupied plot; exits ring the south
+** and east edges. (TSPROC/TSFACT went back to the RA 3x3 plots — stock
+** PROC/FACT lists — when the 4x3 tier read oversized, Luke 2026-08-04.) */
 static short const TsExitWeap43[] = {XYCELL(-1, 3), XYCELL(0, 3), XYCELL(1, 3),
                                      XYCELL(2, 3), XYCELL(3, 3), XYCELL(4, 3),
                                      XYCELL(4, 2), XYCELL(4, 1), XYCELL(-1, 2),
@@ -1333,10 +1322,10 @@ static short const TsOList43[] = {0, 1, 2, 3, REFRESH_EOL};
 /*
 **  TSFACT (TS Construction Yard, TS rules [GACNST]) — the gate on the ownership-gated
 **  TS GDI tree (docs/ts-gdi-tree-plan.md). Deployed only from UNIT_TSMCV (a rare crate
-**  find); never sidebar-buildable, so no cameo. TS-authentic 4x3 footprint (GACNST;
-**  size pass 2026-08-03 — the 3x2 TD-parity read too small beside the 3x3 RA yard).
-**  Art = TS GTCNST SHP + GTCNSTMK buildup under TSFACT tileset keys; classic dims
-**  from its own 96x72 TFASSETS stub.
+**  find); never sidebar-buildable, so no cameo. 3x3 + bib = the RA conyard's exact
+**  geometry (Luke, 2026-08-04: the 4x3 tier read oversized; TS-authentic GACNST is
+**  4x3 but the yard should match the RA FACT plot). Art = TS GTCNST SHP + GTCNSTMK
+**  buildup under TSFACT tileset keys; classic dims from its own 72x72 TFASSETS stub.
 */
 static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
                                            TXT_NONE,           // Display name (rules.ini Name= overrides).
@@ -1361,9 +1350,9 @@ static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
                                            true,               // Can the building be color remapped?
                                            RTTI_BUILDINGTYPE,  // Produces buildings.
                                            DIR_N,              // Starting idle frame.
-                                           BSIZE_43,           // Full 4x3 plot + bib (Luke, 2026-08-04).
+                                           BSIZE_33,           // RA-conyard plot: 3x3 + bib (Luke, 2026-08-04).
                                            NULL,               // No preferred exit cell.
-                                           (short const*)TsFactList43,
+                                           (short const*)ListFactory,
                                            (short const*)NULL);
 
 /*
@@ -1405,10 +1394,10 @@ static BuildingTypeClass const ClassTsProc(STRUCT_TSPROC,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,          // Engine grants free harvester at build time.
                                            DIR_N,
-                                           BSIZE_43,           // 4-wide grid sized to the full-width disc (Luke, 2026-08-04).
+                                           BSIZE_33,           // RA-refinery clone plot: stock dock geometry (Luke, 2026-08-04).
                                            NULL,
-                                           (short const*)TsProcList43,   // Rows 1-2 + RA-pattern dock lane holes.
-                                           (short const*)TsProcOList43);
+                                           (short const*)List010111100,  // RA PROC occupy: dock lane holes.
+                                           (short const*)List101000011); // RA PROC overlap.
 
 static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            TXT_NONE,
@@ -1462,9 +1451,9 @@ static BuildingTypeClass const ClassTsRadr(STRUCT_TSRADR,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_32,           // 3x2 grid sized to the art; dish rides above (Luke, 2026-08-04).
+                                           BSIZE_22,           // TS-authentic Foundation=2x2; dish rides above the plot.
                                            NULL,
-                                           (short const*)List32,
+                                           (short const*)List22,
                                            (short const*)NULL);
 
 static BuildingTypeClass const ClassTsHpad(STRUCT_TSHPAD,

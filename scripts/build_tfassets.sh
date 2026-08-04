@@ -251,36 +251,36 @@ PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
 # MAKE stubs carry the construction frame count the HD buildup zips ship.
 # Size pass 2026-08-03: the launcher maps the canvas onto the stub box
 # CENTERED on the BSIZE box, so stub height beyond the box splits into equal
-# art halos above and below it — and the launcher's SELECTION BOX is the stub
-# box, so the stub must HUG the art (a roomy 96x120 put floating brackets in
-# empty headroom). TSPROC 96x102 / TSWEAP 96x96: halo above the 3-row box +
-# the passable TS apron row below (engine Bib=no; apron baked in the art).
-# TSPROC 96x174: the building content is only 94 src px wide (the TS concrete
-# apron is not drawn), so the full-4-cell-width fit runs at 5.45x -- the disc
-# plus chimney plus smoke is ~121 classic px tall at that scale. The stub is
-# sized so the DISC BOTTOM lands exactly on the plot's south edge (bottom
-# margin = the 51px below-plot halo) -- a shorter stub with a small margin
-# sinks the disc over the bib slab (the 126 version did).
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 96 174 2
+# art halos above and below it. (Selection boxes come from the FOUNDATION,
+# not the stub — bdata Dimensions(), foundation−20%; the old stub-hug rule
+# was a misread.)
+# TSPROC 72x126: art width-fit to the FULL 3x3 PLOT (72 classic; the 96-wide
+# 4-cell fit read oversized next to the 2x2 tier — Luke, 2026-08-04). The
+# building content is only 94 src px wide (the TS concrete apron is not
+# drawn), so the plot-width fit runs at 4.09x — disc + chimney + smoke is
+# ~90 classic px tall at that scale. The stub is sized so the DISC BOTTOM
+# lands exactly on the plot's south edge (bottom margin = the 27px
+# below-plot halo) -- a small-margin stub sinks the disc over the bib slab.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 72 126 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 96 174 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 72 126 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 96 72 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 96 72 19
-# TSPILE 60x48 on the 2x2 plot: a quarter-cell art overhang each side --
-# 72 wide read as spilling out of the build area (Luke), 48 wide read as an
-# infantry-height bunker; 60 is the compromise.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tspile_stub.shp" 60 48 2
+# TSPILE 48x48: back to the grid-matched 2x2 plot width (the 60-overhang
+# compromise predates the tier-wide size drop, Luke 2026-08-04).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspile_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tspile_stub.shp:TSPILE.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tspilemk_stub.shp" 60 48 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspilemk_stub.shp" 48 48 19
 PACK_ARGS+=("$TMPDIR/tspilemk_stub.shp:TSPILEMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
-# TSRADR 48x96 on the 2x2 plot: Obelisk treatment, the dish tower rises a
-# full row above the box (was donor-TDHQ 48x48 = the "pathetically small").
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsradr_stub.shp" 72 150 2
+# TSRADR 48x96 on the 2x2 plot (TS-authentic Foundation=2x2): Obelisk
+# treatment, the dish tower rises a full row above the box. The 3x2/72x150
+# size-up read oversized next to the 2x2 power plant (Luke, 2026-08-04).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsradr_stub.shp" 48 96 2
 PACK_ARGS+=("$TMPDIR/tsradr_stub.shp:TSRADR.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsradrmk_stub.shp" 72 150 20
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsradrmk_stub.shp" 48 96 20
 # TSPOWR 48x48 on the TS-authentic 2x2 grid, same plot as RA POWR (66-on-3x2
 # still read oversized -- Luke, 2026-08-04).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tspowr_stub.shp" 48 48 2
@@ -288,11 +288,11 @@ PACK_ARGS+=("$TMPDIR/tspowr_stub.shp:TSPOWR.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tspowrmk_stub.shp" 48 48 13
 PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")
-# TSFACT 96x72 = the full TS-authentic 4x3 box (BSIZE_43), content inside it.
-# (102-wide overhang tried 2026-08-04, verdict "too big" -- grid-matched 96.)
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsfact_stub.shp" 96 72 2
+# TSFACT 72x72 = the RA-conyard 3x3 box (BSIZE_33) + bib, content inside it
+# (the 4x3 tier read oversized next to the shrunk tier, Luke 2026-08-04).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfact_stub.shp" 72 72 2
 PACK_ARGS+=("$TMPDIR/tsfact_stub.shp:TSFACT.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsfactmk_stub.shp" 96 72 32
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfactmk_stub.shp" 72 72 32
 PACK_ARGS+=("$TMPDIR/tsfactmk_stub.shp:TSFACTMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tstech_stub.shp" 72 48 2
 PACK_ARGS+=("$TMPDIR/tstech_stub.shp:TSTECH.SHP")
