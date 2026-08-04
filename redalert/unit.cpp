@@ -3764,7 +3764,7 @@ int UnitClass::Mission_Unload(void)
             */
             Mark(MARK_UP);
             Coord = Coord_Add(Coord,
-                              ts_dock ? XYP_Coord(-10, 0)
+                              ts_dock ? XYP_Coord(-5, 3)
                                       : XYP_Coord(TD_DOCK_NUDGE_RIGHT, -TD_DOCK_NUDGE_UP));
             Mark(MARK_DOWN);
 
