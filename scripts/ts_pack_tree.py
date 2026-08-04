@@ -498,8 +498,9 @@ if os.path.isdir(f"{ART}/shp_ntrefn") and os.path.isdir(f"{ART}/renders_horv"):
     _hv = _pose("renders_horv")
     _hv_full = _pose("renders_harv")
     _hb = _hv.getbbox()
-    # Luke's ramp point, shifted 64 px west with the 4x3 anchor.
-    _hpos = (round(460 - (_hb[0] + _hb[2]) / 2.0), round(500 - (_hb[1] + _hb[3]) / 2.0))
+    # Luke's ramp point, shifted 64 px west with the 4x3 anchor, minus the
+    # "move left a little" trim (00:25).
+    _hpos = (round(452 - (_hb[0] + _hb[2]) / 2.0), round(500 - (_hb[1] + _hb[3]) / 2.0))
 
     def _tsproc_frame(which, plume_i=None, horv=None, transfer=None):
         fr = place(_apron[which], _factor, 736, 672, _cx, _cy, _dx, _dy)
