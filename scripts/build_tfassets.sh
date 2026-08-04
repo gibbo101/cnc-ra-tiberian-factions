@@ -283,9 +283,10 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tspowrmk_stub.shp" 66 66 13
 PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")
 # TSFACT 96x72 = the full TS-authentic 4x3 box (BSIZE_43), content inside it.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsfact_stub.shp" 102 72 2
+# (102-wide overhang tried 2026-08-04, verdict "too big" -- grid-matched 96.)
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfact_stub.shp" 96 72 2
 PACK_ARGS+=("$TMPDIR/tsfact_stub.shp:TSFACT.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsfactmk_stub.shp" 102 72 32
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfactmk_stub.shp" 96 72 32
 PACK_ARGS+=("$TMPDIR/tsfactmk_stub.shp:TSFACTMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tstech_stub.shp" 72 48 2
 PACK_ARGS+=("$TMPDIR/tstech_stub.shp:TSTECH.SHP")
