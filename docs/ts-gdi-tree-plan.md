@@ -44,8 +44,18 @@ RADIO_BACKUP_NOW). Logs-first: MOD_DEBUG_TSUNITS.txt DOCK-START lines
 (⚠ log sometimes lands in pfx/drive_c/users/steamuser/ instead of
 Documents/CnCRemastered).
 
+**Refinery smoke polish (Luke's session-close SS, 19:00):** the plume's
+dissipate/reform frames (10-16 src px of content) scale to blocky "dead
+pixel" specks at the chimney tip while the smoke is between puffs — plus an
+unexplained solid-black chunk right of the chimney in the same SS. Luke's
+suggestion: make the smoke effectively continuous. Options: drop the
+near-empty frames from the cycle (shortens N — engine `_anims[]` count moves
+again), soften/floor the alpha for tiny frames instead of the hard 128
+threshold, or check whether the deferred NTREFN_C (144-canvas anim, needs
+offset compositing) is TS's own second smoke layer that fills the gap.
+
 **Also unverified in-game:** conyard 0.94 size verdict, refinery
-bib/plume/smoke-cycle look, radar dish top, depot repairs, conyard light
+bib/plume look, radar dish top, depot repairs, conyard light
 rotation. **QUEUED AFTER:** WF exit-door anim (GTWEAP frame 1), component
 towers / infantry / Orcas / audio per plan below.
 
