@@ -503,14 +503,17 @@ if os.path.isdir(f"{ART}/shp_ntrefn") and os.path.isdir(f"{ART}/renders_horv"):
 
     def _tsproc_frame(which, plume_i=None, horv=None, transfer=None):
         fr = place(_apron[which], _factor, 736, 672, _cx, _cy, _dx, _dy)
-        if horv is not None:
-            fr.alpha_composite(_hv if horv == "empty" else _hv_full, _hpos)
         b = _base[which].copy()
         if plume_i is not None and which == 1:
             b.paste(_pn[plume_i], (0, 0), _pn[plume_i])
         if transfer is not None:
             b.paste(_tr[transfer], (0, 0), _tr[transfer])
         fr.alpha_composite(place(b, _factor, 736, 672, _cx, _cy, _dx, _dy))
+        # Truck drawn OVER the building: the docked truck must look exactly
+        # like the live one -- full body visible, no rear clipped under the
+        # sprite (Luke, 00:25: "losing its back").
+        if horv is not None:
+            fr.alpha_composite(_hv if horv == "empty" else _hv_full, _hpos)
         return fr
 
     _out = []

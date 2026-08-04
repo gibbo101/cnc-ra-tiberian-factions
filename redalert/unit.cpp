@@ -3792,9 +3792,16 @@ int UnitClass::Mission_Unload(void)
             **	everything). The Y offset is a VISUAL DIAL (more negative = higher above
             **	the harvester; more positive = more hidden behind it).
             */
-            AnimClass* fumes = new AnimClass(ANIM_TIB_FUMES, Coord_Add(Coord, XYP_Coord(0, -6)));
+            TechnoClass* refc = Contact_With_Whom();
+            /*
+            **	No green fumes at the TS refinery (Luke, 2026-08-05) -- its
+            **	dock stays clean; the other refineries keep the plume.
+            */
+            AnimClass* fumes = (refc != NULL && refc->What_Am_I() == RTTI_BUILDING
+                                && *((BuildingClass*)refc) == STRUCT_TSPROC)
+                                   ? NULL
+                                   : new AnimClass(ANIM_TIB_FUMES, Coord_Add(Coord, XYP_Coord(0, -6)));
             if (fumes != NULL) {
-                TechnoClass* refc = Contact_With_Whom();
                 if (refc != NULL && refc->What_Am_I() == RTTI_BUILDING) {
                     fumes->Attach_To(refc);
                 }
