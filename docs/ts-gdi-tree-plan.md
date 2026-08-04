@@ -69,6 +69,17 @@ again), soften/floor the alpha for tiny frames instead of the hard 128
 threshold, or check whether the deferred NTREFN_C (144-canvas anim, needs
 offset compositing) is TS's own second smoke layer that fills the gap.
 
+**TSHARV geometry (Luke's SS 19:25, TD+TS harvs on the same cell row don't
+line up):** (a) the sprite is ANCHORED ON THE FRONT CABIN — the voxel origin
+is offset (packer note: scoop reaches ~235 px from origin on the 512
+canvas), so it pivots around the cab when turning and sits low-left of its
+cell. Fix lead: compute the 32-frame content-union centre and shift ALL
+frames by one constant offset so the rotation-envelope centre = canvas
+centre (zip-level, preserves registration — same trick as the +8 facing
+reorder). (b) Selection box far too big: ShapeSize=64 vs TD harv 48 — after
+re-centring, the canvas/ShapeSize can likely drop to 48-class. Both fixes
+fold naturally into the harvester docking session.
+
 **Also unverified in-game:** conyard 0.94 size verdict, refinery
 bib/plume look, radar dish top, depot repairs, conyard light
 rotation. **QUEUED AFTER:** WF exit-door anim (GTWEAP frame 1), component
