@@ -2,8 +2,8 @@
 
 ## ⭐ SESSION END 2026-08-05 evening — RESUME HERE (4x4 + reverse dock)
 **Luke ended it "a bad session" — the WORK mostly shipped but two visible
-asks missed. Desktop prefix at `ab2b2168` (md5-verified). Deck still STALE
-at `2d8a5dbb`.**
+asks missed. Desktop prefix now at `db8913b1` (three-layer dock, deployed
+2026-08-05 late, md5-verified). Deck still STALE at `2d8a5dbb`.**
 
 **SHIPPED + play-verified today (log-verified over ~20 clean cycles):**
 - TSPROC foundation = 4x4 (Luke's pick): BSIZE_44, apron row is real
@@ -23,24 +23,23 @@ apparent depth (deployed -240,-86; truth -124,-44). Measure against
 unoccluded landmarks (dome centroid + stripe-field SE tip).**
 
 **OPEN — the missed asks (root causes FOUND, fixes queued):**
-1. **⭐ NEXT SESSION OPENER — the three-layer dock (DESIGN LOCKED with Luke
-   2026-08-05 close): apron under, trucks normal, superstructure over.**
-   Luke's model ("pad z1, harvesters z2, refinery z3", numbers illustrative
-   — slot into the existing global sort). Implementation:
-   (a) packer: stop compositing NTREFNBB into the base frames; ship the
-   apron as its OWN shape in TSPROC.ZIP (buildup keeps its poured pad);
-   (b) draw intercept: emit the apron shape in the GROUND layer the engine
-   already uses for smudges/bibs (under everything that moves, so ALL units
-   drive over it, not just harvesters) — `SortOrder` is per exported shape:
-   dllinterface.cpp:5135 = (ExportLayer<<29)+(Sort_Y()>>3); sub-object
-   reorder precedent at :5796;
-   (c) superstructure Sort_Y threshold computed from REAL values: units
-   carry their own +0x80 (128-lepton) south sort bias (the ShapeSize
-   comment above Sort_Y), so the deployed +108 bias in `ab2b2168` was
-   inert (docked truck sorts 596+128=724 > 620). Threshold must sit
-   between 725 (docked truck) and 767 (pad truck): bias ~+230.
-   Result: docked truck half-hidden by the superstructure silhouette,
-   nose out over the apron. ~1 hour + one deploy + Luke's eyes.
+1. **✅ THREE-LAYER DOCK IMPLEMENTED + DEPLOYED `db8913b1` (2026-08-05
+   late, desktop prefix, md5-verified) — AWAITING LUKE'S EYES.**
+   As locked at close: apron split out of the building sprite into its own
+   `TSPROCAP` asset (2 frames, same affine; building-coloured underlap at
+   the seam — separately hq-scaled edges otherwise open a hairline crack,
+   proven offline by recompose-diff: 0 transparent holes, only 1px tint
+   deltas left), draw intercept re-sorts it into the LAYER_SURFACE band
+   (dllinterface.cpp after the :5135 SortOrder assignment), superstructure
+   Sort_Y bias 108→230 (docked truck +212 < 230 < pad-row truck +255,
+   unit +128 bias accounted). TEST CHECKLIST (one watched dock cycle):
+   (a) truck reverses in → tail swallowed by the superstructure, nose
+   visible over the apron; (b) trucks/infantry crossing the apron draw ON
+   TOP of the concrete everywhere; (c) no seam crack around the bay at
+   game zoom; (d) buildup still pours the pad (no apron pop-in artifact
+   at construction end beyond the normal transition); (e) damaged-state
+   refinery still shows the damaged apron; (f) RA ore truck's ramp-foot
+   park (a row south) unaffected.
 2. **TSFACT (conyard) selection box rides ~13cl high — REGRESSED BY THE
    08-04 TIER RESIZE (Luke: "you had this correct earlier but you broke it
    on resize").** The box WAS correct before the conyard art was re-seated
