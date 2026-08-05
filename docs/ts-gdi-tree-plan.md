@@ -1,6 +1,84 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐ SESSION END 2026-08-04 evening — RESUME HERE
+## ⭐ SESSION END 2026-08-05 ~01:25 — RESUME HERE (docking marathon)
+**Surface = LINUX DESKTOP prefix at `c1efcf91` (md5-verified). ⚠ ONE COMMIT
+STAGED UNDEPLOYED: `d8d41cda` (apron clip revert — the deployed build has
+the HARD-SLICED pad; deploy this FIRST, game was still running at close).
+Deck still STALE at `2d8a5dbb`. ~89 commits tonight ended "we are going in
+circles" — read the DEAD ENDS list before touching the dock again.**
+
+**SHIPPED + Luke-verified tonight:**
+- Whole-tier size drop: radar 2x2 (TS-authentic), refinery RA-3x3→4x3 (see
+  below), conyard 3x3+bib (RA-yard parity, MCV round-trip intact), barracks
+  2x1+bib (building top row, slab bottom row), WF 3x3 TDWEAP-parity +3px
+  bib tuck. Flat trio sits ON its bib (centring experiment rejected).
+- Conyard/WF selection boxes: CenterCoordY bias + dimy trim in the
+  DLL_Draw_Intercept export = box hugs the art rows.
+- TSPROC: apron restored as fit-excluded overlay (736x672 canvas, stub
+  138x126, fit_w=384 decouples building width from canvas); Bib=no;
+  Is_TS_Apron_Cell veto (in CellClass::Is_Clear_To_Build — the ONLY choke
+  point the launcher placement preview honours!) keeps apron walkable but
+  unbuildable; solid 4x3 ghost grid via Occupy_List(true) override (the
+  ghost draws from sidebar PlacementList ← Occupy_List(true) — NOT the
+  draw-intercept OccupyList, NOT Set_Cursor_Shape [dead code]); placement
+  reach seeded from the walkable holes (Calculate_Placement_Distances);
+  conyard top row freed (TDWEAP lists); Storage 80→2000 (pips + capacity);
+  TSHARV elev-32 render, 0.75 pack, orbit-recentred, +8 facing.
+- Docking end-state (SIMPLE): every harvester unloads VISIBLY at TSPROC on
+  the ramp cell (pad = 4x3 centre + MCW), turn-in-place to SE, timer
+  offload, no fumes at TSPROC (kept elsewhere), no harvest smoke puff.
+  TSHARV at RA ref = TD harv's exact SW routine. TD-at-TD attach untouched.
+
+**DEAD ENDS — DO NOT RE-CHASE (each cost a live-fix round):**
+- The TS attach-dock (limbo + HORV-baked truck in refinery frames): Luke
+  ditched it — a baked duplicate = a permanent sync surface (size ×4
+  rounds, z-clip "loses its back", teleports). Machinery fully deleted in
+  `c1efcf91`.
+- BACKUP_INTO_REFINERY at any facing but SW: SNAPS (teleport). A real SE
+  reverse needs a NEW mirrored track table entry (queued, fresh eyes).
+- Detour approach cells: the RADIO_DOCKING maintenance loop re-orders the
+  truck to the MOVE_HERE cell every tick → stuck oscillation.
+- ANY post-turn coordinate seat (single-tick nudge OR 1px/tick creep):
+  reads as slide/teleport; the creep RAN AWAY (Coord_Snap is NOT the
+  cell-centre reference — trucks slid across the map). ALL seat motion
+  deleted; trucks park at cell centre, full stop.
+- Apron rectangle-clip to the 4x3: slices the stripes (hard edge). Full
+  apron restored in the staged `d8d41cda`.
+
+**OPEN — the next-session list (dock polish, ART-side only):**
+1. Deploy `d8d41cda`, then ALIGN THE ART TO THE TRUCKS: both TS + TD harv
+   read misaligned at the dock (cell-centre park vs stripes/composite,
+   ~3-8px). The proven-safe lever = shift the APRON overlay in the packer
+   so the bay centreline sits exactly on the pad cell centre; compare
+   against `~/Desktop/docking-art/refinery-ts/ts-harv-docked.png` (Luke's
+   locked pose) by overlay-measuring an in-game SS, set ONCE from data.
+2. Harvest-resume stall: harvesters idle after TSPROC unload. DOCK-EXIT
+   log lines are in (both Mission_Unload completions); read
+   MOD_DEBUG_TSUNITS.txt (⚠ sometimes lands in pfx/drive_c/users/steamuser)
+   from Luke's next match before theorizing.
+3. Cliff-edge apron drape (concrete over impassable terrain on edge
+   placements) — Luke's session-close options, DECIDE FIRST next session
+   (his lean: the 4x4, "so the pad fits in nicely"):
+   (a) drop the apron entirely, back to Bib=yes RA slab (5-minute revert,
+   ends the apron saga); (b) foundation 4x4 so the drape row is footprint
+   (placement then requires it clear = no cliff drape, grid matches art;
+   ⚠ BSIZE_44 moves the centre cell to origin+2*MCW+2 — EVERY
+   centre-relative dock offset, veto entry, exit cell, reservation check
+   and the art anchor must re-index + full retest); (c) soft alpha fade at
+   the drape edge (art-only). NOT a rectangle clip (proven slice artifact).
+4. Chunky dark intake pixels + black fringe at the bay mouth (hq4x + hard
+   alpha on the upscale) — art polish.
+5. Mirrored reverse track (Luke's line-up-then-reverse spec, SS
+   2026-08-05 00-08-56) — the only way to real reverse-in at SE.
+6. WF apron restoration, same recipe as TSPROC once its look is signed off.
+7. TS harv at TD refinery pose (Aseprite, together) — the last unmade
+   placement; TS-at-TD currently generic W-facing park.
+8. Queued from earlier: SMOKEY harvest puff port, voxel brightness pass
+   (TSHARV/TSMCV vs the TS screencast), TD-units-from-TS-factories tech
+   leak, refinery buildup pad check, conyard light rotation + remaining
+   2026-08-04 verdicts.
+
+## SESSION END 2026-08-04 evening (superseded)
 **Surface = LINUX DESKTOP prefix, deployed + md5-verified at `1e93a870` as
 Luke quit ("nice one"). ⚠ The Deck is STALE at `2d8a5dbb` (clipped dish, old
 sizes, sideways harvester) — push there before any Deck play. ⚠ The desktop
