@@ -440,38 +440,10 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     # so its buildup keeps the pad too -- only TSWEAP still masks the pad
     # out of construction.
     masks = {"TSWEAP": "shp_gtweapbb"}
-    # Apron clipped to the 4x3 foundation rectangle: the painted concrete
-    # must not overflow the grid (it draped over cliffs/water on edge
-    # placements -- Luke, 2026-08-05 01:02). Source-space crop bounds derive
-    # from the same affine the TSPROC fit uses (fit 384 on the no-overlay
-    # union, box = canvas centre +/- 2 cells, south edge at canvas_h - 144).
-    if os.path.isdir(f"{ART}/shp_ntrefnbb") and not os.path.isdir(f"{ART}/shp_ntrefnbb_clip"):
-        _b = []
-        for w in (0, 2):
-            base_im = load("shp_ntrefn", w)
-            for i in range(20):
-                c = base_im.copy()
-                pn = load("shp_ntrefn_b", i)
-                c.paste(pn, (0, 0), pn)
-                _b.append(c.getbbox())
-        _x0 = min(b[0] for b in _b)
-        _x1 = max(b[2] for b in _b)
-        _y1 = max(b[3] for b in _b)
-        _f = 384.0 / (_x1 - _x0)
-        _cx = (_x0 + _x1) / 2.0
-        sx0 = _cx + (112 - 304) / _f
-        sx1 = _cx + (624 - 304) / _f
-        sy1 = float(_y1)  # box south edge == the fit's bottom anchor
-        os.makedirs(f"{ART}/shp_ntrefnbb_clip")
-        for i in range(frame_count("shp_ntrefnbb")):
-            im = load("shp_ntrefnbb", i)
-            px = im.load()
-            for yy in range(im.height):
-                for xx in range(im.width):
-                    if xx < sx0 or xx > sx1 or yy > sy1:
-                        px[xx, yy] = (0, 0, 0, 0)
-            im.save(f"{ART}/shp_ntrefnbb_clip/frame-{i:04d}.png")
-    overlays = {"TSPROC": "shp_ntrefnbb_clip"}
+    # Full apron (the 4x3-rectangle clip sliced hard edges through the
+    # stripes -- Luke, 2026-08-05 01:20; the cliff-edge drape is a queued
+    # design question, not solvable with a rectangle cut).
+    overlays = {"TSPROC": "shp_ntrefnbb"}
     build_structure(ini, base, 0, 2, anims, mk, mkc, cw, ch,
                     bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale,
                     mk_mask_dir=masks.get(ini), overlay_dir=overlays.get(ini),
