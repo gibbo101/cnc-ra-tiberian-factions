@@ -223,18 +223,41 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         dst_x = dst_y = None
 
     if overlay_dir is not None:
-        # Ground overlay (TS concrete apron / dock bay): drawn UNDER the
-        # building but EXCLUDED from the fit, so it rides into the canvas
-        # halo at the building's scale without inflating the building's
-        # size read (the reason aprons were dropped in the first place).
-        # Passability is untouched -- sprite pixels are not occupancy.
-        for base, bf in ((base_h, healthy_f), (base_d, damaged_f)):
-            ov = load(overlay_dir, bf)
-            under = ov.copy()
-            under.paste(base, (0, 0), base)
-            base.paste(under, (0, 0))
-        healthy = [composite(base_h, anims, i, 1) for i in range(n)]
-        damaged_frames = [composite(base_d, anims, i, 2) for i in range(n)]
+        # Ground overlay (TS concrete apron / dock bay): shipped as its OWN
+        # <ini>AP asset (2 frames, healthy/damaged) instead of being baked
+        # into the building frames. The DLL draws it as a sub-object that the
+        # draw intercept re-sorts into the flat ground band, so every unit
+        # drives OVER the concrete while the superstructure keeps its own
+        # south-biased sort (the three-layer dock). Same affine as the
+        # building -- the apron lands pixel-identical to the old composite.
+        # Still fit-excluded: the building's size read is unchanged.
+        # Underlap: grow the apron a couple of source px INTO the building's
+        # silhouette, filled with the BUILDING's own pixels there (never
+        # outward into terrain). The two sprites hq-scale separately, so
+        # without shared coverage the thresholded edges leave a hairline
+        # crack along the seam that the old merged bake blended over. With
+        # building-coloured underlap, wherever the building's scaled edge
+        # erodes a pixel the apron beneath shows the identical colour.
+        import numpy as np
+
+        def underlap(ov_img, base_img, grow=2):
+            a = np.array(ov_img)
+            b = np.array(base_img)
+            covered = a[..., 3] > 0
+            grown = covered.copy()
+            for _ in range(grow):
+                g = grown.copy()
+                for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                    g |= np.roll(grown, (dy, dx), (0, 1))
+                grown = g
+            ring = grown & ~covered & (b[..., 3] > 0)
+            a[ring] = b[ring]
+            return Image.fromarray(a)
+
+        ap = [place(underlap(load(overlay_dir, f), base), factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
+              for f, base in ((healthy_f, base_h), (damaged_f, base_d))]
+        write_zip(f"{STRUCT_DIR}/{ini}AP.ZIP", f"{ini.lower()}ap", ap)
+        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}AP", 2)
 
     frames = [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in healthy]
     frames += [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in damaged_frames]
@@ -441,13 +464,12 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
         anims = [("shp_gtradr_a", fwd + back, dfwd + dback)]
     else:
         anims = [loop(d) for d in anim_dirs]
-    # TSPROC keeps its apron in the BUILT art now (overlay, fit-excluded),
-    # so its buildup keeps the pad too -- only TSWEAP still masks the pad
-    # out of construction.
+    # TSPROC ships its apron as the separate TSPROCAP ground shape (the
+    # three-layer dock), so its buildup keeps the pad too -- only TSWEAP
+    # still masks the pad out of construction.
     masks = {"TSWEAP": "shp_gtweapbb"}
     # Full apron (the 4x3-rectangle clip sliced hard edges through the
-    # stripes -- Luke, 2026-08-05 01:20; the cliff-edge drape is a queued
-    # design question, not solvable with a rectangle cut).
+    # stripes -- Luke, 2026-08-05 01:20).
     overlays = {"TSPROC": "shp_ntrefnbb"}
     build_structure(ini, base, 0, 2, anims, mk, mkc, cw, ch,
                     bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale,

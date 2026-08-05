@@ -5137,6 +5137,15 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.SortOrder = ObjectList->Objects[TotalObjectCount].SortOrder + CurrentDrawCount;
     }
 
+    /*
+    **  TS refinery apron: flat concrete re-sorted into the ground band
+    **  (LAYER_SURFACE, below every LAYER_GROUND building/unit), so anything
+    **  that moves draws over it -- the under layer of the three-layer dock.
+    */
+    if ((shape_file_name != NULL) && (strcmp(shape_file_name, "TSPROCAP") == 0)) {
+        new_object.SortOrder = (LAYER_SURFACE << 29) + (object->Sort_Y() >> 3);
+    }
+
     strncpy(new_object.TypeName, object->Class_Of().IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
 
     if (shape_file_name != NULL) {

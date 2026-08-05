@@ -758,6 +758,18 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
     if (BState != BSTATE_CONSTRUCTION) {
 
         /*
+        **	TS refinery three-layer dock: the concrete apron ships as its own
+        **	TSPROCAP shape and draws as a sub-object that the draw intercept
+        **	re-sorts into the flat ground band -- every unit drives over the
+        **	concrete, while the superstructure's south-biased Sort_Y swallows
+        **	a reverse-docked truck's tail inside the bay.
+        */
+        if (*this == STRUCT_TSPROC) {
+            int apron_shape = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
+            Techno_Draw_Object_Virtual(Class->TSProcApron, apron_shape, x, y, window, DIR_N, 0x0100, "TSPROCAP");
+        }
+
+        /*
         **	A Tethered object is always rendered AFTER the building.
         */
         if ((*this == STRUCT_WEAP || *this == STRUCT_AWEAP || *this == STRUCT_SWEAP || *this == STRUCT_TDWEAP)
@@ -4933,14 +4945,15 @@ COORDINATE BuildingClass::Sort_Y(void) const
     }
     if (*this == STRUCT_TSPROC) {
         /*
-        **	Sort point pushed south to just shy of the dock pad's centre row:
-        **	a truck reverse-docked into the bay (centre north of this line)
-        **	draws BEFORE the refinery, so the building art swallows it --
-        **	Luke's "disappears into the refinery" dock. Anything on or south
-        **	of the pad row (approach, exit, drive-through) still draws on
-        **	top. 108 = pad-centre offset (128 leptons) minus a 20 margin.
+        **	Three-layer dock sort: the apron draws in the flat ground band
+        **	(the TSPROCAP sub-object), so the superstructure is free to sort
+        **	south of a reverse-docked truck and swallow its tail while the
+        **	nose stays out over the concrete. Units carry their own
+        **	+128-lepton south sort bias, so the line must clear the docked
+        **	truck (pad -44, sorts centre+84+128 = +212) yet stay north of a
+        **	truck crossing the pad row (sorts centre+127+128 = +255): 230.
         */
-        return (Coord_Add(Center_Coord(), XY_Coord(0, 108)));
+        return (Coord_Add(Center_Coord(), XY_Coord(0, 230)));
     }
     if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC)) {
         return (Center_Coord());

@@ -920,6 +920,12 @@ public:
     **  classic mode. Loaded alongside WarFactoryOverlay in One_Time.
     */
     static void const* WarFactoryOverlayTd;
+    /*
+    **  TS refinery concrete apron (TSPROCAP.SHP stub in TFASSETS.MIX; HD
+    **  frames in TSPROCAP.ZIP). Drawn under STRUCT_TSPROC as a flat
+    **  ground-band sub-object -- the three-layer dock. Loaded in One_Time.
+    */
+    static void const* TSProcApron;
 
 private:
     /*
