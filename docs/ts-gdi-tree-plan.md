@@ -23,6 +23,29 @@ covers most of the stripes, dragging the centroid SE and DOUBLING the
 apparent depth (deployed -240,-86; truth -124,-44). Measure against
 unoccluded landmarks (dome centroid + stripe-field SE tip).**
 
+## ⭐ OVERNIGHT RUN 2026-08-06 ~00:30 — THE DOCK IS DONE AND VERIFIED
+**Option A (Luke's spec, chosen over B-curved and the bib fallback): the
+truck faces TRUE SE and travels only along that axis. Line-up = SE plate
+cell centre; entry tracks reverse pure NW (Track15/16 TSHARV -(199,199),
+Track17/18 TDHARV -(243,243), every waypoint DIR_SE); park = the on-axis
+point nearest each approved composite (TSHARV pad+(57,57), TDHARV
+pad+(13,13), ~25/15px deeper along the ramp than the exact composite —
+the flagged geometric consequence of the straight line); exit drives
+forward SE back onto the plate. Verified in an autonomous desktop run
+(Claude drove the skirmish end-to-end): 3+ dock cycles with exact axial
+log numbers and park facing=96, burst frames show smooth reverse + clean
+exit, credits banked, NO slide (motion==facing+128 by construction), NO
+teleport (track start==line-up centre). Plate veto verified refusing
+buildings (root cause was Cell_Building at the pad HOLE — resolved via
+the occupied cell north of it); selection box verified hugging the
+building (calibrated -78,-192 lepton bias, 90x56). Deployed desktop
+prefix `002098652661` = commit `dea8c154`. NOT play-verified by Luke yet
+— his checklist: watch one dock of each truck, the ~25px-deeper park is
+the one open aesthetic question. TDHARV used the same machinery with its
+own constants but had no live test (no TD truck in the run). RA ore
+truck ramp-foot park unchanged (untested tonight). Evidence + narrative:
+`~/Desktop/docking-art/MORNING-REPORT.md`.**
+
 **OPEN — the missed asks (updated 2026-08-05 late):**
 1. **❌ THREE-LAYER DOCK TRIED AND REVERTED SAME NIGHT (`db8913b1` →
    revert `b1f9b649`).** Deployed, Luke tested 2 SS in: the docked truck
