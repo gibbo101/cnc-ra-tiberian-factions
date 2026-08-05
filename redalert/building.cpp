@@ -4931,18 +4931,7 @@ COORDINATE BuildingClass::Sort_Y(void) const
     if (*this == STRUCT_BARRACKS /*|| *this == STRUCT_POWER*/) {
         return (Center_Coord());
     }
-    if (*this == STRUCT_TSPROC) {
-        /*
-        **	Sort point pushed south to just shy of the dock pad's centre row:
-        **	a truck reverse-docked into the bay (centre north of this line)
-        **	draws BEFORE the refinery, so the building art swallows it --
-        **	Luke's "disappears into the refinery" dock. Anything on or south
-        **	of the pad row (approach, exit, drive-through) still draws on
-        **	top. 108 = pad-centre offset (128 leptons) minus a 20 margin.
-        */
-        return (Coord_Add(Center_Coord(), XY_Coord(0, 108)));
-    }
-    if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC)) {
+    if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC)) {
         return (Center_Coord());
     }
     /*
@@ -5092,8 +5081,8 @@ bool Is_Refinery_Dock_Busy(CELL cell)
  *    veto also carries the placement-blocking the slab used to provide on the south row.      *
  *    Consulted from TechnoTypeClass::Legal_Placement for building-type placements only.       *
  *                                                                                             *
- *    Apron cells relative to a TSPROC origin cell (4x4 foundation, centre = origin+2*MCW+2    *
- *    = the dock pad): the ramp row (row 3, cols 2-3) plus the east column (col 3, rows 0-2)   *
+ *    Apron cells relative to a TSPROC origin cell (4x3 foundation, centre = origin+MCW+2      *
+ *    = the dock pad): the ramp row (row 2, cols 2-3) plus the east column (col 3, rows 0-1)   *
  *    plus the pad itself.                                                                     *
  *=============================================================================================*/
 bool Is_TS_Apron_Cell(CELL cell)
@@ -5105,19 +5094,18 @@ bool Is_TS_Apron_Cell(CELL cell)
     /*
     **	Offsets from the candidate cell BACK to where a TSPROC centre would be
     **	if this cell were part of its apron (centre = the dock pad cell on the
-    **	4x4 foundation, so the pad's own offset is 0 -- counted loop, no
+    **	4x3 foundation, so the pad's own offset is 0 -- counted loop, no
     **	zero sentinel).
     */
     /*
     **	Only cells the apron ART actually covers (with Bib=no the south-west
     **	cells are bare ground and stay placeable -- Luke, 2026-08-05 00:06).
     */
-    static short const _to_centre[] = {0,                     // the dock pad itself (occupy hole)
-                                       MAP_CELL_W,            // ramp row, col 2 (ramp foot)
-                                       MAP_CELL_W + 1,        // ramp row, col 3
-                                       1 - (MAP_CELL_W * 2),  // east col, row 0
-                                       1 - MAP_CELL_W,        // east col, row 1
-                                       1};                    // east col, row 2
+    static short const _to_centre[] = {0,               // the dock pad itself (occupy hole)
+                                       MAP_CELL_W,      // ramp row, col 2 (ramp foot)
+                                       MAP_CELL_W + 1,  // ramp row, col 3
+                                       1 - MAP_CELL_W,  // east col, row 0
+                                       1};              // east col, row 1
 
     for (int i = 0; i < (int)(sizeof(_to_centre) / sizeof(_to_centre[0])); i++) {
         CELL centre = (CELL)(cell - _to_centre[i]);
