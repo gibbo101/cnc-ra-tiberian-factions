@@ -1087,17 +1087,35 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
             **	uses the attach maneuver + Limbo (falls through below). DIR_SW = one-line dial.
             */
             TechnoClass* rdock = Contact_With_Whom();
+            bool ts_ref = (rdock != NULL && rdock->What_Am_I() == RTTI_BUILDING
+                           && *((BuildingClass*)rdock) == STRUCT_TSPROC);
             bool ra_ref = (rdock != NULL && rdock->What_Am_I() == RTTI_BUILDING
-                           && (*((BuildingClass*)rdock) == STRUCT_REFINERY
-                               || *((BuildingClass*)rdock) == STRUCT_TSPROC));
+                           && *((BuildingClass*)rdock) == STRUCT_REFINERY);
+            if (ts_ref) {
+                /*
+                **	TS refinery: line up nose-SE on the pad, then REVERSE
+                **	west into the bay mouth on Track15 (Luke's line-up-then-
+                **	reverse spec; endpoint = the agreed composite pose).
+                **	RADIO_IM_IN comes from Per_Cell_Process at track end,
+                **	same as the TD attach dock -- transmitting it here would
+                **	skip the reverse. The pad-cell gate keeps a re-polled
+                **	BACKUP_NOW from chaining a second track a cell deeper.
+                */
+                if (!IsRotating && PrimaryFacing != DIR_SE) {
+                    Do_Turn(DIR_SE);
+                } else if (!IsDriving
+                           && Coord_Cell(Center_Coord())
+                                  == Coord_Cell(((BuildingClass*)rdock)->Center_Coord())) {
+                    Force_Track(BACKUP_INTO_REFINERY_SE, Coord_Add(Center_Coord(), XY_Coord(-240, -86)));
+                    Set_Speed(128);
+                }
+                return (RADIO_ROGER);
+            }
             if (ra_ref) {
-                // At the TS refinery: pull onto the ramp and swing the tail in
-                // (turn in place to SE, Luke's docked pose). RA refinery keeps
-                // the plain DIR_SW park. (True reverse-in = queued custom track.)
-                DirType dockdir =
-                    (*((BuildingClass*)rdock) == STRUCT_TSPROC) ? DIR_SE : DIR_SW;
-                if (!IsRotating && PrimaryFacing != dockdir) {
-                    Do_Turn(dockdir);
+                // RA refinery keeps the plain DIR_SW visible park on the
+                // apron cell with the direct IM_IN handshake.
+                if (!IsRotating && PrimaryFacing != DIR_SW) {
+                    Do_Turn(DIR_SW);
                 } else {
                     if (!IsDriving) {
                         if (IsTethered && Mission == MISSION_ENTER) {
@@ -3843,26 +3861,42 @@ int UnitClass::Mission_Unload(void)
         */
         IsDumping = false;
         Tiberium = Gold = Gems = 0; // defensive
-        Transmit_Message(RADIO_UNLOADED);
-#if TF_DEV_BUILD
+        /*
+        **	Captured before the radio drops: a truck that reverse-docked deep
+        **	into the TS refinery's bay (Track15) sits inside the building's
+        **	occupy cell and must be DRIVEN out (Track16) -- normal pathing
+        **	from an occupied cell stalls. The RA-refinery pairing parks on a
+        **	free apron cell and just drives off.
+        */
         {
-            char dpath[512];
-            const char* dprof = getenv("USERPROFILE");
-            if (dprof != NULL && dprof[0] != '\0') {
-                snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
-            } else {
-                strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
+            TechnoClass* exref = Contact_With_Whom();
+            bool ts_bay_exit = (exref != NULL && exref->What_Am_I() == RTTI_BUILDING
+                                && *((BuildingClass*)exref) == STRUCT_TSPROC);
+            Transmit_Message(RADIO_UNLOADED);
+#if TF_DEV_BUILD
+            {
+                char dpath[512];
+                const char* dprof = getenv("USERPROFILE");
+                if (dprof != NULL && dprof[0] != '\0') {
+                    snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
+                } else {
+                    strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
+                }
+                FILE* dlog = fopen(dpath, "a");
+                if (dlog != NULL) {
+                    fprintf(dlog, "frame=%d DOCK-EXIT harv=%s tib=%d cell=%d bay_exit=%d -> MISSION_HARVEST\n", Frame,
+                            Class->IniName, Tiberium, Coord_Cell(Coord), (int)ts_bay_exit);
+                    fclose(dlog);
+                }
             }
-            FILE* dlog = fopen(dpath, "a");
-            if (dlog != NULL) {
-                fprintf(dlog, "frame=%d DOCK-EXIT harv=%s tib=%d cell=%d -> MISSION_HARVEST\n", Frame,
-                        Class->IniName, Tiberium, Coord_Cell(Coord));
-                fclose(dlog);
+#endif
+            Transmit_Message(RADIO_OVER_OUT);
+            Assign_Mission(MISSION_HARVEST);
+            if (ts_bay_exit) {
+                Force_Track(OUT_OF_REFINERY_SE, Coord_Add(Coord, XY_Coord(240, 86)));
+                Set_Speed(128);
             }
         }
-#endif
-        Transmit_Message(RADIO_OVER_OUT);
-        Assign_Mission(MISSION_HARVEST);
         break;
     }
 

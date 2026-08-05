@@ -128,7 +128,9 @@ public:
         BACKUP_INTO_REFINERY = 64, // Track to backup into refinery.
         OUT_OF_REFINERY,           // Track to leave refinery.
         OUT_OF_WEAPON_FACTORY,     // Track to leave weapons factory (vanilla, south).
-        OUT_OF_WEAPON_FACTORY_TD   // Track to leave TD-authentic weapons factory (south-west).
+        OUT_OF_WEAPON_FACTORY_TD,  // Track to leave TD-authentic weapons factory (south-west).
+        BACKUP_INTO_REFINERY_SE,   // TS refinery: reverse west off the pad into the bay mouth, nose SE.
+        OUT_OF_REFINERY_SE         // TS refinery: drive forward SE out of the bay back onto the pad.
     };
 
     /****************************************************************************
@@ -227,10 +229,12 @@ private:
     void Lay_Track(void);
     COORDINATE Smooth_Turn(COORDINATE adj, DirType& dir);
 
-    static TurnTrackType const TrackControl[68];
-    static RawTrackType const RawTracks[14];
+    static TurnTrackType const TrackControl[70];
+    static RawTrackType const RawTracks[16];
     static TrackType const Track13[];
     static TrackType const Track14[];
+    static TrackType const Track15[];
+    static TrackType const Track16[];
     static TrackType const Track12[];
     static TrackType const Track11[];
     static TrackType const Track10[];

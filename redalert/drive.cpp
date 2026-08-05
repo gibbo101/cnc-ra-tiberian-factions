@@ -3221,11 +3221,76 @@ DriveClass::TrackType const DriveClass::Track14[] = {
     {XYP_COORD(1, -1), (DirType)(DIR_SW - 1)},    {0x00000000L, DIR_SW}};
 
 /*
+**  Tiberian Factions mod: Track15/Track16 = the TS refinery's visible
+**  reverse dock (Luke's line-up-then-reverse spec). The truck lines up
+**  nose-SE on the dock pad, then Track15 REVERSES it west-northwest off
+**  the pad into the bay mouth, nose easing SE -> ESE (the composite pose).
+**  Track16 drives it forward out along the same lane back onto the pad.
+**
+**  Purpose-built raw tracks rather than flag-mirrors of Track11/12: the
+**  While_Moving terminator snaps Coord to Head_To_Coord(), and Track11/12
+**  end 85-96 leptons short of their destination -- an ~8-classic-px snap
+**  the TD attach dock hides under its Limbo but a visible truck cannot.
+**  These tracks interpolate to within 13 leptons (~1px) of the terminator,
+**  so the end snap is imperceptible. First waypoint offset == pad minus
+**  destination, so the track starts exactly where the truck stands (any
+**  start mismatch reads as a teleport -- the 2026-08-04 dead-end).
+**
+**  Geometry: destination = pad + (-240,-86) leptons = the truck centre in
+**  Luke's agreed docked composites (bay-mouth cell, one west of the pad).
+*/
+DriveClass::TrackType const DriveClass::Track15[] = {{0x005600F0L, DIR_SE},
+                                                     {0x005200E4L, DIR_SE},
+                                                     {0x004D00D8L, (DirType)(DIR_SE - 8)},
+                                                     {0x004900CCL, (DirType)(DIR_SE - 8)},
+                                                     {0x004500C0L, (DirType)(DIR_SE - 8)},
+                                                     {0x004100B4L, (DirType)(DIR_SE - 8)},
+                                                     {0x003C00A8L, (DirType)(DIR_SE - 16)},
+                                                     {0x0038009CL, (DirType)(DIR_SE - 16)},
+                                                     {0x00340090L, (DirType)(DIR_SE - 16)},
+                                                     {0x002F0084L, (DirType)(DIR_SE - 16)},
+                                                     {0x002B0078L, (DirType)(DIR_SE - 16)},
+                                                     {0x0027006CL, (DirType)(DIR_SE - 16)},
+                                                     {0x00220060L, (DirType)(DIR_SE - 16)},
+                                                     {0x001E0054L, (DirType)(DIR_SE - 16)},
+                                                     {0x001A0048L, (DirType)(DIR_SE - 16)},
+                                                     {0x0016003CL, (DirType)(DIR_SE - 16)},
+                                                     {0x00110030L, (DirType)(DIR_SE - 16)},
+                                                     {0x000D0024L, (DirType)(DIR_SE - 16)},
+                                                     {0x00090018L, (DirType)(DIR_SE - 16)},
+                                                     {0x0004000CL, (DirType)(DIR_SE - 16)},
+
+                                                     {0x00000000L, (DirType)(DIR_SE - 16)}};
+
+DriveClass::TrackType const DriveClass::Track16[] = {{0xFFAAFF10L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFAEFF1CL, (DirType)(DIR_SE - 16)},
+                                                     {0xFFB3FF28L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFB7FF34L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFBBFF40L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFBFFF4CL, (DirType)(DIR_SE - 16)},
+                                                     {0xFFC4FF58L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFC8FF64L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFCCFF70L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFD1FF7CL, (DirType)(DIR_SE - 16)},
+                                                     {0xFFD5FF88L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFD9FF94L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFDEFFA0L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFE2FFACL, (DirType)(DIR_SE - 16)},
+                                                     {0xFFE6FFB8L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFEAFFC4L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFEFFFD0L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFF3FFDCL, (DirType)(DIR_SE - 16)},
+                                                     {0xFFF7FFE8L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFFCFFF4L, (DirType)(DIR_SE - 16)},
+
+                                                     {0x00000000L, (DirType)(DIR_SE - 16)}};
+
+/*
 **	There are a limited basic number of tracks that a vehicle can follow. These
 **	are they. Each track can be interpreted differently but this is controlled
 **	by the TrackControl structure elaborated elsewhere.
 */
-DriveClass::RawTrackType const DriveClass::RawTracks[14] = {{Track1, -1, 0, -1},
+DriveClass::RawTrackType const DriveClass::RawTracks[16] = {{Track1, -1, 0, -1},
                                                             {Track2, -1, 0, -1},
                                                             {Track3, 37, 12, 22},
                                                             {Track4, 26, 11, 19},
@@ -3238,14 +3303,16 @@ DriveClass::RawTrackType const DriveClass::RawTracks[14] = {{Track1, -1, 0, -1},
                                                             {Track11, -1, 0, -1},
                                                             {Track12, -1, 0, -1},
                                                             {Track13, -1, 0, -1},
-                                                            {Track14, -1, 0, -1}};
+                                                            {Track14, -1, 0, -1},
+                                                            {Track15, -1, 0, -1},
+                                                            {Track16, -1, 0, -1}};
 
 /***************************************************************************
 **	Smooth turning control table. Given two directions in a path list, this
 **	table determines which track to use and what modifying operations need
 **	be performed on the track data.
 */
-DriveClass::TurnTrackType const DriveClass::TrackControl[68] = {
+DriveClass::TurnTrackType const DriveClass::TrackControl[70] = {
     {1, 0, DIR_N, F_},                                                      //	0-0
     {3, 7, DIR_NE, F_D},                                                    //	0-1 (raw chart)
     {4, 9, DIR_E, F_D},                                                     //	0-2 (raw chart)
@@ -3314,5 +3381,8 @@ DriveClass::TurnTrackType const DriveClass::TrackControl[68] = {
     {11, 11, DIR_SW, F_},    // Backup harvester into refinery.
     {12, 12, DIR_SW_X2, F_}, // Drive back into refinery.
     {13, 13, DIR_SW, F_},    // Drive out of weapons factory (vanilla RA, south motion).
-    {14, 14, DIR_SW, F_}     // Drive out of weapons factory (TD-authentic, south-west motion).
+    {14, 14, DIR_SW, F_},    // Drive out of weapons factory (TD-authentic, south-west motion).
+
+    {15, 15, (DirType)(DIR_SE - 16), F_}, // TS refinery: reverse into the bay mouth, nose ESE.
+    {16, 16, (DirType)(DIR_SE - 16), F_}  // TS refinery: drive forward SE out of the bay.
 };
