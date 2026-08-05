@@ -489,19 +489,14 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
             case STRUCT_TSPROC:
                 /*
-                **	TS refinery dock = the SE dock-lane hole (occupy row 2 col 2 is
-                **	deliberately unoccupied), the cell under the apron's hazard-striped
-                **	ramp -- Luke's Aseprite dock point. All three harvester eras park
-                **	here: the TS truck attaches from it, TD/RA trucks unload visibly
-                **	on it.
+                **	TD/TS trucks line up on the SE PLATE cell (the diagonal
+                **	apron hole), then their entry tracks reverse them dead
+                **	straight NW along their facing axis into the bay mouth.
+                **	The RA ore truck keeps the ramp-foot cell one row south
+                **	of the pad (its E-facing tip-up seats against the intake
+                **	from there).
                 */
-                /*
-                **	TD/TS trucks dock ON the pad (= the centre CELL of the 4x4
-                **	foundation); the RA ore truck unloads from the ramp-foot
-                **	cell one row south (its E-facing tip-up seats against the
-                **	intake from there).
-                */
-                param = ::As_Target(Coord_Cell(Center_Coord()));
+                param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W + 1));
                 if (from != NULL && from->What_Am_I() == RTTI_UNIT && *((UnitClass*)from) == UNIT_HARVESTER) {
                     param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W));
                 }
@@ -5098,21 +5093,35 @@ bool Is_TS_Apron_Cell(CELL cell)
     **	zero sentinel).
     */
     /*
-    **	Only cells the apron ART actually covers (with Bib=no the south-west
-    **	cells are bare ground and stay placeable -- Luke, 2026-08-05 00:06).
+    **	The whole apron row is vetoed: with the 4x3 foundation the placement
+    **	ghost claims the full bottom row, so a building dropped on ANY of its
+    **	cells reads as standing inside the refinery's plot (Luke,
+    **	2026-08-05 -- supersedes the old bare-ground-SW-cells exception).
     */
     static short const _to_centre[] = {0,               // the dock pad itself (occupy hole)
-                                       MAP_CELL_W,      // ramp row, col 2 (ramp foot)
-                                       MAP_CELL_W + 1,  // ramp row, col 3
+                                       MAP_CELL_W - 2,  // apron row, col 0
+                                       MAP_CELL_W - 1,  // apron row, col 1
+                                       MAP_CELL_W,      // apron row, col 2 (ramp foot)
+                                       MAP_CELL_W + 1,  // apron row, col 3
                                        1 - MAP_CELL_W,  // east col, row 0
                                        1};              // east col, row 1
 
     for (int i = 0; i < (int)(sizeof(_to_centre) / sizeof(_to_centre[0])); i++) {
         CELL centre = (CELL)(cell - _to_centre[i]);
-        if ((unsigned)centre >= MAP_CELL_TOTAL) {
+        /*
+        **	The centre cell (= the dock pad) is an occupy HOLE, so the
+        **	building can never be resolved THERE -- Cell_Building walks the
+        **	occupier chain only, and overlap cells live in a separate array.
+        **	Resolve via the occupied building cell directly north of the pad
+        **	(bottom building row is always occupied), then verify the pad
+        **	relationship. This lookup being pad-anchored is why the veto has
+        **	been silently dead since the centre cell became the pad.
+        */
+        CELL bcell = (CELL)(centre - MAP_CELL_W);
+        if ((unsigned)centre >= MAP_CELL_TOTAL || (unsigned)bcell >= MAP_CELL_TOTAL) {
             continue;
         }
-        BuildingClass const* b = Map[centre].Cell_Building();
+        BuildingClass const* b = Map[bcell].Cell_Building();
         if (b != NULL && *b == STRUCT_TSPROC && Coord_Cell(b->Center_Coord()) == centre) {
             return (true);
         }

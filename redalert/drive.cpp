@@ -3221,61 +3221,144 @@ DriveClass::TrackType const DriveClass::Track14[] = {
     {XYP_COORD(1, -1), (DirType)(DIR_SW - 1)},    {0x00000000L, DIR_SW}};
 
 /*
-**  Tiberian Factions mod: Track15/Track16 = the TS refinery's visible
-**  reverse dock (Luke's line-up-then-reverse spec). The truck lines up
-**  nose-SE on the dock pad, then Track15 REVERSES it west-northwest off
-**  the pad into the bay mouth, nose easing SE -> ESE (the composite pose).
-**  Track16 drives it forward out along the same lane back onto the pad.
+**  Tiberian Factions mod: Track15-Track18 = the TS refinery's visible
+**  reverse dock (Luke's line-up-then-reverse spec, geometry calibrated
+**  2026-08-05 from a live docked frame against his approved composite).
+**  The truck drives onto the concrete plate EAST of the bay (the east
+**  apron hole cell), lines up nose-SE at its centre, then the entry track
+**  REVERSES it west into the bay mouth. Facing holds true DIR_SE the
+**  whole way so the docked sprite is the exact facing in the approved
+**  preview. The exit track drives it forward east back onto the plate.
 **
-**  Purpose-built raw tracks rather than flag-mirrors of Track11/12: the
-**  While_Moving terminator snaps Coord to Head_To_Coord(), and Track11/12
-**  end 85-96 leptons short of their destination -- an ~8-classic-px snap
-**  the TD attach dock hides under its Limbo but a visible truck cannot.
-**  These tracks interpolate to within 13 leptons (~1px) of the terminator,
-**  so the end snap is imperceptible. First waypoint offset == pad minus
-**  destination, so the track starts exactly where the truck stands (any
-**  start mismatch reads as a teleport -- the 2026-08-04 dead-end).
+**  First waypoint offset == line-up cell centre minus destination, so the
+**  track starts exactly where the truck stands (any start mismatch reads
+**  as a teleport -- the 2026-08-04 dead-end, re-confirmed 2026-08-05 when
+**  a destination moved without its table).
 **
-**  Geometry: destination = pad + (-124,-44) leptons = the truck centre in
-**  Luke's agreed docked composites (rear at the bay mouth, body on the
-**  ramp). First cut used (-240,-86) from an occlusion-biased composite
-**  measurement and buried the truck in the building -- re-measured against
-**  unoccluded landmarks (dome + stripe-field tip) 2026-08-05 evening.
+**  Option A (Luke, 2026-08-06): the truck lines up on the SE plate cell
+**  facing TRUE SE and reverses DEAD STRAIGHT along its own facing axis
+**  (pure NW motion) -- slide is impossible by construction because the
+**  motion vector is facing+128 at every waypoint. The straight SE line
+**  from the line-up centre parks TSHARV at pad+(57,57) and TDHARV at
+**  pad+(13,13) (the nearest on-axis points to the calibrated composite
+**  poses; ~25/15 px deeper along the ramp than the exact composite):
+**    Track15/16 = TSHARV entry/exit  (start offsets +-(199,199))
+**    Track17/18 = TDHARV entry/exit  (start offsets +-(243,243))
 */
-DriveClass::TrackType const DriveClass::Track15[] = {{0x002C007CL, DIR_SE},
-                                                     {0x00280071L, DIR_SE},
-                                                     {0x00240065L, (DirType)(DIR_SE - 8)},
-                                                     {0x0020005AL, (DirType)(DIR_SE - 8)},
-                                                     {0x001C004FL, (DirType)(DIR_SE - 8)},
-                                                     {0x00180044L, (DirType)(DIR_SE - 16)},
-                                                     {0x00140038L, (DirType)(DIR_SE - 16)},
-                                                     {0x0010002DL, (DirType)(DIR_SE - 16)},
-                                                     {0x000C0022L, (DirType)(DIR_SE - 16)},
-                                                     {0x00080017L, (DirType)(DIR_SE - 16)},
-                                                     {0x0004000BL, (DirType)(DIR_SE - 16)},
+DriveClass::TrackType const DriveClass::Track15[] = {
+    {0x00C700C7L, DIR_SE},
+    {0x00BE00BEL, DIR_SE},
+    {0x00B500B5L, DIR_SE},
+    {0x00AC00ACL, DIR_SE},
+    {0x00A300A3L, DIR_SE},
+    {0x009A009AL, DIR_SE},
+    {0x00910091L, DIR_SE},
+    {0x00880088L, DIR_SE},
+    {0x007F007FL, DIR_SE},
+    {0x00760076L, DIR_SE},
+    {0x006D006DL, DIR_SE},
+    {0x00640064L, DIR_SE},
+    {0x005A005AL, DIR_SE},
+    {0x00510051L, DIR_SE},
+    {0x00480048L, DIR_SE},
+    {0x003F003FL, DIR_SE},
+    {0x00360036L, DIR_SE},
+    {0x002D002DL, DIR_SE},
+    {0x00240024L, DIR_SE},
+    {0x001B001BL, DIR_SE},
+    {0x00120012L, DIR_SE},
+    {0x00090009L, DIR_SE},
+    {0x00000000L, DIR_SE}};
 
-                                                     {0x00000000L, (DirType)(DIR_SE - 16)}};
+DriveClass::TrackType const DriveClass::Track16[] = {
+    {0xFF39FF39L, DIR_SE},
+    {0xFF42FF42L, DIR_SE},
+    {0xFF4BFF4BL, DIR_SE},
+    {0xFF54FF54L, DIR_SE},
+    {0xFF5DFF5DL, DIR_SE},
+    {0xFF66FF66L, DIR_SE},
+    {0xFF6FFF6FL, DIR_SE},
+    {0xFF78FF78L, DIR_SE},
+    {0xFF81FF81L, DIR_SE},
+    {0xFF8AFF8AL, DIR_SE},
+    {0xFF93FF93L, DIR_SE},
+    {0xFF9CFF9CL, DIR_SE},
+    {0xFFA6FFA6L, DIR_SE},
+    {0xFFAFFFAFL, DIR_SE},
+    {0xFFB8FFB8L, DIR_SE},
+    {0xFFC1FFC1L, DIR_SE},
+    {0xFFCAFFCAL, DIR_SE},
+    {0xFFD3FFD3L, DIR_SE},
+    {0xFFDCFFDCL, DIR_SE},
+    {0xFFE5FFE5L, DIR_SE},
+    {0xFFEEFFEEL, DIR_SE},
+    {0xFFF7FFF7L, DIR_SE},
+    {0x00000000L, DIR_SE}};
 
-DriveClass::TrackType const DriveClass::Track16[] = {{0xFFD4FF84L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFD8FF8FL, (DirType)(DIR_SE - 16)},
-                                                     {0xFFDCFF9BL, (DirType)(DIR_SE - 16)},
-                                                     {0xFFE0FFA6L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFE4FFB1L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFE8FFBCL, (DirType)(DIR_SE - 16)},
-                                                     {0xFFECFFC8L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFF0FFD3L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFF4FFDEL, (DirType)(DIR_SE - 16)},
-                                                     {0xFFF8FFE9L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFFCFFF5L, (DirType)(DIR_SE - 16)},
+DriveClass::TrackType const DriveClass::Track17[] = {
+    {0x00F300F3L, DIR_SE},
+    {0x00EA00EAL, DIR_SE},
+    {0x00E000E0L, DIR_SE},
+    {0x00D700D7L, DIR_SE},
+    {0x00CE00CEL, DIR_SE},
+    {0x00C400C4L, DIR_SE},
+    {0x00BB00BBL, DIR_SE},
+    {0x00B200B2L, DIR_SE},
+    {0x00A800A8L, DIR_SE},
+    {0x009F009FL, DIR_SE},
+    {0x00960096L, DIR_SE},
+    {0x008C008CL, DIR_SE},
+    {0x00830083L, DIR_SE},
+    {0x007A007AL, DIR_SE},
+    {0x00700070L, DIR_SE},
+    {0x00670067L, DIR_SE},
+    {0x005D005DL, DIR_SE},
+    {0x00540054L, DIR_SE},
+    {0x004B004BL, DIR_SE},
+    {0x00410041L, DIR_SE},
+    {0x00380038L, DIR_SE},
+    {0x002F002FL, DIR_SE},
+    {0x00250025L, DIR_SE},
+    {0x001C001CL, DIR_SE},
+    {0x00130013L, DIR_SE},
+    {0x00090009L, DIR_SE},
+    {0x00000000L, DIR_SE}};
 
-                                                     {0x00000000L, (DirType)(DIR_SE - 16)}};
+DriveClass::TrackType const DriveClass::Track18[] = {
+    {0xFF0DFF0DL, DIR_SE},
+    {0xFF16FF16L, DIR_SE},
+    {0xFF20FF20L, DIR_SE},
+    {0xFF29FF29L, DIR_SE},
+    {0xFF32FF32L, DIR_SE},
+    {0xFF3CFF3CL, DIR_SE},
+    {0xFF45FF45L, DIR_SE},
+    {0xFF4EFF4EL, DIR_SE},
+    {0xFF58FF58L, DIR_SE},
+    {0xFF61FF61L, DIR_SE},
+    {0xFF6AFF6AL, DIR_SE},
+    {0xFF74FF74L, DIR_SE},
+    {0xFF7DFF7DL, DIR_SE},
+    {0xFF86FF86L, DIR_SE},
+    {0xFF90FF90L, DIR_SE},
+    {0xFF99FF99L, DIR_SE},
+    {0xFFA3FFA3L, DIR_SE},
+    {0xFFACFFACL, DIR_SE},
+    {0xFFB5FFB5L, DIR_SE},
+    {0xFFBFFFBFL, DIR_SE},
+    {0xFFC8FFC8L, DIR_SE},
+    {0xFFD1FFD1L, DIR_SE},
+    {0xFFDBFFDBL, DIR_SE},
+    {0xFFE4FFE4L, DIR_SE},
+    {0xFFEDFFEDL, DIR_SE},
+    {0xFFF7FFF7L, DIR_SE},
+    {0x00000000L, DIR_SE}};
 
 /*
 **	There are a limited basic number of tracks that a vehicle can follow. These
 **	are they. Each track can be interpreted differently but this is controlled
 **	by the TrackControl structure elaborated elsewhere.
 */
-DriveClass::RawTrackType const DriveClass::RawTracks[16] = {{Track1, -1, 0, -1},
+DriveClass::RawTrackType const DriveClass::RawTracks[18] = {{Track1, -1, 0, -1},
                                                             {Track2, -1, 0, -1},
                                                             {Track3, 37, 12, 22},
                                                             {Track4, 26, 11, 19},
@@ -3290,14 +3373,16 @@ DriveClass::RawTrackType const DriveClass::RawTracks[16] = {{Track1, -1, 0, -1},
                                                             {Track13, -1, 0, -1},
                                                             {Track14, -1, 0, -1},
                                                             {Track15, -1, 0, -1},
-                                                            {Track16, -1, 0, -1}};
+                                                            {Track16, -1, 0, -1},
+                                                            {Track17, -1, 0, -1},
+                                                            {Track18, -1, 0, -1}};
 
 /***************************************************************************
 **	Smooth turning control table. Given two directions in a path list, this
 **	table determines which track to use and what modifying operations need
 **	be performed on the track data.
 */
-DriveClass::TurnTrackType const DriveClass::TrackControl[70] = {
+DriveClass::TurnTrackType const DriveClass::TrackControl[72] = {
     {1, 0, DIR_N, F_},                                                      //	0-0
     {3, 7, DIR_NE, F_D},                                                    //	0-1 (raw chart)
     {4, 9, DIR_E, F_D},                                                     //	0-2 (raw chart)
@@ -3368,6 +3453,8 @@ DriveClass::TurnTrackType const DriveClass::TrackControl[70] = {
     {13, 13, DIR_SW, F_},    // Drive out of weapons factory (vanilla RA, south motion).
     {14, 14, DIR_SW, F_},    // Drive out of weapons factory (TD-authentic, south-west motion).
 
-    {15, 15, (DirType)(DIR_SE - 16), F_}, // TS refinery: reverse into the bay mouth, nose ESE.
-    {16, 16, (DirType)(DIR_SE - 16), F_}  // TS refinery: drive forward SE out of the bay.
+    {15, 15, DIR_SE, F_}, // TS refinery, TSHARV: reverse west into the bay mouth, nose SE.
+    {16, 16, DIR_SE, F_}, // TS refinery, TSHARV: drive forward east out onto the plate.
+    {17, 17, DIR_SE, F_}, // TS refinery, TDHARV: reverse west into the bay mouth, nose SE.
+    {18, 18, DIR_SE, F_}  // TS refinery, TDHARV: drive forward east out onto the plate.
 };

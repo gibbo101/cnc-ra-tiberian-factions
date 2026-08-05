@@ -5313,13 +5313,14 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 new_object.CenterCoordY += (8 * 256) / 24;
                 break;
             case STRUCT_TSPROC:
-                // 4x3 foundation counts the walkable apron row, but the
-                // BUILDING is the north 2 rows: pull the box centre back up
-                // half a cell and use a 2-row box height (the tall art
-                // overhanging north of the plot stays outside the box,
-                // radar treatment).
-                new_object.CenterCoordY -= (12 * 256) / 24;
-                dimy = 38;
+                // Calibrated 2026-08-05 from a live frame (engine pad centre
+                // vs art pixels): the art's visual mass sits 78 leptons west
+                // and 192 north of the game centre (the pad), spanning the
+                // full 4-wide art incl. the north-overhanging roof rows.
+                new_object.CenterCoordX -= 78;
+                new_object.CenterCoordY -= 192;
+                dimx = 90;
+                dimy = 56;
                 break;
             default:
                 break;
@@ -7392,10 +7393,16 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
                                                   MAP_CELL_W + 1};
                 for (int h = 0; h < (int)(sizeof(_ts_holes) / sizeof(_ts_holes[0])); h++) {
                     CELL c2 = (CELL)(cell - _ts_holes[h]);
-                    if (!Map.In_Radar(c2)) {
+                    /*
+                    **	c2 (the would-be pad) is an occupy hole -- resolve the
+                    **	building via the occupied cell north of it (same
+                    **	dead-lookup fix as Is_TS_Apron_Cell).
+                    */
+                    CELL b2cell = (CELL)(c2 - MAP_CELL_W);
+                    if (!Map.In_Radar(c2) || !Map.In_Radar(b2cell)) {
                         continue;
                     }
-                    BuildingClass* b2 = (BuildingClass*)Map[c2].Cell_Find_Object(RTTI_BUILDING);
+                    BuildingClass* b2 = (BuildingClass*)Map[b2cell].Cell_Find_Object(RTTI_BUILDING);
                     if (b2 != NULL && *b2 == STRUCT_TSPROC && Coord_Cell(b2->Center_Coord()) == c2) {
                         base = b2;
                         break;

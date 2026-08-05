@@ -1101,12 +1101,70 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                 **	skip the reverse. The pad-cell gate keeps a re-polled
                 **	BACKUP_NOW from chaining a second track a cell deeper.
                 */
+#if TF_DEV_BUILD
+                {
+                    static int s_diag_frame = -1;
+                    if (Frame != s_diag_frame && (Frame % 15) == 0) {
+                        s_diag_frame = Frame;
+                        char dpath[512];
+                        const char* dprof = getenv("USERPROFILE");
+                        if (dprof != NULL && dprof[0] != '\0') {
+                            snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
+                        } else {
+                            strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
+                        }
+                        FILE* dlog = fopen(dpath, "a");
+                        if (dlog != NULL) {
+                            BuildingClass* bb = (BuildingClass*)rdock;
+                            fprintf(dlog,
+                                    "frame=%d DOCK-DIAG harv=%s hcoord=%08lX hcell=%d bldgcoord=%08lX "
+                                    "bldgcentre=%08lX centrecell=%d rotating=%d driving=%d facing=%d gate=%d\n",
+                                    Frame, Class->IniName, (unsigned long)Center_Coord(),
+                                    Coord_Cell(Center_Coord()), (unsigned long)bb->Coord,
+                                    (unsigned long)bb->Center_Coord(), Coord_Cell(bb->Center_Coord()),
+                                    (int)IsRotating, (int)IsDriving, (int)PrimaryFacing,
+                                    (int)(Coord_Cell(Center_Coord()) == Coord_Cell(bb->Center_Coord())));
+                            fclose(dlog);
+                        }
+                    }
+                }
+#endif
                 if (!IsRotating && PrimaryFacing != DIR_SE) {
                     Do_Turn(DIR_SE);
                 } else if (!IsDriving
                            && Coord_Cell(Center_Coord())
-                                  == Coord_Cell(((BuildingClass*)rdock)->Center_Coord())) {
-                    Force_Track(BACKUP_INTO_REFINERY_SE, Coord_Add(Center_Coord(), XY_Coord(-124, -44)));
+                                  == (CELL)(Coord_Cell(((BuildingClass*)rdock)->Center_Coord()) + MAP_CELL_W + 1)) {
+                    /*
+                    **	Option A (Luke): line-up = the SE plate cell (the
+                    **	diagonal apron hole), facing TRUE SE; the truck then
+                    **	reverses DEAD STRAIGHT along its own facing axis
+                    **	(pure NW) into the bay. Park = the on-axis point
+                    **	nearest each approved composite pose: TSHARV
+                    **	pad+(57,57), TDHARV pad+(13,13) -- both inside the
+                    **	pad cell, so the parked cell (and the IM_IN
+                    **	handshake keyed on it) never flips.
+                    */
+                    COORDINATE padc = Cell_Coord(Coord_Cell(((BuildingClass*)rdock)->Center_Coord()));
+                    bool td_truck = (*this == UNIT_TDHARV);
+                    COORDINATE track_end = Coord_Add(padc, td_truck ? XY_Coord(13, 13) : XY_Coord(57, 57));
+#if TF_DEV_BUILD
+                    {
+                        char dpath[512];
+                        const char* dprof = getenv("USERPROFILE");
+                        if (dprof != NULL && dprof[0] != '\0') {
+                            snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
+                        } else {
+                            strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
+                        }
+                        FILE* dlog = fopen(dpath, "a");
+                        if (dlog != NULL) {
+                            fprintf(dlog, "frame=%d DOCK-TRACK harv=%s from=%08lX to=%08lX\n", Frame,
+                                    Class->IniName, (unsigned long)Center_Coord(), (unsigned long)track_end);
+                            fclose(dlog);
+                        }
+                    }
+#endif
+                    Force_Track(td_truck ? BACKUP_INTO_REFINERY_SE_TD : BACKUP_INTO_REFINERY_SE, track_end);
                     Set_Speed(128);
                 }
                 return (RADIO_ROGER);
@@ -2247,9 +2305,16 @@ void UnitClass::Per_Cell_Process(PCPType why)
                 **	array). Match TD's verbatim check (tiberiandawn/unit.cpp:1766)
                 **	for the TDHARV+TDPROC case.
                 */
-                bool cell_match = (*this == UNIT_TDHARV)
-                    ? (whom == Map[cell].Cell_Building())
-                    : (whom == Map[CELL(cell - MAP_CELL_W)].Cell_Building());
+                /*
+                **	Either-cell match: the truck's own cell covers the TD
+                **	attach dock (truck INSIDE the building's occupy row), the
+                **	north neighbour covers every visible park (RA apron and
+                **	the TSPROC pad, whose own cell is an occupy HOLE that
+                **	Cell_Building can never resolve -- the occupier chain
+                **	doesn't include overlap-only cells).
+                */
+                bool cell_match = (whom == Map[cell].Cell_Building())
+                                  || (whom == Map[CELL(cell - MAP_CELL_W)].Cell_Building());
                 if (cell_match) {
                     switch (Transmit_Message(RADIO_IM_IN, whom)) {
                     case RADIO_ROGER:
@@ -3788,12 +3853,12 @@ int UnitClass::Mission_Unload(void)
                 FILE* dlog = fopen(dpath, "a");
                 if (dlog != NULL) {
                     TechnoClass* refc = Contact_With_Whom();
-                    fprintf(dlog, "frame=%d DOCK-START harv=%s load=%d ref=%s cell=%d\n", Frame,
-                            Class->IniName, Tiberium,
+                    fprintf(dlog, "frame=%d DOCK-START harv=%s load=%d ref=%s cell=%d coord=%08lX facing=%d\n",
+                            Frame, Class->IniName, Tiberium,
                             (refc != NULL && refc->What_Am_I() == RTTI_BUILDING)
                                 ? ((BuildingClass*)refc)->Class->IniName
                                 : "none",
-                            Coord_Cell(Coord));
+                            Coord_Cell(Coord), (unsigned long)Coord, (int)PrimaryFacing);
                     fclose(dlog);
                 }
             }
@@ -3906,7 +3971,13 @@ int UnitClass::Mission_Unload(void)
             Transmit_Message(RADIO_OVER_OUT);
             Assign_Mission(MISSION_HARVEST);
             if (ts_bay_exit) {
-                Force_Track(OUT_OF_REFINERY_SE, Coord_Add(Coord, XY_Coord(124, 44)));
+                /*
+                **	Drive forward east out of the bay back onto the plate
+                **	cell (the line-up cell), mirroring each truck's entry.
+                */
+                bool td_truck = (*this == UNIT_TDHARV);
+                Force_Track(td_truck ? OUT_OF_REFINERY_SE_TD : OUT_OF_REFINERY_SE,
+                            Coord_Add(Coord, td_truck ? XY_Coord(243, 243) : XY_Coord(199, 199)));
                 Set_Speed(128);
             }
         }
