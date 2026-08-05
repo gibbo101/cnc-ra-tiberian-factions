@@ -4122,7 +4122,6 @@ static BuildingTypeClass const ClassLarva2(STRUCT_LARVA2,
 #endif
 void const* BuildingTypeClass::WarFactoryOverlay;
 void const* BuildingTypeClass::WarFactoryOverlayTd;
-void const* BuildingTypeClass::TSProcApron;
 void const* LightningShapes;
 
 /***********************************************************************************************
@@ -4886,9 +4885,6 @@ void BuildingTypeClass::One_Time(void)
     // overlay isn't used.
     _makepath(fullname, NULL, NULL, (char const*)"TDWEAP2", ".SHP");
     WarFactoryOverlayTd = MFCD::Retrieve(fullname);
-    // TS refinery apron ground shape (three-layer dock), TFASSETS.MIX.
-    _makepath(fullname, NULL, NULL, (char const*)"TSPROCAP", ".SHP");
-    TSProcApron = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"LITNING", ".SHP");
     LightningShapes = MFCD::Retrieve(fullname);
 

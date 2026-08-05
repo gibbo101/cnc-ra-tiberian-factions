@@ -44015,28 +44015,6 @@
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROCAP</Name>
-			<Shape>0</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsprocap\tsprocap-0000.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSPROCAP</Name>
-			<Shape>1</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsprocap\tsprocap-0001.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
 			<Name>TSPROC</Name>
 			<Shape>0</Shape>
 		</Key>

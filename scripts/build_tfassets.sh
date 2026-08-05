@@ -266,10 +266,6 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 138 150 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 138 150 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
-# Apron ground shape (three-layer dock): same box as TSPROC so the HD frames
-# (same 736x800 canvas) register pixel-identical over the building's plot.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocap_stub.shp" 138 150 2
-PACK_ARGS+=("$TMPDIR/tsprocap_stub.shp:TSPROCAP.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 72 78 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 72 78 19
