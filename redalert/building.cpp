@@ -4931,7 +4931,18 @@ COORDINATE BuildingClass::Sort_Y(void) const
     if (*this == STRUCT_BARRACKS /*|| *this == STRUCT_POWER*/) {
         return (Center_Coord());
     }
-    if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC)) {
+    if (*this == STRUCT_TSPROC) {
+        /*
+        **	Sort point pushed south to just shy of the dock pad's centre row:
+        **	a truck reverse-docked into the bay (centre north of this line)
+        **	draws BEFORE the refinery, so the building art swallows it --
+        **	Luke's "disappears into the refinery" dock. Anything on or south
+        **	of the pad row (approach, exit, drive-through) still draws on
+        **	top. 108 = pad-centre offset (128 leptons) minus a 20 margin.
+        */
+        return (Coord_Add(Center_Coord(), XY_Coord(0, 108)));
+    }
+    if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC)) {
         return (Center_Coord());
     }
     /*
