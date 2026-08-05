@@ -2,8 +2,9 @@
 
 ## ⭐ SESSION END 2026-08-05 evening — RESUME HERE (4x4 + reverse dock)
 **Luke ended it "a bad session" — the WORK mostly shipped but two visible
-asks missed. Desktop prefix now at `db8913b1` (three-layer dock, deployed
-2026-08-05 late, md5-verified). Deck still STALE at `2d8a5dbb`.**
+asks missed. Desktop prefix now at `7178f70f` (plan-A visible dock + 4x3
+foundation, deployed 2026-08-05 late, md5-verified). Deck still STALE at
+`2d8a5dbb`.**
 
 **SHIPPED + play-verified today (log-verified over ~20 clean cycles):**
 - TSPROC foundation = 4x4 (Luke's pick): BSIZE_44, apron row is real
@@ -22,24 +23,30 @@ covers most of the stripes, dragging the centroid SE and DOUBLING the
 apparent depth (deployed -240,-86; truth -124,-44). Measure against
 unoccluded landmarks (dome centroid + stripe-field SE tip).**
 
-**OPEN — the missed asks (root causes FOUND, fixes queued):**
-1. **✅ THREE-LAYER DOCK IMPLEMENTED + DEPLOYED `db8913b1` (2026-08-05
-   late, desktop prefix, md5-verified) — AWAITING LUKE'S EYES.**
-   As locked at close: apron split out of the building sprite into its own
-   `TSPROCAP` asset (2 frames, same affine; building-coloured underlap at
-   the seam — separately hq-scaled edges otherwise open a hairline crack,
-   proven offline by recompose-diff: 0 transparent holes, only 1px tint
-   deltas left), draw intercept re-sorts it into the LAYER_SURFACE band
-   (dllinterface.cpp after the :5135 SortOrder assignment), superstructure
-   Sort_Y bias 108→230 (docked truck +212 < 230 < pad-row truck +255,
-   unit +128 bias accounted). TEST CHECKLIST (one watched dock cycle):
-   (a) truck reverses in → tail swallowed by the superstructure, nose
-   visible over the apron; (b) trucks/infantry crossing the apron draw ON
-   TOP of the concrete everywhere; (c) no seam crack around the bay at
-   game zoom; (d) buildup still pours the pad (no apron pop-in artifact
-   at construction end beyond the normal transition); (e) damaged-state
-   refinery still shows the damaged apron; (f) RA ore truck's ramp-foot
-   park (a row south) unaffected.
+**OPEN — the missed asks (updated 2026-08-05 late):**
+1. **❌ THREE-LAYER DOCK TRIED AND REVERTED SAME NIGHT (`db8913b1` →
+   revert `b1f9b649`).** Deployed, Luke tested 2 SS in: the docked truck
+   disappeared COMPLETELY (even the +230-threshold "half hide" reads as
+   full-hide in practice — the bay-mouth dark art is building pixels and
+   covers the whole truck). Luke's verdict: **PLAN A, full revert — the
+   truck backs up to the entrance and stays FULLY VISIBLE on top,
+   matching `~/Desktop/docking-art/refinery-ts/{ts,td}-harv-docked.png`.**
+   `0f8192d7` removes ALL TSPROC sort bias (Center_Coord, grouped with
+   REFINERY/TDPROC). Do NOT re-chase sort-based hiding at this building.
+2. **✅ 4x3 FOUNDATION SHIPPED `7178f70f` (Luke's ask, same night):
+   4 wide x 3 high = 2 building rows + apron row; tall art overhangs the
+   row NORTH of the plot (radar treatment — that row stays passable, so
+   units walk behind the refinery).** Centre cell stays the bay-mouth pad
+   (BSIZE_43 centre = row 1 col 2 = the old 4x4 pad cell), so all
+   Center_Coord-keyed dock geometry re-indexed itself; hand-adjusted were
+   the cell lists (blocking/overlap/placement/veto/reach-seed, one row
+   shorter), the 2-row selection box, and the packer (stub 138x174,
+   canvas 736x928, margin 75 — art renders pixel-identical, growth is
+   all bottom cells). DEPLOYED desktop prefix `7178f70f`, md5-verified.
+   TEST: placement grid = solid 4x3; north row passable + units occluded
+   behind the tall art; dock cycle unchanged (pad, reverse track, RA
+   ramp-foot park); truck visible per the reference composites; MCV-era
+   saves with old 4x4 refineries will mis-foot — fresh skirmish only.
 2. **TSFACT (conyard) selection box rides ~13cl high — REGRESSED BY THE
    08-04 TIER RESIZE (Luke: "you had this correct earlier but you broke it
    on resize").** The box WAS correct before the conyard art was re-seated
