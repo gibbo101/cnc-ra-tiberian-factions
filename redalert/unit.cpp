@@ -3718,37 +3718,6 @@ int UnitClass::Mission_Unload(void)
         */
         const int TD_DOCK_NUDGE_RIGHT = 6; // pixels east  (toward the pillars)
         const int TD_DOCK_NUDGE_UP = 6;    // pixels north (rear toward the intake)
-        {
-            /*
-            **	TS ramp settle: ease 1px south per tick until 4px clear of the
-            **	cell centre -- the un-nudged park's rear brushed the bay-mouth
-            **	art (Luke, 01:05), and any single-tick jump reads as a slide.
-            **	Stateless: the offset from the snapped cell centre is the
-            **	progress counter.
-            */
-            TechnoClass* sref = Contact_With_Whom();
-            if (sref != NULL && sref->What_Am_I() == RTTI_BUILDING
-                && *((BuildingClass*)sref) == STRUCT_TSPROC) {
-                /*
-                **	Per-truck seat targets (classic px from the snapped cell
-                **	centre), eased 1px/tick: the TS truck reverses the last
-                **	bit NE into the bay to Luke's Aseprite pose
-                **	(docking-art/refinery-ts/ts-harv-docked.png); the TD
-                **	tanker settles shallow, clear of the bay-mouth art.
-                */
-                int tx = (*this == UNIT_TSHARV) ? (5 * 256) / 24 : 0;
-                int ty = (*this == UNIT_TSHARV) ? -((5 * 256) / 24) : (4 * 256) / 24;
-                int dx = (int)Coord_X(Coord) - (int)Coord_X(Coord_Snap(Coord));
-                int dy = (int)Coord_Y(Coord) - (int)Coord_Y(Coord_Snap(Coord));
-                int sx = (dx < tx) ? 1 : ((dx > tx) ? -1 : 0);
-                int sy = (dy < ty) ? 1 : ((dy > ty) ? -1 : 0);
-                if (sx != 0 || sy != 0) {
-                    Mark(MARK_UP);
-                    Coord = Coord_Add(Coord, XYP_Coord(sx, sy));
-                    Mark(MARK_DOWN);
-                }
-            }
-        }
         if (!IsDumping) {
             IsDumping = true; // park (blocks driving) + mark "actively unloading" for B3 capture
             /*

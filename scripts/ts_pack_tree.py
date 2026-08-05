@@ -440,7 +440,38 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     # so its buildup keeps the pad too -- only TSWEAP still masks the pad
     # out of construction.
     masks = {"TSWEAP": "shp_gtweapbb"}
-    overlays = {"TSPROC": "shp_ntrefnbb"}
+    # Apron clipped to the 4x3 foundation rectangle: the painted concrete
+    # must not overflow the grid (it draped over cliffs/water on edge
+    # placements -- Luke, 2026-08-05 01:02). Source-space crop bounds derive
+    # from the same affine the TSPROC fit uses (fit 384 on the no-overlay
+    # union, box = canvas centre +/- 2 cells, south edge at canvas_h - 144).
+    if os.path.isdir(f"{ART}/shp_ntrefnbb") and not os.path.isdir(f"{ART}/shp_ntrefnbb_clip"):
+        _b = []
+        for w in (0, 2):
+            base_im = load("shp_ntrefn", w)
+            for i in range(20):
+                c = base_im.copy()
+                pn = load("shp_ntrefn_b", i)
+                c.paste(pn, (0, 0), pn)
+                _b.append(c.getbbox())
+        _x0 = min(b[0] for b in _b)
+        _x1 = max(b[2] for b in _b)
+        _y1 = max(b[3] for b in _b)
+        _f = 384.0 / (_x1 - _x0)
+        _cx = (_x0 + _x1) / 2.0
+        sx0 = _cx + (112 - 304) / _f
+        sx1 = _cx + (624 - 304) / _f
+        sy1 = float(_y1)  # box south edge == the fit's bottom anchor
+        os.makedirs(f"{ART}/shp_ntrefnbb_clip")
+        for i in range(frame_count("shp_ntrefnbb")):
+            im = load("shp_ntrefnbb", i)
+            px = im.load()
+            for yy in range(im.height):
+                for xx in range(im.width):
+                    if xx < sx0 or xx > sx1 or yy > sy1:
+                        px[xx, yy] = (0, 0, 0, 0)
+            im.save(f"{ART}/shp_ntrefnbb_clip/frame-{i:04d}.png")
+    overlays = {"TSPROC": "shp_ntrefnbb_clip"}
     build_structure(ini, base, 0, 2, anims, mk, mkc, cw, ch,
                     bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale,
                     mk_mask_dir=masks.get(ini), overlay_dir=overlays.get(ini),
@@ -449,91 +480,6 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     # anchor half a cell (64 px) west of the box centre.
                     dst_x_px=304 if ini == "TSPROC" else None)
     emit_sidebar_data(ini, disp, desc, cameo)
-
-# ---- TSPROC attach-dock windows (Luke's docking session, 2026-08-04) ----
-# Rewrites TSPROC.ZIP with the TS attach-dock layout:
-#   healthy: [0-14 idle plume (src 2-16; specks dropped)] [15-21 ACTIVE]
-#            [22-26 AUX1 siphon] [27-32 AUX2 undock] -> largest = 33;
-#            damaged mirror at +33.
-# bdata rows must match: IDLE/FULL {0,15,3} ACTIVE {15,7,4} AUX1 {22,5,4}
-# AUX2 {27,6,4}. Dock frames layer: apron -> docked HORV -> building
-# (-> NAREFN_A transfer during siphon). The HORV (TS's empty-bed unloading
-# model, rules UnloadingHarvester=) sits at Luke's Aseprite point (524,500)
-# scaled x2/3 -- unit art is 8x-classic, building art 16/3x, so matching the
-# live truck's on-screen size needs the density ratio. Rear tucks under the
-# building layer = "inside the refinery". No plume in dock windows (the
-# window lengths mirror TDPROC's so the offload cadence = the tuned TD dock
-# time; a 20-frame plume can't fit a 5-frame siphon loop).
-if os.path.isdir(f"{ART}/shp_ntrefn") and os.path.isdir(f"{ART}/renders_horv"):
-    _pn = [f for f in (load("shp_ntrefn_b", i) for i in range(20))]
-    _apron = {1: load("shp_ntrefnbb", 0), 2: load("shp_ntrefnbb", 2)}
-    _base = {1: load("shp_ntrefn", 0), 2: load("shp_ntrefn", 2)}
-    _tr = [load("shp_ntrefn_a", i) for i in range(5)]
-    # Affine: identical to the SIZEPASS build (no-overlay union, fit 384).
-    _boxes = []
-    for w in (1, 2):
-        for i in range(20):
-            c = _base[w].copy()
-            c.paste(_pn[i], (0, 0), _pn[i])
-            _boxes.append(c.getbbox())
-    _ux0 = min(b[0] for b in _boxes)
-    _uy1 = max(b[3] for b in _boxes)
-    _ux1 = max(b[2] for b in _boxes)
-    _factor = 384.0 / (_ux1 - _ux0)
-    _cx, _cy = (_ux0 + _ux1) / 2.0, float(_uy1)
-    _dx, _dy = 304.0, 672 - 27 * 16.0 / 3.0  # 4x3 box: building in the west 3 cols
-
-    # Docked truck poses (packed-f20 SE = render frame 28). Baked at the
-    # live pack scale VERBATIM (0.667x read "uber small", 2026-08-05 00:52).
-    # If a mismatch is still reported, MEASURE from a side-by-side
-    # screenshot -- no more factor guessing. Single dial: keep the 0.70 in
-    # sync with ts_pack_units_wave.py.
-    _hs = (6.4 / 12.0) * 0.70
-    def _pose(dirname):
-        im = Image.open(f"{ART}/{dirname}/frame-0028.png").convert("RGBA")
-        im = im.resize((round(im.width * _hs), round(im.height * _hs)), Image.LANCZOS)
-        sil = im.split()[3].point(lambda a: 130 if a > 0 else 0)
-        sh = Image.new("RGBA", im.size, (0, 0, 0, 0))
-        sh.paste(Image.new("RGBA", im.size, (0, 0, 0, 255)), (7, 9), sil)
-        sh.alpha_composite(im)
-        return sh
-    _hv = _pose("renders_horv")
-    _hv_full = _pose("renders_harv")
-    _hb = _hv.getbbox()
-    # Luke's ramp point, shifted 64 px west with the 4x3 anchor, minus the
-    # "move left a little" trim (00:25).
-    _hpos = (round(452 - (_hb[0] + _hb[2]) / 2.0), round(500 - (_hb[1] + _hb[3]) / 2.0))
-
-    def _tsproc_frame(which, plume_i=None, horv=None, transfer=None):
-        fr = place(_apron[which], _factor, 736, 672, _cx, _cy, _dx, _dy)
-        b = _base[which].copy()
-        if plume_i is not None and which == 1:
-            b.paste(_pn[plume_i], (0, 0), _pn[plume_i])
-        if transfer is not None:
-            b.paste(_tr[transfer], (0, 0), _tr[transfer])
-        fr.alpha_composite(place(b, _factor, 736, 672, _cx, _cy, _dx, _dy))
-        # Truck drawn OVER the building: the docked truck must look exactly
-        # like the live one -- full body visible, no rear clipped under the
-        # sprite (Luke, 00:25: "losing its back").
-        if horv is not None:
-            fr.alpha_composite(_hv if horv == "empty" else _hv_full, _hpos)
-        return fr
-
-    _out = []
-    for w in (1, 2):
-        _out += [_tsproc_frame(w, plume_i=i) for i in range(2, 17)]       # idle (specks dropped)
-        # Docked truck = the plain loaded HARV pose throughout (Luke, 00:14:
-        # no canister anim, no fumes, no HORV bed-swap -- the truck must not
-        # "collapse to a different pixel model" while docked).
-        _out += [_tsproc_frame(w, horv="full") for _ in range(7)]             # ACTIVE
-        _out += [_tsproc_frame(w, horv="full") for _ in range(5)]             # AUX1
-        _out += [_tsproc_frame(w, horv="full") for _ in range(6)]             # AUX2
-    # reorder: all healthy (w=1) first, then damaged -- already in that order.
-    write_zip(f"{STRUCT_DIR}/TSPROC.ZIP", "tsproc", _out)
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPROC", len(_out))
-    print(f"TSPROC: attach-dock windows baked ({len(_out)} frames; largest=33)")
-else:
-    print("TSPROC dock windows: SKIP (need shp_ntrefn + renders_horv)")
 
 # ---- TSFACT: TS Construction Yard on the RA-conyard 3x3 plot (BSIZE_33 +
 # bib, stub 72x72; the 4x3 tier read oversized -- Luke, 2026-08-04). Art
