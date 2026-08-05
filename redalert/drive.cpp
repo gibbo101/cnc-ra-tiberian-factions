@@ -3236,52 +3236,37 @@ DriveClass::TrackType const DriveClass::Track14[] = {
 **  destination, so the track starts exactly where the truck stands (any
 **  start mismatch reads as a teleport -- the 2026-08-04 dead-end).
 **
-**  Geometry: destination = pad + (-240,-86) leptons = the truck centre in
-**  Luke's agreed docked composites (bay-mouth cell, one west of the pad).
+**  Geometry: destination = pad + (-124,-44) leptons = the truck centre in
+**  Luke's agreed docked composites (rear at the bay mouth, body on the
+**  ramp). First cut used (-240,-86) from an occlusion-biased composite
+**  measurement and buried the truck in the building -- re-measured against
+**  unoccluded landmarks (dome + stripe-field tip) 2026-08-05 evening.
 */
-DriveClass::TrackType const DriveClass::Track15[] = {{0x005600F0L, DIR_SE},
-                                                     {0x005200E4L, DIR_SE},
-                                                     {0x004D00D8L, (DirType)(DIR_SE - 8)},
-                                                     {0x004900CCL, (DirType)(DIR_SE - 8)},
-                                                     {0x004500C0L, (DirType)(DIR_SE - 8)},
-                                                     {0x004100B4L, (DirType)(DIR_SE - 8)},
-                                                     {0x003C00A8L, (DirType)(DIR_SE - 16)},
-                                                     {0x0038009CL, (DirType)(DIR_SE - 16)},
-                                                     {0x00340090L, (DirType)(DIR_SE - 16)},
-                                                     {0x002F0084L, (DirType)(DIR_SE - 16)},
-                                                     {0x002B0078L, (DirType)(DIR_SE - 16)},
-                                                     {0x0027006CL, (DirType)(DIR_SE - 16)},
-                                                     {0x00220060L, (DirType)(DIR_SE - 16)},
-                                                     {0x001E0054L, (DirType)(DIR_SE - 16)},
-                                                     {0x001A0048L, (DirType)(DIR_SE - 16)},
-                                                     {0x0016003CL, (DirType)(DIR_SE - 16)},
-                                                     {0x00110030L, (DirType)(DIR_SE - 16)},
-                                                     {0x000D0024L, (DirType)(DIR_SE - 16)},
-                                                     {0x00090018L, (DirType)(DIR_SE - 16)},
-                                                     {0x0004000CL, (DirType)(DIR_SE - 16)},
+DriveClass::TrackType const DriveClass::Track15[] = {{0x002C007CL, DIR_SE},
+                                                     {0x00280071L, DIR_SE},
+                                                     {0x00240065L, (DirType)(DIR_SE - 8)},
+                                                     {0x0020005AL, (DirType)(DIR_SE - 8)},
+                                                     {0x001C004FL, (DirType)(DIR_SE - 8)},
+                                                     {0x00180044L, (DirType)(DIR_SE - 16)},
+                                                     {0x00140038L, (DirType)(DIR_SE - 16)},
+                                                     {0x0010002DL, (DirType)(DIR_SE - 16)},
+                                                     {0x000C0022L, (DirType)(DIR_SE - 16)},
+                                                     {0x00080017L, (DirType)(DIR_SE - 16)},
+                                                     {0x0004000BL, (DirType)(DIR_SE - 16)},
 
                                                      {0x00000000L, (DirType)(DIR_SE - 16)}};
 
-DriveClass::TrackType const DriveClass::Track16[] = {{0xFFAAFF10L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFAEFF1CL, (DirType)(DIR_SE - 16)},
-                                                     {0xFFB3FF28L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFB7FF34L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFBBFF40L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFBFFF4CL, (DirType)(DIR_SE - 16)},
-                                                     {0xFFC4FF58L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFC8FF64L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFCCFF70L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFD1FF7CL, (DirType)(DIR_SE - 16)},
-                                                     {0xFFD5FF88L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFD9FF94L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFDEFFA0L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFE2FFACL, (DirType)(DIR_SE - 16)},
-                                                     {0xFFE6FFB8L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFEAFFC4L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFEFFFD0L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFF3FFDCL, (DirType)(DIR_SE - 16)},
-                                                     {0xFFF7FFE8L, (DirType)(DIR_SE - 16)},
-                                                     {0xFFFCFFF4L, (DirType)(DIR_SE - 16)},
+DriveClass::TrackType const DriveClass::Track16[] = {{0xFFD4FF84L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFD8FF8FL, (DirType)(DIR_SE - 16)},
+                                                     {0xFFDCFF9BL, (DirType)(DIR_SE - 16)},
+                                                     {0xFFE0FFA6L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFE4FFB1L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFE8FFBCL, (DirType)(DIR_SE - 16)},
+                                                     {0xFFECFFC8L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFF0FFD3L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFF4FFDEL, (DirType)(DIR_SE - 16)},
+                                                     {0xFFF8FFE9L, (DirType)(DIR_SE - 16)},
+                                                     {0xFFFCFFF5L, (DirType)(DIR_SE - 16)},
 
                                                      {0x00000000L, (DirType)(DIR_SE - 16)}};
 

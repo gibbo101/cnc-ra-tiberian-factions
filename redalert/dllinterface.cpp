@@ -5298,9 +5298,11 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             switch (((BuildingTypeClass const&)object->Class_Of()).Type) {
             case STRUCT_TSFACT:
                 // Height trimmed to the art rows too (48cl art - the usual
-                // 20% trim) or the box still rides half a row high (Luke,
-                // 00:29).
-                new_object.CenterCoordY += (12 * 256) / 24;
+                // 20% trim). Bias re-measured from a live SS 2026-08-05
+                // (bracket rows vs art rows): the art sits 25cl below the
+                // plot centre, not 12 -- the 08-04 tune predated the final
+                // grid-matched art.
+                new_object.CenterCoordY += (25 * 256) / 24;
                 dimy = 38;
                 break;
             case STRUCT_TSWEAP:

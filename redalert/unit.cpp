@@ -1106,7 +1106,7 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                 } else if (!IsDriving
                            && Coord_Cell(Center_Coord())
                                   == Coord_Cell(((BuildingClass*)rdock)->Center_Coord())) {
-                    Force_Track(BACKUP_INTO_REFINERY_SE, Coord_Add(Center_Coord(), XY_Coord(-240, -86)));
+                    Force_Track(BACKUP_INTO_REFINERY_SE, Coord_Add(Center_Coord(), XY_Coord(-124, -44)));
                     Set_Speed(128);
                 }
                 return (RADIO_ROGER);
@@ -3736,6 +3736,19 @@ int UnitClass::Mission_Unload(void)
         */
         const int TD_DOCK_NUDGE_RIGHT = 6; // pixels east  (toward the pillars)
         const int TD_DOCK_NUDGE_UP = 6;    // pixels north (rear toward the intake)
+        /*
+        **	The forced bay-exit track (Track16) keeps the mission queue from
+        **	committing MISSION_HARVEST for a tick or two, so this mission can
+        **	re-run after the dock is finished -- with radio contact already
+        **	dropped. The re-entry ran the dock-start block against a NULL
+        **	contact, which slipped past the TS-refinery fume suppression (it
+        **	keys on the contact's type) and spawned green fumes at the bay.
+        **	Nothing to unload and nobody to talk to: just go harvest.
+        */
+        if (!IsDumping && !In_Radio_Contact()) {
+            Assign_Mission(MISSION_HARVEST);
+            break;
+        }
         if (!IsDumping) {
             IsDumping = true; // park (blocks driving) + mark "actively unloading" for B3 capture
             /*
@@ -3893,7 +3906,7 @@ int UnitClass::Mission_Unload(void)
             Transmit_Message(RADIO_OVER_OUT);
             Assign_Mission(MISSION_HARVEST);
             if (ts_bay_exit) {
-                Force_Track(OUT_OF_REFINERY_SE, Coord_Add(Coord, XY_Coord(240, 86)));
+                Force_Track(OUT_OF_REFINERY_SE, Coord_Add(Coord, XY_Coord(124, 44)));
                 Set_Speed(128);
             }
         }
