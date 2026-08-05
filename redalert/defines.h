@@ -3667,7 +3667,8 @@ typedef enum BSizeType : char
     BSIZE_33,
     BSIZE_42,
     BSIZE_55,
-    BSIZE_43, // TS-authentic wide footprints (TSPROC/TSWEAP). Appended at the tail: Width()/Height()/CenterOffset are positional tables.
+    BSIZE_43, // TS-authentic wide footprints. Appended at the tail: Width()/Height()/CenterOffset are positional tables.
+    BSIZE_44, // TSPROC: 4x3 building + the south apron row as real footprint (no cliff drape).
 
     BSIZE_COUNT
 } BSizeType;

@@ -102,7 +102,8 @@ static short const List101000011[] = {0, 2, (MCW * 2) + 1, (MCW * 2) + 2, REFRES
 static short const TsProcList33[] = {0, 1,           2,
                                      (MCW * 1),     (MCW * 1) + 1, (MCW * 1) + 2,
                                      (MCW * 2),     (MCW * 2) + 1, REFRESH_EOL};
-static short const TsProcOList33[] = {(MCW * 2) + 2, 3, MCW + 3, (MCW * 2) + 3, REFRESH_EOL};
+static short const TsProcOList33[] = {
+    (MCW * 2) + 2, 3, MCW + 3, (MCW * 2) + 3, (MCW * 3) + 2, (MCW * 3) + 3, REFRESH_EOL};
 static short const List1100[] = {0, 1, REFRESH_EOL};
 static short const List1101[] = {0, 1, (MCW * 1) + 1, REFRESH_EOL};
 static short const List11[] = {0, 1, REFRESH_EOL};
@@ -1396,10 +1397,12 @@ static BuildingTypeClass const ClassTsProc(STRUCT_TSPROC,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,          // Engine grants free harvester at build time.
                                            DIR_N,
-                                           BSIZE_43,           // 4x3 incl. the apron column (Luke: "should be a 4*3").
+                                           BSIZE_44,           // 4x3 building + the south apron row as real footprint,
+                                                               // so cliff-edge placements can't drape the apron over
+                                                               // impassable terrain. Centre CELL = the dock pad.
                                            NULL,
                                            (short const*)TsProcList33,   // Blocking: the 3x3 building minus the dock pad.
-                                           (short const*)TsProcOList33); // Overlap: pad + apron column (art redraw).
+                                           (short const*)TsProcOList33); // Overlap: pad + apron column + ramp row (art redraw).
 
 static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            TXT_NONE,
@@ -5366,11 +5369,12 @@ BuildingTypeClass& BuildingTypeClass::As_Reference(StructType type)
 short const* BuildingTypeClass::Occupy_List(bool placement) const
 {
     /*
-    **	TSPROC placement footprint = the SOLID 4x3 (Luke: "should be a 4*3").
-    **	This is the list the sidebar PlacementList export (the launcher's
-    **	ghost grid), Legal_Placement and placement proximity all consume.
-    **	The non-placement (blocking) list keeps the dock pad + apron column
-    **	as walkable holes.
+    **	TSPROC placement footprint = the SOLID 4x4: the 4x3 building plus the
+    **	south apron row, so placement demands the whole apron sits on clear
+    **	ground (no cliff-edge drape). This is the list the sidebar
+    **	PlacementList export (the launcher's ghost grid), Legal_Placement and
+    **	placement proximity all consume. The non-placement (blocking) list
+    **	keeps the dock pad + apron cells as walkable holes.
     */
     if (placement && Type == STRUCT_TSPROC) {
         static short const _tsproc_place[] = {0,
@@ -5385,6 +5389,10 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
                                               MAP_CELL_W * 2 + 1,
                                               MAP_CELL_W * 2 + 2,
                                               MAP_CELL_W * 2 + 3,
+                                              MAP_CELL_W * 3,
+                                              MAP_CELL_W * 3 + 1,
+                                              MAP_CELL_W * 3 + 2,
+                                              MAP_CELL_W * 3 + 3,
                                               REFRESH_EOL};
         return (_tsproc_place);
     }
@@ -5469,7 +5477,7 @@ short const* BuildingTypeClass::Overlap_List(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Width(void) const
 {
-    static int width[BSIZE_COUNT] = {1, 2, 1, 2, 2, 3, 3, 4, 5, 4};
+    static int width[BSIZE_COUNT] = {1, 2, 1, 2, 2, 3, 3, 4, 5, 4, 4};
     return (width[Size]);
 }
 
@@ -5489,7 +5497,7 @@ int BuildingTypeClass::Width(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Height(bool bib) const
 {
-    static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5, 3};
+    static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5, 3, 4};
     return (height[Size] + ((bib && IsBibbed) ? 1 : 0));
 }
 

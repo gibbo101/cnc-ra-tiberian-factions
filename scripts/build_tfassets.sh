@@ -259,11 +259,12 @@ PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
 # building content is only 94 src px wide (the TS concrete apron is not
 # drawn), so the plot-width fit runs at 4.09x — disc + chimney + smoke is
 # ~90 classic px tall at that scale. The stub is sized so the DISC BOTTOM
-# lands exactly on the plot's south edge (bottom margin = the 27px
-# below-plot halo) -- a small-margin stub sinks the disc over the bib slab.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 138 126 2
+# lands exactly on the plot's south edge. 138x150 = the BSIZE_44
+# foundation: one extra cell (24 classic) of canvas at the BOTTOM offsets
+# the half-cell-south anchor move so the art stays pixel-static on the plot.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 138 150 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 138 126 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 138 150 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 72 78 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")

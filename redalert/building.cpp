@@ -173,6 +173,9 @@ COORDINATE const BuildingClass::CenterOffset[BSIZE_COUNT] = {
     0x02800280L,
 
     0x01800200L, // BSIZE_43 (4x3): x = 2 cells, y = 1.5 cells.
+
+    0x02000200L, // BSIZE_44 (4x4): x = 2 cells, y = 2 cells -- the centre CELL is row 2 col 2,
+                 // which for TSPROC is the dock pad itself (an occupy hole).
 };
 
 /***********************************************************************************************
@@ -493,13 +496,14 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
                 **	on it.
                 */
                 /*
-                **	TD/TS trucks dock ON the pad (the ramp cell, centre + MCW on
-                **	the 4x3); the RA ore truck unloads from the south apron cell
-                **	(its E-facing tip-up seats against the intake from there).
+                **	TD/TS trucks dock ON the pad (= the centre CELL of the 4x4
+                **	foundation); the RA ore truck unloads from the ramp-foot
+                **	cell one row south (its E-facing tip-up seats against the
+                **	intake from there).
                 */
-                param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W));
+                param = ::As_Target(Coord_Cell(Center_Coord()));
                 if (from != NULL && from->What_Am_I() == RTTI_UNIT && *((UnitClass*)from) == UNIT_HARVESTER) {
-                    param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W * 2));
+                    param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W));
                 }
                 break;
 
@@ -3098,7 +3102,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             */
             if (base->What_Am_I() == RTTI_UNIT) {
                 UnitClass* unit = (UnitClass*)base;
-                cell = (CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W);
+                cell = Coord_Cell(Center_Coord()); // the dock pad = the 4x4 centre cell
                 ScenarioInit++;
                 // +5/+7 px = the seated-on-ramp point the baked HORV occupies.
                 if (unit->Unlimbo(Coord_Add(Cell_Coord(cell), XYP_Coord(5, 7)), DIR_SE)) {
@@ -3983,7 +3987,13 @@ void BuildingClass::Grand_Opening(bool captured)
         if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC) && !ScenarioInit
             && !captured && !Debug_Map
             && (!House->IsHuman || PurchasePrice == 0 || PurchasePrice > Class->Raw_Cost())) {
-            CELL cell = Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_S));
+            /*
+            **	TSPROC's free harvester appears ON the dock pad, which on the
+            **	4x4 foundation is the centre cell itself (DIR_S would be the
+            **	ramp foot, one row further out than the verified spawn).
+            */
+            CELL cell = (*this == STRUCT_TSPROC) ? Coord_Cell(Center_Coord())
+                                                 : Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_S));
 
             // Tiberian Factions: STRUCT_TDPROC spawns UNIT_TDHARV (TD-art
             // harvester) instead of RA's UNIT_HARVESTER; STRUCT_TSPROC spawns
@@ -4995,14 +5005,15 @@ bool Is_Refinery_Dock_Cell(CELL cell)
     }
 
     /*
-    **	TS refinery: dock pad = the dock-lane hole one cell S of the 4x3
-    **	centre cell -> centre is the pad's N neighbour (type-gated, so no
-    **	clash with the RA refinery's identical N-relation).
+    **	TS refinery: dock pad = the 4x4 foundation's centre cell itself. The
+    **	pad is an occupy HOLE (no building in its occupier chain), so the
+    **	building pointer is read from the occupied cell one row N; the centre
+    **	check then points back at the candidate cell.
     */
     CELL tsncell = Adjacent_Cell(cell, FACING_N);
     if ((unsigned)tsncell < MAP_CELL_TOTAL) {
         BuildingClass const* b = Map[tsncell].Cell_Building();
-        if (b != NULL && *b == STRUCT_TSPROC && Coord_Cell(b->Center_Coord()) == tsncell) {
+        if (b != NULL && *b == STRUCT_TSPROC && Coord_Cell(b->Center_Coord()) == cell) {
             return (true);
         }
     }
@@ -5034,18 +5045,25 @@ bool Is_Refinery_Dock_Busy(CELL cell)
     if ((unsigned)cell >= MAP_CELL_TOTAL) {
         return (false);
     }
+    /*
+    **	centre_is_pad: TSPROC's centre cell IS its dock pad (an occupy hole),
+    **	so the building pointer comes from the occupied cell in `facing`
+    **	direction while the centre check points back at the pad cell itself.
+    */
     struct
     {
         FacingType facing;
         StructType type;
-    } const _pads[] = {{FACING_N, STRUCT_REFINERY}, {FACING_N, STRUCT_TSPROC}, {FACING_NE, STRUCT_TDPROC}};
+        bool centre_is_pad;
+    } const _pads[] = {
+        {FACING_N, STRUCT_REFINERY, false}, {FACING_N, STRUCT_TSPROC, true}, {FACING_NE, STRUCT_TDPROC, false}};
     for (int i = 0; i < (int)(sizeof(_pads) / sizeof(_pads[0])); i++) {
         CELL rcell = Adjacent_Cell(cell, _pads[i].facing);
         if ((unsigned)rcell >= MAP_CELL_TOTAL) {
             continue;
         }
         BuildingClass const* b = Map[rcell].Cell_Building();
-        if (b != NULL && *b == _pads[i].type && Coord_Cell(b->Center_Coord()) == rcell
+        if (b != NULL && *b == _pads[i].type && Coord_Cell(b->Center_Coord()) == (_pads[i].centre_is_pad ? cell : rcell)
             && b->Is_Something_Attached()) {
             return (true);
         }
@@ -5063,9 +5081,9 @@ bool Is_Refinery_Dock_Busy(CELL cell)
  *    veto also carries the placement-blocking the slab used to provide on the south row.      *
  *    Consulted from TechnoTypeClass::Legal_Placement for building-type placements only.       *
  *                                                                                             *
- *    Apron cells relative to a TSPROC origin cell (3x3 plot, centre = origin+MCW+1):          *
- *    the whole south row below the plot (row 3, cols 0-3) plus the east column (col 3,        *
- *    rows 1-2).                                                                               *
+ *    Apron cells relative to a TSPROC origin cell (4x4 foundation, centre = origin+2*MCW+2    *
+ *    = the dock pad): the ramp row (row 3, cols 2-3) plus the east column (col 3, rows 0-2)   *
+ *    plus the pad itself.                                                                     *
  *=============================================================================================*/
 bool Is_TS_Apron_Cell(CELL cell)
 {
@@ -5075,22 +5093,23 @@ bool Is_TS_Apron_Cell(CELL cell)
 
     /*
     **	Offsets from the candidate cell BACK to where a TSPROC centre would be
-    **	if this cell were part of its apron (centre = the pad's reference).
+    **	if this cell were part of its apron (centre = the dock pad cell on the
+    **	4x4 foundation, so the pad's own offset is 0 -- counted loop, no
+    **	zero sentinel).
     */
     /*
     **	Only cells the apron ART actually covers (with Bib=no the south-west
     **	cells are bare ground and stay placeable -- Luke, 2026-08-05 00:06).
     */
-    static short const _to_centre[] = {(MAP_CELL_W * 2),     // south row, col 2 (ramp foot)
-                                       (MAP_CELL_W * 2) + 1, // south row, col 3
-                                       1 - MAP_CELL_W,       // east col, row 0
-                                       1,                    // east col, row 1
-                                       MAP_CELL_W + 1,       // east col, row 2
-                                       MAP_CELL_W,           // the dock pad itself (occupy hole)
-                                       0};
+    static short const _to_centre[] = {0,                     // the dock pad itself (occupy hole)
+                                       MAP_CELL_W,            // ramp row, col 2 (ramp foot)
+                                       MAP_CELL_W + 1,        // ramp row, col 3
+                                       1 - (MAP_CELL_W * 2),  // east col, row 0
+                                       1 - MAP_CELL_W,        // east col, row 1
+                                       1};                    // east col, row 2
 
-    for (short const* off = _to_centre; *off != 0; off++) {
-        CELL centre = (CELL)(cell - *off);
+    for (int i = 0; i < (int)(sizeof(_to_centre) / sizeof(_to_centre[0])); i++) {
+        CELL centre = (CELL)(cell - _to_centre[i]);
         if ((unsigned)centre >= MAP_CELL_TOTAL) {
             continue;
         }
@@ -6140,7 +6159,7 @@ int BuildingClass::Mission_Harvest_TD(void)
             **	differs per refinery: TD = DIR_SW of centre, TS = the SE
             **	dock-lane hole.
             */
-            Map[(*this == STRUCT_TSPROC) ? (CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W)
+            Map[(*this == STRUCT_TSPROC) ? Coord_Cell(Center_Coord())
                                          : Adjacent_Cell(Coord_Cell(Center_Coord()), DIR_SW)]
                 .Incoming(0, true, true);
 

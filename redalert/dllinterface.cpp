@@ -5310,6 +5310,13 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             case STRUCT_TSPILE:
                 new_object.CenterCoordY += (8 * 256) / 24;
                 break;
+            case STRUCT_TSPROC:
+                // 4x4 foundation counts the walkable apron row, but the
+                // BUILDING is the north 3 rows: pull the box centre back up
+                // half a cell and keep the old 3-row box height.
+                new_object.CenterCoordY -= (12 * 256) / 24;
+                dimy = 58;
+                break;
             default:
                 break;
             }
@@ -7365,14 +7372,23 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
             BuildingClass* base = (BuildingClass*)Map[cell].Cell_Find_Object(RTTI_BUILDING);
             if (base == NULL) {
                 /*
-                **	TSPROC's walkable holes (dock pad + apron column) carry no
-                **	building object but ARE part of its 4x3 footprint -- seed
-                **	them too, or placement reach ends a square short past the
-                **	pad (Luke, 2026-08-05 00:33).
+                **	TSPROC's walkable holes (dock pad + apron column + the
+                **	south apron row) carry no building object but ARE part of
+                **	its 4x4 footprint -- seed them too, or placement reach
+                **	ends a square short past the pad (Luke, 2026-08-05 00:33).
+                **	Offsets run from the hole cell back to the centre (= the
+                **	dock pad, so the pad's own offset is 0 -- counted loop).
                 */
-                static short const _ts_holes[] = {MAP_CELL_W, 1 - MAP_CELL_W, 1, MAP_CELL_W + 1, 0};
-                for (short const* off = _ts_holes; *off != 0; off++) {
-                    CELL c2 = (CELL)(cell - *off);
+                static short const _ts_holes[] = {0,
+                                                  1,
+                                                  1 - MAP_CELL_W,
+                                                  1 - (MAP_CELL_W * 2),
+                                                  MAP_CELL_W - 2,
+                                                  MAP_CELL_W - 1,
+                                                  MAP_CELL_W,
+                                                  MAP_CELL_W + 1};
+                for (int h = 0; h < (int)(sizeof(_ts_holes) / sizeof(_ts_holes[0])); h++) {
+                    CELL c2 = (CELL)(cell - _ts_holes[h]);
                     if (!Map.In_Radar(c2)) {
                         continue;
                     }
