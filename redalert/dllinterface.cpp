@@ -5313,11 +5313,13 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 new_object.CenterCoordY += (8 * 256) / 24;
                 break;
             case STRUCT_TSPROC:
-                // 4x4 foundation counts the walkable apron row, but the
-                // BUILDING is the north 3 rows: pull the box centre back up
-                // half a cell and keep the old 3-row box height.
+                // 4x3 foundation counts the walkable apron row, but the
+                // BUILDING is the north 2 rows: pull the box centre back up
+                // half a cell and use a 2-row box height (the tall art
+                // overhanging north of the plot stays outside the box,
+                // radar treatment).
                 new_object.CenterCoordY -= (12 * 256) / 24;
-                dimy = 58;
+                dimy = 38;
                 break;
             default:
                 break;
@@ -7376,7 +7378,7 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
                 /*
                 **	TSPROC's walkable holes (dock pad + apron column + the
                 **	south apron row) carry no building object but ARE part of
-                **	its 4x4 footprint -- seed them too, or placement reach
+                **	its 4x3 footprint -- seed them too, or placement reach
                 **	ends a square short past the pad (Luke, 2026-08-05 00:33).
                 **	Offsets run from the hole cell back to the centre (= the
                 **	dock pad, so the pad's own offset is 0 -- counted loop).
@@ -7384,7 +7386,6 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
                 static short const _ts_holes[] = {0,
                                                   1,
                                                   1 - MAP_CELL_W,
-                                                  1 - (MAP_CELL_W * 2),
                                                   MAP_CELL_W - 2,
                                                   MAP_CELL_W - 1,
                                                   MAP_CELL_W,

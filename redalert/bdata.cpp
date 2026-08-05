@@ -94,16 +94,16 @@ static short const List010111100[] = {1, (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2
 static short const List0111[] = {1, (MCW * 1), (MCW * 1) + 1, REFRESH_EOL};
 static short const List1000[] = {0, REFRESH_EOL};
 static short const List101000011[] = {0, 2, (MCW * 2) + 1, (MCW * 2) + 2, REFRESH_EOL};
-/* TSPROC: full 3x3 minus ONLY the SE dock pad (the cell under the apron's
-** hazard ramp -- must stay enterable for docking harvesters). RA PROC's
-** dock-lane-holes list drew a broken tetris-piece placement grid in the
-** launcher (Luke, 2026-08-04 23:15); occupying all but the pad gives a
-** clean grid whose one missing corner IS the dock bay. */
-static short const TsProcList33[] = {0, 1,           2,
-                                     (MCW * 1),     (MCW * 1) + 1, (MCW * 1) + 2,
-                                     (MCW * 2),     (MCW * 2) + 1, REFRESH_EOL};
-static short const TsProcOList33[] = {
-    (MCW * 2) + 2, 3, MCW + 3, (MCW * 2) + 3, (MCW * 3) + 2, (MCW * 3) + 3, REFRESH_EOL};
+/* TSPROC (4x3: 2 building rows + apron row, tall art overhangs the row
+** north of the plot): building = the west-3x2 block minus ONLY the SE dock
+** pad (the cell under the apron's hazard ramp -- must stay enterable for
+** docking harvesters). Occupying all but the pad gives a clean placement
+** grid whose one missing corner IS the dock bay (the RA dock-lane-holes
+** list drew a broken tetris piece -- Luke, 2026-08-04 23:15). */
+static short const TsProcList[] = {0, 1, 2,
+                                   (MCW * 1), (MCW * 1) + 1, REFRESH_EOL};
+static short const TsProcOList[] = {
+    MCW + 2, 3, MCW + 3, (MCW * 2) + 2, (MCW * 2) + 3, REFRESH_EOL};
 static short const List1100[] = {0, 1, REFRESH_EOL};
 static short const List1101[] = {0, 1, (MCW * 1) + 1, REFRESH_EOL};
 static short const List11[] = {0, 1, REFRESH_EOL};
@@ -1397,12 +1397,13 @@ static BuildingTypeClass const ClassTsProc(STRUCT_TSPROC,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,          // Engine grants free harvester at build time.
                                            DIR_N,
-                                           BSIZE_44,           // 4x3 building + the south apron row as real footprint,
-                                                               // so cliff-edge placements can't drape the apron over
-                                                               // impassable terrain. Centre CELL = the dock pad.
+                                           BSIZE_43,           // 4 wide x 3 high: 2 building rows + the south apron row
+                                                               // as real footprint (no cliff drape). The tall art
+                                                               // overhangs the row NORTH of the plot (radar treatment),
+                                                               // so units can walk behind it. Centre CELL = the dock pad.
                                            NULL,
-                                           (short const*)TsProcList33,   // Blocking: the 3x3 building minus the dock pad.
-                                           (short const*)TsProcOList33); // Overlap: pad + apron column + ramp row (art redraw).
+                                           (short const*)TsProcList,   // Blocking: the 3x2 building minus the dock pad.
+                                           (short const*)TsProcOList); // Overlap: pad + apron column + ramp row (art redraw).
 
 static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            TXT_NONE,
@@ -5369,12 +5370,14 @@ BuildingTypeClass& BuildingTypeClass::As_Reference(StructType type)
 short const* BuildingTypeClass::Occupy_List(bool placement) const
 {
     /*
-    **	TSPROC placement footprint = the SOLID 4x4: the 4x3 building plus the
-    **	south apron row, so placement demands the whole apron sits on clear
-    **	ground (no cliff-edge drape). This is the list the sidebar
-    **	PlacementList export (the launcher's ghost grid), Legal_Placement and
-    **	placement proximity all consume. The non-placement (blocking) list
-    **	keeps the dock pad + apron cells as walkable holes.
+    **	TSPROC placement footprint = the SOLID 4x3: the 3x2 building plus the
+    **	east apron column and south apron row, so placement demands the whole
+    **	apron sits on clear ground (no cliff-edge drape). This is the list
+    **	the sidebar PlacementList export (the launcher's ghost grid),
+    **	Legal_Placement and placement proximity all consume. The
+    **	non-placement (blocking) list keeps the dock pad + apron cells as
+    **	walkable holes. The art row overhanging NORTH of the plot is not
+    **	footprint (radar treatment: units walk behind the building there).
     */
     if (placement && Type == STRUCT_TSPROC) {
         static short const _tsproc_place[] = {0,
@@ -5389,10 +5392,6 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
                                               MAP_CELL_W * 2 + 1,
                                               MAP_CELL_W * 2 + 2,
                                               MAP_CELL_W * 2 + 3,
-                                              MAP_CELL_W * 3,
-                                              MAP_CELL_W * 3 + 1,
-                                              MAP_CELL_W * 3 + 2,
-                                              MAP_CELL_W * 3 + 3,
                                               REFRESH_EOL};
         return (_tsproc_place);
     }

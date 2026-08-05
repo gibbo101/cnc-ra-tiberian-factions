@@ -262,9 +262,9 @@ PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
 # lands exactly on the plot's south edge. 138x150 = the BSIZE_44
 # foundation: one extra cell (24 classic) of canvas at the BOTTOM offsets
 # the half-cell-south anchor move so the art stays pixel-static on the plot.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 138 150 2
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 138 174 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 138 150 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 138 174 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 72 78 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")

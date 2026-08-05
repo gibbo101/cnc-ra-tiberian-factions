@@ -387,20 +387,22 @@ SIZEPASS = [
     # wide -> full-width factor 5.45x -> 643 HD px tall: the canvas must be
     # 672 or the plume tip clips (512/544/576 all did).
     # Width-fit to the full 3x3 PLOT (72 classic; the 4-cell/512 fit read
-    # oversized next to the 2x2 tier -- Luke, 2026-08-04). Stub 138x150:
-    # the BSIZE_44 foundation (apron row = real footprint) moves the draw
-    # anchor (= foundation centre) half a cell south, so the canvas grows
-    # one cell (24 classic / 128 HD) at the BOTTOM to keep the content
-    # pixel-static on the plot -- margin 27+24=51 keeps the disc bottom on
-    # the 3x3 plot's south edge, and the plume keeps its full 27-classic
-    # headroom above the plot top. The wide canvas carries the NTREFNBB
+    # oversized next to the 2x2 tier -- Luke, 2026-08-04). Stub 138x174:
+    # the BSIZE_43 foundation (2 building rows + apron row; the art's top
+    # row OVERHANGS the row north of the plot, radar treatment) puts the
+    # draw anchor (= foundation centre) a full cell south of where the
+    # old 3x3's sat relative to the art, so the canvas carries two extra
+    # cells (48 classic / 256 HD) at the BOTTOM to keep the content
+    # pixel-static -- margin 27+48=75 keeps the disc bottom on the
+    # building rows' south edge, and the plume keeps its full 27-classic
+    # headroom above the art top. The wide canvas carries the NTREFNBB
     # apron OVERLAY (dock bay incl. the hazard-striped ramp, Luke's TS
     # screenshot) riding east/south into the halo -- fit-excluded, so the
     # building size is unchanged.
     # Plume cycle = frames 2-16 only: 0-1/17-19 carry 10-57 src px and
     # scale to "dead pixel" specks at the chimney tip (Luke, 23:17 SS).
     ("TSPROC", "shp_ntrefn", [("shp_ntrefn_b", list(range(2, 17)), list(range(2, 17)))],
-     "shp_ntrefnmk", 19, (736, 800), 51, 1.0, "shp_reficon",
+     "shp_ntrefnmk", 19, (736, 928), 75, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
     # TDWEAP-parity 3x3, apron dropped, RA slab (Luke, 2026-08-04 — "same
     # as ts ref"). Stub 72x78 = 3-classic-px halo below the plot; margin 0
