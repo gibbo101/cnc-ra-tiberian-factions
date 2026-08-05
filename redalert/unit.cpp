@@ -3729,10 +3729,22 @@ int UnitClass::Mission_Unload(void)
             TechnoClass* sref = Contact_With_Whom();
             if (sref != NULL && sref->What_Am_I() == RTTI_BUILDING
                 && *((BuildingClass*)sref) == STRUCT_TSPROC) {
+                /*
+                **	Per-truck seat targets (classic px from the snapped cell
+                **	centre), eased 1px/tick: the TS truck reverses the last
+                **	bit NE into the bay to Luke's Aseprite pose
+                **	(docking-art/refinery-ts/ts-harv-docked.png); the TD
+                **	tanker settles shallow, clear of the bay-mouth art.
+                */
+                int tx = (*this == UNIT_TSHARV) ? (5 * 256) / 24 : 0;
+                int ty = (*this == UNIT_TSHARV) ? -((5 * 256) / 24) : (4 * 256) / 24;
+                int dx = (int)Coord_X(Coord) - (int)Coord_X(Coord_Snap(Coord));
                 int dy = (int)Coord_Y(Coord) - (int)Coord_Y(Coord_Snap(Coord));
-                if (dy < (4 * 256) / 24) {
+                int sx = (dx < tx) ? 1 : ((dx > tx) ? -1 : 0);
+                int sy = (dy < ty) ? 1 : ((dy > ty) ? -1 : 0);
+                if (sx != 0 || sy != 0) {
                     Mark(MARK_UP);
-                    Coord = Coord_Add(Coord, XYP_Coord(0, 1));
+                    Coord = Coord_Add(Coord, XYP_Coord(sx, sy));
                     Mark(MARK_DOWN);
                 }
             }
