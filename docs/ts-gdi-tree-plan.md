@@ -23,24 +23,37 @@ apparent depth (deployed -240,-86; truth -124,-44). Measure against
 unoccluded landmarks (dome centroid + stripe-field SE tip).**
 
 **OPEN — the missed asks (root causes FOUND, fixes queued):**
-1. **Bay-hide ("truck disappears into the refinery, but still drives over
-   the pad")**: Sort_Y bias +108 deployed in `ab2b2168` DID NOTHING — units
-   carry their own +0x80 (128-lepton) south sort bias (see the ShapeSize
-   comment above Sort_Y), so the docked truck sorts at 596+128=724 > 620.
-   Threshold must sit between 725 (deep truck) and 767 (pad truck): bias
-   ~+230. ⚠ BUT Luke then said NOT fully hidden — he wants the truck
-   STICKING OUT of the refinery. Whole-sprite z is binary and the apron is
-   baked into the building sprite, so partial hide needs the apron split
-   into an always-under layer. `SortOrder` IS per exported shape
-   (dllinterface.cpp:5135 = (ExportLayer<<29)+(Sort_Y()>>3), sub-object
-   swap at :5796) — an apron sub-shape with its own north-biased sort looks
-   viable. Design first, with Luke.
-2. **TSFACT (conyard) selection box still rides ~13cl high**: the
-   CenterCoordY bias in the draw intercept is PROVEN IGNORED by the
-   launcher for bracket placement (12→25cl change moved the box 0px across
-   a restart). The 08-04 "box hugs the art rows" note is WRONG for the
-   conyard. Find the real anchor field (instrumented test per restart:
-   CellY? PositionY? SortOrder-adjacent?) before touching numbers again.
+1. **⭐ NEXT SESSION OPENER — the three-layer dock (DESIGN LOCKED with Luke
+   2026-08-05 close): apron under, trucks normal, superstructure over.**
+   Luke's model ("pad z1, harvesters z2, refinery z3", numbers illustrative
+   — slot into the existing global sort). Implementation:
+   (a) packer: stop compositing NTREFNBB into the base frames; ship the
+   apron as its OWN shape in TSPROC.ZIP (buildup keeps its poured pad);
+   (b) draw intercept: emit the apron shape in the GROUND layer the engine
+   already uses for smudges/bibs (under everything that moves, so ALL units
+   drive over it, not just harvesters) — `SortOrder` is per exported shape:
+   dllinterface.cpp:5135 = (ExportLayer<<29)+(Sort_Y()>>3); sub-object
+   reorder precedent at :5796;
+   (c) superstructure Sort_Y threshold computed from REAL values: units
+   carry their own +0x80 (128-lepton) south sort bias (the ShapeSize
+   comment above Sort_Y), so the deployed +108 bias in `ab2b2168` was
+   inert (docked truck sorts 596+128=724 > 620). Threshold must sit
+   between 725 (docked truck) and 767 (pad truck): bias ~+230.
+   Result: docked truck half-hidden by the superstructure silhouette,
+   nose out over the apron. ~1 hour + one deploy + Luke's eyes.
+2. **TSFACT (conyard) selection box rides ~13cl high — REGRESSED BY THE
+   08-04 TIER RESIZE (Luke: "you had this correct earlier but you broke it
+   on resize").** The box WAS correct before the conyard art was re-seated
+   onto its bib. The CenterCoordY bias in the draw intercept is PROVEN
+   IGNORED (12→25cl change moved the box 0px across a restart) — the
+   launcher anchors the box to something the RESIZE moved, most plausibly
+   the sprite's canvas/content geometry (art moved down inside its plot,
+   box stayed plot-anchored, and it only ever "matched" while the art was
+   plot-centred). FIX PATH: git-diff the TSFACT packer geometry
+   (canvas/stub/bottom-margin/overscale + foundation) between the last
+   known-good box commit (pre-reseat, 2026-08-04 evening) and HEAD, and
+   restore the broken relationship — no launcher probing needed unless the
+   diff exonerates the art.
 3. **Luke's 4x3 proposal**: foundation 4 wide x 3 tall (2 building rows +
    apron row), tall art overhanging the top row like TSRADR's dish. Viable;
    third centre re-index (dock offsets, veto, seeds, Track15/16 dests, art
