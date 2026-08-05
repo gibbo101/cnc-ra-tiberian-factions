@@ -1,16 +1,55 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐ SESSION END 2026-08-05 ~01:25 — RESUME HERE (docking marathon)
-**UPDATE 2026-08-05 (day session): desktop prefix now at `44cac511`
-(md5-verified) = apron clip revert deployed AND the apron decision RESOLVED —
-Luke picked option (b), TSPROC foundation = 4x4 (BSIZE_44, apron row is real
-footprint, centre cell = the dock pad, all dock offsets re-indexed, art
-canvas 736x800 with byte-identical frame content). AWAITING FULL DOCK RETEST
-— checklist: 4x4 ghost grid, cliff-edge placement refused, TS+TD+RA harv
-dock cycles at TSPROC, free-harvester spawn on the pad, selection box still
-hugs the 3 building rows, AI places TSPROC, RA/TD refineries unregressed.
-Deck still STALE at `2d8a5dbb`. Read the DEAD ENDS list before touching the
-dock again.**
+## ⭐ SESSION END 2026-08-05 evening — RESUME HERE (4x4 + reverse dock)
+**Luke ended it "a bad session" — the WORK mostly shipped but two visible
+asks missed. Desktop prefix at `ab2b2168` (md5-verified). Deck still STALE
+at `2d8a5dbb`.**
+
+**SHIPPED + play-verified today (log-verified over ~20 clean cycles):**
+- TSPROC foundation = 4x4 (Luke's pick): BSIZE_44, apron row is real
+  footprint (cliff-drape fixed), centre cell = the dock pad, every dock
+  offset re-indexed, art canvas 736x800 (frame content byte-identical).
+- Reverse dock (Track15/16, Luke's line-up-then-reverse spec): truck lines
+  up nose-SE on the pad, reverses to `pad+(-124,-44)` (the composite pose,
+  rear at bay mouth), unloads, drives out forward-SE. Both TS + TD trucks.
+- Green-smoke fix: the forced exit track delays the MISSION_HARVEST commit,
+  so Mission_Unload re-ran CONTACTLESS and slipped past the fume gate
+  (which keys on the contact's type). Contactless re-entry now exits early.
+
+**⚠ MEASUREMENT LESSON (cost the "MAJOR REGRESSION" round): measuring the
+docked composite by VISIBLE stripe centroid is occlusion-biased — the truck
+covers most of the stripes, dragging the centroid SE and DOUBLING the
+apparent depth (deployed -240,-86; truth -124,-44). Measure against
+unoccluded landmarks (dome centroid + stripe-field SE tip).**
+
+**OPEN — the missed asks (root causes FOUND, fixes queued):**
+1. **Bay-hide ("truck disappears into the refinery, but still drives over
+   the pad")**: Sort_Y bias +108 deployed in `ab2b2168` DID NOTHING — units
+   carry their own +0x80 (128-lepton) south sort bias (see the ShapeSize
+   comment above Sort_Y), so the docked truck sorts at 596+128=724 > 620.
+   Threshold must sit between 725 (deep truck) and 767 (pad truck): bias
+   ~+230. ⚠ BUT Luke then said NOT fully hidden — he wants the truck
+   STICKING OUT of the refinery. Whole-sprite z is binary and the apron is
+   baked into the building sprite, so partial hide needs the apron split
+   into an always-under layer. `SortOrder` IS per exported shape
+   (dllinterface.cpp:5135 = (ExportLayer<<29)+(Sort_Y()>>3), sub-object
+   swap at :5796) — an apron sub-shape with its own north-biased sort looks
+   viable. Design first, with Luke.
+2. **TSFACT (conyard) selection box still rides ~13cl high**: the
+   CenterCoordY bias in the draw intercept is PROVEN IGNORED by the
+   launcher for bracket placement (12→25cl change moved the box 0px across
+   a restart). The 08-04 "box hugs the art rows" note is WRONG for the
+   conyard. Find the real anchor field (instrumented test per restart:
+   CellY? PositionY? SortOrder-adjacent?) before touching numbers again.
+3. **Luke's 4x3 proposal**: foundation 4 wide x 3 tall (2 building rows +
+   apron row), tall art overhanging the top row like TSRADR's dish. Viable;
+   third centre re-index (dock offsets, veto, seeds, Track15/16 dests, art
+   re-anchor). Do it FRESH, not stacked on a live-fix evening.
+4. Truck cell straddle: TSHARV ends in the pad cell, TDHARV one west
+   (7277/7276) — endpoint x sits 4 leptons from the cell boundary. Harmless
+   but worth centring when the endpoint next moves.
+
+**Prior session's dead-ends list still applies — read it before dock work.**
 
 **SHIPPED + Luke-verified tonight:**
 - Whole-tier size drop: radar 2x2 (TS-authentic), refinery RA-3x3→4x3 (see
