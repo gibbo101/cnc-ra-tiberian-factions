@@ -1,11 +1,16 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
 ## ⭐ SESSION END 2026-08-05 ~01:25 — RESUME HERE (docking marathon)
-**Surface = LINUX DESKTOP prefix at `c1efcf91` (md5-verified). ⚠ ONE COMMIT
-STAGED UNDEPLOYED: `d8d41cda` (apron clip revert — the deployed build has
-the HARD-SLICED pad; deploy this FIRST, game was still running at close).
-Deck still STALE at `2d8a5dbb`. ~89 commits tonight ended "we are going in
-circles" — read the DEAD ENDS list before touching the dock again.**
+**UPDATE 2026-08-05 (day session): desktop prefix now at `44cac511`
+(md5-verified) = apron clip revert deployed AND the apron decision RESOLVED —
+Luke picked option (b), TSPROC foundation = 4x4 (BSIZE_44, apron row is real
+footprint, centre cell = the dock pad, all dock offsets re-indexed, art
+canvas 736x800 with byte-identical frame content). AWAITING FULL DOCK RETEST
+— checklist: 4x4 ghost grid, cliff-edge placement refused, TS+TD+RA harv
+dock cycles at TSPROC, free-harvester spawn on the pad, selection box still
+hugs the 3 building rows, AI places TSPROC, RA/TD refineries unregressed.
+Deck still STALE at `2d8a5dbb`. Read the DEAD ENDS list before touching the
+dock again.**
 
 **SHIPPED + Luke-verified tonight:**
 - Whole-tier size drop: radar 2x2 (TS-authentic), refinery RA-3x3→4x3 (see
