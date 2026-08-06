@@ -1334,20 +1334,6 @@ void BuildingClass::AI(void)
     }
 
     /*
-    **	The TS war factory's bay doors stand open for as long as the vehicle
-    **	that triggered them is still in the bay mouth, and shut the moment it
-    **	has driven clear. Keying on the cell rather than on a timer means the
-    **	doors track whatever the exit geometry happens to be, and a door left
-    **	open by a unit that died on the spot still closes on its own.
-    */
-    if (*this == STRUCT_TSWEAP && BState == BSTATE_ACTIVE) {
-        CELL bay = Coord_Cell(Exit_Coord());
-        if (Map.In_Radar(bay) && Map[bay].Cell_Unit() == NULL) {
-            Begin_Mode(BSTATE_IDLE);
-        }
-    }
-
-    /*
     **	Building ammo is instantly reloaded.
     */
     if (!Ammo) {
@@ -3374,14 +3360,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                     }
 
                     base->Assign_Mission(MISSION_MOVE);
-
-                    /*
-                    **	The TS war factory throws its bay doors open as the vehicle
-                    **	appears; BuildingClass::AI shuts them once the bay is clear.
-                    */
-                    if (*this == STRUCT_TSWEAP) {
-                        Begin_Mode(BSTATE_ACTIVE);
-                    }
 
                     /*
                     **	When disembarking from a transport then guard an area around the

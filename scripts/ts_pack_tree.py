@@ -155,15 +155,9 @@ def resample(indices, target):
 def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count,
                     canvas_w, canvas_h, target_w=None, bib_dir=None,
                     bottom_margin=None, overscale=1.0, mk_mask_dir=None,
-                    overlay_dir=None, fit_w=None, dst_x_px=None, variant_f=None):
+                    overlay_dir=None, fit_w=None, dst_x_px=None):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
-    variant_f selects a second healthy base frame (the war factory's open
-    door, the radar's raised mast) and doubles the tileset into the engine's
-    IDLE/ACTIVE layout: healthy idle, healthy active, damaged idle, damaged
-    active. It is EXCLUDED from the fit and rides the affine the idle frames
-    establish — the variant shares their source canvas, so it registers
-    pixel-exactly and the building's size read cannot shift.
     Two fit modes:
     - legacy (target_w): base-keyed scale clamped to the canvas, union-centered.
     - size-pass (bottom_margin, classic px): scale = full canvas width for the
@@ -179,12 +173,10 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         n = n * ln // math.gcd(n, ln)
     base_h = load(base_dir, healthy_f)
     base_d = load(base_dir, damaged_f)
-    base_v = load(base_dir, variant_f) if variant_f is not None else None
     if bib_dir is not None:
         # TS bib (concrete apron) is a separate *BB SHP drawn UNDER the
         # building -- the buildup includes it, so the built sprite must too.
-        for base, bf in ([(base_h, healthy_f), (base_d, damaged_f)]
-                         + ([(base_v, variant_f)] if base_v is not None else [])):
+        for base, bf in ((base_h, healthy_f), (base_d, damaged_f)):
             bib = load(bib_dir, bf)
             under = bib.copy()
             under.paste(base, (0, 0), base)
@@ -236,8 +228,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # halo at the building's scale without inflating the building's
         # size read (the reason aprons were dropped in the first place).
         # Passability is untouched -- sprite pixels are not occupancy.
-        for base, bf in ([(base_h, healthy_f), (base_d, damaged_f)]
-                         + ([(base_v, variant_f)] if base_v is not None else [])):
+        for base, bf in ((base_h, healthy_f), (base_d, damaged_f)):
             ov = load(overlay_dir, bf)
             under = ov.copy()
             under.paste(base, (0, 0), base)
@@ -245,17 +236,8 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         healthy = [composite(base_h, anims, i, 1) for i in range(n)]
         damaged_frames = [composite(base_d, anims, i, 2) for i in range(n)]
 
-    def lay(seq):
-        return [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in seq]
-
-    frames = lay(healthy) + lay(damaged_frames)
-    if base_v is not None:
-        # Engine layout: idle, active, then both damaged runs at +largest,
-        # where largest is the ACTIVE run's end (Shape_Number's damaged
-        # offset). TS has no damaged-and-open art, so the damaged active run
-        # repeats the damaged idle composite.
-        variant = [composite(base_v, anims, i, 1) for i in range(n)]
-        frames = lay(healthy) + lay(variant) + lay(damaged_frames) + lay(damaged_frames)
+    frames = [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in healthy]
+    frames += [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in damaged_frames]
     write_zip(f"{STRUCT_DIR}/{ini}.ZIP", ini.lower(), frames)
 
     # TS buildups pour the concrete pad first and keep it throughout; with
@@ -291,7 +273,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
               for i in resample(real_frames(mk_dir), mk_count)]
     write_zip(f"{STRUCT_DIR}/{ini}MAKE.ZIP", f"{ini.lower()}make", mk)
 
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", ini, len(frames))
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", ini, 2 * n)
     patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}MAKE", mk_count)
     print(f"{ini}: N={n} (idle anim count for the _anims[] entry)")
     return n
@@ -469,13 +451,9 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     # stripes -- Luke, 2026-08-05 01:20; the cliff-edge drape is a queued
     # design question, not solvable with a rectangle cut).
     overlays = {"TSPROC": "shp_ntrefnbb"}
-    # GTWEAP frame 1 is the door-open healthy variant; it becomes the war
-    # factory's ACTIVE run so the bay stands open while a vehicle leaves.
-    variants = {"TSWEAP": 1}
     build_structure(ini, base, 0, 2, anims, mk, mkc, cw, ch,
                     bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale,
                     mk_mask_dir=masks.get(ini), overlay_dir=overlays.get(ini),
-                    variant_f=variants.get(ini),
                     fit_w=384 if ini == "TSPROC" else None,
                     # 4x3 foundation, building occupies the WEST 3 columns:
                     # anchor half a cell (64 px) west of the box centre.
