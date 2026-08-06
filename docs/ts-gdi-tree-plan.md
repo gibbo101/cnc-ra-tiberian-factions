@@ -1,6 +1,60 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐ SESSION END 2026-08-06 LATE — RESUME HERE (war factory)
+## ⭐ 2026-08-07 — RESUME HERE (war factory apron → ground art)
+**Desktop prefix at `d87e76f0`, md5-verified (DLL + TSWEAPBB.ZIP). Deck still
+STALE at `2d8a5dbb`. Nothing pushed to origin.**
+
+**SHIPPED, AWAITING ITS FIRST LOOK IN PLAY: the war factory apron is now ground
+art.** The two bugs from 2026-08-06 (vehicles vanishing under the apron; the
+apron answering the mouse as the building) were one cause — the apron lived in
+the building sprite, so it took part in sprite sorting and in the launcher's
+sprite hit-test. It is now the engine's own bib.
+
+### How it works now, and what to check first
+- `SMUDGE_TSWEAPBB` (`sdata.cpp`) is a bib-family smudge, **5 wide x 3 tall**
+  over the 4x3 plot. `BuildingTypeClass::Bib_And_Offset` returns it for
+  `STRUCT_TSWEAP` at offset 0 (plot top-left), independent of `Bib=` in rules
+  (which still governs the RA slab, still off). Everything downstream is stock
+  RA: `SmudgeClass::Mark` stamps `Smudge`+`SmudgeData` per cell, capture
+  re-owns it, `Disown` clears it.
+- **It renders through the TD-terrain GROUND path, not the smudge path**
+  (`Cell_Class_Draw_It`): `IsOverlay=true`, `IsTheaterShape=false`,
+  `Type=OVERLAY_V12` (pip-free), `ShapeIndex=SmudgeData`, drawn centred on the
+  cell. The smudge layer was avoided deliberately — the TD-tile work found it
+  unreliable against ground entries.
+- **⚠ FIRST THING TO CHECK IN PLAY: does the apron render at all?** The
+  live risks are all in that entry: `IsTheaterShape=false` resolving
+  `TSWEAPBB` out of `RA_STRUCTURES.XML`, and `Type=OVERLAY_V12` being
+  accepted. If it is invisible, that is where to look, not the art.
+  If it renders, check: a Titan driving off it stays visible, and the apron
+  takes a move order instead of selecting the factory.
+- **The 5th column is deliberate.** The concrete tapers ~14 canvas px past the
+  plot's east edge; a 4-wide grid cut a flat vertical edge 48px tall across the
+  tip. RA's own bibs lie outside their footprints too. `ts_pack_tree.py`
+  measures the packed apron against the grid and **fails the build** if the art
+  outgrows it — if you change the grid, change `sdata.cpp` in the same commit.
+- The apron slice is verified exact: reassembling the 15 tiles under the new
+  sprite reproduces the old composite with **zero alpha difference**. The
+  residual RGB difference is hq4x edge interpolation, unavoidable once the two
+  layers are scaled separately.
+- The buildup masks its poured pad out again (`masks = {"TSWEAP": ...}`) — the
+  ground apron exists from `MARK_DOWN`, so leaving it in the buildup draws the
+  concrete twice.
+
+### Open, in order
+1. **Judge the apron in play** (above).
+2. **TSPROC gets the same treatment** — identical bug, still sprite-composited.
+   Deliberately left alone until the mechanism is proven on the factory,
+   because its dock is signed off and I did not want to disturb it. It needs
+   its own `SMUDGE_TSPROCBB` and an `aprons` entry; the packer already
+   generalises (pass `((plot), (grid))`).
+3. **SE bay exits** — never started. `TsWeapExit` prefers south-east cells and
+   the spawn faces DIR_SE, but nothing is dialled; expect an awkward pose.
+   Wants Luke's eye live, like the dock.
+4. Carry-overs: TSFACT conyard selection box, RA-truck-at-TSPROC eyeball,
+   watched TDHARV dock, sidebar off-by-one upstream to main.
+
+## SESSION END 2026-08-06 LATE (war factory door + plot)
 **Desktop prefix at `6506fb8b`, md5-verified. Deck still STALE at `2d8a5dbb`.
 Nothing pushed to origin.**
 
@@ -10,7 +64,7 @@ to DOOR_RATE 4) and the placement reach fix.
 **SHIPPED, NOT YET JUDGED:** 4x3 plot + concrete pad, the size fix, bib off,
 the apron build-veto, pad sort order.
 
-### ⭐ THE FINDING THAT DRIVES NEXT SESSION: the pad must become GROUND ART
+### THE FINDING THAT DROVE THIS WORK: the pad must become ground art — DONE 2026-08-07
 Two separate-looking bugs share one root cause — **the pad is part of the
 building SPRITE**:
 - units walking off the pad to the NE vanish under it (sprite sorting);
