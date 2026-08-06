@@ -1,5 +1,37 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐ SESSION END 2026-08-06 — RESUME HERE
+**Desktop prefix at `de1790b5` (md5-verified). Deck still STALE at
+`2d8a5dbb` — push before any Deck play. Nothing pushed to origin
+(Luke's standing rule: commits only, push on his say-so).**
+
+**CLOSED THIS SESSION — the refinery dock arc, SIGNED OFF ("absolute
+perfection"):** final geometry + the live-dial story in the sign-off
+block below. Also shipped: motionless unload (stale-MOVE_HERE guard +
+NavCom clear), organic exit (scripted roll deleted), plate/east-column
+placement veto (occupied-neighbour lookup), refinery Adjacent=1,
+TSHARV Speed=6 + **Tracked=yes** (the wheels-vs-tracks terrain trap,
+third occurrence — Luke called it from the driver's seat; grep any new
+vehicle's rules section for Tracked= before its first drive).
+
+**NEXT SESSION, Luke's explicit list:**
+1. **TSFACT (conyard) selection box** — still wrong, still queued (his
+   close-out reminder). Fix path already scoped in the 08-05 block
+   below: git-diff the TSFACT packer geometry (canvas/stub/
+   bottom-margin/overscale + foundation) between the last known-good
+   box commit (pre-reseat, 2026-08-04 evening) and HEAD; the
+   CenterCoordY-bias lever is PROVEN launcher-ignored for this
+   building — do not re-probe it.
+2. **TS war factory** — door-opening animation + units spawn and drive
+   SOUTH-EAST out of the bays (Luke's spec 2026-08-06). Reuse the dock
+   verification loop (log lines + live dial with Luke's eye for the
+   exit pose).
+3. Carry-overs: RA-truck-at-TSPROC regression eyeball, TDHARV watched
+   dock at TSPROC (machinery verified via TSHARV + Luke's TD
+   screenshots, one clean observed cycle still owed), sidebar
+   off-by-one upstream to main.
+
+
 ## ⭐ SESSION END 2026-08-05 evening — RESUME HERE (4x4 + reverse dock)
 **Luke ended it "a bad session" — the WORK mostly shipped but two visible
 asks missed. Desktop prefix now at `7178f70f` (plan-A visible dock + 4x3
