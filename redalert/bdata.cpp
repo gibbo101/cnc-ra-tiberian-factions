@@ -5385,30 +5385,32 @@ BuildingTypeClass& BuildingTypeClass::As_Reference(StructType type)
 short const* BuildingTypeClass::Occupy_List(bool placement) const
 {
     /*
-    **	TSPROC placement footprint = the SOLID 4x3: the 3x2 building plus the
-    **	east apron column and south apron row, so placement demands the whole
-    **	apron sits on clear ground (no cliff-edge drape). This is the list
+    **	The TS refinery and war factory both sit on a SOLID 4x3: a 3x2
+    **	building plus the concrete apron's east column and south row.
+    **	Placement demands the whole apron lands on clear ground, so neither
+    **	can be sited with its concrete draped over a cliff. This is the list
     **	the sidebar PlacementList export (the launcher's ghost grid),
     **	Legal_Placement and placement proximity all consume. The
-    **	non-placement (blocking) list keeps the dock pad + apron cells as
-    **	walkable holes. The art row overhanging NORTH of the plot is not
-    **	footprint (radar treatment: units walk behind the building there).
+    **	non-placement (blocking) lists keep the apron cells as walkable
+    **	holes — the refinery's dock pad and the factory's bay approach both
+    **	have to stay enterable. The art row overhanging NORTH of the plot is
+    **	not footprint (radar treatment: units walk behind the building there).
     */
-    if (placement && Type == STRUCT_TSPROC) {
-        static short const _tsproc_place[] = {0,
-                                              1,
-                                              2,
-                                              3,
-                                              MAP_CELL_W,
-                                              MAP_CELL_W + 1,
-                                              MAP_CELL_W + 2,
-                                              MAP_CELL_W + 3,
-                                              MAP_CELL_W * 2,
-                                              MAP_CELL_W * 2 + 1,
-                                              MAP_CELL_W * 2 + 2,
-                                              MAP_CELL_W * 2 + 3,
-                                              REFRESH_EOL};
-        return (_tsproc_place);
+    if (placement && (Type == STRUCT_TSPROC || Type == STRUCT_TSWEAP)) {
+        static short const _ts_apron_place[] = {0,
+                                                1,
+                                                2,
+                                                3,
+                                                MAP_CELL_W,
+                                                MAP_CELL_W + 1,
+                                                MAP_CELL_W + 2,
+                                                MAP_CELL_W + 3,
+                                                MAP_CELL_W * 2,
+                                                MAP_CELL_W * 2 + 1,
+                                                MAP_CELL_W * 2 + 2,
+                                                MAP_CELL_W * 2 + 3,
+                                                REFRESH_EOL};
+        return (_ts_apron_place);
     }
 
     SmudgeType bib = SMUDGE_NONE;
