@@ -502,8 +502,15 @@ bool CellClass::Is_Clear_To_Build(SpeedType loco) const
 
     /*
     **	Building over a bib is not allowed.
+    **
+    **	The TS concrete aprons are the exception. They are a building's ground
+    **	art, covering its whole plot and spilling a cell past the east edge
+    **	where the concrete tapers out, so their own footprint says nothing
+    **	about where building is legal -- Is_TS_Apron_Cell above owns that, and
+    **	it vetoes the plot only. Add any further apron smudge here too.
     */
-    if (Smudge != SMUDGE_NONE && SmudgeTypeClass::As_Reference(Smudge).IsBib /* && Owner != HOUSE_NONE*/) {
+    if (Smudge != SMUDGE_NONE && SmudgeTypeClass::As_Reference(Smudge).IsBib && Smudge != SMUDGE_TSWEAPBB
+        /* && Owner != HOUSE_NONE*/) {
         return (false);
     }
 

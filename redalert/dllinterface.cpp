@@ -9003,9 +9003,12 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
     /*
     ** Tiberian Factions -- the TS concrete apron. It is stamped into cells as a
     ** bib-family smudge covering the building's whole plot (one frame per cell,
-    ** SmudgeData = col + row*Width), but it renders through the TD-template
-    ** GROUND path rather than the smudge path above: overlay layer, loose mod
-    ** art resolved by AssetName + ShapeIndex, drawn centred on the cell.
+    ** SmudgeData = col + row*Width). It goes out on the SMUDGE layer, which is
+    ** the launcher's true ground layer: the overlay layer is Y-sorted against
+    ** units, so an apron sent that way drew the cell south of a vehicle over
+    ** that vehicle's legs. The entry otherwise follows the TD-template ground
+    ** recipe -- loose mod art resolved by AssetName + ShapeIndex, drawn centred
+    ** on the cell.
     **
     ** The apron used to be composited into the building sprite. That made it
     ** take part in sprite sorting (a vehicle driving off the apron disappeared
@@ -9055,8 +9058,8 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             apron_entry.CellX = Cell_X(cell);
             apron_entry.CellY = Cell_Y(cell);
             apron_entry.ShapeIndex = cell_ptr->SmudgeData;
-            apron_entry.IsSmudge = false;
-            apron_entry.IsOverlay = true;
+            apron_entry.IsSmudge = true;
+            apron_entry.IsOverlay = false;
             apron_entry.IsResource = false;
             apron_entry.IsSellable = false;
             // Not theatre art -- the apron ships as one loose tileset, like the
