@@ -155,7 +155,7 @@ def resample(indices, target):
 def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count,
                     canvas_w, canvas_h, target_w=None, bib_dir=None,
                     bottom_margin=None, overscale=1.0, mk_mask_dir=None,
-                    overlay_dir=None, fit_w=None, dst_x_px=None):
+                    overlay_dir=None, fit_w=None, dst_x_px=None, door_spec=None):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -239,6 +239,29 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     frames = [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in healthy]
     frames += [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in damaged_frames]
     write_zip(f"{STRUCT_DIR}/{ini}.ZIP", ini.lower(), frames)
+
+    if door_spec is not None:
+        # Door overlay, the WEAP2 scheme: TS draws a roll-up shutter
+        # (DoorAnim) over a static bay interior (UnderDoorAnim), both above
+        # the finished building. Compositing the pair into one tileset keeps
+        # the engine's single overlay draw per door stage.
+        #
+        # Shares this building's affine and canvas, so the overlay lands on
+        # the bay whatever the base fit resolved to. Stages run 0 (shut) to
+        # stages-1 (open); the damaged run repeats them over the damaged
+        # interior, since TS ships no wrecked-door art (the frames past the
+        # real stages are magenta placeholders, as in GTPOWRMK).
+        door_dir, under_dir, stages = door_spec
+        door_frames = []
+        for under_f in (0, 1):
+            under = load(under_dir, under_f)
+            for s in range(stages):
+                shutter = load(door_dir, s)
+                cell = under.copy()
+                cell.paste(shutter, (0, 0), shutter)
+                door_frames.append(place(cell, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y))
+        write_zip(f"{STRUCT_DIR}/{ini}2.ZIP", f"{ini.lower()}2", door_frames)
+        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}2", len(door_frames))
 
     # TS buildups pour the concrete pad first and keep it throughout; with
     # the pad dropped from the finished art (grid-sized buildings + RA slab),
@@ -451,9 +474,13 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     # stripes -- Luke, 2026-08-05 01:20; the cliff-edge drape is a queued
     # design question, not solvable with a rectangle cut).
     overlays = {"TSPROC": "shp_ntrefnbb"}
+    # TS drives the war factory bay with a separate 9-stage shutter over a
+    # static interior (ART.INI: DoorAnim/DoorStages/UnderDoorAnim).
+    doors = {"TSWEAP": ("shp_gtweap_d", "shp_gtweap_1", 9)}
     build_structure(ini, base, 0, 2, anims, mk, mkc, cw, ch,
                     bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale,
                     mk_mask_dir=masks.get(ini), overlay_dir=overlays.get(ini),
+                    door_spec=doors.get(ini),
                     fit_w=384 if ini == "TSPROC" else None,
                     # 4x3 foundation, building occupies the WEST 3 columns:
                     # anchor half a cell (64 px) west of the box centre.

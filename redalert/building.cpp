@@ -815,6 +815,27 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             Techno_Draw_Object_Virtual(Class->WarFactoryOverlayTd, shapenum, x, y, window, DIR_N, 0x0100, "TDWEAP2");
         }
 
+        /*
+        **  STRUCT_TSWEAP — TS drives its bay with a 9-stage roll-up shutter
+        **  over a static interior (TIBSUN ART.INI: DoorAnim=GAWEAP_D,
+        **  DoorStages=9, UnderDoorAnim=GAWEAP_1). The two are composited into
+        **  one TSWEAP2 tileset so a single overlay draw covers a stage, the
+        **  same scheme RA uses for WEAP2. Damaged buildings take the second
+        **  run, which repeats the stages over the wrecked interior — TS ships
+        **  no damaged shutter art.
+        **
+        **  The shape pointer only feeds classic mode, which the TS tree does
+        **  not support; the launcher resolves the real art from the "TSWEAP2"
+        **  name. TD's overlay stands in so the pointer is never NULL, which
+        **  would skip the draw outright.
+        */
+        if (*this == STRUCT_TSWEAP && Strength > 1) {
+            int shapenum = Door_Stage();
+            if (Health_Ratio() <= Rule.ConditionYellow)
+                shapenum += 9;
+            Techno_Draw_Object_Virtual(Class->WarFactoryOverlayTd, shapenum, x, y, window, DIR_N, 0x0100, "TSWEAP2");
+        }
+
         // WEAP2 overlay for vanilla RA WEAP / FAKEWEAP only. STRUCT_TDWEAP
         // gets its own TDWEAP2 overlay block above; STRUCT_TDAFLD is a flat
         // 4×2 strip with no second-layer art and routes through its own
@@ -3189,6 +3210,29 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             // method) and DIR_SW preserved as TD-authentic spawn facing.
             ScenarioInit++;
             if (base->Unlimbo(Exit_Coord(), DIR_SW)) {
+                base->Mark(MARK_UP);
+                base->Coord = Exit_Coord();
+                base->Mark(MARK_DOWN);
+                Transmit_Message(RADIO_HELLO, base);
+                Transmit_Message(RADIO_TETHER);
+                Assign_Mission(MISSION_UNLOAD);
+                ScenarioInit--;
+                return (2);
+            }
+            ScenarioInit--;
+            break;
+
+        case STRUCT_TSWEAP:
+            /*
+            **	The vehicle is placed in the bay still tethered and does not
+            **	move until Mission_Unload has run the shutter up. Facing is
+            **	DIR_SE because that is the way the TS bay points.
+            */
+            if (Mission == MISSION_UNLOAD) {
+                return (1); // busy with the previous vehicle
+            }
+            ScenarioInit++;
+            if (base->Unlimbo(Exit_Coord(), DIR_SE)) {
                 base->Mark(MARK_UP);
                 base->Coord = Exit_Coord();
                 base->Mark(MARK_DOWN);
@@ -7097,6 +7141,107 @@ int BuildingClass::Mission_Unload(void)
     */
     if (*this == STRUCT_TDWEAP) {
         return Mission_Unload_TD();
+    }
+
+    /*
+    **  STRUCT_TSWEAP — the TS bay's own unload cycle. Follows RA's war
+    **  factory sequence (raise the shutter, clear the doorway, release the
+    **  vehicle, lower the shutter) over TS's nine door stages. The vehicle
+    **  paths out under its own steering rather than on a forced track: the
+    **  RA track is cut for RA's 3x2 factory and would drive the wrong way
+    **  out of this building.
+    */
+    if (*this == STRUCT_TSWEAP) {
+        /*
+        **	The doorway is only meaningful while the vehicle is still in
+        **	contact — Find_Exit_Cell dereferences the techno it is asked
+        **	about, and the closing states run after contact has been dropped.
+        */
+        TechnoClass* customer = Contact_With_Whom();
+        CELL cell = (customer != NULL) ? Find_Exit_Cell(customer) : 0;
+        COORDINATE coord = (cell != 0) ? Cell_Coord(cell) : 0;
+        CellClass* cellptr = (cell != 0) ? &Map[cell] : NULL;
+        enum
+        {
+            INITIAL,
+            CLEAR_BIB,
+            OPEN,
+            LEAVE,
+            CLOSE
+        };
+        enum
+        {
+            DOOR_STAGES = 9,
+            DOOR_RATE = 8
+        };
+        UnitClass* unit;
+
+        switch (Status) {
+        case INITIAL:
+            unit = (UnitClass*)Contact_With_Whom();
+            if (unit) {
+                unit->Assign_Mission(MISSION_GUARD);
+                unit->Commence();
+            }
+            Open_Door(DOOR_RATE, DOOR_STAGES);
+            Status = CLEAR_BIB;
+            break;
+
+        /*
+        **	Warn anything loitering in the doorway to move aside.
+        */
+        case CLEAR_BIB:
+            if (cellptr != NULL && cellptr->Cell_Techno()) {
+                cellptr->Incoming(0, true, true);
+                for (FacingType f = FACING_FIRST; f < FACING_COUNT; f++) {
+                    CellClass* cptr = cellptr->Adjacent_Cell(f);
+                    if (cptr && cptr->Cell_Building() == NULL) {
+                        cptr->Incoming(coord, true, true);
+                    }
+                }
+            } else {
+                Status = OPEN;
+            }
+            break;
+
+        case OPEN:
+            if (Is_Door_Open()) {
+                unit = (UnitClass*)Contact_With_Whom();
+                if (unit && cell != 0) {
+                    unit->Assign_Mission(MISSION_MOVE);
+                    unit->Assign_Destination(::As_Target(cell));
+                    if (House->IQ >= Rule.IQGuardArea) {
+                        unit->Assign_Mission(MISSION_GUARD_AREA);
+                        unit->ArchiveTarget = ::As_Target(House->Where_To_Go(unit));
+                    }
+                    Status = LEAVE;
+                } else {
+                    Close_Door(DOOR_RATE, DOOR_STAGES);
+                    Status = CLOSE;
+                }
+            }
+            break;
+
+        /*
+        **	Hold the shutter up until the vehicle is out from under it.
+        */
+        case LEAVE:
+            if (!IsTethered) {
+                Close_Door(DOOR_RATE, DOOR_STAGES);
+                Status = CLOSE;
+            }
+            break;
+
+        case CLOSE:
+            if (Is_Door_Closed()) {
+                Enter_Idle_Mode();
+            }
+            break;
+
+        default:
+            break;
+        }
+        return (MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
     }
 
     if (*this == STRUCT_WEAP || *this == STRUCT_AWEAP || *this == STRUCT_SWEAP) {
