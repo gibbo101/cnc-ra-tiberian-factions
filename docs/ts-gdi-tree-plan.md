@@ -23,6 +23,23 @@ covers most of the stripes, dragging the centroid SE and DOUBLING the
 apparent depth (deployed -240,-86; truth -124,-44). Measure against
 unoccluded landmarks (dome centroid + stripe-field SE tip).**
 
+## ✅ THE DOCK IS SIGNED OFF — "absolute perfection" (Luke, 2026-08-06 evening)
+**FINAL GEOMETRY (build `e15bbf3a` = commit `6e2a55e2`):** line-up = SE
+plate cell centre; aimed dead-straight reverse (motion == facing+128 at
+every waypoint) at facing 92 (TSHARV) / 94 (TDHARV); parks TSHARV
+pad+(40,74), TDHARV pad+(3,23); settling pivot to true SE on arrival;
+motionless unload (stale-MOVE_HERE guard in RADIO_DOCKING + NavCom clear
+at IsDumping); organic pathing exit (no scripted roll). TSHARV Speed=6
+(RA/TD parity). The centering was dialled LIVE with Luke over three
+builds (composite-side attempt read WRONG to his eye; mirrored attempt
+"almost"; half-step back = perfect) — the measured composite coordinates
+were NOT the pose his eye wanted; the final constants are the ground
+truth, do not re-derive from the reference PNGs. Also verified this arc:
+plate/east-column placement veto (occupied-neighbour lookup fix),
+selection box, Adjacent=1 placement reach, MCV 4x3 ghost. QUEUED NEXT:
+war factory session (door anim + SE bay exits), RA-truck-at-TSPROC
+regression eyeball, upstream the sidebar off-by-one to main.
+
 ## ⭐ OVERNIGHT RUN 2026-08-06 ~00:30 — THE DOCK IS DONE AND VERIFIED
 **Option A (Luke's spec, chosen over B-curved and the bib fallback): the
 truck faces TRUE SE and travels only along that axis. Line-up = SE plate
