@@ -9065,9 +9065,12 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             apron_entry.IsOverlay = false;
             apron_entry.IsResource = false;
             apron_entry.IsSellable = false;
-            // Not theatre art -- the apron ships as one loose tileset, like the
-            // building sprite it was cut out of.
-            apron_entry.IsTheaterShape = false;
+            // Theatre art, which is what puts it on the ground. This flag, not
+            // the smudge/overlay pair, is what the launcher sorts on: with it
+            // clear the apron rendered in the sprite pass and drew over a
+            // vehicle standing on it, however the entry was anchored. The
+            // apron is registered in all three RA_TERRAIN_<theatre> tilesets.
+            apron_entry.IsTheaterShape = true;
             apron_entry.IsFlag = false;
         }
     }

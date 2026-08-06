@@ -12,7 +12,7 @@ donor's construction-anim count.
 Inputs: $TS_ART_DIR holding shp_* dirs from ts_shp.py + renders_* from
 vxl_render.py.
 """
-import io, json, math, os, zipfile
+import io, json, math, os, sys, zipfile
 from PIL import Image
 import hqx
 
@@ -160,6 +160,31 @@ def patch_tileset(xml_path, name, count):
     print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles (replaced {removed})")
 
 
+# Every RA theatre's terrain tileset, and the texture folder its
+# RootTexturePath points at. A TS apron is registered in all three: it is
+# TERRAIN art, and terrain art is what the launcher draws on the ground.
+TERRAIN_THEATRES = [("TEMPERATE", "RA_TERRAIN_TEMPERATE.XML"),
+                    ("SNOW", "RA_TERRAIN_SNOW.XML"),
+                    ("INTERIOR", "RA_TERRAIN_INTERIOR.XML")]
+
+GAME_DATA = os.environ.get("CNC_REMASTER_DATA",
+                           os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data"))
+
+
+def ensure_tileset(xml_name):
+    """Path to the mod's copy of a terrain tileset, extracting the vanilla one
+    from CONFIG.MEG the first time. A mod tileset REPLACES the base file, so a
+    theatre we want to add one tile to has to ship the whole thing."""
+    import subprocess
+    path = f"{MOD}/Data/XML/TILESETS/{xml_name}"
+    if not os.path.exists(path):
+        subprocess.run([sys.executable, f"{SCRIPTS}/meg_extract.py", "extract",
+                        f"{GAME_DATA}/CONFIG.MEG", rf"DATA\XML\TILESETS\{xml_name}",
+                        os.path.dirname(path)], check=True, stdout=subprocess.DEVNULL)
+        print(f"extracted vanilla {xml_name} from CONFIG.MEG")
+    return path
+
+
 def resample(indices, target):
     return [indices[min(len(indices) - 1, round(i * (len(indices) - 1) / (target - 1)))] for i in range(target)]
 
@@ -289,8 +314,19 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             for c in range(grid_cols):
                 x, y = left + c * cell_px, top + r * cell_px
                 tiles.append(apron.crop((x, y, x + cell_px, y + cell_px)))
-        write_zip(f"{STRUCT_DIR}/{ini}BB.ZIP", f"{ini.lower()}bb", tiles)
-        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}BB", len(tiles))
+        # Registered as TERRAIN, in every theatre. The launcher decides what
+        # goes on the ground from the entry's IsTheaterShape flag, and a
+        # theatre shape is resolved out of RA_TERRAIN_<theatre>; ship it as a
+        # structure instead and it renders in the sorted sprite pass, where it
+        # draws over a vehicle standing on it. Concrete looks the same in every
+        # theatre, so all three get the same art.
+        for theatre, xml_name in TERRAIN_THEATRES:
+            tex_dir = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/TERRAIN/{theatre}"
+            os.makedirs(tex_dir, exist_ok=True)
+            write_zip(f"{tex_dir}/{ini}BB.ZIP", f"{ini.lower()}bb", tiles)
+            patch_tileset(ensure_tileset(xml_name), f"{ini}BB", len(tiles))
+        # A same-named structure tile would shadow the terrain one.
+        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}BB", 0)
 
     frames = [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in healthy]
     frames += [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in damaged_frames]
