@@ -9001,9 +9001,75 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
     }
 
     /*
+    ** Tiberian Factions -- the TS concrete apron. It is stamped into cells as a
+    ** bib-family smudge covering the building's whole plot (one frame per cell,
+    ** SmudgeData = col + row*Width), but it renders through the TD-template
+    ** GROUND path rather than the smudge path above: overlay layer, loose mod
+    ** art resolved by AssetName + ShapeIndex, drawn centred on the cell.
+    **
+    ** The apron used to be composited into the building sprite. That made it
+    ** take part in sprite sorting (a vehicle driving off the apron disappeared
+    ** behind it) and in the launcher's sprite hit-test (the apron answered as
+    ** the building, so units could not be ordered onto it). Ground art does
+    ** neither.
+    **
+    ** The one-dynamic-entry-per-cell rule applies: an apron cell carrying an
+    ** overlay yields to it, exactly as the TD ground entry above does, because
+    ** two entries on a cell z-fight with no stable ordering.
+    */
+    if (cell_ptr->Smudge == SMUDGE_TSWEAPBB) {
+        const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(cell_ptr->Smudge);
+
+        /*
+        **	Hide the apron along with a cloaked owner (the Stealth Generator
+        **	field), or it stays on the ground and betrays the base. The apron's
+        **	top-left cell is the building's own origin cell, which is always
+        **	occupied, so the owner resolves directly with no probe.
+        */
+        BuildingClass* apron_owner = NULL;
+        if (apron_type.Width > 0) {
+            int apron_col = cell_ptr->SmudgeData % apron_type.Width;
+            int apron_row = cell_ptr->SmudgeData / apron_type.Width;
+            int apron_origin = (int)cell - apron_col - apron_row * MAP_CELL_W;
+            if (apron_origin >= 0 && apron_origin < MAP_CELL_TOTAL) {
+                apron_owner = Map[(CELL)apron_origin].Cell_Building();
+            }
+        }
+        bool apron_hidden = (apron_owner != NULL && apron_owner->Visual_Character() == VISUAL_HIDDEN);
+
+        if (!apron_hidden && cell_ptr->Overlay == OVERLAY_NONE) {
+            CNCDynamicMapEntryStruct& apron_entry = dynamic_map->Entries[entry_index++];
+
+            strncpy(apron_entry.AssetName, apron_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
+            apron_entry.AssetName[CNC_OBJECT_ASSET_NAME_LENGTH - 1] = 0;
+            // Pip-free decorative type, the TD ground-entry choice: the launcher
+            // paints radar pips from the vanilla resource Type range regardless
+            // of our flags, so the apron must not claim one of those.
+            apron_entry.Type = (short)OVERLAY_V12;
+            apron_entry.Owner = (char)cell_ptr->Owner;
+            apron_entry.DrawFlags = SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST;
+            apron_entry.PositionX = xpixel + (CELL_PIXEL_W >> 1);
+            apron_entry.PositionY = ypixel + (CELL_PIXEL_H >> 1);
+            apron_entry.Width = CELL_PIXEL_W;
+            apron_entry.Height = CELL_PIXEL_H;
+            apron_entry.CellX = Cell_X(cell);
+            apron_entry.CellY = Cell_Y(cell);
+            apron_entry.ShapeIndex = cell_ptr->SmudgeData;
+            apron_entry.IsSmudge = false;
+            apron_entry.IsOverlay = true;
+            apron_entry.IsResource = false;
+            apron_entry.IsSellable = false;
+            // Not theatre art -- the apron ships as one loose tileset, like the
+            // building sprite it was cut out of.
+            apron_entry.IsTheaterShape = false;
+            apron_entry.IsFlag = false;
+        }
+    }
+
+    /*
     **	Redraw any smudge.
     */
-    if (cell_ptr->Smudge != SMUDGE_NONE) {
+    else if (cell_ptr->Smudge != SMUDGE_NONE) {
         // SmudgeTypeClass::As_Reference(Smudge).Draw_It(x, y, SmudgeData);
 
         const SmudgeTypeClass& smudge_type = SmudgeTypeClass::As_Reference(cell_ptr->Smudge);

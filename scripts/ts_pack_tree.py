@@ -167,7 +167,8 @@ def resample(indices, target):
 def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count,
                     canvas_w, canvas_h, target_w=None, bib_dir=None,
                     bottom_margin=None, overscale=1.0, mk_mask_dir=None,
-                    overlay_dir=None, fit_w=None, dst_x_px=None, door_spec=None):
+                    overlay_dir=None, fit_w=None, dst_x_px=None, door_spec=None,
+                    apron_cells=None):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -236,7 +237,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         cx, cy = (ux0 + ux1) / 2.0, (uy0 + uy1) / 2.0
         dst_x = dst_y = None
 
-    if overlay_dir is not None:
+    if overlay_dir is not None and apron_cells is None:
         # Ground overlay (TS concrete apron / dock bay): drawn UNDER the
         # building but EXCLUDED from the fit, so it rides into the canvas
         # halo at the building's scale without inflating the building's
@@ -249,6 +250,47 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             base.paste(under, (0, 0))
         healthy = [composite(base_h, anims, i, 1) for i in range(n)]
         damaged_frames = [composite(base_d, anims, i, 2) for i in range(n)]
+
+    if apron_cells is not None:
+        # The apron as GROUND ART: sliced per plot cell into its own tileset
+        # instead of being composited into the building sprite. Sprite pixels
+        # sort against units and answer the launcher's hit-test, so an apron
+        # inside the sprite swallows vehicles driving off it and cannot be
+        # ordered onto; ground art does neither. The engine stamps it cell by
+        # cell as SMUDGE_<INI>BB (sdata.cpp) and draws it on the overlay layer.
+        #
+        # Sliced through the BUILDING's affine, so the concrete lands exactly
+        # where it did in the sprite. The launcher centres a building's canvas
+        # on its BSIZE box, so the plot's north-west corner sits half the
+        # canvas-minus-box overhang in from the canvas corner, and one cell is
+        # 24 classic px of canvas.
+        # The tile grid may be larger than the plot: TS concrete tapers a few
+        # pixels past the plot edge, and a bib is allowed to lie outside the
+        # footprint it belongs to. The grid must match the SmudgeTypeClass in
+        # sdata.cpp, so the apron's real extent is checked against it here --
+        # art that outgrows the grid is a silent clip otherwise.
+        (cols, rows), (grid_cols, grid_rows) = apron_cells
+        cell_px = 24.0 * CANVAS_PER_CLASSIC_PX
+        left = (canvas_w - cols * cell_px) / 2.0
+        top = (canvas_h - rows * cell_px) / 2.0
+        if abs(left - round(left)) > 1e-6 or abs(top - round(top)) > 1e-6:
+            raise SystemExit(f"{ini}: apron plot origin ({left},{top}) is not a whole pixel")
+        left, top, cell_px = round(left), round(top), round(cell_px)
+        apron = place(load(overlay_dir, healthy_f), factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
+        bb = apron.getbbox()
+        if bb and (bb[0] < left or bb[1] < top
+                   or bb[2] > left + grid_cols * cell_px or bb[3] > top + grid_rows * cell_px):
+            raise SystemExit(
+                f"{ini}: apron spans {bb} but the {grid_cols}x{grid_rows} tile grid covers "
+                f"{(left, top, left + grid_cols * cell_px, top + grid_rows * cell_px)}. "
+                f"Grow the grid here and the SmudgeTypeClass in sdata.cpp together.")
+        tiles = []
+        for r in range(grid_rows):
+            for c in range(grid_cols):
+                x, y = left + c * cell_px, top + r * cell_px
+                tiles.append(apron.crop((x, y, x + cell_px, y + cell_px)))
+        write_zip(f"{STRUCT_DIR}/{ini}BB.ZIP", f"{ini.lower()}bb", tiles)
+        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}BB", len(tiles))
 
     frames = [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in healthy]
     frames += [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in damaged_frames]
@@ -484,13 +526,19 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
         anims = [("shp_gtradr_a", fwd + back, dfwd + dback)]
     else:
         anims = [loop(d) for d in anim_dirs]
-    # Both aprons live in the BUILT art now (overlay, fit-excluded), so the
-    # buildups pour and keep their pads too — nothing needs masking out.
-    masks = {}
+    # The refinery's apron lives in its BUILT art, so its buildup pours and
+    # keeps its pad too. The war factory's apron is ground art, stamped from
+    # the moment the plot goes down, so its pad must come OUT of the buildup
+    # frames or the concrete is drawn twice over itself.
+    masks = {"TSWEAP": "shp_gtweapbb"}
     # Full apron (the 4x3-rectangle clip sliced hard edges through the
     # stripes -- Luke, 2026-08-05 01:20; the cliff-edge drape is a queued
     # design question, not solvable with a rectangle cut).
     overlays = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb"}
+    # The war factory's apron ships as ground art, one tile per cell: (plot,
+    # tile grid), the grid matching its SmudgeTypeClass. The refinery's apron
+    # is still inside its sprite, pending the same treatment.
+    aprons = {"TSWEAP": ((4, 3), (5, 3))}
     # TS drives the war factory bay with a separate 9-stage shutter over a
     # static interior (ART.INI: DoorAnim/DoorStages/UnderDoorAnim).
     doors = {"TSWEAP": ("shp_gtweap_d", "shp_gtweap_1", 9)}
@@ -503,7 +551,8 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     # canvas, and anchor it on those columns rather than on
                     # the box centre.
                     fit_w={"TSPROC": 384, "TSWEAP": 384}.get(ini),
-                    dst_x_px={"TSPROC": 304, "TSWEAP": 256}.get(ini))
+                    dst_x_px={"TSPROC": 304, "TSWEAP": 256}.get(ini),
+                    apron_cells=aprons.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSFACT: TS Construction Yard on the RA-conyard 3x3 plot (BSIZE_33 +

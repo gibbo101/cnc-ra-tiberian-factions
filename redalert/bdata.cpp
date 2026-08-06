@@ -5544,6 +5544,17 @@ bool BuildingTypeClass::Bib_And_Offset(SmudgeType& bib, CELL& cell) const
 {
     bib = SMUDGE_NONE;
 
+    /*
+    **	Tiberian Factions -- the TS concrete apron is the building's ground art,
+    **	so it is a bib covering the WHOLE plot from the top-left corner rather
+    **	than an RA slab hung off the bottom row. It is independent of Bib= in
+    **	rules (which governs the RA slab, and is off for these buildings).
+    */
+    if (Type == STRUCT_TSWEAP) {
+        bib = SMUDGE_TSWEAPBB;
+        return (true);
+    }
+
     if (IsBibbed) {
         switch (Width()) {
         case 2:

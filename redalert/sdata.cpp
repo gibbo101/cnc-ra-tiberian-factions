@@ -171,6 +171,22 @@ static SmudgeTypeClass const Bibx3(SMUDGE_BIB3,
                                    false // Is this a crater smudge?
 );
 
+/*
+**	TS war factory concrete apron: one frame per cell, in reading order from the
+**	building's top-left corner. Five columns for a four-column plot -- the
+**	concrete tapers a few pixels past the plot's east edge, and like every RA
+**	bib the apron is allowed to lie outside the footprint it belongs to. These
+**	dimensions are checked against the packed art by ts_pack_tree.py.
+*/
+static SmudgeTypeClass const TsWeapBib(SMUDGE_TSWEAPBB,
+                                       "TSWEAPBB",
+                                       TXT_BIB,
+                                       5,
+                                       3,    // Width and height of smudge (in icons).
+                                       true, // Is this a building bib?
+                                       false // Is this a crater smudge?
+);
+
 /***********************************************************************************************
  * SmudgeTypeClass::SmudgeTypeClass -- Constructor for smudge type objects.                    *
  *                                                                                             *
@@ -280,6 +296,7 @@ void SmudgeTypeClass::Init_Heap(void)
     new SmudgeTypeClass(Bibx1);   // SMUDGE_BIB1
     new SmudgeTypeClass(Bibx2);   //	SMUDGE_BIB2
     new SmudgeTypeClass(Bibx3);   // SMUDGE_BIB3
+    new SmudgeTypeClass(TsWeapBib); // SMUDGE_TSWEAPBB
 }
 
 /***********************************************************************************************

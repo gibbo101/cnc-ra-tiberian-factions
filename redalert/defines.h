@@ -2803,6 +2803,14 @@ typedef enum SmudgeType : char
     SMUDGE_BIB2,
     SMUDGE_BIB3,
 
+    /*
+    **	TS concrete aprons. These are bib-family smudges covering a building's
+    **	whole plot, one frame per cell, so the apron lives on the ground layer
+    **	instead of inside the building sprite: it neither sorts against units
+    **	standing on it nor answers the launcher's sprite hit-test.
+    */
+    SMUDGE_TSWEAPBB,
+
     SMUDGE_COUNT,
     SMUDGE_FIRST = 0
 } SmudgeType;
