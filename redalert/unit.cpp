@@ -1129,7 +1129,7 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                     }
                 }
 #endif
-                DirType lineup_facing = (*this == UNIT_TDHARV) ? (DirType)92 : (DirType)89;
+                DirType lineup_facing = (*this == UNIT_TDHARV) ? (DirType)94 : (DirType)92;
                 if (!IsRotating && PrimaryFacing != lineup_facing) {
                     Do_Turn(lineup_facing);
                 } else if (!IsDriving
@@ -1146,7 +1146,7 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                     */
                     COORDINATE padc = Cell_Coord(Coord_Cell(((BuildingClass*)rdock)->Center_Coord()));
                     bool td_truck = (*this == UNIT_TDHARV);
-                    COORDINATE track_end = Coord_Add(padc, td_truck ? XY_Coord(-8, 34) : XY_Coord(22, 92));
+                    COORDINATE track_end = Coord_Add(padc, td_truck ? XY_Coord(3, 23) : XY_Coord(40, 74));
 #if TF_DEV_BUILD
                     {
                         char dpath[512];
