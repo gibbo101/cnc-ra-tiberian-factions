@@ -9050,9 +9050,12 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             // of our flags, so the apron must not claim one of those.
             apron_entry.Type = (short)OVERLAY_V12;
             apron_entry.Owner = (char)cell_ptr->Owner;
-            apron_entry.DrawFlags = SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST;
-            apron_entry.PositionX = xpixel + (CELL_PIXEL_W >> 1);
-            apron_entry.PositionY = ypixel + (CELL_PIXEL_H >> 1);
+            // Top-left anchored, the convention every RA smudge uses. Drawn
+            // centred instead, the apron's sort point sat half a cell further
+            // south and it beat a vehicle standing on that same cell.
+            apron_entry.DrawFlags = SHAPE_WIN_REL;
+            apron_entry.PositionX = xpixel;
+            apron_entry.PositionY = ypixel;
             apron_entry.Width = CELL_PIXEL_W;
             apron_entry.Height = CELL_PIXEL_H;
             apron_entry.CellX = Cell_X(cell);

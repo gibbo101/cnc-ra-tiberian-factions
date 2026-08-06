@@ -526,11 +526,14 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
         anims = [("shp_gtradr_a", fwd + back, dfwd + dback)]
     else:
         anims = [loop(d) for d in anim_dirs]
-    # The refinery's apron lives in its BUILT art, so its buildup pours and
-    # keeps its pad too. The war factory's apron is ground art, stamped from
-    # the moment the plot goes down, so its pad must come OUT of the buildup
-    # frames or the concrete is drawn twice over itself.
-    masks = {"TSWEAP": "shp_gtweapbb"}
+    # Buildups pour and keep their pads. That double-draws the war factory's
+    # concrete over the ground apron beneath it, which costs nothing (identical
+    # art, identical place) and is the only thing colouring its hazard stripes
+    # during construction: the stripes sit in the house-REMAP range, buildings
+    # are remapped by the launcher and ground art is not, so an apron left to
+    # supply them on its own shows them raw green. Once built the door overlay
+    # covers them, which is why it only ever showed while building.
+    masks = {}
     # Full apron (the 4x3-rectangle clip sliced hard edges through the
     # stripes -- Luke, 2026-08-05 01:20; the cliff-edge drape is a queued
     # design question, not solvable with a rectangle cut).
