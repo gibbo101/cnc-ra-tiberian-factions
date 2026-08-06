@@ -3970,16 +3970,13 @@ int UnitClass::Mission_Unload(void)
 #endif
             Transmit_Message(RADIO_OVER_OUT);
             Assign_Mission(MISSION_HARVEST);
-            if (ts_bay_exit) {
-                /*
-                **	Drive forward east out of the bay back onto the plate
-                **	cell (the line-up cell), mirroring each truck's entry.
-                */
-                bool td_truck = (*this == UNIT_TDHARV);
-                Force_Track(td_truck ? OUT_OF_REFINERY_SE_TD : OUT_OF_REFINERY_SE,
-                            Coord_Add(Coord, td_truck ? XY_Coord(243, 243) : XY_Coord(199, 199)));
-                Set_Speed(128);
-            }
+            /*
+            **	No scripted bay exit (Luke, 2026-08-06: "eliminate the drive
+            **	forward"): the truck leaves the park under normal pathing.
+            **	The pad's only free neighbours are the plate cells, so it
+            **	drives out over the concrete anyway -- organically, facing
+            **	wherever it's actually going.
+            */
         }
         break;
     }
