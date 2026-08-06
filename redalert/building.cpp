@@ -428,6 +428,23 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         }
 
         /*
+        **	TF (TSPROC visible dock): once the customer has begun the dock
+        **	maneuver -- driving its reverse track, parked on the pad, or
+        **	actively unloading -- the docking dance is DONE. Re-running the
+        **	NEED_TO_MOVE / MOVE_HERE coordination below would re-order the
+        **	truck to the PLATE (its line-up cell): a stale NavCom laid while
+        **	the reverse track was driving resumed after the park and read as
+        **	"backs in perfectly, then drives 1 tile SE to unload".
+        */
+        if (*this == STRUCT_TSPROC && from != NULL && from->What_Am_I() == RTTI_UNIT) {
+            UnitClass* customer = (UnitClass*)from;
+            if (customer->IsDumping || customer->TrackNumber != -1
+                || Coord_Cell(customer->Center_Coord()) == Coord_Cell(Center_Coord())) {
+                return (RADIO_ROGER);
+            }
+        }
+
+        /*
         **	If this building is already in radio contact, then it might
         **	be able to satisfy the request to load by bumping off any
         **	preoccupying task.

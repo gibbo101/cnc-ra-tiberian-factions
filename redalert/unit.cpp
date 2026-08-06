@@ -3817,6 +3817,15 @@ int UnitClass::Mission_Unload(void)
         if (!IsDumping) {
             IsDumping = true; // park (blocks driving) + mark "actively unloading" for B3 capture
             /*
+            **	Kill any navigation laid during the approach: the docking
+            **	maintenance loop can re-order the truck to its line-up cell
+            **	while the reverse track is still driving, and that stale
+            **	NavCom resumes after the park -- the "drives 1 tile SE to
+            **	actually unload" bug (Luke, 2026-08-06). The truck must not
+            **	move again until the unload finishes.
+            */
+            Assign_Destination(TARGET_NONE);
+            /*
             **	Park nudge per refinery: at the TD refinery the rear noses NE
             **	toward the pillars; at the TS refinery the truck seats SE onto
             **	the hazard ramp (Luke's Aseprite point, +5/+7 from the pad cell
