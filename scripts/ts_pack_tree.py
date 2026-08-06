@@ -301,7 +301,21 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         if abs(left - round(left)) > 1e-6 or abs(top - round(top)) > 1e-6:
             raise SystemExit(f"{ini}: apron plot origin ({left},{top}) is not a whole pixel")
         left, top, cell_px = round(left), round(top), round(cell_px)
-        apron = place(load(overlay_dir, healthy_f), factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
+        # The apron's hazard stripes are drawn in TS's house-REMAP range (raw
+        # green in the source art). The launcher remaps building sprites and
+        # leaves ground art alone, so those stripes have to carry their final
+        # colour here or they render green. Baked to the gold the launcher
+        # itself produces from that ramp, measured off a rendered frame:
+        # value preserved, (v, 0.82v, 0). Hazard markings are a fixed yellow in
+        # TS whoever owns the building, so a baked colour is no loss.
+        src = load(overlay_dir, healthy_f)
+        px = src.load()
+        for y in range(src.height):
+            for x in range(src.width):
+                r, g, b, a = px[x, y]
+                if a and g > 70 and g > r * 1.6 and g > b * 1.6:
+                    px[x, y] = (g, round(g * 0.82), 0, a)
+        apron = place(src, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
         bb = apron.getbbox()
         if bb and (bb[0] < left or bb[1] < top
                    or bb[2] > left + grid_cols * cell_px or bb[3] > top + grid_rows * cell_px):
@@ -343,7 +357,25 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # stages-1 (open); the damaged run repeats them over the damaged
         # interior, since TS ships no wrecked-door art (the frames past the
         # real stages are magenta placeholders, as in GTPOWRMK).
+        from PIL import ImageChops
         door_dir, under_dir, stages = door_spec
+
+        # Clipped to the building's own silhouette. TS's under-door art carries
+        # the whole bay surround -- ramp and concrete included -- and 71% of it
+        # falls outside the building, where it is a duplicate of ground the
+        # apron already draws. Left in, that surplus is BUILDING art covering
+        # the cells vehicles stand on, which is what made units vanish beside
+        # the factory. Everything that actually moves between door stages is
+        # inside the silhouette, so nothing of the door itself is lost.
+        def silhouette(run):
+            m = None
+            for f in run:
+                a = f.split()[3].point(lambda v: 255 if v > 0 else 0)
+                m = a if m is None else ImageChops.lighter(m, a)
+            return m
+
+        sils = [silhouette(healthy), silhouette(damaged_frames)]
+
         door_frames = []
         for under_f in (0, 1):
             under = load(under_dir, under_f)
@@ -351,6 +383,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 shutter = load(door_dir, s)
                 cell = under.copy()
                 cell.paste(shutter, (0, 0), shutter)
+                cell.putalpha(ImageChops.multiply(cell.split()[3], sils[under_f]))
                 door_frames.append(place(cell, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y))
         write_zip(f"{STRUCT_DIR}/{ini}2.ZIP", f"{ini.lower()}2", door_frames)
         patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}2", len(door_frames))
