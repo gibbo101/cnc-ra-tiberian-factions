@@ -7172,7 +7172,10 @@ int BuildingClass::Mission_Unload(void)
         enum
         {
             DOOR_STAGES = 9,
-            DOOR_RATE = 8
+            // Ticks per stage. TS spreads its shutter over nine stages where
+            // RA's factory uses five, so RA's rate of 8 would take almost
+            // twice as long to open.
+            DOOR_RATE = 4
         };
         UnitClass* unit;
 
