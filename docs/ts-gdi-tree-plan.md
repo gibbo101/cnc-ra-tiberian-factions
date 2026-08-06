@@ -1,5 +1,63 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐ SESSION END 2026-08-06 LATE — RESUME HERE (war factory)
+**Desktop prefix at `6506fb8b`, md5-verified. Deck still STALE at `2d8a5dbb`.
+Nothing pushed to origin.**
+
+**SIGNED OFF IN PLAY:** the bay door ("door animation looks good", speed dialled
+to DOOR_RATE 4) and the placement reach fix.
+
+**SHIPPED, NOT YET JUDGED:** 4x3 plot + concrete pad, the size fix, bib off,
+the apron build-veto, pad sort order.
+
+### ⭐ THE FINDING THAT DRIVES NEXT SESSION: the pad must become GROUND ART
+Two separate-looking bugs share one root cause — **the pad is part of the
+building SPRITE**:
+- units walking off the pad to the NE vanish under it (sprite sorting);
+- hovering the pad gives a select-this-building cursor, so units cannot be
+  ordered onto it (sprite hit-testing — `Cell_Techno` walks only the occupier
+  chain, and the building occupies just its six hangar cells, so this is the
+  LAUNCHER hit-testing the sprite, not the DLL).
+
+**Both affect TSPROC identically.** The fix is to cut the TS pad as ground art
+(the engine's bib model) instead of compositing it into the sprite — it then
+takes part in neither sorting nor hit-testing. A sort-point tweak was
+considered and rejected: it would hide the first bug and leave the second.
+
+### Open, in order
+1. **Pad → ground layer** (above). Fixes both buildings.
+2. **SE bay exits** — never started. `TsWeapExit` prefers south-east cells and
+   the spawn faces DIR_SE, but nothing is dialled; expect an awkward pose.
+   Wants Luke's eye live, like the dock.
+3. Carry-overs from the earlier block below (RA-truck-at-TSPROC eyeball,
+   watched TDHARV dock, sidebar off-by-one upstream, TSFACT selection box).
+
+### Falsified this session — CORRECTED BELOW, do not re-trust the old claim
+- **GTWEAP frame 1 is NOT a "door-open healthy variant".** Frames 0/1/2 are
+  healthy / LIGHT damage / HEAVY damage. Building a door on frame 1 made the
+  factory look shot up while producing. The real door is a separate SHP:
+  `ART.INI` gives `DoorAnim=GAWEAP_D`, `DoorStages=9`, `UnderDoorAnim=GAWEAP_1`,
+  now packed as the TSWEAP2 overlay and drawn through RA's WEAP2 path.
+  The same "frame 1 = variant" claim elsewhere in this doc is suspect.
+- `GTWEAP_D` frames 9-17 are **magenta placeholders**, not a damaged door run
+  (same trap as GTPOWRMK).
+
+### Traps that cost time today
+- **Canvas and classic stub must move together.** Growing a canvas without
+  re-running `build_tfassets.sh` renders the building at the wrong scale,
+  silently. Hit twice — the shrunken hangar and then the mis-sized door.
+  Now guarded: `ts_pack_tree.py` writes `scripts/ts_stub_dims.json` and
+  `ts_stub` in `build_tfassets.sh` refuses a stub that disagrees.
+- **An overlay's shape pointer supplies its render box.** Passing TDWEAP2's
+  pointer drew the TS door at the TD factory's size; TSWEAP2 now has its own
+  stub in TFASSETS.MIX.
+- `Find_Exit_Cell` dereferences its argument — guard before calling it from a
+  state that runs after radio contact drops.
+- `$TS_ART_DIR` was gone from disk and nothing in the repo could rebuild it.
+  Now `scripts/ts_rebuild_art.sh` regenerates it from the Steam TS install
+  (verified: re-packs all twenty TS archives content-identical).
+- TS building cameos live in **SIDEC01.MIX** (GDI), not CONQUER.MIX.
+
 ## ⭐ SESSION END 2026-08-06 — RESUME HERE
 **Desktop prefix at `de1790b5` (md5-verified). Deck still STALE at
 `2d8a5dbb` — push before any Deck play. Nothing pushed to origin
@@ -451,11 +509,15 @@ Deck-deployed):**
   `AppData/Roaming/CnCRemastered/` — check there FIRST next crash.
 - **Dock fix VERIFIED live before the crash:** TDHARV and TSHARV both logged
   DOCK-START at TSPROC.
-- **Damaged-frame convention discovered: TS building SHPs = frame 0 healthy,
-  frame 1 healthy VARIANT (WF door-open, radar mast up), frame 2 DAMAGED,
-  3-5 rubble fragments.** All nine shipped damaged=1 → damaged buildings
-  rendered pristine. All now use frame 2 (bib plates too). The WF door-open
-  frame 1 is a future lever for an exit-door anim.
+- **Damaged-frame convention: TS building SHPs = frame 0 healthy, frame 1
+  LIGHT damage, frame 2 HEAVY damage, 3-5 rubble fragments.** All nine
+  shipped damaged=1 → damaged buildings showed the light stage and read as
+  pristine. All now use frame 2 (bib plates too).
+  (Corrected 2026-08-06: frame 1 was recorded here as a "healthy variant —
+  WF door-open, radar mast up" and treated as a free door animation. It is
+  not; building a door on it made the factory look shot up while producing.
+  The real door is a separate SHP — see the top block. Whether any TS
+  building has a genuine frame-1 variant is unverified; assume damage.)
 - TSWEAP stub 96x84 (canvas hugs the squat hangar; brackets were floating).
 - Luke: TS WF vs TD WF — TS is authentically squat/wide vs TD's tall box;
   +10% overscale applied earlier stands.
