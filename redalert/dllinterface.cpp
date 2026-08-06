@@ -9022,7 +9022,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
     ** overlay yields to it, exactly as the TD ground entry above does, because
     ** two entries on a cell z-fight with no stable ordering.
     */
-    if (cell_ptr->Smudge == SMUDGE_TSWEAPBB) {
+    if (Is_TS_Apron_Smudge(cell_ptr->Smudge)) {
         const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(cell_ptr->Smudge);
 
         /*

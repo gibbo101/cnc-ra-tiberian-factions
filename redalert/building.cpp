@@ -5148,6 +5148,19 @@ bool Is_Refinery_Dock_Busy(CELL cell)
  *    = the dock pad): the ramp row (row 2, cols 2-3) plus the east column (col 3, rows 0-1)   *
  *    plus the pad itself.                                                                     *
  *=============================================================================================*/
+/***********************************************************************************************
+ * Is_TS_Apron_Smudge -- Is this smudge a TS building's concrete apron?                        *
+ *                                                                                             *
+ *    The aprons are bib-family smudges, but only in how they are stamped and indexed. They    *
+ *    are ground DECORATION: they render as terrain rather than through the smudge path, and   *
+ *    they say nothing about where building is legal (Is_TS_Apron_Cell owns that, and an       *
+ *    apron deliberately spills past its plot where the concrete tapers out).                  *
+ *=============================================================================================*/
+bool Is_TS_Apron_Smudge(SmudgeType smudge)
+{
+    return (smudge == SMUDGE_TSWEAPBB || smudge == SMUDGE_TSPROCBB);
+}
+
 bool Is_TS_Apron_Cell(CELL cell)
 {
     if ((unsigned)cell >= MAP_CELL_TOTAL) {

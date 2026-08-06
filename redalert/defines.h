@@ -2810,6 +2810,7 @@ typedef enum SmudgeType : char
     **	standing on it nor answers the launcher's sprite hit-test.
     */
     SMUDGE_TSWEAPBB,
+    SMUDGE_TSPROCBB,
 
     SMUDGE_COUNT,
     SMUDGE_FIRST = 0

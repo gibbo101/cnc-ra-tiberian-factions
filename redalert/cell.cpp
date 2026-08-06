@@ -509,7 +509,7 @@ bool CellClass::Is_Clear_To_Build(SpeedType loco) const
     **	about where building is legal -- Is_TS_Apron_Cell above owns that, and
     **	it vetoes the plot only. Add any further apron smudge here too.
     */
-    if (Smudge != SMUDGE_NONE && SmudgeTypeClass::As_Reference(Smudge).IsBib && Smudge != SMUDGE_TSWEAPBB
+    if (Smudge != SMUDGE_NONE && SmudgeTypeClass::As_Reference(Smudge).IsBib && !Is_TS_Apron_Smudge(Smudge)
         /* && Owner != HOUSE_NONE*/) {
         return (false);
     }

@@ -1,57 +1,81 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐ 2026-08-07 — RESUME HERE (war factory apron → ground art)
-**Desktop prefix at `d87e76f0`, md5-verified (DLL + TSWEAPBB.ZIP). Deck still
-STALE at `2d8a5dbb`. Nothing pushed to origin.**
+## ⭐ 2026-08-07 — RESUME HERE (war factory apron: FIXED + signed off)
+**Desktop prefix at `22f8029d`, md5-verified. Deck still STALE at `2d8a5dbb`.
+Nothing pushed to origin.**
 
-**SHIPPED, AWAITING ITS FIRST LOOK IN PLAY: the war factory apron is now ground
-art.** The two bugs from 2026-08-06 (vehicles vanishing under the apron; the
-apron answering the mouse as the building) were one cause — the apron lived in
-the building sprite, so it took part in sprite sorting and in the launcher's
-sprite hit-test. It is now the engine's own bib.
+**SIGNED OFF IN PLAY ("FIXED!!"):** vehicles no longer vanish beside the war
+factory, and the apron is ground art that takes a move order.
 
-### How it works now, and what to check first
+### ⭐ THE ROOT CAUSE WAS THE BAY DOOR, NOT THE APRON
+Four rounds were spent moving the apron between render layers before anyone
+measured *what was actually covering the unit*. It was `TSWEAP2`, the bay-door
+overlay. **TS's under-door art (`GAWEAP_1`) carries the whole bay surround —
+ramp and concrete included — and 71% of it fell OUTSIDE the building's own
+silhouette.** That surplus is BUILDING art, so it sorts as building and paints
+over exactly the cells vehicles stand on (69% and 83% of the two worst plot
+cells). No apron flag could ever have fixed it.
+
+**Fix: clip the door composite to the building's silhouette** (union of the
+built frames' alpha, per damage run). Lossless for the animation — of the
+pixels that move across the nine door stages, **15 of 10,523** lay outside.
+Verified after packing: the door paints 0% outside the building in every cell.
+
+⚠ **The lesson, and it is the second time this arc has cost hours: measure
+which object owns the pixels before changing any render flag.** A per-cell
+coverage table off the packed art took one command and gave the answer
+outright. See [[feedback-identify-occluder-before-flag-changes]].
+
+### The apron, as it now stands (all of this is keeper work)
 - `SMUDGE_TSWEAPBB` (`sdata.cpp`) is a bib-family smudge, **5 wide x 3 tall**
-  over the 4x3 plot. `BuildingTypeClass::Bib_And_Offset` returns it for
-  `STRUCT_TSWEAP` at offset 0 (plot top-left), independent of `Bib=` in rules
-  (which still governs the RA slab, still off). Everything downstream is stock
-  RA: `SmudgeClass::Mark` stamps `Smudge`+`SmudgeData` per cell, capture
-  re-owns it, `Disown` clears it.
-- **It renders through the TD-terrain GROUND path, not the smudge path**
-  (`Cell_Class_Draw_It`): `IsOverlay=true`, `IsTheaterShape=false`,
-  `Type=OVERLAY_V12` (pip-free), `ShapeIndex=SmudgeData`, drawn centred on the
-  cell. The smudge layer was avoided deliberately — the TD-tile work found it
-  unreliable against ground entries.
-- **⚠ FIRST THING TO CHECK IN PLAY: does the apron render at all?** The
-  live risks are all in that entry: `IsTheaterShape=false` resolving
-  `TSWEAPBB` out of `RA_STRUCTURES.XML`, and `Type=OVERLAY_V12` being
-  accepted. If it is invisible, that is where to look, not the art.
-  If it renders, check: a Titan driving off it stays visible, and the apron
-  takes a move order instead of selecting the factory.
+  over the 4x3 plot. `Bib_And_Offset` returns it for `STRUCT_TSWEAP` at offset
+  0, independent of `Bib=` in rules (which still governs the RA slab, off).
+  Downstream is stock RA: `SmudgeClass::Mark` stamps `Smudge`+`SmudgeData`,
+  capture re-owns, `Disown` clears.
+- **It draws as TERRAIN**, the TD-template ground entry copied field for field:
+  `IsOverlay=true`, `IsSmudge=false`, **`IsTheaterShape=true`**,
+  `Type=OVERLAY_V12` (pip-free), `SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_GHOST`,
+  centred on the cell, `ShapeIndex=SmudgeData`.
+- **A theatre shape resolves out of `RA_TERRAIN_<theatre>`, not
+  `RA_STRUCTURES`** — so the tiles live in all three RA terrain tilesets and
+  their art under `TERRAIN/<THEATRE>/`. **Snow had no mod tileset at all**; the
+  mod now ships a full `RA_TERRAIN_SNOW.XML` extracted from CONFIG.MEG and
+  spliced (a mod tileset REPLACES the base file, so a theatre you want one tile
+  in has to ship the whole thing). `ensure_tileset()` in `ts_pack_tree.py` does
+  the extraction on first run.
+- **`Is_Clear_To_Build` refuses to build over ANY bib** — stock RA. The apron is
+  exempted there (`cell.cpp`), so placement is decided by `Is_TS_Apron_Cell`
+  alone, which vetoes the 4x3 plot and leaves the 5th column free. **Add any
+  future apron smudge to that exemption too.**
 - **The 5th column is deliberate.** The concrete tapers ~14 canvas px past the
   plot's east edge; a 4-wide grid cut a flat vertical edge 48px tall across the
   tip. RA's own bibs lie outside their footprints too. `ts_pack_tree.py`
-  measures the packed apron against the grid and **fails the build** if the art
-  outgrows it — if you change the grid, change `sdata.cpp` in the same commit.
-- The apron slice is verified exact: reassembling the 15 tiles under the new
-  sprite reproduces the old composite with **zero alpha difference**. The
-  residual RGB difference is hq4x edge interpolation, unavoidable once the two
-  layers are scaled separately.
-- The buildup masks its poured pad out again (`masks = {"TSWEAP": ...}`) — the
-  ground apron exists from `MARK_DOWN`, so leaving it in the buildup draws the
-  concrete twice.
+  **fails the build** if the packed apron outgrows its grid — change the grid
+  and `sdata.cpp` in the same commit.
+- The slice is verified exact: the 15 tiles under the new sprite reproduce the
+  old composite with **zero alpha difference**. Residual RGB difference is hq4x
+  edge interpolation, unavoidable once the layers scale separately.
+- **The apron's hazard stripes are BAKED gold** `(v, 0.82v, 0)`. They are drawn
+  in TS's house-remap range (raw green in source); the launcher remaps building
+  sprites and **never** ground art, so ground art must carry its final colour.
+  The ratio was measured off a rendered frame, so it is the launcher's own
+  output for that ramp. Fixed whoever owns the factory — open to revisit if a
+  house-tinted stripe is ever wanted, in which case the stripes come out of the
+  apron entirely instead.
+- The buildup pours and keeps its own pad (`masks = {}`); its remapped stripes
+  cover the apron's during construction.
 
 ### Open, in order
-1. **Judge the apron in play** (above).
-2. **TSPROC gets the same treatment** — identical bug, still sprite-composited.
-   Deliberately left alone until the mechanism is proven on the factory,
-   because its dock is signed off and I did not want to disturb it. It needs
-   its own `SMUDGE_TSPROCBB` and an `aprons` entry; the packer already
-   generalises (pass `((plot), (grid))`).
-3. **SE bay exits** — never started. `TsWeapExit` prefers south-east cells and
+1. **TSPROC apron gets the same treatment** — still sprite-composited, still
+   occludes (Luke saw it on the cell below a med tank) and still hit-tests as
+   building. Left alone deliberately until the mechanism was proven. Needs its
+   own `SMUDGE_TSPROCBB` + `aprons` entry + the `Is_Clear_To_Build` exemption;
+   the packer already generalises (pass `((plot), (grid))`). **Check its art
+   for remap-range pixels too**, and mind its dock-pad occupy hole.
+2. **SE bay exits** — never started. `TsWeapExit` prefers south-east cells and
    the spawn faces DIR_SE, but nothing is dialled; expect an awkward pose.
    Wants Luke's eye live, like the dock.
-4. Carry-overs: TSFACT conyard selection box, RA-truck-at-TSPROC eyeball,
+3. Carry-overs: TSFACT conyard selection box, RA-truck-at-TSPROC eyeball,
    watched TDHARV dock, sidebar off-by-one upstream to main.
 
 ## SESSION END 2026-08-06 LATE (war factory door + plot)

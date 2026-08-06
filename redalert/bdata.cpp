@@ -5554,6 +5554,10 @@ bool BuildingTypeClass::Bib_And_Offset(SmudgeType& bib, CELL& cell) const
         bib = SMUDGE_TSWEAPBB;
         return (true);
     }
+    if (Type == STRUCT_TSPROC) {
+        bib = SMUDGE_TSPROCBB;
+        return (true);
+    }
 
     if (IsBibbed) {
         switch (Width()) {

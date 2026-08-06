@@ -607,10 +607,9 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     # stripes -- Luke, 2026-08-05 01:20; the cliff-edge drape is a queued
     # design question, not solvable with a rectangle cut).
     overlays = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb"}
-    # The war factory's apron ships as ground art, one tile per cell: (plot,
-    # tile grid), the grid matching its SmudgeTypeClass. The refinery's apron
-    # is still inside its sprite, pending the same treatment.
-    aprons = {"TSWEAP": ((4, 3), (5, 3))}
+    # Aprons ship as ground art, one tile per cell: (plot, tile grid), the grid
+    # matching the building's SmudgeTypeClass in sdata.cpp.
+    aprons = {"TSWEAP": ((4, 3), (5, 3)), "TSPROC": ((4, 3), (5, 3))}
     # TS drives the war factory bay with a separate 9-stage shutter over a
     # static interior (ART.INI: DoorAnim/DoorStages/UnderDoorAnim).
     doors = {"TSWEAP": ("shp_gtweap_d", "shp_gtweap_1", 9)}

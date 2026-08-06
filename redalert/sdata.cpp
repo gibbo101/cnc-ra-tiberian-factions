@@ -187,6 +187,19 @@ static SmudgeTypeClass const TsWeapBib(SMUDGE_TSWEAPBB,
                                        false // Is this a crater smudge?
 );
 
+/*
+**	TS refinery concrete apron, the same treatment: its concrete tapers past the
+**	east edge of the 4x3 plot too, so it also takes a fifth column.
+*/
+static SmudgeTypeClass const TsProcBib(SMUDGE_TSPROCBB,
+                                       "TSPROCBB",
+                                       TXT_BIB,
+                                       5,
+                                       3,    // Width and height of smudge (in icons).
+                                       true, // Is this a building bib?
+                                       false // Is this a crater smudge?
+);
+
 /***********************************************************************************************
  * SmudgeTypeClass::SmudgeTypeClass -- Constructor for smudge type objects.                    *
  *                                                                                             *
@@ -297,6 +310,7 @@ void SmudgeTypeClass::Init_Heap(void)
     new SmudgeTypeClass(Bibx2);   //	SMUDGE_BIB2
     new SmudgeTypeClass(Bibx3);   // SMUDGE_BIB3
     new SmudgeTypeClass(TsWeapBib); // SMUDGE_TSWEAPBB
+    new SmudgeTypeClass(TsProcBib); // SMUDGE_TSPROCBB
 }
 
 /***********************************************************************************************
