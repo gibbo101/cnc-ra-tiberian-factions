@@ -427,12 +427,16 @@ SIZEPASS = [
     ("TSPROC", "shp_ntrefn", [("shp_ntrefn_b", list(range(2, 17)), list(range(2, 17)))],
      "shp_ntrefnmk", 19, (736, 928), 75, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
-    # TDWEAP-parity 3x3, apron dropped, RA slab (Luke, 2026-08-04 — "same
-    # as ts ref"). Stub 72x78 = 3-classic-px halo below the plot; margin 0
-    # tucks the art 3px INTO the slab so the exit door sits fully on the
-    # bib (Luke, 22:07 SS; radar has the same tuck).
+    # TS-authentic 4x3 (ART.INI Foundation=4x3): the hangar keeps its 3-cell
+    # width, the grid grows east and south to carry the TS concrete pad.
+    # Canvas 640x544 = stub 120x102 (x5.33); the box is 96x72 classic, so the
+    # halo is 12 classic a side. fit_w 384 pins the hangar at its signed-off
+    # 3-cell width regardless of the wider canvas, dst_x_px 256 seats it on
+    # the WEST three columns, and margin 12 offsets the taller canvas so the
+    # art stays pixel-static against the plot. The pad rides in as a
+    # fit-excluded overlay, so it cannot inflate the building's size read.
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
-     "shp_gtweapmk", 19, (384, 416), 0, 1.0, "shp_weapicon",
+     "shp_gtweapmk", 19, (640, 544), 39, 1.0, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
     # 2x1 plot + bib: the 48-tall stub centres on the 24-tall box, so the
     # canvas bottom is 12 classic below the plot edge. Margin 12 = building
@@ -466,14 +470,13 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
         anims = [("shp_gtradr_a", fwd + back, dfwd + dback)]
     else:
         anims = [loop(d) for d in anim_dirs]
-    # TSPROC keeps its apron in the BUILT art now (overlay, fit-excluded),
-    # so its buildup keeps the pad too -- only TSWEAP still masks the pad
-    # out of construction.
-    masks = {"TSWEAP": "shp_gtweapbb"}
+    # Both aprons live in the BUILT art now (overlay, fit-excluded), so the
+    # buildups pour and keep their pads too — nothing needs masking out.
+    masks = {}
     # Full apron (the 4x3-rectangle clip sliced hard edges through the
     # stripes -- Luke, 2026-08-05 01:20; the cliff-edge drape is a queued
     # design question, not solvable with a rectangle cut).
-    overlays = {"TSPROC": "shp_ntrefnbb"}
+    overlays = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb"}
     # TS drives the war factory bay with a separate 9-stage shutter over a
     # static interior (ART.INI: DoorAnim/DoorStages/UnderDoorAnim).
     doors = {"TSWEAP": ("shp_gtweap_d", "shp_gtweap_1", 9)}
@@ -481,10 +484,12 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale,
                     mk_mask_dir=masks.get(ini), overlay_dir=overlays.get(ini),
                     door_spec=doors.get(ini),
-                    fit_w=384 if ini == "TSPROC" else None,
-                    # 4x3 foundation, building occupies the WEST 3 columns:
-                    # anchor half a cell (64 px) west of the box centre.
-                    dst_x_px=304 if ini == "TSPROC" else None)
+                    # 4-wide foundations whose building fills only the west 3
+                    # columns: pin the building's width independently of the
+                    # canvas, and anchor it on those columns rather than on
+                    # the box centre.
+                    fit_w={"TSPROC": 384, "TSWEAP": 384}.get(ini),
+                    dst_x_px={"TSPROC": 304, "TSWEAP": 256}.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSFACT: TS Construction Yard on the RA-conyard 3x3 plot (BSIZE_33 +

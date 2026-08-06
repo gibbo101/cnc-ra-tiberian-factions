@@ -266,9 +266,13 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsproc_stub.shp" 138 174 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsprocmk_stub.shp" 138 174 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 72 78 2
+# TSWEAP 120x102: the TS-authentic 4x3 plot is 96x72 classic, and the extra
+# 12 classic a side carries the concrete pad's overhang east and south. The
+# hangar itself still fits to 3 cells (72 classic) via the packer's fit_w,
+# so the building reads exactly as it did on the 3x3 plot.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweap_stub.shp" 120 102 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 72 78 19
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsweapmk_stub.shp" 120 102 19
 # TSPILE 48x48: back to the grid-matched 2x2 plot width (the 60-overhang
 # compromise predates the tier-wide size drop, Luke 2026-08-04).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tspile_stub.shp" 48 48 2

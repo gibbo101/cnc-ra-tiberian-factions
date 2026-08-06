@@ -104,6 +104,20 @@ static short const TsProcList[] = {0, 1, 2,
                                    (MCW * 1), (MCW * 1) + 1, REFRESH_EOL};
 static short const TsProcOList[] = {
     MCW + 2, 3, MCW + 3, (MCW * 2) + 2, (MCW * 2) + 3, REFRESH_EOL};
+/* TSWEAP (TS Foundation=4x3): the hangar fills the west 3x2 block, the TS
+** concrete pad the east column and south row. The pad cells stay walkable
+** so a departing vehicle drives out across the apron rather than being
+** walled in by its own plot; the art overhangs the row north of the plot,
+** which is the same radar treatment TSPROC uses. */
+static short const TsWeapList[] = {0, 1, 2,
+                                   (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, REFRESH_EOL};
+static short const TsWeapOList[] = {3, (MCW * 1) + 3,
+                                    (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
+                                    REFRESH_EOL};
+/* Departure cells, south-east first: that is the side the bay door faces. */
+static short const TsWeapExit[] = {XYCELL(3, 3), XYCELL(2, 3), XYCELL(4, 2), XYCELL(4, 3),
+                                   XYCELL(1, 3), XYCELL(4, 1), XYCELL(0, 3), XYCELL(-1, 2),
+                                   REFRESH_EOL};
 static short const List1100[] = {0, 1, REFRESH_EOL};
 static short const List1101[] = {0, 1, (MCW * 1) + 1, REFRESH_EOL};
 static short const List11[] = {0, 1, REFRESH_EOL};
@@ -1429,8 +1443,9 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            TXT_NONE,
                                            "TSWEAP",
                                            FACING_NONE,
-                                           XYP_COORD(10 + (CELL_PIXEL_W / 2),
-                                                     ((CELL_PIXEL_H * 3) - (CELL_PIXEL_H / 2)) - 21), // TDWEAP exit.
+                                           // Bay mouth: south-east corner of the hangar block.
+                                           XYP_COORD((CELL_PIXEL_W * 2) + (CELL_PIXEL_W / 2),
+                                                     (CELL_PIXEL_H * 2) - (CELL_PIXEL_H / 2)),
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,
@@ -1439,10 +1454,10 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory.
                                            DIR_N,
-                                           BSIZE_33,           // TDWEAP-parity 3x3, RA slab, apron dropped (Luke, 2026-08-04).
-                                           (short const*)TdExitWeap,
-                                           (short const*)TdListWeap,
-                                           (short const*)TdOListWeap);
+                                           BSIZE_43,           // TS-authentic 4x3: 3-wide hangar + the pad's east column and south row.
+                                           (short const*)TsWeapExit,
+                                           (short const*)TsWeapList,
+                                           (short const*)TsWeapOList);
 
 static BuildingTypeClass const ClassTsRadr(STRUCT_TSRADR,
                                            TXT_NONE,
