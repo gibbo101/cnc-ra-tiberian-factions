@@ -9003,12 +9003,14 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
     /*
     ** Tiberian Factions -- the TS concrete apron. It is stamped into cells as a
     ** bib-family smudge covering the building's whole plot (one frame per cell,
-    ** SmudgeData = col + row*Width). It goes out on the SMUDGE layer, which is
-    ** the launcher's true ground layer: the overlay layer is Y-sorted against
-    ** units, so an apron sent that way drew the cell south of a vehicle over
-    ** that vehicle's legs. The entry otherwise follows the TD-template ground
-    ** recipe -- loose mod art resolved by AssetName + ShapeIndex, drawn centred
-    ** on the cell.
+    ** SmudgeData = col + row*Width). What it is NOT is a smudge-layer entry:
+    ** it goes out as a byte-for-byte copy of the TD-template ground entry
+    ** above, the one entry shape in this engine proven to draw beneath units,
+    ** differing only in its asset. Overlay layer, theatre shape, centred on the
+    ** cell, all three together -- each was tried without the others first and
+    ** each on its own still drew the apron over a vehicle standing on it.
+    ** Being a theatre shape is why the art is registered in the
+    ** RA_TERRAIN_<theatre> tilesets rather than with the structures.
     **
     ** The apron used to be composited into the building sprite. That made it
     ** take part in sprite sorting (a vehicle driving off the apron disappeared
@@ -9050,26 +9052,18 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             // of our flags, so the apron must not claim one of those.
             apron_entry.Type = (short)OVERLAY_V12;
             apron_entry.Owner = (char)cell_ptr->Owner;
-            // Top-left anchored, the convention every RA smudge uses. Drawn
-            // centred instead, the apron's sort point sat half a cell further
-            // south and it beat a vehicle standing on that same cell.
-            apron_entry.DrawFlags = SHAPE_WIN_REL;
-            apron_entry.PositionX = xpixel;
-            apron_entry.PositionY = ypixel;
+            apron_entry.DrawFlags = SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST;
+            apron_entry.PositionX = xpixel + (CELL_PIXEL_W >> 1);
+            apron_entry.PositionY = ypixel + (CELL_PIXEL_H >> 1);
             apron_entry.Width = CELL_PIXEL_W;
             apron_entry.Height = CELL_PIXEL_H;
             apron_entry.CellX = Cell_X(cell);
             apron_entry.CellY = Cell_Y(cell);
             apron_entry.ShapeIndex = cell_ptr->SmudgeData;
-            apron_entry.IsSmudge = true;
-            apron_entry.IsOverlay = false;
+            apron_entry.IsSmudge = false;
+            apron_entry.IsOverlay = true;
             apron_entry.IsResource = false;
             apron_entry.IsSellable = false;
-            // Theatre art, which is what puts it on the ground. This flag, not
-            // the smudge/overlay pair, is what the launcher sorts on: with it
-            // clear the apron rendered in the sprite pass and drew over a
-            // vehicle standing on it, however the entry was anchored. The
-            // apron is registered in all three RA_TERRAIN_<theatre> tilesets.
             apron_entry.IsTheaterShape = true;
             apron_entry.IsFlag = false;
         }
