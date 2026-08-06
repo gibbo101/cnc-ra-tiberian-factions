@@ -40550,408 +40550,540 @@
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>0</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0000.tga</Frame>
+				<Frame>tsproc\tsproc-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>1</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0001.tga</Frame>
+				<Frame>tsproc\tsproc-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>2</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0002.tga</Frame>
+				<Frame>tsproc\tsproc-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>3</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0003.tga</Frame>
+				<Frame>tsproc\tsproc-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>4</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0004.tga</Frame>
+				<Frame>tsproc\tsproc-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>5</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0005.tga</Frame>
+				<Frame>tsproc\tsproc-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>6</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0006.tga</Frame>
+				<Frame>tsproc\tsproc-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>7</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0007.tga</Frame>
+				<Frame>tsproc\tsproc-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>8</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0008.tga</Frame>
+				<Frame>tsproc\tsproc-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>9</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0009.tga</Frame>
+				<Frame>tsproc\tsproc-0009.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>10</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0010.tga</Frame>
+				<Frame>tsproc\tsproc-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>11</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0011.tga</Frame>
+				<Frame>tsproc\tsproc-0011.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>12</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0012.tga</Frame>
+				<Frame>tsproc\tsproc-0012.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>13</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0013.tga</Frame>
+				<Frame>tsproc\tsproc-0013.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>14</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0014.tga</Frame>
+				<Frame>tsproc\tsproc-0014.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>15</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0015.tga</Frame>
+				<Frame>tsproc\tsproc-0015.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>16</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0016.tga</Frame>
+				<Frame>tsproc\tsproc-0016.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>17</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0017.tga</Frame>
+				<Frame>tsproc\tsproc-0017.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>18</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0018.tga</Frame>
+				<Frame>tsproc\tsproc-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>19</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0019.tga</Frame>
+				<Frame>tsproc\tsproc-0019.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>20</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0020.tga</Frame>
+				<Frame>tsproc\tsproc-0020.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>21</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0021.tga</Frame>
+				<Frame>tsproc\tsproc-0021.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>22</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0022.tga</Frame>
+				<Frame>tsproc\tsproc-0022.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWR</Name>
+			<Name>TSPROC</Name>
 			<Shape>23</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowr\tspowr-0023.tga</Frame>
+				<Frame>tsproc\tsproc-0023.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWRMAKE</Name>
+			<Name>TSPROC</Name>
+			<Shape>24</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsproc\tsproc-0024.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSPROC</Name>
+			<Shape>25</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsproc\tsproc-0025.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSPROC</Name>
+			<Shape>26</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsproc\tsproc-0026.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSPROC</Name>
+			<Shape>27</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsproc\tsproc-0027.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSPROC</Name>
+			<Shape>28</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsproc\tsproc-0028.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSPROC</Name>
+			<Shape>29</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsproc\tsproc-0029.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSPROCMAKE</Name>
 			<Shape>0</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowrmake\tspowrmake-0000.tga</Frame>
+				<Frame>tsprocmake\tsprocmake-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWRMAKE</Name>
+			<Name>TSPROCMAKE</Name>
 			<Shape>1</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowrmake\tspowrmake-0001.tga</Frame>
+				<Frame>tsprocmake\tsprocmake-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWRMAKE</Name>
+			<Name>TSPROCMAKE</Name>
 			<Shape>2</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowrmake\tspowrmake-0002.tga</Frame>
+				<Frame>tsprocmake\tsprocmake-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWRMAKE</Name>
+			<Name>TSPROCMAKE</Name>
 			<Shape>3</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowrmake\tspowrmake-0003.tga</Frame>
+				<Frame>tsprocmake\tsprocmake-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWRMAKE</Name>
+			<Name>TSPROCMAKE</Name>
 			<Shape>4</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowrmake\tspowrmake-0004.tga</Frame>
+				<Frame>tsprocmake\tsprocmake-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWRMAKE</Name>
+			<Name>TSPROCMAKE</Name>
 			<Shape>5</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowrmake\tspowrmake-0005.tga</Frame>
+				<Frame>tsprocmake\tsprocmake-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWRMAKE</Name>
+			<Name>TSPROCMAKE</Name>
 			<Shape>6</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowrmake\tspowrmake-0006.tga</Frame>
+				<Frame>tsprocmake\tsprocmake-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWRMAKE</Name>
+			<Name>TSPROCMAKE</Name>
 			<Shape>7</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowrmake\tspowrmake-0007.tga</Frame>
+				<Frame>tsprocmake\tsprocmake-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWRMAKE</Name>
+			<Name>TSPROCMAKE</Name>
 			<Shape>8</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowrmake\tspowrmake-0008.tga</Frame>
+				<Frame>tsprocmake\tsprocmake-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWRMAKE</Name>
+			<Name>TSPROCMAKE</Name>
 			<Shape>9</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowrmake\tspowrmake-0009.tga</Frame>
+				<Frame>tsprocmake\tsprocmake-0009.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWRMAKE</Name>
+			<Name>TSPROCMAKE</Name>
 			<Shape>10</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowrmake\tspowrmake-0010.tga</Frame>
+				<Frame>tsprocmake\tsprocmake-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWRMAKE</Name>
+			<Name>TSPROCMAKE</Name>
 			<Shape>11</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowrmake\tspowrmake-0011.tga</Frame>
+				<Frame>tsprocmake\tsprocmake-0011.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPOWRMAKE</Name>
+			<Name>TSPROCMAKE</Name>
 			<Shape>12</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tspowrmake\tspowrmake-0012.tga</Frame>
+				<Frame>tsprocmake\tsprocmake-0012.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSPROCMAKE</Name>
+			<Shape>13</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsprocmake\tsprocmake-0013.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSPROCMAKE</Name>
+			<Shape>14</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsprocmake\tsprocmake-0014.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSPROCMAKE</Name>
+			<Shape>15</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsprocmake\tsprocmake-0015.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSPROCMAKE</Name>
+			<Shape>16</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsprocmake\tsprocmake-0016.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSPROCMAKE</Name>
+			<Shape>17</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsprocmake\tsprocmake-0017.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSPROCMAKE</Name>
+			<Shape>18</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsprocmake\tsprocmake-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -41128,6 +41260,182 @@
 		<Value>
 			<Frames>
 				<Frame>tsweap\tsweap-0015.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>16</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0016.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>17</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0017.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>18</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0018.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>19</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0019.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>20</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0020.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>21</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0021.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>22</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0022.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>23</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0023.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>24</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0024.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>25</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0025.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>26</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0026.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>27</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0027.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>28</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0028.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>29</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0029.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>30</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0030.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSWEAP</Name>
+			<Shape>31</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsweap\tsweap-0031.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
@@ -44015,540 +44323,408 @@
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>0</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0000.tga</Frame>
+				<Frame>tspowr\tspowr-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>1</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0001.tga</Frame>
+				<Frame>tspowr\tspowr-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>2</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0002.tga</Frame>
+				<Frame>tspowr\tspowr-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>3</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0003.tga</Frame>
+				<Frame>tspowr\tspowr-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>4</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0004.tga</Frame>
+				<Frame>tspowr\tspowr-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>5</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0005.tga</Frame>
+				<Frame>tspowr\tspowr-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>6</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0006.tga</Frame>
+				<Frame>tspowr\tspowr-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>7</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0007.tga</Frame>
+				<Frame>tspowr\tspowr-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>8</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0008.tga</Frame>
+				<Frame>tspowr\tspowr-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>9</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0009.tga</Frame>
+				<Frame>tspowr\tspowr-0009.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>10</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0010.tga</Frame>
+				<Frame>tspowr\tspowr-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>11</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0011.tga</Frame>
+				<Frame>tspowr\tspowr-0011.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>12</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0012.tga</Frame>
+				<Frame>tspowr\tspowr-0012.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>13</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0013.tga</Frame>
+				<Frame>tspowr\tspowr-0013.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>14</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0014.tga</Frame>
+				<Frame>tspowr\tspowr-0014.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>15</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0015.tga</Frame>
+				<Frame>tspowr\tspowr-0015.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>16</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0016.tga</Frame>
+				<Frame>tspowr\tspowr-0016.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>17</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0017.tga</Frame>
+				<Frame>tspowr\tspowr-0017.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>18</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0018.tga</Frame>
+				<Frame>tspowr\tspowr-0018.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>19</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0019.tga</Frame>
+				<Frame>tspowr\tspowr-0019.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>20</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0020.tga</Frame>
+				<Frame>tspowr\tspowr-0020.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>21</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0021.tga</Frame>
+				<Frame>tspowr\tspowr-0021.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>22</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0022.tga</Frame>
+				<Frame>tspowr\tspowr-0022.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
+			<Name>TSPOWR</Name>
 			<Shape>23</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsproc\tsproc-0023.tga</Frame>
+				<Frame>tspowr\tspowr-0023.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROC</Name>
-			<Shape>24</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsproc\tsproc-0024.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSPROC</Name>
-			<Shape>25</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsproc\tsproc-0025.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSPROC</Name>
-			<Shape>26</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsproc\tsproc-0026.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSPROC</Name>
-			<Shape>27</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsproc\tsproc-0027.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSPROC</Name>
-			<Shape>28</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsproc\tsproc-0028.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSPROC</Name>
-			<Shape>29</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsproc\tsproc-0029.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSPROCMAKE</Name>
+			<Name>TSPOWRMAKE</Name>
 			<Shape>0</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocmake\tsprocmake-0000.tga</Frame>
+				<Frame>tspowrmake\tspowrmake-0000.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROCMAKE</Name>
+			<Name>TSPOWRMAKE</Name>
 			<Shape>1</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocmake\tsprocmake-0001.tga</Frame>
+				<Frame>tspowrmake\tspowrmake-0001.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROCMAKE</Name>
+			<Name>TSPOWRMAKE</Name>
 			<Shape>2</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocmake\tsprocmake-0002.tga</Frame>
+				<Frame>tspowrmake\tspowrmake-0002.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROCMAKE</Name>
+			<Name>TSPOWRMAKE</Name>
 			<Shape>3</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocmake\tsprocmake-0003.tga</Frame>
+				<Frame>tspowrmake\tspowrmake-0003.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROCMAKE</Name>
+			<Name>TSPOWRMAKE</Name>
 			<Shape>4</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocmake\tsprocmake-0004.tga</Frame>
+				<Frame>tspowrmake\tspowrmake-0004.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROCMAKE</Name>
+			<Name>TSPOWRMAKE</Name>
 			<Shape>5</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocmake\tsprocmake-0005.tga</Frame>
+				<Frame>tspowrmake\tspowrmake-0005.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROCMAKE</Name>
+			<Name>TSPOWRMAKE</Name>
 			<Shape>6</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocmake\tsprocmake-0006.tga</Frame>
+				<Frame>tspowrmake\tspowrmake-0006.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROCMAKE</Name>
+			<Name>TSPOWRMAKE</Name>
 			<Shape>7</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocmake\tsprocmake-0007.tga</Frame>
+				<Frame>tspowrmake\tspowrmake-0007.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROCMAKE</Name>
+			<Name>TSPOWRMAKE</Name>
 			<Shape>8</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocmake\tsprocmake-0008.tga</Frame>
+				<Frame>tspowrmake\tspowrmake-0008.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROCMAKE</Name>
+			<Name>TSPOWRMAKE</Name>
 			<Shape>9</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocmake\tsprocmake-0009.tga</Frame>
+				<Frame>tspowrmake\tspowrmake-0009.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROCMAKE</Name>
+			<Name>TSPOWRMAKE</Name>
 			<Shape>10</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocmake\tsprocmake-0010.tga</Frame>
+				<Frame>tspowrmake\tspowrmake-0010.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROCMAKE</Name>
+			<Name>TSPOWRMAKE</Name>
 			<Shape>11</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocmake\tsprocmake-0011.tga</Frame>
+				<Frame>tspowrmake\tspowrmake-0011.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
 	<Tile>
 		<Key>
-			<Name>TSPROCMAKE</Name>
+			<Name>TSPOWRMAKE</Name>
 			<Shape>12</Shape>
 		</Key>
 		<Value>
 			<Frames>
-				<Frame>tsprocmake\tsprocmake-0012.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSPROCMAKE</Name>
-			<Shape>13</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsprocmake\tsprocmake-0013.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSPROCMAKE</Name>
-			<Shape>14</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsprocmake\tsprocmake-0014.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSPROCMAKE</Name>
-			<Shape>15</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsprocmake\tsprocmake-0015.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSPROCMAKE</Name>
-			<Shape>16</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsprocmake\tsprocmake-0016.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSPROCMAKE</Name>
-			<Shape>17</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsprocmake\tsprocmake-0017.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSPROCMAKE</Name>
-			<Shape>18</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsprocmake\tsprocmake-0018.tga</Frame>
+				<Frame>tspowrmake\tspowrmake-0012.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
