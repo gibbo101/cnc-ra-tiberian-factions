@@ -4138,6 +4138,7 @@ static BuildingTypeClass const ClassLarva2(STRUCT_LARVA2,
 #endif
 void const* BuildingTypeClass::WarFactoryOverlay;
 void const* BuildingTypeClass::WarFactoryOverlayTd;
+void const* BuildingTypeClass::WarFactoryOverlayTs;
 void const* LightningShapes;
 
 /***********************************************************************************************
@@ -4901,6 +4902,9 @@ void BuildingTypeClass::One_Time(void)
     // overlay isn't used.
     _makepath(fullname, NULL, NULL, (char const*)"TDWEAP2", ".SHP");
     WarFactoryOverlayTd = MFCD::Retrieve(fullname);
+    // TS's bay-door overlay, sized to the war factory's own stub.
+    _makepath(fullname, NULL, NULL, (char const*)"TSWEAP2", ".SHP");
+    WarFactoryOverlayTs = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"LITNING", ".SHP");
     LightningShapes = MFCD::Retrieve(fullname);
 

@@ -833,7 +833,7 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             int shapenum = Door_Stage();
             if (Health_Ratio() <= Rule.ConditionYellow)
                 shapenum += 9;
-            Techno_Draw_Object_Virtual(Class->WarFactoryOverlayTd, shapenum, x, y, window, DIR_N, 0x0100, "TSWEAP2");
+            Techno_Draw_Object_Virtual(Class->WarFactoryOverlayTs, shapenum, x, y, window, DIR_N, 0x0100, "TSWEAP2");
         }
 
         // WEAP2 overlay for vanilla RA WEAP / FAKEWEAP only. STRUCT_TDWEAP
@@ -4987,7 +4987,14 @@ COORDINATE BuildingClass::Sort_Y(void) const
     if (*this == STRUCT_BARRACKS /*|| *this == STRUCT_POWER*/) {
         return (Center_Coord());
     }
-    if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC)) {
+    /*
+    **  Buildings whose art reaches well south of their sort point. The TS
+    **  refinery and war factory both spread a concrete apron across the
+    **  bottom of their plot, and a vehicle standing on that apron has to
+    **  draw on top of it rather than behind the building.
+    */
+    if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC
+         || *this == STRUCT_TSWEAP)) {
         return (Center_Coord());
     }
     /*
@@ -5169,21 +5176,29 @@ bool Is_TS_Apron_Cell(CELL cell)
 
     for (int i = 0; i < (int)(sizeof(_to_centre) / sizeof(_to_centre[0])); i++) {
         CELL centre = (CELL)(cell - _to_centre[i]);
-        /*
-        **	The centre cell (= the dock pad) is an occupy HOLE, so the
-        **	building can never be resolved THERE -- Cell_Building walks the
-        **	occupier chain only, and overlap cells live in a separate array.
-        **	Resolve via the occupied building cell directly north of the pad
-        **	(bottom building row is always occupied), then verify the pad
-        **	relationship. This lookup being pad-anchored is why the veto has
-        **	been silently dead since the centre cell became the pad.
-        */
-        CELL bcell = (CELL)(centre - MAP_CELL_W);
-        if ((unsigned)centre >= MAP_CELL_TOTAL || (unsigned)bcell >= MAP_CELL_TOTAL) {
+        if ((unsigned)centre >= MAP_CELL_TOTAL) {
             continue;
         }
-        BuildingClass const* b = Map[bcell].Cell_Building();
-        if (b != NULL && *b == STRUCT_TSPROC && Coord_Cell(b->Center_Coord()) == centre) {
+
+        /*
+        **	Resolve the building that would own this apron cell. The war
+        **	factory's centre is one of its own solid cells and answers
+        **	directly. The refinery's centre is the dock pad, an occupy HOLE
+        **	that can never answer -- Cell_Building walks the occupier chain
+        **	only, and overlap cells live in a separate array -- so fall back
+        **	to the occupied cell directly north of it. This lookup being
+        **	pad-anchored is why the veto was silently dead for a while.
+        */
+        BuildingClass const* b = Map[centre].Cell_Building();
+        if (b == NULL) {
+            CELL bcell = (CELL)(centre - MAP_CELL_W);
+            if ((unsigned)bcell >= MAP_CELL_TOTAL) {
+                continue;
+            }
+            b = Map[bcell].Cell_Building();
+        }
+        if (b != NULL && (*b == STRUCT_TSPROC || *b == STRUCT_TSWEAP)
+            && Coord_Cell(b->Center_Coord()) == centre) {
             return (true);
         }
     }

@@ -920,6 +920,13 @@ public:
     **  classic mode. Loaded alongside WarFactoryOverlay in One_Time.
     */
     static void const* WarFactoryOverlayTd;
+    /*
+    **  TS's bay-door overlay (STRUCT_TSWEAP). Packed as TSWEAP2.SHP into
+    **  TFASSETS.MIX at the war factory's own stub dimensions — the pointer
+    **  supplies the box the launcher scales the door tileset onto, so
+    **  borrowing another factory's overlay draws the door at its size.
+    */
+    static void const* WarFactoryOverlayTs;
 
 private:
     /*

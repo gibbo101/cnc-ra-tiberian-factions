@@ -26,6 +26,18 @@ STRUCT_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/STRUCTURES"
 ICON_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB"
 
 
+SCRIPTS = os.path.dirname(os.path.abspath(__file__))
+STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
+
+# Classic stub dimensions each packed canvas requires, filled in as buildings
+# are packed and written out at the end. The launcher maps a building's canvas
+# onto the stub box, so a canvas that grows without its stub growing to match
+# is drawn at the wrong scale -- silently, with nothing else looking wrong.
+# build_tfassets.sh checks its stub literals against this file.
+STUB_DIMS = {}
+CANVAS_PER_CLASSIC_PX = 16.0 / 3.0
+
+
 def load(dirname, i):
     return Image.open(f"{ART}/{dirname}/frame-{i:04d}.png").convert("RGBA")
 
@@ -167,6 +179,8 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
       CenterOffset geometry), so a stub taller than the box extends the art
       symmetrically — content placed low lands on the passable row below the
       plot (the TS apron row)."""
+    STUB_DIMS[ini] = [round(canvas_w / CANVAS_PER_CLASSIC_PX), round(canvas_h / CANVAS_PER_CLASSIC_PX)]
+
     n = 1
     for spec in anims:
         ln = len(spec[1])
@@ -543,5 +557,10 @@ if os.path.isdir(f"{ART}/shp_mcvicon") and not os.path.exists(f"{ICON_DIR}/Build
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
     big.save(f"{ICON_DIR}/BuildIcon_TS_MCV.tga")
     print(f"wrote {ICON_DIR}/BuildIcon_TS_MCV.tga")
+
+with open(STUB_MANIFEST, "w") as f:
+    json.dump(STUB_DIMS, f, indent=1, sort_keys=True)
+    f.write("\n")
+print(f"wrote {STUB_MANIFEST} ({len(STUB_DIMS)} buildings)")
 
 print("DONE")
