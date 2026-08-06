@@ -438,7 +438,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         */
         if (*this == STRUCT_TSPROC && from != NULL && from->What_Am_I() == RTTI_UNIT) {
             UnitClass* customer = (UnitClass*)from;
-            if (customer->IsDumping || customer->TrackNumber != -1
+            if (customer->IsDumping || customer->IsDriving
                 || Coord_Cell(customer->Center_Coord()) == Coord_Cell(Center_Coord())) {
                 return (RADIO_ROGER);
             }
