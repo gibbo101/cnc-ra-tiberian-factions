@@ -1129,24 +1129,24 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                     }
                 }
 #endif
-                if (!IsRotating && PrimaryFacing != DIR_SE) {
-                    Do_Turn(DIR_SE);
+                DirType lineup_facing = (*this == UNIT_TDHARV) ? (DirType)92 : (DirType)89;
+                if (!IsRotating && PrimaryFacing != lineup_facing) {
+                    Do_Turn(lineup_facing);
                 } else if (!IsDriving
                            && Coord_Cell(Center_Coord())
                                   == (CELL)(Coord_Cell(((BuildingClass*)rdock)->Center_Coord()) + MAP_CELL_W + 1)) {
                     /*
-                    **	Option A (Luke): line-up = the SE plate cell (the
-                    **	diagonal apron hole), facing TRUE SE; the truck then
-                    **	reverses DEAD STRAIGHT along its own facing axis
-                    **	(pure NW) into the bay. Park = the on-axis point
-                    **	nearest each approved composite pose: TSHARV
-                    **	pad+(57,57), TDHARV pad+(13,13) -- both inside the
-                    **	pad cell, so the parked cell (and the IM_IN
-                    **	handshake keyed on it) never flips.
+                    **	Aimed reverse, mirrored side (Luke's attempt 2): the
+                    **	parks sit 35 leptons the OTHER side of the pure-SE
+                    **	diagonal (TSHARV pad+(22,92), TDHARV pad+(-8,34));
+                    **	the truck reverses dead straight at the line's own
+                    **	facing (89/92) and pivots to TRUE SE as it settles
+                    **	(see Mission_Unload). Both parks stay inside the pad
+                    **	cell, so the IM_IN handshake never flips.
                     */
                     COORDINATE padc = Cell_Coord(Coord_Cell(((BuildingClass*)rdock)->Center_Coord()));
                     bool td_truck = (*this == UNIT_TDHARV);
-                    COORDINATE track_end = Coord_Add(padc, td_truck ? XY_Coord(13, 13) : XY_Coord(57, 57));
+                    COORDINATE track_end = Coord_Add(padc, td_truck ? XY_Coord(-8, 34) : XY_Coord(22, 92));
 #if TF_DEV_BUILD
                     {
                         char dpath[512];
@@ -3845,6 +3845,14 @@ int UnitClass::Mission_Unload(void)
                 Mark(MARK_UP);
                 Coord = Coord_Add(Coord, XYP_Coord(TD_DOCK_NUDGE_RIGHT, -TD_DOCK_NUDGE_UP));
                 Mark(MARK_DOWN);
+            }
+            /*
+            **	Settling pivot: the aimed reverse arrives one facing notch
+            **	off true SE; straighten into the dock like any vehicle
+            **	obeying a turn order.
+            */
+            if (ts_dock && PrimaryFacing != DIR_SE) {
+                Do_Turn(DIR_SE);
             }
 
 #if TF_DEV_BUILD
