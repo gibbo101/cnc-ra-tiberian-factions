@@ -1508,6 +1508,15 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType) const
         return (MOVE_NO);
     }
 
+    /*
+    **	Infantry never leave the TS war factory, so they are simply kept off
+    **	its doorstep -- an idle guard standing there is exactly what makes a
+    **	new vehicle path back through the building.
+    */
+    if (!ScenarioInit && Is_TS_Weap_Exit_Cell(cell)) {
+        return (MOVE_NO);
+    }
+
     CellClass* cellptr = &Map[cell];
 
     /*

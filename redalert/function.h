@@ -103,6 +103,7 @@ extern int LParam;
 extern int Frame;
 CELL Coord_Cell(COORDINATE coord);
 bool Is_Refinery_Dock_Cell(CELL cell); // TF Layer B: harvester-only refinery dock pad
+bool Is_TS_Weap_Exit_Cell(CELL cell);  // TS war factory doorstep: kept clear for the leaving vehicle
 bool Is_TS_Apron_Cell(CELL cell);      // TS building apron: walkable, never buildable
 bool Is_TS_Apron_Smudge(SmudgeType smudge); // ...and the ground art that draws it
 bool Is_Refinery_Dock_Busy(CELL cell); // dock pad closed while a truck is attached

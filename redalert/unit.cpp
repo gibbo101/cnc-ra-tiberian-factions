@@ -4860,6 +4860,20 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
         return (MOVE_NO);
     }
 
+    /*
+    **	The TS war factory's doorstep stays clear so the vehicle it is
+    **	releasing can drive straight out south-east instead of pathing around
+    **	whatever parked there. The vehicle actually leaving is still tethered
+    **	to the factory, so it is exempt.
+    */
+    if (!ScenarioInit && Is_TS_Weap_Exit_Cell(cell)
+        && !(In_Radio_Contact() && IsTethered
+             && Contact_With_Whom() != NULL
+             && Contact_With_Whom()->What_Am_I() == RTTI_BUILDING
+             && *(BuildingClass*)Contact_With_Whom() == STRUCT_TSWEAP)) {
+        return (MOVE_NO);
+    }
+
     MoveType retval = MOVE_OK;
 
     /*

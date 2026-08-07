@@ -4988,13 +4988,33 @@ COORDINATE BuildingClass::Sort_Y(void) const
         return (Center_Coord());
     }
     /*
-    **  Buildings whose art reaches well south of their sort point. The TS
-    **  refinery and war factory both spread a concrete apron across the
-    **  bottom of their plot, and a vehicle standing on that apron has to
-    **  draw on top of it rather than behind the building.
+    **  The TS war factory sorts on its SOUTHERN EDGE, so the whole hangar --
+    **  base and bay overlay alike -- draws over anything standing on it.
+    **
+    **  Framing a vehicle in the doorway instead was tried and does not hold:
+    **  the opening is about 33 classic pixels tall and these units are twice
+    **  that, so a Mammoth Mk. II pushes its head through the roof, both big
+    **  walkers show their feet below a shut door, and the Hover MLRS bobs its
+    **  missile pods through the roof on every cycle. There is no exit point
+    **  that fixes all of those at once. Covering the vehicle outright does,
+    **  and it also hides the reverse-then-forward jink the exit path makes.
+    **
+    **  Its art ends at y=71.8 of the 72-pixel plot and the plot centre is
+    **  y=36, so 384 leptons puts the sort line on the building's own southern
+    **  edge: covered while standing on the building, on top once clear of it.
+    **  The apron that first forced the centred sort became ground art on
+    **  2026-08-07 and no longer sorts against vehicles at all.
     */
-    if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC
-         || *this == STRUCT_TSWEAP)) {
+    if (*this == STRUCT_TSWEAP) {
+        return (Coord_Add(Center_Coord(), XY_Coord(0, 384)));
+    }
+    /*
+    **  Buildings whose art reaches well south of their sort point. The TS
+    **  refinery spreads a concrete apron across the bottom of its plot, and a
+    **  vehicle standing on that apron has to draw on top of it rather than
+    **  behind the building.
+    */
+    if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC)) {
         return (Center_Coord());
     }
     /*
@@ -5050,6 +5070,38 @@ COORDINATE BuildingClass::Sort_Y(void) const
  *    a STRUCT_REFINERY centre, or its DIR_NE neighbour is a STRUCT_TDPROC centre. Pure cell    *
  *    geometry + a building-pointer read -> cheap and lockstep-deterministic.                   *
  *=============================================================================================*/
+/***********************************************************************************************
+ * Is_TS_Weap_Exit_Cell -- Is this cell the TS war factory's doorstep?                         *
+ *                                                                                             *
+ *    A vehicle leaving the TS bay drives south-east one tile before it is free to turn, so    *
+ *    that tile has to stay empty. An idle guard or a parked tank standing on it makes the      *
+ *    new vehicle path around its own doorway -- the reverse-then-forward jink -- and shoves    *
+ *    it back through the building it is trying to leave. Same treatment as the refinery dock  *
+ *    pad below: everything except the vehicle currently leaving reads the cell as impassable. *
+ *                                                                                             *
+ *    The doorstep is the first entry of TsWeapExit, XYCELL(3,3): one row south of the 4x3     *
+ *    plot, on its eastern column, which is where the bay points.                              *
+ *=============================================================================================*/
+bool Is_TS_Weap_Exit_Cell(CELL cell)
+{
+    if ((unsigned)cell >= MAP_CELL_TOTAL) {
+        return (false);
+    }
+
+    /*
+    **	Walk back from the candidate to where the war factory's north-west
+    **	corner would be, and confirm a TSWEAP actually occupies it.
+    */
+    int x = Cell_X(cell) - 3;
+    int y = Cell_Y(cell) - 3;
+    if (x < 0 || y < 0) {
+        return (false);
+    }
+    CELL origin = XY_Cell(x, y);
+    BuildingClass const* b = Map[origin].Cell_Building();
+    return (b != NULL && *b == STRUCT_TSWEAP && Coord_Cell(b->Coord) == origin);
+}
+
 bool Is_Refinery_Dock_Cell(CELL cell)
 {
     if ((unsigned)cell >= MAP_CELL_TOTAL) {
