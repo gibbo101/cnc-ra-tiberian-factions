@@ -70,11 +70,13 @@ makes that mostly data later.
   emblem circle at (55,5). Do not paste the rectangle.
 - **Composite AFTER the upscale.** At source the eagle is ~45px and hq4x
   destroys it. Render 62% and 78% of pad width; default 62% (keeps a margin).
-- ⚠️ **The rim's gold is currently BAKED** because the pad ships as a bib, and
-  ground art is never house-remapped (08-07 apron finding). As the building's
-  own sprite it goes through the normal remap path, so a captured or Nod-owned
-  bay would take the owner's colour. `REMAP_` choice at the class if Luke wants
-  it gold always. **Needs his call — do not pick silently.**
+- **Rim takes HOUSE COLOUR — decided (Luke, 2026-08-08).** As a bib the gold was
+  baked, because ground art is never house-remapped (08-07 apron finding); as
+  the building's own sprite it goes through the normal remap path, so a captured
+  or Nod-owned bay shows the owner's colour. That is wanted. `REMAP_ALTERNATE`
+  on `ClassTsDrop` already gives it — no change needed. The EMBLEM is unaffected
+  either way: zero of its pixels fall in the remap range, so it stays GDI gold
+  whoever owns the bay.
 - Art source is `~/Desktop/ts-art/` (NOT a scratchpad). `shp_gtdeptbb` 6 frames,
   `shp_gtdeptmk` 20, `shp_fixicon` 1. Frame convention: 0 healthy, 1 healthy
   variant, 2 damaged, 3-5 rubble.
