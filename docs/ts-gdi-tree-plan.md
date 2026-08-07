@@ -1,5 +1,82 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐⭐ 2026-08-07 NIGHT — THE MK2 DROP BAY (design locked, nothing built)
+
+**Scope, Luke: the Orca dropship delivers the Mammoth Mk. II. Nothing more.**
+
+### Why, and what it unblocks
+The Mk2 is 42.6 classic px tall against a 25-33 px bay door. It is the ONLY
+unit that cannot pass through, and it is the reason the hangar was enlarged on
+08-07. Take the Mk2 out of the war factory and the hangar can shrink again:
+
+| target | fit_w | hangar | door | too big |
+|---|---|---|---|---|
+| match TD width | 395 | 70x53 | 26.8x25.7 | TSAPC, Mk2 |
+| **fit_w 416** | 416 | 74x55 | 28.2x27.1 | **Mk2 only** |
+| fit_w 448 | 448 | 80x60 | 30.4x29.1 | Mk2 only |
+
+TD war factory measures **70.5 x 66.6**; TS is 91.3 x 68.1, so the mismatch is
+almost all WIDTH. **The APC sets the floor, not the Titan** -- 27.1 x 25.8
+means below ~416 the APC stops fitting. The Titan (16.8 x 20.0) clears every
+option, so **no unit downscale is needed**; an earlier claim that our units
+were 3x oversized was an arithmetic error (unit canvases are 8 px per classic,
+buildings 16/3 -- do not mix them).
+
+**ORDER MATTERS: prove the dropship first.** The hangar can only shrink if the
+Mk2 leaves, and the Mk2 can only leave if the dropship works. If it does not,
+the fallback is an oversized war factory and the resize never happens.
+
+### The pad -- the art is already separated
+`TSDEPT`'s repair bay is not one sprite:
+- `shp_gtdept` = **the gantry alone** (871 px). Simply do not use it.
+- `shp_gtdeptbb` = **the octagonal pad** (2085 px). This IS the drop bay.
+- `shp_gtdept_a` (20f wedge) / `_b` (14f light) = the anims. Do not pass them.
+
+So "remove the structure, remove the animation" costs nothing. The rim is
+house-remap green (renders gold). Luke's emblem is at `~/Desktop/ts-gdi-logo.png`,
+400x300, emblem a 290x290 circle at (55,5); **zero of its pixels are in the
+remap range**, so it stays GDI gold whoever owns the building. Squash 1.95:1 to
+lie flat, and **composite it AFTER the pad is upscaled** -- at source
+resolution the eagle is ~45 px and hq4x destroys it. Sizes previewed at 62%
+and 78% of pad width; 62% keeps a deck margin.
+
+**Copy TSHPAD, not TSDEPT, for the engine side.** The helipad is already a flat
+pad that aircraft land on, so its sorting and landing behaviour are solved; the
+repair bay's docking logic is a problem we do not need.
+
+### Westwood cut this exact building
+TS `RULES.INI` line 5468 carries `; Dropship bay (obsolete)` -- a commented-out
+`[GADROP]`, `Name=Dropship Bay`, `Prerequisite=DOME,GATECH`, TechLevel 9, and
+`ThreatPosed=0 ; This value MUST be 0 for all building addons` (they classed it
+as an ADDON). `[DSHP]` itself is fully specified and shipped: `Category=AirLift`,
+`Passengers=5`, `Landable=yes`, `IsDropship=yes`, voices `30-I000`+. So this is
+finishing a cut feature, not inventing one -- take their name and prereqs.
+
+### From orbit: the altitude probe (`05b29998`, built, awaiting deploy)
+The cargo-plane path (`TDAFLD`/`TDC17`) is WRONG here -- it is a map-edge
+fly-in. The right parent is RA's helicopter landing: vertical descent onto a
+pad, which `TDORCA` (VTOL, no rotor) already does.
+
+**Altitude is exported to the launcher for free:** `dllinterface.cpp` does
+`new_object.Altitude = object->Height;`, a plain int, so nothing in
+`dllinterface.h` grows and the megamaps rule does not bite. Unknown is what
+ClientG does with a large value. Probe: dev builds unlimbo an Orca at
+`Height = 2000` (TS's own `DropPodHeight`) vs RA's `FLIGHT_LEVEL` of 256.
+**Needs `TDHPAD`, not `TSHPAD`** -- the Orca's `Prerequisite=hpad` remaps to the
+TD pad. Watch: does it render at all, where the shadow falls, and whether the
+descent reads as a landing (the rate is a fixed step per tick, so 8x the height
+is ~8x the time).
+
+### STRETCH GOALS -- parked, not in scope
+- **Orca troop transport.** Nearly free: RA's `AIRCRAFT_TRANSPORT` (Chinook)
+  already has the whole player loop -- load, fly, unload, return. Reskin with
+  TS art and a GDI prereq.
+- **Titan dropship (a fleet of them).** Vehicle-in-aircraft is PROVEN --
+  `TDC17` attaches a `UnitClass` and flies it in -- but only as a one-way
+  scripted delivery with `IsALoaner`. The new work is the player-facing half:
+  load order, unload-here order, round trip. Also: the AI cannot use it, so a
+  human-only air assault is a balance question for `ai-upgrade-plan.md`.
+
 ## ⭐ 2026-08-07 EVENING — RESUME HERE (war factory sandwich)
 **Desktop prefix at DLL `cfa99229`, md5-verified. Deck still STALE. Nothing pushed.**
 
