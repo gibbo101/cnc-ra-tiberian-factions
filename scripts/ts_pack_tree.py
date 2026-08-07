@@ -189,6 +189,43 @@ def place(img, factor, canvas_w, canvas_h, src_cx, src_cy, dst_x=None, dst_y=Non
     return out
 
 
+_EMBLEM_CACHE = {}
+
+
+def stamp_emblem(img, path, frac, squash):
+    """Paint a flat emblem onto a finished frame, centred on its content.
+
+    Applied AFTER the building's affine: at source resolution the artwork is
+    only ~45 px across and the hq upscale destroys it, so it has to meet the
+    canvas at full size. The squash is what makes it read as painted on the
+    deck rather than standing up facing the camera -- it is the isometric
+    projection of a flat disc, and it matches the deck's own 1.95:1 because the
+    deck is itself a circle lying flat.
+    """
+    if path not in _EMBLEM_CACHE:
+        src = Image.open(os.path.expanduser(path)).convert("RGBA")
+        px = src.load()
+        # The artwork ships on a black field with no alpha of its own.
+        for y in range(src.height):
+            for x in range(src.width):
+                r, g, b, _ = px[x, y]
+                if r + g + b < 60:
+                    px[x, y] = (r, g, b, 0)
+        _EMBLEM_CACHE[path] = src.crop(src.getbbox())
+    em = _EMBLEM_CACHE[path]
+
+    bb = img.getbbox()
+    if bb is None:
+        return img
+    w = int(round((bb[2] - bb[0]) * frac))
+    h = max(1, int(round(w / squash)))
+    out = img.copy()
+    out.alpha_composite(em.resize((w, h), Image.LANCZOS),
+                        (bb[0] + ((bb[2] - bb[0]) - w) // 2,
+                         bb[1] + ((bb[3] - bb[1]) - h) // 2))
+    return out
+
+
 def write_zip(path, name, frames):
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
         for i, img in enumerate(frames):
@@ -252,7 +289,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                     canvas_w, canvas_h, target_w=None, bib_dir=None,
                     bottom_margin=None, overscale=1.0, mk_mask_dir=None,
                     overlay_dir=None, fit_w=None, dst_x_px=None, door_spec=None,
-                    apron_cells=None, front_ring=None):
+                    apron_cells=None, front_ring=None, emblem=None):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -572,6 +609,9 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         full = [[split_alpha(f, canvas_masks[r], False) for f in full[r]] for r in (0, 1)]
 
     frames = full[0] + full[1]
+    if emblem is not None:
+        # Built frames only: during construction there is no deck to paint.
+        frames = [stamp_emblem(f, *emblem) for f in frames]
     write_zip(f"{STRUCT_DIR}/{ini}.ZIP", ini.lower(), frames)
 
     if door_spec is not None:
@@ -753,6 +793,11 @@ WAVE2 = [
 # slab like every other refinery/factory.
 BIBS = {"TSHPAD": "shp_gthpadbb", "TSDEPT": "shp_gtdeptbb"}
 
+# (artwork, width as a fraction of the building's content, squash ratio).
+# 0.62 keeps the emblem clear of the rim: at 0.78 it crosses the remap band and
+# the house colour speckles through its edge. 1.95 is the deck's own ratio.
+EMBLEMS = {"TSDROP": ("~/Desktop/ts-gdi-logo.png", 0.62, 1.95)}
+
 for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
     if not os.path.isdir(f"{ART}/{base}"):
         print(f"{ini}: SKIP (no {base})")
@@ -760,7 +805,7 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
     # Damaged base = frame 2: TS building SHPs are 0 healthy, 1 a healthy
     # VARIANT (WF door-open, radar mast), 2 damaged, 3-5 rubble fragments.
     build_structure(ini, base, 0, 2, [loop(d) for d in anim_dirs], mk, mkc, cw, ch, tw,
-                    bib_dir=BIBS.get(ini))
+                    bib_dir=BIBS.get(ini), emblem=EMBLEMS.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- Size pass (2026-08-03, docs/ts-gdi-tree-plan.md top block): the four

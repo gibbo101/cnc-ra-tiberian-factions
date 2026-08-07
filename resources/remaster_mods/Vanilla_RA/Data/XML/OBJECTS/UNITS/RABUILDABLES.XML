@@ -5772,6 +5772,21 @@
 			<BuildIcon>BuildIcon_TS_AmphAPC</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSDROP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSDROP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSDROP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Drop</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSDROP_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSDROP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSDROP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Drop</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END generated cameo mask variants -->
 
 </ObjectTypeList>
