@@ -326,7 +326,8 @@ bool AircraftClass::Unlimbo(COORDINATE coord, DirType dir)
         **  rebuild.
         */
         if (TF_Dev_Cheats() && *this == AIRCRAFT_TDORCA) {
-            Height = 2000;
+            Height = TF_ORBIT_HEIGHT;
+            IsLanding = true;
         }
 #endif
 
@@ -4655,8 +4656,28 @@ bool AircraftClass::Landing_Takeoff_AI(void)
 
         if (IsLanding) {
             Mark(MARK_UP);
-            if (Height)
-                Height -= Pixel_To_Lepton(1);
+            if (Height) {
+                /*
+                **  Tiberian Factions -- fall fast from orbit, then flare to
+                **  land. The stock step is one lepton-pixel a tick, which is
+                **  right for a helicopter dropping the 256 of FLIGHT_LEVEL and
+                **  a crawl for anything starting far above it. Above cruise
+                **  height take a bigger bite, clamped so the last stretch is
+                **  always walked down at the stock rate and the touchdown
+                **  looks the way every other landing does.
+                **
+                **  Nothing in stock play is ever above FLIGHT_LEVEL, so this
+                **  is inert until something deliberately spawns up there.
+                */
+                int step = Pixel_To_Lepton(1);
+                if (Height > FLIGHT_LEVEL) {
+                    step *= TF_ORBIT_FALL_RATE;
+                    if (Height - step < FLIGHT_LEVEL) {
+                        step = Height - FLIGHT_LEVEL;
+                    }
+                }
+                Height -= step;
+            }
             if (Height <= 0) {
                 Height = 0;
                 IsLanding = false;

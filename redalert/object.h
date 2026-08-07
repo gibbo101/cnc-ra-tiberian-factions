@@ -296,7 +296,22 @@ public:
 
     enum
     {
-        FLIGHT_LEVEL = 256
+        FLIGHT_LEVEL = 256,
+
+        /*
+        **  Tiberian Factions -- a from-orbit arrival. TF_ORBIT_HEIGHT is where
+        **  a dropship is spawned: high enough to enter frame from off the top
+        **  of the screen rather than blinking into existence mid-air. The
+        **  launcher renders altitude linearly with no ceiling (verified
+        **  2026-08-07: an Orca at 2000 drew ~490 screen px above its pad), so
+        **  this is a look choice, not an engine limit.
+        **
+        **  TF_ORBIT_FALL_RATE multiplies the descent step while above
+        **  FLIGHT_LEVEL. At the stock one pixel a tick, 2400 would take some
+        **  forty seconds.
+        */
+        TF_ORBIT_HEIGHT = 2400,
+        TF_ORBIT_FALL_RATE = 6
     };
 };
 
