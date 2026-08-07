@@ -96,6 +96,31 @@ def tga_bytes(img):
     return buf.getvalue()
 
 
+def bake_hazard_gold(img):
+    """Burn TS's hazard stripes to their final gold, in place of the launcher.
+
+    The stripes are drawn in TS's house-REMAP range, so they arrive raw green.
+    Ground art is never remapped and building art always is, which puts the
+    apron's stripes and the ramp's on two different colour paths -- they meet
+    at the door-to-pad junction and do not match. Baking both to the gold the
+    launcher itself produces from that ramp, (v, 0.82v, 0) measured off a
+    rendered frame, takes the launcher out of it and they join up.
+
+    The green ramp runs 36..200 in eleven steps. An earlier cut at g > 70
+    dropped the darkest three, which is what banded the stripes yellow and
+    green; 30 takes the lot while still ignoring the olive-brown hull.
+
+    Hazard markings are a fixed yellow in TS whoever owns the building, so a
+    baked colour costs nothing."""
+    px = img.load()
+    for y in range(img.height):
+        for x in range(img.width):
+            r, g, b, a = px[x, y]
+            if a and g > 30 and g > r * 1.6 and g > b * 1.6:
+                px[x, y] = (g, round(g * 0.82), 0, a)
+    return img
+
+
 def bleed_edges(img, rounds=3):
     """Extend the sprite's colour outwards into its transparent margin.
 
@@ -269,7 +294,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     hangar_h, hangar_d = base_h.copy(), base_d.copy()
     if door_spec is not None:
         for run, base in enumerate((base_h, base_d)):
-            interior = load(door_spec[1], run)
+            interior = bake_hazard_gold(load(door_spec[1], run))
             interior.putalpha(ImageChops.multiply(
                 interior.split()[3], base.split()[3].point(lambda v: 255 if v > 0 else 0)))
             base.paste(interior, (0, 0), interior)
@@ -365,13 +390,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # itself produces from that ramp, measured off a rendered frame:
         # value preserved, (v, 0.82v, 0). Hazard markings are a fixed yellow in
         # TS whoever owns the building, so a baked colour is no loss.
-        src = load(overlay_dir, healthy_f)
-        px = src.load()
-        for y in range(src.height):
-            for x in range(src.width):
-                r, g, b, a = px[x, y]
-                if a and g > 70 and g > r * 1.6 and g > b * 1.6:
-                    px[x, y] = (g, round(g * 0.82), 0, a)
+        src = bake_hazard_gold(load(overlay_dir, healthy_f))
         apron = place(src, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
         gx, gy = left + off_c * cell_px, top + off_r * cell_px
         bb = apron.getbbox()

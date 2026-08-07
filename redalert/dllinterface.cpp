@@ -5178,7 +5178,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  Per [[feedback-keep-diagnostics-until-v1]] this stays in source; flip
     **  to #if 0 to silence it.
     */
-#if 0 // TF DIAG — war factory sort order (served its purpose 2026-08-07; flip to 1).
+#if 1 // TF DIAG — war factory sort order (on: chasing the roof leak 2026-08-07 22:35).
     {
         bool interesting = false;
         if (object != NULL) {
