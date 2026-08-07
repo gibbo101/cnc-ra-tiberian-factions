@@ -13,7 +13,7 @@ Inputs: $TS_ART_DIR holding shp_* dirs from ts_shp.py + renders_* from
 vxl_render.py.
 """
 import io, json, math, os, sys, zipfile
-from PIL import Image
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
 import hqx
 
 ART = os.environ.get("TS_ART_DIR")
@@ -193,7 +193,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                     canvas_w, canvas_h, target_w=None, bib_dir=None,
                     bottom_margin=None, overscale=1.0, mk_mask_dir=None,
                     overlay_dir=None, fit_w=None, dst_x_px=None, door_spec=None,
-                    apron_cells=None):
+                    apron_cells=None, front_ring=None):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -359,8 +359,69 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # A same-named structure tile would shadow the terrain one.
         patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}BB", 0)
 
-    frames = [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in healthy]
-    frames += [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y) for f in damaged_frames]
+    # THE BAY FRONT PIECE. Tiberian Sun resolves occlusion with a per-pixel
+    # depth buffer (ART.INI NormalZAdjust / ZShapePointMove), so GAWEAP is a
+    # single sprite with no layer in front of a vehicle standing in the bay.
+    # RA's WEAP and TD's WEAP2 have no depth buffer and instead carry the
+    # hangar's near face in the overlay, which is what sandwiches an emerging
+    # vehicle. Cut that near face out of the base here and hand it to the door
+    # overlay so the Remastered engine gets the same read.
+    #
+    # The face is the wall the opening is cut into: a ring of building art
+    # around the aperture, plus everything at or below the bay threshold (the
+    # near lip and the buttress feet a vehicle passes behind coming down the
+    # ramp).
+    front_masks = None
+    if door_spec is not None and front_ring is not None:
+        door_dir, under_dir, stages = door_spec
+        # The aperture is whatever the shutter uncovers: the pixels that
+        # differ between the shut stage and the open one. Measured rather than
+        # written down, so re-cut door art cannot silently move the frame.
+        diff = ImageChops.difference(load(door_dir, 0), load(door_dir, stages - 1))
+        acc = None
+        for band in diff.split():
+            acc = band if acc is None else ImageChops.add(acc, band)
+        ap = acc.point(lambda v: 255 if v > 12 else 0).getbbox()
+        if ap is None:
+            raise SystemExit(f"{ini}: door stages 0 and {stages - 1} are identical, "
+                             f"so the aperture cannot be located")
+        ax0, ay0, ax1, ay1 = ap
+        region = Image.new("L", base_h.size, 0)
+        draw = ImageDraw.Draw(region)
+        draw.rectangle([ax0 - front_ring, ay0 - front_ring,
+                        ax1 + front_ring - 1, ay1 + front_ring - 1], fill=255)
+        draw.rectangle([0, ay1, base_h.size[0], base_h.size[1]], fill=255)
+        draw.rectangle([ax0, ay0, ax1 - 1, ay1 - 1], fill=0)
+        # The idle anims are lights mounted on that wall. Leave their
+        # footprints behind in the base: carrying them forward would make the
+        # overlay anim-frames x door-stages and need a new shapenum encoding,
+        # and there are 147 lit pixels across all three anims.
+        lights = Image.new("L", base_h.size, 0)
+        for spec in anims:
+            for idx in sorted(set(spec[1]) | set(spec[2])):
+                a = load(spec[0], idx).split()[3].point(lambda v: 255 if v > 0 else 0)
+                lights = ImageChops.lighter(lights, a)
+        region = ImageChops.subtract(region, lights.filter(ImageFilter.MaxFilter(3)))
+        front_masks = [ImageChops.multiply(b.split()[3].point(lambda v: 255 if v > 0 else 0), region)
+                       for b in (base_h, base_d)]
+
+    def without_front(run, mask):
+        """The base run with the front piece removed, the overlay's to draw."""
+        if mask is None:
+            return run
+        out = []
+        for f in run:
+            g = f.copy()
+            g.putalpha(ImageChops.subtract(g.split()[3], mask))
+            out.append(g)
+        return out
+
+    # Placed from the FULL frames' affine: the front piece moves layer, not
+    # position, so it must not shift the building's fit or anchor.
+    frames = [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
+              for f in without_front(healthy, front_masks and front_masks[0])]
+    frames += [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
+               for f in without_front(damaged_frames, front_masks and front_masks[1])]
     write_zip(f"{STRUCT_DIR}/{ini}.ZIP", ini.lower(), frames)
 
     if door_spec is not None:
@@ -374,7 +435,6 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # stages-1 (open); the damaged run repeats them over the damaged
         # interior, since TS ships no wrecked-door art (the frames past the
         # real stages are magenta placeholders, as in GTPOWRMK).
-        from PIL import ImageChops
         door_dir, under_dir, stages = door_spec
 
         # Clipped to the building's own silhouette. TS's under-door art carries
@@ -384,6 +444,11 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # the cells vehicles stand on, which is what made units vanish beside
         # the factory. Everything that actually moves between door stages is
         # inside the silhouette, so nothing of the door itself is lost.
+        #
+        # Taken from the FULL base run, before the front piece is cut out of
+        # it: the silhouette is the building's true outline, and clipping to a
+        # base that has already lost its near face would erase that face from
+        # the overlay it is being moved into.
         def silhouette(run):
             m = None
             for f in run:
@@ -396,11 +461,20 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         door_frames = []
         for under_f in (0, 1):
             under = load(under_dir, under_f)
+            # The near face rides on top of the shutter in every stage, so it
+            # is in front of both the bay interior and anything standing in
+            # it. It needs no silhouette clip -- it is cut FROM the silhouette.
+            front = None
+            if front_masks is not None:
+                front = (base_h, base_d)[under_f].copy()
+                front.putalpha(ImageChops.multiply(front.split()[3], front_masks[under_f]))
             for s in range(stages):
                 shutter = load(door_dir, s)
                 cell = under.copy()
                 cell.paste(shutter, (0, 0), shutter)
                 cell.putalpha(ImageChops.multiply(cell.split()[3], sils[under_f]))
+                if front is not None:
+                    cell.paste(front, (0, 0), front)
                 door_frames.append(place(cell, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y))
         write_zip(f"{STRUCT_DIR}/{ini}2.ZIP", f"{ini.lower()}2", door_frames)
         patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}2", len(door_frames))
@@ -410,7 +484,6 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     # mask the pad's silhouette (its *BB sprite, same source canvas) out of
     # every buildup frame or construction shows a pad that then vanishes.
     if mk_mask_dir is not None:
-        from PIL import ImageChops
         msk = load(mk_mask_dir, 0)
         m2 = load(mk_mask_dir, 2)
         msk.paste(m2, (0, 0), m2)
@@ -643,7 +716,11 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     # the box centre.
                     fit_w={"TSPROC": 384, "TSWEAP": 512}.get(ini),
                     dst_x_px={"TSPROC": 304, "TSWEAP": 448}.get(ini),
-                    apron_cells=aprons.get(ini))
+                    apron_cells=aprons.get(ini),
+                    # Source pixels of near wall kept around the bay opening.
+                    # Wider tucks a vehicle deeper into the bay; tighter reads
+                    # as a thin frame. Dialled by eye in play.
+                    front_ring={"TSWEAP": 12}.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSFACT: TS Construction Yard on the RA-conyard 3x3 plot (BSIZE_33 +

@@ -3,8 +3,10 @@
 # SHP the TS packers consume and decodes it to the shp_<name>/frame-NNNN.png
 # layout ts_pack_tree.py expects.
 #
-# Building bases, their animation SHPs and the *BB apron plates live in the
-# temperate theater archive; buildups (*MK) in the isometric temperate
+# Building bases, their animation SHPs, the *BB apron plates and the war
+# factory's door pair (GTWEAP_D shutter stages + GTWEAP_1 under-door bay,
+# ART.INI DoorAnim/UnderDoorAnim) live in the temperate theater archive;
+# buildups (*MK) in the isometric temperate
 # archive; sidebar cameos in CONQUER. Everything decodes against UNITTEM.PAL
 # except cameos, which use CAMEO.PAL — the terrain palettes decode to noise.
 #
@@ -33,6 +35,7 @@ TEMPERAT="GTCNST.SHP GTCNST_A.SHP GTCNST_B.SHP GTCNST_C.SHP
           GTSILO.SHP
           GTTECH.SHP GTTECH_A.SHP
           GTWEAP.SHP GTWEAP_A.SHP GTWEAP_B.SHP GTWEAP_C.SHP GTWEAPBB.SHP
+          GTWEAP_D.SHP GTWEAP_1.SHP
           NTREFN.SHP NTREFN_B.SHP NTREFNBB.SHP"
 
 ISOTEMP="GTCNSTMK.SHP GTDEPTMK.SHP GTHPADMK.SHP GTPILEMK.SHP GTPOWRMK.SHP
