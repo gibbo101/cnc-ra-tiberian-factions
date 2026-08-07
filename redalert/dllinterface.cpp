@@ -5151,20 +5151,28 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  anything standing IN the doorway, while leaving the base's centre sort
     **  (and therefore the apron) untouched.
     **
-    **  The bias is a band, not a blanket: 192 leptons is 18 classic pixels,
-    **  putting the overlay's sort line at y=54 of the 72-pixel plot. That is
-    **  south of the exit point (y=43 plus the foot class's own 4.5-pixel bias)
-    **  and north of the plot's south edge, so a vehicle driving clear still
-    **  draws over the building. Everything in this overlay is clipped to the
-    **  building's silhouette, so the bias can only ever affect the building's
-    **  own pixels.
+    **  The bias is a band, and its width is the building's own art: 384
+    **  leptons is 36 classic pixels, putting the overlay's sort line on the
+    **  hangar's southern edge (its art ends at y=71.8 of the 72-pixel plot,
+    **  and the building sorts at y=36). A vehicle is therefore covered for as
+    **  long as it is standing on the building, and outranks it the moment it
+    **  has driven clear.
+    **
+    **  A shallower band looks like it works and does not: at 192 leptons the
+    **  line fell at y=54, so a vehicle spawned at y=42 was covered but crossed
+    **  into the open after a single step, popping in front of the door while
+    **  still inside the bay. Measured off tf_sort.log, that was 377 draws
+    **  covered against 23964 on top.
+    **
+    **  Everything in this overlay is clipped to the building's silhouette, so
+    **  the bias can only ever affect the building's own pixels.
     **
     **  Keyed on the asset name, as EA's own shadow and WAKE reordering below
     **  is.
     */
     if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAP2") == 0) {
         new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 192)) >> 3);
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 384)) >> 3);
     }
 
     strncpy(new_object.TypeName, object->Class_Of().IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
@@ -5188,7 +5196,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  Per [[feedback-keep-diagnostics-until-v1]] this stays in source; flip
     **  to #if 0 to silence it.
     */
-#if 1 // TF DIAG — war factory sort order.
+#if 0 // TF DIAG — war factory sort order (served its purpose 2026-08-07; flip to 1).
     {
         bool interesting = false;
         if (object != NULL) {
