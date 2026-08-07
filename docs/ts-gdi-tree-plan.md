@@ -1,40 +1,70 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐ 2026-08-07 LATE — RESUME HERE (war factory resized; door seam OPEN)
-**Desktop prefix at `854fcd4d`, md5-verified. Deck still STALE. Nothing pushed.**
+## ⭐ 2026-08-07 EVENING — RESUME HERE (war factory sandwich)
+**Desktop prefix at DLL `cfa99229`, md5-verified. Deck still STALE. Nothing pushed.**
 
-**THE SIZE FIX, and why it was needed.** A Mammoth Mk. II measured **40x40**
-classic px against a **33.6x33.6** door: it could not fit through, at any spawn
-position. Luke's call was to grow the building, not shrink the units ("i
-actually like the size of titan and mk2"). The hangar is now pinned to **4
-cells** (`fit_w` 384 -> 512, 1.33x): **93.7 x 65.7** classic px, door **47.2 x
-41.5**. Mammoth drops from 82% to 61% of the building's height.
+**THE ARC, IN ONE LINE: the war factory now hides a vehicle behind its shut
+door and reveals it through the opening, because the base carries the bay
+INTERIOR and the overlay carries the whole hangar — RA's and TD's scheme.**
 
-**FOOTPRINT LANDED AT 4x3, NOT 5x4.** The first cut grew the plot to a new
-`BSIZE_54` so the concrete kept a column inside the footprint; Luke confirmed it
-worked in play, then asked for 4x3 with no overlap. **The art is 3.90 x 2.74
-cells, so it fits a 4x3 plot outright** — no radar-style overhang was needed.
-The concrete now falls **wholly outside** the plot and is kept clear by
-`Is_TS_Apron_Cell`, which vetoes apron cells wherever they lie. Footprint back
-to 12 cells. `BSIZE_54` was added and then **removed again** — do not go looking
-for it.
+Landed today, in order: `725afea3` apron stamp, `4c43c7b9` scale-then-split,
+`fda656c6` interior-to-base, `f94d53f7` whole shell in front, `34cc8f05`
+diamond hole + exit pinned, `3a809c1e` sort band widened.
 
-### ⚠ THE TRAP THAT COST A ROUND: BSIZE does NOT drive the placement grid
-`BuildingTypeClass::Occupy_List(placement=true)` returned a **hardcoded 4x3
-literal shared by TSPROC and TSWEAP**. That list — not `Size` — is what the
-sidebar `PlacementList` export, `Legal_Placement` and placement proximity all
-consume, so the launcher drew the old footprint while the engine believed the
-new one. **Split per type now.** Second shared-literal trap in the same change:
-`Is_TS_Apron_Cell`'s offset table was shared the same way and also needed
-splitting. **When resizing a TS building, grep for every literal that names it
-alongside another type.**
+### The four things that were actually wrong
+1. **`Bib_And_Offset` ASSIGNED `cell` instead of adding.** Placement passes 0
+   and looked right; the three paths that stamp the smudge pass the building's
+   own cell, so the apron was created at map cell `MAP_CELL_W+1`. Pad showed
+   during buildup (baked into the MAKE frames) then vanished.
+2. **`hq_scale` composites onto BLACK**, so cutting the art in two put a dark
+   fringe down both sides of the seam. Fix: scale once, split the RESULT with a
+   mask carried through the same affine. 199 fringe px -> 1.
+3. **The bay interior was in the overlay.** It is the BACK of the bay, so once
+   the overlay outranked units it swallowed the vehicle the moment the shutter
+   stopped hiding it. TD packs its interior in the base; we now do too.
+4. **The hole was the opening's BOUNDING BOX.** The doorway is a diamond, so
+   the wall in the corners stayed behind the vehicle. Hole is now the shut
+   shutter's own silhouette (solid; the stage-to-stage diff is full of gaps).
 
-### Geometry, for whoever re-measures
-Canvas **896x672**, stub **168x126** (x5.33), `fit_w` 512, `dst_x_px` 448,
-`bottom_margin` 27, apron `((4,3),(6,4))`. Plot origin sits at (36,27) classic
-inside the stub. `ExitCoordinate` = **XYP_COORD(64, 43)**, the centre of the
-door **APERTURE** (pixels that change between shutter stage 0 and 8) — *not*
-the door composite's centre, which the bay surround drags ~5px south-east.
+### ⚠ THE EXIT POINT IS PINNED BY GEOMETRY, NOT TASTE
+Hangar art spans **y 3.9..71.8** of the 72px plot. A Titan or Mammoth Mk. II
+reaches **37 above and 29 below** its exit point. So the head clears the roof
+below y=41 and the feet clear the base above y=43: **a two-pixel window, and
+y=42 is it.** Moving the exit to 37 to sit the vehicle "deeper" is what put the
+Mk2's guns on the roof. Depth is the near face's job, not the exit point's.
+Any change to hangar size, exit point, or a unit taller than ~66px breaks this.
+
+### ⚠ THE SORT BAND MUST REACH THE BUILDING'S SOUTHERN EDGE
+`dllinterface.cpp` biases the `TSWEAP2` sub-object south of its base, keyed on
+AssetName exactly as EA's own shadow/WAKE reordering is. **384 leptons (36
+classic px)** puts the line on the hangar's south edge. At 192 it looked right
+and was not: the vehicle spawns 10.5px south of the base's sort point, so it
+was covered on frame one and popped in front after a single step. Measured off
+`tf_sort.log`: 377 draws covered vs 23964 on top. The log lives in
+`DLL_Draw_Intercept` under `#if 0` — flip it to 1 to read ordering back.
+
+Sort facts worth keeping: `SortOrder = (ExportLayer << 29) + (Sort_Y() >> 3)`;
+a sub-object inherits its base's key plus the draw count; `STRUCT_TSWEAP` sorts
+at its plot CENTRE (`building.cpp`) so apron vehicles draw on top — **that
+entry may now be obsolete, the apron became ground art on 08-07**, but changing
+the base's sort risks the 08-06 vanishing and wants a deliberate test.
+
+### VERIFIED — but offline, not in play
+Composited from the shipped ZIPs in the engine's real layer order (base ->
+unit -> overlay) at the real exit coordinate: **door open, Mammoth and Titan
+both sit inside the bay framed by the opening, nothing on the roof or beside
+the shutter; door shut, both are fully hidden.** Overlay covers 64% of the
+aperture shut and 14% open; the near face is 79% of the building's outline.
+**An in-play confirmation is still owed** — the 18:05 attempt died on the
+Docklands base being too tiberium-choked to fit a 4x3 refinery, not on the fix.
+
+### OPEN
+- **The door-to-pad seam is NOT fixed.** Same black-bleed as #2 above but on
+  the door layer's own edge, which is still built the old way. The real cure is
+  to stop `hq_scale` bleeding black at all — a global change touching every TS
+  building, so it wants Luke's OK.
+- **Ramp stripes band yellow/green** (the gold-bake test misses the darker
+  bands; ground art is never house-remapped).
 
 ## ⭐⭐ NEXT SESSION STARTS HERE: SPLIT TSWEAP INTO BASE + WEAP2 FRONT
 **Luke's call, 2026-08-07: "split". Deferred to a fresh session deliberately.**
