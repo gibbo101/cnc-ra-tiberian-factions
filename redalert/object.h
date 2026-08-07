@@ -311,7 +311,7 @@ public:
         **  forty seconds.
         */
         TF_ORBIT_HEIGHT = 2400,
-        TF_ORBIT_FALL_RATE = 6
+        TF_ORBIT_FALL_RATE = 3
     };
 };
 

@@ -290,6 +290,40 @@ AircraftClass::AircraftClass(AircraftType classid, HousesType house)
  * HISTORY:                                                                                    *
  *   07/26/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
+/***********************************************************************************************
+ * TF_Orbit_Probe -- Is the from-orbit arrival probe switched on?                              *
+ *                                                                                             *
+ *    OPT-IN, unlike the other dev levers, and deliberately so: this one spawns aircraft in a  *
+ *    state the engine never otherwise produces, and a build that wedges the game should not   *
+ *    be able to do it to every Orca the moment it loads. Create                               *
+ *    Documents/CnCRemastered/tf_orbit.flag to arm it; delete the file to disarm without a     *
+ *    rebuild. Read once and cached, like TF_Dev_Cheats.                                       *
+ *=============================================================================================*/
+bool TF_Orbit_Probe(void)
+{
+#if TF_DEV_BUILD
+    static int cached = -1;
+    if (cached < 0) {
+        cached = 0; // default OFF -- this one has to be asked for
+        const char* h = getenv("USERPROFILE");
+        if (h == NULL)
+            h = getenv("HOME");
+        if (h != NULL) {
+            char p[512];
+            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_orbit.flag", h);
+            FILE* f = fopen(p, "r");
+            if (f != NULL) {
+                cached = 1;
+                fclose(f);
+            }
+        }
+    }
+    return cached != 0;
+#else
+    return false;
+#endif
+}
+
 bool AircraftClass::Unlimbo(COORDINATE coord, DirType dir)
 {
     assert(Aircraft.ID(this) == ID);
@@ -325,7 +359,7 @@ bool AircraftClass::Unlimbo(COORDINATE coord, DirType dir)
         **  release builds; drop tf_dev_off.flag to silence it without a
         **  rebuild.
         */
-        if (TF_Dev_Cheats() && *this == AIRCRAFT_TDORCA) {
+        if (TF_Dev_Cheats() && *this == AIRCRAFT_TDORCA && TF_Orbit_Probe()) {
             Height = TF_ORBIT_HEIGHT;
             IsLanding = true;
         }
