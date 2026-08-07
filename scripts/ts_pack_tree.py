@@ -480,16 +480,21 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         if front_ring:
             aperture = aperture.filter(ImageFilter.MinFilter(2 * front_ring + 1))
         region = ImageChops.invert(aperture)
-        # The idle anims are lights mounted on that wall. Leave their
-        # footprints behind in the base: carrying them forward would make the
-        # overlay anim-frames x door-stages and need a new shapenum encoding,
-        # and there are 147 lit pixels across all three anims.
-        lights = Image.new("L", base_h.size, 0)
-        for spec in anims:
-            for idx in sorted(set(spec[1]) | set(spec[2])):
-                a = load(spec[0], idx).split()[3].point(lambda v: 255 if v > 0 else 0)
-                lights = ImageChops.lighter(lights, a)
-        region = ImageChops.subtract(region, lights.filter(ImageFilter.MaxFilter(3)))
+        # DO NOT punch the idle lights out of the near face. They are lamps
+        # mounted on the hangar -- 147 pixels of it, and 117 of those sit
+        # ABOVE the opening -- so cutting them out of solid roof art leaves
+        # three windows straight through the ceiling at the seam where the
+        # door meets the roof, and anything in the bay shows through them
+        # whatever its size. A Hover MLRS stands 11 classic pixels tall
+        # against a 66 pixel building and still bled, which is what proved
+        # this was a hole rather than a unit too big for its bay.
+        #
+        # The cost is that the lamps stop pulsing: the near face is one static
+        # image per damage run, so they freeze at frame 0. That is a
+        # brightness cycle on 147 pixels against holes in the roof. Restoring
+        # it means indexing the overlay by animation frame as well as door
+        # stage -- 8 x 9 x 2 frames, past the launcher's 128-shape cap -- so
+        # it needs a different mechanism, not a bigger tileset.
         # Cut from the FULL base -- hangar AND bay interior. Everything of the
         # building that is not inside the opening belongs in front, the ramp
         # below the door included: a vehicle deep in the bay is behind that
