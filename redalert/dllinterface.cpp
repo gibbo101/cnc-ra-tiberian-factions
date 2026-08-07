@@ -5138,18 +5138,24 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     }
 
     /*
-    **  Tiberian Factions -- the TS war factory's bay overlay needs no sort
-    **  bias of its own: BuildingClass::Sort_Y now puts the whole building on
-    **  its southern edge, and a sub-object inherits its base's key, so the
-    **  overlay already outranks anything standing on the hangar.
+    **  Tiberian Factions -- the TS war factory's bay overlay sorts south of
+    **  the building it belongs to, so it draws IN FRONT of a vehicle standing
+    **  in the bay while the base draws behind it.
     **
-    **  Biasing this one sub-object was the earlier approach, keyed on
-    **  AssetName as EA's shadow and WAKE reordering below is. It worked --
-    **  tf_sort.log showed the ordering land exactly where intended -- but it
-    **  can only lift the door layer, and the vehicle was still poking out of
-    **  the base's roof. Restore it here if the base ever goes back to a
-    **  centred sort and only the doorway should cover a vehicle.
+    **  That sandwich is the whole scheme: the base holds only the patch of
+    **  building seen THROUGH the doorway, this overlay holds everything else,
+    **  so the opening is the one place a vehicle can render. Its art ends at
+    **  y=71.8 of the 72-pixel plot and the building sorts at y=36, so 384
+    **  leptons puts this layer on the hangar's southern edge -- covering the
+    **  vehicle for as long as it stands on the building, and yielding once it
+    **  has driven clear.
+    **
+    **  Keyed on AssetName, as EA's own shadow and WAKE reordering below is.
     */
+    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAP2") == 0) {
+        new_object.SortOrder =
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 384)) >> 3);
+    }
 
     strncpy(new_object.TypeName, object->Class_Of().IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
 

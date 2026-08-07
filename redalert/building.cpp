@@ -4988,33 +4988,24 @@ COORDINATE BuildingClass::Sort_Y(void) const
         return (Center_Coord());
     }
     /*
-    **  The TS war factory sorts on its SOUTHERN EDGE, so the whole hangar --
-    **  base and bay overlay alike -- draws over anything standing on it.
+    **  The TS war factory keeps the CENTRED sort: it has to stay BEHIND a
+    **  vehicle in its bay, because the doorway patch of its base art is the
+    **  only thing that should show through behind one. Everything of the
+    **  building outside the opening rides in the bay overlay instead, which
+    **  is biased south of this point -- see DLL_Draw_Intercept.
     **
-    **  Framing a vehicle in the doorway instead was tried and does not hold:
-    **  the opening is about 33 classic pixels tall and these units are twice
-    **  that, so a Mammoth Mk. II pushes its head through the roof, both big
-    **  walkers show their feet below a shut door, and the Hover MLRS bobs its
-    **  missile pods through the roof on every cycle. There is no exit point
-    **  that fixes all of those at once. Covering the vehicle outright does,
-    **  and it also hides the reverse-then-forward jink the exit path makes.
-    **
-    **  Its art ends at y=71.8 of the 72-pixel plot and the plot centre is
-    **  y=36, so 384 leptons puts the sort line on the building's own southern
-    **  edge: covered while standing on the building, on top once clear of it.
-    **  The apron that first forced the centred sort became ground art on
-    **  2026-08-07 and no longer sorts against vehicles at all.
+    **  Sorting the whole building south was tried and does cover every
+    **  poke-through, but it covers the vehicle as well and it disappears
+    **  entirely inside the bay.
     */
-    if (*this == STRUCT_TSWEAP) {
-        return (Coord_Add(Center_Coord(), XY_Coord(0, 384)));
-    }
     /*
     **  Buildings whose art reaches well south of their sort point. The TS
     **  refinery spreads a concrete apron across the bottom of its plot, and a
     **  vehicle standing on that apron has to draw on top of it rather than
     **  behind the building.
     */
-    if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC)) {
+    if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC
+         || *this == STRUCT_TSWEAP)) {
         return (Center_Coord());
     }
     /*

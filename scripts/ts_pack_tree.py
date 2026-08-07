@@ -437,13 +437,14 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 a = load(spec[0], idx).split()[3].point(lambda v: 255 if v > 0 else 0)
                 lights = ImageChops.lighter(lights, a)
         region = ImageChops.subtract(region, lights.filter(ImageFilter.MaxFilter(3)))
-        # Cut from the HANGAR, before the bay interior was composited into the
-        # base. Measured against the finished base, the interior's ramp lies
-        # below the threshold and inside the outline, so it would be dragged
-        # into the near face -- putting the ground the vehicle drives on in
-        # front of the vehicle.
+        # Cut from the FULL base -- hangar AND bay interior. Everything of the
+        # building that is not inside the opening belongs in front, the ramp
+        # below the door included: a vehicle deep in the bay is behind that
+        # ramp, and leaving it in the base is what showed its feet under a
+        # shut door. What stays behind is exactly the patch of building framed
+        # by the doorway.
         front_masks = [ImageChops.multiply(b.split()[3].point(lambda v: 255 if v > 0 else 0), region)
-                       for b in (hangar_h, hangar_d)]
+                       for b in (base_h, base_d)]
 
     # SPLIT AFTER SCALING, NEVER BEFORE. hq_scale composites onto a black RGB
     # canvas, so every alpha edge bleeds towards black. Cutting the source art
