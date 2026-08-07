@@ -1568,6 +1568,32 @@ static BuildingTypeClass const ClassTsDept(STRUCT_TSDEPT,
                                            (short const*)OListFix);
 
 /*
+**  TSDROP (Dropship Bay) — Westwood's cut GADROP, finished rather than invented.
+**    Modelled on ClassTsHpad, not ClassTsDept: this is a flat pad an aircraft
+**    lands on, so the helipad's sorting and landing behaviour carry over intact
+**    and the depot's docking logic is avoided entirely. Art is the depot's
+**    octagonal pad alone (shp_gtdeptbb); the gantry and its two anims are unused,
+**    so there is no active-anim entry and nothing to regulate.
+*/
+static BuildingTypeClass const ClassTsDrop(STRUCT_TSDROP,
+                                           TXT_NONE,
+                                           "TSDROP",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),    // Dropship sets down on the pad centre.
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           false,              // no anim to regulate (gantry dropped)
+                                           false, false, false, false,
+                                           true, true, false, false, false, true,
+                                           RTTI_UNITTYPE,      // Vehicle factory: the Mk2 is ordered here and delivered by dropship, the TDAFLD pattern. Deliberately NOT a helipad — outside Is_Helipad and STRUCTF_HELIPAD, either of which would grant a free helicopter and make the deck a general rearm target.
+                                           DIR_N,
+                                           BSIZE_33,           // Matches the pad art's footprint (TDFIX parity).
+                                           NULL,
+                                           (short const*)ListFix,
+                                           (short const*)OListFix);
+
+/*
 **  TDAFLD (Nod Airstrip) — 4×2 flat tile, ARMOR_STEEL, capturable, crewed.
 **    Wholesale port of TD's STRUCT_AIRSTRIP per tiberiandawn/bdata.cpp:841
 **    (ClassAirStrip). RTTI_UNITTYPE factory; vehicles delivered via cargo
@@ -4705,6 +4731,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsHpad);        // STRUCT_TSHPAD (TS Helipad)
     new BuildingTypeClass(ClassTsTech);        // STRUCT_TSTECH (TS Tech Center)
     new BuildingTypeClass(ClassTsDept);        // STRUCT_TSDEPT (TS Service Depot)
+    new BuildingTypeClass(ClassTsDrop);        // STRUCT_TSDROP (TS Dropship Bay)
 }
 
 /***********************************************************************************************
@@ -5072,6 +5099,7 @@ void BuildingTypeClass::One_Time(void)
             {STRUCT_TSHPAD, STRUCT_TDHPAD},
             {STRUCT_TSTECH, STRUCT_TDEYE},
             {STRUCT_TSDEPT, STRUCT_TDFIX},
+            {STRUCT_TSDROP, STRUCT_TDFIX},
         };
         for (int di = 0; di < (int)(sizeof(_td_bdonors) / sizeof(_td_bdonors[0])); di++) {
             BuildingTypeClass& b = As_Reference(_td_bdonors[di].td);

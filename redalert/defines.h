@@ -1587,6 +1587,7 @@ typedef enum StructType : short
     STRUCT_TSHPAD, // TS Helipad "TSHPAD" (GAHPAD, 2x2) — aircraft factory.
     STRUCT_TSTECH, // TS Tech Center "TSTECH" (GATECH, 2x2 TD-parity).
     STRUCT_TSDEPT, // TS Service Depot "TSDEPT" (GADEPT, 3x3) — repair bay.
+    STRUCT_TSDROP, // TS Dropship Bay "TSDROP" (Westwood's cut GADROP, 3x3) — the Mammoth Mk. II arrives here by Orca. Art is TSDEPT's octagonal pad alone (shp_gtdeptbb); the gantry and its anims are unused.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
@@ -1609,7 +1610,7 @@ typedef enum StructType : short
     **	Second range of BuildingTypeClass::Is_Tiberian_Era.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TSDEPT
+    STRUCT_TS_TREE_LAST = STRUCT_TSDROP
 } StructType;
 
 /*

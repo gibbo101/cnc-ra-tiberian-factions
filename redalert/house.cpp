@@ -4140,7 +4140,7 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                 // call (rtti, intheory, builder match, TDAFLD quantity). Useful
                 // for diagnosing factory-stall / wrong-builder issues. Per
                 // [[feedback-keep-diagnostics-until-v1]].
-#if 0
+#if 1
                 {
                     static FILE* s_pol = NULL;
                     if (s_pol == NULL) {

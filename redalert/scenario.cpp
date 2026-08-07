@@ -99,6 +99,46 @@ bool TF_Dev_Cheats(void)
 #endif
 }
 
+/***********************************************************************************************
+ * TF_Dev_Cheap_Build -- Is the flat $1 build-cost lever switched on?                          *
+ *                                                                                             *
+ *    Everything costs one credit: production, refunds, repair and the displayed sidebar price *
+ *    all agree, so the sidebar never quotes a figure the player is not charged. This applies  *
+ *    to AI houses too (Luke: the lever exists to reach the top of the tech tree quickly, not  *
+ *    to observe AI behaviour). Note their build planner still reasons about affordability     *
+ *    from the unmodified Cost_Of(), so what changes for them is only that they stop running   *
+ *    out of money -- do not read AI economic behaviour from a run with this armed.            *
+ *                                                                                             *
+ *    OPT-IN, unlike TF_Dev_Cheats: create Documents/CnCRemastered/tf_cheap.flag to arm it,     *
+ *    delete the file to disarm without a rebuild. It defaults OFF because a build that is      *
+ *    free by default would quietly invalidate every balance observation made while it ran.     *
+ *    Read once and cached, like TF_Dev_Cheats.                                                 *
+ *=============================================================================================*/
+bool TF_Dev_Cheap_Build(void)
+{
+#if TF_DEV_BUILD
+    static int cached = -1;
+    if (cached < 0) {
+        cached = 0; // default OFF -- this one has to be asked for
+        const char* h = getenv("USERPROFILE");
+        if (h == NULL)
+            h = getenv("HOME");
+        if (h != NULL) {
+            char p[512];
+            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_cheap.flag", h);
+            FILE* f = fopen(p, "r");
+            if (f != NULL) {
+                cached = 1;
+                fclose(f);
+            }
+        }
+    }
+    return cached != 0;
+#else
+    return false;
+#endif
+}
+
 extern int PreserveVQAScreen;
 
 void Display_Briefing_Text_GlyphX();

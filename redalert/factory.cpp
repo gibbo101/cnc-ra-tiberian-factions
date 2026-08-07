@@ -339,6 +339,15 @@ bool FactoryClass::Set(TechnoTypeClass const& object, HouseClass& house)
     if (Object) {
         House = Object->House;
         Balance = object.Cost_Of() * house.CostBias;
+#if TF_DEV_BUILD
+        /*
+        **  Dev lever: anything builds for one credit. Set before PurchasePrice
+        **  so the sell/refund value matches what was actually paid.
+        */
+        if (TF_Dev_Cheap_Build()) {
+            Balance = 1;
+        }
+#endif
         Object->PurchasePrice = Balance;
     }
 
@@ -476,6 +485,15 @@ bool FactoryClass::Abandon(void)
             **	Refund all money expended so far, back to the owner of the object under construction.
             */
             int money = Object->Class_Of().Cost_Of() * Object->House->CostBias;
+#if TF_DEV_BUILD
+            /*
+            **  Match the charge, or an abandoned build refunds the full price
+            **  against a one-credit payment and mints the difference.
+            */
+            if (TF_Dev_Cheap_Build()) {
+                money = 1;
+            }
+#endif
             House->Refund_Money(money - Balance);
             Balance = 0;
 

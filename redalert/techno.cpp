@@ -7205,6 +7205,17 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 
         int cost = Techno_Type_Class()->Raw_Cost() * House->CostBias;
 
+#if TF_DEV_BUILD
+        /*
+        **  Dev lever: sell value tracks the one-credit purchase price. Without
+        **  this, selling anything refunds full price against a $1 payment and
+        **  the lever becomes an infinite money press.
+        */
+        if (TF_Dev_Cheap_Build()) {
+            cost = 1;
+        }
+#endif
+
 #ifdef TOFIX
         /*
         **	If the object is carrying Tiberium directly (i.e., the harvester), then

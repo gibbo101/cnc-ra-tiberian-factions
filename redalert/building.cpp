@@ -3064,6 +3064,31 @@ int BuildingClass::Exit_Object(TechnoClass* base)
     switch (base->What_Am_I()) {
 
     case RTTI_AIRCRAFT:
+#if TF_DEV_BUILD
+        /*
+        **  Logs-first: which exit path an aircraft actually leaves its pad by,
+        **  and whether the orbit probe is armed when it does. The probe that
+        **  froze the game was hooked in Unlimbo; this site is a different one
+        **  and has never been observed to run.
+        */
+        {
+            char dpath[512];
+            const char* dprof = getenv("USERPROFILE");
+            if (dprof != NULL && dprof[0] != '\0') {
+                snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
+            } else {
+                strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
+            }
+            FILE* dlog = fopen(dpath, "a");
+            if (dlog != NULL) {
+                fprintf(dlog, "frame=%d ORBIT-EXIT bldg=%s radio=%s type=%d isorca=%s probe=%s\n", Frame,
+                        Class->IniName, In_Radio_Contact() ? "yes" : "no", (int)*((AircraftClass*)base),
+                        (*((AircraftClass*)base) == AIRCRAFT_TDORCA) ? "yes" : "no",
+                        TF_Orbit_Probe() ? "ARMED" : "off");
+                fclose(dlog);
+            }
+        }
+#endif
         if (!In_Radio_Contact()) {
             AircraftClass* air = (AircraftClass*)base;
 
@@ -3096,6 +3121,21 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                     air->Height = TF_ORBIT_HEIGHT;
                     air->Assign_Destination(As_Target());
                     air->IsLanding = true;
+
+                    char apath[512];
+                    const char* aprof = getenv("USERPROFILE");
+                    if (aprof != NULL && aprof[0] != '\0') {
+                        snprintf(apath, sizeof(apath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", aprof);
+                    } else {
+                        strcpy(apath, "MOD_DEBUG_TSUNITS.txt");
+                    }
+                    FILE* alog = fopen(apath, "a");
+                    if (alog != NULL) {
+                        fprintf(alog, "frame=%d ORBIT-APPLY height=%d door=%s navcom=%08lX\n", Frame,
+                                (int)air->Height, air->Is_Door_Closed() ? "closed" : "OPEN",
+                                (unsigned long)air->NavCom);
+                        fclose(alog);
+                    }
                 }
 #endif
                 ScenarioInit--;
