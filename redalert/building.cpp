@@ -3072,6 +3072,32 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             if (air->Unlimbo(Docking_Coord(), air->Pose_Dir())) {
                 Transmit_Message(RADIO_HELLO, air);
                 Transmit_Message(RADIO_TETHER);
+#if TF_DEV_BUILD
+                /*
+                **  PROBE: arrive from orbit rather than appearing on the pad.
+                **
+                **  This has to happen HERE and not in Unlimbo. The pad sets
+                **  Height to 0, unlimbos at the docking coordinate and only
+                **  then tethers, so a hook inside Unlimbo runs before there is
+                **  any radio contact and before NavCom exists -- which is why
+                **  the earlier attempt landed but never docked, and is the
+                **  prime suspect for the freeze that followed.
+                **
+                **  With the pad as NavCom AND as the radio contact, the branch
+                **  at the bottom of Landing_Takeoff_AI can complete its
+                **  handshake and settle the aircraft into the dock, which is
+                **  the state the engine expects an aircraft on a pad to be in.
+                **
+                **  Armed by Documents/CnCRemastered/tf_orbit.flag, off by
+                **  default: it puts aircraft somewhere the engine never
+                **  otherwise puts them.
+                */
+                if (TF_Orbit_Probe() && *air == AIRCRAFT_TDORCA) {
+                    air->Height = TF_ORBIT_HEIGHT;
+                    air->Assign_Destination(As_Target());
+                    air->IsLanding = true;
+                }
+#endif
                 ScenarioInit--;
                 return (2);
             }
