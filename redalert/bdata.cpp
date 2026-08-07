@@ -5585,6 +5585,13 @@ bool BuildingTypeClass::Bib_And_Offset(SmudgeType& bib, CELL& cell) const
     */
     if (Type == STRUCT_TSWEAP) {
         bib = SMUDGE_TSWEAPBB;
+        /*
+        **	The concrete starts one cell east and one south of the plot's
+        **	corner. Stamping from the corner instead would write nine blank
+        **	cells, and a blank stamp wipes the smudge already on that cell --
+        **	which is how a neighbour loses its bib.
+        */
+        cell = MAP_CELL_W + 1;
         return (true);
     }
     if (Type == STRUCT_TSPROC) {

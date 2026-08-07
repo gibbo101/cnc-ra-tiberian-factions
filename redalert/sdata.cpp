@@ -172,17 +172,20 @@ static SmudgeTypeClass const Bibx3(SMUDGE_BIB3,
 );
 
 /*
-**	TS war factory concrete apron: one frame per cell, in reading order from the
-**	building's top-left corner. Six columns for a five-column plot -- the
-**	concrete tapers a few pixels past the plot's east edge, and like every RA
-**	bib the apron is allowed to lie outside the footprint it belongs to. These
-**	dimensions are checked against the packed art by ts_pack_tree.py.
+**	TS war factory concrete apron: one frame per cell, in reading order from
+**	the grid's top-left corner, which Bib_And_Offset places one cell east and
+**	one south of the building's own corner. The grid hugs the concrete rather
+**	than the plot because the engine stamps every cell of a smudge's rectangle
+**	whether its tile carries art or not, and a blank stamp overwrites the cell's
+**	existing smudge -- an oversized grid eats a neighbouring building's bib.
+**	Like every RA bib the apron may lie outside the footprint it belongs to.
+**	These dimensions are checked against the packed art by ts_pack_tree.py.
 */
 static SmudgeTypeClass const TsWeapBib(SMUDGE_TSWEAPBB,
                                        "TSWEAPBB",
                                        TXT_BIB,
-                                       6,
-                                       4,    // Width and height of smudge (in icons).
+                                       5,
+                                       3,    // Width and height of smudge (in icons).
                                        true, // Is this a building bib?
                                        false // Is this a crater smudge?
 );

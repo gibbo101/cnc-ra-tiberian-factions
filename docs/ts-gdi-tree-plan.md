@@ -1,7 +1,7 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
 ## ⭐ 2026-08-07 LATE — RESUME HERE (war factory resized; door seam OPEN)
-**Desktop prefix at `d642ee4b`, md5-verified. Deck still STALE. Nothing pushed.**
+**Desktop prefix at `854fcd4d`, md5-verified. Deck still STALE. Nothing pushed.**
 
 **THE SIZE FIX, and why it was needed.** A Mammoth Mk. II measured **40x40**
 classic px against a **33.6x33.6** door: it could not fit through, at any spawn
@@ -36,15 +36,41 @@ inside the stub. `ExitCoordinate` = **XYP_COORD(64, 43)**, the centre of the
 door **APERTURE** (pixels that change between shutter stage 0 and 8) — *not*
 the door composite's centre, which the bay surround drags ~5px south-east.
 
+## ⭐⭐ NEXT SESSION STARTS HERE: SPLIT TSWEAP INTO BASE + WEAP2 FRONT
+**Luke's call, 2026-08-07: "split". Deferred to a fresh session deliberately.**
+
+**TSWEAP IS BUILT BACKWARDS FROM EVERY OTHER WAR FACTORY IN THE MOD.** Our own
+`building.cpp:795` states the convention: *"WEAP.ZIP is just the bottom ramp;
+WEAP2.ZIP is the walls/roof with door-opening frames."* RA's WEAP, TD's TDWEAP
+and RA's AWEAP/SWEAP all follow it. **TSWEAP does not** — it puts the WHOLE
+hangar in the base sprite and only the shutter in the overlay. That is why a
+spawning vehicle can never look like it is inside the bay: there is no layer
+in front of it. Luke supplied RA and TD reference sprites showing both games'
+lower halves (floor + bay mouth) with the roof carried separately.
+
+**The overlay already draws OVER units** — that is exactly why it was occluding
+vehicles on 08-06, and the 08-07 fix clipped 71% of it away. **The layer we
+deleted is the layer we now want**; it just has to be the hangar's FRONT rather
+than the surplus ground that came attached to it.
+
+Doing it right retires three open problems at once:
+- the hard door seam (nothing is clipped, so nothing has a cut edge),
+- the "unit spawns outside the factory" read (it gets sandwiched),
+- `ExitCoordinate` guesswork (the aperture becomes a real modelled opening).
+
+Shape of the work: re-cut `shp_gtweap` into a base piece (floor, back wall, bay
+interior) and a front piece (roof, near wall) instead of clipping the door
+composite to a silhouette; the front piece composites with each of the 9
+shutter stages, exactly as `TSWEAP2` frames are built today. Damaged run too.
+`Draw_It` already dispatches TSWEAP2 per door stage — **no engine change
+expected**, this is a packer change.
+
 ### OPEN — nothing here is signed off
-1. **The door seam** (Luke's SS, "can see the lines where the door is imposed").
-   Cause measured: the clip added 08-07 multiplies by a **binarised** silhouette
-   (`alpha>0 -> 255`), so the door is cut dead hard against a soft-antialiased
-   building edge, and the cut runs straight through the bay surround's ramp.
-   1.33x made it 33% more visible. **Awaiting Luke's choice:** soften the clip
-   (one line, cosmetic), or move the bay surround out of the door overlay into
-   the apron so nothing needs clipping (correct — the surround IS ground art —
-   and it also fixes item 2).
+1. **The door seam** — superseded by the split above; do not patch it
+   separately. (Cause, for the record: the 08-07 clip multiplies by a
+   **binarised** silhouette (`alpha>0 -> 255`), so the door is cut dead hard
+   against a soft-antialiased building edge, straight through the bay
+   surround's ramp. 1.33x made it 33% more visible.)
 2. **Ramp stripes band yellow/green.** The apron's gold-baking test
    (`g>70 and g>r*1.6 and g>b*1.6`) misses the ramp's DARKER green bands, which
    then stay raw on ground art, and ground art is never house-remapped.
@@ -59,6 +85,26 @@ the door composite's centre, which the bay surround drags ~5px south-east.
    free. Radar treatment there would mean making it BIGGER, a separate size
    judgement (note: a past size-up left it "looking like a toy").
 5. SE bay exits still never judged in play; exit list re-cut but unseen.
+6. **The pad lies outside the 4x3 plot, and geometrically must.** Luke flagged
+   it; there is no arrangement that keeps a Mammoth-width (4-cell) door AND a
+   contained pad on a 4x3 plot, because the hangar uses every column. Choices
+   are: leave it outside (current — `Is_TS_Apron_Cell` keeps it unbuildable),
+   clip the concrete at the plot edge (a hard cut, same ugliness as the door
+   seam), or return to 5x4. **Undecided.**
+7. **TSPROC stamps 6 blank apron tiles of 15** — same class of bug as the war
+   factory's power-plant-bib eater below, still live, NOT fixed (its art is
+   signed off, so it wants Luke's OK). The packer now prints a WARNING naming
+   the count on every run.
+
+### ⚠ A SMUDGE STAMPS EVERY CELL OF ITS RECTANGLE, ART OR NOT
+Found the hard way when the war factory ate the power plant's bib. The engine
+writes the smudge to all `w*h` cells; a tile with no art still stamps, and a
+blank stamp **overwrites whatever smudge that cell already had**. Growing the
+apron grid to 6x4 claimed 24 cells for 15 tiles of concrete, and the 9 blanks
+wiped the neighbour. **The grid must hug the concrete, not the plot** —
+`TSWEAPBB` is now 5x3 at a `Bib_And_Offset` of `MAP_CELL_W + 1` (one cell east,
+one south). `ts_pack_tree.py`'s apron config carries that offset as a third
+tuple, and the packer WARNS on any blank tile it is about to emit.
 
 ## 2026-08-07 — aprons: FIXED + signed off, both buildings
 **Desktop prefix at `71df2628`, md5-verified. Deck still STALE at `2d8a5dbb`.

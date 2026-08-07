@@ -294,7 +294,12 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # footprint it belongs to. The grid must match the SmudgeTypeClass in
         # sdata.cpp, so the apron's real extent is checked against it here --
         # art that outgrows the grid is a silent clip otherwise.
-        (cols, rows), (grid_cols, grid_rows) = apron_cells
+        # The tile grid is offset from the plot's north-west corner as well as
+        # sized, because the engine stamps EVERY cell of a smudge's rectangle
+        # whether or not its tile carries art -- and a blank stamp overwrites
+        # whatever smudge was on that cell, eating a neighbouring building's
+        # bib. The grid must therefore hug the concrete, not the plot.
+        (cols, rows), (grid_cols, grid_rows), (off_c, off_r) = apron_cells
         cell_px = 24.0 * CANVAS_PER_CLASSIC_PX
         left = (canvas_w - cols * cell_px) / 2.0
         top = (canvas_h - rows * cell_px) / 2.0
@@ -316,18 +321,30 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 if a and g > 70 and g > r * 1.6 and g > b * 1.6:
                     px[x, y] = (g, round(g * 0.82), 0, a)
         apron = place(src, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
+        gx, gy = left + off_c * cell_px, top + off_r * cell_px
         bb = apron.getbbox()
-        if bb and (bb[0] < left or bb[1] < top
-                   or bb[2] > left + grid_cols * cell_px or bb[3] > top + grid_rows * cell_px):
+        if bb and (bb[0] < gx or bb[1] < gy
+                   or bb[2] > gx + grid_cols * cell_px or bb[3] > gy + grid_rows * cell_px):
             raise SystemExit(
-                f"{ini}: apron spans {bb} but the {grid_cols}x{grid_rows} tile grid covers "
-                f"{(left, top, left + grid_cols * cell_px, top + grid_rows * cell_px)}. "
-                f"Grow the grid here and the SmudgeTypeClass in sdata.cpp together.")
+                f"{ini}: apron spans {bb} but the {grid_cols}x{grid_rows} tile grid at cell offset "
+                f"({off_c},{off_r}) covers "
+                f"{(gx, gy, gx + grid_cols * cell_px, gy + grid_rows * cell_px)}. "
+                f"Move or grow the grid here, the SmudgeTypeClass in sdata.cpp and the "
+                f"Bib_And_Offset offset in bdata.cpp together.")
+        # Every emitted tile costs a stamped cell, so warn on any that is blank:
+        # it is a cell taken off a neighbour for nothing.
         tiles = []
+        blank = 0
         for r in range(grid_rows):
             for c in range(grid_cols):
-                x, y = left + c * cell_px, top + r * cell_px
-                tiles.append(apron.crop((x, y, x + cell_px, y + cell_px)))
+                x, y = gx + c * cell_px, gy + r * cell_px
+                t = apron.crop((x, y, x + cell_px, y + cell_px))
+                if t.getbbox() is None:
+                    blank += 1
+                tiles.append(t)
+        if blank:
+            print(f"{ini}: WARNING {blank}/{len(tiles)} apron tiles are blank and will still "
+                  f"stamp (overwriting neighbours' bibs) -- tighten the grid")
         # Registered as TERRAIN, in every theatre. The launcher decides what
         # goes on the ground from the entry's IsTheaterShape flag, and a
         # theatre shape is resolved out of RA_TERRAIN_<theatre>; ship it as a
@@ -612,7 +629,7 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     overlays = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb"}
     # Aprons ship as ground art, one tile per cell: (plot, tile grid), the grid
     # matching the building's SmudgeTypeClass in sdata.cpp.
-    aprons = {"TSWEAP": ((4, 3), (6, 4)), "TSPROC": ((4, 3), (5, 3))}
+    aprons = {"TSWEAP": ((4, 3), (5, 3), (1, 1)), "TSPROC": ((4, 3), (5, 3), (0, 0))}
     # TS drives the war factory bay with a separate 9-stage shutter over a
     # static interior (ART.INI: DoorAnim/DoorStages/UnderDoorAnim).
     doors = {"TSWEAP": ("shp_gtweap_d", "shp_gtweap_1", 9)}
