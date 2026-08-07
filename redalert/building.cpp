@@ -5083,7 +5083,7 @@ bool Is_TS_Weap_Exit_Cell(CELL cell)
     **	Walk back from the candidate to where the war factory's north-west
     **	corner would be, and confirm a TSWEAP actually occupies it.
     */
-    int x = Cell_X(cell) - 3;
+    int x = Cell_X(cell) - 4;
     int y = Cell_Y(cell) - 3;
     if (x < 0 || y < 0) {
         return (false);

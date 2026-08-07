@@ -120,9 +120,19 @@ static short const TsWeapOList[] = {4, (MCW * 1) + 4, (MCW * 2) + 4,
                                     (MCW * 3), (MCW * 3) + 1, (MCW * 3) + 2, (MCW * 3) + 3,
                                     (MCW * 3) + 4,
                                     REFRESH_EOL};
-/* Departure cells, south-east first: that is the side the bay door faces. */
-static short const TsWeapExit[] = {XYCELL(3, 3), XYCELL(2, 3), XYCELL(4, 2), XYCELL(4, 3),
-                                   XYCELL(1, 3), XYCELL(4, 1), XYCELL(0, 3), XYCELL(-1, 2),
+/*
+**	Departure cells for the TS bay, the true south-east diagonal first.
+**
+**	The vehicle spawns at the door, cell (2.7, 1.8) of the 4x3 plot, so
+**	XYCELL(3,3) -- the old first choice -- is a third of a cell east and one
+**	and a quarter south: it reads as driving straight out of the south wall.
+**	XYCELL(4,3) is +2 east and +2 south of the spawn cell, a real diagonal
+**	that carries the hull clear of the doorway before anything else happens.
+**	The rest fan out from there, south-east side first, since that is the way
+**	the bay points.
+*/
+static short const TsWeapExit[] = {XYCELL(4, 3), XYCELL(3, 3), XYCELL(4, 2), XYCELL(2, 3),
+                                   XYCELL(4, 1), XYCELL(1, 3), XYCELL(0, 3), XYCELL(-1, 2),
                                    REFRESH_EOL};
 static short const List1100[] = {0, 1, REFRESH_EOL};
 static short const List1101[] = {0, 1, (MCW * 1) + 1, REFRESH_EOL};

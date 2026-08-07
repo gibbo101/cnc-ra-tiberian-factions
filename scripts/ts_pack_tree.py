@@ -480,6 +480,16 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         if front_ring:
             aperture = aperture.filter(ImageFilter.MinFilter(2 * front_ring + 1))
         region = ImageChops.invert(aperture)
+        # Nothing BELOW the opening goes in front. That strip is the ramp and
+        # the door-to-pad join, and it is ground the vehicle drives over on
+        # its way out -- carried in the near face it cuts a band across the
+        # vehicle exactly during the exit. It earns its keep only while the
+        # door is shut, hiding a little of the feet, and that is the idle
+        # state nobody watches. Measured: the strip is 7% of the near face and
+        # moving it back costs 189 pixels of Titan foot on a shut door.
+        _, _, _, ap_bottom = aperture.getbbox()
+        draw = ImageDraw.Draw(region)
+        draw.rectangle([0, ap_bottom, region.width, region.height], fill=0)
         # DO NOT punch the idle lights out of the near face. They are lamps
         # mounted on the hangar -- 147 pixels of it, and 117 of those sit
         # ABOVE the opening -- so cutting them out of solid roof art leaves
