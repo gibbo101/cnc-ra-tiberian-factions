@@ -405,23 +405,38 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         front_masks = [ImageChops.multiply(b.split()[3].point(lambda v: 255 if v > 0 else 0), region)
                        for b in (base_h, base_d)]
 
-    def without_front(run, mask):
-        """The base run with the front piece removed, the overlay's to draw."""
-        if mask is None:
-            return run
-        out = []
-        for f in run:
-            g = f.copy()
-            g.putalpha(ImageChops.subtract(g.split()[3], mask))
-            out.append(g)
+    # SPLIT AFTER SCALING, NEVER BEFORE. hq_scale composites onto a black RGB
+    # canvas, so every alpha edge bleeds towards black. Cutting the source art
+    # in two puts a new alpha edge down the seam in BOTH pieces, and the two
+    # dark fringes meet as a black line across the finished building. Scaling
+    # the whole frame once and dividing the RESULT by a mask carried through
+    # the same affine creates no new edge in the colour domain: the two layers
+    # recomposite to exactly the pixels the unsplit building would have drawn.
+    def scaled(img):
+        return place(img, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
+
+    def split_alpha(img, mask, keep):
+        """img with its alpha restricted to (or cleared of) mask."""
+        out = img.copy()
+        a = out.split()[3]
+        out.putalpha(ImageChops.multiply(a, mask) if keep else ImageChops.subtract(a, mask))
         return out
 
-    # Placed from the FULL frames' affine: the front piece moves layer, not
-    # position, so it must not shift the building's fit or anchor.
-    frames = [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
-              for f in without_front(healthy, front_masks and front_masks[0])]
-    frames += [place(f, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
-               for f in without_front(damaged_frames, front_masks and front_masks[1])]
+    full = [[scaled(f) for f in healthy], [scaled(f) for f in damaged_frames]]
+    front_canvas = None
+    if front_masks is not None:
+        white = Image.new("RGB", base_h.size, (255, 255, 255))
+        canvas_masks = []
+        for m in front_masks:
+            carrier = white.convert("RGBA")
+            carrier.putalpha(m)
+            canvas_masks.append(scaled(carrier).split()[3])
+        # Taken off frame 0 of each run: the face excludes the anim footprints,
+        # so it is identical across the cycle.
+        front_canvas = [split_alpha(full[r][0], canvas_masks[r], True) for r in (0, 1)]
+        full = [[split_alpha(f, canvas_masks[r], False) for f in full[r]] for r in (0, 1)]
+
+    frames = full[0] + full[1]
     write_zip(f"{STRUCT_DIR}/{ini}.ZIP", ini.lower(), frames)
 
     if door_spec is not None:
@@ -463,19 +478,18 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             under = load(under_dir, under_f)
             # The near face rides on top of the shutter in every stage, so it
             # is in front of both the bay interior and anything standing in
-            # it. It needs no silhouette clip -- it is cut FROM the silhouette.
-            front = None
-            if front_masks is not None:
-                front = (base_h, base_d)[under_f].copy()
-                front.putalpha(ImageChops.multiply(front.split()[3], front_masks[under_f]))
+            # it. Composited in CANVAS space, after each layer has been through
+            # the affine on its own: it was cut from the scaled building and
+            # has to go back exactly where it came from.
             for s in range(stages):
                 shutter = load(door_dir, s)
                 cell = under.copy()
                 cell.paste(shutter, (0, 0), shutter)
                 cell.putalpha(ImageChops.multiply(cell.split()[3], sils[under_f]))
-                if front is not None:
-                    cell.paste(front, (0, 0), front)
-                door_frames.append(place(cell, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y))
+                out = place(cell, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
+                if front_canvas is not None:
+                    out = Image.alpha_composite(out, front_canvas[under_f])
+                door_frames.append(out)
         write_zip(f"{STRUCT_DIR}/{ini}2.ZIP", f"{ini.lower()}2", door_frames)
         patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}2", len(door_frames))
 
