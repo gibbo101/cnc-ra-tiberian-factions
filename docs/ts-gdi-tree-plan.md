@@ -66,6 +66,12 @@ shutter stages, exactly as `TSWEAP2` frames are built today. Damaged run too.
 expected**, this is a packer change.
 
 ### OPEN — nothing here is signed off
+0. **REGRESSION, TS WF placement grid (Luke, 2026-08-07, deferred).** The grid
+   reads 4x3 and should be **5x3**, with the 4th row at the top blocked from
+   building — the radar height trick. That blocking has regressed. Not for this
+   session; noted so it is not lost. Suspect the 08-07 footprint change that
+   split `Occupy_List(placement=true)` per type (see the BSIZE trap above): the
+   `_ts_weap_place` literal there is the 4x3 the launcher now draws.
 1. **The door seam** — superseded by the split above; do not patch it
    separately. (Cause, for the record: the 08-07 clip multiplies by a
    **binarised** silhouette (`alpha>0 -> 255`), so the door is cut dead hard

@@ -403,13 +403,22 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         if ap is None:
             raise SystemExit(f"{ini}: door stages 0 and {stages - 1} are identical, "
                              f"so the aperture cannot be located")
+        # The WHOLE hangar goes in front, and the opening is a hole in it.
+        # A ring around the aperture is not enough: a Mammoth Mk. II stands
+        # about 58 classic pixels tall against a 33-pixel opening, so its back
+        # clears the aperture entirely and lands on the roof, outside any ring
+        # that could reasonably be drawn. RA and TD both solve this the same
+        # way -- their base is the bay interior and their overlay is the whole
+        # building -- so a vehicle in the bay is seen THROUGH the opening and
+        # is covered everywhere else.
+        #
+        # front_ring is how far the near face encroaches into the opening; 0
+        # leaves the hole exactly the size the shutter uncovers.
         ax0, ay0, ax1, ay1 = ap
-        region = Image.new("L", base_h.size, 0)
+        region = Image.new("L", base_h.size, 255)
         draw = ImageDraw.Draw(region)
-        draw.rectangle([ax0 - front_ring, ay0 - front_ring,
-                        ax1 + front_ring - 1, ay1 + front_ring - 1], fill=255)
-        draw.rectangle([0, ay1, base_h.size[0], base_h.size[1]], fill=255)
-        draw.rectangle([ax0, ay0, ax1 - 1, ay1 - 1], fill=0)
+        draw.rectangle([ax0 + front_ring, ay0 + front_ring,
+                        ax1 - front_ring - 1, ay1 - front_ring - 1], fill=0)
         # The idle anims are lights mounted on that wall. Leave their
         # footprints behind in the base: carrying them forward would make the
         # overlay anim-frames x door-stages and need a new shapenum encoding,
@@ -755,10 +764,12 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     fit_w={"TSPROC": 384, "TSWEAP": 512}.get(ini),
                     dst_x_px={"TSPROC": 304, "TSWEAP": 448}.get(ini),
                     apron_cells=aprons.get(ini),
-                    # Source pixels of near wall kept around the bay opening.
-                    # Wider tucks a vehicle deeper into the bay; tighter reads
-                    # as a thin frame. Dialled by eye in play.
-                    front_ring={"TSWEAP": 12}.get(ini))
+                    # How far the near face encroaches into the bay opening.
+                    # 0 = the hole is exactly what the shutter uncovers, so a
+                    # vehicle is visible through the full opening and hidden
+                    # everywhere else. Raise it to tuck the vehicle further
+                    # behind the door frame.
+                    front_ring={"TSWEAP": 0}.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSFACT: TS Construction Yard on the RA-conyard 3x3 plot (BSIZE_33 +
