@@ -1,11 +1,12 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐ 2026-08-07 — RESUME HERE (war factory apron: FIXED + signed off)
-**Desktop prefix at `22f8029d`, md5-verified. Deck still STALE at `2d8a5dbb`.
+## ⭐ 2026-08-07 — RESUME HERE (aprons: FIXED + signed off, both buildings)
+**Desktop prefix at `71df2628`, md5-verified. Deck still STALE at `2d8a5dbb`.
 Nothing pushed to origin.**
 
-**SIGNED OFF IN PLAY ("FIXED!!"):** vehicles no longer vanish beside the war
-factory, and the apron is ground art that takes a move order.
+**SIGNED OFF IN PLAY ("all good on the pads"):** vehicles no longer vanish
+beside the war factory OR the refinery, both aprons are ground art that takes a
+move order, and placement is legal everywhere except each 4x3 plot.
 
 ### ⭐ THE ROOT CAUSE WAS THE BAY DOOR, NOT THE APRON
 Four rounds were spent moving the apron between render layers before anyone
@@ -65,17 +66,24 @@ outright. See [[feedback-identify-occluder-before-flag-changes]].
 - The buildup pours and keeps its own pad (`masks = {}`); its remapped stripes
   cover the apron's during construction.
 
+### Both buildings, and how to add a third
+`SMUDGE_TSWEAPBB` and `SMUDGE_TSPROCBB` are both 5x3 over a 4x3 plot. To add
+another, all five of these move together — `Is_TS_Apron_Smudge` exists so the
+placement and render sides cannot drift apart:
+1. `SmudgeType` in `defines.h` + the `SmudgeTypeClass` in `sdata.cpp` (grid).
+2. `Bib_And_Offset` branch in `bdata.cpp` (returns it at offset 0).
+3. `Is_TS_Apron_Smudge` in `building.cpp` (drives BOTH the
+   `Is_Clear_To_Build` exemption and the renderer's ground-entry branch).
+4. `Is_TS_Apron_Cell`'s offset table, if its plot veto differs.
+5. `aprons` in `ts_pack_tree.py`: `((plot cols, rows), (grid cols, rows))`.
+The packer refuses to pack if the art outgrows the grid, and prints the grid
+the art actually needs — that is how both 5-wide grids were arrived at.
+
 ### Open, in order
-1. **TSPROC apron gets the same treatment** — still sprite-composited, still
-   occludes (Luke saw it on the cell below a med tank) and still hit-tests as
-   building. Left alone deliberately until the mechanism was proven. Needs its
-   own `SMUDGE_TSPROCBB` + `aprons` entry + the `Is_Clear_To_Build` exemption;
-   the packer already generalises (pass `((plot), (grid))`). **Check its art
-   for remap-range pixels too**, and mind its dock-pad occupy hole.
-2. **SE bay exits** — never started. `TsWeapExit` prefers south-east cells and
+1. **SE bay exits** — never started. `TsWeapExit` prefers south-east cells and
    the spawn faces DIR_SE, but nothing is dialled; expect an awkward pose.
    Wants Luke's eye live, like the dock.
-3. Carry-overs: TSFACT conyard selection box, RA-truck-at-TSPROC eyeball,
+2. Carry-overs: TSFACT conyard selection box, RA-truck-at-TSPROC eyeball,
    watched TDHARV dock, sidebar off-by-one upstream to main.
 
 ## SESSION END 2026-08-06 LATE (war factory door + plot)
@@ -88,27 +96,14 @@ to DOOR_RATE 4) and the placement reach fix.
 **SHIPPED, NOT YET JUDGED:** 4x3 plot + concrete pad, the size fix, bib off,
 the apron build-veto, pad sort order.
 
-### THE FINDING THAT DROVE THIS WORK: the pad must become ground art — DONE 2026-08-07
-Two separate-looking bugs share one root cause — **the pad is part of the
-building SPRITE**:
-- units walking off the pad to the NE vanish under it (sprite sorting);
-- hovering the pad gives a select-this-building cursor, so units cannot be
-  ordered onto it (sprite hit-testing — `Cell_Techno` walks only the occupier
-  chain, and the building occupies just its six hangar cells, so this is the
-  LAUNCHER hit-testing the sprite, not the DLL).
-
-**Both affect TSPROC identically.** The fix is to cut the TS pad as ground art
-(the engine's bib model) instead of compositing it into the sprite — it then
-takes part in neither sorting nor hit-testing. A sort-point tweak was
-considered and rejected: it would hide the first bug and leave the second.
-
-### Open, in order
-1. **Pad → ground layer** (above). Fixes both buildings.
-2. **SE bay exits** — never started. `TsWeapExit` prefers south-east cells and
-   the spawn faces DIR_SE, but nothing is dialled; expect an awkward pose.
-   Wants Luke's eye live, like the dock.
-3. Carry-overs from the earlier block below (RA-truck-at-TSPROC eyeball,
-   watched TDHARV dock, sidebar off-by-one upstream, TSFACT selection box).
+### The diagnosis written here was HALF WRONG — see the 2026-08-07 block above
+This block claimed a single cause for both symptoms: that the pad was part of
+the building sprite, so it both sorted against units and answered the launcher's
+hit-test. **The hit-test half was right. The vanishing half was not** — for the
+war factory the occluder was the BAY DOOR overlay, whose under-door art spills
+71% of itself outside the building. Moving the pad to ground art did not fix the
+vanishing there; clipping the door did. (For TSPROC, which has no door, the pad
+really was the occluder.) Both are now ground art and both are signed off.
 
 ### Falsified this session — CORRECTED BELOW, do not re-trust the old claim
 - **GTWEAP frame 1 is NOT a "door-open healthy variant".** Frames 0/1/2 are
