@@ -5590,8 +5590,12 @@ bool BuildingTypeClass::Bib_And_Offset(SmudgeType& bib, CELL& cell) const
         **	corner. Stamping from the corner instead would write nine blank
         **	cells, and a blank stamp wipes the smudge already on that cell --
         **	which is how a neighbour loses its bib.
+        **
+        **	This ADJUSTS the caller's cell, as the RA slab below does. The
+        **	placement path passes 0 and wants the bare offset, but every path
+        **	that stamps the smudge for real passes the building's own cell.
         */
-        cell = MAP_CELL_W + 1;
+        cell += MAP_CELL_W + 1;
         return (true);
     }
     if (Type == STRUCT_TSPROC) {
