@@ -308,6 +308,28 @@ bool AircraftClass::Unlimbo(COORDINATE coord, DirType dir)
         House->AScan |= (1L << Class->Type);
         House->ActiveAScan |= (1L << Class->Type);
 
+#if TF_DEV_BUILD
+        /*
+        **  PROBE: does the launcher render an aircraft far above FLIGHT_LEVEL?
+        **
+        **  The from-orbit dropship needs a vehicle that descends vertically
+        **  from well above cruise height. The DLL side is free -- Height is
+        **  exported straight through as CNCObjectStruct::Altitude, an int, so
+        **  nothing in dllinterface.h has to grow (the rule that killed
+        **  megamaps). What is unknown is what ClientG does with a large one:
+        **  where it puts the sprite, how far it throws the shadow, and whether
+        **  it culls the thing entirely.
+        **
+        **  TS used DropPodHeight=2000 against RA's FLIGHT_LEVEL of 256, so 2000
+        **  is the number worth trying first. Orca only, and compiled out of
+        **  release builds; drop tf_dev_off.flag to silence it without a
+        **  rebuild.
+        */
+        if (TF_Dev_Cheats() && *this == AIRCRAFT_TDORCA) {
+            Height = 2000;
+        }
+#endif
+
         /*
         **	Hack it so that aircraft that are both passenger and cargo carrying
         **	will carry passengers at the expense of ammo.
