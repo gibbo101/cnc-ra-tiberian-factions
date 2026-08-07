@@ -96,9 +96,43 @@ def tga_bytes(img):
     return buf.getvalue()
 
 
+def bleed_edges(img, rounds=3):
+    """Extend the sprite's colour outwards into its transparent margin.
+
+    hq4x and LANCZOS both mix in whatever colour sits beside a pixel, and a
+    transparent margin left at black drags every alpha edge towards black. On
+    a whole sprite that is a faint dark rim nobody notices; along a seam where
+    two layers of one building meet, the two rims add up and read as a drawn
+    black line. Filling the margin with the neighbouring colour first means
+    the interpolation has nothing dark to find. Alpha is untouched -- these
+    pixels stay invisible, they only stop poisoning their neighbours."""
+    import numpy as np
+    a = np.array(img)
+    rgb = a[:, :, :3].astype(np.float32)
+    solid = a[:, :, 3] > 0
+    for _ in range(rounds):
+        acc = np.zeros_like(rgb)
+        cnt = np.zeros(solid.shape, np.float32)
+        for dy in (-1, 0, 1):
+            for dx in (-1, 0, 1):
+                if dx == 0 and dy == 0:
+                    continue
+                m = np.roll(np.roll(solid, dy, 0), dx, 1)
+                v = np.roll(np.roll(rgb, dy, 0), dx, 1)
+                acc += v * m[:, :, None]
+                cnt += m
+        grow = (~solid) & (cnt > 0)
+        rgb[grow] = (acc[grow] / cnt[grow][:, None])
+        solid = solid | grow
+    out = a.copy()
+    out[:, :, :3] = np.clip(rgb, 0, 255).astype(np.uint8)
+    return Image.fromarray(out)
+
+
 def hq_scale(img, factor):
+    img = bleed_edges(img)
     rgb = Image.new("RGB", img.size, (0, 0, 0))
-    rgb.paste(img, (0, 0), img)
+    rgb.paste(img.convert("RGB"), (0, 0))
     up = hqx.hq4x(rgb)
     w, h = round(img.width * factor), round(img.height * factor)
     color = up.resize((w, h), Image.LANCZOS)
@@ -443,7 +477,33 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # ramp, and leaving it in the base is what showed its feet under a
         # shut door. What stays behind is exactly the patch of building framed
         # by the doorway.
-        front_masks = [ImageChops.multiply(b.split()[3].point(lambda v: 255 if v > 0 else 0), region)
+        # The near face spans the building's SOLID outline, not merely the
+        # pixels that happen to carry art. Where the door leaf meets the
+        # hangar the two arts do not quite abut, and those few transparent
+        # rows are a window straight through the building: a vehicle's feet
+        # show under a shut door and a Mammoth Mk. II's rear pods show at the
+        # seam. Filling the outline's interior holes closes them, and
+        # bleed_edges has already put the neighbouring colour in those pixels,
+        # so they paint as building rather than as a hard patch.
+        def solid_outline(img):
+            a = img.split()[3].point(lambda v: 255 if v > 0 else 0)
+            # Flood the OUTSIDE from every border pixel; whatever the flood
+            # cannot reach is an interior hole, so add it back.
+            inv = ImageChops.invert(a)
+            flood = inv.copy()
+            fd = ImageDraw.floodfill
+            for x in range(0, inv.width, 1):
+                for yy in (0, inv.height - 1):
+                    if flood.getpixel((x, yy)) == 255:
+                        fd(flood, (x, yy), 128)
+            for y in range(0, inv.height, 1):
+                for xx in (0, inv.width - 1):
+                    if flood.getpixel((xx, y)) == 255:
+                        fd(flood, (xx, y), 128)
+            holes = flood.point(lambda v: 255 if v == 255 else 0)
+            return ImageChops.lighter(a, holes)
+
+        front_masks = [ImageChops.multiply(solid_outline(b), region)
                        for b in (base_h, base_d)]
 
     # SPLIT AFTER SCALING, NEVER BEFORE. hq_scale composites onto a black RGB
