@@ -1,6 +1,66 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐ 2026-08-07 — RESUME HERE (aprons: FIXED + signed off, both buildings)
+## ⭐ 2026-08-07 LATE — RESUME HERE (war factory resized; door seam OPEN)
+**Desktop prefix at `d642ee4b`, md5-verified. Deck still STALE. Nothing pushed.**
+
+**THE SIZE FIX, and why it was needed.** A Mammoth Mk. II measured **40x40**
+classic px against a **33.6x33.6** door: it could not fit through, at any spawn
+position. Luke's call was to grow the building, not shrink the units ("i
+actually like the size of titan and mk2"). The hangar is now pinned to **4
+cells** (`fit_w` 384 -> 512, 1.33x): **93.7 x 65.7** classic px, door **47.2 x
+41.5**. Mammoth drops from 82% to 61% of the building's height.
+
+**FOOTPRINT LANDED AT 4x3, NOT 5x4.** The first cut grew the plot to a new
+`BSIZE_54` so the concrete kept a column inside the footprint; Luke confirmed it
+worked in play, then asked for 4x3 with no overlap. **The art is 3.90 x 2.74
+cells, so it fits a 4x3 plot outright** — no radar-style overhang was needed.
+The concrete now falls **wholly outside** the plot and is kept clear by
+`Is_TS_Apron_Cell`, which vetoes apron cells wherever they lie. Footprint back
+to 12 cells. `BSIZE_54` was added and then **removed again** — do not go looking
+for it.
+
+### ⚠ THE TRAP THAT COST A ROUND: BSIZE does NOT drive the placement grid
+`BuildingTypeClass::Occupy_List(placement=true)` returned a **hardcoded 4x3
+literal shared by TSPROC and TSWEAP**. That list — not `Size` — is what the
+sidebar `PlacementList` export, `Legal_Placement` and placement proximity all
+consume, so the launcher drew the old footprint while the engine believed the
+new one. **Split per type now.** Second shared-literal trap in the same change:
+`Is_TS_Apron_Cell`'s offset table was shared the same way and also needed
+splitting. **When resizing a TS building, grep for every literal that names it
+alongside another type.**
+
+### Geometry, for whoever re-measures
+Canvas **896x672**, stub **168x126** (x5.33), `fit_w` 512, `dst_x_px` 448,
+`bottom_margin` 27, apron `((4,3),(6,4))`. Plot origin sits at (36,27) classic
+inside the stub. `ExitCoordinate` = **XYP_COORD(64, 43)**, the centre of the
+door **APERTURE** (pixels that change between shutter stage 0 and 8) — *not*
+the door composite's centre, which the bay surround drags ~5px south-east.
+
+### OPEN — nothing here is signed off
+1. **The door seam** (Luke's SS, "can see the lines where the door is imposed").
+   Cause measured: the clip added 08-07 multiplies by a **binarised** silhouette
+   (`alpha>0 -> 255`), so the door is cut dead hard against a soft-antialiased
+   building edge, and the cut runs straight through the bay surround's ramp.
+   1.33x made it 33% more visible. **Awaiting Luke's choice:** soften the clip
+   (one line, cosmetic), or move the bay surround out of the door overlay into
+   the apron so nothing needs clipping (correct — the surround IS ground art —
+   and it also fixes item 2).
+2. **Ramp stripes band yellow/green.** The apron's gold-baking test
+   (`g>70 and g>r*1.6 and g>b*1.6`) misses the ramp's DARKER green bands, which
+   then stay raw on ground art, and ground art is never house-remapped.
+3. **The Titan parks ahead of the door.** NOT the factory's fault: `TSTITN`'s
+   ink sits **+11.8 classic px below its box centre** in frame 0, where every
+   other unit is within ±2.4 (Mammoth −0.3, Wolverine +1.7, APC −2.4, harvester
+   −0.2). Its packed box is 378 canvas px tall against ~190 of per-frame ink, so
+   the sprite swings nearly a cell across the walk cycle. Fix the unit's frame
+   registration, or dial `ExitCoordinate` by eye — Luke's call, untouched.
+4. **Power plant.** Luke asked for the same treatment; measured, it does not
+   apply — TSPOWR is **100% x 93%** of its 2x2 plot, so there is no spare row to
+   free. Radar treatment there would mean making it BIGGER, a separate size
+   judgement (note: a past size-up left it "looking like a toy").
+5. SE bay exits still never judged in play; exit list re-cut but unseen.
+
+## 2026-08-07 — aprons: FIXED + signed off, both buildings
 **Desktop prefix at `71df2628`, md5-verified. Deck still STALE at `2d8a5dbb`.
 Nothing pushed to origin.**
 

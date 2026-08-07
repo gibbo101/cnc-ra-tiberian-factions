@@ -104,15 +104,21 @@ static short const TsProcList[] = {0, 1, 2,
                                    (MCW * 1), (MCW * 1) + 1, REFRESH_EOL};
 static short const TsProcOList[] = {
     MCW + 2, 3, MCW + 3, (MCW * 2) + 2, (MCW * 2) + 3, REFRESH_EOL};
-/* TSWEAP (TS Foundation=4x3): the hangar fills the west 3x2 block, the TS
-** concrete pad the east column and south row. The pad cells stay walkable
-** so a departing vehicle drives out across the apron rather than being
-** walled in by its own plot; the art overhangs the row north of the plot,
-** which is the same radar treatment TSPROC uses. */
-static short const TsWeapList[] = {0, 1, 2,
-                                   (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, REFRESH_EOL};
-static short const TsWeapOList[] = {3, (MCW * 1) + 3,
-                                    (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
+/* TSWEAP (4x3): the hangar is four cells wide -- the width a Mammoth Mk. II
+** needs to clear the bay door -- and 2.74 cells tall, so it sits ENTIRELY
+** inside the plot with no art hanging over the neighbouring rows. That leaves
+** no room beside it for the concrete, which therefore falls outside the plot
+** to the east and south. The pad is ground art, so lying outside a footprint
+** costs it nothing: Is_TS_Apron_Cell vetoes apron cells wherever they lie, so
+** it stays unbuildable, and it stays walkable so a departing vehicle drives
+** out across it. */
+static short const TsWeapList[] = {0, 1, 2, 3,
+                                   (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
+                                   (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
+                                   REFRESH_EOL};
+static short const TsWeapOList[] = {4, (MCW * 1) + 4, (MCW * 2) + 4,
+                                    (MCW * 3), (MCW * 3) + 1, (MCW * 3) + 2, (MCW * 3) + 3,
+                                    (MCW * 3) + 4,
                                     REFRESH_EOL};
 /* Departure cells, south-east first: that is the side the bay door faces. */
 static short const TsWeapExit[] = {XYCELL(3, 3), XYCELL(2, 3), XYCELL(4, 2), XYCELL(4, 3),
@@ -1443,9 +1449,13 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            TXT_NONE,
                                            "TSWEAP",
                                            FACING_NONE,
-                                           // Bay mouth: south-east corner of the hangar block.
-                                           XYP_COORD((CELL_PIXEL_W * 2) + (CELL_PIXEL_W / 2),
-                                                     (CELL_PIXEL_H * 2) - (CELL_PIXEL_H / 2)),
+                                           // Bay mouth: the centre of the door APERTURE — the
+                                           // pixels that change as the shutter rolls up — not the
+                                           // centre of the door composite, which the bay surround
+                                           // and ramp drag south-east of the opening. Measured off
+                                           // the packed art against the plot origin; re-measure
+                                           // whenever the hangar's canvas or fit width changes.
+                                           XYP_COORD(64, 43),
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,
@@ -1454,7 +1464,7 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory.
                                            DIR_N,
-                                           BSIZE_43,           // TS-authentic 4x3: 3-wide hangar + the pad's east column and south row.
+                                           BSIZE_43,           // 4-wide hangar on the top two rows + the pad's south row.
                                            (short const*)TsWeapExit,
                                            (short const*)TsWeapList,
                                            (short const*)TsWeapOList);
@@ -5389,32 +5399,55 @@ BuildingTypeClass& BuildingTypeClass::As_Reference(StructType type)
 short const* BuildingTypeClass::Occupy_List(bool placement) const
 {
     /*
-    **	The TS refinery and war factory both sit on a SOLID 4x3: a 3x2
-    **	building plus the concrete apron's east column and south row.
+    **	The TS refinery and war factory both sit on a SOLID plot: the building
+    **	plus the concrete apron's east column and south row, with no holes.
     **	Placement demands the whole apron lands on clear ground, so neither
     **	can be sited with its concrete draped over a cliff. This is the list
     **	the sidebar PlacementList export (the launcher's ghost grid),
-    **	Legal_Placement and placement proximity all consume. The
+    **	Legal_Placement and placement proximity all consume, so it has to
+    **	match the building's BSIZE — a stale list here leaves the launcher
+    **	drawing the old footprint no matter what the engine believes. The
     **	non-placement (blocking) lists keep the apron cells as walkable
     **	holes — the refinery's dock pad and the factory's bay approach both
     **	have to stay enterable. The art row overhanging NORTH of the plot is
     **	not footprint (radar treatment: units walk behind the building there).
     */
-    if (placement && (Type == STRUCT_TSPROC || Type == STRUCT_TSWEAP)) {
-        static short const _ts_apron_place[] = {0,
-                                                1,
-                                                2,
-                                                3,
-                                                MAP_CELL_W,
-                                                MAP_CELL_W + 1,
-                                                MAP_CELL_W + 2,
-                                                MAP_CELL_W + 3,
-                                                MAP_CELL_W * 2,
-                                                MAP_CELL_W * 2 + 1,
-                                                MAP_CELL_W * 2 + 2,
-                                                MAP_CELL_W * 2 + 3,
-                                                REFRESH_EOL};
-        return (_ts_apron_place);
+    if (placement && Type == STRUCT_TSPROC) {
+        static short const _ts_proc_place[] = {0,
+                                               1,
+                                               2,
+                                               3,
+                                               MAP_CELL_W,
+                                               MAP_CELL_W + 1,
+                                               MAP_CELL_W + 2,
+                                               MAP_CELL_W + 3,
+                                               MAP_CELL_W * 2,
+                                               MAP_CELL_W * 2 + 1,
+                                               MAP_CELL_W * 2 + 2,
+                                               MAP_CELL_W * 2 + 3,
+                                               REFRESH_EOL};
+        return (_ts_proc_place);
+    }
+    if (placement && Type == STRUCT_TSWEAP) {
+        /*
+        **	The hangar's own 4x3. The concrete lies outside it and is kept
+        **	clear by Is_TS_Apron_Cell rather than by the footprint, so the
+        **	pad can taper over ground the plot itself could not sit on.
+        */
+        static short const _ts_weap_place[] = {0,
+                                               1,
+                                               2,
+                                               3,
+                                               MAP_CELL_W,
+                                               MAP_CELL_W + 1,
+                                               MAP_CELL_W + 2,
+                                               MAP_CELL_W + 3,
+                                               MAP_CELL_W * 2,
+                                               MAP_CELL_W * 2 + 1,
+                                               MAP_CELL_W * 2 + 2,
+                                               MAP_CELL_W * 2 + 3,
+                                               REFRESH_EOL};
+        return (_ts_weap_place);
     }
 
     SmudgeType bib = SMUDGE_NONE;

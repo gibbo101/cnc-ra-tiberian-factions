@@ -552,16 +552,19 @@ SIZEPASS = [
     ("TSPROC", "shp_ntrefn", [("shp_ntrefn_b", list(range(2, 17)), list(range(2, 17)))],
      "shp_ntrefnmk", 19, (736, 928), 75, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
-    # TS-authentic 4x3 (ART.INI Foundation=4x3): the hangar keeps its 3-cell
-    # width, the grid grows east and south to carry the TS concrete pad.
-    # Canvas 640x544 = stub 120x102 (x5.33); the box is 96x72 classic, so the
-    # halo is 12 classic a side. fit_w 384 pins the hangar at its signed-off
-    # 3-cell width regardless of the wider canvas, dst_x_px 256 seats it on
-    # the WEST three columns, and margin 12 offsets the taller canvas so the
-    # art stays pixel-static against the plot. The pad rides in as a
-    # fit-excluded overlay, so it cannot inflate the building's size read.
+    # 4x3 plot holding the hangar and nothing else. The hangar's width is set
+    # by what has to drive through the bay door -- at the 3-cell width a
+    # Mammoth Mk. II was 40x40 classic px against a 33.6x33.6 door and simply
+    # could not fit -- and at 4 cells wide the art is 3.90x2.74 cells, so it
+    # sits inside the plot without hanging over a neighbouring row. fit_w 512
+    # pins the hangar at 4 cells, dst_x_px 448 centres it on the plot, and
+    # margin 27 puts the art's bottom on the plot's south edge. The canvas is
+    # 896x672 = stub 168x126 (x5.33) against a 96x72 box: the halo is what
+    # carries the concrete, which lands wholly OUTSIDE the plot and is sliced
+    # off into ground art. The pad is fit-excluded, so it cannot inflate the
+    # building's size read.
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
-     "shp_gtweapmk", 19, (640, 544), 39, 1.0, "shp_weapicon",
+     "shp_gtweapmk", 19, (896, 672), 27, 1.0, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
     # 2x1 plot + bib: the 48-tall stub centres on the 24-tall box, so the
     # canvas bottom is 12 classic below the plot edge. Margin 12 = building
@@ -609,7 +612,7 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     overlays = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb"}
     # Aprons ship as ground art, one tile per cell: (plot, tile grid), the grid
     # matching the building's SmudgeTypeClass in sdata.cpp.
-    aprons = {"TSWEAP": ((4, 3), (5, 3)), "TSPROC": ((4, 3), (5, 3))}
+    aprons = {"TSWEAP": ((4, 3), (6, 4)), "TSPROC": ((4, 3), (5, 3))}
     # TS drives the war factory bay with a separate 9-stage shutter over a
     # static interior (ART.INI: DoorAnim/DoorStages/UnderDoorAnim).
     doors = {"TSWEAP": ("shp_gtweap_d", "shp_gtweap_1", 9)}
@@ -621,8 +624,8 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     # columns: pin the building's width independently of the
                     # canvas, and anchor it on those columns rather than on
                     # the box centre.
-                    fit_w={"TSPROC": 384, "TSWEAP": 384}.get(ini),
-                    dst_x_px={"TSPROC": 304, "TSWEAP": 256}.get(ini),
+                    fit_w={"TSPROC": 384, "TSWEAP": 512}.get(ini),
+                    dst_x_px={"TSPROC": 304, "TSWEAP": 448}.get(ini),
                     apron_cells=aprons.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 

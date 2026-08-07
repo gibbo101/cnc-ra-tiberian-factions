@@ -285,16 +285,16 @@ ts_stub TSPROC "$TMPDIR/tsproc_stub.shp" 138 174 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
 ts_stub TSPROC "$TMPDIR/tsprocmk_stub.shp" 138 174 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
-# TSWEAP 120x102: the TS-authentic 4x3 plot is 96x72 classic, and the extra
-# 12 classic a side carries the concrete pad's overhang east and south. The
-# hangar itself still fits to 3 cells (72 classic) via the packer's fit_w,
-# so the building reads exactly as it did on the 3x3 plot.
-ts_stub TSWEAP "$TMPDIR/tsweap_stub.shp" 120 102 2
+# TSWEAP 144x126: the 5x4 plot is 120x96 classic, and the extra 12 classic a
+# side carries the concrete pad's overhang east and south. The hangar fits to
+# 4 cells (96 classic) via the packer's fit_w -- the width a Mammoth Mk. II
+# needs to clear the bay door.
+ts_stub TSWEAP "$TMPDIR/tsweap_stub.shp" 168 126 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
-ts_stub TSWEAP "$TMPDIR/tsweapmk_stub.shp" 120 102 19
+ts_stub TSWEAP "$TMPDIR/tsweapmk_stub.shp" 168 126 19
 # The bay-door overlay shares the building's canvas, so it needs the same stub
 # box or the launcher scales the door to whatever shape file it was handed.
-ts_stub TSWEAP "$TMPDIR/tsweap2_stub.shp" 120 102 18
+ts_stub TSWEAP "$TMPDIR/tsweap2_stub.shp" 168 126 18
 PACK_ARGS+=("$TMPDIR/tsweap2_stub.shp:TSWEAP2.SHP")
 # TSPILE 48x48: back to the grid-matched 2x2 plot width (the 60-overhang
 # compromise predates the tier-wide size drop, Luke 2026-08-04).

@@ -5144,9 +5144,8 @@ bool Is_Refinery_Dock_Busy(CELL cell)
  *    veto also carries the placement-blocking the slab used to provide on the south row.      *
  *    Consulted from TechnoTypeClass::Legal_Placement for building-type placements only.       *
  *                                                                                             *
- *    Apron cells relative to a TSPROC origin cell (4x3 foundation, centre = origin+MCW+2      *
- *    = the dock pad): the ramp row (row 2, cols 2-3) plus the east column (col 3, rows 0-1)   *
- *    plus the pad itself.                                                                     *
+ *    Each building's apron cells are listed as offsets back to its centre in the tables       *
+ *    below -- TSPROC anchors on its dock pad, TSWEAP on a solid hangar cell.                  *
  *=============================================================================================*/
 /***********************************************************************************************
  * Is_TS_Apron_Smudge -- Is this smudge a TS building's concrete apron?                        *
@@ -5179,16 +5178,41 @@ bool Is_TS_Apron_Cell(CELL cell)
     **	cells reads as standing inside the refinery's plot (Luke,
     **	2026-08-05 -- supersedes the old bare-ground-SW-cells exception).
     */
-    static short const _to_centre[] = {0,               // the dock pad itself (occupy hole)
-                                       MAP_CELL_W - 2,  // apron row, col 0
-                                       MAP_CELL_W - 1,  // apron row, col 1
-                                       MAP_CELL_W,      // apron row, col 2 (ramp foot)
-                                       MAP_CELL_W + 1,  // apron row, col 3
-                                       1 - MAP_CELL_W,  // east col, row 0
-                                       1};              // east col, row 1
+    static struct
+    {
+        StructType Type;
+        short Offset;
+    } const _to_centre[] = {
+        /*
+        **	TSPROC, 4x3: centre = the dock pad, so the pad's own offset is 0.
+        */
+        {STRUCT_TSPROC, 0},              // the dock pad itself (occupy hole)
+        {STRUCT_TSPROC, MAP_CELL_W - 2}, // apron row, col 0
+        {STRUCT_TSPROC, MAP_CELL_W - 1}, // apron row, col 1
+        {STRUCT_TSPROC, MAP_CELL_W},     // apron row, col 2 (ramp foot)
+        {STRUCT_TSPROC, MAP_CELL_W + 1}, // apron row, col 3
+        {STRUCT_TSPROC, 1 - MAP_CELL_W}, // east col, row 0
+        {STRUCT_TSPROC, 1},              // east col, row 1
+
+        /*
+        **	TSWEAP, 4x3: centre = row 1, col 2, a solid hangar cell. The
+        **	hangar fills its plot, so every apron cell lies OUTSIDE the
+        **	footprint -- the east column and the row below the plot. Those
+        **	are exactly the cells the footprint cannot keep clear, which is
+        **	why the veto has to name them.
+        */
+        {STRUCT_TSWEAP, 2 - MAP_CELL_W},       // east col, row 0
+        {STRUCT_TSWEAP, 2},                    // east col, row 1
+        {STRUCT_TSWEAP, MAP_CELL_W + 2},       // east col, row 2
+        {STRUCT_TSWEAP, (MAP_CELL_W * 2) + 2}, // east col, apron row
+        {STRUCT_TSWEAP, (MAP_CELL_W * 2) - 2}, // apron row, col 0
+        {STRUCT_TSWEAP, (MAP_CELL_W * 2) - 1}, // apron row, col 1
+        {STRUCT_TSWEAP, MAP_CELL_W * 2},       // apron row, col 2
+        {STRUCT_TSWEAP, (MAP_CELL_W * 2) + 1}, // apron row, col 3
+    };
 
     for (int i = 0; i < (int)(sizeof(_to_centre) / sizeof(_to_centre[0])); i++) {
-        CELL centre = (CELL)(cell - _to_centre[i]);
+        CELL centre = (CELL)(cell - _to_centre[i].Offset);
         if ((unsigned)centre >= MAP_CELL_TOTAL) {
             continue;
         }
@@ -5210,8 +5234,7 @@ bool Is_TS_Apron_Cell(CELL cell)
             }
             b = Map[bcell].Cell_Building();
         }
-        if (b != NULL && (*b == STRUCT_TSPROC || *b == STRUCT_TSWEAP)
-            && Coord_Cell(b->Center_Coord()) == centre) {
+        if (b != NULL && *b == _to_centre[i].Type && Coord_Cell(b->Center_Coord()) == centre) {
             return (true);
         }
     }
