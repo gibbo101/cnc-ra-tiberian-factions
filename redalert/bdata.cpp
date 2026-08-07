@@ -1455,7 +1455,20 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            // and ramp drag south-east of the opening. Measured off
                                            // the packed art against the plot origin; re-measure
                                            // whenever the hangar's canvas or fit width changes.
-                                           XYP_COORD(64, 43),
+                                           // Sits INSIDE the bay, not at its
+                                           // mouth: the aperture centre is
+                                           // (64,43) but a vehicle parked
+                                           // there reads as stuck to the front
+                                           // of the building. Moved north-west
+                                           // along the bay axis to put it in
+                                           // the recess. The usable band is
+                                           // narrow -- the building sorts at
+                                           // y=36 and the bay overlay at y=54,
+                                           // and a foot class adds 4.5 to its
+                                           // own y -- so y below ~32 sorts the
+                                           // vehicle behind the hangar and
+                                           // hides it outright.
+                                           XYP_COORD(58, 37),
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,

@@ -5175,6 +5175,55 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         strncpy(new_object.AssetName, object->Class_Of().Graphic_Name(), CNC_OBJECT_ASSET_NAME_LENGTH);
     }
 
+    /*
+    **  Tiberian Factions diag 2026-08-07: the war factory sandwich.
+    **
+    **  TDWEAP's door overlay draws OVER a vehicle in its bay; TSWEAP's does
+    **  not, and neither Sort_Y, the exit coordinate, nor the unload sequence
+    **  accounts for the difference. This logs what the launcher is actually
+    **  handed -- the sort key of each war factory, of every layer it draws,
+    **  and of every vehicle -- so the ordering can be read off rather than
+    **  reasoned about. Build a vehicle at each factory and diff the two.
+    **
+    **  Per [[feedback-keep-diagnostics-until-v1]] this stays in source; flip
+    **  to #if 0 to silence it.
+    */
+#if 1 // TF DIAG — war factory sort order.
+    {
+        bool interesting = false;
+        if (object != NULL) {
+            if (object->What_Am_I() == RTTI_BUILDING) {
+                char const* n = object->Class_Of().IniName;
+                interesting = (n != NULL && (strcmp(n, "TSWEAP") == 0 || strcmp(n, "TDWEAP") == 0));
+            } else if (object->What_Am_I() == RTTI_UNIT) {
+                interesting = true;
+            }
+        }
+        if (interesting) {
+            static FILE* s_sort_log = NULL;
+            if (s_sort_log == NULL) {
+                char spath[512];
+                const char* sprof = getenv("USERPROFILE");
+                if (sprof != NULL && sprof[0] != '\0') {
+                    snprintf(spath, sizeof(spath), "%s/Documents/CnCRemastered/tf_sort.log", sprof);
+                } else {
+                    snprintf(spath, sizeof(spath), "tf_sort.log");
+                }
+                s_sort_log = fopen(spath, "w");
+            }
+            if (s_sort_log != NULL) {
+                COORDINATE sy = object->Sort_Y();
+                fprintf(s_sort_log,
+                        "%-8s asset=%-10s sub=%d drawcount=%d SortY=%08lX (cellY=%d lepY=%d) Sort=%d\n",
+                        object->Class_Of().IniName, new_object.AssetName, (int)sub_object,
+                        CurrentDrawCount, (unsigned long)sy, (int)Coord_YCell(sy), (int)Coord_Y(sy),
+                        new_object.SortOrder);
+                fflush(s_sort_log);
+            }
+        }
+    }
+#endif
+
     // Tiberian Factions diag 2026-05-31 (pass 2): log the FINAL AssetName the launcher will
     // use to resolve each object's render asset. The launcher NULL-derefs on MCV deploy when an
     // object's AssetName isn't in its asset index; the last line before the crash names it. The

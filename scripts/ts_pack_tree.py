@@ -222,6 +222,24 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             under.paste(base, (0, 0), base)
             base.paste(under, (0, 0))
 
+    # The bay INTERIOR belongs to the base, the way TD's does. TS ships it as
+    # UnderDoorAnim, which reads like an overlay, but it is the BACK of the
+    # bay: a vehicle standing in the doorway is in front of it. Packed into
+    # the overlay it sorts above that vehicle and swallows it the moment the
+    # shutter stops hiding it. Only the shutter and the hangar's near face
+    # belong above a unit.
+    #
+    # Clipped to the building's own outline: TS's under-door art carries the
+    # whole bay surround, ramp and concrete included, and most of it falls
+    # outside the building on ground the apron already draws.
+    hangar_h, hangar_d = base_h.copy(), base_d.copy()
+    if door_spec is not None:
+        for run, base in enumerate((base_h, base_d)):
+            interior = load(door_spec[1], run)
+            interior.putalpha(ImageChops.multiply(
+                interior.split()[3], base.split()[3].point(lambda v: 255 if v > 0 else 0)))
+            base.paste(interior, (0, 0), interior)
+
     # Damaged run keeps the anims cycling over the damaged base — TS itself
     # freezes damaged buildings (the anim SHPs' damaged halves are empty),
     # but the mod's stealth-gen baseline animates damaged, and Luke prefers
@@ -402,8 +420,13 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 a = load(spec[0], idx).split()[3].point(lambda v: 255 if v > 0 else 0)
                 lights = ImageChops.lighter(lights, a)
         region = ImageChops.subtract(region, lights.filter(ImageFilter.MaxFilter(3)))
+        # Cut from the HANGAR, before the bay interior was composited into the
+        # base. Measured against the finished base, the interior's ramp lies
+        # below the threshold and inside the outline, so it would be dragged
+        # into the near face -- putting the ground the vehicle drives on in
+        # front of the vehicle.
         front_masks = [ImageChops.multiply(b.split()[3].point(lambda v: 255 if v > 0 else 0), region)
-                       for b in (base_h, base_d)]
+                       for b in (hangar_h, hangar_d)]
 
     # SPLIT AFTER SCALING, NEVER BEFORE. hq_scale composites onto a black RGB
     # canvas, so every alpha edge bleeds towards black. Cutting the source art
@@ -475,7 +498,8 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
 
         door_frames = []
         for under_f in (0, 1):
-            under = load(under_dir, under_f)
+            # The interior is in the base now; this layer is shutter + face.
+            under = Image.new("RGBA", base_h.size, (0, 0, 0, 0))
             # The near face rides on top of the shutter in every stage, so it
             # is in front of both the bay interior and anything standing in
             # it. Composited in CANVAS space, after each layer has been through
