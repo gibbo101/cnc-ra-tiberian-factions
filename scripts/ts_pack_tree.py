@@ -412,13 +412,21 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # building -- so a vehicle in the bay is seen THROUGH the opening and
         # is covered everywhere else.
         #
-        # front_ring is how far the near face encroaches into the opening; 0
+        # The hole is the SHAPE of the opening, not its bounding box. The
+        # doorway is a diamond in this projection, so a rectangular hole leaves
+        # the wall in its corners behind the vehicle instead of in front, and
+        # the vehicle shows through them beside the door.
+        #
+        # The shut shutter is exactly the door leaf, so its silhouette is the
+        # opening -- a solid shape, unlike the stage-to-stage difference, which
+        # is full of gaps wherever two stages happen to share a colour.
+        #
+        # front_ring is how far the near face encroaches into that opening; 0
         # leaves the hole exactly the size the shutter uncovers.
-        ax0, ay0, ax1, ay1 = ap
-        region = Image.new("L", base_h.size, 255)
-        draw = ImageDraw.Draw(region)
-        draw.rectangle([ax0 + front_ring, ay0 + front_ring,
-                        ax1 - front_ring - 1, ay1 - front_ring - 1], fill=0)
+        aperture = load(door_dir, 0).split()[3].point(lambda v: 255 if v > 0 else 0)
+        if front_ring:
+            aperture = aperture.filter(ImageFilter.MinFilter(2 * front_ring + 1))
+        region = ImageChops.invert(aperture)
         # The idle anims are lights mounted on that wall. Leave their
         # footprints behind in the base: carrying them forward would make the
         # overlay anim-frames x door-stages and need a new shapenum encoding,

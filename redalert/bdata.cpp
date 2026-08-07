@@ -1455,20 +1455,23 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            // and ramp drag south-east of the opening. Measured off
                                            // the packed art against the plot origin; re-measure
                                            // whenever the hangar's canvas or fit width changes.
-                                           // Sits INSIDE the bay, not at its
-                                           // mouth: the aperture centre is
-                                           // (64,43) but a vehicle parked
-                                           // there reads as stuck to the front
-                                           // of the building. Moved north-west
-                                           // along the bay axis to put it in
-                                           // the recess. The usable band is
-                                           // narrow -- the building sorts at
-                                           // y=36 and the bay overlay at y=54,
-                                           // and a foot class adds 4.5 to its
-                                           // own y -- so y below ~32 sorts the
-                                           // vehicle behind the hangar and
-                                           // hides it outright.
-                                           XYP_COORD(58, 37),
+                                           // Centred on the bay opening, and
+                                           // the y is pinned by geometry
+                                           // rather than taste. The hangar's
+                                           // art spans y 3.9..71.8 of the
+                                           // 72-pixel plot and a Titan or
+                                           // Mammoth Mk. II reaches 37 above
+                                           // and 29 below its exit point, so
+                                           // the head clears the roof below
+                                           // y=41 and the feet clear the
+                                           // building's base above y=43. That
+                                           // two-pixel window is the only
+                                           // place the whole vehicle stays
+                                           // within the building it is
+                                           // standing in. Depth comes from the
+                                           // near face covering it, not from
+                                           // moving it back.
+                                           XYP_COORD(64, 42),
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,
