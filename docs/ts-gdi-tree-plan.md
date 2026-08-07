@@ -1,5 +1,122 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐⭐⭐ 2026-08-08 OVERNIGHT — RESUME HERE (the dropship bay)
+
+**The building exists as of `892aa49e` and builds clean. The delivery does not.**
+
+### Objectives, in order (do not reorder — each proves the next)
+1. **Art.** `shp_gtdeptbb` alone, scaled to FILL the 3x3 (Luke: "expand that bay
+   to fill a 3*3 build area"). Entry already added to `ts_pack_tree.py` WAVE2;
+   the packer has not been run yet. Then the GDI emblem, centred.
+2. **Data.** rules.ini section with Westwood's `DOME,GATECH` mapped to our
+   TSRADR + TSTECH, TechLevel 9. RABUILDABLES, ModText, BuildIcon.
+3. **Delivery.** Clone the nuke descent (below), amend freely. Prove with
+   `TDORCA` + ANY vehicle first (Luke: "you can use any unit until it works").
+   The TS dropship import and the Mk2 swap in only after the mechanism works.
+4. **Limits.** One bay per house, then a five-minute cooldown starting ON
+   DELIVERY, both via `Can_Build` so the cameo greys through the existing path.
+
+### The delivery: clone the nuke, do NOT amend it in place
+Luke's steer, and it is the primary path, not a fallback: the nuclear strike
+already flies off the top of the map and falls onto a target cell.
+`BULLET_NUKE_DOWN` is spawned at `building.cpp:6835` over `House->NukeDest`, and
+we have already adapted that chain once for `SPC_TD_NUKE`. **Clone it to a new
+bullet type** (append after `BULLET_NUKE_DOWN` — `bbdata.cpp:186` documents the
+convention) rather than touching the Nod strike, which is shipped and verified.
+
+The clone takes: no warhead damage, the dropship's art, its own descent speed,
+and a delivery hook where the blast used to be.
+
+**Why this beats the aircraft path:** both freezes on 08-07 came from putting an
+AIRCRAFT into a state the engine never otherwise produces (no NavCom, no radio
+contact, landing onto cells its own pad occupies). A `BulletClass` has none of
+that machinery. That entire class of bug does not exist on this path.
+
+**What it cannot do:** a bullet arrives and is consumed, so there is no
+take-off-and-leave beat, and it renders a projectile rather than an aircraft.
+Likely hybrid: descend as the projectile, then spawn the Orca as a REAL aircraft
+on the deck for the unload and departure — a normal aircraft doing normal things
+from a normal state.
+
+⚠️ **Write the payload as a PARAMETER, not hardcoded to the Mk2.** TS drop pods
+are queued as a GDI support power (below); same spine, and parameterising now
+makes that mostly data later.
+
+### Locked design decisions (do not re-litigate)
+- **Not a helipad, deliberately.** Outside BOTH `Is_Helipad` and
+  `STRUCTF_HELIPAD`. `Is_Helipad` grants a FREE HELICOPTER at
+  `building.cpp:4184` and makes the deck a general rearm target at
+  `techno.cpp:7130`; `STRUCTF_HELIPAD` is what feeds prerequisites. Membership
+  of either would have unlocked helicopters off an inert pad. Luke: "inert
+  structure that receives the orca drop ship and releases a mk2 only".
+- **`RTTI_UNITTYPE`** — the bay is where the Mk2 is ORDERED (Luke picked this
+  explicitly). "Inert" means no free heli, no rearm target, no anims; it does
+  not mean no production.
+- **Static pad, no animations** (Luke). The gantry `shp_gtdept` and its anims
+  `_a`/`_b` are simply not passed. No `_anims[]` entry, nothing to regulate.
+- **Cooldown per-HOUSE, not per-bay.** Moot while the cap is 1, but stays
+  correct if the cap is ever raised.
+- **Donor `TDFIX`** (3x3 counterpart), stub 72x72, canvas 384.
+
+### Art specifics (measured, not assumed)
+- Pad content measures **74 x 38 = 1.95:1**, which is exactly the emblem squash
+  figure. The deck IS a circle lying flat, so an emblem squashed to match sits
+  in the same plane BY CONSTRUCTION rather than by eye.
+- Luke: the logo must face **upwards, not head-on** — the 1.95:1 vertical
+  squash IS that re-angling. No rotation on top: the octagon is symmetric in
+  screen space.
+- Logo `~/Desktop/ts-gdi-logo.png` is **400x300 RGB with NO alpha** and its
+  bbox is the full rectangle — key the background out and cut the 290x290
+  emblem circle at (55,5). Do not paste the rectangle.
+- **Composite AFTER the upscale.** At source the eagle is ~45px and hq4x
+  destroys it. Render 62% and 78% of pad width; default 62% (keeps a margin).
+- ⚠️ **The rim's gold is currently BAKED** because the pad ships as a bib, and
+  ground art is never house-remapped (08-07 apron finding). As the building's
+  own sprite it goes through the normal remap path, so a captured or Nod-owned
+  bay would take the owner's colour. `REMAP_` choice at the class if Luke wants
+  it gold always. **Needs his call — do not pick silently.**
+- Art source is `~/Desktop/ts-art/` (NOT a scratchpad). `shp_gtdeptbb` 6 frames,
+  `shp_gtdeptmk` 20, `shp_fixicon` 1. Frame convention: 0 healthy, 1 healthy
+  variant, 2 damaged, 3-5 rubble.
+- **No GADROP cameo exists** (Westwood cut it), so `shp_fixicon` is a
+  PLACEHOLDER. Flag it rather than pretending it is final.
+
+### ⚠️ Unexplained, and NOT dropped
+**Where a helipad-built Orca actually exits is still unknown.** Three probes
+failed to find it on 08-07/08:
+- `BuildingClass::Exit_Object`'s `RTTI_AIRCRAFT` branch never runs (traced, zero
+  `ORBIT-EXIT` lines).
+- `HouseClass::Place_Object` is never reached either (`tf_place_object.log` was
+  never created, diagnostic confirmed in the ACTIVE `#else` branch —
+  `FIXIT_HELI_LANDING` is commented out at `defines.h:121`).
+- Yet `sidebarglyphx.cpp:434` demonstrably queues `EventClass::PLACE` for
+  `RTTI_AIRCRAFT`, which should land in exactly that function.
+This stops blocking us because we own the bay's exit path now, but it is a real
+gap in what we understand about the engine. Do not treat it as closed.
+
+⚠️ **Positive controls matter.** `tf_sort.log` is under `#if 1`, NOT
+`#if TF_DEV_BUILD`, so its freshness NEVER proves which build is live. The `$1`
+lever was what actually confirmed it. Ship a positive control with any negative
+result, or the negative is worthless.
+
+### Dev levers currently armed in the desktop prefix
+- `tf_cheap.flag` — **NEW**, everything costs $1 (build charge, sidebar quote,
+  abandon refund, sell value; AI included per Luke). Opt-in, delete to disarm.
+  ⚠️ Do not read AI economy behaviour from a run with this armed.
+- `tf_orbit.flag` — the old from-orbit probe. Dead code on a dead path; remove
+  it once the nuke-clone descent lands.
+
+### Parked, NOT in scope
+- **TS drop pods as a GDI support power** (Luke, 2026-08-08). Same descent
+  spine — hence the payload-as-parameter rule above.
+- Orca troop transport; Titan dropship (both from the 08-07 block below).
+
+### What needs Luke's eyes, not mine
+Whether the descent READS as a landing, and whether the pad and emblem look
+right in motion. Mechanism-fires plus a screenshot is the most I can sign off.
+Precedent: the naval invasion arc landed twelve genuine fixes and still did not
+work as gameplay.
+
 ## ⭐⭐ 2026-08-07 NIGHT — THE MK2 DROP BAY (design locked, nothing built)
 
 **Scope, Luke: the Orca dropship delivers the Mammoth Mk. II. Nothing more.**

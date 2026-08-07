@@ -740,6 +740,12 @@ WAVE2 = [
      "shp_gttechmk", 19, (384, 256), 375, "shp_techicon", "TS Tech Center", "Unlocks advanced Tiberian technology."),
     ("TSDEPT", "shp_gtdept", ["shp_gtdept_a", "shp_gtdept_b"],
      "shp_gtdeptmk", 19, (384, 384), 382, "shp_fixicon", "TS Service Depot", "Repairs vehicles and aircraft."),
+    # The dropship bay is the depot's apron plate promoted to a building of its
+    # own: GTDEPTBB carries the octagonal deck, GTDEPT the gantry that stands
+    # beside it. Passing only the plate leaves nothing to patch, since the
+    # gantry never overlaps the deck. No anims -- a static pad by design.
+    ("TSDROP", "shp_gtdeptbb", [],
+     "shp_gtdeptmk", 19, (384, 384), 382, "shp_fixicon", "Dropship Bay", "Receives the Mammoth Mk. II by dropship."),
 ]
 
 # TSPROC/TSWEAP apron plates dropped with the 3x3 conversion (2026-08-03
