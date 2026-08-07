@@ -5137,6 +5137,36 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.SortOrder = ObjectList->Objects[TotalObjectCount].SortOrder + CurrentDrawCount;
     }
 
+    /*
+    **  Tiberian Factions -- the TS war factory's bay overlay sorts from a
+    **  point further south than the building it belongs to.
+    **
+    **  A sub-object normally inherits its base object's sort key, and
+    **  STRUCT_TSWEAP sorts at its plot CENTRE so vehicles standing on the
+    **  concrete apron draw on top of it (BuildingClass::Sort_Y). A vehicle at
+    **  the bay's ExitCoordinate is south of that centre, so it also drew on
+    **  top -- over the shutter and the hangar's near face, which is what made
+    **  a newly built vehicle look pasted onto the factory rather than sitting
+    **  inside it. Biasing this one overlay south puts the bay back in front of
+    **  anything standing IN the doorway, while leaving the base's centre sort
+    **  (and therefore the apron) untouched.
+    **
+    **  The bias is a band, not a blanket: 192 leptons is 18 classic pixels,
+    **  putting the overlay's sort line at y=54 of the 72-pixel plot. That is
+    **  south of the exit point (y=43 plus the foot class's own 4.5-pixel bias)
+    **  and north of the plot's south edge, so a vehicle driving clear still
+    **  draws over the building. Everything in this overlay is clipped to the
+    **  building's silhouette, so the bias can only ever affect the building's
+    **  own pixels.
+    **
+    **  Keyed on the asset name, as EA's own shadow and WAKE reordering below
+    **  is.
+    */
+    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAP2") == 0) {
+        new_object.SortOrder =
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 192)) >> 3);
+    }
+
     strncpy(new_object.TypeName, object->Class_Of().IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
 
     if (shape_file_name != NULL) {
