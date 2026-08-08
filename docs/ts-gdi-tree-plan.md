@@ -4,6 +4,40 @@
 
 **The building exists as of `892aa49e` and builds clean. The delivery does not.**
 
+### ⭐ MORNING HANDOVER — what to do first
+**All four objectives are CODED and DEPLOYED (desktop prefix, DLL `80240db9`,
+md5-verified). NOTHING HAS BEEN SEEN TO FALL OUT OF THE SKY.** The descent is
+the one thing that matters and the one thing unproven.
+
+**The test, in order:**
+1. Skirmish, GDI. Deploy the TS MCV (dev cheat provides it).
+2. Build up: TSPROC → TSRADR → TSWEAP → TSTECH → **TSDROP**. `tf_cheap.flag` is
+   armed so everything costs $1, and instant-build is on, so this is quick.
+3. Check the DECK first — does the pad read right, is the emblem the right size
+   and does it lie flat rather than standing up? That is a judgement call and it
+   is yours.
+4. Order the Mammoth Mk. II. It should appear ONLY at the bay. Watch what
+   arrives from the north.
+
+**What to watch for, and what each failure would mean:**
+- **Nothing happens at all** → the pod is not being spawned; `Exit_Object`'s
+  `STRUCT_TSDROP` case is not running. Same shape as the 08-07 Orca problem, and
+  it would mean the bay's exit path is not what I think it is either.
+- **Pod spawns but never arrives** → it is not reaching its target cell. The
+  nuke starts 64 cells north; on a 126x64 map like Docklands that clamps to the
+  map edge, which may be too close for a readable fall.
+- **Pod arrives, no vehicle** → the destructor's delivery branch is not firing;
+  check `IsInLimbo` still holds on the carried unit at that point.
+- **Vehicle appears but the sidebar never re-enables** → `TFDropBayTimer` is not
+  counting down. It is set on landing to `TICKS_PER_MINUTE * 5`.
+- **Mk. II still orderable from the war factory** → the `Who_Can_Build_Me`
+  binding is not taking; check `UnitTypeClass::Type` is what the comparison
+  expects.
+
+**The art is placeholder in two places, deliberately:** the pod wears the
+falling nuke's sprite (no dropship art packed yet) and the bay's cameo is the
+service depot's (Westwood cut GADROP's). Neither is a bug.
+
 ### Progress 2026-08-08 (overnight)
 - `892aa49e` building registered · `27cda644` rim = house colour · `deb34d4e` deck
   art + emblem · `bc838620` rules + one-per-house cap · `017b126e` drop-pod delivery.
@@ -16,12 +50,17 @@
   needs the full tree built, which is ~20 screenshot round trips to hand-drive
   and is Luke's call anyway.
 
-### ⚠️ GAP FOUND, not in the original plan
+### Gap found and closed (was not in the original plan)
 Making the bay `RTTI_UNITTYPE` makes it a vehicle factory, and RA picks a
-factory via `Who_Can_Build_Me`. **Nothing yet binds the Mk2 to the bay or keeps
-ordinary vehicles out of it** — so a Mammoth could roll out of the war factory
-door, or a jeep could arrive by orbital pod. Harmless for a "prove it with any
-unit" test, and genuinely the next problem after the descent works.
+factory via `Who_Can_Build_Me` — so nothing bound the Mk2 to the bay or kept
+ordinary vehicles out of it. **Closed in `6de77e60`** using RA's own kennel/dog
+split: the bay builds only `UNIT_TSHMEC` and only the bay builds it. The Mk2's
+prerequisite moved from TSWEAP to TSDROP to match.
+
+⚠️ **`TFDropBayTimer` must stay initialised in the HouseClass constructor.** It
+was added without that at first; every neighbouring timer is explicitly zeroed
+there, and left uninitialised it reads as a live cooldown, which would make the
+Mk2 permanently unbuildable — a fault that looks exactly like a broken binding.
 
 ### Objectives, in order (do not reorder — each proves the next)
 1. **Art.** `shp_gtdeptbb` alone, scaled to FILL the 3x3 (Luke: "expand that bay
