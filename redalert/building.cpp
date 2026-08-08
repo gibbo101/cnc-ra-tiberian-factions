@@ -3192,6 +3192,39 @@ int BuildingClass::Exit_Object(TechnoClass* base)
     case RTTI_INFANTRY:
     case RTTI_UNIT:
         switch (Class->Type) {
+        case STRUCT_TSDROP: {
+            /*
+            **	The bay has no door to open: what it builds arrives from above. The
+            **	finished vehicle never touches the map here — it rides the pod down in
+            **	limbo and is set down when the pod lands, which is the dog bullet's
+            **	arrangement and keeps the ordered object itself rather than standing up
+            **	a copy of it.
+            **
+            **	The pod starts well north of the deck and falls onto it, the way the
+            **	nuclear strike's second stage does.
+            */
+            CELL dest = Coord_Cell(Center_Coord());
+            int celly = Cell_Y(dest) - 64;
+            if (celly < 1) {
+                celly = 1;
+            }
+
+            BulletClass* pod =
+                new BulletClass(BULLET_TSDROPPOD, ::As_Target(dest), base, 0, WARHEAD_NONE, MPH_MEDIUM_FAST);
+            if (pod != NULL) {
+                COORDINATE start = Cell_Coord(XY_Cell(Cell_X(dest), celly));
+                if (pod->Unlimbo(start, DIR_S)) {
+                    return (2);
+                }
+                delete pod;
+            }
+            /*
+            **	No pod means no delivery. Leave the vehicle in the factory rather than
+            **	losing what was paid for; production retries.
+            */
+            return (1);
+        }
+
         case STRUCT_TSPROC:
             /*
             **	TS refinery: both the free-harvester spawn and the attach-dock

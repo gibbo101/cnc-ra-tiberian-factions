@@ -114,6 +114,30 @@ BulletClass::~BulletClass(void)
     if (GameActive) {
 
         /*
+        **	A dropship bay's cargo rides the pod in limbo, the same way the dog rides its
+        **	bullet, and is set down wherever the pod ended up. Handled here rather than at
+        **	the moment of arrival so that EVERY path which destroys the pod delivers the
+        **	cargo -- a pod removed for any other reason would otherwise strand a vehicle
+        **	in limbo, owned and paid for but permanently absent.
+        */
+        if (*this == BULLET_TSDROPPOD && Payback != NULL && Payback->What_Am_I() == RTTI_UNIT
+            && Payback->IsInLimbo) {
+
+            UnitClass* cargo = (UnitClass*)Payback;
+            Payback = NULL; // the pod no longer owns it, whatever happens below
+
+            COORDINATE where = Coord;
+            if (cargo->Can_Enter_Cell(Coord_Cell(where)) != MOVE_OK) {
+                where = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), cargo->Class->Speed));
+            }
+            if (cargo->Unlimbo(where, DIR_S)) {
+                cargo->Assign_Mission(MISSION_GUARD);
+            } else {
+                delete cargo;
+            }
+        }
+
+        /*
         **	SPECIAL CASE:
         **	The dog is attached to the dog bullet in a limbo state. When the bullet is
         **	destroyed, the dog must come back out of limbo at the closest location possible to
@@ -1518,6 +1542,21 @@ bool BulletClass::Is_Forced_To_Explode(COORDINATE& coord) const
  *=============================================================================================*/
 void BulletClass::Bullet_Explodes(bool forced)
 {
+    /*
+    **	A delivery projectile arrives rather than detonating: it applies no damage at
+    **	all, and its cargo is set down by the destructor, exactly as the dog bullet
+    **	puts its dog back on the map. Returning here is the whole behaviour.
+    **
+    **	This is the reason the descent is a projectile at all. An aircraft brought
+    **	down onto an occupied pad has to reach a state the engine recognises -- radio
+    **	contact, a navigation computer, a completed docking handshake -- and getting
+    **	that wrong froze the game twice. A projectile carries none of that machinery,
+    **	so the entire class of failure cannot arise.
+    */
+    if (*this == BULLET_TSDROPPOD) {
+        return;
+    }
+
     /*
     **	When the target is reached, explode and do the damage
     **	required of it. For homing objects, don't force the explosion to

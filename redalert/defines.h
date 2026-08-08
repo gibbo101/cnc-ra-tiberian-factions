@@ -1385,6 +1385,7 @@ typedef enum BulletType : char
     BULLET_TDSSM2, // TD Rocket Launcher missile (MLRS, BULLET_SSM2) — Homing, AA+AG, visible TDDRAGON sprite, WARHEAD_TDHE. = TDSSM but Arm=9/ROT=7.
     BULLET_TDMISSILE, // TD SSM Launcher Honest John (BULLET_HONEST_JOHN) — NON-homing, accurate, visible TDMISSILE sprite (32-frame rotating), WARHEAD_TDFIRE, ANIM_NAPALM3 impact.
     BULLET_TDNAPALM,  // TD A-10 napalm bomblet (BULLET_NAPALM/ClassNapalm verbatim) — Dropping, Arm 24, BOMBLET sprite, WARHEAD_TDFIRE, ANIM_NAPALM2 impact (bullet ImpactAnim; TDFire warhead Explosion=0).
+    BULLET_TSDROPPOD, // TS Dropship Bay delivery — a descent, not a weapon: carries TFPayload, sets it down and applies no damage. Cloned from NukeDown's fall rather than amending it, so the Nod strike is untouched.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
