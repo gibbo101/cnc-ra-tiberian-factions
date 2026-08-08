@@ -3646,15 +3646,19 @@ static void Create_Units(bool official)
                 }
             }
 
-#if TF_DEV_BUILD
             /*
-            **  Dev-build TS-tree test lever (Luke, 2026-08-01): the human
-            **  player starts with a TS MCV alongside the normal start, so the
-            **  ownership-gated tree is testable without crate luck. Crates
-            **  keep the release behaviour (rare 1-in-32 roll). Compiled out
-            **  of release builds; runtime-gated by TF_Dev_Cheats().
+            **  Every HUMAN player starts with a TS MCV alongside the normal one, so the
+            **  ownership-gated TS tree is reachable without waiting on crate luck. Crates
+            **  keep their own rare roll regardless.
+            **
+            **  Human houses only: the AI cannot drive the TS tree, and handing it one
+            **  would give it a second yard it does not know what to do with.
+            **
+            **  This was a dev-build lever gated on TF_Dev_Cheats. It is now part of the
+            **  game proper, because a release build compiles the dev path out entirely
+            **  and the TS tree would be unreachable in exactly the builds people play.
             */
-            if (TF_Dev_Cheats() && hptr->IsHuman) {
+            if (hptr->IsHuman) {
                 Reserve_Unit();
                 UnitClass* tsmcv = new UnitClass(UNIT_TSMCV, house);
                 if (!Scan_Place_Object(tsmcv, centroid)) {
@@ -3663,7 +3667,6 @@ static void Create_Units(bool official)
                     tsmcv->Set_Mission(MISSION_GUARD);
                 }
             }
-#endif
         } else {
 
             /*
