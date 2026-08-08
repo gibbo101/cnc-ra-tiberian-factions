@@ -639,6 +639,7 @@ HouseClass::HouseClass(HousesType house)
     , JustBuiltVessel(VESSEL_NONE)
     , Blockage(0)
     , RepairTimer(0)
+    , TFDropBayTimer(0)
     , AlertTime(0)
     , BorrowedTime(0)
     , BScan(0)
@@ -919,6 +920,17 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
 {
     assert(Houses.ID(this) == ID);
     assert(type != NULL);
+
+    /*
+    **	A dropship delivery has to finish landing, and then be waited out, before another
+    **	can be ordered. Refusing here greys the cameo through the sidebar's own disabled
+    **	path, which is the same route the one-bay cap takes -- one mechanism, two reasons
+    **	to say no.
+    */
+    if (type->What_Am_I() == RTTI_UNITTYPE && ((UnitTypeClass const*)type)->Type == UNIT_TSHMEC
+        && TFDropBayTimer != 0) {
+        return (false);
+    }
 
     // Diagnostic hook 2026-05-19: log Can_Build calls for mod-defined building
     // entries so we can see why a freshly-added TDxxxx might not appear in the

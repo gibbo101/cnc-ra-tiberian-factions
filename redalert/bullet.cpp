@@ -130,10 +130,22 @@ BulletClass::~BulletClass(void)
             if (cargo->Can_Enter_Cell(Coord_Cell(where)) != MOVE_OK) {
                 where = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), cargo->Class->Speed));
             }
+            HouseClass* owner = cargo->House;
             if (cargo->Unlimbo(where, DIR_S)) {
                 cargo->Assign_Mission(MISSION_GUARD);
             } else {
                 delete cargo;
+                cargo = NULL;
+            }
+
+            /*
+            **	The wait runs from the arrival, not from the order, so what the player
+            **	feels is the gap between deliveries. Started even when the cargo could
+            **	not be placed: the bay did its work either way, and a failed placement
+            **	should not become a way to order again immediately.
+            */
+            if (owner != NULL) {
+                owner->TFDropBayTimer = TICKS_PER_MINUTE * 5;
             }
         }
 

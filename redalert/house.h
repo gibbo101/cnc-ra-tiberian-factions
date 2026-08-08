@@ -354,6 +354,14 @@ public:
     CDTimerClass<FrameTimerClass> RepairTimer;
 
     /*
+    **	How long until this house may order another dropship delivery. Runs from the
+    **	moment a pod lands rather than from the order, so the wait is between arrivals.
+    **	Held per house rather than per bay: it stays meaningful if the one-bay cap is
+    **	ever raised, which a per-bay timer would not.
+    */
+    CDTimerClass<FrameTimerClass> TFDropBayTimer;
+
+    /*
     **	This timer controls the computer auto-attack logic. When this timer expires
     **	and the house has been alerted, then it will create a set of attack
     **	teams.
