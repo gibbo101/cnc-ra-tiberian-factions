@@ -4,6 +4,25 @@
 
 **The building exists as of `892aa49e` and builds clean. The delivery does not.**
 
+### Progress 2026-08-08 (overnight)
+- `892aa49e` building registered · `27cda644` rim = house colour · `deb34d4e` deck
+  art + emblem · `bc838620` rules + one-per-house cap · `017b126e` drop-pod delivery.
+- **Smoke test PASSED 01:17**: mod loads, main menu, lobby, live skirmish on
+  Docklands, no crash. So the new `STRUCT_TSDROP`, `BULLET_TSDROPPOD` and both
+  rules sections initialise cleanly — a bad heap registration or a missing
+  bullet section CTDs at startup, and none did. TS MCV present, so the tree is
+  reachable.
+- **NOT yet proven: anything actually falling out of the sky.** Reaching the bay
+  needs the full tree built, which is ~20 screenshot round trips to hand-drive
+  and is Luke's call anyway.
+
+### ⚠️ GAP FOUND, not in the original plan
+Making the bay `RTTI_UNITTYPE` makes it a vehicle factory, and RA picks a
+factory via `Who_Can_Build_Me`. **Nothing yet binds the Mk2 to the bay or keeps
+ordinary vehicles out of it** — so a Mammoth could roll out of the war factory
+door, or a jeep could arrive by orbital pod. Harmless for a "prove it with any
+unit" test, and genuinely the next problem after the descent works.
+
 ### Objectives, in order (do not reorder — each proves the next)
 1. **Art.** `shp_gtdeptbb` alone, scaled to FILL the 3x3 (Luke: "expand that bay
    to fill a 3*3 build area"). Entry already added to `ts_pack_tree.py` WAVE2;
