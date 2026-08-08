@@ -4,6 +4,46 @@
 
 **The building exists as of `892aa49e` and builds clean. The delivery does not.**
 
+## 🔴 BUG — BUILDING THE BAY LOCKS THE SIDEBAR (Luke, 2026-08-08)
+
+**Symptom:** build the Dropship Bay → its cameo disappears from the sidebar (the
+one-per-house cap doing its job) → **the whole sidebar goes dull and locks**.
+Nothing clickable after that.
+
+**This is a regression introduced by tonight's work, and it is worse than the
+feature not working. FIX THIS BEFORE ANY MORE BAY WORK.** Do not chase the
+descent until the sidebar is healthy.
+
+**Ranked suspects — check in this order:**
+
+1. ⭐ **The bay is a second vehicle factory and steals the role.** `TSDROP` is
+   `RTTI_UNITTYPE`, so `Who_Can_Build_Me` now sees two vehicle factories. The
+   `6de77e60` binding says the bay can build ONLY `UNIT_TSHMEC` — so if the bay
+   becomes the `IsLeader` factory, every other vehicle's factory lookup can
+   return NULL and the vehicle strip loses its host. Test by checking whether
+   the lock happens with NO war factory present vs with one. **This is the
+   likeliest cause and the binding is the newest moving part.**
+2. **`Can_Build` returning false for a type already in a factory slot.** The cap
+   flips `Can_Build(TSDROP)` to false the instant the bay is placed. If the
+   sidebar/factory still holds that slot, `Recalc` may evict an entry that
+   production still references and leave the strip in a stuck state.
+3. **The `TFDropBayTimer` gate at the top of `Can_Build`.** It runs on EVERY
+   `Can_Build` call, including the sidebar's. If a `CDTimerClass != 0`
+   comparison misbehaves, everything greys. Initialised to 0 in the ctor
+   (`house.cpp:642`), so this should be inert — but it is the one check that
+   touches every cameo.
+4. **Power.** The bay draws `Power=-100`. Should only grey, never lock, but it
+   is a one-line check to rule out.
+
+**First diagnostic:** `Can_Build` already has a logging hook that captures
+TS-prefixed IniNames (`house.cpp` ~918, `log_td` covers 'T'+'S'). Turn it on and
+build a bay — the log will say which types start returning false and when.
+
+**Quickest bisect if theory 1 holds:** temporarily set `ClassTsDrop`'s ToBuild
+back to `RTTI_NONE`. If the sidebar stays healthy, it is the factory-role
+collision and the fix is in how the bay advertises itself as a factory, not in
+`Who_Can_Build_Me`.
+
 ### ⭐ MORNING HANDOVER — what to do first
 **All four objectives are CODED and DEPLOYED (desktop prefix, DLL `80240db9`,
 md5-verified). NOTHING HAS BEEN SEEN TO FALL OUT OF THE SKY.** The descent is
