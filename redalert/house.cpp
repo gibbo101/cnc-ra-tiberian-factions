@@ -1090,6 +1090,16 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         **	gating a yard on owning a yard would be circular.
         */
         if (!btype->Is_Construction_Yard()) {
+            /*
+            **	One dropship bay per house. The bay is a delivery point rather than a factory
+            **	floor, so a second one would land two Mammoth Mk. IIs at once and the delivery
+            **	cooldown would stop constraining anything. Returning false here greys the
+            **	cameo through the sidebar's existing disabled path, with no new UI.
+            */
+            if (btype->Type == STRUCT_TSDROP && Get_Quantity(STRUCT_TSDROP) > 0) {
+                return (false);
+            }
+
             /* (TS-tree test defined below at TF_Is_TS_Tree_Type.) */
             /*
             **	A yard opens the tree of the faction it belongs to. So the test is not "do I
