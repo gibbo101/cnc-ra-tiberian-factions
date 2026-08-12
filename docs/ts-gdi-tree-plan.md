@@ -44,8 +44,33 @@ factory holds `IsLeader`, so it never returns NULL for ordinary vehicles.
   bay↔Mk. II binding back in `object.cpp`. The TS-MCV human start-grant from
   that commit stays.
 
-**NOT yet re-verified in game:** the lock fix (build a bay, sidebar must stay
-healthy, cameo greys only after placement) and the descent (never seen).
+**Live-verified 2026-08-12 (Luke driving, desktop):** bay builds with a healthy
+sidebar; the pod falls and delivers. Engine facts proven in that session, each
+one a trap for future work:
+
+- **A fuse arms with at most 0xFF frames of flight** (`fuse.cpp Arm_Fuse`,
+  `Timer = min(timeto, 0xFF)`). A projectile slower than its distance budget
+  "arrives" mid-flight — the pod at MPH_MEDIUM_FAST ran out 29 cells in and
+  delivered the Mk. II 35 cells north of the bay. The nuke survives 64 cells
+  only because it falls at MPH_VERY_FAST. Drop height is now 20 cells.
+- **A unit set down on building-occupied cells is UNRESCUABLE** — it renders
+  under the building's sprite and cannot path off, and manual orders do
+  nothing. The ScenarioInit bypass places it fine; it is movement that is
+  dead. Delivery now sets the cargo down one row south of the pad (the war
+  factory arrangement — WEAP's exit row is outside its occupy list too).
+- **`Begin_Production` never consults `Can_Build`** — a sidebar cameo that
+  exists is orderable, whatever legality says. Any cooldown/cap that keeps
+  its cameo visible must refuse inside `Begin_Production` itself.
+- **`CNCSidebarEntryStruct::Busy` draws NOTHING in the client** (proven: flag
+  set, no grey). To show unavailability, synthesise `Constructing` +
+  `Progress` — the cooldown now renders as a superweapon-style recharge sweep.
+
+**Still open on the bay (Luke's queue, art after mechanism):**
+1. Buildup anim: strip the gantry piece from each TDFIX buildup frame, same
+   crop treatment as the final structure (Luke's spec, 2026-08-12).
+2. Emblem centring: `stamp_emblem` now takes an eye-dial `(dx, dy)`; Luke
+   judges in-game, offsets go in `EMBLEMS["TSDROP"]`.
+3. The real dropship art: the pod still wears the falling nuke's sprite.
 
 ### ⭐ MORNING HANDOVER — what to do first
 **All four objectives are CODED and DEPLOYED (desktop prefix, DLL `80240db9`,

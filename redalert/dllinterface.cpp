@@ -6988,6 +6988,20 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     sidebar_entry.Busy = isbusy;
                     sidebar_entry.PlacementListLength = 0;
 
+                    /*
+                    ** Mk. II delivery cooldown renders as a recharge sweep,
+                    ** superweapon-style -- Busy alone draws nothing in the client.
+                    ** Display-only fields; a live factory below overrides them.
+                    */
+                    if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
+                        && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
+                        && PlayerPtr->TFDropBayTimer != 0) {
+                        sidebar_entry.Constructing = true;
+                        sidebar_entry.Progress = 1.0f
+                                                 - ((float)(unsigned long)PlayerPtr->TFDropBayTimer
+                                                    / (float)HouseClass::TF_DROPBAY_COOLDOWN);
+                    }
+
                     if (factory) {
                         if (factory->Is_Building()) {
                             sidebar_entry.Constructing = true;
@@ -7178,6 +7192,19 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         sidebar_entry.Progress = 0.0f;
                         sidebar_entry.Busy = isbusy;
                         sidebar_entry.PlacementListLength = 0;
+
+                        /*
+                        ** Mk. II delivery cooldown recharge sweep -- matches the
+                        ** single-player path above.
+                        */
+                        if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
+                            && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
+                            && PlayerPtr->TFDropBayTimer != 0) {
+                            sidebar_entry.Constructing = true;
+                            sidebar_entry.Progress = 1.0f
+                                                     - ((float)(unsigned long)PlayerPtr->TFDropBayTimer
+                                                        / (float)HouseClass::TF_DROPBAY_COOLDOWN);
+                        }
 
                         if (factory) {
                             if (factory->Is_Building()) {

@@ -127,39 +127,29 @@ BulletClass::~BulletClass(void)
             Payback = NULL; // the pod no longer owns it, whatever happens below
 
             /*
-            **	When the pod dies over its own bay, the cargo is set down ON the deck --
-            **	that is the delivery the player watched the pod fall toward. Deck cells
-            **	are building-occupied, so the set-down borrows the ScenarioInit bypass
-            **	that every factory exit uses, and the vehicle then rolls off to the
-            **	nearest clear ground as a war factory's product rolls out of its door.
+            **	The pod lands on the deck; the cargo is set down at the deck's front
+            **	edge, one row south of the pad, as if it rolled off -- the war factory
+            **	arrangement, whose exit row is likewise outside its occupy list. It is
+            **	NOT set down on the deck itself: a unit standing on building-occupied
+            **	cells renders under the building's sprite and cannot path off them at
+            **	all (proven in play 2026-08-12 -- manual orders can't rescue it).
             */
             HouseClass* owner = cargo->House;
             COORDINATE where = Coord;
             CELL wcell = Coord_Cell(where);
             BuildingClass* deck = Map[wcell].Cell_Building();
-            bool ondeck = (deck != NULL && *deck == STRUCT_TSDROP && deck->House == owner);
-
-            if (ondeck) {
-                ScenarioInit++;
-                bool placed = cargo->Unlimbo(Cell_Coord(wcell), DIR_S);
-                ScenarioInit--;
-                if (placed) {
-                    cargo->Assign_Destination(::As_Target(Map.Nearby_Location(wcell, cargo->Class->Speed)));
-                    cargo->Assign_Mission(MISSION_MOVE);
-                } else {
-                    ondeck = false;
-                }
+            if (deck != NULL && *deck == STRUCT_TSDROP) {
+                CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W * 2);
+                where = Cell_Coord(front);
             }
-            if (!ondeck) {
-                if (cargo->Can_Enter_Cell(Coord_Cell(where)) != MOVE_OK) {
-                    where = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), cargo->Class->Speed));
-                }
-                if (cargo->Unlimbo(where, DIR_S)) {
-                    cargo->Assign_Mission(MISSION_GUARD);
-                } else {
-                    delete cargo;
-                    cargo = NULL;
-                }
+            if (cargo->Can_Enter_Cell(Coord_Cell(where)) != MOVE_OK) {
+                where = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), cargo->Class->Speed));
+            }
+            if (cargo->Unlimbo(where, DIR_S)) {
+                cargo->Assign_Mission(MISSION_GUARD);
+            } else {
+                delete cargo;
+                cargo = NULL;
             }
 
             /*
@@ -169,7 +159,7 @@ BulletClass::~BulletClass(void)
             **	should not become a way to order again immediately.
             */
             if (owner != NULL) {
-                owner->TFDropBayTimer = TICKS_PER_MINUTE * 5;
+                owner->TFDropBayTimer = HouseClass::TF_DROPBAY_COOLDOWN;
             }
         }
 

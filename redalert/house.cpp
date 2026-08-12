@@ -3297,6 +3297,18 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
     fptr = Fetch_Factory(type);
 
     /*
+    **	The dropship delivery cooldown refuses the order itself. The sidebar keeps
+    **	the Mk. II cameo visible (with a recharge sweep) while the bay reloads, so
+    **	the click has to be turned away here, the one point every production path
+    **	funnels through -- the sidebar's own legality checks are never consulted
+    **	when construction starts.
+    */
+    if (tech != NULL && type == RTTI_UNITTYPE && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
+        && TFDropBayTimer != 0) {
+        return (PROD_CANT);
+    }
+
+    /*
     **	If the house is already busy producing the requested object, then
     **	return with this failure code, unless we are restarting production.
     */

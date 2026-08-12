@@ -357,8 +357,10 @@ public:
     **	How long until this house may order another dropship delivery. Runs from the
     **	moment a pod lands rather than from the order, so the wait is between arrivals.
     **	Held per house rather than per bay: it stays meaningful if the one-bay cap is
-    **	ever raised, which a per-bay timer would not.
+    **	ever raised, which a per-bay timer would not. The constant is shared with the
+    **	sidebar, which renders the remaining fraction as a recharge sweep.
     */
+    enum { TF_DROPBAY_COOLDOWN = TICKS_PER_MINUTE * 5 };
     CDTimerClass<FrameTimerClass> TFDropBayTimer;
 
     /*
