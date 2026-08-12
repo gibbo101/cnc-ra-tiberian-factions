@@ -293,6 +293,8 @@ struct SoundEffectNameStruct
     {"RAILUSE5", 1, IN_NOVAR},    // VOC_TS_RAILUSE5 — TS heavy mech railgun (WEAPON_MECHRAILGUN Report=RAILUSE5), routed via RAC/RAR_SFX_RAILUSE5 (bundled WAV under TDR_SFX_DINOATK1)
     {"TSMISL1", 1, IN_NOVAR},     // VOC_TS_MISL1 — TS missile launch (WEAPON_TSMKTUSK Report=TSMISL1), routed via RAC/RAR_SFX_TSMISL1 (bundled WAV under TDR_SFX_DINODIE1)
     {"TS120MMF", 1, IN_NOVAR},    // VOC_TS_120MMF — TS Titan cannon fire (WEAPON_TS120MM Report=TS120MMF), routed via RAC/RAR_SFX_TS120MMF (bundled WAV under TDR_SFX_DINOMOUT)
+    {"DROPDWN1", 1, IN_NOVAR},    // VOC_TS_DROPDWN1 — TS dropship landing, played at the pod's touchdown (bundled WAV under TDR_SFX_DINOYES)
+    {"DROPUP1", 1, IN_NOVAR},     // VOC_TS_DROPUP1 — TS dropship takeoff, played at the pod's liftoff (bundled WAV under TDR_SFX_STRUGGLE)
 };
 
 //

@@ -6551,6 +6551,45 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> TDR_SFX_DINOMOUT.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+
+  <!-- TS dropship landing / takeoff (DROPDWN1 / DROPUP1, TS SOUND.INI), played by
+       the dropship-bay delivery pod at touchdown and liftoff. Same dormant-MEG-
+       sample trick as the TS weapon sounds above: novel loose sample names crash
+       ClientG, so the decodes ship as Data/AUDIO/TDR_SFX_DINOYES.WAV and
+       TDR_SFX_STRUGGLE.WAV (dinosaur-mission samples, never fired in RA context)
+       and both audio modes point there. -->
+  <SFXEvent Name="RAC_SFX_DROPDWN1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_DINOYES.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_DROPDWN1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_DINOYES.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_DROPUP1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_STRUGGLE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_DROPUP1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TDR_SFX_STRUGGLE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
 </SFXEvents>
 
 

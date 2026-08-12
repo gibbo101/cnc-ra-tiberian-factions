@@ -240,8 +240,10 @@ PACK_ARGS+=("$TMPDIR/tshmec_stub.shp:TSHMEC.SHP")
 # Bullet art, single west-facing frame. The launcher sizes HD art off the
 # classic dims, so without this stub the pod inherits its donor's
 # little-missile dims and the dropship renders TINY (live report, 2026-08-12).
-# 79 = HD canvas 420 x 3/16; re-derive if the render scale or facing changes.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsdshp_stub.shp" 79 79 1
+# 123 = HD canvas 656 x 3/16. 656 is the TS-authentic relative scale (6.4
+# canvas px per voxel, the shared unit factor) -- anything smaller reads
+# tinier than the Mk. II it carries. Re-derive if render scale changes.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdshp_stub.shp" 123 123 1
 PACK_ARGS+=("$TMPDIR/tsdshp_stub.shp:TSDSHP.SHP")
 # TS units wave (Harvester / Wolverine / Disruptor / Amphibious APC) -- same
 # HD-only stub pattern; frame counts match the HD zips (rot-only, walk, or

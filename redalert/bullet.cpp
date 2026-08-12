@@ -462,6 +462,7 @@ void BulletClass::AI(void)
                 Height = 0;
                 TFStage = 1;
                 TFDwell = TICKS_PER_SECOND * 4;
+                Sound_Effect(VOC_TS_DROPDWN1, Coord); // TS's own "dropship lands"
             }
             break;
 
@@ -476,6 +477,7 @@ void BulletClass::AI(void)
             }
             if (TFDwell <= 0) {
                 TFStage = 2;
+                Sound_Effect(VOC_TS_DROPUP1, Coord); // TS's own "dropship takes off"
             }
             break;
 

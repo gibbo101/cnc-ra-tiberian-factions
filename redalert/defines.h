@@ -4082,6 +4082,8 @@ typedef enum VocType : short
     VOC_TS_RAILUSE5,     // TS heavy mech railgun fire (RAILUSE5, decoded from TS SOUNDS.MIX AUD) — WEAPON_MECHRAILGUN Report=. Routed via RAC/RAR_SFX_RAILUSE5 → bundled TDR_SFX_DINOATK1.WAV (dormant-sample host).
     VOC_TS_MISL1,        // TS missile launch (MISL1, TS MammothTusk Report) — WEAPON_TSMKTUSK Report=TSMISL1. Routed via RAC/RAR_SFX_TSMISL1 → bundled TDR_SFX_DINODIE1.WAV (dormant-sample host).
     VOC_TS_120MMF,       // TS Titan 120mm cannon fire (120MMF) — WEAPON_TS120MM Report=TS120MMF. Routed via RAC/RAR_SFX_TS120MMF → bundled TDR_SFX_DINOMOUT.WAV (dormant-sample host).
+    VOC_TS_DROPDWN1,     // TS dropship landing (DROPDWN1, TS SOUND.INI "DROPSHIP LANDS") — played at the pod's touchdown on the bay deck. Routed via RAC/RAR_SFX_DROPDWN1 → bundled TDR_SFX_DINOYES.WAV (dormant-sample host).
+    VOC_TS_DROPUP1,      // TS dropship takeoff (DROPUP1, TS SOUND.INI "DROPSHIP TAKES OFF") — played as the pod lifts off the deck. Routed via RAC/RAR_SFX_DROPUP1 → bundled TDR_SFX_STRUGGLE.WAV (dormant-sample host).
 
     VOC_COUNT,
     VOC_FIRST = 0
