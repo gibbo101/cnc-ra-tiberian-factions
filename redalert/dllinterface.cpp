@@ -6989,17 +6989,23 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     sidebar_entry.PlacementListLength = 0;
 
                     /*
-                    ** Mk. II delivery cooldown renders as a recharge sweep,
-                    ** superweapon-style -- Busy alone draws nothing in the client.
-                    ** Display-only fields; a live factory below overrides them.
+                    ** Mk. II delivery cooldown: the cameo becomes a live countdown.
+                    ** There is no text channel to the client (Busy draws nothing, and
+                    ** a fake Constructing state reads as a build and miscounts queue
+                    ** clicks -- Luke, 2026-08-12), but AssetName is re-read every
+                    ** refresh, so the remaining time is baked art: one dimmed cameo
+                    ** per second, "5:00" down to "0:01", swapped in by name here.
                     */
                     if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                         && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
                         && PlayerPtr->TFDropBayTimer != 0) {
-                        sidebar_entry.Constructing = true;
-                        sidebar_entry.Progress = 1.0f
-                                                 - ((float)(unsigned long)PlayerPtr->TFDropBayTimer
-                                                    / (float)HouseClass::TF_DROPBAY_COOLDOWN);
+                        long secs = ((long)(unsigned long)PlayerPtr->TFDropBayTimer + TICKS_PER_SECOND - 1)
+                                    / TICKS_PER_SECOND;
+                        if (secs > 300) {
+                            secs = 300;
+                        }
+                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                 "TSHMEC_CD%03d", (int)secs);
                     }
 
                     if (factory) {
@@ -7194,16 +7200,19 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         sidebar_entry.PlacementListLength = 0;
 
                         /*
-                        ** Mk. II delivery cooldown recharge sweep -- matches the
+                        ** Mk. II delivery cooldown countdown cameo -- matches the
                         ** single-player path above.
                         */
                         if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                             && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
                             && PlayerPtr->TFDropBayTimer != 0) {
-                            sidebar_entry.Constructing = true;
-                            sidebar_entry.Progress = 1.0f
-                                                     - ((float)(unsigned long)PlayerPtr->TFDropBayTimer
-                                                        / (float)HouseClass::TF_DROPBAY_COOLDOWN);
+                            long secs = ((long)(unsigned long)PlayerPtr->TFDropBayTimer + TICKS_PER_SECOND - 1)
+                                        / TICKS_PER_SECOND;
+                            if (secs > 300) {
+                                secs = 300;
+                            }
+                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                     "TSHMEC_CD%03d", (int)secs);
                         }
 
                         if (factory) {
