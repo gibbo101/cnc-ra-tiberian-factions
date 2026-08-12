@@ -61,6 +61,19 @@ private:
     FacingClass PrimaryFacing;
 
 public:
+    /*
+    **	TSDROPPOD delivery sequencing: the pod flies a VTOL profile -- straight
+    **	down over the deck, a beat on the ground while the cargo rolls out,
+    **	straight up and away. Stage 0 = descending, 1 = on the deck (TFDwell
+    **	frames remaining), 2 = departing. Zero and unused for every other
+    **	bullet type.
+    */
+    int TFStage;
+    int TFDwell;
+    enum
+    {
+        TF_POD_CEILING = 1280 // spawn/exit altitude in leptons (5 cells of climb)
+    };
     /*---------------------------------------------------------------------
     **	Constructors, Destructors, and overloaded operators.
     */
@@ -109,6 +122,7 @@ public:
         TarCom = target;
     };
     virtual bool Unlimbo(COORDINATE, DirType facing = DIR_N);
+    void Deliver_Cargo(void);
     virtual ObjectTypeClass const& Class_Of(void) const
     {
         return *Class;

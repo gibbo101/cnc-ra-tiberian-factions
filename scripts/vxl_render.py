@@ -135,10 +135,12 @@ def team_ramp(palette, remap, team_green):
 
 
 def render_frame(model, yaw_deg, px_per_voxel, team_green, z_lift, canvas=None,
-                 hva_mats=None):
+                 hva_mats=None, pitch_deg=0.0):
     pal = team_ramp(model['palette'], model['remap'], team_green)
     yaw = math.radians(yaw_deg)
     cy, sy_ = math.cos(yaw), math.sin(yaw)
+    pitch = math.radians(pitch_deg)
+    cp, sp = math.cos(pitch), math.sin(pitch)
     pts_all, cols_all, shade_all = [], [], []
     for si, sec in enumerate(model['sections']):
         occ, colv = sec['occ'], sec['col']
@@ -164,6 +166,16 @@ def render_frame(model, yaw_deg, px_per_voxel, team_green, z_lift, canvas=None,
     pos = np.concatenate(pts_all)
     cols = np.concatenate(cols_all)
     nrm = np.concatenate(shade_all)
+
+    # pitch about the model's lateral (y) axis BEFORE yaw: positive lifts the
+    # nose (+x) -- the VTOL flare attitude for descent/ascent frames
+    if pitch_deg:
+        px_ = pos[:, 0] * cp - pos[:, 2] * sp
+        pz_ = pos[:, 0] * sp + pos[:, 2] * cp
+        pos = np.column_stack((px_, pos[:, 1], pz_))
+        nx_ = nrm[:, 0] * cp - nrm[:, 2] * sp
+        nz_ = nrm[:, 0] * sp + nrm[:, 2] * cp
+        nrm = np.column_stack((nx_, nrm[:, 1], nz_))
 
     # rotate about z by yaw (CCW positive)
     rx = pos[:, 0] * cy - pos[:, 1] * sy_
@@ -221,7 +233,8 @@ def main():
     vxl_path, outdir = args[0], args[1]
     opts = {'--frames': '32', '--px-per-voxel': '6', '--yaw0': '0',
             '--team-green': '0,200,0', '--z-lift': '0', '--canvas': '0',
-            '--hva': '', '--hva-frame': '0', '--elev': '54', '--ambient': '0.35'}
+            '--hva': '', '--hva-frame': '0', '--elev': '54', '--ambient': '0.35',
+            '--pitch': '0'}
     i = 2
     while i < len(args):
         opts[args[i]] = args[i + 1]
@@ -232,6 +245,7 @@ def main():
     zlift = float(opts['--z-lift'])
     tg = tuple(int(x) for x in opts['--team-green'].split(','))
     canvas = int(opts['--canvas']) or None
+    pitch = float(opts['--pitch'])  # degrees, positive = nose up (VTOL flare)
 
     set_elevation(float(opts['--elev']))
     global AMBIENT

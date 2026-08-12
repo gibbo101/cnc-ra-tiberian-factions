@@ -82,6 +82,8 @@ BulletClass::BulletClass(BulletType id,
     , Class(BulletTypes.Ptr((int)id))
     , Payback(payback)
     , PrimaryFacing(DIR_N)
+    , TFStage(0)
+    , TFDwell(0)
     , IsInaccurate(false)
     , IsToAnimate(false)
     , IsLocked(true)
@@ -109,59 +111,68 @@ BulletClass::BulletClass(BulletType id,
  * HISTORY:                                                                                    *
  *   07/06/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
+/***********************************************************************************************
+ * BulletClass::Deliver_Cargo -- Sets a dropship pod's cargo down beside its bay.              *
+ *                                                                                             *
+ *    The cargo is set down at the deck's front edge, one row south of the pad, as if it      *
+ *    rolled off -- the war factory arrangement, whose exit row is likewise outside its       *
+ *    occupy list. It is NOT set down on the deck itself: a unit standing on building-        *
+ *    occupied cells renders under the building's sprite and cannot path off them at all      *
+ *    (proven in play 2026-08-12 -- manual orders can't rescue it). Safe to call more than    *
+ *    once; the first delivery takes the cargo and the rest are no-ops.                       *
+ *=============================================================================================*/
+void BulletClass::Deliver_Cargo(void)
+{
+    if (Payback == NULL || Payback->What_Am_I() != RTTI_UNIT || !Payback->IsInLimbo) {
+        return;
+    }
+
+    UnitClass* cargo = (UnitClass*)Payback;
+    Payback = NULL; // the pod no longer owns it, whatever happens below
+
+    HouseClass* owner = cargo->House;
+    COORDINATE where = Coord;
+    CELL wcell = Coord_Cell(where);
+    BuildingClass* deck = Map[wcell].Cell_Building();
+    if (deck != NULL && *deck == STRUCT_TSDROP) {
+        CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W * 2);
+        where = Cell_Coord(front);
+    }
+    if (cargo->Can_Enter_Cell(Coord_Cell(where)) != MOVE_OK) {
+        where = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), cargo->Class->Speed));
+    }
+    if (cargo->Unlimbo(where, DIR_S)) {
+        cargo->Assign_Mission(MISSION_GUARD);
+    } else {
+        delete cargo;
+        cargo = NULL;
+    }
+
+    /*
+    **	The cooldown normally starts at pod launch (building.cpp, the Exit_Object
+    **	case) so the order window closes while the pod is still falling. This is
+    **	the backstop for any pod that existed without that site running: only arm
+    **	if no countdown is already live, because resetting here would snap a
+    **	running countdown back up to 5:00.
+    */
+    if (owner != NULL && owner->TFDropBayTimer == 0) {
+        owner->TFDropBayTimer = HouseClass::TF_DROPBAY_COOLDOWN;
+    }
+}
+
 BulletClass::~BulletClass(void)
 {
     if (GameActive) {
 
         /*
-        **	A dropship bay's cargo rides the pod in limbo, the same way the dog rides its
-        **	bullet, and is set down wherever the pod ended up. Handled here rather than at
-        **	the moment of arrival so that EVERY path which destroys the pod delivers the
-        **	cargo -- a pod removed for any other reason would otherwise strand a vehicle
-        **	in limbo, owned and paid for but permanently absent.
+        **	A dropship bay's cargo rides the pod in limbo, the same way the dog rides
+        **	its bullet. The normal unload happens mid-dwell in the AI stage machine;
+        **	this is the backstop, so that EVERY path which destroys the pod delivers
+        **	the cargo -- a pod removed for any other reason would otherwise strand a
+        **	vehicle in limbo, owned and paid for but permanently absent.
         */
-        if (*this == BULLET_TSDROPPOD && Payback != NULL && Payback->What_Am_I() == RTTI_UNIT
-            && Payback->IsInLimbo) {
-
-            UnitClass* cargo = (UnitClass*)Payback;
-            Payback = NULL; // the pod no longer owns it, whatever happens below
-
-            /*
-            **	The pod lands on the deck; the cargo is set down at the deck's front
-            **	edge, one row south of the pad, as if it rolled off -- the war factory
-            **	arrangement, whose exit row is likewise outside its occupy list. It is
-            **	NOT set down on the deck itself: a unit standing on building-occupied
-            **	cells renders under the building's sprite and cannot path off them at
-            **	all (proven in play 2026-08-12 -- manual orders can't rescue it).
-            */
-            HouseClass* owner = cargo->House;
-            COORDINATE where = Coord;
-            CELL wcell = Coord_Cell(where);
-            BuildingClass* deck = Map[wcell].Cell_Building();
-            if (deck != NULL && *deck == STRUCT_TSDROP) {
-                CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W * 2);
-                where = Cell_Coord(front);
-            }
-            if (cargo->Can_Enter_Cell(Coord_Cell(where)) != MOVE_OK) {
-                where = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), cargo->Class->Speed));
-            }
-            if (cargo->Unlimbo(where, DIR_S)) {
-                cargo->Assign_Mission(MISSION_GUARD);
-            } else {
-                delete cargo;
-                cargo = NULL;
-            }
-
-            /*
-            **	The cooldown normally starts at pod launch (building.cpp, the
-            **	Exit_Object case) so the order window closes while the pod is still
-            **	falling. This is the backstop for any pod that existed without that
-            **	site running: only arm if no countdown is already live, because
-            **	resetting here would snap a running countdown back up to 5:00.
-            */
-            if (owner != NULL && owner->TFDropBayTimer == 0) {
-                owner->TFDropBayTimer = HouseClass::TF_DROPBAY_COOLDOWN;
-            }
+        if (*this == BULLET_TSDROPPOD) {
+            Deliver_Cargo();
         }
 
         /*
@@ -423,6 +434,67 @@ void BulletClass::AI(void)
     */
     if (Class->IsTDPort) {
         AI_TD();
+        return;
+    }
+
+    /*
+    **	The dropship-bay pod flies a VTOL profile, not a ballistic one: straight
+    **	down over the deck, a beat on the ground while the cargo rolls out,
+    **	straight up and gone. There is no map-space motion at all, so the shadow
+    **	never leaves the pad -- the whole sequence is Height against a fixed
+    **	Coord, which also means the fuse and Physics never run for this bullet.
+    */
+    if (*this == BULLET_TSDROPPOD) {
+        ObjectClass::AI();
+        if (!IsActive) {
+            return;
+        }
+        Mark(MARK_CHANGE);
+        LayerType layer = In_Which_Layer();
+        switch (TFStage) {
+        case 0:
+            /*
+            **	Descending: fast from altitude, flaring out near the deck.
+            */
+            if (Height > 4) {
+                Height -= max(4, Height / 16);
+            } else {
+                Height = 0;
+                TFStage = 1;
+                TFDwell = TICKS_PER_SECOND * 4;
+            }
+            break;
+
+        case 1:
+            /*
+            **	On the deck. The cargo rolls out mid-dwell, so the ship visibly
+            **	sits there before and after the unload.
+            */
+            TFDwell--;
+            if (TFDwell == TICKS_PER_SECOND * 2) {
+                Deliver_Cargo();
+            }
+            if (TFDwell <= 0) {
+                TFStage = 2;
+            }
+            break;
+
+        default:
+            /*
+            **	Departing: climb until out of the scene, then vanish. The cargo
+            **	went out mid-dwell, so the destructor's backstop is a no-op.
+            */
+            Height += max(8, Height / 12);
+            if (Height >= TF_POD_CEILING) {
+                delete this;
+                return;
+            }
+            break;
+        }
+        if (In_Which_Layer() != layer) {
+            Map.Remove(this, layer);
+            Map.Submit(this, In_Which_Layer());
+        }
         return;
     }
 
@@ -1451,6 +1523,17 @@ COORDINATE BulletClass::Sort_Y(void) const
 {
     assert(this != 0);
     assert(IsActive);
+
+    /*
+    **	The landed dropship pod sits on its bay's centre cell in the ground
+    **	layer, and a building's sort band reaches its own south edge -- half a
+    **	cell of bias loses that contest and the pad draws over the ship (the
+    **	same burial the Mk. II suffered on the deck). Two cells of bias puts the
+    **	grounded ship past the 3x3 pad's south edge, so it draws on top.
+    */
+    if (*this == BULLET_TSDROPPOD) {
+        return (Coord_Move(Coord, DIR_S, CELL_LEPTON_H * 2));
+    }
 
     return (Coord_Move(Coord, DIR_S, CELL_LEPTON_H / 2));
 }

@@ -3200,28 +3200,28 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             **	arrangement and keeps the ordered object itself rather than standing up
             **	a copy of it.
             **
-            **	The pod starts north of the deck and falls onto it, the way the
-            **	nuclear strike's second stage does.
-            **
-            **	The drop height is bounded by the fuse, not by taste: a fuse arms with
-            **	at most 0xFF frames of flight (fuse.cpp Arm_Fuse), and a pod that
-            **	outlives its fuse "arrives" in mid-air and sets its cargo down there.
-            **	The nuke survives its 64-cell fall only because it drops at
-            **	MPH_VERY_FAST; at the pod's MPH_MEDIUM_FAST the budget runs out near
-            **	29 cells, so 20 keeps a readable margin -- and matches the nuke's
-            **	~11-second descent almost exactly.
+            **	The pod spawns directly OVER the deck at altitude and sinks straight
+            **	down -- a true VTOL profile, run by the stage machine in
+            **	BulletClass::AI. No map-space motion at all, so its shadow sits on
+            **	the pad for the whole descent (an earlier fly-in-from-the-north
+            **	version dragged the shadow across the terrain, which read as level
+            **	flight rather than a landing -- Luke, 2026-08-12). The fuse never
+            **	runs for this bullet, so no flight-time budget applies.
             */
             CELL dest = Coord_Cell(Center_Coord());
-            int celly = Cell_Y(dest) - 20;
-            if (celly < 1) {
-                celly = 1;
-            }
 
             BulletClass* pod =
                 new BulletClass(BULLET_TSDROPPOD, ::As_Target(dest), base, 0, WARHEAD_NONE, MPH_MEDIUM_FAST);
             if (pod != NULL) {
-                COORDINATE start = Cell_Coord(XY_Cell(Cell_X(dest), celly));
-                if (pod->Unlimbo(start, DIR_S)) {
+                if (pod->Unlimbo(Center_Coord(), DIR_S)) {
+                    /*
+                    **	Unlimbo grounds the bullet; lift it to the drop ceiling, moving
+                    **	it between display layers by the book.
+                    */
+                    Map.Remove(pod, pod->In_Which_Layer());
+                    pod->Height = BulletClass::TF_POD_CEILING;
+                    Map.Submit(pod, pod->In_Which_Layer());
+
                     /*
                     **	The cooldown starts the moment the pod launches, not at the
                     **	landing: the gap between order completion and touchdown left
