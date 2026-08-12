@@ -122,6 +122,38 @@ def compute_normals(occ):
     return n / norms
 
 
+NORMAL_SMOOTH = 0  # --normal-smooth N: passes of neighbour averaging
+
+
+def smooth_normals(n, occ, passes):
+    """Average each voxel's normal with its occupied 3x3x3 neighbours.
+
+    The empty-neighbour normals are quantised to 26 directions, which reads as
+    speckle on curved hull (the dropship's nose and tail). Averaging over the
+    surface and renormalising recovers a smooth field without touching the
+    silhouette.
+    """
+    sx, sy, sz = occ.shape
+    for _ in range(passes):
+        pad_n = np.zeros((sx + 2, sy + 2, sz + 2, 3), dtype=np.float32)
+        pad_o = np.zeros((sx + 2, sy + 2, sz + 2), dtype=np.float32)
+        pad_n[1:-1, 1:-1, 1:-1] = n
+        pad_o[1:-1, 1:-1, 1:-1] = occ
+        acc = np.zeros_like(n)
+        cnt = np.zeros(occ.shape, dtype=np.float32)
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for dz in (-1, 0, 1):
+                    acc += pad_n[1 + dx:sx + 1 + dx, 1 + dy:sy + 1 + dy, 1 + dz:sz + 1 + dz]
+                    cnt += pad_o[1 + dx:sx + 1 + dx, 1 + dy:sy + 1 + dy, 1 + dz:sz + 1 + dz]
+        cnt[cnt == 0] = 1
+        n = acc / cnt[..., None]
+        norms = np.linalg.norm(n, axis=-1, keepdims=True)
+        norms[norms == 0] = 1
+        n = n / norms
+    return n
+
+
 def team_ramp(palette, remap, team_green):
     """Return a 256x3 palette with the remap range recolored as a green ramp."""
     pal = palette.copy()
@@ -146,6 +178,8 @@ def render_frame(model, yaw_deg, px_per_voxel, team_green, z_lift, canvas=None,
         occ, colv = sec['occ'], sec['col']
         sx, sy, sz = sec['size']
         normals = compute_normals(occ)
+        if NORMAL_SMOOTH > 0:
+            normals = smooth_normals(normals, occ, NORMAL_SMOOTH)
         idx = np.argwhere(occ)
         if len(idx) == 0:
             continue
@@ -234,7 +268,7 @@ def main():
     opts = {'--frames': '32', '--px-per-voxel': '6', '--yaw0': '0',
             '--team-green': '0,200,0', '--z-lift': '0', '--canvas': '0',
             '--hva': '', '--hva-frame': '0', '--elev': '54', '--ambient': '0.35',
-            '--pitch': '0'}
+            '--pitch': '0', '--normal-smooth': '0'}
     i = 2
     while i < len(args):
         opts[args[i]] = args[i + 1]
@@ -246,6 +280,8 @@ def main():
     tg = tuple(int(x) for x in opts['--team-green'].split(','))
     canvas = int(opts['--canvas']) or None
     pitch = float(opts['--pitch'])  # degrees, positive = nose up (VTOL flare)
+    global NORMAL_SMOOTH
+    NORMAL_SMOOTH = int(opts['--normal-smooth'])
 
     set_elevation(float(opts['--elev']))
     global AMBIENT
