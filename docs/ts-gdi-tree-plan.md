@@ -101,14 +101,27 @@ inserted after "the last ObjectTypeClass" in RABUILDABLES lands INSIDE the
 countdown generator's managed block and its next run EATS it -- insert before
 the BEGIN marker.
 
-**Still open on the bay:**
-1. Buildup anim: strip the gantry piece from each TDFIX buildup frame, same
-   crop treatment as the final structure (Luke's spec, 2026-08-12).
-2. Emblem centring: `stamp_emblem` now takes an eye-dial `(dx, dy)`; Luke
-   judges in-game, offsets go in `EMBLEMS["TSDROP"]`.
-3. Optional: 32° camera re-render to match the vehicle fleet (preview sheets
+**Still open on the bay (Luke's next-session list, 2026-08-13 close):**
+1. ⭐ **Mk. II capped-state cameo: LOCKED look.** At cap the cameo reads
+   clickable and a click plays the EVA "Building" acknowledgment even though
+   production is (correctly, play-confirmed) refused. Wanted: red X / greyed /
+   unclickable — "I don't mind how". Mechanism is ready-made: bake a locked
+   variant (dimmed + red X) and swap it via AssetName while TF_Mk2_At_Cap,
+   exactly like the countdown cameos. ALSO trace where the EVA "Building"
+   speech fires on a refused order — some click path speaks before
+   Begin_Production's verdict; gate it on the verdict.
+2. ⭐ **Buildup anim crop**: strip the cut repair-bay piece from each TDFIX
+   MAKE frame, same treatment as the final structure (Luke's spec).
+3. ⭐ **A proper Dropship Bay sidebar icon** — still wearing the service
+   depot's FIXICON. Luke offers to help with the art.
+3b. ⭐ **A better Mech Division sidebar icon** — the Titan-plus-Wolverine
+   inset composite was a session quickie; design a real one with Luke
+   (he offers to help here too).
+4. Emblem centring: `stamp_emblem` takes an eye-dial `(dx, dy)`; offsets go
+   in `EMBLEMS["TSDROP"]`.
+5. Optional: 32° camera re-render to match the vehicle fleet (preview sheets
    on the Desktop; 54° shipped and accepted).
-4. Mk. II cap to 3 when Luke calls it (TF_MK2_CAP, one constant).
+6. Mk. II cap to 3 when Luke calls it (TF_MK2_CAP, one constant).
 
 ### ⭐ MORNING HANDOVER — what to do first
 **All four objectives are CODED and DEPLOYED (desktop prefix, DLL `80240db9`,
