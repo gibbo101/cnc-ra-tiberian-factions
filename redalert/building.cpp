@@ -3208,12 +3208,19 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             **	flight rather than a landing -- Luke, 2026-08-12). The fuse never
             **	runs for this bullet, so no flight-time budget applies.
             */
-            CELL dest = Coord_Cell(Center_Coord());
+            /*
+            **	The deck art rides high in its plot (size-pass top anchor), so the
+            **	landing point is the deck's VISUAL centre, ~160 leptons north of the
+            **	foundation centre -- aim at the plot centre and the ship sets down on
+            **	the bib instead of the pad.
+            */
+            COORDINATE pad = Coord_Move(Center_Coord(), DIR_N, 0x00A0);
+            CELL dest = Coord_Cell(pad);
 
             BulletClass* pod =
                 new BulletClass(BULLET_TSDROPPOD, ::As_Target(dest), base, 0, WARHEAD_NONE, MPH_MEDIUM_FAST);
             if (pod != NULL) {
-                if (pod->Unlimbo(Center_Coord(), DIR_S)) {
+                if (pod->Unlimbo(pad, DIR_S)) {
                     /*
                     **	Unlimbo grounds the bullet; lift it to the drop ceiling, moving
                     **	it between display layers by the book.

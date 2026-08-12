@@ -1646,14 +1646,15 @@ COORDINATE BulletClass::Sort_Y(void) const
     assert(IsActive);
 
     /*
-    **	The landed dropship pod sits on its bay's centre cell in the ground
-    **	layer, and a building's sort band reaches its own south edge -- half a
-    **	cell of bias loses that contest and the pad draws over the ship (the
-    **	same burial the Mk. II suffered on the deck). Two cells of bias puts the
-    **	grounded ship past the 3x3 pad's south edge, so it draws on top.
+    **	The landed dropship pod sits over its bay in the ground layer, and a
+    **	building's sort band reaches its own south edge -- half a cell of bias
+    **	loses that contest and the pad draws over the ship (the same burial the
+    **	Mk. II suffered on the deck). Three cells of bias clears the pad's south
+    **	edge even from the raised landing point (deck visual centre, ~0.6 cells
+    **	north of the plot centre).
     */
     if (*this == BULLET_TSDROPPOD) {
-        return (Coord_Move(Coord, DIR_S, CELL_LEPTON_H * 2));
+        return (Coord_Move(Coord, DIR_S, CELL_LEPTON_H * 3));
     }
 
     return (Coord_Move(Coord, DIR_S, CELL_LEPTON_H / 2));
