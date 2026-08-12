@@ -135,8 +135,16 @@ void BulletClass::Deliver_Cargo(void)
     CELL wcell = Coord_Cell(where);
     BuildingClass* deck = Map[wcell].Cell_Building();
     if (deck != NULL && *deck == STRUCT_TSDROP) {
+        /*
+        **	Not the front cell's centre but its NORTH EDGE, tucked under the
+        **	dropship's overhanging hull -- at the centre the Mk. II popped in
+        **	visibly beside the ship (Luke, 2026-08-12). The cell underneath is
+        **	still the passable front cell, and the ship's south-biased sort
+        **	draws the hull over the emerging walker, so it reads as stepping
+        **	out from beneath the ship.
+        */
         CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W * 2);
-        where = Cell_Coord(front);
+        where = Coord_Move(Cell_Coord(front), DIR_N, 0x0060);
     }
     if (cargo->Can_Enter_Cell(Coord_Cell(where)) != MOVE_OK) {
         where = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), cargo->Class->Speed));
