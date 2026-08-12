@@ -5789,6 +5789,21 @@
 	</ObjectTypeClass>
 	<!-- END generated cameo mask variants -->
 
+	<ObjectTypeClass Name="RA_TSMDIV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MechDivision</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MechDivision</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 	<!-- BEGIN generated Mk2 cooldown countdown cameos (scripts/ts_mk2_cooldown_cameos.py) -->
 	<ObjectTypeClass Name="RA_TSHMEC_CD001" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>

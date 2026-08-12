@@ -84,6 +84,7 @@ BulletClass::BulletClass(BulletType id,
     , PrimaryFacing(DIR_N)
     , TFStage(0)
     , TFDwell(0)
+    , TFUnloaded(0)
     , IsInaccurate(false)
     , IsToAnimate(false)
     , IsLocked(true)
@@ -111,6 +112,52 @@ BulletClass::BulletClass(BulletType id,
  * HISTORY:                                                                                    *
  *   07/06/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
+/*
+**	The Mech Division manifest: what the TSMDIV token stands for, disembarked in
+**	this order (armour first, escorts last).
+*/
+static UnitType const _mech_division[] = {UNIT_TSTITN, UNIT_TSTITN, UNIT_TSTITN, UNIT_TSSMEC, UNIT_TSSMEC};
+int const MECH_DIVISION_COUNT = (int)(sizeof(_mech_division) / sizeof(_mech_division[0]));
+
+/***********************************************************************************************
+ * BulletClass::TF_Disembark -- One unit steps out from under the landed dropship.             *
+ *                                                                                             *
+ *    Spawns one unit of the given type at the ship's exit point (the north edge of the       *
+ *    front cell, tucked under the hull) and walks it clear -- to the bay's rally point if     *
+ *    one is set, else a couple of rows out from the ramp. Used by the paced Mech Division     *
+ *    unload and by the destructor backstop.                                                  *
+ *=============================================================================================*/
+void BulletClass::TF_Disembark(HouseClass* owner, UnitType type)
+{
+    if (owner == NULL) {
+        return;
+    }
+    UnitClass* member = new UnitClass(type, owner->Class->House);
+    if (member == NULL) {
+        return;
+    }
+
+    CELL wcell = Coord_Cell(Coord);
+    BuildingClass* deck = Map[wcell].Cell_Building();
+    COORDINATE spot = Coord;
+    if (deck != NULL && *deck == STRUCT_TSDROP) {
+        CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W * 2);
+        spot = Coord_Move(Cell_Coord(front), DIR_N, 0x0060);
+    }
+    if (member->Can_Enter_Cell(Coord_Cell(spot)) != MOVE_OK) {
+        spot = Cell_Coord(Map.Nearby_Location(Coord_Cell(spot), member->Class->Speed));
+    }
+    if (member->Unlimbo(spot, DIR_S)) {
+        if (deck == NULL || !deck->Rally_Unit(*static_cast<TechnoClass*>(member))) {
+            CELL clear = Map.Nearby_Location((CELL)(Coord_Cell(spot) + MAP_CELL_W * 2), member->Class->Speed);
+            member->Assign_Destination(::As_Target(clear));
+            member->Assign_Mission(MISSION_MOVE);
+        }
+    } else {
+        delete member;
+    }
+}
+
 /***********************************************************************************************
  * BulletClass::Deliver_Cargo -- Sets a dropship pod's cargo down beside its bay.              *
  *                                                                                             *
@@ -147,38 +194,19 @@ void BulletClass::Deliver_Cargo(void)
         where = Coord_Move(Cell_Coord(front), DIR_N, 0x0060);
     }
     /*
-    **	The Mech Division token is an ORDER, not a unit: it converts here into
-    **	the group it stands for, each member disembarking through the same
-    **	under-the-hull walk-out the Mk. II uses. The token itself is consumed --
+    **	The Mech Division token is an ORDER, not a unit: it converts into the
+    **	group it stands for. The paced unload in the AI dwell normally walks
+    **	the members out one at a time; this path is the backstop for a pod
+    **	destroyed early, so it disembarks whatever REMAINS (TFUnloaded keeps
+    **	the two paths from double-delivering). The token itself is consumed --
     **	it must never reach the map.
     */
     if (cargo->Class->Type == UNIT_TSMDIV) {
-        static UnitType const _mech_division[] = {UNIT_TSTITN, UNIT_TSTITN, UNIT_TSTITN, UNIT_TSSMEC, UNIT_TSSMEC};
         delete cargo;
         cargo = NULL;
-        for (int index = 0; index < (int)(sizeof(_mech_division) / sizeof(_mech_division[0])); index++) {
-            UnitClass* member = new UnitClass(_mech_division[index], owner->Class->House);
-            if (member == NULL) {
-                continue;
-            }
-            /*
-            **	Nearby_Location fans them out naturally: each landed member
-            **	occupies its cell, so the next call picks the next clear one.
-            */
-            COORDINATE spot = where;
-            if (member->Can_Enter_Cell(Coord_Cell(spot)) != MOVE_OK) {
-                spot = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), member->Class->Speed));
-            }
-            if (member->Unlimbo(spot, DIR_S)) {
-                if (deck == NULL || !deck->Rally_Unit(*static_cast<TechnoClass*>(member))) {
-                    CELL clear =
-                        Map.Nearby_Location((CELL)(Coord_Cell(spot) + MAP_CELL_W * 2), member->Class->Speed);
-                    member->Assign_Destination(::As_Target(clear));
-                    member->Assign_Mission(MISSION_MOVE);
-                }
-            } else {
-                delete member;
-            }
+        while (TFUnloaded < MECH_DIVISION_COUNT) {
+            TF_Disembark(owner, _mech_division[TFUnloaded]);
+            TFUnloaded++;
         }
         if (owner != NULL && owner->TFDropBayTimer == 0) {
             owner->TFDropBayTimer = HouseClass::TF_DROPBAY_COOLDOWN;
@@ -525,13 +553,27 @@ void BulletClass::AI(void)
             }
             break;
 
-        case 1:
+        case 1: {
             /*
-            **	On the deck. The cargo rolls out mid-dwell, so the ship visibly
-            **	sits there before and after the unload.
+            **	On the deck. A single cargo rolls out mid-dwell; the Mech
+            **	Division walks out one member at a time, naval-transport
+            **	cadence (Luke, 2026-08-12), the token consumed with the last.
             */
             TFDwell--;
-            if (TFDwell == TICKS_PER_SECOND * 2) {
+            bool group = (Payback != NULL && Payback->What_Am_I() == RTTI_UNIT
+                          && ((UnitClass*)Payback)->Class->Type == UNIT_TSMDIV);
+            if (group) {
+                if (TFDwell <= TICKS_PER_SECOND * 3 && TFUnloaded < MECH_DIVISION_COUNT
+                    && (TICKS_PER_SECOND * 3 - TFDwell) % 9 == 0) {
+                    TF_Disembark(Payback->House, _mech_division[TFUnloaded]);
+                    TFUnloaded++;
+                    if (TFUnloaded >= MECH_DIVISION_COUNT) {
+                        UnitClass* token = (UnitClass*)Payback;
+                        Payback = NULL;
+                        delete token;
+                    }
+                }
+            } else if (TFDwell == TICKS_PER_SECOND * 2) {
                 Deliver_Cargo();
             }
             if (TFDwell <= 0) {
@@ -539,6 +581,7 @@ void BulletClass::AI(void)
                 Sound_Effect(VOC_TS_DROPUP1, Coord); // TS's own "dropship takes off"
             }
             break;
+        }
 
         default:
             /*

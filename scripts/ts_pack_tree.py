@@ -801,14 +801,22 @@ BIBS = {"TSHPAD": "shp_gthpadbb", "TSDEPT": "shp_gtdeptbb"}
 # the house colour speckles through its edge. 1.95 is the deck's own ratio.
 EMBLEMS = {"TSDROP": ("~/Desktop/ts-gdi-logo.png", 0.62, 1.95)}
 
+# Per-entry bottom anchor (classic px), switching that entry to the size-pass
+# fit. TSDROP: the deck hugs the TOP of its 3x3 so the engine bib's bottom row
+# keeps most of its tile to itself (Luke, 2026-08-12) -- deck is ~197 canvas px
+# tall, margin 33 puts its bottom at 208 of 384, clear of the third row.
+BOTTOM_MARGINS = {"TSDROP": 33}
+
 for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
     if not os.path.isdir(f"{ART}/{base}"):
         print(f"{ini}: SKIP (no {base})")
         continue
     # Damaged base = frame 2: TS building SHPs are 0 healthy, 1 a healthy
     # VARIANT (WF door-open, radar mast), 2 damaged, 3-5 rubble fragments.
-    build_structure(ini, base, 0, 2, [loop(d) for d in anim_dirs], mk, mkc, cw, ch, tw,
-                    bib_dir=BIBS.get(ini), emblem=EMBLEMS.get(ini))
+    build_structure(ini, base, 0, 2, [loop(d) for d in anim_dirs], mk, mkc, cw, ch,
+                    None if ini in BOTTOM_MARGINS else tw,
+                    bib_dir=BIBS.get(ini), emblem=EMBLEMS.get(ini),
+                    bottom_margin=BOTTOM_MARGINS.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- Size pass (2026-08-03, docs/ts-gdi-tree-plan.md top block): the four
