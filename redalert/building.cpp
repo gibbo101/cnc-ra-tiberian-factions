@@ -3200,11 +3200,19 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             **	arrangement and keeps the ordered object itself rather than standing up
             **	a copy of it.
             **
-            **	The pod starts well north of the deck and falls onto it, the way the
+            **	The pod starts north of the deck and falls onto it, the way the
             **	nuclear strike's second stage does.
+            **
+            **	The drop height is bounded by the fuse, not by taste: a fuse arms with
+            **	at most 0xFF frames of flight (fuse.cpp Arm_Fuse), and a pod that
+            **	outlives its fuse "arrives" in mid-air and sets its cargo down there.
+            **	The nuke survives its 64-cell fall only because it drops at
+            **	MPH_VERY_FAST; at the pod's MPH_MEDIUM_FAST the budget runs out near
+            **	29 cells, so 20 keeps a readable margin -- and matches the nuke's
+            **	~11-second descent almost exactly.
             */
             CELL dest = Coord_Cell(Center_Coord());
-            int celly = Cell_Y(dest) - 64;
+            int celly = Cell_Y(dest) - 20;
             if (celly < 1) {
                 celly = 1;
             }

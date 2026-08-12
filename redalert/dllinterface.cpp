@@ -6900,6 +6900,10 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                 case RTTI_UNITTYPE:
                     isbusy = (PlayerPtr->UnitFactory != -1);
                     isbusy |= Units.Avail() <= 0;
+                    // Mk. II delivery cooldown: the cameo waits it out greyed rather
+                    // than leaving the sidebar (Recalc keeps the entry alive).
+                    isbusy |= (tech != NULL && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
+                               && PlayerPtr->TFDropBayTimer != 0);
                     sidebar_entry.Type = UNIT_TYPE;
                     break;
 
@@ -7093,6 +7097,10 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     case RTTI_UNITTYPE:
                         isbusy = (PlayerPtr->UnitFactory != -1);
                         isbusy |= Units.Avail() <= 0;
+                        // Mk. II delivery cooldown: greyed, not gone (matches the
+                        // single-player path above).
+                        isbusy |= (tech != NULL && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
+                                   && PlayerPtr->TFDropBayTimer != 0);
                         sidebar_entry.Type = UNIT_TYPE;
                         break;
 

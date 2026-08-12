@@ -147,6 +147,12 @@ static short const List2[] = {0, 1, MCW + 1, MCW, REFRESH_EOL};
 static short const List32[] = {0, 1, 2, MCW, MCW + 1, MCW + 2, REFRESH_EOL};
 // static short const List42[] = {0, 1, 2, 3, MCW, MCW+1, MCW+2, MCW+3, REFRESH_EOL};
 static short const ListFix[] = {1, MCW, MCW + 1, MCW + 2, MCW + MCW + 1, REFRESH_EOL};
+// Full 3x3 slab, no passable corners: the dropship bay's deck art fills its
+// whole foundation, so the placement grid must too (TS placement rule: art
+// matches grid, no holes).
+static short const TsList33[] = {0,       1,           2,
+                                 MCW,     MCW + 1,     MCW + 2,
+                                 MCW * 2, MCW * 2 + 1, MCW * 2 + 2, REFRESH_EOL};
 static short const ListWeap[] = {0, 1, 2, (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, REFRESH_EOL};
 static short const ListWestwood[] = {1, 2, 3, MCW + 1, MCW + 2, MCW + 3, REFRESH_EOL};
 static short const OListSAM[] = {-MCW, -(MCW - 1), REFRESH_EOL};
@@ -1588,10 +1594,10 @@ static BuildingTypeClass const ClassTsDrop(STRUCT_TSDROP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory: the Mk2 is ordered here and delivered by dropship, the TDAFLD pattern. Deliberately NOT a helipad — outside Is_Helipad and STRUCTF_HELIPAD, either of which would grant a free helicopter and make the deck a general rearm target.
                                            DIR_N,
-                                           BSIZE_33,           // Matches the pad art's footprint (TDFIX parity).
+                                           BSIZE_33,           // Matches the pad art's footprint.
                                            NULL,
-                                           (short const*)ListFix,
-                                           (short const*)OListFix);
+                                           (short const*)TsList33, // Full 3x3: the deck fills its foundation, unlike the repair bay's plus shape.
+                                           NULL);
 
 /*
 **  TDAFLD (Nod Airstrip) — 4×2 flat tile, ARMOR_STEEL, capturable, crewed.

@@ -126,16 +126,40 @@ BulletClass::~BulletClass(void)
             UnitClass* cargo = (UnitClass*)Payback;
             Payback = NULL; // the pod no longer owns it, whatever happens below
 
-            COORDINATE where = Coord;
-            if (cargo->Can_Enter_Cell(Coord_Cell(where)) != MOVE_OK) {
-                where = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), cargo->Class->Speed));
-            }
+            /*
+            **	When the pod dies over its own bay, the cargo is set down ON the deck --
+            **	that is the delivery the player watched the pod fall toward. Deck cells
+            **	are building-occupied, so the set-down borrows the ScenarioInit bypass
+            **	that every factory exit uses, and the vehicle then rolls off to the
+            **	nearest clear ground as a war factory's product rolls out of its door.
+            */
             HouseClass* owner = cargo->House;
-            if (cargo->Unlimbo(where, DIR_S)) {
-                cargo->Assign_Mission(MISSION_GUARD);
-            } else {
-                delete cargo;
-                cargo = NULL;
+            COORDINATE where = Coord;
+            CELL wcell = Coord_Cell(where);
+            BuildingClass* deck = Map[wcell].Cell_Building();
+            bool ondeck = (deck != NULL && *deck == STRUCT_TSDROP && deck->House == owner);
+
+            if (ondeck) {
+                ScenarioInit++;
+                bool placed = cargo->Unlimbo(Cell_Coord(wcell), DIR_S);
+                ScenarioInit--;
+                if (placed) {
+                    cargo->Assign_Destination(::As_Target(Map.Nearby_Location(wcell, cargo->Class->Speed)));
+                    cargo->Assign_Mission(MISSION_MOVE);
+                } else {
+                    ondeck = false;
+                }
+            }
+            if (!ondeck) {
+                if (cargo->Can_Enter_Cell(Coord_Cell(where)) != MOVE_OK) {
+                    where = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), cargo->Class->Speed));
+                }
+                if (cargo->Unlimbo(where, DIR_S)) {
+                    cargo->Assign_Mission(MISSION_GUARD);
+                } else {
+                    delete cargo;
+                    cargo = NULL;
+                }
             }
 
             /*

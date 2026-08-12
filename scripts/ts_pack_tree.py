@@ -192,7 +192,7 @@ def place(img, factor, canvas_w, canvas_h, src_cx, src_cy, dst_x=None, dst_y=Non
 _EMBLEM_CACHE = {}
 
 
-def stamp_emblem(img, path, frac, squash):
+def stamp_emblem(img, path, frac, squash, dx=0, dy=0):
     """Paint a flat emblem onto a finished frame, centred on its content.
 
     Applied AFTER the building's affine: at source resolution the artwork is
@@ -219,10 +219,13 @@ def stamp_emblem(img, path, frac, squash):
         return img
     w = int(round((bb[2] - bb[0]) * frac))
     h = max(1, int(round(w / squash)))
+    # dx/dy are eye-dial offsets in canvas pixels: bbox-centring is only the
+    # starting point (the bbox includes the deck's skirt and shadow, so its
+    # centre is not the visible face's centre).
     out = img.copy()
     out.alpha_composite(em.resize((w, h), Image.LANCZOS),
-                        (bb[0] + ((bb[2] - bb[0]) - w) // 2,
-                         bb[1] + ((bb[3] - bb[1]) - h) // 2))
+                        (bb[0] + ((bb[2] - bb[0]) - w) // 2 + dx,
+                         bb[1] + ((bb[3] - bb[1]) - h) // 2 + dy))
     return out
 
 
