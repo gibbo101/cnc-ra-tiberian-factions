@@ -235,6 +235,14 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tstitn_stub.shp" 56 56 128
 PACK_ARGS+=("$TMPDIR/tstitn_stub.shp:TSTITN.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tshmec_stub.shp" 60 60 256
 PACK_ARGS+=("$TMPDIR/tshmec_stub.shp:TSHMEC.SHP")
+
+# Dropship-bay delivery pod -- the TS Dropship sprite (TSDSHP.ZIP, RA_VFX.XML).
+# Bullet art, single west-facing frame. The launcher sizes HD art off the
+# classic dims, so without this stub the pod inherits its donor's
+# little-missile dims and the dropship renders TINY (live report, 2026-08-12).
+# 79 = HD canvas 420 x 3/16; re-derive if the render scale or facing changes.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdshp_stub.shp" 79 79 1
+PACK_ARGS+=("$TMPDIR/tsdshp_stub.shp:TSDSHP.SHP")
 # TS units wave (Harvester / Wolverine / Disruptor / Amphibious APC) -- same
 # HD-only stub pattern; frame counts match the HD zips (rot-only, walk, or
 # body+turret) and dims match each unit's rules.ini ShapeSize.
