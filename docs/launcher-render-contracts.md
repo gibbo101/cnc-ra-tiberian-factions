@@ -145,6 +145,7 @@ highest quality the pipeline can produce.** Concretely:
   marked dormant). New sample names are IMPOSSIBLE (novel names crash
   ClientG); overriding is the only channel.
   Used so far: `BONUS_UNLOCK` (hover missile), `DINOATK1` (railgun),
-  `DINODIE1` (Mk. II tusks), `DINOMOUT` (Titan 120mm). One host per sound;
+  `DINODIE1` (Mk. II tusks), `DINOMOUT` (Titan 120mm), `DINOYES` (dropship
+  landing DROPDWN1), `STRUGGLE` (dropship takeoff DROPUP1). One host per sound;
   prefer clearly TD-gameplay names over generic UI-ish ones (BUTTON, BLEEP)
   as extra insurance. Census one-liner lives in the git history of this doc.
