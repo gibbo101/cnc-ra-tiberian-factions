@@ -141,7 +141,14 @@ void BulletClass::TF_Disembark(HouseClass* owner, UnitType type)
     BuildingClass* deck = Map[wcell].Cell_Building();
     COORDINATE spot = Coord;
     if (deck != NULL && *deck == STRUCT_TSDROP) {
-        CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W * 2);
+        /*
+        **	The bib row -- the plot's own bottom row, walkable since the
+        **	blocking footprint is only the deck's 3x2 -- one row south of the
+        **	foundation centre, biased to its north edge so the unit appears
+        **	tucked under the ship's hull ON the concrete, not on the snow
+        **	beyond it (Luke, 2026-08-13).
+        */
+        CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W);
         spot = Coord_Move(Cell_Coord(front), DIR_N, 0x0060);
     }
     if (member->Can_Enter_Cell(Coord_Cell(spot)) != MOVE_OK) {
@@ -183,14 +190,12 @@ void BulletClass::Deliver_Cargo(void)
     BuildingClass* deck = Map[wcell].Cell_Building();
     if (deck != NULL && *deck == STRUCT_TSDROP) {
         /*
-        **	Not the front cell's centre but its NORTH EDGE, tucked under the
-        **	dropship's overhanging hull -- at the centre the Mk. II popped in
-        **	visibly beside the ship (Luke, 2026-08-12). The cell underneath is
-        **	still the passable front cell, and the ship's south-biased sort
-        **	draws the hull over the emerging walker, so it reads as stepping
-        **	out from beneath the ship.
+        **	The bib row's north edge, tucked under the hull: the plot's bottom
+        **	row is walkable (blocking footprint is the deck's 3x2 only), so the
+        **	cargo appears ON the concrete, and the ship's south-biased sort
+        **	draws the hull over the emerging walker (mirrors TF_Disembark).
         */
-        CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W * 2);
+        CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W);
         where = Coord_Move(Cell_Coord(front), DIR_N, 0x0060);
     }
     /*

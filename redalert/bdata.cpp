@@ -1594,9 +1594,9 @@ static BuildingTypeClass const ClassTsDrop(STRUCT_TSDROP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory: the Mk2 is ordered here and delivered by dropship, the TDAFLD pattern. Deliberately NOT a helipad — outside Is_Helipad and STRUCTF_HELIPAD, either of which would grant a free helicopter and make the deck a general rearm target.
                                            DIR_N,
-                                           BSIZE_33,           // Matches the pad art's footprint.
+                                           BSIZE_33,           // The full plot incl. the bib row (art canvas centres on this box).
                                            NULL,
-                                           (short const*)TsList33, // Full 3x3: the deck fills its foundation, unlike the repair bay's plus shape.
+                                           (short const*)ListWeap, // BLOCKING footprint = the deck's 3x2 only. The plot's bottom row is the bib: walkable, so cargo disembarks ON the concrete (the war-factory exit-row arrangement). Placement still demands the full 3x3 -- see Occupy_List.
                                            NULL);
 
 /*
@@ -5487,6 +5487,15 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
                                                MAP_CELL_W * 2 + 3,
                                                REFRESH_EOL};
         return (_ts_proc_place);
+    }
+    if (placement && Type == STRUCT_TSDROP) {
+        /*
+        **	The ghost grid and legality demand the whole 3x3 -- deck rows plus
+        **	the bib row -- but the blocking list is only the deck's 3x2, so the
+        **	bib row stays walkable for the disembark (the same split TSPROC
+        **	uses for its dock pad).
+        */
+        return ((short const*)TsList33);
     }
     if (placement && Type == STRUCT_TSWEAP) {
         /*
