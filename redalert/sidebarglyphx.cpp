@@ -516,6 +516,16 @@ bool SidebarGlyphxClass::StripClass::Recalc(void)
     **	behave; it also withdraws vanilla cameos when their prerequisite dies.
     */
     for (int index = 0; index < BuildableCount; index++) {
+        /*
+        **	An entry with production in flight is never evicted, whatever the legality
+        **	check says: the placement and cancel paths resolve through this entry, so
+        **	removing it strands the factory -- the player can neither place nor abandon
+        **	the finished object, and that category of the sidebar wedges permanently.
+        **	Legality is re-judged as usual once the factory resolves and unlinks.
+        */
+        if (Buildables[index].Factory != -1) {
+            continue;
+        }
         TechnoTypeClass const* tech = Fetch_Techno_Type(Buildables[index].BuildableType, Buildables[index].BuildableID);
         if (tech) {
             ok = tech->Who_Can_Build_Me(true, true, ParentSidebar->SidebarPlayerPtr->Class->House) != NULL;

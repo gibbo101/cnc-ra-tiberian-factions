@@ -1107,8 +1107,14 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             **	floor, so a second one would land two Mammoth Mk. IIs at once and the delivery
             **	cooldown would stop constraining anything. Returning false here greys the
             **	cameo through the sidebar's existing disabled path, with no new UI.
+            **
+            **	The cap counts STANDING bays only. Get_Quantity would count the bay still on
+            **	the assembly line (Tracking_Add runs in the BuildingClass constructor, at
+            **	production start), which flips this false mid-production -- and the sidebar's
+            **	prereq-aware Recalc then evicts the cameo out from under its own live factory,
+            **	stranding the completed building with no way to place or cancel it.
             */
-            if (btype->Type == STRUCT_TSDROP && Get_Quantity(STRUCT_TSDROP) > 0) {
+            if (btype->Type == STRUCT_TSDROP && Has_Building_Active(STRUCT_TSDROP)) {
                 return (false);
             }
 

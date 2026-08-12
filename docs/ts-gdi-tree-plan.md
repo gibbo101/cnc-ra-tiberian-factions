@@ -4,45 +4,48 @@
 
 **The building exists as of `892aa49e` and builds clean. The delivery does not.**
 
-## 🔴 BUG — BUILDING THE BAY LOCKS THE SIDEBAR (Luke, 2026-08-08)
+## ✅ SIDEBAR LOCK ROOT-CAUSED + FIXED (2026-08-12) — bay restored, descent still the open item
 
-**Symptom:** build the Dropship Bay → its cameo disappears from the sidebar (the
-one-per-house cap doing its job) → **the whole sidebar goes dull and locks**.
-Nothing clickable after that.
+**The lock was suspect 2, not suspect 1 — and the bay was likely never placed
+at all.** The chain, proven by code reading (each link verified at its line):
 
-**This is a regression introduced by tonight's work, and it is worse than the
-feature not working. FIX THIS BEFORE ANY MORE BAY WORK.** Do not chase the
-descent until the sidebar is healthy.
+1. `Tracking_Add` runs in the **BuildingClass constructor** (`building.cpp:2591`),
+   and the factory creates the building object at production START. So
+   `Get_Quantity(STRUCT_TSDROP)` hit 1 the moment the cameo was clicked.
+2. The one-bay cap in `Can_Build` tested `Get_Quantity > 0` → false
+   mid-production.
+3. The glyphx `Recalc` eviction is prereq-aware (`legal=true`,
+   `sidebarglyphx.cpp:521`, our own TF change) → it evicted the TSDROP entry
+   **while its factory was still producing it**.
+4. Placement and cancel both resolve through that sidebar entry
+   (`Get_Pending_Placement_Object` walks `Buildables[]`), so the finished bay
+   could never be placed or abandoned → `PlayerPtr->BuildingFactory` stayed
+   occupied forever → every building cameo rendered `Busy` = the dull, locked
+   sidebar.
 
-**Ranked suspects — check in this order:**
+Suspect 1 (factory-role steal) was impossible without a placed bay, and
+`Who_Can_Build_Me` falls back to `anybuilding` even when a non-matching
+factory holds `IsLeader`, so it never returns NULL for ordinary vehicles.
 
-1. ⭐ **The bay is a second vehicle factory and steals the role.** `TSDROP` is
-   `RTTI_UNITTYPE`, so `Who_Can_Build_Me` now sees two vehicle factories. The
-   `6de77e60` binding says the bay can build ONLY `UNIT_TSHMEC` — so if the bay
-   becomes the `IsLeader` factory, every other vehicle's factory lookup can
-   return NULL and the vehicle strip loses its host. Test by checking whether
-   the lock happens with NO war factory present vs with one. **This is the
-   likeliest cause and the binding is the newest moving part.**
-2. **`Can_Build` returning false for a type already in a factory slot.** The cap
-   flips `Can_Build(TSDROP)` to false the instant the bay is placed. If the
-   sidebar/factory still holds that slot, `Recalc` may evict an entry that
-   production still references and leave the strip in a stuck state.
-3. **The `TFDropBayTimer` gate at the top of `Can_Build`.** It runs on EVERY
-   `Can_Build` call, including the sidebar's. If a `CDTimerClass != 0`
-   comparison misbehaves, everything greys. Initialised to 0 in the ctor
-   (`house.cpp:642`), so this should be inert — but it is the one check that
-   touches every cameo.
-4. **Power.** The bay draws `Power=-100`. Should only grey, never lock, but it
-   is a one-line check to rule out.
+**The fix, three parts (2026-08-12):**
+- **Cap counts standing bays:** `Can_Build` cap now uses
+  `Has_Building_Active(STRUCT_TSDROP)` (non-limbo only, rebuilt every
+  `Recalc_Attributes` pass — self-heals on sell/destroy) instead of
+  `Get_Quantity`.
+- **Recalc never evicts live production:** glyphx `StripClass::Recalc` skips
+  any entry with `Factory != -1`. This closes the whole class of bug the
+  `legal=true` eviction opened (any legality flip mid-production — e.g. a
+  prerequisite lost while something builds — would have stranded the factory
+  the same way). Successful placement clears the link
+  (`house.cpp:4278 factory->Completed(); Abandon_Production(type)`), so the
+  guard cannot keep a cameo alive past a real placement.
+- **Bay restored:** `961ac6aa`'s shelving reverted — TSDROP TechLevel back to
+  9, Mk. II prerequisite back to `TSDROP,TSTECH`, the `Who_Can_Build_Me`
+  bay↔Mk. II binding back in `object.cpp`. The TS-MCV human start-grant from
+  that commit stays.
 
-**First diagnostic:** `Can_Build` already has a logging hook that captures
-TS-prefixed IniNames (`house.cpp` ~918, `log_td` covers 'T'+'S'). Turn it on and
-build a bay — the log will say which types start returning false and when.
-
-**Quickest bisect if theory 1 holds:** temporarily set `ClassTsDrop`'s ToBuild
-back to `RTTI_NONE`. If the sidebar stays healthy, it is the factory-role
-collision and the fix is in how the bay advertises itself as a factory, not in
-`Who_Can_Build_Me`.
+**NOT yet re-verified in game:** the lock fix (build a bay, sidebar must stay
+healthy, cameo greys only after placement) and the descent (never seen).
 
 ### ⭐ MORNING HANDOVER — what to do first
 **All four objectives are CODED and DEPLOYED (desktop prefix, DLL `80240db9`,
