@@ -142,6 +142,7 @@ extern bool TF_Dev_Cheats(void); // TF dev-cheats runtime gate (see defines.h TF
 extern long TF_Building_Scan_Bit(int btype); // building Type -> its BScan/ActiveBScan/OldBScan bit
 extern bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type); // Prerequisite= names a TS-tree building (house.cpp)
 extern bool TF_Is_Dropship_Delivered(UnitTypeClass const* type); // Unit arrives by dropship bay; drives the factory binding, order gates + countdown (house.cpp)
+extern bool TF_Mk2_At_Cap(HouseClass const* house); // House already fields its full Mk. II allowance (house.cpp; heap-counted, CSII fold unsafe)
 extern int TF_AI_IQ_From_Difficulty(DiffType diff); // lobby difficulty -> AI house IQ tier (behavioural difficulty)
 extern bool TFLobbyAIDifficultySet; // true once CNC_Set_Difficulty has delivered a lobby value this match
 

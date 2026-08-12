@@ -146,6 +146,46 @@ void BulletClass::Deliver_Cargo(void)
         CELL front = (CELL)(Coord_Cell(deck->Center_Coord()) + MAP_CELL_W * 2);
         where = Coord_Move(Cell_Coord(front), DIR_N, 0x0060);
     }
+    /*
+    **	The Mech Division token is an ORDER, not a unit: it converts here into
+    **	the group it stands for, each member disembarking through the same
+    **	under-the-hull walk-out the Mk. II uses. The token itself is consumed --
+    **	it must never reach the map.
+    */
+    if (cargo->Class->Type == UNIT_TSMDIV) {
+        static UnitType const _mech_division[] = {UNIT_TSTITN, UNIT_TSTITN, UNIT_TSTITN, UNIT_TSSMEC, UNIT_TSSMEC};
+        delete cargo;
+        cargo = NULL;
+        for (int index = 0; index < (int)(sizeof(_mech_division) / sizeof(_mech_division[0])); index++) {
+            UnitClass* member = new UnitClass(_mech_division[index], owner->Class->House);
+            if (member == NULL) {
+                continue;
+            }
+            /*
+            **	Nearby_Location fans them out naturally: each landed member
+            **	occupies its cell, so the next call picks the next clear one.
+            */
+            COORDINATE spot = where;
+            if (member->Can_Enter_Cell(Coord_Cell(spot)) != MOVE_OK) {
+                spot = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), member->Class->Speed));
+            }
+            if (member->Unlimbo(spot, DIR_S)) {
+                if (deck == NULL || !deck->Rally_Unit(*static_cast<TechnoClass*>(member))) {
+                    CELL clear =
+                        Map.Nearby_Location((CELL)(Coord_Cell(spot) + MAP_CELL_W * 2), member->Class->Speed);
+                    member->Assign_Destination(::As_Target(clear));
+                    member->Assign_Mission(MISSION_MOVE);
+                }
+            } else {
+                delete member;
+            }
+        }
+        if (owner != NULL && owner->TFDropBayTimer == 0) {
+            owner->TFDropBayTimer = HouseClass::TF_DROPBAY_COOLDOWN;
+        }
+        return;
+    }
+
     if (cargo->Can_Enter_Cell(Coord_Cell(where)) != MOVE_OK) {
         where = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), cargo->Class->Speed));
     }

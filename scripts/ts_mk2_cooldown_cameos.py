@@ -30,6 +30,7 @@ FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 # "<Ini>_CDnnn" key overflows CNCSidebarEntryStruct::AssetName[16].
 UNITS = {
     "TSHMEC": "BuildIcon_TS_MammothMk2",
+    "TSMDIV": "BuildIcon_TS_MechDivision",
 }
 
 SECONDS = 300  # 5:00

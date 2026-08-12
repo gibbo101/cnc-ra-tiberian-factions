@@ -925,7 +925,32 @@ bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type)
 */
 bool TF_Is_Dropship_Delivered(UnitTypeClass const* type)
 {
-    return (type != NULL && type->Type == UNIT_TSHMEC);
+    return (type != NULL && (type->Type == UNIT_TSHMEC || type->Type == UNIT_TSMDIV));
+}
+
+/*
+**	How many Mammoth Mk. IIs a house may field at once (Luke, 2026-08-12;
+**	expected to rise to 3). Counted off the Units heap directly: the CSII
+**	quantity fold aliases mod-unit indices onto vanilla UQuantity slots, so
+**	the per-type counters cannot be trusted for TS types. The count includes
+**	one riding a pod in limbo, which is wanted -- a delivery in flight is a
+**	Mk. II spoken for.
+*/
+int const TF_MK2_CAP = 1;
+
+bool TF_Mk2_At_Cap(HouseClass const* house)
+{
+    int count = 0;
+    for (int index = 0; index < Units.Count(); index++) {
+        UnitClass const* unit = Units.Ptr(index);
+        if (unit != NULL && unit->House == house && unit->Class->Type == UNIT_TSHMEC) {
+            count++;
+            if (count >= TF_MK2_CAP) {
+                return (true);
+            }
+        }
+    }
+    return (false);
 }
 
 bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
@@ -941,6 +966,15 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     */
     if (type->What_Am_I() == RTTI_UNITTYPE && TF_Is_Dropship_Delivered((UnitTypeClass const*)type)
         && TFDropBayTimer != 0) {
+        return (false);
+    }
+
+    /*
+    **	A house fields at most TF_MK2_CAP Mammoth Mk. IIs at once; losing one
+    **	is what reopens the order.
+    */
+    if (type->What_Am_I() == RTTI_UNITTYPE && ((UnitTypeClass const*)type)->Type == UNIT_TSHMEC
+        && TF_Mk2_At_Cap(this)) {
         return (false);
     }
 
@@ -3314,10 +3348,15 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
     **	to be turned away here, the one point every production path funnels
     **	through -- the sidebar's own legality checks are never consulted when
     **	construction starts. Applies to everything the bay delivers: the cooldown
-    **	belongs to the bay, not to a unit type.
+    **	belongs to the bay, not to a unit type. The Mk. II field cap refuses here
+    **	for the same reason.
     */
     if (tech != NULL && type == RTTI_UNITTYPE && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
         && TFDropBayTimer != 0) {
+        return (PROD_CANT);
+    }
+    if (tech != NULL && type == RTTI_UNITTYPE && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
+        && TF_Mk2_At_Cap(this)) {
         return (PROD_CANT);
     }
 

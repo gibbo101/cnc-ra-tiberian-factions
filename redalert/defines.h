@@ -1859,6 +1859,7 @@ typedef enum UnitType : char
     UNIT_TSSMEC,            // TS Wolverine (SMECH) — light scout mech, no turret, fires AssaultCannon (instant hitscan). Art = SMECH.SHP walk frames (12x8, Titan walker pipeline); guns are in the sprite, no barrel compositing.
     UNIT_TSSONIC,           // TS Disruptor (SONIC) — turreted sonic tank, fires SonicZap (IsSonic piercing line: railgun mechanics, green beam, no helix). Art = SONIC.VXL body 0-31 + SONICTUR.VXL turret 32-63.
     UNIT_TSAPC,             // TS Amphibious APC (APC) — unarmed hover transport (SPEED_HOVER stands in for TS amphibious float, plan-approved deviation), Passengers=5, door logic alongside UNIT_APC/UNIT_TDAPC.
+    UNIT_TSMDIV,            // Mech Division (dropship-bay group order) — a purchasable TOKEN that never touches the map: Deliver_Cargo expands it into 3 Titans + 2 Wolverines at the unload beat. Cost 2800 (3400 sticker, starport discount — Luke, 2026-08-12).
 
     UNIT_COUNT,
     UNIT_FIRST = 0

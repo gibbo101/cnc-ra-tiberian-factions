@@ -247,6 +247,12 @@ PACK_ARGS+=("$TMPDIR/tshmec_stub.shp:TSHMEC.SHP")
 # growing-shadow descent buckets (Draw_It picks by Height).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsdshp_stub.shp" 123 123 4
 PACK_ARGS+=("$TMPDIR/tsdshp_stub.shp:TSDSHP.SHP")
+
+# Mech Division token (UNIT_TSMDIV) -- a sidebar-only purchasable that the
+# dropship pod expands into 3 Titans + 2 Wolverines; it never renders on the
+# map, the stub exists purely so One_Time resolves its Image cleanly.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmdiv_stub.shp" 16 16 1
+PACK_ARGS+=("$TMPDIR/tsmdiv_stub.shp:TSMDIV.SHP")
 # TS units wave (Harvester / Wolverine / Disruptor / Amphibious APC) -- same
 # HD-only stub pattern; frame counts match the HD zips (rot-only, walk, or
 # body+turret) and dims match each unit's rules.ini ShapeSize.

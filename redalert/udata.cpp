@@ -1779,6 +1779,40 @@ static UnitTypeClass const UnitTsApc(UNIT_TSAPC,
                                      MISSION_HUNT  // ORDERS: Default order.
 );
 
+// Mech Division (UNIT_TSMDIV) — a purchasable TOKEN, not a unit: it exists to
+// be ordered at the dropship bay and is expanded by BulletClass::Deliver_Cargo
+// into 3 Titans + 2 Wolverines at the unload beat. It never unlimbos onto the
+// map in normal play (the destructor backstop expands it too), so its combat
+// stats are inert placeholders and its classic art is a token stub.
+static UnitTypeClass const UnitTsMdiv(UNIT_TSMDIV,
+                                      TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                      "TSMDIV",     // NAME: IniName.
+                                      ANIM_FBALL1,  // EXPLOSION: unused (never on the map).
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0000,       // Vertical offset.
+                                      0x0000,       // Primary weapon offset.
+                                      0x0000,       // Primary weapon lateral offset.
+                                      0x0000,       // Secondary weapon offset.
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      false,        // Crate goodie? Never -- a crate token would strand.
+                                      false,        // Always use the given name?
+                                      false,        // Can squash infantry?
+                                      false,        // Harvests?
+                                      false,        // Invisible to radar?
+                                      true,         // Insignificant (no announcements for the token).
+                                      false,        // Combat turret?
+                                      false,        // Radar dish?
+                                      false,        // Firing animation?
+                                      false,        // Turret locked while moving?
+                                      false,        // Gigundo?
+                                      false,        // Constant animation?
+                                      false,        // Radar jammer?
+                                      false,        // Mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset.
+                                      MISSION_GUARD // ORDERS: unused.
+);
+
 /*
 **  AMCV/SMCV (Allied/Soviet MCVs) and TDGMCV/TDNMCV (GDI/Nod MCVs) — the four faction MCVs.
 **  Each exists as its own type so the MCV carries the faction it will deploy into: an MCV
@@ -2030,6 +2064,7 @@ void UnitTypeClass::Init_Heap(void)
     // Heap slot index must equal the Type enum value (As_Reference indexes the
     // heap directly) -- register strictly in enum order, append new types HERE.
     new UnitTypeClass(UnitTsApc);     // UNIT_TSAPC (TS Amphibious APC)
+    new UnitTypeClass(UnitTsMdiv);    // UNIT_TSMDIV (Mech Division token)
 }
 
 /***********************************************************************************************

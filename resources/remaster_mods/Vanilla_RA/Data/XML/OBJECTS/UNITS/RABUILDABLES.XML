@@ -7890,5 +7890,2105 @@
 			<BuildIcon>BuildIcon_TSHMEC_CD300</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD001" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD001</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD002" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD002</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD003" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD003</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD004" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD004</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD005" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD005</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD006" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD006</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD007" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD007</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD008" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD008</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD009" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD009</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD010" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD010</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD011" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD011</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD012" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD012</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD013" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD013</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD014" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD014</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD015" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD015</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD016" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD016</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD017" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD017</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD018" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD018</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD019" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD019</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD020" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD020</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD021" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD021</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD022" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD022</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD023" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD023</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD024" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD024</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD025" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD025</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD026" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD026</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD027" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD027</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD028" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD028</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD029" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD029</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD030" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD030</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD031" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD031</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD032" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD032</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD033" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD033</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD034" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD034</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD035" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD035</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD036" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD036</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD037" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD037</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD038" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD038</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD039" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD039</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD040" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD040</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD041" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD041</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD042" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD042</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD043" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD043</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD044" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD044</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD045" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD045</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD046" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD046</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD047" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD047</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD048" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD048</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD049" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD049</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD050" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD050</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD051" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD051</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD052" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD052</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD053" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD053</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD054" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD054</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD055" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD055</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD056" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD056</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD057" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD057</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD058" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD058</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD059" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD059</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD060" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD060</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD061" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD061</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD062" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD062</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD063" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD063</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD064" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD064</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD065" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD065</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD066" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD066</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD067" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD067</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD068" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD068</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD069" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD069</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD070" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD070</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD071" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD071</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD072" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD072</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD073" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD073</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD074" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD074</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD075" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD075</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD076" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD076</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD077" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD077</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD078" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD078</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD079" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD079</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD080" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD080</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD081" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD081</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD082" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD082</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD083" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD083</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD084" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD084</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD085" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD085</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD086" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD086</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD087" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD087</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD088" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD088</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD089" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD089</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD090" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD090</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD091" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD091</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD092" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD092</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD093" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD093</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD094" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD094</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD095" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD095</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD096" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD096</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD097" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD097</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD098" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD098</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD099" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD099</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD100" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD100</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD101" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD101</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD102" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD102</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD103" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD103</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD104" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD104</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD105" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD105</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD106" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD106</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD107" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD107</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD108" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD108</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD109" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD109</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD110" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD110</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD111" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD111</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD112" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD112</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD113" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD113</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD114" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD114</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD115" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD115</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD116" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD116</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD117" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD117</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD118" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD118</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD119" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD119</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD120" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD120</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD121" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD121</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD122" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD122</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD123" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD123</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD124" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD124</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD125" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD125</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD126" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD126</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD127" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD127</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD128" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD128</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD129" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD129</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD130" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD130</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD131" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD131</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD132" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD132</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD133" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD133</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD134" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD134</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD135" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD135</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD136" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD136</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD137" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD137</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD138" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD138</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD139" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD139</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD140" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD140</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD141" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD141</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD142" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD142</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD143" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD143</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD144" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD144</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD145" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD145</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD146" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD146</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD147" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD147</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD148" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD148</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD149" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD149</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD150" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD150</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD151" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD151</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD152" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD152</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD153" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD153</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD154" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD154</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD155" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD155</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD156" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD156</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD157" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD157</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD158" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD158</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD159" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD159</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD160" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD160</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD161" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD161</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD162" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD162</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD163" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD163</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD164" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD164</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD165" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD165</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD166" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD166</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD167" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD167</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD168" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD168</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD169" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD169</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD170" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD170</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD171" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD171</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD172" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD172</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD173" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD173</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD174" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD174</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD175" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD175</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD176" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD176</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD177" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD177</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD178" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD178</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD179" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD179</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD180" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD180</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD181" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD181</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD182" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD182</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD183" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD183</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD184" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD184</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD185" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD185</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD186" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD186</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD187" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD187</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD188" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD188</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD189" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD189</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD190" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD190</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD191" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD191</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD192" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD192</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD193" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD193</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD194" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD194</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD195" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD195</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD196" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD196</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD197" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD197</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD198" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD198</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD199" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD199</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD200" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD200</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD201" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD201</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD202" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD202</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD203" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD203</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD204" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD204</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD205" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD205</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD206" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD206</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD207" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD207</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD208" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD208</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD209" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD209</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD210" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD210</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD211" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD211</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD212" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD212</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD213" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD213</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD214" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD214</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD215" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD215</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD216" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD216</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD217" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD217</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD218" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD218</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD219" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD219</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD220" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD220</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD221" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD221</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD222" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD222</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD223" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD223</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD224" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD224</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD225" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD225</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD226" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD226</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD227" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD227</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD228" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD228</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD229" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD229</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD230" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD230</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD231" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD231</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD232" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD232</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD233" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD233</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD234" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD234</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD235" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD235</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD236" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD236</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD237" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD237</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD238" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD238</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD239" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD239</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD240" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD240</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD241" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD241</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD242" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD242</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD243" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD243</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD244" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD244</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD245" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD245</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD246" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD246</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD247" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD247</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD248" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD248</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD249" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD249</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD250" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD250</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD251" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD251</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD252" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD252</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD253" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD253</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD254" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD254</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD255" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD255</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD256" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD256</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD257" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD257</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD258" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD258</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD259" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD259</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD260" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD260</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD261" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD261</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD262" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD262</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD263" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD263</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD264" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD264</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD265" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD265</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD266" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD266</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD267" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD267</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD268" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD268</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD269" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD269</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD270" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD270</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD271" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD271</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD272" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD272</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD273" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD273</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD274" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD274</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD275" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD275</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD276" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD276</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD277" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD277</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD278" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD278</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD279" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD279</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD280" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD280</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD281" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD281</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD282" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD282</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD283" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD283</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD284" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD284</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD285" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD285</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD286" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD286</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD287" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD287</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD288" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD288</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD289" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD289</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD290" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD290</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD291" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD291</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD292" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD292</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD293" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD293</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD294" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD294</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD295" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD295</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD296" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD296</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD297" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD297</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD298" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD298</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD299" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD299</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_CD300" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_CD300</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END generated Mk2 cooldown countdown cameos -->
 </ObjectTypeList>
