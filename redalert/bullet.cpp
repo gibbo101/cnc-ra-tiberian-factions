@@ -142,7 +142,18 @@ void BulletClass::Deliver_Cargo(void)
         where = Cell_Coord(Map.Nearby_Location(Coord_Cell(where), cargo->Class->Speed));
     }
     if (cargo->Unlimbo(where, DIR_S)) {
-        cargo->Assign_Mission(MISSION_GUARD);
+        /*
+        **	It steps out from under the ship and walks clear, the way a unit
+        **	leaves a transport: the appear cell sits beneath the dropship's
+        **	overhang, so standing pat read as the ship having parked on it.
+        **	The bay is a real factory, so a rally point set on it wins; the
+        **	fallback walk is a couple of rows out from the ramp.
+        */
+        if (deck == NULL || !deck->Rally_Unit(*static_cast<TechnoClass*>(cargo))) {
+            CELL clear = Map.Nearby_Location((CELL)(Coord_Cell(where) + MAP_CELL_W * 2), cargo->Class->Speed);
+            cargo->Assign_Destination(::As_Target(clear));
+            cargo->Assign_Mission(MISSION_MOVE);
+        }
     } else {
         delete cargo;
         cargo = NULL;
@@ -748,10 +759,27 @@ void BulletClass::Draw_It(int x, int y, WindowNumberType window) const
                           NULL,
                           DisplayClass::UnitShadow);
         } else {
+            /*
+            **	The dropship's shadow grows as the ship sinks. The engine can't
+            **	scale at draw time -- a shadow is the body sprite redrawn dark --
+            **	so shapes 1..3 in TSDSHP.ZIP are the silhouette pre-scaled to
+            **	55/70/85%, bucketed by altitude; the full frame takes over for
+            **	the last stretch of the descent.
+            */
+            int shadownum = shapenum;
+            if (*this == BULLET_TSDROPPOD) {
+                if (Height > 960) {
+                    shadownum = 1;
+                } else if (Height > 640) {
+                    shadownum = 2;
+                } else if (Height > 320) {
+                    shadownum = 3;
+                }
+            }
             // Add 'this' parameter to call new shape draw intercept. ST - 5/22/2019
             CC_Draw_Shape(this,
                           shapeptr,
-                          shapenum,
+                          shadownum,
                           x,
                           y,
                           window,

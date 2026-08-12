@@ -32,15 +32,21 @@ END = "\t\t\t<!-- END generated TSDSHP drop-pod sprite -->"
 TILE = """\t\t\t<Tile>
 \t\t\t\t<Key>
 \t\t\t\t\t<Name>TSDSHP</Name>
-\t\t\t\t\t<Shape>0</Shape>
+\t\t\t\t\t<Shape>{n}</Shape>
 \t\t\t\t</Key>
 \t\t\t\t<Value>
 \t\t\t\t\t<Frames>
-\t\t\t\t\t\t<Frame>tsdshp\\tsdshp-0000.tga</Frame>
+\t\t\t\t\t\t<Frame>tsdshp\\tsdshp-{n:04d}.tga</Frame>
 \t\t\t\t\t</Frames>
 \t\t\t\t</Value>
 \t\t\t</Tile>
 """
+
+# Shadow-scale frames: the shadow is the body sprite redrawn darkened, and the
+# engine cannot scale at draw time -- so the growing shadow is pre-scaled art.
+# Shape 0 = the ship (body, and the shadow when low); shapes 1..3 = the same
+# art at descending-altitude scales, used by Draw_It's height buckets.
+SHADOW_SCALES = [0.55, 0.70, 0.85]
 
 
 def tga_bytes(img):
@@ -53,20 +59,33 @@ def tga_bytes(img):
 def main():
     frame = Path(sys.argv[1]) if len(sys.argv) > 1 else None
     if frame is None:
-        sys.exit("usage: ts_pack_dropship.py <rendered frame-0000.png>")
+        sys.exit("usage: ts_pack_dropship.py <rendered frame png at final canvas>")
     img = Image.open(frame).convert("RGBA")
-    bb = img.getbbox() or (0, 0, img.width, img.height)
+
+    frames = [img]
+    for scale in SHADOW_SCALES:
+        small = img.resize((max(1, int(img.width * scale)),
+                            max(1, int(img.height * scale))), Image.LANCZOS)
+        # Same canvas, centred: the draw call anchors by canvas, so the scaled
+        # silhouette must sit where the full one does.
+        pad = Image.new("RGBA", img.size, (0, 0, 0, 0))
+        pad.alpha_composite(small, ((img.width - small.width) // 2,
+                                    (img.height - small.height) // 2))
+        frames.append(pad)
 
     VFX_DIR.mkdir(parents=True, exist_ok=True)
     zpath = VFX_DIR / "TSDSHP.ZIP"
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
-        z.writestr("tsdshp-0000.tga", tga_bytes(img.crop(bb)))
-        z.writestr("tsdshp-0000.meta", json.dumps(
-            {"size": [img.width, img.height], "crop": [bb[0], bb[1], bb[2], bb[3]]}))
-    print(f"wrote {zpath}")
+        for n, f in enumerate(frames):
+            bb = f.getbbox() or (0, 0, f.width, f.height)
+            z.writestr(f"tsdshp-{n:04d}.tga", tga_bytes(f.crop(bb)))
+            z.writestr(f"tsdshp-{n:04d}.meta", json.dumps(
+                {"size": [f.width, f.height], "crop": [bb[0], bb[1], bb[2], bb[3]]}))
+    print(f"wrote {zpath} ({len(frames)} frames: body + {len(SHADOW_SCALES)} shadow scales)")
 
     text = VFX_XML.read_text()
-    block = f"{BEGIN}\n{TILE}{END}\n"
+    tiles = "".join(TILE.format(n=n) for n in range(len(frames)))
+    block = f"{BEGIN}\n{tiles}{END}\n"
     if BEGIN in text:
         head, rest = text.split(BEGIN, 1)
         _, tail = rest.split(END + "\n", 1)
@@ -75,7 +94,7 @@ def main():
         idx = text.rindex("</Tiles>")
         text = text[:idx] + block + text[idx:]
     VFX_XML.write_text(text)
-    print(f"registered TSDSHP tile in {VFX_XML.name}")
+    print(f"registered {len(frames)} TSDSHP tiles in {VFX_XML.name}")
 
 
 if __name__ == "__main__":

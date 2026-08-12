@@ -18186,6 +18186,39 @@
 					</Frames>
 				</Value>
 			</Tile>
+			<Tile>
+				<Key>
+					<Name>TSDSHP</Name>
+					<Shape>1</Shape>
+				</Key>
+				<Value>
+					<Frames>
+						<Frame>tsdshp\tsdshp-0001.tga</Frame>
+					</Frames>
+				</Value>
+			</Tile>
+			<Tile>
+				<Key>
+					<Name>TSDSHP</Name>
+					<Shape>2</Shape>
+				</Key>
+				<Value>
+					<Frames>
+						<Frame>tsdshp\tsdshp-0002.tga</Frame>
+					</Frames>
+				</Value>
+			</Tile>
+			<Tile>
+				<Key>
+					<Name>TSDSHP</Name>
+					<Shape>3</Shape>
+				</Key>
+				<Value>
+					<Frames>
+						<Frame>tsdshp\tsdshp-0003.tga</Frame>
+					</Frames>
+				</Value>
+			</Tile>
 			<!-- END generated TSDSHP drop-pod sprite -->
 </Tiles>
 	</TilesetTypeClass>
