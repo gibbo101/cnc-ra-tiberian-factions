@@ -65,12 +65,32 @@ one a trap for future work:
   set, no grey). To show unavailability, synthesise `Constructing` +
   `Progress` — the cooldown now renders as a superweapon-style recharge sweep.
 
-**Still open on the bay (Luke's queue, art after mechanism):**
+**The delivery sequence as SHIPPED (evening session 2026-08-12, live-directed
+by Luke, ~10 builds):** the TS Dropship (DSHP.VXL, west-facing, fine-grain
+render at the TS-authentic 6.4 px/voxel factor, GDI-gold accents) descends
+VERTICALLY over the deck — a 3-stage machine in `BulletClass::AI`
+(descend/flare → 4 s dwell → climb-out), no map motion, so the shadow sits on
+the pad and GROWS through the descent (shapes 1..3 = 55/70/85% pre-scaled
+silhouettes, bucketed by Height in Draw_It). TS's own DROPDWN1/DROPUP1 play at
+touchdown/liftoff (dormant hosts DINOYES/STRUGGLE). The Mk. II disembarks
+mid-dwell from UNDER the hull (north edge of the front cell) and walks clear —
+to the bay's rally point if set (`Rally_Unit`, it is a real factory), else two
+rows out. The bay wears a bib (reverses the earlier no-bib call). The cooldown
+arms at pod LAUNCH, is bay-wide via `TF_Is_Dropship_Delivered` (one list:
+factory binding + both order gates + sidebar keep-alive + countdown), and
+renders as a per-second baked-art countdown cameo, 5:00→0:01
+(`scripts/ts_mk2_cooldown_cameos.py`, AssetName swap — Busy draws nothing,
+fake Constructing miscounts queue clicks, tooltips flash on every asset swap
+per-second: accepted). Key traps live in the engine-facts list above and in
+`launcher-render-contracts.md` (dormant-host ledger updated).
+
+**Still open on the bay:**
 1. Buildup anim: strip the gantry piece from each TDFIX buildup frame, same
    crop treatment as the final structure (Luke's spec, 2026-08-12).
 2. Emblem centring: `stamp_emblem` now takes an eye-dial `(dx, dy)`; Luke
    judges in-game, offsets go in `EMBLEMS["TSDROP"]`.
-3. The real dropship art: the pod still wears the falling nuke's sprite.
+3. In-play confirmation of the full final sequence (build `4c3a66fe`:
+   under-hull disembark + bib) and of cooldown re-arm at 0:00.
 
 ### ⭐ MORNING HANDOVER — what to do first
 **All four objectives are CODED and DEPLOYED (desktop prefix, DLL `80240db9`,
