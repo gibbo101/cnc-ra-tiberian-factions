@@ -542,9 +542,11 @@ void BulletClass::AI(void)
         case 0:
             /*
             **	Descending: fast from altitude, flaring out near the deck.
+            **	Height/20 with a floor of 3 runs ~6.5 s from the ceiling --
+            **	eased from /16 on Luke's call (2026-08-13).
             */
-            if (Height > 4) {
-                Height -= max(4, Height / 16);
+            if (Height > 3) {
+                Height -= max(3, Height / 20);
             } else {
                 Height = 0;
                 TFStage = 1;
@@ -585,11 +587,13 @@ void BulletClass::AI(void)
 
         default:
             /*
-            **	Departing: climb until out of the scene, then vanish. The cargo
-            **	went out mid-dwell, so the destructor's backstop is a no-op.
+            **	Departing: climb until out of the scene, then vanish -- twice the
+            **	spawn altitude, so the exit reads as a long pull away rather than
+            **	a pop. The cargo went out mid-dwell, so the destructor's backstop
+            **	is a no-op.
             */
             Height += max(8, Height / 12);
-            if (Height >= TF_POD_CEILING) {
+            if (Height >= TF_POD_DEPART_CEILING) {
                 delete this;
                 return;
             }

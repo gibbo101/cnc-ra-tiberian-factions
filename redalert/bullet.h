@@ -74,7 +74,8 @@ public:
     int TFUnloaded;
     enum
     {
-        TF_POD_CEILING = 1280 // spawn/exit altitude in leptons (5 cells of climb)
+        TF_POD_CEILING = 1280,       // spawn altitude in leptons (5 cells of descent)
+        TF_POD_DEPART_CEILING = 2560 // the climb-out runs twice as high before the ship vanishes (Luke, 2026-08-13)
     };
     /*---------------------------------------------------------------------
     **	Constructors, Destructors, and overloaded operators.
