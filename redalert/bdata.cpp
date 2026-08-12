@@ -5611,7 +5611,12 @@ int BuildingTypeClass::Width(void) const
 int BuildingTypeClass::Height(bool bib) const
 {
     static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5, 3, 4};
-    return (height[Size] + ((bib && IsBibbed) ? 1 : 0));
+    /*
+    **	The dropship bay's slab sits INSIDE its 3x3 (see Bib_And_Offset), so the
+    **	placement grid must not grow a bib row -- the art already owns the space
+    **	(Luke, 2026-08-12).
+    */
+    return (height[Size] + ((bib && IsBibbed && Type != STRUCT_TSDROP) ? 1 : 0));
 }
 
 /***********************************************************************************************
@@ -5660,6 +5665,19 @@ bool BuildingTypeClass::Bib_And_Offset(SmudgeType& bib, CELL& cell) const
     }
     if (Type == STRUCT_TSPROC) {
         bib = SMUDGE_TSPROCBB;
+        return (true);
+    }
+
+    /*
+    **	Dropship bay: the RA slab, but WITHIN the foundation. The deck art
+    **	leaves clear ground in its own bottom row, so the two-row BIB2 anchors
+    **	one row higher than the standard hang-below placement -- rows 1..2 of
+    **	the 3x3 -- and Height(bib) correspondingly does not grow (the placement
+    **	grid stays a true 3x3; Luke, 2026-08-12).
+    */
+    if (Type == STRUCT_TSDROP && IsBibbed) {
+        bib = SMUDGE_BIB2;
+        cell += (Height() - 2) * MAP_CELL_W;
         return (true);
     }
 
