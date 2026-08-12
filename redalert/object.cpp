@@ -2453,14 +2453,15 @@ BuildingClass* ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, Hous
                 } else if (What_Am_I() == RTTI_UNITTYPE) {
 
                     /*
-                    **	The dropship bay builds the Mammoth Mk. II and nothing else, and
-                    **	nothing else builds the Mk. II -- the same arrangement the kennel
+                    **	The dropship bay builds its delivered cargo and nothing else, and
+                    **	nothing else builds that cargo -- the same arrangement the kennel
                     **	has with dogs above. Both halves are needed: without the first, a
                     **	rifle jeep could arrive by orbital pod; without the second, the
                     **	Mk. II could roll out of the war factory door it is too tall to
-                    **	fit through, which is the whole reason the bay exists.
+                    **	fit through, which is the whole reason the bay exists. The cargo
+                    **	list lives in TF_Is_Dropship_Delivered.
                     */
-                    bool delivered = (((UnitTypeClass*)this)->Type == UNIT_TSHMEC);
+                    bool delivered = TF_Is_Dropship_Delivered((UnitTypeClass*)this);
                     if (delivered == (*building == STRUCT_TSDROP)) {
                         if (building->IsLeader)
                             return (building);

@@ -916,6 +916,18 @@ bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type)
     return false;
 }
 
+/*
+**	Every unit the dropship bay delivers. The one list consulted by the factory
+**	binding, the order gates, the sidebar keep-alive and the countdown cameo
+**	alike -- a future unit (or group) added here inherits the whole delivery
+**	arrangement, cooldown included (Luke, 2026-08-12: the cooldown is the
+**	BAY's, shared across everything it can send, not per unit type).
+*/
+bool TF_Is_Dropship_Delivered(UnitTypeClass const* type)
+{
+    return (type != NULL && type->Type == UNIT_TSHMEC);
+}
+
 bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
 {
     assert(Houses.ID(this) == ID);
@@ -927,7 +939,7 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     **	path, which is the same route the one-bay cap takes -- one mechanism, two reasons
     **	to say no.
     */
-    if (type->What_Am_I() == RTTI_UNITTYPE && ((UnitTypeClass const*)type)->Type == UNIT_TSHMEC
+    if (type->What_Am_I() == RTTI_UNITTYPE && TF_Is_Dropship_Delivered((UnitTypeClass const*)type)
         && TFDropBayTimer != 0) {
         return (false);
     }
@@ -3298,12 +3310,13 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
 
     /*
     **	The dropship delivery cooldown refuses the order itself. The sidebar keeps
-    **	the Mk. II cameo visible (with a recharge sweep) while the bay reloads, so
-    **	the click has to be turned away here, the one point every production path
-    **	funnels through -- the sidebar's own legality checks are never consulted
-    **	when construction starts.
+    **	the cameo visible (counting down) while the bay reloads, so the click has
+    **	to be turned away here, the one point every production path funnels
+    **	through -- the sidebar's own legality checks are never consulted when
+    **	construction starts. Applies to everything the bay delivers: the cooldown
+    **	belongs to the bay, not to a unit type.
     */
-    if (tech != NULL && type == RTTI_UNITTYPE && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
+    if (tech != NULL && type == RTTI_UNITTYPE && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
         && TFDropBayTimer != 0) {
         return (PROD_CANT);
     }

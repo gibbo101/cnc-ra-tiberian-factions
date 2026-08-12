@@ -6989,15 +6989,18 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     sidebar_entry.PlacementListLength = 0;
 
                     /*
-                    ** Mk. II delivery cooldown: the cameo becomes a live countdown.
+                    ** Dropship delivery cooldown: the cameo becomes a live countdown.
                     ** There is no text channel to the client (Busy draws nothing, and
                     ** a fake Constructing state reads as a build and miscounts queue
                     ** clicks -- Luke, 2026-08-12), but AssetName is re-read every
                     ** refresh, so the remaining time is baked art: one dimmed cameo
                     ** per second, "5:00" down to "0:01", swapped in by name here.
+                    ** Applies to every unit the bay delivers; the countdown art is
+                    ** baked per unit by scripts/ts_mk2_cooldown_cameos.py (IniName
+                    ** must stay <= 9 chars for the _CDnnn key to fit AssetName).
                     */
                     if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                        && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
+                        && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
                         && PlayerPtr->TFDropBayTimer != 0) {
                         long secs = ((long)(unsigned long)PlayerPtr->TFDropBayTimer + TICKS_PER_SECOND - 1)
                                     / TICKS_PER_SECOND;
@@ -7005,7 +7008,7 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                             secs = 300;
                         }
                         snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                 "TSHMEC_CD%03d", (int)secs);
+                                 "%s_CD%03d", tech->IniName, (int)secs);
                     }
 
                     if (factory) {
@@ -7200,11 +7203,11 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         sidebar_entry.PlacementListLength = 0;
 
                         /*
-                        ** Mk. II delivery cooldown countdown cameo -- matches the
+                        ** Dropship delivery cooldown countdown cameo -- matches the
                         ** single-player path above.
                         */
                         if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
-                            && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
+                            && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
                             && PlayerPtr->TFDropBayTimer != 0) {
                             long secs = ((long)(unsigned long)PlayerPtr->TFDropBayTimer + TICKS_PER_SECOND - 1)
                                         / TICKS_PER_SECOND;
@@ -7212,7 +7215,7 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                 secs = 300;
                             }
                             snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
-                                     "TSHMEC_CD%03d", (int)secs);
+                                     "%s_CD%03d", tech->IniName, (int)secs);
                         }
 
                         if (factory) {

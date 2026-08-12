@@ -23,8 +23,14 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 ROOT = Path(__file__).resolve().parent.parent
 SRGB = ROOT / "resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB"
 XML = ROOT / "resources/remaster_mods/Vanilla_RA/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
-BASE = SRGB / "BuildIcon_TS_MammothMk2.tga"
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
+
+# Every unit the dropship bay delivers: IniName -> its pristine BuildIcon.
+# Must mirror TF_Is_Dropship_Delivered (house.cpp). IniName <= 9 chars, or the
+# "<Ini>_CDnnn" key overflows CNCSidebarEntryStruct::AssetName[16].
+UNITS = {
+    "TSHMEC": "BuildIcon_TS_MammothMk2",
+}
 
 SECONDS = 300  # 5:00
 GOLD = (255, 204, 51, 255)
@@ -33,35 +39,38 @@ OUTLINE = (0, 0, 0, 255)
 BEGIN = "\t<!-- BEGIN generated Mk2 cooldown countdown cameos (scripts/ts_mk2_cooldown_cameos.py) -->"
 END = "\t<!-- END generated Mk2 cooldown countdown cameos -->"
 
-TEMPLATE = """\t<ObjectTypeClass Name="RA_TSHMEC_CD{sss}" Classification="CNCBuildableObject" CanInstantiate="False">
+TEMPLATE = """\t<ObjectTypeClass Name="RA_{ini}_CD{sss}" Classification="CNCBuildableObject" CanInstantiate="False">
 \t\t<CNCEncyclopediaComponent>
-\t\t\t<ObjectNameTextID>TEXT_UNIT_TSHMEC</ObjectNameTextID>
-\t\t\t<ObjectDescriptionTextID>TEXT_UNIT_TSHMEC_DESC</ObjectDescriptionTextID>
-\t\t\t<BuildIcon>BuildIcon_TSHMEC_CD{sss}</BuildIcon>
+\t\t\t<ObjectNameTextID>TEXT_UNIT_{ini}</ObjectNameTextID>
+\t\t\t<ObjectDescriptionTextID>TEXT_UNIT_{ini}_DESC</ObjectDescriptionTextID>
+\t\t\t<BuildIcon>BuildIcon_{ini}_CD{sss}</BuildIcon>
 \t\t</CNCEncyclopediaComponent>
 \t</ObjectTypeClass>
 """
 
 
 def bake_art():
-    base = Image.open(BASE).convert("RGBA")
-    dimmed = ImageEnhance.Brightness(base).enhance(0.40)
-    font = ImageFont.truetype(FONT, int(base.height * 0.42))
-    for secs in range(1, SECONDS + 1):
-        text = f"{secs // 60}:{secs % 60:02d}"
-        img = dimmed.copy()
-        draw = ImageDraw.Draw(img)
-        bb = draw.textbbox((0, 0), text, font=font, stroke_width=6)
-        draw.text(((img.width - (bb[2] - bb[0])) // 2 - bb[0],
-                   (img.height - (bb[3] - bb[1])) // 2 - bb[1]),
-                  text, font=font, fill=GOLD,
-                  stroke_width=6, stroke_fill=OUTLINE)
-        img.save(SRGB / f"BuildIcon_TSHMEC_CD{secs:03d}.tga")
-    print(f"baked {SECONDS} countdown cameos into {SRGB}")
+    for ini, icon in UNITS.items():
+        base = Image.open(SRGB / f"{icon}.tga").convert("RGBA")
+        dimmed = ImageEnhance.Brightness(base).enhance(0.40)
+        font = ImageFont.truetype(FONT, int(base.height * 0.42))
+        for secs in range(1, SECONDS + 1):
+            text = f"{secs // 60}:{secs % 60:02d}"
+            img = dimmed.copy()
+            draw = ImageDraw.Draw(img)
+            bb = draw.textbbox((0, 0), text, font=font, stroke_width=6)
+            draw.text(((img.width - (bb[2] - bb[0])) // 2 - bb[0],
+                       (img.height - (bb[3] - bb[1])) // 2 - bb[1]),
+                      text, font=font, fill=GOLD,
+                      stroke_width=6, stroke_fill=OUTLINE)
+            img.save(SRGB / f"BuildIcon_{ini}_CD{secs:03d}.tga")
+        print(f"baked {SECONDS} countdown cameos for {ini} into {SRGB}")
 
 
 def inject_xml():
-    entries = "".join(TEMPLATE.format(sss=f"{secs:03d}") for secs in range(1, SECONDS + 1))
+    entries = "".join(TEMPLATE.format(ini=ini, sss=f"{secs:03d}")
+                      for ini in UNITS
+                      for secs in range(1, SECONDS + 1))
     block = f"{BEGIN}\n{entries}{END}\n"
     text = XML.read_text()
     if BEGIN in text:

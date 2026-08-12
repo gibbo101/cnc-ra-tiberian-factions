@@ -3222,6 +3222,15 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             if (pod != NULL) {
                 COORDINATE start = Cell_Coord(XY_Cell(Cell_X(dest), celly));
                 if (pod->Unlimbo(start, DIR_S)) {
+                    /*
+                    **	The cooldown starts the moment the pod launches, not at the
+                    **	landing: the gap between order completion and touchdown left
+                    **	Can_Build open, and a second Mk. II could be ordered while the
+                    **	first was still falling (live play, 2026-08-12). The landing
+                    **	no longer resets the timer -- that would snap a running
+                    **	countdown back up to 5:00 in front of the player.
+                    */
+                    House->TFDropBayTimer = HouseClass::TF_DROPBAY_COOLDOWN;
                     return (2);
                 }
                 delete pod;

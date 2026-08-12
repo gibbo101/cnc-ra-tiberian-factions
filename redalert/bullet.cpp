@@ -153,12 +153,13 @@ BulletClass::~BulletClass(void)
             }
 
             /*
-            **	The wait runs from the arrival, not from the order, so what the player
-            **	feels is the gap between deliveries. Started even when the cargo could
-            **	not be placed: the bay did its work either way, and a failed placement
-            **	should not become a way to order again immediately.
+            **	The cooldown normally starts at pod launch (building.cpp, the
+            **	Exit_Object case) so the order window closes while the pod is still
+            **	falling. This is the backstop for any pod that existed without that
+            **	site running: only arm if no countdown is already live, because
+            **	resetting here would snap a running countdown back up to 5:00.
             */
-            if (owner != NULL) {
+            if (owner != NULL && owner->TFDropBayTimer == 0) {
                 owner->TFDropBayTimer = HouseClass::TF_DROPBAY_COOLDOWN;
             }
         }

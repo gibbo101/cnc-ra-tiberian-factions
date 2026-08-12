@@ -531,14 +531,14 @@ bool SidebarGlyphxClass::StripClass::Recalc(void)
             ok = tech->Who_Can_Build_Me(true, true, ParentSidebar->SidebarPlayerPtr->Class->House) != NULL;
 
             /*
-            **	The Mk. II under delivery cooldown is unavailable, not illegal: its
-            **	cameo stays put and reads busy until the timer expires. Eviction here
-            **	would be one-way -- nothing re-runs Update_Buildables when a timer
-            **	runs out, so the cameo would never come back. A house whose bay is
-            **	gone still loses the cameo through the normal test.
+            **	A dropship-delivered unit under delivery cooldown is unavailable, not
+            **	illegal: its cameo stays put, counting down, until the timer expires.
+            **	Eviction here would be one-way -- nothing re-runs Update_Buildables
+            **	when a timer runs out, so the cameo would never come back. A house
+            **	whose bay is gone still loses the cameo through the normal test.
             */
             if (!ok && tech->What_Am_I() == RTTI_UNITTYPE
-                && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
+                && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
                 && ParentSidebar->SidebarPlayerPtr->TFDropBayTimer != 0
                 && ParentSidebar->SidebarPlayerPtr->Has_Building_Active(STRUCT_TSDROP)) {
                 ok = true;
