@@ -18174,6 +18174,19 @@
 			</Frames>
 		</Value>
 	</Tile>
+			<!-- BEGIN generated TSDSHP drop-pod sprite (scripts/ts_pack_dropship.py) -->
+			<Tile>
+				<Key>
+					<Name>TSDSHP</Name>
+					<Shape>0</Shape>
+				</Key>
+				<Value>
+					<Frames>
+						<Frame>tsdshp\tsdshp-0000.tga</Frame>
+					</Frames>
+				</Value>
+			</Tile>
+			<!-- END generated TSDSHP drop-pod sprite -->
 </Tiles>
 	</TilesetTypeClass>
 </Tilesets>

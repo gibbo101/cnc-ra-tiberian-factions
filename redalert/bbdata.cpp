@@ -299,6 +299,10 @@ void BulletTypeClass::One_Time(void)
     if (tdmissile.ImageData == NULL) {
         ((void const*&)tdmissile.ImageData) = donor.ImageData;
     }
+    BulletTypeClass& tsdroppod = As_Reference(BULLET_TSDROPPOD);  // Dropship delivery -- own TSDSHP sprite (RA_VFX.XML, the TS Dropship voxel); donor passes Draw_It's NULL guard.
+    if (tsdroppod.ImageData == NULL) {
+        ((void const*&)tsdroppod.ImageData) = donor.ImageData;
+    }
 }
 
 /***********************************************************************************************
