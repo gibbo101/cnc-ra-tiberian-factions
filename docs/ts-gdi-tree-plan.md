@@ -84,13 +84,31 @@ fake Constructing miscounts queue clicks, tooltips flash on every asset swap
 per-second: accepted). Key traps live in the engine-facts list above and in
 `launcher-render-contracts.md` (dormant-host ledger updated).
 
+**Late-session additions (2026-08-12/13, all play-verified, Luke: "I love
+it"):** Mech Division (UNIT_TSMDIV, a purchasable TOKEN the pod expands into
+3 Titans + 2 Wolverines, single-file every 9 frames, 2800 vs the 3400
+sticker); Mk. II field cap TF_MK2_CAP=1 (heap-counted -- the CSII quantity
+fold aliases mod-unit UQuantity slots, never trust them); the bay took the
+war-factory footprint arrangement (BLOCKING = deck 3x2 via ListWeap, bib row
+walkable, placement ghost = full 3x3 via an Occupy_List placement split; deck
+art rides high via ts_pack_tree BOTTOM_MARGINS; disembark = bib row's north
+edge, under the hull, on concrete); flight profile stretched (descent
+Height/20 ~6.5 s, departure to TF_POD_DEPART_CEILING = 2x spawn); landing
+point = deck's VISUAL centre (160 leptons north of plot centre; pod Sort_Y
+bias 3 cells). Smoothed-normals art REJECTED in place (detail loss) --
+--normal-smooth stays in vxl_render, unused. ⚠ Generated-XML trap: anything
+inserted after "the last ObjectTypeClass" in RABUILDABLES lands INSIDE the
+countdown generator's managed block and its next run EATS it -- insert before
+the BEGIN marker.
+
 **Still open on the bay:**
 1. Buildup anim: strip the gantry piece from each TDFIX buildup frame, same
    crop treatment as the final structure (Luke's spec, 2026-08-12).
 2. Emblem centring: `stamp_emblem` now takes an eye-dial `(dx, dy)`; Luke
    judges in-game, offsets go in `EMBLEMS["TSDROP"]`.
-3. In-play confirmation of the full final sequence (build `4c3a66fe`:
-   under-hull disembark + bib) and of cooldown re-arm at 0:00.
+3. Optional: 32° camera re-render to match the vehicle fleet (preview sheets
+   on the Desktop; 54° shipped and accepted).
+4. Mk. II cap to 3 when Luke calls it (TF_MK2_CAP, one constant).
 
 ### ⭐ MORNING HANDOVER — what to do first
 **All four objectives are CODED and DEPLOYED (desktop prefix, DLL `80240db9`,
