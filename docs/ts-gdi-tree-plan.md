@@ -172,10 +172,15 @@ clean takeoffs = good signal, not proof; a week of play is.
 buildup crop, and both hand-made icons are done — see the top block):**
 1. Emblem centring: `stamp_emblem` takes an eye-dial `(dx, dy)`; offsets go
    in `EMBLEMS["TSDROP"]`.
-2. Optional: 32° camera re-render of the dropship to match the vehicle
-   fleet's elevation (preview sheets on the Desktop; 54° shipped and
-   accepted — taste call, a flying unit may read better steep).
-3. Mk. II cap to 3 when Luke calls it (TF_MK2_CAP, one constant).
+2. Mk. II cap to 3 when Luke calls it (TF_MK2_CAP, one constant).
+
+(The dropship now renders at the fleet's 32° elevation — Luke picked it off
+a 54/43/32 comparison sheet 2026-08-13. Render kept `--canvas 656`, so the
+classic stub (123 = 656 x 3/16) and drawn scale are untouched; only
+TSDSHP.ZIP changed. Full render recipe: `vxl_render.py DSHP.VXL --frames 1
+--yaw0 180 --px-per-voxel 6.4 --team-green 255,204,51 --elev 32 --canvas
+656` then `ts_pack_dropship.py`; DSHP.VXL re-extractable from TIBSUN.MIX
+via the TS padded-CRC32 name hash + ra_mix_extract's container crypto.)
 
 ### ⭐ MORNING HANDOVER — what to do first
 **All four objectives are CODED and DEPLOYED (desktop prefix, DLL `80240db9`,
