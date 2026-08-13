@@ -1,5 +1,66 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐⭐⭐ SESSION 2026-08-13 EVENING → 08-14 — the building walk + fix marathon
+
+**RESUME HERE: the 3x2 footprint pass is DEPLOYED but UNVERIFIED** (desktop
+DLL `d4bb09e2`, md5-verified, commit `55e4253c`, deployed as Luke quit
+~00:15). Conyard (TSFACT) and dropship bay (TSDROP) went **BSIZE_33 → 3x2**
+— the empty top row was what held their selection boxes off the art
+(contract #7 below). **First thing next session, fresh skirmish:**
+1. Conyard + bay selection boxes (should finally hug the art) + both
+   placement ghosts.
+2. **TS MCV round-trip**: deploy → 3x2 yard → undeploy → MCV back →
+   redeploy. The one real regression risk (machinery is size-generic and
+   TDFACT-proven, but eyes on it).
+3. **Bay delivery end-to-end**: Mk. II ordered → pod lands on the deck's
+   visual centre (landing bias re-derived 160→32 leptons) → cargo steps
+   onto the concrete → walks clear. Mech Division too (crash soak).
+4. Art seats unmoved: conyard ON its slab, deck riding high.
+
+**⭐ THE NIGHT'S HEADLINE — selection-box contract PROVEN (contract #7 in
+`launcher-render-contracts.md`):** the launcher centres a building's box on
+its BSIZE plot and takes ONLY DimensionX/Y from the DLL. Five falsified
+probes in one night (CenterCoordY, dims-anchoring, CellY, doctored
+OccupyList, PositionY — the last visibly moved the SPRITE, detaching the
+refinery from its apron). Never probe again. A box that reads wrong means
+the PLOT is wrong for its art — TDFACT (true 3x2, box fits) vs TSFACT (3x3
+with an empty row, box high) was the control pair that cracked it, Luke's
+find.
+
+**Shipped this session, ALL play-verified by Luke:**
+- **Walk verdicts:** TSPILE box 2x2-north ✓, TSPOWR + TSRADR south-row
+  footprint (Tesla/Obelisk `List22_0011` pattern — ghost 2x2 incl. bib,
+  build/walk behind the tower) ✓ "great job". TSSILO / TSTECH / TSDEPT pass
+  as-is.
+- **Damage states → LIGHT (frame 1)** across the TS tree ("damage states
+  are good"); bay keeps its approved weathered heavy. **Heavy-on-red
+  stretch DITCHED (Luke).**
+- **Pads go UNDER everything:** aprons are no longer map state — the
+  renderer derives them from the owning building's footprint
+  (`_aprons` table, dllinterface). Ore draws over them ("ore on pad is
+  good"), bibs stamp over them and layer correctly, nothing can erase the
+  concrete, cloak-hide preserved, they vanish with the building.
+  `Bib_And_Offset` no longer returns them; stale-cell export guard added.
+- **Mk. II can't-damage bug fixed + verified:** `Target_Coord` anchors
+  TSPROC (dock-lane hole) and the tall towers (art-spill row) to occupied
+  cells; the railgun sweep always damages its aimed-at object. "TS ref and
+  radar can be damaged again."
+- **Rich-start lever** replaces flat-$1 (`tf_cheap.flag` now = 1,000,000
+  credits at skirmish start, og prices): the $1 PurchasePrice was failing
+  EA's free-harvester gate (building.cpp:4166 compares PurchasePrice vs
+  Raw_Cost). FREE-HARV verified live repeatedly.
+- **Refinery box:** settled at the round-1 fit (south edge approved). The
+  wished-for 2 tiles of extra headroom is engine-impossible on a centred
+  box — closed under contract #7.
+
+**Open from tonight (see Open queue):** helipad footprint call still
+pending (Luke's 2x3+bib vs my 2x2+bib counter); TSPROC blank-apron-tile
+WARNING text in the packer is stale (aprons no longer stamp — reword);
+`tf_orbit.flag` dead code still queued; crash watch stayed SILENT all
+night through many Mech Division orders (soak continues).
+
+---
+
 **Workstream home: branch `ts-units`, worktree `../tf-ts-units-worktree`.** Deploy
 surface is assigned per session — as of 2026-08-13 THIS instance deploys to the
 **Linux desktop prefix**; the subterranean instance owns the Deck. The Deck's last
@@ -274,13 +335,13 @@ pad (BSIZE_43 centre = row 1 col 2), so all Center_Coord-keyed dock geometry
 re-indexes itself. ⚠ MCV-era saves with old 4x4 refineries mis-foot — fresh
 skirmish only.
 
-### Hangar resize (QUEUED 2026-08-13 — open queue 26)
+### Hangar resize (QUEUED 2026-08-13 — open queue 27)
 
 With the Mk. II delivered by the bay, the war factory shrinks back: fit_w
 416 → 74x55 hangar, 28.2x27.1 door — **the APC sets the floor** (below ~416
 it stops fitting); the Titan clears every option; TD-exact width 395 would
 break the APC. (Unit canvases are 8 px per classic, buildings 16/3 — never
-mix them.) See open queue 26 for everything that must move with it.
+mix them.) See open queue 27 for everything that must move with it.
 
 ## Refinery dock — ✅ SIGNED OFF "absolute perfection" (Luke, 2026-08-06 evening)
 
@@ -443,16 +504,13 @@ clause. Same literal-chain audit was needed for repair
   already shipped; ship call is Luke's (`ts-asset-import-spike.md` legal
   note).
 
-## Open queue (consolidated + verified against git log, 2026-08-13)
+## Open queue (consolidated; re-verified at session close 2026-08-14 ~00:20)
 
 **Gameplay / engine:**
 1. **Mk. II cap → 3** on Luke's word (`TF_MK2_CAP`, one constant).
-2. **TSFACT conyard selection box** rides ~13cl high (regressed by the 08-04
-   tier resize; Luke's standing reminder). Fix path: git-diff the TSFACT
-   packer geometry (canvas/stub/bottom-margin/overscale + foundation)
-   between the last known-good box commit (pre-reseat, 2026-08-04 evening)
-   and HEAD; restore the broken relationship. No launcher probing —
-   CenterCoordY is proven ignored (dead-ends list).
+2. **⭐ VERIFY the 3x2 footprint pass** (deployed unverified — the full
+   checklist is the session block at the top of this doc): conyard + bay
+   boxes/ghosts, TS MCV round-trip, bay delivery end-to-end, art seats.
 3. **TS WF placement-grid regression:** reads 4x3, should be 5x3 with the
    4th (top) row build-blocked — the radar height trick. Suspect the 08-07
    per-type `Occupy_List(placement=true)` split: the `_ts_weap_place`
@@ -465,45 +523,51 @@ clause. Same literal-chain audit was needed for repair
    uses every column). Options: leave outside (current; `Is_TS_Apron_Cell`
    keeps it unbuildable), clip at the plot edge (hard cut), return to 5x4.
    **Undecided — Luke's call.**
-6. **TSPROC stamps 6 blank apron tiles of 15** — same class as the bib-eater
-   bug, still live (art signed off, so it wants Luke's OK; the packer WARNS
-   with the count every run).
+6. **Helipad footprint** — Luke floated 2x3+bib, my counter 2x2+bib (RA/TD
+   parity + height trick if the art spills). His call; any footprint change
+   needs a watched land-rearm cycle after.
+7. **Packer apron WARNING text is stale** — aprons no longer stamp (they
+   draw from building geometry since 2026-08-13), so "will still stamp,
+   overwriting neighbours' bibs" is false; blank tiles are now merely
+   wasted entries. Reword, and the blank-tile counts (TSPROC 6/15,
+   TSWEAP 2/15) become a pure art-tightening nicety.
 
 **Eyeballs owed (verification, not code):**
-7. War-factory sandwich in play (door open/shut hiding a vehicle) + SE bay
+8. War-factory sandwich in play (door open/shut hiding a vehicle) + SE bay
    exits (exit list re-cut but never judged; expect an awkward pose, wants
    Luke's eye live like the dock).
-8. RA-truck-at-TSPROC regression eyeball; one clean watched TDHARV dock
+9. RA-truck-at-TSPROC regression eyeball; one clean watched TDHARV dock
    cycle at TSPROC; TSHARV auto-return when full (Tiberium_Load fix).
-9. Takeoff-crash soak: a week of play without an `_Except_` file.
+10. Takeoff-crash soak: a week of play without an `_Except_` file (another
+    clean night 2026-08-13/14, many Mech Division orders).
 
 **Art polish (parked):**
-10. WF door-to-pad seam: the real cure is stopping `hq_scale` bleeding black
+11. WF door-to-pad seam: the real cure is stopping `hq_scale` bleeding black
     at all — a global change touching every TS building, **wants Luke's OK**.
-11. Ramp stripes band yellow/green (the gold-bake test misses the darker
+12. Ramp stripes band yellow/green (the gold-bake test misses the darker
     green bands).
-12. Titan parks ahead of the door — `TSTITN` frame registration sits +11.8
+13. Titan parks ahead of the door — `TSTITN` frame registration sits +11.8
     classic px below its box centre (every other unit within ±2.4). Fix the
     registration or dial `ExitCoordinate` by eye — Luke's call.
-13. Refinery smoke continuity (blocky specks between puffs): drop near-empty
+14. Refinery smoke continuity (blocky specks between puffs): drop near-empty
     frames, soften the alpha floor, or check whether NTREFN_C (144-canvas,
     needs offset compositing) is TS's own gap-filling second layer.
-14. Queued art nits: SMOKEY harvest puff port; voxel brightness pass
+15. Queued art nits: SMOKEY harvest puff port; voxel brightness pass
     (TSHARV/TSMCV vs the TS screencast); chunky intake pixels + black fringe
     at the refinery bay mouth; damaged bay deck's stray remap-green pixel.
 
 **Housekeeping:**
-15. Remove the `tf_orbit.flag` dead code (descent landed).
-16. Re-run the free dormant-host census before committing the roster's sound
+16. Remove the `tf_orbit.flag` dead code (descent landed).
+17. Re-run the free dormant-host census before committing the roster's sound
     count (hosts used: BONUS_UNLOCK, DINOATK1, DINODIE1, DINOMOUT, DINOYES,
     STRUGGLE; a host needs no RAC_/RAR_ **and no SFX_GUI_*** reference).
-17. Possibly stale — confirm with Luke before working: conyard 0.94-size +
+18. Possibly stale — confirm with Luke before working: conyard 0.94-size +
     rotating-light verdicts (2026-08-04); TSHARV front-cabin sprite anchor /
     oversized ShapeSize (likely absorbed by the dock arc).
 
 **Restored / added 2026-08-13 evening (Luke's picks — the prune had dropped
-25 by mistake; he caught it):**
-25. **TS harvester poses at the TD and RA refineries** — the last unmade
+26 by mistake; he caught it):**
+26. **TS harvester poses at the TD and RA refineries** — the last unmade
     placements (Luke's original 08-04 scope: "dock ALL 3 harvesters at the
     TS refinery, and the TS harvester at the TD and RA refineries").
     Current code: TS-at-TD = generic visible W-facing park (explicitly
@@ -512,7 +576,7 @@ clause. Same literal-chain audit was needed for repair
     worked out with Luke's eye (Aseprite reference art prepared in
     `~/Desktop/docking-art/`: all 3 harvesters full-canvas-aligned facings
     + all 3 refineries incl. TDPROC's attach anims; see its INDEX.txt).
-26. **War factory descale to normal size (Luke, 2026-08-13).** The Mk. II
+27. **War factory descale to normal size (Luke, 2026-08-13).** The Mk. II
     now arrives by bay, so the 08-07 enlargement can come back down — see
     the hangar-resize table: **fit_w 416 is the floor (below ~416 the
     TSAPC stops fitting through the door); TD-exact width 395 would break
@@ -522,15 +586,15 @@ clause. Same literal-chain audit was needed for repair
     grid (item 3 — fix in the same pass), and canvas+stub together.
 
 **Roster remainder (the plan below):**
-18. Component towers TSVULC/TSCSAM/TSROCK — turreted TDGTWR pattern, NOT the
+19. Component towers TSVULC/TSCSAM/TSROCK — turreted TDGTWR pattern, NOT the
     static recipe (GTCTWR_B/_C/_D are 48-canvas TURRET rotation frames).
-19. Infantry TSE1/TSE2/TSGHOST (td-infantry-port-recipe adapted).
-20. Orcas TSORCA/TSORCAB (RA helipad rearm mechanics).
-21. TS audio wave (dormant-sample recipe; see 16).
-22. NTREFN_C refinery anim offset compositing (see 13).
-23. TS GDI/Nod badge emblems — Luke supplies; TS cameos stay pristine until
+20. Infantry TSE1/TSE2/TSGHOST (td-infantry-port-recipe adapted).
+21. Orcas TSORCA/TSORCAB (RA helipad rearm mechanics).
+22. TS audio wave (dormant-sample recipe; see 17).
+23. NTREFN_C refinery anim offset compositing (see 14).
+24. TS GDI/Nod badge emblems — Luke supplies; TS cameos stay pristine until
     then (they are exempt from faction badging).
-24. Phase-2 decisions with Luke (deferred list below).
+25. Phase-2 decisions with Luke (deferred list below).
 
 ## The plan (2026-08-01) — goal, gate, roster
 
@@ -641,7 +705,7 @@ Every entity ships authentic TS sounds via the dormant-sample recipe
 crash the client, see the bay crash record). Weapon reports are TD
 placeholders (MGUN11 / OBELRAY1) pending the TS audio wave. The free-host
 census needs re-running before the roster's sound count is committed (open
-queue 16).
+queue 17).
 
 ### ⭐ The Stealth Recipe — canonical per-building port (Luke's challenge, 2026-08-01)
 
@@ -683,7 +747,7 @@ Generator. Per building:
 | TSVULC/TSROCK/TSCSAM | GTCTWR_B 64 / _C 96 / _D 64 (48-canvas, TURRET rotation frames — TDGTWR turret pattern, not the static recipe) | — | GTCTWRMK 22 | TWR1/TWR2/TWR3ICON |
 
 (All other buildings ported; NTREFN_C — 144-canvas anim on a 192x168
-building, needs offset compositing — is still unported, open queue 22.
+building, needs offset compositing — is still unported, open queue 23.
 Silo's _B 64 frames likely map to the STORAGE fill-level contract — verify
 before ever touching it.)
 
