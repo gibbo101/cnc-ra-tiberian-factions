@@ -3968,6 +3968,24 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                         occ = occ->Next;
                     }
                 }
+                /*
+                **  The aimed-at object always takes the hit, whatever cells the
+                **  line crossed: a building whose aim cell is an occupancy hole
+                **  (TSPROC dock lane) or whose approach is all walkable apron
+                **  otherwise never joins the sweep and the shot lands for zero.
+                */
+                if (object != NULL && object != this && object->Is_Techno()) {
+                    bool seen = false;
+                    for (int v = 0; v < vcount; v++) {
+                        if (victims[v] == object) {
+                            seen = true;
+                            break;
+                        }
+                    }
+                    if (!seen && vcount < (int)(sizeof(victims) / sizeof(victims[0]))) {
+                        victims[vcount++] = object;
+                    }
+                }
                 WarheadType wh = (weapon->WarheadPtr != NULL) ? WarheadType(weapon->WarheadPtr->ID) : WARHEAD_AP;
                 for (int v = 0; v < vcount; v++) {
                     if (victims[v]->IsActive) {

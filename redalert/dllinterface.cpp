@@ -5365,44 +5365,42 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         */
         if (object->What_Am_I() == RTTI_BUILDING) {
             switch (((BuildingTypeClass const&)object->Class_Of()).Type) {
+            // The 2026-08-13 walk rounds established the launcher's box
+            // model empirically: it honours our DimensionX/Y (size), centres
+            // the box on the building's plot, and IGNORES CenterCoordY
+            // entirely (two bias-only moves and a dims-nudge probe all
+            // failed; the round-2 refinery height grew symmetrically). The
+            // Y biases are deleted as proven dead. Round 3 probes the one
+            // untested vertical lever: the exported cell row itself.
             case STRUCT_TSFACT:
-                // Height trimmed to the art rows (48cl art - the usual 20%
-                // trim). Walk verdict 2026-08-13: size good, box one tile
-                // high. Bias-only proved DEAD tonight; one-unit dims nudge
-                // added to probe the launcher's recompute (see TSDROP).
-                new_object.CenterCoordY += (25 * 256) / 24 + 256;
-                dimy = 37;
+                // Box 1 tile south (walk verdict), size approved at 38.
+                new_object.CellY += 1;
+                dimy = 38;
                 break;
             case STRUCT_TSWEAP:
                 new_object.CenterCoordY += (14 * 256) / 24;
                 dimy = 41;
                 break;
             case STRUCT_TSPILE:
-                // Walk verdict 2026-08-13: 2x2 box, the added tile north --
-                // the flag mast needs cover, the hull row alone reads short.
+                // 2x2 box, the added tile north -- APPROVED in round 1 with
+                // exactly these values; left byte-identical on purpose (the
+                // bias is a no-op under the box model, but an approved box
+                // is not the place to test that).
                 new_object.CenterCoordY += (8 * 256) / 24 - 128;
                 dimy = 38;
                 break;
             case STRUCT_TSPROC:
-                // Round-2 verdict (Luke, 2026-08-13 23:02): south edge is
-                // right where it is -- extend 2 tiles north, 4 tiles tall,
-                // no movement. The launcher proved tonight it honours our
-                // Dimension values but re-derives position itself, so the
-                // height growth carries the whole change; the bias stays
-                // only because removing it is an untested second variable.
+                // South edge stays, 2 tiles added north, 4 tiles tall total:
+                // height 80 centred one row further north = round-1 south
+                // edge preserved by construction IF the CellY probe bites.
                 new_object.CenterCoordX -= 78;
-                new_object.CenterCoordY -= 320;
+                new_object.CellY -= 1;
                 dimx = 90;
                 dimy = 80;
                 break;
             case STRUCT_TSDROP:
-                // Walk verdict 2026-08-13: whole box one tile north, same
-                // size. Bias-only proved DEAD tonight (box did not move);
-                // this round pairs it with a one-unit dims nudge to probe
-                // whether a dims change makes the launcher re-read position.
-                new_object.CenterCoordY -= 256;
-                dimx = 56;
-                dimy = 56;
+                // Whole box 1 tile north, same size.
+                new_object.CellY -= 1;
                 break;
             default:
                 break;
@@ -9169,80 +9167,81 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
     }
 
     /*
-    ** Tiberian Factions -- the TS concrete apron. It is stamped into cells as a
-    ** bib-family smudge covering the building's whole plot (one frame per cell,
-    ** SmudgeData = col + row*Width). What it is NOT is a smudge-layer entry:
-    ** it goes out as a byte-for-byte copy of the TD-template ground entry
-    ** above, the one entry shape in this engine proven to draw beneath units,
-    ** differing only in its asset. Overlay layer, theatre shape, centred on the
-    ** cell, all three together -- each was tried without the others first and
-    ** each on its own still drew the apron over a vehicle standing on it.
-    ** Being a theatre shape is why the art is registered in the
-    ** RA_TERRAIN_<theatre> tilesets rather than with the structures.
-    **
-    ** The apron used to be composited into the building sprite. That made it
-    ** take part in sprite sorting (a vehicle driving off the apron disappeared
-    ** behind it) and in the launcher's sprite hit-test (the apron answered as
-    ** the building, so units could not be ordered onto it). Ground art does
-    ** neither.
-    **
-    ** An apron cell carrying an overlay emits BOTH entries, apron first: the
-    ** vanilla smudge entry already precedes the overlay entry in this function
-    ** and renders ore on top of bib slabs correctly, so same-cell submission
-    ** order is a stable layer order (the old one-entry-per-cell yield left
-    ** ore-shaped holes in the concrete -- walk finding 2026-08-13).
+    ** Tiberian Factions -- the TS concrete apron, drawn from the OWNING
+    ** BUILDING's geometry rather than from map state. It was stamped into
+    ** cells as a bib-family smudge, but one cell holds one smudge, so the
+    ** pad and a neighbour's bib could only ever eat each other (walk
+    ** finding 2026-08-13: the pad goes UNDER everything, never competes).
+    ** Building-derived, bibs stamp freely over its cells and render on top
+    ** (this entry precedes the smudge entry below), ore draws over it (it
+    ** precedes the overlay entry too), nothing can erase the concrete, and
+    ** it leaves with its building. Entry shape stays the TD-template ground
+    ** entry -- overlay layer, theatre shape, centred on the cell -- the one
+    ** entry shape in this engine proven to draw beneath units. A cloaked
+    ** owner (Stealth Generator field) hides its apron with it.
     */
-    if (Is_TS_Apron_Smudge(cell_ptr->Smudge)) {
-        const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(cell_ptr->Smudge);
+    {
+        static const struct
+        {
+            StructType owner;
+            SmudgeType apron;
+            int off_x, off_y; // apron origin relative to the building's origin cell
+        } _aprons[] = {
+            {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 1, 1},
+            {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0},
+        };
+        for (int a = 0; a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {
+            const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(_aprons[a].apron);
+            bool resolved = false;
+            for (int ty = 0; ty < apron_type.Height && !resolved; ty++) {
+                for (int tx = 0; tx < apron_type.Width && !resolved; tx++) {
+                    int origin = (int)cell - (_aprons[a].off_x + tx) - (_aprons[a].off_y + ty) * MAP_CELL_W;
+                    if (origin < 0 || origin >= MAP_CELL_TOTAL) {
+                        continue;
+                    }
+                    BuildingClass* apron_owner = Map[(CELL)origin].Cell_Building();
+                    if (apron_owner == NULL || *apron_owner != _aprons[a].owner
+                        || Coord_Cell(apron_owner->Coord) != (CELL)origin) {
+                        continue;
+                    }
+                    resolved = true;
+                    if (apron_owner->Visual_Character() == VISUAL_HIDDEN) {
+                        break;
+                    }
 
-        /*
-        **	Hide the apron along with a cloaked owner (the Stealth Generator
-        **	field), or it stays on the ground and betrays the base. The apron's
-        **	top-left cell is the building's own origin cell, which is always
-        **	occupied, so the owner resolves directly with no probe.
-        */
-        BuildingClass* apron_owner = NULL;
-        if (apron_type.Width > 0) {
-            int apron_col = cell_ptr->SmudgeData % apron_type.Width;
-            int apron_row = cell_ptr->SmudgeData / apron_type.Width;
-            int apron_origin = (int)cell - apron_col - apron_row * MAP_CELL_W;
-            if (apron_origin >= 0 && apron_origin < MAP_CELL_TOTAL) {
-                apron_owner = Map[(CELL)apron_origin].Cell_Building();
+                    CNCDynamicMapEntryStruct& apron_entry = dynamic_map->Entries[entry_index++];
+
+                    strncpy(apron_entry.AssetName, apron_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
+                    apron_entry.AssetName[CNC_OBJECT_ASSET_NAME_LENGTH - 1] = 0;
+                    // Pip-free decorative type: the launcher paints radar pips
+                    // from the vanilla resource Type range regardless of flags.
+                    apron_entry.Type = (short)OVERLAY_V12;
+                    apron_entry.Owner = (char)apron_owner->Owner();
+                    apron_entry.DrawFlags = SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST;
+                    apron_entry.PositionX = xpixel + (CELL_PIXEL_W >> 1);
+                    apron_entry.PositionY = ypixel + (CELL_PIXEL_H >> 1);
+                    apron_entry.Width = CELL_PIXEL_W;
+                    apron_entry.Height = CELL_PIXEL_H;
+                    apron_entry.CellX = Cell_X(cell);
+                    apron_entry.CellY = Cell_Y(cell);
+                    apron_entry.ShapeIndex = (unsigned short)(tx + ty * apron_type.Width);
+                    apron_entry.IsSmudge = false;
+                    apron_entry.IsOverlay = true;
+                    apron_entry.IsResource = false;
+                    apron_entry.IsSellable = false;
+                    apron_entry.IsTheaterShape = true;
+                    apron_entry.IsFlag = false;
+                }
             }
-        }
-        bool apron_hidden = (apron_owner != NULL && apron_owner->Visual_Character() == VISUAL_HIDDEN);
-
-        if (!apron_hidden) {
-            CNCDynamicMapEntryStruct& apron_entry = dynamic_map->Entries[entry_index++];
-
-            strncpy(apron_entry.AssetName, apron_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
-            apron_entry.AssetName[CNC_OBJECT_ASSET_NAME_LENGTH - 1] = 0;
-            // Pip-free decorative type, the TD ground-entry choice: the launcher
-            // paints radar pips from the vanilla resource Type range regardless
-            // of our flags, so the apron must not claim one of those.
-            apron_entry.Type = (short)OVERLAY_V12;
-            apron_entry.Owner = (char)cell_ptr->Owner;
-            apron_entry.DrawFlags = SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_GHOST;
-            apron_entry.PositionX = xpixel + (CELL_PIXEL_W >> 1);
-            apron_entry.PositionY = ypixel + (CELL_PIXEL_H >> 1);
-            apron_entry.Width = CELL_PIXEL_W;
-            apron_entry.Height = CELL_PIXEL_H;
-            apron_entry.CellX = Cell_X(cell);
-            apron_entry.CellY = Cell_Y(cell);
-            apron_entry.ShapeIndex = cell_ptr->SmudgeData;
-            apron_entry.IsSmudge = false;
-            apron_entry.IsOverlay = true;
-            apron_entry.IsResource = false;
-            apron_entry.IsSellable = false;
-            apron_entry.IsTheaterShape = true;
-            apron_entry.IsFlag = false;
         }
     }
 
     /*
-    **	Redraw any smudge.
+    **	Redraw any smudge. Apron-type smudges are excluded: they no longer
+    **	stamp at all, and any stale cell from an older map state must not go
+    **	out as a smudge entry (the launcher has no such smudge asset).
     */
-    else if (cell_ptr->Smudge != SMUDGE_NONE) {
+    if (cell_ptr->Smudge != SMUDGE_NONE && !Is_TS_Apron_Smudge(cell_ptr->Smudge)) {
         // SmudgeTypeClass::As_Reference(Smudge).Draw_It(x, y, SmudgeData);
 
         const SmudgeTypeClass& smudge_type = SmudgeTypeClass::As_Reference(cell_ptr->Smudge);

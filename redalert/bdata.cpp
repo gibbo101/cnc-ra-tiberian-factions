@@ -5659,30 +5659,13 @@ bool BuildingTypeClass::Bib_And_Offset(SmudgeType& bib, CELL& cell) const
     bib = SMUDGE_NONE;
 
     /*
-    **	Tiberian Factions -- the TS concrete apron is the building's ground art,
-    **	so it is a bib covering the WHOLE plot from the top-left corner rather
-    **	than an RA slab hung off the bottom row. It is independent of Bib= in
-    **	rules (which governs the RA slab, and is off for these buildings).
+    **	Tiberian Factions -- the TS concrete aprons (TSWEAP/TSPROC) are NOT
+    **	bibs any more: they never stamp into cells. The dynamic-map export
+    **	draws them straight from the owning building's geometry, so they sit
+    **	under bibs, ore and everything else instead of competing for the one
+    **	smudge slot a cell has (walk finding 2026-08-13). The offsets the
+    **	renderer uses live in its _aprons table (dllinterface.cpp).
     */
-    if (Type == STRUCT_TSWEAP) {
-        bib = SMUDGE_TSWEAPBB;
-        /*
-        **	The concrete starts one cell east and one south of the plot's
-        **	corner. Stamping from the corner instead would write nine blank
-        **	cells, and a blank stamp wipes the smudge already on that cell --
-        **	which is how a neighbour loses its bib.
-        **
-        **	This ADJUSTS the caller's cell, as the RA slab below does. The
-        **	placement path passes 0 and wants the bare offset, but every path
-        **	that stamps the smudge for real passes the building's own cell.
-        */
-        cell += MAP_CELL_W + 1;
-        return (true);
-    }
-    if (Type == STRUCT_TSPROC) {
-        bib = SMUDGE_TSPROCBB;
-        return (true);
-    }
 
     /*
     **	Dropship bay: the RA slab, but WITHIN the foundation. The deck art
