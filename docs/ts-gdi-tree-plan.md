@@ -1,6 +1,49 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ 2026-08-08 OVERNIGHT — RESUME HERE (the dropship bay)
+## ⭐⭐⭐ 2026-08-13 SESSION — cameo art day, crash fix verified in play
+
+**Takeoff-sound crash: FIRST CLEAN PASS 2026-08-13** — Luke played a full
+session on DLL `042a01e0` (the adpcm_ms re-encode, `2f70e2b5`), Mech Division
+ordered and its takeoff survived; a live crash-file watch on
+`AppData/Roaming/CnCRemastered/_Except_*.txt` stayed silent (newest records
+remain last night's 00:24/00:30 pair). The div-zero was state-dependent, so
+this is strong signal, not proof — keep half an eye on it for a week of play.
+
+**Shipped this session (both play-approved "looked good"):**
+- **Buildup de-gantried** (`e9ada2bf`): the bay's borrowed GTDEPTMK buildup now
+  raises only the deck. Mechanism (in `ts_pack_tree.py`): `mk_clip_dir` clips
+  every MK frame to the clip art's HEALTHY-frame silhouette (damaged bulges
+  past it and leaks foreign pixels); remap-green inside the clip is keyed out
+  and inpainted from the surrounding slab (vectorized neighbour fill — a
+  per-pixel loop stalled); the deck's own rim-ring green is protected ONLY in
+  frames that actually draw the ring (position-only protection shielded the
+  gantry truss crossing the ring's path; that cost four repack rounds).
+  Residue accepted at speed: 2-frame grey crane sliver, small nub, f0-1
+  gantry shadow.
+- **Luke's hand-made cameos installed** (`e25d429b`): Dropship Bay, Mech
+  Division (3 Titans + dropbay badge), Mammoth Mk. II (dropbay badge), all
+  composed on the reconstructed TS unit-cameo scene background. Both 300-frame
+  countdown sets rebaked from the new bases. **`resources/custom-cameos/` is
+  now canonical for hand-made BuildIcons** — both packers
+  (`ts_pack_tree.py` emit_sidebar_data, `ts_pack_walkers.py`) prefer it over
+  generated art, and `scripts/apply_custom_cameos.py` re-asserts every
+  override in one pass (run it after any SRGB-touching packer and BEFORE
+  `ts_mk2_cooldown_cameos.py`).
+- **Art-source kit on Luke's desktop** (`~/Desktop/mech-division-art/`):
+  Titan/Wolverine all 8 facings (shadowless, gold house-colour, transparent),
+  bay deck sprite, and the **reconstructed blank TS cameo scene background**
+  (three-donor agreement vote MMCH/SMCH/HMEC + row-wise fill; TS itself ships
+  no empty scene cameo — XXICON.SHP is a riveted metal plate, different
+  family). Wolverine cameo source = SMCHICON.SHP (not SMECHICON).
+
+**Desktop prefix after session: DLL `042a01e0` + today's art, md5-verified.**
+
+**Remaining next-session list:** ① Mk. II capped cameo should read LOCKED
+(red X / greyed; AssetName-swap mechanism ready) AND gate the EVA "Building"
+ack on Begin_Production's verdict. Queued: emblem dial, optional 32° camera
+match, cap→3 later. (② buildup crop and ③④ both icons: DONE above.)
+
+## 2026-08-08 OVERNIGHT — the dropship bay (superseded resume point)
 
 **The building exists as of `892aa49e` and builds clean. The delivery does not.**
 
@@ -101,7 +144,8 @@ inserted after "the last ObjectTypeClass" in RABUILDABLES lands INSIDE the
 countdown generator's managed block and its next run EATS it -- insert before
 the BEGIN marker.
 
-**🔴 CRASH DIAGNOSED + FIX DEPLOYED, VERIFY FIRST (2026-08-13 ~01:00):** two
+**CRASH DIAGNOSED + FIX DEPLOYED (2026-08-13 ~01:00; first clean play pass
+same day — see top block):** two
 live ClientG crashes at the Mech Division takeoff (00:24, 00:30), byte-identical
 `EXCEPTION_INT_DIVIDE_BY_ZERO` at ClientG+0xAB5E69, `RAR_SFX_DROPUP1` on the
 crash-thread stack (minidump + EA's `_Except_*.txt` in AppData/Roaming/
