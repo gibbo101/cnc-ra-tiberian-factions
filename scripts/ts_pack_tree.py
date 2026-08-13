@@ -291,6 +291,7 @@ def resample(indices, target):
 def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count,
                     canvas_w, canvas_h, target_w=None, bib_dir=None,
                     bottom_margin=None, overscale=1.0, mk_mask_dir=None,
+                    mk_clip_dir=None,
                     overlay_dir=None, fit_w=None, dst_x_px=None, door_spec=None,
                     apron_cells=None, front_ring=None, emblem=None):
     """The Stealth Recipe compositor.
@@ -676,16 +677,74 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     # the pad dropped from the finished art (grid-sized buildings + RA slab),
     # mask the pad's silhouette (its *BB sprite, same source canvas) out of
     # every buildup frame or construction shows a pad that then vanishes.
-    if mk_mask_dir is not None:
-        msk = load(mk_mask_dir, 0)
-        m2 = load(mk_mask_dir, 2)
-        msk.paste(m2, (0, 0), m2)
-        msk = msk.split()[3].point(lambda a: 255 if a > 0 else 0)
+    if mk_mask_dir is not None or mk_clip_dir is not None:
+        mk_degreen = lambda img: img
+        if mk_mask_dir is not None:
+            msk = load(mk_mask_dir, 0)
+            m2 = load(mk_mask_dir, 2)
+            msk.paste(m2, (0, 0), m2)
+            msk = msk.split()[3].point(lambda a: 255 if a > 0 else 0)
+
+            def mk_alpha(a):
+                return ImageChops.subtract(a, msk)
+        else:
+            # A buildup borrowed from a bigger building raises structure this
+            # one doesn't have: keep only what falls inside the clip sprite's
+            # own silhouette (same source canvas, so registration is free).
+            # The borrowed structure also leans OVER that silhouette in some
+            # frames; its pixels are remap-green, so green inside the clip
+            # that isn't part of the clip art's own green (the rim ring) is
+            # foreign — inpaint it from the surrounding slab.
+            import numpy as np
+            # The healthy frame alone defines the clip: the damaged frame's
+            # silhouette bulges past it and would let foreign pixels through.
+            clip_img = load(mk_clip_dir, 0)
+            clip = clip_img.split()[3].point(lambda a: 255 if a > 0 else 0)
+            ca = np.array(clip_img).astype(int)
+            c2a = np.array(load(mk_clip_dir, 2)).astype(int)
+            own_green = ((ca[..., 1] > ca[..., 0] + 20) & (ca[..., 1] > ca[..., 2] + 20)) | \
+                        ((c2a[..., 1] > c2a[..., 0] + 20) & (c2a[..., 1] > c2a[..., 2] + 20))
+
+            def mk_alpha(a):
+                return ImageChops.multiply(a, clip)
+
+            def mk_degreen(img):
+                a = np.array(img).astype(int)
+                green = (a[..., 3] > 0) & (a[..., 1] > a[..., 0] + 20) & \
+                        (a[..., 1] > a[..., 2] + 20)
+                # The clip art's own green (the rim ring) is only protected in
+                # frames actually drawing it: position alone would shield
+                # foreign green that happens to cross the ring's path.
+                ring_drawn = (a[..., :3] == ca[..., :3]).all(-1)[own_green].mean() > 0.5 \
+                    if own_green.any() else False
+                if ring_drawn:
+                    green &= ~own_green
+                if not green.any():
+                    return img
+                good = (a[..., 3] > 0) & ~green
+                out = a.astype(float)
+                shifts = [(dy, dx) for dy in (-1, 0, 1) for dx in (-1, 0, 1)
+                          if (dy, dx) != (0, 0)]
+                while green.any():
+                    ssum = np.zeros(out[..., :3].shape)
+                    scnt = np.zeros(green.shape)
+                    for dy, dx in shifts:
+                        gsh = np.roll(np.roll(good, dy, 0), dx, 1)
+                        csh = np.roll(np.roll(out[..., :3], dy, 0), dx, 1)
+                        ssum += csh * gsh[..., None]
+                        scnt += gsh
+                    fill = green & (scnt > 0)
+                    if not fill.any():
+                        break
+                    out[fill, :3] = ssum[fill] / scnt[fill, None]
+                    good |= fill
+                    green &= ~fill
+                return Image.fromarray(np.clip(out, 0, 255).astype("uint8"))
 
         def mk_load(i):
             img = load(mk_dir, i)
-            img.putalpha(ImageChops.subtract(img.split()[3], msk))
-            return img
+            img.putalpha(mk_alpha(img.split()[3]))
+            return mk_degreen(img)
 
         imgs = [mk_load(i) for i in range(frame_count(mk_dir))]
         counts = [sum(1 for p in im.getdata() if p[3] > 0) for im in imgs]
@@ -807,6 +866,11 @@ EMBLEMS = {"TSDROP": ("~/Desktop/ts-gdi-logo.png", 0.62, 1.95)}
 # tall, margin 33 puts its bottom at 208 of 384, clear of the third row.
 BOTTOM_MARGINS = {"TSDROP": 33}
 
+# The bay borrows the depot's buildup, which also raises the gantry the bay
+# doesn't have: clip every frame to the deck's own silhouette so only the
+# pad's construction survives.
+MK_CLIPS = {"TSDROP": "shp_gtdeptbb"}
+
 for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
     if not os.path.isdir(f"{ART}/{base}"):
         print(f"{ini}: SKIP (no {base})")
@@ -816,7 +880,8 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
     build_structure(ini, base, 0, 2, [loop(d) for d in anim_dirs], mk, mkc, cw, ch,
                     None if ini in BOTTOM_MARGINS else tw,
                     bib_dir=BIBS.get(ini), emblem=EMBLEMS.get(ini),
-                    bottom_margin=BOTTOM_MARGINS.get(ini))
+                    bottom_margin=BOTTOM_MARGINS.get(ini),
+                    mk_clip_dir=MK_CLIPS.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- Size pass (2026-08-03, docs/ts-gdi-tree-plan.md top block): the four
