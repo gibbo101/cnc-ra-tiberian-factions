@@ -5365,42 +5365,33 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         */
         if (object->What_Am_I() == RTTI_BUILDING) {
             switch (((BuildingTypeClass const&)object->Class_Of()).Type) {
-            // The 2026-08-13 walk rounds established the launcher's box
-            // model empirically: it honours our DimensionX/Y (size), centres
-            // the box on the building's plot, and IGNORES CenterCoordY
-            // entirely (two bias-only moves and a dims-nudge probe all
-            // failed; the round-2 refinery height grew symmetrically). The
-            // Y biases are deleted as proven dead. Round 3 probes the one
-            // untested vertical lever: the exported cell row itself.
+            // SELECTION-BOX CONTRACT (proven over four probe rounds,
+            // 2026-08-13, docs/launcher-render-contracts.md): the launcher
+            // centres a building's selection box on its plot by its own
+            // reckoning and takes ONLY DimensionX/Y from these exports.
+            // CenterCoordX/Y, CellX/Y and the OccupyList are all ignored
+            // for box position. Do not add position biases here; size is
+            // the only dial. A box that must sit off plot-centre is an
+            // art-geometry/design problem, not an export problem.
             case STRUCT_TSFACT:
-                // Box 1 tile south (walk verdict), size approved at 38.
-                new_object.CellY += 1;
-                dimy = 38;
+                dimy = 38; // art-rows height, approved 2026-08-13
                 break;
             case STRUCT_TSWEAP:
-                new_object.CenterCoordY += (14 * 256) / 24;
                 dimy = 41;
                 break;
             case STRUCT_TSPILE:
-                // 2x2 box, the added tile north -- APPROVED in round 1 with
-                // exactly these values; left byte-identical on purpose (the
-                // bias is a no-op under the box model, but an approved box
-                // is not the place to test that).
-                new_object.CenterCoordY += (8 * 256) / 24 - 128;
-                dimy = 38;
+                dimy = 38; // 2x2 box, approved 2026-08-13
                 break;
             case STRUCT_TSPROC:
-                // South edge stays, 2 tiles added north, 4 tiles tall total:
-                // height 80 centred one row further north = round-1 south
-                // edge preserved by construction IF the CellY probe bites.
+                // Height approved 2026-08-13 round 1: the plot-centred box
+                // whose south edge sits right. Taller boxes only grow both
+                // ways (see contract above); the PositionY probe (round 5)
+                // moved the SPRITE, not the box -- the draw rect IS the art
+                // anchor. The remaining fix path for off-centre boxes is
+                // stub/canvas geometry, with TDFACT as the working control.
                 new_object.CenterCoordX -= 78;
-                new_object.CellY -= 1;
                 dimx = 90;
-                dimy = 80;
-                break;
-            case STRUCT_TSDROP:
-                // Whole box 1 tile north, same size.
-                new_object.CellY -= 1;
+                dimy = 32;
                 break;
             default:
                 break;
