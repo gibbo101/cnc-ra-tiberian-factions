@@ -1813,6 +1813,80 @@ static UnitTypeClass const UnitTsMdiv(UNIT_TSMDIV,
                                       MISSION_GUARD // ORDERS: unused.
 );
 
+// TS Devil's Tongue (UNIT_TSSUBTANK), TS rules [SUBTANK]. Subterranean flame
+// tank — the underground state machine lives on UnitClass (docs/
+// subterranean-design.md); as a surface vehicle it is a tracked, turret-less
+// flamethrower. TS's FireballLauncher (Damage=0 + fire particles) maps onto our
+// TDFlameTongue chain: same twin-prong nozzle geometry as the TD Flame Tank
+// (0x30 forward + ±0x20 lateral split, Burst=2 picks the side), directional
+// TDFLAME-N muzzle jet, ANIM_NAPALM3 death. TS: Strength=300, Armor=light,
+// TechLevel=7, Sight=5, Speed=5, Cost=750, ROT=6, Crusher=yes, CrateGoodie=yes.
+// (TS NoMovingFire is not modelled — RA has no unit-level flag for it.)
+// Art = SUBTANK.VXL: shapes 0-31 driving, 32-71 dive, 72-111 emerge ladder.
+static UnitTypeClass const UnitTsSubTank(UNIT_TSSUBTANK,
+                                         TXT_LTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                         "TSSUBTANK",  // NAME: IniName.
+                                         ANIM_NAPALM3, // EXPLOSION: napalm burst (flame-carrier death).
+                                         REMAP_NORMAL, // Sidebar remap logic.
+                                         0x0000,       // Vertical offset.
+                                         0x0030,       // Primary weapon offset (TD FTANK nozzle geometry).
+                                         0x0020,       // Primary weapon lateral (±E/W prong split).
+                                         0x0030,       // Secondary weapon offset (mirror primary).
+                                         0x0020,       // Secondary weapon lateral (mirror primary).
+                                         true,         // Can this be a goodie surprise from a crate? (TS CrateGoodie=yes)
+                                         false,        // Always use the given name for the vehicle?
+                                         true,         // Can this unit squash infantry? (TS Crusher=yes)
+                                         false,        // Does this unit harvest Tiberium?
+                                         false,        // Is invisible to radar?
+                                         false,        // Is it insignificant (won't be announced)?
+                                         false,        // Is it equipped with a combat turret? (turret-less)
+                                         false,        // Does it have a rotating radar dish?
+                                         false,        // Is there an associated firing animation?
+                                         false,        // Must the turret be in a locked down position while moving?
+                                         false,        // Is this a gigundo-rotund-enormous unit?
+                                         false,        // Does the unit have a constant animation?
+                                         false,        // Is the unit capable of jamming radar?
+                                         false,        // Is the unit a mobile gap generator?
+                                         32,           // Rotation stages.
+                                         0,            // Turret center offset along body centerline.
+                                         MISSION_HUNT  // ORDERS: Default order.
+);
+
+// TS Subterranean APC (UNIT_TSSAPC), TS rules [SAPC]. Unarmed underground
+// transport (docs/subterranean-design.md) — as a surface vehicle a tracked
+// Passengers=5 carrier joining the UNIT_APC/UNIT_TDAPC/UNIT_TSAPC door sites.
+// TS: Strength=175, Armor=heavy, TechLevel=6, Sight=5, Speed=5, Cost=800,
+// ROT=5, Crusher=yes, CrateGoodie=yes, PipScale=Passengers.
+// Art = SAPC.VXL (striped drill nose), same 112-shape layout as TSSUBTANK.
+static UnitTypeClass const UnitTsSapc(UNIT_TSSAPC,
+                                      TXT_APC,      // NAME: placeholder (HD display via rules.ini Name=).
+                                      "TSSAPC",     // NAME: IniName.
+                                      ANIM_FBALL1,  // EXPLOSION: big fireball.
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0000,       // Vertical offset.
+                                      0x0000,       // Primary weapon offset (unarmed).
+                                      0x0000,       // Primary weapon lateral offset.
+                                      0x0000,       // Secondary weapon offset.
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      true,         // Can this be a goodie surprise from a crate? (TS CrateGoodie=yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (TS Crusher=yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      false,        // Is it equipped with a combat turret?
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline.
+                                      MISSION_HUNT  // ORDERS: Default order.
+);
+
 /*
 **  AMCV/SMCV (Allied/Soviet MCVs) and TDGMCV/TDNMCV (GDI/Nod MCVs) — the four faction MCVs.
 **  Each exists as its own type so the MCV carries the faction it will deploy into: an MCV
@@ -2065,6 +2139,8 @@ void UnitTypeClass::Init_Heap(void)
     // heap directly) -- register strictly in enum order, append new types HERE.
     new UnitTypeClass(UnitTsApc);     // UNIT_TSAPC (TS Amphibious APC)
     new UnitTypeClass(UnitTsMdiv);    // UNIT_TSMDIV (Mech Division token)
+    new UnitTypeClass(UnitTsSubTank); // UNIT_TSSUBTANK (Devil's Tongue)
+    new UnitTypeClass(UnitTsSapc);    // UNIT_TSSAPC (Subterranean APC)
 }
 
 /***********************************************************************************************

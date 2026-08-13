@@ -1860,6 +1860,8 @@ typedef enum UnitType : char
     UNIT_TSSONIC,           // TS Disruptor (SONIC) — turreted sonic tank, fires SonicZap (IsSonic piercing line: railgun mechanics, green beam, no helix). Art = SONIC.VXL body 0-31 + SONICTUR.VXL turret 32-63.
     UNIT_TSAPC,             // TS Amphibious APC (APC) — unarmed SPEED_AMPHIBIOUS transport (TS's own terrain table; water hull frames 32-63 on water), Passengers=5, unload logic alongside UNIT_APC/UNIT_TDAPC, no door art.
     UNIT_TSMDIV,            // Mech Division (dropship-bay group order) — a purchasable TOKEN that never touches the map: Deliver_Cargo expands it into 3 Titans + 2 Wolverines at the unload beat. Cost 2800 (3400 sticker, starport discount — Luke, 2026-08-12).
+    UNIT_TSSUBTANK,         // TS Devil's Tongue (SUBTANK) — subterranean flame tank; fires TDFlameTongue (TS FireballLauncher mapped onto the TD flame chain). Art = SUBTANK.VXL: 32 driving + 80 dive/emerge pitch-ladder shapes (docs/subterranean-design.md).
+    UNIT_TSSAPC,            // TS Subterranean APC (SAPC) — unarmed underground transport, Passengers=5, door logic alongside UNIT_APC/UNIT_TDAPC/UNIT_TSAPC. Art = SAPC.VXL, same 112-shape layout as TSSUBTANK.
 
     UNIT_COUNT,
     UNIT_FIRST = 0

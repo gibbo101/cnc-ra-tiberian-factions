@@ -3208,7 +3208,7 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
                     // If it's a mechanic force-moving into an APC, don't try to heal it.
                     if (*this == INFANTRY_MECHANIC && object->What_Am_I() == RTTI_UNIT
                         && (*(UnitClass*)object == UNIT_APC || *(UnitClass*)object == UNIT_TDAPC
-                            || *(UnitClass*)object == UNIT_TSAPC)
+                            || *(UnitClass*)object == UNIT_TSAPC || *(UnitClass*)object == UNIT_TSSAPC)
                         && (Keyboard->Down(Options.KeyForceMove1) || Keyboard->Down(Options.KeyForceMove2))) {
                     } else {
                         return (ACTION_HEAL);

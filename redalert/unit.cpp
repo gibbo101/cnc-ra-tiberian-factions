@@ -1329,9 +1329,10 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                         **	to rotate.
                         */
 #ifdef FIXIT_PHASETRANSPORT //	checked - ajw 9/28/98
-                        if (*this == UNIT_APC || *this == UNIT_PHASE || *this == UNIT_TDAPC || *this == UNIT_TSAPC) {
+                        if (*this == UNIT_APC || *this == UNIT_PHASE || *this == UNIT_TDAPC || *this == UNIT_TSAPC
+                            || *this == UNIT_TSSAPC) {
 #else
-                        if (*this == UNIT_APC || *this == UNIT_TDAPC || *this == UNIT_TSAPC) {
+                        if (*this == UNIT_APC || *this == UNIT_TDAPC || *this == UNIT_TSAPC || *this == UNIT_TSSAPC) {
 #endif
                             if (IsRotating) {
                                 if (!Is_Door_Closed()) {
@@ -1352,10 +1353,11 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                         if (Transmit_Message(RADIO_MOVE_HERE, param, from) == RADIO_YEA_NOW_WHAT) {
 #ifdef FIXIT_PHASETRANSPORT //	checked - ajw 9/28/98
                             if ((*this != UNIT_APC && *this != UNIT_PHASE && *this != UNIT_TDAPC
-                                 && *this != UNIT_TSAPC)
+                                 && *this != UNIT_TSAPC && *this != UNIT_TSSAPC)
                                 || Is_Door_Open()) {
 #else
-                            if ((*this != UNIT_APC && *this != UNIT_TDAPC && *this != UNIT_TSAPC) || Is_Door_Open()) {
+                            if ((*this != UNIT_APC && *this != UNIT_TDAPC && *this != UNIT_TSAPC
+                                 && *this != UNIT_TSSAPC) || Is_Door_Open()) {
 #endif
                                 param = As_Target();
                                 Transmit_Message(RADIO_TETHER);
@@ -4239,6 +4241,7 @@ int UnitClass::Mission_Unload(void)
 #endif
     case UNIT_TDAPC: // Tiberian Factions: TD APC -- same unload state machine as UNIT_APC.
     case UNIT_TSAPC: // TS Amphibious APC -- same machine; its door state has no art but still gates the cycle.
+    case UNIT_TSSAPC: // Subterranean APC -- surface unload uses the same door state machine.
         switch (Status) {
         case INITIAL_CHECK:
             dir = Desired_Load_Dir(NULL, cell);
@@ -7726,9 +7729,10 @@ int UnitClass::Mission_Guard_Area(void)
     */
     if (Session.Type != GAME_NORMAL &&
 #ifdef FIXIT_PHASETRANSPORT //	checked - ajw 9/28/98
-        (*this == UNIT_APC || *this == UNIT_PHASE || *this == UNIT_TDAPC || *this == UNIT_TSAPC) &&
+        (*this == UNIT_APC || *this == UNIT_PHASE || *this == UNIT_TDAPC || *this == UNIT_TSAPC
+         || *this == UNIT_TSSAPC) &&
 #else
-        (*this == UNIT_APC || *this == UNIT_TDAPC || *this == UNIT_TSAPC) &&
+        (*this == UNIT_APC || *this == UNIT_TDAPC || *this == UNIT_TSAPC || *this == UNIT_TSSAPC) &&
 #endif
         !Target_Legal(TarCom) && !In_Radio_Contact() && House->Which_Zone(this) != ZONE_NONE && !House->IsHuman) {
 

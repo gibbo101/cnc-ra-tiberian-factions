@@ -19,8 +19,9 @@
 > **Open decisions (Luke):** detector unit (MRJ + ported Sensor Array vs one
 > shared) · sensed = reveal-only vs attackable · water-click = nearest-shore
 > emerge vs refuse order.
-> **⚠ No deploy surface assigned to this instance** (AI=desktop, ts-units=Deck
-> per the parallel-instance rule) — settle with Luke before the first deploy.
+> **Deploy surface: the DECK (Luke, 2026-08-13)** — the other Claude instance
+> works on the Linux desktop, so this arc deploys to `steamdeck` (100.68.30.94).
+> Usual rules: pgrep the live game first, md5-verify after deploy.
 
 **Origin (2026-08-13):** community challenge (Madrox8: "you're not going to fully
 recreate the subterranean feature, just workarounds" — Luke: "Challenge....accepted").
