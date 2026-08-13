@@ -146,6 +146,12 @@ highest quality the pipeline can produce.** Concretely:
   ClientG); overriding is the only channel.
   Used so far: `BONUS_UNLOCK` (hover missile), `DINOATK1` (railgun),
   `DINODIE1` (Mk. II tusks), `DINOMOUT` (Titan 120mm), `DINOYES` (dropship
-  landing DROPDWN1), `STRUGGLE` (dropship takeoff DROPUP1). One host per sound;
+  landing DROPDWN1), `STRUGGLE` (dropship takeoff DROPUP1).
+  ⚠ **The override WAV must be MS-ADPCM (fmt tag 2, like every TD?_SFX_ host
+  sample), NOT plain PCM.** A PCM (tag 1) override CRASHES ClientG with an
+  integer divide-by-zero in its audio path (deterministic, ClientG+0xAB5E69;
+  two live crashes 2026-08-13, `RAR_SFX_DROPUP1` on the crash stack) — the
+  client runs ADPCM block math against the file's header. Encode with
+  `ffmpeg -c:a adpcm_ms -ar 22050 -ac 1`. One host per sound;
   prefer clearly TD-gameplay names over generic UI-ish ones (BUTTON, BLEEP)
   as extra insurance. Census one-liner lives in the git history of this doc.

@@ -101,6 +101,23 @@ inserted after "the last ObjectTypeClass" in RABUILDABLES lands INSIDE the
 countdown generator's managed block and its next run EATS it -- insert before
 the BEGIN marker.
 
+**🔴 CRASH DIAGNOSED + FIX DEPLOYED, VERIFY FIRST (2026-08-13 ~01:00):** two
+live ClientG crashes at the Mech Division takeoff (00:24, 00:30), byte-identical
+`EXCEPTION_INT_DIVIDE_BY_ZERO` at ClientG+0xAB5E69, `RAR_SFX_DROPUP1` on the
+crash-thread stack (minidump + EA's `_Except_*.txt` in AppData/Roaming/
+CnCRemastered — those text files are the fast route to any crash's code+stack).
+ROOT CAUSE: the dropship WAVs shipped as plain PCM while every proven dormant-
+host override is MS-ADPCM — the client's ADPCM block math against a PCM header
+divides by zero (rule now in `launcher-render-contracts.md`). FIX shipped
+`2f70e2b5` / DLL build `042a01e0` (deployed, md5-verified): both WAVs
+re-encoded adpcm_ms. **First thing next session: order a Mech Division, watch
+the takeoff — the crash should be gone.** Overnight live-verify was attempted
+and blocked by environment only (XTEST input wedges on the front-end's modal
+dialogs under Proton; Steam client then stuck headless dropping launches —
+game-side reproduction never reached). Note: deliveries survived this sound
+for hours before the two crashes — the div-zero is state-dependent, so several
+clean takeoffs = good signal, not proof; a week of play is.
+
 **Still open on the bay (Luke's next-session list, 2026-08-13 close):**
 1. ⭐ **Mk. II capped-state cameo: LOCKED look.** At cap the cameo reads
    clickable and a click plays the EVA "Building" acknowledgment even though
