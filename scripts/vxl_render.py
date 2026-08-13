@@ -367,12 +367,13 @@ def main():
         worst = 0
         for f in (0, frames // 4):
             _, c = render_frame(model, yaw0 + f * (360.0 / frames), ppv, tg, zlift,
-                                hva_mats=hva_mats)
+                                hva_mats=hva_mats, pitch_deg=pitch)
             worst = max(worst, c)
         canvas = worst
     for f in range(frames):
         yaw = yaw0 + f * (360.0 / frames)  # CCW per classic frame order
-        img, _ = render_frame(model, yaw, ppv, tg, zlift, canvas, hva_mats=hva_mats)
+        img, _ = render_frame(model, yaw, ppv, tg, zlift, canvas, hva_mats=hva_mats,
+                              pitch_deg=pitch)
         img.save(os.path.join(outdir, f'frame-{f:04d}.png'))
     print(f'rendered {frames} frames, canvas {canvas}px -> {outdir}')
 
