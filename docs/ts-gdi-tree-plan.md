@@ -274,14 +274,13 @@ pad (BSIZE_43 centre = row 1 col 2), so all Center_Coord-keyed dock geometry
 re-indexes itself. ⚠ MCV-era saves with old 4x4 refineries mis-foot — fresh
 skirmish only.
 
-### Hangar resize (option, not queued)
+### Hangar resize (QUEUED 2026-08-13 — open queue 26)
 
-With the Mk. II delivered by the bay, the war factory could shrink: fit_w
+With the Mk. II delivered by the bay, the war factory shrinks back: fit_w
 416 → 74x55 hangar, 28.2x27.1 door — **the APC sets the floor** (below ~416
-it stops fitting); the Titan clears every option. The sandwich made this
-mostly moot (the vehicle now reads inside the bay); revisit only if the WF
-still reads oversized in play. (Unit canvases are 8 px per classic,
-buildings 16/3 — never mix them.)
+it stops fitting); the Titan clears every option; TD-exact width 395 would
+break the APC. (Unit canvases are 8 px per classic, buildings 16/3 — never
+mix them.) See open queue 26 for everything that must move with it.
 
 ## Refinery dock — ✅ SIGNED OFF "absolute perfection" (Luke, 2026-08-06 evening)
 
@@ -501,6 +500,26 @@ clause. Same literal-chain audit was needed for repair
 17. Possibly stale — confirm with Luke before working: conyard 0.94-size +
     rotating-light verdicts (2026-08-04); TSHARV front-cabin sprite anchor /
     oversized ShapeSize (likely absorbed by the dock arc).
+
+**Restored / added 2026-08-13 evening (Luke's picks — the prune had dropped
+25 by mistake; he caught it):**
+25. **TS harvester poses at the TD and RA refineries** — the last unmade
+    placements (Luke's original 08-04 scope: "dock ALL 3 harvesters at the
+    TS refinery, and the TS harvester at the TD and RA refineries").
+    Current code: TS-at-TD = generic visible W-facing park (explicitly
+    skips the TD attach maneuver, `unit.cpp` ~1193); TS-at-RA = shares the
+    TDHARV visible-park branch, never dialled. Pose work is collaborative —
+    worked out with Luke's eye (Aseprite reference art prepared in
+    `~/Desktop/docking-art/`: all 3 harvesters full-canvas-aligned facings
+    + all 3 refineries incl. TDPROC's attach anims; see its INDEX.txt).
+26. **War factory descale to normal size (Luke, 2026-08-13).** The Mk. II
+    now arrives by bay, so the 08-07 enlargement can come back down — see
+    the hangar-resize table: **fit_w 416 is the floor (below ~416 the
+    TSAPC stops fitting through the door); TD-exact width 395 would break
+    the APC.** ⚠ Moves together with: the exit point (the y=42 two-pixel
+    window re-derives from the new hangar span), the sandwich layer cut,
+    the sort band (must still reach the new south edge), the placement
+    grid (item 3 — fix in the same pass), and canvas+stub together.
 
 **Roster remainder (the plan below):**
 18. Component towers TSVULC/TSCSAM/TSROCK — turreted TDGTWR pattern, NOT the
