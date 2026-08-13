@@ -100,12 +100,13 @@ def load(dirname, i):
 
 
 def unit_frames(render_base, rot32, rot8):
-    """rot32/rot8: per-model rotation fix. The verified TS-voxel convention
-    (APC/HARV chain) is nose on -X: those models take +8 (of 32) / +2 (of 8).
-    SAPC is authored nose-on-+X -- 180 degrees opposite -- so it takes +24/+6
-    (Deck-verified 2026-08-13: with +8 it drove drill-backwards). The pitch
-    ladders are rendered nose-axis-aware (dive dirs always hold nose-DOWN art:
-    positive pitch for -X-nose models, negative for +X-nose)."""
+    """rot32/rot8: per-model rotation fix, dialled EMPIRICALLY per model via
+    the labelled Desktop facing sheet (Luke's eye, 2026-08-13) -- do not derive
+    from axis renders, the projection reasoning failed twice. SUBTANK (nose -X)
+    lands at 0/0; SAPC (nose +X, 180 opposite) at 16/4. The pitch ladders are
+    rendered nose-axis-aware (dive dirs always hold nose-DOWN art: positive
+    pitch for -X-nose models, negative for +X-nose); rot8 shifts only which
+    facing index each ladder column serves."""
     frames = []
     # Driving frames carry the ground drop shadow; ladder frames don't (the
     # hull is part-buried and the DIG mound anim plays over the top).
@@ -123,8 +124,8 @@ def unit_frames(render_base, rot32, rot8):
     return frames
 
 
-write_zip(f"{UNITS_DIR}/TSSUBTANK.ZIP", "tssubtank", unit_frames("subtank", 8, 2))
-write_zip(f"{UNITS_DIR}/TSSAPC.ZIP", "tssapc", unit_frames("sapc", 24, 6))
+write_zip(f"{UNITS_DIR}/TSSUBTANK.ZIP", "tssubtank", unit_frames("subtank", 0, 0))
+write_zip(f"{UNITS_DIR}/TSSAPC.ZIP", "tssapc", unit_frames("sapc", 0, 0))
 
 # ---- BuildIcons (CAMEO.PAL decodes) ----
 pal = ts_shp.load_pal(f"{ART}/CAMEO.PAL")
