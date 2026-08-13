@@ -6871,12 +6871,6 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     sidebar_entry.Cost =
                         tech->Cost
                         * PlayerPtr->CostBias; // If this gets modified, also modify below for skirmish and multiplayer
-#if TF_DEV_BUILD
-                    // Dev lever: quote what the factory will actually charge.
-                    if (TF_Dev_Cheap_Build()) {
-                        sidebar_entry.Cost = 1;
-                    }
-#endif
                     sidebar_entry.PowerProvided = 0;
                     sidebar_entry.BuildTime = tech->Time_To_Build(
                         PlayerPtr->Class->House); // sidebar_entry.BuildTime = tech->Time_To_Build() / 60;
@@ -7103,12 +7097,6 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         //
                         // sidebar_entry.Cost = tech->Cost;
                         sidebar_entry.Cost = tech->Cost * PlayerPtr->CostBias;
-#if TF_DEV_BUILD
-                        // Dev lever: quote what the factory will actually charge.
-                        if (TF_Dev_Cheap_Build()) {
-                            sidebar_entry.Cost = 1;
-                        }
-#endif
 
                         sidebar_entry.PowerProvided = 0;
                         sidebar_entry.BuildTime = tech->Time_To_Build(

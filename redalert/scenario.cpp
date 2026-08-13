@@ -100,21 +100,18 @@ bool TF_Dev_Cheats(void)
 }
 
 /***********************************************************************************************
- * TF_Dev_Cheap_Build -- Is the flat $1 build-cost lever switched on?                          *
+ * TF_Dev_Rich_Start -- Is the mega-credits dev lever switched on?                             *
  *                                                                                             *
- *    Everything costs one credit: production, refunds, repair and the displayed sidebar price *
- *    all agree, so the sidebar never quotes a figure the player is not charged. This applies  *
- *    to AI houses too (Luke: the lever exists to reach the top of the tech tree quickly, not  *
- *    to observe AI behaviour). Note their build planner still reasons about affordability     *
- *    from the unmodified Cost_Of(), so what changes for them is only that they stop running   *
- *    out of money -- do not read AI economic behaviour from a run with this armed.            *
+ *    Grants the human player 1,000,000 credits at scenario start (skirmish only). Prices,     *
+ *    refunds and sidebar quotes stay authentic, so full-price mechanics that key off what     *
+ *    was PAID keep working -- the flat-$1 predecessor silently failed the refinery's          *
+ *    free-harvester gate, which compares PurchasePrice against Raw_Cost.                      *
  *                                                                                             *
  *    OPT-IN, unlike TF_Dev_Cheats: create Documents/CnCRemastered/tf_cheap.flag to arm it,     *
- *    delete the file to disarm without a rebuild. It defaults OFF because a build that is      *
- *    free by default would quietly invalidate every balance observation made while it ran.     *
- *    Read once and cached, like TF_Dev_Cheats.                                                 *
+ *    delete the file to disarm without a rebuild. It defaults OFF so an armed prefix can       *
+ *    never masquerade as a balance-observation run. Read once and cached, like TF_Dev_Cheats. *
  *=============================================================================================*/
-bool TF_Dev_Cheap_Build(void)
+bool TF_Dev_Rich_Start(void)
 {
 #if TF_DEV_BUILD
     static int cached = -1;
@@ -666,6 +663,15 @@ bool Read_Scenario(char* name)
         for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
             Map.Map_Cell(cell, PlayerPtr);
         }
+    }
+
+    /*
+    **  TF DEV TOGGLE -- mega credits: the human player starts a skirmish with a
+    **  war chest instead of discounted prices (see TF_Dev_Rich_Start above).
+    **  AI houses are untouched.
+    */
+    if (TF_Dev_Rich_Start() && Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        PlayerPtr->Refund_Money(1000000);
     }
 #endif
 
