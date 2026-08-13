@@ -99,27 +99,32 @@ def load(dirname, i):
     return Image.open(f"{ART}/{dirname}/frame-{i:04d}.png").convert("RGBA")
 
 
-def unit_frames(render_base):
+def unit_frames(render_base, rot32, rot8):
+    """rot32/rot8: per-model rotation fix. The verified TS-voxel convention
+    (APC/HARV chain) is nose on -X: those models take +8 (of 32) / +2 (of 8).
+    SAPC is authored nose-on-+X -- 180 degrees opposite -- so it takes +24/+6
+    (Deck-verified 2026-08-13: with +8 it drove drill-backwards). The pitch
+    ladders are rendered nose-axis-aware (dive dirs always hold nose-DOWN art:
+    positive pitch for -X-nose models, negative for +X-nose)."""
     frames = []
-    # 0-31 driving: renders start E-relative; +8 rotation (cardinal-verified).
     # Driving frames carry the ground drop shadow; ladder frames don't (the
     # hull is part-buried and the DIG mound anim plays over the top).
     for i in range(32):
-        frames.append(place(load(f"renders_{render_base}", (i + 8) % 32),
+        frames.append(place(load(f"renders_{render_base}", (i + rot32) % 32),
                             shadow=(10, 13)))
-    # 32-71 dive: facing f = driving frame f*4; 8-frame renders need +2.
+    # 32-71 dive: facing f = driving frame f*4.
     for f in range(8):
         for pitch in (8, 16, 24, 32, 40):
-            frames.append(place(load(f"renders_{render_base}_dive_{pitch}", (f + 2) % 8)))
+            frames.append(place(load(f"renders_{render_base}_dive_{pitch}", (f + rot8) % 8)))
     # 72-111 emerge: steepest first, easing to the surface.
     for f in range(8):
         for pitch in (40, 32, 24, 16, 8):
-            frames.append(place(load(f"renders_{render_base}_emerge_{pitch}", (f + 2) % 8)))
+            frames.append(place(load(f"renders_{render_base}_emerge_{pitch}", (f + rot8) % 8)))
     return frames
 
 
-write_zip(f"{UNITS_DIR}/TSSUBTANK.ZIP", "tssubtank", unit_frames("subtank"))
-write_zip(f"{UNITS_DIR}/TSSAPC.ZIP", "tssapc", unit_frames("sapc"))
+write_zip(f"{UNITS_DIR}/TSSUBTANK.ZIP", "tssubtank", unit_frames("subtank", 8, 2))
+write_zip(f"{UNITS_DIR}/TSSAPC.ZIP", "tssapc", unit_frames("sapc", 24, 6))
 
 # ---- BuildIcons (CAMEO.PAL decodes) ----
 pal = ts_shp.load_pal(f"{ART}/CAMEO.PAL")

@@ -107,6 +107,10 @@ def main():
         flags=re.S,
     )
 
+    # Keys already defined outside the generated block (e.g. a hand-added _0
+    # sibling) must not be emitted again -- the launcher gets one definition.
+    existing = set(re.findall(r'Name="(RA_[A-Za-z0-9_]+)"', xml))
+
     blocks = []
     for m in re.finditer(
         r'<ObjectTypeClass Name="(RA_[A-Za-z0-9_]+)" Classification="CNCBuildableObject".*?</ObjectTypeClass>',
@@ -126,7 +130,13 @@ def main():
         # Superweapons resolve their cameo through a separate DLL path
         # (Convert_Special_Weapon_Type sets a bespoke AssetName), and their long
         # IniNames overflow the mask suffix. They keep their existing badges.
-        if asset.startswith("SW_"):
+        # Their baked badge variants (TF_Apply_Special_Badge's "S<hex>_" keys)
+        # are generated entries too, not buildables -- skip them, along with
+        # the other bespoke DLL-written key families: the dropship cooldown
+        # countdown keys (_CDnnn) and the locked-cameo keys (_LK), which carry
+        # their own art states and never take a badge suffix.
+        if (asset.startswith("SW_") or re.match(r"S[0-9A-F]_", asset)
+                or re.search(r"(_CD\d+|_LK)$", asset)):
             continue
 
         pristine = plain.get(entry_name, current_icon.group(1).strip())
@@ -138,6 +148,8 @@ def main():
 
         def add(suffix, icon):
             key = "RA_" + asset + "_" + suffix
+            if key in existing:
+                return
             if len(asset) + len(suffix) + 1 > 15:
                 sys.exit(f"ERROR: variant key '{asset}_{suffix}' exceeds AssetName[16]")
             blocks.append(
