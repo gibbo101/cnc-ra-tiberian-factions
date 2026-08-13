@@ -1,24 +1,31 @@
 # Subterranean units — locked design + arc tracker
 
-> **⭐ RESUME HERE (2026-08-13 late session: STAGE 1 COMPLETE, deployed to Deck).**
-> **Done:** design LOCKED; art regenerated + packed (`ts_pack_subterranean.py`:
-> 112 shapes/unit = 32 driving + 40 dive + 40 emerge, 384 canvas, 48x48x112
-> classic stubs in TFASSETS.MIX); `UNIT_TSSUBTANK`/`UNIT_TSSAPC` stamped
-> (ctors, APC door/unload chains incl. Mission_Unload, rules.ini behind
-> TSWEAP for testing, Tracked=yes both); DLL built + rsync'd to the Deck,
-> md5-verified. **AWAITING Luke's drive test** (both buildable from the TS
-> war factory; TS MCV spawns for every human at skirmish start).
+> **⭐ RESUME HERE (2026-08-13 end of session: STAGE 1 DONE + all stage-2
+> design inputs settled — NEXT SESSION BUILDS THE STATE MACHINE.)**
+> **Done this session:** art packed + stamped + Deck-deployed (md5-verified);
+> facings dialled by Luke's sheet loop (rot 0/0 BOTH units, dive = negative
+> pitch — see [[feedback-voxel-facing-sheet-loop]]; do NOT re-derive from
+> renders); sidebar cameo fix (cameo_variants_build regenerated + hardened);
+> **transition choreography LOCKED** (section below — angle leads, soil at
+> step 4, into-the-soil = gone); **dig-decision rule DECIDED:** dig only if
+> destination unreachable by surface OR straight-line distance ≥ DIG
+> THRESHOLD, starting at 6 cells, dialled in play across Luke's 2–10 band
+> (one constant).
 > **Shape layout contract (DLL side):** driving = facing frame 0-31; dive =
-> 32 + (facing/4)*5 + step (pitches 8/16/24/32/40 nose-down); emerge =
-> 72 + (facing/4)*5 + step (40 down to 8 nose-up); 0-pitch steps reuse the
+> 32 + (facing/4)*5 + step (nose-down, shallow→steep); emerge =
+> 72 + (facing/4)*5 + step (steep→shallow); 0-pitch steps reuse the
 > driving frame.
+> **Still owed:** Luke's full in-game stage-1 pass on the Deck (drive both,
+> cameos show, flame jets, SAPC loads/unloads 5) — facing + cameo bugs he
+> caught are fixed and deployed, worktree `6434b553`+.
 > **Pick-up steps:**
-> 1. Still pending: cherry-pick the `--pitch` fix (`de359bd7`) to `ts-units`
->    when convenient + check dropship/VTOL flare art wasn't rendered flat.
-> 2. Pre-existing gap found (NOT ours): UNIT_TSAPC is missing from the
+> 1. Build stage 2: the underground state machine (locked design + the
+>    choreography section + dig threshold above are the complete spec).
+> 2. Still pending: cherry-pick the `--pitch` fix (`de359bd7`) to `ts-units`
+>    + check dropship/VTOL flare art wasn't rendered flat.
+> 3. Pre-existing gap found (NOT ours): UNIT_TSAPC missing from the
 >    Mission_Unload case list — the Amphibious APC likely cannot unload
 >    passengers. Belongs to the ts-units instance; flag to Luke.
-> 3. Next work: the underground state machine (see "Remaining arc stages").
 > **Open decisions (Luke):** detector unit (MRJ + ported Sensor Array vs one
 > shared) · sensed = reveal-only vs attackable · water-click = nearest-shore
 > emerge vs refuse order.
