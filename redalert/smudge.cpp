@@ -177,9 +177,20 @@ bool SmudgeClass::Mark(MarkType mark)
                         CellClass* cell = &Map[newcell];
 
                         if (Class->IsBib) {
-                            cell->Smudge = Class->Type;
-                            cell->SmudgeData = w + (h * Class->Width);
-                            cell->Owner = ToOwn;
+                            /*
+                            **	A TS apron goes UNDER everything: it never
+                            **	overwrites a cell's existing smudge (so a
+                            **	neighbour's bib survives a later apron, and
+                            **	blank apron tiles stop eating them), while
+                            **	anything stamped after the apron still
+                            **	overwrites it. The pad yields both ways.
+                            */
+                            bool apron_yields = Is_TS_Apron_Smudge(Class->Type) && cell->Smudge != SMUDGE_NONE;
+                            if (!apron_yields) {
+                                cell->Smudge = Class->Type;
+                                cell->SmudgeData = w + (h * Class->Width);
+                                cell->Owner = ToOwn;
+                            }
                         } else {
                             if (cell->Is_Clear_To_Move(SPEED_TRACK, true, true)) {
                                 if (Class->IsCrater && cell->Smudge != SMUDGE_NONE

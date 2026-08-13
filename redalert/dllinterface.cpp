@@ -5368,9 +5368,10 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             case STRUCT_TSFACT:
                 // Height trimmed to the art rows (48cl art - the usual 20%
                 // trim). Walk verdict 2026-08-13: size good, box one tile
-                // high -- one full tile south on top of the 25cl art seat.
+                // high. Bias-only proved DEAD tonight; one-unit dims nudge
+                // added to probe the launcher's recompute (see TSDROP).
                 new_object.CenterCoordY += (25 * 256) / 24 + 256;
-                dimy = 38;
+                dimy = 37;
                 break;
             case STRUCT_TSWEAP:
                 new_object.CenterCoordY += (14 * 256) / 24;
@@ -5383,21 +5384,25 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 dimy = 38;
                 break;
             case STRUCT_TSPROC:
-                // Calibrated 2026-08-05 from a live frame (engine pad centre
-                // vs art pixels); walk verdict 2026-08-13: the box reached a
-                // tile past the disc's north edge -- trimmed from the top
-                // (height down one tile, centre down half to keep the south
-                // edge planted).
+                // Round-2 verdict (Luke, 2026-08-13 23:02): south edge is
+                // right where it is -- extend 2 tiles north, 4 tiles tall,
+                // no movement. The launcher proved tonight it honours our
+                // Dimension values but re-derives position itself, so the
+                // height growth carries the whole change; the bias stays
+                // only because removing it is an untested second variable.
                 new_object.CenterCoordX -= 78;
-                new_object.CenterCoordY -= 64;
+                new_object.CenterCoordY -= 320;
                 dimx = 90;
-                dimy = 32;
+                dimy = 80;
                 break;
             case STRUCT_TSDROP:
-                // Walk verdict 2026-08-13: deck art rides high in the plot
-                // (BOTTOM_MARGINS) but the box is foundation-anchored and
-                // framed the dirt below -- one tile north onto the deck.
+                // Walk verdict 2026-08-13: whole box one tile north, same
+                // size. Bias-only proved DEAD tonight (box did not move);
+                // this round pairs it with a one-unit dims nudge to probe
+                // whether a dims change makes the launcher re-read position.
                 new_object.CenterCoordY -= 256;
+                dimx = 56;
+                dimy = 56;
                 break;
             default:
                 break;
@@ -9181,9 +9186,11 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
     ** the building, so units could not be ordered onto it). Ground art does
     ** neither.
     **
-    ** The one-dynamic-entry-per-cell rule applies: an apron cell carrying an
-    ** overlay yields to it, exactly as the TD ground entry above does, because
-    ** two entries on a cell z-fight with no stable ordering.
+    ** An apron cell carrying an overlay emits BOTH entries, apron first: the
+    ** vanilla smudge entry already precedes the overlay entry in this function
+    ** and renders ore on top of bib slabs correctly, so same-cell submission
+    ** order is a stable layer order (the old one-entry-per-cell yield left
+    ** ore-shaped holes in the concrete -- walk finding 2026-08-13).
     */
     if (Is_TS_Apron_Smudge(cell_ptr->Smudge)) {
         const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(cell_ptr->Smudge);
@@ -9205,7 +9212,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
         }
         bool apron_hidden = (apron_owner != NULL && apron_owner->Visual_Character() == VISUAL_HIDDEN);
 
-        if (!apron_hidden && cell_ptr->Overlay == OVERLAY_NONE) {
+        if (!apron_hidden) {
             CNCDynamicMapEntryStruct& apron_entry = dynamic_map->Entries[entry_index++];
 
             strncpy(apron_entry.AssetName, apron_type.IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
