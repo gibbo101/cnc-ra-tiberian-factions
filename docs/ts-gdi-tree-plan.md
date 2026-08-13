@@ -2,20 +2,21 @@
 
 ## ⭐⭐⭐ SESSION 2026-08-13 EVENING → 08-14 — the building walk + fix marathon
 
-**RESUME HERE: the 3x2 footprint pass is DEPLOYED but UNVERIFIED** (desktop
-DLL `d4bb09e2`, md5-verified, commit `55e4253c`, deployed as Luke quit
-~00:15). Conyard (TSFACT) and dropship bay (TSDROP) went **BSIZE_33 → 3x2**
-— the empty top row was what held their selection boxes off the art
-(contract #7 below). **First thing next session, fresh skirmish:**
-1. Conyard + bay selection boxes (should finally hug the art) + both
-   placement ghosts.
-2. **TS MCV round-trip**: deploy → 3x2 yard → undeploy → MCV back →
+**The 3x2 footprint pass: conyard + bay boxes VERIFIED IN PLAY** ("FIXED!",
+Luke, 00:10) — desktop DLL `d4bb09e2`, commit `55e4253c`. Conyard (TSFACT)
+and dropship bay (TSDROP) went **BSIZE_33 → 3x2**; the empty top row was
+what held their boxes off the art (contract #7 below). **STILL OWED next
+session, fresh skirmish:**
+1. **TS MCV round-trip**: deploy → 3x2 yard → undeploy → MCV back →
    redeploy. The one real regression risk (machinery is size-generic and
    TDFACT-proven, but eyes on it).
-3. **Bay delivery end-to-end**: Mk. II ordered → pod lands on the deck's
+2. **Bay delivery end-to-end**: Mk. II ordered → pod lands on the deck's
    visual centre (landing bias re-derived 160→32 leptons) → cargo steps
    onto the concrete → walks clear. Mech Division too (crash soak).
-4. Art seats unmoved: conyard ON its slab, deck riding high.
+3. **Refinery box DECISION (Luke, deferred 00:15)**: leave the approved
+   round-1 fit (recommended), or a 4x2 plot conversion buying ONE tile of
+   headroom (not the wished-for two — centred-box maths) at the cost of
+   re-indexing and fully retesting the signed-off dock geometry.
 
 **⭐ THE NIGHT'S HEADLINE — selection-box contract PROVEN (contract #7 in
 `launcher-render-contracts.md`):** the launcher centres a building's box on
@@ -508,9 +509,9 @@ clause. Same literal-chain audit was needed for repair
 
 **Gameplay / engine:**
 1. **Mk. II cap → 3** on Luke's word (`TF_MK2_CAP`, one constant).
-2. **⭐ VERIFY the 3x2 footprint pass** (deployed unverified — the full
-   checklist is the session block at the top of this doc): conyard + bay
-   boxes/ghosts, TS MCV round-trip, bay delivery end-to-end, art seats.
+2. **⭐ 3x2 pass: boxes VERIFIED ("FIXED!"); still owed** — TS MCV
+   round-trip, bay delivery end-to-end, and the refinery-box decision
+   (see the session block at the top of this doc).
 3. **TS WF placement-grid regression:** reads 4x3, should be 5x3 with the
    4th (top) row build-blocked — the radar height trick. Suspect the 08-07
    per-type `Occupy_List(placement=true)` split: the `_ts_weap_place`
