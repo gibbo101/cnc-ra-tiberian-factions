@@ -47,7 +47,19 @@ click handlers consult `TF_Delivery_Order_Refused` (the same shared verdict
 `Begin_Production` enforces, house.cpp) BEFORE speaking, so a refused click
 gets "Cannot comply" instead of the false "Building" ack.
 
-**Remaining queue:** emblem dial, optional 32° camera match, cap→3 later.
+**Evening art pass (same day, all Luke-approved "love it", desktop prefix
+current, DLL unchanged `1c142e0a`):**
+- **Dropship at the fleet's 32°** (`3b75cc3d`) — canvas pinned 656 so the
+  classic stub and drawn scale never moved.
+- **Emblem fills the pad** (`40e190bf`) — 0.74 @2.15 (+6,-6), picked off a
+  4-way sheet; ring measured, not eyeballed.
+- **Damaged pad weathered** (`01294c8a`) — damaged frames stamp against the
+  healthy reference: same geometry, emblem erased where the deck is gone,
+  charred through the deck's own burn mask.
+
+**Remaining queue:** cap→3 on Luke's word; then the TIDY-UP list before any
+new feature (Luke, 2026-08-13): upstream the sidebar off-by-one to main,
+prune this doc's superseded tail. Bay arc CLOSED.
 
 ## 2026-08-08 OVERNIGHT — the dropship bay (superseded resume point)
 
