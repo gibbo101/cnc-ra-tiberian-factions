@@ -774,9 +774,16 @@ def emit_sidebar_data(ini, display, desc, icon_dir):
     ModText rows. TS-tree entries are never faction-badged, so only _0 exists."""
     import re
     icon_name = f"BuildIcon_TS_{ini[2:].title()}"
-    icon = Image.open(f"{ART}/{icon_dir}/frame-0000.png")
-    big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(f"{ICON_DIR}/{icon_name}.tga")
+    # Hand-made art in resources/custom-cameos is canonical for its icon name;
+    # only generate from the TS cameo when no override exists.
+    custom = os.path.abspath(f"{MOD}/../../custom-cameos/{icon_name}.png")
+    if os.path.exists(custom):
+        Image.open(custom).convert("RGBA").resize((341, 256), Image.LANCZOS).save(
+            f"{ICON_DIR}/{icon_name}.tga")
+    else:
+        icon = Image.open(f"{ART}/{icon_dir}/frame-0000.png")
+        big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
+        big.save(f"{ICON_DIR}/{icon_name}.tga")
 
     RAB = f"{MOD}/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
     xml = open(RAB, encoding="utf-8").read()

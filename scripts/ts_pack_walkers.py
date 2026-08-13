@@ -350,6 +350,13 @@ print("repacked RAILFX.ZIP (6 real + 6 blank shapes)")
 # ---- BuildIcons (CAMEO.PAL decodes) ----
 for src_d, out in [("shp_mmchicon2", "BuildIcon_TS_Titan"),
                    ("shp_hmecicon2", "BuildIcon_TS_MammothMk2")]:
+    # Hand-made art in resources/custom-cameos is canonical for its icon name.
+    custom = os.path.abspath(f"{MOD}/../../custom-cameos/{out}.png")
+    if os.path.exists(custom):
+        Image.open(custom).convert("RGBA").resize((341, 256), Image.LANCZOS).save(
+            f"{ICON_DIR}/{out}.tga")
+        print(f"custom {ICON_DIR}/{out}.tga")
+        continue
     icon = Image.open(f"{ART}/{src_d}/frame-0000.png")
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
     big.save(f"{ICON_DIR}/{out}.tga")
