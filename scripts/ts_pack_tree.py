@@ -879,7 +879,7 @@ WAVE2 = [
     # beside it. Passing only the plate leaves nothing to patch, since the
     # gantry never overlaps the deck. No anims -- a static pad by design.
     ("TSDROP", "shp_gtdeptbb", [],
-     "shp_gtdeptmk", 19, (384, 384), 382, "shp_fixicon", "Dropship Bay", "Receives the Mammoth Mk. II by dropship."),
+     "shp_gtdeptmk", 19, (384, 256), 382, "shp_fixicon", "Dropship Bay", "Receives the Mammoth Mk. II by dropship."),
 ]
 
 # TSPROC/TSWEAP apron plates dropped with the 3x3 conversion (2026-08-03
@@ -897,10 +897,10 @@ BIBS = {"TSHPAD": "shp_gthpadbb", "TSDEPT": "shp_gtdeptbb"}
 EMBLEMS = {"TSDROP": ("~/Desktop/ts-gdi-logo.png", 0.74, 2.15, 6, -6)}
 
 # Per-entry bottom anchor (classic px), switching that entry to the size-pass
-# fit. TSDROP: the deck hugs the TOP of its 3x3 so the engine bib's bottom row
-# keeps most of its tile to itself (Luke, 2026-08-12) -- deck is ~197 canvas px
-# tall, margin 33 puts its bottom at 208 of 384, clear of the third row.
-BOTTOM_MARGINS = {"TSDROP": 33}
+# fit. TSDROP: the plot is the deck's own 3x2 (2026-08-13), canvas 384x256
+# mapped onto it; margin 9 keeps the deck's bottom at the same 39cl below the
+# origin the 3x3-era margin 33 gave it, so the art does not move on screen.
+BOTTOM_MARGINS = {"TSDROP": 9}
 
 # The bay borrows the depot's buildup, which also raises the gantry the bay
 # doesn't have: clip every frame to the deck's own silhouette so only the
@@ -1058,9 +1058,11 @@ if os.path.isdir(f"{ART}/shp_gtcnst"):
     # verdict; the centred experiment floated it off the slab). Foundation
     # brackets extending over the empty north plot are accepted -- the
     # selection box is launcher-fixed to the foundation.
+    # Canvas 384x256 since the 3x2 plot (2026-08-13): frame = plot, content
+    # flush bottom = art on the slab exactly as approved, box hugs the art.
     build_structure("TSFACT", "shp_gtcnst", 0, 1,
                     [loop("shp_gtcnst_a"), light, loop("shp_gtcnst_c")],
-                    "shp_gtcnstmk", 32, 384, 384, bottom_margin=0,
+                    "shp_gtcnstmk", 32, 384, 256, bottom_margin=0,
                     overscale=1.0)
 
 # ---- TSPOWR: TS Power Plant (2x2, POWR donor 48x48 -> 256x256).

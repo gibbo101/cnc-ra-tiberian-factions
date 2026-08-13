@@ -5373,9 +5373,9 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             // for box position. Do not add position biases here; size is
             // the only dial. A box that must sit off plot-centre is an
             // art-geometry/design problem, not an export problem.
-            case STRUCT_TSFACT:
-                dimy = 38; // art-rows height, approved 2026-08-13
-                break;
+            // TSFACT needs no case since the 3x2 plot (2026-08-13): the
+            // default foundation-derived box IS the approved 57x38 on the
+            // art rows. TSDROP likewise (box on the deck's 3x2).
             case STRUCT_TSWEAP:
                 dimy = 41;
                 break;

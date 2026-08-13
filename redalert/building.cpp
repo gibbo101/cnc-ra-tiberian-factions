@@ -3209,12 +3209,11 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             **	runs for this bullet, so no flight-time budget applies.
             */
             /*
-            **	The deck art rides high in its plot (size-pass top anchor), so the
-            **	landing point is the deck's VISUAL centre, ~160 leptons north of the
-            **	foundation centre -- aim at the plot centre and the ship sets down on
-            **	the bib instead of the pad.
+            **	The landing point is the deck's VISUAL centre, a shade north of the
+            **	3x2 foundation centre (the deck art hugs the plot top; the old 3x3
+            **	era needed 160 leptons of bias, the 3x2 plot centre sits 128 closer).
             */
-            COORDINATE pad = Coord_Move(Center_Coord(), DIR_N, 0x00A0);
+            COORDINATE pad = Coord_Move(Center_Coord(), DIR_N, 0x0020);
             CELL dest = Coord_Cell(pad);
 
             BulletClass* pod =

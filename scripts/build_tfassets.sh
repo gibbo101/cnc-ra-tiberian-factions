@@ -336,9 +336,9 @@ PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")
 # TSFACT 72x72 = the RA-conyard 3x3 box (BSIZE_33) + bib, content inside it
 # (the 4x3 tier read oversized next to the shrunk tier, Luke 2026-08-04).
-ts_stub TSFACT "$TMPDIR/tsfact_stub.shp" 72 72 2
+ts_stub TSFACT "$TMPDIR/tsfact_stub.shp" 72 48 2
 PACK_ARGS+=("$TMPDIR/tsfact_stub.shp:TSFACT.SHP")
-ts_stub TSFACT "$TMPDIR/tsfactmk_stub.shp" 72 72 32
+ts_stub TSFACT "$TMPDIR/tsfactmk_stub.shp" 72 48 32
 PACK_ARGS+=("$TMPDIR/tsfactmk_stub.shp:TSFACTMAKE.SHP")
 ts_stub TSTECH "$TMPDIR/tstech_stub.shp" 72 48 2
 PACK_ARGS+=("$TMPDIR/tstech_stub.shp:TSTECH.SHP")

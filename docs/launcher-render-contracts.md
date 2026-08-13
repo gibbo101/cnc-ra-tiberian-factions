@@ -78,6 +78,32 @@ Titan's turret frames for several builds (only the thin antenna survived,
 "cannon missing" #0). Use `safe_paste()` (pre-crops the source) everywhere in
 the art pipeline.
 
+## 7. Building selection boxes: the launcher owns POSITION, we own only SIZE
+
+Proven over five probe rounds (2026-08-13, ~one build-test cycle each — never
+spend another): the launcher centres a building's selection box on the
+building's plot by its own internal reckoning and takes ONLY `DimensionX/Y`
+(the box size, classic px) from the DLL's object export. Every position
+candidate was falsified live:
+
+- `CenterCoordY` bias — ignored (two bias-only moves, zero pixels).
+- Dimension-change "anchoring" — height changes grow the box symmetrically
+  around the plot centre; there is no fixed-edge growth.
+- `CellY` bias — ignored.
+- A doctored render-side `OccupyList` (bounding-box centring theory) — ignored.
+- `PositionY` bias — moves the SPRITE, not the box: the exported draw rect is
+  the art's anchor (the probe visibly detached the refinery from its
+  building-derived apron). Art and box cannot be decoupled by any export field.
+
+Corollaries: a box reads wrong exactly when the ART is seated off its plot
+centre (the TSFACT slab reseat is what "broke" its box — the box never moved).
+TDFACT (correct box, same 3x3 plot, same pipeline) vs TSFACT (box a tile high)
+is the standing control pair for the one unexplored lever: classic stub /
+canvas geometry. Open boxes as of 2026-08-13: TSFACT (1 tile high), TSDROP
+(1 tile low), TSPROC (Luke wants 2 tiles more headroom than a plot-centred box
+can give). Fix path: diff TDFACT's stub/canvas content geometry against
+TSFACT's and transplant the relationship, art compensated to stay put.
+
 ## House quality policy for TS-sourced assets (Luke, 2026-07-20)
 
 **Every unit, building, and weapon pulled from Tiberian Sun ships at the

@@ -1387,10 +1387,15 @@ static BuildingTypeClass const ClassTsFact(STRUCT_TSFACT,
                                            true,               // Can the building be color remapped?
                                            RTTI_BUILDINGTYPE,  // Produces buildings.
                                            DIR_N,              // Starting idle frame.
-                                           BSIZE_33,           // RA-conyard plot: 3x3 + bib (Luke, 2026-08-04).
+                                           BSIZE_32,           // 3x2, TDFACT parity (2026-08-13): the art is
+                                                               // TD-conyard-sized, and the 3x3 box's empty top
+                                                               // row is what held the selection box a tile high
+                                                               // (the launcher centres boxes on this box --
+                                                               // launcher-render-contracts.md #7). MCV deploy is
+                                                               // size-generic; TDFACT proves the 3x2 round-trip.
                                            NULL,               // No preferred exit cell.
-                                           (short const*)TdListWeap,  // Rows 1-2: flat art top row stays
-                                           (short const*)TdOListWeap); // placeable/walkable (overlap only).
+                                           (short const*)List32,
+                                           (short const*)NULL);
 
 /*
 **  TS GDI tree production/economy buildings (docs/ts-gdi-tree-plan.md §Stealth
@@ -1597,9 +1602,14 @@ static BuildingTypeClass const ClassTsDrop(STRUCT_TSDROP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory: the Mk2 is ordered here and delivered by dropship, the TDAFLD pattern. Deliberately NOT a helipad — outside Is_Helipad and STRUCTF_HELIPAD, either of which would grant a free helicopter and make the deck a general rearm target.
                                            DIR_N,
-                                           BSIZE_33,           // The full plot incl. the bib row (art canvas centres on this box).
+                                           BSIZE_32,           // The deck's own 3x2 (2026-08-13; was 3x3 incl. the
+                                                               // bib row, which held the selection box a tile south
+                                                               // of the deck -- the launcher centres boxes on this
+                                                               // box). The concrete below is the standard bib hang
+                                                               // now: same cells as before, walkable, cargo
+                                                               // disembarks ON it (war-factory exit-row pattern).
                                            NULL,
-                                           (short const*)ListWeap, // BLOCKING footprint = the deck's 3x2 only. The plot's bottom row is the bib: walkable, so cargo disembarks ON the concrete (the war-factory exit-row arrangement). Placement still demands the full 3x3 -- see Occupy_List.
+                                           (short const*)ListWeap, // BLOCKING footprint = the deck's 3x2 = the plot.
                                            NULL);
 
 /*
@@ -5495,15 +5505,6 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
                                                REFRESH_EOL};
         return (_ts_proc_place);
     }
-    if (placement && Type == STRUCT_TSDROP) {
-        /*
-        **	The ghost grid and legality demand the whole 3x3 -- deck rows plus
-        **	the bib row -- but the blocking list is only the deck's 3x2, so the
-        **	bib row stays walkable for the disembark (the same split TSPROC
-        **	uses for its dock pad).
-        */
-        return ((short const*)TsList33);
-    }
     if (placement && Type == STRUCT_TSWEAP) {
         /*
         **	The hangar's own 4x3. The concrete lies outside it and is kept
@@ -5668,18 +5669,11 @@ bool BuildingTypeClass::Bib_And_Offset(SmudgeType& bib, CELL& cell) const
     */
 
     /*
-    **	Dropship bay: the RA slab, but WITHIN the foundation. The deck art
-    **	leaves clear ground in its own bottom row, so the two-row BIB2 anchors
-    **	one row higher than the standard hang-below placement -- rows 1..2 of
-    **	the 3x3 -- and Height(bib) correspondingly does not grow (the placement
-    **	grid stays a true 3x3; Luke, 2026-08-12).
+    **	Dropship bay: with the 3x2 plot (2026-08-13) the standard hang-below
+    **	placement puts BIB2 on exactly the rows the old special case chose --
+    **	deck bottom row + the walkable concrete below -- so it takes the
+    **	generic path like everything else.
     */
-    if (Type == STRUCT_TSDROP && IsBibbed) {
-        bib = SMUDGE_BIB2;
-        cell += (Height() - 2) * MAP_CELL_W;
-        return (true);
-    }
-
     if (IsBibbed) {
         switch (Width()) {
         case 2:
