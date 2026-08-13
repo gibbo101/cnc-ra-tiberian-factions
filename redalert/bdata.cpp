@@ -1514,10 +1514,13 @@ static BuildingTypeClass const ClassTsRadr(STRUCT_TSRADR,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_22,           // TS-authentic Foundation=2x2; dish rides above the plot.
+                                           BSIZE_22,           // TS-authentic 2x2 box; south row is the real footprint
+                                                               // (Luke, 2026-08-13 -- restores the pre-regression read):
+                                                               // the dish/mast tile north is art spill, walkable and
+                                                               // buildable-behind; slab bib below = 2x2 total plot.
                                            NULL,
-                                           (short const*)List22,
-                                           (short const*)NULL);
+                                           (short const*)List22_0011,
+                                           (short const*)List22_1100);
 
 static BuildingTypeClass const ClassTsHpad(STRUCT_TSHPAD,
                                            TXT_NONE,
@@ -2483,10 +2486,14 @@ static BuildingTypeClass const ClassTsPowr(STRUCT_TSPOWR,
                                            true,            // Can the building be color remapped to indicate owner?
                                            RTTI_NONE,       // The object type produced at this factory.
                                            DIR_N,           // Starting idle frame to match construction.
-                                           BSIZE_22,        // TS-authentic 2x2, same plot as RA POWR (Luke, 2026-08-04).
+                                           BSIZE_22,        // TS-authentic 2x2 box; the tower is tall, so only the
+                                                            // south row is real footprint (Luke, 2026-08-13): the
+                                                            // north tile is art spill -- units walk it, buildings
+                                                            // place there, the RA slab bib below completes a 2x2
+                                                            // total plot. Tesla/Obelisk pattern.
                                            NULL,            // Preferred exit cell list.
-                                           (short const*)List22,     // OCCUPYLIST: List of active foundation squares.
-                                           (short const*)NULL        // OVERLAPLIST: art halo only.
+                                           (short const*)List22_0011, // OCCUPYLIST: south row only.
+                                           (short const*)List22_1100  // OVERLAPLIST: north art-spill row.
 );
 
 static BuildingTypeClass const ClassPower(STRUCT_POWER,

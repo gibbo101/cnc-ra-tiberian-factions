@@ -911,9 +911,13 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), tw, cameo, disp, desc in WAVE2:
     if not os.path.isdir(f"{ART}/{base}"):
         print(f"{ini}: SKIP (no {base})")
         continue
-    # Damaged base = frame 2: TS building SHPs are 0 healthy, 1 a healthy
-    # VARIANT (WF door-open, radar mast), 2 damaged, 3-5 rubble fragments.
-    build_structure(ini, base, 0, 2, [loop(d) for d in anim_dirs], mk, mkc, cw, ch,
+    # Damaged base = frame 1: TS building SHPs are 0 healthy, 1 LIGHT damage,
+    # 2 HEAVY damage, 3-5 rubble fragments (the old "frame 1 = healthy
+    # variant" claim was falsified 2026-08-06). Luke picked LIGHT as the
+    # damaged state off the Desktop sheets, 2026-08-13. TSDROP keeps HEAVY:
+    # its weathered damaged deck was approved in play 2026-08-13.
+    build_structure(ini, base, 0, (2 if ini == "TSDROP" else 1),
+                    [loop(d) for d in anim_dirs], mk, mkc, cw, ch,
                     None if ini in BOTTOM_MARGINS else tw,
                     bib_dir=BIBS.get(ini), emblem=EMBLEMS.get(ini),
                     bottom_margin=BOTTOM_MARGINS.get(ini),
@@ -1019,7 +1023,7 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     # TS drives the war factory bay with a separate 9-stage shutter over a
     # static interior (ART.INI: DoorAnim/DoorStages/UnderDoorAnim).
     doors = {"TSWEAP": ("shp_gtweap_d", "shp_gtweap_1", 9)}
-    build_structure(ini, base, 0, 2, anims, mk, mkc, cw, ch,
+    build_structure(ini, base, 0, 1, anims, mk, mkc, cw, ch,
                     bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale,
                     mk_mask_dir=masks.get(ini), overlay_dir=overlays.get(ini),
                     door_spec=doors.get(ini),
@@ -1042,7 +1046,7 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
 # bib, stub 72x72; the 4x3 tier read oversized -- Luke, 2026-08-04). Art
 # union h/w = 0.67, so the plot-width fit stands ~48 classic inside the
 # 72-box. Anims: _A crane 20, _B light 10, _C crane-2 30 -> N=60. Damaged
-# base = GTCNST frame 2.
+# base = GTCNST frame 1 (LIGHT).
 if os.path.isdir(f"{ART}/shp_gtcnst"):
     # GTCNST_B (rotating light) breaks the healthy+damaged half convention:
     # its 10 content frames are ONE full rotation (equal 614px every frame,
@@ -1054,16 +1058,16 @@ if os.path.isdir(f"{ART}/shp_gtcnst"):
     # verdict; the centred experiment floated it off the slab). Foundation
     # brackets extending over the empty north plot are accepted -- the
     # selection box is launcher-fixed to the foundation.
-    build_structure("TSFACT", "shp_gtcnst", 0, 2,
+    build_structure("TSFACT", "shp_gtcnst", 0, 1,
                     [loop("shp_gtcnst_a"), light, loop("shp_gtcnst_c")],
                     "shp_gtcnstmk", 32, 384, 384, bottom_margin=0,
                     overscale=1.0)
 
 # ---- TSPOWR: TS Power Plant (2x2, POWR donor 48x48 -> 256x256).
 # Content scaled to TDNUKE (content 256 full-width). Anims: _A fan 24, _B 12
-# -> N=24. Damaged base = GTPOWR frame 2 (spike-established layout).
+# -> N=24. Damaged base = GTPOWR frame 1 (LIGHT).
 if os.path.isdir(f"{ART}/shp_gtpowr"):
-    build_structure("TSPOWR", "shp_gtpowr", 0, 2,
+    build_structure("TSPOWR", "shp_gtpowr", 0, 1,
                     [loop("shp_gtpowr_a"), loop("shp_gtpowr_b")],
                     "shp_gtpowrmk", 13, 256, 256, bottom_margin=0)
 

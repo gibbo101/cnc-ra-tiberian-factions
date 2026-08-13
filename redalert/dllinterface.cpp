@@ -5366,12 +5366,10 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         if (object->What_Am_I() == RTTI_BUILDING) {
             switch (((BuildingTypeClass const&)object->Class_Of()).Type) {
             case STRUCT_TSFACT:
-                // Height trimmed to the art rows too (48cl art - the usual
-                // 20% trim). Bias re-measured from a live SS 2026-08-05
-                // (bracket rows vs art rows): the art sits 25cl below the
-                // plot centre, not 12 -- the 08-04 tune predated the final
-                // grid-matched art.
-                new_object.CenterCoordY += (25 * 256) / 24;
+                // Height trimmed to the art rows (48cl art - the usual 20%
+                // trim). Walk verdict 2026-08-13: size good, box one tile
+                // high -- one full tile south on top of the 25cl art seat.
+                new_object.CenterCoordY += (25 * 256) / 24 + 256;
                 dimy = 38;
                 break;
             case STRUCT_TSWEAP:
@@ -5379,17 +5377,27 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 dimy = 41;
                 break;
             case STRUCT_TSPILE:
-                new_object.CenterCoordY += (8 * 256) / 24;
+                // Walk verdict 2026-08-13: 2x2 box, the added tile north --
+                // the flag mast needs cover, the hull row alone reads short.
+                new_object.CenterCoordY += (8 * 256) / 24 - 128;
+                dimy = 38;
                 break;
             case STRUCT_TSPROC:
                 // Calibrated 2026-08-05 from a live frame (engine pad centre
-                // vs art pixels): the art's visual mass sits 78 leptons west
-                // and 192 north of the game centre (the pad), spanning the
-                // full 4-wide art incl. the north-overhanging roof rows.
+                // vs art pixels); walk verdict 2026-08-13: the box reached a
+                // tile past the disc's north edge -- trimmed from the top
+                // (height down one tile, centre down half to keep the south
+                // edge planted).
                 new_object.CenterCoordX -= 78;
-                new_object.CenterCoordY -= 192;
+                new_object.CenterCoordY -= 64;
                 dimx = 90;
-                dimy = 56;
+                dimy = 32;
+                break;
+            case STRUCT_TSDROP:
+                // Walk verdict 2026-08-13: deck art rides high in the plot
+                // (BOTTOM_MARGINS) but the box is foundation-anchored and
+                // framed the dirt below -- one tile north onto the deck.
+                new_object.CenterCoordY -= 256;
                 break;
             default:
                 break;
