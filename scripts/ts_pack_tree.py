@@ -192,15 +192,20 @@ def place(img, factor, canvas_w, canvas_h, src_cx, src_cy, dst_x=None, dst_y=Non
 _EMBLEM_CACHE = {}
 
 
-def stamp_emblem(img, path, frac, squash, dx=0, dy=0):
+def stamp_emblem(img, path, frac, squash, dx=0, dy=0, ref=None):
     """Paint a flat emblem onto a finished frame, centred on its content.
 
     Applied AFTER the building's affine: at source resolution the artwork is
     only ~45 px across and the hq upscale destroys it, so it has to meet the
     canvas at full size. The squash is what makes it read as painted on the
     deck rather than standing up facing the camera -- it is the isometric
-    projection of a flat disc, and it matches the deck's own 1.95:1 because the
-    deck is itself a circle lying flat.
+    projection of a flat disc, matching the pad's own ratio.
+
+    ref, when given, is the HEALTHY frame and marks img as a damaged frame:
+    geometry comes from ref (the damaged content box shrinks where edges are
+    blown off, and re-deriving from it shrank and shifted the emblem), the
+    emblem is erased wherever the deck itself is gone, and it chars wherever
+    the deck burned (darker-than-healthy = scorch, carried onto the paint).
     """
     if path not in _EMBLEM_CACHE:
         src = Image.open(os.path.expanduser(path)).convert("RGBA")
@@ -214,7 +219,7 @@ def stamp_emblem(img, path, frac, squash, dx=0, dy=0):
         _EMBLEM_CACHE[path] = src.crop(src.getbbox())
     em = _EMBLEM_CACHE[path]
 
-    bb = img.getbbox()
+    bb = (ref if ref is not None else img).getbbox()
     if bb is None:
         return img
     w = int(round((bb[2] - bb[0]) * frac))
@@ -222,10 +227,25 @@ def stamp_emblem(img, path, frac, squash, dx=0, dy=0):
     # dx/dy are eye-dial offsets in canvas pixels: bbox-centring is only the
     # starting point (the bbox includes the deck's skirt and shadow, so its
     # centre is not the visible face's centre).
+    layer = Image.new("RGBA", img.size, (0, 0, 0, 0))
+    layer.alpha_composite(em.resize((w, h), Image.LANCZOS),
+                          (bb[0] + ((bb[2] - bb[0]) - w) // 2 + dx,
+                           bb[1] + ((bb[3] - bb[1]) - h) // 2 + dy))
+
+    if ref is not None:
+        # Scorch: where the damaged deck is darker than the healthy one, char
+        # the emblem paint with it. The threshold ignores compression noise;
+        # the x3 gain ramps real burns to full char quickly.
+        burn = ImageChops.subtract(ref.convert("L"), img.convert("L"))
+        burn = burn.point(lambda v: min(255, max(0, (v - 40) * 3)))
+        char = Image.new("RGBA", img.size, (24, 18, 12, 255))
+        char.putalpha(ImageChops.multiply(burn, layer.split()[3]))
+        layer.alpha_composite(char)
+        # No deck, no paint: clear the emblem over destroyed sections.
+        layer.putalpha(ImageChops.multiply(layer.split()[3], img.split()[3]))
+
     out = img.copy()
-    out.alpha_composite(em.resize((w, h), Image.LANCZOS),
-                        (bb[0] + ((bb[2] - bb[0]) - w) // 2 + dx,
-                         bb[1] + ((bb[3] - bb[1]) - h) // 2 + dy))
+    out.alpha_composite(layer)
     return out
 
 
@@ -615,7 +635,12 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     frames = full[0] + full[1]
     if emblem is not None:
         # Built frames only: during construction there is no deck to paint.
-        frames = [stamp_emblem(f, *emblem) for f in frames]
+        # Damaged-run frames stamp against the healthy reference: same
+        # geometry, erased over destroyed deck, scorched where it burned.
+        n_healthy = len(full[0])
+        healthy_ref = frames[0]
+        frames = [stamp_emblem(f, *emblem, ref=(healthy_ref if i >= n_healthy else None))
+                  for i, f in enumerate(frames)]
     write_zip(f"{STRUCT_DIR}/{ini}.ZIP", ini.lower(), frames)
 
     if door_spec is not None:
