@@ -1,21 +1,24 @@
 # Subterranean units — locked design + arc tracker
 
-> **⭐ RESUME HERE (checkpoint 2026-08-13, session end).**
-> **Done:** design LOCKED (every rule below Luke-ratified); all TS art
-> extracted + rendered at the fleet camera; **dive/emerge 8-direction pitch
-> ladder SIGNED OFF ("looks good!")**; `vxl_render.py --pitch` bug fixed.
-> No engine code exists yet — art/design phase only.
-> **Session art lives in the session scratchpad (`subterranean/`) and is
-> DISPOSABLE** — every output regenerates from the recipes in this doc
-> (extraction ~1 min, full render set ~2 min). Do NOT hunt for old scratchpads.
+> **⭐ RESUME HERE (2026-08-13 late session: STAGE 1 COMPLETE, deployed to Deck).**
+> **Done:** design LOCKED; art regenerated + packed (`ts_pack_subterranean.py`:
+> 112 shapes/unit = 32 driving + 40 dive + 40 emerge, 384 canvas, 48x48x112
+> classic stubs in TFASSETS.MIX); `UNIT_TSSUBTANK`/`UNIT_TSSAPC` stamped
+> (ctors, APC door/unload chains incl. Mission_Unload, rules.ini behind
+> TSWEAP for testing, Tracked=yes both); DLL built + rsync'd to the Deck,
+> md5-verified. **AWAITING Luke's drive test** (both buildable from the TS
+> war factory; TS MCV spawns for every human at skirmish start).
+> **Shape layout contract (DLL side):** driving = facing frame 0-31; dive =
+> 32 + (facing/4)*5 + step (pitches 8/16/24/32/40 nose-down); emerge =
+> 72 + (facing/4)*5 + step (40 down to 8 nose-up); 0-pitch steps reuse the
+> driving frame.
 > **Pick-up steps:**
-> 1. Cherry-pick the `--pitch` fix commit (`de359bd7`) to `ts-units` when
->    convenient + check dropship/VTOL flare art wasn't rendered flat.
-> 2. Next work: the packer — dive ladder (8 facings × 6 steps × dive+emerge)
->    + 32 driving frames into ZIP/meta per `ts_pack_units_wave.py` pattern
->    (TGA/meta crop contract! classic stub sizes the unit!), then stamp
->    `UNIT_TSSAPC` / `UNIT_TSSUBTANK` (check `Tracked=` — recurring trap).
-> 3. Then the underground state machine (see "Remaining arc stages").
+> 1. Still pending: cherry-pick the `--pitch` fix (`de359bd7`) to `ts-units`
+>    when convenient + check dropship/VTOL flare art wasn't rendered flat.
+> 2. Pre-existing gap found (NOT ours): UNIT_TSAPC is missing from the
+>    Mission_Unload case list — the Amphibious APC likely cannot unload
+>    passengers. Belongs to the ts-units instance; flag to Luke.
+> 3. Next work: the underground state machine (see "Remaining arc stages").
 > **Open decisions (Luke):** detector unit (MRJ + ported Sensor Array vs one
 > shared) · sensed = reveal-only vs attackable · water-click = nearest-shore
 > emerge vs refuse order.
