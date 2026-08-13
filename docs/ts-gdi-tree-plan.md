@@ -170,9 +170,16 @@ clean takeoffs = good signal, not proof; a week of play is.
 
 **Still open on the bay (triaged with Luke 2026-08-13; the LOCKED cameo,
 buildup crop, and both hand-made icons are done — see the top block):**
-1. Emblem centring: `stamp_emblem` takes an eye-dial `(dx, dy)`; offsets go
-   in `EMBLEMS["TSDROP"]`.
-2. Mk. II cap to 3 when Luke calls it (TF_MK2_CAP, one constant).
+1. Mk. II cap to 3 when Luke calls it (TF_MK2_CAP, one constant).
+2. Cosmetic nit: the damaged deck frame carries a stray remap-green pixel
+   island off its right edge (renders as a floating house-colour dot);
+   scrub in the packer if it bothers anyone in play.
+
+(Emblem: fill-the-pad dial shipped 2026-08-13 — Luke picked 0.74 @2.15
+squash (+6,-6) off a 4-way sheet; measurements + reasoning live on the
+`EMBLEMS` comment in ts_pack_tree.py. ⚠ A TSDROP-only pack run — temp
+TS_ART_DIR with just its shp dirs — TRUNCATES scripts/ts_stub_dims.json
+to the packed subset; restore it after partial runs.)
 
 (The dropship now renders at the fleet's 32° elevation — Luke picked it off
 a 54/43/32 comparison sheet 2026-08-13. Render kept `--canvas 656`, so the

@@ -862,10 +862,14 @@ WAVE2 = [
 # slab like every other refinery/factory.
 BIBS = {"TSHPAD": "shp_gthpadbb", "TSDEPT": "shp_gtdeptbb"}
 
-# (artwork, width as a fraction of the building's content, squash ratio).
-# 0.62 keeps the emblem clear of the rim: at 0.78 it crosses the remap band and
-# the house colour speckles through its edge. 1.95 is the deck's own ratio.
-EMBLEMS = {"TSDROP": ("~/Desktop/ts-gdi-logo.png", 0.62, 1.95)}
+# (artwork, width fraction of content, squash ratio, dx, dy). Fill-the-pad
+# dial (Luke's pick off a 4-way sheet, 2026-08-13): the ring's inner ellipse
+# measures 292x136 centred at (197.6, 103.2) on the healthy frame, so squash
+# matches the ring's own 2.15 (not the deck skirt's 1.95) and (+6, -6)
+# corrects the bbox-centre bias -- the bbox includes the skirt, whose centre
+# sits left and low of the ring's. 0.74 (284px) leaves ~4px to the remap
+# band; crossing it speckles house colour through the emblem edge.
+EMBLEMS = {"TSDROP": ("~/Desktop/ts-gdi-logo.png", 0.74, 2.15, 6, -6)}
 
 # Per-entry bottom anchor (classic px), switching that entry to the size-pass
 # fit. TSDROP: the deck hugs the TOP of its 3x3 so the engine bib's bottom row
