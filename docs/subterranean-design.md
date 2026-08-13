@@ -132,6 +132,29 @@ TD Flame Tank weapon chain rather than porting the particle system.
 - Scratchpad is session-scoped: re-run the extraction (recipe above, tools/
   ts_extract.py) if starting fresh; contact sheets `sheet_subtank/sapc/dig.png`.
 
+## Transition choreography (Luke-approved 2026-08-13, GIF v5 — the stage-2 spec)
+
+Dialled over five preview rounds on the Desktop GIF; encode these rules in the
+DIGGING_IN/EMERGING states, with tick counts as the tunables:
+
+- **Angle leads, sink follows.** The 5-step pitch ladder plays AT SURFACE level
+  (no submergence while tilting; only a small cosmetic settle, ~0→26px at pack
+  scale across the steps).
+- **Tilt starts clean** — no dirt for steps 1–3. The DIG anim fires at step 4,
+  when the nose is well into the angle.
+- **Into the soil = GONE.** The hull hides the instant step 5 completes, while
+  the DIG mound is still solid. No slide-under, no tail poking out. The mound
+  churns out alone over the hidden object.
+- **Emerge mirrors it:** DIG erupts at the exit cell over the hidden object;
+  the hull appears at the steepest emerge frame mid-churn; the soil settles
+  while the ladder levels off, finishing clean before the unit drives away.
+- Preview cadence (110ms GIF ticks, a starting point for engine frames):
+  2 ticks per ladder step, DIG at tick 6, hidden at tick 10, DIG spans ~14.
+- Preview artifacts: `~/Desktop/subterranean-underground-cycle.gif` (full
+  cycle) and `subterranean-dive-preview.gif` (stationary close-up). Both
+  regenerate from the packed zips + scratch DIG frames; the builder scripts
+  live in the session transcript, but the rules above are the contract.
+
 ## Remaining arc stages
 
 1. Pack art (`ts_pack_art.py` pattern: TGA/meta crop contract, classic stub for
