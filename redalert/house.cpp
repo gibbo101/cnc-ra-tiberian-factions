@@ -953,6 +953,28 @@ bool TF_Mk2_At_Cap(HouseClass const* house)
     return (false);
 }
 
+/*
+**	The single verdict on whether a dropship-bay order would be turned away:
+**	the bay is still reloading, or the house already fields its Mk. II
+**	allowance. Begin_Production enforces it; the sidebar click handlers
+**	consult it first so EVA never acknowledges an order that is about to be
+**	refused.
+*/
+bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id)
+{
+    if (house == NULL || type != RTTI_UNITTYPE) {
+        return (false);
+    }
+    UnitTypeClass const* utype = (UnitTypeClass const*)Fetch_Techno_Type(type, id);
+    if (utype == NULL) {
+        return (false);
+    }
+    if (TF_Is_Dropship_Delivered(utype) && house->TFDropBayTimer != 0) {
+        return (true);
+    }
+    return (utype->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(house));
+}
+
 bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
 {
     assert(Houses.ID(this) == ID);
@@ -3343,20 +3365,13 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
     fptr = Fetch_Factory(type);
 
     /*
-    **	The dropship delivery cooldown refuses the order itself. The sidebar keeps
-    **	the cameo visible (counting down) while the bay reloads, so the click has
-    **	to be turned away here, the one point every production path funnels
-    **	through -- the sidebar's own legality checks are never consulted when
-    **	construction starts. Applies to everything the bay delivers: the cooldown
-    **	belongs to the bay, not to a unit type. The Mk. II field cap refuses here
-    **	for the same reason.
+    **	The dropship bay refuses its own orders here, the one point every
+    **	production path funnels through -- the sidebar keeps refused cameos
+    **	visible (countdown / locked art) and its legality checks are never
+    **	consulted when construction starts. The verdict is shared with the
+    **	sidebar click handlers so EVA's acknowledgment matches it.
     */
-    if (tech != NULL && type == RTTI_UNITTYPE && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
-        && TFDropBayTimer != 0) {
-        return (PROD_CANT);
-    }
-    if (tech != NULL && type == RTTI_UNITTYPE && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC
-        && TF_Mk2_At_Cap(this)) {
+    if (TF_Delivery_Order_Refused(this, type, id)) {
         return (PROD_CANT);
     }
 

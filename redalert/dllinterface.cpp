@@ -7011,6 +7011,18 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                  "%s_CD%03d", tech->IniName, (int)secs);
                     }
 
+                    /*
+                    ** At the Mk. II field cap the cameo reads LOCKED (dimmed, red X;
+                    ** baked by scripts/ts_mk2_cooldown_cameos.py). The cap outranks
+                    ** the reload countdown: only losing the fielded Mk. II reopens
+                    ** the order, so a time-remaining readout would be a lie.
+                    */
+                    if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
+                        && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(PlayerPtr)) {
+                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                 "%s_LK", tech->IniName);
+                    }
+
                     if (factory) {
                         if (factory->Is_Building()) {
                             sidebar_entry.Constructing = true;
@@ -7216,6 +7228,16 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                             }
                             snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
                                      "%s_CD%03d", tech->IniName, (int)secs);
+                        }
+
+                        /*
+                        ** Mk. II field-cap LOCKED cameo -- matches the single-player
+                        ** path above (cap outranks the reload countdown).
+                        */
+                        if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
+                            && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(PlayerPtr)) {
+                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                     "%s_LK", tech->IniName);
                         }
 
                         if (factory) {
@@ -7912,6 +7934,17 @@ bool DLLExportClass::Construction_Action(SidebarRequestEnum construction_action,
 
                             default:
                                 /*
+                                **	An order Begin_Production is about to refuse (bay reloading,
+                                **	Mk. II cap) gets a scold, not a "Building" acknowledgment --
+                                **	EVA speaks to the verdict, not the click.
+                                */
+                                if (TF_Delivery_Order_Refused(
+                                        PlayerPtr, (RTTIType)buildable_type, buildable_id)) {
+                                    On_Speech(PlayerPtr, VOX_NO_FACTORY); // "Cannot comply"
+                                    return false;
+                                }
+
+                                /*
                                 **	If this side strip is already busy with production, then ignore the
                                 **	input and announce this fact.
                                 */
@@ -8125,8 +8158,14 @@ bool DLLExportClass::MP_Construction_Action(SidebarRequestEnum construction_acti
 
                             default:
                                 /*
-                                **
+                                **	Refused-order EVA gate -- matches the single-player path above.
                                 */
+                                if (TF_Delivery_Order_Refused(
+                                        PlayerPtr, (RTTIType)buildable_type, buildable_id)) {
+                                    On_Speech(PlayerPtr, VOX_NO_FACTORY); // "Cannot comply"
+                                    return false;
+                                }
+
                                 if ((RTTIType)buildable_type == RTTI_INFANTRYTYPE) {
                                     On_Speech(PlayerPtr, VOX_TRAINING); // Speak(VOX_TRAINING);
                                 } else {

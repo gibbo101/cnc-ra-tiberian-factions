@@ -8,9 +8,15 @@ ART: one dimmed Mk. II cameo per remaining second, "5:00" down to "0:01",
 stamped in gold, and the DLL swaps the asset key once a second while
 TFDropBayTimer runs.
 
+Also bakes the Mk. II field-cap LOCKED cameo (dimmed + red X): while a house
+fields its full Mk. II allowance the DLL swaps the cameo to <Ini>_LK the same
+way, and the click is refused with "Cannot comply" instead of a false
+"Building" ack.
+
 Emits:
   Data/ART/TEXTURES/SRGB/BuildIcon_TSHMEC_CD<sss>.tga   (sss = 001..300)
-  RABUILDABLES.XML ObjectTypeClass entries RA_TSHMEC_CD<sss>
+  Data/ART/TEXTURES/SRGB/BuildIcon_TSHMEC_LK.tga        (field-cap locked)
+  RABUILDABLES.XML ObjectTypeClass entries RA_TSHMEC_CD<sss> / RA_TSHMEC_LK
 
 Idempotent: re-running replaces the generated XML block and overwrites the art.
 
@@ -33,18 +39,24 @@ UNITS = {
     "TSMDIV": "BuildIcon_TS_MechDivision",
 }
 
+# Units whose cameo also gets a field-cap LOCKED variant. Must mirror the
+# TF_Mk2_At_Cap sidebar swap in dllinterface.cpp (cap applies to the Mk. II
+# only, not to everything the bay delivers).
+LOCKED = ["TSHMEC"]
+
 SECONDS = 300  # 5:00
 GOLD = (255, 204, 51, 255)
 OUTLINE = (0, 0, 0, 255)
+RED = (220, 32, 32, 255)
 
 BEGIN = "\t<!-- BEGIN generated Mk2 cooldown countdown cameos (scripts/ts_mk2_cooldown_cameos.py) -->"
 END = "\t<!-- END generated Mk2 cooldown countdown cameos -->"
 
-TEMPLATE = """\t<ObjectTypeClass Name="RA_{ini}_CD{sss}" Classification="CNCBuildableObject" CanInstantiate="False">
+TEMPLATE = """\t<ObjectTypeClass Name="RA_{ini}_{tag}" Classification="CNCBuildableObject" CanInstantiate="False">
 \t\t<CNCEncyclopediaComponent>
 \t\t\t<ObjectNameTextID>TEXT_UNIT_{ini}</ObjectNameTextID>
 \t\t\t<ObjectDescriptionTextID>TEXT_UNIT_{ini}_DESC</ObjectDescriptionTextID>
-\t\t\t<BuildIcon>BuildIcon_{ini}_CD{sss}</BuildIcon>
+\t\t\t<BuildIcon>BuildIcon_{ini}_{tag}</BuildIcon>
 \t\t</CNCEncyclopediaComponent>
 \t</ObjectTypeClass>
 """
@@ -68,10 +80,28 @@ def bake_art():
         print(f"baked {SECONDS} countdown cameos for {ini} into {SRGB}")
 
 
+def bake_locked():
+    for ini in LOCKED:
+        base = Image.open(SRGB / f"{UNITS[ini]}.tga").convert("RGBA")
+        img = ImageEnhance.Brightness(base).enhance(0.40)
+        draw = ImageDraw.Draw(img)
+        w, h = img.size
+        ix, iy = int(w * 0.18), int(h * 0.18)
+        strokes = [((ix, iy), (w - ix, h - iy)), ((w - ix, iy), (ix, h - iy))]
+        # Dark casing first, red stroke on top, so the X reads on any cameo.
+        for start, end in strokes:
+            draw.line([start, end], fill=OUTLINE, width=max(2, int(h * 0.16)))
+        for start, end in strokes:
+            draw.line([start, end], fill=RED, width=max(1, int(h * 0.09)))
+        img.save(SRGB / f"BuildIcon_{ini}_LK.tga")
+        print(f"baked locked cameo BuildIcon_{ini}_LK into {SRGB}")
+
+
 def inject_xml():
-    entries = "".join(TEMPLATE.format(ini=ini, sss=f"{secs:03d}")
+    entries = "".join(TEMPLATE.format(ini=ini, tag=f"CD{secs:03d}")
                       for ini in UNITS
                       for secs in range(1, SECONDS + 1))
+    entries += "".join(TEMPLATE.format(ini=ini, tag="LK") for ini in LOCKED)
     block = f"{BEGIN}\n{entries}{END}\n"
     text = XML.read_text()
     if BEGIN in text:
@@ -83,9 +113,10 @@ def inject_xml():
         idx = text.rindex("</")
         text = text[:idx] + block + text[idx:]
     XML.write_text(text)
-    print(f"injected {SECONDS} XML entries into {XML.name}")
+    print(f"injected {len(UNITS) * SECONDS + len(LOCKED)} XML entries into {XML.name}")
 
 
 if __name__ == "__main__":
     bake_art()
+    bake_locked()
     inject_xml()

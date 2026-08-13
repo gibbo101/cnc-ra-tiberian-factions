@@ -38,10 +38,16 @@ this is strong signal, not proof — keep half an eye on it for a week of play.
 
 **Desktop prefix after session: DLL `042a01e0` + today's art, md5-verified.**
 
-**Remaining next-session list:** ① Mk. II capped cameo should read LOCKED
-(red X / greyed; AssetName-swap mechanism ready) AND gate the EVA "Building"
-ack on Begin_Production's verdict. Queued: emblem dial, optional 32° camera
-match, cap→3 later. (② buildup crop and ③④ both icons: DONE above.)
+**Capped-cameo LOCKED + EVA gate: SHIPPED + play-verified 2026-08-13
+("worked well").** At the Mk. II field cap the cameo swaps to a dimmed
+red-X variant (`BuildIcon_TSHMEC_LK`, baked from Luke's art by
+`ts_mk2_cooldown_cameos.py`); the cap OUTRANKS the reload countdown (time
+never reopens a capped order, so a countdown there would lie). Both sidebar
+click handlers consult `TF_Delivery_Order_Refused` (the same shared verdict
+`Begin_Production` enforces, house.cpp) BEFORE speaking, so a refused click
+gets "Cannot comply" instead of the false "Building" ack.
+
+**Remaining queue:** emblem dial, optional 32° camera match, cap→3 later.
 
 ## 2026-08-08 OVERNIGHT — the dropship bay (superseded resume point)
 
@@ -162,27 +168,14 @@ game-side reproduction never reached). Note: deliveries survived this sound
 for hours before the two crashes — the div-zero is state-dependent, so several
 clean takeoffs = good signal, not proof; a week of play is.
 
-**Still open on the bay (Luke's next-session list, 2026-08-13 close):**
-1. ⭐ **Mk. II capped-state cameo: LOCKED look.** At cap the cameo reads
-   clickable and a click plays the EVA "Building" acknowledgment even though
-   production is (correctly, play-confirmed) refused. Wanted: red X / greyed /
-   unclickable — "I don't mind how". Mechanism is ready-made: bake a locked
-   variant (dimmed + red X) and swap it via AssetName while TF_Mk2_At_Cap,
-   exactly like the countdown cameos. ALSO trace where the EVA "Building"
-   speech fires on a refused order — some click path speaks before
-   Begin_Production's verdict; gate it on the verdict.
-2. ⭐ **Buildup anim crop**: strip the cut repair-bay piece from each TDFIX
-   MAKE frame, same treatment as the final structure (Luke's spec).
-3. ⭐ **A proper Dropship Bay sidebar icon** — still wearing the service
-   depot's FIXICON. Luke offers to help with the art.
-3b. ⭐ **A better Mech Division sidebar icon** — the Titan-plus-Wolverine
-   inset composite was a session quickie; design a real one with Luke
-   (he offers to help here too).
-4. Emblem centring: `stamp_emblem` takes an eye-dial `(dx, dy)`; offsets go
+**Still open on the bay (triaged with Luke 2026-08-13; the LOCKED cameo,
+buildup crop, and both hand-made icons are done — see the top block):**
+1. Emblem centring: `stamp_emblem` takes an eye-dial `(dx, dy)`; offsets go
    in `EMBLEMS["TSDROP"]`.
-5. Optional: 32° camera re-render to match the vehicle fleet (preview sheets
-   on the Desktop; 54° shipped and accepted).
-6. Mk. II cap to 3 when Luke calls it (TF_MK2_CAP, one constant).
+2. Optional: 32° camera re-render of the dropship to match the vehicle
+   fleet's elevation (preview sheets on the Desktop; 54° shipped and
+   accepted — taste call, a flying unit may read better steep).
+3. Mk. II cap to 3 when Luke calls it (TF_MK2_CAP, one constant).
 
 ### ⭐ MORNING HANDOVER — what to do first
 **All four objectives are CODED and DEPLOYED (desktop prefix, DLL `80240db9`,
