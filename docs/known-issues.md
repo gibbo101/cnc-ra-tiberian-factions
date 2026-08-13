@@ -8,6 +8,33 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## Dropship bay (ts-units branch)
+
+### ClientG crash at the dropship takeoff sound — ✅ FIX DEPLOYED 2026-08-13, VERIFY IN PLAY
+- **Severity:** blocker (game exits to desktop mid-match). Two live crashes 2026-08-13
+  (00:24, 00:30), both at a Mech Division delivery's takeoff.
+- **Root cause:** the DROPDWN1/DROPUP1 override WAVs shipped plain PCM; dormant-host
+  overrides must be MS-ADPCM like the MEG samples they impersonate, or ClientG's ADPCM
+  block math divides by zero (deterministic `ClientG+0xAB5E69`, `RAR_SFX_DROPUP1` on the
+  crash stack). Full record: `ts-gdi-tree-plan.md` top block; rule:
+  `launcher-render-contracts.md`.
+- **Fix:** `2f70e2b5` re-encodes both WAVs `adpcm_ms`. Deployed desktop (`042a01e0`).
+  State-dependent crash, so several clean takeoffs = good signal, not proof.
+
+### Countdown cameo tooltip flickers once per second — ACCEPTED (Luke, 2026-08-12)
+- **Severity:** cosmetic. The 5:00→0:01 cooldown countdown is per-second baked-art
+  AssetName swaps; each swap rebuilds the client's sidebar button, killing an open
+  tooltip. No DLL-side fix exists (tooltip and icon are one client widget). Luke chose
+  per-second precision over flicker-free coarser steps.
+
+### Mk. II cameo reads clickable at the field cap; EVA acks refused orders — OPEN
+- **Severity:** minor. At `TF_MK2_CAP` the order is correctly refused (play-confirmed),
+  but the cameo looks live and a click plays the EVA "Building" acknowledgment. Wanted:
+  locked look (red X / grey) via the AssetName-swap channel + gate the ack on
+  `Begin_Production`'s verdict. Next-session list, `ts-gdi-tree-plan.md` top.
+
+---
+
 ## AI difficulty
 
 ### Per-slot AI difficulty fell back to global Hard on most matches — ✅ FIXED 2026-07-21 (verification pass outstanding)
