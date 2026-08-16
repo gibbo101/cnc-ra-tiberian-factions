@@ -185,7 +185,7 @@ static SmudgeTypeClass const TsWeapBib(SMUDGE_TSWEAPBB,
                                        "TSWEAPBB",
                                        TXT_BIB,
                                        5,
-                                       3,    // Width and height of smudge (in icons).
+                                       3,    // Width and height of smudge (in icons) — full unclipped pad, 5x3 ensemble 2026-08-17.
                                        true, // Is this a building bib?
                                        false // Is this a crater smudge?
 );

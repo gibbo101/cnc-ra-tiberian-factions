@@ -104,35 +104,27 @@ static short const TsProcList[] = {0, 1, 2,
                                    (MCW * 1), (MCW * 1) + 1, REFRESH_EOL};
 static short const TsProcOList[] = {
     MCW + 2, 3, MCW + 3, (MCW * 2) + 2, (MCW * 2) + 3, REFRESH_EOL};
-/* TSWEAP (4x3): the hangar is four cells wide -- the width a Mammoth Mk. II
-** needs to clear the bay door -- and 2.74 cells tall, so it sits ENTIRELY
-** inside the plot with no art hanging over the neighbouring rows. That leaves
-** no room beside it for the concrete, which therefore falls outside the plot
-** to the east and south. The pad is ground art, so lying outside a footprint
-** costs it nothing: Is_TS_Apron_Cell vetoes apron cells wherever they lie, so
-** it stays unbuildable, and it stays walkable so a departing vehicle drives
-** out across it. */
-static short const TsWeapList[] = {0, 1, 2, 3,
-                                   (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
-                                   (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
+/* TSWEAP (3x2, descale final 2026-08-16): the Mk. II arrives by dropship bay
+** now, so the hangar no longer passes a 40px sprite. The 70x44 hangar art is
+** CENTRED on and fills the 3x2 plot (blocking = the whole plot), giving the
+** TDFACT-parity selection box for free. The concrete is wholly OUTSIDE the
+** plot -- east column + front row, the TD-bib arrangement -- walkable,
+** veto'd by Is_TS_Apron_Cell, in the overlap list for redraw, and included
+** in the 4x3 PLACEMENT grid so the ghost covers building + pad (Luke). */
+static short const TsWeapList[] = {0, 1, 2,
+                                   (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2,
                                    REFRESH_EOL};
-static short const TsWeapOList[] = {4, (MCW * 1) + 4, (MCW * 2) + 4,
-                                    (MCW * 3), (MCW * 3) + 1, (MCW * 3) + 2, (MCW * 3) + 3,
-                                    (MCW * 3) + 4,
+static short const TsWeapOList[] = {3, (MCW * 1) + 3,
+                                    (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
                                     REFRESH_EOL};
 /*
-**	Departure cells for the TS bay, the true south-east diagonal first.
-**
-**	The vehicle spawns at the door, cell (2.7, 1.8) of the 4x3 plot, so
-**	XYCELL(3,3) -- the old first choice -- is a third of a cell east and one
-**	and a quarter south: it reads as driving straight out of the south wall.
-**	XYCELL(4,3) is +2 east and +2 south of the spawn cell, a real diagonal
-**	that carries the hull clear of the doorway before anything else happens.
-**	The rest fan out from there, south-east side first, since that is the way
-**	the bay points.
+**	Departure cells for the TS bay. The vehicle spawns at the door mouth over
+**	cell (2.3, 1.9) of the descaled hangar; XYCELL(2,2) is the concrete
+**	directly under the door -- the natural first roll-out -- then the fan
+**	spreads south and south-east across the apron and off the plot.
 */
-static short const TsWeapExit[] = {XYCELL(4, 3), XYCELL(3, 3), XYCELL(4, 2), XYCELL(2, 3),
-                                   XYCELL(4, 1), XYCELL(1, 3), XYCELL(0, 3), XYCELL(-1, 2),
+static short const TsWeapExit[] = {XYCELL(2, 2), XYCELL(2, 3), XYCELL(3, 3), XYCELL(3, 2),
+                                   XYCELL(1, 3), XYCELL(4, 3), XYCELL(0, 3), XYCELL(-1, 2),
                                    REFRESH_EOL};
 static short const List1100[] = {0, 1, REFRESH_EOL};
 static short const List1101[] = {0, 1, (MCW * 1) + 1, REFRESH_EOL};
@@ -1470,29 +1462,15 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            TXT_NONE,
                                            "TSWEAP",
                                            FACING_NONE,
-                                           // Bay mouth: the centre of the door APERTURE — the
-                                           // pixels that change as the shutter rolls up — not the
-                                           // centre of the door composite, which the bay surround
-                                           // and ramp drag south-east of the opening. Measured off
-                                           // the packed art against the plot origin; re-measure
-                                           // whenever the hangar's canvas or fit width changes.
-                                           // Centred on the bay opening, and
-                                           // the y is pinned by geometry
-                                           // rather than taste. The hangar's
-                                           // art spans y 3.9..71.8 of the
-                                           // 72-pixel plot and a Titan or
-                                           // Mammoth Mk. II reaches 37 above
-                                           // and 29 below its exit point, so
-                                           // the head clears the roof below
-                                           // y=41 and the feet clear the
-                                           // building's base above y=43. That
-                                           // two-pixel window is the only
-                                           // place the whole vehicle stays
-                                           // within the building it is
-                                           // standing in. Depth comes from the
-                                           // near face covering it, not from
-                                           // moving it back.
-                                           XYP_COORD(64, 42),
+                                           // Bay mouth on the 4x3 plot (2026-08-17 respec): x =
+                                           // door aperture centre, y = aperture centre (art rel
+                                           // this origin: aperture ~(56, 33)) -- units small
+                                           // enough to hide (harvester/APC/hover) sit fully
+                                           // inside; the Titan overhang is DEFERRED (Luke). The
+                                           // spawn path logs building origin, Exit_Coord and the
+                                           // unit's post-Unlimbo coord to MOD_DEBUG_AI.txt under
+                                           // TF_DEV_BUILD -- read the log before dialling this.
+                                           XYP_COORD(56, 33),
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,
@@ -1501,7 +1479,12 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory.
                                            DIR_N,
-                                           BSIZE_43,           // 4-wide hangar on the top two rows + the pad's south row.
+                                           BSIZE_43,           // 4x3, TSPROC parity (2026-08-17 respec): hangar on the
+                                                               // west 3 cols x rows 0-1, pad column + front row
+                                                               // IN-plot as walkable concrete (Luke's original "similar
+                                                               // to TS ref" call). The selection box is plot-centred by
+                                                               // the launcher; the export case sizes it to the
+                                                               // ENSEMBLE, the refinery pattern.
                                            (short const*)TsWeapExit,
                                            (short const*)TsWeapList,
                                            (short const*)TsWeapOList);
@@ -5507,22 +5490,29 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
     }
     if (placement && Type == STRUCT_TSWEAP) {
         /*
-        **	The hangar's own 4x3. The concrete lies outside it and is kept
-        **	clear by Is_TS_Apron_Cell rather than by the footprint, so the
-        **	pad can taper over ground the plot itself could not sit on.
+        **	The full 5x3 ensemble: the 3x2 hangar plot, the concrete's east
+        **	pad column, the front row AND the taper column -- the ghost
+        **	promises every cell the built building's ground art occupies
+        **	(Luke, 2026-08-17: "if the building needs to be 5x3 because of
+        **	the pad, then make the ghost 5x3"; clipping the taper off the
+        **	art was tried first and looked like garbage). Placement cells
+        **	may lie outside the BSIZE plot; blocking stays the 3x2.
         */
         static short const _ts_weap_place[] = {0,
                                                1,
                                                2,
                                                3,
+                                               4,
                                                MAP_CELL_W,
                                                MAP_CELL_W + 1,
                                                MAP_CELL_W + 2,
                                                MAP_CELL_W + 3,
+                                               MAP_CELL_W + 4,
                                                MAP_CELL_W * 2,
                                                MAP_CELL_W * 2 + 1,
                                                MAP_CELL_W * 2 + 2,
                                                MAP_CELL_W * 2 + 3,
+                                               MAP_CELL_W * 2 + 4,
                                                REFRESH_EOL};
         return (_ts_weap_place);
     }

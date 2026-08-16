@@ -454,6 +454,11 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         src = bake_hazard_gold(load(overlay_dir, healthy_f))
         apron = place(src, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
         gx, gy = left + off_c * cell_px, top + off_r * cell_px
+        if ini in globals().get("APRON_CLIP", set()):
+            clipped = Image.new("RGBA", apron.size, (0, 0, 0, 0))
+            rect = apron.crop((gx, gy, gx + grid_cols * cell_px, gy + grid_rows * cell_px))
+            clipped.paste(rect, (gx, gy))
+            apron = clipped
         bb = apron.getbbox()
         if bb and (bb[0] < gx or bb[1] < gy
                    or bb[2] > gx + grid_cols * cell_px or bb[3] > gy + grid_rows * cell_px):
@@ -894,7 +899,16 @@ BIBS = {"TSHPAD": "shp_gthpadbb", "TSDEPT": "shp_gtdeptbb"}
 # corrects the bbox-centre bias -- the bbox includes the skirt, whose centre
 # sits left and low of the ring's. 0.74 (284px) leaves ~4px to the remap
 # band; crossing it speckles house colour through the emblem edge.
-EMBLEMS = {"TSDROP": ("~/Desktop/ts-gdi-logo.png", 0.74, 2.15, 6, -6)}
+# APRON_CLIP: clip a building's concrete to its tile grid. Tried on TSWEAP
+# 2026-08-17 and REJECTED ("cutting the pad off looks like garbage" -- the
+# same hard-edge failure recorded 2026-08-05); the ghost grew to 5x3 instead.
+APRON_CLIP = set()
+
+# Emblem art lives IN the repo (resources/custom-cameos) — a Desktop copy
+# got Trash-cleaned 2026-08-16 and broke the pack.
+EMBLEMS = {"TSDROP": (os.path.join(os.path.dirname(__file__), "..",
+                                   "resources/custom-cameos/ts-gdi-logo.png"),
+                      0.74, 2.15, 6, -6)}
 
 # Per-entry bottom anchor (classic px), switching that entry to the size-pass
 # fit. TSDROP: the plot is the deck's own 3x2 (2026-08-13), canvas 384x256
@@ -959,19 +973,22 @@ SIZEPASS = [
     ("TSPROC", "shp_ntrefn", [("shp_ntrefn_b", list(range(2, 17)), list(range(2, 17)))],
      "shp_ntrefnmk", 19, (736, 928), 75, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
-    # 4x3 plot holding the hangar and nothing else. The hangar's width is set
-    # by what has to drive through the bay door -- at the 3-cell width a
-    # Mammoth Mk. II was 40x40 classic px against a 33.6x33.6 door and simply
-    # could not fit -- and at 4 cells wide the art is 3.90x2.74 cells, so it
-    # sits inside the plot without hanging over a neighbouring row. fit_w 512
-    # pins the hangar at 4 cells, dst_x_px 448 centres it on the plot, and
-    # margin 27 puts the art's bottom on the plot's south edge. The canvas is
-    # 896x672 = stub 168x126 (x5.33) against a 96x72 box: the halo is what
-    # carries the concrete, which lands wholly OUTSIDE the plot and is sliced
-    # off into ground art. The pad is fit-excluded, so it cannot inflate the
-    # building's size read.
+    # 4x3 plot, descaled 2026-08-16 (Luke): the Mk. II arrives by dropship
+    # bay now, so the hangar no longer has to pass a 40px sprite -- fit_w 460:
+    # Luke's split-the-difference between the 416 APC floor and the old 512
+    # (416 read barely bigger than the power plant, 2026-08-16 SS).
+    # 3x2 PLOT, hangar CENTRED (dst_x 448 = canvas centre): the 70x44 art
+    # fills the 72x48 plot, so the launcher's plot-centred box hugs it with
+    # NO export case -- TDFACT/TDWEAP parity. Concrete = wholly outside the
+    # plot (east col + front row), the TD-bib arrangement. The hangar shrinks onto
+    # the WEST THREE columns (dst_x_px 384 = their centre) and the concrete
+    # pad comes INSIDE the plot, TSPROC-style: east column + south row are
+    # walkable ground the apron art covers. margin 39 seats the hangar's
+    # bottom 12 classic into the south row so the door face meets the
+    # concrete and the art roughly centres on the plot-centred selection
+    # box. Canvas/stub unchanged (896x672 = 168x126).
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
-     "shp_gtweapmk", 19, (896, 672), 27, 1.0, "shp_weapicon",
+     "shp_gtweapmk", 19, (896, 672), 51, 1.0, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
     # 2x1 plot + bib: the 48-tall stub centres on the 24-tall box, so the
     # canvas bottom is 12 classic below the plot edge. Margin 12 = building
@@ -1019,7 +1036,7 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     overlays = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb"}
     # Aprons ship as ground art, one tile per cell: (plot, tile grid), the grid
     # matching the building's SmudgeTypeClass in sdata.cpp.
-    aprons = {"TSWEAP": ((4, 3), (5, 3), (1, 1)), "TSPROC": ((4, 3), (5, 3), (0, 0))}
+    aprons = {"TSWEAP": ((4, 3), (5, 3), (0, 0)), "TSPROC": ((4, 3), (5, 3), (0, 0))}
     # TS drives the war factory bay with a separate 9-stage shutter over a
     # static interior (ART.INI: DoorAnim/DoorStages/UnderDoorAnim).
     doors = {"TSWEAP": ("shp_gtweap_d", "shp_gtweap_1", 9)}
@@ -1031,8 +1048,8 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     # columns: pin the building's width independently of the
                     # canvas, and anchor it on those columns rather than on
                     # the box centre.
-                    fit_w={"TSPROC": 384, "TSWEAP": 512}.get(ini),
-                    dst_x_px={"TSPROC": 304, "TSWEAP": 448}.get(ini),
+                    fit_w={"TSPROC": 384, "TSWEAP": 460}.get(ini),
+                    dst_x_px={"TSPROC": 304, "TSWEAP": 392}.get(ini),
                     apron_cells=aprons.get(ini),
                     # How far the near face encroaches into the bay opening.
                     # 0 = the hole is exactly what the shutter uncovers, so a

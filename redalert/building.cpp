@@ -3348,7 +3348,9 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             /*
             **	The vehicle is placed in the bay still tethered and does not
             **	move until Mission_Unload has run the shutter up. Facing is
-            **	DIR_SE because that is the way the TS bay points.
+            **	DIR_SE because that is the way the TS bay points. (A
+            **	materialise-at-the-open-door variant was tried 2026-08-17
+            **	and rejected -- units spawn INSIDE, TD/RA-style.)
             */
             if (Mission == MISSION_UNLOAD) {
                 return (1); // busy with the previous vehicle
@@ -3358,6 +3360,33 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 base->Mark(MARK_UP);
                 base->Coord = Exit_Coord();
                 base->Mark(MARK_DOWN);
+#if TF_DEV_BUILD
+                // Spawn-position ground truth (2026-08-17): the exit point was
+                // dialled blind against screenshots for a whole session; this
+                // states what the engine actually did. Origin = the plot's NW
+                // cell; the XYP offset is measured from Coord, so any anchor
+                // surprise (cell-centre vs corner) shows up here.
+                {
+                    const char* up = getenv("USERPROFILE");
+                    char p[600];
+                    snprintf(p, sizeof(p), "%s/MOD_DEBUG_AI.txt", up ? up : ".");
+                    FILE* f = fopen(p, "a");
+                    if (f != NULL) {
+                        fprintf(f,
+                                "TSWEAP spawn: bldg Coord=%08lx (cell %d,%d) Exit_Coord=%08lx "
+                                "(px %d,%d rel origin) unit '%s' Coord=%08lx\n",
+                                (unsigned long)Coord,
+                                Cell_X(Coord_Cell(Coord)),
+                                Cell_Y(Coord_Cell(Coord)),
+                                (unsigned long)Exit_Coord(),
+                                (int)(((Coord_X(Exit_Coord()) - Coord_X(Coord)) * 24) >> 8),
+                                (int)(((Coord_Y(Exit_Coord()) - Coord_Y(Coord)) * 24) >> 8),
+                                base->Class_Of().IniName,
+                                (unsigned long)base->Coord);
+                        fclose(f);
+                    }
+                }
+#endif
                 Transmit_Message(RADIO_HELLO, base);
                 Transmit_Message(RADIO_TETHER);
                 Assign_Mission(MISSION_UNLOAD);
@@ -5360,20 +5389,21 @@ bool Is_TS_Apron_Cell(CELL cell)
         {STRUCT_TSPROC, 1},              // east col, row 1
 
         /*
-        **	TSWEAP, 4x3: centre = row 1, col 2, a solid hangar cell. The
-        **	hangar fills its plot, so every apron cell lies OUTSIDE the
-        **	footprint -- the east column and the row below the plot. Those
-        **	are exactly the cells the footprint cannot keep clear, which is
-        **	why the veto has to name them.
+        **	TSWEAP, 4x3 TSPROC-parity (2026-08-17): centre = row 1, col 2, a
+        **	solid hangar cell. Hangar = west 3 cols x rows 0-1; the concrete
+        **	pad column (col 3) + front row (row 2) are IN-plot walkable
+        **	holes; the ~13px taper column (col 4) lies past the east edge.
+        **	All veto'd -- no building object stands on them.
         */
-        {STRUCT_TSWEAP, 2 - MAP_CELL_W},       // east col, row 0
-        {STRUCT_TSWEAP, 2},                    // east col, row 1
-        {STRUCT_TSWEAP, MAP_CELL_W + 2},       // east col, row 2
-        {STRUCT_TSWEAP, (MAP_CELL_W * 2) + 2}, // east col, apron row
-        {STRUCT_TSWEAP, (MAP_CELL_W * 2) - 2}, // apron row, col 0
-        {STRUCT_TSWEAP, (MAP_CELL_W * 2) - 1}, // apron row, col 1
-        {STRUCT_TSWEAP, MAP_CELL_W * 2},       // apron row, col 2
-        {STRUCT_TSWEAP, (MAP_CELL_W * 2) + 1}, // apron row, col 3
+        {STRUCT_TSWEAP, 1 - MAP_CELL_W},           // pad col, row 0
+        {STRUCT_TSWEAP, 1},                        // pad col, row 1
+        {STRUCT_TSWEAP, MAP_CELL_W + 1},           // pad col, front row (SE concrete)
+        {STRUCT_TSWEAP, MAP_CELL_W - 2},           // front row, col 0
+        {STRUCT_TSWEAP, MAP_CELL_W - 1},           // front row, col 1
+        {STRUCT_TSWEAP, MAP_CELL_W},               // front row, col 2
+        {STRUCT_TSWEAP, 2 - MAP_CELL_W},           // taper col, row 0
+        {STRUCT_TSWEAP, 2},                        // taper col, row 1
+        {STRUCT_TSWEAP, MAP_CELL_W + 2},           // taper col, front row
     };
 
     for (int i = 0; i < (int)(sizeof(_to_centre) / sizeof(_to_centre[0])); i++) {

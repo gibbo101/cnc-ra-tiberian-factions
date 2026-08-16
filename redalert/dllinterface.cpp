@@ -5153,8 +5153,10 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  Keyed on AssetName, as EA's own shadow and WAKE reordering below is.
     */
     if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAP2") == 0) {
+        // 128 leptons = 12 classic px: the 4x3 plot's centre sort point (y=36)
+        // to the hangar's south edge (y=48; was 384 for the old 72px hangar).
         new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 384)) >> 3);
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 128)) >> 3);
     }
 
     strncpy(new_object.TypeName, object->Class_Of().IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
@@ -5163,6 +5165,21 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         strncpy(new_object.AssetName, shape_file_name, CNC_OBJECT_ASSET_NAME_LENGTH);
     } else {
         strncpy(new_object.AssetName, object->Class_Of().Graphic_Name(), CNC_OBJECT_ASSET_NAME_LENGTH);
+    }
+
+    /*
+    **  TSTITN frame registration sits +11.8 classic px south of its true
+    **  position (every other unit is within +/-2.4 -- known-issues item 13):
+    **  the engine stands the Titan AT the war-factory door / repair pad /
+    **  park spot and the sprite draws half a cell south of it. Bias the DRAW
+    **  RECT north to re-seat the art on the unit's real coord -- render-only.
+    **  Keyed on the FINAL AssetName: units reach this export with a NULL
+    **  shape_file_name (the name comes from Graphic_Name()), so a
+    **  shape_file_name check never fires for the hull -- the 2026-08-16
+    **  first cut of this bias was dead code.
+    */
+    if (strncmp(new_object.AssetName, "TSTITN", 6) == 0) {
+        new_object.PositionY -= 12;
     }
 
     /*
@@ -5377,7 +5394,14 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             // default foundation-derived box IS the approved 57x38 on the
             // art rows. TSDROP likewise (box on the deck's 3x2).
             case STRUCT_TSWEAP:
-                dimy = 41;
+                // ENSEMBLE dims (2026-08-17 respec): the box covers hangar +
+                // pad together, the refinery pattern -- Luke reads the whole
+                // ensemble as "the WF" and a hangar-only box looks small.
+                // Position is launcher-owned on BOTH axes (six falsified
+                // probes; CenterCoordX was the sixth) -- size is the only
+                // dial, centred on the 4x3 plot.
+                dimx = 104;
+                dimy = 58;
                 break;
             case STRUCT_TSPILE:
                 dimy = 38; // 2x2 box, approved 2026-08-13
@@ -9178,7 +9202,8 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             SmudgeType apron;
             int off_x, off_y; // apron origin relative to the building's origin cell
         } _aprons[] = {
-            {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 1, 1},
+            // (0,0): 4x2-plot grid, cols 0-4 x rows 0-2 (2026-08-16).
+            {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 0, 0},
             {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0},
         };
         for (int a = 0; a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {

@@ -1,13 +1,51 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ 2026-08-16/17 — WF descale attempt: FULLY REVERTED, read before retrying
+## ⭐⭐⭐ RESUME HERE — WF descale (2026-08-16/17): respec DEPLOYED, issue list below
 
-**The whole arc lives in `git stash` ("WF descale arc 2026-08-16/17"); the
-deployed desktop prefix is back to the pre-descale baseline.** Luke asked for
-"a simple downsize" (open queue 27); ~10 build-deploy rounds later everything
-the factory does had regressed and the arc was reverted wholesale. The
-factory is FOUR coupled systems keyed to the art's exact pixel size — any
-resize must satisfy all of them at once, planned up front:
+**Status at session end (Luke's call, ~00:50): the descale CONTINUES — an
+earlier wholesale revert was itself reverted (Luke: "I haven't asked you to
+revert"); the stash was popped and a TSPROC-parity respec built and deployed.
+Desktop prefix = DLL `4ed60756` + run-12 art; worktree committed at this
+state.** Deployed geometry: fit_w 460 (hangar 70x44 at margin 51, west 3
+cols), BSIZE_43 4x3 plot with pad col + front row IN-plot (TSPROC parity,
+Luke's original call), ghost 5x3, ensemble selection box 104x58, sort band
+128, XYP(56,33) spawn (inside the small-unit containment window), spawn
+diagnostics to MOD_DEBUG_AI.txt (TF_DEV-gated), TSTITN draw-rect bias -12
+keyed on AssetName.
+
+### OPEN ISSUES (Luke's end-of-session list, in priority order)
+
+1. **PAD RENDERS PARTIALLY on the built factory.** The packed TSWEAPBB
+   tiles are VERIFIED CORRECT (contact-sheeted: full concrete + stripes
+   across the 5x3 grid) — the fault is RENDER-side tile placement/emission
+   in the `_aprons` block (dllinterface ~9210). Diagnosis was mid-flight at
+   session end. Next steps: (a) TSPROC uses the IDENTICAL structure
+   ((5,3)@(0,0) on a 4x3 plot) and renders fully — diff the two configs
+   field by field; (b) if clean, dump the emitted apron entries per cell
+   (cell, tx,ty, ShapeIndex) and compare against expectation. Do NOT
+   re-slice the art — it is correct.
+2. **Buildup no longer matches the built building** (Luke). Same root
+   cause as #1: the buildup bakes its own pad at the correct position; the
+   built state's ground-tile pad draws displaced/missing, so the handoff
+   visibly jumps. Fix #1 and re-check before treating this separately.
+3. **Spawn point: "better but still needs tweaking" (Luke).** Dial from
+   DATA now: every TSWEAP spawn logs bldg origin / Exit_Coord / unit coord
+   to MOD_DEBUG_AI.txt — read the log against one SS before moving XYP
+   (56,33). Titan's feet stick out the door: that is the PARKED containment
+   question (Titan 52.2px vs 44.1px art; options recorded below) — Luke:
+   "stop worrying about the titan, we'll respond once the resize works".
+4. **Selection box** now ensemble-sized (104x58, refinery pattern) — no
+   verdict yet on this build; verify with Luke, dial dims only (position is
+   launcher-owned on BOTH axes, six falsified probes).
+5. **Ghost 5x3 + built-vs-ghost match** — no verdict yet on this build.
+6. In-play sweep once 1-5 close: door cycle + sort (no pop-in front of the
+   shut door), exit fan first-choice (2,2), APC/harvester full hide,
+   capture/sell/repair on the new footprint, AI builds and uses it.
+7. Consistency question Luke floated (parked): TSPROC's own pad taper vs
+   its 4x3 ghost — revisit only after the WF pattern is signed off.
+
+**The four coupled constraints (any further resize must satisfy all at
+once, computed BEFORE building):**
 
 1. **Containment (the binding constraint):** the sandwich hide needs art
    height ≥ the tallest exiting unit. ⚠ **The Titan is 26.1/26.1 = 52.2
@@ -34,6 +72,9 @@ resize must satisfy all of them at once, planned up front:
    the open door" was built and Luke rejected it outright — reverted.
 
 **Also learned, keep regardless of the arc:**
+- The 08-16 "FULLY REVERTED" state lasted minutes — Luke had not asked for
+  it. Reverting is a decision, not a fix (now in global CLAUDE.md; never
+  suggest session end either — Luke decides both).
 - **Units reach the object export with NULL shape_file_name** — per-unit
   render biases must key on the final `AssetName`, not `shape_file_name`
   (the first cut of the TSTITN registration fix was dead code).
