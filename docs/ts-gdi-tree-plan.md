@@ -13,6 +13,15 @@ Luke's original call), ghost 5x3, ensemble selection box 104x58, sort band
 diagnostics to MOD_DEBUG_AI.txt (TF_DEV-gated), TSTITN draw-rect bias -12
 keyed on AssetName.
 
+**NEXT SESSION WORKS WITH ASEPRITE (Luke, session close):** the WF art/pad
+work goes through Aseprite — prepare reference exports the way the
+harvester-docking arc did (`~/Desktop/docking-art/` pattern: full-canvas-
+aligned frames + an INDEX.txt) so Luke can inspect/mark up/hand-edit the
+actual pixels instead of judging geometry through build-deploy rounds.
+Candidates to export ready-to-open: the TSWEAP composite (hangar + pad +
+door layers on the canvas grid), the sliced TSWEAPBB tile sheet, and a
+buildup final frame for the handoff comparison (issue 2).
+
 ### OPEN ISSUES (Luke's end-of-session list, in priority order)
 
 1. **PAD RENDERS PARTIALLY on the built factory.** The packed TSWEAPBB
