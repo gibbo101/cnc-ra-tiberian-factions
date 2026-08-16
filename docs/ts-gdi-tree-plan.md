@@ -1,5 +1,54 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐⭐⭐ 2026-08-16/17 — WF descale attempt: FULLY REVERTED, read before retrying
+
+**The whole arc lives in `git stash` ("WF descale arc 2026-08-16/17"); the
+deployed desktop prefix is back to the pre-descale baseline.** Luke asked for
+"a simple downsize" (open queue 27); ~10 build-deploy rounds later everything
+the factory does had regressed and the arc was reverted wholesale. The
+factory is FOUR coupled systems keyed to the art's exact pixel size — any
+resize must satisfy all of them at once, planned up front:
+
+1. **Containment (the binding constraint):** the sandwich hide needs art
+   height ≥ the tallest exiting unit. ⚠ **The Titan is 26.1/26.1 = 52.2
+   classic px tall — the "37 above/29 below = 66" figure further down this
+   doc is the MAMMOTH MK. II's, wrongly applied to the Titan on 08-07.**
+   Art ≥ ~53 tall ⇒ (at tonight's packing ratios, 0.151/0.096 classic per
+   fit_w px) fit_w ≥ ~550, art ~83x53 — a real descale from the original
+   ~94x66 is possible WITH containment. Alternative: shrink the Titan via
+   its classic stub (56→50 = x0.89, one line in build_tfassets.sh, shadow
+   included, no art repack) and descale further. At Luke's 460 pick
+   (70x44) containment is impossible and the Titan visibly stands outside
+   — rejected.
+2. **Box:** contract #7 extended — **CenterCoordX is ALSO ignored (6th
+   falsified probe)**: the launcher owns box position on BOTH axes. A
+   bang-on box requires plot ≈ art rect with the art centred (TDFACT
+   parity gives it with DEFAULT dims, no export case). 3x2 hugged the
+   70x44 art perfectly; re-derive for whatever size is chosen.
+3. **Ghost honesty (Luke, emphatic):** the ghost must cover every cell the
+   built ensemble's ground art touches — his final call was ghost 5x3 for
+   the full pad incl. taper. **Hard-clipping the pad art to a smaller grid
+   "looks like garbage"** (re-confirms the 08-05 hard-edge finding).
+4. **Spawn INSIDE, non-negotiable:** units must spawn hidden in the
+   building and drive out, TD/RA-style. A delayed-unlimbo "materialise at
+   the open door" was built and Luke rejected it outright — reverted.
+
+**Also learned, keep regardless of the arc:**
+- **Units reach the object export with NULL shape_file_name** — per-unit
+  render biases must key on the final `AssetName`, not `shape_file_name`
+  (the first cut of the TSTITN registration fix was dead code).
+- TSTITN registration (+11.8 south, known-issues 13): a
+  `PositionY -= 12` draw-rect bias keyed on AssetName is the right shape
+  of fix (in the stash; never cleanly play-verified — confounded rounds).
+- The pad emblem `~/Desktop/ts-gdi-logo.png` was Trash-cleaned and broke
+  the pack; recovered to `resources/custom-cameos/ts-gdi-logo.png`
+  (committed). The stash carries the packer change that reads the repo
+  copy — land it with the next arc.
+- Process (the real lesson): the ROUNDS burned Luke — geometry was probed
+  live one knob at a time against coupled constraints. Next attempt:
+  compute all four constraints on paper first, get Luke's sign-off on the
+  numbers, ship ONE build.
+
 ## ⭐⭐⭐ SESSION 2026-08-13 EVENING → 08-14 — the building walk + fix marathon
 
 **The 3x2 footprint pass: conyard + bay boxes VERIFIED IN PLAY** ("FIXED!",
@@ -251,11 +300,13 @@ backwards until 08-07). Offline-verified in the engine's real layer order;
 **an in-play confirmation is still owed.**
 
 **⚠ THE EXIT POINT IS PINNED BY GEOMETRY, NOT TASTE.** Hangar art spans
-y 3.9..71.8 of the 72px plot. A Titan or Mammoth Mk. II reaches 37 above and
-29 below its exit point, so the head clears the roof below y=41 and the feet
-clear the base above y=43: **a two-pixel window, and y=42 is it.** Depth is
-the near face's job, not the exit point's. Any change to hangar size, exit
-point, or a unit taller than ~66px breaks this.
+y 3.9..71.8 of the 72px plot. **CORRECTED 2026-08-17: the 37-above/29-below
+= 66px figure is the MAMMOTH MK. II's; the Titan is 26.1/26.1 = 52.2 px
+(measured from the packed ZIP metas).** With the Mk. II gone to the dropship
+bay, the tallest exiting unit is the Titan and the true window at this art
+size is ~[30, 45.7], not two pixels — y=42 sits inside it, which is why it
+worked. Depth is the near face's job, not the exit point's. Any hangar
+resize re-derives this window against the 52.2px Titan.
 
 **⚠ THE SORT BAND MUST REACH THE BUILDING'S SOUTHERN EDGE.**
 `dllinterface.cpp` biases the `TSWEAP2` sub-object south of its base, keyed
