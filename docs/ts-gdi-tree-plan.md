@@ -13,10 +13,9 @@ session, fresh skirmish:**
 2. **Bay delivery end-to-end**: Mk. II ordered → pod lands on the deck's
    visual centre (landing bias re-derived 160→32 leptons) → cargo steps
    onto the concrete → walks clear. Mech Division too (crash soak).
-3. **Refinery box DECISION (Luke, deferred 00:15)**: leave the approved
-   round-1 fit (recommended), or a 4x2 plot conversion buying ONE tile of
-   headroom (not the wished-for two — centred-box maths) at the cost of
-   re-indexing and fully retesting the signed-off dock geometry.
+3. **Refinery box DECISION: RESOLVED 2026-08-16 — round-1 fit accepted**
+   after a played-and-reverted 4x5 height-trick attempt (full record in
+   the Open queue, item 2).
 
 **⭐ THE NIGHT'S HEADLINE — selection-box contract PROVEN (contract #7 in
 `launcher-render-contracts.md`):** the launcher centres a building's box on
@@ -509,9 +508,21 @@ clause. Same literal-chain audit was needed for repair
 
 **Gameplay / engine:**
 1. **Mk. II cap → 3** on Luke's word (`TF_MK2_CAP`, one constant).
-2. **⭐ 3x2 pass: boxes VERIFIED ("FIXED!"); still owed** — TS MCV
-   round-trip, bay delivery end-to-end, and the refinery-box decision
-   (see the session block at the top of this doc).
+2. **⭐ 3x2 pass: CLOSED.** Boxes verified ("FIXED!", 08-14); MCV
+   round-trip PASS + bay delivery end-to-end PASS (fresh skirmish,
+   2026-08-16). **Refinery box: round-1 2-tile fit ACCEPTED (Luke,
+   2026-08-16) — the 4x5 height-trick attempt was built, played and
+   REVERTED same evening. Don't re-chase.** What the attempt proved
+   before rejection: BSIZE_45 ghost rows + CenterOffset pinned to the
+   dock pad (0x03800200) keeps Center_Coord world-invariant (sprite,
+   dock geometry, spawns all untouched — no art recut needed) and the
+   plot-centred box does reach the stacks; the apron renderer's owner
+   lookup must probe a solid row, not the ghost origin; a 4x5 placement
+   demand reads as a monstrosity (grid must stay the real footprint,
+   Tesla/Obelisk convention). Rejected on look: the tall box + the two
+   extra plot rows didn't read better than the round-1 fit. Left
+   unresolved: whether the launcher centres boxes on the BSIZE plot or
+   the placement-list rect (both were 4x5 in the played build).
 3. **TS WF placement-grid regression:** reads 4x3, should be 5x3 with the
    4th (top) row build-blocked — the radar height trick. Suspect the 08-07
    per-type `Occupy_List(placement=true)` split: the `_ts_weap_place`
@@ -554,7 +565,8 @@ clause. Same literal-chain audit was needed for repair
     frames, soften the alpha floor, or check whether NTREFN_C (144-canvas,
     needs offset compositing) is TS's own gap-filling second layer.
 15. Queued art nits: SMOKEY harvest puff port; voxel brightness pass
-    (TSHARV/TSMCV vs the TS screencast); chunky intake pixels + black fringe
+    (TSHARV/TSMCV vs the TS screencast; + the dropship — "too dark",
+    Luke 2026-08-16); chunky intake pixels + black fringe
     at the refinery bay mouth; damaged bay deck's stray remap-green pixel.
 
 **Housekeeping:**
