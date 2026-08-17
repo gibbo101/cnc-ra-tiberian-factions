@@ -9241,6 +9241,38 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
                     apron_entry.CellX = Cell_X(cell);
                     apron_entry.CellY = Cell_Y(cell);
                     apron_entry.ShapeIndex = (unsigned short)(tx + ty * apron_type.Width);
+#if TF_DEV_BUILD
+                    // Apron emission ground truth (2026-08-17): the WF pad
+                    // rendered partially while its packed tiles proved
+                    // correct. One line per cell, once per process: a cell
+                    // missing here was never emitted (loop-side fault); all
+                    // cells present with correct fields = launcher-side.
+                    {
+                        static unsigned char _logged[MAP_CELL_TOTAL];
+                        if (!_logged[cell]) {
+                            _logged[cell] = 1;
+                            const char* up = getenv("USERPROFILE");
+                            char p[600];
+                            snprintf(p, sizeof(p), "%s/MOD_DEBUG_AI.txt", up ? up : ".");
+                            FILE* f = fopen(p, "a");
+                            if (f != NULL) {
+                                fprintf(f,
+                                        "APRON emit %s: cell %d,%d tile %d,%d shape %d "
+                                        "pos %d,%d owner house %d\n",
+                                        apron_type.IniName,
+                                        Cell_X(cell),
+                                        Cell_Y(cell),
+                                        tx,
+                                        ty,
+                                        (int)apron_entry.ShapeIndex,
+                                        (int)apron_entry.PositionX,
+                                        (int)apron_entry.PositionY,
+                                        (int)apron_entry.Owner);
+                                fclose(f);
+                            }
+                        }
+                    }
+#endif
                     apron_entry.IsSmudge = false;
                     apron_entry.IsOverlay = true;
                     apron_entry.IsResource = false;
