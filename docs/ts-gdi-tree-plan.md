@@ -1,6 +1,44 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — WF descale (2026-08-16/17): respec DEPLOYED, issue list below
+## ⭐⭐⭐ RESUME HERE — 2026-08-17 late session close: WF spawn/exit iteration mid-flight
+
+**State at close (Luke: "we will continue tomorrow"):** the 4x3 respec is
+fully landed and play-approved (pad "3*5→4x3 works nicely", buildup "looks
+good", sandwich reveal works). The spawn/exit polish is MID-ITERATION via
+the Aseprite marker loop:
+
+- **Prefix is CURRENT: DLL `a8d4ea56` = the saved seat XYP(48,24)**
+  (NW corner of cell (2,1), Luke's final marker save; the held deploy
+  went out via the exit-watcher after he closed the game, md5-verified).
+- **The loop tooling (all committed):** `wf-pad-edit.aseprite` layers:
+  SPAWN--MOVE-ME (drag = set spawn; read+shipped by me), CELL CENTRES
+  (cyan = zero-recentre seats), grid reset to engine-true. `scripts/
+  wf_spawn_preview.py` renders the honest GIF (door reveal, recentre
+  leg, SE walk-out) from the marker — iterate WITHOUT launching.
+- **Recentre law (video-proven):** off-centre spawns first drive to
+  their cell's centre. The (56,21) seat slid visibly NORTH (bad); the
+  saved (48,24) seat's leg runs +63,+63 = SE = reads as pulling out.
+- **OPEN DECISION 1 — Titan door-shut containment:** at any workable
+  seat the CURRENT-size Titan's back clears the 44-classic roofline
+  (Titan = 52.2). Evidence sheet `~/Desktop/wf-art/
+  73-containment-options.png`: harvester contained; Titan pokes; Titan
+  at stub 56→50 (x0.89, one line in build_tfassets.sh, shadow incl., no
+  art repack — the recorded containment lever) = contained. Luke's
+  verdict owed.
+- **OPEN DECISION 2 — units drive over the WF art (Luke's report):**
+  exits/paths cross the hangar's drawn SW corner (art occupies front-row
+  cols 0-1 visually). Proposal on the table: block front-row cells
+  (0,2),(1,2) in TsWeapList (door corridor cols 2-3 stays open), keeping
+  the exit fan as is — "reserve the end square". Not yet built.
+- **Sandwich sort is FIXED and play-verified** (unit visible as shutter
+  rises): base sorts at plot NORTH edge, keyed on final AssetName —
+  **the NULL-shape_file_name trap struck a SECOND time** (first cut
+  keyed on shape_file_name = dead code, proven in tf_sort.log: 128-lep
+  gap unchanged).
+- **QUEUED NEXT ARC (Luke):** bring back the WF's animated lights
+  (GTWEAP_A/_B/_C idle anims).
+
+## ⭐⭐ SUPERSEDED — WF descale (2026-08-16/17): respec DEPLOYED, issue list below
 
 **Status at session end (Luke's call, ~00:50): the descale CONTINUES — an
 earlier wholesale revert was itself reverted (Luke: "I haven't asked you to

@@ -1462,17 +1462,19 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            TXT_NONE,
                                            "TSWEAP",
                                            FACING_NONE,
-                                           // ON the cell (1,0) centre (Luke's Aseprite marker,
-                                           // 2026-08-17 late): a spawn off cell-centre makes the
-                                           // drive logic's first move a visible recentre slide
-                                           // (seen in play at the (56,21) seat -- video'd), so
-                                           // the seat snaps to a centre; the sheet's CELL CENTRES
-                                           // layer marks the legal spots. Deep bay, one column
-                                           // west of the door axis; drives out SE with no slide.
-                                           // The spawn path logs building origin, Exit_Coord and
-                                           // the unit's post-Unlimbo coord to MOD_DEBUG_AI.txt
-                                           // under TF_DEV_BUILD.
-                                           XYP_COORD(36, 12),
+                                           // NW corner of cell (2,1), the door column (Luke's
+                                           // Aseprite marker, 2026-08-17 close): off-centre
+                                           // spawns take the drive logic's recentre leg first,
+                                           // but from this seat that leg runs +63,+63 canvas --
+                                           // SE, the exit direction -- so it reads as pulling
+                                           // out, not the backwards slide the (56,21) seat
+                                           // showed (video'd). The sheet's CELL CENTRES layer
+                                           // marks the zero-slide spots. Door-shut containment
+                                           // of the Titan at this depth is the OPEN question
+                                           // (docs/ts-gdi-tree-plan.md; sheet 73 on the
+                                           // Desktop). Spawn logging to MOD_DEBUG_AI.txt under
+                                           // TF_DEV_BUILD.
+                                           XYP_COORD(48, 24),
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,
