@@ -1,42 +1,61 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-17 late session close: WF spawn/exit iteration mid-flight
+## ⭐⭐⭐ RESUME HERE — 2026-08-18 session close: exit rails SHIPPED, one clipping bug then the lights arc
 
-**State at close (Luke: "we will continue tomorrow"):** the 4x3 respec is
-fully landed and play-approved (pad "3*5→4x3 works nicely", buildup "looks
-good", sandwich reveal works). The spawn/exit polish is MID-ITERATION via
-the Aseprite marker loop:
+**State at close ("we are done for tonight"):** the WF spawn/exit arc is
+CLOSED and play-approved ("new positions, perfection!"). Desktop prefix =
+DLL `a87146677cd7efbfb9aebfdc970550a3`, md5-verified; worktree committed
+through `e2b030c7`.
 
-- **Prefix is CURRENT: DLL `a8d4ea56` = the saved seat XYP(48,24)**
-  (NW corner of cell (2,1), Luke's final marker save; the held deploy
-  went out via the exit-watcher after he closed the game, md5-verified).
-- **The loop tooling (all committed):** `wf-pad-edit.aseprite` layers:
-  SPAWN--MOVE-ME (drag = set spawn; read+shipped by me), CELL CENTRES
-  (cyan = zero-recentre seats), grid reset to engine-true. `scripts/
-  wf_spawn_preview.py` renders the honest GIF (door reveal, recentre
-  leg, SE walk-out) from the marker — iterate WITHOUT launching.
-- **Recentre law (video-proven):** off-centre spawns first drive to
-  their cell's centre. The (56,21) seat slid visibly NORTH (bad); the
-  saved (48,24) seat's leg runs +63,+63 = SE = reads as pulling out.
-- **OPEN DECISION 1 — Titan door-shut containment:** at any workable
-  seat the CURRENT-size Titan's back clears the 44-classic roofline
-  (Titan = 52.2). Evidence sheet `~/Desktop/wf-art/
-  73-containment-options.png`: harvester contained; Titan pokes; Titan
-  at stub 56→50 (x0.89, one line in build_tfassets.sh, shadow incl., no
-  art repack — the recorded containment lever) = contained. Luke's
-  verdict owed.
-- **OPEN DECISION 2 — units drive over the WF art (Luke's report):**
-  exits/paths cross the hangar's drawn SW corner (art occupies front-row
-  cols 0-1 visually). Proposal on the table: block front-row cells
-  (0,2),(1,2) in TsWeapList (door corridor cols 2-3 stays open), keeping
-  the exit fan as is — "reserve the end square". Not yet built.
-- **Sandwich sort is FIXED and play-verified** (unit visible as shutter
-  rises): base sorts at plot NORTH edge, keyed on final AssetName —
-  **the NULL-shape_file_name trap struck a SECOND time** (first cut
-  keyed on shape_file_name = dead code, proven in tf_sort.log: 128-lep
-  gap unchanged).
-- **QUEUED NEXT ARC (Luke):** bring back the WF's animated lights
-  (GTWEAP_A/_B/_C idle anims).
+**What shipped tonight (all play-verified):**
+- **Forced exit rails replace organic pathing** — the recentre-leg slide
+  is dead. `Force_Track` plays a generated straight rail per unit type:
+  Track19 (default seat, magenta marker, XYP(48,29), dir 93) and Track20
+  (Titan's own seat, orange SPAWN TSTITN marker, XYP(48,19), dir 99),
+  both ending on the centre of **tile 13** = plot cell (3,2), the
+  reserved handover cell (pinned in building.cpp, generator-checked).
+  Hull faces the line every waypoint; `Force_Track` gained an optional
+  boarding-index param (unused, for future same-rail seats).
+- **The whole loop is Aseprite-driven:** `wf_spawn_preview.py` reads both
+  markers → emits `tsweap_exit_track{,_titan}.inc` + `tsweap_exit_seats.inc`
+  (consumed by BOTH bdata.cpp and building.cpp — no hand-typed seat left),
+  stamps the rails into the sheet (RAILS -- GENERATED layer, yellow=default
+  orange=titan), renders the honest GIF with per-facing sprites. Drag a
+  marker → re-run → rebuild; the script hard-errors on any seat/dest drift.
+- **Front-row corner blocking** (cells (0,2),(1,2) back in TsWeapList) —
+  units no longer drive over the hangar's drawn SW corner (`8af6f4ec`).
+
+**NEXT SESSION, FIRST: the last clipping bug — unit pops above the roof on
+exit.** SS `~/Pictures/Screenshots/Screenshot from 2026-08-18 00-43-47.png`
+(hover MLRS drawn fully over the hangar mid-exit, "a couple of frames,
+jarring"). **ASK LUKE FOR A VIDEO of the exit — offered 2026-08-18, wanted:
+it pins which waypoint flips and how long the window is.** Investigation
+state (code already located, dllinterface.cpp ~5155-5205):
+- Mechanism: the sandwich flip point. TSWEAP2 overlay sorts at Sort_Y+128
+  lep (hangar south edge, y=48 classic); the gliding unit's sort y crosses
+  that key while its tall sprite still overlaps opaque roof pixels → for
+  those frames it draws over the whole hangar.
+- Candidate cures, in preference order: **(a) clamp the unit's export sort
+  under the overlay while it is on a TS exit track** (TrackNumber ==
+  OUT_OF_WEAPON_FACTORY_TS/_TITAN → sort just above the TSWEAP base key;
+  normal sort resumes at track end — tile 13 has no opaque hangar overlap,
+  so no pop); **(b) generator-computed flip Y** — wf_spawn_preview.py can
+  intersect the unit sprite with the opaque overlay along the waypoints and
+  emit a per-rail flip-Y macro; (c) just move the overlay key south — risks
+  reverse-clipping units standing in front of the south wall, least liked.
+- tf_sort.log diag is ACTIVE (#if 1, dllinterface.cpp ~5220) — read keys
+  off a live exit before choosing.
+
+**THEN: the lights arc (Luke):** bring back the WF's animated lights
+(GTWEAP_A/_B/_C idle anims).
+
+**Also queued from tonight:** Open-queue item 15b — per-model unit-angle
+revisit (hover MLRS a facing step off vs TSHARV/TD med tank, SS 00-42-31).
+
+**Superseded tonight:** the recentre law + CELL CENTRES zero-slide seats
+(rails make any seat slide-free); OPEN DECISION 1 (Titan containment via
+stub 56→50 / sheet 73) — the Titan's 5px-north seat was approved in play,
+containment never re-raised; re-open only if Luke flags it.
 
 ## ⭐⭐ SUPERSEDED — WF descale (2026-08-16/17): respec DEPLOYED, issue list below
 
