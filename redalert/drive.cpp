@@ -420,6 +420,10 @@ bool DriveClass::Teleport_To(CELL cell)
  *          coord -- The coordinate that the unit will end up at when the movement track       *
  *                   is completed.                                                             *
  *                                                                                             *
+ *          index -- Waypoint to board the track at (default 0, the table start). Lets units   *
+ *                   with different seats share one rail: the caller must place the unit ON    *
+ *                   that waypoint's coordinate or playback starts with a visible snap.        *
+ *                                                                                             *
  * OUTPUT:  none                                                                               *
  *                                                                                             *
  * WARNINGS:   none                                                                            *
@@ -427,12 +431,12 @@ bool DriveClass::Teleport_To(CELL cell)
  * HISTORY:                                                                                    *
  *   03/17/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void DriveClass::Force_Track(int track, COORDINATE coord)
+void DriveClass::Force_Track(int track, COORDINATE coord, int index)
 {
     assert(IsActive);
 
     TrackNumber = track;
-    TrackIndex = 0;
+    TrackIndex = index;
     if (coord != 0) {
         Start_Driver(coord);
     }
@@ -3368,7 +3372,15 @@ DriveClass::TrackType const DriveClass::Track19[] = {
 #include "tsweap_exit_track.inc"
 };
 
-DriveClass::RawTrackType const DriveClass::RawTracks[19] = {{Track1, -1, 0, -1},
+/*
+**  Track20 = the Titan's own rail: same tile-13 destination, its own seat
+**  (the orange SPAWN TSTITN marker). Generated alongside Track19.
+*/
+DriveClass::TrackType const DriveClass::Track20[] = {
+#include "tsweap_exit_track_titan.inc"
+};
+
+DriveClass::RawTrackType const DriveClass::RawTracks[20] = {{Track1, -1, 0, -1},
                                                             {Track2, -1, 0, -1},
                                                             {Track3, 37, 12, 22},
                                                             {Track4, 26, 11, 19},
@@ -3386,14 +3398,15 @@ DriveClass::RawTrackType const DriveClass::RawTracks[19] = {{Track1, -1, 0, -1},
                                                             {Track16, -1, 0, -1},
                                                             {Track17, -1, 0, -1},
                                                             {Track18, -1, 0, -1},
-                                                            {Track19, -1, 0, -1}};
+                                                            {Track19, -1, 0, -1},
+                                                            {Track20, -1, 0, -1}};
 
 /***************************************************************************
 **	Smooth turning control table. Given two directions in a path list, this
 **	table determines which track to use and what modifying operations need
 **	be performed on the track data.
 */
-DriveClass::TurnTrackType const DriveClass::TrackControl[73] = {
+DriveClass::TurnTrackType const DriveClass::TrackControl[74] = {
     {1, 0, DIR_N, F_},                                                      //	0-0
     {3, 7, DIR_NE, F_D},                                                    //	0-1 (raw chart)
     {4, 9, DIR_E, F_D},                                                     //	0-2 (raw chart)
@@ -3469,5 +3482,6 @@ DriveClass::TurnTrackType const DriveClass::TrackControl[73] = {
     {17, 17, (DirType)94, F_}, // TS refinery, TDHARV: aimed reverse (mirrored side), pivot to SE.
     {18, 18, (DirType)94, F_}, // TS refinery, TDHARV exit mirror (unused).
 
-    {19, 19, DIR_SE, F_}       // TS war factory: authored SE exit glide to the pad corner (generated).
+    {19, 19, DIR_SE, F_},      // TS war factory: default seat's SE exit rail to tile 13 (generated).
+    {20, 20, DIR_SE, F_}       // TS war factory: the Titan's own SE exit rail to tile 13 (generated).
 };

@@ -65,6 +65,9 @@
 #define MCW MAP_CELL_W
 
 #define XYCELL(x, y) (y * MAP_CELL_W + x)
+// TS war factory seats, GENERATED from the Aseprite spawn markers by
+// wf_spawn_preview.py -- ClassTsWeap's exit point consumes the default.
+#include "tsweap_exit_seats.inc"
 static short const ExitPyle[] = {XYCELL(1, 2),
                                  XYCELL(2, 2),
                                  XYCELL(0, 2),
@@ -1464,19 +1467,13 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            TXT_NONE,
                                            "TSWEAP",
                                            FACING_NONE,
-                                           // NW corner of cell (2,1), the door column (Luke's
-                                           // Aseprite marker, 2026-08-17 close): off-centre
-                                           // spawns take the drive logic's recentre leg first,
-                                           // but from this seat that leg runs +63,+63 canvas --
-                                           // SE, the exit direction -- so it reads as pulling
-                                           // out, not the backwards slide the (56,21) seat
-                                           // showed (video'd). The sheet's CELL CENTRES layer
-                                           // marks the zero-slide spots. Door-shut containment
-                                           // of the Titan at this depth is the OPEN question
-                                           // (docs/ts-gdi-tree-plan.md; sheet 73 on the
-                                           // Desktop). Spawn logging to MOD_DEBUG_AI.txt under
+                                           // The default bay seat (the sheet's magenta SPAWN
+                                           // marker). Units leave on their type's generated
+                                           // exit rail (Track19/20) -- no recentre leg, no
+                                           // slide; the Titan seats at its own orange marker.
+                                           // Spawn logging to MOD_DEBUG_AI.txt under
                                            // TF_DEV_BUILD.
-                                           XYP_COORD(48, 24),
+                                           TSWEAP_SEAT_DEFAULT,
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,

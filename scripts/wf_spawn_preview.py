@@ -1,33 +1,32 @@
 #!/usr/bin/env python3
-"""The TS war factory exit loop: Aseprite marker -> engine track + preview GIF.
+"""The TS war factory exit loop: Aseprite markers -> engine tracks + preview GIF.
 
-Reads the spawn seat from the SPAWN layer of the Aseprite sheet (drag the
-magenta crosshair, save, re-run this) and produces BOTH sides of the loop:
+Two spawn markers on the sheet drive everything:
 
-  1. redalert/tsweap_exit_track.inc -- the generated Track19 waypoint table
-     (offsets relative to the track destination, hull facing per waypoint).
-     The engine plays this via Force_Track(OUT_OF_WEAPON_FACTORY_TS), so the
-     vehicle glides out of the bay in one authored motion: no cell-recentre
-     leg, no turn-in-place.
-  2. ~/Desktop/wf-art/spawn-preview.gif -- the honest preview of that exact
-     motion (door reveal, glide, door close), with the exit rails drawn as
-     ground art. The same rails are stamped into the Aseprite sheet as a
-     "RAILS -- GENERATED" layer so the line is visible next to the marker.
+  SPAWN -- MOVE ME   (magenta)  the DEFAULT seat, every unit except the Titan
+  SPAWN TSTITN       (orange)   the Titan's own seat
 
-THE TRACK IS A STRAIGHT SHOT from the SPAWN marker to the centre of TILE 13
-(Luke, 2026-08-18) -- the pad corner cell (3,2) in the sheet's numbered
-grid, one SE diagonal from the door. The hull faces the line's direction
-the whole way; with the seat on the 45-degree diagonal that is pure SE,
-spawn facing to arrival. Tile 13 is the engine's reserved handover cell:
-the unit arrives on its centre (only a cell centre hands over slide-free)
-and vacates when the rally point or the next unit's doorway-scatter pushes
-it on. An off-SE line is warned about loudly, never silently bent.
+Each seat gets its own straight exit rail to the centre of TILE 13 (Luke,
+2026-08-18) -- the pad corner cell (3,2) in the sheet's numbered grid, the
+engine's reserved handover cell. The hull faces its line's direction the
+whole way; both rails sit within a few DirType units of pure SE, so both
+hulls render SE for the entire glide. Only a cell centre hands over to
+normal driving slide-free, which is why the destination is fixed to the
+tile centre. Units vacate tile 13 via the rally point or the next unit's
+doorway scatter.
 
-The script asserts bdata.cpp's ClassTsWeap exit point matches the marker and
-building.cpp's pinned unload cell matches the computed destination -- seat,
-destination and track MUST move together or the track start reads as a
-teleport (the refinery-dock lesson). On mismatch it prints the exact value
-to update and exits nonzero.
+One run produces:
+  1. redalert/tsweap_exit_track.inc        -- Track19, the default rail
+  2. redalert/tsweap_exit_track_titan.inc  -- Track20, the Titan rail
+  3. redalert/tsweap_exit_seats.inc        -- TSWEAP_SEAT_DEFAULT / _TSTITN
+     macros, consumed by BOTH bdata.cpp (class exit point) and building.cpp
+     (spawn seat pick), so seat and track can never drift apart.
+  4. ~/Desktop/wf-art/spawn-preview.gif    -- the honest preview: door
+     reveal, glide along the rail with per-facing sprites, door close.
+     Both rails are drawn as ground art (yellow = default, orange = Titan)
+     and stamped into the sheet as a RAILS -- GENERATED layer.
+
+Drag a marker, save, re-run, rebuild -- that is the whole loop.
 
 Usage: wf_spawn_preview.py [TSTITN|TSHARV]   (default TSTITN)
 """
@@ -39,6 +38,8 @@ RA = f"{REPO}/resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/RED_ALER
 SHEET = os.path.expanduser("~/Desktop/wf-art/wf-pad-edit.aseprite")
 OUT = os.path.expanduser("~/Desktop/wf-art/spawn-preview.gif")
 INC = f"{REPO}/redalert/tsweap_exit_track.inc"
+INC_TITAN = f"{REPO}/redalert/tsweap_exit_track_titan.inc"
+INC_SEATS = f"{REPO}/redalert/tsweap_exit_seats.inc"
 BDATA = f"{REPO}/redalert/bdata.cpp"
 BUILDING = f"{REPO}/redalert/building.cpp"
 ASEPRITE = os.path.expanduser("~/.steam/steam/steamapps/common/Aseprite/aseprite")
@@ -50,10 +51,10 @@ OVER_KEY = 336 + 64                  # hangar south edge (Sort_Y + 128 leptons)
 TITAN_H = 278                        # 52.2 classic px on this canvas
 CV = 16 / 3                          # canvas px per classic px
 DIR_SE = 96
-# Blocked plot cells (col,row): the 3x2 hangar + the front-row cells under
-# its drawn SW corner. Mirrors TsWeapList in bdata.cpp.
-BLOCKED_CELLS = {(c, r) for r in range(2) for c in range(3)} | {(0, 2), (1, 2)}
-PLOT_CELLS_W, PLOT_CELLS_H = 4, 3
+# Tile 13 in the sheet's numbered grid = plot cell (3,2), the pad corner:
+# the reserved handover cell every rail ends on.
+DEST_CELL = (3, 2)
+DEST = (DEST_CELL[0] * 24 + 12, DEST_CELL[1] * 24 + 12)
 # facing order in the packed art (preview_to_desktop SPECS): N NW W SW S SE E NE.
 # DirType is clockwise from north, so facing index = (8 - dir/32) % 8.
 UNITS = {"TSTITN": ("TSTITN.ZIP", "tstitn", 12, True, TITAN_H),
@@ -69,7 +70,7 @@ def frame(zpath, pre, s):
     return c
 
 
-def marker_from_sheet(layer, is_magenta):
+def marker_from_sheet(layer, magenta_only=False):
     tmp = "/tmp/wf-marker.png"
     r = subprocess.run([ASEPRITE, "-b", SHEET, "--layer", layer,
                         "--save-as", tmp], capture_output=True)
@@ -77,14 +78,18 @@ def marker_from_sheet(layer, is_magenta):
         return None
     import numpy as np
     m = np.array(Image.open(tmp).convert("RGBA")).astype(int)
-    if is_magenta:
-        mask = (m[..., 3] > 128) & (m[..., 0] > 200) & (m[..., 2] > 200) & (m[..., 1] < 100)
-    else:
-        mask = (m[..., 3] > 128) & (m[..., 1] > 200) & (m[..., 2] > 200) & (m[..., 0] < 100)
+    mask = m[..., 3] > 128
+    if magenta_only:
+        mask &= (m[..., 0] > 200) & (m[..., 2] > 200) & (m[..., 1] < 100)
     ys, xs = np.nonzero(mask)
     if len(xs) == 0:
         return None
     return int(round(xs.mean())), int(round(ys.mean()))
+
+
+def to_classic(canvas_xy):
+    return (round((canvas_xy[0] - PLOT[0]) * 3 / 16),
+            round((canvas_xy[1] - PLOT[1]) * 3 / 16))
 
 
 def dirtype(dx, dy):
@@ -92,38 +97,17 @@ def dirtype(dx, dy):
     return int(round(math.atan2(dx, -dy) * 128 / math.pi)) % 256
 
 
-def snap_to_centre(pt):
-    """Nearest walkable plot-cell centre to a classic-px point."""
-    cx = round((pt[0] - 12) / 24) * 24 + 12
-    cy = round((pt[1] - 12) / 24) * 24 + 12
-    cell = ((cx - 12) // 24, (cy - 12) // 24)
-    if not (0 <= cell[0] < PLOT_CELLS_W and 0 <= cell[1] < PLOT_CELLS_H):
-        sys.exit(f"EXIT marker {pt} snaps to cell {cell}, outside the 4x3 "
-                 f"plot -- move it onto the plot's walkable concrete.")
-    if cell in BLOCKED_CELLS:
-        sys.exit(f"EXIT marker {pt} snaps to cell {cell}, a blocked hangar "
-                 f"cell -- move it onto the walkable concrete (door corridor "
-                 f"or pad column).")
-    if (cx, cy) != pt:
-        print(f"EXIT marker snapped to cell {cell} centre ({cx},{cy}) "
-              f"(was {pt}) -- track ends must sit on a cell centre or the "
-              f"engine's handover slides.")
-    return (cx, cy), cell
-
-
-def build_track(seat, dest):
-    """Straight glide seat -> dest in ~1px steps, hull facing the line the
-    whole way. Returns the track table."""
+def build_track(seat, label):
+    """Straight glide seat -> tile 13 centre in ~1px steps, hull facing the
+    line the whole way. Returns the track table."""
     sx, sy = seat
-    dx, dy = dest
+    dx, dy = DEST
     if dx <= sx or dy <= sy:
-        sys.exit(f"EXIT {dest} is not SE of the seat {seat} -- the bay door "
-                 f"points SE; put the exit marker south-east of the spawn.")
+        sys.exit(f"{label} seat {seat} is not NW of tile 13 centre {DEST} -- "
+                 f"the bay door points SE; move the marker back inside the bay.")
     d = dirtype(dx - sx, dy - sy)
-    if abs(d - DIR_SE) > 6:
-        print(f"WARNING: line direction {d} deviates from pure SE ({DIR_SE}) "
-              f"-- hull renders SE but motion is off-diagonal. Align the "
-              f"markers on the 45-degree diagonal for a pure SE shot.")
+    note = "" if abs(d - DIR_SE) <= 6 else "  (WARNING: visibly off the SE diagonal)"
+    print(f"{label} rail: seat {seat} -> {DEST}, dir {d}{note}")
     n = max(1, round(math.hypot(dx - sx, dy - sy)))
     track, seen = [], None
     for i in range(n):
@@ -137,62 +121,65 @@ def build_track(seat, dest):
     return track
 
 
-def emit_inc(seat, dest, track):
-    dcell = ((dest[0] - 12) // 24, (dest[1] - 12) // 24)
-    end_dir = track[-1][1]
+def emit_track(path, label, seat, track):
     rows = "".join(f"    {{XYP_COORD({ox}, {oy}), (DirType){d}}},\n"
                    for (ox, oy), d in track[:-1])
-    with open(INC, "w") as f:
+    with open(path, "w") as f:
         f.write(
-            "// GENERATED by scripts/wf_spawn_preview.py from the Aseprite SPAWN\n"
-            "// and EXIT markers -- do not hand-edit; move a marker and re-run.\n"
-            f"// Straight glide: seat XYP({seat[0]}, {seat[1]}) -> cell "
-            f"{dcell} centre XYP{dest}, dir {end_dir}, {len(track)} entries.\n"
+            "// GENERATED by scripts/wf_spawn_preview.py from the Aseprite\n"
+            "// spawn markers -- do not hand-edit; move a marker and re-run.\n"
+            f"// {label}: seat XYP({seat[0]}, {seat[1]}) -> cell {DEST_CELL} "
+            f"centre XYP{DEST}, dir {track[-1][1]}, {len(track)} entries.\n"
             f"{rows}"
-            f"    {{0x00000000L, (DirType){end_dir}}}\n")
-    print(f"wrote {INC} ({len(track)} entries, dir {end_dir}, start offset "
-          f"({track[0][0][0]},{track[0][0][1]}), dest cell {dcell})")
-    return dcell
+            f"    {{0x00000000L, (DirType){track[-1][1]}}}\n")
+    print(f"wrote {os.path.basename(path)} ({len(track)} entries)")
 
 
-def check_bdata_seat(seat):
-    src = open(BDATA).read()
-    m = re.search(r"ClassTsWeap\(.*?XYP_COORD\(\s*(-?\d+),\s*(-?\d+)\s*\)",
-                  src, re.S)
-    if not m:
-        sys.exit("could not find ClassTsWeap exit point in bdata.cpp")
-    have = (int(m.group(1)), int(m.group(2)))
-    if have != seat:
-        sys.exit(f"SEAT MISMATCH: marker says XYP_COORD({seat[0]}, {seat[1]}) "
-                 f"but bdata.cpp ClassTsWeap has XYP_COORD{have}. Update "
-                 f"bdata.cpp to the marker value and rebuild -- track and "
-                 f"seat must move together or the glide starts with a snap.")
-    print(f"bdata.cpp seat matches marker: XYP_COORD({seat[0]}, {seat[1]})")
+def emit_seats(seat_def, seat_titan):
+    with open(INC_SEATS, "w") as f:
+        f.write(
+            "// GENERATED by scripts/wf_spawn_preview.py from the Aseprite\n"
+            "// spawn markers -- do not hand-edit; move a marker and re-run.\n"
+            "// Offsets from the building origin (plot NW corner), classic px.\n"
+            f"#define TSWEAP_SEAT_DEFAULT XYP_COORD({seat_def[0]}, {seat_def[1]})\n"
+            f"#define TSWEAP_SEAT_TSTITN  XYP_COORD({seat_titan[0]}, {seat_titan[1]})\n")
+    print(f"wrote {os.path.basename(INC_SEATS)}: default {seat_def}, "
+          f"titan {seat_titan}")
 
 
-def check_building_dest(dcell):
-    src = open(BUILDING).read()
+def check_sources():
+    """The generated macros must actually be consumed -- a hand-typed seat
+    or destination in the C sources is drift waiting to happen."""
+    bsrc = open(BDATA).read()
+    m = re.search(r"ClassTsWeap\(.*?(TSWEAP_SEAT_DEFAULT|XYP_COORD\([^)]*\))",
+                  bsrc, re.S)
+    if not m or m.group(1) != "TSWEAP_SEAT_DEFAULT":
+        sys.exit("bdata.cpp ClassTsWeap must pass TSWEAP_SEAT_DEFAULT (from "
+                 "tsweap_exit_seats.inc) as its exit point, not a literal.")
+    gsrc = open(BUILDING).read()
     m = re.search(r"XYCELL\((\d+),\s*(\d+)\)[^\n]*TSWEAP exit-track destination",
-                  src)
+                  gsrc)
     if not m:
         sys.exit("could not find the TSWEAP exit-track destination pin in "
                  "building.cpp (marker comment 'TSWEAP exit-track destination')")
     have = (int(m.group(1)), int(m.group(2)))
-    if have != dcell:
-        sys.exit(f"DESTINATION MISMATCH: the SE ray lands on cell {dcell} but "
-                 f"building.cpp pins XYCELL{have}. Update the pinned cell to "
-                 f"XYCELL({dcell[0]}, {dcell[1]}) and rebuild -- track and "
-                 f"destination must move together.")
-    print(f"building.cpp pinned cell matches track dest: XYCELL{dcell}")
+    if have != DEST_CELL:
+        sys.exit(f"DESTINATION MISMATCH: rails end on cell {DEST_CELL} but "
+                 f"building.cpp pins XYCELL{have}.")
+    print("bdata.cpp consumes TSWEAP_SEAT_DEFAULT; building.cpp pin matches "
+          f"XYCELL{DEST_CELL}")
 
 
-def stamp_rails_layer(pts):
+def stamp_rails_layer(rail_sets):
     """Write the exit rails into the Aseprite sheet as a generated layer so
-    the line is visible right next to the SPAWN marker while editing. The
-    layer is deleted and re-stamped every run; a sheet backup is taken first."""
+    the lines are visible next to the markers while editing. The layer is
+    deleted and re-stamped every run; a sheet backup is taken first."""
     shutil.copy2(SHEET, SHEET + ".bak")
     lua = "/tmp/wf-rails-stamp.lua"
-    pt_rows = ",".join(f"{{{x},{y}}}" for x, y in pts)
+    sets = []
+    for pts, rgb in rail_sets:
+        pt_rows = ",".join(f"{{{x},{y}}}" for x, y in pts)
+        sets.append(f"{{pts={{{pt_rows}}}, r={rgb[0]}, g={rgb[1]}, b={rgb[2]}}}")
     with open(lua, "w") as f:
         f.write(f"""
 local spr = app.activeSprite
@@ -203,15 +190,17 @@ local layer = spr:newLayer()
 layer.name = "RAILS -- GENERATED"
 layer.opacity = 200
 local img = Image(spr.spec)
-local pts = {{{pt_rows}}}
-local col = app.pixelColor.rgba(255, 220, 0, 255)
-if spr.colorMode ~= ColorMode.RGB then col = 255 end
-for _, p in ipairs(pts) do
-  for dx = -1, 1 do
-    for dy = -1, 1 do
-      local X, Y = p[1] + dx, p[2] + dy
-      if X >= 0 and Y >= 0 and X < spr.width and Y < spr.height then
-        img:putPixel(X, Y, col)
+local sets = {{{",".join(sets)}}}
+for _, s in ipairs(sets) do
+  local col = app.pixelColor.rgba(s.r, s.g, s.b, 255)
+  if spr.colorMode ~= ColorMode.RGB then col = 255 end
+  for _, p in ipairs(s.pts) do
+    for dx = -1, 1 do
+      for dy = -1, 1 do
+        local X, Y = p[1] + dx, p[2] + dy
+        if X >= 0 and Y >= 0 and X < spr.width and Y < spr.height then
+          img:putPixel(X, Y, col)
+        end
       end
     end
   end
@@ -230,36 +219,36 @@ spr:saveAs(spr.filename)
               f"(backup at {SHEET}.bak)")
 
 
-# Tile 13 in the sheet's numbered grid = plot cell (3,2), the pad corner:
-# the reserved handover cell the glide ends on.
-DEST_CELL = (3, 2)
-DEST = (DEST_CELL[0] * 24 + 12, DEST_CELL[1] * 24 + 12)
-
-
 def main():
     which = sys.argv[1] if len(sys.argv) > 1 else "TSTITN"
     uz, upre, stride, has_turret, target_h = UNITS[which]
 
-    m = marker_from_sheet("SPAWN -- MOVE ME", is_magenta=True)
+    m = marker_from_sheet("SPAWN -- MOVE ME", magenta_only=True)
     if m is None:
-        sys.exit("no SPAWN marker found on the sheet")
-    mx, my = m
-    seat = (round((mx - PLOT[0]) * 3 / 16), round((my - PLOT[1]) * 3 / 16))
-    print(f"spawn marker: canvas ({mx},{my})  classic {seat}")
-    print(f"rails: seat {seat} -> tile 13 (cell {DEST_CELL}) centre {DEST}")
+        sys.exit("no SPAWN -- MOVE ME marker found on the sheet")
+    seat_def = to_classic(m)
+    print(f"default marker: canvas {m}  classic {seat_def}")
+    t = marker_from_sheet("SPAWN TSTITN")
+    if t is None:
+        seat_titan = seat_def
+        print("no SPAWN TSTITN marker -- titan uses the default seat")
+    else:
+        seat_titan = to_classic(t)
+        print(f"titan marker:   canvas {t}  classic {seat_titan}")
 
-    dest, dcell = DEST, DEST_CELL
-    track = build_track(seat, dest)
-    emit_inc(seat, dest, track)
-    check_bdata_seat(seat)
-    check_building_dest(dcell)
+    track_def = build_track(seat_def, "default")
+    track_titan = build_track(seat_titan, "titan")
+    emit_track(INC, "default rail (Track19)", seat_def, track_def)
+    emit_track(INC_TITAN, "titan rail (Track20)", seat_titan, track_titan)
+    emit_seats(seat_def, seat_titan)
+    check_sources()
 
     pad = Image.new("RGBA", CANVAS, (0, 0, 0, 0))
     bbz = f"{RA}/TERRAIN/TEMPERATE/TSWEAPBB.ZIP"
     for r in range(3):
         for c in range(4):
-            t = frame(bbz, "tsweapbb", r * 4 + c)
-            pad.paste(t, (192 + c * 128, 144 + r * 128), t)
+            tt = frame(bbz, "tsweapbb", r * 4 + c)
+            pad.paste(tt, (192 + c * 128, 144 + r * 128), tt)
     base = frame(f"{RA}/STRUCTURES/TSWEAP.ZIP", "tsweap", 0)
     door = [frame(f"{RA}/STRUCTURES/TSWEAP2.ZIP", "tsweap2", s) for s in range(9)]
 
@@ -282,19 +271,19 @@ def main():
     def canvas_pt(cx, cy):
         return (round(PLOT[0] + cx * CV), round(PLOT[1] + cy * CV))
 
-    # The rails: the authored track drawn as ground art -- seat through every
-    # waypoint to the destination centre. Under the sprites in the GIF, and
-    # stamped into the Aseprite sheet as its own generated layer.
-    rail_pts = [canvas_pt(*seat)] + \
-               [canvas_pt(dest[0] + ox, dest[1] + oy) for (ox, oy), _ in track]
+    def rail_pts(seat, track):
+        return [canvas_pt(*seat)] + \
+               [canvas_pt(DEST[0] + ox, DEST[1] + oy) for (ox, oy), _ in track]
+
+    pts_def = rail_pts(seat_def, track_def)
+    pts_titan = rail_pts(seat_titan, track_titan)
     rails = Image.new("RGBA", CANVAS, (0, 0, 0, 0))
     dr = ImageDraw.Draw(rails)
-    dr.line(rail_pts, fill=(255, 220, 0, 190), width=3)
-    for p in rail_pts[::4]:
-        dr.ellipse([p[0]-4, p[1]-4, p[0]+4, p[1]+4], fill=(255, 130, 0, 220))
-    ex, ey = rail_pts[-1]
+    for pts, col in ((pts_def, (255, 220, 0, 190)), (pts_titan, (255, 130, 0, 190))):
+        dr.line(pts, fill=col, width=3)
+    ex, ey = pts_def[-1]
     dr.ellipse([ex-7, ey-7, ex+7, ey+7], outline=(255, 60, 60, 255), width=3)
-    stamp_rails_layer(rail_pts)
+    stamp_rails_layer([(pts_def, (255, 220, 0)), (pts_titan, (255, 130, 0))])
 
     def compose(door_stage, upos, udir):
         bg = Image.new("RGBA", CANVAS, (225, 225, 232, 255))
@@ -312,21 +301,21 @@ def main():
         return bg
 
     # Engine order (building.cpp STRUCT_TSWEAP): the vehicle is unlimbo'd
-    # into the bay FIRST, tethered and stationary, then the shutter runs up
-    # -- revealed as the door opens. Then Force_Track plays Track19: the
-    # pure-SE glide. At track end the unit stands on the destination centre
-    # still facing SE (rally point, if set, takes it from there); the
-    # shutter closes over the empty bay.
+    # into the bay FIRST at its type's seat, tethered and stationary, then
+    # the shutter runs up -- revealed as the door opens. Then Force_Track
+    # plays the type's rail. At track end the unit stands on tile 13's
+    # centre (rally point, if set, takes it from there); the shutter closes.
+    seat, track = (seat_titan, track_titan) if which == "TSTITN" else (seat_def, track_def)
+    end_dir = track[-1][1]
     frames = []
-    seat_cv = canvas_pt(*seat)
     for s in range(9):                       # door opens over the waiting unit
-        frames.append(compose(s, seat_cv, DIR_SE))
+        frames.append(compose(s, canvas_pt(*seat), end_dir))
     for (ox, oy), d in track[::2] + [track[-1]]:   # the authored glide
-        frames.append(compose(8, canvas_pt(dest[0] + ox, dest[1] + oy), d))
-    for _ in range(3):                       # free on the pad corner, SE
-        frames.append(compose(8, canvas_pt(*dest), DIR_SE))
+        frames.append(compose(8, canvas_pt(DEST[0] + ox, DEST[1] + oy), d))
+    for _ in range(3):                       # free on tile 13
+        frames.append(compose(8, canvas_pt(*DEST), end_dir))
     for s in range(8, -1, -1):               # door closes
-        frames.append(compose(s, canvas_pt(*dest), DIR_SE))
+        frames.append(compose(s, canvas_pt(*DEST), end_dir))
 
     crop = (100, 60, 896, 672)
     frames = [f.crop(crop).convert("P", palette=Image.ADAPTIVE) for f in frames]

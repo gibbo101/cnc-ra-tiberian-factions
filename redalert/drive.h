@@ -114,7 +114,7 @@ public:
 #ifdef CHEAT_KEYS
     virtual void Debug_Dump(MonoClass* mono) const;
 #endif
-    void Force_Track(int track, COORDINATE coord);
+    void Force_Track(int track, COORDINATE coord, int index = 0);
     virtual bool Stop_Driver(void);
 
     void Mark_Track(COORDINATE headto, MarkType type);
@@ -133,7 +133,8 @@ public:
         OUT_OF_REFINERY_SE,        // TS refinery, TSHARV: drive forward east out onto the plate.
         BACKUP_INTO_REFINERY_SE_TD, // TS refinery, TDHARV variant (deeper bay seat).
         OUT_OF_REFINERY_SE_TD,     // TS refinery, TDHARV variant.
-        OUT_OF_WEAPON_FACTORY_TS   // TS war factory: authored seat-to-apron glide (generated table).
+        OUT_OF_WEAPON_FACTORY_TS,      // TS war factory: default seat's exit rail (generated table).
+        OUT_OF_WEAPON_FACTORY_TS_TITAN // TS war factory: the Titan's own seat/rail (generated table).
     };
 
     /****************************************************************************
@@ -232,8 +233,8 @@ private:
     void Lay_Track(void);
     COORDINATE Smooth_Turn(COORDINATE adj, DirType& dir);
 
-    static TurnTrackType const TrackControl[73];
-    static RawTrackType const RawTracks[19];
+    static TurnTrackType const TrackControl[74];
+    static RawTrackType const RawTracks[20];
     static TrackType const Track13[];
     static TrackType const Track14[];
     static TrackType const Track15[];
@@ -241,6 +242,7 @@ private:
     static TrackType const Track17[];
     static TrackType const Track18[];
     static TrackType const Track19[];
+    static TrackType const Track20[];
     static TrackType const Track12[];
     static TrackType const Track11[];
     static TrackType const Track10[];

@@ -107,6 +107,9 @@
 #include "function.h"
 #include "utracker.h"
 #include "event.h"
+// TS war factory seats: per-unit-type boarding points on the Track19 exit
+// rail, GENERATED from the Aseprite SPAWN markers by wf_spawn_preview.py.
+#include "tsweap_exit_seats.inc"
 #include <cstdio>
 #include <cmath>
 #include "rules.h"
@@ -3356,10 +3359,20 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 return (1); // busy with the previous vehicle
             }
             ScenarioInit++;
-            if (base->Unlimbo(Exit_Coord(), DIR_SE)) {
-                base->Mark(MARK_UP);
-                base->Coord = Exit_Coord();
-                base->Mark(MARK_DOWN);
+            {
+                // Per-unit-type boarding point on the shared exit rail: the
+                // Titan seats at its own marker; everything else uses the
+                // default. The unload's Force_Track boards at the matching
+                // waypoint index -- seat and index are generated together.
+                bool is_titan = (base->What_Am_I() == RTTI_UNIT
+                                 && *(UnitClass*)base == UNIT_TSTITN);
+                COORDINATE seat = Coord_Add(Coord,
+                                            is_titan ? TSWEAP_SEAT_TSTITN
+                                                     : TSWEAP_SEAT_DEFAULT);
+                if (base->Unlimbo(seat, DIR_SE)) {
+                    base->Mark(MARK_UP);
+                    base->Coord = seat;
+                    base->Mark(MARK_DOWN);
 #if TF_DEV_BUILD
                 // Spawn-position ground truth (2026-08-17): the exit point was
                 // dialled blind against screenshots for a whole session; this
@@ -3373,25 +3386,26 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                     FILE* f = fopen(p, "a");
                     if (f != NULL) {
                         fprintf(f,
-                                "TSWEAP spawn: bldg Coord=%08lx (cell %d,%d) Exit_Coord=%08lx "
+                                "TSWEAP spawn: bldg Coord=%08lx (cell %d,%d) seat=%08lx "
                                 "(px %d,%d rel origin) unit '%s' Coord=%08lx\n",
                                 (unsigned long)Coord,
                                 Cell_X(Coord_Cell(Coord)),
                                 Cell_Y(Coord_Cell(Coord)),
-                                (unsigned long)Exit_Coord(),
-                                (int)(((Coord_X(Exit_Coord()) - Coord_X(Coord)) * 24) >> 8),
-                                (int)(((Coord_Y(Exit_Coord()) - Coord_Y(Coord)) * 24) >> 8),
+                                (unsigned long)seat,
+                                (int)(((Coord_X(seat) - Coord_X(Coord)) * 24) >> 8),
+                                (int)(((Coord_Y(seat) - Coord_Y(Coord)) * 24) >> 8),
                                 base->Class_Of().IniName,
                                 (unsigned long)base->Coord);
                         fclose(f);
                     }
                 }
 #endif
-                Transmit_Message(RADIO_HELLO, base);
-                Transmit_Message(RADIO_TETHER);
-                Assign_Mission(MISSION_UNLOAD);
-                ScenarioInit--;
-                return (2);
+                    Transmit_Message(RADIO_HELLO, base);
+                    Transmit_Message(RADIO_TETHER);
+                    Assign_Mission(MISSION_UNLOAD);
+                    ScenarioInit--;
+                    return (2);
+                }
             }
             ScenarioInit--;
             break;
@@ -7459,7 +7473,10 @@ int BuildingClass::Mission_Unload(void)
                         unit->Assign_Mission(MISSION_GUARD_AREA);
                         unit->ArchiveTarget = ::As_Target(House->Where_To_Go(unit));
                     }
-                    unit->Force_Track(DriveClass::OUT_OF_WEAPON_FACTORY_TS, coord);
+                    unit->Force_Track((*unit == UNIT_TSTITN)
+                                          ? DriveClass::OUT_OF_WEAPON_FACTORY_TS_TITAN
+                                          : DriveClass::OUT_OF_WEAPON_FACTORY_TS,
+                                      coord);
                     unit->Set_Speed(128);
                     Status = LEAVE;
                 } else {
