@@ -1462,16 +1462,17 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            TXT_NONE,
                                            "TSWEAP",
                                            FACING_NONE,
-                                           // Deep in the bay, straight up the door's axis (Luke's
-                                           // Aseprite marker, 2026-08-17 evening: canvas 493,258
-                                           // on the centred ensemble): units materialise behind
-                                           // the hangar face and drive out through the door.
-                                           // Units small enough to hide (harvester/APC/hover) sit
-                                           // fully inside; the Titan overhang is DEFERRED (Luke).
+                                           // ON the cell (1,0) centre (Luke's Aseprite marker,
+                                           // 2026-08-17 late): a spawn off cell-centre makes the
+                                           // drive logic's first move a visible recentre slide
+                                           // (seen in play at the (56,21) seat -- video'd), so
+                                           // the seat snaps to a centre; the sheet's CELL CENTRES
+                                           // layer marks the legal spots. Deep bay, one column
+                                           // west of the door axis; drives out SE with no slide.
                                            // The spawn path logs building origin, Exit_Coord and
                                            // the unit's post-Unlimbo coord to MOD_DEBUG_AI.txt
-                                           // under TF_DEV_BUILD -- read the log before dialling.
-                                           XYP_COORD(56, 21),
+                                           // under TF_DEV_BUILD.
+                                           XYP_COORD(36, 12),
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,
