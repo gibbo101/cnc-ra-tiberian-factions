@@ -3355,7 +3355,20 @@ DriveClass::TrackType const DriveClass::Track18[] = {
 **	are they. Each track can be interpreted differently but this is controlled
 **	by the TrackControl structure elaborated elsewhere.
 */
-DriveClass::RawTrackType const DriveClass::RawTracks[18] = {{Track1, -1, 0, -1},
+/*
+**  Tiberian Factions mod: Track19 = the TS war factory's authored exit glide:
+**  a straight SE shot from the bay seat to the pad-corner handover cell
+**  (the Aseprite sheet's tile 13), hull facing the line the whole way.
+**  Replaces the organic-pathing exit whose first move was the drive logic's
+**  cell-recentre leg (a visible slide). The table is GENERATED from the
+**  Aseprite SPAWN marker by scripts/wf_spawn_preview.py -- move the marker
+**  and re-run the script; never hand-edit the include.
+*/
+DriveClass::TrackType const DriveClass::Track19[] = {
+#include "tsweap_exit_track.inc"
+};
+
+DriveClass::RawTrackType const DriveClass::RawTracks[19] = {{Track1, -1, 0, -1},
                                                             {Track2, -1, 0, -1},
                                                             {Track3, 37, 12, 22},
                                                             {Track4, 26, 11, 19},
@@ -3372,14 +3385,15 @@ DriveClass::RawTrackType const DriveClass::RawTracks[18] = {{Track1, -1, 0, -1},
                                                             {Track15, -1, 0, -1},
                                                             {Track16, -1, 0, -1},
                                                             {Track17, -1, 0, -1},
-                                                            {Track18, -1, 0, -1}};
+                                                            {Track18, -1, 0, -1},
+                                                            {Track19, -1, 0, -1}};
 
 /***************************************************************************
 **	Smooth turning control table. Given two directions in a path list, this
 **	table determines which track to use and what modifying operations need
 **	be performed on the track data.
 */
-DriveClass::TurnTrackType const DriveClass::TrackControl[72] = {
+DriveClass::TurnTrackType const DriveClass::TrackControl[73] = {
     {1, 0, DIR_N, F_},                                                      //	0-0
     {3, 7, DIR_NE, F_D},                                                    //	0-1 (raw chart)
     {4, 9, DIR_E, F_D},                                                     //	0-2 (raw chart)
@@ -3453,5 +3467,7 @@ DriveClass::TurnTrackType const DriveClass::TrackControl[72] = {
     {15, 15, (DirType)92, F_}, // TS refinery, TSHARV: aimed reverse (mirrored side), pivot to SE.
     {16, 16, (DirType)92, F_}, // TS refinery, TSHARV exit mirror (unused; organic pathing exits).
     {17, 17, (DirType)94, F_}, // TS refinery, TDHARV: aimed reverse (mirrored side), pivot to SE.
-    {18, 18, (DirType)94, F_}  // TS refinery, TDHARV exit mirror (unused).
+    {18, 18, (DirType)94, F_}, // TS refinery, TDHARV exit mirror (unused).
+
+    {19, 19, DIR_SE, F_}       // TS war factory: authored SE exit glide to the pad corner (generated).
 };

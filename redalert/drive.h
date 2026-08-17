@@ -132,7 +132,8 @@ public:
         BACKUP_INTO_REFINERY_SE,   // TS refinery, TSHARV: reverse west off the plate into the bay mouth.
         OUT_OF_REFINERY_SE,        // TS refinery, TSHARV: drive forward east out onto the plate.
         BACKUP_INTO_REFINERY_SE_TD, // TS refinery, TDHARV variant (deeper bay seat).
-        OUT_OF_REFINERY_SE_TD      // TS refinery, TDHARV variant.
+        OUT_OF_REFINERY_SE_TD,     // TS refinery, TDHARV variant.
+        OUT_OF_WEAPON_FACTORY_TS   // TS war factory: authored seat-to-apron glide (generated table).
     };
 
     /****************************************************************************
@@ -231,14 +232,15 @@ private:
     void Lay_Track(void);
     COORDINATE Smooth_Turn(COORDINATE adj, DirType& dir);
 
-    static TurnTrackType const TrackControl[72];
-    static RawTrackType const RawTracks[18];
+    static TurnTrackType const TrackControl[73];
+    static RawTrackType const RawTracks[19];
     static TrackType const Track13[];
     static TrackType const Track14[];
     static TrackType const Track15[];
     static TrackType const Track16[];
     static TrackType const Track17[];
     static TrackType const Track18[];
+    static TrackType const Track19[];
     static TrackType const Track12[];
     static TrackType const Track11[];
     static TrackType const Track10[];

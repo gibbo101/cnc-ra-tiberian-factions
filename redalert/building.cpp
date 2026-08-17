@@ -7389,20 +7389,21 @@ int BuildingClass::Mission_Unload(void)
     **  STRUCT_TSWEAP — the TS bay's own unload cycle. Follows RA's war
     **  factory sequence (raise the shutter, clear the doorway, release the
     **  vehicle, lower the shutter) over TS's nine door stages. The vehicle
-    **  paths out under its own steering rather than on a forced track: the
-    **  RA track is cut for RA's 3x2 factory and would drive the wrong way
-    **  out of this building.
+    **  leaves on its own forced track (Track19, generated from the Aseprite
+    **  seat marker): one authored glide from the bay seat to the door cell
+    **  centre, hull facing the direction of travel throughout. Organic
+    **  pathing's first move is a cell-recentre leg that reads as a slide.
     */
     if (*this == STRUCT_TSWEAP) {
         /*
-        **	The doorway is only meaningful while the vehicle is still in
-        **	contact — Find_Exit_Cell dereferences the techno it is asked
-        **	about, and the closing states run after contact has been dropped.
+        **	The handover cell is pinned to the pad corner the exit track is
+        **	authored into (the sheet's tile 13) -- the WEAP pattern:
+        **	CLEAR_BIB below scatters loiterers off it rather than routing
+        **	around them, and the freed unit vacates it via rally/scatter.
         */
-        TechnoClass* customer = Contact_With_Whom();
-        CELL cell = (customer != NULL) ? Find_Exit_Cell(customer) : 0;
-        COORDINATE coord = (cell != 0) ? Cell_Coord(cell) : 0;
-        CellClass* cellptr = (cell != 0) ? &Map[cell] : NULL;
+        CELL cell = Coord_Cell(Coord) + (2 * MAP_CELL_W + 3); // XYCELL(3, 2) -- TSWEAP exit-track destination (generator-checked)
+        COORDINATE coord = Cell_Coord(cell);
+        CellClass* cellptr = &Map[cell];
         enum
         {
             INITIAL,
@@ -7452,13 +7453,14 @@ int BuildingClass::Mission_Unload(void)
         case OPEN:
             if (Is_Door_Open()) {
                 unit = (UnitClass*)Contact_With_Whom();
-                if (unit && cell != 0) {
+                if (unit) {
                     unit->Assign_Mission(MISSION_MOVE);
-                    unit->Assign_Destination(::As_Target(cell));
                     if (House->IQ >= Rule.IQGuardArea) {
                         unit->Assign_Mission(MISSION_GUARD_AREA);
                         unit->ArchiveTarget = ::As_Target(House->Where_To_Go(unit));
                     }
+                    unit->Force_Track(DriveClass::OUT_OF_WEAPON_FACTORY_TS, coord);
+                    unit->Set_Speed(128);
                     Status = LEAVE;
                 } else {
                     Close_Door(DOOR_RATE, DOOR_STAGES);
