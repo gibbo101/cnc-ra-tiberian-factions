@@ -24,9 +24,11 @@ PLOT = (192, 144, 704, 528)          # 4x3 plot on the canvas
 BASE_KEY = PLOT[1]                   # bay interior: plot north edge
 OVER_KEY = 336 + 64                  # hangar south edge (Sort_Y + 128 leptons)
 TITAN_H = 278                        # 52.2 classic px on this canvas
-# body/turret shape indices for the S facing (preview_to_desktop SPECS)
-UNITS = {"TSTITN": ("TSTITN.ZIP", "tstitn", 4 * 12, 96 + 4 * 4, TITAN_H),
-         "TSHARV": ("TSHARV.ZIP", "tsharv", 4 * 4, None, 170)}
+# body/turret shape indices for the SE facing (preview_to_desktop SPECS,
+# facing order N NW W SW S SE E NE -> SE = 5): the engine unlimbos DIR_SE
+# and the unit drives out on the SE diagonal (building.cpp STRUCT_TSWEAP).
+UNITS = {"TSTITN": ("TSTITN.ZIP", "tstitn", 5 * 12, 96 + 5 * 4, TITAN_H),
+         "TSHARV": ("TSHARV.ZIP", "tsharv", 5 * 4, None, 170)}
 
 
 def frame(zpath, pre, s):
@@ -92,13 +94,19 @@ def main():
             bg.alpha_composite(im)
         return bg
 
-    for s in range(9):                       # door opens
-        frames.append(compose(s, None))
-    for i in range(steps + 1):               # unit drives out
+    # Engine order (building.cpp STRUCT_TSWEAP): the vehicle is unlimbo'd
+    # into the bay FIRST, tethered and stationary, then the shutter runs up
+    # -- so it is revealed as the door opens, not popped in afterwards --
+    # and it drives out on the SE diagonal it was spawned facing.
+    end_x = sx + (end_y - sy)
+    for s in range(9):                       # door opens over the waiting unit
+        frames.append(compose(s, (sx, sy)))
+    for i in range(steps + 1):               # unit drives out SE
+        x = round(sx + (end_x - sx) * i / steps)
         y = round(sy + (end_y - sy) * i / steps)
-        frames.append(compose(8, (sx, y)))
+        frames.append(compose(8, (x, y)))
     for s in range(8, -1, -1):               # door closes
-        frames.append(compose(s, (sx, end_y)))
+        frames.append(compose(s, (end_x, end_y)))
 
     crop = (100, 60, 896, 672)
     frames = [f.crop(crop).convert("P", palette=Image.ADAPTIVE) for f in frames]
