@@ -104,18 +104,20 @@ static short const TsProcList[] = {0, 1, 2,
                                    (MCW * 1), (MCW * 1) + 1, REFRESH_EOL};
 static short const TsProcOList[] = {
     MCW + 2, 3, MCW + 3, (MCW * 2) + 2, (MCW * 2) + 3, REFRESH_EOL};
-/* TSWEAP (3x2, descale final 2026-08-16): the Mk. II arrives by dropship bay
-** now, so the hangar no longer passes a 40px sprite. The 70x44 hangar art is
-** CENTRED on and fills the 3x2 plot (blocking = the whole plot), giving the
-** TDFACT-parity selection box for free. The concrete is wholly OUTSIDE the
-** plot -- east column + front row, the TD-bib arrangement -- walkable,
-** veto'd by Is_TS_Apron_Cell, in the overlap list for redraw, and included
-** in the 4x3 PLACEMENT grid so the ghost covers building + pad (Luke). */
+/* TSWEAP: the Mk. II arrives by dropship bay now, so the hangar no longer
+** passes a 40px sprite. The 70x44 hangar art is anchored on the west-3x2
+** block, and its drawn SW corner spills into front-row cols 0-1 -- those two
+** cells are BLOCKED so units path around the hangar instead of driving over
+** its wall. The door corridor (front-row cols 2-3) and the east pad column
+** stay walkable concrete: veto'd by Is_TS_Apron_Cell, in the overlap list
+** for redraw, and included in the 4x3 PLACEMENT grid so the ghost covers
+** building + pad (Luke). */
 static short const TsWeapList[] = {0, 1, 2,
                                    (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2,
+                                   (MCW * 2), (MCW * 2) + 1,
                                    REFRESH_EOL};
 static short const TsWeapOList[] = {3, (MCW * 1) + 3,
-                                    (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
+                                    (MCW * 2) + 2, (MCW * 2) + 3,
                                     REFRESH_EOL};
 /*
 **	Departure cells for the TS bay. The vehicle spawns at the door mouth over
