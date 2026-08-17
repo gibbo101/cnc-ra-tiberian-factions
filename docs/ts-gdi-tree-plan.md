@@ -36,10 +36,32 @@ buildup final frame for the handoff comparison (issue 2).
    ts_pack_tree.py run, restage into build/ before judging art in-game
    (`rsync -ac resources/remaster_mods/Vanilla_RA/Data/ 
    build/remaster/Vanilla_RA/Data/`).
-2. **Buildup-vs-built handoff — expected fixed by the same restage**
-   (buildup and pad now come from the same pack run); needs one watched
-   build for Luke's verdict.
-3. **Spawn point: "better but still needs tweaking" (Luke).** Dial from
+2. **CLOSED 2026-08-17 evening — buildup handoff ("build up looks good",
+   Luke)**: the buildup now carries NO pad pixels of its own (ts_pack_tree
+   erases them outside the building silhouette); the ground tiles draw
+   beneath the buildup from placement, so there is nothing to jump.
+
+**⭐ THE 2026-08-17 EVENING ARC — the 4x3 hand-authored respec (all
+deployed, DLL `93ccd729`):** Luke hand-tucked the pad in Aseprite
+(`resources/custom-art/wf-pad-edit.aseprite`; the pad canvas is the
+committed packer source — ts_pack_tree consumes it via apron_canvas, the
+affine'd GTWEAPBB is no longer used for TSWEAP). Grid/smudge/ghost all
+4x3 = the plot; ensemble centred on the plot (margin 40.5) so the box
+hugs at 96x49 with no compromise dims; spawn dialled by dragging the
+SPAWN layer in the same Aseprite sheet (currently XYP(56,21), deep bay);
+`scripts/wf_spawn_preview.py` renders the spawn-and-drive-out GIF from
+the marker — the no-game-reload iteration loop. **Sandwich sort fix:**
+the bay interior (asset TSWEAP) now sorts at the plot's NORTH edge
+(-384 leptons) — the centre-line default hid any unit spawned north of
+y=36 classic (engine-proven in tf_sort.log). Engine spawn order is
+already unit-first-then-shutter, facing DIR_SE. Stale 08-07
+STRUCTURES/TSWEAPBB.ZIP deleted (repo+build+prefix).
+**OWED IN PLAY:** spawn seat verdict, box 96x49 verdict, ghost 4x3
+verdict, door-reveal + SE walk-out confirmation.
+**QUEUED NEXT (Luke, 2026-08-17):** bring the WF's animated lights back
+(the GTWEAP_A/_B/_C idle anims — window/light blinkers).
+
+3. **Spawn point: now marker-dialled (see arc above).** Dial from
    DATA now: every TSWEAP spawn logs bldg origin / Exit_Coord / unit coord
    to MOD_DEBUG_AI.txt — read the log against one SS before moving XYP
    (56,33). Titan's feet stick out the door: that is the PARKED containment
