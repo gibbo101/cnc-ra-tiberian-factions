@@ -731,6 +731,13 @@ clause. Same literal-chain audit was needed for repair
     (TSHARV/TSMCV vs the TS screencast; + the dropship — "too dark",
     Luke 2026-08-16); chunky intake pixels + black fringe
     at the refinery bay mouth; damaged bay deck's stray remap-green pixel.
+15b. **Units pass: revisit unit angles per model** (Luke, 2026-08-18).
+    Evidence SS `~/Pictures/Screenshots/Screenshot from 2026-08-18
+    00-42-31.png`: parked side by side, TS Harvester lines up with the TD
+    Medium Tank but the TS hover MLRS reads a facing step off. Per-model
+    render-facing dial via the labelled Desktop sheet loop
+    ([[feedback-voxel-facing-sheet-loop]] — the wave's "+8" rule does not
+    generalise); audit the whole TS voxel roster while at it.
 
 **Housekeeping:**
 16. Remove the `tf_orbit.flag` dead code (descent landed).
