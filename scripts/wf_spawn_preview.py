@@ -96,14 +96,24 @@ def main():
 
     # Engine order (building.cpp STRUCT_TSWEAP): the vehicle is unlimbo'd
     # into the bay FIRST, tethered and stationary, then the shutter runs up
-    # -- so it is revealed as the door opens, not popped in afterwards --
-    # and it drives out on the SE diagonal it was spawned facing.
-    end_x = sx + (end_y - sy)
+    # -- so it is revealed as the door opens, not popped in afterwards.
+    # First motion is the drive logic's CELL RECENTRE: the unit heads to
+    # the centre of the cell the spawn point lands in, THEN walks out SE.
+    # A marker exactly on a cell centre has no recentre leg.
+    ccx = 192 + ((sx - 192) // 128) * 128 + 64
+    ccy = 144 + ((sy - 144) // 128) * 128 + 64
+    print(f"recentre leg: ({sx},{sy}) -> cell centre ({ccx},{ccy}), "
+          f"{'NONE' if (ccx,ccy)==(sx,sy) else f'{ccx-sx:+d},{ccy-sy:+d} px'}")
+    end_x = ccx + (end_y - ccy)
     for s in range(9):                       # door opens over the waiting unit
         frames.append(compose(s, (sx, sy)))
+    rc = max(1, round(((ccx-sx)**2 + (ccy-sy)**2) ** 0.5 / 18))
+    for i in range(1, rc + 1):               # recentre slide
+        frames.append(compose(8, (round(sx + (ccx-sx)*i/rc),
+                                  round(sy + (ccy-sy)*i/rc))))
     for i in range(steps + 1):               # unit drives out SE
-        x = round(sx + (end_x - sx) * i / steps)
-        y = round(sy + (end_y - sy) * i / steps)
+        x = round(ccx + (end_x - ccx) * i / steps)
+        y = round(ccy + (end_y - ccy) * i / steps)
         frames.append(compose(8, (x, y)))
     for s in range(8, -1, -1):               # door closes
         frames.append(compose(s, (end_x, end_y)))
