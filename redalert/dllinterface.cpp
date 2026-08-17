@@ -5158,21 +5158,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 128)) >> 3);
     }
-    /*
-    **  The BASE (bay interior) sorts at the plot's NORTH edge, not the
-    **  building's centre line: it is the room's back wall, and a vehicle
-    **  standing anywhere in the plot must draw over it or the bay reads
-    **  empty through the open door. The centre-line default broke the
-    **  sandwich the moment the spawn point moved north of y=36 (2026-08-17
-    **  evening, the hand-dialled deep-bay spawn): the unit sorted under the
-    **  interior and vanished. Sort_Y is the plot centre (y=36 classic), so
-    **  -384 leptons puts this layer at y=0, north of any in-plot vehicle.
-    */
-    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAP") == 0) {
-        new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, -384)) >> 3);
-    }
-
     strncpy(new_object.TypeName, object->Class_Of().IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
 
     if (shape_file_name != NULL) {
@@ -5194,6 +5179,27 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     */
     if (strncmp(new_object.AssetName, "TSTITN", 6) == 0) {
         new_object.PositionY -= 12;
+    }
+
+    /*
+    **  The BASE (bay interior) sorts at the plot's NORTH edge, not the
+    **  building's centre line: it is the room's back wall, and a vehicle
+    **  standing anywhere in the plot must draw over it or the bay reads
+    **  empty through the open door. The centre-line default broke the
+    **  sandwich the moment the spawn point moved north of y=36 (2026-08-17
+    **  evening, the hand-dialled deep-bay spawn): the unit sorted under the
+    **  interior and vanished. Sort_Y is the plot centre (y=36 classic), so
+    **  -384 leptons puts this layer at y=0, north of any in-plot vehicle.
+    **  Keyed on the FINAL AssetName: the base draw reaches this export with
+    **  a NULL shape_file_name (same trap as the TSTITN bias above -- the
+    **  first cut keyed on shape_file_name and was dead code, proven in
+    **  tf_sort.log: overlay-base gap stayed 128 leptons). Exact match so
+    **  TSWEAPMAKE keeps the default sort; TSWEAP2 has its own key above.
+    */
+    if (object->What_Am_I() == RTTI_BUILDING
+        && strcmp(new_object.AssetName, "TSWEAP") == 0) {
+        new_object.SortOrder =
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, -384)) >> 3);
     }
 
     /*
