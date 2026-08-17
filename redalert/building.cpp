@@ -5389,11 +5389,11 @@ bool Is_TS_Apron_Cell(CELL cell)
         {STRUCT_TSPROC, 1},              // east col, row 1
 
         /*
-        **	TSWEAP, 4x3 TSPROC-parity (2026-08-17): centre = row 1, col 2, a
-        **	solid hangar cell. Hangar = west 3 cols x rows 0-1; the concrete
-        **	pad column (col 3) + front row (row 2) are IN-plot walkable
-        **	holes; the ~13px taper column (col 4) lies past the east edge.
-        **	All veto'd -- no building object stands on them.
+        **	TSWEAP, 4x3 (2026-08-17 evening, hand-tucked pad): centre =
+        **	row 1, col 2, a solid hangar cell. Hangar = west 3 cols x rows
+        **	0-1; the concrete pad column (col 3) + front row (row 2) are
+        **	IN-plot walkable holes -- units drive out of the door through
+        **	the front row. All veto'd -- no building object stands on them.
         */
         {STRUCT_TSWEAP, 1 - MAP_CELL_W},           // pad col, row 0
         {STRUCT_TSWEAP, 1},                        // pad col, row 1
@@ -5401,9 +5401,6 @@ bool Is_TS_Apron_Cell(CELL cell)
         {STRUCT_TSWEAP, MAP_CELL_W - 2},           // front row, col 0
         {STRUCT_TSWEAP, MAP_CELL_W - 1},           // front row, col 1
         {STRUCT_TSWEAP, MAP_CELL_W},               // front row, col 2
-        {STRUCT_TSWEAP, 2 - MAP_CELL_W},           // taper col, row 0
-        {STRUCT_TSWEAP, 2},                        // taper col, row 1
-        {STRUCT_TSWEAP, MAP_CELL_W + 2},           // taper col, front row
     };
 
     for (int i = 0; i < (int)(sizeof(_to_centre) / sizeof(_to_centre[0])); i++) {

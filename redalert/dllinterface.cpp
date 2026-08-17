@@ -5394,14 +5394,14 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             // default foundation-derived box IS the approved 57x38 on the
             // art rows. TSDROP likewise (box on the deck's 3x2).
             case STRUCT_TSWEAP:
-                // ENSEMBLE dims (2026-08-17 respec): the box covers hangar +
-                // pad together, the refinery pattern -- Luke reads the whole
-                // ensemble as "the WF" and a hangar-only box looks small.
-                // Position is launcher-owned on BOTH axes (six falsified
-                // probes; CenterCoordX was the sixth) -- size is the only
-                // dial, centred on the 4x3 plot.
-                dimx = 104;
-                dimy = 58;
+                // Ensemble bbox (2026-08-17 evening): the hand-tucked pad
+                // centres the ensemble on the 4x3 plot, so the plot-centred
+                // box hugs the art with a size dial alone -- art 510x262
+                // canvas px = 96x49 classic. Position is launcher-owned on
+                // BOTH axes (six falsified probes; CenterCoordX was the
+                // sixth) -- size is the only dial.
+                dimx = 96;
+                dimy = 49;
                 break;
             case STRUCT_TSPILE:
                 dimy = 38; // 2x2 box, approved 2026-08-13
@@ -9202,7 +9202,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             SmudgeType apron;
             int off_x, off_y; // apron origin relative to the building's origin cell
         } _aprons[] = {
-            // (0,0): 4x2-plot grid, cols 0-4 x rows 0-2 (2026-08-16).
+            // (0,0): both grids sit on their building's plot origin.
             {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 0, 0},
             {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0},
         };

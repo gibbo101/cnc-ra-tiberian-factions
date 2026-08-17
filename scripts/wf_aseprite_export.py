@@ -23,7 +23,7 @@ OUT = os.path.expanduser("~/Desktop/wf-art")
 CANVAS = (896, 672)
 CELL = 128                      # 24 classic px * 16/3
 PLOT_COLS, PLOT_ROWS = 4, 3     # BSIZE_43
-GRID_COLS, GRID_ROWS = 5, 3     # TSWEAPBB smudge grid
+GRID_COLS, GRID_ROWS = 4, 3     # TSWEAPBB smudge grid (hand-tucked pad, 2026-08-17 evening)
 LEFT = (CANVAS[0] - PLOT_COLS * CELL) // 2   # 192 -- grid/plot origin x
 TOP = (CANVAS[1] - PLOT_ROWS * CELL) // 2    # 144 -- grid/plot origin y
 

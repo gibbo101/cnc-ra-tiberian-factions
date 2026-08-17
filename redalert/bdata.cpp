@@ -1462,15 +1462,17 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            TXT_NONE,
                                            "TSWEAP",
                                            FACING_NONE,
-                                           // Bay mouth on the 4x3 plot (2026-08-17 respec): x =
-                                           // door aperture centre, y = aperture centre (art rel
-                                           // this origin: aperture ~(56, 33)) -- units small
-                                           // enough to hide (harvester/APC/hover) sit fully
-                                           // inside; the Titan overhang is DEFERRED (Luke). The
-                                           // spawn path logs building origin, Exit_Coord and the
-                                           // unit's post-Unlimbo coord to MOD_DEBUG_AI.txt under
+                                           // Bay mouth on the 4x3 plot: x = door aperture centre,
+                                           // y = aperture centre. The ensemble is centred on the
+                                           // plot (2026-08-17 evening, art union bottom at canvas
+                                           // 456), which moved the aperture 10.5 classic south of
+                                           // the old anchor: 33 -> 44. Units small enough to hide
+                                           // (harvester/APC/hover) sit fully inside; the Titan
+                                           // overhang is DEFERRED (Luke). The spawn path logs
+                                           // building origin, Exit_Coord and the unit's
+                                           // post-Unlimbo coord to MOD_DEBUG_AI.txt under
                                            // TF_DEV_BUILD -- read the log before dialling this.
-                                           XYP_COORD(56, 33),
+                                           XYP_COORD(56, 44),
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,
@@ -5490,29 +5492,23 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
     }
     if (placement && Type == STRUCT_TSWEAP) {
         /*
-        **	The full 5x3 ensemble: the 3x2 hangar plot, the concrete's east
-        **	pad column, the front row AND the taper column -- the ghost
-        **	promises every cell the built building's ground art occupies
-        **	(Luke, 2026-08-17: "if the building needs to be 5x3 because of
-        **	the pad, then make the ghost 5x3"; clipping the taper off the
-        **	art was tried first and looked like garbage). Placement cells
-        **	may lie outside the BSIZE plot; blocking stays the 3x2.
+        **	The 4x3 plot exactly: the hand-tucked pad (2026-08-17 evening)
+        **	keeps every concrete pixel inside the plot, so ghost, plot and
+        **	ground art all agree -- the ghost promises every cell the built
+        **	building's ground art occupies. Blocking stays the 3x2 hangar.
         */
         static short const _ts_weap_place[] = {0,
                                                1,
                                                2,
                                                3,
-                                               4,
                                                MAP_CELL_W,
                                                MAP_CELL_W + 1,
                                                MAP_CELL_W + 2,
                                                MAP_CELL_W + 3,
-                                               MAP_CELL_W + 4,
                                                MAP_CELL_W * 2,
                                                MAP_CELL_W * 2 + 1,
                                                MAP_CELL_W * 2 + 2,
                                                MAP_CELL_W * 2 + 3,
-                                               MAP_CELL_W * 2 + 4,
                                                REFRESH_EOL};
         return (_ts_weap_place);
     }

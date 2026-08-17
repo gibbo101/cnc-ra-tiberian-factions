@@ -313,7 +313,8 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                     bottom_margin=None, overscale=1.0, mk_mask_dir=None,
                     mk_clip_dir=None,
                     overlay_dir=None, fit_w=None, dst_x_px=None, door_spec=None,
-                    apron_cells=None, front_ring=None, emblem=None):
+                    apron_cells=None, front_ring=None, emblem=None,
+                    apron_canvas=None):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -400,6 +401,9 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         cx, cy = (ux0 + ux1) / 2.0, (uy0 + uy1) / 2.0
         dst_x = dst_y = None
 
+    mk_pad_erase = None
+    mk_building_sil = None
+
     if overlay_dir is not None and apron_cells is None:
         # Ground overlay (TS concrete apron / dock bay): drawn UNDER the
         # building but EXCLUDED from the fit, so it rides into the canvas
@@ -453,6 +457,21 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # TS whoever owns the building, so a baked colour is no loss.
         src = bake_hazard_gold(load(overlay_dir, healthy_f))
         apron = place(src, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
+        if apron_canvas is not None:
+            # Hand-authored pad: a canvas-space RGBA in FINAL position (grid
+            # colours and hazard gold already baked) replaces the affine'd
+            # source. The affine'd original still defines, together with the
+            # new pad, the region erased from the buildup frames below: the
+            # ground tiles draw beneath the buildup sprite from placement, so
+            # a buildup carrying NO pad pixels of its own hands off to the
+            # built state with nothing to jump.
+            mk_pad_erase = apron.split()[3].point(lambda v: 255 if v > 0 else 0)
+            apron = Image.open(apron_canvas).convert("RGBA")
+            if apron.size != (canvas_w, canvas_h):
+                raise SystemExit(f"{ini}: apron canvas {apron.size} != canvas "
+                                 f"{(canvas_w, canvas_h)}")
+            mk_pad_erase = ImageChops.lighter(
+                mk_pad_erase, apron.split()[3].point(lambda v: 255 if v > 0 else 0))
         gx, gy = left + off_c * cell_px, top + off_r * cell_px
         if ini in globals().get("APRON_CLIP", set()):
             clipped = Image.new("RGBA", apron.size, (0, 0, 0, 0))
@@ -681,6 +700,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             return m
 
         sils = [silhouette(healthy), silhouette(damaged_frames)]
+        mk_building_sil = ImageChops.lighter(sils[0], sils[1])
 
         door_frames = []
         for under_f in (0, 1):
@@ -791,6 +811,21 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     else:
         mk = [place(load(mk_dir, i), factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
               for i in resample(real_frames(mk_dir), mk_count)]
+    if mk_pad_erase is not None:
+        # Hand-authored pad (apron_canvas): strip every pad pixel -- old
+        # position and new -- from the buildup, except where the building's
+        # own silhouette stands (walls rise from the pad; erasing those
+        # unbuilds the building bottom-up). The ground tiles supply the
+        # concrete beneath the whole animation.
+        erase = mk_pad_erase
+        if mk_building_sil is not None:
+            s = Image.new("RGBA", mk_building_sil.size, (255, 255, 255, 0))
+            s.putalpha(mk_building_sil)
+            keep = place(s, factor, canvas_w, canvas_h, cx, cy,
+                         dst_x, dst_y).split()[3].point(lambda v: 255 if v > 127 else 0)
+            erase = ImageChops.subtract(erase, keep)
+        for f in mk:
+            f.putalpha(ImageChops.subtract(f.split()[3], erase))
     write_zip(f"{STRUCT_DIR}/{ini}MAKE.ZIP", f"{ini.lower()}make", mk)
 
     patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", ini, 2 * n)
@@ -987,8 +1022,14 @@ SIZEPASS = [
     # bottom 12 classic into the south row so the door face meets the
     # concrete and the art roughly centres on the plot-centred selection
     # box. Canvas/stub unchanged (896x672 = 168x126).
+    # margin 40.5 (2026-08-17 evening, Luke's Aseprite pass): building union
+    # bottom at canvas 456, which centres the ENSEMBLE (hangar + hand-tucked
+    # pad, bbox 205-467) on the 4x3 plot (144-528). Art centred on plot =
+    # the launcher's plot-centred selection box hugs it at 96x49 with a size
+    # dial only (contract #7). The door front dips into the top half of the
+    # walkable bottom row; units drive out through it.
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
-     "shp_gtweapmk", 19, (896, 672), 51, 1.0, "shp_weapicon",
+     "shp_gtweapmk", 19, (896, 672), 40.5, 1.0, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
     # 2x1 plot + bib: the 48-tall stub centres on the 24-tall box, so the
     # canvas bottom is 12 classic below the plot edge. Margin 12 = building
@@ -1036,7 +1077,7 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     overlays = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb"}
     # Aprons ship as ground art, one tile per cell: (plot, tile grid), the grid
     # matching the building's SmudgeTypeClass in sdata.cpp.
-    aprons = {"TSWEAP": ((4, 3), (5, 3), (0, 0)), "TSPROC": ((4, 3), (5, 3), (0, 0))}
+    aprons = {"TSWEAP": ((4, 3), (4, 3), (0, 0)), "TSPROC": ((4, 3), (5, 3), (0, 0))}
     # TS drives the war factory bay with a separate 9-stage shutter over a
     # static interior (ART.INI: DoorAnim/DoorStages/UnderDoorAnim).
     doors = {"TSWEAP": ("shp_gtweap_d", "shp_gtweap_1", 9)}
@@ -1051,6 +1092,11 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     fit_w={"TSPROC": 384, "TSWEAP": 460}.get(ini),
                     dst_x_px={"TSPROC": 304, "TSWEAP": 392}.get(ini),
                     apron_cells=aprons.get(ini),
+                    # TSWEAP's pad is hand-authored (Luke, Aseprite, 2026-08-17):
+                    # the committed canvas replaces the affine'd GTWEAPBB.
+                    apron_canvas={"TSWEAP": os.path.abspath(os.path.join(
+                        MOD, "..", "..", "custom-art",
+                        "tsweap-pad-canvas.png"))}.get(ini),
                     # How far the near face encroaches into the bay opening.
                     # 0 = the hole is exactly what the shutter uncovers, so a
                     # vehicle is visible through the full opening and hidden

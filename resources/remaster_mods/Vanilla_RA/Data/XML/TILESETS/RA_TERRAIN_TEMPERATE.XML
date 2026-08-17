@@ -89745,39 +89745,6 @@
 			</Frames>
 		</Value>
 	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSWEAPBB</Name>
-			<Shape>12</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsweapbb\tsweapbb-0012.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSWEAPBB</Name>
-			<Shape>13</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsweapbb\tsweapbb-0013.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
-	<Tile>
-		<Key>
-			<Name>TSWEAPBB</Name>
-			<Shape>14</Shape>
-		</Key>
-		<Value>
-			<Frames>
-				<Frame>tsweapbb\tsweapbb-0014.tga</Frame>
-			</Frames>
-		</Value>
-	</Tile>
 </Tiles>
 	</TilesetTypeClass>
 </Tilesets>

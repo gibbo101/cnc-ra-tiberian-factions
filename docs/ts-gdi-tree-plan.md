@@ -24,19 +24,21 @@ buildup final frame for the handoff comparison (issue 2).
 
 ### OPEN ISSUES (Luke's end-of-session list, in priority order)
 
-1. **PAD RENDERS PARTIALLY on the built factory.** The packed TSWEAPBB
-   tiles are VERIFIED CORRECT (contact-sheeted: full concrete + stripes
-   across the 5x3 grid) — the fault is RENDER-side tile placement/emission
-   in the `_aprons` block (dllinterface ~9210). Diagnosis was mid-flight at
-   session end. Next steps: (a) TSPROC uses the IDENTICAL structure
-   ((5,3)@(0,0) on a 4x3 plot) and renders fully — diff the two configs
-   field by field; (b) if clean, dump the emitted apron entries per cell
-   (cell, tx,ty, ShapeIndex) and compare against expectation. Do NOT
-   re-slice the art — it is correct.
-2. **Buildup no longer matches the built building** (Luke). Same root
-   cause as #1: the buildup bakes its own pad at the correct position; the
-   built state's ground-tile pad draws displaced/missing, so the handoff
-   visibly jumps. Fix #1 and re-check before treating this separately.
+1. **CLOSED 2026-08-17 evening — pad renders fully in play (Luke: "3*5
+   works nicely now with apron").** Root cause was NOT render code: the
+   08-16 session's final 00:38 pack run never restaged from `resources/`
+   into `build/` (the data-only-restage trap), so every played round drew
+   an older TSWEAPBB — while the contact-sheet verification read the new
+   one. Restaged + deployed; the TF_DEV apron-emission log confirmed all
+   15 cells emit a perfect contiguous grid (correct shapes/positions), so
+   the `_aprons` loop and the launcher were both always fine. The
+   overlap-list culling theory is DEAD. Rule reaffirmed: after any
+   ts_pack_tree.py run, restage into build/ before judging art in-game
+   (`rsync -ac resources/remaster_mods/Vanilla_RA/Data/ 
+   build/remaster/Vanilla_RA/Data/`).
+2. **Buildup-vs-built handoff — expected fixed by the same restage**
+   (buildup and pad now come from the same pack run); needs one watched
+   build for Luke's verdict.
 3. **Spawn point: "better but still needs tweaking" (Luke).** Dial from
    DATA now: every TSWEAP spawn logs bldg origin / Exit_Coord / unit coord
    to MOD_DEBUG_AI.txt — read the log against one SS before moving XYP
