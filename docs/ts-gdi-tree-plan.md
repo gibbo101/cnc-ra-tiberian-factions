@@ -77,6 +77,15 @@ on the pad west of the mouth → erased from the BASE (marked box
 ART and was REVERTED on Luke's instruction** — his marked pixels were
 the whole spec ([[feedback-user-marked-pixels-are-the-whole-truth]]).
 
+**Round 4 (late evening): tall-tower placement ghost FIXED + play-verified
+(Luke: "fixed").** TSPOWR/TSRADR placed with a one-row ghost a cell below
+the cursor (placement list followed the south-row footprint while the
+launcher anchors the cursor on the BSIZE origin) and could anchor a row
+higher at the map top edge. Fix `f25ec5e3`: full-2x2 placement list
+(the radar height trick), blocking unchanged; prefix DLL = `40794b46`.
+Note: AI placement legality tightened by the headroom row for these two
+— half an eye on PLACE-FAIL in future AI games.
+
 **Session close (Luke: "lets leave it as it is... polish round
 later"):** some stripes remain visible in play; queued for a POLISH
 ROUND driven by another markup pass, not by filters.
