@@ -42,11 +42,28 @@ stub 16→28, tileset counts auto-patched (TSWEAP 28, TSWEAPLT 28).
 Verified in the packed zips: frame1==frame13, frame2==frame12,
 frame5==frame9 byte-identical; frame0≠frame7.
 
-**Owed next session, in play:** lamp pulse reads as sweep-and-return;
-no seam pixels over exiting units (build one exit and watch the
-door/floor line); damaged-state lamps still animate; exits/door
-unchanged. Desktop prefix at close = DLL
-`c5e688bfe012830f0c1b5d62f90c58ab` + trimmed 28-frame lamp art,
+**Round 2 (Luke's 17:26 regression report, ss 17-26-22):** the door
+COLUMN sat over the Titan's torso mid-exit, and the door/floor seam
+still rendered over its feet — BOTH are the exit clamp holding the unit
+under the whole face for the entire rail (the seam pixels were
+TSWEAP2's own, at the `ap_bottom` cut line — the lamp trim never
+touched them; the double-blend theory was only part of the story).
+FIXES (deployed): ① the near-face cut now removes 3 extra source rows
+above `ap_bottom` — the seam band (HD rows y376-390, verified) moved
+into the BASE layer, which sorts under units, and the idle composite is
+pixel-identical; ② the Titan's rail releases the clamp 32 leptons south
+of the bay-mouth line (`On_TS_Titan_Exit_Track()` +
+`Coord_Y(Sort_Y) > clamp+96` in the export block) — tall and narrow,
+it clears the roof there, and the column falls behind its torso. The
+DEFAULT rail keeps the full-rail clamp: wide hulls overlap the
+east-wing roof to the last waypoint (the original pop). Watch for
+column-over-hull on WIDE units near the rail end — accepted trade-off
+for now, flag if it reads badly in motion.
+
+**Owed next session, in play:** Titan walk-out clean (no column over
+torso, no seam at its feet); wide-unit exits still pop-free; lamp
+sweep-and-return cadence; damaged lamps animate. Desktop prefix at
+close = DLL `8919d51db2d6fe7427c9b71778d74aeb` + seam-cut art,
 md5-verified, deployed with the game closed.
 
 **State:** the WF spawn/exit arc is fully CLOSED — rails play-approved

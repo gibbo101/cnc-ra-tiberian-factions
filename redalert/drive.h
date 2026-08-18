@@ -128,6 +128,10 @@ public:
     {
         return TrackNumber == OUT_OF_WEAPON_FACTORY_TS || TrackNumber == OUT_OF_WEAPON_FACTORY_TS_TITAN;
     }
+    bool On_TS_Titan_Exit_Track(void) const
+    {
+        return TrackNumber == OUT_OF_WEAPON_FACTORY_TS_TITAN;
+    }
     virtual bool Stop_Driver(void);
 
     void Mark_Track(COORDINATE headto, MarkType type);

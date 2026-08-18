@@ -5227,9 +5227,22 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     if (object->What_Am_I() == RTTI_UNIT && CurrentDrawCount == 0) {
         DriveClass const* drive = (DriveClass const*)object;
         if (drive->On_TS_Exit_Track() && drive->TsExitSortClamp != 0) {
-            int clamp = (ExportLayer << 29) + (drive->TsExitSortClamp >> 3);
-            if (new_object.SortOrder > clamp) {
-                new_object.SortOrder = clamp;
+            /*
+            **  The clamp exists to keep an emerging hull under the ROOF, and
+            **  the wide hulls on the default rail overlap the east wing to
+            **  the last waypoint. The Titan does not: tall and narrow, it
+            **  clears the roof as soon as its feet pass the bay mouth, and
+            **  from there the door column must fall BEHIND its torso -- so
+            **  its rail releases the clamp 32 leptons south of the mouth
+            **  line (clamp coord +64 = the overlay key, +32 margin).
+            */
+            bool release = drive->On_TS_Titan_Exit_Track()
+                           && Coord_Y(object->Sort_Y()) > Coord_Y(drive->TsExitSortClamp) + 96;
+            if (!release) {
+                int clamp = (ExportLayer << 29) + (drive->TsExitSortClamp >> 3);
+                if (new_object.SortOrder > clamp) {
+                    new_object.SortOrder = clamp;
+                }
             }
         }
     }

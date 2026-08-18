@@ -585,7 +585,12 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # moving it back costs 189 pixels of Titan foot on a shut door.
         _, _, _, ap_bottom = aperture.getbbox()
         draw = ImageDraw.Draw(region)
-        draw.rectangle([0, ap_bottom, region.width, region.height], fill=0)
+        # Cut 3 rows ABOVE the aperture bottom as well: the door/floor seam's
+        # antialiased edge rides those rows, and any face pixel renders over a
+        # unit sort-clamped onto an exit rail. Moved to the base they draw
+        # identically on an idle building (nothing sorts between the layers
+        # there) and stay under an exiting unit.
+        draw.rectangle([0, ap_bottom - 3, region.width, region.height], fill=0)
         # DO NOT punch the idle lights out of the near face. They are lamps
         # mounted on the hangar -- 147 pixels of it, and 117 of those sit
         # ABOVE the opening -- so cutting them out of solid roof art leaves
