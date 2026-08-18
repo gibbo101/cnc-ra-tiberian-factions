@@ -1,6 +1,53 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-18 daytime: exit clipping FIXED, lights arc next
+## ⭐⭐⭐ RESUME HERE — 2026-08-18 afternoon close: lamps SHIPPED + approved, two open lamp issues
+
+**State at close (Luke: "lets wrap up here"):** the WF lamps arc SHIPPED
+same day it started — `8a396a7f` — and play-approved ("the lights are
+working, love it"). Desktop prefix = DLL
+`95998492472b8e06739c4d1c1629a9fd` + TSWEAPLT art, md5-verified;
+worktree committed through the checkpoint commit after this block.
+
+**The lamp mechanism (`8a396a7f`):** new TSWEAPLT layer = the near-face
+region cut from EVERY idle phase (8 healthy + 8 damaged, full-canvas
+registration, same crop as TSWEAP2), drawn in building.cpp right after
+the TSWEAP2 draw at `Shape_Number()` (auto-synced to the body's idle
+stage — the anim machinery at bdata.cpp:4906 was running invisibly all
+along), sorted ONE notch (+136 lep vs +128) above the door overlay.
+Packer emits it in build_structure's door block (`lamp_runs`), stub via
+build_tfassets.sh (168x126 x16), RA_STRUCTURES.XML + TFASSETS.MIX wired.
+Pre-game verification loop that worked well: composite lamp frames over
+TSWEAP2 frame 0 → GIF + a phase-diff-union "lamp location" map.
+
+### Both close-of-session issues FIXED and DEPLOYED — in-play verdict OWED
+
+**Issue A — door/floor seam pixels over exiting units (Luke, 13:25:
+"some of the pixels on the line where the door meets the floor are
+rendering over the units as they leave").** Cause as hypothesised:
+TSWEAPLT carried the WHOLE face per phase, re-drawing TSWEAP2's
+antialiased seam edge on top of itself — double alpha blend ≈ twice the
+opacity over the clamped exiting unit. FIX (deployed): lamp frames are
+trimmed to pixels that CHANGE against phase 0 (|Δ|>30, MaxFilter(5)
+dilation for the glow edge) — verified in the packed zip: frame 0
+EMPTY, other frames only lamp clusters (~150-260px crops vs the 459px
+face), nothing below canvas y=263, the seam gone from the layer.
+
+**Issue B — lamp cadence ping-pong (Luke: "run once, then run in
+reverse, then loop, like the radar and con yard").** FIX (deployed):
+build_structure gained a `pingpong` flag (TSWEAP only) that reorders
+the composited frames fwd+back at the composite level (8 → 14 frames,
+0-7 + 6-1), so base AND lamp layers inherit the same order and stay
+Shape_Number-locked; `_anims[]` Count 8→14 (bdata.cpp:4906), TSWEAPLT
+stub 16→28, tileset counts auto-patched (TSWEAP 28, TSWEAPLT 28).
+Verified in the packed zips: frame1==frame13, frame2==frame12,
+frame5==frame9 byte-identical; frame0≠frame7.
+
+**Owed next session, in play:** lamp pulse reads as sweep-and-return;
+no seam pixels over exiting units (build one exit and watch the
+door/floor line); damaged-state lamps still animate; exits/door
+unchanged. Desktop prefix at close = DLL
+`c5e688bfe012830f0c1b5d62f90c58ab` + trimmed 28-frame lamp art,
+md5-verified, deployed with the game closed.
 
 **State:** the WF spawn/exit arc is fully CLOSED — rails play-approved
 ("new positions, perfection!") AND the roof-clipping pop squashed

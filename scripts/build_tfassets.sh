@@ -314,8 +314,9 @@ ts_stub TSWEAP "$TMPDIR/tsweapmk_stub.shp" 168 126 19
 # box or the launcher scales the door to whatever shape file it was handed.
 ts_stub TSWEAP "$TMPDIR/tsweap2_stub.shp" 168 126 18
 PACK_ARGS+=("$TMPDIR/tsweap2_stub.shp:TSWEAP2.SHP")
-# The lamp layer shares the canvas too: 8 idle phases x healthy/damaged.
-ts_stub TSWEAP "$TMPDIR/tsweaplt_stub.shp" 168 126 16
+# The lamp layer shares the canvas too: the 14-frame ping-pong idle cycle
+# (8 phases swept forward then back) x healthy/damaged.
+ts_stub TSWEAP "$TMPDIR/tsweaplt_stub.shp" 168 126 28
 PACK_ARGS+=("$TMPDIR/tsweaplt_stub.shp:TSWEAPLT.SHP")
 # TSPILE 48x48: back to the grid-matched 2x2 plot width (the 60-overhang
 # compromise predates the tier-wide size drop, Luke 2026-08-04).

@@ -4903,7 +4903,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 28, 3},  // GAPILE halved windows _A(4)+_B(4)+_C(7 flag) -> LCM 28
         {STRUCT_TSPROC, BSTATE_IDLE, 0, 15, 3}, // NAREFN _B plume, speck frames dropped (src 2-16)
         {STRUCT_TSPROC, BSTATE_FULL, 0, 15, 3}, // customer approaching: keep the plume running
-        {STRUCT_TSWEAP, BSTATE_IDLE, 0, 8, 3},   // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8
+        {STRUCT_TSWEAP, BSTATE_IDLE, 0, 14, 3},  // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8, swept fwd+back (ping-pong, packer order)
         {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)
         {STRUCT_TSTECH, BSTATE_IDLE, 0, 8, 3},   // GATECH _A halved (8 healthy + 8 damage-pocked dome)

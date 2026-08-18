@@ -314,7 +314,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                     mk_clip_dir=None,
                     overlay_dir=None, fit_w=None, dst_x_px=None, door_spec=None,
                     apron_cells=None, front_ring=None, emblem=None,
-                    apron_canvas=None):
+                    apron_canvas=None, pingpong=False):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -367,6 +367,17 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     # that (2026-08-01).
     healthy = [composite(base_h, anims, i, 1) for i in range(n)]
     damaged_frames = [composite(base_d, anims, i, 2) for i in range(n)]
+
+    if pingpong and n > 2:
+        # Forward then reverse, the TSRADR treatment applied at the composite
+        # level: the cycle reads as a sweep that returns instead of a loop
+        # that jumps. Every downstream layer (base, lamps) inherits the same
+        # order, so the Shape_Number index stays locked across them. The
+        # _anims[] Count must match the new n.
+        order = list(range(n)) + list(range(n - 2, 0, -1))
+        healthy = [healthy[i] for i in order]
+        damaged_frames = [damaged_frames[i] for i in order]
+        n = len(order)
 
     boxes = [f.getbbox() for f in healthy + damaged_frames]
     boxes = [b for b in boxes if b]
@@ -656,10 +667,24 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         front_canvas = [split_alpha(full[r][0], canvas_masks[r], True) for r in (0, 1)]
         # The idle lamps live INSIDE the face, so the static face freezes them
         # at phase 0. Keep the face region of EVERY phase as well: it becomes
-        # the <INI>LT lamp layer, drawn just above the door overlay, where each
-        # phase's lamp pixels replace the frozen ones and the rest of the face
-        # re-covers itself with identical pixels.
+        # the <INI>LT lamp layer, drawn just above the door overlay, carrying
+        # each phase's lamp pixels over the frozen ones.
         lamp_runs = [[split_alpha(f, canvas_masks[r], True) for f in full[r]] for r in (0, 1)]
+        # Trimmed to the pixels that actually CHANGE against phase 0 (dilated
+        # for the glow's soft edge): the static face stays the door overlay's
+        # job alone. Re-drawing it in this layer doubled the alpha of its
+        # antialiased edges, and the door/floor seam line rendered over
+        # exiting units.
+        import numpy as np
+        for r in (0, 1):
+            ref = np.asarray(lamp_runs[r][0], np.int16)
+            for k in range(len(lamp_runs[r])):
+                cur = np.asarray(lamp_runs[r][k], np.int16)
+                changed = (np.abs(cur - ref).sum(2) > 30).astype(np.uint8) * 255
+                mask = Image.fromarray(changed).filter(ImageFilter.MaxFilter(5))
+                out = lamp_runs[r][k].copy()
+                out.putalpha(ImageChops.multiply(out.split()[3], mask))
+                lamp_runs[r][k] = out
         full = [[split_alpha(f, canvas_masks[r], False) for f in full[r]] for r in (0, 1)]
 
     frames = full[0] + full[1]
@@ -1116,7 +1141,10 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     # vehicle is visible through the full opening and hidden
                     # everywhere else. Raise it to tuck the vehicle further
                     # behind the door frame.
-                    front_ring={"TSWEAP": 0}.get(ini))
+                    front_ring={"TSWEAP": 0}.get(ini),
+                    # The lamp cycle sweeps and returns (8 -> 14 frames);
+                    # _anims[] Count and the TSWEAPLT stub must match.
+                    pingpong={"TSWEAP": True}.get(ini, False))
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSFACT: TS Construction Yard on the RA-conyard 3x3 plot (BSIZE_33 +
