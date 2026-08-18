@@ -5514,6 +5514,21 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
         return (_ts_weap_place);
     }
 
+    /*
+    **	The tall 2x2 towers (power plant, radar) occupy only their south row;
+    **	the north row is art headroom units walk behind. Their PLACEMENT list
+    **	still spans the full declared box: the launcher anchors the placement
+    **	cursor on the BSIZE origin, so a south-row-only ghost draws one cell
+    **	below the cursor and the pair could anchor a row higher than any
+    **	other building at the map's top edge. Ghost = the whole box, cursor
+    **	on its top row, and the headroom row is demanded clear at placement
+    **	(the radar height trick); blocking stays south-row-only.
+    */
+    if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR)) {
+        static short const _ts_tall22_place[] = {0, 1, MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
+        return (_ts_tall22_place);
+    }
+
     SmudgeType bib = SMUDGE_NONE;
     CELL cell = 0;
 
