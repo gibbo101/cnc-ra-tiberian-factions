@@ -163,7 +163,7 @@ highest quality the pipeline can produce.** Concretely:
   is 54 and reads alien next to RA art. Current renders, all
   `--px-per-voxel 12 --team-green 0,200,0 --elev 32`:
   TSHARV (yaw0 0 + wave face_fix, scale 0.85), TSAPC (yaw0 0 + face_fix),
-  TSSONIC + SONICTUR (yaw0 0 + face_fix), TSMCV (yaw0 90, no reorder),
+  TSSONIC + SONICTUR (yaw0 90, no reorder — its wave line applies NO face_fix), TSMCV (yaw0 90, no reorder),
   TSHVR + HVRTUR (yaw0 90, no reorder). Aircraft: DSHP dropship
   `--yaw0 180 --elev 32 --canvas 656 --px-per-voxel 6.4`. VXLs
   re-extractable from TIBSUN.MIX LOCAL.MIX via tools/ts_extract.py.
