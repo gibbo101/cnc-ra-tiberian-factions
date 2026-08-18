@@ -1,11 +1,36 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-18 session close: exit rails SHIPPED, one clipping bug then the lights arc
+## ⭐⭐⭐ RESUME HERE — 2026-08-18 daytime: exit clipping FIXED, lights arc next
 
-**State at close ("we are done for tonight"):** the WF spawn/exit arc is
-CLOSED and play-approved ("new positions, perfection!"). Desktop prefix =
-DLL `a87146677cd7efbfb9aebfdc970550a3`, md5-verified; worktree committed
-through `e2b030c7`.
+**State:** the WF spawn/exit arc is fully CLOSED — rails play-approved
+("new positions, perfection!") AND the roof-clipping pop squashed
+(Luke: "i declare that bug squashed", 2026-08-18 13:04 run). Desktop
+prefix = DLL `fc84260f8e5951e3d5a25e9785317a15`, md5-verified; worktree
+committed through `8a24deaf`.
+
+**The clipping fix (`8a24deaf`):** cure (a) from the writeup below — the
+factory stamps `TsExitSortClamp` (its Sort_Y +64 leptons, 524288 sort
+units under the TSWEAP2 overlay key) on the unit when it assigns the
+exit rail; the render export clamps the unit's BASE draw only (sub-object
++n layering keeps its headroom) while `On_TS_Exit_Track()`, so the hangar
+clips the unit for the whole glide and normal sort resumes at the
+handover cell, which is free of hangar art. Verified two ways: Luke's
+play verdict, and the clamp signature in tf_sort.log (sort key pinned
+constant across 29 moving frames for BOTH rails — TSAPC default seat,
+TSTITN own seat). Video-analysis method that pinned it: extract all
+frames (`ffmpeg -vsync passthrough`), diff a roof-region box against a
+reference frame to find pop windows, then read keys off the same
+session's tf_sort.log — the first over-key frame landed at exactly the
+overlay key's lepY.
+
+**RETRACTED same session — "bug 2" (east-side draw-over) was a
+thumbnail misreading, NOT a defect.** At full zoom every frame of the
+harvester's post-exit drive north along the building's east side renders
+correctly (clipped behind the roof beam and strut; frames drawing over
+the strut base have the unit genuinely south of the art's ground line —
+correct painter order). Do not re-chase. Lesson re-proven: zoom-diff the
+actual frames against a temporally-close clean frame before declaring a
+render bug ([[feedback-identify-occluder-before-flag-changes]]).
 
 **What shipped tonight (all play-verified):**
 - **Forced exit rails replace organic pathing** — the recentre-leg slide
@@ -25,29 +50,9 @@ through `e2b030c7`.
 - **Front-row corner blocking** (cells (0,2),(1,2) back in TsWeapList) —
   units no longer drive over the hangar's drawn SW corner (`8af6f4ec`).
 
-**NEXT SESSION, FIRST: the last clipping bug — unit pops above the roof on
-exit.** SS `~/Pictures/Screenshots/Screenshot from 2026-08-18 00-43-47.png`
-(hover MLRS drawn fully over the hangar mid-exit, "a couple of frames,
-jarring"). **ASK LUKE FOR A VIDEO of the exit — offered 2026-08-18, wanted:
-it pins which waypoint flips and how long the window is.** Investigation
-state (code already located, dllinterface.cpp ~5155-5205):
-- Mechanism: the sandwich flip point. TSWEAP2 overlay sorts at Sort_Y+128
-  lep (hangar south edge, y=48 classic); the gliding unit's sort y crosses
-  that key while its tall sprite still overlaps opaque roof pixels → for
-  those frames it draws over the whole hangar.
-- Candidate cures, in preference order: **(a) clamp the unit's export sort
-  under the overlay while it is on a TS exit track** (TrackNumber ==
-  OUT_OF_WEAPON_FACTORY_TS/_TITAN → sort just above the TSWEAP base key;
-  normal sort resumes at track end — tile 13 has no opaque hangar overlap,
-  so no pop); **(b) generator-computed flip Y** — wf_spawn_preview.py can
-  intersect the unit sprite with the opaque overlay along the waypoints and
-  emit a per-rail flip-Y macro; (c) just move the overlay key south — risks
-  reverse-clipping units standing in front of the south wall, least liked.
-- tf_sort.log diag is ACTIVE (#if 1, dllinterface.cpp ~5220) — read keys
-  off a live exit before choosing.
-
-**THEN: the lights arc (Luke):** bring back the WF's animated lights
-(GTWEAP_A/_B/_C idle anims).
+**NEXT: the lights arc (Luke):** bring back the WF's animated lights
+(GTWEAP_A/_B/_C idle anims). tf_sort.log diag still ACTIVE (#if 1,
+dllinterface.cpp ~5240).
 
 **Also queued from tonight:** Open-queue item 15b — per-model unit-angle
 revisit (hover MLRS a facing step off vs TSHARV/TD med tank, SS 00-42-31).
