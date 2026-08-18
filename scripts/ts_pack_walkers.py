@@ -26,7 +26,11 @@ import hqx
 ART = os.environ.get("TS_ART_DIR")
 if not ART:
     raise SystemExit("set TS_ART_DIR to the extracted/rendered TS art directory")
-MOD = "/home/gibbo101/Documents/development/cnc-remastered-mods/cnc-ra-tiberian-factions/resources/remaster_mods/Vanilla_RA"
+# TF_MOD_DIR overrides so worktree checkouts pack into their own resources
+# (the hardcoded default bit the ts-units worktree, 2026-08-18).
+MOD = os.environ.get(
+    "TF_MOD_DIR",
+    "/home/gibbo101/Documents/development/cnc-remastered-mods/cnc-ra-tiberian-factions/resources/remaster_mods/Vanilla_RA")
 UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
 VFX_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/VFX"
 ICON_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB"

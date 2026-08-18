@@ -156,6 +156,19 @@ highest quality the pipeline can produce.** Concretely:
   `WalkFacings × WalkFrames`. Per-unit camera elevation is a legitimate dial
   (`vxl_render.py --elev` — the Mk. II renders at 35° for its TS stance vs the
   54° house camera).
+- **⭐ VOXEL RENDER LEDGER (2026-08-18 — keep this current; its absence cost
+  an evening).** RA/TD Remastered HD unit sprites match a **~32° camera**
+  (Luke's pick, commit 51469c8c: "the 54-degree default read top-down"), so
+  EVERY ground-vehicle voxel renders at `--elev 32`; the vxl_render default
+  is 54 and reads alien next to RA art. Current renders, all
+  `--px-per-voxel 12 --team-green 0,200,0 --elev 32`:
+  TSHARV (yaw0 0 + wave face_fix, scale 0.85), TSAPC (yaw0 0 + face_fix),
+  TSSONIC + SONICTUR (yaw0 0 + face_fix), TSMCV (yaw0 90, no reorder),
+  TSHVR + HVRTUR (yaw0 90, no reorder). Aircraft: DSHP dropship
+  `--yaw0 180 --elev 32 --canvas 656 --px-per-voxel 6.4`. VXLs
+  re-extractable from TIBSUN.MIX LOCAL.MIX via tools/ts_extract.py.
+  Frame-0 convention: yaw0 90 ⇒ frame 0 = N advancing CCW (zip-native);
+  yaw0 0 ⇒ E-start, needs the wave's +8 face_fix.
 - **Audio policy (Luke, 2026-07-20): every TS unit ships its AUTHENTIC TS
   sounds** — weapon reports, and eventually voices — via the dormant-sample
   recipe (`td-audio-routing-recipe.md` + the HOVRMIS1 trap notes).
