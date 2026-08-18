@@ -314,6 +314,9 @@ ts_stub TSWEAP "$TMPDIR/tsweapmk_stub.shp" 168 126 19
 # box or the launcher scales the door to whatever shape file it was handed.
 ts_stub TSWEAP "$TMPDIR/tsweap2_stub.shp" 168 126 18
 PACK_ARGS+=("$TMPDIR/tsweap2_stub.shp:TSWEAP2.SHP")
+# The overlay's floor band, split into its own layer under the exit clamp.
+ts_stub TSWEAP "$TMPDIR/tsweap2l_stub.shp" 168 126 18
+PACK_ARGS+=("$TMPDIR/tsweap2l_stub.shp:TSWEAP2L.SHP")
 # The lamp layer shares the canvas too: the 14-frame ping-pong idle cycle
 # (8 phases swept forward then back) x healthy/damaged.
 ts_stub TSWEAP "$TMPDIR/tsweaplt_stub.shp" 168 126 28

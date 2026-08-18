@@ -839,6 +839,15 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             Techno_Draw_Object_Virtual(Class->WarFactoryOverlayTs, shapenum, x, y, window, DIR_N, 0x0100, "TSWEAP2");
 
             /*
+            **  The overlay's floor band (ramp lip, door-frame feet, wall
+            **  bases) draws as its own layer, sorted one notch under the
+            **  exit clamp: an emerging unit passes over the floor furniture
+            **  while the roof above it still covers the hull. Same stage
+            **  index as the door overlay it was split from.
+            */
+            Techno_Draw_Object_Virtual(Class->WarFactoryOverlayTs, shapenum, x, y, window, DIR_N, 0x0100, "TSWEAP2L");
+
+            /*
             **  The idle lamps live in the near face, which is one static
             **  image per damage run in TSWEAP2 -- frozen at phase 0. This
             **  layer replays the face at the building's own idle stage

@@ -692,6 +692,18 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 lamp_runs[r][k] = out
         full = [[split_alpha(f, canvas_masks[r], False) for f in full[r]] for r in (0, 1)]
 
+    # Luke's red-pixel markup (2026-08-18, edit 3): a leftover hazard-stripe
+    # skirt from the source GTWEAP art rides in the BASE below the overlay's
+    # bottom edge, west of the bay mouth, on top of the hand-tucked pad.
+    # Erase the marked patch (+2px margin); the pad ground art beneath is the
+    # intended surface. Canvas space, so the coordinates are the markup's.
+    # (A wider remap-green sweep of the whole south skirt was tried 2026-08-18
+    # and REVERTED on Luke's instruction -- the band is wanted art there.)
+    if ini == "TSWEAP":
+        for run in full:
+            for f in run:
+                f.paste((0, 0, 0, 0), (353, 402, 370, 443))
+
     frames = full[0] + full[1]
     if emblem is not None:
         # Built frames only: during construction there is no deck to paint.
@@ -756,6 +768,28 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 if front_canvas is not None:
                     out = Image.alpha_composite(out, front_canvas[under_f])
                 door_frames.append(out)
+
+        # The overlay's FLOOR BAND -- ramp lip, door-frame feet, wall bases --
+        # splits into its own layer (<INI>2L), sorted one notch UNDER the exit
+        # clamp: a unit gliding out must draw over the floor furniture while
+        # the roof and upper walls stay above it for the whole rail (a single
+        # overlay key cannot serve both, which put the frame's foot over an
+        # emerging hull). Units parked deep in the bay sort below the band's
+        # key, so the shut-door composite is unchanged. Split in canvas space
+        # on the finished frames: the band top sits a fixed distance above the
+        # overlay's lowest opaque row, derived per pack so a respec moves it
+        # automatically. 62 canvas rows ~= 26 source px at the current fit --
+        # deep enough for the east frame's upright foot (Luke's red-pixel
+        # markup, canvas y329, band bottom y390).
+        if front_canvas is not None:
+            y_last = max(f.getbbox()[3] for f in door_frames if f.getbbox())
+            band_top = y_last - 62
+            band = Image.new("L", (canvas_w, canvas_h), 0)
+            ImageDraw.Draw(band).rectangle([0, band_top, canvas_w, canvas_h], fill=255)
+            low_frames = [split_alpha(f, band, True) for f in door_frames]
+            door_frames = [split_alpha(f, band, False) for f in door_frames]
+            write_zip(f"{STRUCT_DIR}/{ini}2L.ZIP", f"{ini.lower()}2l", low_frames)
+            patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}2L", len(low_frames))
         write_zip(f"{STRUCT_DIR}/{ini}2.ZIP", f"{ini.lower()}2", door_frames)
         patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}2", len(door_frames))
 

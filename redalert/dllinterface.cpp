@@ -5169,6 +5169,17 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 136)) >> 3);
     }
+
+    /*
+    **  The overlay's floor band sorts one notch UNDER the exit clamp (+64):
+    **  a unit gliding out draws over the ramp lip and door-frame feet, while
+    **  anything parked deep in the bay (its own key north of here) stays
+    **  under them and the shut-door composite is unchanged.
+    */
+    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAP2L") == 0) {
+        new_object.SortOrder =
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 56)) >> 3);
+    }
     strncpy(new_object.TypeName, object->Class_Of().IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
 
     if (shape_file_name != NULL) {
