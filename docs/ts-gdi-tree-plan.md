@@ -60,11 +60,31 @@ east-wing roof to the last waypoint (the original pop). Watch for
 column-over-hull on WIDE units near the rail end — accepted trade-off
 for now, flag if it reads badly in motion.
 
-**PLAY-APPROVED at close (Luke, ~18:00: "thats good enough"):** the
-round-2 build passed his eye. Still worth a glance in future play:
-wide-unit rail-end column sliver (the accepted trade-off), lamp
-sweep-and-return cadence, damaged lamps. Desktop prefix at close = DLL
-`8919d51db2d6fe7427c9b71778d74aeb` + seam-cut art, md5-verified.
+**Round 3 (evening, Luke's red-pixel markup session):** three artifacts
+on the APC exit pinned by Luke painting the exact pixels red (ss
+22-12-42; registration ss→canvas = +200,+114 at 1:1, FFT on gradient
+maps). ① L-shaped frame foot (canvas y373-385) and ② upright bar
+(y329-341) rendered over the emerging hull → **the floor-band layer**
+(`ff37bc39`): the overlay's bottom 62 canvas rows (y329-390: ramp lip,
+frame feet, wall bases, shutter bottoms) split into TSWEAP2L, drawn
+after TSWEAP2 at the same door stage, sorted at Sort_Y+56 (one notch
+under the exit clamp's +64) — emerging units pass over the floor
+furniture, deep-bay units stay under it, partition exact.
+**① and ② PLAY-VERIFIED FIXED (Luke).** ③ leftover hazard-stripe patch
+on the pad west of the mouth → erased from the BASE (marked box
++2px, canvas 353-370 x 402-443); the hand-tucked pad shows through.
+⚠ **A wider remap-green sweep of the whole south skirt WIPED WANTED
+ART and was REVERTED on Luke's instruction** — his marked pixels were
+the whole spec ([[feedback-user-marked-pixels-are-the-whole-truth]]).
+
+**Session close (Luke: "lets leave it as it is... polish round
+later"):** some stripes remain visible in play; queued for a POLISH
+ROUND driven by another markup pass, not by filters.
+⚠ **PREFIX/REPO DRIFT AT CLOSE:** the desktop prefix still holds the
+REVERTED-sweep art's predecessor (the over-erased sweep build, DLL
+`15e2c38b`); the repo (`ff37bc39`) holds the correct box-only art.
+First deploy of the next session reconciles — repack is NOT needed,
+just restage `resources/` → `build/` and rsync (game closed).
 
 **State:** the WF spawn/exit arc is fully CLOSED — rails play-approved
 ("new positions, perfection!") AND the roof-clipping pop squashed
