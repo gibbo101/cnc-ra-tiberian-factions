@@ -5203,6 +5203,27 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     }
 
     /*
+    **  A unit riding a TS war-factory exit rail keeps sorting UNDER the
+    **  hangar overlay for the whole glide: its own key crosses the overlay's
+    **  (Sort_Y +128) mid-rail while the sprite still overlaps opaque roof
+    **  pixels, popping the unit over the hangar for the tail of the exit.
+    **  The factory stamps the clamp when it assigns the rail; the clamp only
+    **  ever lowers the key, and applies to the base draw alone so sub-object
+    **  draws keep their +n layering above the hull within the headroom the
+    **  clamp leaves under the overlay. Normal sort resumes at track end,
+    **  where the handover cell is clear of the hangar art.
+    */
+    if (object->What_Am_I() == RTTI_UNIT && CurrentDrawCount == 0) {
+        DriveClass const* drive = (DriveClass const*)object;
+        if (drive->On_TS_Exit_Track() && drive->TsExitSortClamp != 0) {
+            int clamp = (ExportLayer << 29) + (drive->TsExitSortClamp >> 3);
+            if (new_object.SortOrder > clamp) {
+                new_object.SortOrder = clamp;
+            }
+        }
+    }
+
+    /*
     **  Tiberian Factions diag 2026-08-07: the war factory sandwich.
     **
     **  TDWEAP's door overlay draws OVER a vehicle in its bay; TSWEAP's does

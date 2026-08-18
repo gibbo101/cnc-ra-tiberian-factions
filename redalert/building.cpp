@@ -7473,6 +7473,12 @@ int BuildingClass::Mission_Unload(void)
                         unit->Assign_Mission(MISSION_GUARD_AREA);
                         unit->ArchiveTarget = ::As_Target(House->Where_To_Go(unit));
                     }
+                    /*
+                    **	Sort clamp for the whole rail: 64 leptons under the hangar
+                    **	overlay's south-edge key (+128), leaving headroom below it
+                    **	for the unit's sub-object draws (turret, shadow).
+                    */
+                    unit->TsExitSortClamp = Coord_Add(Sort_Y(), XY_Coord(0, 64));
                     unit->Force_Track((*unit == UNIT_TSTITN)
                                           ? DriveClass::OUT_OF_WEAPON_FACTORY_TS_TITAN
                                           : DriveClass::OUT_OF_WEAPON_FACTORY_TS,

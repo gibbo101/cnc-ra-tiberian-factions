@@ -85,6 +85,15 @@ public:
     */
     unsigned IsOnShortTrack : 1;
 
+    /*
+    **	While this unit rides a TS war-factory exit rail, the render export
+    **	clamps its sort key to this coordinate so the hangar overlay keeps
+    **	drawing over it for the whole glide. Zero = no clamp. Stamped by the
+    **	factory when it assigns the rail; consulted only while an exit track
+    **	is running, so it never needs clearing.
+    */
+    COORDINATE TsExitSortClamp;
+
     /*---------------------------------------------------------------------
     **	Constructors, Destructors, and overloaded operators.
     */
@@ -115,6 +124,10 @@ public:
     virtual void Debug_Dump(MonoClass* mono) const;
 #endif
     void Force_Track(int track, COORDINATE coord, int index = 0);
+    bool On_TS_Exit_Track(void) const
+    {
+        return TrackNumber == OUT_OF_WEAPON_FACTORY_TS || TrackNumber == OUT_OF_WEAPON_FACTORY_TS_TITAN;
+    }
     virtual bool Stop_Driver(void);
 
     void Mark_Track(COORDINATE headto, MarkType type);
