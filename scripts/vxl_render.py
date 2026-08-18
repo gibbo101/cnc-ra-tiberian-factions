@@ -268,7 +268,7 @@ def main():
     opts = {'--frames': '32', '--px-per-voxel': '6', '--yaw0': '0',
             '--team-green': '0,200,0', '--z-lift': '0', '--canvas': '0',
             '--hva': '', '--hva-frame': '0', '--elev': '54', '--ambient': '0.35',
-            '--pitch': '0', '--normal-smooth': '0'}
+            '--pitch': '0', '--normal-smooth': '0', '--height-elev': ''}
     i = 2
     while i < len(args):
         opts[args[i]] = args[i + 1]
@@ -284,6 +284,14 @@ def main():
     NORMAL_SMOOTH = int(opts['--normal-smooth'])
 
     set_elevation(float(opts['--elev']))
+    if opts['--height-elev']:
+        # Split camera: ground-plane foreshortening from --elev, VERTICAL
+        # scale from this angle. Tall models keep the height read they had
+        # at the old camera while the stance drops to the fleet's ground
+        # angle -- cos(32) draws heights 1.44x taller than cos(54), which
+        # is what made the Hover MLRS rack tower at the pure 32 render.
+        global COS_E
+        COS_E = math.cos(math.radians(float(opts['--height-elev'])))
     global AMBIENT
     AMBIENT = float(opts['--ambient'])
     model = parse_vxl(vxl_path)

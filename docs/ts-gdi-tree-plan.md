@@ -1,5 +1,32 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐ PARKED ARC — Hover MLRS at the 32-degree camera (2026-08-19 00:0x)
+
+**Spec, Luke's words: "the rocket pod sits centered at the back."**
+Ground truth = `docs/reference-art/tshvr-pods-source-of-truth.png`
+(crop of ss 2026-08-18 00-42-31, SE facing): pods centered on the hull's
+width axis at the AFT end, riding the hull tilt, low against the deck.
+
+**State:** the SHIPPED TSHVR art is live (restored byte-for-byte after
+the 32-degree attempts; prefix verified). MCV/APC/Disruptor keep their
+32-degree art (MCV play-praised). FOUR rejected candidates — do not
+re-offer: pure 32 canvas-centered (pods flew: rack height bakes into
+the art, seat mistuned), pure 32 content-centered (pods seated but
+TOWER: cos32 draws heights 1.44x cos54), rack v-squash 65-85% ("EVEN
+WORSE"), hybrid 54-pods-on-32-hull + split camera 32-ground/54-height
+(both "garbage"). vxl_render gained `--height-elev` (kept, unused).
+
+**Next-run plan (agreed direction, not started):**
+1. Recompute the engine aft-seat table `_aft_x/_aft_y` (udata.cpp
+   ~2457) for the 32 camera — it bakes sin54 ("13/16 vertical"); the
+   recompute is deterministic (aft ground distance 18, project with the
+   new camera), then fine-tune by Luke's eye.
+2. Dial the rack's rendered look against the reference crop WITH Luke
+   (sheet → his verdict → adjust), packed-zip compass sheet approved
+   BEFORE any deploy — never discover a candidate in-game again.
+3. Consider matching against actual TS in-game look (TS is installed)
+   if the reference crop under-constrains.
+
 ## ⭐⭐⭐ RESUME HERE — 2026-08-18 afternoon close: lamps SHIPPED + approved, two open lamp issues
 
 **State at close (Luke: "lets wrap up here"):** the WF lamps arc SHIPPED
