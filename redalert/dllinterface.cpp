@@ -5158,6 +5158,17 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 128)) >> 3);
     }
+
+    /*
+    **  The lamp layer rides one sort notch (8 leptons) above the door
+    **  overlay: it is the near face again, at the building's idle phase,
+    **  and must cover the overlay's frozen phase-0 lamps while staying a
+    **  face -- everything the overlay covers, it covers.
+    */
+    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAPLT") == 0) {
+        new_object.SortOrder =
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 136)) >> 3);
+    }
     strncpy(new_object.TypeName, object->Class_Of().IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
 
     if (shape_file_name != NULL) {

@@ -837,6 +837,20 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             if (Health_Ratio() <= Rule.ConditionYellow)
                 shapenum += 9;
             Techno_Draw_Object_Virtual(Class->WarFactoryOverlayTs, shapenum, x, y, window, DIR_N, 0x0100, "TSWEAP2");
+
+            /*
+            **  The idle lamps live in the near face, which is one static
+            **  image per damage run in TSWEAP2 -- frozen at phase 0. This
+            **  layer replays the face at the building's own idle stage
+            **  (TSWEAPLT: 8 phases healthy + 8 damaged, the same index the
+            **  body draw uses), riding one sort notch above the door
+            **  overlay. Skipped during construction: the face does not
+            **  exist under the buildup art.
+            */
+            if (BState != BSTATE_CONSTRUCTION) {
+                Techno_Draw_Object_Virtual(
+                    Class->WarFactoryOverlayTs, Shape_Number(), x, y, window, DIR_N, 0x0100, "TSWEAPLT");
+            }
         }
 
         // WEAP2 overlay for vanilla RA WEAP / FAKEWEAP only. STRUCT_TDWEAP

@@ -654,6 +654,12 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # Taken off frame 0 of each run: the face excludes the anim footprints,
         # so it is identical across the cycle.
         front_canvas = [split_alpha(full[r][0], canvas_masks[r], True) for r in (0, 1)]
+        # The idle lamps live INSIDE the face, so the static face freezes them
+        # at phase 0. Keep the face region of EVERY phase as well: it becomes
+        # the <INI>LT lamp layer, drawn just above the door overlay, where each
+        # phase's lamp pixels replace the frozen ones and the rest of the face
+        # re-covers itself with identical pixels.
+        lamp_runs = [[split_alpha(f, canvas_masks[r], True) for f in full[r]] for r in (0, 1)]
         full = [[split_alpha(f, canvas_masks[r], False) for f in full[r]] for r in (0, 1)]
 
     frames = full[0] + full[1]
@@ -722,6 +728,14 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 door_frames.append(out)
         write_zip(f"{STRUCT_DIR}/{ini}2.ZIP", f"{ini.lower()}2", door_frames)
         patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}2", len(door_frames))
+
+        if front_canvas is not None:
+            # The lamp layer (see the lamp_runs cut above): the full face per
+            # phase, healthy run then damaged, indexed by the SAME shape number
+            # as the body draw (Fetch_Stage + damaged offset in Shape_Number).
+            lamp_frames = lamp_runs[0] + lamp_runs[1]
+            write_zip(f"{STRUCT_DIR}/{ini}LT.ZIP", f"{ini.lower()}lt", lamp_frames)
+            patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}LT", len(lamp_frames))
 
     # TS buildups pour the concrete pad first and keep it throughout; with
     # the pad dropped from the finished art (grid-sized buildings + RA slab),
