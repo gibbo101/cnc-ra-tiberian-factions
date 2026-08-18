@@ -60,11 +60,11 @@ east-wing roof to the last waypoint (the original pop). Watch for
 column-over-hull on WIDE units near the rail end — accepted trade-off
 for now, flag if it reads badly in motion.
 
-**Owed next session, in play:** Titan walk-out clean (no column over
-torso, no seam at its feet); wide-unit exits still pop-free; lamp
-sweep-and-return cadence; damaged lamps animate. Desktop prefix at
-close = DLL `8919d51db2d6fe7427c9b71778d74aeb` + seam-cut art,
-md5-verified, deployed with the game closed.
+**PLAY-APPROVED at close (Luke, ~18:00: "thats good enough"):** the
+round-2 build passed his eye. Still worth a glance in future play:
+wide-unit rail-end column sliver (the accepted trade-off), lamp
+sweep-and-return cadence, damaged lamps. Desktop prefix at close = DLL
+`8919d51db2d6fe7427c9b71778d74aeb` + seam-cut art, md5-verified.
 
 **State:** the WF spawn/exit arc is fully CLOSED — rails play-approved
 ("new positions, perfection!") AND the roof-clipping pop squashed
