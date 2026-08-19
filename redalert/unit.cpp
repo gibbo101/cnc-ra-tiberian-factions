@@ -2886,6 +2886,41 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
 
             Class->Turret_Adjust(PrimaryFacing, xx, yy);
 
+#if TF_DEV_BUILD // TF DEV: TSHVR facing/seat diagnostic. One line per facing change per unit. Compiled out of release builds.
+            if (*this == UNIT_TSHVR) {
+                static FILE* tf_facing_log = NULL;
+                static int last_idx[600];
+                static bool init_done = false;
+                if (!init_done) {
+                    for (int i = 0; i < 600; i++) last_idx[i] = -1;
+                    init_done = true;
+                }
+                if (tf_facing_log == NULL) {
+                    const char* h = getenv("USERPROFILE");
+                    if (h == NULL) h = getenv("HOME");
+                    if (h != NULL) {
+                        char p[512];
+                        snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_facing.log", h);
+                        tf_facing_log = fopen(p, "a");
+                        if (tf_facing_log != NULL) {
+                            fprintf(tf_facing_log, "==== TSHVR facing log session start ====\n");
+                        }
+                    }
+                }
+                int id = Units.ID(this);
+                int idx = Dir_To_32(PrimaryFacing);
+                if (tf_facing_log != NULL && id >= 0 && id < 600 && last_idx[id] != idx) {
+                    last_idx[id] = idx;
+                    fprintf(tf_facing_log,
+                            "frame=%ld id=%d cell=%d,%d dir=%d idx=%d artframe=%d seat=(%d,%d)\n",
+                            (long)::Frame, id, Coord_XCell(Coord), Coord_YCell(Coord),
+                            (int)PrimaryFacing.Current(), idx, TechnoClass::BodyShape[idx],
+                            xx - x, yy - y);
+                    fflush(tf_facing_log);
+                }
+            }
+#endif
+
             /*
             **	Actually perform the draw. Overlay an optional shimmer effect as necessary.
             **	(Pass the body's draw scale so a scaled unit's turret matches its hull.)

@@ -2463,16 +2463,22 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
         // camera's own foreshortening (13/16 vertical), so the seat is identical
         // relative to the hull at all 32 facings. (Normal_Move_Point's classic
         // vertical halving overshot E/W relative to N/S against this art.)
-        static const signed char _aft_x[32] = {0, 0, -1, -3, -4, -6, -8, -9, -9, -9, -8,
-                                               -6, -4, -3, -1, 0, 0, 0, 1, 3, 4, 6,
-                                               8, 9, 9, 9, 8, 6, 4, 3, 1, 0};
-        // All 32 entries: Luke's four dialled cardinals (2026-08-19,
-        // N(0,2) E(-9,-6) S(1,-10) W(9,-6)) with cosine interpolation
-        // between them. Anchors exact; N-S asymmetry is real (per-facing
-        // art offsets) -- a symmetric law was falsified in play.
-        static const signed char _aft_y[32] = {2, 2, 1, 0, -2, -4, -5, -6, -6, -6, -7,
-                                               -7, -8, -9, -9, -10, -10, -10, -9, -9, -8, -7,
-                                               -7, -6, -6, -6, -5, -4, -2, 0, 1, 2}; // W (24) = -6, Luke-approved mirror of E
+        // Anchor placement rides EA's Facing32 quantisation: the table's
+        // 3D-Studio 45-degree compensation puts a RESTING exact-diagonal
+        // heading in idx 3/13/19/29 (never 4/12/20/28), so the dialled
+        // diagonal seats live in BOTH the resting index and its mid-turn
+        // neighbour. Cardinals rest on 0/8/16/24 exactly.
+        static const signed char _aft_x[32] = {0, -4, -7, -11, -11, -10, -10, -10, -9, -9, -8,
+                                               -8, -8, -8, -5, -3, 0, 3, 5, 8, 8, 8,
+                                               8, 9, 9, 10, 10, 10, 11, 11, 7, 4};
+        // Anchors: Luke's dialled cardinals + diagonal marks (2026-08-19,
+        // N(0,2) E(-9,-6) S(0,-10) W(9,-6); NE(-11,-1) SE(-8,-11)
+        // SW(8,-12)); NW(11,-1) is an interim x-mirror of NE awaiting his
+        // mark. Linear blends between anchors. N-S asymmetry is real
+        // (per-facing art offsets) -- a symmetric law was falsified in play.
+        static const signed char _aft_y[32] = {2, 1, 0, -1, -1, -2, -4, -5, -6, -7, -8,
+                                               -10, -11, -11, -11, -10, -10, -11, -11, -12, -12, -10,
+                                               -9, -8, -6, -5, -4, -2, -1, -1, 0, 1};
         index = Dir_To_32(dir);
         x += _aft_x[index];
         y += _aft_y[index];
