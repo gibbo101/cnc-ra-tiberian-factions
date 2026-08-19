@@ -1,5 +1,41 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐⭐⭐ RESUME HERE — 2026-08-19 ~01:30 close: MLRS 32° SHIPPED (cardinals approved), diagonals NEXT SESSION
+
+**State at close (Luke: "we'll do the diagonals next session"):** the
+Hover MLRS runs the 32-degree renders in play — hull + rack ambient
+0.50, drum z-clipped (`--z-clip 10`), rack position fully in the engine
+aft-seat table. **Cardinals N(0,2) E(-9,-6) S(0,-10) W(9,-6) dialled by
+Luke's Aseprite marks and play-approved ("NESW good"). Diagonals =
+cosine blend through those anchors, deployed interim — "diagonals need
+work".** Worktree committed `020a70c6`; prefix DLL `15cee39c` + the
+session's art.
+
+**NEXT SESSION FIRST — the four diagonal marks.** Everything is staged:
+`~/Desktop/hvr-pods-aseprite/hvr_{NE,SE,SW,NW}.aseprite` (hull locked +
+pod layer at the deployed blended seat; per-file `*_baseline.json`
+records seat + indices). Loop per file: Luke drags the pod layer,
+Ctrl+S → read the POD cel DIRECTLY (cel.position + content bbox — the
+hide-hull-then-flatten reader LEAKS the hidden layer, never use it;
+scripts in scratchpad pattern `read_s2.lua`) → delta/6 = classic px →
+bake the seat index (NE=4, SE=12, SW=20, NW=28) → rebuild DLL → deploy.
+After all 8 anchors: re-blend the 16ths through them; Luke slow-turns a
+unit to catch residual wobble (turret hop during rotation = un-dialled
+entries stepping — his diagnosis, confirmed).
+
+**Protocols that made tonight work (KEEP):**
+- One .aseprite per facing, TWO layers (hull locked, "POD - move me"),
+  pod pre-placed at the CURRENT deployed seat so the drag IS the fix.
+- Deploy-then-notify: he exits fully, I deploy on the pgrep-exit watch,
+  I say "go", THEN he relaunches (instant relaunch can race the 5s
+  watcher and load stale — explained several phantom "wrong way" rounds).
+- Verbal pixel nudges FAILED repeatedly (sign/scale confusion);
+  marks-only. Seat resolution = 1 classic px ≈ 5 screen px; his S mark
+  proved sub-classic wishes can't be expressed in the seat.
+- Derivations: E↔W mirror HELD, N↔S mirror FALSIFIED, first blend with a
+  bad anchor read "all west" — blends only through APPROVED anchors, and
+  only as interim.
+
 ## ⭐ PARKED ARC — Hover MLRS at the 32-degree camera (2026-08-19 00:0x)
 
 **Spec, Luke's words: "the rocket pod sits centered at the back."**
