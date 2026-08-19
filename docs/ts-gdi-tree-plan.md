@@ -1,6 +1,45 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-19 ~01:30 close: MLRS 32° SHIPPED (cardinals approved), diagonals NEXT SESSION
+## ⭐⭐⭐ RESUME HERE — 2026-08-19 evening: MLRS rack ARC COMPLETE — "we have a winner" (`142001ab`, prefix DLL `da1d78c9`)
+
+**The whole diagonal + turret-jump arc closed in one evening session.**
+Four separate faults, each proven by receipts (tf_facing.log / video
+frame tracking / art measurement) before fixing — full detail in the
+`142001ab` commit message:
+
+1. **Facing32 resting indices**: EA's 3D-Studio 45° compensation means a
+   resting exact-diagonal heading reads seat idx **3/13/19/29**, never
+   4/12/20/28 — every early diagonal mark went to slots only swept
+   mid-turn. Proven with a probe table + the 8-rose + tf_facing.log.
+   Final eye-dialled anchors: N(0,2) NE(-5,0) E(-9,-6) SE(-5,-9)
+   S(0,-10) SW(5,-9) W(9,-6) NW(5,0) (SW/NW = x-mirror of SE/NE,
+   rose-verified).
+2. **Mount pendulum**: RA pathing flicks the hull heading per move cell;
+   a raw hull-keyed mount jumped px per flick → draw-side slewed hull
+   facing (glides 1/4 gap per rendered frame, display-only state).
+3. **Aspect pop**: side-on pod art ~20px taller than end-on; rack swing
+   slowed to 3 dirs/tick so sweeps render as rotation.
+4. **Spin slip-slide** (Luke's diagnosis): each pod frame's content sat
+   differently in its crop → the rack-facing seat component now cancels
+   per-frame centroid offsets; stationary spins pinned to ~1px; rest
+   poses reproduce the dialled seats EXACTLY (asserted).
+
+Turret behaviour is fully classic (destination lead + target tracking);
+hover bob kept (tested innocent). `Hover_Rack_Seat(hull, rack)` in
+udata.cpp is the two-part seat; the four failed shapes (hull-locked
+draw, instant snap, rack-keyed seat, raw two-part) are in this
+session's history — don't re-offer them.
+
+**Loop that worked**: aseprite drag for coarse (round-2 files =
+`~/Desktop/hvr-pods-round2/`, TRUE resting art frames 29/19/13/3), then
+**EWNS + notches by eye** (1 notch = 1 classic px ≈ 6 screen px), with
+engine receipts (tf_facing.log logs idx + tfacing + seat per change)
+whenever anything smelled wrong. AS-DEPLOYED-32.png sheet generator
+pattern lives in the session transcript.
+
+**Next**: WF stripe polish round still queued; open queue below.
+
+## (superseded) 2026-08-19 ~01:30 close: MLRS 32° SHIPPED (cardinals approved), diagonals NEXT SESSION
 
 **State at close (Luke: "we'll do the diagonals next session"):** the
 Hover MLRS runs the 32-degree renders in play — hull + rack ambient
