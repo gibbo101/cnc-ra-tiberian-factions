@@ -860,7 +860,11 @@ void UnitClass::Rotation_AI(void)
 
             if (SecondaryFacing.Is_Rotating()) {
                 Mark(MARK_CHANGE_REDRAW);
-                if (SecondaryFacing.Rotation_Adjust(Class->ROT + 1)) {
+                // TSHVR: the rack is large and its side-on frames are much taller
+                // than its end-on frames, so a fast sweep reads as the rack
+                // popping upward. A slower swing renders the intermediate frames
+                // as a deliberate turret rotation instead.
+                if (SecondaryFacing.Rotation_Adjust((*this == UNIT_TSHVR) ? 3 : Class->ROT + 1)) {
                     Mark(MARK_CHANGE_REDRAW);
                 }
 
@@ -2884,7 +2888,34 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
                 Recoil_Adjust(SecondaryFacing, xx, yy);
             }
 
-            Class->Turret_Adjust(PrimaryFacing, xx, yy);
+            if (*this == UNIT_TSHVR) {
+                // Two-part seat: mount position from the hull facing, art
+                // residual from the rack facing actually drawn. The mount uses
+                // a DRAW-SIDE slewed copy of the hull facing: RA pathing flicks
+                // the hull heading between move directions every few ticks, and
+                // a mount keyed raw to it pendulums several px per flick. The
+                // slew glides a quarter of the gap per rendered frame (display
+                // state only -- never feeds the sim, so save/MP-safe).
+                static unsigned char _rack_disp[600];
+                static bool _rack_disp_ok[600];
+                DirType hull = PrimaryFacing.Current();
+                int rid = Units.ID(this);
+                if (rid >= 0 && rid < 600) {
+                    if (!_rack_disp_ok[rid]) {
+                        _rack_disp_ok[rid] = true;
+                        _rack_disp[rid] = (unsigned char)hull;
+                    }
+                    signed char diff = (signed char)((unsigned char)hull - _rack_disp[rid]);
+                    int step = diff / 4;
+                    if (step == 0 && diff != 0)
+                        step = (diff > 0) ? 1 : -1;
+                    _rack_disp[rid] = (unsigned char)(_rack_disp[rid] + step);
+                    hull = (DirType)_rack_disp[rid];
+                }
+                Class->Hover_Rack_Seat(hull, SecondaryFacing, xx, yy);
+            } else {
+                Class->Turret_Adjust(PrimaryFacing, xx, yy);
+            }
 
 #if TF_DEV_BUILD // TF DEV: TSHVR facing/seat diagnostic. One line per facing change per unit. Compiled out of release builds.
             if (*this == UNIT_TSHVR) {
@@ -2909,13 +2940,15 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
                 }
                 int id = Units.ID(this);
                 int idx = Dir_To_32(PrimaryFacing);
-                if (tf_facing_log != NULL && id >= 0 && id < 600 && last_idx[id] != idx) {
-                    last_idx[id] = idx;
+                int combo = idx * 32 + tfacing;
+                if (tf_facing_log != NULL && id >= 0 && id < 600 && last_idx[id] != combo) {
+                    last_idx[id] = combo;
                     fprintf(tf_facing_log,
-                            "frame=%ld id=%d cell=%d,%d dir=%d idx=%d artframe=%d seat=(%d,%d)\n",
+                            "frame=%ld id=%d cell=%d,%d dir=%d idx=%d tfacing=%d hullart=%d rackart=%d seat=(%d,%d)%s\n",
                             (long)::Frame, id, Coord_XCell(Coord), Coord_YCell(Coord),
-                            (int)PrimaryFacing.Current(), idx, TechnoClass::BodyShape[idx],
-                            xx - x, yy - y);
+                            (int)PrimaryFacing.Current(), idx, tfacing,
+                            TechnoClass::BodyShape[idx], TechnoClass::BodyShape[tfacing],
+                            xx - x, yy - y, (tfacing != idx) ? "  <== RACK OFF HULL" : "");
                     fflush(tf_facing_log);
                 }
             }

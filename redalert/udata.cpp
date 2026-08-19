@@ -2454,40 +2454,56 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
         y += _adjust[index].Y;
         break;
 
-    case UNIT_TSHVR: { // TS Hover MLRS: rack rides aft on the long hover platform.
-                       // Geometric seat (the naval turret pattern): push straight
-                       // rearward along the hull axis with tilt compensation --
-                       // consistent at every facing, unlike the MSAM hand table
-                       // (whose lateral components suit the classic chassis only).
-        // Precomputed aft push (ground distance 18) projected with the voxel render
-        // camera's own foreshortening (13/16 vertical), so the seat is identical
-        // relative to the hull at all 32 facings. (Normal_Move_Point's classic
-        // vertical halving overshot E/W relative to N/S against this art.)
-        // Anchor placement rides EA's Facing32 quantisation: the table's
-        // 3D-Studio 45-degree compensation puts a RESTING exact-diagonal
-        // heading in idx 3/13/19/29 (never 4/12/20/28), so the dialled
-        // diagonal seats live in BOTH the resting index and its mid-turn
-        // neighbour. Cardinals rest on 0/8/16/24 exactly.
-        static const signed char _aft_x[32] = {0, -4, -7, -11, -11, -10, -10, -10, -9, -9, -8,
-                                               -8, -8, -8, -5, -3, 0, 3, 5, 8, 8, 8,
-                                               8, 9, 9, 10, 10, 10, 11, 11, 7, 4};
-        // Anchors: Luke's dialled cardinals + diagonal marks (2026-08-19,
-        // N(0,2) E(-9,-6) S(0,-10) W(9,-6); NE(-11,-1) SE(-8,-11)
-        // SW(8,-12)); NW(11,-1) is an interim x-mirror of NE awaiting his
-        // mark. Linear blends between anchors. N-S asymmetry is real
-        // (per-facing art offsets) -- a symmetric law was falsified in play.
-        static const signed char _aft_y[32] = {2, 1, 0, -1, -1, -2, -4, -5, -6, -7, -8,
-                                               -10, -11, -11, -11, -10, -10, -11, -11, -12, -12, -10,
-                                               -9, -8, -6, -5, -4, -2, -1, -1, 0, 1};
-        index = Dir_To_32(dir);
-        x += _aft_x[index];
-        y += _aft_y[index];
+    case UNIT_TSHVR:
+        // Single-dir callers (fire coord etc.) treat the rack as resting on the
+        // hull line; the draw path passes hull and rack facings separately.
+        Hover_Rack_Seat(dir, dir, x, y);
         break;
-    }
 
     default:
         break;
     }
+}
+
+/***********************************************************************************************
+ * UnitTypeClass::Hover_Rack_Seat -- TSHVR rocket-rack draw seat, hull and rack facings apart. *
+ *                                                                                             *
+ *    The rack rides a fixed aft mount, so its screen POSITION follows the HULL facing (the    *
+ *    projected mount ellipse), while a small per-frame art-anchoring residual follows the     *
+ *    RACK facing (the frame actually drawn). At rest the two indices agree and the sum        *
+ *    reproduces the dialled seat exactly; mid-turn or while aiming, the rack stays planted    *
+ *    on its mount with the correct tilt instead of orbiting off the deck.                     *
+ *                                                                                             *
+ *    Mount = aft distance 9, deck height 4, camera vertical factor 6 (2026-08-19 dial;       *
+ *    residual = Luke's dialled seat minus that projection, never more than 2 px).            *
+ *    Anchor placement rides EA's Facing32 quantisation: its 3D-Studio 45-degree              *
+ *    compensation puts a RESTING exact-diagonal heading in idx 3/13/19/29 (never             *
+ *    4/12/20/28), so dialled diagonal seats live in BOTH that index and its mid-turn         *
+ *    neighbour. Cardinals rest on 0/8/16/24 exactly.                                         *
+ *=============================================================================================*/
+void UnitTypeClass::Hover_Rack_Seat(DirType hull, DirType rack, int& x, int& y) const
+{
+    // Mount = dialled seat minus the rack part; rack part (_res) cancels each
+    // pod frame's content-centroid offset within its crop, so a stationary
+    // spin keeps the rack's mass pinned to one screen coordinate (within the
+    // 1-px integer floor). mount[i] + res[i] reproduces the dialled seat at
+    // every rest facing exactly.
+    static const signed char _mount_x[32] = {0,  -2, -3, -5, -5, -7, -8, -9, -9, -8, -7,
+                                             -6, -5, -5, -3, -2, 0,  2,  3,  5,  5,  6,
+                                             7,  8,  9,  8,  8,  7,  5,  5,  3,  2};
+    static const signed char _mount_y[32] = {1,  0,  0,  -1, -1, -2, -3, -4, -6, -7, -8,
+                                             -8, -9, -9, -9, -10, -10, -9, -9, -9, -9, -8,
+                                             -8, -6, -5, -4, -3, -2, -1, -1, 0,  0};
+    static const signed char _res_x[32] = {0, 0, 0, 0, 0, 1, 1, 1, 0, 0, 0,
+                                           0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                                           0, 0, 0, 0, -1, -1, 0, 0, 0, 0};
+    static const signed char _res_y[32] = {1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0,
+                                           0, 0, 0, 0, 0, 0, -1, 0, 0, 0, 0,
+                                           0, -1, -1, 0, 0, 0, 1, 1, 1, 1};
+    int hidx = Dir_To_32(hull);
+    int ridx = Dir_To_32(rack);
+    x += _mount_x[hidx] + _res_x[ridx];
+    y += _mount_y[hidx] + _res_y[ridx];
 }
 
 /***********************************************************************************************

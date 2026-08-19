@@ -1147,6 +1147,7 @@ public:
     virtual int Max_Pips(void) const;
 
     void Turret_Adjust(DirType dir, int& x, int& y) const;
+    void Hover_Rack_Seat(DirType hull, DirType rack, int& x, int& y) const;
 
     /*
     **	Role test for a mobile construction vehicle of any faction (the two
