@@ -36,6 +36,7 @@ def set_elevation(deg):
     ELEV = math.radians(deg)
     SIN_E, COS_E = math.sin(ELEV), math.cos(ELEV)
 SS = 4  # supersample factor
+Z_CLIP = None  # --z-clip: drop model geometry below this height
 
 LIGHT = np.array([-0.5, 0.6, 0.75])  # top, slightly NW
 LIGHT = LIGHT / np.linalg.norm(LIGHT)
@@ -219,6 +220,15 @@ def render_frame(model, yaw_deg, px_per_voxel, team_green, z_lift, canvas=None,
     ny = nrm[:, 0] * sy_ + nrm[:, 1] * cy
     nz = nrm[:, 2]
 
+    # Drop geometry below a model-space height: undercarriage the camera was
+    # never meant to see (the Hover MLRS turret's mounting drum reads as a
+    # dangling mass at low elevations).
+    if Z_CLIP is not None:
+        keep = rz >= Z_CLIP
+        rx, ry, rz = rx[keep], ry[keep], rz[keep]
+        nx, ny, nz = nx[keep], ny[keep], nz[keep]
+        cols = cols[keep]
+
     # project: screen u = rx ; v = ry*sinE + rz*cosE (v up)
     u = rx
     v = ry * SIN_E + rz * COS_E
@@ -268,7 +278,8 @@ def main():
     opts = {'--frames': '32', '--px-per-voxel': '6', '--yaw0': '0',
             '--team-green': '0,200,0', '--z-lift': '0', '--canvas': '0',
             '--hva': '', '--hva-frame': '0', '--elev': '54', '--ambient': '0.35',
-            '--pitch': '0', '--normal-smooth': '0', '--height-elev': ''}
+            '--pitch': '0', '--normal-smooth': '0', '--height-elev': '',
+            '--z-clip': ''}
     i = 2
     while i < len(args):
         opts[args[i]] = args[i + 1]
@@ -282,6 +293,8 @@ def main():
     pitch = float(opts['--pitch'])  # degrees, positive = nose up (VTOL flare)
     global NORMAL_SMOOTH
     NORMAL_SMOOTH = int(opts['--normal-smooth'])
+    global Z_CLIP
+    Z_CLIP = float(opts['--z-clip']) if opts['--z-clip'] else None
 
     set_elevation(float(opts['--elev']))
     if opts['--height-elev']:

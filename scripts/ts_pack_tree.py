@@ -675,21 +675,12 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # the <INI>LT lamp layer, drawn just above the door overlay, carrying
         # each phase's lamp pixels over the frozen ones.
         lamp_runs = [[split_alpha(f, canvas_masks[r], True) for f in full[r]] for r in (0, 1)]
-        # Trimmed to the pixels that actually CHANGE against phase 0 (dilated
-        # for the glow's soft edge): the static face stays the door overlay's
-        # job alone. Re-drawing it in this layer doubled the alpha of its
-        # antialiased edges, and the door/floor seam line rendered over
-        # exiting units.
-        import numpy as np
-        for r in (0, 1):
-            ref = np.asarray(lamp_runs[r][0], np.int16)
-            for k in range(len(lamp_runs[r])):
-                cur = np.asarray(lamp_runs[r][k], np.int16)
-                changed = (np.abs(cur - ref).sum(2) > 30).astype(np.uint8) * 255
-                mask = Image.fromarray(changed).filter(ImageFilter.MaxFilter(5))
-                out = lamp_runs[r][k].copy()
-                out.putalpha(ImageChops.multiply(out.split()[3], mask))
-                lamp_runs[r][k] = out
+        # Full-face frames (the play-approved look). A changing-pixels trim
+        # was tried 2026-08-18 and REVERTED 2026-08-19: it left the red
+        # glow's dilated halo as isolated smudges over the roof. Its
+        # motivation -- the double-blended door/floor seam -- was removed
+        # separately when the seam rows moved into the BASE layer, so the
+        # full face re-covers itself with identical pixels everywhere.
         full = [[split_alpha(f, canvas_masks[r], False) for f in full[r]] for r in (0, 1)]
 
     # Luke's red-pixel markup (2026-08-18, edit 3): a leftover hazard-stripe

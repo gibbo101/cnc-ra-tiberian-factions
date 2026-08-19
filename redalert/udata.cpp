@@ -2463,12 +2463,16 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
         // camera's own foreshortening (13/16 vertical), so the seat is identical
         // relative to the hull at all 32 facings. (Normal_Move_Point's classic
         // vertical halving overshot E/W relative to N/S against this art.)
-        static const signed char _aft_x[32] = {0,  -2, -3, -5, -6, -7, -8, -9, -9, -9, -8,
-                                               -7, -6, -5, -3, -2, 0,  2,  3,  5,  6,  7,
-                                               8,  9,  9,  9,  8,  7,  6,  5,  3,  2};
-        static const signed char _aft_y[32] = {7,  7,  7,  6,  5,  4,  3,  1,  0,  -1, -3,
-                                               -4, -5, -6, -7, -7, -7, -7, -7, -6, -5, -4,
-                                               -3, -1, 0,  1,  3,  4,  5,  6,  7,  7};
+        static const signed char _aft_x[32] = {0, 0, -1, -3, -4, -6, -8, -9, -9, -9, -8,
+                                               -6, -4, -3, -1, 0, 0, 0, 1, 3, 4, 6,
+                                               8, 9, 9, 9, 8, 6, 4, 3, 1, 0};
+        // All 32 entries: Luke's four dialled cardinals (2026-08-19,
+        // N(0,2) E(-9,-6) S(1,-10) W(9,-6)) with cosine interpolation
+        // between them. Anchors exact; N-S asymmetry is real (per-facing
+        // art offsets) -- a symmetric law was falsified in play.
+        static const signed char _aft_y[32] = {2, 2, 1, 0, -2, -4, -5, -6, -6, -6, -7,
+                                               -7, -8, -9, -9, -10, -10, -10, -9, -9, -8, -7,
+                                               -7, -6, -6, -6, -5, -4, -2, 0, 1, 2}; // W (24) = -6, Luke-approved mirror of E
         index = Dir_To_32(dir);
         x += _aft_x[index];
         y += _aft_y[index];
