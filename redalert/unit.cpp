@@ -2790,10 +2790,11 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
     DirType rotation = DIR_N;
     int scale = 0x0100;
 
-    // (TS-spike note: TSHVR's on-screen size comes from its 64x64 classic stub SHP
-    // in TFASSETS.MIX -- a real classic-dims bump, so the health bar / selection box
-    // scale too. The earlier draw-scale hack sheared the turret off its hull because
-    // scale is applied about the ground anchor per-draw; keep scale at 1.0.)
+    // (TS-spike note: TSHVR's on-screen size comes from its classic stub SHP in
+    // TFASSETS.MIX, which is 48x48 -- tank-sized, matching [TSHVR] ShapeSize. The
+    // rack seats below were dialled against a sprite at that size, so the dims are
+    // load-bearing. The earlier draw-scale hack sheared the turret off its hull
+    // because scale is applied about the ground anchor per-draw; keep scale at 1.0.)
     //
     // Hover bob (TS-authentic): the hull gently rides up and down over its baked
     // drop shadow. Applied to y before both hull and turret draw (turret copies y),

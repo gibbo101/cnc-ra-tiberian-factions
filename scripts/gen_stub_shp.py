@@ -4,7 +4,7 @@
 Purpose: HD-only entities get their on-screen size (and health-bar/selection
 box) from the classic ImageData frame dimensions. When no real classic art
 exists, a transparent stub with the right dimensions is the honest way to
-declare "this unit is WxH classic pixels" (e.g. TSHVR 64x64 = bigger than a
+declare "this unit is WxH classic pixels" (e.g. TSHMEC 60x60 = bigger than a
 48x48 tank). Classic mode never renders in this mod, so pixels don't matter —
 only the header dims. Frames are valid LCW so nothing crashes if decompressed.
 

@@ -221,9 +221,13 @@ if [[ -f "$DESERT_MIX" ]]; then
 fi
 
 # TS-spike -- TSHVR (Hover MLRS) classic stub. HD-only unit (voxel-rendered
-# tileset, no classic art); this 64x64 transparent stub declares its classic
-# dimensions so the launcher sizes the sprite, health bar and selection box
-# for a large platform (vs the 48x48 tank default a donor ImageData gives).
+# tileset, no classic art); the stub declares the classic dimensions the
+# launcher sizes the sprite, health bar and selection box from.
+# ⚠ 48x48 (tank-sized) is DELIBERATE and matches [TSHVR] ShapeSize=48,48.
+# The rack seat table (udata.cpp Hover_Rack_Seat) was eye-dialled by Luke
+# against a sprite at THIS size and signed off 2026-08-19. Changing these
+# dims rescales the sprite and invalidates every dialled seat -- do not
+# "correct" it to 64x64 without redoing the whole seat arc.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tshvr_stub.shp" 48 48 64
 PACK_ARGS+=("$TMPDIR/tshvr_stub.shp:TSHVR.SHP")
 

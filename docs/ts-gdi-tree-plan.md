@@ -1,5 +1,34 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐ SIGN-OFF LEDGER — GDI units Luke has declared COMPLETE
+
+A unit here is **done**: no open art, geometry or behaviour work, and it is not
+to be reopened for polish without Luke saying so. The end-of-roster generic
+lightness pass (open queue 15) is the ONE exception that may still touch them.
+
+| Unit | Signed off | Notes |
+|---|---|---|
+| **Hover MLRS** (`UNIT_TSHVR`) | 2026-08-19 ("we have a winner") | The rack/diagonal arc closed in full: 32° render, `Hover_Rack_Seat()` two-part seat, Facing32 resting indices 3/13/19/29, centroid-pinned spin. Four rejected rack shapes are recorded in the arc block below — do not re-offer them. |
+| **TS MCV** (`UNIT_TSMCV`) | 2026-08-20 | 32° render play-praised earlier in the wave. Final change: `Speed=3` → `5` to match the TD MCV family. ⚠ That speed edit was signed off BEFORE it reached play — see the caveat below. |
+
+**Titan (`UNIT_TSTITN`) was on this list and Luke pulled it off (2026-08-20).**
+It stays in the open queue; do not mark it complete.
+
+**⚠ TS MCV caveat, kept until it is cleared:** the `Speed=5` edit was staged and
+signed off while the game was running, so it has never been driven. If the MCV
+reads wrong in play, the sign-off does not bar fixing it — that is a
+not-yet-verified change, not settled work.
+
+**⚠ TSHVR stub dims are LOAD-BEARING — do not "fix" them.** The Hover MLRS
+classic stub is **48x48** (`build_tfassets.sh`), matching `[TSHVR]
+ShapeSize=48,48`. Three comments used to claim it was 64x64 "so the launcher
+sizes it as a large platform"; the code never did that, and the comments were
+corrected 2026-08-20. The stub dims drive sprite / health-bar / selection-box
+scale, and **the whole eye-dialled rack seat table was tuned against the sprite
+at 48x48**. Bumping the stub to match the old comments would rescale the sprite
+and invalidate every approved seat. A chain audit (2026-08-20) found this was
+the only functional ambiguity in either signed-off unit.
+
 ## ⭐⭐⭐ RESUME HERE — 2026-08-19 evening: MLRS rack ARC COMPLETE — "we have a winner" (`142001ab`, prefix DLL `da1d78c9`)
 
 **The whole diagonal + turret-jump arc closed in one evening session.**
@@ -951,6 +980,13 @@ clause. Same literal-chain audit was needed for repair
     Luke 2026-08-16); chunky intake pixels + black fringe
     at the refinery bay mouth; damaged bay deck's stray remap-green pixel.
 15b. **Units pass: revisit unit angles per model** (Luke, 2026-08-18).
+    **MLRS half CLOSED**: its "facing step off" was diagnosed in `d9c188b6` as
+    the 54-vs-32 camera projection (10.9° apparent rotation at SE), not a
+    facing step, and the re-render plus the rack arc closed it — signed off
+    2026-08-19. TS MCV signed off 2026-08-20. Remaining models to audit:
+    TSHARV, TSAPC, TSSONIC, and TSHMEC (the Mk. II is the odd one out — it
+    renders at 35°, never came down to the 32° house camera with the other
+    four, and is absent from the render ledger).
     Evidence SS `~/Pictures/Screenshots/Screenshot from 2026-08-18
     00-42-31.png`: parked side by side, TS Harvester lines up with the TD
     Medium Tank but the TS hover MLRS reads a facing step off. Per-model
