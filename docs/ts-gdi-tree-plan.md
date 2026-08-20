@@ -1,5 +1,45 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐⭐⭐ RESUME HERE — 2026-08-20: unit shadows re-based on base-game art, VERDICT OWED
+
+**State at close:** every TS unit's baked shadow was rebuilt to the RA/TD
+convention and DEPLOYED to the desktop prefix (DLL `da1d78c9` unchanged, art
+md5-verified against source). **Luke has not yet judged round 2** — round 1 he
+called "way over done", round 2 is the corrected numbers and is what is sitting
+in the prefix now.
+
+**Two things owed next session:**
+1. **Per-unit shadow verdict, one unit at a time** (Luke's stated plan). The
+   sign-off ledger below is where passes get recorded.
+2. **⭐ Luke has an ADDITIONAL REQUEST for the Hover MLRS** that he had not
+   described when the session closed. Ask him for it before touching the MLRS.
+
+**The census that started it (worth keeping — it was not just mistuning):**
+three of eight TS units were rendering NO shadow at all. TSHARV (alpha 66) and
+TSHMEC (71) had been diluted under the launcher's ~128 alpha cutoff by a resize
+applied AFTER `drop_shadow`, and TSMCV had no shadow layer whatsoever. The
+other five sat at alpha 130 thrown out on a 45-degree diagonal, reading as a
+hard black duplicate of the hull.
+
+**The lesson that generalises: measure against BASE-GAME art, not our own
+ports.** Round 1's numbers came from our repacked TD art (dx 0.042w, dy 0.138w)
+and were rejected in play. Pulling RA's real art out of `TEXTURES_RA_SRGB.MEG`
+(2TNK/3TNK/MCV/JEEP) and re-measuring against Luke's own TD Medium Tank
+reference gives **dx 0.028w, dy 0.120w, alpha 191** — and alpha was never
+wrong, 191 pure black is exactly what both RA and TD bake. Full contract in
+`launcher-render-contracts.md`.
+
+**Mechanism:** `scripts/ts_reshadow.py` owns the convention and runs on the
+PACKED zips as the authoritative final pass, AFTER any resize. It is idempotent
+(strips the old shadow before applying its own), preserves body pixels
+byte-for-byte, and the center-symmetric crop keeps every body's on-screen
+position invariant — which is what makes it safe to re-run against signed-off
+units. Turret frames carry no shadow, so TSHVR's dialled rack seats are out of
+its reach by construction. Both packers were synced to the same numbers and
+carry a note that this pass must follow any repack.
+⚠ When iterating, `git checkout` the unit zips back to the last checkpoint
+before re-running, so no edge fringe from a rejected round is baked in.
+
 ## ⭐ SIGN-OFF LEDGER — GDI units Luke has declared COMPLETE
 
 A unit here is **done**: no open art, geometry or behaviour work, and it is not

@@ -93,7 +93,8 @@ def crisp_place(img, factor, canvas, anchor_src, anchor_dst):
     return out
 
 
-def drop_shadow(frame, dx, dy, alpha=130):
+# ts_reshadow.py owns the shadow convention -- run it after any repack.
+def drop_shadow(frame, dx, dy, alpha=191):
     """2TNK technique: hull silhouette offset down-right, composited under."""
     sil = Image.new("RGBA", frame.size, (0, 0, 0, 0))
     mask = frame.split()[3].point(lambda a: alpha if a > 0 else 0)
@@ -127,7 +128,7 @@ for f in range(8):                        # body: out facing f (CCW) <- src bloc
     src_block = (8 - f) % 8
     for s in WALK_PICK:
         fr = crisp_place(mm(src_block * 15 + s), F_T, CANVAS_T, ANCHOR_SRC, ANCHOR_DST)
-        frames.append(drop_shadow(fr, 14, 18))
+        frames.append(drop_shadow(fr, 4, 18))
 # Turret = SHP torso + the VOXEL cannon barrel composited per facing. TS draws
 # the Titan's cannon from MMCHBARL.VXL at runtime (art.ini PBarrelLength) — it
 # is NOT in the SHP frames, which is why the ported torso had no gun. The
@@ -325,7 +326,7 @@ if os.path.isdir(f"{ART}/hq_hvr_body"):
         # pointy corner. Offset = walker (14,18) scaled 448→192 canvas; the
         # small gap reads as hover float.
         safe_paste(out, scaled, ox2, oy2)
-        hframes.append(drop_shadow(out, 6, 8))
+        hframes.append(drop_shadow(out, 5, 17))
     for im in ht:
         scaled = im.resize((round(im.width * F_H), round(im.height * F_H)), Image.LANCZOS)
         out = Image.new("RGBA", (CANVAS_H, CANVAS_H), (0, 0, 0, 0))

@@ -70,7 +70,14 @@ def safe_paste(dst, src, x, y):
     dst.paste(src, (x, y), src)
 
 
-def drop_shadow(frame, dx, dy, alpha=130):
+# AFTER ANY REPACK, RUN scripts/ts_reshadow.py. It owns the shadow convention
+# (EA's TD/RA baked offset-silhouette: dx = 0.028*w, dy = 0.120*w, alpha 191)
+# and it strips whatever shadow is here before applying its own, so it is the
+# authoritative pass and it corrects any dilution a later resize introduces
+# (that dilution is exactly how TSHARV ended up at alpha 66, under the
+# launcher's ~128 cutoff, rendering no shadow at all). The offsets below are
+# kept in step with it so a fresh pack already looks close.
+def drop_shadow(frame, dx, dy, alpha=191):
     sil = Image.new("RGBA", frame.size, (0, 0, 0, 0))
     mask = frame.split()[3].point(lambda a: alpha if a > 0 else 0)
     black = Image.new("RGBA", frame.size, (0, 0, 0, 255))
@@ -160,17 +167,17 @@ def recenter_orbit(frames):
 # small in the field; 0.80 read big — Luke's split, 2026-08-05).
 if os.path.isdir(f"{ART}/renders_harv"):
     write_zip(f"{UNITS_DIR}/TSHARV.ZIP", "tsharv",
-              recenter_orbit(face_fix(vox_frames("renders_harv", 384, shadow=(10, 13), scale=0.75))))
+              recenter_orbit(face_fix(vox_frames("renders_harv", 384, shadow=(6, 25), scale=0.75))))
 else:
     print("TSHARV: SKIP (no renders_harv)")
 if os.path.isdir(f"{ART}/renders_apc"):
-    write_zip(f"{UNITS_DIR}/TSAPC.ZIP", "tsapc", face_fix(vox_frames("renders_apc", 384, shadow=(10, 13))))
+    write_zip(f"{UNITS_DIR}/TSAPC.ZIP", "tsapc", face_fix(vox_frames("renders_apc", 384, shadow=(7, 30))))
 else:
     print("TSAPC: SKIP (no renders_apc)")
 
 # ---- TSSONIC: body 0-31 + turret 32-63, one shared scale ----
 if os.path.isdir(f"{ART}/renders_sonic"):
-    sonic = vox_frames("renders_sonic", 448, shadow=(12, 15))
+    sonic = vox_frames("renders_sonic", 448, shadow=(8, 36))
     sonic += vox_frames("renders_sonictur", 448)  # turret: no shadow, canvas-centered
     write_zip(f"{UNITS_DIR}/TSSONIC.ZIP", "tssonic", sonic)
 else:
@@ -200,7 +207,7 @@ if os.path.isdir(f"{ART}/shp_smech"):
         for s in range(12):
             fr = crisp_place(sm(src_block * 12 + s), F_SHP, CANVAS_S,
                              (47.5, feet_src), (CANVAS_S / 2, feet_dst))
-            frames.append(drop_shadow(fr, 12, 15))
+            frames.append(drop_shadow(fr, 4, 15))
     write_zip(f"{UNITS_DIR}/TSSMEC.ZIP", "tssmec", frames)
 else:
     print("TSSMEC: SKIP (no shp_smech)")
