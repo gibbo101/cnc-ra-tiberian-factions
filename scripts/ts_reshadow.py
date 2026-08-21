@@ -18,21 +18,32 @@ Re-rendering would risk both of those. This pass cannot.
 
 THE CONVENTION (measured, not guessed)
 --------------------------------------
-Every EA TD/RA HD ground vehicle bakes its shadow as an OFFSET SILHOUETTE of
-the body -- the same mechanism our packers already use. Fitting a shifted copy
-of the body against the actual shadow region scores IoU 0.72-0.88 across EA's
-whole vehicle set, so the mechanism was never the problem; the tuning was.
+EA's throw is a FIXED PIXEL DISTANCE, independent of how big the sprite is.
+Measured per-column -- the vertical gap between the shadow's lower edge and the
+body's own lower edge in the same column -- across nine base-game vehicles
+spanning 122px to 228px of body width:
 
-Measured across EA's TD vehicle art (TDHTNK/TDMTNK/TDLTNK/TDAPC/TDJEEP/TDBGGY/
-TDARTY/TDFTNK/TDSTNK/TDBIKE/TDHARV/TDMCV/TDMLRS/TDMSAM):
+    RA JEEP 126px  -5.5    RA 2TNK 134px  -6.0    RA 4TNK 185px  -6.0
+    RA MCV  228px  -7.0    RA HARV 200px  -5.0    TD APC  122px  -5.0
+    TD MTNK 133px  -6.0    TD HTNK 185px  -6.0    TD MSAM 128px  -7.0
 
-    offset dx ~= 0.042 * body width      dy ~= 0.180 * body height
-    dy/dx ~= 3   (light is high and near-south, only slightly east)
-    shadow alpha 191 (modal; EA also uses 153 and 179)
+Body width nearly doubles across that set and the throw does not move: it is a
+constant, not a ratio. Visible shadow runs 6-12% of body pixel area throughout.
 
-Our TS art sat at dy/dx ~= 1.3 -- a 45-degree diagonal throw, which reads as a
-hard black duplicate of the hull rather than as ground shade -- and at alpha
-130, barely over the launcher's ~128 cutoff.
+Note the SIGN. EA's shadow tucks UNDER the hull and stops short of its bottom
+edge; the shadow's bbox sits inside the body's bbox on all four sides. So EA is
+not baking a full-size translated copy of the body -- a translation can only
+ever push the silhouette past the hull, never inside it. What the eye actually
+reads is the thin contact band, ~6px thick, that escapes along the lower edge,
+and a small offset silhouette reproduces that band closely enough at this size.
+
+Sizing the throw off the sprite instead of fixing it is what broke: our TS
+sprites run up to 301px wide against RA's largest at 228, so a 12%-of-width
+throw gave the Mammoth Mk. II a 41px overhang where a TD tank has a 6px tuck.
+Luke's verdict on that round: sticks out far too much, the Mk. II looks like it
+is floating, and any TS unit stood next to a TD unit looks ridiculous. Alpha was
+never the problem in either round -- 191 pure black is what EA bakes, and it is
+what we ship.
 
 Three TS units were worse than mistuned and rendered NO shadow at all:
 TSHARV (alpha 66) and TSHMEC (alpha 71) both sat under the launcher's alpha
@@ -47,32 +58,22 @@ MOD = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                    "..", "resources", "remaster_mods", "Vanilla_RA"))
 UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
 
-# Both offsets scale off sprite WIDTH, never height. Width tracks the ground
-# footprint; height does not, because an isometric sprite's height also carries
-# how tall the thing stands. Sizing dy off height threw the Wolverine's and
-# Mk. II's shadows clear of their feet while looking correct on every low hull.
+# ABSOLUTE PIXELS, applied to every unit whatever its size. Do not re-express
+# these as a fraction of the sprite: two rounds were rejected in play for doing
+# exactly that, and the base-game measurement in the docstring above is flat
+# across a 2x range of body widths. A fraction also punishes our biggest art
+# hardest, which is the opposite of what the eye wants -- the Mk. II is the unit
+# most often parked beside a TD tank.
 #
-# These are measured off the BASE GAME's own RA art, pulled from
-# TEXTURES_RA_SRGB.MEG (2TNK/3TNK/MCV/JEEP), which is the standard our units
-# are actually seen next to:
+# dy 6 puts the visible contact band at EA's own thickness; dx 2 keeps EA's
+# roughly 3:1 down-to-sideways lean. Measured result on the real art:
 #
-#     unit     alpha   dx/bw    dy/bw
-#     2TNK      191    0.0263   0.1189
-#     3TNK      191    0.0277   0.1203
-#     MCV       191    0.0278   0.0893
-#     JEEP      191    0.0304   0.1216
-#
-# A first pass used means taken off TD art instead (0.042 / 0.138) and Luke's
-# in-game verdict was "way over done" on every ground unit. Alpha was never the
-# problem -- 191 pure black is exactly what RA bakes -- the throw was simply too
-# long, ~50% too far sideways and ~20% too far down, which inflates the visible
-# shadow band by the same proportion.
-# The TD Medium Tank is the unit Luke parks the TS roster against as his
-# reference, and it independently lands in the same place as the RA sample
-# (alpha 191, dx/bw 0.0277, dy/bw 0.1205) -- so RA and TD share one convention
-# and these fractions ARE that convention.
-EA_DX_FRAC = 0.028
-EA_DY_FRAC = 0.120
+#     unit      before            after       EA's range
+#     TSHMEC    +41px / 24%    +6px /  5%     ~6px / 6-12%
+#     TSAPC     +30px / 27%    +6px /  6%
+#     TSTITN    +18px / 22%    +6px /  9%
+EA_DX = 2
+EA_DY = 6
 EA_ALPHA = 191
 
 # Per-unit overrides, in packed-canvas pixels. The Hover MLRS was the one unit
@@ -225,7 +226,7 @@ def process(unit, dry_run):
     if unit in OFFSET_OVERRIDE:
         dx, dy = OFFSET_OVERRIDE[unit]
     else:
-        dx, dy = round(EA_DX_FRAC * bw), round(EA_DY_FRAC * bw)
+        dx, dy = EA_DX, EA_DY
 
     canvas = full[0].width
     clipped = 0
