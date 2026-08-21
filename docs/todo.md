@@ -85,6 +85,42 @@ RESTART is not an exit: InstanceServerG persists and one deploy attempt was lost
 
 ---
 
+## Workshop support: karain0330 GPU-crash report (2026-08-21)
+
+Player `karain0330` reported "Graphics card driver crash detected / DXGI fault device
+removed". Reply DRAFTED and handed to Luke, **not yet confirmed posted**. Draft lives in
+this session's memory record.
+
+**Triage facts established (see [[reference-player-crash-triage]]):**
+- `Video Card Driver Crash Detected!` and `Error: DXGI_ERROR_DEVICE_REMOVED` are literal
+  strings in `ClientG.exe`. The player is quoting EA's own dialog: the D3D11 device was
+  lost, not a mod assert.
+- **Process split confirmed by binary:** `InstanceServerG.exe` loads `RedAlert.dll`
+  (2 string refs; `ClientG.exe` has 0). Our DLL's import table is KERNEL32 / msvcrt /
+  OLEAUT32 / SHELL32 / USER32 / WINMM only: **no d3d11, no dxgi, no gdi32**. Mod game
+  code cannot reach the GPU.
+- **But mod DATA can and has crashed ClientG** (wrong-size CONFIG.MEG member, HD tile
+  atlas attempts, the TS audio pair). So never tell a player the mod "cannot" cause a
+  renderer crash. Access violation != driver reset, but the distinction is ours to prove,
+  not to assert.
+- `<game install>/log/CrashLog.txt` is THE thing to request from a reporting player: one
+  line per crash naming the faulting process, so it separates ClientG (renderer) from
+  InstanceServerG (us) instantly.
+- VRAM theory KILLED: our `MT_COMMANDBAR_COMMON.TGA` is 6871x6716 32bpp / 176MB, and
+  EA's own copy inside `TEXTURES_SRGB.MEG` is 184,582,562 bytes of the same thing. We
+  replace like with like.
+- `GAMECONSTANTS.XML` has **no** texture/quality/VRAM constant, so there is no mod-side
+  knob to offer a player with a marginal GPU.
+- **Steam Workshop comments are capped at 1000 characters.** Budget for it when drafting.
+
+**OPEN LEAD, unchased:** Luke's own `log/CrashLog.txt` carries **seven `ClientG.exe`
+crashes at a fixed EIP `0x00EB5E69`** (07-17/18 and 08-12/13, both art-iteration
+sessions), alongside the expected InstanceServerG entries. Not yet checked against what
+actually shipped in v4.0: may be dead dev-build art, may be a live shipped-art crash.
+Worth an hour before the next release.
+
+---
+
 ## ✅ CONSUMED 2026-08-03: the naval-doctrine-v2 verify (kept for the session record)
 
 Two verify matches played 2026-08-03 (islands map; match 1 = 2 Mediums, match 2 = 2 Hards).
