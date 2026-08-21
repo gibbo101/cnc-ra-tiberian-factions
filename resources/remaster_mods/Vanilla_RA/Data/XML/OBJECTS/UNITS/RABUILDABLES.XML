@@ -5585,6 +5585,38 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<ObjectTypeClass Name="RA_TSSMEC_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSSMEC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSSMEC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Wolverine</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSSONIC_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSSONIC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSSONIC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Disruptor</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSAPC_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSAPC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSAPC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_AmphAPC</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSHARV_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSHARV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSHARV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Harvester</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 	<ObjectTypeClass Name="RA_TSTITN_4" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TSTITN</ObjectNameTextID>
