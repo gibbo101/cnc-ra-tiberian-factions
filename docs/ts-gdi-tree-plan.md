@@ -1,44 +1,151 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-20: unit shadows re-based on base-game art, VERDICT OWED
+## ⭐⭐⭐ RESUME HERE — 2026-08-22: cameos deployed UNVERIFIED, then the roster jobs
 
-**State at close:** every TS unit's baked shadow was rebuilt to the RA/TD
-convention and DEPLOYED to the desktop prefix (DLL `da1d78c9` unchanged, art
-md5-verified against source). **Luke has not yet judged round 2** — round 1 he
-called "way over done", round 2 is the corrected numbers and is what is sitting
-in the prefix now.
+**State at close:** the shadow pass is DONE and play-approved ("much better").
+All eight units' art plus the cameo XML fix are deployed to the desktop prefix;
+the DLL is UNCHANGED at `da1d78c9` and was never rebuilt this session. Four
+units are signed off (Hover MLRS, Titan, MCV, Mammoth Mk. II) and four still
+owe a shadow verdict. Everything below is UNCOMMITTED in the worktree.
 
-**Two things owed next session:**
-1. **Per-unit shadow verdict, one unit at a time** (Luke's stated plan). The
-   sign-off ledger below is where passes get recorded.
-2. **⭐ Luke has an ADDITIONAL REQUEST for the Hover MLRS** that he had not
-   described when the session closed. Ask him for it before touching the MLRS.
+### ⭐ FIRST CHECK NEXT SESSION: the four cameos in-game (Luke, 2026-08-22)
 
-**The census that started it (worth keeping — it was not just mistuning):**
-three of eight TS units were rendering NO shadow at all. TSHARV (alpha 66) and
-TSHMEC (71) had been diluted under the launcher's ~128 alpha cutoff by a resize
-applied AFTER `drop_shadow`, and TSMCV had no shadow layer whatsoever. The
-other five sat at alpha 130 thrown out on a 45-degree diagonal, reading as a
-hard black duplicate of the hull.
+The `_0` badge-variant fix is **deployed and md5-verified in the desktop prefix
+but has NOT been seen in play.** It is data-only, so the game just needs a
+restart — no build, no DLL. Look at the sidebar for the Wolverine, Disruptor,
+APC and Harvester before starting anything else. If they draw, the cameo item
+is closed on all four; if they do not, the next suspect is whether the launcher
+resolves `BuildIcon_TS_*` names for units the way it does for the TS buildings
+that already work (`RA_TSTITN_0` -> `BuildIcon_TS_Titan` is the proven pattern
+to diff against).
 
-**The lesson that generalises: measure against BASE-GAME art, not our own
-ports.** Round 1's numbers came from our repacked TD art (dx 0.042w, dy 0.138w)
-and were rejected in play. Pulling RA's real art out of `TEXTURES_RA_SRGB.MEG`
-(2TNK/3TNK/MCV/JEEP) and re-measuring against Luke's own TD Medium Tank
-reference gives **dx 0.028w, dy 0.120w, alpha 191** — and alpha was never
-wrong, 191 pure black is exactly what both RA and TD bake. Full contract in
-`launcher-render-contracts.md`.
+**Then: the TS Wolverine (`UNIT_TSSMEC`)** — weapon animation + sound.
 
-**Mechanism:** `scripts/ts_reshadow.py` owns the convention and runs on the
-PACKED zips as the authoritative final pass, AFTER any resize. It is idempotent
-(strips the old shadow before applying its own), preserves body pixels
-byte-for-byte, and the center-symmetric crop keeps every body's on-screen
-position invariant — which is what makes it safe to re-run against signed-off
-units. Turret frames carry no shadow, so TSHVR's dialled rack seats are out of
-its reach by construction. Both packers were synced to the same numbers and
-carry a note that this pass must follow any repack.
-⚠ When iterating, `git checkout` the unit zips back to the last checkpoint
-before re-running, so no edge fringe from a rejected round is baked in.
+**Shadow verdicts still owed:** TSAPC, TSHARV, TSSMEC, TSSONIC. (Hover MLRS,
+Titan, MCV and the Mk. II are all signed off.)
+
+### ⭐ THE ROSTER-WALK QUEUE (Luke, dictated 2026-08-21/22)
+
+Gaps he called out per unit while walking the roster. Order: Wolverine first,
+Harvester LAST.
+
+| Unit | Outstanding |
+|---|---|
+| **Wolverine** `TSSMEC` | ~~sidebar icon~~ ✅; TS weapon **animation + sound** (the weapon itself is already ported) |
+| **Disruptor** `TSSONIC` | ~~sidebar icon~~ ✅; its own weapon **animation + sound** |
+| **APC** `TSAPC` | ~~sidebar icon~~ ✅; its unique **on-water art**; unit **enter/exit mechanics re-checked** |
+| **Harvester** `TSHARV` — **DO LAST** | ~~sidebar icon~~ ✅; **TD + RA refinery docking** |
+| **Mammoth Mk. II** | signed off; Luke wants **RA vs TS comparison videos** at some point (not a work item) |
+
+### ✅ The four cameos — FIXED 2026-08-22, deployed, data-only (no DLL rebuild)
+
+⭐ **The trap: `TF_Apply_Cameo_Badge` ALWAYS appends `_<hex>` to the sidebar
+AssetName**, even when the badge is zero. TS-tree types force `held = 0`
+(`TF_Is_TS_Tree_Type`, keyed off a TS building in `Prerequisite`), so the
+sidebar asks the launcher for **`RA_<IniName>_0`**, never the bare name.
+
+All four units already had correct BASE entries in `RABUILDABLES.XML` pointing
+at real, present art — what was missing was only the `_0` variant, so the
+lookup fell through and no icon drew. Added `RA_TSSMEC_0`, `RA_TSSONIC_0`,
+`RA_TSAPC_0`, `RA_TSHARV_0`, each pointing at the same `BuildIcon` as its base
+entry. The cameo TGAs were already shipped by `ts_pack_units_wave.py`; no art
+was generated.
+
+**Audit run after the fix: no other `RA_TS*` entry is missing its `_0`, and no
+TS entry points at absent art.** (`RA_TSLA_0` -> `BuildIcon_RA_TeslaCoil` is
+RA's own Tesla Coil resolving from the base MEG, not a gap.)
+
+**Rule for any future buildable:** a base `RABUILDABLES.XML` entry is not
+enough. Every buildable needs the badge variant the sidebar will actually
+request — `_0` for anything TS-tree-gated.
+
+⭐ **The cameo ART already exists for all four.** `ts_pack_units_wave.py` decodes
+HARVICON / SMCHICON / SONIICON / APCICON against CAMEO.PAL, and
+`BuildIcon_TS_Harvester|Wolverine|Disruptor|AmphAPC.tga` are all present in
+`Data/ART/TEXTURES/SRGB/`. So "needs a sidebar icon" is a **wiring** job, not an
+art job — the runtime AssetName switch at `dllinterface.cpp` ~5690/~5852 is the
+mechanism. Do not re-generate the art.
+
+**The weapons are ported; what is missing is presentation.** Both units already
+carry TS-verbatim weapon stats, and both are standing in on borrowed
+presentation pending the TS audio wave:
+
+- `[AssaultCannon]` (Wolverine): Dmg40 / ROF50 / Range5 / Projectile=Invisible /
+  Warhead=SA — TS verbatim. `Report=MGUN11` (TD heavy MG) stands in for TS
+  **TSGUN4**; `Anim=GUNFIRE` is RA's generic muzzle flash. The projectile is an
+  instant invisible hitscan, so there is nothing in flight to see — which is why
+  it reads as borrowed. It is NOT the Humvee's weapon.
+- `[SonicZap]` (Disruptor): IsSonic piercing line on the railgun sweep, green
+  beam, no helix, through `WARHEAD_SONIC`. `Report=OBELRAY1` (TD Obelisk ray
+  hum) stands in for TS **SONIC4**.
+
+So both sound items are one shared job: pull TSGUN4 and SONIC4 out of TS
+SOUNDS.MIX. Precedent is HOVRMIS1 (`ts-asset-import-spike.md`), and the
+dormant-host WAVs MUST be MS-ADPCM (`launcher-render-contracts.md`).
+
+### The shadow fix: EA's throw is a FIXED PIXEL DISTANCE, not a fraction
+
+Round 2 (dx 0.028w / dy 0.120w) was rejected in play: "sticks out far too much",
+"makes the Mk. II look like it's floating", "any TS unit sat with a TD unit
+looks ridiculous". Opacity was explicitly fine.
+
+The premise under rounds 1 and 2 was wrong. `ts_reshadow.py` asserted EA bakes
+"an OFFSET SILHOUETTE of the body" fitted at IoU 0.72-0.88 — but EA's shadow
+bbox sits INSIDE the hull bbox on all four edges, which a translated full-size
+copy can never produce. Measured per-column across nine base-game vehicles from
+122px to 228px of body width, the throw is a flat **-5 to -7px** and the visible
+shadow is **6-12% of body pixel area**. Body width nearly doubles across that
+set and the throw does not move.
+
+Sizing the throw off the sprite is what broke it: our TS sprites run to 301px
+wide against RA's largest at 228, so 12%-of-width gave the Mk. II a **41px
+overhang** where a TD tank has a 6px tuck.
+
+**Shipped: `EA_DX = 2`, `EA_DY = 6`, absolute pixels, every unit.** Alpha stays
+191 and was never wrong. Result, measured on the real art:
+
+| | before | after | EA's range |
+|---|---|---|---|
+| TSHMEC | +41px / 24% | +6px / 5% | ~6px / 6-12% |
+| TSSONIC | +36px / 33% | +6px / 6% | " |
+| TSMCV | +34px / 29% | +6px / 6% | " |
+| TSAPC | +30px / 27% | +6px / 6% | " |
+| TSHARV | +25px / 28% | +6px / 8% | " |
+| TSTITN | +18px / 22% | +6px / 9% | " |
+| TSSMEC | +15px / 20% | +6px / 10% | " |
+| TSHVR | +17px / 41% | **untouched** | Luke's approved hover float |
+
+⚠️ **Never re-express the throw as a fraction of the sprite.** Two rounds were
+rejected in play for exactly that. The fraction also punishes our biggest art
+hardest, which is backwards — the Mk. II is the unit most often parked beside a
+TD tank.
+
+### Hover MLRS still-shadow experiment — PARKED, not built
+
+Luke asked whether the shadow could stay still while the hull bobs, to sell the
+hover. Traced and costed: the bob is `y += _hover_bob[(Frame >> 2) & 7]` at
+`unit.cpp:2802`, applied to the whole draw, so the baked shadow rides along.
+The launcher makes the FIRST `Techno_Draw_Object` the base draw and sorts every
+later draw above it, so the fix is to draw a shadow-only shape block first at
+the un-bobbed y, then hull and rack at the bobbed y.
+
+`scripts/ts_hover_split_shadow.py` implements the art half (64 -> 96 frames:
+hull 0-31 stripped, rack 32-63, shadow 64-95) and is complete but **PARKED and
+reverted**. Once the ground units came down to 6px, the MLRS's 17px shadow read
+as its own thing and Luke's verdict on the existing bob was "looks ok". If it is
+ever revived it also needs the `Draw_It` re-order AND a 96-frame classic stub in
+`build_tfassets.sh` — the art alone renders the hull with no shadow.
+
+### Two traps worth keeping
+
+- **A regenerated art zip never md5-matches**, even when the art is identical:
+  Python's `zipfile` stamps the current time into every entry. Compare member
+  names + bytes, not the file hash, when checking source against deployed.
+- **Re-measure the SOURCE on a rejected round, and `git checkout` the art back
+  to the pre-pass checkpoint before re-applying** — otherwise the rejected
+  round's fringe is baked into the next one. Done here: all eight zips were
+  restored to `bbb6b7b7^` before the new constants were applied.
+
 
 ## ⭐ SIGN-OFF LEDGER — GDI units Luke has declared COMPLETE
 
@@ -49,10 +156,13 @@ lightness pass (open queue 15) is the ONE exception that may still touch them.
 | Unit | Signed off | Notes |
 |---|---|---|
 | **Hover MLRS** (`UNIT_TSHVR`) | 2026-08-19 ("we have a winner") | The rack/diagonal arc closed in full: 32° render, `Hover_Rack_Seat()` two-part seat, Facing32 resting indices 3/13/19/29, centroid-pinned spin. Four rejected rack shapes are recorded in the arc block below — do not re-offer them. |
+| **Mammoth Mk. II** (`UNIT_TSHMEC`) | 2026-08-22 | Signed off once the railgun question was closed: **TS has no railgun animation to extract.** `[MechRailgun]` drives `AttachedParticleSystem=LargeRailgunSys`, whose particle `[LargeRailgunPart]` carries no `Image=` and has zero ART.INI entries — TS generates the spiral in its particle engine and draws it as coloured pixels. Nothing to port. TS's genuine numbers, if ever wanted: SpiralRadius=15, ParticlesPerCoord=.15, SpiralDeltaPerCoord=.03, LaserColor=25,20,255, particle fade (25,70,205)->(150,150,150) over MaxEC=70. |
+| **Titan** (`UNIT_TSTITN`) | 2026-08-21 | Signed off in the shadow walk, after the 6px fixed throw replaced the width fraction that had given it an 18px overhang. |
 | **TS MCV** (`UNIT_TSMCV`) | 2026-08-20 | 32° render play-praised earlier in the wave. Final change: `Speed=3` → `5` to match the TD MCV family. ⚠ That speed edit was signed off BEFORE it reached play — see the caveat below. |
 
-**Titan (`UNIT_TSTITN`) was on this list and Luke pulled it off (2026-08-20).**
-It stays in the open queue; do not mark it complete.
+**Titan (`UNIT_TSTITN`) was pulled off this list on 2026-08-20 and put back on
+2026-08-21**, signed off with the Hover MLRS and MCV once the shadow throw came
+down to EA's 6px.
 
 **⚠ TS MCV caveat, kept until it is cleared:** the `Speed=5` edit was staged and
 signed off while the game was running, so it has never been driven. If the MCV

@@ -48,20 +48,33 @@ it because TD's `LineMaxFrames = 5` sends 0–4.
 **Rule:** `LineMaxFrames <= 5` for anything using the `Lines[]` beam path.
 Related: `MAX_OBJECT_LINES = 3` (dllinterface.h ABI — cannot grow).
 
-## 4. New anim TYPES are launcher-dead; delayed anims are suspect
+## 4. Custom anim types DO render; the white box is the sub-object endpoint bug
 
-The launcher resolves anim-type objects against its own tables — a DLL-added
-`AnimType` (ANIM_RAILFX) renders the white placeholder regardless of tileset
-registration, and repointing a vanilla anim's tiles (TWINKLE2) at custom art
-didn't take either. How mod-shipped anims DO reach launcher art (TDIONSFX
-manages it — base-MEG-referenced frames?) is still unsolved; audit before
-relying on any custom anim's visual. Also avoid the `AnimClass` ctor's
-`timedelay` param — vanilla never uses it and delayed anims export in a
-pre-start state.
+⚠️ **Corrected 2026-08-22.** This entry used to read "new anim TYPES are
+launcher-dead — a DLL-added `AnimType` renders the white placeholder regardless
+of tileset registration". That is falsified by our own Ion Cannon:
 
-**Rule:** for guaranteed-visible effects, spawn stock anims (the railgun helix
-uses `ANIM_PIFFPIFF`). Custom-art anims need the TDIONSFX mechanism understood
-first.
+- `ANIM_TD_ION_CANNON` is a **DLL-added** anim type (`adata.cpp`).
+- Its art is **mod-shipped**, not base-MEG: `TDIONSFX.ZIP`, 5.6MB, in the mod's
+  own `RED_ALERT/VFX/` directory. The code comment claiming it resolves to the
+  base game's `ionsfx` frames is wrong.
+- It is registered exactly like any other tile, 32 shapes in `RA_VFX.XML`.
+- It renders, play-verified in the superweapon arc.
+
+So a DLL-added anim type with mod-shipped art and a tileset entry is a working
+combination. `RAILFX` failed for a different, separately-documented reason: an
+anim spawned inside the firer's or the target's own cell attaches to that object
+and exports through the launcher's **sub-object** path, which draws the white
+placeholder box (`techno.cpp`, the "endpoint-box bug"). The fix — start the
+helix a full cell clear of both endpoints — was applied to `ANIM_PIFFPIFF` and
+**RAILFX was never retried after it**. RAILFX's art is fine: 12 frames, valid
+meta, real pixels, all 12 shapes registered, correct XML scope (checked).
+
+Still true: avoid the `AnimClass` ctor's `timedelay` param — vanilla never uses
+it and delayed anims export in a pre-start state.
+
+**Rule:** custom-art anims are viable. Keep every spawn a full cell clear of any
+object's own cell, or it exports as a sub-object and draws the white box.
 
 ## 5. Hull-fixed direct-fire units need `IsLockTurret = true`
 
