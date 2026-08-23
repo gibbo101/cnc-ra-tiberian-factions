@@ -6235,9 +6235,9 @@ BulletClass* UnitClass::Fire_At(TARGET target, int which)
                 **  Diagnostic: firing-pose receipt. Confirms the shot reached
                 **  here, what the sound table was asked for, and the shape span
                 **  the firing block occupies, so a missing flash can be told
-                **  apart from a missing shot. Flip to 0 once signed off.
+                **  apart from a missing shot. Flip to 1 to re-enable.
                 */
-#if 1
+#if 0
                 {
                     static FILE* tf_fire_log = NULL;
                     if (tf_fire_log == NULL) {
