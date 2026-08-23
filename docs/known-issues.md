@@ -8,6 +8,26 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## TS building placement (ts-units branch)
+
+### TS power plant and TS radar land one tile below the placement grid — OPEN, reported 2026-08-24
+- **Severity:** major (misplaced buildings; the player cannot trust the placement preview).
+- **Symptom (Luke, in play):** while placing `TSPOWR` or `TSRADR`, the highlighted
+  placement grid sits one tile ABOVE where the building actually ends up. Both are
+  reproducible; other TS-tree buildings were not called out.
+- **Not yet investigated.** Prime suspects, in order:
+  1. A foundation/BSIZE vs art-canvas mismatch specific to these two. Note `ts_stub_dims.json`
+     gives TSPOWR 48x48 and TSRADR 48x96 — TSRADR is the only *tall* entry in that table,
+     which makes a height-derived origin error the obvious first thing to measure.
+  2. The placement cursor deriving its origin from the stub canvas while the build
+     placement uses the foundation, so any art halo above the box shifts the preview.
+     Selection-box contract #7 (`ts-gdi-tree-plan.md`) says the launcher centres on the
+     BSIZE plot and only the SIZE is ours; the same asymmetry would explain a one-tile bias.
+- **Do first:** compare the declared foundation against the packed canvas for exactly these
+  two, before changing any placement code.
+
+---
+
 ## Dropship bay (ts-units branch)
 
 ### ClientG crash at the dropship takeoff sound — ✅ FIX DEPLOYED 2026-08-13, VERIFY IN PLAY

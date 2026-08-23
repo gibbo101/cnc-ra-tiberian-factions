@@ -76,6 +76,20 @@ if __name__ == '__main__':
     remap = (16, 31)
     team = (0, 200, 0)
     pal = load_pal(palp)
+
+    # --pal-override IDX=R,G,B [...] retunes single palette entries before the
+    # decode. TS ramps were authored to be read at 1x: a ramp's darkest one or
+    # two entries often carry a strong hue shift that works as a single-pixel
+    # edge and turns into a coloured blob once we upscale it 6x. Taming those
+    # entries keeps the shading without the blob, and does it here (at the
+    # palette) rather than by painting over the sprite.
+    for arg in sys.argv[4:]:
+        if not arg.startswith('--pal-override='):
+            continue
+        for item in arg.split('=', 1)[1].split():
+            idx, rgb = item.split('=')
+            pal[int(idx)] = tuple(int(v) for v in rgb.split(','))
+            print(f'  palette override: idx {idx} -> {pal[int(idx)]}')
     size, frames = decode_shp(shp)
     os.makedirs(outdir, exist_ok=True)
     print(f'{shp}: canvas {size}, {len(frames)} frames')
