@@ -361,6 +361,10 @@ ts_stub TSSILO "$TMPDIR/tssilomk_stub.shp" 48 48 19
 PACK_ARGS+=("$TMPDIR/tssilomk_stub.shp:TSSILOMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/railfx_stub.shp" 24 24 12
 PACK_ARGS+=("$TMPDIR/railfx_stub.shp:RAILFX.SHP")
+# TS Disruptor sonic wave (ANIM_TS_SONICWAVE) -- HD-only like the other TS art;
+# frame count matches TSSONICW.ZIP, dims match the anim type's max dimension.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssonicw_stub.shp" 32 32 6
+PACK_ARGS+=("$TMPDIR/tssonicw_stub.shp:TSSONICW.SHP")
 
 # Repack into TFASSETS.MIX with TD-prefix renames.
 python3 scripts/mix_tools.py pack "$OUTMIX" "${PACK_ARGS[@]}"

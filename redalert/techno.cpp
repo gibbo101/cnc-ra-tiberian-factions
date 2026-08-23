@@ -4049,20 +4049,37 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                     COORDINATE c = XY_Coord(sx + ddx * d / dist + px * amp / dist,
                                             sy + ddy * d / dist + py * amp / dist);
                     // ANIM_PIFFPIFF: a stock anim the launcher provably renders.
-                    // Both custom-art spark attempts (new ANIM_RAILFX type, and
-                    // vanilla TWINKLE2 with repointed tiles) drew the launcher's
-                    // white placeholder — how mod anims reach launcher-side art
-                    // is still unsolved (TDIONSFX manages it; mechanism TBD, see
-                    // the pipeline-traps memory). Sparkle puffs along the helix
-                    // read fine until the blue spark art can be delivered.
                     // NO spawn delay: vanilla never delays these anims, and a
                     // delayed anim exports to the launcher in its pre-start
-                    // state (suspected source of the endpoint placeholder
-                    // boxes). The muzzle->target ripple was cosmetic only.
+                    // state. The muzzle->target ripple was cosmetic only.
                     new AnimClass(ANIM_PIFFPIFF, c);
                 }
 
-                new SmudgeClass(Random_Pick(SMUDGE_SCORCH1, SMUDGE_SCORCH6), dest);
+                /*
+                **  Sonic (Disruptor): a chain of expanding rings along the beam
+                **  line, standing in for the live screen distortion TS draws in
+                **  its own engine. Rings and not arcs because a spawned anim is
+                **  drawn UNROTATED — a crescent would only read right at one
+                **  beam angle, a ring reads the same at all eight.
+                **
+                **  Spaced wider than the railgun helix so the individual waves
+                **  stay separable, and held the same full cell clear of both
+                **  endpoints for the sub-object reason above.
+                */
+                if (weapon->IsSonic) {
+                    for (int d = 300; d < dist - 300; d += 160) {
+                        COORDINATE c = XY_Coord(sx + ddx * d / dist, sy + ddy * d / dist);
+                        new AnimClass(ANIM_TS_SONICWAVE, c);
+                    }
+                }
+
+                /*
+                **  Scorch is a railgun thing. TS's SonicWarhead sets no scorch
+                **  and a pressure wave has nothing to burn with.
+                */
+                if (weapon->IsRailgun) {
+                    new SmudgeClass(Random_Pick(SMUDGE_SCORCH1, SMUDGE_SCORCH6), dest);
+                }
             }
         } else
 

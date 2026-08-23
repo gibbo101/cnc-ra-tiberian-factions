@@ -2432,6 +2432,13 @@ static AnimTypeClass const ChemNW(ANIM_CHEM_NW, "TDCHEM-NW", 48, 9, false, false
 // RA_VFX.XML); classic = transparent stub in TFASSETS.MIX (dims only).
 static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 6, 0, VOC_NONE, ANIM_NONE, 6, 0x100);
 
+// Tiberian Factions -- TS Disruptor sonic wave (ANIM_TS_SONICWAVE). Art is ours
+// (TSSONICW.ZIP via scripts/ts_gen_sonicwave.py): TS has NO sonic-wave art to
+// port, it distorts the screen live. Translucent so the ring reads as pressure
+// over the terrain rather than as a solid hoop. No sound of its own -- SONIC4
+// already fires from the weapon's Report.
+static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 32, 5, false, false, false, false, false, false, false, true, false, 0, 1, 0, 0, 0, 6, 0, VOC_NONE, ANIM_NONE, 6, 0x100);
+
 void AnimTypeClass::Init_Heap(void)
 {
     /*
@@ -2572,9 +2579,11 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(BeaconVirtual);
 #endif
 
-    // MUST stay last: matches the ANIM_RAILFX enum slot after the virtual
-    // anims (heap ID == registration order).
+    // MUST stay last, in this order: heap ID == registration order, and these
+    // two occupy the ANIM_RAILFX / ANIM_TS_SONICWAVE enum slots that follow the
+    // virtual anims.
     new AnimTypeClass(RailFx);
+    new AnimTypeClass(TsSonicWave);
 }
 
 /***********************************************************************************************

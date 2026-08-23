@@ -18220,6 +18220,72 @@
 				</Value>
 			</Tile>
 			<!-- END generated TSDSHP drop-pod sprite -->
+	<Tile>
+		<Key>
+			<Name>TSSONICW</Name>
+			<Shape>0</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tssonicw\tssonicw-0000.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSSONICW</Name>
+			<Shape>1</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tssonicw\tssonicw-0001.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSSONICW</Name>
+			<Shape>2</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tssonicw\tssonicw-0002.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSSONICW</Name>
+			<Shape>3</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tssonicw\tssonicw-0003.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSSONICW</Name>
+			<Shape>4</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tssonicw\tssonicw-0004.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSSONICW</Name>
+			<Shape>5</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tssonicw\tssonicw-0005.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
 </Tiles>
 	</TilesetTypeClass>
 </Tilesets>
