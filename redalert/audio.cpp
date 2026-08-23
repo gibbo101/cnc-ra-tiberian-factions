@@ -295,6 +295,8 @@ struct SoundEffectNameStruct
     {"TS120MMF", 1, IN_NOVAR},    // VOC_TS_120MMF — TS Titan cannon fire (WEAPON_TS120MM Report=TS120MMF), routed via RAC/RAR_SFX_TS120MMF (bundled WAV under TDR_SFX_DINOMOUT)
     {"DROPDWN1", 1, IN_NOVAR},    // VOC_TS_DROPDWN1 — TS dropship landing, played at the pod's touchdown (bundled WAV under TDR_SFX_DINOYES)
     {"DROPUP1", 1, IN_NOVAR},     // VOC_TS_DROPUP1 — TS dropship takeoff, played at the pod's liftoff (bundled WAV under TDR_SFX_STRUGGLE)
+    {"TSGUN4", 1, IN_NOVAR},      // VOC_TS_TSGUN4 — TS Wolverine assault cannon (WEAPON_ASSAULTCANNON Report=TSGUN4), routed via RAC/RAR_SFX_TSGUN4 (bundled WAV under TDR_SFX_GUN19)
+    {"SONIC4", 1, IN_NOVAR},      // VOC_TS_SONIC4 — TS Disruptor sonic beam (WEAPON_SONICZAP Report=SONIC4), routed via RAC/RAR_SFX_SONIC4 (bundled WAV under TDR_SFX_CRUMBLE)
 };
 
 //

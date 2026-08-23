@@ -1,28 +1,77 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-22: cameos deployed UNVERIFIED, then the roster jobs
+## ⭐⭐⭐ RESUME HERE — 2026-08-24: Wolverine anim + sound DEPLOYED, UNVERIFIED
 
-**State at close:** the shadow pass is DONE and play-approved ("much better").
-All eight units' art plus the cameo XML fix are deployed to the desktop prefix;
-the DLL is UNCHANGED at `da1d78c9` and was never rebuilt this session. Four
-units are signed off (Hover MLRS, Titan, MCV, Mammoth Mk. II) and four still
-owe a shadow verdict. Everything below is UNCOMMITTED in the worktree.
+**State at close:** the four cameos are VERIFIED and closed. The Wolverine's TS
+firing animation and the TS weapon sounds for BOTH the Wolverine and the
+Disruptor are built, deployed to the **desktop** prefix and md5-verified, but
+have **not been seen in play**. DLL rebuilt (was `da1d78c9`, unchanged since
+2026-08-21). Everything is committed.
 
-### ⭐ FIRST CHECK NEXT SESSION: the four cameos in-game (Luke, 2026-08-22)
+### ⭐ FIRST CHECK NEXT SESSION: the Wolverine firing pass
 
-The `_0` badge-variant fix is **deployed and md5-verified in the desktop prefix
-but has NOT been seen in play.** It is data-only, so the game just needs a
-restart — no build, no DLL. Look at the sidebar for the Wolverine, Disruptor,
-APC and Harvester before starting anything else. If they draw, the cameo item
-is closed on all four; if they do not, the next suspect is whether the launcher
-resolves `BuildIcon_TS_*` names for units the way it does for the TS buildings
-that already work (`RA_TSTITN_0` -> `BuildIcon_TS_Titan` is the proven pattern
-to diff against).
+Load a skirmish, build a Wolverine, make it shoot something. Three things to
+watch, in order:
 
-**Then: the TS Wolverine (`UNIT_TSSMEC`)** — weapon animation + sound.
+1. **Muzzle flash** — the mech should plant and flash on sub-frames 0 and 2 of a
+   4-frame cycle, once per shot (ROF 50, so roughly one burst every 3.3s).
+2. **Sound** — the assault cannon should now be TS `TSGUN4`, not the TD heavy MG.
+3. **Disruptor sound** — its beam should now be TS `SONIC4`, not the Obelisk hum.
 
-**Shadow verdicts still owed:** TSAPC, TSHARV, TSSMEC, TSSONIC. (Hover MLRS,
-Titan, MCV and the Mk. II are all signed off.)
+**Receipt:** `tf_fireanim.log` in `Documents/CnCRemastered/` (⚠ may land at the
+prefix's `users/steamuser/` root instead — check both). One line per shot:
+`FIRE TSSMEC frame=N wfacing=W fireanim=8 shapes=96..99 report=R`. If the log is
+empty the shot never reached `UnitClass::Fire_At`; if it has lines but no flash
+shows, the art/tileset side is the suspect, not the trigger. Flip the `#if 1`
+guarding that block to `0` once signed off.
+
+**Shadow verdicts — collect these in the same load:** TSAPC, TSHARV, TSSMEC,
+TSSONIC (Luke: "I think the shadows passed last session too", definitive verdict
+owed at this test). Hover MLRS, Titan, MCV and the Mk. II are signed off already.
+
+### How the firing animation works (built 2026-08-24)
+
+TS does **not** give `[AssaultCannon]` an `Anim=` — our old `Anim=GUNFIRE` was a
+borrowed RA muzzle flash, now dropped. The real animation is in the sprite:
+`art.ini [SMECH]` declares `WalkFrames=12` **`FiringFrames=4`**, and SMECH.SHP
+carries the poses at frames 104-135 (8 facing blocks of 4, flash on sub-frames
+0 and 2). Our packer had documented that range in a comment and skipped it.
+
+- **Art** — `TSSMEC.ZIP` 96 -> 128 frames; the firing block is appended after the
+  walk cycle using the **walk union's** anchor, deliberately not recomputed, so
+  every already-approved walk frame stays put and the mech does not hop when it
+  opens fire. Verified: walk frames are pixel-equivalent to the approved ones
+  (mean RGB within 0.4 - the byte diffs are PIL/hqx resampling noise, not
+  content). `RA_UNITS.XML` -> 128 tiles, classic stub -> 128 frames.
+- **DLL** — new `FiringFrames` on `UnitTypeClass` (defaults 0, so every existing
+  walker is untouched) and a `FireAnim` countdown on `UnitClass` set in
+  `UnitClass::Fire_At`. The shape calc plays the firing block while that timer
+  runs and outranks the gait, so a shot reads as a shot even mid-rotation. The
+  turret base offset now clears walk **and** firing blocks.
+- ⚠ **`FireAnim` is initialised in the constructor init list AND body**, matching
+  `Reload` - savegame load copies the data before placement-new runs.
+
+### The TS sound channel (both units, built 2026-08-24)
+
+`TSGUN4` and `SONIC4` decoded from TS `SOUNDS.MIX` and shipped over **dormant
+host samples** (novel sample names crash ClientG, so overriding is the only
+channel):
+
+| TS sound | Host sample | Used by |
+|---|---|---|
+| `TSGUN4` (0.82s) | `GUN19` | Wolverine `[AssaultCannon]` |
+| `SONIC4` (2.76s) | `CRUMBLE` | Disruptor `[SonicZap]` |
+
+Both hosts were censused clean: referenced only by `TDC_`/`TDR_`-named events,
+which never fire in RA mode. Host ledger now reads BONUS_UNLOCK, DINOATK1,
+DINODIE1, DINOMOUT, DINOYES, STRUGGLE, **GUN19, CRUMBLE**.
+
+⭐ **The AUD decoder is now a repo script: `scripts/ts_aud_decode.py`.** It was a
+throwaway last time and was lost, which is why the TS audio wave looked like
+fresh work each time. The IMA predictor runs continuously across chunk
+boundaries; resetting per chunk gives audio that starts clean and decays into
+noise. Output is PCM, then `ffmpeg -c:a adpcm_ms` because the override WAV must
+be MS-ADPCM (fmt tag 2) or ClientG divides by zero.
 
 ### ⭐ THE ROSTER-WALK QUEUE (Luke, dictated 2026-08-21/22)
 
@@ -31,8 +80,8 @@ Harvester LAST.
 
 | Unit | Outstanding |
 |---|---|
-| **Wolverine** `TSSMEC` | ~~sidebar icon~~ ✅; TS weapon **animation + sound** (the weapon itself is already ported) |
-| **Disruptor** `TSSONIC` | ~~sidebar icon~~ ✅; its own weapon **animation + sound** |
+| **Wolverine** `TSSMEC` | ~~sidebar icon~~ ✅; ~~TS weapon animation + sound~~ BUILT 2026-08-24, awaiting play verdict |
+| **Disruptor** `TSSONIC` | ~~sidebar icon~~ ✅; ~~sound~~ BUILT 2026-08-24 (SONIC4); its own weapon **animation** still open (TS gives SonicZap no Anim= either, so this is the IsSonic beam's own presentation) |
 | **APC** `TSAPC` | ~~sidebar icon~~ ✅; its unique **on-water art**; unit **enter/exit mechanics re-checked** |
 | **Harvester** `TSHARV` — **DO LAST** | ~~sidebar icon~~ ✅; **TD + RA refinery docking** |
 | **Mammoth Mk. II** | signed off; Luke wants **RA vs TS comparison videos** at some point (not a work item) |

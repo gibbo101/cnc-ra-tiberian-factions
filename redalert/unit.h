@@ -132,6 +132,13 @@ public:
     CDTimerClass<FrameTimerClass> Reload;
 
     /*
+    **  Tiberian Factions — TS walker firing-pose countdown. Set to
+    **  FiringFrames * WalkRate on each shot; while it runs the body draws from
+    **  the firing block that follows the walk cycle instead of from the gait.
+    */
+    CDTimerClass<FrameTimerClass> FireAnim;
+
+    /*
     **	This is the facing of the turret. It can be, and usually is,
     **	rotated independently of the body it is attached to.
     */

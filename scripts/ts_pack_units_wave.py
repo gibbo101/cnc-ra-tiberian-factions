@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Package the TS units wave (TSHARV / TSSMEC / TSSONIC / TSAPC) into the mod tree:
   - TSHARV.ZIP   32 frames (voxel body facings), 384 canvas, ShapeSize 48
-  - TSSMEC.ZIP   96 frames (12-step walk x 8 facings, Titan walker layout), 384 canvas
+  - TSSMEC.ZIP  128 frames (12-step walk + 4-step firing, x 8 facings), 384 canvas
   - TSSONIC.ZIP  64 frames (body 0-31 + turret 32-63, TSHVR layout), 448 canvas, ShapeSize 56
   - TSAPC.ZIP    32 frames (voxel body facings), 384 canvas, ShapeSize 48
   - BuildIcon_TS_{Harvester,Wolverine,Disruptor,AmphAPC}.tga (TS cameos, CAMEO.PAL)
@@ -188,6 +188,8 @@ else:
 # firing 104-135, shadows 136-271 (unused). Engine frame space is CCW 0=N:
 # out facing f <- src block (8-f)%8 (the MMCH reorder).
 CANVAS_S = 384
+SMECH_FIRE_BASE = 104   # SMECH.SHP: walk 0-95, standing 96-103, firing 104-135
+SMECH_FIRE_FRAMES = 4   # art.ini [SMECH] FiringFrames=4
 if os.path.isdir(f"{ART}/shp_smech"):
     sm = lambda i: Image.open(f"{ART}/shp_smech/frame-{i:04d}.png").convert("RGBA")
     ux0, uy0, ux1, uy1 = 1e9, 1e9, -1e9, -1e9
@@ -206,6 +208,18 @@ if os.path.isdir(f"{ART}/shp_smech"):
         src_block = (8 - f) % 8
         for s in range(12):
             fr = crisp_place(sm(src_block * 12 + s), F_SHP, CANVAS_S,
+                             (47.5, feet_src), (CANVAS_S / 2, feet_dst))
+            frames.append(drop_shadow(fr, 4, 15))
+    # Firing block appended after the walk cycle: art.ini [SMECH] FiringFrames=4,
+    # SHP 104-135 laid out as 8 facing blocks of 4 (flash on sub-frames 0 and 2).
+    # The anchor pair is the WALK union's -- feet_src/feet_dst are deliberately
+    # NOT recomputed over the firing frames, so the mech holds its ground when it
+    # opens fire and every already-approved walk frame stays byte-identical.
+    for f in range(8):
+        src_block = (8 - f) % 8
+        for s in range(SMECH_FIRE_FRAMES):
+            fr = crisp_place(sm(SMECH_FIRE_BASE + src_block * SMECH_FIRE_FRAMES + s),
+                             F_SHP, CANVAS_S,
                              (47.5, feet_src), (CANVAS_S / 2, feet_dst))
             frames.append(drop_shadow(fr, 4, 15))
     write_zip(f"{UNITS_DIR}/TSSMEC.ZIP", "tssmec", frames)
@@ -247,7 +261,7 @@ def patch_tileset(xml_path, name, count):
     print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles")
 
 patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSHARV", 32)
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSSMEC", 96)
+patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSSMEC", 96 + 32)
 patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSSONIC", 64)
 patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSAPC", 32)
 

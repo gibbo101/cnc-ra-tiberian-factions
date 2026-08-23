@@ -309,10 +309,12 @@ UnitClass::UnitClass(UnitType classid, HousesType house)
     , ShroudBits(0xFFFFFFFFUL)
     , ShroudCenter(0)
     , Reload(0)
+    , FireAnim(0)
     , SecondaryFacing(PrimaryFacing)
     , TiberiumUnloadRefinery(TARGET_NONE)
 {
     Reload = 0;
+    FireAnim = 0;
 
     /*
     **	TF: attack-move (CFE port). Constructor init, not declaration init --
@@ -2666,6 +2668,20 @@ int UnitClass::Shape_Number(void) const
             // the turret draw use. The walker tilesets are packed CCW too.
             int wfacing =
                 ((TechnoClass::BodyShape[Dir_To_32(PrimaryFacing)] * Class->WalkFacings + 16) / 32) % Class->WalkFacings;
+
+            /*
+            **  The firing block sits immediately after the walk cycle, laid out
+            **  the same way (WalkFacings blocks of FiringFrames). While FireAnim
+            **  runs it outranks the gait, so a shot always reads as a shot even
+            **  if the walker is still rotating onto its target.
+            */
+            if (Class->FiringFrames > 0 && FireAnim > 0) {
+                int elapsed = (Class->FiringFrames * Class->WalkRate) - (int)FireAnim;
+                int fstage = elapsed / Class->WalkRate;
+                fstage = min(max(fstage, 0), Class->FiringFrames - 1);
+                return (Class->WalkFacings * Class->WalkFrames + wfacing * Class->FiringFrames + fstage);
+            }
+
             int stage = (IsDriving && !IsRotating) ? ((::Frame + ID) / Class->WalkRate) % Class->WalkFrames : 0;
             return (wfacing * Class->WalkFrames + stage);
         }
@@ -2874,8 +2890,11 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
             **	Determine which turret shape to use. This depends on if there
             **	is any firing animation in progress.
             */
-            // TS walkers put their turret block after the walk frames, not at 32.
-            int turret_base = (Class->WalkFrames > 1) ? (Class->WalkFacings * Class->WalkFrames) : 32;
+            // TS walkers put their turret block after the walk and firing frames, not at 32.
+            int turret_base =
+                (Class->WalkFrames > 1)
+                    ? (Class->WalkFacings * (Class->WalkFrames + Class->FiringFrames))
+                    : 32;
             shapenum = TechnoClass::BodyShape[tfacing] + turret_base;
 #ifdef FIXIT_PHASETRANSPORT //	checked - ajw 9/28/98
             if (*this == UNIT_PHASE) {
@@ -6200,6 +6219,51 @@ BulletClass* UnitClass::Fire_At(TARGET target, int which)
             */
             if ((*this == UNIT_V2_LAUNCHER) && Reload == 0) {
                 Reload = TICKS_PER_SECOND * 30;
+            }
+
+            /*
+            **  Tiberian Factions — TS walkers carry their muzzle flash in the
+            **  sprite rather than in a weapon Anim, so a shot starts the firing
+            **  block playing. One pass at the gait's own cadence, after which
+            **  Draw_Shape_Number falls back to the walk cycle on its own.
+            */
+            if (Class->FiringFrames > 0) {
+                FireAnim = Class->FiringFrames * Class->WalkRate;
+                Mark(MARK_CHANGE_REDRAW);
+
+                /*
+                **  Diagnostic: firing-pose receipt. Confirms the shot reached
+                **  here, what the sound table was asked for, and the shape span
+                **  the firing block occupies, so a missing flash can be told
+                **  apart from a missing shot. Flip to 0 once signed off.
+                */
+#if 1
+                {
+                    static FILE* tf_fire_log = NULL;
+                    if (tf_fire_log == NULL) {
+                        const char* h = getenv("USERPROFILE");
+                        if (h == NULL) h = getenv("HOME");
+                        if (h != NULL) {
+                            char pth[512];
+                            snprintf(pth, sizeof(pth), "%s/Documents/CnCRemastered/tf_fireanim.log", h);
+                            tf_fire_log = fopen(pth, "w");
+                        }
+                    }
+                    if (tf_fire_log != NULL) {
+                        int wf = ((TechnoClass::BodyShape[Dir_To_32(PrimaryFacing)] * Class->WalkFacings + 16) / 32)
+                                 % Class->WalkFacings;
+                        int base = Class->WalkFacings * Class->WalkFrames;
+                        fprintf(tf_fire_log,
+                                "FIRE %s frame=%d wfacing=%d fireanim=%d shapes=%d..%d report=%d\n",
+                                (Class->IniName != NULL) ? Class->IniName : "<null>",
+                                (int)::Frame, wf, (int)FireAnim,
+                                base + wf * Class->FiringFrames,
+                                base + wf * Class->FiringFrames + Class->FiringFrames - 1,
+                                (weap != NULL) ? (int)weap->Sound : -1);
+                        fflush(tf_fire_log);
+                    }
+                }
+#endif
             }
         }
     }

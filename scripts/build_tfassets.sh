@@ -262,7 +262,7 @@ PACK_ARGS+=("$TMPDIR/tsmdiv_stub.shp:TSMDIV.SHP")
 # body+turret) and dims match each unit's rules.ini ShapeSize.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsharv_stub.shp" 64 64 32
 PACK_ARGS+=("$TMPDIR/tsharv_stub.shp:TSHARV.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tssmec_stub.shp" 48 48 96
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssmec_stub.shp" 48 48 128
 PACK_ARGS+=("$TMPDIR/tssmec_stub.shp:TSSMEC.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tssonic_stub.shp" 56 56 64
 PACK_ARGS+=("$TMPDIR/tssonic_stub.shp:TSSONIC.SHP")

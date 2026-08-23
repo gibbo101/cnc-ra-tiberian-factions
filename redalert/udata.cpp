@@ -2527,6 +2527,7 @@ bool UnitTypeClass::Read_INI(CCINIClass& ini)
         IsNoFireWhileMoving = ini.Get_Bool(IniName, "NoMovingFire", IsNoFireWhileMoving);
         WalkFrames = ini.Get_Int(IniName, "WalkFrames", WalkFrames);
         WalkFacings = ini.Get_Int(IniName, "WalkFacings", WalkFacings);
+        FiringFrames = ini.Get_Int(IniName, "FiringFrames", FiringFrames);
         WalkRate = max(1, ini.Get_Int(IniName, "WalkRate", WalkRate));
         Speed = ini.Get_Bool(IniName, "Tracked", (Speed == SPEED_TRACK)) ? SPEED_TRACK : SPEED_WHEEL;
         // TS-spike: Hover=yes overrides the binary Tracked choice with the amphibious

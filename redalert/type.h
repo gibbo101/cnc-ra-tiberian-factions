@@ -1015,12 +1015,21 @@ public:
     **  tileset is laid out as WalkFacings blocks of WalkFrames each
     **  (shape = facing_index * WalkFrames + stage); the walk stage advances
     **  while driving and rests at 0 when stopped. The turret block (if any)
-    **  starts at WalkFacings * WalkFrames instead of 32. Parsed from
+    **  starts after the walk and firing blocks instead of at 32. Parsed from
     **  `WalkFrames=` / `WalkFacings=` in rules.ini (defaults 1/32 = the
     **  standard 32-frame vehicle layout, untouched).
     */
     int WalkFrames = 1;
     int WalkFacings = 32;
+
+    /*
+    **  Tiberian Factions — TS walker firing animation (art.ini FiringFrames).
+    **  When non-zero the tileset carries a second block of WalkFacings x
+    **  FiringFrames immediately after the walk cycle, and the body plays it
+    **  once per shot. Zero (the default) means the unit has no firing pose and
+    **  the walk cycle is the whole body tileset.
+    */
+    int FiringFrames = 0;
 
     /*
     **  Game ticks per walk-animation frame (TS WalkRate semantics; bigger =
