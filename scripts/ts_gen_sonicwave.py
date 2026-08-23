@@ -3,18 +3,34 @@
 
 There is NO sonic-wave art in Tiberian Sun to port: TS generates the effect in
 its own engine as a live screen distortion of whatever is behind the wave. We
-cannot distort, so the wave is faked with a translucent sprite.
+cannot distort, so the wave is faked with translucent sprites.
 
-WHY RINGS AND NOT ARCS
-----------------------
-A spawned AnimClass draws its sprite unrotated. An arc or crescent would only
-read correctly when the beam happened to point one way, and would look wrong at
-the other seven facings. A ring is rotationally symmetric, so one sprite serves
-every beam angle. Rings marching along the beam line read as a wave travelling
-out from the muzzle.
+WHAT THE REAL THING LOOKS LIKE (measured off TS footage, 2026-08-24)
+-------------------------------------------------------------------
+Not rings, and not a beam: a WIDE TRANSLUCENT BAND that sweeps out from the
+tank along the firing line. Measured on a 834x465 capture:
 
-Each spawned ring expands and fades across its own frames; the caller spawns
-them in sequence along the line, so several are in flight at once.
+  * band thickness ~39px against a 108px unit selection box -> the band is
+    ~0.36 of the unit's own width. For our 56px ShapeSize Disruptor that is
+    ~20 classic px, and at the 5.33 canvas-per-classic-px VFX ratio (RAILFX:
+    128px canvas, 24 classic dim) that is ~107px inside a 128px canvas.
+  * mean band colour (121,176,105) over (122,94,59) terrain. Solving the
+    alpha composite gives roughly (130,235,140) at ~60% alpha.
+  * the interior is mottled rather than flat -- it reads as rippling pressure.
+  * the band EXTENDS outward from the muzzle, it does not appear all at once.
+
+WHY DISCS AND NOT ONE BAND SPRITE
+---------------------------------
+A spawned AnimClass draws UNROTATED, so a band sprite would only line up at one
+of the eight beam angles. A soft disc is rotationally symmetric; spawning a
+dense overlapping chain of them along the line builds the band at ANY angle,
+with the band's thickness coming from the disc diameter.
+
+The outward sweep comes from each disc's stage offset, not from a spawn delay
+(the AnimClass ctor's timedelay param is off-limits -- delayed anims export to
+the launcher in a pre-start state). Each disc fades IN then OUT across its
+stages; discs near the muzzle are started LATE in that cycle and far discs
+EARLY, so as time advances the bright part of the band travels outward.
 
 Tuning lives entirely in the constants below.
 
@@ -23,34 +39,75 @@ Usage:  ts_gen_sonicwave.py [OUTDIR]
 import io, json, math, os, sys, zipfile
 from PIL import Image, ImageDraw, ImageFilter
 
-CANVAS = 128          # matches RAILFX, the other small VFX anim
-FRAMES = 6            # anim stages
-R_START, R_END = 14.0, 44.0     # ring radius, first frame -> last
-T_START, T_END = 8.0, 3.0       # ring thickness, first frame -> last
-A_START, A_END = 200, 0         # ring alpha, first frame -> last
-COLOR = (210, 240, 255)         # pale blue-white: sonic, not laser-green
-BLUR = 1.4                      # softens the ring so it reads as pressure, not a hoop
+CANVAS = 128          # 5.33 canvas px per classic px -> 24 classic dim, as RAILFX
+FRAMES = 8            # anim stages; alpha ramps up then back down across them
+DIAMETER = 107.0      # ~20 classic px: the measured 0.36 x unit width
+COLOR = (130, 235, 140)   # solved from the footage's alpha composite
+A_PEAK = 150          # ~60% alpha at the crest of the fade
+EDGE_SOFT = 5.0       # gaussian blur on the disc edge, in px
+MOTTLE = 0.30         # 0 = flat fill, 1 = heavily rippled interior
+MOTTLE_SEED = 20260824
+RISE, FALL = 0.22, 0.34   # envelope shoulders; the middle stages hold at full alpha
 
 
 def lerp(a, b, t):
     return a + (b - a) * t
 
 
-def ring(i):
-    """One stage: an expanding, thinning, fading soft ring."""
-    t = i / (FRAMES - 1) if FRAMES > 1 else 0.0
-    r = lerp(R_START, R_END, t)
-    thick = lerp(T_START, T_END, t)
-    alpha = int(round(lerp(A_START, A_END, t)))
+def _mottle():
+    """Static noise field so the band interior ripples instead of reading flat."""
+    import random
+    rnd = random.Random(MOTTLE_SEED)
+    n = Image.new('L', (CANVAS, CANVAS))
+    n.putdata([rnd.randrange(256) for _ in range(CANVAS * CANVAS)])
+    # Blur to clumps rather than per-pixel static, then normalise to 0..255.
+    n = n.filter(ImageFilter.GaussianBlur(3.0))
+    lo, hi = n.getextrema()
+    span = max(1, hi - lo)
+    return n.point(lambda v: (v - lo) * 255 // span)
 
-    # Supersample x4 so the ring edge is smooth before the blur.
+
+_NOISE = None
+
+
+def wave(i):
+    """One stage: a soft mottled disc, fading in then out across the frames."""
+    global _NOISE
+    if _NOISE is None:
+        _NOISE = _mottle()
+
+    # Trapezoid envelope: rise, HOLD, fall. A triangle spent most of its stages
+    # nearly invisible, which left the far half of the band dead once the discs
+    # were staged along it; the hold keeps the whole band lit while still giving
+    # the crest something to travel through.
+    t = i / (FRAMES - 1) if FRAMES > 1 else 0.0
+    if t < RISE:
+        env = t / RISE
+    elif t > 1.0 - FALL:
+        env = (1.0 - t) / FALL
+    else:
+        env = 1.0
+    alpha = int(round(A_PEAK * min(1.0, env)))
+    if alpha <= 0:
+        return Image.new('RGBA', (CANVAS, CANVAS), (0, 0, 0, 0))
+
     ss = 4
     big = Image.new('L', (CANVAS * ss, CANVAS * ss), 0)
     d = ImageDraw.Draw(big)
     c = CANVAS * ss / 2.0
-    d.ellipse([c - r * ss, c - r * ss, c + r * ss, c + r * ss],
-              outline=255, width=max(1, int(round(thick * ss))))
-    mask = big.resize((CANVAS, CANVAS), Image.LANCZOS).filter(ImageFilter.GaussianBlur(BLUR))
+    r = DIAMETER * ss / 2.0
+    d.ellipse([c - r, c - r, c + r, c + r], fill=255)
+    mask = big.resize((CANVAS, CANVAS), Image.LANCZOS).filter(ImageFilter.GaussianBlur(EDGE_SOFT))
+
+    # Modulate the disc by the noise field so the interior ripples.
+    if MOTTLE > 0:
+        m = mask.load()
+        nz = _NOISE.load()
+        for y in range(CANVAS):
+            for x in range(CANVAS):
+                if m[x, y]:
+                    f = 1.0 - MOTTLE + MOTTLE * (nz[x, y] / 255.0)
+                    m[x, y] = int(m[x, y] * f)
 
     out = Image.new('RGBA', (CANVAS, CANVAS), (0, 0, 0, 0))
     out.paste(Image.new('RGBA', (CANVAS, CANVAS), COLOR + (255,)), (0, 0),
@@ -85,7 +142,7 @@ def main():
                      'resources', 'remaster_mods', 'Vanilla_RA', 'Data', 'ART',
                      'TEXTURES', 'SRGB', 'RED_ALERT', 'VFX'))
     outdir = os.path.abspath(outdir)
-    frames = [ring(i) for i in range(FRAMES)]
+    frames = [wave(i) for i in range(FRAMES)]
     path = os.path.join(outdir, 'TSSONICW.ZIP')
     write_zip(path, 'tssonicw', frames)
     print(f'wrote {path} ({len(frames)} frames, {CANVAS}px canvas)')

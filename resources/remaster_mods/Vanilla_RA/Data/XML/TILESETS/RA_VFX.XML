@@ -18286,6 +18286,28 @@
 			</Frames>
 		</Value>
 	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSSONICW</Name>
+			<Shape>6</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tssonicw\tssonicw-0006.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSSONICW</Name>
+			<Shape>7</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tssonicw\tssonicw-0007.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
 </Tiles>
 	</TilesetTypeClass>
 </Tilesets>

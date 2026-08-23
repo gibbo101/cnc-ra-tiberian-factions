@@ -2437,7 +2437,7 @@ static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, fa
 // port, it distorts the screen live. Translucent so the ring reads as pressure
 // over the terrain rather than as a solid hoop. No sound of its own -- SONIC4
 // already fires from the weapon's Report.
-static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 32, 5, false, false, false, false, false, false, false, true, false, 0, 1, 0, 0, 0, 6, 0, VOC_NONE, ANIM_NONE, 6, 0x100);
+static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 24, 7, false, false, false, false, false, false, false, true, false, 0, 1, 0, 0, 0, 8, 0, VOC_NONE, ANIM_NONE, 8, 0x100);
 
 void AnimTypeClass::Init_Heap(void)
 {

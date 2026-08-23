@@ -16,26 +16,52 @@ version from `sizeof()` of every game class including `UnitClass`, and the new
 `FireAnim` timer changed it. It crashes rather than rejecting cleanly (pre-existing
 ungraceful handling). Any new per-unit state will do this again; expect it.
 
-### THE DISRUPTOR SONIC WAVE — built 2026-08-24, DEPLOYED, art is a FIRST PASS
+### THE DISRUPTOR SONIC WAVE — rebuilt 2026-08-24 against real TS footage, DEPLOYED
 
-Luke picked "marching wave arcs" from three options. Plumbing is complete and
-deployed; **the ring art is provisional pending a look at real TS footage** Luke
-is capturing. Retuning is meant to be art-only.
+Luke picked "marching wave arcs" from three options, then captured TS footage
+(`~/Videos/Screencasts/Screencast from 2026-08-24 00-38-41.webm`). **The footage
+falsified the first build**: it is not rings and not a beam.
+
+⭐ **WHAT THE REAL EFFECT IS — a WIDE TRANSLUCENT BAND that sweeps out along the
+firing line.** Measured off the capture (834x465):
+
+| Property | Measured | What we ship |
+|---|---|---|
+| band thickness | ~39px against a 108px unit selection box = **0.36 x unit width** | 107px disc in a 128px canvas = ~20 classic px |
+| colour | mean (121,176,105) over (122,94,59) terrain | solved to **(130,235,140) at ~60% alpha** |
+| interior | mottled, reads as rippling pressure | noise field, `MOTTLE = 0.30` |
+| behaviour | extends outward from the muzzle, does not appear at once | per-disc start-stage sweep |
+
+⭐ **HOW IT IS BUILT — a dense chain of soft DISCS, not one band sprite.** A
+spawned anim draws UNROTATED, so a band sprite would only line up at one of the
+eight beam angles. Overlapping rotationally-symmetric discs build the band at any
+angle; the band's thickness IS the disc diameter.
+
+⚠ **SPACING IS LOAD-BEARING at 64 leptons.** Simulated at true on-screen scale:
+at 96 and 128 leptons the band scallops into visible beads. 64 gives one
+continuous swath with soft parallel edges.
+
+⚠ **The envelope must HOLD, not peak.** The first attempt used a triangular
+fade which left most stages nearly invisible — staged along the line that killed
+the far half of the band. It is now a trapezoid (`RISE`/`FALL` shoulders, full
+alpha through the middle).
+
+The sweep comes from each disc's **start stage** (`SONIC_SWEEP_STAGES = 4`),
+never a spawn delay — the `AnimClass` ctor's `timedelay` param is off-limits
+(delayed anims export in a pre-start state). `AnimClass` derives from
+`StageClass` and the ctor ends with `Set_Stage(0)`, so a post-construction offset
+sticks.
 
 ⭐ **TS has NO sonic-wave art to port** (probed: no SONICBEAM/WAVE/SONICWAVE SHP
 in CONQUER.MIX or LOCAL.MIX). TS generates the effect in its own engine as a live
-screen distortion of the terrain behind the wave. We cannot distort, so the wave
-is faked with a translucent sprite. Don't go looking for the art again.
-
-⭐ **RINGS, NOT ARCS — a spawned `AnimClass` draws UNROTATED.** A crescent or arc
-would only read correctly at one of the eight beam angles. A ring is rotationally
-symmetric, so one sprite serves every facing. This constraint applies to ANY
-future directional effect built out of anims.
+screen distortion of the terrain behind the wave. We cannot distort. Don't go
+looking for the art again.
 
 What was built:
-- `scripts/ts_gen_sonicwave.py` — procedural ring art (expand + thin + fade over
-  6 frames, 128px canvas matching RAILFX). **All tuning is constants at the top**:
-  radius, thickness, alpha, colour, blur.
+- `scripts/ts_gen_sonicwave.py` — procedural disc art, 8 stages, 128px canvas
+  (RAILFX's 5.33 canvas-px-per-classic-px ratio -> 24 classic dim). **All tuning
+  is constants at the top**: diameter, colour, peak alpha, envelope shoulders,
+  edge softness, mottle.
 - `ANIM_TS_SONICWAVE` in `defines.h` + `adata.cpp`, registered **after** `RailFx`
   — heap ID == registration order, so both must stay last and in that order.
 - `TSSONICW.ZIP` in `RED_ALERT/VFX/`, 6 tiles in `RA_VFX.XML`, classic stub 32x32x6.
@@ -45,10 +71,9 @@ What was built:
 - Scorch smudge moved under the railgun branch — TS's `SonicWarhead` sets no
   scorch and a pressure wave has nothing to burn with.
 
-**If it reads as a static chain rather than a travelling wave**, the tuning lever
-is staggering each ring's starting stage by distance. Deliberately NOT done yet:
-simplest version first, and the `AnimClass` ctor's `timedelay` param is off-limits
-(delayed anims export in a pre-start state).
+**Not yet seen in play.** Most likely things to want: the sweep may read as too
+subtle (raise `SONIC_SWEEP_STAGES`), or the band may sit too bright or too long
+(`A_PEAK`, and the `FALL` shoulder). Both are single constants.
 
 ⭐ **Corrected a stale comment in `techno.cpp`** claiming custom-art anims cannot
 reach launcher art and the mechanism was "TBD". Falsified: `TDIONSFX.ZIP` is

@@ -4034,6 +4034,9 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 **  Spawn delay grows with distance so the helix ripples from
                 **  muzzle to target.
                 */
+                // How many stages of head start the muzzle end of the sonic band gets
+                // over its far end. Bigger = the band takes longer to reach the target.
+                enum { SONIC_SWEEP_STAGES = 4 };
                 static const signed char _helix[32] = {0,   5,   9,   13,  17,  20,  22,  24,  24, 24, 22,
                                                        20,  17,  13,  9,   5,   0,   -5,  -9,  -13, -17,
                                                        -20, -22, -24, -24, -24, -22, -20, -17, -13, -9, -5};
@@ -4056,20 +4059,36 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 }
 
                 /*
-                **  Sonic (Disruptor): a chain of expanding rings along the beam
-                **  line, standing in for the live screen distortion TS draws in
-                **  its own engine. Rings and not arcs because a spawned anim is
-                **  drawn UNROTATED — a crescent would only read right at one
-                **  beam angle, a ring reads the same at all eight.
+                **  Sonic (Disruptor): the wide translucent band TS sweeps out
+                **  from the tank, built from a dense chain of soft discs.
                 **
-                **  Spaced wider than the railgun helix so the individual waves
-                **  stay separable, and held the same full cell clear of both
-                **  endpoints for the sub-object reason above.
+                **  Discs, not one band sprite, because a spawned anim draws
+                **  UNROTATED — a band would only line up at one of the eight
+                **  beam angles. Overlapping discs build the band at any angle,
+                **  and the band's thickness is the disc's diameter (sized off
+                **  real TS footage: ~0.36 of the unit's own width).
+                **
+                **  SPACING IS LOAD-BEARING at 64 leptons: measured against the
+                **  disc diameter, wider spacing scallops the band's edges into
+                **  visible beads instead of one continuous swath.
+                **
+                **  The sweep comes from each disc's START STAGE, not a spawn
+                **  delay — the AnimClass ctor's timedelay param is off-limits
+                **  (delayed anims export in a pre-start state). Discs near the
+                **  muzzle start late in the fade cycle and far ones at zero, so
+                **  the band grows outward as the stages advance.
+                **
+                **  Held the same full cell clear of both endpoints as the helix
+                **  above, for the same sub-object reason.
                 */
                 if (weapon->IsSonic) {
-                    for (int d = 300; d < dist - 300; d += 160) {
+                    for (int d = 300; d < dist - 300; d += 64) {
                         COORDINATE c = XY_Coord(sx + ddx * d / dist, sy + ddy * d / dist);
-                        new AnimClass(ANIM_TS_SONICWAVE, c);
+                        AnimClass* wave = new AnimClass(ANIM_TS_SONICWAVE, c);
+                        if (wave != NULL) {
+                            int stage = (SONIC_SWEEP_STAGES * (dist - d)) / dist;
+                            wave->Set_Stage(min(max(stage, 0), SONIC_SWEEP_STAGES));
+                        }
                     }
                 }
 
