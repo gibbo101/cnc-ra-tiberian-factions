@@ -16,15 +16,53 @@ version from `sizeof()` of every game class including `UnitClass`, and the new
 `FireAnim` timer changed it. It crashes rather than rejecting cleanly (pre-existing
 ungraceful handling). Any new per-unit state will do this again; expect it.
 
-### NEXT: the Disruptor's weapon animation
+### THE DISRUPTOR SONIC WAVE — built 2026-08-24, DEPLOYED, art is a FIRST PASS
 
-The only roster-walk item left on it. ⚠ Unlike the Wolverine there is **no sprite
-block to recover** — TS gives `[SonicZap]` no `Anim=` either, and SONIC.VXL is a
-voxel body + turret with no firing frames. Its presentation IS the IsSonic beam, so
-this is a design call (beam shape / distortion / impact), not a port. Get Luke's
-direction before building.
+Luke picked "marching wave arcs" from three options. Plumbing is complete and
+deployed; **the ring art is provisional pending a look at real TS footage** Luke
+is capturing. Retuning is meant to be art-only.
 
-Then: **APC** (on-water art, enter/exit mechanics), **Harvester LAST** (TD + RA
+⭐ **TS has NO sonic-wave art to port** (probed: no SONICBEAM/WAVE/SONICWAVE SHP
+in CONQUER.MIX or LOCAL.MIX). TS generates the effect in its own engine as a live
+screen distortion of the terrain behind the wave. We cannot distort, so the wave
+is faked with a translucent sprite. Don't go looking for the art again.
+
+⭐ **RINGS, NOT ARCS — a spawned `AnimClass` draws UNROTATED.** A crescent or arc
+would only read correctly at one of the eight beam angles. A ring is rotationally
+symmetric, so one sprite serves every facing. This constraint applies to ANY
+future directional effect built out of anims.
+
+What was built:
+- `scripts/ts_gen_sonicwave.py` — procedural ring art (expand + thin + fade over
+  6 frames, 128px canvas matching RAILFX). **All tuning is constants at the top**:
+  radius, thickness, alpha, colour, blur.
+- `ANIM_TS_SONICWAVE` in `defines.h` + `adata.cpp`, registered **after** `RailFx`
+  — heap ID == registration order, so both must stay last and in that order.
+- `TSSONICW.ZIP` in `RED_ALERT/VFX/`, 6 tiles in `RA_VFX.XML`, classic stub 32x32x6.
+- Spawn chain in `techno.cpp`: rings every 160 leptons along the beam, held the
+  same **full cell clear of both endpoints** as the railgun helix (the sub-object
+  white-box trap).
+- Scorch smudge moved under the railgun branch — TS's `SonicWarhead` sets no
+  scorch and a pressure wave has nothing to burn with.
+
+**If it reads as a static chain rather than a travelling wave**, the tuning lever
+is staggering each ring's starting stage by distance. Deliberately NOT done yet:
+simplest version first, and the `AnimClass` ctor's `timedelay` param is off-limits
+(delayed anims export in a pre-start state).
+
+⭐ **Corrected a stale comment in `techno.cpp`** claiming custom-art anims cannot
+reach launcher art and the mechanism was "TBD". Falsified: `TDIONSFX.ZIP` is
+mod-shipped in `RED_ALERT/VFX/` and renders. Contract #4 in
+`launcher-render-contracts.md` is the current truth.
+
+### ✅ Disruptor also now stops to fire
+
+TS `[SONIC]` carries `NoMovingFire` with the comment "This MUST be set to true
+for the sonic tank" — the wave is anchored to the firing position. Our port had
+left it off; the engine already supported the flag (`IsNoFireWhileMoving`).
+Deployed, not yet seen in play.
+
+### NEXT after the Disruptor: **APC** (on-water art, enter/exit mechanics), **Harvester LAST** (TD + RA
 refinery docking).
 
 ⚠ **Also open: TS power plant and TS radar place one tile below their placement
