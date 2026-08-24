@@ -12,10 +12,23 @@ new `FireAnim` member on `UnitClass` changed it. It CRASHES rather than rejectin
 cleanly. Luke hit this once already; a fresh skirmish is fine. Any future
 per-unit state will do it again.
 
-### ⭐ FIRST THING NEXT SESSION: look at the Disruptor, it is unverified
+### ⭐ FIRST THING NEXT SESSION: the Disruptor is IMPROVED but NOT DONE
 
-The build in the desktop prefix contains an **untested experiment**. Do not
-assume it works. Fire a Disruptor and look, then read the notes below.
+**Luke's verdict on this build (quick look, 2026-08-24 close):** *"lots of work
+to do still, but better than it was."* So the three fixes moved it forward and
+nothing regressed — but it is not close to signed off.
+
+⚠ **What that verdict does NOT tell us: whether the stealth shimmer is actually
+rendering.** "Better than it was" is also what the three non-shimmer fixes alone
+would produce (no yellow beam, a fuller band, longer hold). **Establish this
+first, before tuning anything** — otherwise you will be tuning constants on an
+effect whose main mechanism may be inert.
+
+Cheapest way to settle it: set `A_PEAK` very low (say 30) and look. If the wave
+is still clearly visible, the launcher is contributing the shimmer; if it all but
+disappears, `Cloak = CLOAKING` is being ignored and the sprite is doing all the
+work — at which point try `UNCLOAKING`, then fall back to `UNCLOAKED` with a
+higher `A_PEAK`.
 
 **What Luke saw on the LAST verified build** (capture:
 `~/Videos/Screencasts/Screencast from 2026-08-24 00-51-52.webm`) — "lots of work
