@@ -28,63 +28,75 @@ with the band's thickness coming from the disc diameter.
 
 The outward sweep comes from each disc's stage offset, not from a spawn delay
 (the AnimClass ctor's timedelay param is off-limits -- delayed anims export to
-the launcher in a pre-start state). Each disc fades IN then OUT across its
-stages; discs near the muzzle are started LATE in that cycle and far discs
-EARLY, so as time advances the bright part of the band travels outward.
+the launcher in a pre-start state). The first LEAD_STAGES stages are fully
+transparent. The engine starts the muzzle disc at stage LEAD_STAGES and the far
+disc at stage 0 (SONIC_SWEEP_STAGES in techno.cpp), so the band grows out of
+the hull over the lead-in, every disc then holds for the same span, and the
+band retracts from the muzzle end -- the grow / hold / retract envelope
+measured off TS: ~0.7s out, ~2s held, ~0.7s retract, ~3.3s in all at 2 ticks
+per stage.
+
+TIMING (measured off the same TS footage, 6fps frames): the whole band lives
+~20 frames = ~3.3s. 50 ticks (25 stages x 2) ran in 1.2s on Luke's game speed,
+so the game runs ~40 ticks/s there and the stage delay is 5.
 
 Tuning lives entirely in the constants below.
 
 Usage:  ts_gen_sonicwave.py [OUTDIR]
 """
-import io, json, math, os, sys, zipfile
+import io, json, math, os, re, sys, zipfile
 from PIL import Image, ImageDraw, ImageFilter
 
 CANVAS = 128          # 5.33 canvas px per classic px -> 24 classic dim, as RAILFX
-FRAMES = 8            # anim stages; alpha ramps up then back down across them
+FRAMES = 25           # anim stages at 5 ticks each (adata.cpp): ~3.2s at Luke's ~40 tick/s game speed, the TS band's life
+LEAD_STAGES = 5       # fully transparent lead-in = the outward sweep (SONIC_SWEEP_STAGES)
 DIAMETER = 107.0      # ~20 classic px: the measured 0.36 x unit width
-COLOR = (120, 200, 245)   # blue: the shimmer supplies the distortion, this supplies the tint
-A_PEAK = 120          # lower now the launcher's shimmer carries most of the read
+COLOR = (120, 232, 180)   # mint-teal: the solved green pulled toward the cyan highlights TS shows (Luke: 'definitely more blue')
+A_PEAK = 30           # per DISC. Discs overlap ~6-7 deep at 32-lepton spacing, and the
+                      # band's ~60% measured alpha is the STACK: 1-(1-30/255)^6.7 = 0.57.
+                      # 153 here (60% per disc) compounds to an opaque mud.
 EDGE_SOFT = 5.0       # gaussian blur on the disc edge, in px
-MOTTLE = 0.30         # 0 = flat fill, 1 = heavily rippled interior
+MOTTLE = 1.0          # 0 = flat fill, 1 = heavily rippled interior. Full strength: the
+                      # 6-7 deep disc stack averages any texture down by ~sqrt(7).
+MOTTLE_SCALE = 2.0    # blur radius of the noise clumps, px on the 128 canvas
 MOTTLE_SEED = 20260824
-RISE, FALL = 0.22, 0.34   # envelope shoulders; the middle stages hold at full alpha
+RISE_STAGES = 1       # stages from dark to full once the lead-in ends
+FALL_STAGES = 2       # stages from full to dark at the end
 
 
 def lerp(a, b, t):
     return a + (b - a) * t
 
 
-def _mottle():
-    """Static noise field so the band interior ripples instead of reading flat."""
+def _mottle(stage):
+    """Noise field for one stage. A different field per stage makes the band's
+    interior shimmer over time -- the nearest a sprite gets to TS's live
+    distortion of the ground under the wave."""
     import random
-    rnd = random.Random(MOTTLE_SEED)
+    rnd = random.Random(MOTTLE_SEED + stage)
     n = Image.new('L', (CANVAS, CANVAS))
     n.putdata([rnd.randrange(256) for _ in range(CANVAS * CANVAS)])
     # Blur to clumps rather than per-pixel static, then normalise to 0..255.
-    n = n.filter(ImageFilter.GaussianBlur(3.0))
+    n = n.filter(ImageFilter.GaussianBlur(MOTTLE_SCALE))
     lo, hi = n.getextrema()
     span = max(1, hi - lo)
     return n.point(lambda v: (v - lo) * 255 // span)
 
 
-_NOISE = None
-
-
 def wave(i):
     """One stage: a soft mottled disc, fading in then out across the frames."""
-    global _NOISE
-    if _NOISE is None:
-        _NOISE = _mottle()
 
-    # Trapezoid envelope: rise, HOLD, fall. A triangle spent most of its stages
-    # nearly invisible, which left the far half of the band dead once the discs
-    # were staged along it; the hold keeps the whole band lit while still giving
-    # the crest something to travel through.
-    t = i / (FRAMES - 1) if FRAMES > 1 else 0.0
-    if t < RISE:
-        env = t / RISE
-    elif t > 1.0 - FALL:
-        env = (1.0 - t) / FALL
+    # Envelope: transparent lead-in, short rise, HOLD, short fall. The hold is
+    # most of the life: a triangle spent most of its stages nearly invisible
+    # and killed the far half of the band once the discs were staged along it.
+    lit = i - LEAD_STAGES + 1          # 1 on the first lit stage
+    lit_span = FRAMES - LEAD_STAGES
+    if lit <= 0:
+        env = 0.0
+    elif lit <= RISE_STAGES:
+        env = lit / (RISE_STAGES + 1)
+    elif lit > lit_span - FALL_STAGES:
+        env = (lit_span - lit + 1) / (FALL_STAGES + 1)
     else:
         env = 1.0
     alpha = int(round(A_PEAK * min(1.0, env)))
@@ -102,16 +114,19 @@ def wave(i):
     # Modulate the disc by the noise field so the interior ripples.
     if MOTTLE > 0:
         m = mask.load()
-        nz = _NOISE.load()
+        nz = _mottle(i).load()
         for y in range(CANVAS):
             for x in range(CANVAS):
                 if m[x, y]:
                     f = 1.0 - MOTTLE + MOTTLE * (nz[x, y] / 255.0)
                     m[x, y] = int(m[x, y] * f)
 
-    out = Image.new('RGBA', (CANVAS, CANVAS), (0, 0, 0, 0))
-    out.paste(Image.new('RGBA', (CANVAS, CANVAS), COLOR + (255,)), (0, 0),
-              mask.point(lambda v: v * alpha // 255))
+    # Straight alpha: full-strength COLOR in RGB, the disc in the alpha channel
+    # only. Pasting through the mask onto a transparent canvas instead blends
+    # the RGB toward black by the mask, which ships a near-black sprite that
+    # renders as a grey ghost whatever the alpha.
+    out = Image.new('RGBA', (CANVAS, CANVAS), COLOR + (0,))
+    out.putalpha(mask.point(lambda v: v * alpha // 255))
     return out
 
 
@@ -136,16 +151,34 @@ def write_zip(path, name, frames):
                 {'size': [W, H], 'crop': [b[0], b[1], b[2], b[3]]}))
 
 
+def patch_tileset(xml_path, name, count):
+    """Declare exactly `count` shapes for `name`: a stage with no tile draws as
+    the launcher's white placeholder box, so the tileset must always match the
+    frame count packed here."""
+    sub = name.lower()
+    xml = open(xml_path, encoding='utf-8').read()
+    xml = re.sub(r"\t*<Tile>\s*<Key>\s*<Name>" + re.escape(name) + r"</Name>.*?</Tile>\n?",
+                 '', xml, flags=re.S)
+    block = ('\t<Tile>\n\t\t<Key>\n\t\t\t<Name>%s</Name>\n\t\t\t<Shape>%d</Shape>\n\t\t</Key>\n'
+             '\t\t<Value>\n\t\t\t<Frames>\n\t\t\t\t<Frame>%s</Frame>\n\t\t\t</Frames>\n\t\t</Value>\n\t</Tile>\n')
+    blocks = ''.join(block % (name, i, f'{sub}\\{sub}-{i:04d}.tga') for i in range(count))
+    idx = xml.rindex('</Tiles>')
+    open(xml_path, 'w', encoding='utf-8').write(xml[:idx] + blocks + xml[idx:])
+    print(f'patched {os.path.basename(xml_path)}: {name} -> {count} tiles')
+
+
 def main():
+    mod = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..',
+                       'resources', 'remaster_mods', 'Vanilla_RA', 'Data')
     outdir = sys.argv[1] if len(sys.argv) > 1 else (
-        os.path.join(os.path.dirname(os.path.abspath(__file__)), '..',
-                     'resources', 'remaster_mods', 'Vanilla_RA', 'Data', 'ART',
-                     'TEXTURES', 'SRGB', 'RED_ALERT', 'VFX'))
+        os.path.join(mod, 'ART', 'TEXTURES', 'SRGB', 'RED_ALERT', 'VFX'))
     outdir = os.path.abspath(outdir)
     frames = [wave(i) for i in range(FRAMES)]
     path = os.path.join(outdir, 'TSSONICW.ZIP')
     write_zip(path, 'tssonicw', frames)
     print(f'wrote {path} ({len(frames)} frames, {CANVAS}px canvas)')
+    if len(sys.argv) <= 1:
+        patch_tileset(os.path.join(mod, 'XML', 'TILESETS', 'RA_VFX.XML'), 'TSSONICW', FRAMES)
 
 
 if __name__ == '__main__':

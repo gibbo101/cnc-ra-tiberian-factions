@@ -5437,25 +5437,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.FlashingFlags = 0;
         new_object.Cloak = (CurrentDrawCount > 0) ? root_object.Cloak : UNCLOAKED;
 
-        /*
-        **  Tiberian Factions — the Disruptor's sonic band is exported CLOAKING
-        **  so the launcher runs its own stealth shimmer over it. TS draws the
-        **  wave as a live distortion of the terrain behind it, which we cannot
-        **  reproduce from a sprite; the launcher already owns exactly that
-        **  effect and applies it per object through this field.
-        **
-        **  CLOAKING, not CLOAKED: CLOAKED is the settled invisible state, the
-        **  transition states are the ones that shimmer. The sprite underneath
-        **  supplies the colour, the launcher supplies the distortion.
-        **
-        **  Scoped to this one anim type on purpose — it sets an export flag on
-        **  our own effect object and never touches any unit's real Cloak state,
-        **  so genuine stealth units are unaffected.
-        */
-        if (object != NULL && object->What_Am_I() == RTTI_ANIM
-            && ((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICWAVE) {
-            new_object.Cloak = CLOAKING;
-        }
         new_object.VisibleFlags = CNCObjectStruct::VISIBLE_FLAGS_ALL;
         new_object.SpiedByFlags = 0U;
 

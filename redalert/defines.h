@@ -2968,7 +2968,7 @@ typedef enum AnimType : char
 #endif
 
     ANIM_RAILFX, // TS railgun particle: small blue spark, spawned in a helix along the MechRailgun beam line (TS draws the railgun as laser line + spiraling particles; the launcher's 3-line cap forces the particles to be anims).
-    ANIM_TS_SONICWAVE, // TS Disruptor sonic wave: expanding translucent ring, spawned in a chain along the SonicZap beam line. TS draws the wave as a live screen distortion its engine generates; there is no TS art to port, so the ring sprite (TSSONICW.ZIP, scripts/ts_gen_sonicwave.py) stands in. A ring and not an arc because spawned anims draw unrotated.
+    ANIM_TS_SONICWAVE, // TS Disruptor sonic wave: one soft translucent disc, spawned in a dense chain along the SonicZap line to build the band. TS draws the wave as a live screen distortion its engine generates; there is no TS art to port, so the disc sprite (TSSONICW.ZIP, scripts/ts_gen_sonicwave.py) stands in. A disc and not a band because spawned anims draw unrotated.
 
     ANIM_COUNT,
     ANIM_FIRST = 0

@@ -3940,7 +3940,11 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 **  collect every techno occupying a crossed cell (deduped —
                 **  buildings occupy many cells), then apply AmbientDamage to
                 **  each through the RailShot warhead.
+                **
+                **  Railgun only. The sonic band deals its damage from the
+                **  wave itself, over the band's life (see SonicDamage below).
                 */
+                if (!weapon->IsSonic) {
                 ObjectClass* victims[48];
                 int vcount = 0;
                 CELL lastcell = (CELL)-1;
@@ -3993,6 +3997,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                         victims[v]->Take_Damage(dmg, 0, wh, this);
                     }
                 }
+                }
 
                 /*
                 **  The beam: near-white core between two blue outers (TS
@@ -4040,8 +4045,13 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 **  muzzle to target.
                 */
                 // How many stages of head start the muzzle end of the sonic band gets
-                // over its far end. Bigger = the band takes longer to reach the target.
-                enum { SONIC_SWEEP_STAGES = 4 };
+                // over its far end. The art's first SONIC_SWEEP_STAGES stages are fully
+                // transparent, so a far disc started at stage 0 stays dark until the
+                // crest reaches it; the muzzle disc skips that lead-in and lights at
+                // once. Every disc lives the same number of lit stages, so the band
+                // also retracts from the muzzle end last-lit-dies-last, as TS's does.
+                // Must match LEAD_STAGES in scripts/ts_gen_sonicwave.py.
+                enum { SONIC_SWEEP_STAGES = AnimClass::SONIC_LEAD_STAGES };
                 static const signed char _helix[32] = {0,   5,   9,   13,  17,  20,  22,  24,  24, 24, 22,
                                                        20,  17,  13,  9,   5,   0,   -5,  -9,  -13, -17,
                                                        -20, -22, -24, -24, -24, -22, -20, -17, -13, -9, -5};
@@ -4073,9 +4083,11 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 **  and the band's thickness is the disc's diameter (sized off
                 **  real TS footage: ~0.36 of the unit's own width).
                 **
-                **  SPACING IS LOAD-BEARING at 64 leptons: measured against the
-                **  disc diameter, wider spacing scallops the band's edges into
-                **  visible beads instead of one continuous swath.
+                **  SPACING IS LOAD-BEARING at 32 leptons: the overlap count
+                **  along the line alternates between two values, and the
+                **  density ripple that makes is 3-vs-4 at 64 (visible beads,
+                **  seen in play) but 6-vs-7 at 32 (smooth). Per-disc alpha in
+                **  the art is set for that stack depth.
                 **
                 **  The sweep comes from each disc's START STAGE, not a spawn
                 **  delay — the AnimClass ctor's timedelay param is off-limits
@@ -4083,24 +4095,48 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 **  muzzle start late in the fade cycle and far ones at zero, so
                 **  the band grows outward as the stages advance.
                 **
-                **  Held the same full cell clear of both endpoints as the helix
-                **  above, for the same sub-object reason.
+                **  Starts AT the muzzle: Fire_Coord is the barrel tip (the
+                **  type's PrimaryOffset), and TS's wave visibly leaves the
+                **  cannon. The old "keep a cell clear of both endpoints" rule
+                **  (the helix above) was traced to stages with no tileset
+                **  entry drawing the white box, not to the spawn cell; the
+                **  export loop draws every anim as its own root object.
+                **
+                **  The band IS the weapon: the first disc spawned in each cell
+                **  past the firer's own is that cell's damage anchor, dealing
+                **  AmbientDamage in SONIC_DAMAGE_TICKS instalments across the
+                **  hold. The aimed-at object rides on the last disc.
                 */
                 if (weapon->IsSonic) {
-                    /*
-                    **  Clearance is ONE CELL (256 leptons) at each end, not the
-                    **  railgun's 300: at close range the wider margin ate the
-                    **  whole shot and left a single blob floating in the middle
-                    **  instead of a band. 256 is the actual width of the cell
-                    **  the sub-object rule is protecting against.
-                    */
-                    for (int d = 256; d < dist - 256; d += 64) {
+                    CELL anchored = Coord_Cell(Center_Coord());
+                    AnimClass* last = NULL;
+                    for (int d = 0; d <= dist; d += 32) {
                         COORDINATE c = XY_Coord(sx + ddx * d / dist, sy + ddy * d / dist);
+                        CELL cc = Coord_Cell(c);
                         AnimClass* wave = new AnimClass(ANIM_TS_SONICWAVE, c);
                         if (wave != NULL) {
                             int stage = (SONIC_SWEEP_STAGES * (dist - d)) / dist;
                             wave->Set_Stage(min(max(stage, 0), SONIC_SWEEP_STAGES));
+                            // No owner: the launcher tints an owned anim in the
+                            // house colour, which turned the green band GDI gold.
+                            if (cc != anchored) {
+                                anchored = cc;
+                                wave->SonicDamage = weapon->AmbientDamage / AnimClass::SONIC_DAMAGE_TICKS;
+                            }
+                            last = wave;
                         }
+                    }
+                    /*
+                    **  The aimed-at object rides on the last disc whatever
+                    **  cell it stands in: a building's aim cell can be an
+                    **  occupancy hole (TSPROC dock lane) that no anchor
+                    **  disc would ever find an occupier in.
+                    */
+                    if (object != NULL && object != this && object->Is_Techno() && last != NULL) {
+                        if (last->SonicDamage == 0) {
+                            last->SonicDamage = weapon->AmbientDamage / AnimClass::SONIC_DAMAGE_TICKS;
+                        }
+                        last->SonicVictim = object->As_Target();
                     }
                 }
 

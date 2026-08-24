@@ -1,6 +1,92 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-25: Disruptor wave is MID-EXPERIMENT, UNVERIFIED
+## ⭐⭐⭐ RESUME HERE — 2026-08-24 evening: Disruptor band = real weapon, "cracking job", NEXT = Aseprite pass
+
+**State at close (Luke: "cracking job" on the band; "not coming from muzzle";
+"next session we aseprite it").** Everything below is COMMITTED on `ts-units`
+and DEPLOYED to the desktop prefix (DLL `c8859224`, art `9e64ac1f`).
+
+### What shipped this session (all verified by clip, six rounds)
+
+- **Damage over time — WORKS, Luke-approved ("damage works well").** The band
+  is the weapon: `Fire_At` no longer applies AmbientDamage for `IsSonic`; the
+  first disc spawned in each cell past the firer's own is that cell's anchor
+  (`AnimClass::SonicDamage = AmbientDamage/5 = 28`) and hits every techno in
+  its cell on stages 6/10/14/18/22 (`AnimClass::AI`). The aimed-at object rides
+  on the LAST disc as `SonicVictim` (TARGET; cleared in `Detach`). Kill credit
+  is NULL-source, as the Ion Cannon. Railgun sweep untouched (`!IsSonic`).
+  ⚠ Two new `AnimClass` members = save version moved again.
+- **Envelope matches TS**: 25 stages × 5 ticks (~3.2 s at Luke's ~40 tick/s
+  game speed — measured: 50 ticks ran in 1.2 s). Art stages 0-4 are fully
+  transparent; muzzle discs start at stage 5, far ones at 0
+  (`AnimClass::SONIC_LEAD_STAGES`), giving grow ~0.6 s / hold / retract-from-
+  tank-end. Spacing 32 leptons (64 beaded visibly: 3-vs-4 overlap ripple).
+- **Not IsTranslucent, no owner** on the discs. Both were changed while
+  chasing the colour; both turned out irrelevant (see the trap) but neither
+  is wanted, leave them off.
+- **Generator patches the tileset** (`scripts/ts_gen_sonicwave.py` writes
+  `RA_VFX.XML` to its own frame count).
+
+### ⚠ TRAPS FOUND THIS SESSION (each cost a build round)
+
+1. **A stage with no tileset entry draws the WHITE BOX.** Bumping the anim to
+   25 stages with 8 tiles declared = boxes from stage 8 on. This is also, in
+   hindsight, what the 2026-08 "endpoint-box / sub-object cell rule" was:
+   **starting discs inside the firer's cell drew NO boxes tonight** (clip
+   18-29-22). Rule falsified; `launcher-render-contracts.md` §4 needs the
+   correction. The export loop draws every anim as its own root
+   (`dllinterface.cpp:5905`).
+2. **PIL `paste(colour, mask)` onto a transparent canvas darkens the RGB toward
+   black** — the shipped TGA was (14,26,15) not (130,235,140), and rendered as
+   grey (no owner) / gold (owner tint on a near-black sprite). Write
+   `Image.new(COLOR+(0,))` + `putalpha(mask)` — straight alpha. **Check pixel
+   RGB inside the ZIP after every regen** (the check is in this session's
+   log: `Image.open(...).getdata()`).
+3. **Per-disc alpha must be set for the STACK**: 6-7 discs overlap at 32
+   spacing; 60 % per disc compounds to opaque mud. A_PEAK 30 ≈ 57 % total.
+4. `Set_Stage(n)` then the first `Graphic_Logic` advances to n+1 before it is
+   ever fetched: a hit keyed to stage n never fires for a disc started at n.
+5. Data-only edits don't restage: `cmake -E copy_directory resources/... build/...`
+   after every regen (memory already says so; hit it again).
+
+### What TS does (answers given to Luke, from TS rules/engine)
+
+- Wave = launched projectile. Tank moving or retargeting mid-wave neither
+  cancels nor redirects it; next shot goes to the new target. Ours matches.
+  Luke asked twice whether it *should* terminate — **open design question**,
+  not TS behaviour. Cheap if wanted: firer keeps disc IDs, deletes on new order.
+- Distortion = engine pixel displacement. Launcher has none (cloak export =
+  darkening ghost, tested). Substitute shipped: per-stage noise field so the
+  interior shimmers.
+
+### NEXT SESSION — the Aseprite pass (Luke's call)
+
+Open on the last clip (`Screencast from 2026-08-24 18-29-22.webm`):
+1. **"Not coming from the muzzle."** Two parts: (a) discs start at
+   `Fire_Coord` (PrimaryOffset 0xC0 forward of the turret) and the band's
+   first visible edge lands at the hull front, not the barrel tip; (b) **in the
+   fire frame the turret barrel points NORTH while the band goes EAST** — the
+   turret is not drawn facing the target when the shot lands. Check (b) first:
+   turret facing index / `IsLockTurret` / the per-model facing sheet loop
+   ([[feedback-voxel-facing-sheet-loop]]) before touching (a).
+2. **Colour went too pale** with MOTTLE=1.0: band (209,228,219) over snow vs
+   TS core (129,185,118) over dirt. Full-strength mottle halves the average
+   alpha; raise A_PEAK (≈45) or MOTTLE 0.6. Luke wants it BLUER than pure
+   green; current COLOR (120,232,180).
+3. Aseprite: Luke will hand-paint the disc/band frames; keep
+   `scripts/ts_gen_sonicwave.py`'s ZIP/meta/tileset contract and feed the
+   painted frames through `write_zip` + `patch_tileset`.
+4. Queued: WF exit clipping report (Luke, 2026-08-24: "clipping on exit and
+   pixels on the floor over the units again"). Verified NOT a code regression
+   (clamp, floor band, lamp layer all intact; prefix == build). The 08-18
+   record left two things open (pad stripes polish; column-over-hull on wide
+   hulls near rail end). Needs a clip + unit name.
+5. Queued: "is the RA Disruptor bigger than TS's?" — clips were at different
+   zoom (285 px vs 57 px selection boxes), needs an in-game cell measure.
+
+---
+
+## (superseded 2026-08-24 evening) RESUME — 2026-08-25: Disruptor wave is MID-EXPERIMENT, UNVERIFIED
 
 **Signed off this session:** Wolverine COMPLETE (firing animation, TSGUN4, canopy
 dot) and in the ledger. Disruptor SONIC4 sound approved. **All shadows signed

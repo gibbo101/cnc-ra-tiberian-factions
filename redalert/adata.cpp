@@ -2434,10 +2434,16 @@ static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, fa
 
 // Tiberian Factions -- TS Disruptor sonic wave (ANIM_TS_SONICWAVE). Art is ours
 // (TSSONICW.ZIP via scripts/ts_gen_sonicwave.py): TS has NO sonic-wave art to
-// port, it distorts the screen live. Translucent so the ring reads as pressure
-// over the terrain rather than as a solid hoop. No sound of its own -- SONIC4
-// already fires from the weapon's Report.
-static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 24, 7, false, false, false, false, false, false, false, true, false, 0, 2, 0, 0, 0, 8, 0, VOC_NONE, ANIM_NONE, 8, 0x100);
+// port, it distorts the screen live. One soft translucent disc; a chain of them
+// along the shot builds the band. 25 stages at 5 ticks: 5 transparent lead-in
+// stages (the outward sweep, see SONIC_SWEEP_STAGES), then ~2.5s lit, matching
+// the ~3.3s TS band at the ~40 tick/s the game runs on Luke's speed setting.
+// Not IsNormalized: the damage ticks ride the stages and must stay in step with
+// game logic. NOT IsTranslucent: that flag draws with SHAPE_GHOST, which the
+// launcher renders as a colourless darkening of the ground (the art's own
+// alpha channel does the blending, as RAILFX proves). No sound of its own --
+// SONIC4 already fires from the weapon's Report.
+static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 25, 0, VOC_NONE, ANIM_NONE, 25, 0x100);
 
 void AnimTypeClass::Init_Heap(void)
 {

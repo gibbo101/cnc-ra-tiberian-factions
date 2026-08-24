@@ -153,6 +153,26 @@ public:
     HousesType OwnerHouse;
 
     /*
+    **	Tiberian Factions: the Disruptor's sonic band is the weapon, not a
+    **	decoration. One disc per cell along the shot (the "anchor") carries
+    **	SonicDamage, and deals it to whatever techno occupies its cell on every
+    **	SONIC_DAMAGE_PERIOD-th lit stage, SONIC_DAMAGE_TICKS times over the
+    **	band's hold -- so damage arrives as the crest reaches a cell and keeps
+    **	coming while the band sits there, and anything that leaves the band
+    **	early takes less. SonicVictim is the aimed-at object, hit by the disc
+    **	nearest it: that disc cannot stand in the target's own cell.
+    **	Zero SonicDamage = a purely cosmetic disc.
+    */
+    enum
+    {
+        SONIC_LEAD_STAGES = 5,   // fully transparent lead-in (the outward sweep)
+        SONIC_DAMAGE_TICKS = 5,  // hits per anchor disc over the band's life
+        SONIC_DAMAGE_PERIOD = 4, // stages between hits
+    };
+    int SonicDamage;
+    TARGET SonicVictim;
+
+    /*
     **	This counter tells how many more times the animation should loop before it
     **	terminates.
     */

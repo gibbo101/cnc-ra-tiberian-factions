@@ -600,6 +600,8 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
     , xObject(TARGET_NONE)
     , SortTarget(TARGET_NONE)
     , OwnerHouse(HOUSE_NONE)
+    , SonicDamage(0)
+    , SonicVictim(TARGET_NONE)
     , Loops(1)
     , IsToDelete(false)
     , IsBrandNew(true)
@@ -916,6 +918,48 @@ void AnimClass::AI(void)
                         }
                         delete this;
                         return;
+                    }
+                }
+            }
+
+            /*
+            **	Tiberian Factions: sonic-band damage tick (see SonicDamage in
+            **	anim.h). The first hit lands on the stage after the lead-in
+            **	ends, so a muzzle disc started AT the lead-in boundary still
+            **	takes every tick. Victims are collected before any damage is
+            **	dealt: Take_Damage can destroy an occupier and unlink the
+            **	chain being walked.
+            */
+            if (SonicDamage > 0 && Class->Type == ANIM_TS_SONICWAVE) {
+                int lit = stage - (SONIC_LEAD_STAGES + 1);
+                if (lit >= 0 && (lit % SONIC_DAMAGE_PERIOD) == 0
+                    && lit < SONIC_DAMAGE_TICKS * SONIC_DAMAGE_PERIOD) {
+                    ObjectClass* victims[8];
+                    int vcount = 0;
+                    ObjectClass* occ = Map[Coord_Cell(Center_Coord())].Cell_Occupier();
+                    while (occ != NULL && vcount < (int)(sizeof(victims) / sizeof(victims[0]))) {
+                        if (occ->Is_Techno()) {
+                            victims[vcount++] = occ;
+                        }
+                        occ = occ->Next;
+                    }
+                    if (Target_Legal(SonicVictim) && vcount < (int)(sizeof(victims) / sizeof(victims[0]))) {
+                        ObjectClass* aimed = As_Object(SonicVictim);
+                        bool seen = false;
+                        for (int v = 0; v < vcount; v++) {
+                            if (victims[v] == aimed) {
+                                seen = true;
+                            }
+                        }
+                        if (aimed != NULL && !seen && aimed->Is_Techno()) {
+                            victims[vcount++] = aimed;
+                        }
+                    }
+                    for (int v = 0; v < vcount; v++) {
+                        if (victims[v]->IsActive) {
+                            int dmg = SonicDamage;
+                            victims[v]->Take_Damage(dmg, 0, WARHEAD_SONIC, NULL);
+                        }
                     }
                 }
             }
@@ -1313,6 +1357,9 @@ void AnimClass::Detach(TARGET target, bool all)
             AttachLayer = LAYER_NONE;
             IsToDelete = true;
             Mark(MARK_UP);
+        }
+        if (SonicVictim == target) {
+            SonicVictim = TARGET_NONE;
         }
     }
 #endif
