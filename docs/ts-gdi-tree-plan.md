@@ -105,6 +105,7 @@ validated against the 17-37 clip to within ~20 levels).
   myself."* → damage ticks compressed to stages 6/8/10/12/14 (all five within
   ~1 s of the crest; the rest of the hold is visual only), and the firer is
   exempt from its own band (`AnimClass::SonicFirer`).
+- ✅ VERIFIED IN PLAY 2026-08-25 (Luke: "not hurting each other, good").
 - *"Could Disruptors hurt other Disruptors? I built armies of them because
   they wouldn't hurt each other."* → correct for TS; **Disruptors are now
   immune to sonic damage** (any `UNIT_TSSONIC` skipped by the band, including
