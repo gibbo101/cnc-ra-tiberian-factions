@@ -2,6 +2,12 @@
 
 ## ⭐⭐⭐ RESUME HERE — 2026-08-24 evening: Disruptor band = real weapon, "cracking job", NEXT = Aseprite pass
 
+**CHECKPOINT at session end (Luke: "doc everything, commit as a checkpoint, end here").**
+Prefix DLL `9e42d34f` = HEAD of `ts-units`; art ZIPs `4e187d5a` (TSSONIC) / `853725fd`
+(TSSONICW). **First clip next session verifies, in one go:** turret horn faces the
+target N/S/E/W, band leaves the horn, teal tint, ticks land fast, a Disruptor pair +
+one mixed unit (pair unhurt, mixed unit hurt). Then Luke's Aseprite pass on the band.
+
 **State at close (Luke: "cracking job" on the band; "not coming from muzzle";
 "next session we aseprite it").** Everything below is COMMITTED on `ts-units`
 and DEPLOYED to the desktop prefix (DLL `c8859224`, art `9e64ac1f`).
