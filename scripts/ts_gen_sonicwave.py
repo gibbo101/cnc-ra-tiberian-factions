@@ -42,8 +42,8 @@ from PIL import Image, ImageDraw, ImageFilter
 CANVAS = 128          # 5.33 canvas px per classic px -> 24 classic dim, as RAILFX
 FRAMES = 8            # anim stages; alpha ramps up then back down across them
 DIAMETER = 107.0      # ~20 classic px: the measured 0.36 x unit width
-COLOR = (130, 235, 140)   # solved from the footage's alpha composite
-A_PEAK = 150          # ~60% alpha at the crest of the fade
+COLOR = (120, 200, 245)   # blue: the shimmer supplies the distortion, this supplies the tint
+A_PEAK = 120          # lower now the launcher's shimmer carries most of the read
 EDGE_SOFT = 5.0       # gaussian blur on the disc edge, in px
 MOTTLE = 0.30         # 0 = flat fill, 1 = heavily rippled interior
 MOTTLE_SEED = 20260824

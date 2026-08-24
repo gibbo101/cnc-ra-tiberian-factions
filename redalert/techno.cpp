@@ -4009,14 +4009,18 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 // (0x0B = 0,0,168) under a bright pure-blue core (0x0A =
                 // 80,80,252). The launcher renders only the core line in the
                 // virtual window, so the core carries the look.
-                // Sonic (Disruptor) draws the same 3-line beam in green:
-                // dark-green outers (0x7E = 0,141,0) under a pure-green
-                // core (0x7C = 0,255,0).
-                int outer_c = weapon->IsSonic ? 0x7E : 0x0B;
-                int core_c = weapon->IsSonic ? 0x7C : 0x0A;
-                Lines[0][0] = x + 1; Lines[0][1] = y; Lines[0][2] = x1; Lines[0][3] = y1; Lines[0][4] = outer_c;
-                Lines[1][0] = x - 1; Lines[1][1] = y; Lines[1][2] = x1; Lines[1][3] = y1; Lines[1][4] = outer_c;
-                Lines[2][0] = x;     Lines[2][1] = y; Lines[2][2] = x1; Lines[2][3] = y1; Lines[2][4] = core_c;
+                /*
+                **  Railgun only. The Disruptor draws NO beam line: TS's sonic
+                **  weapon is a band of distorted air, and there is no bolt or
+                **  bolt-coloured core anywhere in the reference footage. The
+                **  3-line beam it used to borrow from the railgun was also
+                **  painting the launcher's endpoint bursts at both ends of the
+                **  shot, which is what read as "a laser with stars on it".
+                */
+                if (!weapon->IsSonic) {
+                Lines[0][0] = x + 1; Lines[0][1] = y; Lines[0][2] = x1; Lines[0][3] = y1; Lines[0][4] = 0x0B;
+                Lines[1][0] = x - 1; Lines[1][1] = y; Lines[1][2] = x1; Lines[1][3] = y1; Lines[1][4] = 0x0B;
+                Lines[2][0] = x;     Lines[2][1] = y; Lines[2][2] = x1; Lines[2][3] = y1; Lines[2][4] = 0x0A;
                 LineCount = 3;
                 LineFrame = 0;
                 // 5, NOT more: the launcher's line renderer only supports
@@ -4025,6 +4029,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 // (the railgun white/red-box bug; frame values 5-6 from the
                 // original LineMaxFrames=7 overran the launcher's table).
                 LineMaxFrames = 5;
+                }
                 Map.Flag_To_Redraw(true);
 
                 /*
@@ -4082,7 +4087,14 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 **  above, for the same sub-object reason.
                 */
                 if (weapon->IsSonic) {
-                    for (int d = 300; d < dist - 300; d += 64) {
+                    /*
+                    **  Clearance is ONE CELL (256 leptons) at each end, not the
+                    **  railgun's 300: at close range the wider margin ate the
+                    **  whole shot and left a single blob floating in the middle
+                    **  instead of a band. 256 is the actual width of the cell
+                    **  the sub-object rule is protecting against.
+                    */
+                    for (int d = 256; d < dist - 256; d += 64) {
                         COORDINATE c = XY_Coord(sx + ddx * d / dist, sy + ddy * d / dist);
                         AnimClass* wave = new AnimClass(ANIM_TS_SONICWAVE, c);
                         if (wave != NULL) {

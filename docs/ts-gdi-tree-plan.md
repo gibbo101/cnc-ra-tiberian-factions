@@ -1,157 +1,100 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-24: Wolverine SIGNED OFF, next is the Disruptor
+## ⭐⭐⭐ RESUME HERE — 2026-08-25: Disruptor wave is MID-EXPERIMENT, UNVERIFIED
 
-**Verified in play this session (Luke):**
-- The four `_0` sidebar cameos — CLOSED.
-- **Wolverine firing animation + TSGUN4 sound — "perfect wolverine".**
-- **Disruptor SONIC4 sound — "also good".**
-- **Shadows PASS** on all four outstanding units (TSAPC, TSHARV, TSSMEC, TSSONIC).
-  Combined with the earlier four, the whole roster's shadows are now signed off.
-- Wolverine canopy red dot — fixed and redeployed, **awaiting a look** (art-only,
-  just needs a restart).
+**Signed off this session:** Wolverine COMPLETE (firing animation, TSGUN4, canopy
+dot) and in the ledger. Disruptor SONIC4 sound approved. **All shadows signed
+off** across the whole roster. Cameos closed on all four.
 
-⚠ **Old savegames are dead as of this build.** `saveload.cpp:70-80` derives the save
-version from `sizeof()` of every game class including `UnitClass`, and the new
-`FireAnim` timer changed it. It crashes rather than rejecting cleanly (pre-existing
-ungraceful handling). Any new per-unit state will do this again; expect it.
+⚠ **Old savegames are dead as of this session's builds** — `saveload.cpp:70-80`
+derives the save version from `sizeof()` of every game class, and the Wolverine's
+new `FireAnim` member on `UnitClass` changed it. It CRASHES rather than rejecting
+cleanly. Luke hit this once already; a fresh skirmish is fine. Any future
+per-unit state will do it again.
 
-### THE DISRUPTOR SONIC WAVE — rebuilt 2026-08-24 against real TS footage, DEPLOYED
+### ⭐ FIRST THING NEXT SESSION: look at the Disruptor, it is unverified
 
-Luke picked "marching wave arcs" from three options, then captured TS footage
-(`~/Videos/Screencasts/Screencast from 2026-08-24 00-38-41.webm`). **The footage
-falsified the first build**: it is not rings and not a beam.
+The build in the desktop prefix contains an **untested experiment**. Do not
+assume it works. Fire a Disruptor and look, then read the notes below.
 
-⭐ **WHAT THE REAL EFFECT IS — a WIDE TRANSLUCENT BAND that sweeps out along the
-firing line.** Measured off the capture (834x465):
+**What Luke saw on the LAST verified build** (capture:
+`~/Videos/Screencasts/Screencast from 2026-08-24 00-51-52.webm`) — "lots of work
+to do":
+1. A **yellow beam with big star bursts at both ends**. That was the railgun's
+   3-line beam, which sonic was borrowing; the bursts are the launcher's endpoint
+   artifacts on that line. **FIXED** — the Disruptor now draws NO beam line at
+   all, which is also what TS does.
+2. **One dark blob instead of a band.** Cause found by arithmetic, not guesswork:
+   the spawn loop cleared 300 leptons at EACH end, so a ~3-cell shot
+   (dist ~768) left a span of 168 = only 3 discs bunched mid-flight. **FIXED** —
+   clearance is now one cell (256).
+3. **Gone almost instantly.** **FIXED** — anim delay 1 -> 2 ticks per stage, so
+   the band holds for ~1s instead of ~0.5s.
 
-| Property | Measured | What we ship |
+### ⭐ THE EXPERIMENT: the launcher's own stealth shimmer (Luke's idea)
+
+Luke: *"the disruptor beam looks a bit like the stealth effect but with a blue
+colour"*, then: *"clone it and use a unique new item?"* — which is what was built.
+
+⭐ **`CNCObjectStruct` has a per-object `Cloak` field** (`dllinterface.h:228`)
+that the launcher renders its stealth shimmer from. TS draws the sonic wave as a
+live distortion of the terrain behind it, which a sprite cannot do — **but the
+launcher already owns exactly that effect.** So `ANIM_TS_SONICWAVE` is now
+exported with `Cloak = CLOAKING` in `DLL_Draw_Intercept`.
+
+- **CLOAKING, not CLOAKED.** CLOAKED is the settled invisible state; the
+  TRANSITION states are the ones that shimmer.
+- **Scoped to that one anim type**, keyed off `Class_Of()`. It never touches any
+  unit's real `Cloak` state, so genuine stealth units cannot be affected. (Note
+  `AnimClass::Class` is PRIVATE — go through the public `Class_Of()`.)
+- The sprite supplies the colour, the launcher supplies the distortion. Art is
+  now blue `(120,200,245)` at `A_PEAK = 120`, lowered because the shimmer is
+  meant to carry the read.
+
+⚠ **THIS IS UNPROVEN.** The launcher may ignore `Cloak` on a non-unit object, or
+may render CLOAKING as near-invisible. **If the wave vanishes entirely, that is
+the first suspect** — try `UNCLOAKING`, then fall back to `UNCLOAKED` and a
+higher `A_PEAK` (the plain sprite band, which is the known-working state).
+
+### What the real TS effect is (measured, keep)
+
+A **wide translucent BAND that sweeps out along the firing line** — not rings,
+not a beam. Measured off `Screencast from 2026-08-24 00-38-41.webm` (834x465):
+
+| Property | Measured | Shipped |
 |---|---|---|
-| band thickness | ~39px against a 108px unit selection box = **0.36 x unit width** | 107px disc in a 128px canvas = ~20 classic px |
-| colour | mean (121,176,105) over (122,94,59) terrain | solved to **(130,235,140) at ~60% alpha** |
-| interior | mottled, reads as rippling pressure | noise field, `MOTTLE = 0.30` |
-| behaviour | extends outward from the muzzle, does not appear at once | per-disc start-stage sweep |
+| thickness | ~39px vs a 108px selection box = **0.36 x unit width** | 107px disc in a 128px canvas |
+| colour | mean (121,176,105) over (122,94,59) terrain -> **(130,235,140) @ ~60% alpha** | now blue per Luke's steer |
+| interior | mottled, rippling | noise field, `MOTTLE = 0.30` |
+| behaviour | extends outward from the muzzle | per-disc start-stage sweep |
 
-⭐ **HOW IT IS BUILT — a dense chain of soft DISCS, not one band sprite.** A
-spawned anim draws UNROTATED, so a band sprite would only line up at one of the
-eight beam angles. Overlapping rotationally-symmetric discs build the band at any
-angle; the band's thickness IS the disc diameter.
+⭐ **DISCS, NOT A BAND SPRITE — a spawned anim draws UNROTATED.** A band sprite
+would only line up at one of eight angles. Overlapping circular discs build the
+band at any angle; band thickness IS the disc diameter. **This constraint applies
+to any future directional effect built from anims.**
 
-⚠ **SPACING IS LOAD-BEARING at 64 leptons.** Simulated at true on-screen scale:
-at 96 and 128 leptons the band scallops into visible beads. 64 gives one
-continuous swath with soft parallel edges.
+⚠ **Spacing is load-bearing at 64 leptons** (simulated at true on-screen scale:
+96 and 128 scallop the band into visible beads).
+⚠ **The fade envelope must HOLD, not peak** — a triangular fade left most stages
+invisible and killed the far half of the band once discs were staged.
+⚠ The sweep uses each disc's **start stage**, never a spawn delay: the
+`AnimClass` ctor's `timedelay` param is off-limits, and the ctor ends with
+`Set_Stage(0)` so a post-construction offset sticks.
 
-⚠ **The envelope must HOLD, not peak.** The first attempt used a triangular
-fade which left most stages nearly invisible — staged along the line that killed
-the far half of the band. It is now a trapezoid (`RISE`/`FALL` shoulders, full
-alpha through the middle).
+⭐ **TS has NO sonic-wave art to port** — probed CONQUER.MIX and LOCAL.MIX for
+every plausible name. Don't go looking again.
 
-The sweep comes from each disc's **start stage** (`SONIC_SWEEP_STAGES = 4`),
-never a spawn delay — the `AnimClass` ctor's `timedelay` param is off-limits
-(delayed anims export in a pre-start state). `AnimClass` derives from
-`StageClass` and the ctor ends with `Set_Stage(0)`, so a post-construction offset
-sticks.
+### ✅ Also done, unverified in play
 
-⭐ **TS has NO sonic-wave art to port** (probed: no SONICBEAM/WAVE/SONICWAVE SHP
-in CONQUER.MIX or LOCAL.MIX). TS generates the effect in its own engine as a live
-screen distortion of the terrain behind the wave. We cannot distort. Don't go
-looking for the art again.
+- **Disruptor now stops to fire.** TS `[SONIC]` carries `NoMovingFire` ("This
+  MUST be set to true for the sonic tank"); our port had left it off and the
+  engine already supported the flag.
+- **Scorch is railgun-only now** — TS's `SonicWarhead` sets no scorch.
 
-What was built:
-- `scripts/ts_gen_sonicwave.py` — procedural disc art, 8 stages, 128px canvas
-  (RAILFX's 5.33 canvas-px-per-classic-px ratio -> 24 classic dim). **All tuning
-  is constants at the top**: diameter, colour, peak alpha, envelope shoulders,
-  edge softness, mottle.
-- `ANIM_TS_SONICWAVE` in `defines.h` + `adata.cpp`, registered **after** `RailFx`
-  — heap ID == registration order, so both must stay last and in that order.
-- `TSSONICW.ZIP` in `RED_ALERT/VFX/`, 6 tiles in `RA_VFX.XML`, classic stub 32x32x6.
-- Spawn chain in `techno.cpp`: rings every 160 leptons along the beam, held the
-  same **full cell clear of both endpoints** as the railgun helix (the sub-object
-  white-box trap).
-- Scorch smudge moved under the railgun branch — TS's `SonicWarhead` sets no
-  scorch and a pressure wave has nothing to burn with.
+### ⚠ Open bug, untouched
 
-**Not yet seen in play.** Most likely things to want: the sweep may read as too
-subtle (raise `SONIC_SWEEP_STAGES`), or the band may sit too bright or too long
-(`A_PEAK`, and the `FALL` shoulder). Both are single constants.
-
-⭐ **Corrected a stale comment in `techno.cpp`** claiming custom-art anims cannot
-reach launcher art and the mechanism was "TBD". Falsified: `TDIONSFX.ZIP` is
-mod-shipped in `RED_ALERT/VFX/` and renders. Contract #4 in
-`launcher-render-contracts.md` is the current truth.
-
-### ✅ Disruptor also now stops to fire
-
-TS `[SONIC]` carries `NoMovingFire` with the comment "This MUST be set to true
-for the sonic tank" — the wave is anchored to the firing position. Our port had
-left it off; the engine already supported the flag (`IsNoFireWhileMoving`).
-Deployed, not yet seen in play.
-
-### NEXT after the Disruptor: **APC** (on-water art, enter/exit mechanics), **Harvester LAST** (TD + RA
-refinery docking).
-
-⚠ **Also open: TS power plant and TS radar place one tile below their placement
-grid** (reported in play 2026-08-24). Logged with first suspects in
-`known-issues.md`.
-
-### ⭐ The lesson that reframed the Wolverine job
-
-TS gives `[AssaultCannon]` **no `Anim=` at all**. What looked like "borrowed
-presentation needing new effect work" was a **sprite block we had never packed**:
-`art.ini [SMECH]` declares `WalkFrames=12` **`FiringFrames=4`**, and SMECH.SHP holds
-the poses at frames 104-135 (8 facing blocks of 4, flash on sub-frames 0 and 2). Our
-packer had documented that range in a comment and skipped it.
-
-**Check `art.ini` before assuming a TS unit needs new effect work.**
-
-- **Art** — `TSSMEC.ZIP` 96 -> 128 frames. The firing block reuses the **walk union's**
-  anchor, deliberately not recomputed, so approved walk frames stay put and the mech
-  does not hop as it fires. `RA_UNITS.XML` and the classic stub both -> 128.
-- **DLL** — `FiringFrames` on `UnitTypeClass` (defaults 0, existing walkers untouched)
-  and a `FireAnim` countdown on `UnitClass` set in `UnitClass::Fire_At`. The shape calc
-  plays the firing block while that timer runs and outranks the gait. Turret base offset
-  now clears walk **and** firing blocks.
-- ⚠ `FireAnim` is initialised in the constructor **init list AND body**, matching
-  `Reload` — savegame load copies the data before placement-new runs.
-- The `tf_fireanim.log` diagnostic is still `#if 1` in `UnitClass::Fire_At`. **Flip it to
-  0** now the unit is signed off.
-
-### ⭐ TS ramps are authored for 1x: the canopy red dot
-
-Luke: "red dot on the head in multiple directions". It was **authentic TS art**, not a
-pipeline fault — palette indices 186-189 are the dark tail of the canopy's yellow ramp
-`(214,121,16)` -> `(165,56,0)`, only 81 pixels across all 136 frames, all at the canopy
-top. At TS's native 1x that is a single-pixel shaded edge; our **6.4x upscale turns it
-into a 6x6 blob** that reads as a deliberate red light.
-
-Fixed at the palette, not by painting the sprite: `ts_shp.py` gained
-`--pal-override IDX=R,G,B`, and 186-189 were pulled back onto the canopy's own hue
-(`206,152,58` / `190,140,52` / `174,128,46` / `158,116,40`). Walk frames now carry zero
-strong red; the 16 muzzle-flash frames keep theirs.
-
-⭐ **Generalise this:** any TS ramp's darkest one or two entries can carry a strong hue
-shift that only works at 1x. Suspect it whenever a TS sprite shows a small coloured dot
-we did not put there. **Not swept across the other TS units — Luke has not asked.**
-
-### The TS sound channel
-
-`TSGUN4` and `SONIC4` decoded from TS `SOUNDS.MIX` and shipped over **dormant host
-samples** (novel sample names crash ClientG, so overriding is the only channel):
-
-| TS sound | Host sample | Used by |
-|---|---|---|
-| `TSGUN4` (0.82s) | `GUN19` | Wolverine `[AssaultCannon]` |
-| `SONIC4` (2.76s) | `CRUMBLE` | Disruptor `[SonicZap]` |
-
-Both censused clean: referenced only by `TDC_`/`TDR_`-named events, which never fire in
-RA mode. Host ledger: BONUS_UNLOCK, DINOATK1, DINODIE1, DINOMOUT, DINOYES, STRUGGLE,
-**GUN19, CRUMBLE**.
-
-⭐ **`scripts/ts_aud_decode.py` is now a repo script.** It was a throwaway last time and
-was lost, which is why the TS audio wave kept looking like fresh work. The IMA predictor
-runs continuously across chunk boundaries; resetting per chunk gives audio that starts
-clean and decays into noise. Output is PCM, then `ffmpeg -c:a adpcm_ms` — the override
-WAV must be MS-ADPCM (fmt tag 2) or ClientG divides by zero.
+**TS power plant and TS radar place one tile below their placement grid**
+(reported in play 2026-08-24). Logged with first suspects in `known-issues.md`.
 
 ### ⭐ THE ROSTER-WALK QUEUE (Luke, dictated 2026-08-21/22)
 
