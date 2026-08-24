@@ -8,7 +8,7 @@
 - ✅ **Turret facing ROOT CAUSE:** the raw `renders_sonictur` frames line up with the hull
   renders index-for-index (Desktop facing sheet, Luke's read). Last night's `(16-j)` mirror was
   the bug Luke saw as "east facing west" while driving. Packer + ZIP back to identity
-  (`5ed080c7`). **Owed: Luke's in-play verdict on N/E facing after the fix.**
+  (`5ed080c7`). ✅ **VERIFIED in play (Luke: "fixed").**
 - ❌ **Launcher stealth shimmer on the band = DEAD, proven with receipts.** Lever
   `tf_sonic_cloak.flag` (dev builds, re-read per shot; 1 CLOAKING, 2 UNCLOAKING, 3 CLOAKED,
   4 stage-keyed transition, 5 flip per stage, +10 = firer-owned discs). Modes 12/14/15/1 all
