@@ -73,8 +73,20 @@ meta, real pixels, all 12 shapes registered, correct XML scope (checked).
 Still true: avoid the `AnimClass` ctor's `timedelay` param — vanilla never uses
 it and delayed anims export in a pre-start state.
 
-**Rule:** custom-art anims are viable. Keep every spawn a full cell clear of any
-object's own cell, or it exports as a sub-object and draws the white box.
+**Corrected again 2026-08-24: the cell rule is FALSE.** The white box is drawn
+for any anim STAGE that has no tile in the tileset XML (proven: bumping
+TSSONICW to 25 stages with 8 tiles declared boxed stages 8-24; the sonic
+discs now spawn inside the firer's own cell and draw no box). RAILFX at the
+time had fewer tiles declared than stages, which is what the "endpoint box"
+was. The export loop draws every layer object, anims included, as its own
+root (`dllinterface.cpp`, `CurrentDrawCount = 0` per object) — a free anim
+never becomes a sub-object by position.
+
+**Rule:** custom-art anims are viable anywhere. Declare exactly as many tiles
+as the anim has stages (have the generator patch the XML, as
+`ts_gen_sonicwave.py` does), and write STRAIGHT alpha: PIL `paste(colour,
+mask)` onto a transparent canvas darkens the RGB toward black and the launcher
+draws the darkened sprite faithfully (read as grey/gold before it was caught).
 
 ## 5. Hull-fixed direct-fire units need `IsLockTurret = true`
 
