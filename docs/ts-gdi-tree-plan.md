@@ -93,6 +93,18 @@ validated against the 17-37 clip to within ~20 levels).
    the band itself), not more disc art. Compositor + variants live in the
    session scratchpad only (`sim_band.py`, `variants.py`, `sim2.py`).
 
+### Luke's answers on the damage feel (2026-08-24, late) — BUILT + DEPLOYED (DLL `9e42d34f`), unverified
+
+- *"Our band is too slow, I could stop firing, move the vehicle and damage
+  myself."* → damage ticks compressed to stages 6/8/10/12/14 (all five within
+  ~1 s of the crest; the rest of the hold is visual only), and the firer is
+  exempt from its own band (`AnimClass::SonicFirer`).
+- *"Could Disruptors hurt other Disruptors? I built armies of them because
+  they wouldn't hurt each other."* → correct for TS; **Disruptors are now
+  immune to sonic damage** (any `UNIT_TSSONIC` skipped by the band, including
+  as the aimed-at target). Mixed groups still take it, as in TS.
+- Band termination on move/retarget left as-is (TS projectile behaviour).
+
 ### NEXT SESSION — the Aseprite pass (Luke's call)
 
 Open on the last clip (`Screencast from 2026-08-24 18-29-22.webm`), before

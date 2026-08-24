@@ -602,6 +602,7 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
     , OwnerHouse(HOUSE_NONE)
     , SonicDamage(0)
     , SonicVictim(TARGET_NONE)
+    , SonicFirer(TARGET_NONE)
     , Loops(1)
     , IsToDelete(false)
     , IsBrandNew(true)
@@ -936,9 +937,16 @@ void AnimClass::AI(void)
                     && lit < SONIC_DAMAGE_TICKS * SONIC_DAMAGE_PERIOD) {
                     ObjectClass* victims[8];
                     int vcount = 0;
+                    /*
+                    **	Disruptors are immune to sonic damage, as in Tiberian
+                    **	Sun: a Disruptor group never hurts itself, only the
+                    **	units it is mixed with.
+                    */
+                    ObjectClass* firer = Target_Legal(SonicFirer) ? As_Object(SonicFirer) : NULL;
                     ObjectClass* occ = Map[Coord_Cell(Center_Coord())].Cell_Occupier();
                     while (occ != NULL && vcount < (int)(sizeof(victims) / sizeof(victims[0]))) {
-                        if (occ->Is_Techno()) {
+                        bool disruptor = occ->What_Am_I() == RTTI_UNIT && *((UnitClass*)occ) == UNIT_TSSONIC;
+                        if (occ->Is_Techno() && occ != firer && !disruptor) {
                             victims[vcount++] = occ;
                         }
                         occ = occ->Next;
@@ -951,7 +959,8 @@ void AnimClass::AI(void)
                                 seen = true;
                             }
                         }
-                        if (aimed != NULL && !seen && aimed->Is_Techno()) {
+                        bool disruptor = aimed != NULL && aimed->What_Am_I() == RTTI_UNIT && *((UnitClass*)aimed) == UNIT_TSSONIC;
+                        if (aimed != NULL && !seen && aimed->Is_Techno() && !disruptor) {
                             victims[vcount++] = aimed;
                         }
                     }
@@ -1360,6 +1369,9 @@ void AnimClass::Detach(TARGET target, bool all)
         }
         if (SonicVictim == target) {
             SonicVictim = TARGET_NONE;
+        }
+        if (SonicFirer == target) {
+            SonicFirer = TARGET_NONE;
         }
     }
 #endif

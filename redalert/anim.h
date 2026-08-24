@@ -166,11 +166,12 @@ public:
     enum
     {
         SONIC_LEAD_STAGES = 5,   // fully transparent lead-in (the outward sweep)
-        SONIC_DAMAGE_TICKS = 5,  // hits per anchor disc over the band's life
-        SONIC_DAMAGE_PERIOD = 4, // stages between hits
+        SONIC_DAMAGE_TICKS = 5,  // hits per anchor disc, all within ~1s of the crest
+        SONIC_DAMAGE_PERIOD = 2, // stages between hits (4 let a tank drive into its own wave)
     };
     int SonicDamage;
     TARGET SonicVictim;
+    TARGET SonicFirer; // never damaged by its own band
 
     /*
     **	This counter tells how many more times the animation should loop before it

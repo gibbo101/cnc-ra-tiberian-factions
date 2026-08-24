@@ -4119,6 +4119,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                             wave->Set_Stage(min(max(stage, 0), SONIC_SWEEP_STAGES));
                             // No owner: the launcher tints an owned anim in the
                             // house colour, which turned the green band GDI gold.
+                            wave->SonicFirer = As_Target();
                             if (cc != anchored) {
                                 anchored = cc;
                                 wave->SonicDamage = weapon->AmbientDamage / AnimClass::SONIC_DAMAGE_TICKS;
