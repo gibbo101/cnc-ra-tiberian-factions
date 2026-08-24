@@ -12,6 +12,22 @@ new `FireAnim` member on `UnitClass` changed it. It CRASHES rather than rejectin
 cleanly. Luke hit this once already; a fresh skirmish is fine. Any future
 per-unit state will do it again.
 
+### 🎬 JOB ZERO NEXT SESSION: ASK LUKE FOR A VIDEO (his instruction, 2026-08-24)
+
+**Before touching the Disruptor, ask Luke to capture a clip of the CURRENT build
+firing.** He asked to be made to do this first, and he is right: on 2026-08-24 a
+verbal report ("lots of work to do") cost a round of guessing, while the two
+clips he did record each settled the question outright — the first falsified the
+whole ring design, the second exposed three separate faults in one frame.
+
+Captures land in `~/Videos/Screencasts/`. Pull frames with
+`ffmpeg -i <file> -vf fps=6 out-%03d.png` and read them directly; measuring off
+the pixels (band thickness against the selection box, colour against terrain)
+beat every assumption made without them.
+
+**Generalise it: for anything judged by eye, get footage BEFORE building, not
+after.**
+
 ### ⭐ FIRST THING NEXT SESSION: the Disruptor is IMPROVED but NOT DONE
 
 **Luke's verdict on this build (quick look, 2026-08-24 close):** *"lots of work
