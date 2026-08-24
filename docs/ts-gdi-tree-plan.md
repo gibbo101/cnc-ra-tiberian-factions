@@ -17,8 +17,12 @@
   drew nothing different. **The launcher ignores `Cloak` on anim objects.** Last night's
   "darkening ghost" was the near-black PIL sprite, not the cloak. Only untested resort:
   export the discs typed as UNIT (shader may key on object type) — crash risk, low odds.
-  Fake-distortion options that survive the disc stack: travelling pulse, rim ring (see
-  2026-08-24 sim notes below). Lever + log stay in for now; strip before ship.
+  **Levers still to try next session (wire into the same flag file first):** `DrawFlags`
+  with SHAPE_PREDATOR / SHAPE_GHOST / SHAPE_FADING on the discs; per-stage `Scale` throb;
+  `FlashingFlags` pulsed by stage; last resort, export the discs typed as UNIT.
+  ❌ Victim-shimmer (export the hit unit UNCLOAKING) REJECTED by Luke: the beam shimmers, never
+  the target. Fake-distortion art options that survive the disc stack: travelling pulse, rim
+  ring (see 2026-08-24 sim notes below). Lever + log stay in for now; strip before ship.
 - **NEXT SESSION (Luke, 2026-08-25): band cut-off.** On stop (S), move, or retarget the band
   must stop at the tank immediately and the emitted part run out toward the target, NOT play
   the full envelope. Design: tank-end discs are furthest along in stage, so on a real TarCom
