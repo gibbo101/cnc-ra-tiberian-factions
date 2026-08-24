@@ -74,6 +74,37 @@
  * before launching the game). In a release build this is hard-false and the cheat call sites   *
  * are compiled out entirely. Path resolves under the Proton prefix via USERPROFILE.            *
  *=============================================================================================*/
+/*
+**  Sonic band cloak-export experiment. Documents/CnCRemastered/tf_sonic_cloak.flag
+**  holds one integer, re-read on every Disruptor shot so it can be changed between
+**  shots without a restart. Units digit = the Cloak state exported for each disc
+**  (0 none, 1 CLOAKING, 2 UNCLOAKING, 3 CLOAKED, 4 transition keyed on the disc's
+**  stage, 5 flip every stage); +10 = the discs are owned by the firing house.
+**  Dev builds only; the shipped DLL always exports UNCLOAKED, unowned.
+*/
+int TF_SonicCloakMode = 0;
+
+void TF_Sonic_Cloak_Mode_Refresh(void)
+{
+#if TF_DEV_BUILD
+    TF_SonicCloakMode = 0;
+    const char* h = getenv("USERPROFILE");
+    if (h == NULL)
+        h = getenv("HOME");
+    if (h != NULL) {
+        char p[512];
+        snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_sonic_cloak.flag", h);
+        FILE* f = fopen(p, "r");
+        if (f != NULL) {
+            if (fscanf(f, "%d", &TF_SonicCloakMode) != 1) {
+                TF_SonicCloakMode = 0;
+            }
+            fclose(f);
+        }
+    }
+#endif
+}
+
 bool TF_Dev_Cheats(void)
 {
 #if TF_DEV_BUILD

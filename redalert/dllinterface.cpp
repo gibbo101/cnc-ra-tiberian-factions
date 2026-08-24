@@ -5437,6 +5437,45 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.FlashingFlags = 0;
         new_object.Cloak = (CurrentDrawCount > 0) ? root_object.Cloak : UNCLOAKED;
 
+        /*
+        **  Sonic band cloak-export experiment (TF_SonicCloakMode): the launcher
+        **  renders its own stealth shimmer from this field, which is the nearest
+        **  thing it has to TS's live distortion under the wave. Scoped to the
+        **  wave anim; no unit's real Cloak state is touched.
+        */
+        if (TF_SonicCloakMode != 0 && object != NULL && object->What_Am_I() == RTTI_ANIM
+            && ((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICWAVE) {
+            int stage = ((AnimClass const*)object)->Fetch_Stage();
+            switch (TF_SonicCloakMode % 10) {
+            case 1:
+                new_object.Cloak = CLOAKING;
+                break;
+            case 2:
+                new_object.Cloak = UNCLOAKING;
+                break;
+            case 3:
+                new_object.Cloak = CLOAKED;
+                break;
+            case 4:
+                // Decloak as the crest arrives, recloak as the band fades.
+                if (stage < AnimClass::SONIC_LEAD_STAGES) {
+                    new_object.Cloak = UNCLOAKED;
+                } else if (stage < AnimClass::SONIC_LEAD_STAGES + 4) {
+                    new_object.Cloak = UNCLOAKING;
+                } else if (stage >= 21) {
+                    new_object.Cloak = CLOAKING;
+                } else {
+                    new_object.Cloak = UNCLOAKED;
+                }
+                break;
+            case 5:
+                new_object.Cloak = (stage & 1) ? UNCLOAKING : CLOAKING;
+                break;
+            default:
+                break;
+            }
+        }
+
         new_object.VisibleFlags = CNCObjectStruct::VISIBLE_FLAGS_ALL;
         new_object.SpiedByFlags = 0U;
 

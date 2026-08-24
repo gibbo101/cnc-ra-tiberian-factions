@@ -4108,6 +4108,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 **  hold. The aimed-at object rides on the last disc.
                 */
                 if (weapon->IsSonic) {
+                    TF_Sonic_Cloak_Mode_Refresh();
                     CELL anchored = Coord_Cell(Center_Coord());
                     AnimClass* last = NULL;
                     for (int d = 0; d <= dist; d += 32) {
@@ -4120,6 +4121,9 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                             // No owner: the launcher tints an owned anim in the
                             // house colour, which turned the green band GDI gold.
                             wave->SonicFirer = As_Target();
+                            if (TF_SonicCloakMode >= 10) {
+                                wave->Set_Owner(House->Class->House);
+                            }
                             if (cc != anchored) {
                                 anchored = cc;
                                 wave->SonicDamage = weapon->AmbientDamage / AnimClass::SONIC_DAMAGE_TICKS;

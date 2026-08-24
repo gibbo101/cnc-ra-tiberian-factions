@@ -138,6 +138,8 @@ bool Is_Refinery_Dock_Busy(CELL cell); // dock pad closed while a truck is attac
 
 extern int Get_CD_Drive(void);
 extern void Fatal(char const* message, ...);
+extern int TF_SonicCloakMode;              // sonic band cloak-export experiment (see TF_Sonic_Cloak_Mode_Refresh)
+extern void TF_Sonic_Cloak_Mode_Refresh(void);
 extern bool TF_Dev_Cheats(void); // TF dev-cheats runtime gate (see defines.h TF_DEV_BUILD)
 extern long TF_Building_Scan_Bit(int btype); // building Type -> its BScan/ActiveBScan/OldBScan bit
 extern bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type); // Prerequisite= names a TS-tree building (house.cpp)
