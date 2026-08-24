@@ -23,7 +23,16 @@
   ❌ Victim-shimmer (export the hit unit UNCLOAKING) REJECTED by Luke: the beam shimmers, never
   the target. Fake-distortion art options that survive the disc stack: travelling pulse, rim
   ring (see 2026-08-24 sim notes below). Lever + log stay in for now; strip before ship.
-- **NEXT SESSION (Luke, 2026-08-25): band cut-off.** On stop (S), move, or retarget the band
+- **NEXT SESSION queue (Luke, 2026-08-25), in order:**
+  1. **Build the remaining shimmer levers** (predator/ghost/fading DrawFlags, Scale throb,
+     FlashingFlags, typed-as-UNIT) into `tf_sonic_cloak.flag` so the first shots walk them.
+  2. **Turret seat: the cannon sits CENTRED on the hull and should sit at the BACK** (TS
+     `TurretOffset=-64`; udata.cpp's turret-centre field is unused by the RA draw path, so it
+     needs the TSTITN-style per-facing seat table or a baked offset in the turret frames; the
+     Aseprite seat loop with Luke, [[feedback-aseprite-seat-loop-protocols]]).
+  3. **Unit size** review alongside (measure against the base game's art, never our ports).
+  4. Band cut-off, below. Then the Aseprite pass on the band.
+- **Band cut-off.** On stop (S), move, or retarget the band
   must stop at the tank immediately and the emitted part run out toward the target, NOT play
   the full envelope. Design: tank-end discs are furthest along in stage, so on a real TarCom
   change / NavCom assignment on a `UNIT_TSSONIC` bump every disc with `SonicFirer == me` by the
