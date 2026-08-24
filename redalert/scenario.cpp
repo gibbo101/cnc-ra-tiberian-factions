@@ -101,6 +101,12 @@ void TF_Sonic_Cloak_Mode_Refresh(void)
             }
             fclose(f);
         }
+        snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_sonic.log", h);
+        f = fopen(p, "a");
+        if (f != NULL) {
+            fprintf(f, "shot: flag %s, mode %d\n", (TF_SonicCloakMode != 0) ? "read" : "absent-or-zero", TF_SonicCloakMode);
+            fclose(f);
+        }
     }
 #endif
 }

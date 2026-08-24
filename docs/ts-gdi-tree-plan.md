@@ -1,6 +1,36 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-24 evening: Disruptor band = real weapon, "cracking job", NEXT = Aseprite pass
+## ⭐⭐⭐ RESUME HERE — 2026-08-25: Disruptor turret fixed, cloak-shimmer DEAD, NEXT = band cut-off on stop/move/retarget
+
+**Prefix DLL `5bb752fd` (= HEAD of `ts-units` with tf_sonic.log diagnostics), TSSONIC.ZIP `90a52655`.**
+
+- ✅ **Disruptor immunity verified in play** ("not hurting each other, good").
+- ✅ **Turret facing ROOT CAUSE:** the raw `renders_sonictur` frames line up with the hull
+  renders index-for-index (Desktop facing sheet, Luke's read). Last night's `(16-j)` mirror was
+  the bug Luke saw as "east facing west" while driving. Packer + ZIP back to identity
+  (`5ed080c7`). **Owed: Luke's in-play verdict on N/E facing after the fix.**
+- ❌ **Launcher stealth shimmer on the band = DEAD, proven with receipts.** Lever
+  `tf_sonic_cloak.flag` (dev builds, re-read per shot; 1 CLOAKING, 2 UNCLOAKING, 3 CLOAKED,
+  4 stage-keyed transition, 5 flip per stage, +10 = firer-owned discs). Modes 12/14/15/1 all
+  looked identical to the plain band; `tf_sonic.log` shows `flag read, mode 1` and
+  `export: disc stage 5 mode 1` — the discs reached the launcher tagged CLOAKING and it
+  drew nothing different. **The launcher ignores `Cloak` on anim objects.** Last night's
+  "darkening ghost" was the near-black PIL sprite, not the cloak. Only untested resort:
+  export the discs typed as UNIT (shader may key on object type) — crash risk, low odds.
+  Fake-distortion options that survive the disc stack: travelling pulse, rim ring (see
+  2026-08-24 sim notes below). Lever + log stay in for now; strip before ship.
+- **NEXT SESSION (Luke, 2026-08-25): band cut-off.** On stop (S), move, or retarget the band
+  must stop at the tank immediately and the emitted part run out toward the target, NOT play
+  the full envelope. Design: tank-end discs are furthest along in stage, so on a real TarCom
+  change / NavCom assignment on a `UNIT_TSSONIC` bump every disc with `SonicFirer == me` by the
+  same delta = (FRAMES-FALL_STAGES-1) - max stage among them; the cut then travels
+  source→target for free and remaining damage ticks are skipped. Hook the UnitClass
+  Assign_Target / Assign_Destination overrides (only when the target actually changes; never
+  from inside Basic_Path — see path-failure-livelock-design.md). Then the Aseprite pass.
+
+---
+
+## 2026-08-24 evening: Disruptor band = real weapon, "cracking job"
 
 **CHECKPOINT at session end (Luke: "doc everything, commit as a checkpoint, end here").**
 Prefix DLL `9e42d34f` = HEAD of `ts-units`; art ZIPs `4e187d5a` (TSSONIC) / `853725fd`

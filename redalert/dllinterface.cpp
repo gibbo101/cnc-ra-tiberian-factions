@@ -5446,6 +5446,20 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         if (TF_SonicCloakMode != 0 && object != NULL && object->What_Am_I() == RTTI_ANIM
             && ((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICWAVE) {
             int stage = ((AnimClass const*)object)->Fetch_Stage();
+            static int logged = 0;
+            if (logged < 3) {
+                logged++;
+                const char* h = getenv("USERPROFILE");
+                if (h == NULL)
+                    h = getenv("HOME");
+                char lp[512];
+                snprintf(lp, sizeof(lp), "%s/Documents/CnCRemastered/tf_sonic.log", h ? h : ".");
+                FILE* lf = fopen(lp, "a");
+                if (lf != NULL) {
+                    fprintf(lf, "export: disc stage %d mode %d owner %d\n", stage, TF_SonicCloakMode, (int)new_object.Owner);
+                    fclose(lf);
+                }
+            }
             switch (TF_SonicCloakMode % 10) {
             case 1:
                 new_object.Cloak = CLOAKING;
