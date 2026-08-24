@@ -59,20 +59,47 @@ and DEPLOYED to the desktop prefix (DLL `c8859224`, art `9e64ac1f`).
   darkening ghost, tested). Substitute shipped: per-stage noise field so the
   interior shimmers.
 
+### Late-evening offline pass (Luke away, "keep going, get it like TS") — DEPLOYED UNVERIFIED
+
+Deployed to the desktop prefix after Luke left (C&C not running; DLL
+`0da82c27`, TSSONIC.ZIP `4e187d5a`, TSSONICW.ZIP `853725fd`). **Nothing
+below has been seen in play.** Expected-look sheet for Luke:
+`~/Desktop/disruptor-band-expected-2026-08-24.png` (offline compositor,
+validated against the 17-37 clip to within ~20 levels).
+
+1. **Turret N/S mirror FIXED (art permutation).** Pixel-matching the 18-29
+   fire frame against all 64 frames: the game drew hull 24 + turret 56, the
+   same index, and turret 56's horn DOES point east — my "barrel points
+   north" read was the mount tower. The real fault: turret 32 showed the horn
+   pointing SOUTH and 48 NORTH while E/W were right, i.e. the turret block is
+   mirrored about the E-W axis relative to the body. `ts_pack_units_wave.py`
+   now packs `turret[j] = render[(16-j)%32]`, and the shipped ZIP was
+   permuted the same way. ⚠ E/W-right + N/S-swapped is the signature of a
+   render taken from the OPPOSITE camera side, so the turret's perspective is
+   from behind; a proper `renders_sonictur` re-render is a
+   [[feedback-voxel-facing-sheet-loop]] job with Luke.
+2. **"Not from the muzzle" — real cause = `PrimaryOffset`.** The horn tip
+   sits mid-hull; 0xC0 put `Fire_Coord` (disc 0) a hull-length ahead of it.
+   Now 0x50. Verify: band should overlap the turret and leave the horn.
+3. **Colour**: COLOR (105,228,200) teal, A_PEAK 40, MOTTLE 0.5 (full mottle
+   had halved the alpha). Sim says ~(160,226,212) over snow at hold.
+4. **Texture/shimmer — SIMULATED DEAD for stacked discs (don't re-chase):**
+   the 6-7 deep stack is a blur along the line, so per-disc noise, big
+   clumps, sparse "carrier" discs (repeat as a dot grid) and expanding rings
+   (chain-link artefacts) ALL measured flat (std ≈ background). Only
+   cross-band variation and whole-band temporal change survive. If Luke
+   wants TS's ripple, it needs a different mechanism (8/16-facing band
+   sprites with a per-instance end stage, or the Aseprite pass painting
+   the band itself), not more disc art. Compositor + variants live in the
+   session scratchpad only (`sim_band.py`, `variants.py`, `sim2.py`).
+
 ### NEXT SESSION — the Aseprite pass (Luke's call)
 
-Open on the last clip (`Screencast from 2026-08-24 18-29-22.webm`):
-1. **"Not coming from the muzzle."** Two parts: (a) discs start at
-   `Fire_Coord` (PrimaryOffset 0xC0 forward of the turret) and the band's
-   first visible edge lands at the hull front, not the barrel tip; (b) **in the
-   fire frame the turret barrel points NORTH while the band goes EAST** — the
-   turret is not drawn facing the target when the shot lands. Check (b) first:
-   turret facing index / `IsLockTurret` / the per-model facing sheet loop
-   ([[feedback-voxel-facing-sheet-loop]]) before touching (a).
-2. **Colour went too pale** with MOTTLE=1.0: band (209,228,219) over snow vs
-   TS core (129,185,118) over dirt. Full-strength mottle halves the average
-   alpha; raise A_PEAK (≈45) or MOTTLE 0.6. Luke wants it BLUER than pure
-   green; current COLOR (120,232,180).
+Open on the last clip (`Screencast from 2026-08-24 18-29-22.webm`), before
+the offline pass above:
+1. ~~"Not coming from the muzzle" / turret facing~~ → see the offline pass;
+   **first clip of the session verifies items 1-3 there.**
+2. ~~Colour too pale~~ → offline pass item 3.
 3. Aseprite: Luke will hand-paint the disc/band frames; keep
    `scripts/ts_gen_sonicwave.py`'s ZIP/meta/tileset contract and feed the
    painted frames through `write_zip` + `patch_tileset`.

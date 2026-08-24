@@ -51,14 +51,16 @@ CANVAS = 128          # 5.33 canvas px per classic px -> 24 classic dim, as RAIL
 FRAMES = 25           # anim stages at 5 ticks each (adata.cpp): ~3.2s at Luke's ~40 tick/s game speed, the TS band's life
 LEAD_STAGES = 5       # fully transparent lead-in = the outward sweep (SONIC_SWEEP_STAGES)
 DIAMETER = 107.0      # ~20 classic px: the measured 0.36 x unit width
-COLOR = (120, 232, 180)   # mint-teal: the solved green pulled toward the cyan highlights TS shows (Luke: 'definitely more blue')
-A_PEAK = 30           # per DISC. Discs overlap ~6-7 deep at 32-lepton spacing, and the
+COLOR = (105, 228, 200)   # teal: TS's solved green (130,235,140) pulled toward its cyan highlights; Luke twice: 'too green', 'definitely more blue'
+A_PEAK = 40           # per DISC. Discs overlap ~6-7 deep at 32-lepton spacing, and the
                       # band's ~60% measured alpha is the STACK: 1-(1-30/255)^6.7 = 0.57.
                       # 153 here (60% per disc) compounds to an opaque mud.
 EDGE_SOFT = 5.0       # gaussian blur on the disc edge, in px
-MOTTLE = 1.0          # 0 = flat fill, 1 = heavily rippled interior. Full strength: the
-                      # 6-7 deep disc stack averages any texture down by ~sqrt(7).
-MOTTLE_SCALE = 2.0    # blur radius of the noise clumps, px on the 128 canvas
+MOTTLE = 0.5          # 0 = flat fill, 1 = heavily rippled interior. The 6-7 deep disc
+                      # stack is a blur along the line: per-disc texture cannot survive
+                      # it (simulated 2026-08-24: every design measured flat), so this is
+                      # only edge softening. Full strength halved the band's alpha.
+MOTTLE_SCALE = 3.0    # blur radius of the noise clumps, px on the 128 canvas
 MOTTLE_SEED = 20260824
 RISE_STAGES = 1       # stages from dark to full once the lead-in ends
 FALL_STAGES = 2       # stages from full to dark at the end

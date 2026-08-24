@@ -1721,7 +1721,7 @@ static UnitTypeClass const UnitTsSonic(UNIT_TSSONIC,
                                        ANIM_FBALL1,  // EXPLOSION: big fireball.
                                        REMAP_NORMAL, // Sidebar remap logic.
                                        0x0030,       // Vertical offset (render calibration).
-                                       0x00C0,       // Primary weapon offset: emitter muzzle forward of the turret.
+                                       0x0050,       // Primary weapon offset: the horn tip, measured mid-hull in play (0xC0 put the band a hull-length ahead of it).
                                        0x0000,       // Primary weapon lateral offset (centerline emitter).
                                        0x0000,       // Secondary weapon offset (no secondary).
                                        0x0000,       // Secondary weapon lateral offset.

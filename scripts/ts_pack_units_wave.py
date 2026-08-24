@@ -178,7 +178,12 @@ else:
 # ---- TSSONIC: body 0-31 + turret 32-63, one shared scale ----
 if os.path.isdir(f"{ART}/renders_sonic"):
     sonic = vox_frames("renders_sonic", 448, shadow=(8, 36))
-    sonic += vox_frames("renders_sonictur", 448)  # turret: no shadow, canvas-centered
+    # Turret: no shadow, canvas-centered. The turret renders run the opposite
+    # way round to the body's about the E-W axis (E and W agree, N and S are
+    # swapped: frame 0 showed the horn pointing south). Mirror the block so
+    # index j faces the same way as body frame j.
+    tur = vox_frames("renders_sonictur", 448)
+    sonic += [tur[(16 - j) % 32] for j in range(32)]
     write_zip(f"{UNITS_DIR}/TSSONIC.ZIP", "tssonic", sonic)
 else:
     print("TSSONIC: SKIP (no renders_sonic)")
