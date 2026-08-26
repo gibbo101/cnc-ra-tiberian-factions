@@ -5510,6 +5510,10 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             if (TF_SonicFxMode & 32) {
                 new_object.Type = UNIT;
             }
+            if (TF_SonicFxMode & 64) {
+                // Keep a UNIT-typed disc out of the real units' ID range.
+                new_object.ID += 5000;
+            }
         }
 
         new_object.VisibleFlags = CNCObjectStruct::VISIBLE_FLAGS_ALL;

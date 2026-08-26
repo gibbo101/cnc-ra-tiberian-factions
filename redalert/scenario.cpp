@@ -82,7 +82,8 @@
 **  stage, 5 flip every stage); +10 = the discs are owned by the firing house.
 **  An optional second integer on the same line is a bit-mask of extra draw levers
 **  applied to every disc: 1 SHAPE_PREDATOR, 2 SHAPE_GHOST, 4 SHAPE_FADING, 8 Scale
-**  throb by stage, 16 FlashingFlags pulse by stage, 32 export the disc typed as UNIT.
+**  throb by stage, 16 FlashingFlags pulse by stage, 32 export the disc typed as UNIT,
+**  64 offset the exported ID out of the unit table's range.
 **  Third and fourth integers tune the throb: amplitude in percent of unity scale and
 **  period in stages (2 = alternate; longer = a smooth wave that travels tank->target
 **  because tank-end discs are further along in stage).
