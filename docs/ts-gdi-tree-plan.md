@@ -22,7 +22,7 @@ stub. Flag file is `tf_sonic_cloak.flag.off` (shipped default path).**
   sawtooth on diagonals; the near-square oblong survived). A rotated sprite must be packed
   square with the art inside the inscribed circle. Also: overlapping discs can never give a
   hard edge (chord coverage ramps the alpha) nor keep a mottle (6-7 deep stack smears it;
-  sim max std 7 vs TS 19.5). `launcher-render-contracts.md` needs both added.
+  sim max std 7 vs TS 19.5). Both recorded in `launcher-render-contracts.md` §8-9.
 - **Travelling pulse = the shimmer substitute, MECHANISM PROVEN in play (3 clips):**
   `ANIM_TS_SONICPULSE` (`adata.cpp`, art `TSSONICP.ZIP` from `ts_gen_sonicwave.py::pulse`,
   stub in `build_tfassets.sh`), one on every wave disc (`SONIC_PULSE_EVERY = 1`), lit only in a
@@ -36,8 +36,18 @@ stub. Flag file is `tf_sonic_cloak.flag.off` (shipped default path).**
   `PULSE_COLOR` from the black test to the real off-tint (paler/whiter teal; Luke to pick) and
   `PULSE_ALPHA` to taste (per-disc; the pulse discs stack like the wave discs). Old saves are
   dead again (new anim type + `SonicDir` member).
-- Then, in Luke's order: turret seat to the REAR of the hull (Aseprite seat loop), unit size,
-  band cut-off on S/move/retarget (design in the 08-25 block below), any Aseprite pass.
+- Then, in Luke's order: turret seat to the REAR of the hull (Aseprite seat loop; TS
+  `TurretOffset=-64`, udata.cpp's turret-centre field is unused by the RA draw path, so it
+  needs a TSTITN-style per-facing seat table or a baked offset in the turret frames), unit
+  size (measure the base game's art, never our ports), band cut-off, any Aseprite pass.
+- **Band cut-off design (Luke, 2026-08-25).** On stop (S), move, or retarget the band must
+  stop at the tank immediately and the emitted part run out toward the target, NOT play the
+  full envelope. Tank-end discs are furthest along in stage, so on a real TarCom change /
+  NavCom assignment on a `UNIT_TSSONIC` bump every disc (wave AND pulse) with
+  `SonicFirer == me` by the same delta = (FRAMES-FALL_STAGES-1) - max stage among them; the
+  cut then travels source->target for free and remaining damage ticks are skipped. Hook the
+  UnitClass Assign_Target / Assign_Destination overrides, only when the target actually
+  changes; never from inside Basic_Path (path-failure-livelock-design.md).
 
 ### Launcher levers on the discs: every one walked with log receipts (2026-08-26)
 

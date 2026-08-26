@@ -129,6 +129,28 @@ canvas geometry. Open boxes as of 2026-08-13: TSFACT (1 tile high), TSDROP
 can give). Fix path: diff TDFACT's stub/canvas content geometry against
 TSFACT's and transplant the relationship, art compensated to stay put.
 
+## 8. Anim exports honour `Rotation`, but the rotated texture is clipped to the UNROTATED frame
+
+Proven 2026-08-27 on the Disruptor band (fx bit 128 in `tf_sonic_cloak.flag`): setting
+`CNCObjectStruct::Rotation` on an anim export turns the sprite onto that DirType (E, N and SE
+all verified in play), which the 2026-08 "spawned anims draw unrotated" note did not know.
+The catch: the launcher rotates the texture inside the sprite's quad but keeps the quad at
+the packed frame's unrotated size, so anything outside that rectangle is cut off. A 64x112
+strip frame drew as a 64-wide bar at N/S and a sawtooth of axis-aligned rectangles on the
+diagonal; a near-square 124x72 oblong survived. **Rule: a sprite that will be exported
+rotated must be packed as a SQUARE frame (no bbox crop) with the art inside the inscribed
+circle.** `ts_gen_sonicwave.py::write_zip(square=True)` did this; the strip itself was
+rejected in play, the contract stands.
+
+## 9. Overlapping-sprite chains can never give a hard edge or keep a texture
+
+Measured offline against the TS Disruptor footage before the strip attempt: a chain of
+discs overlapping 6-7 deep (a) ramps its alpha at the strip edge whatever the disc edge
+does, because chord coverage falls off toward the edge (35-75 px ramps for every variant),
+and (b) smears any per-disc mottle along the chain (best interior std 7 vs TS's 19.5). If
+a hard edge or a preserved texture is the requirement, the primitive must be a single
+rotated sprite per span (§8), not a chain.
+
 ## House quality policy for TS-sourced assets (Luke, 2026-07-20)
 
 **Every unit, building, and weapon pulled from Tiberian Sun ships at the
