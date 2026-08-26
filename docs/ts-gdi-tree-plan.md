@@ -24,9 +24,15 @@ closer"** ← PICK; 12/12 "pretty good"; 25/4 "nice but not TS"; 12/4, 12/8, 8/6
 Clip of 12/6: `~/Videos/Screencasts/Screencast from 2026-08-26 23-49-16.webm`.
 
 **Conclusion: the launcher has NO pixel displacement for us on any object type. Don't
-re-chase.** The TS ground-wobble ("just the wave shimmer effect and we'd be golden") is now
-an ART job: per-stage noise / heat-haze inside the disc frames, which the throb then moves
-along the band. That is the Aseprite pass.
+re-chase.** Then Luke re-watched the TS clip (`Screencast from 2026-08-24 00-38-41.webm`):
+**TS fakes it too**: a hard-edged straight strip, mottled translucent green, and a paler
+DISC PULSE riding along the strip tank->target. "We've been chasing a shimmer."
+**Agreed next design (Luke: "blue beam with an off-colour additional disc"):** keep the blue
+band; add `ANIM_TS_SONICPULSE` discs spawned alongside the band at the same spacing, art
+transparent except a ~4-stage window, so the stage offset makes the highlight travel
+tank->target for free; 2-3 windows per hold. OPEN before building: pulse colour (paler
+blue vs white-cyan) and whether the band keeps its throb. Then the strip-edge/noise
+Aseprite pass if still wanted.
 
 **Shipped default** (`function.h` `TF_SONIC_*_DEFAULT`): fx 12 (fading + throb), amp 12,
 period 6, no cloak, unowned. Because tank-end discs are further along in stage, a
@@ -51,7 +57,7 @@ harmless there). Both log sites are `TF_DEV_BUILD`-gated; nothing to strip befor
      source→target for free and remaining damage ticks are skipped. Hook the UnitClass
      Assign_Target / Assign_Destination overrides (only when the target actually changes;
      never from inside Basic_Path — see path-failure-livelock-design.md).
-  4. **Aseprite pass on the band**: the shimmer art (above).
+  4. **Off-colour disc pulse** (design above), then any Aseprite pass on the band.
 
 ---
 
