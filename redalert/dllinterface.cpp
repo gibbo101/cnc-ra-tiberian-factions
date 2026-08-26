@@ -5439,14 +5439,14 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.Cloak = (CurrentDrawCount > 0) ? root_object.Cloak : UNCLOAKED;
 
         /*
-        **  Sonic band cloak-export experiment (TF_SonicCloakMode): the launcher
-        **  renders its own stealth shimmer from this field, which is the nearest
-        **  thing it has to TS's live distortion under the wave. Scoped to the
-        **  wave anim; no unit's real Cloak state is touched.
+        **  Sonic band draw levers (see TF_Sonic_Cloak_Mode_Refresh): the shipped
+        **  look is fading plus a stage-keyed scale throb; dev flag can swap in
+        **  the other launcher levers per shot. Scoped to the wave anim.
         */
-        if ((TF_SonicCloakMode != 0 || TF_SonicFxMode != 0) && object != NULL && object->What_Am_I() == RTTI_ANIM
+        if (object != NULL && object->What_Am_I() == RTTI_ANIM
             && ((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICWAVE) {
             int stage = ((AnimClass const*)object)->Fetch_Stage();
+#if TF_DEV_BUILD
             static int logged = 0;
             if (logged < 3) {
                 logged++;
@@ -5461,6 +5461,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                     fclose(lf);
                 }
             }
+#endif
             switch (TF_SonicCloakMode % 10) {
             case 1:
                 new_object.Cloak = CLOAKING;

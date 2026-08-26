@@ -1,45 +1,57 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-25: Disruptor turret fixed, cloak-shimmer DEAD, NEXT = band cut-off on stop/move/retarget
+## ⭐⭐⭐ RESUME HERE — 2026-08-26: Disruptor shimmer levers WALKED, fading+throb 12/6 is the shipped look; NEXT = turret seat to the rear, unit size, band cut-off, Aseprite pass
 
-**Prefix DLL `5bb752fd` (= HEAD of `ts-units` with tf_sonic.log diagnostics), TSSONIC.ZIP `90a52655`.**
+**Prefix DLL `1bf773aa` (= HEAD of `ts-units`, default path, flag file renamed to
+`tf_sonic_cloak.flag.off`), TSSONIC.ZIP `90a52655`.** First shot next session verifies the
+default path looks identical to the play-picked `0 12 12 6`.
 
-- ✅ **Disruptor immunity verified in play** ("not hurting each other, good").
-- ✅ **Turret facing ROOT CAUSE:** the raw `renders_sonictur` frames line up with the hull
-  renders index-for-index (Desktop facing sheet, Luke's read). Last night's `(16-j)` mirror was
-  the bug Luke saw as "east facing west" while driving. Packer + ZIP back to identity
-  (`5ed080c7`). ✅ **VERIFIED in play (Luke: "fixed").**
-- ❌ **Launcher stealth shimmer on the band = DEAD, proven with receipts.** Lever
-  `tf_sonic_cloak.flag` (dev builds, re-read per shot; 1 CLOAKING, 2 UNCLOAKING, 3 CLOAKED,
-  4 stage-keyed transition, 5 flip per stage, +10 = firer-owned discs). Modes 12/14/15/1 all
-  looked identical to the plain band; `tf_sonic.log` shows `flag read, mode 1` and
-  `export: disc stage 5 mode 1` — the discs reached the launcher tagged CLOAKING and it
-  drew nothing different. **The launcher ignores `Cloak` on anim objects.** Last night's
-  "darkening ghost" was the near-black PIL sprite, not the cloak. Only untested resort:
-  export the discs typed as UNIT (shader may key on object type) — crash risk, low odds.
-  **Levers still to try next session (wire into the same flag file first):** `DrawFlags`
-  with SHAPE_PREDATOR / SHAPE_GHOST / SHAPE_FADING on the discs; per-stage `Scale` throb;
-  `FlashingFlags` pulsed by stage; last resort, export the discs typed as UNIT.
-  ❌ Victim-shimmer (export the hit unit UNCLOAKING) REJECTED by Luke: the beam shimmers, never
-  the target. Fake-distortion art options that survive the disc stack: travelling pulse, rim
-  ring (see 2026-08-24 sim notes below). Lever + log stay in for now; strip before ship.
-- **NEXT SESSION queue (Luke, 2026-08-25), in order:**
-  1. **Build the remaining shimmer levers** (predator/ghost/fading DrawFlags, Scale throb,
-     FlashingFlags, typed-as-UNIT) into `tf_sonic_cloak.flag` so the first shots walk them.
-  2. **Turret seat: the cannon sits CENTRED on the hull and should sit at the BACK** (TS
+### Launcher shimmer levers: every one walked with log receipts (2026-08-26)
+
+| lever | verdict |
+|---|---|
+| `Cloak` on the anim export | ignored (08-25) |
+| `Cloak` on a UNIT-typed disc with offset ID | ignored, band identical (clip 23-54-15) |
+| `SHAPE_PREDATOR` | band INVISIBLE, no ground warp even zoomed over rocks |
+| `SHAPE_GHOST` | no effect |
+| `SHAPE_FADING` | translucent ✅ |
+| `Scale` throb keyed on stage | ripples ✅; cosine amp 12 % / period 6 stages = "even closer" to TS |
+| `FlashingFlags` pulse | hard on/off strobe, REJECTED (photosensitivity) |
+| typed as UNIT without ID offset | band draws but the Disruptor body vanishes (ID clash) |
+
+Variant walk (Luke's words): 19/2 baseline "pulsing"; 8/2 "closest to TS yet"; **12/6 "even
+closer"** ← PICK; 12/12 "pretty good"; 25/4 "nice but not TS"; 12/4, 12/8, 8/6, 16/6 all "ok".
+Clip of 12/6: `~/Videos/Screencasts/Screencast from 2026-08-26 23-49-16.webm`.
+
+**Conclusion: the launcher has NO pixel displacement for us on any object type. Don't
+re-chase.** The TS ground-wobble ("just the wave shimmer effect and we'd be golden") is now
+an ART job: per-stage noise / heat-haze inside the disc frames, which the throb then moves
+along the band. That is the Aseprite pass.
+
+**Shipped default** (`function.h` `TF_SONIC_*_DEFAULT`): fx 12 (fading + throb), amp 12,
+period 6, no cloak, unowned. Because tank-end discs are further along in stage, a
+stage-keyed cosine travels tank→target for free. Dev builds re-read
+`Documents/CnCRemastered/tf_sonic_cloak.flag` per shot: `<cloak> <fx-bits> <amp%> <period>`
+(fx bits 1 predator, 2 ghost, 4 fading, 8 throb, 16 flash, 32 typed UNIT, 64 ID offset). A
+line with fewer numbers falls back to the defaults for the missing ones (`1 108` ran at 19/2,
+harmless there). Both log sites are `TF_DEV_BUILD`-gated; nothing to strip before ship.
+
+- ✅ Disruptor immunity verified in play (08-25). ✅ Turret facing = identity order, verified.
+- **NEXT SESSION queue (Luke's order), in order:**
+  1. **Turret seat: the cannon sits CENTRED on the hull and should sit at the BACK** (TS
      `TurretOffset=-64`; udata.cpp's turret-centre field is unused by the RA draw path, so it
      needs the TSTITN-style per-facing seat table or a baked offset in the turret frames; the
      Aseprite seat loop with Luke, [[feedback-aseprite-seat-loop-protocols]]).
-  3. **Unit size** review alongside (measure against the base game's art, never our ports).
-  4. Band cut-off, below. Then the Aseprite pass on the band.
-- **Band cut-off.** On stop (S), move, or retarget the band
-  must stop at the tank immediately and the emitted part run out toward the target, NOT play
-  the full envelope. Design: tank-end discs are furthest along in stage, so on a real TarCom
-  change / NavCom assignment on a `UNIT_TSSONIC` bump every disc with `SonicFirer == me` by the
-  same delta = (FRAMES-FALL_STAGES-1) - max stage among them; the cut then travels
-  source→target for free and remaining damage ticks are skipped. Hook the UnitClass
-  Assign_Target / Assign_Destination overrides (only when the target actually changes; never
-  from inside Basic_Path — see path-failure-livelock-design.md). Then the Aseprite pass.
+  2. **Unit size** review alongside (measure against the base game's art, never our ports).
+  3. **Band cut-off.** On stop (S), move, or retarget the band must stop at the tank
+     immediately and the emitted part run out toward the target, NOT play the full envelope.
+     Design: tank-end discs are furthest along in stage, so on a real TarCom change / NavCom
+     assignment on a `UNIT_TSSONIC` bump every disc with `SonicFirer == me` by the same
+     delta = (FRAMES-FALL_STAGES-1) - max stage among them; the cut then travels
+     source→target for free and remaining damage ticks are skipped. Hook the UnitClass
+     Assign_Target / Assign_Destination overrides (only when the target actually changes;
+     never from inside Basic_Path — see path-failure-livelock-design.md).
+  4. **Aseprite pass on the band**: the shimmer art (above).
 
 ---
 

@@ -138,6 +138,9 @@ bool Is_Refinery_Dock_Busy(CELL cell); // dock pad closed while a truck is attac
 
 extern int Get_CD_Drive(void);
 extern void Fatal(char const* message, ...);
+#define TF_SONIC_FX_DEFAULT           12  // SHAPE_FADING + scale throb
+#define TF_SONIC_THROB_AMP_DEFAULT    12  // percent of unity scale
+#define TF_SONIC_THROB_PERIOD_DEFAULT 6   // stages per cosine cycle
 extern int TF_SonicCloakMode;              // sonic band cloak-export experiment (see TF_Sonic_Cloak_Mode_Refresh)
 extern int TF_SonicFxMode;                 // sonic band extra draw levers, bit-mask (same flag file, second integer)
 extern int TF_SonicThrobAmp;               // sonic band throb amplitude, percent (third integer)
