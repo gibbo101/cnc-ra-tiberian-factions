@@ -5443,7 +5443,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         **  thing it has to TS's live distortion under the wave. Scoped to the
         **  wave anim; no unit's real Cloak state is touched.
         */
-        if (TF_SonicCloakMode != 0 && object != NULL && object->What_Am_I() == RTTI_ANIM
+        if ((TF_SonicCloakMode != 0 || TF_SonicFxMode != 0) && object != NULL && object->What_Am_I() == RTTI_ANIM
             && ((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICWAVE) {
             int stage = ((AnimClass const*)object)->Fetch_Stage();
             static int logged = 0;
@@ -5456,7 +5456,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 snprintf(lp, sizeof(lp), "%s/Documents/CnCRemastered/tf_sonic.log", h ? h : ".");
                 FILE* lf = fopen(lp, "a");
                 if (lf != NULL) {
-                    fprintf(lf, "export: disc stage %d mode %d owner %d\n", stage, TF_SonicCloakMode, (int)new_object.Owner);
+                    fprintf(lf, "export: disc stage %d mode %d fx %d owner %d\n", stage, TF_SonicCloakMode, TF_SonicFxMode, (int)new_object.Owner);
                     fclose(lf);
                 }
             }
@@ -5487,6 +5487,25 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 break;
             default:
                 break;
+            }
+            if (TF_SonicFxMode & 1) {
+                new_object.DrawFlags |= SHAPE_PREDATOR;
+            }
+            if (TF_SonicFxMode & 2) {
+                new_object.DrawFlags |= SHAPE_GHOST;
+            }
+            if (TF_SonicFxMode & 4) {
+                new_object.DrawFlags |= SHAPE_FADING;
+            }
+            if (TF_SonicFxMode & 8) {
+                // Throb: +-19% about unity, alternating per stage.
+                new_object.Scale = (stage & 1) ? 0x0130 : 0x00D0;
+            }
+            if (TF_SonicFxMode & 16) {
+                new_object.FlashingFlags = (stage & 1) ? 0xFFFFFFFFU : 0U;
+            }
+            if (TF_SonicFxMode & 32) {
+                new_object.Type = UNIT;
             }
         }
 
