@@ -83,16 +83,23 @@
 **  An optional second integer on the same line is a bit-mask of extra draw levers
 **  applied to every disc: 1 SHAPE_PREDATOR, 2 SHAPE_GHOST, 4 SHAPE_FADING, 8 Scale
 **  throb by stage, 16 FlashingFlags pulse by stage, 32 export the disc typed as UNIT.
+**  Third and fourth integers tune the throb: amplitude in percent of unity scale and
+**  period in stages (2 = alternate; longer = a smooth wave that travels tank->target
+**  because tank-end discs are further along in stage).
 **  Dev builds only; the shipped DLL always exports UNCLOAKED, unowned, plain.
 */
 int TF_SonicCloakMode = 0;
 int TF_SonicFxMode = 0;
+int TF_SonicThrobAmp = 19;
+int TF_SonicThrobPeriod = 2;
 
 void TF_Sonic_Cloak_Mode_Refresh(void)
 {
 #if TF_DEV_BUILD
     TF_SonicCloakMode = 0;
     TF_SonicFxMode = 0;
+    TF_SonicThrobAmp = 19;
+    TF_SonicThrobPeriod = 2;
     const char* h = getenv("USERPROFILE");
     if (h == NULL)
         h = getenv("HOME");
@@ -101,19 +108,25 @@ void TF_Sonic_Cloak_Mode_Refresh(void)
         snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_sonic_cloak.flag", h);
         FILE* f = fopen(p, "r");
         if (f != NULL) {
-            int n = fscanf(f, "%d %d", &TF_SonicCloakMode, &TF_SonicFxMode);
+            int n = fscanf(f, "%d %d %d %d", &TF_SonicCloakMode, &TF_SonicFxMode, &TF_SonicThrobAmp, &TF_SonicThrobPeriod);
             if (n < 1) {
                 TF_SonicCloakMode = 0;
             }
             if (n < 2) {
                 TF_SonicFxMode = 0;
             }
+            if (n < 3 || TF_SonicThrobAmp < 0 || TF_SonicThrobAmp > 90) {
+                TF_SonicThrobAmp = 19;
+            }
+            if (n < 4 || TF_SonicThrobPeriod < 2) {
+                TF_SonicThrobPeriod = 2;
+            }
             fclose(f);
         }
         snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_sonic.log", h);
         f = fopen(p, "a");
         if (f != NULL) {
-            fprintf(f, "shot: flag %s, mode %d fx %d\n", (TF_SonicCloakMode != 0 || TF_SonicFxMode != 0) ? "read" : "absent-or-zero", TF_SonicCloakMode, TF_SonicFxMode);
+            fprintf(f, "shot: flag %s, mode %d fx %d amp %d period %d\n", (TF_SonicCloakMode != 0 || TF_SonicFxMode != 0) ? "read" : "absent-or-zero", TF_SonicCloakMode, TF_SonicFxMode, TF_SonicThrobAmp, TF_SonicThrobPeriod);
             fclose(f);
         }
     }

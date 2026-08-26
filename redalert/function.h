@@ -140,6 +140,8 @@ extern int Get_CD_Drive(void);
 extern void Fatal(char const* message, ...);
 extern int TF_SonicCloakMode;              // sonic band cloak-export experiment (see TF_Sonic_Cloak_Mode_Refresh)
 extern int TF_SonicFxMode;                 // sonic band extra draw levers, bit-mask (same flag file, second integer)
+extern int TF_SonicThrobAmp;               // sonic band throb amplitude, percent (third integer)
+extern int TF_SonicThrobPeriod;            // sonic band throb period in stages (fourth integer)
 extern void TF_Sonic_Cloak_Mode_Refresh(void);
 extern bool TF_Dev_Cheats(void); // TF dev-cheats runtime gate (see defines.h TF_DEV_BUILD)
 extern long TF_Building_Scan_Bit(int btype); // building Type -> its BScan/ActiveBScan/OldBScan bit

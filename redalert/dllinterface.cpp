@@ -30,6 +30,7 @@
 #include <cstdio>
 
 #include "function.h"
+#include <math.h>
 #include <tlhelp32.h>
 #include "keyframe.h"
 #include "utracker.h"
@@ -5498,8 +5499,10 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 new_object.DrawFlags |= SHAPE_FADING;
             }
             if (TF_SonicFxMode & 8) {
-                // Throb: +-19% about unity, alternating per stage.
-                new_object.Scale = (stage & 1) ? 0x0130 : 0x00D0;
+                // Throb: a cosine of the disc's stage, amplitude and period from the flag.
+                double phase = (2.0 * 3.14159265) * (double)stage / (double)TF_SonicThrobPeriod;
+                int amp = (0x0100 * TF_SonicThrobAmp) / 100;
+                new_object.Scale = 0x0100 + (int)((double)amp * cos(phase));
             }
             if (TF_SonicFxMode & 16) {
                 new_object.FlashingFlags = (stage & 1) ? 0xFFFFFFFFU : 0U;
