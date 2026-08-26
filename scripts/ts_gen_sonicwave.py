@@ -62,6 +62,10 @@ MOTTLE = 0.5          # 0 = flat fill, 1 = heavily rippled interior. The 6-7 dee
                       # only edge softening. Full strength halved the band's alpha.
 MOTTLE_SCALE = 3.0    # blur radius of the noise clumps, px on the 128 canvas
 MOTTLE_SEED = 20260824
+PULSE_COLOR = (0, 0, 0)   # TEST colour so the pulse is unmissable; the real one is an off-tint of COLOR
+PULSE_ALPHA = 40          # per disc: the pulse discs stack 6-7 deep like the wave discs (~65 % total)
+PULSE_PERIOD = 6          # stages between pulses
+PULSE_WIDTH = 1           # lit stages per pulse
 RISE_STAGES = 1       # stages from dark to full once the lead-in ends
 FALL_STAGES = 2       # stages from full to dark at the end
 
@@ -132,6 +136,25 @@ def wave(i):
     return out
 
 
+def pulse(i):
+    """One stage of the pulse disc: the wave's disc shape, PULSE_COLOR, lit only
+    inside a repeating stage window. Discs further along the band sit at lower
+    stages, so the lit window sweeps tank->target as the stages advance."""
+    lit = i - LEAD_STAGES
+    if lit < 0 or (lit % PULSE_PERIOD) >= PULSE_WIDTH:
+        return Image.new('RGBA', (CANVAS, CANVAS), (0, 0, 0, 0))
+    ss = 4
+    big = Image.new('L', (CANVAS * ss, CANVAS * ss), 0)
+    d = ImageDraw.Draw(big)
+    c = CANVAS * ss / 2.0
+    r = DIAMETER * ss / 2.0
+    d.ellipse([c - r, c - r, c + r, c + r], fill=255)
+    mask = big.resize((CANVAS, CANVAS), Image.LANCZOS).filter(ImageFilter.GaussianBlur(EDGE_SOFT))
+    out = Image.new('RGBA', (CANVAS, CANVAS), PULSE_COLOR + (0,))
+    out.putalpha(mask.point(lambda v: v * PULSE_ALPHA // 255))
+    return out
+
+
 def tga_bytes(img):
     buf = io.BytesIO()
     img.save(buf, format='TGA')
@@ -179,8 +202,13 @@ def main():
     path = os.path.join(outdir, 'TSSONICW.ZIP')
     write_zip(path, 'tssonicw', frames)
     print(f'wrote {path} ({len(frames)} frames, {CANVAS}px canvas)')
+    pframes = [pulse(i) for i in range(FRAMES)]
+    ppath = os.path.join(outdir, 'TSSONICP.ZIP')
+    write_zip(ppath, 'tssonicp', pframes)
+    print(f'wrote {ppath} ({len(pframes)} frames)')
     if len(sys.argv) <= 1:
         patch_tileset(os.path.join(mod, 'XML', 'TILESETS', 'RA_VFX.XML'), 'TSSONICW', FRAMES)
+        patch_tileset(os.path.join(mod, 'XML', 'TILESETS', 'RA_VFX.XML'), 'TSSONICP', FRAMES)
 
 
 if __name__ == '__main__':

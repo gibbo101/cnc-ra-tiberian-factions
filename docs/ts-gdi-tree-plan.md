@@ -1,63 +1,62 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-26: Disruptor shimmer levers WALKED, fading+throb 12/6 is the shipped look; NEXT = turret seat to the rear, unit size, band cut-off, Aseprite pass
+## ⭐⭐⭐ RESUME HERE — 2026-08-27: Disruptor = blue discs + fading + 12/6 throb + a TRAVELLING PULSE (mechanism proven; length + colour to dial); strip approach DEAD
 
-**Prefix DLL `1bf773aa` (= HEAD of `ts-units`, default path, flag file renamed to
-`tf_sonic_cloak.flag.off`), TSSONIC.ZIP `90a52655`.** First shot next session verifies the
-default path looks identical to the play-picked `0 12 12 6`.
+**Prefix DLL `87ab8e63` (= HEAD of `ts-units`), TSSONICW.ZIP (discs, pixel-identical to the
+08-26 checkpoint), TSSONICP.ZIP `9f424734` (BLACK test pulse), TFASSETS.MIX has the TSSONICP
+stub. Flag file is `tf_sonic_cloak.flag.off` (shipped default path).**
 
-### Launcher shimmer levers: every one walked with log receipts (2026-08-26)
+### Where the look stands (Luke's verdicts, 2026-08-26/27)
+
+- **Band = the teal disc chain** with SHAPE_FADING + stage-keyed scale throb amp 12 %/period 6
+  (`function.h` `TF_SONIC_*_DEFAULT`; play-picked from a 9-variant walk, clip 23-49-16).
+- **TS fakes its shimmer too** (Luke re-watched `Screencast from 2026-08-24 00-38-41.webm`):
+  hard strip, mottled tint, plus a paler disc pulse riding tank->target. "We've been chasing
+  a shimmer." No launcher displacement exists on any object type (all levers walked, table
+  below). Don't re-chase.
+- **Strip approach TRIED AND REJECTED (2026-08-27):** rotated hard-edged segments
+  (`Rotation` export, fx bit 128). Luke: "the version before was better with better colours",
+  "ditch what you just gave me, it's the wrong direction". Findings kept because they are
+  contracts: **the launcher DOES honour `Rotation` on anim exports, but clips the rotated
+  texture to the UNROTATED frame rectangle** (64x112 crop at N/S drew a 64-wide bar and a
+  sawtooth on diagonals; the near-square oblong survived). A rotated sprite must be packed
+  square with the art inside the inscribed circle. Also: overlapping discs can never give a
+  hard edge (chord coverage ramps the alpha) nor keep a mottle (6-7 deep stack smears it;
+  sim max std 7 vs TS 19.5). `launcher-render-contracts.md` needs both added.
+- **Travelling pulse = the shimmer substitute, MECHANISM PROVEN in play (3 clips):**
+  `ANIM_TS_SONICPULSE` (`adata.cpp`, art `TSSONICP.ZIP` from `ts_gen_sonicwave.py::pulse`,
+  stub in `build_tfassets.sh`), one on every wave disc (`SONIC_PULSE_EVERY = 1`), lit only in a
+  1-stage window every `PULSE_PERIOD = 6` stages, own stage gradient `SONIC_PULSE_SPREAD = 10`
+  tank->target so the lit set slides toward the target. Walk: every-12th discs = hopping dots
+  (00-31-23); every disc, 2-stage window, band gradient = a band section ~40 % of the beam,
+  "too long but improvement" (00-35-43); 1-stage window + spread 10 = ~10 % = ONE DISC, reads
+  as a circle again (00-39-21). Luke: "can't get it to look like a band from a circle".
+- **NEXT (first thing):** the block must be 2-3 disc diameters to read as a band segment:
+  `SONIC_PULSE_SPREAD` 10 -> 5 with the 1-stage window (~20 % of the beam). Then swap
+  `PULSE_COLOR` from the black test to the real off-tint (paler/whiter teal; Luke to pick) and
+  `PULSE_ALPHA` to taste (per-disc; the pulse discs stack like the wave discs). Old saves are
+  dead again (new anim type + `SonicDir` member).
+- Then, in Luke's order: turret seat to the REAR of the hull (Aseprite seat loop), unit size,
+  band cut-off on S/move/retarget (design in the 08-25 block below), any Aseprite pass.
+
+### Launcher levers on the discs: every one walked with log receipts (2026-08-26)
 
 | lever | verdict |
 |---|---|
 | `Cloak` on the anim export | ignored (08-25) |
-| `Cloak` on a UNIT-typed disc with offset ID | ignored, band identical (clip 23-54-15) |
+| `Cloak` on a UNIT-typed disc with offset ID (fx 32+64) | ignored, band identical |
 | `SHAPE_PREDATOR` | band INVISIBLE, no ground warp even zoomed over rocks |
 | `SHAPE_GHOST` | no effect |
-| `SHAPE_FADING` | translucent ✅ |
-| `Scale` throb keyed on stage | ripples ✅; cosine amp 12 % / period 6 stages = "even closer" to TS |
-| `FlashingFlags` pulse | hard on/off strobe, REJECTED (photosensitivity) |
-| typed as UNIT without ID offset | band draws but the Disruptor body vanishes (ID clash) |
+| `SHAPE_FADING` | translucent ✅ shipped |
+| `Scale` throb keyed on stage | ripples ✅ shipped at 12/6 |
+| `FlashingFlags` pulse | hard strobe, REJECTED (photosensitivity) |
+| `Rotation` (fx 128) | HONOURED, but clipped to the unrotated frame (see above) |
+| typed as UNIT without ID offset | the Disruptor body vanishes (ID clash) |
 
-Variant walk (Luke's words): 19/2 baseline "pulsing"; 8/2 "closest to TS yet"; **12/6 "even
-closer"** ← PICK; 12/12 "pretty good"; 25/4 "nice but not TS"; 12/4, 12/8, 8/6, 16/6 all "ok".
-Clip of 12/6: `~/Videos/Screencasts/Screencast from 2026-08-26 23-49-16.webm`.
-
-**Conclusion: the launcher has NO pixel displacement for us on any object type. Don't
-re-chase.** Then Luke re-watched the TS clip (`Screencast from 2026-08-24 00-38-41.webm`):
-**TS fakes it too**: a hard-edged straight strip, mottled translucent green, and a paler
-DISC PULSE riding along the strip tank->target. "We've been chasing a shimmer."
-**Agreed next design (Luke: "blue beam with an off-colour additional disc"):** keep the blue
-band; add `ANIM_TS_SONICPULSE` discs spawned alongside the band at the same spacing, art
-transparent except a ~4-stage window, so the stage offset makes the highlight travel
-tank->target for free; 2-3 windows per hold. OPEN before building: pulse colour (paler
-blue vs white-cyan) and whether the band keeps its throb. Then the strip-edge/noise
-Aseprite pass if still wanted.
-
-**Shipped default** (`function.h` `TF_SONIC_*_DEFAULT`): fx 12 (fading + throb), amp 12,
-period 6, no cloak, unowned. Because tank-end discs are further along in stage, a
-stage-keyed cosine travels tank→target for free. Dev builds re-read
-`Documents/CnCRemastered/tf_sonic_cloak.flag` per shot: `<cloak> <fx-bits> <amp%> <period>`
-(fx bits 1 predator, 2 ghost, 4 fading, 8 throb, 16 flash, 32 typed UNIT, 64 ID offset). A
-line with fewer numbers falls back to the defaults for the missing ones (`1 108` ran at 19/2,
-harmless there). Both log sites are `TF_DEV_BUILD`-gated; nothing to strip before ship.
-
-- ✅ Disruptor immunity verified in play (08-25). ✅ Turret facing = identity order, verified.
-- **NEXT SESSION queue (Luke's order), in order:**
-  1. **Turret seat: the cannon sits CENTRED on the hull and should sit at the BACK** (TS
-     `TurretOffset=-64`; udata.cpp's turret-centre field is unused by the RA draw path, so it
-     needs the TSTITN-style per-facing seat table or a baked offset in the turret frames; the
-     Aseprite seat loop with Luke, [[feedback-aseprite-seat-loop-protocols]]).
-  2. **Unit size** review alongside (measure against the base game's art, never our ports).
-  3. **Band cut-off.** On stop (S), move, or retarget the band must stop at the tank
-     immediately and the emitted part run out toward the target, NOT play the full envelope.
-     Design: tank-end discs are furthest along in stage, so on a real TarCom change / NavCom
-     assignment on a `UNIT_TSSONIC` bump every disc with `SonicFirer == me` by the same
-     delta = (FRAMES-FALL_STAGES-1) - max stage among them; the cut then travels
-     source→target for free and remaining damage ticks are skipped. Hook the UnitClass
-     Assign_Target / Assign_Destination overrides (only when the target actually changes;
-     never from inside Basic_Path — see path-failure-livelock-design.md).
-  4. **Off-colour disc pulse** (design above), then any Aseprite pass on the band.
+Dev flag `Documents/CnCRemastered/tf_sonic_cloak.flag`, re-read per shot: `<cloak> <fx-bits>
+<amp%> <period>` (fx 1 predator, 2 ghost, 4 fading, 8 throb, 16 flash, 32 typed UNIT, 64 ID
+offset, 128 rotate). Missing numbers fall back to the shipped defaults. All log sites are
+`TF_DEV_BUILD`-gated.
 
 ---
 

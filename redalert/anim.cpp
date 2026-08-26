@@ -603,6 +603,7 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
     , SonicDamage(0)
     , SonicVictim(TARGET_NONE)
     , SonicFirer(TARGET_NONE)
+    , SonicDir(DIR_N)
     , Loops(1)
     , IsToDelete(false)
     , IsBrandNew(true)

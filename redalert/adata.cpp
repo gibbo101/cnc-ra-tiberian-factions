@@ -2445,6 +2445,12 @@ static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, fa
 // SONIC4 already fires from the weapon's Report.
 static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 25, 0, VOC_NONE, ANIM_NONE, 25, 0x100);
 
+// Tiberian Factions -- TS Disruptor sonic pulse (ANIM_TS_SONICPULSE): the same
+// envelope as the wave disc, art from the same generator (TSSONICP.ZIP), lit
+// only in a short repeating stage window. Spawned every SONIC_PULSE_EVERY
+// discs on top of the band; carries no damage.
+static AnimTypeClass const TsSonicPulse(ANIM_TS_SONICPULSE, "TSSONICP", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 25, 0, VOC_NONE, ANIM_NONE, 25, 0x100);
+
 void AnimTypeClass::Init_Heap(void)
 {
     /*
@@ -2586,10 +2592,11 @@ void AnimTypeClass::Init_Heap(void)
 #endif
 
     // MUST stay last, in this order: heap ID == registration order, and these
-    // two occupy the ANIM_RAILFX / ANIM_TS_SONICWAVE enum slots that follow the
-    // virtual anims.
+    // three occupy the ANIM_RAILFX / ANIM_TS_SONICWAVE / ANIM_TS_SONICPULSE enum
+    // slots that follow the virtual anims.
     new AnimTypeClass(RailFx);
     new AnimTypeClass(TsSonicWave);
+    new AnimTypeClass(TsSonicPulse);
 }
 
 /***********************************************************************************************

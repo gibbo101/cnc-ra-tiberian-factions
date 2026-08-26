@@ -5444,7 +5444,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         **  the other launcher levers per shot. Scoped to the wave anim.
         */
         if (object != NULL && object->What_Am_I() == RTTI_ANIM
-            && ((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICWAVE) {
+            && (((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICWAVE
+                || ((AnimTypeClass const&)object->Class_Of()).Type == ANIM_TS_SONICPULSE)) {
             int stage = ((AnimClass const*)object)->Fetch_Stage();
 #if TF_DEV_BUILD
             static int logged = 0;
@@ -5514,6 +5515,9 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             if (TF_SonicFxMode & 64) {
                 // Keep a UNIT-typed disc out of the real units' ID range.
                 new_object.ID += 5000;
+            }
+            if (TF_SonicFxMode & 128) {
+                new_object.Rotation = (unsigned char)((AnimClass const*)object)->SonicDir;
             }
         }
 

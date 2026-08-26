@@ -365,6 +365,8 @@ PACK_ARGS+=("$TMPDIR/railfx_stub.shp:RAILFX.SHP")
 # frame count matches TSSONICW.ZIP, dims match the anim type's max dimension.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tssonicw_stub.shp" 24 24 25
 PACK_ARGS+=("$TMPDIR/tssonicw_stub.shp:TSSONICW.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssonicp_stub.shp" 24 24 25
+PACK_ARGS+=("$TMPDIR/tssonicp_stub.shp:TSSONICP.SHP")
 
 # Repack into TFASSETS.MIX with TD-prefix renames.
 python3 scripts/mix_tools.py pack "$OUTMIX" "${PACK_ARGS[@]}"
