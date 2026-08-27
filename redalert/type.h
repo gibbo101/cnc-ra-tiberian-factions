@@ -1156,6 +1156,7 @@ public:
     virtual int Max_Pips(void) const;
 
     void Turret_Adjust(DirType dir, int& x, int& y) const;
+    void Sonic_Turret_Seat(DirType dir, int& x, int& y) const;
     void Hover_Rack_Seat(DirType hull, DirType rack, int& x, int& y) const;
 
     /*

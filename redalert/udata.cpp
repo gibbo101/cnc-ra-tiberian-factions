@@ -1720,8 +1720,8 @@ static UnitTypeClass const UnitTsSonic(UNIT_TSSONIC,
                                        "TSSONIC",    // NAME: IniName.
                                        ANIM_FBALL1,  // EXPLOSION: big fireball.
                                        REMAP_NORMAL, // Sidebar remap logic.
-                                       0x0030,       // Vertical offset (render calibration).
-                                       0x0050,       // Primary weapon offset: the horn tip, measured mid-hull in play (0xC0 put the band a hull-length ahead of it).
+                                       0x0030,       // Vertical offset: UNUSED for this unit -- Fire_Coord builds the muzzle from the turret seat (see there).
+                                       0x0050,       // Primary weapon offset: UNUSED for this unit (same).
                                        0x0000,       // Primary weapon lateral offset (centerline emitter).
                                        0x0000,       // Secondary weapon offset (no secondary).
                                        0x0000,       // Secondary weapon lateral offset.
@@ -2460,6 +2460,10 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
         Hover_Rack_Seat(dir, dir, x, y);
         break;
 
+    case UNIT_TSSONIC:
+        Sonic_Turret_Seat(dir, x, y);
+        break;
+
     default:
         break;
     }
@@ -2504,6 +2508,33 @@ void UnitTypeClass::Hover_Rack_Seat(DirType hull, DirType rack, int& x, int& y) 
     int ridx = Dir_To_32(rack);
     x += _mount_x[hidx] + _res_x[ridx];
     y += _mount_y[hidx] + _res_y[ridx];
+}
+
+/***********************************************************************************************
+ * UnitTypeClass::Sonic_Turret_Seat -- TS Disruptor turret seat, aft of the hull centre.       *
+ *                                                                                             *
+ *    TS art.ini [SONIC] TurretOffset=-64: the turret pivots a quarter cell behind the hull    *
+ *    centre, 6 classic px at our scale. The screen position of that aft point per hull        *
+ *    facing is the Hover MLRS rack mount (the play-dialled projection: camera pitch and        *
+ *    EA's Facing32 diagonal quirks included) rescaled from its 9 px aft to 6, with the rack's *
+ *    deck lift removed and the Disruptor's own lift dialled separately.                       *
+ *=============================================================================================*/
+void UnitTypeClass::Sonic_Turret_Seat(DirType dir, int& x, int& y) const
+{
+    enum { SONIC_SEAT_AFT_PX = 6, HOVER_MOUNT_AFT_PX = 9, SONIC_SEAT_LIFT_PX = 0 };
+    // The hover mount, with its 4.5 px deck lift folded back out (its y is aft*cos - 4.5).
+    static const signed char _mount_x[32] = {0,  -2, -3, -5, -5, -7, -8, -9, -9, -8, -7,
+                                             -6, -5, -5, -3, -2, 0,  2,  3,  5,  5,  6,
+                                             7,  8,  9,  8,  8,  7,  5,  5,  3,  2};
+    static const signed char _mount_y[32] = {1,  0,  0,  -1, -1, -2, -3, -4, -6, -7, -8,
+                                             -8, -9, -9, -9, -10, -10, -9, -9, -9, -9, -8,
+                                             -8, -6, -5, -4, -3, -2, -1, -1, 0,  0};
+    int i = Dir_To_32(dir);
+    int ax = (_mount_x[i] * SONIC_SEAT_AFT_PX * 2 + (_mount_x[i] < 0 ? -HOVER_MOUNT_AFT_PX : HOVER_MOUNT_AFT_PX)) / (HOVER_MOUNT_AFT_PX * 2);
+    int ay2 = _mount_y[i] * 2 + 9; // (y + 4.5) * 2, the pure aft projection doubled
+    int ay = (ay2 * SONIC_SEAT_AFT_PX + (ay2 < 0 ? -HOVER_MOUNT_AFT_PX : HOVER_MOUNT_AFT_PX)) / (HOVER_MOUNT_AFT_PX * 2);
+    x += ax;
+    y += ay - SONIC_SEAT_LIFT_PX;
 }
 
 /***********************************************************************************************

@@ -592,6 +592,28 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
         return XY_Coord(Coord_X(coord) + _tstitn_muzzle[fi][0], Coord_Y(coord) + _tstitn_muzzle[fi][1]);
     }
 
+    /*
+    **  Tiberian Factions -- TS Disruptor (UNIT_TSSONIC): the band leaves the horn on
+    **  top of the aft-seated turret (TS art.ini [SONIC] TurretOffset=-64,
+    **  PrimaryFireFLH=0,0,150). Built in screen space exactly as the turret is
+    **  drawn: the per-facing turret seat, then the horn tip forward along the
+    **  TURRET facing with the camera pitch foreshortening its north-south share,
+    **  then the horn's height as a straight northward lift. Dial the three px
+    **  constants by eye; PrimaryOffset/VerticalOffset are unused for this unit.
+    */
+    if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_TSSONIC) {
+        enum { HORN_FWD_PX = 9, HORN_LIFT_PX = 11, PITCH_PCT = 61 };
+        int sx = 0, sy = 0;
+        ((UnitClass const*)this)->Class->Sonic_Turret_Seat(PrimaryFacing.Current(), sx, sy);
+        double t = (double)(unsigned char)dir * (6.28318530718 / 256.0);
+        int hx = (int)floor(HORN_FWD_PX * sin(t) + 0.5);
+        int hy = (int)floor(-HORN_FWD_PX * cos(t) * PITCH_PCT / 100.0 + 0.5);
+        int px = sx + hx;
+        int py = sy + hy - HORN_LIFT_PX;
+        COORDINATE centre = Center_Coord();
+        return XY_Coord((int)Coord_X(centre) + (px * CELL_LEPTON_W) / 24, (int)Coord_Y(centre) + (py * CELL_LEPTON_H) / 24);
+    }
+
     if (IsSecondShot) {
         coord = Coord_Move(coord, (DirType)(dir + DIR_E), lateral);
     } else {
