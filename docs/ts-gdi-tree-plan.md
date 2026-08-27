@@ -12,6 +12,26 @@
    credits bank, drive-off). Pre-read: the DEAD-ENDS list in the docking section of this doc
    and `harvester-docking-session-handover.md`. Use OpenTS `harvest`/refinery docking code
    (`unit.cpp` Mission_Unload / Mission_Harvest) as ground truth for any TS-side question.
+   **Code state read 2026-08-28 (nothing changed yet):**
+   - Acceptance: every refinery accepts every harvester (`building.cpp` RADIO_HELLO case
+     REFINERY/TSPROC/TDPROC, ~l.300). Dock cells (RADIO_DOCKING ~l.540): RA refinery =
+     DIR_S of centre; TD refinery = DIR_SW of centre; TS refinery = centre +1 row +1 col
+     (+1 row only for the RA harvester).
+   - ⚠ **THE BUG TO FIX FIRST — TSHARV at the TD refinery takes the TD ATTACH path.**
+     `RADIO_IM_IN` at `STRUCT_TDPROC` (~l.360) diverts only `UNIT_HARVESTER` to
+     MISSION_UNLOAD; everything else (TDHARV *and* TSHARV) gets `RADIO_ATTACH` -> limbo'd
+     and "baked" into the refinery's frames, which are the TD truck's art. So a TS harvester
+     docking at a TD refinery vanishes and a TD truck appears in the bay. Fix: divert
+     `UNIT_TSHARV` to MISSION_UNLOAD there too (park + timer offload, the pairing every
+     non-native harvester already uses).
+   - Seat: `Mission_Unload` case TSHARV shares TDHARV's branch (~l.3870): at any non-TSPROC
+     refinery it applies `TD_DOCK_NUDGE_RIGHT/UP` = 6 px E / 6 px N (dialled for the TD
+     sprite at the RA refinery) and issues NO facing turn (only TSPROC gets `Do_Turn(DIR_SE)`).
+     The TS harvester needs its own per-pairing seat dials (RA refinery, TD refinery) and a
+     dock facing per pairing -- an Aseprite/screenshot seat loop with Luke, one build per
+     nudge. Fume plume anchors at `Coord + (0,-6)` for non-TSPROC (check it sits on the TS hull).
+   - Draw: TSHARV is excluded from the RA dump/load frame paths (~l.2698/2718), so no white
+     box is expected; verify anyway (32-frame voxel).
 2. **Unit brightness pass** (queued nit 15 below): TSHARV / TSMCV / dropship "too dark"
    (Luke 08-16) vs the TS screencast. Method: measure TS's own render brightness from a TS
    screenshot / OpenTS voxel lighting constants (`voxel*.cpp`), never eyeball; the lever is
