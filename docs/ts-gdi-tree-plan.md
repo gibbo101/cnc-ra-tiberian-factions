@@ -2,7 +2,14 @@
 
 ## ⭐⭐⭐ RESUME HERE — 2026-08-28: Disruptor firing behaviour (OpenTS WaveClass) + continuous damage SHIPPED `9a4c70a8`; Mk.II RAILGUN re-port (OpenTS + TS rules) VERIFIED "looks good", SHIPPED `79db903e`. Pulse/ripple CLOSED. Both Disruptor + Mk.II are now source-faithful.
 
-**Prefix DLL `b97b8561` = HEAD `79db903e`. Old saves are dead. Next (Luke's order): OpenTS audit of the remaining TS ports (Hover MLRS, Wolverine, Titan, subterranean, EMP), turret seat to the rear, unit size.**
+**Prefix DLL `ec76c868` = HEAD (turret seat + horn muzzle commit). Old saves are dead.
+Disruptor arc: band FINAL, firing behaviour SHIPPED, turret seat (TS TurretOffset=-64 via the
+Hover mount rescaled, `UnitTypeClass::Sonic_Turret_Seat`) + horn-rooted muzzle
+(`Fire_Coord` UNIT_TSSONIC branch: seat + HORN_FWD_PX 9 along the turret facing at PITCH 61 %
++ HORN_LIFT_PX 11) BOTH SIGNED OFF FIRST BUILD 08-28 (sheet: all 8 facings). Unit size:
+Luke DECIDED keep (39 px = exactly TS's 1.26x Hover MLRS; already 20 % longer than the RA
+Mammoth). Next (Luke's order): OpenTS audit of the remaining TS ports (Hover MLRS, Wolverine,
+Titan, subterranean, EMP).**
 
 ### Mk.II RAILGUN re-port from OpenTS + TS rules — VERIFIED + SHIPPED `79db903e`
 TS data (extracted live from `TIBSUN.MIX/LOCAL.MIX/rules.ini` with `tools/ts_extract.py`;
