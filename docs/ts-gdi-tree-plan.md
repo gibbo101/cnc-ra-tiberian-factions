@@ -1,9 +1,35 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-27 (late): Disruptor FIRING BEHAVIOUR ported from OpenTS WaveClass — DEPLOYED UNVERIFIED (DLL `f3ecf16f`); band thinned to 15 px, awaiting verdict. Pulse/ripple CLOSED.
+## ⭐⭐⭐ RESUME HERE — 2026-08-27 (late): Disruptor firing behaviour (OpenTS WaveClass) VERIFIED "LOOKING GOOD" + continuous damage, committed `9a4c70a8`; Mk.II RAILGUN re-port from OpenTS DEPLOYED UNVERIFIED. Pulse/ripple CLOSED.
 
-**Prefix DLL `f3ecf16f` (= HEAD `e3c19050` + the firing port + thin band, UNCOMMITTED).
-Old saves are dead (2 AnimClass + 1 TechnoClass members).**
+**Prefix DLL = HEAD `9a4c70a8` + the railgun re-port (UNCOMMITTED). Old saves are dead.**
+
+### Mk.II RAILGUN re-port from OpenTS + TS rules — DEPLOYED UNVERIFIED (same DLL)
+TS data (extracted live from `TIBSUN.MIX/LOCAL.MIX/rules.ini` with `tools/ts_extract.py`;
+copy in the session scratchpad): `[MechRailgun]` AmbientDamage=200 ROF=60 Range=8 Report=RAILUSE5
+Anim=GUNFIRE; `[LargeRailgunSys]` SpiralRadius=15 ParticlesPerCoord=.15 SpiralDeltaPerCoord=.03
+PositionPerturbation=30 MovementPerturbation=.4 VelocityPerturbation=.6 Laser=yes
+LaserColor=25,20,255; `[LargeRailgunPart]` MaxEC=70 ColorList=(25,70,205),(150,150,150)
+ColorSpeed=.009 Velocity=.3. Code: `partsys.cpp Railgun_AI`, `techno.cpp Railgun_Beam_Damage`.
+- **Coil** = TS's helix maths verbatim (`techno.cpp` IsRailgun branch): 19 sparks/cell (half TS's
+  density — HD sprites, not pixels), radius 15 leptons, .03 rad/lepton, ±15 lepton jitter, the
+  helix's height axis folded into screen-vertical. Sparks are `ANIM_RAILFX` again (the old
+  white-box was the tile-count trap), art from NEW `scripts/ts_gen_railfx.py`: 12-frame ladder
+  blue (25,70,205) -> grey (150,150,150) over ~1 s then grey to ~2.4 s (12 stages x 8 ticks).
+  TS's outward drift (Velocity=.3/frame ≈ 2 px over a life) deliberately NOT reproduced.
+- **Damage**: TS's half-cell radius — a unit is hit only within 128 leptons of the line; a
+  building by any crossed cell; the aimed target always.
+- Anim heap floor raised 200 -> 1024 (`rules.cpp`): a max-range shot lays ~150 sparks.
+- Beam stays the 3-line 5-frame draw (launcher caps).
+- **GUNFIRE muzzle flash ADDED (08-28):** `ANIM_TS_GUNFIRE` = TS `gunfire.shp` (CONQUER.MIX, 3
+  frames, ANIM.PAL, x4 onto the 128 canvas, `TSGUNFIRE.ZIP`, translucent), wired purely as
+  `Anim=TSGUNFIRE` on `[MechRailgun]` through RA's own Fire_At Anim= dispatch (spawned at
+  Fire_Coord, attached to the firer). Stub in TFASSETS.MIX (rebuilt, 75 entries).
+- **Coil life halved to 1.2 s (08-28, Luke: smoke still there when the Mk.II fires again):**
+  RAILFX delay 8 -> 4. TS locks the gun until its coil dies (~2.4 s); we keep the 1.5 s ROF
+  and dissipate faster instead.
+- Verify: fire at max range on desert — a dense ragged blue coil hugging the beam, greying out
+  within a second, lingering ~2.5 s; units beside the line unhurt unless within half a cell.
 
 ### First clip next session verifies the firing port (all four pieces in one shot)
 1. **One band per firer**: a Disruptor holding fire on a target produces bands back to back with

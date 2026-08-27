@@ -361,6 +361,9 @@ ts_stub TSSILO "$TMPDIR/tssilomk_stub.shp" 48 48 19
 PACK_ARGS+=("$TMPDIR/tssilomk_stub.shp:TSSILOMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/railfx_stub.shp" 24 24 12
 PACK_ARGS+=("$TMPDIR/railfx_stub.shp:RAILFX.SHP")
+# TS GUNFIRE muzzle flash (ANIM_TS_GUNFIRE) -- 3 frames, HD-only stub.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsgunfire_stub.shp" 24 24 3
+PACK_ARGS+=("$TMPDIR/tsgunfire_stub.shp:TSGUNFIRE.SHP")
 # TS Disruptor sonic wave (ANIM_TS_SONICWAVE) -- HD-only like the other TS art;
 # frame count matches TSSONICW.ZIP, dims match the anim type's max dimension.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tssonicw_stub.shp" 24 24 25

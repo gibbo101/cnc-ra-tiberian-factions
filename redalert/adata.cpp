@@ -2428,9 +2428,12 @@ static AnimTypeClass const ChemNW(ANIM_CHEM_NW, "TDCHEM-NW", 48, 9, false, false
 // railgun as a laser line plus particles spiraling around it; the beam is the
 // 3-line Lines[] draw (launcher ABI cap), so the spiral is a swarm of these
 // short-lived blue sparks spawned along a helix by the IsRailgun branch in
-// TechnoClass::Fire_At. Art = pipeline-generated 6-frame glow (RAILFX tiles in
-// RA_VFX.XML); classic = transparent stub in TFASSETS.MIX (dims only).
-static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 6, 0, VOC_NONE, ANIM_NONE, 6, 0x100);
+// TechnoClass::Fire_At. Art = scripts/ts_gen_railfx.py: a 12-frame colour ladder
+// walking TS's [LargeRailgunPart] ColorList blue->grey then holding grey. 12 stages
+// x 4 ticks = 1.2 s: half TS's MaxEC, so the coil is gone before the 1.5 s refire
+// (TS locks the gun until its coil dies; we keep the gun's rate instead).
+// Classic = transparent stub in TFASSETS.MIX.
+static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, false, false, false, false, false, false, false, 0, 4, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 
 // Tiberian Factions -- TS Disruptor sonic wave (ANIM_TS_SONICWAVE). Art is ours
 // (TSSONICW.ZIP via scripts/ts_gen_sonicwave.py): TS has NO sonic-wave art to
@@ -2449,6 +2452,12 @@ static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 24, 7, fal
 // nothing spawns it (the type stays registered to keep the enum stable and its
 // TSSONICP art slot valid). Every ripple mechanism was tried and rejected in
 // play 2026-08-27; the findings live in docs/ts-gdi-tree-plan.md.
+// Tiberian Factions -- TS GUNFIRE muzzle flash (ANIM_TS_GUNFIRE): TS's [MechRailgun]
+// Anim=GUNFIRE, art.ini Translucent=yes. Art = CONQUER.MIX gunfire.shp decoded with
+// ANIM.PAL and scaled x4 onto the 128 canvas (TSGUNFIRE.ZIP). Attached to the firer
+// by Fire_At's Anim= dispatch, as any RA muzzle anim.
+static AnimTypeClass const TsGunfire(ANIM_TS_GUNFIRE, "TSGUNFIRE", 16, 1, false, false, false, false, false, false, false, true, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+
 static AnimTypeClass const TsSonicPulse(ANIM_TS_SONICPULSE, "TSSONICP", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x100);
 
 void AnimTypeClass::Init_Heap(void)
@@ -2592,11 +2601,12 @@ void AnimTypeClass::Init_Heap(void)
 #endif
 
     // MUST stay last, in this order: heap ID == registration order, and these
-    // three occupy the ANIM_RAILFX / ANIM_TS_SONICWAVE / ANIM_TS_SONICPULSE enum
-    // slots that follow the virtual anims.
+    // four occupy the ANIM_RAILFX / ANIM_TS_SONICWAVE / ANIM_TS_SONICPULSE /
+    // ANIM_TS_GUNFIRE enum slots that follow the virtual anims.
     new AnimTypeClass(RailFx);
     new AnimTypeClass(TsSonicWave);
     new AnimTypeClass(TsSonicPulse);
+    new AnimTypeClass(TsGunfire);
 }
 
 /***********************************************************************************************

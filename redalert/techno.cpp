@@ -131,6 +131,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include <math.h>
 #include "tstitn_muzzle.h"
 #include "utracker.h"
 
@@ -3960,7 +3961,15 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                     lastcell = cell;
                     ObjectClass* occ = Map[cell].Cell_Occupier();
                     while (occ != NULL) {
-                        if (occ != this && occ->Is_Techno()) {
+                        // TS: a unit is hit only within half a cell of the line
+                        // itself; a building is hit by any crossed cell.
+                        bool within = true;
+                        if (occ->What_Am_I() != RTTI_BUILDING) {
+                            COORDINATE oc = occ->Center_Coord();
+                            long side = (long)((int)Coord_X(oc) - sx) * ddy - (long)((int)Coord_Y(oc) - sy) * ddx;
+                            within = (side < 0 ? -side : side) / dist < CELL_LEPTON_W / 2;
+                        }
+                        if (occ != this && occ->Is_Techno() && within) {
                             bool seen = false;
                             for (int v = 0; v < vcount; v++) {
                                 if (victims[v] == occ) {
@@ -4041,11 +4050,15 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 Map.Flag_To_Redraw(true);
 
                 /*
-                **  The spiral: RAILFX sparks stepped along the line, offset
-                **  perpendicular by a sine (one turn per ~1.4 cells, amplitude
-                **  ~24 leptons ≈ TS SpiralRadius=15 scaled up for readability).
-                **  Spawn delay grows with distance so the helix ripples from
-                **  muzzle to target.
+                **  The coil, as TS's [LargeRailgunSys] particle system lays it
+                **  (OpenTS partsys.cpp Railgun_AI): ParticlesPerCoord=.15 sparks
+                **  along the shot on a helix of SpiralRadius=15 leptons turning
+                **  SpiralDeltaPerCoord=.03 rad per lepton, each jittered by
+                **  PositionPerturbationCoefficient=30. The helix's height axis
+                **  becomes a screen-vertical offset. TS's outward drift
+                **  (Velocity=.3 per frame) moves a spark ~2 px in its whole
+                **  life and is not reproduced. Density halved for the anim
+                **  heap: our sparks are HD sprites, not single pixels.
                 */
                 // How many stages of head start the muzzle end of the sonic band gets
                 // over its far end. The art's first SONIC_SWEEP_STAGES stages are fully
@@ -4055,25 +4068,18 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 // also retracts from the muzzle end last-lit-dies-last, as TS's does.
                 // Must match LEAD_STAGES in scripts/ts_gen_sonicwave.py.
                 enum { SONIC_SWEEP_STAGES = AnimClass::SONIC_LEAD_STAGES };
-                static const signed char _helix[32] = {0,   5,   9,   13,  17,  20,  22,  24,  24, 24, 22,
-                                                       20,  17,  13,  9,   5,   0,   -5,  -9,  -13, -17,
-                                                       -20, -22, -24, -24, -24, -22, -20, -17, -13, -9, -5};
-                int px = -ddy, py = ddx; // beam-perpendicular (unnormalized; /dist normalizes)
-                if (weapon->IsRailgun)
-                // Start/stop the helix a full cell clear of the endpoints: a
-                // spark spawned inside the firer's or the target's own cell
-                // attaches itself to that object and exports through the
-                // launcher's sub-object path, which renders it as the white
-                // placeholder box (the endpoint-box bug).
-                for (int d = 300; d < dist - 300; d += 44) {
-                    int amp = _helix[(d / 11) & 31];
-                    COORDINATE c = XY_Coord(sx + ddx * d / dist + px * amp / dist,
-                                            sy + ddy * d / dist + py * amp / dist);
-                    // ANIM_PIFFPIFF: a stock anim the launcher provably renders.
-                    // NO spawn delay: vanilla never delays these anims, and a
-                    // delayed anim exports to the launcher in its pre-start
-                    // state. The muzzle->target ripple was cosmetic only.
-                    new AnimClass(ANIM_PIFFPIFF, c);
+                if (weapon->IsRailgun) {
+                    enum { RAIL_SPARKS_PER_CELL = 19, RAIL_SPIRAL_RADIUS = 15, RAIL_JITTER = 15 };
+                    int count = (dist * RAIL_SPARKS_PER_CELL) / CELL_LEPTON_W;
+                    for (int i = 0; i < count; i++) {
+                        int along = (dist * i) / count;
+                        double angle = (double)along * 0.03;
+                        double ring = cos(angle) * RAIL_SPIRAL_RADIUS;
+                        double lift = sin(angle) * RAIL_SPIRAL_RADIUS;
+                        int x = sx + (ddx * along) / dist + (int)(-(double)ddy * ring / dist) + Random_Pick(-(int)RAIL_JITTER, (int)RAIL_JITTER);
+                        int y = sy + (ddy * along) / dist + (int)((double)ddx * ring / dist) - (int)lift + Random_Pick(-(int)RAIL_JITTER, (int)RAIL_JITTER);
+                        new AnimClass(ANIM_RAILFX, XY_Coord(x, y));
+                    }
                 }
 
                 /*
