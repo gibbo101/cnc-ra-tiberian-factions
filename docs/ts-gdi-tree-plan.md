@@ -1,11 +1,36 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-27 (evening): Disruptor band is FINAL (discs + fading + 12/6 throb, NO pulse). Pulse/ripple workstream CLOSED — every mechanism falsified. OpenTS source released: audit queue below.
+## ⭐⭐⭐ RESUME HERE — 2026-08-27 (late): Disruptor FIRING BEHAVIOUR ported from OpenTS WaveClass — DEPLOYED UNVERIFIED (DLL `f3ecf16f`); band thinned to 15 px, awaiting verdict. Pulse/ripple CLOSED.
 
-**Prefix DLL `e0133c1d` (= HEAD of `ts-units` + the ripple teardown, uncommitted), band art
-TSSONICW.ZIP unchanged since the 08-26 checkpoint. TSSONICP.ZIP still ships (13-frame ladder)
-but NOTHING spawns ANIM_TS_SONICPULSE — the type is retired in place to keep the enum and
-tileset stable. Flag file `tf_sonic_cloak.flag.off`; `tf_sonic_vortex.flag` DELETED.**
+**Prefix DLL `f3ecf16f` (= HEAD `e3c19050` + the firing port + thin band, UNCOMMITTED).
+Old saves are dead (2 AnimClass + 1 TechnoClass members).**
+
+### First clip next session verifies the firing port (all four pieces in one shot)
+1. **One band per firer**: a Disruptor holding fire on a target produces bands back to back with
+   NO overlap (rearm = `SonicBandEnd`, the frame the band is gone).
+2. **Moving target**: fire at a unit, drive it sideways mid-band — the band swings and follows
+   it, hinged at the muzzle (every disc re-derives its place on the live line each tick).
+3. **Cut-off**: press S / give a move order / retarget mid-band — the band freezes and retracts
+   from the TANK end toward the target immediately, damage stops, next shot allowed after the
+   retract (~0.4 s). Same on target death or when the target runs > 6 cells away.
+4. Band thickness: 15 classic px (was 20; TS's polygon is 18.75). Thinner? `DIAMETER` in
+   `ts_gen_sonicwave.py`, one number, art-only.
+
+### The port (mirrors OpenTS `wave.cpp` `Wave_Shape_AI` — read it before changing anything)
+- `AnimClass::SonicT` (0-256 place on the muzzle->target line; -1 = cut loose) and
+  `SonicTether` (the TARGET fired at, cell or object) on every wave disc; `TechnoClass::SonicBandEnd`
+  gates `Can_Fire` with FIRE_REARM for sonic weapons.
+- Tether predicate per disc per tick (`AnimClass::AI`): firer alive && tether legal &&
+  `firer->TarCom == SonicTether` && distance <= `SONIC_TETHER_RANGE` (2172 leptons = TS's
+  6 diagonal cells). Tethered -> disc moves to `lerp(Fire_Coord(0), aim, T)` via Mark UP/DOWN.
+  Broken -> the first disc to notice scans the band (same `SonicFirer`, `SonicT >= 0`), computes
+  ONE delta = `(Stages - SONIC_FALL_STAGES - 1) - max stage`, bumps every disc by it, zeroes
+  their `SonicDamage`, sets `SonicT = -1`, and pulls the firer's `SonicBandEnd` in to the fall.
+  This replaces the 08-25 "hook Assign_Target/Assign_Destination" design: polling `TarCom` is
+  what TS itself does and needs no override plumbing.
+- Deliberately NOT ported (Luke-approved feel kept): TS's per-frame AmbientDamage to every
+  occupier, wall/overlay/cliff effects, the 100-frame life (ours = 25 stages x 5 ticks, matches
+  the footage). Ground-target (force-fire) shots keep a static band, cut only by TarCom change.
 
 ### ⭐ OpenTS (github.com/OpenTS-Developers/OpenTS, released 2026-08-27) — cloned to `reference/OpenTS/`
 Community source reconstruction of TS 2.03 Firestorm, GPL v3 — licence-compatible with us.
@@ -63,14 +88,6 @@ real behaviour is readable. Also a candidate source for the band cut-off semanti
   `TurretOffset=-64`, udata.cpp's turret-centre field is unused by the RA draw path, so it
   needs a TSTITN-style per-facing seat table or a baked offset in the turret frames), unit
   size (measure the base game's art, never our ports), band cut-off, any Aseprite pass.
-- **Band cut-off design (Luke, 2026-08-25).** On stop (S), move, or retarget the band must
-  stop at the tank immediately and the emitted part run out toward the target, NOT play the
-  full envelope. Tank-end discs are furthest along in stage, so on a real TarCom change /
-  NavCom assignment on a `UNIT_TSSONIC` bump every disc (wave AND pulse) with
-  `SonicFirer == me` by the same delta = (FRAMES-FALL_STAGES-1) - max stage among them; the
-  cut then travels source->target for free and remaining damage ticks are skipped. Hook the
-  UnitClass Assign_Target / Assign_Destination overrides, only when the target actually
-  changes; never from inside Basic_Path (path-failure-livelock-design.md).
 
 ### Launcher levers on the discs: every one walked with log receipts (2026-08-26)
 

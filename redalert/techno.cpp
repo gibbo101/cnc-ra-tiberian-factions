@@ -713,6 +713,7 @@ TechnoClass::TechnoClass(RTTIType rtti, int id, HousesType house)
     , SuspendedTarCom(TARGET_NONE)
     , PrimaryFacing(DIR_N)
     , Arm(0)
+    , SonicBandEnd(0)
     , Ammo(-1)
     , ElectricZapDelay(-1)
     , ElectricZapTarget(0)
@@ -3253,6 +3254,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         */
         if (Arm != 0)
             return (FIRE_REARM);
+        if (weapon->IsSonic && (int)Frame < SonicBandEnd)
+            return (FIRE_REARM);
 
         /*
         **	The target must be within range in order to allow firing.
@@ -4104,7 +4107,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 **
                 **  The band IS the weapon: the first disc spawned in each cell
                 **  past the firer's own is that cell's damage anchor, dealing
-                **  AmbientDamage in SONIC_DAMAGE_TICKS instalments across the
+                **  AmbientDamage in Sonic_Damage_Hits() instalments across the
                 **  hold. The aimed-at object rides on the last disc.
                 */
                 if (weapon->IsSonic) {
@@ -4123,15 +4126,21 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                             // house colour, which turned the green band GDI gold.
                             wave->SonicFirer = As_Target();
                             wave->SonicDir = ::Direction(XY_Coord(sx, sy), XY_Coord(sx + ddx, sy + ddy));
+                            wave->SonicT = (d * 256) / dist;
+                            wave->SonicTether = target;
                             if (TF_SonicCloakMode >= 10) {
                                 wave->Set_Owner(House->Class->House);
                             }
                             if (cc != anchored) {
                                 anchored = cc;
-                                wave->SonicDamage = weapon->AmbientDamage / AnimClass::SONIC_DAMAGE_TICKS;
+                                wave->SonicDamage = max(weapon->AmbientDamage / AnimClass::Sonic_Damage_Hits(), 1);
                             }
                             last = wave;
                         }
+                    }
+                    {
+                        AnimTypeClass const& wavetype = AnimTypeClass::As_Reference(ANIM_TS_SONICWAVE);
+                        SonicBandEnd = (int)Frame + wavetype.Stages * wavetype.Delay;
                     }
                     /*
                     **  The aimed-at object rides on the last disc whatever
@@ -4141,7 +4150,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                     */
                     if (object != NULL && object != this && object->Is_Techno() && last != NULL) {
                         if (last->SonicDamage == 0) {
-                            last->SonicDamage = weapon->AmbientDamage / AnimClass::SONIC_DAMAGE_TICKS;
+                            last->SonicDamage = max(weapon->AmbientDamage / AnimClass::Sonic_Damage_Hits(), 1);
                         }
                         last->SonicVictim = object->As_Target();
                     }

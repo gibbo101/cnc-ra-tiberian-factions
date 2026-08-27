@@ -219,6 +219,13 @@ public:
     CDTimerClass<FrameTimerClass> Arm;
 
     /*
+    **	Tiberian Factions: the game frame at which this object's Disruptor band is
+    **	gone. A sonic weapon cannot fire again while its band lives (TS keeps one
+    **	WaveClass per firer); a cut band shortens it.
+    */
+    int SonicBandEnd;
+
+    /*
     **	The number of shot this object can fire before running out of ammo. If this
     **	value is zero, then firing is not allowed. If -1, then there is no ammunition
     **	limit.

@@ -355,6 +355,18 @@ void AnimClass::Draw_It(int x, int y, WindowNumberType window) const
 #endif
 }
 
+/*
+**	The number of damage hits one anchor disc lands across a full band pass:
+**	every SONIC_DAMAGE_PERIOD-th stage from the first visible stage to the
+**	start of the fade. AmbientDamage is split across them.
+*/
+int AnimClass::Sonic_Damage_Hits(void)
+{
+    AnimTypeClass const& wavetype = AnimTypeClass::As_Reference(ANIM_TS_SONICWAVE);
+    int span = wavetype.Stages - SONIC_LEAD_STAGES - SONIC_FALL_STAGES;
+    return max((span + SONIC_DAMAGE_PERIOD - 1) / SONIC_DAMAGE_PERIOD, 1);
+}
+
 /***********************************************************************************************
  * AnimClass::Mark -- Signals to map that redrawing is necessary.                              *
  *                                                                                             *
@@ -605,6 +617,8 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
     , SonicVictim(TARGET_NONE)
     , SonicFirer(TARGET_NONE)
     , SonicDir(DIR_N)
+    , SonicT(-1)
+    , SonicTether(TARGET_NONE)
     , Loops(1)
     , IsToDelete(false)
     , IsBrandNew(true)
@@ -849,6 +863,59 @@ void AnimClass::AI(void)
         return;
     }
 
+    /*
+    **	Tiberian Factions: the Disruptor band's tether, as TS's WaveClass
+    **	(OpenTS wave.cpp, Wave_Shape_AI). While the firer still aims at what
+    **	the band was fired at and it is within six cells, every disc re-derives
+    **	its place on the live muzzle->target line each tick, so the band
+    **	follows a moving target and swings with the hull. The first tick that
+    **	fails -- a move or stop order clears TarCom, a retarget swaps it,
+    **	either party dies, the target runs out of range -- the band freezes
+    **	where it is, stops dealing damage, and every disc of it jumps into the
+    **	fall by one shared delta, so the retract runs from the tank end toward
+    **	the target. The firer's rearm follows the shortened life.
+    */
+    if (Class->Type == ANIM_TS_SONICWAVE && SonicT >= 0) {
+        TechnoClass* firer = Target_Legal(SonicFirer) ? As_Techno(SonicFirer) : NULL;
+        bool tethered = firer != NULL && firer->IsActive && Target_Legal(SonicTether)
+                        && firer->TarCom == SonicTether
+                        && ::Distance(firer->Center_Coord(), As_Coord(SonicTether)) <= SONIC_TETHER_RANGE;
+        if (tethered) {
+            COORDINATE muzzle = firer->Fire_Coord(0);
+            COORDINATE aim = As_Coord(SonicTether);
+            int x = (int)Coord_X(muzzle) + (((int)Coord_X(aim) - (int)Coord_X(muzzle)) * SonicT) / 256;
+            int y = (int)Coord_Y(muzzle) + (((int)Coord_Y(aim) - (int)Coord_Y(muzzle)) * SonicT) / 256;
+            COORDINATE fresh = XY_Coord(x, y);
+            if (fresh != Coord) {
+                Mark(MARK_UP);
+                Coord = fresh;
+                Mark(MARK_DOWN);
+            }
+        } else {
+            int top = 0;
+            for (int index = 0; index < Anims.Count(); index++) {
+                AnimClass* disc = Anims.Ptr(index);
+                if (disc->IsActive && disc->Class->Type == ANIM_TS_SONICWAVE && disc->SonicT >= 0
+                    && disc->SonicFirer == SonicFirer) {
+                    top = max(top, disc->Fetch_Stage());
+                }
+            }
+            int delta = max((Class->Stages - SONIC_FALL_STAGES - 1) - top, 0);
+            for (int index = 0; index < Anims.Count(); index++) {
+                AnimClass* disc = Anims.Ptr(index);
+                if (disc->IsActive && disc->Class->Type == ANIM_TS_SONICWAVE && disc->SonicT >= 0
+                    && disc->SonicFirer == SonicFirer) {
+                    disc->Set_Stage(disc->Fetch_Stage() + delta);
+                    disc->SonicDamage = 0;
+                    disc->SonicT = -1;
+                }
+            }
+            if (firer != NULL) {
+                firer->SonicBandEnd = (int)Frame + (SONIC_FALL_STAGES + 1) * Class->Delay;
+            }
+        }
+    }
+
 
     /*
     **	If this is a brand new animation, then don't process it the first logic pass
@@ -935,9 +1002,9 @@ void AnimClass::AI(void)
             **	chain being walked.
             */
             if (SonicDamage > 0 && Class->Type == ANIM_TS_SONICWAVE) {
-                int lit = stage - (SONIC_LEAD_STAGES + 1);
+                int lit = stage - SONIC_LEAD_STAGES;
                 if (lit >= 0 && (lit % SONIC_DAMAGE_PERIOD) == 0
-                    && lit < SONIC_DAMAGE_TICKS * SONIC_DAMAGE_PERIOD) {
+                    && lit < Class->Stages - SONIC_LEAD_STAGES - SONIC_FALL_STAGES) {
                     ObjectClass* victims[8];
                     int vcount = 0;
                     /*
@@ -1375,6 +1442,9 @@ void AnimClass::Detach(TARGET target, bool all)
         }
         if (SonicFirer == target) {
             SonicFirer = TARGET_NONE;
+        }
+        if (SonicTether == target) {
+            SonicTether = TARGET_NONE;
         }
     }
 #endif
