@@ -1,6 +1,6 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — NEXT SESSION (set by Luke 2026-08-28): (1) TS harvester docking at the RA and TD refineries, (2) the unit brightness pass — then EVERY current TS unit is signed off. Shipped 08-27/28: Disruptor arc CLOSED, Mk.II railgun, Amphibious APC (all source-faithful via OpenTS), all pushed (`f876b002`).
+## ⭐⭐⭐ RESUME HERE — agenda set by Luke 2026-08-28: (1) TS harvester docking at the RA and TD refineries, (2) the unit brightness pass, (3) TS power plant + radar placement glitch, (4) war factory re-look with OpenTS — then the next phase. Shipped 08-27/28: Disruptor arc CLOSED, Mk.II railgun, Amphibious APC (all source-faithful via OpenTS), all pushed (`f876b002`).
 
 **Prefix DLL `10b2483d` = HEAD `f876b002`, pushed. Old saves are dead.**
 
@@ -18,6 +18,13 @@
    `vxl_render.py --ambient` (0.35 default) + the 1.45x team-green lift, re-render + re-pack
    per model via the existing pack scripts (keep the +8 face fix and each model's `--elev`:
    APC/harvester 32, others 54).
+3. **TS Power Plant + TS Radar placement glitch** (OPEN since 08-24: both place one tile below
+   their grid). Compare against OpenTS building placement / foundation + the TS art.ini
+   entries for GAPOWR / GARADR (foundation, anim offsets) before touching any offset.
+4. **Re-look at the TS war factory** with the source in hand: OpenTS's factory door / exit
+   / sort logic (`building.cpp` GAWEAP handling, art.ini GAWEAP anims) against our sandwich
+   + exit-rail + clamp construction (see the WF sections below and the DEAD-ENDS list).
+Then the next phase.
 
 
 
