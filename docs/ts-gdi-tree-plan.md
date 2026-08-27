@@ -1,10 +1,10 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-27 (late): Disruptor firing behaviour (OpenTS WaveClass) VERIFIED "LOOKING GOOD" + continuous damage, committed `9a4c70a8`; Mk.II RAILGUN re-port from OpenTS DEPLOYED UNVERIFIED. Pulse/ripple CLOSED.
+## ⭐⭐⭐ RESUME HERE — 2026-08-28: Disruptor firing behaviour (OpenTS WaveClass) + continuous damage SHIPPED `9a4c70a8`; Mk.II RAILGUN re-port (OpenTS + TS rules) VERIFIED "looks good", SHIPPED `79db903e`. Pulse/ripple CLOSED. Both Disruptor + Mk.II are now source-faithful.
 
-**Prefix DLL = HEAD `9a4c70a8` + the railgun re-port (UNCOMMITTED). Old saves are dead.**
+**Prefix DLL `b97b8561` = HEAD `79db903e`. Old saves are dead. Next (Luke's order): OpenTS audit of the remaining TS ports (Hover MLRS, Wolverine, Titan, subterranean, EMP), turret seat to the rear, unit size.**
 
-### Mk.II RAILGUN re-port from OpenTS + TS rules — DEPLOYED UNVERIFIED (same DLL)
+### Mk.II RAILGUN re-port from OpenTS + TS rules — VERIFIED + SHIPPED `79db903e`
 TS data (extracted live from `TIBSUN.MIX/LOCAL.MIX/rules.ini` with `tools/ts_extract.py`;
 copy in the session scratchpad): `[MechRailgun]` AmbientDamage=200 ROF=60 Range=8 Report=RAILUSE5
 Anim=GUNFIRE; `[LargeRailgunSys]` SpiralRadius=15 ParticlesPerCoord=.15 SpiralDeltaPerCoord=.03
