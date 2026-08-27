@@ -1,15 +1,25 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-28: Disruptor arc CLOSED (band, firing, seat, muzzle all shipped); Mk.II railgun SHIPPED `79db903e`; Amphibious APC OpenTS pass (3 fixes + water hull + TS speed table) VERIFIED "perfection" + SHIPPED. Next: OpenTS audit continues (Hover MLRS, Wolverine, Titan, subterranean, EMP).
+## ⭐⭐⭐ RESUME HERE — NEXT SESSION (set by Luke 2026-08-28): (1) TS harvester docking at the RA and TD refineries, (2) the unit brightness pass — then EVERY current TS unit is signed off. Shipped 08-27/28: Disruptor arc CLOSED, Mk.II railgun, Amphibious APC (all source-faithful via OpenTS), all pushed (`f876b002`).
 
-**Prefix DLL `ec76c868` = HEAD (turret seat + horn muzzle commit). Old saves are dead.
-Disruptor arc: band FINAL, firing behaviour SHIPPED, turret seat (TS TurretOffset=-64 via the
-Hover mount rescaled, `UnitTypeClass::Sonic_Turret_Seat`) + horn-rooted muzzle
-(`Fire_Coord` UNIT_TSSONIC branch: seat + HORN_FWD_PX 9 along the turret facing at PITCH 61 %
-+ HORN_LIFT_PX 11) BOTH SIGNED OFF FIRST BUILD 08-28 (sheet: all 8 facings). Unit size:
-Luke DECIDED keep (39 px = exactly TS's 1.26x Hover MLRS; already 20 % longer than the RA
-Mammoth). Next (Luke's order): OpenTS audit of the remaining TS ports (Hover MLRS, Wolverine,
-Titan, subterranean, EMP).**
+**Prefix DLL `10b2483d` = HEAD `f876b002`, pushed. Old saves are dead.**
+
+### The two remaining items (Luke, 2026-08-28) — then all current units are signed off
+1. **TS harvester (`TSHARV`) docking at the RA and TD refineries.** Docks at TSPROC already
+   (signed off 08-06). `Mission_Unload` `case UNIT_TSHARV` shares the TD/RA-harvester path
+   (`unit.cpp` ~3870, "no dump frames on the voxel sprite"); verify the reverse-dock seat at
+   RA `STRUCT_REFINERY` and `STRUCT_TDPROC` (dock cell, facing, park nudge, no white box,
+   credits bank, drive-off). Pre-read: the DEAD-ENDS list in the docking section of this doc
+   and `harvester-docking-session-handover.md`. Use OpenTS `harvest`/refinery docking code
+   (`unit.cpp` Mission_Unload / Mission_Harvest) as ground truth for any TS-side question.
+2. **Unit brightness pass** (queued nit 15 below): TSHARV / TSMCV / dropship "too dark"
+   (Luke 08-16) vs the TS screencast. Method: measure TS's own render brightness from a TS
+   screenshot / OpenTS voxel lighting constants (`voxel*.cpp`), never eyeball; the lever is
+   `vxl_render.py --ambient` (0.35 default) + the 1.45x team-green lift, re-render + re-pack
+   per model via the existing pack scripts (keep the +8 face fix and each model's `--elev`:
+   APC/harvester 32, others 54).
+
+
 
 ### Mk.II RAILGUN re-port from OpenTS + TS rules — VERIFIED + SHIPPED `79db903e`
 TS data (extracted live from `TIBSUN.MIX/LOCAL.MIX/rules.ini` with `tools/ts_extract.py`;
@@ -425,8 +435,8 @@ Harvester LAST.
 | Unit | Outstanding |
 |---|---|
 | **Wolverine** `TSSMEC` | ✅ COMPLETE 2026-08-24 (icon, firing animation, TSGUN4 sound, canopy dot) |
-| **Disruptor** `TSSONIC` | ~~sidebar icon~~ ✅; ~~sound~~ ✅ SONIC4 2026-08-24; **weapon animation OPEN** — a design call, not a port (no TS sprite block, no TS Anim=) |
-| **APC** `TSAPC` | ~~sidebar icon~~ ✅; its unique **on-water art**; unit **enter/exit mechanics re-checked** |
+| **Disruptor** `TSSONIC` | ~~sidebar icon~~ ✅; ~~sound~~ ✅; ~~weapon animation~~ ✅ band FINAL + firing behaviour + seat + muzzle, all SHIPPED 08-27/28 (OpenTS) |
+| **APC** `TSAPC` | ~~sidebar icon~~ ✅; ~~on-water art~~ ✅ apcw hull; ~~enter/exit~~ ✅ unload fixed; TS amphibious speed table — SHIPPED 08-28 |
 | **Harvester** `TSHARV` — **DO LAST** | ~~sidebar icon~~ ✅; **TD + RA refinery docking** |
 | **Mammoth Mk. II** | signed off; Luke wants **RA vs TS comparison videos** at some point (not a work item) |
 
