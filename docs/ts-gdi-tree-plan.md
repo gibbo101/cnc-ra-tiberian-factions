@@ -1,6 +1,6 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-28: Disruptor arc CLOSED (band, firing, seat, muzzle all shipped); Mk.II railgun SHIPPED `79db903e`; Amphibious APC OpenTS pass (3 fixes + water hull + TS speed table) DEPLOYED UNVERIFIED `10b2483d`, uncommitted.
+## ⭐⭐⭐ RESUME HERE — 2026-08-28: Disruptor arc CLOSED (band, firing, seat, muzzle all shipped); Mk.II railgun SHIPPED `79db903e`; Amphibious APC OpenTS pass (3 fixes + water hull + TS speed table) VERIFIED "perfection" + SHIPPED. Next: OpenTS audit continues (Hover MLRS, Wolverine, Titan, subterranean, EMP).
 
 **Prefix DLL `ec76c868` = HEAD (turret seat + horn muzzle commit). Old saves are dead.
 Disruptor arc: band FINAL, firing behaviour SHIPPED, turret seat (TS TurretOffset=-64 via the
@@ -65,7 +65,7 @@ ColorSpeed=.009 Velocity=.3. Code: `partsys.cpp Railgun_AI`, `techno.cpp Railgun
   occupier, wall/overlay/cliff effects, the 100-frame life (ours = 25 stages x 5 ticks, matches
   the footage). Ground-target (force-fire) shots keep a static band, cut only by TarCom change.
 
-### Amphibious APC — OpenTS audit pass 2026-08-28 — DEPLOYED UNVERIFIED (DLL `10b2483d`)
+### Amphibious APC — OpenTS audit pass 2026-08-28 — VERIFIED + SHIPPED
 Luke's three: (1) white box while loading = RA's APC door frames 32-40 requested at NE/NW, TSAPC
 has no door art (`Shape_Number` now skips the door branch for TSAPC); (2) could not unload =
 `UNIT_TSAPC` was missing from `Mission_Unload`'s APC state machine (added); (3) submerged on
