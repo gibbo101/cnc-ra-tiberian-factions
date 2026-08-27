@@ -151,6 +151,18 @@ and (b) smears any per-disc mottle along the chain (best interior std 7 vs TS's 
 a hard edge or a preserved texture is the requirement, the primitive must be a single
 rotated sprite per span (§8), not a chain.
 
+## 10. The chronal vortex is a launcher-drawn screen warp the DLL can position — but nothing else
+
+Proven 2026-08-27 (Disruptor ripple spike): `Get_Dynamic_Map_State` exports
+`VortexActive/X/Y/Width/Height` every frame, and the launcher will render its vortex
+distortion wherever the DLL points it — the ONLY true per-pixel warp the Remastered renderer
+offers a mod. The catches, all observed in play: the launcher IGNORES the exported
+Width/Height (our 64 px request drew a ~350 px whirlpool), anchors the effect at the
+coordinate's top-left rather than its centre, always draws the full chrono whirlpool styling
+(heavy swirl, not a subtle haze), and keeps churning for as long as the flag stays true.
+Useless for a beam ripple; potentially useful for a deliberate large one-off screen warp.
+The real `ChronalVortex` always owns the slot when active.
+
 ## House quality policy for TS-sourced assets (Luke, 2026-07-20)
 
 **Every unit, building, and weapon pulled from Tiberian Sun ships at the

@@ -54,6 +54,7 @@
 
 #include "function.h"
 #include "keyframe.h"
+#include <math.h>
 #define VIC 1
 
 /***********************************************************************************************
@@ -847,6 +848,7 @@ void AnimClass::AI(void)
         delete this;
         return;
     }
+
 
     /*
     **	If this is a brand new animation, then don't process it the first logic pass

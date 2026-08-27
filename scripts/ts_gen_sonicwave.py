@@ -62,10 +62,9 @@ MOTTLE = 0.5          # 0 = flat fill, 1 = heavily rippled interior. The 6-7 dee
                       # only edge softening. Full strength halved the band's alpha.
 MOTTLE_SCALE = 3.0    # blur radius of the noise clumps, px on the 128 canvas
 MOTTLE_SEED = 20260824
-PULSE_COLOR = (0, 0, 0)   # TEST colour so the pulse is unmissable; the real one is an off-tint of COLOR
-PULSE_ALPHA = 40          # per disc: the pulse discs stack 6-7 deep like the wave discs (~65 % total)
-PULSE_PERIOD = 6          # stages between pulses
-PULSE_WIDTH = 1           # lit stages per pulse
+PULSE_COLOR = (235, 255, 250)  # paler/whiter than the band: TS's ripple lifts the green/blue of what's underneath
+PULSE_ALPHA = 35          # per disc at PEAK amplitude; the discs stack ~6-7 deep along the band
+PULSE_FRAMES = 13         # amplitude ladder, frame = ripple level 0-12 (TS WaveClass); the DLL drives the stage per tick
 RISE_STAGES = 1       # stages from dark to full once the lead-in ends
 FALL_STAGES = 2       # stages from full to dark at the end
 
@@ -137,11 +136,12 @@ def wave(i):
 
 
 def pulse(i):
-    """One stage of the pulse disc: the wave's disc shape, PULSE_COLOR, lit only
-    inside a repeating stage window. Discs further along the band sit at lower
-    stages, so the lit window sweeps tank->target as the stages advance."""
-    lit = i - LEAD_STAGES
-    if lit < 0 or (lit % PULSE_PERIOD) >= PULSE_WIDTH:
+    """Ripple level i of the amplitude ladder: the wave's disc shape in a pale
+    tint, alpha proportional to i/12. The DLL sets each ripple disc's stage per
+    tick from TS's |sin| formula, so the band brightens in travelling crests
+    exactly as TS's screen-space ripple does."""
+    alpha = PULSE_ALPHA * i // (PULSE_FRAMES - 1)
+    if alpha <= 0:
         return Image.new('RGBA', (CANVAS, CANVAS), (0, 0, 0, 0))
     ss = 4
     big = Image.new('L', (CANVAS * ss, CANVAS * ss), 0)
@@ -151,7 +151,7 @@ def pulse(i):
     d.ellipse([c - r, c - r, c + r, c + r], fill=255)
     mask = big.resize((CANVAS, CANVAS), Image.LANCZOS).filter(ImageFilter.GaussianBlur(EDGE_SOFT))
     out = Image.new('RGBA', (CANVAS, CANVAS), PULSE_COLOR + (0,))
-    out.putalpha(mask.point(lambda v: v * PULSE_ALPHA // 255))
+    out.putalpha(mask.point(lambda v: v * alpha // 255))
     return out
 
 
@@ -161,16 +161,22 @@ def tga_bytes(img):
     return buf.getvalue()
 
 
-def write_zip(path, name, frames):
-    """Center-symmetric crop + meta -- identical contract to the other packers."""
+def write_zip(path, name, frames, square=False):
+    """Center-symmetric crop + meta -- identical contract to the other packers.
+    square=True keeps the full square frame: a sprite exported with Rotation
+    is clipped to the UNROTATED frame rectangle (contract 8), so rotated art
+    must never be bbox-cropped."""
     with zipfile.ZipFile(path, 'w', zipfile.ZIP_DEFLATED) as z:
         for i, img in enumerate(frames):
             base = f'{name}-{i:04d}'
             W, H = img.width, img.height
-            bb = img.getbbox() or (W // 2 - 1, H // 2 - 1, W // 2 + 1, H // 2 + 1)
-            x0 = min(bb[0], W - bb[2])
-            y0 = min(bb[1], H - bb[3])
-            b = (x0, y0, W - x0, H - y0)
+            if square:
+                b = (0, 0, W, H)
+            else:
+                bb = img.getbbox() or (W // 2 - 1, H // 2 - 1, W // 2 + 1, H // 2 + 1)
+                x0 = min(bb[0], W - bb[2])
+                y0 = min(bb[1], H - bb[3])
+                b = (x0, y0, W - x0, H - y0)
             z.writestr(base + '.tga', tga_bytes(img.crop(b)))
             z.writestr(base + '.meta', json.dumps(
                 {'size': [W, H], 'crop': [b[0], b[1], b[2], b[3]]}))
@@ -202,13 +208,13 @@ def main():
     path = os.path.join(outdir, 'TSSONICW.ZIP')
     write_zip(path, 'tssonicw', frames)
     print(f'wrote {path} ({len(frames)} frames, {CANVAS}px canvas)')
-    pframes = [pulse(i) for i in range(FRAMES)]
+    pframes = [pulse(i) for i in range(PULSE_FRAMES)]
     ppath = os.path.join(outdir, 'TSSONICP.ZIP')
     write_zip(ppath, 'tssonicp', pframes)
     print(f'wrote {ppath} ({len(pframes)} frames)')
     if len(sys.argv) <= 1:
         patch_tileset(os.path.join(mod, 'XML', 'TILESETS', 'RA_VFX.XML'), 'TSSONICW', FRAMES)
-        patch_tileset(os.path.join(mod, 'XML', 'TILESETS', 'RA_VFX.XML'), 'TSSONICP', FRAMES)
+        patch_tileset(os.path.join(mod, 'XML', 'TILESETS', 'RA_VFX.XML'), 'TSSONICP', PULSE_FRAMES)
 
 
 if __name__ == '__main__':

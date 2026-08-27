@@ -2445,11 +2445,11 @@ static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, fa
 // SONIC4 already fires from the weapon's Report.
 static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 25, 0, VOC_NONE, ANIM_NONE, 25, 0x100);
 
-// Tiberian Factions -- TS Disruptor sonic pulse (ANIM_TS_SONICPULSE): the same
-// envelope as the wave disc, art from the same generator (TSSONICP.ZIP), lit
-// only in a short repeating stage window. Spawned every SONIC_PULSE_EVERY
-// discs on top of the band; carries no damage.
-static AnimTypeClass const TsSonicPulse(ANIM_TS_SONICPULSE, "TSSONICP", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 25, 0, VOC_NONE, ANIM_NONE, 25, 0x100);
+// Tiberian Factions -- TS Disruptor ripple disc (ANIM_TS_SONICPULSE): RETIRED,
+// nothing spawns it (the type stays registered to keep the enum stable and its
+// TSSONICP art slot valid). Every ripple mechanism was tried and rejected in
+// play 2026-08-27; the findings live in docs/ts-gdi-tree-plan.md.
+static AnimTypeClass const TsSonicPulse(ANIM_TS_SONICPULSE, "TSSONICP", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x100);
 
 void AnimTypeClass::Init_Heap(void)
 {

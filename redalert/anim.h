@@ -166,8 +166,6 @@ public:
     enum
     {
         SONIC_LEAD_STAGES = 5,   // fully transparent lead-in (the outward sweep)
-        SONIC_PULSE_SPREAD = 10, // pulse-disc stage gradient tank->target; steeper than the band's sweep = a shorter lit block
-        SONIC_PULSE_EVERY = 1,   // a pulse disc rides every Nth wave disc; 1 = the lit discs overlap into a band section
         SONIC_SPACING = 32,      // leptons between discs along the beam (6-7 deep overlap builds the band)
         SONIC_DAMAGE_TICKS = 5,  // hits per anchor disc, all within ~1s of the crest
         SONIC_DAMAGE_PERIOD = 2, // stages between hits (4 let a tank drive into its own wave)

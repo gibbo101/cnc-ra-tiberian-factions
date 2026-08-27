@@ -4111,20 +4111,11 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                     TF_Sonic_Cloak_Mode_Refresh();
                     CELL anchored = Coord_Cell(Center_Coord());
                     AnimClass* last = NULL;
-                    int disc_index = 0;
-                    for (int d = 0; d <= dist; d += AnimClass::SONIC_SPACING, disc_index++) {
+                    for (int d = 0; d <= dist; d += AnimClass::SONIC_SPACING) {
                         COORDINATE c = XY_Coord(sx + ddx * d / dist, sy + ddy * d / dist);
                         CELL cc = Coord_Cell(c);
                         int stage = (SONIC_SWEEP_STAGES * (dist - d)) / dist;
                         stage = min(max(stage, 0), SONIC_SWEEP_STAGES);
-                        if (disc_index % AnimClass::SONIC_PULSE_EVERY == 0) {
-                            AnimClass* pulse = new AnimClass(ANIM_TS_SONICPULSE, c);
-                            if (pulse != NULL) {
-                                pulse->Set_Stage(min((AnimClass::SONIC_PULSE_SPREAD * (dist - d)) / dist, (int)AnimClass::SONIC_PULSE_SPREAD));
-                                pulse->SonicFirer = As_Target();
-                                pulse->SonicDir = ::Direction(XY_Coord(sx, sy), XY_Coord(sx + ddx, sy + ddy));
-                            }
-                        }
                         AnimClass* wave = new AnimClass(ANIM_TS_SONICWAVE, c);
                         if (wave != NULL) {
                             wave->Set_Stage(stage);

@@ -1,10 +1,44 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-27: Disruptor = blue discs + fading + 12/6 throb + a TRAVELLING PULSE (mechanism proven; length + colour to dial); strip approach DEAD
+## ⭐⭐⭐ RESUME HERE — 2026-08-27 (evening): Disruptor band is FINAL (discs + fading + 12/6 throb, NO pulse). Pulse/ripple workstream CLOSED — every mechanism falsified. OpenTS source released: audit queue below.
 
-**Prefix DLL `87ab8e63` (= HEAD of `ts-units`), TSSONICW.ZIP (discs, pixel-identical to the
-08-26 checkpoint), TSSONICP.ZIP `9f424734` (BLACK test pulse), TFASSETS.MIX has the TSSONICP
-stub. Flag file is `tf_sonic_cloak.flag.off` (shipped default path).**
+**Prefix DLL `e0133c1d` (= HEAD of `ts-units` + the ripple teardown, uncommitted), band art
+TSSONICW.ZIP unchanged since the 08-26 checkpoint. TSSONICP.ZIP still ships (13-frame ladder)
+but NOTHING spawns ANIM_TS_SONICPULSE — the type is retired in place to keep the enum and
+tileset stable. Flag file `tf_sonic_cloak.flag.off`; `tf_sonic_vortex.flag` DELETED.**
+
+### ⭐ OpenTS (github.com/OpenTS-Developers/OpenTS, released 2026-08-27) — cloned to `reference/OpenTS/`
+Community source reconstruction of TS 2.03 Firestorm, GPL v3 — licence-compatible with us.
+Manual: https://opents-developers.github.io/OpenTS/. `code/wave.cpp` `WaveClass` is the REAL
+Disruptor wave: a screen-space per-pixel effect — polygon quad rasterized per scanline, each
+pixel displaced 0-3 px along the travel direction and its G/B lifted by `(110+amp*8)/256`,
+amp = `|sin(0.125*(WaveEC+radius))|*12` (wavelength ~50 px, crests glide source->target at
+1 px/frame, several at once; `WaveEC` life counter doubles as ripple phase).
+**QUEUED (Luke): audit the other TS ports against OpenTS source** — Hover MLRS, Wolverine
+FiringFrames, Titan, walker gaits, subterranean, EMP were all built from footage; now the
+real behaviour is readable. Also a candidate source for the band cut-off semantics
+(WaveClass tether: wave stops growing + fades when the firer stops aiming at the target).
+
+### Pulse/ripple: CLOSED 2026-08-27, four falsified mechanisms (don't re-chase ANY)
+1. **Lit-window sprite pulse** (stage-gradient discs, spread 24/10/5 walked): spread 10 =
+   one disc, "reads as a circle"; spread 5 = 25-35% block, "should be a small slither"
+   (TS's own patch measures 2-4% of band length — sliver < disc diameter is geometrically
+   impossible from disc primitives).
+2. **Rotated thin bar** (square-packed, Rotation from SonicDir in the shipped path): drew
+   UNROTATED in play — pill lying along an E shot, stepped pill chain on diagonals — despite
+   contract §8 (rotation proven on the WAVE type via the fx-128 flag). Never diagnosed;
+   "hell no".
+3. **TS-exact amplitude ladder** (13-frame art ladder, stage driven per tick from the OpenTS
+   formula): mechanism VERIFIED in play (crests at right spacing, travelling, measured) but
+   pale-overlay-on-band cannot read like TS's multiplicative G/B lift: alpha 35 invisible on
+   snow (+1.4%), alpha 80 = opaque white beading balls on desert ("regression"), 35 on
+   desert still "out please".
+4. **Chronal-vortex hijack** (dynamic_map VortexActive/X/Y override to ride the ripple
+   crest — the launcher's only true pixel warp): the launcher DOES render it anywhere we
+   point it, but IGNORES VortexWidth/Height (drew ~5x our 64 px), anchors at top-left not
+   centre, carries the full chrono whirlpool styling, and churns for the whole life of the
+   anims driving it. Unusable for a beam ripple. (Genuinely new lever though — recorded in
+   launcher-render-contracts.md §10 for anything that ever WANTS a big screen warp.)
 
 ### Where the look stands (Luke's verdicts, 2026-08-26/27)
 
@@ -23,20 +57,9 @@ stub. Flag file is `tf_sonic_cloak.flag.off` (shipped default path).**
   square with the art inside the inscribed circle. Also: overlapping discs can never give a
   hard edge (chord coverage ramps the alpha) nor keep a mottle (6-7 deep stack smears it;
   sim max std 7 vs TS 19.5). Both recorded in `launcher-render-contracts.md` §8-9.
-- **Travelling pulse = the shimmer substitute, MECHANISM PROVEN in play (3 clips):**
-  `ANIM_TS_SONICPULSE` (`adata.cpp`, art `TSSONICP.ZIP` from `ts_gen_sonicwave.py::pulse`,
-  stub in `build_tfassets.sh`), one on every wave disc (`SONIC_PULSE_EVERY = 1`), lit only in a
-  1-stage window every `PULSE_PERIOD = 6` stages, own stage gradient `SONIC_PULSE_SPREAD = 10`
-  tank->target so the lit set slides toward the target. Walk: every-12th discs = hopping dots
-  (00-31-23); every disc, 2-stage window, band gradient = a band section ~40 % of the beam,
-  "too long but improvement" (00-35-43); 1-stage window + spread 10 = ~10 % = ONE DISC, reads
-  as a circle again (00-39-21). Luke: "can't get it to look like a band from a circle".
-- **NEXT (first thing):** the block must be 2-3 disc diameters to read as a band segment:
-  `SONIC_PULSE_SPREAD` 10 -> 5 with the 1-stage window (~20 % of the beam). Then swap
-  `PULSE_COLOR` from the black test to the real off-tint (paler/whiter teal; Luke to pick) and
-  `PULSE_ALPHA` to taste (per-disc; the pulse discs stack like the wave discs). Old saves are
-  dead again (new anim type + `SonicDir` member).
-- Then, in Luke's order: turret seat to the REAR of the hull (Aseprite seat loop; TS
+- **Pulse: REMOVED (see the CLOSED section above).** The band ships bare: discs + fading +
+  12/6 throb. Old saves are dead (this session's `AnimClass` member churn).
+- **NEXT**, in Luke's order: turret seat to the REAR of the hull (Aseprite seat loop; TS
   `TurretOffset=-64`, udata.cpp's turret-centre field is unused by the RA draw path, so it
   needs a TSTITN-style per-facing seat table or a baked offset in the turret frames), unit
   size (measure the base game's art, never our ports), band cut-off, any Aseprite pass.
