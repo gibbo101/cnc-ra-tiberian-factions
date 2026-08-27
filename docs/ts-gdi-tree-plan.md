@@ -1,6 +1,6 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — 2026-08-28: Disruptor firing behaviour (OpenTS WaveClass) + continuous damage SHIPPED `9a4c70a8`; Mk.II RAILGUN re-port (OpenTS + TS rules) VERIFIED "looks good", SHIPPED `79db903e`. Pulse/ripple CLOSED. Both Disruptor + Mk.II are now source-faithful.
+## ⭐⭐⭐ RESUME HERE — 2026-08-28: Disruptor arc CLOSED (band, firing, seat, muzzle all shipped); Mk.II railgun SHIPPED `79db903e`; Amphibious APC OpenTS pass (3 fixes + water hull + TS speed table) DEPLOYED UNVERIFIED `10b2483d`, uncommitted.
 
 **Prefix DLL `ec76c868` = HEAD (turret seat + horn muzzle commit). Old saves are dead.
 Disruptor arc: band FINAL, firing behaviour SHIPPED, turret seat (TS TurretOffset=-64 via the
@@ -64,6 +64,23 @@ ColorSpeed=.009 Velocity=.3. Code: `partsys.cpp Railgun_AI`, `techno.cpp Railgun
 - Deliberately NOT ported (Luke-approved feel kept): TS's per-frame AmbientDamage to every
   occupier, wall/overlay/cliff effects, the 100-frame life (ours = 25 stages x 5 ticks, matches
   the footage). Ground-target (force-fire) shots keep a static band, cut only by TarCom change.
+
+### Amphibious APC — OpenTS audit pass 2026-08-28 — DEPLOYED UNVERIFIED (DLL `10b2483d`)
+Luke's three: (1) white box while loading = RA's APC door frames 32-40 requested at NE/NW, TSAPC
+has no door art (`Shape_Number` now skips the door branch for TSAPC); (2) could not unload =
+`UNIT_TSAPC` was missing from `Mission_Unload`'s APC state machine (added); (3) submerged on
+water = TS's own mechanism: `apcw.vxl` (the water hull) drawn whenever the cell is water
+(OpenTS unit.cpp AuxVoxel on LAND_WATER) -> rendered at the body's camera (`vxl_render.py
+--frames 32 --px-per-voxel 12 --yaw0 0 --elev 32`, reproduces the shipped body render to the
+pixel) and appended as frames 32-63 by NEW `scripts/ts_pack_tsapc_water.py` (body frames kept
+byte-identical); `Shape_Number` adds 32 on LAND_WATER. Stub 64 frames, tileset 64.
+**Speed made TS-exact:** TS's APC is NOT hover -- it is the drive locomotor with
+`SpeedType=Amphibious` and its own land table. NEW `SPEED_AMPHIBIOUS` (rules key
+`Amphibious=yes`; per-land `Amphibious=` column: Clear 80, Rough 40, Road 100, Water 80, Rock 0,
+Wall 0, Ore 50, Beach 60, River 80 (TS has none; taken as water)), sharing MZONE_HOVER
+(identical passability footprint). Old saves dead (enum + Zones untouched, but sizeof drift
+elsewhere tonight). Verify: load infantry (no box), unload (works), drive into water (low hull),
+and the speed drop on beach/rough.
 
 ### ⭐ OpenTS (github.com/OpenTS-Developers/OpenTS, released 2026-08-27) — cloned to `reference/OpenTS/`
 Community source reconstruction of TS 2.03 Firestorm, GPL v3 — licence-compatible with us.

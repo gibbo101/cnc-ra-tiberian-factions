@@ -266,7 +266,7 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tssmec_stub.shp" 48 48 128
 PACK_ARGS+=("$TMPDIR/tssmec_stub.shp:TSSMEC.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tssonic_stub.shp" 56 56 64
 PACK_ARGS+=("$TMPDIR/tssonic_stub.shp:TSSONIC.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsapc_stub.shp" 48 48 32
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsapc_stub.shp" 48 48 64
 PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
 # TS-tree buildings with TS-authentic footprints (docs/ts-gdi-tree-plan.md):
 # classic stubs declare each one's canvas dims (dims x5.33 = HD canvas); the

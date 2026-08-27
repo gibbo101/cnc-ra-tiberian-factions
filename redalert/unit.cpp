@@ -2744,7 +2744,7 @@ int UnitClass::Shape_Number(void) const
                 **	Door opening and closing animation must be handled carefully. There are only
                 **	certain directions where this door animation will work.
                 */
-                if (!Is_Door_Closed() && (PrimaryFacing == DIR_NW || PrimaryFacing == DIR_NE)) {
+                if (*this != UNIT_TSAPC && !Is_Door_Closed() && (PrimaryFacing == DIR_NW || PrimaryFacing == DIR_NE)) {
                     if (PrimaryFacing == DIR_NE) {
                         shapenum = 32;
                     } else {
@@ -2753,6 +2753,16 @@ int UnitClass::Shape_Number(void) const
                         }
                     }
                     shapenum += Door_Stage();
+                }
+
+                /*
+                **	Tiberian Factions: the TS Amphibious APC has no door art, and swaps
+                **	to its water hull (TS apcw.vxl, frames 32-63, sitting low in the
+                **	water) whenever its cell is water and not a bridge -- as TS's own
+                **	UnitClass draw does (OpenTS unit.cpp: AuxVoxel on LAND_WATER).
+                */
+                if (*this == UNIT_TSAPC && Map[Coord_Cell(Center_Coord())].Land_Type() == LAND_WATER) {
+                    shapenum += 32;
                 }
             }
         }
@@ -4159,6 +4169,7 @@ int UnitClass::Mission_Unload(void)
     case UNIT_PHASE:
 #endif
     case UNIT_TDAPC: // Tiberian Factions: TD APC -- same unload state machine as UNIT_APC.
+    case UNIT_TSAPC: // TS Amphibious APC -- same machine; its door state has no art but still gates the cycle.
         switch (Status) {
         case INITIAL_CHECK:
             dir = Desired_Load_Dir(NULL, cell);

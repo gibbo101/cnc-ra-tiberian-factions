@@ -339,7 +339,7 @@ bool TechnoClass::Can_Teleport_Here(CELL cell) const
                                     -1,
                                     ttype->Speed == SPEED_FLOAT
                                         ? MZONE_WATER
-                                        : (ttype->Speed == SPEED_HOVER ? MZONE_HOVER : MZONE_NORMAL))) {
+                                        : ((ttype->Speed == SPEED_HOVER || ttype->Speed == SPEED_AMPHIBIOUS) ? MZONE_HOVER : MZONE_NORMAL))) {
         return (false);
     }
 
@@ -8226,7 +8226,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             }
             // TS-spike: hover units use the land+water spanning zone map so
             // cross-shoreline move orders / targeting / AI pass the zone gates.
-            if (Speed == SPEED_HOVER) {
+            if (Speed == SPEED_HOVER || Speed == SPEED_AMPHIBIOUS) {
                 MZone = MZONE_HOVER;
             }
 

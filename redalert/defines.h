@@ -1858,7 +1858,7 @@ typedef enum UnitType : char
     UNIT_TSHARV,            // TS Harvester (HARV) — RA-harvester mechanics docked at STRUCT_TSPROC (RA-refinery family); voxel render, 32 facings, no dump-anim frames (draw skips the dump shape calc like TDHARV). Free unit of the TS refinery.
     UNIT_TSSMEC,            // TS Wolverine (SMECH) — light scout mech, no turret, fires AssaultCannon (instant hitscan). Art = SMECH.SHP walk frames (12x8, Titan walker pipeline); guns are in the sprite, no barrel compositing.
     UNIT_TSSONIC,           // TS Disruptor (SONIC) — turreted sonic tank, fires SonicZap (IsSonic piercing line: railgun mechanics, green beam, no helix). Art = SONIC.VXL body 0-31 + SONICTUR.VXL turret 32-63.
-    UNIT_TSAPC,             // TS Amphibious APC (APC) — unarmed hover transport (SPEED_HOVER stands in for TS amphibious float, plan-approved deviation), Passengers=5, door logic alongside UNIT_APC/UNIT_TDAPC.
+    UNIT_TSAPC,             // TS Amphibious APC (APC) — unarmed SPEED_AMPHIBIOUS transport (TS's own terrain table; water hull frames 32-63 on water), Passengers=5, unload logic alongside UNIT_APC/UNIT_TDAPC, no door art.
     UNIT_TSMDIV,            // Mech Division (dropship-bay group order) — a purchasable TOKEN that never touches the map: Deliver_Cargo expands it into 3 Titans + 2 Wolverines at the unload beat. Cost 2800 (3400 sticker, starport discount — Luke, 2026-08-12).
 
     UNIT_COUNT,
@@ -3841,6 +3841,7 @@ typedef enum SpeedType : char
     SPEED_WINGED, // Lifter's, 'thopters, and rockets.
     SPEED_FLOAT,  // Ships.
     SPEED_HOVER,  // Hover craft (TS-spike): amphibious ground locomotor — passable on land AND water, blocked by rock/wall. TD had this slot; RA dropped it. Appended so existing indices keep their values.
+    SPEED_AMPHIBIOUS, // TS SpeedType=Amphibious (the Amphibious APC): a tracked drive that also takes water, at TS's own per-land percentages (rules.ini Amphibious=). Same passability footprint as hover, so it shares MZONE_HOVER.
 
     SPEED_COUNT,
     SPEED_FIRST = SPEED_FOOT

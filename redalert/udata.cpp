@@ -2563,6 +2563,9 @@ bool UnitTypeClass::Read_INI(CCINIClass& ini)
         Speed = ini.Get_Bool(IniName, "Tracked", (Speed == SPEED_TRACK)) ? SPEED_TRACK : SPEED_WHEEL;
         // TS-spike: Hover=yes overrides the binary Tracked choice with the amphibious
         // hover locomotor (land + water passability from the ground table's Hover= row).
+        if (ini.Get_Bool(IniName, "Amphibious", (Speed == SPEED_AMPHIBIOUS))) {
+            Speed = SPEED_AMPHIBIOUS; // TS SpeedType=Amphibious
+        }
         if (ini.Get_Bool(IniName, "Hover", (Speed == SPEED_HOVER))) {
             Speed = SPEED_HOVER;
         }

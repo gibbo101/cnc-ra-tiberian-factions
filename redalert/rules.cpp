@@ -974,6 +974,9 @@ bool RulesClass::Land_Types(CCINIClass& ini)
             gptr->Cost[SPEED_FLOAT] = ini.Get_Fixed(_lands[land], "Float", 1);
             // TS-spike hover locomotor: amphibious; rules.ini gives [Rock]/[Wall] Hover=0.
             gptr->Cost[SPEED_HOVER] = ini.Get_Fixed(_lands[land], "Hover", 1);
+            // TS SpeedType=Amphibious: its own per-land table; a land without the key
+            // behaves as hover, so maps predating it stay traversable.
+            gptr->Cost[SPEED_AMPHIBIOUS] = ini.Get_Fixed(_lands[land], "Amphibious", gptr->Cost[SPEED_HOVER]);
             gptr->Build = ini.Get_Bool(_lands[land], "Buildable", false);
         }
     }
