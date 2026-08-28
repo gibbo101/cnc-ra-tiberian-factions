@@ -5517,10 +5517,12 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
         return (_ts_proc_place);
     }
     if (placement && Type == STRUCT_TSWEAP) {
-        // The ghost = the whole 5x3: hangar rows plus the concrete the pad lands on.
+        // The ghost follows the art: the hangar cells plus every cell the pad
+        // lands on -- the whole 5x3 except the bottom-left cell (0,2), which
+        // carries no concrete.
         static short const _ts_weap_place[] = {0, 1, 2, 3, 4,
                                                MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2, MAP_CELL_W + 3, MAP_CELL_W + 4,
-                                               MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2, MAP_CELL_W * 2 + 3, MAP_CELL_W * 2 + 4,
+                                               MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2, MAP_CELL_W * 2 + 3, MAP_CELL_W * 2 + 4,
                                                REFRESH_EOL};
         return (_ts_weap_place);
     }

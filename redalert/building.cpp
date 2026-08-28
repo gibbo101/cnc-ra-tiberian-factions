@@ -5579,8 +5579,7 @@ bool Is_TS_Apron_Cell(CELL cell)
         **	and are OCCUPIED cells now; occupancy blocks placement there.
         */
         // 5x3 (08-28 rebuild): centre = row 1 col 2. Walkable, never buildable:
-        // the whole front row (row 2, cols 0-4) and the east column (col 4, rows 0-1).
-        {STRUCT_TSWEAP, MAP_CELL_W - 2},
+        // the front row's concrete (row 2, cols 1-4) and the east column (col 4, rows 0-1).
         {STRUCT_TSWEAP, MAP_CELL_W - 1},
         {STRUCT_TSWEAP, MAP_CELL_W},
         {STRUCT_TSWEAP, MAP_CELL_W + 1},
