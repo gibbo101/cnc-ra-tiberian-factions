@@ -11,10 +11,12 @@
 > **`UnitClass::Scatter(threat==0)`** (the guard mission's off-impassable nudge)
 > surfaced the digger on the near bank every time it passed under water — guard
 > it for the whole cycle (DriveClass::Scatter alone is not enough).
-> **Still to verify:** Stop mid-ladder / Stop underground (no player Stop hook
-> exists yet — TARGET_NONE is ignored, so Stop currently does nothing to a
-> digger), SAPC passengers through a dig + unload after (enemy AI VERIFIED to ignore it until it surfaces),
-> `TunnelDigThreshold` dial. Trace stays on in dev builds:
+> **Also verified (later 08-28):** Stop underground -> nearest surfaceable ground ("works
+> perfectly", Luke chose to keep the TS rule; hook = the IDLE event in event.cpp), enemy AI
+> ignores it until it surfaces. **Still to verify:** SAPC passengers through a dig + unload
+> after (door art fix in), `TunnelDigThreshold` dial, the relit hulls + clean cameos by eye,
+> and the **TS flame port** (`4412baa1`: TSFire particles / TSFireball stream,
+> scripts/ts_pack_flame.py) -- ask for video before tuning. Trace stays on in dev builds:
 > `Documents/CnCRemastered/MOD_DEBUG_TUNNEL.txt`.
 > **Not done:** dig sound (SUBDRIL1), DIRTEXPL, mound scale by eye (x4 first
 > guess, Luke happy so far), save/load of the new fields.
