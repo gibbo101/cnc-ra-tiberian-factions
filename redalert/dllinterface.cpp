@@ -5175,7 +5175,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  own line is row 1.5), so the shut door covers it and the rising door
     **  reveals it. +192 leptons = row 2.25, past any mouth seat.
     */
-    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAPNF") == 0) {
+    if (shape_file_name != NULL && (strcmp(shape_file_name, "TSWEAPNF") == 0 || strcmp(shape_file_name, "TSWEAPNU") == 0)) {
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 192)) >> 3);
     }

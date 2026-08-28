@@ -4221,6 +4221,7 @@ void const* BuildingTypeClass::WarFactoryOverlayTs;
 void const* BuildingTypeClass::TsWeapShutter;
 void const* BuildingTypeClass::TsWeapUnderDoor;
 void const* BuildingTypeClass::TsWeapFront;
+void const* BuildingTypeClass::TsWeapFrontOpen;
 void const* BuildingTypeClass::TsRefineryFlame;
 void const* BuildingTypeClass::TsRefineryLid;
 void const* LightningShapes;
@@ -4994,6 +4995,8 @@ void BuildingTypeClass::One_Time(void)
     TsWeapUnderDoor = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSWEAPNF", ".SHP");
     TsWeapFront = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSWEAPNU", ".SHP");
+    TsWeapFrontOpen = MFCD::Retrieve(fullname);
     // TS refinery event layers (fireball burst, dock lid), sized to its stub.
     _makepath(fullname, NULL, NULL, (char const*)"TSPROCFR", ".SHP");
     TsRefineryFlame = MFCD::Retrieve(fullname);

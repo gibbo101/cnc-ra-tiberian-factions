@@ -931,6 +931,7 @@ public:
     static void const* TsWeapShutter;
     static void const* TsWeapUnderDoor;
     static void const* TsWeapFront;
+    static void const* TsWeapFrontOpen;
     static void const* TsRefineryFlame;
     static void const* TsRefineryLid;
 

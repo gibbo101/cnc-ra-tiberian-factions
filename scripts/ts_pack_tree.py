@@ -759,18 +759,67 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # lintel down, cut a band as wide as the widest vehicle (+ margin)
         # centred on the door; the roof above the lintel stays in front.
         ob = opening.getbbox()
-        cx = (ob[0] + ob[2]) // 2
-        half = 334 // 2
-        ImageDraw.Draw(opening).rectangle([cx - half, ob[1], cx + half, canvas_h], fill=255)
+        # The band starts under the OPEN shutter's bottom edge: the awning and
+        # the rolled shutter above it stay in front of the vehicle (nothing
+        # may show between the door roof and the hangar roof).
+        open_bb = scaled(centre_on(load("shp_gtweap_d", 8), base_h.size)).getbbox()
+        # Luke's read (08-28): the LEFT jamb renders over the vehicle, the vehicle
+        # renders over the RIGHT pillar (it exits SE past it). So the band runs
+        # from the door's left edge eastward to the widest vehicle's reach.
+        x0, y0, x1 = int(open_bb[0]) + 4, int(open_bb[3]) - 4, int((ob[0] + ob[2]) // 2 + 334 // 2)
+        opening = Image.new("L", (canvas_w, canvas_h), 0)
+        # The band's LEFT boundary is Luke's yellow line (custom-art/
+        # tsweap-front-cut-line.json, drawn in Aseprite 08-28 along the left
+        # jamb's inner edge): everything left of it renders over the vehicle.
+        # Rows above/below the line extend its end points.
+        line_path = os.path.join(MOD, "..", "..", "custom-art", "tsweap-front-cut-line.json")
+        line = json.load(open(line_path)) if os.path.exists(line_path) else None
+        od = ImageDraw.Draw(opening)
+        for yy in range(y0, canvas_h):
+            if line is not None:
+                lx = line["rows"].get(str(yy))
+                if lx is None:
+                    lx = line["x_top"] if yy < line["y_top"] else line["x_bot"]
+                lx = int(lx) + 1
+            else:
+                lx = x0
+            od.line([(lx, yy), (max(x1, lx + 1), yy)], fill=255)
+        # Nothing may show between the lintel and the roof: within the door's
+        # columns, every row above the opening becomes solid in the front layer
+        # (between the body's own outermost pixels), colour from the bled margin.
+        def fill_above(img):
+            out = bleed_edges(img, rounds=6)
+            a = out.split()[3]
+            import numpy as np
+            arr = np.array(a)
+            sub = arr[:y0, x0:x1 + 1]
+            for r in range(sub.shape[0]):
+                cols = np.where(sub[r] > 0)[0]
+                if len(cols) >= 2:
+                    sub[r, cols[0]:cols[-1] + 1] = 255
+            arr[:y0, x0:x1 + 1] = sub
+            out.putalpha(Image.fromarray(arr))
+            return out
         def cut(img, keep_inside):
             out = img.copy()
             a = out.split()[3]
             out.putalpha(ImageChops.multiply(a, opening) if keep_inside else ImageChops.subtract(a, opening))
-            return out
+            return out if keep_inside else fill_above(out)
         front = [[cut(f, False) for f in run] for run in full]
+        # The body has its door PAINTED SHUT (TS covers it with the under-door
+        # art, GAWEAP_1, while a unit leaves). Second front tileset for the
+        # unloading state: the open doorway composited over each idle frame.
+        ud = [scaled(centre_on(load("shp_gtweap_1", i), base_h.size)) for i in (0, 1)]
+        def with_doorway(img, r):
+            out = img.copy()
+            out.alpha_composite(ud[r])
+            return out
+        front_open = [[cut(with_doorway(f, r), False) for f in full[r]] for r in (0, 1)]
         full = [[cut(f, True) for f in run] for run in full]
         write_zip(f"{STRUCT_DIR}/{ini}NF.ZIP", f"{ini.lower()}nf", front[0] + front[1])
         patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}NF", len(front[0]) + len(front[1]))
+        write_zip(f"{STRUCT_DIR}/{ini}NU.ZIP", f"{ini.lower()}nu", front_open[0] + front_open[1])
+        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}NU", len(front_open[0]) + len(front_open[1]))
     # Sub-object layers on the building's own affine: TS anims that are not
     # part of the idle cycle (one-shots, event-driven). Each becomes
     # <INI><SUFFIX>.ZIP with the frames in source order, so the DLL indexes

@@ -867,7 +867,11 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             **	The near face: the whole hangar minus the opening, at the idle
             **	phase, in front of a vehicle in the bay; the shutter over that.
             */
-            Techno_Draw_Object_Virtual(Class->TsWeapFront, Shape_Number(), x, y, window, DIR_N, 0x0100, "TSWEAPNF");
+            if (Mission == MISSION_UNLOAD) {
+                Techno_Draw_Object_Virtual(Class->TsWeapFrontOpen, Shape_Number(), x, y, window, DIR_N, 0x0100, "TSWEAPNU");
+            } else {
+                Techno_Draw_Object_Virtual(Class->TsWeapFront, Shape_Number(), x, y, window, DIR_N, 0x0100, "TSWEAPNF");
+            }
             Techno_Draw_Object_Virtual(Class->TsWeapShutter, stage + dmg * 9, x, y, window, DIR_N, 0x0100, "TSWEAPDR");
         }
 
