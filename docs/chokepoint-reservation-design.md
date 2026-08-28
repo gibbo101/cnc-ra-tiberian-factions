@@ -159,6 +159,12 @@ All in `DriveClass`. Vehicles only. Lockstep-safe (synced `As_Target()` ids, no 
   your own follower; boxed-in → returns 0 → hold.
 - **`Start_Of_Move` top:** acts on the decision (hold → Stop_Driver+return; retreat → Assign yield
   cell + `Queue_Navigation_List(original)` to auto-resume).
+  - ⚠️ **Recursion hazard, fixed 2026-08-01:** `DriveClass::Assign_Destination` re-enters
+    `Start_Of_Move` for a stationary unit, so a RETREAT whose nested evaluation again decides
+    RETREAT recursed unboundedly — `EXCEPTION_STACK_OVERFLOW` at ~1,500 frames deep in a fully
+    jammed pinch (2026-08-01 DOCKLANDS crash dump). Guarded by `giveway_retreat_depth`: the
+    retreat-triggered nested pass skips give-way evaluation and paths straight to the yield cell.
+    Give-way is stateless-per-tick, so the skipped evaluation costs nothing.
 - **No-path sidestep (safety net)** lower in the no-path branch, opposing-guarded.
 - **Diagnostics (`TF_DEV_BUILD`, → `tf_astar.log`):** `HEADON:` (every head-on MOVE_NO),
   `CHOKE:` (every no-path branch: branch taken + `towardNav`/`aheadFacing` MoveType + try count),

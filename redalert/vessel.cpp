@@ -2444,6 +2444,22 @@ void VesselClass::Combat_AI(void)
         **	failure code returned is that from the primary weapon.
         */
         int primary = What_Weapon_Should_I_Use(TarCom);
+
+        /*
+        **	A skirmish-AI ship with a live target in weapon range stops to finish it.
+        **	Sailing on while shooting is how a patrolling destroyer trades itself for
+        **	two pot-shots at a power plant -- and a turretless hull (the subs) cannot
+        **	fire AT ALL with a NavCom assigned (Can_Fire -> FIRE_MOVING), so a ship
+        **	kept permanently on the move never fights, however close the enemy.
+        **	Dropping the destination lets guard logic take over: the hull or turret
+        **	comes to bear, the target dies, and the fleet doctrine in Expert_AI deals
+        **	the next order once the water is clear. Humans keep full control of their
+        **	own ships, and campaign scripting is left untouched.
+        */
+        if (Session.Type != GAME_NORMAL && !House->IsHuman && Target_Legal(NavCom) && In_Range(TarCom, primary)) {
+            Assign_Destination(TARGET_NONE);
+        }
+
         FireErrorType ok = Can_Fire(TarCom, primary);
 
         switch (ok) {

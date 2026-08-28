@@ -1932,13 +1932,25 @@ bool DriveClass::Start_Of_Move(void)
     }
 
     /*
+    **	Give-way re-entrancy guard: the RETREAT branch below assigns a fallback destination, and
+    **	DriveClass::Assign_Destination re-enters Start_Of_Move for a stationary unit. Inside a
+    **	fully jammed pinch the nested evaluation can decide RETREAT again, and again -- unbounded
+    **	mutual recursion (observed at ~1,500 frames deep before EXCEPTION_STACK_OVERFLOW). While a
+    **	retreat assignment is on the call stack, the nested pass skips give-way evaluation and goes
+    **	straight to pathing toward the retreat cell -- which is the whole point of the retreat.
+    **	Give-way is stateless and re-decided every tick, so one skipped evaluation costs nothing.
+    **	Call-stack-scoped and the sim is single-threaded, so this is lockstep- and savegame-inert.
+    */
+    static int giveway_retreat_depth = 0;
+
+    /*
     **	Infantry give-way (v2.2.3): clear a friendly idle foot soldier out of a 1-wide corridor cell
     **	ahead of us, OR -- if a friendly infantry column is already traversing the pinch and we are
     **	still at the mouth -- WAIT for them rather than butting in and scattering them (return 2). Done
     **	FIRST, before the vehicle give-way decision below, which would otherwise HOLD us behind an idle
     **	man indefinitely (he is invisible to the claim system, so that hold never releases).
     */
-    if (Infantry_Give_Way() == 2) {
+    if (giveway_retreat_depth == 0 && Infantry_Give_Way() == 2) {
         Stop_Driver();
         return (false); // hold at the mouth; the moving column owns the corridor
     }
@@ -1951,7 +1963,7 @@ bool DriveClass::Start_Of_Move(void)
     **	are already inside the pinch and blocking the winner's lane (back out to free it -- once
     **	on open ground the decision flips to HOLD and we wait there).
     */
-    if (Target_Legal(NavCom)) {
+    if (Target_Legal(NavCom) && giveway_retreat_depth == 0) {
         TechnoClass* gw_winner = NULL;
         int gw = Give_Way_Decision(&gw_winner);
         if (gw == 1) {
@@ -2007,7 +2019,9 @@ bool DriveClass::Start_Of_Move(void)
                     }
                 }
 #endif
+                giveway_retreat_depth++;
                 Assign_Destination(::As_Target(back));
+                giveway_retreat_depth--;
                 Queue_Navigation_List(original);
             }
             Stop_Driver();
@@ -2048,6 +2062,14 @@ bool DriveClass::Start_Of_Move(void)
         }
 
         if (!Basic_Path()) {
+
+            /*
+            **	No-progress bookkeeping (TF) -- exactly one update per failure; verdict
+            **	consumed by the patient-queue override further down. 60s window: vehicle
+            **	patience at a busy pinch is deliberate, and a genuinely queued column
+            **	advances a cell (resetting the window) well inside a minute.
+            */
+            bool tf_no_progress = TF_Path_No_Progress(TICKS_PER_MINUTE);
 
 #if TF_DEV_BUILD
             /*
@@ -2273,7 +2295,41 @@ bool DriveClass::Start_Of_Move(void)
                             }
                         }
                     }
-                    if (traffic_blocked) {
+                    /*
+                    **	No-progress override (Tiberian Factions). The patient queue below assumes
+                    **	traffic always clears, but a permanently boxed unit -- walled-off destination,
+                    **	or a jam with allies on every neighbour -- satisfies the traffic test on every
+                    **	cycle, so its patience resets forever and the abandon branch is unreachable.
+                    **	A full minute failing from the SAME cell is not a queue: a genuinely queued
+                    **	column advances a cell every so often, which restarts the window (as does a
+                    **	deadlock-breaker scatter). Trip = fall through to the engine's own abandon
+                    **	branch, scan-limit handling included.
+                    */
+#if TF_DEV_BUILD
+                    if (tf_no_progress && traffic_blocked) {
+                        static FILE* tf_noprog_log = NULL;
+                        if (tf_noprog_log == NULL) {
+                            const char* h = getenv("USERPROFILE");
+                            if (h == NULL)
+                                h = getenv("HOME");
+                            if (h != NULL) {
+                                char p[512];
+                                snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                                tf_noprog_log = fopen(p, "a");
+                            }
+                        }
+                        if (tf_noprog_log != NULL) {
+                            CELL mc = Coord_Cell(Center_Coord());
+                            CELL dc = Target_Legal(NavCom) ? As_Cell(NavCom) : -1;
+                            fprintf(tf_noprog_log,
+                                    "NOPROG abort (veh): unit=%s src=(%d,%d) dst=(%d,%d) stuck=%ldf\n",
+                                    Techno_Type_Class()->IniName, (int)Cell_X(mc), (int)Cell_Y(mc),
+                                    (int)Cell_X(dc), (int)Cell_Y(dc), (long)(Frame - TF_NoProgStart));
+                            fflush(tf_noprog_log);
+                        }
+                    }
+#endif
+                    if (traffic_blocked && !tf_no_progress) {
                         TryTryAgain = PATH_RETRY; // wait its turn at the pinch; do not abandon
 
                         /*
@@ -2349,6 +2405,7 @@ bool DriveClass::Start_Of_Move(void)
         }
 
         TryTryAgain = PATH_RETRY;
+        TF_NoProgSrc = -1; // found a path -- restart the no-progress window
         facing = Path[0];
     }
 

@@ -725,6 +725,17 @@ public:
     bool TF_Knows_Any_Enemy_Building(void);
     int TF_Committable_Army(void) const;
     bool TF_Has_Income(void) const;
+    bool TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) const;
+    int TF_Naval_Fleet_Cap(bool enemy_coastal, int* enemy_navy = NULL) const;
+    bool TF_Ferry_Route_Blocked(int* enemyland = NULL) const;
+    bool TF_Ferry_Assault(int& targetland, bool& second_front) const;
+    bool TF_Ferry_Wants_Transport(void) const;
+    UnitType TF_Ferry_MCV_Type(void) const;
+    bool TF_Ferry_Wants_MCV(void) const;
+    void TF_Ferry_AI(void);
+    void TF_Ferry_Escort(CELL landing);
+    CELL TF_Find_Naval_Cell(BuildingClass const* building) const;
+    CELL TF_Naval_Patrol_Cell(int wzone) const;
     bool Place_Special_Blast(SpecialWeaponType id, CELL cell);
     bool Flag_Attach(CELL cell, bool set_home = false);
     bool Flag_Attach(UnitClass* object, bool set_home = false);

@@ -230,6 +230,56 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Combat / units
 
+### Endgame auto-sonar doesn't know the TD subs exist (found 2026-08-01, unfixed)
+- Vanilla's endgame stall-breaker (`house.cpp` FIXIT_VERSION_3 block, `AutoSonarTimer` 40s
+  cadence): when a house owns nothing but submarines, every sub is force-uncloaked for 15s so
+  opponents can find and finish it. Both halves are hardcoded to the RA hulls only:
+  - The trigger gate is `VQuantity[VESSEL_SS] > 0` (SS/MSUB share the slot count) — a Nod
+    house reduced to only TDNSUB/TDOBLISUB/TDMSUB never trips it, so a cloaked TD sub can
+    stall the endgame FOREVER (the exact stall the mechanism exists to prevent).
+  - The "nothing but subs" census loops run over the RA-era ranges (`UNIT_RA_COUNT`,
+    `VESSEL_RA_COUNT`), so TD ground units aren't counted either — a Soviet-teamed house
+    with TD remnants could get pinged while it still has an army.
+- Fix shape when picked up: treat all five sub hulls (SS/MSUB/TDNSUB/TDOBLISUB/TDMSUB) as
+  subs in both the gate and the ping loop, and run the census over the full type ranges.
+- Related context: sub concealment is the standard cloak system (`Cloakable=yes` on all five
+  hulls); the only passive detection in the engine is the 1-cell adjacency shimmer
+  (`foot.cpp` scanner check — all vessels and infantry are `IsScanner`), which is cosmetic
+  and never acted on by the AI. Sub-detection improvements are a design discussion
+  (2026-08-01), not yet a workstream.
+
+### AI built A-10s at helipads (parked-on-pad / fly-in-and-explode) — ✅ FIXED 2026-08-01
+- **Symptoms (both player-observed, Docklands skirmishes):** a GDI A-10 parked dead-center on
+  a helipad; later the same day, an AI A-10 "flying in like a helicopter" to a loaded helipad
+  and self-destructing on arrival. AI economy bleed: money spent on aircraft that explode.
+- **Root cause (proven by TF_AI_DIAG):** `PROD start TDA10 ... at factory TDGHPAD#86` — the
+  per-building factory logic asks `Suggest_New_Object(RTTI_AIRCRAFTTYPE)`, and the house-level
+  `BuildAircraft` choice does not know which factory is asking, so whichever aircraft factory
+  ticks first takes the order — including a helipad taking a fixed-wing. `Exit_Object` then
+  spawns it parked on a free pad (`Docking_Coord`, Height=0), or map-edge-flies it in when the
+  pad is tethered; an undockable fixed-wing self-destructs at touchdown (`Landing_Takeoff_AI`).
+  All the docking/`Who_Can_Build_Me` chains were audited type-correct — production assignment
+  was the one unguarded path.
+- **Fix:** the wrong-family factory DECLINES the order (helipads take rotary only, the
+  airstrip family fixed-wing only) and leaves it for a sibling; an order cannot strand because
+  `Can_Build` already requires the airfield prerequisite for fixed-wing types.
+- **Related fix, same session (`0c12624`):** the out-of-ammo rearm search was hardcoded
+  `Find_Docking_Bay(STRUCT_HELIPAD)`, which fixed-wing can never satisfy — an AI A-10 with
+  empty ammo never found its airfield and flew disarmed forever. Now searches the aircraft's
+  home-building family (airstrip family matching made symmetric).
+- `FIXEDWING-LAND` touchdown census (TF_DEV_BUILD) left in for regression-watching.
+
+### AI superweapon targeting ignores stealth-generator cloak — ✅ FIXED + PLAYER-VERIFIED 2026-08-01
+- **Was:** GDI AI ion-cannoned the player's airfield while it sat inside a Nod stealth
+  generator field. Vanilla AI superweapon target selection predates building cloak and never
+  checked visibility.
+- **Fix (`0164b7f`):** `Special_Weapon_AI` skips any building `Is_Cloaked(this)` — discovery
+  stays sticky intel, but the live cloak veils the strike, forcing target displacement exactly
+  like direct fire. Cloak state already encodes detector coverage (a detector forces the
+  uncloak), so no separate detector check is needed.
+- **Verified in play the same day:** "enemy going for the unstealthed stuff" (Luke, live
+  Docklands match with stealth generator up).
+
 ### Recon Bike (TDBIKE) won't turn to fire at off-axis targets — ✅ FIXED 2026-06-16
 - **Severity:** major (unit was much less effective; affected Nod harass doctrine).
 - **Status:** RESOLVED — `UnitClass::Rotation_AI` (unit.cpp:601).
@@ -305,17 +355,31 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Pathfinding / AI cooperation
 
-### Units livelock retrying a doomed path forever — ROOT-CAUSED, NO FIX 2026-07-19
-- **Severity: ESCALATED TO CRASH (2026-08-01).** The DOCKLANDS A* strong test (teamed AIs, human
-  isolated across the river — every ground target unreachable) drove ~8,000 legacy-pathfinder
-  fallbacks by F12,770 and the sim process died with `EXCEPTION_STACK_OVERFLOW`
-  (`InstanceServerG.exe`, `_Except_424.txt`, dump saved in AppData). A* itself stayed clean
-  (`captrips=0` throughout — the budget item below PASSED); the stack death is in the legacy
-  fallback under retry-storm volume. **Repro:** DOCKLANDS, 3 teamed AIs vs isolated human,
-  ~10-15 min. The no-progress cure below is now crash-prevention, not just efficiency —
-  first candidate for the next session.
-- **Status:** root cause CONFIRMED. **No fix.** One attempt crashed the game on both machines and
-  was reverted; a second, safer attempt was falsified. All surfaces back on clean `HEAD`.
+### Units livelock retrying a doomed path forever — ✅ CLOSED 2026-08-01 (crash fixed+verified; wedges cured; storm deferred to naval)
+- **Final status:** the give-way recursion CRASH is fixed and verified (two long matches, no
+  artifacts). The in-base wedge livelock is cured by the no-progress detector. The
+  unreachable-target retry storm is NOT curable by give-up logic (measured 8.96 vs 8.4
+  fallbacks/frame with detector v2 + scan-limit) — those units simply have no ground route;
+  the cure is AI naval transport (`ai-upgrade-plan.md`), Luke's call 2026-08-01. Full verdict
+  + falsification history: `path-failure-livelock-design.md`.
+- **The 2026-08-01 DOCKLANDS `EXCEPTION_STACK_OVERFLOW` was a SEPARATE defect the livelock merely
+  fed.** Walking the crash minidump (`InstanceServerG.exe_2026-08-01_00-17-47_T472.dmp`, raw
+  stack scan + addr2line) showed ~1,500 repetitions of one cycle: `Start_Of_Move` give-way
+  RETREAT (`drive.cpp` gw==2) → `Assign_Destination(back)` → nested `Start_Of_Move` (engine calls
+  it for a stationary unit) → RETREAT again — unbounded mutual recursion in OUR v2.2.3 give-way
+  code whenever a pinch is so jammed the retreat decision repeats. The earlier "stack death is in
+  the legacy fallback under retry-storm volume" reading was wrong (the legacy pathfinder is
+  iterative). Fixed with a call-stack re-entrancy guard: a retreat-triggered nested
+  `Start_Of_Move` skips give-way evaluation and paths straight to the retreat cell.
+- **Status:** livelock root cause CONFIRMED 2026-07-19; **both fixes implemented 2026-08-01**
+  (recursion guard above + the no-progress detector below, `FootClass::TF_Path_No_Progress`:
+  infantry give-up branch aborts after 8s of zero progress on the same (cell, destination) pair;
+  the vehicle patient queue yields to the abandon branch after 60s of literally zero movement —
+  a genuinely queued column advances cells, which restarts the window). Old savegames break
+  (FootClass grew), accepted like the SuperWeapon-enum growth. Two earlier dead ends are recorded
+  in the design doc: never call the virtual `Assign_Destination()` from inside `Basic_Path()`
+  (crashed both machines), and the `Nearby_Location` guard alone (falsified).
+  **Verification pending:** DOCKLANDS-style rerun on the fixed build.
 - **⭐ Full detail: `docs/path-failure-livelock-design.md`. Read it before touching this** — it
   records both dead ends, and both are easy to walk straight back into.
 - **Symptom:** the same `(unit, src, dst)` triple repeats in `tf_astar.log` hundreds of times in

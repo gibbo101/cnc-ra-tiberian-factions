@@ -40,6 +40,359 @@ range is incredible"). Decision: leave as-is while the roster is being built, th
 balance pass on the TS side, **range first but everything else too** (damage, ROF, HP, cost,
 speed, the Devil's Tongue stream numbers). One known deliberate deviation already: the Mk. II AA
 tusks carry RA MammothTusk stats (7.5 range) instead of TS's 6.
+## ⭐ NEXT SESSION — RESUME HERE: harbor-seal design pass + the last two unverified arcs (written 2026-08-04 ~00:15)
+
+SIX verify matches played 2026-08-03 evening (islands map). 12 code commits shipped
+same-session, each fix live-verified or staged within one match of its finding:
+`05f2436` `b2b502c` `7a11419` `6806881` `3843c75` `5969e90` `a42e5d2` `569e3d1`
+`d3c0bec` `72c33f3` `b5c466c` `98719e7` `f9b86ad1`. Desktop prefix = through
+`f9b86ad1`, md5 `bb074dc6` verified post-session (incl. the armed-cap fix — so the
+"only transports" bug is fixed but UNVERIFIED in play).
+
+**HONEST STATUS (Luke's correction, 2026-08-04: "but it didn't, did it"):** the ferry
+PIPELINE now emits the full event chain in the log and the plumbing bugs found were
+real and fixed — but as a GAME FEATURE the invasion does not work yet. Player-visible
+reality across all six matches: ONE match (the "FIRST LANDING!" one) where the AI made
+some small landings — token forces (2 heavy tanks; a solitary V2) that died
+pointlessly. The FINAL match, on the most-fixed build, produced ZERO visible
+amphibious assaults: the AI massed ~5 transports, stopped building warships entirely
+(armed-cap bug, fixed but undeployed until session end), and its `aboard=5` sails
+never became landings the player could see (unload-stuck aborts + attrition — the
+delivery end still fails in reality even when boarding succeeds). H13's convoy was
+fully blocked all match (harbor seal). NO beachhead ever assembled, NO wave ever
+released, NO forward base ever built, all night. Log events != a working feature; the
+feature bar is a match where Luke WATCHES a real force land, hold a beach, and build
+on it.
+
+**Mechanics verified in the LOG (not yet as gameplay):**
+- Fleet doctrine cycle: blind patrol → NAVAL-MASS → NAVAL-WAVE → re-mass repeated all
+  night. (Luke never confirmed satisfying massed fleet battles on screen — check.)
+- Boarding after the staging fix: `FERRY-SAIL aboard=5 stragglers=0` repeatedly
+  (final match, H14 side only).
+- FERRY-WAIT / load-stall diagnostics named every silent gate (`aboard=0 outside=5
+  dist=1` pinpointed the boarding-walk failure in one line).
+- EXPERT-SELL only at designed fire-sale tiers; stop-to-engage ended the reported
+  drive-by destroyer deaths (sub combat itself never visually confirmed — check).
+
+**STILL UNVERIFIED (the two remaining arcs):**
+1. **FERRY-WAVE release never observed** — beachheads took heavy deliveries but no
+   release line all night. Either defenders eat arrivals below the 15 threshold, or the
+   threshold is too high for contested beaches. Consider: scale wave threshold to
+   deliveries-so-far, or count cumulative-landed instead of currently-alive.
+2. **FERRY-MCV / FERRY-DEPLOY forward fortress** — depots+MCVs for RA factions only
+   unlocked mid-session (`3843c75`); no MCV ride observed yet. Needs one match where a
+   beachhead holds.
+
+**THE structural item — harbor seal (screenshot evidence 2026-08-03 23:59):**
+H13-Allied repeatedly died at `pickup-stall` ×3: its conscripts staged at the beach
+(staging fix working) while its LSTs idled across the channel, zone-legal but physically
+unable to reach the pickup — the naval yard footprint + parked fleet seal the channel,
+and **zones ignore buildings** so no zone check can see it. One red LST also wedged
+against a mid-channel islet. Design pass needed:
+- Naval yard placement must not seal its own channel (W5 placement criterion).
+- Pickup shore selection should verify transport reachability (path check or
+  give-up-and-repick after N pickup-stalls at the same cell).
+- The islet wedge suggests landing/pickup cells adjacent to micro-islands score as
+  valid; filter by landmass size.
+
+**Queued (design questions for Luke, evidence in hand):**
+- Air doctrine vs siege hulls (CA/TDCA/MSUB/TDMSUB): Luke leaning yes 2026-08-03 —
+  weighted aircraft target bias when intel has seen one. Slots after this verify cycle.
+- Gap-generator fairness: AI aircraft attacked things hidden under a gap field; target
+  evaluation ignores shroud entirely. Investigation item (per-house jam state in threat
+  eval).
+- Naval funding floor (H14 fire-sold yard+ATEK in a genuine cash collapse while
+  fielding a fleet).
+- Suppress land attack teams at land-unreachable enemies (the 63k-fallback storm;
+  ferry draft harvests some units but teams still burn pathfinder budget).
+- Transient `SYRD/APWR no-location` PLACE-FAIL (~1 per match, always self-recovered;
+  zone=0 in the reject line each time).
+- Sub-detection improvements (Luke's pick pending: B sonar radius + C detector hull);
+  endgame auto-sonar TD-sub gap; chrono-MCV delivery post-P3b/3c.
+- A-10 factory/rearm fixes (`9b6d486`/`0c12624`) still awaiting regression eyes.
+- Difficulty gate still owed a CONNECTED-map check: Medium AI must show zero FERRY
+  lines there (on split maps every tier ferries by design — that part verified).
+
+Logs: `MOD_DEBUG_AI.txt` — ⚠ lands at `pfx/drive_c/users/steamuser/` some runs (NOT
+Documents/CnCRemastered/ — CWD-dependent, check both). Full game exit before any deploy —
+pgrep `InstanceServerG[.]exe`, never bare `-f InstanceServer`, it self-matches. A match
+RESTART is not an exit: InstanceServerG persists and one deploy attempt was lost to it.
+
+---
+
+## Workshop support: karain0330 GPU-crash report (2026-08-21)
+
+Player `karain0330` reported "Graphics card driver crash detected / DXGI fault device
+removed". Reply DRAFTED and handed to Luke, **not yet confirmed posted**. Draft lives in
+this session's memory record.
+
+**Triage facts established (see [[reference-player-crash-triage]]):**
+- `Video Card Driver Crash Detected!` and `Error: DXGI_ERROR_DEVICE_REMOVED` are literal
+  strings in `ClientG.exe`. The player is quoting EA's own dialog: the D3D11 device was
+  lost, not a mod assert.
+- **Process split confirmed by binary:** `InstanceServerG.exe` loads `RedAlert.dll`
+  (2 string refs; `ClientG.exe` has 0). Our DLL's import table is KERNEL32 / msvcrt /
+  OLEAUT32 / SHELL32 / USER32 / WINMM only: **no d3d11, no dxgi, no gdi32**. Mod game
+  code cannot reach the GPU.
+- **But mod DATA can and has crashed ClientG** (wrong-size CONFIG.MEG member, HD tile
+  atlas attempts, the TS audio pair). So never tell a player the mod "cannot" cause a
+  renderer crash. Access violation != driver reset, but the distinction is ours to prove,
+  not to assert.
+- `<game install>/log/CrashLog.txt` is THE thing to request from a reporting player: one
+  line per crash naming the faulting process, so it separates ClientG (renderer) from
+  InstanceServerG (us) instantly.
+- VRAM theory KILLED: our `MT_COMMANDBAR_COMMON.TGA` is 6871x6716 32bpp / 176MB, and
+  EA's own copy inside `TEXTURES_SRGB.MEG` is 184,582,562 bytes of the same thing. We
+  replace like with like.
+- `GAMECONSTANTS.XML` has **no** texture/quality/VRAM constant, so there is no mod-side
+  knob to offer a player with a marginal GPU.
+- **Steam Workshop comments are capped at 1000 characters.** Budget for it when drafting.
+
+**OPEN LEAD, unchased:** Luke's own `log/CrashLog.txt` carries **seven `ClientG.exe`
+crashes at a fixed EIP `0x00EB5E69`** (07-17/18 and 08-12/13, both art-iteration
+sessions), alongside the expected InstanceServerG entries. Not yet checked against what
+actually shipped in v4.0: may be dead dev-build art, may be a live shipped-art crash.
+Worth an hour before the next release.
+
+---
+
+## ✅ CONSUMED 2026-08-03: the naval-doctrine-v2 verify (kept for the session record)
+
+Two verify matches played 2026-08-03 (islands map; match 1 = 2 Mediums, match 2 = 2 Hards).
+Batch `05f2436` + `b2b502c` + `7a11419` built and deploys on next full game exit. What the
+matches PROVED and what they FOUND:
+
+**VERIFIED live (match 2):** fleet cap scaling on discovery (2 blind → 4, enavy tracked);
+NAVAL-MASS rally + NAVAL-WAVE release full cycle for BOTH Hard AIs; re-massing after fleet
+wipe; FERRY-WAIT diags named every silent gate; EXPERT-SELL fires only at the designed
+fire-sale tiers (SYRD+ATEK at urgency=2 during a real economy collapse, no churn loop).
+
+**FOUND + FIXED (in the pending build, all pushed):**
+- Subs never fought: Can_Fire returns FIRE_MOVING for any turretless hull with a NavCom,
+  and the lifetime patrol kept every ship permanently destined → stop-to-engage in
+  VesselClass::Combat_AI (AI ships drop NavCom when target in range) + dispatcher never
+  re-orders an engaged ship (`05f2436`).
+- No massing "like land armies" → W5.4 fleet doctrine: blind patrol → mass at rally →
+  release as one hunting wave at 3/4 cap (`05f2436`).
+- No AI air power ever: RA factions only built radar REACTIVELY (enemy already flies) →
+  proactive dome for every faction, unlocks helipad/airstrip branches (`05f2436`).
+- Ferry NEVER sailed at any difficulty: eligibility wanted idle TEAMLESS guard units,
+  Hard teams claim everything instantly (both AIs at roster=0 all match; H13's land teams
+  burned 63k+ A* fallbacks marching at an unreachable island) → 3-level draft:
+  census=staged-only, second-front roster drafts staged troops from teams, route-blocked
+  roster conscripts freely incl. hunt/move (the ferry IS the attack wave there). Drafted
+  units leave their team and stand by in guard (`b2b502c`).
+- "Naval gone dead" post-wave: MISSION_HUNT is terminal, stalled hunters (unreachable
+  target) park at shore forever, invisible to the guard-only dispatcher, CurVessels pins
+  at cap and production stops → hunt supervision returns non-moving can't-hit hunters to
+  guard (`7a11419`).
+- Cross-match static leak: ferry ops/beach rally/fleet rally survived into the next match
+  of a session (stale beach rally can satisfy the MCV gate) → reset in HouseClass::Init.
+
+**NEXT MATCH checklist (any 2-AI water map, at least one Hard):**
+1. FERRY-START with roster=3-5 (the draft working) → FERRY-SAIL → FERRY-UNLOAD →
+   beachhead → FERRY-MCV/FERRY-DEPLOY forward fortress. THE headline item.
+2. Repeating NAVAL-WAVE cycles all match (hunt supervision keeping rotation alive);
+   NAVAL-HUNT lines followed by NAVAL-IDLE = a hunter stalling, grab context.
+3. Subs visibly fighting (stop-to-engage); NAVAL-IDLE names any parked-warship state
+   (the match-2 blind-phase parked subs were never explained — this tracer exists for it).
+4. Radar domes from ALL factions mid-game, then helicopters/aircraft.
+5. Difficulty gate still owed: a Medium AI on a CONNECTED map must show zero FERRY lines.
+
+**Design questions for Luke (live evidence in hand):**
+- Naval funding priority: H14 fire-sold its yard+ATEK in a real cash collapse while
+  fielding a fleet; should naval production hold below some cash floor?
+- Land waves at an unreachable enemy: teams still burn the whole army pathing at the sea
+  on route-blocked maps (the 63k-fallback storm). Ferry draft harvests some of it, but
+  should Expert_AI suppress land attack teams entirely when the enemy is unreachable?
+
+Logs: `MOD_DEBUG_AI.txt` — ⚠ THIS RUN it appeared at `pfx/drive_c/users/steamuser/` (NOT
+Documents/CnCRemastered/ — CWD-dependent, check both). Full game exit before any deploy —
+pgrep `InstanceServerG[.]exe`, never bare `-f InstanceServer`, it self-matches.
+
+**Match A — the big one: 1+ HARD AI on a regular coastal map (shared sea + land route).**
+This exercises the second front, which fires on almost every map now. Pass criteria in order:
+1. **Naval re-soak (carry-over):** yard placed at economy-ready (~F6-8k, before discovery);
+   `NAVAL-PATROL` legs from the first ship; tech centre built ONCE and kept (no
+   `EXPERT-SELL ATEK` churn); no sidebar crash (fix went in before match 2 ended early).
+2. **Yard-exit fix:** `YARD-EXIT blocked` lines may appear but CLEAR (curV rises after);
+   fleet actually REACHES cap — `NAVAL-PICK ... curV=` climbing to `cap=` instead of match
+   3's 44-starts-3-ships. Eyeball: are there real naval battles now? (If fleets still
+   wander past each other piecemeal, fleet-massing doctrine is the queued follow-on.)
+3. **Second front (Hard only):** once enemycoastal flips AND the AI has 18+ idle spare
+   units: `NAVAL-PICK LST ferry` → `FERRY-START` (roster/pickup/landing cells) →
+   `FERRY-ESCORT` warships ordered ahead → `FERRY-SAIL` → `FERRY-UNLOAD` near the ENEMY
+   base at a weak stretch of coast.
+4. **Beachhead doctrine:** landed units do NOT attack piecemeal — they gather at the rally
+   (guard-area) while shuttles keep delivering (`FERRY-START op=1/2/3` as the convoy
+   scales); at 15 ashore one `FERRY-WAVE release beach=N` line and the whole force attacks
+   as a single wave. Stall-release: 5+ ashore with no delivery for ~3 min also releases.
+5. **Forward fortress:** after the first load is ashore — `FERRY-MCV queued` → MCV takes
+   the first berth next ride → `FERRY-DEPLOY` at the rally → yard deploys → **expansion
+   buildings (power, defences) place AROUND the beachhead yard**, not back home, and the
+   MAIN base keeps building normally (the cluster-brain guarantee — any PLACE-FAIL storm
+   or main-base placement weirdness after the expansion deploys = cluster regression,
+   grab the log).
+6. **Difficulty gate:** if a Medium/Easy AI is in the match, it must produce ZERO FERRY-*
+   lines on a connected map (single-front classic game preserved).
+
+**Match B — split map (Docklands), mixed difficulties:** ferry + MCV expansion must run at
+EVERY difficulty there (it's the only delivery route), landing at the shortest crossing;
+beachhead membership is zone-based there so stray survivors get adopted anywhere ashore.
+
+**Known watch items (log even if the match passes):**
+- Naval funding starves vs tank spam (match 3: H15 pinned at cash=11; `PROD hold ... cash=`
+  lines at the yard). Likely fix: naval funding priority — design question for Luke.
+- MCV deploy retry-loop: `FERRY-DEPLOY` repeating with no yard appearing = rally terrain
+  can't fit the 3x3 yard; needs a nudge-and-retry.
+- One transient `SYRD no-location` PLACE-FAIL self-recovered in match 3 — recheck.
+- A-10 factory/rearm fixes (`9b6d486`/`0c12624`) still awaiting regression eyes.
+
+**Queued next after verify:** sub-detection improvements (Luke has the options writeup:
+recommended B = real sonar radius via Is_Cloaked hook + C = detector hull in every fleet —
+awaiting his pick); endgame auto-sonar TD-sub gap fix (known-issues); fleet-massing doctrine
+if battles stay piecemeal; chrono-MCV delivery once Chronosphere AI dispatch (P3b/3c) exists.
+
+---
+
+## ✅ Match-2 crash ROOT-CAUSED same day: the sidebar off-by-one (fix already on main)
+
+InstanceServerG crashed ~F79,733 in the GDI-vs-Allies naval match. **Minidump walked
+(rawwalk.py + addr2line against a `82510bc` worktree build): AV 0xc0000005 at
+`LinkClass::Add` (common/link.cpp:266) — the gadget/linked-list plumbing the sidebar
+buttons live on, dying on a corrupted pointer.** That is the signature of EA's
+`StripClass::Add` off-by-one (`Buildables[75]` OOB write smashes the adjacent sidebar
+state; next gadget link-in follows the garbage pointer). Cause and effect line up: the
+sidebar's units column holds infantry+vehicles+aircraft+VESSELS, and the naval work made
+GDI's column cross 75 entries for the first time — same bug the parallel TS instance found
+independently the same day (their symptom: empty sidebar). Fix `cf8ad1f` (guard `<`,
+MAX_BUILDABLES 120, both sidebar implementations) was applied to main before the walk and
+is in the deployed DLL. **Closed pending a re-soak match; if any new sim crash appears,
+re-walk before assuming this.** Evidence kept: dump
+`.../AppData/Roaming/CnCRemastered/InstanceServerG.exe_2026-08-01_13-16-53_T476.dmp`,
+logs `MOD_DEBUG_AI.match2-naval-crash.txt` + `tf_astar.match2-naval-crash-tail.log`
+(fallback storm hot at crash: 216,985 fallbacks, captrips=0 — budget held, storm NOT the
+cause this time).
+
+## ⭐ W5.1 Naval AI — steps 1-3 SHIPPED + LIVE-VERIFIED; patrol + gates evolving
+
+Step 1 (water census + `TF_Naval_Assessment`) shipped `c01202e`, live-verified on Docklands.
+Steps 2+3 implemented 2026-08-01 (this commit), deployed to the desktop prefix, NOT yet
+observed in a live match:
+
+2. **Naval yard queue + coastal placement** — `AI_Building` pool entry for the faction's
+   yard (role = `STRUCT_SHIP_YARD`: SYRD/SPEN/TDGYARD/TDNPEN via `TF_Skirmish_Equivalent`),
+   gated on economy + assessment ok + enemycoastal, one yard, MEDIUM urgency (ageing brings
+   it up). Placement: `Find_Build_Location` branches on `Speed == SPEED_FLOAT` into
+   `TF_Find_Naval_Cell` — whole-map scan, same Legal/Proximity predicates, no zone-ring
+   restriction (that was the silent-fail gap), prefers the assessment's water zone, never
+   accepts ponds, picks the legal cell nearest the base centre.
+3. **AI_Vessel skirmish branch** — the `IsBaseBuilding` clear now falls through to an
+   AI_Unit-style uniform pick over Can_Build's ARMED vessels (transports excluded until the
+   W5.2 ferry controller exists), gated on yard-role owned + assessment + `enemycoastal`,
+   interim fleet cap `TF_NAVAL_FLEET_CAP=6` until step 4.
+
+**Match 1 (2 Allied AIs, Docklands):** full chain verified — GPS flip F21059, SYRD placed
+`ontarget=1`, PT/DD produced. Caught the **vanilla sell-table loop** (SYRD/SPEN at
+URGENCY_LOW top of the fire-sale order; LOW fires on any sub-100 cash dip → build/
+half-price-sell/rebuild every ~90s). Fixed `82510bc` + `EXPERT-SELL` diag.
+**Match 2 (GDI vs Allies):** sell fix VERIFIED (TDGYARD placed F45554 `ontarget=1 ok=421`,
+persisted for the rest of the match, fleet reached curV=4+: TDPT/TDDD/TDCA×2/TDPT; Allied
+SYRD placed F62231 + PT/DD). Caught TWO more issues live: (a) `EXPERT-SELL ATEK` — the
+tech-centre/repair-bay churn, same table, fixed in `1b1dda1` (pool-rebuilt buildings can't
+sell at LOW); (b) **parked fleets never fight** (Luke) — patrol made lifetime-long in
+`e9d415f`. Ended in the sim crash logged above.
+
+**Committed + built + pushed, NOT yet live-verified (deploys on next full game start):**
+- `1b1dda1` — yard decoupled from discovery (Luke's call: recon-special factions otherwise
+  get a standing naval head start; on water-split maps the navy IS the scout). Fleet size
+  scales instead: 2-ship blind patrol → 6 after discovery. Naval patrol dispatcher in
+  Expert_AI (water-zone-only legs, storm-safe by construction) + tech-centre/repair-bay
+  sell-tier fix.
+- `e9d415f` — patrol runs for the life of the fleet (not just while blind).
+- sidebar off-by-one from `ts-units` applied to main (see crash block above).
+**Next-match verify list:** yards at economy-ready (~F6-8k, before discovery), NAVAL-PATROL
+legs from first ship, blind fleet holds at 2 → 6 after flip, tech centre built ONCE and
+kept, ships actually roaming, battles when fleets cross.
+
+4. **Build gates — SHIPPED `76bfcc0` (2026-08-01), not yet live-verified.** The fixed
+   `TF_NAVAL_FLEET_CAP=6` is replaced by `TF_Naval_Fleet_Cap`: match the STRONGEST single
+   opponent's observed navy (max not sum, margin 0 so matching settles — the air-cap
+   shape), intel-filtered via `Is_Discovered_By_Player`; a scouted enemy yard counts as a
+   fleet on the way; transports count as invasion threat; floor 4 (shore-bombardment
+   presence vs navy-less opponents), ceiling 12. Blind patrol stays 2.
+   - Water-separated-map bootstrap (Luke's observation): already covered — `1b1dda1`
+     decoupled the yard from discovery and gives every coastal AI the 2-ship blind patrol,
+     a superset of "yard + scout vessel before discovery". No further work.
+
+5. **W5.2 sea-transport ferrying — SHIPPED (2026-08-01), not yet live-verified.** The piece
+   that unblocks the cliff-massing verdict from the livelock closure. `TF_Ferry_AI` in
+   Expert_AI: one op per house, engages only when the designated Enemy is land-unreachable
+   (`TF_Ferry_Route_Blocked`, MZONE_NORMAL zone mismatch). AI_Vessel queues ONE LST outside
+   the armed-fleet cap (`TF_Ferry_Wants_Transport`; all four factions use the RA LST — the
+   TDLST hull stayed cut, no transport-switch wiring needed). State machine: pick shore
+   points (`TF_Ferry_Shore_Cell` whole-map scan, pickup near own base, landing on the
+   enemy landmass nearest our base = shortest crossing), gather 3–5 idle teamless armed
+   ground units, board via the TMission_Load handshake (one ENTER assignment per pass while
+   the transport's radio is free), sail, MISSION_UNLOAD; blocked-beach retry re-plans
+   toward the enemy base avoiding the failed spot, timeouts abort cleanly and release
+   stragglers. Expedition sweep: idle armed units standing on the enemy landmass get
+   MISSION_HUNT — also adopts survivors of ops whose transport died. Known gaps (accepted
+   v1): op state is per-match statics (a mid-op save/load resets to IDLE, transport keeps
+   cargo idle); a second LST can slip through the production-lag window (bounded at 2).
+
+**Match 3 (2026-08-01 evening, 3 AIs, water-split):** step-4 gate VERIFIED live (blind
+cap held at 2, scaled to `cap=4 enavy=2` on discovery, sell fix held, no crash to F137k+).
+But Luke's read was right — "no big naval battles, green naval stuck, no army transport":
+**44 vessel `PROD start`s produced a 3-ship fleet and the ferry LST never spawned.** Root
+cause found + FIXED (`0593113`): `Exit_Object`'s vessel case returned 0 ("abort + refund")
+whenever `Find_Exit_Cell` found the one-cell exit ring occupied — every completed ship
+whose slipway was momentarily blocked (usually by the house's own dockside hulls) was
+silently deleted. Vanilla never hit it (no skirmish navy). Now: blocked slipway = the
+temporary-blockage retry (3s), own parked ships scattered off the ring, `YARD-EXIT` diag.
+Ferry v2 shipped same evening (`2a9e504`): up to 3 concurrent LST ops sharing a beachhead,
+transport demand scales with idle army, threat-scored landing picks (avoid discovered
+shore defences), warship escorts dispatched ahead of the crossing (`FERRY-ESCORT`).
+
+6. **Beachhead assembly + W5.3 amphibious expansion — SHIPPED 2026-08-01 late (Luke's
+   directives: "15 units isn't gonna cut it", "imagine a base with teslas/obelisks at the
+   landing zone"), not yet live-verified.**
+   - Beachhead doctrine (`3062228`): landed units rally inland and hold (guard-area)
+     instead of hunting piecemeal; whole force releases at 15 ashore (`FERRY-WAVE`);
+     stall-release (5+ ashore, no delivery 3 min). Convoy cap 3→4 LSTs.
+   - Cluster brain (`ffe940d` + yard-list fix in `782a310`): `Recalc_Center` tracks only
+     the dominant yard cluster (Center can't drift into the sea between two bases); a
+     remote yard places its own products via nearest-first whole-map scan around itself
+     (14-cell range, same Legal+proximity predicates). Single-yard houses byte-identical.
+   - MCV pipeline (`782a310`): force first, base second — once a load is ashore,
+     `FERRY-MCV queued` (faction MCV jumps the combat pick), first berth on the next
+     ride, `FERRY-DEPLOY` walks it to the rally and MISSION_UNLOAD deploys it; expansion
+     yard then grows a defended forward base (power/defences via the normal pool routed
+     through the remote anchor). Chronoshift delivery variant designed, gated on
+     Chronosphere AI dispatch (P3b/3c).
+
+7. **Second front on connected maps — SHIPPED `ef7c875` (Luke: only one map is truly
+   water-split).** `TF_Ferry_Assault` carries both doctrines: split map = invasion at
+   every difficulty, shortest crossing; connected map with shared sea = **Hard-tier-only**
+   opportunistic landing (difficulty stays behavioural), gated on fair-fog enemycoastal +
+   18 surplus idle units (land waves keep first claim), landing near the ENEMY base at
+   the weakest threat-scored coast. Beachhead membership on a shared landmass = within 10
+   cells of the rally (zone identity can't distinguish there). MCV forward base enabled
+   on connected maps too (`4e88713`, Luke's call) — Hard tier via the Assault gate;
+   "already planted" = yard within 10 cells of rally on shared landmasses.
+
+**Next-match verify list (deployed = through `ef7c875`):** fleets actually REACH cap
+(watch `YARD-EXIT blocked` — should appear then clear, curV rising after), LST spawns →
+`FERRY-START/SAIL/UNLOAD` chain, units gather at rally then `FERRY-WAVE release`, convoy
+scales (2nd–4th LST as idle army grows), escorts precede landings, then `FERRY-MCV
+queued` → `FERRY-DEPLOY` → expansion yard building defences at the beachhead. Watch
+items: vessel funding starves vs tank spam (H15 sat at cash=11 — naval may need a funding
+priority look), one early `SYRD no-location` PLACE-FAIL self-recovered, matched fleets
+concentrating into real battles (massing doctrine is the follow-on if not), MCV deploy
+retry-loop if the rally terrain can't fit a 3x3 yard.
+
+Same-day context: livelock workstream CLOSED (`98a7177`), A-10 factory + rearm fixes
+(`9b6d486`/`0c12624`) awaiting regression eyes in normal play.
 
 ---
 

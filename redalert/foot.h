@@ -243,6 +243,20 @@ public:
     int TryTryAgain; // Number of retry attempts remaining.
 
     /*
+    **	No-progress detector (Tiberian Factions). The engine's give-up logic only aborts a
+    **	destination on a movement-zone mismatch, but zones ignore buildings, so a walled-off
+    **	(or own-cell) destination retries forever. Keyed on the SOURCE CELL alone — mission
+    **	logic rotates a stuck unit through different (equally unreachable) destinations every
+    **	few attempts, so destination-pair keying never accumulates. A unit whose paths keep
+    **	failing from the same cell, with no long quiet gap between failures, is stuck no matter
+    **	where it is currently being sent. Reset on any successful path or any movement.
+    */
+    CELL TF_NoProgSrc;
+    long TF_NoProgStart;
+    long TF_NoProgLast;
+    bool TF_Path_No_Progress(long window);
+
+    /*
     ** If the object has recently attacked a base, then this timer will not
     ** have expired yet.  It is used so a building does not keep calling
     ** for help from the same attacker.

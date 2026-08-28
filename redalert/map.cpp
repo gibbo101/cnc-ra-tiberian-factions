@@ -64,6 +64,9 @@
 #include "lcwstraw.h"
 #include "common/endianness.h"
 
+int TF_WaterZoneSize[256];
+int TF_WaterZoneCount;
+
 #define MCW MAP_CELL_W
 int const MapClass::RadiusOffset[] = {
     /* 0  */ 0,
@@ -1858,15 +1861,24 @@ bool MapClass::Zone_Reset(int method)
     }
 
     /*
-    **	Water based zone recalcuation.
+    **	Water based zone recalcuation. Tiberian Factions: record each water zone's
+    **	cell count as it is discovered -- Zone_Span computes it anyway, and the naval
+    **	AI's pond-vs-sea judgement is exactly this number. Water zones ignore
+    **	buildings, so the histogram is stable for the whole match once computed.
     */
     if (method & MZONEF_WATER) {
         int zone = 1; // Starting zone number.
+        memset(TF_WaterZoneSize, 0, sizeof(TF_WaterZoneSize));
         for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
-            if (Zone_Span(cell, zone, MZONE_WATER)) {
+            int span = Zone_Span(cell, zone, MZONE_WATER);
+            if (span) {
+                if (zone < ARRAY_SIZE(TF_WaterZoneSize)) {
+                    TF_WaterZoneSize[zone] = span;
+                }
                 zone++;
             }
         }
+        TF_WaterZoneCount = min(zone - 1, (int)ARRAY_SIZE(TF_WaterZoneSize) - 1);
     }
 
     /*

@@ -4378,7 +4378,15 @@ int AircraftClass::Mission_Guard(void)
     */
     if (Ammo == 0 && Is_Weapon_Equipped()) {
         if (!In_Radio_Contact()) {
-            BuildingClass* building = Find_Docking_Bay(STRUCT_HELIPAD, false);
+            /*
+            **	Tiberian Factions: search the aircraft's own home-building type, not a
+            **	hardcoded helipad. Helipads refuse fixed-wing at RADIO_CAN_LOAD, so an
+            **	out-of-ammo AI A-10 could never find its airfield here and flew around
+            **	disarmed forever. Helicopters still resolve to the helipad family
+            **	(Find_Docking_Bay cross-matches all pad types), fixed-wing to the
+            **	airstrip family.
+            */
+            BuildingClass* building = Find_Docking_Bay(Class->Building, false);
 #ifdef FIXIT_CARRIER //	checked - ajw 9/28/98
             if (!Class->IsFixedWing) {
                 int dist = 0x7FFFFFFF;
@@ -4694,6 +4702,41 @@ bool AircraftClass::Landing_Takeoff_AI(void)
                 Height = 0;
                 IsLanding = false;
                 Set_Speed(0);
+
+#if TF_DEV_BUILD
+                /*
+                ** TF DEV: fixed-wing touchdown census (known-issues "fixed-wing parked on a
+                ** helipad", 2026-08-01). A live parked plane implies MISSION_ENTER at touchdown
+                ** (any other mission self-destructs just below), i.e. a dock contract existed or
+                ** was lost mid-landing. Log every fixed-wing touchdown with what is under the
+                ** wheels and who the radio contact is, so the next sighting explains itself.
+                */
+                if (Class->IsFixedWing) {
+                    static FILE* tf_land_log = NULL;
+                    if (tf_land_log == NULL) {
+                        const char* h = getenv("USERPROFILE");
+                        if (h == NULL)
+                            h = getenv("HOME");
+                        if (h != NULL) {
+                            char p[512];
+                            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                            tf_land_log = fopen(p, "a");
+                        }
+                    }
+                    if (tf_land_log != NULL) {
+                        CELL mc = Coord_Cell(Center_Coord());
+                        BuildingClass* under = Map[mc].Cell_Building();
+                        TechnoClass* contact = In_Radio_Contact() ? Contact_With_Whom() : NULL;
+                        fprintf(tf_land_log,
+                                "FIXEDWING-LAND: unit=%s cell=(%d,%d) mission=%d under=%s contact=%s navcom=%d\n",
+                                Class->IniName, (int)Cell_X(mc), (int)Cell_Y(mc), (int)Mission,
+                                under ? under->Class->IniName : "<ground>",
+                                contact ? contact->Techno_Type_Class()->IniName : "<none>",
+                                (int)NavCom);
+                        fflush(tf_land_log);
+                    }
+                }
+#endif
 
                 /*
                 **	If the NavCom now equals the destination, then clear out the NavCom.
