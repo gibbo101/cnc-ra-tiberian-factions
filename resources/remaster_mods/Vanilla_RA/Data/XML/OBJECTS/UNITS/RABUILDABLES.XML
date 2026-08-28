@@ -5819,22 +5819,6 @@
 			<BuildIcon>BuildIcon_TS_Drop</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
-	<ObjectTypeClass Name="RA_TSSUBTANK" Classification="CNCBuildableObject" CanInstantiate="False">
-		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_UNIT_TSSUBTANK</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_UNIT_TSSUBTANK_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TS_DevilsTongue</BuildIcon>
-		</CNCEncyclopediaComponent>
-	</ObjectTypeClass>
-
-	<ObjectTypeClass Name="RA_TSSAPC" Classification="CNCBuildableObject" CanInstantiate="False">
-		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_UNIT_TSSAPC</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_UNIT_TSSAPC_DESC</ObjectDescriptionTextID>
-			<BuildIcon>BuildIcon_TS_SubAPC</BuildIcon>
-		</CNCEncyclopediaComponent>
-	</ObjectTypeClass>
-
 	<ObjectTypeClass Name="RA_TSSUBTANK_0" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TSSUBTANK</ObjectNameTextID>
