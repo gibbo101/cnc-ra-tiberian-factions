@@ -1,27 +1,21 @@
 # Subterranean units — locked design + arc tracker
 
-> **⭐ RESUME HERE (2026-08-28 late: STAGE 2 VERIFIED IN PLAY ON THE DECK — "it
-> worked!" / "works nicely". Deck DLL `f65ba4333e4f`, commit `1e64a405`.)**
-> Verified by Luke: dig decision, dive ladder + mound ("animation to go under is
-> good"), straight-line travel under water AND cliffs to the far side, surfacing
-> with mound, owner marker (shape 112 disturbed-earth ring) with selection box +
-> health bar underground, no lag. Three live fixes on the way: (1) `What_Action`
-> must never scan (`Nearby_Location` per frame = "awful lag"); (2) engine
-> `Assign_Destination(TARGET_NONE)` idle clears are NOT stop orders; (3)
-> **`UnitClass::Scatter(threat==0)`** (the guard mission's off-impassable nudge)
-> surfaced the digger on the near bank every time it passed under water — guard
-> it for the whole cycle (DriveClass::Scatter alone is not enough).
-> **Also verified (later 08-28):** Stop underground -> nearest surfaceable ground ("works
-> perfectly", Luke chose to keep the TS rule; hook = the IDLE event in event.cpp), enemy AI
-> ignores it until it surfaces. **Still to verify:** SAPC passengers through a dig + unload
-> after (door art fix in), `TunnelDigThreshold` dial, the relit hulls + clean cameos by eye,
-> and the **TS flame port** (`4412baa1`: TSFire particles / TSFireball stream,
-> scripts/ts_pack_flame.py) -- ask for video before tuning. Trace stays on in dev builds:
-> `Documents/CnCRemastered/MOD_DEBUG_TUNNEL.txt`.
-> **Not done:** dig sound (SUBDRIL1), DIRTEXPL, mound scale by eye (x4 first
-> guess, Luke happy so far), save/load of the new fields.
-> **Next stages:** 3 = sensor detection (widen the export's VisibleFlags for
-> sensing houses; `Is_Cloaked` gate follows), 4 = EMP arc wiring `Force_Emerge`.
+> **⭐ RESUME HERE (2026-08-28 close: STAGE 2 VERIFIED, DEVIL'S TONGUE = EXACT TS
+> FLAME, joint checkpoint `dd5d65e6` on origin/subterranean rebased onto ts-units
+> `66717e43`; Deck DLL `73c3b8449d05`.)**
+> Verified by Luke in play: dig cycle end to end (under water + cliffs), Stop underground
+> (TS rule kept), owner marker + selection box, enemy AI ignores it, relit hulls, clean
+> cameos, SAPC door art, **TS fire stream "working fine", no crash** after the burn-loop
+> use-after-destroy fix. TS flame = TSFire particles (FLAMEALL 4x19), FireStreamSys stream
+> (2 per 4 frames x 30, twin prongs KEPT by Luke's preference, seats fwd 0x80 split 0x30),
+> TS [Fire] verses + TS Modify_Damage arithmetic in-bullet (48px-cell distance scale,
+> delivered via WARHEAD_TSFLAMEHIT), FLAMTNK1/SUBDRIL1 sounds on dormant hosts.
+> **Still to verify:** SAPC 5 passengers through a dig + unload after; `TunnelDigThreshold`
+> dial. **Not done:** DIRTEXPL, save/load of the new fields, dev traces still on
+> (MOD_DEBUG_TUNNEL.txt: cycle + BURN lines).
+> **Next stages:** 3 = sensor detection (widen VisibleFlags for sensing houses; Is_Cloaked
+> gate follows), 4 = EMP arc wiring `Force_Emerge`. Balance: see todo.md (TS roster pass
+> once units complete).
 >
 > **The spec changed under us, for the better:** `reference/OpenTS/code/tunnel.cpp`
 > is TS's actual `TunnelLocomotionClass` (700 lines) and `unit.cpp` ~5220-5360 is
