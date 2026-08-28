@@ -1,37 +1,46 @@
 # Subterranean units — locked design + arc tracker
 
-> **⭐ RESUME HERE (2026-08-13 end of session: STAGE 1 DONE + all stage-2
-> design inputs settled — NEXT SESSION BUILDS THE STATE MACHINE.)**
-> **Done this session:** art packed + stamped + Deck-deployed (md5-verified);
-> facings dialled by Luke's sheet loop (rot 0/0 BOTH units, dive = negative
-> pitch — see [[feedback-voxel-facing-sheet-loop]]; do NOT re-derive from
-> renders); sidebar cameo fix (cameo_variants_build regenerated + hardened);
-> **transition choreography LOCKED** (section below — angle leads, soil at
-> step 4, into-the-soil = gone); **dig-decision rule DECIDED:** dig only if
-> destination unreachable by surface OR straight-line distance ≥ DIG
-> THRESHOLD, starting at 6 cells, dialled in play across Luke's 2–10 band
-> (one constant).
-> **Shape layout contract (DLL side):** driving = facing frame 0-31; dive =
-> 32 + (facing/4)*5 + step (nose-down, shallow→steep); emerge =
-> 72 + (facing/4)*5 + step (steep→shallow); 0-pitch steps reuse the
-> driving frame.
-> **Still owed:** Luke's full in-game stage-1 pass on the Deck (drive both,
-> cameos show, flame jets, SAPC loads/unloads 5) — facing + cameo bugs he
-> caught are fixed and deployed, worktree `6434b553`+.
-> **Pick-up steps:**
-> 1. Build stage 2: the underground state machine (locked design + the
->    choreography section + dig threshold above are the complete spec).
-> 2. Still pending: cherry-pick the `--pitch` fix (`de359bd7`) to `ts-units`
->    + check dropship/VTOL flare art wasn't rendered flat.
-> 3. Pre-existing gap found (NOT ours): UNIT_TSAPC missing from the
->    Mission_Unload case list — the Amphibious APC likely cannot unload
->    passengers. Belongs to the ts-units instance; flag to Luke.
-> **Open decisions (Luke):** detector unit (MRJ + ported Sensor Array vs one
-> shared) · sensed = reveal-only vs attackable · water-click = nearest-shore
-> emerge vs refuse order.
-> **Deploy surface: the DECK (Luke, 2026-08-13)** — the other Claude instance
-> works on the Linux desktop, so this arc deploys to `steamdeck` (100.68.30.94).
-> Usual rules: pgrep the live game first, md5-verify after deploy.
+> **⭐ RESUME HERE (2026-08-28: STAGE 2 BUILT FROM THE REAL TS SOURCE, DEPLOYED
+> TO THE DECK, UNVERIFIED IN PLAY.)**
+> **The spec changed under us, for the better:** `reference/OpenTS/code/tunnel.cpp`
+> is TS's actual `TunnelLocomotionClass` (700 lines) and `unit.cpp` ~5220-5360 is
+> the real drive-vs-dig decision. Stage 2 is a PORT of those, not the from-scratch
+> design below (which survives as the locked *presentation* contract). Ground
+> truth from the source: TS digs on EVERY move order unless a short unbroken
+> surface route exists (`Is_Route_Broken`: same zone, Chebyshev < 12, trial walk
+> <= 15 steps); underground travel is a straight line at 19 leptons/tick through
+> any terrain; arrival on a blocked cell = `Nearby_Location` retarget (same zone
+> first, then any); NO legal cell anywhere = self-destruct with C4Warhead; a stop
+> order underground heads for the nearest surfaceable ground; the owner sees
+> `VISUAL_RIPPLE`, enemies `VISUAL_HIDDEN`; sensors detect at height < -20 with
+> `VOX_SUBTERRANEAN_DETECTED`; EMP (`empulse.cpp`) sweeps `LAYER_UNDERGROUND` and
+> calls `Stop_Moving` + stun.
+> **What shipped (commit `33ebd2cd`, worktree rebased onto ts-units HEAD):**
+> `UnitClass` state machine `TUNNEL_IDLE/TURNING/DIGGING_IN/TUNNELING/EMERGING/
+> ABORTING` (`unit.cpp` tail, `Tunnel_AI`); `Assign_Destination` runs
+> `Should_Dig_To` (other zone OR distance >= `[General] TunnelDigThreshold=6`,
+> adjacent never); `UnitClass::Mark` keeps `IsDown` without cell occupancy while
+> tunneling; `TechnoClass::Is_Tunneling()` folded into `Is_Cloaked` (all
+> non-ally target/visibility queries); launcher export = `Cloak=CLOAKED` +
+> `VisibleFlags` cleared for non-allies; `Take_Damage` immune unless forced;
+> `Can_Fire` = FIRE_BUSY, no scatter, no unload in the cycle; water/cliff clicks
+> are legal orders (`What_Action` -> nearest emerge cell); `Force_Emerge()` real,
+> uncalled (EMP arc). Cadence constants at the top of the block: 3 frames/step,
+> DIG at step 4, hull hidden 6 frames after the emerge mound erupts.
+> **ANIM_TS_DIG** = TSDIG.ZIP (37 tiles, `scripts/ts_pack_dig.py`, x4 on a 512
+> canvas, 64x64 stub) — custom anim types DO render (contracts §4 corrected 08-22).
+> **NEXT: Luke's Deck pass.** Checklist: (1) order a Devil's Tongue 2-5 cells
+> away -> drives; >= 6 -> turns, ladder, mound, vanishes, shimmer for the owner,
+> re-emerges facing travel direction; (2) click water / across a cliff -> digs and
+> surfaces on the nearest land; (3) Stop mid-ladder -> levels out; Stop underground
+> -> surfaces nearby; (4) enemy AI ignores it underground; (5) SAPC keeps its 5
+> passengers through a dig and unloads only after surfacing; (6) dial
+> `TunnelDigThreshold` in rules.ini (2-10 band) and the ladder cadence by eye.
+> **Not done:** dig sound (SUBDRIL1 not in CONQUER.MIX — chase in audio stage),
+> owner-side selection while underground untested, mound scale (x4) is a first
+> guess, DIRTEXPL packed nowhere yet, save/load of the new fields untested.
+> **Open decisions (Luke):** detector unit · sensed = reveal-only vs attackable.
+> **Deploy surface: the DECK** (other instance owns the desktop, agreed 08-28).
 
 **Origin (2026-08-13):** community challenge (Madrox8: "you're not going to fully
 recreate the subterranean feature, just workarounds" — Luke: "Challenge....accepted").
