@@ -1,6 +1,6 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — NEXT SESSION (Luke, 2026-08-28 close): **TS harvester docking at the TD and RA refineries** — on the PC. Start from item 1 below: the dock fix `58994541` is committed but NOT DEPLOYED to either prefix (build HEAD, deploy, first verify the TD-refinery pairing no longer vanishes into the attach path), then the seat loop per pairing (zeroed dials in `Mission_Unload`). TS's own dock procedure is in that block. After that: war factory re-look with OpenTS, then the open queue. Closed 2026-08-28: brightness pass (contract 11), power plant/radar placement, mesh-upscale spike (rejected).
+## ⭐⭐⭐ RESUME HERE — NEXT (2026-08-28 PC session): item 1 (TS harvester at the TD + RA refineries) is CLOSED and signed off; next is **item 4: war factory re-look with OpenTS**, then the open queue. Item 1 record: `58994541` fix verified (TS harvester parks visibly at the TD refinery); seat dialled 6 px E / 10 px N (Luke's eye, two nudges); RA-refinery pairing passed first try with zero dials; drive-off slide CURED by the `ROLL_OFF_DOCK_SEAT` runtime rail (`DriveClass::Roll_Off_Seat`, commit `5662acea`, Luke: "drive off is perfect") — rail waypoints are offsets from the DESTINATION, so any nudged seat handed straight to pathing snaps; the rail walks it back to the cell centre a pixel a step, facing held. The TD harvester's RA-refinery seat uses the same rail. Desktop prefix = DLL `9073bd64` = `5662acea`.
 
 **DECK (2026-08-28 session, Luke on the Deck today): DLL `806e0cdb` = `f876b002` code (the
 dock-fix commit `58994541` is deliberately NOT deployed -- Luke: harvester work waits for the PC)
@@ -31,7 +31,7 @@ ramp replaces the old 1.45x green lift). All sheets in the session scratchpad.
 Verify on the Deck: build a TS harvester + MCV, drop-pod a unit; judge against the TD/RA HD
 units beside them. Too bright → the lever is a single global multiplier on `TS_VPL_SCALE`.
 
-### Item 1 — TS harvester docking at the RA and TD refineries (NEXT SESSION); items 2–3 CLOSED 2026-08-28; item 4 (WF re-look) queued
+### Item 1 — TS harvester docking at the RA and TD refineries — CLOSED 2026-08-28 (see RESUME block); items 2–3 CLOSED 2026-08-28; item 4 (WF re-look) NEXT
 1. **TS harvester (`TSHARV`) docking at the RA and TD refineries.** Docks at TSPROC already
    (signed off 08-06). `Mission_Unload` `case UNIT_TSHARV` shares the TD/RA-harvester path
    (`unit.cpp` ~3870, "no dump frames on the voxel sprite"); verify the reverse-dock seat at
