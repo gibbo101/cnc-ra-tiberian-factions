@@ -18,10 +18,15 @@ shaded RGB is clipped at 255 (unclipped, the uint8 cast wrapped and the dropship
 fringe pixels). Re-rendered per the ledger and repacked through each unit's own recipe, then
 `ts_reshadow.py`: TSHARV (233x106 body bbox identical to shipped; mean RGB 39/59/37 → 66/88/62),
 TSMCV (278x131 identical; 48/50/26 → 80/79/44; NEW `scripts/ts_pack_tsmcv.py` = the tree
-script's block on its own), TSDSHP (92/75/38 mean). Sheet in the session scratchpad. NOT touched:
-the five signed-off voxel units (TSHVR, TSSONIC, TSTITN, TSSMEC, TSHMEC, TSAPC) still carry the
-legacy shading — if Luke likes the three, the same re-render/repack/reshadow applies to them
-(APC needs `ts_pack_tsapc_water.py` for frames 32–63 after the wave pack).
+script's block on its own), TSDSHP (92/75/38 mean). Sheet in the session scratchpad. Luke: "looks a lot
+better, do the other six" → the remaining VOXEL units re-lit the same way and DEPLOYED (Deck),
+geometry ±1 px: TSHVR (body + rack `--z-clip 10`), TSSONIC (hull + turret `--hva SONICTUR.HVA`
+— the turret pose lives in the HVA; without it the render is 38 px taller and sits 78 px lower),
+TSAPC (body + `apcw` water hull via `ts_pack_tsapc_water.py`), TSHMEC (8 HVA gait frames at
+35°). NEW `scripts/ts_pack_hvr_hmec.py` = the walkers script's TSHVR/TSHMEC blocks alone
+(the full walkers script needs Titan SHP inputs not on disk). Titan and Wolverine are TS SHPs
+(MMCH/SMECH), not renders — no change. Team-colour areas move less than hulls (~1.2x, the TS
+ramp replaces the old 1.45x green lift). All sheets in the session scratchpad.
 Verify on the Deck: build a TS harvester + MCV, drop-pod a unit; judge against the TD/RA HD
 units beside them. Too bright → the lever is a single global multiplier on `TS_VPL_SCALE`.
 
