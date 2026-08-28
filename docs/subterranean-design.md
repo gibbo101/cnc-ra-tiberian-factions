@@ -13,7 +13,7 @@
 > it for the whole cycle (DriveClass::Scatter alone is not enough).
 > **Still to verify:** Stop mid-ladder / Stop underground (no player Stop hook
 > exists yet — TARGET_NONE is ignored, so Stop currently does nothing to a
-> digger), SAPC passengers through a dig + unload after, enemy AI ignoring it,
+> digger), SAPC passengers through a dig + unload after (enemy AI VERIFIED to ignore it until it surfaces),
 > `TunnelDigThreshold` dial. Trace stays on in dev builds:
 > `Documents/CnCRemastered/MOD_DEBUG_TUNNEL.txt`.
 > **Not done:** dig sound (SUBDRIL1), DIRTEXPL, mound scale by eye (x4 first
