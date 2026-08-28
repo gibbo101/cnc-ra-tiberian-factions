@@ -163,6 +163,38 @@ coordinate's top-left rather than its centre, always draws the full chrono whirl
 Useless for a beam ripple; potentially useful for a deliberate large one-off screen warp.
 The real `ChronalVortex` always owns the slot when active.
 
+## 11. Voxel units are lit the way Tiberian Sun lights them — and a relight never re-places a sprite (2026-08-28, signed off "night and day")
+
+**The shading model (`scripts/vxl_render.py`, default `--shade ts --normals vxl`):**
+- Light: one fixed world vector at 45° elevation (OpenTS `_voxel.h Set_Voxel_Light_Angle`), length
+  **1.5** (`voxlib.cpp Precalculate_Normal_Lookup`). Per voxel, `n·L` is truncated to a table index
+  (`int(n·L × 16)`, negative → 0, so 16 = neutral, 24 = fully lit) into **VOXELS.VPL** (TIBSUN.MIX,
+  `tools/ts_extract.py`). Each VPL table is a fixed brightness scale of the palette; the 32 measured
+  luminance ratios are `TS_VPL_SCALE`: **0.62 (facing away) → 1.26 (neutral) → 1.70 (lit)**. The old
+  ambient-plus-Lambert blend ran 0.35 → 1.0 — a 1.6–1.8× gap across the whole curve, which was every
+  "too dark" report since the units wave. `--shade legacy --ambient N` reproduces old renders.
+- Normals: **the VXL's own per-voxel normal index**, resolved through TS's tables
+  (`scripts/ts_vxl_normals.py` = OpenTS `VoxelNormals1..4`, chosen by the section's normal mode byte).
+  Geometry-derived normals (`--normals geo`) quantise to 26 directions; under TS's stepped table that
+  reads as **blotches across flat decks** (Luke: "patchy"). Real normals light decks evenly and brighter.
+- Team colour: the remap ramp keeps its **1.45× lift under either model** — the launcher's hue-remap
+  preserves luminance, and remap-heavy hulls (APC, Disruptor, harvester) read dark without it.
+- Shaded RGB is clipped at 255 before the uint8 cast, or bright channels wrap into green fringe pixels.
+
+**The placement rule (the part that "butchered the turrets"):** the pack scripts **do not reproduce
+where the shipped zips put things** — the Disruptor hull and the MLRS rack were moved at zip level in
+later sessions, and a re-render's crop can grow (the rack's antenna pole no longer cut by the pack
+canvas, a shadow one pass taller). The launcher anchors on the crop centre, so a grown crop or a
+bbox-centred paste **moves the sprite** even when every body pixel is in the same place. So:
+- **A relight goes through `scripts/ts_recrop_to_shipped.py <rev> NAME…`** after packing and
+  reshadowing: it slides each new canvas onto the shipped frame's alpha mask (FFT cross-correlation)
+  and cuts the shipped crop rect. Verify: overlap ≈ old pixel count, 0 residual shift.
+- **Turret blocks stay the shipped pixels** (TSHVR 32–63, TSSONIC 32–63 restored verbatim from
+  `63db908b`) — Luke's call, "if it ain't broke". The APC water hull (32–63) IS relit, then levelled to
+  the land hull's mean luminance (`apcw.vxl` shades brighter on its own table), with the shipped shadow
+  layer composited back under it; **never run `ts_reshadow.py` over the water frames** (it strips them).
+- Titan and Wolverine are TS SHPs (MMCH/SMECH), not renders — they are already TS-bright.
+
 ## House quality policy for TS-sourced assets (Luke, 2026-07-20)
 
 **Every unit, building, and weapon pulled from Tiberian Sun ships at the
@@ -257,10 +289,16 @@ highest quality the pipeline can produce.** Concretely:
   EVERY ground-vehicle voxel renders at `--elev 32`; the vxl_render default
   is 54 and reads alien next to RA art. Current renders, all
   `--px-per-voxel 12 --team-green 0,200,0 --elev 32`:
-  TSHARV (yaw0 0 + wave face_fix, scale 0.85), TSAPC (yaw0 0 + face_fix),
-  TSSONIC + SONICTUR (yaw0 90, no reorder — its wave line applies NO face_fix), TSMCV (yaw0 90, no reorder),
-  TSHVR + HVRTUR (yaw0 90, no reorder). Aircraft: DSHP dropship
-  `--yaw0 180 --elev 32 --canvas 656 --px-per-voxel 6.4`. VXLs
+  TSHARV (yaw0 0 + wave face_fix, pack scale 0.75), TSAPC (yaw0 0 + face_fix; water hull
+  `apcw.vxl` same camera → `ts_pack_tsapc_water.py`), TSSONIC (yaw0 90, no reorder, `--canvas 628`)
+  + SONICTUR (**`--hva SONICTUR.HVA`** — the turret's pose is in the HVA; without it the render is
+  38 px taller and sits 78 px lower, `--canvas 624`), TSMCV (yaw0 90, no reorder →
+  `ts_pack_tsmcv.py`), TSHVR (yaw0 90, `--canvas 500`) + HVRTUR (**`--z-clip 10`** drum clip,
+  `--canvas 660`) → `ts_pack_hvr_hmec.py`, TSHMEC (yaw0 90, **`--elev 35`**, `--hva HMEC.HVA
+  --hva-frame f` for f in 0 2 4 6 8 11 13 15, `--canvas 1000`, dirs `ts35_hmec_<f>`) → same script.
+  Aircraft: DSHP dropship `--yaw0 180 --elev 32 --canvas 656 --px-per-voxel 6.4 --team-green
+  255,204,51` → `ts_pack_dropship.py`. After ANY repack: `ts_reshadow.py` (not on water frames), then
+  `ts_recrop_to_shipped.py` — see contract 11. VXLs
   re-extractable from TIBSUN.MIX LOCAL.MIX via tools/ts_extract.py.
   Frame-0 convention: yaw0 90 ⇒ frame 0 = N advancing CCW (zip-native);
   yaw0 0 ⇒ E-start, needs the wave's +8 face_fix.
