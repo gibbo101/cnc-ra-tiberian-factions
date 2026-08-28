@@ -7221,12 +7221,17 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                 if (tech) {
                                     BuildingTypeClass* building_type = (BuildingTypeClass*)tech;
                                     short const* occupy_list = building_type->Occupy_List(true);
+                                    // Ghost = the ground rows only: headroom rows are
+                                    // dropped and the rest re-based on the ghost's top row.
+                                    int ghost_shift = building_type->Placement_Ghost_Rows_Above() * MAP_CELL_W;
                                     if (occupy_list) {
                                         while (*occupy_list != REFRESH_EOL
                                                && sidebar_entry.PlacementListLength < MAX_OCCUPY_CELLS) {
-                                            sidebar_entry.PlacementList[sidebar_entry.PlacementListLength] =
-                                                *occupy_list;
-                                            sidebar_entry.PlacementListLength++;
+                                            if (*occupy_list >= ghost_shift) {
+                                                sidebar_entry.PlacementList[sidebar_entry.PlacementListLength] =
+                                                    (short)(*occupy_list - ghost_shift);
+                                                sidebar_entry.PlacementListLength++;
+                                            }
                                             occupy_list++;
                                         }
                                     }
@@ -7433,12 +7438,17 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                     if (tech) {
                                         BuildingTypeClass* building_type = (BuildingTypeClass*)tech;
                                         short const* occupy_list = building_type->Occupy_List(true);
+                                        // Ghost = the ground rows only: headroom rows are dropped and
+                                        // the rest re-based on the ghost's top row.
+                                        int ghost_shift = building_type->Placement_Ghost_Rows_Above() * MAP_CELL_W;
                                         if (occupy_list) {
                                             while (*occupy_list != REFRESH_EOL
                                                    && sidebar_entry.PlacementListLength < MAX_OCCUPY_CELLS) {
-                                                sidebar_entry.PlacementList[sidebar_entry.PlacementListLength] =
-                                                    *occupy_list;
-                                                sidebar_entry.PlacementListLength++;
+                                                if (*occupy_list >= ghost_shift) {
+                                                    sidebar_entry.PlacementList[sidebar_entry.PlacementListLength] =
+                                                        (short)(*occupy_list - ghost_shift);
+                                                    sidebar_entry.PlacementListLength++;
+                                                }
                                                 occupy_list++;
                                             }
                                         }
@@ -8491,11 +8501,61 @@ bool DLLExportClass::Place(uint64 player_id, int buildable_type, int buildable_i
             }
 
             CELL cell = (CELL)(map_cell_x + cell_x) + ((map_cell_y + cell_y) << _map_width_shift_bits);
+            // The launcher sends the ghost's top-left; the plot origin sits
+            // any headroom rows above it.
+            cell = (CELL)(cell - building_type->Placement_Ghost_Rows_Above() * MAP_CELL_W);
 
+#if TF_DEV_BUILD
+            // Placement-anchor diagnostic: the cell the launcher sends, the
+            // engine's cursor offset at that instant, and the placement list
+            // the ghost was drawn from.
+            {
+                char dpath[512];
+                const char* dprof = getenv("USERPROFILE");
+                if (dprof != NULL && dprof[0] != '\0') {
+                    snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
+                } else {
+                    strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
+                }
+                FILE* dlog = fopen(dpath, "a");
+                if (dlog != NULL) {
+                    fprintf(dlog, "frame=%d PLACE %s client=(%d,%d) cell=%d (x=%d,y=%d) ZoneOffset=%d ZoneCell=%d list=",
+                            Frame, building_type->IniName, (int)cell_x, (int)cell_y, (int)cell, Cell_X(cell),
+                            Cell_Y(cell), (int)Map.ZoneOffset, (int)Map.ZoneCell);
+                    short const* pl = building_type->Occupy_List(true);
+                    while (pl != NULL && *pl != REFRESH_EOL) {
+                        fprintf(dlog, "%d,", (int)*pl);
+                        pl++;
+                    }
+                    fprintf(dlog, "\n");
+                    fclose(dlog);
+                }
+            }
+#endif
             /*
             ** Call the place directly instead of queueing it, so we can evaluate the return code.
             */
-            if (PlayerPtr->Place_Object(building->What_Am_I(), cell + Map.ZoneOffset)) {
+            bool placed = PlayerPtr->Place_Object(building->What_Am_I(), cell + Map.ZoneOffset);
+#if TF_DEV_BUILD
+            {
+                char dpath[512];
+                const char* dprof = getenv("USERPROFILE");
+                if (dprof != NULL && dprof[0] != '\0') {
+                    snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
+                } else {
+                    strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
+                }
+                FILE* dlog = fopen(dpath, "a");
+                if (dlog != NULL) {
+                    fprintf(dlog, "frame=%d PLACE-RESULT %s placed=%d at cell=%d (x=%d,y=%d) bldgcoord=%08lX bldgcell=%d\n",
+                            Frame, building_type->IniName, (int)placed, (int)(cell + Map.ZoneOffset),
+                            Cell_X((CELL)(cell + Map.ZoneOffset)), Cell_Y((CELL)(cell + Map.ZoneOffset)),
+                            (unsigned long)building->Coord, (int)Coord_Cell(building->Coord));
+                    fclose(dlog);
+                }
+            }
+#endif
+            if (placed) {
                 PlacementType[CurrentLocalPlayerIndex] = NULL;
             }
         }

@@ -8247,12 +8247,19 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         */
         short const* offset = Occupy_List(true);
         bool build = (What_Am_I() == RTTI_BUILDINGTYPE);
+        // Art headroom rows (the tall TS towers) are walk-behind air, not
+        // ground, and the launcher never draws them in the ghost: a ghost
+        // that reads fully legal must place, so they are not checked at all.
+        int headroom = build ? ((BuildingTypeClass const*)this)->Placement_Ghost_Rows_Above() * MAP_CELL_W : 0;
 
         while (offset != NULL && *offset != REFRESH_EOL) {
-            CELL cell = pos + *offset++;
+            short off = *offset++;
+            CELL cell = pos + off;
             if (!Map.In_Radar(cell))
                 return (false);
-            if (build) {
+            if (build && off < headroom) {
+                continue;
+            } else if (build) {
                 // The TS apron veto lives inside Is_Clear_To_Build (the choke
                 // point the launcher's placement preview also uses).
                 if (!Map[cell].Is_Clear_To_Build(Speed)) {

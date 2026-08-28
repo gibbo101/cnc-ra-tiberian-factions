@@ -5525,7 +5525,15 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
     **	(the radar height trick); blocking stays south-row-only.
     */
     if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR)) {
-        static short const _ts_tall22_place[] = {0, 1, MAP_CELL_W, MAP_CELL_W + 1, REFRESH_EOL};
+        /*
+        **	Legality spans headroom + pads + bib: three rows from the plot
+        **	origin. The GHOST the launcher draws is only the two ground rows
+        **	(pads + bib, like the barracks' 2x1 + bib) -- see
+        **	Placement_Ghost_Rows_Above(): the sidebar export drops the headroom
+        **	row and Place() re-anchors the plot one row above the ghost.
+        */
+        static short const _ts_tall22_place[] = {0, 1, MAP_CELL_W, MAP_CELL_W + 1,
+                                                  MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, REFRESH_EOL};
         return (_ts_tall22_place);
     }
 
@@ -5657,6 +5665,21 @@ int BuildingTypeClass::Height(bool bib) const
  * HISTORY:                                                                                    *
  *   05/23/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
+/*
+**	Rows of the placement list that are art headroom above the ground the
+**	player aims: the launcher draws those cells as ghost too, so the sidebar
+**	export drops them and Place() anchors the plot that many rows north of
+**	the cell the launcher sends. Only the tall 2x2 towers have any.
+*/
+int BuildingTypeClass::Placement_Ghost_Rows_Above(void) const
+{
+    if (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR) {
+        return (1);
+    }
+    return (0);
+}
+
+
 bool BuildingTypeClass::Bib_And_Offset(SmudgeType& bib, CELL& cell) const
 {
     bib = SMUDGE_NONE;

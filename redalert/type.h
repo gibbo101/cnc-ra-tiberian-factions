@@ -892,6 +892,7 @@ public:
     virtual bool Create_And_Place(CELL cell, HousesType house) const;
     virtual ObjectClass* Create_One_Of(HouseClass* house) const;
     virtual short const* Occupy_List(bool placement = false) const;
+    int Placement_Ghost_Rows_Above(void) const;
     virtual short const* Overlap_List(void) const;
     virtual void const* Get_Buildup_Data(void) const
     {

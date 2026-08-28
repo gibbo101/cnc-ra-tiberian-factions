@@ -79,8 +79,8 @@ units beside them. Too bright → the lever is a single global multiplier on `TS
    `vxl_render.py --ambient` (0.35 default) + the 1.45x team-green lift, re-render + re-pack
    per model via the existing pack scripts (keep the +8 face fix and each model's `--elev`:
    APC/harvester 32, others 54).
-3. **TS Power Plant + TS Radar placement glitch** (OPEN since 08-24: both place one tile below
-   their grid). Compare against OpenTS building placement / foundation + the TS art.ini
+3. ~~**TS Power Plant + TS Radar placement glitch**~~ **FIXED 2026-08-28** (see `known-issues.md`:
+   ghost = ground rows, plot re-anchored above it, legality = ghost only). Compare against OpenTS building placement / foundation + the TS art.ini
    entries for GAPOWR / GARADR (foundation, anim offsets) before touching any offset.
 4. **Re-look at the TS war factory** with the source in hand: OpenTS's factory door / exit
    / sort logic (`building.cpp` GAWEAP handling, art.ini GAWEAP anims) against our sandwich
