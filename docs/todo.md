@@ -5,6 +5,15 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Deploy/unload hotkey for non-RA units (Luke, 2026-08-28: "a shame the deploy key is hardcoded to RA units only through the launcher")
+
+The launcher's deploy key does nothing for the TD/TS transports (Sub APC unload had to be a
+click). Per docs/config-meg-lever-audit.md Tier 1 the mod-hotkey chain is mod-data end to end
+and only our DLL handler is missing (the lost MCV deploy key was the first target). Fold the
+transport unload into that hotkey arc.
+
+---
+
 ## Subterranean detection — DEFERRED until the TS Mobile Sensor Array is ported (Luke, 2026-08-28)
 
 Stage 3 of the subterranean arc (sensing houses see a tunneling vehicle: widen the launcher
