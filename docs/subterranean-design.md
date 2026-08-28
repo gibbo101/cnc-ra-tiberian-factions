@@ -1,7 +1,26 @@
 # Subterranean units — locked design + arc tracker
 
-> **⭐ RESUME HERE (2026-08-28: STAGE 2 BUILT FROM THE REAL TS SOURCE, DEPLOYED
-> TO THE DECK, UNVERIFIED IN PLAY.)**
+> **⭐ RESUME HERE (2026-08-28 late: STAGE 2 VERIFIED IN PLAY ON THE DECK — "it
+> worked!" / "works nicely". Deck DLL `f65ba4333e4f`, commit `1e64a405`.)**
+> Verified by Luke: dig decision, dive ladder + mound ("animation to go under is
+> good"), straight-line travel under water AND cliffs to the far side, surfacing
+> with mound, owner marker (shape 112 disturbed-earth ring) with selection box +
+> health bar underground, no lag. Three live fixes on the way: (1) `What_Action`
+> must never scan (`Nearby_Location` per frame = "awful lag"); (2) engine
+> `Assign_Destination(TARGET_NONE)` idle clears are NOT stop orders; (3)
+> **`UnitClass::Scatter(threat==0)`** (the guard mission's off-impassable nudge)
+> surfaced the digger on the near bank every time it passed under water — guard
+> it for the whole cycle (DriveClass::Scatter alone is not enough).
+> **Still to verify:** Stop mid-ladder / Stop underground (no player Stop hook
+> exists yet — TARGET_NONE is ignored, so Stop currently does nothing to a
+> digger), SAPC passengers through a dig + unload after, enemy AI ignoring it,
+> `TunnelDigThreshold` dial. Trace stays on in dev builds:
+> `Documents/CnCRemastered/MOD_DEBUG_TUNNEL.txt`.
+> **Not done:** dig sound (SUBDRIL1), DIRTEXPL, mound scale by eye (x4 first
+> guess, Luke happy so far), save/load of the new fields.
+> **Next stages:** 3 = sensor detection (widen the export's VisibleFlags for
+> sensing houses; `Is_Cloaked` gate follows), 4 = EMP arc wiring `Force_Emerge`.
+>
 > **The spec changed under us, for the better:** `reference/OpenTS/code/tunnel.cpp`
 > is TS's actual `TunnelLocomotionClass` (700 lines) and `unit.cpp` ~5220-5360 is
 > the real drive-vs-dig decision. Stage 2 is a PORT of those, not the from-scratch
