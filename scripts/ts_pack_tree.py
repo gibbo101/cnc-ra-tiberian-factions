@@ -552,6 +552,14 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 f"Bib_And_Offset offset in bdata.cpp together.")
         # Every emitted tile costs a stamped cell, so warn on any that is blank:
         # it is a cell taken off a neighbour for nothing.
+        # Pad pixels under the finished building's own silhouette are never
+        # seen and, being sorted by cell, could paint over a unit standing on
+        # the threshold: clear them (08-29, the one grey pixel on the seam).
+        if ini == "TSWEAP":
+            body_sil = place(base_h, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y).split()[3].point(lambda v: 255 if v > 0 else 0).filter(ImageFilter.MinFilter(3))
+            keep = ImageChops.subtract(apron.split()[3], body_sil)
+            apron = apron.copy()
+            apron.putalpha(keep)
         tiles = []
         blank = 0
         for r in range(grid_rows):
@@ -766,7 +774,10 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # Luke's read (08-28): the LEFT jamb renders over the vehicle, the vehicle
         # renders over the RIGHT pillar (it exits SE past it). So the band runs
         # from the door's left edge eastward to the widest vehicle's reach.
-        x0, y0, x1 = int(open_bb[0]) + 4, int(ob[1]), int((ob[0] + ob[2]) // 2 + 334 // 2)  # y0 = doorway top: the awning above stays front, the rolled shutter is its own layer
+        # x1 = the canvas edge: nothing of the front belongs east of the door
+        # below the awning (the open-doorway composite reaches x=772 and drew
+        # over units walking out -- 08-29 cast).
+        x0, y0, x1 = int(open_bb[0]) + 4, int(ob[1]), int(canvas_w) - 1
         opening = Image.new("L", (canvas_w, canvas_h), 0)
         # The band's LEFT boundary is Luke's yellow line (custom-art/
         # tsweap-front-cut-line.json, drawn in Aseprite 08-28 along the left
