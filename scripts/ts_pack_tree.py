@@ -766,7 +766,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # Luke's read (08-28): the LEFT jamb renders over the vehicle, the vehicle
         # renders over the RIGHT pillar (it exits SE past it). So the band runs
         # from the door's left edge eastward to the widest vehicle's reach.
-        x0, y0, x1 = int(open_bb[0]) + 4, int(open_bb[3]) - 4, int((ob[0] + ob[2]) // 2 + 334 // 2)
+        x0, y0, x1 = int(open_bb[0]) + 4, int(ob[1]), int((ob[0] + ob[2]) // 2 + 334 // 2)  # y0 = doorway top: the awning above stays front, the rolled shutter is its own layer
         opening = Image.new("L", (canvas_w, canvas_h), 0)
         # The band's LEFT boundary is Luke's yellow line (custom-art/
         # tsweap-front-cut-line.json, drawn in Aseprite 08-28 along the left
