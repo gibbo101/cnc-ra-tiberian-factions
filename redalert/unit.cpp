@@ -2698,7 +2698,12 @@ int UnitClass::Shape_Number(void) const
         **	refinery its body is the HORV model (bed lowered), packed as the
         **	second 32-facing block of the TSHARV tileset.
         */
-        if (*this == UNIT_TSHARV && IsDumping) {
+        /*
+        **	Switched off (Luke, 08-28): the bed dropping on the reverse-in seat
+        **	reads as the truck losing its back. Frames 32-63 stay packed.
+        */
+        const bool TS_HORV_ENABLED = false;
+        if (TS_HORV_ENABLED && *this == UNIT_TSHARV && IsDumping) {
             TechnoClass const* dref = Contact_With_Whom();
             if (dref != NULL && dref->What_Am_I() == RTTI_BUILDING && *((BuildingClass const*)dref) == STRUCT_TSPROC) {
                 return (UnitClass::BodyShape[facing] + 32);
