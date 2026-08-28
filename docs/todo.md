@@ -5,6 +5,19 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## TS roster balance pass — REQUIRED once the TS units are complete (Luke, 2026-08-28)
+
+Every TS unit ships with its exact TS stats (Luke's rule: exact TS, no borrowing from RA), and
+TS's combat scale is bigger than RA's/TD's: Mk. II railgun and Hover MLRS reach 8 cells,
+Disruptor 6, Titan 6, against an RA heavy tank at 4.75 and a TD medium at ~4. On the shared
+battlefield the TS era outranges the other two ("the Mk. II, Disruptor etc. feel like their
+range is incredible"). Decision: leave as-is while the roster is being built, then run a full
+balance pass on the TS side, **range first but everything else too** (damage, ROF, HP, cost,
+speed, the Devil's Tongue stream numbers). One known deliberate deviation already: the Mk. II AA
+tusks carry RA MammothTusk stats (7.5 range) instead of TS's 6.
+
+---
+
 ## ✅ AI base placement — FIXED AND VERIFIED (2026-07-31)
 
 Root cause was `Recalc_Center`'s collapsed Radius (cost-weighted divisor); fixed together with
