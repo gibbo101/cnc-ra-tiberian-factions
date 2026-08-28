@@ -3,3 +3,10 @@
 // Offsets from the building origin (plot NW corner), classic px.
 #define TSWEAP_SEAT_DEFAULT XYP_COORD(48, 29)
 #define TSWEAP_SEAT_TSTITN  XYP_COORD(48, 19)
+
+/*
+**	08-28 rebuild: door-mouth seat, leptons from the plot origin -- the packed
+**	shutter's centre column (2.69 cells) and a unit centre just inside the
+**	threshold (1.80 rows). The generated seats above are the old bay's.
+*/
+#define TSWEAP_SEAT_MOUTH XY_Coord(689, 461)

@@ -136,11 +136,7 @@ static short const TsWeapOList[] = {-MCW, -MCW + 1, -MCW + 2, -MCW + 3,
 static short const TsWeapExit[] = {XYCELL(2, 2), XYCELL(2, 3), XYCELL(1, 2), XYCELL(3, 2),
                                    XYCELL(1, 3), XYCELL(3, 3), XYCELL(4, 2), XYCELL(0, 2),
                                    REFRESH_EOL};
-/*
-**	Door-mouth seat, leptons from the plot origin: the packed shutter's centre
-**	column (2.69 cells) and a unit centre just inside the threshold (1.80 rows).
-*/
-#define TSWEAP_SEAT_MOUTH XY_Coord(689, 461)
+
 static short const List1100[] = {0, 1, REFRESH_EOL};
 static short const List1101[] = {0, 1, (MCW * 1) + 1, REFRESH_EOL};
 static short const List11[] = {0, 1, REFRESH_EOL};
