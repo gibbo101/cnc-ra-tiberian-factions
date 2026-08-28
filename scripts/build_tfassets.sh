@@ -326,17 +326,11 @@ PACK_ARGS+=("$TMPDIR/tsprocld_stub.shp:TSPROCLD.SHP")
 ts_stub TSWEAP "$TMPDIR/tsweap_stub.shp" 168 126 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
 ts_stub TSWEAP "$TMPDIR/tsweapmk_stub.shp" 168 126 19
-# The bay-door overlay shares the building's canvas, so it needs the same stub
-# box or the launcher scales the door to whatever shape file it was handed.
-ts_stub TSWEAP "$TMPDIR/tsweap2_stub.shp" 168 126 18
-PACK_ARGS+=("$TMPDIR/tsweap2_stub.shp:TSWEAP2.SHP")
-# The overlay's floor band, split into its own layer under the exit clamp.
-ts_stub TSWEAP "$TMPDIR/tsweap2l_stub.shp" 168 126 18
-PACK_ARGS+=("$TMPDIR/tsweap2l_stub.shp:TSWEAP2L.SHP")
-# The lamp layer shares the canvas too: the 14-frame ping-pong idle cycle
-# (8 phases swept forward then back) x healthy/damaged.
-ts_stub TSWEAP "$TMPDIR/tsweaplt_stub.shp" 168 126 28
-PACK_ARGS+=("$TMPDIR/tsweaplt_stub.shp:TSWEAPLT.SHP")
+# The shutter and under-door layers share the building's canvas (08-28 rebuild).
+ts_stub TSWEAP "$TMPDIR/tsweapdr_stub.shp" 168 126 18
+PACK_ARGS+=("$TMPDIR/tsweapdr_stub.shp:TSWEAPDR.SHP")
+ts_stub TSWEAP "$TMPDIR/tsweapud_stub.shp" 168 126 4
+PACK_ARGS+=("$TMPDIR/tsweapud_stub.shp:TSWEAPUD.SHP")
 # TSPILE 48x48: back to the grid-matched 2x2 plot width (the 60-overhang
 # compromise predates the tier-wide size drop, Luke 2026-08-04).
 ts_stub TSPILE "$TMPDIR/tspile_stub.shp" 48 48 2

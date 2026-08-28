@@ -928,6 +928,8 @@ public:
     **  borrowing another factory's overlay draws the door at its size.
     */
     static void const* WarFactoryOverlayTs;
+    static void const* TsWeapShutter;
+    static void const* TsWeapUnderDoor;
     static void const* TsRefineryFlame;
     static void const* TsRefineryLid;
 

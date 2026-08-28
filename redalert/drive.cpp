@@ -486,6 +486,37 @@ bool DriveClass::Roll_Off_Seat(int px_east, int px_north)
 }
 
 /***********************************************************************************************
+ * DriveClass::Rail_To -- Straight runtime rail from the unit's current spot to a coordinate.  *
+ *                                                                                             *
+ *    Fills the ROLL_OFF_DOCK_SEAT table with a 1 px-per-waypoint line from where the unit     *
+ *    stands to `dest`, holding `face`, and starts it. The war factory uses it to drive a       *
+ *    vehicle from its door-mouth seat onto the exit cell with no recentring step.             *
+ *=============================================================================================*/
+bool DriveClass::Rail_To(COORDINATE dest, DirType face)
+{
+    assert(IsActive);
+
+    int ex = (int)(short)(Coord_X(Coord) - Coord_X(dest));
+    int ny = (int)(short)(Coord_Y(Coord) - Coord_Y(dest));
+    int steps = (abs(ex) > abs(ny)) ? abs(ex) : abs(ny);
+    steps = (steps + PIXEL_LEPTON_W - 1) / PIXEL_LEPTON_W;
+    if (steps < 1) {
+        return (false);
+    }
+    if (steps > (int)(sizeof(Track21) / sizeof(Track21[0])) - 1) {
+        steps = (int)(sizeof(Track21) / sizeof(Track21[0])) - 1;
+    }
+    for (int i = 0; i <= steps; i++) {
+        Track21[i].Offset = XY_Coord((LEPTON)(short)(ex * (steps - i) / steps), (LEPTON)(short)(ny * (steps - i) / steps));
+        Track21[i].Facing = face;
+    }
+    Track21[steps].Offset = 0;
+    Force_Track(ROLL_OFF_DOCK_SEAT, dest);
+    Set_Speed(128);
+    return (true);
+}
+
+/***********************************************************************************************
  * DriveClass::Roll_On_Seat -- Drives a unit from its cell centre out onto a seat.             *
  *                                                                                             *
  *    The mirror of Roll_Off_Seat: a short straight rail from the cell centre to a point       *

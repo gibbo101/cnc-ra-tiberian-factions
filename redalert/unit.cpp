@@ -2930,6 +2930,17 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
             static const int _settle[6] = {0, 0, 1, 1, 2, 3};
             y += _settle[TunnelStep <= 5 ? TunnelStep : 5];
         }
+    /*
+    **	TS (UnitClass::Render): a vehicle seated in the war factory's door mouth
+    **	is not drawn until the shutter is fully up -- the shut door is what
+    **	hides it, and the reveal is the door rising.
+    */
+    if (!is_hidden && IsTethered && In_Radio_Contact()) {
+        TechnoClass const* fac = Contact_With_Whom();
+        if (fac != NULL && fac->What_Am_I() == RTTI_BUILDING && *((BuildingClass const*)fac) == STRUCT_TSWEAP
+            && ((BuildingClass const*)fac)->Mission == MISSION_UNLOAD && !((BuildingClass const*)fac)->Is_Door_Open()) {
+            is_hidden = true;
+        }
     }
     if (!is_hidden) {
         shapenum = Shape_Number();

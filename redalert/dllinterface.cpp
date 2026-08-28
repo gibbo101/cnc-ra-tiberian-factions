@@ -5138,27 +5138,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.SortOrder = ObjectList->Objects[TotalObjectCount].SortOrder + CurrentDrawCount;
     }
 
-    /*
-    **  Tiberian Factions -- the TS war factory's bay overlay sorts south of
-    **  the building it belongs to, so it draws IN FRONT of a vehicle standing
-    **  in the bay while the base draws behind it.
-    **
-    **  That sandwich is the whole scheme: the base holds only the patch of
-    **  building seen THROUGH the doorway, this overlay holds everything else,
-    **  so the opening is the one place a vehicle can render. Its art ends at
-    **  y=71.8 of the 72-pixel plot and the building sorts at y=36, so 384
-    **  leptons puts this layer on the hangar's southern edge -- covering the
-    **  vehicle for as long as it stands on the building, and yielding once it
-    **  has driven clear.
-    **
-    **  Keyed on AssetName, as EA's own shadow and WAKE reordering below is.
-    */
-    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAP2") == 0) {
-        // 128 leptons = 12 classic px: the 4x3 plot's centre sort point (y=36)
-        // to the hangar's south edge (y=48; was 384 for the old 72px hangar).
-        new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 128)) >> 3);
-    }
 
     /*
     **  The lamp layer rides one sort notch (8 leptons) above the door
@@ -5166,31 +5145,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  and must cover the overlay's frozen phase-0 lamps while staying a
     **  face -- everything the overlay covers, it covers.
     */
-    /*
-    **  The TS refinery's dock lid sits in the bay mouth under the parked
-    **  harvester's rear: sort it a half cell north of the building's line so
-    **  the truck (sorted on the pad) draws over it.
-    */
-    if (shape_file_name != NULL && strcmp(shape_file_name, "TSPROCLD") == 0) {
-        new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, (LEPTON)(short)-128)) >> 3);
-    }
 
-    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAPLT") == 0) {
-        new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 136)) >> 3);
-    }
-
-    /*
-    **  The overlay's floor band sorts one notch UNDER the exit clamp (+64):
-    **  a unit gliding out draws over the ramp lip and door-frame feet, while
-    **  anything parked deep in the bay (its own key north of here) stays
-    **  under them and the shut-door composite is unchanged.
-    */
-    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAP2L") == 0) {
-        new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 56)) >> 3);
-    }
     strncpy(new_object.TypeName, object->Class_Of().IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
 
     if (shape_file_name != NULL) {
@@ -5215,24 +5170,14 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     }
 
     /*
-    **  The BASE (bay interior) sorts at the plot's NORTH edge, not the
-    **  building's centre line: it is the room's back wall, and a vehicle
-    **  standing anywhere in the plot must draw over it or the bay reads
-    **  empty through the open door. The centre-line default broke the
-    **  sandwich the moment the spawn point moved north of y=36 (2026-08-17
-    **  evening, the hand-dialled deep-bay spawn): the unit sorted under the
-    **  interior and vanished. Sort_Y is the plot centre (y=36 classic), so
-    **  -384 leptons puts this layer at y=0, north of any in-plot vehicle.
-    **  Keyed on the FINAL AssetName: the base draw reaches this export with
-    **  a NULL shape_file_name (same trap as the TSTITN bias above -- the
-    **  first cut keyed on shape_file_name and was dead code, proven in
-    **  tf_sort.log: overlay-base gap stayed 128 leptons). Exact match so
-    **  TSWEAPMAKE keeps the default sort; TSWEAP2 has its own key above.
+    **  TS war factory (08-28 rebuild): the roll-up shutter layer sorts south of
+    **  a vehicle seated in the door mouth (row 1.8 of the plot; the building's
+    **  own line is row 1.5), so the shut door covers it and the rising door
+    **  reveals it. +192 leptons = row 2.25, past any mouth seat.
     */
-    if (object->What_Am_I() == RTTI_BUILDING
-        && strcmp(new_object.AssetName, "TSWEAP") == 0) {
+    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAPDR") == 0) {
         new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, -384)) >> 3);
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 192)) >> 3);
     }
 
     /*
@@ -5571,8 +5516,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 // canvas px = 96x49 classic. Position is launcher-owned on
                 // BOTH axes (six falsified probes; CenterCoordX was the
                 // sixth) -- size is the only dial.
-                dimx = 96;
-                dimy = 49;
+                dimx = 80; // 08-28 rebuild: body 76x56 classic on the 5x3 plot (position is launcher-owned)
+                dimy = 58;
                 break;
             case STRUCT_TSPILE:
                 dimy = 38; // 2x2 box, approved 2026-08-13
@@ -9445,7 +9390,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             int off_x, off_y; // apron origin relative to the building's origin cell
         } _aprons[] = {
             // (0,0): both grids sit on their building's plot origin.
-            {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 0, 0},
+            {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 1, 0}, // 4x3 pad grid from col 1 of the 5x3 plot
             {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0},
         };
         for (int a = 0; a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {

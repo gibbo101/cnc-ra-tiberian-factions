@@ -187,6 +187,7 @@ COORDINATE const BuildingClass::CenterOffset[BSIZE_COUNT] = {
 
     0x02000200L, // BSIZE_44 (4x4): x = 2 cells, y = 2 cells -- the centre CELL is row 2 col 2,
                  // which for TSPROC is the dock pad itself (an occupy hole).
+    0x01800280L, // BSIZE_53 (5x3): x = 2.5 cells, y = 1.5 cells -- centre CELL row 1 col 2 (hangar).
 };
 
 /***********************************************************************************************
@@ -844,51 +845,25 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         **  name. TD's overlay stands in so the pointer is never NULL, which
         **  would skip the draw outright.
         */
-        if (*this == STRUCT_TSWEAP && Strength > 1) {
-            int shapenum = Door_Stage();
-            if (Health_Ratio() <= Rule.ConditionYellow)
-                shapenum += 9;
-            Techno_Draw_Object_Virtual(Class->WarFactoryOverlayTs, shapenum, x, y, window, DIR_N, 0x0100, "TSWEAP2");
-
-            /*
-            **  The overlay's floor band (ramp lip, door-frame feet, wall
-            **  bases) draws as its own layer, sorted one notch under the
-            **  exit clamp: an emerging unit passes over the floor furniture
-            **  while the roof above it still covers the hull. Same stage
-            **  index as the door overlay it was split from.
-            */
-            Techno_Draw_Object_Virtual(Class->WarFactoryOverlayTs, shapenum, x, y, window, DIR_N, 0x0100, "TSWEAP2L");
-
-            /*
-            **  The idle lamps live in the near face, which is one static
-            **  image per damage run in TSWEAP2 -- frozen at phase 0. This
-            **  layer replays the face at the building's own idle stage
-            **  (TSWEAPLT: 8 phases healthy + 8 damaged, the same index the
-            **  body draw uses), riding one sort notch above the door
-            **  overlay. Skipped during construction: the face does not
-            **  exist under the buildup art.
-            */
-            if (BState != BSTATE_CONSTRUCTION) {
-                Techno_Draw_Object_Virtual(
-                    Class->WarFactoryOverlayTs, Shape_Number(), x, y, window, DIR_N, 0x0100, "TSWEAPLT");
-            }
-        }
-
         /*
-        **	TS refinery event layers, on the building's own canvas: the chimney
-        **	fireball while a burst plays and the dock lid while it opens/closes.
-        **	Damaged runs follow the healthy runs in each layer's tileset.
+        **	TS war factory (08-28 rebuild): the body is one sprite. The roll-up
+        **	shutter (GAWEAP_D, 9 stages + 9 damaged) is a layer sorted south of
+        **	the vehicle in the mouth, so it hides it while shut and reveals it
+        **	as it rises; the under-door floor (GAWEAP_1) shows while unloading.
         */
-        if (*this == STRUCT_TSPROC && Strength > 1 && BState != BSTATE_CONSTRUCTION) {
+        if (*this == STRUCT_TSWEAP && Strength > 1) {
             int dmg = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
-            if (TsFlameStage >= 0) {
-                Techno_Draw_Object_Virtual(
-                    Class->TsRefineryFlame, TsFlameStage + dmg * 20, x, y, window, DIR_N, 0x0100, "TSPROCFR");
+            if (Mission == MISSION_UNLOAD) {
+                Techno_Draw_Object_Virtual(Class->TsWeapUnderDoor, dmg, x, y, window, DIR_N, 0x0100, "TSWEAPUD");
             }
-            if (TS_LID_ENABLED && Ts_Lid_Busy()) {
-                Techno_Draw_Object_Virtual(
-                    Class->TsRefineryLid, TsLidStage + dmg * 5, x, y, window, DIR_N, 0x0100, "TSPROCLD");
+            int stage = Door_Stage();
+            if (stage < 0) {
+                stage = 0;
             }
+            if (stage > 8) {
+                stage = 8;
+            }
+            Techno_Draw_Object_Virtual(Class->TsWeapShutter, stage + dmg * 9, x, y, window, DIR_N, 0x0100, "TSWEAPDR");
         }
 
         // WEAP2 overlay for vanilla RA WEAP / FAKEWEAP only. STRUCT_TDWEAP
@@ -3542,58 +3517,22 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             break;
 
         case STRUCT_TSWEAP:
-            /*
-            **	The vehicle is placed in the bay still tethered and does not
-            **	move until Mission_Unload has run the shutter up. Facing is
-            **	DIR_SE because that is the way the TS bay points. (A
-            **	materialise-at-the-open-door variant was tried 2026-08-17
-            **	and rejected -- units spawn INSIDE, TD/RA-style.)
-            */
             if (Mission == MISSION_UNLOAD) {
                 return (1); // busy with the previous vehicle
             }
             ScenarioInit++;
             {
-                // Per-unit-type boarding point on the shared exit rail: the
-                // Titan seats at its own marker; everything else uses the
-                // default. The unload's Force_Track boards at the matching
-                // waypoint index -- seat and index are generated together.
-                bool is_titan = (base->What_Am_I() == RTTI_UNIT
-                                 && *(UnitClass*)base == UNIT_TSTITN);
-                COORDINATE seat = Coord_Add(Coord,
-                                            is_titan ? TSWEAP_SEAT_TSTITN
-                                                     : TSWEAP_SEAT_DEFAULT);
-                if (base->Unlimbo(seat, DIR_SE)) {
+                /*
+                **	TS (OpenTS Exit_Object): the vehicle exists from the moment
+                **	production completes, seated in the door mouth behind the shut
+                **	shutter, facing out. It is not drawn until the shutter is fully
+                **	up (UnitClass::Draw_It), then rides the exit rail south.
+                */
+                COORDINATE seat = Coord_Add(Coord, TSWEAP_SEAT_MOUTH);
+                if (base->Unlimbo(seat, DIR_S)) {
                     base->Mark(MARK_UP);
                     base->Coord = seat;
                     base->Mark(MARK_DOWN);
-#if TF_DEV_BUILD
-                // Spawn-position ground truth (2026-08-17): the exit point was
-                // dialled blind against screenshots for a whole session; this
-                // states what the engine actually did. Origin = the plot's NW
-                // cell; the XYP offset is measured from Coord, so any anchor
-                // surprise (cell-centre vs corner) shows up here.
-                {
-                    const char* up = getenv("USERPROFILE");
-                    char p[600];
-                    snprintf(p, sizeof(p), "%s/MOD_DEBUG_AI.txt", up ? up : ".");
-                    FILE* f = fopen(p, "a");
-                    if (f != NULL) {
-                        fprintf(f,
-                                "TSWEAP spawn: bldg Coord=%08lx (cell %d,%d) seat=%08lx "
-                                "(px %d,%d rel origin) unit '%s' Coord=%08lx\n",
-                                (unsigned long)Coord,
-                                Cell_X(Coord_Cell(Coord)),
-                                Cell_Y(Coord_Cell(Coord)),
-                                (unsigned long)seat,
-                                (int)(((Coord_X(seat) - Coord_X(Coord)) * 24) >> 8),
-                                (int)(((Coord_Y(seat) - Coord_Y(Coord)) * 24) >> 8),
-                                base->Class_Of().IniName,
-                                (unsigned long)base->Coord);
-                        fclose(f);
-                    }
-                }
-#endif
                     Transmit_Message(RADIO_HELLO, base);
                     Transmit_Message(RADIO_TETHER);
                     Assign_Mission(MISSION_UNLOAD);
@@ -3603,7 +3542,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             }
             ScenarioInit--;
             break;
-
         case STRUCT_TDAFLD:
             // STRUCT_TDAFLD — verbatim port of TD's case STRUCT_AIRSTRIP
             // (tiberiandawn/building.cpp:2263-2269). Cargo plane delivery
@@ -5624,10 +5562,15 @@ bool Is_TS_Apron_Cell(CELL cell)
         **	them. Front-row cols 0-1 sit under the hangar's drawn SW corner
         **	and are OCCUPIED cells now; occupancy blocks placement there.
         */
-        {STRUCT_TSWEAP, 1 - MAP_CELL_W},           // pad col, row 0
-        {STRUCT_TSWEAP, 1},                        // pad col, row 1
-        {STRUCT_TSWEAP, MAP_CELL_W + 1},           // pad col, front row (SE concrete)
-        {STRUCT_TSWEAP, MAP_CELL_W},               // front row, col 2 (door corridor)
+        // 5x3 (08-28 rebuild): centre = row 1 col 2. Walkable, never buildable:
+        // the whole front row (row 2, cols 0-4) and the east column (col 4, rows 0-1).
+        {STRUCT_TSWEAP, MAP_CELL_W - 2},
+        {STRUCT_TSWEAP, MAP_CELL_W - 1},
+        {STRUCT_TSWEAP, MAP_CELL_W},
+        {STRUCT_TSWEAP, MAP_CELL_W + 1},
+        {STRUCT_TSWEAP, MAP_CELL_W + 2},
+        {STRUCT_TSWEAP, 2 - MAP_CELL_W},
+        {STRUCT_TSWEAP, 2},
     };
 
     for (int i = 0; i < (int)(sizeof(_to_centre) / sizeof(_to_centre[0])); i++) {
@@ -7624,12 +7567,12 @@ int BuildingClass::Mission_Unload(void)
     */
     if (*this == STRUCT_TSWEAP) {
         /*
-        **	The handover cell is pinned to the pad corner the exit track is
-        **	authored into (the sheet's tile 13) -- the WEAP pattern:
-        **	CLEAR_BIB below scatters loiterers off it rather than routing
-        **	around them, and the freed unit vacates it via rally/scatter.
+        **	TS's factory cycle (OpenTS Do_MISSION_UNLOAD): open the shutter, keep
+        **	the exit cell clear, when the shutter is fully up put the vehicle on a
+        **	rail from its mouth seat straight out onto the exit cell, wait until
+        **	it has untethered, shut the door, idle.
         */
-        CELL cell = Coord_Cell(Coord) + (2 * MAP_CELL_W + 3); // XYCELL(3, 2) -- TSWEAP exit-track destination (generator-checked)
+        CELL cell = Coord_Cell(Coord) + (2 * MAP_CELL_W + 2); // XYCELL(2, 2): the concrete under the door
         COORDINATE coord = Cell_Coord(cell);
         CellClass* cellptr = &Map[cell];
         enum
@@ -7643,13 +7586,9 @@ int BuildingClass::Mission_Unload(void)
         enum
         {
             DOOR_STAGES = 9,
-            // Ticks per stage. TS spreads its shutter over nine stages where
-            // RA's factory uses five, so RA's rate of 8 would take almost
-            // twice as long to open.
-            DOOR_RATE = 4
+            DOOR_RATE = 4 // ticks per stage: nine TS stages in the time RA's five take
         };
         UnitClass* unit;
-
         switch (Status) {
         case INITIAL:
             unit = (UnitClass*)Contact_With_Whom();
@@ -7660,10 +7599,6 @@ int BuildingClass::Mission_Unload(void)
             Open_Door(DOOR_RATE, DOOR_STAGES);
             Status = CLEAR_BIB;
             break;
-
-        /*
-        **	Warn anything loitering in the doorway to move aside.
-        */
         case CLEAR_BIB:
             if (cellptr != NULL && cellptr->Cell_Techno()) {
                 cellptr->Incoming(0, true, true);
@@ -7677,7 +7612,6 @@ int BuildingClass::Mission_Unload(void)
                 Status = OPEN;
             }
             break;
-
         case OPEN:
             if (Is_Door_Open()) {
                 unit = (UnitClass*)Contact_With_Whom();
@@ -7687,17 +7621,7 @@ int BuildingClass::Mission_Unload(void)
                         unit->Assign_Mission(MISSION_GUARD_AREA);
                         unit->ArchiveTarget = ::As_Target(House->Where_To_Go(unit));
                     }
-                    /*
-                    **	Sort clamp for the whole rail: 64 leptons under the hangar
-                    **	overlay's south-edge key (+128), leaving headroom below it
-                    **	for the unit's sub-object draws (turret, shadow).
-                    */
-                    unit->TsExitSortClamp = Coord_Add(Sort_Y(), XY_Coord(0, 64));
-                    unit->Force_Track((*unit == UNIT_TSTITN)
-                                          ? DriveClass::OUT_OF_WEAPON_FACTORY_TS_TITAN
-                                          : DriveClass::OUT_OF_WEAPON_FACTORY_TS,
-                                      coord);
-                    unit->Set_Speed(128);
+                    unit->Rail_To(coord, DIR_S);
                     Status = LEAVE;
                 } else {
                     Close_Door(DOOR_RATE, DOOR_STAGES);
@@ -7705,29 +7629,22 @@ int BuildingClass::Mission_Unload(void)
                 }
             }
             break;
-
-        /*
-        **	Hold the shutter up until the vehicle is out from under it.
-        */
         case LEAVE:
             if (!IsTethered) {
                 Close_Door(DOOR_RATE, DOOR_STAGES);
                 Status = CLOSE;
             }
             break;
-
         case CLOSE:
             if (Is_Door_Closed()) {
                 Enter_Idle_Mode();
             }
             break;
-
         default:
             break;
         }
         return (MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
     }
-
     if (*this == STRUCT_WEAP || *this == STRUCT_AWEAP || *this == STRUCT_SWEAP) {
         CELL cell = Coord_Cell(Coord) + Class->ExitList[0];
         COORDINATE coord = Cell_Coord(cell);

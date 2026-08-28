@@ -190,7 +190,7 @@ def bleed_edges(img, rounds=3):
 #   lanczos-hard  Lanczos colour, 1-bit alpha: a soft silhouette over snow
 #              reads as a pale outline on a dark building (08-28 SS), so the
 #              edge stays hard and only the interior is smoothed.
-SCALER_MODE = {"TSPROC": "lanczos-hard"}
+SCALER_MODE = {"TSPROC": "lanczos-hard", "TSWEAP": "lanczos-hard"}
 CURRENT_INI = [None]
 
 
@@ -1097,7 +1097,7 @@ BIBS = {"TSHPAD": "shp_gthpadbb", "TSDEPT": "shp_gtdeptbb"}
 # APRON_CLIP: clip a building's concrete to its tile grid. Tried on TSWEAP
 # 2026-08-17 and REJECTED ("cutting the pad off looks like garbage" -- the
 # same hard-edge failure recorded 2026-08-05); the ghost grew to 5x3 instead.
-APRON_CLIP = set()
+APRON_CLIP = {"TSWEAP"}  # GAWEAPBB leaves a sliver east of the 5-wide plot; the pad must stay inside the placement ghost
 
 # EXTRA_LAYERS: event-driven TS anims shipped as sub-object layers (see
 # build_structure). TSPROC: FR = NTREFN_B fireball, 20 healthy + 20 damaged,
@@ -1106,6 +1106,10 @@ APRON_CLIP = set()
 EXTRA_LAYERS = {
     "TSPROC": [("FR", "shp_ntrefn_b", list(range(40))),
                ("LD", "shp_ntrefn_a", list(range(10)))],
+    # TSWEAP: DR = GAWEAP_D roll-up shutter, 9 stages healthy + 9 damaged;
+    # UD = GAWEAP_1 under-door floor, 2 healthy + 2 damaged.
+    "TSWEAP": [("DR", "shp_gtweap_d", list(range(18))),
+               ("UD", "shp_gtweap_1", list(range(4)))],
 }
 
 # Emblem art lives IN the repo (resources/custom-cameos) — a Desktop copy
@@ -1203,7 +1207,7 @@ SIZEPASS = [
     # dial only (contract #7). The door front dips into the top half of the
     # walkable bottom row; units drive out through it.
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
-     "shp_gtweapmk", 19, (896, 672), 40.5, 1.0, "shp_weapicon",
+     "shp_gtweapmk", 19, (896, 672), 51, 1.0, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
     # 2x1 plot + bib: the 48-tall stub centres on the 24-tall box, so the
     # canvas bottom is 12 classic below the plot edge. Margin 12 = building
@@ -1235,6 +1239,15 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
         fwd, back = list(range(0, 15)), list(range(13, 0, -1))
         dfwd, dback = list(range(15, 30)), list(range(28, 15, -1))
         anims = [("shp_gtradr_a", fwd + back, dfwd + dback)]
+    elif ini == "TSWEAP":
+        # From scratch (08-28): TS's three looping active anims baked into one
+        # 32-step idle -- _A (16f) and _B (8f) at Rate 400 advance every other
+        # step, _C (4f) at Rate 800 every step. Each SHP = healthy half +
+        # damaged half. The shutter and under-door are event layers (below).
+        def halves(d, n):
+            return (d, [i // 2 % n for i in range(32)], [n + i // 2 % n for i in range(32)])
+        anims = [halves("shp_gtweap_a", 16), halves("shp_gtweap_b", 8),
+                 ("shp_gtweap_c", [i % 4 for i in range(32)], [4 + i % 4 for i in range(32)])]
     else:
         anims = [loop(d) for d in anim_dirs]
     # Buildups pour and keep their pads. That double-draws the war factory's
@@ -1251,10 +1264,10 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     overlays = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb"}
     # Aprons ship as ground art, one tile per cell: (plot, tile grid), the grid
     # matching the building's SmudgeTypeClass in sdata.cpp.
-    aprons = {"TSWEAP": ((4, 3), (4, 3), (0, 0)), "TSPROC": ((4, 3), (5, 3), (0, 0))}
+    aprons = {"TSWEAP": ((5, 3), (4, 3), (1, 0)), "TSPROC": ((4, 3), (5, 3), (0, 0))}
     # TS drives the war factory bay with a separate 9-stage shutter over a
     # static interior (ART.INI: DoorAnim/DoorStages/UnderDoorAnim).
-    doors = {"TSWEAP": ("shp_gtweap_d", "shp_gtweap_1", 9)}
+    doors = {}  # TSWEAP's shutter is an EXTRA_LAYERS sub-object now (TSWEAPDR)
     build_structure(ini, base, 0, 1, anims, mk, mkc, cw, ch,
                     bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale,
                     mk_mask_dir=masks.get(ini), overlay_dir=overlays.get(ini),
@@ -1263,23 +1276,21 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     # columns: pin the building's width independently of the
                     # canvas, and anchor it on those columns rather than on
                     # the box centre.
-                    fit_w={"TSPROC": 384, "TSWEAP": 460}.get(ini),
+                    fit_w={"TSPROC": 384, "TSWEAP": 404}.get(ini),  # TSWEAP 404 = GTWEAP 98 src px at the refinery's 4.12
                     dst_x_px={"TSPROC": 304, "TSWEAP": 392}.get(ini),
                     apron_cells=aprons.get(ini),
                     # TSWEAP's pad is hand-authored (Luke, Aseprite, 2026-08-17):
                     # the committed canvas replaces the affine'd GTWEAPBB.
-                    apron_canvas={"TSWEAP": os.path.abspath(os.path.join(
-                        MOD, "..", "..", "custom-art",
-                        "tsweap-pad-canvas.png"))}.get(ini),
+                    apron_canvas=None,  # TS's own GAWEAPBB at the building's affine (08-28 restart)
                     # How far the near face encroaches into the bay opening.
                     # 0 = the hole is exactly what the shutter uncovers, so a
                     # vehicle is visible through the full opening and hidden
                     # everywhere else. Raise it to tuck the vehicle further
                     # behind the door frame.
-                    front_ring={"TSWEAP": 0}.get(ini),
+                    front_ring=None,
                     # The lamp cycle sweeps and returns (8 -> 14 frames);
                     # _anims[] Count and the TSWEAPLT stub must match.
-                    pingpong={"TSWEAP": True}.get(ini, False))
+                    pingpong=False)
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSFACT: TS Construction Yard on the RA-conyard 3x3 plot (BSIZE_33 +

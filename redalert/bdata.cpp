@@ -115,12 +115,17 @@ static short const TsProcOList[] = {
 ** stay walkable concrete: veto'd by Is_TS_Apron_Cell, in the overlap list
 ** for redraw, and included in the 4x3 PLACEMENT grid so the ghost covers
 ** building + pad (Luke). */
-static short const TsWeapList[] = {0, 1, 2,
-                                   (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2,
-                                   (MCW * 2), (MCW * 2) + 1,
+/*
+**	TSWEAP (08-28 rebuild, 5x3): the hangar occupies rows 0-1 x cols 0-3. Row 2
+**	(the door's front row) and col 4 are walkable concrete; the roof art
+**	overhangs the row above the plot (overlap only).
+*/
+static short const TsWeapList[] = {0, 1, 2, 3,
+                                   (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
                                    REFRESH_EOL};
-static short const TsWeapOList[] = {3, (MCW * 1) + 3,
-                                    (MCW * 2) + 2, (MCW * 2) + 3,
+static short const TsWeapOList[] = {-MCW, -MCW + 1, -MCW + 2, -MCW + 3,
+                                    4, (MCW * 1) + 4,
+                                    (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3, (MCW * 2) + 4,
                                     REFRESH_EOL};
 /*
 **	Departure cells for the TS bay. The vehicle spawns at the door mouth over
@@ -128,9 +133,14 @@ static short const TsWeapOList[] = {3, (MCW * 1) + 3,
 **	directly under the door -- the natural first roll-out -- then the fan
 **	spreads south and south-east across the apron and off the plot.
 */
-static short const TsWeapExit[] = {XYCELL(2, 2), XYCELL(2, 3), XYCELL(3, 3), XYCELL(3, 2),
-                                   XYCELL(1, 3), XYCELL(4, 3), XYCELL(0, 3), XYCELL(-1, 2),
+static short const TsWeapExit[] = {XYCELL(2, 2), XYCELL(2, 3), XYCELL(1, 2), XYCELL(3, 2),
+                                   XYCELL(1, 3), XYCELL(3, 3), XYCELL(4, 2), XYCELL(0, 2),
                                    REFRESH_EOL};
+/*
+**	Door-mouth seat, leptons from the plot origin: the packed shutter's centre
+**	column (2.69 cells) and a unit centre just inside the threshold (1.80 rows).
+*/
+#define TSWEAP_SEAT_MOUTH XY_Coord(689, 461)
 static short const List1100[] = {0, 1, REFRESH_EOL};
 static short const List1101[] = {0, 1, (MCW * 1) + 1, REFRESH_EOL};
 static short const List11[] = {0, 1, REFRESH_EOL};
@@ -1473,7 +1483,7 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            // slide; the Titan seats at its own orange marker.
                                            // Spawn logging to MOD_DEBUG_AI.txt under
                                            // TF_DEV_BUILD.
-                                           TSWEAP_SEAT_DEFAULT,
+                                           TSWEAP_SEAT_MOUTH,
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,
@@ -1482,7 +1492,9 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory.
                                            DIR_N,
-                                           BSIZE_43,           // 4x3, TSPROC parity (2026-08-17 respec): hangar on the
+                                           BSIZE_53,           // 5x3 (08-28 rebuild): hangar rows 0-1 x cols 0-3 at the
+                                                               // refinery's art scale; row 2 + col 4 walkable concrete.
+                                                               // (superseded note follows) 4x3, TSPROC parity: hangar on the
                                                                // west 3 cols x rows 0-1, pad column + front row
                                                                // IN-plot as walkable concrete (Luke's original "similar
                                                                // to TS ref" call). The selection box is plot-centred by
@@ -4210,6 +4222,8 @@ static BuildingTypeClass const ClassLarva2(STRUCT_LARVA2,
 void const* BuildingTypeClass::WarFactoryOverlay;
 void const* BuildingTypeClass::WarFactoryOverlayTd;
 void const* BuildingTypeClass::WarFactoryOverlayTs;
+void const* BuildingTypeClass::TsWeapShutter;
+void const* BuildingTypeClass::TsWeapUnderDoor;
 void const* BuildingTypeClass::TsRefineryFlame;
 void const* BuildingTypeClass::TsRefineryLid;
 void const* LightningShapes;
@@ -4905,7 +4919,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 28, 3},  // GAPILE halved windows _A(4)+_B(4)+_C(7 flag) -> LCM 28
         {STRUCT_TSPROC, BSTATE_IDLE, 0, 16, 3}, // NAREFN _C deck lights (fireball + lid are event layers)
         {STRUCT_TSPROC, BSTATE_FULL, 0, 16, 3}, // customer approaching: lights keep cycling
-        {STRUCT_TSWEAP, BSTATE_IDLE, 0, 14, 3},  // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8, swept fwd+back (ping-pong, packer order)
+        {STRUCT_TSWEAP, BSTATE_IDLE, 0, 32, 3},  // GAWEAP _A/_B (Rate 400) + _C (Rate 800) baked at 32 steps  // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8, swept fwd+back (ping-pong, packer order)
         {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)
         {STRUCT_TSTECH, BSTATE_IDLE, 0, 8, 3},   // GATECH _A halved (8 healthy + 8 damage-pocked dome)
@@ -4977,8 +4991,10 @@ void BuildingTypeClass::One_Time(void)
     _makepath(fullname, NULL, NULL, (char const*)"TDWEAP2", ".SHP");
     WarFactoryOverlayTd = MFCD::Retrieve(fullname);
     // TS's bay-door overlay, sized to the war factory's own stub.
-    _makepath(fullname, NULL, NULL, (char const*)"TSWEAP2", ".SHP");
-    WarFactoryOverlayTs = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSWEAPDR", ".SHP");
+    TsWeapShutter = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSWEAPUD", ".SHP");
+    TsWeapUnderDoor = MFCD::Retrieve(fullname);
     // TS refinery event layers (fireball burst, dock lid), sized to its stub.
     _makepath(fullname, NULL, NULL, (char const*)"TSPROCFR", ".SHP");
     TsRefineryFlame = MFCD::Retrieve(fullname);
@@ -5499,24 +5515,10 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
         return (_ts_proc_place);
     }
     if (placement && Type == STRUCT_TSWEAP) {
-        /*
-        **	The 4x3 plot exactly: the hand-tucked pad (2026-08-17 evening)
-        **	keeps every concrete pixel inside the plot, so ghost, plot and
-        **	ground art all agree -- the ghost promises every cell the built
-        **	building's ground art occupies. Blocking stays the 3x2 hangar.
-        */
-        static short const _ts_weap_place[] = {0,
-                                               1,
-                                               2,
-                                               3,
-                                               MAP_CELL_W,
-                                               MAP_CELL_W + 1,
-                                               MAP_CELL_W + 2,
-                                               MAP_CELL_W + 3,
-                                               MAP_CELL_W * 2,
-                                               MAP_CELL_W * 2 + 1,
-                                               MAP_CELL_W * 2 + 2,
-                                               MAP_CELL_W * 2 + 3,
+        // The ghost = the whole 5x3: hangar rows plus the concrete the pad lands on.
+        static short const _ts_weap_place[] = {0, 1, 2, 3, 4,
+                                               MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2, MAP_CELL_W + 3, MAP_CELL_W + 4,
+                                               MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2, MAP_CELL_W * 2 + 3, MAP_CELL_W * 2 + 4,
                                                REFRESH_EOL};
         return (_ts_weap_place);
     }
@@ -5624,7 +5626,7 @@ short const* BuildingTypeClass::Overlap_List(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Width(void) const
 {
-    static int width[BSIZE_COUNT] = {1, 2, 1, 2, 2, 3, 3, 4, 5, 4, 4};
+    static int width[BSIZE_COUNT] = {1, 2, 1, 2, 2, 3, 3, 4, 5, 4, 4, 5};
     return (width[Size]);
 }
 
@@ -5644,7 +5646,7 @@ int BuildingTypeClass::Width(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Height(bool bib) const
 {
-    static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5, 3, 4};
+    static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5, 3, 4, 3};
     /*
     **	The dropship bay's slab sits INSIDE its 3x3 (see Bib_And_Offset), so the
     **	placement grid must not grow a bib row -- the art already owns the space
