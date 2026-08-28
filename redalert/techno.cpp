@@ -2247,19 +2247,19 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
     bool TechnoClass::Is_Cloaked(HousesType house, bool check_invisible) const
     {
         const bool is_invisible = check_invisible && Techno_Type_Class()->IsInvisible;
-        return !House->Is_Ally(house) && ((Cloak == CLOAKED) || is_invisible);
+        return !House->Is_Ally(house) && ((Cloak == CLOAKED) || is_invisible || Is_Tunneling());
     }
 
     bool TechnoClass::Is_Cloaked(HouseClass const* house, bool check_invisible) const
     {
         const bool is_invisible = check_invisible && Techno_Type_Class()->IsInvisible;
-        return !House->Is_Ally(house) && ((Cloak == CLOAKED) || is_invisible);
+        return !House->Is_Ally(house) && ((Cloak == CLOAKED) || is_invisible || Is_Tunneling());
     }
 
     bool TechnoClass::Is_Cloaked(ObjectClass const* object, bool check_invisible) const
     {
         const bool is_invisible = check_invisible && Techno_Type_Class()->IsInvisible;
-        return !House->Is_Ally(object) && ((Cloak == CLOAKED) || is_invisible);
+        return !House->Is_Ally(object) && ((Cloak == CLOAKED) || is_invisible || Is_Tunneling());
     }
 
     /***********************************************************************************************

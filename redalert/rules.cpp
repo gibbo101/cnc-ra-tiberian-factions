@@ -95,6 +95,7 @@ RulesClass::RulesClass(void)
     , AttackDelay(5)
     , PowerEmergencyFraction(3, 4)
     , BadgerBombCount(1)
+    , TunnelDigThreshold(6)
     , AirstripRatio(".12")
     , AirstripLimit(5)
     , HelipadRatio(".12")
@@ -411,6 +412,7 @@ bool RulesClass::General(CCINIClass& ini)
     if (ini.Is_Present(GENERAL)) {
         TurboBoost = ini.Get_Fixed(GENERAL, "TurboBoost", TurboBoost);
         BadgerBombCount = ini.Get_Int(GENERAL, "BadgerBombCount", BadgerBombCount);
+        TunnelDigThreshold = ini.Get_Int(GENERAL, "TunnelDigThreshold", TunnelDigThreshold);
         IsCurleyShuffle = ini.Get_Bool(GENERAL, "CurleyShuffle", IsCurleyShuffle);
         IsFlashLowPower = ini.Get_Bool(GENERAL, "FlashLowPower", IsFlashLowPower);
         IsChronoKill = ini.Get_Bool(GENERAL, "ChronoKillCargo", IsChronoKill);

@@ -184,6 +184,29 @@ public:
     long HarvBadExpiry[HARV_BLACKLIST_MAX]; // Frame each blacklist entry expires
 
     /*
+    **	TF subterranean cycle (Devil's Tongue / Subterranean APC). A port of TS's
+    **	TunnelLocomotionClass onto the unit itself: the vehicle turns to face its
+    **	destination, pitches nose-down through the dive ladder, leaves the surface
+    **	occupancy entirely while it travels underground in a straight line, then
+    **	surfaces through the emerge ladder at the destination (or the nearest legal
+    **	cell). See docs/subterranean-design.md for the locked choreography.
+    */
+    enum TunnelStateType : unsigned char
+    {
+        TUNNEL_IDLE,       // surfaced, an ordinary vehicle
+        TUNNEL_TURNING,    // rotating to face the dig destination
+        TUNNEL_DIGGING_IN, // dive ladder playing at the surface (TunnelStep 1..5)
+        TUNNEL_TUNNELING,  // underground, out of cell occupancy, moving on Coord
+        TUNNEL_EMERGING,   // placed at the exit cell; hull hidden (step 0) then emerge ladder 1..5
+        TUNNEL_ABORTING    // dig cancelled mid-ladder; levelling back to idle
+    };
+    unsigned char TunnelState;
+    unsigned char TunnelStep;   // ladder step within DIGGING_IN / EMERGING / ABORTING
+    unsigned char TunnelTick;   // frames left in the current step
+    unsigned char TunnelFacing; // 0..7 facing snapped at dig start (ladder frame block)
+    COORDINATE TunnelDest;      // underground destination (0 when idle)
+
+    /*
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
     *save/load
     */
@@ -359,6 +382,25 @@ public:
     virtual int Offload_Tiberium_Bail(void);
     virtual void Enter_Idle_Mode(bool initial = false);
     virtual MoveType Can_Enter_Cell(CELL cell, FacingType facing = FACING_NONE) const;
+
+    /*
+    **	TF subterranean cycle -- see the TunnelState members above.
+    */
+    bool Is_Subterranean(void) const;
+    virtual bool Is_Tunneling(void) const;
+    bool Is_In_Tunnel_Cycle(void) const
+    {
+        return (TunnelState != TUNNEL_IDLE);
+    }
+    bool Should_Dig_To(CELL cell) const;
+    CELL Find_Emerge_Cell(CELL cell) const;
+    void Tunnel_To(COORDINATE dest);
+    void Tunnel_Stop(void);
+    void Tunnel_AI(void);
+    bool Force_Emerge(void);
+    void Tunnel_Explode(void);
+    void Tunnel_Begin_Emerge(void);
+    virtual bool Mark(MarkType mark = MARK_CHANGE);
     virtual void Per_Cell_Process(PCPType why);
     void Exit_Repair(void);
     void Shroud_Regen(void);

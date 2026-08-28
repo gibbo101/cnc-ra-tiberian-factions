@@ -429,6 +429,14 @@ public:
                               WindowNumberType window,
                               COORDINATE source_coord = 0L,
                               unsigned char* remap = NULL) const;
+    /*
+    **	Tiberian Factions: true while a subterranean vehicle is travelling underground.
+    **	Every "can that house see / target this" query treats it like a cloaked object.
+    */
+    virtual bool Is_Tunneling(void) const
+    {
+        return (false);
+    }
     bool Is_Cloaked(HousesType house, bool check_invisible = false) const;
     bool Is_Cloaked(HouseClass const* house, bool check_invisible = false) const;
     bool Is_Cloaked(ObjectClass const* object, bool check_invisible = false) const;

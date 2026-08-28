@@ -105,6 +105,13 @@ public:
     int BadgerBombCount;
 
     /*
+    **	Tiberian Factions: a subterranean vehicle drives to any surface-reachable
+    **	destination closer than this many cells and digs to everything else
+    **	(TS hardcodes 12; TS-authentic short hops stay on the surface).
+    */
+    int TunnelDigThreshold;
+
+    /*
     **	This specifies the percentage of the base (by building quantity) that should
     **	be composed of airstrips.
     */

@@ -189,6 +189,12 @@ void DriveClass::Scatter(COORDINATE threat, bool forced, bool nokidding)
     if (MissionControl[Mission].IsParalyzed)
         return;
 
+    /*
+    **	TF subterranean: a vehicle in its dig cycle cannot be shoved aside.
+    */
+    if (What_Am_I() == RTTI_UNIT && ((UnitClass*)this)->Is_In_Tunnel_Cycle())
+        return;
+
     if ((What_Am_I() != RTTI_UNIT || !((UnitClass*)this)->IsDumping)
         && (!Target_Legal(NavCom) || (nokidding && !IsRotating))) {
         if (!Target_Legal(TarCom) || forced || Random_Pick(1, 4) == 1) {

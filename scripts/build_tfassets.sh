@@ -382,6 +382,10 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tssonicw_stub.shp" 24 24 25
 PACK_ARGS+=("$TMPDIR/tssonicw_stub.shp:TSSONICW.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tssonicp_stub.shp" 24 24 25
 PACK_ARGS+=("$TMPDIR/tssonicp_stub.shp:TSSONICP.SHP")
+# TS subterranean DIG mound (ANIM_TS_DIG) -- 37 frames on a 64x64 classic box
+# (TSDIG.ZIP is a 512 canvas, scripts/ts_pack_dig.py).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdig_stub.shp" 64 64 37
+PACK_ARGS+=("$TMPDIR/tsdig_stub.shp:TSDIG.SHP")
 
 # Repack into TFASSETS.MIX with TD-prefix renames.
 python3 scripts/mix_tools.py pack "$OUTMIX" "${PACK_ARGS[@]}"

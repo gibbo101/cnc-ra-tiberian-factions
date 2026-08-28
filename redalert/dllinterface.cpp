@@ -5750,7 +5750,18 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             new_object.Cloak = techno_object->Cloak;
             new_object.SpiedByFlags = techno_object->Spied_By();
 
-            if (techno_object->Techno_Type_Class()->IsInvisible) {
+            /*
+            **	TF subterranean: while underground the vehicle exports as CLOAKED so its
+            **	owner (and allies) see the shimmer silhouette, and it is hidden outright from
+            **	every house that is not allied -- the same per-house mask the invisible
+            **	objects use. Sensor detection will later widen the visible set.
+            */
+            const bool tf_tunneling = techno_object->Is_Tunneling();
+            if (tf_tunneling) {
+                new_object.Cloak = CLOAKED;
+            }
+
+            if (techno_object->Techno_Type_Class()->IsInvisible || tf_tunneling) {
                 // Hide for enemy players
                 HouseClass* owner = HouseClass::As_Pointer(object->Owner());
                 if (owner != nullptr) {

@@ -2973,6 +2973,7 @@ typedef enum AnimType : char
     ANIM_TS_SONICWAVE, // TS Disruptor sonic wave: one soft translucent disc, spawned in a dense chain along the SonicZap line to build the band. TS draws the wave as a live screen distortion its engine generates; there is no TS art to port, so the disc sprite (TSSONICW.ZIP, scripts/ts_gen_sonicwave.py) stands in. A disc and not a band because spawned anims draw unrotated.
     ANIM_TS_SONICPULSE, // TS Disruptor sonic pulse: RETIRED (never spawned); slot kept so the anim enum and TSSONICP tileset stay stable.
     ANIM_TS_GUNFIRE,    // TS GUNFIRE muzzle flash (gunfire.shp, 3 frames, translucent): the Mk.II railgun's Anim= in rules.ini.
+    ANIM_TS_DIG,        // TS DIG mound (dig.shp, 37 frames): the subterranean dig-in / emerge earth burst (TS [AudioVisual] Dig=). Spawned by the tunnel cycle in UnitClass::Tunnel_AI.
 
     ANIM_COUNT,
     ANIM_FIRST = 0

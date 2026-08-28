@@ -333,6 +333,11 @@ UnitClass::UnitClass(UnitType classid, HousesType house)
     HarvReachableResets = 0;
     HarvStuckCell = -1;
     HarvStuckFrame = 0;
+    TunnelState = TUNNEL_IDLE;
+    TunnelStep = 0;
+    TunnelTick = 0;
+    TunnelFacing = 0;
+    TunnelDest = 0;
     for (int hb = 0; hb < HARV_BLACKLIST_MAX; hb++) {
         HarvBadMin[hb] = -1;
         HarvBadMax[hb] = -1;
@@ -451,6 +456,24 @@ void UnitClass::AI(void)
     if (Height == 0 && !IsDumping && !IsDriving && Is_Door_Closed() /*&& Mission != MISSION_UNLOAD*/) {
         //		if (MissionQueue == MISSION_NONE) Enter_Idle_Mode();
         Commence();
+    }
+
+    /*
+    **	TF subterranean cycle owns the vehicle's motion while it runs: the drive
+    **	layer only gets to finish a track the unit was already on when the dig
+    **	order arrived. Mission/team/cloak processing (FootClass::AI) still ticks.
+    */
+    if (Is_In_Tunnel_Cycle()) {
+        Tunnel_AI();
+        if (!IsActive) {
+            return;
+        }
+        if (TunnelState == TUNNEL_TURNING && (IsDriving || Head_To_Coord() != 0)) {
+            DriveClass::AI();
+        } else {
+            FootClass::AI();
+        }
+        return;
     }
     DriveClass::AI();
     if (!IsActive || Height > 0) {
@@ -1532,6 +1555,14 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
     */
     // bool select = (IsSelected && House->IsPlayerControl);
     bool select = (Is_Selected_By_Player()); //&& House->IsPlayerControl);
+
+    /*
+    **	TF: nothing on the surface reaches a vehicle travelling underground.
+    **	Only a forced hit (the tunnel self-destruct, the future EMP kill) lands.
+    */
+    if (TunnelState == TUNNEL_TUNNELING && !forced) {
+        return (RESULT_NONE);
+    }
 
     /*
     **	In order for a this to be damaged, it must either be a unit
@@ -2662,6 +2693,21 @@ int UnitClass::Shape_Number(void) const
         **  while the unit is actually driving; a standing walker rests on the
         **  first frame of its facing's cycle. Cadence /2 ≈ TS WalkRate=2.
         */
+        /*
+        **	TF subterranean ladders (docs/subterranean-design.md shape contract):
+        **	dive = 32 + facing8*5 + (step-1), emerge = 72 + facing8*5 + (step-1).
+        **	The dive ladder runs shallow->steep and the emerge ladder steep->shallow
+        **	as packed, so both index straight off the step counter.
+        */
+        if (Is_Subterranean() && TunnelStep >= 1 && TunnelStep <= 5) {
+            if (TunnelState == TUNNEL_DIGGING_IN || TunnelState == TUNNEL_ABORTING) {
+                return (32 + TunnelFacing * 5 + (TunnelStep - 1));
+            }
+            if (TunnelState == TUNNEL_EMERGING) {
+                return (72 + TunnelFacing * 5 + (TunnelStep - 1));
+            }
+        }
+
         if (Class->WalkFrames > 1) {
             // BodyShape maps the clockwise DirType index into CCW frame space
             // (0=N advancing CCW) — the same space every 32-frame tileset and
@@ -2857,7 +2903,22 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
     **	If drawing of this unit is not explicitly prohibited, then proceed
     **	with the render process.
     */
-    const bool is_hidden = (Visual_Character() == VISUAL_HIDDEN) && (window != WINDOW_VIRTUAL);
+    bool is_hidden = (Visual_Character() == VISUAL_HIDDEN) && (window != WINDOW_VIRTUAL);
+
+    /*
+    **	TF subterranean: the hull stays hidden under the fresh DIG mound for the
+    **	emerge lead-in (step 0), and settles a few pixels into the ground while
+    **	the dive ladder pitches it over (the angle leads, the sink follows).
+    */
+    if (Is_Subterranean()) {
+        if (TunnelState == TUNNEL_EMERGING && TunnelStep == 0) {
+            is_hidden = true;
+        }
+        if ((TunnelState == TUNNEL_DIGGING_IN || TunnelState == TUNNEL_ABORTING) && TunnelStep >= 1) {
+            static const int _settle[6] = {0, 0, 1, 1, 2, 3};
+            y += _settle[TunnelStep <= 5 ? TunnelStep : 5];
+        }
+    }
     if (!is_hidden) {
         shapenum = Shape_Number();
 
@@ -3776,6 +3837,13 @@ int UnitClass::Mission_Unload(void)
 {
     assert(Units.ID(this) == ID);
     assert(IsActive);
+
+    /*
+    **	TF subterranean APC: nobody gets out until the vehicle is back on the surface.
+    */
+    if (Is_In_Tunnel_Cycle()) {
+        return (TICKS_PER_SECOND / 2);
+    }
 
     enum
     {
@@ -5621,6 +5689,14 @@ ActionType UnitClass::What_Action(CELL cell) const
     if (action == ACTION_MOVE && Map[cell].Land_Type() == LAND_TIBERIUM && Class->IsToHarvest) {
         return (ACTION_HARVEST);
     }
+    /*
+    **	TF subterranean: water, cliffs and other impassable clicks are legal dig
+    **	orders -- the vehicle surfaces at the nearest cell it can stand on.
+    */
+    if (action == ACTION_NOMOVE && Is_Subterranean() && House->IsPlayerControl && Map.In_Radar(cell)
+        && Find_Emerge_Cell(cell) != -1) {
+        return (ACTION_MOVE);
+    }
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
     if (*this == UNIT_MAD && (IsDumping || Gold)) {
         action = ACTION_NOMOVE;
@@ -6218,6 +6294,13 @@ FireErrorType UnitClass::Can_Fire(TARGET target, int which) const
     DirType dir; // The facing to impart upon the projectile.
     int diff;
     FireErrorType fire = DriveClass::Can_Fire(target, which);
+
+    /*
+    **	TF subterranean: a vehicle lining up, digging, underground or surfacing has no shot.
+    */
+    if (fire == FIRE_OK && Is_In_Tunnel_Cycle()) {
+        return (FIRE_BUSY);
+    }
 
     if (fire == FIRE_OK) {
         WeaponTypeClass const* weapon = (which == 0) ? Class->PrimaryWeapon : Class->SecondaryWeapon;
@@ -7081,6 +7164,33 @@ void UnitClass::Assign_Destination(TARGET target)
     assert(IsActive);
 
     /*
+    **	TF subterranean: plain cell destinations go through the dig decision.
+    **	A vehicle already in the cycle retargets underground (or aborts on a
+    **	stop order); a surfaced one digs when the surface route is broken or
+    **	long, and drives otherwise. Object targets (transports, repair bays,
+    **	refineries) always take the normal driving path.
+    */
+    if (Is_Subterranean()) {
+        if (target == TARGET_NONE) {
+            if (Is_In_Tunnel_Cycle()) {
+                Tunnel_Stop();
+                return;
+            }
+        } else if (Is_Target_Cell(target)) {
+            CELL cell = As_Cell(target);
+            if (TunnelState == TUNNEL_TURNING || TunnelState == TUNNEL_DIGGING_IN
+                || TunnelState == TUNNEL_TUNNELING) {
+                Tunnel_To(Cell_Coord(cell));
+                return;
+            }
+            if (TunnelState == TUNNEL_IDLE && Should_Dig_To(cell)) {
+                Tunnel_To(Cell_Coord(cell));
+                return;
+            }
+        }
+    }
+
+    /*
     **	Abort early if there is anything wrong with the parameters
     **	or the unit already is assigned the specified destination.
     */
@@ -7755,4 +7865,325 @@ int UnitClass::Mission_Guard_Area(void)
         }
     }
     return (DriveClass::Mission_Guard_Area());
+}
+
+
+/***********************************************************************************************
+ * TF subterranean cycle -- a port of Tiberian Sun's TunnelLocomotionClass (OpenTS,            *
+ * code/tunnel.cpp) onto UnitClass. The RA engine has no locomotor objects, so the state       *
+ * lives on the unit and UnitClass::AI hands motion to Tunnel_AI while a cycle runs.           *
+ *                                                                                             *
+ * Underground travel is TS-authentic: a straight line at a fixed lepton rate that ignores     *
+ * every terrain type (water included). The only terrain rule is where the vehicle may         *
+ * surface, and a vehicle with nowhere legal to surface dies underground.                      *
+ *=============================================================================================*/
+static const int TUNNEL_LEPTONS_PER_TICK = 19;   // TS Process_Tunneling: 19 leptons per frame.
+static const int TUNNEL_LADDER_TICKS = 3;        // Frames per pitch-ladder step.
+static const int TUNNEL_DIG_ANIM_STEP = 4;       // Dive: the DIG mound erupts entering this step.
+static const int TUNNEL_EMERGE_LEAD_TICKS = 6;   // Emerge: hull stays hidden this long after the mound erupts.
+
+bool UnitClass::Is_Subterranean(void) const
+{
+    return (*this == UNIT_TSSUBTANK || *this == UNIT_TSSAPC);
+}
+
+bool UnitClass::Is_Tunneling(void) const
+{
+    return (TunnelState == TUNNEL_TUNNELING);
+}
+
+/*
+**	Drive when the surface route is short and unbroken; dig otherwise. Mirrors TS
+**	Is_Route_Broken: a different movement zone always digs, an adjacent cell never
+**	does, and beyond the threshold distance the vehicle prefers the tunnel.
+*/
+bool UnitClass::Should_Dig_To(CELL cell) const
+{
+    CELL from = Coord_Cell(Coord);
+    if (from == cell) {
+        return (false);
+    }
+    if (!Is_In_Same_Zone(cell)) {
+        return (true);
+    }
+    int dist = max(abs(Cell_X(cell) - Cell_X(from)), abs(Cell_Y(cell) - Cell_Y(from)));
+    if (dist <= 1) {
+        return (false);
+    }
+    return (dist >= Rule.TunnelDigThreshold);
+}
+
+/*
+**	The nearest cell a tracked vehicle can surface on, preferring the movement zone the
+**	requested cell belongs to so the vehicle comes up on the side the order meant.
+**	Returns -1 when the map has nowhere at all.
+*/
+CELL UnitClass::Find_Emerge_Cell(CELL cell) const
+{
+    if (Map.In_Radar(cell) && Can_Enter_Cell(cell) == MOVE_OK) {
+        return (cell);
+    }
+    CELL found = Map.Nearby_Location(cell, SPEED_TRACK, Map[cell].Zones[MZONE_NORMAL], MZONE_NORMAL);
+    if (found == 0) {
+        found = Map.Nearby_Location(cell, SPEED_TRACK, -1, MZONE_NORMAL);
+    }
+    return (found == 0 ? -1 : found);
+}
+
+/*
+**	Starts a dig toward the coordinate, or retargets a cycle already under way. A
+**	vehicle that is surfacing finishes surfacing first and re-evaluates the order then.
+*/
+void UnitClass::Tunnel_To(COORDINATE dest)
+{
+    if (dest == 0) {
+        return;
+    }
+    dest = Cell_Coord(Coord_Cell(dest));
+    if (Is_In_Tunnel_Cycle() && TunnelDest == dest) {
+        return;
+    }
+    TunnelDest = dest;
+
+    switch (TunnelState) {
+    case TUNNEL_IDLE:
+        FootClass::Assign_Destination(TARGET_NONE);
+        Path[0] = FACING_NONE;
+        TunnelState = TUNNEL_TURNING;
+        TunnelStep = 0;
+        TunnelTick = 0;
+        break;
+
+    case TUNNEL_ABORTING:
+        TunnelState = TUNNEL_DIGGING_IN;
+        break;
+
+    default:
+        break;
+    }
+}
+
+/*
+**	A stop order. What it costs depends on how far the dig has gone (TS Stop_Moving):
+**	not yet committed = forget it, mid-ladder = level back out, underground = make for
+**	the nearest ground it can surface on, and with no such ground it stays buried for good.
+*/
+void UnitClass::Tunnel_Stop(void)
+{
+    switch (TunnelState) {
+    case TUNNEL_TURNING:
+        TunnelState = TUNNEL_IDLE;
+        TunnelDest = 0;
+        break;
+
+    case TUNNEL_DIGGING_IN:
+        TunnelState = TUNNEL_ABORTING;
+        TunnelDest = 0;
+        break;
+
+    case TUNNEL_TUNNELING: {
+        CELL cell = Find_Emerge_Cell(Coord_Cell(Coord));
+        if (cell == -1) {
+            Tunnel_Explode();
+        } else {
+            TunnelDest = Cell_Coord(cell);
+        }
+        break;
+    }
+
+    default:
+        TunnelDest = 0;
+        break;
+    }
+}
+
+/*
+**	Leaves the underground state at the current (already legal) cell: the DIG mound
+**	erupts, the vehicle takes the cell, and the hull stays hidden for the lead-in.
+*/
+void UnitClass::Tunnel_Begin_Emerge(void)
+{
+    Mark(MARK_UP);
+    TunnelState = TUNNEL_EMERGING;
+    TunnelStep = 0;
+    TunnelTick = TUNNEL_EMERGE_LEAD_TICKS;
+    TunnelFacing = (UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())] / 4) & 7;
+    Mark(MARK_DOWN);
+    new AnimClass(ANIM_TS_DIG, Coord);
+}
+
+/*
+**	Surfaces a tunneling vehicle where it is (the EMP counter). On a cell it cannot
+**	stand on it is destroyed instead. Returns whether it surfaced.
+*/
+bool UnitClass::Force_Emerge(void)
+{
+    if (TunnelState != TUNNEL_TUNNELING) {
+        return (false);
+    }
+    CELL cell = Coord_Cell(Coord);
+    if (!Map.In_Radar(cell) || Can_Enter_Cell(cell) != MOVE_OK) {
+        Tunnel_Explode();
+        return (false);
+    }
+    Mark(MARK_UP);
+    Coord = Cell_Coord(cell);
+    Mark(MARK_DOWN);
+    Tunnel_Begin_Emerge();
+    return (true);
+}
+
+/*
+**	Death underground: a muffled dirt burst at the surface and nothing comes out.
+*/
+void UnitClass::Tunnel_Explode(void)
+{
+    new AnimClass(ANIM_TS_DIG, Coord);
+    TunnelDest = 0;
+    int damage = Strength;
+    Take_Damage(damage, 0, WARHEAD_HE, NULL, true);
+}
+
+/*
+**	Per-frame processing of the cycle. Choreography (docs/subterranean-design.md):
+**	the angle leads and the sink follows, the mound erupts at ladder step 4, the hull
+**	is gone the instant step 5 completes, and the emerge mirrors it.
+*/
+void UnitClass::Tunnel_AI(void)
+{
+    switch (TunnelState) {
+    case TUNNEL_TURNING: {
+        if (IsDriving || Head_To_Coord() != 0) {
+            return;
+        }
+        if (TunnelDest == 0) {
+            TunnelState = TUNNEL_IDLE;
+            return;
+        }
+        DirType want = ::Direction(Coord, TunnelDest);
+        if (PrimaryFacing.Is_Rotating()) {
+            Mark(MARK_CHANGE_REDRAW);
+            PrimaryFacing.Rotation_Adjust(Techno_Type_Class()->ROT * House->GroundspeedBias);
+            Mark(MARK_CHANGE_REDRAW);
+            return;
+        }
+        if (PrimaryFacing.Current() != want) {
+            PrimaryFacing.Set_Desired(want);
+            return;
+        }
+        TunnelFacing = (UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())] / 4) & 7;
+        TunnelState = TUNNEL_DIGGING_IN;
+        TunnelStep = 1;
+        TunnelTick = TUNNEL_LADDER_TICKS;
+        Mark(MARK_CHANGE_REDRAW);
+        break;
+    }
+
+    case TUNNEL_DIGGING_IN:
+        if (TunnelTick > 0 && --TunnelTick > 0) {
+            return;
+        }
+        TunnelStep++;
+        TunnelTick = TUNNEL_LADDER_TICKS;
+        Mark(MARK_CHANGE_REDRAW);
+        if (TunnelStep == TUNNEL_DIG_ANIM_STEP) {
+            new AnimClass(ANIM_TS_DIG, Coord);
+        }
+        if (TunnelStep > 5) {
+            Mark(MARK_UP);
+            TunnelState = TUNNEL_TUNNELING;
+            TunnelStep = 0;
+            Mark(MARK_DOWN);
+        }
+        break;
+
+    case TUNNEL_ABORTING:
+        if (TunnelTick > 0 && --TunnelTick > 0) {
+            return;
+        }
+        TunnelTick = TUNNEL_LADDER_TICKS;
+        Mark(MARK_CHANGE_REDRAW);
+        if (TunnelStep > 0) {
+            TunnelStep--;
+        }
+        if (TunnelStep == 0) {
+            TunnelState = TUNNEL_IDLE;
+            TunnelDest = 0;
+        }
+        break;
+
+    case TUNNEL_TUNNELING: {
+        if (TunnelDest == 0) {
+            Tunnel_Stop();
+            return;
+        }
+        if (::Distance(Coord, TunnelDest) <= TUNNEL_LEPTONS_PER_TICK) {
+            Mark(MARK_UP);
+            Coord = TunnelDest;
+            Mark(MARK_DOWN);
+            CELL cell = Coord_Cell(Coord);
+            if (Map.In_Radar(cell) && Can_Enter_Cell(cell) == MOVE_OK) {
+                Tunnel_Begin_Emerge();
+                return;
+            }
+            CELL alt = Find_Emerge_Cell(cell);
+            if (alt == -1) {
+                Tunnel_Explode();
+            } else if (alt != cell) {
+                TunnelDest = Cell_Coord(alt);
+            }
+            return;
+        }
+        DirType dir = ::Direction(Coord, TunnelDest);
+        Mark(MARK_UP);
+        Coord = Coord_Move(Coord, dir, TUNNEL_LEPTONS_PER_TICK);
+        PrimaryFacing.Set_Current(dir);
+        PrimaryFacing.Set_Desired(dir);
+        Mark(MARK_DOWN);
+        break;
+    }
+
+    case TUNNEL_EMERGING: {
+        if (TunnelTick > 0 && --TunnelTick > 0) {
+            return;
+        }
+        TunnelStep++;
+        TunnelTick = TUNNEL_LADDER_TICKS;
+        Mark(MARK_CHANGE_REDRAW);
+        if (TunnelStep == 1) {
+            Look();
+        }
+        if (TunnelStep > 5) {
+            TunnelState = TUNNEL_IDLE;
+            TunnelStep = 0;
+            COORDINATE pending = TunnelDest;
+            TunnelDest = 0;
+            if (pending != 0 && Coord_Cell(pending) != Coord_Cell(Coord)) {
+                Assign_Destination(::As_Target(Coord_Cell(pending)));
+            }
+        }
+        break;
+    }
+
+    default:
+        break;
+    }
+}
+
+/*
+**	Underground the vehicle has no surface footprint: up/down marks only keep the
+**	IsDown bookkeeping (so it still exports to the renderer) and never touch the
+**	cell occupancy lists. The transitions into and out of the underground state
+**	are ordered so the real pick-up happens before, and the real placement after.
+*/
+bool UnitClass::Mark(MarkType mark)
+{
+    if (TunnelState == TUNNEL_TUNNELING && (mark == MARK_UP || mark == MARK_DOWN)) {
+        if (TechnoClass::Mark(mark)) {
+            Map.Refresh_Cells(Coord_Cell(Coord), Overlap_List());
+            return (true);
+        }
+        return (false);
+    }
+    return (DriveClass::Mark(mark));
 }

@@ -2446,6 +2446,13 @@ static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, fa
 // launcher renders as a colourless darkening of the ground (the art's own
 // alpha channel does the blending, as RAILFX proves). No sound of its own --
 // SONIC4 already fires from the weapon's Report.
+// Tiberian Factions -- TS subterranean DIG mound (ANIM_TS_DIG). TS [AudioVisual]
+// Dig=DIG: the earth burst a tunneling vehicle throws up when it digs in and
+// again when it surfaces. Art = TSDIG.ZIP (scripts/ts_pack_dig.py, 37 frames
+// decoded from TS DIG.SHP against ANIM.PAL). Not a ground-layer anim: it must
+// draw OVER the hull so the mound swallows the nose (docs/subterranean-design.md).
+static AnimTypeClass const TsDig(ANIM_TS_DIG, "TSDIG", 64, 18, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 37, 0, VOC_NONE, ANIM_NONE, 37, 0x100);
+
 static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 25, 0, VOC_NONE, ANIM_NONE, 25, 0x100);
 
 // Tiberian Factions -- TS Disruptor ripple disc (ANIM_TS_SONICPULSE): RETIRED,
@@ -2601,12 +2608,13 @@ void AnimTypeClass::Init_Heap(void)
 #endif
 
     // MUST stay last, in this order: heap ID == registration order, and these
-    // four occupy the ANIM_RAILFX / ANIM_TS_SONICWAVE / ANIM_TS_SONICPULSE /
-    // ANIM_TS_GUNFIRE enum slots that follow the virtual anims.
+    // five occupy the ANIM_RAILFX / ANIM_TS_SONICWAVE / ANIM_TS_SONICPULSE /
+    // ANIM_TS_GUNFIRE / ANIM_TS_DIG enum slots that follow the virtual anims.
     new AnimTypeClass(RailFx);
     new AnimTypeClass(TsSonicWave);
     new AnimTypeClass(TsSonicPulse);
     new AnimTypeClass(TsGunfire);
+    new AnimTypeClass(TsDig);
 }
 
 /***********************************************************************************************
