@@ -7638,10 +7638,10 @@ int BuildingClass::Mission_Unload(void)
                         unit->ArchiveTarget = ::As_Target(House->Where_To_Go(unit));
                     }
                     /*
-                    **	Sort clamp for the whole rail: under the near face (+192)
-                    **	until the rail ends clear of the hangar's lip.
+                    **	No sort clamp on the rail: the near face has no pixels along
+                    **	the exit path below the awning, and a pinned key put the unit
+                    **	under the front-row pad tile (08-29 cast: cut by a cell edge).
                     */
-                    unit->TsExitSortClamp = Coord_Add(Sort_Y(), XY_Coord(0, 128));
                     unit->Rail_To(coord, Desired_Facing256(Coord_X(unit->Coord), Coord_Y(unit->Coord), Coord_X(coord), Coord_Y(coord)));
                     Status = LEAVE;
                 } else {
