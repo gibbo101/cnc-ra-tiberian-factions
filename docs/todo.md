@@ -10,8 +10,13 @@ maintenance, and queued tasks. Newest at top.
 Stage 3 of the subterranean arc (sensing houses see a tunneling vehicle: widen the launcher
 export's VisibleFlags for them, then the `Is_Cloaked` gate follows) has no detector to drive it
 yet. Build it together with the TS Mobile Sensor Array (MSA) port; the MRJ-as-RA-era-detector
-question from docs/subterranean-design.md is decided then too. Until then, underground = invisible
-to every non-ally, which is the TS behaviour without sensors.
+question from docs/subterranean-design.md is decided then too. **Design question to settle at the
+same time: how do the TD and RA factions detect diggers?** TS gives the MSA (GDI) and nothing else;
+the RA/TD rosters have no sensor concept, so a Nod digger under an Allied or GDI base would be
+undetectable forever. Candidates: the RA Mobile Radar Jammer gains sensor duty (RA era), a TD
+building/unit takes the role (TD era), radar-domes/comm-centres sense within a radius, or every
+faction gets one shared detector. Until then, underground = invisible to every non-ally, which is
+the TS behaviour without sensors.
 
 ---
 
