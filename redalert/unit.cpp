@@ -7629,6 +7629,13 @@ void UnitClass::Scatter(COORDINATE threat, bool forced, bool nokidding)
     if (!MissionControl[Mission].IsScatter && !forced)
         return;
 
+    /*
+    **	TF subterranean: underground the vehicle "stands" on water and rock, and the
+    **	guard mission's off-impassable-ground nudge must not surface it there.
+    */
+    if (Is_In_Tunnel_Cycle())
+        return;
+
     if (PrimaryFacing.Is_Rotating())
         return;
     //	if (IsRotating) return;
