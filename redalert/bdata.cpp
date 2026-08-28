@@ -2492,6 +2492,39 @@ static BuildingTypeClass const ClassTsPowr(STRUCT_TSPOWR,
                                            (short const*)List22_1100  // OVERLAPLIST: north art-spill row.
 );
 
+// TS EMP Pulse Cannon (STRUCT_TSPULS, TS rules [NAPULS]) -- docs/emp-cannon-design.md.
+// 2x2 like the power plant, but squat (a rock mound with the cannon head on its
+// dome), so it occupies the whole plot. No engine turret: the head's rotation is
+// baked into the building tileset (shapes 0-60), Shape_Number picks the facing.
+static BuildingTypeClass const ClassTsPuls(STRUCT_TSPULS,
+                                           TXT_POWER,       // NAME: placeholder (rules.ini Name= overrides).
+                                           "TSPULS",        // NAME: IniName (launcher tileset key).
+                                           FACING_S,        // Foundation direction from center of building.
+                                           XYP_COORD(0, 0), // Exit point for produced units.
+                                           REMAP_ALTERNATE, // Sidebar remap logic.
+                                           0x0000,          // Vertical offset.
+                                           0x0000,          // Primary weapon offset along turret centerline.
+                                           0x0000,          // Primary weapon lateral offset along turret centerline.
+                                           false,           // Is this building a fake (decoy?)
+                                           true,            // Animation rate is regulated for constant speed?
+                                           false,           // Always use the given name for the building?
+                                           false,           // Is this a wall type structure?
+                                           true,            // Simple (one frame) damage imagery?
+                                           false,           // Is it invisible to radar?
+                                           true,            // Can the player select this?
+                                           true,            // Is this a legal target for attack or move?
+                                           false,           // Is this an insignificant building?
+                                           false,           // Theater specific graphic image?
+                                           false,           // Does it have a rotating turret? (baked into the shapes)
+                                           true,            // Can the building be color remapped to indicate owner?
+                                           RTTI_NONE,       // The object type produced at this factory.
+                                           DIR_N,           // Starting idle frame to match construction.
+                                           BSIZE_22,        // 2x2, whole plot occupied.
+                                           NULL,            // Preferred exit cell list.
+                                           (short const*)List22,     // OCCUPYLIST: all four cells.
+                                           (short const*)List22_1100 // OVERLAPLIST: north art-spill row.
+);
+
 static BuildingTypeClass const ClassPower(STRUCT_POWER,
                                           TXT_POWER,       // NAME:			Short name of the structure.
                                           "POWR",          // NAME:			Short name of the structure.
@@ -4743,6 +4776,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsTech);        // STRUCT_TSTECH (TS Tech Center)
     new BuildingTypeClass(ClassTsDept);        // STRUCT_TSDEPT (TS Service Depot)
     new BuildingTypeClass(ClassTsDrop);        // STRUCT_TSDROP (TS Dropship Bay)
+    new BuildingTypeClass(ClassTsPuls);        // STRUCT_TSPULS (TS EMP Pulse Cannon)
 }
 
 /***********************************************************************************************
@@ -5116,6 +5150,7 @@ void BuildingTypeClass::One_Time(void)
             {STRUCT_TSTECH, STRUCT_TDEYE},
             {STRUCT_TSDEPT, STRUCT_TDFIX},
             {STRUCT_TSDROP, STRUCT_TDFIX},
+            {STRUCT_TSPULS, STRUCT_POWER}, // TS EMP cannon: 2x2 donor for ImageData/BuildupData
         };
         for (int di = 0; di < (int)(sizeof(_td_bdonors) / sizeof(_td_bdonors[0])); di++) {
             BuildingTypeClass& b = As_Reference(_td_bdonors[di].td);

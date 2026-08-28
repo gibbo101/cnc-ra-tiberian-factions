@@ -35,6 +35,12 @@ STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
 # is drawn at the wrong scale -- silently, with nothing else looking wrong.
 # build_tfassets.sh checks its stub literals against this file.
 STUB_DIMS = {}
+# A run only packs the buildings whose art is present, so start from the shipped
+# manifest and let this run overwrite its own entries; a fresh file would drop
+# every other building's stub dims and break build_tfassets.sh's check.
+if os.path.exists(STUB_MANIFEST):
+    with open(STUB_MANIFEST) as _f:
+        STUB_DIMS = json.load(_f)
 CANVAS_PER_CLASSIC_PX = 16.0 / 3.0
 
 
@@ -1218,6 +1224,12 @@ SIZEPASS = [
     ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
      "shp_gtradrmk", 20, (256, 512), 21, 1.0, "shp_radricon",
      "TS Radar", "Provides radar coverage."),
+    # TS EMP Pulse Cannon (docs/emp-cannon-design.md). NAPULS is snow-theatre-only
+    # art (decode with UNITSNO.PAL); _A = the 122-frame idle. TSPOWR's 2x2 fit.
+    # The PULSCAN voxel turret rides as the TSPULST sub-object layer (EXTRA_LAYERS).
+    ("TSPULS", "shp_napuls", ["shp_napuls_a"],
+     "shp_napulsmk", 13, (256, 256), 0, 1.0, "shp_empicon",
+     "EMP Cannon", "Fires an electromagnetic pulse that disables vehicles and structures."),
 ]
 
 for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc in SIZEPASS:

@@ -1591,6 +1591,7 @@ typedef enum StructType : short
     STRUCT_TSDEPT, // TS Service Depot "TSDEPT" (GADEPT, 3x3) — repair bay.
     STRUCT_TSDROP, // TS Dropship Bay "TSDROP" (Westwood's cut GADROP, 3x3) — the Mammoth Mk. II arrives here by Orca. Art is TSDEPT's octagonal pad alone (shp_gtdeptbb); the gantry and its anims are unused.
 
+    STRUCT_TSPULS, // TS EMP Pulse Cannon "TSPULS" (NAPULS, 2x2, snow-theatre art). Shapes 0-60 = the cannon head's 61-frame rotation on the dome (NAPULS_A), 61-121 = damaged; Shape_Number picks the frame from PrimaryFacing. Superweapon host for SPC_TS_EMP (docs/emp-cannon-design.md).
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
 
@@ -1612,7 +1613,7 @@ typedef enum StructType : short
     **	Second range of BuildingTypeClass::Is_Tiberian_Era.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TSDROP
+    STRUCT_TS_TREE_LAST = STRUCT_TSPULS
 } StructType;
 
 /*

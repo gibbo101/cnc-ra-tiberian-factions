@@ -10075,5 +10075,20 @@
 			<BuildIcon>BuildIcon_TS_SubAPC</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSPULS" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPULS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPULS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Puls</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSPULS_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPULS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPULS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Puls</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END generated Mk2 cooldown countdown cameos -->
 </ObjectTypeList>

@@ -354,6 +354,11 @@ ts_stub TSRADR "$TMPDIR/tsradrmk_stub.shp" 48 96 20
 # still read oversized -- Luke, 2026-08-04).
 ts_stub TSPOWR "$TMPDIR/tspowr_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tspowr_stub.shp:TSPOWR.SHP")
+# TS EMP cannon: 122 shapes (61 head-rotation + 61 damaged) on the 2x2 48x48 box.
+ts_stub TSPULS "$TMPDIR/tspuls_stub.shp" 48 48 122
+PACK_ARGS+=("$TMPDIR/tspuls_stub.shp:TSPULS.SHP")
+ts_stub TSPULS "$TMPDIR/tspulsmk_stub.shp" 48 48 13
+PACK_ARGS+=("$TMPDIR/tspulsmk_stub.shp:TSPULSMAKE.SHP")
 ts_stub TSPOWR "$TMPDIR/tspowrmk_stub.shp" 48 48 13
 PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")

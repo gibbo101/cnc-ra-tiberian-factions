@@ -1114,6 +1114,20 @@ int BuildingClass::Shape_Number(void) const
     int shapenum = Fetch_Stage();
 
     /*
+    **	TS EMP cannon: the tileset is the head's 61-frame rotation (NAPULS_A), 0 =
+    **	facing west and advancing counter-clockwise; damaged run = +61. The frame
+    **	follows PrimaryFacing, which Rotation_AI turns toward the target.
+    */
+    if (*this == STRUCT_TSPULS && BState != BSTATE_CONSTRUCTION) {
+        int from_west = (192 - (int)PrimaryFacing.Current()) & 255;
+        int frame = (from_west * 61) / 256;
+        if (Health_Ratio() <= Rule.ConditionYellow) {
+            frame += 61;
+        }
+        return (frame);
+    }
+
+    /*
     **	The shape file to use for rendering depends on whether the building
     **	is undergoing construction or not.
     */
@@ -8870,8 +8884,8 @@ void BuildingClass::Factory_AI(void)
  *=============================================================================================*/
 void BuildingClass::Rotation_AI(void)
 {
-    if (Class->IsTurretEquipped && Mission != MISSION_CONSTRUCTION && Mission != MISSION_DECONSTRUCTION
-        && (!Class->IsPowered || House->Power_Fraction() >= 1)) {
+    if ((Class->IsTurretEquipped || *this == STRUCT_TSPULS) && Mission != MISSION_CONSTRUCTION
+        && Mission != MISSION_DECONSTRUCTION && (!Class->IsPowered || House->Power_Fraction() >= 1)) {
 
         /*
         **	Rotate turret to match desired facing.
