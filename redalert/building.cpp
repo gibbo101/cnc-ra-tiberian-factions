@@ -884,7 +884,7 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         **	turning with PrimaryFacing (Rotation_AI, TS ROT 12).
         */
         if (*this == STRUCT_TSPULS && Strength > 0 && BState != BSTATE_CONSTRUCTION) {
-            static const int TSPULS_TURRET_Y = -5; // classic px above the plot centre: the dome top
+            static const int TSPULS_TURRET_Y = 5; // classic px: seat dial (Deck sheet 2026-08-28: -5 floated 6px above the dome)
             int tshape = UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())];
             Techno_Draw_Object_Virtual(Class->TsPulseTurret, tshape, x, y + TSPULS_TURRET_Y, window, DIR_N, 0x0100, "TSPULST");
         }
