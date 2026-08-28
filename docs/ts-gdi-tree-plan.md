@@ -6,7 +6,7 @@
 dock-fix commit `58994541` is deliberately NOT deployed -- Luke: harvester work waits for the PC)
 + HEAD data. Desktop prefix still `10b2483d` = `f876b002`.**
 
-### Brightness pass — SIGNED OFF 2026-08-28 (Luke: "that is night and day!") — canonical write-up: `launcher-render-contracts.md` contract 11 + the render ledger. Below = the session's working notes.
+### Brightness pass — SIGNED OFF 2026-08-28 (Luke: "that is night and day!"; turrets relit + walkers levelled + APC water shadow dropped, all "looks good"/"much better"). Queued: voxel-mesh upscale spike (harvester first), Titan barrel relight. — canonical write-up: `launcher-render-contracts.md` contract 11 + the render ledger. Below = the session's working notes.
 Root cause measured, not eyeballed: `vxl_render.py` shaded `0.35 + 0.65·max(n·L,0)` (0.35→1.0
 of the palette). TS (OpenTS `voxlib.cpp Precalculate_Normal_Lookup` + the shipped VOXELS.VPL,
 extracted from TIBSUN.MIX) lights with a length-1.5 vector, truncates n·L·16 to a table index

@@ -189,11 +189,18 @@ bbox-centred paste **moves the sprite** even when every body pixel is in the sam
 - **A relight goes through `scripts/ts_recrop_to_shipped.py <rev> NAME…`** after packing and
   reshadowing: it slides each new canvas onto the shipped frame's alpha mask (FFT cross-correlation)
   and cuts the shipped crop rect. Verify: overlap ≈ old pixel count, 0 residual shift.
-- **Turret blocks stay the shipped pixels** (TSHVR 32–63, TSSONIC 32–63 restored verbatim from
-  `63db908b`) — Luke's call, "if it ain't broke". The APC water hull (32–63) IS relit, then levelled to
-  the land hull's mean luminance (`apcw.vxl` shades brighter on its own table), with the shipped shadow
-  layer composited back under it; **never run `ts_reshadow.py` over the water frames** (it strips them).
-- Titan and Wolverine are TS SHPs (MMCH/SMECH), not renders — they are already TS-bright.
+- Turret blocks (TSHVR 32–63, TSSONIC 32–63) are relit the same way and placed by the alignment —
+  verified 100% (Disruptor) / 94–99.7% (rack, the cut pole) mask overlap with the shipped frames.
+- The APC water hull (32–63) is relit, then levelled to the land hull's mean luminance (`apcw.vxl`
+  shades brighter on its own table), and **carries no shadow** (a hull in water keeps its shadow under
+  the surface, as RA's ships do — Luke: "much better"). **Never run `ts_reshadow.py` over the water
+  frames.**
+- Titan and Wolverine are TS SHPs (MMCH/SMECH), not renders, with TS's light baked per facing (a mech
+  turned away from the light read a step darker: Wolverine SE vs S, Titan N a quarter under NE).
+  `scripts/ts_equalise_shp_facings.py` levels each facing block to the brightest block's mean body
+  luminance (idempotent; in-frame shading and shadows untouched). The Titan's cannon barrel
+  (`MMCHBARL.VXL`, 30° render inside the walkers script) is still legacy-lit — needs the Titan inputs.
+- Upscaling beyond this = mesh the voxels (dual contouring + interpolated VXL normals), spike queued.
 
 ## House quality policy for TS-sourced assets (Luke, 2026-07-20)
 
