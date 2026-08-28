@@ -1,20 +1,18 @@
 # EMP Pulse Cannon — TS port design + arc tracker
 
-> **⭐ RESUME HERE (2026-08-28 ~23:40: STAGE A BUILT + DECK-DEPLOYED, UNVERIFIED.
-> Branch `emp-cannon` @ `afbd597b`, Deck DLL `3bd4b32bdbda`.)**
+> **⭐ RESUME HERE (2026-08-29 00:1x: STAGE A VERIFIED "looks good" on the Deck.
+> Branch `emp-cannon`, Deck DLL `39d86e742182` + turret zip `93c10aa67a8b`.)**
 > STRUCT_TSPULS "EMP Cannon": TS tree behind TSRADR, TechLevel 6, cost 1000, power -150,
-> 500 HP heavy, 2x2 whole-plot occupancy + bib. **Turret decision:** NAPULS_A turned out
-> to be the cannon head's own 61-frame 2D rotation on the dome (frames 61-121 empty), so
-> the building tileset IS the turret: shape = `((192 - PrimaryFacing) & 255) * 61 / 256`
-> (frame 0 = facing WEST, counter-clockwise -- a sheet-loop HYPOTHESIS, dial with Luke),
-> +61 damaged. Rotation_AI turns TSPULS at ROT 12. The PULSCAN voxel layer was packed,
-> looked twice the dome's size, and was DROPPED (script + tiles removed). Packer:
-> `ts_pack_tree.py` SIZEPASS entry (TS_ART_DIR = the EMP extraction with shp_napuls /
-> shp_napuls_a / shp_napulsmk / shp_empicon decoded via UNITSNO.PAL + CAMEO.PAL); the
-> manifest now MERGES (fixed the overwrite trap). Cameo = BuildIcon_TS_Puls.
-> **Deck checklist:** builds from the TS yard behind the radar; sits on its bib; damaged
-> frame at yellow; the head faces NORTH at rest (frame 45) -- if not, the phase/sense is
-> wrong: take a labelled sheet round. No weapon, no superweapon yet (stage B next).
+> 500 HP heavy, 2x2 whole-plot occupancy + bib. Art = **NTPULS (temperate)**; NAPULS is
+> the ARCTIC variant (TS 2nd-letter theatre code -- the first build used it and showed
+> snow drifts). Cannon = **PULSCAN voxel at 1:1** (1 voxel = 1 TS px, K=1/12 of the 12
+> px/voxel render) as the `TSPULST` sub-object layer, seat `TSPULS_TURRET_Y = +10` classic
+> px (dialled over three Deck sheets: -5 floated, 1.6x was "why bigger!?" -- Luke wants the
+> 1:1 cannon, just seated). NAPULS_A (a small 2D head) is unused, as in TS.
+> **Open nit (Luke, next session): "a good second where it's waiting for the turret"** --
+> the layer is gated on `BState != BSTATE_CONSTRUCTION`, so the cannon pops on only after
+> the 13-frame buildup ends. Fix options: draw it over the last buildup frames, or shorten
+> the buildup. Then stage B.
 > Luke: exact TS (no borrowing from RA), building first, Deck deploys, bib required.
 > **Stages:** A = building ✓built; B = superweapon (recharge, sidebar, targeting, the
 > ball); C = the pulse (stun timer on TechnoClass, every gate, sparkles, aircraft crash,
