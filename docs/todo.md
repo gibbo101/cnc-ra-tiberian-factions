@@ -15,7 +15,8 @@ same time: how do the TD and RA factions detect diggers?** TS gives the MSA (GDI
 the RA/TD rosters have no sensor concept, so a Nod digger under an Allied or GDI base would be
 undetectable forever. Candidates: the RA Mobile Radar Jammer gains sensor duty (RA era), a TD
 building/unit takes the role (TD era), radar-domes/comm-centres sense within a radius, or every
-faction gets one shared detector. Until then, underground = invisible to every non-ally, which is
+faction gets one shared detector. Luke's lean (2026-08-28): **they can't** -- RA/TD eras have no
+answer to diggers, only the TS-era MSA does -- but undecided until the MSA is built. Until then, underground = invisible to every non-ally, which is
 the TS behaviour without sensors.
 
 ---
