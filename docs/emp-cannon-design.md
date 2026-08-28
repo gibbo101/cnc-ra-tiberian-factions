@@ -1,14 +1,25 @@
 # EMP Pulse Cannon — TS port design + arc tracker
 
-> **⭐ RESUME HERE (2026-08-28 late: ARC OPENED on branch `emp-cannon` off main
-> `1d3d7f24` / tag `trunk-2026-08-28-convergence`; research complete, nothing built.)**
-> Luke: the EMP arc starts with the BUILDING. Exact TS (no borrowing from RA), Deck deploys.
-> **Stages:** A = building art + type (buildable, sits on the map, turret tracks); B = the
-> superweapon (recharge, sidebar, targeting, cannon fires the ball); C = the pulse
-> (stun timer on TechnoClass, every gate, sparkles, aircraft crash, building power-off);
-> D = diggers (`UnitClass::Force_Emerge` on the underground sweep -- Luke's BOOM rule);
-> E = sounds + EVA. Neither the subterranean pair nor this ships to the Workshop without
-> the other (docs/subterranean-design.md).
+> **⭐ RESUME HERE (2026-08-28 ~23:40: STAGE A BUILT + DECK-DEPLOYED, UNVERIFIED.
+> Branch `emp-cannon` @ `afbd597b`, Deck DLL `3bd4b32bdbda`.)**
+> STRUCT_TSPULS "EMP Cannon": TS tree behind TSRADR, TechLevel 6, cost 1000, power -150,
+> 500 HP heavy, 2x2 whole-plot occupancy + bib. **Turret decision:** NAPULS_A turned out
+> to be the cannon head's own 61-frame 2D rotation on the dome (frames 61-121 empty), so
+> the building tileset IS the turret: shape = `((192 - PrimaryFacing) & 255) * 61 / 256`
+> (frame 0 = facing WEST, counter-clockwise -- a sheet-loop HYPOTHESIS, dial with Luke),
+> +61 damaged. Rotation_AI turns TSPULS at ROT 12. The PULSCAN voxel layer was packed,
+> looked twice the dome's size, and was DROPPED (script + tiles removed). Packer:
+> `ts_pack_tree.py` SIZEPASS entry (TS_ART_DIR = the EMP extraction with shp_napuls /
+> shp_napuls_a / shp_napulsmk / shp_empicon decoded via UNITSNO.PAL + CAMEO.PAL); the
+> manifest now MERGES (fixed the overwrite trap). Cameo = BuildIcon_TS_Puls.
+> **Deck checklist:** builds from the TS yard behind the radar; sits on its bib; damaged
+> frame at yellow; the head faces NORTH at rest (frame 45) -- if not, the phase/sense is
+> wrong: take a labelled sheet round. No weapon, no superweapon yet (stage B next).
+> Luke: exact TS (no borrowing from RA), building first, Deck deploys, bib required.
+> **Stages:** A = building ✓built; B = superweapon (recharge, sidebar, targeting, the
+> ball); C = the pulse (stun timer on TechnoClass, every gate, sparkles, aircraft crash,
+> building power-off); D = diggers (`Force_Emerge`, BOOM rule); E = sounds + EVA. Neither
+> the subterranean pair nor this ships to the Workshop without the other.
 
 ## TS ground truth (live-extracted TIBSUN.MIX rules/art + OpenTS)
 
