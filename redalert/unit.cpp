@@ -341,6 +341,8 @@ UnitClass::UnitClass(UnitType classid, HousesType house)
     TunnelTick = 0;
     TunnelFacing = 0;
     TunnelDest = 0;
+    FireStreamTicks = 0;
+    FireStreamTarget = TARGET_NONE;
     for (int hb = 0; hb < HARV_BLACKLIST_MAX; hb++) {
         HarvBadMin[hb] = -1;
         HarvBadMax[hb] = -1;
@@ -466,6 +468,8 @@ void UnitClass::AI(void)
     **	layer only gets to finish a track the unit was already on when the dig
     **	order arrived. Mission/team/cloak processing (FootClass::AI) still ticks.
     */
+    Fire_Stream_AI();
+
     if (Is_In_Tunnel_Cycle()) {
         Tunnel_AI();
         if (!IsActive) {
@@ -8253,4 +8257,56 @@ bool UnitClass::Mark(MarkType mark)
         return (false);
     }
     return (DriveClass::Mark(mark));
+}
+
+
+/***********************************************************************************************
+ * TF: TS FireballLauncher stream (OpenTS ParticleSystemClass::Fire_AI). The weapon's own shot  *
+ * is the first particle; the unit then spawns one every 4 frames for 30 frames, launched from  *
+ * alternating prongs toward an aim point that swings a little side to side so the jet pulses.  *
+ *=============================================================================================*/
+static const int FIRE_STREAM_LIFE = 30;    // TS FireStreamSys Lifetime.
+static const int FIRE_STREAM_SPAWN = 4;    // TS FireStreamSys SpawnFrames.
+
+void UnitClass::Fire_Stream_Begin(TARGET target)
+{
+    FireStreamTicks = FIRE_STREAM_LIFE;
+    FireStreamTarget = target;
+}
+
+void UnitClass::Fire_Stream_AI(void)
+{
+    if (FireStreamTicks <= 0) {
+        return;
+    }
+    FireStreamTicks--;
+    if ((FireStreamTicks % FIRE_STREAM_SPAWN) != 0 || Is_In_Tunnel_Cycle() || !Target_Legal(FireStreamTarget)) {
+        return;
+    }
+    WeaponTypeClass const* weapon = WeaponTypeClass::As_Pointer(WEAPON_TSFIREBALL);
+    if (weapon == NULL || weapon->Bullet == NULL || weapon->WarheadPtr == NULL) {
+        return;
+    }
+    IsSecondShot = !IsSecondShot;
+    COORDINATE fire_coord = Fire_Coord(0);
+    COORDINATE target_coord = ::As_Coord(FireStreamTarget);
+    DirType dir = ::Direction(fire_coord, target_coord);
+
+    // The aim point swings in and out across the line of fire (integer table, lockstep-safe).
+    static const int _wobble[8] = {0, 4, 6, 4, 0, -4, -6, -4};
+    dir = (DirType)((int)dir + _wobble[(FireStreamTicks / FIRE_STREAM_SPAWN) & 7]);
+
+    int firepower = weapon->Attack;
+    if (firepower > 0) {
+        firepower = weapon->Attack * FirepowerBias * House->FirepowerBias;
+    }
+    BulletClass* bullet = new BulletClass(weapon->Bullet->Type,
+                                          FireStreamTarget,
+                                          this,
+                                          firepower,
+                                          WarheadType(weapon->WarheadPtr->ID),
+                                          weapon->MaxSpeed);
+    if (bullet != NULL && !bullet->Unlimbo(fire_coord, dir)) {
+        delete bullet;
+    }
 }

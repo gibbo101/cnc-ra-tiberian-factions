@@ -386,6 +386,10 @@ PACK_ARGS+=("$TMPDIR/tssonicp_stub.shp:TSSONICP.SHP")
 # (TSDIG.ZIP is a 512 canvas, scripts/ts_pack_dig.py).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsdig_stub.shp" 64 64 37
 PACK_ARGS+=("$TMPDIR/tsdig_stub.shp:TSDIG.SHP")
+# TS fire-stream particle (BULLET_TSFIRE) -- 76 shapes (4 axes x 19 states), 20x20 box
+# (TSFIRE.ZIP is a 160 canvas, scripts/ts_pack_flame.py).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfire_stub.shp" 20 20 76
+PACK_ARGS+=("$TMPDIR/tsfire_stub.shp:TSFIRE.SHP")
 
 # Repack into TFASSETS.MIX with TD-prefix renames.
 python3 scripts/mix_tools.py pack "$OUTMIX" "${PACK_ARGS[@]}"

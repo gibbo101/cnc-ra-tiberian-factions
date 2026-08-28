@@ -530,6 +530,38 @@ void BulletClass::AI(void)
     }
 
     /*
+    **	TF: TS fire-stream particle (OpenTS ParticleClass::Fire_Behavior_AI). The sprite
+    **	ages one state every 6 frames and dies at state 19; while the state is at or
+    **	below 14 it burns everything sharing its cell every 3 frames (Strength is the
+    **	per-burn damage). Once it reaches its target it stops flying and burns out in
+    **	place instead of exploding.
+    */
+    if (*this == BULLET_TSFIRE) {
+        TFStage++;
+        int state = TFStage / 6;
+        if (state >= 19) {
+            delete this;
+            return;
+        }
+        if ((TFStage % 3) == 0 && state <= 14) {
+            ObjectClass* optr = Map[Coord_Cell(Coord)].Cell_Occupier();
+            while (optr != NULL) {
+                ObjectClass* next = optr->Next;
+                if (optr->IsActive && optr->Strength > 0 && optr != (ObjectClass*)Payback) {
+                    int damage = Strength;
+                    optr->Take_Damage(damage, 0, Warhead, Payback);
+                }
+                optr = next;
+            }
+        }
+        Mark(MARK_CHANGE);
+        if (TFDwell) {
+            ObjectClass::AI();
+            return;
+        }
+    }
+
+    /*
     **	The dropship-bay pod flies a VTOL profile, not a ballistic one: straight
     **	down over the deck, a beat on the ground while the cargo rolls out,
     **	straight up and gone. There is no map-space motion at all, so the shadow
@@ -758,6 +790,8 @@ void BulletClass::AI(void)
                 Strength--;
             }
 
+        } else if (*this == BULLET_TSFIRE) {
+            TFDwell = 1; // arrived: burn out in place
         } else {
             Bullet_Explodes(forced);
             delete this;
@@ -783,6 +817,17 @@ void BulletClass::AI(void)
 int BulletClass::Shape_Number(void) const
 {
     int shapenum = 0;
+
+    /*
+    **	TF: FLAMEALL is 4 axis sets (N/S, NE/SW, E/W, NW/SE) x 19 ageing states.
+    */
+    if (*this == BULLET_TSFIRE) {
+        int state = TFStage / 6;
+        if (state > 18) {
+            state = 18;
+        }
+        return ((Dir_Facing(PrimaryFacing.Current()) % 4) * 19 + state);
+    }
 
     if (!Class->IsFaceless) {
         shapenum = UnitClass::BodyShape[Dir_To_32(PrimaryFacing)];

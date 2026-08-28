@@ -1385,6 +1385,7 @@ typedef enum BulletType : char
     BULLET_TDSSM2, // TD Rocket Launcher missile (MLRS, BULLET_SSM2) — Homing, AA+AG, visible TDDRAGON sprite, WARHEAD_TDHE. = TDSSM but Arm=9/ROT=7.
     BULLET_TDMISSILE, // TD SSM Launcher Honest John (BULLET_HONEST_JOHN) — NON-homing, accurate, visible TDMISSILE sprite (32-frame rotating), WARHEAD_TDFIRE, ANIM_NAPALM3 impact.
     BULLET_TDNAPALM,  // TD A-10 napalm bomblet (BULLET_NAPALM/ClassNapalm verbatim) — Dropping, Arm 24, BOMBLET sprite, WARHEAD_TDFIRE, ANIM_NAPALM2 impact (bullet ImpactAnim; TDFire warhead Explosion=0).
+    BULLET_TSFIRE,    // TS fire-stream particle (FireStream, FLAMEALL sprite): flies as a bullet, ages through 19 states, burns whatever shares its cell every 3 frames, rests as a burning puddle at the target. Registered "TSFire".
     BULLET_TSDROPPOD, // TS Dropship Bay delivery — a descent, not a weapon: carries TFPayload, sets it down and applies no damage. Cloned from NukeDown's fall rather than amending it, so the Nod strike is untouched.
 
     BULLET_COUNT,
@@ -3433,6 +3434,7 @@ typedef enum WeaponType : char
     WEAPON_MECHRAILGUN,    // TS Mammoth Mk. II railgun — Damage=0 + AmbientDamage=200 applied along the whole line (IsRailgun path in Fire_At), instant TDLaser projectile, WARHEAD_RAILSHOT. Registered "MechRailgun".
     WEAPON_TSMKTUSK,       // TS Mammoth Mk. II AA missiles — RA MammothTusk stats on the STRICTLY anti-air AAMissile projectile (TS tusks never fire at ground). Registered "TSMammothTusk".
     WEAPON_ASSAULTCANNON,  // TS Wolverine assault cannon — TS [AssaultCannon] verbatim (Dmg40/ROF50/Range5, instant Invisible projectile, SA warhead). Registered "AssaultCannon".
+    WEAPON_TSFIREBALL,     // TS Devil's Tongue FireballLauncher — Damage=0 impact, the damage is the fire stream (BULLET_TSFIRE particles spawned every 4 frames for 30 frames per shot, UnitClass::Fire_Stream_AI). Registered "TSFireball".
     WEAPON_SONICZAP,       // TS Disruptor sonic beam — IsSonic piercing line (railgun sweep mechanics, green beam, no helix) through WARHEAD_SONIC. TS per-frame wave damage translated to one AmbientDamage application per object on the line. Registered "SonicZap".
 
     WEAPON_COUNT,

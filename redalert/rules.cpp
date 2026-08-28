@@ -752,6 +752,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("MechRailgun");    // WEAPON_MECHRAILGUN (TS Mammoth Mk. II railgun -- IsRailgun piercing line, instant TDLaser projectile)
     new WeaponTypeClass("TSMammothTusk");  // WEAPON_TSMKTUSK (TS Mk. II AA missiles -- MammothTusk stats on the AA-only AAMissile projectile)
     new WeaponTypeClass("AssaultCannon");  // WEAPON_ASSAULTCANNON (TS Wolverine -- TS [AssaultCannon] verbatim, instant Invisible/SA chain)
+    new WeaponTypeClass("TSFireball");     // WEAPON_TSFIREBALL (TS Devil's Tongue -- fire-stream particles, UnitClass::Fire_Stream_AI)
     new WeaponTypeClass("SonicZap");       // WEAPON_SONICZAP (TS Disruptor -- IsSonic piercing line through WARHEAD_SONIC)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI

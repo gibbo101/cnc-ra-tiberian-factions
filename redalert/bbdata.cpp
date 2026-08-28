@@ -200,6 +200,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TDSSM2");        //	BULLET_TDSSM2 (TD Rocket Launcher missile, MLRS — = TDSSM but Arm9/ROT7)
     new BulletTypeClass("TDMissile");     //	BULLET_TDMISSILE (TD SSM Launcher Honest John — non-homing, own TDMISSILE sprite)
     new BulletTypeClass("TDNapalm");      //	BULLET_TDNAPALM (TD A-10 napalm bomblet — ClassNapalm verbatim, BOMBLET sprite)
+    new BulletTypeClass("TSFire");        //	BULLET_TSFIRE (TS fire-stream particle, FLAMEALL sprite)
     new BulletTypeClass("TSDropPod");     //	BULLET_TSDROPPOD (dropship bay delivery — falls like NukeDown, sets its cargo down, does no damage)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /

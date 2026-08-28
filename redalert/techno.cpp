@@ -3699,6 +3699,13 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             } else {
                 delete bullet;
             }
+            /*
+            **	TF: the TS FireballLauncher's shot is the first particle of a stream the
+            **	unit keeps spawning for the next 30 frames (TS FireStreamSys Lifetime).
+            */
+            if (weapon == WeaponTypeClass::As_Pointer(WEAPON_TSFIREBALL) && What_Am_I() == RTTI_UNIT) {
+                ((UnitClass*)this)->Fire_Stream_Begin(target);
+            }
             if (tclass.IsTurretEquipped) {
                 IsInRecoilState = true;
                 Mark(MARK_CHANGE_REDRAW);

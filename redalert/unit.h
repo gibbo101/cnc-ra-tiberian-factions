@@ -207,6 +207,14 @@ public:
     COORDINATE TunnelDest;      // underground destination (0 when idle)
 
     /*
+    **	TF: TS FireballLauncher stream (Devil's Tongue). Frames of stream left after a
+    **	shot and the target it plays toward; Fire_Stream_AI spawns a BULLET_TSFIRE
+    **	particle every 4 of them (TS FireStreamSys SpawnFrames), alternating prongs.
+    */
+    int FireStreamTicks;
+    TARGET FireStreamTarget;
+
+    /*
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
     *save/load
     */
@@ -400,6 +408,8 @@ public:
     bool Force_Emerge(void);
     void Tunnel_Explode(void);
     void Tunnel_Begin_Emerge(void);
+    void Fire_Stream_Begin(TARGET target);
+    void Fire_Stream_AI(void);
     virtual bool Mark(MarkType mark = MARK_CHANGE);
     virtual void Per_Cell_Process(PCPType why);
     void Exit_Repair(void);
