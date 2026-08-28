@@ -264,7 +264,7 @@ private:
     static TrackType const Track18[];
     static TrackType const Track19[];
     static TrackType const Track20[];
-    static TrackType Track21[32]; // ROLL_OFF_DOCK_SEAT, filled per use by Roll_Off_Seat().
+    static TrackType Track21[64]; // ROLL_OFF_DOCK_SEAT, filled per use by Roll_Off_Seat() / Rail_To().
     static TrackType const Track12[];
     static TrackType const Track11[];
     static TrackType const Track10[];

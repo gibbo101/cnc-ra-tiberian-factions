@@ -3526,10 +3526,10 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 **	TS (OpenTS Exit_Object): the vehicle exists from the moment
                 **	production completes, seated in the door mouth behind the shut
                 **	shutter, facing out. It is not drawn until the shutter is fully
-                **	up (UnitClass::Draw_It), then rides the exit rail south.
+                **	up (UnitClass::Draw_It), then rides the exit rail south-east.
                 */
                 COORDINATE seat = Coord_Add(Coord, TSWEAP_SEAT_MOUTH);
-                if (base->Unlimbo(seat, DIR_S)) {
+                if (base->Unlimbo(seat, DIR_SE)) {
                     base->Mark(MARK_UP);
                     base->Coord = seat;
                     base->Mark(MARK_DOWN);
@@ -7572,7 +7572,7 @@ int BuildingClass::Mission_Unload(void)
         **	rail from its mouth seat straight out onto the exit cell, wait until
         **	it has untethered, shut the door, idle.
         */
-        CELL cell = Coord_Cell(Coord) + (2 * MAP_CELL_W + 2); // XYCELL(2, 2): the concrete under the door
+        CELL cell = Coord_Cell(Coord) + (2 * MAP_CELL_W + 3); // XYCELL(3, 2): the concrete down-right of the door (SE exit)
         COORDINATE coord = Cell_Coord(cell);
         CellClass* cellptr = &Map[cell];
         enum
@@ -7621,7 +7621,7 @@ int BuildingClass::Mission_Unload(void)
                         unit->Assign_Mission(MISSION_GUARD_AREA);
                         unit->ArchiveTarget = ::As_Target(House->Where_To_Go(unit));
                     }
-                    unit->Rail_To(coord, DIR_S);
+                    unit->Rail_To(coord, DIR_SE);
                     Status = LEAVE;
                 } else {
                     Close_Door(DOOR_RATE, DOOR_STAGES);

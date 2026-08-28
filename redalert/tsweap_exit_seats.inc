@@ -7,6 +7,6 @@
 /*
 **	08-28 rebuild: door-mouth seat, leptons from the plot origin -- the packed
 **	shutter's centre column (2.69 cells) and a unit centre just inside the
-**	threshold (1.80 rows). The generated seats above are the old bay's.
+**	doorway (1.10 rows: the vehicle stands in the opening, its top under the raised shutter). The generated seats above are the old bay's.
 */
-#define TSWEAP_SEAT_MOUTH XY_Coord(689, 461)
+#define TSWEAP_SEAT_MOUTH XY_Coord(689, 282)

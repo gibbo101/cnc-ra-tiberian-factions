@@ -3553,7 +3553,7 @@ DriveClass::TrackType const DriveClass::Track20[] = {
 **  the seat back to the cell centre, facing held, then Force_Tracks it. Lockstep-safe:
 **  filled from the same dials on every machine, immediately consumed.
 */
-DriveClass::TrackType DriveClass::Track21[32];
+DriveClass::TrackType DriveClass::Track21[64];
 
 DriveClass::RawTrackType const DriveClass::RawTracks[21] = {{Track1, -1, 0, -1},
                                                             {Track2, -1, 0, -1},
