@@ -558,7 +558,27 @@ void BulletClass::AI(void)
                 ObjectClass* next = optr->Next;
                 if (optr->IsActive && optr->Strength > 0 && optr != (ObjectClass*)Payback) {
                     int damage = Strength;
-                    optr->Take_Damage(damage, ::Distance(Coord, optr->Center_Coord()) / 10, Warhead, Payback);
+                    int dist = ::Distance(Coord, optr->Center_Coord()) / 10;
+                    int before = optr->Strength;
+                    ResultType res = optr->Take_Damage(damage, dist, Warhead, Payback);
+#if TF_DEV_BUILD
+                    {
+                        char path[512];
+                        const char* prof = getenv("USERPROFILE");
+                        if (prof != NULL && prof[0] != '\0') {
+                            snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TUNNEL.txt", prof);
+                        } else {
+                            strcpy(path, "MOD_DEBUG_TUNNEL.txt");
+                        }
+                        FILE* f = fopen(path, "a");
+                        if (f != NULL) {
+                            fprintf(f, "frame=%d BURN bullet#%d state=%d hit=%s rtti=%d dist=%d dmg=%d hp %d->%d res=%d\n", Frame, ID,
+                                    state, optr->Class_Of().Name(), (int)optr->What_Am_I(), dist, damage, before,
+                                    optr->IsActive ? optr->Strength : 0, (int)res);
+                            fclose(f);
+                        }
+                    }
+#endif
                 }
                 optr = next;
             }

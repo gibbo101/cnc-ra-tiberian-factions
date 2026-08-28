@@ -1829,10 +1829,10 @@ static UnitTypeClass const UnitTsSubTank(UNIT_TSSUBTANK,
                                          ANIM_NAPALM3, // EXPLOSION: napalm burst (flame-carrier death).
                                          REMAP_NORMAL, // Sidebar remap logic.
                                          0x0000,       // Vertical offset.
-                                         0x0030,       // Primary weapon offset (TD FTANK nozzle geometry).
-                                         0x0020,       // Primary weapon lateral (±E/W prong split).
-                                         0x0030,       // Secondary weapon offset (mirror primary).
-                                         0x0020,       // Secondary weapon lateral (mirror primary).
+                                         0x0080,       // Primary weapon offset = TS PrimaryFireFLH forward 128 (art.ini [SUBTANK]); TD FTANK nozzle geometry).
+                                         0x0030,       // Primary weapon lateral (±E/W prong split, widened so E/W-facing jets read as two; TS itself fires from the centre).
+                                         0x0080,       // Secondary weapon offset (mirror primary).
+                                         0x0030,       // Secondary weapon lateral (mirror primary).
                                          true,         // Can this be a goodie surprise from a crate? (TS CrateGoodie=yes)
                                          false,        // Always use the given name for the vehicle?
                                          true,         // Can this unit squash infantry? (TS Crusher=yes)
