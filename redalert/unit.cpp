@@ -8073,6 +8073,7 @@ void UnitClass::Tunnel_Begin_Emerge(void)
     TunnelTick = TUNNEL_EMERGE_LEAD_TICKS;
     TunnelFacing = (UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())] / 4) & 7;
     Mark(MARK_DOWN);
+    Sound_Effect(VOC_TS_SUBDRIL1, Coord);
     new AnimClass(ANIM_TS_DIG, Coord);
     TF_Tunnel_Log(this, "EMERGE-BEGIN");
 }
@@ -8142,6 +8143,7 @@ void UnitClass::Tunnel_AI(void)
         TunnelStep = 1;
         TunnelTick = TUNNEL_LADDER_TICKS;
         Mark(MARK_CHANGE_REDRAW);
+        Sound_Effect(VOC_TS_SUBDRIL1, Coord);
         TF_Tunnel_Log(this, "DIGGING-IN facing8=%d", TunnelFacing);
         break;
     }
@@ -8154,6 +8156,7 @@ void UnitClass::Tunnel_AI(void)
         TunnelTick = TUNNEL_LADDER_TICKS;
         Mark(MARK_CHANGE_REDRAW);
         if (TunnelStep == TUNNEL_DIG_ANIM_STEP) {
+            Sound_Effect(VOC_TS_SUBDRIL1, Coord);
             new AnimClass(ANIM_TS_DIG, Coord);
         }
         if (TunnelStep > 5) {

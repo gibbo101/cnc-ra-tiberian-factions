@@ -4097,6 +4097,8 @@ typedef enum VocType : short
     VOC_TS_DROPUP1,      // TS dropship takeoff (DROPUP1, TS SOUND.INI "DROPSHIP TAKES OFF") — played as the pod lifts off the deck. Routed via RAC/RAR_SFX_DROPUP1 → bundled TDR_SFX_STRUGGLE.WAV (dormant-sample host).
     VOC_TS_TSGUN4,       // TS Wolverine assault cannon (TSGUN4, decoded from TS SOUNDS.MIX AUD) — WEAPON_ASSAULTCANNON Report=. Routed via RAC/RAR_SFX_TSGUN4 → bundled TDR_SFX_GUN19.WAV (dormant-sample host).
     VOC_TS_SONIC4,       // TS Disruptor sonic beam (SONIC4, decoded from TS SOUNDS.MIX AUD) — WEAPON_SONICZAP Report=. Routed via RAC/RAR_SFX_SONIC4 → bundled TDR_SFX_CRUMBLE.WAV (dormant-sample host).
+    VOC_TS_FLAMTNK1,     // TS flame tank fire (FLAMTNK1, TS FireballLauncher Report) -- routed via RAC/RAR_SFX_FLAMTNK1 -> bundled TDR_SFX_TURRFIR5.WAV (dormant-sample host).
+    VOC_TS_SUBDRIL1,     // TS subterranean dig (SUBDRIL1, TS [AudioVisual] DigSound) -- routed via RAC/RAR_SFX_SUBDRIL1 -> bundled TDR_SFX_SAMMOTR2.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0
