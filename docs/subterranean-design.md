@@ -11,7 +11,7 @@
 > TS [Fire] verses + TS Modify_Damage arithmetic in-bullet (48px-cell distance scale,
 > delivered via WARHEAD_TSFLAMEHIT), FLAMTNK1/SUBDRIL1 sounds on dormant hosts.
 > **SAPC VERIFIED ("pass!"):** 5 passengers load, dig, surface, unload; unload refused underground;
-> Stop with cargo surfaces nearby. **Still to verify:** `TunnelDigThreshold` dial only. **Not done:** DIRTEXPL, save/load of the new fields, dev traces still on
+> Stop with cargo surfaces nearby. **OWED (Luke, 2026-08-29): the Devil's Tongue flame-jet firing positions** -- seats are PrimaryOffset 0x80 (TS FLH 128 fwd) + 0x30 lateral split (udata.cpp), deployed in the trace build, never signed off; dial from mid-burst screenshots (cardinal + diagonal) against the prong pixels, one round. **Still to verify:** `TunnelDigThreshold` dial. **Not done:** DIRTEXPL, save/load of the new fields, dev traces still on
 > (MOD_DEBUG_TUNNEL.txt: cycle + BURN lines).
 > **Next stages:** 3 = sensor detection DEFERRED until the Mobile Sensor Array port (todo.md),
 > 4 = EMP arc wiring `Force_Emerge`. Balance: see todo.md (TS roster pass
