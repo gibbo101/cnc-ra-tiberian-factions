@@ -200,7 +200,12 @@ bbox-centred paste **moves the sprite** even when every body pixel is in the sam
   `scripts/ts_equalise_shp_facings.py` levels each facing block to the brightest block's mean body
   luminance (idempotent; in-frame shading and shadows untouched). The Titan's cannon barrel
   (`MMCHBARL.VXL`, 30° render inside the walkers script) is still legacy-lit — needs the Titan inputs.
-- Upscaling beyond this = mesh the voxels (dual contouring + interpolated VXL normals), spike queued.
+- **Voxel-mesh upscale: SPIKED AND REJECTED (2026-08-28, harvester A/B in-game).** `scripts/vxl_mesh_render.py`
+  (marching cubes + Taubin smoothing + denoised vertex colours, TS lighting) renders a smoother hull,
+  but at game sprite scale the 1-voxel ribs and panel lines ARE the detail, and any smoothing that
+  rounds the staircase rounds them away — Luke: "the smaller one has more detail", "lost some side
+  panelling". The voxel render with real normals stays. Script kept for reference only (needs a
+  scikit-image venv). Don't re-chase unless units are drawn larger than the game does.
 
 ## House quality policy for TS-sourced assets (Luke, 2026-07-20)
 
