@@ -5,6 +5,16 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## TS buildings: theatre-aware art (found 2026-08-28 via the EMP cannon)
+
+TS ships every building in per-theatre variants named by the second letter (GT/NT =
+temperate, GA/NA = arctic; snow art carries baked snow drifts). Our TS tree packs only the
+temperate set, so on RA snow maps the TS buildings look temperate. If wanted: the engine's
+theatre-specific-art flag + a second HD tileset per building + the arctic decode
+(UNITSNO.PAL). Not started; cosmetic.
+
+---
+
 ## Deploy/unload hotkey for non-RA units (Luke, 2026-08-28: "a shame the deploy key is hardcoded to RA units only through the launcher")
 
 The launcher's deploy key does nothing for the TD/TS transports (Sub APC unload had to be a
