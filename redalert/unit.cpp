@@ -1175,9 +1175,11 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
                 }
                 return (RADIO_ROGER);
             }
-            if (ra_ref) {
+            if (ra_ref || *this == UNIT_TSHARV) {
                 // RA refinery keeps the plain DIR_SW visible park on the
-                // apron cell with the direct IM_IN handshake.
+                // apron cell with the direct IM_IN handshake. The TS harvester
+                // parks the same way at the TD refinery (its dock cell is the
+                // SW apron); the TD attach path below is the TD truck's only.
                 if (!IsRotating && PrimaryFacing != DIR_SW) {
                     Do_Turn(DIR_SW);
                 } else {
@@ -1193,12 +1195,8 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
             **	TD harv -> TD ref (the special case): verbatim TD attach maneuver -- turn
             **	DIR_SW, then Force_Track BACKUP_INTO_REFINERY into the building's south-row
             **	cell; Per_Cell_Process completes the Limbo + Attach handshake. The TS
-            **	harvester never takes this path (at the TD refinery it keeps the plain
-            **	visible park via the generic branch below).
+            **	harvester never reaches here (handled above).
             */
-            if (*this == UNIT_TSHARV) {
-                return (RADIO_ROGER);
-            }
             if (!IsRotating && PrimaryFacing != DIR_SW) {
                 Do_Turn(DIR_SW);
             } else {
@@ -3939,7 +3937,28 @@ int UnitClass::Mission_Unload(void)
             **	-- the un-nudged park IS aligned. TD refinery keeps its
             **	long-shipped pillar nudge.
             */
-            if (!ts_dock) {
+            /*
+            **	The TS harvester has its own seat per refinery pairing (voxel hull,
+            **	different silhouette from the TD truck). VISUAL DIALS: pixels
+            **	east / north of the dock cell, and a settling facing (-1 = keep).
+            */
+            const int TS_AT_RA_NUDGE_RIGHT = 0, TS_AT_RA_NUDGE_UP = 0, TS_AT_RA_DOCK_DIR = -1;
+            const int TS_AT_TD_NUDGE_RIGHT = 0, TS_AT_TD_NUDGE_UP = 0, TS_AT_TD_DOCK_DIR = -1;
+            bool td_dock = (nref != NULL && nref->What_Am_I() == RTTI_BUILDING
+                            && *((BuildingClass*)nref) == STRUCT_TDPROC);
+            if (*this == UNIT_TSHARV && !ts_dock) {
+                int nx = td_dock ? TS_AT_TD_NUDGE_RIGHT : TS_AT_RA_NUDGE_RIGHT;
+                int ny = td_dock ? TS_AT_TD_NUDGE_UP : TS_AT_RA_NUDGE_UP;
+                int nd = td_dock ? TS_AT_TD_DOCK_DIR : TS_AT_RA_DOCK_DIR;
+                if (nx || ny) {
+                    Mark(MARK_UP);
+                    Coord = Coord_Add(Coord, XYP_Coord(nx, -ny));
+                    Mark(MARK_DOWN);
+                }
+                if (nd >= 0 && PrimaryFacing != (DirType)nd) {
+                    Do_Turn((DirType)nd);
+                }
+            } else if (!ts_dock) {
                 Mark(MARK_UP);
                 Coord = Coord_Add(Coord, XYP_Coord(TD_DOCK_NUDGE_RIGHT, -TD_DOCK_NUDGE_UP));
                 Mark(MARK_DOWN);

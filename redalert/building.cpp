@@ -377,8 +377,12 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             **	NOT the TD attach path. Do not Limbo/attach it and do NOT fire the TD
             **	building animation (which has a TD harvester drawn into it); just put it
             **	in MISSION_UNLOAD like STRUCT_REFINERY does. It dust-loops at the dock.
+            **	The TS harvester (voxel sprite; the TD refinery's frames carry only
+            **	the TD truck's art) takes the same visible park + timer offload. Only
+            **	the TD harvester attaches.
             */
-            if (from != NULL && from->What_Am_I() == RTTI_UNIT && *((UnitClass*)from) == UNIT_HARVESTER) {
+            if (from != NULL && from->What_Am_I() == RTTI_UNIT
+                && (*((UnitClass*)from) == UNIT_HARVESTER || *((UnitClass*)from) == UNIT_TSHARV)) {
                 Mark(MARK_CHANGE);
                 from->Assign_Mission(MISSION_UNLOAD);
                 return (RADIO_ROGER);
