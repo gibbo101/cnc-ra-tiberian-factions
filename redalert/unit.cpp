@@ -8287,26 +8287,29 @@ void UnitClass::Fire_Stream_AI(void)
     if (weapon == NULL || weapon->Bullet == NULL || weapon->WarheadPtr == NULL) {
         return;
     }
-    IsSecondShot = !IsSecondShot;
-    COORDINATE fire_coord = Fire_Coord(0);
-    COORDINATE target_coord = ::As_Coord(FireStreamTarget);
-    DirType dir = ::Direction(fire_coord, target_coord);
-
-    // The aim point swings in and out across the line of fire (integer table, lockstep-safe).
-    static const int _wobble[8] = {0, 4, 6, 4, 0, -4, -6, -4};
-    dir = (DirType)((int)dir + _wobble[(FireStreamTicks / FIRE_STREAM_SPAWN) & 7]);
-
     int firepower = weapon->Attack;
     if (firepower > 0) {
         firepower = weapon->Attack * FirepowerBias * House->FirepowerBias;
     }
-    BulletClass* bullet = new BulletClass(weapon->Bullet->Type,
-                                          FireStreamTarget,
-                                          this,
-                                          firepower,
-                                          WarheadType(weapon->WarheadPtr->ID),
-                                          weapon->MaxSpeed);
-    if (bullet != NULL && !bullet->Unlimbo(fire_coord, dir)) {
-        delete bullet;
+    COORDINATE target_coord = ::As_Coord(FireStreamTarget);
+
+    // The aim point swings in and out across the line of fire (integer table, lockstep-safe).
+    static const int _wobble[8] = {0, 4, 6, 4, 0, -4, -6, -4};
+    int wobble = _wobble[(FireStreamTicks / FIRE_STREAM_SPAWN) & 7];
+
+    // TS Burst=2: one stream per nozzle, so each spawn tick launches from both prongs.
+    for (int nozzle = 0; nozzle < 2; nozzle++) {
+        IsSecondShot = !IsSecondShot;
+        COORDINATE fire_coord = Fire_Coord(0);
+        DirType dir = (DirType)((int)::Direction(fire_coord, target_coord) + wobble);
+        BulletClass* bullet = new BulletClass(weapon->Bullet->Type,
+                                              FireStreamTarget,
+                                              this,
+                                              firepower,
+                                              WarheadType(weapon->WarheadPtr->ID),
+                                              weapon->MaxSpeed);
+        if (bullet != NULL && !bullet->Unlimbo(fire_coord, dir)) {
+            delete bullet;
+        }
     }
 }

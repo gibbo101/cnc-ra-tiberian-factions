@@ -537,8 +537,17 @@ void BulletClass::AI(void)
     **	place instead of exploding.
     */
     if (*this == BULLET_TSFIRE) {
-        TFStage += TFDwell ? 3 : 1; // past the target the flame dies off three times as fast
-        int state = TFStage / 6;
+        /*
+        **	TS Normalized particle: the state-advance is sized so the particle reaches its
+        **	target at the final damage state (14) and dies five states later, so the burn
+        **	stops at arrival and the flame fades about a third of its flight beyond it.
+        */
+        if (TFDwell <= 0) {
+            int frames = ::Distance(Coord, ::As_Coord(TarCom)) / max(1, MaxSpeed);
+            TFDwell = frames / 15 + 1; // TS: min_time / (FinalDamageState + 1) + 1
+        }
+        TFStage++;
+        int state = TFStage / TFDwell;
         if (state >= 19) {
             delete this;
             return;
@@ -549,7 +558,7 @@ void BulletClass::AI(void)
                 ObjectClass* next = optr->Next;
                 if (optr->IsActive && optr->Strength > 0 && optr != (ObjectClass*)Payback) {
                     int damage = Strength;
-                    optr->Take_Damage(damage, 0, Warhead, Payback);
+                    optr->Take_Damage(damage, ::Distance(Coord, optr->Center_Coord()) / 10, Warhead, Payback);
                 }
                 optr = next;
             }
@@ -787,7 +796,7 @@ void BulletClass::AI(void)
             }
 
         } else if (*this == BULLET_TSFIRE) {
-            TFDwell = 1; // arrived: keeps flying, ages out about a cell beyond (TS particles pass through)
+            // A fire particle passes through its target; its state, not the fuse, ends it.
         } else {
             Bullet_Explodes(forced);
             delete this;
@@ -818,7 +827,7 @@ int BulletClass::Shape_Number(void) const
     **	TF: FLAMEALL is 4 axis sets (N/S, NE/SW, E/W, NW/SE) x 19 ageing states.
     */
     if (*this == BULLET_TSFIRE) {
-        int state = TFStage / 6;
+        int state = TFStage / max(1, TFDwell);
         if (state > 18) {
             state = 18;
         }
