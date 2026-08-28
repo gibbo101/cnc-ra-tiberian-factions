@@ -83,6 +83,10 @@ if __name__ == '__main__':
     # edge and turns into a coloured blob once we upscale it 6x. Taming those
     # entries keeps the shading without the blob, and does it here (at the
     # palette) rather than by painting over the sprite.
+    # --no-remap: ANIM.PAL art (fire, sparks) has no house-colour range; indices
+    # 16-31 are the sprite's own colours, not a team ramp.
+    if '--no-remap' in sys.argv[4:]:
+        remap = None
     for arg in sys.argv[4:]:
         if not arg.startswith('--pal-override='):
             continue

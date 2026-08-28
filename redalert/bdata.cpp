@@ -4210,6 +4210,8 @@ static BuildingTypeClass const ClassLarva2(STRUCT_LARVA2,
 void const* BuildingTypeClass::WarFactoryOverlay;
 void const* BuildingTypeClass::WarFactoryOverlayTd;
 void const* BuildingTypeClass::WarFactoryOverlayTs;
+void const* BuildingTypeClass::TsRefineryFlame;
+void const* BuildingTypeClass::TsRefineryLid;
 void const* LightningShapes;
 
 /***********************************************************************************************
@@ -4901,8 +4903,8 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSFACT, BSTATE_IDLE, 0, 30, 3},  // GACNST halved windows _A(10)+_B(5)+_C(15) -> LCM 30
         {STRUCT_TSPOWR, BSTATE_IDLE, 0, 12, 3},  // GAPOWR halved windows _A(12)+_B(6) -> LCM 12
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 28, 3},  // GAPILE halved windows _A(4)+_B(4)+_C(7 flag) -> LCM 28
-        {STRUCT_TSPROC, BSTATE_IDLE, 0, 15, 3}, // NAREFN _B plume, speck frames dropped (src 2-16)
-        {STRUCT_TSPROC, BSTATE_FULL, 0, 15, 3}, // customer approaching: keep the plume running
+        {STRUCT_TSPROC, BSTATE_IDLE, 0, 16, 3}, // NAREFN _C deck lights (fireball + lid are event layers)
+        {STRUCT_TSPROC, BSTATE_FULL, 0, 16, 3}, // customer approaching: lights keep cycling
         {STRUCT_TSWEAP, BSTATE_IDLE, 0, 14, 3},  // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8, swept fwd+back (ping-pong, packer order)
         {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)
@@ -4977,6 +4979,11 @@ void BuildingTypeClass::One_Time(void)
     // TS's bay-door overlay, sized to the war factory's own stub.
     _makepath(fullname, NULL, NULL, (char const*)"TSWEAP2", ".SHP");
     WarFactoryOverlayTs = MFCD::Retrieve(fullname);
+    // TS refinery event layers (fireball burst, dock lid), sized to its stub.
+    _makepath(fullname, NULL, NULL, (char const*)"TSPROCFR", ".SHP");
+    TsRefineryFlame = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSPROCLD", ".SHP");
+    TsRefineryLid = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"LITNING", ".SHP");
     LightningShapes = MFCD::Retrieve(fullname);
 

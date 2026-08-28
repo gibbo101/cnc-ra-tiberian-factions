@@ -2693,6 +2693,17 @@ int UnitClass::Shape_Number(void) const
         // UNIT_TSHARV: the voxel render is 32 rotation frames ONLY — no load or
         // dump anim shapes exist, so both anim branches below are skipped and the
         // body facing frame draws throughout harvest/unload.
+        /*
+        **	TS's UnloadingHarvester: while the TS harvester unloads at the TS
+        **	refinery its body is the HORV model (bed lowered), packed as the
+        **	second 32-facing block of the TSHARV tileset.
+        */
+        if (*this == UNIT_TSHARV && IsDumping) {
+            TechnoClass const* dref = Contact_With_Whom();
+            if (dref != NULL && dref->What_Am_I() == RTTI_BUILDING && *((BuildingClass const*)dref) == STRUCT_TSPROC) {
+                return (UnitClass::BodyShape[facing] + 32);
+            }
+        }
         if (IsHarvesting && !PrimaryFacing.Is_Rotating() && !NavCom && !IsDriving && *this != UNIT_TSHARV) {
             if (*this == UNIT_TDHARV) {
                 static char const _td_hstage[6] = {0, 1, 2, 3, 2, 1};

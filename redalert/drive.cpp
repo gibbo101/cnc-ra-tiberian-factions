@@ -480,6 +480,39 @@ bool DriveClass::Roll_Off_Seat(int px_east, int px_north)
 }
 
 /***********************************************************************************************
+ * DriveClass::Roll_On_Seat -- Drives a unit from its cell centre out onto a seat.             *
+ *                                                                                             *
+ *    The mirror of Roll_Off_Seat: a short straight rail from the cell centre to a point       *
+ *    (px_east, px_north) pixels off it, facing held, ending exactly on the seat.              *
+ *=============================================================================================*/
+bool DriveClass::Roll_On_Seat(int px_east, int px_north)
+{
+    assert(IsActive);
+
+    if (!px_east && !px_north) {
+        return (false);
+    }
+    int ex = px_east * PIXEL_LEPTON_W;
+    int ny = -px_north * PIXEL_LEPTON_W;
+    int steps = (abs(px_east) > abs(px_north)) ? abs(px_east) : abs(px_north);
+    if (steps > (int)(sizeof(Track21) / sizeof(Track21[0])) - 1) {
+        steps = (int)(sizeof(Track21) / sizeof(Track21[0])) - 1;
+    }
+    DirType face = PrimaryFacing.Current();
+    COORDINATE seat = Coord_Add(Cell_Coord(Coord_Cell(Coord)), XY_Coord((LEPTON)(short)ex, (LEPTON)(short)ny));
+    for (int i = 0; i <= steps; i++) {
+        int sx = -ex * (steps - i) / steps;
+        int sy = -ny * (steps - i) / steps;
+        Track21[i].Offset = XY_Coord((LEPTON)(short)sx, (LEPTON)(short)sy);
+        Track21[i].Facing = face;
+    }
+    Track21[steps].Offset = 0;
+    Force_Track(ROLL_OFF_DOCK_SEAT, seat);
+    Set_Speed(128);
+    return (true);
+}
+
+/***********************************************************************************************
  * DriveClass::DriveClass -- Constructor for drive class object.                               *
  *                                                                                             *
  *    This will initialize the drive class to its default state. It is called as a result      *

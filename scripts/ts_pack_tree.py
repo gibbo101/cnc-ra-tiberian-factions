@@ -86,7 +86,19 @@ def composite(base_img, anims, i, which):
     for spec in anims:
         idx = spec[which]
         f = load(spec[0], idx[i % len(idx)])
-        out.paste(f, (0, 0), f)
+        # TS draws building anims SHAPE_CENTER on the building: an anim SHP on
+        # a smaller canvas than the base (NTREFN_C 144x144 on 192x168) sits
+        # centred, not at the corner.
+        out.paste(f, ((out.width - f.width) // 2, (out.height - f.height) // 2), f)
+    return out
+
+
+def centre_on(img, size):
+    """img centred on a transparent canvas of `size` (TS SHAPE_CENTER)."""
+    if img.size == tuple(size):
+        return img
+    out = Image.new("RGBA", tuple(size), (0, 0, 0, 0))
+    out.paste(img, ((size[0] - img.width) // 2, (size[1] - img.height) // 2), img)
     return out
 
 
@@ -154,17 +166,34 @@ def bleed_edges(img, rounds=3):
     return Image.fromarray(out)
 
 
+# Per-building upscale mode (default "hq4x-hard", the tree's shipped look):
+#   hq4x-hard  hq4x edge reconstruction, Lanczos to size, 1-bit alpha.
+#   hq4x-soft  same colour path, Lanczos-resampled (soft) alpha.
+#   lanczos    plain Lanczos colour + soft alpha: the smooth, filtered look
+#              of TS at native pixels (Luke's TS-refinery screencast, 08-28).
+#   lanczos-hard  Lanczos colour, 1-bit alpha: a soft silhouette over snow
+#              reads as a pale outline on a dark building (08-28 SS), so the
+#              edge stays hard and only the interior is smoothed.
+SCALER_MODE = {"TSPROC": "lanczos-hard"}
+CURRENT_INI = [None]
+
+
 def hq_scale(img, factor):
+    mode = SCALER_MODE.get(CURRENT_INI[0], "hq4x-hard")
     img = bleed_edges(img)
     rgb = Image.new("RGB", img.size, (0, 0, 0))
     rgb.paste(img.convert("RGB"), (0, 0))
-    up = hqx.hq4x(rgb)
     w, h = round(img.width * factor), round(img.height * factor)
-    color = up.resize((w, h), Image.LANCZOS)
+    if mode.startswith("lanczos"):
+        color = rgb.resize((w, h), Image.LANCZOS)
+    else:
+        color = hqx.hq4x(rgb).resize((w, h), Image.LANCZOS)
     alpha = img.split()[3].resize((img.width * 8, img.height * 8), Image.NEAREST).resize((w, h), Image.LANCZOS)
     out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     out.paste(color, (0, 0))
-    out.putalpha(alpha.point(lambda a: 255 if a >= 128 else 0))
+    if mode.endswith("-hard"):
+        alpha = alpha.point(lambda a: 255 if a >= 128 else 0)
+    out.putalpha(alpha)
     return out
 
 
@@ -326,6 +355,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
       CenterOffset geometry), so a stub taller than the box extends the art
       symmetrically — content placed low lands on the passable row below the
       plot (the TS apron row)."""
+    CURRENT_INI[0] = ini
     STUB_DIMS[ini] = [round(canvas_w / CANVAS_PER_CLASSIC_PX), round(canvas_h / CANVAS_PER_CLASSIC_PX)]
 
     n = 1
@@ -467,7 +497,13 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # value preserved, (v, 0.82v, 0). Hazard markings are a fixed yellow in
         # TS whoever owns the building, so a baked colour is no loss.
         src = bake_hazard_gold(load(overlay_dir, healthy_f))
+        # The apron is terrain art with thin curb lines: hq4x keeps them crisp
+        # where Lanczos smears them into a visible rim, so it always takes the
+        # default scaler whatever the building itself uses.
+        saved_ini = CURRENT_INI[0]
+        CURRENT_INI[0] = None
         apron = place(src, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y)
+        CURRENT_INI[0] = saved_ini
         if apron_canvas is not None:
             # Hand-authored pad: a canvas-space RGBA in FINAL position (grid
             # colours and hazard gold already baked) replaces the affine'd
@@ -659,6 +695,45 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         return out
 
     full = [[scaled(f) for f in healthy], [scaled(f) for f in damaged_frames]]
+    # The building over its own apron: any partial-coverage pixel along the
+    # join becomes opaque, so the silhouette GROWS onto the pad and no seam of
+    # terrain shows between the two (soft edges showed the pad through as a
+    # stair-step; the plain 128-threshold edge left single specks of snow).
+    # Applied only where the building overlaps the apron mask.
+    if apron_cells is not None and SCALER_MODE.get(ini, "hq4x-hard") != "hq4x-hard":
+        pad_mask = apron.split()[3].point(lambda v: 255 if v > 0 else 0)
+        # Seam band: pixels within 2 px of the pad that the pad does not cover.
+        # Where the building comes within 2 px of that band there is a hairline
+        # of terrain between the two pieces of art; those pixels join the
+        # building (alpha 255, colour = the bled margin the scaler already laid).
+        pad_near = pad_mask.filter(ImageFilter.MaxFilter(5))
+        seam_band = ImageChops.subtract(pad_near, pad_mask)
+        def harden_over_pad(img):
+            a = img.split()[3]
+            hard = a.point(lambda v: 255 if v >= 16 else 0)  # grow, never erode: the pad rim must stay covered
+            solid = a.point(lambda v: 255 if v > 0 else 0)
+            near_building = solid.filter(ImageFilter.MaxFilter(5))
+            fill = ImageChops.multiply(seam_band, near_building)
+            # Overlap: the launcher anchors the building on its crop centre and
+            # the pad on cell corners, so the two can land a pixel apart in-game
+            # and open a hairline that no offline composite shows. Grow the
+            # building 3 px over the pad along the seam so drift cannot open it.
+            overlap = ImageChops.multiply(solid.filter(ImageFilter.MaxFilter(7)), pad_near)
+            # The grown pixels must wear the building's edge colour: the scaled
+            # canvas's transparent margin is black by now (masked paste), so
+            # bleed the edge colour outward first, 4 px to cover the 3 px growth.
+            out = bleed_edges(img, rounds=4)
+            out.putalpha(ImageChops.lighter(ImageChops.lighter(Image.composite(hard, a, pad_mask), fill), overlap))
+            return out
+        full = [[harden_over_pad(f) for f in run] for run in full]
+    # Sub-object layers on the building's own affine: TS anims that are not
+    # part of the idle cycle (one-shots, event-driven). Each becomes
+    # <INI><SUFFIX>.ZIP with the frames in source order, so the DLL indexes
+    # them directly (healthy run first, damaged run second, TS convention).
+    for suffix, dirname, indices in globals().get("EXTRA_LAYERS", {}).get(ini, []):
+        layer = [scaled(centre_on(load(dirname, i), base_h.size)) for i in indices]
+        write_zip(f"{STRUCT_DIR}/{ini}{suffix}.ZIP", f"{ini.lower()}{suffix.lower()}", layer)
+        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}{suffix}", len(layer))
     front_canvas = None
     if front_masks is not None:
         white = Image.new("RGB", base_h.size, (255, 255, 255))
@@ -1008,6 +1083,15 @@ BIBS = {"TSHPAD": "shp_gthpadbb", "TSDEPT": "shp_gtdeptbb"}
 # same hard-edge failure recorded 2026-08-05); the ghost grew to 5x3 instead.
 APRON_CLIP = set()
 
+# EXTRA_LAYERS: event-driven TS anims shipped as sub-object layers (see
+# build_structure). TSPROC: FR = NTREFN_B fireball, 20 healthy + 20 damaged,
+# one burst per DLL trigger; LD = NTREFN_A dock lid, 5 healthy + 5 damaged,
+# played forward at dock start and reversed at dock end.
+EXTRA_LAYERS = {
+    "TSPROC": [("FR", "shp_ntrefn_b", list(range(40))),
+               ("LD", "shp_ntrefn_a", list(range(10)))],
+}
+
 # Emblem art lives IN the repo (resources/custom-cameos) — a Desktop copy
 # got Trash-cleaned 2026-08-16 and broke the pack.
 EMBLEMS = {"TSDROP": (os.path.join(os.path.dirname(__file__), "..",
@@ -1074,7 +1158,12 @@ SIZEPASS = [
     # building size is unchanged.
     # Plume cycle = frames 2-16 only: 0-1/17-19 carry 10-57 src px and
     # scale to "dead pixel" specks at the chimney tip (Luke, 23:17 SS).
-    ("TSPROC", "shp_ntrefn", [("shp_ntrefn_b", list(range(2, 17)), list(range(2, 17)))],
+    # Idle = the NTREFN_C deck lights (16 healthy + 16 damaged). The chimney
+    # fireball (NTREFN_B) and the dock lid (NTREFN_A) are NOT baked: TS plays
+    # the fireball as a one-shot burst with a random pause between bursts and
+    # the lid only while a harvester docks/undocks, so both ship as their own
+    # sub-object layers (EXTRA_LAYERS below) driven by the DLL.
+    ("TSPROC", "shp_ntrefn", [("shp_ntrefn_c", list(range(16)), list(range(16, 32)))],
      "shp_ntrefnmk", 19, (736, 928), 75, 1.0, "shp_reficon",
      "TS Tiberium Refinery", "Processes Tiberium into credits."),
     # 4x3 plot, descaled 2026-08-16 (Luke): the Mk. II arrives by dropship

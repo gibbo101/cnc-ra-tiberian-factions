@@ -132,6 +132,20 @@ public:
     unsigned IsCharged : 1;
 
     /*
+    **	TS refinery event layers. The chimney fireball is a one-shot burst
+    **	(TsFlameStage 0..19 while playing, -1 idle) separated by a random pause
+    **	(TsFlameTimer ticks), as TS's NAREFN_B RandomLoopDelay. The dock lid
+    **	plays forward when a harvester seats and in reverse when it leaves:
+    **	TsLidPhase 0 shut (not drawn), 1 opening, 2 open (not drawn), 3 closing.
+    */
+    signed char TsFlameStage;
+    unsigned char TsFlameTick;
+    short TsFlameTimer;
+    unsigned char TsLidPhase;
+    unsigned char TsLidStage;
+    unsigned char TsLidTick;
+
+    /*
     **	A building that has been captured will not contain the full compliment
     **	of crew. This is true even if it subsequently gets captured back.
     */
@@ -283,6 +297,12 @@ public:
     virtual DirType Fire_Direction(void) const;
     virtual short const* Overlap_List(bool redraw = false) const;
     int Shape_Number(void) const;
+    void Ts_Lid_Open(void);
+    void Ts_Lid_Close(void);
+    bool Ts_Lid_Busy(void) const
+    {
+        return TsLidPhase == 1 || TsLidPhase == 3;
+    }
     int Power_Output(void) const;
     CELL Check_Point(CheckPointType cp) const;
 

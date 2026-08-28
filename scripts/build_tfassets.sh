@@ -260,7 +260,7 @@ PACK_ARGS+=("$TMPDIR/tsmdiv_stub.shp:TSMDIV.SHP")
 # TS units wave (Harvester / Wolverine / Disruptor / Amphibious APC) -- same
 # HD-only stub pattern; frame counts match the HD zips (rot-only, walk, or
 # body+turret) and dims match each unit's rules.ini ShapeSize.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsharv_stub.shp" 64 64 32
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsharv_stub.shp" 64 64 64
 PACK_ARGS+=("$TMPDIR/tsharv_stub.shp:TSHARV.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tssmec_stub.shp" 48 48 128
 PACK_ARGS+=("$TMPDIR/tssmec_stub.shp:TSSMEC.SHP")
@@ -307,6 +307,12 @@ ts_stub TSPROC "$TMPDIR/tsproc_stub.shp" 138 174 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
 ts_stub TSPROC "$TMPDIR/tsprocmk_stub.shp" 138 174 19
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
+# The refinery's event layers share its canvas: the chimney fireball burst
+# (20 healthy + 20 damaged) and the dock lid (5 + 5).
+ts_stub TSPROC "$TMPDIR/tsprocfr_stub.shp" 138 174 40
+PACK_ARGS+=("$TMPDIR/tsprocfr_stub.shp:TSPROCFR.SHP")
+ts_stub TSPROC "$TMPDIR/tsprocld_stub.shp" 138 174 10
+PACK_ARGS+=("$TMPDIR/tsprocld_stub.shp:TSPROCLD.SHP")
 # TSWEAP 144x126: the 5x4 plot is 120x96 classic, and the extra 12 classic a
 # side carries the concrete pad's overhang east and south. The hangar fits to
 # 4 cells (96 classic) via the packer's fit_w -- the width a Mammoth Mk. II

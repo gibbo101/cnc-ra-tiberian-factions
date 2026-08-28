@@ -5166,6 +5166,16 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  and must cover the overlay's frozen phase-0 lamps while staying a
     **  face -- everything the overlay covers, it covers.
     */
+    /*
+    **  The TS refinery's dock lid sits in the bay mouth under the parked
+    **  harvester's rear: sort it a half cell north of the building's line so
+    **  the truck (sorted on the pad) draws over it.
+    */
+    if (shape_file_name != NULL && strcmp(shape_file_name, "TSPROCLD") == 0) {
+        new_object.SortOrder =
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, (LEPTON)(short)-128)) >> 3);
+    }
+
     if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAPLT") == 0) {
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 136)) >> 3);

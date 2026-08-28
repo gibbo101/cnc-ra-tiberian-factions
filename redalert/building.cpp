@@ -120,6 +120,14 @@
 #include "sidebarglyphx.h"
 
 /*
+**	The TS refinery's dock lid is held off until the TS pad seat (harvester
+**	facing E on the lid position, HORV body) is in: on the reverse-in seat the
+**	lid shows beside the hull, which TS never does. Off = never opens, so
+**	nothing waits on it.
+*/
+static const bool TS_LID_ENABLED = false;
+
+/*
 ** TF: rally points (CFE Patch Redux port) — draw rally markers directly in
 ** remastered graphics mode. Defined in conquer.cpp.
 */
@@ -866,6 +874,23 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             }
         }
 
+        /*
+        **	TS refinery event layers, on the building's own canvas: the chimney
+        **	fireball while a burst plays and the dock lid while it opens/closes.
+        **	Damaged runs follow the healthy runs in each layer's tileset.
+        */
+        if (*this == STRUCT_TSPROC && Strength > 1 && BState != BSTATE_CONSTRUCTION) {
+            int dmg = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
+            if (TsFlameStage >= 0) {
+                Techno_Draw_Object_Virtual(
+                    Class->TsRefineryFlame, TsFlameStage + dmg * 20, x, y, window, DIR_N, 0x0100, "TSPROCFR");
+            }
+            if (TS_LID_ENABLED && Ts_Lid_Busy()) {
+                Techno_Draw_Object_Virtual(
+                    Class->TsRefineryLid, TsLidStage + dmg * 5, x, y, window, DIR_N, 0x0100, "TSPROCLD");
+            }
+        }
+
         // WEAP2 overlay for vanilla RA WEAP / FAKEWEAP only. STRUCT_TDWEAP
         // gets its own TDWEAP2 overlay block above; STRUCT_TDAFLD is a flat
         // 4×2 strip with no second-layer art and routes through its own
@@ -1049,6 +1074,38 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
  * HISTORY:                                                                                    *
  *   07/29/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
+/***********************************************************************************************
+ * BuildingClass::Ts_Lid_Open / Ts_Lid_Close -- Drive the TS refinery's dock lid.              *
+ *                                                                                             *
+ *    A docking harvester opens the lid (NAREFN_A played forward, then not drawn while         *
+ *    open); the departing harvester closes it (the same frames reversed, then not drawn).     *
+ *    Ts_Lid_Busy() reports while either run plays so the harvester can wait for the close.    *
+ *=============================================================================================*/
+void BuildingClass::Ts_Lid_Open(void)
+{
+    if (!TS_LID_ENABLED) {
+        return;
+    }
+    if (TsLidPhase == 0) {
+        TsLidStage = 0;
+    }
+    if (TsLidPhase == 0 || TsLidPhase == 3) {
+        TsLidPhase = 1;
+        TsLidTick = 0;
+    }
+}
+
+void BuildingClass::Ts_Lid_Close(void)
+{
+    if (TsLidPhase == 1 || TsLidPhase == 2) {
+        if (TsLidPhase == 2) {
+            TsLidStage = 4;
+        }
+        TsLidPhase = 3;
+        TsLidTick = 0;
+    }
+}
+
 int BuildingClass::Shape_Number(void) const
 {
     assert(Buildings.ID(this) == ID);
@@ -1341,6 +1398,47 @@ void BuildingClass::AI(void)
 {
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
+
+    /*
+    **	TS refinery event layers: fireball burst with a random pause between
+    **	bursts (TS NAREFN_B: 20 frames, RandomLoopDelay 10..300 TS frames), and
+    **	the dock lid stepping through its 5 frames at TS's Rate=200 (~4 ticks).
+    */
+    if (*this == STRUCT_TSPROC && BState != BSTATE_CONSTRUCTION) {
+        /*
+        **	TS: 20 frames over ~1.5 s (measured off the screencast), then a
+        **	pause of 10..300 TS frames (0.3..10 s). At ~40 ticks/s that is
+        **	3 ticks a frame and a 12..400 tick pause.
+        */
+        if (TsFlameStage >= 0) {
+            if (++TsFlameTick >= 3) {
+                TsFlameTick = 0;
+                if (++TsFlameStage >= 20) {
+                    TsFlameStage = -1;
+                    TsFlameTimer = (short)Random_Pick(12, 400);
+                }
+                Mark(MARK_CHANGE_REDRAW);
+            }
+        } else if (--TsFlameTimer <= 0) {
+            TsFlameStage = 0;
+            Mark(MARK_CHANGE_REDRAW);
+        }
+        if (Ts_Lid_Busy() && ++TsLidTick >= 4) {
+            TsLidTick = 0;
+            if (TsLidPhase == 1) {
+                if (++TsLidStage >= 5) {
+                    TsLidPhase = 2;
+                }
+            } else {
+                if (TsLidStage == 0) {
+                    TsLidPhase = 0;
+                } else {
+                    TsLidStage--;
+                }
+            }
+            Mark(MARK_CHANGE_REDRAW);
+        }
+    }
 
     /*
     **	Process building animation state changes. Transition to a following state
@@ -2598,6 +2696,12 @@ BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     , IsSurvivorless(false)
     , IsCharging(false)
     , IsCharged(false)
+    , TsFlameStage(-1)
+    , TsFlameTick(0)
+    , TsFlameTimer(30)
+    , TsLidPhase(0)
+    , TsLidStage(0)
+    , TsLidTick(0)
     , IsCaptured(false)
     , IsJamming(false)
     , IsJammed(false)

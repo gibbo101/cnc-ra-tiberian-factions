@@ -125,6 +125,7 @@ public:
 #endif
     void Force_Track(int track, COORDINATE coord, int index = 0);
     bool Roll_Off_Seat(int px_east, int px_north);
+    bool Roll_On_Seat(int px_east, int px_north);
     bool On_TS_Exit_Track(void) const
     {
         return TrackNumber == OUT_OF_WEAPON_FACTORY_TS || TrackNumber == OUT_OF_WEAPON_FACTORY_TS_TITAN;
