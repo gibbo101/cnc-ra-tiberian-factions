@@ -849,6 +849,14 @@ void EventClass::Execute(void)
             **	sends an in-progress minelayer home rather than laying at the spot.
             */
             techno->ResetAttackMove(2);
+            /*
+            **	TF subterranean: the player's Stop is the one order that cancels a dig
+            **	(the engine's own NavCom clears never do). Mid-ladder it levels back out;
+            **	underground it makes for the nearest ground it can surface on.
+            */
+            if (techno->What_Am_I() == RTTI_UNIT && ((UnitClass*)techno)->Is_In_Tunnel_Cycle()) {
+                ((UnitClass*)techno)->Tunnel_Stop();
+            }
             techno->Transmit_Message(RADIO_OVER_OUT);
             techno->Assign_Destination(TARGET_NONE);
             techno->Assign_Target(TARGET_NONE);
