@@ -663,6 +663,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TDAGT");     // WARHEAD_TDAGT (v4.0 F8 — AGT-only TDHE clone, vs-heavy 25->50; fires from TDTowTwo only)
     new WarheadTypeClass("RailShot");  // WARHEAD_RAILSHOT (TS MechRailgun line damage — TS [RailShot] verses)
     new WarheadTypeClass("TSFlame");      // WARHEAD_TSFLAME (TS [Fire] verses for the Devil's Tongue stream)
+    new WarheadTypeClass("TSFlameHit");   // WARHEAD_TSFLAMEHIT (pre-scaled TS fire burn delivery)
     new WarheadTypeClass("SonicWarhead"); // WARHEAD_SONIC (TS Disruptor SonicZap line damage — TS [SonicWarhead] verses)
 
     Weapons.Set_Heap(WeaponMax);

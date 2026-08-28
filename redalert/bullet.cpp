@@ -557,10 +557,32 @@ void BulletClass::AI(void)
             while (optr != NULL) {
                 ObjectClass* next = optr->Next;
                 if (optr->IsActive && optr->Strength > 0 && optr != (ObjectClass*)Payback) {
-                    int damage = Strength;
+                    /*
+                    **	TS Modify_Damage, verbatim (OpenTS combat.cpp): distance is particle-to-centre
+                    **	leptons / 10, scaled by SpreadFactor * (PIXEL_LEPTON_W / 3) with TS's 48px
+                    **	cells (5 leptons per pixel -> x1), clamped to 16; the modified damage is
+                    **	floored to 1 first, divided by the scaled distance, and only inside 4
+                    **	(320 leptons) does MinDamage apply. RA's 24px cells would scale the same
+                    **	formula by 400 instead of 80, so it is computed here and delivered unscaled.
+                    */
+                    WarheadTypeClass const* wh = WarheadTypeClass::As_Pointer(Warhead);
                     int dist = ::Distance(Coord, optr->Center_Coord()) / 10;
+                    int modified = Strength * wh->Modifier[optr->Class_Of().Armor];
+                    int damage = modified ? modified : 1;
+                    int scaled = dist / (wh->SpreadFactor ? wh->SpreadFactor * 1 : 1);
+                    scaled = Bound(scaled, 0, 16);
+                    if (scaled) {
+                        damage = damage / scaled;
+                    }
+                    if (scaled < 4) {
+                        damage = max(damage, Rule.MinDamage);
+                    }
+                    damage = min(damage, Rule.MaxDamage);
                     int before = optr->Strength;
-                    ResultType res = optr->Take_Damage(damage, dist, Warhead, Payback);
+                    ResultType res = RESULT_NONE;
+                    if (damage > 0) {
+                        res = optr->Take_Damage(damage, 0, WARHEAD_TSFLAMEHIT, Payback);
+                    }
 #if TF_DEV_BUILD
                     {
                         char path[512];
