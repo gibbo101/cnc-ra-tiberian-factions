@@ -753,6 +753,15 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             fr = scaled(centre_on(load("shp_gtweap_d", i), base_h.size))
             opening = ImageChops.lighter(opening, fr.split()[3].point(lambda v: 255 if v > 0 else 0))
         opening = opening.filter(ImageFilter.MaxFilter(5))
+        # The jambs go to the back layer too: our vehicles are wider than the
+        # opening (Disruptor 318 canvas px vs a 153 px door), and a pillar
+        # slicing a vehicle in the mouth was the old bay's worst read. From the
+        # lintel down, cut a band as wide as the widest vehicle (+ margin)
+        # centred on the door; the roof above the lintel stays in front.
+        ob = opening.getbbox()
+        cx = (ob[0] + ob[2]) // 2
+        half = 334 // 2
+        ImageDraw.Draw(opening).rectangle([cx - half, ob[1], cx + half, canvas_h], fill=255)
         def cut(img, keep_inside):
             out = img.copy()
             a = out.split()[3]
