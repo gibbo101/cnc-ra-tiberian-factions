@@ -124,6 +124,7 @@ public:
     virtual void Debug_Dump(MonoClass* mono) const;
 #endif
     void Force_Track(int track, COORDINATE coord, int index = 0);
+    bool Roll_Off_Seat(int px_east, int px_north);
     bool On_TS_Exit_Track(void) const
     {
         return TrackNumber == OUT_OF_WEAPON_FACTORY_TS || TrackNumber == OUT_OF_WEAPON_FACTORY_TS_TITAN;
@@ -151,7 +152,8 @@ public:
         BACKUP_INTO_REFINERY_SE_TD, // TS refinery, TDHARV variant (deeper bay seat).
         OUT_OF_REFINERY_SE_TD,     // TS refinery, TDHARV variant.
         OUT_OF_WEAPON_FACTORY_TS,      // TS war factory: default seat's exit rail (generated table).
-        OUT_OF_WEAPON_FACTORY_TS_TITAN // TS war factory: the Titan's own seat/rail (generated table).
+        OUT_OF_WEAPON_FACTORY_TS_TITAN, // TS war factory: the Titan's own seat/rail (generated table).
+        ROLL_OFF_DOCK_SEAT             // Runtime rail: a nudged dock seat rolls back to its cell centre before pathing.
     };
 
     /****************************************************************************
@@ -250,8 +252,8 @@ private:
     void Lay_Track(void);
     COORDINATE Smooth_Turn(COORDINATE adj, DirType& dir);
 
-    static TurnTrackType const TrackControl[74];
-    static RawTrackType const RawTracks[20];
+    static TurnTrackType const TrackControl[75];
+    static RawTrackType const RawTracks[21];
     static TrackType const Track13[];
     static TrackType const Track14[];
     static TrackType const Track15[];
@@ -260,6 +262,7 @@ private:
     static TrackType const Track18[];
     static TrackType const Track19[];
     static TrackType const Track20[];
+    static TrackType Track21[32]; // ROLL_OFF_DOCK_SEAT, filled per use by Roll_Off_Seat().
     static TrackType const Track12[];
     static TrackType const Track11[];
     static TrackType const Track10[];

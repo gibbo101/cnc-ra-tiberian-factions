@@ -443,6 +443,43 @@ void DriveClass::Force_Track(int track, COORDINATE coord, int index)
 }
 
 /***********************************************************************************************
+ * DriveClass::Roll_Off_Seat -- Drives a seat-nudged unit back onto its cell centre.           *
+ *                                                                                             *
+ *    A unit parked (px_east, px_north) pixels off its cell centre is put on a short           *
+ *    straight rail that ends exactly at the centre, keeping its current facing, so the        *
+ *    hand-over to normal pathing happens from a true cell centre with no snap.                *
+ *                                                                                             *
+ * INPUT:   px_east, px_north -- the seat's pixel offset from the cell centre (the nudge).     *
+ *                                                                                             *
+ * OUTPUT:  bool; was a rail started? (false for a zero nudge -- nothing to roll off)          *
+ *=============================================================================================*/
+bool DriveClass::Roll_Off_Seat(int px_east, int px_north)
+{
+    assert(IsActive);
+
+    if (!px_east && !px_north) {
+        return (false);
+    }
+    int ex = px_east * PIXEL_LEPTON_W;
+    int ny = -px_north * PIXEL_LEPTON_W;
+    int steps = (abs(px_east) > abs(px_north)) ? abs(px_east) : abs(px_north);
+    if (steps > (int)(sizeof(Track21) / sizeof(Track21[0])) - 1) {
+        steps = (int)(sizeof(Track21) / sizeof(Track21[0])) - 1;
+    }
+    DirType face = PrimaryFacing.Current();
+    for (int i = 0; i <= steps; i++) {
+        int sx = ex * (steps - i) / steps;
+        int sy = ny * (steps - i) / steps;
+        Track21[i].Offset = XY_Coord((LEPTON)(short)sx, (LEPTON)(short)sy);
+        Track21[i].Facing = face;
+    }
+    Track21[steps].Offset = 0;
+    Force_Track(ROLL_OFF_DOCK_SEAT, Cell_Coord(Coord_Cell(Coord)));
+    Set_Speed(128);
+    return (true);
+}
+
+/***********************************************************************************************
  * DriveClass::DriveClass -- Constructor for drive class object.                               *
  *                                                                                             *
  *    This will initialize the drive class to its default state. It is called as a result      *
@@ -3381,7 +3418,17 @@ DriveClass::TrackType const DriveClass::Track20[] = {
 #include "tsweap_exit_track_titan.inc"
 };
 
-DriveClass::RawTrackType const DriveClass::RawTracks[20] = {{Track1, -1, 0, -1},
+/*
+**  Track21 = the ROLL_OFF_DOCK_SEAT rail. A harvester parked on a sub-cell seat
+**  (the per-pairing dock nudge) cannot hand straight over to normal pathing: the
+**  drive logic's first move recentres it on the cell in one step, a visible slide.
+**  Roll_Off_Seat() fills this table at dock end with a 1 px-per-waypoint line from
+**  the seat back to the cell centre, facing held, then Force_Tracks it. Lockstep-safe:
+**  filled from the same dials on every machine, immediately consumed.
+*/
+DriveClass::TrackType DriveClass::Track21[32];
+
+DriveClass::RawTrackType const DriveClass::RawTracks[21] = {{Track1, -1, 0, -1},
                                                             {Track2, -1, 0, -1},
                                                             {Track3, 37, 12, 22},
                                                             {Track4, 26, 11, 19},
@@ -3400,14 +3447,15 @@ DriveClass::RawTrackType const DriveClass::RawTracks[20] = {{Track1, -1, 0, -1},
                                                             {Track17, -1, 0, -1},
                                                             {Track18, -1, 0, -1},
                                                             {Track19, -1, 0, -1},
-                                                            {Track20, -1, 0, -1}};
+                                                            {Track20, -1, 0, -1},
+                                                            {Track21, -1, 0, -1}};
 
 /***************************************************************************
 **	Smooth turning control table. Given two directions in a path list, this
 **	table determines which track to use and what modifying operations need
 **	be performed on the track data.
 */
-DriveClass::TurnTrackType const DriveClass::TrackControl[74] = {
+DriveClass::TurnTrackType const DriveClass::TrackControl[75] = {
     {1, 0, DIR_N, F_},                                                      //	0-0
     {3, 7, DIR_NE, F_D},                                                    //	0-1 (raw chart)
     {4, 9, DIR_E, F_D},                                                     //	0-2 (raw chart)
@@ -3484,5 +3532,6 @@ DriveClass::TurnTrackType const DriveClass::TrackControl[74] = {
     {18, 18, (DirType)94, F_}, // TS refinery, TDHARV exit mirror (unused).
 
     {19, 19, DIR_SE, F_},      // TS war factory: default seat's SE exit rail to tile 13 (generated).
-    {20, 20, DIR_SE, F_}       // TS war factory: the Titan's own SE exit rail to tile 13 (generated).
+    {20, 20, DIR_SE, F_},      // TS war factory: the Titan's own SE exit rail to tile 13 (generated).
+    {21, 21, DIR_SW, F_}       // Roll-off from a nudged dock seat to the cell centre (runtime table).
 };

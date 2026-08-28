@@ -3743,6 +3743,17 @@ bool UnitClass::Harvesting(void)
  * HISTORY:                                                                                    *
  *   07/18/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
+/*
+**	TS harvester seat per foreign refinery pairing: pixels east / north of the dock
+**	cell centre, and a settling facing (-1 = keep). Shared by the park nudge and the
+**	dock-end roll-off rail so the seat is left exactly the way it was entered.
+**	VISUAL DIALS (must stay under half a cell, 12 px, so the dock cell is unchanged).
+*/
+static const int TD_DOCK_NUDGE_RIGHT = 6; // TD harvester at the RA refinery: pixels east (toward the pillars)
+static const int TD_DOCK_NUDGE_UP = 6;    // pixels north (rear toward the intake)
+static const int TS_AT_RA_NUDGE_RIGHT = 0, TS_AT_RA_NUDGE_UP = 0, TS_AT_RA_DOCK_DIR = -1;
+static const int TS_AT_TD_NUDGE_RIGHT = 6, TS_AT_TD_NUDGE_UP = 10, TS_AT_TD_DOCK_DIR = -1;
+
 int UnitClass::Mission_Unload(void)
 {
     assert(Units.ID(this) == ID);
@@ -3895,8 +3906,6 @@ int UnitClass::Mission_Unload(void)
         **	dump; the puff follows for free (spawned relative to Coord). Mark up/down
         **	re-registers the sub-cell position. VISUAL DIAL.
         */
-        const int TD_DOCK_NUDGE_RIGHT = 6; // pixels east  (toward the pillars)
-        const int TD_DOCK_NUDGE_UP = 6;    // pixels north (rear toward the intake)
         /*
         **	The forced bay-exit track (Track16) keeps the mission queue from
         **	committing MISSION_HARVEST for a tick or two, so this mission can
@@ -3942,8 +3951,6 @@ int UnitClass::Mission_Unload(void)
             **	different silhouette from the TD truck). VISUAL DIALS: pixels
             **	east / north of the dock cell, and a settling facing (-1 = keep).
             */
-            const int TS_AT_RA_NUDGE_RIGHT = 0, TS_AT_RA_NUDGE_UP = 0, TS_AT_RA_DOCK_DIR = -1;
-            const int TS_AT_TD_NUDGE_RIGHT = 0, TS_AT_TD_NUDGE_UP = 0, TS_AT_TD_DOCK_DIR = -1;
             bool td_dock = (nref != NULL && nref->What_Am_I() == RTTI_BUILDING
                             && *((BuildingClass*)nref) == STRUCT_TDPROC);
             if (*this == UNIT_TSHARV && !ts_dock) {
@@ -4102,8 +4109,24 @@ int UnitClass::Mission_Unload(void)
                 }
             }
 #endif
+            bool td_bay_exit = (exref != NULL && exref->What_Am_I() == RTTI_BUILDING
+                                && *((BuildingClass*)exref) == STRUCT_TDPROC);
             Transmit_Message(RADIO_OVER_OUT);
             Assign_Mission(MISSION_HARVEST);
+            /*
+            **	The TS harvester rolls off its nudged seat back to the cell centre
+            **	before pathing takes over, the same rail idea as the war factory
+            **	exit: a seat handed straight to the drive logic recentres in one
+            **	step and reads as a slide.
+            */
+            if (!ts_bay_exit) {
+                if (*this == UNIT_TSHARV) {
+                    Roll_Off_Seat(td_bay_exit ? TS_AT_TD_NUDGE_RIGHT : TS_AT_RA_NUDGE_RIGHT,
+                                  td_bay_exit ? TS_AT_TD_NUDGE_UP : TS_AT_RA_NUDGE_UP);
+                } else {
+                    Roll_Off_Seat(TD_DOCK_NUDGE_RIGHT, TD_DOCK_NUDGE_UP);
+                }
+            }
             /*
             **	No scripted bay exit (Luke, 2026-08-06: "eliminate the drive
             **	forward"): the truck leaves the park under normal pathing.
