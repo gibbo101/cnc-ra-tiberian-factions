@@ -270,9 +270,9 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsapc_stub.shp" 48 48 64
 PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
 # Subterranean pair (Devil's Tongue / Sub APC) -- 112 shapes each: 32 driving
 # + 40 dive + 40 emerge pitch-ladder frames (docs/subterranean-design.md).
-python3 scripts/gen_stub_shp.py "$TMPDIR/tssubtank_stub.shp" 48 48 112
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssubtank_stub.shp" 48 48 113
 PACK_ARGS+=("$TMPDIR/tssubtank_stub.shp:TSSUBTANK.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tssapc_stub.shp" 48 48 112
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssapc_stub.shp" 48 48 113
 PACK_ARGS+=("$TMPDIR/tssapc_stub.shp:TSSAPC.SHP")
 # TS-tree buildings with TS-authentic footprints (docs/ts-gdi-tree-plan.md):
 # classic stubs declare each one's canvas dims (dims x5.33 = HD canvas); the

@@ -2702,6 +2702,9 @@ int UnitClass::Shape_Number(void) const
         **	The dive ladder runs shallow->steep and the emerge ladder steep->shallow
         **	as packed, so both index straight off the step counter.
         */
+        if (Is_Subterranean() && TunnelState == TUNNEL_TUNNELING) {
+            return (112); // owner-side disturbed-earth marker (scripts/ts_add_underground_marker.py)
+        }
         if (Is_Subterranean() && TunnelStep >= 1 && TunnelStep <= 5) {
             if (TunnelState == TUNNEL_DIGGING_IN || TunnelState == TUNNEL_ABORTING) {
                 return (32 + TunnelFacing * 5 + (TunnelStep - 1));
@@ -2914,9 +2917,9 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
     **	the dive ladder pitches it over (the angle leads, the sink follows).
     */
     if (Is_Subterranean()) {
-        // Underground the hull is not drawn at all: the launcher draws an owner's
-        // CLOAKED unit solid, so there is no shimmer to lean on (yet).
-        if (TunnelState == TUNNEL_TUNNELING || (TunnelState == TUNNEL_EMERGING && TunnelStep == 0)) {
+        // Underground, Shape_Number swaps the hull for the earth marker (the launcher
+        // draws an owner's CLOAKED unit solid, so the sprite itself must read as buried).
+        if (TunnelState == TUNNEL_EMERGING && TunnelStep == 0) {
             is_hidden = true;
         }
         if ((TunnelState == TUNNEL_DIGGING_IN || TunnelState == TUNNEL_ABORTING) && TunnelStep >= 1) {

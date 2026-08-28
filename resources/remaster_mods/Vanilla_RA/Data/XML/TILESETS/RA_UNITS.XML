@@ -197640,6 +197640,17 @@
 	</Tile>
 	<Tile>
 		<Key>
+			<Name>TSSUBTANK</Name>
+			<Shape>112</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tssubtank\tssubtank-0112.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
 			<Name>TSSAPC</Name>
 			<Shape>0</Shape>
 		</Key>
@@ -198867,6 +198878,17 @@
 		<Value>
 			<Frames>
 				<Frame>tssapc\tssapc-0111.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSSAPC</Name>
+			<Shape>112</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tssapc\tssapc-0112.tga</Frame>
 			</Frames>
 		</Value>
 	</Tile>
