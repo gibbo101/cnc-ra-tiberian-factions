@@ -40,7 +40,20 @@ Z_CLIP = None  # --z-clip: drop model geometry below this height
 
 LIGHT = np.array([-0.5, 0.6, 0.75])  # top, slightly NW
 LIGHT = LIGHT / np.linalg.norm(LIGHT)
-AMBIENT = 0.35  # overridable via --ambient (side-heavy low-elevation renders read dark)
+AMBIENT = 0.35  # legacy shading only (--shade legacy --ambient N)
+SHADE_MODEL = 'ts'  # --shade ts|legacy
+
+# Tiberian Sun's own voxel shading (OpenTS voxlib.cpp Precalculate_Normal_Lookup +
+# VOXELS.VPL): the light vector has length 1.5, the Lambert term n.L is truncated
+# to a VPL table index (negative -> 0, 16 = neutral), and each table is a fixed
+# brightness scale of the palette. These 32 scales are the measured luminance
+# ratios of TS's shipped VOXELS.VPL tables over the base palette.
+TS_VPL_SCALE = np.array([
+    0.619, 0.662, 0.701, 0.736, 0.777, 0.889, 0.925, 0.975,
+    1.000, 1.023, 1.066, 1.106, 1.142, 1.169, 1.204, 1.233,
+    1.264, 1.339, 1.396, 1.454, 1.517, 1.564, 1.609, 1.646,
+    1.696, 1.737, 1.775, 1.802, 1.833, 1.859, 1.893, 1.922])
+TS_LIGHT_LEN = 1.5
 
 
 def parse_vxl(path):
@@ -163,7 +176,10 @@ def team_ramp(palette, remap, team_green):
     lum = palette[r0:r1 + 1].mean(axis=1)
     peak = max(lum.max(), 1.0)
     for i in range(r0, r1 + 1):
-        pal[i] = np.clip(tg * (lum[i - r0] / peak) * 1.45, 0, 255)
+        # The launcher team-green lift (1.45x) compensated the legacy model's
+        # dim shading; TS's own ramp already carries that lift.
+        lift = 1.0 if SHADE_MODEL == 'ts' else 1.45
+        pal[i] = np.clip(tg * (lum[i - r0] / peak) * lift, 0, 255)
     return pal
 
 
@@ -244,9 +260,15 @@ def render_frame(model, yaw_deg, px_per_voxel, team_green, z_lift, canvas=None,
     su = (u * scale + cx_px).astype(np.int32)
     sv = (cz_px - v * scale).astype(np.int32)
 
-    shade = AMBIENT + (1 - AMBIENT) * np.clip(
-        nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2], 0, 1)
-    rgb = pal[cols] * shade[:, None]
+    lambert = nx * LIGHT[0] + ny * LIGHT[1] + nz * LIGHT[2]
+    if SHADE_MODEL == 'ts':
+        idx = np.floor(np.clip(lambert, 0, 1) * TS_LIGHT_LEN * 16).astype(np.int32)
+        shade = TS_VPL_SCALE[np.clip(idx, 0, 31)]
+    else:
+        shade = AMBIENT + (1 - AMBIENT) * np.clip(lambert, 0, 1)
+    # TS's tables resolve to real palette entries, so a lit voxel can never
+    # exceed the palette; clip here or the uint8 cast wraps bright channels.
+    rgb = np.clip(pal[cols] * shade[:, None], 0, 255)
 
     img = np.zeros((H, W, 4), dtype=np.float32)
     zbuf = np.full((H, W), 1e9, dtype=np.float32)
@@ -277,7 +299,7 @@ def main():
     vxl_path, outdir = args[0], args[1]
     opts = {'--frames': '32', '--px-per-voxel': '6', '--yaw0': '0',
             '--team-green': '0,200,0', '--z-lift': '0', '--canvas': '0',
-            '--hva': '', '--hva-frame': '0', '--elev': '54', '--ambient': '0.35',
+            '--hva': '', '--hva-frame': '0', '--elev': '54', '--ambient': '0.35', '--shade': 'ts',
             '--pitch': '0', '--normal-smooth': '0', '--height-elev': '',
             '--z-clip': ''}
     i = 2
@@ -305,8 +327,11 @@ def main():
         # is what made the Hover MLRS rack tower at the pure 32 render.
         global COS_E
         COS_E = math.cos(math.radians(float(opts['--height-elev'])))
-    global AMBIENT
+    global AMBIENT, SHADE_MODEL
     AMBIENT = float(opts['--ambient'])
+    SHADE_MODEL = opts['--shade']
+    assert SHADE_MODEL in ('ts', 'legacy'), '--shade ts|legacy'
+
     model = parse_vxl(vxl_path)
     hva_mats = None
     if opts['--hva']:

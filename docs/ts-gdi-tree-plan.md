@@ -2,7 +2,28 @@
 
 ## ⭐⭐⭐ RESUME HERE — agenda set by Luke 2026-08-28: (1) TS harvester docking at the RA and TD refineries, (2) the unit brightness pass, (3) TS power plant + radar placement glitch, (4) war factory re-look with OpenTS — then the next phase. Shipped 08-27/28: Disruptor arc CLOSED, Mk.II railgun, Amphibious APC (all source-faithful via OpenTS), all pushed (`f876b002`).
 
-**Prefix DLL `10b2483d` = HEAD `f876b002`, pushed. Old saves are dead.**
+**DECK (2026-08-28 session, Luke on the Deck today): DLL `806e0cdb` = `f876b002` code (the
+dock-fix commit `58994541` is deliberately NOT deployed -- Luke: harvester work waits for the PC)
++ HEAD data. Desktop prefix still `10b2483d` = `f876b002`.**
+
+### Brightness pass — DEPLOYED TO THE DECK 2026-08-28, awaiting Luke's eye
+Root cause measured, not eyeballed: `vxl_render.py` shaded `0.35 + 0.65·max(n·L,0)` (0.35→1.0
+of the palette). TS (OpenTS `voxlib.cpp Precalculate_Normal_Lookup` + the shipped VOXELS.VPL,
+extracted from TIBSUN.MIX) lights with a length-1.5 vector, truncates n·L·16 to a table index
+(negative → 0) and each table is a fixed palette scale: 0.62 (facing away) → 1.26 (neutral, idx
+16) → 1.70 (fully lit, idx 24). A 1.6–1.8x gap across the whole curve = "too dark". Ported as
+`--shade ts` (now the DEFAULT; `--shade legacy --ambient N` reproduces the old renders
+byte-for-byte). In TS mode the 1.45x team-green lift is dropped (TS's ramp carries the lift) and
+shaded RGB is clipped at 255 (unclipped, the uint8 cast wrapped and the dropship grew green
+fringe pixels). Re-rendered per the ledger and repacked through each unit's own recipe, then
+`ts_reshadow.py`: TSHARV (233x106 body bbox identical to shipped; mean RGB 39/59/37 → 66/88/62),
+TSMCV (278x131 identical; 48/50/26 → 80/79/44; NEW `scripts/ts_pack_tsmcv.py` = the tree
+script's block on its own), TSDSHP (92/75/38 mean). Sheet in the session scratchpad. NOT touched:
+the five signed-off voxel units (TSHVR, TSSONIC, TSTITN, TSSMEC, TSHMEC, TSAPC) still carry the
+legacy shading — if Luke likes the three, the same re-render/repack/reshadow applies to them
+(APC needs `ts_pack_tsapc_water.py` for frames 32–63 after the wave pack).
+Verify on the Deck: build a TS harvester + MCV, drop-pod a unit; judge against the TD/RA HD
+units beside them. Too bright → the lever is a single global multiplier on `TS_VPL_SCALE`.
 
 ### The two remaining items (Luke, 2026-08-28) — then all current units are signed off
 1. **TS harvester (`TSHARV`) docking at the RA and TD refineries.** Docks at TSPROC already
