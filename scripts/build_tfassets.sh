@@ -331,6 +331,9 @@ ts_stub TSWEAP "$TMPDIR/tsweapdr_stub.shp" 168 126 18
 PACK_ARGS+=("$TMPDIR/tsweapdr_stub.shp:TSWEAPDR.SHP")
 ts_stub TSWEAP "$TMPDIR/tsweapud_stub.shp" 168 126 4
 PACK_ARGS+=("$TMPDIR/tsweapud_stub.shp:TSWEAPUD.SHP")
+# The near face (hangar minus the opening), the idle cycle x healthy/damaged.
+ts_stub TSWEAP "$TMPDIR/tsweapnf_stub.shp" 168 126 64
+PACK_ARGS+=("$TMPDIR/tsweapnf_stub.shp:TSWEAPNF.SHP")
 # TSPILE 48x48: back to the grid-matched 2x2 plot width (the 60-overhang
 # compromise predates the tier-wide size drop, Luke 2026-08-04).
 ts_stub TSPILE "$TMPDIR/tspile_stub.shp" 48 48 2

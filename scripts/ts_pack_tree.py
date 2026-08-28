@@ -742,6 +742,26 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             out.putalpha(ImageChops.lighter(ImageChops.lighter(Image.composite(hard, a, pad_mask), fill), overlap))
             return out
         full = [[harden_over_pad(f) for f in run] for run in full]
+    # TSWEAP sandwich (08-28 rebuild): without a z-buffer the only way a vehicle
+    # reads INSIDE the bay is building art drawn in front of it. Front layer
+    # (<INI>NF) = every idle frame minus the door opening; the base tileset
+    # keeps only the opening's interior (same frame count, so Shape_Number
+    # indexes both). The opening = the union of the shutter layer's pixels.
+    if ini == "TSWEAP":
+        opening = Image.new("L", (canvas_w, canvas_h), 0)
+        for i in range(9):
+            fr = scaled(centre_on(load("shp_gtweap_d", i), base_h.size))
+            opening = ImageChops.lighter(opening, fr.split()[3].point(lambda v: 255 if v > 0 else 0))
+        opening = opening.filter(ImageFilter.MaxFilter(5))
+        def cut(img, keep_inside):
+            out = img.copy()
+            a = out.split()[3]
+            out.putalpha(ImageChops.multiply(a, opening) if keep_inside else ImageChops.subtract(a, opening))
+            return out
+        front = [[cut(f, False) for f in run] for run in full]
+        full = [[cut(f, True) for f in run] for run in full]
+        write_zip(f"{STRUCT_DIR}/{ini}NF.ZIP", f"{ini.lower()}nf", front[0] + front[1])
+        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}NF", len(front[0]) + len(front[1]))
     # Sub-object layers on the building's own affine: TS anims that are not
     # part of the idle cycle (one-shots, event-driven). Each becomes
     # <INI><SUFFIX>.ZIP with the frames in source order, so the DLL indexes

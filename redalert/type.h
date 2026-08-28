@@ -930,6 +930,7 @@ public:
     static void const* WarFactoryOverlayTs;
     static void const* TsWeapShutter;
     static void const* TsWeapUnderDoor;
+    static void const* TsWeapFront;
     static void const* TsRefineryFlame;
     static void const* TsRefineryLid;
 

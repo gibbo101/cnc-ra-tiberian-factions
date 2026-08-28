@@ -129,7 +129,8 @@ public:
     bool Rail_To(COORDINATE dest, DirType face);
     bool On_TS_Exit_Track(void) const
     {
-        return TrackNumber == OUT_OF_WEAPON_FACTORY_TS || TrackNumber == OUT_OF_WEAPON_FACTORY_TS_TITAN;
+        return TrackNumber == OUT_OF_WEAPON_FACTORY_TS || TrackNumber == OUT_OF_WEAPON_FACTORY_TS_TITAN
+               || (TrackNumber == ROLL_OFF_DOCK_SEAT && TsExitSortClamp != 0);
     }
     bool On_TS_Titan_Exit_Track(void) const
     {

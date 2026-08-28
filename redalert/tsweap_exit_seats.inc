@@ -10,3 +10,8 @@
 **	doorway (1.10 rows: the vehicle stands in the opening, its top under the raised shutter). The generated seats above are the old bay's.
 */
 #define TSWEAP_SEAT_MOUTH XY_Coord(689, 282)
+/*
+**	Per-unit seats: the Titan stands two cells tall, so it seats deeper (row 0.40)
+**	with its feet at the threshold; everything else takes the mouth seat.
+*/
+#define TSWEAP_SEAT_MOUTH_TITAN XY_Coord(689, 102)

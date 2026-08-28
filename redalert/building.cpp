@@ -863,6 +863,11 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             if (stage > 8) {
                 stage = 8;
             }
+            /*
+            **	The near face: the whole hangar minus the opening, at the idle
+            **	phase, in front of a vehicle in the bay; the shutter over that.
+            */
+            Techno_Draw_Object_Virtual(Class->TsWeapFront, Shape_Number(), x, y, window, DIR_N, 0x0100, "TSWEAPNF");
             Techno_Draw_Object_Virtual(Class->TsWeapShutter, stage + dmg * 9, x, y, window, DIR_N, 0x0100, "TSWEAPDR");
         }
 
@@ -3528,7 +3533,8 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 **	shutter, facing out. It is not drawn until the shutter is fully
                 **	up (UnitClass::Draw_It), then rides the exit rail south-east.
                 */
-                COORDINATE seat = Coord_Add(Coord, TSWEAP_SEAT_MOUTH);
+                bool is_titan = (base->What_Am_I() == RTTI_UNIT && *(UnitClass*)base == UNIT_TSTITN);
+                COORDINATE seat = Coord_Add(Coord, is_titan ? TSWEAP_SEAT_MOUTH_TITAN : TSWEAP_SEAT_MOUTH);
                 if (base->Unlimbo(seat, DIR_SE)) {
                     base->Mark(MARK_UP);
                     base->Coord = seat;
@@ -7572,7 +7578,8 @@ int BuildingClass::Mission_Unload(void)
         **	rail from its mouth seat straight out onto the exit cell, wait until
         **	it has untethered, shut the door, idle.
         */
-        CELL cell = Coord_Cell(Coord) + (2 * MAP_CELL_W + 3); // XYCELL(3, 2): the concrete down-right of the door (SE exit)
+        CELL cell = Coord_Cell(Coord) + (3 * MAP_CELL_W + 3); // XYCELL(3, 3): off the plot down-right of the door -- the
+                                                              // vehicle is clear of the near face's lip before it sorts over it
         COORDINATE coord = Cell_Coord(cell);
         CellClass* cellptr = &Map[cell];
         enum
@@ -7621,6 +7628,11 @@ int BuildingClass::Mission_Unload(void)
                         unit->Assign_Mission(MISSION_GUARD_AREA);
                         unit->ArchiveTarget = ::As_Target(House->Where_To_Go(unit));
                     }
+                    /*
+                    **	Sort clamp for the whole rail: under the near face (+192)
+                    **	until the rail ends clear of the hangar's lip.
+                    */
+                    unit->TsExitSortClamp = Coord_Add(Sort_Y(), XY_Coord(0, 128));
                     unit->Rail_To(coord, DIR_SE);
                     Status = LEAVE;
                 } else {
