@@ -102,11 +102,12 @@ def load(dirname, i):
 def unit_frames(render_base, rot32, rot8):
     """rot32/rot8: per-model rotation fix, dialled EMPIRICALLY per model via
     the labelled Desktop facing sheet (Luke's eye, 2026-08-13) -- do not derive
-    from axis renders, the projection reasoning failed twice. SUBTANK (nose -X)
-    lands at 0/0; SAPC (nose +X, 180 opposite) at 16/4. The pitch ladders are
-    rendered nose-axis-aware (dive dirs always hold nose-DOWN art: positive
-    pitch for -X-nose models, negative for +X-nose); rot8 shifts only which
-    facing index each ladder column serves."""
+    from axis renders, the projection reasoning failed twice. Both models land
+    at 0/0. The pitch ladders are rendered with vxl_render.py --pitch: dive dirs
+    hold NEGATIVE pitch (nose down) and emerge dirs POSITIVE for BOTH models
+    (verified against the shipped frames 2026-08-28 -- a +pitch SUBTANK dive
+    came out inverted); rot8 shifts only which facing index each ladder column
+    serves."""
     frames = []
     # Driving frames carry the ground drop shadow; ladder frames don't (the
     # hull is part-buried and the DIG mound anim plays over the top).
@@ -131,9 +132,12 @@ write_zip(f"{UNITS_DIR}/TSSAPC.ZIP", "tssapc", unit_frames("sapc", 0, 0))
 pal = ts_shp.load_pal(f"{ART}/CAMEO.PAL")
 for shp, out in [("SUBTICON", "BuildIcon_TS_DevilsTongue"),
                  ("SAPCICON", "BuildIcon_TS_SubAPC")]:
+    # Palette colours as shipped: CAMEO.PAL 16-31 is already the Nod red ramp,
+    # and repainting it flat green speckled the icon. hq4x per the house policy.
+    import hqx
     size, frs = ts_shp.decode_shp(f"{ART}/{shp}.SHP")
-    icon = ts_shp.frame_to_rgba(frs[0], pal, (16, 31), (0, 200, 0))
-    big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
+    icon = ts_shp.frame_to_rgba(frs[0], pal, remap=None)
+    big = hqx.hq4x(icon.convert("RGB")).convert("RGBA").resize((341, 256), Image.LANCZOS)
     big.save(f"{ICON_DIR}/{out}.tga")
     print(f"wrote {ICON_DIR}/{out}.tga")
 

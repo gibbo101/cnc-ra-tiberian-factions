@@ -2812,7 +2812,7 @@ int UnitClass::Shape_Number(void) const
                 **	Door opening and closing animation must be handled carefully. There are only
                 **	certain directions where this door animation will work.
                 */
-                if (*this != UNIT_TSAPC && !Is_Door_Closed() && (PrimaryFacing == DIR_NW || PrimaryFacing == DIR_NE)) {
+                if (*this != UNIT_TSAPC && !Is_Subterranean() && !Is_Door_Closed() && (PrimaryFacing == DIR_NW || PrimaryFacing == DIR_NE)) {
                     if (PrimaryFacing == DIR_NE) {
                         shapenum = 32;
                     } else {
