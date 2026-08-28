@@ -10,8 +10,8 @@
 > (2 per 4 frames x 30, twin prongs KEPT by Luke's preference, seats fwd 0x80 split 0x30),
 > TS [Fire] verses + TS Modify_Damage arithmetic in-bullet (48px-cell distance scale,
 > delivered via WARHEAD_TSFLAMEHIT), FLAMTNK1/SUBDRIL1 sounds on dormant hosts.
-> **Still to verify:** SAPC 5 passengers through a dig + unload after; `TunnelDigThreshold`
-> dial. **Not done:** DIRTEXPL, save/load of the new fields, dev traces still on
+> **SAPC VERIFIED ("pass!"):** 5 passengers load, dig, surface, unload; unload refused underground;
+> Stop with cargo surfaces nearby. **Still to verify:** `TunnelDigThreshold` dial only. **Not done:** DIRTEXPL, save/load of the new fields, dev traces still on
 > (MOD_DEBUG_TUNNEL.txt: cycle + BURN lines).
 > **Next stages:** 3 = sensor detection DEFERRED until the Mobile Sensor Array port (todo.md),
 > 4 = EMP arc wiring `Force_Emerge`. Balance: see todo.md (TS roster pass
