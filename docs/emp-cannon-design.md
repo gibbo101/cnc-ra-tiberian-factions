@@ -71,7 +71,8 @@ AI skips stunned buildings.
   (2x2 donor), `_anims[]` idle line, TF_Building_Scan_Bit, `TsPulseTurret` shapefile
   loaded like `TsRefineryFlame`. Turret facing = `PrimaryFacing`, rotated by the building
   AI at ROT 12 toward `TarCom`/the pending EMP target; idle = DIR_N.
-- **Data:** rules.ini [TSPULS] (TS stats; Prerequisite TSRADR; Owner as the TS tree),
+- **Data:** rules.ini [TSPULS] (TS stats; Prerequisite TSRADR; Owner as the TS tree; **Bib=yes --
+  Luke: "ensure emp building has a bib"**, the TSPOWR pattern),
   RABUILDABLES entry before the BEGIN marker, ModText rows, `ts_stub_dims.json` merge
   (⚠ `ts_pack_tree.py` REWRITES the manifest with only this run's buildings -- load the
   existing file first).
