@@ -77,11 +77,13 @@ def parse_vxl(path):
         min_b = struct.unpack_from('<3f', data, toff + 64)
         max_b = struct.unpack_from('<3f', data, toff + 76)
         sx, sy, sz = data[toff + 88], data[toff + 89], data[toff + 90]
+        normal_mode = data[toff + 91]
         base = body_start
         starts = np.frombuffer(data, dtype=np.int32, count=sx * sy, offset=base + span_start_off)
         voxels = []  # (ix, iy, iz, color)
         occ = np.zeros((sx, sy, sz), dtype=bool)
         col = np.zeros((sx, sy, sz), dtype=np.uint8)
+        nidx = np.zeros((sx, sy, sz), dtype=np.uint8)
         for i in range(sx * sy):
             if starts[i] == -1:
                 continue
@@ -92,12 +94,13 @@ def parse_vxl(path):
                 skip = data[p]; num = data[p + 1]; p += 2
                 z += skip
                 for v in range(num):
-                    c = data[p]; p += 2  # color, normal (normal ignored)
+                    c, n = data[p], data[p + 1]; p += 2  # color, normal index
                     occ[ix, iy, z] = True
                     col[ix, iy, z] = c
+                    nidx[ix, iy, z] = n
                     z += 1
                 p += 1  # trailing count byte
-        sections.append(dict(occ=occ, col=col, size=(sx, sy, sz),
+        sections.append(dict(occ=occ, col=col, nidx=nidx, normal_mode=normal_mode, size=(sx, sy, sz),
                              min_b=np.array(min_b), max_b=np.array(max_b),
                              scale=scale, transform=transform))
     return dict(sections=sections, palette=palette,
@@ -137,6 +140,24 @@ def compute_normals(occ):
 
 
 NORMAL_SMOOTH = 0  # --normal-smooth N: passes of neighbour averaging
+NORMAL_SOURCE = 'vxl'  # --normals vxl|geo: the model's own normal indices (TS) or geometry-derived
+
+
+def vxl_normals(sec, geo):
+    """Per-voxel normals from the VXL's normal bytes via TS's tables; a voxel whose
+    index is outside its section's table keeps the geometry normal."""
+    from ts_vxl_normals import TABLES
+    table = TABLES.get(int(sec['normal_mode']))
+    if table is None:
+        return geo
+    tab = np.array(table, dtype=np.float32)
+    idx = sec['nidx'].astype(np.int32)
+    ok = idx < len(tab)
+    out = geo.copy()
+    n = tab[np.clip(idx, 0, len(tab) - 1)]
+    n /= np.maximum(np.linalg.norm(n, axis=-1, keepdims=True), 1e-6)
+    out[ok] = n[ok]
+    return out
 
 
 def smooth_normals(n, occ, passes):
@@ -195,6 +216,8 @@ def render_frame(model, yaw_deg, px_per_voxel, team_green, z_lift, canvas=None,
         occ, colv = sec['occ'], sec['col']
         sx, sy, sz = sec['size']
         normals = compute_normals(occ)
+        if NORMAL_SOURCE == 'vxl':
+            normals = vxl_normals(sec, normals)
         if NORMAL_SMOOTH > 0:
             normals = smooth_normals(normals, occ, NORMAL_SMOOTH)
         idx = np.argwhere(occ)
@@ -301,7 +324,7 @@ def main():
             '--team-green': '0,200,0', '--z-lift': '0', '--canvas': '0',
             '--hva': '', '--hva-frame': '0', '--elev': '54', '--ambient': '0.35', '--shade': 'ts',
             '--pitch': '0', '--normal-smooth': '0', '--height-elev': '',
-            '--z-clip': ''}
+            '--z-clip': '', '--normals': 'vxl'}
     i = 2
     while i < len(args):
         opts[args[i]] = args[i + 1]
@@ -327,7 +350,9 @@ def main():
         # is what made the Hover MLRS rack tower at the pure 32 render.
         global COS_E
         COS_E = math.cos(math.radians(float(opts['--height-elev'])))
-    global AMBIENT, SHADE_MODEL
+    global AMBIENT, SHADE_MODEL, NORMAL_SOURCE
+    NORMAL_SOURCE = opts['--normals']
+    assert NORMAL_SOURCE in ('vxl', 'geo'), '--normals vxl|geo'
     AMBIENT = float(opts['--ambient'])
     SHADE_MODEL = opts['--shade']
     assert SHADE_MODEL in ('ts', 'legacy'), '--shade ts|legacy'
