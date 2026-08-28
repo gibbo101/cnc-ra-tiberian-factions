@@ -537,7 +537,7 @@ void BulletClass::AI(void)
     **	place instead of exploding.
     */
     if (*this == BULLET_TSFIRE) {
-        TFStage++;
+        TFStage += TFDwell ? 3 : 1; // past the target the flame dies off three times as fast
         int state = TFStage / 6;
         if (state >= 19) {
             delete this;
@@ -555,10 +555,6 @@ void BulletClass::AI(void)
             }
         }
         Mark(MARK_CHANGE);
-        if (TFDwell) {
-            ObjectClass::AI();
-            return;
-        }
     }
 
     /*
@@ -791,7 +787,7 @@ void BulletClass::AI(void)
             }
 
         } else if (*this == BULLET_TSFIRE) {
-            TFDwell = 1; // arrived: burn out in place
+            TFDwell = 1; // arrived: keeps flying, ages out about a cell beyond (TS particles pass through)
         } else {
             Bullet_Explodes(forced);
             delete this;

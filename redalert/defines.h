@@ -3334,6 +3334,7 @@ typedef enum WarheadType : char
     WARHEAD_TDHOLLOW, // TD hollow-point (WARHEAD_HOLLOW_POINT) — Commando sniper. Spread 4, verses {1.0,0.03,0.03,0.03,0.03}: one-shots infantry, ~nil vs armor/buildings.
     WARHEAD_TDAGT, // AGT-only warhead, fired from TDTowTwo (the GDI Advanced Guard Tower) ONLY. Verses identical to TDHE today; kept separate so the AGT can be tuned without touching the ~12 other TDHE weapons.
     WARHEAD_RAILSHOT, // TS railgun warhead (MechRailgun ambient line damage). TS [RailShot]: Spread 1, verses 200/175/160/100/25%.
+    WARHEAD_TSFLAME, // TS [Fire] warhead for the Devil's Tongue stream: 600% none, 148% light, 59% heavy, 6% wood, 2% concrete -- fire is an anti-infantry/light-vehicle weapon in TS, near-useless on structures. Registered "TSFlame".
     WARHEAD_SONIC,    // TS sonic warhead (Disruptor SonicZap line damage). TS [SonicWarhead]: Spread 2, verses 100/100/100/80/60%, Wood=yes. Registered "SonicWarhead".
 
     WARHEAD_COUNT,
