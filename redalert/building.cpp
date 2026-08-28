@@ -3535,7 +3535,13 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 */
                 bool is_titan = (base->What_Am_I() == RTTI_UNIT && *(UnitClass*)base == UNIT_TSTITN);
                 COORDINATE seat = Coord_Add(Coord, is_titan ? TSWEAP_SEAT_MOUTH_TITAN : TSWEAP_SEAT_MOUTH);
-                if (base->Unlimbo(seat, DIR_SE)) {
+                /*
+                **	Facing = the exit rail's own direction (seat -> exit cell), so the
+                **	vehicle points exactly along the line it will drive.
+                */
+                COORDINATE exitc = Cell_Coord((CELL)(Coord_Cell(Coord) + (2 * MAP_CELL_W + 4)));
+                DirType outdir = Desired_Facing256(Coord_X(seat), Coord_Y(seat), Coord_X(exitc), Coord_Y(exitc));
+                if (base->Unlimbo(seat, outdir)) {
                     base->Mark(MARK_UP);
                     base->Coord = seat;
                     base->Mark(MARK_DOWN);
@@ -7578,8 +7584,8 @@ int BuildingClass::Mission_Unload(void)
         **	rail from its mouth seat straight out onto the exit cell, wait until
         **	it has untethered, shut the door, idle.
         */
-        CELL cell = Coord_Cell(Coord) + (3 * MAP_CELL_W + 3); // XYCELL(3, 3): off the plot down-right of the door -- the
-                                                              // vehicle is clear of the near face's lip before it sorts over it
+        CELL cell = Coord_Cell(Coord) + (2 * MAP_CELL_W + 4); // XYCELL(4, 2): the pad's SE corner; ~SE of the mouth seat.
+                                                              // The rail ends on its centre, clear of the near face's lip.
         COORDINATE coord = Cell_Coord(cell);
         CellClass* cellptr = &Map[cell];
         enum
@@ -7633,7 +7639,7 @@ int BuildingClass::Mission_Unload(void)
                     **	until the rail ends clear of the hangar's lip.
                     */
                     unit->TsExitSortClamp = Coord_Add(Sort_Y(), XY_Coord(0, 128));
-                    unit->Rail_To(coord, DIR_SE);
+                    unit->Rail_To(coord, Desired_Facing256(Coord_X(unit->Coord), Coord_Y(unit->Coord), Coord_X(coord), Coord_Y(coord)));
                     Status = LEAVE;
                 } else {
                     Close_Door(DOOR_RATE, DOOR_STAGES);
