@@ -4135,7 +4135,18 @@ int UnitClass::Mission_Unload(void)
             **	exit: a seat handed straight to the drive logic recentres in one
             **	step and reads as a slide.
             */
-            if (!ts_bay_exit) {
+            if (ts_bay_exit) {
+                /*
+                **	Forward exit rail (the war-factory idea): the bay seat is off
+                **	the cell centre, so the drive logic's first move would
+                **	recentre it in one step -- a slide. Track16/18 start exactly
+                **	on the TSHARV/TDHARV seats and drive forward SE onto the plate
+                **	cell, the line-up cell of the approach.
+                */
+                COORDINATE plate = Cell_Coord((CELL)(Coord_Cell(exref->Center_Coord()) + MAP_CELL_W + 1));
+                Force_Track((*this == UNIT_TDHARV) ? OUT_OF_REFINERY_SE_TD : OUT_OF_REFINERY_SE, plate);
+                Set_Speed(128);
+            } else {
                 if (*this == UNIT_TSHARV) {
                     Roll_Off_Seat(td_bay_exit ? TS_AT_TD_NUDGE_RIGHT : TS_AT_RA_NUDGE_RIGHT,
                                   td_bay_exit ? TS_AT_TD_NUDGE_UP : TS_AT_RA_NUDGE_UP);

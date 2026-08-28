@@ -41,16 +41,20 @@ CANVAS_PER_CLASSIC_PX = 16.0 / 3.0
 # Source-pixel patches, (dirname) -> [((x, y), (x, y) to copy from)]. NTREFN's
 # rib foot carries three orange pixels that read as a red spark in HD
 # (Luke, 08-28); they take the rib colour from the row above.
+_RIB_FOOT = [((97, 137), (97, 136)), ((98, 137), (98, 136)), ((99, 137), (99, 136)), ((98, 138), (98, 136))]
 PIXEL_PATCHES = {
-    "shp_ntrefn": [((97, 137), (97, 136)), ((98, 137), (98, 136)), ((99, 137), (99, 136))],
+    "shp_ntrefn": _RIB_FOOT,
+    "shp_ntrefnmk": _RIB_FOOT,  # the buildup carries the same rib foot once the ribs are up
 }
 
 
 def load(dirname, i):
     img = Image.open(f"{ART}/{dirname}/frame-{i:04d}.png").convert("RGBA")
     for (x, y), (sx, sy) in PIXEL_PATCHES.get(dirname, []):
-        if img.getpixel((x, y))[3] > 0:
-            img.putpixel((x, y), img.getpixel((sx, sy)))
+        r, g, b, a = img.getpixel((x, y))
+        if a > 0 and r > 150 and g < 110 and b < 80:
+            src = img.getpixel((sx, sy))
+            img.putpixel((x, y), src if src[3] > 0 else (0, 0, 0, 0))
     return img
 
 
