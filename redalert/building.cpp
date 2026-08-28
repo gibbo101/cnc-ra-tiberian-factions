@@ -3173,6 +3173,40 @@ void BuildingClass::Init(void)
  *   04/10/1995 JLB : Handles building production by computer.                                 *
  *   06/17/1995 JLB : Handles refinery exit.                                                   *
  *=============================================================================================*/
+/*
+**	W5.3 expansion bases: legal placement cell nearest a REMOTE construction yard.
+**	The zone-ring scan is anchored to the one house Center back at the main base, so
+**	an expansion yard's products go through this whole-map nearest-first scan instead
+**	-- same predicate pair as Find_Cell_In_Zone (Legal_Placement + proximity), with a
+**	hard range so the expansion stays a compact fortress rather than a sprawl.
+*/
+static CELL TF_Find_Cell_Near_Yard(BuildingClass const* product, BuildingClass const* yard)
+{
+    TechnoTypeClass const* ttype = product->Techno_Type_Class();
+    short const* list = product->Occupy_List(true);
+    COORDINATE anchor = yard->Center_Coord();
+    CELL best = 0;
+    int bestd = INT_MAX;
+    for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
+        if (!Map.In_Radar(cell)) {
+            continue;
+        }
+        int d = ::Distance(Cell_Coord(cell), anchor);
+        if (d >= bestd || d > 14 * CELL_LEPTON_W) {
+            continue;
+        }
+        if (!ttype->Legal_Placement(cell)) {
+            continue;
+        }
+        if (list != NULL && !Map.Passes_Proximity_Check(ttype, product->House->Class->House, list, cell)) {
+            continue;
+        }
+        best = cell;
+        bestd = d;
+    }
+    return (best);
+}
+
 int BuildingClass::Exit_Object(TechnoClass* base)
 {
     assert(Buildings.ID(this) == ID);
@@ -3316,7 +3350,36 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 return (2);
             }
             ScenarioInit--;
-            break;
+
+            /*
+            **	A blocked slipway is a TEMPORARY condition, not a failed order. The
+            **	exit ring is one cell wide, so a couple of friendly hulls loitering
+            **	dockside block it completely -- and the 0-return below scraps a
+            **	fully-paid completed vessel with no trace (vanilla never hit this:
+            **	its skirmish AI built no ships, and a human's blocked sidebar just
+            **	re-queues). Hold the order for the normal 3-second retry instead,
+            **	and shoo our own parked ships off the ring so it actually clears.
+            */
+            for (int index = 0; index < Vessels.Count(); index++) {
+                VesselClass* v = Vessels.Ptr(index);
+                if (v != NULL && !v->IsInLimbo && v->Strength > 0 && v->House == House
+                    && ::Distance(Center_Coord(), v->Center_Coord()) < 0x0300) {
+                    v->Scatter(0, true);
+                }
+            }
+#if TF_DEV_BUILD // TF_AI_DIAG
+            if (!House->IsHuman) {
+                extern FILE* TF_AI_Diag_File(void);
+                FILE* _tfdbg = TF_AI_Diag_File();
+                if (_tfdbg != NULL) {
+                    fprintf(_tfdbg, "F%ld H%d AL%d YARD-EXIT blocked %s at %s#%d\n", (long)Frame,
+                            (int)House->Class->House, (int)House->ActLike, base->Class_Of().IniName,
+                            Class->IniName, (int)ID);
+                    fflush(_tfdbg);
+                }
+            }
+#endif
+            return (1);
 
         default:
             break;
@@ -3747,9 +3810,29 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             } else {
 
                 /*
+                **	W5.3 expansion bases: a construction yard standing far outside the
+                **	main base's rings (deployed from a ferried or chronoshifted MCV) is
+                **	invisible to the base brain -- Recalc_Center tracks the dominant
+                **	cluster only, and every zone the ring scan knows is back home. So a
+                **	remote yard anchors its own products: nearest legal cell to itself,
+                **	which packs the expansion tight around the yard. Water-bound
+                **	products still route through the naval scan below.
+                */
+                if (House->Center != 0 && ((BuildingClass*)base)->Class->Speed != SPEED_FLOAT
+                    && ::Distance(Center_Coord(), House->Center)
+                           > House->Radius + 10 * CELL_LEPTON_W) {
+                    CELL nearcell = TF_Find_Cell_Near_Yard((BuildingClass*)base, this);
+                    if (nearcell != 0) {
+                        coord = Cell_Coord(nearcell);
+                    }
+                }
+
+                /*
                 **	Find a suitable new spot to place.
                 */
-                coord = House->Find_Build_Location((BuildingClass*)base);
+                if (coord == 0) {
+                    coord = House->Find_Build_Location((BuildingClass*)base);
+                }
             }
 
             if (coord) {
@@ -8710,6 +8793,24 @@ void BuildingClass::Factory_AI(void)
                     }
 
                     TechnoTypeClass const* techno = House->Suggest_New_Object(Class->ToBuild, *this == STRUCT_KENNEL);
+
+                    /*
+                    **	Aircraft are host-specific: helipads host rotary craft, the
+                    **	airstrip family fixed-wing. The house-level suggestion
+                    **	(BuildAircraft) does not know which factory is asking, so the
+                    **	wrong host must DECLINE the order and leave it for a sibling of
+                    **	the right family. Otherwise a helipad accepts an A-10: it spawns
+                    **	parked on the pad if the pad is free, or flies in helicopter-
+                    **	style and self-destructs on touchdown when it cannot dock.
+                    */
+                    if (techno != NULL && Class->ToBuild == RTTI_AIRCRAFTTYPE) {
+                        bool fixed_wing = ((AircraftTypeClass const*)techno)->IsFixedWing;
+                        bool strip_host = (*this == STRUCT_AIRSTRIP || *this == STRUCT_TDAFLD
+                                           || *this == STRUCT_TDGAFLD);
+                        if (fixed_wing != strip_host) {
+                            techno = NULL;
+                        }
+                    }
 
                     /*
                     **	If a suitable object type was selected for production, then start

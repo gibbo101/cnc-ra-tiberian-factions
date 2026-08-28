@@ -4337,12 +4337,33 @@ void InfantryClass::Movement_AI(void)
                     if (!Basic_Path()) {
 
                         /*
+                        **	No-progress bookkeeping (TF) -- exactly one update per failure.
+                        **	The verdict is used further down in more than one branch.
+                        */
+                        bool tf_no_progress = TF_Path_No_Progress(TICKS_PER_SECOND * 8);
+
+                        /*
                         **	Check to ensure that if a computer controlled unit is in
                         **	hunt mode, but cannot reach the target it would like to,
                         **	abort the target tracking and let the normal hunt logic
                         **	assign a new one.
                         */
                         if (!House->IsHuman && Mission == MISSION_HUNT) {
+                            /*
+                            **	TF: this abort re-picks on the very next hunt scan, and with
+                            **	every reachable target gone the scan keeps handing back
+                            **	unreachable prey -- a full-rate repath storm (measured in the
+                            **	hundreds per unit per match). Once the unit is provably stuck,
+                            **	throttle the re-pick with the engine's own scan limiter: the
+                            **	next scan considers only in-range targets, and lifts itself
+                            **	when it finds none (FootClass::Greatest_Threat).
+                            */
+                            if (tf_no_progress) {
+                                IsScanLimited = true;
+                                if (Team.Is_Valid()) {
+                                    Team->Scan_Limit();
+                                }
+                            }
                             Assign_Destination(TARGET_NONE);
                             Assign_Target(TARGET_NONE);
                         } else {
@@ -4391,6 +4412,57 @@ void InfantryClass::Movement_AI(void)
                                         && Map[As_Cell(TarCom)].Zones[Class->MZone] != Map[Coord].Zones[Class->MZone]) {
                                         Assign_Target(TARGET_NONE);
                                     }
+
+                                    /*
+                                    **	No-progress abort (Tiberian Factions). The zone test above
+                                    **	misses two whole families of doomed destination: anything
+                                    **	walled off by buildings (zones ignore buildings, so it reads
+                                    **	"same zone" while being unreachable) and a destination equal
+                                    **	to our own cell (always its own zone). Both retry forever at
+                                    **	~4 attempts/second. If paths have been failing from this cell
+                                    **	for a sustained window, no zone argument can save the order --
+                                    **	drop it. Keep a target we can already shoot from here;
+                                    **	movement is not needed to be useful.
+                                    */
+                                    if (Target_Legal(NavCom) && tf_no_progress) {
+#if TF_DEV_BUILD
+                                        {
+                                            static FILE* tf_noprog_log = NULL;
+                                            if (tf_noprog_log == NULL) {
+                                                const char* h = getenv("USERPROFILE");
+                                                if (h == NULL)
+                                                    h = getenv("HOME");
+                                                if (h != NULL) {
+                                                    char p[512];
+                                                    snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_astar.log", h);
+                                                    tf_noprog_log = fopen(p, "a");
+                                                }
+                                            }
+                                            if (tf_noprog_log != NULL) {
+                                                CELL mc = Coord_Cell(Center_Coord());
+                                                CELL dc = As_Cell(NavCom);
+                                                fprintf(tf_noprog_log,
+                                                        "NOPROG abort (inf): unit=%s src=(%d,%d) dst=(%d,%d) stuck=%ldf\n",
+                                                        Class->IniName, (int)Cell_X(mc), (int)Cell_Y(mc),
+                                                        (int)Cell_X(dc), (int)Cell_Y(dc), (long)(Frame - TF_NoProgStart));
+                                                fflush(tf_noprog_log);
+                                            }
+                                        }
+#endif
+                                        Assign_Destination(TARGET_NONE);
+                                        if (Target_Legal(TarCom) && !In_Range(TarCom)) {
+                                            /*
+                                            **	Same scan-limit throttle as the vehicle abandon
+                                            **	branch: stop the next target scan from handing
+                                            **	back the unreachable prey we just gave up on.
+                                            */
+                                            IsScanLimited = true;
+                                            if (Team.Is_Valid()) {
+                                                Team->Scan_Limit();
+                                            }
+                                            Assign_Target(TARGET_NONE);
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -4398,6 +4470,7 @@ void InfantryClass::Movement_AI(void)
                         return;
                     }
                     TryTryAgain = PATH_RETRY;
+                    TF_NoProgSrc = -1; // found a path -- restart the no-progress window
                 }
 
                 /*

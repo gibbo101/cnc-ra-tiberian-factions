@@ -138,7 +138,7 @@ public:
         */
         enum SideBarGeneralEnums
         {
-            MAX_BUILDABLES = 120 // Raised from 75: multi-tree games (faction + TS) overflow a column.
+            MAX_BUILDABLES = 120 // Raised from 75: multi-tree games overflow a column.
         };
 
         SidebarGlyphxClass* ParentSidebar;

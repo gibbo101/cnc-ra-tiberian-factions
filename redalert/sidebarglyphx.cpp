@@ -362,7 +362,7 @@ static int TF_Sidebar_Sort_Key(RTTIType type, int id)
 bool SidebarGlyphxClass::StripClass::Add(RTTIType type, int id, bool via_capture)
 {
     /* < not <=: at count==MAX the write lands out of bounds (EA off-by-one,
-    ** first hit when the TS tree pushed a column past 75 entries). */
+    ** first hit when a multi-tree game pushed a column past 75 entries). */
     if (BuildableCount < MAX_BUILDABLES) {
         for (int index = 0; index < BuildableCount; index++) {
             if (Buildables[index].BuildableType == type && Buildables[index].BuildableID == id) {
@@ -516,34 +516,9 @@ bool SidebarGlyphxClass::StripClass::Recalc(void)
     **	behave; it also withdraws vanilla cameos when their prerequisite dies.
     */
     for (int index = 0; index < BuildableCount; index++) {
-        /*
-        **	An entry with production in flight is never evicted, whatever the legality
-        **	check says: the placement and cancel paths resolve through this entry, so
-        **	removing it strands the factory -- the player can neither place nor abandon
-        **	the finished object, and that category of the sidebar wedges permanently.
-        **	Legality is re-judged as usual once the factory resolves and unlinks.
-        */
-        if (Buildables[index].Factory != -1) {
-            continue;
-        }
         TechnoTypeClass const* tech = Fetch_Techno_Type(Buildables[index].BuildableType, Buildables[index].BuildableID);
         if (tech) {
             ok = tech->Who_Can_Build_Me(true, true, ParentSidebar->SidebarPlayerPtr->Class->House) != NULL;
-
-            /*
-            **	A dropship-delivered unit refused by Can_Build while a bay stands is
-            **	unavailable, not illegal -- the delivery cooldown or the Mk. II field
-            **	cap, both of which expire on their own. Its cameo stays put; eviction
-            **	here would be one-way (nothing re-runs Update_Buildables when a timer
-            **	runs out or a Mk. II dies, so the cameo would never come back).
-            **	Ordering stays refused inside Begin_Production. A house whose bay is
-            **	gone still loses the cameo through the normal test.
-            */
-            if (!ok && tech->What_Am_I() == RTTI_UNITTYPE
-                && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)
-                && ParentSidebar->SidebarPlayerPtr->Has_Building_Active(STRUCT_TSDROP)) {
-                ok = true;
-            }
         } else {
 
             if ((unsigned)Buildables[index].BuildableID < SPC_COUNT) {

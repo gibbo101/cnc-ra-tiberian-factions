@@ -122,6 +122,9 @@ FootClass::FootClass(RTTIType rtti, int id, HousesType house)
     , PathThreshhold(MOVE_CLOAK)
     , PathDelay(0)
     , TryTryAgain(PATH_RETRY)
+    , TF_NoProgSrc(-1)
+    , TF_NoProgStart(0)
+    , TF_NoProgLast(0)
     , BaseAttackTimer(0)
     , FormationSpeed(SPEED_FOOT)
     , FormationMaxSpeed(MPH_IMMOBILE)
@@ -293,6 +296,36 @@ bool FootClass::Mark(MarkType mark)
         return (true);
     }
     return (false);
+}
+
+/***********************************************************************************************
+ * FootClass::TF_Path_No_Progress -- No-progress detector for the path failure branches.       *
+ *                                                                                             *
+ *    Call EXACTLY ONCE per Basic_Path failure, at the top of the failure branch. Returns      *
+ *    true once path attempts have kept failing from the same cell for `window` frames with    *
+ *    no quiet gap longer than the staleness bound. Keyed on the source cell alone: a stuck    *
+ *    unit's destination ROTATES (hunt logic re-picks another unreachable target every few     *
+ *    attempts), so pair keying never accumulates -- but the unit not moving while failing     *
+ *    is invariant. Any movement or a successful path (caller resets TF_NoProgSrc) starts a    *
+ *    fresh window, so a queued column that advances even one cell never trips. The caller     *
+ *    acts on the verdict caller-side; never from inside Basic_Path itself.                    *
+ *=============================================================================================*/
+bool FootClass::TF_Path_No_Progress(long window)
+{
+    /*
+    **	Failures separated by more than this are unrelated episodes, not one continuous
+    **	stall -- without this bound a unit could trip instantly on the first failure of a
+    **	new order issued minutes after an old, long-forgotten stall at the same cell.
+    */
+    const long TF_NOPROG_STALE = TICKS_PER_SECOND * 5;
+
+    CELL src = Coord_Cell(Center_Coord());
+    if (TF_NoProgSrc != src || Frame - TF_NoProgLast > TF_NOPROG_STALE) {
+        TF_NoProgSrc = src;
+        TF_NoProgStart = Frame;
+    }
+    TF_NoProgLast = Frame;
+    return (Frame - TF_NoProgStart >= window);
 }
 
 /***********************************************************************************************
