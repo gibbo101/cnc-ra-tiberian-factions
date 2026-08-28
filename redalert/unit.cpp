@@ -98,6 +98,9 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include <stdarg.h>
+
+static void TF_Tunnel_Log(UnitClass const* unit, char const* fmt, ...);
 
 // TF: attack-move (CFE port) -- launcher-side Shift state, per local player.
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
@@ -7189,9 +7192,14 @@ void UnitClass::Assign_Destination(TARGET target)
                 Tunnel_To(Cell_Coord(cell));
                 return;
             }
-            if (TunnelState == TUNNEL_IDLE && Should_Dig_To(cell)) {
-                Tunnel_To(Cell_Coord(cell));
-                return;
+            if (TunnelState == TUNNEL_IDLE) {
+                bool dig = Should_Dig_To(cell);
+                TF_Tunnel_Log(this, "ORDER cell=(%d,%d) samezone=%d -> %s", Cell_X(cell), Cell_Y(cell),
+                              Is_In_Same_Zone(cell), dig ? "DIG" : "drive");
+                if (dig) {
+                    Tunnel_To(Cell_Coord(cell));
+                    return;
+                }
             }
         }
     }
@@ -7888,6 +7896,40 @@ static const int TUNNEL_LADDER_TICKS = 3;        // Frames per pitch-ladder step
 static const int TUNNEL_DIG_ANIM_STEP = 4;       // Dive: the DIG mound erupts entering this step.
 static const int TUNNEL_EMERGE_LEAD_TICKS = 6;   // Emerge: hull stays hidden this long after the mound erupts.
 
+/*
+**	Dev-build trace of the cycle (Documents/CnCRemastered/MOD_DEBUG_TUNNEL.txt).
+*/
+static void TF_Tunnel_Log(UnitClass const* unit, char const* fmt, ...)
+{
+#if TF_DEV_BUILD
+    char path[512];
+    const char* prof = getenv("USERPROFILE");
+    if (prof != NULL && prof[0] != '\0') {
+        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TUNNEL.txt", prof);
+    } else {
+        strcpy(path, "MOD_DEBUG_TUNNEL.txt");
+    }
+    FILE* f = fopen(path, "a");
+    if (f == NULL) {
+        return;
+    }
+    CELL c = Coord_Cell(unit->Coord);
+    fprintf(f, "frame=%d %s#%d state=%d step=%d at=(%d,%d) dest=(%d,%d) ", Frame, unit->Class->IniName, unit->ID,
+            unit->TunnelState, unit->TunnelStep, Cell_X(c), Cell_Y(c),
+            unit->TunnelDest ? Cell_X(Coord_Cell(unit->TunnelDest)) : -1,
+            unit->TunnelDest ? Cell_Y(Coord_Cell(unit->TunnelDest)) : -1);
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(f, fmt, ap);
+    va_end(ap);
+    fputc('\n', f);
+    fclose(f);
+#else
+    (void)unit;
+    (void)fmt;
+#endif
+}
+
 bool UnitClass::Is_Subterranean(void) const
 {
     return (*this == UNIT_TSSUBTANK || *this == UNIT_TSSAPC);
@@ -7950,6 +7992,7 @@ void UnitClass::Tunnel_To(COORDINATE dest)
         return;
     }
     TunnelDest = dest;
+    TF_Tunnel_Log(this, "TUNNEL_TO");
 
     switch (TunnelState) {
     case TUNNEL_IDLE:
@@ -7976,6 +8019,7 @@ void UnitClass::Tunnel_To(COORDINATE dest)
 */
 void UnitClass::Tunnel_Stop(void)
 {
+    TF_Tunnel_Log(this, "STOP");
     switch (TunnelState) {
     case TUNNEL_TURNING:
         TunnelState = TUNNEL_IDLE;
@@ -8016,6 +8060,7 @@ void UnitClass::Tunnel_Begin_Emerge(void)
     TunnelFacing = (UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())] / 4) & 7;
     Mark(MARK_DOWN);
     new AnimClass(ANIM_TS_DIG, Coord);
+    TF_Tunnel_Log(this, "EMERGE-BEGIN");
 }
 
 /*
@@ -8044,6 +8089,7 @@ bool UnitClass::Force_Emerge(void)
 */
 void UnitClass::Tunnel_Explode(void)
 {
+    TF_Tunnel_Log(this, "EXPLODE");
     new AnimClass(ANIM_TS_DIG, Coord);
     TunnelDest = 0;
     int damage = Strength;
@@ -8082,6 +8128,7 @@ void UnitClass::Tunnel_AI(void)
         TunnelStep = 1;
         TunnelTick = TUNNEL_LADDER_TICKS;
         Mark(MARK_CHANGE_REDRAW);
+        TF_Tunnel_Log(this, "DIGGING-IN facing8=%d", TunnelFacing);
         break;
     }
 
@@ -8100,6 +8147,7 @@ void UnitClass::Tunnel_AI(void)
             TunnelState = TUNNEL_TUNNELING;
             TunnelStep = 0;
             Mark(MARK_DOWN);
+            TF_Tunnel_Log(this, "UNDERGROUND isdown=%d", IsDown);
         }
         break;
 
@@ -8133,6 +8181,8 @@ void UnitClass::Tunnel_AI(void)
                 return;
             }
             CELL alt = Find_Emerge_Cell(cell);
+            TF_Tunnel_Log(this, "ARRIVED-BLOCKED canenter=%d land=%d alt=(%d,%d)", Can_Enter_Cell(cell),
+                          Map[cell].Land_Type(), alt == -1 ? -1 : Cell_X(alt), alt == -1 ? -1 : Cell_Y(alt));
             if (alt == -1) {
                 Tunnel_Explode();
             } else if (alt != cell) {
@@ -8160,6 +8210,7 @@ void UnitClass::Tunnel_AI(void)
             Look();
         }
         if (TunnelStep > 5) {
+            TF_Tunnel_Log(this, "SURFACED");
             TunnelState = TUNNEL_IDLE;
             TunnelStep = 0;
             COORDINATE pending = TunnelDest;
