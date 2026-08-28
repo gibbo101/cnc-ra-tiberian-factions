@@ -802,27 +802,11 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 if yy > slope * xx + intercept:
                     opening.putpixel((xx, yy), 255)
         y0 = int(min(bots))  # for the fill above
-        # Nothing may show between the lintel and the roof: within the door's
-        # columns, every row above the opening becomes solid in the front layer
-        # (between the body's own outermost pixels), colour from the bled margin.
-        def fill_above(img):
-            out = bleed_edges(img, rounds=6)
-            a = out.split()[3]
-            import numpy as np
-            arr = np.array(a)
-            sub = arr[:y0, x0:x1 + 1]
-            for r in range(sub.shape[0]):
-                cols = np.where(sub[r] > 0)[0]
-                if len(cols) >= 2:
-                    sub[r, cols[0]:cols[-1] + 1] = 255
-            arr[:y0, x0:x1 + 1] = sub
-            out.putalpha(Image.fromarray(arr))
-            return out
         def cut(img, keep_inside):
             out = img.copy()
             a = out.split()[3]
             out.putalpha(ImageChops.multiply(a, opening) if keep_inside else ImageChops.subtract(a, opening))
-            return out if keep_inside else fill_above(out)
+            return out  # no fill above: it bridged the roof edge to the last lamp (08-29)
         front = [[cut(f, False) for f in run] for run in full]
         # The body has its door PAINTED SHUT (TS covers it with the under-door
         # art, GAWEAP_1, while a unit leaves). Second front tileset for the
