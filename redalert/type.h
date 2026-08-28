@@ -929,6 +929,7 @@ public:
     */
     static void const* WarFactoryOverlayTs;
     static void const* TsRefineryFlame;
+    static void const* TsPulseTurret; // TS EMP cannon PULSCAN layer (TSPULST.SHP stub, 32 facings)
     static void const* TsRefineryLid;
 
 private:

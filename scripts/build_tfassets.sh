@@ -354,8 +354,11 @@ ts_stub TSRADR "$TMPDIR/tsradrmk_stub.shp" 48 96 20
 # still read oversized -- Luke, 2026-08-04).
 ts_stub TSPOWR "$TMPDIR/tspowr_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tspowr_stub.shp:TSPOWR.SHP")
-# TS EMP cannon: 122 shapes (61 head-rotation + 61 damaged) on the 2x2 48x48 box.
-ts_stub TSPULS "$TMPDIR/tspuls_stub.shp" 48 48 122
+# TS EMP cannon: static base (healthy + damaged) on the 2x2 48x48 box; the PULSCAN
+# turret is the TSPULST layer (32 facings).
+ts_stub TSPULS "$TMPDIR/tspuls_stub.shp" 48 48 2
+ts_stub TSPULS "$TMPDIR/tspulst_stub.shp" 48 48 32
+PACK_ARGS+=("$TMPDIR/tspulst_stub.shp:TSPULST.SHP")
 PACK_ARGS+=("$TMPDIR/tspuls_stub.shp:TSPULS.SHP")
 ts_stub TSPULS "$TMPDIR/tspulsmk_stub.shp" 48 48 13
 PACK_ARGS+=("$TMPDIR/tspulsmk_stub.shp:TSPULSMAKE.SHP")

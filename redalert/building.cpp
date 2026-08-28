@@ -879,6 +879,16 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         **	fireball while a burst plays and the dock lid while it opens/closes.
         **	Damaged runs follow the healthy runs in each layer's tileset.
         */
+        /*
+        **	TS EMP cannon: the PULSCAN voxel cannon (32 facings) rides on the dome,
+        **	turning with PrimaryFacing (Rotation_AI, TS ROT 12).
+        */
+        if (*this == STRUCT_TSPULS && Strength > 0 && BState != BSTATE_CONSTRUCTION) {
+            static const int TSPULS_TURRET_Y = -5; // classic px above the plot centre: the dome top
+            int tshape = UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())];
+            Techno_Draw_Object_Virtual(Class->TsPulseTurret, tshape, x, y + TSPULS_TURRET_Y, window, DIR_N, 0x0100, "TSPULST");
+        }
+
         if (*this == STRUCT_TSPROC && Strength > 1 && BState != BSTATE_CONSTRUCTION) {
             int dmg = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
             if (TsFlameStage >= 0) {
@@ -1114,17 +1124,11 @@ int BuildingClass::Shape_Number(void) const
     int shapenum = Fetch_Stage();
 
     /*
-    **	TS EMP cannon: the tileset is the head's 61-frame rotation (NAPULS_A), 0 =
-    **	facing west and advancing counter-clockwise; damaged run = +61. The frame
-    **	follows PrimaryFacing, which Rotation_AI turns toward the target.
+    **	TS EMP cannon: static mound (healthy / damaged); the cannon is the TSPULST
+    **	sub-object layer drawn in Draw_It from PrimaryFacing.
     */
     if (*this == STRUCT_TSPULS && BState != BSTATE_CONSTRUCTION) {
-        int from_west = (192 - (int)PrimaryFacing.Current()) & 255;
-        int frame = (from_west * 61) / 256;
-        if (Health_Ratio() <= Rule.ConditionYellow) {
-            frame += 61;
-        }
-        return (frame);
+        return ((Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0);
     }
 
     /*

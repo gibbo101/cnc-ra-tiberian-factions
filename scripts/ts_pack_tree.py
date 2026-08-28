@@ -1112,6 +1112,11 @@ APRON_CLIP = set()
 EXTRA_LAYERS = {
     "TSPROC": [("FR", "shp_ntrefn_b", list(range(40))),
                ("LD", "shp_ntrefn_a", list(range(10)))],
+    # EMP cannon turret: PULSCAN.VXL rendered 32 facings (fleet camera) at 1:1 TS
+    # pixel scale (shp_pulscan_t, 1 voxel = 1 TS px); the DLL draws shape
+    # BodyShape[facing] seated on the dome. NAPULS_A (a small 2D head) is unused,
+    # as in TS.
+    "TSPULS": [("T", "shp_pulscan_t", list(range(32)))],
 }
 
 # Emblem art lives IN the repo (resources/custom-cameos) — a Desktop copy
@@ -1225,9 +1230,9 @@ SIZEPASS = [
      "shp_gtradrmk", 20, (256, 512), 21, 1.0, "shp_radricon",
      "TS Radar", "Provides radar coverage."),
     # TS EMP Pulse Cannon (docs/emp-cannon-design.md). NAPULS is snow-theatre-only
-    # art (decode with UNITSNO.PAL); _A = the 122-frame idle. TSPOWR's 2x2 fit.
-    # The PULSCAN voxel turret rides as the TSPULST sub-object layer (EXTRA_LAYERS).
-    ("TSPULS", "shp_napuls", ["shp_napuls_a"],
+    # art: NTPULS = temperate (NAPULS is the ARCTIC variant, TS 2nd-letter theatre code); static base (frame 0 / LIGHT damage), TSPOWR's
+    # 2x2 fit. The PULSCAN voxel turret rides as the TSPULST layer (EXTRA_LAYERS).
+    ("TSPULS", "shp_napuls", [],
      "shp_napulsmk", 13, (256, 256), 0, 1.0, "shp_empicon",
      "EMP Cannon", "Fires an electromagnetic pulse that disables vehicles and structures."),
 ]
