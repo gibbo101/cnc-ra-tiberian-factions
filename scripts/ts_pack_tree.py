@@ -776,8 +776,21 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         if not os.path.exists(line_path):
             raise SystemExit(f"{ini}: front cut line missing: {line_path}")
         line = json.load(open(line_path))
+        # The band's TOP follows the rolled (open) shutter's lower edge, which
+        # is a slanted line in the iso art, extended along its slant past the
+        # bar's ends: a flat top either lets a tall unit show above the bar or
+        # cuts it flat below it. Per column: y_top(x) = the fitted edge.
+        import numpy as np
+        oa = np.array(scaled(centre_on(load("shp_gtweap_d", 8), base_h.size)).split()[3]) > 0
+        cols, bots = [], []
+        for xx in range(oa.shape[1]):
+            ys_ = np.where(oa[:, xx])[0]
+            if len(ys_):
+                cols.append(xx)
+                bots.append(int(ys_.max()))
+        slope, intercept = np.polyfit(cols, bots, 1)
         od = ImageDraw.Draw(opening)
-        for yy in range(y0, canvas_h):
+        for yy in range(int(min(bots)) - 20, canvas_h):
             if line is not None:
                 lx = line["rows"].get(str(yy))
                 if lx is None:
@@ -785,7 +798,10 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 lx = int(lx) + 1
             else:
                 lx = x0
-            od.line([(lx, yy), (max(x1, lx + 1), yy)], fill=255)
+            for xx in range(lx, max(x1, lx + 1) + 1):
+                if yy > slope * xx + intercept:
+                    opening.putpixel((xx, yy), 255)
+        y0 = int(min(bots))  # for the fill above
         # Nothing may show between the lintel and the roof: within the door's
         # columns, every row above the opening becomes solid in the front layer
         # (between the body's own outermost pixels), colour from the bled margin.
