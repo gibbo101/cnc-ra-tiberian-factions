@@ -58,6 +58,21 @@ units beside them. Too bright → the lever is a single global multiplier on `TS
      nudge. Fume plume anchors at `Coord + (0,-6)` for non-TSPROC (check it sits on the TS hull).
    - Draw: TSHARV is excluded from the RA dump/load frame paths (~l.2698/2718), so no white
      box is expected; verify anyway (32-frame voxel).
+   - **TS's OWN dock procedure (read from OpenTS 2026-08-28, Luke: "reckon we can get the
+     correct docking procedure?"):** `building.cpp Docking_Coord` = refinery `Center_Coord()`
+     + half a cell EAST (the harvester parks on the refinery's own plot, on the ramp cell);
+     RADIO_DOCKING sends the harvester there (`RADIO_MOVE_HERE`), then `RADIO_BACKUP_NOW`:
+     harvester `Do_Turn(DIR_E)`, and once stopped + tethered + in MISSION_ENTER it sends
+     `RADIO_IM_IN` directly (no reverse track at all); refinery `IsDockUnload` → harvester
+     `MISSION_UNLOAD`. `Do_MISSION_UNLOAD` harvester branch: turn to DIR_E if not already;
+     `IsDumping=true`, stage/rate reset, the building WEST of the harvester's cell gets
+     `Begin_Anim(BANIM_PRE_PRODUCTION)` (the refinery's own unload anim = art.ini GAREFN
+     active anims); status 3 offloads one bail per `HarvesterDumpRate` minutes of stage into
+     `House->Harvested()`; status 4 waits for `Anim_Active(BANIM_PRODUCTION)` to end, then
+     `MISSION_HARVEST` + `RADIO_OVER_OUT`. No Limbo, no attach: the harvester stays a live
+     object facing E on the pad while the refinery animates. For OUR TSPROC that is exactly
+     the signed-off "one live sprite" park; the remaining work is the two foreign refineries,
+     where TS offers no procedure — dock cell + facing there are our call (seat loop).
 2. **Unit brightness pass** (queued nit 15 below): TSHARV / TSMCV / dropship "too dark"
    (Luke 08-16) vs the TS screencast. Method: measure TS's own render brightness from a TS
    screenshot / OpenTS voxel lighting constants (`voxel*.cpp`), never eyeball; the lever is
