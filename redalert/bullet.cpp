@@ -553,10 +553,32 @@ void BulletClass::AI(void)
             return;
         }
         if ((TFStage % 3) == 0 && state <= 14) {
-            ObjectClass* optr = Map[Coord_Cell(Coord)].Cell_Occupier();
-            while (optr != NULL) {
-                ObjectClass* next = optr->Next;
-                if (optr->IsActive && optr->Strength > 0 && optr != (ObjectClass*)Payback) {
+            /*
+            **	A burn can kill its target, and a death can take neighbours with it, so the
+            **	cell chain is re-read from the cell after every kill rather than walked
+            **	through a saved Next pointer. Objects already burnt this tick are remembered
+            **	so the re-read never burns one twice.
+            */
+            ObjectClass* burnt[16];
+            int nburnt = 0;
+            bool again = true;
+            while (again) {
+                again = false;
+                ObjectClass* optr = Map[Coord_Cell(Coord)].Cell_Occupier();
+                while (optr != NULL) {
+                    bool seen = false;
+                    for (int b = 0; b < nburnt; b++) {
+                        if (burnt[b] == optr) {
+                            seen = true;
+                        }
+                    }
+                    if (seen || !optr->IsActive || optr->Strength <= 0 || optr == (ObjectClass*)Payback) {
+                        optr = optr->Next;
+                        continue;
+                    }
+                    if (nburnt < 16) {
+                        burnt[nburnt++] = optr;
+                    }
                     /*
                     **	TS Modify_Damage, verbatim (OpenTS combat.cpp): distance is particle-to-centre
                     **	leptons / 10, scaled by SpreadFactor * (PIXEL_LEPTON_W / 3) with TS's 48px
@@ -578,6 +600,10 @@ void BulletClass::AI(void)
                         damage = max(damage, Rule.MinDamage);
                     }
                     damage = min(damage, Rule.MaxDamage);
+#if TF_DEV_BUILD
+                    char const* hitname = optr->Class_Of().Name();
+                    int hitrtti = (int)optr->What_Am_I();
+#endif
                     int before = optr->Strength;
                     ResultType res = RESULT_NONE;
                     if (damage > 0) {
@@ -595,14 +621,18 @@ void BulletClass::AI(void)
                         FILE* f = fopen(path, "a");
                         if (f != NULL) {
                             fprintf(f, "frame=%d BURN bullet#%d state=%d hit=%s rtti=%d dist=%d dmg=%d hp %d->%d res=%d\n", Frame, ID,
-                                    state, optr->Class_Of().Name(), (int)optr->What_Am_I(), dist, damage, before,
-                                    optr->IsActive ? optr->Strength : 0, (int)res);
+                                    state, hitname, hitrtti, dist, damage, before, res == RESULT_DESTROYED ? 0 : before - damage,
+                                    (int)res);
                             fclose(f);
                         }
                     }
 #endif
+                    if (res == RESULT_DESTROYED) {
+                        again = true;
+                        break;
+                    }
+                    optr = optr->Next;
                 }
-                optr = next;
             }
         }
         Mark(MARK_CHANGE);
