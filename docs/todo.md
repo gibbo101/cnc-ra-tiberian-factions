@@ -5,6 +5,16 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Subterranean detection — DEFERRED until the TS Mobile Sensor Array is ported (Luke, 2026-08-28)
+
+Stage 3 of the subterranean arc (sensing houses see a tunneling vehicle: widen the launcher
+export's VisibleFlags for them, then the `Is_Cloaked` gate follows) has no detector to drive it
+yet. Build it together with the TS Mobile Sensor Array (MSA) port; the MRJ-as-RA-era-detector
+question from docs/subterranean-design.md is decided then too. Until then, underground = invisible
+to every non-ally, which is the TS behaviour without sensors.
+
+---
+
 ## TS roster balance pass — REQUIRED once the TS units are complete (Luke, 2026-08-28)
 
 Every TS unit ships with its exact TS stats (Luke's rule: exact TS, no borrowing from RA), and

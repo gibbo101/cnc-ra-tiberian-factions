@@ -13,8 +13,8 @@
 > **Still to verify:** SAPC 5 passengers through a dig + unload after; `TunnelDigThreshold`
 > dial. **Not done:** DIRTEXPL, save/load of the new fields, dev traces still on
 > (MOD_DEBUG_TUNNEL.txt: cycle + BURN lines).
-> **Next stages:** 3 = sensor detection (widen VisibleFlags for sensing houses; Is_Cloaked
-> gate follows), 4 = EMP arc wiring `Force_Emerge`. Balance: see todo.md (TS roster pass
+> **Next stages:** 3 = sensor detection DEFERRED until the Mobile Sensor Array port (todo.md),
+> 4 = EMP arc wiring `Force_Emerge`. Balance: see todo.md (TS roster pass
 > once units complete).
 >
 > **The spec changed under us, for the better:** `reference/OpenTS/code/tunnel.cpp`
