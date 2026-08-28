@@ -773,7 +773,9 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # jamb's inner edge): everything left of it renders over the vehicle.
         # Rows above/below the line extend its end points.
         line_path = os.path.join(MOD, "..", "..", "custom-art", "tsweap-front-cut-line.json")
-        line = json.load(open(line_path)) if os.path.exists(line_path) else None
+        if not os.path.exists(line_path):
+            raise SystemExit(f"{ini}: front cut line missing: {line_path}")
+        line = json.load(open(line_path))
         od = ImageDraw.Draw(opening)
         for yy in range(y0, canvas_h):
             if line is not None:
