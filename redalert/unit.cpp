@@ -2911,7 +2911,9 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
     **	the dive ladder pitches it over (the angle leads, the sink follows).
     */
     if (Is_Subterranean()) {
-        if (TunnelState == TUNNEL_EMERGING && TunnelStep == 0) {
+        // Underground the hull is not drawn at all: the launcher draws an owner's
+        // CLOAKED unit solid, so there is no shimmer to lean on (yet).
+        if (TunnelState == TUNNEL_TUNNELING || (TunnelState == TUNNEL_EMERGING && TunnelStep == 0)) {
             is_hidden = true;
         }
         if ((TunnelState == TUNNEL_DIGGING_IN || TunnelState == TUNNEL_ABORTING) && TunnelStep >= 1) {
@@ -5691,10 +5693,11 @@ ActionType UnitClass::What_Action(CELL cell) const
     }
     /*
     **	TF subterranean: water, cliffs and other impassable clicks are legal dig
-    **	orders -- the vehicle surfaces at the nearest cell it can stand on.
+    **	orders -- the vehicle surfaces at the nearest cell it can stand on. This
+    **	runs every frame for the hovered cell, so it must not search: the actual
+    **	order does the nearest-cell scan once, in Assign_Destination / Tunnel_AI.
     */
-    if (action == ACTION_NOMOVE && Is_Subterranean() && House->IsPlayerControl && Map.In_Radar(cell)
-        && Find_Emerge_Cell(cell) != -1) {
+    if (action == ACTION_NOMOVE && Is_Subterranean() && House->IsPlayerControl && Map.In_Radar(cell)) {
         return (ACTION_MOVE);
     }
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
@@ -7172,8 +7175,11 @@ void UnitClass::Assign_Destination(TARGET target)
     */
     if (Is_Subterranean()) {
         if (target == TARGET_NONE) {
+            /*
+            **	The engine clears the NavCom on its own idle transitions; that is not a
+            **	stop order, so a running cycle simply carries on underground.
+            */
             if (Is_In_Tunnel_Cycle()) {
-                Tunnel_Stop();
                 return;
             }
         } else if (Is_Target_Cell(target)) {
