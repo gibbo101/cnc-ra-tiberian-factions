@@ -176,10 +176,10 @@ def team_ramp(palette, remap, team_green):
     lum = palette[r0:r1 + 1].mean(axis=1)
     peak = max(lum.max(), 1.0)
     for i in range(r0, r1 + 1):
-        # The launcher team-green lift (1.45x) compensated the legacy model's
-        # dim shading; TS's own ramp already carries that lift.
-        lift = 1.0 if SHADE_MODEL == 'ts' else 1.45
-        pal[i] = np.clip(tg * (lum[i - r0] / peak) * lift, 0, 255)
+        # The launcher's team-colour hue-remap keeps luminance, so the remap
+        # ramp needs the same lift under either shade model (the naval
+        # findings' 1.45x); without it remap-heavy hulls read dark.
+        pal[i] = np.clip(tg * (lum[i - r0] / peak) * 1.45, 0, 255)
     return pal
 
 
