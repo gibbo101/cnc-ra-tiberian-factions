@@ -1576,36 +1576,9 @@ clause. Same literal-chain audit was needed for repair
 10. Takeoff-crash soak: a week of play without an `_Except_` file (another
     clean night 2026-08-13/14, many Mech Division orders).
 
-**Art polish (parked):**
+**Art polish:**
 11. WF door-to-pad seam: the real cure is stopping `hq_scale` bleeding black
     at all — a global change touching every TS building, **wants Luke's OK**.
-12. Ramp stripes band yellow/green (the gold-bake test misses the darker
-    green bands).
-13. Titan parks ahead of the door — `TSTITN` frame registration sits +11.8
-    classic px below its box centre (every other unit within ±2.4). Fix the
-    registration or dial `ExitCoordinate` by eye — Luke's call.
-14. Refinery smoke continuity (blocky specks between puffs): drop near-empty
-    frames, soften the alpha floor, or check whether NTREFN_C (144-canvas,
-    needs offset compositing) is TS's own gap-filling second layer.
-15. Queued art nits: SMOKEY harvest puff port; voxel brightness pass
-    (TSHARV/TSMCV vs the TS screencast; + the dropship — "too dark",
-    Luke 2026-08-16); chunky intake pixels + black fringe
-    at the refinery bay mouth; damaged bay deck's stray remap-green pixel.
-15b. **Units pass: revisit unit angles per model** (Luke, 2026-08-18).
-    **MLRS half CLOSED**: its "facing step off" was diagnosed in `d9c188b6` as
-    the 54-vs-32 camera projection (10.9° apparent rotation at SE), not a
-    facing step, and the re-render plus the rack arc closed it — signed off
-    2026-08-19. TS MCV signed off 2026-08-20. Remaining models to audit:
-    TSHARV, TSAPC, TSSONIC, and TSHMEC (the Mk. II is the odd one out — it
-    renders at 35°, never came down to the 32° house camera with the other
-    four, and is absent from the render ledger).
-    Evidence SS `~/Pictures/Screenshots/Screenshot from 2026-08-18
-    00-42-31.png`: parked side by side, TS Harvester lines up with the TD
-    Medium Tank but the TS hover MLRS reads a facing step off. Per-model
-    render-facing dial via the labelled Desktop sheet loop
-    ([[feedback-voxel-facing-sheet-loop]] — the wave's "+8" rule does not
-    generalise); audit the whole TS voxel roster while at it.
-
 **Housekeeping:**
 16. Remove the `tf_orbit.flag` dead code (descent landed).
 17. Re-run the free dormant-host census before committing the roster's sound
@@ -1640,7 +1613,6 @@ clause. Same literal-chain audit was needed for repair
 20. Infantry TSE1/TSE2/TSGHOST (td-infantry-port-recipe adapted).
 21. Orcas TSORCA/TSORCAB (RA helipad rearm mechanics).
 22. TS audio wave (dormant-sample recipe; see 17).
-23. NTREFN_C refinery anim offset compositing (see 14).
 24. TS GDI/Nod badge emblems — Luke supplies; TS cameos stay pristine until
     then (they are exempt from faction badging).
 25. Phase-2 decisions with Luke (deferred list below).
