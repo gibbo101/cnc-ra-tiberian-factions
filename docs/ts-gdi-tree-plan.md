@@ -1554,10 +1554,6 @@ clause. Same literal-chain audit was needed for repair
    extra plot rows didn't read better than the round-1 fit. Left
    unresolved: whether the launcher centres boxes on the BSIZE plot or
    the placement-list rect (both were 4x5 in the played build).
-3. **TS WF placement-grid regression:** reads 4x3, should be 5x3 with the
-   4th (top) row build-blocked — the radar height trick. Suspect the 08-07
-   per-type `Occupy_List(placement=true)` split: the `_ts_weap_place`
-   literal is the 4x3 the launcher now draws.
 4. **TD-units-from-TS-factories tech leak** (and audit the reverse): TSPILE/
    TSWEAP accepted as production sources for TD-era units. Decide the rule
    with Luke first (strict era separation vs deliberate cross-era), then
@@ -1640,8 +1636,7 @@ clause. Same literal-chain audit was needed for repair
     TSAPC stops fitting through the door); TD-exact width 395 would break
     the APC.** ⚠ Moves together with: the exit point (the y=42 two-pixel
     window re-derives from the new hangar span), the sandwich layer cut,
-    the sort band (must still reach the new south edge), the placement
-    grid (item 3 — fix in the same pass), and canvas+stub together.
+    the sort band (must still reach the new south edge), and canvas+stub together.
 
 **Roster remainder (the plan below):**
 19. Component towers TSVULC/TSCSAM/TSROCK — turreted TDGTWR pattern, NOT the
