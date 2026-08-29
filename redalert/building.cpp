@@ -3537,8 +3537,12 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 **	shutter, facing out. It is not drawn until the shutter is fully
                 **	up (UnitClass::Draw_It), then rides the exit rail south-east.
                 */
-                bool is_titan = (base->What_Am_I() == RTTI_UNIT && *(UnitClass*)base == UNIT_TSTITN);
-                COORDINATE seat = Coord_Add(Coord, is_titan ? TSWEAP_SEAT_MOUTH_TITAN : TSWEAP_SEAT_MOUTH);
+                bool is_mech = false;
+                if (base->What_Am_I() == RTTI_UNIT) {
+                    UnitType ut = *(UnitClass*)base;
+                    is_mech = (ut == UNIT_TSTITN || ut == UNIT_TSSMEC || ut == UNIT_TSHMEC);
+                }
+                COORDINATE seat = Coord_Add(Coord, is_mech ? TSWEAP_SEAT_MOUTH_MECH : TSWEAP_SEAT_MOUTH);
                 /*
                 **	Facing = the exit rail's own direction (seat -> exit cell), so the
                 **	vehicle points exactly along the line it will drive.
