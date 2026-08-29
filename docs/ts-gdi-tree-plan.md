@@ -503,19 +503,6 @@ every plausible name. Don't go looking again.
 **TS power plant and TS radar place one tile below their placement grid**
 (reported in play 2026-08-24). Logged with first suspects in `known-issues.md`.
 
-### ⭐ THE ROSTER-WALK QUEUE (Luke, dictated 2026-08-21/22)
-
-Gaps he called out per unit while walking the roster. Order: Wolverine first,
-Harvester LAST.
-
-| Unit | Outstanding |
-|---|---|
-| **Wolverine** `TSSMEC` | ✅ COMPLETE 2026-08-24 (icon, firing animation, TSGUN4 sound, canopy dot) |
-| **Disruptor** `TSSONIC` | ~~sidebar icon~~ ✅; ~~sound~~ ✅; ~~weapon animation~~ ✅ band FINAL + firing behaviour + seat + muzzle, all SHIPPED 08-27/28 (OpenTS) |
-| **APC** `TSAPC` | ~~sidebar icon~~ ✅; ~~on-water art~~ ✅ apcw hull; ~~enter/exit~~ ✅ unload fixed; TS amphibious speed table — SHIPPED 08-28 |
-| **Harvester** `TSHARV` — **DO LAST** | ~~sidebar icon~~ ✅; **TD + RA refinery docking** |
-| **Mammoth Mk. II** | signed off; Luke wants **RA vs TS comparison videos** at some point (not a work item) |
-
 ### ✅ The four cameos — FIXED 2026-08-22, deployed, data-only (no DLL rebuild)
 
 ⭐ **The trap: `TF_Apply_Cameo_Badge` ALWAYS appends `_<hex>` to the sidebar
@@ -639,6 +626,9 @@ lightness pass (open queue 15) is the ONE exception that may still touch them.
 | **Titan** (`UNIT_TSTITN`) | 2026-08-21 | Signed off in the shadow walk, after the 6px fixed throw replaced the width fraction that had given it an 18px overhang. |
 | **Wolverine** (`UNIT_TSSMEC`) | 2026-08-24 ("wolverine signed off, nice one") | Complete: sidebar cameo, TS firing animation (art.ini `FiringFrames=4`, SMECH.SHP 104-135 — the flash is a sprite block, TS gives `[AssaultCannon]` no `Anim=`), TSGUN4 sound, and the canopy red dot (authentic TS ramp tail, tamed at the palette via `ts_shp.py --pal-override`). Shadow passed in the same load. |
 | **TS MCV** (`UNIT_TSMCV`) | 2026-08-20 | 32° render play-praised earlier in the wave. Final change: `Speed=3` → `5` to match the TD MCV family. ⚠ That speed edit was signed off BEFORE it reached play — see the caveat below. |
+| **Disruptor** (`UNIT_TSSONIC`) | 2026-08-28 | Band FINAL (no pulse; four ripple mechanisms falsified), OpenTS WaveClass firing behaviour, turret seat + horn-rooted muzzle, cameo, sound. |
+| **Amphibious APC** (`UNIT_TSAPC`) | 2026-08-28 ("perfection") | OpenTS pass: unload fix, apcw water hull frames, SPEED_AMPHIBIOUS + TS land table, cameo. |
+| **TS Harvester** (`UNIT_TSHARV`) | 2026-08-30 | Docking at the TS, TD and RA refineries all closed 08-28 (ROLL_OFF_DOCK_SEAT rail); WF door seat swept 08-30. Cameo done. |
 
 **Titan (`UNIT_TSTITN`) was pulled off this list on 2026-08-20 and put back on
 2026-08-21**, signed off with the Hover MLRS and MCV once the shadow throw came
