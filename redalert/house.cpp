@@ -1441,6 +1441,8 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             if (t == STRUCT_REFINERY) {
                 if (tdproc_type >= 0 && Has_Building_Active(tdproc_type))
                     continue;
+                if (Has_Building_Active(STRUCT_TSPROC))
+                    continue;
             }
             // STRUCT_ADVANCED_TECH — satisfied by the faction high-tech building:
             // GDI Advanced Comm (TDEYE) or Nod Temple (TDTMPL). TD's UnitMCV
@@ -1467,6 +1469,8 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             if (t == STRUCT_REPAIR) {
                 if (tdfix_type >= 0 && Has_Building_Active(tdfix_type))
                     continue;
+                if (Has_Building_Active(STRUCT_TSDEPT))
+                    continue;
             }
             // STRUCT_POWER — satisfied by the TD power plants (TDNUKE / TDNUK2). GDI/Nod never build
             // RA's POWR/APWR (those are allies,soviet), so RA structures keyed to Prerequisite=powr —
@@ -1476,6 +1480,8 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                 if (tdnuke_type >= 0 && Has_Building_Active(tdnuke_type))
                     continue;
                 if (tdnuk2_type >= 0 && Has_Building_Active(tdnuk2_type))
+                    continue;
+                if (Has_Building_Active(STRUCT_TSPOWR))
                     continue;
             }
             // v4.0 separated naval/air production buildings satisfy the RA-token prereqs of the
@@ -1499,9 +1505,24 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             // the vanilla 'fix' token, remapped above.)
             if (t == tdnuke_type
                 && (Has_Building_Active(STRUCT_POWER) || Has_Building_Active(STRUCT_ADVANCED_POWER)
+                    || (tdnuk2_type >= 0 && Has_Building_Active(tdnuk2_type))
+                    || Has_Building_Active(STRUCT_TSPOWR)))
+                continue;
+            if (t == tdproc_type && (Has_Building_Active(STRUCT_REFINERY) || Has_Building_Active(STRUCT_TSPROC)))
+                continue;
+            // The TS era joins the same infrastructure pool (Luke, 2026-08-30):
+            // a house running RA or TD power and refining does not have to
+            // duplicate them to open the TS tree, and TS plants/refineries keep
+            // the RA/TD trees fed. TS-token direction here; the RA/TD-token
+            // directions are in the clauses above. Radar and tech centres stay
+            // faction identity in every era.
+            if (t == STRUCT_TSPOWR
+                && (Has_Building_Active(STRUCT_POWER) || Has_Building_Active(STRUCT_ADVANCED_POWER)
+                    || (tdnuke_type >= 0 && Has_Building_Active(tdnuke_type))
                     || (tdnuk2_type >= 0 && Has_Building_Active(tdnuk2_type))))
                 continue;
-            if (t == tdproc_type && Has_Building_Active(STRUCT_REFINERY))
+            if (t == STRUCT_TSPROC
+                && (Has_Building_Active(STRUCT_REFINERY) || (tdproc_type >= 0 && Has_Building_Active(tdproc_type))))
                 continue;
         }
         return (false);

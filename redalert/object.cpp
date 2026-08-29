@@ -2405,6 +2405,24 @@ BuildingClass* ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, Hous
         BuildingClass* building = Buildings.Ptr(index);
         assert(building != NULL);
 
+        /*
+        **	Eras keep their own doors. RA and TD already do, because a unit's Owner
+        **	mask never includes the other era's ActLike (the check just below). The
+        **	TS tree is owned by every side by design (the yard is the gate), so it
+        **	would pass that check for any factory a house owns, and any RA/TD unit
+        **	would pass it for a TS factory the house built. Pair them explicitly:
+        **	a TS-tree unit exits only a TS factory, and a TS factory produces only
+        **	TS-tree units (Luke, 2026-08-30). Buildings are exempt: any yard
+        **	constructs, the TS tree gates itself through Prerequisite=TSFACT.
+        */
+        if (RTTI != RTTI_BUILDINGTYPE) {
+            bool const ts_factory = (*building == STRUCT_TSWEAP || *building == STRUCT_TSPILE
+                                     || *building == STRUCT_TSHPAD || *building == STRUCT_TSDROP);
+            if (ts_factory != TF_Is_TS_Tree_Type((TechnoTypeClass const*)this)) {
+                continue;
+            }
+        }
+
         if (!building->IsInLimbo && building->House->Class->House == house && building->Class->ToBuild == RTTI
             && building->Mission != MISSION_DECONSTRUCTION && building->MissionQueue != MISSION_DECONSTRUCTION
             && ((1L << building->ActLike) & Get_Ownable())
