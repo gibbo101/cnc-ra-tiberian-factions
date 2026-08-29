@@ -838,7 +838,14 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     # <INI><SUFFIX>.ZIP with the frames in source order, so the DLL indexes
     # them directly (healthy run first, damaged run second, TS convention).
     for suffix, dirname, indices in globals().get("EXTRA_LAYERS", {}).get(ini, []):
-        layer = [scaled(centre_on(load(dirname, i), base_h.size)) for i in indices]
+        clip = globals().get("EXTRA_LAYER_CLIPS", {}).get((ini, suffix))
+        def load_clipped(i):
+            f = load(dirname, i)
+            if clip is not None:
+                f.paste((0, 0, 0, 0), clip)
+                keep_largest_component(f)
+            return f
+        layer = [scaled(centre_on(load_clipped(i), base_h.size)) for i in indices]
         write_zip(f"{STRUCT_DIR}/{ini}{suffix}.ZIP", f"{ini.lower()}{suffix.lower()}", layer)
         patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}{suffix}", len(layer))
     front_canvas = None
@@ -1202,6 +1209,43 @@ EXTRA_LAYERS = {
     "TSWEAP": [("DR", "shp_gtweap_d", list(range(18))),
                ("UD", "shp_gtweap_1", list(range(4)))],
 }
+
+# Source-space erase boxes on a sub-object layer, applied before the affine.
+# TSWEAP DR: the door leaf's bottom-right tab (source x>=113, y>=113) rolls up
+# last and floats as a detached piece in stages 5-7; the layer sorts above
+# units, so the tab drew over any hull crossing the right jamb. The base's
+# painted-shut door carries the same pixels for the idle look.
+EXTRA_LAYER_CLIPS = {("TSWEAP", "DR"): (113, 113, 192, 168)}
+
+
+def keep_largest_component(img):
+    """Erase every opaque island except the largest (4-connected), in place:
+    a clipped layer must not leave detached fringe pixels that sort above
+    units."""
+    from collections import deque
+    px = img.load()
+    w, h = img.size
+    seen = set()
+    comps = []
+    for y in range(h):
+        for x in range(w):
+            if px[x, y][3] and (x, y) not in seen:
+                q = deque([(x, y)])
+                seen.add((x, y))
+                comp = []
+                while q:
+                    cx, cy = q.popleft()
+                    comp.append((cx, cy))
+                    for nx, ny in ((cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1)):
+                        if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in seen and px[nx, ny][3]:
+                            seen.add((nx, ny))
+                            q.append((nx, ny))
+                comps.append(comp)
+    if len(comps) > 1:
+        comps.sort(key=len, reverse=True)
+        for comp in comps[1:]:
+            for p in comp:
+                px[p] = (0, 0, 0, 0)
 
 # Emblem art lives IN the repo (resources/custom-cameos) — a Desktop copy
 # got Trash-cleaned 2026-08-16 and broke the pack.

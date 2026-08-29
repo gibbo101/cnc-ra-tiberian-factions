@@ -9,9 +9,9 @@
 **	shutter's centre column (2.38 cells, moved west 08-29) and a unit centre just inside the
 **	doorway (1.10 rows: the vehicle stands in the opening, its top under the raised shutter). The generated seats above are the old bay's.
 */
-#define TSWEAP_SEAT_MOUTH XY_Coord(610, 282)  // col 2.38 (west, 08-29), row 1.10: the doorway
+#define TSWEAP_SEAT_MOUTH XY_Coord(690, 282)  // from the ORIGIN CELL CENTRE (Coord): canvas (537,349); hull west edge ~8 px behind the left jamb
 /*
 **	Per-unit seats: the Titan stands two cells tall, so it seats deeper (row 0.40)
 **	with its feet at the threshold; everything else takes the mouth seat.
 */
-#define TSWEAP_SEAT_MOUTH_TITAN XY_Coord(610, 192)  // row 0.75: the Titan sits further back so its feet stay in the door
+#define TSWEAP_SEAT_MOUTH_TITAN XY_Coord(690, -108)  // canvas (537,154): feet at y=305, just above the shut shutter (313); head under the roof
