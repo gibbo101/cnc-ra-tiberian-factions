@@ -2930,6 +2930,7 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
             static const int _settle[6] = {0, 0, 1, 1, 2, 3};
             y += _settle[TunnelStep <= 5 ? TunnelStep : 5];
         }
+    }
     /*
     **	War factory: a vehicle seated deep in the bay is hidden by the shut
     **	shutter and the near face, and revealed as the shutter rises -- no
