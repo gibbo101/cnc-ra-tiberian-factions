@@ -628,7 +628,7 @@ lightness pass (open queue 15) is the ONE exception that may still touch them.
 | **TS MCV** (`UNIT_TSMCV`) | 2026-08-20 | 32° render play-praised earlier in the wave. Final change: `Speed=3` → `5` to match the TD MCV family. ⚠ That speed edit was signed off BEFORE it reached play — see the caveat below. |
 | **Disruptor** (`UNIT_TSSONIC`) | 2026-08-28 | Band FINAL (no pulse; four ripple mechanisms falsified), OpenTS WaveClass firing behaviour, turret seat + horn-rooted muzzle, cameo, sound. |
 | **Amphibious APC** (`UNIT_TSAPC`) | 2026-08-28 ("perfection") | OpenTS pass: unload fix, apcw water hull frames, SPEED_AMPHIBIOUS + TS land table, cameo. |
-| **TS Harvester** (`UNIT_TSHARV`) | 2026-08-30 | Docking at the TS, TD and RA refineries all closed 08-28 (ROLL_OFF_DOCK_SEAT rail); WF door seat swept 08-30. Cameo done. |
+| **TS Harvester** (`UNIT_TSHARV`) | 2026-08-30 | Docking at the TS, TD and RA refineries closed 08-28 (ROLL_OFF_DOCK_SEAT rail); TS-harv-at-RA-refinery SIGNED OFF in play 2026-08-30; WF door seat swept 08-30. Cameo done. |
 
 **Titan (`UNIT_TSTITN`) was pulled off this list on 2026-08-20 and put back on
 2026-08-21**, signed off with the Hover MLRS and MCV once the shadow throw came
@@ -1587,15 +1587,6 @@ clause. Same literal-chain audit was needed for repair
 
 **Restored / added 2026-08-13 evening (Luke's picks — the prune had dropped
 26 by mistake; he caught it):**
-26. **TS harvester poses at the TD and RA refineries** — the last unmade
-    placements (Luke's original 08-04 scope: "dock ALL 3 harvesters at the
-    TS refinery, and the TS harvester at the TD and RA refineries").
-    Current code: TS-at-TD = generic visible W-facing park (explicitly
-    skips the TD attach maneuver, `unit.cpp` ~1193); TS-at-RA = shares the
-    TDHARV visible-park branch, never dialled. Pose work is collaborative —
-    worked out with Luke's eye (Aseprite reference art prepared in
-    `~/Desktop/docking-art/`: all 3 harvesters full-canvas-aligned facings
-    + all 3 refineries incl. TDPROC's attach anims; see its INDEX.txt).
 27. **War factory descale to normal size (Luke, 2026-08-13).** The Mk. II
     now arrives by bay, so the 08-07 enlargement can come back down — see
     the hangar-resize table: **fit_w 416 is the floor (below ~416 the
