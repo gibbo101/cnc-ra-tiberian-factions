@@ -38,7 +38,8 @@ MASKS = ROOT / "scripts/cameo_work/faction_masks.txt"
 MTD = ROOT / "scripts/cameo_work/MT_COMMANDBAR_COMMON.MTD"
 ART = ROOT / "resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB"
 
-FACTION_BITS = [0x1, 0x2, 0x4, 0x8]
+FACTION_BITS = [0x1, 0x2, 0x4, 0x8, 0x10]  # 0x10 = the TS tree, digit 'G'
+DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUV"
 
 BEGIN = "\t<!-- BEGIN generated cameo mask variants (scripts/cameo_variants_build.py) -->"
 END = "\t<!-- END generated cameo mask variants -->"
@@ -167,7 +168,7 @@ def main():
         for combo in subsets(masks.get(asset, 0)):
             icon = f"BuildIcon_{asset}_{combo:X}"
             if resolves(icon):
-                add("%X" % combo, icon)
+                add(DIGITS[combo], icon)
 
     generated = BEGIN + "\n" + "\n".join(blocks) + END + "\n"
     if "</ObjectTypeList>" not in xml:

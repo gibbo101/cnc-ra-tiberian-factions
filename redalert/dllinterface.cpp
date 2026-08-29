@@ -6626,6 +6626,7 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_ControlGroup_Request(Co
 #define TF_FACTION_SOVIET 0x2
 #define TF_FACTION_GDI    0x4
 #define TF_FACTION_NOD    0x8
+#define TF_FACTION_TSGDI  0x10 /* the TS tree; badge digit 'G' */
 
 static int TF_Faction_Mask_From_Ownable(int ownable)
 {
@@ -6643,6 +6644,20 @@ static int TF_Faction_Mask_From_Ownable(int ownable)
         mask |= TF_FACTION_NOD;
     }
     return mask;
+}
+
+/*
+** The faction an entry is badged as. TS-tree types are Owner= every side (the
+** yard is the gate), so their Ownable says nothing about faction; they are the
+** TS GDI faction, one emblem, and the badge rule is otherwise the same as for
+** the four RA/TD factions (Luke, 2026-08-30).
+*/
+static int TF_Entry_Faction_Mask(TechnoTypeClass const* type)
+{
+    if (type != NULL && TF_Is_TS_Tree_Type(type)) {
+        return TF_FACTION_TSGDI;
+    }
+    return TF_Faction_Mask_From_Ownable(type != NULL ? type->Get_Ownable() : 0);
 }
 
 #if TF_DEV_BUILD
@@ -6677,23 +6692,23 @@ static void TF_Dump_Faction_Masks(void)
 
     for (int i = 0; i < BuildingTypes.Count(); i++) {
         BuildingTypeClass const* t = BuildingTypes.Ptr(i);
-        fprintf(fp, "%s\t%d\n", t->IniName, TF_Faction_Mask_From_Ownable(t->Get_Ownable()));
+        fprintf(fp, "%s\t%d\n", t->IniName, TF_Entry_Faction_Mask(t));
     }
     for (int i = 0; i < UnitTypes.Count(); i++) {
         UnitTypeClass const* t = UnitTypes.Ptr(i);
-        fprintf(fp, "%s\t%d\n", t->IniName, TF_Faction_Mask_From_Ownable(t->Get_Ownable()));
+        fprintf(fp, "%s\t%d\n", t->IniName, TF_Entry_Faction_Mask(t));
     }
     for (int i = 0; i < InfantryTypes.Count(); i++) {
         InfantryTypeClass const* t = InfantryTypes.Ptr(i);
-        fprintf(fp, "%s\t%d\n", t->IniName, TF_Faction_Mask_From_Ownable(t->Get_Ownable()));
+        fprintf(fp, "%s\t%d\n", t->IniName, TF_Entry_Faction_Mask(t));
     }
     for (int i = 0; i < AircraftTypes.Count(); i++) {
         AircraftTypeClass const* t = AircraftTypes.Ptr(i);
-        fprintf(fp, "%s\t%d\n", t->IniName, TF_Faction_Mask_From_Ownable(t->Get_Ownable()));
+        fprintf(fp, "%s\t%d\n", t->IniName, TF_Entry_Faction_Mask(t));
     }
     for (int i = 0; i < VesselTypes.Count(); i++) {
         VesselTypeClass const* t = VesselTypes.Ptr(i);
-        fprintf(fp, "%s\t%d\n", t->IniName, TF_Faction_Mask_From_Ownable(t->Get_Ownable()));
+        fprintf(fp, "%s\t%d\n", t->IniName, TF_Entry_Faction_Mask(t));
     }
 
     fclose(fp);
@@ -6730,18 +6745,16 @@ static TF_ProducerMasks TF_Compute_Producer_Masks(HouseClass const* house)
             continue;
         }
         /*
-        ** TS-tree factories are faction-agnostic (Owner= all four sides), so
-        ** counting their Ownable here would claim the player produces from
-        ** every faction at once -- activating badges with combinations no art
-        ** was baked for (the <Missing> TSPOWR_F tooltip). They contribute
-        ** nothing to the faction-producer picture.
+        ** TS-tree factories are Owner= all four sides, so their Ownable would
+        ** claim the player produces from every faction at once. They are the
+        ** TS GDI faction: the TS yard, barracks, war factory, helipad and bay
+        ** each contribute that one bit to their category.
         */
-        if (building->Class->Type >= STRUCT_TS_TREE_FIRST && building->Class->Type <= STRUCT_TS_TREE_LAST) {
-            continue;
-        }
         RTTIType makes = building->Class->ToBuild;
         if (makes > RTTI_NONE && makes < RTTI_COUNT) {
-            masks.by_rtti[makes] |= TF_Faction_Mask_From_Ownable(building->Class->Get_Ownable());
+            bool const ts = (building->Class->Type == STRUCT_TSFACT
+                             || (building->Class->Type >= STRUCT_TS_TREE_FIRST && building->Class->Type <= STRUCT_TS_TREE_LAST));
+            masks.by_rtti[makes] |= ts ? TF_FACTION_TSGDI : TF_Faction_Mask_From_Ownable(building->Class->Get_Ownable());
         }
     }
     return masks;
@@ -6764,7 +6777,7 @@ static void TF_Apply_Cameo_Badge(char* asset_name, int entry_owner_mask, int hel
 
     int badge = 0;
     int held_count = 0;
-    for (int bit = 0x1; bit <= 0x8; bit <<= 1) {
+    for (int bit = 0x1; bit <= TF_FACTION_TSGDI; bit <<= 1) {
         if (held_mask & bit) {
             held_count++;
         }
@@ -6774,10 +6787,10 @@ static void TF_Apply_Cameo_Badge(char* asset_name, int entry_owner_mask, int hel
     }
 
     size_t length = strnlen(asset_name, CNC_OBJECT_ASSET_NAME_LENGTH);
-    /* Need room for '_' + one hex digit + NUL. */
+    /* Need room for '_' + one base-32 digit + NUL ('G' = the TS bit alone). */
     if (length + 3 <= CNC_OBJECT_ASSET_NAME_LENGTH) {
         asset_name[length] = '_';
-        asset_name[length + 1] = "0123456789ABCDEF"[badge & 0xF];
+        asset_name[length + 1] = "0123456789ABCDEFGHIJKLMNOPQRSTUV"[badge & 0x1F];
         asset_name[length + 2] = '\0';
     }
 }
@@ -7110,18 +7123,8 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     int held = (category > RTTI_NONE && category < RTTI_COUNT)
                                    ? producer_masks.by_rtti[category]
                                    : 0;
-                    /*
-                    ** TS-tree entries are faction-agnostic (the TS yard is the
-                    ** gate, not a faction), so a faction badge is meaningless
-                    ** -- and their widened Owner mask would demand badge
-                    ** combinations no art was baked for (the blank-cameo bug).
-                    ** Zero held forces the pristine _0 variant.
-                    */
-                    if (TF_Is_TS_Tree_Type((TechnoTypeClass const*)tech)) {
-                        held = 0;
-                    }
                     TF_Apply_Cameo_Badge(sidebar_entry.AssetName,
-                                         TF_Faction_Mask_From_Ownable(tech->Get_Ownable()), held);
+                                         TF_Entry_Faction_Mask((TechnoTypeClass const*)tech), held);
                 }
 
                 if (super_weapon != nullptr) {
@@ -7340,12 +7343,8 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         int held = (category > RTTI_NONE && category < RTTI_COUNT)
                                        ? producer_masks.by_rtti[category]
                                        : 0;
-                        /* TS-tree entries never badge (see the solo path). */
-                        if (TF_Is_TS_Tree_Type((TechnoTypeClass const*)tech)) {
-                            held = 0;
-                        }
                         TF_Apply_Cameo_Badge(sidebar_entry.AssetName,
-                                             TF_Faction_Mask_From_Ownable(tech->Get_Ownable()), held);
+                                             TF_Entry_Faction_Mask((TechnoTypeClass const*)tech), held);
                     }
 
                     if (super_weapon != nullptr) {
