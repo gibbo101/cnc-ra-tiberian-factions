@@ -1576,9 +1576,6 @@ clause. Same literal-chain audit was needed for repair
 10. Takeoff-crash soak: a week of play without an `_Except_` file (another
     clean night 2026-08-13/14, many Mech Division orders).
 
-**Art polish:**
-11. WF door-to-pad seam: the real cure is stopping `hq_scale` bleeding black
-    at all — a global change touching every TS building, **wants Luke's OK**.
 **Housekeeping:**
 16. Remove the `tf_orbit.flag` dead code (descent landed).
 17. Re-run the free dormant-host census before committing the roster's sound
