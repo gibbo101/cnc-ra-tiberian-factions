@@ -1558,10 +1558,6 @@ clause. Same literal-chain audit was needed for repair
    TSWEAP accepted as production sources for TD-era units. Decide the rule
    with Luke first (strict era separation vs deliberate cross-era), then
    audit both directions + what the sidebar offers with mixed-era factories.
-5. **WF pad lies outside the 4x3 plot** (geometrically must — the hangar
-   uses every column). Options: leave outside (current; `Is_TS_Apron_Cell`
-   keeps it unbuildable), clip at the plot edge (hard cut), return to 5x4.
-   **Undecided — Luke's call.**
 6. **Helipad footprint** — Luke floated 2x3+bib, my counter 2x2+bib (RA/TD
    parity + height trick if the art spills). His call; any footprint change
    needs a watched land-rearm cycle after.
