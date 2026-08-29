@@ -22,6 +22,11 @@ names come from scripts/cameo_work/plain_icon_map.json.
 
 Idempotent. Re-running replaces the generated block rather than stacking it.
 
+WARNING: hand-written entries placed INSIDE the generated block are wiped by a
+re-run (2026-08-30: the TS base entries were). Keep hand entries outside the
+BEGIN/END markers, and diff entry names before committing a regenerated file.
+TS-tree _G variants are appended by hand in their own block, not by this tool.
+
 License: GPL v3.
 """
 import json
@@ -166,7 +171,7 @@ def main():
         # the entry's owner subsets; an entry with no owner mask gets _0 alone.
         add("0", pristine)
         for combo in subsets(masks.get(asset, 0)):
-            icon = f"BuildIcon_{asset}_{combo:X}"
+            icon = f"BuildIcon_{asset}_{DIGITS[combo]}"
             if resolves(icon):
                 add(DIGITS[combo], icon)
 

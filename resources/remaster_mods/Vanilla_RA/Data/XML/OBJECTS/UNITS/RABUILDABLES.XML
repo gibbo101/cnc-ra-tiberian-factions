@@ -10076,4 +10076,153 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	<!-- END generated Mk2 cooldown countdown cameos -->
+	<!-- BEGIN generated TS-tree badge variants (_G = the TS GDI emblem) -->
+	<ObjectTypeClass Name="RA_TSAPC_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSAPC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSAPC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSAPC_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSDEPT_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSDEPT</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSDEPT_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSDEPT_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSDROP_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSDROP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSDROP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSDROP_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSHARV_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSHARV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSHARV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSHARV_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSHMEC_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSHMEC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSHMEC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSHMEC_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSHPAD_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSHPAD</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSHPAD_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSHPAD_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSHVR_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSHVR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSHVR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSHVR_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMCV_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMCV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMCV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMCV_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMDIV_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMDIV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMDIV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMDIV_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSPILE_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPILE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPILE_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSPILE_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSPOWR_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPOWR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPOWR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSPOWR_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSPROC_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPROC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPROC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSPROC_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSRADR_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSRADR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSRADR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSRADR_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSSAPC_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSSAPC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSSAPC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSSAPC_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSSILO_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSSILO</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSSILO_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSSILO_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSSMEC_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSSMEC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSSMEC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSSMEC_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSSONIC_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSSONIC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSSONIC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSSONIC_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSSUBTANK_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSSUBTANK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSSUBTANK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSSUBTANK_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSTECH_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSTECH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSTECH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSTECH_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSTITN_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSTITN</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSTITN_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSTITN_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSWEAP_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSWEAP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSWEAP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSWEAP_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<!-- END generated TS-tree badge variants -->
 </ObjectTypeList>
