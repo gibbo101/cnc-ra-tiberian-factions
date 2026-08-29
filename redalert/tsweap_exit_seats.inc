@@ -14,4 +14,4 @@
 **	Per-unit seats: the Titan stands two cells tall, so it seats deeper (row 0.40)
 **	with its feet at the threshold; everything else takes the mouth seat.
 */
-#define TSWEAP_SEAT_MOUTH_TITAN XY_Coord(690, -108)  // canvas (537,154): feet at y=305, just above the shut shutter (313); head under the roof
+#define TSWEAP_SEAT_MOUTH_TITAN XY_Coord(597, 123)  // canvas (490.5,269.5): Luke 08-29 seat loop, S46.5 W46.5 px off the threshold seat (690,30)

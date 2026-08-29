@@ -841,7 +841,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         clip = globals().get("EXTRA_LAYER_CLIPS", {}).get((ini, suffix))
         def load_clipped(i):
             f = load(dirname, i)
-            if clip is not None:
+            if clip is not None and is_detached(f, clip):
                 f.paste((0, 0, 0, 0), clip)
                 keep_largest_component(f)
             return f
@@ -1210,18 +1210,17 @@ EXTRA_LAYERS = {
                ("UD", "shp_gtweap_1", list(range(4)))],
 }
 
-# Source-space erase boxes on a sub-object layer, applied before the affine.
-# TSWEAP DR: the door leaf's bottom-right tab (source x>=113, y>=113) rolls up
-# last and floats as a detached piece in stages 5-7; the layer sorts above
-# units, so the tab drew over any hull crossing the right jamb. The base's
-# painted-shut door carries the same pixels for the idle look.
+# Source-space erase boxes on a sub-object layer, applied before the affine,
+# and only on frames where the box holds a piece detached from the main
+# body. TSWEAP DR: the door leaf's bottom-right tab (source x>=113, y>=113)
+# rolls up last and floats free in stages 5-7; the layer sorts above units,
+# so the tab drew over any hull crossing the right jamb. While the tab is
+# still joined to the leaf (shut and early stages) it is real door and stays.
 EXTRA_LAYER_CLIPS = {("TSWEAP", "DR"): (113, 113, 192, 168)}
 
 
-def keep_largest_component(img):
-    """Erase every opaque island except the largest (4-connected), in place:
-    a clipped layer must not leave detached fringe pixels that sort above
-    units."""
+def components(img):
+    """Opaque 4-connected islands of an RGBA image, largest first."""
     from collections import deque
     px = img.load()
     w, h = img.size
@@ -1241,11 +1240,28 @@ def keep_largest_component(img):
                             seen.add((nx, ny))
                             q.append((nx, ny))
                 comps.append(comp)
-    if len(comps) > 1:
-        comps.sort(key=len, reverse=True)
-        for comp in comps[1:]:
-            for p in comp:
-                px[p] = (0, 0, 0, 0)
+    comps.sort(key=len, reverse=True)
+    return comps
+
+
+def is_detached(img, box):
+    """True when no pixel inside `box` belongs to the image's largest island."""
+    comps = components(img)
+    if not comps:
+        return False
+    x0, y0, x1, y1 = box
+    return not any(x0 <= x < x1 and y0 <= y < y1 for x, y in comps[0])
+
+
+def keep_largest_component(img):
+    """Erase every opaque island except the largest (4-connected), in place:
+    a clipped layer must not leave detached fringe pixels that sort above
+    units."""
+    px = img.load()
+    comps = components(img)
+    for comp in comps[1:]:
+        for p in comp:
+            px[p] = (0, 0, 0, 0)
 
 # Emblem art lives IN the repo (resources/custom-cameos) — a Desktop copy
 # got Trash-cleaned 2026-08-16 and broke the pack.
