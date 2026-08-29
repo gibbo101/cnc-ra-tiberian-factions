@@ -1562,6 +1562,12 @@ clause. Same literal-chain audit was needed for repair
    `scripts/tab_emblems/tsgdi.png` (Luke's weathered TS disc); Nod disc comes
    with the Nod faction. ⚠ `cameo_variants_build.py` wipes hand entries inside
    its block: TS `_G` entries live in their own appended XML block.
+   ⚠ **Merge-loss regression found + fixed same day (`adde7d6b`, Luke: "fixed,
+   working again"):** the 08-12 sidebar eviction guard (`Factory != -1` →
+   never evict) had been dropped by merge `61ef77f7` (main into ts-units);
+   Mk. II vanished on click, Mech Division after one drop. Restored, and bay
+   cargo now survives its cooldown/cap through the factory-only test. Lesson:
+   after any trunk merge, `git log -S` the known one-line guards.
 6. **Helipad footprint** — Luke floated 2x3+bib, my counter 2x2+bib (RA/TD
    parity + height trick if the art spills). His call; any footprint change
    needs a watched land-rearm cycle after.
