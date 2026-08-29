@@ -1554,16 +1554,14 @@ clause. Same literal-chain audit was needed for repair
    extra plot rows didn't read better than the round-1 fit. Left
    unresolved: whether the launcher centres boxes on the BSIZE plot or
    the placement-list rect (both were 4x5 in the played build).
-4. ✅ **Era rule DECIDED + SHIPPED 2026-08-30 (`7436704f`, smoke-tested "seems good"):**
-   strict at the door for TS (TS units exit only TS factories, TS factories build
-   only TS units, via `Who_Can_Build_Me`); RA/TD were already door-strict through
-   the Owner-vs-ActLike check. Power/refinery/repair cross-satisfy across all
-   three eras; radar and tech centres stay faction identity.
-5. **TS GDI cameo badge — CODE COMMITTED, ART PENDING (2026-08-30).** TS tree =
-   fifth badge faction (bit 0x10, digit 'G'); DLL + both cameo scripts +
-   faction_masks.txt updated. Waiting on Luke's TS GDI disc emblem →
-   `scripts/tab_emblems/tsgdi.png`, then bake `_G` cameos, XML variants, deploy
-   together (DLL alone blanks TS cameos). Nod emblem comes with the Nod faction.
+4. ✅ **Era rule + TS GDI badge — SHIPPED AND SIGNED OFF 2026-08-30 ("all passes",
+   `7436704f`..`e119fa66`).** TS units exit only TS factories and vice versa
+   (`Who_Can_Build_Me`; RA/TD were already door-strict via Owner-vs-ActLike);
+   power/refinery/repair cross-satisfy across all three eras; radar/tech stay
+   faction identity. TS tree = fifth badge faction (bit 0x10, digit 'G'), emblem
+   `scripts/tab_emblems/tsgdi.png` (Luke's weathered TS disc); Nod disc comes
+   with the Nod faction. ⚠ `cameo_variants_build.py` wipes hand entries inside
+   its block: TS `_G` entries live in their own appended XML block.
 6. **Helipad footprint** — Luke floated 2x3+bib, my counter 2x2+bib (RA/TD
    parity + height trick if the art spills). His call; any footprint change
    needs a watched land-rearm cycle after.
