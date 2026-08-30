@@ -1607,6 +1607,34 @@ static BuildingTypeClass const ClassTsDrop(STRUCT_TSDROP,
                                            NULL);
 
 /*
+**  TSTURB (TS Power Turbine, GAPOWRUP) — a building ADDON, not a structure.
+**    Built from the sidebar like any building, but placement installs it into
+**    an already-placed TSPOWR (PowersUpBuilding wired in Init_Heap) instead of
+**    unlimboing: the plug object is consumed and the host's Power_Output rises
+**    by the plug's Power. The 1x1 footprint only shapes the placement ghost;
+**    it never occupies map cells. Stats in rules.ini [TSTURB] (TS [GAPOWRUP]).
+*/
+static BuildingTypeClass const ClassTsTurb(STRUCT_TSTURB,
+                                           TXT_NONE,
+                                           "TSTURB",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           false,
+                                           false, false,
+                                           true,               // simple damage imagery (single-frame art)
+                                           false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+/*
 **  TDAFLD (Nod Airstrip) — 4×2 flat tile, ARMOR_STEEL, capturable, crewed.
 **    Wholesale port of TD's STRUCT_AIRSTRIP per tiberiandawn/bdata.cpp:841
 **    (ClassAirStrip). RTTI_UNITTYPE factory; vehicles delivered via cargo
@@ -4308,6 +4336,8 @@ BuildingTypeClass::BuildingTypeClass(StructType type,
     , Capacity(0)
     , Power(0)
     , Drain(0)
+    , PowersUpBuilding(STRUCT_NONE)
+    , UpgradesMax(0)
     , Size(size)
     , ShapeWidth(0)
     , ShapeHeight(0)
@@ -4755,6 +4785,14 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsTech);        // STRUCT_TSTECH (TS Tech Center)
     new BuildingTypeClass(ClassTsDept);        // STRUCT_TSDEPT (TS Service Depot)
     new BuildingTypeClass(ClassTsDrop);        // STRUCT_TSDROP (TS Dropship Bay)
+    new BuildingTypeClass(ClassTsTurb);        // STRUCT_TSTURB (TS Power Turbine addon)
+
+    /*
+    **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so
+    **	the plug relationships are set on the heap copies once all slots exist.
+    */
+    As_Reference(STRUCT_TSPOWR).UpgradesMax = 2;                     // TS [GAPOWR] Upgrades=2
+    As_Reference(STRUCT_TSTURB).PowersUpBuilding = STRUCT_TSPOWR;    // TS [GAPOWRUP]
 }
 
 /***********************************************************************************************

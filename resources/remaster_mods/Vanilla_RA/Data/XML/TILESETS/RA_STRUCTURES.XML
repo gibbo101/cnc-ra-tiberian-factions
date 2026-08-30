@@ -48237,6 +48237,28 @@
 			</Frames>
 		</Value>
 	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSTURB</Name>
+			<Shape>0</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsturb\tsturb-0000.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSTURB</Name>
+			<Shape>1</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tsturb\tsturb-0001.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
 </Tiles>
 	</TilesetTypeClass>
 </Tilesets>

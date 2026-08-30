@@ -1000,6 +1000,20 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         return (false);
     }
 
+    /*
+    **	An addon plug (TS PowersUpBuilding) is only offered while the house owns
+    **	a live building of its host type — there is nowhere to install it
+    **	otherwise. Checked structurally here because prereq tokens won't do it:
+    **	the era rule cross-satisfies infrastructure tokens (an RA power plant
+    **	satisfies a TSPOWR prereq), but a plug needs the literal host.
+    */
+    if (type->What_Am_I() == RTTI_BUILDINGTYPE) {
+        BuildingTypeClass const* btype = (BuildingTypeClass const*)type;
+        if (btype->PowersUpBuilding != STRUCT_NONE && !Has_Building_Active(btype->PowersUpBuilding)) {
+            return (false);
+        }
+    }
+
     // Diagnostic hook 2026-05-19: log Can_Build calls for mod-defined building
     // entries so we can see why a freshly-added TDxxxx might not appear in the
     // sidebar. Filter to TD-prefixed IniNames and rate-limit. Keep in place

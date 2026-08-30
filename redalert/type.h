@@ -761,6 +761,17 @@ public:
     int Drain;
 
     /*
+    **	TS building-addon support (TS PowersUpBuilding=/Upgrades=). A type whose
+    **	PowersUpBuilding names another building type is a plug: it is built like
+    **	any building but never unlimbos onto the map — placing it on a matching
+    **	host installs it there (see BuildingClass::Unlimbo), adding its Power to
+    **	the host's output. UpgradesMax on the HOST type is how many plugs it
+    **	accepts. Plugs live and die with their host and refund on its sale.
+    */
+    StructType PowersUpBuilding;
+    int UpgradesMax;
+
+    /*
     **	This is the size of the building. This size value is a rough indication
     **	of the building's "footprint".
     */

@@ -146,6 +146,15 @@ public:
     unsigned char TsLidTick;
 
     /*
+    **	TS building addons (TS Upgrades). Plugs installed into this building,
+    **	newest last; UpgradeLevel doubles as the cursor into the list. Installed
+    **	plugs add their type's Power to Power_Output and refund on sale. Only
+    **	meaningful on types with a nonzero UpgradesMax.
+    */
+    unsigned char UpgradeLevel;
+    StructType UpgradeTypes[3];
+
+    /*
     **	A building that has been captured will not contain the full compliment
     **	of crew. This is true even if it subsequently gets captured back.
     */
@@ -304,6 +313,9 @@ public:
         return TsLidPhase == 1 || TsLidPhase == 3;
     }
     int Power_Output(void) const;
+    virtual int Refund_Amount(void) const;
+    bool Can_Upgrade(BuildingTypeClass const* plug, HouseClass const* house) const;
+    int Upgrade_Power(void) const;
     CELL Check_Point(CheckPointType cp) const;
 
     /*

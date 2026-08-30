@@ -1475,6 +1475,30 @@ if os.path.isdir(f"{ART}/shp_gtpowr"):
                     [loop("shp_gtpowr_a"), loop("shp_gtpowr_b")],
                     "shp_gtpowrmk", 13, 256, 256, bottom_margin=0)
 
+# ---- TSTURB: Power Turbine addon (TS GAPOWRUP). Never a map object — the
+# tileset exists for the sidebar placement GHOST only (the DLL installs the
+# plug into a TSPOWR and consumes it, building.cpp Unlimbo divert). Art = the
+# plant's own GTPOWR_B turbine sprite, cropped and scaled by the SAME factor
+# the plant's size-pass fit uses so the ghost reads at the installed size.
+if os.path.isdir(f"{ART}/shp_gtpowr_b"):
+    CURRENT_INI[0] = "TSTURB"
+    plant_frames = [load("shp_gtpowr", 0), load("shp_gtpowr", 1)]
+    for d in ("shp_gtpowr_a", "shp_gtpowr_b"):
+        plant_frames += [load(d, i) for i in range(frame_count(d))]
+    pboxes = [f.getbbox() for f in plant_frames if f.getbbox()]
+    plant_uw = max(b[2] for b in pboxes) - min(b[0] for b in pboxes)
+    factor = 256.0 / plant_uw
+    turb = load("shp_gtpowr_b", 0)
+    turb = hq_scale(turb.crop(turb.getbbox()), factor)
+    canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    canvas.paste(turb, ((128 - turb.width) // 2, (128 - turb.height) // 2), turb)
+    write_zip(f"{STRUCT_DIR}/TSTURB.ZIP", "tsturb", [canvas, canvas])
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSTURB", 2)
+    STUB_DIMS["TSTURB"] = [24, 24]
+    emit_sidebar_data("TSTURB", "Power Turbine",
+                      "Installs into a Tiberian Power Plant, adding 50 power. Two per plant.",
+                      "shp_turbicon")
+
 # ---- TSMCV (MCV.VXL render, 32 facings, canvas 384 = classic 48 x 8) ----
 if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(f"{UNITS_DIR}/TSMCV.ZIP"):
     def scale_center(img, factor, canvas):

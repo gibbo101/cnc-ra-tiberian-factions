@@ -2108,6 +2108,29 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
     }
 
     /*
+    **	If this is an addon plug (TS PowersUpBuilding), it never gets unlimboed.
+    **	Instead it installs into the host building under the placement cell: the
+    **	host gains the plug's Power, is restored to full strength (TS behaviour —
+    **	the new hardware arrives with fresh armour), and the plug object is
+    **	consumed. Mirrors the wall divert above: `delete this` then return true
+    **	so the factory completes normally.
+    */
+    if (Class->PowersUpBuilding != STRUCT_NONE) {
+        BuildingClass* host = Map[Coord_Cell(coord)].Cell_Building();
+        if (host != NULL && host->Can_Upgrade(Class, House)) {
+            int oldpower = host->Power_Output();
+            host->UpgradeTypes[host->UpgradeLevel++] = Class->Type;
+            host->House->Adjust_Power(host->Power_Output() - oldpower);
+            host->Strength = host->Class->MaxStrength;
+            host->House->IsRecalcNeeded = true;
+            host->Mark(MARK_CHANGE);
+            delete this;
+            return (true);
+        }
+        return (false);
+    }
+
+    /*
     **	Normal building unlimbo process.
     */
     if (TechnoClass::Unlimbo(coord, dir)) {
@@ -2686,6 +2709,7 @@ BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     , TsLidPhase(0)
     , TsLidStage(0)
     , TsLidTick(0)
+    , UpgradeLevel(0)
     , IsCaptured(false)
     , IsJamming(false)
     , IsJammed(false)
@@ -2707,6 +2731,9 @@ BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     // BuildingTypeClass* from Create_One_Of (vs the StructType-based legacy
     // path that delegates through BuildingTypes.Ptr).
     House->Tracking_Add(this);
+    for (int uidx = 0; uidx < (int)(sizeof(UpgradeTypes) / sizeof(UpgradeTypes[0])); uidx++) {
+        UpgradeTypes[uidx] = STRUCT_NONE;
+    }
     IsSecondShot = !Class->Is_Two_Shooter();
     Strength = Class->MaxStrength;
     Ammo = Class->MaxAmmo;
@@ -7921,10 +7948,61 @@ int BuildingClass::Power_Output(void) const
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
-    if (Class->Power) {
-        return (Class->Power * fixed(LastStrength, Class->MaxStrength));
+    int power = Class->Power + Upgrade_Power();
+    if (power) {
+        return (power * fixed(LastStrength, Class->MaxStrength));
     }
     return (0);
+}
+
+/*
+**	Total Power contributed by installed addon plugs (TS upgrades). Scales with
+**	the host's health via Power_Output like the building's own Power.
+*/
+int BuildingClass::Upgrade_Power(void) const
+{
+    int power = 0;
+    for (int i = 0; i < UpgradeLevel; i++) {
+        if (UpgradeTypes[i] != STRUCT_NONE) {
+            power += BuildingTypeClass::As_Reference(UpgradeTypes[i]).Power;
+        }
+    }
+    return (power);
+}
+
+/*
+**	Selling a building also refunds the addon plugs installed in it, each at
+**	the same sell-back rate as the building itself.
+*/
+int BuildingClass::Refund_Amount(void) const
+{
+    int refund = TechnoClass::Refund_Amount();
+    for (int i = 0; i < UpgradeLevel; i++) {
+        if (UpgradeTypes[i] != STRUCT_NONE) {
+            int cost = BuildingTypeClass::As_Reference(UpgradeTypes[i]).Raw_Cost() * House->CostBias;
+            if (House->IsHuman) {
+                cost = cost * Rule.RefundPercent;
+            }
+            refund += cost;
+        }
+    }
+    return (refund);
+}
+
+/*
+**	Would placing the given addon plug on this building install it here? True
+**	only for the plug's host type, same owner, with a free addon slot.
+**	(TS BuildingClass::Can_Upgrade.)
+*/
+bool BuildingClass::Can_Upgrade(BuildingTypeClass const* plug, HouseClass const* house) const
+{
+    if (plug == NULL || house != House) {
+        return (false);
+    }
+    if (plug->PowersUpBuilding == STRUCT_NONE || plug->PowersUpBuilding != Class->Type) {
+        return (false);
+    }
+    return (UpgradeLevel < Class->UpgradesMax);
 }
 
 /***********************************************************************************************

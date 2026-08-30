@@ -10224,5 +10224,27 @@
 			<BuildIcon>BuildIcon_TSWEAP_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSTURB_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSTURB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSTURB_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSTURB_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END generated TS-tree badge variants -->
+
+	<ObjectTypeClass Name="RA_TSTURB" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSTURB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSTURB_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Turb</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSTURB_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSTURB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSTURB_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Turb</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 </ObjectTypeList>

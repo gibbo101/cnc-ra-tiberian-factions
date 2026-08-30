@@ -7831,6 +7831,19 @@ bool DLLExportClass::Get_Placement_State(uint64 player_id, unsigned char* buffer
             CellClass* cellptr = &Map[cell];
             bool clear = cellptr->Is_Clear_To_Build(PlacementType[CurrentLocalPlayerIndex]->Speed);
 
+            /*
+            **	Addon plugs (TS PowersUpBuilding) place ONTO a host building, so the
+            **	usual clear-ground test is inverted: legal exactly on the cells of a
+            **	host the player can still upgrade, illegal everywhere else.
+            */
+            if (PlacementType[CurrentLocalPlayerIndex]->PowersUpBuilding != STRUCT_NONE) {
+                BuildingClass* host = cellptr->Cell_Building();
+                bool upgradable =
+                    (host != NULL && host->Can_Upgrade(PlacementType[CurrentLocalPlayerIndex], PlayerPtr));
+                pass = upgradable;
+                clear = upgradable;
+            }
+
             CNCPlacementCellInfoStruct& placement_cell_info = placement_info->CellInfo[index++];
             placement_cell_info.PassesProximityCheck = pass;
             placement_cell_info.GenerallyClear = clear;

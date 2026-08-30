@@ -355,6 +355,11 @@ ts_stub TSPOWR "$TMPDIR/tspowr_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tspowr_stub.shp:TSPOWR.SHP")
 ts_stub TSPOWR "$TMPDIR/tspowrmk_stub.shp" 48 48 13
 PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
+# TSTURB 24x24 on a 1x1: the power-turbine addon's placement GHOST (it never
+# stands on the map — placement installs it into a TSPOWR). No MAKE stub: the
+# buildup state is unreachable.
+ts_stub TSTURB "$TMPDIR/tsturb_stub.shp" 24 24 2
+PACK_ARGS+=("$TMPDIR/tsturb_stub.shp:TSTURB.SHP")
 PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")
 # TSFACT 72x72 = the RA-conyard 3x3 box (BSIZE_33) + bib, content inside it
 # (the 4x3 tier read oversized next to the shrunk tier, Luke 2026-08-04).
