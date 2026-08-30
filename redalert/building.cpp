@@ -8051,13 +8051,16 @@ bool BuildingClass::Can_Upgrade(BuildingTypeClass const* plug, HouseClass const*
         return (false);
     }
     /*
-    **	One of each: a second copy of the same plug adds nothing (its special
-    **	is house-level) and would waste a slot. Deviation from TS, which
-    **	allows duplicates (Luke, 2026-08-31).
+    **	One of each for SUPERWEAPON plugs: a second uplink adds nothing (the
+    **	special is house-level) and would waste a slot. Deviation from TS,
+    **	which allows duplicates (Luke, 2026-08-31). Resource plugs stack —
+    **	the power plant takes two turbines by design.
     */
-    for (int i = 0; i < UpgradeLevel; i++) {
-        if (UpgradeTypes[i] == plug->Type) {
-            return (false);
+    if (plug->Type == STRUCT_TSPION) {
+        for (int i = 0; i < UpgradeLevel; i++) {
+            if (UpgradeTypes[i] == plug->Type) {
+                return (false);
+            }
         }
     }
     return (UpgradeLevel < Class->UpgradesMax);
