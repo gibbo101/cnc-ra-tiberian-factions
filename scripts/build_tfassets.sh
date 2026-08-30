@@ -360,10 +360,11 @@ PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 # buildup state is unreachable.
 ts_stub TSTURB "$TMPDIR/tsturb_stub.shp" 24 24 2
 PACK_ARGS+=("$TMPDIR/tsturb_stub.shp:TSTURB.SHP")
-# TSPLUG 72x48 on the 3x2 TSTECH-twin plot (TS Upgrade Centre, addon host).
-ts_stub TSPLUG "$TMPDIR/tsplug_stub.shp" 72 48 2
+# TSPLUG 72x72 on the 3x2 plot (TS Upgrade Centre, addon host): the radar
+# height trick — square canvas, masts rise into the headroom above the box.
+ts_stub TSPLUG "$TMPDIR/tsplug_stub.shp" 72 72 2
 PACK_ARGS+=("$TMPDIR/tsplug_stub.shp:TSPLUG.SHP")
-ts_stub TSPLUG "$TMPDIR/tsplugmk_stub.shp" 72 48 19
+ts_stub TSPLUG "$TMPDIR/tsplugmk_stub.shp" 72 72 19
 PACK_ARGS+=("$TMPDIR/tsplugmk_stub.shp:TSPLUGMAKE.SHP")
 # TSPION 24x24: the Ion Cannon Uplink plug's placement ghost (never on map).
 ts_stub TSPION "$TMPDIR/tspion_stub.shp" 24 24 2
@@ -375,9 +376,12 @@ ts_stub TSFACT "$TMPDIR/tsfact_stub.shp" 72 48 2
 PACK_ARGS+=("$TMPDIR/tsfact_stub.shp:TSFACT.SHP")
 ts_stub TSFACT "$TMPDIR/tsfactmk_stub.shp" 72 48 32
 PACK_ARGS+=("$TMPDIR/tsfactmk_stub.shp:TSFACTMAKE.SHP")
-ts_stub TSTECH "$TMPDIR/tstech_stub.shp" 72 48 2
+# TSTECH 72x72 (2026-08-31, radar height trick with TSPLUG): 3x2 plot kept,
+# square canvas so the dome + antenna rise instead of the legacy height-clamp
+# shrinking the whole building.
+ts_stub TSTECH "$TMPDIR/tstech_stub.shp" 72 72 2
 PACK_ARGS+=("$TMPDIR/tstech_stub.shp:TSTECH.SHP")
-ts_stub TSTECH "$TMPDIR/tstechmk_stub.shp" 72 48 19
+ts_stub TSTECH "$TMPDIR/tstechmk_stub.shp" 72 72 19
 PACK_ARGS+=("$TMPDIR/tstechmk_stub.shp:TSTECHMAKE.SHP")
 ts_stub TSSILO "$TMPDIR/tssilo_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tssilo_stub.shp:TSSILO.SHP")

@@ -1189,8 +1189,6 @@ WAVE2 = [
      "shp_gtsilomk", 19, (256, 256), 250, "shp_siloicon", "TS Tiberium Silo", "Stores excess Tiberium."),
     ("TSHPAD", "shp_gthpad", ["shp_gthpad_a"],
      "shp_gthpadmk", 19, (256, 256), 256, "shp_heliicon", "TS Helipad", "Rearms Tiberian-era aircraft."),
-    ("TSTECH", "shp_gttech", ["shp_gttech_a"],
-     "shp_gttechmk", 19, (384, 256), 375, "shp_techicon", "TS Tech Center", "Unlocks advanced Tiberian technology."),
     ("TSDEPT", "shp_gtdept", ["shp_gtdept_a", "shp_gtdept_b"],
      "shp_gtdeptmk", 19, (384, 384), 382, "shp_fixicon", "TS Service Depot", "Repairs vehicles and aircraft."),
     # The dropship bay is the depot's apron plate promoted to a building of its
@@ -1394,6 +1392,13 @@ SIZEPASS = [
     ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
      "shp_gtradrmk", 20, (256, 512), 21, 1.0, "shp_radricon",
      "TS Radar", "Provides radar coverage."),
+    # TSTECH on the radar height trick (Luke, 2026-08-31): keep the 3x2 plot,
+    # let the dome + antenna rise into a square canvas's headroom instead of
+    # the whole building shrinking to the old height-clamped legacy fit.
+    # margin 12 = (stub 72 − box 48)/2: content bottom on the plot's south edge.
+    ("TSTECH", "shp_gttech", ["shp_gttech_a"],
+     "shp_gttechmk", 19, (384, 384), 12, 1.0, "shp_techicon",
+     "TS Tech Center", "Unlocks advanced Tiberian technology."),
 ]
 
 for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc in SIZEPASS:
@@ -1545,19 +1550,34 @@ if os.path.isdir(f"{ART}/shp_gtpowr_b"):
 # inside n=40. TSPION's own tileset is the placement GHOST only, scaled by the
 # centre's fit factor so the ghost reads at installed size.
 if os.path.isdir(f"{ART}/shp_gtplug"):
-    dish10 = [round(i * 15 / 10) for i in range(10)]
+    # Anim windows straight from TS ART.INI (the halved-windows convention is
+    # WRONG for this building — Luke caught the mid-sweep snap, 2026-08-31):
+    #   [GAPLUG_A]  LoopEnd=20, no ping-pong -> the full 20 frames are ONE
+    #               cycle, both runs (no damaged form).
+    #   [GAPLUG_B]  healthy 0-8 straight; [GAPLUG_BD] damaged = 10-19
+    #               PING-PONGED. Healthy trimmed to 8 (drops the 9th frame) so
+    #               n stays LCM(20,8,8)=40; damaged ping-pong resampled to 20.
+    #   [GAPLUG_C]  LoopEnd=8, no ping-pong -> full 8 both runs.
+    #   [GAPLUG_F]  (uplink dish) PingPong=yes -> 0..14,13..1 (28 steps),
+    #               resampled to 20, same both runs (no damaged form).
+    def resample(seq, count):
+        return [seq[round(k * (len(seq) - 1) / (count - 1))] for k in range(count)]
+    bd_pong = resample(list(range(10, 20)) + list(range(18, 10, -1)), 20)
+    dish_pong = resample(list(range(15)) + list(range(13, 0, -1)), 20)
     dst = f"{ART}/shp_gtplug_f_p1"
     os.makedirs(dst, exist_ok=True)
-    for k, i in enumerate(dish10):
+    for k, i in enumerate(dish_pong):
         Image.open(f"{ART}/shp_gtplug_f/frame-{i:04d}.png").convert("RGBA").save(
             f"{dst}/frame-{k:04d}.png")
-    spin10 = list(range(10))
+    spin20 = list(range(20))
     build_structure("TSPLUG", "shp_gtplug", 0, 1,
-                    [loop("shp_gtplug_a"),
-                     ("shp_gtplug_b", list(range(8)), list(range(10, 18))),
-                     loop("shp_gtplug_c")],
-                    "shp_gtplugmk", 19, 384, 256, target_w=375,
-                    powerup_layers=[("shp_gtplug_f_p1", spin10, spin10)])
+                    [("shp_gtplug_a", list(range(20)), list(range(20))),
+                     ("shp_gtplug_b", list(range(8)), bd_pong),
+                     ("shp_gtplug_c", list(range(8)), list(range(8)))],
+                    # The radar height trick: 3x2 plot, square canvas, masts in
+                    # the headroom. margin 12 = (stub 72 − box 48)/2.
+                    "shp_gtplugmk", 19, 384, 384, bottom_margin=12,
+                    powerup_layers=[("shp_gtplug_f_p1", spin20, spin20)])
     emit_sidebar_data("TSPLUG", "Upgrade Center",
                       "Hosts superweapon upgrade plugs. Two slots. Detects cloaked units.",
                       "shp_plugicon")
@@ -1571,9 +1591,11 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
     write_zip(f"{STRUCT_DIR}/TSPION.ZIP", "tspion", [canvas, canvas])
     patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPION", 2)
     STUB_DIMS["TSPION"] = [24, 24]
+    # RAD3ICON is the uplink's real TS cameo (ART.INI [GAPLUG_F] Cameo=);
+    # IONCICON is the satellite — the SUPERWEAPON's targeting icon.
     emit_sidebar_data("TSPION", "Ion Cannon Uplink",
                       "Installs into an Upgrade Center, granting the Ion Cannon.",
-                      "shp_ioncicon")
+                      "shp_rad3icon")
 
 # ---- TSMCV (MCV.VXL render, 32 facings, canvas 384 = classic 48 x 8) ----
 if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(f"{UNITS_DIR}/TSMCV.ZIP"):
