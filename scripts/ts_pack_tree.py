@@ -37,6 +37,11 @@ STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
 STUB_DIMS = {}
 CANVAS_PER_CLASSIC_PX = 16.0 / 3.0
 
+# The affine scale each packed building actually shipped at (the fit's clamps
+# applied), for satellite art that must match — an addon plug's placement
+# ghost is scaled by its host's factor.
+FIT_FACTOR = {}
+
 
 # Source-pixel patches, (dirname) -> [((x, y), (x, y) to copy from)]. NTREFN's
 # rib foot carries three orange pixels that read as a red spark in HD
@@ -457,6 +462,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         factor = min(factor, float(canvas_w) / (ux1 - ux0), float(canvas_h) / (uy1 - uy0))
         cx, cy = (ux0 + ux1) / 2.0, (uy0 + uy1) / 2.0
         dst_x = dst_y = None
+    FIT_FACTOR[ini] = factor
 
     mk_pad_erase = None
     mk_building_sil = None
@@ -1529,6 +1535,45 @@ if os.path.isdir(f"{ART}/shp_gtpowr_b"):
     emit_sidebar_data("TSTURB", "Power Turbine",
                       "Installs into a Tiberian Power Plant, adding 50 power. Two per plant.",
                       "shp_turbicon")
+
+# ---- TSPLUG: TS GDI Upgrade Centre (3x2 TSTECH twin, GAPLUG art) + the Ion
+# Cannon Uplink plug (TSPION). GTPLUG anim windows: _A masts 20 real (10/10
+# halves), _B lights real 0-7 + 10-17 (halves at stride 10 with 2 pad frames),
+# _C 8 real (4/4) -> n = LCM(10,8,4) = 40. The uplink dish (GTPLUG_F, 15 real
+# frames, no damaged form) is the level-1 powerup layer at slot 1's PowerUp1Loc
+# anchor (0,0); its 15-frame cycle is resampled to 10 so it wraps cleanly
+# inside n=40. TSPION's own tileset is the placement GHOST only, scaled by the
+# centre's fit factor so the ghost reads at installed size.
+if os.path.isdir(f"{ART}/shp_gtplug"):
+    dish10 = [round(i * 15 / 10) for i in range(10)]
+    dst = f"{ART}/shp_gtplug_f_p1"
+    os.makedirs(dst, exist_ok=True)
+    for k, i in enumerate(dish10):
+        Image.open(f"{ART}/shp_gtplug_f/frame-{i:04d}.png").convert("RGBA").save(
+            f"{dst}/frame-{k:04d}.png")
+    spin10 = list(range(10))
+    build_structure("TSPLUG", "shp_gtplug", 0, 1,
+                    [loop("shp_gtplug_a"),
+                     ("shp_gtplug_b", list(range(8)), list(range(10, 18))),
+                     loop("shp_gtplug_c")],
+                    "shp_gtplugmk", 19, 384, 256, target_w=375,
+                    powerup_layers=[("shp_gtplug_f_p1", spin10, spin10)])
+    emit_sidebar_data("TSPLUG", "Upgrade Center",
+                      "Hosts superweapon upgrade plugs. Two slots. Detects cloaked units.",
+                      "shp_plugicon")
+
+    plug_factor = FIT_FACTOR["TSPLUG"]
+    CURRENT_INI[0] = "TSPION"
+    dish = load("shp_gtplug_f", 0)
+    dish = hq_scale(dish.crop(dish.getbbox()), plug_factor)
+    canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    canvas.paste(dish, ((128 - dish.width) // 2, (128 - dish.height) // 2), dish)
+    write_zip(f"{STRUCT_DIR}/TSPION.ZIP", "tspion", [canvas, canvas])
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPION", 2)
+    STUB_DIMS["TSPION"] = [24, 24]
+    emit_sidebar_data("TSPION", "Ion Cannon Uplink",
+                      "Installs into an Upgrade Center, granting the Ion Cannon.",
+                      "shp_ioncicon")
 
 # ---- TSMCV (MCV.VXL render, 32 facings, canvas 384 = classic 48 x 8) ----
 if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(f"{UNITS_DIR}/TSMCV.ZIP"):

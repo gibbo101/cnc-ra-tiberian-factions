@@ -6814,6 +6814,13 @@ static int TF_Special_Display_Mask(SpecialWeaponType id, HouseClass* house)
     case SPC_IRON_CURTAIN:
         return (TF_FACTION_SOVIET);
     case SPC_TD_ION_CANNON:
+        /*
+        **	Granted by the TD Advanced Comm Centre (GDI) or the TS Ion Cannon
+        **	Uplink plug — badge whichever source the house actually has.
+        */
+        if (!house->Has_Building_Active(STRUCT_TDEYE) && TF_House_Has_Plug(house, STRUCT_TSPION)) {
+            return (TF_FACTION_TSGDI);
+        }
         return (TF_FACTION_GDI);
     case SPC_TD_NUKE:
     case SPC_TD_PARA_INFANTRY:

@@ -10231,6 +10231,20 @@
 			<BuildIcon>BuildIcon_TSTURB_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSPLUG_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPLUG</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPLUG_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSPLUG_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSPION_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPION</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPION_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSPION_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END generated TS-tree badge variants -->
 
 	<ObjectTypeClass Name="RA_TSTURB" Classification="CNCBuildableObject" CanInstantiate="False">
@@ -10245,6 +10259,36 @@
 			<ObjectNameTextID>TEXT_STRUCTURE_TSTURB</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSTURB_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TS_Turb</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSPLUG" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPLUG</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPLUG_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Plug</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSPLUG_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPLUG</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPLUG_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Plug</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSPION" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPION</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPION_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Pion</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSPION_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPION</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPION_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Pion</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 </ObjectTypeList>

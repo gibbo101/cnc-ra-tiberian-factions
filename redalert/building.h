@@ -316,6 +316,7 @@ public:
     virtual int Refund_Amount(void) const;
     bool Can_Upgrade(BuildingTypeClass const* plug, HouseClass const* house) const;
     int Upgrade_Power(void) const;
+    int Upgrade_Drain(void) const;
     CELL Check_Point(CheckPointType cp) const;
 
     /*

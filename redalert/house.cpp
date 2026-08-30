@@ -897,6 +897,27 @@ HouseStaticClass::HouseStaticClass(void)
 **  skips them and the sidebar never faction-badges their cameos
 **  (docs/ts-gdi-tree-plan.md).
 */
+/*
+**	Does this house have the given addon plug installed in any live building?
+**	Plugs never stand on the map (they live inside their host's UpgradeTypes),
+**	so ownership tests for what a plug grants — the Ion Cannon Uplink's
+**	superweapon — scan the building heap rather than Has_Building_Active.
+*/
+bool TF_House_Has_Plug(HouseClass const* house, StructType plug)
+{
+    for (int i = 0; i < Buildings.Count(); i++) {
+        BuildingClass const* b = Buildings.Ptr(i);
+        if (b != NULL && b->IsActive && !b->IsInLimbo && b->House == house && b->Strength > 0) {
+            for (int u = 0; u < b->UpgradeLevel; u++) {
+                if (b->UpgradeTypes[u] == plug) {
+                    return (true);
+                }
+            }
+        }
+    }
+    return (false);
+}
+
 bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type)
 {
     if (type == NULL) {
@@ -2519,9 +2540,12 @@ void HouseClass::Super_Weapon_Handler(void)
     **  type is past 31 (STRUCT_TDEYE can't fit in the 32-bit BScan mask).
     **  No side restriction here — any house with a TDEYE gets the super,
     **  which matches HOUSEF_GOOD ownership on the building itself.
+    **  The TS Ion Cannon Uplink plug (TSPION, installed in a TSPLUG) is a
+    **  second grantor: same special, either source keeps it alive.
     */
+    bool ion_host = Has_Building_Active(STRUCT_TDEYE) || TF_House_Has_Plug(this, STRUCT_TSPION);
     if (SuperWeapon[SPC_TD_ION_CANNON].Is_Present()) {
-        if ((!Has_Building_Active(STRUCT_TDEYE) && !SuperWeapon[SPC_TD_ION_CANNON].Is_One_Time()) || IsDefeated) {
+        if ((!ion_host && !SuperWeapon[SPC_TD_ION_CANNON].Is_One_Time()) || IsDefeated) {
             if (SuperWeapon[SPC_TD_ION_CANNON].Remove()) {
                 if (this == PlayerPtr) {
                     if (Map.IsTargettingMode == SPC_TD_ION_CANNON) {
@@ -2537,7 +2561,7 @@ void HouseClass::Super_Weapon_Handler(void)
             }
         }
     } else {
-        if (Has_Building_Active(STRUCT_TDEYE) && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
+        if (ion_host && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
             SuperWeapon[SPC_TD_ION_CANNON].Enable(false, this == PlayerPtr, Power_Fraction() < 1);
             if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
                 if (IsHuman) {

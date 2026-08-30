@@ -360,6 +360,14 @@ PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 # buildup state is unreachable.
 ts_stub TSTURB "$TMPDIR/tsturb_stub.shp" 24 24 2
 PACK_ARGS+=("$TMPDIR/tsturb_stub.shp:TSTURB.SHP")
+# TSPLUG 72x48 on the 3x2 TSTECH-twin plot (TS Upgrade Centre, addon host).
+ts_stub TSPLUG "$TMPDIR/tsplug_stub.shp" 72 48 2
+PACK_ARGS+=("$TMPDIR/tsplug_stub.shp:TSPLUG.SHP")
+ts_stub TSPLUG "$TMPDIR/tsplugmk_stub.shp" 72 48 19
+PACK_ARGS+=("$TMPDIR/tsplugmk_stub.shp:TSPLUGMAKE.SHP")
+# TSPION 24x24: the Ion Cannon Uplink plug's placement ghost (never on map).
+ts_stub TSPION "$TMPDIR/tspion_stub.shp" 24 24 2
+PACK_ARGS+=("$TMPDIR/tspion_stub.shp:TSPION.SHP")
 PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")
 # TSFACT 72x72 = the RA-conyard 3x3 box (BSIZE_33) + bib, content inside it
 # (the 4x3 tier read oversized next to the shrunk tier, Luke 2026-08-04).

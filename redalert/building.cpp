@@ -1247,7 +1247,7 @@ int BuildingClass::Shape_Number(void) const
         **	per level, so the level stride is twice the idle anim extent
         **	(TSPOWR: 2 x 12 = 24, turbines baked onto the plant per level).
         */
-        if (UpgradeLevel != 0 && *this == STRUCT_TSPOWR) {
+        if (UpgradeLevel != 0 && (*this == STRUCT_TSPOWR || *this == STRUCT_TSPLUG)) {
             shapenum += UpgradeLevel * 2 * (Class->Anims[BSTATE_IDLE].Start + Class->Anims[BSTATE_IDLE].Count);
         }
     }
@@ -1775,6 +1775,19 @@ static bool TF_Stealth_Detector_In_Range(TechnoClass const* obj, int range)
             return (true);
         }
     }
+    /*
+    **	Scanner BUILDINGS (TS Sensors=yes — the TS Upgrade Centre) detect at
+    **	their own Sight range rather than the short foot-detector radius: a
+    **	fixed sensor structure covers its surroundings, TS-style.
+    */
+    for (int i = 0; i < Buildings.Count(); i++) {
+        BuildingClass* b = Buildings.Ptr(i);
+        if (b != NULL && b->IsActive && !b->IsInLimbo && !b->House->Is_Ally(owner)
+            && b->Class->IsScanner
+            && ::Distance(b->Center_Coord(), oc) <= b->Class->SightRange * CELL_LEPTON_W) {
+            return (true);
+        }
+    }
     return (false);
 }
 
@@ -2131,6 +2144,7 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
             int oldpower = host->Power_Output();
             host->UpgradeTypes[host->UpgradeLevel++] = Class->Type;
             host->House->Adjust_Power(host->Power_Output() - oldpower);
+            host->House->Adjust_Drain(Class->Drain);
             host->Strength = host->Class->MaxStrength;
             host->House->IsRecalcNeeded = true;
             host->Mark(MARK_CHANGE);
@@ -4253,7 +4267,7 @@ bool BuildingClass::Limbo(void)
         **	Update the power status of the owner's house.
         */
         House->Adjust_Power(-Power_Output());
-        House->Adjust_Drain(-Class->Drain);
+        House->Adjust_Drain(-(Class->Drain + Upgrade_Drain()));
         House->Adjust_Capacity(-Class->Capacity, true);
         if (House == PlayerPtr) {
             Map.PowerClass::IsToRedraw = true;
@@ -4410,9 +4424,10 @@ void BuildingClass::Grand_Opening(bool captured)
 
         /*
         **	Adjust the owning house according to the power, drain, and Tiberium capacity that
-        **	this building has.
+        **	this building has. Installed addon plugs' drain rides along (relevant on
+        **	the captured re-open, where plugs are already present).
         */
-        House->Adjust_Drain(Class->Drain);
+        House->Adjust_Drain(Class->Drain + Upgrade_Drain());
         House->Adjust_Capacity(Class->Capacity);
         House->IsRecalcNeeded = true;
 
@@ -5194,7 +5209,7 @@ bool BuildingClass::Captured(HouseClass* newowner)
 
         House->Adjust_Power(-Power_Output());
         LastStrength = 0;
-        House->Adjust_Drain(-Class->Drain);
+        House->Adjust_Drain(-(Class->Drain + Upgrade_Drain()));
         int booty = House->Adjust_Capacity(-Class->Capacity, true);
 
         /*
@@ -7988,6 +8003,22 @@ int BuildingClass::Upgrade_Power(void) const
 }
 
 /*
+**	Total power Drain of installed addon plugs. Rides the host at every
+**	Adjust_Drain site (open, limbo, capture) so plug drain lives and dies
+**	with its host exactly as the host's own drain does.
+*/
+int BuildingClass::Upgrade_Drain(void) const
+{
+    int drain = 0;
+    for (int i = 0; i < UpgradeLevel; i++) {
+        if (UpgradeTypes[i] != STRUCT_NONE) {
+            drain += BuildingTypeClass::As_Reference(UpgradeTypes[i]).Drain;
+        }
+    }
+    return (drain);
+}
+
+/*
 **	Selling a building also refunds the addon plugs installed in it, each at
 **	the same sell-back rate as the building itself.
 */
@@ -8018,6 +8049,16 @@ bool BuildingClass::Can_Upgrade(BuildingTypeClass const* plug, HouseClass const*
     }
     if (plug->PowersUpBuilding == STRUCT_NONE || plug->PowersUpBuilding != Class->Type) {
         return (false);
+    }
+    /*
+    **	One of each: a second copy of the same plug adds nothing (its special
+    **	is house-level) and would waste a slot. Deviation from TS, which
+    **	allows duplicates (Luke, 2026-08-31).
+    */
+    for (int i = 0; i < UpgradeLevel; i++) {
+        if (UpgradeTypes[i] == plug->Type) {
+            return (false);
+        }
     }
     return (UpgradeLevel < Class->UpgradesMax);
 }

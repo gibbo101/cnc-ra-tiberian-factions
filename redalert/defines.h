@@ -1591,6 +1591,8 @@ typedef enum StructType : short
     STRUCT_TSDEPT, // TS Service Depot "TSDEPT" (GADEPT, 3x3) — repair bay.
     STRUCT_TSDROP, // TS Dropship Bay "TSDROP" (Westwood's cut GADROP, 3x3) — the Mammoth Mk. II arrives here by Orca. Art is TSDEPT's octagonal pad alone (shp_gtdeptbb); the gantry and its anims are unused.
     STRUCT_TSTURB, // TS Power Turbine "TSTURB" (GAPOWRUP) — a building ADDON: never unlimbos onto the map, installs into a placed TSPOWR (PowersUpBuilding) and adds its Power. Art = the plant's own GTPOWR_B turbine.
+    STRUCT_TSPLUG, // TS GDI Upgrade Centre "TSPLUG" (GAPLUG, 3x2 like TSTECH) — the addon HOST with 2 plug slots; cloak sensor (IsScanner). Drain 150.
+    STRUCT_TSPION, // TS Ion Cannon Uplink "TSPION" (GAPLUG3) — addon plug for TSPLUG; grants the GDI Ion Cannon special while installed. Drain 100. Art = GTPLUG_F dish.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
@@ -1613,7 +1615,7 @@ typedef enum StructType : short
     **	Second range of BuildingTypeClass::Is_Tiberian_Era.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TSTURB
+    STRUCT_TS_TREE_LAST = STRUCT_TSPION
 } StructType;
 
 /*

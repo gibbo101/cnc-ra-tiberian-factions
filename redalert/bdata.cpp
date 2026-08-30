@@ -1635,6 +1635,59 @@ static BuildingTypeClass const ClassTsTurb(STRUCT_TSTURB,
                                            (short const*)NULL);
 
 /*
+**  TSPLUG (TS GDI Upgrade Centre, GAPLUG) — the 2-slot addon HOST of the
+**    upgrade mechanic (UpgradesMax wired in Init_Heap). Physically a TSTECH
+**    twin: 3x2 plot, GTPLUG art via the Stealth Recipe. Sensors=yes in TS —
+**    IsScanner set in Init_Heap; TF_Stealth_Detector_In_Range gives scanner
+**    BUILDINGS detection at their own Sight range. Stats in rules.ini
+**    [TSPLUG] (TS [GAPLUG]: cost 1000, Str 1000, Power=-150, TL10).
+*/
+static BuildingTypeClass const ClassTsPlug(STRUCT_TSPLUG,
+                                           TXT_NONE,
+                                           "TSPLUG",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           true,               // anim regulated (masts/lights cycle)
+                                           false, false, false, false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_32,           // TSTECH twin.
+                                           NULL,
+                                           (short const*)List32,
+                                           NULL);
+
+/*
+**  TSPION (Ion Cannon Uplink, GAPLUG3) — addon plug for TSPLUG, same
+**    never-on-the-map contract as TSTURB. While installed anywhere in the
+**    house, the GDI Ion Cannon special is granted (house.cpp AI, the TDEYE
+**    predicate). Stats in rules.ini [TSPION] (TS [GAPLUG3]: cost 1500,
+**    Power=-100, TL10).
+*/
+static BuildingTypeClass const ClassTsPion(STRUCT_TSPION,
+                                           TXT_NONE,
+                                           "TSPION",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           false,
+                                           false, false,
+                                           true,               // simple damage imagery (ghost art)
+                                           false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+/*
 **  TDAFLD (Nod Airstrip) — 4×2 flat tile, ARMOR_STEEL, capturable, crewed.
 **    Wholesale port of TD's STRUCT_AIRSTRIP per tiberiandawn/bdata.cpp:841
 **    (ClassAirStrip). RTTI_UNITTYPE factory; vehicles delivered via cargo
@@ -4786,6 +4839,8 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsDept);        // STRUCT_TSDEPT (TS Service Depot)
     new BuildingTypeClass(ClassTsDrop);        // STRUCT_TSDROP (TS Dropship Bay)
     new BuildingTypeClass(ClassTsTurb);        // STRUCT_TSTURB (TS Power Turbine addon)
+    new BuildingTypeClass(ClassTsPlug);        // STRUCT_TSPLUG (TS Upgrade Centre, addon host)
+    new BuildingTypeClass(ClassTsPion);        // STRUCT_TSPION (Ion Cannon Uplink addon)
 
     /*
     **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so
@@ -4793,6 +4848,9 @@ void BuildingTypeClass::Init_Heap(void)
     */
     As_Reference(STRUCT_TSPOWR).UpgradesMax = 2;                     // TS [GAPOWR] Upgrades=2
     As_Reference(STRUCT_TSTURB).PowersUpBuilding = STRUCT_TSPOWR;    // TS [GAPOWRUP]
+    As_Reference(STRUCT_TSPLUG).UpgradesMax = 2;                     // TS [GAPLUG] Upgrades=2
+    As_Reference(STRUCT_TSPLUG).IsScanner = true;                    // TS Sensors=yes: cloak detector
+    As_Reference(STRUCT_TSPION).PowersUpBuilding = STRUCT_TSPLUG;    // TS [GAPLUG3]
 }
 
 /***********************************************************************************************
@@ -4960,6 +5018,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)
         {STRUCT_TSTECH, BSTATE_IDLE, 0, 8, 3},   // GATECH _A halved (8 healthy + 8 damage-pocked dome)
         {STRUCT_TSDEPT, BSTATE_IDLE, 0, 35, 3},  // GADEPT _A halved(5)+_B whole(7, odd=no damaged half) -> LCM 35
+        {STRUCT_TSPLUG, BSTATE_IDLE, 0, 40, 3},  // GAPLUG windows _A(10)+_B(8)+_C(4) -> LCM 40
         // TSSILO is static (no TS idle anim): shape 0 healthy, 1 damaged.
     };
 
