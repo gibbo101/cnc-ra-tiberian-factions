@@ -4107,6 +4107,10 @@ typedef enum VocType : short
     VOC_TS_FLAMTNK1,     // TS flame tank fire (FLAMTNK1, TS FireballLauncher Report) -- routed via RAC/RAR_SFX_FLAMTNK1 -> bundled TDR_SFX_TURRFIR5.WAV (dormant-sample host).
     VOC_TS_SUBDRIL1,     // TS subterranean dig (SUBDRIL1, TS [AudioVisual] DigSound) -- routed via RAC/RAR_SFX_SUBDRIL1 -> bundled TDR_SFX_SAMMOTR2.WAV.
     VOC_TS_ION1,         // TS Ion Cannon strike (ION1, TS art.ini [IONBEAM] Report=) -- ANIM_TS_ION_BEAM's sound. Routed via RAC/RAR_SFX_TSION1 -> bundled TSION1.WAV under its OWN name (the novel-name path, proven 2026-08-31).
+    VOC_TD_MONEY_UP,     // TD credit tick up (TONE15) -- DLL-fired faction tick for GDI/Nod; the launcher's own cashup1 event is data-silenced.
+    VOC_TD_MONEY_DOWN,   // TD credit tick down (TONE16) -- as above.
+    VOC_DLL_MONEY_UP,    // RA credit tick up re-fired by the DLL under alias CASHUPD (stock RA?_SFX_cashup1 events are silenced; this alias points at the original sample).
+    VOC_DLL_MONEY_DOWN,  // RA credit tick down re-fired by the DLL under alias CASHDND.
 
     VOC_COUNT,
     VOC_FIRST = 0

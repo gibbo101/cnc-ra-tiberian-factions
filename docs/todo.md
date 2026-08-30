@@ -28,8 +28,8 @@ Related queued arcs from the same evening's assessment: TS EVA/CABAL faction voi
 (2026-08-30/31 audit probes ALL RESOLVED — results in the canonical docs: ⭐ NOVEL sample
 names RESOLVE from loose files — the dormant-host constraint is FALSIFIED, every historic
 failure was file format → full rules in `launcher-render-contracts.md` §dormant hosts
-(one-shot confirm on the nonlocalized weapon-SFX channel queued for the next shipped
-weapon sound); loose `.MTD` = ignored, region geometry launcher-owned →
+(PROVEN ON BOTH CHANNELS 2026-08-31 — EVA/localized and weapon-SFX/nonlocalized, the
+MGUN2 minigunner probe); loose `.MTD` = ignored, region geometry launcher-owned →
 `ui-atlas-modding.md`; never probe audio via the credit tick.)
 
 ---

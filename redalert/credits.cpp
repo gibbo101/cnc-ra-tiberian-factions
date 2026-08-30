@@ -100,9 +100,8 @@ void CreditClass::Graphic_Logic(bool forced)
         **	effect was requested.
         */
         if (IsAudible) {
-            // NB: in REMASTER_BUILD this block does not run — GlyphX draws the
-            // credit counter and plays the tick itself, so the credit tick
-            // cannot be faction-routed from the DLL. See building-sound-routing.md.
+            // NB: in REMASTER_BUILD this block does not run (GlyphX owns the draw
+            // path); the faction-routed tick fires from CreditClass::AI instead.
             if (IsUp) {
                 Sound_Effect(VOC_MONEY_UP, fixed(1, 2));
             } else {
@@ -267,6 +266,21 @@ void CreditClass::AI(bool forced, HouseClass* player_ptr, bool logic_only)
         if (Current - adder != Current) {
             IsAudible = true;
             IsUp = (adder > 0);
+#ifdef REMASTER_BUILD
+            /*
+            **	GlyphX displays this roll (VisibleCredits.Current is exported as the
+            **	sidebar counter) but never branches on faction, so its stock tick
+            **	events are data-silenced and the tick is fired here instead, where
+            **	the owning faction is known. Local player's HUD only.
+            */
+            if (player_ptr == PlayerPtr) {
+                if (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD) {
+                    Sound_Effect(IsUp ? VOC_TD_MONEY_UP : VOC_TD_MONEY_DOWN, fixed(1, 2));
+                } else {
+                    Sound_Effect(IsUp ? VOC_DLL_MONEY_UP : VOC_DLL_MONEY_DOWN, fixed(1, 2));
+                }
+            }
+#endif
         }
     }
     IsToRedraw = true;

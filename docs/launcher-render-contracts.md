@@ -344,9 +344,10 @@ highest quality the pipeline can produce.** Concretely:
   2026-08-31: an actual TS EVA line played in-game** — TIBSUN.MIX SPEECH01.MIX
   `00-I018.AUD` → ts_aud_decode.py → `ffmpeg -ac 2 -ar 44077 -c:a adpcm_ms`
   (default align 1024 IS accepted on the EVA channel) → loose novel name →
-  localized event repoint. Proven on the localized/EVA channel; nonlocalized
-  weapon-SFX expected identical (its old failure was the PCM confound) —
-  one-shot confirm when the next weapon sound ships. Probe
+  localized event repoint. **PROVEN ON BOTH CHANNELS**: localized/EVA (TS EVA
+  line in-game) AND nonlocalized weapon-SFX (2026-08-31: MGUN2 repointed at a
+  novel-named 22050-mono MS-ADPCM WAV played on every minigunner shot). No
+  caveats remain — the dormant-host constraint is fully dead. Probe
   side-lesson: never probe audio via the launcher-fired credit tick (any loose
   override silences it — bad vehicle).
   Used so far: `BONUS_UNLOCK` (hover missile), `DINOATK1` (railgun),

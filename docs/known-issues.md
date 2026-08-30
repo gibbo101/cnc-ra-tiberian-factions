@@ -8,6 +8,17 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## MP clients hear no credit tick (faction-routed tick, 2026-08-31)
+
+- **Severity:** minor. **Status:** open, by design for now.
+- The faction-routed credit tick silences the launcher's stock `cashup1`/`cashdn1`
+  events and re-fires from the DLL for the local player only (`credits.cpp`
+  `CreditClass::AI`). In LAN MP the sim is host-only, so client HUDs get the
+  silenced events and no DLL fire — silent tick. Fix would need per-player sound
+  targeting (`DLLExportClass::On_Sound_Effect` takes a `player_ptr`; the global
+  `Sound_Effect` wrapper hardcodes `PlayerPtr`). Detail:
+  `building-sound-routing.md` §2.
+
 ## TS building placement (ts-units branch)
 
 ### TS power plant and TS radar placement — FIXED 2026-08-28 (Luke: "fixed!")

@@ -300,6 +300,10 @@ struct SoundEffectNameStruct
     {"FLAMTNK1", 1, IN_NOVAR},    // VOC_TS_FLAMTNK1 -- TS flame tank fire (WEAPON_TSFIREBALL Report=FLAMTNK1), routed via RAC/RAR_SFX_FLAMTNK1 (bundled WAV under TDR_SFX_TURRFIR5)
     {"SUBDRIL1", 1, IN_NOVAR},    // VOC_TS_SUBDRIL1 -- TS subterranean dig sound (UnitClass::Tunnel_AI), routed via RAC/RAR_SFX_SUBDRIL1 (bundled WAV under TDR_SFX_SAMMOTR2)
     {"TSION1", 1, IN_NOVAR},      // VOC_TS_ION1 -- TS Ion Cannon strike (ANIM_TS_ION_BEAM), routed via RAC/RAR_SFX_TSION1 (bundled TSION1.WAV, own name)
+    {"TONE15", 10, IN_NOVAR},     // VOC_TD_MONEY_UP -- TD rising money tick (RAC/RAR_SFX_TONE15 -> TD?_SFX_TONE15.WAV)
+    {"TONE16", 10, IN_NOVAR},     // VOC_TD_MONEY_DOWN -- TD falling money tick (RAC/RAR_SFX_TONE16 -> TD?_SFX_TONE16.WAV)
+    {"CASHUPD", 10, IN_NOVAR},    // VOC_DLL_MONEY_UP -- RA rising money tick, DLL-fired alias (RAC/RAR_SFX_CASHUPD -> RA?_SFX_cashup1.WAV)
+    {"CASHDND", 10, IN_NOVAR},    // VOC_DLL_MONEY_DOWN -- RA falling money tick, DLL-fired alias (RAC/RAR_SFX_CASHDND -> RA?_SFX_cashdn1.WAV)
 };
 
 //

@@ -4099,7 +4099,7 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
 	<SFXEvent Name="RAC_SFX_cashdn1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
 		<IsPreset> False </IsPreset>
 		<SampleNamesList>
-			<entry> RAC_SFX_cashdn1.WAV </entry>
+			<entry> SILENTD.WAV </entry>
 		</SampleNamesList>
 	</SFXEvent>
 
@@ -4114,7 +4114,7 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
 	<SFXEvent Name="RAC_SFX_cashup1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
 		<IsPreset> False </IsPreset>
 		<SampleNamesList>
-			<entry> RAC_SFX_cashup1.WAV </entry>
+			<entry> SILENTD.WAV </entry>
 		</SampleNamesList>
 	</SFXEvent>
 
@@ -5064,7 +5064,7 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
 	<SFXEvent Name="RAR_SFX_cashdn1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
 		<IsPreset> False </IsPreset>
 		<SampleNamesList>
-			<entry> RAR_SFX_cashdn1.WAV </entry>
+			<entry> SILENTD.WAV </entry>
 		</SampleNamesList>
 	</SFXEvent>
 
@@ -5079,7 +5079,7 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
 	<SFXEvent Name="RAR_SFX_cashup1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
 		<IsPreset> False </IsPreset>
 		<SampleNamesList>
-			<entry> RAR_SFX_cashup1.WAV </entry>
+			<entry> SILENTD.WAV </entry>
 		</SampleNamesList>
 	</SFXEvent>
 
@@ -6678,6 +6678,62 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> TDR_SFX_CRUMBLE.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+	<SFXEvent Name="RAC_SFX_TONE15" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDC_SFX_TONE15.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_TONE15" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDR_SFX_TONE15.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAC_SFX_TONE16" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDC_SFX_TONE16.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_TONE16" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDR_SFX_TONE16.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAC_SFX_CASHUPD" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> RAC_SFX_cashup1.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_CASHUPD" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> RAR_SFX_cashup1.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAC_SFX_CASHDND" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> RAC_SFX_cashdn1.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_CASHDND" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> RAR_SFX_cashdn1.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
 </SFXEvents>
 
 
