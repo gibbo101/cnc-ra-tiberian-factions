@@ -493,7 +493,7 @@ rules.ini now holds the **verbatim TD-source STRNTH** and the engine doubles it 
 
 **Status:** PARKED (low priority — the mouse affordance is a complete substitute). Spoofing `CNCObjectStruct.TypeName = "MCV"` for TDMCV did NOT fix it, so GlyphX isn't keying purely on the `TypeName` string. Next spike hypothesis: GlyphX keys on the numeric `DllObjectTypeEnum Type`. Full log in memory `[[project-mcv-deploy-hotkey-spike]]`.
 
-**Lesson:** before chasing a hotkey/UI bug for a TD-ported entity, determine whether the behavior lives in the DLL or GlyphX. If GlyphX, it may be unfixable from the mod side (cf. §3.x classic-mode spacebar limitation). Confirm the keying mechanism before investing time. For deploy/unload specifically: don't re-chase per-unit — it's one shared GlyphX gate, dead for all new TD types; document the mouse-click workaround for the player and move on.
+**Lesson:** before chasing a hotkey/UI bug for a TD-ported entity, determine whether the behavior lives in the DLL or GlyphX. If GlyphX, it may be unfixable from the mod side (cf. §3.x classic-mode spacebar limitation). Confirm the keying mechanism before investing time. For deploy/unload specifically: don't re-chase the STOCK key per-unit — it's one shared GlyphX gate, dead for all new TD types; the real route is the MOD-DEFINED hotkey lever (`config-meg-lever-audit.md` Tier 1 — chain complete, only our DLL handler missing; queued in `todo.md`). Until then, document the mouse-click workaround for the player.
 
 ---
 

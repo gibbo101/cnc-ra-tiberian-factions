@@ -205,6 +205,15 @@ Their pattern names files with the RA prefix directly (`RAC_SFX_OBELRAY1.WAV`) r
 
 ## What this unlocks
 
+> ⭐ **2026-08-31 upgrade: sample names are FREE.** A controlled probe proved the launcher
+> resolves NOVEL sample names from loose `Data/AUDIO/` files — the old "novel names crash"
+> was a file-format confound. New audio (TS EVA, TS weapon sounds, anything) can ship under
+> its own names; no dormant-host reuse needed. The binding rule is FORMAT (MS-ADPCM WAV
+> matching the channel's shape; localized "MP3" entries actually map to ADPCM WAVs under a
+> locale dir). Canonical rules: `launcher-render-contracts.md` §dormant hosts. The alias
+> recipe in this doc remains correct for routing; only its "must reuse existing sample
+> names" assumption is obsolete.
+
 With the audio routing pipeline proven, every future TD asset port follows the same recipe:
 
 - **Weapon sounds**: TowTwo (ROCKET2), TdTurretGun (TNKFIRE6), and all future weapon ports

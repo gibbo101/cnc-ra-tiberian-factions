@@ -326,8 +326,29 @@ highest quality the pipeline can produce.** Concretely:
   TDC_/TDR_-named events only fire in TD game context, never in our mod, but
   GUI events are game-agnostic and DO fire in RA mode (proven 2026-07-22:
   SFX_GUI_Generic_Bad_Sound plays SCOLD1, which the RAC_/RAR_-only census had
-  marked dormant). New sample names are IMPOSSIBLE (novel names crash
-  ClientG); overriding is the only channel.
+  marked dormant). ⭐ **THE DORMANT-HOST CONSTRAINT IS FALSIFIED (2026-08-31,
+  controlled live probe): NOVEL sample names RESOLVE from loose files.** A
+  novel-named copy of known-good bytes played on the EVA channel
+  (RAR_SFX_TDCONSTRU1 → "TSEVA_PROBE2_EN-US.MP3" → loose file, played), and a
+  same-name loose override of a localized sample played in the same run. Every
+  historical "novel name" failure was file FORMAT: the old crash was plain-PCM
+  hitting the ADPCM math (EIP 0x400000+0xAB5E69), and two 08-30 probes failed
+  as an actual MP3 / wrong-shape WAV. **The real rules: (1) format must be
+  MS-ADPCM WAV (the localized "MP3" entries are a lie — MEG members are
+  ADPCM WAVs, e.g. EVA lines stereo 44077 Hz align 140; SFX 22050 mono align
+  1024); (2) localized samples live under a locale dir (Data/AUDIO/EN-US/) and
+  the XML .MP3 extension maps to a .WAV member; (3) bad format fails silent or
+  crashes — md5+fmt-check files against a base sample of the same channel.**
+  Dormant hosts are now just a legacy technique (the 6 shipped ones keep
+  working); new audio ships under its OWN names. **END-TO-END PROVEN
+  2026-08-31: an actual TS EVA line played in-game** — TIBSUN.MIX SPEECH01.MIX
+  `00-I018.AUD` → ts_aud_decode.py → `ffmpeg -ac 2 -ar 44077 -c:a adpcm_ms`
+  (default align 1024 IS accepted on the EVA channel) → loose novel name →
+  localized event repoint. Proven on the localized/EVA channel; nonlocalized
+  weapon-SFX expected identical (its old failure was the PCM confound) —
+  one-shot confirm when the next weapon sound ships. Probe
+  side-lesson: never probe audio via the launcher-fired credit tick (any loose
+  override silences it — bad vehicle).
   Used so far: `BONUS_UNLOCK` (hover missile), `DINOATK1` (railgun),
   `DINODIE1` (Mk. II tusks), `DINOMOUT` (Titan 120mm), `DINOYES` (dropship
   landing DROPDWN1), `STRUGGLE` (dropship takeoff DROPUP1).

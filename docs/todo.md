@@ -5,6 +5,35 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Front-end pixels via loose files — confirm from OUR mod, then use it (2026-08-30)
+
+The "shell ignores loose overrides" wall is FALSIFIED (see `front-end-texture-meg-spike.md`
+2026-08-30 update: Reilsss's loose atlas renders custom picker icons in the lobby; standalone
+loose DDS render the main menu). Queued:
+
+1. ~~Confirm from our mod structure~~ **DONE 2026-08-31, on camera**: repainted `_04`/`_05`
+   slot regions in our deployed loose atlas rendered in the lobby (test tile, then real art).
+   Bonus mapping: starting-position markers are separate 40x40 regions
+   `UI_MAPSELECT_FACTION_NN` (`_04`=(4742,4278), `_05`=(1413,4297)) — painted, render
+   near-certain but not eyeballed before the demo ended; re-verify when real emblems ship.
+2. Available whenever wanted: bespoke Allied/Soviet picker emblems (replaces the
+   country-flag compromise), TS GDI emblem for the selectable-side arc, TS-styled front-end
+   screens (menu/lobby/load — source art in TIBSUN.MIX). Slot regions are 150x80 + `_ON`/
+   `_OVER` variants; markers 40x40; region geometry fixed (loose `.MTD` ignored).
+
+Related queued arcs from the same evening's assessment: TS EVA/CABAL faction voices
+(sources confirmed; needs the dormant-host re-census + a TS house to route on — memory
+`project-ts-eva-feasibility`).
+
+(2026-08-30/31 audit probes ALL RESOLVED — results in the canonical docs: ⭐ NOVEL sample
+names RESOLVE from loose files — the dormant-host constraint is FALSIFIED, every historic
+failure was file format → full rules in `launcher-render-contracts.md` §dormant hosts
+(one-shot confirm on the nonlocalized weapon-SFX channel queued for the next shipped
+weapon sound); loose `.MTD` = ignored, region geometry launcher-owned →
+`ui-atlas-modding.md`; never probe audio via the credit tick.)
+
+---
+
 ## Deploy/unload hotkey for non-RA units (Luke, 2026-08-28: "a shame the deploy key is hardcoded to RA units only through the launcher")
 
 The launcher's deploy key does nothing for the TD/TS transports (Sub APC unload had to be a

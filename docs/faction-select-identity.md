@@ -57,7 +57,7 @@ Per-language: there's a `MASTERTEXTFILE_<lang>.LOC` per language (EN-US, FR-FR, 
 | `.LOC` **same-length** in-place edit | ✅ safe |
 | `.LOC` table rewrite, file size unchanged (a string grows, another gives bytes back) | ✅ safe, proven 2026-07-21 |
 | `FACTIONS.XML` `CampaignType` change | startup crash (genuine-faction route) |
-| loose `Data/ART/TEXTURES` override for the front-end | ignored (in-game only) |
+| loose `Data/ART/TEXTURES` override for the front-end | ✅ RENDERS (re-proven 2026-08-30 — atlas + standalone DDS; the old "ignored" result was a bad test, see `front-end-texture-meg-spike.md`) |
 
 ## Status / open items
 
