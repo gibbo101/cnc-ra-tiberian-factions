@@ -1240,6 +1240,16 @@ int BuildingClass::Shape_Number(void) const
                 }
             }
         }
+
+        /*
+        **	A building with installed addon plugs draws the art variant for its
+        **	upgrade level: the tileset carries one full healthy+damaged block
+        **	per level, so the level stride is twice the idle anim extent
+        **	(TSPOWR: 2 x 12 = 24, turbines baked onto the plant per level).
+        */
+        if (UpgradeLevel != 0 && *this == STRUCT_TSPOWR) {
+            shapenum += UpgradeLevel * 2 * (Class->Anims[BSTATE_IDLE].Start + Class->Anims[BSTATE_IDLE].Count);
+        }
     }
     return (shapenum);
 }

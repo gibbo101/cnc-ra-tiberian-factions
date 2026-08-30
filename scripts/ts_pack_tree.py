@@ -359,7 +359,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                     mk_clip_dir=None,
                     overlay_dir=None, fit_w=None, dst_x_px=None, door_spec=None,
                     apron_cells=None, front_ring=None, emblem=None,
-                    apron_canvas=None, pingpong=False):
+                    apron_canvas=None, pingpong=False, powerup_layers=None):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -885,6 +885,20 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 f.paste((0, 0, 0, 0), (353, 402, 370, 443))
 
     frames = full[0] + full[1]
+    # Building-addon art variants (TS upgrades): one full healthy+damaged
+    # block appended per installed-plug level, each = the base composite plus
+    # the first L powerup anim layers (a shifted copy of the plant's own
+    # turbine anim, per the host's TS PowerUpNLoc anchors). Level 0 = the
+    # frames above, untouched, and every level rides the SAME affine — the
+    # fit is keyed to the level-0 union so installing a plug never moves the
+    # building. Shape_Number picks the block by UpgradeLevel * 2n.
+    if powerup_layers:
+        assert not pingpong, f"{ini}: powerup_layers + pingpong not supported"
+        layered = list(anims)
+        for spec in powerup_layers:
+            layered = layered + [spec]
+            frames += [scaled(composite(base_h, layered, i, 1)) for i in range(n)]
+            frames += [scaled(composite(base_d, layered, i, 2)) for i in range(n)]
     if emblem is not None:
         # Built frames only: during construction there is no deck to paint.
         # Damaged-run frames stamp against the healthy reference: same
@@ -1086,7 +1100,8 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             f.putalpha(ImageChops.subtract(f.split()[3], erase))
     write_zip(f"{STRUCT_DIR}/{ini}MAKE.ZIP", f"{ini.lower()}make", mk)
 
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", ini, 2 * n)
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", ini,
+                  2 * n * (1 + len(powerup_layers or [])))
     patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}MAKE", mk_count)
     print(f"{ini}: N={n} (idle anim count for the _anims[] entry)")
     return n
@@ -1470,10 +1485,26 @@ if os.path.isdir(f"{ART}/shp_gtcnst"):
 # ---- TSPOWR: TS Power Plant (2x2, POWR donor 48x48 -> 256x256).
 # Content scaled to TDNUKE (content 256 full-width). Anims: _A fan 24, _B 12
 # -> N=24. Damaged base = GTPOWR frame 1 (LIGHT).
+# Addon variants: +1/+2 Power Turbines (TSTURB installs) as extra GTPOWR_B
+# layers shifted by TS's PowerUp1/2Loc pixel anchors (ART.INI [GAPOWR]:
+# (-24,+13) and (-48,0) from the shared canvas position; ZZ/YSort are draw
+# order only). The tileset grows to 3 x 24 frames; Shape_Number selects the
+# block by UpgradeLevel.
 if os.path.isdir(f"{ART}/shp_gtpowr"):
+    powerups = []
+    for name, (dx, dy) in (("up1", (-24, 13)), ("up2", (-48, 0))):
+        dst = f"{ART}/shp_gtpowr_b_{name}"
+        os.makedirs(dst, exist_ok=True)
+        for i in range(frame_count("shp_gtpowr_b")):
+            src = Image.open(f"{ART}/shp_gtpowr_b/frame-{i:04d}.png").convert("RGBA")
+            out = Image.new("RGBA", src.size, (0, 0, 0, 0))
+            out.paste(src, (dx, dy), src)
+            out.save(f"{dst}/frame-{i:04d}.png")
+        powerups.append(loop(f"shp_gtpowr_b_{name}"))
     build_structure("TSPOWR", "shp_gtpowr", 0, 1,
                     [loop("shp_gtpowr_a"), loop("shp_gtpowr_b")],
-                    "shp_gtpowrmk", 13, 256, 256, bottom_margin=0)
+                    "shp_gtpowrmk", 13, 256, 256, bottom_margin=0,
+                    powerup_layers=powerups)
 
 # ---- TSTURB: Power Turbine addon (TS GAPOWRUP). Never a map object — the
 # tileset exists for the sidebar placement GHOST only (the DLL installs the
