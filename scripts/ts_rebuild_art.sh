@@ -53,7 +53,12 @@ CONQUER="BRRKICON.SHP HELIICON.SHP RADRICON.SHP TECHICON.SHP WEAPICON.SHP TURBIC
 SIDEC01="FIXICON.SHP REFICON.SHP SILOICON.SHP MCVICON.SHP"
 
 echo "== extracting =="
-python3 "$EXTRACT" "$TIBSUN" CACHE.MIX    extract "$RAW" UNITTEM.PAL CAMEO.PAL >/dev/null
+python3 "$EXTRACT" "$TIBSUN" CACHE.MIX    extract "$RAW" UNITTEM.PAL CAMEO.PAL ANIM.PAL >/dev/null
+# Ion strike effect art (anim SHPs, decoded by ts_pack_ion.py itself against
+# ANIM.PAL — kept out of $CONQUER so the cameo-palette loop doesn't touch them)
+# + the TS ION1 strike sound.
+python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" IONBEAM.SHP RING1.SHP >/dev/null
+python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" ION1.AUD >/dev/null
 python3 "$EXTRACT" "$TIBSUN" TEMPERAT.MIX extract "$RAW" $TEMPERAT >/dev/null
 python3 "$EXTRACT" "$TIBSUN" ISOTEMP.MIX  extract "$RAW" $ISOTEMP  >/dev/null
 python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" $CONQUER  >/dev/null

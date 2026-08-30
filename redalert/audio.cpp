@@ -299,6 +299,7 @@ struct SoundEffectNameStruct
     {"SONIC4", 1, IN_NOVAR},      // VOC_TS_SONIC4 — TS Disruptor sonic beam (WEAPON_SONICZAP Report=SONIC4), routed via RAC/RAR_SFX_SONIC4 (bundled WAV under TDR_SFX_CRUMBLE)
     {"FLAMTNK1", 1, IN_NOVAR},    // VOC_TS_FLAMTNK1 -- TS flame tank fire (WEAPON_TSFIREBALL Report=FLAMTNK1), routed via RAC/RAR_SFX_FLAMTNK1 (bundled WAV under TDR_SFX_TURRFIR5)
     {"SUBDRIL1", 1, IN_NOVAR},    // VOC_TS_SUBDRIL1 -- TS subterranean dig sound (UnitClass::Tunnel_AI), routed via RAC/RAR_SFX_SUBDRIL1 (bundled WAV under TDR_SFX_SAMMOTR2)
+    {"TSION1", 1, IN_NOVAR},      // VOC_TS_ION1 -- TS Ion Cannon strike (ANIM_TS_ION_BEAM), routed via RAC/RAR_SFX_TSION1 (bundled TSION1.WAV, own name)
 };
 
 //

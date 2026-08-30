@@ -6042,6 +6042,27 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     </SampleNamesList>
   </SFXEvent>
 
+  <!-- TS Ion Cannon strike (ANIM_TS_ION_BEAM, the uplink-granted flavour):
+       TS's own ION1 sample bundled under its OWN name (loose Data/AUDIO/
+       TSION1.WAV, MS-ADPCM — the proven novel-name path, 2026-08-31). -->
+  <SFXEvent Name="RAC_SFX_TSION1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSION1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_TSION1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSION1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
   <!-- Obelisk of Light: warm-up charge -->
   <SFXEvent Name="RAC_SFX_OBELPOWR" Preset="_PRESET_MD_MOBIUS_2D">
     <IsPreset> False </IsPreset>

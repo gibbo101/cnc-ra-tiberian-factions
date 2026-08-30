@@ -2978,6 +2978,8 @@ typedef enum AnimType : char
     ANIM_TS_SONICPULSE, // TS Disruptor sonic pulse: RETIRED (never spawned); slot kept so the anim enum and TSSONICP tileset stay stable.
     ANIM_TS_GUNFIRE,    // TS GUNFIRE muzzle flash (gunfire.shp, 3 frames, translucent): the Mk.II railgun's Anim= in rules.ini.
     ANIM_TS_DIG,        // TS DIG mound (dig.shp, 37 frames): the subterranean dig-in / emerge earth burst (TS [AudioVisual] Dig=). Spawned by the tunnel cycle in UnitClass::Tunnel_AI.
+    ANIM_TS_ION_BEAM,   // TS Ion Cannon beam (IONBEAM.SHP, 15 frames, pre-tiled tall at pack time): the uplink-granted ion strike's beam. Carries the strike damage + ION1 sound in Middle(), like ANIM_TD_ION_CANNON.
+    ANIM_TS_ION_RING,   // TS Ion Cannon ground ring (RING1.SHP, 15 frames, flat): TS [General] IonBlast=RING1, spawned alongside the beam at the impact cell. Visual only.
 
     ANIM_COUNT,
     ANIM_FIRST = 0
@@ -4104,6 +4106,7 @@ typedef enum VocType : short
     VOC_TS_SONIC4,       // TS Disruptor sonic beam (SONIC4, decoded from TS SOUNDS.MIX AUD) — WEAPON_SONICZAP Report=. Routed via RAC/RAR_SFX_SONIC4 → bundled TDR_SFX_CRUMBLE.WAV (dormant-sample host).
     VOC_TS_FLAMTNK1,     // TS flame tank fire (FLAMTNK1, TS FireballLauncher Report) -- routed via RAC/RAR_SFX_FLAMTNK1 -> bundled TDR_SFX_TURRFIR5.WAV (dormant-sample host).
     VOC_TS_SUBDRIL1,     // TS subterranean dig (SUBDRIL1, TS [AudioVisual] DigSound) -- routed via RAC/RAR_SFX_SUBDRIL1 -> bundled TDR_SFX_SAMMOTR2.WAV.
+    VOC_TS_ION1,         // TS Ion Cannon strike (ION1, TS art.ini [IONBEAM] Report=) -- ANIM_TS_ION_BEAM's sound. Routed via RAC/RAR_SFX_TSION1 -> bundled TSION1.WAV under its OWN name (the novel-name path, proven 2026-08-31).
 
     VOC_COUNT,
     VOC_FIRST = 0

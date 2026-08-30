@@ -769,6 +769,18 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<!-- Tiberian Factions mod — the same Ion Cannon super when granted by the
+	     TS Ion Cannon Uplink plug (TSPION in a TSPLUG): AssetName "SW_TSIon"
+	     from TF_Apply_Special_Badge, cameo = the TS satellite (IONCICON).
+	     Badged variant SG_TSIon (TS-tree digit 'G') below in the TS block. -->
+	<ObjectTypeClass Name="RA_SW_TSION" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_IONCANNON</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_IONCANNON</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SW_TSION</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 	<!-- Tiberian Factions mod — Nod paratroops super (SPC_TD_PARA_INFANTRY).
 	     AssetName "SW_TDParaInf" (distinct from the Soviet drop's
 	     "SW_ParaInfantry") so the tooltip resolves the Nod strings below and
@@ -10243,6 +10255,13 @@
 			<ObjectNameTextID>TEXT_STRUCTURE_TSPION</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPION_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TSPION_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SG_TSION" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_IONCANNON</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_GDI_IONCANNON</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SG_TSION</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	<!-- END generated TS-tree badge variants -->

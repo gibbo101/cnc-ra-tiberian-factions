@@ -3856,9 +3856,23 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
     */
     case SPC_TD_ION_CANNON:
         if (SuperWeapon[SPC_TD_ION_CANNON].Is_Ready()) {
-            AnimClass* ion_anim = new AnimClass(ANIM_TD_ION_CANNON, Cell_Coord(cell), 0, 1);
+            /*
+            **  Grantor flavour: the TS Ion Cannon Uplink fires the TS effect
+            **  (IONBEAM + RING1 ground flash, TS ION1 sound via the beam's
+            **  Report); a TD Advanced Comm Centre keeps TD's beam. Same
+            **  damage either way (anim.cpp Middle()).
+            */
+            bool ts_flavour = !Has_Building_Active(STRUCT_TDEYE) && TF_House_Has_Plug(this, STRUCT_TSPION);
+            AnimClass* ion_anim = new AnimClass(ts_flavour ? ANIM_TS_ION_BEAM : ANIM_TD_ION_CANNON,
+                                                Cell_Coord(cell), 0, 1);
             if (ion_anim != NULL) {
                 ion_anim->Set_Owner(Class->House);
+            }
+            if (ts_flavour) {
+                AnimClass* ring_anim = new AnimClass(ANIM_TS_ION_RING, Cell_Coord(cell), 0, 1);
+                if (ring_anim != NULL) {
+                    ring_anim->Set_Owner(Class->House);
+                }
             }
             SuperWeapon[SPC_TD_ION_CANNON].Discharged(this == PlayerPtr);
             IsRecalcNeeded = true;

@@ -402,6 +402,12 @@ PACK_ARGS+=("$TMPDIR/tssonicp_stub.shp:TSSONICP.SHP")
 # (TSDIG.ZIP is a 512 canvas, scripts/ts_pack_dig.py).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsdig_stub.shp" 64 64 37
 PACK_ARGS+=("$TMPDIR/tsdig_stub.shp:TSDIG.SHP")
+# TS ion strike pair (scripts/ts_pack_ion.py): beam canvas 120x960, ring
+# 832x408, both / 8 for the classic dims the launcher sizes the HD art off.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsionbm_stub.shp" 15 120 15
+PACK_ARGS+=("$TMPDIR/tsionbm_stub.shp:TSIONBM.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsionrng_stub.shp" 104 51 15
+PACK_ARGS+=("$TMPDIR/tsionrng_stub.shp:TSIONRNG.SHP")
 # TS fire-stream particle (BULLET_TSFIRE) -- 76 shapes (4 axes x 19 states), 20x20 box
 # (TSFIRE.ZIP is a 160 canvas, scripts/ts_pack_flame.py).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsfire_stub.shp" 20 20 76

@@ -6864,6 +6864,17 @@ static void TF_Apply_Special_Badge(char* asset_name, SpecialWeaponType id, House
         return;
     }
 
+    /*
+    **	Grantor flavour first: an Ion Cannon held via the TS uplink (and no TD
+    **	Advanced Comm Centre) shows the TS satellite cameo, so the base key is
+    **	rewritten before any badge prefixing.
+    */
+    if (id == SPC_TD_ION_CANNON && !house->Has_Building_Active(STRUCT_TDEYE)
+        && TF_House_Has_Plug(house, STRUCT_TSPION)) {
+        strncpy(asset_name, "SW_TSIon", CNC_OBJECT_ASSET_NAME_LENGTH);
+        asset_name[CNC_OBJECT_ASSET_NAME_LENGTH - 1] = '\0';
+    }
+
     int held = 0;
     for (int s = SPC_FIRST; s < SPC_COUNT; s++) {
         if (house->SuperWeapon[s].Is_Present()) {
@@ -6871,7 +6882,7 @@ static void TF_Apply_Special_Badge(char* asset_name, SpecialWeaponType id, House
         }
     }
     int held_count = 0;
-    for (int bit = 0x1; bit <= 0x8; bit <<= 1) {
+    for (int bit = 0x1; bit <= TF_FACTION_TSGDI; bit <<= 1) {
         if (held & bit) {
             held_count++;
         }
@@ -6887,7 +6898,12 @@ static void TF_Apply_Special_Badge(char* asset_name, SpecialWeaponType id, House
     char rest[CNC_OBJECT_ASSET_NAME_LENGTH];
     strncpy(rest, asset_name + 3, sizeof(rest) - 1);
     rest[sizeof(rest) - 1] = '\0';
-    snprintf(asset_name, CNC_OBJECT_ASSET_NAME_LENGTH, "S%X_%s", badge & 0xF, rest);
+    /*
+    **	Base-32 badge digit, matching the buildable badge (TS alone = 'G');
+    **	the old "%X" truncated the 0x10 TS bit to "S0_", a dead key.
+    */
+    snprintf(asset_name, CNC_OBJECT_ASSET_NAME_LENGTH, "S%c_%s",
+             "0123456789ABCDEFGHIJKLMNOPQRSTUV"[badge & 0x1F], rest);
 }
 
 /**************************************************************************************************

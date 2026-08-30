@@ -279,6 +279,7 @@ void AnimClass::Draw_It(int x, int y, WindowNumberType window) const
             // close-enough centered render until the conditional Y-anchor
             // is re-introduced if needed.
             case ANIM_TD_ION_CANNON:
+            case ANIM_TS_ION_BEAM:
                 flags = flags | SHAPE_BOTTOM;
                 y += 12;
                 break;
@@ -459,7 +460,7 @@ short const* AnimClass::Overlap_List(void) const
         return (OverlapAtom);
     }
 
-    if (Class->Type == ANIM_TD_ION_CANNON) {
+    if (Class->Type == ANIM_TD_ION_CANNON || Class->Type == ANIM_TS_ION_BEAM) {
         return (OverlapTdIon);
     }
 
@@ -1279,7 +1280,7 @@ void AnimClass::Middle(void)
     **  the beam visual ends. Spawning ART_EXP1 here fires it on the same
     **  frame as the damage, matching the visual impact moment.
     */
-    if (Class->Type == ANIM_TD_ION_CANNON) {
+    if (Class->Type == ANIM_TD_ION_CANNON || Class->Type == ANIM_TS_ION_BEAM) {
         /*
         **  Source = NULL deliberately. Explosion_Damage skips any object
         **  whose pointer matches the source (combat.cpp:211), so if we
@@ -1288,11 +1289,18 @@ void AnimClass::Middle(void)
         **  practice. Cost: kill credit isn't attributed to "GDI's Ion
         **  Cannon" — acceptable trade-off. (TD's source has the same
         **  loop but presumably this edge case wasn't exercised.)
+        **
+        **  The TS beam (uplink flavour) hits at the same moment with the
+        **  same numbers — flavour only, balance identical. No ART_EXP1
+        **  for it: TS's own impact visual is the RING1 ground flash the
+        **  fire site spawns beside the beam.
         */
         Explosion_Damage(Center_Coord(), 600, NULL, WARHEAD_TDPB);
-        AnimClass* impact_anim = new AnimClass(ANIM_ART_EXP1, Center_Coord(), 0, 1);
-        if (impact_anim != NULL) {
-            impact_anim->Set_Owner(OwnerHouse);
+        if (Class->Type == ANIM_TD_ION_CANNON) {
+            AnimClass* impact_anim = new AnimClass(ANIM_ART_EXP1, Center_Coord(), 0, 1);
+            if (impact_anim != NULL) {
+                impact_anim->Set_Owner(OwnerHouse);
+            }
         }
     }
 
