@@ -13,9 +13,9 @@ loose DDS render the main menu). Queued:
 
 1. ~~Confirm from our mod structure~~ **DONE 2026-08-31, on camera**: repainted `_04`/`_05`
    slot regions in our deployed loose atlas rendered in the lobby (test tile, then real art).
-   Bonus mapping: starting-position markers are separate 40x40 regions
-   `UI_MAPSELECT_FACTION_NN` (`_04`=(4742,4278), `_05`=(1413,4297)) — painted, render
-   near-certain but not eyeballed before the demo ended; re-verify when real emblems ship.
+   Bonus: starting-position markers are separate 40x40 regions
+   `UI_MAPSELECT_FACTION_NN` (`_04`=(4742,4278), `_05`=(1413,4297)) — painted AND verified
+   on the minimap in-game (Luke: "worked fine"). Full picker surface proven.
 2. Available whenever wanted: bespoke Allied/Soviet picker emblems (replaces the
    country-flag compromise), TS GDI emblem for the selectable-side arc, TS-styled front-end
    screens (menu/lobby/load — source art in TIBSUN.MIX). Slot regions are 150x80 + `_ON`/
