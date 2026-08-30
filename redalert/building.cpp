@@ -2124,6 +2124,13 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
             host->Strength = host->Class->MaxStrength;
             host->House->IsRecalcNeeded = true;
             host->Mark(MARK_CHANGE);
+            /*
+            **	Sever the builder's placement radio link before self-deleting, as
+            **	the wall divert does. Who_Can_Build_Me skips builders that are in
+            **	radio contact, so a link left dangling here wedges the conyard
+            **	out of ALL further building placement.
+            */
+            Transmit_Message(RADIO_OVER_OUT);
             delete this;
             return (true);
         }
