@@ -279,9 +279,19 @@ void AnimClass::Draw_It(int x, int y, WindowNumberType window) const
             // close-enough centered render until the conditional Y-anchor
             // is re-introduced if needed.
             case ANIM_TD_ION_CANNON:
-            case ANIM_TS_ION_BEAM:
                 flags = flags | SHAPE_BOTTOM;
                 y += 12;
+                break;
+
+            /*
+            **  TS beam: the segment tiling runs flush to the canvas bottom,
+            **  so the art's bottom edge IS the impact point. Anchor it at
+            **  the cell centre where the damage, scorch and RING1 flash all
+            **  land — TD's half-cell drop would ground the tip a half cell
+            **  south of the burn mark.
+            */
+            case ANIM_TS_ION_BEAM:
+                flags = flags | SHAPE_BOTTOM;
                 break;
 
             case ANIM_FLAG:
@@ -1300,6 +1310,16 @@ void AnimClass::Middle(void)
             AnimClass* impact_anim = new AnimClass(ANIM_ART_EXP1, Center_Coord(), 0, 1);
             if (impact_anim != NULL) {
                 impact_anim->Set_Owner(OwnerHouse);
+            }
+        } else {
+            /*
+            **  The TS strike's RING1 shockwave is not just visual: the 3x3
+            **  it sweeps takes real damage, making the uplink cannon the
+            **  successor to the TD original (which stays single-cell).
+            **  Centre damage is TD-identical; the ring hits at half.
+            */
+            for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
+                Explosion_Damage(Adjacent_Cell(Center_Coord(), face), 600 / 2, NULL, WARHEAD_TDPB);
             }
         }
     }

@@ -1663,8 +1663,9 @@ static BuildingTypeClass const ClassTsPlug(STRUCT_TSPLUG,
 /*
 **  TSPION (Ion Cannon Uplink, GAPLUG3) — addon plug for TSPLUG, same
 **    never-on-the-map contract as TSTURB. While installed anywhere in the
-**    house, the GDI Ion Cannon special is granted (house.cpp AI, the TDEYE
-**    predicate). Stats in rules.ini [TSPION] (TS [GAPLUG3]: cost 1500,
+**    house, the TS Ion Cannon special (SPC_TS_ION_CANNON, its own slot
+**    beside the TD cannon's) is granted (house.cpp Super_Weapon_Handler).
+**    Stats in rules.ini [TSPION] (TS [GAPLUG3]: cost 1500,
 **    Power=-100, TL10).
 */
 static BuildingTypeClass const ClassTsPion(STRUCT_TSPION,

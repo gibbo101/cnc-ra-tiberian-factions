@@ -784,6 +784,7 @@ typedef enum SpecialWeaponType : char
     SPC_TD_NUKE,          // Nod Nuclear Strike (BULLET_NUKE_DOWN + ANIM_ATOM_BLAST, sourced from STRUCT_TDTMPL)
     SPC_TD_PARA_INFANTRY, // Nod paratroops (TD infantry drop, sourced from STRUCT_TDAFLD + STRUCT_TDHAND)
     SPC_TD_SPY_MISSION,   // Nod recon flight (sourced from STRUCT_TDAFLD; same U2 flyover, own timer)
+    SPC_TS_ION_CANNON,    // TS Ion Cannon strike (ANIM_TS_ION_BEAM + RING1, sourced from the TSPION uplink plug)
 
     SPC_COUNT,
     SPC_FIRST = 0,

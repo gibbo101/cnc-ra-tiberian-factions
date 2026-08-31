@@ -92,6 +92,9 @@ extern char const* Speech[VOX_COUNT];
 // Init_SpeechTD (audio.cpp). NULL slots fall back to Speech[].
 extern char const* SpeechTD[VOX_COUNT];
 extern void Init_SpeechTD(void);
+// RA-voice renames for stub-silenced launcher lines (audio.cpp Init_SpeechRAO).
+extern char const* SpeechRAO[VOX_COUNT];
+extern void Init_SpeechRAO(void);
 
 /*
 ** Misc defines
@@ -4113,13 +4116,39 @@ void DLLExportClass::On_Speech(const HouseClass* player_ptr, int speech_index)
         // Allied/Soviet keep RA's Speech[]. NULL SpeechTD[] slot also
         // falls back to RA. Future per-side Nod voice would branch here.
         Init_SpeechTD();
+        Init_SpeechRAO();
         char const* name = Speech[speech_index];
         if (player_ptr != NULL
             && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD)
             && SpeechTD[speech_index] != NULL) {
             name = SpeechTD[speech_index];
+        } else if (SpeechRAO[speech_index] != NULL) {
+            name = SpeechRAO[speech_index];
         }
         strncpy(new_event.Speech.SpeechName, name, 16);
+#if TF_DEV_BUILD
+        /*
+        **  TF speech-routing diagnostic: every speech event handed to the
+        **  launcher, with the routing inputs. If a line plays in the wrong
+        **  faction voice while this log shows the TD name was sent, the
+        **  launcher resolved by index, not name.
+        */
+        {
+            const char* up = getenv("USERPROFILE");
+            if (up != NULL) {
+                char path[512];
+                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_speech.log", up);
+                FILE* f = fopen(path, "a");
+                if (f != NULL) {
+                    fprintf(f, "[speech] idx=%d name=%s actlike=%d td_slot=%s\n",
+                            speech_index, name,
+                            (player_ptr != NULL) ? (int)player_ptr->ActLike : -1,
+                            (SpeechTD[speech_index] != NULL) ? SpeechTD[speech_index] : "(null)");
+                    fclose(f);
+                }
+            }
+        }
+#endif
     } else {
         strncpy(new_event.Speech.SpeechName, "BAD_SPEECH_INDEX", 16);
     }
@@ -4526,6 +4555,20 @@ void DLLExportClass::On_Multiplayer_Game_Over(void)
     }
 
     GameOver = true;
+
+    /*
+    **  Faction-voiced endgame EVA. The launcher's own "Mission accomplished"/
+    **  "Your mission has failed" auto-fire is silence-stubbed (loose 44-byte
+    **  WAVs over its sample names), so the DLL speaks the line per human
+    **  player here: TD EVA for GDI/Nod, the RA line under its RAO* rename
+    **  for everyone else (On_Speech routes by house).
+    */
+    for (int sp = 0; sp < Session.Players.Count(); sp++) {
+        HouseClass* sp_house = HouseClass::As_Pointer(Session.Players[sp]->Player.ID);
+        if (sp_house != NULL && sp_house->IsHuman) {
+            Speak(sp_house->IsDefeated ? VOX_FAIL : VOX_ACCOMPLISHED, sp_house);
+        }
+    }
 
     EventCallbackStruct event;
 
@@ -6814,14 +6857,9 @@ static int TF_Special_Display_Mask(SpecialWeaponType id, HouseClass* house)
     case SPC_IRON_CURTAIN:
         return (TF_FACTION_SOVIET);
     case SPC_TD_ION_CANNON:
-        /*
-        **	Granted by the TD Advanced Comm Centre (GDI) or the TS Ion Cannon
-        **	Uplink plug — badge whichever source the house actually has.
-        */
-        if (!house->Has_Building_Active(STRUCT_TDEYE) && TF_House_Has_Plug(house, STRUCT_TSPION)) {
-            return (TF_FACTION_TSGDI);
-        }
         return (TF_FACTION_GDI);
+    case SPC_TS_ION_CANNON:
+        return (TF_FACTION_TSGDI);
     case SPC_TD_NUKE:
     case SPC_TD_PARA_INFANTRY:
     case SPC_TD_SPY_MISSION:
@@ -6862,17 +6900,6 @@ static void TF_Apply_Special_Badge(char* asset_name, SpecialWeaponType id, House
 {
     if (asset_name == NULL || strncmp(asset_name, "SW_", 3) != 0 || house == NULL) {
         return;
-    }
-
-    /*
-    **	Grantor flavour first: an Ion Cannon held via the TS uplink (and no TD
-    **	Advanced Comm Centre) shows the TS satellite cameo, so the base key is
-    **	rewritten before any badge prefixing.
-    */
-    if (id == SPC_TD_ION_CANNON && !house->Has_Building_Active(STRUCT_TDEYE)
-        && TF_House_Has_Plug(house, STRUCT_TSPION)) {
-        strncpy(asset_name, "SW_TSIon", CNC_OBJECT_ASSET_NAME_LENGTH);
-        asset_name[CNC_OBJECT_ASSET_NAME_LENGTH - 1] = '\0';
     }
 
     int held = 0;
@@ -7604,6 +7631,16 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
             strncpy(weapon_name, "SW_IonCannon", 16);
         }
         break;
+    case SPC_TS_ION_CANNON:
+        // Tiberian Factions mod — the uplink-granted TS Ion Cannon: same
+        // launcher-side SW_ION_CANNON plumbing (cursor, cost handling) as
+        // the TD cannon, but AssetName "SW_TSIon" resolves the TS satellite
+        // cameo entry (RA_SW_TSION in RABUILDABLES.XML).
+        dll_weapon_type = SW_ION_CANNON;
+        if (weapon_name != NULL) {
+            strncpy(weapon_name, "SW_TSIon", 16);
+        }
+        break;
     case SPC_TD_NUKE:
         // Tiberian Factions mod — route Nod Nuclear Strike to SW_NUKE.
         // SW_NUKE is on the RA launcher's no-$0 cost-suppression whitelist
@@ -7664,6 +7701,7 @@ void DLLExportClass::Fill_Sidebar_Entry_From_Special_Weapon(CNCSidebarEntryStruc
     case SPC_TD_NUKE:
     case SPC_TD_PARA_INFANTRY:
     case SPC_TD_SPY_MISSION:
+    case SPC_TS_ION_CANNON:
         Convert_Special_Weapon_Type(weapon_type, sidebar_entry_out.SuperWeaponType, sidebar_entry_out.AssetName);
         break;
     default:

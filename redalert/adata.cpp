@@ -2453,8 +2453,9 @@ static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, fa
 // draw OVER the hull so the mound swallows the nose (docs/subterranean-design.md).
 static AnimTypeClass const TsDig(ANIM_TS_DIG, "TSDIG", 64, 18, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 37, 0, VOC_NONE, ANIM_NONE, 37, 0x100);
 
-// Tiberian Factions -- TS Ion Cannon strike pair (the uplink-granted flavour of
-// SPC_TD_ION_CANNON; the TD Advanced Comm Centre keeps ANIM_TD_ION_CANNON).
+// Tiberian Factions -- TS Ion Cannon strike pair (SPC_TS_ION_CANNON, the
+// uplink-granted superweapon; the TD Advanced Comm Centre's SPC_TD_ION_CANNON
+// keeps ANIM_TD_ION_CANNON).
 // Art = TSIONBM.ZIP / TSIONRNG.ZIP (scripts/ts_pack_ion.py: TS IONBEAM.SHP +
 // RING1.SHP decoded against ANIM.PAL at the 8/3 scale; the 120px beam segment
 // is pre-tiled tall since the launcher cannot tile TS's Tiled=yes anims).

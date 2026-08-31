@@ -10,7 +10,7 @@ stacked vertically (it wrap-tiles cleanly, that is what Tiled=yes means).
 
 Decoded against ANIM.PAL with NO team remap, scaled x4 (TS cell 48 px -> RA
 cell 192 canvas px, the TSDIG contract), canvas = classic stub x 8
-(build_tfassets.sh: TSIONBM 15x240, TSIONRNG 104x51).
+(build_tfassets.sh: TSIONBM 15x480, TSIONRNG 104x51).
 
 Also emits:
 - BuildIcon_SW_TSION.tga — the TS satellite cameo (IONCICON, CAMEO.PAL) for
@@ -39,7 +39,7 @@ ICON_DIR = f"{MOD}/ART/TEXTURES/SRGB"
 XML = f"{MOD}/XML/TILESETS/RA_VFX.XML"
 RAW = f"{ART}/.raw"
 SCALE = 4.0
-BEAM_SEGMENTS = 4  # 4 x 480 = 1920 canvas px — matches the TD beam's 1912px art height (Luke: the TD beam enters from the top of the screen; the TS one must too)
+BEAM_SEGMENTS = 8  # 8 x 480 = 3840 canvas px. The TD beam's art is 2038px but renders at VirtualScale 0x200 (adata.cpp) = ~4076 virtual px; ours draws at 0x100 to keep the narrow TS column width, so the height must be tiled in at pack time (Luke: the TD beam enters from the top of the screen; the TS one must too)
 
 
 def tga_bytes(img):
@@ -86,7 +86,7 @@ def main():
     beam = []
     for W, H, im in decode("IONBEAM.SHP", anim_pal):
         seg = im.resize((round(W * SCALE), round(H * SCALE)), Image.LANCZOS)
-        canvas = Image.new("RGBA", (120, 1920), (0, 0, 0, 0))
+        canvas = Image.new("RGBA", (120, seg.height * BEAM_SEGMENTS), (0, 0, 0, 0))
         x = round(canvas.width / 2 - seg.width / 2)
         for s in range(BEAM_SEGMENTS):
             canvas.alpha_composite(seg, (x, canvas.height - (s + 1) * seg.height))

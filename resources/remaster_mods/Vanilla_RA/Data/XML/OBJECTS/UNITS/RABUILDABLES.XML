@@ -769,9 +769,10 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
-	<!-- Tiberian Factions mod — the same Ion Cannon super when granted by the
-	     TS Ion Cannon Uplink plug (TSPION in a TSPLUG): AssetName "SW_TSIon"
-	     from TF_Apply_Special_Badge, cameo = the TS satellite (IONCICON).
+	<!-- Tiberian Factions mod — the TS Ion Cannon super (SPC_TS_ION_CANNON,
+	     its own superweapon beside the TD cannon's), granted by the TS Ion
+	     Cannon Uplink plug (TSPION in a TSPLUG): AssetName "SW_TSIon" from
+	     Convert_Special_Weapon_Type, cameo = the TS satellite (IONCICON).
 	     Badged variant SG_TSIon (TS-tree digit 'G') below in the TS block. -->
 	<ObjectTypeClass Name="RA_SW_TSION" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>

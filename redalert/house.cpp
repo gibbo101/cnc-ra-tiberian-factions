@@ -776,6 +776,18 @@ HouseClass::HouseClass(HousesType house)
                                                      VOX_NOT_READY,
                                                      VOX_INSUFFICIENT_POWER);
 
+    // Tiberian Factions mod — TS Ion Cannon (uplink-granted). Its own
+    // superweapon slot so a house holding both the TD Advanced Comm Centre
+    // and the TS uplink fields both strikes side by side. Same TS-authentic
+    // 10-minute recharge as TS rules.ini and the same charge voices as the
+    // TD cannon (identical EVA wording).
+    new (&SuperWeapon[SPC_TS_ION_CANNON]) SuperClass(TICKS_PER_MINUTE * 10,
+                                                     true,
+                                                     VOX_TD_ION_CHARGING,
+                                                     VOX_TD_ION_READY,
+                                                     VOX_NOT_READY,
+                                                     VOX_INSUFFICIENT_POWER);
+
     // Tiberian Factions mod — Nod Nuclear Strike. TD-authentic 14-minute
     // recharge per tiberiandawn/defines.h NUKE_GONE_TIME (14 *
     // TICKS_PER_MINUTE). TD has no "charging" voice for the nuke so the
@@ -2173,6 +2185,18 @@ void HouseClass::Super_Weapon_Handler(void)
 
         if (super->Is_Present()) {
 
+#if TF_DEV_BUILD
+            /*
+            **  Dev cheat: human-owned superweapons hold full charge so a strike
+            **  can be tested without the multi-minute recharge wait. Quiet (no
+            **  ready announcement) and re-arms on the tick after a launch.
+            **  Runtime-gated like the instant-build cheat (tf_dev_off.flag).
+            */
+            if (TF_Dev_Cheats() && IsHuman && !super->Is_Ready()) {
+                super->Forced_Charge(false);
+            }
+#endif
+
             /*
             **	Perform any charge-up logic for the super weapon. If the super
             **	weapon is owned by the player and a graphic change is detected, then
@@ -2530,10 +2554,8 @@ void HouseClass::Super_Weapon_Handler(void)
     **  type is past 31 (STRUCT_TDEYE can't fit in the 32-bit BScan mask).
     **  No side restriction here — any house with a TDEYE gets the super,
     **  which matches HOUSEF_GOOD ownership on the building itself.
-    **  The TS Ion Cannon Uplink plug (TSPION, installed in a TSPLUG) is a
-    **  second grantor: same special, either source keeps it alive.
     */
-    bool ion_host = Has_Building_Active(STRUCT_TDEYE) || TF_House_Has_Plug(this, STRUCT_TSPION);
+    bool ion_host = Has_Building_Active(STRUCT_TDEYE);
     if (SuperWeapon[SPC_TD_ION_CANNON].Is_Present()) {
         if ((!ion_host && !SuperWeapon[SPC_TD_ION_CANNON].Is_One_Time()) || IsDefeated) {
             if (SuperWeapon[SPC_TD_ION_CANNON].Remove()) {
@@ -2562,6 +2584,48 @@ void HouseClass::Super_Weapon_Handler(void)
             } else {
                 if (this == PlayerPtr) {
                     Map.Add(RTTI_SPECIAL, SPC_TD_ION_CANNON);
+                    Map.Column[1].Flag_To_Redraw();
+                }
+            }
+        }
+    }
+
+    /*
+    **  Tiberian Factions mod — TS Ion Cannon (SPC_TS_ION_CANNON). Its own
+    **  superweapon, granted by the TS Ion Cannon Uplink plug (TSPION
+    **  installed in a TSPLUG): a house holding both the TD Advanced Comm
+    **  Centre and the uplink fields both ion strikes side by side, each on
+    **  its own charge timer.
+    */
+    bool ts_ion_host = TF_House_Has_Plug(this, STRUCT_TSPION);
+    if (SuperWeapon[SPC_TS_ION_CANNON].Is_Present()) {
+        if ((!ts_ion_host && !SuperWeapon[SPC_TS_ION_CANNON].Is_One_Time()) || IsDefeated) {
+            if (SuperWeapon[SPC_TS_ION_CANNON].Remove()) {
+                if (this == PlayerPtr) {
+                    if (Map.IsTargettingMode == SPC_TS_ION_CANNON) {
+                        Map.IsTargettingMode = SPC_NONE;
+                    }
+                    Map.Column[1].Flag_To_Redraw();
+                }
+                IsRecalcNeeded = true;
+            }
+        } else {
+            if (SuperWeapon[SPC_TS_ION_CANNON].Is_Ready() && !IsHuman) {
+                Special_Weapon_AI(SPC_TS_ION_CANNON);
+            }
+        }
+    } else {
+        if (ts_ion_host && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
+            SuperWeapon[SPC_TS_ION_CANNON].Enable(false, this == PlayerPtr, Power_Fraction() < 1);
+            if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
+                if (IsHuman) {
+#ifdef REMASTER_BUILD
+                    Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TS_ION_CANNON, this);
+#endif
+                }
+            } else {
+                if (this == PlayerPtr) {
+                    Map.Add(RTTI_SPECIAL, SPC_TS_ION_CANNON);
                     Map.Column[1].Flag_To_Redraw();
                 }
             }
@@ -3846,28 +3910,42 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
     */
     case SPC_TD_ION_CANNON:
         if (SuperWeapon[SPC_TD_ION_CANNON].Is_Ready()) {
-            /*
-            **  Grantor flavour: the TS Ion Cannon Uplink fires the TS effect
-            **  (IONBEAM + RING1 ground flash, TS ION1 sound via the beam's
-            **  Report); a TD Advanced Comm Centre keeps TD's beam. Same
-            **  damage either way (anim.cpp Middle()).
-            */
-            bool ts_flavour = !Has_Building_Active(STRUCT_TDEYE) && TF_House_Has_Plug(this, STRUCT_TSPION);
-            AnimClass* ion_anim = new AnimClass(ts_flavour ? ANIM_TS_ION_BEAM : ANIM_TD_ION_CANNON,
-                                                Cell_Coord(cell), 0, 1);
+            AnimClass* ion_anim = new AnimClass(ANIM_TD_ION_CANNON, Cell_Coord(cell), 0, 1);
             if (ion_anim != NULL) {
                 ion_anim->Set_Owner(Class->House);
-            }
-            if (ts_flavour) {
-                AnimClass* ring_anim = new AnimClass(ANIM_TS_ION_RING, Cell_Coord(cell), 0, 1);
-                if (ring_anim != NULL) {
-                    ring_anim->Set_Owner(Class->House);
-                }
             }
             SuperWeapon[SPC_TD_ION_CANNON].Discharged(this == PlayerPtr);
             IsRecalcNeeded = true;
             fired = true;
             what = "ION_CANNON";
+            if (this == PlayerPtr) {
+                Map.Column[1].Flag_To_Redraw();
+                Map.IsTargettingMode = SPC_NONE;
+            }
+        }
+        break;
+
+    /*
+    **  Tiberian Factions mod — TS Ion Cannon discharge (uplink-granted).
+    **  TS's strike pair at the targeted cell: the IONBEAM carries the same
+    **  600 / WARHEAD_TDPB damage + TS ION1 sound in its Middle() (anim.cpp,
+    **  balance identical to the TD strike), the RING1 ground flash is
+    **  visual only.
+    */
+    case SPC_TS_ION_CANNON:
+        if (SuperWeapon[SPC_TS_ION_CANNON].Is_Ready()) {
+            AnimClass* ts_ion_anim = new AnimClass(ANIM_TS_ION_BEAM, Cell_Coord(cell), 0, 1);
+            if (ts_ion_anim != NULL) {
+                ts_ion_anim->Set_Owner(Class->House);
+            }
+            AnimClass* ts_ring_anim = new AnimClass(ANIM_TS_ION_RING, Cell_Coord(cell), 0, 1);
+            if (ts_ring_anim != NULL) {
+                ts_ring_anim->Set_Owner(Class->House);
+            }
+            SuperWeapon[SPC_TS_ION_CANNON].Discharged(this == PlayerPtr);
+            IsRecalcNeeded = true;
+            fired = true;
+            what = "TS_ION_CANNON";
             if (this == PlayerPtr) {
                 Map.Column[1].Flag_To_Redraw();
                 Map.IsTargettingMode = SPC_NONE;

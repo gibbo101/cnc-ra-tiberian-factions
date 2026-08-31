@@ -3171,7 +3171,7 @@ int DisplayClass::TacticalClass::Action(unsigned flags, KeyNumType& key)
             // changes; ACTION_NUKE_BOMB is the closest cursor we can
             // reach from the mod side (crosshair-style targeting). If we
             // ever land launcher-side hooks, this becomes ACTION_TD_ION_CANNON.
-            if (Map.IsTargettingMode == SPC_TD_ION_CANNON) {
+            if (Map.IsTargettingMode == SPC_TD_ION_CANNON || Map.IsTargettingMode == SPC_TS_ION_CANNON) {
                 action = ACTION_NUKE_BOMB;
             }
 
