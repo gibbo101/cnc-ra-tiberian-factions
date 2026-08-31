@@ -20,17 +20,13 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
-## Mailbox EVA lines lock to the boot's first-fired faction on an in-session switch (2026-08-31)
+## RESOLVED: mailbox EVA lines now follow the picked faction across an in-session switch (2026-09-01)
 
-- **Severity:** minor. **Status:** open — RAM-patch spike queued (todo.md) to lift it.
-- Play-proven (same-boot flip test, 2026-08-31): ClientG lazy-loads each localized sample at
-  its FIRST FIRE of the launcher session and caches it for the whole boot — the DLL's
-  match-start rewrite landed on disk (byte-verified) and a later match still played the cached
-  bytes. So each mailbox line speaks the faction of the first match it fired in; switching
-  faction without relaunching keeps the earlier voice on lines already heard. First match per
-  boot — the normal case — is always correct. Fix direction: patch the cached blob in ClientG
-  memory at match start (the lobby resolver already ships cross-process reads; payloads padded
-  to equal length make it a same-size write).
+- Was: ClientG caches each localized sample once per boot, so a faction switch without
+  relaunching kept the stale voice. FIXED by the RAM patch — the DLL overwrites the cached blob
+  in ClientG's memory at match start (`TF_Patch_ClientG_Cache`, dllinterface.cpp). All five
+  launcher-owned lines verified faction-correct both directions, no crash. Full record and the
+  five findings that made it work: `eva-ram-patch-spike.md`.
 
 ---
 

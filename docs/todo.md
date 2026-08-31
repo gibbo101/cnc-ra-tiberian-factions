@@ -17,17 +17,16 @@ WriteProcessMemory behave under Proton like the proven reads. Probe read-only fi
 
 ---
 
-## Mailbox lever beyond audio: per-faction radar crest (Luke, 2026-08-31)
+## ⭐ NEXT SPIKE: per-faction radar crest via RAM patch (Luke, 2026-09-01)
 
-The era-voice mailbox (EVA arc) generalises to any launcher-blind choice whose CONTENT resolves
-from a loose file we ship: the launcher picks WHICH slot, the DLL rewrites WHAT'S IN IT at match
-start. Luke's first target: the radar-box crest. The per-faction crest choice is a proven
-ClientG wall (2 hardcoded slots), but the slot PIXELS live in our shipped loose
-`MT_COMMANDBAR_COMMON.TGA` — so repaint the region the picked side will get (GDI pick → GDI
-eagle into the Allied-crest region). Uncompressed TGA = cheap in-place region patch, not a
-184 MB rewrite. Gate: probe the atlas's cache granularity first (swap region bytes between
-matches, watch the crest) — audio reads loose files at least per boot; the atlas may cache
-harder. Candidates after the crest: loading screens, other launcher-picked shell art.
+Full plan: `docs/radar-crest-ram-spike.md`. The EVA RAM patch proved cross-process
+`WriteProcessMemory` into ClientG works under Proton, which is exactly the mechanism the
+2026-07-20 crest spike declined as "too fragile." Reopen it: stage-1 read-only probe to find the
+loaded ALLIES/SOVIET crest pixels in ClientG memory (raw BGRA / file bytes / DXT), then overwrite
+with the faction crest at match start. Decisive risk the probe settles cheaply: whether a
+CPU-readable copy exists at all, or the pixels are GPU-only after upload (the failure mode audio
+never had). Reuse `TF_Patch_ClientG_Cache`. After the crest: loading screens, other
+launcher-picked shell art.
 
 ---
 

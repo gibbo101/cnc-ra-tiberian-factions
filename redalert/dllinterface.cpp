@@ -1644,6 +1644,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance(int scenario_in
  * History: 1/7/2019 5:20PM - ST
  **************************************************************************************************/
 static void TF_Mailbox_Write_EVA_Voice(void);
+#if TF_DEV_BUILD
+static void TF_Probe_ClientG_Cache(void);
+#endif
 
 extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int scenario_index,
                                                                            int scenario_variation,
@@ -1792,6 +1795,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
     Set_Palette(GamePalette.Get_Data());
 
     TF_Mailbox_Write_EVA_Voice();
+#if TF_DEV_BUILD
+    TF_Probe_ClientG_Cache();
+#endif
 
     return true;
 }
@@ -2029,6 +2035,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const ch
     Set_Palette(GamePalette.Get_Data());
 
     TF_Mailbox_Write_EVA_Voice();
+#if TF_DEV_BUILD
+    TF_Probe_ClientG_Cache();
+#endif
 
     return true;
 }
@@ -3735,6 +3744,8 @@ void DLLExportClass::Shutdown(void)
 */
 static char TF_ModRootPath[MAX_PATH]; // "<mod>\" incl. trailing separator
 
+static void TF_Patch_ClientG_Cache(bool td_era);
+
 static void TF_Mailbox_Write_EVA_Voice(void)
 {
     if (TF_ModRootPath[0] == 0) {
@@ -3780,7 +3791,376 @@ static void TF_Mailbox_Write_EVA_Voice(void)
         snprintf(dst, sizeof(dst), "%s\\%s", dir, _rows[i].dst);
         CopyFileA(src, dst, FALSE);
     }
+
+    // Also overwrite any already-cached copy in ClientG's memory, so an in-session faction
+    // switch corrects lines heard (and cached) before the switch (docs/eva-ram-patch-spike.md).
+    TF_Patch_ClientG_Cache(td_era);
 }
+
+/*
+** Tiberian Factions -- stage-2 RAM patch (docs/eva-ram-patch-spike.md). The disk mailbox
+** above only reaches a launcher-fired EVA line the FIRST time it fires in a boot; ClientG
+** then caches the sample (proven: raw ADPCM file bytes, in a PAGE_READWRITE region) and
+** replays the cached copy, so a faction switch WITHOUT relaunching keeps the stale voice on
+** already-heard lines. This patch overwrites the cached blob in ClientG's memory with the
+** era-correct bytes at match start: scan for the WRONG faction's distinctive needle, compute
+** the blob start from the needle's known file offset, and write the correct-faction WAV over
+** it. The TD/RA payload of each line+channel is padded to EQUAL byte length (they are
+** re-encoded mono at a fixed rate; MS-ADPCM is constant-rate so equal sample count => equal
+** bytes), so the cached blob is one fixed size and the overwrite is always same-size -- no
+** overflow in either switch direction. Covers all four launcher-owned lines, both channels.
+*/
+static bool TF_WriteFile_Into_Process(HANDLE proc, SIZE_T dest, const char* path)
+{
+    FILE* f = fopen(path, "rb");
+    if (f == NULL) {
+        return false;
+    }
+    fseek(f, 0, SEEK_END);
+    long len = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    if (len <= 0 || len > (1 << 20)) {
+        fclose(f);
+        return false;
+    }
+    unsigned char* buf = (unsigned char*)malloc(len);
+    if (buf == NULL) {
+        fclose(f);
+        return false;
+    }
+    bool ok = (fread(buf, 1, len, f) == (size_t)len);
+    fclose(f);
+    if (ok) {
+        SIZE_T wrote = 0;
+        ok = WriteProcessMemory(proc, (LPVOID)dest, buf, len, &wrote) && wrote == (SIZE_T)len;
+    }
+    free(buf);
+    return ok;
+}
+
+static void TF_Patch_ClientG_Cache(bool td_era)
+{
+    if (TF_ModRootPath[0] == 0) {
+        return;
+    }
+    char dir[MAX_PATH];
+    snprintf(dir, sizeof(dir), "%sData\\AUDIO\\EN-US", TF_ModRootPath);
+
+    // One entry per launcher-owned line + channel. Each carries BOTH factions' distinctive
+    // 20-byte needle and its byte offset within that faction's (equal-length) payload file,
+    // plus both file names. At runtime the WRONG faction (!desired) is the one to hunt; a hit
+    // locates the blob start (hit - wrong.fileoff) and the DESIRED faction's payload is written
+    // over it. Needles/offsets are regenerated whenever the payloads are re-padded.
+    struct PatchLine
+    {
+        const unsigned char* td_needle;
+        int td_fileoff;
+        const char* td_file;
+        const unsigned char* ra_needle;
+        int ra_fileoff;
+        const char* ra_file;
+    };
+    static const unsigned char td_nodeply_c[] = {0x0f, 0x0f, 0xee, 0xf1, 0x55, 0x35, 0x33, 0x33, 0x43, 0x32, 0x43, 0x33, 0x33, 0x53, 0x24, 0x22, 0x22, 0x10, 0xea, 0xbc};
+    static const unsigned char ra_nodeply_c[] = {0x0d, 0xb0, 0x41, 0x15, 0x42, 0x10, 0x20, 0xe1, 0x01, 0x14, 0x22, 0x34, 0x34, 0x11, 0x32, 0x10, 0xff, 0x31, 0xf2, 0x41};
+    static const unsigned char td_nodeply_r[] = {0x44, 0x33, 0x23, 0x0e, 0xea, 0xcc, 0xef, 0xe0, 0x14, 0x32, 0x15, 0x53, 0x41, 0x1f, 0xcd, 0xce, 0xe1, 0x13, 0x44, 0x44};
+    static const unsigned char ra_nodeply_r[] = {0xee, 0xf0, 0xf0, 0x34, 0x33, 0x20, 0xeb, 0xd1, 0x54, 0x2d, 0x9e, 0xf2, 0x2f, 0xed, 0xf0, 0x04, 0x43, 0x2f, 0xf3, 0x31};
+    // BCT keeps its BASE-FORMAT payloads (block_align 70 -- the teardown sample loader rejects
+    // ffmpeg's power-of-two re-encode with silence), zero-padded after the data chunk to equal
+    // length per channel so the same-size cache write still holds. Needles read from real audio.
+    static const unsigned char td_bct_c[] = {0xde, 0x25, 0xf0, 0x01, 0x61, 0x20, 0x00, 0x61, 0x31, 0x01, 0xf0, 0xfc, 0xde, 0xfd, 0xc8, 0xde, 0x22, 0x71, 0xe0, 0x11};
+    static const unsigned char ra_bct_c[] = {0x11, 0xfd, 0x20, 0xfc, 0x22, 0xb0, 0xde, 0x0f, 0xdb, 0x10, 0xd0, 0xe4, 0x60, 0x33, 0x22, 0x00, 0xa1, 0x0f, 0xde, 0xd3};
+    static const unsigned char td_bct_r[] = {0x01, 0x01, 0x2d, 0x00, 0x2d, 0x00, 0x8a, 0x11, 0x8a, 0x11, 0x8c, 0x15, 0x8c, 0x15, 0xcc, 0x11, 0x66, 0x22, 0x44, 0x55};
+    static const unsigned char ra_bct_r[] = {0xff, 0xf0, 0x75, 0x2f, 0xff, 0x15, 0x23, 0x0f, 0xf0, 0x27, 0x20, 0xed, 0x00, 0x10, 0xdf, 0xad, 0xec, 0xec, 0xd0, 0x1b};
+    static const unsigned char td_won_c[] = {0x12, 0x22, 0x1e, 0xef, 0x35, 0x3e, 0x9d, 0xf3, 0x1c, 0xbe, 0xff, 0xe0, 0xf0, 0x12, 0x30, 0xe2, 0x56, 0x32, 0x14, 0x44};
+    static const unsigned char ra_won_c[] = {0xd8, 0xed, 0xbc, 0xef, 0xdd, 0xed, 0xbd, 0xef, 0x10, 0x13, 0x1e, 0x14, 0x33, 0x47, 0x34, 0x12, 0x22, 0x43, 0x42, 0x22};
+    static const unsigned char td_won_r[] = {0xff, 0xfd, 0xbc, 0xcc, 0xcd, 0xdc, 0xdd, 0xde, 0xce, 0xee, 0xed, 0xd9, 0xdc, 0xcd, 0xcc, 0xcd, 0xdd, 0xcd, 0xed, 0xce};
+    static const unsigned char ra_won_r[] = {0xdd, 0xbd, 0xef, 0xee, 0xbd, 0xee, 0xfd, 0xbe, 0xfe, 0xdc, 0xee, 0xad, 0xfe, 0xfc, 0xdc, 0xde, 0xe0, 0x11, 0x0f, 0xdd};
+    static const unsigned char td_lst_c[] = {0x00, 0x00, 0x02, 0x33, 0x43, 0x43, 0x44, 0x33, 0x20, 0xdd, 0xac, 0xde, 0x10, 0xf0, 0x11, 0x33, 0x43, 0x11, 0xff, 0x26};
+    static const unsigned char ra_lst_c[] = {0x02, 0x32, 0x66, 0x52, 0x21, 0xe0, 0x32, 0x23, 0x42, 0x52, 0x11, 0x10, 0xaf, 0x20, 0xbf, 0x2f, 0xed, 0xcd, 0xdd, 0x0a};
+    static const unsigned char td_lst_r[] = {0xf2, 0x12, 0x11, 0x10, 0xfe, 0xff, 0xf0, 0xf0, 0x10, 0xee, 0xed, 0xdd, 0xdd, 0xfe, 0xfe, 0xdd, 0xdc, 0xcd, 0xdf, 0xed};
+    static const unsigned char ra_lst_r[] = {0xda, 0xda, 0xcc, 0xbc, 0xcd, 0xdf, 0x0f, 0xd0, 0x11, 0x12, 0x63, 0x30, 0x1f, 0x12, 0x0e, 0xf0, 0xfe, 0x9d, 0x04, 0x41};
+    // BCT only fires at teardown, so it is not cached during its OWN match -- but after its
+    // first teardown it persists in cache, so the NEXT match's start-patch can flip it (same as
+    // the other lines). Its base-format payloads are zero-padded to equal length, so the write
+    // stays same-size. NODEPLY/WON/LST use the re-encoded equal-length payloads.
+    static const PatchLine lines[] = {
+        {td_nodeply_c, 1124, "TF_MBX_TD_NODEPLY_C.WAV", ra_nodeply_c, 1124, "TF_MBX_RA_NODEPLY_C.WAV"},
+        {td_nodeply_r, 1124, "TF_MBX_TD_NODEPLY_R.WAV", ra_nodeply_r, 1124, "TF_MBX_RA_NODEPLY_R.WAV"},
+        {td_bct_c, 678, "TF_MBX_TD_BCT_C.WAV", ra_bct_c, 678, "TF_MBX_RA_BCT_C.WAV"},
+        {td_bct_r, 7078, "TF_MBX_TD_BCT_R.WAV", ra_bct_r, 678, "TF_MBX_RA_BCT_R.WAV"},
+        {td_won_c, 1124, "TF_MBX_TD_WON_C.WAV", ra_won_c, 1124, "TF_MBX_RA_WON_C.WAV"},
+        {td_won_r, 1624, "TF_MBX_TD_WON_R.WAV", ra_won_r, 1124, "TF_MBX_RA_WON_R.WAV"},
+        {td_lst_c, 1124, "TF_MBX_TD_LST_C.WAV", ra_lst_c, 1124, "TF_MBX_RA_LST_C.WAV"},
+        {td_lst_r, 1374, "TF_MBX_TD_LST_R.WAV", ra_lst_r, 1124, "TF_MBX_RA_LST_R.WAV"},
+    };
+    const int NEEDLE_LEN = 20;
+
+    struct PatchRow
+    {
+        const unsigned char* wrong_needle;
+        int wrong_len;
+        int wrong_fileoff;
+        const char* correct_file;
+    };
+    PatchRow rows[8];
+    int row_count = (int)(sizeof(lines) / sizeof(lines[0]));
+    for (int i = 0; i < row_count; i++) {
+        // Hunt the WRONG faction's bytes; write the DESIRED faction's file over them.
+        rows[i].wrong_needle = td_era ? lines[i].ra_needle : lines[i].td_needle;
+        rows[i].wrong_len = NEEDLE_LEN;
+        rows[i].wrong_fileoff = td_era ? lines[i].ra_fileoff : lines[i].td_fileoff;
+        rows[i].correct_file = td_era ? lines[i].td_file : lines[i].ra_file;
+    }
+
+    FILE* log = NULL;
+#if TF_DEV_BUILD
+    const char* up = getenv("USERPROFILE");
+    char logpath[512];
+    if (up != NULL) {
+        snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+        log = fopen(logpath, "a");
+    }
+    if (log) {
+        fprintf(log, "== patch at frame %d td_era=%d ==\n", (int)Frame, (int)td_era);
+    }
+#endif
+
+    static unsigned char scratch[1 << 20];
+    const int overlap = 32;
+
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) {
+        if (log) {
+            fclose(log);
+        }
+        return;
+    }
+    PROCESSENTRY32W pe;
+    pe.dwSize = sizeof(pe);
+    if (Process32FirstW(snap, &pe)) {
+        do {
+            if (_wcsicmp(pe.szExeFile, L"ClientG.exe") != 0) {
+                continue;
+            }
+            HANDLE proc = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
+                                          | PROCESS_QUERY_INFORMATION,
+                                      FALSE, pe.th32ProcessID);
+            if (proc == NULL) {
+                if (log) {
+                    fprintf(log, "  OpenProcess(write) failed\n");
+                }
+                continue;
+            }
+            SIZE_T addr = 0;
+            MEMORY_BASIC_INFORMATION mbi;
+            while (VirtualQueryEx(proc, (LPCVOID)addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
+                SIZE_T region_base = (SIZE_T)mbi.BaseAddress;
+                SIZE_T region_size = mbi.RegionSize;
+                bool writable = (mbi.State == MEM_COMMIT)
+                                && (mbi.Protect == PAGE_READWRITE || mbi.Protect == PAGE_EXECUTE_READWRITE)
+                                && region_size <= ((SIZE_T)512 << 20);
+                if (writable) {
+                    for (SIZE_T off = 0; off < region_size; off += (sizeof(scratch) - overlap)) {
+                        SIZE_T want = region_size - off;
+                        if (want > sizeof(scratch)) {
+                            want = sizeof(scratch);
+                        }
+                        SIZE_T got = 0;
+                        if (!ReadProcessMemory(proc, (LPCVOID)(region_base + off), scratch, want, &got)
+                            || got == 0) {
+                            continue;
+                        }
+                        for (int r = 0; r < row_count; r++) {
+                            const unsigned char* nb = rows[r].wrong_needle;
+                            int nl = rows[r].wrong_len;
+                            if ((SIZE_T)nl > got) {
+                                continue;
+                            }
+                            for (SIZE_T i = 0; i + nl <= got; i++) {
+                                if (scratch[i] == nb[0] && memcmp(scratch + i, nb, nl) == 0) {
+                                    SIZE_T hit = region_base + off + i;
+                                    SIZE_T blob = hit - rows[r].wrong_fileoff;
+                                    char path[MAX_PATH];
+                                    snprintf(path, sizeof(path), "%s\\%s", dir, rows[r].correct_file);
+                                    bool ok = TF_WriteFile_Into_Process(proc, blob, path);
+                                    if (log) {
+                                        fprintf(log, "  PATCH %s @blob %08x (hit %08x) -> %s\n",
+                                                ok ? "OK" : "FAIL", (unsigned int)blob, (unsigned int)hit,
+                                                rows[r].correct_file);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                SIZE_T next = region_base + region_size;
+                if (next <= addr) {
+                    break;
+                }
+                addr = next;
+            }
+            CloseHandle(proc);
+        } while (Process32NextW(snap, &pe));
+    }
+    CloseHandle(snap);
+    if (log) {
+        fflush(log);
+        fclose(log);
+    }
+}
+
+#if TF_DEV_BUILD
+/*
+** Tiberian Factions -- stage-1 RAM-patch spike probe (docs/eva-ram-patch-spike.md).
+** READ-ONLY. Scans ClientG.exe's writable private memory for known needles taken
+** from the mailbox NODEPLY sample (the placement-reject line), in BOTH candidate
+** cache formats, and logs every hit to tf_cache_probe.log. It answers one question:
+** does ClientG cache the sample as ADPCM file bytes (found via the ADPCM needle ->
+** an in-place same-size overwrite is trivial) or as decoded PCM (found via the PCM
+** needle -> equal-length PCM handling required)? Reuses the lobby resolver's proven
+** cross-process scan (CreateToolhelp32Snapshot / OpenProcess / VirtualQueryEx /
+** ReadProcessMemory). Nothing is written to ClientG. Runs at match start; the useful
+** result comes on the SECOND match of a boot, after match 1 has fired (and cached)
+** the line -- misplace a building in match 1, then start match 2.
+*/
+struct TF_ProbeNeedle
+{
+    const char* name;
+    const unsigned char* bytes;
+    int len;
+};
+
+static void TF_Probe_ClientG_Cache(void)
+{
+    // Needles: 20-byte ADPCM data-chunk slices (docs/eva-ram-patch-spike.md). Both channel
+    // variants of NODEPLY (Allied 22k = C, Soviet 44k = R) since which plays follows the
+    // player's country, plus construction-complete which fires in EVERY match (guaranteed
+    // cache) so a zero on it means the scan itself is not reaching the cache.
+    static const unsigned char nodeply_c[] = {0x1d, 0xf0, 0x0c, 0xbf, 0x0c, 0xfc, 0xf0, 0xeb, 0x02, 0xfe,
+                                              0xe4, 0x1f, 0xde, 0xdb, 0xed, 0xc1, 0x11, 0xef, 0x70, 0x01};
+    static const unsigned char nodeply_r[] = {0xdf, 0x02, 0x00, 0x05, 0x2e, 0xaf, 0x13, 0x11, 0xfe, 0xdf,
+                                              0x27, 0x11, 0x0d, 0xe0, 0x02, 0x12, 0x70, 0xfa, 0xf0, 0x44};
+    static const unsigned char tddeploy_c[] = {0xff, 0x9e, 0x02, 0x20, 0xb0, 0xed, 0xb0, 0x40, 0xff, 0x10,
+                                               0xbe, 0xe0, 0xff, 0xe0, 0x34, 0xff, 0x15, 0x12, 0x34, 0x70};
+    static const unsigned char tddeploy_r[] = {0x00, 0x11, 0x11, 0x00, 0x00, 0xaa, 0xdd, 0xff, 0x11, 0x33,
+                                               0x44, 0x44, 0x33, 0x00, 0xbb, 0xcc, 0xee, 0xdd, 0xee, 0x22};
+    static const unsigned char constru_c[] = {0x20, 0x12, 0x60, 0x0f, 0x06, 0x0f, 0x13, 0x02, 0x00, 0xf5,
+                                              0x0c, 0x30, 0xd0, 0x00, 0x0c, 0xf8, 0x00, 0x00, 0xfe, 0xa0};
+    static const unsigned char constru_r[] = {0x44, 0x11, 0x66, 0x22, 0x22, 0x22, 0x11, 0x22, 0xff, 0xcc,
+                                              0xdd, 0xaa, 0xee, 0xcc, 0x00, 0x00, 0x00, 0x22, 0x22, 0x33};
+    static const TF_ProbeNeedle needles[] = {
+        {"NODEPLY_C", nodeply_c, sizeof(nodeply_c)},
+        {"NODEPLY_R", nodeply_r, sizeof(nodeply_r)},
+        {"TDDEPLOY_C", tddeploy_c, sizeof(tddeploy_c)},
+        {"TDDEPLOY_R", tddeploy_r, sizeof(tddeploy_r)},
+        {"CONSTRU_C", constru_c, sizeof(constru_c)},
+        {"CONSTRU_R", constru_r, sizeof(constru_r)},
+    };
+    const int needle_count = (int)(sizeof(needles) / sizeof(needles[0]));
+
+    const char* up = getenv("USERPROFILE");
+    if (up == NULL) {
+        return;
+    }
+    char logpath[512];
+    snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+    FILE* log = fopen(logpath, "a");
+    if (log == NULL) {
+        return;
+    }
+    fprintf(log, "== probe at frame %d ==\n", (int)Frame);
+
+    static unsigned char scratch[1 << 20];
+    const int overlap = 32; // >= max needle length, so a needle straddling two chunks is caught
+
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) {
+        fprintf(log, "  snapshot failed\n");
+        fclose(log);
+        return;
+    }
+    PROCESSENTRY32W pe;
+    pe.dwSize = sizeof(pe);
+    int hit_total[8] = {0};
+    int procs_found = 0, procs_opened = 0;
+    unsigned long long bytes_scanned = 0;
+    int regions_scanned = 0;
+    if (Process32FirstW(snap, &pe)) {
+        do {
+            if (_wcsicmp(pe.szExeFile, L"ClientG.exe") != 0) {
+                continue;
+            }
+            procs_found++;
+            HANDLE proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, pe.th32ProcessID);
+            if (proc == NULL) {
+                fprintf(log, "  ClientG pid %lu: OpenProcess failed\n", (unsigned long)pe.th32ProcessID);
+                continue;
+            }
+            procs_opened++;
+            SIZE_T addr = 0;
+            MEMORY_BASIC_INFORMATION mbi;
+            while (VirtualQueryEx(proc, (LPCVOID)addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
+                SIZE_T region_base = (SIZE_T)mbi.BaseAddress;
+                SIZE_T region_size = mbi.RegionSize;
+                // Scan any committed, readable region regardless of Type (PRIVATE/MAPPED/IMAGE):
+                // a loose-file sample may be memory-mapped (MAPPED) or copy-on-write, not only
+                // heap-loaded. Exclude only NOACCESS/GUARD.
+                bool readable = (mbi.State == MEM_COMMIT)
+                                && !(mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD))
+                                && (mbi.Protect != 0)
+                                && region_size <= ((SIZE_T)512 << 20);
+                if (readable) {
+                    regions_scanned++;
+                    for (SIZE_T off = 0; off < region_size; off += (sizeof(scratch) - overlap)) {
+                        SIZE_T want = region_size - off;
+                        if (want > sizeof(scratch)) {
+                            want = sizeof(scratch);
+                        }
+                        SIZE_T got = 0;
+                        if (!ReadProcessMemory(proc, (LPCVOID)(region_base + off), scratch, want, &got)
+                            || got == 0) {
+                            continue;
+                        }
+                        bytes_scanned += got;
+                        for (int ni = 0; ni < needle_count; ni++) {
+                            const unsigned char* nb = needles[ni].bytes;
+                            int nl = needles[ni].len;
+                            if ((SIZE_T)nl > got) {
+                                continue;
+                            }
+                            for (SIZE_T i = 0; i + nl <= got; i++) {
+                                if (scratch[i] == nb[0] && memcmp(scratch + i, nb, nl) == 0) {
+                                    if (hit_total[ni] < 32) {
+                                        fprintf(log, "  HIT %s @ %08x (region %08x prot %lx)\n",
+                                                needles[ni].name,
+                                                (unsigned int)(region_base + off + i),
+                                                (unsigned int)region_base, (unsigned long)mbi.Protect);
+                                    }
+                                    hit_total[ni]++;
+                                }
+                            }
+                        }
+                    }
+                }
+                SIZE_T next = region_base + region_size;
+                if (next <= addr) {
+                    break;
+                }
+                addr = next;
+            }
+            CloseHandle(proc);
+        } while (Process32NextW(snap, &pe));
+    }
+    CloseHandle(snap);
+    fprintf(log, "  clientg found=%d opened=%d regions=%d bytes=%llu\n",
+            procs_found, procs_opened, regions_scanned, bytes_scanned);
+    for (int ni = 0; ni < needle_count; ni++) {
+        fprintf(log, "  TOTAL %s: %d\n", needles[ni].name, hit_total[ni]);
+    }
+    fflush(log);
+    fclose(log);
+}
+#endif // TF_DEV_BUILD
 
 static void TF_Install_Bundled_Maps(const char* mod_path)
 {
