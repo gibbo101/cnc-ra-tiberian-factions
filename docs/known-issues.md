@@ -8,17 +8,43 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
-## "Cannot deploy here" + "Battle control terminated" stay RA-voiced for TD factions (2026-08-31)
+## Launcher drops DLL speech dispatched in the game-over window (2026-08-31)
 
-- **Severity:** cosmetic. **Status:** open — launcher-owned moments, no DLL hook.
-- Diagnostic-proven (tf_speech.log, session 2026-08-31): these two lines never reach the
-  DLL's `On_Speech`. The placement-reject click is swallowed client-side by ClientG
-  (placement-distances grid), and the quit line fires during match teardown. With no
-  DLL-visible moment, the radar recipe (stub + refire) cannot apply — stubbing alone
-  would silence the line for every faction. All other wrong-voice EVA lines were fixed
-  the same session (structure sold = missing `SpeechTD` mapping; mission accomplished /
-  failed = stub + refire from `On_Multiplayer_Game_Over`). Don't re-chase without a new
-  launcher-side lever.
+- **Severity:** limitation (worked around). **Status:** confirmed — do not retry refire there.
+- Play-proven (tf_speech.log + ears, 2026-08-31): speech events the DLL dispatches during /
+  after `On_Multiplayer_Game_Over` are discarded by the launcher — `TDACCOM1`, `TDFAIL1` and
+  `RAOLOST1` all logged going out through fully valid chains (events registered, samples
+  present) and stayed inaudible, while every mid-game dispatch plays. Stub + refire therefore
+  can never voice the endgame lines; they ride the era mailbox instead (below). Mid-game
+  stub + refire (structure sold) is unaffected and proven audible.
+
+---
+
+## Mailbox EVA lines lock to the boot's first-fired faction on an in-session switch (2026-08-31)
+
+- **Severity:** minor. **Status:** open — RAM-patch spike queued (todo.md) to lift it.
+- Play-proven (same-boot flip test, 2026-08-31): ClientG lazy-loads each localized sample at
+  its FIRST FIRE of the launcher session and caches it for the whole boot — the DLL's
+  match-start rewrite landed on disk (byte-verified) and a later match still played the cached
+  bytes. So each mailbox line speaks the faction of the first match it fired in; switching
+  faction without relaunching keeps the earlier voice on lines already heard. First match per
+  boot — the normal case — is always correct. Fix direction: patch the cached blob in ClientG
+  memory at match start (the lobby resolver already ships cross-process reads; payloads padded
+  to equal length make it a same-size write).
+
+---
+
+## MP clients keep RA voice on the mailbox-routed EVA lines (2026-08-31)
+
+- **Severity:** minor. **Status:** open, by design for now — same shape as the credit-tick limit.
+- "Cannot deploy here", "battle control terminated", "mission accomplished" and "your mission
+  has failed" are faction-voiced by the **era mailbox**: the launcher fires these at moments the
+  DLL never sees (client-side placement reject, teardown, the game-over window drop above), so
+  the DLL instead rewrites the loose `Data/AUDIO/EN-US/` sample files those events resolve,
+  copying era-correct bytes (`TF_MBX_*` payloads) at every match start
+  (`TF_Mailbox_Write_EVA_Voice`, dllinterface.cpp). In LAN MP only the host runs the DLL, so
+  client machines keep the shipped/base RA samples on those names. Structure sold is exempt —
+  it uses stub + mid-game dispatch, which the launcher routes per player, reaching clients.
 
 ---
 

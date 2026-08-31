@@ -5,6 +5,32 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## RAM patch for the mailbox boot-cache (Luke, 2026-08-31 — ACTIVE, picked up right after the EVA merge)
+
+Lift the per-boot voice lock (known-issues.md): at match start, find the cached sample blob in
+ClientG's memory and overwrite it in place with the era-correct bytes. Building blocks: the
+lobby resolver's proven cross-process scan (pid discovery + ReadProcessMemory,
+dllinterface.cpp Route B); payload pairs padded to EQUAL length so the write is always
+same-size; disk mailbox stays for the first-fire case. Open questions: does the cache hold
+file bytes (ADPCM) or decoded PCM (decode our payloads and search both); does
+WriteProcessMemory behave under Proton like the proven reads. Probe read-only first.
+
+---
+
+## Mailbox lever beyond audio: per-faction radar crest (Luke, 2026-08-31)
+
+The era-voice mailbox (EVA arc) generalises to any launcher-blind choice whose CONTENT resolves
+from a loose file we ship: the launcher picks WHICH slot, the DLL rewrites WHAT'S IN IT at match
+start. Luke's first target: the radar-box crest. The per-faction crest choice is a proven
+ClientG wall (2 hardcoded slots), but the slot PIXELS live in our shipped loose
+`MT_COMMANDBAR_COMMON.TGA` — so repaint the region the picked side will get (GDI pick → GDI
+eagle into the Allied-crest region). Uncompressed TGA = cheap in-place region patch, not a
+184 MB rewrite. Gate: probe the atlas's cache granularity first (swap region bytes between
+matches, watch the crest) — audio reads loose files at least per boot; the atlas may cache
+harder. Candidates after the crest: loading screens, other launcher-picked shell art.
+
+---
+
 ## Superweapon power pass (Luke, 2026-08-31)
 
 Luke's verdict after the TS ion shockwave landed (600 centre + 300 x 8 ring, "guaranteed
