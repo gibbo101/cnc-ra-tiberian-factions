@@ -10,8 +10,12 @@ maintenance, and queued tasks. Newest at top.
 All unlocked by the novel-sample-name + faction-tick work (2026-08-31). One routing key,
 three surfaces, decided together:
 
-- **Key decision first**: route on the future TS house (`ts-factions-feasibility.md`) or
-  LIVE on the era door rule (base switches voice the moment a TS MCV deploys) — or both.
+- **Key DECIDED (Luke, 2026-08-31): route on the future TS house** (`ts-factions-feasibility.md`).
+  A live era-wide audio flip when a TS MCV deploys was considered and REJECTED — don't re-offer.
+- **Open idea (Luke, same night, uncommitted): production EVA could key on the SOURCE
+  BUILDING** — the Speak() call sites for "construction complete"/"unit ready" know which
+  factory produced, so a TS factory could announce in the TS voice while a TD barracks
+  stays TD, per event, no global state. Design-level only; consider during the arc.
 - **Credit tick**: TS tick sounds → extend the shipped `CreditClass::AI` branch
   (`building-sound-routing.md` §2). Sound names via OpenTS grep.
 - **Radar on/off**: already DLL-fired (`radar.cpp:259/279`, `house.cpp:2088`) — pure
