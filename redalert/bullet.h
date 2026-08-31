@@ -90,12 +90,14 @@ public:
         **	TSPODDROP (the infantry drop pod, TS RULES.INI ground truth):
         **	DropPodHeight=2000 leptons of altitude; DropPodSpeed=75 along the
         **	0.79-rad slope splits ~53/53 leptons per frame horizontal/vertical
-        **	(cos/sin 0.79), a ~38-frame fall; Vulcan2 Damage=50, doubled per
-        **	strafe burst by droppod.cpp.
+        **	(cos/sin 0.79), a ~38-frame fall. Strafe damage deviates from TS
+        **	(Vulcan2 50, doubled): halved after play — five pods' combined
+        **	bursts were one-shotting power plants and barracks (Luke,
+        **	2026-08-31). The SA warhead keeps the ring lethal to infantry.
         */
         TF_POD_DROP_HEIGHT = 2000,
         TF_POD_FALL_SPEED = 53,
-        TF_POD_STRAFE_DAMAGE = 50
+        TF_POD_STRAFE_DAMAGE = 25
     };
     /*---------------------------------------------------------------------
     **	Constructors, Destructors, and overloaded operators.

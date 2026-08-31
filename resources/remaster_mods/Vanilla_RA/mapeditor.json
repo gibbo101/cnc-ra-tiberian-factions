@@ -1274,6 +1274,267 @@
       ]
     },
     {
+      "id": 37,
+      "kind": "vehicle",
+      "name": "tshvr",
+      "display_name": "Hover MLRS",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 38,
+      "kind": "vehicle",
+      "name": "tstitn",
+      "display_name": "Titan",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames08Cardinal"
+      ],
+      "walk_frames": 12,
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 39,
+      "kind": "vehicle",
+      "name": "tshmec",
+      "display_name": "Mammoth Mk. II",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "walk_frames": 8,
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 40,
+      "kind": "vehicle",
+      "name": "smcv",
+      "display_name": "Soviet MCV",
+      "owner": "USSR",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "BuildingRemap"
+      ]
+    },
+    {
+      "id": 41,
+      "kind": "vehicle",
+      "name": "tdnmcv",
+      "display_name": "Nod MCV",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "BuildingRemap"
+      ]
+    },
+    {
+      "id": 42,
+      "kind": "vehicle",
+      "name": "tdgmcv",
+      "display_name": "GDI MCV",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "BuildingRemap"
+      ]
+    },
+    {
+      "id": 43,
+      "kind": "vehicle",
+      "name": "amcv",
+      "display_name": "Allied MCV",
+      "owner": "Greece",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "BuildingRemap"
+      ]
+    },
+    {
+      "id": 44,
+      "kind": "vehicle",
+      "name": "tsmcv",
+      "display_name": "TS Mobile Construction Vehicle",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "BuildingRemap"
+      ]
+    },
+    {
+      "id": 45,
+      "kind": "vehicle",
+      "name": "tsharv",
+      "display_name": "TS Harvester",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Harvester",
+        "BuildingRemap"
+      ]
+    },
+    {
+      "id": 46,
+      "kind": "vehicle",
+      "name": "tssmec",
+      "display_name": "Wolverine",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames08Cardinal"
+      ],
+      "walk_frames": 12,
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 47,
+      "kind": "vehicle",
+      "name": "tssonic",
+      "display_name": "Disruptor",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 48,
+      "kind": "vehicle",
+      "name": "tsapc",
+      "display_name": "Amphibious APC",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": []
+    },
+    {
+      "id": 50,
+      "kind": "vehicle",
+      "name": "tssubtank",
+      "display_name": "Devil's Tongue",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 51,
+      "kind": "vehicle",
+      "name": "tssapc",
+      "display_name": "Subterranean APC",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": []
+    },
+    {
       "id": 7,
       "kind": "aircraft",
       "name": "tdc17",

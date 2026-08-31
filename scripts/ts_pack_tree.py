@@ -1570,17 +1570,22 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
         Image.open(f"{ART}/shp_gtplug_f/frame-{i:04d}.png").convert("RGBA").save(
             f"{dst}/frame-{k:04d}.png")
     # Second plug slot: GAPLUG_D (the pod-node dome, ART.INI LoopEnd=14 straight)
-    # resampled 15 -> 20 to wrap in n=40. Level art is TYPE-BLIND (level 1 =
-    # dish, level 2 = dish + dome regardless of which plugs are installed) —
-    # the per-type socket matrix stays the deferred problem; without this
-    # layer a second install pointed past the shipped frames and drew the
-    # white-box placeholder.
+    # resampled 15 -> 20 to wrap in n=40, pre-shifted by TS's second-socket
+    # anchor (ART.INI [GAPLUG] PowerUp2Loc (-24,-12); slot 1 is (0,0)) — the
+    # turbine precedent — so the dome lands on its OWN socket instead of
+    # stacking on the dish's. Level art is TYPE-BLIND (level 1 = dish, level
+    # 2 = dish + dome regardless of which plugs are installed) — the per-type
+    # socket matrix stays the deferred problem; without this layer a second
+    # install pointed past the shipped frames and drew the white-box
+    # placeholder.
     dome_seq = resample(list(range(15)), 20)
     dst2 = f"{ART}/shp_gtplug_d_p2"
     os.makedirs(dst2, exist_ok=True)
     for k, i in enumerate(dome_seq):
-        Image.open(f"{ART}/shp_gtplug_d/frame-{i:04d}.png").convert("RGBA").save(
-            f"{dst2}/frame-{k:04d}.png")
+        src = Image.open(f"{ART}/shp_gtplug_d/frame-{i:04d}.png").convert("RGBA")
+        out = Image.new("RGBA", src.size, (0, 0, 0, 0))
+        out.paste(src, (-24, -12), src)
+        out.save(f"{dst2}/frame-{k:04d}.png")
     spin20 = list(range(20))
     build_structure("TSPLUG", "shp_gtplug", 0, 1,
                     [("shp_gtplug_a", list(range(20)), list(range(20))),
