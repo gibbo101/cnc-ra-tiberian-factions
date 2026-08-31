@@ -45,8 +45,9 @@ can masquerade as "fixed" (e.g. the placement double vanished only because the n
 `HVYDOOR1` had no sample). **Checklist:** when adding a routed TD VOC, always also
 extract its WAV(s) into `Data/AUDIO/`.
 
-**2. The credit tick — faction-routed via the silence-and-refire flank (IMPLEMENTED
-2026-08-31, awaiting in-game verdict).** The 2026-05-28 findings stand and are the
+**2. The credit tick — faction-routed via the silence-and-refire flank (VERIFIED IN
+PLAY 2026-08-31, Luke: "you magnificent beast" — GDI/Nod get the TD tick, RA factions
+unchanged).** The 2026-05-28 findings stand and are the
 foundation: the launcher fires `RA?_SFX_cashup1`/`cashdn1` itself, faction-blind
 (`Graphic_Logic`'s sound path never runs — proven by the empty-diagnostic-file
 technique), so no data wiring alone can faction-route it. BUT the DLL *drives the
