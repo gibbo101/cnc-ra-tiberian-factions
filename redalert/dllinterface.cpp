@@ -3765,6 +3765,10 @@ static void TF_Mailbox_Write_EVA_Voice(void)
         {"TF_MBX_TD_NODEPLY_R.WAV", "TF_MBX_RA_NODEPLY_R.WAV", "RAR_SFX_EVA_NODEPLY1_EN-US.WAV"},
         {"TF_MBX_TD_BCT_C.WAV", "TF_MBX_RA_BCT_C.WAV", "RAC_SFX_EVA_BCT1_EN-US.WAV"},
         {"TF_MBX_TD_BCT_R.WAV", "TF_MBX_RA_BCT_R.WAV", "RAR_SFX_EVA_BCT1_EN-US.WAV"},
+        {"TF_MBX_TD_WON_C.WAV", "TF_MBX_RA_WON_C.WAV", "RAC_SFX_EVA_MISNWON1_EN-US.WAV"},
+        {"TF_MBX_TD_WON_R.WAV", "TF_MBX_RA_WON_R.WAV", "RAR_SFX_EVA_MISNWON1_EN-US.WAV"},
+        {"TF_MBX_TD_LST_C.WAV", "TF_MBX_RA_LST_C.WAV", "RAC_SFX_EVA_MISNLST1_EN-US.WAV"},
+        {"TF_MBX_TD_LST_R.WAV", "TF_MBX_RA_LST_R.WAV", "RAR_SFX_EVA_MISNLST1_EN-US.WAV"},
     };
     char dir[MAX_PATH];
     snprintf(dir, sizeof(dir), "%sData\\AUDIO\\EN-US", TF_ModRootPath);
@@ -4625,18 +4629,13 @@ void DLLExportClass::On_Multiplayer_Game_Over(void)
     GameOver = true;
 
     /*
-    **  Faction-voiced endgame EVA. The launcher's own "Mission accomplished"/
-    **  "Your mission has failed" auto-fire is silence-stubbed (loose 44-byte
-    **  WAVs over its sample names), so the DLL speaks the line per human
-    **  player here: TD EVA for GDI/Nod, the RA line under its RAO* rename
-    **  for everyone else (On_Speech routes by house).
+    **  No DLL-spoken endgame EVA: the launcher drops speech events dispatched
+    **  in the game-over window (TDACCOM1/TDFAIL1/RAOLOST1 all logged going
+    **  out and inaudible, while every mid-game dispatch plays). The
+    **  "Mission accomplished"/"Your mission has failed" lines are instead
+    **  faction-voiced through the era mailbox (TF_Mailbox_Write_EVA_Voice),
+    **  which the launcher's own auto-fire plays.
     */
-    for (int sp = 0; sp < Session.Players.Count(); sp++) {
-        HouseClass* sp_house = HouseClass::As_Pointer(Session.Players[sp]->Player.ID);
-        if (sp_house != NULL && sp_house->IsHuman) {
-            Speak(sp_house->IsDefeated ? VOX_FAIL : VOX_ACCOMPLISHED, sp_house);
-        }
-    }
 
     EventCallbackStruct event;
 

@@ -776,8 +776,11 @@ void Init_SpeechRAO(void)
         return;
     inited = true;
 
-    SpeechRAO[VOX_ACCOMPLISHED]   = "RAOWON1";
-    SpeechRAO[VOX_FAIL]           = "RAOLOST1";
+    // RAO names exist for lines whose stock sample is silence-stubbed (to
+    // mute the launcher's own faction-blind auto-fire) but which the DLL can
+    // still speak audibly. That only works MID-GAME: speech dispatched in the
+    // game-over window is dropped by the launcher, so endgame lines route
+    // through the era mailbox instead (dllinterface.cpp).
     SpeechRAO[VOX_STRUCTURE_SOLD] = "RAOSTRUSLD1";
 }
 
