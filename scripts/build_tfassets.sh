@@ -408,6 +408,21 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsionbm_stub.shp" 15 480 15
 PACK_ARGS+=("$TMPDIR/tsionbm_stub.shp:TSIONBM.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsionrng_stub.shp" 104 51 15
 PACK_ARGS+=("$TMPDIR/tsionrng_stub.shp:TSIONRNG.SHP")
+# TS drop-pod strike set (scripts/ts_pack_pods.py): husks 192x192, DROPEXP puff
+# 400x272, PODRING entry flash 400x208, SMOKEY trail 128x120, pod bullet body
+# 192x192 — all / 8 for the classic dims the launcher sizes the HD art off.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdpod1_stub.shp" 24 24 8
+PACK_ARGS+=("$TMPDIR/tsdpod1_stub.shp:TSDPOD1.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdpod2_stub.shp" 24 24 8
+PACK_ARGS+=("$TMPDIR/tsdpod2_stub.shp:TSDPOD2.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdrpexp_stub.shp" 50 34 12
+PACK_ARGS+=("$TMPDIR/tsdrpexp_stub.shp:TSDRPEXP.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspodrng_stub.shp" 50 26 20
+PACK_ARGS+=("$TMPDIR/tspodrng_stub.shp:TSPODRNG.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssmokey_stub.shp" 16 15 11
+PACK_ARGS+=("$TMPDIR/tssmokey_stub.shp:TSSMOKEY.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspodblt_stub.shp" 24 24 1
+PACK_ARGS+=("$TMPDIR/tspodblt_stub.shp:TSPODBLT.SHP")
 # TS fire-stream particle (BULLET_TSFIRE) -- 76 shapes (4 axes x 19 states), 20x20 box
 # (TSFIRE.ZIP is a 160 canvas, scripts/ts_pack_flame.py).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsfire_stub.shp" 20 20 76

@@ -1597,6 +1597,23 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
                       "Installs into an Upgrade Center, granting the Ion Cannon.",
                       "shp_rad3icon")
 
+    # TSPODS: the Drop Pod Node plug (our Firestorm-style third plug — base TS
+    # grants pods by script only). Same never-on-the-map contract as TSPION:
+    # the tileset is the placement GHOST only (GAPLUG_D's dome, ART.INI
+    # Cameo=RAD1ICON). Host socket art per installed plug TYPE is the deferred
+    # art-matrix problem — the centre keeps its dish-only powerup art for now.
+    CURRENT_INI[0] = "TSPODS"
+    dome = load("shp_gtplug_d", 0)
+    dome = hq_scale(dome.crop(dome.getbbox()), plug_factor)
+    canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    canvas.paste(dome, ((128 - dome.width) // 2, (128 - dome.height) // 2), dome)
+    write_zip(f"{STRUCT_DIR}/TSPODS.ZIP", "tspods", [canvas, canvas])
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPODS", 2)
+    STUB_DIMS["TSPODS"] = [24, 24]
+    emit_sidebar_data("TSPODS", "Drop Pod Node",
+                      "Installs into an Upgrade Center, granting Drop Pod reinforcements.",
+                      "shp_rad1icon")
+
 # ---- TSMCV (MCV.VXL render, 32 facings, canvas 384 = classic 48 x 8) ----
 if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(f"{UNITS_DIR}/TSMCV.ZIP"):
     def scale_center(img, factor, canvas):

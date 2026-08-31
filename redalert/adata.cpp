@@ -2467,6 +2467,20 @@ static AnimTypeClass const TsDig(ANIM_TS_DIG, "TSDIG", 64, 18, false, false, fal
 static AnimTypeClass const TsIonBeam(ANIM_TS_ION_BEAM, "TSIONBM", 48, 11, false, false, false, true, true, false, false, false, false, 0, 2, 0, 0, 0, 15, 0, VOC_TS_ION1, ANIM_NONE, 15, 0x100);
 static AnimTypeClass const TsIonRing(ANIM_TS_ION_RING, "TSIONRNG", 48, 7, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 15, 0, VOC_NONE, ANIM_NONE, 15, 0x100);
 
+// Tiberian Factions -- TS Drop Pod strike set (SPC_TS_DROPPODS; TS [General]
+// DropPod=/DropPodPuff=/AtmosphereEntry= + the SMOKEY trail; OpenTS
+// droppod.cpp). Art = scripts/ts_pack_pods.py (ANIM.PAL, x4, canvas = classic
+// stub x 8). The husks are the "mark to leave" after a pod lands -- TS keeps
+// them forever; ours linger through 5 loop cycles then fade. Ground-layer so
+// the trooper walks OVER its own pod. DROPEXP rides on top (not ground);
+// PODRING is the flat entry flash at the spawn point; SMOKEY is the descent
+// trail, spawned by the pod bullet's AI every 6 frames.
+static AnimTypeClass const TsDropPod1(ANIM_TS_DROPPOD1, "TSDPOD1", 24, 4, false, false, false, false, false, false, true, false, false, 0, 4, 0, 0, 0, 8, 5, VOC_NONE, ANIM_NONE, 8, 0x100);
+static AnimTypeClass const TsDropPod2(ANIM_TS_DROPPOD2, "TSDPOD2", 24, 4, false, false, false, false, false, false, true, false, false, 0, 4, 0, 0, 0, 8, 5, VOC_NONE, ANIM_NONE, 8, 0x100);
+static AnimTypeClass const TsDropExp(ANIM_TS_DROPEXP, "TSDRPEXP", 50, 6, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
+static AnimTypeClass const TsPodRing(ANIM_TS_PODRING, "TSPODRNG", 50, 10, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 20, 0, VOC_NONE, ANIM_NONE, 20, 0x100);
+static AnimTypeClass const TsSmokey(ANIM_TS_SMOKEY, "TSSMOKEY", 16, 5, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 11, 0, VOC_NONE, ANIM_NONE, 11, 0x100);
+
 static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 25, 0, VOC_NONE, ANIM_NONE, 25, 0x100);
 
 // Tiberian Factions -- TS Disruptor ripple disc (ANIM_TS_SONICPULSE): RETIRED,
@@ -2623,8 +2637,9 @@ void AnimTypeClass::Init_Heap(void)
 
     // MUST stay last, in this order: heap ID == registration order, and these
     // occupy the ANIM_RAILFX / ANIM_TS_SONICWAVE / ANIM_TS_SONICPULSE /
-    // ANIM_TS_GUNFIRE / ANIM_TS_DIG / ANIM_TS_ION_BEAM / ANIM_TS_ION_RING
-    // enum slots that follow the virtual anims.
+    // ANIM_TS_GUNFIRE / ANIM_TS_DIG / ANIM_TS_ION_BEAM / ANIM_TS_ION_RING /
+    // ANIM_TS_DROPPOD1 / ANIM_TS_DROPPOD2 / ANIM_TS_DROPEXP /
+    // ANIM_TS_PODRING / ANIM_TS_SMOKEY enum slots that follow the virtual anims.
     new AnimTypeClass(RailFx);
     new AnimTypeClass(TsSonicWave);
     new AnimTypeClass(TsSonicPulse);
@@ -2632,6 +2647,11 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(TsDig);
     new AnimTypeClass(TsIonBeam);
     new AnimTypeClass(TsIonRing);
+    new AnimTypeClass(TsDropPod1);
+    new AnimTypeClass(TsDropPod2);
+    new AnimTypeClass(TsDropExp);
+    new AnimTypeClass(TsPodRing);
+    new AnimTypeClass(TsSmokey);
 }
 
 /***********************************************************************************************

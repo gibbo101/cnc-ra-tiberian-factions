@@ -8056,7 +8056,7 @@ bool BuildingClass::Can_Upgrade(BuildingTypeClass const* plug, HouseClass const*
     **	which allows duplicates (Luke, 2026-08-31). Resource plugs stack —
     **	the power plant takes two turbines by design.
     */
-    if (plug->Type == STRUCT_TSPION) {
+    if (plug->Type == STRUCT_TSPION || plug->Type == STRUCT_TSPODS) {
         for (int i = 0; i < UpgradeLevel; i++) {
             if (UpgradeTypes[i] == plug->Type) {
                 return (false);

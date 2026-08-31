@@ -304,6 +304,7 @@ struct SoundEffectNameStruct
     {"TONE16", 10, IN_NOVAR},     // VOC_TD_MONEY_DOWN -- TD falling money tick (RAC/RAR_SFX_TONE16 -> TD?_SFX_TONE16.WAV)
     {"CASHUPD", 10, IN_NOVAR},    // VOC_DLL_MONEY_UP -- RA rising money tick, DLL-fired alias (RAC/RAR_SFX_CASHUPD -> RA?_SFX_cashup1.WAV)
     {"CASHDND", 10, IN_NOVAR},    // VOC_DLL_MONEY_DOWN -- RA falling money tick, DLL-fired alias (RAC/RAR_SFX_CASHDND -> RA?_SFX_cashdn1.WAV)
+    {"TSGUN4", 1, IN_NOVAR},      // VOC_TS_GUN4 -- TS Vulcan2 report: the drop pod's LZ strafe (RAC/RAR_SFX_TSGUN4 -> bundled TSGUN4.WAV, own name)
 };
 
 //
