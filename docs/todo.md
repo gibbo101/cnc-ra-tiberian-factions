@@ -5,6 +5,26 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## TS-era audio identity arc (Luke, 2026-08-31 — design as ONE piece)
+
+All unlocked by the novel-sample-name + faction-tick work (2026-08-31). One routing key,
+three surfaces, decided together:
+
+- **Key decision first**: route on the future TS house (`ts-factions-feasibility.md`) or
+  LIVE on the era door rule (base switches voice the moment a TS MCV deploys) — or both.
+- **Credit tick**: TS tick sounds → extend the shipped `CreditClass::AI` branch
+  (`building-sound-routing.md` §2). Sound names via OpenTS grep.
+- **Radar on/off**: already DLL-fired (`radar.cpp:259/279`, `house.cpp:2088`) — pure
+  routing, add VOC_TS_RADAR_ON/OFF + TS assets. (TD variants for GDI/Nod could ride the
+  same branch if wanted.)
+- **EVA voice set**: `project-ts-eva-feasibility` memory — SPEECH01/02.MIX sourced,
+  delivery proven; ~20-30 lines per voice under own names, `SpeechTS[]`/`SpeechCABAL[]`
+  tables in `On_Speech`.
+- ⚠ VOC enum (defines.h) and SoundEffectName[] (audio.cpp) are ORDER-COUPLED — append in
+  both, same order.
+
+---
+
 ## Front-end pixels via loose files — confirm from OUR mod, then use it (2026-08-30)
 
 The "shell ignores loose overrides" wall is FALSIFIED (see `front-end-texture-meg-spike.md`
