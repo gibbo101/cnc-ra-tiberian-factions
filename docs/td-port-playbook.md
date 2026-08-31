@@ -654,7 +654,12 @@ Before declaring a TD-entity port "100% authentic":
       ordinal from `defines.h`) and `mapeditor.json` regenerated — the native editor learns
       our types from that shipped manifest, not from its own source. Schema + field meanings:
       `cnc-map-editor/docs/mapeditor-json.md`. (Terrain templates regenerate automatically;
-      buildings/units/infantry are the script's embedded tables.)
+      buildings/units/infantry are the script's embedded tables.) Types with no vanilla
+      text id use `display_name` (the rules.ini `Name=`); walkers need `walk_frames`
+      (the rules.ini `WalkFrames=` — body packs as facing blocks of that stride, turret
+      block after the whole run). Take footprints/occupancy/frame layouts from the
+      **bdata.cpp/udata.cpp ctors and rules.ini**, never from the enum comments in
+      `defines.h` — those went stale once (TSPROC/TSWEAP) and cost a re-verification pass.
 - [ ] `IsTDPort = true` set after registration (for classes that have the flag)
 - [ ] Donor `ImageData` pointer copied if not a building (bullet/anim/aircraft)
 - [ ] Rules.ini values are TD-source raw values (with conversion comments if non-IsTDPort)

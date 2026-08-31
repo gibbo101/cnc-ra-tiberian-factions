@@ -1585,9 +1585,9 @@ typedef enum StructType : short
     */
     STRUCT_TSFACT, // TS Construction Yard "TSFACT" (TS GACNST; 3x2 TD-parity) — deployed from UNIT_TSMCV; the gate on the TS tree. Not sidebar-buildable.
     STRUCT_TSPILE, // TS Barracks "TSPILE" (GAPILE, 2x2) — infantry factory.
-    STRUCT_TSPROC, // TS Tiberium Refinery "TSPROC" (PROC/NAREFN art, 3x3 TD-parity) — free harvester at build.
+    STRUCT_TSPROC, // TS Tiberium Refinery "TSPROC" (PROC/NAREFN art, 4x3 plot, dock-pad corner free — bdata.cpp TsProcList) — free harvester at build.
     STRUCT_TSSILO, // TS Silo "TSSILO" (GASILO; 2x1 TD-parity).
-    STRUCT_TSWEAP, // TS War Factory "TSWEAP" (GAWEAP; 3x3 TD-parity) — vehicle factory.
+    STRUCT_TSWEAP, // TS War Factory "TSWEAP" (GAWEAP; 5x3 plot, 4x2 blocking — bdata.cpp TsWeapList) — vehicle factory.
     STRUCT_TSRADR, // TS Radar "TSRADR" (GARADR, 2x2).
     STRUCT_TSHPAD, // TS Helipad "TSHPAD" (GAHPAD, 2x2) — aircraft factory.
     STRUCT_TSTECH, // TS Tech Center "TSTECH" (GATECH, 2x2 TD-parity).
