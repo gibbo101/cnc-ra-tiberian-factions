@@ -776,8 +776,9 @@ void Init_SpeechRAO(void)
         return;
     inited = true;
 
-    SpeechRAO[VOX_ACCOMPLISHED] = "RAOWON1";
-    SpeechRAO[VOX_FAIL]         = "RAOLOST1";
+    SpeechRAO[VOX_ACCOMPLISHED]   = "RAOWON1";
+    SpeechRAO[VOX_FAIL]           = "RAOLOST1";
+    SpeechRAO[VOX_STRUCTURE_SOLD] = "RAOSTRUSLD1";
 }
 
 /***********************************************************************************************

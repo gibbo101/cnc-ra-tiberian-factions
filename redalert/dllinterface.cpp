@@ -1643,6 +1643,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance(int scenario_in
  *
  * History: 1/7/2019 5:20PM - ST
  **************************************************************************************************/
+static void TF_Mailbox_Write_EVA_Voice(void);
+
 extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int scenario_index,
                                                                            int scenario_variation,
                                                                            int scenario_direction,
@@ -1788,6 +1790,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
     Map.Render();
 
     Set_Palette(GamePalette.Get_Data());
+
+    TF_Mailbox_Write_EVA_Voice();
 
     return true;
 }
@@ -2023,6 +2027,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const ch
     Map.Render();
 
     Set_Palette(GamePalette.Get_Data());
+
+    TF_Mailbox_Write_EVA_Voice();
 
     return true;
 }
@@ -3712,6 +3718,66 @@ void DLLExportClass::Shutdown(void)
 ** side-channel (display.cpp), so they degrade gracefully if the mod is
 ** later disabled.
 */
+/*
+** Tiberian Factions -- era-voice mailbox for the launcher's self-fired EVA
+** lines. "Cannot deploy here" (the placement-reject click is swallowed
+** client-side) and "battle control terminated" (fired during teardown) never
+** pass through On_Speech, so they cannot be faction-routed at dispatch. Their
+** samples, however, resolve from loose files under <mod>\Data\AUDIO\EN-US\,
+** so whenever a match starts the DLL copies the era-correct recording over
+** those sample names: the launcher stays faction-blind yet speaks the picked
+** side's voice. TD-era sides (ActLike GDI/Nod) get the TD lines, everyone
+** else the RA originals. The shipped TF_MBX_* files carry both sets of bytes;
+** the destination names are only ever created by this write, so a fresh
+** install falls back to the base MEG's RA samples until the first match. In
+** LAN games only the host machine runs the DLL: clients keep the RA voice for
+** these two lines (same limit as the faction credit tick).
+*/
+static char TF_ModRootPath[MAX_PATH]; // "<mod>\" incl. trailing separator
+
+static void TF_Mailbox_Write_EVA_Voice(void)
+{
+    if (TF_ModRootPath[0] == 0) {
+        return;
+    }
+    const HouseClass* local = PlayerPtr;
+    if (local == NULL) {
+        for (int i = 0; i < Houses.Count(); i++) {
+            HouseClass* house = Houses.Ptr(i);
+            if (house != NULL && house->IsActive && house->IsHuman) {
+                local = house;
+                break;
+            }
+        }
+    }
+    if (local == NULL) {
+        return;
+    }
+    bool td_era = (local->ActLike == HOUSE_GOOD || local->ActLike == HOUSE_BAD);
+
+    static const struct
+    {
+        const char* td_src;
+        const char* ra_src;
+        const char* dst;
+    } _rows[] = {
+        {"TF_MBX_TD_NODEPLY_C.WAV", "TF_MBX_RA_NODEPLY_C.WAV", "RAC_SFX_EVA_NODEPLY1_EN-US.WAV"},
+        {"TF_MBX_TD_NODEPLY_R.WAV", "TF_MBX_RA_NODEPLY_R.WAV", "RAR_SFX_EVA_NODEPLY1_EN-US.WAV"},
+        {"TF_MBX_TD_BCT_C.WAV", "TF_MBX_RA_BCT_C.WAV", "RAC_SFX_EVA_BCT1_EN-US.WAV"},
+        {"TF_MBX_TD_BCT_R.WAV", "TF_MBX_RA_BCT_R.WAV", "RAR_SFX_EVA_BCT1_EN-US.WAV"},
+    };
+    char dir[MAX_PATH];
+    snprintf(dir, sizeof(dir), "%sData\\AUDIO\\EN-US", TF_ModRootPath);
+    CreateDirectoryA(dir, NULL);
+    for (int i = 0; i < (int)(sizeof(_rows) / sizeof(_rows[0])); i++) {
+        char src[MAX_PATH];
+        char dst[MAX_PATH];
+        snprintf(src, sizeof(src), "%s\\%s", dir, td_era ? _rows[i].td_src : _rows[i].ra_src);
+        snprintf(dst, sizeof(dst), "%s\\%s", dir, _rows[i].dst);
+        CopyFileA(src, dst, FALSE);
+    }
+}
+
 static void TF_Install_Bundled_Maps(const char* mod_path)
 {
     static bool _installed = false;
@@ -3732,6 +3798,8 @@ static void TF_Install_Bundled_Maps(const char* mod_path)
     }
     root[len - 6] = 0; // now "<mod>\" (keeps the trailing separator)
     _installed = true;
+    strncpy(TF_ModRootPath, root, sizeof(TF_ModRootPath));
+    TF_ModRootPath[sizeof(TF_ModRootPath) - 1] = 0;
 
     const char* profile = getenv("USERPROFILE");
     if (profile == NULL || profile[0] == 0) {

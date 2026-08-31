@@ -12897,7 +12897,7 @@
         Allies+Soviets. Radar-recipe pattern. -->
    <LocalizedSFXEvent Name="RAC_SFX_RAOWON1" Preset="_PRESET_HUD_OVERLAP">
       <SampleNamesList>
-         <entry> RAOC_SFX_EVA_MISNWON1.WAV </entry>
+         <entry> RAOC_SFX_EVA_MISNWON1_EN-US.MP3 </entry>
       </SampleNamesList>
       <LocalizedTextIDs>
          <entry> TEXT_SFX_RAC_SFX_MISNWON1 </entry>
@@ -12908,7 +12908,7 @@
    </LocalizedSFXEvent>
    <LocalizedSFXEvent Name="RAR_SFX_RAOWON1" Preset="_PRESET_HUD_OVERLAP">
       <SampleNamesList>
-         <entry> RAOR_SFX_EVA_MISNWON1.WAV </entry>
+         <entry> RAOR_SFX_EVA_MISNWON1_EN-US.MP3 </entry>
       </SampleNamesList>
       <LocalizedTextIDs>
          <entry> TEXT_SFX_RAR_SFX_MISNWON1 </entry>
@@ -12919,7 +12919,7 @@
    </LocalizedSFXEvent>
    <LocalizedSFXEvent Name="RAC_SFX_RAOLOST1" Preset="_PRESET_HUD_OVERLAP">
       <SampleNamesList>
-         <entry> RAOC_SFX_EVA_MISNLST1.WAV </entry>
+         <entry> RAOC_SFX_EVA_MISNLST1_EN-US.MP3 </entry>
       </SampleNamesList>
       <LocalizedTextIDs>
          <entry> TEXT_SFX_RAC_SFX_MISNLST1 </entry>
@@ -12930,7 +12930,7 @@
    </LocalizedSFXEvent>
    <LocalizedSFXEvent Name="RAR_SFX_RAOLOST1" Preset="_PRESET_HUD_OVERLAP">
       <SampleNamesList>
-         <entry> RAOR_SFX_EVA_MISNLST1.WAV </entry>
+         <entry> RAOR_SFX_EVA_MISNLST1_EN-US.MP3 </entry>
       </SampleNamesList>
       <LocalizedTextIDs>
          <entry> TEXT_SFX_RAR_SFX_MISNLST1 </entry>
@@ -12938,5 +12938,31 @@
       <MinVolume> 100 </MinVolume>
       <MaxVolume> 100 </MaxVolume>
       <Priority> 1 </Priority>
+   </LocalizedSFXEvent>
+   <!-- Tiberian Factions: RA 'structure sold' under a new name (RAO* samples
+        are loose copies of the base RA EVA in Data/AUDIO/EN-US/). The
+        launcher's own STRUSLD1 auto-fire is silence-stubbed and the DLL
+        refires per faction: TDSTRUSLD1 for GDI+Nod, these for Allies+Soviets. -->
+   <LocalizedSFXEvent Name="RAC_SFX_RAOSTRUSLD1" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> RAOC_SFX_EVA_STRUSLD1_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+         <entry> TEXT_SFX_RAC_SFX_STRUSLD1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+   </LocalizedSFXEvent>
+   <LocalizedSFXEvent Name="RAR_SFX_RAOSTRUSLD1" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> RAOR_SFX_EVA_STRUSLD1_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+         <entry> TEXT_SFX_RAR_SFX_STRUSLD1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
    </LocalizedSFXEvent>
 </LocalizedSFXEvents>
