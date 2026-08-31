@@ -650,6 +650,11 @@ Before declaring a TD-entity port "100% authentic":
 - [ ] Chain audit shows zero LEAKs (all sections TD-prefixed)
 - [ ] Enum entries added to `defines.h` before the `_COUNT` sentinel
 - [ ] Explicit `new XxxTypeClass(...)` registration in the right `data.cpp` / `rules.cpp`
+- [ ] **Map editor manifest:** entity added to `scripts/editor_manifest.py` (id = the enum
+      ordinal from `defines.h`) and `mapeditor.json` regenerated — the native editor learns
+      our types from that shipped manifest, not from its own source. Schema + field meanings:
+      `cnc-map-editor/docs/mapeditor-json.md`. (Terrain templates regenerate automatically;
+      buildings/units/infantry are the script's embedded tables.)
 - [ ] `IsTDPort = true` set after registration (for classes that have the flag)
 - [ ] Donor `ImageData` pointer copied if not a building (bullet/anim/aircraft)
 - [ ] Rules.ini values are TD-source raw values (with conversion comments if non-IsTDPort)

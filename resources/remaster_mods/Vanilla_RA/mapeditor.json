@@ -1,0 +1,3705 @@
+{
+  "format": 1,
+  "game_type": "RA",
+  "buildings": [
+    {
+      "id": 87,
+      "name": "tdobli",
+      "text_id": "TEXT_STRUCTURE_TITLE_NOD_OBELISK",
+      "power_production": 0,
+      "power_usage": 150,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 2,
+      "occupy_mask": "0 1",
+      "owner": "BadGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": []
+    },
+    {
+      "id": 88,
+      "name": "tdnuke",
+      "text_id": "TEXT_STRUCTURE_TITLE_GDI_POWER_PLANT",
+      "power_production": 100,
+      "power_usage": 0,
+      "storage": 0,
+      "capturable": true,
+      "width": 2,
+      "height": 2,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 89,
+      "name": "tdnuk2",
+      "text_id": "TEXT_STRUCTURE_TITLE_GDI_ADV_POWER_PLANT",
+      "power_production": 200,
+      "power_usage": 0,
+      "storage": 0,
+      "capturable": true,
+      "width": 2,
+      "height": 2,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 90,
+      "name": "tdpyle",
+      "text_id": "TEXT_STRUCTURE_TITLE_GDI_BARRACKS",
+      "power_production": 0,
+      "power_usage": 20,
+      "storage": 0,
+      "capturable": true,
+      "width": 2,
+      "height": 2,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 91,
+      "name": "tdsilo",
+      "text_id": "TEXT_STRUCTURE_TITLE_GDI_SILO",
+      "power_production": 0,
+      "power_usage": 10,
+      "storage": 1500,
+      "capturable": true,
+      "width": 2,
+      "height": 1,
+      "occupy_mask": "10",
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 92,
+      "name": "tdgtwr",
+      "text_id": "TEXT_STRUCTURE_TITLE_GDI_GUARD_TOWER",
+      "power_production": 0,
+      "power_usage": 10,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": []
+    },
+    {
+      "id": 93,
+      "name": "tdatwr",
+      "text_id": "TEXT_STRUCTURE_TITLE_GDI_ADV_GUARD_TOWER",
+      "power_production": 0,
+      "power_usage": 20,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 2,
+      "occupy_mask": "0 1",
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": []
+    },
+    {
+      "id": 94,
+      "name": "tdgun",
+      "text_id": "TEXT_STRUCTURE_TITLE_NOD_TURRET",
+      "power_production": 0,
+      "power_usage": 20,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "BadGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Turret"
+      ]
+    },
+    {
+      "id": 95,
+      "name": "tdsam",
+      "text_id": "TEXT_STRUCTURE_TITLE_NOD_SAM_SITE",
+      "power_production": 0,
+      "power_usage": 20,
+      "storage": 0,
+      "capturable": false,
+      "width": 2,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "BadGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Turret"
+      ]
+    },
+    {
+      "id": 96,
+      "name": "tdhand",
+      "text_id": "TEXT_STRUCTURE_TITLE_NOD_HAND_OF_NOD",
+      "power_production": 0,
+      "power_usage": 20,
+      "storage": 0,
+      "capturable": true,
+      "width": 2,
+      "height": 3,
+      "occupy_mask": "00 11 01",
+      "owner": "BadGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 97,
+      "name": "tdhpad",
+      "text_id": "TEXT_STRUCTURE_TITLE_GDI_HELIPAD",
+      "power_production": 0,
+      "power_usage": 10,
+      "storage": 0,
+      "capturable": true,
+      "width": 2,
+      "height": 2,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 98,
+      "name": "tdfix",
+      "text_id": "TEXT_STRUCTURE_TITLE_GDI_REPAIR_FACILITY",
+      "power_production": 0,
+      "power_usage": 30,
+      "storage": 0,
+      "capturable": true,
+      "width": 3,
+      "height": 3,
+      "occupy_mask": "010 111 010",
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "paved",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 99,
+      "name": "tdhq",
+      "text_id": "TEXT_STRUCTURE_TITLE_GDI_COMM_CENTER",
+      "power_production": 0,
+      "power_usage": 40,
+      "storage": 0,
+      "capturable": true,
+      "width": 2,
+      "height": 2,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 100,
+      "name": "tdweap",
+      "text_id": "TEXT_STRUCTURE_TITLE_GDI_WEAPONS_FACTORY",
+      "power_production": 0,
+      "power_usage": 30,
+      "storage": 0,
+      "capturable": true,
+      "width": 3,
+      "height": 3,
+      "occupy_mask": "000 111 111",
+      "owner": "GoodGuy",
+      "factory_overlay": "tdweap2",
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 101,
+      "name": "tdafld",
+      "text_id": "TEXT_STRUCTURE_TITLE_NOD_AIRFIELD",
+      "power_production": 0,
+      "power_usage": 30,
+      "storage": 0,
+      "capturable": true,
+      "width": 4,
+      "height": 2,
+      "occupy_mask": null,
+      "owner": "BadGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 102,
+      "name": "tdfact",
+      "text_id": "TEXT_STRUCTURE_TITLE_GDI_CONSTRUCTION_YARD",
+      "power_production": 0,
+      "power_usage": 0,
+      "storage": 0,
+      "capturable": true,
+      "width": 3,
+      "height": 2,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Factory",
+        "Bib"
+      ]
+    },
+    {
+      "id": 103,
+      "name": "tdproc",
+      "text_id": "TEXT_STRUCTURE_TITLE_GDI_REFINERY",
+      "power_production": 0,
+      "power_usage": 40,
+      "storage": 2000,
+      "capturable": true,
+      "width": 3,
+      "height": 3,
+      "occupy_mask": "010 111 000",
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 104,
+      "name": "tdeye",
+      "text_id": "TEXT_STRUCTURE_TITLE_GDI_ADV_COMM_CENTER",
+      "power_production": 0,
+      "power_usage": 200,
+      "storage": 0,
+      "capturable": false,
+      "width": 2,
+      "height": 2,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 105,
+      "name": "tdtmpl",
+      "text_id": "TEXT_STRUCTURE_TITLE_NOD_TEMPLE_OF_NOD",
+      "power_production": 0,
+      "power_usage": 150,
+      "storage": 0,
+      "capturable": false,
+      "width": 3,
+      "height": 3,
+      "occupy_mask": "000 111 111",
+      "owner": "BadGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 106,
+      "name": "tdblossom",
+      "text_id": "TEXT_PROP_TITLE_BLOSSOM_TREE",
+      "power_production": 0,
+      "power_usage": 0,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "Neutral",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "NoRemap"
+      ]
+    },
+    {
+      "id": 107,
+      "name": "tdgyard",
+      "text_id": "TEXT_STRUCTURE_RA_SYRD",
+      "power_production": 0,
+      "power_usage": 30,
+      "storage": 0,
+      "capturable": true,
+      "width": 3,
+      "height": 3,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": []
+    },
+    {
+      "id": 108,
+      "name": "tdnpen",
+      "text_id": "TEXT_STRUCTURE_RA_SPEN",
+      "power_production": 0,
+      "power_usage": 30,
+      "storage": 0,
+      "capturable": true,
+      "width": 3,
+      "height": 3,
+      "occupy_mask": null,
+      "owner": "BadGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": []
+    },
+    {
+      "id": 109,
+      "name": "tdgafld",
+      "text_id": "TEXT_STRUCTURE_TITLE_NOD_AIRFIELD",
+      "power_production": 0,
+      "power_usage": 30,
+      "storage": 0,
+      "capturable": true,
+      "width": 3,
+      "height": 2,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": []
+    },
+    {
+      "id": 110,
+      "name": "tdsteal",
+      "text_id": "TEXT_STRUCTURE_TF_TDSTEAL",
+      "power_production": 0,
+      "power_usage": 100,
+      "storage": 0,
+      "capturable": true,
+      "width": 1,
+      "height": 2,
+      "occupy_mask": "0 1",
+      "owner": "BadGuy",
+      "factory_overlay": null,
+      "frame_offset": 13,
+      "graphics_source": "gap",
+      "z_order": "default",
+      "flags": []
+    },
+    {
+      "id": 111,
+      "name": "tdfbnk",
+      "text_id": "TEXT_STRUCTURE_TF_TDFBNK",
+      "power_production": 0,
+      "power_usage": 15,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "BadGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": "pbox",
+      "z_order": "default",
+      "flags": []
+    }
+  ],
+  "units": [
+    {
+      "id": 22,
+      "kind": "vehicle",
+      "name": "tdmcv",
+      "text_id": "TEXT_UNIT_TITLE_GDI_MCV",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "BuildingRemap"
+      ]
+    },
+    {
+      "id": 23,
+      "kind": "vehicle",
+      "name": "tdharv",
+      "text_id": "TEXT_UNIT_TITLE_GDI_HARVESTER",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Harvester",
+        "BuildingRemap"
+      ]
+    },
+    {
+      "id": 24,
+      "kind": "vehicle",
+      "name": "tdmtnk",
+      "text_id": "TEXT_UNIT_TITLE_GDI_MED_TANK",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 25,
+      "kind": "vehicle",
+      "name": "tdltnk",
+      "text_id": "TEXT_UNIT_TITLE_NOD_LIGHT_TANK",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 26,
+      "kind": "vehicle",
+      "name": "tdhtnk",
+      "text_id": "TEXT_UNIT_TITLE_GDI_MAMMOTH_TANK",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 27,
+      "kind": "vehicle",
+      "name": "tdftnk",
+      "text_id": "TEXT_UNIT_TITLE_NOD_FLAME_TANK",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 28,
+      "kind": "vehicle",
+      "name": "tdbike",
+      "text_id": "TEXT_UNIT_TITLE_NOD_RECON_BIKE",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 29,
+      "kind": "vehicle",
+      "name": "tdjeep",
+      "text_id": "TEXT_UNIT_TITLE_GDI_HUMVEE",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": -4,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 30,
+      "kind": "vehicle",
+      "name": "tdbggy",
+      "text_id": "TEXT_UNIT_TITLE_NOD_NOD_BUGGY",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": -4,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 31,
+      "kind": "vehicle",
+      "name": "tdapc",
+      "text_id": "TEXT_UNIT_TITLE_GDI_APC",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full",
+        "HasUnloadFrames"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 32,
+      "kind": "vehicle",
+      "name": "tdstnk",
+      "text_id": "TEXT_UNIT_TITLE_NOD_STEALTH_TANK",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 33,
+      "kind": "vehicle",
+      "name": "tdmlrs",
+      "text_id": "TEXT_UNIT_TITLE_GDI_MRLS",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [
+        "Frames32Full",
+        "OnFlatBed"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 34,
+      "kind": "vehicle",
+      "name": "tdmsam",
+      "text_id": "TEXT_UNIT_TITLE_NOD_SSM_LAUNCHER",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [
+        "Frames32Full",
+        "OnFlatBed"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 35,
+      "kind": "vehicle",
+      "name": "tdarty",
+      "text_id": "TEXT_UNIT_TITLE_NOD_ARTILLERY",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 36,
+      "kind": "vehicle",
+      "name": "tdvice",
+      "text_id": "TEXT_UNIT_TITLE_VICE",
+      "owner": "Neutral",
+      "body_frames": [
+        "Frames01Single"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 7,
+      "kind": "aircraft",
+      "name": "tdc17",
+      "text_id": "TEXT_UNIT_TITLE_C17",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "FixedWing"
+      ]
+    },
+    {
+      "id": 8,
+      "kind": "aircraft",
+      "name": "tdheli",
+      "text_id": "TEXT_UNIT_TITLE_NOD_HELICOPTER",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [
+        "Rotor"
+      ],
+      "turret": "LROTOR",
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": -2,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 9,
+      "kind": "aircraft",
+      "name": "tdorca",
+      "text_id": "TEXT_UNIT_TITLE_GDI_ORCA",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 10,
+      "kind": "aircraft",
+      "name": "tda10",
+      "text_id": "TEXT_UNIT_TITLE_A10",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "FixedWing",
+        "Armed"
+      ]
+    },
+    {
+      "id": 11,
+      "kind": "aircraft",
+      "name": "tdc17p",
+      "text_id": "TEXT_UNIT_TITLE_C17",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "FixedWing"
+      ]
+    },
+    {
+      "id": 7,
+      "kind": "vessel",
+      "name": "tdboat",
+      "text_id": "TEXT_UNIT_TITLE_WAKE",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames16Simple"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": "tdboattur",
+      "turret2": null,
+      "turret_offset": 14,
+      "turret_y": 1,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 8,
+      "kind": "vessel",
+      "name": "tdlst",
+      "text_id": "TEXT_UNIT_TITLE_LST",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames01Single",
+        "HasUnloadFrames"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": []
+    },
+    {
+      "id": 9,
+      "kind": "vessel",
+      "name": "tdoblisub",
+      "text_id": "TEXT_UNIT_TF_TDOBLISUB",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames16Simple"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 10,
+      "kind": "vessel",
+      "name": "tdnsub",
+      "text_id": "TEXT_UNIT_RA_SS",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames16Simple"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 11,
+      "kind": "vessel",
+      "name": "tdpt",
+      "text_id": "TEXT_UNIT_RA_PT",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames16Simple"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": "mgun",
+      "turret2": null,
+      "turret_offset": 14,
+      "turret_y": 1,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 12,
+      "kind": "vessel",
+      "name": "tddd",
+      "text_id": "TEXT_UNIT_RA_DD",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames16Simple"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": "ssam",
+      "turret2": null,
+      "turret_offset": -8,
+      "turret_y": -4,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 13,
+      "kind": "vessel",
+      "name": "tdca",
+      "text_id": "TEXT_UNIT_RA_CA",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames16Simple"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": "turr",
+      "turret2": "turr",
+      "turret_offset": 22,
+      "turret_y": -4,
+      "flags": [
+        "Turret",
+        "DoubleTurret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 14,
+      "kind": "vessel",
+      "name": "tdmsub",
+      "text_id": "TEXT_UNIT_RA_MSUB",
+      "owner": "BadGuy",
+      "body_frames": [
+        "Frames16Simple"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    }
+  ],
+  "infantry": [
+    {
+      "id": 26,
+      "name": "tde1",
+      "text_id": "TEXT_UNIT_TITLE_GDI_MINIGUNNER",
+      "owner": "GoodGuy",
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 27,
+      "name": "tde2",
+      "text_id": "TEXT_UNIT_TITLE_GDI_GRENADIER",
+      "owner": "GoodGuy",
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 28,
+      "name": "tde3",
+      "text_id": "TEXT_UNIT_TITLE_GDI_ROCKET_SOLDIER",
+      "owner": "GoodGuy",
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 29,
+      "name": "tde4",
+      "text_id": "TEXT_UNIT_TITLE_NOD_FLAMETHROWER",
+      "owner": "BadGuy",
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 30,
+      "name": "tde5",
+      "text_id": "TEXT_UNIT_TITLE_NOD_CHEM_WARRIOR",
+      "owner": "BadGuy",
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 31,
+      "name": "tde6",
+      "text_id": "TEXT_UNIT_TITLE_GDI_ENGINEER",
+      "owner": "GoodGuy",
+      "flags": []
+    },
+    {
+      "id": 32,
+      "name": "tdrmbo",
+      "text_id": "TEXT_UNIT_TITLE_GDI_COMMANDO",
+      "owner": "GoodGuy",
+      "flags": [
+        "Armed"
+      ]
+    }
+  ],
+  "templates": [
+    {
+      "id": 401,
+      "name": "tdsh1",
+      "width": 3,
+      "height": 3,
+      "lands": "BBB BBB WWW",
+      "mask": null
+    },
+    {
+      "id": 402,
+      "name": "tdwsh1",
+      "width": 3,
+      "height": 3,
+      "lands": "BBB BBB WWW",
+      "mask": null
+    },
+    {
+      "id": 403,
+      "name": "tdsh2",
+      "width": 3,
+      "height": 3,
+      "lands": "BBB III III",
+      "mask": null
+    },
+    {
+      "id": 404,
+      "name": "tdwsh2",
+      "width": 3,
+      "height": 3,
+      "lands": "BBB III III",
+      "mask": null
+    },
+    {
+      "id": 405,
+      "name": "tdsh3",
+      "width": 1,
+      "height": 1,
+      "lands": "I",
+      "mask": null
+    },
+    {
+      "id": 406,
+      "name": "tdwsh3",
+      "width": 1,
+      "height": 1,
+      "lands": "I",
+      "mask": null
+    },
+    {
+      "id": 407,
+      "name": "tdsh4",
+      "width": 2,
+      "height": 1,
+      "lands": "II",
+      "mask": null
+    },
+    {
+      "id": 408,
+      "name": "tdwsh4",
+      "width": 2,
+      "height": 1,
+      "lands": "II",
+      "mask": null
+    },
+    {
+      "id": 409,
+      "name": "tdsh5",
+      "width": 3,
+      "height": 3,
+      "lands": "BBB BBB WWW",
+      "mask": null
+    },
+    {
+      "id": 410,
+      "name": "tdwsh5",
+      "width": 3,
+      "height": 3,
+      "lands": "BBB BBB WWW",
+      "mask": null
+    },
+    {
+      "id": 411,
+      "name": "tdsh6",
+      "width": 3,
+      "height": 3,
+      "lands": "BBB BBB WWW",
+      "mask": null
+    },
+    {
+      "id": 412,
+      "name": "tdwsh6",
+      "width": 3,
+      "height": 3,
+      "lands": "BBB BBB WWW",
+      "mask": null
+    },
+    {
+      "id": 413,
+      "name": "tdsh7",
+      "width": 2,
+      "height": 2,
+      "lands": "BW WW",
+      "mask": null
+    },
+    {
+      "id": 414,
+      "name": "tdwsh7",
+      "width": 2,
+      "height": 2,
+      "lands": "BW WW",
+      "mask": null
+    },
+    {
+      "id": 415,
+      "name": "tdsh8",
+      "width": 3,
+      "height": 3,
+      "lands": "BBB BBB BBW",
+      "mask": null
+    },
+    {
+      "id": 416,
+      "name": "tdwsh8",
+      "width": 3,
+      "height": 3,
+      "lands": "BBB BBB BBW",
+      "mask": null
+    },
+    {
+      "id": 417,
+      "name": "tdsh9",
+      "width": 3,
+      "height": 3,
+      "lands": "BBB BBB WBB",
+      "mask": null
+    },
+    {
+      "id": 418,
+      "name": "tdwsh9",
+      "width": 3,
+      "height": 3,
+      "lands": "BBB BBB WBB",
+      "mask": null
+    },
+    {
+      "id": 419,
+      "name": "tdsh10",
+      "width": 2,
+      "height": 2,
+      "lands": "WB WW",
+      "mask": null
+    },
+    {
+      "id": 420,
+      "name": "tdwsh10",
+      "width": 2,
+      "height": 2,
+      "lands": "WB WW",
+      "mask": null
+    },
+    {
+      "id": 421,
+      "name": "tdsh11",
+      "width": 3,
+      "height": 3,
+      "lands": "BWW BWW WWW",
+      "mask": null
+    },
+    {
+      "id": 422,
+      "name": "tdwsh11",
+      "width": 3,
+      "height": 3,
+      "lands": "BWW BWW WWW",
+      "mask": null
+    },
+    {
+      "id": 423,
+      "name": "tdsh12",
+      "width": 3,
+      "height": 3,
+      "lands": "WWW WWB WWB",
+      "mask": null
+    },
+    {
+      "id": 424,
+      "name": "tdwsh12",
+      "width": 3,
+      "height": 3,
+      "lands": "WWW WWB WWB",
+      "mask": null
+    },
+    {
+      "id": 425,
+      "name": "tdsh13",
+      "width": 3,
+      "height": 3,
+      "lands": "WWW WWW BWW",
+      "mask": null
+    },
+    {
+      "id": 426,
+      "name": "tdwsh13",
+      "width": 3,
+      "height": 3,
+      "lands": "WWW WWW BWW",
+      "mask": null
+    },
+    {
+      "id": 427,
+      "name": "tdsh14",
+      "width": 3,
+      "height": 3,
+      "lands": "III III BBI",
+      "mask": null
+    },
+    {
+      "id": 428,
+      "name": "tdwsh14",
+      "width": 3,
+      "height": 3,
+      "lands": "III III BBI",
+      "mask": null
+    },
+    {
+      "id": 429,
+      "name": "tdsh15",
+      "width": 3,
+      "height": 3,
+      "lands": "XII III BIB",
+      "mask": "011 111 111"
+    },
+    {
+      "id": 430,
+      "name": "tdwsh15",
+      "width": 3,
+      "height": 3,
+      "lands": "XII III BIB",
+      "mask": "011 111 111"
+    },
+    {
+      "id": 431,
+      "name": "tdsh16",
+      "width": 3,
+      "height": 2,
+      "lands": "III III",
+      "mask": null
+    },
+    {
+      "id": 432,
+      "name": "tdwsh16",
+      "width": 3,
+      "height": 2,
+      "lands": "III III",
+      "mask": null
+    },
+    {
+      "id": 433,
+      "name": "tdsh17",
+      "width": 2,
+      "height": 2,
+      "lands": "WW WW",
+      "mask": null
+    },
+    {
+      "id": 434,
+      "name": "tdwsh17",
+      "width": 2,
+      "height": 2,
+      "lands": "WW WW",
+      "mask": null
+    },
+    {
+      "id": 435,
+      "name": "tdsh18",
+      "width": 2,
+      "height": 2,
+      "lands": "WW WW",
+      "mask": null
+    },
+    {
+      "id": 436,
+      "name": "tdwsh18",
+      "width": 2,
+      "height": 2,
+      "lands": "WW WW",
+      "mask": null
+    },
+    {
+      "id": 437,
+      "name": "tdbridge1",
+      "width": 4,
+      "height": 4,
+      "lands": "XXCC WWCW WCWW CCWW",
+      "mask": "0011 1111 1111 1111"
+    },
+    {
+      "id": 438,
+      "name": "tdwbridge1",
+      "width": 4,
+      "height": 4,
+      "lands": "XXCC WWCW WCWW CCWW",
+      "mask": "0011 1111 1111 1111"
+    },
+    {
+      "id": 439,
+      "name": "tdbridge2",
+      "width": 5,
+      "height": 5,
+      "lands": "CCWXW WCWWW WWCWW WWWCC XXXCC",
+      "mask": "11101 11111 11111 11111 00011"
+    },
+    {
+      "id": 440,
+      "name": "tdwbridge2",
+      "width": 5,
+      "height": 5,
+      "lands": "CCWXW WCWWW WWCWW WWWCC XXXCC",
+      "mask": "11101 11111 11111 11111 00011"
+    },
+    {
+      "id": 441,
+      "name": "tdsh32",
+      "width": 3,
+      "height": 3,
+      "lands": "WCC CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 442,
+      "name": "tdwsh32",
+      "width": 3,
+      "height": 3,
+      "lands": "WCC CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 443,
+      "name": "tdsh33",
+      "width": 3,
+      "height": 3,
+      "lands": "CCW CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 444,
+      "name": "tdwsh33",
+      "width": 3,
+      "height": 3,
+      "lands": "CCW CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 445,
+      "name": "tdsh34",
+      "width": 3,
+      "height": 3,
+      "lands": "BBW BBW BBW",
+      "mask": null
+    },
+    {
+      "id": 446,
+      "name": "tdwsh34",
+      "width": 3,
+      "height": 3,
+      "lands": "BBW BBW BBW",
+      "mask": null
+    },
+    {
+      "id": 447,
+      "name": "tdsh35",
+      "width": 3,
+      "height": 3,
+      "lands": "WBB WBB WBB",
+      "mask": null
+    },
+    {
+      "id": 448,
+      "name": "tdwsh35",
+      "width": 3,
+      "height": 3,
+      "lands": "WBB WBB WBB",
+      "mask": null
+    },
+    {
+      "id": 449,
+      "name": "tdwp16",
+      "width": 2,
+      "height": 2,
+      "lands": "CC CC",
+      "mask": null
+    },
+    {
+      "id": 450,
+      "name": "tdwp17",
+      "width": 4,
+      "height": 2,
+      "lands": "XXCC CCCC",
+      "mask": "0011 1111"
+    },
+    {
+      "id": 451,
+      "name": "tdwp18",
+      "width": 4,
+      "height": 3,
+      "lands": "CCXX CCCC XXCC",
+      "mask": "1100 1111 0011"
+    },
+    {
+      "id": 452,
+      "name": "tdwp19",
+      "width": 4,
+      "height": 3,
+      "lands": "XXCC CCCC CCXX",
+      "mask": "0011 1111 1100"
+    },
+    {
+      "id": 453,
+      "name": "tdwp20",
+      "width": 4,
+      "height": 3,
+      "lands": "CCCC XXCC XXCC",
+      "mask": "1111 0011 0011"
+    },
+    {
+      "id": 454,
+      "name": "tdclear1",
+      "width": 4,
+      "height": 4,
+      "lands": "CCCC CCCC CCCC CCCC",
+      "mask": null
+    },
+    {
+      "id": 455,
+      "name": "tdwclear1",
+      "width": 4,
+      "height": 4,
+      "lands": "CCCC CCCC CCCC CCCC",
+      "mask": null
+    },
+    {
+      "id": 456,
+      "name": "tdw1",
+      "width": 1,
+      "height": 1,
+      "lands": "W",
+      "mask": null
+    },
+    {
+      "id": 457,
+      "name": "tdww1",
+      "width": 1,
+      "height": 1,
+      "lands": "W",
+      "mask": null
+    },
+    {
+      "id": 458,
+      "name": "tdww2",
+      "width": 2,
+      "height": 2,
+      "lands": "WW WW",
+      "mask": null
+    },
+    {
+      "id": 459,
+      "name": "tds01",
+      "width": 2,
+      "height": 2,
+      "lands": "II CI",
+      "mask": null
+    },
+    {
+      "id": 460,
+      "name": "tdws01",
+      "width": 2,
+      "height": 2,
+      "lands": "II CI",
+      "mask": null
+    },
+    {
+      "id": 461,
+      "name": "tds02",
+      "width": 2,
+      "height": 3,
+      "lands": "IC II II",
+      "mask": null
+    },
+    {
+      "id": 462,
+      "name": "tdws02",
+      "width": 2,
+      "height": 3,
+      "lands": "IC II II",
+      "mask": null
+    },
+    {
+      "id": 463,
+      "name": "tds03",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 464,
+      "name": "tdws03",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 465,
+      "name": "tds04",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 466,
+      "name": "tdws04",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 467,
+      "name": "tds05",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 468,
+      "name": "tdws05",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 469,
+      "name": "tds06",
+      "width": 2,
+      "height": 3,
+      "lands": "CI II IX",
+      "mask": "11 11 10"
+    },
+    {
+      "id": 470,
+      "name": "tdws06",
+      "width": 2,
+      "height": 3,
+      "lands": "CI II IX",
+      "mask": "11 11 10"
+    },
+    {
+      "id": 471,
+      "name": "tds07",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 472,
+      "name": "tdws07",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 473,
+      "name": "tds08",
+      "width": 2,
+      "height": 2,
+      "lands": "IC II",
+      "mask": null
+    },
+    {
+      "id": 474,
+      "name": "tdws08",
+      "width": 2,
+      "height": 2,
+      "lands": "IC II",
+      "mask": null
+    },
+    {
+      "id": 475,
+      "name": "tds09",
+      "width": 3,
+      "height": 2,
+      "lands": "III CII",
+      "mask": null
+    },
+    {
+      "id": 476,
+      "name": "tdws09",
+      "width": 3,
+      "height": 2,
+      "lands": "III CII",
+      "mask": null
+    },
+    {
+      "id": 477,
+      "name": "tds10",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 478,
+      "name": "tdws10",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 479,
+      "name": "tds11",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 480,
+      "name": "tdws11",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 481,
+      "name": "tds12",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 482,
+      "name": "tdws12",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 483,
+      "name": "tds13",
+      "width": 3,
+      "height": 2,
+      "lands": "III IIC",
+      "mask": null
+    },
+    {
+      "id": 484,
+      "name": "tdws13",
+      "width": 3,
+      "height": 2,
+      "lands": "III IIC",
+      "mask": null
+    },
+    {
+      "id": 485,
+      "name": "tds14",
+      "width": 2,
+      "height": 2,
+      "lands": "IC CX",
+      "mask": "11 10"
+    },
+    {
+      "id": 486,
+      "name": "tdws14",
+      "width": 2,
+      "height": 2,
+      "lands": "IC CX",
+      "mask": "11 10"
+    },
+    {
+      "id": 487,
+      "name": "tds15",
+      "width": 2,
+      "height": 2,
+      "lands": "IC II",
+      "mask": null
+    },
+    {
+      "id": 488,
+      "name": "tdws15",
+      "width": 2,
+      "height": 2,
+      "lands": "IC II",
+      "mask": null
+    },
+    {
+      "id": 489,
+      "name": "tds16",
+      "width": 2,
+      "height": 3,
+      "lands": "IX II XI",
+      "mask": "10 11 01"
+    },
+    {
+      "id": 490,
+      "name": "tdws16",
+      "width": 2,
+      "height": 3,
+      "lands": "IX II XI",
+      "mask": "10 11 01"
+    },
+    {
+      "id": 491,
+      "name": "tds17",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 492,
+      "name": "tdws17",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 493,
+      "name": "tds18",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 494,
+      "name": "tdws18",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 495,
+      "name": "tds19",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 496,
+      "name": "tdws19",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 497,
+      "name": "tds20",
+      "width": 2,
+      "height": 3,
+      "lands": "XI II IC",
+      "mask": "01 11 11"
+    },
+    {
+      "id": 498,
+      "name": "tdws20",
+      "width": 2,
+      "height": 3,
+      "lands": "XI II IC",
+      "mask": "01 11 11"
+    },
+    {
+      "id": 499,
+      "name": "tds21",
+      "width": 1,
+      "height": 2,
+      "lands": "I I",
+      "mask": null
+    },
+    {
+      "id": 500,
+      "name": "tdws21",
+      "width": 1,
+      "height": 2,
+      "lands": "I I",
+      "mask": null
+    },
+    {
+      "id": 501,
+      "name": "tds22",
+      "width": 2,
+      "height": 1,
+      "lands": "II",
+      "mask": null
+    },
+    {
+      "id": 502,
+      "name": "tdws22",
+      "width": 2,
+      "height": 1,
+      "lands": "II",
+      "mask": null
+    },
+    {
+      "id": 503,
+      "name": "tds23",
+      "width": 3,
+      "height": 2,
+      "lands": "III IIC",
+      "mask": null
+    },
+    {
+      "id": 504,
+      "name": "tdws23",
+      "width": 3,
+      "height": 2,
+      "lands": "III IIC",
+      "mask": null
+    },
+    {
+      "id": 505,
+      "name": "tds24",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 506,
+      "name": "tdws24",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 507,
+      "name": "tds25",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 508,
+      "name": "tdws25",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 509,
+      "name": "tds26",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 510,
+      "name": "tdws26",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 511,
+      "name": "tds27",
+      "width": 3,
+      "height": 2,
+      "lands": "IIC CII",
+      "mask": null
+    },
+    {
+      "id": 512,
+      "name": "tdws27",
+      "width": 3,
+      "height": 2,
+      "lands": "IIC CII",
+      "mask": null
+    },
+    {
+      "id": 513,
+      "name": "tds28",
+      "width": 2,
+      "height": 2,
+      "lands": "II XI",
+      "mask": "11 01"
+    },
+    {
+      "id": 514,
+      "name": "tdws28",
+      "width": 2,
+      "height": 2,
+      "lands": "II XI",
+      "mask": "11 01"
+    },
+    {
+      "id": 515,
+      "name": "tds29",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 516,
+      "name": "tdws29",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 517,
+      "name": "tds30",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 518,
+      "name": "tdws30",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 519,
+      "name": "tds31",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 520,
+      "name": "tdws31",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 521,
+      "name": "tds32",
+      "width": 2,
+      "height": 2,
+      "lands": "II IX",
+      "mask": "11 10"
+    },
+    {
+      "id": 522,
+      "name": "tdws32",
+      "width": 2,
+      "height": 2,
+      "lands": "II IX",
+      "mask": "11 10"
+    },
+    {
+      "id": 523,
+      "name": "tds33",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 524,
+      "name": "tdws33",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 525,
+      "name": "tds34",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 526,
+      "name": "tdws34",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 527,
+      "name": "tds35",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 528,
+      "name": "tdws35",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 529,
+      "name": "tds36",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 530,
+      "name": "tdws36",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 531,
+      "name": "tds37",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 532,
+      "name": "tdws37",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 533,
+      "name": "tds38",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 534,
+      "name": "tdws38",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 535,
+      "name": "tdp07",
+      "width": 4,
+      "height": 2,
+      "lands": "CCCC CCCC",
+      "mask": "1111 1111"
+    },
+    {
+      "id": 536,
+      "name": "tdwp07",
+      "width": 4,
+      "height": 2,
+      "lands": "CCCC CCCC",
+      "mask": "1111 1111"
+    },
+    {
+      "id": 537,
+      "name": "tdwp08",
+      "width": 3,
+      "height": 2,
+      "lands": "CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 538,
+      "name": "tdwp13",
+      "width": 3,
+      "height": 2,
+      "lands": "CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 539,
+      "name": "tdwp14",
+      "width": 2,
+      "height": 1,
+      "lands": "CC",
+      "mask": null
+    },
+    {
+      "id": 540,
+      "name": "tdwp15",
+      "width": 4,
+      "height": 2,
+      "lands": "CCCC CCXX",
+      "mask": "1111 1100"
+    },
+    {
+      "id": 541,
+      "name": "tdb1",
+      "width": 1,
+      "height": 1,
+      "lands": "I",
+      "mask": null
+    },
+    {
+      "id": 542,
+      "name": "tdwb1",
+      "width": 1,
+      "height": 1,
+      "lands": "I",
+      "mask": null
+    },
+    {
+      "id": 543,
+      "name": "tdb2",
+      "width": 2,
+      "height": 1,
+      "lands": "II",
+      "mask": null
+    },
+    {
+      "id": 544,
+      "name": "tdwb2",
+      "width": 2,
+      "height": 1,
+      "lands": "II",
+      "mask": null
+    },
+    {
+      "id": 545,
+      "name": "tdwb3",
+      "width": 3,
+      "height": 1,
+      "lands": "III",
+      "mask": null
+    },
+    {
+      "id": 546,
+      "name": "tdd01",
+      "width": 2,
+      "height": 2,
+      "lands": "XC CC",
+      "mask": "01 11"
+    },
+    {
+      "id": 547,
+      "name": "tdwd01",
+      "width": 2,
+      "height": 2,
+      "lands": "XC CC",
+      "mask": "01 11"
+    },
+    {
+      "id": 548,
+      "name": "tdd02",
+      "width": 2,
+      "height": 2,
+      "lands": "CC CC",
+      "mask": "11 11"
+    },
+    {
+      "id": 549,
+      "name": "tdwd02",
+      "width": 2,
+      "height": 2,
+      "lands": "CC CC",
+      "mask": "11 11"
+    },
+    {
+      "id": 550,
+      "name": "tdd03",
+      "width": 1,
+      "height": 2,
+      "lands": "CC",
+      "mask": "1 1"
+    },
+    {
+      "id": 551,
+      "name": "tdwd03",
+      "width": 1,
+      "height": 2,
+      "lands": "CC",
+      "mask": "1 1"
+    },
+    {
+      "id": 552,
+      "name": "tdd04",
+      "width": 2,
+      "height": 2,
+      "lands": "XC CC",
+      "mask": "01 11"
+    },
+    {
+      "id": 553,
+      "name": "tdwd04",
+      "width": 2,
+      "height": 2,
+      "lands": "XC CC",
+      "mask": "01 11"
+    },
+    {
+      "id": 554,
+      "name": "tdd05",
+      "width": 3,
+      "height": 4,
+      "lands": "XCC CCX CCX CCX",
+      "mask": "011 110 110 110"
+    },
+    {
+      "id": 555,
+      "name": "tdwd05",
+      "width": 3,
+      "height": 4,
+      "lands": "XCC CCX CCX CCX",
+      "mask": "011 110 110 110"
+    },
+    {
+      "id": 556,
+      "name": "tdd06",
+      "width": 2,
+      "height": 3,
+      "lands": "CX CC CC",
+      "mask": "10 11 11"
+    },
+    {
+      "id": 557,
+      "name": "tdwd06",
+      "width": 2,
+      "height": 3,
+      "lands": "CX CC CC",
+      "mask": "10 11 11"
+    },
+    {
+      "id": 558,
+      "name": "tdd07",
+      "width": 3,
+      "height": 2,
+      "lands": "CCC XCC",
+      "mask": "111 011"
+    },
+    {
+      "id": 559,
+      "name": "tdwd07",
+      "width": 3,
+      "height": 2,
+      "lands": "CCC XCC",
+      "mask": "111 011"
+    },
+    {
+      "id": 560,
+      "name": "tdd08",
+      "width": 3,
+      "height": 2,
+      "lands": "XCXC CCC",
+      "mask": "010 111"
+    },
+    {
+      "id": 561,
+      "name": "tdwd08",
+      "width": 3,
+      "height": 2,
+      "lands": "XCXC CCC",
+      "mask": "010 111"
+    },
+    {
+      "id": 562,
+      "name": "tdd09",
+      "width": 4,
+      "height": 3,
+      "lands": "CCCC CCCC XXCC",
+      "mask": "1111 1111 0011"
+    },
+    {
+      "id": 563,
+      "name": "tdwd09",
+      "width": 4,
+      "height": 3,
+      "lands": "CCCC CCCC XXCC",
+      "mask": "1111 1111 0011"
+    },
+    {
+      "id": 564,
+      "name": "tdd10",
+      "width": 4,
+      "height": 2,
+      "lands": "CCXX CCCC",
+      "mask": "1100 1111"
+    },
+    {
+      "id": 565,
+      "name": "tdwd10",
+      "width": 4,
+      "height": 2,
+      "lands": "CCXX CCCC",
+      "mask": "1100 1111"
+    },
+    {
+      "id": 566,
+      "name": "tdd11",
+      "width": 2,
+      "height": 3,
+      "lands": "XC CC CX",
+      "mask": "01 11 10"
+    },
+    {
+      "id": 567,
+      "name": "tdwd11",
+      "width": 2,
+      "height": 3,
+      "lands": "XC CC CX",
+      "mask": "01 11 10"
+    },
+    {
+      "id": 568,
+      "name": "tdd12",
+      "width": 2,
+      "height": 2,
+      "lands": "CX CC",
+      "mask": "10 11"
+    },
+    {
+      "id": 569,
+      "name": "tdwd12",
+      "width": 2,
+      "height": 2,
+      "lands": "CX CC",
+      "mask": "10 11"
+    },
+    {
+      "id": 570,
+      "name": "tdd13",
+      "width": 4,
+      "height": 3,
+      "lands": "CCCX CCCC XXCC",
+      "mask": "1110 1111 0011"
+    },
+    {
+      "id": 571,
+      "name": "tdwd13",
+      "width": 4,
+      "height": 3,
+      "lands": "CCCX CCCC XXCC",
+      "mask": "1110 1111 0011"
+    },
+    {
+      "id": 572,
+      "name": "tdd14",
+      "width": 3,
+      "height": 3,
+      "lands": "XCC CCC CCC",
+      "mask": "011 111 111"
+    },
+    {
+      "id": 573,
+      "name": "tdwd14",
+      "width": 3,
+      "height": 3,
+      "lands": "XCC CCC CCC",
+      "mask": "011 111 111"
+    },
+    {
+      "id": 574,
+      "name": "tdd15",
+      "width": 3,
+      "height": 3,
+      "lands": "CCC CCC CCX",
+      "mask": "111 111 110"
+    },
+    {
+      "id": 575,
+      "name": "tdwd15",
+      "width": 3,
+      "height": 3,
+      "lands": "CCC CCC CCX",
+      "mask": "111 111 110"
+    },
+    {
+      "id": 576,
+      "name": "tdd16",
+      "width": 3,
+      "height": 3,
+      "lands": "CCC CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 577,
+      "name": "tdwd16",
+      "width": 3,
+      "height": 3,
+      "lands": "CCC CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 578,
+      "name": "tdd17",
+      "width": 3,
+      "height": 2,
+      "lands": "CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 579,
+      "name": "tdwd17",
+      "width": 3,
+      "height": 2,
+      "lands": "CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 580,
+      "name": "tdd18",
+      "width": 3,
+      "height": 3,
+      "lands": "CCC CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 581,
+      "name": "tdwd18",
+      "width": 3,
+      "height": 3,
+      "lands": "CCC CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 582,
+      "name": "tdd19",
+      "width": 3,
+      "height": 3,
+      "lands": "CCC CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 583,
+      "name": "tdwd19",
+      "width": 3,
+      "height": 3,
+      "lands": "CCC CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 584,
+      "name": "tdd20",
+      "width": 3,
+      "height": 3,
+      "lands": "CCX CCC CCC",
+      "mask": "110 111 111"
+    },
+    {
+      "id": 585,
+      "name": "tdwd20",
+      "width": 3,
+      "height": 3,
+      "lands": "CCX CCC CCC",
+      "mask": "110 111 111"
+    },
+    {
+      "id": 586,
+      "name": "tdd21",
+      "width": 3,
+      "height": 2,
+      "lands": "CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 587,
+      "name": "tdwd21",
+      "width": 3,
+      "height": 2,
+      "lands": "CCC CCC",
+      "mask": null
+    },
+    {
+      "id": 588,
+      "name": "tdd22",
+      "width": 3,
+      "height": 3,
+      "lands": "XCX CCC CCC",
+      "mask": "010 111 111"
+    },
+    {
+      "id": 589,
+      "name": "tdwd22",
+      "width": 3,
+      "height": 3,
+      "lands": "XCX CCC CCC",
+      "mask": "010 111 111"
+    },
+    {
+      "id": 590,
+      "name": "tdd23",
+      "width": 3,
+      "height": 3,
+      "lands": "XCC CCC CCX",
+      "mask": "011 111 110"
+    },
+    {
+      "id": 591,
+      "name": "tdwd23",
+      "width": 3,
+      "height": 3,
+      "lands": "XCC CCC CCX",
+      "mask": "011 111 110"
+    },
+    {
+      "id": 592,
+      "name": "tdd24",
+      "width": 3,
+      "height": 3,
+      "lands": "CCX CCC XCC",
+      "mask": "110 111 011"
+    },
+    {
+      "id": 593,
+      "name": "tdwd24",
+      "width": 3,
+      "height": 3,
+      "lands": "CCX CCC XCC",
+      "mask": "110 111 011"
+    },
+    {
+      "id": 594,
+      "name": "tdd25",
+      "width": 3,
+      "height": 3,
+      "lands": "CCX CCC XCC",
+      "mask": "110 111 011"
+    },
+    {
+      "id": 595,
+      "name": "tdwd25",
+      "width": 3,
+      "height": 3,
+      "lands": "CCX CCC XCC",
+      "mask": "110 111 011"
+    },
+    {
+      "id": 596,
+      "name": "tdd26",
+      "width": 2,
+      "height": 2,
+      "lands": "XC CX",
+      "mask": "01 10"
+    },
+    {
+      "id": 597,
+      "name": "tdwd26",
+      "width": 2,
+      "height": 2,
+      "lands": "XC CX",
+      "mask": "01 10"
+    },
+    {
+      "id": 598,
+      "name": "tdd27",
+      "width": 2,
+      "height": 2,
+      "lands": "CX XC",
+      "mask": "01 10"
+    },
+    {
+      "id": 599,
+      "name": "tdwd27",
+      "width": 2,
+      "height": 2,
+      "lands": "CX XC",
+      "mask": "01 10"
+    },
+    {
+      "id": 600,
+      "name": "tdd28",
+      "width": 2,
+      "height": 2,
+      "lands": "CC CX",
+      "mask": "11 10"
+    },
+    {
+      "id": 601,
+      "name": "tdwd28",
+      "width": 2,
+      "height": 2,
+      "lands": "CC CX",
+      "mask": "11 10"
+    },
+    {
+      "id": 602,
+      "name": "tdd29",
+      "width": 2,
+      "height": 2,
+      "lands": "CC CX",
+      "mask": "11 10"
+    },
+    {
+      "id": 603,
+      "name": "tdwd29",
+      "width": 2,
+      "height": 2,
+      "lands": "CC CX",
+      "mask": "11 10"
+    },
+    {
+      "id": 604,
+      "name": "tdd30",
+      "width": 2,
+      "height": 2,
+      "lands": "CC CX",
+      "mask": "11 10"
+    },
+    {
+      "id": 605,
+      "name": "tdwd30",
+      "width": 2,
+      "height": 2,
+      "lands": "CC CX",
+      "mask": "11 10"
+    },
+    {
+      "id": 606,
+      "name": "tdd31",
+      "width": 2,
+      "height": 2,
+      "lands": "XC CC",
+      "mask": "01 11"
+    },
+    {
+      "id": 607,
+      "name": "tdwd31",
+      "width": 2,
+      "height": 2,
+      "lands": "XC CC",
+      "mask": "01 11"
+    },
+    {
+      "id": 608,
+      "name": "tdd32",
+      "width": 2,
+      "height": 2,
+      "lands": "XC CC",
+      "mask": "01 11"
+    },
+    {
+      "id": 609,
+      "name": "tdwd32",
+      "width": 2,
+      "height": 2,
+      "lands": "XC CC",
+      "mask": "01 11"
+    },
+    {
+      "id": 610,
+      "name": "tdd33",
+      "width": 2,
+      "height": 2,
+      "lands": "XC CC",
+      "mask": "01 11"
+    },
+    {
+      "id": 611,
+      "name": "tdwd33",
+      "width": 2,
+      "height": 2,
+      "lands": "XC CC",
+      "mask": "01 11"
+    },
+    {
+      "id": 612,
+      "name": "tdd34",
+      "width": 3,
+      "height": 3,
+      "lands": "XCC CCC CCX",
+      "mask": "011 111 110"
+    },
+    {
+      "id": 613,
+      "name": "tdwd34",
+      "width": 3,
+      "height": 3,
+      "lands": "XCC CCC CCX",
+      "mask": "011 111 110"
+    },
+    {
+      "id": 614,
+      "name": "tdd35",
+      "width": 3,
+      "height": 3,
+      "lands": "XCC CCC CCX",
+      "mask": "011 111 110"
+    },
+    {
+      "id": 615,
+      "name": "tdwd35",
+      "width": 3,
+      "height": 3,
+      "lands": "XCC CCC CCX",
+      "mask": "011 111 110"
+    },
+    {
+      "id": 616,
+      "name": "tdd36",
+      "width": 2,
+      "height": 2,
+      "lands": "CX XC",
+      "mask": "10 01"
+    },
+    {
+      "id": 617,
+      "name": "tdwd36",
+      "width": 2,
+      "height": 2,
+      "lands": "CX XC",
+      "mask": "10 01"
+    },
+    {
+      "id": 618,
+      "name": "tdd37",
+      "width": 2,
+      "height": 2,
+      "lands": "CX XC",
+      "mask": "10 01"
+    },
+    {
+      "id": 619,
+      "name": "tdwd37",
+      "width": 2,
+      "height": 2,
+      "lands": "CX XC",
+      "mask": "10 01"
+    },
+    {
+      "id": 620,
+      "name": "tdd38",
+      "width": 2,
+      "height": 2,
+      "lands": "CC XC",
+      "mask": "11 01"
+    },
+    {
+      "id": 621,
+      "name": "tdwd38",
+      "width": 2,
+      "height": 2,
+      "lands": "CC XC",
+      "mask": "11 01"
+    },
+    {
+      "id": 622,
+      "name": "tdd39",
+      "width": 2,
+      "height": 2,
+      "lands": "CC XC",
+      "mask": "11 01"
+    },
+    {
+      "id": 623,
+      "name": "tdwd39",
+      "width": 2,
+      "height": 2,
+      "lands": "CC XC",
+      "mask": "11 01"
+    },
+    {
+      "id": 624,
+      "name": "tdd40",
+      "width": 2,
+      "height": 2,
+      "lands": "CC XC",
+      "mask": "11 01"
+    },
+    {
+      "id": 625,
+      "name": "tdwd40",
+      "width": 2,
+      "height": 2,
+      "lands": "CC XC",
+      "mask": "11 01"
+    },
+    {
+      "id": 626,
+      "name": "tdd41",
+      "width": 2,
+      "height": 2,
+      "lands": "CX CC",
+      "mask": "10 11"
+    },
+    {
+      "id": 627,
+      "name": "tdwd41",
+      "width": 2,
+      "height": 2,
+      "lands": "CX CC",
+      "mask": "10 11"
+    },
+    {
+      "id": 628,
+      "name": "tdd42",
+      "width": 2,
+      "height": 2,
+      "lands": "CX CC",
+      "mask": "10 11"
+    },
+    {
+      "id": 629,
+      "name": "tdwd42",
+      "width": 2,
+      "height": 2,
+      "lands": "CX CC",
+      "mask": "10 11"
+    },
+    {
+      "id": 630,
+      "name": "tdd43",
+      "width": 2,
+      "height": 2,
+      "lands": "CX CC",
+      "mask": "10 11"
+    },
+    {
+      "id": 631,
+      "name": "tdwd43",
+      "width": 2,
+      "height": 2,
+      "lands": "CX CC",
+      "mask": "10 11"
+    },
+    {
+      "id": 632,
+      "name": "tdwrv01",
+      "width": 5,
+      "height": 4,
+      "lands": "WWXXX WWWWW WWWWW WWWXX",
+      "mask": "11000 11111 11111 01100"
+    },
+    {
+      "id": 633,
+      "name": "tdwrv02",
+      "width": 5,
+      "height": 3,
+      "lands": "WWWWW WWWWW WWWXX",
+      "mask": "11111 11111 11100"
+    },
+    {
+      "id": 634,
+      "name": "tdwrv03",
+      "width": 4,
+      "height": 4,
+      "lands": "WWXX WWwC WWWW XWWW",
+      "mask": "1100 1111 1111 0111"
+    },
+    {
+      "id": 635,
+      "name": "tdwrv04",
+      "width": 4,
+      "height": 4,
+      "lands": "XXWW XWWW WWWW WWWX",
+      "mask": "0011 0111 1111 1110"
+    },
+    {
+      "id": 636,
+      "name": "tdwrv05",
+      "width": 3,
+      "height": 3,
+      "lands": "WWW WWW WWW",
+      "mask": null
+    },
+    {
+      "id": 637,
+      "name": "tdwrv06",
+      "width": 3,
+      "height": 2,
+      "lands": "WWW WWW",
+      "mask": null
+    },
+    {
+      "id": 638,
+      "name": "tdwrv07",
+      "width": 3,
+      "height": 2,
+      "lands": "WWW WWW",
+      "mask": null
+    },
+    {
+      "id": 639,
+      "name": "tdwrv08",
+      "width": 2,
+      "height": 2,
+      "lands": "WW WW",
+      "mask": null
+    },
+    {
+      "id": 640,
+      "name": "tdwrv09",
+      "width": 2,
+      "height": 2,
+      "lands": "WW WW",
+      "mask": null
+    },
+    {
+      "id": 641,
+      "name": "tdwrv10",
+      "width": 2,
+      "height": 2,
+      "lands": "WW WW",
+      "mask": null
+    },
+    {
+      "id": 642,
+      "name": "tdwrv11",
+      "width": 2,
+      "height": 2,
+      "lands": "WW WW",
+      "mask": null
+    },
+    {
+      "id": 643,
+      "name": "tdwrv12",
+      "width": 3,
+      "height": 4,
+      "lands": "WWW WWW WWW WWW",
+      "mask": null
+    },
+    {
+      "id": 644,
+      "name": "tdwrv13",
+      "width": 4,
+      "height": 4,
+      "lands": "XXWW WWWW WWWW, WWWW",
+      "mask": null
+    },
+    {
+      "id": 645,
+      "name": "tdford1",
+      "width": 3,
+      "height": 3,
+      "lands": "WWC CCC WWC",
+      "mask": null
+    },
+    {
+      "id": 646,
+      "name": "tdwford1",
+      "width": 3,
+      "height": 3,
+      "lands": "WWC CCC WWC",
+      "mask": null
+    },
+    {
+      "id": 647,
+      "name": "tdford2",
+      "width": 3,
+      "height": 3,
+      "lands": "CCC WCW WCC",
+      "mask": null
+    },
+    {
+      "id": 648,
+      "name": "tdwford2",
+      "width": 3,
+      "height": 3,
+      "lands": "CCC WCW WCC",
+      "mask": null
+    },
+    {
+      "id": 649,
+      "name": "tdfalls1",
+      "width": 3,
+      "height": 3,
+      "lands": "CWW WWW WWW",
+      "mask": null
+    },
+    {
+      "id": 650,
+      "name": "tdwfalls1",
+      "width": 3,
+      "height": 3,
+      "lands": "CWW WWW WWW",
+      "mask": null
+    },
+    {
+      "id": 651,
+      "name": "tdfalls2",
+      "width": 3,
+      "height": 2,
+      "lands": "WWW WWW",
+      "mask": null
+    },
+    {
+      "id": 652,
+      "name": "tdwfalls2",
+      "width": 3,
+      "height": 2,
+      "lands": "WWW WWW",
+      "mask": null
+    },
+    {
+      "id": 653,
+      "name": "tdwbridge1d",
+      "width": 4,
+      "height": 4,
+      "lands": "XXCC WWWW WWWW CCWW",
+      "mask": "0011 1111 1111 1111"
+    },
+    {
+      "id": 654,
+      "name": "tdwbridge2d",
+      "width": 5,
+      "height": 5,
+      "lands": "CCWXW WWWWW WWWWW WWWCC XXXCC",
+      "mask": "11101 11111 11111 11111 00011"
+    },
+    {
+      "id": 655,
+      "name": "tdsh20",
+      "width": 4,
+      "height": 1,
+      "lands": "IIII",
+      "mask": null
+    },
+    {
+      "id": 656,
+      "name": "tdsh21",
+      "width": 3,
+      "height": 1,
+      "lands": "III",
+      "mask": null
+    },
+    {
+      "id": 657,
+      "name": "tdsh22",
+      "width": 6,
+      "height": 2,
+      "lands": "XIIIXX IIIII",
+      "mask": "011100 111111"
+    },
+    {
+      "id": 658,
+      "name": "tdsh23",
+      "width": 2,
+      "height": 2,
+      "lands": "IC II",
+      "mask": null
+    },
+    {
+      "id": 659,
+      "name": "tdbr1",
+      "width": 1,
+      "height": 1,
+      "lands": "I",
+      "mask": null
+    },
+    {
+      "id": 660,
+      "name": "tdbr2",
+      "width": 1,
+      "height": 1,
+      "lands": "I",
+      "mask": null
+    },
+    {
+      "id": 661,
+      "name": "tdbr3",
+      "width": 1,
+      "height": 1,
+      "lands": "I",
+      "mask": null
+    },
+    {
+      "id": 662,
+      "name": "tdbr4",
+      "width": 1,
+      "height": 1,
+      "lands": "I",
+      "mask": null
+    },
+    {
+      "id": 663,
+      "name": "tdbr6",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 664,
+      "name": "tdbr7",
+      "width": 2,
+      "height": 2,
+      "lands": "II II",
+      "mask": null
+    },
+    {
+      "id": 665,
+      "name": "tdbr8",
+      "width": 3,
+      "height": 2,
+      "lands": "III III",
+      "mask": null
+    },
+    {
+      "id": 666,
+      "name": "tdbr9",
+      "width": 3,
+      "height": 2,
+      "lands": "III III",
+      "mask": null
+    },
+    {
+      "id": 667,
+      "name": "tdp01",
+      "width": 1,
+      "height": 1,
+      "lands": "C",
+      "mask": null
+    },
+    {
+      "id": 668,
+      "name": "tdp02",
+      "width": 1,
+      "height": 1,
+      "lands": "I",
+      "mask": null
+    },
+    {
+      "id": 669,
+      "name": "tdp03",
+      "width": 1,
+      "height": 1,
+      "lands": "C",
+      "mask": null
+    },
+    {
+      "id": 670,
+      "name": "tdp04",
+      "width": 1,
+      "height": 1,
+      "lands": "I",
+      "mask": null
+    },
+    {
+      "id": 671,
+      "name": "tdp05",
+      "width": 2,
+      "height": 2,
+      "lands": "CC CC",
+      "mask": null
+    },
+    {
+      "id": 672,
+      "name": "tdp06",
+      "width": 6,
+      "height": 4,
+      "lands": "CCCCXX XCCCXX XXCCCC XXCCCC",
+      "mask": "111100 011100 001111 001111"
+    },
+    {
+      "id": 673,
+      "name": "tdsh19",
+      "width": 3,
+      "height": 2,
+      "lands": "XII III",
+      "mask": "011 111"
+    },
+    {
+      "id": 674,
+      "name": "tdrv14",
+      "width": 4,
+      "height": 3,
+      "lands": "WWWW WWWW WWWW",
+      "mask": null
+    },
+    {
+      "id": 675,
+      "name": "tdrv15",
+      "width": 4,
+      "height": 3,
+      "lands": "WWWW WWWW WWWW",
+      "mask": null
+    },
+    {
+      "id": 676,
+      "name": "tdrv16",
+      "width": 6,
+      "height": 4,
+      "lands": "XXWWWW XWWWWW WWWWWW WWWWXX",
+      "mask": "001111 011111 111111 111100"
+    },
+    {
+      "id": 677,
+      "name": "tdrv17",
+      "width": 6,
+      "height": 5,
+      "lands": "WWWWXX WWWWWX WWWWWW WWWWWW XXXXWW",
+      "mask": "111100 111110 111111 111111 000011"
+    },
+    {
+      "id": 678,
+      "name": "tdrv18",
+      "width": 4,
+      "height": 4,
+      "lands": "WWWW WWWX WWWX WWWX",
+      "mask": "1111 1110 1110 1110"
+    },
+    {
+      "id": 679,
+      "name": "tdrv19",
+      "width": 4,
+      "height": 4,
+      "lands": "XWWW XWWW WWWW WWWW",
+      "mask": "0111 0111 1111 1111"
+    },
+    {
+      "id": 680,
+      "name": "tdrv20",
+      "width": 6,
+      "height": 8,
+      "lands": "XXWWWW XWWWWX WWWWWX WWWWWX WWWWWX WWWWXX WWWWXX WWWWXX",
+      "mask": "001111 011110 111110 111110 111110 111100 111100 111100"
+    },
+    {
+      "id": 681,
+      "name": "tdrv21",
+      "width": 5,
+      "height": 8,
+      "lands": "WWWWX WWWWX XWWWX XWWWW XWWWW XXWWW XXWWW XXXWW",
+      "mask": "11110 11110 01110 01111 01111 00111 00111 00011"
+    },
+    {
+      "id": 682,
+      "name": "tdrv22",
+      "width": 3,
+      "height": 3,
+      "lands": "XWW WWW WWW",
+      "mask": "011 111 111"
+    },
+    {
+      "id": 683,
+      "name": "tdrv23",
+      "width": 3,
+      "height": 3,
+      "lands": "WWW WWW WWW",
+      "mask": null
+    },
+    {
+      "id": 684,
+      "name": "tdrv24",
+      "width": 3,
+      "height": 3,
+      "lands": "WWW WWW XWW",
+      "mask": "111 111 011"
+    },
+    {
+      "id": 685,
+      "name": "tdrv25",
+      "width": 3,
+      "height": 3,
+      "lands": "WWW WWW WWW",
+      "mask": null
+    },
+    {
+      "id": 686,
+      "name": "tdbridge3",
+      "width": 6,
+      "height": 5,
+      "lands": "XXXCCX CWWCWC WWCWWW WCWWWW CCXXXX",
+      "mask": "000110 111111 111111 111111 110000"
+    },
+    {
+      "id": 687,
+      "name": "tdbridge3d",
+      "width": 6,
+      "height": 5,
+      "lands": "XXXCCX CWWWWC WWWWWW WCWWWW WCXXXX",
+      "mask": "000110 111111 111111 111111 110000"
+    },
+    {
+      "id": 688,
+      "name": "tdbridge4",
+      "width": 6,
+      "height": 4,
+      "lands": "XCWWWW WWCWWW WWWCWW WWWWCX",
+      "mask": "011111 111111 111111 111110"
+    },
+    {
+      "id": 689,
+      "name": "tdbridge4d",
+      "width": 6,
+      "height": 4,
+      "lands": "XCWWWW WWWWWW WWWWWW WWWWCX",
+      "mask": "011111 111111 111111 111110"
+    },
+    {
+      "id": 690,
+      "name": "tdsh24",
+      "width": 3,
+      "height": 3,
+      "lands": "III IIC III",
+      "mask": null
+    },
+    {
+      "id": 691,
+      "name": "tdsh25",
+      "width": 3,
+      "height": 2,
+      "lands": "III CII",
+      "mask": null
+    },
+    {
+      "id": 692,
+      "name": "tdsh26",
+      "width": 3,
+      "height": 2,
+      "lands": "III XII",
+      "mask": "111 011"
+    },
+    {
+      "id": 693,
+      "name": "tdsh27",
+      "width": 4,
+      "height": 1,
+      "lands": "III III",
+      "mask": null
+    },
+    {
+      "id": 694,
+      "name": "tdsh28",
+      "width": 3,
+      "height": 1,
+      "lands": "III",
+      "mask": null
+    },
+    {
+      "id": 695,
+      "name": "tdsh29",
+      "width": 6,
+      "height": 2,
+      "lands": "IIIIII XCIIXX",
+      "mask": "111111 011100"
+    },
+    {
+      "id": 696,
+      "name": "tdsh30",
+      "width": 2,
+      "height": 2,
+      "lands": "II IX",
+      "mask": "11 10"
+    },
+    {
+      "id": 697,
+      "name": "tdsh31",
+      "width": 3,
+      "height": 3,
+      "lands": "III III III",
+      "mask": null
+    },
+    {
+      "id": 698,
+      "name": "tdsh36",
+      "width": 1,
+      "height": 1,
+      "lands": "C",
+      "mask": null
+    },
+    {
+      "id": 699,
+      "name": "tdsh37",
+      "width": 1,
+      "height": 1,
+      "lands": "C",
+      "mask": null
+    },
+    {
+      "id": 700,
+      "name": "tdsh38",
+      "width": 1,
+      "height": 1,
+      "lands": "C",
+      "mask": null
+    },
+    {
+      "id": 701,
+      "name": "tdsh39",
+      "width": 1,
+      "height": 1,
+      "lands": "C",
+      "mask": null
+    },
+    {
+      "id": 702,
+      "name": "tdsh40",
+      "width": 3,
+      "height": 3,
+      "lands": "CWW WWW WWW",
+      "mask": null
+    },
+    {
+      "id": 703,
+      "name": "tdsh41",
+      "width": 3,
+      "height": 3,
+      "lands": "WWC WWC WCC",
+      "mask": null
+    },
+    {
+      "id": 704,
+      "name": "tdsh42",
+      "width": 1,
+      "height": 2,
+      "lands": "W W",
+      "mask": null
+    },
+    {
+      "id": 705,
+      "name": "tdsh43",
+      "width": 1,
+      "height": 3,
+      "lands": "W W W",
+      "mask": null
+    },
+    {
+      "id": 706,
+      "name": "tdsh44",
+      "width": 1,
+      "height": 3,
+      "lands": "W W W",
+      "mask": null
+    },
+    {
+      "id": 707,
+      "name": "tdsh45",
+      "width": 1,
+      "height": 2,
+      "lands": "W W",
+      "mask": null
+    },
+    {
+      "id": 708,
+      "name": "tdsh46",
+      "width": 3,
+      "height": 3,
+      "lands": "CCW CWW WWW",
+      "mask": null
+    },
+    {
+      "id": 709,
+      "name": "tdsh47",
+      "width": 3,
+      "height": 3,
+      "lands": "WWX WWX WWW",
+      "mask": "110 110 111"
+    },
+    {
+      "id": 710,
+      "name": "tdsh48",
+      "width": 3,
+      "height": 3,
+      "lands": "WXX WXX WWW",
+      "mask": "100 100 111"
+    },
+    {
+      "id": 711,
+      "name": "tdsh49",
+      "width": 3,
+      "height": 3,
+      "lands": "XWW WWW WWW",
+      "mask": "011 111 111"
+    },
+    {
+      "id": 712,
+      "name": "tdsh50",
+      "width": 4,
+      "height": 3,
+      "lands": "XWWW WWWX WWXX",
+      "mask": "0111 1110 1100"
+    },
+    {
+      "id": 713,
+      "name": "tdsh51",
+      "width": 4,
+      "height": 3,
+      "lands": "WW00 WWW0 WWWW",
+      "mask": "1100 1110 1111"
+    },
+    {
+      "id": 714,
+      "name": "tdsh52",
+      "width": 4,
+      "height": 3,
+      "lands": "WWWW XXWW XXWW",
+      "mask": "1111 0011 0011"
+    },
+    {
+      "id": 715,
+      "name": "tdsh53",
+      "width": 4,
+      "height": 3,
+      "lands": "CCCW CWWW WWWW",
+      "mask": null
+    },
+    {
+      "id": 716,
+      "name": "tdsh54",
+      "width": 3,
+      "height": 2,
+      "lands": "WWW WWW",
+      "mask": null
+    },
+    {
+      "id": 717,
+      "name": "tdsh55",
+      "width": 3,
+      "height": 2,
+      "lands": "WWW WWW",
+      "mask": null
+    },
+    {
+      "id": 718,
+      "name": "tdsh56",
+      "width": 3,
+      "height": 2,
+      "lands": "XWW WWW",
+      "mask": "011 111"
+    },
+    {
+      "id": 719,
+      "name": "tdsh57",
+      "width": 3,
+      "height": 2,
+      "lands": "WXX WWW",
+      "mask": "100 111"
+    },
+    {
+      "id": 720,
+      "name": "tdsh58",
+      "width": 2,
+      "height": 3,
+      "lands": "WX WW WW",
+      "mask": "10 11 11"
+    },
+    {
+      "id": 721,
+      "name": "tdsh59",
+      "width": 2,
+      "height": 3,
+      "lands": "CW WW WW",
+      "mask": null
+    },
+    {
+      "id": 722,
+      "name": "tdsh60",
+      "width": 2,
+      "height": 3,
+      "lands": "WW WC WC",
+      "mask": null
+    },
+    {
+      "id": 723,
+      "name": "tdsh61",
+      "width": 2,
+      "height": 3,
+      "lands": "WC WW XW",
+      "mask": "11 11 01"
+    },
+    {
+      "id": 724,
+      "name": "tdsh62",
+      "width": 6,
+      "height": 1,
+      "lands": "WWWWWW",
+      "mask": null
+    },
+    {
+      "id": 725,
+      "name": "tdsh63",
+      "width": 4,
+      "height": 1,
+      "lands": "WWWW",
+      "mask": null
+    }
+  ]
+}
