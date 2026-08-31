@@ -364,7 +364,8 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                     mk_clip_dir=None,
                     overlay_dir=None, fit_w=None, dst_x_px=None, door_spec=None,
                     apron_cells=None, front_ring=None, emblem=None,
-                    apron_canvas=None, pingpong=False, powerup_layers=None):
+                    apron_canvas=None, pingpong=False, powerup_layers=None,
+                    powerup_blocks=None):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -898,7 +899,17 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     # frames above, untouched, and every level rides the SAME affine — the
     # fit is keyed to the level-0 union so installing a plug never moves the
     # building. Shape_Number picks the block by UpgradeLevel * 2n.
-    if powerup_layers:
+    if powerup_blocks:
+        # TYPE-KEYED variant blocks (the Upgrade Centre): each entry is the
+        # complete layer list for one visual state, emitted in order — the
+        # engine's Shape_Number block index must enumerate identically
+        # (building.cpp STRUCT_TSPLUG branch).
+        assert not pingpong, f"{ini}: powerup_blocks + pingpong not supported"
+        for block in powerup_blocks:
+            layered = list(anims) + list(block)
+            frames += [scaled(composite(base_h, layered, i, 1)) for i in range(n)]
+            frames += [scaled(composite(base_d, layered, i, 2)) for i in range(n)]
+    elif powerup_layers:
         assert not pingpong, f"{ini}: powerup_layers + pingpong not supported"
         layered = list(anims)
         for spec in powerup_layers:
@@ -1107,7 +1118,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     write_zip(f"{STRUCT_DIR}/{ini}MAKE.ZIP", f"{ini.lower()}make", mk)
 
     patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", ini,
-                  2 * n * (1 + len(powerup_layers or [])))
+                  2 * n * (1 + len(powerup_blocks if powerup_blocks else (powerup_layers or []))))
     patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}MAKE", mk_count)
     print(f"{ini}: N={n} (idle anim count for the _anims[] entry)")
     return n
@@ -1564,29 +1575,28 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
         return [seq[round(k * (len(seq) - 1) / (count - 1))] for k in range(count)]
     bd_pong = resample(list(range(10, 20)) + list(range(18, 10, -1)), 20)
     dish_pong = resample(list(range(15)) + list(range(13, 0, -1)), 20)
-    dst = f"{ART}/shp_gtplug_f_p1"
-    os.makedirs(dst, exist_ok=True)
-    for k, i in enumerate(dish_pong):
-        Image.open(f"{ART}/shp_gtplug_f/frame-{i:04d}.png").convert("RGBA").save(
-            f"{dst}/frame-{k:04d}.png")
-    # Second plug slot: GAPLUG_D (the pod-node dome, ART.INI LoopEnd=14 straight)
-    # resampled 15 -> 20 to wrap in n=40, pre-shifted by TS's second-socket
-    # anchor (ART.INI [GAPLUG] PowerUp2Loc (-24,-12); slot 1 is (0,0)) — the
-    # turbine precedent — so the dome lands on its OWN socket instead of
-    # stacking on the dish's. Level art is TYPE-BLIND (level 1 = dish, level
-    # 2 = dish + dome regardless of which plugs are installed) — the per-type
-    # socket matrix stays the deferred problem; without this layer a second
-    # install pointed past the shipped frames and drew the white-box
-    # placeholder.
+    # TYPE-KEYED socket art: each plug TYPE (dish = ion uplink GTPLUG_F, dome
+    # = pod node GTPLUG_D) is baked at BOTH socket anchors (ART.INI [GAPLUG]:
+    # PowerUp1Loc (0,0) = the right socket, first install; PowerUp2Loc
+    # (-24,-12) = the left socket, second install — the turbine shift
+    # precedent). Blocks enumerate every visual state, mirrored EXACTLY by
+    # Shape_Number's STRUCT_TSPLUG branch (building.cpp): 1 = dish@1,
+    # 2 = dome@1, 3 = dish@1 + dome@2, 4 = dome@1 + dish@2. Seeker Control
+    # extends both lists to 9 blocks (3 types, ordered distinct pairs).
     dome_seq = resample(list(range(15)), 20)
-    dst2 = f"{ART}/shp_gtplug_d_p2"
-    os.makedirs(dst2, exist_ok=True)
-    for k, i in enumerate(dome_seq):
-        src = Image.open(f"{ART}/shp_gtplug_d/frame-{i:04d}.png").convert("RGBA")
-        out = Image.new("RGBA", src.size, (0, 0, 0, 0))
-        out.paste(src, (-24, -12), src)
-        out.save(f"{dst2}/frame-{k:04d}.png")
+    plug_arts = [("f", "shp_gtplug_f", dish_pong), ("d", "shp_gtplug_d", dome_seq)]
+    for tag, srcdir, seq in plug_arts:
+        for slot, (dx, dy) in (("p1", (0, 0)), ("p2", (-24, -12))):
+            dst = f"{ART}/shp_gtplug_{tag}_{slot}"
+            os.makedirs(dst, exist_ok=True)
+            for k, i in enumerate(seq):
+                src = Image.open(f"{srcdir.replace('shp_', ART + '/shp_')}/frame-{i:04d}.png").convert("RGBA")
+                out = Image.new("RGBA", src.size, (0, 0, 0, 0))
+                out.paste(src, (dx, dy), src)
+                out.save(f"{dst}/frame-{k:04d}.png")
     spin20 = list(range(20))
+    def plug_layer(tag, slot):
+        return (f"shp_gtplug_{tag}_{slot}", spin20, spin20)
     build_structure("TSPLUG", "shp_gtplug", 0, 1,
                     [("shp_gtplug_a", list(range(20)), list(range(20))),
                      ("shp_gtplug_b", list(range(8)), bd_pong),
@@ -1594,8 +1604,10 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
                     # The radar height trick: 3x2 plot, square canvas, masts in
                     # the headroom. margin 12 = (stub 72 − box 48)/2.
                     "shp_gtplugmk", 19, 384, 384, bottom_margin=12,
-                    powerup_layers=[("shp_gtplug_f_p1", spin20, spin20),
-                                    ("shp_gtplug_d_p2", spin20, spin20)])
+                    powerup_blocks=[[plug_layer("f", "p1")],
+                                    [plug_layer("d", "p1")],
+                                    [plug_layer("f", "p1"), plug_layer("d", "p2")],
+                                    [plug_layer("d", "p1"), plug_layer("f", "p2")]])
     emit_sidebar_data("TSPLUG", "Upgrade Center",
                       "Hosts superweapon upgrade plugs. Two slots. Detects cloaked units.",
                       "shp_plugicon")
