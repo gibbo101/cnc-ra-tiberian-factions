@@ -4010,28 +4010,39 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
     */
     case SPC_TS_DROPPODS:
         if (SuperWeapon[SPC_TS_DROPPODS].Is_Ready()) {
-            for (int pd = 0; pd < 3; pd++) {
+            /*
+            **  Approaches are EAST/WEST only: altitude draws as a north
+            **  shift, so an E/W slide plus the sinking offset reads as the
+            **  45-degree streak. A north/south approach fights the illusion
+            **  (a south-approach pod draws two drop-heights off-screen and
+            **  pops in at the last moment — seen in play, 2026-08-31).
+            **  Squad: three Minigunners, two Grenadiers (TS infantry
+            **  equivalents swap in when that roster lands — Luke).
+            */
+            for (int pd = 0; pd < 5; pd++) {
                 CELL podcell = cell;
                 if (pd > 0) {
-                    CELL scatter = Coord_Cell(Coord_Scatter(Cell_Coord(cell), CELL_LEPTON_W + CELL_LEPTON_W / 2, false));
+                    CELL scatter = Coord_Cell(Coord_Scatter(Cell_Coord(cell), CELL_LEPTON_W * 2, false));
                     if (Map.In_Radar(scatter)) {
                         podcell = scatter;
                     }
                 }
                 COORDINATE lz = Cell_Coord(podcell);
-                DirType approach = (DirType)((unsigned char)(DIR_N + 64 * Random_Pick(0, 3)));
-                int drop_h = BulletClass::TF_POD_DROP_HEIGHT + pd * 256;
+                DirType approach = Random_Pick(0, 1) ? DIR_E : DIR_W;
+                int drop_h = BulletClass::TF_POD_DROP_HEIGHT + pd * 160;
                 COORDINATE spawn = Coord_Move(lz, (DirType)((unsigned char)(approach + DIR_S)), drop_h);
 
                 BulletClass* pod = new BulletClass(BULLET_TSPODDROP, ::As_Target(podcell), NULL, 0, WARHEAD_NONE, MPH_MEDIUM_FAST);
                 if (pod != NULL) {
                     pod->TFPodHouse = Class->House;
                     pod->TFPodApproach = approach;
+                    pod->TFPodType = (pd < 3) ? INFANTRY_TDE1 : INFANTRY_TDE2;
                     if (pod->Unlimbo(spawn, DIR_S)) {
                         Map.Remove(pod, pod->In_Which_Layer());
                         pod->Height = drop_h;
                         Map.Submit(pod, pod->In_Which_Layer());
                         new AnimClass(ANIM_TS_PODRING, Coord_Move(spawn, DIR_N, drop_h));
+                        Sound_Effect(VOC_TS_METEOR, lz);
                     } else {
                         delete pod;
                     }

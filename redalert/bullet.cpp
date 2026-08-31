@@ -87,6 +87,7 @@ BulletClass::BulletClass(BulletType id,
     , TFUnloaded(0)
     , TFPodHouse(HOUSE_NONE)
     , TFPodApproach(DIR_N)
+    , TFPodType(INFANTRY_TDE1)
     , IsInaccurate(false)
     , IsToAnimate(false)
     , IsLocked(true)
@@ -779,7 +780,7 @@ void BulletClass::AI(void)
             Height = 0;
             Coord = lz;
 
-            InfantryClass* trooper = new InfantryClass(INFANTRY_TDE1, TFPodHouse);
+            InfantryClass* trooper = new InfantryClass(TFPodType, TFPodHouse);
             bool landed = (trooper != NULL) && trooper->Unlimbo(Coord, DIR_S);
             if (landed) {
                 new AnimClass((Frame & 1) ? ANIM_TS_DROPPOD2 : ANIM_TS_DROPPOD1, Coord);

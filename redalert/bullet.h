@@ -80,6 +80,7 @@ public:
     */
     HousesType TFPodHouse;
     DirType TFPodApproach;
+    InfantryType TFPodType;
     enum
     {
         TF_POD_CEILING = 1280,       // spawn altitude in leptons (5 cells of descent)

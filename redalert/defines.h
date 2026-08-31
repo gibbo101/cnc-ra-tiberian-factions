@@ -4126,6 +4126,7 @@ typedef enum VocType : short
     VOC_DLL_MONEY_UP,    // RA credit tick up re-fired by the DLL under alias CASHUPD (stock RA?_SFX_cashup1 events are silenced; this alias points at the original sample).
     VOC_DLL_MONEY_DOWN,  // RA credit tick down re-fired by the DLL under alias CASHDND.
     VOC_TS_GUN4,         // TS Vulcan2 report (TSGUN4) -- the drop pod's LZ strafe. Routed via RAC/RAR_SFX_TSGUN4 -> bundled TSGUN4.WAV under its OWN name (novel-name path).
+    VOC_TS_METEOR,       // TS meteor whoosh (METEOR1) -- the drop pod descent scream, fired at the LZ per pod launch. RAC/RAR_SFX_TSMETEOR -> bundled TSMETEOR.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0

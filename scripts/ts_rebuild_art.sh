@@ -63,7 +63,7 @@ python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" ION1.AUD >/dev/null
 # Drop-pod strike art (anim SHPs, decoded by ts_pack_pods.py against ANIM.PAL)
 # + the pod strafe gun sound.
 python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" DROPPOD.SHP DROPPOD2.SHP DROPEXP.SHP PODRING.SHP SMOKEY.SHP >/dev/null
-python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" TSGUN4.AUD >/dev/null
+python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" TSGUN4.AUD METEOR1.AUD >/dev/null
 python3 "$EXTRACT" "$TIBSUN" TEMPERAT.MIX extract "$RAW" $TEMPERAT >/dev/null
 python3 "$EXTRACT" "$TIBSUN" ISOTEMP.MIX  extract "$RAW" $ISOTEMP  >/dev/null
 python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" $CONQUER  >/dev/null

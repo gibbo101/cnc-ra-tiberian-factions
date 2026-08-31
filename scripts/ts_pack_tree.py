@@ -1569,6 +1569,18 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
     for k, i in enumerate(dish_pong):
         Image.open(f"{ART}/shp_gtplug_f/frame-{i:04d}.png").convert("RGBA").save(
             f"{dst}/frame-{k:04d}.png")
+    # Second plug slot: GAPLUG_D (the pod-node dome, ART.INI LoopEnd=14 straight)
+    # resampled 15 -> 20 to wrap in n=40. Level art is TYPE-BLIND (level 1 =
+    # dish, level 2 = dish + dome regardless of which plugs are installed) —
+    # the per-type socket matrix stays the deferred problem; without this
+    # layer a second install pointed past the shipped frames and drew the
+    # white-box placeholder.
+    dome_seq = resample(list(range(15)), 20)
+    dst2 = f"{ART}/shp_gtplug_d_p2"
+    os.makedirs(dst2, exist_ok=True)
+    for k, i in enumerate(dome_seq):
+        Image.open(f"{ART}/shp_gtplug_d/frame-{i:04d}.png").convert("RGBA").save(
+            f"{dst2}/frame-{k:04d}.png")
     spin20 = list(range(20))
     build_structure("TSPLUG", "shp_gtplug", 0, 1,
                     [("shp_gtplug_a", list(range(20)), list(range(20))),
@@ -1577,7 +1589,8 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
                     # The radar height trick: 3x2 plot, square canvas, masts in
                     # the headroom. margin 12 = (stub 72 − box 48)/2.
                     "shp_gtplugmk", 19, 384, 384, bottom_margin=12,
-                    powerup_layers=[("shp_gtplug_f_p1", spin20, spin20)])
+                    powerup_layers=[("shp_gtplug_f_p1", spin20, spin20),
+                                    ("shp_gtplug_d_p2", spin20, spin20)])
     emit_sidebar_data("TSPLUG", "Upgrade Center",
                       "Hosts superweapon upgrade plugs. Two slots. Detects cloaked units.",
                       "shp_plugicon")

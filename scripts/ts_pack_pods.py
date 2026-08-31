@@ -115,11 +115,13 @@ def main():
     big.save(f"{ICON_DIR}/BuildIcon_SW_TSPODS.tga")
     print(f"wrote {ICON_DIR}/BuildIcon_SW_TSPODS.tga")
 
-    # The Vulcan2 strafe report under its own sample name (novel-name path).
-    out_wav = f"{MOD}/AUDIO/TSGUN4.WAV"
-    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{RAW}/TSGUN4.AUD",
-                    "-acodec", "adpcm_ms", out_wav], check=True)
-    print(f"wrote {out_wav}")
+    # The Vulcan2 strafe report + the meteor descent whoosh under their own
+    # sample names (novel-name path).
+    for aud, wav in (("TSGUN4.AUD", "TSGUN4.WAV"), ("METEOR1.AUD", "TSMETEOR.WAV")):
+        out_wav = f"{MOD}/AUDIO/{wav}"
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{RAW}/{aud}",
+                        "-acodec", "adpcm_ms", out_wav], check=True)
+        print(f"wrote {out_wav}")
 
 
 if __name__ == "__main__":
