@@ -1002,24 +1002,14 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     assert(type != NULL);
 
     /*
-    **	A dropship delivery has to finish landing, and then be waited out, before another
-    **	can be ordered. Refusing here greys the cameo through the sidebar's own disabled
-    **	path, which is the same route the one-bay cap takes -- one mechanism, two reasons
-    **	to say no.
+    **	The dropship delivery cooldown and the Mk. II field cap do NOT refuse
+    **	here. Can_Build is the sidebar's OFFER test (Update_Buildables), so a
+    **	pause expressed here makes the cameo vanish instead of greying -- and a
+    **	bay rebuilt while a pause runs re-offers its cargo through this test,
+    **	so the cameos never came back at all. Order refusal belongs to
+    **	TF_Delivery_Order_Refused (Begin_Production and the click handlers);
+    **	the countdown / locked dress is painted by the sidebar fill itself.
     */
-    if (type->What_Am_I() == RTTI_UNITTYPE && TF_Is_Dropship_Delivered((UnitTypeClass const*)type)
-        && TFDropBayTimer != 0) {
-        return (false);
-    }
-
-    /*
-    **	A house fields at most TF_MK2_CAP Mammoth Mk. IIs at once; losing one
-    **	is what reopens the order.
-    */
-    if (type->What_Am_I() == RTTI_UNITTYPE && ((UnitTypeClass const*)type)->Type == UNIT_TSHMEC
-        && TF_Mk2_At_Cap(this)) {
-        return (false);
-    }
 
     /*
     **	An addon plug (TS PowersUpBuilding) is only offered while the house owns
