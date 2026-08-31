@@ -8316,8 +8316,21 @@ void UnitClass::Fire_Stream_AI(void)
                                               firepower,
                                               WarheadType(weapon->WarheadPtr->ID),
                                               weapon->MaxSpeed);
-        if (bullet != NULL && !bullet->Unlimbo(fire_coord, dir)) {
-            delete bullet;
+        if (bullet != NULL) {
+            if (!bullet->Unlimbo(fire_coord, dir)) {
+                delete bullet;
+            } else {
+                /*
+                **	The dwell is sized at launch, while the target is known legal. The
+                **	lazy init in BulletClass::AI measured the distance a frame later,
+                **	when the stream's own earlier particles may already have killed the
+                **	target -- and As_Coord on a dead target is the map origin, which
+                **	handed the particle a cross-map lifetime and a flame that crawled
+                **	far past weapon range.
+                */
+                int frames = ::Distance(fire_coord, target_coord) / max(1, (int)weapon->MaxSpeed);
+                bullet->TFDwell = frames / 15 + 1;
+            }
         }
     }
 }

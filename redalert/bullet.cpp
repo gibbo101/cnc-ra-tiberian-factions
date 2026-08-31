@@ -543,8 +543,18 @@ void BulletClass::AI(void)
         **	stops at arrival and the flame fades about a third of its flight beyond it.
         */
         if (TFDwell <= 0) {
-            int frames = ::Distance(Coord, ::As_Coord(TarCom)) / max(1, MaxSpeed);
-            TFDwell = frames / 15 + 1; // TS: min_time / (FinalDamageState + 1) + 1
+            /*
+            **	Backstop only -- the stream spawner sizes the dwell at launch. A
+            **	particle reaching this with its target already dead must fade at the
+            **	minimum rate: As_Coord on a dead target is the map origin, and
+            **	measuring against that handed the flame a cross-map lifetime.
+            */
+            if (!Target_Legal(TarCom)) {
+                TFDwell = 1;
+            } else {
+                int frames = ::Distance(Coord, ::As_Coord(TarCom)) / max(1, MaxSpeed);
+                TFDwell = frames / 15 + 1; // TS: min_time / (FinalDamageState + 1) + 1
+            }
         }
         TFStage++;
         int state = TFStage / TFDwell;
