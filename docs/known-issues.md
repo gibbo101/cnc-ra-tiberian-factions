@@ -8,6 +8,20 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## "Cannot deploy here" + "Battle control terminated" stay RA-voiced for TD factions (2026-08-31)
+
+- **Severity:** cosmetic. **Status:** open — launcher-owned moments, no DLL hook.
+- Diagnostic-proven (tf_speech.log, session 2026-08-31): these two lines never reach the
+  DLL's `On_Speech`. The placement-reject click is swallowed client-side by ClientG
+  (placement-distances grid), and the quit line fires during match teardown. With no
+  DLL-visible moment, the radar recipe (stub + refire) cannot apply — stubbing alone
+  would silence the line for every faction. All other wrong-voice EVA lines were fixed
+  the same session (structure sold = missing `SpeechTD` mapping; mission accomplished /
+  failed = stub + refire from `On_Multiplayer_Game_Over`). Don't re-chase without a new
+  launcher-side lever.
+
+---
+
 ## MP clients hear no credit tick (faction-routed tick, 2026-08-31)
 
 - **Severity:** minor. **Status:** open, by design for now.

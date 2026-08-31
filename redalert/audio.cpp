@@ -755,6 +755,29 @@ void Init_SpeechTD(void)
     SpeechTD[VOX_NEED_MO_CAPACITY]   = "TDSILOS1";
     SpeechTD[VOX_SUSPENDED]          = "TDONHOLD1";
     SpeechTD[VOX_REPAIRING]          = "TDREPAIR1";
+    SpeechTD[VOX_STRUCTURE_SOLD]     = "TDSTRUSLD1";
+}
+
+/*
+**  RA-voice overrides for lines whose launcher auto-fire is silence-stubbed
+**  (the radar recipe): the DLL refires these itself for every faction, so
+**  Allied/Soviet dispatch must resolve NEW event names (RAC/RAR_SFX_RAO*)
+**  whose samples are loose copies of the base RA EVA — the ORIGINAL event's
+**  sample name now points at a 44-byte silent stub. TD factions take
+**  SpeechTD[] first; this table is the everyone-else fallback. NULL = the
+**  RA Speech[] name is untouched by any stub, dispatch it as-is.
+*/
+char const* SpeechRAO[VOX_COUNT] = {NULL};
+
+void Init_SpeechRAO(void)
+{
+    static bool inited = false;
+    if (inited)
+        return;
+    inited = true;
+
+    SpeechRAO[VOX_ACCOMPLISHED] = "RAOWON1";
+    SpeechRAO[VOX_FAIL]         = "RAOLOST1";
 }
 
 /***********************************************************************************************

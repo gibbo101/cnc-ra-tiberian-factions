@@ -12866,4 +12866,77 @@
       <Priority> 2 </Priority>
    </LocalizedSFXEvent>
 
+   <!-- Tiberian Factions: TD 'structure sold' for the DLL's faction-routed
+        speech (SpeechTD TDSTRUSLD1); samples are the base game's TD EVA. -->
+   <LocalizedSFXEvent Name="RAC_SFX_TDSTRUSLD1" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TDC_SFX_EVA_STRUSLD1_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+         <entry> TEXT_SFX_TDC_SFX_STRUSLD1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+   </LocalizedSFXEvent>
+   <LocalizedSFXEvent Name="RAR_SFX_TDSTRUSLD1" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TDR_SFX_EVA_STRUSLD1_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+         <entry> TEXT_SFX_TDR_SFX_STRUSLD1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+   </LocalizedSFXEvent>
+   <!-- Tiberian Factions: RA endgame lines under NEW names (RAO* samples are
+        loose copies of the base RA EVA). The launcher's own MISNWON1/MISNLST1
+        auto-fire is silence-stubbed (44-byte loose WAVs over its sample names)
+        and the DLL refires per faction: TDACCOM1/TDFAIL1 for GDI+Nod, these for
+        Allies+Soviets. Radar-recipe pattern. -->
+   <LocalizedSFXEvent Name="RAC_SFX_RAOWON1" Preset="_PRESET_HUD_OVERLAP">
+      <SampleNamesList>
+         <entry> RAOC_SFX_EVA_MISNWON1.WAV </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+         <entry> TEXT_SFX_RAC_SFX_MISNWON1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 1 </Priority>
+   </LocalizedSFXEvent>
+   <LocalizedSFXEvent Name="RAR_SFX_RAOWON1" Preset="_PRESET_HUD_OVERLAP">
+      <SampleNamesList>
+         <entry> RAOR_SFX_EVA_MISNWON1.WAV </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+         <entry> TEXT_SFX_RAR_SFX_MISNWON1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 1 </Priority>
+   </LocalizedSFXEvent>
+   <LocalizedSFXEvent Name="RAC_SFX_RAOLOST1" Preset="_PRESET_HUD_OVERLAP">
+      <SampleNamesList>
+         <entry> RAOC_SFX_EVA_MISNLST1.WAV </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+         <entry> TEXT_SFX_RAC_SFX_MISNLST1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 1 </Priority>
+   </LocalizedSFXEvent>
+   <LocalizedSFXEvent Name="RAR_SFX_RAOLOST1" Preset="_PRESET_HUD_OVERLAP">
+      <SampleNamesList>
+         <entry> RAOR_SFX_EVA_MISNLST1.WAV </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+         <entry> TEXT_SFX_RAR_SFX_MISNLST1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 1 </Priority>
+   </LocalizedSFXEvent>
 </LocalizedSFXEvents>

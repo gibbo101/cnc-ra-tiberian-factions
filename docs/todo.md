@@ -5,6 +5,27 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Superweapon power pass (Luke, 2026-08-31)
+
+Luke's verdict after the TS ion shockwave landed (600 centre + 300 x 8 ring, "guaranteed
+precision kill on a large building. I think I like it"): **other superweapons SHOULD be more
+powerful too.** Design pass over the full roster — RA nuke, TD nuke, chrono, iron curtain,
+paradrops, recon — weapon by weapon: what each should feel like, then the damage/radius/
+duration dials. The TS ion sets the bar: a superweapon should feel like an event, and each
+should keep a distinct identity (the ion pair proved flavour + role separation works).
+
+---
+
+## Era-scoped build-time rules (Luke, 2026-08-31 — stray thought, unplanned)
+
+Unanchor build-time rules from factions and tie them to the entity's ERA: RA rules for RA
+buildings, TD rules for TD buildings, TS rules for TS buildings — same shape as the shipped
+era door rule. Would systematize the per-entity TD build-time parity done ad hoc in 1.1.x.
+Needs a value-by-value read of the TD and TS sources first (TS = per-1000-credits rate +
+multi-factory bonus) before any design. Own arc when picked up.
+
+---
+
 ## TS-era audio identity arc (Luke, 2026-08-31 — design as ONE piece)
 
 All unlocked by the novel-sample-name + faction-tick work (2026-08-31). One routing key,
