@@ -16,11 +16,17 @@ three surfaces, decided together:
   A live era-wide audio flip on TS MCV deploy was REJECTED — don't re-offer. (Aside, noted
   not planned: production Speak() call sites know the source factory, so per-building
   voices are technically possible.)
-- **Credit tick**: TS tick sounds → extend the shipped `CreditClass::AI` branch
-  (`building-sound-routing.md` §2). Sound names via OpenTS grep.
-- **Radar on/off**: already DLL-fired (`radar.cpp:259/279`, `house.cpp:2088`) — pure
-  routing, add VOC_TS_RADAR_ON/OFF + TS assets. (TD variants for GDI/Nod could ride the
-  same branch if wanted.)
+- **Credit tick + radar: SOUNDS VERIFIED IN PLAY (2026-08-31 demo, "perfect" — reverted).**
+  TS assets confirmed: `CREDUP1`/`CREDDWN1` (tick) and `COMMUP1`/`RADARDN1` (radar
+  on/off), per TS rules.ini [AudioVisual]; all four in `SOUNDS.MIX` inside TIBSUN.MIX;
+  convert `ts_aud_decode.py` → `ffmpeg -c:a adpcm_ms -ar 22050 -ac 1`, ship under own
+  names. Tick: extend the shipped `CreditClass::AI` branch (`building-sound-routing.md`
+  §2). Radar: **per-faction dispatch ALREADY SHIPPED** — launcher auto-fire is
+  silent-stubbed (44-byte `RA?_SFX_RADARON2/RADARDN1.WAV`), DLL routes by HousesType to
+  `TFRADR*` (GDI/Nod) / `RAORAD*` (Allied/Soviet) events (comment block in the shipped
+  NONLOCALIZED XML ~line 6428) — TS = add a third event pair + route. ⚠ NEVER repoint the
+  silent-stubbed `radaron2/radardn1` events — that un-silences the launcher's auto-fire
+  and doubles the sound (the demo's first attempt proved it).
 - **EVA voice set**: `project-ts-eva-feasibility` memory — SPEECH01/02.MIX sourced,
   delivery proven; ~20-30 lines per voice under own names, `SpeechTS[]`/`SpeechCABAL[]`
   tables in `On_Speech`.
