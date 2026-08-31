@@ -6926,6 +6926,7 @@ static int TF_Special_Display_Mask(SpecialWeaponType id, HouseClass* house)
     case SPC_TD_ION_CANNON:
         return (TF_FACTION_GDI);
     case SPC_TS_ION_CANNON:
+    case SPC_TS_DROPPODS:
         return (TF_FACTION_TSGDI);
     case SPC_TD_NUKE:
     case SPC_TD_PARA_INFANTRY:
@@ -7708,6 +7709,15 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
             strncpy(weapon_name, "SW_TSIon", 16);
         }
         break;
+    case SPC_TS_DROPPODS:
+        // Tiberian Factions mod — TS Drop Pod reinforcements: paratroop-class
+        // launcher plumbing (SW_PARA_INFANTRY is cost-suppression whitelisted),
+        // AssetName "SW_TSPods" resolves the TS PODSICON cameo entry.
+        dll_weapon_type = SW_PARA_INFANTRY;
+        if (weapon_name != NULL) {
+            strncpy(weapon_name, "SW_TSPods", 16);
+        }
+        break;
     case SPC_TD_NUKE:
         // Tiberian Factions mod — route Nod Nuclear Strike to SW_NUKE.
         // SW_NUKE is on the RA launcher's no-$0 cost-suppression whitelist
@@ -7769,6 +7779,7 @@ void DLLExportClass::Fill_Sidebar_Entry_From_Special_Weapon(CNCSidebarEntryStruc
     case SPC_TD_PARA_INFANTRY:
     case SPC_TD_SPY_MISSION:
     case SPC_TS_ION_CANNON:
+    case SPC_TS_DROPPODS:
         Convert_Special_Weapon_Type(weapon_type, sidebar_entry_out.SuperWeaponType, sidebar_entry_out.AssetName);
         break;
     default:

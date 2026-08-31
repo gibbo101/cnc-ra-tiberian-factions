@@ -788,6 +788,12 @@ HouseClass::HouseClass(HousesType house)
                                                      VOX_NOT_READY,
                                                      VOX_INSUFFICIENT_POWER);
 
+    // Tiberian Factions mod — TS Drop Pod reinforcements (TSPODS plug).
+    // Orbital delivery, so unpowered like the paratroop drops it parallels;
+    // 5-minute cadence sits between the paratroops and the ion cannon.
+    new (&SuperWeapon[SPC_TS_DROPPODS])
+        SuperClass(TICKS_PER_MINUTE * 5, false, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_NOT_READY);
+
     // Tiberian Factions mod — Nod Nuclear Strike. TD-authentic 14-minute
     // recharge per tiberiandawn/defines.h NUKE_GONE_TIME (14 *
     // TICKS_PER_MINUTE). TD has no "charging" voice for the nuke so the
@@ -2633,6 +2639,46 @@ void HouseClass::Super_Weapon_Handler(void)
     }
 
     /*
+    **  Tiberian Factions mod — TS Drop Pod reinforcements (SPC_TS_DROPPODS),
+    **  granted by the Drop Pod Node plug (TSPODS in a TSPLUG). Same shape as
+    **  the TS Ion Cannon block above.
+    */
+    bool ts_pods_host = TF_House_Has_Plug(this, STRUCT_TSPODS);
+    if (SuperWeapon[SPC_TS_DROPPODS].Is_Present()) {
+        if ((!ts_pods_host && !SuperWeapon[SPC_TS_DROPPODS].Is_One_Time()) || IsDefeated) {
+            if (SuperWeapon[SPC_TS_DROPPODS].Remove()) {
+                if (this == PlayerPtr) {
+                    if (Map.IsTargettingMode == SPC_TS_DROPPODS) {
+                        Map.IsTargettingMode = SPC_NONE;
+                    }
+                    Map.Column[1].Flag_To_Redraw();
+                }
+                IsRecalcNeeded = true;
+            }
+        } else {
+            if (SuperWeapon[SPC_TS_DROPPODS].Is_Ready() && !IsHuman) {
+                Special_Weapon_AI(SPC_TS_DROPPODS);
+            }
+        }
+    } else {
+        if (ts_pods_host && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
+            SuperWeapon[SPC_TS_DROPPODS].Enable(false, this == PlayerPtr, false);
+            if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
+                if (IsHuman) {
+#ifdef REMASTER_BUILD
+                    Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TS_DROPPODS, this);
+#endif
+                }
+            } else {
+                if (this == PlayerPtr) {
+                    Map.Add(RTTI_SPECIAL, SPC_TS_DROPPODS);
+                    Map.Column[1].Flag_To_Redraw();
+                }
+            }
+        }
+    }
+
+    /*
     **  Tiberian Factions mod — Nod Nuclear Strike (SPC_TD_NUKE). Same shape
     **  as the Ion Cannon block above, swapped for TDTMPL as the host
     **  building. Uses Has_Building_Active(STRUCT_TDTMPL) since heap types
@@ -3946,6 +3992,66 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
             IsRecalcNeeded = true;
             fired = true;
             what = "TS_ION_CANNON";
+            if (this == PlayerPtr) {
+                Map.Column[1].Flag_To_Redraw();
+                Map.IsTargettingMode = SPC_NONE;
+            }
+        }
+        break;
+
+    /*
+    **  Tiberian Factions mod — TS Drop Pod discharge. Three pods streak in
+    **  on the targeted cell (first dead-on, two scattered a cell and a half),
+    **  each a BULLET_TSPODDROP carrying one trooper. The approach direction
+    **  is sim-random per pod; the spawn point sits one drop-height back along
+    **  it so the 45-degree slide grounds exactly on the LZ, and later pods
+    **  start higher so the arrivals stagger. PODRING flashes at each pod's
+    **  apparent (north-shifted) entry point, per TS AtmosphereEntry.
+    */
+    case SPC_TS_DROPPODS:
+        if (SuperWeapon[SPC_TS_DROPPODS].Is_Ready()) {
+            /*
+            **  Approaches are EAST/WEST only: altitude draws as a north
+            **  shift, so an E/W slide plus the sinking offset reads as the
+            **  45-degree streak. A north/south approach fights the illusion
+            **  (a south-approach pod draws two drop-heights off-screen and
+            **  pops in at the last moment — seen in play, 2026-08-31).
+            **  Squad: three Minigunners, two Grenadiers (TS infantry
+            **  equivalents swap in when that roster lands — Luke).
+            */
+            for (int pd = 0; pd < 5; pd++) {
+                CELL podcell = cell;
+                if (pd > 0) {
+                    CELL scatter = Coord_Cell(Coord_Scatter(Cell_Coord(cell), CELL_LEPTON_W * 2, false));
+                    if (Map.In_Radar(scatter)) {
+                        podcell = scatter;
+                    }
+                }
+                COORDINATE lz = Cell_Coord(podcell);
+                DirType approach = Random_Pick(0, 1) ? DIR_E : DIR_W;
+                int drop_h = BulletClass::TF_POD_DROP_HEIGHT + pd * 160;
+                COORDINATE spawn = Coord_Move(lz, (DirType)((unsigned char)(approach + DIR_S)), drop_h);
+
+                BulletClass* pod = new BulletClass(BULLET_TSPODDROP, ::As_Target(podcell), NULL, 0, WARHEAD_NONE, MPH_MEDIUM_FAST);
+                if (pod != NULL) {
+                    pod->TFPodHouse = Class->House;
+                    pod->TFPodApproach = approach;
+                    pod->TFPodType = (pd < 3) ? INFANTRY_TDE1 : INFANTRY_TDE2;
+                    if (pod->Unlimbo(spawn, DIR_S)) {
+                        Map.Remove(pod, pod->In_Which_Layer());
+                        pod->Height = drop_h;
+                        Map.Submit(pod, pod->In_Which_Layer());
+                        new AnimClass(ANIM_TS_PODRING, Coord_Move(spawn, DIR_N, drop_h));
+                        Sound_Effect(VOC_TS_METEOR, lz);
+                    } else {
+                        delete pod;
+                    }
+                }
+            }
+            SuperWeapon[SPC_TS_DROPPODS].Discharged(this == PlayerPtr);
+            IsRecalcNeeded = true;
+            fired = true;
+            what = "TS_DROPPODS";
             if (this == PlayerPtr) {
                 Map.Column[1].Flag_To_Redraw();
                 Map.IsTargettingMode = SPC_NONE;

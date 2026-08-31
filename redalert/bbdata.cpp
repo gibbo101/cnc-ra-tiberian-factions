@@ -202,6 +202,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TDNapalm");      //	BULLET_TDNAPALM (TD A-10 napalm bomblet — ClassNapalm verbatim, BOMBLET sprite)
     new BulletTypeClass("TSFire");        //	BULLET_TSFIRE (TS fire-stream particle, FLAMEALL sprite)
     new BulletTypeClass("TSDropPod");     //	BULLET_TSDROPPOD (dropship bay delivery — falls like NukeDown, sets its cargo down, does no damage)
+    new BulletTypeClass("TSPodDrop");     //	BULLET_TSPODDROP (infantry drop pod — angled descent strafing the LZ, spawns its trooper + husk on touchdown)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per
@@ -303,6 +304,10 @@ void BulletTypeClass::One_Time(void)
     BulletTypeClass& tsdroppod = As_Reference(BULLET_TSDROPPOD);  // Dropship delivery -- own TSDSHP sprite (RA_VFX.XML, the TS Dropship voxel); donor passes Draw_It's NULL guard.
     if (tsdroppod.ImageData == NULL) {
         ((void const*&)tsdroppod.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tspoddrop = As_Reference(BULLET_TSPODDROP);  // Infantry drop pod -- own TSPODBLT sprite (RA_VFX.XML, the DROPPOD body); donor passes Draw_It's NULL guard.
+    if (tspoddrop.ImageData == NULL) {
+        ((void const*&)tspoddrop.ImageData) = donor.ImageData;
     }
 }
 

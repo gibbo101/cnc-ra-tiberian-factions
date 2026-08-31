@@ -1689,6 +1689,35 @@ static BuildingTypeClass const ClassTsPion(STRUCT_TSPION,
                                            (short const*)NULL);
 
 /*
+**  TSPODS (Drop Pod Node) — our Firestorm-style plug for TSPLUG, same
+**    never-on-the-map contract as TSPION (base TS grants drop pods by
+**    script only, so this plug is our own invention). While installed
+**    anywhere in the house, the TS Drop Pod special (SPC_TS_DROPPODS) is
+**    granted (house.cpp Super_Weapon_Handler). Stats in rules.ini
+**    [TSPODS]; art = GTPLUG_D dome ghost, cameo RAD1ICON (ART.INI
+**    [GAPLUG_D] Cameo=).
+*/
+static BuildingTypeClass const ClassTsPods(STRUCT_TSPODS,
+                                           TXT_NONE,
+                                           "TSPODS",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           false,
+                                           false, false,
+                                           true,               // simple damage imagery (ghost art)
+                                           false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+/*
 **  TDAFLD (Nod Airstrip) — 4×2 flat tile, ARMOR_STEEL, capturable, crewed.
 **    Wholesale port of TD's STRUCT_AIRSTRIP per tiberiandawn/bdata.cpp:841
 **    (ClassAirStrip). RTTI_UNITTYPE factory; vehicles delivered via cargo
@@ -4842,6 +4871,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsTurb);        // STRUCT_TSTURB (TS Power Turbine addon)
     new BuildingTypeClass(ClassTsPlug);        // STRUCT_TSPLUG (TS Upgrade Centre, addon host)
     new BuildingTypeClass(ClassTsPion);        // STRUCT_TSPION (Ion Cannon Uplink addon)
+    new BuildingTypeClass(ClassTsPods);        // STRUCT_TSPODS (Drop Pod Node addon)
 
     /*
     **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so
@@ -4852,6 +4882,7 @@ void BuildingTypeClass::Init_Heap(void)
     As_Reference(STRUCT_TSPLUG).UpgradesMax = 2;                     // TS [GAPLUG] Upgrades=2
     As_Reference(STRUCT_TSPLUG).IsScanner = true;                    // TS Sensors=yes: cloak detector
     As_Reference(STRUCT_TSPION).PowersUpBuilding = STRUCT_TSPLUG;    // TS [GAPLUG3]
+    As_Reference(STRUCT_TSPODS).PowersUpBuilding = STRUCT_TSPLUG;    // our Firestorm-style pod node
 }
 
 /***********************************************************************************************

@@ -6734,6 +6734,50 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
 		</SampleNamesList>
 	</SFXEvent>
 
+  <!-- Tiberian Factions: TS Vulcan2 report (drop pod LZ strafe) — bundled
+       TSGUN4.WAV, MS-ADPCM, own name. -->
+  <SFXEvent Name="RAC_SFX_TSGUN4" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSGUN4.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <!-- Tiberian Factions: TS Vulcan2 report (drop pod LZ strafe) — bundled
+       TSGUN4.WAV, MS-ADPCM, own name. -->
+  <SFXEvent Name="RAR_SFX_TSGUN4" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSGUN4.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <!-- Tiberian Factions: TS meteor whoosh (drop pod descent) - bundled
+       TSMETEOR.WAV, MS-ADPCM, own name. -->
+  <SFXEvent Name="RAC_SFX_TSMETEOR" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSMETEOR.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <!-- Tiberian Factions: TS meteor whoosh (drop pod descent) - bundled
+       TSMETEOR.WAV, MS-ADPCM, own name. -->
+  <SFXEvent Name="RAR_SFX_TSMETEOR" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSMETEOR.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
 </SFXEvents>
 
 

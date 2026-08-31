@@ -785,6 +785,7 @@ typedef enum SpecialWeaponType : char
     SPC_TD_PARA_INFANTRY, // Nod paratroops (TD infantry drop, sourced from STRUCT_TDAFLD + STRUCT_TDHAND)
     SPC_TD_SPY_MISSION,   // Nod recon flight (sourced from STRUCT_TDAFLD; same U2 flyover, own timer)
     SPC_TS_ION_CANNON,    // TS Ion Cannon strike (ANIM_TS_ION_BEAM + RING1, sourced from the TSPION uplink plug)
+    SPC_TS_DROPPODS,      // TS Drop Pod reinforcements (3 BULLET_TSPODDROP pods of infantry, sourced from the TSPODS plug)
 
     SPC_COUNT,
     SPC_FIRST = 0,
@@ -1388,6 +1389,7 @@ typedef enum BulletType : char
     BULLET_TDNAPALM,  // TD A-10 napalm bomblet (BULLET_NAPALM/ClassNapalm verbatim) — Dropping, Arm 24, BOMBLET sprite, WARHEAD_TDFIRE, ANIM_NAPALM2 impact (bullet ImpactAnim; TDFire warhead Explosion=0).
     BULLET_TSFIRE,    // TS fire-stream particle (FireStream, FLAMEALL sprite): flies as a bullet, ages through 19 states, burns whatever shares its cell every 3 frames, rests as a burning puddle at the target. Registered "TSFire".
     BULLET_TSDROPPOD, // TS Dropship Bay delivery — a descent, not a weapon: carries TFPayload, sets it down and applies no damage. Cloned from NukeDown's fall rather than amending it, so the Nod strike is untouched.
+    BULLET_TSPODDROP, // TS infantry drop pod (SPC_TS_DROPPODS) — streaks in at DropPodAngle strafing the LZ, spawns its trooper + husk on touchdown. OpenTS droppod.cpp ported onto the bullet frame like the dropship above.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -1594,6 +1596,7 @@ typedef enum StructType : short
     STRUCT_TSTURB, // TS Power Turbine "TSTURB" (GAPOWRUP) — a building ADDON: never unlimbos onto the map, installs into a placed TSPOWR (PowersUpBuilding) and adds its Power. Art = the plant's own GTPOWR_B turbine.
     STRUCT_TSPLUG, // TS GDI Upgrade Centre "TSPLUG" (GAPLUG, 3x2 like TSTECH) — the addon HOST with 2 plug slots; cloak sensor (IsScanner). Drain 150.
     STRUCT_TSPION, // TS Ion Cannon Uplink "TSPION" (GAPLUG3) — addon plug for TSPLUG; grants the GDI Ion Cannon special while installed. Drain 100. Art = GTPLUG_F dish.
+    STRUCT_TSPODS, // TS Drop Pod Node "TSPODS" (our Firestorm-style plug — base TS grants pods by script only); grants Drop Pod reinforcements while installed. Art = GTPLUG_D dome.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
@@ -1616,7 +1619,7 @@ typedef enum StructType : short
     **	Second range of BuildingTypeClass::Is_Tiberian_Era.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TSPION
+    STRUCT_TS_TREE_LAST = STRUCT_TSPODS
 } StructType;
 
 /*
@@ -2832,7 +2835,12 @@ typedef enum SmudgeType : char
 **	Animations are enumerated here. Animations are the high speed and
 **	short lived effects that occur with explosions and fire.
 */
-typedef enum AnimType : char
+/*
+**	Underlying type widened from char when the drop-pod set pushed ANIM_COUNT
+**	past 127. Not launcher-ABI: AnimType never crosses dllinterface.h; the MP
+**	event union that carries one is same-DLL-both-sides.
+*/
+typedef enum AnimType : short
 {
     ANIM_NONE = -1,
     ANIM_FBALL1,        // Large fireball explosion (bulges rightward).
@@ -2981,6 +2989,11 @@ typedef enum AnimType : char
     ANIM_TS_DIG,        // TS DIG mound (dig.shp, 37 frames): the subterranean dig-in / emerge earth burst (TS [AudioVisual] Dig=). Spawned by the tunnel cycle in UnitClass::Tunnel_AI.
     ANIM_TS_ION_BEAM,   // TS Ion Cannon beam (IONBEAM.SHP, 15 frames, pre-tiled tall at pack time): the uplink-granted ion strike's beam. Carries the strike damage + ION1 sound in Middle(), like ANIM_TD_ION_CANNON.
     ANIM_TS_ION_RING,   // TS Ion Cannon ground ring (RING1.SHP, 15 frames, flat): TS [General] IonBlast=RING1, spawned alongside the beam at the impact cell. Visual only.
+    ANIM_TS_DROPPOD1,   // TS drop pod husk mark 1 (DROPPOD.SHP, 8 frames, flat): TS [General] DropPod= — left at the LZ after a pod lands.
+    ANIM_TS_DROPPOD2,   // TS drop pod husk mark 2 (DROPPOD2.SHP, 8 frames, flat): the other DropPod= husk variant.
+    ANIM_TS_DROPEXP,    // TS drop pod touchdown puff (DROPEXP.SHP, 12 frames): TS [General] DropPodPuff= — plays over the husk at landing.
+    ANIM_TS_PODRING,    // TS drop pod atmosphere-entry flash (PODRING.SHP, 20 frames, flat): TS [General] AtmosphereEntry= — spawned at the pod's spawn point.
+    ANIM_TS_SMOKEY,     // TS SMOKEY smoke puff (SMOKEY.SHP, 11 frames): the falling pod's trail, spawned every 6 frames by the pod bullet.
 
     ANIM_COUNT,
     ANIM_FIRST = 0
@@ -4112,6 +4125,8 @@ typedef enum VocType : short
     VOC_TD_MONEY_DOWN,   // TD credit tick down (TONE16) -- as above.
     VOC_DLL_MONEY_UP,    // RA credit tick up re-fired by the DLL under alias CASHUPD (stock RA?_SFX_cashup1 events are silenced; this alias points at the original sample).
     VOC_DLL_MONEY_DOWN,  // RA credit tick down re-fired by the DLL under alias CASHDND.
+    VOC_TS_GUN4,         // TS Vulcan2 report (TSGUN4) -- the drop pod's LZ strafe. Routed via RAC/RAR_SFX_TSGUN4 -> bundled TSGUN4.WAV under its OWN name (novel-name path).
+    VOC_TS_METEOR,       // TS meteor whoosh (METEOR1) -- the drop pod descent scream, fired at the LZ per pod launch. RAC/RAR_SFX_TSMETEOR -> bundled TSMETEOR.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0

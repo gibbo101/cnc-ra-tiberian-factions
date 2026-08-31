@@ -85,6 +85,9 @@ BulletClass::BulletClass(BulletType id,
     , TFStage(0)
     , TFDwell(0)
     , TFUnloaded(0)
+    , TFPodHouse(HOUSE_NONE)
+    , TFPodApproach(DIR_N)
+    , TFPodType(INFANTRY_TDE1)
     , IsInaccurate(false)
     , IsToAnimate(false)
     , IsLocked(true)
@@ -723,6 +726,77 @@ void BulletClass::AI(void)
             }
             break;
         }
+        if (In_Which_Layer() != layer) {
+            Map.Remove(this, layer);
+            Map.Submit(this, In_Which_Layer());
+        }
+        return;
+    }
+
+    /*
+    **	The infantry drop pod streaks in along TS's fixed ~45-degree approach
+    **	(DropPodAngle 0.79): equal horizontal and vertical speed, so it spawns
+    **	one drop-height sideways from the LZ and arrives exactly as it grounds.
+    **	OpenTS droppod.cpp Process(), ported onto the bullet frame: SMOKEY
+    **	puffs trail the fall, the LZ takes doubled Vulcan2 fire while a
+    **	non-ally holds it, and touchdown spawns the trooper, the husk mark and
+    **	the DROPEXP puff -- or a C4-grade blast when the cell won't take the
+    **	trooper. Like the dropship, it returns before the ballistic code, so
+    **	the fuse and Physics never run.
+    */
+    if (*this == BULLET_TSPODDROP) {
+        ObjectClass::AI();
+        if (!IsActive) {
+            return;
+        }
+        Mark(MARK_CHANGE);
+        LayerType layer = In_Which_Layer();
+        TFDwell++;
+
+        COORDINATE lz = ::As_Coord(TarCom);
+
+        if (Height > 0) {
+            Height -= TF_POD_FALL_SPEED;
+            Coord = Coord_Move(Coord, TFPodApproach, TF_POD_FALL_SPEED);
+
+            /*
+            **	The trail draws where the pod APPEARS: screen-up is map-north,
+            **	so the puff's coord is the pod shifted north by its altitude.
+            */
+            if (TFDwell % 6 == 0) {
+                new AnimClass(ANIM_TS_SMOKEY, Coord_Move(Coord, DIR_N, Height));
+            }
+            if (TFDwell % 3 == 0) {
+                TechnoClass* holder = Map[Coord_Cell(lz)].Cell_Techno();
+                HouseClass* hptr = (TFPodHouse != HOUSE_NONE) ? HouseClass::As_Pointer(TFPodHouse) : NULL;
+                if (holder != NULL && hptr != NULL && !hptr->Is_Ally(holder)) {
+                    COORDINATE hit = Coord_Scatter(lz, CELL_LEPTON_W / 3, false);
+                    Sound_Effect(VOC_TS_GUN4, Coord);
+                    Explosion_Damage(hit, 2 * TF_POD_STRAFE_DAMAGE, NULL, WARHEAD_SA);
+                    new AnimClass(ANIM_PIFFPIFF, hit);
+                }
+            }
+        } else {
+            Height = 0;
+            Coord = lz;
+
+            InfantryClass* trooper = new InfantryClass(TFPodType, TFPodHouse);
+            bool landed = (trooper != NULL) && trooper->Unlimbo(Coord, DIR_S);
+            if (landed) {
+                new AnimClass((Frame & 1) ? ANIM_TS_DROPPOD2 : ANIM_TS_DROPPOD1, Coord);
+                new AnimClass(ANIM_TS_DROPEXP, Coord);
+                trooper->Scatter(0, true);
+            } else {
+                if (trooper != NULL) {
+                    delete trooper;
+                }
+                Explosion_Damage(Coord, 100, NULL, WARHEAD_HE);
+                new AnimClass(ANIM_FBALL1, Coord);
+            }
+            delete this;
+            return;
+        }
+
         if (In_Which_Layer() != layer) {
             Map.Remove(this, layer);
             Map.Submit(this, In_Which_Layer());
