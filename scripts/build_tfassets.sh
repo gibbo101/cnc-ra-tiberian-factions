@@ -402,9 +402,9 @@ PACK_ARGS+=("$TMPDIR/tssonicp_stub.shp:TSSONICP.SHP")
 # (TSDIG.ZIP is a 512 canvas, scripts/ts_pack_dig.py).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsdig_stub.shp" 64 64 37
 PACK_ARGS+=("$TMPDIR/tsdig_stub.shp:TSDIG.SHP")
-# TS ion strike pair (scripts/ts_pack_ion.py): beam canvas 120x960, ring
+# TS ion strike pair (scripts/ts_pack_ion.py): beam canvas 120x1920 (TD-height), ring
 # 832x408, both / 8 for the classic dims the launcher sizes the HD art off.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsionbm_stub.shp" 15 120 15
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsionbm_stub.shp" 15 240 15
 PACK_ARGS+=("$TMPDIR/tsionbm_stub.shp:TSIONBM.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsionrng_stub.shp" 104 51 15
 PACK_ARGS+=("$TMPDIR/tsionrng_stub.shp:TSIONRNG.SHP")
