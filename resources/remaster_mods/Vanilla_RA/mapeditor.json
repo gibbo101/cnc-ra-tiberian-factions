@@ -4451,5 +4451,14 @@
       "lands": "WWWW",
       "mask": null
     }
+  ],
+  "resources": [
+    {
+      "flavor": "tiberium",
+      "overlays": [
+        "tib01"
+      ],
+      "spawner_building": "tdblossom"
+    }
   ]
 }

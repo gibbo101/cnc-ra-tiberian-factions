@@ -188,9 +188,16 @@ def templates():
     return [entries[i] for i in sorted(entries)]
 
 
+# The harvestable flavors TF adds beyond ore/gems, for the editor's random map
+# generator: tiberium fields (tib01 overlay) seeded by the blossom tree.
+RESOURCES = [
+    {"flavor": "tiberium", "overlays": ["tib01"], "spawner_building": "tdblossom"},
+]
+
+
 def manifest():
     return {"format": 1, "game_type": "RA", "buildings": BUILDINGS, "units": UNITS,
-            "infantry": INFANTRY, "templates": templates()}
+            "infantry": INFANTRY, "templates": templates(), "resources": RESOURCES}
 
 
 def normalized(m):
