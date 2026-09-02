@@ -5,6 +5,19 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## TS sidebar: decided TD sidebar for now (Luke, 2026-09-02); three probes for later
+
+TS factions will use TD's HUD scene with their own logo (the FACTIONS.XML scene swap +
+crest re-point already give this). A real TS sidebar is blocked by the full atlas (95.8%
+covered; TS art cannot go into TD's regions without taking them from GDI/Nod). Probes that
+decide it, cheapest first: (1) can a tactical scene widget's texture name be a standalone
+loose DDS instead of an atlas region (the shell loads backgrounds that way) — one widget in a
+probe CONFIG.MEG; (2) is a third scene loadable — copy Tactical_UI.bui under a new name (loose
+`Art/GUI/` or a new MEG member) and point one faction at it; (3) does a loose .MTD + larger
+TGA extend the region table. If (1) works the TS sidebar is a BUI restyle plus loose art.
+
+---
+
 ## Group deploy on the backslash key (Luke, 2026-09-02: "a todo for another time")
 
 Vanilla: the self-click action is granted only when exactly ONE unit is selected
