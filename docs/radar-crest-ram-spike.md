@@ -61,12 +61,31 @@ crest + TD plate; for RA sides all four are stock. Verified GDI → plate, Nod �
 blue grid restored, in one session. The launcher-drawn faction label under the crest goes
 dark-on-grey over the plate (TD-authentic; not ours to recolour).
 
+## The whole TD sidebar (same day)
+
+Every RA sidebar region the launcher draws has a same-named TD region in the atlas (`UI_RA_SIDEBAR_*`
+→ `UI_SIDEBAR_*`, `RA_UI_FRAME_TOOLTIP_SIDEBAR_*` → `UI_FRAME_TOOLTIP_SIDEBAR_*`), and the big
+pieces match in size. `TF_SidebarSkin[]` (54 pairs, generated from the `.MTD`) extends the same
+patch: for GDI/Nod every pair is re-pointed at its TD counterpart (build-bar plates, power bar,
+top button, tab icons, tooltip frame, small buttons), for RA sides restored. Verified all four
+factions in one session. Two exclusions: the RA radar **bezel** stays (TD's plate is opaque and
+covered the crest when the bezel was re-pointed), and the square **sell/repair/map** buttons stay
+RA (121x121 vs TD's 260x78; a squash). Live inventory method: scan ClientG for the record of
+every candidate region — only drawn regions have one.
+
+**Restore trap + fix:** two slots that share a target (blue and red build bar → one TD plate;
+ALLIES/SOVIET crest → one TD crest) were indistinguishable on the way back, so the first slot won
+(Allied got the red build bar, Soviet got the chevron). Every written rect now carries a per-slot
+sub-pixel nudge on u0 (`slot * 1e-6` UV ≈ 0.007 px), so each record restores to its own stock.
+
+**Resize:** GDI's eagle is now aspect-correct — scaled to 444 high and centred in a 495x444
+window (the slot's 794:713) painted into the unused DINO region; NOD samples a 660x593 window of
+its own region. `scripts/crest_atlas_paint.py` paints everything the patch depends on (pristine
+RA crests + the DINO eagle) into a shipped atlas.
+
 ## Open / follow-ups
 
-- **Aspect:** the slot is 794x713; GDI's region is 718x706 (~9% horizontal stretch, eagle fills
-  its region edge to edge, so no crop is possible) and NOD's is 660x660 (scorpion has ~30 px of
-  clear margin, so an aspect-correct window `y+33, h=593` is available if Luke's eye wants it).
-  Luke saw both stretched and was happy; change is a 4-int edit in `TF_Crest_Slots`.
+- **Sell/repair/map buttons** still RA on the TD skin (shape mismatch) — next.
 - **Allied and Soviet crests RESTORED (same day):** the shipped atlas had the C&C logo painted
   into both RA crest regions ("one logo for all"); the pristine 794x713 Allied chevron / Soviet
   pentagon were byte-copied back from `scripts/cameo_work/MT_COMMANDBAR_COMMON.TGA` (the base

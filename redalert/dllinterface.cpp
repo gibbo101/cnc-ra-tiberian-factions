@@ -4037,13 +4037,15 @@ struct TF_AtlasRect
     int x, y, w, h;
 };
 
-static void TF_Atlas_UV_Record(const TF_AtlasRect& r, float out[4])
+static void TF_Atlas_UV_Record(const TF_AtlasRect& r, float out[4], int nudge = 0)
 {
     // Same arithmetic the launcher used to build the record (double divide, cast to float),
-    // so the bytes match its cached copies exactly.
+    // so the bytes match its cached copies exactly. A rect we WRITE carries a per-slot
+    // sub-pixel nudge on u0 (nudge * 0.007 px; invisible) so two slots that share a target
+    // still leave distinguishable records and each restores to its own stock rect.
     const double W = 6871.0, H = 6716.0; // MT_COMMANDBAR_COMMON.TGA
     out[0] = (float)(r.y / H);
-    out[1] = (float)(r.x / W);
+    out[1] = (float)(r.x / W + nudge * 1e-6);
     out[2] = (float)(r.w / W);
     out[3] = (float)(r.h / H);
 }
@@ -4055,14 +4057,85 @@ struct TF_CrestSlot
     float nod[4];      // what a Nod player should see instead
     const float* want; // which of the three the local player should see
 };
-#define TF_CREST_SLOTS 4 // ALLIES crest, SOVIET crest, blue radar under-screen, red radar under-screen
+
+/*
+** TD sidebar skin for GDI/Nod (docs/radar-crest-ram-spike.md): every RA sidebar region the
+** launcher draws, paired with the same-named TD region already in the atlas. Generated from
+** MT_COMMANDBAR_COMMON.MTD (see the generator note in the doc); the RA radar bezel is left
+** alone (TD's plate is opaque and would cover the crest), and the square sell/repair/map
+** buttons stay RA (TD's are 260x78, a different shape).
+*/
+struct TF_SkinPair
+{
+    TF_AtlasRect ra;
+    TF_AtlasRect td;
+};
+static const TF_SkinPair TF_SidebarSkin[] = {
+    {{5672, 714, 23, 21}, {2658, 729, 23, 21}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_ALLIED_BL -> UI_FRAME_TOOLTIP_SIDEBAR_BL
+    {{727, 2377, 660, 21}, {727, 2400, 660, 21}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_ALLIED_BM -> UI_FRAME_TOOLTIP_SIDEBAR_BM
+    {{1239, 1660, 22, 21}, {6842, 1679, 22, 21}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_ALLIED_BR -> UI_FRAME_TOOLTIP_SIDEBAR_BR
+    {{4788, 2357, 660, 304}, {1466, 2242, 660, 304}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_ALLIED_M -> UI_FRAME_TOOLTIP_SIDEBAR_M
+    {{698, 6411, 23, 304}, {673, 6411, 23, 304}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_ALLIED_ML -> UI_FRAME_TOOLTIP_SIDEBAR_ML
+    {{772, 6411, 22, 304}, {649, 6411, 22, 304}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_ALLIED_MR -> UI_FRAME_TOOLTIP_SIDEBAR_MR
+    {{5672, 694, 23, 18}, {5672, 674, 23, 18}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_ALLIED_TL -> UI_FRAME_TOOLTIP_SIDEBAR_TL
+    {{800, 1685, 660, 18}, {800, 1728, 660, 18}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_ALLIED_TM -> UI_FRAME_TOOLTIP_SIDEBAR_TM
+    {{2525, 755, 22, 18}, {2128, 1936, 22, 18}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_ALLIED_TR -> UI_FRAME_TOOLTIP_SIDEBAR_TR
+    {{5672, 628, 23, 21}, {2658, 729, 23, 21}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_BL -> UI_FRAME_TOOLTIP_SIDEBAR_BL
+    {{800, 1705, 660, 21}, {727, 2400, 660, 21}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_BM -> UI_FRAME_TOOLTIP_SIDEBAR_BM
+    {{2660, 1840, 22, 21}, {6842, 1679, 22, 21}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_BR -> UI_FRAME_TOOLTIP_SIDEBAR_BR
+    {{1466, 1936, 660, 304}, {1466, 2242, 660, 304}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_M -> UI_FRAME_TOOLTIP_SIDEBAR_M
+    {{723, 6411, 23, 304}, {673, 6411, 23, 304}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_ML -> UI_FRAME_TOOLTIP_SIDEBAR_ML
+    {{748, 6411, 22, 304}, {649, 6411, 22, 304}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_MR -> UI_FRAME_TOOLTIP_SIDEBAR_MR
+    {{5672, 608, 23, 18}, {5672, 674, 23, 18}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_TL -> UI_FRAME_TOOLTIP_SIDEBAR_TL
+    {{800, 1748, 660, 18}, {800, 1728, 660, 18}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_TM -> UI_FRAME_TOOLTIP_SIDEBAR_TM
+    {{2658, 752, 22, 18}, {2128, 1936, 22, 18}}, // RA_UI_FRAME_TOOLTIP_SIDEBAR_TR -> UI_FRAME_TOOLTIP_SIDEBAR_TR
+    {{5210, 5503, 787, 1212}, {4253, 5503, 787, 1212}}, // UI_RA_SIDEBAR_BUILDBARBG -> UI_SIDEBAR_BUILDBARBG
+    {{4563, 5182, 169, 84}, {3027, 2961, 147, 87}}, // UI_RA_SIDEBAR_BUTTON_DISABLED -> UI_SIDEBAR_BUTTON_DISABLED
+    {{4563, 5096, 169, 84}, {3027, 3139, 147, 87}}, // UI_RA_SIDEBAR_BUTTON_ENABLED -> UI_SIDEBAR_BUTTON_ENABLED
+    {{2495, 5102, 169, 84}, {3027, 3050, 147, 87}}, // UI_RA_SIDEBAR_BUTTON_HIGHLIGHTED -> UI_SIDEBAR_BUTTON_HIGHLIGHTED
+    {{6041, 5145, 169, 84}, {2495, 3144, 187, 87}}, // UI_RA_SIDEBAR_BUTTON_PULSE -> UI_SIDEBAR_BUTTON_PULSE
+    {{3576, 6095, 70, 70}, {3698, 4322, 76, 69}}, // UI_RA_SIDEBAR_MAXIMIZEBUTTON_HOVER -> UI_SIDEBAR_MAXIMIZEBUTTON_HOVER
+    {{644, 6080, 70, 70}, {3698, 4393, 76, 69}}, // UI_RA_SIDEBAR_MAXIMIZEBUTTON_OFF -> UI_SIDEBAR_MAXIMIZEBUTTON_OFF
+    {{2066, 6079, 70, 70}, {3698, 4464, 76, 69}}, // UI_RA_SIDEBAR_MAXIMIZEBUTTON_PRESS -> UI_SIDEBAR_MAXIMIZEBUTTON_PRESS
+    {{2605, 5927, 70, 70}, {3698, 4535, 76, 69}}, // UI_RA_SIDEBAR_MENUBUTTON_HOVER -> UI_SIDEBAR_MENUBUTTON_HOVER
+    {{655, 5874, 70, 70}, {3698, 4606, 76, 69}}, // UI_RA_SIDEBAR_MENUBUTTON_OFF -> UI_SIDEBAR_MENUBUTTON_OFF
+    {{2605, 5855, 70, 70}, {4563, 5422, 76, 69}}, // UI_RA_SIDEBAR_MENUBUTTON_PRESS -> UI_SIDEBAR_MENUBUTTON_PRESS
+    {{655, 5802, 70, 70}, {3698, 4180, 76, 69}}, // UI_RA_SIDEBAR_MINIMIZEBUTTON_HOVER -> UI_SIDEBAR_MINIMIZEBUTTON_HOVER
+    {{2605, 5783, 70, 70}, {6682, 5427, 76, 69}}, // UI_RA_SIDEBAR_MINIMIZEBUTTON_OFF -> UI_SIDEBAR_MINIMIZEBUTTON_OFF
+    {{655, 5730, 70, 70}, {6760, 5427, 76, 69}}, // UI_RA_SIDEBAR_MINIMIZEBUTTON_PRESS -> UI_SIDEBAR_MINIMIZEBUTTON_PRESS
+    {{2066, 6151, 70, 69}, {4082, 5466, 76, 69}}, // UI_RA_SIDEBAR_PINGBUTTON_HOVER -> UI_SIDEBAR_PINGBUTTON_HOVER
+    {{3027, 6192, 70, 69}, {1383, 5558, 76, 69}}, // UI_RA_SIDEBAR_PINGBUTTON_OFF -> UI_SIDEBAR_PINGBUTTON_OFF
+    {{3508, 6186, 70, 69}, {1383, 5629, 76, 69}}, // UI_RA_SIDEBAR_PINGBUTTON_PRESS -> UI_SIDEBAR_PINGBUTTON_PRESS
+    {{3436, 6186, 70, 69}, {1383, 5700, 76, 69}}, // UI_RA_SIDEBAR_PLAYERBUTTON_HOVER -> UI_SIDEBAR_PLAYERBUTTON_HOVER
+    {{3364, 6186, 70, 69}, {3698, 4251, 76, 69}}, // UI_RA_SIDEBAR_PLAYERBUTTON_OFF -> UI_SIDEBAR_PLAYERBUTTON_OFF
+    {{644, 6152, 70, 69}, {4641, 5422, 76, 69}}, // UI_RA_SIDEBAR_PLAYERBUTTON_PRESS -> UI_SIDEBAR_PLAYERBUTTON_PRESS
+    {{6788, 5503, 82, 1212}, {5042, 5503, 82, 1212}}, // UI_RA_SIDEBAR_POWERBG -> UI_SIDEBAR_POWERBG
+    {{5126, 5503, 82, 1212}, {4163, 5523, 88, 1192}}, // UI_RA_SIDEBAR_POWERFRAMING -> UI_SIDEBAR_POWERFRAMING
+    {{4656, 3015, 130, 64}, {1361, 2552, 100, 60}}, // UI_RA_SIDEBAR_TABICON_INFANTRY_BRIGHT -> UI_SIDEBAR_TABICON_INFANTRY_BRIGHT
+    {{4656, 2949, 130, 64}, {1361, 2614, 100, 60}}, // UI_RA_SIDEBAR_TABICON_INFANTRY_OFF -> UI_SIDEBAR_TABICON_INFANTRY_OFF
+    {{4656, 2883, 130, 64}, {1361, 2676, 100, 60}}, // UI_RA_SIDEBAR_TABICON_INFANTRY_ON -> UI_SIDEBAR_TABICON_INFANTRY_ON
+    {{4646, 1501, 130, 64}, {1361, 2738, 100, 60}}, // UI_RA_SIDEBAR_TABICON_STRUCTURE_BRIGHT -> UI_SIDEBAR_TABICON_STRUCTURE_BRIGHT
+    {{3027, 3890, 130, 64}, {1361, 2800, 100, 60}}, // UI_RA_SIDEBAR_TABICON_STRUCTURE_OFF -> UI_SIDEBAR_TABICON_STRUCTURE_OFF
+    {{1322, 1497, 130, 64}, {1361, 2862, 100, 60}}, // UI_RA_SIDEBAR_TABICON_STRUCTURE_ON -> UI_SIDEBAR_TABICON_STRUCTURE_ON
+    {{4648, 874, 130, 64}, {5592, 3132, 100, 60}}, // UI_RA_SIDEBAR_TABICON_SUPERS_BRIGHT -> UI_SIDEBAR_TABICON_SUPERS_BRIGHT
+    {{3027, 4022, 130, 64}, {5592, 3194, 100, 60}}, // UI_RA_SIDEBAR_TABICON_SUPERS_OFF -> UI_SIDEBAR_TABICON_SUPERS_OFF
+    {{3027, 3956, 130, 64}, {5592, 3256, 100, 60}}, // UI_RA_SIDEBAR_TABICON_SUPERS_ON -> UI_SIDEBAR_TABICON_SUPERS_ON
+    {{4656, 3213, 130, 64}, {3027, 5206, 127, 60}}, // UI_RA_SIDEBAR_TABICON_VEHICLES_BRIGHT -> UI_SIDEBAR_TABICON_VEHICLES_BRIGHT
+    {{4656, 3147, 130, 64}, {4662, 544, 122, 60}}, // UI_RA_SIDEBAR_TABICON_VEHICLES_OFF -> UI_SIDEBAR_TABICON_VEHICLES_OFF
+    {{4656, 3081, 130, 64}, {4662, 606, 122, 60}}, // UI_RA_SIDEBAR_TABICON_VEHICLES_ON -> UI_SIDEBAR_TABICON_VEHICLES_ON
+    {{3778, 885, 868, 82}, {5698, 752, 868, 82}}, // UI_RA_SIDEBAR_TOPBUTTON -> UI_SIDEBAR_TOPBUTTON
+    {{5999, 5503, 787, 1212}, {4253, 5503, 787, 1212}}, // UI_RA_SIDEBAR_BUILDBARBG_BLUE -> UI_SIDEBAR_BUILDBARBG
+};
+#define TF_SKIN_PAIRS ((int)(sizeof(TF_SidebarSkin) / sizeof(TF_SidebarSkin[0])))
+#define TF_CREST_FIXED 4 // ALLIES crest, SOVIET crest, blue radar under-screen, red radar under-screen
+#define TF_CREST_SLOTS (TF_CREST_FIXED + TF_SKIN_PAIRS)
 
 // Session-persistent list of ClientG addresses that hold a radar-crest UV record, so the
 // per-frame driver can cheaply re-point them without re-scanning ClientG's whole heap. The
 // record is created lazily (first radar draw), a few frames after match start, and a fresh
 // per-match copy appears each match -- so a full scan runs for a short window each match and
 // discovered addresses are re-verified every frame.
-static SIZE_T TF_CrestAddr[32];
+static SIZE_T TF_CrestAddr[512];
 static int TF_CrestAddrCount = 0;
 static int TF_CrestMatchStartFrame = -100000;
 
@@ -4103,8 +4176,12 @@ static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
     // crest over a scratched metallic plate, so GDI/Nod get that plate behind theirs too.
     static const TF_AtlasRect ALLIES = {5698, 1706, 794, 713};
     static const TF_AtlasRect SOVIET = {2684, 1709, 794, 713};
-    static const TF_AtlasRect GDI = {1, 1875, 718, 706};
-    static const TF_AtlasRect NOD = {3778, 2221, 660, 660};
+    // GDI: the 718x706 eagle fills its region edge to edge, so an aspect-correct copy (scaled
+    // to 444 high, centred in a 495x444 window = the slot's 794:713) is painted into the
+    // never-referenced UI_SIDEBAR_FACTIONLOGO_DINO region of the shipped atlas. NOD: the
+    // scorpion has clear margin, so a 660x593 window of its own region keeps the aspect.
+    static const TF_AtlasRect GDI = {2154, 1900, 495, 444};
+    static const TF_AtlasRect NOD = {3778, 2254, 660, 593};
     static const TF_AtlasRect UNDERBG_BLUE = {5698, 836, 868, 868}; // UI_RA_SIDEBAR_RADAR_UNDERBG_BLUE
     static const TF_AtlasRect UNDERBG_RED = {2684, 782, 868, 868};  // UI_RA_SIDEBAR_RADAR_UNDERBG
     static const TF_AtlasRect TD_PLATE = {4788, 750, 868, 763};     // UI_SIDEBAR_RADARBG (TD)
@@ -4117,9 +4194,17 @@ static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
     TF_Atlas_UV_Record(SOVIET, slots[1].stock);
     TF_Atlas_UV_Record(UNDERBG_BLUE, slots[2].stock);
     TF_Atlas_UV_Record(UNDERBG_RED, slots[3].stock);
+    for (int s = 0; s < TF_CREST_FIXED; s++) {
+        TF_Atlas_UV_Record(s < 2 ? GDI : TD_PLATE, slots[s].gdi, 1 + s);
+        TF_Atlas_UV_Record(s < 2 ? NOD : TD_PLATE, slots[s].nod, 1 + s);
+    }
+    for (int k = 0; k < TF_SKIN_PAIRS; k++) {
+        TF_CrestSlot& sl = slots[TF_CREST_FIXED + k];
+        TF_Atlas_UV_Record(TF_SidebarSkin[k].ra, sl.stock);
+        TF_Atlas_UV_Record(TF_SidebarSkin[k].td, sl.gdi, 1 + TF_CREST_FIXED + k);
+        memcpy(sl.nod, sl.gdi, sizeof(sl.nod));
+    }
     for (int s = 0; s < TF_CREST_SLOTS; s++) {
-        TF_Atlas_UV_Record(s < 2 ? GDI : TD_PLATE, slots[s].gdi);
-        TF_Atlas_UV_Record(s < 2 ? NOD : TD_PLATE, slots[s].nod);
         slots[s].want = gdi ? slots[s].gdi : (nod ? slots[s].nod : slots[s].stock);
     }
     return true;
@@ -4157,6 +4242,19 @@ static void TF_Crest_Full_Scan(FILE* log)
     }
     bool gdi = (slots[0].want == slots[0].gdi);
     bool nod = (slots[0].want == slots[0].nod);
+    // First-dword filter: a record's leading float (v0) must be one of ours before the
+    // 16-byte compares run, so ~50 slots cost one bit test per 4-byte position.
+    static unsigned char bloom[8192];
+    memset(bloom, 0, sizeof(bloom));
+    for (int s = 0; s < TF_CREST_SLOTS; s++) {
+        const float* pats[3] = {slots[s].stock, slots[s].gdi, slots[s].nod};
+        for (int q = 0; q < 3; q++) {
+            unsigned int u;
+            memcpy(&u, pats[q], 4);
+            unsigned int key = (u ^ (u >> 16)) & 0xFFFF;
+            bloom[key >> 3] |= (unsigned char)(1 << (key & 7));
+        }
+    }
     HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
                                   | PROCESS_QUERY_INFORMATION);
     if (proc == NULL) {
@@ -4184,6 +4282,12 @@ static void TF_Crest_Full_Scan(FILE* log)
                     continue;
                 }
                 for (SIZE_T i = 0; i + REC <= got; i += 4) {
+                    unsigned int lead;
+                    memcpy(&lead, scratch + i, 4);
+                    unsigned int lkey = (lead ^ (lead >> 16)) & 0xFFFF;
+                    if (!(bloom[lkey >> 3] & (1 << (lkey & 7)))) {
+                        continue;
+                    }
                     // A record is one of ours if it holds a slot's stock rect, or a faction
                     // rect a previous match wrote. Paired slots share their faction rects, so
                     // such a hit is attributed to the first of the pair; the write is the same.
@@ -4213,8 +4317,8 @@ static void TF_Crest_Full_Scan(FILE* log)
                     bool ok = WriteProcessMemory(proc, (LPVOID)rec_addr, slots[slot].want, REC, &wrote)
                               && wrote == (SIZE_T)REC;
                     if (log) {
-                        static const char* const _slot_names[TF_CREST_SLOTS] = {"ALLIES", "SOVIET", "UNDERBG_BLUE", "UNDERBG_RED"};
-                        fprintf(log, "  scan slot %s @ %08x %s -> %s %s\n", _slot_names[slot],
+                        static const char* const _slot_names[TF_CREST_FIXED] = {"ALLIES", "SOVIET", "UNDERBG_BLUE", "UNDERBG_RED"};
+                        fprintf(log, "  scan slot %s @ %08x %s -> %s %s\n", slot < TF_CREST_FIXED ? _slot_names[slot] : "skin",
                                 (unsigned int)rec_addr, was, gdi ? "gdi" : (nod ? "nod" : "stock"),
                                 ok ? "OK" : "FAIL");
                     }
