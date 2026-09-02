@@ -2150,6 +2150,27 @@ static int TF_Self_Action_Selected(void)
 }
 
 static long TF_SelectAllLatchUntil = -1; // frame until which a recent 'A' press still counts as held
+static const int TF_HUNTER_DRAW_SIZE = 90; // launcher draw box for the Hunter Seeker droid (tune by eye)
+
+/*
+**	The Hunter Seeker fires on a keyboard press, not a sidebar cameo -- the
+**	launcher forces a map-target step on cameo clicks (keyed on the AssetName
+**	string, uncrackable mod-side), which TS's instant no-target activation does
+**	not. Read straight from the keyboard like the deploy key; a fresh press
+**	queues the special through the normal event path (MP-safe) and the droid
+**	picks its own victim. Default key = H.
+*/
+static void TF_Hunter_Seeker_Key_Tick(void)
+{
+    static bool _was_down = false;
+    bool down = (GetAsyncKeyState('H') & 0x8000) != 0;
+    if (down && !_was_down && PlayerPtr != NULL
+        && PlayerPtr->SuperWeapon[SPC_TS_HUNTSEEK].Is_Present()
+        && PlayerPtr->SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready()) {
+        OutList.Add(EventClass(EventClass::SPECIAL_PLACE, SPC_TS_HUNTSEEK, (CELL)0));
+    }
+    _was_down = down;
+}
 
 static void TF_Deploy_Key_Tick(void)
 {
@@ -2270,6 +2291,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 
     // The deploy key, read straight from the keyboard (see TF_Deploy_Key_Tick).
     TF_Deploy_Key_Tick();
+
+    // The Hunter Seeker's instant no-target launch key (see TF_Hunter_Seeker_Key_Tick).
+    TF_Hunter_Seeker_Key_Tick();
 
     // Flush the queued difficulty announcements once the match is actually
     // rendering (messages sent at difficulty-set time are dropped).
@@ -5994,6 +6018,17 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             width  = btc_for_size->ShapeWidth;
             height = btc_for_size->ShapeHeight;
         }
+    }
+
+    /*
+    **	The Hunter Seeker droid draws off this width/height (a bullet's default is
+    **	tiny). Size it up here -- this is the launcher's actual draw box and it
+    **	reloads per match. Tune TF_HUNTER_DRAW_SIZE by eye.
+    */
+    if (object != NULL && object->What_Am_I() == RTTI_BULLET
+        && ((BulletTypeClass const&)object->Class_Of()).Type == BULLET_TSHUNTER) {
+        width = TF_HUNTER_DRAW_SIZE;
+        height = TF_HUNTER_DRAW_SIZE;
     }
 
     // Diagnostic 2026-05-19: log Draw calls for every TD-prefixed building

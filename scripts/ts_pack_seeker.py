@@ -74,7 +74,7 @@ def decode(shp, pal, remap=None, team=None):
 
 def main():
     unit_pal = ts_shp.load_pal(f"{RAW}/UNITTEM.PAL")
-    body = decode("GGHUNT.SHP", unit_pal, remap=(16, 31), team=(0, 200, 0))[:8]
+    body = decode("GGHUNT.SHP", unit_pal, remap=(16, 31), team=(165, 170, 185))[:8]  # steel, not the green house placeholder (bullets are not house-tinted)
     # One crop box for the whole spin so the droid never jitters between frames.
     boxes = [f.getbbox() for f in body]
     box = (min(b[0] for b in boxes), min(b[1] for b in boxes), max(b[2] for b in boxes), max(b[3] for b in boxes))
