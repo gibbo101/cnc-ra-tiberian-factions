@@ -7200,7 +7200,39 @@ bool HouseClass::TF_Eco_Below_Target(int* refwant, int* harvwant, int* refhave) 
     if (IsTiberiumShort) {
         return (false);
     }
-    return (refq < rwant || TF_Harvesters_Owned() < hwant);
+    bool below = (refq < rwant || TF_Harvesters_Owned() < hwant);
+
+    /*
+    **	Safety valve: a refinery that cannot be placed, or a harvester that
+    **	cannot be afforded, must not hold the army back for the rest of the
+    **	match. A continuous hold expires after four minutes and only re-arms
+    **	once the targets have been met in between.
+    */
+    enum
+    {
+        TF_ECO_HOLD_MAX = TICKS_PER_MINUTE * 4
+    };
+    static long _hold_since[HOUSE_COUNT] = {0};
+    static bool _hold_spent[HOUSE_COUNT] = {false};
+    int hidx = (int)Class->House;
+    if (hidx < 0 || hidx >= HOUSE_COUNT) {
+        return (below);
+    }
+    if (!below) {
+        _hold_since[hidx] = 0;
+        _hold_spent[hidx] = false;
+        return (false);
+    }
+    if (_hold_spent[hidx]) {
+        return (false);
+    }
+    if (_hold_since[hidx] == 0) {
+        _hold_since[hidx] = (long)Frame;
+    } else if ((long)Frame - _hold_since[hidx] > TF_ECO_HOLD_MAX) {
+        _hold_spent[hidx] = true;
+        return (false);
+    }
+    return (true);
 }
 
 /*
