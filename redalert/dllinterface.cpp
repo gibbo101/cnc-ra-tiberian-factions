@@ -8575,7 +8575,7 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
         // problem. Kept on the paratroop-class plumbing meanwhile; the DLL
         // ignores the clicked cell and the droid self-targets. AssetName
         // "SW_TSHunt" resolves the TS DETNICON cameo.
-        dll_weapon_type = SW_PARA_INFANTRY;
+        dll_weapon_type = SW_GPS;
         if (weapon_name != NULL) {
             strncpy(weapon_name, "SW_TSHunt", 16);
         }
