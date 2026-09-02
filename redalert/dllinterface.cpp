@@ -6477,6 +6477,14 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         **  256/24 leptons. Conyard art 48cl in the 72cl plot -> +12cl; WF
         **  51cl tucked 3 into the slab -> +14cl; barracks 32cl in 48 -> +8cl.
         */
+        if (object->What_Am_I() == RTTI_BULLET
+            && ((BulletTypeClass const&)object->Class_Of()).Type == BULLET_TSHUNTER) {
+            // The Hunter Seeker droid renders from its DimensionX/Y box (the
+            // bullet default 10x10 draws it tiny). Size it up.
+            dimx = 46;
+            dimy = 46;
+        }
+
         if (object->What_Am_I() == RTTI_BUILDING) {
             switch (((BuildingTypeClass const&)object->Class_Of()).Type) {
             // SELECTION-BOX CONTRACT (proven over four probe rounds,
@@ -8575,7 +8583,7 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
         // problem. Kept on the paratroop-class plumbing meanwhile; the DLL
         // ignores the clicked cell and the droid self-targets. AssetName
         // "SW_TSHunt" resolves the TS DETNICON cameo.
-        dll_weapon_type = SW_GPS;
+        dll_weapon_type = SW_PARA_INFANTRY;
         if (weapon_name != NULL) {
             strncpy(weapon_name, "SW_TSHunt", 16);
         }
