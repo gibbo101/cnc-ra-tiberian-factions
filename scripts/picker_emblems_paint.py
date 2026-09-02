@@ -5,7 +5,7 @@ The RA lobby picker icon for a faction is a preloaded atlas region (`FACTIONS.XM
 only the UI_MULTIPLAYER_PLAYERSLOT_FACTION_NN regions are safe). GDI uses _03, Nod _10, Allies
 _04, Soviet _05, and the country duplicates _06.._09; each has _ON / _OVER variants. The region is a 150x80
 parallelogram: a flag on the left, the side crest badge on the right. The region becomes the faction's
-radar crest, centred, on the parallelogram filled with the lobby's red: no flag, no badge (Luke, 2026-09-02). Byte-edits the target atlases in place, same size.
+radar crest alone, centred, on a transparent plate: no flag, no badge, no field (Luke, 2026-09-02). Byte-edits the target atlases in place, same size.
 
 usage: picker_emblems_paint.py <target MT_COMMANDBAR_COMMON.TGA> [more targets...]
 """
@@ -27,16 +27,16 @@ def _variants(nn):
 # picker region -> (emblem source region, field colour). The mod's FACTIONS.XML points GDI at _03
 # and Nod at _10 (the old Spain/Turkey flags), Allies at _04, Soviet at _05; _06/_08/_09 are the
 # Allied country duplicates and _07 the Soviet one, so they wear the same plates.
-PLATE_RED = (150, 14, 14)   # the lobby's red, so the plate reads as part of the row (Luke, 2026-09-02)
+PLATE_RED = (150, 14, 14)   # unused: red plates looked wrong on the dropdown's black panel (Luke, 2026-09-02)
 SLOTS = {}
 for nn in ('03',):
-    SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_GDI', PLATE_RED)
+    SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_GDI', None)
 for nn in ('10',):
-    SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_NOD', PLATE_RED)
+    SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_NOD', None)
 for nn in ('04', '06', '08', '09'):
-    SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_ALLIES', PLATE_RED)
+    SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_ALLIES', None)
 for nn in ('05', '07'):
-    SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_SOVIET', PLATE_RED)
+    SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_SOVIET', None)
 
 
 def regions():
