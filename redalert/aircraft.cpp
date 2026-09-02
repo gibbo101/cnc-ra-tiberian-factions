@@ -3140,10 +3140,25 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
                               ? WarheadType(weapon->WarheadPtr->ID)
                               : WARHEAD_HE;
     COORDINATE here = Center_Coord();
+    TARGET tgt = TarCom;
 
     Sound_Effect(VOC_TS_HUNTER2, here);
 
-    TechnoClass* victim = As_Techno(TarCom);
+    /*
+    **	Take the droid out of the world BEFORE dealing the damage. The target's
+    **	own destruction can be a secondary explosion -- an explosive harvester
+    **	fires Wide_Area_Damage on death (unit.cpp) -- and with the droid still
+    **	sitting on the impact cell that blast re-enters and deletes this pointer
+    **	mid-routine (the harvester-kill crash). Limbo unlinks the droid from the
+    **	cell + layer occupier lists that Explosion_Damage walks, so nothing can
+    **	reach it; the object stays valid until the explicit delete below.
+    */
+    Stun();
+    Limbo();
+
+    new AnimClass(ANIM_FBALL1, here);
+
+    TechnoClass* victim = As_Techno(tgt);
     if (victim != NULL && victim->IsActive) {
         int dmg = attack;
         victim->Take_Damage(dmg, 0, warhead, this, true);
@@ -3151,13 +3166,7 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
 
     Explosion_Damage(here, attack, NULL, warhead);
 
-    /*
-    **	The droid dies with its target -- one strike, no retarget. A flying
-    **	aircraft halves incoming damage, so make the self-damage unconditionally
-    **	lethal regardless of the weapon's number.
-    */
-    int selfdmg = max(attack, Strength * 2 + 2);
-    Take_Damage(selfdmg, 0, warhead, NULL, true);
+    delete this;
 }
 
 /***********************************************************************************************
