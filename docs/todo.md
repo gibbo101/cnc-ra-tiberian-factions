@@ -8,7 +8,8 @@ maintenance, and queued tasks. Newest at top.
 ## TS sidebar: decided TD sidebar for now (Luke, 2026-09-02); three probes for later
 
 TS factions will use TD's HUD scene with their own logo (the FACTIONS.XML scene swap +
-crest re-point already give this). A real TS sidebar is blocked by the full atlas (95.8%
+crest re-point already give this); RA2 factions/units use RA's scene (no swap) until further
+work, same reasoning. A real TS sidebar is blocked by the full atlas (95.8%
 covered; TS art cannot go into TD's regions without taking them from GDI/Nod). Probes that
 decide it, cheapest first: (1) can a tactical scene widget's texture name be a standalone
 loose DDS instead of an atlas region (the shell loads backgrounds that way) — one widget in a
