@@ -2,7 +2,8 @@
 
 *Draft for Luke's blog post, written 2026-09-02 from the session that broke walls two, three and four.
 Facts and dates are from the repo docs and commits; the voice is a placeholder. Screenshots in this
-folder. No em dashes in the final copy.*
+folder. No em dashes in the final copy. Everything described here is on the mod's main branch
+and NOT yet in a released build; the release waits on the AI work.*
 
 ---
 
@@ -48,7 +49,7 @@ alignment, so that one keeps the base game's encoding and is padded with zeros a
 and a line can only be patched after it has been heard once, which is fine because the next
 match's start-patch catches it.
 
-That shipped on 1 September. All five lines follow the faction across an in-session switch.
+That landed on 1 September. All five lines follow the faction across an in-session switch.
 And it left behind a tool: a proven way to find and rewrite a specific thing inside the
 launcher's memory.
 
@@ -129,7 +130,7 @@ bind a key in the options menu, and the press reaches the DLL with a map cell. W
 generic handler that asks every selected unit what a self-click would do and acts only if the
 answer is "deploy". It worked. The wall was delivery: the mod cannot ship a default binding.
 Four ways of injecting one were tried, all ignored by the launcher; the settings file that holds
-bindings is doubly compressed and hashed with an unknown algorithm. The feature shipped as a
+bindings is doubly compressed and hashed with an unknown algorithm. The July release carried a
 handler nobody could reach without binding it themselves, and the key stayed a known
 limitation on the Workshop page.
 
