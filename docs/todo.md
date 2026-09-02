@@ -716,7 +716,7 @@ factions in skirmish (mouse self-click deploys); no em dashes in any user-facing
 
 ---
 
-## ✅ RESOLVED 2026-09-02: deploy key no longer needs a binding — the DLL reads `/` and `\\` straight from the keyboard (GetAsyncKeyState is cross-process under Wine). Mod Command 1 stays as an optional player-bound alias. History below.
+## ✅ RESOLVED 2026-09-02: deploy key no longer needs a binding — the DLL reads the default deploy key (backslash) straight from the keyboard (GetAsyncKeyState is cross-process under Wine). Mod Command 1 stays as an optional player-bound alias. History below.
 
 **Proven end to end (2026-07-21):** `CNCEnableModHotKeyGameCommands` True exposes Mod Command
 1-4 in Options > Controls; a player-bound key reaches

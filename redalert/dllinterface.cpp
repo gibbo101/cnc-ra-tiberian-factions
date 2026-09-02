@@ -2128,9 +2128,8 @@ static void TF_Lobby_Difficulty_Retry();
 **	GetAsyncKeyState sees the key from InstanceServerG. Each fresh press asks every
 **	selected object for its own self-action and acts only on ACTION_SELF -- the same rule
 **	as a self-click, so MCVs deploy, APCs / transports / Chinooks unload, minelayers lay,
-**	and anything deployable added later is covered. Keys: the launcher's default deploy
-**	key (backslash, VK_OEM_5) and the slash next to it (VK_OEM_2), so UK and US layouts
-**	both land on a key that already reads as "deploy" to the player.
+**	and anything deployable added later is covered. The key is the launcher's own default
+**	deploy binding (backslash, VK_OEM_5), so the stock MCV and every faction unit share it.
 */
 static int TF_Self_Action_Selected(void)
 {
@@ -2154,7 +2153,7 @@ static long TF_SelectAllLatchUntil = -1; // frame until which a recent 'A' press
 static void TF_Deploy_Key_Tick(void)
 {
     static bool _was_down = false;
-    bool down = ((GetAsyncKeyState(VK_OEM_5) & 0x8000) != 0) || ((GetAsyncKeyState(VK_OEM_2) & 0x8000) != 0);
+    bool down = (GetAsyncKeyState(VK_OEM_5) & 0x8000) != 0;
     if (down && !_was_down) {
         TF_Self_Action_Selected();
     }

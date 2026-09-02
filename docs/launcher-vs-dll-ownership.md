@@ -150,7 +150,7 @@ both made a GDI MCV deploy by key; `TypeName` alone did not. (The 2026-06-03 "sp
 end" verdict was a bad test — that spoof never reached the launcher, the art stayed TD.) Since
 `AssetName` drives the art, the shipped fix bypasses the launcher: `TF_Deploy_Key_Tick`
 (`dllinterface.cpp`, per frame from `CNC_Advance_Instance`) polls `GetAsyncKeyState` for
-`VK_OEM_5`/`VK_OEM_2` — the DLL's InstanceServerG shares the Wine/Windows session with ClientG,
+`VK_OEM_5` (backslash, the launcher's default deploy binding) — the DLL's InstanceServerG shares the Wine/Windows session with ClientG,
 so the key is visible cross-process — and on a fresh press runs `TF_Self_Action_Selected()`, the
 mod-command-1 rule (every selected object asked `What_Action(self)`, acted on only for
 `ACTION_SELF`). MCVs of every faction deploy, APCs/transports/Chinooks unload, minelayers lay,
