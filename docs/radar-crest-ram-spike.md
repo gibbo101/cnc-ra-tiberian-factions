@@ -42,9 +42,13 @@ Records must be computed as **double divide then cast to float** to byte-match C
    session and visible after exit-to-desktop + relaunch. A disk mailbox can only ever be
    per-launch.
 2. **The record is created lazily, on the first radar draw, a few frames into the match.** A
-   match-start-only patch (frame 0) found nothing on a fresh launch. Fix: `TF_Crest_Tick` runs a
-   full scan every 6 frames for the first 450 frames of each match, remembers every record
-   address it finds, and cheaply re-verifies the known addresses every frame.
+   match-start-only patch (frame 0) found nothing on a fresh launch. Fix: `TF_Crest_Tick`
+   requests full scans at frames 0, 6, 12, 24, 48, 96, 192 and 384 of each match, remembers every
+   record address found, and re-verifies the known addresses every fifth frame.
+   **The scan must not run on the game thread:** each one reads the launcher's whole heap
+   (hundreds of MB cross-process), and the first version, 75 scans on the game thread, stalled
+   matches for up to a minute at the start. It now runs on a worker thread (`TF_Crest_Scan_Thread`,
+   one at a time, from a private copy of the slot table); `TF_Open_ClientG` caches the pid.
 3. **Nod draws the ALLIES slot too.** With only the SOVIET record re-pointed, a Nod player kept
    the ALLIES art. Which slot a faction draws is launcher-owned, so the DLL points **both** slots
    at the faction rect for GDI/Nod and both back to stock otherwise; whichever the launcher draws
@@ -61,7 +65,18 @@ crest + TD plate; for RA sides all four are stock. Verified GDI → plate, Nod �
 blue grid restored, in one session. The launcher-drawn faction label under the crest goes
 dark-on-grey over the plate (TD-authentic; not ours to recolour).
 
-## The whole TD sidebar (same day)
+## The whole TD sidebar — superseded the same evening by the TD scene swap
+
+**GDI and Nod now load TD's own HUD scene** (`FACTIONS.XML` scene-list swap, see
+`faction-select-identity.md`), so none of the RA-scene re-pointing below runs for them any more:
+TD's scene draws `UI_SIDEBAR_*` directly. What the crest patch still does under the TD scene is one
+thing: TD's scene chooses its logo by RA side, so for Nod (Allied side) the record holding the
+`UI_SIDEBAR_FACTIONLOGO_GDI` rect is re-pointed at `_NOD` (slots 9 and 10). The skin table, the
+under-screen/bezel/rail/plate/power-fill slots and `scripts/td_sidebar_extras_paint.py` are idle
+for GDI/Nod and are kept only until the TD scene has more play time behind it; strip them then.
+The record below stands as the method record.
+
+### The RA-scene skin (how it was done before the scene swap)
 
 Every RA sidebar region the launcher draws has a same-named TD region in the atlas (`UI_RA_SIDEBAR_*`
 → `UI_SIDEBAR_*`, `RA_UI_FRAME_TOOLTIP_SIDEBAR_*` → `UI_FRAME_TOOLTIP_SIDEBAR_*`), and the big
