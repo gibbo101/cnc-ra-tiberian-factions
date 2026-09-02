@@ -744,6 +744,65 @@ void BulletClass::AI(void)
     **	trooper. Like the dropship, it returns before the ballistic code, so
     **	the fuse and Physics never run.
     */
+    /*
+    **	TS Hunter Seeker droid (SPC_TS_HUNTSEEK). A self-guided kamikaze on the
+    **	bullet frame -- the bullet's own AI deletes it cleanly, which the
+    **	aircraft attempt could not. It flies at altitude toward a random enemy
+    **	the granting house's picker chose (re-acquiring if that victim dies) and
+    **	detonates on contact: the target takes a forced lethal hit, a tight
+    **	splash lands, and the droid removes itself. Being airborne it is never
+    **	in the impact cell's occupier list, so a target's own death-explosion
+    **	(an explosive harvester) can never reach it. TFPodHouse carries the
+    **	firing house; TarCom is the current victim.
+    */
+    if (*this == BULLET_TSHUNTER) {
+        ObjectClass::AI();
+        if (!IsActive) {
+            return;
+        }
+        Mark(MARK_CHANGE);
+        LayerType layer = In_Which_Layer();
+
+        enum
+        {
+            HUNT_SPEED = 42,
+            HUNT_DETONATE = 160
+        };
+
+        if (!Target_Legal(TarCom)) {
+            HouseClass* hptr = (TFPodHouse != HOUSE_NONE) ? HouseClass::As_Pointer(TFPodHouse) : NULL;
+            TarCom = (hptr != NULL) ? TF_Hunter_Seeker_Acquire(hptr) : TARGET_NONE;
+        }
+
+        if (Target_Legal(TarCom)) {
+            COORDINATE tcoord = ::As_Coord(TarCom);
+            int dist = Distance(tcoord);
+            DirType dir = ::Direction(Coord, tcoord);
+            PrimaryFacing.Set(dir);
+
+            if (dist < HUNT_DETONATE) {
+                TechnoClass* victim = As_Techno(TarCom);
+                Sound_Effect(VOC_TS_HUNTER2, Coord);
+                if (victim != NULL && victim->IsActive) {
+                    int dmg = victim->Strength + 1000;
+                    victim->Take_Damage(dmg, 0, WARHEAD_HE, NULL, true);
+                }
+                Explosion_Damage(tcoord, 400, NULL, WARHEAD_HE);
+                new AnimClass(ANIM_FBALL1, tcoord);
+                delete this;
+                return;
+            }
+
+            Coord = Coord_Move(Coord, dir, HUNT_SPEED);
+        }
+
+        if (In_Which_Layer() != layer) {
+            Map.Remove(this, layer);
+            Map.Submit(this, In_Which_Layer());
+        }
+        return;
+    }
+
     if (*this == BULLET_TSPODDROP) {
         ObjectClass::AI();
         if (!IsActive) {
@@ -982,6 +1041,10 @@ int BulletClass::Shape_Number(void) const
     /*
     **	TF: FLAMEALL is 4 axis sets (N/S, NE/SW, E/W, NW/SE) x 19 ageing states.
     */
+    if (*this == BULLET_TSHUNTER) {
+        return ((Frame / 3) & 7);
+    }
+
     if (*this == BULLET_TSFIRE) {
         int state = TFStage / max(1, TFDwell);
         if (state > 18) {

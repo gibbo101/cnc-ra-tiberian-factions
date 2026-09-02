@@ -3051,7 +3051,7 @@ static void TF_HS_Log(const char* fmt, ...)
 #endif
 }
 
-static TARGET TF_Hunter_Seeker_Acquire(HouseClass const* house)
+TARGET TF_Hunter_Seeker_Acquire(HouseClass const* house)
 {
     TechnoClass* out = NULL;
     int total = 0;

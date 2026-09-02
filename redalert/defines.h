@@ -1391,6 +1391,7 @@ typedef enum BulletType : char
     BULLET_TSFIRE,    // TS fire-stream particle (FireStream, FLAMEALL sprite): flies as a bullet, ages through 19 states, burns whatever shares its cell every 3 frames, rests as a burning puddle at the target. Registered "TSFire".
     BULLET_TSDROPPOD, // TS Dropship Bay delivery — a descent, not a weapon: carries TFPayload, sets it down and applies no damage. Cloned from NukeDown's fall rather than amending it, so the Nod strike is untouched.
     BULLET_TSPODDROP, // TS infantry drop pod (SPC_TS_DROPPODS) — streaks in at DropPodAngle strafing the LZ, spawns its trooper + husk on touchdown. OpenTS droppod.cpp ported onto the bullet frame like the dropship above.
+    BULLET_TSHUNTER,  // TS Hunter Seeker droid (SPC_TS_HUNTSEEK) — a self-guided kamikaze on the bullet frame (self-deletes cleanly, unlike the aircraft attempt): homes to a random enemy TF_Hunter_Seeker_Acquire picks and detonates on it. Art = the TSHUNT 8-frame spin.
 
     BULLET_COUNT,
     BULLET_FIRST = 0

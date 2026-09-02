@@ -151,6 +151,7 @@ extern long TF_Building_Scan_Bit(int btype); // building Type -> its BScan/Activ
 extern bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type); // Prerequisite= names a TS-tree building (house.cpp)
 extern bool TF_House_Has_Plug(HouseClass const* house, StructType plug); // addon plug installed in any live building (house.cpp)
 extern BuildingClass* TF_House_Plug_Host(HouseClass const* house, StructType plug); // the live building carrying that plug, else NULL (house.cpp)
+extern TARGET TF_Hunter_Seeker_Acquire(HouseClass const* house); // pick a random live visible enemy for the Hunter Seeker (aircraft.cpp)
 extern bool TF_Is_Dropship_Delivered(UnitTypeClass const* type); // Unit arrives by dropship bay; drives the factory binding, order gates + countdown (house.cpp)
 extern bool TF_Mk2_At_Cap(HouseClass const* house); // House already fields its full Mk. II allowance (house.cpp; heap-counted, CSII fold unsafe)
 extern bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id); // Begin_Production would turn this order away (bay reloading / Mk. II cap); gates the EVA ack too (house.cpp)

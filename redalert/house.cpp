@@ -4127,12 +4127,22 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
             if (host != NULL) {
                 CELL spawn = Map.Nearby_Location(Coord_Cell(host->Center_Coord()), SPEED_FOOT);
                 if (spawn > 0 && Map.In_Radar(spawn)) {
-                    AircraftClass* droid = new AircraftClass(AIRCRAFT_TSHUNT, Class->House);
+                    /*
+                    **  The droid is a bullet, not an aircraft -- a bullet deletes
+                    **  itself cleanly from its own AI, where the aircraft could not.
+                    **  It spawns airborne beside the Upgrade Centre and homes to a
+                    **  random enemy the picker chooses (BulletClass::AI,
+                    **  BULLET_TSHUNTER).
+                    */
+                    TARGET tgt = TF_Hunter_Seeker_Acquire(this);
+                    BulletClass* droid =
+                        new BulletClass(BULLET_TSHUNTER, tgt, NULL, 0, WARHEAD_NONE, MPH_MEDIUM_FAST);
                     if (droid != NULL) {
-                        droid->Height = 0;
+                        droid->TFPodHouse = Class->House;
                         if (droid->Unlimbo(Cell_Coord(spawn), DIR_E)) {
-                            droid->Assign_Mission(MISSION_ATTACK);
-                            droid->Commence();
+                            Map.Remove(droid, droid->In_Which_Layer());
+                            droid->Height = ObjectClass::FLIGHT_LEVEL;
+                            Map.Submit(droid, droid->In_Which_Layer());
                         } else {
                             delete droid;
                         }

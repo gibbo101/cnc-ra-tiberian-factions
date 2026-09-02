@@ -203,6 +203,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TSFire");        //	BULLET_TSFIRE (TS fire-stream particle, FLAMEALL sprite)
     new BulletTypeClass("TSDropPod");     //	BULLET_TSDROPPOD (dropship bay delivery — falls like NukeDown, sets its cargo down, does no damage)
     new BulletTypeClass("TSPodDrop");     //	BULLET_TSPODDROP (infantry drop pod — angled descent strafing the LZ, spawns its trooper + husk on touchdown)
+    new BulletTypeClass("TSHUNT");        //	BULLET_TSHUNTER (Hunter Seeker droid — homing kamikaze; draws the TSHUNT 8-frame spin, detonation is code)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per
@@ -308,6 +309,10 @@ void BulletTypeClass::One_Time(void)
     BulletTypeClass& tspoddrop = As_Reference(BULLET_TSPODDROP);  // Infantry drop pod -- own TSPODBLT sprite (RA_VFX.XML, the DROPPOD body); donor passes Draw_It's NULL guard.
     if (tspoddrop.ImageData == NULL) {
         ((void const*&)tspoddrop.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tshunter = As_Reference(BULLET_TSHUNTER);  // Hunter Seeker droid -- draws the TSHUNT tileset by name; donor passes Draw_It's NULL guard.
+    if (tshunter.ImageData == NULL) {
+        ((void const*&)tshunter.ImageData) = donor.ImageData;
     }
 }
 
