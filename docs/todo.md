@@ -5,6 +5,48 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## ⭐ AI "REGRESSION" A/B MEASURED 2026-09-02 — resume here for the AI workstream
+
+Luke felt the dev-build AI at the 15 Aug LAN (ts-units 2c83f4dc: Phase 1 + W2.9 + cadence +
+placement + scout spread + broke-order hold; NO naval arc) had regressed: "constant small
+streams of units to pick off", "not aggressive in its economy", "spamming infantry", "felt vs an
+easy enemy". Measured with two blind 1v1s on Keep off the Grass, Luke GDI vs one Nod AI, all
+dev cheats off, exact tag builds staged as extra mod folders in the desktop prefix
+(`TF_AB_400`, `TF_AB_420`, `TF_AB_0815`; worktrees `../tf-ab-*-worktree`):
+
+| | 4.0.0 (no fair fog, vanilla cadence) | 15 Aug build, Hard (IQ 5 confirmed) |
+|---|---|---|
+| match length | 16:28 | 9:04 |
+| AI gathered | 30,056 (~1.8k/min) | 16,400 (~1.8k/min) |
+| AI kills | 26 | 20 |
+| AI refineries / harvesters | 2 / 3 (by eye) | 2 / 3 (log) |
+| AI defences | several (by eye) | ONE gun turret all game |
+| AI waves | none seen before Luke's push at ~10 min | F8340 army=18 and F9975 army=15, both "roll" (Hard 60%); army 0-5 for the rest |
+
+**Findings (log `MOD_DEBUG_AI.txt`, frames ~33/s of game time):**
+1. **Economy did NOT regress** — identical income both builds. Vanilla RefineryRatio .16 rounds
+   to 2 refineries until 13 buildings; W3 staged planner is the fix, not a rollback.
+2. **Early waves at the count floor throw the army away.** W4.1's floor of 10 units is blind
+   to unit value and match stage: 18 tier-1 Nod units hit GDI medium tanks at ~4 min, 15 more
+   50 s later, then thirteen consecutive `WAVE-SHUFFLE massing army=0..5`. 4.0.0's flat 33%
+   roll + long interval kept that army home as base defence — that is the "more units at home"
+   Luke saw, and the "streams to eat" he felt.
+3. **Defences starve behind tech in the build pool.** DefenseRatio .4 wanted 5 defences at 12
+   buildings; the pool picks one MEDIUM item per cycle and TDFBNK lost to PROC/HQ/NUK2/NUK2/FIX
+   until F9711. The Nod turret→bunker alternation means no TDGUN is offered while bunkers <
+   turrets, so the base sat on one turret for six minutes. Cash pinned at $13-58 from ~3 min
+   (30 infantry vs 12 vehicles built).
+4. Fair fog barely features: 3 scouts, contact made early, nothing blocked after. Ferry/naval
+   not in the felt build at all. Broke-order hold fired once for 45 frames — not a factor.
+   Stat handicaps identical 4.2.0..main (all houses Normal = 1.0x) — not a factor.
+
+**Fix list (no rollback):** (a) wave floor weighted by army VALUE and match stage, not count;
+(b) W4 staging so a launch arrives as one force (Route B is small); (c) defence gets its own
+claim on the build budget instead of competing at MEDIUM with tech; (d) W3 economy staging.
+A/B record + logs: session scratchpad `ab-results.md`, `g2-hard.txt`.
+
+---
+
 ## Stretch goals: TS depower button + waypoint mode (Luke, 2026-09-02)
 
 Both behaviours are DLL-side (a building flagged off stops drawing/producing power and its

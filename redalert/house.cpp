@@ -7069,13 +7069,17 @@ UrgencyType HouseClass::Check_Raise_Power(void) const
 **	ground units, armed infantry and armed aircraft. Harvesters and MCVs are
 **	excluded because sending either is never an attack, and engineers are
 **	excluded because they carry no combat power even though a launching wave
-**	does take them along.
+**	does take them along. `value` (optional) receives the same army priced at
+**	list cost, so a wave can be judged by what it is worth and not just by how
+**	many heads it has: twenty minigunners and eight medium tanks are both "20"
+**	by count and nothing alike in a fight.
 */
-int HouseClass::TF_Committable_Army(void) const
+int HouseClass::TF_Committable_Army(int* value) const
 {
     assert(Houses.ID(this) == ID);
 
     int army = 0;
+    int worth = 0;
     int index;
 
     for (index = 0; index < Units.Count(); index++) {
@@ -7083,21 +7087,27 @@ int HouseClass::TF_Committable_Army(void) const
         if (u != NULL && !u->IsInLimbo && u->House == this && u->Strength > 0 && u->Is_Weapon_Equipped()
             && !u->Class->IsToHarvest && !u->Class->Is_MCV()) {
             army++;
+            worth += u->Class->Cost;
         }
     }
     for (index = 0; index < Infantry.Count(); index++) {
         InfantryClass const* i = Infantry.Ptr(index);
         if (i != NULL && !i->IsInLimbo && i->House == this && i->Strength > 0 && i->Is_Weapon_Equipped()) {
             army++;
+            worth += i->Class->Cost;
         }
     }
     for (index = 0; index < Aircraft.Count(); index++) {
         AircraftClass const* a = Aircraft.Ptr(index);
         if (a != NULL && !a->IsInLimbo && a->House == this && a->Strength > 0 && a->Is_Weapon_Equipped()) {
             army++;
+            worth += a->Class->Cost;
         }
     }
 
+    if (value != NULL) {
+        *value = worth;
+    }
     return (army);
 }
 
@@ -7115,7 +7125,9 @@ int HouseClass::TF_Committable_Army(void) const
 struct TFWaveDialsStruct
 {
     int Floor;         // Never launch below this many committable units.
-    int Ceiling;       // Always launch at or above this many.
+    int FloorValue;    // ...nor below this much army at list cost.
+    int Ceiling;       // Always launch at or above this many units.
+    int CeilingValue;  // ...or at or above this much army at list cost.
     int MidChance;     // Percent chance of launching between the two.
     int Recheck;       // Frames to wait after declining.
     int IntervalScale; // Percent scale on the post-launch interval.
@@ -7125,21 +7137,34 @@ static TFWaveDialsStruct TF_Wave_Dials(int iq)
 {
     TFWaveDialsStruct dials;
 
+    /*
+    **	The value floor is the same at every tier for the same reason the count
+    **	floor is: a wave worth less than a handful of tanks dies in detail against
+    **	any real defence, and letting an easier AI throw one earlier is not mercy.
+    **	The value ceiling scales like the count ceiling so the harder AI is the
+    **	one that stops hoarding first.
+    */
     if (iq <= 3) {
         dials.Floor = 10;
+        dials.FloorValue = 8000;
         dials.Ceiling = 32;
+        dials.CeilingValue = 26000;
         dials.MidChance = 25;
         dials.Recheck = TICKS_PER_SECOND * 90;
         dials.IntervalScale = 133;
     } else if (iq == 4) {
         dials.Floor = 10;
+        dials.FloorValue = 8000;
         dials.Ceiling = 30;
+        dials.CeilingValue = 22000;
         dials.MidChance = 40;
         dials.Recheck = TICKS_PER_SECOND * 60;
         dials.IntervalScale = 100;
     } else {
         dials.Floor = 10;
+        dials.FloorValue = 8000;
         dials.Ceiling = 26;
+        dials.CeilingValue = 18000;
         dials.MidChance = 60;
         dials.Recheck = TICKS_PER_SECOND * 30;
         dials.IntervalScale = 67;
@@ -7165,7 +7190,17 @@ bool HouseClass::AI_Attack(UrgencyType)
     **	change shortly.
     */
     TFWaveDialsStruct dials = TF_Wave_Dials(IQ);
-    int army = TF_Committable_Army();
+    int worth = 0;
+    int army = TF_Committable_Army(&worth);
+
+    /*
+    **	Stage gate: no wave before the house can build vehicles. An army raised
+    **	from a barracks alone is a rush of tier-one infantry and scout cars, and
+    **	measured against a human with a war factory it simply feeds the enemy
+    **	(A/B 2026-09-02: 18 then 15 units thrown at medium tanks at four minutes,
+    **	then nothing left to defend with). The wave waits for the factory.
+    */
+    bool has_factory = (TF_Role_Quantity(ActiveBQuantity, STRUCT_WEAP) > 0);
 
     /*
     **	A house whose economy has been crippled might never reach the floor and
@@ -7180,11 +7215,15 @@ bool HouseClass::AI_Attack(UrgencyType)
         TF_WAVE_FLOOR_DECAY_PERIOD = TICKS_PER_MINUTE * 2
     };
     int floor = dials.Floor;
+    int floorvalue = dials.FloorValue;
     if (Frame > TF_WAVE_FLOOR_DECAY_START) {
-        floor -= (int)((Frame - TF_WAVE_FLOOR_DECAY_START) / TF_WAVE_FLOOR_DECAY_PERIOD);
+        int steps = (int)((Frame - TF_WAVE_FLOOR_DECAY_START) / TF_WAVE_FLOOR_DECAY_PERIOD);
+        floor -= steps;
         if (floor < TF_WAVE_FLOOR_MIN) {
             floor = TF_WAVE_FLOOR_MIN;
         }
+        // The value floor gives way in step with the count floor.
+        floorvalue = (dials.FloorValue * floor) / dials.Floor;
     }
 
     char const* reason;
@@ -7192,12 +7231,18 @@ bool HouseClass::AI_Attack(UrgencyType)
     if (Frame > TICKS_PER_MINUTE && !CurBuildings) {
         launch = true;
         reason = "desperation";
-    } else if (army >= dials.Ceiling) {
+    } else if (!has_factory && CurBuildings) {
+        launch = false;
+        reason = "no-factory";
+    } else if (worth >= dials.CeilingValue || (army >= dials.Ceiling && worth >= floorvalue)) {
         launch = true;
         reason = "ceiling";
     } else if (army < floor) {
         launch = false;
         reason = "massing";
+    } else if (worth < floorvalue) {
+        launch = false;
+        reason = "massing-value";
     } else {
         launch = Percent_Chance(dials.MidChance);
         reason = launch ? "roll" : "roll-declined";
@@ -7248,8 +7293,8 @@ bool HouseClass::AI_Attack(UrgencyType)
         FILE* _tfdbg = TF_AI_Diag_File();
         if (_tfdbg != NULL) {
             fprintf(_tfdbg,
-                    "F%ld H%d AL%d WAVE-%s why=%s army=%d floor=%d ceiling=%d iq=%d defences=%d sendpercent=%d "
-                    "forced=%d\n",
+                    "F%ld H%d AL%d WAVE-%s why=%s army=%d floor=%d ceiling=%d value=%d floorvalue=%d ceilingvalue=%d "
+                    "iq=%d defences=%d sendpercent=%d forced=%d\n",
                     (long)Frame,
                     (int)Class->House,
                     (int)ActLike,
@@ -7258,6 +7303,9 @@ bool HouseClass::AI_Attack(UrgencyType)
                     army,
                     floor,
                     dials.Ceiling,
+                    worth,
+                    floorvalue,
+                    dials.CeilingValue,
                     IQ,
                     defences,
                     sendpercent,
@@ -9785,7 +9833,17 @@ int HouseClass::AI_Building(void)
         int tf_def = TF_Skirmish_Type(STRUCT_FLAME_TURRET, ActLike);
         current = BQuantity[STRUCT_PILLBOX] + BQuantity[STRUCT_CAMOPILLBOX] + BQuantity[STRUCT_TURRET]
                   + BQuantity[STRUCT_FLAME_TURRET] + BQuantity[STRUCT_TDFBNK] + (tf_def >= 0 ? BQuantity[tf_def] : 0);
-        if (current < Round_Up(Rule.DefenseRatio * fixed(CurBuildings)) && current < (unsigned)Rule.DefenseLimit) {
+        unsigned tf_defwant = Round_Up(Rule.DefenseRatio * fixed(CurBuildings));
+        if (current < tf_defwant && current < (unsigned)Rule.DefenseLimit) {
+            /*
+            **	Defence competes with refineries, radar, power and the repair bay at
+            **	MEDIUM, and among equals the earlier scan entry wins, so a base can
+            **	reach a dozen buildings on a single turret (A/B 2026-09-02: one gun
+            **	turret all game, the bunker lost five cycles running). A base carrying
+            **	less than half the defence it wants claims HIGH; the rest of the way
+            **	to the ratio stays MEDIUM so the economy is not spent on towers.
+            */
+            UrgencyType tf_defurg = (current * 2 < tf_defwant) ? URGENCY_HIGH : URGENCY_MEDIUM;
             /*
             **  Nod fields BOTH its anti-armor Turret (tf_def -> TDGUN) and its anti-infantry
             **  Flame Bunker. Interleave them: build a Flame Bunker whenever Nod has strictly
@@ -9807,7 +9865,7 @@ int HouseClass::AI_Building(void)
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
-                    *choiceptr = BuildChoiceClass(URGENCY_MEDIUM, b->Type);
+                    *choiceptr = BuildChoiceClass(tf_defurg, b->Type);
                 }
             } else {
                 if (Percent_Chance(50)) {
@@ -9815,7 +9873,7 @@ int HouseClass::AI_Building(void)
                     if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                         choiceptr = BuildChoice.Alloc();
                         if (choiceptr != NULL) {
-                            *choiceptr = BuildChoiceClass(URGENCY_MEDIUM, b->Type);
+                            *choiceptr = BuildChoiceClass(tf_defurg, b->Type);
                         }
                     }
                 } else {
@@ -9823,7 +9881,7 @@ int HouseClass::AI_Building(void)
                     if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                         choiceptr = BuildChoice.Alloc();
                         if (choiceptr != NULL) {
-                            *choiceptr = BuildChoiceClass(URGENCY_MEDIUM, b->Type);
+                            *choiceptr = BuildChoiceClass(tf_defurg, b->Type);
                         }
                     }
                 }

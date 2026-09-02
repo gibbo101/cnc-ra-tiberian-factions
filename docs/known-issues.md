@@ -20,6 +20,15 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## TD construction yard offers the TS Radar — ⏳ OPEN (Luke, 2026-09-02, seen with dev cheats on)
+
+Reported mid A/B: a GDI (TD) yard's sidebar listed the TS Radar. `[TSRADR]` is
+`Owner=allies,soviet,GoodGuy,BadGuy` with `Prerequisite=TSPROC`, so once the TS refinery
+prerequisite is satisfied any yard's ActLike passes Can_Build. Suspects: the era door rule's
+shared-infrastructure pool letting a non-TS refinery satisfy `TSPROC`, or the TS-MCV grant's
+yard counting for the TD yard's buildable list. Unverified which; reproduce without cheats
+and check `MOD_DEBUG_CANBUILD.txt`.
+
 ## RESOLVED: mailbox EVA lines now follow the picked faction across an in-session switch (2026-09-01)
 
 - Was: ClientG caches each localized sample once per boot, so a faction switch without
