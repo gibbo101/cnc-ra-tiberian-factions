@@ -1599,6 +1599,8 @@ void HouseClass::Init(void)
 
     extern void TF_Skirmish_Naval_Reset(void);
     TF_Skirmish_Naval_Reset();
+    extern void TF_Wave_Reset(void);
+    TF_Wave_Reset();
 }
 
 // Object selection list is switched with player context for GlyphX. ST - 8/7/2019 10:11AM
@@ -6618,6 +6620,11 @@ int HouseClass::Expert_AI(void)
     TF_Ferry_AI();
 
     /*
+    **	Attack-wave gathering: release a staged wave once it has assembled.
+    */
+    TF_Wave_AI();
+
+    /*
     **	If there is no enemy assigned to this house, then assign one now. The
     **	enemy that is closest is picked. However, don't pick an enemy if the
     **	base has not been established yet.
@@ -7246,6 +7253,184 @@ bool HouseClass::TF_Eco_Below_Target(int* refwant, int* harvwant, int* refhave) 
 **	given army size at much the same minute, so a lower floor would only make
 **	the easier AI attack FIRST.
 */
+/*
+**	Attack-wave staging. A launch used to be N individual hunt orders from
+**	wherever each unit stood, so the wave arrived as a line and died in detail
+**	(A/B 2026-09-02, all three games). Now the committed units march to a
+**	staging cell a few cells short of the nearest enemy building the house has
+**	actually seen, gather there, and are released together. Per-house state
+**	lives in file statics (the HouseClass layout is left alone) and is cleared
+**	on every scenario load.
+*/
+enum
+{
+    TF_WAVE_MAX = 96,                                 // roster capacity per house
+    TF_WAVE_STAGE_BACK = 9,                           // cells short of the known enemy building
+    TF_WAVE_GATHER_RADIUS = 5,                        // cells; "arrived" at the staging cell
+    TF_WAVE_GATHER_MIN_PCT = 70,                      // release once this share has arrived...
+    TF_WAVE_GATHER_TIMEOUT = TICKS_PER_MINUTE * 2     // ...or when the stragglers are taking too long
+};
+struct TFWaveStruct
+{
+    TARGET Roster[TF_WAVE_MAX];
+    int Count;
+    CELL Stage;
+    long Deadline;
+    bool Gathering;
+};
+static TFWaveStruct _tf_wave[HOUSE_COUNT];
+
+void TF_Wave_Reset(void)
+{
+    for (int h = 0; h < HOUSE_COUNT; h++) {
+        _tf_wave[h].Count = 0;
+        _tf_wave[h].Stage = 0;
+        _tf_wave[h].Deadline = 0;
+        _tf_wave[h].Gathering = false;
+    }
+}
+
+/*
+**	The enemy building nearest this house's base among those the house has
+**	discovered (fair fog: a building it has never seen is not a destination).
+**	Zero when the house is still blind.
+*/
+COORDINATE HouseClass::TF_Wave_Known_Enemy_Coord(void) const
+{
+    assert(Houses.ID(this) == ID);
+
+    COORDINATE best = 0;
+    int bestdist = 0;
+    for (int index = 0; index < Buildings.Count(); index++) {
+        BuildingClass const* b = Buildings.Ptr(index);
+        if (b != NULL && !b->IsInLimbo && b->Strength > 0 && !Is_Ally(b) && b->House->Class->House != HOUSE_NEUTRAL
+            && b->Is_Discovered_By_Player((HouseClass*)this)) {
+            int dist = ::Distance(Center, b->Center_Coord());
+            if (best == 0 || dist < bestdist) {
+                best = b->Center_Coord();
+                bestdist = dist;
+            }
+        }
+    }
+    return (best);
+}
+
+/*
+**	Where the wave gathers: on the line from our base to the nearest known
+**	enemy building, TF_WAVE_STAGE_BACK cells short of it (halfway if the two
+**	are closer than that), snapped to a passable cell on our own landmass.
+**	Zero when there is nothing to stage against, in which case the launch
+**	falls back to plain hunt orders.
+*/
+CELL HouseClass::TF_Wave_Stage_Cell(void) const
+{
+    assert(Houses.ID(this) == ID);
+
+    COORDINATE enemy = TF_Wave_Known_Enemy_Coord();
+    if (enemy == 0 || Center == 0) {
+        return (0);
+    }
+    int dx = Coord_X(enemy) - Coord_X(Center);
+    int dy = Coord_Y(enemy) - Coord_Y(Center);
+    int dist = ::Distance(Center, enemy);
+    if (dist <= 0) {
+        return (0);
+    }
+    int back = TF_WAVE_STAGE_BACK * CELL_LEPTON_W;
+    int along = dist - back;
+    if (along < dist / 2) {
+        along = dist / 2;
+    }
+    COORDINATE stage = XY_Coord(Coord_X(Center) + (dx * along) / dist, Coord_Y(Center) + (dy * along) / dist);
+    CELL cell = Coord_Cell(stage);
+    CELL home = Coord_Cell(Center);
+    int zone = (home > 0 && Map.In_Radar(home)) ? Map[home].Zones[MZONE_NORMAL] : -1;
+    if (zone <= 0) {
+        zone = -1;
+    }
+    cell = Map.Nearby_Location(cell, SPEED_TRACK, zone, MZONE_NORMAL);
+    if (cell <= 0 || !Map.In_Radar(cell)) {
+        return (0);
+    }
+    return (cell);
+}
+
+/*
+**	Gathering tick: once enough of the roster stands at the staging cell, or
+**	the stragglers have had their two minutes, every survivor is released to
+**	hunt together. Runs from the Expert_AI cadence beside the ferry state
+**	machine.
+*/
+void HouseClass::TF_Wave_AI(void)
+{
+    assert(Houses.ID(this) == ID);
+
+    int hidx = (int)Class->House;
+    if (hidx < 0 || hidx >= HOUSE_COUNT) {
+        return;
+    }
+    TFWaveStruct& wave = _tf_wave[hidx];
+    if (!wave.Gathering) {
+        return;
+    }
+    int alive = 0;
+    int arrived = 0;
+    for (int i = 0; i < wave.Count; i++) {
+        TechnoClass* t = As_Techno(wave.Roster[i]);
+        if (t == NULL || t->IsInLimbo || t->Strength == 0 || (HouseClass const*)t->House != this) {
+            continue;
+        }
+        alive++;
+        if (wave.Stage != 0 && t->Distance(Cell_Coord(wave.Stage)) <= TF_WAVE_GATHER_RADIUS * CELL_LEPTON_W) {
+            arrived++;
+        }
+    }
+    bool release = false;
+    char const* why = "";
+    if (alive == 0) {
+        release = true;
+        why = "dead";
+    } else if (arrived * 100 >= alive * TF_WAVE_GATHER_MIN_PCT) {
+        release = true;
+        why = "gathered";
+    } else if ((long)Frame >= wave.Deadline) {
+        release = true;
+        why = "timeout";
+    }
+    if (!release) {
+        return;
+    }
+    for (int i = 0; i < wave.Count; i++) {
+        TechnoClass* t = As_Techno(wave.Roster[i]);
+        if (t == NULL || t->IsInLimbo || t->Strength == 0 || (HouseClass const*)t->House != this) {
+            continue;
+        }
+        t->Assign_Mission(MISSION_HUNT);
+    }
+#if TF_DEV_BUILD // TF_AI_DIAG
+    {
+        extern FILE* TF_AI_Diag_File(void);
+        FILE* _tfdbg = TF_AI_Diag_File();
+        if (_tfdbg != NULL) {
+            fprintf(_tfdbg,
+                    "F%ld H%d AL%d WAVE-RELEASE why=%s alive=%d arrived=%d roster=%d stage=%d\n",
+                    (long)Frame,
+                    (int)Class->House,
+                    (int)ActLike,
+                    why,
+                    alive,
+                    arrived,
+                    wave.Count,
+                    (int)wave.Stage);
+            fflush(_tfdbg);
+        }
+    }
+#endif
+    wave.Count = 0;
+    wave.Stage = 0;
+    wave.Gathering = false;
+}
+
 struct TFWaveDialsStruct
 {
     int Floor;         // Never launch below this many committable units.
@@ -7439,6 +7624,28 @@ bool HouseClass::AI_Attack(UrgencyType)
     }
 #endif
 
+    /*
+    **	Staging: a launch with a known enemy building marches the committed
+    **	ground units to a staging cell and gathers them there (TF_Wave_AI
+    **	releases them). Without one -- the house is still blind -- the old
+    **	per-unit hunt order stands, which is also what finds the enemy.
+    */
+    CELL stage = 0;
+    TFWaveStruct* wave = NULL;
+    if (launch && !forced) {
+        int hidx = (int)Class->House;
+        if (hidx >= 0 && hidx < HOUSE_COUNT) {
+            stage = TF_Wave_Stage_Cell();
+            if (stage != 0) {
+                wave = &_tf_wave[hidx];
+                wave->Count = 0;
+                wave->Stage = stage;
+                wave->Deadline = (long)Frame + TF_WAVE_GATHER_TIMEOUT;
+                wave->Gathering = true;
+            }
+        }
+    }
+
     int index;
     for (index = 0; index < Aircraft.Count(); index++) {
         AircraftClass* a = Aircraft.Ptr(index);
@@ -7466,7 +7673,13 @@ bool HouseClass::AI_Attack(UrgencyType)
                 u->Scatter(0, true, true);
             }
             if (!shuffle && u->Is_Weapon_Equipped() && (forced || Percent_Chance(sendpercent))) {
-                u->Assign_Mission(MISSION_HUNT);
+                if (wave != NULL && wave->Count < TF_WAVE_MAX) {
+                    u->Assign_Mission(MISSION_MOVE);
+                    u->Assign_Destination(::As_Target(stage));
+                    wave->Roster[wave->Count++] = u->As_Target();
+                } else {
+                    u->Assign_Mission(MISSION_HUNT);
+                }
             } else if (!shuffle && u->Is_Weapon_Equipped()) {
 
                 /*
@@ -7504,7 +7717,13 @@ bool HouseClass::AI_Attack(UrgencyType)
             */
             if (!shuffle && (i->Is_Weapon_Equipped() || *i == INFANTRY_RENOVATOR || *i == INFANTRY_TDE6)
                 && (forced || Percent_Chance(sendpercent))) {
-                i->Assign_Mission(MISSION_HUNT);
+                if (wave != NULL && wave->Count < TF_WAVE_MAX) {
+                    i->Assign_Mission(MISSION_MOVE);
+                    i->Assign_Destination(::As_Target(stage));
+                    wave->Roster[wave->Count++] = i->As_Target();
+                } else {
+                    i->Assign_Mission(MISSION_HUNT);
+                }
             } else if (!shuffle && i->Is_Weapon_Equipped()) {
 
                 /*
@@ -7526,6 +7745,32 @@ bool HouseClass::AI_Attack(UrgencyType)
             }
         }
     }
+#if TF_DEV_BUILD // TF_AI_DIAG
+    if (launch) {
+        extern FILE* TF_AI_Diag_File(void);
+        FILE* _tfdbg = TF_AI_Diag_File();
+        if (_tfdbg != NULL) {
+            fprintf(_tfdbg,
+                    "F%ld H%d AL%d WAVE-STAGE stage=%d roster=%d\n",
+                    (long)Frame,
+                    (int)Class->House,
+                    (int)ActLike,
+                    (int)stage,
+                    wave != NULL ? wave->Count : 0);
+            fflush(_tfdbg);
+        }
+    }
+    if (wave != NULL && wave->Count == 0) {
+        wave->Gathering = false;
+        wave->Stage = 0;
+    }
+#else
+    if (wave != NULL && wave->Count == 0) {
+        wave->Gathering = false;
+        wave->Stage = 0;
+    }
+#endif
+
     /*
     **	A launched wave takes the full interval to rebuild; a declined one is
     **	rechecked shortly, since the army it was waiting on is still growing.
