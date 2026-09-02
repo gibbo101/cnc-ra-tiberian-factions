@@ -71,10 +71,10 @@ dark-on-grey over the plate (TD-authentic; not ours to recolour).
 `faction-select-identity.md`), so none of the RA-scene re-pointing below runs for them any more:
 TD's scene draws `UI_SIDEBAR_*` directly. What the crest patch still does under the TD scene is one
 thing: TD's scene chooses its logo by RA side, so for Nod (Allied side) the record holding the
-`UI_SIDEBAR_FACTIONLOGO_GDI` rect is re-pointed at `_NOD` (slots 9 and 10). The skin table, the
-under-screen/bezel/rail/plate/power-fill slots and `scripts/td_sidebar_extras_paint.py` are idle
-for GDI/Nod and are kept only until the TD scene has more play time behind it; strip them then.
-The record below stands as the method record.
+`UI_SIDEBAR_FACTIONLOGO_GDI` rect is re-pointed at `_NOD` (the patch's two remaining slots).
+The skin table, the under-screen/bezel/rail/plate/power-fill slots, their paint script and the
+table generator were removed the same evening (Luke's sign-off); recover them from git history
+(commit 2b7947fc) if a re-skin of RA's scene is ever wanted. The record below is the method.
 
 ### The RA-scene skin (how it was done before the scene swap)
 
@@ -107,10 +107,7 @@ patch depends on (pristine RA crests + the DINO eagle) into a shipped atlas.
   the running ClientG holds records for (only drawn regions have one: the inventory step);
   `point RA_REGION TD_REGION|x,y,w,h` re-points every live record at another rect and shows on
   the next frame. Every finding in this doc was made with this loop before a line of DLL code.
-- `scripts/sidebar_skin_table.py` — regenerates `TF_SidebarSkin[]` in `dllinterface.cpp` from
-  the `.MTD` (pairing rules + the bezel/button exceptions live there). Run after any atlas
-  metadata change, then rebuild.
-- `scripts/crest_atlas_paint.py` — the atlas edits the patch depends on, reproducible.
+- `scripts/crest_atlas_paint.py` — restores the pristine RA crests into a shipped atlas.
 - `TF_Crest_*` in `dllinterface.cpp` — the shipped patch: `TF_Crest_Slots` (what each slot should
   show per faction), `TF_Crest_Full_Scan` (heap walk with a first-word filter, remembers record
   addresses), `TF_Crest_Reverify` (per-frame cheap re-point of known addresses), `TF_Crest_Tick`

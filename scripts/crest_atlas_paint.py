@@ -25,9 +25,6 @@ W, H, HDR = 6871, 6716, 18
 ALLIES = (5698, 1706, 794, 713)
 SOVIET = (2684, 1709, 794, 713)
 GDI = (1, 1875, 718, 706)
-DINO_ORIGIN = (2154, 1900)
-GDI_WINDOW = (495, 444)
-EAGLE_H = 396  # ~89% of the window: leaves the bottom ~11% of the slot clear for the label
 
 
 def row_off(x, y):
@@ -68,12 +65,6 @@ def main(targets):
         for yy in range(h):
             src.seek(row_off(x, y + yy))
             rows.append((row_off(x, y + yy), src.read(w * 4)))
-    eagle = read_region(src, GDI)
-    ww, hh = GDI_WINDOW
-    scaled = eagle.resize((round(eagle.width * EAGLE_H / eagle.height), EAGLE_H), Image.LANCZOS)
-    window = Image.new('RGBA', (ww, hh), (0, 0, 0, 0))
-    window.paste(scaled, ((ww - scaled.width) // 2, 0), scaled)
-    rows += rows_of(window, DINO_ORIGIN)
     for t in targets:
         with open(t, 'r+b') as f:
             for off, b in rows:
