@@ -3,7 +3,8 @@
 *Draft for Luke's blog post, written 2026-09-02 from the session that broke walls two, three and four.
 Facts and dates are from the repo docs and commits; the voice is a placeholder. Screenshots in this
 folder. No em dashes in the final copy. Everything described here is on the mod's main branch
-and NOT yet in a released build; the release waits on the AI work.*
+and NOT yet in a released build; the release waits on the AI work. Posted 2026-09-02 as a Workshop
+discussion: https://steamcommunity.com/workshop/filedetails/discussion/3729834253/586184898467944101/*
 
 ---
 
