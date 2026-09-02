@@ -5,7 +5,7 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
-## RAM patch for the mailbox boot-cache (Luke, 2026-08-31 — ACTIVE, picked up right after the EVA merge)
+## ✅ DONE 2026-09-01: RAM patch for the mailbox boot-cache (shipped; record in `docs/eva-ram-patch-spike.md`)
 
 Lift the per-boot voice lock (known-issues.md): at match start, find the cached sample blob in
 ClientG's memory and overwrite it in place with the era-correct bytes. Building blocks: the

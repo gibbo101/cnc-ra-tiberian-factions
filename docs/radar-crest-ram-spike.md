@@ -80,10 +80,26 @@ ALLIES/SOVIET crest → one TD crest) were indistinguishable on the way back, so
 (Allied got the red build bar, Soviet got the chevron). Every written rect now carries a per-slot
 sub-pixel nudge on u0 (`slot * 1e-6` UV ≈ 0.007 px), so each record restores to its own stock.
 
-**Resize:** GDI's eagle is now aspect-correct — scaled to 444 high and centred in a 495x444
-window (the slot's 794:713) painted into the unused DINO region; NOD samples a 660x593 window of
-its own region. `scripts/crest_atlas_paint.py` paints everything the patch depends on (pristine
-RA crests + the DINO eagle) into a shipped atlas.
+**Resize + position:** GDI's eagle is aspect-correct and sits clear of the launcher's "GDI"
+label — scaled to 396 high, centred horizontally and top-aligned in a 495x444 window (the
+slot's 794:713; the bottom ~11% stays transparent) painted into the unused DINO region; NOD
+samples a 660x593 window of its own region. `scripts/crest_atlas_paint.py` paints everything the
+patch depends on (pristine RA crests + the DINO eagle) into a shipped atlas.
+
+## Tooling (the method, reusable)
+
+- `scripts/clientg_region_probe.py` — the live lever. `list [REGEX]` shows which atlas regions
+  the running ClientG holds records for (only drawn regions have one: the inventory step);
+  `point RA_REGION TD_REGION|x,y,w,h` re-points every live record at another rect and shows on
+  the next frame. Every finding in this doc was made with this loop before a line of DLL code.
+- `scripts/sidebar_skin_table.py` — regenerates `TF_SidebarSkin[]` in `dllinterface.cpp` from
+  the `.MTD` (pairing rules + the bezel/button exceptions live there). Run after any atlas
+  metadata change, then rebuild.
+- `scripts/crest_atlas_paint.py` — the atlas edits the patch depends on, reproducible.
+- `TF_Crest_*` in `dllinterface.cpp` — the shipped patch: `TF_Crest_Slots` (what each slot should
+  show per faction), `TF_Crest_Full_Scan` (heap walk with a first-word filter, remembers record
+  addresses), `TF_Crest_Reverify` (per-frame cheap re-point of known addresses), `TF_Crest_Tick`
+  (6-frame cadence for the first 450 frames of each match).
 
 ## Can the launcher HUD gain new buttons? (Luke, 2026-09-02)
 

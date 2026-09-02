@@ -18,6 +18,14 @@ The Remastered front-end (Petroglyph "Mobius" engine, **native C++**) is **facti
 
 **The UI-image lever (added 2026-05-29).** Launcher 2D UI *images* — the sidebar faction crest, lobby logos, flags, buttons — live in the `MT_COMMANDBAR_COMMON.TGA` atlas and are **moddable** via a byte-edited loose `.TGA` in `Data/ART/TEXTURES/SRGB/` (vanilla, **no EMC**, proven on the Deck). So the real test is a **trichotomy**: CONFIG.MEG *data* and texture-atlas *images* are both moddable; only `ClientG.exe` *code* is the true lock. (The in-game sidebar emblem was first mis-filed as a code lock — it's an atlas image, `UI_SIDEBAR_FACTIONLOGO_ALLIES`.) Canonical: `ui-atlas-modding.md`.
 
+**The RAM lever (added 2026-09-02).** A fourth bucket sits between atlas images and ClientG code:
+ClientG's *runtime state* is writable from the DLL (`OpenProcess` + `WriteProcessMemory` into the
+sibling process, proven under Proton). Two walls fell this way: launcher-owned EVA lines
+(overwrite the cached sample blob, `eva-ram-patch-spike.md`) and the side-keyed radar crest /
+sidebar (re-point the cached per-region UV record, `radar-crest-ram-spike.md`). What it can do:
+change what an existing launcher-drawn element samples or plays. What it cannot: add widgets,
+change layout or behaviour — those remain code. Probe with `scripts/clientg_region_probe.py`.
+
 ---
 
 ## The process model (runtime-confirmed 2026-07-11)

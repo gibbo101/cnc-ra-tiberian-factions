@@ -5,9 +5,10 @@ The per-faction radar crest (docs/radar-crest-ram-spike.md) re-points ClientG's 
 records at atlas regions, so the shipped atlas must hold:
   * the PRISTINE Allied / Soviet crests in UI_SIDEBAR_FACTIONLOGO_ALLIES / _SOVIET (the old
     C&C-logo-for-all paint is retired), and
-  * an aspect-correct GDI eagle (scaled to 444 high, centred in a 495x444 window = the slot's
-    794:713) in the top-left of the never-referenced UI_SIDEBAR_FACTIONLOGO_DINO region, which
-    is the rect the DLL points the GDI crest at (TF_Crest_Slots: {2154, 1900, 495, 444}).
+  * an aspect-correct GDI eagle (scaled to EAGLE_H high, centred horizontally and TOP-aligned in
+    a 495x444 window = the slot's 794:713, so it clears the launcher's "GDI" label drawn over the
+    bottom of the slot) in the top-left of the never-referenced UI_SIDEBAR_FACTIONLOGO_DINO
+    region, which is the rect the DLL points the GDI crest at (TF_Crest_Slots: {2154, 1900, 495, 444}).
 
 Byte-edits the target in place (same size, format-identical). Source of truth for the pristine
 pixels is the base atlas kept at scripts/cameo_work/MT_COMMANDBAR_COMMON.TGA.
@@ -26,6 +27,7 @@ SOVIET = (2684, 1709, 794, 713)
 GDI = (1, 1875, 718, 706)
 DINO_ORIGIN = (2154, 1900)
 GDI_WINDOW = (495, 444)
+EAGLE_H = 396  # ~89% of the window: leaves the bottom ~11% of the slot clear for the label
 
 
 def row_off(x, y):
@@ -68,7 +70,7 @@ def main(targets):
             rows.append((row_off(x, y + yy), src.read(w * 4)))
     eagle = read_region(src, GDI)
     ww, hh = GDI_WINDOW
-    scaled = eagle.resize((round(eagle.width * hh / eagle.height), hh), Image.LANCZOS)
+    scaled = eagle.resize((round(eagle.width * EAGLE_H / eagle.height), EAGLE_H), Image.LANCZOS)
     window = Image.new('RGBA', (ww, hh), (0, 0, 0, 0))
     window.paste(scaled, ((ww - scaled.width) // 2, 0), scaled)
     rows += rows_of(window, DINO_ORIGIN)
