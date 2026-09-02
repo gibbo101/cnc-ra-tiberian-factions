@@ -4050,11 +4050,12 @@ static void TF_Atlas_UV_Record(const TF_AtlasRect& r, float out[4])
 
 struct TF_CrestSlot
 {
-    float stock[4];    // the RA side crest the launcher points this slot at
-    float gdi[4];      // the TD GDI crest region
-    float nod[4];      // the TD Nod crest region
+    float stock[4];    // the RA region the launcher points this slot at
+    float gdi[4];      // what a GDI player should see instead
+    float nod[4];      // what a Nod player should see instead
     const float* want; // which of the three the local player should see
 };
+#define TF_CREST_SLOTS 4 // ALLIES crest, SOVIET crest, blue radar under-screen, red radar under-screen
 
 // Session-persistent list of ClientG addresses that hold a radar-crest UV record, so the
 // per-frame driver can cheaply re-point them without re-scanning ClientG's whole heap. The
@@ -4079,7 +4080,7 @@ static void TF_Crest_Remember(SIZE_T addr)
 
 // Build the two slots (ALLIES->GDI, SOVIET->NOD) for the current local player. Returns false
 // if there is no local player yet.
-static bool TF_Crest_Slots(TF_CrestSlot slots[2])
+static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
 {
     const HouseClass* local = PlayerPtr;
     if (local == NULL) {
@@ -4097,11 +4098,16 @@ static bool TF_Crest_Slots(TF_CrestSlot slots[2])
     bool gdi = (local->ActLike == HOUSE_GOOD);
     bool nod = (local->ActLike == HOUSE_BAD);
 
-    // Atlas regions (from MT_COMMANDBAR_COMMON.MTD).
+    // Atlas regions (from MT_COMMANDBAR_COMMON.MTD). The crest is drawn over the radar
+    // under-screen (RA: a dark grid, blue for the ALLIES slot, red for SOVIET); TD drew its
+    // crest over a scratched metallic plate, so GDI/Nod get that plate behind theirs too.
     static const TF_AtlasRect ALLIES = {5698, 1706, 794, 713};
     static const TF_AtlasRect SOVIET = {2684, 1709, 794, 713};
     static const TF_AtlasRect GDI = {1, 1875, 718, 706};
     static const TF_AtlasRect NOD = {3778, 2221, 660, 660};
+    static const TF_AtlasRect UNDERBG_BLUE = {5698, 836, 868, 868}; // UI_RA_SIDEBAR_RADAR_UNDERBG_BLUE
+    static const TF_AtlasRect UNDERBG_RED = {2684, 782, 868, 868};  // UI_RA_SIDEBAR_RADAR_UNDERBG
+    static const TF_AtlasRect TD_PLATE = {4788, 750, 868, 763};     // UI_SIDEBAR_RADARBG (TD)
 
     // The launcher draws the ALLIES slot for GDI AND Nod (proven 2026-09-02: a Nod player
     // kept the ALLIES art with the SOVIET record re-pointed). Which slot a given faction
@@ -4109,9 +4115,11 @@ static bool TF_Crest_Slots(TF_CrestSlot slots[2])
     // drawn shows the right crest.
     TF_Atlas_UV_Record(ALLIES, slots[0].stock);
     TF_Atlas_UV_Record(SOVIET, slots[1].stock);
-    for (int s = 0; s < 2; s++) {
-        TF_Atlas_UV_Record(GDI, slots[s].gdi);
-        TF_Atlas_UV_Record(NOD, slots[s].nod);
+    TF_Atlas_UV_Record(UNDERBG_BLUE, slots[2].stock);
+    TF_Atlas_UV_Record(UNDERBG_RED, slots[3].stock);
+    for (int s = 0; s < TF_CREST_SLOTS; s++) {
+        TF_Atlas_UV_Record(s < 2 ? GDI : TD_PLATE, slots[s].gdi);
+        TF_Atlas_UV_Record(s < 2 ? NOD : TD_PLATE, slots[s].nod);
         slots[s].want = gdi ? slots[s].gdi : (nod ? slots[s].nod : slots[s].stock);
     }
     return true;
@@ -4143,7 +4151,7 @@ static HANDLE TF_Open_ClientG(DWORD access)
 // either slot's stock or faction rect, remember its address and write the wanted rect.
 static void TF_Crest_Full_Scan(FILE* log)
 {
-    TF_CrestSlot slots[2];
+    TF_CrestSlot slots[TF_CREST_SLOTS];
     if (!TF_Crest_Slots(slots)) {
         return;
     }
@@ -4176,23 +4184,22 @@ static void TF_Crest_Full_Scan(FILE* log)
                     continue;
                 }
                 for (SIZE_T i = 0; i + REC <= got; i += 4) {
-                    // A record is one of ours if it holds a slot's stock rect, or a TD rect a
-                    // previous match wrote. Both slots share the TD rects, so a TD-rect hit is
-                    // attributed to slot 0; the write is the same either way.
+                    // A record is one of ours if it holds a slot's stock rect, or a faction
+                    // rect a previous match wrote. Paired slots share their faction rects, so
+                    // such a hit is attributed to the first of the pair; the write is the same.
                     int slot = -1;
                     const char* was = NULL;
-                    if (memcmp(scratch + i, slots[0].stock, REC) == 0) {
-                        slot = 0;
-                        was = "stock";
-                    } else if (memcmp(scratch + i, slots[1].stock, REC) == 0) {
-                        slot = 1;
-                        was = "stock";
-                    } else if (memcmp(scratch + i, slots[0].gdi, REC) == 0) {
-                        slot = 0;
-                        was = "gdi";
-                    } else if (memcmp(scratch + i, slots[0].nod, REC) == 0) {
-                        slot = 0;
-                        was = "nod";
+                    for (int s = 0; s < TF_CREST_SLOTS && slot < 0; s++) {
+                        if (memcmp(scratch + i, slots[s].stock, REC) == 0) {
+                            slot = s;
+                            was = "stock";
+                        } else if (memcmp(scratch + i, slots[s].gdi, REC) == 0) {
+                            slot = s;
+                            was = "gdi";
+                        } else if (memcmp(scratch + i, slots[s].nod, REC) == 0) {
+                            slot = s;
+                            was = "nod";
+                        }
                     }
                     if (slot < 0) {
                         continue;
@@ -4206,7 +4213,8 @@ static void TF_Crest_Full_Scan(FILE* log)
                     bool ok = WriteProcessMemory(proc, (LPVOID)rec_addr, slots[slot].want, REC, &wrote)
                               && wrote == (SIZE_T)REC;
                     if (log) {
-                        fprintf(log, "  scan slot %s @ %08x %s -> %s %s\n", slot == 0 ? "ALLIES" : "SOVIET",
+                        static const char* const _slot_names[TF_CREST_SLOTS] = {"ALLIES", "SOVIET", "UNDERBG_BLUE", "UNDERBG_RED"};
+                        fprintf(log, "  scan slot %s @ %08x %s -> %s %s\n", _slot_names[slot],
                                 (unsigned int)rec_addr, was, gdi ? "gdi" : (nod ? "nod" : "stock"),
                                 ok ? "OK" : "FAIL");
                     }
@@ -4229,7 +4237,7 @@ static void TF_Crest_Reverify(void)
     if (TF_CrestAddrCount == 0) {
         return;
     }
-    TF_CrestSlot slots[2];
+    TF_CrestSlot slots[TF_CREST_SLOTS];
     if (!TF_Crest_Slots(slots)) {
         return;
     }
@@ -4246,11 +4254,11 @@ static void TF_Crest_Reverify(void)
             continue;
         }
         int slot = -1;
-        if (memcmp(cur, slots[0].stock, REC) == 0 || memcmp(cur, slots[0].gdi, REC) == 0
-            || memcmp(cur, slots[0].nod, REC) == 0) {
-            slot = 0;
-        } else if (memcmp(cur, slots[1].stock, REC) == 0) {
-            slot = 1;
+        for (int s = 0; s < TF_CREST_SLOTS && slot < 0; s++) {
+            if (memcmp(cur, slots[s].stock, REC) == 0 || memcmp(cur, slots[s].gdi, REC) == 0
+                || memcmp(cur, slots[s].nod, REC) == 0) {
+                slot = s;
+            }
         }
         if (slot >= 0 && memcmp(cur, slots[slot].want, REC) != 0) {
             SIZE_T wrote = 0;

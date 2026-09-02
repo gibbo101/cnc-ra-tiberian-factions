@@ -1,7 +1,7 @@
 # Per-faction radar crest — SOLVED (2026-09-02)
 
 The in-game radar-slot crest (shown while the player has no radar building) now follows the
-picked faction: **GDI → TD eagle, Nod → TD scorpion, Allied → RA chevron, Soviet → RA pentagon**. Verified
+picked faction: **GDI → TD eagle, Nod → TD scorpion, Allied → RA chevron, Soviet → RA pentagon**. Backdrop follows too (TD plate for GDI/Nod, see below). Verified
 in play across four skirmishes in ONE session (Nod, GDI, Allied, Soviet) with no relaunch; both
 switch directions confirmed in the log. Ships in release builds; logging is `TF_DEV_BUILD`-only.
 Code: `TF_Crest_*` in `redalert/dllinterface.cpp` (`TF_Crest_Tick` driven per frame from
@@ -50,6 +50,16 @@ Records must be computed as **double divide then cast to float** to byte-match C
    at the faction rect for GDI/Nod and both back to stock otherwise; whichever the launcher draws
    is right. (The 2026-07-20 "HOUSE_BAD → SOVIET region" claim was never testable: both regions
    held the same C&C logo.)
+
+## The backdrop too (same day)
+
+TD drew its crest over a scratched metallic plate (`UI_SIDEBAR_RADARBG`, 868x763); RA draws it
+over a dark radar grid (`UI_RA_SIDEBAR_RADAR_UNDERBG_BLUE` for the ALLIES slot, `_UNDERBG` red
+for SOVIET). Both under-screens have the same kind of cached record, so the DLL now carries
+**four slots**: the two crests and the two under-screens. For GDI/Nod all four point at the TD
+crest + TD plate; for RA sides all four are stock. Verified GDI → plate, Nod → plate, Allied →
+blue grid restored, in one session. The launcher-drawn faction label under the crest goes
+dark-on-grey over the plate (TD-authentic; not ours to recolour).
 
 ## Open / follow-ups
 
