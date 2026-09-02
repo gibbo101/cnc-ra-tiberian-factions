@@ -4062,8 +4062,8 @@ struct TF_CrestSlot
 ** TD sidebar skin for GDI/Nod (docs/radar-crest-ram-spike.md): every RA sidebar region the
 ** launcher draws, paired with the same-named TD region already in the atlas. Generated from
 ** MT_COMMANDBAR_COMMON.MTD (see the generator note in the doc); the RA radar bezel is left
-** alone (TD's plate is opaque and would cover the crest), and the square sell/repair/map
-** buttons stay RA (TD's are 260x78, a different shape).
+** alone (TD's plate is opaque and would cover the crest). The square sell/repair/map buttons
+** sample a centred square window of TD's 260x78 bar (icon on the grille, top/bottom bevels).
 */
 struct TF_SkinPair
 {
@@ -4093,7 +4093,21 @@ static const TF_SkinPair TF_SidebarSkin[] = {
     {{4563, 5182, 169, 84}, {3027, 2961, 147, 87}}, // UI_RA_SIDEBAR_BUTTON_DISABLED -> UI_SIDEBAR_BUTTON_DISABLED
     {{4563, 5096, 169, 84}, {3027, 3139, 147, 87}}, // UI_RA_SIDEBAR_BUTTON_ENABLED -> UI_SIDEBAR_BUTTON_ENABLED
     {{2495, 5102, 169, 84}, {3027, 3050, 147, 87}}, // UI_RA_SIDEBAR_BUTTON_HIGHLIGHTED -> UI_SIDEBAR_BUTTON_HIGHLIGHTED
+    {{6213, 4724, 121, 121}, {2479, 2743, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_MAP_HOVER -> UI_SIDEBAR_BUTTON_MAP_HOVER (centred square window)
+    {{5553, 5317, 121, 121}, {538, 2917, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_MAP_OFF -> UI_SIDEBAR_BUTTON_MAP_OFF (centred square window)
+    {{3027, 5699, 121, 121}, {2479, 2823, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_MAP_ON -> UI_SIDEBAR_BUTTON_MAP_ON (centred square window)
+    {{2495, 5660, 121, 121}, {538, 2837, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_MAP_PRESS -> UI_SIDEBAR_BUTTON_MAP_PRESS (centred square window)
     {{6041, 5145, 169, 84}, {2495, 3144, 187, 87}}, // UI_RA_SIDEBAR_BUTTON_PULSE -> UI_SIDEBAR_BUTTON_PULSE
+    {{3027, 5576, 121, 121}, {6696, 494, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_REPAIR_HOVER -> UI_SIDEBAR_BUTTON_REPAIR_HOVER (centred square window)
+    {{6213, 4601, 121, 121}, {6696, 654, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_REPAIR_OFF -> UI_SIDEBAR_BUTTON_REPAIR_OFF (centred square window)
+    {{3027, 5453, 121, 121}, {6696, 574, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_REPAIR_ON -> UI_SIDEBAR_BUTTON_REPAIR_ON (centred square window)
+    {{4082, 5343, 121, 121}, {6696, 414, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_REPAIR_PRESS -> UI_SIDEBAR_BUTTON_REPAIR_PRESS (centred square window)
+    {{6213, 5216, 121, 121}, {6696, 174, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_REPAIR_PRESSED -> UI_SIDEBAR_BUTTON_REPAIR_PRESSED (centred square window)
+    {{6213, 5339, 121, 121}, {6696, 94, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_SELL_HOVER -> UI_SIDEBAR_BUTTON_SELL_HOVER (centred square window)
+    {{3027, 5330, 121, 121}, {3575, 2220, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_SELL_OFF -> UI_SIDEBAR_BUTTON_SELL_OFF (centred square window)
+    {{6213, 4847, 121, 121}, {6696, 334, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_SELL_ON -> UI_SIDEBAR_BUTTON_SELL_ON (centred square window)
+    {{6213, 4970, 121, 121}, {6696, 254, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_SELL_PRESS -> UI_SIDEBAR_BUTTON_SELL_PRESS (centred square window)
+    {{6213, 5093, 121, 121}, {3575, 2300, 78, 78}}, // UI_RA_SIDEBAR_BUTTON_SELL_PRESSED -> UI_SIDEBAR_BUTTON_SELL_PRESSED (centred square window)
     {{3576, 6095, 70, 70}, {3698, 4322, 76, 69}}, // UI_RA_SIDEBAR_MAXIMIZEBUTTON_HOVER -> UI_SIDEBAR_MAXIMIZEBUTTON_HOVER
     {{644, 6080, 70, 70}, {3698, 4393, 76, 69}}, // UI_RA_SIDEBAR_MAXIMIZEBUTTON_OFF -> UI_SIDEBAR_MAXIMIZEBUTTON_OFF
     {{2066, 6079, 70, 70}, {3698, 4464, 76, 69}}, // UI_RA_SIDEBAR_MAXIMIZEBUTTON_PRESS -> UI_SIDEBAR_MAXIMIZEBUTTON_PRESS

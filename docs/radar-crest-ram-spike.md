@@ -70,8 +70,10 @@ patch: for GDI/Nod every pair is re-pointed at its TD counterpart (build-bar pla
 top button, tab icons, tooltip frame, small buttons), for RA sides restored. Verified all four
 factions in one session. Two exclusions: the RA radar **bezel** stays (TD's plate is opaque and
 covered the crest when the bezel was re-pointed), and the square **sell/repair/map** buttons stay
-RA (121x121 vs TD's 260x78; a squash). Live inventory method: scan ClientG for the record of
-every candidate region — only drawn regions have one.
+RA at first (121x121 vs TD's 260x78; a squash) — solved the same day by sampling a centred
+square (78x78) window of each TD button bar: icon on the grille with the top/bottom bevels, all
+14 states, no repaint. Live inventory method: scan ClientG for the record of every candidate
+region — only drawn regions have one.
 
 **Restore trap + fix:** two slots that share a target (blue and red build bar → one TD plate;
 ALLIES/SOVIET crest → one TD crest) were indistinguishable on the way back, so the first slot won
@@ -83,9 +85,16 @@ window (the slot's 794:713) painted into the unused DINO region; NOD samples a 6
 its own region. `scripts/crest_atlas_paint.py` paints everything the patch depends on (pristine
 RA crests + the DINO eagle) into a shipped atlas.
 
+## Can the launcher HUD gain new buttons? (Luke, 2026-09-02)
+
+No. This patch only changes which atlas pixels an EXISTING widget samples. The widget set — how
+many buttons, where they sit, their hit-tests and what they do — is compiled `ClientG.exe` code
+plus the `RA_TACTICAL_UI.BUI` scene graph, and the BUI can only reshape/hide/retexture existing
+widgets under the same-size rule (`bui-front-end-modding.md`). A future TS sidebar therefore
+means re-skinning and re-arranging RA's widgets, not adding to them.
+
 ## Open / follow-ups
 
-- **Sell/repair/map buttons** still RA on the TD skin (shape mismatch) — next.
 - **Allied and Soviet crests RESTORED (same day):** the shipped atlas had the C&C logo painted
   into both RA crest regions ("one logo for all"); the pristine 794x713 Allied chevron / Soviet
   pentagon were byte-copied back from `scripts/cameo_work/MT_COMMANDBAR_COMMON.TGA` (the base
