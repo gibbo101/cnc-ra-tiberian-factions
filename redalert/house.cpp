@@ -7277,6 +7277,12 @@ struct TFWaveStruct
     CELL Stage;
     long Deadline;
     bool Gathering;
+    bool Striking;   // released on attack-move; members that arrive convert to hunt
+    long StrikeUntil;
+};
+enum
+{
+    TF_WAVE_STRIKE_TIMEOUT = TICKS_PER_MINUTE * 6 // stop shepherding a released wave after this
 };
 static TFWaveStruct _tf_wave[HOUSE_COUNT];
 
@@ -7287,6 +7293,8 @@ void TF_Wave_Reset(void)
         _tf_wave[h].Stage = 0;
         _tf_wave[h].Deadline = 0;
         _tf_wave[h].Gathering = false;
+        _tf_wave[h].Striking = false;
+        _tf_wave[h].StrikeUntil = 0;
     }
 }
 
@@ -7370,6 +7378,47 @@ void HouseClass::TF_Wave_AI(void)
         return;
     }
     TFWaveStruct& wave = _tf_wave[hidx];
+
+    /*
+    **	Striking phase (Hard): the wave went out on attack-move, which fights
+    **	everything on the way and then drops the unit into guard at the
+    **	destination. Anyone who has finished the attack-move is switched to
+    **	hunt so the wave carries on through the base instead of standing at
+    **	its door. Shepherding stops when the roster is dead or after a while.
+    */
+    if (wave.Striking) {
+        int living = 0;
+        int converted = 0;
+        for (int i = 0; i < wave.Count; i++) {
+            TechnoClass* t = As_Techno(wave.Roster[i]);
+            if (t == NULL || t->IsInLimbo || t->Strength == 0 || (HouseClass const*)t->House != this) {
+                continue;
+            }
+            living++;
+            if (!t->AttackMove && t->Mission != MISSION_HUNT && t->Mission != MISSION_ATTACK
+                && t->Mission != MISSION_CAPTURE) {
+                t->Assign_Mission(MISSION_HUNT);
+                converted++;
+            }
+        }
+#if TF_DEV_BUILD // TF_AI_DIAG
+        if (converted > 0) {
+            extern FILE* TF_AI_Diag_File(void);
+            FILE* _tfdbg = TF_AI_Diag_File();
+            if (_tfdbg != NULL) {
+                fprintf(_tfdbg, "F%ld H%d AL%d WAVE-STRIKE hunt=%d living=%d\n", (long)Frame, (int)Class->House,
+                        (int)ActLike, converted, living);
+                fflush(_tfdbg);
+            }
+        }
+#endif
+        if (living == 0 || (long)Frame >= wave.StrikeUntil) {
+            wave.Striking = false;
+            wave.Count = 0;
+        }
+        return;
+    }
+
     if (!wave.Gathering) {
         return;
     }
@@ -7400,12 +7449,31 @@ void HouseClass::TF_Wave_AI(void)
     if (!release) {
         return;
     }
+
+    /*
+    **	Hard releases on attack-move (CFE port, the player's shift-click): the
+    **	wave advances on the known enemy building as one body, engaging what it
+    **	meets on the way and keeping its destination through every detour
+    **	fight. Lower tiers hunt from the staging cell as before. The objective
+    **	is a CELL, not the building, so its destruction mid-march does not
+    **	cancel the order.
+    */
+    COORDINATE objective = (IQ >= 5) ? TF_Wave_Known_Enemy_Coord() : 0;
+    TARGET objtarget = (objective != 0) ? ::As_Target(Coord_Cell(objective)) : TARGET_NONE;
     for (int i = 0; i < wave.Count; i++) {
         TechnoClass* t = As_Techno(wave.Roster[i]);
         if (t == NULL || t->IsInLimbo || t->Strength == 0 || (HouseClass const*)t->House != this) {
             continue;
         }
-        t->Assign_Mission(MISSION_HUNT);
+        if (objtarget != TARGET_NONE && t->Is_Foot()) {
+            t->Assign_Target(TARGET_NONE);
+            t->Assign_Mission(MISSION_MOVE);
+            t->AttackMove = 1;
+            t->RememberedNavCom = objtarget;
+            ((FootClass*)t)->Assign_Destination(objtarget);
+        } else {
+            t->Assign_Mission(MISSION_HUNT);
+        }
     }
 #if TF_DEV_BUILD // TF_AI_DIAG
     {
@@ -7413,22 +7481,29 @@ void HouseClass::TF_Wave_AI(void)
         FILE* _tfdbg = TF_AI_Diag_File();
         if (_tfdbg != NULL) {
             fprintf(_tfdbg,
-                    "F%ld H%d AL%d WAVE-RELEASE why=%s alive=%d arrived=%d roster=%d stage=%d\n",
+                    "F%ld H%d AL%d WAVE-RELEASE why=%s mode=%s alive=%d arrived=%d roster=%d stage=%d objective=%d\n",
                     (long)Frame,
                     (int)Class->House,
                     (int)ActLike,
                     why,
+                    objtarget != TARGET_NONE ? "attack-move" : "hunt",
                     alive,
                     arrived,
                     wave.Count,
-                    (int)wave.Stage);
+                    (int)wave.Stage,
+                    (int)Coord_Cell(objective));
             fflush(_tfdbg);
         }
     }
 #endif
-    wave.Count = 0;
     wave.Stage = 0;
     wave.Gathering = false;
+    if (objtarget != TARGET_NONE && alive > 0) {
+        wave.Striking = true;
+        wave.StrikeUntil = (long)Frame + TF_WAVE_STRIKE_TIMEOUT;
+    } else {
+        wave.Count = 0;
+    }
 }
 
 struct TFWaveDialsStruct
@@ -7639,6 +7714,7 @@ bool HouseClass::AI_Attack(UrgencyType)
             if (stage != 0) {
                 wave = &_tf_wave[hidx];
                 wave->Count = 0;
+                wave->Striking = false;
                 wave->Stage = stage;
                 wave->Deadline = (long)Frame + TF_WAVE_GATHER_TIMEOUT;
                 wave->Gathering = true;
