@@ -7111,6 +7111,98 @@ int HouseClass::TF_Committable_Army(int* value) const
     return (army);
 }
 
+static unsigned TF_Role_Quantity(unsigned const* bquantity, StructType ra);
+
+/*
+**	Harvesters this house owns, counted through the Units heap. UQuantity reads
+**	zero for a TD harvester docked inside its refinery (Limbo + attach), so the
+**	heap is the only count that sees the whole fleet.
+*/
+int HouseClass::TF_Harvesters_Owned(void) const
+{
+    assert(Houses.ID(this) == ID);
+
+    int owned = 0;
+    for (int index = 0; index < Units.Count(); index++) {
+        UnitClass const* u = Units.Ptr(index);
+        if (u != NULL && (HouseClass const*)u->House == this
+            && (*u == UNIT_TDHARV || *u == UNIT_HARVESTER || *u == UNIT_TSHARV)) {
+            owned++;
+        }
+    }
+    return (owned);
+}
+
+/*
+**	Economy targets. Vanilla sizes the refinery count as a fraction of the base
+**	(RefineryRatio) and fields one harvester per refinery, so a computer house
+**	sits on two refineries and three harvesters from the fourth minute to the
+**	end of the match while a human doubles that (A/B 2026-09-02: ~1.8k/min every
+**	game, the human at 2-3x). The refinery target is now paced by match time as
+**	a player paces it, with the ratio rule kept as a floor, and the harvester
+**	fleet scales with the tier: a Hard AI works every refinery with two.
+*/
+int HouseClass::TF_Eco_Refinery_Target(void) const
+{
+    assert(Houses.ID(this) == ID);
+
+    int want = 1;
+    if (Frame >= (TICKS_PER_MINUTE * 5) / 2) {
+        want = 2;
+    }
+    if (Frame >= TICKS_PER_MINUTE * 6) {
+        want = 3;
+    }
+    if (Frame >= TICKS_PER_MINUTE * 10) {
+        want = 4;
+    }
+    if (want > Rule.RefineryLimit) {
+        want = Rule.RefineryLimit;
+    }
+    return (want);
+}
+
+int HouseClass::TF_Eco_Harvester_Target(int refineries) const
+{
+    assert(Houses.ID(this) == ID);
+
+    if (IQ >= 5) {
+        return (refineries * 2);
+    }
+    if (IQ == 4) {
+        return ((refineries * 3) / 2);
+    }
+    return (refineries);
+}
+
+/*
+**	True while the house has fewer refineries or harvesters than its targets and
+**	could still do something about it (ore on the map). Production of combat
+**	units yields to the economy while this holds, so the income arrives before
+**	the army that is supposed to spend it.
+*/
+bool HouseClass::TF_Eco_Below_Target(int* refwant, int* harvwant, int* refhave) const
+{
+    assert(Houses.ID(this) == ID);
+
+    int refq = (int)TF_Role_Quantity(BQuantity, STRUCT_REFINERY);
+    int rwant = TF_Eco_Refinery_Target();
+    int hwant = TF_Eco_Harvester_Target(refq);
+    if (refwant != NULL) {
+        *refwant = rwant;
+    }
+    if (harvwant != NULL) {
+        *harvwant = hwant;
+    }
+    if (refhave != NULL) {
+        *refhave = refq;
+    }
+    if (IsTiberiumShort) {
+        return (false);
+    }
+    return (refq < rwant || TF_Harvesters_Owned() < hwant);
+}
+
 /*
 **	Attack-wave pacing dials, keyed off the house IQ (Easy 3, Medium 4,
 **	Hard 5). Difficulty moves frequency and responsiveness ONLY: a harder AI
@@ -9673,13 +9765,20 @@ int HouseClass::AI_Building(void)
         **	Build a refinery if there isn't one already available.
         */
         unsigned int current = tf_refqty;
-        if (!IsTiberiumShort && current < Round_Up(Rule.RefineryRatio * fixed(CurBuildings))
-            && current < (unsigned)Rule.RefineryLimit) {
+        unsigned tf_refwant = Round_Up(Rule.RefineryRatio * fixed(CurBuildings));
+        unsigned tf_reftime = (unsigned)TF_Eco_Refinery_Target();
+        if (tf_reftime > tf_refwant) {
+            tf_refwant = tf_reftime;
+        }
+        if (!IsTiberiumShort && current < tf_refwant && current < (unsigned)Rule.RefineryLimit) {
             b = TF_Skirmish_Pick(STRUCT_REFINERY, ActLike);
             if (Can_Build(b, ActLike) && (money > b->Cost_Of() || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
-                    *choiceptr = BuildChoiceClass(tf_refqty == 0 ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
+                    // Below the match-time pace the refinery is the income engine and
+                    // outranks tech; past it the ratio rule fills in at MEDIUM as before.
+                    *choiceptr = BuildChoiceClass(
+                        (tf_refqty == 0 || current < tf_reftime) ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
                 }
             }
         }
@@ -10214,6 +10313,55 @@ int HouseClass::AI_Building(void)
  * HISTORY:                                                                                    *
  *   09/29/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
+/*
+**	Garrison kept while the economy holds combat production: enough to see off a
+**	scout and hold the bunkers, not an army.
+*/
+enum
+{
+    TF_ECO_GARRISON_VEHICLES = 2,
+    TF_ECO_GARRISON_INFANTRY = 4
+};
+
+/*
+**	Diagnostic: one ECO-HOLD line per house per ~minute while production yields to
+**	the economy, naming the targets it is waiting on.
+*/
+static void TF_Eco_Hold_Diag(HouseClass const* house, char const* what)
+{
+#if TF_DEV_BUILD // TF_AI_DIAG
+    extern FILE* TF_AI_Diag_File(void);
+    static long _last[HOUSE_COUNT] = {0};
+    int hidx = (int)house->Class->House;
+    if (hidx < 0 || hidx >= HOUSE_COUNT || (long)Frame - _last[hidx] < TICKS_PER_MINUTE) {
+        return;
+    }
+    _last[hidx] = (long)Frame;
+    int refwant = 0;
+    int harvwant = 0;
+    int refhave = 0;
+    house->TF_Eco_Below_Target(&refwant, &harvwant, &refhave);
+    FILE* _tfdbg = TF_AI_Diag_File();
+    if (_tfdbg != NULL) {
+        fprintf(_tfdbg,
+                "F%ld H%d AL%d ECO-HOLD %s ref=%d/%d harv=%d/%d $%d\n",
+                (long)Frame,
+                (int)house->Class->House,
+                (int)house->ActLike,
+                what,
+                refhave,
+                refwant,
+                house->TF_Harvesters_Owned(),
+                harvwant,
+                house->Available_Money());
+        fflush(_tfdbg);
+    }
+#else
+    (void)house;
+    (void)what;
+#endif
+}
+
 int HouseClass::AI_Unit(void)
 {
     assert(Houses.ID(this) == ID);
@@ -10236,15 +10384,10 @@ int HouseClass::AI_Unit(void)
     // 11 for 3 refineries) -> broke -> power-starved -> upper tier blocked. The heap scan
     // counts docked + active (but not destroyed) harvesters, capping production at ~one
     // per refinery and rebuilding only genuine losses.
-    int tf_harv_owned = 0;
-    for (int hidx = 0; hidx < Units.Count(); hidx++) {
-        UnitClass const* hu = Units.Ptr(hidx);
-        if (hu != NULL && (HouseClass*)hu->House == this
-            && (*hu == UNIT_TDHARV || *hu == UNIT_HARVESTER || *hu == UNIT_TSHARV)) {
-            tf_harv_owned++;
-        }
-    }
-    if (IQ >= Rule.IQHarvester && !IsTiberiumShort && !IsHuman && (int)tf_refq > tf_harv_owned
+    int tf_harv_owned = TF_Harvesters_Owned();
+    // The fleet target scales with the tier (Hard works every refinery with two
+    // harvesters, Medium three per two, Easy the vanilla one each).
+    if (IQ >= Rule.IQHarvester && !IsTiberiumShort && !IsHuman && TF_Eco_Harvester_Target((int)tf_refq) > tf_harv_owned
         && Difficulty != DIFF_HARD) {
         if (UnitTypeClass::As_Reference(tf_harv).Level <= (unsigned)Control.TechLevel) {
             BuildUnit = tf_harv;
@@ -10336,6 +10479,18 @@ int HouseClass::AI_Unit(void)
     }
 
     if (IsBaseBuilding) {
+
+        /*
+        **	Economy first: while the refinery or harvester fleet is below its target
+        **	the combat pick yields (a small garrison excepted), so the credits reach
+        **	the yard's refinery order and the harvester order above instead of
+        **	draining into tier-one units the moment they arrive.
+        */
+        if (Session.Type != GAME_NORMAL && CurUnits - tf_harv_owned >= TF_ECO_GARRISON_VEHICLES
+            && TF_Eco_Below_Target()) {
+            TF_Eco_Hold_Diag(this, "vehicle");
+            return (TICKS_PER_SECOND * 2);
+        }
 
         /*
         **	W5.3: a beachhead that is holding gets a base. The expansion MCV jumps the
@@ -10716,6 +10871,16 @@ int HouseClass::AI_Infantry(void)
     }
 
     if (IsBaseBuilding) {
+        /*
+        **	Economy first (see AI_Unit): infantry is the cheapest drain on a
+        **	starved treasury, so it waits behind the refinery and harvester targets
+        **	once a small garrison stands.
+        */
+        if (Session.Type != GAME_NORMAL && CurInfantry >= TF_ECO_GARRISON_INFANTRY && TF_Eco_Below_Target()) {
+            TF_Eco_Hold_Diag(this, "infantry");
+            return (TICKS_PER_SECOND * 2);
+        }
+
         HouseClass const* enemy = NULL;
         if (Enemy != HOUSE_NONE) {
             enemy = HouseClass::As_Pointer(Enemy);
