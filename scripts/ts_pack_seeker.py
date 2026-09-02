@@ -32,7 +32,7 @@ XML = f"{MOD}/XML/TILESETS/RA_UNITS.XML"
 EMBLEM = os.path.join(HERE, "tab_emblems", "tsgdi.png")
 CANVAS = 384
 SCALE = 4
-BIG_MULT = 2  # extra upscale so the droid renders larger on screen
+BIG_MULT = 3  # extra upscale so the droid renders larger on screen
 
 
 def tga_bytes(img):
