@@ -3115,10 +3115,15 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
         distance = Distance(tcoord);
         PrimaryFacing.Set_Desired(Direction(tcoord));
         SecondaryFacing.Set_Desired(Direction(tcoord));
-        if (distance < DESCEND_PROXIMITY) {
-            want = max(10, FLIGHT_LEVEL * distance / DESCEND_PROXIMITY);
-        }
     }
+    /*
+    **	The droid strikes from flight level rather than diving to the deck. A
+    **	dive drops it into LAYER_GROUND, an abnormal state for an aircraft, and
+    **	self-deleting from there corrupted the layer lists (the recurring
+    **	detonation crash). Staying at FLIGHT_LEVEL keeps it a normal LAYER_TOP
+    **	aircraft through the strike, so its removal is the ordinary aircraft
+    **	death the engine handles cleanly.
+    */
 
     /*
     **	Altitude: the launcher draws Height as a north shift with the engine
@@ -3210,17 +3215,14 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
     Explosion_Damage(here, attack, NULL, warhead);
 
     /*
-    **	Now destroy the droid through the engine's own death path rather than a
-    **	raw `delete this`. Restore a single hit point so the forced lethal
-    **	Take_Damage reaches RESULT_DESTROYED, which severs radio contact
-    **	(RADIO_OVER_OUT), stuns, empties cargo and unlinks the layers before the
-    **	one delete. The manual delete skipped that teardown and crashed on every
-    **	target type (tf_hunter.log reached this point then CTD).
+    **	Remove the droid the same way Edge_Of_World_AI removes a spent aircraft
+    **	from inside AI(): Stun (radio/nav severed) then a plain delete, whose
+    **	destructor Limbo unlinks the map layers. The engine's Take_Damage death
+    **	path (Death_Announcement etc.) crashed here; this minimal teardown is the
+    **	proven one, now that the whole routine runs at the safe late point in AI.
     */
-    Strength = 1;
-    TF_HS_Log("  self-destruct via engine Take_Damage\n");
-    int lethal = 0x7FFF;
-    Take_Damage(lethal, 0, warhead, NULL, true);
+    TF_HS_Log("  self-destruct via delete this\n");
+    delete this;
 }
 
 /***********************************************************************************************

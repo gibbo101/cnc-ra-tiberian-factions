@@ -755,19 +755,24 @@ bool Read_Scenario(char* name)
                 }
             }
         }
-        if (home != 0) {
-            for (int d = 3; d <= 14; d++) {
-                CELL c = home + (d * MAP_CELL_W);
-                if ((unsigned)c >= MAP_CELL_TOTAL) {
-                    continue;
-                }
-                BuildingClass* up =
-                    new BuildingClass(BuildingTypes.Ptr((int)STRUCT_TSPLUG), PlayerPtr->Class->House);
-                if (up != NULL && up->Unlimbo(Cell_Coord(c))) {
-                    break;
-                }
-                if (up != NULL) {
-                    delete up;
+        bool placed = false;
+        for (int ring = 3; ring <= 16 && !placed; ring++) {
+            for (int dx = -ring; dx <= ring && !placed; dx++) {
+                for (int dy = -ring; dy <= ring && !placed; dy++) {
+                    if (home == 0) {
+                        break;
+                    }
+                    CELL c = home + dx + (dy * MAP_CELL_W);
+                    if ((unsigned)c >= MAP_CELL_TOTAL) {
+                        continue;
+                    }
+                    BuildingClass* up =
+                        new BuildingClass(BuildingTypes.Ptr((int)STRUCT_TSPLUG), PlayerPtr->Class->House);
+                    if (up != NULL && up->Unlimbo(Cell_Coord(c))) {
+                        placed = true;
+                    } else if (up != NULL) {
+                        delete up;
+                    }
                 }
             }
         }
