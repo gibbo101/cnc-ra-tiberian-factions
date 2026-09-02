@@ -3120,30 +3120,39 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
 }
 
 /*
-**	The strike: the victim takes a forced (unmodified) hit of twice its
-**	remaining strength -- TS's SuicideBomb is 11000 at 100% against every
-**	armour -- then the droid destroys itself, and its Explodes= rule lays the
-**	blast anim and splash at the impact point.
+**	The strike, ported from OpenTS fly.cpp Nearing_Target (the IsHunterSeeker
+**	detonate branch): the target takes the weapon's full attack, a splash of
+**	the same magnitude lands at the droid, and the droid takes the same and
+**	dies. The self Take_Damage's destructor unlinks the map layers on its own
+**	-- exactly like a shot-down aircraft -- so there is NO manual Map.Remove
+**	(the RA landing path does one only because it is mid-transition, and doing
+**	it here removed the object from the wrong layer under the freed pointer:
+**	the post-fire crash).
+**
+**	Nothing touches this object after the self Take_Damage; TF_Hunter_Seeker_AI
+**	returns true and AI() returns, the one context where a self-delete is safe.
 */
 void AircraftClass::TF_Hunter_Seeker_Detonate(void)
 {
-    Sound_Effect(VOC_TS_HUNTER2, Center_Coord());
+    WeaponTypeClass const* weapon = Class->PrimaryWeapon;
+    int attack = (weapon != NULL) ? weapon->Attack : Strength;
+    WarheadType warhead = (weapon != NULL && weapon->WarheadPtr != NULL)
+                              ? WarheadType(weapon->WarheadPtr->ID)
+                              : WARHEAD_HE;
+    COORDINATE here = Center_Coord();
+
+    Sound_Effect(VOC_TS_HUNTER2, here);
 
     TechnoClass* victim = As_Techno(TarCom);
-    if (victim != NULL && victim->IsActive && victim->Strength > 0) {
-        int hit = victim->Strength * 2 + 1;
-        victim->Take_Damage(hit, 0, WARHEAD_HE, this, true);
+    if (victim != NULL && victim->IsActive) {
+        int dmg = attack;
+        victim->Take_Damage(dmg, 0, warhead, this, true);
     }
 
-    /*
-    **	Same self-destruct shape as a fixed-wing aircraft grounding itself
-    **	(Landing_Takeoff_AI). Flying aircraft halve incoming damage, so the
-    **	fatal point is two, not one.
-    */
-    Strength = 1;
-    int damage = 2;
-    Map.Remove(this, In_Which_Layer());
-    Take_Damage(damage, 0, WARHEAD_AP, 0, true);
+    Explosion_Damage(here, attack, NULL, warhead);
+
+    int selfdmg = attack;
+    Take_Damage(selfdmg, 0, warhead, NULL, true);
 }
 
 /***********************************************************************************************
