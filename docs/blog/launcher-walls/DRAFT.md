@@ -64,8 +64,7 @@ factions collapsed onto two RA crests.
 
 The atlas that holds every HUD image is moddable as a loose file. In May we proved it by
 painting the Command & Conquer logo into both crest regions. Every faction saw the same
-neutral logo. Honest, faction-agnostic, and a compromise: it hid the problem rather than solving
-it.
+neutral logo. Faction-agnostic, and a compromise: it hid the problem rather than solving it.
 
 In July we tried to do better. The atlas already contains TD's GDI eagle and Nod scorpion in
 regions the RA launcher never references. We painted markers into them, launched as GDI, and got
