@@ -577,16 +577,16 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Launcher / engine limitations (cannot be fixed from a mod — do not re-investigate)
 
-### Select-all (A) and Deploy (/) hotkeys ignore GDI/Nod harvester + MCV
-- **Severity:** minor, player-facing.
-- **Status:** WON'T FIX (launcher-hardcoded unit identity; not reachable from the DLL/mod).
-- **Workaround:** drag-box to select army; click the MCV with the deploy cursor to deploy. Documented in
-  the Workshop "Known limitations". MCV deploy hotkey spike resolved-negative (memory
-  `project-mcv-deploy-hotkey-spike`).
-- **Scope widens at W2 b3 (accepted by Luke, 2026-07-19):** the MCV split replaces the vanilla
-  `MCV`/`TDMCV` with four faction MCV types (`AMCV`/`SMCV`/`TDGMCV`/`TDNMCV`) in skirmish, so
-  the deploy hotkey stops working for **Allied and Soviet too** — the GlyphX gate keys on
-  vanilla enum identity and no new type can have it. Mouse self-click deploy remains for all.
+### Select-all (A) and Deploy hotkeys ignore faction harvesters + MCVs — ✅ FIXED 2026-09-02
+- **Was:** WON'T FIX (launcher-hardcoded unit identity). Now FIXED on the DLL side, no launcher
+  change: the DLL polls the deploy key itself (`GetAsyncKeyState`, cross-process) and runs the
+  generic self-action on the selection, so every faction MCV, APC, transport and minelayer
+  deploys/unloads on the stock backslash key; and while A is held the DLL vetoes harvesters and
+  MCVs in the launcher's select-all hand-over. Mechanism + the reverse-engineered launcher gate
+  (exported AssetName+TypeName must both be "MCV"): `launcher-vs-dll-ownership.md`. Verified
+  headless on GDI/Allied MCVs and a GDI harvester; Luke to re-test APC/Chinook/minelayer/TS units.
+- **Player-facing copy still says it's a limitation** (Workshop "Known limitations", ModDB page):
+  update at the next release.
 
 ### Classic graphics mode dropped (HD-only)
 - **Severity:** by-design, player-facing.
