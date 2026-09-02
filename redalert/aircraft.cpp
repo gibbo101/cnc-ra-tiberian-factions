@@ -1066,12 +1066,18 @@ void AircraftClass::AI(void)
     assert(IsActive);
 
     /*
-    **	The hunter seeker has exactly one job: whatever idle/guard fallback
-    **	the engine hands it after a victim dies, it goes straight back to
-    **	hunting.
+    **	The hunter seeker keeps the inert attack mission alive and does all
+    **	its flying here. TF_Hunter_Seeker_AI returns true only when it has
+    **	detonated (and deleted itself), the one context where a self-delete is
+    **	safe -- exactly like the fixed-wing self-destruct in Landing_Takeoff_AI.
     */
-    if (*this == AIRCRAFT_TSHUNT && Mission != MISSION_ATTACK && MissionQueue != MISSION_ATTACK) {
-        Assign_Mission(MISSION_ATTACK);
+    if (*this == AIRCRAFT_TSHUNT) {
+        if (Mission != MISSION_ATTACK && MissionQueue != MISSION_ATTACK) {
+            Assign_Mission(MISSION_ATTACK);
+        }
+        if (TF_Hunter_Seeker_AI()) {
+            return;
+        }
     }
 
     /*
@@ -3050,7 +3056,7 @@ static TARGET TF_Hunter_Seeker_Acquire(HouseClass const* house)
 **	droid hovers. TS constants, leptons per frame: EmergeSpeed 6, AscentSpeed
 **	40, DescentSpeed 50, DescendProximity 700, DetonateProximity 150.
 */
-int AircraftClass::TF_Hunter_Seeker_AI(void)
+bool AircraftClass::TF_Hunter_Seeker_AI(void)
 {
     enum
     {
@@ -3102,7 +3108,7 @@ int AircraftClass::TF_Hunter_Seeker_AI(void)
         }
         if (distance < DETONATE_PROXIMITY) {
             TF_Hunter_Seeker_Detonate();
-            return (1);
+            return (true);
         }
     }
 
@@ -3110,7 +3116,7 @@ int AircraftClass::TF_Hunter_Seeker_AI(void)
         Map.Remove(this, layer);
         Map.Submit(this, In_Which_Layer());
     }
-    return (1);
+    return (false);
 }
 
 /*
@@ -3162,8 +3168,14 @@ int AircraftClass::Mission_Attack(void)
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
 
+    /*
+    **	The hunter seeker's flight and detonation run from AI() (a mission
+    **	function must never delete its own object -- MissionClass::AI writes
+    **	Timer to the freed object right after). Its mission is just a live
+    **	keep-alive.
+    */
     if (*this == AIRCRAFT_TSHUNT) {
-        return (TF_Hunter_Seeker_AI());
+        return (1);
     }
 
     if (Class->IsFixedWing) {

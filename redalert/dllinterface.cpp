@@ -8568,10 +8568,12 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
         }
         break;
     case SPC_TS_HUNTSEEK:
-        // Tiberian Factions mod — TS Hunter Seeker: paratroop-class launcher
-        // plumbing (cost-suppression whitelisted); the click's cell is ignored
-        // by the DLL. AssetName "SW_TSHunt" resolves the TS DETNICON cameo.
-        dll_weapon_type = SW_PARA_INFANTRY;
+        // Tiberian Factions mod — TS Hunter Seeker: fires on the cameo click
+        // with NO target cursor (TS's [HuntSeekSpecial] has no Action=). The
+        // sonar-pulse launcher type is the instant/no-target activation; the
+        // DLL ignores the cell and the droid picks its own victim. AssetName
+        // "SW_TSHunt" resolves the TS DETNICON cameo.
+        dll_weapon_type = SW_SONAR_PULSE;
         if (weapon_name != NULL) {
             strncpy(weapon_name, "SW_TSHunt", 16);
         }

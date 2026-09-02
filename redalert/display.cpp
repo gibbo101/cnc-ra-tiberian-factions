@@ -3172,7 +3172,7 @@ int DisplayClass::TacticalClass::Action(unsigned flags, KeyNumType& key)
             // reach from the mod side (crosshair-style targeting). If we
             // ever land launcher-side hooks, this becomes ACTION_TD_ION_CANNON.
             if (Map.IsTargettingMode == SPC_TD_ION_CANNON || Map.IsTargettingMode == SPC_TS_ION_CANNON
-                || Map.IsTargettingMode == SPC_TS_DROPPODS || Map.IsTargettingMode == SPC_TS_HUNTSEEK) {
+                || Map.IsTargettingMode == SPC_TS_DROPPODS) {
                 action = ACTION_NUKE_BOMB;
             }
 
