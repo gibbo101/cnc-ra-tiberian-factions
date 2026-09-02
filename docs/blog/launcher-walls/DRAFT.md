@@ -1,0 +1,195 @@
+# Three launcher walls, and how they came down
+
+*Draft for Luke's blog post, written 2026-09-02 from the session that broke walls two and three.
+Facts and dates are from the repo docs and commits; the voice is a placeholder. Screenshots in this
+folder. No em dashes in the final copy.*
+
+---
+
+## Why a mod for Red Alert Remastered has "walls" at all
+
+Tiberian Factions lives inside a strange architecture. The Remastered Collection is two
+programs: the game engine (the 1996 C++ that EA open-sourced, compiled into `RedAlert.dll` and
+run by a process called InstanceServerG) and the launcher (ClientG, the closed-source shell that
+draws the HD art, plays the audio, owns the HUD, the lobby, and the keyboard). A mod can rebuild
+the engine DLL, and that is what this mod is. It cannot rebuild the launcher.
+
+So every feature the mod wants has to answer one question first: does the launcher let the DLL
+say what it needs to say? When the answer was no, we called it a wall, documented it, and moved
+on. Three of those walls mattered more than the rest. This is the story of how each one fell,
+in the order the mod's docs recorded them.
+
+## Wall one: EVA lines the launcher speaks on its own
+
+GDI and Nod have their own EVA voice. Most lines were easy: the engine asks for a line, the DLL
+looks at the player's faction and asks the launcher to play the TD recording instead of the RA
+one. Five lines never went through the engine at all. "Cannot deploy here", "structure sold",
+"mission accomplished", "mission failed" and "battle control terminated" are fired by the
+launcher itself, at moments the DLL never sees. A GDI player heard the Red Alert announcer for
+exactly those five, and the docs filed them as launcher-owned.
+
+The first crack was noticing what the launcher does with those lines: it resolves each sample
+from a loose file on disk if one exists, otherwise from the base archive. The DLL can write
+files. So at every match start, the DLL copies the picked faction's recording over the loose
+file the launcher will read. We called it the mailbox. It worked on the first fire of every line.
+
+It failed on the second. The launcher reads each sample once per boot and keeps it in memory, so
+a player who switched faction between matches kept hearing the previous faction until they
+restarted the game. That was the actual wall: not the file, the cache.
+
+The cache lives in the launcher's memory. The DLL runs in a sibling process. Windows lets one
+process open another and write to it, and it turned out Proton honours that too. So at match
+start the DLL now scans the launcher's memory for the cached sample of the wrong faction (a
+20-byte needle taken from real audio, never the leading silence) and overwrites it in place with
+the right one. Rules learned the hard way: the write must be the same size as the original or
+the launcher crashes, so every TD/RA pair is padded to equal length; the "battle control
+terminated" sample is loaded by a stricter decoder at teardown that rejects ffmpeg's block
+alignment, so that one keeps the base game's encoding and is padded with zeros after the data;
+and a line can only be patched after it has been heard once, which is fine because the next
+match's start-patch catches it.
+
+That shipped on 1 September. All five lines follow the faction across an in-session switch.
+And it left behind a tool: a proven way to find and rewrite a specific thing inside the
+launcher's memory.
+
+## Wall two: the faction crest on the radar
+
+Before a player builds a radar, the slot in the sidebar shows a faction crest. The launcher
+draws it, and it is keyed on the RA side: Allied countries get one crest, Soviet countries the
+other. The mod's GDI is technically on the Allied side and Nod on the Soviet side, so all four
+factions collapsed onto two RA crests.
+
+### The compromise
+
+The atlas that holds every HUD image is moddable as a loose file. In May we proved it by
+painting the Command & Conquer logo into both crest regions. Every faction saw the same
+neutral logo. Honest, faction-agnostic, and a compromise: it hid the problem rather than solving
+it.
+
+In July we tried to do better. The atlas already contains TD's GDI eagle and Nod scorpion in
+regions the RA launcher never references. We painted markers into them, launched as GDI, and got
+the Allied region regardless. Which region the crest reads from is decided in the launcher's
+code, not in any data we ship. The doc recorded it as tested and dead, and even named the one
+untried escape route: cross-process writes into the launcher, "heavier, fragile, crash-prone,
+not pursued".
+
+### Bringing it down
+
+By September that escape route was the EVA fix, proven and shipping. So the crest spike was
+reopened on the memory side, with a read-only probe first.
+
+The obvious plan failed immediately, and the failure was the lesson. The idea was to overwrite
+the crest's pixels in launcher memory. A scan of 1.7 gigabytes of the launcher's readable memory
+found the crest pixels in no encoding at all. After the atlas is uploaded to the GPU, the
+launcher throws the CPU copy away. Pixels were never going to be the lever.
+
+What the scan did find was the atlas's metadata: the region names, and the atlas name, sitting
+in ordinary writable heap. Following that thread turned up the real mechanism. For every atlas
+region it draws, the launcher keeps a tiny cached record: four floats giving the region's
+position and size as texture coordinates. The crest is drawn from that record every frame. It
+takes sixteen bytes to point the Allied crest slot at the TD eagle region instead, and the
+change is visible on the next frame. No new art, no relaunch.
+
+The rest of that day was traps and their fixes:
+
+- The record does not exist at match start. The launcher creates it lazily on the first radar
+  draw, a few frames in. A patch that ran once at match start found nothing on a fresh launch.
+  Now the DLL scans for a short window at the start of every match and cheaply re-checks the
+  addresses it found on every frame after.
+- Nod draws the Allied slot too. The old note that Nod used the Soviet region could never have
+  been tested, because both regions held the same logo. The DLL simply points both slots at the
+  faction's crest.
+- The Allied and Soviet crests came back. With the crest per-faction, the C&C logo compromise
+  was retired: the pristine RA chevron and pentagon were restored into the atlas from the base
+  game, so all four factions finally have their own.
+
+Then the same sixteen-byte trick was pointed at everything else in the sidebar. TD's metal
+radar plate replaced RA's radar grid behind the GDI and Nod crests. Then every RA sidebar region
+the launcher draws was paired with its same-named TD region in the atlas: the build-bar plates,
+the power bar, the tab icons, the tooltip frame, the small buttons, and finally the sell,
+repair and map buttons (TD's are a different shape, so the RA slots sample a centred square of
+each TD button bar). GDI and Nod now play on the Tiberian Dawn sidebar. Allied and Soviet get
+theirs back the moment they pick an RA side, in the same session.
+
+One wall it did not break: the launcher's HUD cannot gain new buttons. This changes what an
+existing widget samples. The widgets themselves are compiled code.
+
+## Wall three: the deploy key and select-all
+
+Two keys had been broken since the factions got their own MCV types. The deploy key only
+deployed the stock RA MCV; every faction MCV, transport and minelayer had to be clicked. And
+select-all grabbed the faction harvesters and MCVs along with the army, because the launcher
+only knows to exclude the stock ones.
+
+### How it was troubleshot, and why we gave up
+
+EA left a hook for community hotkeys in the launcher's data and in the DLL source ("For our
+ever-awesome Community Modders!"). In July we proved the whole chain: enable the constant,
+bind a key in the options menu, and the press reaches the DLL with a map cell. We wrote a
+generic handler that asks every selected unit what a self-click would do and acts only if the
+answer is "deploy". It worked. The wall was delivery: the mod cannot ship a default binding.
+Four ways of injecting one were tried, all ignored by the launcher; the settings file that holds
+bindings is doubly compressed and hashed with an unknown algorithm. The feature shipped as a
+handler nobody could reach without binding it themselves, and the key stayed a known
+limitation on the Workshop page.
+
+In June we had also tried spoofing the names the DLL exports for each unit, so the launcher
+would think a faction MCV was the stock one. The note says it had no effect. That note was
+wrong, and it stayed wrong for three months, because the spoof in that test never reached the
+launcher at all.
+
+### Bringing it down
+
+The September session started by reverse-engineering what the launcher actually checks. A
+diagnostic DLL dumped every field it exports for a selected unit, for the stock MCV and for a
+faction MCV, and they were identical apart from names. Aliasing the type name alone changed
+nothing. Aliasing both the type name and the asset name made the launcher fire its deploy
+command for a GDI MCV. So the gate is: both exported names must be exactly "MCV". Confirmed,
+and useless, because the asset name is what selects the unit's art.
+
+The launcher's binary told the rest of the story. It interns unit names at startup and keeps the
+"MCV" and "HARV" ids side by side in one settings object; the deploy command and the select-all
+exclusion both compare against those. Patching that in memory would have been the crest trick
+again, and it would have worked for one name.
+
+The better answer was to stop needing the launcher. The launcher was only ever a relay: it
+detected the key and told the DLL. But the DLL's process shares the same session, and a plain
+Windows call reports the physical key state to any process that asks. So the DLL now polls the
+deploy key itself, every frame, and on a fresh press runs the handler from July, the one that
+already knew how to deploy MCVs, unload APCs and Chinooks, and lay mines. No binding, no data
+file, no memory patch. Select-all fell the same way: the launcher still picks a bad list, but
+it hands every pick to the DLL one at a time, and the DLL now applies the engine's own
+band-select rule to the hand-over while the key is down.
+
+Verified headless on the Linux desktop with the monitors off: the GDI MCV deployed on a tap,
+the Allied MCV deployed on a tap, a minigunner was selected by A while a GDI MCV and a GDI
+harvester were not.
+
+## What the three have in common
+
+None of the walls was fake. The launcher really does own those samples, that crest, and that
+key. What was wrong each time was the assumption about where the boundary sat:
+
+- The EVA cache was launcher-owned, but memory is shared across processes.
+- The crest pixels were unreachable, but the record that points at them was not.
+- The key was launcher-owned, but the keyboard is not.
+
+The rule the mod now works by: a wall proven on the data side is not proven on the memory
+side, and a wall proven in the launcher is not proven in the DLL. Look for the structure that
+drives the behaviour, not the behaviour itself.
+
+---
+
+### Screenshots in this folder
+
+- `crest_4up_v2.png`: the four crests in one session (GDI eagle on TD plate, Nod scorpion on
+  TD plate, Allied chevron, Soviet pentagon).
+- `crest_g1.png`: the first live eagle, seconds after the sixteen-byte write.
+- `radar_bgs.png`: the four radar backgrounds in the base atlas (RA bezel, RA under-screens,
+  TD plate).
+- `eagle_up.png`, `eagle_resize.png`: the eagle aspect-corrected and moved clear of the label.
+- `v4_gdi.png`, `v4_allied.png`: the full TD sidebar for GDI, and Allied back on RA's.
+- `buttons_live.png`: the sell/repair/map buttons sampling TD's bars.
+- `scene_gdi.png`, `scene_allied.png`: the GDI and Allied MCVs deployed by the key.
+- `a_test.png`: the GDI MCV click-selected, then unselected after A.
+- `scene_ctrl.png`: the control, a minigunner selected by A.
