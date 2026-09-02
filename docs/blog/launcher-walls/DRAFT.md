@@ -111,7 +111,7 @@ repair and map buttons (TD's are a different shape, so the RA slots sample a cen
 each TD button bar). GDI and Nod now play on the Tiberian Dawn sidebar. Allied and Soviet get
 theirs back the moment they pick an RA side, in the same session.
 
-One wall it did not break: the launcher's HUD cannot gain new buttons. This changes what an
+One wall it did not break: the launcher's HUD cannot gain new buttons... yet. This changes what an
 existing widget samples. The widgets themselves are compiled code.
 
 ## Wall three: the deploy key and select-all
