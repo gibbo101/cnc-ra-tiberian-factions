@@ -17,7 +17,7 @@ WriteProcessMemory behave under Proton like the proven reads. Probe read-only fi
 
 ---
 
-## ⭐ NEXT SPIKE: per-faction radar crest via RAM patch (Luke, 2026-09-01)
+## ✅ DONE 2026-09-02: per-faction radar crest via RAM patch — shipped in the DLL, record in `docs/radar-crest-ram-spike.md` (follow-ups there: aspect, distinct Allied/Soviet crests). Original spike note kept below for history.
 
 Full plan: `docs/radar-crest-ram-spike.md`. The EVA RAM patch proved cross-process
 `WriteProcessMemory` into ClientG works under Proton, which is exactly the mechanism the

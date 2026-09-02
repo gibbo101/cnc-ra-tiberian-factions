@@ -1,74 +1,77 @@
-# Per-faction radar crest — RAM-patch spike (reopened 2026-09-01)
+# Per-faction radar crest — SOLVED (2026-09-02)
 
-**Goal:** the in-game radar-slot faction crest (shown when the player has no radar building) is
-side-only — the launcher routes `HOUSE_GOOD`→the ALLIES crest region and `HOUSE_BAD`→SOVIET,
-collapsing GDI/Nod onto the two RA side crests. Make it show a real GDI eagle / Nod scorpion per
-faction.
+The in-game radar-slot crest (shown while the player has no radar building) now follows the
+picked faction: **GDI → TD eagle, Nod → TD scorpion, Allied → RA chevron, Soviet → RA pentagon**. Verified
+in play across four skirmishes in ONE session (Nod, GDI, Allied, Soviet) with no relaunch; both
+switch directions confirmed in the log. Ships in release builds; logging is `TF_DEV_BUILD`-only.
+Code: `TF_Crest_*` in `redalert/dllinterface.cpp` (`TF_Crest_Tick` driven per frame from
+`CNC_Advance_Instance`; `TF_Patch_ClientG_Crest` at match start only resets the scan window).
 
-## Why this is worth reopening
+This reopens and closes the 2026-07-20 wall ("crest is side-keyed in `ClientG.exe`, not moddable"):
+that finding was right on the DATA side and wrong on the RAM side, exactly like the EVA lines
+(`eva-ram-patch-spike.md`).
 
-The 2026-07-20 spike (memory `reference-radar-crest-per-faction-wall`) proved two things:
-1. **Data can't route it.** Painting the unused `UI_SIDEBAR_FACTIONLOGO_GDI`/`_NOD` atlas regions
-   does nothing — the RA launcher never references them; region selection is `ClientG.exe` code.
-2. It explicitly weighed the RAM angle and **declined it**: "Redirecting the crest would need
-   cross-process WRITES into ClientG.exe … a heavier, fragile, crash-prone mechanism … Not
-   pursued."
+## The mechanism (what actually works)
 
-That second point is exactly the capability the **EVA RAM patch just proved reliable** (see
-`eva-ram-patch-spike.md`): cross-process `WriteProcessMemory` into ClientG.exe works under Proton,
-we can locate a loaded asset in ClientG memory by a byte needle, and a same-size overwrite at
-match start changes what the launcher renders — without a crash. So the wall's own stated escape
-route is now a proven tool. Reopen on that basis.
+ClientG keeps **one small cached record per referenced atlas region** in ordinary writable heap:
 
-## The approach — overwrite the loaded crest PIXELS (direct analog of the EVA win)
+```
+float v0, u0, wn, hn;   // y/H, x/W, w/W, h/H of the region in MT_COMMANDBAR_COMMON.TGA (6871x6716)
+```
 
-The launcher loads the ALLIES/SOVIET crest image from the loose atlas
-(`MT_COMMANDBAR_COMMON.TGA` / the `UI_SIDEBAR_FACTIONLOGO_*` regions,
-`docs/ui-atlas-modding.md`). Instead of trying to re-route which region is drawn (ClientG code),
-overwrite the PIXELS of the region that IS drawn: at match start, for a GDI/Nod player, find the
-loaded ALLIES/SOVIET crest pixels in ClientG memory and write the faction crest over them — same
-mechanism family as the EVA sample-blob overwrite (`TF_Patch_ClientG_Cache`).
+The crest quad samples straight from this record every frame (the per-frame vertex buffers carry
+the same UVs). ALLIES = `{1706/6716, 5698/6871, 794/6871, 713/6716}`. There is a persistent
+master copy plus a per-match copy cloned from it (typically 2 records per slot, 4 total). Both
+TD crests already ship inside the atlas as the never-referenced `UI_SIDEBAR_FACTIONLOGO_GDI`
+(1,1875,718,706) and `_NOD` (3778,2221,660,660) regions. **Re-pointing the ALLIES record's 16
+bytes at the GDI or NOD rect swaps the drawn crest instantly** — no pixel data, no new art.
 
-## Stage 1 — READ-ONLY probe (do this first)
+The DLL (in InstanceServerG) does it cross-process, same infra as the EVA patch:
+`CreateToolhelp32Snapshot` → `ClientG.exe` → `OpenProcess(VM_READ|VM_WRITE|VM_OPERATION)` →
+`VirtualQueryEx` over `MEM_PRIVATE`/`PAGE_READWRITE` regions → 4-byte-aligned needle search for
+any record holding a slot's stock rect or a TD rect → `WriteProcessMemory` of the wanted rect.
+Records must be computed as **double divide then cast to float** to byte-match ClientG's copies.
 
-Reuse the EVA patch's scan (`CreateToolhelp32Snapshot` → `ClientG.exe` → `VirtualQueryEx` →
-`ReadProcessMemory`). Needle = a distinctive run of bytes from the ALLIES-crest region of the
-loose atlas, tried in each plausible in-memory form:
-- **raw BGRA/RGBA** (uncompressed decoded pixels) — most likely if ClientG keeps a CPU copy;
-- **the TGA/atlas file bytes** (if it caches the loaded file like it does audio);
-- **DXT/BCn block bytes** (if stored compressed).
+## The three findings that shaped it (in the order they bit)
 
-Generate the needle from the exact pixels we ship in that atlas region. Log hits + region
-protect flags, exactly like the EVA stage-1 probe.
+1. **Pixels are GPU-only after launch.** A 1.7 GB read of every readable ClientG mapping found the
+   crest pixels in NO encoding (BGRA/RGBA/ARGB/ABGR/24-bit, even a 4-pixel run, and no TGA
+   header) while the atlas *metadata* (region names, atlas name) was resident. The pixel-overwrite
+   route from the original plan is dead. Corollary: the loose atlas is read **once per launch** —
+   a marker painted into the crest region on disk was invisible across a new match in the same
+   session and visible after exit-to-desktop + relaunch. A disk mailbox can only ever be
+   per-launch.
+2. **The record is created lazily, on the first radar draw, a few frames into the match.** A
+   match-start-only patch (frame 0) found nothing on a fresh launch. Fix: `TF_Crest_Tick` runs a
+   full scan every 6 frames for the first 450 frames of each match, remembers every record
+   address it finds, and cheaply re-verifies the known addresses every frame.
+3. **Nod draws the ALLIES slot too.** With only the SOVIET record re-pointed, a Nod player kept
+   the ALLIES art. Which slot a faction draws is launcher-owned, so the DLL points **both** slots
+   at the faction rect for GDI/Nod and both back to stock otherwise; whichever the launcher draws
+   is right. (The 2026-07-20 "HOUSE_BAD → SOVIET region" claim was never testable: both regions
+   held the same C&C logo.)
 
-**The decisive question the probe answers:** does a CPU-readable copy of the crest pixels exist in
-ClientG memory at all?
-- **Found, in a writable region** → stage 2 (overwrite with the faction crest, same-size) is very
-  likely to work, just like EVA.
-- **Not found** → the crest almost certainly lives only in GPU/VRAM after upload (the real risk
-  textures carry that audio samples do not). A CPU-memory patch can't reach GPU-resident pixels;
-  the spike would then pivot to patching the upload path or accept the wall. Determining this is
-  the whole value of stage 1 — cheap, read-only, no crash risk.
+## Open / follow-ups
 
-## Stage 2 — the overwrite (only if stage 1 finds writable CPU pixels)
+- **Aspect:** the slot is 794x713; GDI's region is 718x706 (~9% horizontal stretch, eagle fills
+  its region edge to edge, so no crop is possible) and NOD's is 660x660 (scorpion has ~30 px of
+  clear margin, so an aspect-correct window `y+33, h=593` is available if Luke's eye wants it).
+  Luke saw both stretched and was happy; change is a 4-int edit in `TF_Crest_Slots`.
+- **Allied and Soviet crests RESTORED (same day):** the shipped atlas had the C&C logo painted
+  into both RA crest regions ("one logo for all"); the pristine 794x713 Allied chevron / Soviet
+  pentagon were byte-copied back from `scripts/cameo_work/MT_COMMANDBAR_COMMON.TGA` (the base
+  atlas) into `resources/.../MT_COMMANDBAR_COMMON.TGA` and the prefix copy (md5 `33780c7a…`),
+  and `scripts/frontend_atlas_build.py` no longer repaints them (`apply_crest = False`).
+  Verified in play: Allied → chevron, Soviet → pentagon. Also learned: **Soviet countries draw
+  the SOVIET slot** (unpatched record), so the routing is GDI/Nod/Allied → ALLIES, Soviet → SOVIET.
+  All four factions now show their own crest with the TD pair re-pointed and the RA pair stock.
+- LAN clients keep the stock crest (no DLL there) — same limit as the EVA mailbox.
+- Live-testing tool: with the game running headless, `/proc/<ClientG pid>/mem` is read/write
+  from Bash (same uid), so a hypothesis costs one Python write + one screenshot, no DLL rebuild.
+  That is how findings 1 and 3 were established in minutes.
 
-At match start, for GDI/Nod players, write the faction crest pixels over the located ALLIES/SOVIET
-crest blob (same-size — keep the faction crest art at the exact region dimensions). Handle the
-redraw-cadence question: the crest is drawn every frame, so unlike a one-shot audio sample the
-patch may need to persist or re-apply if ClientG re-reads the source. Watch for a re-upload that
-reverts our write (the GPU-cache failure mode).
+## Standing rule (reaffirmed)
 
-## Known-good building blocks to reuse
-
-- Cross-process scan + write: `TF_Patch_ClientG_Cache` / `TF_WriteFile_Into_Process`,
-  dllinterface.cpp.
-- Atlas region names, byte-edit recipe, loose-override delivery: `docs/ui-atlas-modding.md`,
-  `docs/front-end-texture-meg-spike.md`.
-- The faction NAME text under the crest is ALREADY per-faction (launcher-aware) — only the image
-  is side-only, so a per-faction crest completes an identity that is already half-right.
-
-## Standing rule this spike embodies
-
-A wall proven dead on the DATA side (2026-07-20) is not proven dead on the **RAM** side. The EVA
-arc turned three "launcher-owned, can't touch it" walls into shipped features with cross-process
-memory work; the radar crest is the next candidate by the same method.
+A wall proven dead on the data side is not proven dead on the RAM side. Before declaring a
+launcher behaviour impossible: (1) grep CONFIG.MEG, (2) scan ClientG memory for the *structure*
+that drives it (names, rects, UVs), not just the payload.

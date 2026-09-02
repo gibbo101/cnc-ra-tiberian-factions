@@ -1646,6 +1646,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance(int scenario_in
 static void TF_Mailbox_Write_EVA_Voice(void);
 #if TF_DEV_BUILD
 static void TF_Probe_ClientG_Cache(void);
+static void TF_Patch_ClientG_Crest(void);
+static void TF_Crest_Tick(void);
+static void TF_Probe_ClientG_Crest(void);
 #endif
 
 extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int scenario_index,
@@ -1795,8 +1798,10 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
     Set_Palette(GamePalette.Get_Data());
 
     TF_Mailbox_Write_EVA_Voice();
+    TF_Patch_ClientG_Crest();
 #if TF_DEV_BUILD
     TF_Probe_ClientG_Cache();
+    TF_Probe_ClientG_Crest();
 #endif
 
     return true;
@@ -2035,8 +2040,10 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const ch
     Set_Palette(GamePalette.Get_Data());
 
     TF_Mailbox_Write_EVA_Voice();
+    TF_Patch_ClientG_Crest();
 #if TF_DEV_BUILD
     TF_Probe_ClientG_Cache();
+    TF_Probe_ClientG_Crest();
 #endif
 
     return true;
@@ -2187,6 +2194,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
     // Runs before the HELLO flush so a successful re-scan's announcements reach the
     // screen on the same frame they are queued.
     TF_Lobby_Difficulty_Retry();
+
+    // Keep the per-faction radar crest pointed at the picked side's crest (RAM patch).
+    TF_Crest_Tick();
 
     // Flush the queued difficulty announcements once the match is actually
     // rendering (messages sent at difficulty-set time are dropped).
@@ -4009,6 +4019,281 @@ static void TF_Patch_ClientG_Cache(bool td_era)
     }
 }
 
+/*
+** Tiberian Factions -- per-faction radar crest (docs/radar-crest-ram-spike.md).
+** The radar-slot crest is side-keyed in the launcher: GDI draws the ALLIES atlas region,
+** Nod the SOVIET one, so the two RA sides collapse four factions onto two crests. ClientG
+** keeps one small cached record per referenced atlas region -- four floats {v0, u0, w/W,
+** h/H} of MT_COMMANDBAR_COMMON.TGA -- in writable heap, and the crest quad samples straight
+** from it every frame. Re-pointing the ALLIES record at the atlas's own TD GDI crest region
+** (and SOVIET at the TD NOD region) swaps the drawn crest with no pixel data; both TD crests
+** already ship inside the atlas. The pixel route is dead (the atlas lives only on the GPU
+** after launch). The record is created lazily on the first radar draw, a few frames into the
+** match, and a fresh per-match copy appears each match, so the patch is driven per-frame for
+** a short window from CNC_Advance_Instance (TF_Crest_Tick), not once at match start.
+*/
+struct TF_AtlasRect
+{
+    int x, y, w, h;
+};
+
+static void TF_Atlas_UV_Record(const TF_AtlasRect& r, float out[4])
+{
+    // Same arithmetic the launcher used to build the record (double divide, cast to float),
+    // so the bytes match its cached copies exactly.
+    const double W = 6871.0, H = 6716.0; // MT_COMMANDBAR_COMMON.TGA
+    out[0] = (float)(r.y / H);
+    out[1] = (float)(r.x / W);
+    out[2] = (float)(r.w / W);
+    out[3] = (float)(r.h / H);
+}
+
+struct TF_CrestSlot
+{
+    float stock[4];    // the RA side crest the launcher points this slot at
+    float gdi[4];      // the TD GDI crest region
+    float nod[4];      // the TD Nod crest region
+    const float* want; // which of the three the local player should see
+};
+
+// Session-persistent list of ClientG addresses that hold a radar-crest UV record, so the
+// per-frame driver can cheaply re-point them without re-scanning ClientG's whole heap. The
+// record is created lazily (first radar draw), a few frames after match start, and a fresh
+// per-match copy appears each match -- so a full scan runs for a short window each match and
+// discovered addresses are re-verified every frame.
+static SIZE_T TF_CrestAddr[32];
+static int TF_CrestAddrCount = 0;
+static int TF_CrestMatchStartFrame = -100000;
+
+static void TF_Crest_Remember(SIZE_T addr)
+{
+    for (int i = 0; i < TF_CrestAddrCount; i++) {
+        if (TF_CrestAddr[i] == addr) {
+            return;
+        }
+    }
+    if (TF_CrestAddrCount < (int)(sizeof(TF_CrestAddr) / sizeof(TF_CrestAddr[0]))) {
+        TF_CrestAddr[TF_CrestAddrCount++] = addr;
+    }
+}
+
+// Build the two slots (ALLIES->GDI, SOVIET->NOD) for the current local player. Returns false
+// if there is no local player yet.
+static bool TF_Crest_Slots(TF_CrestSlot slots[2])
+{
+    const HouseClass* local = PlayerPtr;
+    if (local == NULL) {
+        for (int i = 0; i < Houses.Count(); i++) {
+            HouseClass* house = Houses.Ptr(i);
+            if (house != NULL && house->IsActive && house->IsHuman) {
+                local = house;
+                break;
+            }
+        }
+    }
+    if (local == NULL) {
+        return false;
+    }
+    bool gdi = (local->ActLike == HOUSE_GOOD);
+    bool nod = (local->ActLike == HOUSE_BAD);
+
+    // Atlas regions (from MT_COMMANDBAR_COMMON.MTD).
+    static const TF_AtlasRect ALLIES = {5698, 1706, 794, 713};
+    static const TF_AtlasRect SOVIET = {2684, 1709, 794, 713};
+    static const TF_AtlasRect GDI = {1, 1875, 718, 706};
+    static const TF_AtlasRect NOD = {3778, 2221, 660, 660};
+
+    // The launcher draws the ALLIES slot for GDI AND Nod (proven 2026-09-02: a Nod player
+    // kept the ALLIES art with the SOVIET record re-pointed). Which slot a given faction
+    // draws is launcher-owned, so both slots follow the picked faction and whichever one is
+    // drawn shows the right crest.
+    TF_Atlas_UV_Record(ALLIES, slots[0].stock);
+    TF_Atlas_UV_Record(SOVIET, slots[1].stock);
+    for (int s = 0; s < 2; s++) {
+        TF_Atlas_UV_Record(GDI, slots[s].gdi);
+        TF_Atlas_UV_Record(NOD, slots[s].nod);
+        slots[s].want = gdi ? slots[s].gdi : (nod ? slots[s].nod : slots[s].stock);
+    }
+    return true;
+}
+
+// Open ClientG.exe with the access this patch needs. Returns NULL if not found.
+static HANDLE TF_Open_ClientG(DWORD access)
+{
+    HANDLE proc = NULL;
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) {
+        return NULL;
+    }
+    PROCESSENTRY32W pe;
+    pe.dwSize = sizeof(pe);
+    if (Process32FirstW(snap, &pe)) {
+        do {
+            if (_wcsicmp(pe.szExeFile, L"ClientG.exe") == 0) {
+                proc = OpenProcess(access, FALSE, pe.th32ProcessID);
+                break;
+            }
+        } while (Process32NextW(snap, &pe));
+    }
+    CloseHandle(snap);
+    return proc;
+}
+
+// Full scan: walk ClientG's private writable heap, and for every record currently holding
+// either slot's stock or faction rect, remember its address and write the wanted rect.
+static void TF_Crest_Full_Scan(FILE* log)
+{
+    TF_CrestSlot slots[2];
+    if (!TF_Crest_Slots(slots)) {
+        return;
+    }
+    bool gdi = (slots[0].want == slots[0].gdi);
+    bool nod = (slots[0].want == slots[0].nod);
+    HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
+                                  | PROCESS_QUERY_INFORMATION);
+    if (proc == NULL) {
+        return;
+    }
+    const int REC = 16;
+    static unsigned char scratch[1 << 20];
+    const int overlap = 32;
+    SIZE_T addr = 0;
+    MEMORY_BASIC_INFORMATION mbi;
+    while (VirtualQueryEx(proc, (LPCVOID)addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
+        SIZE_T region_base = (SIZE_T)mbi.BaseAddress;
+        SIZE_T region_size = mbi.RegionSize;
+        bool writable = (mbi.State == MEM_COMMIT) && (mbi.Type == MEM_PRIVATE)
+                        && (mbi.Protect == PAGE_READWRITE) && region_size <= ((SIZE_T)512 << 20);
+        if (writable) {
+            for (SIZE_T off = 0; off < region_size; off += (sizeof(scratch) - overlap)) {
+                SIZE_T want_bytes = region_size - off;
+                if (want_bytes > sizeof(scratch)) {
+                    want_bytes = sizeof(scratch);
+                }
+                SIZE_T got = 0;
+                if (!ReadProcessMemory(proc, (LPCVOID)(region_base + off), scratch, want_bytes, &got)
+                    || got < (SIZE_T)REC) {
+                    continue;
+                }
+                for (SIZE_T i = 0; i + REC <= got; i += 4) {
+                    // A record is one of ours if it holds a slot's stock rect, or a TD rect a
+                    // previous match wrote. Both slots share the TD rects, so a TD-rect hit is
+                    // attributed to slot 0; the write is the same either way.
+                    int slot = -1;
+                    const char* was = NULL;
+                    if (memcmp(scratch + i, slots[0].stock, REC) == 0) {
+                        slot = 0;
+                        was = "stock";
+                    } else if (memcmp(scratch + i, slots[1].stock, REC) == 0) {
+                        slot = 1;
+                        was = "stock";
+                    } else if (memcmp(scratch + i, slots[0].gdi, REC) == 0) {
+                        slot = 0;
+                        was = "gdi";
+                    } else if (memcmp(scratch + i, slots[0].nod, REC) == 0) {
+                        slot = 0;
+                        was = "nod";
+                    }
+                    if (slot < 0) {
+                        continue;
+                    }
+                    SIZE_T rec_addr = region_base + off + i;
+                    TF_Crest_Remember(rec_addr);
+                    if (memcmp(scratch + i, slots[slot].want, REC) == 0) {
+                        continue;
+                    }
+                    SIZE_T wrote = 0;
+                    bool ok = WriteProcessMemory(proc, (LPVOID)rec_addr, slots[slot].want, REC, &wrote)
+                              && wrote == (SIZE_T)REC;
+                    if (log) {
+                        fprintf(log, "  scan slot %s @ %08x %s -> %s %s\n", slot == 0 ? "ALLIES" : "SOVIET",
+                                (unsigned int)rec_addr, was, gdi ? "gdi" : (nod ? "nod" : "stock"),
+                                ok ? "OK" : "FAIL");
+                    }
+                }
+            }
+        }
+        SIZE_T next = region_base + region_size;
+        if (next <= addr) {
+            break;
+        }
+        addr = next;
+    }
+    CloseHandle(proc);
+}
+
+// Cheap per-frame path: re-point only the already-discovered records. Reads 16 bytes each,
+// so it is safe to run every frame; self-heals a record ClientG rewrote back to its side crest.
+static void TF_Crest_Reverify(void)
+{
+    if (TF_CrestAddrCount == 0) {
+        return;
+    }
+    TF_CrestSlot slots[2];
+    if (!TF_Crest_Slots(slots)) {
+        return;
+    }
+    HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
+                                  | PROCESS_QUERY_INFORMATION);
+    if (proc == NULL) {
+        return;
+    }
+    const int REC = 16;
+    for (int a = 0; a < TF_CrestAddrCount; a++) {
+        unsigned char cur[REC];
+        SIZE_T got = 0;
+        if (!ReadProcessMemory(proc, (LPCVOID)TF_CrestAddr[a], cur, REC, &got) || got != (SIZE_T)REC) {
+            continue;
+        }
+        int slot = -1;
+        if (memcmp(cur, slots[0].stock, REC) == 0 || memcmp(cur, slots[0].gdi, REC) == 0
+            || memcmp(cur, slots[0].nod, REC) == 0) {
+            slot = 0;
+        } else if (memcmp(cur, slots[1].stock, REC) == 0) {
+            slot = 1;
+        }
+        if (slot >= 0 && memcmp(cur, slots[slot].want, REC) != 0) {
+            SIZE_T wrote = 0;
+            WriteProcessMemory(proc, (LPVOID)TF_CrestAddr[a], slots[slot].want, REC, &wrote);
+        }
+    }
+    CloseHandle(proc);
+}
+
+// Reset the per-match window so the driver rescans for this match's freshly-created record.
+static void TF_Patch_ClientG_Crest(void)
+{
+    TF_CrestMatchStartFrame = (int)Frame;
+}
+
+// Driven every frame from CNC_Advance_Instance. Cheaply re-points known records each frame,
+// and runs a full heap scan a few times over the first ~15 seconds of each match to discover
+// the record ClientG creates lazily on the first radar draw.
+static void TF_Crest_Tick(void)
+{
+    TF_Crest_Reverify();
+    int since = (int)Frame - TF_CrestMatchStartFrame;
+    if (since >= 0 && since <= 450 && ((int)Frame % 6) == 0) {
+        FILE* log = NULL;
+#if TF_DEV_BUILD
+        const char* up = getenv("USERPROFILE");
+        char logpath[512];
+        if (up != NULL) {
+            snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+            log = fopen(logpath, "a");
+        }
+        if (log) {
+            fprintf(log, "== crest scan frame %d known=%d ==\n", (int)Frame, TF_CrestAddrCount);
+        }
+#endif
+        TF_Crest_Full_Scan(log);
+        if (log) {
+            fflush(log);
+            fclose(log);
+        }
+    }
+}
+
 #if TF_DEV_BUILD
 /*
 ** Tiberian Factions -- stage-1 RAM-patch spike probe (docs/eva-ram-patch-spike.md).
@@ -4030,34 +4315,13 @@ struct TF_ProbeNeedle
     int len;
 };
 
-static void TF_Probe_ClientG_Cache(void)
+/*
+** Shared read-only scanner for the ClientG RAM probes: walks every committed, readable
+** region of ClientG.exe, logs every hit of every needle (address, region, protection, type)
+** and per-needle totals to tf_cache_probe.log. Nothing is written to ClientG.
+*/
+static void TF_Probe_ClientG_Needles(const TF_ProbeNeedle* needles, int needle_count, const char* tag)
 {
-    // Needles: 20-byte ADPCM data-chunk slices (docs/eva-ram-patch-spike.md). Both channel
-    // variants of NODEPLY (Allied 22k = C, Soviet 44k = R) since which plays follows the
-    // player's country, plus construction-complete which fires in EVERY match (guaranteed
-    // cache) so a zero on it means the scan itself is not reaching the cache.
-    static const unsigned char nodeply_c[] = {0x1d, 0xf0, 0x0c, 0xbf, 0x0c, 0xfc, 0xf0, 0xeb, 0x02, 0xfe,
-                                              0xe4, 0x1f, 0xde, 0xdb, 0xed, 0xc1, 0x11, 0xef, 0x70, 0x01};
-    static const unsigned char nodeply_r[] = {0xdf, 0x02, 0x00, 0x05, 0x2e, 0xaf, 0x13, 0x11, 0xfe, 0xdf,
-                                              0x27, 0x11, 0x0d, 0xe0, 0x02, 0x12, 0x70, 0xfa, 0xf0, 0x44};
-    static const unsigned char tddeploy_c[] = {0xff, 0x9e, 0x02, 0x20, 0xb0, 0xed, 0xb0, 0x40, 0xff, 0x10,
-                                               0xbe, 0xe0, 0xff, 0xe0, 0x34, 0xff, 0x15, 0x12, 0x34, 0x70};
-    static const unsigned char tddeploy_r[] = {0x00, 0x11, 0x11, 0x00, 0x00, 0xaa, 0xdd, 0xff, 0x11, 0x33,
-                                               0x44, 0x44, 0x33, 0x00, 0xbb, 0xcc, 0xee, 0xdd, 0xee, 0x22};
-    static const unsigned char constru_c[] = {0x20, 0x12, 0x60, 0x0f, 0x06, 0x0f, 0x13, 0x02, 0x00, 0xf5,
-                                              0x0c, 0x30, 0xd0, 0x00, 0x0c, 0xf8, 0x00, 0x00, 0xfe, 0xa0};
-    static const unsigned char constru_r[] = {0x44, 0x11, 0x66, 0x22, 0x22, 0x22, 0x11, 0x22, 0xff, 0xcc,
-                                              0xdd, 0xaa, 0xee, 0xcc, 0x00, 0x00, 0x00, 0x22, 0x22, 0x33};
-    static const TF_ProbeNeedle needles[] = {
-        {"NODEPLY_C", nodeply_c, sizeof(nodeply_c)},
-        {"NODEPLY_R", nodeply_r, sizeof(nodeply_r)},
-        {"TDDEPLOY_C", tddeploy_c, sizeof(tddeploy_c)},
-        {"TDDEPLOY_R", tddeploy_r, sizeof(tddeploy_r)},
-        {"CONSTRU_C", constru_c, sizeof(constru_c)},
-        {"CONSTRU_R", constru_r, sizeof(constru_r)},
-    };
-    const int needle_count = (int)(sizeof(needles) / sizeof(needles[0]));
-
     const char* up = getenv("USERPROFILE");
     if (up == NULL) {
         return;
@@ -4068,10 +4332,10 @@ static void TF_Probe_ClientG_Cache(void)
     if (log == NULL) {
         return;
     }
-    fprintf(log, "== probe at frame %d ==\n", (int)Frame);
+    fprintf(log, "== probe %s at frame %d ==\n", tag, (int)Frame);
 
     static unsigned char scratch[1 << 20];
-    const int overlap = 32; // >= max needle length, so a needle straddling two chunks is caught
+    const int overlap = 64; // >= max needle length, so a needle straddling two chunks is caught
 
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (snap == INVALID_HANDLE_VALUE) {
@@ -4131,10 +4395,11 @@ static void TF_Probe_ClientG_Cache(void)
                             for (SIZE_T i = 0; i + nl <= got; i++) {
                                 if (scratch[i] == nb[0] && memcmp(scratch + i, nb, nl) == 0) {
                                     if (hit_total[ni] < 32) {
-                                        fprintf(log, "  HIT %s @ %08x (region %08x prot %lx)\n",
+                                        fprintf(log, "  HIT %s @ %08x (region %08x size %08x prot %lx type %lx)\n",
                                                 needles[ni].name,
                                                 (unsigned int)(region_base + off + i),
-                                                (unsigned int)region_base, (unsigned long)mbi.Protect);
+                                                (unsigned int)region_base, (unsigned int)region_size,
+                                                (unsigned long)mbi.Protect, (unsigned long)mbi.Type);
                                     }
                                     hit_total[ni]++;
                                 }
@@ -4159,6 +4424,68 @@ static void TF_Probe_ClientG_Cache(void)
     }
     fflush(log);
     fclose(log);
+}
+
+static void TF_Probe_ClientG_Cache(void)
+{
+    // Needles: 20-byte ADPCM data-chunk slices (docs/eva-ram-patch-spike.md). Both channel
+    // variants of NODEPLY (Allied 22k = C, Soviet 44k = R) since which plays follows the
+    // player's country, plus construction-complete which fires in EVERY match (guaranteed
+    // cache) so a zero on it means the scan itself is not reaching the cache.
+    static const unsigned char nodeply_c[] = {0x1d, 0xf0, 0x0c, 0xbf, 0x0c, 0xfc, 0xf0, 0xeb, 0x02, 0xfe,
+                                              0xe4, 0x1f, 0xde, 0xdb, 0xed, 0xc1, 0x11, 0xef, 0x70, 0x01};
+    static const unsigned char nodeply_r[] = {0xdf, 0x02, 0x00, 0x05, 0x2e, 0xaf, 0x13, 0x11, 0xfe, 0xdf,
+                                              0x27, 0x11, 0x0d, 0xe0, 0x02, 0x12, 0x70, 0xfa, 0xf0, 0x44};
+    static const unsigned char tddeploy_c[] = {0xff, 0x9e, 0x02, 0x20, 0xb0, 0xed, 0xb0, 0x40, 0xff, 0x10,
+                                               0xbe, 0xe0, 0xff, 0xe0, 0x34, 0xff, 0x15, 0x12, 0x34, 0x70};
+    static const unsigned char tddeploy_r[] = {0x00, 0x11, 0x11, 0x00, 0x00, 0xaa, 0xdd, 0xff, 0x11, 0x33,
+                                               0x44, 0x44, 0x33, 0x00, 0xbb, 0xcc, 0xee, 0xdd, 0xee, 0x22};
+    static const unsigned char constru_c[] = {0x20, 0x12, 0x60, 0x0f, 0x06, 0x0f, 0x13, 0x02, 0x00, 0xf5,
+                                              0x0c, 0x30, 0xd0, 0x00, 0x0c, 0xf8, 0x00, 0x00, 0xfe, 0xa0};
+    static const unsigned char constru_r[] = {0x44, 0x11, 0x66, 0x22, 0x22, 0x22, 0x11, 0x22, 0xff, 0xcc,
+                                              0xdd, 0xaa, 0xee, 0xcc, 0x00, 0x00, 0x00, 0x22, 0x22, 0x33};
+    static const TF_ProbeNeedle needles[] = {
+        {"NODEPLY_C", nodeply_c, sizeof(nodeply_c)},
+        {"NODEPLY_R", nodeply_r, sizeof(nodeply_r)},
+        {"TDDEPLOY_C", tddeploy_c, sizeof(tddeploy_c)},
+        {"TDDEPLOY_R", tddeploy_r, sizeof(tddeploy_r)},
+        {"CONSTRU_C", constru_c, sizeof(constru_c)},
+        {"CONSTRU_R", constru_r, sizeof(constru_r)},
+    };
+    TF_Probe_ClientG_Needles(needles, (int)(sizeof(needles) / sizeof(needles[0])), "eva");
+}
+/*
+** Tiberian Factions -- per-faction radar crest, stage-1 RAM probe (docs/radar-crest-ram-spike.md).
+** READ-ONLY. Asks whether a CPU-readable copy of the radar-slot crest pixels exists in
+** ClientG.exe at match start. Needles are two 8-pixel opaque runs (rows 249 and 463 of the
+** 794x713 UI_SIDEBAR_FACTIONLOGO_ALLIES/_SOVIET regions, which currently hold identical
+** pixels) taken straight from the shipped MT_COMMANDBAR_COMMON.TGA, in BGRA (= the TGA file
+** bytes = the natural decoded layout) and RGBA. Two rows at the same x let the hit
+** addresses reveal the in-memory stride: 27484 = the whole atlas, 3176 = a cropped region
+** texture; the sign gives top- vs bottom-origin. Two hits per needle (one per region) with
+** the whole-atlas stride means the entire atlas is resident.
+*/
+static void TF_Probe_ClientG_Crest(void)
+{
+    static const unsigned char row249_bgra[] = {0x00, 0x01, 0x02, 0xff, 0x10, 0x0e, 0x0f, 0xff, 0x4f, 0x45, 0x40, 0xff,
+                                                0xab, 0x96, 0x87, 0xff, 0xd7, 0xbd, 0xa8, 0xff, 0xc8, 0xad, 0x97, 0xff,
+                                                0xcb, 0xae, 0x99, 0xff, 0xce, 0xb5, 0xa1, 0xff};
+    static const unsigned char row249_rgba[] = {0x02, 0x01, 0x00, 0xff, 0x0f, 0x0e, 0x10, 0xff, 0x40, 0x45, 0x4f, 0xff,
+                                                0x87, 0x96, 0xab, 0xff, 0xa8, 0xbd, 0xd7, 0xff, 0x97, 0xad, 0xc8, 0xff,
+                                                0x99, 0xae, 0xcb, 0xff, 0xa1, 0xb5, 0xce, 0xff};
+    static const unsigned char row463_bgra[] = {0xa6, 0x9b, 0x96, 0xff, 0x8e, 0x84, 0x7d, 0xff, 0x94, 0x89, 0x81, 0xff,
+                                                0x97, 0x8e, 0x83, 0xff, 0xa0, 0x99, 0x92, 0xff, 0x9b, 0x91, 0x8a, 0xff,
+                                                0xaa, 0xa0, 0x97, 0xff, 0x6a, 0x60, 0x56, 0xff};
+    static const unsigned char row463_rgba[] = {0x96, 0x9b, 0xa6, 0xff, 0x7d, 0x84, 0x8e, 0xff, 0x81, 0x89, 0x94, 0xff,
+                                                0x83, 0x8e, 0x97, 0xff, 0x92, 0x99, 0xa0, 0xff, 0x8a, 0x91, 0x9b, 0xff,
+                                                0x97, 0xa0, 0xaa, 0xff, 0x56, 0x60, 0x6a, 0xff};
+    static const TF_ProbeNeedle needles[] = {
+        {"CREST_R249_BGRA", row249_bgra, sizeof(row249_bgra)},
+        {"CREST_R249_RGBA", row249_rgba, sizeof(row249_rgba)},
+        {"CREST_R463_BGRA", row463_bgra, sizeof(row463_bgra)},
+        {"CREST_R463_RGBA", row463_rgba, sizeof(row463_rgba)},
+    };
+    TF_Probe_ClientG_Needles(needles, (int)(sizeof(needles) / sizeof(needles[0])), "crest");
 }
 #endif // TF_DEV_BUILD
 

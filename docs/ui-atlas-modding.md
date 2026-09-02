@@ -27,7 +27,7 @@ The Remastered launcher draws almost all 2D UI from one giant texture atlas — 
 
 | UI element | Region(s) | Keying |
 |---|---|---|
-| **In-game sidebar / radar faction crest** | **`UI_SIDEBAR_FACTIONLOGO_ALLIES` / `_SOVIET`** (794×713) | **per-SIDE** → faction-neutral only |
+| **In-game sidebar / radar faction crest** | **`UI_SIDEBAR_FACTIONLOGO_ALLIES` / `_SOVIET`** (794×713) | per-SIDE in data; **per-FACTION via the DLL RAM patch** (`radar-crest-ram-spike.md`, 2026-09-02) |
 | Lobby faction-pick big logo | `RA_UI_MULTIPLAYER_ALLIED/SOVIET_LOGO_LARGE_NORMAL`/`_HOVER`/`_SELECTED` (309–311) | per-side |
 | Lobby / player-list flag icon | `RA_UI_FLAG_ICON_<COUNTRY>` (SPAIN, TURKEY, … 73×40) | **per-COUNTRY** |
 | Small player-list logo | `RA_UI_ALLIED/SOVIET_LOGO_SMALL` | per-side |
@@ -37,7 +37,7 @@ We burned ~an afternoon editing `RA_UI_MULTIPLAYER_ALLIED_LOGO_LARGE_*` (the **l
 Native `UI_SIDEBAR_FACTIONLOGO_GDI`/`_NOD`/`_DINO` regions exist (Tiberian Dawn), but the RA launcher picks `ALLIES`/`SOVIET` for RA players, so they aren't auto-shown in RA.
 
 **Per-side vs per-country is the design constraint:**
-- In-game crest is **per-SIDE** → editing it is **faction-neutral** (hits everyone on that side). Great for "one logo for all" (we put the C&C logo). Can't be "GDI's logo only" in-game.
+- In-game crest is **per-SIDE on the data side** (the pixels you paint here are what Allied/Soviet see). GDI and Nod get the TD eagle/scorpion because the DLL re-points the launcher's cached region record at runtime — `radar-crest-ram-spike.md`. Both RA sides draw the ALLIES region for GDI *and* Nod.
 - Flags are **per-COUNTRY** → `RA_UI_FLAG_ICON_SPAIN`→GDI and `_TURKEY`→Nod are **Allied-safe** (England/USSR keep theirs). This is the clean lever for per-faction identity on the faction-SELECT screen.
 
 ---

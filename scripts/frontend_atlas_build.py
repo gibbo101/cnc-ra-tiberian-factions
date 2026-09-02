@@ -10,7 +10,9 @@ mtd = open('/tmp/mt_commandbar_common.mtd', 'rb').read()
 if os.path.exists('/tmp/atlas_v2.tga'):
     base, apply_crest = '/tmp/atlas_v2.tga', False
 else:
-    base, apply_crest = '/tmp/mt_commandbar_common.tga', True
+    # Crest regions keep the pristine Allied/Soviet art: the radar crest is per-faction at
+    # runtime (docs/radar-crest-ram-spike.md), so the C&C-logo-for-all paint is retired.
+    base, apply_crest = '/tmp/mt_commandbar_common.tga', False
 print("base:", base, "| re-apply crest:", apply_crest)
 
 atlas = bytearray(open(base, 'rb').read())
