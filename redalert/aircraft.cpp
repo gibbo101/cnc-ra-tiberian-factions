@@ -3182,20 +3182,15 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
     Sound_Effect(VOC_TS_HUNTER2, here);
 
     /*
-    **	Neutralise the droid BEFORE dealing the damage, then delete it once at
-    **	the end -- the ordering the engine's own exploding units rely on. The
-    **	target's death can be a secondary explosion (an explosive harvester
-    **	fires Wide_Area_Damage on death, unit.cpp); with Strength already 0 the
-    **	droid's Take_Damage no-ops on the guard `if (oldstrength ...)`, so that
-    **	blast cannot re-enter and free this pointer. A prior Limbo() instead
-    **	left the object in a state its destructor double-freed (the delete-time
-    **	crash), so it is NOT limbo'd here -- the destructor removes it from the
-    **	(correctly-filed) layer on delete.
+    **	Deal the strike with the droid neutralised (Strength 0): a target's
+    **	death-explosion (an explosive harvester fires Wide_Area_Damage on death,
+    **	unit.cpp) that reaches the droid hits the Take_Damage guard
+    **	`if (oldstrength ...)` and no-ops, so it can neither re-enter nor free
+    **	this pointer. Kill the target with source NULL for the same reason (no
+    **	dangling back-reference to a droid that is about to die).
     */
     Stun();
     Strength = 0;
-
-    new AnimClass(ANIM_FBALL1, here);
 
     TechnoClass* victim = As_Techno(tgt);
     TF_HS_Log("  detonate victim=%s attack=%d wh=%d\n",
@@ -3203,13 +3198,23 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
               attack, (int)warhead);
     if (victim != NULL && victim->IsActive) {
         int dmg = attack;
-        victim->Take_Damage(dmg, 0, warhead, this, true);
+        victim->Take_Damage(dmg, 0, warhead, NULL, true);
     }
 
     Explosion_Damage(here, attack, NULL, warhead);
 
-    TF_HS_Log("  droid deleted cleanly\n");
-    delete this;
+    /*
+    **	Now destroy the droid through the engine's own death path rather than a
+    **	raw `delete this`. Restore a single hit point so the forced lethal
+    **	Take_Damage reaches RESULT_DESTROYED, which severs radio contact
+    **	(RADIO_OVER_OUT), stuns, empties cargo and unlinks the layers before the
+    **	one delete. The manual delete skipped that teardown and crashed on every
+    **	target type (tf_hunter.log reached this point then CTD).
+    */
+    Strength = 1;
+    TF_HS_Log("  self-destruct via engine Take_Damage\n");
+    int lethal = 0x7FFF;
+    Take_Damage(lethal, 0, warhead, NULL, true);
 }
 
 /***********************************************************************************************
