@@ -3182,16 +3182,18 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
     Sound_Effect(VOC_TS_HUNTER2, here);
 
     /*
-    **	Take the droid out of the world BEFORE dealing the damage. The target's
-    **	own destruction can be a secondary explosion -- an explosive harvester
-    **	fires Wide_Area_Damage on death (unit.cpp) -- and with the droid still
-    **	sitting on the impact cell that blast re-enters and deletes this pointer
-    **	mid-routine (the harvester-kill crash). Limbo unlinks the droid from the
-    **	cell + layer occupier lists that Explosion_Damage walks, so nothing can
-    **	reach it; the object stays valid until the explicit delete below.
+    **	Neutralise the droid BEFORE dealing the damage, then delete it once at
+    **	the end -- the ordering the engine's own exploding units rely on. The
+    **	target's death can be a secondary explosion (an explosive harvester
+    **	fires Wide_Area_Damage on death, unit.cpp); with Strength already 0 the
+    **	droid's Take_Damage no-ops on the guard `if (oldstrength ...)`, so that
+    **	blast cannot re-enter and free this pointer. A prior Limbo() instead
+    **	left the object in a state its destructor double-freed (the delete-time
+    **	crash), so it is NOT limbo'd here -- the destructor removes it from the
+    **	(correctly-filed) layer on delete.
     */
     Stun();
-    Limbo();
+    Strength = 0;
 
     new AnimClass(ANIM_FBALL1, here);
 
