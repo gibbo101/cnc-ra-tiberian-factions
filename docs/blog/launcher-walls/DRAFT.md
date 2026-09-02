@@ -57,8 +57,8 @@ launcher's memory.
 
 Before a player builds a radar, the slot in the sidebar shows a faction crest. The launcher
 draws it, and it is keyed on the RA side: Allied countries get one crest, Soviet countries the
-other. The mod's GDI is technically on the Allied side and Nod on the Soviet side, so all four
-factions collapsed onto two RA crests.
+other. As far as the launcher knows, the mod's GDI and Nod are both Allied-side countries, so
+GDI, Nod and the Allies shared one crest and only the Soviets had their own.
 
 ### The compromise
 
@@ -108,8 +108,9 @@ radar plate replaced RA's radar grid behind the GDI and Nod crests. Then every R
 the launcher draws was paired with its same-named TD region in the atlas: the build-bar plates,
 the power bar, the tab icons, the tooltip frame, the small buttons, and finally the sell,
 repair and map buttons (TD's are a different shape, so the RA slots sample a centred square of
-each TD button bar). GDI and Nod now play on the Tiberian Dawn sidebar. Allied and Soviet get
-theirs back the moment they pick an RA side, in the same session.
+each TD button bar). For a day, GDI and Nod played on a re-skinned Red Alert sidebar that
+looked a lot like Tiberian Dawn's, and Allied and Soviet got theirs back the moment they picked
+an RA side, in the same session. Wall four is what became of that.
 
 One wall it did not break: the launcher's HUD cannot gain new buttons... yet. This changes what an
 existing widget samples. The widgets themselves are compiled code.
