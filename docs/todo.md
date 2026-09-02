@@ -5,6 +5,22 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Stretch goals: TS depower button + waypoint mode (Luke, 2026-09-02)
+
+Both behaviours are DLL-side (a building flagged off stops drawing/producing power and its
+defences idle; waypoints = a queued move-order list). The DLL polls the keyboard itself (the
+deploy key), so each can be a hotkey MODE that changes how the next launcher-delivered clicks
+are interpreted; mode cursors are CONFIG.MEG cursor data. New sidebar buttons cannot fire
+anything (a BUI button is a name the launcher must already wire), but a button whose command
+already reaches the DLL can be hijacked: the PING button arrives as a beacon request with a map
+cell (`CNC_Handle_Beacon_Request`) and beacons are useless in skirmish, so re-skin its icon and
+treat the request as "toggle power on the building at this cell" = a real depower button.
+Waypoint mode stays a hotkey unless a second DLL-reaching command turns up; a visual-only
+widget can show the mode state via the crest-style record re-point. Probe list for a real TS
+sidebar is in the entry below.
+
+---
+
 ## TS sidebar: decided TD sidebar for now (Luke, 2026-09-02); three probes for later
 
 TS factions will use TD's HUD scene with their own logo (the FACTIONS.XML scene swap +
