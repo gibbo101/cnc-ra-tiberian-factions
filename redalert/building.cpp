@@ -1058,6 +1058,40 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
  * HISTORY:                                                                                    *
  *   07/29/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
+/*
+**	Upgrade Centre socket art: the tileset carries one full healthy+damaged
+**	block per visual state. Plug types are ordered dish (TSPION), dome
+**	(TSPODS), node (TSSEEK); blocks 1-3 are that type alone in socket 1 and
+**	blocks 4-9 are the ordered distinct pairs (first in socket 1, second in
+**	socket 2). ts_pack_tree.py emits the blocks in exactly this order.
+*/
+static int TF_Plug_Type_Index(StructType type)
+{
+    switch (type) {
+    case STRUCT_TSPION:
+        return (0);
+    case STRUCT_TSPODS:
+        return (1);
+    case STRUCT_TSSEEK:
+        return (2);
+    default:
+        return (-1);
+    }
+}
+
+int TF_Plug_Art_Block(StructType first, StructType second)
+{
+    int a = TF_Plug_Type_Index(first);
+    int b = TF_Plug_Type_Index(second);
+    if (a < 0) {
+        return (0);
+    }
+    if (b < 0 || b == a) {
+        return (1 + a);
+    }
+    return (4 + a * 2 + ((b > a) ? (b - 1) : b));
+}
+
 /***********************************************************************************************
  * BuildingClass::Ts_Lid_Open / Ts_Lid_Close -- Drive the TS refinery's dock lid.              *
  *                                                                                             *
@@ -1248,18 +1282,18 @@ int BuildingClass::Shape_Number(void) const
         **	(TSPOWR: 2 x 12 = 24, turbines baked onto the plant per level).
         **
         **	The Upgrade Centre's blocks are TYPE-KEYED, not level-keyed — its
-        **	two plug types wear different art, so each socket must show the
-        **	plug actually installed in it (Luke, 2026-08-31; the level scheme
+        **	plug types wear different art, so each socket must show the plug
+        **	actually installed in it (Luke, 2026-08-31; the level scheme
         **	dressed a pod node as the ion dish). Block order matches
-        **	ts_pack_tree.py: 1 = dish@1, 2 = dome@1, 3 = dish@1 + dome@2,
-        **	4 = dome@1 + dish@2 (same-type pairs are barred by the
-        **	one-of-each rule, so four blocks cover every state).
+        **	ts_pack_tree.py (TF_Plug_Art_Block): three single-plug blocks in
+        **	type order, then the six ordered distinct pairs (same-type pairs
+        **	are barred by the one-of-each rule, so nine blocks cover every
+        **	state).
         */
         if (UpgradeLevel != 0 && (*this == STRUCT_TSPOWR || *this == STRUCT_TSPLUG)) {
             int block = UpgradeLevel;
             if (*this == STRUCT_TSPLUG) {
-                bool first_is_dish = (UpgradeTypes[0] == STRUCT_TSPION);
-                block = (UpgradeLevel == 1) ? (first_is_dish ? 1 : 2) : (first_is_dish ? 3 : 4);
+                block = TF_Plug_Art_Block(UpgradeTypes[0], (UpgradeLevel >= 2) ? UpgradeTypes[1] : STRUCT_NONE);
             }
             shapenum += block * 2 * (Class->Anims[BSTATE_IDLE].Start + Class->Anims[BSTATE_IDLE].Count);
         }
@@ -8069,7 +8103,7 @@ bool BuildingClass::Can_Upgrade(BuildingTypeClass const* plug, HouseClass const*
     **	which allows duplicates (Luke, 2026-08-31). Resource plugs stack —
     **	the power plant takes two turbines by design.
     */
-    if (plug->Type == STRUCT_TSPION || plug->Type == STRUCT_TSPODS) {
+    if (plug->Type == STRUCT_TSPION || plug->Type == STRUCT_TSPODS || plug->Type == STRUCT_TSSEEK) {
         for (int i = 0; i < UpgradeLevel; i++) {
             if (UpgradeTypes[i] == plug->Type) {
                 return (false);

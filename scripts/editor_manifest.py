@@ -86,6 +86,7 @@ BUILDINGS = [
     {'id': 134, 'name': 'tsplug', 'display_name': 'Upgrade Center', 'power_production': 0, 'power_usage': 150, 'storage': 0, 'capturable': True, 'width': 3, 'height': 2, 'occupy_mask': None, 'owner': 'GoodGuy', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': ['Bib']},
     {'id': 135, 'name': 'tspion', 'display_name': 'Ion Cannon Uplink', 'power_production': 0, 'power_usage': 100, 'storage': 0, 'capturable': False, 'width': 1, 'height': 1, 'occupy_mask': None, 'owner': 'GoodGuy', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': []},
     {'id': 136, 'name': 'tspods', 'display_name': 'Drop Pod Node', 'power_production': 0, 'power_usage': 75, 'storage': 0, 'capturable': False, 'width': 1, 'height': 1, 'occupy_mask': None, 'owner': 'GoodGuy', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': []},
+    {'id': 137, 'name': 'tsseek', 'display_name': 'Seeker Control', 'power_production': 0, 'power_usage': 50, 'storage': 0, 'capturable': False, 'width': 1, 'height': 1, 'occupy_mask': None, 'owner': 'GoodGuy', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': []},
 ]
 
 UNITS = [

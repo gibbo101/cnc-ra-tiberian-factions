@@ -369,6 +369,14 @@ PACK_ARGS+=("$TMPDIR/tsplugmk_stub.shp:TSPLUGMAKE.SHP")
 # TSPION 24x24: the Ion Cannon Uplink plug's placement ghost (never on map).
 ts_stub TSPION "$TMPDIR/tspion_stub.shp" 24 24 2
 PACK_ARGS+=("$TMPDIR/tspion_stub.shp:TSPION.SHP")
+# TSPODS / TSSEEK 24x24: the Drop Pod Node and Seeker Control plug ghosts (never on map).
+ts_stub TSPODS "$TMPDIR/tspods_stub.shp" 24 24 2
+PACK_ARGS+=("$TMPDIR/tspods_stub.shp:TSPODS.SHP")
+ts_stub TSSEEK "$TMPDIR/tsseek_stub.shp" 24 24 2
+PACK_ARGS+=("$TMPDIR/tsseek_stub.shp:TSSEEK.SHP")
+# TSHUNT 24x24 x 8: the hunter seeker droid (aircraft; 192 canvas / 8, one facing x 8 spin frames).
+ts_stub TSHUNT "$TMPDIR/tshunt_stub.shp" 24 24 8
+PACK_ARGS+=("$TMPDIR/tshunt_stub.shp:TSHUNT.SHP")
 PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")
 # TSFACT 72x72 = the RA-conyard 3x3 box (BSIZE_33) + bib, content inside it
 # (the 4x3 tier read oversized next to the shrunk tier, Luke 2026-08-04).

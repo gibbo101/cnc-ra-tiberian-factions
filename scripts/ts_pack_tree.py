@@ -1581,10 +1581,16 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
     # (-24,-12) = the left socket, second install — the turbine shift
     # precedent). Blocks enumerate every visual state, mirrored EXACTLY by
     # Shape_Number's STRUCT_TSPLUG branch (building.cpp): 1 = dish@1,
-    # 2 = dome@1, 3 = dish@1 + dome@2, 4 = dome@1 + dish@2. Seeker Control
-    # extends both lists to 9 blocks (3 types, ordered distinct pairs).
+    # 2 = dome@1, 3 = node@1, then the six ordered distinct pairs 4 = dish+dome,
+    # 5 = dish+node, 6 = dome+dish, 7 = dome+node, 8 = node+dish, 9 = node+dome
+    # — building.cpp TF_Plug_Art_Block enumerates identically (type order
+    # dish, dome, node; pair block = 4 + a*2 + (b>a ? b-1 : b)).
+    # Seeker Control node (GTPLUG_E, ART.INI [GAPLUG_E] LoopEnd=14, no
+    # ping-pong, no damaged form) = the same straight 15-frame loop as the dome.
     dome_seq = resample(list(range(15)), 20)
-    plug_arts = [("f", "shp_gtplug_f", dish_pong), ("d", "shp_gtplug_d", dome_seq)]
+    node_seq = resample(list(range(15)), 20)
+    plug_arts = [("f", "shp_gtplug_f", dish_pong), ("d", "shp_gtplug_d", dome_seq),
+                 ("e", "shp_gtplug_e", node_seq)]
     for tag, srcdir, seq in plug_arts:
         for slot, (dx, dy) in (("p1", (0, 0)), ("p2", (-24, -12))):
             dst = f"{ART}/shp_gtplug_{tag}_{slot}"
@@ -1606,8 +1612,13 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
                     "shp_gtplugmk", 19, 384, 384, bottom_margin=12,
                     powerup_blocks=[[plug_layer("f", "p1")],
                                     [plug_layer("d", "p1")],
+                                    [plug_layer("e", "p1")],
                                     [plug_layer("f", "p1"), plug_layer("d", "p2")],
-                                    [plug_layer("d", "p1"), plug_layer("f", "p2")]])
+                                    [plug_layer("f", "p1"), plug_layer("e", "p2")],
+                                    [plug_layer("d", "p1"), plug_layer("f", "p2")],
+                                    [plug_layer("d", "p1"), plug_layer("e", "p2")],
+                                    [plug_layer("e", "p1"), plug_layer("f", "p2")],
+                                    [plug_layer("e", "p1"), plug_layer("d", "p2")]])
     emit_sidebar_data("TSPLUG", "Upgrade Center",
                       "Hosts superweapon upgrade plugs. Two slots. Detects cloaked units.",
                       "shp_plugicon")
@@ -1643,6 +1654,21 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
     emit_sidebar_data("TSPODS", "Drop Pod Node",
                       "Installs into an Upgrade Center, granting Drop Pod reinforcements.",
                       "shp_rad1icon")
+
+    # TSSEEK: the Seeker Control plug (TS GAPLUG2). Same never-on-the-map
+    # contract: the tileset is the placement GHOST only (GAPLUG_E's node,
+    # ART.INI Cameo=RAD2ICON).
+    CURRENT_INI[0] = "TSSEEK"
+    node = load("shp_gtplug_e", 0)
+    node = hq_scale(node.crop(node.getbbox()), plug_factor)
+    canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    canvas.paste(node, ((128 - node.width) // 2, (128 - node.height) // 2), node)
+    write_zip(f"{STRUCT_DIR}/TSSEEK.ZIP", "tsseek", [canvas, canvas])
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSSEEK", 2)
+    STUB_DIMS["TSSEEK"] = [24, 24]
+    emit_sidebar_data("TSSEEK", "Seeker Control",
+                      "Installs into an Upgrade Center, granting the Hunter Seeker droid.",
+                      "shp_rad2icon")
 
 # ---- TSMCV (MCV.VXL render, 32 facings, canvas 384 = classic 48 x 8) ----
 if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(f"{UNITS_DIR}/TSMCV.ZIP"):

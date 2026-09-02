@@ -794,6 +794,11 @@ HouseClass::HouseClass(HousesType house)
     new (&SuperWeapon[SPC_TS_DROPPODS])
         SuperClass(TICKS_PER_MINUTE * 5, false, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_NOT_READY);
 
+    // Tiberian Factions mod — TS Hunter Seeker (TSSEEK plug). TS rules.ini
+    // [HuntSeekSpecial]: RechargeTime=12, IsPowered=true, no voices.
+    new (&SuperWeapon[SPC_TS_HUNTSEEK])
+        SuperClass(TICKS_PER_MINUTE * 12, true, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_INSUFFICIENT_POWER);
+
     // Tiberian Factions mod — Nod Nuclear Strike. TD-authentic 14-minute
     // recharge per tiberiandawn/defines.h NUKE_GONE_TIME (14 *
     // TICKS_PER_MINUTE). TD has no "charging" voice for the nuke so the
@@ -921,19 +926,24 @@ HouseStaticClass::HouseStaticClass(void)
 **	so ownership tests for what a plug grants — the Ion Cannon Uplink's
 **	superweapon — scan the building heap rather than Has_Building_Active.
 */
-bool TF_House_Has_Plug(HouseClass const* house, StructType plug)
+BuildingClass* TF_House_Plug_Host(HouseClass const* house, StructType plug)
 {
     for (int i = 0; i < Buildings.Count(); i++) {
-        BuildingClass const* b = Buildings.Ptr(i);
+        BuildingClass* b = Buildings.Ptr(i);
         if (b != NULL && b->IsActive && !b->IsInLimbo && b->House == house && b->Strength > 0) {
             for (int u = 0; u < b->UpgradeLevel; u++) {
                 if (b->UpgradeTypes[u] == plug) {
-                    return (true);
+                    return (b);
                 }
             }
         }
     }
-    return (false);
+    return (NULL);
+}
+
+bool TF_House_Has_Plug(HouseClass const* house, StructType plug)
+{
+    return (TF_House_Plug_Host(house, plug) != NULL);
 }
 
 bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type)
@@ -2679,6 +2689,50 @@ void HouseClass::Super_Weapon_Handler(void)
     }
 
     /*
+    **  Tiberian Factions mod — TS Hunter Seeker (SPC_TS_HUNTSEEK), granted
+    **  by the Seeker Control plug (TSSEEK in a TSPLUG). Same shape as the
+    **  TS Ion Cannon block above.
+    */
+    bool ts_seek_host = TF_House_Has_Plug(this, STRUCT_TSSEEK);
+    if (SuperWeapon[SPC_TS_HUNTSEEK].Is_Present()) {
+        if ((!ts_seek_host && !SuperWeapon[SPC_TS_HUNTSEEK].Is_One_Time()) || IsDefeated) {
+            if (SuperWeapon[SPC_TS_HUNTSEEK].Remove()) {
+                if (this == PlayerPtr) {
+                    if (Map.IsTargettingMode == SPC_TS_HUNTSEEK) {
+                        Map.IsTargettingMode = SPC_NONE;
+                    }
+                    Map.Column[1].Flag_To_Redraw();
+                }
+                IsRecalcNeeded = true;
+            }
+        } else {
+            /*
+            **  The droid finds its own victim, so the AI needs no discovered
+            **  target to release it (TS AI_Hunter_Seeker fires on ready).
+            */
+            if (SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready() && !IsHuman) {
+                Place_Special_Blast(SPC_TS_HUNTSEEK, 0);
+            }
+        }
+    } else {
+        if (ts_seek_host && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
+            SuperWeapon[SPC_TS_HUNTSEEK].Enable(false, this == PlayerPtr, false);
+            if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
+                if (IsHuman) {
+#ifdef REMASTER_BUILD
+                    Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TS_HUNTSEEK, this);
+#endif
+                }
+            } else {
+                if (this == PlayerPtr) {
+                    Map.Add(RTTI_SPECIAL, SPC_TS_HUNTSEEK);
+                    Map.Column[1].Flag_To_Redraw();
+                }
+            }
+        }
+    }
+
+    /*
     **  Tiberian Factions mod — Nod Nuclear Strike (SPC_TD_NUKE). Same shape
     **  as the Ion Cannon block above, swapped for TDTMPL as the host
     **  building. Uses Has_Building_Active(STRUCT_TDTMPL) since heap types
@@ -4052,6 +4106,43 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
             IsRecalcNeeded = true;
             fired = true;
             what = "TS_DROPPODS";
+            if (this == PlayerPtr) {
+                Map.Column[1].Flag_To_Redraw();
+                Map.IsTargettingMode = SPC_NONE;
+            }
+        }
+        break;
+
+    /*
+    **  Tiberian Factions mod -- TS Hunter Seeker (OpenTS super.cpp
+    **  SUPER_HUNTER_SEEKER): the droid emerges on clear ground beside the
+    **  Upgrade Centre carrying the Seeker Control plug, then hunts on its
+    **  own (AircraftClass::TF_Hunter_Seeker_AI). The clicked cell is
+    **  ignored -- TS fires this special with no target at all; the RA
+    **  launcher always asks for a click, so the click only releases it.
+    */
+    case SPC_TS_HUNTSEEK:
+        if (SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready()) {
+            BuildingClass* host = TF_House_Plug_Host(this, STRUCT_TSSEEK);
+            if (host != NULL) {
+                CELL spawn = Map.Nearby_Location(Coord_Cell(host->Center_Coord()), SPEED_FOOT);
+                if (spawn > 0 && Map.In_Radar(spawn)) {
+                    AircraftClass* droid = new AircraftClass(AIRCRAFT_TSHUNT, Class->House);
+                    if (droid != NULL) {
+                        droid->Height = 0;
+                        if (droid->Unlimbo(Cell_Coord(spawn), DIR_E)) {
+                            droid->Assign_Mission(MISSION_ATTACK);
+                            droid->Commence();
+                        } else {
+                            delete droid;
+                        }
+                    }
+                }
+            }
+            SuperWeapon[SPC_TS_HUNTSEEK].Discharged(this == PlayerPtr);
+            IsRecalcNeeded = true;
+            fired = true;
+            what = "TS_HUNTSEEK";
             if (this == PlayerPtr) {
                 Map.Column[1].Flag_To_Redraw();
                 Map.IsTargettingMode = SPC_NONE;

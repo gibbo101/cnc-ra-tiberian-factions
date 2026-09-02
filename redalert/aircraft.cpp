@@ -398,6 +398,14 @@ int AircraftClass::Shape_Number(void) const
 {
     int shapenum = 0;
 
+    /*
+    **	The hunter seeker's sprite is one facing x 8 spin frames (TS GGHUNT,
+    **	WalkFrames=8): the frame cycles with time, never with the heading.
+    */
+    if (*this == AIRCRAFT_TSHUNT) {
+        return ((Frame / 3) & 7);
+    }
+
     switch (Class->Rotation) {
     case 32:
         shapenum = UnitClass::BodyShape[Dir_To_32(SecondaryFacing)];
@@ -1056,6 +1064,15 @@ void AircraftClass::AI(void)
 {
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
+
+    /*
+    **	The hunter seeker has exactly one job: whatever idle/guard fallback
+    **	the engine hands it after a victim dies, it goes straight back to
+    **	hunting.
+    */
+    if (*this == AIRCRAFT_TSHUNT && Mission != MISSION_ATTACK && MissionQueue != MISSION_ATTACK) {
+        Assign_Mission(MISSION_ATTACK);
+    }
 
     /*
     **	A Mission change can always occur if the aircraft is landed or flying.
@@ -2967,6 +2984,162 @@ DirType AircraftClass::Pose_Dir(void) const
     return (DIR_NE);
 }
 
+/*
+**	TS Hunter Seeker targeting (OpenTS fly.cpp Acquire_Hunter_Seeker_Target):
+**	every live, visible, legal enemy techno is a candidate and the pick is
+**	uniformly random -- no threat weighting, no distance weighting. When any
+**	candidate belongs to a human player, the pick is made among those first.
+*/
+template <class HEAP>
+static void TF_HS_Walk(HEAP& heap, HouseClass const* house, bool humans_only, int& counter, int pick, TechnoClass*& out)
+{
+    for (int index = 0; index < heap.Count(); index++) {
+        TechnoClass* obj = heap.Ptr(index);
+        if (obj == NULL || !obj->IsActive || obj->IsInLimbo || obj->Strength <= 0) {
+            continue;
+        }
+        if (house->Is_Ally(obj) || !obj->Class_Of().IsLegalTarget || obj->Is_Cloaked(house)) {
+            continue;
+        }
+        if (humans_only && !obj->House->IsHuman) {
+            continue;
+        }
+        if (counter == pick) {
+            out = obj;
+        }
+        counter++;
+    }
+}
+
+static TARGET TF_Hunter_Seeker_Acquire(HouseClass const* house)
+{
+    TechnoClass* out = NULL;
+    int total = 0;
+    int humans = 0;
+    TF_HS_Walk(Units, house, false, total, -1, out);
+    TF_HS_Walk(Infantry, house, false, total, -1, out);
+    TF_HS_Walk(Buildings, house, false, total, -1, out);
+    TF_HS_Walk(Aircraft, house, false, total, -1, out);
+    TF_HS_Walk(Vessels, house, false, total, -1, out);
+    TF_HS_Walk(Units, house, true, humans, -1, out);
+    TF_HS_Walk(Infantry, house, true, humans, -1, out);
+    TF_HS_Walk(Buildings, house, true, humans, -1, out);
+    TF_HS_Walk(Aircraft, house, true, humans, -1, out);
+    TF_HS_Walk(Vessels, house, true, humans, -1, out);
+    bool humans_only = (humans > 0);
+    int pool = humans_only ? humans : total;
+    if (pool <= 0) {
+        return (TARGET_NONE);
+    }
+    int pick = Random_Pick(0, pool - 1);
+    int counter = 0;
+    TF_HS_Walk(Units, house, humans_only, counter, pick, out);
+    TF_HS_Walk(Infantry, house, humans_only, counter, pick, out);
+    TF_HS_Walk(Buildings, house, humans_only, counter, pick, out);
+    TF_HS_Walk(Aircraft, house, humans_only, counter, pick, out);
+    TF_HS_Walk(Vessels, house, humans_only, counter, pick, out);
+    return (out != NULL ? out->As_Target() : TARGET_NONE);
+}
+
+/*
+**	TS Hunter Seeker flight (OpenTS fly.cpp, the IsHunterSeeker branches):
+**	emerge slowly from the ground beside the Upgrade Centre, climb to flight
+**	level, fly straight at the victim, sink toward it inside the descend
+**	radius and detonate inside the detonate radius. The victim is
+**	re-acquired whenever the current one is gone; with no enemy left the
+**	droid hovers. TS constants, leptons per frame: EmergeSpeed 6, AscentSpeed
+**	40, DescentSpeed 50, DescendProximity 700, DetonateProximity 150.
+*/
+int AircraftClass::TF_Hunter_Seeker_AI(void)
+{
+    enum
+    {
+        EMERGE_SPEED = 6,
+        ASCENT_SPEED = 40,
+        DESCENT_SPEED = 50,
+        DESCEND_PROXIMITY = 700,
+        DETONATE_PROXIMITY = 150,
+        EMERGE_HEIGHT = FLIGHT_LEVEL / 4
+    };
+
+    LayerType layer = In_Which_Layer();
+
+    if (!Target_Legal(TarCom)) {
+        Assign_Target(TF_Hunter_Seeker_Acquire(House));
+    }
+
+    int want = FLIGHT_LEVEL;
+    int distance = 0;
+    if (Target_Legal(TarCom)) {
+        COORDINATE tcoord = ::As_Coord(TarCom);
+        distance = Distance(tcoord);
+        PrimaryFacing.Set_Desired(Direction(tcoord));
+        SecondaryFacing.Set_Desired(Direction(tcoord));
+        if (distance < DESCEND_PROXIMITY) {
+            want = max(10, FLIGHT_LEVEL * distance / DESCEND_PROXIMITY);
+        }
+    }
+
+    /*
+    **	Altitude: the launcher draws Height as a north shift with the engine
+    **	shadow underneath, so the climb and the final dive both read.
+    */
+    bool emerging = (Height < EMERGE_HEIGHT);
+    if (Height < want) {
+        Height = min(want, Height + (emerging ? EMERGE_SPEED : ASCENT_SPEED));
+    } else if (Height > want) {
+        Height = max(want, Height - DESCENT_SPEED);
+    }
+    Mark(MARK_CHANGE);
+
+    if (!Target_Legal(TarCom) || emerging) {
+        if (Speed != 0) {
+            Set_Speed(0);
+        }
+    } else {
+        if (Speed != 0xFF) {
+            Set_Speed(0xFF);
+        }
+        if (distance < DETONATE_PROXIMITY) {
+            TF_Hunter_Seeker_Detonate();
+            return (1);
+        }
+    }
+
+    if (layer != In_Which_Layer()) {
+        Map.Remove(this, layer);
+        Map.Submit(this, In_Which_Layer());
+    }
+    return (1);
+}
+
+/*
+**	The strike: the victim takes a forced (unmodified) hit of twice its
+**	remaining strength -- TS's SuicideBomb is 11000 at 100% against every
+**	armour -- then the droid destroys itself, and its Explodes= rule lays the
+**	blast anim and splash at the impact point.
+*/
+void AircraftClass::TF_Hunter_Seeker_Detonate(void)
+{
+    Sound_Effect(VOC_TS_HUNTER2, Center_Coord());
+
+    TechnoClass* victim = As_Techno(TarCom);
+    if (victim != NULL && victim->IsActive && victim->Strength > 0) {
+        int hit = victim->Strength * 2 + 1;
+        victim->Take_Damage(hit, 0, WARHEAD_HE, this, true);
+    }
+
+    /*
+    **	Same self-destruct shape as a fixed-wing aircraft grounding itself
+    **	(Landing_Takeoff_AI). Flying aircraft halve incoming damage, so the
+    **	fatal point is two, not one.
+    */
+    Strength = 1;
+    int damage = 2;
+    Map.Remove(this, In_Which_Layer());
+    Take_Damage(damage, 0, WARHEAD_AP, 0, true);
+}
+
 /***********************************************************************************************
  * AircraftClass::Mission_Attack -- Handles the attack mission for aircraft.                   *
  *                                                                                             *
@@ -2988,6 +3161,10 @@ int AircraftClass::Mission_Attack(void)
 {
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
+
+    if (*this == AIRCRAFT_TSHUNT) {
+        return (TF_Hunter_Seeker_AI());
+    }
 
     if (Class->IsFixedWing) {
         return (Mission_Hunt());

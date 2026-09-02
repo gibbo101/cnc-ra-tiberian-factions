@@ -81,6 +81,8 @@ public:
     static void Init(void);
 
     virtual int Mission_Attack(void);
+    int TF_Hunter_Seeker_AI(void);
+    void TF_Hunter_Seeker_Detonate(void);
     virtual int Mission_Unload(void);
     virtual int Mission_Hunt(void);
     virtual int Mission_Retreat(void);

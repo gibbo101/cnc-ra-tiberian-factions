@@ -975,6 +975,24 @@
       "graphics_source": null,
       "z_order": "default",
       "flags": []
+    },
+    {
+      "id": 137,
+      "name": "tsseek",
+      "display_name": "Seeker Control",
+      "power_production": 0,
+      "power_usage": 50,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": []
     }
   ],
   "units": [

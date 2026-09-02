@@ -7775,6 +7775,7 @@ static int TF_Special_Display_Mask(SpecialWeaponType id, HouseClass* house)
         return (TF_FACTION_GDI);
     case SPC_TS_ION_CANNON:
     case SPC_TS_DROPPODS:
+    case SPC_TS_HUNTSEEK:
         return (TF_FACTION_TSGDI);
     case SPC_TD_NUKE:
     case SPC_TD_PARA_INFANTRY:
@@ -8566,6 +8567,15 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
             strncpy(weapon_name, "SW_TSPods", 16);
         }
         break;
+    case SPC_TS_HUNTSEEK:
+        // Tiberian Factions mod — TS Hunter Seeker: paratroop-class launcher
+        // plumbing (cost-suppression whitelisted); the click's cell is ignored
+        // by the DLL. AssetName "SW_TSHunt" resolves the TS DETNICON cameo.
+        dll_weapon_type = SW_PARA_INFANTRY;
+        if (weapon_name != NULL) {
+            strncpy(weapon_name, "SW_TSHunt", 16);
+        }
+        break;
     case SPC_TD_NUKE:
         // Tiberian Factions mod — route Nod Nuclear Strike to SW_NUKE.
         // SW_NUKE is on the RA launcher's no-$0 cost-suppression whitelist
@@ -8628,6 +8638,7 @@ void DLLExportClass::Fill_Sidebar_Entry_From_Special_Weapon(CNCSidebarEntryStruc
     case SPC_TD_SPY_MISSION:
     case SPC_TS_ION_CANNON:
     case SPC_TS_DROPPODS:
+    case SPC_TS_HUNTSEEK:
         Convert_Special_Weapon_Type(weapon_type, sidebar_entry_out.SuperWeaponType, sidebar_entry_out.AssetName);
         break;
     default:

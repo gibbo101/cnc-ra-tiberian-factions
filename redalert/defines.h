@@ -786,6 +786,7 @@ typedef enum SpecialWeaponType : char
     SPC_TD_SPY_MISSION,   // Nod recon flight (sourced from STRUCT_TDAFLD; same U2 flyover, own timer)
     SPC_TS_ION_CANNON,    // TS Ion Cannon strike (ANIM_TS_ION_BEAM + RING1, sourced from the TSPION uplink plug)
     SPC_TS_DROPPODS,      // TS Drop Pod reinforcements (3 BULLET_TSPODDROP pods of infantry, sourced from the TSPODS plug)
+    SPC_TS_HUNTSEEK,      // TS Hunter Seeker droid (a self-targeting kamikaze flyer, sourced from the TSSEEK plug)
 
     SPC_COUNT,
     SPC_FIRST = 0,
@@ -1597,6 +1598,7 @@ typedef enum StructType : short
     STRUCT_TSPLUG, // TS GDI Upgrade Centre "TSPLUG" (GAPLUG, 3x2 like TSTECH) — the addon HOST with 2 plug slots; cloak sensor (IsScanner). Drain 150.
     STRUCT_TSPION, // TS Ion Cannon Uplink "TSPION" (GAPLUG3) — addon plug for TSPLUG; grants the GDI Ion Cannon special while installed. Drain 100. Art = GTPLUG_F dish.
     STRUCT_TSPODS, // TS Drop Pod Node "TSPODS" (our Firestorm-style plug — base TS grants pods by script only); grants Drop Pod reinforcements while installed. Art = GTPLUG_D dome.
+    STRUCT_TSSEEK, // TS Seeker Control "TSSEEK" (GAPLUG2) — addon plug for TSPLUG; grants the Hunter Seeker special while installed. Drain 50. Art = GTPLUG_E node.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
@@ -1619,7 +1621,7 @@ typedef enum StructType : short
     **	Second range of BuildingTypeClass::Is_Tiberian_Era.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TSPODS
+    STRUCT_TS_TREE_LAST = STRUCT_TSSEEK
 } StructType;
 
 /*
@@ -1960,6 +1962,7 @@ typedef enum AircraftType : char
     AIRCRAFT_TDORCA,    // TD Orca (ORCA) — GDI, NO rotor (VTOL), DRAGON missiles (TDStnkDragon), Ammo 6, helipad-built. aadata.cpp OrcaHeli.
     AIRCRAFT_TDA10,     // v4.0: TD A-10 Warthog — GDI, fixed-wing napalm strafer, Ammo 3, airfield-built (AFLD owner-opened). DTA-style divergence (TD's A-10 was a support power). aadata.cpp TdA10.
     AIRCRAFT_TDPARADROP, // v4.0: targetable support-drop C-17 (Nod Paratroopers delivery). Twin of TDCARGO but attackable + Passengers=5; reuses the TDC17 sprite via RA_UNITS.XML alias. aadata.cpp TDParaDropPlane.
+    AIRCRAFT_TSHUNT,     // TS Hunter Seeker droid (GHUNTER, art GGHUNT) -- the SPC_TS_HUNTSEEK payload: a VTOL kamikaze that emerges beside the Upgrade Centre, picks a random enemy and detonates on it. Unselectable, unbuildable. aadata.cpp TsHunt; flight in AircraftClass::TF_Hunter_Seeker_AI.
 
     AIRCRAFT_COUNT,
     AIRCRAFT_NONE = -1,
@@ -4127,6 +4130,7 @@ typedef enum VocType : short
     VOC_DLL_MONEY_DOWN,  // RA credit tick down re-fired by the DLL under alias CASHDND.
     VOC_TS_GUN4,         // TS Vulcan2 report (TSGUN4) -- the drop pod's LZ strafe. Routed via RAC/RAR_SFX_TSGUN4 -> bundled TSGUN4.WAV under its OWN name (novel-name path).
     VOC_TS_METEOR,       // TS meteor whoosh (METEOR1) -- the drop pod descent scream, fired at the LZ per pod launch. RAC/RAR_SFX_TSMETEOR -> bundled TSMETEOR.WAV.
+    VOC_TS_HUNTER2,      // TS hunter seeker detonation (HUNTER2, the SuicideBomb Report=). RAC/RAR_SFX_TSHUNTR2 -> bundled TSHUNTR2.WAV, own name.
 
     VOC_COUNT,
     VOC_FIRST = 0

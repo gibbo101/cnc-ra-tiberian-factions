@@ -10258,6 +10258,31 @@
 			<BuildIcon>BuildIcon_TSPION_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<!-- Tiberian Factions mod — the TS Hunter Seeker super (SPC_TS_HUNTSEEK,
+	     granted by the TSSEEK plug): AssetName "SW_TSHunt" from
+	     Convert_Special_Weapon_Type, cameo = TS DETNICON; SG_ = the
+	     TS-tree badged key, TSSEEK_G = the badged plug cameo. -->
+	<ObjectTypeClass Name="RA_SW_TSHUNT" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_TS_HUNTSEEK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_TS_HUNTSEEK</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SW_TSHUNT</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SG_TSHUNT" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_TS_HUNTSEEK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_DESC_TS_HUNTSEEK</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SG_TSHUNT</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSSEEK_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSSEEK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSSEEK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSSEEK_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- Tiberian Factions mod — the TS Drop Pod super (SPC_TS_DROPPODS,
 	     granted by the TSPODS plug): AssetName "SW_TSPods" from
 	     Convert_Special_Weapon_Type, cameo = TS PODSICON; SG_ = the
@@ -10349,6 +10374,21 @@
 			<ObjectNameTextID>TEXT_STRUCTURE_TSPODS</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPODS_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TS_Pods</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSSEEK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSSEEK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSSEEK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Seek</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSSEEK_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSSEEK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSSEEK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Seek</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 </ObjectTypeList>
