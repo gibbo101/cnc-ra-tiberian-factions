@@ -40,10 +40,22 @@ dev cheats off, exact tag builds staged as extra mod folders in the desktop pref
    not in the felt build at all. Broke-order hold fired once for 45 frames — not a factor.
    Stat handicaps identical 4.2.0..main (all houses Normal = 1.0x) — not a factor.
 
-**Fix list (no rollback):** (a) wave floor weighted by army VALUE and match stage, not count;
-(b) W4 staging so a launch arrives as one force (Route B is small); (c) defence gets its own
-claim on the build budget instead of competing at MEDIUM with tech; (d) W3 economy staging.
-A/B record + logs: session scratchpad `ab-results.md`, `g2-hard.txt`.
+**Fixes landed on branch `ai-regression` the same night (worktree `../tf-ai-worktree`):**
+- `cd391414` (a)+(c): wave floor by army VALUE (8k credits) + war-factory stage gate, value
+  ceilings 18/22/26k by tier; defences claim HIGH under half the ratio. **PLAY-VERIFIED** (game
+  3: one 27-unit / 8,450-credit wave at ~6 min, 3 defences by min 5; outcome barely moved).
+- `f1909a4f` + `8fef3f23` (d): refinery target paced by sim-minutes (2 @2.5, 3 @6, 4 @10;
+  ratio rule kept as floor; HIGH while below pace), harvester fleet per tier (Hard 2/refinery,
+  Medium 1.5, Easy 1), infantry + combat-vehicle production yields while below target beyond a
+  4-inf/2-veh garrison, hold capped at 4 sim-min (`ECO-HOLD` diag). Also `tf_dev_reveal.flag`
+  (full map with every other cheat off). **UNVERIFIED.**
+- `8ffbceab` (b): staging — committed ground units MOVE to a cell 9 short of the nearest
+  DISCOVERED enemy building, gather (70% within 5 cells or 2 sim-min), then HUNT together
+  (`WAVE-STAGE` / `WAVE-RELEASE`). Blind house keeps per-unit hunt. **UNVERIFIED.**
+
+**Next:** one Hard game (Keep off the Grass, GDI vs Nod, no cheats but `tf_dev_reveal.flag`)
+reading ECO-HOLD / WAVE-STAGE / WAVE-RELEASE against `docs/ai-ab-2026-09-02/`; then W3
+placement + counter-composition. A/B record + logs: `docs/ai-ab-2026-09-02/`.
 
 ---
 
