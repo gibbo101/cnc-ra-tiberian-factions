@@ -40,7 +40,7 @@ must be bound by the player. See `todo.md`.
 
 ## Tier 1 — actionable levers
 
-### 1. Mod hotkey commands (the big one; chain complete, untested)
+### 1. Mod hotkey commands (chain complete; SUPERSEDED 2026-09-02 for deploy — the DLL polls the key directly, see launcher-vs-dll-ownership.md)
 
 EA built a mod hotkey path and left the hook in our own source. We have never connected it:
 

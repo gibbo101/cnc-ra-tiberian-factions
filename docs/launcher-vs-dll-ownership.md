@@ -138,35 +138,36 @@ The MCV is recognised by IniName/numeric type, not an exported capability bit: `
 
 ### What this means
 - **BOTH the harvester AND the MCV leak on `a`** — Deck-confirmed 2026-06-03 (Luke). This **disproves** the earlier guess that `CanHarvest=true` (exported for `TDHARV`) would get the harvester excluded. The launcher's `a`-exclusion does **not** read the `CanHarvest` bit; it recognises RA's `HARV`/`MCV` by **hardcoded identity** (which is why the RA units don't leak but `TDHARV`/`TDMCV` do). The `ResourceHarvesterComponent` mapping evidently drives other harvester behaviour (resource UI/cursor), not the select-all filter.
-- **`a`-exclusion (both units) and `/`-deploy (MCV) are the closed-launcher wall** — same family as the MCV-deploy hotkey and the classic-mode spacebar.
+- **`a`-exclusion and `/`-deploy: SOLVED 2026-09-02 on the DLL side — see the section below.**
 - **The DLL-routed drag-box select IS fixed** — `should_exclude_from_selection` (display.cpp ~2827) now lists `UNIT_TDMCV`; `TDHARV` covered by `IsToHarvest`. Only the launcher-driven `a`/`/` army paths remain gated.
 
-### Per-frame export spoofs are a DEAD END — TESTED & CONFIRMED 2026-06-03
-Both `CNCObjectStruct.TypeName` (= `Class_Of().IniName`, dllinterface.cpp ~3755) and `AssetName` (= graphic name, ~3758-3760) are per-frame export fields. Spoofing them does **not** reach the launcher's `a`/`/` recognition:
-- **`TypeName="MCV"` spoof** (MCV-deploy spike): deploy `/` still did nothing.
-- **`AssetName`+`TypeName`→`"MCV"`/`"HARV"` spoof, Deck-tested 2026-06-03**: **no effect at all** — the GDI/Nod harvester/MCV **still rendered as their TD sprites** AND `a` **still selected them**. The launcher binds a unit's sprite + type identity **once, at object/type registration**, then references it by an internal handle; per-frame export-field overrides are simply ignored for an already-known unit. (This also means `AssetName` only matters at registration, not per-frame.)
-- **Conclusion:** the `a`-exclusion and `/`-deploy recognition live at the registered-type level inside `ClientG.exe`, unreachable from the DLL's per-frame export. There is **no per-frame field we can spoof**. Shipped as a Known Limitation on the Workshop page (v1.11). Don't re-test export-field spoofs.
-- **A Ghidra decompile of `ClientG.exe`** is the only route that could resolve it and is **not worth it** for cosmetic hotkey convenience — see the next section's cost/benefit bar.
+### The `/` and `a` walls are DOWN (2026-09-02) — the DLL owns both keys
 
----
+**Deploy (`/`, backslash by default):** the launcher's `COMMAND_CNC_DEPLOY_SELECTED_MCV`
+self-clicks the selected unit (it sends `INPUT_REQUEST_COMMAND_AT_POSITION` at the unit) **only
+when the exported `AssetName` AND `TypeName` are both exactly "MCV"** — proven live: aliasing
+both made a GDI MCV deploy by key; `TypeName` alone did not. (The 2026-06-03 "spoofs are a dead
+end" verdict was a bad test — that spoof never reached the launcher, the art stayed TD.) Since
+`AssetName` drives the art, the shipped fix bypasses the launcher: `TF_Deploy_Key_Tick`
+(`dllinterface.cpp`, per frame from `CNC_Advance_Instance`) polls `GetAsyncKeyState` for
+`VK_OEM_5`/`VK_OEM_2` — the DLL's InstanceServerG shares the Wine/Windows session with ClientG,
+so the key is visible cross-process — and on a fresh press runs `TF_Self_Action_Selected()`, the
+mod-command-1 rule (every selected object asked `What_Action(self)`, acted on only for
+`ACTION_SELF`). MCVs of every faction deploy, APCs/transports/Chinooks unload, minelayers lay,
+TS deployables follow for free. No binding, no XML, no RAM patch.
 
-## Diagnostic techniques that work here (reusable)
+**Select-all (`a`):** launcher-driven — ClientG picks the objects and hands them to
+`CNC_Clear_Object_Selection` + `CNC_Select_Object` one by one, excluding only the stock HARV/MCV
+by interned name id (ClientG interns unit names at startup; that object holds "HARV" at +0xaf8
+and "MCV" at +0xafc). The DLL now applies the engine's own band-select rule at the hand-over:
+`TF_Select_All_Excludes` refuses harvesters (`IsToHarvest`) and any `Is_MCV()` while A is down or
+was pressed within the last 10 frames (the launcher's round trip lands a frame or two after the
+key). Verified: minigunner selected by A, GDI MCV and GDI harvester not.
 
-- **"Is this sound DLL- or launcher-driven?"** Drop an `fopen`-append log at the DLL call site; an *empty* file while the game runs proves the launcher owns it. (Used to prove the credit tick. Use `%USERPROFILE%` paths — `reference-diagnostic-paths`.)
-- **"Does the launcher know about X?"** `strings -n N ClientG.exe | grep`. Demangled C++ symbols expose class/struct/enum names: `XMLTypeConverterClass<...>` shows exactly which XML→type conversions exist; `Faction_Event_GUI_SFX_*` enumerates the launcher's GUI-SFX vocabulary.
-- **"What can cross the boundary?"** Read `dllinterface.h` — it is the complete contract, nothing else gets through.
-
----
-
-## When a Ghidra dive WOULD be worth it
-
-**Not now.** Source + strings answer every standing question, and the `FactionType` lead dead-ends on a negative a decompile would only re-confirm — at the cost of installing Ghidra and disassembling 34 MB of stripped, optimized native C++.
-
-A decompile becomes worthwhile only if **both** hold: (a) we commit to genuine engine houses, **and** (b) we need the exact `House → FactionType/side` mapping logic — e.g., to learn whether new house slots could ever map to launcher faction/color/audio slots, or to extract the credit-counter animation parameters. Until then the value doesn't clear the cost.
-
----
-
-## Engine gotchas migrated from cross-session memory (2026-07-15)
+ClientG facts for next time: command ids deploy = `0x1020`, select-all-on-screen = `0x101b`
+(name-registered at 0x14b1xxx); `CNC_Handle_*` strings are NOT in ClientG (InstanceServerG calls
+the DLL; ClientG talks over IPC); gdb attaches but neither hardware watchpoints nor int3
+breakpoints fired on this Wine process — `/proc/<pid>/mem` is the reliable probe.
 
 ### `this == PlayerPtr` is ALWAYS TRUE inside HouseClass::AI (REMASTER_BUILD)
 `HouseClass::AI()` opens with `Logic_Switch_Player_Context(this)` under `#ifdef REMASTER_BUILD`, so

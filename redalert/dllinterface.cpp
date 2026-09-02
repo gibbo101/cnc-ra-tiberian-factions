@@ -1267,6 +1267,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Clear_Object_Selection(uint64 
     return true;
 }
 
+static bool TF_Select_All_Excludes(ObjectClass* object); // defined with the deploy-key code below
+
 extern "C" __declspec(dllexport) bool __cdecl CNC_Select_Object(uint64 player_id,
                                                                 int object_type_id,
                                                                 int object_to_select_id)
@@ -1296,6 +1298,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Select_Object(uint64 player_id
 
             if (obj && !obj->IsInLimbo && obj->House->IsPlayerControl
                 && Units.ID((UnitClass*)obj) == object_to_select_id) {
+                if (TF_Select_All_Excludes(obj)) {
+                    return false;
+                }
                 if (!obj->Is_Selected_By_Player()) {
                     obj->Select();
                     AllowVoice = false;
@@ -2113,6 +2118,71 @@ bool Debug_Write_Shape(const char* file_name, void const* shapefile, int shapenu
 // the difficulty code below, driven per-frame from CNC_Advance_Instance.
 static void TF_Lobby_Difficulty_Retry();
 
+/*
+**	Tiberian Factions -- the deploy key, owned by the DLL.
+**
+**	The launcher's COMMAND_CNC_DEPLOY_SELECTED_MCV only acts on a unit whose exported
+**	names are exactly "MCV" (ClientG compares an interned name id), so every faction MCV,
+**	APC, transport and minelayer lost its key. Instead of teaching the launcher, the DLL
+**	reads the keyboard itself: both processes share one Wine/Windows session, so
+**	GetAsyncKeyState sees the key from InstanceServerG. Each fresh press asks every
+**	selected object for its own self-action and acts only on ACTION_SELF -- the same rule
+**	as a self-click, so MCVs deploy, APCs / transports / Chinooks unload, minelayers lay,
+**	and anything deployable added later is covered. Keys: the launcher's default deploy
+**	key (backslash, VK_OEM_5) and the slash next to it (VK_OEM_2), so UK and US layouts
+**	both land on a key that already reads as "deploy" to the player.
+*/
+static int TF_Self_Action_Selected(void)
+{
+    int acted = 0;
+    for (int index = 0; index < CurrentObject.Count(); index++) {
+        ObjectClass* object = CurrentObject[index];
+        if (object == NULL || !object->IsActive) {
+            continue;
+        }
+        if (object->What_Action(object) != ACTION_SELF) {
+            continue;
+        }
+        object->Active_Click_With(ACTION_SELF, object);
+        acted++;
+    }
+    return acted;
+}
+
+static long TF_SelectAllLatchUntil = -1; // frame until which a recent 'A' press still counts as held
+
+static void TF_Deploy_Key_Tick(void)
+{
+    static bool _was_down = false;
+    bool down = ((GetAsyncKeyState(VK_OEM_5) & 0x8000) != 0) || ((GetAsyncKeyState(VK_OEM_2) & 0x8000) != 0);
+    if (down && !_was_down) {
+        TF_Self_Action_Selected();
+    }
+    _was_down = down;
+
+    // The launcher's select-all reaches CNC_Select_Object a frame or two after the key
+    // goes down, so remember a press briefly rather than requiring the key to still be held.
+    if (GetAsyncKeyState('A') & 0x8000) {
+        TF_SelectAllLatchUntil = (long)Frame + 10;
+    }
+}
+
+/*
+**	Select-all ('A') is launcher-driven: ClientG picks the objects and hands them to
+**	CNC_Select_Object one by one, excluding only the stock harvester and MCV by name id, so
+**	every faction harvester and MCV leaked into the army selection. While the key is held,
+**	the DLL applies the engine's own band-select rule to what the launcher hands over.
+*/
+static bool TF_Select_All_Excludes(ObjectClass* object)
+{
+    bool a_recent = ((GetAsyncKeyState('A') & 0x8000) != 0) || ((long)Frame <= TF_SelectAllLatchUntil);
+    if (!a_recent) {
+        return false;
+    }
+    return (object->What_Am_I() == RTTI_UNIT)
+           && (((UnitClass*)object)->Class->IsToHarvest || ((UnitClass*)object)->Class->Is_MCV());
+}
+
 // Player-facing announcements of the tier each AI actually got, queued at
 // difficulty-set time (client not rendering yet) and flushed from
 // CNC_Advance_Instance once the match is on screen.
@@ -2197,6 +2267,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 
     // Keep the per-faction radar crest pointed at the picked side's crest (RAM patch).
     TF_Crest_Tick();
+
+    // The deploy key, read straight from the keyboard (see TF_Deploy_Key_Tick).
+    TF_Deploy_Key_Tick();
 
     // Flush the queued difficulty announcements once the match is actually
     // rendering (messages sent at difficulty-set time are dropped).
@@ -7283,18 +7356,7 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
         **	stays in step.
         */
         if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_1_AT_POSITION) {
-            int deployed = 0;
-            for (int index = 0; index < CurrentObject.Count(); index++) {
-                ObjectClass* object = CurrentObject[index];
-                if (object == NULL || !object->IsActive) {
-                    continue;
-                }
-                if (object->What_Action(object) != ACTION_SELF) {
-                    continue;
-                }
-                object->Active_Click_With(ACTION_SELF, object);
-                deployed++;
-            }
+            int deployed = TF_Self_Action_Selected();
 
 #if TF_DEV_BUILD // TF_DIAG -- first-test instrumentation for the mod hotkey chain.
             {

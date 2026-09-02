@@ -110,7 +110,7 @@ MGUN2 minigunner probe); loose `.MTD` = ignored, region geometry launcher-owned 
 
 ---
 
-## Deploy/unload hotkey for non-RA units (Luke, 2026-08-28: "a shame the deploy key is hardcoded to RA units only through the launcher")
+## ✅ DONE 2026-09-02: deploy/unload hotkey for non-RA units — the DLL polls the key itself (`TF_Deploy_Key_Tick`, docs/launcher-vs-dll-ownership.md); Luke to re-test APC/Chinook/minelayer/TS units at his PC
 
 The launcher's deploy key does nothing for the TD/TS transports (Sub APC unload had to be a
 click). Per docs/config-meg-lever-audit.md Tier 1 the mod-hotkey chain is mod-data end to end
@@ -716,7 +716,7 @@ factions in skirmish (mouse self-click deploys); no em dashes in any user-facing
 
 ---
 
-## ⭐ Mod hotkeys — handler WORKS; delivery of a default binding UNSOLVED. Deferred to 4.2 (Luke, 2026-07-21)
+## ✅ RESOLVED 2026-09-02: deploy key no longer needs a binding — the DLL reads `/` and `\\` straight from the keyboard (GetAsyncKeyState is cross-process under Wine). Mod Command 1 stays as an optional player-bound alias. History below.
 
 **Proven end to end (2026-07-21):** `CNCEnableModHotKeyGameCommands` True exposes Mod Command
 1-4 in Options > Controls; a player-bound key reaches
