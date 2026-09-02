@@ -7119,6 +7119,7 @@ int HouseClass::TF_Committable_Army(int* value) const
 }
 
 static unsigned TF_Role_Quantity(unsigned const* bquantity, StructType ra);
+static int TF_House_Landmass(COORDINATE center);
 
 /*
 **	Harvesters this house owns, counted through the Units heap. UQuantity reads
@@ -7207,6 +7208,13 @@ bool HouseClass::TF_Eco_Below_Target(int* refwant, int* harvwant, int* refhave) 
     if (IsTiberiumShort) {
         return (false);
     }
+    /*
+    **	A house under attack builds soldiers, not harvesters: a hit in the last
+    **	two minutes lifts the hold outright.
+    */
+    if (LATime != 0 && (long)Frame - (long)LATime < TICKS_PER_MINUTE * 2) {
+        return (false);
+    }
     bool below = (refq < rwant || TF_Harvesters_Owned() < hwant);
 
     /*
@@ -7268,7 +7276,7 @@ enum
     TF_WAVE_STAGE_BACK = 9,                           // cells short of the known enemy building
     TF_WAVE_GATHER_RADIUS = 5,                        // cells; "arrived" at the staging cell
     TF_WAVE_GATHER_MIN_PCT = 70,                      // release once this share has arrived...
-    TF_WAVE_GATHER_TIMEOUT = TICKS_PER_MINUTE * 2     // ...or when the stragglers are taking too long
+    TF_WAVE_GATHER_TIMEOUT = TICKS_PER_MINUTE * 4     // ...or when the stragglers are taking too long
 };
 struct TFWaveStruct
 {
@@ -7349,15 +7357,21 @@ CELL HouseClass::TF_Wave_Stage_Cell(void) const
     if (along < dist / 2) {
         along = dist / 2;
     }
+    /*
+    **	Only stage against an enemy on our own landmass. Across water the wave
+    **	would walk at the shore and die there (Docklands, 2026-09-02: 31 staged,
+    **	none arrived); the ferry doctrine owns that delivery, and the plain hunt
+    **	order it drafts from is what the launch falls back to.
+    */
+    int ourland = TF_House_Landmass(Center);
+    CELL ecell = Coord_Cell(enemy);
+    if (ourland <= 0 || ecell <= 0 || !Map.In_Radar(ecell) || Map[ecell].Zones[MZONE_NORMAL] != ourland) {
+        return (0);
+    }
     COORDINATE stage = XY_Coord(Coord_X(Center) + (dx * along) / dist, Coord_Y(Center) + (dy * along) / dist);
     CELL cell = Coord_Cell(stage);
-    CELL home = Coord_Cell(Center);
-    int zone = (home > 0 && Map.In_Radar(home)) ? Map[home].Zones[MZONE_NORMAL] : -1;
-    if (zone <= 0) {
-        zone = -1;
-    }
-    cell = Map.Nearby_Location(cell, SPEED_TRACK, zone, MZONE_NORMAL);
-    if (cell <= 0 || !Map.In_Radar(cell)) {
+    cell = Map.Nearby_Location(cell, SPEED_TRACK, ourland, MZONE_NORMAL);
+    if (cell <= 0 || !Map.In_Radar(cell) || Map[cell].Zones[MZONE_NORMAL] != ourland) {
         return (0);
     }
     return (cell);
@@ -7610,11 +7624,27 @@ bool HouseClass::AI_Attack(UrgencyType)
         floorvalue = (dials.FloorValue * floor) / dials.Floor;
     }
 
+    bool wave_gathering = false;
+    {
+        int whidx = (int)Class->House;
+        if (whidx >= 0 && whidx < HOUSE_COUNT) {
+            wave_gathering = _tf_wave[whidx].Gathering;
+        }
+    }
+
     char const* reason;
     bool launch;
     if (Frame > TICKS_PER_MINUTE && !CurBuildings) {
         launch = true;
         reason = "desperation";
+    } else if (wave_gathering) {
+        /*
+        **	A wave is still assembling at its staging cell. Launching again now
+        **	would re-roster the same units to a new cell and reset their clock,
+        **	so the decision waits for the release.
+        */
+        launch = false;
+        reason = "staging";
     } else if (!has_factory && CurBuildings) {
         launch = false;
         reason = "no-factory";
@@ -7707,7 +7737,7 @@ bool HouseClass::AI_Attack(UrgencyType)
     */
     CELL stage = 0;
     TFWaveStruct* wave = NULL;
-    if (launch && !forced) {
+    if (launch) {
         int hidx = (int)Class->House;
         if (hidx >= 0 && hidx < HOUSE_COUNT) {
             stage = TF_Wave_Stage_Cell();
@@ -7736,6 +7766,14 @@ bool HouseClass::AI_Attack(UrgencyType)
         UnitClass* u = Units.Ptr(index);
 
         if (u != NULL && !u->IsInLimbo && u->House == this && u->Strength > 0) {
+
+            /*
+            **	Already out on a previous wave (attack-moving or hunting): a new
+            **	launch must not pull it back to a staging cell.
+            */
+            if (!shuffle && (u->AttackMove || u->Mission == MISSION_HUNT || u->Mission == MISSION_ATTACK)) {
+                continue;
+            }
 
             /*
             **	Nudge every ground unit as the wave launches so anything wedged
@@ -7782,6 +7820,9 @@ bool HouseClass::AI_Attack(UrgencyType)
 
         if (i != NULL && !i->IsInLimbo && i->House == this && i->Strength > 0) {
 
+            if (!shuffle && (i->AttackMove || i->Mission == MISSION_HUNT || i->Mission == MISSION_ATTACK)) {
+                continue;
+            }
             if (!shuffle) {
                 i->Scatter(0, true, true);
             }
@@ -10675,6 +10716,19 @@ enum
     TF_ECO_GARRISON_VEHICLES = 2,
     TF_ECO_GARRISON_INFANTRY = 4
 };
+/*
+**	The garrison grows with the match so a base that has spent ten minutes on
+**	its economy is not still defended by its opening squad: one more soldier a
+**	minute, one more vehicle every two.
+*/
+static int TF_Eco_Garrison_Infantry(void)
+{
+    return (TF_ECO_GARRISON_INFANTRY + (int)(Frame / TICKS_PER_MINUTE));
+}
+static int TF_Eco_Garrison_Vehicles(void)
+{
+    return (TF_ECO_GARRISON_VEHICLES + (int)(Frame / (TICKS_PER_MINUTE * 2)));
+}
 
 /*
 **	Diagnostic: one ECO-HOLD line per house per ~minute while production yields to
@@ -10839,7 +10893,7 @@ int HouseClass::AI_Unit(void)
         **	the yard's refinery order and the harvester order above instead of
         **	draining into tier-one units the moment they arrive.
         */
-        if (Session.Type != GAME_NORMAL && CurUnits - tf_harv_owned >= TF_ECO_GARRISON_VEHICLES
+        if (Session.Type != GAME_NORMAL && CurUnits - tf_harv_owned >= TF_Eco_Garrison_Vehicles()
             && TF_Eco_Below_Target()) {
             TF_Eco_Hold_Diag(this, "vehicle");
             return (TICKS_PER_SECOND * 2);
@@ -11229,7 +11283,7 @@ int HouseClass::AI_Infantry(void)
         **	starved treasury, so it waits behind the refinery and harvester targets
         **	once a small garrison stands.
         */
-        if (Session.Type != GAME_NORMAL && CurInfantry >= TF_ECO_GARRISON_INFANTRY && TF_Eco_Below_Target()) {
+        if (Session.Type != GAME_NORMAL && CurInfantry >= TF_Eco_Garrison_Infantry() && TF_Eco_Below_Target()) {
             TF_Eco_Hold_Diag(this, "infantry");
             return (TICKS_PER_SECOND * 2);
         }
