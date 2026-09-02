@@ -756,6 +756,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("AssaultCannon");  // WEAPON_ASSAULTCANNON (TS Wolverine -- TS [AssaultCannon] verbatim, instant Invisible/SA chain)
     new WeaponTypeClass("TSFireball");     // WEAPON_TSFIREBALL (TS Devil's Tongue -- fire-stream particles, UnitClass::Fire_Stream_AI)
     new WeaponTypeClass("SonicZap");       // WEAPON_SONICZAP (TS Disruptor -- IsSonic piercing line through WARHEAD_SONIC)
+    new WeaponTypeClass("TSSuicide");      // WEAPON_TSSUICIDE (TS Hunter Seeker suicide bomb -- read by TF_Hunter_Seeker_Detonate, never fired)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's

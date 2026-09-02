@@ -3460,6 +3460,7 @@ typedef enum WeaponType : char
     WEAPON_ASSAULTCANNON,  // TS Wolverine assault cannon — TS [AssaultCannon] verbatim (Dmg40/ROF50/Range5, instant Invisible projectile, SA warhead). Registered "AssaultCannon".
     WEAPON_TSFIREBALL,     // TS Devil's Tongue FireballLauncher — Damage=0 impact, the damage is the fire stream (BULLET_TSFIRE particles spawned every 4 frames for 30 frames per shot, UnitClass::Fire_Stream_AI). Registered "TSFireball".
     WEAPON_SONICZAP,       // TS Disruptor sonic beam — IsSonic piercing line (railgun sweep mechanics, green beam, no helix) through WARHEAD_SONIC. TS per-frame wave damage translated to one AmbientDamage application per object on the line. Registered "SonicZap".
+    WEAPON_TSSUICIDE,      // TS Hunter Seeker suicide bomb (TS [SuicideBomb]) — Damage 11000, Warhead Super (100% all), Projectile Invisible. Never fired through the weapon system; TF_Hunter_Seeker_Detonate reads its Attack + Warhead. Registered "TSSuicide".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0

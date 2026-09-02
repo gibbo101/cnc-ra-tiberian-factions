@@ -3151,7 +3151,12 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
 
     Explosion_Damage(here, attack, NULL, warhead);
 
-    int selfdmg = attack;
+    /*
+    **	The droid dies with its target -- one strike, no retarget. A flying
+    **	aircraft halves incoming damage, so make the self-damage unconditionally
+    **	lethal regardless of the weapon's number.
+    */
+    int selfdmg = max(attack, Strength * 2 + 2);
     Take_Damage(selfdmg, 0, warhead, NULL, true);
 }
 
