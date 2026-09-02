@@ -1,6 +1,6 @@
-# Three launcher walls, and how they came down
+# Four launcher walls, and how they came down
 
-*Draft for Luke's blog post, written 2026-09-02 from the session that broke walls two and three.
+*Draft for Luke's blog post, written 2026-09-02 from the session that broke walls two, three and four.
 Facts and dates are from the repo docs and commits; the voice is a placeholder. Screenshots in this
 folder. No em dashes in the final copy.*
 
@@ -16,7 +16,7 @@ the engine DLL, and that is what this mod is. It cannot rebuild the launcher.
 
 So every feature the mod wants has to answer one question first: does the launcher let the DLL
 say what it needs to say? When the answer was no, we called it a wall, documented it, and moved
-on. Three of those walls mattered more than the rest. This is the story of how each one fell,
+on. Four of those walls mattered more than the rest. This is the story of how each one fell,
 in the order the mod's docs recorded them.
 
 ## Wall one: EVA lines the launcher speaks on its own
@@ -165,7 +165,57 @@ Verified headless on the Linux desktop with the monitors off: the GDI MCV deploy
 the Allied MCV deployed on a tap, a minigunner was selected by A while a GDI MCV and a GDI
 harvester were not.
 
-## What the three have in common
+## Wall four: the sidebar itself
+
+With the crest solved, the obvious next question was the rest of the sidebar. GDI and Nod were
+playing on Red Alert's HUD: RA's bezel around the radar, RA's square repair, sell and map
+buttons, RA's power tube, and the launcher's country name printed under a crest that already
+said which faction you were.
+
+### The long way round
+
+The sixteen-byte trick from wall two scaled up. Every piece of RA's sidebar that has a
+same-named piece of TD's in the atlas was paired off, seventy-six pairs, and re-pointed at match
+start. That gave GDI and Nod a TD-looking sidebar in an afternoon, and a side-by-side against
+the real Tiberian Dawn sidebar showed everything that was still wrong: the bezel, the button
+shapes, the power fills, the credits colour, the label. Each of those was an RA piece with no
+TD twin, so each needed new art painted into the atlas and a fresh re-point.
+
+The atlas turned out to be full. Not nearly full: full, with the only safe scratch space being
+TD front-end art that the RA launcher never draws. The evening became a sequence of ever smaller
+pieces squeezed into ever odder corners: a transparent bezel so TD's plate frame showed through,
+a half-size rail piece for the buttons to sit on, a plate piece so the frame's bottom edge
+cleared the rail, translucent fills so TD's pips read as lit. Each one fixed the previous
+round's complaint and produced the next. At the fourth round, with the map showing through a
+gap between plate and rail and the power meter still not filling pips, Luke said stop guessing
+and look at how TD does it.
+
+### The short way
+
+TD does it with a different scene. The launcher's HUD is a scene graph file, one for RA and
+one for TD, and the question was what picks between them. The answer was in the faction data
+we had been editing for months for the lobby picker. Every faction entry names both scenes: a
+primary list naming TD's, and an alternate list naming RA's. The RA launcher reads the
+alternate list. Swap the two names inside the GDI and Nod entries, same bytes exchanged, and
+those two factions load Tiberian Dawn's actual HUD: the wide button bar, the pip power meter,
+the TD tabs, the green credits, and no country label, because TD's scene never had one.
+Allies and Soviets keep RA's scene untouched.
+
+One thing followed us over. TD's scene picks its crest by RA side, and Nod lives on the Allied
+side of the launcher's ledger, so Nod got the GDI eagle. The sixteen-byte trick fixed that in
+minutes, the same way it fixed wall two. Everything else the evening had painted and re-pointed
+was deleted the same night, seventy-six pairs and all. The RA scene got one edit of its own: the
+country name under the crest is hidden, because every faction now wears its own crest.
+
+### What it cost
+
+The crest patch had a bug we only felt on a real PC. Its memory scan of the launcher ran
+seventy-five times in the first fifteen seconds of every match, on the game thread, and each
+run read hundreds of megabytes across processes. Skirmishes crawled for the first minute. It
+now runs on its own thread, eight times at widening gaps, and the load is clean. The lesson went
+straight into the project's rules: never scan the launcher on the game thread.
+
+## What the four have in common
 
 None of the walls was fake. The launcher really does own those samples, that crest, and that
 key. What was wrong each time was the assumption about where the boundary sat:
@@ -173,6 +223,11 @@ key. What was wrong each time was the assumption about where the boundary sat:
 - The EVA cache was launcher-owned, but memory is shared across processes.
 - The crest pixels were unreachable, but the record that points at them was not.
 - The key was launcher-owned, but the keyboard is not.
+- The sidebar layout was compiled code, but which layout a faction loads is a line of data.
+
+The fourth is the humbling one. Wall two's method was so good that we spent an evening using it
+to rebuild a thing the launcher would have handed us for free, if we had read one more field
+of a file we had already been editing. Look at how the other game does it before building it.
 
 The rule the mod now works by: a wall proven on the data side is not proven on the memory
 side, and a wall proven in the launcher is not proven in the DLL. Look for the structure that
@@ -193,3 +248,9 @@ drives the behaviour, not the behaviour itself.
 - `scene_gdi.png`, `scene_allied.png`: the GDI and Allied MCVs deployed by the key.
 - `a_test.png`: the GDI MCV click-selected, then unselected after A.
 - `scene_ctrl.png`: the control, a minigunner selected by A.
+- `lobby_badges.png`, `loading_badges.png`: the lobby map markers and loading-screen badges
+  wearing faction crests inside the player-colour rings.
+- `sidebar_reskin_vs_og.png`, `sidebar_reskin_round3_vs_og.png`: the re-skinned RA scene (left)
+  against the real TD sidebar (right), rounds one and three of the long way round.
+- STILL NEEDED: a screenshot of GDI or Nod on TD's real HUD scene after the swap, and one of
+  Allies on RA's scene with the label gone.
