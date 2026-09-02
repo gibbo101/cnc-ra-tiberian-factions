@@ -53,6 +53,18 @@ dev cheats off, exact tag builds staged as extra mod folders in the desktop pref
   DISCOVERED enemy building, gather (70% within 5 cells or 2 sim-min), then HUNT together
   (`WAVE-STAGE` / `WAVE-RELEASE`). Blind house keeps per-unit hunt. **UNVERIFIED.**
 
+**Queued from the four-AI Docklands watch (Luke, 2026-09-02 late):**
+- Tech ordering: no house had a tech centre / advanced comm / temple after 12 sim-minutes of
+  four-refinery income (they arrive only via the 7500-frame starvation rescue). W3 build
+  planner item ("tech when affordable"); Luke: not yet, get the pieces working together first.
+- Ferry waits for sea control: a ferry op should only launch when the house's armed hulls at
+  least match the strongest enemy fleet seen on that water (or none seen and a patrol has
+  crossed); until then transports load and wait and the warship cap nudges up. First naval item
+  after the land pieces settle.
+- The 4-AI Docklands HANG (first run froze the sim at F22357, no dump; second run with the
+  watchdog armed ran past F40000 clean on the same build) — unexplained; watchdog script
+  `hang_stacks.sh` pattern: poll the AI log size, gdb `thread apply all bt` on stall.
+
 **Next:** one Hard game (Keep off the Grass, GDI vs Nod, no cheats but `tf_dev_reveal.flag`)
 reading ECO-HOLD / WAVE-STAGE / WAVE-RELEASE against `docs/ai-ab-2026-09-02/`; then W3
 placement + counter-composition. A/B record + logs: `docs/ai-ab-2026-09-02/`.

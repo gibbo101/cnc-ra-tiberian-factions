@@ -7294,6 +7294,28 @@ enum
 };
 static TFWaveStruct _tf_wave[HOUSE_COUNT];
 
+static bool TF_Wave_Member(FootClass const* f, HouseClass const* house)
+{
+    if (f == NULL || house == NULL) {
+        return (false);
+    }
+    int hidx = (int)house->Class->House;
+    if (hidx < 0 || hidx >= HOUSE_COUNT) {
+        return (false);
+    }
+    TFWaveStruct const& wave = _tf_wave[hidx];
+    if (!wave.Gathering && !wave.Striking) {
+        return (false);
+    }
+    TARGET me = f->As_Target();
+    for (int i = 0; i < wave.Count; i++) {
+        if (wave.Roster[i] == me) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
 void TF_Wave_Reset(void)
 {
     for (int h = 0; h < HOUSE_COUNT; h++) {
@@ -7614,7 +7636,15 @@ bool HouseClass::AI_Attack(UrgencyType)
     };
     int floor = dials.Floor;
     int floorvalue = dials.FloorValue;
-    if (Frame > TF_WAVE_FLOOR_DECAY_START) {
+    /*
+    **	The decay is for a house whose economy has been crippled, so that it
+    **	still commits what it has. A house with a working economy keeps the
+    **	full floor however long the match runs; otherwise the late game turns
+    **	back into a trickle of four-unit waves (Docklands 2026-09-02).
+    */
+    bool strangled = (IsTiberiumShort || TF_Role_Quantity(BQuantity, STRUCT_REFINERY) < 2
+                      || TF_Harvesters_Owned() < 2);
+    if (strangled && Frame > TF_WAVE_FLOOR_DECAY_START) {
         int steps = (int)((Frame - TF_WAVE_FLOOR_DECAY_START) / TF_WAVE_FLOOR_DECAY_PERIOD);
         floor -= steps;
         if (floor < TF_WAVE_FLOOR_MIN) {
@@ -7737,17 +7767,37 @@ bool HouseClass::AI_Attack(UrgencyType)
     */
     CELL stage = 0;
     TFWaveStruct* wave = NULL;
+    TARGET direct = TARGET_NONE; // Hard, no staging cell: attack-move from home
     if (launch) {
         int hidx = (int)Class->House;
         if (hidx >= 0 && hidx < HOUSE_COUNT) {
             stage = TF_Wave_Stage_Cell();
+            wave = &_tf_wave[hidx];
+            wave->Count = 0;
+            wave->Striking = false;
+            wave->Gathering = false;
+            wave->Stage = 0;
             if (stage != 0) {
-                wave = &_tf_wave[hidx];
-                wave->Count = 0;
-                wave->Striking = false;
                 wave->Stage = stage;
                 wave->Deadline = (long)Frame + TF_WAVE_GATHER_TIMEOUT;
                 wave->Gathering = true;
+            } else if (IQ >= 5) {
+                /*
+                **	No staging cell (the known enemy is too close, or off our
+                **	landmass): a Hard house still goes out on attack-move rather
+                **	than as loose hunters, and is shepherded like a released wave.
+                */
+                COORDINATE objective = TF_Wave_Known_Enemy_Coord();
+                CELL ocell = (objective != 0) ? Coord_Cell(objective) : 0;
+                int ourland = TF_House_Landmass(Center);
+                if (ocell > 0 && Map.In_Radar(ocell) && ourland > 0 && Map[ocell].Zones[MZONE_NORMAL] == ourland) {
+                    direct = ::As_Target(ocell);
+                    wave->Striking = true;
+                    wave->StrikeUntil = (long)Frame + TF_WAVE_STRIKE_TIMEOUT;
+                }
+            }
+            if (!wave->Gathering && !wave->Striking) {
+                wave = NULL;
             }
         }
     }
@@ -7787,9 +7837,16 @@ bool HouseClass::AI_Attack(UrgencyType)
                 u->Scatter(0, true, true);
             }
             if (!shuffle && u->Is_Weapon_Equipped() && (forced || Percent_Chance(sendpercent))) {
-                if (wave != NULL && wave->Count < TF_WAVE_MAX) {
+                if (wave != NULL && wave->Count < TF_WAVE_MAX && stage != 0) {
                     u->Assign_Mission(MISSION_MOVE);
                     u->Assign_Destination(::As_Target(stage));
+                    wave->Roster[wave->Count++] = u->As_Target();
+                } else if (wave != NULL && wave->Count < TF_WAVE_MAX && direct != TARGET_NONE) {
+                    u->Assign_Target(TARGET_NONE);
+                    u->Assign_Mission(MISSION_MOVE);
+                    u->AttackMove = 1;
+                    u->RememberedNavCom = direct;
+                    u->Assign_Destination(direct);
                     wave->Roster[wave->Count++] = u->As_Target();
                 } else {
                     u->Assign_Mission(MISSION_HUNT);
@@ -7834,9 +7891,16 @@ bool HouseClass::AI_Attack(UrgencyType)
             */
             if (!shuffle && (i->Is_Weapon_Equipped() || *i == INFANTRY_RENOVATOR || *i == INFANTRY_TDE6)
                 && (forced || Percent_Chance(sendpercent))) {
-                if (wave != NULL && wave->Count < TF_WAVE_MAX) {
+                if (wave != NULL && wave->Count < TF_WAVE_MAX && stage != 0) {
                     i->Assign_Mission(MISSION_MOVE);
                     i->Assign_Destination(::As_Target(stage));
+                    wave->Roster[wave->Count++] = i->As_Target();
+                } else if (wave != NULL && wave->Count < TF_WAVE_MAX && direct != TARGET_NONE) {
+                    i->Assign_Target(TARGET_NONE);
+                    i->Assign_Mission(MISSION_MOVE);
+                    i->AttackMove = 1;
+                    i->RememberedNavCom = direct;
+                    i->Assign_Destination(direct);
                     wave->Roster[wave->Count++] = i->As_Target();
                 } else {
                     i->Assign_Mission(MISSION_HUNT);
@@ -7868,25 +7932,22 @@ bool HouseClass::AI_Attack(UrgencyType)
         FILE* _tfdbg = TF_AI_Diag_File();
         if (_tfdbg != NULL) {
             fprintf(_tfdbg,
-                    "F%ld H%d AL%d WAVE-STAGE stage=%d roster=%d\n",
+                    "F%ld H%d AL%d WAVE-STAGE stage=%d roster=%d mode=%s\n",
                     (long)Frame,
                     (int)Class->House,
                     (int)ActLike,
                     (int)stage,
-                    wave != NULL ? wave->Count : 0);
+                    wave != NULL ? wave->Count : 0,
+                    stage != 0 ? "gather" : (direct != TARGET_NONE ? "direct-attack-move" : "hunt"));
             fflush(_tfdbg);
         }
     }
-    if (wave != NULL && wave->Count == 0) {
-        wave->Gathering = false;
-        wave->Stage = 0;
-    }
-#else
-    if (wave != NULL && wave->Count == 0) {
-        wave->Gathering = false;
-        wave->Stage = 0;
-    }
 #endif
+    if (wave != NULL && wave->Count == 0) {
+        wave->Gathering = false;
+        wave->Striking = false;
+        wave->Stage = 0;
+    }
 
     /*
     **	A launched wave takes the full interval to rebuild; a declined one is
@@ -8816,10 +8877,20 @@ enum
     TF_DRAFT_STAGING,
     TF_DRAFT_DOOMED
 };
+static bool TF_Wave_Member(FootClass const* f, HouseClass const* house);
+
 static bool TF_Ferry_Eligible(FootClass const* f, HouseClass const* house, int ourland, int draft = TF_DRAFT_SPARE)
 {
     if (f == NULL || (HouseClass const*)f->House != house || f->IsInLimbo || f->Strength == 0
         || !f->Is_Weapon_Equipped() || Map[Coord_Cell(f->Center_Coord())].Zones[MZONE_NORMAL] != ourland) {
+        return (false);
+    }
+    /*
+    **	A unit marching to, or released from, an attack-wave staging cell is on a
+    **	move order too; the ferry must not conscript the wave off its road
+    **	(Docklands 2026-09-02: releases with nobody arrived).
+    */
+    if (TF_Wave_Member(f, house)) {
         return (false);
     }
     if (!f->Team.Is_Valid() && f->Mission == MISSION_GUARD) {
@@ -10326,7 +10397,13 @@ int HouseClass::AI_Building(void)
         int tf_def = TF_Skirmish_Type(STRUCT_FLAME_TURRET, ActLike);
         current = BQuantity[STRUCT_PILLBOX] + BQuantity[STRUCT_CAMOPILLBOX] + BQuantity[STRUCT_TURRET]
                   + BQuantity[STRUCT_FLAME_TURRET] + BQuantity[STRUCT_TDFBNK] + (tf_def >= 0 ? BQuantity[tf_def] : 0);
-        unsigned tf_defwant = Round_Up(Rule.DefenseRatio * fixed(CurBuildings));
+        /*
+        **	The ratio is taken against the base the defences protect, not against a
+        **	count that includes the defences themselves -- otherwise every tower
+        **	built asks for the next one (Docklands 2026-09-02: 14 of 30 buildings).
+        */
+        unsigned tf_defbase = (CurBuildings > current) ? (CurBuildings - current) : 0;
+        unsigned tf_defwant = Round_Up(Rule.DefenseRatio * fixed(tf_defbase));
         if (current < tf_defwant && current < (unsigned)Rule.DefenseLimit) {
             /*
             **	Defence competes with refineries, radar, power and the repair bay at
