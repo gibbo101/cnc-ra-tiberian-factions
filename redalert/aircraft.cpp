@@ -1067,18 +1067,11 @@ void AircraftClass::AI(void)
     assert(IsActive);
 
     /*
-    **	The hunter seeker keeps the inert attack mission alive and does all
-    **	its flying here. TF_Hunter_Seeker_AI returns true only when it has
-    **	detonated (and deleted itself), the one context where a self-delete is
-    **	safe -- exactly like the fixed-wing self-destruct in Landing_Takeoff_AI.
+    **	The hunter seeker keeps the inert attack mission alive; its flying and
+    **	self-destruct run later in AI() (the Edge_Of_World-safe delete zone).
     */
-    if (*this == AIRCRAFT_TSHUNT) {
-        if (Mission != MISSION_ATTACK && MissionQueue != MISSION_ATTACK) {
-            Assign_Mission(MISSION_ATTACK);
-        }
-        if (TF_Hunter_Seeker_AI()) {
-            return;
-        }
+    if (*this == AIRCRAFT_TSHUNT && Mission != MISSION_ATTACK && MissionQueue != MISSION_ATTACK) {
+        Assign_Mission(MISSION_ATTACK);
     }
 
     /*
@@ -1143,6 +1136,19 @@ void AircraftClass::AI(void)
     */
     if (Landing_Takeoff_AI()) {
         return;
+    }
+
+    /*
+    **	The hunter seeker's flight and self-destruct run here -- the same late
+    **	point in AI() where Edge_Of_World_AI deletes an aircraft from inside its
+    **	own AI. Running it at the top of AI() (before FootClass::AI) deleted the
+    **	droid mid-way through the logic layer's per-object bookkeeping and
+    **	crashed; this is the proven-safe position.
+    */
+    if (*this == AIRCRAFT_TSHUNT) {
+        if (TF_Hunter_Seeker_AI()) {
+            return;
+        }
     }
 
     /*

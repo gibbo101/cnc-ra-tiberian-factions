@@ -731,6 +731,47 @@ bool Read_Scenario(char* name)
     if (TF_Dev_Rich_Start() && Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
         PlayerPtr->Refund_Money(1000000);
     }
+
+    /*
+    **  Tiberian Factions dev aid: drop a GDI Upgrade Centre (STRUCT_TSPLUG) at
+    **  the local player's start so the Hunter Seeker arc can be tested without
+    **  building the whole TS tree first. Empty -- build a power plant and drop
+    **  a Seeker Control plug on it. Pointer ctor avoids the delegating-ctor
+    **  IsActive=0 bug; scans south of home for a clear 3x2 spot.
+    */
+    if (TF_Dev_Cheats() && Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr) {
+                home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                break;
+            }
+        }
+        if (home == 0) {
+            for (int i = 0; i < Buildings.Count(); i++) {
+                if (Buildings.Ptr(i)->House == PlayerPtr) {
+                    home = Coord_Cell(Buildings.Ptr(i)->Center_Coord());
+                    break;
+                }
+            }
+        }
+        if (home != 0) {
+            for (int d = 3; d <= 14; d++) {
+                CELL c = home + (d * MAP_CELL_W);
+                if ((unsigned)c >= MAP_CELL_TOTAL) {
+                    continue;
+                }
+                BuildingClass* up =
+                    new BuildingClass(BuildingTypes.Ptr((int)STRUCT_TSPLUG), PlayerPtr->Class->House);
+                if (up != NULL && up->Unlimbo(Cell_Coord(c))) {
+                    break;
+                }
+                if (up != NULL) {
+                    delete up;
+                }
+            }
+        }
+    }
 #endif
 
     /*
