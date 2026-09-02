@@ -745,6 +745,7 @@ void Init_SpeechTD(void)
     SpeechTD[VOX_REINFORCEMENTS]     = "TDREINFOR1";
     SpeechTD[VOX_CANCELED]           = "TDCANCEL1";
     SpeechTD[VOX_BUILDING]           = "TDBLDGING1";
+    SpeechTD[VOX_TRAINING]           = "TDBLDGING1"; // TD has no "Training": it says "Building" for units too
     SpeechTD[VOX_LOW_POWER]          = "TDLOPOWER1";
     SpeechTD[VOX_INSUFFICIENT_POWER] = "TDNOPOWER1";
     SpeechTD[VOX_NEED_MO_MONEY]      = "TDMOCASH1";

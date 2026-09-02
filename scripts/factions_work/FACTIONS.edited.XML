@@ -1542,7 +1542,7 @@
 			<StructurePlacementGridVisualizer>BuildRange</StructurePlacementGridVisualizer>
 			<TopLevelGUIList network="client">
 				<entry>
-					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
+					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
 					<SortValue>Command_Bar</SortValue>
 					<LoadContext>Tactical</LoadContext>
 					<AcceptsInput>true</AcceptsInput>
@@ -1558,7 +1558,7 @@
 			</TopLevelGUIList>
 			<TopLevelGUIListAlt network="client">
 				<entry>
-					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
+					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
 					<SortValue>Command_Bar</SortValue>
 					<LoadContext>Tactical</LoadContext>
 					<AcceptsInput>true</AcceptsInput>
@@ -2631,7 +2631,7 @@
 			<StructurePlacementGridVisualizer>BuildRange</StructurePlacementGridVisualizer>
 			<TopLevelGUIList network="client">
 				<entry>
-					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
+					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
 					<SortValue>Command_Bar</SortValue>
 					<LoadContext>Tactical</LoadContext>
 					<AcceptsInput>true</AcceptsInput>
@@ -2647,7 +2647,7 @@
 			</TopLevelGUIList>
 			<TopLevelGUIListAlt network="client">
 				<entry>
-					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
+					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
 					<SortValue>Command_Bar</SortValue>
 					<LoadContext>Tactical</LoadContext>
 					<AcceptsInput>true</AcceptsInput>

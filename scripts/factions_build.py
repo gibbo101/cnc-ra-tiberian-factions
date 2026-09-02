@@ -11,6 +11,11 @@ change size (offsets resolve against the base archive):
   * ICONS: GDI (Faction3) and Nod (Faction10) point at the full-size 150x80 plates that used to
     hold the Spain and Turkey flags (_03 / _10) instead of the 66x56 _00 / _01 icons, so all
     picker entries share one size. scripts/picker_emblems_paint.py paints those plates.
+  * TD_HUD: every entry names both tactical scenes, TD's Tactical_UI.bui in TopLevelGUIList and
+    RA's RA_Tactical_UI.bui in TopLevelGUIListAlt; the launcher picks one list per game. In the
+    GDI (Faction3) and Nod (Faction4) entries the two scene names are swapped, so those factions
+    load TD's HUD scene (wide sell/repair/map bar, TD power meter, no side label) while the RA
+    sides keep RA's. Same bytes, just exchanged.
   * HIDE (optional, off by default): entries named on the command line are wrapped in XML
     comments; the launcher keeps a blank, still-selectable row for each, which is why it is off.
 
@@ -22,6 +27,9 @@ import sys
 ORDER = ['Faction1', 'Faction2', 'Faction3', 'Faction10', 'Faction4', 'Faction5',
          'Faction6', 'Faction7', 'Faction8', 'Faction9']
 ICONS = {'Faction3': '03', 'Faction10': '10'}
+TD_HUD = ['Faction3', 'Faction4']
+SCENE_TD = b'Art/GUI/Tactical_UI.bui'
+SCENE_RA = b'Art/GUI/RA_Tactical_UI.bui'
 
 
 def blocks_of(data):
@@ -52,6 +60,11 @@ def main(base, out, hide):
             new = b'<SmallIconName>UI_Multiplayer_PlayerSlot_Faction_' + ICONS[name].encode() + b'.tga</SmallIconName>'
             assert old and len(new) == len(old.group(0))
             block = block[:old.start()] + new + block[old.end():]
+        if name in TD_HUD:
+            assert block.count(SCENE_TD) == 1 and block.count(SCENE_RA) == 1, name
+            swapped = block.replace(SCENE_TD, b'\0SWAP\0').replace(SCENE_RA, SCENE_TD).replace(b'\0SWAP\0', SCENE_RA)
+            assert len(swapped) == len(block), name
+            block = swapped
         if name in hide:
             inner = block.replace(b'<!--', b'<!  ').replace(b'-->', b'  >').replace(b'--', b'- ')
             wrapped = b'<!--' + inner + b'-->'

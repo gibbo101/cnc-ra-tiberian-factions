@@ -4214,7 +4214,7 @@ static const TF_SkinPair TF_SidebarSkin[] = {
     {{5999, 5503, 787, 1212}, {4253, 5503, 787, 1212}}, // UI_RA_SIDEBAR_BUILDBARBG_BLUE -> UI_SIDEBAR_BUILDBARBG
 };
 #define TF_SKIN_PAIRS ((int)(sizeof(TF_SidebarSkin) / sizeof(TF_SidebarSkin[0])))
-#define TF_CREST_FIXED 4 // ALLIES crest, SOVIET crest, blue radar under-screen, red radar under-screen
+#define TF_CREST_FIXED 11 // ALLIES/SOVIET crests, blue/red under-screens, RA bezel, 3 power fills, power level marker, TD GDI/NOD logos
 #define TF_CREST_SLOTS (TF_CREST_FIXED + TF_SKIN_PAIRS)
 
 // Session-persistent list of ClientG addresses that hold a radar-crest UV record, so the
@@ -4223,18 +4223,22 @@ static const TF_SkinPair TF_SidebarSkin[] = {
 // per-match copy appears each match -- so a full scan runs for a short window each match and
 // discovered addresses are re-verified every frame.
 static SIZE_T TF_CrestAddr[512];
-static int TF_CrestAddrCount = 0;
+static volatile int TF_CrestAddrCount = 0; // appended by the scan thread, read by the per-frame re-verify
 static int TF_CrestMatchStartFrame = -100000;
+static int TF_CrestScanNext = 0;           // index into the per-match scan schedule
 
 static void TF_Crest_Remember(SIZE_T addr)
 {
-    for (int i = 0; i < TF_CrestAddrCount; i++) {
+    int n = TF_CrestAddrCount;
+    for (int i = 0; i < n; i++) {
         if (TF_CrestAddr[i] == addr) {
             return;
         }
     }
-    if (TF_CrestAddrCount < (int)(sizeof(TF_CrestAddr) / sizeof(TF_CrestAddr[0]))) {
-        TF_CrestAddr[TF_CrestAddrCount++] = addr;
+    if (n < (int)(sizeof(TF_CrestAddr) / sizeof(TF_CrestAddr[0]))) {
+        TF_CrestAddr[n] = addr;
+        __asm__ __volatile__("" ::: "memory"); // the address lands before the count says it is there
+        TF_CrestAddrCount = n + 1;
     }
 }
 
@@ -4271,7 +4275,31 @@ static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
     static const TF_AtlasRect NOD = {3778, 2254, 660, 593};
     static const TF_AtlasRect UNDERBG_BLUE = {5698, 836, 868, 868}; // UI_RA_SIDEBAR_RADAR_UNDERBG_BLUE
     static const TF_AtlasRect UNDERBG_RED = {2684, 782, 868, 868};  // UI_RA_SIDEBAR_RADAR_UNDERBG
-    static const TF_AtlasRect TD_PLATE = {4788, 750, 868, 763};     // UI_SIDEBAR_RADARBG (TD)
+    // TD's plate, scaled into the top 86% of a square with the rest transparent, so its bottom
+    // frame edge sits above the rail (scripts/td_sidebar_extras_paint.py, half size).
+    static const TF_AtlasRect TD_PLATE = {4220, 2883, 434, 422};
+    // RA's bezel is drawn over the under-screen: a hollow frame plus the label bar and bolt
+    // rail behind the sell/repair/map buttons. TD's plate carries its own frame, so for
+    // GDI/Nod the bezel samples a piece that is transparent above and TD's sell/repair rail
+    // across the bottom 12% (scripts/td_sidebar_extras_paint.py paints it, half size).
+    static const TF_AtlasRect RA_BEZEL = {1466, 777, 868, 868}; // UI_RA_SIDEBAR_RADARBG
+    static const TF_AtlasRect TD_RAIL = {5698, 2474, 500, 500};
+    // RA's power meter fills are rounded tubes and its level marker a gold tab; TD's meter is
+    // flat colour under the framing's grille with no marker. Flat strips from the same script;
+    // the marker samples a fully transparent strip (unpainted rows under the DINO eagle).
+    static const TF_AtlasRect RA_FILL_GREEN = {2684, 23, 1001, 31};  // UI_RA_SIDEBAR_POWERFILLGREEN
+    static const TF_AtlasRect RA_FILL_RED = {5791, 1, 1001, 31};     // UI_RA_SIDEBAR_POWERFILLRED
+    static const TF_AtlasRect RA_FILL_YELLOW = {4788, 1, 1001, 31};  // UI_RA_SIDEBAR_POWERFILLYELLOW
+    static const TF_AtlasRect RA_LEVEL = {2618, 5726, 57, 55};       // UI_RA_SIDEBAR_POWERLEVEL
+    static const TF_AtlasRect TD_FILL_GREEN = {5698, 94, 905, 31};
+    static const TF_AtlasRect TD_FILL_RED = {5698, 125, 905, 31};
+    static const TF_AtlasRect TD_FILL_YELLOW = {5698, 156, 905, 31};
+    static const TF_AtlasRect CLEAR = {2154, 2300, 495, 40};
+    // GDI/Nod load TD's HUD scene (FACTIONS.XML scene swap, scripts/factions_build.py), which
+    // draws the TD logo regions directly, choosing by RA side: Allied -> GDI eagle, Soviet ->
+    // Nod scorpion. Nod is on the Allied side, so its eagle record is re-pointed at the scorpion.
+    static const TF_AtlasRect TD_LOGO_GDI = {1, 1875, 718, 706};    // UI_SIDEBAR_FACTIONLOGO_GDI
+    static const TF_AtlasRect TD_LOGO_NOD = {3778, 2221, 660, 660}; // UI_SIDEBAR_FACTIONLOGO_NOD
 
     // The launcher draws the ALLIES slot for GDI AND Nod (proven 2026-09-02: a Nod player
     // kept the ALLIES art with the SOVIET record re-pointed). Which slot a given faction
@@ -4281,10 +4309,28 @@ static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
     TF_Atlas_UV_Record(SOVIET, slots[1].stock);
     TF_Atlas_UV_Record(UNDERBG_BLUE, slots[2].stock);
     TF_Atlas_UV_Record(UNDERBG_RED, slots[3].stock);
-    for (int s = 0; s < TF_CREST_FIXED; s++) {
-        TF_Atlas_UV_Record(s < 2 ? GDI : TD_PLATE, slots[s].gdi, 1 + s);
-        TF_Atlas_UV_Record(s < 2 ? NOD : TD_PLATE, slots[s].nod, 1 + s);
+    // Slots 4..8 show the same TD piece for GDI and Nod.
+    static const TF_AtlasRect* const SHARED[5][2] = {
+        {&RA_BEZEL, &TD_RAIL},
+        {&RA_FILL_GREEN, &TD_FILL_GREEN},
+        {&RA_FILL_RED, &TD_FILL_RED},
+        {&RA_FILL_YELLOW, &TD_FILL_YELLOW},
+        {&RA_LEVEL, &CLEAR},
+    };
+    for (int s = 4; s < 9; s++) {
+        TF_Atlas_UV_Record(*SHARED[s - 4][0], slots[s].stock);
     }
+    for (int s = 0; s < 9; s++) {
+        const TF_AtlasRect& shared = (s >= 4) ? *SHARED[s - 4][1] : TD_PLATE;
+        TF_Atlas_UV_Record(s < 2 ? GDI : shared, slots[s].gdi, 1 + s);
+        TF_Atlas_UV_Record(s < 2 ? NOD : shared, slots[s].nod, 1 + s);
+    }
+    TF_Atlas_UV_Record(TD_LOGO_GDI, slots[9].stock);
+    TF_Atlas_UV_Record(TD_LOGO_GDI, slots[9].gdi, 10);
+    TF_Atlas_UV_Record(TD_LOGO_NOD, slots[9].nod, 10);
+    TF_Atlas_UV_Record(TD_LOGO_NOD, slots[10].stock);
+    TF_Atlas_UV_Record(TD_LOGO_GDI, slots[10].gdi, 11);
+    TF_Atlas_UV_Record(TD_LOGO_NOD, slots[10].nod, 11);
     for (int k = 0; k < TF_SKIN_PAIRS; k++) {
         TF_CrestSlot& sl = slots[TF_CREST_FIXED + k];
         TF_Atlas_UV_Record(TF_SidebarSkin[k].ra, sl.stock);
@@ -4300,6 +4346,16 @@ static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
 // Open ClientG.exe with the access this patch needs. Returns NULL if not found.
 static HANDLE TF_Open_ClientG(DWORD access)
 {
+    // The launcher's pid never changes for the life of this instance, so the process walk
+    // runs once; callers open a fresh handle per use (this is called every frame).
+    static DWORD cached_pid = 0;
+    if (cached_pid != 0) {
+        HANDLE proc = OpenProcess(access, FALSE, cached_pid);
+        if (proc != NULL) {
+            return proc;
+        }
+        cached_pid = 0;
+    }
     HANDLE proc = NULL;
     HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
     if (snap == INVALID_HANDLE_VALUE) {
@@ -4311,6 +4367,9 @@ static HANDLE TF_Open_ClientG(DWORD access)
         do {
             if (_wcsicmp(pe.szExeFile, L"ClientG.exe") == 0) {
                 proc = OpenProcess(access, FALSE, pe.th32ProcessID);
+                if (proc != NULL) {
+                    cached_pid = pe.th32ProcessID;
+                }
                 break;
             }
         } while (Process32NextW(snap, &pe));
@@ -4321,12 +4380,8 @@ static HANDLE TF_Open_ClientG(DWORD access)
 
 // Full scan: walk ClientG's private writable heap, and for every record currently holding
 // either slot's stock or faction rect, remember its address and write the wanted rect.
-static void TF_Crest_Full_Scan(FILE* log)
+static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
 {
-    TF_CrestSlot slots[TF_CREST_SLOTS];
-    if (!TF_Crest_Slots(slots)) {
-        return;
-    }
     bool gdi = (slots[0].want == slots[0].gdi);
     bool nod = (slots[0].want == slots[0].nod);
     // First-dword filter: a record's leading float (v0) must be one of ours before the
@@ -4404,7 +4459,7 @@ static void TF_Crest_Full_Scan(FILE* log)
                     bool ok = WriteProcessMemory(proc, (LPVOID)rec_addr, slots[slot].want, REC, &wrote)
                               && wrote == (SIZE_T)REC;
                     if (log) {
-                        static const char* const _slot_names[TF_CREST_FIXED] = {"ALLIES", "SOVIET", "UNDERBG_BLUE", "UNDERBG_RED"};
+                        static const char* const _slot_names[TF_CREST_FIXED] = {"ALLIES", "SOVIET", "UNDERBG_BLUE", "UNDERBG_RED", "BEZEL", "FILL_G", "FILL_R", "FILL_Y", "LEVEL", "TDLOGO_GDI", "TDLOGO_NOD"};
                         fprintf(log, "  scan slot %s @ %08x %s -> %s %s\n", slot < TF_CREST_FIXED ? _slot_names[slot] : "skin",
                                 (unsigned int)rec_addr, was, gdi ? "gdi" : (nod ? "nod" : "stock"),
                                 ok ? "OK" : "FAIL");
@@ -4463,33 +4518,82 @@ static void TF_Crest_Reverify(void)
 static void TF_Patch_ClientG_Crest(void)
 {
     TF_CrestMatchStartFrame = (int)Frame;
+    TF_CrestScanNext = 0;
+}
+
+// The full scan reads the launcher's whole heap (hundreds of MB across processes), which
+// stalled the game for its duration when it ran on the game thread. It runs on a worker
+// thread instead, one at a time, from a private copy of the slot table taken on the game
+// thread; a request that arrives while a scan is still running is dropped (the next
+// scheduled one covers it).
+static TF_CrestSlot TF_CrestScanSlots[TF_CREST_SLOTS];
+static volatile LONG TF_CrestScanBusy = 0;
+
+static DWORD WINAPI TF_Crest_Scan_Thread(LPVOID)
+{
+    FILE* log = NULL;
+#if TF_DEV_BUILD
+    const char* up = getenv("USERPROFILE");
+    char logpath[512];
+    if (up != NULL) {
+        snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+        log = fopen(logpath, "a");
+    }
+    if (log) {
+        fprintf(log, "== crest scan frame %d known=%d ==\n", (int)Frame, TF_CrestAddrCount);
+    }
+#endif
+    TF_Crest_Full_Scan(TF_CrestScanSlots, log);
+    if (log) {
+        fflush(log);
+        fclose(log);
+    }
+    InterlockedExchange(&TF_CrestScanBusy, 0);
+    return 0;
+}
+
+static void TF_Crest_Request_Scan(void)
+{
+    TF_CrestSlot slots[TF_CREST_SLOTS];
+    if (!TF_Crest_Slots(slots)) {
+        return;
+    }
+    if (InterlockedCompareExchange(&TF_CrestScanBusy, 1, 0) != 0) {
+        return;
+    }
+    for (int s = 0; s < TF_CREST_SLOTS; s++) {
+        TF_CrestScanSlots[s] = slots[s];
+        // `want` points into its own slot; re-aim it at the copy.
+        TF_CrestScanSlots[s].want = (slots[s].want == slots[s].gdi) ? TF_CrestScanSlots[s].gdi
+                                    : (slots[s].want == slots[s].nod) ? TF_CrestScanSlots[s].nod
+                                                                      : TF_CrestScanSlots[s].stock;
+    }
+    HANDLE thread = CreateThread(NULL, 0, TF_Crest_Scan_Thread, NULL, 0, NULL);
+    if (thread == NULL) {
+        InterlockedExchange(&TF_CrestScanBusy, 0);
+        return;
+    }
+    CloseHandle(thread);
 }
 
 // Driven every frame from CNC_Advance_Instance. Cheaply re-points known records each frame,
-// and runs a full heap scan a few times over the first ~15 seconds of each match to discover
-// the record ClientG creates lazily on the first radar draw.
+// and requests a full heap scan at widening intervals over the first ~15 seconds of each
+// match to discover the record ClientG creates lazily on the first radar draw. On a fresh
+// launch the first scan sees nothing and the second or third catches the record; in later
+// matches the first scan finds everything and the rest confirm it.
 static void TF_Crest_Tick(void)
 {
-    TF_Crest_Reverify();
+    // 169 cross-process reads per pass; every fifth frame keeps the self-heal invisible
+    // and the cost off the frame budget.
+    if (((int)Frame % 5) == 0) {
+        TF_Crest_Reverify();
+    }
+    static const int _scan_at[] = {0, 6, 12, 24, 48, 96, 192, 384};
+    const int count = (int)(sizeof(_scan_at) / sizeof(_scan_at[0]));
     int since = (int)Frame - TF_CrestMatchStartFrame;
-    if (since >= 0 && since <= 450 && ((int)Frame % 6) == 0) {
-        FILE* log = NULL;
-#if TF_DEV_BUILD
-        const char* up = getenv("USERPROFILE");
-        char logpath[512];
-        if (up != NULL) {
-            snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-            log = fopen(logpath, "a");
-        }
-        if (log) {
-            fprintf(log, "== crest scan frame %d known=%d ==\n", (int)Frame, TF_CrestAddrCount);
-        }
-#endif
-        TF_Crest_Full_Scan(log);
-        if (log) {
-            fflush(log);
-            fclose(log);
-        }
+    if (since >= 0 && TF_CrestScanNext < count && since >= _scan_at[TF_CrestScanNext]) {
+        TF_CrestScanNext++;
+        TF_Crest_Request_Scan();
     }
 }
 

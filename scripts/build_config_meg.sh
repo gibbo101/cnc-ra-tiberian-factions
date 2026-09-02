@@ -20,6 +20,8 @@ cd "$(dirname "$0")/.."
 MEG="resources/remaster_mods/Vanilla_RA/Data/CONFIG.MEG"
 BASE_BUI="scripts/bui_work/RA_MAIN_MENU.base.BUI"
 EDIT_BUI="scripts/bui_work/RA_MAIN_MENU.edited.BUI"
+BASE_HUD="scripts/bui_work/RA_TACTICAL_UI.base.BUI"
+EDIT_HUD="scripts/bui_work/RA_TACTICAL_UI.edited.BUI"
 BASE_GC="scripts/gc_work/GAMECONSTANTS.base.XML"
 EDIT_GC="scripts/gc_work/GAMECONSTANTS.edited.XML"
 LOOSE_GC="resources/remaster_mods/Vanilla_RA/Data/XML/GAMECONSTANTS.XML"
@@ -37,6 +39,9 @@ EDIT_FAC="scripts/factions_work/FACTIONS.edited.XML"
 echo "==> Rebuilding edited RA_MAIN_MENU.BUI from base"
 python3 scripts/bui_mainmenu_build.py "$BASE_BUI" "$EDIT_BUI"
 
+echo "==> Rebuilding edited RA_TACTICAL_UI.BUI from base (side label under the crest hidden)"
+python3 scripts/bui_work/hud_label_hide_build.py "$BASE_HUD" "$EDIT_HUD"
+
 echo "==> Rebuilding edited MUSICEVENTS.XML from base (skirmish playlist)"
 python3 scripts/musicevents_build.py "$BASE_MUS" "$MUS_LIST" "$EDIT_MUS"
 
@@ -48,6 +53,7 @@ echo "==> Rebuilding FACTIONS.XML from base (picker order + full-size GDI/Nod pl
 python3 scripts/factions_build.py "$BASE_FAC" "$EDIT_FAC"
 python3 scripts/meg_pack.py repack "$MEG" "$MEG.tmp" \
     "RA_MAIN_MENU.BUI=$EDIT_BUI" \
+    "DATA\\ART\\GUI\\RA_TACTICAL_UI.BUI=$EDIT_HUD" \
     "MUSICEVENTS.XML=$EDIT_MUS" "MASTERTEXTFILE_EN-US.LOC=$EDIT_LOC" \
     "DATA\\XML\\OBJECTS\\MISC\\FACTIONS.XML=$EDIT_FAC"
 mv "$MEG.tmp" "$MEG"
@@ -56,6 +62,8 @@ mv "$MEG.tmp" "$MEG"
 echo "==> Verifying the edited files inside the MEG"
 python3 scripts/meg_extract.py extract "$MEG" "RA_MAIN_MENU.BUI" /tmp/_megverify >/dev/null
 cmp "/tmp/_megverify/RA_MAIN_MENU.BUI" "$EDIT_BUI" && echo "OK: BUI in CONFIG.MEG matches edited BUI"
+python3 scripts/meg_extract.py extract "$MEG" "RA_TACTICAL_UI.BUI" /tmp/_megverify >/dev/null
+cmp "/tmp/_megverify/RA_TACTICAL_UI.BUI" "$EDIT_HUD" && echo "OK: HUD BUI in CONFIG.MEG matches edited copy"
 python3 scripts/meg_extract.py extract "$MEG" "MUSICEVENTS.XML" /tmp/_megverify >/dev/null
 cmp "/tmp/_megverify/MUSICEVENTS.XML" "$EDIT_MUS" && echo "OK: MUSICEVENTS in CONFIG.MEG matches edited copy"
 python3 scripts/meg_extract.py extract "$MEG" "MASTERTEXTFILE_EN-US.LOC" /tmp/_megverify >/dev/null

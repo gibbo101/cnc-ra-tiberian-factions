@@ -38,6 +38,11 @@ for nn in ('10', '06', '08', '09'):
 for nn in ('05', '07'):
     SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_SOVIET', None)
 
+# The lobby's start-position markers on the map preview are UI_MAPSELECT_FACTION_NN, 40x40
+# circle badges indexed one above the picker plates (_01 GDI, _02 Nod, _03 Spain .. _10 Turkey).
+# Same emblem per country as the plate, filling the badge.
+MAP_SLOTS = {nn: SLOTS[nn][0] for nn in SLOTS}
+
 
 def regions():
     mtd = open(MTD, 'rb').read()
@@ -82,8 +87,8 @@ def compose(src, logo, field):
             elif a > 0:
                 px[xx, yy] = (field[0], field[1], field[2], a)
     # logo: gold line art with alpha; fit to ~66 px high, centred in the whole shape
-    lg = logo.copy()
-    lg.thumbnail((w - 40, 72), Image.LANCZOS)
+    lg = logo.crop(logo.getbbox())       # drop the crest's transparent margins first
+    lg.thumbnail((w - 4, h), Image.LANCZOS)  # the plate's full height: the box fits the plate by width, so height is the only lever
     # The launcher draws the plate at roughly a third of this size with no mip filtering, so
     # soften the fine metallic detail a touch or it aliases into speckle in the list.
     lg = lg.filter(ImageFilter.GaussianBlur(0.7))
@@ -98,12 +103,43 @@ def compose(src, logo, field):
     return out
 
 
+BADGE_DISC = 22   # the base flag badge's opaque disc within the 40x40 slot; the launcher draws the
+                  # player-colour ring behind it, so the crest must stay inside the disc
+
+
+def compose_badge(size, logo):
+    lg = logo.crop(logo.getbbox())
+    lg.thumbnail((BADGE_DISC, BADGE_DISC), Image.LANCZOS)
+    lg = lg.filter(ImageFilter.GaussianBlur(0.3))
+    out = Image.new('RGBA', size, (0, 0, 0, 0))
+    out.paste(lg, ((size[0] - lg.width) // 2, (size[1] - lg.height) // 2), lg)
+    return out
+
+
+def paint_rows(rows, rect, img):
+    x0, y0 = rect[0], rect[1]
+    px = img.load()
+    for yy in range(img.height):
+        b = bytearray()
+        for xx in range(img.width):
+            r, g, bb, a = px[xx, yy]
+            b += bytes((bb, g, r, a))
+        rows.append((row_off(x0, y0 + yy), bytes(b)))
+
+
 def main(targets):
     regs = regions()
     src = open(PRISTINE, 'rb')
     rows = []
     preview = []
     logos = {}
+    for nn, logo_region in MAP_SLOTS.items():
+        if logo_region not in logos:
+            logos[logo_region] = read_region(src, regs[logo_region])
+        rect = regs['UI_MAPSELECT_FACTION_' + nn]
+        img = compose_badge((rect[2], rect[3]), logos[logo_region])
+        preview.append(img)
+        paint_rows(rows, rect, img)
     for nn, (logo_region, field) in SLOTS.items():
         if logo_region not in logos:
             logos[logo_region] = read_region(src, regs[logo_region])
@@ -112,14 +148,7 @@ def main(targets):
             rect = regs[slot]
             img = compose(read_region(src, rect), logo, field)
             preview.append(img)
-            x0, y0 = rect[0], rect[1]
-            px = img.load()
-            for yy in range(img.height):
-                b = bytearray()
-                for xx in range(img.width):
-                    r, g, bb, a = px[xx, yy]
-                    b += bytes((bb, g, r, a))
-                rows.append((row_off(x0, y0 + yy), bytes(b)))
+            paint_rows(rows, rect, img)
     for t in targets:
         with open(t, 'r+b') as f:
             for off, b in rows:

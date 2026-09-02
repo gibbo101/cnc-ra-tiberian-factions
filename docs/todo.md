@@ -5,6 +5,21 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Group deploy on the backslash key (Luke, 2026-09-02: "a todo for another time")
+
+Vanilla: the self-click action is granted only when exactly ONE unit is selected
+(`TechnoClass::What_Action`, techno.cpp, `CurrentObject.Count() == 1`), so with a group selected
+neither the launcher's deploy key nor `TF_Self_Action_Selected` deploys anything. The extension:
+on a fresh backslash press with a group selected, evaluate each selected unit as if it were alone
+(swap `CurrentObject` down to that one unit around the `What_Action(self)` call, or test the
+per-class conditions directly: `Is_MCV()` + `Legal_Placement`, passengers aboard, minelayer with
+ammo) and give every deployable one its `MISSION_UNLOAD` via `Player_Assign_Mission`. MCVs each
+try their own spot; APCs/Chinooks all unload; minelayers all lay. Same for the TS Juggernaut /
+Tick Tank once they deploy. Small change in `TF_Self_Action_Selected` + rebuild; single-unit
+behaviour must stay identical.
+
+---
+
 ## Bottom of the barrel: crest label colour on the TD plate (Luke, 2026-09-02: only if it proves hard to read)
 
 The launcher-drawn "GDI"/"Nod" text under the radar crest was coloured for RA's dark grid and now
