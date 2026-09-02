@@ -1,0 +1,6018 @@
+<?xml version="1.0"?>
+<ObjectTypeList xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+	<!-- ******************************************************************* -->
+	<!-- ******								Faction 1 (GDI)						****** -->
+	<!-- ******************************************************************* -->
+
+	<ObjectTypeClass Name="Faction1" Classification="Faction">
+		<FactionComponent>
+			<Faction>Faction1</Faction>
+			<TacticalUIFilename network="client">TacticalCommandBar/BetaTacticalCommandBar.swf</TacticalUIFilename>
+			<SortPriority network="client">0</SortPriority>
+			<AudioTableName network="client">Faction1</AudioTableName>
+			<AutoSwapDiffuseTexture>false</AutoSwapDiffuseTexture>
+			<CampaignType>GDI_CAMPAIGN</CampaignType>
+			<CoopCampaignType></CoopCampaignType>
+			<AIKnowledgeBase network="server">Data\\Scripts\\AI\\Faction1Rules.clp</AIKnowledgeBase>
+			<AIInitialGoals network="server">Data\\Scripts\\AI\\Faction1GoalRules.clp</AIInitialGoals>
+			<TeamColorSettings>
+				<!-- Team 0 (Sky Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.00</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>0.00</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 1 (Red)-->
+				<entry>
+					<ParticleColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.78</R>
+						<G>0.36</G>
+						<B>0.36</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.80</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 2 (Green) -->
+				<entry>
+					<ParticleColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.50</R>
+						<G>0.63</G>
+						<B>0.42</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.24</R>
+								<G>0.63</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 3 (Yellow) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.92</G>
+						<B>0.47</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.85</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 4 (Orange) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.69</G>
+						<B>0.44</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.29</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 5 (Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.44</R>
+						<G>0.52</G>
+						<B>0.65</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.12</R>
+								<G>0.33</G>
+								<B>0.66</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 6 (Pink) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.56</G>
+						<B>0.88</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.06</G>
+								<B>0.74</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 7 (Purple) -->
+				<entry>
+					<ParticleColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.74</R>
+						<G>0.64</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.56</R>
+								<G>0.39</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 8 (White) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>1.0</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- Team 9 (Dark Grey) -->
+				<entry>
+					<ParticleColor>
+						<R>0.14</R>
+						<G>0.18</G>
+						<B>0.20</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.40</R>
+						<G>0.45</G>
+						<B>0.50</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.08</R>
+						<G>0.12</G>
+						<B>0.16</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.14</R>
+								<G>0.18</G>
+								<B>0.20</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- outpost neutral color -->
+				<entry>
+					<ParticleColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.7</R>
+						<G>0.7</G>
+						<B>0.60</B>
+						<A>0.25</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.7</R>
+								<G>0.55</G>
+								<B>0.3</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+			</TeamColorSettings>
+			<!-- These icons should match MULTIPLAYER colors -->
+			<FactionColorIcons>
+				<entry>ColorBox01.png</entry>
+				<entry>ColorBox02.png</entry>
+				<entry>ColorBox03.png</entry>
+				<entry>ColorBox04.png</entry>
+			</FactionColorIcons>
+			<StealthColor network="client">
+				<R>0.04</R>
+				<G>0.25</G>
+				<B>0.55</B>
+				<A>1.0</A>
+			</StealthColor>
+			<StealthBrokenColor network="client">
+				<R>0.15</R>
+				<G>0.04</G>
+				<B>0.65</B>
+				<A>1.0</A>
+			</StealthBrokenColor>
+			<ShieldsHitFlashActive network="client"> false </ShieldsHitFlashActive>
+			<ShieldsHitFlashColor network="client">
+				<R>0.0</R>
+				<G>0.2</G>
+				<B>1.0</B>
+				<A>1.0</A>
+			</ShieldsHitFlashColor>
+			<ShieldsHitFlashDurationMS network="client"> 100 </ShieldsHitFlashDurationMS>
+
+			<StartObjectsSOBFile network="server">Start_Objects_LEGACY_HERO_00.sob</StartObjectsSOBFile>
+			
+			<FactionObjects>
+				<!--MLL: Keep the structures in the order they should appear on the structure breakdown screen. -->
+
+			</FactionObjects>
+			
+			<FactionObjectSorting network="client">
+				<!--JAC: List objects in order of display in the selection list. This can include other faction units -->
+			</FactionObjectSorting>
+			
+			<StructureHierarchyObjects>
+			</StructureHierarchyObjects>
+			
+			<UnitHierarchyObjects>
+			</UnitHierarchyObjects>
+
+			<!-- Units and structures which the user can build through the GUI for this faction -->
+			<BuildableStructureObjects>
+			</BuildableStructureObjects>
+			
+			<WallGridStructureObjects>
+			</WallGridStructureObjects>
+
+			<BuildableUnitObjects>
+			</BuildableUnitObjects>
+
+			<CategorizedStructures>
+				<!-- PRODUCTION -->
+				<Entry>
+				</Entry>
+				<!--  SUPPORT -->
+				<Entry>
+				</Entry>
+				<!--  DEFENSES -->
+				<Entry>
+				</Entry>
+			</CategorizedStructures>
+
+			<ResearchStructures>
+			</ResearchStructures>
+			
+			<ChassisToTypeMapping/>
+			<ChassisToDefaultWeaponMapping/>
+			<TechTreeUINameToTechName/>
+			<ChassisTypeToBaseName/>
+			<ModelsToPreload/>
+			<UnitQueueGameCommands network="client"/>
+			<TechUpgradeGroups/>
+
+			<PaymentStrategy>AllResourcesDirectlyUpfront</PaymentStrategy>
+			<TechUpgradePaymentStrategy>ResourcesUpFront</TechUpgradePaymentStrategy>
+			<StructurePlacementGridVisualizer>BuildRange</StructurePlacementGridVisualizer>
+			<TopLevelGUIList network="client">
+				<entry>
+					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>UI_Chat</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIList>
+			<TopLevelGUIListAlt network="client">
+				<entry>
+					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>Art/GUI/RA/RA_UI_Chat_Soviet.bui</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIListAlt>
+		</FactionComponent>
+		<AttributeDirectoryComponent>
+			<DynamicBaseValues>
+				<Entry>
+					<Key>StartingHumanPopulation</Key>
+					<Value>
+						<OverrideValue>1000</OverrideValue>
+					</Value>
+				</Entry>
+				<Entry>
+					<Key>StartingAIPopulation</Key>
+					<Value>
+						<OverrideValue>200</OverrideValue>
+					</Value>
+				</Entry>
+			</DynamicBaseValues>
+		</AttributeDirectoryComponent>
+		<EncyclopediaComponent>
+			<ObjectNameTextID></ObjectNameTextID>
+			<DefaultIcons>
+				<SmallIconName>UI_Multiplayer_PlayerSlot_Faction_00.tga</SmallIconName>
+				<LargeIconName></LargeIconName>
+			</DefaultIcons>
+		</EncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<!-- ******************************************************************* -->
+	<!-- ******								Faction 2 (Nod)						****** -->
+	<!-- ******************************************************************* -->
+
+	<ObjectTypeClass Name="Faction2" Classification="Faction">
+		<FactionComponent>
+			<Faction>Faction2</Faction>
+			<TacticalUIFilename network="client">TacticalCommandBar/BetaTacticalCommandBar.swf</TacticalUIFilename>
+			<SortPriority network="client">0</SortPriority>
+			<AudioTableName network="client">Faction1</AudioTableName>
+			<AutoSwapDiffuseTexture>false</AutoSwapDiffuseTexture>
+			<CampaignType>NOD_CAMPAIGN</CampaignType>
+			<CoopCampaignType></CoopCampaignType>
+			<AIKnowledgeBase network="server">Data\\Scripts\\AI\\Faction1Rules.clp</AIKnowledgeBase>
+			<AIInitialGoals network="server">Data\\Scripts\\AI\\Faction1GoalRules.clp</AIInitialGoals>
+			<TeamColorSettings>
+				<!-- Team 0 (Sky Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.00</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>0.00</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 1 (Red)-->
+				<entry>
+					<ParticleColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.78</R>
+						<G>0.36</G>
+						<B>0.36</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.80</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 2 (Green) -->
+				<entry>
+					<ParticleColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.50</R>
+						<G>0.63</G>
+						<B>0.42</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.24</R>
+								<G>0.63</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 3 (Yellow) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.92</G>
+						<B>0.47</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.85</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 4 (Orange) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.69</G>
+						<B>0.44</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.29</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 5 (Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.44</R>
+						<G>0.52</G>
+						<B>0.65</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.12</R>
+								<G>0.33</G>
+								<B>0.66</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 6 (Pink) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.56</G>
+						<B>0.88</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.06</G>
+								<B>0.74</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 7 (Purple) -->
+				<entry>
+					<ParticleColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.74</R>
+						<G>0.64</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.56</R>
+								<G>0.39</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 8 (White) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>1.0</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- Team 9 (Dark Grey) -->
+				<entry>
+					<ParticleColor>
+						<R>0.14</R>
+						<G>0.18</G>
+						<B>0.20</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.40</R>
+						<G>0.45</G>
+						<B>0.50</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.08</R>
+						<G>0.12</G>
+						<B>0.16</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.14</R>
+								<G>0.18</G>
+								<B>0.20</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- outpost neutral color -->
+				<entry>
+					<ParticleColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.7</R>
+						<G>0.7</G>
+						<B>0.60</B>
+						<A>0.25</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.7</R>
+								<G>0.55</G>
+								<B>0.3</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+			</TeamColorSettings>
+			<!-- These icons should match MULTIPLAYER colors -->
+			<FactionColorIcons>
+				<entry>ColorBox01.png</entry>
+				<entry>ColorBox02.png</entry>
+				<entry>ColorBox03.png</entry>
+				<entry>ColorBox04.png</entry>
+			</FactionColorIcons>
+			<StealthColor network="client">
+				<R>0.04</R>
+				<G>0.25</G>
+				<B>0.55</B>
+				<A>1.0</A>
+			</StealthColor>
+			<StealthBrokenColor network="client">
+				<R>0.15</R>
+				<G>0.04</G>
+				<B>0.65</B>
+				<A>1.0</A>
+			</StealthBrokenColor>
+			<ShieldsHitFlashActive network="client"> false </ShieldsHitFlashActive>
+			<ShieldsHitFlashColor network="client">
+				<R>0.0</R>
+				<G>0.2</G>
+				<B>1.0</B>
+				<A>1.0</A>
+			</ShieldsHitFlashColor>
+			<ShieldsHitFlashDurationMS network="client"> 100 </ShieldsHitFlashDurationMS>
+
+			<StartObjectsSOBFile network="server">Start_Objects_LEGACY_HERO_00.sob</StartObjectsSOBFile>
+			
+			<FactionObjects>
+				<!--MLL: Keep the structures in the order they should appear on the structure breakdown screen. -->
+
+			</FactionObjects>
+			
+			<FactionObjectSorting network="client">
+				<!--JAC: List objects in order of display in the selection list. This can include other faction units -->
+			</FactionObjectSorting>
+			
+			<StructureHierarchyObjects>
+			</StructureHierarchyObjects>
+			
+			<UnitHierarchyObjects>
+			</UnitHierarchyObjects>
+
+			<!-- Units and structures which the user can build through the GUI for this faction -->
+			<BuildableStructureObjects>
+			</BuildableStructureObjects>
+			
+			<WallGridStructureObjects>
+			</WallGridStructureObjects>
+
+			<BuildableUnitObjects>
+			</BuildableUnitObjects>
+
+			<CategorizedStructures>
+				<!-- PRODUCTION -->
+				<Entry>
+				</Entry>
+				<!--  SUPPORT -->
+				<Entry>
+				</Entry>
+				<!--  DEFENSES -->
+				<Entry>
+				</Entry>
+			</CategorizedStructures>
+
+			<ResearchStructures>
+			</ResearchStructures>
+			
+			<ChassisToTypeMapping/>
+			<ChassisToDefaultWeaponMapping/>
+			<TechTreeUINameToTechName/>
+			<ChassisTypeToBaseName/>
+			<ModelsToPreload/>
+			<UnitQueueGameCommands network="client"/>
+			<TechUpgradeGroups/>
+
+			<PaymentStrategy>AllResourcesDirectlyUpfront</PaymentStrategy>
+			<TechUpgradePaymentStrategy>ResourcesUpFront</TechUpgradePaymentStrategy>
+			<StructurePlacementGridVisualizer>BuildRange</StructurePlacementGridVisualizer>
+			<TopLevelGUIList network="client">
+				<entry>
+					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>UI_Chat</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIList>
+			<TopLevelGUIListAlt network="client">
+				<entry>
+					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>Art/GUI/RA/RA_UI_Chat_Soviet.bui</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIListAlt>
+		</FactionComponent>
+		<AttributeDirectoryComponent>
+			<DynamicBaseValues>
+				<Entry>
+					<Key>StartingHumanPopulation</Key>
+					<Value>
+						<OverrideValue>1000</OverrideValue>
+					</Value>
+				</Entry>
+				<Entry>
+					<Key>StartingAIPopulation</Key>
+					<Value>
+						<OverrideValue>200</OverrideValue>
+					</Value>
+				</Entry>
+			</DynamicBaseValues>
+		</AttributeDirectoryComponent>
+		<EncyclopediaComponent>
+			<ObjectNameTextID></ObjectNameTextID>
+			<DefaultIcons>
+				<SmallIconName>UI_Multiplayer_PlayerSlot_Faction_01.tga</SmallIconName>
+				<LargeIconName></LargeIconName>
+			</DefaultIcons>
+		</EncyclopediaComponent>
+	</ObjectTypeClass>
+
+
+	<!-- ******************************************************************* -->
+	<!-- ******								Faction 3 (Spain)						****** -->
+	<!-- ******************************************************************* -->
+
+	<ObjectTypeClass Name="Faction3" Classification="Faction">
+		<FactionComponent>
+			<Faction>Faction3</Faction>
+			<TacticalUIFilename network="client">TacticalCommandBar/BetaTacticalCommandBar.swf</TacticalUIFilename>
+			<SortPriority network="client">0</SortPriority>
+			<AudioTableName network="client">Faction1</AudioTableName>
+			<AutoSwapDiffuseTexture>false</AutoSwapDiffuseTexture>
+			<CampaignType>RA_ALLIES_CAMPAIGN</CampaignType>
+			<CoopCampaignType></CoopCampaignType>
+			<AIKnowledgeBase network="server">Data\\Scripts\\AI\\Faction1Rules.clp</AIKnowledgeBase>
+			<AIInitialGoals network="server">Data\\Scripts\\AI\\Faction1GoalRules.clp</AIInitialGoals>
+			<TeamColorSettings>
+				<!-- Team 0 (Sky Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.00</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>0.00</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 1 (Red)-->
+				<entry>
+					<ParticleColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.78</R>
+						<G>0.36</G>
+						<B>0.36</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.80</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 2 (Green) -->
+				<entry>
+					<ParticleColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.50</R>
+						<G>0.63</G>
+						<B>0.42</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.24</R>
+								<G>0.63</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 3 (Yellow) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.92</G>
+						<B>0.47</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.85</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 4 (Orange) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.69</G>
+						<B>0.44</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.29</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 5 (Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.44</R>
+						<G>0.52</G>
+						<B>0.65</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.12</R>
+								<G>0.33</G>
+								<B>0.66</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 6 (Pink) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.56</G>
+						<B>0.88</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.06</G>
+								<B>0.74</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 7 (Purple) -->
+				<entry>
+					<ParticleColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.74</R>
+						<G>0.64</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.56</R>
+								<G>0.39</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 8 (White) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>1.0</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- Team 9 (Dark Grey) -->
+				<entry>
+					<ParticleColor>
+						<R>0.14</R>
+						<G>0.18</G>
+						<B>0.20</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.40</R>
+						<G>0.45</G>
+						<B>0.50</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.08</R>
+						<G>0.12</G>
+						<B>0.16</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.14</R>
+								<G>0.18</G>
+								<B>0.20</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- outpost neutral color -->
+				<entry>
+					<ParticleColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.7</R>
+						<G>0.7</G>
+						<B>0.60</B>
+						<A>0.25</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.7</R>
+								<G>0.55</G>
+								<B>0.3</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+			</TeamColorSettings>
+			<!-- These icons should match MULTIPLAYER colors -->
+			<FactionColorIcons>
+				<entry>ColorBox01.png</entry>
+				<entry>ColorBox02.png</entry>
+				<entry>ColorBox03.png</entry>
+				<entry>ColorBox04.png</entry>
+			</FactionColorIcons>
+			<StealthColor network="client">
+				<R>0.04</R>
+				<G>0.25</G>
+				<B>0.55</B>
+				<A>1.0</A>
+			</StealthColor>
+			<StealthBrokenColor network="client">
+				<R>0.15</R>
+				<G>0.04</G>
+				<B>0.65</B>
+				<A>1.0</A>
+			</StealthBrokenColor>
+			<ShieldsHitFlashActive network="client"> false </ShieldsHitFlashActive>
+			<ShieldsHitFlashColor network="client">
+				<R>0.0</R>
+				<G>0.2</G>
+				<B>1.0</B>
+				<A>1.0</A>
+			</ShieldsHitFlashColor>
+			<ShieldsHitFlashDurationMS network="client"> 100 </ShieldsHitFlashDurationMS>
+
+			<StartObjectsSOBFile network="server">Start_Objects_LEGACY_HERO_00.sob</StartObjectsSOBFile>
+			
+			<FactionObjects>
+				<!--MLL: Keep the structures in the order they should appear on the structure breakdown screen. -->
+
+			</FactionObjects>
+			
+			<FactionObjectSorting network="client">
+				<!--JAC: List objects in order of display in the selection list. This can include other faction units -->
+			</FactionObjectSorting>
+			
+			<StructureHierarchyObjects>
+			</StructureHierarchyObjects>
+			
+			<UnitHierarchyObjects>
+			</UnitHierarchyObjects>
+
+			<!-- Units and structures which the user can build through the GUI for this faction -->
+			<BuildableStructureObjects>
+			</BuildableStructureObjects>
+			
+			<WallGridStructureObjects>
+			</WallGridStructureObjects>
+
+			<BuildableUnitObjects>
+			</BuildableUnitObjects>
+
+			<CategorizedStructures>
+				<!-- PRODUCTION -->
+				<Entry>
+				</Entry>
+				<!--  SUPPORT -->
+				<Entry>
+				</Entry>
+				<!--  DEFENSES -->
+				<Entry>
+				</Entry>
+			</CategorizedStructures>
+
+			<ResearchStructures>
+			</ResearchStructures>
+			
+			<ChassisToTypeMapping/>
+			<ChassisToDefaultWeaponMapping/>
+			<TechTreeUINameToTechName/>
+			<ChassisTypeToBaseName/>
+			<ModelsToPreload/>
+			<UnitQueueGameCommands network="client"/>
+			<TechUpgradeGroups/>
+
+			<PaymentStrategy>AllResourcesDirectlyUpfront</PaymentStrategy>
+			<TechUpgradePaymentStrategy>ResourcesUpFront</TechUpgradePaymentStrategy>
+			<StructurePlacementGridVisualizer>BuildRange</StructurePlacementGridVisualizer>
+			<TopLevelGUIList network="client">
+				<entry>
+					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>UI_Chat</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIList>
+			<TopLevelGUIListAlt network="client">
+				<entry>
+					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>Art/GUI/RA/RA_UI_Chat_Allies.bui</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIListAlt>
+			<GUIFileNames network="client">
+				<Entry>
+					<Key>DialogBox</Key>
+					<Value>RA/RA_DialogBox_Allied</Value>
+				</Entry>
+				<Entry>
+					<Key>RevertDialog</Key>
+					<Value>RA/UI_RA_RevertDialog_Allies</Value>
+				</Entry>
+			</GUIFileNames>
+		</FactionComponent>
+		<AttributeDirectoryComponent>
+			<DynamicBaseValues>
+				<Entry>
+					<Key>StartingHumanPopulation</Key>
+					<Value>
+						<OverrideValue>1000</OverrideValue>
+					</Value>
+				</Entry>
+				<Entry>
+					<Key>StartingAIPopulation</Key>
+					<Value>
+						<OverrideValue>200</OverrideValue>
+					</Value>
+				</Entry>
+			</DynamicBaseValues>
+		</AttributeDirectoryComponent>
+		<EncyclopediaComponent>
+			<ObjectNameTextID></ObjectNameTextID>
+			<DefaultIcons>
+				<SmallIconName>UI_Multiplayer_PlayerSlot_Faction_00.tga</SmallIconName>
+				<LargeIconName></LargeIconName>
+			</DefaultIcons>
+		</EncyclopediaComponent>
+	</ObjectTypeClass>
+
+
+
+
+	<!-- ******************************************************************* -->
+	<!-- ******								Faction 4 (Greece)					****** -->
+	<!-- ******************************************************************* -->
+
+	<ObjectTypeClass Name="Faction4" Classification="Faction">
+		<FactionComponent>
+			<Faction>Faction4</Faction>
+			<TacticalUIFilename network="client">TacticalCommandBar/BetaTacticalCommandBar.swf</TacticalUIFilename>
+			<SortPriority network="client">0</SortPriority>
+			<AudioTableName network="client">Faction1</AudioTableName>
+			<AutoSwapDiffuseTexture>false</AutoSwapDiffuseTexture>
+			<CampaignType>RA_ALLIES_CAMPAIGN</CampaignType>
+			<CoopCampaignType></CoopCampaignType>
+			<AIKnowledgeBase network="server">Data\\Scripts\\AI\\Faction1Rules.clp</AIKnowledgeBase>
+			<AIInitialGoals network="server">Data\\Scripts\\AI\\Faction1GoalRules.clp</AIInitialGoals>
+			<TeamColorSettings>
+				<!-- Team 0 (Sky Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.00</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>0.00</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 1 (Red)-->
+				<entry>
+					<ParticleColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.78</R>
+						<G>0.36</G>
+						<B>0.36</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.80</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 2 (Green) -->
+				<entry>
+					<ParticleColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.50</R>
+						<G>0.63</G>
+						<B>0.42</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.24</R>
+								<G>0.63</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 3 (Yellow) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.92</G>
+						<B>0.47</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.85</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 4 (Orange) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.69</G>
+						<B>0.44</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.29</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 5 (Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.44</R>
+						<G>0.52</G>
+						<B>0.65</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.12</R>
+								<G>0.33</G>
+								<B>0.66</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 6 (Pink) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.56</G>
+						<B>0.88</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.06</G>
+								<B>0.74</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 7 (Purple) -->
+				<entry>
+					<ParticleColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.74</R>
+						<G>0.64</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.56</R>
+								<G>0.39</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 8 (White) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>1.0</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- Team 9 (Dark Grey) -->
+				<entry>
+					<ParticleColor>
+						<R>0.14</R>
+						<G>0.18</G>
+						<B>0.20</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.40</R>
+						<G>0.45</G>
+						<B>0.50</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.08</R>
+						<G>0.12</G>
+						<B>0.16</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.14</R>
+								<G>0.18</G>
+								<B>0.20</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- outpost neutral color -->
+				<entry>
+					<ParticleColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.7</R>
+						<G>0.7</G>
+						<B>0.60</B>
+						<A>0.25</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.7</R>
+								<G>0.55</G>
+								<B>0.3</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+			</TeamColorSettings>
+			<!-- These icons should match MULTIPLAYER colors -->
+			<FactionColorIcons>
+				<entry>ColorBox01.png</entry>
+				<entry>ColorBox02.png</entry>
+				<entry>ColorBox03.png</entry>
+				<entry>ColorBox04.png</entry>
+			</FactionColorIcons>
+			<StealthColor network="client">
+				<R>0.04</R>
+				<G>0.25</G>
+				<B>0.55</B>
+				<A>1.0</A>
+			</StealthColor>
+			<StealthBrokenColor network="client">
+				<R>0.15</R>
+				<G>0.04</G>
+				<B>0.65</B>
+				<A>1.0</A>
+			</StealthBrokenColor>
+			<ShieldsHitFlashActive network="client"> false </ShieldsHitFlashActive>
+			<ShieldsHitFlashColor network="client">
+				<R>0.0</R>
+				<G>0.2</G>
+				<B>1.0</B>
+				<A>1.0</A>
+			</ShieldsHitFlashColor>
+			<ShieldsHitFlashDurationMS network="client"> 100 </ShieldsHitFlashDurationMS>
+
+			<StartObjectsSOBFile network="server">Start_Objects_LEGACY_HERO_00.sob</StartObjectsSOBFile>
+			
+			<FactionObjects>
+				<!--MLL: Keep the structures in the order they should appear on the structure breakdown screen. -->
+
+			</FactionObjects>
+			
+			<FactionObjectSorting network="client">
+				<!--JAC: List objects in order of display in the selection list. This can include other faction units -->
+			</FactionObjectSorting>
+			
+			<StructureHierarchyObjects>
+			</StructureHierarchyObjects>
+			
+			<UnitHierarchyObjects>
+			</UnitHierarchyObjects>
+
+			<!-- Units and structures which the user can build through the GUI for this faction -->
+			<BuildableStructureObjects>
+			</BuildableStructureObjects>
+			
+			<WallGridStructureObjects>
+			</WallGridStructureObjects>
+
+			<BuildableUnitObjects>
+			</BuildableUnitObjects>
+
+			<CategorizedStructures>
+				<!-- PRODUCTION -->
+				<Entry>
+				</Entry>
+				<!--  SUPPORT -->
+				<Entry>
+				</Entry>
+				<!--  DEFENSES -->
+				<Entry>
+				</Entry>
+			</CategorizedStructures>
+
+			<ResearchStructures>
+			</ResearchStructures>
+			
+			<ChassisToTypeMapping/>
+			<ChassisToDefaultWeaponMapping/>
+			<TechTreeUINameToTechName/>
+			<ChassisTypeToBaseName/>
+			<ModelsToPreload/>
+			<UnitQueueGameCommands network="client"/>
+			<TechUpgradeGroups/>
+
+			<PaymentStrategy>AllResourcesDirectlyUpfront</PaymentStrategy>
+			<TechUpgradePaymentStrategy>ResourcesUpFront</TechUpgradePaymentStrategy>
+			<StructurePlacementGridVisualizer>BuildRange</StructurePlacementGridVisualizer>
+			<TopLevelGUIList network="client">
+				<entry>
+					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>UI_Chat</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIList>
+			<TopLevelGUIListAlt network="client">
+				<entry>
+					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>Art/GUI/RA/RA_UI_Chat_Allies.bui</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIListAlt>
+			<GUIFileNames network="client">
+				<Entry>
+					<Key>DialogBox</Key>
+					<Value>RA/RA_DialogBox_Allied</Value>
+				</Entry>
+				<Entry>
+					<Key>RevertDialog</Key>
+					<Value>RA/UI_RA_RevertDialog_Allies</Value>
+				</Entry>
+			</GUIFileNames>
+		</FactionComponent>
+		<AttributeDirectoryComponent>
+			<DynamicBaseValues>
+				<Entry>
+					<Key>StartingHumanPopulation</Key>
+					<Value>
+						<OverrideValue>1000</OverrideValue>
+					</Value>
+				</Entry>
+				<Entry>
+					<Key>StartingAIPopulation</Key>
+					<Value>
+						<OverrideValue>200</OverrideValue>
+					</Value>
+				</Entry>
+			</DynamicBaseValues>
+		</AttributeDirectoryComponent>
+		<EncyclopediaComponent>
+			<ObjectNameTextID></ObjectNameTextID>
+			<DefaultIcons>
+				<SmallIconName>UI_Multiplayer_PlayerSlot_Faction_04.tga</SmallIconName>
+				<LargeIconName></LargeIconName>
+			</DefaultIcons>
+		</EncyclopediaComponent>
+	</ObjectTypeClass>
+
+
+
+	<!-- ******************************************************************* -->
+	<!-- ******								Faction 5 (USSR)						****** -->
+	<!-- ******************************************************************* -->
+
+	<ObjectTypeClass Name="Faction5" Classification="Faction">
+		<FactionComponent>
+			<Faction>Faction5</Faction>
+			<TacticalUIFilename network="client">TacticalCommandBar/BetaTacticalCommandBar.swf</TacticalUIFilename>
+			<SortPriority network="client">0</SortPriority>
+			<AudioTableName network="client">Faction1</AudioTableName>
+			<AutoSwapDiffuseTexture>false</AutoSwapDiffuseTexture>
+			<CampaignType>RA_USSR_CAMPAIGN</CampaignType>
+			<CoopCampaignType></CoopCampaignType>
+			<AIKnowledgeBase network="server">Data\\Scripts\\AI\\Faction1Rules.clp</AIKnowledgeBase>
+			<AIInitialGoals network="server">Data\\Scripts\\AI\\Faction1GoalRules.clp</AIInitialGoals>
+			<TeamColorSettings>
+				<!-- Team 0 (Sky Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.00</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>0.00</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 1 (Red)-->
+				<entry>
+					<ParticleColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.78</R>
+						<G>0.36</G>
+						<B>0.36</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.80</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 2 (Green) -->
+				<entry>
+					<ParticleColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.50</R>
+						<G>0.63</G>
+						<B>0.42</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.24</R>
+								<G>0.63</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 3 (Yellow) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.92</G>
+						<B>0.47</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.85</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 4 (Orange) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.69</G>
+						<B>0.44</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.29</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 5 (Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.44</R>
+						<G>0.52</G>
+						<B>0.65</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.12</R>
+								<G>0.33</G>
+								<B>0.66</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 6 (Pink) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.56</G>
+						<B>0.88</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.06</G>
+								<B>0.74</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 7 (Purple) -->
+				<entry>
+					<ParticleColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.74</R>
+						<G>0.64</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.56</R>
+								<G>0.39</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 8 (White) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>1.0</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- Team 9 (Dark Grey) -->
+				<entry>
+					<ParticleColor>
+						<R>0.14</R>
+						<G>0.18</G>
+						<B>0.20</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.40</R>
+						<G>0.45</G>
+						<B>0.50</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.08</R>
+						<G>0.12</G>
+						<B>0.16</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.14</R>
+								<G>0.18</G>
+								<B>0.20</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- outpost neutral color -->
+				<entry>
+					<ParticleColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.7</R>
+						<G>0.7</G>
+						<B>0.60</B>
+						<A>0.25</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.7</R>
+								<G>0.55</G>
+								<B>0.3</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+			</TeamColorSettings>
+			<!-- These icons should match MULTIPLAYER colors -->
+			<FactionColorIcons>
+				<entry>ColorBox01.png</entry>
+				<entry>ColorBox02.png</entry>
+				<entry>ColorBox03.png</entry>
+				<entry>ColorBox04.png</entry>
+			</FactionColorIcons>
+			<StealthColor network="client">
+				<R>0.04</R>
+				<G>0.25</G>
+				<B>0.55</B>
+				<A>1.0</A>
+			</StealthColor>
+			<StealthBrokenColor network="client">
+				<R>0.15</R>
+				<G>0.04</G>
+				<B>0.65</B>
+				<A>1.0</A>
+			</StealthBrokenColor>
+			<ShieldsHitFlashActive network="client"> false </ShieldsHitFlashActive>
+			<ShieldsHitFlashColor network="client">
+				<R>0.0</R>
+				<G>0.2</G>
+				<B>1.0</B>
+				<A>1.0</A>
+			</ShieldsHitFlashColor>
+			<ShieldsHitFlashDurationMS network="client"> 100 </ShieldsHitFlashDurationMS>
+
+			<StartObjectsSOBFile network="server">Start_Objects_LEGACY_HERO_00.sob</StartObjectsSOBFile>
+			
+			<FactionObjects>
+				<!--MLL: Keep the structures in the order they should appear on the structure breakdown screen. -->
+
+			</FactionObjects>
+			
+			<FactionObjectSorting network="client">
+				<!--JAC: List objects in order of display in the selection list. This can include other faction units -->
+			</FactionObjectSorting>
+			
+			<StructureHierarchyObjects>
+			</StructureHierarchyObjects>
+			
+			<UnitHierarchyObjects>
+			</UnitHierarchyObjects>
+
+			<!-- Units and structures which the user can build through the GUI for this faction -->
+			<BuildableStructureObjects>
+			</BuildableStructureObjects>
+			
+			<WallGridStructureObjects>
+			</WallGridStructureObjects>
+
+			<BuildableUnitObjects>
+			</BuildableUnitObjects>
+
+			<CategorizedStructures>
+				<!-- PRODUCTION -->
+				<Entry>
+				</Entry>
+				<!--  SUPPORT -->
+				<Entry>
+				</Entry>
+				<!--  DEFENSES -->
+				<Entry>
+				</Entry>
+			</CategorizedStructures>
+
+			<ResearchStructures>
+			</ResearchStructures>
+			
+			<ChassisToTypeMapping/>
+			<ChassisToDefaultWeaponMapping/>
+			<TechTreeUINameToTechName/>
+			<ChassisTypeToBaseName/>
+			<ModelsToPreload/>
+			<UnitQueueGameCommands network="client"/>
+			<TechUpgradeGroups/>
+
+			<PaymentStrategy>AllResourcesDirectlyUpfront</PaymentStrategy>
+			<TechUpgradePaymentStrategy>ResourcesUpFront</TechUpgradePaymentStrategy>
+			<StructurePlacementGridVisualizer>BuildRange</StructurePlacementGridVisualizer>
+			<TopLevelGUIList network="client">
+				<entry>
+					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>UI_Chat</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIList>
+			<TopLevelGUIListAlt network="client">
+				<entry>
+					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>Art/GUI/RA/RA_UI_Chat_Soviet.bui</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIListAlt>
+			<GUIFileNames network="client">
+				<Entry>
+					<Key>UI_Quickmatch_Dialog</Key>
+					<Value>RA/RA_UI_Quickmatch_Dialog</Value>
+				</Entry>
+				<Entry>
+					<Key>UI_Skirmish_GameLobby</Key>
+					<Value>RA/RA_UI_Skirmish_GameLobby</Value>
+				</Entry>
+				<Entry>
+					<Key>UI_GameLobby</Key>
+					<Value>RA/RA_UI_GameLobby</Value>
+				</Entry>
+				<Entry>
+					<Key>UI_MultiplayerMenu</Key>
+					<Value>RA/RA_UI_MultiplayerMenu</Value>
+				</Entry>
+				<Entry>
+					<Key>UI_LAN_GameLobby</Key>
+					<Value>RA/RA_UI_LAN_GameLobby</Value>
+				</Entry>
+				<Entry>
+					<Key>UI_LAN_MultiplayerMenu</Key>
+					<Value>RA/RA_UI_LAN_MultiplayerMenu</Value>
+				</Entry>
+				<Entry>
+					<Key>UI_LoadingScreen</Key>
+					<Value>RA/RA_UI_LoadingScreen</Value>
+				</Entry>
+				<Entry>
+					<Key>DialogBox</Key>
+					<Value>RA/RA_DialogBox_Soviet</Value>
+				</Entry>
+				<Entry>
+					<Key>RevertDialog</Key>
+					<Value>RA/UI_RA_RevertDialog_Soviet</Value>
+				</Entry>
+        <Entry>
+          <Key>UI_Observer_Load</Key>
+          <Value>RA/RA_UI_Observer_Load</Value>
+        </Entry>
+        <Entry>
+          <Key>UI_Replay_Load</Key>
+          <Value>RA/RA_UI_Replay_Load</Value>
+        </Entry>
+        <Entry>
+          <Key>UI_Local_Replay_Load</Key>
+          <Value>RA/RA_UI_Local_Replay_Load</Value>
+        </Entry>
+        <Entry>
+          <Key>UI_Tooltip_Scene</Key>
+          <Value>RA/RA_UI_Tooltip_Scene</Value>
+        </Entry>
+        <Entry>
+          <Key>UI_Tooltip_Tactical</Key>
+          <Value>RA/RA_UI_Tooltip_Tactical</Value>
+        </Entry>
+        <Entry>
+          <Key>UI_Chat</Key>
+          <Value>RA/RA_UI_Chat_Soviet</Value>
+        </Entry>
+        <Entry>
+          <Key>UI_WorkshopMap_Browse</Key>
+          <Value>RA/RA_UI_WorkshopMap_Browse</Value>
+        </Entry>
+        <Entry>
+          <Key>UI_SyncMap</Key>
+          <Value>RA/RA_UI_SyncMap</Value>
+        </Entry>
+        <Entry>
+          <Key>UI_Lag_Dialog</Key>
+          <Value>RA/RA_UI_Lag_Dialog</Value>
+        </Entry>        
+      </GUIFileNames>
+		</FactionComponent>
+		<AttributeDirectoryComponent>
+			<DynamicBaseValues>
+				<Entry>
+					<Key>StartingHumanPopulation</Key>
+					<Value>
+						<OverrideValue>1000</OverrideValue>
+					</Value>
+				</Entry>
+				<Entry>
+					<Key>StartingAIPopulation</Key>
+					<Value>
+						<OverrideValue>200</OverrideValue>
+					</Value>
+				</Entry>
+			</DynamicBaseValues>
+		</AttributeDirectoryComponent>
+		<EncyclopediaComponent>
+			<ObjectNameTextID></ObjectNameTextID>
+			<DefaultIcons>
+				<SmallIconName>UI_Multiplayer_PlayerSlot_Faction_05.tga</SmallIconName>
+				<LargeIconName></LargeIconName>
+			</DefaultIcons>
+		</EncyclopediaComponent>
+	</ObjectTypeClass>
+
+
+
+	<!-- ******************************************************************* -->
+	<!-- ******								Faction 6 (England)					****** -->
+	<!-- ******************************************************************* -->
+
+	<ObjectTypeClass Name="Faction6" Classification="Faction">
+		<FactionComponent>
+			<Faction>Faction6</Faction>
+			<TacticalUIFilename network="client">TacticalCommandBar/BetaTacticalCommandBar.swf</TacticalUIFilename>
+			<SortPriority network="client">0</SortPriority>
+			<AudioTableName network="client">Faction1</AudioTableName>
+			<AutoSwapDiffuseTexture>false</AutoSwapDiffuseTexture>
+			<CampaignType>RA_ALLIES_CAMPAIGN</CampaignType>
+			<CoopCampaignType></CoopCampaignType>
+			<AIKnowledgeBase network="server">Data\\Scripts\\AI\\Faction1Rules.clp</AIKnowledgeBase>
+			<AIInitialGoals network="server">Data\\Scripts\\AI\\Faction1GoalRules.clp</AIInitialGoals>
+			<TeamColorSettings>
+				<!-- Team 0 (Sky Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.00</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>0.00</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 1 (Red)-->
+				<entry>
+					<ParticleColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.78</R>
+						<G>0.36</G>
+						<B>0.36</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.80</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 2 (Green) -->
+				<entry>
+					<ParticleColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.50</R>
+						<G>0.63</G>
+						<B>0.42</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.24</R>
+								<G>0.63</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 3 (Yellow) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.92</G>
+						<B>0.47</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.85</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 4 (Orange) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.69</G>
+						<B>0.44</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.29</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 5 (Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.44</R>
+						<G>0.52</G>
+						<B>0.65</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.12</R>
+								<G>0.33</G>
+								<B>0.66</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 6 (Pink) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.56</G>
+						<B>0.88</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.06</G>
+								<B>0.74</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 7 (Purple) -->
+				<entry>
+					<ParticleColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.74</R>
+						<G>0.64</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.56</R>
+								<G>0.39</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 8 (White) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>1.0</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- Team 9 (Dark Grey) -->
+				<entry>
+					<ParticleColor>
+						<R>0.14</R>
+						<G>0.18</G>
+						<B>0.20</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.40</R>
+						<G>0.45</G>
+						<B>0.50</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.08</R>
+						<G>0.12</G>
+						<B>0.16</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.14</R>
+								<G>0.18</G>
+								<B>0.20</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- outpost neutral color -->
+				<entry>
+					<ParticleColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.7</R>
+						<G>0.7</G>
+						<B>0.60</B>
+						<A>0.25</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.7</R>
+								<G>0.55</G>
+								<B>0.3</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+			</TeamColorSettings>
+			<!-- These icons should match MULTIPLAYER colors -->
+			<FactionColorIcons>
+				<entry>ColorBox01.png</entry>
+				<entry>ColorBox02.png</entry>
+				<entry>ColorBox03.png</entry>
+				<entry>ColorBox04.png</entry>
+			</FactionColorIcons>
+			<StealthColor network="client">
+				<R>0.04</R>
+				<G>0.25</G>
+				<B>0.55</B>
+				<A>1.0</A>
+			</StealthColor>
+			<StealthBrokenColor network="client">
+				<R>0.15</R>
+				<G>0.04</G>
+				<B>0.65</B>
+				<A>1.0</A>
+			</StealthBrokenColor>
+			<ShieldsHitFlashActive network="client"> false </ShieldsHitFlashActive>
+			<ShieldsHitFlashColor network="client">
+				<R>0.0</R>
+				<G>0.2</G>
+				<B>1.0</B>
+				<A>1.0</A>
+			</ShieldsHitFlashColor>
+			<ShieldsHitFlashDurationMS network="client"> 100 </ShieldsHitFlashDurationMS>
+
+			<StartObjectsSOBFile network="server">Start_Objects_LEGACY_HERO_00.sob</StartObjectsSOBFile>
+			
+			<FactionObjects>
+				<!--MLL: Keep the structures in the order they should appear on the structure breakdown screen. -->
+
+			</FactionObjects>
+			
+			<FactionObjectSorting network="client">
+				<!--JAC: List objects in order of display in the selection list. This can include other faction units -->
+			</FactionObjectSorting>
+			
+			<StructureHierarchyObjects>
+			</StructureHierarchyObjects>
+			
+			<UnitHierarchyObjects>
+			</UnitHierarchyObjects>
+
+			<!-- Units and structures which the user can build through the GUI for this faction -->
+			<BuildableStructureObjects>
+			</BuildableStructureObjects>
+			
+			<WallGridStructureObjects>
+			</WallGridStructureObjects>
+
+			<BuildableUnitObjects>
+			</BuildableUnitObjects>
+
+			<CategorizedStructures>
+				<!-- PRODUCTION -->
+				<Entry>
+				</Entry>
+				<!--  SUPPORT -->
+				<Entry>
+				</Entry>
+				<!--  DEFENSES -->
+				<Entry>
+				</Entry>
+			</CategorizedStructures>
+
+			<ResearchStructures>
+			</ResearchStructures>
+			
+			<ChassisToTypeMapping/>
+			<ChassisToDefaultWeaponMapping/>
+			<TechTreeUINameToTechName/>
+			<ChassisTypeToBaseName/>
+			<ModelsToPreload/>
+			<UnitQueueGameCommands network="client"/>
+			<TechUpgradeGroups/>
+
+			<PaymentStrategy>AllResourcesDirectlyUpfront</PaymentStrategy>
+			<TechUpgradePaymentStrategy>ResourcesUpFront</TechUpgradePaymentStrategy>
+			<StructurePlacementGridVisualizer>BuildRange</StructurePlacementGridVisualizer>
+			<TopLevelGUIList network="client">
+				<entry>
+					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>UI_Chat</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIList>
+			<TopLevelGUIListAlt network="client">
+				<entry>
+					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>Art/GUI/RA/RA_UI_Chat_Allies.bui</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIListAlt>
+			<GUIFileNames network="client">
+				<Entry>
+					<Key>DialogBox</Key>
+					<Value>RA/RA_DialogBox_Allied</Value>
+				</Entry>
+				<Entry>
+					<Key>RevertDialog</Key>
+					<Value>RA/UI_RA_RevertDialog_Allies</Value>
+				</Entry>
+			</GUIFileNames>
+		</FactionComponent>
+		<AttributeDirectoryComponent>
+			<DynamicBaseValues>
+				<Entry>
+					<Key>StartingHumanPopulation</Key>
+					<Value>
+						<OverrideValue>1000</OverrideValue>
+					</Value>
+				</Entry>
+				<Entry>
+					<Key>StartingAIPopulation</Key>
+					<Value>
+						<OverrideValue>200</OverrideValue>
+					</Value>
+				</Entry>
+			</DynamicBaseValues>
+		</AttributeDirectoryComponent>
+		<EncyclopediaComponent>
+			<ObjectNameTextID></ObjectNameTextID>
+			<DefaultIcons>
+				<SmallIconName>UI_Multiplayer_PlayerSlot_Faction_06.tga</SmallIconName>
+				<LargeIconName></LargeIconName>
+			</DefaultIcons>
+		</EncyclopediaComponent>
+	</ObjectTypeClass>
+
+
+
+	<!-- ******************************************************************* -->
+	<!-- ******								Faction 7 (Ukraine)					****** -->
+	<!-- ******************************************************************* -->
+
+	<ObjectTypeClass Name="Faction7" Classification="Faction">
+		<FactionComponent>
+			<Faction>Faction7</Faction>
+			<TacticalUIFilename network="client">TacticalCommandBar/BetaTacticalCommandBar.swf</TacticalUIFilename>
+			<SortPriority network="client">0</SortPriority>
+			<AudioTableName network="client">Faction1</AudioTableName>
+			<AutoSwapDiffuseTexture>false</AutoSwapDiffuseTexture>
+			<CampaignType>RA_USSR_CAMPAIGN</CampaignType>
+			<CoopCampaignType></CoopCampaignType>
+			<AIKnowledgeBase network="server">Data\\Scripts\\AI\\Faction1Rules.clp</AIKnowledgeBase>
+			<AIInitialGoals network="server">Data\\Scripts\\AI\\Faction1GoalRules.clp</AIInitialGoals>
+			<TeamColorSettings>
+				<!-- Team 0 (Sky Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.00</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>0.00</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 1 (Red)-->
+				<entry>
+					<ParticleColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.78</R>
+						<G>0.36</G>
+						<B>0.36</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.80</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 2 (Green) -->
+				<entry>
+					<ParticleColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.50</R>
+						<G>0.63</G>
+						<B>0.42</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.24</R>
+								<G>0.63</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 3 (Yellow) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.92</G>
+						<B>0.47</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.85</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 4 (Orange) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.69</G>
+						<B>0.44</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.29</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 5 (Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.44</R>
+						<G>0.52</G>
+						<B>0.65</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.12</R>
+								<G>0.33</G>
+								<B>0.66</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 6 (Pink) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.56</G>
+						<B>0.88</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.06</G>
+								<B>0.74</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 7 (Purple) -->
+				<entry>
+					<ParticleColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.74</R>
+						<G>0.64</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.56</R>
+								<G>0.39</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 8 (White) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>1.0</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- Team 9 (Dark Grey) -->
+				<entry>
+					<ParticleColor>
+						<R>0.14</R>
+						<G>0.18</G>
+						<B>0.20</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.40</R>
+						<G>0.45</G>
+						<B>0.50</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.08</R>
+						<G>0.12</G>
+						<B>0.16</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.14</R>
+								<G>0.18</G>
+								<B>0.20</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- outpost neutral color -->
+				<entry>
+					<ParticleColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.7</R>
+						<G>0.7</G>
+						<B>0.60</B>
+						<A>0.25</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.7</R>
+								<G>0.55</G>
+								<B>0.3</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+			</TeamColorSettings>
+			<!-- These icons should match MULTIPLAYER colors -->
+			<FactionColorIcons>
+				<entry>ColorBox01.png</entry>
+				<entry>ColorBox02.png</entry>
+				<entry>ColorBox03.png</entry>
+				<entry>ColorBox04.png</entry>
+			</FactionColorIcons>
+			<StealthColor network="client">
+				<R>0.04</R>
+				<G>0.25</G>
+				<B>0.55</B>
+				<A>1.0</A>
+			</StealthColor>
+			<StealthBrokenColor network="client">
+				<R>0.15</R>
+				<G>0.04</G>
+				<B>0.65</B>
+				<A>1.0</A>
+			</StealthBrokenColor>
+			<ShieldsHitFlashActive network="client"> false </ShieldsHitFlashActive>
+			<ShieldsHitFlashColor network="client">
+				<R>0.0</R>
+				<G>0.2</G>
+				<B>1.0</B>
+				<A>1.0</A>
+			</ShieldsHitFlashColor>
+			<ShieldsHitFlashDurationMS network="client"> 100 </ShieldsHitFlashDurationMS>
+
+			<StartObjectsSOBFile network="server">Start_Objects_LEGACY_HERO_00.sob</StartObjectsSOBFile>
+			
+			<FactionObjects>
+				<!--MLL: Keep the structures in the order they should appear on the structure breakdown screen. -->
+
+			</FactionObjects>
+			
+			<FactionObjectSorting network="client">
+				<!--JAC: List objects in order of display in the selection list. This can include other faction units -->
+			</FactionObjectSorting>
+			
+			<StructureHierarchyObjects>
+			</StructureHierarchyObjects>
+			
+			<UnitHierarchyObjects>
+			</UnitHierarchyObjects>
+
+			<!-- Units and structures which the user can build through the GUI for this faction -->
+			<BuildableStructureObjects>
+			</BuildableStructureObjects>
+			
+			<WallGridStructureObjects>
+			</WallGridStructureObjects>
+
+			<BuildableUnitObjects>
+			</BuildableUnitObjects>
+
+			<CategorizedStructures>
+				<!-- PRODUCTION -->
+				<Entry>
+				</Entry>
+				<!--  SUPPORT -->
+				<Entry>
+				</Entry>
+				<!--  DEFENSES -->
+				<Entry>
+				</Entry>
+			</CategorizedStructures>
+
+			<ResearchStructures>
+			</ResearchStructures>
+			
+			<ChassisToTypeMapping/>
+			<ChassisToDefaultWeaponMapping/>
+			<TechTreeUINameToTechName/>
+			<ChassisTypeToBaseName/>
+			<ModelsToPreload/>
+			<UnitQueueGameCommands network="client"/>
+			<TechUpgradeGroups/>
+
+			<PaymentStrategy>AllResourcesDirectlyUpfront</PaymentStrategy>
+			<TechUpgradePaymentStrategy>ResourcesUpFront</TechUpgradePaymentStrategy>
+			<StructurePlacementGridVisualizer>BuildRange</StructurePlacementGridVisualizer>
+			<TopLevelGUIList network="client">
+				<entry>
+					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>UI_Chat</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIList>
+			<TopLevelGUIListAlt network="client">
+				<entry>
+					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>Art/GUI/RA/RA_UI_Chat_Soviet.bui</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIListAlt>
+			<GUIFileNames network="client">
+				<Entry>
+					<Key>DialogBox</Key>
+					<Value>RA/RA_DialogBox_Soviet</Value>
+				</Entry>
+				<Entry>
+					<Key>RevertDialog</Key>
+					<Value>RA/UI_RA_RevertDialog_Soviet</Value>
+				</Entry>
+			</GUIFileNames>
+		</FactionComponent>
+		<AttributeDirectoryComponent>
+			<DynamicBaseValues>
+				<Entry>
+					<Key>StartingHumanPopulation</Key>
+					<Value>
+						<OverrideValue>1000</OverrideValue>
+					</Value>
+				</Entry>
+				<Entry>
+					<Key>StartingAIPopulation</Key>
+					<Value>
+						<OverrideValue>200</OverrideValue>
+					</Value>
+				</Entry>
+			</DynamicBaseValues>
+		</AttributeDirectoryComponent>
+		<EncyclopediaComponent>
+			<ObjectNameTextID></ObjectNameTextID>
+			<DefaultIcons>
+				<SmallIconName>UI_Multiplayer_PlayerSlot_Faction_07.tga</SmallIconName>
+				<LargeIconName></LargeIconName>
+			</DefaultIcons>
+		</EncyclopediaComponent>
+	</ObjectTypeClass>
+
+
+
+	<!-- ******************************************************************* -->
+	<!-- ******								Faction 8 (Germany)					****** -->
+	<!-- ******************************************************************* -->
+
+	<ObjectTypeClass Name="Faction8" Classification="Faction">
+		<FactionComponent>
+			<Faction>Faction8</Faction>
+			<TacticalUIFilename network="client">TacticalCommandBar/BetaTacticalCommandBar.swf</TacticalUIFilename>
+			<SortPriority network="client">0</SortPriority>
+			<AudioTableName network="client">Faction1</AudioTableName>
+			<AutoSwapDiffuseTexture>false</AutoSwapDiffuseTexture>
+			<CampaignType>RA_ALLIES_CAMPAIGN</CampaignType>
+			<CoopCampaignType></CoopCampaignType>
+			<AIKnowledgeBase network="server">Data\\Scripts\\AI\\Faction1Rules.clp</AIKnowledgeBase>
+			<AIInitialGoals network="server">Data\\Scripts\\AI\\Faction1GoalRules.clp</AIInitialGoals>
+			<TeamColorSettings>
+				<!-- Team 0 (Sky Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.00</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>0.00</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 1 (Red)-->
+				<entry>
+					<ParticleColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.78</R>
+						<G>0.36</G>
+						<B>0.36</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.80</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 2 (Green) -->
+				<entry>
+					<ParticleColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.50</R>
+						<G>0.63</G>
+						<B>0.42</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.24</R>
+								<G>0.63</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 3 (Yellow) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.92</G>
+						<B>0.47</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.85</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 4 (Orange) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.69</G>
+						<B>0.44</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.29</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 5 (Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.44</R>
+						<G>0.52</G>
+						<B>0.65</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.12</R>
+								<G>0.33</G>
+								<B>0.66</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 6 (Pink) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.56</G>
+						<B>0.88</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.06</G>
+								<B>0.74</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 7 (Purple) -->
+				<entry>
+					<ParticleColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.74</R>
+						<G>0.64</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.56</R>
+								<G>0.39</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 8 (White) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>1.0</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- Team 9 (Dark Grey) -->
+				<entry>
+					<ParticleColor>
+						<R>0.14</R>
+						<G>0.18</G>
+						<B>0.20</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.40</R>
+						<G>0.45</G>
+						<B>0.50</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.08</R>
+						<G>0.12</G>
+						<B>0.16</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.14</R>
+								<G>0.18</G>
+								<B>0.20</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- outpost neutral color -->
+				<entry>
+					<ParticleColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.7</R>
+						<G>0.7</G>
+						<B>0.60</B>
+						<A>0.25</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.7</R>
+								<G>0.55</G>
+								<B>0.3</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+			</TeamColorSettings>
+			<!-- These icons should match MULTIPLAYER colors -->
+			<FactionColorIcons>
+				<entry>ColorBox01.png</entry>
+				<entry>ColorBox02.png</entry>
+				<entry>ColorBox03.png</entry>
+				<entry>ColorBox04.png</entry>
+			</FactionColorIcons>
+			<StealthColor network="client">
+				<R>0.04</R>
+				<G>0.25</G>
+				<B>0.55</B>
+				<A>1.0</A>
+			</StealthColor>
+			<StealthBrokenColor network="client">
+				<R>0.15</R>
+				<G>0.04</G>
+				<B>0.65</B>
+				<A>1.0</A>
+			</StealthBrokenColor>
+			<ShieldsHitFlashActive network="client"> false </ShieldsHitFlashActive>
+			<ShieldsHitFlashColor network="client">
+				<R>0.0</R>
+				<G>0.2</G>
+				<B>1.0</B>
+				<A>1.0</A>
+			</ShieldsHitFlashColor>
+			<ShieldsHitFlashDurationMS network="client"> 100 </ShieldsHitFlashDurationMS>
+
+			<StartObjectsSOBFile network="server">Start_Objects_LEGACY_HERO_00.sob</StartObjectsSOBFile>
+			
+			<FactionObjects>
+				<!--MLL: Keep the structures in the order they should appear on the structure breakdown screen. -->
+
+			</FactionObjects>
+			
+			<FactionObjectSorting network="client">
+				<!--JAC: List objects in order of display in the selection list. This can include other faction units -->
+			</FactionObjectSorting>
+			
+			<StructureHierarchyObjects>
+			</StructureHierarchyObjects>
+			
+			<UnitHierarchyObjects>
+			</UnitHierarchyObjects>
+
+			<!-- Units and structures which the user can build through the GUI for this faction -->
+			<BuildableStructureObjects>
+			</BuildableStructureObjects>
+			
+			<WallGridStructureObjects>
+			</WallGridStructureObjects>
+
+			<BuildableUnitObjects>
+			</BuildableUnitObjects>
+
+			<CategorizedStructures>
+				<!-- PRODUCTION -->
+				<Entry>
+				</Entry>
+				<!--  SUPPORT -->
+				<Entry>
+				</Entry>
+				<!--  DEFENSES -->
+				<Entry>
+				</Entry>
+			</CategorizedStructures>
+
+			<ResearchStructures>
+			</ResearchStructures>
+			
+			<ChassisToTypeMapping/>
+			<ChassisToDefaultWeaponMapping/>
+			<TechTreeUINameToTechName/>
+			<ChassisTypeToBaseName/>
+			<ModelsToPreload/>
+			<UnitQueueGameCommands network="client"/>
+			<TechUpgradeGroups/>
+
+			<PaymentStrategy>AllResourcesDirectlyUpfront</PaymentStrategy>
+			<TechUpgradePaymentStrategy>ResourcesUpFront</TechUpgradePaymentStrategy>
+			<StructurePlacementGridVisualizer>BuildRange</StructurePlacementGridVisualizer>
+			<TopLevelGUIList network="client">
+				<entry>
+					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>UI_Chat</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIList>
+			<TopLevelGUIListAlt network="client">
+				<entry>
+					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>Art/GUI/RA/RA_UI_Chat_Allies.bui</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIListAlt>
+			<GUIFileNames network="client">
+				<Entry>
+					<Key>DialogBox</Key>
+					<Value>RA/RA_DialogBox_Allied</Value>
+				</Entry>
+				<Entry>
+					<Key>RevertDialog</Key>
+					<Value>RA/UI_RA_RevertDialog_Allies</Value>
+				</Entry>
+			</GUIFileNames>
+		</FactionComponent>
+		<AttributeDirectoryComponent>
+			<DynamicBaseValues>
+				<Entry>
+					<Key>StartingHumanPopulation</Key>
+					<Value>
+						<OverrideValue>1000</OverrideValue>
+					</Value>
+				</Entry>
+				<Entry>
+					<Key>StartingAIPopulation</Key>
+					<Value>
+						<OverrideValue>200</OverrideValue>
+					</Value>
+				</Entry>
+			</DynamicBaseValues>
+		</AttributeDirectoryComponent>
+		<EncyclopediaComponent>
+			<ObjectNameTextID></ObjectNameTextID>
+			<DefaultIcons>
+				<SmallIconName>UI_Multiplayer_PlayerSlot_Faction_08.tga</SmallIconName>
+				<LargeIconName></LargeIconName>
+			</DefaultIcons>
+		</EncyclopediaComponent>
+	</ObjectTypeClass>
+
+
+
+	<!-- ******************************************************************* -->
+	<!-- ******								Faction 9 (France)					****** -->
+	<!-- ******************************************************************* -->
+
+	<ObjectTypeClass Name="Faction9" Classification="Faction">
+		<FactionComponent>
+			<Faction>Faction9</Faction>
+			<TacticalUIFilename network="client">TacticalCommandBar/BetaTacticalCommandBar.swf</TacticalUIFilename>
+			<SortPriority network="client">0</SortPriority>
+			<AudioTableName network="client">Faction1</AudioTableName>
+			<AutoSwapDiffuseTexture>false</AutoSwapDiffuseTexture>
+			<CampaignType>RA_ALLIES_CAMPAIGN</CampaignType>
+			<CoopCampaignType></CoopCampaignType>
+			<AIKnowledgeBase network="server">Data\\Scripts\\AI\\Faction1Rules.clp</AIKnowledgeBase>
+			<AIInitialGoals network="server">Data\\Scripts\\AI\\Faction1GoalRules.clp</AIInitialGoals>
+			<TeamColorSettings>
+				<!-- Team 0 (Sky Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.00</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>0.00</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 1 (Red)-->
+				<entry>
+					<ParticleColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.78</R>
+						<G>0.36</G>
+						<B>0.36</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.80</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 2 (Green) -->
+				<entry>
+					<ParticleColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.50</R>
+						<G>0.63</G>
+						<B>0.42</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.24</R>
+								<G>0.63</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 3 (Yellow) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.92</G>
+						<B>0.47</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.85</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 4 (Orange) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.69</G>
+						<B>0.44</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.29</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 5 (Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.44</R>
+						<G>0.52</G>
+						<B>0.65</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.12</R>
+								<G>0.33</G>
+								<B>0.66</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 6 (Pink) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.56</G>
+						<B>0.88</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.06</G>
+								<B>0.74</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 7 (Purple) -->
+				<entry>
+					<ParticleColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.74</R>
+						<G>0.64</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.56</R>
+								<G>0.39</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 8 (White) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>1.0</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- Team 9 (Dark Grey) -->
+				<entry>
+					<ParticleColor>
+						<R>0.14</R>
+						<G>0.18</G>
+						<B>0.20</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.40</R>
+						<G>0.45</G>
+						<B>0.50</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.08</R>
+						<G>0.12</G>
+						<B>0.16</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.14</R>
+								<G>0.18</G>
+								<B>0.20</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- outpost neutral color -->
+				<entry>
+					<ParticleColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.7</R>
+						<G>0.7</G>
+						<B>0.60</B>
+						<A>0.25</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.7</R>
+								<G>0.55</G>
+								<B>0.3</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+			</TeamColorSettings>
+			<!-- These icons should match MULTIPLAYER colors -->
+			<FactionColorIcons>
+				<entry>ColorBox01.png</entry>
+				<entry>ColorBox02.png</entry>
+				<entry>ColorBox03.png</entry>
+				<entry>ColorBox04.png</entry>
+			</FactionColorIcons>
+			<StealthColor network="client">
+				<R>0.04</R>
+				<G>0.25</G>
+				<B>0.55</B>
+				<A>1.0</A>
+			</StealthColor>
+			<StealthBrokenColor network="client">
+				<R>0.15</R>
+				<G>0.04</G>
+				<B>0.65</B>
+				<A>1.0</A>
+			</StealthBrokenColor>
+			<ShieldsHitFlashActive network="client"> false </ShieldsHitFlashActive>
+			<ShieldsHitFlashColor network="client">
+				<R>0.0</R>
+				<G>0.2</G>
+				<B>1.0</B>
+				<A>1.0</A>
+			</ShieldsHitFlashColor>
+			<ShieldsHitFlashDurationMS network="client"> 100 </ShieldsHitFlashDurationMS>
+
+			<StartObjectsSOBFile network="server">Start_Objects_LEGACY_HERO_00.sob</StartObjectsSOBFile>
+			
+			<FactionObjects>
+				<!--MLL: Keep the structures in the order they should appear on the structure breakdown screen. -->
+
+			</FactionObjects>
+			
+			<FactionObjectSorting network="client">
+				<!--JAC: List objects in order of display in the selection list. This can include other faction units -->
+			</FactionObjectSorting>
+			
+			<StructureHierarchyObjects>
+			</StructureHierarchyObjects>
+			
+			<UnitHierarchyObjects>
+			</UnitHierarchyObjects>
+
+			<!-- Units and structures which the user can build through the GUI for this faction -->
+			<BuildableStructureObjects>
+			</BuildableStructureObjects>
+			
+			<WallGridStructureObjects>
+			</WallGridStructureObjects>
+
+			<BuildableUnitObjects>
+			</BuildableUnitObjects>
+
+			<CategorizedStructures>
+				<!-- PRODUCTION -->
+				<Entry>
+				</Entry>
+				<!--  SUPPORT -->
+				<Entry>
+				</Entry>
+				<!--  DEFENSES -->
+				<Entry>
+				</Entry>
+			</CategorizedStructures>
+
+			<ResearchStructures>
+			</ResearchStructures>
+			
+			<ChassisToTypeMapping/>
+			<ChassisToDefaultWeaponMapping/>
+			<TechTreeUINameToTechName/>
+			<ChassisTypeToBaseName/>
+			<ModelsToPreload/>
+			<UnitQueueGameCommands network="client"/>
+			<TechUpgradeGroups/>
+
+			<PaymentStrategy>AllResourcesDirectlyUpfront</PaymentStrategy>
+			<TechUpgradePaymentStrategy>ResourcesUpFront</TechUpgradePaymentStrategy>
+			<StructurePlacementGridVisualizer>BuildRange</StructurePlacementGridVisualizer>
+			<TopLevelGUIList network="client">
+				<entry>
+					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>UI_Chat</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIList>
+			<TopLevelGUIListAlt network="client">
+				<entry>
+					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>Art/GUI/RA/RA_UI_Chat_Allies.bui</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIListAlt>
+			<GUIFileNames network="client">
+				<Entry>
+					<Key>DialogBox</Key>
+					<Value>RA/RA_DialogBox_Allied</Value>
+				</Entry>
+				<Entry>
+					<Key>RevertDialog</Key>
+					<Value>RA/UI_RA_RevertDialog_Allies</Value>
+				</Entry>
+			</GUIFileNames>
+		</FactionComponent>
+		<AttributeDirectoryComponent>
+			<DynamicBaseValues>
+				<Entry>
+					<Key>StartingHumanPopulation</Key>
+					<Value>
+						<OverrideValue>1000</OverrideValue>
+					</Value>
+				</Entry>
+				<Entry>
+					<Key>StartingAIPopulation</Key>
+					<Value>
+						<OverrideValue>200</OverrideValue>
+					</Value>
+				</Entry>
+			</DynamicBaseValues>
+		</AttributeDirectoryComponent>
+		<EncyclopediaComponent>
+			<ObjectNameTextID></ObjectNameTextID>
+			<DefaultIcons>
+				<SmallIconName>UI_Multiplayer_PlayerSlot_Faction_09.tga</SmallIconName>
+				<LargeIconName></LargeIconName>
+			</DefaultIcons>
+		</EncyclopediaComponent>
+	</ObjectTypeClass>
+
+
+
+	<!-- ******************************************************************* -->
+	<!-- ******								Faction 10 (Turkey)					****** -->
+	<!-- ******************************************************************* -->
+
+	<ObjectTypeClass Name="Faction10" Classification="Faction">
+		<FactionComponent>
+			<Faction>Faction10</Faction>
+			<TacticalUIFilename network="client">TacticalCommandBar/BetaTacticalCommandBar.swf</TacticalUIFilename>
+			<SortPriority network="client">0</SortPriority>
+			<AudioTableName network="client">Faction1</AudioTableName>
+			<AutoSwapDiffuseTexture>false</AutoSwapDiffuseTexture>
+			<CampaignType>RA_ALLIES_CAMPAIGN</CampaignType>
+			<CoopCampaignType></CoopCampaignType>
+			<AIKnowledgeBase network="server">Data\\Scripts\\AI\\Faction1Rules.clp</AIKnowledgeBase>
+			<AIInitialGoals network="server">Data\\Scripts\\AI\\Faction1GoalRules.clp</AIInitialGoals>
+			<TeamColorSettings>
+				<!-- Team 0 (Sky Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.00</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>0.00</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 1 (Red)-->
+				<entry>
+					<ParticleColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.78</R>
+						<G>0.36</G>
+						<B>0.36</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.80</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 2 (Green) -->
+				<entry>
+					<ParticleColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.50</R>
+						<G>0.63</G>
+						<B>0.42</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.24</R>
+								<G>0.63</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 3 (Yellow) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.92</G>
+						<B>0.47</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.85</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 4 (Orange) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.69</G>
+						<B>0.44</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.29</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 5 (Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.44</R>
+						<G>0.52</G>
+						<B>0.65</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.12</R>
+								<G>0.33</G>
+								<B>0.66</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 6 (Pink) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.56</G>
+						<B>0.88</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.06</G>
+								<B>0.74</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 7 (Purple) -->
+				<entry>
+					<ParticleColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.74</R>
+						<G>0.64</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.56</R>
+								<G>0.39</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 8 (White) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>1.0</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- Team 9 (Dark Grey) -->
+				<entry>
+					<ParticleColor>
+						<R>0.14</R>
+						<G>0.18</G>
+						<B>0.20</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.40</R>
+						<G>0.45</G>
+						<B>0.50</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.08</R>
+						<G>0.12</G>
+						<B>0.16</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.14</R>
+								<G>0.18</G>
+								<B>0.20</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- outpost neutral color -->
+				<entry>
+					<ParticleColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.7</R>
+						<G>0.7</G>
+						<B>0.60</B>
+						<A>0.25</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.7</R>
+								<G>0.55</G>
+								<B>0.3</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+			</TeamColorSettings>
+			<!-- These icons should match MULTIPLAYER colors -->
+			<FactionColorIcons>
+				<entry>ColorBox01.png</entry>
+				<entry>ColorBox02.png</entry>
+				<entry>ColorBox03.png</entry>
+				<entry>ColorBox04.png</entry>
+			</FactionColorIcons>
+			<StealthColor network="client">
+				<R>0.04</R>
+				<G>0.25</G>
+				<B>0.55</B>
+				<A>1.0</A>
+			</StealthColor>
+			<StealthBrokenColor network="client">
+				<R>0.15</R>
+				<G>0.04</G>
+				<B>0.65</B>
+				<A>1.0</A>
+			</StealthBrokenColor>
+			<ShieldsHitFlashActive network="client"> false </ShieldsHitFlashActive>
+			<ShieldsHitFlashColor network="client">
+				<R>0.0</R>
+				<G>0.2</G>
+				<B>1.0</B>
+				<A>1.0</A>
+			</ShieldsHitFlashColor>
+			<ShieldsHitFlashDurationMS network="client"> 100 </ShieldsHitFlashDurationMS>
+
+			<StartObjectsSOBFile network="server">Start_Objects_LEGACY_HERO_00.sob</StartObjectsSOBFile>
+			
+			<FactionObjects>
+				<!--MLL: Keep the structures in the order they should appear on the structure breakdown screen. -->
+
+			</FactionObjects>
+			
+			<FactionObjectSorting network="client">
+				<!--JAC: List objects in order of display in the selection list. This can include other faction units -->
+			</FactionObjectSorting>
+			
+			<StructureHierarchyObjects>
+			</StructureHierarchyObjects>
+			
+			<UnitHierarchyObjects>
+			</UnitHierarchyObjects>
+
+			<!-- Units and structures which the user can build through the GUI for this faction -->
+			<BuildableStructureObjects>
+			</BuildableStructureObjects>
+			
+			<WallGridStructureObjects>
+			</WallGridStructureObjects>
+
+			<BuildableUnitObjects>
+			</BuildableUnitObjects>
+
+			<CategorizedStructures>
+				<!-- PRODUCTION -->
+				<Entry>
+				</Entry>
+				<!--  SUPPORT -->
+				<Entry>
+				</Entry>
+				<!--  DEFENSES -->
+				<Entry>
+				</Entry>
+			</CategorizedStructures>
+
+			<ResearchStructures>
+			</ResearchStructures>
+			
+			<ChassisToTypeMapping/>
+			<ChassisToDefaultWeaponMapping/>
+			<TechTreeUINameToTechName/>
+			<ChassisTypeToBaseName/>
+			<ModelsToPreload/>
+			<UnitQueueGameCommands network="client"/>
+			<TechUpgradeGroups/>
+
+			<PaymentStrategy>AllResourcesDirectlyUpfront</PaymentStrategy>
+			<TechUpgradePaymentStrategy>ResourcesUpFront</TechUpgradePaymentStrategy>
+			<StructurePlacementGridVisualizer>BuildRange</StructurePlacementGridVisualizer>
+			<TopLevelGUIList network="client">
+				<entry>
+					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>UI_Chat</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIList>
+			<TopLevelGUIListAlt network="client">
+				<entry>
+					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>Art/GUI/RA/RA_UI_Chat_Allies.bui</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIListAlt>
+			<GUIFileNames network="client">
+				<Entry>
+					<Key>DialogBox</Key>
+					<Value>RA/RA_DialogBox_Allied</Value>
+				</Entry>
+				<Entry>
+					<Key>RevertDialog</Key>
+					<Value>RA/UI_RA_RevertDialog_Allies</Value>
+				</Entry>
+			</GUIFileNames>
+		</FactionComponent>
+		<AttributeDirectoryComponent>
+			<DynamicBaseValues>
+				<Entry>
+					<Key>StartingHumanPopulation</Key>
+					<Value>
+						<OverrideValue>1000</OverrideValue>
+					</Value>
+				</Entry>
+				<Entry>
+					<Key>StartingAIPopulation</Key>
+					<Value>
+						<OverrideValue>200</OverrideValue>
+					</Value>
+				</Entry>
+			</DynamicBaseValues>
+		</AttributeDirectoryComponent>
+		<EncyclopediaComponent>
+			<ObjectNameTextID></ObjectNameTextID>
+			<DefaultIcons>
+				<SmallIconName>UI_Multiplayer_PlayerSlot_Faction_01.tga</SmallIconName>
+				<LargeIconName></LargeIconName>
+			</DefaultIcons>
+		</EncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<!-- ******************************************************************* -->
+	<!-- ******								Faction 11 (Jurassic) 				****** -->
+	<!-- ******************************************************************* -->
+
+	<ObjectTypeClass Name="Faction_Funpark" Classification="Faction">
+		<FactionComponent>
+			<Faction>Faction11</Faction>
+			<TacticalUIFilename network="client">TacticalCommandBar/BetaTacticalCommandBar.swf</TacticalUIFilename>
+			<SortPriority network="client">0</SortPriority>
+			<AudioTableName network="client">Faction1</AudioTableName>
+			<AutoSwapDiffuseTexture>false</AutoSwapDiffuseTexture>
+			<CampaignType>FUNPARK_CAMPAIGN</CampaignType>
+			<CoopCampaignType></CoopCampaignType>
+			<AIKnowledgeBase network="server">Data\\Scripts\\AI\\Faction1Rules.clp</AIKnowledgeBase>
+			<AIInitialGoals network="server">Data\\Scripts\\AI\\Faction1GoalRules.clp</AIInitialGoals>
+			<TeamColorSettings>
+				<!-- Team 0 (Sky Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.00</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>0.00</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.00</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>0.00</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 1 (Red)-->
+				<entry>
+					<ParticleColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.78</R>
+						<G>0.36</G>
+						<B>0.36</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.80</R>
+						<G>0.00</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.80</R>
+								<G>0.00</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 2 (Green) -->
+				<entry>
+					<ParticleColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.50</R>
+						<G>0.63</G>
+						<B>0.42</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.24</R>
+						<G>0.63</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.24</R>
+								<G>0.63</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 3 (Yellow) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.92</G>
+						<B>0.47</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.85</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.85</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 4 (Orange) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.69</G>
+						<B>0.44</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.29</G>
+						<B>0.00</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.29</G>
+								<B>0.00</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 5 (Blue) -->
+				<entry>
+					<ParticleColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.44</R>
+						<G>0.52</G>
+						<B>0.65</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.12</R>
+						<G>0.33</G>
+						<B>0.66</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.12</R>
+								<G>0.33</G>
+								<B>0.66</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 6 (Pink) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>0.56</G>
+						<B>0.88</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>0.06</G>
+						<B>0.74</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>0.06</G>
+								<B>0.74</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 7 (Purple) -->
+				<entry>
+					<ParticleColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.74</R>
+						<G>0.64</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.56</R>
+						<G>0.39</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.56</R>
+								<G>0.39</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+				<!-- Team 8 (White) -->
+				<entry>
+					<ParticleColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>1.0</R>
+						<G>1.0</G>
+						<B>1.0</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>1.0</R>
+								<G>1.0</G>
+								<B>1.0</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- Team 9 (Dark Grey) -->
+				<entry>
+					<ParticleColor>
+						<R>0.14</R>
+						<G>0.18</G>
+						<B>0.20</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.40</R>
+						<G>0.45</G>
+						<B>0.50</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.08</R>
+						<G>0.12</G>
+						<B>0.16</B>
+						<A>1.0</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.14</R>
+								<G>0.18</G>
+								<B>0.20</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+
+				<!-- outpost neutral color -->
+				<entry>
+					<ParticleColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</ParticleColor>
+					<UIColor>
+						<R>0.5</R>
+						<G>0.5</G>
+						<B>0.5</B>
+						<A>1.0</A>
+					</UIColor>
+					<RadarIconColor>
+						<R>0.7</R>
+						<G>0.7</G>
+						<B>0.60</B>
+						<A>0.25</A>
+					</RadarIconColor>
+					<ColorList>
+						<entry>
+							<Name>Colorization</Name>
+							<Value>
+								<R>0.7</R>
+								<G>0.55</G>
+								<B>0.3</B>
+								<A>1.0</A>
+							</Value>
+						</entry>
+					</ColorList>
+					<RandomizeEmissiveUOffset>True</RandomizeEmissiveUOffset>
+					<RandomizeEmissiveVOffset>False</RandomizeEmissiveVOffset>
+				</entry>
+			</TeamColorSettings>
+			<!-- These icons should match MULTIPLAYER colors -->
+			<FactionColorIcons>
+				<entry>ColorBox01.png</entry>
+				<entry>ColorBox02.png</entry>
+				<entry>ColorBox03.png</entry>
+				<entry>ColorBox04.png</entry>
+			</FactionColorIcons>
+			<StealthColor network="client">
+				<R>0.04</R>
+				<G>0.25</G>
+				<B>0.55</B>
+				<A>1.0</A>
+			</StealthColor>
+			<StealthBrokenColor network="client">
+				<R>0.15</R>
+				<G>0.04</G>
+				<B>0.65</B>
+				<A>1.0</A>
+			</StealthBrokenColor>
+			<ShieldsHitFlashActive network="client"> false </ShieldsHitFlashActive>
+			<ShieldsHitFlashColor network="client">
+				<R>0.0</R>
+				<G>0.2</G>
+				<B>1.0</B>
+				<A>1.0</A>
+			</ShieldsHitFlashColor>
+			<ShieldsHitFlashDurationMS network="client"> 100 </ShieldsHitFlashDurationMS>
+
+			<StartObjectsSOBFile network="server">Start_Objects_LEGACY_HERO_00.sob</StartObjectsSOBFile>
+			
+			<FactionObjects>
+				<!--MLL: Keep the structures in the order they should appear on the structure breakdown screen. -->
+
+			</FactionObjects>
+			
+			<FactionObjectSorting network="client">
+				<!--JAC: List objects in order of display in the selection list. This can include other faction units -->
+			</FactionObjectSorting>
+			
+			<StructureHierarchyObjects>
+			</StructureHierarchyObjects>
+			
+			<UnitHierarchyObjects>
+			</UnitHierarchyObjects>
+
+			<!-- Units and structures which the user can build through the GUI for this faction -->
+			<BuildableStructureObjects>
+			</BuildableStructureObjects>
+			
+			<WallGridStructureObjects>
+			</WallGridStructureObjects>
+
+			<BuildableUnitObjects>
+			</BuildableUnitObjects>
+
+			<CategorizedStructures>
+				<!-- PRODUCTION -->
+				<Entry>
+				</Entry>
+				<!--  SUPPORT -->
+				<Entry>
+				</Entry>
+				<!--  DEFENSES -->
+				<Entry>
+				</Entry>
+			</CategorizedStructures>
+
+			<ResearchStructures>
+			</ResearchStructures>
+			
+			<ChassisToTypeMapping/>
+			<ChassisToDefaultWeaponMapping/>
+			<TechTreeUINameToTechName/>
+			<ChassisTypeToBaseName/>
+			<ModelsToPreload/>
+			<UnitQueueGameCommands network="client"/>
+			<TechUpgradeGroups/>
+
+			<PaymentStrategy>AllResourcesDirectlyUpfront</PaymentStrategy>
+			<TechUpgradePaymentStrategy>ResourcesUpFront</TechUpgradePaymentStrategy>
+			<StructurePlacementGridVisualizer>BuildRange</StructurePlacementGridVisualizer>
+			<TopLevelGUIList network="client">
+				<entry>
+					<SceneName>Art/GUI/Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>UI_Chat</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIList>
+			<TopLevelGUIListAlt network="client">
+				<entry>
+					<SceneName>Art/GUI/RA_Tactical_UI.bui</SceneName>
+					<SortValue>Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>true</PrimaryScene>
+				</entry>
+				<entry>
+					<SceneName>UI_Chat</SceneName>
+					<SortValue>Above_Command_Bar</SortValue>
+					<LoadContext>Tactical</LoadContext>
+					<AcceptsInput>true</AcceptsInput>
+					<PrimaryScene>false</PrimaryScene>
+				</entry>
+			</TopLevelGUIListAlt>
+		</FactionComponent>
+		<AttributeDirectoryComponent>
+			<DynamicBaseValues>
+				<Entry>
+					<Key>StartingHumanPopulation</Key>
+					<Value>
+						<OverrideValue>1000</OverrideValue>
+					</Value>
+				</Entry>
+				<Entry>
+					<Key>StartingAIPopulation</Key>
+					<Value>
+						<OverrideValue>200</OverrideValue>
+					</Value>
+				</Entry>
+			</DynamicBaseValues>
+		</AttributeDirectoryComponent>
+		<EncyclopediaComponent>
+			<ObjectNameTextID></ObjectNameTextID>
+			<DefaultIcons>
+				<SmallIconName>UI_Multiplayer_PlayerSlot_Faction_00.tga</SmallIconName>
+				<LargeIconName></LargeIconName>
+			</DefaultIcons>
+		</EncyclopediaComponent>
+	</ObjectTypeClass>
+
+	
+
+</ObjectTypeList>

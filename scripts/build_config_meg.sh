@@ -31,6 +31,8 @@ BASE_INP="scripts/input_work/INPUTTRANSLATORCONFIGURATIONS.base.XML"
 EDIT_INP="scripts/input_work/INPUTTRANSLATORCONFIGURATIONS.edited.XML"
 BASE_LOC="scripts/loc_work/MASTERTEXTFILE_EN-US.base.LOC"
 EDIT_LOC="scripts/loc_work/MASTERTEXTFILE_EN-US.edited.LOC"
+BASE_FAC="scripts/factions_work/FACTIONS.base.XML"
+EDIT_FAC="scripts/factions_work/FACTIONS.edited.XML"
 
 echo "==> Rebuilding edited RA_MAIN_MENU.BUI from base"
 python3 scripts/bui_mainmenu_build.py "$BASE_BUI" "$EDIT_BUI"
@@ -42,9 +44,12 @@ echo "==> Rebuilding edited MASTERTEXTFILE_EN-US.LOC from base (Unholy Alliance 
 python3 scripts/loc_relabel.py "$BASE_LOC" "$EDIT_LOC" @scripts/loc_work/mastertext.edits.txt
 
 echo "==> Repacking $MEG with the edited BUI + MUSICEVENTS + MASTERTEXT (in place)"
+echo "==> Rebuilding trimmed FACTIONS.XML from base (one picker entry per faction)"
+python3 scripts/factions_trim.py "$BASE_FAC" "$EDIT_FAC"
 python3 scripts/meg_pack.py repack "$MEG" "$MEG.tmp" \
     "RA_MAIN_MENU.BUI=$EDIT_BUI" \
-    "MUSICEVENTS.XML=$EDIT_MUS" "MASTERTEXTFILE_EN-US.LOC=$EDIT_LOC"
+    "MUSICEVENTS.XML=$EDIT_MUS" "MASTERTEXTFILE_EN-US.LOC=$EDIT_LOC" \
+    "DATA\\XML\\OBJECTS\\MISC\\FACTIONS.XML=$EDIT_FAC"
 mv "$MEG.tmp" "$MEG"
 
 
@@ -55,6 +60,8 @@ python3 scripts/meg_extract.py extract "$MEG" "MUSICEVENTS.XML" /tmp/_megverify 
 cmp "/tmp/_megverify/MUSICEVENTS.XML" "$EDIT_MUS" && echo "OK: MUSICEVENTS in CONFIG.MEG matches edited copy"
 python3 scripts/meg_extract.py extract "$MEG" "MASTERTEXTFILE_EN-US.LOC" /tmp/_megverify >/dev/null
 cmp "/tmp/_megverify/MASTERTEXTFILE_EN-US.LOC" "$EDIT_LOC" && echo "OK: MASTERTEXT in CONFIG.MEG matches edited copy"
+python3 scripts/meg_extract.py extract "$MEG" "MISC\\FACTIONS.XML" /tmp/_megverify >/dev/null
+cmp "/tmp/_megverify/FACTIONS.XML" "$EDIT_FAC" && echo "OK: FACTIONS in CONFIG.MEG matches edited copy"
 echo "==> Validating shipped XML"
 python3 scripts/validate_shipped_xml.py resources/remaster_mods/
 
