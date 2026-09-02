@@ -59,6 +59,29 @@ Per-language: there's a `MASTERTEXTFILE_<lang>.LOC` per language (EN-US, FR-FR, 
 | `FACTIONS.XML` `CampaignType` change | startup crash (genuine-faction route) |
 | loose `Data/ART/TEXTURES` override for the front-end | ✅ RENDERS (re-proven 2026-08-30 — atlas + standalone DDS; the old "ignored" result was a bad test, see `front-end-texture-meg-spike.md`) |
 
+## Picker layout (2026-09-02) — one crest per row, launcher order
+
+The picker lists countries in the launcher's enum order and that order is not data: reordering
+the `FACTIONS.XML` entries changes nothing, and a hidden entry leaves a blank row that still
+selects the hidden country. So the rows are assigned by position instead (DLL remap in
+`CNC_Start_Instance`, names in `scripts/loc_work/mastertext.edits.txt`, plates painted by
+`scripts/picker_emblems_paint.py`):
+
+| row | country | plays as | plate |
+|---|---|---|---|
+| 1 | Spain | GDI (`HOUSE_GOOD`) | `_03` GDI radar crest |
+| 2 | Greece | Nod (`HOUSE_BAD`) | `_04` Nod radar crest |
+| 3 | USSR | Soviet | `_05` Soviet crest |
+| 4 | England | Allies | `_06` Allied crest |
+| 5-8 | Ukraine / Germany / France / Turkey | Soviet / Allies dupes | same crests |
+
+Both hijacked countries are Allied-side to the launcher, which Nod needs (it draws the ALLIES HUD
+slot). GDI and Nod moved off the 66x56 `_00`/`_01` icons onto the full-size `_03`/`_10`-style
+plates so every row is the same size (`scripts/factions_build.py` sets the `SmallIconName`s and is
+run by `build_config_meg.sh`). Plates are the metallic radar crests alone on a transparent
+region, slightly softened because the list draws them at about a third of their size with no
+mip filtering.
+
 ## Status / open items
 
 > **SHIPPED (39e069b).** GDI/Nod emblems + names ship via the mod `Data/CONFIG.MEG`. The wiring
@@ -67,7 +90,7 @@ Per-language: there's a `MASTERTEXTFILE_<lang>.LOC` per language (EN-US, FR-FR, 
 > resolved front-end texture MEG route — see `front-end-texture-meg-spike.md`. ⚠ The 184MB crest
 > atlas is gitignored; regen `scripts/frontend_atlas_build.py` before deploy (see [[project-faction-select-shipped]]).
 
-- **All 8 relabeled (DONE 2026-05-29):** Spain→GDI, Turkey→Nod, Greece/England/Germany/France→Allies, USSR/Ukraine→Soviet — across `NAME_FACTION_NN` + `BONUS_<C>` + `REDALERT_<C>` (22 same-length edits in one pass). The redundant 4 can't be *hidden* (no data flag; `CampaignType` crashes), so the picker is 8 entries reading as the 4 factions (dupes accepted). **USSR caveat:** `NAME_FACTION_5` and `REDALERT_RUSSIA` are only 4-char slots, so "Soviet" (6) won't fit same-length — they stay "USSR" (the lobby overlay `BONUS_RUSSIA`, 43 chars, *does* show "Soviet"). "Soviet" everywhere was deferred as needing a size-changing rebuild; that reasoning is now wrong — `loc_relabel.py` can grow those two slots byte-neutrally (2026-07-21). Cheap to finish if it ever matters.
+- **All 8 relabeled (DONE 2026-05-29; re-assigned 2026-09-02, see the picker layout table above):** Spain→GDI, Greece→Nod, England/Germany/France/Turkey→Allies, USSR/Ukraine→Soviet — across `NAME_FACTION_NN` + `BONUS_<C>` + `REDALERT_<C>` (22 same-length edits in one pass). The redundant 4 can't be *hidden* (no data flag; `CampaignType` crashes), so the picker is 8 entries reading as the 4 factions (dupes accepted). **USSR caveat:** `NAME_FACTION_5` and `REDALERT_RUSSIA` are only 4-char slots, so "Soviet" (6) won't fit same-length — they stay "USSR" (the lobby overlay `BONUS_RUSSIA`, 43 chars, *does* show "Soviet"). "Soviet" everywhere was deferred as needing a size-changing rebuild; that reasoning is now wrong — `loc_relabel.py` can grow those two slots byte-neutrally (2026-07-21). Cheap to finish if it ever matters.
 - **All remaining icon/flag surfaces are texture-only (CONFIG.MEG can't reach them — confirmed: FACTIONS.XML has only `SmallIconName`, no map/loading field):** Allies/Soviet picker emblems (vs flags), the **map position-select** marker flag, the **loading-screen** flag, and bespoke GDI/Nod art. The launcher picks all of these from the atlas **by the player's country**, so they show e.g. the Spain flag for GDI. One fix for all → `front-end-texture-meg-spike.md`.
 - **Wiring (DONE):** the CONFIG.MEG is built into the mod and ships in releases (was a `/tmp` build during the spike).
 

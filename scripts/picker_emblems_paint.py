@@ -14,7 +14,7 @@ import re
 import struct
 import sys
 
-from PIL import Image
+from PIL import Image, ImageFilter
 
 MTD = 'scripts/cameo_work/MT_COMMANDBAR_COMMON.MTD'
 PRISTINE = 'scripts/cameo_work/MT_COMMANDBAR_COMMON.TGA'
@@ -24,16 +24,16 @@ def _variants(nn):
     return [b, b + '_ON', b + '_OVER']
 
 
-# picker region -> (emblem source region, field colour). The mod's FACTIONS.XML points GDI at _03
-# and Nod at _10 (the old Spain/Turkey flags), Allies at _04, Soviet at _05; _06/_08/_09 are the
-# Allied country duplicates and _07 the Soviet one, so they wear the same plates.
+# picker region -> (emblem source region, field colour). Rows follow the launcher's country
+# order: _03 Spain = GDI, _04 Greece = Nod (DLL remap), _05 USSR = Soviet, _06 England = Allies,
+# _07 Ukraine = Soviet duplicate, _08 Germany / _09 France / _10 Turkey = Allied duplicates.
 PLATE_RED = (150, 14, 14)   # unused: red plates looked wrong on the dropdown's black panel (Luke, 2026-09-02)
 SLOTS = {}
 for nn in ('03',):
     SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_GDI', None)
-for nn in ('10',):
+for nn in ('04',):
     SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_NOD', None)
-for nn in ('04', '06', '08', '09'):
+for nn in ('10', '06', '08', '09'):
     SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_ALLIES', None)
 for nn in ('05', '07'):
     SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_SOVIET', None)
@@ -84,6 +84,9 @@ def compose(src, logo, field):
     # logo: gold line art with alpha; fit to ~66 px high, centred in the whole shape
     lg = logo.copy()
     lg.thumbnail((w - 40, 72), Image.LANCZOS)
+    # The launcher draws the plate at roughly a third of this size with no mip filtering, so
+    # soften the fine metallic detail a touch or it aliases into speckle in the list.
+    lg = lg.filter(ImageFilter.GaussianBlur(0.7))
     ox = (w - lg.width) // 2
     oy = (h - lg.height) // 2
     tmp = Image.new('RGBA', out.size, (0, 0, 0, 0))

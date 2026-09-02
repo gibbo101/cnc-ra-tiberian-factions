@@ -1057,18 +1057,19 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         strncpy(who->Name, player_info.Name, MPLAYER_NAME_MAX);
         who->Name[MPLAYER_NAME_MAX - 1] = 0; // Make sure it's terminated
 
-        // Tiberian Factions mod: hijack two of the orphaned country slots so the
-        // closed-source Remastered country picker can route to HOUSE_GOOD / HOUSE_BAD.
-        // Spain is fully orphaned (no scs* campaign files ship; only used as enum-
-        // iteration lower bound). Turkey's hidden +10% build-speed bonus
-        // (techno.cpp Time_To_Build) gates on ActLike==HOUSE_TURKEY, which is no
-        // longer true after this reassignment. France stays vanilla (Phase Tank).
-        // Cosmetic relabel of TXT_SPAIN / TXT_TURKEY → "GDI" / "Nod" handled in
-        // the mod's string-table overrides.
+        // Tiberian Factions mod: hijack two of the RA country slots so the closed-source
+        // Remastered country picker can route to HOUSE_GOOD / HOUSE_BAD. The picker lists
+        // countries in enum order and that order is launcher-owned, so the slots are chosen
+        // for where they sit in the list: Spain (first row) is GDI, Greece (second row) is
+        // Nod, then USSR and England read as the Soviet and Allied entries, and the
+        // remaining countries are duplicates wearing the same crests (Luke, 2026-09-02).
+        // Both hijacked countries are Allied-side to the launcher, which is what Nod needs
+        // (it draws the ALLIES HUD slot). Cosmetic relabels live in the mod's string-table
+        // overrides (scripts/loc_work/mastertext.edits.txt).
         if (player_info.House == HOUSE_SPAIN) {
             player_info.House = HOUSE_GOOD;
         }
-        if (player_info.House == HOUSE_TURKEY) {
+        if (player_info.House == HOUSE_GREECE) {
             player_info.House = HOUSE_BAD;
         }
 
