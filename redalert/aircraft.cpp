@@ -92,6 +92,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include <cstdarg>
 
 // TF: attack-move (CFE port) -- launcher-side Shift state, per local player.
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
@@ -3017,6 +3018,33 @@ static void TF_HS_Walk(HEAP& heap, HouseClass const* house, bool humans_only, in
     }
 }
 
+static void TF_HS_Log(const char* fmt, ...)
+{
+#if TF_DEV_BUILD
+    static FILE* log = NULL;
+    static bool tried = false;
+    if (!tried) {
+        tried = true;
+        const char* h = getenv("USERPROFILE");
+        if (h == NULL) h = getenv("HOME");
+        if (h != NULL) {
+            char p[512];
+            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_hunter.log", h);
+            log = fopen(p, "a");
+        }
+    }
+    if (log != NULL) {
+        va_list ap;
+        va_start(ap, fmt);
+        vfprintf(log, fmt, ap);
+        va_end(ap);
+        fflush(log);
+    }
+#else
+    (void)fmt;
+#endif
+}
+
 static TARGET TF_Hunter_Seeker_Acquire(HouseClass const* house)
 {
     TechnoClass* out = NULL;
@@ -3098,6 +3126,19 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
     }
     Mark(MARK_CHANGE);
 
+    /*
+    **	Keep the droid registered in the layer matching its CURRENT height
+    **	BEFORE anything that removes it from the map. It emerges from the
+    **	ground and dives back toward it, so it crosses the ground/air boundary
+    **	on the very frame it detonates; if the layer resubmit ran after the
+    **	detonate (as it did originally) Limbo would unlink the wrong layer list
+    **	and leave a dangling pointer -- the recurring null crash. Do it first.
+    */
+    if (layer != In_Which_Layer()) {
+        Map.Remove(this, layer);
+        Map.Submit(this, In_Which_Layer());
+    }
+
     if (!Target_Legal(TarCom) || emerging) {
         if (Speed != 0) {
             Set_Speed(0);
@@ -3107,14 +3148,10 @@ bool AircraftClass::TF_Hunter_Seeker_AI(void)
             Set_Speed(0xFF);
         }
         if (distance < DETONATE_PROXIMITY) {
+            TF_HS_Log("DETONATE dist=%d height=%d tgt=%d\n", distance, (int)Height, (int)TarCom);
             TF_Hunter_Seeker_Detonate();
             return (true);
         }
-    }
-
-    if (layer != In_Which_Layer()) {
-        Map.Remove(this, layer);
-        Map.Submit(this, In_Which_Layer());
     }
     return (false);
 }
@@ -3159,6 +3196,9 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
     new AnimClass(ANIM_FBALL1, here);
 
     TechnoClass* victim = As_Techno(tgt);
+    TF_HS_Log("  detonate victim=%s attack=%d wh=%d\n",
+              (victim && victim->Techno_Type_Class()) ? victim->Techno_Type_Class()->IniName : "-",
+              attack, (int)warhead);
     if (victim != NULL && victim->IsActive) {
         int dmg = attack;
         victim->Take_Damage(dmg, 0, warhead, this, true);
@@ -3166,6 +3206,7 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
 
     Explosion_Damage(here, attack, NULL, warhead);
 
+    TF_HS_Log("  droid deleted cleanly\n");
     delete this;
 }
 
