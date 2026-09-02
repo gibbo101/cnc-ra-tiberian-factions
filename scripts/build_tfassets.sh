@@ -375,7 +375,7 @@ PACK_ARGS+=("$TMPDIR/tspods_stub.shp:TSPODS.SHP")
 ts_stub TSSEEK "$TMPDIR/tsseek_stub.shp" 24 24 2
 PACK_ARGS+=("$TMPDIR/tsseek_stub.shp:TSSEEK.SHP")
 # TSHUNT 24x24 x 8: the hunter seeker droid (aircraft; 192 canvas / 8, one facing x 8 spin frames).
-ts_stub TSHUNT "$TMPDIR/tshunt_stub.shp" 24 24 8
+ts_stub TSHUNT "$TMPDIR/tshunt_stub.shp" 48 48 8
 PACK_ARGS+=("$TMPDIR/tshunt_stub.shp:TSHUNT.SHP")
 PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")
 # TSFACT 72x72 = the RA-conyard 3x3 box (BSIZE_33) + bib, content inside it

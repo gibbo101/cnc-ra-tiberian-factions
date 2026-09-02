@@ -30,8 +30,9 @@ UNITS_DIR = f"{MOD}/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
 ICON_DIR = f"{MOD}/ART/TEXTURES/SRGB"
 XML = f"{MOD}/XML/TILESETS/RA_UNITS.XML"
 EMBLEM = os.path.join(HERE, "tab_emblems", "tsgdi.png")
-CANVAS = 192
+CANVAS = 384
 SCALE = 4
+BIG_MULT = 2  # extra upscale so the droid renders larger on screen
 
 
 def tga_bytes(img):
@@ -84,6 +85,8 @@ def main():
         big = hqx.hq4x(rgb).convert("RGBA")
         alpha = seg.split()[3].resize((seg.width * SCALE, seg.height * SCALE), Image.NEAREST)
         big.putalpha(alpha)
+        if BIG_MULT != 1:
+            big = big.resize((big.width * BIG_MULT, big.height * BIG_MULT), Image.LANCZOS)
         canvas = Image.new("RGBA", (CANVAS, CANVAS), (0, 0, 0, 0))
         canvas.alpha_composite(big, ((CANVAS - big.width) // 2, (CANVAS - big.height) // 2))
         frames.append(canvas)
@@ -109,7 +112,7 @@ def main():
 
     stub_manifest = os.path.join(HERE, "ts_stub_dims.json")
     dims = json.load(open(stub_manifest))
-    dims["TSHUNT"] = [CANVAS // 8, CANVAS // 8]
+    dims["TSHUNT"] = [CANVAS // 8, CANVAS // 8]  # 48x48 now
     with open(stub_manifest, "w") as f:
         json.dump(dims, f, indent=1, sort_keys=True)
         f.write("\n")
