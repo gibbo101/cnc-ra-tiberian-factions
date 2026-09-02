@@ -756,6 +756,7 @@ bool Read_Scenario(char* name)
             }
         }
         bool placed = false;
+        CELL placed_cell = 0;
         for (int ring = 3; ring <= 16 && !placed; ring++) {
             for (int dx = -ring; dx <= ring && !placed; dx++) {
                 for (int dy = -ring; dy <= ring && !placed; dy++) {
@@ -770,8 +771,32 @@ bool Read_Scenario(char* name)
                         new BuildingClass(BuildingTypes.Ptr((int)STRUCT_TSPLUG), PlayerPtr->Class->House);
                     if (up != NULL && up->Unlimbo(Cell_Coord(c))) {
                         placed = true;
+                        placed_cell = c;
                     } else if (up != NULL) {
                         delete up;
+                    }
+                }
+            }
+        }
+
+        /*
+        **  Size/colour probe: a stationary Hunter Seeker droid a few cells north
+        **  of the Upgrade Centre. HOUSE_NONE -> its AI finds no owner house and
+        **  never acquires a victim, so it hovers in place for a screenshot.
+        */
+        if (placed_cell != 0) {
+            CELL hc = placed_cell - (3 * MAP_CELL_W);
+            if ((unsigned)hc < MAP_CELL_TOTAL) {
+                BulletClass* probe = new BulletClass(BULLET_TSHUNTER, ::As_Target(hc), NULL, 0,
+                                                     WARHEAD_NONE, MPH_MEDIUM_FAST);
+                if (probe != NULL) {
+                    probe->TFPodHouse = HOUSE_NONE;
+                    if (probe->Unlimbo(Cell_Coord(hc), DIR_E)) {
+                        Map.Remove(probe, probe->In_Which_Layer());
+                        probe->Height = ObjectClass::FLIGHT_LEVEL;
+                        Map.Submit(probe, probe->In_Which_Layer());
+                    } else {
+                        delete probe;
                     }
                 }
             }
