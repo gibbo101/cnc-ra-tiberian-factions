@@ -4,9 +4,9 @@
 The RA lobby picker icon for a faction is a preloaded atlas region (`FACTIONS.XML` SmallIconName,
 only the UI_MULTIPLAYER_PLAYERSLOT_FACTION_NN regions are safe). Our Allies entry uses _04
 (Greece) and Soviet uses _05 (USSR); each has _ON / _OVER variants. The region is a 150x80
-parallelogram: a flag on the left, the side crest badge on the right. This keeps the badge and
-the outline, fills the flag area with a dark field, and centres the faction emblem (the lobby's
-own gold line-art logos) on it. Byte-edits the target atlases in place, same size.
+parallelogram: a flag on the left, the side crest badge on the right. Like the GDI and Nod icons,
+the whole shape becomes a dark field with the faction emblem (the lobby's own gold line-art
+logos) centred on it; no flag, no badge. Byte-edits the target atlases in place, same size.
 
 usage: picker_emblems_paint.py <target MT_COMMANDBAR_COMMON.TGA> [more targets...]
 """
@@ -20,8 +20,6 @@ from PIL import Image
 MTD = 'scripts/cameo_work/MT_COMMANDBAR_COMMON.MTD'
 PRISTINE = 'scripts/cameo_work/MT_COMMANDBAR_COMMON.TGA'
 W, H, HDR = 6871, 6716, 18
-FLAG_W = 104            # flag area of the 150-wide parallelogram at the top row; the badge edge slants
-FLAG_SLANT = 21         # extra flag width at the bottom row (the parallelogram leans right)
 SLOTS = {
     'ALLIED': (['UI_MULTIPLAYER_PLAYERSLOT_FACTION_04', 'UI_MULTIPLAYER_PLAYERSLOT_FACTION_04_ON',
                 'UI_MULTIPLAYER_PLAYERSLOT_FACTION_04_OVER'],
@@ -63,20 +61,19 @@ def read_region(f, rect):
 
 
 def compose(src, logo, field):
-    """src = pristine flag region; replace the flag pixels left of the badge with field + logo."""
+    """src = pristine flag region; replace every opaque pixel with the field, then centre the logo."""
     out = src.copy()
     px = out.load()
     w, h = out.size
     for yy in range(h):
-        edge = FLAG_W + FLAG_SLANT * yy // max(1, h - 1)
-        for xx in range(edge):
+        for xx in range(w):
             r, g, b, a = px[xx, yy]
             if a > 0:
                 px[xx, yy] = (field[0], field[1], field[2], a)
-    # logo: gold line art with alpha; fit to ~62 px high, centred in the flag area
+    # logo: gold line art with alpha; fit to ~66 px high, centred in the whole shape
     lg = logo.copy()
-    lg.thumbnail((FLAG_W - 20, 62), Image.LANCZOS)
-    ox = (FLAG_W - lg.width) // 2 + 4
+    lg.thumbnail((w - 40, 66), Image.LANCZOS)
+    ox = (w - lg.width) // 2
     oy = (h - lg.height) // 2
     mask = out.split()[3]          # only where the region is opaque (keeps the parallelogram)
     tmp = Image.new('RGBA', out.size, (0, 0, 0, 0))
