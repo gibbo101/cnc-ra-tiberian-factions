@@ -5,6 +5,12 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Bottom of the barrel: crest label colour on the TD plate (Luke, 2026-09-02: only if it proves hard to read)
+
+The launcher-drawn "GDI"/"Nod" text under the radar crest was coloured for RA's dark grid and now
+sits dark-on-grey on TD's metal plate. Probe = find the cached text-style record ClientG draws it
+from (same method as `radar-crest-ram-spike.md`) and recolour for GDI/Nod. Do nothing unless asked.
+
 ## ✅ DONE 2026-09-01: RAM patch for the mailbox boot-cache (shipped; record in `docs/eva-ram-patch-spike.md`)
 
 Lift the per-boot voice lock (known-issues.md): at match start, find the cached sample blob in
