@@ -44,8 +44,8 @@ echo "==> Rebuilding edited MASTERTEXTFILE_EN-US.LOC from base (Unholy Alliance 
 python3 scripts/loc_relabel.py "$BASE_LOC" "$EDIT_LOC" @scripts/loc_work/mastertext.edits.txt
 
 echo "==> Repacking $MEG with the edited BUI + MUSICEVENTS + MASTERTEXT (in place)"
-echo "==> Rebuilding trimmed FACTIONS.XML from base (one picker entry per faction)"
-python3 scripts/factions_trim.py "$BASE_FAC" "$EDIT_FAC"
+echo "==> Rebuilding FACTIONS.XML from base (picker order + full-size GDI/Nod plates)"
+python3 scripts/factions_build.py "$BASE_FAC" "$EDIT_FAC"
 python3 scripts/meg_pack.py repack "$MEG" "$MEG.tmp" \
     "RA_MAIN_MENU.BUI=$EDIT_BUI" \
     "MUSICEVENTS.XML=$EDIT_MUS" "MASTERTEXTFILE_EN-US.LOC=$EDIT_LOC" \

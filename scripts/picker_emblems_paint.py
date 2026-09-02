@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
-"""Paint the Allied and Soviet emblems over the Greece/USSR flags in the lobby picker icons.
+"""Paint faction emblem plates over the country flags in the lobby picker icons.
 
 The RA lobby picker icon for a faction is a preloaded atlas region (`FACTIONS.XML` SmallIconName,
-only the UI_MULTIPLAYER_PLAYERSLOT_FACTION_NN regions are safe). Our Allies entry uses _04
-(Greece) and Soviet uses _05 (USSR); each has _ON / _OVER variants. The region is a 150x80
-parallelogram: a flag on the left, the side crest badge on the right. Like the GDI and Nod icons,
-the whole shape becomes a dark field with the faction emblem (the lobby's own gold line-art
-logos) centred on it; no flag, no badge. Byte-edits the target atlases in place, same size.
+only the UI_MULTIPLAYER_PLAYERSLOT_FACTION_NN regions are safe). GDI uses _03, Nod _10, Allies
+_04, Soviet _05, and the country duplicates _06.._09; each has _ON / _OVER variants. The region is a 150x80
+parallelogram: a flag on the left, the side crest badge on the right. The region becomes the faction's
+radar crest alone, centred, on a transparent plate: no flag, no badge, no field (Luke, 2026-09-02). Byte-edits the target atlases in place, same size.
 
 usage: picker_emblems_paint.py <target MT_COMMANDBAR_COMMON.TGA> [more targets...]
 """
@@ -20,14 +19,23 @@ from PIL import Image
 MTD = 'scripts/cameo_work/MT_COMMANDBAR_COMMON.MTD'
 PRISTINE = 'scripts/cameo_work/MT_COMMANDBAR_COMMON.TGA'
 W, H, HDR = 6871, 6716, 18
-SLOTS = {
-    'ALLIED': (['UI_MULTIPLAYER_PLAYERSLOT_FACTION_04', 'UI_MULTIPLAYER_PLAYERSLOT_FACTION_04_ON',
-                'UI_MULTIPLAYER_PLAYERSLOT_FACTION_04_OVER'],
-               'RA_UI_MULTIPLAYER_ALLIED_LOGO_LARGE_SELECTED', (24, 44, 96)),
-    'SOVIET': (['UI_MULTIPLAYER_PLAYERSLOT_FACTION_05', 'UI_MULTIPLAYER_PLAYERSLOT_FACTION_05_ON',
-                'UI_MULTIPLAYER_PLAYERSLOT_FACTION_05_OVER'],
-               'RA_UI_MULTIPLAYER_SOVIET_LOGO_LARGE_SELECTED', (110, 18, 18)),
-}
+def _variants(nn):
+    b = 'UI_MULTIPLAYER_PLAYERSLOT_FACTION_%s' % nn
+    return [b, b + '_ON', b + '_OVER']
+
+
+# picker region -> (emblem source region, field colour). The mod's FACTIONS.XML points GDI at _03
+# and Nod at _10 (the old Spain/Turkey flags), Allies at _04, Soviet at _05; _06/_08/_09 are the
+# Allied country duplicates and _07 the Soviet one, so they wear the same plates.
+SLOTS = {}
+for nn in ('03',):
+    SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_GDI', None)
+for nn in ('10',):
+    SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_NOD', None)
+for nn in ('04', '06', '08', '09'):
+    SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_ALLIES', None)
+for nn in ('05', '07'):
+    SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_SOVIET', None)
 
 
 def regions():
@@ -68,19 +76,20 @@ def compose(src, logo, field):
     for yy in range(h):
         for xx in range(w):
             r, g, b, a = px[xx, yy]
-            if a > 0:
+            if field is None:
+                px[xx, yy] = (0, 0, 0, 0)          # emblem only, no plate
+            elif a > 0:
                 px[xx, yy] = (field[0], field[1], field[2], a)
     # logo: gold line art with alpha; fit to ~66 px high, centred in the whole shape
     lg = logo.copy()
-    lg.thumbnail((w - 40, 66), Image.LANCZOS)
+    lg.thumbnail((w - 40, 72), Image.LANCZOS)
     ox = (w - lg.width) // 2
     oy = (h - lg.height) // 2
-    mask = out.split()[3]          # only where the region is opaque (keeps the parallelogram)
     tmp = Image.new('RGBA', out.size, (0, 0, 0, 0))
     tmp.paste(lg, (ox, oy), lg)
-    tmp.putalpha(Image.eval(tmp.split()[3], lambda a: a).point(lambda v: v))
-    tmp_alpha = Image.composite(tmp.split()[3], Image.new('L', out.size, 0), mask)
-    tmp.putalpha(tmp_alpha)
+    if field is not None:
+        mask = out.split()[3]      # keep the emblem inside the parallelogram
+        tmp.putalpha(Image.composite(tmp.split()[3], Image.new('L', out.size, 0), mask))
     out.alpha_composite(tmp)
     return out
 
@@ -90,9 +99,12 @@ def main(targets):
     src = open(PRISTINE, 'rb')
     rows = []
     preview = []
-    for name, (slots, logo_region, field) in SLOTS.items():
-        logo = read_region(src, regs[logo_region])
-        for slot in slots:
+    logos = {}
+    for nn, (logo_region, field) in SLOTS.items():
+        if logo_region not in logos:
+            logos[logo_region] = read_region(src, regs[logo_region])
+        logo = logos[logo_region]
+        for slot in _variants(nn):
             rect = regs[slot]
             img = compose(read_region(src, rect), logo, field)
             preview.append(img)
@@ -110,9 +122,10 @@ def main(targets):
                 f.seek(off)
                 f.write(b)
         print(t, hashlib.md5(open(t, 'rb').read()).hexdigest())
-    sheet = Image.new('RGBA', (len(preview) * 160, 90), (0, 110, 0, 255))
+    cols = 6
+    sheet = Image.new('RGBA', (cols * 160, ((len(preview) + cols - 1) // cols) * 90), (0, 110, 0, 255))
     for i, im in enumerate(preview):
-        sheet.paste(im, (i * 160, 5), im)
+        sheet.paste(im, ((i % cols) * 160, (i // cols) * 90 + 5), im)
     sheet.save('/tmp/picker_preview.png')
     print('preview /tmp/picker_preview.png')
 
