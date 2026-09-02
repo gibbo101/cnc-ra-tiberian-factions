@@ -187,8 +187,8 @@ pieces squeezed into ever odder corners: a transparent bezel so TD's plate frame
 a half-size rail piece for the buttons to sit on, a plate piece so the frame's bottom edge
 cleared the rail, translucent fills so TD's pips read as lit. Each one fixed the previous
 round's complaint and produced the next. At the fourth round, with the map showing through a
-gap between plate and rail and the power meter still not filling pips, Luke said stop guessing
-and look at how TD does it.
+gap between plate and rail and the power meter still not filling pips, we stopped guessing and
+looked at how TD does it.
 
 ### The short way
 
