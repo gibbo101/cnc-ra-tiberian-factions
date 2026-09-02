@@ -52,7 +52,7 @@ but is strictly more work for no gain.)
 ## The lobby picker — the only real ceiling (cosmetic)
 
 Fixed 8-entry list; adding entries hard-crashes (`faction-select-identity.md`).
-Currently 4 of 8 slots are meaningful (Spain→GDI, Turkey→Nod, rest are
+Currently 4 of 8 slots are meaningful (Spain→GDI, Greece→Nod since 2026-09-02, rest are
 Allies/Soviet dupes), so up to 4 more factions fit by relabeling dupes.
 
 - **Names:** same-length in-place MASTERTEXT edits, pad with trailing spaces.

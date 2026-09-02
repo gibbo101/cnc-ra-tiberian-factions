@@ -2,7 +2,7 @@
 
 How to give the RA skirmish **faction picker** custom **icons**, **names**, and **bonus-overlay text** for GDI / Nod / Allies / Soviet — shipped via a mod `Data/CONFIG.MEG`, **no EMC, no texture MEG**. Companion to `config-meg-mod-delivery.md` (the delivery mechanism) and `ui-atlas-modding.md` (why loose textures don't reach the front-end).
 
-**Proven on the Deck:** Spain→GDI emblem + "GDI"; Turkey→Nod emblem + "Nod"; Greece→flag + "Allies"; USSR→flag + "Soviet". No bonus lines. No crash.
+**Proven on the Deck:** Spain→GDI emblem + "GDI"; Turkey→Nod emblem + "Nod" (Nod moved to the Greece slot on 2026-09-02, see the picker layout table); Greece→flag + "Allies"; USSR→flag + "Soviet". No bonus lines. No crash.
 
 ---
 
