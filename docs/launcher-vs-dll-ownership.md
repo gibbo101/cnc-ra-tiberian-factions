@@ -105,6 +105,7 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 | Sidebar build icons / cost / progress | DLL supplies per-entry; launcher renders | **Partial** — DLL owns `AssetName`/cost/etc. | `CNCSidebarEntryStruct` |
 | HUD credit/power/timer **values** | DLL supplies values; launcher renders | Values yes, rendering no | `CNCSidebarStruct` |
 | Superweapon `$cost` line suppression | Launcher (`SW_` whitelist) | No | `reference-launcher-superweapon-cost-suppression` |
+| **Superweapon targeted-vs-instant firing** | **Launcher** (compiled, AssetName-keyed) | **Yes, by DLL self-fire** — cameo click read cross-process, `Place_Special_Blast` called directly, launcher targeting never runs | `TF_Hunter_Cameo_Tick`; see below |
 | Win/lose stings, "under attack", low-power GUI SFX | Launcher (`Faction_Event_GUI_SFX_*`) | No (Allied/Soviet only — see below) | strings |
 
 ---
@@ -168,6 +169,54 @@ ClientG facts for next time: command ids deploy = `0x1020`, select-all-on-screen
 (name-registered at 0x14b1xxx); `CNC_Handle_*` strings are NOT in ClientG (InstanceServerG calls
 the DLL; ClientG talks over IPC); gdb attaches but neither hardware watchpoints nor int3
 breakpoints fired on this Wine process — `/proc/<pid>/mem` is the reliable probe.
+
+### Superweapon targeted-vs-instant firing: launcher-owned and DLL-blind, but bypassable (2026-09-03)
+
+**Question:** can a superweapon cameo fire on a single click with no targeting cursor, the way
+the Hunter Seeker droid needed to (self-targeting -- a map click is meaningless for it)?
+
+**The launcher decision itself is a wall, proven two ways:**
+- The targeted-vs-instant choice is **compiled into ClientG**, keyed on the super's `AssetName`
+  string. Tested directly: `SW_SonarPulse` is targeted (cameo click opens a cursor, a map click
+  is required); `SW_GPS` is the one instant super, and it **auto-fires on its own timer and never
+  sends a `PLACE` request at all** -- so it can never round-trip into spawning anything. No
+  AssetName gives "instant AND spawns on demand".
+- The DLL is **blind to the launcher's targeting state**: `Map.IsTargettingMode` never moves when
+  a super cameo is clicked (logged per-frame to confirm), and `CNCSidebarEntryStruct` (the
+  DLL-to-launcher sidebar entry) has no "needs target" field to set. `CNC_Handle_Sidebar_Request`
+  only carries construction requests; `CNC_Handle_SuperWeapon_Request` only ever delivers
+  `SUPERWEAPON_REQUEST_PLACE_SUPER_WEAPON` with a target cell, after the launcher's own targeting
+  step -- the click itself never reaches the DLL.
+
+**The wall is DOWN, same mechanism as the deploy key: the DLL reads the cameo click itself.**
+`TF_Hunter_Cameo_Tick` (`dllinterface.cpp`, per frame from `CNC_Advance_Instance`) polls
+`GetAsyncKeyState(VK_LBUTTON)` + `GetCursorPos` **on the game thread**. When a press lands inside
+the super tab's first-slot rectangle (right-anchored, scaled off the calibrated 1920x1080 slot by
+screen height) and the super is `Is_Ready()`, the DLL fires it directly --
+`PlayerPtr->Place_Special_Blast(id, 0)` -- bypassing the launcher's targeting UI entirely. Firing
+discharges the special, so the launcher drops its own cursor once the cameo reads not-ready on the
+next refresh; no synthesized key is needed to cancel it (sending Escape lands after targeting is
+already gone and opens the pause menu instead -- do not do this).
+
+**⚠ A background polling thread does NOT work under Wine.** `GetAsyncKeyState` only stays current
+for the thread that owns the input queue; a `CreateThread`d poller running every few ms read
+nothing (0 detections across repeated tests). Poll on the game thread, once per
+`CNC_Advance_Instance` call -- a human click spans several logic frames so the once-per-frame poll
+catches it, and the `GetAsyncKeyState` low bit (`0x0001`, "pressed since last poll") backstops a
+click shorter than one frame.
+
+**Cameo art is independent of the click-detect mechanism and is normal AssetName wiring**: give
+the super its own `RA_SW_<name>` entry in `RABUILDABLES.XML` with its own `BuildIcon`, and export
+that AssetName from `Convert_Special_Weapon_Type` while keeping whatever real `SW_` enum value
+gives the launcher plumbing you need (`SW_SONAR_PULSE` for the Hunter Seeker -- an ordinary
+targeted-super slot in the tab; the DLL never lets the launcher's targeting actually run). This
+does not touch the real superweapon sharing that `SW_` enum value -- its own AssetName/cameo is
+untouched, and its own effect is keyed on its own `SPC_*` case, not the enum value.
+
+See `project-hunter-seeker-notarget-wall.md` (cross-session memory) for the full session log,
+traps (headless-only: pause-menu-freezes-the-poll, LAN lobby Start disabled under a mod, the
+insta-superweapon dev cheat masking the real recharge), and the verified end-to-end result
+(single click -> droid spawns -> flies to the AI -> wins, no crash).
 
 ### `this == PlayerPtr` is ALWAYS TRUE inside HouseClass::AI (REMASTER_BUILD)
 `HouseClass::AI()` opens with `Logic_Switch_Player_Context(this)` under `#ifdef REMASTER_BUILD`, so
