@@ -2152,6 +2152,48 @@ static int TF_Self_Action_Selected(void)
 static long TF_SelectAllLatchUntil = -1; // frame until which a recent 'A' press still counts as held
 static const int TF_HUNTER_DRAW_SIZE = 90; // launcher draw box for the Hunter Seeker droid (tune by eye)
 
+#if TF_DEV_BUILD
+// Dev testing aid (cheats on): once units exist, grant + charge the Hunter Seeker special for the
+// local player and drop an Upgrade Centre with a Seeker Control installed a few cells from their
+// first unit, so the arc is testable without building the whole TS tree.
+static void TF_Hunter_Dev_Setup_Tick(void)
+{
+    static bool done = false;
+    if (done || Frame < 40 || PlayerPtr == NULL || !TF_Dev_Cheats()) {
+        return;
+    }
+    CELL ph = 0;
+    for (int i = 0; i < Units.Count(); i++) {
+        if (Units.Ptr(i)->House == PlayerPtr) { ph = Coord_Cell(Units.Ptr(i)->Center_Coord()); break; }
+    }
+    if (ph == 0) {
+        return;
+    }
+    done = true;
+
+    // Grant the special outright (one-time so the plug/power gate never revokes it).
+    PlayerPtr->SuperWeapon[SPC_TS_HUNTSEEK].Enable(true, PlayerPtr == PlayerPtr, false);
+    PlayerPtr->SuperWeapon[SPC_TS_HUNTSEEK].Forced_Charge(true);
+#ifdef REMASTER_BUILD
+    Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TS_HUNTSEEK, PlayerPtr);
+#endif
+
+    // Drop an Upgrade Centre + Seeker Control a few cells around home (visual/full-flow testing).
+    for (int oi = 3; oi <= 12; oi++) {
+        CELL c = ph + oi;
+        if ((unsigned)c >= MAP_CELL_TOTAL) continue;
+        BuildingClass* up = new BuildingClass(BuildingTypes.Ptr((int)STRUCT_TSPLUG), PlayerPtr->Class->House);
+        if (up != NULL && up->Unlimbo(Cell_Coord(c))) {
+            up->UpgradeTypes[up->UpgradeLevel++] = STRUCT_TSSEEK;
+            up->House->IsRecalcNeeded = true;
+            break;
+        } else if (up != NULL) {
+            delete up;
+        }
+    }
+}
+#endif
+
 static void TF_Deploy_Key_Tick(void)
 {
     static bool _was_down = false;
@@ -2271,6 +2313,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 
     // The deploy key, read straight from the keyboard (see TF_Deploy_Key_Tick).
     TF_Deploy_Key_Tick();
+#if TF_DEV_BUILD
+    TF_Hunter_Dev_Setup_Tick();
+#endif
 
     // Flush the queued difficulty announcements once the match is actually
     // rendering (messages sent at difficulty-set time are dropped).
