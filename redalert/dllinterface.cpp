@@ -2168,48 +2168,6 @@ static void TF_Sidebar_Log(const char* fmt, ...)
 #endif
 }
 
-#if TF_DEV_BUILD
-// Dev testing aid (cheats on): once units exist, grant + charge the Hunter Seeker special for the
-// local player and drop an Upgrade Centre with a Seeker Control installed a few cells from their
-// first unit, so the arc is testable without building the whole TS tree.
-static void TF_Hunter_Dev_Setup_Tick(void)
-{
-    static bool done = false;
-    if (done || Frame < 40 || PlayerPtr == NULL || !TF_Dev_Cheats()) {
-        return;
-    }
-    CELL ph = 0;
-    for (int i = 0; i < Units.Count(); i++) {
-        if (Units.Ptr(i)->House == PlayerPtr) { ph = Coord_Cell(Units.Ptr(i)->Center_Coord()); break; }
-    }
-    if (ph == 0) {
-        return;
-    }
-    done = true;
-
-    // Grant the special outright (one-time so the plug/power gate never revokes it).
-    PlayerPtr->SuperWeapon[SPC_TS_HUNTSEEK].Enable(true, PlayerPtr == PlayerPtr, false);
-    PlayerPtr->SuperWeapon[SPC_TS_HUNTSEEK].Forced_Charge(true);
-#ifdef REMASTER_BUILD
-    Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TS_HUNTSEEK, PlayerPtr);
-#endif
-
-    // Drop an Upgrade Centre + Seeker Control a few cells around home (visual/full-flow testing).
-    for (int oi = 3; oi <= 12; oi++) {
-        CELL c = ph + oi;
-        if ((unsigned)c >= MAP_CELL_TOTAL) continue;
-        BuildingClass* up = new BuildingClass(BuildingTypes.Ptr((int)STRUCT_TSPLUG), PlayerPtr->Class->House);
-        if (up != NULL && up->Unlimbo(Cell_Coord(c))) {
-            up->UpgradeTypes[up->UpgradeLevel++] = STRUCT_TSSEEK;
-            up->House->IsRecalcNeeded = true;
-            break;
-        } else if (up != NULL) {
-            delete up;
-        }
-    }
-}
-#endif
-
 static void TF_Deploy_Key_Tick(void)
 {
     static bool _was_down = false;
@@ -2330,9 +2288,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
     // The deploy key, read straight from the keyboard (see TF_Deploy_Key_Tick).
     TF_Deploy_Key_Tick();
 
-#if TF_DEV_BUILD
-    TF_Hunter_Dev_Setup_Tick();
-#endif
 
     // Flush the queued difficulty announcements once the match is actually
     // rendering (messages sent at difficulty-set time are dropped).
@@ -4212,7 +4167,7 @@ struct TF_CrestSlot
     const float* want; // which of the three the local player should see
 };
 
-#define TF_CREST_SLOTS 2 // the TD GDI logo record, the TD NOD logo record
+#define TF_CREST_SLOTS 14 // the two TD logo records + the twelve sidebar tab icon records
 
 // Session-persistent list of ClientG addresses that hold a radar-crest UV record, so the
 // per-frame driver can cheaply re-point them without re-scanning ClientG's whole heap. The
@@ -4267,6 +4222,38 @@ static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
     TF_Atlas_UV_Record(TD_LOGO_NOD, slots[1].stock);
     TF_Atlas_UV_Record(TD_LOGO_GDI, slots[1].gdi, 2);
     TF_Atlas_UV_Record(TD_LOGO_NOD, slots[1].nod, 2);
+
+    /*
+    **  The sidebar build tabs. In RA mode the launcher draws the RA tab icons (gold, 130x64)
+    **  into TD's scene, whose tab widgets are sized for TD's own icons (green, 100x60), so
+    **  the icons squash and the selected tab reads gold. The TD icons ship in the atlas
+    **  unreferenced; a TD-era player gets each RA icon record re-pointed at the TD icon of
+    **  the same state (proven live with clientg_region_probe.py, 2026-09-03).
+    */
+    static const struct
+    {
+        TF_AtlasRect ra; // UI_RA_SIDEBAR_TABICON_<x> (stock)
+        TF_AtlasRect td; // UI_SIDEBAR_TABICON_<x>
+    } _tabs[TF_CREST_SLOTS - 2] = {
+        {{1322, 1497, 130, 64}, {1361, 2862, 100, 60}}, // STRUCTURE_ON
+        {{3027, 3890, 130, 64}, {1361, 2800, 100, 60}}, // STRUCTURE_OFF
+        {{4646, 1501, 130, 64}, {1361, 2738, 100, 60}}, // STRUCTURE_BRIGHT
+        {{4656, 2883, 130, 64}, {1361, 2676, 100, 60}}, // INFANTRY_ON
+        {{4656, 2949, 130, 64}, {1361, 2614, 100, 60}}, // INFANTRY_OFF
+        {{4656, 3015, 130, 64}, {1361, 2552, 100, 60}}, // INFANTRY_BRIGHT
+        {{4656, 3081, 130, 64}, {4662, 606, 122, 60}},  // VEHICLES_ON
+        {{4656, 3147, 130, 64}, {4662, 544, 122, 60}},  // VEHICLES_OFF
+        {{4656, 3213, 130, 64}, {3027, 5206, 127, 60}}, // VEHICLES_BRIGHT
+        {{3027, 3956, 130, 64}, {5592, 3256, 100, 60}}, // SUPERS_ON
+        {{3027, 4022, 130, 64}, {5592, 3194, 100, 60}}, // SUPERS_OFF
+        {{4648, 874, 130, 64}, {5592, 3132, 100, 60}},  // SUPERS_BRIGHT
+    };
+    for (int t = 0; t < TF_CREST_SLOTS - 2; t++) {
+        TF_Atlas_UV_Record(_tabs[t].ra, slots[2 + t].stock);
+        TF_Atlas_UV_Record(_tabs[t].td, slots[2 + t].gdi, 3 + t);
+        TF_Atlas_UV_Record(_tabs[t].td, slots[2 + t].nod, 3 + t);
+    }
+
     for (int s = 0; s < TF_CREST_SLOTS; s++) {
         slots[s].want = gdi ? slots[s].gdi : (nod ? slots[s].nod : slots[s].stock);
     }
@@ -4389,7 +4376,12 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
                     bool ok = WriteProcessMemory(proc, (LPVOID)rec_addr, slots[slot].want, REC, &wrote)
                               && wrote == (SIZE_T)REC;
                     if (log) {
-                        static const char* const _slot_names[TF_CREST_SLOTS] = {"TDLOGO_GDI", "TDLOGO_NOD"};
+                        static const char* const _slot_names[TF_CREST_SLOTS] = {
+                            "TDLOGO_GDI", "TDLOGO_NOD",
+                            "TAB_STRUCTURE_ON", "TAB_STRUCTURE_OFF", "TAB_STRUCTURE_BRIGHT",
+                            "TAB_INFANTRY_ON", "TAB_INFANTRY_OFF", "TAB_INFANTRY_BRIGHT",
+                            "TAB_VEHICLES_ON", "TAB_VEHICLES_OFF", "TAB_VEHICLES_BRIGHT",
+                            "TAB_SUPERS_ON", "TAB_SUPERS_OFF", "TAB_SUPERS_BRIGHT"};
                         fprintf(log, "  scan slot %s @ %08x %s -> %s %s\n", _slot_names[slot],
                                 (unsigned int)rec_addr, was, gdi ? "gdi" : (nod ? "nod" : "stock"),
                                 ok ? "OK" : "FAIL");
@@ -4518,11 +4510,17 @@ static void TF_Crest_Tick(void)
     if (((int)Frame % 5) == 0) {
         TF_Crest_Reverify();
     }
+    // The tab icon records for a state (a tab's first selection, a super's first "ready")
+    // are created on demand well after match start, so after the start-up burst the scan
+    // keeps running at a slow cadence to catch them; it is off the game thread.
     static const int _scan_at[] = {0, 6, 12, 24, 48, 96, 192, 384};
     const int count = (int)(sizeof(_scan_at) / sizeof(_scan_at[0]));
     int since = (int)Frame - TF_CrestMatchStartFrame;
+    const int periodic = (since < 9000) ? 300 : 900; // tabs get their first hover early on
     if (since >= 0 && TF_CrestScanNext < count && since >= _scan_at[TF_CrestScanNext]) {
         TF_CrestScanNext++;
+        TF_Crest_Request_Scan();
+    } else if (since > _scan_at[count - 1] && (since % periodic) == 0) {
         TF_Crest_Request_Scan();
     }
 }
