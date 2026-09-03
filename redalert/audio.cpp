@@ -760,6 +760,12 @@ void Init_SpeechTD(void)
     SpeechTD[VOX_SUSPENDED]          = "TDONHOLD1";
     SpeechTD[VOX_REPAIRING]          = "TDREPAIR1";
     SpeechTD[VOX_STRUCTURE_SOLD]     = "TDSTRUSLD1";
+    SpeechTD[VOX_STRUCTURE_DESTROYED] = "TDSTRCLOST";
+    SpeechTD[VOX_ABOMB_READY]        = "TDNUKAVAIL";
+    SpeechTD[VOX_ABOMB_LAUNCH]       = "TDNUKLNCH1";
+    SpeechTD[VOX_AIRCRAFT_LOST]      = "TDUNITLOST"; // TD has one "unit lost" for every arm
+    SpeechTD[VOX_SHIP_LOST]          = "TDUNITLOST";
+    SpeechTD[VOX_HQ_UNDER_ATTACK]    = "TDBASEATK1";
 }
 
 /*

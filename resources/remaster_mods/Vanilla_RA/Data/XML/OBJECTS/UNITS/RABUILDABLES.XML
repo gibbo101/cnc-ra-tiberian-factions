@@ -10271,8 +10271,8 @@
 	</ObjectTypeClass>
 	<ObjectTypeClass Name="RA_SG_TSHUNT" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
-			<ObjectNameTextID>TEXT_UNIT_TITLE_TS_HUNTSEEK</ObjectNameTextID>
-			<ObjectDescriptionTextID>TEXT_UNIT_DESC_TS_HUNTSEEK</ObjectDescriptionTextID>
+			<ObjectNameTextID>TEXT_UNIT_TITLE_GDI_MRLS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TITLE_GDI_MRLS</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_SG_TSHUNT</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>

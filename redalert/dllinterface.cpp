@@ -30,6 +30,7 @@
 #include <cstdio>
 
 #include "function.h"
+#include <stdarg.h>
 #include <math.h>
 #include <tlhelp32.h>
 #include "keyframe.h"
@@ -2152,6 +2153,21 @@ static int TF_Self_Action_Selected(void)
 static long TF_SelectAllLatchUntil = -1; // frame until which a recent 'A' press still counts as held
 static const int TF_HUNTER_DRAW_SIZE = 90; // launcher draw box for the Hunter Seeker droid (tune by eye)
 
+static void TF_Sidebar_Log(const char* fmt, ...)
+{
+#if TF_DEV_BUILD
+    char cp[512]; const char* pr = getenv("USERPROFILE");
+    if (pr && pr[0]) snprintf(cp, sizeof(cp), "%s/Documents/CnCRemastered/MOD_DEBUG_SIDEBAR.txt", pr);
+    else strcpy(cp, "MOD_DEBUG_SIDEBAR.txt");
+    FILE* f = fopen(cp, "a");
+    if (!f) return;
+    fprintf(f, "frame=%d ", (int)Frame);
+    va_list ap; va_start(ap, fmt); vfprintf(f, fmt, ap); va_end(ap);
+    fprintf(f, "\n");
+    fclose(f);
+#endif
+}
+
 #if TF_DEV_BUILD
 // Dev testing aid (cheats on): once units exist, grant + charge the Hunter Seeker special for the
 // local player and drop an Upgrade Centre with a Seeker Control installed a few cells from their
@@ -2177,15 +2193,6 @@ static void TF_Hunter_Dev_Setup_Tick(void)
 #ifdef REMASTER_BUILD
     Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TS_HUNTSEEK, PlayerPtr);
 #endif
-
-    // A one-time Sonar Pulse (crate-style) beside it, to compare the launcher's cameo-click
-    // handling of the one super the original engine fired without a target.
-    if (PlayerPtr->SuperWeapon[SPC_SONAR_PULSE].Enable(true, true, false)) {
-        PlayerPtr->SuperWeapon[SPC_SONAR_PULSE].Forced_Charge(true);
-#ifdef REMASTER_BUILD
-        Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_SONAR_PULSE, PlayerPtr);
-#endif
-    }
 
     // Drop an Upgrade Centre + Seeker Control a few cells around home (visual/full-flow testing).
     for (int oi = 3; oi <= 12; oi++) {
@@ -2217,87 +2224,6 @@ static void TF_Deploy_Key_Tick(void)
     if (GetAsyncKeyState('A') & 0x8000) {
         TF_SelectAllLatchUntil = (long)Frame + 10;
     }
-}
-
-/*
-**	Tiberian Factions -- the Hunter Seeker cameo fires on a SINGLE click, in the super weapon
-**	tab, with NO target. The launcher owns the sidebar and always opens a targeting cursor when
-**	a super cameo is clicked; it never tells the DLL about that click, and its targeted-vs-instant
-**	choice is compiled in. So the DLL reads the click itself with the same cross-process trick the
-**	deploy key uses -- GetAsyncKeyState + GetCursorPos, on the game thread (Wine only keeps the async
-**	key state current for the thread that owns the input queue, so an off-thread poller reads nothing;
-**	that was tried and abandoned). When a press lands on the Hunter Seeker cameo and the special is
-**	charged, it fires directly: Place_Special_Blast spawns the droid beside the Upgrade Centre carrying
-**	the Seeker Control plug and it hunts on its own (AircraftClass::TF_Hunter_Seeker_AI). Firing
-**	discharges the special and the launcher closes its own targeting cursor once the cameo reads
-**	not-ready, so the one click is the whole interaction. A human click spans several logic frames, so
-**	the once-per-frame poll catches it; the low bit backstops clicks shorter than a frame.
-**
-**	The cameo is the super tab's first slot: right-anchored to the screen, sized from the calibrated
-**	1920x1080 slot by the vertical scale (the Remaster HUD grows with the screen height).
-*/
-static void TF_Hunter_Cameo_Rect(int& rx0, int& rx1, int& ry0, int& ry1)
-{
-    int sw = GetSystemMetrics(SM_CXSCREEN);
-    int sh = GetSystemMetrics(SM_CYSCREEN);
-    if (sw <= 0) sw = 1920;
-    if (sh <= 0) sh = 1080;
-    double scale = (double)sh / 1080.0;
-    rx0 = sw - (int)(372 * scale);
-    rx1 = sw - (int)(246 * scale);
-    ry0 = (int)(546 * scale);
-    ry1 = (int)(622 * scale);
-}
-
-static void TF_Hunter_Cameo_Tick(void)
-{
-    if (PlayerPtr == NULL) {
-        return;
-    }
-
-    // Read the left button straight from the keyboard/mouse state, on the game thread (the only
-    // thread whose GetAsyncKeyState Wine keeps current). High bit = held now, low bit = pressed
-    // since the last poll; the low bit catches a click that began and ended between two frames.
-    static bool _was_down = false;
-    SHORT ks = GetAsyncKeyState(VK_LBUTTON);
-    bool down = (ks & 0x8000) != 0;
-    bool pressed = (down && !_was_down) || ((ks & 0x0001) != 0);
-    _was_down = down;
-    if (!pressed) {
-        return;
-    }
-
-    POINT pt;
-    if (!GetCursorPos(&pt)) {
-        return;
-    }
-    int rx0, rx1, ry0, ry1;
-    TF_Hunter_Cameo_Rect(rx0, rx1, ry0, ry1);
-    bool in_rect = !(pt.x < rx0 || pt.x > rx1 || pt.y < ry0 || pt.y > ry1);
-    bool ready = PlayerPtr->SuperWeapon[SPC_TS_HUNTSEEK].Is_Present()
-                 && PlayerPtr->SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready();
-
-#if TF_DEV_BUILD
-    // Calibration aid: log EVERY left click with the screen size and the box the DLL used, so a
-    // miss on another resolution shows exactly where the cameo really sits.
-    {
-        char cp[512]; const char* pr = getenv("USERPROFILE");
-        if (pr && pr[0]) snprintf(cp, sizeof(cp), "%s/Documents/CnCRemastered/MOD_DEBUG_CAMEO.txt", pr);
-        else strcpy(cp, "MOD_DEBUG_CAMEO.txt");
-        FILE* f = fopen(cp, "a");
-        if (f) {
-            fprintf(f, "frame=%d click x=%ld y=%ld screen=%dx%d box=[%d..%d,%d..%d] in_box=%d ready=%d\n",
-                    (int)Frame, (long)pt.x, (long)pt.y, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
-                    rx0, rx1, ry0, ry1, in_rect ? 1 : 0, ready ? 1 : 0);
-            fclose(f);
-        }
-    }
-#endif
-    if (!in_rect || !ready) {
-        return;
-    }
-
-    PlayerPtr->Place_Special_Blast(SPC_TS_HUNTSEEK, 0);
 }
 
 /*
@@ -2404,8 +2330,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
     // The deploy key, read straight from the keyboard (see TF_Deploy_Key_Tick).
     TF_Deploy_Key_Tick();
 
-    // The Hunter Seeker cameo, fired by the DLL on a single click (see TF_Hunter_Cameo_Tick).
-    TF_Hunter_Cameo_Tick();
 #if TF_DEV_BUILD
     TF_Hunter_Dev_Setup_Tick();
 #endif
@@ -4002,6 +3926,10 @@ static void TF_Mailbox_Write_EVA_Voice(void)
         {"TF_MBX_TD_WON_R.WAV", "TF_MBX_RA_WON_R.WAV", "RAR_SFX_EVA_MISNWON1_EN-US.WAV"},
         {"TF_MBX_TD_LST_C.WAV", "TF_MBX_RA_LST_C.WAV", "RAC_SFX_EVA_MISNLST1_EN-US.WAV"},
         {"TF_MBX_TD_LST_R.WAV", "TF_MBX_RA_LST_R.WAV", "RAR_SFX_EVA_MISNLST1_EN-US.WAV"},
+        {"TF_MBX_TD_SLCT_C.WAV", "TF_MBX_RA_SLCT_C.WAV", "RAC_SFX_EVA_SLCTTGT1_EN-US.WAV"},
+        {"TF_MBX_TD_SLCT_R.WAV", "TF_MBX_RA_SLCT_R.WAV", "RAR_SFX_EVA_SLCTTGT1_EN-US.WAV"},
+        {"TF_MBX_TD_NOPOW_C.WAV", "TF_MBX_RA_NOPOW_C.WAV", "RAC_SFX_EVA_NOPOWR1_EN-US.WAV"},
+        {"TF_MBX_TD_NOPOW_R.WAV", "TF_MBX_RA_NOPOW_R.WAV", "RAR_SFX_EVA_NOPOWR1_EN-US.WAV"},
     };
     char dir[MAX_PATH];
     snprintf(dir, sizeof(dir), "%sData\\AUDIO\\EN-US", TF_ModRootPath);
@@ -4030,7 +3958,7 @@ static void TF_Mailbox_Write_EVA_Voice(void)
 ** it. The TD/RA payload of each line+channel is padded to EQUAL byte length (they are
 ** re-encoded mono at a fixed rate; MS-ADPCM is constant-rate so equal sample count => equal
 ** bytes), so the cached blob is one fixed size and the overwrite is always same-size -- no
-** overflow in either switch direction. Covers all four launcher-owned lines, both channels.
+** overflow in either switch direction. Covers every launcher-owned line, both channels.
 */
 static bool TF_WriteFile_Into_Process(HANDLE proc, SIZE_T dest, const char* path)
 {
@@ -4101,6 +4029,16 @@ static void TF_Patch_ClientG_Cache(bool td_era)
     static const unsigned char ra_lst_c[] = {0x02, 0x32, 0x66, 0x52, 0x21, 0xe0, 0x32, 0x23, 0x42, 0x52, 0x11, 0x10, 0xaf, 0x20, 0xbf, 0x2f, 0xed, 0xcd, 0xdd, 0x0a};
     static const unsigned char td_lst_r[] = {0xf2, 0x12, 0x11, 0x10, 0xfe, 0xff, 0xf0, 0xf0, 0x10, 0xee, 0xed, 0xdd, 0xdd, 0xfe, 0xfe, 0xdd, 0xdc, 0xcd, 0xdf, 0xed};
     static const unsigned char ra_lst_r[] = {0xda, 0xda, 0xcc, 0xbc, 0xcd, 0xdf, 0x0f, 0xd0, 0x11, 0x12, 0x63, 0x30, 0x1f, 0x12, 0x0e, 0xf0, 0xfe, 0x9d, 0x04, 0x41};
+    // "Select target" (super cameo click) and "Insufficient power" (stalled-build click), both
+    // launcher-fired mid-match; re-encoded equal-length payloads (scripts/eva_mailbox_payload.py).
+    static const unsigned char td_slct_c[] = {0xf0, 0x00, 0x01, 0x0d, 0x40, 0xa4, 0x0c, 0x30, 0xff, 0x05, 0xc0, 0x3d, 0x12, 0xef, 0x14, 0xcf, 0x4f, 0xff, 0x21, 0xd1};
+    static const unsigned char ra_slct_c[] = {0x00, 0x04, 0x31, 0x70, 0x14, 0x01, 0x2f, 0x31, 0xe2, 0x22, 0x52, 0xf5, 0x4f, 0x17, 0xe1, 0xfc, 0x2e, 0xa0, 0xfe, 0xff};
+    static const unsigned char td_slct_r[] = {0x11, 0xec, 0x03, 0x1d, 0xd1, 0x4f, 0xd2, 0x5e, 0xb0, 0x21, 0xf0, 0x22, 0x09, 0xd2, 0x41, 0xe0, 0x30, 0xbf, 0x25, 0x0b};
+    static const unsigned char ra_slct_r[] = {0x12, 0x00, 0x27, 0x2f, 0xac, 0xf3, 0x51, 0x0e, 0xfe, 0xff, 0x15, 0x21, 0xee, 0xff, 0xfc, 0xf4, 0x53, 0x1e, 0xcb, 0xd1};
+    static const unsigned char td_nopow_c[] = {0x1c, 0x41, 0xf0, 0xf4, 0xef, 0x6e, 0x02, 0x00, 0x00, 0x1f, 0x13, 0x1d, 0x37, 0xc0, 0x3f, 0xee, 0x7f, 0xc2, 0x1e, 0xe4};
+    static const unsigned char ra_nopow_c[] = {0x20, 0xf1, 0xe2, 0xff, 0x3d, 0xf3, 0xfd, 0x7e, 0xd7, 0xf0, 0x00, 0x2c, 0x11, 0xf5, 0xc0, 0x4d, 0x04, 0xee, 0x4f, 0xe1};
+    static const unsigned char td_nopow_r[] = {0x02, 0x36, 0x43, 0x21, 0x20, 0xff, 0x24, 0x33, 0x42, 0x10, 0x12, 0x76, 0x32, 0x22, 0xfd, 0xde, 0xf1, 0x54, 0x41, 0x20};
+    static const unsigned char ra_nopow_r[] = {0x02, 0x33, 0x30, 0x00, 0x22, 0xea, 0xe1, 0x41, 0x0a, 0x01, 0x0e, 0xbe, 0x00, 0xfe, 0x04, 0x62, 0xff, 0xe0, 0xfc, 0xcd};
     // BCT only fires at teardown, so it is not cached during its OWN match -- but after its
     // first teardown it persists in cache, so the NEXT match's start-patch can flip it (same as
     // the other lines). Its base-format payloads are zero-padded to equal length, so the write
@@ -4114,6 +4052,10 @@ static void TF_Patch_ClientG_Cache(bool td_era)
         {td_won_r, 1624, "TF_MBX_TD_WON_R.WAV", ra_won_r, 1124, "TF_MBX_RA_WON_R.WAV"},
         {td_lst_c, 1124, "TF_MBX_TD_LST_C.WAV", ra_lst_c, 1124, "TF_MBX_RA_LST_C.WAV"},
         {td_lst_r, 1374, "TF_MBX_TD_LST_R.WAV", ra_lst_r, 1124, "TF_MBX_RA_LST_R.WAV"},
+        {td_slct_c, 1212, "TF_MBX_TD_SLCT_C.WAV", ra_slct_c, 1276, "TF_MBX_RA_SLCT_C.WAV"},
+        {td_slct_r, 2236, "TF_MBX_TD_SLCT_R.WAV", ra_slct_r, 1212, "TF_MBX_RA_SLCT_R.WAV"},
+        {td_nopow_c, 1852, "TF_MBX_TD_NOPOW_C.WAV", ra_nopow_c, 1916, "TF_MBX_RA_NOPOW_C.WAV"},
+        {td_nopow_r, 1660, "TF_MBX_TD_NOPOW_R.WAV", ra_nopow_r, 1212, "TF_MBX_RA_NOPOW_R.WAV"},
     };
     const int NEEDLE_LEN = 20;
 
@@ -4124,8 +4066,8 @@ static void TF_Patch_ClientG_Cache(bool td_era)
         int wrong_fileoff;
         const char* correct_file;
     };
-    PatchRow rows[8];
     int row_count = (int)(sizeof(lines) / sizeof(lines[0]));
+    PatchRow rows[sizeof(lines) / sizeof(lines[0])];
     for (int i = 0; i < row_count; i++) {
         // Hunt the WRONG faction's bytes; write the DESIRED faction's file over them.
         rows[i].wrong_needle = td_era ? lines[i].ra_needle : lines[i].td_needle;
@@ -5183,15 +5125,22 @@ void DLLExportClass::On_Speech(const HouseClass* player_ptr, int speech_index)
         // Tiberian Factions mod: side-conditional TD EVA dispatch. GDI/Nod
         // players get the TD voice variant (registered in mod-side
         // SFXEVENTSLOCALIZED.XML as RAC_SFX_TD<NAME> / RAR_SFX_TD<NAME>).
-        // Allied/Soviet keep RA's Speech[]. NULL SpeechTD[] slot also
-        // falls back to RA. Future per-side Nod voice would branch here.
+        // Allied/Soviet keep RA's Speech[]. A NULL SpeechTD[] slot is
+        // silence for GDI/Nod. Future per-side Nod voice would branch here.
         Init_SpeechTD();
         Init_SpeechRAO();
         char const* name = Speech[speech_index];
-        if (player_ptr != NULL
-            && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD)
-            && SpeechTD[speech_index] != NULL) {
+        bool td_era = (player_ptr != NULL
+                       && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD));
+        if (td_era && SpeechTD[speech_index] != NULL) {
             name = SpeechTD[speech_index];
+        } else if (td_era && strncmp(name, "TD", 2) != 0) {
+            /*
+            ** A TD-era house never hears the RA announcer: a line TD has no
+            ** recording of (sonar pulse, chronosphere, crate upgrades...) is
+            ** dropped rather than spoken in the wrong voice.
+            */
+            return;
         } else if (SpeechRAO[speech_index] != NULL) {
             name = SpeechRAO[speech_index];
         }
@@ -7618,6 +7567,9 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Sidebar_Request(Sidebar
         return;
     }
 
+    TF_Sidebar_Log("sidebar request type=%d buildable_type=%d buildable_id=%d cell=%d,%d",
+                   (int)request_type, buildable_type, buildable_id, (int)cell_x, (int)cell_y);
+
     switch (request_type) {
 
     // Changing right-click support for first put building on hold, and then subsequenct right-clicks to decrement that
@@ -7676,6 +7628,9 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_SuperWeapon_Request(Sup
     if (!DLLExportClass::Set_Player_Context(player_id)) {
         return;
     }
+
+    TF_Sidebar_Log("superweapon request type=%d buildable_type=%d buildable_id=%d at %d,%d",
+                   (int)request_type, buildable_type, buildable_id, x1, y1);
 
     switch (request_type) {
     case SUPERWEAPON_REQUEST_PLACE_SUPER_WEAPON:
@@ -8727,9 +8682,9 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
         break;
     case SPC_TS_HUNTSEEK:
         // Tiberian Factions mod -- TS Hunter Seeker. SW_SONAR_PULSE gives the launcher plumbing
-        // (a real super slot in the tab), but the DLL fires it itself on the cameo click
-        // (TF_Hunter_Cameo_Tick -> Place_Special_Blast), so the launcher's targeting is never
-        // used. AssetName "SW_TSHunt" resolves the Hunter Seeker cameo (RA_SW_TSHUNT /
+        // (a real super slot in the tab). The special launches itself the tick it is charged
+        // (HouseClass::Super_Weapon_Handler), so the launcher's targeting is never used and
+        // the cameo is a countdown. AssetName "SW_TSHunt" resolves the Hunter Seeker cameo (RA_SW_TSHUNT /
         // BuildIcon_SW_TSHUNT in RABUILDABLES.XML) -- distinct from the real Sonar Pulse, which
         // keeps its own "SW_SonarPulse" cameo. SonarPulse's ping is DLL-side (keyed on
         // SPC_SONAR_PULSE), so routing here does not trigger it.

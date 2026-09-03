@@ -1257,6 +1257,19 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             */
             bool ts_tree = TF_Is_TS_Tree_Type((TechnoTypeClass const*)type);
 
+            /*
+            **	The TS tree is its own lineage: every TS building needs the house's TS
+            **	yard standing, not just the chain of TS buildings above it. Without this a
+            **	TD or RA yard keeps extending a TS base (uplink, drop pod node, seeker
+            **	control) after the TS yard is gone, since those plugs only name the
+            **	Upgrade Centre as a prerequisite.
+            */
+            bool ts_building = (btype->Type == STRUCT_TSPOWR
+                                || (btype->Type >= STRUCT_TS_TREE_FIRST && btype->Type <= STRUCT_TS_TREE_LAST));
+            if (ts_building && !Has_Building_Active(STRUCT_TSFACT)) {
+                return (false);
+            }
+
             int const factions = HOUSEF_GDI | HOUSEF_NOD | HOUSEF_ALLIES | HOUSEF_SOVIET;
             int ownable = type->Get_Ownable();
             if (!ts_tree && (ownable & factions) != 0) {
