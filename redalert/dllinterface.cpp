@@ -4167,7 +4167,7 @@ struct TF_CrestSlot
     const float* want; // which of the three the local player should see
 };
 
-#define TF_CREST_SLOTS 14 // the two TD logo records + the twelve sidebar tab icon records
+#define TF_CREST_SLOTS 2 // the TD GDI logo record, the TD NOD logo record
 
 // Session-persistent list of ClientG addresses that hold a radar-crest UV record, so the
 // per-frame driver can cheaply re-point them without re-scanning ClientG's whole heap. The
@@ -4222,37 +4222,6 @@ static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
     TF_Atlas_UV_Record(TD_LOGO_NOD, slots[1].stock);
     TF_Atlas_UV_Record(TD_LOGO_GDI, slots[1].gdi, 2);
     TF_Atlas_UV_Record(TD_LOGO_NOD, slots[1].nod, 2);
-
-    /*
-    **  The sidebar build tabs. In RA mode the launcher draws the RA tab icons (gold, 130x64)
-    **  into TD's scene, whose tab widgets are sized for TD's own icons (green, 100x60), so
-    **  the icons squash and the selected tab reads gold. The TD icons ship in the atlas
-    **  unreferenced; a TD-era player gets each RA icon record re-pointed at the TD icon of
-    **  the same state (proven live with clientg_region_probe.py, 2026-09-03).
-    */
-    static const struct
-    {
-        TF_AtlasRect ra; // UI_RA_SIDEBAR_TABICON_<x> (stock)
-        TF_AtlasRect td; // UI_SIDEBAR_TABICON_<x>
-    } _tabs[TF_CREST_SLOTS - 2] = {
-        {{1322, 1497, 130, 64}, {1361, 2862, 100, 60}}, // STRUCTURE_ON
-        {{3027, 3890, 130, 64}, {1361, 2800, 100, 60}}, // STRUCTURE_OFF
-        {{4646, 1501, 130, 64}, {1361, 2738, 100, 60}}, // STRUCTURE_BRIGHT
-        {{4656, 2883, 130, 64}, {1361, 2676, 100, 60}}, // INFANTRY_ON
-        {{4656, 2949, 130, 64}, {1361, 2614, 100, 60}}, // INFANTRY_OFF
-        {{4656, 3015, 130, 64}, {1361, 2552, 100, 60}}, // INFANTRY_BRIGHT
-        {{4656, 3081, 130, 64}, {4662, 606, 122, 60}},  // VEHICLES_ON
-        {{4656, 3147, 130, 64}, {4662, 544, 122, 60}},  // VEHICLES_OFF
-        {{4656, 3213, 130, 64}, {3027, 5206, 127, 60}}, // VEHICLES_BRIGHT
-        {{3027, 3956, 130, 64}, {5592, 3256, 100, 60}}, // SUPERS_ON
-        {{3027, 4022, 130, 64}, {5592, 3194, 100, 60}}, // SUPERS_OFF
-        {{4648, 874, 130, 64}, {5592, 3132, 100, 60}},  // SUPERS_BRIGHT
-    };
-    for (int t = 0; t < TF_CREST_SLOTS - 2; t++) {
-        TF_Atlas_UV_Record(_tabs[t].ra, slots[2 + t].stock);
-        TF_Atlas_UV_Record(_tabs[t].td, slots[2 + t].gdi, 3 + t);
-        TF_Atlas_UV_Record(_tabs[t].td, slots[2 + t].nod, 3 + t);
-    }
 
     for (int s = 0; s < TF_CREST_SLOTS; s++) {
         slots[s].want = gdi ? slots[s].gdi : (nod ? slots[s].nod : slots[s].stock);
@@ -4376,12 +4345,7 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
                     bool ok = WriteProcessMemory(proc, (LPVOID)rec_addr, slots[slot].want, REC, &wrote)
                               && wrote == (SIZE_T)REC;
                     if (log) {
-                        static const char* const _slot_names[TF_CREST_SLOTS] = {
-                            "TDLOGO_GDI", "TDLOGO_NOD",
-                            "TAB_STRUCTURE_ON", "TAB_STRUCTURE_OFF", "TAB_STRUCTURE_BRIGHT",
-                            "TAB_INFANTRY_ON", "TAB_INFANTRY_OFF", "TAB_INFANTRY_BRIGHT",
-                            "TAB_VEHICLES_ON", "TAB_VEHICLES_OFF", "TAB_VEHICLES_BRIGHT",
-                            "TAB_SUPERS_ON", "TAB_SUPERS_OFF", "TAB_SUPERS_BRIGHT"};
+                        static const char* const _slot_names[TF_CREST_SLOTS] = {"TDLOGO_GDI", "TDLOGO_NOD"};
                         fprintf(log, "  scan slot %s @ %08x %s -> %s %s\n", _slot_names[slot],
                                 (unsigned int)rec_addr, was, gdi ? "gdi" : (nod ? "nod" : "stock"),
                                 ok ? "OK" : "FAIL");
@@ -4437,10 +4401,124 @@ static void TF_Crest_Reverify(void)
 }
 
 // Reset the per-match window so the driver rescans for this match's freshly-created record.
+/*
+**  The sidebar build tab icons are the one HUD element the launcher names in CODE rather
+**  than in the scene file: it appends the state to a per-game prefix baked into ClientG
+**  ("UI_RA_Sidebar_TabIcon_Structure_" in RA mode, "UI_Sidebar_TabIcon_Structure_" in TD
+**  mode) and looks the region up by that name. So GDI/Nod, on TD's scene, still got RA's
+**  gold 130x64 icons squashed into TD's 100x60 tab widgets, in every state. Rewriting the
+**  four RA prefixes inside ClientG's image to the TD ones at match start makes the launcher
+**  itself look up TD's icons for every state, placement included; RA sides get the RA
+**  prefixes restored. The TD prefix is shorter, so the write always fits.
+*/
+static void TF_Patch_ClientG_Tab_Prefix(bool td_era)
+{
+    static const char* const _ra[4] = {"UI_RA_Sidebar_TabIcon_Structure_",
+                                       "UI_RA_Sidebar_TabIcon_Infantry_",
+                                       "UI_RA_Sidebar_TabIcon_Vehicles_",
+                                       "UI_RA_Sidebar_TabIcon_Supers_"};
+    static const char* const _td[4] = {"UI_Sidebar_TabIcon_Structure_",
+                                       "UI_Sidebar_TabIcon_Infantry_",
+                                       "UI_Sidebar_TabIcon_Vehicles_",
+                                       "UI_Sidebar_TabIcon_Supers_"};
+    // The image never moves for the life of the launcher: locate each prefix once per pid.
+    static DWORD located_pid = 0;
+    static SIZE_T where[4] = {0, 0, 0, 0};
+
+    HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
+                                  | PROCESS_QUERY_INFORMATION);
+    if (proc == NULL) {
+        return;
+    }
+    DWORD pid = GetProcessId(proc);
+    if (pid != located_pid) {
+        located_pid = pid;
+        memset(where, 0, sizeof(where));
+        static unsigned char scratch[1 << 20];
+        const int overlap = 64;
+        SIZE_T addr = 0;
+        MEMORY_BASIC_INFORMATION mbi;
+        while (VirtualQueryEx(proc, (LPCVOID)addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
+            SIZE_T region_base = (SIZE_T)mbi.BaseAddress;
+            SIZE_T region_size = mbi.RegionSize;
+            bool image = (mbi.State == MEM_COMMIT) && (mbi.Type == MEM_IMAGE) && (mbi.Protect & 0xEE) != 0
+                         && region_size <= ((SIZE_T)256 << 20);
+            if (image) {
+                for (SIZE_T off = 0; off < region_size; off += (sizeof(scratch) - overlap)) {
+                    SIZE_T want = region_size - off;
+                    if (want > sizeof(scratch)) {
+                        want = sizeof(scratch);
+                    }
+                    SIZE_T got = 0;
+                    if (!ReadProcessMemory(proc, (LPCVOID)(region_base + off), scratch, want, &got) || got == 0) {
+                        continue;
+                    }
+                    for (int k = 0; k < 4; k++) {
+                        size_t n = strlen(_ra[k]) + 1; // with the terminator: the exact string
+                        if (where[k] != 0 || got < n) {
+                            continue;
+                        }
+                        for (SIZE_T i = 0; i + n <= got; i++) {
+                            if (scratch[i] == 'U' && memcmp(scratch + i, _ra[k], n) == 0) {
+                                where[k] = region_base + off + i;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            SIZE_T next = region_base + region_size;
+            if (next <= addr) {
+                break;
+            }
+            addr = next;
+        }
+    }
+    for (int k = 0; k < 4; k++) {
+        if (where[k] == 0) {
+            continue;
+        }
+        const char* want = td_era ? _td[k] : _ra[k];
+        size_t n = strlen(want) + 1;
+        char cur[48];
+        SIZE_T got = 0;
+        if (ReadProcessMemory(proc, (LPCVOID)where[k], cur, n, &got) && got == n && memcmp(cur, want, n) == 0) {
+            continue;
+        }
+        DWORD old_protect = 0;
+        if (!VirtualProtectEx(proc, (LPVOID)where[k], n, PAGE_READWRITE, &old_protect)) {
+            continue;
+        }
+        SIZE_T wrote = 0;
+        WriteProcessMemory(proc, (LPVOID)where[k], want, n, &wrote);
+        DWORD tmp = 0;
+        VirtualProtectEx(proc, (LPVOID)where[k], n, old_protect, &tmp);
+#if TF_DEV_BUILD
+        const char* up = getenv("USERPROFILE");
+        if (up != NULL) {
+            char logpath[512];
+            snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+            FILE* log = fopen(logpath, "a");
+            if (log) {
+                fprintf(log, "  tab prefix %d @ %08x -> %s %s\n", k, (unsigned int)where[k], want,
+                        (wrote == (SIZE_T)n) ? "OK" : "FAIL");
+                fclose(log);
+            }
+        }
+#endif
+    }
+    CloseHandle(proc);
+}
+
 static void TF_Patch_ClientG_Crest(void)
 {
     TF_CrestMatchStartFrame = (int)Frame;
     TF_CrestScanNext = 0;
+
+    TF_CrestSlot slots[TF_CREST_SLOTS];
+    if (TF_Crest_Slots(slots)) {
+        TF_Patch_ClientG_Tab_Prefix(slots[0].want != slots[0].stock);
+    }
 }
 
 // The full scan reads the launcher's whole heap (hundreds of MB across processes), which
@@ -4510,17 +4588,13 @@ static void TF_Crest_Tick(void)
     if (((int)Frame % 5) == 0) {
         TF_Crest_Reverify();
     }
-    // The tab icon records for a state (a tab's first selection, a super's first "ready")
-    // are created on demand well after match start, so after the start-up burst the scan
-    // keeps running at a slow cadence to catch them; it is off the game thread.
+    // The burst covers records that existed before the atlas table was patched; records
+    // created later in the match are born from the patched table and need no scan.
     static const int _scan_at[] = {0, 6, 12, 24, 48, 96, 192, 384};
     const int count = (int)(sizeof(_scan_at) / sizeof(_scan_at[0]));
     int since = (int)Frame - TF_CrestMatchStartFrame;
-    const int periodic = (since < 9000) ? 300 : 900; // tabs get their first hover early on
     if (since >= 0 && TF_CrestScanNext < count && since >= _scan_at[TF_CrestScanNext]) {
         TF_CrestScanNext++;
-        TF_Crest_Request_Scan();
-    } else if (since > _scan_at[count - 1] && (since % periodic) == 0) {
         TF_Crest_Request_Scan();
     }
 }

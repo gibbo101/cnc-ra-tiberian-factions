@@ -110,6 +110,31 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 
 ---
 
+### Sidebar build-tab icons: named in ClientG CODE, fixed by rewriting the prefix string (2026-09-04)
+
+GDI/Nod on TD's HUD scene still drew RA's gold 130x64 tab icons squashed into TD's 100x60
+tab widgets, in every state (off/on/bright/placement), while repair/sell/map/plates were TD.
+**Why these four only:** every other sidebar element is named in the scene file, so the
+TD scene swap fixed them. The tab icons are the one element the launcher names in code: it
+appends the state to a per-game prefix baked into `ClientG.exe` (`strings` shows both sets:
+`UI_Sidebar_TabIcon_Structure_` ... and `UI_RA_Sidebar_TabIcon_Structure_` ...) and looks the
+region up by that name; RA mode picks the RA prefix regardless of scene.
+
+**Fix (`TF_Patch_ClientG_Tab_Prefix`, called from `TF_Patch_ClientG_Crest` at match start):**
+locate the four RA prefix strings in ClientG's IMAGE (MEM_IMAGE regions, once per pid) and
+`VirtualProtectEx` + `WriteProcessMemory` the TD prefix over them for TD-era players (shorter,
+NUL-terminated, always fits); write the RA prefix back for RA sides. The launcher then does
+exactly what it does in TD mode for every state. Verified GDI "perfect" (Luke).
+
+**Two dead detours, recorded so nobody repeats them:** (1) re-pointing the drawn UV RECORDS
+(12 crest-style slots) works but every state's record is created on demand (first hover, first
+"ready", placement), so each shows gold until the next heap scan — and scanning often enough
+to hide that lags the game; (2) patching the atlas TABLE entry (`{w,h,x,y}` int32, name ptr 68
+bytes before the quad, second `{w,h}` copy 32 before) makes new records right at birth but
+still misses states born before the patch and needs the same heap walk. A code-side string
+is the cheapest lever when the launcher builds a name in code: **grep `strings ClientG.exe`
+for the name family before touching records.**
+
 ## The one new lead: the launcher's `FactionType` audio table — and why it can't help us
 
 `strings ClientG.exe` revealed a **real per-faction audio system** in pgaudio: a `FactionType` enum and a family of `Faction_Event_GUI_SFX_*` events (`Credits_Start_Gain`, `ConstructionComplete`, `Low_Power`, `HQUnderAttack`, `InsufficientFunds`, …) parsed from XML via `XMLTypeConverterClass::Convert<enum FactionTableAudioTypeEnum, SFXEventClass>`. At first glance this looks like a launcher-side faction hook we could exploit. **It is not usable for GDI/Nod**, for three independent reasons:
