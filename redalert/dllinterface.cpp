@@ -8712,25 +8712,16 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
         }
         break;
     case SPC_TS_HUNTSEEK:
-        // Tiberian Factions mod — TS Hunter Seeker is presented to the launcher
-        // as SonarPulse so that a PLACE request round-trips back to this DLL and
-        // spawns the self-targeting droid (see Place_Super_Weapon).
-        //
-        // The launcher decides targeted-vs-instant firing from the AssetName
-        // string, and that decision is compiled into ClientG.exe — it cannot be
-        // changed from mod data. Every AssetName that sends a PLACE request is
-        // targeted (cameo click, then a map click whose cell the droid ignores);
-        // the one no-target super, SW_GPS, auto-fires on its own timer and never
-        // sends PLACE, so it cannot spawn the droid. SonarPulse therefore gives
-        // the working path: cameo click, then one throwaway map click. True
-        // single-click no-target firing would require a ClientG RAM lever to
-        // detect the launcher's targeting mode and inject the PLACE itself.
-        //
-        // SonarPulse's own effect is DLL-side and keyed on SPC_SONAR_PULSE, so
-        // routing our SPC_TS_HUNTSEEK here does not trigger a sonar ping.
+        // Tiberian Factions mod -- TS Hunter Seeker. SW_SONAR_PULSE gives the launcher plumbing
+        // (a real super slot in the tab), but the DLL fires it itself on the cameo click
+        // (TF_Hunter_Cameo_Tick -> Place_Special_Blast), so the launcher's targeting is never
+        // used. AssetName "SW_TSHunt" resolves the Hunter Seeker cameo (RA_SW_TSHUNT /
+        // BuildIcon_SW_TSHUNT in RABUILDABLES.XML) -- distinct from the real Sonar Pulse, which
+        // keeps its own "SW_SonarPulse" cameo. SonarPulse's ping is DLL-side (keyed on
+        // SPC_SONAR_PULSE), so routing here does not trigger it.
         dll_weapon_type = SW_SONAR_PULSE;
         if (weapon_name != NULL) {
-            strncpy(weapon_name, "SW_SonarPulse", 16);
+            strncpy(weapon_name, "SW_TSHunt", 16);
         }
         break;
     case SPC_TD_NUKE:
