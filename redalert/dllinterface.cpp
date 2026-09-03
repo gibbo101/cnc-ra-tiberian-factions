@@ -8633,16 +8633,15 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
         }
         break;
     case SPC_TS_HUNTSEEK:
-        // Tiberian Factions mod — TS Hunter Seeker. TS fires this with no
-        // target, but the launcher decides targeted-vs-instant from the
-        // AssetName string (docs/launcher-vs-dll-ownership.md) and a novel
-        // AssetName defaults to targeted -- no-target is an open launcher-side
-        // problem. Kept on the paratroop-class plumbing meanwhile; the DLL
-        // ignores the clicked cell and the droid self-targets. AssetName
-        // "SW_TSHunt" resolves the TS DETNICON cameo.
-        dll_weapon_type = SW_PARA_INFANTRY;
+        // Tiberian Factions mod — TS Hunter Seeker fires with NO target. The
+        // launcher keys instant-vs-targeted on the AssetName string, so present
+        // it as SonarPulse (an instant super): the cameo click fires immediately
+        // and the launcher still round-trips PLACE, so the droid spawns and
+        // self-targets. The SonarPulse slot is repurposed (real Sonar Pulse is
+        // disabled) and its cameo repainted to the TS DETNICON.
+        dll_weapon_type = SW_SONAR_PULSE;
         if (weapon_name != NULL) {
-            strncpy(weapon_name, "SW_TSHunt", 16);
+            strncpy(weapon_name, "SW_SonarPulse", 16);
         }
         break;
     case SPC_TD_NUKE:
