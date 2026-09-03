@@ -121,10 +121,13 @@ appends the state to a per-game prefix baked into `ClientG.exe` (`strings` shows
 region up by that name; RA mode picks the RA prefix regardless of scene.
 
 **Fix (`TF_Patch_ClientG_Tab_Prefix`, called from `TF_Patch_ClientG_Crest` at match start):**
-locate the four RA prefix strings in ClientG's IMAGE (MEM_IMAGE regions, once per pid) and
+locate the four RA prefix slots in ClientG's IMAGE (MEM_IMAGE regions) and
 `VirtualProtectEx` + `WriteProcessMemory` the TD prefix over them for TD-era players (shorter,
-NUL-terminated, always fits); write the RA prefix back for RA sides. The launcher then does
-exactly what it does in TD mode for every state. Verified GDI "perfect" (Luke).
+NUL-terminated, always fits); write the RA prefix back for RA sides. Locate on EVERY call and
+by EITHER form: after a TD-era match a slot reads as the TD string with the RA tail still behind
+its terminator (which is also what tells it from the genuine TD prefix elsewhere in the image),
+and the DLL instance does not persist between matches, so nothing can be cached. Verified both
+ways in one launch (GDI green in every state incl. placement, Allied gold; Luke: "that's a win").
 
 **Two dead detours, recorded so nobody repeats them:** (1) re-pointing the drawn UV RECORDS
 (12 crest-style slots) works but every state's record is created on demand (first hover, first
