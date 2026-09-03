@@ -3221,7 +3221,7 @@ void AircraftClass::TF_Hunter_Seeker_Detonate(void)
     **	path (Death_Announcement etc.) crashed here; this minimal teardown is the
     **	proven one, now that the whole routine runs at the safe late point in AI.
     */
-    TF_HS_Log("  self-destruct via delete this\n");
+    new AnimClass(ANIM_FBALL1, here);
     delete this;
 }
 

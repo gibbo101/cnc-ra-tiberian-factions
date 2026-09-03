@@ -4128,21 +4128,18 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                 CELL spawn = Map.Nearby_Location(Coord_Cell(host->Center_Coord()), SPEED_FOOT);
                 if (spawn > 0 && Map.In_Radar(spawn)) {
                     /*
-                    **  The droid is a bullet, not an aircraft -- a bullet deletes
-                    **  itself cleanly from its own AI, where the aircraft could not.
-                    **  It spawns airborne beside the Upgrade Centre and homes to a
-                    **  random enemy the picker chooses (BulletClass::AI,
-                    **  BULLET_TSHUNTER).
+                    **  The droid is an AircraftClass so it renders unit-sized (a
+                    **  bullet renders tiny in the launcher). It spawns at flight
+                    **  level beside the Upgrade Centre and never dives; its
+                    **  self-destruct runs only at the Edge_Of_World-safe point in
+                    **  AircraftClass::AI, so deleting it from its own AI is safe.
                     */
-                    TARGET tgt = TF_Hunter_Seeker_Acquire(this);
-                    BulletClass* droid =
-                        new BulletClass(BULLET_TSHUNTER, tgt, NULL, 0, WARHEAD_NONE, MPH_MEDIUM_FAST);
+                    AircraftClass* droid = new AircraftClass(AIRCRAFT_TSHUNT, Class->House);
                     if (droid != NULL) {
-                        droid->TFPodHouse = Class->House;
+                        droid->Assign_Target(TF_Hunter_Seeker_Acquire(this));
                         if (droid->Unlimbo(Cell_Coord(spawn), DIR_E)) {
-                            Map.Remove(droid, droid->In_Which_Layer());
-                            droid->Height = ObjectClass::FLIGHT_LEVEL;
-                            Map.Submit(droid, droid->In_Which_Layer());
+                            droid->Assign_Mission(MISSION_ATTACK);
+                            droid->Commence();
                         } else {
                             delete droid;
                         }
