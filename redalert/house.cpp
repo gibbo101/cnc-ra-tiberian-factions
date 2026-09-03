@@ -2208,7 +2208,10 @@ void HouseClass::Super_Weapon_Handler(void)
             **  ready announcement) and re-arms on the tick after a launch.
             **  Runtime-gated like the instant-build cheat (tf_dev_off.flag).
             */
-            if (TF_Dev_Cheats() && IsHuman && !super->Is_Ready()) {
+            // TF: the Hunter Seeker is a repeatable click-to-fire weapon whose 12-minute
+            // recharge is a real mechanic, so it is excluded from the insta-charge cheat (its
+            // countdown must be visible/testable); other supers still hold charge for dev.
+            if (TF_Dev_Cheats() && IsHuman && !super->Is_Ready() && special != SPC_TS_HUNTSEEK) {
                 super->Forced_Charge(false);
             }
 #endif
