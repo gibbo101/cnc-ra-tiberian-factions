@@ -2264,22 +2264,27 @@ static void TF_Hunter_Cameo_Tick(void)
     }
     int rx0, rx1, ry0, ry1;
     TF_Hunter_Cameo_Rect(rx0, rx1, ry0, ry1);
-    if (pt.x < rx0 || pt.x > rx1 || pt.y < ry0 || pt.y > ry1) {
-        return;
-    }
-
+    bool in_rect = !(pt.x < rx0 || pt.x > rx1 || pt.y < ry0 || pt.y > ry1);
     bool ready = PlayerPtr->SuperWeapon[SPC_TS_HUNTSEEK].Is_Present()
                  && PlayerPtr->SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready();
+
 #if TF_DEV_BUILD
+    // Calibration aid: log EVERY left click with the screen size and the box the DLL used, so a
+    // miss on another resolution shows exactly where the cameo really sits.
     {
         char cp[512]; const char* pr = getenv("USERPROFILE");
         if (pr && pr[0]) snprintf(cp, sizeof(cp), "%s/Documents/CnCRemastered/MOD_DEBUG_CAMEO.txt", pr);
         else strcpy(cp, "MOD_DEBUG_CAMEO.txt");
         FILE* f = fopen(cp, "a");
-        if (f) { fprintf(f, "frame=%d cameo-click x=%ld y=%ld ready=%d\n", (int)Frame, (long)pt.x, (long)pt.y, ready ? 1 : 0); fclose(f); }
+        if (f) {
+            fprintf(f, "frame=%d click x=%ld y=%ld screen=%dx%d box=[%d..%d,%d..%d] in_box=%d ready=%d\n",
+                    (int)Frame, (long)pt.x, (long)pt.y, GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN),
+                    rx0, rx1, ry0, ry1, in_rect ? 1 : 0, ready ? 1 : 0);
+            fclose(f);
+        }
     }
 #endif
-    if (!ready) {
+    if (!in_rect || !ready) {
         return;
     }
 
