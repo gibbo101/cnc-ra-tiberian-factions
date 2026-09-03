@@ -2211,6 +2211,82 @@ static void TF_Deploy_Key_Tick(void)
 }
 
 /*
+**	Tiberian Factions -- the Hunter Seeker cameo fires on a SINGLE click, in the super weapon
+**	tab, with NO target. The launcher owns the sidebar and always opens a targeting cursor when
+**	a super cameo is clicked; it never tells the DLL about that click, and its targeted-vs-instant
+**	choice is compiled in. So the DLL reads the click itself with the same cross-process trick the
+**	deploy key uses -- GetAsyncKeyState + GetCursorPos, on the game thread (Wine only keeps the async
+**	key state current for the thread that owns the input queue, so an off-thread poller reads nothing;
+**	that was tried and abandoned). When a press lands on the Hunter Seeker cameo and the special is
+**	charged, it fires directly: Place_Special_Blast spawns the droid beside the Upgrade Centre carrying
+**	the Seeker Control plug and it hunts on its own (AircraftClass::TF_Hunter_Seeker_AI). Firing
+**	discharges the special and the launcher closes its own targeting cursor once the cameo reads
+**	not-ready, so the one click is the whole interaction. A human click spans several logic frames, so
+**	the once-per-frame poll catches it; the low bit backstops clicks shorter than a frame.
+**
+**	The cameo is the super tab's first slot: right-anchored to the screen, sized from the calibrated
+**	1920x1080 slot by the vertical scale (the Remaster HUD grows with the screen height).
+*/
+static void TF_Hunter_Cameo_Rect(int& rx0, int& rx1, int& ry0, int& ry1)
+{
+    int sw = GetSystemMetrics(SM_CXSCREEN);
+    int sh = GetSystemMetrics(SM_CYSCREEN);
+    if (sw <= 0) sw = 1920;
+    if (sh <= 0) sh = 1080;
+    double scale = (double)sh / 1080.0;
+    rx0 = sw - (int)(372 * scale);
+    rx1 = sw - (int)(246 * scale);
+    ry0 = (int)(546 * scale);
+    ry1 = (int)(622 * scale);
+}
+
+static void TF_Hunter_Cameo_Tick(void)
+{
+    if (PlayerPtr == NULL) {
+        return;
+    }
+
+    // Read the left button straight from the keyboard/mouse state, on the game thread (the only
+    // thread whose GetAsyncKeyState Wine keeps current). High bit = held now, low bit = pressed
+    // since the last poll; the low bit catches a click that began and ended between two frames.
+    static bool _was_down = false;
+    SHORT ks = GetAsyncKeyState(VK_LBUTTON);
+    bool down = (ks & 0x8000) != 0;
+    bool pressed = (down && !_was_down) || ((ks & 0x0001) != 0);
+    _was_down = down;
+    if (!pressed) {
+        return;
+    }
+
+    POINT pt;
+    if (!GetCursorPos(&pt)) {
+        return;
+    }
+    int rx0, rx1, ry0, ry1;
+    TF_Hunter_Cameo_Rect(rx0, rx1, ry0, ry1);
+    if (pt.x < rx0 || pt.x > rx1 || pt.y < ry0 || pt.y > ry1) {
+        return;
+    }
+
+    bool ready = PlayerPtr->SuperWeapon[SPC_TS_HUNTSEEK].Is_Present()
+                 && PlayerPtr->SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready();
+#if TF_DEV_BUILD
+    {
+        char cp[512]; const char* pr = getenv("USERPROFILE");
+        if (pr && pr[0]) snprintf(cp, sizeof(cp), "%s/Documents/CnCRemastered/MOD_DEBUG_CAMEO.txt", pr);
+        else strcpy(cp, "MOD_DEBUG_CAMEO.txt");
+        FILE* f = fopen(cp, "a");
+        if (f) { fprintf(f, "frame=%d cameo-click x=%ld y=%ld ready=%d\n", (int)Frame, (long)pt.x, (long)pt.y, ready ? 1 : 0); fclose(f); }
+    }
+#endif
+    if (!ready) {
+        return;
+    }
+
+    PlayerPtr->Place_Special_Blast(SPC_TS_HUNTSEEK, 0);
+}
+
+/*
 **	Select-all ('A') is launcher-driven: ClientG picks the objects and hands them to
 **	CNC_Select_Object one by one, excluding only the stock harvester and MCV by name id, so
 **	every faction harvester and MCV leaked into the army selection. While the key is held,
@@ -2313,6 +2389,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 
     // The deploy key, read straight from the keyboard (see TF_Deploy_Key_Tick).
     TF_Deploy_Key_Tick();
+
+    // The Hunter Seeker cameo, fired by the DLL on a single click (see TF_Hunter_Cameo_Tick).
+    TF_Hunter_Cameo_Tick();
 #if TF_DEV_BUILD
     TF_Hunter_Dev_Setup_Tick();
 #endif
