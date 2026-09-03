@@ -1608,6 +1608,10 @@ clause. Same literal-chain audit was needed for repair
 **Roster remainder (the plan below):**
 19. Component towers TSVULC/TSCSAM/TSROCK — turreted TDGTWR pattern, NOT the
     static recipe (GTCTWR_B/_C/_D are 48-canvas TURRET rotation frames).
+19b. Gates (TSGATE), Firestorm generator + wall sections (TSFIRE/TSFSDF), EMP cannon
+    (branch) — added to the roster 2026-09-04 at Luke's call; see the buildings table
+    for the engine-work and art caveats (gates need original top-down art; the concrete
+    wall stays RA's BRIK). Each a medium arc with its own design doc, OpenTS as reference.
 20. Infantry TSE1/TSE2/TSGHOST (td-infantry-port-recipe adapted).
 21. Orcas TSORCA/TSORCAB (RA helipad rearm mechanics).
 22. TS audio wave (dormant-sample recipe; see 17).
@@ -1668,6 +1672,11 @@ IniName prefix throughout (dodges the TD HP-doubling hook). ✓ = shipped.
 | TSVULC | GAVULC (GACTWR_B art) | 2 | 350 | 500 | TSPILE | component tower + vulcan as ONE standalone turret; cost = tower 200 + vulcan 150 |
 | TSCSAM | GACSAM (GACTWR_C art?) | 5 | 500 | 500 | TSPILE, TSRADR | AA tower, same translation |
 | TSROCK | GAROCK (GACTWR_A art?) | 9 | 800 | 500 | TSPILE, TSTECH | RPG tower, same translation |
+| TSGATE | GAGATE_A/_B | 6 | 250 | 350 | TSPILE | **new mechanic** (RA has no gates): solid to enemies, passable to friendlies, opens on approach, joins walls. Port from OpenTS (`IsGate`, ~100 refs over building/cell/map/unit/infantry). **Art must be ORIGINAL top-down** (TS's two sprites are isometric diagonals; RA runs need a horizontal and a vertical gate, open + closed, matched to RA's concrete wall). Medium arc, design doc first. Added 2026-09-04 (Luke). |
+| (wall) | GAWALL | 6 | 50 | 150 | TSPILE | **NOT a new type**: GDI/Nod keep RA's Concrete Wall (BRIK), already top-down with straight joins; TS's isometric wall art does not fit RA's grid. Cameo may take TS's look. A new wall slot is off the table: the launcher keys wall placement on the five RA wall names, and the MAKE-suffix trap is already known. |
+| TSFIRE | GAFIRE | 9 | 2000 | 800 | TSTECH | Firestorm Generator, power -200: a toggled superweapon that raises the field on every TSFSDF for a timed burst. **New mechanic**, OpenTS reference. Added 2026-09-04 (Luke). |
+| TSFSDF | GAFSDF | 9 | 50 | 200 | TSFIRE | Firestorm Wall Section, power -2, IsBase=no: a 1x1 pillar, passable while the field is down, solid + lethal while up. Pillar art is grid-agnostic; the field is a beam effect we draw straight along RA's grid between adjacent pillars (OpenTS `IsFirestormWall`, `MAX_FIRESTORM_WALL_FRAMES 15`). |
+| TSEMPC | (Firestorm exp.) | — | — | — | — | EMP Pulse Cannon: branch `emp-cannon`, stage A verified, stages B-E open — `docs/emp-cannon-design.md`. Both sides in TS. |
 
 #### Vehicles (voxel renders @ 12 px/voxel unless noted)
 
