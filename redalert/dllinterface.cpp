@@ -8633,12 +8633,22 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
         }
         break;
     case SPC_TS_HUNTSEEK:
-        // Tiberian Factions mod — TS Hunter Seeker fires with NO target. The
-        // launcher keys instant-vs-targeted on the AssetName string, so present
-        // it as SonarPulse (an instant super): the cameo click fires immediately
-        // and the launcher still round-trips PLACE, so the droid spawns and
-        // self-targets. The SonarPulse slot is repurposed (real Sonar Pulse is
-        // disabled) and its cameo repainted to the TS DETNICON.
+        // Tiberian Factions mod — TS Hunter Seeker is presented to the launcher
+        // as SonarPulse so that a PLACE request round-trips back to this DLL and
+        // spawns the self-targeting droid (see Place_Super_Weapon).
+        //
+        // The launcher decides targeted-vs-instant firing from the AssetName
+        // string, and that decision is compiled into ClientG.exe — it cannot be
+        // changed from mod data. Every AssetName that sends a PLACE request is
+        // targeted (cameo click, then a map click whose cell the droid ignores);
+        // the one no-target super, SW_GPS, auto-fires on its own timer and never
+        // sends PLACE, so it cannot spawn the droid. SonarPulse therefore gives
+        // the working path: cameo click, then one throwaway map click. True
+        // single-click no-target firing would require a ClientG RAM lever to
+        // detect the launcher's targeting mode and inject the PLACE itself.
+        //
+        // SonarPulse's own effect is DLL-side and keyed on SPC_SONAR_PULSE, so
+        // routing our SPC_TS_HUNTSEEK here does not trigger a sonar ping.
         dll_weapon_type = SW_SONAR_PULSE;
         if (weapon_name != NULL) {
             strncpy(weapon_name, "SW_SonarPulse", 16);
