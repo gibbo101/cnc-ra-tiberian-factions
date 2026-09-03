@@ -2710,10 +2710,11 @@ void HouseClass::Super_Weapon_Handler(void)
             }
         } else {
             /*
-            **  The droid finds its own victim, so the AI needs no discovered
-            **  target to release it (TS AI_Hunter_Seeker fires on ready).
+            **  The droid finds its own victim, so it launches the tick it is
+            **  charged, for every house (GPS-style): the launcher never sees a
+            **  ready cameo, so it never opens a targeting cursor for it.
             */
-            if (SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready() && !IsHuman) {
+            if (SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready()) {
                 Place_Special_Blast(SPC_TS_HUNTSEEK, 0);
             }
         }

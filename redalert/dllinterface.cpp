@@ -2178,6 +2178,15 @@ static void TF_Hunter_Dev_Setup_Tick(void)
     Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TS_HUNTSEEK, PlayerPtr);
 #endif
 
+    // A one-time Sonar Pulse (crate-style) beside it, to compare the launcher's cameo-click
+    // handling of the one super the original engine fired without a target.
+    if (PlayerPtr->SuperWeapon[SPC_SONAR_PULSE].Enable(true, true, false)) {
+        PlayerPtr->SuperWeapon[SPC_SONAR_PULSE].Forced_Charge(true);
+#ifdef REMASTER_BUILD
+        Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_SONAR_PULSE, PlayerPtr);
+#endif
+    }
+
     // Drop an Upgrade Centre + Seeker Control a few cells around home (visual/full-flow testing).
     for (int oi = 3; oi <= 12; oi++) {
         CELL c = ph + oi;
