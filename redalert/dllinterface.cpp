@@ -4421,19 +4421,45 @@ static void TF_Patch_ClientG_Tab_Prefix(bool td_era)
                                        "UI_Sidebar_TabIcon_Infantry_",
                                        "UI_Sidebar_TabIcon_Vehicles_",
                                        "UI_Sidebar_TabIcon_Supers_"};
-    // The image never moves for the life of the launcher: locate each prefix once per pid.
-    static DWORD located_pid = 0;
-    static SIZE_T where[4] = {0, 0, 0, 0};
+    // Located on every call: a slot reads as the RA string, or (after a TD-era match, the DLL
+    // instance having been recycled since) as the shorter TD string with the RA string's
+    // tail still behind its terminator -- which is also what tells it apart from the genuine
+    // TD prefix elsewhere in the image.
+    SIZE_T where[4] = {0, 0, 0, 0};
+    unsigned char patched[4][48];
+    size_t patched_len[4];
+    for (int k = 0; k < 4; k++) {
+        size_t ra_len = strlen(_ra[k]) + 1;
+        size_t td_len = strlen(_td[k]) + 1;
+        memcpy(patched[k], _td[k], td_len);
+        memcpy(patched[k] + td_len, _ra[k] + td_len, ra_len - td_len);
+        patched_len[k] = ra_len;
+    }
 
+    FILE* log = NULL;
+#if TF_DEV_BUILD
+    {
+        const char* up = getenv("USERPROFILE");
+        if (up != NULL) {
+            char logpath[512];
+            snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+            log = fopen(logpath, "a");
+        }
+    }
+#endif
     HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
                                   | PROCESS_QUERY_INFORMATION);
     if (proc == NULL) {
+        if (log) {
+            fprintf(log, "  tab prefix: ClientG not opened (td_era=%d)\n", (int)td_era);
+            fclose(log);
+        }
         return;
     }
-    DWORD pid = GetProcessId(proc);
-    if (pid != located_pid) {
-        located_pid = pid;
-        memset(where, 0, sizeof(where));
+    if (log) {
+        fprintf(log, "  tab prefix: td_era=%d\n", (int)td_era);
+    }
+    {
         static unsigned char scratch[1 << 20];
         const int overlap = 64;
         SIZE_T addr = 0;
@@ -4454,12 +4480,13 @@ static void TF_Patch_ClientG_Tab_Prefix(bool td_era)
                         continue;
                     }
                     for (int k = 0; k < 4; k++) {
-                        size_t n = strlen(_ra[k]) + 1; // with the terminator: the exact string
+                        size_t n = patched_len[k]; // both forms are this long, terminators included
                         if (where[k] != 0 || got < n) {
                             continue;
                         }
                         for (SIZE_T i = 0; i + n <= got; i++) {
-                            if (scratch[i] == 'U' && memcmp(scratch + i, _ra[k], n) == 0) {
+                            if (scratch[i] == 'U'
+                                && (memcmp(scratch + i, _ra[k], n) == 0 || memcmp(scratch + i, patched[k], n) == 0)) {
                                 where[k] = region_base + off + i;
                                 break;
                             }
@@ -4487,25 +4514,28 @@ static void TF_Patch_ClientG_Tab_Prefix(bool td_era)
         }
         DWORD old_protect = 0;
         if (!VirtualProtectEx(proc, (LPVOID)where[k], n, PAGE_READWRITE, &old_protect)) {
+            if (log) {
+                fprintf(log, "  tab prefix %d @ %08x: VirtualProtectEx failed (%u)\n", k,
+                        (unsigned int)where[k], (unsigned)GetLastError());
+            }
             continue;
         }
         SIZE_T wrote = 0;
         WriteProcessMemory(proc, (LPVOID)where[k], want, n, &wrote);
         DWORD tmp = 0;
         VirtualProtectEx(proc, (LPVOID)where[k], n, old_protect, &tmp);
-#if TF_DEV_BUILD
-        const char* up = getenv("USERPROFILE");
-        if (up != NULL) {
-            char logpath[512];
-            snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-            FILE* log = fopen(logpath, "a");
-            if (log) {
-                fprintf(log, "  tab prefix %d @ %08x -> %s %s\n", k, (unsigned int)where[k], want,
-                        (wrote == (SIZE_T)n) ? "OK" : "FAIL");
-                fclose(log);
+        if (log) {
+            fprintf(log, "  tab prefix %d @ %08x -> %s %s (was %.32s)\n", k, (unsigned int)where[k], want,
+                    (wrote == (SIZE_T)n) ? "OK" : "FAIL", cur);
+        }
+    }
+    if (log) {
+        for (int k = 0; k < 4; k++) {
+            if (where[k] == 0) {
+                fprintf(log, "  tab prefix %d: not located\n", k);
             }
         }
-#endif
+        fclose(log);
     }
     CloseHandle(proc);
 }
@@ -4519,6 +4549,20 @@ static void TF_Patch_ClientG_Crest(void)
     if (TF_Crest_Slots(slots)) {
         TF_Patch_ClientG_Tab_Prefix(slots[0].want != slots[0].stock);
     }
+#if TF_DEV_BUILD
+    else {
+        const char* up = getenv("USERPROFILE");
+        if (up != NULL) {
+            char logpath[512];
+            snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+            FILE* log = fopen(logpath, "a");
+            if (log) {
+                fprintf(log, "  tab prefix: no local house at match start\n");
+                fclose(log);
+            }
+        }
+    }
+#endif
 }
 
 // The full scan reads the launcher's whole heap (hundreds of MB across processes), which
