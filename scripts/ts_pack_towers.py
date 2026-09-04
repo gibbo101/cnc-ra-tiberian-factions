@@ -31,8 +31,9 @@ Env:
   TS_ART_DIR   required, holds the decoded sprite directories
   TS_BODY_DIR  body art directory (default shp_gpt_ctwr; TS's own is shp_gtctwr)
   TS_MAKE_DIR  buildup directory, used only with TS's own body (default shp_gtctwrmk)
-  TS_BODY_W    body content width in final pixels (default 145, on a 128 px cell: the
-               tower overhangs its cell, as it must to read against RA's heavy walls)
+  TS_BODY_W    body content width in final pixels. Default 128 = exactly one cell:
+               the tower is a 1x1 building and its art stays inside its own square,
+               overlapping no neighbour (Luke, 2026-09-04)
   TS_TURRET_K  turret size over the TS-authentic body ratio (default 1.0)
   TS_SEAT_DX / TS_SEAT_DY   nudge the turret seat, in TS pixels
 License: GPL v3.
@@ -54,7 +55,7 @@ CELL_PX = W.CELL_PX                                   # 128
 # wall arms now run to their own boundary and stop, so every piece stays inside its
 # own cell and nothing is drawn over a neighbour.
 GROUND_Y = CANVAS_H // 2 + int(os.environ.get("TS_GROUND_Y", "64"))
-BODY_W = int(os.environ.get("TS_BODY_W", "145"))
+BODY_W = int(os.environ.get("TS_BODY_W", "128"))
 BODY_DIR = os.environ.get("TS_BODY_DIR", "shp_gpt_ctwr")
 MAKE_DIR = os.environ.get("TS_MAKE_DIR", "shp_gtctwrmk")
 TURRETS = {"TSVULC": "shp_gtctwr_b", "TSROCK": "shp_gtctwr_c", "TSCSAM": "shp_gtctwr_d"}
