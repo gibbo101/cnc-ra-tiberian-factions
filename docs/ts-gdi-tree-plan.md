@@ -1,19 +1,96 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — **WALLS + COMPONENT TOWERS arc, branch `ts-walls-towers` (2026-09-04, uncommitted, Deck DLL `c93ba0ba`).**
-Engine complete: `OVERLAY_TSWALL`/`STRUCT_TSWALL` (BRIK pattern, exported to the launcher as
-BRIK with AssetName TSWALL), `STRUCT_TSCTWR` bare tower (UpgradesMax=1, IsScanner),
-`STRUCT_TSVULC`/`TSROCK`/`TSCSAM` = the plugs AND the armed tower types (PowersUpBuilding=TSCTWR;
-installing swaps the bare tower in place, BuildingClass::Unlimbo), walls join any tower
-(`TF_Is_Wall_Tower`, cell.h; TSWALL + BRIK + SBAG per TS's sandbag rule), a tower may be placed
-ON your own wall segment (replaces it, TS wall-tower rule), sale refunds tower + plug. Weapons
-verbatim from TS: [TSVulcanTower]/[TSSA], [TSRPGTower]/[TSRPG], [TSRedEye2]/[TSSAMWH]; Reports
-are stand-ins until the TS audio wave (CHAINGN1/GLNCH4/SAMSHOT1 owed), muzzle anims owed.
-**Art = Blender meshes** (Luke rejected voxel splats and the TS iso sprite: connectors must sit
-on N/E/S/W, done properly): `scripts/ts_blender_walls.py` builds + renders (`blender -b -P ...
--- --out DIR --only calib|walls|towers`), `scripts/ts_pack_blender.py DIR` packs the 9 ZIPs
-(176x320 canvas, 33x60 stubs). TRAP: two boxes sharing a top plane render black in Cycles.
-Luke's verdict on the look is the next input; then gate (IsGate port), Nod wall/gate, sounds.
+## ⭐⭐⭐ RESUME HERE — **WALLS + COMPONENT TOWERS, branch `ts-walls-towers` @ `bdfcb850`, pushed, NOT merged (main is `d47ebeae`). 2026-09-04.**
+
+**Next session, Luke's pick:** (1) **component tower animations**, (2) **authentic weapon
+geometry for the Vulcan, SAM and RPG upgrades**. ⚠ Settle the second with Luke first: the three
+turrets currently ship as TS's own `GTCTWR_B/_C/_D` sprites composited onto the tower by
+`scripts/ts_pack_towers.py`. "Authentic geo weapons" could mean firing animations and muzzle art
+on those sprites, or replacing them with modelled turrets. Very different jobs — ask before building.
+
+**Deploy state.** Desktop prefix has the last DLL; the **Deck is STALE** (offline all evening,
+never received the day's builds). Deploy it before any Deck play. Both surfaces were in use, so
+every deploy this session checked `pgrep ClientG|InstanceServerG` first and aborted if the game
+was up — keep doing that.
+
+### What shipped
+
+**The construction yard grants the tech tree, never the faction** (Luke's rule: "our tech tree
+is faction agnostic — the only time a faction matters is the conyard you spawn with"). Take a
+Tiberian MCV as a Soviet and you get that tree. `HouseClass::Yard_Factions()` is the single
+source both gates read; the ownership gate used to reject anything the player's own house could
+not build before it ever looked at a yard, which was the bug. Applies to units and production
+too. Detail + the 82-building audit: memory `project-yard-grants-tree-rule`.
+
+**Walls.** The TS tree fences with **sandbags + the concrete wall** — a TS yard satisfies
+ownership for exactly those two (`TF_Is_TS_Yard_Wall`), not the chain link fence (Tiberian-era)
+nor RA's wire fences. `TSWALL` stays wired but dormant at `TechLevel=-1`; set it back to 6 to
+revive. Both walls carry the **TS cameo badge** — `TF_Entry_Faction_Mask` adds the TS bit and
+`scripts/cameo_work/faction_masks.txt` holds 29/31. Badges only render when a category is
+producible from 2+ yards, which is intended.
+
+**Component towers are standalone defences.** A wall run stops at one rather than binding into
+it, and a tower can no longer be placed onto a wall segment. Wall arms end **flush on the cell
+boundary** (the overshoot that closed wall-to-wall gaps was plainly visible poking into a
+tower's cell) and the tower's art sits on its own south edge for the same reason.
+
+**Tower + three plugs.** `TSCTWR` bare (200), `TSVULC` (150), `TSROCK` (600), `TSCSAM` (300),
+TS-authentic stats off the barracks. The plug **is** the armed tower type: placing it replaces
+the bare one in place, keeps its health ratio, and **installs rather than builds**. Sale refunds
+both. Weapons are TS verbatim: `[TSVulcanTower]`/`[TSSA]`, `[TSRPGTower]`/`[TSRPG]`,
+`[TSRedEye2]`/`[TSSAMWH]`. Reports are stand-ins pending the TS audio wave (CHAINGN1, GLNCH4,
+SAMSHOT1 owed); muzzle anims owed. The Wolverine's AssaultCannon also moved to `[TSSA]`.
+
+### Traps this session cost real time
+
+⚠ **The wedge bug, second occurrence.** Making a plug "plop in" skipped `MISSION_CONSTRUCTION`,
+which is *also* where a placed building frees its builder and runs `Grand_Opening`. The conyard
+stayed in radio contact forever and `Who_Can_Build_Me` skips such a builder, so every later
+placement built-then-cancelled and nothing could be selected. Fixed by doing both explicitly in
+the swap path (`building.cpp`, `tf_plug_swap`). Same class as the 2026-08-30 install bug — **any
+divert that bypasses the construction mission must free the builder itself.**
+
+⚠ Each turret set rotates about a **different pivot** (`GTCTWR_B` 23.08,13.69 / `_C` 23.99,11.37
+/ `_D` 24.03,11.12). One shared value threw the RPG ~9 px off its platform.
+
+⚠ Turret scale is **TS-authentic, ~0.75 of the body width**, measured from an in-game shot of
+all four towers. The smaller value picked earlier was judged against a redrawn body with a
+smaller platform and undershot badly.
+
+⚠ `GTCTWRMK`'s tail frames are **debris cels, not build stages** — shipping them flashed scraps
+at the end of the buildup. Filter by content area, then resample to the stub's frame count.
+
+⚠ The SAM's "dodgy pixels" are **TS's own art** (missile pod ends). Do not repaint Westwood's
+pixels.
+
+⚠ Two Blender traps: a world created through the API has a **near-black default colour**, so
+setting only its strength leaves everything the sun misses rendering black; and **beveling a box
+that carries non-uniform object scale** makes degenerate geometry that also renders black.
+
+### Art
+
+**Tower = TS's own sprite, unedited. Wall = the voxel packer at TS-measured proportions with tan
+piers** (Luke picked version 4 from a six-way sheet). Body width is **exactly one cell** so the
+art stays inside its plot and no longer overhangs the selection box, which the engine sizes from
+the plot. A turret still rises above the plot (height, not footprint) and the RPG's launcher
+reaches ~8 px past the east edge when aimed that way — both flagged, both fine unless Luke says
+otherwise.
+
+**Six attempts at a tower whose connectors face N/E/S/W were rejected** (voxel splats, two
+procedural Blender towers, a GPT redraw that invented its own connectors and kept the diagonals,
+uamila's Cults STL, and TS's sprite in place). Third-party models were pulled back out of the
+repo, so there is **no licence obligation**. The spec for a human artist is
+**`docs/ts-walls-towers-art-brief.md`** and the ask is now a single object, since the turrets are
+TS's own sprites and the walls fall back to TD concrete. TRELLIS locally is impossible on this
+box (needs 24 GB VRAM against 12, 15 GB disk free, no CUDA toolkit, Blackwell vs its pinned
+cu124).
+
+### Tooling added
+`scripts/ts_pack_walls.py` (wall art + 16 joins x 3 damage), `scripts/ts_pack_towers.py` (tower
+family from a swappable body dir; `TS_BODY_DIR`, `TS_BODY_W`, `TS_TURRET_K`, `TS_SEAT_DX/DY`),
+`scripts/ts_render_tower_glb.py` (any mesh -> our camera, repainted by geometry — the path a
+future artist mesh takes). `ts_blender_walls.py`, `ts_pack_blender.py` and `ts_blender_tower.py`
+are the superseded routes, kept for the record.
 
 ## ⭐⭐⭐ RESUME HERE — **WF rebuild: BOTH DOOR SEATS SIGNED OFF 2026-08-29 evening (branch `wf-rebuild` HEAD `7df943d1`, desktop DLL `a0b4c9e4`).** `TSWEAP_SEAT_MOUTH_MECH` (597,123) for the walkers (Titan "PERFECTION", Wolverine PASS; Mk. II assumed) and `TSWEAP_SEAT_MOUTH` (573,219) for tracked/wheeled hulls ("we have our winner", called on the APC/harvester run). Both dialled live by Luke's EWNS marks, one build per nudge — do NOT re-derive. Vehicle-seat sweep (Disruptor, Hover MLRS, harvester, MCV) DONE 2026-08-30; merged to main `bd4734b5` and the merged desktop build played. WF arc CLOSED. NEXT: roster remainder (component towers first) or open-queue calls, Luke's pick. **Facts established 2026-08-29:**
 - ⚠ **`Coord` of the building = the ORIGIN CELL'S CENTRE, not the plot's NW corner.** Seat (lx,ly) → canvas (192 + lx/2, 208 + ly/2) on the 896x672 canvas (plot = 128 px/cell from canvas (128,144)). Left jamb = `resources/custom-art/tsweap-front-cut-line.json`.

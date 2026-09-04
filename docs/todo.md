@@ -1,3 +1,16 @@
+## Component towers + TS walls — 2026-09-04 (branch `ts-walls-towers` @ bdfcb850, pushed, not merged)
+
+Full record: `docs/ts-gdi-tree-plan.md` top block. Short version:
+
+- NEXT: component tower animations; authentic weapon geometry for Vulcan/SAM/RPG. Ask Luke
+  which the second means (firing anims on TS's sprites vs modelled turrets) before building.
+- The Deck is STALE — it was offline all evening and never got the day's builds.
+- Open cosmetic calls: a turret rises above the plot, and the RPG's launcher reaches ~8 px
+  past the east edge when aimed that way. Both normal; Luke to say if he wants them reined in.
+- Owed on the arc: TS sounds (CHAINGN1 / GLNCH4 / SAMSHOT1) and muzzle anims for the three
+  tower weapons; editor manifest entries for the new types; the gate and Nod's wall.
+- The tower body still wants a real artist — `docs/ts-walls-towers-art-brief.md`, one object.
+
 # TODO / backlog
 
 Running list of things to do. Bugs/limitations live in `known-issues.md`; this is for chores,
