@@ -1757,15 +1757,39 @@ void CellClass::Concrete_Calc(void)
  *   09/19/1994 JLB : Created.                                                                 *
  *   09/19/1994 BWG : Updated to handle partially-damaged walls.                               *
  *=============================================================================================*/
-void CellClass::Wall_Update(void)
+/*
+**	Does a live TS component tower (bare or armed) stand in this cell? TS walls
+**	terminate into it exactly as into another wall segment (TS WallTower).
+*/
+bool CellClass::Has_TS_Wall_Tower(void) const
 {
-    if (Overlay == OVERLAY_NONE) {
-        return;
+    ObjectClass* obj = Cell_Occupier();
+    while (obj != NULL) {
+        if (obj->What_Am_I() == RTTI_BUILDING) {
+            BuildingClass* b = (BuildingClass*)obj;
+            if (b->Strength > 0 && TF_Is_Wall_Tower(b->Class->Type)) {
+                return (true);
+            }
+        }
+        obj = obj->Next;
     }
+    return (false);
+}
 
-    OverlayTypeClass const& wall = OverlayTypeClass::As_Reference(Overlay);
-    if (!wall.IsWall) {
-        return;
+void CellClass::Wall_Update(bool force)
+{
+    /*
+    **	force = recompute the neighbours' joins regardless of what this cell holds:
+    **	used when a component tower arrives in or leaves this cell.
+    */
+    if (!force) {
+        if (Overlay == OVERLAY_NONE) {
+            return;
+        }
+        OverlayTypeClass const& wall = OverlayTypeClass::As_Reference(Overlay);
+        if (!wall.IsWall) {
+            return;
+        }
     }
 
     assert((unsigned)Cell_Number() <= MAP_CELL_TOTAL);
@@ -1784,6 +1808,10 @@ void CellClass::Wall_Update(void)
             */
             for (unsigned i = 0; i < (sizeof(_offsets) / sizeof(_offsets[0]) - 1); i++) {
                 CellClass* adjcell = newcell->Adjacent_Cell(_offsets[i]);
+                /*
+                **	Component towers are standalone defences, not wall pieces (Luke,
+                **	2026-09-04): a wall run stops at one rather than binding into it.
+                */
                 if (adjcell && adjcell->Overlay == newcell->Overlay) {
                     icon |= 1 << i;
                 }
@@ -1795,6 +1823,13 @@ void CellClass::Wall_Update(void)
             **	is calculated, but there is no artwork for it, then consider the wall to be
             **	completely destroyed.
             */
+            // Tiberian Factions -- TSWALL shares BRIK's 16x3 frame layout: past the
+            // third damage stage there is no art, so the wall is gone.
+            if (newcell->Overlay == OVERLAY_TSWALL && newcell->OverlayData == 48) {
+                newcell->Overlay = OVERLAY_NONE;
+                newcell->OverlayData = 0;
+                Detach_This_From_All(::As_Target(newcell->Cell_Number()), true);
+            }
             if (newcell->Overlay == OVERLAY_BRICK_WALL && newcell->OverlayData == 48) {
                 newcell->Overlay = OVERLAY_NONE;
                 newcell->OverlayData = 0;

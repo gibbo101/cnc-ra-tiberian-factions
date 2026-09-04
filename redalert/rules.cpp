@@ -665,6 +665,9 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TSFlame");      // WARHEAD_TSFLAME (TS [Fire] verses for the Devil's Tongue stream)
     new WarheadTypeClass("TSFlameHit");   // WARHEAD_TSFLAMEHIT (pre-scaled TS fire burn delivery)
     new WarheadTypeClass("SonicWarhead"); // WARHEAD_SONIC (TS Disruptor SonicZap line damage — TS [SonicWarhead] verses)
+    new WarheadTypeClass("TSSA");         // WARHEAD_TSSA (TS [SA] small arms -- TS verses, the tower Vulcan's warhead)
+    new WarheadTypeClass("TSRPG");        // WARHEAD_TSRPG (TS [RPG] -- the tower RPG's warhead)
+    new WarheadTypeClass("TSSAMWH");      // WARHEAD_TSSAMWH (TS [SAMWH] -- the tower SAM's warhead)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
@@ -757,6 +760,9 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TSFireball");     // WEAPON_TSFIREBALL (TS Devil's Tongue -- fire-stream particles, UnitClass::Fire_Stream_AI)
     new WeaponTypeClass("SonicZap");       // WEAPON_SONICZAP (TS Disruptor -- IsSonic piercing line through WARHEAD_SONIC)
     new WeaponTypeClass("TSSuicide");      // WEAPON_TSSUICIDE (TS Hunter Seeker suicide bomb -- read by TF_Hunter_Seeker_Detonate, never fired)
+    new WeaponTypeClass("TSVulcanTower");  // WEAPON_TSVULCANTOWER (TS component tower Vulcan -- TS [VulcanTower] verbatim)
+    new WeaponTypeClass("TSRPGTower");     // WEAPON_TSRPGTOWER (TS component tower RPG -- TS [RPGTower] verbatim)
+    new WeaponTypeClass("TSRedEye2");      // WEAPON_TSREDEYE2 (TS component tower SAM -- TS [RedEye2] verbatim)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's

@@ -1,5 +1,20 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
+## ⭐⭐⭐ RESUME HERE — **WALLS + COMPONENT TOWERS arc, branch `ts-walls-towers` (2026-09-04, uncommitted, Deck DLL `c93ba0ba`).**
+Engine complete: `OVERLAY_TSWALL`/`STRUCT_TSWALL` (BRIK pattern, exported to the launcher as
+BRIK with AssetName TSWALL), `STRUCT_TSCTWR` bare tower (UpgradesMax=1, IsScanner),
+`STRUCT_TSVULC`/`TSROCK`/`TSCSAM` = the plugs AND the armed tower types (PowersUpBuilding=TSCTWR;
+installing swaps the bare tower in place, BuildingClass::Unlimbo), walls join any tower
+(`TF_Is_Wall_Tower`, cell.h; TSWALL + BRIK + SBAG per TS's sandbag rule), a tower may be placed
+ON your own wall segment (replaces it, TS wall-tower rule), sale refunds tower + plug. Weapons
+verbatim from TS: [TSVulcanTower]/[TSSA], [TSRPGTower]/[TSRPG], [TSRedEye2]/[TSSAMWH]; Reports
+are stand-ins until the TS audio wave (CHAINGN1/GLNCH4/SAMSHOT1 owed), muzzle anims owed.
+**Art = Blender meshes** (Luke rejected voxel splats and the TS iso sprite: connectors must sit
+on N/E/S/W, done properly): `scripts/ts_blender_walls.py` builds + renders (`blender -b -P ...
+-- --out DIR --only calib|walls|towers`), `scripts/ts_pack_blender.py DIR` packs the 9 ZIPs
+(176x320 canvas, 33x60 stubs). TRAP: two boxes sharing a top plane render black in Cycles.
+Luke's verdict on the look is the next input; then gate (IsGate port), Nod wall/gate, sounds.
+
 ## ⭐⭐⭐ RESUME HERE — **WF rebuild: BOTH DOOR SEATS SIGNED OFF 2026-08-29 evening (branch `wf-rebuild` HEAD `7df943d1`, desktop DLL `a0b4c9e4`).** `TSWEAP_SEAT_MOUTH_MECH` (597,123) for the walkers (Titan "PERFECTION", Wolverine PASS; Mk. II assumed) and `TSWEAP_SEAT_MOUTH` (573,219) for tracked/wheeled hulls ("we have our winner", called on the APC/harvester run). Both dialled live by Luke's EWNS marks, one build per nudge — do NOT re-derive. Vehicle-seat sweep (Disruptor, Hover MLRS, harvester, MCV) DONE 2026-08-30; merged to main `bd4734b5` and the merged desktop build played. WF arc CLOSED. NEXT: roster remainder (component towers first) or open-queue calls, Luke's pick. **Facts established 2026-08-29:**
 - ⚠ **`Coord` of the building = the ORIGIN CELL'S CENTRE, not the plot's NW corner.** Seat (lx,ly) → canvas (192 + lx/2, 208 + ly/2) on the 896x672 canvas (plot = 128 px/cell from canvas (128,144)). Left jamb = `resources/custom-art/tsweap-front-cut-line.json`.
 - **The "grey square bottom-right of the door"** = the door-leaf tab clip (`EXTRA_LAYER_CLIPS`) running on EVERY shutter frame, including the shut door where the tab is real leaf; the hole showed the flat interior and let hulls through. Fixed: `is_detached()` — the clip only fires on frames where the box holds pixels disconnected from the leaf (stages 5-7). Closing the hole also cured most of the "units drawn over the shutter" popping.

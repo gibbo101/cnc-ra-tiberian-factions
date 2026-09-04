@@ -783,6 +783,7 @@ public:
     void Debug_Dump(MonoClass* mono) const;
 #endif
     void AI(void);
+    int Yard_Factions(void) const;
     bool Can_Build(RTTIType rtti, int type, HousesType house) const;
 
     // Factory controls.

@@ -360,6 +360,32 @@ PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 # buildup state is unreachable.
 ts_stub TSTURB "$TMPDIR/tsturb_stub.shp" 24 24 2
 PACK_ARGS+=("$TMPDIR/tsturb_stub.shp:TSTURB.SHP")
+# TSWALL 33x60 (canvas 176x320: joined arms overshoot the cell edge): the TS concrete wall OVERLAY's classic stub
+# (the engine loads walls as non-theatre "<INI>.SHP" by IniName). 48 frames =
+# 16 join icons x 3 damage stages, RA's wall layout. Taller than the cell so a
+# north-south run's crest can rise above the cell's north edge. No MAKE stub:
+# walls never enumerate in the buildup state (dllinterface IsWall guard).
+ts_stub TSWALL "$TMPDIR/tswall_stub.shp" 33 60 48
+PACK_ARGS+=("$TMPDIR/tswall_stub.shp:TSWALL.SHP")
+# TS component tower family, same 33x60 canvas family as the wall (176x320 HD):
+# TSCTWR bare tower 2 frames (healthy/damaged) + rising buildup; TSVULC armed
+# tower = 32 facings x {idle, recoil, damaged idle, damaged recoil} like TDGUN.
+ts_stub TSCTWR "$TMPDIR/tsctwr_stub.shp" 33 60 2
+PACK_ARGS+=("$TMPDIR/tsctwr_stub.shp:TSCTWR.SHP")
+ts_stub TSCTWR "$TMPDIR/tsctwrmk_stub.shp" 33 60 17
+PACK_ARGS+=("$TMPDIR/tsctwrmk_stub.shp:TSCTWRMAKE.SHP")
+ts_stub TSVULC "$TMPDIR/tsvulc_stub.shp" 33 60 128
+PACK_ARGS+=("$TMPDIR/tsvulc_stub.shp:TSVULC.SHP")
+ts_stub TSVULC "$TMPDIR/tsvulcmk_stub.shp" 33 60 17
+PACK_ARGS+=("$TMPDIR/tsvulcmk_stub.shp:TSVULCMAKE.SHP")
+ts_stub TSROCK "$TMPDIR/tsrock_stub.shp" 33 60 128
+PACK_ARGS+=("$TMPDIR/tsrock_stub.shp:TSROCK.SHP")
+ts_stub TSROCK "$TMPDIR/tsrockmk_stub.shp" 33 60 17
+PACK_ARGS+=("$TMPDIR/tsrockmk_stub.shp:TSROCKMAKE.SHP")
+ts_stub TSCSAM "$TMPDIR/tscsam_stub.shp" 33 60 128
+PACK_ARGS+=("$TMPDIR/tscsam_stub.shp:TSCSAM.SHP")
+ts_stub TSCSAM "$TMPDIR/tscsammk_stub.shp" 33 60 17
+PACK_ARGS+=("$TMPDIR/tscsammk_stub.shp:TSCSAMMAKE.SHP")
 # TSPLUG 72x72 on the 3x2 plot (TS Upgrade Centre, addon host): the radar
 # height trick — square canvas, masts rise into the headroom above the box.
 ts_stub TSPLUG "$TMPDIR/tsplug_stub.shp" 72 72 2

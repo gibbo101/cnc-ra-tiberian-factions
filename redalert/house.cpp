@@ -1002,6 +1002,49 @@ bool TF_Mk2_At_Cap(HouseClass const* house)
     return (false);
 }
 
+
+
+/*
+**	The walls a TS construction yard provides. The TS tree ships no wall of its own
+**	and fences itself with SANDBAGS and the CONCRETE WALL (Luke, 2026-09-04) -- not
+**	the chain link fence, which is the Tiberian-era wall, nor RA's wire fences.
+**	Their own Owner= lists do not mention every faction, so a TS yard has to satisfy
+**	the ownership test for these two whoever is holding it.
+*/
+static bool TF_Is_TS_Yard_Wall(ObjectTypeClass const* type)
+{
+    if (type == NULL || type->What_Am_I() != RTTI_BUILDINGTYPE) {
+        return (false);
+    }
+    StructType st = ((BuildingTypeClass const*)type)->Type;
+    return (st == STRUCT_SANDBAG_WALL || st == STRUCT_BRICK_WALL);
+}
+
+/***********************************************************************************************
+ * HouseClass::Yard_Factions -- Which factions' construction yards does this house own?         *
+ *                                                                                             *
+ *    Returns the HOUSEF_ bits for every faction construction yard the house currently has      *
+ *    standing. A yard grants its faction's tree to whoever holds it, so this is the set that   *
+ *    Can_Build tests an object's Owner= against.                                               *
+ *=============================================================================================*/
+int HouseClass::Yard_Factions(void) const
+{
+    int yards = 0;
+    if (Has_Building_Active(STRUCT_TDGFACT)) {
+        yards |= HOUSEF_GDI;
+    }
+    if (Has_Building_Active(STRUCT_TDNFACT)) {
+        yards |= HOUSEF_NOD;
+    }
+    if (Has_Building_Active(STRUCT_AFACT)) {
+        yards |= HOUSEF_ALLIES;
+    }
+    if (Has_Building_Active(STRUCT_SFACT)) {
+        yards |= HOUSEF_SOVIET;
+    }
+    return (yards);
+}
+
 /*
 **	The single verdict on whether a dropship-bay order would be turned away:
 **	the bay is still reloading, or the house already fields its Mk. II
@@ -1167,8 +1210,23 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
 
     /*
     **	Check to see if this owner can build the object type specified.
+    **
+    **	Tiberian Factions -- a construction yard grants its tree, not the faction the
+    **	player picked (Luke, 2026-09-04). So a Soviet who takes a GDI yard builds GDI
+    **	buildings from it, and the same in every other direction. Owning a yard whose
+    **	faction appears in this type's Owner= therefore satisfies the test as well as
+    **	being that faction. The yard requirement itself is enforced below, so this only
+    **	widens WHO may hold the yard, never what a yard unlocks.
+    **
+    **	Walls are the one thing no yard lists: the TS tree has no wall of its own and
+    **	fences itself with the ordinary sandbag and concrete walls, so a TS yard
+    **	satisfies the test for a wall whatever the holder's faction.
     */
-    if (((1L << house) & own) == 0) {
+    bool yard_grants = ((own & Yard_Factions()) != 0);
+    if (TF_Is_TS_Yard_Wall(type) && Has_Building_Active(STRUCT_TSFACT)) {
+        yard_grants = true;
+    }
+    if (((1L << house) & own) == 0 && !yard_grants) {
         return (false);
     }
 
@@ -1270,22 +1328,18 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                 return (false);
             }
 
+            /*
+            **	A TS yard satisfies the yard requirement for WALLS: the TS tree has no
+            **	wall of its own and fences itself with the ordinary sandbag and concrete
+            **	walls (Luke, 2026-09-04). Everything else still needs a yard whose
+            **	faction can build it.
+            */
+            bool ts_walls = TF_Is_TS_Yard_Wall(type) && Has_Building_Active(STRUCT_TSFACT);
+
             int const factions = HOUSEF_GDI | HOUSEF_NOD | HOUSEF_ALLIES | HOUSEF_SOVIET;
             int ownable = type->Get_Ownable();
-            if (!ts_tree && (ownable & factions) != 0) {
-                int yards = 0;
-                if (Has_Building_Active(STRUCT_TDGFACT)) {
-                    yards |= HOUSEF_GDI;
-                }
-                if (Has_Building_Active(STRUCT_TDNFACT)) {
-                    yards |= HOUSEF_NOD;
-                }
-                if (Has_Building_Active(STRUCT_AFACT)) {
-                    yards |= HOUSEF_ALLIES;
-                }
-                if (Has_Building_Active(STRUCT_SFACT)) {
-                    yards |= HOUSEF_SOVIET;
-                }
+            if (!ts_tree && !ts_walls && (ownable & factions) != 0) {
+                int yards = Yard_Factions();
                 if ((ownable & yards) == 0) {
                     return (false);
                 }
@@ -5951,6 +6005,10 @@ void HouseClass::Sell_Wall(CELL cell)
 
                 case OVERLAY_FENCE:
                     btype = &BuildingTypeClass::As_Reference(STRUCT_FENCE);
+                    break;
+
+                case OVERLAY_TSWALL:
+                    btype = &BuildingTypeClass::As_Reference(STRUCT_TSWALL);
                     break;
 
                 default:

@@ -1380,6 +1380,10 @@ bool BuildingClass::Mark(MarkType mark)
                     new OverlayClass(OVERLAY_FENCE, cell, House->Class->House);
                     break;
 
+                case STRUCT_TSWALL:
+                    new OverlayClass(OVERLAY_TSWALL, cell, House->Class->House);
+                    break;
+
                 default:
                     break;
                 }
@@ -2100,6 +2104,15 @@ void BuildingClass::Process_Stealth_Generators(void)
     }
 }
 
+/*
+**	Set while a component-tower plug is replacing the bare tower it was placed on.
+**	The replacement is an INSTALL, not a construction: the turret drops straight on,
+**	the way a power turbine or an upgrade-centre plug does, rather than the tower
+**	rebuilding itself from a hole in the ground. Set and consumed inside one
+**	synchronous Unlimbo, so a file-static is enough.
+*/
+static bool TFPlugInstallInProgress = false;
+
 /***********************************************************************************************
  * BuildingClass::Unlimbo -- Removes a building from limbo state.                              *
  *                                                                                             *
@@ -2159,6 +2172,10 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
                 otype = OVERLAY_FENCE;
                 break;
 
+            case STRUCT_TSWALL:
+                otype = OVERLAY_TSWALL;
+                break;
+
             default:
                 otype = OVERLAY_NONE;
                 break;
@@ -2185,8 +2202,33 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
     **	consumed. Mirrors the wall divert above: `delete this` then return true
     **	so the factory completes normally.
     */
+    bool tf_plug_swap = false;
+
     if (Class->PowersUpBuilding != STRUCT_NONE) {
         BuildingClass* host = Map[Coord_Cell(coord)].Cell_Building();
+        /*
+        **	Component tower plugs (Vulcan, RPG, SAM) are the armed tower types
+        **	themselves: the bare tower makes way and this building takes its cell
+        **	and health ratio through the normal unlimbo below (buildup, house
+        **	bookkeeping and wall joins included). Sale refunds both (Refund_Amount).
+        */
+        bool swapped = false;
+        if (host != NULL && *host == STRUCT_TSCTWR && host->Can_Upgrade(Class, House)) {
+            coord = host->Coord;
+            fixed ratio = host->Health_Ratio();
+            host->Transmit_Message(RADIO_OVER_OUT);
+            host->Limbo();
+            delete host;
+            host = NULL;
+            Strength = (int)Class->MaxStrength * ratio;
+            if (Strength < 1) {
+                Strength = 1;
+            }
+            swapped = true;
+            tf_plug_swap = true;
+            TFPlugInstallInProgress = true;
+        }
+        if (!swapped) {
         if (host != NULL && host->Can_Upgrade(Class, House)) {
             int oldpower = host->Power_Output();
             host->UpgradeTypes[host->UpgradeLevel++] = Class->Type;
@@ -2206,12 +2248,33 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
             return (true);
         }
         return (false);
+        }
+    }
+
+    /*
+    **	A component tower placed onto a wall segment replaces it (TS wall tower):
+    **	the overlay goes before the tower takes the cell, and the neighbours'
+    **	joins are recomputed once the tower stands (below).
+    */
+    if (*this == STRUCT_TSCTWR) {
+        CellClass& tc = Map[Coord_Cell(coord)];
+        if (tc.Overlay == OVERLAY_TSWALL || tc.Overlay == OVERLAY_BRICK_WALL || tc.Overlay == OVERLAY_SANDBAG_WALL) {
+            tc.Overlay = OVERLAY_NONE;
+            tc.OverlayData = 0;
+            Detach_This_From_All(::As_Target(tc.Cell_Number()), true);
+            tc.Recalc_Attributes();
+            tc.Redraw_Objects();
+        }
     }
 
     /*
     **	Normal building unlimbo process.
     */
     if (TechnoClass::Unlimbo(coord, dir)) {
+
+        if (TF_Is_Wall_Tower(Class->Type)) {
+            Map[Coord_Cell(Coord)].Wall_Update(true);
+        }
 
         /*
         **	Ensure that the owning house knows about the
@@ -2294,6 +2357,20 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
             // else: building has no side bits in Ownable — preserve the
             // initial ActLike (House->ActLike). HOUSE_GOOD / HOUSE_BAD
             // players landing here keep their own identity.
+        }
+
+        /*
+        **	A component-tower plug installs rather than builds, so it never runs the
+        **	construction mission -- and that mission is where a new building frees its
+        **	builder ("You're free.") and runs Grand_Opening. Both have to happen here
+        **	instead. Leaving the radio link dangling wedges the construction yard out
+        **	of ALL further placement, because Who_Can_Build_Me skips a builder that is
+        **	in radio contact (object.cpp): the sidebar item builds, then cancels, and
+        **	nothing can be placed or selected afterwards.
+        */
+        if (tf_plug_swap) {
+            Transmit_Message(RADIO_OVER_OUT);
+            Grand_Opening();
         }
 
         return (true);
@@ -4333,7 +4410,13 @@ bool BuildingClass::Limbo(void)
         //			IsInLimbo = false;
         //		}
     }
-    return (TechnoClass::Limbo());
+    bool tower = TF_Is_Wall_Tower(Class->Type);
+    CELL cell = Coord_Cell(Coord);
+    bool limboed = TechnoClass::Limbo();
+    if (limboed && tower) {
+        Map[cell].Wall_Update(true);
+    }
+    return (limboed);
 }
 
 /***********************************************************************************************
@@ -7540,7 +7623,8 @@ void BuildingClass::Enter_Idle_Mode(bool initial)
     */
     MissionType mission = MISSION_GUARD;
 
-    if (!initial || ScenarioInit || Debug_Map) {
+    if (!initial || ScenarioInit || Debug_Map || TFPlugInstallInProgress) {
+        TFPlugInstallInProgress = false;
         Begin_Mode(BSTATE_IDLE);
         mission = MISSION_GUARD;
     } else {
@@ -8072,6 +8156,13 @@ int BuildingClass::Upgrade_Drain(void) const
 int BuildingClass::Refund_Amount(void) const
 {
     int refund = TechnoClass::Refund_Amount();
+    if (Class->PowersUpBuilding == STRUCT_TSCTWR) {
+        int cost = BuildingTypeClass::As_Reference(STRUCT_TSCTWR).Raw_Cost() * House->CostBias;
+        if (House->IsHuman) {
+            cost = cost * Rule.RefundPercent;
+        }
+        refund += cost;
+    }
     for (int i = 0; i < UpgradeLevel; i++) {
         if (UpgradeTypes[i] != STRUCT_NONE) {
             int cost = BuildingTypeClass::As_Reference(UpgradeTypes[i]).Raw_Cost() * House->CostBias;

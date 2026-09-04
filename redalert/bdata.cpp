@@ -1635,6 +1635,160 @@ static BuildingTypeClass const ClassTsTurb(STRUCT_TSTURB,
                                            (short const*)NULL);
 
 /*
+**  TSCTWR (TS GDI Component Tower, GACTWR) — the bare wall joint. No weapon,
+**    no turret; wall runs terminate into it (cell.cpp Has_TS_Wall_Tower) and it
+**    takes ONE plug (UpgradesMax=1, Init_Heap). Two-frame simple-damage art
+**    (voxel drum + feet, scripts/ts_pack_towers.py). Sensors=yes -> IsScanner.
+**    Stats in rules.ini [TSCTWR] (TS [GACTWR]: cost 200, Str 500, Power=-10, TL2).
+**  TSVULC (TS Vulcan Cannon, GAVULC) — the tower's Vulcan plug, which is ALSO the
+**    armed tower type: PowersUpBuilding=TSCTWR makes it place like a plug (green
+**    only on a bare tower), and the Unlimbo divert swaps the bare tower for this
+**    building in place. Rotating turret, TDGUN frame layout. Primary=TSVulcanTower.
+*/
+static BuildingTypeClass const ClassTsCtwr(STRUCT_TSCTWR,
+                                           TXT_NONE,
+                                           "TSCTWR",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           false,               // always use the given name
+                                           false,               // IsWall
+                                           true,                // simple damage imagery (frame 1 = damaged)
+                                           false,               // invisible to radar
+                                           true,                // selectable
+                                           true,                // legal target
+                                           false,               // insignificant
+                                           false,               // theater specific
+                                           false,               // turret
+                                           true,                // remappable
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+static BuildingTypeClass const ClassTsVulc(STRUCT_TSVULC,
+                                           TXT_NONE,
+                                           "TSVULC",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0030,              // Vertical offset -- matches TURRET/TDGUN.
+                                           0x0080,              // Primary weapon offset -- matches TURRET/TDGUN.
+                                           0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           false,               // always use the given name
+                                           false,               // IsWall
+                                           false,               // simple damage imagery
+                                           false,               // invisible to radar
+                                           true,                // selectable
+                                           true,                // legal target
+                                           false,               // insignificant
+                                           false,               // theater specific
+                                           true,                // rotating turret
+                                           true,                // remappable
+                                           RTTI_NONE,
+                                           (DirType)208,        // Match TURRET starting facing.
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+// TSROCK / TSCSAM: the RPG and SAM plugs, same shape as TSVULC (docs above).
+static BuildingTypeClass const ClassTsRock(STRUCT_TSROCK,
+                                           TXT_NONE,
+                                           "TSROCK",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0030,              // Vertical offset -- matches TURRET/TDGUN.
+                                           0x0080,              // Primary weapon offset -- matches TURRET/TDGUN.
+                                           0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           false,               // always use the given name
+                                           false,               // IsWall
+                                           false,               // simple damage imagery
+                                           false,               // invisible to radar
+                                           true,                // selectable
+                                           true,                // legal target
+                                           false,               // insignificant
+                                           false,               // theater specific
+                                           true,                // rotating turret
+                                           true,                // remappable
+                                           RTTI_NONE,
+                                           (DirType)208,        // Match TURRET starting facing.
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+static BuildingTypeClass const ClassTsCsam(STRUCT_TSCSAM,
+                                           TXT_NONE,
+                                           "TSCSAM",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0030,              // Vertical offset -- matches TURRET/TDGUN.
+                                           0x0080,              // Primary weapon offset -- matches TURRET/TDGUN.
+                                           0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           false,               // always use the given name
+                                           false,               // IsWall
+                                           false,               // simple damage imagery
+                                           false,               // invisible to radar
+                                           true,                // selectable
+                                           true,                // legal target
+                                           false,               // insignificant
+                                           false,               // theater specific
+                                           true,                // rotating turret
+                                           true,                // remappable
+                                           RTTI_NONE,
+                                           (DirType)208,        // Match TURRET starting facing.
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+/*
+**  TSWALL (TS GDI Concrete Wall, GAWALL) — a wall-type building exactly like RA's
+**    BRIK: never stands on the map, placement converts it to OVERLAY_TSWALL
+**    (building.cpp Unlimbo + the placement-legality switch). Stats in rules.ini
+**    [TSWALL] (TS [GAWALL]: cost 50, TL6, Prerequisite=GAPILE, Adjacent=4).
+*/
+static BuildingTypeClass const ClassTsWall(STRUCT_TSWALL,
+                                           TXT_BRICK_WALL,
+                                           "TSWALL",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_NONE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           true,                // always use the given name
+                                           true,                // IsWall
+                                           false,               // simple damage imagery
+                                           false,               // invisible to radar
+                                           false,               // selectable
+                                           true,                // legal target
+                                           true,                // insignificant
+                                           false,               // theater specific
+                                           false,               // turret
+                                           false,               // remappable
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+/*
 **  TSPLUG (TS GDI Upgrade Centre, GAPLUG) — the 2-slot addon HOST of the
 **    upgrade mechanic (UpgradesMax wired in Init_Heap). Physically a TSTECH
 **    twin: 3x2 plot, GTPLUG art via the Stealth Recipe. Sensors=yes in TS —
@@ -4900,6 +5054,11 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsPion);        // STRUCT_TSPION (Ion Cannon Uplink addon)
     new BuildingTypeClass(ClassTsPods);        // STRUCT_TSPODS (Drop Pod Node addon)
     new BuildingTypeClass(ClassTsSeek);        // STRUCT_TSSEEK (Seeker Control addon)
+    new BuildingTypeClass(ClassTsWall);        // STRUCT_TSWALL (TS concrete wall, overlay on placement)
+    new BuildingTypeClass(ClassTsCtwr);        // STRUCT_TSCTWR (TS component tower, bare wall joint)
+    new BuildingTypeClass(ClassTsVulc);        // STRUCT_TSVULC (TS Vulcan tower = the Vulcan plug)
+    new BuildingTypeClass(ClassTsRock);        // STRUCT_TSROCK (TS RPG tower = the RPG plug)
+    new BuildingTypeClass(ClassTsCsam);        // STRUCT_TSCSAM (TS SAM tower = the SAM plug)
 
     /*
     **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so
@@ -4912,6 +5071,14 @@ void BuildingTypeClass::Init_Heap(void)
     As_Reference(STRUCT_TSPION).PowersUpBuilding = STRUCT_TSPLUG;    // TS [GAPLUG3]
     As_Reference(STRUCT_TSPODS).PowersUpBuilding = STRUCT_TSPLUG;    // our Firestorm-style pod node
     As_Reference(STRUCT_TSSEEK).PowersUpBuilding = STRUCT_TSPLUG;    // TS [GAPLUG2]
+    As_Reference(STRUCT_TSCTWR).UpgradesMax = 1;                     // TS [GACTWR]: one plug per tower
+    As_Reference(STRUCT_TSCTWR).IsScanner = true;                    // TS Sensors=yes
+    As_Reference(STRUCT_TSVULC).PowersUpBuilding = STRUCT_TSCTWR;    // TS [GAVULC] PowersUpBuilding=gactwr
+    As_Reference(STRUCT_TSVULC).IsScanner = true;                    // the tower's sensor survives the swap
+    As_Reference(STRUCT_TSROCK).PowersUpBuilding = STRUCT_TSCTWR;    // TS [GAROCK]
+    As_Reference(STRUCT_TSROCK).IsScanner = true;
+    As_Reference(STRUCT_TSCSAM).PowersUpBuilding = STRUCT_TSCTWR;    // TS [GACSAM]
+    As_Reference(STRUCT_TSCSAM).IsScanner = true;
 }
 
 /***********************************************************************************************

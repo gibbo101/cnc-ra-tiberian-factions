@@ -1600,6 +1600,11 @@ typedef enum StructType : short
     STRUCT_TSPION, // TS Ion Cannon Uplink "TSPION" (GAPLUG3) — addon plug for TSPLUG; grants the GDI Ion Cannon special while installed. Drain 100. Art = GTPLUG_F dish.
     STRUCT_TSPODS, // TS Drop Pod Node "TSPODS" (our Firestorm-style plug — base TS grants pods by script only); grants Drop Pod reinforcements while installed. Art = GTPLUG_D dome.
     STRUCT_TSSEEK, // TS Seeker Control "TSSEEK" (GAPLUG2) — addon plug for TSPLUG; grants the Hunter Seeker special while installed. Drain 50. Art = GTPLUG_E node.
+    STRUCT_TSWALL, // TS GDI Concrete Wall "TSWALL" (GAWALL) — wall-type building: placement converts it to OVERLAY_TSWALL (building.cpp), like BRIK. Generated voxel art on the grid axes (scripts/ts_pack_walls.py).
+    STRUCT_TSCTWR, // TS GDI Component Tower "TSCTWR" (GACTWR) — the bare, unarmed wall joint: walls terminate into it (cell.cpp Has_TS_Wall_Tower). One plug slot (UpgradesMax=1). Sensors=yes -> IsScanner. Voxel drum + feet art (scripts/ts_pack_towers.py).
+    STRUCT_TSVULC, // TS Vulcan Cannon tower "TSVULC" (GAVULC) — the tower's Vulcan plug AND the armed tower type in one: PowersUpBuilding=TSCTWR, and installing it REPLACES the bare tower with this rotating-turret building (building.cpp Unlimbo divert). TDGUN frame layout (32 facings, +32 recoil, +64 damaged). Fires TSVulcanTower.
+    STRUCT_TSROCK, // TS RPG Upgrade tower "TSROCK" (GAROCK) — same plug-is-the-armed-tower pattern as TSVULC. Fires TSRPGTower (arcing, MinimumRange 2).
+    STRUCT_TSCSAM, // TS SAM Upgrade tower "TSCSAM" (GACSAM) — same pattern. Fires TSRedEye2 (AA-only homing missile). Powered.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
@@ -1622,7 +1627,7 @@ typedef enum StructType : short
     **	Second range of BuildingTypeClass::Is_Tiberian_Era.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TSSEEK
+    STRUCT_TS_TREE_LAST = STRUCT_TSCSAM
 } StructType;
 
 /*
@@ -1736,6 +1741,12 @@ typedef enum OverlayType : char
     // NOTE: any map data or tool that writes TIB01 by index must use the new
     // value -- scripts/td_map_to_ra.py is kept in sync.
     OVERLAY_TIB01,
+    // Tiberian Factions -- TS GDI concrete wall (GAWALL). Appended past TIB01 for the
+    // same raw-index reason. Exported to the launcher AS OVERLAY_BRICK_WALL for its
+    // wall/sell semantics while AssetName "TSWALL" selects our own art (the TIB01
+    // precedent: sprite by name, behaviour by Type). 16 join icons x 3 damage
+    // stages in OverlayData, RA's wall layout; 48 = destroyed (cell.cpp Wall_Update).
+    OVERLAY_TSWALL,
 
     OVERLAY_COUNT,
     OVERLAY_FIRST = 0
@@ -3360,6 +3371,9 @@ typedef enum WarheadType : char
     WARHEAD_TSFLAME, // TS [Fire] warhead for the Devil's Tongue stream: 600% none, 148% light, 59% heavy, 6% wood, 2% concrete -- fire is an anti-infantry/light-vehicle weapon in TS, near-useless on structures. Registered "TSFlame".
     WARHEAD_TSFLAMEHIT, // Delivery warhead for a TS fire-stream burn: the TS damage arithmetic runs in BulletClass::AI, this just carries the result unscaled (100% verses, fire InfDeath). Registered "TSFlameHit".
     WARHEAD_SONIC,    // TS sonic warhead (Disruptor SonicZap line damage). TS [SonicWarhead]: Spread 2, verses 100/100/100/80/60%, Wood=yes. Registered "SonicWarhead".
+    WARHEAD_TSSA,     // TS small-arms warhead. TS [SA]: Spread 3, verses 100/60/40/25/10%, InfDeath 1 (RA's own [SA] is 100/50/60/25/25). Registered "TSSA".
+    WARHEAD_TSRPG,    // TS RPG tower warhead. TS [RPG]: Spread 3, Wall=yes, Wood=yes, verses 30/75/90/100/70%, InfDeath 3. Registered "TSRPG".
+    WARHEAD_TSSAMWH,  // TS SAM warhead. TS [SAMWH]: Spread 3, 100% all, InfDeath 3. Registered "TSSAMWH".
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
@@ -3462,6 +3476,9 @@ typedef enum WeaponType : char
     WEAPON_TSFIREBALL,     // TS Devil's Tongue FireballLauncher — Damage=0 impact, the damage is the fire stream (BULLET_TSFIRE particles spawned every 4 frames for 30 frames per shot, UnitClass::Fire_Stream_AI). Registered "TSFireball".
     WEAPON_SONICZAP,       // TS Disruptor sonic beam — IsSonic piercing line (railgun sweep mechanics, green beam, no helix) through WARHEAD_SONIC. TS per-frame wave damage translated to one AmbientDamage application per object on the line. Registered "SonicZap".
     WEAPON_TSSUICIDE,      // TS Hunter Seeker suicide bomb (TS [SuicideBomb]) — Damage 11000, Warhead Super (100% all), Projectile Invisible. Never fired through the weapon system; TF_Hunter_Seeker_Detonate reads its Attack + Warhead. Registered "TSSuicide".
+    WEAPON_TSVULCANTOWER,  // TS component tower Vulcan cannon — TS [VulcanTower] verbatim (Dmg18/ROF26/Range6, instant Invisible projectile, TSSA warhead). Registered "TSVulcanTower".
+    WEAPON_TSRPGTOWER,     // TS component tower RPG — TS [RPGTower] verbatim (Dmg110/ROF80/Range8/MinRange2, arcing Lobbed projectile, TSRPG warhead). Registered "TSRPGTower".
+    WEAPON_TSREDEYE2,      // TS component tower SAM — TS [RedEye2] verbatim (Dmg33/ROF55/Range15, AA-only TDPatriot homing missile, TSSAMWH warhead). Registered "TSRedEye2".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0

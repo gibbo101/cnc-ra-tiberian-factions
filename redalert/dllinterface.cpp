@@ -7844,7 +7844,22 @@ static int TF_Entry_Faction_Mask(TechnoTypeClass const* type)
     if (type != NULL && TF_Is_TS_Tree_Type(type)) {
         return TF_FACTION_TSGDI;
     }
-    return TF_Faction_Mask_From_Ownable(type != NULL ? type->Get_Ownable() : 0);
+    int mask = TF_Faction_Mask_From_Ownable(type != NULL ? type->Get_Ownable() : 0);
+    /*
+    ** The badge says which of the player's CONSTRUCTION YARDS can build the entry,
+    ** not which faction the player picked. A TS yard builds sandbags and the
+    ** concrete wall (the TS tree ships no wall of its own), so those two carry the
+    ** TS emblem alongside whichever other yards can build them -- exactly as
+    ** HouseClass::Can_Build lets a TS yard unlock them. Their Owner= lists never
+    ** mention the TS tree, so the bit has to be added here.
+    */
+    if (type != NULL && type->What_Am_I() == RTTI_BUILDINGTYPE) {
+        StructType st = ((BuildingTypeClass const*)type)->Type;
+        if (st == STRUCT_SANDBAG_WALL || st == STRUCT_BRICK_WALL) {
+            mask |= TF_FACTION_TSGDI;
+        }
+    }
+    return mask;
 }
 
 #if TF_DEV_BUILD
@@ -10921,8 +10936,13 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             // pips tiberium GREEN with no art override and leaves real gems (other
             // maps' placed GEMS types) untouched. Verified from the RADARMAP
             // tileset + pip TGA colors, 2026-06-09.
+            // TSWALL likewise presents as BRIK for the launcher's wall/sell semantics
+            // (IsSellable below keys on the vanilla wall Type range) while its own
+            // AssetName picks the TSWALL tileset.
             overlay_entry.Type = (cell_ptr->Overlay == OVERLAY_TIB01)
                                      ? (short)OVERLAY_GEMS3
+                                     : (cell_ptr->Overlay == OVERLAY_TSWALL)
+                                     ? (short)OVERLAY_BRICK_WALL
                                      : (short)cell_ptr->Overlay;
             overlay_entry.Owner = (char)cell_ptr->Owner;
             overlay_entry.DrawFlags =

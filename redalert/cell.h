@@ -52,6 +52,15 @@ struct NoInitClass;
 /****************************************************************************
 **	Each cell on the map is controlled by the following structure.
 */
+/*
+**	TS component tower family: the bare tower and its armed forms. Walls terminate
+**	into any of them and they carry the wall-join bookkeeping (building.cpp).
+*/
+inline bool TF_Is_Wall_Tower(StructType t)
+{
+    return (t == STRUCT_TSCTWR || t == STRUCT_TSVULC || t == STRUCT_TSROCK || t == STRUCT_TSCSAM);
+}
+
 class CellClass
 {
 public:
@@ -357,7 +366,8 @@ public:
     bool Grow_Tiberium(void);
     bool Spread_Tiberium(bool forced = false);
     int Tiberium_Adjust(bool pregame = false);
-    void Wall_Update(void);
+    void Wall_Update(bool force = false);
+    bool Has_TS_Wall_Tower(void) const;
     void Concrete_Calc(void);
     void Recalc_Attributes(void);
     int Reduce_Tiberium(int levels);
