@@ -22,13 +22,18 @@ change size (offsets resolve against the base archive):
 
 usage: factions_build.py <base FACTIONS.XML> <out FACTIONS.XML> [--hide Faction6 ...]
 """
+import os
 import re
 import sys
 
 ORDER = ['Faction1', 'Faction2', 'Faction3', 'Faction10', 'Faction4', 'Faction5',
          'Faction6', 'Faction7', 'Faction8', 'Faction9']
 ICONS = {'Faction3': '03', 'Faction10': '10'}
-TD_HUD = ['Faction3', 'Faction4', 'Faction8']  # Faction8 = Germany = TS GDI
+TD_HUD = ['Faction3', 'Faction4']
+# Faction8 = Germany = TS GDI, and only when the fifth faction is switched on; with
+# TF_TS_GDI_FACTION=0 the row is an Allied duplicate and keeps RA's HUD scene.
+if os.environ.get('TF_TS_GDI_FACTION', '1') != '0':
+    TD_HUD.append('Faction8')
 SCENE_TD = b'Art/GUI/Tactical_UI.bui'
 SCENE_RA = b'Art/GUI/RA_Tactical_UI.bui'
 

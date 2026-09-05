@@ -1042,6 +1042,12 @@ int HouseClass::Yard_Factions(void) const
     if (Has_Building_Active(STRUCT_SFACT)) {
         yards |= HOUSEF_SOVIET;
     }
+    /*
+    **	With the fifth faction switched off (TF_TS_GDI_FACTION 0) HOUSEF_TSGDI is empty, so
+    **	a TS yard grants nothing here -- which is what we want. It must NOT fall back to the
+    **	Germany bit: Germany is an Allied country again in that build, and a TS yard would
+    **	then unlock the whole Allied tree for whoever crated the MCV.
+    */
     if (Has_Building_Active(STRUCT_TSFACT)) {
         yards |= HOUSEF_TSGDI;
     }

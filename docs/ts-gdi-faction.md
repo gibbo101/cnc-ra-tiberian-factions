@@ -123,6 +123,47 @@ The whole arc was driven headless — Xvfb + Steam under `systemd-run --user`, x
 
 ---
 
+## The release switch — `TF_TS_GDI_FACTION`
+
+The faction can sit finished on `main` without appearing in a release. The switch is
+**build-time, not runtime**: the picker's row text and emblem are CONFIG.MEG data the
+launcher reads at startup, long before the DLL has a say, so no flag file can hide them.
+
+`package-for-workshop.sh` builds with `-DTF_TS_GDI_FACTION=0` and regenerates the staged
+front-end to match. Flip both when it is time to ship it.
+
+**Off means today's `main` behaviour, exactly:**
+
+| | On (local dev builds) | Off (releases) |
+|---|---|---|
+| `HOUSEF_ALLIES` | without Germany | with Germany, as before |
+| `HOUSEF_TSGDI` | `HOUSEF_GERMANY` | `HOUSEF_NONE` |
+| `Is_TS_GDI()` | `house == HOUSE_GERMANY` | constant `false` |
+| Picker row 6 | "TS GDI" + TS emblem, TD HUD scene | "Allies" + Allied crest, RA HUD scene |
+| A TS yard | grants the TS tree | grants nothing (see below) |
+
+`Is_TS_GDI()` going constant-false is what retires the starting roster, the EVA, the unit
+voices, the side name and the crest — each of those branches simply never fires, so there is
+no second code path to keep in step.
+
+⚠ **The one thing that does not fall out for free** is `Yard_Factions()`. It must contribute
+`HOUSEF_TSGDI`, never `HOUSEF_GERMANY` directly: with the faction off, Germany is an Allied
+country again, so a Germany bit there would let a crate-found TS yard unlock **the entire
+Allied tree**. Empty-when-off is what makes the line safe.
+
+The data side is three toggles, all driven by `TF_TS_GDI_FACTION` in the environment:
+`build_config_meg.sh` (master-text overrides back to "Allies"), `factions_build.py` (Faction8
+drops out of the TD-HUD scene swap) and `picker_emblems_paint.py` (the `_08` plate goes back
+to the Allied crest). `TF_MEG_TARGET` points the MEG build at the **staged** copy, so a
+package run never leaves the repo in release shape; the two generated intermediates it
+rewrites are snapshotted and restored by the packager.
+
+The TS EVA and voice WAVs, their XML events, and the unbadged cameo entries ship either way.
+They are inert with the faction off — nothing can route to them — and the cameo entries are a
+genuine fix regardless: a crate-found TS yard whose owner has lost their own yard badges 0 too.
+
+---
+
 ## What is left
 
 - **The six launcher-fired EVA lines** (cannot deploy here, battle control terminated, mission

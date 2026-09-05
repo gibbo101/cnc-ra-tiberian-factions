@@ -10,6 +10,7 @@ radar crest alone, centred, on a transparent plate: no flag, no badge, no field 
 usage: picker_emblems_paint.py <target MT_COMMANDBAR_COMMON.TGA> [more targets...]
 """
 import hashlib
+import os
 import re
 import struct
 import sys
@@ -35,9 +36,14 @@ for nn in ('04',):
     SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_NOD', None)
 for nn in ('10', '06', '09'):
     SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_ALLIES', None)
-# _08 (Germany) is the Tiberian Sun GDI row. Its emblem has no atlas region to borrow,
-# so the source is our own art file; a 'file:' key is read from disk instead.
-SLOTS['08'] = ('file:scripts/tab_emblems/tsgdi.png', None)
+# _08 (Germany) is the Tiberian Sun GDI row when the fifth faction is switched on. Its
+# emblem has no atlas region to borrow, so the source is our own art file; a 'file:' key is
+# read from disk instead. With TF_TS_GDI_FACTION=0 the row is an Allied duplicate again and
+# wears the Allied crest, matching a DLL built with the faction compiled out.
+if os.environ.get('TF_TS_GDI_FACTION', '1') != '0':
+    SLOTS['08'] = ('file:scripts/tab_emblems/tsgdi.png', None)
+else:
+    SLOTS['08'] = ('UI_SIDEBAR_FACTIONLOGO_ALLIES', None)
 for nn in ('05', '07'):
     SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_SOVIET', None)
 

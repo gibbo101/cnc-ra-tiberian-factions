@@ -5,6 +5,12 @@ Full record: `docs/ts-gdi-faction.md`. Short version:
 - Pick "TS GDI" (picker row 6, the old Germany duplicate) and you start with a TS MCV and a TS
   army, build the TS tree off the TD sidebar, hear TS's EVA and unit crews, and fly the TS GDI
   eagle on the radar. All seven of those were confirmed in a live skirmish, driven headless.
+- The faction has a release switch: `TF_TS_GDI_FACTION` (defines.h, default 1).
+  `package-for-workshop.sh` builds with it at 0 and regenerates the staged picker data to
+  match, so TS GDI can sit on main unreleased. Flip both to ship it.
+- ⚠ FIXED IN PASSING: release builds have not compiled since `9b28b8e0` (2026-09-01) — the
+  crest patch was promoted to release but its forward declarations stayed inside
+  `#if TF_DEV_BUILD`. Nothing had been packaged since, so it went unseen.
 - NEXT: the six launcher-fired EVA lines still speak TD's recordings for TS GDI (the era mailbox
   pads a TD/RA pair and carries hardcoded cache needles; a third era needs a three-way pad and
   fresh needles). Then TS Nod on France, and AI support.

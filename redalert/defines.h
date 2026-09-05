@@ -1207,11 +1207,29 @@ inline HousesType operator++(HousesType& ht)
 // colour, flag, start markers, loading screens -- so a faction built this way
 // needs no launcher-side enum at all, and the picker row the player clicks IS
 // the house they play. See docs/ts-factions-feasibility.md.
+//
+// TF_TS_GDI_FACTION is the release switch for the fifth faction. Built with it at 0,
+// Germany goes back to being an Allied country duplicate and every trace of TS GDI
+// leaves the game: Is_TS_GDI() is constant false, so the starting roster, EVA, unit
+// voices, side name and radar crest all fall through to their old branches, and
+// HOUSEF_TSGDI is empty, so the TS construction yard grants no tree of its own.
+// package-for-workshop.sh builds with 0 and regenerates the picker data to match,
+// so the faction can sit finished on main without appearing in a release.
+#ifndef TF_TS_GDI_FACTION
+#define TF_TS_GDI_FACTION 1
+#endif
+
+#if TF_TS_GDI_FACTION
 #define HOUSEF_ALLIES (HOUSEF_ENGLAND | HOUSEF_SPAIN | HOUSEF_GREECE | HOUSEF_FRANCE | HOUSEF_TURKEY)
+#define HOUSEF_TSGDI  (HOUSEF_GERMANY)
+#else
+#define HOUSEF_ALLIES                                                                                                  \
+    (HOUSEF_ENGLAND | HOUSEF_SPAIN | HOUSEF_GREECE | HOUSEF_GERMANY | HOUSEF_FRANCE | HOUSEF_TURKEY)
+#define HOUSEF_TSGDI  (HOUSEF_NONE)
+#endif
 #define HOUSEF_SOVIET (HOUSEF_USSR | HOUSEF_UKRAINE)
 #define HOUSEF_GDI    (HOUSEF_GOOD)
 #define HOUSEF_NOD    (HOUSEF_BAD)
-#define HOUSEF_TSGDI  (HOUSEF_GERMANY)
 #define HOUSEF_OTHERS                                                                                                  \
     (HOUSEF_NEUTRAL | HOUSEF_JP | HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5        \
      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8)
@@ -1226,7 +1244,12 @@ inline HousesType operator++(HousesType& ht)
 */
 inline bool Is_TS_GDI(HousesType house)
 {
+#if TF_TS_GDI_FACTION
     return (house == HOUSE_GERMANY);
+#else
+    (void)house;
+    return (false);
+#endif
 }
 
 #define HOUSEF_ENGLAND (1L << HOUSE_ENGLAND)

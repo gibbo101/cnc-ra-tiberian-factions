@@ -17,7 +17,22 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-MEG="resources/remaster_mods/Vanilla_RA/Data/CONFIG.MEG"
+# TF_MEG_TARGET repoints every edit at another copy of CONFIG.MEG -- package-for-workshop
+# uses it to build the release-shaped front-end into the STAGED mod without disturbing the
+# repo's own (which always carries the dev shape).
+MEG="${TF_MEG_TARGET:-resources/remaster_mods/Vanilla_RA/Data/CONFIG.MEG}"
+
+# The fifth faction's release switch (see TF_TS_GDI_FACTION in redalert/defines.h). With it
+# off, the picker row that reads "TS GDI" goes back to reading "Allies", matching a DLL built
+# with the faction compiled out.
+TS_GDI_FACTION="${TF_TS_GDI_FACTION:-1}"
+LOC_OVERRIDES=()
+if [[ "$TS_GDI_FACTION" == "0" ]]; then
+    LOC_OVERRIDES=(TEXT_FACTION_NAME_FACTION_8=Allies
+                   TEXT_FACTION_BONUS_GERMANY=Allies
+                   TEXT_FACTION_REDALERT_GERMANY=Allies)
+    echo "==> Fifth faction OFF: Germany's picker row stays an Allied duplicate"
+fi
 BASE_BUI="scripts/bui_work/RA_MAIN_MENU.base.BUI"
 EDIT_BUI="scripts/bui_work/RA_MAIN_MENU.edited.BUI"
 BASE_HUD="scripts/bui_work/RA_TACTICAL_UI.base.BUI"
@@ -46,7 +61,7 @@ echo "==> Rebuilding edited MUSICEVENTS.XML from base (skirmish playlist)"
 python3 scripts/musicevents_build.py "$BASE_MUS" "$MUS_LIST" "$EDIT_MUS"
 
 echo "==> Rebuilding edited MASTERTEXTFILE_EN-US.LOC from base (Unholy Alliance checkbox)"
-python3 scripts/loc_relabel.py "$BASE_LOC" "$EDIT_LOC" @scripts/loc_work/mastertext.edits.txt
+python3 scripts/loc_relabel.py "$BASE_LOC" "$EDIT_LOC" @scripts/loc_work/mastertext.edits.txt "${LOC_OVERRIDES[@]}"
 
 echo "==> Repacking $MEG with the edited BUI + MUSICEVENTS + MASTERTEXT (in place)"
 echo "==> Rebuilding FACTIONS.XML from base (picker order + full-size GDI/Nod plates)"

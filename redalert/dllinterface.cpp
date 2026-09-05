@@ -1654,10 +1654,12 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance(int scenario_in
  * History: 1/7/2019 5:20PM - ST
  **************************************************************************************************/
 static void TF_Mailbox_Write_EVA_Voice(void);
-#if TF_DEV_BUILD
-static void TF_Probe_ClientG_Cache(void);
+// The crest patch ships in release builds (its call sites below are unguarded), so its
+// declarations must not sit behind TF_DEV_BUILD -- only the two probes are dev-only.
 static void TF_Patch_ClientG_Crest(void);
 static void TF_Crest_Tick(void);
+#if TF_DEV_BUILD
+static void TF_Probe_ClientG_Cache(void);
 static void TF_Probe_ClientG_Crest(void);
 #endif
 
