@@ -777,6 +777,54 @@ void Init_SpeechTD(void)
 **  SpeechTD[] first; this table is the everyone-else fallback. NULL = the
 **  RA Speech[] name is untouched by any stub, dispatch it as-is.
 */
+/*
+**  Tiberian Sun GDI's own EVA. Same shape as SpeechTD[]: a filled slot is the
+**  sample name the DLL hands the launcher, a NULL slot falls back to the TD
+**  announcer (never RA's -- On_Speech drops a line no Tiberium-era side has a
+**  recording of). Samples ride the proven loose-file route: novel names resolve
+**  from <mod>\Data\AUDIO\EN-US as MS-ADPCM WAVs, registered as events in the
+**  mod's loose SFXEVENTSLOCALIZED.XML.
+*/
+char const* SpeechTS[VOX_COUNT] = {NULL};
+
+void Init_SpeechTS(void)
+{
+    static bool inited = false;
+    if (inited)
+        return;
+    inited = true;
+
+    SpeechTS[VOX_ACCOMPLISHED]       = "TSACCOM1";
+    SpeechTS[VOX_FAIL]               = "TSFAIL1";
+    SpeechTS[VOX_NO_FACTORY]         = "TSNOFACT1";
+    SpeechTS[VOX_CONSTRUCTION]       = "TSCONSTRU1";
+    SpeechTS[VOX_UNIT_READY]         = "TSUNITREDY";
+    SpeechTS[VOX_NEW_CONSTRUCT]      = "TSNEWOPT1";
+    SpeechTS[VOX_DEPLOY]             = "TSDEPLOY1";
+    SpeechTS[VOX_STRUCTURE_DESTROYED] = "TSSTRCLOST";
+    SpeechTS[VOX_NO_CASH]            = "TSNOCASH1";
+    SpeechTS[VOX_NEED_MO_MONEY]      = "TSNOCASH1"; // TS has one "insufficient funds"
+    SpeechTS[VOX_CONTROL_EXIT]       = "TSBATLCON1";
+    SpeechTS[VOX_REINFORCEMENTS]     = "TSREINFOR1";
+    SpeechTS[VOX_CANCELED]           = "TSCANCEL1";
+    SpeechTS[VOX_BUILDING]           = "TSBLDGING1";
+    SpeechTS[VOX_TRAINING]           = "TSTRAIN1";
+    SpeechTS[VOX_LOW_POWER]          = "TSLOPOWER1";
+    SpeechTS[VOX_INSUFFICIENT_POWER] = "TSLOPOWER1"; // TS warns on low power only
+    SpeechTS[VOX_BASE_UNDER_ATTACK]  = "TSBASEATK1";
+    SpeechTS[VOX_HQ_UNDER_ATTACK]    = "TSBASEATK1";
+    SpeechTS[VOX_PRIMARY_SELECTED]   = "TSPRIBLDG1";
+    SpeechTS[VOX_UNIT_LOST]          = "TSUNITLOST";
+    SpeechTS[VOX_AIRCRAFT_LOST]      = "TSUNITLOST"; // one "unit lost" for every arm
+    SpeechTS[VOX_SHIP_LOST]          = "TSUNITLOST";
+    SpeechTS[VOX_SELECT_TARGET]      = "TSSELECT1";
+    SpeechTS[VOX_NEED_MO_CAPACITY]   = "TSSILOS1";
+    SpeechTS[VOX_SUSPENDED]          = "TSONHOLD1";
+    SpeechTS[VOX_REPAIRING]          = "TSREPAIR1";
+    SpeechTS[VOX_STRUCTURE_SOLD]     = "TSSTRUSLD1";
+    SpeechTS[VOX_UNIT_REPAIRED]      = "TSUNITREPD";
+}
+
 char const* SpeechRAO[VOX_COUNT] = {NULL};
 
 void Init_SpeechRAO(void)

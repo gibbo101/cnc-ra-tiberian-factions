@@ -3235,6 +3235,22 @@ static void Reserve_Unit()
     }
 }
 
+/*
+**	Which faction's starting roster a house is handed. Normally the side it
+**	picked -- except that a computer house cannot yet run the Tiberian Sun tree
+**	(its base builder has no TS roles), so an AI that draws TS GDI in the lobby
+**	fields the TD GDI roster instead of standing on a yard it cannot use. Human
+**	TS GDI players get the real thing.
+*/
+static HousesType TF_Roster_Side(HouseClass const* hptr)
+{
+    HousesType side = hptr->ActLike;
+    if (Is_TS_GDI(side) && !hptr->IsHuman) {
+        side = HOUSE_GOOD;
+    }
+    return (side);
+}
+
 static void Create_Units(bool official)
 {
     /*
@@ -3246,6 +3262,14 @@ static void Create_Units(bool official)
     **  SSM/Arty/Bike/Buggy/Flame/Stealth=Nod). Distributed across RA's four
     **  tech-gated rows; Ally/Soviet columns are unchanged.
     */
+    /*
+    **  The TsGdiType column is the fifth faction's roster (Tiberian Sun GDI, the
+    **  GERMANY house): Titan and Wolverine as the mainline pair, the amphibious
+    **  APC in the transport row, the Hover MLRS as the fire-support row, and the
+    **  Disruptor at the top. The Mammoth Mk. II is deliberately absent -- it
+    **  arrives by dropship in this mod, and a free one at match start would be a
+    **  different game.
+    */
     static struct
     {
         int MinLevel;
@@ -3253,10 +3277,31 @@ static void Create_Units(bool official)
         UnitType SovietType[2];
         UnitType GdiType[2];
         UnitType NodType[2];
-    } utable[] = {{4, {UNIT_MTANK2, UNIT_LTANK}, {UNIT_MTANK, UNIT_NONE}, {UNIT_TDMTNK, UNIT_TDJEEP}, {UNIT_TDLTNK, UNIT_TDBGGY}},
-                  {5, {UNIT_APC, UNIT_NONE}, {UNIT_V2_LAUNCHER, UNIT_NONE}, {UNIT_TDAPC, UNIT_NONE}, {UNIT_TDBIKE, UNIT_NONE}},
-                  {8, {UNIT_ARTY, UNIT_JEEP}, {UNIT_MTANK, UNIT_NONE}, {UNIT_TDMLRS, UNIT_TDJEEP}, {UNIT_TDARTY, UNIT_TDFTNK}},
-                  {10, {UNIT_MTANK2, UNIT_MTANK2}, {UNIT_HTANK, UNIT_NONE}, {UNIT_TDHTNK, UNIT_NONE}, {UNIT_TDSTNK, UNIT_TDMSAM}}};
+        UnitType TsGdiType[2];
+    } utable[] = {{4,
+                   {UNIT_MTANK2, UNIT_LTANK},
+                   {UNIT_MTANK, UNIT_NONE},
+                   {UNIT_TDMTNK, UNIT_TDJEEP},
+                   {UNIT_TDLTNK, UNIT_TDBGGY},
+                   {UNIT_TSTITN, UNIT_TSSMEC}},
+                  {5,
+                   {UNIT_APC, UNIT_NONE},
+                   {UNIT_V2_LAUNCHER, UNIT_NONE},
+                   {UNIT_TDAPC, UNIT_NONE},
+                   {UNIT_TDBIKE, UNIT_NONE},
+                   {UNIT_TSAPC, UNIT_NONE}},
+                  {8,
+                   {UNIT_ARTY, UNIT_JEEP},
+                   {UNIT_MTANK, UNIT_NONE},
+                   {UNIT_TDMLRS, UNIT_TDJEEP},
+                   {UNIT_TDARTY, UNIT_TDFTNK},
+                   {UNIT_TSHVR, UNIT_TSSMEC}},
+                  {10,
+                   {UNIT_MTANK2, UNIT_MTANK2},
+                   {UNIT_HTANK, UNIT_NONE},
+                   {UNIT_TDHTNK, UNIT_NONE},
+                   {UNIT_TDSTNK, UNIT_TDMSAM},
+                   {UNIT_TSSONIC, UNIT_NONE}}};
     static int num_units[ARRAY_SIZE(utable)]; // # of each type of unit to create
     int tot_units;                            // total # units to create
 
@@ -3631,7 +3676,10 @@ static void Create_Units(bool official)
             **  Spain/Turkey→HOUSE_BAD swap sets ActLike correctly.
             */
             UnitType mcv_type = UNIT_AMCV;
-            switch (hptr->ActLike) {
+            switch (TF_Roster_Side(hptr)) {
+            case HOUSE_GERMANY: // Tiberian Sun GDI -- the fifth faction starts on its own yard
+                mcv_type = UNIT_TSMCV;
+                break;
             case HOUSE_GOOD:
                 mcv_type = UNIT_TDGMCV;
                 break;
@@ -3727,7 +3775,7 @@ static void Create_Units(bool official)
             **  game proper, because a release build compiles the dev path out entirely
             **  and the TS tree would be unreachable in exactly the builds people play.
             */
-            if (hptr->IsHuman && !TF_UnholyAlliance) {
+            if (hptr->IsHuman && !TF_UnholyAlliance && !Is_TS_GDI(TF_Roster_Side(hptr))) {
                 Reserve_Unit();
                 UnitClass* tsmcv = new UnitClass(UNIT_TSMCV, house);
                 if (!Scan_Place_Object(tsmcv, centroid)) {
@@ -3775,11 +3823,14 @@ static void Create_Units(bool official)
                 **	were handed RA Allied tanks/jeeps -- the bug being fixed.)
                 */
                 const UnitType* upair;
-                if (hptr->ActLike == HOUSE_GOOD) {
+                HousesType const uside = TF_Roster_Side(hptr);
+                if (Is_TS_GDI(uside)) {
+                    upair = utable[i].TsGdiType;
+                } else if (uside == HOUSE_GOOD) {
                     upair = utable[i].GdiType;
-                } else if (hptr->ActLike == HOUSE_BAD) {
+                } else if (uside == HOUSE_BAD) {
                     upair = utable[i].NodType;
-                } else if (hptr->ActLike == HOUSE_USSR || hptr->ActLike == HOUSE_UKRAINE) {
+                } else if (uside == HOUSE_USSR || uside == HOUSE_UKRAINE) {
                     upair = utable[i].SovietType;
                 } else {
                     upair = utable[i].AllyType;
@@ -3825,13 +3876,14 @@ static void Create_Units(bool official)
                 */
                 int icount;
                 InfantryType itype;
-                if (hptr->ActLike == HOUSE_GOOD) {
+                HousesType const iside = TF_Roster_Side(hptr);
+                if (Is_TS_GDI(iside) || iside == HOUSE_GOOD) {
                     icount = itable[i].GdiCount;
                     itype = itable[i].GdiType;
-                } else if (hptr->ActLike == HOUSE_BAD) {
+                } else if (iside == HOUSE_BAD) {
                     icount = itable[i].NodCount;
                     itype = itable[i].NodType;
-                } else if (hptr->ActLike == HOUSE_USSR || hptr->ActLike == HOUSE_UKRAINE) {
+                } else if (iside == HOUSE_USSR || iside == HOUSE_UKRAINE) {
                     icount = itable[i].SovietCount;
                     itype = itable[i].SovietType;
                 } else {

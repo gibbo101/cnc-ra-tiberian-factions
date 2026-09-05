@@ -10,6 +10,13 @@ records at atlas regions, so the shipped atlas must hold:
     bottom of the slot) in the top-left of the never-referenced UI_SIDEBAR_FACTIONLOGO_DINO
     region, which is the rect the DLL points the GDI crest at (TF_Crest_Slots: {2154, 1900, 495, 444}).
 
+It also holds:
+  * the Tiberian Sun GDI emblem, same treatment, in UI_OBSERVER_MAP_BG -- a plain metal panel
+    that only TD-mode observer view draws, so an RA-mode match never renders it. The atlas has
+    no free space left (99% covered) and the DINO slot is already spent on the GDI eagle, so a
+    fifth faction's crest has to claim a region the mod cannot show. TF_Crest_Slots points a TS
+    GDI player's crest at {4220, 2883, 434, 400}.
+
 Byte-edits the target in place (same size, format-identical). Source of truth for the pristine
 pixels is the base atlas kept at scripts/cameo_work/MT_COMMANDBAR_COMMON.TGA.
 
@@ -25,6 +32,11 @@ W, H, HDR = 6871, 6716, 18
 ALLIES = (5698, 1706, 794, 713)
 SOVIET = (2684, 1709, 794, 713)
 GDI = (1, 1875, 718, 706)
+# The TS GDI crest window: the observer panel's full width, top-aligned, leaving the bottom 22
+# rows clear of the label the launcher draws across the foot of the crest widget.
+TSGDI = (4220, 2883, 434, 400)
+TSGDI_ART = 'scripts/tab_emblems/tsgdi.png'
+TSGDI_H = 380  # emblem height inside the window, matching the eagle's headroom
 
 
 def row_off(x, y):
@@ -57,6 +69,19 @@ def rows_of(img, origin):
     return out
 
 
+def ts_crest():
+    """The TS GDI emblem on transparency, fitted to the observer-panel window."""
+    logo = Image.open(TSGDI_ART).convert('RGBA')
+    logo = logo.crop(logo.getbbox())
+    x, y, w, h = TSGDI
+    scale = min(TSGDI_H / logo.height, w / logo.width)
+    logo = logo.resize((max(1, int(logo.width * scale)), max(1, int(logo.height * scale))),
+                       Image.LANCZOS)
+    out = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    out.paste(logo, ((w - logo.width) // 2, 0), logo)
+    return out
+
+
 def main(targets):
     src = open(PRISTINE, 'rb')
     rows = []
@@ -65,6 +90,7 @@ def main(targets):
         for yy in range(h):
             src.seek(row_off(x, y + yy))
             rows.append((row_off(x, y + yy), src.read(w * 4)))
+    rows += rows_of(ts_crest(), (TSGDI[0], TSGDI[1]))
     for t in targets:
         with open(t, 'r+b') as f:
             for off, b in rows:

@@ -1,9 +1,11 @@
-# TS factions in RA — feasibility (design-level, verified 2026-07-18)
+# TS factions in RA — the mechanism (traced 2026-07-18, built 2026-09-05)
 
-**Status: FEASIBLE, design de-risked, NOT scheduled.** Luke's call: TS factions are
-probably not for Tiberian Factions itself — they're the seed of a **future spin-off
-mod: TD + RA + TS + RA2 factions in one mod** (see "The multi-era vision" below).
-This doc records the verified mechanism so the design doesn't have to be re-derived.
+**Status: TS GDI IS BUILT AND PLAYABLE — see `ts-gdi-faction.md` for what shipping it took.**
+The mechanism below is the one that was implemented, unchanged: a country house decoupled from
+`HOUSEF_ALLIES`, no new `HousesType`, no launcher wall. TS Nod is the same recipe with France
+and is not built yet. The multi-era vision below (TD + RA + TS + RA2 in one mod) is the long
+game, and is now one faction closer.
+
 Grew out of the TS asset-import spike (`ts-asset-import-spike.md`), which proved the
 art pipeline end-to-end (voxel render, TS-SHP decode, hover locomotor, TSHVR +
 TSPOWR signed off in-game).
@@ -55,13 +57,15 @@ Fixed 8-entry list; adding entries hard-crashes (`faction-select-identity.md`).
 Currently 4 of 8 slots are meaningful (Spain→GDI, Greece→Nod since 2026-09-02, rest are
 Allies/Soviet dupes), so up to 4 more factions fit by relabeling dupes.
 
-- **Names:** same-length in-place MASTERTEXT edits, pad with trailing spaces.
-  "France" (6) → "TS Nod" is an exact fit; "Germany" (7) → "TS GDI ".
+- **Names:** same-length in-place MASTERTEXT edits. The strings that matter are the picker's
+  own (`NAME_FACTION_8` and the country's BONUS_/REDALERT_ pair), whose values were already the
+  relabelled side names: "Allies" (6) → "TS GDI" is an exact fit, "TS Nod" likewise.
   Three strings per faction: `NAME_FACTION_NN` + `BONUS_<COUNTRY>` +
   `REDALERT_<COUNTRY>`.
 - **Icons:** front-end-preloaded regions ONLY — GDI eagle (`_00`), Nod cobra
-  (`_01`), 8 country flags (`_03`–`_10`). TS GDI wears the same eagle as TD GDI
-  (or a flag). Bespoke front-end emblems are DEAD (`front-end-texture-meg-spike.md`).
+  (`_01`), 8 country flags (`_03`–`_10`). TS GDI took the `_08` plate and had its own emblem
+  painted into it: bespoke front-end pixels are NOT dead — the loose atlas override reaches the
+  shell (`front-end-texture-meg-spike.md`, corrected 2026-08-30).
   In-game sidebar crests + cameos are fully moddable as usual.
 
 ## Campaign exposure — accepted, with a cheap tiebreaker

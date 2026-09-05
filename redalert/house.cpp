@@ -1042,6 +1042,9 @@ int HouseClass::Yard_Factions(void) const
     if (Has_Building_Active(STRUCT_SFACT)) {
         yards |= HOUSEF_SOVIET;
     }
+    if (Has_Building_Active(STRUCT_TSFACT)) {
+        yards |= HOUSEF_TSGDI;
+    }
     return (yards);
 }
 
@@ -1336,7 +1339,7 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             */
             bool ts_walls = TF_Is_TS_Yard_Wall(type) && Has_Building_Active(STRUCT_TSFACT);
 
-            int const factions = HOUSEF_GDI | HOUSEF_NOD | HOUSEF_ALLIES | HOUSEF_SOVIET;
+            int const factions = HOUSEF_GDI | HOUSEF_NOD | HOUSEF_ALLIES | HOUSEF_SOVIET | HOUSEF_TSGDI;
             int ownable = type->Get_Ownable();
             if (!ts_tree && !ts_walls && (ownable & factions) != 0) {
                 int yards = Yard_Factions();

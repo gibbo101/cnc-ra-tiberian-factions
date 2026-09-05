@@ -1200,15 +1200,34 @@ inline HousesType operator++(HousesType& ht)
 // the Allied / Soviet umbrella so they form their own factions. Vanilla RA
 // had HOUSE_GOOD bundled into HOUSEF_ALLIES and HOUSE_BAD into HOUSEF_SOVIET,
 // causing the TD houses to silently inherit RA's tech trees.
-#define HOUSEF_ALLIES                                                                                                  \
-    (HOUSEF_ENGLAND | HOUSEF_SPAIN | HOUSEF_GREECE | HOUSEF_GERMANY | HOUSEF_FRANCE | HOUSEF_TURKEY)
+//
+// Tiberian Sun GDI is the fifth faction and takes the same treatment one step
+// further: rather than mint a new HousesType, it claims the GERMANY country
+// house and leaves the Allied umbrella. The launcher knows Germany natively --
+// colour, flag, start markers, loading screens -- so a faction built this way
+// needs no launcher-side enum at all, and the picker row the player clicks IS
+// the house they play. See docs/ts-factions-feasibility.md.
+#define HOUSEF_ALLIES (HOUSEF_ENGLAND | HOUSEF_SPAIN | HOUSEF_GREECE | HOUSEF_FRANCE | HOUSEF_TURKEY)
 #define HOUSEF_SOVIET (HOUSEF_USSR | HOUSEF_UKRAINE)
 #define HOUSEF_GDI    (HOUSEF_GOOD)
 #define HOUSEF_NOD    (HOUSEF_BAD)
+#define HOUSEF_TSGDI  (HOUSEF_GERMANY)
 #define HOUSEF_OTHERS                                                                                                  \
     (HOUSEF_NEUTRAL | HOUSEF_JP | HOUSEF_MULTI1 | HOUSEF_MULTI2 | HOUSEF_MULTI3 | HOUSEF_MULTI4 | HOUSEF_MULTI5        \
      | HOUSEF_MULTI6 | HOUSEF_MULTI7 | HOUSEF_MULTI8)
 #define HOUSEF_NONE 0
+
+/*
+**	True when this house plays as Tiberian Sun GDI. The faction rides the GERMANY
+**	country house (see the HOUSEF_TSGDI note above), so every side-flavoured branch
+**	-- starting roster, EVA voice, unit responses, side name -- asks through here
+**	rather than naming the country, which reads as an unrelated RA country everywhere
+**	it appears.
+*/
+inline bool Is_TS_GDI(HousesType house)
+{
+    return (house == HOUSE_GERMANY);
+}
 
 #define HOUSEF_ENGLAND (1L << HOUSE_ENGLAND)
 #define HOUSEF_SPAIN   (1L << HOUSE_SPAIN)

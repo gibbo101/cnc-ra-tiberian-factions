@@ -93,6 +93,9 @@ extern char const* Speech[VOX_COUNT];
 // Init_SpeechTD (audio.cpp). NULL slots fall back to Speech[].
 extern char const* SpeechTD[VOX_COUNT];
 extern void Init_SpeechTD(void);
+// Tiberian Sun GDI's EVA (audio.cpp Init_SpeechTS). NULL slots fall back to SpeechTD[].
+extern char const* SpeechTS[VOX_COUNT];
+extern void Init_SpeechTS(void);
 // RA-voice renames for stub-silenced launcher lines (audio.cpp Init_SpeechRAO).
 extern char const* SpeechRAO[VOX_COUNT];
 extern void Init_SpeechRAO(void);
@@ -668,7 +671,7 @@ void On_Sound_Effect(int sound_index, int variation, COORDINATE coord, int house
         /*
         **	Change the extension based on the variation and house accent requested.
         */
-        if (((1 << house) & HOUSEF_ALLIES) != 0) {
+        if (((1 << house) & HOUSEF_ALLIES) != 0 || Is_TS_GDI(house)) {
 
             /*
             **	For infantry, use a variation on the response. For vehicles, always
@@ -2210,6 +2213,8 @@ static int TFHelloPendingCount = 0;
 static const char* TF_Side_Name(HousesType act_like)
 {
     switch (act_like) {
+    case HOUSE_GERMANY:
+        return "TS GDI";
     case HOUSE_GOOD:
         return "GDI";
     case HOUSE_BAD:
@@ -3865,7 +3870,7 @@ static void TF_Mailbox_Write_EVA_Voice(void)
     if (local == NULL) {
         return;
     }
-    bool td_era = (local->ActLike == HOUSE_GOOD || local->ActLike == HOUSE_BAD);
+    bool td_era = (local->ActLike == HOUSE_GOOD || local->ActLike == HOUSE_BAD || Is_TS_GDI(local->ActLike));
 
     static const struct
     {
@@ -4164,7 +4169,8 @@ struct TF_CrestSlot
     float stock[4];    // the region the launcher points this slot at
     float gdi[4];      // what a GDI player should see instead
     float nod[4];      // what a Nod player should see instead
-    const float* want; // which of the three the local player should see
+    float tsgdi[4];    // what a Tiberian Sun GDI player should see instead
+    const float* want; // which of the four the local player should see
 };
 
 #define TF_CREST_SLOTS 2 // the TD GDI logo record, the TD NOD logo record
@@ -4213,18 +4219,29 @@ static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
     }
     bool gdi = (local->ActLike == HOUSE_GOOD);
     bool nod = (local->ActLike == HOUSE_BAD);
+    bool tsgdi = Is_TS_GDI(local->ActLike);
 
     static const TF_AtlasRect TD_LOGO_GDI = {1, 1875, 718, 706};    // UI_SIDEBAR_FACTIONLOGO_GDI
     static const TF_AtlasRect TD_LOGO_NOD = {3778, 2221, 660, 660}; // UI_SIDEBAR_FACTIONLOGO_NOD
+    /*
+    **	Tiberian Sun GDI's own eagle. The atlas has no room left for a fifth crest, so it is
+    **	painted over UI_OBSERVER_MAP_BG -- TD-mode observer art an RA-mode match never draws
+    **	(scripts/crest_atlas_paint.py). The window is shorter than the region so the emblem
+    **	clears the label the launcher writes across the foot of the crest.
+    */
+    static const TF_AtlasRect TS_LOGO_GDI = {4220, 2883, 434, 400};
     TF_Atlas_UV_Record(TD_LOGO_GDI, slots[0].stock);
     TF_Atlas_UV_Record(TD_LOGO_GDI, slots[0].gdi, 1);
     TF_Atlas_UV_Record(TD_LOGO_NOD, slots[0].nod, 1);
+    TF_Atlas_UV_Record(TS_LOGO_GDI, slots[0].tsgdi, 1);
     TF_Atlas_UV_Record(TD_LOGO_NOD, slots[1].stock);
     TF_Atlas_UV_Record(TD_LOGO_GDI, slots[1].gdi, 2);
     TF_Atlas_UV_Record(TD_LOGO_NOD, slots[1].nod, 2);
+    TF_Atlas_UV_Record(TS_LOGO_GDI, slots[1].tsgdi, 2);
 
     for (int s = 0; s < TF_CREST_SLOTS; s++) {
-        slots[s].want = gdi ? slots[s].gdi : (nod ? slots[s].nod : slots[s].stock);
+        slots[s].want = tsgdi ? slots[s].tsgdi
+                              : (gdi ? slots[s].gdi : (nod ? slots[s].nod : slots[s].stock));
     }
     return true;
 }
@@ -4270,13 +4287,14 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
 {
     bool gdi = (slots[0].want == slots[0].gdi);
     bool nod = (slots[0].want == slots[0].nod);
+    bool tsgdi = (slots[0].want == slots[0].tsgdi);
     // First-dword filter: a record's leading float (v0) must be one of ours before the
     // 16-byte compares run, so the slots cost one bit test per 4-byte position.
     static unsigned char bloom[8192];
     memset(bloom, 0, sizeof(bloom));
     for (int s = 0; s < TF_CREST_SLOTS; s++) {
-        const float* pats[3] = {slots[s].stock, slots[s].gdi, slots[s].nod};
-        for (int q = 0; q < 3; q++) {
+        const float* pats[4] = {slots[s].stock, slots[s].gdi, slots[s].nod, slots[s].tsgdi};
+        for (int q = 0; q < 4; q++) {
             unsigned int u;
             memcpy(&u, pats[q], 4);
             unsigned int key = (u ^ (u >> 16)) & 0xFFFF;
@@ -4331,6 +4349,9 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
                         } else if (memcmp(scratch + i, slots[s].nod, REC) == 0) {
                             slot = s;
                             was = "nod";
+                        } else if (memcmp(scratch + i, slots[s].tsgdi, REC) == 0) {
+                            slot = s;
+                            was = "tsgdi";
                         }
                     }
                     if (slot < 0) {
@@ -4347,7 +4368,8 @@ static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
                     if (log) {
                         static const char* const _slot_names[TF_CREST_SLOTS] = {"TDLOGO_GDI", "TDLOGO_NOD"};
                         fprintf(log, "  scan slot %s @ %08x %s -> %s %s\n", _slot_names[slot],
-                                (unsigned int)rec_addr, was, gdi ? "gdi" : (nod ? "nod" : "stock"),
+                                (unsigned int)rec_addr, was,
+                                tsgdi ? "tsgdi" : (gdi ? "gdi" : (nod ? "nod" : "stock")),
                                 ok ? "OK" : "FAIL");
                     }
                 }
@@ -4388,7 +4410,7 @@ static void TF_Crest_Reverify(void)
         int slot = -1;
         for (int s = 0; s < TF_CREST_SLOTS && slot < 0; s++) {
             if (memcmp(cur, slots[s].stock, REC) == 0 || memcmp(cur, slots[s].gdi, REC) == 0
-                || memcmp(cur, slots[s].nod, REC) == 0) {
+                || memcmp(cur, slots[s].nod, REC) == 0 || memcmp(cur, slots[s].tsgdi, REC) == 0) {
                 slot = s;
             }
         }
@@ -5107,7 +5129,8 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
         // Mirrors the SpeechTD[] pattern in On_Speech.
         if (sound_effect_index == VOC_RADAR_ON || sound_effect_index == VOC_RADAR_OFF) {
             bool td_faction = (player_ptr != NULL
-                               && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD));
+                               && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD
+                                   || Is_TS_GDI(player_ptr->ActLike)));
             const char* name;
             if (sound_effect_index == VOC_RADAR_ON) {
                 name = td_faction ? "TFRADRON" : "RAORADON";
@@ -5147,7 +5170,16 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
         // takes via negative variation). Credit-tick routing was reverted (the
         // launcher owns the tick and the WAV stub didn't silence it).
         if (player_ptr != NULL
-            && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD)) {
+            && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD
+                || Is_TS_GDI(player_ptr->ActLike))) {
+            /*
+            ** Tiberian Sun GDI answers in its own crews' voices. TS keys these to
+            ** numbered voice sets rather than named events (set 15 = the GDI
+            ** rifleman, set 25 = the GDI vehicle crew); scripts/ts_voices_build.py
+            ** lands them under our own event names in the same four-extension
+            ** shape the TD set uses, so only the base name changes here.
+            */
+            bool const ts_voice = Is_TS_GDI(player_ptr->ActLike);
             const char* td_base = NULL;
             switch (sound_effect_index) {
             case VOC_ACKNOWL:    td_base = "TDACKNO";   break;
@@ -5164,6 +5196,27 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
             case VOC_VEHIC:      td_base = "TDVEHIC1";  break;
             case VOC_TD_UNIT1:   td_base = "TDUNIT1";   break;
             default:             break;
+            }
+            if (td_base != NULL && ts_voice) {
+                static const struct
+                {
+                    const char* td;
+                    const char* ts;
+                } _ts_bases[] = {
+                    {"TDACKNO", "TSACKNO"},       {"TDREPORT1", "TSREPORT1"},
+                    {"TDYESSIR1", "TSYESSIR1"},   {"TDREADY", "TSREADY"},
+                    {"TDAWAIT1", "TSAWAIT1"},     {"TDROGER", "TSROGER"},
+                    {"TDRITAWAY", "TSRITAWAY"},   {"TDUGOTIT", "TSUGOTIT"},
+                    {"TDAFFIRM1", "TSAFFIRM1"},   {"TDNOPROB", "TSNOPROB"},
+                    {"TDMOVOUT1", "TSMOVOUT1"},   {"TDVEHIC1", "TSVEHIC1"},
+                    {"TDUNIT1", "TSUNIT1"},
+                };
+                for (int i = 0; i < (int)(sizeof(_ts_bases) / sizeof(_ts_bases[0])); i++) {
+                    if (strcmp(td_base, _ts_bases[i].td) == 0) {
+                        td_base = _ts_bases[i].ts;
+                        break;
+                    }
+                }
             }
             if (td_base != NULL) {
                 // Infantry fire with positive variation (ID+1) -> direct .V01/.V03
@@ -5244,11 +5297,23 @@ void DLLExportClass::On_Speech(const HouseClass* player_ptr, int speech_index)
         // Allied/Soviet keep RA's Speech[]. A NULL SpeechTD[] slot is
         // silence for GDI/Nod. Future per-side Nod voice would branch here.
         Init_SpeechTD();
+        Init_SpeechTS();
         Init_SpeechRAO();
         char const* name = Speech[speech_index];
+        bool ts_era = (player_ptr != NULL && Is_TS_GDI(player_ptr->ActLike));
         bool td_era = (player_ptr != NULL
                        && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD));
-        if (td_era && SpeechTD[speech_index] != NULL) {
+        if (ts_era) {
+            /*
+            ** Tiberian Sun GDI hears its own announcer or nothing at all -- the
+            ** same rule the TD sides follow one line below. Borrowing TD's EVA
+            ** for the lines TS never recorded would swap voices mid-match.
+            */
+            if (SpeechTS[speech_index] == NULL) {
+                return;
+            }
+            name = SpeechTS[speech_index];
+        } else if (td_era && SpeechTD[speech_index] != NULL) {
             name = SpeechTD[speech_index];
         } else if (td_era && strncmp(name, "TD", 2) != 0) {
             /*

@@ -13,7 +13,8 @@ change size (offsets resolve against the base archive):
     picker entries share one size. scripts/picker_emblems_paint.py paints those plates.
   * TD_HUD: every entry names both tactical scenes, TD's Tactical_UI.bui in TopLevelGUIList and
     RA's RA_Tactical_UI.bui in TopLevelGUIListAlt; the launcher picks one list per game. In the
-    GDI (Faction3) and Nod (Faction4) entries the two scene names are swapped, so those factions
+    GDI (Faction3), Nod (Faction4) and TS GDI (Faction8) entries the two scene names are
+    swapped, so those factions
     load TD's HUD scene (wide sell/repair/map bar, TD power meter, no side label) while the RA
     sides keep RA's. Same bytes, just exchanged.
   * HIDE (optional, off by default): entries named on the command line are wrapped in XML
@@ -27,7 +28,7 @@ import sys
 ORDER = ['Faction1', 'Faction2', 'Faction3', 'Faction10', 'Faction4', 'Faction5',
          'Faction6', 'Faction7', 'Faction8', 'Faction9']
 ICONS = {'Faction3': '03', 'Faction10': '10'}
-TD_HUD = ['Faction3', 'Faction4']
+TD_HUD = ['Faction3', 'Faction4', 'Faction8']  # Faction8 = Germany = TS GDI
 SCENE_TD = b'Art/GUI/Tactical_UI.bui'
 SCENE_RA = b'Art/GUI/RA_Tactical_UI.bui'
 

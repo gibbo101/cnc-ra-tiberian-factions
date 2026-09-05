@@ -33,8 +33,11 @@ for nn in ('03',):
     SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_GDI', None)
 for nn in ('04',):
     SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_NOD', None)
-for nn in ('10', '06', '08', '09'):
+for nn in ('10', '06', '09'):
     SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_ALLIES', None)
+# _08 (Germany) is the Tiberian Sun GDI row. Its emblem has no atlas region to borrow,
+# so the source is our own art file; a 'file:' key is read from disk instead.
+SLOTS['08'] = ('file:scripts/tab_emblems/tsgdi.png', None)
 for nn in ('05', '07'):
     SLOTS[nn] = ('UI_SIDEBAR_FACTIONLOGO_SOVIET', None)
 
@@ -59,6 +62,14 @@ def regions():
 
 def row_off(x, y):
     return HDR + (H - 1 - y) * W * 4 + x * 4
+
+
+def read_logo(f, regs, key):
+    """Emblem source: an atlas region name, or 'file:<path>' for art of our own."""
+    if key.startswith('file:'):
+        img = Image.open(key[5:]).convert('RGBA')
+        return img.crop(img.getbbox())
+    return read_region(f, regs[key])
 
 
 def read_region(f, rect):
@@ -135,14 +146,14 @@ def main(targets):
     logos = {}
     for nn, logo_region in MAP_SLOTS.items():
         if logo_region not in logos:
-            logos[logo_region] = read_region(src, regs[logo_region])
+            logos[logo_region] = read_logo(src, regs, logo_region)
         rect = regs['UI_MAPSELECT_FACTION_' + nn]
         img = compose_badge((rect[2], rect[3]), logos[logo_region])
         preview.append(img)
         paint_rows(rows, rect, img)
     for nn, (logo_region, field) in SLOTS.items():
         if logo_region not in logos:
-            logos[logo_region] = read_region(src, regs[logo_region])
+            logos[logo_region] = read_logo(src, regs, logo_region)
         logo = logos[logo_region]
         for slot in _variants(nn):
             rect = regs[slot]

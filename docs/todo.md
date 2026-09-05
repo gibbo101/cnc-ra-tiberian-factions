@@ -1,3 +1,19 @@
+## TS GDI is a playable faction — 2026-09-05 (branch `ts-gdi-faction`, verified, not merged)
+
+Full record: `docs/ts-gdi-faction.md`. Short version:
+
+- Pick "TS GDI" (picker row 6, the old Germany duplicate) and you start with a TS MCV and a TS
+  army, build the TS tree off the TD sidebar, hear TS's EVA and unit crews, and fly the TS GDI
+  eagle on the radar. All seven of those were confirmed in a live skirmish, driven headless.
+- NEXT: the six launcher-fired EVA lines still speak TD's recordings for TS GDI (the era mailbox
+  pads a TD/RA pair and carries hardcoded cache needles; a third era needs a three-way pad and
+  fresh needles). Then TS Nod on France, and AI support.
+- The AI cannot run the TS tree, so an AI that draws TS GDI is handed the TD GDI roster
+  (`TF_Roster_Side`). Revisit with the AI milestone's faction layer.
+- TS GDI fields TD GDI riflemen; TS has no infantry in the mod yet.
+- ⚠ The UI atlas is full: the TS crest had to claim `UI_OBSERVER_MAP_BG`. A sixth faction crest
+  needs another sacrifice of that kind.
+
 ## Component towers + TS walls — 2026-09-04 (branch `ts-walls-towers` @ bdfcb850, pushed, not merged)
 
 Full record: `docs/ts-gdi-tree-plan.md` top block. Short version:
