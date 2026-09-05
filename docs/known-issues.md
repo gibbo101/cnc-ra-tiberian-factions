@@ -46,14 +46,23 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## MP clients hear no credit tick (faction-routed tick, 2026-08-31)
 
-- **Severity:** minor. **Status:** open, by design for now.
+- **Severity:** minor. **Status:** fix BUILT 2026-09-05, awaiting a LAN test.
 - The faction-routed credit tick silences the launcher's stock `cashup1`/`cashdn1`
   events and re-fires from the DLL for the local player only (`credits.cpp`
   `CreditClass::AI`). In LAN MP the sim is host-only, so client HUDs get the
-  silenced events and no DLL fire — silent tick. Fix would need per-player sound
-  targeting (`DLLExportClass::On_Sound_Effect` takes a `player_ptr`; the global
-  `Sound_Effect` wrapper hardcodes `PlayerPtr`). Detail:
-  `building-sound-routing.md` §2.
+  silenced events and no DLL fire — silent tick. The fix this entry called for is
+  now in: `TF_Fire_Credit_Tick` (dllinterface.cpp) hands the roll's own house to
+  `DLLExportClass::On_Sound_Effect`, so the tick is addressed to the player whose
+  credits moved instead of to whoever is local. The host's own tick still goes
+  through the unchanged path, so single player is untouched.
+- **What the LAN test decides.** EA's beacon addresses allied players exactly this
+  way (`CNC_Handle_Beacon_Request`), so the launcher plainly honours the id for
+  *some* events — but whether it forwards a remotely-addressed sound to that
+  player's shell is launcher-internal and unproven. Two outcomes: joiners hear
+  their own faction's tick (done), or **the host hears the other players' ticks**,
+  which means the id is a local filter only and the data-side flank is needed
+  instead (`building-sound-routing.md` §2). The failure mode is audible, so one
+  match settles it.
 
 ## TS building placement (ts-units branch)
 

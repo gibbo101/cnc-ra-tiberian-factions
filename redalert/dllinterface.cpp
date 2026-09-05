@@ -12181,6 +12181,37 @@ void DLLExportClass::Team_Units_Formation_Toggle_On(uint64 player_id)
     }
 }
 
+
+/*
+**	Tiberian Factions -- fire a house's credit tick AT THAT HOUSE.
+**
+**	The stock tick events are data-silenced and the DLL fires the era-correct one from the
+**	roll itself, which works for whoever is at the keyboard. In a LAN game that is only ever
+**	the host: a joiner has no game DLL mapped at all (reference-lan-mp-host-only-sim), so it
+**	can run nothing of ours. The host does simulate the joiner's house, though, and the sound
+**	callback carries a per-player id -- EA's own beacon addresses allies exactly this way
+**	(see CNC_Handle_Beacon_Request below) -- so the tick can be sent to the player whose
+**	credits actually moved rather than to whoever is local.
+**
+**	Whether the launcher forwards a remotely-addressed sound to that player's shell is
+**	launcher-internal and untested; if it does not, the host hears the other players' ticks
+**	and this needs the data-side flank instead (docs/building-sound-routing.md).
+*/
+void TF_Fire_Credit_Tick(HouseClass* house, bool is_up)
+{
+    if (house == NULL) {
+        return;
+    }
+    VocType voc;
+    if (Is_TS_GDI(house->ActLike)) {
+        voc = is_up ? VOC_TS_MONEY_UP : VOC_TS_MONEY_DOWN;
+    } else if (house->ActLike == HOUSE_GOOD || house->ActLike == HOUSE_BAD) {
+        voc = is_up ? VOC_TD_MONEY_UP : VOC_TD_MONEY_DOWN;
+    } else {
+        voc = is_up ? VOC_DLL_MONEY_UP : VOC_DLL_MONEY_DOWN;
+    }
+    DLLExportClass::On_Sound_Effect(house, (int)voc, "", 1, 0);
+}
 /**************************************************************************************************
  * CNC_Handle_Debug_Request -- Process a debug input request
  *
