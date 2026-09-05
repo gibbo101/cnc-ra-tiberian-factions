@@ -164,13 +164,51 @@ genuine fix regardless: a crate-found TS yard whose owner has lost their own yar
 
 ---
 
+## The era mailbox, N eras wide
+
+Six lines are fired by the launcher itself and never reach `On_Speech`: cannot deploy here,
+battle control terminated, mission won, mission lost, select target, insufficient power. The
+mailbox writes the era-correct recording over the launcher's own sample names at match start,
+and overwrites ClientG's cached copy so an in-session switch is corrected too.
+
+It was a TD/RA **pair**. It is now a table with one payload per era per line, generated whole by
+`scripts/eva_mailbox_build.py` into `redalert/tf_eva_mailbox.h`. **Adding TS Nod's CABAL or RA2's
+announcers is one entry in that script's `ERAS` plus its recordings** — no new branch in the DLL,
+which asks `TF_Eva_Era()` for an index and looks the row up.
+
+Why it could not stay a pair, and what that cost:
+
+- **Every era's payload for a line must be the same byte length**, because the cache overwrite
+  finds a blob by hunting the *wrong* era's needle and subtracting that era's file offset. So a
+  new era re-pads every line and invalidates every needle — which is why the table is generated
+  rather than pasted in by hand.
+- ⚠ **The scan is now bucketed by first needle byte.** It used to re-scan each chunk of ClientG's
+  heap once per row; at two eras that was 12 passes, at six it would be 60 over hundreds of MB.
+  Bucketing keeps the per-byte cost flat however many eras exist.
+- ⚠ **ffmpeg cannot encode the alignment the teardown line needs.** Its MS-ADPCM encoder demands
+  a power-of-two block size; "battle control terminated" needs `block_align = 70`, which is why
+  that line used to be byte-padded instead of re-encoded. `scripts/msadpcm.py` encodes at any
+  alignment (35 dB SNR against the source), so every era's payload can now be produced properly.
+- ⚠ **The shipped runtime seeds ARE the RA payloads, byte for byte.** ClientG caches whatever
+  sits at the launcher's sample name when it starts, so on a fresh install the cached blob is the
+  seed — and the overwrite can only find it if the seed is a current-length era payload. The
+  builder rewrites the seeds for that reason; let them drift and a new install silently keeps
+  RA's voice for its first session.
+- ⚠ **The originals were never kept.** Only the padded outputs were in the repo, so RA's and TD's
+  content is recovered by decoding those and trimming the pad — one extra ADPCM generation on
+  those two eras. The frozen sources now live in `scripts/eva_work/src/` so the builder never
+  reads its own output back (which would stack a generation per run). If the base recordings are
+  ever re-extracted cleanly, replace that snapshot.
+
+TS's recordings sit a little quieter than RA's (peaks ~15-25k against ~30k); worth a level pass
+if it reads as quiet in play.
+
+---
+
 ## What is left
 
-- **The six launcher-fired EVA lines** (cannot deploy here, battle control terminated, mission
-  won/lost, select target, insufficient power) still play **TD's** recordings for TS GDI. They do
-  not pass through `On_Speech`; they come from the era mailbox, which currently pads a TD/RA
-  *pair* to equal length and carries hardcoded needles for the ClientG cache overwrite
-  (`eva_mailbox_payload.py`). A third era means a three-way pad and fresh needles.
+- **The six launcher-fired EVA lines are now TS's own** (built 2026-09-05, not yet heard in
+  play). The mailbox is N-way: see "The era mailbox, N eras wide" below.
 - **TS GDI has no infantry of its own** — it fields the TD GDI riflemen. TS infantry is a
   content wave, not faction work.
 - **TS Nod** is the same recipe with France: `HOUSEF_TSNOD (HOUSEF_FRANCE)`, `Faction9`, the

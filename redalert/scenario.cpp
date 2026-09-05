@@ -3873,11 +3873,18 @@ static void Create_Units(bool official)
                 **	Allies/Soviet keep RA vanilla. (Note: Unlimbo calls
                 **	Enter_Idle_Mode(), which assigns the infantry to HUNT; we must
                 **	use Set_Mission() to override this state.)
+                **
+                **	Tiberian Sun GDI starts with NO infantry at all (Luke, 2026-09-05).
+                **	TS infantry is a later wave of the TS content work, and borrowing
+                **	TD's riflemen in the meantime puts the wrong era on the field.
                 */
                 int icount;
                 InfantryType itype;
                 HousesType const iside = TF_Roster_Side(hptr);
-                if (Is_TS_GDI(iside) || iside == HOUSE_GOOD) {
+                if (Is_TS_GDI(iside)) {
+                    icount = 0;
+                    itype = INFANTRY_NONE;
+                } else if (iside == HOUSE_GOOD) {
                     icount = itable[i].GdiCount;
                     itype = itable[i].GdiType;
                 } else if (iside == HOUSE_BAD) {

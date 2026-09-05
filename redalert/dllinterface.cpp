@@ -93,6 +93,7 @@ extern char const* Speech[VOX_COUNT];
 // Init_SpeechTD (audio.cpp). NULL slots fall back to Speech[].
 extern char const* SpeechTD[VOX_COUNT];
 extern void Init_SpeechTD(void);
+#include "tf_eva_mailbox.h"
 // Tiberian Sun GDI's EVA (audio.cpp Init_SpeechTS). NULL slots fall back to SpeechTD[].
 extern char const* SpeechTS[VOX_COUNT];
 extern void Init_SpeechTS(void);
@@ -3852,76 +3853,8 @@ void DLLExportClass::Shutdown(void)
 */
 static char TF_ModRootPath[MAX_PATH]; // "<mod>\" incl. trailing separator
 
-static void TF_Patch_ClientG_Cache(bool td_era);
+static void TF_Patch_ClientG_Cache(int era);
 
-static void TF_Mailbox_Write_EVA_Voice(void)
-{
-    if (TF_ModRootPath[0] == 0) {
-        return;
-    }
-    const HouseClass* local = PlayerPtr;
-    if (local == NULL) {
-        for (int i = 0; i < Houses.Count(); i++) {
-            HouseClass* house = Houses.Ptr(i);
-            if (house != NULL && house->IsActive && house->IsHuman) {
-                local = house;
-                break;
-            }
-        }
-    }
-    if (local == NULL) {
-        return;
-    }
-    bool td_era = (local->ActLike == HOUSE_GOOD || local->ActLike == HOUSE_BAD || Is_TS_GDI(local->ActLike));
-
-    static const struct
-    {
-        const char* td_src;
-        const char* ra_src;
-        const char* dst;
-    } _rows[] = {
-        {"TF_MBX_TD_NODEPLY_C.WAV", "TF_MBX_RA_NODEPLY_C.WAV", "RAC_SFX_EVA_NODEPLY1_EN-US.WAV"},
-        {"TF_MBX_TD_NODEPLY_R.WAV", "TF_MBX_RA_NODEPLY_R.WAV", "RAR_SFX_EVA_NODEPLY1_EN-US.WAV"},
-        {"TF_MBX_TD_BCT_C.WAV", "TF_MBX_RA_BCT_C.WAV", "RAC_SFX_EVA_BCT1_EN-US.WAV"},
-        {"TF_MBX_TD_BCT_R.WAV", "TF_MBX_RA_BCT_R.WAV", "RAR_SFX_EVA_BCT1_EN-US.WAV"},
-        {"TF_MBX_TD_WON_C.WAV", "TF_MBX_RA_WON_C.WAV", "RAC_SFX_EVA_MISNWON1_EN-US.WAV"},
-        {"TF_MBX_TD_WON_R.WAV", "TF_MBX_RA_WON_R.WAV", "RAR_SFX_EVA_MISNWON1_EN-US.WAV"},
-        {"TF_MBX_TD_LST_C.WAV", "TF_MBX_RA_LST_C.WAV", "RAC_SFX_EVA_MISNLST1_EN-US.WAV"},
-        {"TF_MBX_TD_LST_R.WAV", "TF_MBX_RA_LST_R.WAV", "RAR_SFX_EVA_MISNLST1_EN-US.WAV"},
-        {"TF_MBX_TD_SLCT_C.WAV", "TF_MBX_RA_SLCT_C.WAV", "RAC_SFX_EVA_SLCTTGT1_EN-US.WAV"},
-        {"TF_MBX_TD_SLCT_R.WAV", "TF_MBX_RA_SLCT_R.WAV", "RAR_SFX_EVA_SLCTTGT1_EN-US.WAV"},
-        {"TF_MBX_TD_NOPOW_C.WAV", "TF_MBX_RA_NOPOW_C.WAV", "RAC_SFX_EVA_NOPOWR1_EN-US.WAV"},
-        {"TF_MBX_TD_NOPOW_R.WAV", "TF_MBX_RA_NOPOW_R.WAV", "RAR_SFX_EVA_NOPOWR1_EN-US.WAV"},
-    };
-    char dir[MAX_PATH];
-    snprintf(dir, sizeof(dir), "%sData\\AUDIO\\EN-US", TF_ModRootPath);
-    CreateDirectoryA(dir, NULL);
-    for (int i = 0; i < (int)(sizeof(_rows) / sizeof(_rows[0])); i++) {
-        char src[MAX_PATH];
-        char dst[MAX_PATH];
-        snprintf(src, sizeof(src), "%s\\%s", dir, td_era ? _rows[i].td_src : _rows[i].ra_src);
-        snprintf(dst, sizeof(dst), "%s\\%s", dir, _rows[i].dst);
-        CopyFileA(src, dst, FALSE);
-    }
-
-    // Also overwrite any already-cached copy in ClientG's memory, so an in-session faction
-    // switch corrects lines heard (and cached) before the switch (docs/eva-ram-patch-spike.md).
-    TF_Patch_ClientG_Cache(td_era);
-}
-
-/*
-** Tiberian Factions -- stage-2 RAM patch (docs/eva-ram-patch-spike.md). The disk mailbox
-** above only reaches a launcher-fired EVA line the FIRST time it fires in a boot; ClientG
-** then caches the sample (proven: raw ADPCM file bytes, in a PAGE_READWRITE region) and
-** replays the cached copy, so a faction switch WITHOUT relaunching keeps the stale voice on
-** already-heard lines. This patch overwrites the cached blob in ClientG's memory with the
-** era-correct bytes at match start: scan for the WRONG faction's distinctive needle, compute
-** the blob start from the needle's known file offset, and write the correct-faction WAV over
-** it. The TD/RA payload of each line+channel is padded to EQUAL byte length (they are
-** re-encoded mono at a fixed rate; MS-ADPCM is constant-rate so equal sample count => equal
-** bytes), so the cached blob is one fixed size and the overwrite is always same-size -- no
-** overflow in either switch direction. Covers every launcher-owned line, both channels.
-*/
 static bool TF_WriteFile_Into_Process(HANDLE proc, SIZE_T dest, const char* path)
 {
     FILE* f = fopen(path, "rb");
@@ -3950,7 +3883,59 @@ static bool TF_WriteFile_Into_Process(HANDLE proc, SIZE_T dest, const char* path
     return ok;
 }
 
-static void TF_Patch_ClientG_Cache(bool td_era)
+/*
+**	Which announcer a house hears. The generated table carries one payload per era for
+**	every launcher-fired line, so adding TS Nod's CABAL or RA2's announcers is a row in
+**	scripts/eva_mailbox_build.py's ERAS plus its recordings -- not another branch here.
+*/
+static int TF_Eva_Era(HousesType act_like)
+{
+    if (Is_TS_GDI(act_like)) {
+        return TF_EVA_ERA_TS;
+    }
+    if (act_like == HOUSE_GOOD || act_like == HOUSE_BAD) {
+        return TF_EVA_ERA_TD;
+    }
+    return TF_EVA_ERA_RA;
+}
+
+static void TF_Mailbox_Write_EVA_Voice(void)
+{
+    if (TF_ModRootPath[0] == 0) {
+        return;
+    }
+    const HouseClass* local = PlayerPtr;
+    if (local == NULL) {
+        for (int i = 0; i < Houses.Count(); i++) {
+            HouseClass* house = Houses.Ptr(i);
+            if (house != NULL && house->IsActive && house->IsHuman) {
+                local = house;
+                break;
+            }
+        }
+    }
+    if (local == NULL) {
+        return;
+    }
+    int const era = TF_Eva_Era(local->ActLike);
+
+    char dir[MAX_PATH];
+    snprintf(dir, sizeof(dir), "%sData\\AUDIO\\EN-US", TF_ModRootPath);
+    CreateDirectoryA(dir, NULL);
+    for (int i = 0; i < (int)(sizeof(TF_EvaMailboxLines) / sizeof(TF_EvaMailboxLines[0])); i++) {
+        char src[MAX_PATH];
+        char dst[MAX_PATH];
+        snprintf(src, sizeof(src), "%s\\%s", dir, TF_EvaMailboxLines[i].era[era].file);
+        snprintf(dst, sizeof(dst), "%s\\%s", dir, TF_EvaMailboxLines[i].dst);
+        CopyFileA(src, dst, FALSE);
+    }
+
+    // Also overwrite any already-cached copy in ClientG's memory, so an in-session faction
+    // switch corrects lines heard (and cached) before the switch (docs/eva-ram-patch-spike.md).
+    TF_Patch_ClientG_Cache(era);
+}
+
+static void TF_Patch_ClientG_Cache(int era)
 {
     if (TF_ModRootPath[0] == 0) {
         return;
@@ -3958,84 +3943,57 @@ static void TF_Patch_ClientG_Cache(bool td_era)
     char dir[MAX_PATH];
     snprintf(dir, sizeof(dir), "%sData\\AUDIO\\EN-US", TF_ModRootPath);
 
-    // One entry per launcher-owned line + channel. Each carries BOTH factions' distinctive
-    // 20-byte needle and its byte offset within that faction's (equal-length) payload file,
-    // plus both file names. At runtime the WRONG faction (!desired) is the one to hunt; a hit
-    // locates the blob start (hit - wrong.fileoff) and the DESIRED faction's payload is written
-    // over it. Needles/offsets are regenerated whenever the payloads are re-padded.
-    struct PatchLine
-    {
-        const unsigned char* td_needle;
-        int td_fileoff;
-        const char* td_file;
-        const unsigned char* ra_needle;
-        int ra_fileoff;
-        const char* ra_file;
-    };
-    static const unsigned char td_nodeply_c[] = {0x0f, 0x0f, 0xee, 0xf1, 0x55, 0x35, 0x33, 0x33, 0x43, 0x32, 0x43, 0x33, 0x33, 0x53, 0x24, 0x22, 0x22, 0x10, 0xea, 0xbc};
-    static const unsigned char ra_nodeply_c[] = {0x0d, 0xb0, 0x41, 0x15, 0x42, 0x10, 0x20, 0xe1, 0x01, 0x14, 0x22, 0x34, 0x34, 0x11, 0x32, 0x10, 0xff, 0x31, 0xf2, 0x41};
-    static const unsigned char td_nodeply_r[] = {0x44, 0x33, 0x23, 0x0e, 0xea, 0xcc, 0xef, 0xe0, 0x14, 0x32, 0x15, 0x53, 0x41, 0x1f, 0xcd, 0xce, 0xe1, 0x13, 0x44, 0x44};
-    static const unsigned char ra_nodeply_r[] = {0xee, 0xf0, 0xf0, 0x34, 0x33, 0x20, 0xeb, 0xd1, 0x54, 0x2d, 0x9e, 0xf2, 0x2f, 0xed, 0xf0, 0x04, 0x43, 0x2f, 0xf3, 0x31};
-    // BCT keeps its BASE-FORMAT payloads (block_align 70 -- the teardown sample loader rejects
-    // ffmpeg's power-of-two re-encode with silence), zero-padded after the data chunk to equal
-    // length per channel so the same-size cache write still holds. Needles read from real audio.
-    static const unsigned char td_bct_c[] = {0xde, 0x25, 0xf0, 0x01, 0x61, 0x20, 0x00, 0x61, 0x31, 0x01, 0xf0, 0xfc, 0xde, 0xfd, 0xc8, 0xde, 0x22, 0x71, 0xe0, 0x11};
-    static const unsigned char ra_bct_c[] = {0x11, 0xfd, 0x20, 0xfc, 0x22, 0xb0, 0xde, 0x0f, 0xdb, 0x10, 0xd0, 0xe4, 0x60, 0x33, 0x22, 0x00, 0xa1, 0x0f, 0xde, 0xd3};
-    static const unsigned char td_bct_r[] = {0x01, 0x01, 0x2d, 0x00, 0x2d, 0x00, 0x8a, 0x11, 0x8a, 0x11, 0x8c, 0x15, 0x8c, 0x15, 0xcc, 0x11, 0x66, 0x22, 0x44, 0x55};
-    static const unsigned char ra_bct_r[] = {0xff, 0xf0, 0x75, 0x2f, 0xff, 0x15, 0x23, 0x0f, 0xf0, 0x27, 0x20, 0xed, 0x00, 0x10, 0xdf, 0xad, 0xec, 0xec, 0xd0, 0x1b};
-    static const unsigned char td_won_c[] = {0x12, 0x22, 0x1e, 0xef, 0x35, 0x3e, 0x9d, 0xf3, 0x1c, 0xbe, 0xff, 0xe0, 0xf0, 0x12, 0x30, 0xe2, 0x56, 0x32, 0x14, 0x44};
-    static const unsigned char ra_won_c[] = {0xd8, 0xed, 0xbc, 0xef, 0xdd, 0xed, 0xbd, 0xef, 0x10, 0x13, 0x1e, 0x14, 0x33, 0x47, 0x34, 0x12, 0x22, 0x43, 0x42, 0x22};
-    static const unsigned char td_won_r[] = {0xff, 0xfd, 0xbc, 0xcc, 0xcd, 0xdc, 0xdd, 0xde, 0xce, 0xee, 0xed, 0xd9, 0xdc, 0xcd, 0xcc, 0xcd, 0xdd, 0xcd, 0xed, 0xce};
-    static const unsigned char ra_won_r[] = {0xdd, 0xbd, 0xef, 0xee, 0xbd, 0xee, 0xfd, 0xbe, 0xfe, 0xdc, 0xee, 0xad, 0xfe, 0xfc, 0xdc, 0xde, 0xe0, 0x11, 0x0f, 0xdd};
-    static const unsigned char td_lst_c[] = {0x00, 0x00, 0x02, 0x33, 0x43, 0x43, 0x44, 0x33, 0x20, 0xdd, 0xac, 0xde, 0x10, 0xf0, 0x11, 0x33, 0x43, 0x11, 0xff, 0x26};
-    static const unsigned char ra_lst_c[] = {0x02, 0x32, 0x66, 0x52, 0x21, 0xe0, 0x32, 0x23, 0x42, 0x52, 0x11, 0x10, 0xaf, 0x20, 0xbf, 0x2f, 0xed, 0xcd, 0xdd, 0x0a};
-    static const unsigned char td_lst_r[] = {0xf2, 0x12, 0x11, 0x10, 0xfe, 0xff, 0xf0, 0xf0, 0x10, 0xee, 0xed, 0xdd, 0xdd, 0xfe, 0xfe, 0xdd, 0xdc, 0xcd, 0xdf, 0xed};
-    static const unsigned char ra_lst_r[] = {0xda, 0xda, 0xcc, 0xbc, 0xcd, 0xdf, 0x0f, 0xd0, 0x11, 0x12, 0x63, 0x30, 0x1f, 0x12, 0x0e, 0xf0, 0xfe, 0x9d, 0x04, 0x41};
-    // "Select target" (super cameo click) and "Insufficient power" (stalled-build click), both
-    // launcher-fired mid-match; re-encoded equal-length payloads (scripts/eva_mailbox_payload.py).
-    static const unsigned char td_slct_c[] = {0xf0, 0x00, 0x01, 0x0d, 0x40, 0xa4, 0x0c, 0x30, 0xff, 0x05, 0xc0, 0x3d, 0x12, 0xef, 0x14, 0xcf, 0x4f, 0xff, 0x21, 0xd1};
-    static const unsigned char ra_slct_c[] = {0x00, 0x04, 0x31, 0x70, 0x14, 0x01, 0x2f, 0x31, 0xe2, 0x22, 0x52, 0xf5, 0x4f, 0x17, 0xe1, 0xfc, 0x2e, 0xa0, 0xfe, 0xff};
-    static const unsigned char td_slct_r[] = {0x11, 0xec, 0x03, 0x1d, 0xd1, 0x4f, 0xd2, 0x5e, 0xb0, 0x21, 0xf0, 0x22, 0x09, 0xd2, 0x41, 0xe0, 0x30, 0xbf, 0x25, 0x0b};
-    static const unsigned char ra_slct_r[] = {0x12, 0x00, 0x27, 0x2f, 0xac, 0xf3, 0x51, 0x0e, 0xfe, 0xff, 0x15, 0x21, 0xee, 0xff, 0xfc, 0xf4, 0x53, 0x1e, 0xcb, 0xd1};
-    static const unsigned char td_nopow_c[] = {0x1c, 0x41, 0xf0, 0xf4, 0xef, 0x6e, 0x02, 0x00, 0x00, 0x1f, 0x13, 0x1d, 0x37, 0xc0, 0x3f, 0xee, 0x7f, 0xc2, 0x1e, 0xe4};
-    static const unsigned char ra_nopow_c[] = {0x20, 0xf1, 0xe2, 0xff, 0x3d, 0xf3, 0xfd, 0x7e, 0xd7, 0xf0, 0x00, 0x2c, 0x11, 0xf5, 0xc0, 0x4d, 0x04, 0xee, 0x4f, 0xe1};
-    static const unsigned char td_nopow_r[] = {0x02, 0x36, 0x43, 0x21, 0x20, 0xff, 0x24, 0x33, 0x42, 0x10, 0x12, 0x76, 0x32, 0x22, 0xfd, 0xde, 0xf1, 0x54, 0x41, 0x20};
-    static const unsigned char ra_nopow_r[] = {0x02, 0x33, 0x30, 0x00, 0x22, 0xea, 0xe1, 0x41, 0x0a, 0x01, 0x0e, 0xbe, 0x00, 0xfe, 0x04, 0x62, 0xff, 0xe0, 0xfc, 0xcd};
-    // BCT only fires at teardown, so it is not cached during its OWN match -- but after its
-    // first teardown it persists in cache, so the NEXT match's start-patch can flip it (same as
-    // the other lines). Its base-format payloads are zero-padded to equal length, so the write
-    // stays same-size. NODEPLY/WON/LST use the re-encoded equal-length payloads.
-    static const PatchLine lines[] = {
-        {td_nodeply_c, 1124, "TF_MBX_TD_NODEPLY_C.WAV", ra_nodeply_c, 1124, "TF_MBX_RA_NODEPLY_C.WAV"},
-        {td_nodeply_r, 1124, "TF_MBX_TD_NODEPLY_R.WAV", ra_nodeply_r, 1124, "TF_MBX_RA_NODEPLY_R.WAV"},
-        {td_bct_c, 678, "TF_MBX_TD_BCT_C.WAV", ra_bct_c, 678, "TF_MBX_RA_BCT_C.WAV"},
-        {td_bct_r, 7078, "TF_MBX_TD_BCT_R.WAV", ra_bct_r, 678, "TF_MBX_RA_BCT_R.WAV"},
-        {td_won_c, 1124, "TF_MBX_TD_WON_C.WAV", ra_won_c, 1124, "TF_MBX_RA_WON_C.WAV"},
-        {td_won_r, 1624, "TF_MBX_TD_WON_R.WAV", ra_won_r, 1124, "TF_MBX_RA_WON_R.WAV"},
-        {td_lst_c, 1124, "TF_MBX_TD_LST_C.WAV", ra_lst_c, 1124, "TF_MBX_RA_LST_C.WAV"},
-        {td_lst_r, 1374, "TF_MBX_TD_LST_R.WAV", ra_lst_r, 1124, "TF_MBX_RA_LST_R.WAV"},
-        {td_slct_c, 1212, "TF_MBX_TD_SLCT_C.WAV", ra_slct_c, 1276, "TF_MBX_RA_SLCT_C.WAV"},
-        {td_slct_r, 2236, "TF_MBX_TD_SLCT_R.WAV", ra_slct_r, 1212, "TF_MBX_RA_SLCT_R.WAV"},
-        {td_nopow_c, 1852, "TF_MBX_TD_NOPOW_C.WAV", ra_nopow_c, 1916, "TF_MBX_RA_NOPOW_C.WAV"},
-        {td_nopow_r, 1660, "TF_MBX_TD_NOPOW_R.WAV", ra_nopow_r, 1212, "TF_MBX_RA_NOPOW_R.WAV"},
-    };
-    const int NEEDLE_LEN = 20;
-
+    /*
+    **	One row per line per era we are NOT playing: hunt that era's distinctive bytes, and
+    **	whatever they are found in is a cached copy of that era's payload, so the blob starts
+    **	at (hit - its file offset) and our own era's file is written over it. Every era's
+    **	payload for a line is the same byte length, which is what makes the write safe.
+    */
     struct PatchRow
     {
         const unsigned char* wrong_needle;
-        int wrong_len;
         int wrong_fileoff;
         const char* correct_file;
     };
-    int row_count = (int)(sizeof(lines) / sizeof(lines[0]));
-    PatchRow rows[sizeof(lines) / sizeof(lines[0])];
-    for (int i = 0; i < row_count; i++) {
-        // Hunt the WRONG faction's bytes; write the DESIRED faction's file over them.
-        rows[i].wrong_needle = td_era ? lines[i].ra_needle : lines[i].td_needle;
-        rows[i].wrong_len = NEEDLE_LEN;
-        rows[i].wrong_fileoff = td_era ? lines[i].ra_fileoff : lines[i].td_fileoff;
-        rows[i].correct_file = td_era ? lines[i].td_file : lines[i].ra_file;
+    int const line_count = (int)(sizeof(TF_EvaMailboxLines) / sizeof(TF_EvaMailboxLines[0]));
+    PatchRow rows[(sizeof(TF_EvaMailboxLines) / sizeof(TF_EvaMailboxLines[0])) * TF_EVA_ERA_COUNT];
+    int row_count = 0;
+    for (int i = 0; i < line_count; i++) {
+        for (int e = 0; e < TF_EVA_ERA_COUNT; e++) {
+            if (e == era) {
+                continue;
+            }
+            rows[row_count].wrong_needle = TF_EvaMailboxLines[i].era[e].needle;
+            rows[row_count].wrong_fileoff = TF_EvaMailboxLines[i].era[e].fileoff;
+            rows[row_count].correct_file = TF_EvaMailboxLines[i].era[era].file;
+            row_count++;
+        }
+    }
+
+    /*
+    **	Bucket the needles by their first byte. The heap walk below is the expensive part and
+    **	it used to be re-scanned once per row, which was tolerable at two eras and would not be
+    **	at six: this keeps the per-byte cost at roughly one compare however many eras exist.
+    */
+    int bucket_start[257];
+    int bucket_rows[(sizeof(TF_EvaMailboxLines) / sizeof(TF_EvaMailboxLines[0])) * TF_EVA_ERA_COUNT];
+    {
+        int counts[256];
+        memset(counts, 0, sizeof(counts));
+        for (int r = 0; r < row_count; r++) {
+            counts[rows[r].wrong_needle[0]]++;
+        }
+        int total = 0;
+        for (int c = 0; c < 256; c++) {
+            bucket_start[c] = total;
+            total += counts[c];
+        }
+        bucket_start[256] = total;
+        int fill[256];
+        memcpy(fill, bucket_start, sizeof(fill));
+        for (int r = 0; r < row_count; r++) {
+            bucket_rows[fill[rows[r].wrong_needle[0]]++] = r;
+        }
     }
 
     FILE* log = NULL;
@@ -4047,7 +4005,7 @@ static void TF_Patch_ClientG_Cache(bool td_era)
         log = fopen(logpath, "a");
     }
     if (log) {
-        fprintf(log, "== patch at frame %d td_era=%d ==\n", (int)Frame, (int)td_era);
+        fprintf(log, "== patch at frame %d era=%d rows=%d ==\n", (int)Frame, era, row_count);
     }
 #endif
 
@@ -4096,14 +4054,14 @@ static void TF_Patch_ClientG_Cache(bool td_era)
                             || got == 0) {
                             continue;
                         }
-                        for (int r = 0; r < row_count; r++) {
-                            const unsigned char* nb = rows[r].wrong_needle;
-                            int nl = rows[r].wrong_len;
-                            if ((SIZE_T)nl > got) {
-                                continue;
-                            }
-                            for (SIZE_T i = 0; i + nl <= got; i++) {
-                                if (scratch[i] == nb[0] && memcmp(scratch + i, nb, nl) == 0) {
+                        if (got >= (SIZE_T)TF_EVA_NEEDLE_LEN) {
+                            for (SIZE_T i = 0; i + TF_EVA_NEEDLE_LEN <= got; i++) {
+                                unsigned char const lead = scratch[i];
+                                for (int b = bucket_start[lead]; b < bucket_start[lead + 1]; b++) {
+                                    int const r = bucket_rows[b];
+                                    if (memcmp(scratch + i, rows[r].wrong_needle, TF_EVA_NEEDLE_LEN) != 0) {
+                                        continue;
+                                    }
                                     SIZE_T hit = region_base + off + i;
                                     SIZE_T blob = hit - rows[r].wrong_fileoff;
                                     char path[MAX_PATH];
