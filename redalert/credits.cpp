@@ -274,7 +274,9 @@ void CreditClass::AI(bool forced, HouseClass* player_ptr, bool logic_only)
             **	the owning faction is known. Local player's HUD only.
             */
             if (player_ptr == PlayerPtr) {
-                if (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD) {
+                if (Is_TS_GDI(player_ptr->ActLike)) {
+                    Sound_Effect(IsUp ? VOC_TS_MONEY_UP : VOC_TS_MONEY_DOWN, fixed(1, 2));
+                } else if (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD) {
                     Sound_Effect(IsUp ? VOC_TD_MONEY_UP : VOC_TD_MONEY_DOWN, fixed(1, 2));
                 } else {
                     Sound_Effect(IsUp ? VOC_DLL_MONEY_UP : VOC_DLL_MONEY_DOWN, fixed(1, 2));

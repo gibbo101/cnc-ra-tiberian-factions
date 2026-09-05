@@ -4192,6 +4192,8 @@ typedef enum VocType : short
     VOC_TS_GUN4,         // TS Vulcan2 report (TSGUN4) -- the drop pod's LZ strafe. Routed via RAC/RAR_SFX_TSGUN4 -> bundled TSGUN4.WAV under its OWN name (novel-name path).
     VOC_TS_METEOR,       // TS meteor whoosh (METEOR1) -- the drop pod descent scream, fired at the LZ per pod launch. RAC/RAR_SFX_TSMETEOR -> bundled TSMETEOR.WAV.
     VOC_TS_HUNTER2,      // TS hunter seeker detonation (HUNTER2, the SuicideBomb Report=). RAC/RAR_SFX_TSHUNTR2 -> bundled TSHUNTR2.WAV, own name.
+    VOC_TS_MONEY_UP,     // TS credit tick up (CREDUP1, TS rules [AudioVisual] CreditTicks=) -- the TS-era voice of the DLL-fired tick. RAC/RAR_SFX_TSCREDUP1 -> bundled TSCREDUP1.WAV, own name.
+    VOC_TS_MONEY_DOWN,   // TS credit tick down (CREDDWN1) -- as above.
 
     VOC_COUNT,
     VOC_FIRST = 0

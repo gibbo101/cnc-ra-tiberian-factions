@@ -307,6 +307,8 @@ struct SoundEffectNameStruct
     {"TSGUN4", 1, IN_NOVAR},      // VOC_TS_GUN4 -- TS Vulcan2 report: the drop pod's LZ strafe (RAC/RAR_SFX_TSGUN4 -> bundled TSGUN4.WAV, own name)
     {"TSMETEOR", 1, IN_NOVAR},    // VOC_TS_METEOR -- TS meteor whoosh: the drop pod descent scream (RAC/RAR_SFX_TSMETEOR -> bundled TSMETEOR.WAV, own name)
     {"TSHUNTR2", 1, IN_NOVAR},    // VOC_TS_HUNTER2 -- TS hunter seeker detonation (RAC/RAR_SFX_TSHUNTR2 -> bundled TSHUNTR2.WAV, own name)
+    {"TSCREDUP1", 10, IN_NOVAR},  // VOC_TS_MONEY_UP -- TS rising money tick (RAC/RAR_SFX_TSCREDUP1 -> bundled TSCREDUP1.WAV, own name)
+    {"TSCREDDWN1", 10, IN_NOVAR}, // VOC_TS_MONEY_DOWN -- TS falling money tick (RAC/RAR_SFX_TSCREDDWN1 -> bundled TSCREDDWN1.WAV, own name)
 };
 
 //
