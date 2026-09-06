@@ -1,3 +1,35 @@
+## TS GDI is on main — 2026-09-06 (merged, pushed, deployed to PC + Deck)
+
+`main` @ `5a9d91b9`. Canonical doc: `docs/ts-gdi-faction.md`. The merge also landed the
+**walls + component towers arc** (3 commits from 09-04) that had never reached main.
+
+**Signed off in play:** TS logo, TS EVA, TS unit voices, TS radar on/off, TS credit ticks,
+TS building slam + silent buildup, the crest flicker fix, and both ends of the era mailbox
+("cannot deploy here" TS for TS GDI, RA for a Soviet; "battle control terminated" on quit).
+
+**Release state:** `TF_TS_GDI_FACTION` defaults to 1 locally; `package-for-workshop.sh` builds
+with 0 and regenerates the staged front-end, so the faction sits on main WITHOUT shipping.
+Flip both when it is time to release it. Release builds also compile again — they had not since
+`9b28b8e0` (01-09), the crest patch's declarations having been left behind `TF_DEV_BUILD`.
+
+**Next, in rough order:**
+- **LAN test of the addressed credit tick.** Both machines are on the same build. Self-diagnosing:
+  joiners hear their own faction's tick (fixed), or the host hears everyone's (the id is a local
+  filter, fall back to the data-side flank in `building-sound-routing.md`).
+- **TS infantry** — TS GDI currently starts with no infantry at all, by Luke's call.
+- **AI cannot run the TS tree** (`TF_Roster_Side` hands it the TD GDI roster). Revisit with the
+  AI milestone's faction layer.
+- **TS Nod** — same recipe on France: `HOUSEF_TSNOD (HOUSEF_FRANCE)`, `Faction9`, CABAL from
+  `SPEECH02.MIX`, one more `ERAS` entry in `scripts/eva_mailbox_build.py`, and a crest region
+  (the atlas is full — see the trap in `ts-gdi-faction.md`).
+- Component tower animations and authentic weapon geometry (the 09-04 arc's open queue).
+
+**Two traps this session left behind, both worth reading before similar work:**
+- A sound that is inaudible: walk the chain AFTER the sample (event → preset → mixer) before
+  touching the audio. The credit tick's preset pinned volume to 5 of 100 and cost eight rounds.
+- Adding a crest variant means adding it to FOUR places; a missing case falls through to a
+  plausible default rather than failing, and corrupts the scan log's `want=` while it is at it.
+
 ## TS GDI is a playable faction — 2026-09-05 (branch `ts-gdi-faction`, verified, not merged)
 
 Full record: `docs/ts-gdi-faction.md`. Short version:

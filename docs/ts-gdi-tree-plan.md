@@ -1,6 +1,6 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — **WALLS + COMPONENT TOWERS, branch `ts-walls-towers` @ `bdfcb850`, pushed, NOT merged (main is `d47ebeae`). 2026-09-04.**
+## ⭐⭐⭐ RESUME HERE — **WALLS + COMPONENT TOWERS, branch `ts-walls-towers`, MERGED TO MAIN 2026-09-06 as part of the TS GDI faction merge (`main` @ `5a9d91b9`). 2026-09-04.**
 
 **Next session, Luke's pick:** (1) **component tower animations**, (2) **authentic weapon
 geometry for the Vulcan, SAM and RPG upgrades**. ⚠ Settle the second with Luke first: the three
