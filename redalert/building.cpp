@@ -6034,7 +6034,13 @@ int BuildingClass::Mission_Construction(void)
             // when more separated buildings land, this check stays as a
             // range comparison so we don't have to per-IniName special-
             // case here.
-            if (Class->Is_Tiberian_Era()) {
+            if (Class->Is_TS_Era()) {
+                /*
+                **	Tiberian Sun has no construction loop: the building slams down and then
+                **	rises in silence (OpenTS plays only a per-building AuxSound1 during the
+                **	buildup, which no TS structure defines). Deliberate quiet, not a gap.
+                */
+            } else if (Class->Is_Tiberian_Era()) {
                 Sound_Effect(VOC_TD_CONSTRUCTION, Coord);
             } else {
                 Sound_Effect(VOC_CONSTRUCTION, Coord);

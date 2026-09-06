@@ -892,6 +892,7 @@ public:
     **	one? Drives the TD construction and place-down audio.
     */
     bool Is_Tiberian_Era(void) const;
+    bool Is_TS_Era(void) const;
 
     virtual int Full_Name(void) const;
     virtual bool Read_INI(CCINIClass& ini);

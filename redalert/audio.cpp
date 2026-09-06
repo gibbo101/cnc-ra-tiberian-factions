@@ -311,6 +311,7 @@ struct SoundEffectNameStruct
     {"TSCREDDWN1", 10, IN_NOVAR}, // VOC_TS_MONEY_DOWN -- TS falling money tick (RAC/RAR_SFX_TSCREDDWN1 -> bundled TSCREDDWN1.WAV, own name)
     {"TSCOMMUP1", 1, IN_NOVAR},   // VOC_TS_RADAR_ON -- TS radar up (RAC/RAR_SFX_TSCOMMUP1 -> bundled TSCOMMUP1.WAV, own name)
     {"TSRADARDN1", 1, IN_NOVAR},  // VOC_TS_RADAR_OFF -- TS radar down (RAC/RAR_SFX_TSRADARDN1 -> bundled TSRADARDN1.WAV, own name)
+    {"TSPLACE2", 10, IN_NOVAR},   // VOC_TS_PLACE_BUILDING_DOWN -- TS building slam (RAC/RAR_SFX_TSPLACE2 -> bundled TSPLACE2.WAV, own name)
 };
 
 //

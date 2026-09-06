@@ -4589,10 +4589,18 @@ static void TF_Crest_Request_Scan(void)
     }
     for (int s = 0; s < TF_CREST_SLOTS; s++) {
         TF_CrestScanSlots[s] = slots[s];
-        // `want` points into its own slot; re-aim it at the copy.
-        TF_CrestScanSlots[s].want = (slots[s].want == slots[s].gdi) ? TF_CrestScanSlots[s].gdi
-                                    : (slots[s].want == slots[s].nod) ? TF_CrestScanSlots[s].nod
-                                                                      : TF_CrestScanSlots[s].stock;
+        /*
+        **	`want` points into its own slot; re-aim it at the copy. EVERY variant needs a
+        **	case here: a missing one does not fail loudly, it silently falls through to
+        **	stock, and the scan then spends the whole burst writing the WRONG crest while
+        **	the per-frame re-verify writes the right one -- which reads in game as the
+        **	crest flickering for the first ten seconds of a match. TS GDI was omitted here
+        **	when the fourth variant was added.
+        */
+        TF_CrestScanSlots[s].want = (slots[s].want == slots[s].gdi)     ? TF_CrestScanSlots[s].gdi
+                                    : (slots[s].want == slots[s].nod)   ? TF_CrestScanSlots[s].nod
+                                    : (slots[s].want == slots[s].tsgdi) ? TF_CrestScanSlots[s].tsgdi
+                                                                        : TF_CrestScanSlots[s].stock;
     }
     HANDLE thread = CreateThread(NULL, 0, TF_Crest_Scan_Thread, NULL, 0, NULL);
     if (thread == NULL) {
@@ -5125,6 +5133,34 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
             }
 #endif
         }
+
+        /*
+        ** TEMPORARY (2026-09-06): the credit tick and radar toggle are reported as playing
+        ** the wrong era. Log exactly which sample name leaves the DLL so the question is
+        ** measured rather than argued. Remove once the tick is confirmed.
+        */
+#if TF_DEV_BUILD
+        if (sound_effect_index == VOC_TS_MONEY_UP || sound_effect_index == VOC_TS_MONEY_DOWN
+            || sound_effect_index == VOC_TD_MONEY_UP || sound_effect_index == VOC_TD_MONEY_DOWN
+            || sound_effect_index == VOC_DLL_MONEY_UP || sound_effect_index == VOC_DLL_MONEY_DOWN
+            || sound_effect_index == VOC_RADAR_ON || sound_effect_index == VOC_RADAR_OFF
+            || sound_effect_index == VOC_TS_PLACE_BUILDING_DOWN
+            || sound_effect_index == VOC_TD_PLACE_BUILDING_DOWN
+            || sound_effect_index == VOC_PLACE_BUILDING_DOWN) {
+            const char* up = getenv("USERPROFILE");
+            if (up != NULL) {
+                char path[512];
+                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_sfx_dispatch.log", up);
+                FILE* f = fopen(path, "a");
+                if (f != NULL) {
+                    fprintf(f, "[sfx] voc=%d name=%s actlike=%d\n", sound_effect_index,
+                            new_event.SoundEffect.SoundEffectName,
+                            (player_ptr != NULL) ? (int)player_ptr->ActLike : -1);
+                    fclose(f);
+                }
+            }
+        }
+#endif
 
         // Tiberian Factions: per-faction unit-voice dispatch. GDI/Nod (ActLike
         // HOUSE_GOOD/HOUSE_BAD) get TD unit acknowledgments; Allied/Soviet keep

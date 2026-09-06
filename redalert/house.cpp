@@ -4792,12 +4792,18 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                     // use-after-free that CTDs on every wall placement, all factions.
                     bool td_bldg = (tech->What_Am_I() == RTTI_BUILDING
                                     && ((BuildingClass*)tech)->Class->Is_Tiberian_Era());
+                    // Read before Unlimbo for the same reason as td_bldg above: a wall
+                    // deletes itself in there, so tech cannot be touched afterwards.
+                    bool ts_bldg = (tech->What_Am_I() == RTTI_BUILDING
+                                    && ((BuildingClass*)tech)->Class->Is_TS_Era());
                     if (tech->Unlimbo(Cell_Coord(cell))) {
                         factory->Completed();
                         Abandon_Production(type);
 
                         if (PlayerPtr == this) {
-                            Sound_Effect(td_bldg ? VOC_TD_PLACE_BUILDING_DOWN : VOC_PLACE_BUILDING_DOWN);
+                            Sound_Effect(ts_bldg ? VOC_TS_PLACE_BUILDING_DOWN
+                                                : (td_bldg ? VOC_TD_PLACE_BUILDING_DOWN
+                                                           : VOC_PLACE_BUILDING_DOWN));
                             Map.Set_Cursor_Shape(0);
                             Map.PendingObjectPtr = 0;
                             Map.PendingObject = 0;

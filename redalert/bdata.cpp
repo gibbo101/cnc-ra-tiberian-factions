@@ -4826,6 +4826,24 @@ bool BuildingTypeClass::Is_Tiberian_Era(void) const
 }
 
 /***********************************************************************************************
+ * BuildingTypeClass::Is_TS_Era -- Is this one of the Tiberian Sun structures?                  *
+ *                                                                                             *
+ *    Narrower than Is_Tiberian_Era, which answers "TD or TS". TS's building audio differs      *
+ *    from both earlier games: it slams down with PLACE2 and then rises in SILENCE, where RA    *
+ *    and TD both run a construction rumble (OpenTS: BuildingSlam is played on placement, and   *
+ *    the buildup plays only a per-building AuxSound1, which no TS building defines -- it is    *
+ *    an aircraft take-off/landing field).                                                      *
+ *                                                                                             *
+ *    Keyed on the BUILDING, not the picked faction, like the other placement sounds: a TS      *
+ *    yard sounds like a TS yard whoever crated or captured it.                                 *
+ *=============================================================================================*/
+bool BuildingTypeClass::Is_TS_Era(void) const
+{
+    return (Type == STRUCT_TSPOWR)
+           || (Type >= STRUCT_TS_TREE_FIRST && Type <= STRUCT_TS_TREE_LAST);
+}
+
+/***********************************************************************************************
  * TF_Building_Scan_Bit -- Maps a building Type to the scan-mask bit it contributes.            *
  *                                                                                              *
  *    BScan / ActiveBScan / OldBScan are 32-bit masks, so a Type can only represent itself      *

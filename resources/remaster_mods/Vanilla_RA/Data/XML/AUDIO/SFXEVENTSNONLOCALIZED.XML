@@ -6678,6 +6678,20 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> TDR_SFX_CRUMBLE.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+	<SFXEvent Name="RAC_SFX_TSPLACE2" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TSPLACE2.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_TSPLACE2" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TSPLACE2.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
 	<SFXEvent Name="RAC_SFX_TSCOMMUP1" Preset="_PRESET_MD_MOBIUS_2D">
 		<IsPreset> False </IsPreset>
 		<SampleNamesList>
@@ -6711,6 +6725,8 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
 		<SampleNamesList>
 			<entry> TSCREDUP1.WAV </entry>
 		</SampleNamesList>
+		<MinVolume> 26 </MinVolume>
+		<MaxVolume> 26 </MaxVolume>
 	</SFXEvent>
 
 	<SFXEvent Name="RAR_SFX_TSCREDUP1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
@@ -6718,6 +6734,8 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
 		<SampleNamesList>
 			<entry> TSCREDUP1.WAV </entry>
 		</SampleNamesList>
+		<MinVolume> 26 </MinVolume>
+		<MaxVolume> 26 </MaxVolume>
 	</SFXEvent>
 
 	<SFXEvent Name="RAC_SFX_TSCREDDWN1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
@@ -6725,6 +6743,8 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
 		<SampleNamesList>
 			<entry> TSCREDDWN1.WAV </entry>
 		</SampleNamesList>
+		<MinVolume> 46 </MinVolume>
+		<MaxVolume> 46 </MaxVolume>
 	</SFXEvent>
 
 	<SFXEvent Name="RAR_SFX_TSCREDDWN1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
@@ -6732,6 +6752,8 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
 		<SampleNamesList>
 			<entry> TSCREDDWN1.WAV </entry>
 		</SampleNamesList>
+		<MinVolume> 46 </MinVolume>
+		<MaxVolume> 46 </MaxVolume>
 	</SFXEvent>
 
 	<SFXEvent Name="RAC_SFX_TONE15" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
