@@ -12,7 +12,19 @@ with 0 and regenerates the staged front-end, so the faction sits on main WITHOUT
 Flip both when it is time to release it. Release builds also compile again — they had not since
 `9b28b8e0` (01-09), the crest patch's declarations having been left behind `TF_DEV_BUILD`.
 
-**Next, in rough order:**
+**NEXT SESSION (Luke, 2026-09-06 close): component tower TS WEAPON TUNING.** The three plug
+turrets fire `[TSVulcanTower]`/`[TSSA]`, `[TSRPGTower]`/`[TSRPG]` and `[TSRedEye2]`/`[TSSAMWH]`,
+ported TS-verbatim, but their **`Report=` sounds are stand-ins** — the TS originals `CHAINGN1`
+(Vulcan), `GLNCH4` (RPG) and `SAMSHOT1` (SAM) are still owed, as are muzzle anims. Stats live in
+`CCDATA/rules.ini`; TS ground truth is `reference/OpenTS` per the workspace CLAUDE.md, not wiki
+pages. Confirm with Luke at the start whether "tuning" means the stats, the sounds, or both —
+the 09-04 close also left "authentic weapon geometry" open, which is a different (art) job.
+Extraction recipe for the sounds is the one used for the radar pair and credit ticks this
+session: `tools/ts_extract.py` on SOUNDS.MIX → `scripts/ts_aud_decode.py` → ffmpeg `adpcm_ms`
+22050 mono → bundle under its own name → `RAC_/RAR_SFX_<NAME>` events in
+`SFXEVENTSNONLOCALIZED.XML` (⚠ check the event's PRESET volume — see the trap below).
+
+**Then, in rough order:**
 - **LAN test of the addressed credit tick.** Both machines are on the same build. Self-diagnosing:
   joiners hear their own faction's tick (fixed), or the host hears everyone's (the id is a local
   filter, fall back to the data-side flank in `building-sound-routing.md`).
