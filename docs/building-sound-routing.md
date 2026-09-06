@@ -28,6 +28,7 @@ pointing at the TD WAVs (which already ship in the base MEGs).
 |---|---|---|---|
 | **Placement slam** | `VOC_PLACE_BUILDING_DOWN`=`PLACBLDG` (`house.cpp` place, `unit.cpp` MCV deploy) | `VOC_SLAM`=`HVYDOOR1` (TD `HOUSE.CPP:2933`) | **Shipped** `VOC_TD_PLACE_BUILDING_DOWN`, building-keyed |
 | **Construction loop** | `VOC_CONSTRUCTION`=`BUILD5` | `VOC_TD_CONSTRUCTION`=`CONSTRU2` (`building.cpp` Mission_Construction) | Shipped earlier |
+| **Radar on/off** | `VOC_RADAR_ON/OFF`=`RADARON2`/`RADARDN1`, launcher auto-fire silenced, DLL re-fires | `TFRADRON`/`TFRADROF` (TD Comm Center / Power Down) | **Shipped**, player-keyed. TS GDI has its OWN pair from 2026-09-06: `TSCOMMUP1`/`TSRADARDN1` (TS rules `[AudioVisual] RadarOn=COMMUP1`, `RadarOff=RADARDN1`) — it was borrowing TD's, which is the wrong era. |
 | **Credit tick** | `VOC_MONEY_UP/DOWN`=`CASHUP1/CASHDN1` (`credits.cpp:104/106`) | `VOC_UP/DOWN`=`TONE15`/`TONE16` (TD `CREDITS.CPP:98/100`) | **Shipped** via silence-and-refire (see below). TS GDI joined 2026-09-05: `VOC_TS_MONEY_UP/DOWN` = TS's own `CREDUP1`/`CREDDWN1` (TS rules `[AudioVisual] CreditTicks=`), bundled under their own names. |
 | **Damaged** | *none* — RA plays no building hit-SFX | — | No action |
 | **Sell** | `VOC_CASHTURN` + EVA voice | `VOC_CASHTURN` (TD `HOUSE.CPP:4761`) — same | No action |

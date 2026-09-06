@@ -309,6 +309,8 @@ struct SoundEffectNameStruct
     {"TSHUNTR2", 1, IN_NOVAR},    // VOC_TS_HUNTER2 -- TS hunter seeker detonation (RAC/RAR_SFX_TSHUNTR2 -> bundled TSHUNTR2.WAV, own name)
     {"TSCREDUP1", 10, IN_NOVAR},  // VOC_TS_MONEY_UP -- TS rising money tick (RAC/RAR_SFX_TSCREDUP1 -> bundled TSCREDUP1.WAV, own name)
     {"TSCREDDWN1", 10, IN_NOVAR}, // VOC_TS_MONEY_DOWN -- TS falling money tick (RAC/RAR_SFX_TSCREDDWN1 -> bundled TSCREDDWN1.WAV, own name)
+    {"TSCOMMUP1", 1, IN_NOVAR},   // VOC_TS_RADAR_ON -- TS radar up (RAC/RAR_SFX_TSCOMMUP1 -> bundled TSCOMMUP1.WAV, own name)
+    {"TSRADARDN1", 1, IN_NOVAR},  // VOC_TS_RADAR_OFF -- TS radar down (RAC/RAR_SFX_TSRADARDN1 -> bundled TSRADARDN1.WAV, own name)
 };
 
 //

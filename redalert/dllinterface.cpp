@@ -5088,14 +5088,19 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
         // GDI/Nod route to TFRADRON/TFRADROF (TD Comm Center / Power Down).
         // Mirrors the SpeechTD[] pattern in On_Speech.
         if (sound_effect_index == VOC_RADAR_ON || sound_effect_index == VOC_RADAR_OFF) {
+            /*
+            ** TS GDI has its own pair (TS rules [AudioVisual] RadarOn=COMMUP1 /
+            ** RadarOff=RADARDN1); it was borrowing TD's Comm Center audio while those
+            ** were unported, which is audibly the wrong era.
+            */
+            bool ts_faction = (player_ptr != NULL && Is_TS_GDI(player_ptr->ActLike));
             bool td_faction = (player_ptr != NULL
-                               && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD
-                                   || Is_TS_GDI(player_ptr->ActLike)));
+                               && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD));
             const char* name;
             if (sound_effect_index == VOC_RADAR_ON) {
-                name = td_faction ? "TFRADRON" : "RAORADON";
+                name = ts_faction ? "TSCOMMUP1" : (td_faction ? "TFRADRON" : "RAORADON");
             } else {
-                name = td_faction ? "TFRADROF" : "RAORADOF";
+                name = ts_faction ? "TSRADARDN1" : (td_faction ? "TFRADROF" : "RAORADOF");
             }
             strncpy(new_event.SoundEffect.SoundEffectName, name, 16);
             new_event.SoundEffect.SoundEffectName[15] = '\0';

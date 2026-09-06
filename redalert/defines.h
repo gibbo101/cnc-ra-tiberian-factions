@@ -4194,6 +4194,8 @@ typedef enum VocType : short
     VOC_TS_HUNTER2,      // TS hunter seeker detonation (HUNTER2, the SuicideBomb Report=). RAC/RAR_SFX_TSHUNTR2 -> bundled TSHUNTR2.WAV, own name.
     VOC_TS_MONEY_UP,     // TS credit tick up (CREDUP1, TS rules [AudioVisual] CreditTicks=) -- the TS-era voice of the DLL-fired tick. RAC/RAR_SFX_TSCREDUP1 -> bundled TSCREDUP1.WAV, own name.
     VOC_TS_MONEY_DOWN,   // TS credit tick down (CREDDWN1) -- as above.
+    VOC_TS_RADAR_ON,     // TS radar activation (COMMUP1, TS rules [AudioVisual] RadarOn=). RAC/RAR_SFX_TSCOMMUP1 -> bundled TSCOMMUP1.WAV, own name.
+    VOC_TS_RADAR_OFF,    // TS radar deactivation (RADARDN1, RadarOff=) -- as above.
 
     VOC_COUNT,
     VOC_FIRST = 0
