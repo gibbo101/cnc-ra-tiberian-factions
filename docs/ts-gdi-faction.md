@@ -207,8 +207,12 @@ if it reads as quiet in play.
 
 ## What is left
 
-- **The six launcher-fired EVA lines are now TS's own** (built 2026-09-05, not yet heard in
-  play). The mailbox is N-way: see "The era mailbox, N eras wide" below.
+- **The six launcher-fired EVA lines are now TS's own**, CONFIRMED IN PLAY 2026-09-06: "cannot
+  deploy here" speaks TS for a TS GDI player while a Soviet player still gets RA's recording, and
+  "battle control terminated" -- the one line whose payload comes from `scripts/msadpcm.py`
+  rather than ffmpeg, at block alignment 70 -- plays correctly on quit. That last one also
+  proves the hand-rolled encoder's output is accepted by the launcher, which is what makes a
+  fourth or sixth era possible. The mailbox is N-way: see "The era mailbox, N eras wide" below.
 - **TS GDI has no infantry of its own** — it fields the TD GDI riflemen. TS infantry is a
   content wave, not faction work.
 - **TS Nod** is the same recipe with France: `HOUSEF_TSNOD (HOUSEF_FRANCE)`, `Faction9`, the
