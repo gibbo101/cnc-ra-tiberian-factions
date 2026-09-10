@@ -1,3 +1,42 @@
+## Coach day 2026-09-11: deep dives and feasibility checks (Luke, phone only)
+
+Luke is away from the PC and the Deck. The game runs headless on the desktop (Xvfb + Steam under
+`systemd-run --user`, Xvfb unpacked at `~/.local/opt/xvfb`) and he judges screenshots, clips and
+recordings. Each item ends in a researched answer with evidence; nothing gets built unless a dive
+shows a clear win and he says go.
+
+1. **TS Nod as the sixth faction**, on France, behind a build-time switch like
+   `TF_TS_GDI_FACTION`. Emblem ready: `scripts/tab_emblems/tsnod.png`. Recipe:
+   `docs/ts-gdi-faction.md` (CABAL from `SPEECH02.MIX`, one more `ERAS` entry in
+   `scripts/eva_mailbox_build.py`, a crest region, see 2).
+2. **Can the UI atlas grow?** Established 2026-09-10: the `.MTD` holds only pixel boxes, no atlas
+   size, and ClientG carries no size constant; an 8192x8192 atlas (stock art at its own coords,
+   magenta pad) loads, and the menu, lobby and TD sidebar all draw correctly. But ClientG's cached
+   region records match neither 6871x6716 nor 8192x8192, so the divisor is still unknown. Finish:
+   `scripts/atlas_grow_probe.py <atlas> <out>` → deploy (md5) → one match →
+   `scripts/clientg_ratio_scan.py` prints the effective W,H → `ATLAS_W=.. ATLAS_H=..
+   scripts/clientg_region_probe.py point UI_SIDEBAR_FACTIONLOGO_GDI 7000,100,794,713`; the crest
+   turning magenta means the new space is drawable. Then the crest needles (`dllinterface.cpp`
+   ~4120) and every script hardcoding 6871/6716 move to the new size. A loose `.MTD` stays
+   ignored, so new space is reachable only by re-pointing records. Restore the shipped atlas after.
+3. **AI runs the TS tree.** `TF_Roster_Side()` hands an AI that draws TS GDI the TD GDI roster,
+   and captured factories are invisible to the AI. Design: `docs/ai-upgrade-plan.md` §W2.9.
+   Verify with headless AI-vs-AI matches.
+4. **Pathfinding, TS against ours:** port from `reference/OpenTS` or fix ours (the A* entry
+   below, `docs/path-failure-livelock-design.md`), plus the one-off sim hang at F22357 from the
+   2026-09-02 AI A/B. Start from opents-pad's zone/subzone work (`1a14767`, `c604cf6` in
+   `~/Documents/development/opents-pad`).
+5. **Controller feasibility, opents-pad style:** can InstanceServerG read a pad under Proton
+   (`XInputGetState`), and which actions can the DLL issue itself versus what the launcher owns
+   (camera, cursor, sidebar and superweapon clicks; `docs/launcher-vs-dll-ownership.md`)? Crib
+   `opents-pad/docs/CONTROLLER.md`, `renegade-pad/docs/CONTROLLER.md`, `generals-pad/docs/PLAN.md`.
+   Pad-gated; keyboard and mouse stay stock.
+
+If time allows: the component tower weapon pass (below), the TS sidebar probes, group deploy,
+editor manifest entries for the component towers.
+
+---
+
 ## TS GDI is on main — 2026-09-06 (merged, pushed, deployed to PC + Deck)
 
 `main` @ `5a9d91b9`. Canonical doc: `docs/ts-gdi-faction.md`. The merge also landed the

@@ -18,13 +18,16 @@ match has ended, start a new one (per-match copies are cloned from the persisten
 this tool also patches). The DLL's own per-frame re-verify will fight you on the slots it owns
 (crest, under-screens, TF_SidebarSkin pairs) unless the local player is an RA side.
 """
+import os
 import re
 import struct
 import subprocess
 import sys
 
 MTD = 'scripts/cameo_work/MT_COMMANDBAR_COMMON.MTD'
-W, H = 6871.0, 6716.0
+# The atlas size the launcher divides region rects by; override for a resized atlas.
+W = float(os.environ.get('ATLAS_W', 6871))
+H = float(os.environ.get('ATLAS_H', 6716))
 
 
 def regions():
