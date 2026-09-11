@@ -9051,6 +9051,21 @@ void BuildingClass::Factory_AI(void)
                     }
 
                     /*
+                    **	The dropship bay builds its deliveries and nothing else, and nothing
+                    **	else builds them (the Who_Can_Build_Me pairing); nor does it take an
+                    **	order it would refuse while reloading or with the Mk. II allowance in
+                    **	use. The house-level suggestion does not know which factory is asking,
+                    **	so the wrong one declines and leaves the order for the other.
+                    */
+                    if (techno != NULL && Class->ToBuild == RTTI_UNITTYPE) {
+                        UnitTypeClass const* ut = (UnitTypeClass const*)techno;
+                        if (TF_Is_Dropship_Delivered(ut) != (*this == STRUCT_TSDROP)
+                            || TF_Delivery_Order_Refused(House, RTTI_UNITTYPE, ut->Type)) {
+                            techno = NULL;
+                        }
+                    }
+
+                    /*
                     **	If a suitable object type was selected for production, then start
                     **	producing it now.
                     */

@@ -10332,6 +10332,22 @@ int HouseClass::AI_Building(void)
         }
 
         /*
+        **	The TS dropship bay: the only door the Mammoth Mk. II and the Mech Division come
+        **	through. One per house -- BQuantity counts it from production start, so a second
+        **	is never queued while the first is still on the yard's line. The economy comes
+        **	first, as for air production above.
+        */
+        if (BQuantity[STRUCT_TSDROP] == 0) {
+            b = &BuildingTypeClass::As_Reference(STRUCT_TSDROP);
+            if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
+                choiceptr = BuildChoice.Alloc();
+                if (choiceptr != NULL) {
+                    *choiceptr = BuildChoiceClass(tf_economy_ready ? URGENCY_MEDIUM : URGENCY_LOW, b->Type);
+                }
+            }
+        }
+
+        /*
         **	W5.1: a naval yard, once the water evaluation says a navy can matter here.
         **	Deliberately NOT gated on having discovered an enemy shore: naval presence
         **	is map control a human takes proactively, the patrol the yard enables is
@@ -10516,6 +10532,16 @@ int HouseClass::AI_Unit(void)
 {
     assert(Houses.ID(this) == ID);
 
+    /*
+    **	A delivery the dropship bay would refuse (reloading, or the Mk. II allowance in
+    **	use), or has no bay to come through, is dropped: every unit factory declines it,
+    **	so unit production would stall behind it.
+    */
+    if (BuildUnit != UNIT_NONE && TF_Is_Dropship_Delivered(&UnitTypeClass::As_Reference(BuildUnit))
+        && (!Has_Building_Active(STRUCT_TSDROP) || TF_Delivery_Order_Refused(this, RTTI_UNITTYPE, BuildUnit))) {
+        BuildUnit = UNIT_NONE;
+    }
+
     if (BuildUnit != UNIT_NONE)
         return (TICKS_PER_SECOND);
     if (CurUnits >= Control.MaxUnit)
@@ -10670,8 +10696,13 @@ int HouseClass::AI_Unit(void)
             // combat picks and the AI spams harvesters, burning income. Vanilla only
             // excluded UNIT_HARVESTER.
             if (Can_Build(utype, ActLike) && utype->Type != UNIT_HARVESTER
-                && utype->Type != UNIT_TDHARV && utype->Type != UNIT_TSHARV) {
-                if (utype->PrimaryWeapon != NULL) {
+                && utype->Type != UNIT_TDHARV && utype->Type != UNIT_TSHARV
+                && !TF_Delivery_Order_Refused(this, RTTI_UNITTYPE, utype->Type)) {
+                /*
+                **	The dropship bay's deliveries weigh as combat units: the Mech Division
+                **	is a token with no weapon of its own, but it lands five armed mechs.
+                */
+                if (utype->PrimaryWeapon != NULL || TF_Is_Dropship_Delivered(utype)) {
                     counter[index] = 20;
                 } else {
                     counter[index] = 1;
