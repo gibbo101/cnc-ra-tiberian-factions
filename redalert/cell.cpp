@@ -2753,6 +2753,9 @@ bool CellClass::Goodie_Check(FootClass* object)
                         mcv_type = UNIT_AMCV;
                         break;
                     }
+                    if (Is_TS_GDI(object->House->ActLike)) {
+                        mcv_type = UNIT_TSMCV;
+                    }
                 }
                 utp = &UnitTypeClass::As_Reference(mcv_type);
             }

@@ -68,11 +68,25 @@ session: `tools/ts_extract.py` on SOUNDS.MIX → `scripts/ts_aud_decode.py` → 
   joiners hear their own faction's tick (fixed), or the host hears everyone's (the id is a local
   filter, fall back to the data-side flank in `building-sound-routing.md`).
 - **TS infantry** — TS GDI currently starts with no infantry at all, by Luke's call.
-- **AI cannot run the TS tree** (`TF_Roster_Side` hands it the TD GDI roster). Revisit with the
-  AI milestone's faction layer.
+- **TS GDI roster gap** (TS + Firestorm rules, checked 2026-09-11): all infantry (Light
+  Infantry, Disc Thrower, Medic, Engineer, Jumpjet Infantry, Ghost Stalker), Mobile Sensor
+  Array, Firestorm's Juggernaut, Limpet Drone, Mobile EM-Pulse and Mobile War Factory, and the
+  Orca Fighter, Orca Bomber and Carryall. **Plus TS's hidden Mammoth Tank `[4TNK]`** (TechLevel
+  -1 in TS, crate-only; 120mmx + MammothTusk, self-healing) — Luke wants to see how it
+  translates. Its voxels ship in `LOCAL.MIX` (`4TNK`/`4TNKTUR`/`4TNKBARL` + HVAs). The AI also
+  never builds the Dropship Bay (no Mk. II) or the Upgrade Centre (no 2-of-3 plugs).
+- **AI runs the TS tree** (2026-09-11): `TF_TS_Equivalent` mirrors each base role onto the TS
+  building, defences are the tower two-step (bare tower, then plug), turbines ride the power
+  role. Still owed: the Dropship Bay (Mk. II, Mech Division) and the Upgrade Centre's plugs.
 - **TS Nod** — same recipe on France: `HOUSEF_TSNOD (HOUSEF_FRANCE)`, `Faction9`, CABAL from
   `SPEECH02.MIX`, one more `ERAS` entry in `scripts/eva_mailbox_build.py`, and a crest region
   (the atlas is full — see the trap in `ts-gdi-faction.md`).
+- **TS Pavement (GAPAVE)** — do it alongside TS Nod (Luke, 2026-09-11). Placing it turns cells
+  into pavement ground: it keeps Tiberium creep off build space (Tiberium blocks placement) and
+  blocks subterranean units, which Nod fields. Costs: placement logic like the wall divert (the
+  building becomes ground, not an object) and square-grid ground art for RA's HD tileset, since
+  TS's pavement is isometric. Solve that art together with the Firestorm panels, which pose the
+  same isometric-versus-square question.
 - Component tower animations and authentic weapon geometry (the 09-04 arc's open queue).
 
 **Two traps this session left behind, both worth reading before similar work:**

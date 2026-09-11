@@ -6140,6 +6140,68 @@ BuildingClass* HouseClass::Find_Building(StructType type, ZoneType zone) const
     return (NULL);
 }
 
+/*
+**	A building of this house that the given addon plug would install into, or NULL: a
+**	bare component tower for a tower plug, a power plant with a free slot for the turbine.
+*/
+static BuildingClass* TF_Plug_Host(HouseClass const* house, BuildingTypeClass const* plug)
+{
+    if (plug == NULL || plug->PowersUpBuilding == STRUCT_NONE) {
+        return (NULL);
+    }
+    for (int i = 0; i < Buildings.Count(); i++) {
+        BuildingClass* b = Buildings.Ptr(i);
+        if (b != NULL && b->IsActive && !b->IsInLimbo && b->Strength > 0 && b->House == house
+            && b->Can_Upgrade(plug, house)) {
+            return (b);
+        }
+    }
+    return (NULL);
+}
+
+/*
+**	Tallies a building this house has chosen or has in production against the slots for one
+**	host type: a host on its way brings its slots, a plug for that host claims one.
+*/
+static void TF_Plug_Commitment(StructType type, StructType host, int slots, int& room)
+{
+    if (type == host) {
+        room += slots;
+    } else if (type != STRUCT_NONE && BuildingTypeClass::As_Reference(type).PowersUpBuilding == host) {
+        room--;
+    }
+}
+
+/*
+**	How many more of this addon plug the house has room for: free slots on its standing hosts,
+**	plus the slots of hosts it has chosen or has in production, less the plugs for that host
+**	type it has chosen or has in production. A plug queued before its host stands fails
+**	Can_Build and waits a pass.
+*/
+static int TF_Plug_Room(HouseClass const* house, BuildingTypeClass const* plug)
+{
+    StructType host = plug->PowersUpBuilding;
+    int slots = BuildingTypeClass::As_Reference(host).UpgradesMax;
+    int room = 0;
+    TF_Plug_Commitment(house->BuildStructure, host, slots, room);
+    for (int i = 0; i < Buildings.Count(); i++) {
+        BuildingClass* bld = Buildings.Ptr(i);
+        if (bld == NULL || !bld->IsActive || bld->House != house) {
+            continue;
+        }
+        if (!bld->IsInLimbo && bld->Strength > 0 && *bld == host) {
+            room += bld->Class->UpgradesMax - bld->UpgradeLevel;
+        }
+        if (bld->Factory.Is_Valid()) {
+            TechnoClass const* obj = bld->Factory->Get_Object();
+            if (obj != NULL && obj->What_Am_I() == RTTI_BUILDING) {
+                TF_Plug_Commitment(((BuildingClass const*)obj)->Class->Type, host, slots, room);
+            }
+        }
+    }
+    return (room);
+}
+
 /***********************************************************************************************
  * HouseClass::Find_Build_Location -- Finds a suitable building location.                      *
  *                                                                                             *
@@ -6159,6 +6221,22 @@ BuildingClass* HouseClass::Find_Building(StructType type, ZoneType zone) const
 COORDINATE HouseClass::Find_Build_Location(BuildingClass* building) const
 {
     assert(Houses.ID(this) == ID);
+
+    /*
+    **	An addon plug goes onto a building of its host type, never onto open ground.
+    */
+    if (building->Class->PowersUpBuilding != STRUCT_NONE) {
+        BuildingClass const* host = TF_Plug_Host(this, building->Class);
+        if (host != NULL) {
+            CELL origin = Coord_Cell(host->Coord);
+            for (short const* list = host->Class->Occupy_List(); *list != REFRESH_EOL; list++) {
+                if (Map[(CELL)(origin + *list)].Cell_Building() == host) {
+                    return (Cell_Coord((CELL)(origin + *list)));
+                }
+            }
+        }
+        return (0);
+    }
 
     /*
     **	Water-bound buildings can't use the defence-zone rings below: the zones are
@@ -7900,8 +7978,74 @@ int HouseClass::AI_Base_Defense(void)
  *    equivalent returns NULL, so the vanilla pick stands and Can_Build harmlessly skips it    *
  *    for GDI/Nod. Pre-D2 stopgap; the clean fix is a role tag in rules.ini.                   *
  *=============================================================================================*/
+/*
+**	The Tiberian Sun GDI tree's building for a base role, or NULL where the tree has none:
+**	no navy, and no fixed-wing airfield (the Orca flies from the helipad). The defence roles
+**	name the armed tower, which is a plug on a bare component tower; TF_AI_Tower_Step has the
+**	builder put the bare tower down first. The advanced power role is the turbine, an addon
+**	that goes on a power plant with a free slot (TF_AI_Plug_Fits).
+*/
+static BuildingTypeClass const* TF_TS_Equivalent(StructType ra)
+{
+    StructType ts = STRUCT_NONE;
+    switch (ra) {
+    case STRUCT_POWER:
+        ts = STRUCT_TSPOWR;
+        break;
+    case STRUCT_ADVANCED_POWER:
+        ts = STRUCT_TSTURB;
+        break;
+    case STRUCT_REFINERY:
+        ts = STRUCT_TSPROC;
+        break;
+    case STRUCT_BARRACKS:
+    case STRUCT_TENT:
+        ts = STRUCT_TSPILE;
+        break;
+    case STRUCT_WEAP:
+        ts = STRUCT_TSWEAP;
+        break;
+    case STRUCT_PILLBOX: // light base defence
+    case STRUCT_CAMOPILLBOX:
+    case STRUCT_TURRET:
+    case STRUCT_FLAME_TURRET:
+        ts = STRUCT_TSVULC;
+        break;
+    case STRUCT_TESLA: // advanced base defence
+        ts = STRUCT_TSROCK;
+        break;
+    case STRUCT_SAM: // dedicated AA
+    case STRUCT_AAGUN:
+        ts = STRUCT_TSCSAM;
+        break;
+    case STRUCT_RADAR:
+        ts = STRUCT_TSRADR;
+        break;
+    case STRUCT_ADVANCED_TECH:
+    case STRUCT_SOVIET_TECH:
+        ts = STRUCT_TSTECH;
+        break;
+    case STRUCT_HELIPAD:
+        ts = STRUCT_TSHPAD;
+        break;
+    case STRUCT_REPAIR:
+        ts = STRUCT_TSDEPT;
+        break;
+    case STRUCT_CONST:
+        ts = STRUCT_TSFACT;
+        break;
+    default:
+        break;
+    }
+    return (ts != STRUCT_NONE) ? &BuildingTypeClass::As_Reference(ts) : NULL;
+}
+
 static BuildingTypeClass const* TF_Skirmish_Equivalent(StructType ra, HousesType actlike)
 {
+    if (Is_TS_GDI(actlike)) {
+        return (TF_TS_Equivalent(ra));
+    }
+
     if (actlike != HOUSE_GOOD && actlike != HOUSE_BAD) {
         /*
         **	W2 (c): Allied/Soviet skirmish AIs build their own faction's war
@@ -8035,6 +8179,28 @@ static BuildingTypeClass const* TF_Skirmish_Pick(StructType ra, HousesType actli
 }
 
 /*
+**	True when the builder can use this building now: always for an ordinary building, and for
+**	an addon plug only while a host slot is free and unclaimed.
+*/
+static bool TF_AI_Plug_Fits(HouseClass const* house, BuildingTypeClass const* b)
+{
+    return (b == NULL || b->PowersUpBuilding == STRUCT_NONE || TF_Plug_Room(house, b) > 0);
+}
+
+/*
+**	A component tower plug needs a bare tower to install into. Returns the plug while a bare
+**	tower is free and unclaimed, else the bare tower itself, so the builder puts a tower down
+**	on one pass and arms it on a later one. Any other building passes through.
+*/
+static BuildingTypeClass const* TF_AI_Tower_Step(HouseClass const* house, BuildingTypeClass const* b)
+{
+    if (b == NULL || b->PowersUpBuilding != STRUCT_TSCTWR || TF_AI_Plug_Fits(house, b)) {
+        return (b);
+    }
+    return (&BuildingTypeClass::As_Reference(STRUCT_TSCTWR));
+}
+
+/*
 **	Heap Type of the faction's TD equivalent for a base role, or -1 for vanilla houses /
 **	unmapped roles. The caller adds BQuantity[<this>] to its existing BQuantity[RA-slot]
 **	presence count so the "do I already have one?" gates see the AI's own TD buildings.
@@ -8089,10 +8255,12 @@ static unsigned TF_Role_Quantity(unsigned const* bquantity, StructType ra)
 {
     /*
     **	One representative ActLike per lineage. TF_Skirmish_Equivalent keys GDI off
-    **	HOUSE_GOOD and Nod off HOUSE_BAD, and maps the RA houses onto their own split
-    **	types (AWEAP/SWEAP, AHPAD/SHPAD), so these four cover every tree we can own.
+    **	HOUSE_GOOD, Nod off HOUSE_BAD and TS GDI off HOUSE_GERMANY, and maps the RA houses
+    **	onto their own split types (AWEAP/SWEAP, AHPAD/SHPAD), so these five cover every
+    **	tree we can own. With the TS faction compiled out Germany resolves exactly as
+    **	England does, and the duplicate check below counts it once.
     */
-    static const HousesType _lineages[] = {HOUSE_GOOD, HOUSE_BAD, HOUSE_ENGLAND, HOUSE_USSR};
+    static const HousesType _lineages[] = {HOUSE_GOOD, HOUSE_BAD, HOUSE_ENGLAND, HOUSE_USSR, HOUSE_GERMANY};
 
     int seen[8];
     int nseen = 0;
@@ -8603,12 +8771,12 @@ static CELL TF_Ferry_Shore_Cell(int wzone, int landzone, COORDINATE nearto, CELL
 }
 
 /*
-**	W5.3: every MCV hull, RA and TD lineages both.
+**	W5.3: every MCV hull, every lineage.
 */
 static bool TF_Is_MCV(UnitClass const* u)
 {
     return (*u == UNIT_MCV || *u == UNIT_TDMCV || *u == UNIT_AMCV || *u == UNIT_SMCV || *u == UNIT_TDGMCV
-            || *u == UNIT_TDNMCV);
+            || *u == UNIT_TDNMCV || *u == UNIT_TSMCV);
 }
 
 /*
@@ -8839,7 +9007,7 @@ UnitType HouseClass::TF_Ferry_MCV_Type(void) const
 {
     assert(Houses.ID(this) == ID);
 
-    static UnitType const _mcvs[] = {UNIT_AMCV, UNIT_SMCV, UNIT_TDGMCV, UNIT_TDNMCV};
+    static UnitType const _mcvs[] = {UNIT_AMCV, UNIT_SMCV, UNIT_TDGMCV, UNIT_TDNMCV, UNIT_TSMCV};
     for (int i = 0; i < (int)ARRAY_SIZE(_mcvs); i++) {
         if (Can_Build(&UnitTypeClass::As_Reference(_mcvs[i]), ActLike)) {
             return (_mcvs[i]);
@@ -9794,7 +9962,7 @@ int HouseClass::AI_Building(void)
         **	money available.
         */
         b = TF_Skirmish_Pick(STRUCT_ADVANCED_POWER, ActLike);
-        if (Can_Build(b, ActLike) && Power <= Drain + Rule.PowerSurplus && (b->Cost_Of() < money || hasincome)) {
+        if (Can_Build(b, ActLike) && TF_AI_Plug_Fits(this, b) && Power <= Drain + Rule.PowerSurplus && (b->Cost_Of() < money || hasincome)) {
             choiceptr = BuildChoice.Alloc();
             if (choiceptr != NULL) {
                 *choiceptr = BuildChoiceClass(tf_refqty == 0 ? URGENCY_LOW : URGENCY_MEDIUM, b->Type);
@@ -9990,7 +10158,7 @@ int HouseClass::AI_Building(void)
                 }
             }
             if (b == NULL) {
-                b = TF_Skirmish_Pick(STRUCT_FLAME_TURRET, ActLike);
+                b = TF_AI_Tower_Step(this, TF_Skirmish_Pick(STRUCT_FLAME_TURRET, ActLike));
             }
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
@@ -10058,7 +10226,7 @@ int HouseClass::AI_Building(void)
                     }
                 }
 
-                b = TF_Skirmish_Pick(STRUCT_SAM, ActLike);
+                b = TF_AI_Tower_Step(this, TF_Skirmish_Pick(STRUCT_SAM, ActLike));
                 if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                     choiceptr = BuildChoice.Alloc();
                     if (choiceptr != NULL) {
@@ -10066,7 +10234,7 @@ int HouseClass::AI_Building(void)
                             (current < (unsigned)threat_quantity) ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
                     }
                 } else {
-                    b = TF_Skirmish_Pick(STRUCT_AAGUN, ActLike);
+                    b = TF_AI_Tower_Step(this, TF_Skirmish_Pick(STRUCT_AAGUN, ActLike));
                     if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                         choiceptr = BuildChoice.Alloc();
                         if (choiceptr != NULL) {
@@ -10084,7 +10252,7 @@ int HouseClass::AI_Building(void)
         int tf_adv = TF_Skirmish_Type(STRUCT_TESLA, ActLike);
         current = BQuantity[STRUCT_TESLA] + (tf_adv >= 0 ? BQuantity[tf_adv] : 0);
         if (current < Round_Up(Rule.TeslaRatio * fixed(CurBuildings)) && current < (unsigned)Rule.TeslaLimit) {
-            b = TF_Skirmish_Pick(STRUCT_TESLA, ActLike);
+            b = TF_AI_Tower_Step(this, TF_Skirmish_Pick(STRUCT_TESLA, ActLike));
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome) && Power_Fraction() >= 1) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
@@ -10359,7 +10527,7 @@ int HouseClass::AI_Unit(void)
     */
     int tf_proc_t = TF_Skirmish_Type(STRUCT_REFINERY, ActLike);
     unsigned tf_refq = BQuantity[STRUCT_REFINERY] + (tf_proc_t >= 0 ? BQuantity[tf_proc_t] : 0);
-    UnitType tf_harv = (tf_proc_t >= 0) ? UNIT_TDHARV : UNIT_HARVESTER;
+    UnitType tf_harv = Is_TS_GDI(ActLike) ? UNIT_TSHARV : ((tf_proc_t >= 0) ? UNIT_TDHARV : UNIT_HARVESTER);
     // Tiberian Factions: count harvesters via the Units heap, not UQuantity. UQuantity
     // reads 0 for docked TD harvesters (Limbo+Attach into the refinery), so the old
     // `tf_refq > UQuantity[tf_harv]` was ALWAYS true -> the AI spammed harvesters (e.g.

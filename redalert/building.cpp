@@ -3943,7 +3943,13 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             **	routine will return failure. The calling routine will probably abandon this
             **	building in preference to building another.
             */
-            BaseNodeClass* node = Base.Next_Buildable(((BuildingClass*)base)->Class->Type);
+            /*
+            **	An addon plug installs into a standing building of its host type, so it
+            **	takes no base node, no ground near a remote yard and no flush: the host
+            **	itself occupies the cell, and a flush would wait on it forever.
+            */
+            bool plug = (((BuildingClass*)base)->Class->PowersUpBuilding != STRUCT_NONE);
+            BaseNodeClass* node = plug ? NULL : Base.Next_Buildable(((BuildingClass*)base)->Class->Type);
             COORDINATE coord = 0;
             if (node) {
                 coord = Cell_Coord(node->Cell);
@@ -3958,7 +3964,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 **	which packs the expansion tight around the yard. Water-bound
                 **	products still route through the naval scan below.
                 */
-                if (House->Center != 0 && ((BuildingClass*)base)->Class->Speed != SPEED_FLOAT
+                if (!plug && House->Center != 0 && ((BuildingClass*)base)->Class->Speed != SPEED_FLOAT
                     && ::Distance(Center_Coord(), House->Center)
                            > House->Radius + 10 * CELL_LEPTON_W) {
                     CELL nearcell = TF_Find_Cell_Near_Yard((BuildingClass*)base, this);
@@ -3976,7 +3982,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             }
 
             if (coord) {
-                if (Flush_For_Placement(base, Coord_Cell(coord))) {
+                if (!plug && Flush_For_Placement(base, Coord_Cell(coord))) {
                     return (1);
                 }
                 if (base->Unlimbo(coord)) {
@@ -8841,6 +8847,13 @@ void BuildingClass::Factory_AI(void)
         TechnoClass* product = Factory->Get_Object();
         //		FactoryClass * fact = Factory;
 
+        /*
+        **	An addon plug deletes itself as it installs into its host, so what the product is
+        **	has to be read before it leaves the factory.
+        */
+        RTTIType product_rtti = product->What_Am_I();
+        StructType product_struct = (product_rtti == RTTI_BUILDING) ? ((BuildingClass*)product)->Class->Type : STRUCT_NONE;
+
         switch (Exit_Object(product)) {
 
         /*
@@ -8867,7 +8880,7 @@ void BuildingClass::Factory_AI(void)
         **	tracking logic that the requested object has been produced.
         */
         case 2:
-            switch (product->What_Am_I()) {
+            switch (product_rtti) {
             case RTTI_VESSEL:
                 House->JustBuiltVessel = ((VesselClass*)product)->Class->Type;
                 House->IsBuiltSomething = true;
@@ -8884,7 +8897,7 @@ void BuildingClass::Factory_AI(void)
                 break;
 
             case RTTI_BUILDING:
-                House->JustBuiltStructure = ((BuildingClass*)product)->Class->Type;
+                House->JustBuiltStructure = product_struct;
                 House->IsBuiltSomething = true;
                 break;
 

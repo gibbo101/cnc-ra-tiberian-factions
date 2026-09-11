@@ -3235,22 +3235,6 @@ static void Reserve_Unit()
     }
 }
 
-/*
-**	Which faction's starting roster a house is handed. Normally the side it
-**	picked -- except that a computer house cannot yet run the Tiberian Sun tree
-**	(its base builder has no TS roles), so an AI that draws TS GDI in the lobby
-**	fields the TD GDI roster instead of standing on a yard it cannot use. Human
-**	TS GDI players get the real thing.
-*/
-static HousesType TF_Roster_Side(HouseClass const* hptr)
-{
-    HousesType side = hptr->ActLike;
-    if (Is_TS_GDI(side) && !hptr->IsHuman) {
-        side = HOUSE_GOOD;
-    }
-    return (side);
-}
-
 static void Create_Units(bool official)
 {
     /*
@@ -3676,7 +3660,7 @@ static void Create_Units(bool official)
             **  Spain/Turkey→HOUSE_BAD swap sets ActLike correctly.
             */
             UnitType mcv_type = UNIT_AMCV;
-            switch (TF_Roster_Side(hptr)) {
+            switch (hptr->ActLike) {
             case HOUSE_GERMANY: // Tiberian Sun GDI -- the fifth faction starts on its own yard
                 mcv_type = UNIT_TSMCV;
                 break;
@@ -3823,7 +3807,7 @@ static void Create_Units(bool official)
                 **	were handed RA Allied tanks/jeeps -- the bug being fixed.)
                 */
                 const UnitType* upair;
-                HousesType const uside = TF_Roster_Side(hptr);
+                HousesType const uside = hptr->ActLike;
                 if (Is_TS_GDI(uside)) {
                     upair = utable[i].TsGdiType;
                 } else if (uside == HOUSE_GOOD) {
@@ -3880,7 +3864,7 @@ static void Create_Units(bool official)
                 */
                 int icount;
                 InfantryType itype;
-                HousesType const iside = TF_Roster_Side(hptr);
+                HousesType const iside = hptr->ActLike;
                 if (Is_TS_GDI(iside)) {
                     icount = 0;
                     itype = INFANTRY_NONE;
