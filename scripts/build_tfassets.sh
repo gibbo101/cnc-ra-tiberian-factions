@@ -462,6 +462,50 @@ PACK_ARGS+=("$TMPDIR/tspodblt_stub.shp:TSPODBLT.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsfire_stub.shp" 20 20 76
 PACK_ARGS+=("$TMPDIR/tsfire_stub.shp:TSFIRE.SHP")
 
+# TS component tower weapon art (scripts/ts_pack_towerfx.py): the Vulcan's muzzle flashes, the
+# warheads' impacts, the SAM trail, the RPG canister and the SAM missile. Canvas = TS canvas x 4
+# rounded up to whole 8 px cells; stub = canvas / 8; frame counts match the zips.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgunn_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgunn_stub.shp:TSMGUNN.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgunne_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgunne_stub.shp:TSMGUNNE.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgune_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgune_stub.shp:TSMGUNE.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgunse_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgunse_stub.shp:TSMGUNSE.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmguns_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmguns_stub.shp:TSMGUNS.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgunsw_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgunsw_stub.shp:TSMGUNSW.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgunw_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgunw_stub.shp:TSMGUNW.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgunnw_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgunnw_stub.shp:TSMGUNNW.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspiff_stub.shp" 30 18 12
+PACK_ARGS+=("$TMPDIR/tspiff_stub.shp:TSPIFF.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsclsn16_stub.shp" 16 8 13
+PACK_ARGS+=("$TMPDIR/tsclsn16_stub.shp:TSCLSN16.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsclsn22_stub.shp" 22 11 13
+PACK_ARGS+=("$TMPDIR/tsclsn22_stub.shp:TSCLSN22.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsclsn30_stub.shp" 31 15 18
+PACK_ARGS+=("$TMPDIR/tsclsn30_stub.shp:TSCLSN30.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsclsn42_stub.shp" 44 21 18
+PACK_ARGS+=("$TMPDIR/tsclsn42_stub.shp:TSCLSN42.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsclsn58_stub.shp" 62 29 18
+PACK_ARGS+=("$TMPDIR/tsclsn58_stub.shp:TSCLSN58.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsxgry1_stub.shp" 10 10 15
+PACK_ARGS+=("$TMPDIR/tsxgry1_stub.shp:TSXGRY1.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsxgry2_stub.shp" 18 14 13
+PACK_ARGS+=("$TMPDIR/tsxgry2_stub.shp:TSXGRY2.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsexpsml_stub.shp" 14 12 14
+PACK_ARGS+=("$TMPDIR/tsexpsml_stub.shp:TSEXPSML.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssmoky2_stub.shp" 8 7 11
+PACK_ARGS+=("$TMPDIR/tssmoky2_stub.shp:TSSMOKY2.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tscanist_stub.shp" 4 3 32
+PACK_ARGS+=("$TMPDIR/tscanist_stub.shp:TSCANIST.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdragon_stub.shp" 8 8 32
+PACK_ARGS+=("$TMPDIR/tsdragon_stub.shp:TSDRAGON.SHP")
+
 # Repack into TFASSETS.MIX with TD-prefix renames.
 python3 scripts/mix_tools.py pack "$OUTMIX" "${PACK_ARGS[@]}"
 echo "TFASSETS.MIX rebuilt with ${#ENTRIES[@]} entries -> $OUTMIX"

@@ -527,6 +527,14 @@ void BulletClass::AI(void)
     **	Tiberian Factions mod: TD-ported bullets run TD's verbatim AI body via
     **	AI_TD(). No RA logic for TD entities per [[project-td-port-architecture]].
     */
+    /*
+    **	The TS SAM missile trails SMOKEY2 puffs (TS art.ini [DRAGON] Trailer=SMOKEY2), each
+    **	drawn where the missile appears: screen-up is map-north, so it sits north by its height.
+    */
+    if (*this == BULLET_TSAAHEATSEEKER && !IsInLimbo && (Frame % 3) == 0) {
+        new AnimClass(ANIM_TS_SMOKEY2, Coord_Move(Coord, DIR_N, Height));
+    }
+
     if (Class->IsTDPort) {
         AI_TD();
         return;

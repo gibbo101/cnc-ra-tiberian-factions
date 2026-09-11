@@ -3771,6 +3771,10 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             case ANIM_TDFTFLAME_N:
                 a = AnimType(ANIM_TDFTFLAME_N + Dir_Facing(Fire_Direction())); // Flame Tank's own jet family (nozzle-reanchored; decoupled from ANIM_FLAME_*)
                 break;
+
+            case ANIM_TS_MGUN_N:
+                a = AnimType(ANIM_TS_MGUN_N + Dir_Facing(Fire_Direction())); // TS [VulcanTower] Anim=MGUN-N..MGUN-NW, one flash per facing
+                break;
             }
 
             /*

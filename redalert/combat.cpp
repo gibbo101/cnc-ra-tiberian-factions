@@ -276,6 +276,16 @@ void Explosion_Damage(COORDINATE coord, int strength, TechnoClass* source, Warhe
     }
 }
 
+/*
+**	A Tiberian Sun warhead picks its impact from its own AnimList in 25-point damage bands,
+**	as TS does: the first entry covers 1-24 points, the second 25-49, and the last covers
+**	everything above its own band.
+*/
+static AnimType TF_TS_Anim_Band(AnimType const* list, int count, int damage)
+{
+    return (list[min(damage / 25, count - 1)]);
+}
+
 /***********************************************************************************************
  * Combat_Anim -- Determines explosion animation to play.                                      *
  *                                                                                             *
@@ -366,6 +376,25 @@ AnimType Combat_Anim(int damage, WarheadType warhead, LandType land)
         if (land == LAND_WATER)
             return (_waterlist[(ARRAY_SIZE(_waterlist) - 1) * fixed(min(damage, 150), 150)]);
         return (_firelist[(ARRAY_SIZE(_firelist) - 1) * fixed(min(damage, 150), 150)]);
+
+    /*
+    **	Tiberian Sun warhead AnimLists, explosion sets 20-22: [SA], [RPG] and [SAMWH].
+    **	[RPG] is Conventional=yes, so a blast on water takes the splash instead.
+    */
+    case 20:
+        return (ANIM_TS_PIFFPIFF);
+
+    case 21: {
+        static AnimType const _ts_rpg[] = {ANIM_TS_CLSN16, ANIM_TS_CLSN22, ANIM_TS_CLSN30, ANIM_TS_CLSN42, ANIM_TS_CLSN58};
+        if (land == LAND_WATER)
+            return (_waterlist[(ARRAY_SIZE(_waterlist) - 1) * fixed(min(damage, 150), 150)]);
+        return (TF_TS_Anim_Band(_ts_rpg, ARRAY_SIZE(_ts_rpg), damage));
+    }
+
+    case 22: {
+        static AnimType const _ts_sam[] = {ANIM_TS_XGRYSML1, ANIM_TS_XGRYSML2, ANIM_TS_EXPLOSML};
+        return (TF_TS_Anim_Band(_ts_sam, ARRAY_SIZE(_ts_sam), damage));
+    }
 
     case 1:
         return (ANIM_PIFF);

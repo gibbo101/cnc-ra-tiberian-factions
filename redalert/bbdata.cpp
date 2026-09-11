@@ -204,6 +204,8 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TSDropPod");     //	BULLET_TSDROPPOD (dropship bay delivery — falls like NukeDown, sets its cargo down, does no damage)
     new BulletTypeClass("TSPodDrop");     //	BULLET_TSPODDROP (infantry drop pod — angled descent strafing the LZ, spawns its trooper + husk on touchdown)
     new BulletTypeClass("TSHUNT");        //	BULLET_TSHUNTER (Hunter Seeker droid — homing kamikaze; draws the TSHUNT 8-frame spin, detonation is code)
+    new BulletTypeClass("TSLobbed2");     //	BULLET_TSLOBBED2 (TS RPG tower canister — accurate high arc, TSCANIST tumble)
+    new BulletTypeClass("TSAAHeatSeeker"); //	BULLET_TSAAHEATSEEKER (TS SAM tower missile — TSDRAGON on the TD Patriot homing path)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per
@@ -218,6 +220,7 @@ void BulletTypeClass::Init_Heap(void)
     BulletTypes.Ptr((int)BULLET_TDTOW)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_TDSSM2)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_TDMISSILE)->IsTDPort = true;
+    BulletTypes.Ptr((int)BULLET_TSAAHEATSEEKER)->IsTDPort = true; // flies the TD Patriot's proven homing path
     BulletTypes.Ptr((int)BULLET_TDNAPALM)->IsTDPort = true;
 }
 
@@ -313,6 +316,14 @@ void BulletTypeClass::One_Time(void)
     BulletTypeClass& tshunter = As_Reference(BULLET_TSHUNTER);  // Hunter Seeker droid -- draws the TSHUNT tileset by name; donor passes Draw_It's NULL guard.
     if (tshunter.ImageData == NULL) {
         ((void const*&)tshunter.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tslobbed2 = As_Reference(BULLET_TSLOBBED2);  // RPG tower canister -- own TSCANIST sprite (RA_VFX.XML); donor passes Draw_It's NULL guard.
+    if (tslobbed2.ImageData == NULL) {
+        ((void const*&)tslobbed2.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tsheatseeker = As_Reference(BULLET_TSAAHEATSEEKER);  // SAM tower missile -- own TSDRAGON sprite (RA_VFX.XML); donor passes Draw_It's NULL guard.
+    if (tsheatseeker.ImageData == NULL) {
+        ((void const*&)tsheatseeker.ImageData) = donor.ImageData;
     }
 }
 

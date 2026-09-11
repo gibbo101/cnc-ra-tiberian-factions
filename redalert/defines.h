@@ -1434,6 +1434,8 @@ typedef enum BulletType : char
     BULLET_TSDROPPOD, // TS Dropship Bay delivery — a descent, not a weapon: carries TFPayload, sets it down and applies no damage. Cloned from NukeDown's fall rather than amending it, so the Nod strike is untouched.
     BULLET_TSPODDROP, // TS infantry drop pod (SPC_TS_DROPPODS) — streaks in at DropPodAngle strafing the LZ, spawns its trooper + husk on touchdown. OpenTS droppod.cpp ported onto the bullet frame like the dropship above.
     BULLET_TSHUNTER,  // TS Hunter Seeker droid (SPC_TS_HUNTSEEK) — a self-guided kamikaze on the bullet frame (self-deletes cleanly, unlike the aircraft attempt): homes to a random enemy TF_Hunter_Seeker_Acquire picks and detonates on it. Art = the TSHUNT 8-frame spin.
+    BULLET_TSLOBBED2,       // TS [Lobbed2]: the RPG tower's arcing canister (TSCANIST, 15-frame tumble).
+    BULLET_TSAAHEATSEEKER,  // TS [AAHeatSeeker]: the SAM tower's missile (TSDRAGON) on the TD Patriot's homing path, trailing SMOKEY2.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -3051,6 +3053,24 @@ typedef enum AnimType : short
     ANIM_TS_DROPEXP,    // TS drop pod touchdown puff (DROPEXP.SHP, 12 frames): TS [General] DropPodPuff= — plays over the husk at landing.
     ANIM_TS_PODRING,    // TS drop pod atmosphere-entry flash (PODRING.SHP, 20 frames, flat): TS [General] AtmosphereEntry= — spawned at the pod's spawn point.
     ANIM_TS_SMOKEY,     // TS SMOKEY smoke puff (SMOKEY.SHP, 11 frames): the falling pod's trail, spawned every 6 frames by the pod bullet.
+    ANIM_TS_MGUN_N,     // TS Vulcan tower muzzle flash (MGUN-N.SHP): the first of eight, one per facing in FacingType
+    ANIM_TS_MGUN_NE,    // order -- Fire_At adds Dir_Facing to ANIM_TS_MGUN_N ([VulcanTower] Anim=MGUN-N..MGUN-NW).
+    ANIM_TS_MGUN_E,
+    ANIM_TS_MGUN_SE,
+    ANIM_TS_MGUN_S,
+    ANIM_TS_MGUN_SW,
+    ANIM_TS_MGUN_W,
+    ANIM_TS_MGUN_NW,
+    ANIM_TS_PIFFPIFF,   // TS [SA] impact (PIFFPIFF.SHP): the Vulcan tower's bullet hits.
+    ANIM_TS_CLSN16,     // TS [RPG] impacts (S_CLSN16-58.SHP), smallest to largest in 25-point damage bands.
+    ANIM_TS_CLSN22,
+    ANIM_TS_CLSN30,
+    ANIM_TS_CLSN42,
+    ANIM_TS_CLSN58,
+    ANIM_TS_XGRYSML1,   // TS [SAMWH] impacts (XGRYSML1, XGRYSML2, EXPLOSML), in 25-point damage bands.
+    ANIM_TS_XGRYSML2,
+    ANIM_TS_EXPLOSML,
+    ANIM_TS_SMOKEY2,    // TS SMOKEY2 puff: the SAM missile's trail (art.ini [DRAGON] Trailer=SMOKEY2).
 
     ANIM_COUNT,
     ANIM_FIRST = 0
@@ -4197,6 +4217,11 @@ typedef enum VocType : short
     VOC_TS_RADAR_ON,     // TS radar activation (COMMUP1, TS rules [AudioVisual] RadarOn=). RAC/RAR_SFX_TSCOMMUP1 -> bundled TSCOMMUP1.WAV, own name.
     VOC_TS_RADAR_OFF,    // TS radar deactivation (RADARDN1, RadarOff=) -- as above.
     VOC_TS_PLACE_BUILDING_DOWN, // TS building slam (PLACE2, TS rules [AudioVisual] BuildingSlam=/BuildingDrop=). TS buildings rise SILENTLY afterwards -- see BuildingTypeClass::Is_TS_Era.
+    VOC_TS_CHAINGN1,     // TS Vulcan tower report (CHAINGN1, [VulcanTower] Report=). RAC/RAR_SFX_TSCHAINGN1 -> bundled TSCHAINGN1.WAV, own name.
+    VOC_TS_GLNCH4,       // TS RPG tower report (GLNCH4, [RPGTower] Report=) -- as above.
+    VOC_TS_SAMSHOT1,     // TS SAM tower report (SAMSHOT1, [RedEye2] Report=) -- as above.
+    VOC_TS_EXPNEW13,     // TS impact report on XGRYSML1/2 and EXPLOSML (art.ini Report=EXPNEW13). RAC/RAR_SFX_TSEXPNEW13 -> bundled TSEXPNEW13.WAV, own name.
+    VOC_TS_EXPNEW14,     // TS impact report on S_CLSN16-58 (art.ini Report=EXPNEW14) -- as above.
 
     VOC_COUNT,
     VOC_FIRST = 0

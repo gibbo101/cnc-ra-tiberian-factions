@@ -63,6 +63,13 @@ python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" ION1.AUD >/dev/null
 # Drop-pod strike art (anim SHPs, decoded by ts_pack_pods.py against ANIM.PAL)
 # + the pod strafe gun sound.
 python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" DROPPOD.SHP DROPPOD2.SHP DROPEXP.SHP PODRING.SHP SMOKEY.SHP >/dev/null
+# Component tower weapons (decoded by ts_pack_towerfx.py): the Vulcan muzzle flashes, the
+# warheads' impact anims and the SAM trail against ANIM.PAL, the RPG canister and SAM missile
+# against UNITTEM.PAL, and the tower reports + impact sounds.
+python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" MGUN-N.SHP MGUN-NE.SHP MGUN-E.SHP MGUN-SE.SHP \
+    MGUN-S.SHP MGUN-SW.SHP MGUN-W.SHP MGUN-NW.SHP PIFFPIFF.SHP S_CLSN16.SHP S_CLSN22.SHP S_CLSN30.SHP \
+    S_CLSN42.SHP S_CLSN58.SHP XGRYSML1.SHP XGRYSML2.SHP EXPLOSML.SHP SMOKEY2.SHP CANISTER.SHP DRAGON.SHP >/dev/null
+python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" CHAINGN1.AUD GLNCH4.AUD SAMSHOT1.AUD EXPNEW13.AUD EXPNEW14.AUD >/dev/null
 python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" TSGUN4.AUD METEOR1.AUD >/dev/null
 # Hunter seeker droid sprite + the HuntSeekSpecial sidebar image (ts_pack_seeker.py) + its
 # detonation report.

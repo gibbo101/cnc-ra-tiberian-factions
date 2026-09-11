@@ -2481,6 +2481,29 @@ static AnimTypeClass const TsDropExp(ANIM_TS_DROPEXP, "TSDRPEXP", 50, 6, false, 
 static AnimTypeClass const TsPodRing(ANIM_TS_PODRING, "TSPODRNG", 50, 10, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 20, 0, VOC_NONE, ANIM_NONE, 20, 0x100);
 static AnimTypeClass const TsSmokey(ANIM_TS_SMOKEY, "TSSMOKEY", 16, 5, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 11, 0, VOC_NONE, ANIM_NONE, 11, 0x100);
 
+// Tiberian Factions -- TS component tower weapon art (scripts/ts_pack_towerfx.py, TS canvas x 4,
+// stub = canvas / 8). The Vulcan's MGUN-N..NW muzzle flashes, one per facing; the tower
+// warheads' impacts ([SA] PIFFPIFF, [RPG] S_CLSN16-58, [SAMWH] XGRYSML1/2 + EXPLOSML) with
+// art.ini's Normalized/Translucent/Crater/Scorch and Report= sounds; the SAM missile's SMOKEY2.
+static AnimTypeClass const TsMgunN(ANIM_TS_MGUN_N, "TSMGUNN", 9, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunNE(ANIM_TS_MGUN_NE, "TSMGUNNE", 9, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunE(ANIM_TS_MGUN_E, "TSMGUNE", 9, 1, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunSE(ANIM_TS_MGUN_SE, "TSMGUNSE", 9, 1, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunS(ANIM_TS_MGUN_S, "TSMGUNS", 9, 1, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunSW(ANIM_TS_MGUN_SW, "TSMGUNSW", 9, 1, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunW(ANIM_TS_MGUN_W, "TSMGUNW", 9, 1, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunNW(ANIM_TS_MGUN_NW, "TSMGUNNW", 9, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsPiffPiff(ANIM_TS_PIFFPIFF, "TSPIFF", 30, 6, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
+static AnimTypeClass const TsClsn16(ANIM_TS_CLSN16, "TSCLSN16", 16, 6, false, true, false, false, true, false, false, true, false, 0, 2, 0, 0, 0, 13, 0, VOC_TS_EXPNEW14, ANIM_NONE, 13, 0x100);
+static AnimTypeClass const TsClsn22(ANIM_TS_CLSN22, "TSCLSN22", 22, 6, false, true, false, false, true, false, false, true, false, 0, 2, 0, 0, 0, 13, 0, VOC_TS_EXPNEW14, ANIM_NONE, 13, 0x100);
+static AnimTypeClass const TsClsn30(ANIM_TS_CLSN30, "TSCLSN30", 31, 9, false, true, false, false, true, false, false, true, false, 0, 2, 0, 0, 0, 18, 0, VOC_TS_EXPNEW14, ANIM_NONE, 18, 0x100);
+static AnimTypeClass const TsClsn42(ANIM_TS_CLSN42, "TSCLSN42", 44, 9, false, true, false, false, true, false, false, true, false, 0, 2, 0, 0, 0, 18, 0, VOC_TS_EXPNEW14, ANIM_NONE, 18, 0x100);
+static AnimTypeClass const TsClsn58(ANIM_TS_CLSN58, "TSCLSN58", 62, 9, false, true, false, false, true, false, false, true, false, 0, 2, 0, 0, 0, 18, 0, VOC_TS_EXPNEW14, ANIM_NONE, 18, 0x100);
+static AnimTypeClass const TsXgrySml1(ANIM_TS_XGRYSML1, "TSXGRY1", 10, 2, false, false, false, false, false, false, false, true, false, 0, 2, 0, 0, 0, 15, 0, VOC_TS_EXPNEW13, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsXgrySml2(ANIM_TS_XGRYSML2, "TSXGRY2", 18, 5, false, false, false, false, false, false, false, true, false, 0, 2, 0, 0, 0, 13, 0, VOC_TS_EXPNEW13, ANIM_NONE, 13, 0x100);
+static AnimTypeClass const TsExploSml(ANIM_TS_EXPLOSML, "TSEXPSML", 14, 2, false, false, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 14, 0, VOC_TS_EXPNEW13, ANIM_NONE, 14, 0x100);
+static AnimTypeClass const TsSmokey2(ANIM_TS_SMOKEY2, "TSSMOKY2", 8, 7, false, false, false, false, false, false, false, true, false, 0, 2, 0, 0, 0, 11, 0, VOC_NONE, ANIM_NONE, 11, 0x100);
+
 static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 25, 0, VOC_NONE, ANIM_NONE, 25, 0x100);
 
 // Tiberian Factions -- TS Disruptor ripple disc (ANIM_TS_SONICPULSE): RETIRED,
@@ -2652,6 +2675,24 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(TsDropExp);
     new AnimTypeClass(TsPodRing);
     new AnimTypeClass(TsSmokey);
+    new AnimTypeClass(TsMgunN);
+    new AnimTypeClass(TsMgunNE);
+    new AnimTypeClass(TsMgunE);
+    new AnimTypeClass(TsMgunSE);
+    new AnimTypeClass(TsMgunS);
+    new AnimTypeClass(TsMgunSW);
+    new AnimTypeClass(TsMgunW);
+    new AnimTypeClass(TsMgunNW);
+    new AnimTypeClass(TsPiffPiff);
+    new AnimTypeClass(TsClsn16);
+    new AnimTypeClass(TsClsn22);
+    new AnimTypeClass(TsClsn30);
+    new AnimTypeClass(TsClsn42);
+    new AnimTypeClass(TsClsn58);
+    new AnimTypeClass(TsXgrySml1);
+    new AnimTypeClass(TsXgrySml2);
+    new AnimTypeClass(TsExploSml);
+    new AnimTypeClass(TsSmokey2);
 }
 
 /***********************************************************************************************

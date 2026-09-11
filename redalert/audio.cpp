@@ -312,6 +312,11 @@ struct SoundEffectNameStruct
     {"TSCOMMUP1", 1, IN_NOVAR},   // VOC_TS_RADAR_ON -- TS radar up (RAC/RAR_SFX_TSCOMMUP1 -> bundled TSCOMMUP1.WAV, own name)
     {"TSRADARDN1", 1, IN_NOVAR},  // VOC_TS_RADAR_OFF -- TS radar down (RAC/RAR_SFX_TSRADARDN1 -> bundled TSRADARDN1.WAV, own name)
     {"TSPLACE2", 10, IN_NOVAR},   // VOC_TS_PLACE_BUILDING_DOWN -- TS building slam (RAC/RAR_SFX_TSPLACE2 -> bundled TSPLACE2.WAV, own name)
+    {"TSCHAINGN1", 1, IN_NOVAR},  // VOC_TS_CHAINGN1 -- TS Vulcan tower (RAC/RAR_SFX_TSCHAINGN1 -> bundled TSCHAINGN1.WAV, own name)
+    {"TSGLNCH4", 1, IN_NOVAR},    // VOC_TS_GLNCH4 -- TS RPG tower (RAC/RAR_SFX_TSGLNCH4 -> bundled TSGLNCH4.WAV, own name)
+    {"TSSAMSHOT1", 1, IN_NOVAR},  // VOC_TS_SAMSHOT1 -- TS SAM tower (RAC/RAR_SFX_TSSAMSHOT1 -> bundled TSSAMSHOT1.WAV, own name)
+    {"TSEXPNEW13", 1, IN_NOVAR},  // VOC_TS_EXPNEW13 -- TS missile impact (RAC/RAR_SFX_TSEXPNEW13 -> bundled TSEXPNEW13.WAV, own name)
+    {"TSEXPNEW14", 1, IN_NOVAR},  // VOC_TS_EXPNEW14 -- TS grenade impact (RAC/RAR_SFX_TSEXPNEW14 -> bundled TSEXPNEW14.WAV, own name)
 };
 
 //
