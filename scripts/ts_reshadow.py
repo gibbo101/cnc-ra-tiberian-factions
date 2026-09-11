@@ -82,7 +82,7 @@ EA_ALPHA = 191
 # hull's reads as float rather than as error. Keep its approved values.
 OFFSET_OVERRIDE = {"TSHVR": (5, 17)}
 
-UNITS = ["TSAPC", "TSHARV", "TSHMEC", "TSHVR", "TSMCV", "TSSMEC", "TSSONIC", "TSTITN"]
+UNITS = ["TS4TNK", "TSAPC", "TSHARV", "TSHMEC", "TSHVR", "TSMCV", "TSSMEC", "TSSONIC", "TSTITN"]
 
 # Whether a unit currently carries a shadow is DETECTED from the art (a flat
 # pure-black alpha plateau), never hardcoded -- that keeps the pass idempotent

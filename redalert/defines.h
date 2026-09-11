@@ -1928,6 +1928,7 @@ typedef enum UnitType : char
     UNIT_TSMDIV,            // Mech Division (dropship-bay group order) — a purchasable TOKEN that never touches the map: Deliver_Cargo expands it into 3 Titans + 2 Wolverines at the unload beat. Cost 2800 (3400 sticker, starport discount — Luke, 2026-08-12).
     UNIT_TSSUBTANK,         // TS Devil's Tongue (SUBTANK) — subterranean flame tank; fires TDFlameTongue (TS FireballLauncher mapped onto the TD flame chain). Art = SUBTANK.VXL: 32 driving + 80 dive/emerge pitch-ladder shapes (docs/subterranean-design.md).
     UNIT_TSSAPC,            // TS Subterranean APC (SAPC) — unarmed underground transport, Passengers=5, door logic alongside UNIT_APC/UNIT_TDAPC/UNIT_TSAPC. Art = SAPC.VXL, same 112-shape layout as TSSUBTANK.
+    UNIT_TS4TNK,            // The old TS Mammoth Tank (TS [4TNK], TechLevel -1 in TS): twin 120mmx cannon + MammothTusk AA missiles, self-healing. Art = 4TNK.VXL hull 0-31 + 4TNKTUR/4TNKBARL turret 32-63 (scripts/ts_pack_4tnk.py).
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -3436,6 +3437,7 @@ typedef enum WarheadType : char
     WARHEAD_TSSA,     // TS small-arms warhead. TS [SA]: Spread 3, verses 100/60/40/25/10%, InfDeath 1 (RA's own [SA] is 100/50/60/25/25). Registered "TSSA".
     WARHEAD_TSRPG,    // TS RPG tower warhead. TS [RPG]: Spread 3, Wall=yes, Wood=yes, verses 30/75/90/100/70%, InfDeath 3. Registered "TSRPG".
     WARHEAD_TSSAMWH,  // TS SAM warhead. TS [SAMWH]: Spread 3, 100% all, InfDeath 3. Registered "TSSAMWH".
+    WARHEAD_TSHE,     // TS high-explosive warhead. TS [HE]: Spread 4, Wall=yes, Wood=yes, verses 100/85/70/35/28%, InfDeath 2. Registered "TSHE".
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
@@ -3541,6 +3543,8 @@ typedef enum WeaponType : char
     WEAPON_TSVULCANTOWER,  // TS component tower Vulcan cannon — TS [VulcanTower] verbatim (Dmg18/ROF26/Range6, instant Invisible projectile, TSSA warhead). Registered "TSVulcanTower".
     WEAPON_TSRPGTOWER,     // TS component tower RPG — TS [RPGTower] verbatim (Dmg110/ROF80/Range8/MinRange2, arcing Lobbed projectile, TSRPG warhead). Registered "TSRPGTower".
     WEAPON_TSREDEYE2,      // TS component tower SAM — TS [RedEye2] verbatim (Dmg33/ROF55/Range15, AA-only TDPatriot homing missile, TSSAMWH warhead). Registered "TSRedEye2".
+    WEAPON_TS120MMX,       // TS Mammoth Tank cannon (TS [120mmx]): Dmg50/ROF80/Burst2, on the TDAPDS instant shell like the Titan's TS120mm.
+    WEAPON_TS4TNKTUSK,     // The old TS Mammoth's own tusks: TS [MammothTusk] verbatim (Dmg40/ROF80/Range6/Speed20/Burst2, AA-only TSAAHeatSeeker, TSHE warhead).
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -4222,6 +4226,7 @@ typedef enum VocType : short
     VOC_TS_SAMSHOT1,     // TS SAM tower report (SAMSHOT1, [RedEye2] Report=) -- as above.
     VOC_TS_EXPNEW13,     // TS impact report on XGRYSML1/2 and EXPLOSML (art.ini Report=EXPNEW13). RAC/RAR_SFX_TSEXPNEW13 -> bundled TSEXPNEW13.WAV, own name.
     VOC_TS_EXPNEW14,     // TS impact report on S_CLSN16-58 (art.ini Report=EXPNEW14) -- as above.
+    VOC_TS_120MMX9,      // TS Mammoth Tank cannon report (120MMX9, [120mmx] Report=). RAC/RAR_SFX_TS120MMX9 -> bundled TS120MMX9.WAV, own name.
 
     VOC_COUNT,
     VOC_FIRST = 0

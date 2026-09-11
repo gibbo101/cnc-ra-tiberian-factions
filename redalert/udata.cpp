@@ -1744,6 +1744,41 @@ static UnitTypeClass const UnitTsSonic(UNIT_TSSONIC,
                                        MISSION_HUNT  // ORDERS: Default order.
 );
 
+// The old TS Mammoth Tank (UNIT_TS4TNK), TS rules [4TNK] (TechLevel -1 in TS, crate-only;
+// buildable here). Turreted twin 120mmx cannon + MammothTusk AA missiles, self-healing
+// (rules.ini). TS: Strength=600, Armor=heavy, Sight=6, Speed=4, Cost=1700, Points=60,
+// ROT=5, Crusher=yes, CrateGoodie=yes. Art = 4TNK.VXL hull 0-31 + 4TNKTUR with 4TNKBARL
+// turret 32-63; no TurretOffset in TS art, so hull and turret share the voxel origin.
+// Weapon offsets start from the TD Mammoth's twin-barrel geometry.
+static UnitTypeClass const UnitTs4tnk(UNIT_TS4TNK,
+                                      TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                      "TS4TNK",     // NAME: IniName.
+                                      ANIM_ART_EXP1,// EXPLOSION: big fragment explosion.
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0020,       // Vertical offset.
+                                      0x00C0,       // Primary weapon offset along turret centerline.
+                                      0x0028,       // Primary weapon lateral offset (twin barrels alternate).
+                                      0x0008,       // Secondary weapon offset along turret centerline.
+                                      0x0040,       // Secondary weapon lateral offset (tusk pods).
+                                      true,         // Can this be a goodie surprise from a crate? (TS CrateGoodie=yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (TS Crusher=yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      true,         // Is it equipped with a combat turret? (TS Turret=yes)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline.
+                                      MISSION_HUNT  // ORDERS: Default order.
+);
+
 // TS Amphibious APC (UNIT_TSAPC), TS rules [APC]. Unarmed hover transport —
 // SPEED_HOVER stands in for the TS amphibious float (plan-approved deviation),
 // so it crosses water like the Hover MLRS. Passengers=5 via rules.ini; door
@@ -2141,6 +2176,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTsMdiv);    // UNIT_TSMDIV (Mech Division token)
     new UnitTypeClass(UnitTsSubTank); // UNIT_TSSUBTANK (Devil's Tongue)
     new UnitTypeClass(UnitTsSapc);    // UNIT_TSSAPC (Subterranean APC)
+    new UnitTypeClass(UnitTs4tnk);    // UNIT_TS4TNK (the old TS Mammoth Tank)
 }
 
 /***********************************************************************************************
@@ -2312,6 +2348,7 @@ void UnitTypeClass::One_Time(void)
             {UNIT_TSHVR, UNIT_MTANK2},
             {UNIT_TSTITN, UNIT_MTANK2},
             {UNIT_TSHMEC, UNIT_HTANK},
+            {UNIT_TS4TNK, UNIT_HTANK}, // the old TS Mammoth Tank: HD voxel art under TS4TNK keys
             {UNIT_AMCV, UNIT_MCV},
             {UNIT_SMCV, UNIT_MCV},
             {UNIT_TDGMCV, UNIT_TDMCV},

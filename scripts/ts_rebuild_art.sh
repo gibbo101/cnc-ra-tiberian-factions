@@ -70,6 +70,10 @@ python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" MGUN-N.SHP MGUN-NE.SHP 
     MGUN-S.SHP MGUN-SW.SHP MGUN-W.SHP MGUN-NW.SHP PIFFPIFF.SHP S_CLSN16.SHP S_CLSN22.SHP S_CLSN30.SHP \
     S_CLSN42.SHP S_CLSN58.SHP XGRYSML1.SHP XGRYSML2.SHP EXPLOSML.SHP SMOKEY2.SHP CANISTER.SHP DRAGON.SHP >/dev/null
 python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" CHAINGN1.AUD GLNCH4.AUD SAMSHOT1.AUD EXPNEW13.AUD EXPNEW14.AUD >/dev/null
+# The old TS Mammoth Tank [4TNK] (scripts/ts_pack_4tnk.py): hull, turret and barrel voxels
+# with their HVAs, and its cannon and tusk reports.
+python3 "$EXTRACT" "$TIBSUN" LOCAL.MIX    extract "$RAW" 4TNK.VXL 4TNK.HVA 4TNKTUR.VXL 4TNKTUR.HVA 4TNKBARL.VXL 4TNKBARL.HVA >/dev/null
+python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" 120MMX9.AUD MISL1.AUD >/dev/null
 python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" TSGUN4.AUD METEOR1.AUD >/dev/null
 # Hunter seeker droid sprite + the HuntSeekSpecial sidebar image (ts_pack_seeker.py) + its
 # detonation report.

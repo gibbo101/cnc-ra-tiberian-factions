@@ -668,6 +668,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TSSA");         // WARHEAD_TSSA (TS [SA] small arms -- TS verses, the tower Vulcan's warhead)
     new WarheadTypeClass("TSRPG");        // WARHEAD_TSRPG (TS [RPG] -- the tower RPG's warhead)
     new WarheadTypeClass("TSSAMWH");      // WARHEAD_TSSAMWH (TS [SAMWH] -- the tower SAM's warhead)
+    new WarheadTypeClass("TSHE");         // WARHEAD_TSHE (TS [HE] -- the old TS Mammoth's tusk warhead)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
@@ -763,6 +764,8 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TSVulcanTower");  // WEAPON_TSVULCANTOWER (TS component tower Vulcan -- TS [VulcanTower] verbatim)
     new WeaponTypeClass("TSRPGTower");     // WEAPON_TSRPGTOWER (TS component tower RPG -- TS [RPGTower] verbatim)
     new WeaponTypeClass("TSRedEye2");      // WEAPON_TSREDEYE2 (TS component tower SAM -- TS [RedEye2] verbatim)
+    new WeaponTypeClass("TS120mmx");       // WEAPON_TS120MMX (TS Mammoth Tank cannon -- TS [120mmx] on the TDAPDS instant shell)
+    new WeaponTypeClass("TS4TNKTusk");     // WEAPON_TS4TNKTUSK (the old TS Mammoth's tusks -- TS [MammothTusk] verbatim)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -825,6 +828,8 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TSHoverMissile"))->IsTDPort = true;
     // TS120mm (Titan): TS [120mm] stats through the TDAPDS instant shell (TDMTNK's chain).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TS120mm"))->IsTDPort = true;
+    // TS120mmx (old TS Mammoth Tank): TS [120mmx] stats through the same TDAPDS instant shell.
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TS120mmx"))->IsTDPort = true;
     // TD155mm (Artillery ARTY): TD WEAPON_155MM -- a high-damage (150) arcing HE bombardment shell
     // firing BULLET_TDHESHELL. IsTDPort for raw Speed (MPH_MEDIUM_FAST) + the AI_TD arc path.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TD155mm"))->IsTDPort = true;

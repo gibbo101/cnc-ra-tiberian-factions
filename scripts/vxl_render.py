@@ -204,9 +204,17 @@ def team_ramp(palette, remap, team_green):
     return pal
 
 
+# Palette indices inside the remap range drawn in a fixed palette colour instead of the
+# team ramp, as (index, source index) pairs: lets a model TS painted almost wholly in remap
+# keep team colour on chosen parts only.
+KEEP_COLOUR = ()
+
+
 def render_frame(model, yaw_deg, px_per_voxel, team_green, z_lift, canvas=None,
                  hva_mats=None, pitch_deg=0.0):
     pal = team_ramp(model['palette'], model['remap'], team_green)
+    for i, src in KEEP_COLOUR:
+        pal[i] = model['palette'][src]
     yaw = math.radians(yaw_deg)
     cy, sy_ = math.cos(yaw), math.sin(yaw)
     pitch = math.radians(pitch_deg)
@@ -324,7 +332,8 @@ def main():
             '--team-green': '0,200,0', '--z-lift': '0', '--canvas': '0',
             '--hva': '', '--hva-frame': '0', '--elev': '54', '--ambient': '0.35', '--shade': 'ts',
             '--pitch': '0', '--normal-smooth': '0', '--height-elev': '',
-            '--z-clip': '', '--normals': 'vxl'}
+            '--z-clip': '', '--normals': 'vxl', '--attach': '', '--attach-hva': '',
+            '--keep-colour': ''}
     i = 2
     while i < len(args):
         opts[args[i]] = args[i + 1]
@@ -357,10 +366,27 @@ def main():
     SHADE_MODEL = opts['--shade']
     assert SHADE_MODEL in ('ts', 'legacy'), '--shade ts|legacy'
 
+    global KEEP_COLOUR
+    if opts['--keep-colour']:
+        # "19" keeps index 19's own colour; "19:144" draws it in index 144's colour.
+        KEEP_COLOUR = tuple((int(a), int(b or a)) for a, _, b in
+                            (x.partition(':') for x in opts['--keep-colour'].split(',')))
     model = parse_vxl(vxl_path)
     hva_mats = None
     if opts['--hva']:
         hva_mats = parse_hva(opts['--hva'])[int(opts['--hva-frame'])]
+    # --attach renders a second model (a turret's barrel) in the same depth-sorted pass,
+    # each section placed by its own HVA, so the part hides and is hidden correctly at
+    # every facing instead of being pasted over the render.
+    if opts['--attach']:
+        part = parse_vxl(opts['--attach'])
+        identity = [np.hstack((np.eye(3, dtype=np.float32), np.zeros((3, 1), np.float32)))]
+        if hva_mats is None:
+            hva_mats = identity * len(model['sections'])
+        part_mats = (parse_hva(opts['--attach-hva'])[int(opts['--hva-frame'])]
+                     if opts['--attach-hva'] else identity * len(part['sections']))
+        model['sections'] = model['sections'] + part['sections']
+        hva_mats = list(hva_mats) + list(part_mats)
     os.makedirs(outdir, exist_ok=True)
     # first pass with fixed canvas: find biggest extent over all frames
     if canvas is None:

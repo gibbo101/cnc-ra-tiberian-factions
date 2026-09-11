@@ -6734,6 +6734,35 @@
 			<BuildIcon>BuildIcon_TS_Wolverine</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<!-- Mammoth Mk. I (the old TS Mammoth): its own cameo on the TS scene, badged _G like the Mk. II; hand block, outside every generated one. -->
+	<ObjectTypeClass Name="RA_TS4TNK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TS4TNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TS4TNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MammothMk1</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TS4TNK_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TS4TNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TS4TNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MammothMk1</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TS4TNK_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TS4TNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TS4TNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS4TNK_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TS4TNK_G_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TS4TNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TS4TNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS4TNK_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<ObjectTypeClass Name="RA_TSSONIC" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TSSONIC</ObjectNameTextID>
