@@ -4160,6 +4160,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                             // No owner: the launcher tints an owned anim in the
                             // house colour, which turned the green band GDI gold.
                             wave->SonicFirer = As_Target();
+                            wave->SonicHouse = House->Class->House;
                             wave->SonicDir = ::Direction(XY_Coord(sx, sy), XY_Coord(sx + ddx, sy + ddy));
                             wave->SonicT = (d * 256) / dist;
                             wave->SonicTether = target;

@@ -176,6 +176,7 @@ public:
     int SonicDamage;
     TARGET SonicVictim;
     TARGET SonicFirer; // never damaged by its own band
+    HousesType SonicHouse; // the firer's house: Disruptors of this house are immune (TS TypeImmune)
     DirType SonicDir;  // beam direction firer->target, for a rotated export
     int SonicT;        // this disc's place on the muzzle->target line, 0-256; -1 once the band is cut loose
     TARGET SonicTether; // what the band was fired at: the firer must keep aiming at it or the band retracts

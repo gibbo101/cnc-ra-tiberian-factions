@@ -1570,10 +1570,10 @@ static BuildingTypeClass const ClassTsDept(STRUCT_TSDEPT,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,          // Repair bay (not a factory).
                                            DIR_N,
-                                           BSIZE_33,           // TDFIX parity.
-                                           NULL,
-                                           (short const*)ListFix,
-                                           (short const*)OListFix);
+                                           BSIZE_33,           // TS Foundation=3x3: the bay art fills
+                                           NULL,               // the whole plot, so the corners are
+                                           (short const*)TsList33, // occupied, not free ground.
+                                           NULL);
 
 /*
 **  TSDROP (Dropship Bay) — Westwood's cut GADROP, finished rather than invented.

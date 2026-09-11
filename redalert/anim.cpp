@@ -627,6 +627,7 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
     , SonicDamage(0)
     , SonicVictim(TARGET_NONE)
     , SonicFirer(TARGET_NONE)
+    , SonicHouse(HOUSE_NONE)
     , SonicDir(DIR_N)
     , SonicT(-1)
     , SonicTether(TARGET_NONE)
@@ -1019,14 +1020,15 @@ void AnimClass::AI(void)
                     ObjectClass* victims[8];
                     int vcount = 0;
                     /*
-                    **	Disruptors are immune to sonic damage, as in Tiberian
-                    **	Sun: a Disruptor group never hurts itself, only the
-                    **	units it is mixed with.
+                    **	Tiberian Sun's TypeImmune: a Disruptor takes no damage from
+                    **	a band fired by a Disruptor of its own house, so a Disruptor
+                    **	group never hurts itself. Enemy Disruptors, and allied ones
+                    **	of another house, are hit like anything else.
                     */
                     ObjectClass* firer = Target_Legal(SonicFirer) ? As_Object(SonicFirer) : NULL;
                     ObjectClass* occ = Map[Coord_Cell(Center_Coord())].Cell_Occupier();
                     while (occ != NULL && vcount < (int)(sizeof(victims) / sizeof(victims[0]))) {
-                        bool disruptor = occ->What_Am_I() == RTTI_UNIT && *((UnitClass*)occ) == UNIT_TSSONIC;
+                        bool disruptor = occ->What_Am_I() == RTTI_UNIT && *((UnitClass*)occ) == UNIT_TSSONIC && occ->Owner() == SonicHouse;
                         if (occ->Is_Techno() && occ != firer && !disruptor) {
                             victims[vcount++] = occ;
                         }
@@ -1040,7 +1042,8 @@ void AnimClass::AI(void)
                                 seen = true;
                             }
                         }
-                        bool disruptor = aimed != NULL && aimed->What_Am_I() == RTTI_UNIT && *((UnitClass*)aimed) == UNIT_TSSONIC;
+                        bool disruptor = aimed != NULL && aimed->What_Am_I() == RTTI_UNIT && *((UnitClass*)aimed) == UNIT_TSSONIC
+                                         && aimed->Owner() == SonicHouse;
                         if (aimed != NULL && !seen && aimed->Is_Techno() && !disruptor) {
                             victims[vcount++] = aimed;
                         }
