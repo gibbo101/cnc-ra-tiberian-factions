@@ -2776,10 +2776,11 @@ bool CellClass::Goodie_Check(FootClass* object)
             }
 
             /*
-            **  Tiberian Factions -- the TS units ride the unit crate as rare
-            **  finds: hidden from the sidebar (TechLevel=-1), but a lucky crate
-            **  can field one for ANY faction. 1-in-8 unit crates rolls the TS
-            **  table (Hover MLRS / Titan / Mammoth Mk. II).
+            **  Tiberian Factions -- TS units ride the unit crate as rare finds a
+            **  lucky crate can field for ANY faction. 1-in-8 unit crates rolls the
+            **  TS table (Hover MLRS / Titan / Mammoth Mk. II, plus the Devil's
+            **  Tongue and Subterranean APC, which are Nod's and reach the field no
+            **  other way).
             */
             if (utp == NULL && Session.Type != GAME_NORMAL && Random_Pick(0, 7) == 0) {
                 /*
@@ -2793,8 +2794,8 @@ bool CellClass::Goodie_Check(FootClass* object)
                 if (Session.Options.Bases && Random_Pick(0, 3) == 0) {
                     utp = &UnitTypeClass::As_Reference(UNIT_TSMCV);
                 } else {
-                    static UnitType const _ts_goodies[] = {UNIT_TSHVR, UNIT_TSTITN, UNIT_TSHMEC};
-                    utp = &UnitTypeClass::As_Reference(_ts_goodies[Random_Pick(0, 2)]);
+                    static UnitType const _ts_goodies[] = {UNIT_TSHVR, UNIT_TSTITN, UNIT_TSHMEC, UNIT_TSSUBTANK, UNIT_TSSAPC};
+                    utp = &UnitTypeClass::As_Reference(_ts_goodies[Random_Pick(0, (int)ARRAY_SIZE(_ts_goodies) - 1)]);
                 }
             }
 

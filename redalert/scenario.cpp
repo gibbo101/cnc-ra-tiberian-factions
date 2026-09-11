@@ -3742,32 +3742,6 @@ static void Create_Units(bool official)
                     }
                 }
             }
-
-            /*
-            **  Every HUMAN player starts with a TS MCV alongside the normal one, so the
-            **  ownership-gated TS tree is reachable without waiting on crate luck. Crates
-            **  keep their own rare roll regardless.
-            **
-            **  Human houses only: the AI cannot drive the TS tree, and handing it one
-            **  would give it a second yard it does not know what to do with.
-            **
-            **  Unholy Alliance sits this out (Luke, 2026-08-31): its package is the four
-            **  era MCVs, and the TS tree stays a crate find there. The match-start grant
-            **  in the other modes is a testing convenience while the TS tree matures.
-            **
-            **  This was a dev-build lever gated on TF_Dev_Cheats. It is now part of the
-            **  game proper, because a release build compiles the dev path out entirely
-            **  and the TS tree would be unreachable in exactly the builds people play.
-            */
-            if (hptr->IsHuman && !TF_UnholyAlliance && !Is_TS_GDI(TF_Roster_Side(hptr))) {
-                Reserve_Unit();
-                UnitClass* tsmcv = new UnitClass(UNIT_TSMCV, house);
-                if (!Scan_Place_Object(tsmcv, centroid)) {
-                    delete tsmcv;
-                } else {
-                    tsmcv->Set_Mission(MISSION_GUARD);
-                }
-            }
         } else {
 
             /*
