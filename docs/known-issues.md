@@ -8,6 +8,22 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## TS GDI War Factory: the under-door stripes take team colour, the apron's stay gold (2026-09-12)
+
+- **Severity:** cosmetic. **Status:** open, fix proposed, waiting on Luke's go.
+- Luke's screencast (2026-09-12, red team): the yellow and black hazard stripes inside the bay,
+  seen when the door opens, turn red while the apron's stripes stay gold.
+- Cause: TS paints both sets of stripes in remap (team-colour) pixels, in `GTWEAPBB` (the apron)
+  and `GTWEAP_1` (the bay under the door). Our apron is ground art, and the launcher never
+  house-remaps ground art, so its stripes were baked gold when the apron shipped (2026-08-07,
+  Luke accepted gold whoever owns the building). The bay art is ordinary building art, so its
+  remap pixels still recolour per house, and the two sets no longer match.
+- Proposed fix: bake the bay's stripe pixels gold in `scripts/ts_pack_tree.py`, the same
+  treatment as the apron, so every stripe is gold for every house. Team-coloured stripes
+  everywhere isn't available: the apron can't be remapped.
+
+---
+
 ## Launcher drops DLL speech dispatched in the game-over window (2026-08-31)
 
 - **Severity:** limitation (worked around). **Status:** confirmed — do not retry refire there.
