@@ -3,9 +3,11 @@
 The SAM, Mk. I anti-air, RPG tower, Vulcan flash, War Factory door and stripes, and TS
 placement reach all passed in play on 2026-09-12. Still open:
 
-- Upgrade Centre AI: the AI should pick two of the three plugs.
-- `TSDRAGON` (art, stub, RA_VFX.XML entries) is unused now that `[TSAAHeatSeeker]` draws RA's
-  MISSILE; remove it at the next art pass.
+- Upgrade Centre AI is in but not yet seen in play: a TS GDI AI at Normal or Hard builds the
+  centre, the Ion Cannon Uplink, then Drop Pods or Seeker Control rolled per match. Confirm it
+  with the `PROD start TSPLUG` / `TSPION` / `TSPODS` / `TSSEEK` lines in `MOD_DEBUG_AI.txt`.
+- The AI aims its drop pods at the enemy's most valuable building (`Special_Weapon_AI`), which
+  lands infantry on the strongest point of a base; a better drop target is open.
 - The TD-port bullet path never damaged aircraft with `TSAAHeatSeeker`; the root cause inside
   that path was not found. Any other TD-port AA bullet (`BULLET_TDPATRIOT`) may share it.
 

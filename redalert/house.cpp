@@ -8201,6 +8201,45 @@ static BuildingTypeClass const* TF_AI_Tower_Step(HouseClass const* house, Buildi
 }
 
 /*
+**	True when this house has the given building chosen next or on a factory's line.
+*/
+static bool TF_AI_Building_Pending(HouseClass const* house, StructType type)
+{
+    if (house->BuildStructure == type) {
+        return (true);
+    }
+    for (int i = 0; i < Buildings.Count(); i++) {
+        BuildingClass const* bld = Buildings.Ptr(i);
+        if (bld != NULL && bld->IsActive && bld->House == house && bld->Factory.Is_Valid()) {
+            TechnoClass const* obj = bld->Factory->Get_Object();
+            if (obj != NULL && obj->What_Am_I() == RTTI_BUILDING && ((BuildingClass const*)obj)->Class->Type == type) {
+                return (true);
+            }
+        }
+    }
+    return (false);
+}
+
+/*
+**	The next TS Upgrade Centre plug this house wants, or STRUCT_NONE: the Ion Cannon Uplink
+**	first, then one of the Drop Pod Node and Seeker Control, rolled per house from the match
+**	seed. A plug already installed or on its way is never asked for again, since a centre
+**	takes one of each and would refuse the duplicate.
+*/
+static StructType TF_AI_Upgrade_Plug(HouseClass const* house)
+{
+    unsigned roll = (unsigned)Seed * 2654435761u + (unsigned)house->Class->House * 40503u;
+    StructType const order[2] = {STRUCT_TSPION, ((roll >> 16) & 1) ? STRUCT_TSPODS : STRUCT_TSSEEK};
+    for (int i = 0; i < 2; i++) {
+        if (TF_House_Has_Plug(house, order[i])) {
+            continue;
+        }
+        return (TF_AI_Building_Pending(house, order[i]) ? STRUCT_NONE : order[i]);
+    }
+    return (STRUCT_NONE);
+}
+
+/*
 **	Heap Type of the faction's TD equivalent for a base role, or -1 for vanilla houses /
 **	unmapped roles. The caller adds BQuantity[<this>] to its existing BQuantity[RA-slot]
 **	presence count so the "do I already have one?" gates see the AI's own TD buildings.
@@ -10340,6 +10379,26 @@ int HouseClass::AI_Building(void)
         if (BQuantity[STRUCT_TSDROP] == 0) {
             b = &BuildingTypeClass::As_Reference(STRUCT_TSDROP);
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
+                choiceptr = BuildChoice.Alloc();
+                if (choiceptr != NULL) {
+                    *choiceptr = BuildChoiceClass(tf_economy_ready ? URGENCY_MEDIUM : URGENCY_LOW, b->Type);
+                }
+            }
+        }
+
+        /*
+        **	The TS Upgrade Centre and its plugs, for a house that can fire superweapons: the
+        **	centre once, then one plug at a time as TF_AI_Upgrade_Plug asks for them. A plug
+        **	queued before its centre stands fails Can_Build and waits a pass.
+        */
+        if (IQ >= Rule.IQSuperWeapons) {
+            if (BQuantity[STRUCT_TSPLUG] == 0) {
+                b = &BuildingTypeClass::As_Reference(STRUCT_TSPLUG);
+            } else {
+                StructType plug = TF_AI_Upgrade_Plug(this);
+                b = (plug != STRUCT_NONE) ? &BuildingTypeClass::As_Reference(plug) : NULL;
+            }
+            if (b != NULL && Can_Build(b, ActLike) && TF_AI_Plug_Fits(this, b) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
                     *choiceptr = BuildChoiceClass(tf_economy_ready ? URGENCY_MEDIUM : URGENCY_LOW, b->Type);

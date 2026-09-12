@@ -1808,9 +1808,6 @@ IniName prefix throughout (dodges the TD HP-doubling hook). ✓ = shipped.
   Chinook lifts infantry only).
 - **LPST (Mobile Sensor Array)** — sensor/cloak-detect logic; revisit with
   the Stealth Generator `IsScanner` detectors.
-- **GAPLUG/2/3** (Upgrade Center + plugs) — upgrade-slot mechanic doesn't
-  exist; Ion Cannon Uplink could later host the existing Ion Cannon special
-  on the Temple-nuke pattern.
 - **GAFIRE/GAFSDF** (Firestorm) — wholly new defensive logic.
 - **NAPULS (EMP Cannon)** — EMP disable logic is new. *(An EMP arc is now
   planned in the subterranean instance's lane — coordinate before starting.)*
