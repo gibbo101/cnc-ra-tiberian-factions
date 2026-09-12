@@ -993,6 +993,84 @@
       "graphics_source": null,
       "z_order": "default",
       "flags": []
+    },
+    {
+      "id": 139,
+      "name": "tsctwr",
+      "display_name": "Component Tower",
+      "power_production": 0,
+      "power_usage": 10,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": []
+    },
+    {
+      "id": 140,
+      "name": "tsvulc",
+      "display_name": "Vulcan Cannon",
+      "power_production": 0,
+      "power_usage": 30,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Turret"
+      ]
+    },
+    {
+      "id": 141,
+      "name": "tsrock",
+      "display_name": "RPG Upgrade",
+      "power_production": 0,
+      "power_usage": 30,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Turret"
+      ]
+    },
+    {
+      "id": 142,
+      "name": "tscsam",
+      "display_name": "SAM Upgrade",
+      "power_production": 0,
+      "power_usage": 40,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "GoodGuy",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Turret"
+      ]
     }
   ],
   "units": [
@@ -1551,6 +1629,27 @@
       "turret_offset": 0,
       "turret_y": 0,
       "flags": []
+    },
+    {
+      "id": 52,
+      "kind": "vehicle",
+      "name": "ts4tnk",
+      "display_name": "Mammoth Mk. I",
+      "owner": "GoodGuy",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
     },
     {
       "id": 7,

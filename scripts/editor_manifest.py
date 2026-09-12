@@ -87,6 +87,13 @@ BUILDINGS = [
     {'id': 135, 'name': 'tspion', 'display_name': 'Ion Cannon Uplink', 'power_production': 0, 'power_usage': 100, 'storage': 0, 'capturable': False, 'width': 1, 'height': 1, 'occupy_mask': None, 'owner': 'GoodGuy', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': []},
     {'id': 136, 'name': 'tspods', 'display_name': 'Drop Pod Node', 'power_production': 0, 'power_usage': 75, 'storage': 0, 'capturable': False, 'width': 1, 'height': 1, 'occupy_mask': None, 'owner': 'GoodGuy', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': []},
     {'id': 137, 'name': 'tsseek', 'display_name': 'Seeker Control', 'power_production': 0, 'power_usage': 50, 'storage': 0, 'capturable': False, 'width': 1, 'height': 1, 'occupy_mask': None, 'owner': 'GoodGuy', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': []},
+    # The component tower and its armed forms: the plug replaces the bare tower, so each
+    # armed tower stands on the map as its own 1x1 turret building (TDGUN frame layout).
+    # TSWALL (138) is dormant and places as an overlay, so it has no entry.
+    {'id': 139, 'name': 'tsctwr', 'display_name': 'Component Tower', 'power_production': 0, 'power_usage': 10, 'storage': 0, 'capturable': False, 'width': 1, 'height': 1, 'occupy_mask': None, 'owner': 'GoodGuy', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': []},
+    {'id': 140, 'name': 'tsvulc', 'display_name': 'Vulcan Cannon', 'power_production': 0, 'power_usage': 30, 'storage': 0, 'capturable': False, 'width': 1, 'height': 1, 'occupy_mask': None, 'owner': 'GoodGuy', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': ['Turret']},
+    {'id': 141, 'name': 'tsrock', 'display_name': 'RPG Upgrade', 'power_production': 0, 'power_usage': 30, 'storage': 0, 'capturable': False, 'width': 1, 'height': 1, 'occupy_mask': None, 'owner': 'GoodGuy', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': ['Turret']},
+    {'id': 142, 'name': 'tscsam', 'display_name': 'SAM Upgrade', 'power_production': 0, 'power_usage': 40, 'storage': 0, 'capturable': False, 'width': 1, 'height': 1, 'occupy_mask': None, 'owner': 'GoodGuy', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': ['Turret']},
 ]
 
 UNITS = [
@@ -125,6 +132,7 @@ UNITS = [
     {'id': 48, 'kind': 'vehicle', 'name': 'tsapc', 'display_name': 'Amphibious APC', 'owner': 'GoodGuy', 'body_frames': ['Frames32Full'], 'turret_frames': [], 'turret': None, 'turret2': None, 'turret_offset': 0, 'turret_y': 0, 'flags': []},
     {'id': 50, 'kind': 'vehicle', 'name': 'tssubtank', 'display_name': "Devil's Tongue", 'owner': 'BadGuy', 'body_frames': ['Frames32Full'], 'turret_frames': [], 'turret': None, 'turret2': None, 'turret_offset': 0, 'turret_y': 0, 'flags': ['Armed']},
     {'id': 51, 'kind': 'vehicle', 'name': 'tssapc', 'display_name': 'Subterranean APC', 'owner': 'BadGuy', 'body_frames': ['Frames32Full'], 'turret_frames': [], 'turret': None, 'turret2': None, 'turret_offset': 0, 'turret_y': 0, 'flags': []},
+    {'id': 52, 'kind': 'vehicle', 'name': 'ts4tnk', 'display_name': 'Mammoth Mk. I', 'owner': 'GoodGuy', 'body_frames': ['Frames32Full'], 'turret_frames': ['Frames32Full'], 'turret': None, 'turret2': None, 'turret_offset': 0, 'turret_y': 0, 'flags': ['Turret', 'Armed']},
     {'id': 7, 'kind': 'aircraft', 'name': 'tdc17', 'text_id': 'TEXT_UNIT_TITLE_C17', 'owner': 'BadGuy', 'body_frames': ['Frames32Full'], 'turret_frames': [], 'turret': None, 'turret2': None, 'turret_offset': 0, 'turret_y': 0, 'flags': ['FixedWing']},
     {'id': 8, 'kind': 'aircraft', 'name': 'tdheli', 'text_id': 'TEXT_UNIT_TITLE_NOD_HELICOPTER', 'owner': 'BadGuy', 'body_frames': ['Frames32Full'], 'turret_frames': ['Rotor'], 'turret': 'LROTOR', 'turret2': None, 'turret_offset': 0, 'turret_y': -2, 'flags': ['Turret', 'Armed']},
     {'id': 9, 'kind': 'aircraft', 'name': 'tdorca', 'text_id': 'TEXT_UNIT_TITLE_GDI_ORCA', 'owner': 'GoodGuy', 'body_frames': ['Frames32Full'], 'turret_frames': [], 'turret': None, 'turret2': None, 'turret_offset': 0, 'turret_y': 0, 'flags': ['Armed']},
