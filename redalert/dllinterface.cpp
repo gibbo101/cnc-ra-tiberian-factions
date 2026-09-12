@@ -9177,11 +9177,21 @@ bool DLLExportClass::Passes_Proximity_Check(CELL cell_in,
     **	cells to these are of friendly persuasion, then consider the proximity check to
     **	have been a success.
     */
+    /*
+    **	cell_in is the ghost's top-left. A tall TS building's placement list starts
+    **	with headroom rows above the ghost; only the ghost's own rows count, at their
+    **	true cells, so reach is measured from the ground the player sees.
+    */
+    int headroom = placement_type->Placement_Ghost_Rows_Above() * MAP_CELL_W;
     short const* occupy_list = placement_type->Occupy_List(true);
 
     while (*occupy_list != REFRESH_EOL) {
 
-        CELL center_cell = cell_in + *occupy_list++;
+        int offset = *occupy_list++;
+        if (offset < headroom) {
+            continue;
+        }
+        CELL center_cell = cell_in + offset - headroom;
 
         if (!Map.In_Radar(center_cell)) {
             return false;

@@ -702,6 +702,13 @@ bool DisplayClass::Passes_Proximity_Check(ObjectTypeClass const* object,
     BuildingTypeClass const* building = (BuildingTypeClass const*)object;
 
     /*
+    **	A tall TS building's placement list starts with headroom rows above the ground
+    **	it stands on. trycell is the plot origin, so those rows sit above the ghost the
+    **	player sees; they do not count towards proximity.
+    */
+    int headroom = building->Placement_Ghost_Rows_Above() * MAP_CELL_W;
+
+    /*
     **	Scan through all cells that the building foundation would cover. If any adjacent
     **	cells to these are of friendly persuasion, then consider the proximity check to
     **	have been a success.
@@ -712,6 +719,10 @@ bool DisplayClass::Passes_Proximity_Check(ObjectTypeClass const* object,
     //	CELL cell = ZoneCell;
     if (building->Adjacent == 1) {
         while (*ptr != REFRESH_EOL && (retval == -1)) {
+            if (*ptr < headroom) {
+                ptr++;
+                continue;
+            }
             cell = trycell + *ptr++;
             //			cell = ZoneCell + ZoneOffset + *ptr++;
 
