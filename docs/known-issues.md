@@ -8,9 +8,13 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
-## TS GDI War Factory: the under-door stripes take team colour, the apron's stay gold (2026-09-12)
+## RESOLVED: TS GDI War Factory: the under-door stripes take team colour, the apron's stay gold (2026-09-12)
 
-- **Severity:** cosmetic. **Status:** open, fix proposed, waiting on Luke's go.
+- **Severity:** cosmetic. **Status:** resolved 2026-09-12, verified in play. Every stripe is gold
+  for every house: `EXTRA_LAYER_BAKE` in `scripts/ts_pack_tree.py` bakes `GTWEAP_1`'s floor
+  stripes (source rows 118-133) into both the under-door layer and the open-doorway front; the
+  team block on the bay frame keeps its house colour. The same pass stopped the damaged door
+  drawing magenta: `GAWEAP_D`'s second nine frames are TS shadow frames, not damaged ones.
 - Luke's screencast (2026-09-12, red team): the yellow and black hazard stripes inside the bay,
   seen when the door opens, turn red while the apron's stripes stay gold.
 - Cause: TS paints both sets of stripes in remap (team-colour) pixels, in `GTWEAPBB` (the apron)

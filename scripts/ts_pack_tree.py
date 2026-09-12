@@ -129,8 +129,11 @@ def tga_bytes(img):
     return buf.getvalue()
 
 
-def bake_hazard_gold(img):
+def bake_hazard_gold(img, top=0):
     """Burn TS's hazard stripes to their final gold, in place of the launcher.
+
+    Only rows from `top` down are baked, for art whose remap pixels above the
+    stripes are team colour that should stay house-coloured.
 
     The stripes are drawn in TS's house-REMAP range, so they arrive raw green.
     Ground art is never remapped and building art always is, which puts the
@@ -146,7 +149,7 @@ def bake_hazard_gold(img):
     Hazard markings are a fixed yellow in TS whoever owns the building, so a
     baked colour costs nothing."""
     px = img.load()
-    for y in range(img.height):
+    for y in range(top, img.height):
         for x in range(img.width):
             r, g, b, a = px[x, y]
             if a and g > 30 and g > r * 1.6 and g > b * 1.6:
@@ -829,7 +832,8 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # The body has its door PAINTED SHUT (TS covers it with the under-door
         # art, GAWEAP_1, while a unit leaves). Second front tileset for the
         # unloading state: the open doorway composited over each idle frame.
-        ud = [scaled(centre_on(load("shp_gtweap_1", i), base_h.size)) for i in (0, 1)]
+        ud_top = EXTRA_LAYER_BAKE[("TSWEAP", "UD")]
+        ud = [scaled(centre_on(bake_hazard_gold(load("shp_gtweap_1", i), ud_top), base_h.size)) for i in (0, 1)]
         def with_doorway(img, r):
             out = img.copy()
             out.alpha_composite(ud[r])
@@ -846,8 +850,11 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
     # them directly (healthy run first, damaged run second, TS convention).
     for suffix, dirname, indices in globals().get("EXTRA_LAYERS", {}).get(ini, []):
         clip = globals().get("EXTRA_LAYER_CLIPS", {}).get((ini, suffix))
+        bake_top = globals().get("EXTRA_LAYER_BAKE", {}).get((ini, suffix))
         def load_clipped(i):
             f = load(dirname, i)
+            if bake_top is not None:
+                f = bake_hazard_gold(f, bake_top)
             if clip is not None and is_detached(f, clip):
                 f.paste((0, 0, 0, 0), clip)
                 keep_largest_component(f)
@@ -1234,9 +1241,12 @@ APRON_CLIP = {"TSWEAP"}  # GAWEAPBB leaves a sliver east of the 5-wide plot; the
 EXTRA_LAYERS = {
     "TSPROC": [("FR", "shp_ntrefn_b", list(range(40))),
                ("LD", "shp_ntrefn_a", list(range(10)))],
-    # TSWEAP: DR = GAWEAP_D roll-up shutter, 9 stages healthy + 9 damaged;
-    # UD = GAWEAP_1 under-door floor, 2 healthy + 2 damaged.
-    "TSWEAP": [("DR", "shp_gtweap_d", list(range(18))),
+    # TSWEAP: DR = GAWEAP_D roll-up shutter, 9 stages. GAWEAP_D has no damaged
+    # frames: its second nine are TS shadow frames, which draw magenta. The DLL
+    # indexes stage + 9 when damaged, so the nine stages ship twice.
+    # UD = GAWEAP_1 under-door floor: frame 0 healthy, 1 damaged (2-3 are
+    # shadows, never indexed).
+    "TSWEAP": [("DR", "shp_gtweap_d", list(range(9)) * 2),
                ("UD", "shp_gtweap_1", list(range(4)))],
 }
 
@@ -1247,6 +1257,13 @@ EXTRA_LAYERS = {
 # so the tab drew over any hull crossing the right jamb. While the tab is
 # still joined to the leaf (shut and early stages) it is real door and stays.
 EXTRA_LAYER_CLIPS = {("TSWEAP", "DR"): (113, 113, 192, 168)}
+
+# Sub-object layers whose hazard stripes are baked gold, keyed to the first
+# source row baked. TSWEAP UD: GAWEAP_1's floor stripes (rows 118-133) go gold
+# to match the apron, which is ground art and never house-remapped; the team
+# block on the bay frame above them (rows 87-98) keeps its house colour. The
+# open-doorway front tileset (<INI>NU) composites the same art with the same bake.
+EXTRA_LAYER_BAKE = {("TSWEAP", "UD"): 110}
 
 
 def components(img):
