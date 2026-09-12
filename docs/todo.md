@@ -1,35 +1,13 @@
-## Next session: TS fire points and the SAM site test (2026-09-12)
+## Open after the 2026-09-12 SAM session
 
-Luke's reports from the 2026-09-12 FFA: the Mammoth Mk. I tusks and the SAM tower's missiles
-appear with a gap from the weapon; the SAM misses its targets and its range is far too long.
-Researched, nothing built yet. Then run the SAM site test Luke asked for.
+The SAM, Mk. I anti-air, RPG tower, Vulcan flash, War Factory door and stripes, and TS
+placement reach all passed in play on 2026-09-12. Still open:
 
-- **Gap, cause 1 (both units):** the `BulletClass` constructor sets `Height = FLIGHT_LEVEL`
-  (256, a full cell) and `Unlimbo_TD` zeroes it only for non-`High` bullets, so every `High=yes`
-  missile (`TSAAHeatSeeker`: the tusks and the SAM) appears a cell above its fire point. Fix: for
-  `BULLET_TSAAHEATSEEKER`, start at Height 0 in `Unlimbo_TD` and climb to `FLIGHT_LEVEL` in the
-  TD-port AI (`bullet.cpp` ~1700, beside the arcing/dropping height code), and add it to the
-  layer-sync condition there.
-- **Gap, cause 2 (fire offsets):** TS4TNK carries TDHTNK placeholder offsets and the three tower
-  plugs carry TDGUN's (0x30 up, 0x80 forward). Mammoth: TS's FLHs projected through the render
-  camera (FLH / 8 = voxels, 6.4 px per voxel, elev 32, frame f at yaw 90 + 11.25f, 4/3 leptons
-  per canvas px, the Titan's scale) land on the pods and barrel tips at every facing checked.
-  Script: `~/Desktop/ts-art/tnk_muzzle_wip.py`. Turn it into a generated header like
-  `tstitn_muzzle.h` (per weapon, per side), indexed by `BodyShape[Dir_To_32(Turret_Facing())]`.
-- **Tower plugs:** TS `[GACSAM]` and `[GAROCK]` FireFLH 152,+-50,192 (`[GAVULC]` 162,+-30,90).
-  The turret's rotation centre in our 176x320 canvas measures (90,104); 2 leptons per px
-  (`CELL_PX` 128); turret sprites are scaled 128/34 from TS px. TS maths: iso tile 48x24, height
-  0.1148 px per lepton, `As_Radian32 = (dir32 - 8) * -11.25 deg`, turret frame =
-  `BodyShape[dir32]` with TS's table (28,27,...,0,31,30,29). The decoded GTCTWR_B/C/D sprites are
-  no longer on disk: re-extract, or measure the pods off our packed frames, and check on a marker
-  sheet before building.
-- **Misses and range:** RA arms the fuse at launch as distance / speed + 4 frames. TS's Speed 30
-  (45 turbo-boosted) over Range 15 burns out before it catches a moving aircraft. RA `[Nike]` is
-  Range 7.5, Speed 50; `[TDNike]` 7.5 and 100. Proposed: Range 7.5, Speed 50, noted in
-  `[TSRedEye2]` as a TS deviation.
-- **Also open:** the TS GDI War Factory's under-door stripes take team colour while the apron's
-  stay gold (`docs/known-issues.md`, fix proposed, awaiting Luke's go); Upgrade Centre AI (pick 2 of 3 plugs). The AI dropship bay work
-  is committed (`2442d957`); Luke saw an AI Mammoth Mk. II delivered.
+- Upgrade Centre AI: the AI should pick two of the three plugs.
+- `TSDRAGON` (art, stub, RA_VFX.XML entries) is unused now that `[TSAAHeatSeeker]` draws RA's
+  MISSILE; remove it at the next art pass.
+- The TD-port bullet path never damaged aircraft with `TSAAHeatSeeker`; the root cause inside
+  that path was not found. Any other TD-port AA bullet (`BULLET_TDPATRIOT`) may share it.
 
 ## Coach day 2026-09-11: deep dives and feasibility checks (Luke, phone only)
 

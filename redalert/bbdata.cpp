@@ -220,7 +220,6 @@ void BulletTypeClass::Init_Heap(void)
     BulletTypes.Ptr((int)BULLET_TDTOW)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_TDSSM2)->IsTDPort = true;
     BulletTypes.Ptr((int)BULLET_TDMISSILE)->IsTDPort = true;
-    BulletTypes.Ptr((int)BULLET_TSAAHEATSEEKER)->IsTDPort = true; // flies the TD Patriot's proven homing path
     BulletTypes.Ptr((int)BULLET_TDNAPALM)->IsTDPort = true;
 }
 

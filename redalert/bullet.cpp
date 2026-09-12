@@ -879,6 +879,20 @@ void BulletClass::AI(void)
         return;
 
     /*
+    **	The TS SAM missile climbs from the muzzle to flight level, rising half as fast
+    **	as it flies. Its map layer follows the height so Limbo removes it from the
+    **	right list.
+    */
+    if (*this == BULLET_TSAAHEATSEEKER && Height < FLIGHT_LEVEL) {
+        LayerType layer = In_Which_Layer();
+        Height = min(Height + max((int)MaxSpeed / 2, 16), (int)FLIGHT_LEVEL);
+        if (In_Which_Layer() != layer) {
+            Map.Remove(this, layer);
+            Map.Submit(this, In_Which_Layer());
+        }
+    }
+
+    /*
     **	Ballistic objects are handled here.
     */
     bool forced = false; // Forced explosion.
@@ -1319,9 +1333,10 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
     /*
     **	Try to unlimbo the bullet as far as the base class is concerned. Use the already
     **	set direction and strength if the "punt" values were passed in. This allows a bullet
-    **	to be setup prior to being launched.
+    **	to be setup prior to being launched. The TS SAM missile leaves the launcher at
+    **	the muzzle and climbs to flight level in AI.
     */
-    if (!Class->IsHigh) {
+    if (!Class->IsHigh || *this == BULLET_TSAAHEATSEEKER) {
         Height = 0;
     }
     if (ObjectClass::Unlimbo(coord)) {
@@ -2085,6 +2100,22 @@ void BulletClass::Bullet_Explodes(bool forced)
     if ((Payback != NULL && Payback->What_Am_I() == RTTI_INFANTRY && ((InfantryClass*)Payback)->Class->IsDog)
         || (!forced && !Class->IsArcing && Class->ROT == 0 && Fuse_Target())) {
         Coord = Fuse_Target();
+    }
+
+    /*
+    **	A TS arcing shell that lands near its target goes off on the target's centre, so
+    **	a target that moved during the flight still takes the full blast. Near means a
+    **	third of the landing distance is within the greater of half a cell and two
+    **	frames' flight, TS's own rule.
+    */
+    if (*this == BULLET_TSLOBBED2) {
+        TechnoClass* victim = As_Techno(TarCom);
+        if (victim != NULL && victim->IsActive && !victim->IsInLimbo) {
+            COORDINATE vcoord = victim->Center_Coord();
+            if (::Distance(Coord, vcoord) / 3 <= max(CELL_LEPTON_W / 2, (int)MaxSpeed * 2)) {
+                Coord = vcoord;
+            }
+        }
     }
 
     /*
