@@ -205,7 +205,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TSPodDrop");     //	BULLET_TSPODDROP (infantry drop pod — angled descent strafing the LZ, spawns its trooper + husk on touchdown)
     new BulletTypeClass("TSHUNT");        //	BULLET_TSHUNTER (Hunter Seeker droid — homing kamikaze; draws the TSHUNT 8-frame spin, detonation is code)
     new BulletTypeClass("TSLobbed2");     //	BULLET_TSLOBBED2 (TS RPG tower canister — accurate high arc, TSCANIST tumble)
-    new BulletTypeClass("TSAAHeatSeeker"); //	BULLET_TSAAHEATSEEKER (TS SAM tower missile — TSDRAGON on the TD Patriot homing path)
+    new BulletTypeClass("TSAAHeatSeeker"); //	BULLET_TSAAHEATSEEKER (TS SAM tower and Mk. I missile — RA's MISSILE art on RA's homing path)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per
@@ -320,7 +320,7 @@ void BulletTypeClass::One_Time(void)
     if (tslobbed2.ImageData == NULL) {
         ((void const*&)tslobbed2.ImageData) = donor.ImageData;
     }
-    BulletTypeClass& tsheatseeker = As_Reference(BULLET_TSAAHEATSEEKER);  // SAM tower missile -- own TSDRAGON sprite (RA_VFX.XML); donor passes Draw_It's NULL guard.
+    BulletTypeClass& tsheatseeker = As_Reference(BULLET_TSAAHEATSEEKER);  // SAM tower and Mk. I missile -- draws RA's MISSILE; donor passes Draw_It's NULL guard.
     if (tsheatseeker.ImageData == NULL) {
         ((void const*&)tsheatseeker.ImageData) = donor.ImageData;
     }

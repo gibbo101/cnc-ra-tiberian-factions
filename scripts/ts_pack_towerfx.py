@@ -5,19 +5,15 @@ TS [VulcanTower] Anim=MGUN-N..MGUN-NW (one muzzle flash per facing). The tower
 warheads pick their impact from AnimList in 25-point damage bands ([SA] PIFFPIFF,
 [RPG] S_CLSN16-58, [SAMWH] XGRYSML1, XGRYSML2, EXPLOSML), and those anims carry
 art.ini Report=EXPNEW14 (S_CLSN*) and EXPNEW13 (XGRYSML*, EXPLOSML). [Lobbed2]
-flies Image=CANISTER; [AAHeatSeeker] flies Image=DRAGON with art.ini
-Trailer=SMOKEY2. The reports are [VulcanTower] CHAINGN1, [RPGTower] GLNCH4 and
-[RedEye2] SAMSHOT1.
+flies Image=CANISTER, and SMOKEY2 is the trail [AAHeatSeeker]'s missile leaves (the
+missile itself draws RA's MISSILE). The reports are [VulcanTower] CHAINGN1, [RPGTower]
+GLNCH4 and [RedEye2] SAMSHOT1.
 
 Anims decode against ANIM.PAL, projectiles against UNITTEM.PAL (TS draws a bullet
 with the unit palette unless it sets AnimPalette). Every frame is hq4x-upscaled
 onto a canvas of the TS canvas x 4, rounded up to whole 8 px classic cells, so the
 classic stub in build_tfassets.sh is canvas / 8. The summary this prints (frames,
 stub, biggest frame) is what the stubs and the AnimTypeClass entries follow.
-
-DRAGON's 32 frames run clockwise from north; the engine draws a rotating bullet
-as BodyShape[Dir_To_32(facing)] = (32 - d) % 32, so frame k takes TS frame
-(32 - k) % 32.
 
 Sounds decode with ts_aud_decode.py (ffmpeg's own AUD reader errors at end of
 file), then encode MS-ADPCM WAV, 22050 Hz mono, under their own
@@ -97,7 +93,6 @@ def main():
     # The canister tumbles through 15 frames, but it ships as a full 32-tile set (the
     # frames cycled round) so any shape index the launcher asks for has a tile.
     pack("CANISTER.SHP", "TSCANIST", unit, order=lambda k, n: k % n, count=32)
-    pack("DRAGON.SHP", "TSDRAGON", unit, order=lambda k, n: (n - k) % n)
 
     for aud in ("CHAINGN1", "GLNCH4", "SAMSHOT1", "EXPNEW13", "EXPNEW14"):
         pcm = f"{RAW}/{aud}.pcm.wav"
