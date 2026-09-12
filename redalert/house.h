@@ -723,7 +723,14 @@ public:
     void Special_Weapon_AI(SpecialWeaponType id);
     CELL TF_Scout_Destination(CELL from);
     bool TF_Knows_Any_Enemy_Building(void);
-    int TF_Committable_Army(void) const;
+    COORDINATE TF_Wave_Known_Enemy_Coord(void) const;
+    CELL TF_Wave_Stage_Cell(void) const;
+    void TF_Wave_AI(void);
+    int TF_Committable_Army(int* value = NULL) const;
+    int TF_Harvesters_Owned(void) const;
+    int TF_Eco_Refinery_Target(void) const;
+    int TF_Eco_Harvester_Target(int refineries) const;
+    bool TF_Eco_Below_Target(int* refwant = NULL, int* harvwant = NULL, int* refhave = NULL) const;
     bool TF_Has_Income(void) const;
     bool TF_Naval_Assessment(int& zone, int& size, bool& enemy_coastal) const;
     int TF_Naval_Fleet_Cap(bool enemy_coastal, int* enemy_navy = NULL) const;

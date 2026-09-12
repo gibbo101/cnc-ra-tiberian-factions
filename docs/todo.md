@@ -154,6 +154,72 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## ⭐ AI "REGRESSION" A/B MEASURED 2026-09-02 — resume here for the AI workstream
+
+Luke felt the dev-build AI at the 15 Aug LAN (ts-units 2c83f4dc: Phase 1 + W2.9 + cadence +
+placement + scout spread + broke-order hold; NO naval arc) had regressed: "constant small
+streams of units to pick off", "not aggressive in its economy", "spamming infantry", "felt vs an
+easy enemy". Measured with two blind 1v1s on Keep off the Grass, Luke GDI vs one Nod AI, all
+dev cheats off, exact tag builds staged as extra mod folders in the desktop prefix
+(`TF_AB_400`, `TF_AB_420`, `TF_AB_0815`; worktrees `../tf-ab-*-worktree`):
+
+| | 4.0.0 (no fair fog, vanilla cadence) | 15 Aug build, Hard (IQ 5 confirmed) |
+|---|---|---|
+| match length | 16:28 | 9:04 |
+| AI gathered | 30,056 (~1.8k/min) | 16,400 (~1.8k/min) |
+| AI kills | 26 | 20 |
+| AI refineries / harvesters | 2 / 3 (by eye) | 2 / 3 (log) |
+| AI defences | several (by eye) | ONE gun turret all game |
+| AI waves | none seen before Luke's push at ~10 min | F8340 army=18 and F9975 army=15, both "roll" (Hard 60%); army 0-5 for the rest |
+
+**Findings (log `MOD_DEBUG_AI.txt`, frames ~33/s of game time):**
+1. **Economy did NOT regress** — identical income both builds. Vanilla RefineryRatio .16 rounds
+   to 2 refineries until 13 buildings; W3 staged planner is the fix, not a rollback.
+2. **Early waves at the count floor throw the army away.** W4.1's floor of 10 units is blind
+   to unit value and match stage: 18 tier-1 Nod units hit GDI medium tanks at ~4 min, 15 more
+   50 s later, then thirteen consecutive `WAVE-SHUFFLE massing army=0..5`. 4.0.0's flat 33%
+   roll + long interval kept that army home as base defence — that is the "more units at home"
+   Luke saw, and the "streams to eat" he felt.
+3. **Defences starve behind tech in the build pool.** DefenseRatio .4 wanted 5 defences at 12
+   buildings; the pool picks one MEDIUM item per cycle and TDFBNK lost to PROC/HQ/NUK2/NUK2/FIX
+   until F9711. The Nod turret→bunker alternation means no TDGUN is offered while bunkers <
+   turrets, so the base sat on one turret for six minutes. Cash pinned at $13-58 from ~3 min
+   (30 infantry vs 12 vehicles built).
+4. Fair fog barely features: 3 scouts, contact made early, nothing blocked after. Ferry/naval
+   not in the felt build at all. Broke-order hold fired once for 45 frames — not a factor.
+   Stat handicaps identical 4.2.0..main (all houses Normal = 1.0x) — not a factor.
+
+**Fixes landed on branch `ai-regression` the same night (worktree `../tf-ai-worktree`):**
+- `cd391414` (a)+(c): wave floor by army VALUE (8k credits) + war-factory stage gate, value
+  ceilings 18/22/26k by tier; defences claim HIGH under half the ratio. **PLAY-VERIFIED** (game
+  3: one 27-unit / 8,450-credit wave at ~6 min, 3 defences by min 5; outcome barely moved).
+- `f1909a4f` + `8fef3f23` (d): refinery target paced by sim-minutes (2 @2.5, 3 @6, 4 @10;
+  ratio rule kept as floor; HIGH while below pace), harvester fleet per tier (Hard 2/refinery,
+  Medium 1.5, Easy 1), infantry + combat-vehicle production yields while below target beyond a
+  4-inf/2-veh garrison, hold capped at 4 sim-min (`ECO-HOLD` diag). Also `tf_dev_reveal.flag`
+  (full map with every other cheat off). **UNVERIFIED.**
+- `8ffbceab` (b): staging — committed ground units MOVE to a cell 9 short of the nearest
+  DISCOVERED enemy building, gather (70% within 5 cells or 2 sim-min), then HUNT together
+  (`WAVE-STAGE` / `WAVE-RELEASE`). Blind house keeps per-unit hunt. **UNVERIFIED.**
+
+**Queued from the four-AI Docklands watch (Luke, 2026-09-02 late):**
+- Tech ordering: no house had a tech centre / advanced comm / temple after 12 sim-minutes of
+  four-refinery income (they arrive only via the 7500-frame starvation rescue). W3 build
+  planner item ("tech when affordable"); Luke: not yet, get the pieces working together first.
+- Ferry waits for sea control: a ferry op should only launch when the house's armed hulls at
+  least match the strongest enemy fleet seen on that water (or none seen and a patrol has
+  crossed); until then transports load and wait and the warship cap nudges up. First naval item
+  after the land pieces settle.
+- The 4-AI Docklands HANG (first run froze the sim at F22357, no dump; second run with the
+  watchdog armed ran past F40000 clean on the same build) — unexplained; watchdog script
+  `hang_stacks.sh` pattern: poll the AI log size, gdb `thread apply all bt` on stall.
+
+**Next:** one Hard game (Keep off the Grass, GDI vs Nod, no cheats but `tf_dev_reveal.flag`)
+reading ECO-HOLD / WAVE-STAGE / WAVE-RELEASE against `docs/ai-ab-2026-09-02/`; then W3
+placement + counter-composition. A/B record + logs: `docs/ai-ab-2026-09-02/`.
+
+---
+
 ## Stretch goals: TS depower button + waypoint mode (Luke, 2026-09-02)
 
 Both behaviours are DLL-side (a building flagged off stops drawing/producing power and its

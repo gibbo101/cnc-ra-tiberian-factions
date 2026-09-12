@@ -147,6 +147,7 @@ extern int TF_SonicThrobAmp;               // sonic band throb amplitude, percen
 extern int TF_SonicThrobPeriod;            // sonic band throb period in stages (fourth integer)
 extern void TF_Sonic_Cloak_Mode_Refresh(void);
 extern bool TF_Dev_Cheats(void); // TF dev-cheats runtime gate (see defines.h TF_DEV_BUILD)
+extern bool TF_Dev_Reveal(void); // full-map reveal on its own (tf_dev_reveal.flag) even when the other cheats are off
 extern long TF_Building_Scan_Bit(int btype); // building Type -> its BScan/ActiveBScan/OldBScan bit
 extern bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type); // Prerequisite= names a TS-tree building (house.cpp)
 extern bool TF_House_Has_Plug(HouseClass const* house, StructType plug); // addon plug installed in any live building (house.cpp)

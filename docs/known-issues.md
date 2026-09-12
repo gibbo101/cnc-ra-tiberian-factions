@@ -40,6 +40,27 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## Sim froze once in a 4-Hard-AI Docklands match — ⏳ OPEN, UNREPRODUCED (2026-09-02)
+
+First run of the `ai-regression` build: every DLL log stopped inside frame 22357 (~11 real
+minutes), ClientG kept spinning at ~60% CPU, no minidump, no A* fallback storm (3,385 fallbacks,
+astar log silent too). Second run, same build and lobby, ran to F45000 clean with a stall
+watchdog armed. Nothing in the last log lines stands out (a grenadier order, a forced Nod
+launch, an Allied strike conversion). Next occurrence: attach gdb before it hangs — poll the AI
+log size every 5 s and on a 20 s stall run `gdb -p <pid> -batch -ex 'thread apply all bt 30'`
+on ClientG (ptrace is allowed here; gdb attaches fine, only breakpoints never fire). Suspects
+in order: the new wave/eco code (house.cpp `TF_Wave_*`, `TF_Eco_*`), then the naval/ferry arc
+which had never soaked with four Hard AIs on that build.
+
+## TD construction yard offers the TS Radar — ⏳ OPEN (Luke, 2026-09-02, seen with dev cheats on)
+
+Reported mid A/B: a GDI (TD) yard's sidebar listed the TS Radar. `[TSRADR]` is
+`Owner=allies,soviet,GoodGuy,BadGuy` with `Prerequisite=TSPROC`, so once the TS refinery
+prerequisite is satisfied any yard's ActLike passes Can_Build. Suspects: the era door rule's
+shared-infrastructure pool letting a non-TS refinery satisfy `TSPROC`, or the TS-MCV grant's
+yard counting for the TD yard's buildable list. Unverified which; reproduce without cheats
+and check `MOD_DEBUG_CANBUILD.txt`.
+
 ## RESOLVED: mailbox EVA lines now follow the picked faction across an in-session switch (2026-09-01)
 
 - Was: ClientG caches each localized sample once per boot, so a faction switch without

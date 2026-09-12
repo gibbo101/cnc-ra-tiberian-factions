@@ -132,6 +132,39 @@ void TF_Sonic_Cloak_Mode_Refresh(void)
 #endif
 }
 
+/*
+**	Map reveal on its own. Documents/CnCRemastered/tf_dev_reveal.flag keeps the
+**	full-map cheat while tf_dev_off.flag has switched every other cheat off, so
+**	a fair AI test can still be watched from above. Read once, like the others.
+*/
+bool TF_Dev_Reveal(void)
+{
+#if TF_DEV_BUILD
+    if (TF_Dev_Cheats()) {
+        return true;
+    }
+    static int cached = -1;
+    if (cached < 0) {
+        cached = 0;
+        const char* h = getenv("USERPROFILE");
+        if (h == NULL)
+            h = getenv("HOME");
+        if (h != NULL) {
+            char p[512];
+            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_dev_reveal.flag", h);
+            FILE* f = fopen(p, "r");
+            if (f != NULL) {
+                cached = 1;
+                fclose(f);
+            }
+        }
+    }
+    return cached != 0;
+#else
+    return false;
+#endif
+}
+
 bool TF_Dev_Cheats(void)
 {
 #if TF_DEV_BUILD
@@ -716,7 +749,7 @@ bool Read_Scenario(char* name)
     **  (TF_DEV_BUILD); runtime-gated by TF_Dev_Cheats() in dev builds.
     */
 #if TF_DEV_BUILD
-    if (TF_Dev_Cheats() && Session.Type != GAME_NORMAL && PlayerPtr != NULL && !PlayerPtr->IsVisionary) {
+    if (TF_Dev_Reveal() && Session.Type != GAME_NORMAL && PlayerPtr != NULL && !PlayerPtr->IsVisionary) {
         PlayerPtr->IsVisionary = true;
         for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
             Map.Map_Cell(cell, PlayerPtr);
