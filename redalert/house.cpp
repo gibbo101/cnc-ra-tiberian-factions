@@ -1325,19 +1325,6 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             bool ts_tree = TF_Is_TS_Tree_Type((TechnoTypeClass const*)type);
 
             /*
-            **	The TS tree is its own lineage: every TS building needs the house's TS
-            **	yard standing, not just the chain of TS buildings above it. Without this a
-            **	TD or RA yard keeps extending a TS base (uplink, drop pod node, seeker
-            **	control) after the TS yard is gone, since those plugs only name the
-            **	Upgrade Centre as a prerequisite.
-            */
-            bool ts_building = (btype->Type == STRUCT_TSPOWR
-                                || (btype->Type >= STRUCT_TS_TREE_FIRST && btype->Type <= STRUCT_TS_TREE_LAST));
-            if (ts_building && !Has_Building_Active(STRUCT_TSFACT)) {
-                return (false);
-            }
-
-            /*
             **	A TS yard satisfies the yard requirement for WALLS: the TS tree has no
             **	wall of its own and fences itself with the ordinary sandbag and concrete
             **	walls (Luke, 2026-09-04). Everything else still needs a yard whose
@@ -1353,6 +1340,21 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                     return (false);
                 }
             }
+        }
+    }
+
+    /*
+    **	The TS tree is its own lineage in every game type: each TS building needs the house's
+    **	TS yard standing, not just the chain of TS buildings above it. Without this a TD or RA
+    **	yard would build TS buildings whose prerequisites the shared pool satisfies (a TD
+    **	refinery stands in for TSPROC), and keep extending a TS base (uplink, drop pod node,
+    **	seeker control) after the TS yard is gone.
+    */
+    if (type->What_Am_I() == RTTI_BUILDINGTYPE && !((BuildingTypeClass const*)type)->Is_Construction_Yard()) {
+        StructType const st = ((BuildingTypeClass const*)type)->Type;
+        bool const ts_building = (st == STRUCT_TSPOWR || (st >= STRUCT_TS_TREE_FIRST && st <= STRUCT_TS_TREE_LAST));
+        if (ts_building && !Has_Building_Active(STRUCT_TSFACT)) {
+            return (false);
         }
     }
 

@@ -52,14 +52,15 @@ on ClientG (ptrace is allowed here; gdb attaches fine, only breakpoints never fi
 in order: the new wave/eco code (house.cpp `TF_Wave_*`, `TF_Eco_*`), then the naval/ferry arc
 which had never soaked with four Hard AIs on that build.
 
-## TD construction yard offers the TS Radar — ⏳ OPEN (Luke, 2026-09-02, seen with dev cheats on)
+## RESOLVED: TD construction yard offers the TS Radar (Luke, 2026-09-02, seen with dev cheats on)
 
-Reported mid A/B: a GDI (TD) yard's sidebar listed the TS Radar. `[TSRADR]` is
-`Owner=allies,soviet,GoodGuy,BadGuy` with `Prerequisite=TSPROC`, so once the TS refinery
-prerequisite is satisfied any yard's ActLike passes Can_Build. Suspects: the era door rule's
-shared-infrastructure pool letting a non-TS refinery satisfy `TSPROC`, or the TS-MCV grant's
-yard counting for the TD yard's buildable list. Unverified which; reproduce without cheats
-and check `MOD_DEBUG_CANBUILD.txt`.
+Reported mid A/B: a GDI (TD) yard's sidebar listed the TS Radar. Cause: TS-tree buildings skip
+the faction-yard test, and the era door rule's shared pool lets a TD or RA refinery satisfy
+`TSPROC`, so TSRADR and TSSILO (then TSHPAD, once a leaked radar stood) appeared on a yard with
+no TS yard. Fixed by `576962c1` (2026-09-03): every TS building needs a standing TSFACT. That
+gate sat inside the skirmish-only block, so campaigns still leaked; on 2026-09-13 it moved ahead
+of the prerequisite loop for every game type. `MOD_DEBUG_CANBUILD.txt` is switched off in
+`house.cpp`, so it is not a diagnostic channel.
 
 ## RESOLVED: mailbox EVA lines now follow the picked faction across an in-session switch (2026-09-01)
 

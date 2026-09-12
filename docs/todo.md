@@ -1,3 +1,18 @@
+## TS GDI to finish before anything else (Luke, 2026-09-13)
+
+TS GDI comes before a release, TS Nod or new arcs. "Finished" means all of the below, then the
+roster balance pass (see "TS roster balance pass" further down), then the release switch
+(`TF_TS_GDI_FACTION`) and hazelnut's icon credit.
+
+- **Bug first:** a TD construction yard can offer the TS Radar (`docs/known-issues.md`).
+- **TS infantry:** Light Infantry, Disc Thrower, Medic, Engineer, Jumpjet Infantry, Ghost Stalker.
+- **TS aircraft:** Orca Fighter, Orca Bomber, Carryall.
+- **Remaining vehicles:** Mobile Sensor Array, Juggernaut, Limpet Drone, Mobile EMP, Mobile War
+  Factory.
+- **EMP Pulse Cannon:** branch `emp-cannon` (`docs/emp-cannon-design.md`), stage A verified.
+- **Firestorm Generator:** new defensive logic; its wall panels are isometric like the dropped gate,
+  so the art route is decided with Luke before building.
+
 ## Open after the 2026-09-12 SAM session
 
 The SAM, Mk. I anti-air, RPG tower, Vulcan flash, War Factory door and stripes, and TS
