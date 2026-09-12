@@ -9,3 +9,7 @@ These are already padded, re-encoded copies of the base game's samples rather th
 originals -- the true sources were not kept when the mailbox was first built. Trimming their
 pad and re-encoding costs one extra generation on RA and TD, which is why they are frozen here
 rather than regenerated. If the base recordings are ever re-extracted cleanly, replace these.
+
+The `REPAIR` sources are the exception: they are the base game's own samples, extracted
+untouched from `SFX2D_EN-US.MEG` (`RAC`/`RAR`/`TDC`/`TDR_SFX_EVA_REPAIR1_EN-US.WAV`), so that
+line's payloads keep the base rate and block_align 70.

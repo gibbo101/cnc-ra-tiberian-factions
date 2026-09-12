@@ -61,6 +61,7 @@ LINES = {
     "LST":     ("RAC_SFX_EVA_MISNLST1_EN-US.WAV", "RAR_SFX_EVA_MISNLST1_EN-US.WAV"),
     "SLCT":    ("RAC_SFX_EVA_SLCTTGT1_EN-US.WAV", "RAR_SFX_EVA_SLCTTGT1_EN-US.WAV"),
     "NOPOW":   ("RAC_SFX_EVA_NOPOWR1_EN-US.WAV", "RAR_SFX_EVA_NOPOWR1_EN-US.WAV"),
+    "REPAIR":  ("RAC_SFX_EVA_REPAIR1_EN-US.WAV", "RAR_SFX_EVA_REPAIR1_EN-US.WAV"),
 }
 
 # Tiberian Sun's recording of each line, by .AUD name in SPEECH01.MIX (GDI's EVA).
@@ -72,6 +73,7 @@ TS_AUD = {
     "LST":     "00-I286",   # you have lost
     "SLCT":    "00-I042",   # select target
     "NOPOW":   "00-I024",   # low power (TS has no separate "insufficient power")
+    "REPAIR":  "00-I040",   # repairing
 }
 
 NEEDLE_LEN = 20
