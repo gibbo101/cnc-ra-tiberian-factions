@@ -8,6 +8,10 @@ placement reach all passed in play on 2026-09-12. Still open:
   with the `PROD start TSPLUG` / `TSPION` / `TSPODS` / `TSSEEK` lines in `MOD_DEBUG_AI.txt`.
 - The AI aims its drop pods at the enemy's most valuable building (`Special_Weapon_AI`), which
   lands infantry on the strongest point of a base; a better drop target is open.
+- Nod SAM site, check in the next skirmish: `[TDNike]` `Speed=100` reads as light speed
+  (`_Scale_To_256`), and `Unlimbo_TD` makes a visible light-speed missile immobile, so by the
+  code the missile never leaves the launcher. It was signed off doing damage, so play decides.
+  If it bursts on the launcher: `Speed=39` (TD's `MPH_VERY_FAST`) and RA's missile path.
 - The TD-port bullet path never damaged aircraft with `TSAAHeatSeeker`; the root cause inside
   that path was not found. Any other TD-port AA bullet (`BULLET_TDPATRIOT`) may share it.
 
@@ -139,8 +143,9 @@ Full record: `docs/ts-gdi-tree-plan.md` top block. Short version:
 - The Deck is STALE — it was offline all evening and never got the day's builds.
 - Open cosmetic calls: a turret rises above the plot, and the RPG's launcher reaches ~8 px
   past the east edge when aimed that way. Both normal; Luke to say if he wants them reined in.
-- Owed on the arc: TS sounds (CHAINGN1 / GLNCH4 / SAMSHOT1) and muzzle anims for the three
-  tower weapons; editor manifest entries for the new types; the gate and Nod's wall.
+- Owed on the arc: editor manifest entries for the new types. No gate and no Nod wall: TS
+  draws both isometric, and the TS tree fences with the ordinary walls, as it does for the
+  dormant TS GDI wall.
 - The tower body still wants a real artist — `docs/ts-walls-towers-art-brief.md`, one object.
 
 # TODO / backlog
