@@ -1974,6 +1974,15 @@
       "flags": [
         "Armed"
       ]
+    },
+    {
+      "id": 34,
+      "name": "tse2",
+      "display_name": "Disc Thrower",
+      "owner": "GoodGuy",
+      "flags": [
+        "Armed"
+      ]
     }
   ],
   "templates": [

@@ -1436,6 +1436,7 @@ typedef enum BulletType : char
     BULLET_TSHUNTER,  // TS Hunter Seeker droid (SPC_TS_HUNTSEEK) — a self-guided kamikaze on the bullet frame (self-deletes cleanly, unlike the aircraft attempt): homes to a random enemy TF_Hunter_Seeker_Acquire picks and detonates on it. Art = the TSHUNT 8-frame spin.
     BULLET_TSLOBBED2,       // TS [Lobbed2]: the RPG tower's arcing canister (TSCANIST, 15-frame tumble).
     BULLET_TSAAHEATSEEKER,  // TS [AAHeatSeeker]: the SAM tower's and Mk. I's missile, drawn with RA's MISSILE on RA's homing path, trailing TS's SMOKEY2.
+    BULLET_TSLOBBED,        // TS [Lobbed]: the Disc Thrower's disc, an accurate arc drawn with TS's DISCUS (TSDISCUS, 7-frame spin).
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -1846,6 +1847,7 @@ typedef enum InfantryType : char
     INFANTRY_TDE6,   // TD Engineer (E6) — no weapon; captures buildings (Infiltrate). GDI+Nod, barracks-level.
     INFANTRY_TDRMBO, // TD Commando (RMBO) — 125-dmg sniper (one-shots infantry) + C4 building-destroy. GDI+Nod, tech-center gated.
     INFANTRY_TSE1,   // TS Light Infantry (E1) — the TS GDI rifleman, fires TSMinigun. TS-SHP art on the E1Sequence layout (ts_pack_infantry.py).
+    INFANTRY_TSE2,   // TS Disc Thrower (E2) — lobs TSGrenade discs. TS-SHP art on the E1Sequence layout (ts_pack_infantry.py).
 
     INFANTRY_COUNT,
     INFANTRY_FIRST = 0
@@ -3547,6 +3549,7 @@ typedef enum WeaponType : char
     WEAPON_TS120MMX,       // TS Mammoth Tank cannon (TS [120mmx]): Dmg50/ROF80/Burst2, on the TDAPDS instant shell like the Titan's TS120mm.
     WEAPON_TS4TNKTUSK,     // The old TS Mammoth's own tusks: TS [MammothTusk] verbatim (Dmg40/ROF80/Range6/Speed20/Burst2, AA-only TSAAHeatSeeker, TSHE warhead).
     WEAPON_TSMINIGUN,      // TS Light Infantry minigun: TS [Minigun] (Dmg8/ROF21/Range4, instant Invisible projectile, TSSA warhead). Registered "TSMinigun".
+    WEAPON_TSGRENADE,      // TS Disc Thrower disc: TS [Grenade] (Dmg40/ROF80/Range4.5, BULLET_TSLOBBED arc, TSHE warhead). Registered "TSGrenade".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0

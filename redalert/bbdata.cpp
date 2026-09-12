@@ -206,6 +206,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TSHUNT");        //	BULLET_TSHUNTER (Hunter Seeker droid — homing kamikaze; draws the TSHUNT 8-frame spin, detonation is code)
     new BulletTypeClass("TSLobbed2");     //	BULLET_TSLOBBED2 (TS RPG tower canister — accurate high arc, TSCANIST tumble)
     new BulletTypeClass("TSAAHeatSeeker"); //	BULLET_TSAAHEATSEEKER (TS SAM tower and Mk. I missile — RA's MISSILE art on RA's homing path)
+    new BulletTypeClass("TSLobbed");      //	BULLET_TSLOBBED (TS Disc Thrower disc — accurate arc, TSDISCUS spin)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per
@@ -323,6 +324,10 @@ void BulletTypeClass::One_Time(void)
     BulletTypeClass& tsheatseeker = As_Reference(BULLET_TSAAHEATSEEKER);  // SAM tower and Mk. I missile -- draws RA's MISSILE; donor passes Draw_It's NULL guard.
     if (tsheatseeker.ImageData == NULL) {
         ((void const*&)tsheatseeker.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tslobbed = As_Reference(BULLET_TSLOBBED);  // Disc Thrower disc -- own TSDISCUS sprite (RA_VFX.XML); donor passes Draw_It's NULL guard.
+    if (tslobbed.ImageData == NULL) {
+        ((void const*&)tslobbed.ImageData) = donor.ImageData;
     }
 }
 

@@ -48,6 +48,15 @@ SHADOW_ALPHA = 128
 UNITS = {
     "TSE1": ("e1", 292, "e1icon", "BuildIcon_TS_E1", "Light Infantry",
              "Basic GDI infantry armed with a minigun."),
+    "TSE2": ("e2", 292, "e2icon", "BuildIcon_TS_E2", "Disc Thrower",
+             "GDI infantry that lobs explosive discs over walls and cover."),
+}
+
+# ini -> (TS projectile SHP in $TS_ART_DIR/.raw, VFX tileset name). The projectile ships as
+# a full 32-tile set, its frames cycled round, so any shape index the launcher asks for
+# has a tile (the RPG tower canister's contract); its classic stub is in build_tfassets.sh.
+PROJECTILES = {
+    "TSE2": ("DISCUS.SHP", "TSDISCUS"),
 }
 
 
@@ -179,6 +188,11 @@ def pack(ini):
     cameo(cameo_stem, icon)
     sidebar(ini, icon)
     text_rows(ini, display, desc)
+    if ini in PROJECTILES:
+        import ts_pack_towerfx, ts_shp
+        shp, name = PROJECTILES[ini]
+        pal = ts_shp.load_pal(f"{ART}/.raw/UNITTEM.PAL")
+        ts_pack_towerfx.pack(shp, name, pal, order=lambda k, n: k % n, count=32)
 
 
 if __name__ == "__main__":

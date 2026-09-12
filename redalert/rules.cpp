@@ -767,6 +767,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TS120mmx");       // WEAPON_TS120MMX (TS Mammoth Tank cannon -- TS [120mmx] on the TDAPDS instant shell)
     new WeaponTypeClass("TS4TNKTusk");     // WEAPON_TS4TNKTUSK (the old TS Mammoth's tusks -- TS [MammothTusk] verbatim)
     new WeaponTypeClass("TSMinigun");      // WEAPON_TSMINIGUN (TS Light Infantry -- TS [Minigun] verbatim)
+    new WeaponTypeClass("TSGrenade");      // WEAPON_TSGRENADE (TS Disc Thrower -- TS [Grenade] with Firestorm's ROF)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's

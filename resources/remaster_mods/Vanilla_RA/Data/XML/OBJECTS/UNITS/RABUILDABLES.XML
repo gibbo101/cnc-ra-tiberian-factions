@@ -6791,6 +6791,13 @@
 			<BuildIcon>BuildIcon_TS_E1</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSE2" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSE2</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSE2_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_E2</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END hand-written TS-tree base cameo entries -->
 
 	<ObjectTypeClass Name="RA_TSTURB" Classification="CNCBuildableObject" CanInstantiate="False">
@@ -6937,6 +6944,7 @@
 			<BuildIcon>BuildIcon_TS_Seek</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+
 
 
 
@@ -11010,6 +11018,22 @@
 			<ObjectNameTextID>TEXT_UNIT_TSE1</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TSE1_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TSE1_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSE2_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSE2</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSE2_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_E2</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSE2_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSE2</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSE2_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSE2_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

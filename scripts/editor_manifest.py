@@ -157,6 +157,7 @@ INFANTRY = [
     {'id': 31, 'name': 'tde6', 'text_id': 'TEXT_UNIT_TITLE_GDI_ENGINEER', 'owner': 'GoodGuy', 'flags': []},
     {'id': 32, 'name': 'tdrmbo', 'text_id': 'TEXT_UNIT_TITLE_GDI_COMMANDO', 'owner': 'GoodGuy', 'flags': ['Armed']},
     {'id': 33, 'name': 'tse1', 'display_name': 'Light Infantry', 'owner': 'GoodGuy', 'flags': ['Armed']},
+    {'id': 34, 'name': 'tse2', 'display_name': 'Disc Thrower', 'owner': 'GoodGuy', 'flags': ['Armed']},
 ]
 
 

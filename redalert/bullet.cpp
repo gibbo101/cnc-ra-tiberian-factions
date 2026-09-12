@@ -2108,7 +2108,7 @@ void BulletClass::Bullet_Explodes(bool forced)
     **	third of the landing distance is within the greater of half a cell and two
     **	frames' flight, TS's own rule.
     */
-    if (*this == BULLET_TSLOBBED2) {
+    if (*this == BULLET_TSLOBBED2 || *this == BULLET_TSLOBBED) {
         TechnoClass* victim = As_Techno(TarCom);
         if (victim != NULL && victim->IsActive && !victim->IsInLimbo) {
             COORDINATE vcoord = victim->Center_Coord();
