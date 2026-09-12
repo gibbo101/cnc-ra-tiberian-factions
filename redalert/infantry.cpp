@@ -435,7 +435,7 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
         **	If an engineer is damaged and it is just sitting there, then tell it
         **	to go do something since it will definitely die if it doesn't.
         */
-        if (!House->IsHuman && *this == INFANTRY_RENOVATOR
+        if (!House->IsHuman && (*this == INFANTRY_RENOVATOR || *this == INFANTRY_TSENGINEER)
             && (Mission == MISSION_GUARD || Mission == MISSION_GUARD_AREA)) {
             Assign_Mission(MISSION_HUNT);
         }
@@ -636,10 +636,10 @@ void InfantryClass::Per_Cell_Process(PCPType why)
                 tech = cellptr->Cell_Techno();
             }
             if (tech != NULL && (tech->As_Target() == NavCom || tech->As_Target() == TarCom)) {
-                // Tiberian Factions: TDE6 (GDI/Nod engineer) shares RA's engineer
-                // capture/renovate execution path. Single-vs-multi capture is decided
-                // by the faction gate below (td_single).
-                if (*this == INFANTRY_RENOVATOR || *this == INFANTRY_TDE6) {
+                // Tiberian Factions: TDE6 (GDI/Nod engineer) and the TS Engineer share RA's
+                // engineer capture/renovate execution path. Single-vs-multi capture is
+                // decided by the gate below (td_single).
+                if (*this == INFANTRY_RENOVATOR || *this == INFANTRY_TDE6 || *this == INFANTRY_TSENGINEER) {
 
                     /*
                     **	An engineer will either mega-repair a friendly or allied
@@ -653,8 +653,9 @@ void InfantryClass::Per_Cell_Process(PCPType why)
                     if (tech->House->Is_Ally(House)) {
 #endif
                         // Tiberian Factions: TD engineers (TDE6) are capture-only — no
-                        // friendly mega-repair (TD-authentic). Only RA's RENOVATOR repairs.
-                        if (*this == INFANTRY_RENOVATOR) {
+                        // friendly mega-repair (TD-authentic). RA's RENOVATOR and the TS
+                        // Engineer restore a friendly building to full strength.
+                        if (*this == INFANTRY_RENOVATOR || *this == INFANTRY_TSENGINEER) {
                             if (tech->Trigger.Is_Valid()) {
                                 tech->Trigger->Spring(TEVENT_PLAYER_ENTERED, this);
                             }
@@ -669,8 +670,11 @@ void InfantryClass::Per_Cell_Process(PCPType why)
                         // GOOD/BAD) capture a building outright in a single use, like TD
                         // — ignore the health gate. Allied/Soviet engineers keep RA's
                         // Aftermath multi-engineer capture (damage to ConditionRed, then
-                        // the next engineer takes it). Gate is on the engineer's owner.
-                        bool td_single = (House->ActLike == HOUSE_GOOD || House->ActLike == HOUSE_BAD);
+                        // the next engineer takes it). Gate is on the engineer's owner,
+                        // except the TS Engineer, which always captures outright (TS
+                        // EngineerCaptureLevel=1).
+                        bool td_single = (House->ActLike == HOUSE_GOOD || House->ActLike == HOUSE_BAD
+                                          || *this == INFANTRY_TSENGINEER);
 #ifdef FIXIT_ENGINEER //	checked - ajw 9/28/98
                         if ((td_single || tech->Health_Ratio() <= EngineerCaptureLevel) && iscapturable) {
 #else
@@ -3156,15 +3160,15 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
     ** renovate it.
     ** However, abort the whole thing if the building is a barrel or mine.
     */
-    if ((*this == INFANTRY_RENOVATOR || *this == INFANTRY_TDE6) && object->What_Am_I() == RTTI_BUILDING
-        && House->IsPlayerControl) {
+    if ((*this == INFANTRY_RENOVATOR || *this == INFANTRY_TDE6 || *this == INFANTRY_TSENGINEER)
+        && object->What_Am_I() == RTTI_BUILDING && House->IsPlayerControl) {
         BuildingClass const* bldg = (BuildingClass*)object;
         if (bldg->Class->IsRepairable) {
             if (House->Is_Ally(bldg)) {
-                // Tiberian Factions: only RA's RENOVATOR mega-repairs friendly buildings;
-                // TD engineers (TDE6) are capture-only. Fall through to the default action
-                // for a TDE6 over a friendly building (no repair cursor).
-                if (*this == INFANTRY_RENOVATOR) {
+                // Tiberian Factions: RA's RENOVATOR and the TS Engineer mega-repair friendly
+                // buildings; TD engineers (TDE6) are capture-only. Fall through to the default
+                // action for a TDE6 over a friendly building (no repair cursor).
+                if (*this == INFANTRY_RENOVATOR || *this == INFANTRY_TSENGINEER) {
                     if (bldg->Health_Ratio() == 1) {
                         return (ACTION_NO_GREPAIR);
                     }

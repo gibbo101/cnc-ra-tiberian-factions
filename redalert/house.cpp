@@ -8154,10 +8154,12 @@ bool HouseClass::AI_Attack(UrgencyType)
 
             /*
             **	Engineers join the wave so Mission_Hunt can dispatch them to
-            **	capture: RENOVATOR is vanilla; TDE6 is the GDI/Nod engineer
-            **	and belongs in the same clause.
+            **	capture: RENOVATOR is vanilla; TDE6 is the GDI/Nod engineer and
+            **	TSENGINEER the TS one, and both belong in the same clause.
             */
-            if (!shuffle && (i->Is_Weapon_Equipped() || *i == INFANTRY_RENOVATOR || *i == INFANTRY_TDE6)
+            if (!shuffle
+                && (i->Is_Weapon_Equipped() || *i == INFANTRY_RENOVATOR || *i == INFANTRY_TDE6
+                    || *i == INFANTRY_TSENGINEER)
                 && (forced || Percent_Chance(sendpercent))) {
                 if (wave != NULL && wave->Count < TF_WAVE_MAX && stage != 0) {
                     i->Assign_Mission(MISSION_MOVE);
@@ -11907,6 +11909,7 @@ int HouseClass::AI_Infantry(void)
                         break;
 
                     case INFANTRY_TDE6:
+                    case INFANTRY_TSENGINEER:
                         if (CurInfantry > 5) {
                             typetrack[count].Value = 1 - max(QuantityI(index), 0);
                         }

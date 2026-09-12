@@ -1848,6 +1848,7 @@ typedef enum InfantryType : char
     INFANTRY_TDRMBO, // TD Commando (RMBO) — 125-dmg sniper (one-shots infantry) + C4 building-destroy. GDI+Nod, tech-center gated.
     INFANTRY_TSE1,   // TS Light Infantry (E1) — the TS GDI rifleman, fires TSMinigun. TS-SHP art on the E1Sequence layout (ts_pack_infantry.py).
     INFANTRY_TSE2,   // TS Disc Thrower (E2) — lobs TSGrenade discs. TS-SHP art on the E1Sequence layout (ts_pack_infantry.py).
+    INFANTRY_TSENGINEER, // TS Engineer (ENGINEER) — unarmed; captures an enemy building outright and restores a friendly one to full strength.
 
     INFANTRY_COUNT,
     INFANTRY_FIRST = 0

@@ -1983,6 +1983,13 @@
       "flags": [
         "Armed"
       ]
+    },
+    {
+      "id": 35,
+      "name": "tsengineer",
+      "display_name": "Engineer",
+      "owner": "GoodGuy",
+      "flags": []
     }
   ],
   "templates": [

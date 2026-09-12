@@ -654,6 +654,28 @@ static InfantryTypeClass const TsE2(INFANTRY_TSE2, // Infantry type number.
                                     0              // pointer to override remap table
 );
 
+/*
+**	TS Engineer (INFANTRY_TSENGINEER). TS art.ini [ENGINEER] shares E1Sequence; unarmed.
+*/
+static InfantryTypeClass const TsEngineer(INFANTRY_TSENGINEER, // Infantry type number.
+                                          TXT_E6,              // Translate name number (display set via rules.ini Name=).
+                                          "TSENGINEER",        // INI name for infantry.
+                                          0x0035,              // Vertical offset.
+                                          0x0010,              // Primary weapon offset along centerline.
+                                          false,               // Is this a female type?
+                                          true,                // Has crawling animation frames? (TS Crawls=yes)
+                                          false,               // Is this a civilian?
+                                          false,               // Does this unit use the override remap table?
+                                          false,               // Always use the given name for the infantry?
+                                          false,               // Theater specific graphic image?
+                                          PIP_ENGINEER,        // Transport pip shape/color to use.
+                                          TsE1DoControls,
+                                          TsE1DoControls,
+                                          2,                   // Frame of projectile launch (TS FireUp=2; unarmed).
+                                          2,                   // Frame of projectile launch while prone.
+                                          0                    // pointer to override remap table
+);
+
 // Grenadiers
 static InfantryTypeClass const E2(INFANTRY_E2, // Infantry type number.
                                   TXT_E2,      // Translate name number for infantry type.
@@ -1577,6 +1599,7 @@ void InfantryTypeClass::Init_Heap(void)
     new InfantryTypeClass(TdRmbo);
     new InfantryTypeClass(TsE1);
     new InfantryTypeClass(TsE2);
+    new InfantryTypeClass(TsEngineer);
 }
 
 /***********************************************************************************************
@@ -1839,6 +1862,14 @@ void InfantryTypeClass::One_Time(void)
     }
     if (tse2.CameoData == NULL) {
         ((void const*&)tse2.CameoData) = As_Reference(INFANTRY_E1).CameoData;
+    }
+
+    InfantryTypeClass& tseng = As_Reference(INFANTRY_TSENGINEER);  // TS Engineer -- donor E1 (packed on the E1 canvas like TSE1).
+    if (tseng.ImageData == NULL) {
+        ((void const*&)tseng.ImageData) = As_Reference(INFANTRY_E1).ImageData;
+    }
+    if (tseng.CameoData == NULL) {
+        ((void const*&)tseng.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 
     InfantryTypeClass& tde2 = As_Reference(INFANTRY_TDE2);  // TD Grenadier — donor E2 (RA's grenadier).
