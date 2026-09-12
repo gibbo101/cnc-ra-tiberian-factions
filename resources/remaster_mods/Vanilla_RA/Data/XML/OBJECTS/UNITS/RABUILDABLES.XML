@@ -6784,6 +6784,13 @@
 			<BuildIcon>BuildIcon_TS_Weap</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSE1" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSE1</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSE1_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_E1</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END hand-written TS-tree base cameo entries -->
 
 	<ObjectTypeClass Name="RA_TSTURB" Classification="CNCBuildableObject" CanInstantiate="False">
@@ -6930,6 +6937,8 @@
 			<BuildIcon>BuildIcon_TS_Seek</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+
+
 
 	<!-- BEGIN generated cameo mask variants (scripts/cameo_variants_build.py) -->
 	<ObjectTypeClass Name="RA_IRON_0" Classification="CNCBuildableObject" CanInstantiate="False">
@@ -10948,6 +10957,22 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<ObjectTypeClass Name="RA_TS4TNK_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TS4TNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TS4TNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MammothMk1</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TS4TNK_G_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TS4TNK</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TS4TNK_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS4TNK_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 	<ObjectTypeClass Name="RA_TSSONIC_0" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TSSONIC</ObjectNameTextID>
@@ -10969,6 +10994,22 @@
 			<ObjectNameTextID>TEXT_STRUCTURE_TSWEAP</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSWEAP_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TS_Weap</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSE1_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSE1</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSE1_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_E1</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSE1_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSE1</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSE1_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSE1_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

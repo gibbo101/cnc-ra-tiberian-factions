@@ -1845,6 +1845,7 @@ typedef enum InfantryType : char
     INFANTRY_TDE5, // TD Chem Warrior (E5) — Nod-only, fires TDChem (invisible round + directional chem-spray jet).
     INFANTRY_TDE6,   // TD Engineer (E6) — no weapon; captures buildings (Infiltrate). GDI+Nod, barracks-level.
     INFANTRY_TDRMBO, // TD Commando (RMBO) — 125-dmg sniper (one-shots infantry) + C4 building-destroy. GDI+Nod, tech-center gated.
+    INFANTRY_TSE1,   // TS Light Infantry (E1) — the TS GDI rifleman, fires TSMinigun. TS-SHP art on the E1Sequence layout (ts_pack_infantry.py).
 
     INFANTRY_COUNT,
     INFANTRY_FIRST = 0
@@ -3545,6 +3546,7 @@ typedef enum WeaponType : char
     WEAPON_TSREDEYE2,      // TS component tower SAM — TS [RedEye2] verbatim (Dmg33/ROF55/Range15, AA-only TDPatriot homing missile, TSSAMWH warhead). Registered "TSRedEye2".
     WEAPON_TS120MMX,       // TS Mammoth Tank cannon (TS [120mmx]): Dmg50/ROF80/Burst2, on the TDAPDS instant shell like the Titan's TS120mm.
     WEAPON_TS4TNKTUSK,     // The old TS Mammoth's own tusks: TS [MammothTusk] verbatim (Dmg40/ROF80/Range6/Speed20/Burst2, AA-only TSAAHeatSeeker, TSHE warhead).
+    WEAPON_TSMINIGUN,      // TS Light Infantry minigun: TS [Minigun] (Dmg8/ROF21/Range4, instant Invisible projectile, TSSA warhead). Registered "TSMinigun".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -4227,6 +4229,7 @@ typedef enum VocType : short
     VOC_TS_EXPNEW13,     // TS impact report on XGRYSML1/2 and EXPLOSML (art.ini Report=EXPNEW13). RAC/RAR_SFX_TSEXPNEW13 -> bundled TSEXPNEW13.WAV, own name.
     VOC_TS_EXPNEW14,     // TS impact report on S_CLSN16-58 (art.ini Report=EXPNEW14) -- as above.
     VOC_TS_120MMX9,      // TS Mammoth Tank cannon report (120MMX9, [120mmx] Report=). RAC/RAR_SFX_TS120MMX9 -> bundled TS120MMX9.WAV, own name.
+    VOC_TS_INFGUN3,      // TS Light Infantry minigun report (INFGUN3, [Minigun] Report=). RAC/RAR_SFX_TSINFGUN3 -> bundled TSINFGUN3.WAV, own name.
 
     VOC_COUNT,
     VOC_FIRST = 0

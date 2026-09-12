@@ -1965,6 +1965,15 @@
       "flags": [
         "Armed"
       ]
+    },
+    {
+      "id": 33,
+      "name": "tse1",
+      "display_name": "Light Infantry",
+      "owner": "GoodGuy",
+      "flags": [
+        "Armed"
+      ]
     }
   ],
   "templates": [

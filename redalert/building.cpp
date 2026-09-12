@@ -8318,6 +8318,13 @@ InfantryType BuildingClass::Crew_Type(void) const
     if (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') {
         return (INFANTRY_TDE1);
     }
+
+    /*
+    **	Every TS building's survivor is the TS rifleman, as TD's is the minigunner.
+    */
+    if (Class->IniName[0] == 'T' && Class->IniName[1] == 'S') {
+        return (INFANTRY_TSE1);
+    }
     return (TechnoClass::Crew_Type());
 }
 
