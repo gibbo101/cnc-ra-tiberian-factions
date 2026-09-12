@@ -6615,9 +6615,15 @@ int BuildingClass::Mission_Attack(void)
                         Status = TDSAM_READY2;
                     } else {
                         if (error == FIRE_OK) {
+                            /*
+                            **	The launcher stays up and keeps firing while it has an air
+                            **	target, so a site in a fight matches the other SAMs' rate of
+                            **	fire; READY turns it north and lowers it once nothing is
+                            **	left to shoot.
+                            */
                             Fire_At(TarCom, 0);
-                            Status = TDSAM_LOCKING;
-                            return (TICKS_PER_SECOND * 3);
+                            Status = TDSAM_READY;
+                            return (1);
                         }
                     }
                 }

@@ -8,10 +8,9 @@ placement reach all passed in play on 2026-09-12. Still open:
   with the `PROD start TSPLUG` / `TSPION` / `TSPODS` / `TSSEEK` lines in `MOD_DEBUG_AI.txt`.
 - The AI aims its drop pods at the enemy's most valuable building (`Special_Weapon_AI`), which
   lands infantry on the strongest point of a base; a better drop target is open.
-- Nod SAM site, check in the next skirmish: `[TDNike]` `Speed=100` reads as light speed
-  (`_Scale_To_256`), and `Unlimbo_TD` makes a visible light-speed missile immobile, so by the
-  code the missile never leaves the launcher. It was signed off doing damage, so play decides.
-  If it bursts on the launcher: `Speed=39` (TD's `MPH_VERY_FAST`) and RA's missile path.
+- Why the Nod SAM's missile flies at all: `[TDNike]` `Speed=100` reads as light speed
+  (`_Scale_To_256`), and `Unlimbo_TD` makes a visible light-speed missile immobile, yet play
+  shows it flying and hitting. Unexplained; look before changing any TD-port bullet speed.
 - The TD-port bullet path never damaged aircraft with `TSAAHeatSeeker`; the root cause inside
   that path was not found. Any other TD-port AA bullet (`BULLET_TDPATRIOT`) may share it.
 
