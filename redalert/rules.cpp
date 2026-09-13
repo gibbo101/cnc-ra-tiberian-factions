@@ -669,6 +669,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TSRPG");        // WARHEAD_TSRPG (TS [RPG] -- the tower RPG's warhead)
     new WarheadTypeClass("TSSAMWH");      // WARHEAD_TSSAMWH (TS [SAMWH] -- the tower SAM's warhead)
     new WarheadTypeClass("TSHE");         // WARHEAD_TSHE (TS [HE] -- the old TS Mammoth's tusk warhead)
+    new WarheadTypeClass("TSRailShot2");  // WARHEAD_TSRAILSHOT2 (TS [RailShot2] -- the Ghost Stalker's light railgun)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
@@ -769,6 +770,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TSMinigun");      // WEAPON_TSMINIGUN (TS Light Infantry -- TS [Minigun] verbatim)
     new WeaponTypeClass("TSGrenade");      // WEAPON_TSGRENADE (TS Disc Thrower -- TS [Grenade] with Firestorm's ROF)
     new WeaponTypeClass("TSHeal");         // WEAPON_TSHEAL (TS Medic -- TS [Heal] verbatim)
+    new WeaponTypeClass("TSLtRail");       // WEAPON_TSLTRAIL (TS Ghost Stalker -- TS [LtRail] on the IsRailgun line path)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's

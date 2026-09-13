@@ -2435,6 +2435,11 @@ static AnimTypeClass const ChemNW(ANIM_CHEM_NW, "TDCHEM-NW", 48, 9, false, false
 // Classic = transparent stub in TFASSETS.MIX.
 static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, false, false, false, false, false, false, false, 0, 4, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 
+// Tiberian Factions -- TS light railgun particle (ANIM_TS_RAILFXS), the Ghost Stalker's
+// coil: RAILFX's timing with [SmallRailgunPart]'s ColorList, (200,200,200) fading fast
+// to (150,150,150). Art = scripts/ts_gen_railfx.py. Classic = transparent stub.
+static AnimTypeClass const TsRailFxS(ANIM_TS_RAILFXS, "TSRAILFXS", 24, 3, false, false, false, false, false, false, false, false, false, 0, 4, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
+
 // Tiberian Factions -- TS Disruptor sonic wave (ANIM_TS_SONICWAVE). Art is ours
 // (TSSONICW.ZIP via scripts/ts_gen_sonicwave.py): TS has NO sonic-wave art to
 // port, it distorts the screen live. One soft translucent disc; a chain of them
@@ -2693,6 +2698,7 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(TsXgrySml2);
     new AnimTypeClass(TsExploSml);
     new AnimTypeClass(TsSmokey2);
+    new AnimTypeClass(TsRailFxS);
 }
 
 /***********************************************************************************************

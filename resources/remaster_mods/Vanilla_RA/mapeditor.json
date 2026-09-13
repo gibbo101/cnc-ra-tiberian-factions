@@ -1997,6 +1997,15 @@
       "display_name": "Medic",
       "owner": "GoodGuy",
       "flags": []
+    },
+    {
+      "id": 37,
+      "name": "tsghost",
+      "display_name": "Ghost Stalker",
+      "owner": "GoodGuy",
+      "flags": [
+        "Armed"
+      ]
     }
   ],
   "templates": [

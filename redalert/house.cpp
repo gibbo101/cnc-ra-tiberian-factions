@@ -1207,6 +1207,21 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
 #endif
 
     /*
+    **	The Ghost Stalker is a hero: a house fields one at a time (TS BuildLimit=1). One
+    **	alive, including one riding in a transport, keeps the cameo off the sidebar.
+    **	A Ghost Stalker already in production is not counted, since a false here would
+    **	make the sidebar abandon it.
+    */
+    if (type->What_Am_I() == RTTI_INFANTRYTYPE && ((InfantryTypeClass const*)type)->Type == INFANTRY_TSGHOST) {
+        for (int i = 0; i < Infantry.Count(); i++) {
+            InfantryClass const* inf = Infantry.Ptr(i);
+            if (inf != NULL && inf->IsActive && inf->House == this && *inf == INFANTRY_TSGHOST) {
+                return (false);
+            }
+        }
+    }
+
+    /*
     **	The computer can always build everything.
     */
     if (!IsHuman && Session.Type == GAME_NORMAL)
@@ -11916,6 +11931,7 @@ int HouseClass::AI_Infantry(void)
                         break;
 
                     case INFANTRY_TDRMBO:
+                    case INFANTRY_TSGHOST:
                         typetrack[count].Value = 1 - max(QuantityI(index), 0);
                         break;
 

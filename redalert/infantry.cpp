@@ -1322,7 +1322,23 @@ void InfantryClass::AI(void)
     **	Harvester and the unit-type Visceroid are inherently immune because this
     **	only hooks infantry. Tunable: the cadence mask and the damage value.
     */
-    if (In_Which_Layer() == LAYER_GROUND && !IsInLimbo
+    /*
+    **	The Ghost Stalker is TiberiumProof and TiberiumHeal: Tiberium never hurts it, and
+    **	while it stands in Tiberium below full health it regains 1 point a second (TS
+    **	TiberiumHeal=1/60 minute, the infantry repair step), snapping to full once past
+    **	the green threshold as TS does.
+    */
+    if (*this == INFANTRY_TSGHOST && In_Which_Layer() == LAYER_GROUND && !IsInLimbo
+        && Map[Coord_Cell(Coord)].Overlay == OVERLAY_TIB01 && Strength > 0
+        && Health_Ratio() < Rule.ConditionGreen && ((Frame + ID) % TICKS_PER_SECOND) == 0) {
+        Strength++;
+        if (Health_Ratio() > Rule.ConditionGreen) {
+            Strength = Class->MaxStrength;
+        }
+        Mark(MARK_CHANGE);
+    }
+
+    if (In_Which_Layer() == LAYER_GROUND && !IsInLimbo && *this != INFANTRY_TSGHOST
         && Map[Coord_Cell(Coord)].Overlay == OVERLAY_TIB01) {
         if (((Frame + ID) % 50) == 0) { // TD-calibrated: ~28 tiles to kill a minigunner
             // Magnitude isn't in the released EA source, so these are the tuning

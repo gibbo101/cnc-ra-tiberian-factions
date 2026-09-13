@@ -6812,6 +6812,13 @@
 			<BuildIcon>BuildIcon_TS_Medic</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSGHOST" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSGHOST</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSGHOST_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Ghost</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END hand-written TS-tree base cameo entries -->
 
 	<ObjectTypeClass Name="RA_TSTURB" Classification="CNCBuildableObject" CanInstantiate="False">
@@ -6958,6 +6965,7 @@
 			<BuildIcon>BuildIcon_TS_Seek</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+
 
 
 
@@ -11082,6 +11090,22 @@
 			<ObjectNameTextID>TEXT_UNIT_TSMEDIC</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TSMEDIC_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TSMEDIC_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSGHOST_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSGHOST</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSGHOST_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Ghost</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSGHOST_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSGHOST</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSGHOST_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSGHOST_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

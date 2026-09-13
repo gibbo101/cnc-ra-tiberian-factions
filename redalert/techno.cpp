@@ -4108,9 +4108,15 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 **  shot, which is what read as "a laser with stars on it".
                 */
                 if (!weapon->IsSonic) {
-                Lines[0][0] = x + 1; Lines[0][1] = y; Lines[0][2] = x1; Lines[0][3] = y1; Lines[0][4] = 0x0B;
-                Lines[1][0] = x - 1; Lines[1][1] = y; Lines[1][2] = x1; Lines[1][3] = y1; Lines[1][4] = 0x0B;
-                Lines[2][0] = x;     Lines[2][1] = y; Lines[2][2] = x1; Lines[2][3] = y1; Lines[2][4] = 0x0A;
+                // The Ghost Stalker's light railgun is TS's orange laser ([SmallRailgunSys]
+                // LaserColor 255,128,0): dark-orange outers (0x07 = 168,84,0) under an
+                // orange core (0x9F = 252,136,0).
+                bool const small_rail = (weapon->ID == WEAPON_TSLTRAIL);
+                int const outer = small_rail ? 0x07 : 0x0B;
+                int const core = small_rail ? 0x9F : 0x0A;
+                Lines[0][0] = x + 1; Lines[0][1] = y; Lines[0][2] = x1; Lines[0][3] = y1; Lines[0][4] = outer;
+                Lines[1][0] = x - 1; Lines[1][1] = y; Lines[1][2] = x1; Lines[1][3] = y1; Lines[1][4] = outer;
+                Lines[2][0] = x;     Lines[2][1] = y; Lines[2][2] = x1; Lines[2][3] = y1; Lines[2][4] = core;
                 LineCount = 3;
                 LineFrame = 0;
                 // 5, NOT more: the launcher's line renderer only supports
@@ -4142,16 +4148,24 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 // Must match LEAD_STAGES in scripts/ts_gen_sonicwave.py.
                 enum { SONIC_SWEEP_STAGES = AnimClass::SONIC_LEAD_STAGES };
                 if (weapon->IsRailgun) {
-                    enum { RAIL_SPARKS_PER_CELL = 19, RAIL_SPIRAL_RADIUS = 15, RAIL_JITTER = 15 };
-                    int count = (dist * RAIL_SPARKS_PER_CELL) / CELL_LEPTON_W;
+                    // The Ghost Stalker's coil is [SmallRailgunSys]: ParticlesPerCoord .1,
+                    // SpiralRadius 6, SpiralDeltaPerCoord .035, PositionPerturbation 20,
+                    // grey sparks, on the same halved density as the Mk. II's.
+                    bool const small_rail = (weapon->ID == WEAPON_TSLTRAIL);
+                    int const sparks_per_cell = small_rail ? 13 : 19;
+                    int const spiral_radius = small_rail ? 6 : 15;
+                    int const jitter = small_rail ? 10 : 15;
+                    double const turn = small_rail ? 0.035 : 0.03;
+                    AnimType const spark = small_rail ? ANIM_TS_RAILFXS : ANIM_RAILFX;
+                    int count = (dist * sparks_per_cell) / CELL_LEPTON_W;
                     for (int i = 0; i < count; i++) {
                         int along = (dist * i) / count;
-                        double angle = (double)along * 0.03;
-                        double ring = cos(angle) * RAIL_SPIRAL_RADIUS;
-                        double lift = sin(angle) * RAIL_SPIRAL_RADIUS;
-                        int x = sx + (ddx * along) / dist + (int)(-(double)ddy * ring / dist) + Random_Pick(-(int)RAIL_JITTER, (int)RAIL_JITTER);
-                        int y = sy + (ddy * along) / dist + (int)((double)ddx * ring / dist) - (int)lift + Random_Pick(-(int)RAIL_JITTER, (int)RAIL_JITTER);
-                        new AnimClass(ANIM_RAILFX, XY_Coord(x, y));
+                        double angle = (double)along * turn;
+                        double ring = cos(angle) * spiral_radius;
+                        double lift = sin(angle) * spiral_radius;
+                        int x = sx + (ddx * along) / dist + (int)(-(double)ddy * ring / dist) + Random_Pick(-jitter, jitter);
+                        int y = sy + (ddy * along) / dist + (int)((double)ddx * ring / dist) - (int)lift + Random_Pick(-jitter, jitter);
+                        new AnimClass(spark, XY_Coord(x, y));
                     }
                 }
 

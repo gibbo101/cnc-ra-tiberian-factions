@@ -722,6 +722,28 @@ static InfantryTypeClass const TsMedic(INFANTRY_TSMEDIC, // Infantry type number
                                        0                 // pointer to override remap table
 );
 
+/*
+**	TS Ghost Stalker (INFANTRY_TSGHOST). TS art.ini [GHOST] shares E1Sequence.
+*/
+static InfantryTypeClass const TsGhost(INFANTRY_TSGHOST, // Infantry type number.
+                                       TXT_E7,           // Translate name number (display set via rules.ini Name=).
+                                       "TSGHOST",        // INI name for infantry.
+                                       0x0035,           // Vertical offset.
+                                       0x0010,           // Primary weapon offset along centerline.
+                                       false,            // Is this a female type?
+                                       true,             // Has crawling animation frames? (TS Crawls=yes)
+                                       false,            // Is this a civilian?
+                                       false,            // Does this unit use the override remap table?
+                                       false,            // Always use the given name for the infantry?
+                                       false,            // Theater specific graphic image?
+                                       PIP_COMMANDO,     // Transport pip shape/color to use.
+                                       TsE1DoControls,
+                                       TsE1DoControls,
+                                       2,                // Frame of projectile launch (TS FireUp=2).
+                                       2,                // Frame of projectile launch while prone.
+                                       0                 // pointer to override remap table
+);
+
 // Grenadiers
 static InfantryTypeClass const E2(INFANTRY_E2, // Infantry type number.
                                   TXT_E2,      // Translate name number for infantry type.
@@ -1647,6 +1669,7 @@ void InfantryTypeClass::Init_Heap(void)
     new InfantryTypeClass(TsE2);
     new InfantryTypeClass(TsEngineer);
     new InfantryTypeClass(TsMedic);
+    new InfantryTypeClass(TsGhost);
 }
 
 /***********************************************************************************************
@@ -1925,6 +1948,14 @@ void InfantryTypeClass::One_Time(void)
     }
     if (tsmedic.CameoData == NULL) {
         ((void const*&)tsmedic.CameoData) = As_Reference(INFANTRY_E1).CameoData;
+    }
+
+    InfantryTypeClass& tsghost = As_Reference(INFANTRY_TSGHOST);  // TS Ghost Stalker -- donor E1 (packed on the E1 canvas like TSE1).
+    if (tsghost.ImageData == NULL) {
+        ((void const*&)tsghost.ImageData) = As_Reference(INFANTRY_E1).ImageData;
+    }
+    if (tsghost.CameoData == NULL) {
+        ((void const*&)tsghost.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 
     InfantryTypeClass& tde2 = As_Reference(INFANTRY_TDE2);  // TD Grenadier — donor E2 (RA's grenadier).

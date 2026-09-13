@@ -54,6 +54,9 @@ UNITS = {
                    "Captures enemy structures outright and restores friendly ones to full strength."),
     "TSMEDIC": ("medic", 307, "mediicon", "BuildIcon_TS_Medic", "Medic",
                 "Heals nearby friendly infantry."),
+    "TSGHOST": ("ghost", 292, "gosticon", "BuildIcon_TS_Ghost", "Ghost Stalker",
+                "Elite commando. His railgun pierces a line of troops, he plants C4 on "
+                "structures and heals in Tiberium. One at a time."),
 }
 
 # ini -> (TS projectile SHP in $TS_ART_DIR/.raw, VFX tileset name). The projectile ships as

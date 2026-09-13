@@ -1850,6 +1850,7 @@ typedef enum InfantryType : char
     INFANTRY_TSE2,   // TS Disc Thrower (E2) — lobs TSGrenade discs. TS-SHP art on the E1Sequence layout (ts_pack_infantry.py).
     INFANTRY_TSENGINEER, // TS Engineer (ENGINEER) — unarmed; captures an enemy building outright and restores a friendly one to full strength.
     INFANTRY_TSMEDIC,    // TS Medic (MEDIC) — heals friendly infantry with TSHeal. TS-SHP art on MedicSequence (307 poses).
+    INFANTRY_TSGHOST,    // TS Ghost Stalker (GHOST) — hero commando: TSLtRail light railgun, C4 on buildings, immune to and healed by Tiberium, one per house.
 
     INFANTRY_COUNT,
     INFANTRY_FIRST = 0
@@ -3077,6 +3078,7 @@ typedef enum AnimType : short
     ANIM_TS_XGRYSML2,
     ANIM_TS_EXPLOSML,
     ANIM_TS_SMOKEY2,    // TS SMOKEY2 puff: the SAM missile's trail (art.ini [DRAGON] Trailer=SMOKEY2).
+    ANIM_TS_RAILFXS,    // TS light railgun particle: small grey spark spawned in a tight helix along the Ghost Stalker's beam ([SmallRailgunPart]).
 
     ANIM_COUNT,
     ANIM_FIRST = 0
@@ -3443,6 +3445,7 @@ typedef enum WarheadType : char
     WARHEAD_TSRPG,    // TS RPG tower warhead. TS [RPG]: Spread 3, Wall=yes, Wood=yes, verses 30/75/90/100/70%, InfDeath 3. Registered "TSRPG".
     WARHEAD_TSSAMWH,  // TS SAM warhead. TS [SAMWH]: Spread 3, 100% all, InfDeath 3. Registered "TSSAMWH".
     WARHEAD_TSHE,     // TS high-explosive warhead. TS [HE]: Spread 4, Wall=yes, Wood=yes, verses 100/85/70/35/28%, InfDeath 2. Registered "TSHE".
+    WARHEAD_TSRAILSHOT2, // TS light railgun warhead (LtRail line damage). TS [RailShot2]: Spread 1, verses 100/130/150/110/5%, InfDeath 2. Registered "TSRailShot2".
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
@@ -3553,6 +3556,7 @@ typedef enum WeaponType : char
     WEAPON_TSMINIGUN,      // TS Light Infantry minigun: TS [Minigun] (Dmg8/ROF21/Range4, instant Invisible projectile, TSSA warhead). Registered "TSMinigun".
     WEAPON_TSGRENADE,      // TS Disc Thrower disc: TS [Grenade] (Dmg40/ROF80/Range4.5, BULLET_TSLOBBED arc, TSHE warhead). Registered "TSGrenade".
     WEAPON_TSHEAL,         // TS Medic heal: TS [Heal] (Dmg-50/ROF80/Range2.83, Organic warhead, HEALER1 report). Registered "TSHeal".
+    WEAPON_TSLTRAIL,       // TS Ghost Stalker light railgun: TS [LtRail] (AmbientDamage150 along the line/ROF60/Range6, orange beam, TSRailShot2 warhead, BIGGGUN1 report). Registered "TSLtRail".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -4237,6 +4241,7 @@ typedef enum VocType : short
     VOC_TS_120MMX9,      // TS Mammoth Tank cannon report (120MMX9, [120mmx] Report=). RAC/RAR_SFX_TS120MMX9 -> bundled TS120MMX9.WAV, own name.
     VOC_TS_INFGUN3,      // TS Light Infantry minigun report (INFGUN3, [Minigun] Report=). RAC/RAR_SFX_TSINFGUN3 -> bundled TSINFGUN3.WAV, own name.
     VOC_TS_HEALER1,      // TS Medic heal report (HEALER1, [Heal] Report=). RAC/RAR_SFX_TSHEALER1 -> bundled TSHEALER1.WAV, own name.
+    VOC_TS_BIGGGUN1,     // TS Ghost Stalker railgun report (BIGGGUN1, [LtRail] Report=). RAC/RAR_SFX_TSBIGGGUN1 -> bundled TSBIGGGUN1.WAV, own name.
 
     VOC_COUNT,
     VOC_FIRST = 0
