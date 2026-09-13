@@ -2751,6 +2751,23 @@ void InfantryClass::Response_Select(void)
             Sound_Effect(_cmd_select[Sim_Random_Pick(0, ARRAY_SIZE(_cmd_select) - 1)], fixed(1), ID + 1);
             return;
         }
+        // Tiberian Factions: the TS Engineer, Medic and Ghost Stalker answer in the voice sets
+        // TS gives them (19, 20 and 14), whoever owns them. Select = each set's VoiceSelect.
+        if (*this == INFANTRY_TSENGINEER) {
+            static VocType _v[] = {VOC_TS_19I000, VOC_TS_19I002, VOC_TS_19I006};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        if (*this == INFANTRY_TSMEDIC) {
+            static VocType _v[] = {VOC_TS_20I000, VOC_TS_20I004, VOC_TS_20I006};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        if (*this == INFANTRY_TSGHOST) {
+            static VocType _v[] = {VOC_TS_14I000, VOC_TS_14I002, VOC_TS_14I004};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
         // Tiberian Factions: GDI/Nod (HOUSE_GOOD/HOUSE_BAD) generic infantry use
         // the TD passive select voices ("yes sir / reporting / awaiting orders /
         // ready"). Special RA units (Tanya, dog, ...) aren't in their roster, so
@@ -2891,6 +2908,22 @@ void InfantryClass::Response_Move(void)
             static VocType _cmd_move[] = {VOC_TD_CMD_GOTIT, VOC_TD_CMD_NOPROB, VOC_TD_CMD_KEEPEM,
                                           VOC_TD_CMD_CMON, VOC_TD_CMD_LEFTY};
             Sound_Effect(_cmd_move[Sim_Random_Pick(0, ARRAY_SIZE(_cmd_move) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        // Tiberian Factions: TS Engineer / Medic / Ghost Stalker move = each set's VoiceMove.
+        if (*this == INFANTRY_TSENGINEER) {
+            static VocType _v[] = {VOC_TS_19I010, VOC_TS_19I016};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        if (*this == INFANTRY_TSMEDIC) {
+            static VocType _v[] = {VOC_TS_20I008, VOC_TS_20I010, VOC_TS_20I012};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        if (*this == INFANTRY_TSGHOST) {
+            static VocType _v[] = {VOC_TS_14I008, VOC_TS_14I010, VOC_TS_14I012, VOC_TS_14I014};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
             return;
         }
         // Tiberian Factions: GDI/Nod move-order voices (active confirmations,
@@ -3038,6 +3071,22 @@ void InfantryClass::Response_Attack(void)
             static VocType _cmd_attack[] = {VOC_TD_CMD_ROCK, VOC_TD_CMD_BOMBIT, VOC_TD_CMD_YELL,
                                             VOC_TD_CMD_LAUGH, VOC_TD_CMD_TUFF};
             Sound_Effect(_cmd_attack[Sim_Random_Pick(0, ARRAY_SIZE(_cmd_attack) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        // Tiberian Factions: TS Engineer / Medic / Ghost Stalker attack = each set's VoiceAttack.
+        if (*this == INFANTRY_TSENGINEER) {
+            static VocType _v[] = {VOC_TS_19I018, VOC_TS_19I016};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        if (*this == INFANTRY_TSMEDIC) {
+            static VocType _v[] = {VOC_TS_20I016, VOC_TS_20I018, VOC_TS_20I020};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        if (*this == INFANTRY_TSGHOST) {
+            static VocType _v[] = {VOC_TS_14I008, VOC_TS_14I010, VOC_TS_14I014, VOC_TS_14I016};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
             return;
         }
         // Tiberian Factions: GDI/Nod attack-order voices (active confirmations,

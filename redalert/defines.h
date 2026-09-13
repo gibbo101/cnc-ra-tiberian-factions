@@ -4242,6 +4242,34 @@ typedef enum VocType : short
     VOC_TS_INFGUN3,      // TS Light Infantry minigun report (INFGUN3, [Minigun] Report=). RAC/RAR_SFX_TSINFGUN3 -> bundled TSINFGUN3.WAV, own name.
     VOC_TS_HEALER1,      // TS Medic heal report (HEALER1, [Heal] Report=). RAC/RAR_SFX_TSHEALER1 -> bundled TSHEALER1.WAV, own name.
     VOC_TS_BIGGGUN1,     // TS Ghost Stalker railgun report (BIGGGUN1, [LtRail] Report=). RAC/RAR_SFX_TSBIGGGUN1 -> bundled TSBIGGGUN1.WAV, own name.
+    VOC_TS_JUMPJET1,     // TS Jumpjet Infantry cannon report (JUMPJET1, [JumpCannon] Report=). RAC/RAR_SFX_TSJUMPJET1 -> bundled TSJUMPJET1.WAV, own name.
+
+    // TS Engineer, voice set 19 (scripts/ts_voices_build.py SINGLES): select I000/I002/I006, move I010/I016, attack I018/I016.
+    VOC_TS_19I000,
+    VOC_TS_19I002,
+    VOC_TS_19I006,
+    VOC_TS_19I010,
+    VOC_TS_19I016,
+    VOC_TS_19I018,
+    // TS Medic, voice set 20: select I000/I004/I006, move I008/I010/I012, attack I016/I018/I020.
+    VOC_TS_20I000,
+    VOC_TS_20I004,
+    VOC_TS_20I006,
+    VOC_TS_20I008,
+    VOC_TS_20I010,
+    VOC_TS_20I012,
+    VOC_TS_20I016,
+    VOC_TS_20I018,
+    VOC_TS_20I020,
+    // TS Ghost Stalker, voice set 14: select I000/I002/I004, move I008/I010/I012/I014, attack I008/I010/I014/I016.
+    VOC_TS_14I000,
+    VOC_TS_14I002,
+    VOC_TS_14I004,
+    VOC_TS_14I008,
+    VOC_TS_14I010,
+    VOC_TS_14I012,
+    VOC_TS_14I014,
+    VOC_TS_14I016,
 
     VOC_COUNT,
     VOC_FIRST = 0

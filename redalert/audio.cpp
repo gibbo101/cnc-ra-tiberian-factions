@@ -321,6 +321,33 @@ struct SoundEffectNameStruct
     {"TSINFGUN3", 1, IN_NOVAR},   // VOC_TS_INFGUN3 -- TS Light Infantry minigun (RAC/RAR_SFX_TSINFGUN3 -> bundled TSINFGUN3.WAV, own name)
     {"TSHEALER1", 1, IN_NOVAR},   // VOC_TS_HEALER1 -- TS Medic heal (RAC/RAR_SFX_TSHEALER1 -> bundled TSHEALER1.WAV, own name)
     {"TSBIGGGUN1", 1, IN_NOVAR},  // VOC_TS_BIGGGUN1 -- TS Ghost Stalker railgun (RAC/RAR_SFX_TSBIGGGUN1 -> bundled TSBIGGGUN1.WAV, own name)
+    {"TSJUMPJET1", 1, IN_NOVAR},  // VOC_TS_JUMPJET1 -- TS Jumpjet Infantry cannon (RAC/RAR_SFX_TSJUMPJET1 -> bundled TSJUMPJET1.WAV, own name)
+
+    // TS Engineer / Medic / Ghost Stalker voice sets 19 / 20 / 14, single takes like the TD
+    // Commando's (localized RAC/RAR_SFX_TS<set>I<line>, scripts/ts_voices_build.py SINGLES).
+    {"TS19I000", 20, IN_NOVAR},   // VOC_TS_19I000
+    {"TS19I002", 20, IN_NOVAR},   // VOC_TS_19I002
+    {"TS19I006", 20, IN_NOVAR},   // VOC_TS_19I006
+    {"TS19I010", 20, IN_NOVAR},   // VOC_TS_19I010
+    {"TS19I016", 20, IN_NOVAR},   // VOC_TS_19I016
+    {"TS19I018", 20, IN_NOVAR},   // VOC_TS_19I018
+    {"TS20I000", 20, IN_NOVAR},   // VOC_TS_20I000
+    {"TS20I004", 20, IN_NOVAR},   // VOC_TS_20I004
+    {"TS20I006", 20, IN_NOVAR},   // VOC_TS_20I006
+    {"TS20I008", 20, IN_NOVAR},   // VOC_TS_20I008
+    {"TS20I010", 20, IN_NOVAR},   // VOC_TS_20I010
+    {"TS20I012", 20, IN_NOVAR},   // VOC_TS_20I012
+    {"TS20I016", 20, IN_NOVAR},   // VOC_TS_20I016
+    {"TS20I018", 20, IN_NOVAR},   // VOC_TS_20I018
+    {"TS20I020", 20, IN_NOVAR},   // VOC_TS_20I020
+    {"TS14I000", 20, IN_NOVAR},   // VOC_TS_14I000
+    {"TS14I002", 20, IN_NOVAR},   // VOC_TS_14I002
+    {"TS14I004", 20, IN_NOVAR},   // VOC_TS_14I004
+    {"TS14I008", 20, IN_NOVAR},   // VOC_TS_14I008
+    {"TS14I010", 20, IN_NOVAR},   // VOC_TS_14I010
+    {"TS14I012", 20, IN_NOVAR},   // VOC_TS_14I012
+    {"TS14I014", 20, IN_NOVAR},   // VOC_TS_14I014
+    {"TS14I016", 20, IN_NOVAR},   // VOC_TS_14I016
 };
 
 //

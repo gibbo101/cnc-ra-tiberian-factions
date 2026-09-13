@@ -64,12 +64,26 @@ VOICES = {
 
 EXTS = (".V01", ".V03", ".V00", ".V02")  # the order the tuples are written in
 
+# Single takes for the TS infantry with a voice set of their own: set 19 the Engineer, set 20
+# the Medic, set 14 the Ghost Stalker (each type's VoiceSelect, VoiceMove and VoiceAttack
+# lines). Each becomes the event TS<set>I<line> with no extension, the IN_NOVAR shape the TD
+# Commando's lines use; infantry.cpp's response tables choose among them.
+SINGLES = (
+    "19-I000", "19-I002", "19-I006", "19-I010", "19-I016", "19-I018",
+    "20-I000", "20-I004", "20-I006", "20-I008", "20-I010", "20-I012", "20-I016", "20-I018", "20-I020",
+    "14-I000", "14-I002", "14-I004", "14-I008", "14-I010", "14-I012", "14-I014", "14-I016",
+)
+
+
+def single_base(aud):
+    return "TS" + aud.replace("-", "")
+
 
 def extract(ts_dir, tmp):
     mix = Path(ts_dir) / "TIBSUN.MIX"
     if not mix.exists():
         sys.exit("no TIBSUN.MIX under %s" % ts_dir)
-    names = sorted({n for row in VOICES.values() for n in row})
+    names = sorted({n for row in VOICES.values() for n in row} | set(SINGLES))
     cmd = [sys.executable, str(TS_EXTRACT), str(mix), "SOUNDS.MIX", "extract", str(tmp)]
     cmd += ["%s.AUD" % n for n in names]
     out = subprocess.run(cmd, capture_output=True, text=True)
@@ -119,6 +133,12 @@ def write_xml():
             for prefix in ("RAC", "RAR"):
                 body.append(event("%s_SFX_%s%s" % (prefix, base, ext), sample))
                 count += 1
+    for aud in SINGLES:
+        base = single_base(aud)
+        sample = sample_name(base, "")
+        for prefix in ("RAC", "RAR"):
+            body.append(event("%s_SFX_%s" % (prefix, base), sample))
+            count += 1
     body.append(END + "\n")
     block = "".join(body)
 
@@ -147,6 +167,9 @@ def main():
             for ext, aud in zip(EXTS, row):
                 dst = encode(tmp, base, ext, aud)
                 print("  %-10s %-4s %s -> %s" % (base, ext, aud, dst.name))
+        for aud in SINGLES:
+            dst = encode(tmp, single_base(aud), "", aud)
+            print("  %-10s      %s -> %s" % (single_base(aud), aud, dst.name))
     print("registered %d events in %s" % (write_xml(), XML.name))
 
 
