@@ -81,6 +81,11 @@ public:
     HousesType TFPodHouse;
     DirType TFPodApproach;
     InfantryType TFPodType;
+    /*
+    **	TSLOBBED: how many times the disc has touched down; it goes off on the third.
+    **	Zero and unused for every other bullet type.
+    */
+    int TFBounces;
     enum
     {
         TF_POD_CEILING = 1280,       // spawn altitude in leptons (5 cells of descent)
@@ -139,6 +144,7 @@ public:
 
     bool Is_Forced_To_Explode(COORDINATE& coord) const;
     void Bullet_Explodes(bool forced);
+    bool TS_Disc_Bounce(void);
     int Shape_Number(void) const;
     virtual LayerType In_Which_Layer(void) const;
     virtual COORDINATE Sort_Y(void) const;

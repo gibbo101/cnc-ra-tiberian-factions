@@ -88,6 +88,7 @@ BulletClass::BulletClass(BulletType id,
     , TFPodHouse(HOUSE_NONE)
     , TFPodApproach(DIR_N)
     , TFPodType(INFANTRY_TDE1)
+    , TFBounces(0)
     , IsInaccurate(false)
     , IsToAnimate(false)
     , IsLocked(true)
@@ -502,6 +503,40 @@ bool BulletClass::Mark(MarkType mark)
     return (false);
 }
 
+/*
+**	The Disc Thrower's disc skips like TS's [Lobbed] (Bouncy, Elasticity .75, OpenTS
+**	bullet.cpp). On touching down it goes off if an enemy stands in the cell, on its third
+**	touchdown, or when too little rise is left to leave the ground; otherwise it springs
+**	back up at three quarters of its vertical and ground speed. Returns whether it bounced.
+*/
+bool BulletClass::TS_Disc_Bounce(void)
+{
+    TechnoClass* techno = Map[Coord_Cell(Coord)].Cell_Techno();
+    if (techno == Payback || (techno != NULL && Payback != NULL && Payback->House->Is_Ally(techno))) {
+        techno = NULL;
+    }
+    TFBounces++;
+    int rise = -Riser * 3 / 4;
+    if (techno != NULL || TFBounces >= 3 || rise < 4) {
+        return (false);
+    }
+
+    /*
+    **	Back in the air: the layer registration follows the height, or the next landing
+    **	would remove it from a list it is not in.
+    */
+    LayerType layer = In_Which_Layer();
+    IsFalling = true;
+    Height = 1;
+    Riser = rise;
+    if (In_Which_Layer() != layer) {
+        Map.Remove(this, layer);
+        Map.Submit(this, In_Which_Layer());
+    }
+    Fly_Speed(192, Get_Speed());
+    return (true);
+}
+
 /***********************************************************************************************
  * BulletClass::AI -- Logic processing for bullet.                                             *
  *                                                                                             *
@@ -897,7 +932,29 @@ void BulletClass::AI(void)
     */
     bool forced = false; // Forced explosion.
     if ((Class->IsArcing || Class->IsDropping) && !IsFalling) {
-        forced = true;
+        forced = !(*this == BULLET_TSLOBBED && TS_Disc_Bounce());
+    }
+
+    /*
+    **	The disc is a TS Floater: ObjectClass::AI pulls it down at full gravity, and half of
+    **	that is given back each frame (the odd unit alternating), so it falls at half gravity.
+    */
+    if (*this == BULLET_TSLOBBED && IsFalling) {
+        Riser += Rule.Gravity / 2 + ((Frame & 1) ? Rule.Gravity % 2 : 0);
+    }
+
+    /*
+    **	The disc also goes off in flight when it passes within half a cell of an enemy
+    **	soldier or vehicle near the ground, as TS's ballistic projectiles do; the firer and
+    **	its allies are ignored. A building stops it only where it touches down.
+    */
+    if (!forced && *this == BULLET_TSLOBBED && Height < CELL_LEPTON_W / 2) {
+        TechnoClass* techno = Map[Coord_Cell(Coord)].Cell_Techno();
+        if (techno != NULL && techno != Payback && techno->What_Am_I() != RTTI_BUILDING
+            && (Payback == NULL || !Payback->House->Is_Ally(techno))
+            && ::Distance(Coord, techno->Center_Coord()) < CELL_LEPTON_W / 2) {
+            forced = true;
+        }
     }
 
     /*
@@ -1024,7 +1081,11 @@ void BulletClass::AI(void)
         **	maintenance (usually nothing). Otherwise, explode and then
         **	delete the bullet.
         */
-        if (!forced && (Class->IsDropping || !Fuse_Checkup(Coord))) {
+        /*
+        **	The bouncing disc ignores the proximity fuse: it only goes off where TS_Disc_Bounce
+        **	or its in-flight check says so, however far it skips past its target.
+        */
+        if (!forced && (Class->IsDropping || *this == BULLET_TSLOBBED || !Fuse_Checkup(Coord))) {
             /*
             **	Certain projectiles lose strength when they travel.
             */
@@ -1439,6 +1500,14 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
             Height = 1;
             Riser = ((Distance(tcoord) / 2) / (speed + 1)) * Rule.Gravity;
             Riser = max(Riser, 10);
+
+            /*
+            **	The Disc Thrower's disc is a TS Floater and falls at half gravity (AI), so it
+            **	leaves at half the rise: the same time in the air under a lower, lazier arc.
+            */
+            if (*this == BULLET_TSLOBBED) {
+                Riser = max(Riser / 2, 5);
+            }
         }
         if (Class->IsDropping) {
             IsFalling = true;
@@ -2108,7 +2177,7 @@ void BulletClass::Bullet_Explodes(bool forced)
     **	third of the landing distance is within the greater of half a cell and two
     **	frames' flight, TS's own rule.
     */
-    if (*this == BULLET_TSLOBBED2 || *this == BULLET_TSLOBBED) {
+    if (*this == BULLET_TSLOBBED2) {
         TechnoClass* victim = As_Techno(TarCom);
         if (victim != NULL && victim->IsActive && !victim->IsInLimbo) {
             COORDINATE vcoord = victim->Center_Coord();

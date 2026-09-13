@@ -1436,7 +1436,7 @@ typedef enum BulletType : char
     BULLET_TSHUNTER,  // TS Hunter Seeker droid (SPC_TS_HUNTSEEK) — a self-guided kamikaze on the bullet frame (self-deletes cleanly, unlike the aircraft attempt): homes to a random enemy TF_Hunter_Seeker_Acquire picks and detonates on it. Art = the TSHUNT 8-frame spin.
     BULLET_TSLOBBED2,       // TS [Lobbed2]: the RPG tower's arcing canister (TSCANIST, 15-frame tumble).
     BULLET_TSAAHEATSEEKER,  // TS [AAHeatSeeker]: the SAM tower's and Mk. I's missile, drawn with RA's MISSILE on RA's homing path, trailing TS's SMOKEY2.
-    BULLET_TSLOBBED,        // TS [Lobbed]: the Disc Thrower's disc, an accurate arc drawn with TS's DISCUS (TSDISCUS, 7-frame spin).
+    BULLET_TSLOBBED,        // TS [Lobbed]: the Disc Thrower's disc, a bouncing Floater arc drawn with TS's DISCUS (TSDISCUS, 7-frame spin).
 
     BULLET_COUNT,
     BULLET_FIRST = 0
