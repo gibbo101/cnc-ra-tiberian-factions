@@ -11903,16 +11903,31 @@ int HouseClass::AI_Infantry(void)
                     **	past INFANTRY_RA_COUNT for the TD slots). Balance of the resulting
                     **	mix is a post-v1.0 item (see docs/balance-v1-notes.md).
                     */
+                    /*
+                    **	The TS Barracks roster takes the same weights by analog: TSE1 light
+                    **	infantry ~ E1(3), TSE2 disc thrower ~ E2(5), TSJUMPJET ~ E3(2) as the
+                    **	specialist, the TS engineer and Ghost Stalker with the engineer and
+                    **	commando below, and up to two TS medics once there are six infantry.
+                    */
                     case INFANTRY_TDE1:
+                    case INFANTRY_TSE1:
                         typetrack[count].Value = 3;
                         break;
 
                     case INFANTRY_TDE2:
+                    case INFANTRY_TSE2:
                         typetrack[count].Value = 5;
                         break;
 
                     case INFANTRY_TDE3:
+                    case INFANTRY_TSJUMPJET:
                         typetrack[count].Value = 2;
+                        break;
+
+                    case INFANTRY_TSMEDIC:
+                        if (CurInfantry > 5) {
+                            typetrack[count].Value = 2 - max(QuantityI(index), 0);
+                        }
                         break;
 
                     case INFANTRY_TDE4:
