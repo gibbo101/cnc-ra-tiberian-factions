@@ -6,12 +6,48 @@ roster balance pass (see "TS roster balance pass" further down), then the releas
 
 - **Bug first:** a TD construction yard can offer the TS Radar (`docs/known-issues.md`).
 - **TS infantry:** Light Infantry, Disc Thrower, Medic, Engineer, Jumpjet Infantry, Ghost Stalker.
+  All but the Jumpjet are built on `main` (local commits, 2026-09-13); see "TS infantry status".
 - **TS aircraft:** Orca Fighter, Orca Bomber, Carryall.
 - **Remaining vehicles:** Mobile Sensor Array, Juggernaut, Limpet Drone, Mobile EMP, Mobile War
   Factory.
 - **EMP Pulse Cannon:** branch `emp-cannon` (`docs/emp-cannon-design.md`), stage A verified.
 - **Firestorm Generator:** new defensive logic; its wall panels are isometric like the dropped gate,
   so the art route is decided with Luke before building.
+
+## TS infantry status (2026-09-13)
+
+Built from the TS Barracks, all at RA/TD infantry height (`scripts/ts_pack_infantry.py`, x3.25):
+Light Infantry (passed in play), Disc Thrower, Engineer, Medic, Ghost Stalker (needs the TS Tech
+Center, one per house).
+
+**Seen working in a headless skirmish:** all five render at the right size; discs arc and burst
+(after the TFASSETS.MIX stub rebuild); the Ghost's orange beam and grey coil fire and kill a line
+of riflemen; Light Infantry go prone under fire; the Medic heals a wounded soldier to full.
+
+**Still to check in play:**
+- Sidebar: all five cameos at the TS Barracks, the Ghost only with a TS Tech Center, and its
+  cameo gone while one is alive.
+- Engineer: captures an enemy building in one go; restores a damaged friendly building to full.
+- Ghost Stalker: C4 on a building; stands in Tiberium unhurt and heals there.
+- Sounds: TSINFGUN3 (Light Infantry), TSHEALER1 (Medic), TSBIGGGUN1 (Ghost). The Disc
+  Thrower's throw is silent, as in TS.
+
+**Follow-ups:**
+- Voices: all five answer with the TS rifleman's set 15. TS gives the Engineer set 19, the
+  Ghost set 14 and the Medic set 20; they need per-type voice entries in the infantry response
+  switches, as the TD Commando has.
+- The disc does not bounce. TS's `[Lobbed]` is `Bouncy=yes` (up to three skips, detonating early
+  on a soldier) and `Floater=yes` (half gravity); both are listed in `[TSLobbed]`'s comment.
+
+**Jumpjet Infantry: proposal, not built.** TS [JUMPJET]: Strength 120, Armor light, Speed 8
+(Firestorm), Cost 600, TechLevel 6, needs Barracks + Radar, JumpCannon (15 damage, Burst 2, ROF 40,
+Range 5, SA warhead, JUMPJET1). It flies on the jumpjet locomotor (MovementZone=Fly) and draws
+`JumpjetSequence`: Fly 292, Hover 340, FireFly 388, and a 15-frame Tumble when shot down. Our
+infantry are ground-only (pathing, cell occupancy and targeting all assume it), so the practical
+route is an aircraft type in the helicopter mould: hovering flight, unlimited ammo, no pad,
+drawn from the jumpjet frames, targetable by AA and ground fire as TS's is. What that needs:
+building an aircraft from the TS Barracks rather than a pad or airfield, its sidebar tab, and
+what it does when idle (TS jumpjets hover rather than land). Decide the route with Luke first.
 
 ## Open after the 2026-09-12 SAM session
 
