@@ -214,6 +214,23 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Hybrid maps: Tiberium slowly eats Ore where the fields meet (Luke, 2026-09-14)
+
+Today neither resource converts the other. Spreading only lands on an empty cell
+(`CellClass::Can_Tiberium_Germinate`, `redalert/cell.cpp`) and each field spreads as its own
+type (`CellClass::Spread_Tiberium`), so a Tiberium field and an Ore field that meet just hold a
+border. Wanted: Tiberium creeps into the Ore. The change sits in `Spread_Tiberium`: a dense TIB01
+cell with no empty neighbour turns an adjacent Ore cell into TIB01. That reverses the
+"stay distinct" rule written into `Spread_Tiberium`, and neither TD nor TS has Ore to copy, so
+Luke decides before it is built:
+
+- **Rate:** e.g. only full-density Tiberium, on the normal spread tick (a takeover of minutes).
+- **Gems:** eaten too, or safe as the prize resource.
+- **Density:** a converted cell starts as thin Tiberium, or keeps the Ore cell's value.
+
+The official maps themselves: `docs/official-map-hybrids.md` (Keep off the Grass done, the rest to
+survey and convert).
+
 ## ⭐ AI "REGRESSION" A/B MEASURED 2026-09-02 — resume here for the AI workstream
 
 Luke felt the dev-build AI at the 15 Aug LAN (ts-units 2c83f4dc: Phase 1 + W2.9 + cadence +
