@@ -207,6 +207,14 @@ bbox-centred paste **moves the sprite** even when every body pixel is in the sam
   panelling". The voxel render with real normals stays. Script kept for reference only (needs a
   scikit-image venv). Don't re-chase unless units are drawn larger than the game does.
 
+## 12. A new stub line does nothing until TFASSETS.MIX is rebuilt and committed (2026-09-13)
+
+Adding a stub line to `scripts/build_tfassets.sh` does nothing until the script is run and
+`CCDATA/TFASSETS.MIX` is committed. A new HD bullet with no classic stub draws at a fallback
+size, as a large blocky square: the Disc Thrower's TSDISCUS flew as a ~70x80 px block of its own
+colours until the rebuild. The rebuilt archive lists new entries by CRC, not name, so check the
+entry count against the committed copy (`mix_tools.py list`) rather than grepping for the name.
+
 ## House quality policy for TS-sourced assets (Luke, 2026-07-20)
 
 **Every unit, building, and weapon pulled from Tiberian Sun ships at the
