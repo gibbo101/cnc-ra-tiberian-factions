@@ -771,6 +771,7 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TSGrenade");      // WEAPON_TSGRENADE (TS Disc Thrower -- TS [Grenade] with Firestorm's ROF)
     new WeaponTypeClass("TSHeal");         // WEAPON_TSHEAL (TS Medic -- TS [Heal] verbatim)
     new WeaponTypeClass("TSLtRail");       // WEAPON_TSLTRAIL (TS Ghost Stalker -- TS [LtRail] on the IsRailgun line path)
+    new WeaponTypeClass("TSJumpCannon");   // WEAPON_TSJUMPCANNON (TS Jumpjet Infantry -- TS [JumpCannon])
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's

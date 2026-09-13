@@ -57,6 +57,26 @@ UNITS = {
     "TSGHOST": ("ghost", 292, "gosticon", "BuildIcon_TS_Ghost", "Ghost Stalker",
                 "Elite commando. His railgun pierces a line of troops, he plants C4 on "
                 "structures and heals in Tiberium. One at a time."),
+    "TSJUMPJET": ("jumpjet", 451, "jjeticon", "BuildIcon_TS_Jumpjet", "Jumpjet Infantry",
+                  "Airborne GDI infantry. Flies over terrain on jump jets and fires from the air."),
+}
+
+# ini -> first flight pose. A unit that flies draws its flight poses lifted off the ground, so
+# they ship without a shadow: TS's shadow frames for them are empty, and the DLL darkens the
+# pose itself on the ground beneath it, as TS does (InfantryClass::Draw_It).
+FLIGHT_POSES = {
+    "TSJUMPJET": 292,
+}
+
+# ini -> TS anims the unit brings with it: (SHP in $TS_ART_DIR/.raw, VFX tileset name), decoded
+# against ANIM.PAL; each needs its classic stub in build_tfassets.sh.
+EFFECTS = {
+    "TSJUMPJET": (("S_BANG34.SHP", "TSBANG34"),),  # [General] InfantryExplode: shot down in flight
+}
+
+# ini -> TS sounds the unit brings with it, each shipped as Data/AUDIO/TS<name>.WAV.
+SOUNDS = {
+    "TSJUMPJET": ("JUMPJET1", "EXPNEW10"),  # [JumpCannon] Report, [S_BANG34] Report
 }
 
 # ini -> (TS projectile SHP in $TS_ART_DIR/.raw, VFX tileset name). The projectile ships as
@@ -189,9 +209,13 @@ def text_rows(ini, display, desc):
 
 def pack(ini):
     stem, poses, cameo_stem, icon, display, desc = UNITS[ini]
-    frames = [place(with_shadow(frame(stem, i), frame(stem, i + poses))) for i in range(poses)]
+    first_flight = FLIGHT_POSES.get(ini, poses)
+    frames = []
+    for i in range(poses):
+        pose, shadow = frame(stem, i), frame(stem, i + poses)
+        frames.append(place(with_shadow(pose, shadow) if i < first_flight else pose))
     write_zip(f"{UNITS_DIR}/{ini}.ZIP", ini.lower(), frames)
-    patch_tileset(ini, poses)
+    patch_tileset(ini, len(frames))
     cameo(cameo_stem, icon)
     sidebar(ini, icon)
     text_rows(ini, display, desc)
@@ -200,6 +224,19 @@ def pack(ini):
         shp, name = PROJECTILES[ini]
         pal = ts_shp.load_pal(f"{ART}/.raw/UNITTEM.PAL")
         ts_pack_towerfx.pack(shp, name, pal, order=lambda k, n: k % n, count=32)
+    if ini in EFFECTS:
+        import ts_pack_towerfx, ts_shp
+        pal = ts_shp.load_pal(f"{ART}/.raw/ANIM.PAL")
+        for shp, name in EFFECTS[ini]:
+            ts_pack_towerfx.pack(shp, name, pal)
+    for aud in SOUNDS.get(ini, ()):
+        import subprocess
+        pcm = f"{ART}/.raw/{aud}.pcm.wav"
+        subprocess.run([sys.executable, f"{HERE}/ts_aud_decode.py", f"{ART}/.raw/{aud}.AUD", pcm],
+                       check=True, stdout=subprocess.DEVNULL)
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", pcm, "-c:a", "adpcm_ms",
+                        "-ar", "22050", "-ac", "1", f"{MOD}/Data/AUDIO/TS{aud}.WAV"], check=True)
+        print(f"wrote TS{aud}.WAV")
 
 
 if __name__ == "__main__":

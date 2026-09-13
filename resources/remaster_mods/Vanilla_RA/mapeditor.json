@@ -2006,6 +2006,15 @@
       "flags": [
         "Armed"
       ]
+    },
+    {
+      "id": 38,
+      "name": "tsjumpjet",
+      "display_name": "Jumpjet Infantry",
+      "owner": "GoodGuy",
+      "flags": [
+        "Armed"
+      ]
     }
   ],
   "templates": [

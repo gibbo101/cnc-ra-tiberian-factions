@@ -6758,6 +6758,22 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> TSJUMPJET1.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSEXPNEW10" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW10.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSEXPNEW10" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW10.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
   <SFXEvent Name="RAC_SFX_TSCHAINGN1" Preset="_PRESET_MD_MOBIUS_2D">
     <IsPreset> False </IsPreset>
     <MinPitch>100</MinPitch>

@@ -2928,6 +2928,32 @@ void DisplayClass::Select_These(COORDINATE coord1, COORDINATE coord2, bool addit
     }
 
     /*
+    **	Select any airborne jumpjets within the bounding box. Those in the top layer are off the
+    **	ground list; they are measured where they are drawn, lifted by their height.
+    */
+    for (int inf_index = 0; inf_index < Infantry.Count(); inf_index++) {
+        InfantryClass* inf = Infantry.Ptr(inf_index);
+        if (!inf->IsActive || inf->IsInLimbo || !inf->Is_Airborne_Jumpjet() || inf->In_Which_Layer() == LAYER_GROUND) {
+            continue;
+        }
+        COORDINATE ocoord = inf->Center_Coord();
+        int x = Coord_X(ocoord);
+        int y = Coord_Y(ocoord) - inf->Height;
+        if (inf->Class->IsSelectable && !inf->Is_Cloaked(PlayerPtr) && !inf->Is_Selected_By_Player() && x >= x1
+            && x <= x2 && y >= y1 && y <= y2) {
+            bool old_allow_voice = AllowVoice;
+            bool is_player_controlled = inf->House->IsPlayerControl;
+            AllowVoice &= is_player_controlled;
+            if (inf->Select(true)) {
+                if (is_player_controlled) {
+                    old_allow_voice = false;
+                }
+            }
+            AllowVoice = old_allow_voice;
+        }
+    }
+
+    /*
     ** If a mix of player and non-player controlled units were selected, make sure non-player controlled units are
     *de-selected
     */

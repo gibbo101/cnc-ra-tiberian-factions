@@ -504,6 +504,19 @@ bool BulletClass::Mark(MarkType mark)
 }
 
 /*
+**	The jumpjet a bullet is aimed at, if it is flying in the top map layer. Like an aircraft
+**	aloft it is off the cell lists, so a blast cannot find it; it takes its damage directly.
+*/
+static InfantryClass* TF_Airborne_Jumpjet(TARGET target)
+{
+    InfantryClass* inf = As_Infantry(target);
+    if (inf != NULL && inf->Is_Airborne_Jumpjet() && inf->In_Which_Layer() != LAYER_GROUND) {
+        return (inf);
+    }
+    return (NULL);
+}
+
+/*
 **	The Disc Thrower's disc skips like TS's [Lobbed] (Bouncy, Elasticity .75, OpenTS
 **	bullet.cpp). On touching down it goes off if an enemy stands in the cell, on its third
 **	touchdown, or when too little rise is left to leave the ground; otherwise it springs
@@ -1876,7 +1889,7 @@ void BulletClass::AI_TD(void)
         **	BULLET_TOW gets 1/3 boost; other AA bullets get 1/2. Our TDSSM is
         **	the TD-port equivalent of TD's TOW.
         */
-        if (Class->IsAntiAircraft && As_Aircraft(TarCom) && Distance(TarCom) < 0x0080) {
+        if (Class->IsAntiAircraft && (As_Aircraft(TarCom) || TF_Airborne_Jumpjet(TarCom)) && Distance(TarCom) < 0x0080) {
             forced = true;
             if (*this == BULLET_SSM) {  // TD: BULLET_TOW
                 Strength += Strength / 3;
@@ -1926,16 +1939,20 @@ void BulletClass::AI_TD(void)
                 fflush(TF_TDPortLog);
             }
 #endif
-            if (!Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->In_Which_Layer() == LAYER_GROUND) {
+            if ((!Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->In_Which_Layer() == LAYER_GROUND)
+                && TF_Airborne_Jumpjet(TarCom) == NULL) {
                 Explosion_Damage(Coord, Strength, Payback, Class->ClassWarhead);
             } else {
 
                 /*
                 **	Special damage apply for SAM missiles. This is the only way that
-                **	missile damage affects the aircraft target.
+                **	missile damage affects an aircraft or airborne jumpjet target.
                 */
                 if (Distance(TarCom) < 0x0080) {
-                    AircraftClass* object = As_Aircraft(TarCom);
+                    TechnoClass* object = As_Aircraft(TarCom);
+                    if (object == NULL) {
+                        object = TF_Airborne_Jumpjet(TarCom);
+                    }
 
                     int str = Strength;
                     if (object)
@@ -2116,7 +2133,7 @@ bool BulletClass::Is_Forced_To_Explode(COORDINATE& coord) const
     /*
     **	Bullets are generally more effective when they are fired at aircraft.
     */
-    if (Class->IsAntiAircraft && As_Aircraft(TarCom) && Distance(TarCom) < 0x0080) {
+    if (Class->IsAntiAircraft && (As_Aircraft(TarCom) || TF_Airborne_Jumpjet(TarCom)) && Distance(TarCom) < 0x0080) {
         return (true);
     }
 
@@ -2190,7 +2207,8 @@ void BulletClass::Bullet_Explodes(bool forced)
     /*
     **	Non-aircraft targets apply damage to the ground.
     */
-    if (!Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->In_Which_Layer() == LAYER_GROUND) {
+    if ((!Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->In_Which_Layer() == LAYER_GROUND)
+        && TF_Airborne_Jumpjet(TarCom) == NULL) {
         Explosion_Damage(Coord, Strength, Payback, Warhead);
         if (!IsActive)
             return;
@@ -2199,10 +2217,13 @@ void BulletClass::Bullet_Explodes(bool forced)
 
         /*
         **	Special damage apply for SAM missiles. This is the only way that missile
-        **	damage affects the aircraft target.
+        **	damage affects an aircraft or airborne jumpjet target.
         */
         if (Distance(TarCom) < 0x0080) {
-            AircraftClass* object = As_Aircraft(TarCom);
+            TechnoClass* object = As_Aircraft(TarCom);
+            if (object == NULL) {
+                object = TF_Airborne_Jumpjet(TarCom);
+            }
 
             int str = Strength;
             if (object)
@@ -2224,7 +2245,8 @@ void BulletClass::Bullet_Explodes(bool forced)
     */
     CellClass const* cellptr = &Map[Coord];
     LandType land = cellptr->Land_Type();
-    if (Is_Target_Aircraft(TarCom) && As_Aircraft(TarCom)->In_Which_Layer() == LAYER_TOP) {
+    if ((Is_Target_Aircraft(TarCom) && As_Aircraft(TarCom)->In_Which_Layer() == LAYER_TOP)
+        || TF_Airborne_Jumpjet(TarCom) != NULL) {
         land = LAND_NONE;
     }
 

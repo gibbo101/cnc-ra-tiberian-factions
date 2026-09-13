@@ -1437,6 +1437,7 @@ typedef enum BulletType : char
     BULLET_TSLOBBED2,       // TS [Lobbed2]: the RPG tower's arcing canister (TSCANIST, 15-frame tumble).
     BULLET_TSAAHEATSEEKER,  // TS [AAHeatSeeker]: the SAM tower's and Mk. I's missile, drawn with RA's MISSILE on RA's homing path, trailing TS's SMOKEY2.
     BULLET_TSLOBBED,        // TS [Lobbed]: the Disc Thrower's disc, a bouncing Floater arc drawn with TS's DISCUS (TSDISCUS, 7-frame spin).
+    BULLET_TSINVISIBLE3,    // TS [Invisible3]: instant and unseen, hits air and ground alike (the Jumpjet Infantry's cannon).
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -1851,6 +1852,7 @@ typedef enum InfantryType : char
     INFANTRY_TSENGINEER, // TS Engineer (ENGINEER) — unarmed; captures an enemy building outright and restores a friendly one to full strength.
     INFANTRY_TSMEDIC,    // TS Medic (MEDIC) — heals friendly infantry with TSHeal. TS-SHP art on MedicSequence (307 poses).
     INFANTRY_TSGHOST,    // TS Ghost Stalker (GHOST) — hero commando: TSLtRail light railgun, C4 on buildings, immune to and healed by Tiberium, one per house.
+    INFANTRY_TSJUMPJET,  // TS Jumpjet Infantry (JUMPJET) — flies on TS's jumpjet locomotor (InfantryClass::Jumpjet_AI), fires TSJumpCannon.
 
     INFANTRY_COUNT,
     INFANTRY_FIRST = 0
@@ -3079,6 +3081,7 @@ typedef enum AnimType : short
     ANIM_TS_EXPLOSML,
     ANIM_TS_SMOKEY2,    // TS SMOKEY2 puff: the SAM missile's trail (art.ini [DRAGON] Trailer=SMOKEY2).
     ANIM_TS_RAILFXS,    // TS light railgun particle: small grey spark spawned in a tight helix along the Ghost Stalker's beam ([SmallRailgunPart]).
+    ANIM_TS_SBANG34,    // TS S_BANG34: the InfantryExplode burst a jumpjet makes when it is shot down.
 
     ANIM_COUNT,
     ANIM_FIRST = 0
@@ -3557,6 +3560,7 @@ typedef enum WeaponType : char
     WEAPON_TSGRENADE,      // TS Disc Thrower disc: TS [Grenade] (Dmg40/ROF80/Range4.5, BULLET_TSLOBBED arc, TSHE warhead). Registered "TSGrenade".
     WEAPON_TSHEAL,         // TS Medic heal: TS [Heal] (Dmg-50/ROF80/Range2.83, Organic warhead, HEALER1 report). Registered "TSHeal".
     WEAPON_TSLTRAIL,       // TS Ghost Stalker light railgun: TS [LtRail] (AmbientDamage150 along the line/ROF60/Range6, orange beam, TSRailShot2 warhead, BIGGGUN1 report). Registered "TSLtRail".
+    WEAPON_TSJUMPCANNON,   // TS Jumpjet Infantry cannon: TS [JumpCannon] (Dmg15/Burst2/ROF40/Range5, TSSA warhead, JUMPJET1 report). Registered "TSJumpCannon".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -4270,6 +4274,7 @@ typedef enum VocType : short
     VOC_TS_14I012,
     VOC_TS_14I014,
     VOC_TS_14I016,
+    VOC_TS_EXPNEW10,     // TS small explosion (EXPNEW10, art.ini [S_BANG34] Report=): a jumpjet shot down. RAC/RAR_SFX_TSEXPNEW10 -> bundled TSEXPNEW10.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0

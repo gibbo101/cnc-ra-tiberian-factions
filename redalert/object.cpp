@@ -1218,7 +1218,9 @@ bool ObjectClass::Select(bool allow_mixed)
     /*
     **	Don't allow selection if the object is still in the air.
     */
-    if (Height > 0 && (What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_VESSEL || What_Am_I() == RTTI_INFANTRY)) {
+    if (Height > 0
+        && (What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_VESSEL
+            || (What_Am_I() == RTTI_INFANTRY && !((InfantryClass*)this)->Is_Jumpjet()))) {
         return (false);
     }
 

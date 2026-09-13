@@ -189,6 +189,9 @@ InfantryClass::InfantryClass(InfantryType classid, HousesType house)
     , Fear(FEAR_NONE)
     , StopDriverFrame(-1)
     , LookCell(0)
+    , JumpjetState(JJ_GROUNDED)
+    , JumpjetSpeed(0)
+    , JumpjetLanding(0)
 {
     House->Tracking_Add(this);
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
@@ -366,6 +369,16 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
         Assign_Mission(MISSION_GUARD);
         Commence();
 
+        /*
+        **	A jumpjet shot down in the air just bursts (TS [General] InfantryExplode=S_BANG34),
+        **	drawn where it was flying: screen-up is map-north, so north by its height.
+        */
+        if (Is_Airborne_Jumpjet()) {
+            new AnimClass(ANIM_TS_SBANG34, Coord_Move(Coord, DIR_N, Height));
+            delete this;
+            return (res);
+        }
+
         VocType sound;
         VocType altsound;
         sound = Sim_Random_Pick(VOC_SCREAM1, VOC_SCREAM11);
@@ -486,6 +499,19 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
 int InfantryClass::Shape_Number(WindowNumberType window) const
 {
     /*
+    **	An airborne jumpjet draws TS's flight poses (JumpjetSequence), six frames per facing:
+    **	FireFly (388) while shooting, Fly (292) at speed, Hover (340) otherwise.
+    */
+    if (Is_Airborne_Jumpjet()) {
+        int facing = HumanShape[Dir_To_32(PrimaryFacing.Current())] * 6;
+        if (IsFiring) {
+            return (388 + facing + Fetch_Stage() % 6);
+        }
+        int pose = (JumpjetState == JJ_CRUISING && JumpjetSpeed * 5 > JUMPJET_MAX_SPEED * 4) ? 292 : 340;
+        return (pose + facing + (Frame / 2) % 6);
+    }
+
+    /*
     **	Fetch the shape pointer to use for the infantry. This is controlled by what
     **	choreograph sequence the infantry is performing, it's facing, and whether it
     **	is prone.
@@ -582,6 +608,31 @@ void InfantryClass::Draw_It(int x, int y, WindowNumberType window) const
 
     y += 4;
     x -= 2;
+
+    /*
+    **	An airborne jumpjet's body is lifted by its height (Techno_Draw_Object does the lift).
+    **	Its shadow is the same frame darkened on the ground beneath it, as TS draws an airborne
+    **	infantry's (SHAPE_DARKEN); the helicopter shadow flags make the renderer draw it as a
+    **	shadow, under the body. The selection box and health bar follow the body up.
+    */
+    if (Is_Airborne_Jumpjet()) {
+        int lift = Lepton_To_Pixel(Height);
+        int body = Shape_Number(window);
+        if (Visual_Character() <= VISUAL_DARKEN) {
+            CC_Draw_Shape(this,
+                          shapefile,
+                          body,
+                          x + 1,
+                          y + 2,
+                          window,
+                          SHAPE_PREDATOR | SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_FADING,
+                          DisplayClass::FadingShade,
+                          NULL);
+        }
+        Techno_Draw_Object(shapefile, body, x, y, window);
+        FootClass::Draw_It(x, y - lift, window);
+        return;
+    }
 
     /*
     **	Actually draw the root body of the unit.
@@ -2189,6 +2240,13 @@ void InfantryClass::Scatter(COORDINATE threat, bool forced, bool nokidding)
     assert(IsActive);
 
     /*
+    **	An airborne jumpjet has no ground path to scatter along.
+    */
+    if (Is_Airborne_Jumpjet()) {
+        return;
+    }
+
+    /*
     **	A unit that is in the process of going somewhere will never scatter.
     */
     if (IsDriving)
@@ -2511,7 +2569,18 @@ bool InfantryClass::Limbo(void)
     if (!IsInLimbo) {
         Stop_Driver();
 
-        Clear_Occupy_Bit(Coord);
+        /*
+        **	An airborne jumpjet holds no sub-cell spot of its own, only the one it reserved to
+        **	land on.
+        */
+        if (Is_Airborne_Jumpjet()) {
+            if (JumpjetLanding != 0) {
+                Clear_Occupy_Bit(JumpjetLanding);
+                JumpjetLanding = 0;
+            }
+        } else {
+            Clear_Occupy_Bit(Coord);
+        }
     }
     return (FootClass::Limbo());
 }
@@ -4297,6 +4366,229 @@ void InfantryClass::Doing_AI(void)
     }
 }
 
+/*
+**	Should this jumpjet fly to the target rather than walk (TS InfantryClass::Should_JumpJet_Fly)?
+**	One already in the air stays in the air. On the ground it walks a short trip it can make on
+**	foot and flies anything else: a destination it cannot walk to, or one twelve or more cells
+**	away. TS also flies a walk of more than fifteen steps; the straight distance stands in for
+**	that path length.
+*/
+bool InfantryClass::Jumpjet_Should_Fly(TARGET target) const
+{
+    if (Is_Airborne_Jumpjet()) {
+        return (true);
+    }
+    CELL from = Coord_Cell(Coord);
+    CELL to = As_Cell(target);
+    if (from == to) {
+        return (false);
+    }
+    if (Map[from].Zones[Class->MZone] != Map[to].Zones[Class->MZone]) {
+        return (true);
+    }
+    int dist = max(abs((int)Cell_X(to) - (int)Cell_X(from)), abs((int)Cell_Y(to) - (int)Cell_Y(from)));
+    return (dist >= 12);
+}
+
+/*
+**	Sets the jumpjet's height and slides it a distance along a heading. MARK_UP before and
+**	MARK_DOWN after keep its cell registration right (FootClass::Mark only touches the cell
+**	lists in the ground layer); its map-layer registration moves with it when the height
+**	crosses between the ground and top layers; and it looks about whenever it enters a new
+**	cell, as walking infantry do.
+*/
+void InfantryClass::Jumpjet_Move(int height, int distance, DirType heading)
+{
+    CELL oldcell = Coord_Cell(Coord);
+    Mark(MARK_UP);
+    LayerType layer = In_Which_Layer();
+    Height = height;
+    if (In_Which_Layer() != layer) {
+        Map.Remove(this, layer);
+        Map.Submit(this, In_Which_Layer());
+    }
+    if (distance > 0) {
+        COORDINATE next = Coord_Move(Coord, heading, distance);
+        if (Map.In_Radar(Coord_Cell(next))) {
+            Coord = next;
+        }
+    }
+    Mark(MARK_DOWN);
+    if (Coord_Cell(Coord) != oldcell) {
+        Look(true);
+    }
+}
+
+/*
+**	TS's jumpjet locomotor (OpenTS jumpjet.cpp), run in place of infantry movement while the
+**	jumpjet is in the air or about to take off. Returns whether it handled movement this tick.
+**
+**	Grounded: a move it would rather fly than walk lifts it off, giving up its sub-cell spot.
+**	Ascending: it climbs to cruise height, setting off once a quarter of the way up.
+**	Hovering: it holds station while it has a target, sets off when given somewhere else to be,
+**	and otherwise comes down. Cruising: it flies at its destination, easing to half speed inside
+**	two cells and to three tenths inside one; on arrival it hovers if it has a target and comes
+**	down if not. Descending: it reserves a free spot beneath it, drifts over it and settles,
+**	becoming ordinary infantry again; a destination a cell or more away sends it back up. While
+**	hovering or cruising it bobs about its cruise height. Speed builds by a quarter lepton a
+**	tick and falls off half as fast again; the body turns toward the heading unless it is firing.
+*/
+bool InfantryClass::Jumpjet_AI(void)
+{
+    if (JumpjetState == JJ_GROUNDED) {
+        if (IsDriving || IsFiring || IsInLimbo || !Target_Legal(NavCom) || !Jumpjet_Should_Fly(NavCom)) {
+            return (false);
+        }
+        Clear_Occupy_Bit(Coord);
+        Path[0] = FACING_NONE;
+        JumpjetSpeed = 0;
+        JumpjetState = JJ_ASCENDING;
+        Do_Action(DO_STAND_READY, true);
+    }
+
+    IsDriving = false;
+    bool has_dest = Target_Legal(NavCom);
+    bool has_target = Target_Legal(TarCom);
+    COORDINATE dest = has_dest ? As_Coord(NavCom) : Coord;
+    DirType heading = PrimaryFacing.Current();
+    int height = Height;
+    int want = 0;
+
+    switch (JumpjetState) {
+    case JJ_ASCENDING:
+        height = min(height + (int)JUMPJET_CLIMB, (int)JUMPJET_CRUISE);
+        if (height > JUMPJET_CRUISE / 4 && has_dest && ::Distance(Coord, dest) >= 20) {
+            heading = ::Direction(Coord, dest);
+            want = JUMPJET_MAX_SPEED;
+        }
+        if (height >= JUMPJET_CRUISE) {
+            JumpjetState = JJ_HOVERING;
+        }
+        break;
+
+    case JJ_HOVERING:
+        if (has_dest && ::Distance(Coord, dest) >= 20) {
+            JumpjetState = JJ_CRUISING;
+        } else if (!has_target) {
+            JumpjetState = JJ_DESCENDING;
+        }
+        break;
+
+    case JJ_CRUISING: {
+        if (!has_dest) {
+            JumpjetState = has_target ? JJ_HOVERING : JJ_DESCENDING;
+            break;
+        }
+        int dist = ::Distance(Coord, dest);
+        heading = ::Direction(Coord, dest);
+        if (dist < 20) {
+            JumpjetSpeed = 0;
+            JumpjetState = has_target ? JJ_HOVERING : JJ_DESCENDING;
+        } else if (dist < CELL_LEPTON_W) {
+            want = JUMPJET_MAX_SPEED * 3 / 10;
+        } else if (dist < CELL_LEPTON_W * 2) {
+            want = JUMPJET_MAX_SPEED / 2;
+        } else {
+            want = JUMPJET_MAX_SPEED;
+        }
+        break;
+    }
+
+    case JJ_DESCENDING: {
+        if (has_dest && ::Distance(Coord, dest) >= CELL_LEPTON_W) {
+            if (JumpjetLanding != 0) {
+                Clear_Occupy_Bit(JumpjetLanding);
+                JumpjetLanding = 0;
+            }
+            JumpjetState = JJ_ASCENDING;
+            break;
+        }
+
+        /*
+        **	Reserve the spot to come down on: the closest free one in this cell, or in the
+        **	nearest cell a soldier can stand in when this one is taken or impassable.
+        */
+        if (JumpjetLanding == 0) {
+            CELL cell = Coord_Cell(Coord);
+            COORDINATE spot = (Can_Enter_Cell(cell) == MOVE_OK) ? Map[cell].Closest_Free_Spot(Coord) : 0;
+            if (spot == 0) {
+                CELL nearcell = Map.Nearby_Location(cell, SPEED_FOOT, -1, Class->MZone);
+                if (nearcell != 0) {
+                    spot = Map[nearcell].Closest_Free_Spot(Cell_Coord(nearcell));
+                }
+            }
+            if (spot == 0) {
+                break;
+            }
+            JumpjetLanding = spot;
+            Set_Occupy_Bit(spot);
+        }
+
+        int dist = ::Distance(Coord, JumpjetLanding);
+        if (dist > 8) {
+            heading = ::Direction(Coord, JumpjetLanding);
+            want = min((int)(JUMPJET_MAX_SPEED * 3 / 10), dist * 4);
+        }
+        height = max(height - (int)JUMPJET_CLIMB, 0);
+
+        /*
+        **	Touch down on the reserved spot and rejoin the ground as ordinary infantry.
+        */
+        if (height == 0 && dist <= 8) {
+            JumpjetSpeed = 0;
+            Mark(MARK_UP);
+            LayerType layer = In_Which_Layer();
+            Height = 0;
+            Coord = JumpjetLanding;
+            if (In_Which_Layer() != layer) {
+                Map.Remove(this, layer);
+                Map.Submit(this, In_Which_Layer());
+            }
+            Mark(MARK_DOWN);
+            JumpjetLanding = 0;
+            JumpjetState = JJ_GROUNDED;
+            if (has_dest) {
+                Assign_Destination(TARGET_NONE);
+            }
+            Per_Cell_Process(PCP_END);
+            Look();
+            return (true);
+        }
+        break;
+    }
+
+    default:
+        break;
+    }
+
+    /*
+    **	The hover bob: a slow rise and fall about the cruise height.
+    */
+    if (JumpjetState == JJ_HOVERING || JumpjetState == JJ_CRUISING) {
+        int phase = (Frame + ID) % JUMPJET_WOBBLE_TICKS;
+        int half = JUMPJET_WOBBLE_TICKS / 2;
+        int wave = (phase < half) ? phase : (JUMPJET_WOBBLE_TICKS - phase);
+        int bob = JUMPJET_CRUISE - JUMPJET_WOBBLE + (wave * 2 * JUMPJET_WOBBLE) / half;
+        height = (height < bob) ? min(height + (int)JUMPJET_CLIMB, bob) : max(height - (int)JUMPJET_CLIMB, bob);
+    }
+
+    if (want > JumpjetSpeed) {
+        JumpjetSpeed = min((int)JumpjetSpeed + 1, want);
+    } else if (want < JumpjetSpeed) {
+        JumpjetSpeed = max((int)JumpjetSpeed - 2, want);
+    }
+
+    if (!IsFiring) {
+        PrimaryFacing.Set_Desired(heading);
+        if (PrimaryFacing.Is_Rotating()) {
+            PrimaryFacing.Rotation_Adjust(JUMPJET_TURN);
+        }
+    }
+
+    Jumpjet_Move(height, JumpjetSpeed / 4, heading);
+    return (true);
+}
+
 /***********************************************************************************************
  * InfantryClass::Movement_AI -- This routine handles all infantry movement logic.             *
  *                                                                                             *
@@ -4325,6 +4617,14 @@ void InfantryClass::Movement_AI(void)
     */
     if (Mission == MISSION_MOVE && !Target_Legal(NavCom)) {
         Enter_Idle_Mode();
+    }
+
+    /*
+    **	A jumpjet's flight takes over its movement while it is in the air, or once it has been
+    **	sent somewhere it would rather fly than walk.
+    */
+    if (Is_Jumpjet() && Jumpjet_AI()) {
+        return;
     }
 
     if (!IsFiring && !IsFalling && Doing != DO_DOG_MAUL) {

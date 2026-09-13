@@ -6819,6 +6819,13 @@
 			<BuildIcon>BuildIcon_TS_Ghost</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSJUMPJET" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSJUMPJET</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSJUMPJET_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Jumpjet</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END hand-written TS-tree base cameo entries -->
 
 	<ObjectTypeClass Name="RA_TSTURB" Classification="CNCBuildableObject" CanInstantiate="False">
@@ -6965,6 +6972,7 @@
 			<BuildIcon>BuildIcon_TS_Seek</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+
 
 
 
@@ -11106,6 +11114,22 @@
 			<ObjectNameTextID>TEXT_UNIT_TSGHOST</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TSGHOST_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TSGHOST_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSJUMPJET_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSJUMPJET</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSJUMPJET_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Jumpjet</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSJUMPJET_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSJUMPJET</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSJUMPJET_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSJUMPJET_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

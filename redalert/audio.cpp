@@ -348,6 +348,7 @@ struct SoundEffectNameStruct
     {"TS14I012", 20, IN_NOVAR},   // VOC_TS_14I012
     {"TS14I014", 20, IN_NOVAR},   // VOC_TS_14I014
     {"TS14I016", 20, IN_NOVAR},   // VOC_TS_14I016
+    {"TSEXPNEW10", 1, IN_NOVAR},  // VOC_TS_EXPNEW10 -- TS small explosion, a jumpjet shot down (RAC/RAR_SFX_TSEXPNEW10 -> bundled TSEXPNEW10.WAV, own name)
 };
 
 //

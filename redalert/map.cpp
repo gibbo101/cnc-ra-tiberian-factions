@@ -1773,6 +1773,22 @@ ObjectClass* MapClass::Close_Object(COORDINATE coord) const
     }
 
     /*
+    ** Airborne jumpjets in the top layer are off the cell lists too; measure them where they
+    ** are drawn, lifted by their height.
+    */
+    for (int index = 0; index < Infantry.Count(); index++) {
+        InfantryClass* inf = Infantry.Ptr(index);
+        if (inf->IsActive && !inf->IsInLimbo && inf->Is_Airborne_Jumpjet() && inf->In_Which_Layer() != LAYER_GROUND
+            && !inf->Is_Cloaked(PlayerPtr)) {
+            int d = Distance(coord, Coord_Add(inf->Center_Coord(), XY_Coord(0, -inf->Height)));
+            if (d >= 0 && (!object || d < distance)) {
+                distance = d;
+                object = inf;
+            }
+        }
+    }
+
+    /*
     **	Only return the object if it is within 1/4 cell distance from the specified
     **	coordinate.
     */

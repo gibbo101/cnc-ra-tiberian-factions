@@ -207,6 +207,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TSLobbed2");     //	BULLET_TSLOBBED2 (TS RPG tower canister — accurate high arc, TSCANIST tumble)
     new BulletTypeClass("TSAAHeatSeeker"); //	BULLET_TSAAHEATSEEKER (TS SAM tower and Mk. I missile — RA's MISSILE art on RA's homing path)
     new BulletTypeClass("TSLobbed");      //	BULLET_TSLOBBED (TS Disc Thrower disc — accurate arc, TSDISCUS spin)
+    new BulletTypeClass("TSInvisible3");  //	BULLET_TSINVISIBLE3 (TS [Invisible3] — instant, unseen, air and ground)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per

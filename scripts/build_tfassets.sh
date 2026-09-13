@@ -425,6 +425,12 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/railfx_stub.shp" 24 24 12
 PACK_ARGS+=("$TMPDIR/railfx_stub.shp:RAILFX.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsrailfxs_stub.shp" 24 24 12
 PACK_ARGS+=("$TMPDIR/tsrailfxs_stub.shp:TSRAILFXS.SHP")
+# TS Jumpjet Infantry: its own stub at E1's 50x39 carrying all 451 poses, since classic drawing
+# drops any frame past the shape's count and E1 has 438. TSBANG34 is its shot-down burst.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsjumpjet_stub.shp" 50 39 451
+PACK_ARGS+=("$TMPDIR/tsjumpjet_stub.shp:TSJUMPJET.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsbang34_stub.shp" 17 17 13
+PACK_ARGS+=("$TMPDIR/tsbang34_stub.shp:TSBANG34.SHP")
 # TS GUNFIRE muzzle flash (ANIM_TS_GUNFIRE) -- 3 frames, HD-only stub.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsgunfire_stub.shp" 24 24 3
 PACK_ARGS+=("$TMPDIR/tsgunfire_stub.shp:TSGUNFIRE.SHP")

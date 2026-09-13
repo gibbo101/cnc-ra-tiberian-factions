@@ -744,6 +744,54 @@ static InfantryTypeClass const TsGhost(INFANTRY_TSGHOST, // Infantry type number
                                        0                 // pointer to override remap table
 );
 
+/*
+**	TS Jumpjet Infantry (INFANTRY_TSJUMPJET), TS art.ini [JUMPJET] JumpjetSequence. The ground
+**	poses follow E1Sequence's layout with no prone set (Prone, Down and Up are the stand, Crawl
+**	the walk). Shape_Number draws the flight poses (Fly 292, Hover 340, FireFly 388) while it is
+**	airborne.
+*/
+static DoInfoStruct TsJumpjetDoControls[DO_COUNT] = {
+    {0, 1, 1},     // DO_STAND_READY      Ready
+    {0, 1, 1},     // DO_STAND_GUARD      Guard
+    {0, 1, 1},     // DO_PRONE            Prone
+    {8, 6, 6},     // DO_WALK             Walk
+    {164, 6, 6},   // DO_FIRE_WEAPON      FireUp
+    {0, 1, 1},     // DO_LIE_DOWN         Down
+    {8, 6, 6},     // DO_CRAWL            Crawl
+    {0, 1, 1},     // DO_GET_UP           Up
+    {164, 6, 6},   // DO_FIRE_PRONE       FireProne
+    {56, 15, 0},   // DO_IDLE1            Idle1
+    {71, 15, 0},   // DO_IDLE2            Idle2
+    {134, 15, 0},  // DO_GUN_DEATH        Die1
+    {149, 15, 0},  // DO_EXPLOSION_DEATH  Die2
+    {149, 15, 0},  // DO_EXPLOSION2_DEATH Die2
+    {149, 15, 0},  // DO_GRENADE_DEATH    Die2
+    {134, 15, 0},  // DO_FIRE_DEATH       Die1
+    {0, 1, 1},     // DO_GESTURE1
+    {0, 1, 1},     // DO_SALUTE1
+    {0, 1, 1},     // DO_GESTURE2
+    {0, 1, 1},     // DO_SALUTE2
+    {0, 0, 0},     // DO_DOG_MAUL
+};
+static InfantryTypeClass const TsJumpjet(INFANTRY_TSJUMPJET, // Infantry type number.
+                                         TXT_E1,             // Translate name number (display set via rules.ini Name=).
+                                         "TSJUMPJET",        // INI name for infantry.
+                                         0x0035,             // Vertical offset.
+                                         0x0010,             // Primary weapon offset along centerline.
+                                         false,              // Is this a female type?
+                                         false,              // Has crawling animation frames? (no prone set)
+                                         false,              // Is this a civilian?
+                                         false,              // Does this unit use the override remap table?
+                                         false,              // Always use the given name for the infantry?
+                                         false,              // Theater specific graphic image?
+                                         PIP_FULL,           // Transport pip shape/color to use.
+                                         TsJumpjetDoControls,
+                                         TsJumpjetDoControls,
+                                         2,                  // Frame of projectile launch (TS FireUp=2).
+                                         2,                  // Frame of projectile launch while prone.
+                                         0                   // pointer to override remap table
+);
+
 // Grenadiers
 static InfantryTypeClass const E2(INFANTRY_E2, // Infantry type number.
                                   TXT_E2,      // Translate name number for infantry type.
@@ -1670,6 +1718,7 @@ void InfantryTypeClass::Init_Heap(void)
     new InfantryTypeClass(TsEngineer);
     new InfantryTypeClass(TsMedic);
     new InfantryTypeClass(TsGhost);
+    new InfantryTypeClass(TsJumpjet);
 }
 
 /***********************************************************************************************
@@ -1956,6 +2005,19 @@ void InfantryTypeClass::One_Time(void)
     }
     if (tsghost.CameoData == NULL) {
         ((void const*&)tsghost.CameoData) = As_Reference(INFANTRY_E1).CameoData;
+    }
+
+    /*
+    **	TS Jumpjet -- its own TSJUMPJET.SHP stub (TFASSETS.MIX) carries all 610 frames the flight
+    **	poses and ground shadows need; E1's 438 would cut them off. E1 stands in only if the stub
+    **	is missing.
+    */
+    InfantryTypeClass& tsjumpjet = As_Reference(INFANTRY_TSJUMPJET);
+    if (tsjumpjet.ImageData == NULL) {
+        ((void const*&)tsjumpjet.ImageData) = As_Reference(INFANTRY_E1).ImageData;
+    }
+    if (tsjumpjet.CameoData == NULL) {
+        ((void const*&)tsjumpjet.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 
     InfantryTypeClass& tde2 = As_Reference(INFANTRY_TDE2);  // TD Grenadier — donor E2 (RA's grenadier).

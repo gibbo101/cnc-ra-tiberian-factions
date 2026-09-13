@@ -35,6 +35,36 @@
 #ifndef INFANTRY_H
 #define INFANTRY_H
 
+/*
+**	Flight state of a jumpjet infantry (TS JumpjetLocomotionClass): on the ground, climbing to
+**	cruise height, holding a hover, flying to its destination, or coming down to land.
+*/
+enum JumpjetStateType : unsigned char
+{
+    JJ_GROUNDED,
+    JJ_ASCENDING,
+    JJ_HOVERING,
+    JJ_CRUISING,
+    JJ_DESCENDING
+};
+
+/*
+**	Jumpjet flight tuning, from OpenTS's Rules defaults (JumpjetSpeed 30, JumpjetClimb 5,
+**	JumpjetAcceleration .25, JumpjetWobblesPerSecond .25, JumpjetWobbleDeviation 40), with the
+**	cruise height and bob set against RA's FLIGHT_LEVEL: at 200 leptons a hovering jumpjet sits
+**	in the top map layer (the boundary is 170) and below the helicopters (256).
+*/
+enum JumpjetTuningType
+{
+    JUMPJET_CRUISE = 200,        // cruise height, leptons
+    JUMPJET_WOBBLE = 16,         // hover bob either side of the cruise height, leptons
+    JUMPJET_WOBBLE_TICKS = 60,   // one bob cycle, ticks
+    JUMPJET_CLIMB = 5,           // climb and descent, leptons per tick
+    JUMPJET_MAX_SPEED = 120,     // top ground speed, quarter leptons per tick (30 leptons)
+    JUMPJET_TURN = 8,            // turn rate, facing steps per tick
+    JUMPJET_FLIGHT_POSE = 292,   // first flight pose (Fly) in the TS frame set
+};
+
 class InfantryClass : public FootClass
 {
 public:
@@ -105,6 +135,14 @@ public:
     ** Track the last cell we looked from.
     */
     CELL LookCell;
+
+    /*
+    **	Jumpjet flight (INFANTRY_TSJUMPJET only): the flight state, the ground speed in quarter
+    **	leptons per tick, and the ground spot reserved to land on (0 when none).
+    */
+    JumpjetStateType JumpjetState;
+    short JumpjetSpeed;
+    COORDINATE JumpjetLanding;
 
     /*---------------------------------------------------------------------
     **	Constructors, Destructors, and overloaded operators.
@@ -212,6 +250,21 @@ public:
     void Firing_AI(void);
     void Doing_AI(void);
     void Movement_AI(void);
+
+    /*
+    **	TS jumpjet flight (INFANTRY_TSJUMPJET).
+    */
+    bool Is_Jumpjet(void) const
+    {
+        return (Class->Type == INFANTRY_TSJUMPJET);
+    };
+    bool Is_Airborne_Jumpjet(void) const
+    {
+        return (Class->Type == INFANTRY_TSJUMPJET && JumpjetState != JJ_GROUNDED);
+    };
+    bool Jumpjet_Should_Fly(TARGET target) const;
+    bool Jumpjet_AI(void);
+    void Jumpjet_Move(int height, int distance, DirType heading);
 
 /*
 **	Scenario and debug support.

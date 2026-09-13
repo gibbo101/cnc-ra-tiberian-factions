@@ -2428,6 +2428,23 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                         }
                     }
                 }
+
+                /*
+                **	Airborne jumpjets are air targets too, and like aircraft aloft they are not
+                **	recorded at the cell level (TS scans them with the aircraft).
+                */
+                for (int index = 0; index < Infantry.Count(); index++) {
+                    InfantryClass* object = Infantry.Ptr(index);
+
+                    int value = 0;
+                    if (object->Is_Airborne_Jumpjet() && object->In_Which_Layer() != LAYER_GROUND
+                        && Evaluate_Object(method, mask | (1 << RTTI_INFANTRY), range, object, value)) {
+                        if (value > bestval) {
+                            bestobject = object;
+                            bestval = value;
+                        }
+                    }
+                }
             }
 
             /*
@@ -2910,7 +2927,13 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         CargoClass::AI();
         RadioClass::AI();
 
-        if (!IsActive || (Height > 0 && What_Am_I() != RTTI_AIRCRAFT))
+        /*
+        **	Objects in the air skip the rest -- except aircraft, and jumpjet infantry, which fight,
+        **	animate and heal in flight.
+        */
+        if (!IsActive
+            || (Height > 0 && What_Am_I() != RTTI_AIRCRAFT
+                && !(What_Am_I() == RTTI_INFANTRY && ((InfantryClass*)this)->Is_Jumpjet())))
             return;
 
         DoorClass::AI();
@@ -3287,6 +3310,15 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         if (object != NULL && object->What_Am_I() == RTTI_AIRCRAFT && !weapon->Bullet->IsAntiAircraft
             && ((AircraftClass*)object)->Height > 0) {
 
+            return (FIRE_CANT);
+        }
+
+        /*
+        **	A jumpjet in the air is an air target: only a weapon that can hit aircraft reaches it
+        **	(TS TechnoClass::Can_Fire refuses a non-AA weapon any target In_Air).
+        */
+        if (object != NULL && object->What_Am_I() == RTTI_INFANTRY
+            && ((InfantryClass*)object)->Is_Airborne_Jumpjet() && !weapon->Bullet->IsAntiAircraft) {
             return (FIRE_CANT);
         }
 
