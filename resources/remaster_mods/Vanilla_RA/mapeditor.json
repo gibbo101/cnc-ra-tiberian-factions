@@ -1990,6 +1990,13 @@
       "display_name": "Engineer",
       "owner": "GoodGuy",
       "flags": []
+    },
+    {
+      "id": 36,
+      "name": "tsmedic",
+      "display_name": "Medic",
+      "owner": "GoodGuy",
+      "flags": []
     }
   ],
   "templates": [

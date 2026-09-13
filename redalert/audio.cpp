@@ -319,6 +319,7 @@ struct SoundEffectNameStruct
     {"TSEXPNEW14", 1, IN_NOVAR},  // VOC_TS_EXPNEW14 -- TS grenade impact (RAC/RAR_SFX_TSEXPNEW14 -> bundled TSEXPNEW14.WAV, own name)
     {"TS120MMX9", 1, IN_NOVAR},   // VOC_TS_120MMX9 -- TS Mammoth Tank cannon (RAC/RAR_SFX_TS120MMX9 -> bundled TS120MMX9.WAV, own name)
     {"TSINFGUN3", 1, IN_NOVAR},   // VOC_TS_INFGUN3 -- TS Light Infantry minigun (RAC/RAR_SFX_TSINFGUN3 -> bundled TSINFGUN3.WAV, own name)
+    {"TSHEALER1", 1, IN_NOVAR},   // VOC_TS_HEALER1 -- TS Medic heal (RAC/RAR_SFX_TSHEALER1 -> bundled TSHEALER1.WAV, own name)
 };
 
 //

@@ -3204,7 +3204,8 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
     if (Combat_Damage() < 0 && House->IsPlayerControl) {
         if (House->Is_Ally(object)) {
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
-            if ((object->What_Am_I() == RTTI_INFANTRY && object != this && *this == INFANTRY_MEDIC)
+            if ((object->What_Am_I() == RTTI_INFANTRY && object != this
+                 && (*this == INFANTRY_MEDIC || *this == INFANTRY_TSMEDIC))
                 || (*this == INFANTRY_MECHANIC
                     && (object->What_Am_I() == RTTI_UNIT || object->What_Am_I() == RTTI_AIRCRAFT))) {
 
@@ -4035,7 +4036,7 @@ void InfantryClass::Firing_AI(void)
                     ObjectClass* targ = As_Object(TarCom);
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
                     if (targ) {
-                        if ((targ->What_Am_I() == RTTI_INFANTRY && *this == INFANTRY_MEDIC)
+                        if ((targ->What_Am_I() == RTTI_INFANTRY && (*this == INFANTRY_MEDIC || *this == INFANTRY_TSMEDIC))
                             || (*this == INFANTRY_MECHANIC
                                 && (targ->What_Am_I() == RTTI_AIRCRAFT || targ->What_Am_I() == RTTI_UNIT))) {
 

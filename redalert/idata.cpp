@@ -676,6 +676,52 @@ static InfantryTypeClass const TsEngineer(INFANTRY_TSENGINEER, // Infantry type 
                                           0                    // pointer to override remap table
 );
 
+/*
+**	TS Medic (INFANTRY_TSMEDIC), TS art.ini [MedicSequence]: E1Sequence's layout plus a
+**	15-frame heal at 292 drawn for every facing, used standing and prone alike.
+*/
+static DoInfoStruct TsMedicDoControls[DO_COUNT] = {
+    {0, 1, 1},     // DO_STAND_READY      Ready
+    {0, 1, 1},     // DO_STAND_GUARD      Guard
+    {86, 1, 6},    // DO_PRONE            Prone
+    {8, 6, 6},     // DO_WALK             Walk
+    {292, 15, 0},  // DO_FIRE_WEAPON      FireUp
+    {260, 2, 2},   // DO_LIE_DOWN         Down
+    {86, 6, 6},    // DO_CRAWL            Crawl
+    {276, 2, 2},   // DO_GET_UP           Up
+    {292, 15, 0},  // DO_FIRE_PRONE       FireProne
+    {56, 15, 0},   // DO_IDLE1            Idle1
+    {71, 14, 0},   // DO_IDLE2            Idle2
+    {134, 15, 0},  // DO_GUN_DEATH        Die1
+    {149, 15, 0},  // DO_EXPLOSION_DEATH  Die2
+    {149, 15, 0},  // DO_EXPLOSION2_DEATH Die2
+    {149, 15, 0},  // DO_GRENADE_DEATH    Die2
+    {134, 15, 0},  // DO_FIRE_DEATH       Die1
+    {0, 1, 1},     // DO_GESTURE1
+    {0, 1, 1},     // DO_SALUTE1
+    {0, 1, 1},     // DO_GESTURE2
+    {0, 1, 1},     // DO_SALUTE2
+    {0, 0, 0},     // DO_DOG_MAUL
+};
+static InfantryTypeClass const TsMedic(INFANTRY_TSMEDIC, // Infantry type number.
+                                       TXT_MEDIC,        // Translate name number (display set via rules.ini Name=).
+                                       "TSMEDIC",        // INI name for infantry.
+                                       0x0035,           // Vertical offset.
+                                       0x0010,           // Primary weapon offset along centerline.
+                                       false,            // Is this a female type?
+                                       true,             // Has crawling animation frames? (TS Crawls=yes)
+                                       false,            // Is this a civilian?
+                                       false,            // Does this unit use the override remap table?
+                                       false,            // Always use the given name for the infantry?
+                                       false,            // Theater specific graphic image?
+                                       PIP_ENGINEER,     // Transport pip shape/color to use (as RA's medic).
+                                       TsMedicDoControls,
+                                       TsMedicDoControls,
+                                       2,                // Frame of projectile launch (TS FireUp=2).
+                                       2,                // Frame of projectile launch while prone.
+                                       0                 // pointer to override remap table
+);
+
 // Grenadiers
 static InfantryTypeClass const E2(INFANTRY_E2, // Infantry type number.
                                   TXT_E2,      // Translate name number for infantry type.
@@ -1600,6 +1646,7 @@ void InfantryTypeClass::Init_Heap(void)
     new InfantryTypeClass(TsE1);
     new InfantryTypeClass(TsE2);
     new InfantryTypeClass(TsEngineer);
+    new InfantryTypeClass(TsMedic);
 }
 
 /***********************************************************************************************
@@ -1870,6 +1917,14 @@ void InfantryTypeClass::One_Time(void)
     }
     if (tseng.CameoData == NULL) {
         ((void const*&)tseng.CameoData) = As_Reference(INFANTRY_E1).CameoData;
+    }
+
+    InfantryTypeClass& tsmedic = As_Reference(INFANTRY_TSMEDIC);  // TS Medic -- donor E1 (packed on the E1 canvas like TSE1).
+    if (tsmedic.ImageData == NULL) {
+        ((void const*&)tsmedic.ImageData) = As_Reference(INFANTRY_E1).ImageData;
+    }
+    if (tsmedic.CameoData == NULL) {
+        ((void const*&)tsmedic.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 
     InfantryTypeClass& tde2 = As_Reference(INFANTRY_TDE2);  // TD Grenadier — donor E2 (RA's grenadier).

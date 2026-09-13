@@ -1849,6 +1849,7 @@ typedef enum InfantryType : char
     INFANTRY_TSE1,   // TS Light Infantry (E1) — the TS GDI rifleman, fires TSMinigun. TS-SHP art on the E1Sequence layout (ts_pack_infantry.py).
     INFANTRY_TSE2,   // TS Disc Thrower (E2) — lobs TSGrenade discs. TS-SHP art on the E1Sequence layout (ts_pack_infantry.py).
     INFANTRY_TSENGINEER, // TS Engineer (ENGINEER) — unarmed; captures an enemy building outright and restores a friendly one to full strength.
+    INFANTRY_TSMEDIC,    // TS Medic (MEDIC) — heals friendly infantry with TSHeal. TS-SHP art on MedicSequence (307 poses).
 
     INFANTRY_COUNT,
     INFANTRY_FIRST = 0
@@ -3551,6 +3552,7 @@ typedef enum WeaponType : char
     WEAPON_TS4TNKTUSK,     // The old TS Mammoth's own tusks: TS [MammothTusk] verbatim (Dmg40/ROF80/Range6/Speed20/Burst2, AA-only TSAAHeatSeeker, TSHE warhead).
     WEAPON_TSMINIGUN,      // TS Light Infantry minigun: TS [Minigun] (Dmg8/ROF21/Range4, instant Invisible projectile, TSSA warhead). Registered "TSMinigun".
     WEAPON_TSGRENADE,      // TS Disc Thrower disc: TS [Grenade] (Dmg40/ROF80/Range4.5, BULLET_TSLOBBED arc, TSHE warhead). Registered "TSGrenade".
+    WEAPON_TSHEAL,         // TS Medic heal: TS [Heal] (Dmg-50/ROF80/Range2.83, Organic warhead, HEALER1 report). Registered "TSHeal".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -4234,6 +4236,7 @@ typedef enum VocType : short
     VOC_TS_EXPNEW14,     // TS impact report on S_CLSN16-58 (art.ini Report=EXPNEW14) -- as above.
     VOC_TS_120MMX9,      // TS Mammoth Tank cannon report (120MMX9, [120mmx] Report=). RAC/RAR_SFX_TS120MMX9 -> bundled TS120MMX9.WAV, own name.
     VOC_TS_INFGUN3,      // TS Light Infantry minigun report (INFGUN3, [Minigun] Report=). RAC/RAR_SFX_TSINFGUN3 -> bundled TSINFGUN3.WAV, own name.
+    VOC_TS_HEALER1,      // TS Medic heal report (HEALER1, [Heal] Report=). RAC/RAR_SFX_TSHEALER1 -> bundled TSHEALER1.WAV, own name.
 
     VOC_COUNT,
     VOC_FIRST = 0

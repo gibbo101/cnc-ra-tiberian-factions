@@ -52,6 +52,8 @@ UNITS = {
              "GDI infantry that lobs explosive discs over walls and cover."),
     "TSENGINEER": ("engineer", 292, "engnicon", "BuildIcon_TS_Engineer", "Engineer",
                    "Captures enemy structures outright and restores friendly ones to full strength."),
+    "TSMEDIC": ("medic", 307, "mediicon", "BuildIcon_TS_Medic", "Medic",
+                "Heals nearby friendly infantry."),
 }
 
 # ini -> (TS projectile SHP in $TS_ART_DIR/.raw, VFX tileset name). The projectile ships as
