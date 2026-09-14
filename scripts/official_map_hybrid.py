@@ -44,13 +44,32 @@ OVERLAY_TIB01 = codec.OVERLAY_TIB01
 MINE_REACH = 2  # an ore cell this close to a mine (Chebyshev) seeds that mine's field
 
 TIB_PREVIEW_HUE = np.array([77.3, 92.4, 41.8])  # Tiberium speckle in EA's TD lobby thumbnails
-PREVIEW_REACH_PX = 11  # ore sprites overhang their cell; the repaint mask grows by this window
+# The Tiberium colour is brightened to the map's Ore speckle, but no further than this, so it
+# stays a clear green against pale snow.
+TIB_PREVIEW_MAX_LIFT = 1.6
+PREVIEW_REACH_CELLS = 0.5  # ore sprites overhang their cell; the repaint mask grows this far
 
-# map file -> ore-mine cells whose field turns to Tiberium, the mine itself to a blossom tree.
+# map file -> the fields that turn to Tiberium. A plain list names ore-mine cells: each mine's
+# field turns to Tiberium and the mine becomes a blossom tree. A dict may also list "fields":
+# any cell inside an Ore/Gem field, which turns to Tiberium with no blossom.
 HYBRIDS = {
-    # Keep off the Grass: the mirrored East and South-West flank fields. The home patches, the
-    # centre gems and the lone mine at (82,61) stay Ore.
+    # Keep off the Grass (2p, Tiberium-leaning): the mirrored East and South-West flank fields.
+    # The home patches, the centre gems and the lone mine at (82,61) stay Ore.
     "scm05ea.ini": [5714, 9901],
+    # Middle Mayhem (2p, ~45/55): the ringed central island and its five mines. Every field
+    # outside the ring stays Ore.
+    "scm02ea.ini": [6852, 7350, 7888, 8373, 8769],
+    # North By Northwest (8p, Tiberium-heavy ~63/37): the centre and its four mines, the four
+    # diagonal fields, and the three compass gem patches (the fourth is part of the centre field).
+    # The corner and edge fields stay Ore, so every start keeps Ore within reach.
+    "scm09ea.ini": {"mines": [7232, 8121, 8135, 9024],
+                    "fields": [4436, 4523, 10022, 10196, 5053, 7344, 9914]},
+    # First Come, First Serve (4p, Ore-heavy ~10/90): only the contested centre field.
+    "scm10ea.ini": [8256],
+    # Docklands (8p, split by the river): every field west of the river is Tiberium, gems
+    # included, and every field east of it stays Ore. West has more cells, East more gems.
+    "scm111ea.ini": {"mines": [4505, 4529, 6041, 10936, 11284, 11289],
+                     "fields": [5801, 6401, 7603]},
 }
 
 
@@ -161,18 +180,31 @@ def _starts(by_name):
     return [int(wps[str(i)]) for i in range(8) if str(i) in wps]
 
 
-def make_hybrid(src, mines):
-    """(hybrid map bytes, set of cells turned to Tiberium)."""
+def _spec(entry):
+    """(mines, fields) from a HYBRIDS entry: a list of mine cells, or a dict with either key."""
+    if isinstance(entry, dict):
+        return list(entry.get("mines", [])), list(entry.get("fields", []))
+    return list(entry), []
+
+
+def make_hybrid(src, entry):
+    """(hybrid map bytes, set of cells turned to Tiberium) for one HYBRIDS entry."""
+    mines, fields = _spec(entry)
     sections = _split_sections(src.decode("latin-1"))
     by_name = {_name(h): body for h, body in sections if h}
     overlay = _overlay(by_name)
     missing = set(mines) - set(_mines(by_name))
     if missing:
         raise SystemExit(f"no ore mine at cell(s) {sorted(missing)}")
+    bare = [c for c in fields if overlay[c] not in ORE]
+    if bare:
+        raise SystemExit(f"field cell(s) {bare} hold no Ore or Gems")
 
     converted = set()
     for mine in mines:
         converted |= _field_cells(overlay, mine)
+    for cell in fields:
+        converted |= _grow(overlay, [cell])
     for c in converted:
         overlay[c] = OVERLAY_TIB01
     for mine in mines:
@@ -230,22 +262,29 @@ def repaint_preview(stock_dds, bounds, cells):
     img = Image.open(io.BytesIO(stock_dds)).convert("RGB")
     a = np.asarray(img).astype(float)
     x0, y0, w, h = bounds
-    sx, sy = img.width / w, img.height / h
+    # The map is scaled by its longer side and centred; a non-square map is letterboxed.
+    scale = min(img.width / w, img.height / h)
+    ox, oy = (img.width - w * scale) / 2, (img.height - h * scale) / 2
     mask = np.zeros(a.shape[:2], np.uint8)
     for c in cells:
         x, y = c % 128 - x0, c // 128 - y0
-        mask[int(y * sy):int((y + 1) * sy), int(x * sx):int((x + 1) * sx)] = 255
-    mask = np.asarray(Image.fromarray(mask).filter(ImageFilter.MaxFilter(PREVIEW_REACH_PX))) > 0
+        mask[int(oy + y * scale):int(oy + (y + 1) * scale),
+             int(ox + x * scale):int(ox + (x + 1) * scale)] = 255
+    reach = 2 * max(1, round(scale * PREVIEW_REACH_CELLS)) + 1
+    mask = np.asarray(Image.fromarray(mask).filter(ImageFilter.MaxFilter(reach))) > 0
 
-    grass = np.median(a[~mask].reshape(-1, 3), 0)
     r, g, b = a[..., 0], a[..., 1], a[..., 2]
-    speckle = mask & (r >= g * 0.85) & (r - b > 40) & (r > 90)
+    # Ore speckle is tan: red well above blue, and not greener than it is red. Grass, snow,
+    # water and grey rock all fail this, so only the speckle itself is recoloured.
+    tan = np.clip((r - b - 15) / 25, 0, 1) * (r >= g * 0.8)
+    speckle = mask & (tan >= 1) & (r > 90)
     if not speckle.any():
         raise SystemExit("no Ore speckle found under the converted fields")
     ore = a[speckle].mean(0)
-    tib = TIB_PREVIEW_HUE * (ore.mean() / TIB_PREVIEW_HUE.mean())
-    towards_ore = ore - grass
-    weight = np.clip(((a - grass) @ towards_ore) / (towards_ore @ towards_ore), 0, 1.3) * mask
+    ground = np.median(a[mask & (tan == 0)].reshape(-1, 3), 0)
+    tib = TIB_PREVIEW_HUE * min(ore.mean() / TIB_PREVIEW_HUE.mean(), TIB_PREVIEW_MAX_LIFT)
+    towards_ore = ore - ground
+    weight = np.clip(((a - ground) @ towards_ore) / (towards_ore @ towards_ore), 0, 1.3) * tan * mask
     return Image.fromarray(np.clip(a + weight[..., None] * (tib - ore), 0, 255).astype(np.uint8))
 
 
@@ -304,11 +343,13 @@ def main():
         key, bounds = preview_key(args.game, src)
         stock = read_meg_member(os.path.join(args.game, TEXTURES_MEG), key + ".DDS")
         dds_path = os.path.join(args.mod, "Data/ART/TEXTURES/SRGB", key + ".DDS")
+        dds = preview_dds(stock, repaint_preview(stock, bounds, cells))
         os.makedirs(os.path.dirname(dds_path), exist_ok=True)
         with open(dds_path, "wb") as f:
-            f.write(preview_dds(stock, repaint_preview(stock, bounds, cells)))
-        print(f"{name}: {len(cells)} Ore cells -> Tiberium, {len(HYBRIDS[name])} mines -> "
-              f"blossom trees\n  map     {map_path}\n  preview {dds_path}")
+            f.write(dds)
+        mines, fields = _spec(HYBRIDS[name])
+        print(f"{name}: {len(cells)} Ore cells -> Tiberium, {len(mines)} mines -> blossom trees, "
+              f"{len(fields)} fields without a mine\n  map     {map_path}\n  preview {dds_path}")
 
 
 if __name__ == "__main__":
