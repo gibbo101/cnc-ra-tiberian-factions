@@ -18,7 +18,9 @@ Usage: official_map_hybrid.py [--game <CnCRemastered dir>] [--mod <mod dir>] [ma
        official_map_hybrid.py --survey <map> ...
 """
 import argparse
+import functools
 import io
+import json
 import os
 import re
 import struct
@@ -76,6 +78,18 @@ HYBRIDS = {
     "scm111ea.ini": {"mines": [4505, 4529, 6041, 10936, 11284, 11289],
                      "fields": [5801, 6401], "take_gems": True},
 }
+
+
+PLAN_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "official_map_hybrids.json")
+
+
+def entries():
+    """Every map to build: the planner's picks, overridden by the hand-picked HYBRIDS."""
+    plan = {}
+    if os.path.exists(PLAN_PATH):
+        with open(PLAN_PATH) as f:
+            plan = json.load(f)
+    return {**plan, **HYBRIDS}
 
 
 def _mix_index(f, base):
@@ -248,27 +262,37 @@ def make_hybrid(src, entry):
     return result, converted
 
 
+@functools.lru_cache(maxsize=None)
+def _preview_entries(game_dir):
+    """[(key, bounds, waypoints)] for every RA map preview entry in CONFIG.MEG."""
+    with open(os.path.join(game_dir, CONFIG_MEG), "rb") as f:
+        config = f.read()
+    return [(e[0].decode(), tuple(int(v) for v in e[1:5]),
+             [int(v) for v in re.findall(rb"<Entry>(\d+)</Entry>", e[5])])
+            for e in re.findall(
+                rb'<INIData Name="(MOBIUS_RED_ALERT_[A-Z0-9_]+)">\s*<MapTileX>(\d+)</MapTileX>'
+                rb'\s*<MapTileY>(\d+)</MapTileY>\s*<MapTileWidth>(\d+)</MapTileWidth>'
+                rb'\s*<MapTileHeight>(\d+)</MapTileHeight>.*?<Waypoints>(.*?)</Waypoints>',
+                config, re.S)]
+
+
 def preview_key(game_dir, src):
     """(texture key, (x, y, w, h)) of the map's lobby preview, matched on bounds and starts."""
     by_name = _sections(src)
     m = dict(l.split("=", 1) for l in by_name["map"] if "=" in l)
     bounds = tuple(int(m[k]) for k in ("X", "Y", "Width", "Height"))
-    starts = _starts(by_name)
-    with open(os.path.join(game_dir, CONFIG_MEG), "rb") as f:
-        config = f.read()
-    keys = [e[0].decode() for e in re.findall(
-        rb'<INIData Name="([A-Z0-9_]+)">\s*<MapTileX>(\d+)</MapTileX>\s*<MapTileY>(\d+)</MapTileY>'
-        rb'\s*<MapTileWidth>(\d+)</MapTileWidth>\s*<MapTileHeight>(\d+)</MapTileHeight>'
-        rb'.*?<Waypoints>(.*?)</Waypoints>', config, re.S)
-        if tuple(int(v) for v in e[1:5]) == bounds
-        and [int(v) for v in re.findall(rb"<Entry>(\d+)</Entry>", e[5])][:len(starts)] == starts]
+    # The preview entry lists each start once, in the order the map file first names it.
+    starts = list(dict.fromkeys(_starts(by_name)))
+    keys = [key for key, b, waypoints in _preview_entries(game_dir)
+            if b == bounds and waypoints[:len(starts)] == starts]
     if len(keys) != 1:
         raise SystemExit(f"expected one preview entry for bounds {bounds} starts {starts}, got {keys}")
     return keys[0], bounds
 
 
 def repaint_preview(stock_dds, bounds, cells):
-    """The stock thumbnail with the Ore speckle over `cells` recoloured as Tiberium."""
+    """The stock thumbnail with the Ore speckle over `cells` recoloured as Tiberium, or None
+    when the thumbnail shows no speckle there."""
     img = Image.open(io.BytesIO(stock_dds)).convert("RGB")
     a = np.asarray(img).astype(float)
     x0, y0, w, h = bounds
@@ -284,12 +308,14 @@ def repaint_preview(stock_dds, bounds, cells):
     mask = np.asarray(Image.fromarray(mask).filter(ImageFilter.MaxFilter(reach))) > 0
 
     r, g, b = a[..., 0], a[..., 1], a[..., 2]
-    # Ore speckle is tan: red well above blue, and not greener than it is red. Grass, snow,
-    # water and grey rock all fail this, so only the speckle itself is recoloured.
-    tan = np.clip((r - b - 15) / 25, 0, 1) * (r >= g * 0.8)
-    speckle = mask & (tan >= 1) & (r > 90)
+    # Ore speckle is tan: redder against blue than the ground under the field, and not greener
+    # than it is red. Grass, snow, water and grey rock all fail this, so only the speckle itself
+    # is recoloured, however pale it is on a given theatre.
+    ground = np.median(a[mask].reshape(-1, 3), 0)
+    tan = np.clip((r - b - (ground[0] - ground[2]) - 8) / 16, 0, 1) * (r >= g * 0.8)
+    speckle = mask & (tan >= 1)
     if not speckle.any():
-        raise SystemExit("no Ore speckle found under the converted fields")
+        return None
     ore = a[speckle].mean(0)
     ground = np.median(a[mask & (tan == 0)].reshape(-1, 3), 0)
     tib = TIB_PREVIEW_HUE * min(ore.mean() / TIB_PREVIEW_HUE.mean(), TIB_PREVIEW_MAX_LIFT)
@@ -343,23 +369,35 @@ def main():
             print(f"== {name}")
             survey(read_official_map(args.game, name))
         return
-    for name in args.maps or sorted(HYBRIDS):
-        src = read_official_map(args.game, name)
-        data, cells = make_hybrid(src, HYBRIDS[name])
+    todo = entries()
+    failed = []
+    for name in args.maps or sorted(todo):
+        try:
+            src = read_official_map(args.game, name)
+            data, cells = make_hybrid(src, todo[name])
+            key, bounds = preview_key(args.game, src)
+            stock = read_meg_member(os.path.join(args.game, TEXTURES_MEG), key + ".DDS")
+            repainted = repaint_preview(stock, bounds, cells)
+            dds = preview_dds(stock, repainted) if repainted is not None else None
+        except SystemExit as e:
+            failed.append(name)
+            print(f"{name}: FAILED: {e}")
+            continue
         map_path = os.path.join(args.mod, "CCDATA", name)
         with open(map_path, "wb") as f:
             f.write(data)
-
-        key, bounds = preview_key(args.game, src)
-        stock = read_meg_member(os.path.join(args.game, TEXTURES_MEG), key + ".DDS")
         dds_path = os.path.join(args.mod, "Data/ART/TEXTURES/SRGB", key + ".DDS")
-        dds = preview_dds(stock, repaint_preview(stock, bounds, cells))
-        os.makedirs(os.path.dirname(dds_path), exist_ok=True)
-        with open(dds_path, "wb") as f:
-            f.write(dds)
-        mines, fields, _ = _spec(HYBRIDS[name])
+        if dds is None:
+            dds_path = "none: the stock thumbnail shows no Ore speckle there, so it stays stock"
+        else:
+            os.makedirs(os.path.dirname(dds_path), exist_ok=True)
+            with open(dds_path, "wb") as f:
+                f.write(dds)
+        mines, fields, _ = _spec(todo[name])
         print(f"{name}: {len(cells)} Ore cells -> Tiberium, {len(mines)} mines -> blossom trees, "
               f"{len(fields)} fields without a mine\n  map     {map_path}\n  preview {dds_path}")
+    if failed:
+        raise SystemExit(f"{len(failed)} map(s) failed: {', '.join(failed)}")
 
 
 if __name__ == "__main__":
