@@ -182,4 +182,4 @@ Mix is counted in resource cells at map start (Tiberium / Ore / Gems).
 | `scm02ea.ini` Middle Mayhem (Sm, 2p) | snow | ~45%: 250 / 289 / 22 | the ringed central island, its 5 mines | every field outside the ring | proven in play on the desktop 2026-09-14 (first snow map) |
 | `scm09ea.ini` North By Northwest (Lg, 8p) | snow | Tiberium-heavy 63%: 774 / 463 / 0 | centre (4 mines), 4 diagonal fields, 3 compass gem patches | the 4 corner and 4 edge fields | built 2026-09-14 |
 | `scm10ea.ini` First Come, First Serve (84x84, 4p) | temperate | Ore-heavy 10%: 68 / 594 / 0 | the centre field, its mine | both big flank fields and every small field | built 2026-09-14 |
-| `scm111ea.ini` Docklands (8p) | snow | split by the river, 58%: 390 / 144 / 143 | everything west of the river, gems included (6 mines, 3 mineless fields) | everything east of the river | built 2026-09-14 |
+| `scm111ea.ini` Docklands (8p) | snow | split by the river, 58%: 390 / 144 / 143 | everything west of the river, gems included (6 mines, 3 mineless fields) | everything east of the river | proven in play on the desktop 2026-09-14 |
