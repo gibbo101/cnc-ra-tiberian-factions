@@ -2,8 +2,9 @@
 """Build Tiberium/Ore hybrid versions of the official RA skirmish maps.
 
 Each official map is read straight from the game's MAIN.MIX -> general.mix. Every ore mine
-named in HYBRIDS becomes a TD blossom tree (Neutral STRUCT_TDBLOSSOM), and the ore field it
-feeds (the connected Ore/Gem cells within reach of the mine) becomes Tiberium (OVERLAY_TIB01).
+named in HYBRIDS becomes a TD blossom tree (Neutral STRUCT_TDBLOSSOM), and the Ore in the field
+it feeds (the connected Ore/Gem cells within reach of the mine) becomes Tiberium
+(OVERLAY_TIB01). Gems are never touched.
 Everything else in the file is carried over byte for byte, except [Digest], which is dropped so
 the engine skips digest validation on the edited file. The map is written to the mod's CCDATA
 folder under the official file name, where it shadows the stock map.
@@ -39,7 +40,8 @@ DEFAULT_MOD = os.path.join(REPO, "resources/remaster_mods/Vanilla_RA")
 DEFAULT_GAME = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered")
 
 OVERLAY_NONE = 0xFF
-ORE = range(5, 13)  # OVERLAY_GOLD1..OVERLAY_GEMS4 (redalert/defines.h)
+ORE = range(5, 13)  # OVERLAY_GOLD1..OVERLAY_GEMS4 (redalert/defines.h): what makes up a field
+GOLD = range(5, 9)  # OVERLAY_GOLD1..4: the only cells that turn to Tiberium; Gems never change
 OVERLAY_TIB01 = codec.OVERLAY_TIB01
 MINE_REACH = 2  # an ore cell this close to a mine (Chebyshev) seeds that mine's field
 
@@ -49,27 +51,30 @@ TIB_PREVIEW_HUE = np.array([77.3, 92.4, 41.8])  # Tiberium speckle in EA's TD lo
 TIB_PREVIEW_MAX_LIFT = 1.6
 PREVIEW_REACH_CELLS = 0.5  # ore sprites overhang their cell; the repaint mask grows this far
 
-# map file -> the fields that turn to Tiberium. A plain list names ore-mine cells: each mine's
-# field turns to Tiberium and the mine becomes a blossom tree. A dict may also list "fields":
-# any cell inside an Ore/Gem field, which turns to Tiberium with no blossom.
+# map file -> the pure-Ore fields that turn to Tiberium. Gems never change, and a field with any
+# Gems in it stays Ore, so only fields of Ore alone may be listed. A plain list names ore-mine
+# cells: each mine's field turns to Tiberium and the mine becomes a blossom tree. A dict may also
+# list "fields" (any cell inside a field, which turns to Tiberium with no blossom) and set
+# "take_gems" to turn mixed Ore/Gem fields over whole, Gems included; a field of Gems alone
+# never turns.
 HYBRIDS = {
-    # Keep off the Grass (2p, Tiberium-leaning): the mirrored East and South-West flank fields.
-    # The home patches, the centre gems and the lone mine at (82,61) stay Ore.
+    # Keep off the Grass (2p): the mirrored East and South-West flank fields. The home patches,
+    # the centre gems and the lone mine at (82,61) stay as they are.
     "scm05ea.ini": [5714, 9901],
-    # Middle Mayhem (2p, ~45/55): the ringed central island and its five mines. Every field
-    # outside the ring stays Ore.
-    "scm02ea.ini": [6852, 7350, 7888, 8373, 8769],
-    # North By Northwest (8p, Tiberium-heavy ~63/37): the centre and its four mines, the four
-    # diagonal fields, and the three compass gem patches (the fourth is part of the centre field).
-    # The corner and edge fields stay Ore, so every start keeps Ore within reach.
-    "scm09ea.ini": {"mines": [7232, 8121, 8135, 9024],
-                    "fields": [4436, 4523, 10022, 10196, 5053, 7344, 9914]},
-    # First Come, First Serve (4p, Ore-heavy ~10/90): only the contested centre field.
+    # Middle Mayhem (2p): four of the island's five fields. The fifth, at mine 7888, holds Gems
+    # and stays Ore, as does every field outside the ring.
+    "scm02ea.ini": [6852, 7350, 8373, 8769],
+    # North By Northwest (8p): the four corner fields and their mines, and the four diagonal
+    # fields. The centre holds Gems and stays Ore, with the edge fields and the gem patches.
+    "scm09ea.ini": {"mines": [2323, 2412, 13715, 13804],
+                    "fields": [4436, 4523, 10022, 10196]},
+    # First Come, First Serve (4p, Ore-heavy): only the contested centre field.
     "scm10ea.ini": [8256],
-    # Docklands (8p, split by the river): every field west of the river is Tiberium, gems
-    # included, and every field east of it stays Ore. West has more cells, East more gems.
+    # Docklands (8p, split by the river): every field west of the river turns to Tiberium, mixed
+    # Ore/Gem fields included, and every field east of it stays as it is. The all-Gem box in the
+    # west keeps its Gems.
     "scm111ea.ini": {"mines": [4505, 4529, 6041, 10936, 11284, 11289],
-                     "fields": [5801, 6401, 7603]},
+                     "fields": [5801, 6401], "take_gems": True},
 }
 
 
@@ -181,15 +186,16 @@ def _starts(by_name):
 
 
 def _spec(entry):
-    """(mines, fields) from a HYBRIDS entry: a list of mine cells, or a dict with either key."""
+    """(mines, fields, take_gems) from a HYBRIDS entry: a list of mine cells, or a dict."""
     if isinstance(entry, dict):
-        return list(entry.get("mines", [])), list(entry.get("fields", []))
-    return list(entry), []
+        return (list(entry.get("mines", [])), list(entry.get("fields", [])),
+                bool(entry.get("take_gems", False)))
+    return list(entry), [], False
 
 
 def make_hybrid(src, entry):
     """(hybrid map bytes, set of cells turned to Tiberium) for one HYBRIDS entry."""
-    mines, fields = _spec(entry)
+    mines, fields, take_gems = _spec(entry)
     sections = _split_sections(src.decode("latin-1"))
     by_name = {_name(h): body for h, body in sections if h}
     overlay = _overlay(by_name)
@@ -201,10 +207,14 @@ def make_hybrid(src, entry):
         raise SystemExit(f"field cell(s) {bare} hold no Ore or Gems")
 
     converted = set()
-    for mine in mines:
-        converted |= _field_cells(overlay, mine)
-    for cell in fields:
-        converted |= _grow(overlay, [cell])
+    for seed, field in ([(m, _field_cells(overlay, m)) for m in mines]
+                        + [(c, _grow(overlay, [c])) for c in fields]):
+        gems = {c for c in field if overlay[c] not in GOLD}
+        if len(gems) == len(field):
+            raise SystemExit(f"the field at cell {seed} is all Gems, which never change")
+        if gems and not take_gems:
+            raise SystemExit(f"the field at cell {seed} has Gems in it, so it stays Ore")
+        converted |= field
     for c in converted:
         overlay[c] = OVERLAY_TIB01
     for mine in mines:
@@ -347,7 +357,7 @@ def main():
         os.makedirs(os.path.dirname(dds_path), exist_ok=True)
         with open(dds_path, "wb") as f:
             f.write(dds)
-        mines, fields = _spec(HYBRIDS[name])
+        mines, fields, _ = _spec(HYBRIDS[name])
         print(f"{name}: {len(cells)} Ore cells -> Tiberium, {len(mines)} mines -> blossom trees, "
               f"{len(fields)} fields without a mine\n  map     {map_path}\n  preview {dds_path}")
 

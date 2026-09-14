@@ -71,7 +71,13 @@ python3 scripts/official_map_hybrid.py scm05ea.ini            # rebuild one
 
 `HYBRIDS` maps an official file name to the fields that turn to Tiberium (cell = `y*128 + x`).
 A plain list names ore-mine cells. A dict can also name `"fields"`: any one cell inside an
-Ore/Gem field, which turns that whole field to Tiberium with no blossom.
+Ore field, which turns that whole field to Tiberium with no blossom.
+
+**Gem rules (Luke, 2026-09-14).** Gems never get touched, and a field with any Gems in it stays
+exactly as it is, so only pure-Ore fields turn to Tiberium. The builder refuses an entry that
+names a field holding Gems. The one exception is Docklands, whose entry sets
+`"take_gems": True` so its west bank turns over whole, mixed Ore/Gem fields included; even
+there, a field of Gems alone keeps its Gems (the all-gem box in the west).
 
 ```python
 "scm05ea.ini": [5714, 9901],                          # two mines, two blossoms
@@ -82,8 +88,8 @@ Ore/Gem field, which turns that whole field to Tiberium with no blossom.
 
 1. takes each mine's field (the Ore/Gem cells within 2 cells of the mine, grown out through every
    8-connected Ore/Gem neighbour) and each named field (grown out from its cell);
-2. sets those cells to `OVERLAY_TIB01` (25) in `[OverlayPack]`, gems included; the engine works
-   out density when the map loads;
+2. applies the gem rules above, then sets the field's cells to `OVERLAY_TIB01` (25) in
+   `[OverlayPack]`; the engine works out density when the map loads;
 3. drops each mine's `<cell>=MINE` line from `[TERRAIN]`;
 4. adds `Neutral,TDBLOSSOM,256,<cell>,0,None` to `[STRUCTURES]` for each mine, the same line
    `td_map_to_ra.py` writes for TD blossom trees. The blossom seeds Tiberium itself
@@ -121,8 +127,9 @@ Every other line is carried over byte for byte. The script reads the pristine ma
 2. **Choose the mix.** The Tiberium/Ore split varies from map to map on purpose: some maps near
    50/50, some Tiberium-heavy, some Ore-heavy (Luke, 2026-09-14). No map has to be even. What
    stays fair is each start's access: on a mirrored map, convert fields in mirrored pairs so
-   every start gets the same deal. Watch for a field the map joins onto another (North By
-   Northwest's East gem patch is part of the centre field): converting one converts both.
+   every start gets the same deal. Only pure-Ore fields are candidates (`gems 0` in the survey).
+   Fields the map joins together count as one: North By Northwest's centre has its East gem
+   patch attached, so the whole centre stays Ore.
    Record the mix in the table below, so the pool as a whole keeps a spread. A field with no
    mine goes in under `"fields"`; it gets no blossom, and a tree it later engulfs may bloom
    into one on its own.
@@ -150,8 +157,8 @@ Every other line is carried over byte for byte. The script reads the pristine ma
 - The blossom tree seeds TIB01 into empty neighbouring cells.
 - An ordinary tree with 6 or more TIB01 neighbours turns into a blossom tree
   (`redalert/terrain.cpp`).
-- Tiberium is worth the same per bail as Ore (`GoldValue`), so converting gems to Tiberium lowers
-  that field's value.
+- Tiberium is worth the same per bail as Ore (`GoldValue`), so a Tiberium field pays what the
+  Ore field it replaced paid. Gems pay more, which is one reason they never turn.
 
 ## Traps
 
@@ -167,8 +174,9 @@ Every other line is carried over byte for byte. The script reads the pristine ma
 - **`MAIN.MIX` is an extended, unencrypted MIX.** `mix_tools.read_mix` and `ra_mix_extract.py` do
   not parse it; the builder has its own reader.
 - **Maps can hide extra mines.** Keep off the Grass has three: the survey lists them all.
-- **Gem speckle in a converted field keeps its colour in the thumbnail.** The repaint only picks
-  up tan Ore speckle. In the map itself the gem cells do become Tiberium.
+- **Docklands' thumbnail keeps the gem speckle of its converted mixed fields.** The repaint only
+  picks up tan Ore speckle, while the map itself turns those Gem cells to Tiberium
+  (`take_gems`). Every other map converts pure-Ore fields only, so its thumbnail matches.
 - **`meg_extract.py` reads the whole MEG into memory.** Fine for `CONFIG.MEG`, slow for the
   2.4 GB `TEXTURES_SRGB.MEG`; the builder seeks instead.
 
@@ -179,7 +187,7 @@ Mix is counted in resource cells at map start (Tiberium / Ore / Gems).
 | Map | Theatre | Mix | Converted | Kept as Ore | Status |
 |---|---|---|---|---|---|
 | `scm05ea.ini` Keep off the Grass (Sm, 2p) | temperate | Tiberium-leaning 55%: 181 / 68 / 78 | mines 5714 (East field), 9901 (South-West field) | both home patches, centre gems, mine 7890 | map and thumbnail proven on the Deck 2026-09-14 |
-| `scm02ea.ini` Middle Mayhem (Sm, 2p) | snow | ~45%: 250 / 289 / 22 | the ringed central island, its 5 mines | every field outside the ring | proven in play on the desktop 2026-09-14 (first snow map) |
-| `scm09ea.ini` North By Northwest (Lg, 8p) | snow | Tiberium-heavy 63%: 774 / 463 / 0 | centre (4 mines), 4 diagonal fields, 3 compass gem patches | the 4 corner and 4 edge fields | built 2026-09-14 |
+| `scm02ea.ini` Middle Mayhem (Sm, 2p) | snow | 33%: 183 / 329 / 49 | four of the island's five fields and their mines | the island field at mine 7888 (it holds gems) and everything outside the ring | played on the desktop 2026-09-14 (first snow map), rebuilt under the gem rules since |
+| `scm09ea.ini` North By Northwest (Lg, 8p) | snow | 54%: 666 / 403 / 168 | the 4 corner fields and their mines, the 4 diagonal fields | the centre (it holds gems), the edge fields and the gem patches | built 2026-09-14 |
 | `scm10ea.ini` First Come, First Serve (84x84, 4p) | temperate | Ore-heavy 10%: 68 / 594 / 0 | the centre field, its mine | both big flank fields and every small field | built 2026-09-14 |
-| `scm111ea.ini` Docklands (8p) | snow | split by the river, 58%: 390 / 144 / 143 | everything west of the river, gems included (6 mines, 3 mineless fields) | everything east of the river | proven in play on the desktop 2026-09-14 |
+| `scm111ea.ini` Docklands (8p) | snow | split by the river, 53%: 360 / 144 / 173 | everything west of the river, mixed Ore/Gem fields whole (`take_gems`; 6 mines, 2 mineless fields) | the all-gem box in the west, and everything east of the river | played on the desktop 2026-09-14, all-gem box restored since |
