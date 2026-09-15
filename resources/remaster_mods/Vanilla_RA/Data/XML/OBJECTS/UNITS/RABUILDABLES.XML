@@ -6373,7 +6373,15 @@
 			<BuildIcon>BuildIcon_TSHMEC_LK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
-
+	<ObjectTypeClass Name="RA_TSGHOST_LK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSGHOST</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSGHOST_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSGHOST_LK</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<!-- END generated Mk2 cooldown countdown cameos -->
+	<!-- Hand-written entries: keep OUTSIDE the generated block above -->
 	<ObjectTypeClass Name="RA_TSSUBTANK" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TSSUBTANK</ObjectNameTextID>
@@ -6388,7 +6396,6 @@
 			<BuildIcon>BuildIcon_TS_SubAPC</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
-	<!-- END generated Mk2 cooldown countdown cameos -->
 	<!-- BEGIN generated TS-tree badge variants (_G = the TS GDI emblem) -->
 	<ObjectTypeClass Name="RA_TSAPC_G" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>

@@ -8,15 +8,15 @@ ART: one dimmed Mk. II cameo per remaining second, "5:00" down to "0:01",
 stamped in gold, and the DLL swaps the asset key once a second while
 TFDropBayTimer runs.
 
-Also bakes the Mk. II field-cap LOCKED cameo (dimmed + red X): while a house
-fields its full Mk. II allowance the DLL swaps the cameo to <Ini>_LK the same
-way, and the click is refused with "Cannot comply" instead of a false
-"Building" ack.
+Also bakes the field-cap LOCKED cameos (dimmed + red X): while a house fields
+its full Mk. II allowance, or its one Ghost Stalker, the DLL swaps the cameo to
+<Ini>_LK the same way, and the click is refused with "Cannot comply" instead of
+a false "Building" / "Training" ack.
 
 Emits:
   Data/ART/TEXTURES/SRGB/BuildIcon_TSHMEC_CD<sss>.tga   (sss = 001..300)
-  Data/ART/TEXTURES/SRGB/BuildIcon_TSHMEC_LK.tga        (field-cap locked)
-  RABUILDABLES.XML ObjectTypeClass entries RA_TSHMEC_CD<sss> / RA_TSHMEC_LK
+  Data/ART/TEXTURES/SRGB/BuildIcon_<Ini>_LK.tga         (field-cap locked)
+  RABUILDABLES.XML ObjectTypeClass entries RA_TSHMEC_CD<sss> / RA_<Ini>_LK
 
 Idempotent: re-running replaces the generated XML block and overwrites the art.
 
@@ -39,10 +39,14 @@ UNITS = {
     "TSMDIV": "BuildIcon_TS_MechDivision",
 }
 
-# Units whose cameo also gets a field-cap LOCKED variant. Must mirror the
-# TF_Mk2_At_Cap sidebar swap in dllinterface.cpp (cap applies to the Mk. II
-# only, not to everything the bay delivers).
-LOCKED = ["TSHMEC"]
+# Units whose cameo also gets a field-cap LOCKED variant: IniName -> its
+# pristine BuildIcon. Must mirror the TF_Mk2_At_Cap / TF_Ghost_At_Cap sidebar
+# swaps in dllinterface.cpp (the Mk. II field cap and the one-per-house Ghost
+# Stalker), not everything the bay delivers.
+LOCKED = {
+    "TSHMEC": UNITS["TSHMEC"],
+    "TSGHOST": "BuildIcon_TS_Ghost",
+}
 
 SECONDS = 300  # 5:00
 GOLD = (255, 204, 51, 255)
@@ -81,8 +85,8 @@ def bake_art():
 
 
 def bake_locked():
-    for ini in LOCKED:
-        base = Image.open(SRGB / f"{UNITS[ini]}.tga").convert("RGBA")
+    for ini, icon in LOCKED.items():
+        base = Image.open(SRGB / f"{icon}.tga").convert("RGBA")
         img = ImageEnhance.Brightness(base).enhance(0.40)
         draw = ImageDraw.Draw(img)
         w, h = img.size

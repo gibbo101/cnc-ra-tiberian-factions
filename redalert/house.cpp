@@ -1002,6 +1002,21 @@ bool TF_Mk2_At_Cap(HouseClass const* house)
     return (false);
 }
 
+/*
+**	The Ghost Stalker is a hero: a house fields one at a time (TS BuildLimit=1). One alive
+**	anywhere, riding a transport or still on the barracks floor, holds the cap.
+*/
+bool TF_Ghost_At_Cap(HouseClass const* house)
+{
+    for (int index = 0; index < Infantry.Count(); index++) {
+        InfantryClass const* inf = Infantry.Ptr(index);
+        if (inf != NULL && inf->IsActive && inf->House == house && *inf == INFANTRY_TSGHOST) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
 
 
 /*
@@ -1055,15 +1070,21 @@ int HouseClass::Yard_Factions(void) const
 }
 
 /*
-**	The single verdict on whether a dropship-bay order would be turned away:
-**	the bay is still reloading, or the house already fields its Mk. II
-**	allowance. Begin_Production enforces it; the sidebar click handlers
-**	consult it first so EVA never acknowledges an order that is about to be
-**	refused.
+**	The single verdict on whether a capped order would be turned away: the dropship
+**	bay is still reloading, the house already fields its Mk. II allowance, or its
+**	Ghost Stalker is alive. Begin_Production enforces it; the sidebar click handlers
+**	consult it first so EVA never acknowledges an order that is about to be refused.
 */
 bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id)
 {
-    if (house == NULL || type != RTTI_UNITTYPE) {
+    if (house == NULL) {
+        return (false);
+    }
+    if (type == RTTI_INFANTRYTYPE) {
+        InfantryTypeClass const* itype = (InfantryTypeClass const*)Fetch_Techno_Type(type, id);
+        return (itype != NULL && itype->Type == INFANTRY_TSGHOST && TF_Ghost_At_Cap(house));
+    }
+    if (type != RTTI_UNITTYPE) {
         return (false);
     }
     UnitTypeClass const* utype = (UnitTypeClass const*)Fetch_Techno_Type(type, id);
@@ -1207,19 +1228,9 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
 #endif
 
     /*
-    **	The Ghost Stalker is a hero: a house fields one at a time (TS BuildLimit=1). One
-    **	alive, including one riding in a transport, keeps the cameo off the sidebar.
-    **	A Ghost Stalker already in production is not counted, since a false here would
-    **	make the sidebar abandon it.
+    **	The Ghost Stalker's one-per-house limit does not refuse here either: the cameo stays
+    **	and reads LOCKED, and the order is turned away by TF_Delivery_Order_Refused.
     */
-    if (type->What_Am_I() == RTTI_INFANTRYTYPE && ((InfantryTypeClass const*)type)->Type == INFANTRY_TSGHOST) {
-        for (int i = 0; i < Infantry.Count(); i++) {
-            InfantryClass const* inf = Infantry.Ptr(i);
-            if (inf != NULL && inf->IsActive && inf->House == this && *inf == INFANTRY_TSGHOST) {
-                return (false);
-            }
-        }
-    }
 
     /*
     **	The computer can always build everything.
@@ -11946,8 +11957,11 @@ int HouseClass::AI_Infantry(void)
                         break;
 
                     case INFANTRY_TDRMBO:
-                    case INFANTRY_TSGHOST:
                         typetrack[count].Value = 1 - max(QuantityI(index), 0);
+                        break;
+
+                    case INFANTRY_TSGHOST:
+                        typetrack[count].Value = TF_Ghost_At_Cap(this) ? 0 : 1;
                         break;
 
                     default:
