@@ -1,3 +1,12 @@
+## Resource spill on destruction (Luke's idea, 2026-09-15, queued)
+
+TS spews Tiberium from a dying Tiberium-healing unit (the Ghost Stalker, now in) and scatters a
+dying harvester's cargo into the cells around it; TS buildings never spill. Luke wants the
+mechanic extended: Tiberium silos and refineries (TS and TD) spill Tiberium when destroyed, and
+RA's silos and refinery spill Ore. Design knobs to settle first: how much (the credits the house
+loses when the capacity goes, valued per ore stage), where (the footprint plus its ring), and
+whether the TS/TD/RA harvesters get TS's cargo scatter too.
+
 ## TS GDI to finish before anything else (Luke, 2026-09-13)
 
 TS GDI comes before a release, TS Nod or new arcs. "Finished" means all of the below, then the
@@ -7,14 +16,16 @@ roster balance pass (see "TS roster balance pass" further down), then the releas
 - **Bug first:** a TD construction yard can offer the TS Radar (`docs/known-issues.md`).
 - **TS infantry:** Light Infantry, Disc Thrower, Medic, Engineer, Jumpjet Infantry, Ghost Stalker.
   All six are built on `main` (local commits, 2026-09-13); see "TS infantry status".
-- **TS aircraft:** Orca Fighter, Orca Bomber, Carryall.
+- **TS aircraft:** Orca Fighter, Orca Bomber, Carryall. FIRST fix the TS Helipad (TSHPAD): it
+  does not operate as a helipad today (Luke, 2026-09-15), and it should get a bib like the RA
+  and TD helipads.
 - **Remaining vehicles:** Mobile Sensor Array, Juggernaut, Limpet Drone, Mobile EMP, Mobile War
   Factory.
 - **EMP Pulse Cannon:** branch `emp-cannon` (`docs/emp-cannon-design.md`), stage A verified.
 - **Firestorm Generator:** new defensive logic; its wall panels are isometric like the dropped gate,
   so the art route is decided with Luke before building.
 
-## TS infantry status (2026-09-13)
+## TS infantry status (2026-09-13; ALL SIX PASSED in play by 2026-09-15, Medic last)
 
 Built from the TS Barracks, all at RA/TD infantry height (`scripts/ts_pack_infantry.py`, x3.25):
 Light Infantry (passed in play), Disc Thrower, Engineer, Medic, Ghost Stalker (needs the TS Tech
@@ -25,6 +36,142 @@ trains all six.
 **Seen working in a headless skirmish:** all five render at the right size; discs arc and burst
 (after the TFASSETS.MIX stub rebuild); the Ghost's orange beam and grey coil fire and kill a line
 of riflemen; Light Infantry go prone under fire; the Medic heals a wounded soldier to full.
+
+**Play test 2026-09-14 (desktop DLL 6be8bb4f), Luke: "NOT a good test session".**
+Passed: the disc goes off on water and on a skip into a cliff; the Jumpjet flies across a river.
+Failed or open, with the fix build (desktop DLL 79f67565, uncommitted on main):
+- Barracks door: TS infantry spawned at the bottom-centre of the bib, a cell under the doorway.
+  Cause: TSPILE reused the RA tent's exit pixel (24,47) on its 2x1 plot. Fixed: the exit is the
+  doorway foot (20,34) with a west-column exit list (`ExitTsPile`), and TSPILE takes the
+  barracks exit branch. Untested.
+- Jumpjet box: the health bar rose with the CenterCoordY probe but the bracket corners stayed on
+  the ground by the shadow, so the launcher places an infantry bracket from something other than
+  the exported centre. Probe 2 (Luke: "treat it like a helicopter"): an airborne jumpjet exports
+  as Type AIRCRAFT with ID+5000, because the launcher lifts an aircraft's bracket and bar by its
+  Altitude. Untested; watch for a selection glitch at take-off and landing.
+- Jumpjet attack in the air: the log (`Documents/CnCRemastered/tf_jumpjet.log`) showed the
+  target dropped 30 frames into the flight: techno.cpp's maintenance check clears a
+  non-aircraft's target that is out of range and in another map zone (the tower sat across
+  the river). Jumpjets are now exempt like aircraft, in that check and the attack-move one.
+  Second log (69cbf6b4): they reached the target and fired 228 shots hovering, but a new
+  target out of range left them hovering with no destination, and the attack mission never
+  ended when a target died. ROOT CAUSE: `MissionClass::AI` returns early for any infantry
+  with Height > 0, so no mission runs in flight (also why they cruised on with a dead
+  mission). Jumpjets now exempt there (DLL 642df368). PASSED (Luke, 2026-09-15: "looks like
+  theyre all good"; log: 62 shots, every one spawned a bullet, cruise/hover cycles and a
+  landing). Barracks doorway spawn PASSED.
+- Jumpjet box, probe 3 (69cbf6b4): the AIRCRAFT export changed nothing. The airborne draw put
+  the SHADOW first, making it the launcher's root object; body now draws first, as a
+  helicopter does. Luke: "almost, still a bit low, health bar covers the head" (box centred
+  about the feet). Probe 4 (642df368): back to the INFANTRY type, body root, CenterCoordY
+  lifted by Height. PASSED (Luke, 2026-09-15: "selection box fixes"). The launcher rule: the
+  box and bar follow the FIRST shape an object draws plus its exported centre; the Type field
+  and Altitude do nothing for them.
+- Disc Thrower "missing" on force-fire at friendlies: by TS's rule (OpenTS bullet.cpp) an ally
+  never sets the disc off, in flight or on a bounce, so a disc thrown at a friendly skips through
+  and bursts on the third touchdown. Not a bug. Retest against ENEMY infantry and a moving enemy
+  vehicle.
+- Ghost Stalker cameo washed out with green pixels: all six TS infantry cameos had been decoded
+  with the house-colour remap (palette 16-31 -> green). Re-decoded with `--no-remap` and
+  re-badged. Fixed, needs a look.
+- Ghost cameo disappeared once one was built. Luke: "we put a big red X on the mk2". Done the
+  Mk. II way: the one-per-house test left Can_Build for `TF_Delivery_Order_Refused`
+  (`TF_Ghost_At_Cap`), both sidebar fills paint `TSGHOST_LK` (dimmed, red X, baked by
+  `ts_mk2_cooldown_cameos.py`), the click gets "Cannot comply", and the AI weights a second
+  Ghost at 0. PASSED (Luke, 2026-09-15: "ghost stalker limit 1 confirmed"). ⚠ that script's regen wiped
+  the hand-written TSSUBTANK/TSSAPC entries that sat inside its block; restored OUTSIDE it.
+- Railgun colours are TS-authentic (TS RULES.INI): the Ghost's `SmallRailgunSys` LaserColor
+  255,128,0 (orange) with a grey coil (200,200,200)->(150,150,150); the Mk. II's
+  `LargeRailgunSys` LaserColor 25,20,255 (blue) with a coil (25,70,205)->(150,150,150). Luke
+  remembers them alike; Luke: "if ghost and mk2 were different so be it" (kept as TS has them).
+
+**Luke, 2026-09-15 00:40: "just tiberium heal, everything else pass" - every remaining item
+below PASSED, the Ghost Stalker's Tiberium heal last ("confirmed healing"). The heal cadence
+then moved from 1 s to TS's 0.6 s (TiberiumHeal=.010 minutes), uncommitted, untested.**
+
+**The 6be8bb4f list (all passed except the Tiberium heal):**
+- Disc Thrower: hits a standing soldier and a moving vehicle; a miss skips (two skips at
+  most, gone on the third touchdown); goes off on water; a first throw clears a cliff, a skip
+  into one goes off; flying low into an enemy building stops it.
+- Jumpjet movement: takes off for a long walk round a cliff, walks a one-cell move; crosses a
+  river with no land route (a click on the water goes to the nearest land).
+- Jumpjet flight: speed, quick acceleration, curved turns, the slower bob, lower over the last
+  cell with no target; take-off, landing, hover fire, click and box select in the air.
+- Jumpjet box: selection box and health bar follow it up (probe; may still sit on the ground).
+- Jumpjet vs anti-air: SAM targets it in the air (PASSED, Luke 2026-09-15). Still to see:
+  ground-only weapons refuse it; it bursts (S_BANG34) when shot down; its shadow.
+- Jumpjet on the ground: never goes prone (Fearless); a tank can't crush it.
+- Railguns (Ghost, Mk. II) on TS's particle coils: PASSED (Luke, 2026-09-15: "rail gun fine").
+- Prone damage: TS small arms and HE 70%, railguns and RPG full, Devil's Tongue 600%; RA and
+  TD weapons still 50%.
+- Still unchecked from before: TS Barracks cameos (Ghost only with a Tech Center, one per
+  house); Engineer capture and friendly repair; Ghost C4, Tiberium immunity and heal; sounds
+  (TSINFGUN3, TSHEALER1, TSBIGGGUN1, silent disc throw); the Engineer, Medic and Ghost voices
+  (restart after a deploy); the AI training the roster.
+- Known, not fixed: the Ghost's beam starts at his chest; facing west it looks like his head
+  (Luke). TS fire-point table ready (PrimaryFireFLH 100,0,100 projected per facing frame,
+  checked against TS's drawn muzzle flash), waiting on Luke's OK, and whether the Light
+  Infantry (80,0,85), Disc Thrower (60,0,100) and Jumpjet (100,0,120) get theirs too.
+
+**Railgun, prone and Jumpjet tuning build, desktop DLL 6be8bb4f (uncommitted, awaiting
+play):** the Jumpjet is also Fearless (never scared prone; `InfantryTypeClass::IsFearless`
+reads `Fearless=`) and uncrushable, as TS's [JUMPJET]. both railguns now run TS's particle system (`TF_Railgun_Coil` / `Rail_Spark_AI`):
+full-density coils of drifting sparks that blend colour as they age and live 70-79 frames,
+one thin beam line in the nearest palette colour, and no refire until the coil has faded.
+TS warheads carry their own ProneDamage. The Jumpjet flies on TS's [JumpjetControls]
+(Speed 14, Acceleration 2, TurnRate 4, sine bob at .15 a second), along its turning facing.
+
+**Fix build, desktop DLL 5060f7cb (uncommitted, awaiting play):** the disc now flies TS's own
+ballistic step (`TS_Disc_Launch` / `TS_Disc_AI`), and water or a cliff sets it off (Luke:
+"water, boom"; a first throw clears cliffs, a skip into one goes off). Jumpjets take a move
+anywhere and use TS's full walk-or-fly rule. The RA and TD SAM state machines accept an
+airborne jumpjet. The Jumpjet's exported centre is raised by its height as a probe: the
+launcher ignores `CenterCoordY` for building boxes, and this build shows whether it does the same
+for units. The Ghost's fire point is still open.
+
+**Audit against OpenTS (2026-09-13):** confirmed in code: prone damage is RA's one 50% where TS
+sets it per warhead (SA 70%, HE 70%, RailShot2 100%); the Jumpjet flies on OpenTS's C++
+defaults instead of TS RULES.INI [JumpjetControls] (Speed 14, Acceleration 2, TurnRate 4,
+WobblesPerSecond .15). Reported, not yet checked: TS Jumpjets are Fearless and uncrushable;
+TS splash falls off faster (`/3` against our `/2`); Tiberium damage runs on a timer instead of
+per cell entered; the Ghost heals in Tiberium at 60% of TS's rate and spills no Tiberium on
+death; RA death screams instead of TS's DEDMAN set. Disc ROF 80 and Jumpjet Speed 8 are
+Firestorm's values (FIRESTRM.INI). **Veterancy stays out (Luke, 2026-09-13):** if it ever comes in, it comes in for every
+faction's units, never TS alone.
+
+**Failed in Luke's play test (2026-09-13 evening, desktop DLL 21ba15cb):**
+- Disc Thrower cannot hit a unit: the disc lands short of the target cell and skips past it. Our
+  disc flies on RA's Riser/Fly_Speed approximation, which lands up to half a cell off; TS solves
+  the arc exactly (`Calculate_Projectile_Speed`/`Calculate_Projectile_Pitch` with floater
+  gravity, aimed at `Predict_Target_Coord`) and flies it on its own velocity step (OpenTS
+  bullet.cpp 534-763). Fix = port that flight. The disc also skips on water (OpenTS's bounce has no
+  water test, so TS does too) and over cliffs (RA cliffs have no height; TS's disc goes off
+  against a cliff face): the handling of both is Luke's call.
+- Jumpjet won't take off for a long walk round a cliff: ours flies only on a zone change or a
+  straight twelve cells. TS `Should_JumpJet_Fly` also walks a one-cell trip and flies a walk of
+  more than fifteen steps (`Test_Cell_Walk`); `Find_Path_AStar` with a NULL result path returns
+  that length.
+- Jumpjet won't cross a river with no land route: the move click is pulled back to a cell in the
+  unit's own zone (foot.cpp ACTION_MOVE/NOMOVE, `Nearby_Location` with the current zone). TS treats
+  jumpjets as move-anywhere (OpenTS foot.cpp 1667/4649).
+- Jumpjet selection box and health bar stay on the ground while it flies (screenshot); the
+  launcher places the box from the logical position, not the lifted draw.
+- SAM sites neither target nor fire at an airborne jumpjet: the RA SAM and TD SAM attack state
+  machines, and the TD SAM's reacquire, accept only `Is_Target_Aircraft` with Height > 0. The TS
+  SAM tower is `[TSCSAM]` (TSRedEye2); check its path too.
+- Ghost Stalker's beam started at his head (Luke's screencast 2026-09-15 00:21 confirmed it):
+  the infantry fire coordinate is the unit centre plus E1's VerticalOffset 0x35, which lands
+  at head height on this sprite. FIXED overnight 2026-09-15: `InfantryClass::Fire_Coord`
+  returns a per-facing muzzle for the Ghost, standing and prone, from
+  `redalert/tsghost_muzzle.h`, GENERATED by `scripts/ts_ghost_fire_points.py` off the TS fire
+  frames' own muzzle flash (bright yellow on alternate stages; north flashes on the even
+  stages above the head). Anchor maths: canvas centre = draw point = unit coord + (-2,+4)
+  classic px; 1 HD px = 2 leptons. VERIFIED headless 2026-09-15 00:40 (smoke-spawn harness,
+  flank riflemen added W/E): firing east the starburst and beam leave the barrel tip, up and
+  right of the figure, not the head. Clean desktop DLL da49d7ea. Harness lesson: the spawned
+  foes die within 25 s, so the screenshot burst must start right after the lobby Start.
+- The Ghost's orange beam is TS's: [SmallRailgunSys] LaserColor=255,128,0; the Mk. II's
+  [LargeRailgunSys] is 25,20,255.
 
 **Still to check in play:**
 - Sidebar: all five cameos at the TS Barracks, the Ghost only with a TS Tech Center, and its

@@ -9,6 +9,21 @@
 - `docs/td-building-separation-recipe.md` — building-specific separation steps
 - `docs/td-audio-routing-recipe.md` — audio MERGE pattern + SFXEVENTSNONLOCALIZED.XML
 
+## Before any code: the authenticity checklist (TD and TS ports; Luke, 2026-09-13)
+
+The source of truth is the era's own code: the TD source for TD entities, OpenTS
+(`reference/OpenTS/code`) for TS entities. Where a behaviour is the same in both games (engineer
+capture, medic heal), RA's mechanism is acceptable; where it is unique to the entity's game (the
+Disc Thrower's bouncing disc), it is ported. Reusing an RA engine path counts as RA logic even when
+the numbers on it are TS's.
+
+1. **Before building any port:** list each behaviour next to the TD/OpenTS function it comes
+   from. Anything without a source is a question for Luke, answered before code.
+2. **No "not modelled yet" in a commit.** An unported behaviour is a question for Luke, not a
+   to-do note.
+3. **Test the behaviour, not the picture.** A weapon is only verified once it hits a standing and
+   a moving target.
+
 ---
 
 ## 1. The architecture (Option A)
