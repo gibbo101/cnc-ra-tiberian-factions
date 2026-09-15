@@ -49,19 +49,20 @@ enum JumpjetStateType : unsigned char
 };
 
 /*
-**	Jumpjet flight tuning, from OpenTS's Rules defaults (JumpjetSpeed 30, JumpjetClimb 5,
-**	JumpjetAcceleration .25, JumpjetWobblesPerSecond .25, JumpjetWobbleDeviation 40), with the
-**	cruise height and bob set against RA's FLIGHT_LEVEL: at 200 leptons a hovering jumpjet sits
-**	in the top map layer (the boundary is 170) and below the helicopters (256).
+**	Jumpjet flight tuning, TS RULES.INI [JumpjetControls]: Speed 14, Climb 5, Acceleration 2,
+**	TurnRate 4, WobblesPerSecond .15, WobbleDeviation 40. The cruise height is set against RA's
+**	FLIGHT_LEVEL instead of TS's CruiseHeight 500: at 200 leptons a hovering jumpjet sits in the
+**	top map layer (the boundary is 170) and below the helicopters (256), and the bob scales with it.
 */
 enum JumpjetTuningType
 {
     JUMPJET_CRUISE = 200,        // cruise height, leptons
-    JUMPJET_WOBBLE = 16,         // hover bob either side of the cruise height, leptons
-    JUMPJET_WOBBLE_TICKS = 60,   // one bob cycle, ticks
+    JUMPJET_WOBBLE = 16,         // hover bob either side of the flight level, leptons (TS's 40 of 500)
+    JUMPJET_WOBBLE_TICKS = 100,  // one bob cycle, ticks (15 / WobblesPerSecond)
     JUMPJET_CLIMB = 5,           // climb and descent, leptons per tick
-    JUMPJET_MAX_SPEED = 120,     // top ground speed, quarter leptons per tick (30 leptons)
-    JUMPJET_TURN = 8,            // turn rate, facing steps per tick
+    JUMPJET_MAX_SPEED = 56,      // top ground speed, quarter leptons per tick (14 leptons)
+    JUMPJET_ACCEL = 8,           // speed gained per tick, quarter leptons (2 leptons)
+    JUMPJET_TURN = 4,            // turn rate, facing steps per tick
     JUMPJET_FLIGHT_POSE = 292,   // first flight pose (Fly) in the TS frame set
 };
 
@@ -143,6 +144,7 @@ public:
     JumpjetStateType JumpjetState;
     short JumpjetSpeed;
     COORDINATE JumpjetLanding;
+    short JumpjetWobble; // ticks into the hover bob; restarts whenever it stops hovering or cruising
 
     /*---------------------------------------------------------------------
     **	Constructors, Destructors, and overloaded operators.

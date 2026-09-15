@@ -1489,7 +1489,17 @@ void FootClass::Active_Click_With(ActionType action, CELL cell)
             ** off the edge of the map.
             */
             CellClass const* cellptr = &Map[::As_Cell(::As_Target(Center_Coord()))];
-            if (What_Am_I() != RTTI_AIRCRAFT) {
+            if (What_Am_I() == RTTI_INFANTRY && ((InfantryClass*)this)->Is_Jumpjet()) {
+
+                /*
+                **	A jumpjet goes wherever it is sent, flying if it cannot walk there (TS moves
+                **	it anywhere): only a cell it cannot stand on is swapped for the nearest one
+                **	it can, in any zone.
+                */
+                if (action == ACTION_NOMOVE) {
+                    cell = Map.Nearby_Location(cell, Techno_Type_Class()->Speed, -1, Techno_Type_Class()->MZone);
+                }
+            } else if (What_Am_I() != RTTI_AIRCRAFT) {
 
                 if (Can_Enter_Cell(Coord_Cell(Center_Coord())) == MOVE_OK) {
                     cell = Map.Nearby_Location(cell,

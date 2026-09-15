@@ -1335,6 +1335,12 @@ public:
     unsigned IsFraidyCat : 1;
 
     /*
+    **	Tiberian Factions: a fearless soldier is never frightened by damage, so it never drops
+    **	prone (TS [Infantry] Fearless).
+    */
+    unsigned IsFearless : 1;
+
+    /*
     **	This flags whether this infantry is actually a civilian. A
     **	civilian uses different voice responses, has less ammunition,
     **	and runs from danger more often.

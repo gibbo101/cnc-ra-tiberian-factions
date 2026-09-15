@@ -271,7 +271,12 @@ void MissionClass::AI(void)
     **	ground level (such as when be paradropped), it will perform no mission AI
     **	processing.
     */
-    if ((What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_VESSEL) && Height > 0) {
+    /*
+    **	A ground object in the air (a paradrop, a flung crate) has no mission to run until it
+    **	lands; a jumpjet keeps its mission in flight, as an aircraft does.
+    */
+    if ((What_Am_I() == RTTI_INFANTRY || What_Am_I() == RTTI_UNIT || What_Am_I() == RTTI_VESSEL) && Height > 0
+        && !(What_Am_I() == RTTI_INFANTRY && ((InfantryClass*)this)->Is_Jumpjet())) {
         return;
     }
 

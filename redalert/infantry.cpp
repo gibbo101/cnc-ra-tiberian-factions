@@ -82,6 +82,8 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "tsghost_muzzle.h"
+#include <math.h>
 
 // TF: attack-move (CFE port) -- launcher-side Shift state, per local player.
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
@@ -192,6 +194,7 @@ InfantryClass::InfantryClass(InfantryType classid, HousesType house)
     , JumpjetState(JJ_GROUNDED)
     , JumpjetSpeed(0)
     , JumpjetLanding(0)
+    , JumpjetWobble(0)
 {
     House->Tracking_Add(this);
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
@@ -329,10 +332,12 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
     ResultType res = RESULT_NONE;
 
     /*
-    **	Prone infantry take only half damage, but never below one damage point.
+    **	Prone infantry take the warhead's prone share of the damage (TS ProneDamage), or the
+    **	rules' global share from a warhead without one.
     */
     if (IsProne && damage > 0) {
-        damage = damage * Rule.ProneDamageBias;
+        WarheadTypeClass const* whead = WarheadTypeClass::As_Pointer(warhead);
+        damage = damage * ((whead != NULL && whead->HasProneDamage) ? whead->ProneDamage : Rule.ProneDamageBias);
     }
 
     /*
@@ -368,6 +373,30 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
         Mission = MISSION_NONE;
         Assign_Mission(MISSION_GUARD);
         Commence();
+
+        /*
+        **	A Tiberium-healing soldier spews Tiberium into its own cell and the four beside it
+        **	when it dies (TS TechnoClass::Take_Damage), each patch a young growth or a little
+        **	more where Tiberium already lies.
+        */
+        if (*this == INFANTRY_TSGHOST) {
+            static FacingType const _spew[] = {FACING_N, FACING_E, FACING_S, FACING_W};
+            CellClass* center = &Map[Coord_Cell(Center_Coord())];
+            for (int index = -1; index < (int)(sizeof(_spew) / sizeof(_spew[0])); index++) {
+                CellClass* cellptr = (index < 0) ? center : center->Adjacent_Cell(_spew[index]);
+                if (cellptr == NULL) {
+                    continue;
+                }
+                if (cellptr->Overlay == OVERLAY_TIB01) {
+                    cellptr->OverlayData = min((int)cellptr->OverlayData + Random_Pick(0, 2), 11);
+                    cellptr->Recalc_Attributes();
+                    cellptr->Redraw_Objects();
+                } else if (cellptr->Can_Tiberium_Germinate()) {
+                    new OverlayClass(OVERLAY_TIB01, cellptr->Cell_Number());
+                    cellptr->OverlayData = Random_Pick(0, 2);
+                }
+            }
+        }
 
         /*
         **	A jumpjet shot down in the air just bursts (TS [General] InfantryExplode=S_BANG34),
@@ -460,10 +489,10 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
         if (source != NULL && Fear < FEAR_SCARED) {
             if (Class->IsFraidyCat) {
                 Fear = FEAR_PANIC;
-            } else {
+            } else if (!Class->IsFearless) {
                 Fear = FEAR_SCARED;
             }
-        } else {
+        } else if (!Class->IsFearless) {
 
             /*
             **	Increase the fear of the infantry by a bit. The fear increases more
@@ -613,12 +642,19 @@ void InfantryClass::Draw_It(int x, int y, WindowNumberType window) const
     **	An airborne jumpjet's body is lifted by its height (Techno_Draw_Object does the lift).
     **	Its shadow is the same frame darkened on the ground beneath it, as TS draws an airborne
     **	infantry's (SHAPE_DARKEN); the helicopter shadow flags make the renderer draw it as a
-    **	shadow, under the body. The selection box and health bar follow the body up.
+    **	shadow. The launcher places the selection box and health bar on the FIRST shape drawn,
+    **	so in the virtual window the body goes first and the shadow follows as its sub-object,
+    **	as a helicopter draws; the classic renderer wants the shadow underneath, so it draws it
+    **	first.
     */
     if (Is_Airborne_Jumpjet()) {
         int lift = Lepton_To_Pixel(Height);
         int body = Shape_Number(window);
-        if (Visual_Character() <= VISUAL_DARKEN) {
+        bool const shadow = (Visual_Character() <= VISUAL_DARKEN);
+        if (window == WINDOW_VIRTUAL) {
+            Techno_Draw_Object(shapefile, body, x, y, window);
+        }
+        if (shadow) {
             CC_Draw_Shape(this,
                           shapefile,
                           body,
@@ -629,7 +665,9 @@ void InfantryClass::Draw_It(int x, int y, WindowNumberType window) const
                           DisplayClass::FadingShade,
                           NULL);
         }
-        Techno_Draw_Object(shapefile, body, x, y, window);
+        if (window != WINDOW_VIRTUAL) {
+            Techno_Draw_Object(shapefile, body, x, y, window);
+        }
         FootClass::Draw_It(x, y - lift, window);
         return;
     }
@@ -1375,13 +1413,13 @@ void InfantryClass::AI(void)
     */
     /*
     **	The Ghost Stalker is TiberiumProof and TiberiumHeal: Tiberium never hurts it, and
-    **	while it stands in Tiberium below full health it regains 1 point a second (TS
-    **	TiberiumHeal=1/60 minute, the infantry repair step), snapping to full once past
-    **	the green threshold as TS does.
+    **	while it stands in Tiberium below full health it regains a point every 0.6 seconds
+    **	(TS [General] TiberiumHeal=.010 minutes, 9 ticks), snapping to full once past the
+    **	green threshold as TS does.
     */
     if (*this == INFANTRY_TSGHOST && In_Which_Layer() == LAYER_GROUND && !IsInLimbo
         && Map[Coord_Cell(Coord)].Overlay == OVERLAY_TIB01 && Strength > 0
-        && Health_Ratio() < Rule.ConditionGreen && ((Frame + ID) % TICKS_PER_SECOND) == 0) {
+        && Health_Ratio() < Rule.ConditionGreen && ((Frame + ID) % 9) == 0) {
         Strength++;
         if (Health_Ratio() > Rule.ConditionGreen) {
             Strength = Class->MaxStrength;
@@ -1994,6 +2032,15 @@ FireErrorType InfantryClass::Can_Fire(TARGET target, int which) const
  *=============================================================================================*/
 COORDINATE InfantryClass::Fire_Coord(int which) const
 {
+    /*
+    **	The Ghost Stalker's railgun leaves the barrel as drawn on each facing, standing and
+    **	prone (muzzle table measured off the TS fire frames by scripts/ts_ghost_fire_points.py).
+    */
+    if (*this == INFANTRY_TSGHOST) {
+        short const* muzzle = _tsghost_muzzle[IsProne ? 1 : 0][HumanShape[Dir_To_32(PrimaryFacing.Current())]];
+        COORDINATE center = Center_Coord();
+        return (XY_Coord(Coord_X(center) + muzzle[0], Coord_Y(center) + muzzle[1]));
+    }
     COORDINATE coord = FootClass::Fire_Coord(which);
 
     /*
@@ -4143,6 +4190,51 @@ bool InfantryClass::Edge_Of_World_AI(void)
     return (false);
 }
 
+#if TF_DEV_BUILD
+/*
+**	Dev-build trace of a jumpjet's flight and fire decisions, one line per event, in
+**	Documents/CnCRemastered/tf_jumpjet.log.
+*/
+static void TF_Jumpjet_Log(InfantryClass const* inf, char const* what)
+{
+    static FILE* log = NULL;
+    if (log == NULL) {
+        char path[512];
+        const char* prof = getenv("USERPROFILE");
+        if (prof != NULL && prof[0] != '\0') {
+            snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_jumpjet.log", prof);
+        } else {
+            strcpy(path, "tf_jumpjet.log");
+        }
+        log = fopen(path, "w");
+        if (log == NULL) {
+            return;
+        }
+    }
+    int dist = Target_Legal(inf->NavCom) ? ::Distance(inf->Coord, As_Coord(inf->NavCom)) : -1;
+    fprintf(log,
+            "F%ld inf#%d state=%d h=%d spd=%d mission=%d q=%d doing=%d tar=%08X nav=%08X dist=%d cell=%d,%d face=%d want=%d firing=%d %s\n",
+            (long)Frame,
+            Infantry.ID(inf),
+            (int)inf->JumpjetState,
+            (int)inf->Height,
+            (int)inf->JumpjetSpeed,
+            (int)inf->Mission,
+            (int)inf->MissionQueue,
+            (int)inf->Doing,
+            (unsigned)inf->TarCom,
+            (unsigned)inf->NavCom,
+            dist,
+            (int)Cell_X(Coord_Cell(inf->Coord)),
+            (int)Cell_Y(Coord_Cell(inf->Coord)),
+            (int)inf->PrimaryFacing.Current(),
+            (int)inf->PrimaryFacing.Desired(),
+            (int)inf->IsFiring,
+            what);
+    fflush(log);
+}
+#endif
+
 /***********************************************************************************************
  * InfantryClass::Firing_AI -- Handles firing and combat AI for the infantry.                  *
  *                                                                                             *
@@ -4164,7 +4256,15 @@ void InfantryClass::Firing_AI(void)
         int primary = What_Weapon_Should_I_Use(TarCom);
 
         if (!IsFiring) {
-            switch (Can_Fire(TarCom, primary)) {
+            FireErrorType const fire_check = Can_Fire(TarCom, primary);
+#if TF_DEV_BUILD
+            if (Is_Airborne_Jumpjet() && (Frame % 15) == 0) {
+                char why[32];
+                snprintf(why, sizeof(why), "can_fire=%d", (int)fire_check);
+                TF_Jumpjet_Log(this, why);
+            }
+#endif
+            switch (fire_check) {
             case FIRE_ILLEGAL:
                 if (Combat_Damage(primary) < 0) {
                     ObjectClass* targ = As_Object(TarCom);
@@ -4244,7 +4344,14 @@ void InfantryClass::Firing_AI(void)
             **	Target might have changed during the firing animation
             */
             if (Can_Fire(TarCom, primary) == FIRE_OK) {
+#if TF_DEV_BUILD
+                BulletClass* shot = Fire_At(TarCom, primary);
+                if (Is_Airborne_Jumpjet()) {
+                    TF_Jumpjet_Log(this, (shot != NULL) ? "fire bullet" : "fire NO-BULLET");
+                }
+#else
                 Fire_At(TarCom, primary);
+#endif
 
                 /*
                 **	Run away from slowly approaching projectiles.
@@ -4368,10 +4475,10 @@ void InfantryClass::Doing_AI(void)
 
 /*
 **	Should this jumpjet fly to the target rather than walk (TS InfantryClass::Should_JumpJet_Fly)?
-**	One already in the air stays in the air. On the ground it walks a short trip it can make on
-**	foot and flies anything else: a destination it cannot walk to, or one twelve or more cells
-**	away. TS also flies a walk of more than fifteen steps; the straight distance stands in for
-**	that path length.
+**	One already in the air stays in the air. On the ground it flies to a destination it cannot
+**	walk to. Otherwise it walks to a neighbouring cell, flies twelve or more cells or off the
+**	visible map, and in between flies only when the walk is longer than fifteen steps or no
+**	walk exists (TS Test_Cell_Walk).
 */
 bool InfantryClass::Jumpjet_Should_Fly(TARGET target) const
 {
@@ -4380,14 +4487,21 @@ bool InfantryClass::Jumpjet_Should_Fly(TARGET target) const
     }
     CELL from = Coord_Cell(Coord);
     CELL to = As_Cell(target);
-    if (from == to) {
-        return (false);
-    }
     if (Map[from].Zones[Class->MZone] != Map[to].Zones[Class->MZone]) {
         return (true);
     }
+    if (from == to) {
+        return (false);
+    }
     int dist = max(abs((int)Cell_X(to) - (int)Cell_X(from)), abs((int)Cell_Y(to) - (int)Cell_Y(from)));
-    return (dist >= 12);
+    if (dist == 1) {
+        return (false);
+    }
+    if (dist >= 12 || !Map.In_Radar(from) || !Map.In_Radar(to)) {
+        return (true);
+    }
+    int walk = const_cast<InfantryClass*>(this)->Find_Path_AStar(NULL, from, to, CONQUER_PATH_MAX, MOVE_TEMP, -1);
+    return (walk == 0 || walk > 15);
 }
 
 /*
@@ -4430,11 +4544,16 @@ void InfantryClass::Jumpjet_Move(int height, int distance, DirType heading)
 **	two cells and to three tenths inside one; on arrival it hovers if it has a target and comes
 **	down if not. Descending: it reserves a free spot beneath it, drifts over it and settles,
 **	becoming ordinary infantry again; a destination a cell or more away sends it back up. While
-**	hovering or cruising it bobs about its cruise height. Speed builds by a quarter lepton a
-**	tick and falls off half as fast again; the body turns toward the heading unless it is firing.
+**	hovering or cruising it bobs about its flight level, which drops to three quarters of cruise
+**	height over the last cell when it has no target. Speed follows TS's step (see below), and
+**	it flies along its own turning facing, curving round to its heading, except while firing
+**	and while drifting onto its landing spot.
 */
 bool InfantryClass::Jumpjet_AI(void)
 {
+#if TF_DEV_BUILD
+    int const entry_state = (int)JumpjetState;
+#endif
     if (JumpjetState == JJ_GROUNDED) {
         if (IsDriving || IsFiring || IsInLimbo || !Target_Legal(NavCom) || !Jumpjet_Should_Fly(NavCom)) {
             return (false);
@@ -4453,6 +4572,7 @@ bool InfantryClass::Jumpjet_AI(void)
     DirType heading = PrimaryFacing.Current();
     int height = Height;
     int want = 0;
+    int level = JUMPJET_CRUISE;
 
     switch (JumpjetState) {
     case JJ_ASCENDING:
@@ -4486,6 +4606,9 @@ bool InfantryClass::Jumpjet_AI(void)
             JumpjetState = has_target ? JJ_HOVERING : JJ_DESCENDING;
         } else if (dist < CELL_LEPTON_W) {
             want = JUMPJET_MAX_SPEED * 3 / 10;
+            if (!has_target) {
+                level = JUMPJET_CRUISE * 3 / 4;
+            }
         } else if (dist < CELL_LEPTON_W * 2) {
             want = JUMPJET_MAX_SPEED / 2;
         } else {
@@ -4495,6 +4618,7 @@ bool InfantryClass::Jumpjet_AI(void)
     }
 
     case JJ_DESCENDING: {
+        level = 0;
         if (has_dest && ::Distance(Coord, dest) >= CELL_LEPTON_W) {
             if (JumpjetLanding != 0) {
                 Clear_Occupy_Bit(JumpjetLanding);
@@ -4547,6 +4671,9 @@ bool InfantryClass::Jumpjet_AI(void)
             Mark(MARK_DOWN);
             JumpjetLanding = 0;
             JumpjetState = JJ_GROUNDED;
+#if TF_DEV_BUILD
+            TF_Jumpjet_Log(this, "landed");
+#endif
             if (has_dest) {
                 Assign_Destination(TARGET_NONE);
             }
@@ -4561,21 +4688,46 @@ bool InfantryClass::Jumpjet_AI(void)
         break;
     }
 
+#if TF_DEV_BUILD
+    if ((int)JumpjetState != entry_state) {
+        TF_Jumpjet_Log(this, "state");
+    } else if ((Frame % 30) == 0) {
+        TF_Jumpjet_Log(this, "tick");
+    }
+#endif
+
     /*
-    **	The hover bob: a slow rise and fall about the cruise height.
+    **	The hover bob (TS Movement_AI): the height eases toward the flight level plus a sine of the
+    **	wobble deviation, one cycle every JUMPJET_WOBBLE_TICKS, and the cycle starts over whenever
+    **	it stops hovering or cruising.
     */
     if (JumpjetState == JJ_HOVERING || JumpjetState == JJ_CRUISING) {
-        int phase = (Frame + ID) % JUMPJET_WOBBLE_TICKS;
-        int half = JUMPJET_WOBBLE_TICKS / 2;
-        int wave = (phase < half) ? phase : (JUMPJET_WOBBLE_TICKS - phase);
-        int bob = JUMPJET_CRUISE - JUMPJET_WOBBLE + (wave * 2 * JUMPJET_WOBBLE) / half;
+        JumpjetWobble++;
+        int bob = level + (int)(sin(JumpjetWobble * (2.0 * 3.14159265) / JUMPJET_WOBBLE_TICKS) * JUMPJET_WOBBLE);
         height = (height < bob) ? min(height + (int)JUMPJET_CLIMB, bob) : max(height - (int)JUMPJET_CLIMB, bob);
+    } else {
+        JumpjetWobble = 0;
     }
 
+    /*
+    **	TS's speed step: under the speed it wants it gains the acceleration, up to its top
+    **	speed, and over it it sheds one and a half times that, down to a stop; both can happen in
+    **	one tick. Outside the destination cell and still low on its climb, it loses a tenth of its
+    **	speed below half its flight level and another tenth below a quarter.
+    */
     if (want > JumpjetSpeed) {
-        JumpjetSpeed = min((int)JumpjetSpeed + 1, want);
-    } else if (want < JumpjetSpeed) {
-        JumpjetSpeed = max((int)JumpjetSpeed - 2, want);
+        JumpjetSpeed = min((int)JumpjetSpeed + (int)JUMPJET_ACCEL, (int)JUMPJET_MAX_SPEED);
+    }
+    if (want < JumpjetSpeed) {
+        JumpjetSpeed = max((int)JumpjetSpeed - (int)JUMPJET_ACCEL * 3 / 2, 0);
+    }
+    if (Coord_Cell(Coord) != Coord_Cell(dest)) {
+        if (Height < level / 2) {
+            JumpjetSpeed = JumpjetSpeed * 9 / 10;
+        }
+        if (Height < level / 4) {
+            JumpjetSpeed = JumpjetSpeed * 9 / 10;
+        }
     }
 
     if (!IsFiring) {
@@ -4585,7 +4737,8 @@ bool InfantryClass::Jumpjet_AI(void)
         }
     }
 
-    Jumpjet_Move(height, JumpjetSpeed / 4, heading);
+    bool const along_facing = !IsFiring && JumpjetState != JJ_DESCENDING;
+    Jumpjet_Move(height, JumpjetSpeed / 4, along_facing ? PrimaryFacing.Current() : heading);
     return (true);
 }
 

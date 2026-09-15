@@ -1591,6 +1591,7 @@ InfantryTypeClass::InfantryTypeClass(InfantryType type,
     , IsCrawling(is_crawling)
     , IsCapture(false)
     , IsFraidyCat(false)
+    , IsFearless(false)
     , IsCivilian(is_civilian)
     , IsBomber(false)
     , IsDog(false)
@@ -2133,6 +2134,7 @@ bool InfantryTypeClass::Read_INI(CCINIClass& ini)
 {
     if (TechnoTypeClass::Read_INI(ini)) {
         IsFraidyCat = ini.Get_Bool(Name(), "Fraidycat", IsFraidyCat);
+        IsFearless = ini.Get_Bool(Name(), "Fearless", IsFearless);
         IsCapture = ini.Get_Bool(Name(), "Infiltrate", IsCapture);
         IsBomber = ini.Get_Bool(Name(), "C4", IsBomber);
         IsDog = ini.Get_Bool(Name(), "IsCanine", IsDog);

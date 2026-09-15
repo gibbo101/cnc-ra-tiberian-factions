@@ -824,6 +824,98 @@ bool Read_Scenario(char* name)
     }
 #endif
 
+#if 0 // TF DEV TOGGLE: TS infantry smoke-spawn near start. Flip to 1 for testing.
+    /*
+    **  Spawns one of each TS infantry (plus a wounded Light Infantry for the Medic) three
+    **  cells south of the player's start, and four enemy riflemen four cells beyond them,
+    **  so a headless run sees every weapon fire without driving the sidebar.
+    */
+    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr) {
+                home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                break;
+            }
+        }
+        HouseClass* enemy = NULL;
+        for (int h = HOUSE_MULTI1; h < HOUSE_COUNT && enemy == NULL; h++) {
+            HouseClass* hp = HouseClass::As_Pointer((HousesType)h);
+            if (hp != NULL && hp != PlayerPtr && !PlayerPtr->Is_Ally(hp)) {
+                enemy = hp;
+            }
+        }
+        if (home != 0) {
+            static InfantryType const _roster[] = {INFANTRY_TSE1, INFANTRY_TSMEDIC, INFANTRY_TSE1,
+                                                   INFANTRY_TSE2, INFANTRY_TSENGINEER, INFANTRY_TSGHOST};
+            int const count = (int)ARRAY_SIZE(_roster);
+            int placed = 0;
+            int row = 0;
+            for (int dy = 2; dy <= 8 && placed < count; dy++) {
+                for (int dx = -6; dx <= 6 && placed < count; dx++) {
+                    CELL cell = home + dy * MAP_CELL_W + dx;
+                    if ((unsigned)cell >= MAP_CELL_TOTAL || Map[cell].Land_Type() != LAND_CLEAR
+                        || Map[cell].Cell_Techno() != NULL) {
+                        continue;
+                    }
+                    InfantryClass* inf = new InfantryClass(_roster[placed], PlayerPtr->Class->House);
+                    if (inf == NULL) {
+                        break;
+                    }
+                    if (!inf->Unlimbo(Cell_Coord(cell), DIR_S)) {
+                        delete inf;
+                        continue;
+                    }
+                    if (placed == 0) {
+                        inf->Strength = inf->Class->MaxStrength / 3;
+                    }
+                    row = dy;
+                    placed++;
+                }
+            }
+            bool const spawn_foes = true;
+            if (spawn_foes && enemy != NULL && placed > 0) {
+                int foes = 0;
+                for (int dy = row + 4; dy <= row + 10 && foes < 4; dy++) {
+                    for (int dx = -6; dx <= 6 && foes < 4; dx++) {
+                        CELL cell = home + dy * MAP_CELL_W + dx;
+                        if ((unsigned)cell >= MAP_CELL_TOTAL || Map[cell].Land_Type() != LAND_CLEAR
+                            || Map[cell].Cell_Techno() != NULL) {
+                            continue;
+                        }
+                        InfantryClass* inf = new InfantryClass(INFANTRY_E1, enemy->Class->House);
+                        if (inf == NULL) {
+                            break;
+                        }
+                        if (!inf->Unlimbo(Cell_Coord(cell), DIR_N)) {
+                            delete inf;
+                            continue;
+                        }
+                        foes++;
+                    }
+                }
+                /*
+                **  Flank riflemen level with the squad, west and east, so the Ghost fires on
+                **  more than one facing.
+                */
+                static int const _flank[] = {-10, 4, -10, 4};
+                static int const _flank_row[] = {0, 0, 1, 1};
+                for (int i = 0; i < (int)ARRAY_SIZE(_flank); i++) {
+                    CELL cell = home + (row + _flank_row[i]) * MAP_CELL_W + _flank[i];
+                    if ((unsigned)cell >= MAP_CELL_TOTAL || Map[cell].Land_Type() != LAND_CLEAR
+                        || Map[cell].Cell_Techno() != NULL) {
+                        continue;
+                    }
+                    InfantryClass* inf = new InfantryClass(INFANTRY_E1, enemy->Class->House);
+                    if (inf != NULL && !inf->Unlimbo(Cell_Coord(cell), DIR_N)) {
+                        delete inf;
+                    }
+                }
+            }
+        }
+    }
+#endif
+
     BEnd(BENCH_SCENARIO);
     return (true);
 }

@@ -167,6 +167,22 @@ enum TdSamState
     TDSAM_LOWERING,    // door anim frames 48-63
 };
 
+/*
+**	Whether a SAM site's target is in the air: an aircraft aloft, or a jumpjet flying in the
+**	top map layer, which TS counts as an air target too.
+*/
+static bool TF_SAM_Air_Target(TARGET target)
+{
+    if (!Target_Legal(target)) {
+        return (false);
+    }
+    if (Is_Target_Aircraft(target)) {
+        return (As_Aircraft(target)->Height != 0);
+    }
+    InfantryClass* inf = As_Infantry(target);
+    return (inf != NULL && inf->Is_Airborne_Jumpjet() && inf->In_Which_Layer() != LAYER_GROUND);
+}
+
 /***************************************************************************
 **	Center of building offset table.
 */
@@ -3810,6 +3826,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
         case STRUCT_KENNEL:
         case STRUCT_TDPYLE:     // TD GDI Barracks — shares BARRACKS exit-cell pattern (TD building.cpp:2288 aliases STRUCT_BARRACKS||STRUCT_HAND). See docs/td-tier1-verification.md.
         case STRUCT_TDHAND:     // TD Nod Hand of Nod — same BARRACKS||HAND alias in TD source. M4 Tier 3.
+        case STRUCT_TSPILE:     // TS Barracks: same exit-cell pattern, spawned at its doorway pixel.
 
             cell = Find_Exit_Cell(base);
             if (cell != 0) {
@@ -4527,7 +4544,7 @@ TARGET BuildingClass::Greatest_Threat(ThreatType threat) const
 bool BuildingClass::TDSAM_Try_Reacquire(void)
 {
     TARGET newtarget = Greatest_Threat(THREAT_NORMAL);
-    if (Target_Legal(newtarget) && Is_Target_Aircraft(newtarget) && As_Aircraft(newtarget)->Height != 0) {
+    if (TF_SAM_Air_Target(newtarget)) {
         Assign_Target(newtarget);
         return (true);
     }
@@ -6419,7 +6436,7 @@ int BuildingClass::Mission_Attack(void)
             if ((Class->IsPowered && House->Power_Fraction() < 1) || IsJammed) {
                 return (1);
             }
-            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+            if (!TF_SAM_Air_Target(TarCom)) {
                 Assign_Target(TARGET_NONE);
                 Status = SAM_READY;
                 Assign_Mission(MISSION_GUARD);
@@ -6441,7 +6458,7 @@ int BuildingClass::Mission_Attack(void)
         **	The launcher is in the process of firing.
         */
         case SAM_FIRING:
-            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+            if (!TF_SAM_Air_Target(TarCom)) {
                 Assign_Target(TARGET_NONE);
                 Status = SAM_READY;
             } else {
@@ -6512,7 +6529,7 @@ int BuildingClass::Mission_Attack(void)
         **	Target tracking — rotate to face TarCom.
         */
         case TDSAM_READY:
-            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+            if (!TF_SAM_Air_Target(TarCom)) {
                 // Smarter SAMs: volley still loaded (0 shots fired) -- look for another
                 // air target and stay up to engage it before retracting to reload.
                 if (TDSAM_Try_Reacquire()) {
@@ -6538,7 +6555,7 @@ int BuildingClass::Mission_Attack(void)
         **	First shot.
         */
         case TDSAM_FIRING:
-            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+            if (!TF_SAM_Air_Target(TarCom)) {
                 // Smarter SAMs: volley still loaded (0 shots fired) -- reacquire and
                 // re-rotate onto the new target rather than wasting the surface cycle.
                 if (TDSAM_Try_Reacquire()) {
@@ -6570,7 +6587,7 @@ int BuildingClass::Mission_Attack(void)
         **	Re-rotate after shot 1.
         */
         case TDSAM_READY2:
-            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+            if (!TF_SAM_Air_Target(TarCom)) {
                 // Smarter SAMs: one missile left in this volley -- reacquire another air
                 // target and stay up to spend it before retracting to reload.
                 if (TDSAM_Try_Reacquire()) {
@@ -6596,7 +6613,7 @@ int BuildingClass::Mission_Attack(void)
         **	Second shot — also Primary (TDSAM has no secondary weapon).
         */
         case TDSAM_FIRING2:
-            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+            if (!TF_SAM_Air_Target(TarCom)) {
                 // Smarter SAMs: one missile left in this volley -- reacquire and re-rotate
                 // onto the new target rather than retracting with a shot still loaded.
                 if (TDSAM_Try_Reacquire()) {

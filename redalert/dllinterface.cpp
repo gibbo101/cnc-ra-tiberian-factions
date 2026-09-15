@@ -6750,6 +6750,13 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.CenterCoordX = Coord_X(object->Center_Coord());
         new_object.CenterCoordY = Coord_Y(object->Center_Coord());
         /*
+        **  An airborne jumpjet is drawn lifted by its height, and its exported centre rises
+        **  with it so the health bar sits over the body rather than over the shadow.
+        */
+        if (object->What_Am_I() == RTTI_INFANTRY && ((InfantryClass const*)object)->Is_Airborne_Jumpjet()) {
+            new_object.CenterCoordY -= object->Height;
+        }
+        /*
         **  TF: flat TS buildings (side-on iso art, ~0.7 h/w) sit in the SOUTH
         **  of their square plot, so a plot-centred selection box rides over
         **  empty ground to the north. Bias the exported centre south onto the
@@ -8462,6 +8469,15 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                  "%s_LK", tech->IniName);
                     }
 
+                    /*
+                    ** A living Ghost Stalker locks its cameo the same way (one per house).
+                    */
+                    if (tech != NULL && sidebar_entry.Type == INFANTRY_TYPE
+                        && ((InfantryTypeClass const*)tech)->Type == INFANTRY_TSGHOST && TF_Ghost_At_Cap(PlayerPtr)) {
+                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                 "%s_LK", tech->IniName);
+                    }
+
                     if (factory) {
                         if (factory->Is_Building()) {
                             sidebar_entry.Constructing = true;
@@ -8670,6 +8686,15 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         */
                         if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                             && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(PlayerPtr)) {
+                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                     "%s_LK", tech->IniName);
+                        }
+
+                        /*
+                        ** Ghost Stalker cap LOCKED cameo -- matches the single-player path above.
+                        */
+                        if (tech != NULL && sidebar_entry.Type == INFANTRY_TYPE
+                            && ((InfantryTypeClass const*)tech)->Type == INFANTRY_TSGHOST && TF_Ghost_At_Cap(PlayerPtr)) {
                             snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
                                      "%s_LK", tech->IniName);
                         }
