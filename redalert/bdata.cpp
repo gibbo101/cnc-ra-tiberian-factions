@@ -83,6 +83,22 @@ static short const ExitPyle[] = {XYCELL(1, 2),
                                  XYCELL(-1, 1),
                                  REFRESH_EOL};
 
+// TS Barracks: the doorway is drawn on the west column of the plot, so a soldier steps
+// straight out of it into the cell two rows down before trying the neighbours.
+static short const ExitTsPile[] = {XYCELL(0, 2),
+                                   XYCELL(1, 2),
+                                   XYCELL(-1, 2),
+                                   XYCELL(2, 2),
+                                   XYCELL(-1, 1),
+                                   XYCELL(2, 1),
+                                   XYCELL(-1, 0),
+                                   XYCELL(2, 0),
+                                   XYCELL(0, -1),
+                                   XYCELL(1, -1),
+                                   XYCELL(-1, -1),
+                                   XYCELL(2, -1),
+                                   REFRESH_EOL};
+
 static short const ExitSub[] = {XYCELL(0, 2), XYCELL(2, 2), XYCELL(-1, 2), XYCELL(1, 2), XYCELL(3, 2)};
 
 static short const ExitWeap[] =
@@ -1412,7 +1428,7 @@ static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            TXT_NONE,
                                            "TSPILE",
                                            FACING_NONE,
-                                           XYP_COORD(24, 47),  // Match TDPYLE/TENT.
+                                           XYP_COORD(20, 34),  // The foot of the doorway on the art's lower-left face, in classic px from the plot origin.
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,              // fake
@@ -1424,7 +1440,7 @@ static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            BSIZE_21,           // 2x1 + bib row = the 2x2 (incl bib) the bib-seated art
                                                                 // actually covers; the 2x2 plot's top row was dead grid
                                                                 // over empty ground (Luke, 2026-08-04 23:25).
-                                           (short const*)ExitPyle,
+                                           (short const*)ExitTsPile,
                                            (short const*)List21,
                                            NULL);
 
