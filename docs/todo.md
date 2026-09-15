@@ -17,8 +17,8 @@ roster balance pass (see "TS roster balance pass" further down), then the releas
 - **TS infantry:** Light Infantry, Disc Thrower, Medic, Engineer, Jumpjet Infantry, Ghost Stalker.
   All six are built on `main` (local commits, 2026-09-13); see "TS infantry status".
 - **TS aircraft:** Orca Fighter, Orca Bomber, Carryall. FIRST fix the TS Helipad (TSHPAD): it
-  does not operate as a helipad today (Luke, 2026-09-15), and it should get a bib like the RA
-  and TD helipads.
+  does not operate as a helipad today (Luke, 2026-09-15), it should get a bib like the RA and
+  TD helipads, and the aircraft's spawn and return point on the pad must be right.
 - **Remaining vehicles:** Mobile Sensor Array, Juggernaut, Limpet Drone, Mobile EMP, Mobile War
   Factory.
 - **EMP Pulse Cannon:** branch `emp-cannon` (`docs/emp-cannon-design.md`), stage A verified.
