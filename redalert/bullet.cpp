@@ -50,6 +50,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include <math.h>
 
 /***********************************************************************************************
  * BulletClass::BulletClass -- Bullet constructor.                                             *
@@ -89,6 +90,12 @@ BulletClass::BulletClass(BulletType id,
     , TFPodApproach(DIR_N)
     , TFPodType(INFANTRY_TDE1)
     , TFBounces(0)
+    , TFVelX(0.0)
+    , TFVelY(0.0)
+    , TFVelZ(0.0)
+    , TFPosX(0.0)
+    , TFPosY(0.0)
+    , TFPosZ(0.0)
     , IsInaccurate(false)
     , IsToAnimate(false)
     , IsLocked(true)
@@ -517,37 +524,269 @@ static InfantryClass* TF_Airborne_Jumpjet(TARGET target)
 }
 
 /*
-**	The Disc Thrower's disc skips like TS's [Lobbed] (Bouncy, Elasticity .75, OpenTS
-**	bullet.cpp). On touching down it goes off if an enemy stands in the cell, on its third
-**	touchdown, or when too little rise is left to leave the ground; otherwise it springs
-**	back up at three quarters of its vertical and ground speed. Returns whether it bounced.
+**	TS's constants for the Disc Thrower's disc: [General] Gravity=6 halved for a Floater,
+**	BulletTypeClass's default Elasticity, and the band above the ground inside which a
+**	ballistic shot strikes a building, a wall or (once skipping) a cliff.
 */
-bool BulletClass::TS_Disc_Bounce(void)
+static double const TS_FLOATER_GRAVITY = 3.0;
+static double const TS_DISC_ELASTICITY = 0.75;
+static int const TS_OBSTACLE_BAND = 150;
+
+/*
+**	TS's firing solution for a lobbed shot (OpenTS combat.cpp Calculate_Projectile_Angle): the
+**	launch angle that carries a shot at this speed, under this gravity, across a horizontal
+**	distance to a height difference. A reachable aim point has a flat and a lobbed answer;
+**	high_arc picks the lobbed one. Returns whether any answer exists.
+*/
+static bool TS_Projectile_Angle(bool high_arc, double speed, double distance, double height, double gravity, double& angle)
 {
-    TechnoClass* techno = Map[Coord_Cell(Coord)].Cell_Techno();
-    if (techno == Payback || (techno != NULL && Payback != NULL && Payback->House->Is_Ally(techno))) {
-        techno = NULL;
-    }
-    TFBounces++;
-    int rise = -Riser * 3 / 4;
-    if (techno != NULL || TFBounces >= 3 || rise < 4) {
+    double dx2 = (distance < 1.0) ? 1.0 : distance * distance;
+    double vsq = speed * speed;
+    double value = vsq * vsq - 2.0 * vsq * height * gravity - gravity * gravity * dx2;
+    if (value < 0.0) {
         return (false);
+    }
+    double base = vsq - height * gravity;
+    double numerator = high_arc ? base - sqrt(value) : base + sqrt(value);
+    double cos2 = numerator / (((height * height) / dx2 + 1.0) * 2.0);
+    if (cos2 < 0.0) {
+        return (false);
+    }
+    double ratio = sqrt(cos2) / speed;
+    angle = acos(ratio > 1.0 ? 1.0 : ratio);
+    return (true);
+}
+
+/*
+**	Launches the Disc Thrower's disc as TS throws [Lobbed] (OpenTS TechnoClass::Fire_At). It
+**	leaves the thrower's hand at his fire height, aimed where the target will be: a moving
+**	vehicle is led by the ground it covers while the disc is in the air (Predict_Target_Coord).
+**	The launch speed carries the weapon's full range under the Floater's half gravity, capped
+**	at half the distance to the aim point, and the flat arc that lands on the aim point sets
+**	the angle. Returns false, throwing nothing, when no arc reaches the aim point.
+*/
+bool BulletClass::TS_Disc_Launch(COORDINATE coord)
+{
+    /*
+    **	RA's fire coordinate carries the hand height as a northward shift; the disc starts on
+    **	the ground beneath that point, at that height.
+    */
+    int lift = 0;
+    int range = CELL_LEPTON_W * 9 / 2;
+    if (Payback != NULL) {
+        TechnoTypeClass const* tclass = Payback->Techno_Type_Class();
+        lift = tclass->VerticalOffset;
+        coord = Coord_Move(coord, DIR_S, lift);
+        for (int which = 0; which < 2; which++) {
+            WeaponTypeClass const* weapon = (which == 0) ? tclass->PrimaryWeapon : tclass->SecondaryWeapon;
+            if (weapon != NULL && weapon->Bullet != NULL && weapon->Bullet->Type == BULLET_TSLOBBED) {
+                range = weapon->Range;
+                break;
+            }
+        }
+    }
+    int speed = (int)sqrt((double)range * TS_FLOATER_GRAVITY * 1.2);
+
+    COORDINATE tcoord = As_Coord(TarCom);
+    int theight = 0;
+    TechnoClass const* victim = As_Techno(TarCom);
+    if (victim != NULL) {
+        theight = victim->Height;
+        if (victim->What_Am_I() == RTTI_UNIT && ((UnitClass const*)victim)->IsDriving) {
+            UnitClass const* unit = (UnitClass const*)victim;
+            int maxspeed = min(unit->Class->MaxSpeed * unit->SpeedBias * unit->House->GroundspeedBias, (int)MPH_LIGHT_SPEED);
+            if (unit->IsFormationMove) {
+                maxspeed = unit->FormationMaxSpeed;
+            }
+            if (unit->Flagged != HOUSE_NONE) {
+                maxspeed /= 2;
+            }
+            int ground = maxspeed * fixed(unit->Speed, 256);
+            int travel = (int)(::Distance(coord, tcoord) / (speed * 0.9) * ground);
+            tcoord = Coord_Move(tcoord, unit->PrimaryFacing.Current(), travel);
+        }
+    }
+
+    double dx = (double)Coord_X(tcoord) - (double)Coord_X(coord);
+    double dy = (double)Coord_Y(tcoord) - (double)Coord_Y(coord);
+    double dz = (double)(theight - lift);
+    double planar = sqrt(dx * dx + dy * dy);
+    double length = sqrt(planar * planar + dz * dz);
+    if (speed > length / 2) {
+        speed = (int)(length / 2);
     }
 
     /*
-    **	Back in the air: the layer registration follows the height, or the next landing
-    **	would remove it from a list it is not in.
+    **	The lobbed arc is taken only for an aim point higher than it is far away; the flat
+    **	answer can point downwards, which a second solve a lepton further out reveals.
     */
+    bool high = (dz > 0.0 && planar < dz);
+    double angle = 0.0;
+    if (speed <= 0 || !TS_Projectile_Angle(high, speed, planar, dz, TS_FLOATER_GRAVITY, angle)) {
+        return (false);
+    }
+    if (!high) {
+        double test = angle;
+        TS_Projectile_Angle(false, speed, planar + 1.0, dz, TS_FLOATER_GRAVITY, test);
+        if (test < angle) {
+            angle = -angle;
+        }
+    }
+
+    Height = 0;
+    if (!ObjectClass::Unlimbo(coord)) {
+        return (false);
+    }
+    Map.Remove(this, In_Which_Layer());
+
+    double horizontal = speed * cos(angle);
+    TFVelX = (planar > 0.0) ? horizontal * dx / planar : 0.0;
+    TFVelY = (planar > 0.0) ? horizontal * dy / planar : 0.0;
+    TFVelZ = speed * sin(angle);
+    TFPosX = Coord_X(coord);
+    TFPosY = Coord_Y(coord);
+    TFPosZ = lift;
+    TFBounces = 0;
+    Height = lift;
+    IsFalling = false;
+    Riser = 0;
+    PrimaryFacing = ::Direction(coord, tcoord);
+
+    Map.Submit(this, In_Which_Layer());
+    return (true);
+}
+
+/*
+**	Flies the Disc Thrower's disc on TS's ballistic step for a Bouncy Floater (OpenTS
+**	BulletClass::AI, the unguided branch). Each frame half gravity pulls it down and it moves
+**	by its velocity. Flying under the obstacle band into a non-allied building or a wall
+**	strikes it. Striking the ground or an obstacle bounces it back at three quarters of its
+**	speed, unless an enemy stands in the cell it came from, the landing cell is water or a
+**	cliff, or it has touched down three times; any of those sets it off. Once it has skipped,
+**	flying low over a cliff sets it off too, though a first throw clears cliffs. In flight it
+**	goes off on any enemy within half a cell of it, and it goes off where it lies once it has
+**	slowed to a crawl near the ground. A disc that lands on someone near its target goes off
+**	on the target, as TS nudges a collision onto its victim.
+*/
+void BulletClass::TS_Disc_AI(void)
+{
+    ObjectClass::AI();
+    if (!IsActive) {
+        return;
+    }
+
+    COORDINATE const from = Coord;
+    bool forced = false;
+    bool collided = false;
+
+    TFVelZ -= TS_FLOATER_GRAVITY;
+    double x = TFPosX + TFVelX;
+    double y = TFPosY + TFVelY;
+    double z = TFPosZ + TFVelZ;
+
+    /*
+    **	A disc thrown off the edge of the map vanishes.
+    */
+    double const edge = (double)(MAP_CELL_W * CELL_LEPTON_W);
+    if (x < 0.0 || y < 0.0 || x >= edge || y >= edge || !Map.In_Radar(Coord_Cell(XY_Coord((int)x, (int)y)))) {
+        Mark();
+        delete this;
+        return;
+    }
+    COORDINATE coord = XY_Coord((int)x, (int)y);
+    CellClass& cell = Map[coord];
+    bool const low = (z >= 0.0 && z < TS_OBSTACLE_BAND);
+
+    bool obstacle = false;
+    if (low) {
+        BuildingClass* building = cell.Cell_Building();
+        if (building != NULL) {
+            obstacle = (building != Payback && (Payback == NULL || !Payback->House->Is_Ally(building)));
+        } else if (cell.Overlay != OVERLAY_NONE && OverlayTypeClass::As_Reference(cell.Overlay).IsWall) {
+            obstacle = true;
+        }
+    }
+
+    if (z < 0.0 || obstacle) {
+        z = 0.0;
+        TFVelX *= TS_DISC_ELASTICITY;
+        TFVelY *= TS_DISC_ELASTICITY;
+        TFVelZ *= -TS_DISC_ELASTICITY;
+
+        CELL fromcell = Coord_Cell(from);
+        TechnoClass* techno = Map[fromcell].Cell_Techno();
+        if ((Payback != NULL && fromcell == Coord_Cell(Payback->Center_Coord()))
+            || (techno != NULL && Payback != NULL && Payback->House->Is_Ally(techno))) {
+            techno = NULL;
+        }
+        if (techno != NULL && techno != Payback) {
+            forced = true;
+            collided = true;
+        }
+
+        LandType land = cell.Land_Type();
+        if (land == LAND_WATER || land == LAND_RIVER || land == LAND_ROCK) {
+            forced = true;
+        }
+
+        TFBounces++;
+        if (TFBounces >= 3) {
+            forced = true;
+        }
+    } else if (TFBounces > 0 && low && cell.Land_Type() == LAND_ROCK) {
+        forced = true;
+    }
+
+    if (!forced) {
+        TechnoClass* techno = cell.Cell_Techno();
+        if (techno != NULL && techno != Payback && (Payback == NULL || !Payback->House->Is_Ally(techno))) {
+            COORDINATE hit = techno->Center_Coord();
+            double hx = (double)Coord_X(hit) - x;
+            double hy = (double)Coord_Y(hit) - y;
+            double hz = (double)techno->Height - z;
+            if (sqrt(hx * hx + hy * hy + hz * hz) < CELL_LEPTON_W / 2) {
+                forced = true;
+                coord = hit;
+                x = Coord_X(hit);
+                y = Coord_Y(hit);
+                z = techno->Height;
+            }
+        }
+    }
+
+    double speed = sqrt(TFVelX * TFVelX + TFVelY * TFVelY + TFVelZ * TFVelZ);
+    if (speed < 10.0 && Height < 10) {
+        forced = true;
+    }
+
+    Mark();
     LayerType layer = In_Which_Layer();
-    IsFalling = true;
-    Height = 1;
-    Riser = rise;
+    Coord = coord;
+    Height = (int)z;
+    TFPosX = x;
+    TFPosY = y;
+    TFPosZ = z;
     if (In_Which_Layer() != layer) {
         Map.Remove(this, layer);
         Map.Submit(this, In_Which_Layer());
     }
-    Fly_Speed(192, Get_Speed());
-    return (true);
+
+    if (forced) {
+        if (collided && Target_Legal(TarCom)) {
+            COORDINATE tcoord = As_Coord(TarCom);
+            ObjectClass const* tobj = As_Object(TarCom);
+            double tz = (tobj != NULL) ? (double)tobj->Height : 0.0;
+            double mx = (double)Coord_X(tcoord) - x;
+            double my = (double)Coord_Y(tcoord) - y;
+            double mz = (z + tz) / 2.0 - tz;
+            double reach = (speed * 2.0 > CELL_LEPTON_W / 2) ? speed * 2.0 : (double)(CELL_LEPTON_W / 2);
+            if (sqrt(mx * mx + my * my + mz * mz) / 3.0 <= reach) {
+                Coord = tcoord;
+            }
+        }
+        Bullet_Explodes(true);
+        delete this;
+    }
 }
 
 /***********************************************************************************************
@@ -585,6 +824,11 @@ void BulletClass::AI(void)
 
     if (Class->IsTDPort) {
         AI_TD();
+        return;
+    }
+
+    if (*this == BULLET_TSLOBBED) {
+        TS_Disc_AI();
         return;
     }
 
@@ -945,29 +1189,7 @@ void BulletClass::AI(void)
     */
     bool forced = false; // Forced explosion.
     if ((Class->IsArcing || Class->IsDropping) && !IsFalling) {
-        forced = !(*this == BULLET_TSLOBBED && TS_Disc_Bounce());
-    }
-
-    /*
-    **	The disc is a TS Floater: ObjectClass::AI pulls it down at full gravity, and half of
-    **	that is given back each frame (the odd unit alternating), so it falls at half gravity.
-    */
-    if (*this == BULLET_TSLOBBED && IsFalling) {
-        Riser += Rule.Gravity / 2 + ((Frame & 1) ? Rule.Gravity % 2 : 0);
-    }
-
-    /*
-    **	The disc also goes off in flight when it passes within half a cell of an enemy
-    **	soldier or vehicle near the ground, as TS's ballistic projectiles do; the firer and
-    **	its allies are ignored. A building stops it only where it touches down.
-    */
-    if (!forced && *this == BULLET_TSLOBBED && Height < CELL_LEPTON_W / 2) {
-        TechnoClass* techno = Map[Coord_Cell(Coord)].Cell_Techno();
-        if (techno != NULL && techno != Payback && techno->What_Am_I() != RTTI_BUILDING
-            && (Payback == NULL || !Payback->House->Is_Ally(techno))
-            && ::Distance(Coord, techno->Center_Coord()) < CELL_LEPTON_W / 2) {
-            forced = true;
-        }
+        forced = true;
     }
 
     /*
@@ -1094,11 +1316,7 @@ void BulletClass::AI(void)
         **	maintenance (usually nothing). Otherwise, explode and then
         **	delete the bullet.
         */
-        /*
-        **	The bouncing disc ignores the proximity fuse: it only goes off where TS_Disc_Bounce
-        **	or its in-flight check says so, however far it skips past its target.
-        */
-        if (!forced && (Class->IsDropping || *this == BULLET_TSLOBBED || !Fuse_Checkup(Coord))) {
+        if (!forced && (Class->IsDropping || !Fuse_Checkup(Coord))) {
             /*
             **	Certain projectiles lose strength when they travel.
             */
@@ -1404,6 +1622,10 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
         return (Unlimbo_TD(coord, dir));
     }
 
+    if (*this == BULLET_TSLOBBED) {
+        return (TS_Disc_Launch(coord));
+    }
+
     /*
     **	Try to unlimbo the bullet as far as the base class is concerned. Use the already
     **	set direction and strength if the "punt" values were passed in. This allows a bullet
@@ -1513,14 +1735,6 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
             Height = 1;
             Riser = ((Distance(tcoord) / 2) / (speed + 1)) * Rule.Gravity;
             Riser = max(Riser, 10);
-
-            /*
-            **	The Disc Thrower's disc is a TS Floater and falls at half gravity (AI), so it
-            **	leaves at half the rise: the same time in the air under a lower, lazier arc.
-            */
-            if (*this == BULLET_TSLOBBED) {
-                Riser = max(Riser / 2, 5);
-            }
         }
         if (Class->IsDropping) {
             IsFalling = true;

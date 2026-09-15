@@ -86,6 +86,18 @@ public:
     **	Zero and unused for every other bullet type.
     */
     int TFBounces;
+    /*
+    **	TSLOBBED: the disc flies on TS's own ballistic step, so it carries a velocity in
+    **	leptons per frame and a position to fractions of a lepton (X and Y across the map, Z
+    **	above the ground); Coord and Height are the whole-lepton parts. Zero and unused for
+    **	every other bullet type.
+    */
+    double TFVelX;
+    double TFVelY;
+    double TFVelZ;
+    double TFPosX;
+    double TFPosY;
+    double TFPosZ;
     enum
     {
         TF_POD_CEILING = 1280,       // spawn altitude in leptons (5 cells of descent)
@@ -144,7 +156,8 @@ public:
 
     bool Is_Forced_To_Explode(COORDINATE& coord) const;
     void Bullet_Explodes(bool forced);
-    bool TS_Disc_Bounce(void);
+    bool TS_Disc_Launch(COORDINATE coord);
+    void TS_Disc_AI(void);
     int Shape_Number(void) const;
     virtual LayerType In_Which_Layer(void) const;
     virtual COORDINATE Sort_Y(void) const;
