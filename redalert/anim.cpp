@@ -631,6 +631,10 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
     , SonicDir(DIR_N)
     , SonicT(-1)
     , SonicTether(TARGET_NONE)
+    , RailSpeed(0.0f)
+    , RailBlend(0.0f)
+    , RailFade(0.0f)
+    , RailLife(0)
     , Loops(1)
     , IsToDelete(false)
     , IsBrandNew(true)
@@ -799,6 +803,130 @@ AnimClass::~AnimClass(void)
 #endif
 }
 
+/*
+**	A random step in [-0.5, 0.5], as TS's Random_Double(-0.5, 0.5), from the non-critical
+**	generator: railgun sparks are cosmetic.
+*/
+static double TF_Rail_Jitter(void)
+{
+    return (Sim_Random_Pick(-500, 500) / 1000.0);
+}
+
+/*
+**	Lays a TS railgun coil along a shot (OpenTS partsys.cpp ParticleSystemClass::Railgun_AI),
+**	from the muzzle at (sx, sy) across (dx, dy), dist leptons long. ParticlesPerCoord sparks per
+**	lepton sit on a helix of SpiralRadius around the line, turning SpiralDeltaPerCoord radians per
+**	lepton, each nudged by up to half PositionPerturbationCoefficient on every axis. Each drifts
+**	outward along its own point of the helix, bent by up to half MovementPerturbationCoefficient,
+**	at its particle Velocity plus a speed that random-walks from spark to spark, and lives MaxEC
+**	plus up to nine frames. The helix's height draws as a northward shift, as screen-up is
+**	map-north. The Ghost Stalker's light railgun ([SmallRailgunSys], [SmallRailgunPart]) and the
+**	Mk. II's ([LargeRailgunSys], [LargeRailgunPart]) differ only in these values. Returns the
+**	frames until the last spark fades.
+*/
+int TF_Railgun_Coil(bool small, int sx, int sy, int dx, int dy, int dist)
+{
+    struct RailgunSystemType
+    {
+        AnimType Spark;
+        double PerLepton;      // ParticlesPerCoord
+        double Radius;         // SpiralRadius
+        double Turn;           // SpiralDeltaPerCoord
+        double Position;       // PositionPerturbationCoefficient
+        double Movement;       // MovementPerturbationCoefficient
+        double VelocityJitter; // VelocityPerturbationCoefficient
+        double Velocity;       // the particle's Velocity
+        double ColorSpeed;     // the particle's ColorSpeed
+        int MaxEC;             // the particle's MaxEC
+    };
+    static RailgunSystemType const _small = {ANIM_TS_RAILFXS, .1, 6.0, .035, 20.0, .3, .6, .4, .03, 70};
+    static RailgunSystemType const _large = {ANIM_RAILFX, .15, 15.0, .03, 30.0, .4, .6, .3, .009, 70};
+    RailgunSystemType const& sys = small ? _small : _large;
+
+    if (dist <= 0) {
+        return (0);
+    }
+    double px = -(double)dy / dist;
+    double py = (double)dx / dist;
+    int count = (int)(dist * sys.PerLepton);
+    double walk = 0.0;
+    int longest = 0;
+    for (int i = 0; i < count; i++) {
+        double frac = (double)i / count;
+        double angle = dist * frac * sys.Turn;
+        double spiral[3] = {px * cos(angle), py * cos(angle), sin(angle)};
+
+        double pos[3];
+        pos[0] = sx + dx * frac + spiral[0] * sys.Radius + TF_Rail_Jitter() * sys.Position;
+        pos[1] = sy + dy * frac + spiral[1] * sys.Radius + TF_Rail_Jitter() * sys.Position;
+        pos[2] = spiral[2] * sys.Radius + TF_Rail_Jitter() * sys.Position;
+
+        double dir[3];
+        double length = 0.0;
+        for (int k = 0; k < 3; k++) {
+            dir[k] = spiral[k] + TF_Rail_Jitter() * sys.Movement;
+            length += dir[k] * dir[k];
+        }
+        length = sqrt(length);
+
+        double step = (TF_Rail_Jitter() + walk) * (sys.VelocityJitter * 0.5);
+        walk = (step > sys.VelocityJitter) ? sys.VelocityJitter : ((step < -sys.Movement) ? -sys.Movement : step);
+
+        int x = (int)pos[0];
+        int y = (int)(pos[1] - pos[2]);
+        if (x < 0 || y < 0) {
+            continue;
+        }
+        AnimClass* spark = new AnimClass(sys.Spark, XY_Coord(x, y));
+        if (spark == NULL) {
+            break;
+        }
+        for (int k = 0; k < 3; k++) {
+            spark->RailPos[k] = (float)pos[k];
+            spark->RailDir[k] = (length > 0.0) ? (float)(dir[k] / length) : 0.0f;
+        }
+        spark->RailSpeed = (float)(walk + sys.Velocity);
+        spark->RailBlend = 0.0f;
+        spark->RailFade = (float)sys.ColorSpeed;
+        spark->RailLife = sys.MaxEC + Sim_Random_Pick(0, 9);
+        spark->Set_Stage(0);
+        if (spark->RailLife > longest) {
+            longest = spark->RailLife;
+        }
+    }
+    return (longest);
+}
+
+/*
+**	One frame of a TS railgun spark (OpenTS ParticleClass::Railgun_Behavior_AI): it moves along
+**	its direction at its speed, the speed jittering by up to .05 either way, and its colour blends
+**	a further ColorSpeed plus up to .05 toward the second colour of its list, holding there once
+**	it arrives. The art is that blend as an even 12-frame ladder. It is gone when its life runs out.
+*/
+void AnimClass::Rail_Spark_AI(void)
+{
+    if (IsToDelete || --RailLife <= 0) {
+        delete this;
+        return;
+    }
+    for (int k = 0; k < 3; k++) {
+        RailPos[k] += RailDir[k] * RailSpeed;
+    }
+    RailSpeed += (float)(TF_Rail_Jitter() * 0.1);
+    RailBlend += RailFade + (float)((TF_Rail_Jitter() + 0.5) * 0.05);
+    if (RailBlend > 1.0f) {
+        RailBlend = 1.0f;
+    }
+    int x = (int)RailPos[0];
+    int y = (int)(RailPos[1] - RailPos[2]);
+    if (x < 0 || y < 0) {
+        delete this;
+        return;
+    }
+    Coord = XY_Coord(x, y);
+    Set_Stage((int)(RailBlend * 11.0f + 0.5f));
+}
+
 /***********************************************************************************************
  * AnimClass::AI -- This is the low level anim processor.                                      *
  *                                                                                             *
@@ -816,6 +944,11 @@ AnimClass::~AnimClass(void)
  *=============================================================================================*/
 void AnimClass::AI(void)
 {
+    if (Class->Type == ANIM_RAILFX || Class->Type == ANIM_TS_RAILFXS) {
+        Rail_Spark_AI();
+        return;
+    }
+
 #ifdef VIC
     assert(Anims.ID(this) == ID);
     assert(IsActive);

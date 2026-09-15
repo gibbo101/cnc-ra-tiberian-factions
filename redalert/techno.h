@@ -226,6 +226,13 @@ public:
     int SonicBandEnd;
 
     /*
+    **	Tiberian Factions: the game frame at which this object's last railgun coil has faded.
+    **	A railgun cannot fire again while its coil lives (TS keeps one railgun particle system
+    **	per firer and refuses the shot until it is gone).
+    */
+    int RailCoilEnd;
+
+    /*
     **	The number of shot this object can fire before running out of ammo. If this
     **	value is zero, then firing is not allowed. If -1, then there is no ammunition
     **	limit.

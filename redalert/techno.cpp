@@ -777,6 +777,7 @@ TechnoClass::TechnoClass(RTTIType rtti, int id, HousesType house)
     , PrimaryFacing(DIR_N)
     , Arm(0)
     , SonicBandEnd(0)
+    , RailCoilEnd(0)
     , Ammo(-1)
     , ElectricZapDelay(-1)
     , ElectricZapTarget(0)
@@ -2810,7 +2811,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             **	Forget a target that is out of range and not in our zone, unless
             **	we're an aircraft (which can chase across zones).
             */
-            if (What_Am_I() != RTTI_AIRCRAFT && Target_Legal(TarCom) && !Is_In_Same_Zone(As_Cell(TarCom))) {
+            if (What_Am_I() != RTTI_AIRCRAFT && !(What_Am_I() == RTTI_INFANTRY && ((InfantryClass*)this)->Is_Jumpjet())
+                && Target_Legal(TarCom) && !Is_In_Same_Zone(As_Cell(TarCom))) {
                 int primary = What_Weapon_Should_I_Use(TarCom);
                 if (!In_Range(TarCom, primary)) {
                     Assign_Target(TARGET_NONE);
@@ -2966,9 +2968,12 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
 
         /*
         **	Perform a maintenance check to see that if somehow this object is trying to fire
-        **	upon an object it can never hit (because it can't reach it), then abort the tarcom
+        **	upon an object it can never hit (because it can't reach it), then abort the tarcom.
+        **	A jumpjet flies across zones like an aircraft, so its target is kept (TS treats the
+        **	two alike).
         */
-        if (What_Am_I() != RTTI_AIRCRAFT && Target_Legal(TarCom) && (!Is_Foot() || !((FootClass*)this)->Team.Is_Valid())
+        if (What_Am_I() != RTTI_AIRCRAFT && !(What_Am_I() == RTTI_INFANTRY && ((InfantryClass*)this)->Is_Jumpjet())
+            && Target_Legal(TarCom) && (!Is_Foot() || !((FootClass*)this)->Team.Is_Valid())
             && (!Is_Foot() || !Is_In_Same_Zone(As_Cell(TarCom)))) {
             int primary = What_Weapon_Should_I_Use(TarCom);
             if (!In_Range(TarCom, primary)) {
@@ -3350,6 +3355,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         if (Arm != 0)
             return (FIRE_REARM);
         if (weapon->IsSonic && (int)Frame < SonicBandEnd)
+            return (FIRE_REARM);
+        if (weapon->IsRailgun && (int)Frame < RailCoilEnd)
             return (FIRE_REARM);
 
         /*
@@ -4116,10 +4123,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 }
                 }
 
-                /*
-                **  The beam: near-white core between two blue outers (TS
-                **  LaserColor 25,20,255 -> RA palette 0x0A; core 0xA0).
-                */
                 int x, y, x1, y1;
                 Map.Coord_To_Pixel(source, x, y);
                 Map.Coord_To_Pixel(dest, x1, y1);
@@ -4127,10 +4130,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 x1 += Map.TacPixelX;
                 y += Map.TacPixelY;
                 y1 += Map.TacPixelY;
-                // TS railgun blue (LaserColor 25,20,255): dark-blue outers
-                // (0x0B = 0,0,168) under a bright pure-blue core (0x0A =
-                // 80,80,252). The launcher renders only the core line in the
-                // virtual window, so the core carries the look.
                 /*
                 **  Railgun only. The Disruptor draws NO beam line: TS's sonic
                 **  weapon is a band of distorted air, and there is no bolt or
@@ -4140,16 +4139,17 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 **  shot, which is what read as "a laser with stars on it".
                 */
                 if (!weapon->IsSonic) {
-                // The Ghost Stalker's light railgun is TS's orange laser ([SmallRailgunSys]
-                // LaserColor 255,128,0): dark-orange outers (0x07 = 168,84,0) under an
-                // orange core (0x9F = 252,136,0).
+                /*
+                **  The beam, as TS's railgun particle system draws it (OpenTS partsys.cpp
+                **  Railgun_AI): one thin line in the system's LaserColor with no outer glow,
+                **  in the nearest RA palette colour. The Ghost Stalker's [SmallRailgunSys]
+                **  orange 255,128,0 is 0x9F; the Mk. II's [LargeRailgunSys] blue 25,20,255
+                **  is 0x0A, which keeps its saturated blue. TS fades the line out over ten
+                **  frames; the launcher's own line animation carries it instead.
+                */
                 bool const small_rail = (weapon->ID == WEAPON_TSLTRAIL);
-                int const outer = small_rail ? 0x07 : 0x0B;
-                int const core = small_rail ? 0x9F : 0x0A;
-                Lines[0][0] = x + 1; Lines[0][1] = y; Lines[0][2] = x1; Lines[0][3] = y1; Lines[0][4] = outer;
-                Lines[1][0] = x - 1; Lines[1][1] = y; Lines[1][2] = x1; Lines[1][3] = y1; Lines[1][4] = outer;
-                Lines[2][0] = x;     Lines[2][1] = y; Lines[2][2] = x1; Lines[2][3] = y1; Lines[2][4] = core;
-                LineCount = 3;
+                Lines[0][0] = x; Lines[0][1] = y; Lines[0][2] = x1; Lines[0][3] = y1; Lines[0][4] = small_rail ? 0x9F : 0x0A;
+                LineCount = 1;
                 LineFrame = 0;
                 // 5, NOT more: the launcher's line renderer only supports
                 // animation frames 0-4 (the obelisk's proven envelope) —
@@ -4160,17 +4160,6 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 }
                 Map.Flag_To_Redraw(true);
 
-                /*
-                **  The coil, as TS's [LargeRailgunSys] particle system lays it
-                **  (OpenTS partsys.cpp Railgun_AI): ParticlesPerCoord=.15 sparks
-                **  along the shot on a helix of SpiralRadius=15 leptons turning
-                **  SpiralDeltaPerCoord=.03 rad per lepton, each jittered by
-                **  PositionPerturbationCoefficient=30. The helix's height axis
-                **  becomes a screen-vertical offset. TS's outward drift
-                **  (Velocity=.3 per frame) moves a spark ~2 px in its whole
-                **  life and is not reproduced. Density halved for the anim
-                **  heap: our sparks are HD sprites, not single pixels.
-                */
                 // How many stages of head start the muzzle end of the sonic band gets
                 // over its far end. The art's first SONIC_SWEEP_STAGES stages are fully
                 // transparent, so a far disc started at stage 0 stays dark until the
@@ -4180,25 +4169,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
                 // Must match LEAD_STAGES in scripts/ts_gen_sonicwave.py.
                 enum { SONIC_SWEEP_STAGES = AnimClass::SONIC_LEAD_STAGES };
                 if (weapon->IsRailgun) {
-                    // The Ghost Stalker's coil is [SmallRailgunSys]: ParticlesPerCoord .1,
-                    // SpiralRadius 6, SpiralDeltaPerCoord .035, PositionPerturbation 20,
-                    // grey sparks, on the same halved density as the Mk. II's.
-                    bool const small_rail = (weapon->ID == WEAPON_TSLTRAIL);
-                    int const sparks_per_cell = small_rail ? 13 : 19;
-                    int const spiral_radius = small_rail ? 6 : 15;
-                    int const jitter = small_rail ? 10 : 15;
-                    double const turn = small_rail ? 0.035 : 0.03;
-                    AnimType const spark = small_rail ? ANIM_TS_RAILFXS : ANIM_RAILFX;
-                    int count = (dist * sparks_per_cell) / CELL_LEPTON_W;
-                    for (int i = 0; i < count; i++) {
-                        int along = (dist * i) / count;
-                        double angle = (double)along * turn;
-                        double ring = cos(angle) * spiral_radius;
-                        double lift = sin(angle) * spiral_radius;
-                        int x = sx + (ddx * along) / dist + (int)(-(double)ddy * ring / dist) + Random_Pick(-jitter, jitter);
-                        int y = sy + (ddy * along) / dist + (int)((double)ddx * ring / dist) - (int)lift + Random_Pick(-jitter, jitter);
-                        new AnimClass(spark, XY_Coord(x, y));
-                    }
+                    RailCoilEnd = (int)Frame + TF_Railgun_Coil(weapon->ID == WEAPON_TSLTRAIL, sx, sy, ddx, ddy, dist);
                 }
 
                 /*

@@ -110,6 +110,14 @@ public:
     bool IsOrganic : 1;
 
     /*
+    **	Tiberian Factions: the share of this warhead's damage a prone soldier takes (TS gives
+    **	every warhead its own ProneDamage). A warhead without the key uses the rules' global
+    **	ProneDamage, as RA's all do.
+    */
+    bool HasProneDamage : 1;
+    fixed ProneDamage;
+
+    /*
     **	The warhead damage is reduced depending on the the type of armor the
     **	defender has. This table is what gives weapons their "character".
     */

@@ -2424,20 +2424,17 @@ static AnimTypeClass const ChemSW(ANIM_CHEM_SW, "TDCHEM-SW", 48, 9, false, false
 static AnimTypeClass const ChemW(ANIM_CHEM_W, "TDCHEM-W", 48, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const ChemNW(ANIM_CHEM_NW, "TDCHEM-NW", 48, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 
-// Tiberian Factions -- TS railgun particle spark (ANIM_RAILFX). TS renders the
-// railgun as a laser line plus particles spiraling around it; the beam is the
-// 3-line Lines[] draw (launcher ABI cap), so the spiral is a swarm of these
-// short-lived blue sparks spawned along a helix by the IsRailgun branch in
-// TechnoClass::Fire_At. Art = scripts/ts_gen_railfx.py: a 12-frame colour ladder
-// walking TS's [LargeRailgunPart] ColorList blue->grey then holding grey. 12 stages
-// x 4 ticks = 1.2 s: half TS's MaxEC, so the coil is gone before the 1.5 s refire
-// (TS locks the gun until its coil dies; we keep the gun's rate instead).
+// Tiberian Factions -- TS railgun particle spark (ANIM_RAILFX), the Mk. II's coil. TS
+// renders the railgun as a laser line plus particles spiralling around it; each spark is
+// one of TS's [LargeRailgunPart] particles, laid by TF_Railgun_Coil and moved each frame by
+// AnimClass::Rail_Spark_AI, which also sets its stage and ends it. Art =
+// scripts/ts_gen_railfx.py: a 12-frame ladder from the ColorList's blue to its grey.
 // Classic = transparent stub in TFASSETS.MIX.
 static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, false, false, false, false, false, false, false, 0, 4, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 
 // Tiberian Factions -- TS light railgun particle (ANIM_TS_RAILFXS), the Ghost Stalker's
-// coil: RAILFX's timing with [SmallRailgunPart]'s ColorList, (200,200,200) fading fast
-// to (150,150,150). Art = scripts/ts_gen_railfx.py. Classic = transparent stub.
+// coil: one of TS's [SmallRailgunPart] particles, run like RAILFX, on a ladder from
+// (200,200,200) to (150,150,150). Art = scripts/ts_gen_railfx.py. Classic = transparent stub.
 static AnimTypeClass const TsRailFxS(ANIM_TS_RAILFXS, "TSRAILFXS", 24, 3, false, false, false, false, false, false, false, false, false, 0, 4, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 
 // Tiberian Factions -- TS S_BANG34 (ANIM_TS_SBANG34), TS's [General] InfantryExplode: the burst
