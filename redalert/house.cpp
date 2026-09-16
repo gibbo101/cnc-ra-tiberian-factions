@@ -12047,6 +12047,19 @@ int HouseClass::AI_Aircraft(void)
         }
 
         /*
+        **	TS GDI flies the Orca Fighter and, with a Tech Center, the Orca Bomber, both from the
+        **	TS Helipad; one airframe per pad, the bomber taking every third slot.
+        */
+        if (Can_Build(&AircraftTypeClass::As_Reference(AIRCRAFT_TSORCA), ActLike)
+            && AircraftTypeClass::As_Reference(AIRCRAFT_TSORCA).Level <= (unsigned)Control.TechLevel
+            && BQuantity[STRUCT_TSHPAD] > AQuantity[AIRCRAFT_TSORCA] + AQuantity[AIRCRAFT_TSORCAB]) {
+            bool bomber = Can_Build(&AircraftTypeClass::As_Reference(AIRCRAFT_TSORCAB), ActLike)
+                          && AircraftTypeClass::As_Reference(AIRCRAFT_TSORCAB).Level <= (unsigned)Control.TechLevel
+                          && (AQuantity[AIRCRAFT_TSORCA] + AQuantity[AIRCRAFT_TSORCAB]) % 3 == 2;
+            BuildAircraft = bomber ? AIRCRAFT_TSORCAB : AIRCRAFT_TSORCA;
+            return (TICKS_PER_SECOND);
+        }
+        /*
         **	GDI A-10 -- the fixed-wing analog of the Orca case above. RA's MiG/Yak cases
         **	key on STRUCT_AIRSTRIP, which GDI never owns, so without this the GDI AI built
         **	no fixed-wing at all. Keyed to the separated GDI Airfield (STRUCT_TDGAFLD);
@@ -13859,7 +13872,7 @@ void HouseClass::Check_Pertinent_Structures(void)
         BuildingClass* b = Buildings.Ptr(index);
 
         if (b && b->IsActive && b->House == this) {
-            if (!b->Class->IsWall && *b != STRUCT_APMINE && *b != STRUCT_AVMINE) {
+            if (!b->Class->IsWall && *b != STRUCT_APMINE && *b != STRUCT_AVMINE && *b != STRUCT_TSDLIMP) {
                 if (!Special.ModernBalance
                     || (*b != STRUCT_SHIP_YARD && *b != STRUCT_FAKE_YARD && *b != STRUCT_SUB_PEN
                         && *b != STRUCT_FAKE_PEN && *b != STRUCT_TDGYARD && *b != STRUCT_TDNPEN)) {

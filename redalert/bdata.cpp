@@ -1965,6 +1965,38 @@ static BuildingTypeClass const ClassTdAfld(STRUCT_TDAFLD,
                                            (short const*)NULL  // No overlap row.
 );
 
+// TS Limpet Mine (STRUCT_TSDLIMP), Firestorm [DLIMPET]: the Limpet Drone settled.
+// Never built from the sidebar (the drone deploys into it, and the deploy order
+// packs it back into UNIT_TSLIMP). Mine-like: driven over, cloaked (rules
+// Cloakable=yes), and its LIMP shot attaches the drone to a passing vehicle
+// instead of doing damage (TF_Limpet_Attach), after which the mine is spent.
+// Art = DLIMPET body + DLIMP_A blink (10 healthy + 10 damaged), DLIMPMK build-up.
+static BuildingTypeClass const ClassTsDlimp(STRUCT_TSDLIMP,
+                                            TXT_NONE,
+                                            "TSDLIMP",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_NORMAL,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            true,                // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            true,                // insignificant (never announced, never a base)
+                                            false,               // theater specific
+                                            false,               // rotating turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_11,
+                                            NULL,
+                                            (short const*)List1,
+                                            (short const*)NULL);
+
 /*
 **  TDHQ (Communications Center / Radar) — 2×2 radar dome, ARMOR_WOOD,
 **    capturable, crewed. Wholesale port of TD's STRUCT_RADAR per
@@ -5093,6 +5125,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsVulc);        // STRUCT_TSVULC (TS Vulcan tower = the Vulcan plug)
     new BuildingTypeClass(ClassTsRock);        // STRUCT_TSROCK (TS RPG tower = the RPG plug)
     new BuildingTypeClass(ClassTsCsam);        // STRUCT_TSCSAM (TS SAM tower = the SAM plug)
+    new BuildingTypeClass(ClassTsDlimp);       // STRUCT_TSDLIMP (TS Limpet Mine)
 
     /*
     **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so
@@ -5278,6 +5311,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSWEAP, BSTATE_IDLE, 0, 32, 3},  // GAWEAP _A/_B (Rate 400) + _C (Rate 800) baked at 32 steps  // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8, swept fwd+back (ping-pong, packer order)
         {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)
+        {STRUCT_TSDLIMP, BSTATE_IDLE, 0, 10, 3}, // DLIMP_A blink halved (10 healthy + 10 damaged)
         {STRUCT_TSTECH, BSTATE_IDLE, 0, 8, 3},   // GATECH _A halved (8 healthy + 8 damage-pocked dome)
         {STRUCT_TSDEPT, BSTATE_IDLE, 0, 35, 3},  // GADEPT _A halved(5)+_B whole(7, odd=no damaged half) -> LCM 35
         {STRUCT_TSPLUG, BSTATE_IDLE, 0, 40, 3},  // GAPLUG windows _A(10)+_B(8)+_C(4) -> LCM 40

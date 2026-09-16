@@ -2139,19 +2139,50 @@ static void TF_Lobby_Difficulty_Retry();
 **	and anything deployable added later is covered. The key is the launcher's own default
 **	deploy binding (backslash, VK_OEM_5), so the stock MCV and every faction unit share it.
 */
+bool TF_DeployKeyBatch = false; // set while the deploy key runs its selected-object loop (techno.cpp What_Action)
+
 static int TF_Self_Action_Selected(void)
 {
     int acted = 0;
+    bool ts_unit = false;
+    /*
+    **	Every selected object deploys together with its own voice held, and TS units answer
+    **	with the crew's single "deploying" (TS's DeploySound), as TS's deploy key does.
+    */
+    TF_DeployKeyBatch = true;
+    AllowVoice = false;
     for (int index = 0; index < CurrentObject.Count(); index++) {
         ObjectClass* object = CurrentObject[index];
         if (object == NULL || !object->IsActive) {
             continue;
         }
-        if (object->What_Action(object) != ACTION_SELF) {
+        ActionType answer = object->What_Action(object);
+#if TF_DEV_BUILD
+        {
+            const char* up = getenv("USERPROFILE");
+            char lp[600];
+            snprintf(lp, sizeof(lp), "%s/MOD_DEBUG_HOTKEY.txt", up ? up : ".");
+            FILE* lf = fopen(lp, "a");
+            if (lf != NULL) {
+                fprintf(lf, "DEPLOY-KEY frame=%ld #%d/%d rtti=%d answer=%d\n", (long)Frame, index,
+                        CurrentObject.Count(), (int)object->What_Am_I(), (int)answer);
+                fclose(lf);
+            }
+        }
+#endif
+        if (answer != ACTION_SELF) {
             continue;
         }
         object->Active_Click_With(ACTION_SELF, object);
         acted++;
+        if (object->Is_Techno() && TF_Is_TS_Tree_Type(((TechnoClass*)object)->Techno_Type_Class())) {
+            ts_unit = true;
+        }
+    }
+    AllowVoice = true;
+    TF_DeployKeyBatch = false;
+    if (ts_unit) {
+        Sound_Effect(VOC_TS_DEPLOY, fixed(1), 1, 0, HOUSE_NONE);
     }
     return acted;
 }
@@ -2178,8 +2209,53 @@ static void TF_Deploy_Key_Tick(void)
 {
     static bool _was_down = false;
     bool down = (GetAsyncKeyState(VK_OEM_5) & 0x8000) != 0;
+#if TF_DEV_BUILD
+    /*
+    **	Dev builds also take the deploy order from a flag file, for headless runs where no
+    **	keyboard reaches the game: Documents/CnCRemastered/tf_deploy_now.flag, consumed on sight.
+    */
+    if ((Frame % 15) == 0) {
+        const char* prof = getenv("USERPROFILE");
+        if (prof != NULL && prof[0] != '\0') {
+            char flag[512];
+            snprintf(flag, sizeof(flag), "%s/Documents/CnCRemastered/tf_deploy_now.flag", prof);
+            FILE* ff = fopen(flag, "r");
+            if (ff != NULL) {
+                fclose(ff);
+                remove(flag);
+                /*
+                **	The flag also selects the player's TS MCVs, since the launcher resets the
+                **	selection list at match start.
+                */
+                Unselect_All();
+                for (int u = 0; u < Units.Count(); u++) {
+                    UnitClass* unit = Units.Ptr(u);
+                    if (unit != NULL && unit->IsActive && !unit->IsInLimbo && unit->House == PlayerPtr
+                        && *unit == UNIT_TSMCV) {
+                        unit->Select();
+                    }
+                }
+                {
+                    char lp[600];
+                    snprintf(lp, sizeof(lp), "%s/MOD_DEBUG_HOTKEY.txt", prof);
+                    FILE* lf = fopen(lp, "a");
+                    if (lf != NULL) {
+                        fprintf(lf, "DEPLOY-FLAG frame=%ld selected=%d\n", (long)Frame, CurrentObject.Count());
+                        fclose(lf);
+                    }
+                }
+                down = true;
+            }
+        }
+    }
+#endif
     if (down && !_was_down) {
-        TF_Self_Action_Selected();
+        int acted = TF_Self_Action_Selected();
+#if TF_DEV_BUILD
+        char msg[80];
+        snprintf(msg, sizeof(msg), "Deploy key: %d of %d selected", acted, CurrentObject.Count());
+        On_Message(msg, 5.0f, -1);
+#endif
     }
     _was_down = down;
 

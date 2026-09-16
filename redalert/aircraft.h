@@ -108,6 +108,10 @@ public:
         return (SecondaryFacing.Current());
     }
     int Shape_Number(void) const;
+    bool TF_Carryall_Pickup_Pending(void) const;
+    unsigned char TFBombsThisRun; // Orca Bomber: bombs dropped on the current run (TS drops a stick per pass)
+    bool TF_Carryall_Exchange(void);
+    void TF_Draw_Carried(int x, int y, WindowNumberType window) const;
     virtual MoveType Can_Enter_Cell(CELL cell, FacingType facing = FACING_NONE) const;
     virtual ObjectTypeClass const& Class_Of(void) const
     {

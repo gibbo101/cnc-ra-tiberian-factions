@@ -208,6 +208,9 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TSAAHeatSeeker"); //	BULLET_TSAAHEATSEEKER (TS SAM tower and Mk. I missile — RA's MISSILE art on RA's homing path)
     new BulletTypeClass("TSLobbed");      //	BULLET_TSLOBBED (TS Disc Thrower disc — accurate arc, TSDISCUS spin)
     new BulletTypeClass("TSInvisible3");  //	BULLET_TSINVISIBLE3 (TS [Invisible3] — instant, unseen, air and ground)
+    new BulletTypeClass("TSHellfireMissile"); // BULLET_TSHELLFIRE (TS [AAHeatSeeker2] — the Orca Fighter's homing missile)
+    new BulletTypeClass("TSBombShell");   // BULLET_TSBOMBSHELL (TS [Cannon2] dropped by the Orca Bomber)
+    new BulletTypeClass("TSBallistic2");  // BULLET_TSBALLISTIC2 (Firestorm [Ballistic2] -- the Juggernaut's arcing shell)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per

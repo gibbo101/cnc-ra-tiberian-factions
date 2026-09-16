@@ -782,8 +782,11 @@ bool DriveClass::While_Moving(void)
     **	visibly move on the map, then process accordingly.
     ** Slow the unit down if he's carrying a flag.
     */
-    MPHType maxspeed =
-        MPHType(min(Techno_Type_Class()->MaxSpeed * SpeedBias * House->GroundspeedBias, (int)MPH_LIGHT_SPEED));
+    int topspeed = Techno_Type_Class()->MaxSpeed * SpeedBias * House->GroundspeedBias;
+    if (LimpetType != 0) {
+        topspeed = topspeed * LimpetSpeedFactor; // a TS Limpet Drone rides along
+    }
+    MPHType maxspeed = MPHType(min(topspeed, (int)MPH_LIGHT_SPEED));
     if (IsFormationMove)
         maxspeed = FormationMaxSpeed;
 
@@ -930,6 +933,9 @@ bool DriveClass::While_Moving(void)
                                 memmove((char*)&Path[0], (char*)&Path[1], CONQUER_PATH_MAX - 1);
                                 Path[CONQUER_PATH_MAX - 1] = FACING_NONE;
                             } else {
+                                if (!IsActive) {   // a crate on the way in can have destroyed this unit
+                                    return (false);
+                                }
                                 Path[0] = FACING_NONE;
                                 TrackNumber = -1;
                                 actual = 0;
@@ -2687,6 +2693,13 @@ bool DriveClass::Start_Of_Move(void)
         IsNewNavCom = false;
         TrackIndex = 0;
         if (!Start_Driver(dest)) {
+            /*
+            **	The crate check inside Start_Driver can destroy this unit; nothing of it may be
+            **	touched after that, least of all a virtual call.
+            */
+            if (!IsActive) {
+                return (false);
+            }
             TrackNumber = -1;
             Path[0] = FACING_NONE;
             Set_Speed(0);
@@ -2776,7 +2789,11 @@ void DriveClass::AI(void)
         if ((Class->Speed == SPEED_FLOAT || Class->Speed == SPEED_HOVER || Class->Speed == SPEED_TRACK
              || (Class->Speed == SPEED_WHEEL && !Special.IsThreePoint))
             && PrimaryFacing.Is_Rotating()) {
-            if (PrimaryFacing.Rotation_Adjust(Class->ROT)) {
+            int rot = Class->ROT;
+            if (LimpetType != 0) {
+                rot = max(1, rot * LimpetSpeedFactor); // a TS Limpet Drone rides along
+            }
+            if (PrimaryFacing.Rotation_Adjust(rot)) {
                 Mark(MARK_CHANGE);
             }
 #else

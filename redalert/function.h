@@ -156,6 +156,8 @@ extern BuildingClass* TF_House_Plug_Host(HouseClass const* house, StructType plu
 extern TARGET TF_Hunter_Seeker_Acquire(HouseClass const* house); // pick a random live visible enemy for the Hunter Seeker (aircraft.cpp)
 extern bool TF_Is_Dropship_Delivered(UnitTypeClass const* type); // Unit arrives by dropship bay; drives the factory binding, order gates + countdown (house.cpp)
 extern bool TF_Mk2_At_Cap(HouseClass const* house); // House already fields its full Mk. II allowance (house.cpp; heap-counted, CSII fold unsafe)
+extern bool TF_DeployKeyBatch; // the deploy key is running its selected-object loop: self-actions answer for each object as if it were alone (dllinterface.cpp)
+extern bool TF_Limpet_Attach(TechnoClass* mine, int which); // a limpet mine's shot attaches its drone to the vehicle it targets (techno.cpp)
 extern bool TF_Ghost_At_Cap(HouseClass const* house); // House already fields its Ghost Stalker (house.cpp; heap-counted)
 extern bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id); // Begin_Production would turn this order away (bay reloading / Mk. II cap / Ghost Stalker cap); gates the EVA ack too (house.cpp)
 extern int TF_AI_IQ_From_Difficulty(DiffType diff); // lobby difficulty -> AI house IQ tier (behavioural difficulty)

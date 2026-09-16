@@ -315,7 +315,10 @@ highest quality the pipeline can produce.** Concretely:
   38 px taller and sits 78 px lower, `--canvas 624`), TSMCV (yaw0 90, no reorder →
   `ts_pack_tsmcv.py`), TSHVR (yaw0 90, `--canvas 500`) + HVRTUR (**`--z-clip 10`** drum clip,
   `--canvas 660`) → `ts_pack_hvr_hmec.py`, TSHMEC (yaw0 90, **`--elev 35`**, `--hva HMEC.HVA
-  --hva-frame f` for f in 0 2 4 6 8 11 13 15, `--canvas 1000`, dirs `ts35_hmec_<f>`) → same script.
+  --hva-frame f` for f in 0 2 4 6 8 11 13 15, `--canvas 1000`, dirs `ts35_hmec_<f>`, PLUS the same
+  renders with **`--shadow 0.6,-0.2`** into `ts35sh_hmec_<f>`: the body set owns the union fit, the
+  shadow set is what ships; canvas 576 / stub 72 so the east-cast shadow of the E-facing barrel
+  fits; NOT in `ts_reshadow.py`) → same script.
   Aircraft: DSHP dropship `--yaw0 180 --elev 32 --canvas 656 --px-per-voxel 6.4 --team-green
   255,204,51` → `ts_pack_dropship.py`. After ANY repack: `ts_reshadow.py` (not on water frames), then
   `ts_recrop_to_shipped.py` — see contract 11. VXLs

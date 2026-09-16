@@ -64,6 +64,7 @@ WarheadTypeClass::WarheadTypeClass(char const* name)
     : ID(Warheads.ID(this))
     , IniName(name)
     , SpreadFactor(1)
+    , LimpetFactor(0)
     , IsWallDestroyer(false)
     , IsWoodDestroyer(false)
     , IsTiberiumDestroyer(false)
@@ -161,6 +162,7 @@ bool WarheadTypeClass::Read_INI(CCINIClass& ini)
 {
     if (ini.Is_Present(Name())) {
         SpreadFactor = ini.Get_Int(Name(), "Spread", SpreadFactor);
+        LimpetFactor = ini.Get_Int(Name(), "LimpetFactor", LimpetFactor);
         IsWallDestroyer = ini.Get_Bool(Name(), "Wall", IsWallDestroyer);
         IsWoodDestroyer = ini.Get_Bool(Name(), "Wood", IsWoodDestroyer);
         IsTiberiumDestroyer = ini.Get_Bool(Name(), "Ore", IsTiberiumDestroyer);

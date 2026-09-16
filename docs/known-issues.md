@@ -684,6 +684,12 @@ of the prerequisite loop for every game type. `MOD_DEBUG_CANBUILD.txt` is switch
 ---
 
 ## Skirmish setup
+- **Candidate root cause (2026-09-16, fix deployed, awaiting a crates-on LAN):** a skirmish crash
+  with crates on was traced from its minidump to `DriveClass::Start_Of_Move`: `FootClass::Start_Driver`
+  runs `Goodie_Check` on the cell being entered, an explosion crate destroys the unit there, and the
+  stock code then calls the virtual `Set_Speed(0)` on the freed object (same gap in `While_Moving`).
+  Both failure paths now return when `IsActive` is clear. Only the simulating host runs the unit AI,
+  which fits "the host crashes". Verify with a crates-on LAN game before closing this entry.
 
 ### GDI/Nod skirmish "starting units" bonus gives RA units, not TD
 - **Severity:** minor.

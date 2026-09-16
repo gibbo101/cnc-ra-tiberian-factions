@@ -1040,6 +1040,16 @@ public:
     */
     int WalkFrames = 1;
     int WalkFacings = 32;
+    /*
+    **  Tiberian Factions -- TS DeployToFire (the Juggernaut). The unit walks with no gun,
+    **  sets down through DeployFrames of ladder art to fire from a fixed stance with a
+    **  turning turret, and packs up again before it moves. The tileset carries the walk
+    **  blocks, then 32 deployed facings, then the ladder. Parsed from `DeployToFire=` /
+    **  `DeployFrames=` / `DeployRate=` in rules.ini.
+    */
+    bool IsDeployToFire = false;
+    int DeployFrames = 0;
+    int DeployRate = 2;
 
     /*
     **  Tiberian Factions — TS walker firing animation (art.ini FiringFrames).

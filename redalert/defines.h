@@ -1438,6 +1438,9 @@ typedef enum BulletType : char
     BULLET_TSAAHEATSEEKER,  // TS [AAHeatSeeker]: the SAM tower's and Mk. I's missile, drawn with RA's MISSILE on RA's homing path, trailing TS's SMOKEY2.
     BULLET_TSLOBBED,        // TS [Lobbed]: the Disc Thrower's disc, a bouncing Floater arc drawn with TS's DISCUS (TSDISCUS, 7-frame spin).
     BULLET_TSINVISIBLE3,    // TS [Invisible3]: instant and unseen, hits air and ground alike (the Jumpjet Infantry's cannon).
+    BULLET_TSHELLFIRE,      // TS [AAHeatSeeker2]: the Orca Fighter's homing missile, air and ground, on RA's homing path with DRAGON art.
+    BULLET_TSBOMBSHELL,     // TS [Cannon2] as the Orca Bomber drops it: a falling bomb (RA Dropping) with the TD bomblet art.
+    BULLET_TSBALLISTIC2,    // Firestorm [Ballistic2]: the Juggernaut's arcing, inaccurate 120MM shell.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -1651,6 +1654,7 @@ typedef enum StructType : short
     STRUCT_TSVULC, // TS Vulcan Cannon tower "TSVULC" (GAVULC) — the tower's Vulcan plug AND the armed tower type in one: PowersUpBuilding=TSCTWR, and installing it REPLACES the bare tower with this rotating-turret building (building.cpp Unlimbo divert). TDGUN frame layout (32 facings, +32 recoil, +64 damaged). Fires TSVulcanTower.
     STRUCT_TSROCK, // TS RPG Upgrade tower "TSROCK" (GAROCK) — same plug-is-the-armed-tower pattern as TSVULC. Fires TSRPGTower (arcing, MinimumRange 2).
     STRUCT_TSCSAM, // TS SAM Upgrade tower "TSCSAM" (GACSAM) — same pattern. Fires TSRedEye2 (AA-only homing missile). Powered.
+    STRUCT_TSDLIMP, // TS Limpet Mine "TSDLIMP" (Firestorm DLIMPET, 1x1) — the drone settled: cloaked, driven over like a mine, fires its LimpetFactor warhead at a passing vehicle and is spent. The deploy order packs it back into UNIT_TSLIMP.
 
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
@@ -1673,7 +1677,7 @@ typedef enum StructType : short
     **	Second range of BuildingTypeClass::Is_Tiberian_Era.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TSCSAM
+    STRUCT_TS_TREE_LAST = STRUCT_TSDLIMP
 } StructType;
 
 /*
@@ -1937,6 +1941,8 @@ typedef enum UnitType : char
     UNIT_TSSUBTANK,         // TS Devil's Tongue (SUBTANK) — subterranean flame tank; fires TDFlameTongue (TS FireballLauncher mapped onto the TD flame chain). Art = SUBTANK.VXL: 32 driving + 80 dive/emerge pitch-ladder shapes (docs/subterranean-design.md).
     UNIT_TSSAPC,            // TS Subterranean APC (SAPC) — unarmed underground transport, Passengers=5, door logic alongside UNIT_APC/UNIT_TDAPC/UNIT_TSAPC. Art = SAPC.VXL, same 112-shape layout as TSSUBTANK.
     UNIT_TS4TNK,            // The old TS Mammoth Tank (TS [4TNK], TechLevel -1 in TS): twin 120mmx cannon + MammothTusk AA missiles, self-healing. Art = 4TNK.VXL hull 0-31 + 4TNKTUR/4TNKBARL turret 32-63 (scripts/ts_pack_4tnk.py).
+    UNIT_TSJUGG,            // TS Juggernaut (Firestorm [JUGG]): a walker that sets down to fire three arcing 90mm shells at long range (DeployToFire). Art = JUGGER.SHP walk + DJUGG deployed facings + DJUGGMK ladder (scripts/ts_pack_jugg.py).
+    UNIT_TSLIMP,            // TS Limpet Drone (Firestorm [LIMPET]): an unarmed hover crawler that deploys into the cloaked STRUCT_TSDLIMP mine. Art = LIMPED.SHP, a ten-frame crawl cycle with no facings (scripts/ts_pack_limpet.py).
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -2028,6 +2034,9 @@ typedef enum AircraftType : char
     AIRCRAFT_TDA10,     // v4.0: TD A-10 Warthog — GDI, fixed-wing napalm strafer, Ammo 3, airfield-built (AFLD owner-opened). DTA-style divergence (TD's A-10 was a support power). aadata.cpp TdA10.
     AIRCRAFT_TDPARADROP, // v4.0: targetable support-drop C-17 (Nod Paratroopers delivery). Twin of TDCARGO but attackable + Passengers=5; reuses the TDC17 sprite via RA_UNITS.XML alias. aadata.cpp TDParaDropPlane.
     AIRCRAFT_TSHUNT,     // TS Hunter Seeker droid (GHUNTER, art GGHUNT) -- the SPC_TS_HUNTSEEK payload: a VTOL kamikaze that emerges beside the Upgrade Centre, picks a random enemy and detonates on it. Unselectable, unbuildable. aadata.cpp TsHunt; flight in AircraftClass::TF_Hunter_Seeker_AI.
+    AIRCRAFT_TSORCA,     // TS Orca Fighter (ORCA): VTOL gunship, TS [Hellfire] missiles, Ammo 5, built and rearmed at the TS Helipad. aadata.cpp TsOrca.
+    AIRCRAFT_TSORCAB,    // TS Orca Bomber (ORCAB): VTOL bomber, TS [Bomb] dropped over the target, Ammo 2, needs the TS Tech Center. aadata.cpp TsOrcaB.
+    AIRCRAFT_TSCARRY,    // TS Carryall (TRNSPORT): unarmed VTOL that lifts one vehicle and sets it down where sent (AircraftClass carryall missions). aadata.cpp TsCarry.
 
     AIRCRAFT_COUNT,
     AIRCRAFT_NONE = -1,
@@ -3449,6 +3458,10 @@ typedef enum WarheadType : char
     WARHEAD_TSSAMWH,  // TS SAM warhead. TS [SAMWH]: Spread 3, 100% all, InfDeath 3. Registered "TSSAMWH".
     WARHEAD_TSHE,     // TS high-explosive warhead. TS [HE]: Spread 4, Wall=yes, Wood=yes, verses 100/85/70/35/28%, InfDeath 2. Registered "TSHE".
     WARHEAD_TSRAILSHOT2, // TS light railgun warhead (LtRail line damage). TS [RailShot2]: Spread 1, verses 100/130/150/110/5%, InfDeath 2. Registered "TSRailShot2".
+    WARHEAD_TSORCAAP, // TS Orca missile warhead. TS [ORCAAP]: Spread 2, verses 30/65/150/100/30%, InfDeath 3, ProneDamage 50%. Registered "TSOrcaAP".
+    WARHEAD_TSORCAHE, // TS Orca bomb warhead. TS [ORCAHE]: wide splash, verses 200/90/75/32/100%, InfDeath 2, ProneDamage 150%. Registered "TSOrcaHE".
+    WARHEAD_TSARTYHE, // TS artillery warhead. TS [ARTYHE]: Spread 6, verses 100/85/68/35/35%, InfDeath 2, ProneDamage 150%. Registered "TSArtyHE".
+    WARHEAD_TSLIMPY,  // TS Limpet warhead (Firestorm [LIMPY]): LimpetFactor 35 -- the shot attaches the drone instead of doing damage.
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
@@ -3561,6 +3574,10 @@ typedef enum WeaponType : char
     WEAPON_TSHEAL,         // TS Medic heal: TS [Heal] (Dmg-50/ROF80/Range2.83, Organic warhead, HEALER1 report). Registered "TSHeal".
     WEAPON_TSLTRAIL,       // TS Ghost Stalker light railgun: TS [LtRail] (AmbientDamage150 along the line/ROF60/Range6, orange beam, TSRailShot2 warhead, BIGGGUN1 report). Registered "TSLtRail".
     WEAPON_TSJUMPCANNON,   // TS Jumpjet Infantry cannon: TS [JumpCannon] (Dmg15/Burst2/ROF40/Range5, TSSA warhead, JUMPJET1 report). Registered "TSJumpCannon".
+    WEAPON_TSHELLFIRE,     // TS Orca Fighter missiles: TS [Hellfire] (Dmg30/Burst2/ROF50/Range6, TSOrcaAP warhead, ORCAMIS1 report). Registered "TSHellfire".
+    WEAPON_TSBOMB,         // TS Orca Bomber bomb: TS [Bomb] (Dmg160/ROF10, TSOrcaHE warhead) dropped from over the target. Registered "TSBomb".
+    WEAPON_TSJUGG90MM,     // TS Juggernaut cannon: Firestorm [Jugg90mm] (Dmg75/Burst3/ROF150/Range18/MinimumRange5, TSArtyHE, JUGGER1 report). Registered "TSJugg90mm".
+    WEAPON_TSLIMP,         // TS Limpet Mine shot: Firestorm [LIMP] (Damage 1, ROF 80, Range 2, invisible bullet, TSLimpy, LIMPBOM1 report). Registered "TSLimpet".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -4275,6 +4292,27 @@ typedef enum VocType : short
     VOC_TS_14I014,
     VOC_TS_14I016,
     VOC_TS_EXPNEW10,     // TS small explosion (EXPNEW10, art.ini [S_BANG34] Report=): a jumpjet shot down. RAC/RAR_SFX_TSEXPNEW10 -> bundled TSEXPNEW10.WAV.
+    VOC_TS_ORCAMIS1,     // TS Orca missile launch (ORCAMIS1, [Hellfire] Report=). RAC/RAR_SFX_TSORCAMIS1 -> bundled TSORCAMIS1.WAV.
+    VOC_TS_ORCAUP1,      // TS Orca take-off (ORCAUP1, AuxSound1). Bundled TSORCAUP1.WAV.
+    VOC_TS_ORCADWN1,     // TS Orca landing (ORCADWN1, AuxSound2). Bundled TSORCADWN1.WAV.
+    VOC_TS_30I000,       // TS voice set 30, the Orca pilot (30-I000).
+    VOC_TS_30I002,       // TS voice set 30, the Orca pilot (30-I002).
+    VOC_TS_30I004,       // TS voice set 30, the Orca pilot (30-I004).
+    VOC_TS_30I006,       // TS voice set 30, the Orca pilot (30-I006).
+    VOC_TS_30I014,       // TS voice set 30, the Orca pilot (30-I014).
+    VOC_TS_30I016,       // TS voice set 30, the Orca pilot (30-I016).
+    VOC_TS_30I018,       // TS voice set 30, the Orca pilot (30-I018).
+    VOC_TS_30I022,       // TS voice set 30, the Orca pilot (30-I022).
+    VOC_TS_30I030,       // TS voice set 30, the Orca pilot (30-I030).
+    VOC_TS_30I034,       // TS voice set 30, the Orca pilot (30-I034).
+    VOC_TS_30I036,       // TS voice set 30, the Orca pilot (30-I036).
+    VOC_TS_DEPLOY,       // TS [AudioVisual] DeploySound (27-I002): the crew's "deploying" when the deploy key deploys TS units. Bundled TSDEPLOY.WAV.
+    VOC_TS_JUGGER1,      // TS Juggernaut cannon report (JUGGER1, Firestorm [Jugg90mm] Report=). Bundled TSJUGGER1.WAV.
+    VOC_TS_LIMPBOM1,     // TS Limpet Drone leaping onto a vehicle (LIMPBOM1, Firestorm [LIMP] Report=). Bundled TSLIMPBOM1.WAV.
+    VOC_TS_LIMPQ3,       // TS Limpet Drone select chirp (LIMPQ3). Bundled TSLIMPQ3.WAV.
+    VOC_TS_LIMPQ4,       // TS Limpet Drone select chirp (LIMPQ4). Bundled TSLIMPQ4.WAV.
+    VOC_TS_LIMPC3,       // TS Limpet Drone move/attack chirp (LIMPC3). Bundled TSLIMPC3.WAV.
+    VOC_TS_LIMPC4,       // TS Limpet Drone move/attack chirp (LIMPC4). Bundled TSLIMPC4.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0

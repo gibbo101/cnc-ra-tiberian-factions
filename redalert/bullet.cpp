@@ -1316,7 +1316,10 @@ void BulletClass::AI(void)
         **	maintenance (usually nothing). Otherwise, explode and then
         **	delete the bullet.
         */
-        if (!forced && (Class->IsDropping || !Fuse_Checkup(Coord))) {
+        /*
+        **	The Juggernaut's shell has no proximity fuse: only the end of its arc brings it down.
+        */
+        if (!forced && (Class->IsDropping || *this == BULLET_TSBALLISTIC2 || !Fuse_Checkup(Coord))) {
             /*
             **	Certain projectiles lose strength when they travel.
             */
@@ -1649,6 +1652,16 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
         }
 
         /*
+        **	An inaccurate arcing shell lands up to BallisticScatter from its aim point, in any
+        **	direction, rolled afresh for every shot, so some shots land dead on and none is wild.
+        */
+        if (*this == BULLET_TSBALLISTIC2) {
+            int scatter = Random_Pick(0, (int)Rule.BallisticScatter);
+            tcoord = Coord_Move(tcoord, (DirType)Random_Pick(0, 255), scatter);
+            dir = Direction(tcoord);
+        }
+
+        /*
         **	Possibly adjust the target if this projectile is inaccurate. This occurs whenever
         **	certain weapons are trained upon targets they were never designed to attack. Example: when
         **	turrets or anti-tank missiles are fired at infantry. Indirect
@@ -1735,6 +1748,36 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
             Height = 1;
             Riser = ((Distance(tcoord) / 2) / (speed + 1)) * Rule.Gravity;
             Riser = max(Riser, 10);
+
+            /*
+            **	The Juggernaut's shell lands on the frame it reaches its aim point: the flight is cut
+            **	into whole frames, the ground speed set so those frames cover the range exactly, and
+            **	the climb chosen so the arc comes down on the last of them. The stock arithmetic
+            **	above rounds the climb independently of the speed and puts a fast shell down a
+            **	constant half cell from where it was aimed.
+            */
+            if (*this == BULLET_TSBALLISTIC2) {
+                int dist = Distance(tcoord);
+                int frames = max(4, (dist + speed - 1) / speed);
+                speed = max(1, (dist + frames - 1) / frames);
+                Fly_Speed(255, (MPHType)speed);
+                Riser = max(1, (Rule.Gravity * (frames - 1)) / 2 - 1);
+#if TF_DEV_BUILD
+                {
+                    const char* prof = getenv("USERPROFILE");
+                    char path[512];
+                    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : ".");
+                    FILE* lf = fopen(path, "a");
+                    if (lf != NULL) {
+                        fprintf(lf, "frame=%d JUGG-LAUNCH from=(%d,%d) aim=(%d,%d) target=(%d,%d) dist=%d frames=%d speed=%d riser=%d dir=%d\n",
+                                (int)Frame, (int)Coord_X(Coord), (int)Coord_Y(Coord), (int)Coord_X(tcoord), (int)Coord_Y(tcoord),
+                                (int)Coord_X(As_Coord(TarCom)), (int)Coord_Y(As_Coord(TarCom)), dist, frames, speed,
+                                (int)Riser, (int)dir);
+                        fclose(lf);
+                    }
+                }
+#endif
+            }
         }
         if (Class->IsDropping) {
             IsFalling = true;
@@ -2375,6 +2418,29 @@ bool BulletClass::Is_Forced_To_Explode(COORDINATE& coord) const
  *=============================================================================================*/
 void BulletClass::Bullet_Explodes(bool forced)
 {
+    /*
+    **	The Juggernaut's shell comes down on its (scattered) aim point when the arc ends within
+    **	a cell of it, so the flight's rounding never moves the burst off where it was rolled to land.
+    */
+    if (*this == BULLET_TSBALLISTIC2 && forced && Fuse_Target() != 0 && ::Distance(Coord, Fuse_Target()) < CELL_LEPTON_W) {
+        Coord = Fuse_Target();
+    }
+#if TF_DEV_BUILD
+    if (*this == BULLET_TSBALLISTIC2) {
+        const char* prof = getenv("USERPROFILE");
+        char path[512];
+        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : ".");
+        FILE* lf = fopen(path, "a");
+        if (lf != NULL) {
+            COORDINATE tc = Target_Legal(TarCom) ? As_Coord(TarCom) : 0;
+            fprintf(lf, "frame=%d JUGG-SHELL impact at=(%d,%d) off=(%d,%d) target=%s dist=%d aimoff=(%d,%d) forced=%d height=%d\n", (int)Frame,
+                    (int)Coord_X(Coord), (int)Coord_Y(Coord), (int)Coord_X(Coord) - (int)Coord_X(tc), (int)Coord_Y(Coord) - (int)Coord_Y(tc),
+                    Target_Legal(TarCom) ? "yes" : "none", tc ? (int)::Distance(Coord, tc) : -1,
+                    (int)Coord_X(Coord) - (int)Coord_X(Fuse_Target()), (int)Coord_Y(Coord) - (int)Coord_Y(Fuse_Target()), (int)forced, (int)Height);
+            fclose(lf);
+        }
+    }
+#endif
     /*
     **	A delivery projectile arrives rather than detonating: it applies no damage at
     **	all, and its cargo is set down by the destructor, exactly as the dog bullet

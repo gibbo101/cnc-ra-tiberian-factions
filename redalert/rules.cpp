@@ -670,6 +670,10 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TSSAMWH");      // WARHEAD_TSSAMWH (TS [SAMWH] -- the tower SAM's warhead)
     new WarheadTypeClass("TSHE");         // WARHEAD_TSHE (TS [HE] -- the old TS Mammoth's tusk warhead)
     new WarheadTypeClass("TSRailShot2");  // WARHEAD_TSRAILSHOT2 (TS [RailShot2] -- the Ghost Stalker's light railgun)
+    new WarheadTypeClass("TSOrcaAP");     // WARHEAD_TSORCAAP (TS [ORCAAP] -- the Orca Fighter's missiles)
+    new WarheadTypeClass("TSOrcaHE");     // WARHEAD_TSORCAHE (TS [ORCAHE] -- the Orca Bomber's bombs)
+    new WarheadTypeClass("TSArtyHE");
+    new WarheadTypeClass("TSLimpy");      // WARHEAD_TSLIMPY (Firestorm [LIMPY] -- the Limpet Drone attaches)     // WARHEAD_TSARTYHE (TS [ARTYHE] -- the Juggernaut's shells)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
@@ -772,6 +776,10 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TSHeal");         // WEAPON_TSHEAL (TS Medic -- TS [Heal] verbatim)
     new WeaponTypeClass("TSLtRail");       // WEAPON_TSLTRAIL (TS Ghost Stalker -- TS [LtRail] on the IsRailgun line path)
     new WeaponTypeClass("TSJumpCannon");   // WEAPON_TSJUMPCANNON (TS Jumpjet Infantry -- TS [JumpCannon])
+    new WeaponTypeClass("TSHellfire");     // WEAPON_TSHELLFIRE (TS Orca Fighter -- TS [Hellfire])
+    new WeaponTypeClass("TSBomb");         // WEAPON_TSBOMB (TS Orca Bomber -- TS [Bomb])
+    new WeaponTypeClass("TSJugg90mm");
+    new WeaponTypeClass("TSLimpet");       // WEAPON_TSLIMP (TS Limpet Mine -- Firestorm [LIMP]; not "TSLimp": INI sections are case-blind and the drone is [TSLIMP])     // WEAPON_TSJUGG90MM (TS Juggernaut -- Firestorm [Jugg90mm])
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's

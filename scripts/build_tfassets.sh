@@ -237,7 +237,7 @@ PACK_ARGS+=("$TMPDIR/tshvr_stub.shp:TSHVR.SHP")
 # only; 6 frames).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tstitn_stub.shp" 56 56 128
 PACK_ARGS+=("$TMPDIR/tstitn_stub.shp:TSTITN.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tshmec_stub.shp" 60 60 256
+python3 scripts/gen_stub_shp.py "$TMPDIR/tshmec_stub.shp" 72 72 256
 PACK_ARGS+=("$TMPDIR/tshmec_stub.shp:TSHMEC.SHP")
 
 # Dropship-bay delivery pod -- the TS Dropship sprite (TSDSHP.ZIP, RA_VFX.XML).
@@ -268,6 +268,20 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tssonic_stub.shp" 56 56 64
 PACK_ARGS+=("$TMPDIR/tssonic_stub.shp:TSSONIC.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsapc_stub.shp" 48 48 64
 PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
+# TS aircraft (Orca Fighter / Orca Bomber / Carryall) -- HD-only voxel renders, 32
+# facings each; dims match each one's rules.ini ShapeSize.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsorca_stub.shp" 48 48 32
+PACK_ARGS+=("$TMPDIR/tsorca_stub.shp:TSORCA.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsorcab_stub.shp" 48 48 32
+PACK_ARGS+=("$TMPDIR/tsorcab_stub.shp:TSORCAB.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tscarry_stub.shp" 56 56 32
+PACK_ARGS+=("$TMPDIR/tscarry_stub.shp:TSCARRY.SHP")
+# TS Juggernaut -- 202 shapes: 120 walk + 32 deployed at rest + 32 deployed aiming + 18 deploy ladder.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsjugg_stub.shp" 56 56 202
+PACK_ARGS+=("$TMPDIR/tsjugg_stub.shp:TSJUGG.SHP")
+# TS Limpet Drone -- 10 crawl frames, no facings (24x24 = ShapeSize). Its mine's stubs sit with the buildings below.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tslimp_stub.shp" 24 24 10
+PACK_ARGS+=("$TMPDIR/tslimp_stub.shp:TSLIMP.SHP")
 # Subterranean pair (Devil's Tongue / Sub APC) -- 112 shapes each: 32 driving
 # + 40 dive + 40 emerge pitch-ladder frames (docs/subterranean-design.md).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tssubtank_stub.shp" 48 48 113
@@ -342,6 +356,11 @@ ts_stub TSPILE "$TMPDIR/tspile_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tspile_stub.shp:TSPILE.SHP")
 ts_stub TSPILE "$TMPDIR/tspilemk_stub.shp" 48 48 19
 PACK_ARGS+=("$TMPDIR/tspilemk_stub.shp:TSPILEMAKE.SHP")
+# TS Limpet Mine on a 48x48 stub (the build-up's standing drone overhangs the 1x1 plot).
+ts_stub TSDLIMP "$TMPDIR/tsdlimp_stub.shp" 48 48 20
+PACK_ARGS+=("$TMPDIR/tsdlimp_stub.shp:TSDLIMP.SHP")
+ts_stub TSDLIMP "$TMPDIR/tsdlimpmk_stub.shp" 48 48 19
+PACK_ARGS+=("$TMPDIR/tsdlimpmk_stub.shp:TSDLIMPMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
 # TSRADR 48x96 on the 2x2 plot (TS-authentic Foundation=2x2): Obelisk
 # treatment, the dish tower rises a full row above the box. The 3x2/72x150

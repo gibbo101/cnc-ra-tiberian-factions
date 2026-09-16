@@ -349,6 +349,27 @@ struct SoundEffectNameStruct
     {"TS14I014", 20, IN_NOVAR},   // VOC_TS_14I014
     {"TS14I016", 20, IN_NOVAR},   // VOC_TS_14I016
     {"TSEXPNEW10", 1, IN_NOVAR},  // VOC_TS_EXPNEW10 -- TS small explosion, a jumpjet shot down (RAC/RAR_SFX_TSEXPNEW10 -> bundled TSEXPNEW10.WAV, own name)
+    {"TSORCAMIS1", 1, IN_NOVAR},  // VOC_TS_ORCAMIS1 -- TS Orca missile launch
+    {"TSORCAUP1", 1, IN_NOVAR},   // VOC_TS_ORCAUP1 -- TS Orca take-off
+    {"TSORCADWN1", 1, IN_NOVAR},  // VOC_TS_ORCADWN1 -- TS Orca landing
+    {"TS30I000", 20, IN_NOVAR},   // VOC_TS_30I000
+    {"TS30I002", 20, IN_NOVAR},   // VOC_TS_30I002
+    {"TS30I004", 20, IN_NOVAR},   // VOC_TS_30I004
+    {"TS30I006", 20, IN_NOVAR},   // VOC_TS_30I006
+    {"TS30I014", 20, IN_NOVAR},   // VOC_TS_30I014
+    {"TS30I016", 20, IN_NOVAR},   // VOC_TS_30I016
+    {"TS30I018", 20, IN_NOVAR},   // VOC_TS_30I018
+    {"TS30I022", 20, IN_NOVAR},   // VOC_TS_30I022
+    {"TS30I030", 20, IN_NOVAR},   // VOC_TS_30I030
+    {"TS30I034", 20, IN_NOVAR},   // VOC_TS_30I034
+    {"TS30I036", 20, IN_NOVAR},   // VOC_TS_30I036
+    {"TSDEPLOY", 1, IN_NOVAR},    // VOC_TS_DEPLOY -- TS DeploySound 27-I002, the deploy key's "deploying"
+    {"TSJUGGER1", 1, IN_NOVAR},   // VOC_TS_JUGGER1 -- TS Juggernaut cannon report
+    {"TSLIMPBOM1", 1, IN_NOVAR},  // VOC_TS_LIMPBOM1 -- TS Limpet Drone attaching
+    {"TSLIMPQ3", 20, IN_NOVAR},   // VOC_TS_LIMPQ3 -- TS Limpet Drone select
+    {"TSLIMPQ4", 20, IN_NOVAR},   // VOC_TS_LIMPQ4
+    {"TSLIMPC3", 20, IN_NOVAR},   // VOC_TS_LIMPC3 -- TS Limpet Drone move/attack
+    {"TSLIMPC4", 20, IN_NOVAR},   // VOC_TS_LIMPC4
 };
 
 //

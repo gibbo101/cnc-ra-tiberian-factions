@@ -247,6 +247,7 @@ AircraftClass::AircraftClass(AircraftType classid, HousesType house)
     , SightTimer(0)
     , AttacksRemaining(1)
 {
+    TFBombsThisRun = 0;
     /*
     **	For two shooters, clear out the second shot flag -- it will be set the first time
     **	the object fires. For non two shooters, set the flag since it will never be cleared
@@ -500,6 +501,9 @@ void AircraftClass::Draw_It(int x, int y, WindowNumberType window) const
         **	Draw the root body of the unit.
         */
         Techno_Draw_Object(shapefile, shapenum, x, y + jitter, window, rotation);
+        if (*this == AIRCRAFT_TSCARRY && Is_Something_Attached()) {
+            TF_Draw_Carried(x, y + jitter + 6, window);
+        }
 
         /*
         **	Special manual shadow draw code.
@@ -2094,6 +2098,90 @@ ResultType AircraftClass::Take_Damage(int& damage, int distance, WarheadType war
     return (res);
 }
 
+/*
+**	Whether this is a Carryall sent to lift a vehicle: empty, and its destination a friendly
+**	vehicle rather than a cell. Such a destination is never a landing zone, so the move
+**	mission flies straight over it instead of looking for clear ground beside it.
+*/
+bool AircraftClass::TF_Carryall_Pickup_Pending(void) const
+{
+    if (*this != AIRCRAFT_TSCARRY || Is_Something_Attached()) {
+        return (false);
+    }
+    UnitClass const* unit = As_Unit(NavCom);
+    return (unit != NULL && !unit->IsInLimbo && House->Is_Ally(unit));
+}
+
+/*
+**	A Carryall over its destination lifts the vehicle beneath it, or sets down the one it
+**	carries (TS AircraftClass::Do_MISSION_MOVE_Carryall). Returns whether it did either; the
+**	caller then leaves the move mission without landing. A vehicle that cannot be placed
+**	stays aboard.
+*/
+bool AircraftClass::TF_Carryall_Exchange(void)
+{
+    if (!Is_Something_Attached()) {
+        UnitClass* unit = As_Unit(NavCom);
+        if (unit == NULL || unit->IsInLimbo || unit->Height > 0 || !House->Is_Ally(unit)
+            || Distance(unit) > 0x00C0) {
+            return (false);
+        }
+        unit->Assign_Target(TARGET_NONE);
+        unit->Assign_Destination(TARGET_NONE);
+        unit->Transmit_Message(RADIO_OVER_OUT);
+        unit->Limbo();
+        Attach(unit);
+        return (true);
+    }
+
+    FootClass* unit = Detach_Object();
+    if (unit == NULL) {
+        return (false);
+    }
+    CELL cell = Coord_Cell(Coord);
+    COORDINATE spot = Cell_Coord(cell);
+    if (unit->Can_Enter_Cell(cell) != MOVE_OK) {
+        CELL nearby = Map.Nearby_Location(cell, unit->Techno_Type_Class()->Speed, -1, unit->Techno_Type_Class()->MZone);
+        if (nearby != 0) {
+            spot = Cell_Coord(nearby);
+        }
+    }
+    unit->Height = 0;
+    if (!unit->Unlimbo(spot, SecondaryFacing.Current())) {
+        Attach(unit);
+        return (false);
+    }
+    unit->Assign_Mission(MISSION_GUARD);
+    return (true);
+}
+
+/*
+**	Draws the vehicle a Carryall carries, hull and turret, hanging just below the aircraft
+**	(the launcher resolves the hull's own tileset by name). The TS walkers keep their turret
+**	block elsewhere in their frame set, so only their hull is drawn.
+*/
+void AircraftClass::TF_Draw_Carried(int x, int y, WindowNumberType window) const
+{
+    FootClass const* cargo = Attached_Object();
+    if (cargo == NULL || cargo->What_Am_I() != RTTI_UNIT) {
+        return;
+    }
+    UnitClass const* unit = (UnitClass const*)cargo;
+    void const* shapefile = unit->Get_Image_Data();
+    if (shapefile == NULL) {
+        return;
+    }
+    char const* name = unit->Class->Graphic_Name();
+    Techno_Draw_Object_Virtual(shapefile, unit->Shape_Number(), x, y, window, DIR_N, 0x0100, name);
+    if (unit->Class->IsTurretEquipped) {
+        int tbase = (unit->Class->WalkFrames > 1)
+                        ? unit->Class->WalkFacings * (unit->Class->WalkFrames + unit->Class->FiringFrames)
+                        : 32;
+        int turret = tbase + TechnoClass::BodyShape[Dir_To_32(unit->SecondaryFacing)];
+        Techno_Draw_Object_Virtual(shapefile, turret, x, y, window, DIR_N, 0x0100, name);
+    }
+}
+
 /***********************************************************************************************
  * AircraftClass::Mission_Move -- Handles movement mission.                                    *
  *                                                                                             *
@@ -2284,7 +2372,7 @@ int AircraftClass::Mission_Move(void)
         } else if (!Target_Legal(NavCom)) {
             Enter_Idle_Mode();
         } else {
-            if (!Is_LZ_Clear(NavCom) || !Cell_Seems_Ok(As_Cell(NavCom))) {
+            if (!TF_Carryall_Pickup_Pending() && (!Is_LZ_Clear(NavCom) || !Cell_Seems_Ok(As_Cell(NavCom)))) {
                 Assign_Destination(New_LZ(NavCom));
                 if (Team.Is_Valid()) {
                     Team->Assign_Mission_Target(NavCom);
@@ -2322,7 +2410,7 @@ int AircraftClass::Mission_Move(void)
     **	Fly toward target.
     */
     case FLY_TO_LZ:
-        if (Is_LZ_Clear(NavCom)) {
+        if (Is_LZ_Clear(NavCom) || TF_Carryall_Pickup_Pending()) {
             int distance = Process_Fly_To(true, NavCom);
 
             if (distance < 0x0080) {
@@ -2386,6 +2474,39 @@ int AircraftClass::Mission_Move(void)
             Status = TAKE_OFF;
         }
         if (Process_Landing()) {
+            /*
+            **	The Carryall lifts its load or sets it down only once it is on the ground (TS lands for
+            **	both); loaded it climbs straight back to a hover, empty it hops to a clear spot beside.
+            */
+            if (*this == AIRCRAFT_TSCARRY) {
+                bool loaded = Is_Something_Attached();
+#if TF_DEV_BUILD
+                {
+                    const char* prof = getenv("USERPROFILE");
+                    char path[512];
+                    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : ".");
+                    FILE* lf = fopen(path, "a");
+                    if (lf != NULL) {
+                        UnitClass* u = As_Unit(NavCom);
+                        fprintf(lf, "frame=%d CARRY landed loaded=%d nav=%08lx unit=%s limbo=%d uheight=%d dist=%d height=%d cell=%d\n",
+                                (int)Frame, (int)loaded, (unsigned long)NavCom, u ? u->Class->IniName : "none",
+                                u ? (int)u->IsInLimbo : -1, u ? (int)u->Height : -1, u ? (int)Distance(u) : -1, (int)Height,
+                                (int)Coord_Cell(Coord));
+                        fclose(lf);
+                    }
+                }
+#endif
+                if (TF_Carryall_Exchange()) {
+                    if (loaded) {
+                        Assign_Destination(New_LZ(::As_Target(Coord_Cell(Coord))));
+                        Status = TAKE_OFF;
+                        return (1);
+                    }
+                    Assign_Destination(TARGET_NONE);
+                    Enter_Idle_Mode();
+                    return (1);
+                }
+            }
             if (MissionQueue == MISSION_NONE) {
                 Enter_Idle_Mode();
             }
@@ -2544,8 +2665,16 @@ void AircraftClass::Enter_Idle_Mode(bool)
                         Assign_Destination(Good_LZ());
                     }
                 } else {
-                    Assign_Destination(Good_LZ());
-                    mission = MISSION_MOVE;
+                    if (*this == AIRCRAFT_TSCARRY) {
+                        /*
+                        **	A loaded Carryall holds its hover rather than landing with the vehicle.
+                        */
+                        Assign_Destination(TARGET_NONE);
+                        mission = MISSION_GUARD;
+                    } else {
+                        Assign_Destination(Good_LZ());
+                        mission = MISSION_MOVE;
+                    }
                 }
             } else {
 
@@ -2753,6 +2882,13 @@ void AircraftClass::Active_Click_With(ActionType action, ObjectClass* object)
         return;
 
     case ACTION_ENTER:
+        /*
+        **	The Carryall's lift order is a move onto the vehicle; the exchange happens on arrival.
+        */
+        if (*this == AIRCRAFT_TSCARRY && object->What_Am_I() == RTTI_UNIT) {
+            Player_Assign_Mission(MISSION_MOVE, TARGET_NONE, object->As_Target());
+            return;
+        }
         Player_Assign_Mission(MISSION_ENTER, TARGET_NONE, object->As_Target());
         break;
 
@@ -2883,6 +3019,15 @@ ActionType AircraftClass::What_Action(ObjectClass const* target) const
     }
 #endif
 
+    /*
+    **	An empty Carryall over a friendly vehicle on the ground offers to lift it (TS's tote
+    **	cursor; the launcher's nearest is the enter cursor). Not one inside a war factory.
+    */
+    if (*this == AIRCRAFT_TSCARRY && !Is_Something_Attached() && action != ACTION_ATTACK
+        && target->What_Am_I() == RTTI_UNIT && House->Is_Ally(target) && !target->IsInLimbo && target->Height == 0
+        && Map[target->Center_Coord()].Cell_Building() == NULL) {
+        action = ACTION_ENTER;
+    }
     if (Class->IsFixedWing && action == ACTION_MOVE) {
         /*
         **	TF: attack-move (CFE port) -- fixed-wing planes can't plain-move to an
@@ -3269,7 +3414,8 @@ int AircraftClass::Mission_Attack(void)
         FLY_TO_POSITION,
         FIRE_AT_TARGET,
         FIRE_AT_TARGET2,
-        RETURN_TO_BASE
+        RETURN_TO_BASE,
+        TF_BOMB_LOOP
     };
     switch (Status) {
 
@@ -3290,6 +3436,25 @@ int AircraftClass::Mission_Attack(void)
     case PICK_ATTACK_LOCATION:
         if (!Target_Legal(TarCom)) {
             Status = RETURN_TO_BASE;
+        } else if (*this == AIRCRAFT_TSORCAB) {
+            /*
+            **	The Orca Bomber flies a run straight over its target (TS strafes with any non-homing
+            **	weapon): the run ends four cells past the target, five bombs fall while it is within reach,
+            **	and the next run comes back the other way while it has bombs left.
+            */
+            COORDINATE tc = As_Coord(TarCom);
+            DirType run = ::Direction(Center_Coord(), tc);
+            COORDINATE beyond = Coord_Move(tc, run, 4 * CELL_LEPTON_W);
+            if (!Map.In_Radar(Coord_Cell(beyond))) {
+                beyond = tc;
+            }
+            Assign_Destination(::As_Target(Coord_Cell(beyond)));
+            TFBombsThisRun = 0;
+            if (!Target_Legal(NavCom)) {
+                Status = RETURN_TO_BASE;
+            } else {
+                Status = (Height < FLIGHT_LEVEL) ? TAKE_OFF : FLY_TO_POSITION;
+            }
         } else {
             Assign_Destination(Good_Fire_Location(TarCom));
             if (Target_Legal(NavCom)) {
@@ -3331,9 +3496,60 @@ int AircraftClass::Mission_Attack(void)
         break;
 
     /*
+    **	The Orca Bomber's turn between runs: fly through the turning point, then line up again.
+    */
+    case TF_BOMB_LOOP:
+        if (!Target_Legal(TarCom) || !Ammo) {
+            Status = RETURN_TO_BASE;
+            return (1);
+        }
+        if (!Target_Legal(NavCom) || Process_Fly_To(false, NavCom) < 0x0080) {
+            Status = PICK_ATTACK_LOCATION;
+            return (1);
+        }
+        SecondaryFacing.Set_Desired(PrimaryFacing.Desired());
+        return (1);
+
+    /*
     **	Fly to attack location.
     */
     case FLY_TO_POSITION:
+        if (*this == AIRCRAFT_TSORCAB) {
+            if (!Target_Legal(TarCom) || !Ammo) {
+                Status = RETURN_TO_BASE;
+                return (1);
+            }
+            if (!Target_Legal(NavCom)) {
+                Status = PICK_ATTACK_LOCATION;
+                return (1);
+            }
+            int run = Process_Fly_To(false, NavCom);
+            SecondaryFacing.Set_Desired(PrimaryFacing.Desired());   // nose into the run, never side-on
+            if (TFBombsThisRun < 5 && In_Range(TarCom) && Can_Fire(TarCom, 0) == FIRE_OK) {   // TS strafe: five bombs a pass
+                Fire_At(TarCom, 0);
+                Map[::As_Cell(TarCom)].Incoming(Coord, true);
+                TFBombsThisRun++;
+            }
+            if (run < 0x0080) {
+                if (!Ammo) {
+                    Status = RETURN_TO_BASE;
+                    return (1);
+                }
+                /*
+                **	Bank round for the next run: a turning point off to the side of the run line, so
+                **	the way back over the target is a loop rather than a stop and a reverse.
+                */
+                DirType bank = (DirType)(((int)PrimaryFacing.Current() + (int)DIR_E) & 0x00FF);
+                COORDINATE turn = Coord_Move(Coord, bank, 3 * CELL_LEPTON_W);
+                if (Map.In_Radar(Coord_Cell(turn))) {
+                    Assign_Destination(::As_Target(Coord_Cell(turn)));
+                    Status = TF_BOMB_LOOP;
+                } else {
+                    Status = PICK_ATTACK_LOCATION;
+                }
+            }
+            return (1);
+        }
         if (Target_Legal(TarCom)) {
 
             /*
@@ -3732,6 +3948,19 @@ DirType AircraftClass::Desired_Load_Dir(ObjectClass* object, CELL& moveto) const
     return (DIR_N);
 }
 
+/*
+**	The TS aircraft announce leaving and reaching the ground (TS AuxSound1/AuxSound2): the
+**	Orcas with ORCAUP1/ORCADWN1, the Carryall with the dropship's DROPUP1/DROPDWN1.
+*/
+static void TF_TS_Aircraft_Aux_Sound(AircraftClass const* air, bool up)
+{
+    if (*air == AIRCRAFT_TSORCA || *air == AIRCRAFT_TSORCAB) {
+        Sound_Effect(up ? VOC_TS_ORCAUP1 : VOC_TS_ORCADWN1, air->Center_Coord());
+    } else if (*air == AIRCRAFT_TSCARRY) {
+        Sound_Effect(up ? VOC_TS_DROPUP1 : VOC_TS_DROPDWN1, air->Center_Coord());
+    }
+}
+
 /***********************************************************************************************
  * AircraftClass::Process_Take_Off -- State machine support for taking off.                    *
  *                                                                                             *
@@ -3767,6 +3996,7 @@ bool AircraftClass::Process_Take_Off(void)
         case 0:
             Close_Door(5, 4);
             PrimaryFacing = SecondaryFacing;
+            TF_TS_Aircraft_Aux_Sound(this, true);
             break;
 
         case FLIGHT_LEVEL / 2:
@@ -3854,6 +4084,7 @@ bool AircraftClass::Process_Landing(void)
             break;
 
         case FLIGHT_LEVEL:
+            TF_TS_Aircraft_Aux_Sound(this, false);
             break;
 
         default:
@@ -3931,6 +4162,15 @@ TARGET AircraftClass::Good_Fire_Location(TARGET target) const
     if (Target_Legal(target)) {
         int range = Weapon_Range(0);
         COORDINATE tcoord = As_Coord(target);
+
+        /*
+        **	A weapon that only reaches the next cell (the Orca Bomber's bombs) is dropped from
+        **	directly above: the ring search below starts a cell inside the range and would find
+        **	no position at all, sending the aircraft home instead of attacking.
+        */
+        if (range < 0x0300) {
+            return (::As_Target(Coord_Cell(tcoord)));
+        }
         CELL bestcell = 0;
         CELL best2cell = 0;
         int bestval = -1;
@@ -4591,6 +4831,17 @@ int AircraftClass::Mission_Guard(void)
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
 
+    /*
+    **	A loaded Carryall holds its hover until it is sent somewhere to set the vehicle down.
+    */
+    if (*this == AIRCRAFT_TSCARRY && Is_Something_Attached()) {
+        if (Height < FLIGHT_LEVEL) {
+            Process_Take_Off();
+            return (1);
+        }
+        return (MissionControl[Mission].Normal_Delay());
+    }
+
     if (Height == FLIGHT_LEVEL) {
 
         /*
@@ -4782,6 +5033,16 @@ void AircraftClass::Response_Attack(void)
 {
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
+    /*
+    **	The TS aircraft answer in the Orca pilot's voice (TS voice set 30), whoever owns them.
+    */
+    if (*this == AIRCRAFT_TSORCA || *this == AIRCRAFT_TSORCAB || *this == AIRCRAFT_TSCARRY) {
+        static VocType _ts[] = {VOC_TS_30I022, VOC_TS_30I030, VOC_TS_30I034, VOC_TS_30I036};
+        if (AllowVoice) {
+            Sound_Effect(_ts[Sim_Random_Pick(0, ARRAY_SIZE(_ts) - 1)], fixed(1), -(ID + 1));
+        }
+        return;
+    }
 
     static VocType _response[] = {VOC_AFFIRM, VOC_ACKNOWL};
     VocType response = _response[Sim_Random_Pick(0, ARRAY_SIZE(_response) - 1)];
@@ -4808,6 +5069,16 @@ void AircraftClass::Response_Move(void)
 {
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
+    /*
+    **	The TS aircraft answer in the Orca pilot's voice (TS voice set 30), whoever owns them.
+    */
+    if (*this == AIRCRAFT_TSORCA || *this == AIRCRAFT_TSORCAB || *this == AIRCRAFT_TSCARRY) {
+        static VocType _ts[] = {VOC_TS_30I014, VOC_TS_30I016, VOC_TS_30I018, VOC_TS_30I022};
+        if (AllowVoice) {
+            Sound_Effect(_ts[Sim_Random_Pick(0, ARRAY_SIZE(_ts) - 1)], fixed(1), -(ID + 1));
+        }
+        return;
+    }
 
     static VocType _response[] = {VOC_ACKNOWL, VOC_AFFIRM};
     VocType response = _response[Sim_Random_Pick(0, ARRAY_SIZE(_response) - 1)];
@@ -4834,6 +5105,16 @@ void AircraftClass::Response_Select(void)
 {
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
+    /*
+    **	The TS aircraft answer in the Orca pilot's voice (TS voice set 30), whoever owns them.
+    */
+    if (*this == AIRCRAFT_TSORCA || *this == AIRCRAFT_TSORCAB || *this == AIRCRAFT_TSCARRY) {
+        static VocType _ts[] = {VOC_TS_30I000, VOC_TS_30I002, VOC_TS_30I004, VOC_TS_30I006};
+        if (AllowVoice) {
+            Sound_Effect(_ts[Sim_Random_Pick(0, ARRAY_SIZE(_ts) - 1)], fixed(1), -(ID + 1));
+        }
+        return;
+    }
 
     static VocType _response[] = {VOC_VEHIC, VOC_REPORT, VOC_YESSIR, VOC_YESSIR, VOC_YESSIR, VOC_AWAIT};
     VocType response = _response[Sim_Random_Pick(0, ARRAY_SIZE(_response) - 1)];

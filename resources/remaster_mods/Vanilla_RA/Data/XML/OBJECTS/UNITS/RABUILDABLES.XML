@@ -6833,6 +6833,48 @@
 			<BuildIcon>BuildIcon_TS_Jumpjet</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSORCA" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSORCA</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSORCA_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_OrcaFighter</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSORCAB" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSORCAB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSORCAB_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_OrcaBomber</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSCARRY" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSCARRY</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSCARRY_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Carryall</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSJUGG" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSJUGG</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSJUGG_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Juggernaut</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSLIMP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSLIMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSLIMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_LimpetDrone</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSDLIMP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSDLIMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSDLIMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_LimpetDrone</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END hand-written TS-tree base cameo entries -->
 
 	<ObjectTypeClass Name="RA_TSTURB" Classification="CNCBuildableObject" CanInstantiate="False">
@@ -6979,6 +7021,9 @@
 			<BuildIcon>BuildIcon_TS_Seek</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+
+
+
 
 
 
@@ -11137,6 +11182,94 @@
 			<ObjectNameTextID>TEXT_UNIT_TSJUMPJET</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TSJUMPJET_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TSJUMPJET_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSORCA_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSORCA</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSORCA_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_OrcaFighter</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSORCA_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSORCA</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSORCA_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSORCA_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSORCAB_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSORCAB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSORCAB_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_OrcaBomber</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSORCAB_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSORCAB</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSORCAB_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSORCAB_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSCARRY_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSCARRY</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSCARRY_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Carryall</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSCARRY_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSCARRY</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSCARRY_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSCARRY_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSJUGG_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSJUGG</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSJUGG_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Juggernaut</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSJUGG_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSJUGG</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSJUGG_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSJUGG_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSLIMP_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSLIMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSLIMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_LimpetDrone</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSLIMP_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSLIMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSLIMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSLIMP_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSDLIMP_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSDLIMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSDLIMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_LimpetDrone</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

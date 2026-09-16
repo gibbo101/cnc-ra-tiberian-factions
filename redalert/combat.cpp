@@ -237,7 +237,27 @@ void Explosion_Damage(COORDINATE coord, int strength, TechnoClass* source, Warhe
             }
             if (object->IsDown && !object->IsInLimbo && distance < range) {
                 int damage = strength;
-                object->Take_Damage(damage, distance, warhead, source);
+#if TF_DEV_BUILD
+                int before = object->Strength;
+                char hitname[24];
+                snprintf(hitname, sizeof(hitname), "%s", object->Is_Techno() ? ((TechnoClass*)object)->Techno_Type_Class()->IniName : "?");
+#endif
+                ResultType result = object->Take_Damage(damage, distance, warhead, source);
+#if TF_DEV_BUILD
+                if (warhead == WARHEAD_TSARTYHE) {
+                    const char* prof = getenv("USERPROFILE");
+                    char path[512];
+                    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : ".");
+                    FILE* lf = fopen(path, "a");
+                    if (lf != NULL) {
+                        /* a kill deletes the object inside Take_Damage: nothing of it is read after */
+                        fprintf(lf, "frame=%d JUGG-SPLASH %s dist=%d strength=%d hp %d -> %d\n", (int)Frame,
+                                hitname, distance, strength, before,
+                                (result == RESULT_DESTROYED) ? 0 : (int)object->Strength);
+                        fclose(lf);
+                    }
+                }
+#endif
             }
         }
     }

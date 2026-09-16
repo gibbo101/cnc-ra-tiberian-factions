@@ -306,6 +306,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         case STRUCT_SHPAD:
         case STRUCT_TDGHPAD:
         case STRUCT_TDNHPAD:
+        case STRUCT_TSHPAD:    // TS Helipad -- same rotary-aircraft dock semantics.
             if (from->What_Am_I() == RTTI_AIRCRAFT && !((AircraftClass const*)from)->Class->IsFixedWing) {
                 return (RADIO_ROGER);
             }
@@ -372,6 +373,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         case STRUCT_SHPAD:
         case STRUCT_TDGHPAD:
         case STRUCT_TDNHPAD:
+        case STRUCT_TSHPAD:    // TS Helipad -- repair-on-dock.
             Assign_Mission(MISSION_REPAIR);
             from->Assign_Mission(MISSION_SLEEP);
             return (RADIO_ROGER);
@@ -526,6 +528,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             case STRUCT_SHPAD:
             case STRUCT_TDGHPAD:
             case STRUCT_TDNHPAD:
+            case STRUCT_TSHPAD:    // TS Helipad -- dock target is the building itself.
                 param = As_Target();
                 break;
 
@@ -1157,7 +1160,10 @@ int BuildingClass::Shape_Number(void) const
         **	If the building is deconstructing, then the display frame progresses
         **	from the end to the beginning. Reverse the shape number accordingly.
         */
-        if (Mission == MISSION_DECONSTRUCTION) {
+        /*
+        **	Selling runs the build-up backwards; so does a Limpet Mine packing itself into its drone.
+        */
+        if (Mission == MISSION_DECONSTRUCTION || (Mission == MISSION_UNLOAD && *this == STRUCT_TSDLIMP)) {
             shapenum = (Class->Anims[BState].Start + Class->Anims[BState].Count - 1) - shapenum;
         }
 
@@ -3117,6 +3123,13 @@ void BuildingClass::Active_Click_With(ActionType action, ObjectClass* object)
     }
 
     /*
+    **	TS Limpet Mine: the deploy order (self click or the deploy key) packs it into its drone.
+    */
+    if (action == ACTION_SELF && *this == STRUCT_TSDLIMP) {
+        Player_Assign_Mission(MISSION_UNLOAD);
+    }
+
+    /*
     **	TF: rally points (CFE Patch Redux port). Alt+Click (force move) on a
     **	unit or building rallies onto that object.
     */
@@ -4497,6 +4510,13 @@ TARGET BuildingClass::Greatest_Threat(ThreatType threat) const
     **	already exited the 7.5-cell weapon range and the state machine bails
     **	to LOWERING without firing.
     */
+    /*
+    **	TS Limpet Mine: only a vehicle in reach is worth leaping onto.
+    */
+    if (*this == STRUCT_TSDLIMP) {
+        return (TechnoClass::Greatest_Threat(THREAT_VEHICLES | THREAT_RANGE));
+    }
+
     if (*this == STRUCT_TDSAM) {
         threat = threat | THREAT_AREA;
         if (Class->PrimaryWeapon != NULL && Class->PrimaryWeapon->Bullet->IsAntiAircraft) {
@@ -4686,6 +4706,12 @@ void BuildingClass::Grand_Opening(bool captured)
             case STRUCT_TDHPAD:
                 air = new AircraftClass(House->ActLike == HOUSE_BAD ? AIRCRAFT_TDAPACHE : AIRCRAFT_TDORCA,
                                         House->Class->House);
+                break;
+            case STRUCT_TSHPAD:
+                /*
+                **	A TS pad comes with no aircraft (TS GAHPAD); the Orcas are bought from it.
+                */
+                air = NULL;
                 break;
             default:
                 if (House->ActLike == HOUSE_USSR || House->ActLike == HOUSE_UKRAINE) {
@@ -4938,7 +4964,7 @@ ActionType BuildingClass::What_Action(ObjectClass const* object) const
                 break;
             }
 
-        } else {
+        } else if (*this != STRUCT_TSDLIMP) {
             action = ACTION_NONE;
         }
     }
@@ -5111,6 +5137,12 @@ COORDINATE BuildingClass::Docking_Coord(void) const
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
+    if (*this == STRUCT_TSHPAD) {
+        /*
+        **	The TS pad's landing octagon is drawn on the lower-right cell of the 2x2 plot.
+        */
+        return (Coord_Add(Coord, XYP_COORD(29, 29)));
+    }
     if (Class->Is_Helipad()) {
         return (Coord_Add(Coord, XYP_COORD(24, 18)));
     }
@@ -5589,7 +5621,7 @@ COORDINATE BuildingClass::Sort_Y(void) const
     **	Mines need to bias their sort location such that they are typically drawn
     **	before any objects that might overlap them.
     */
-    if (*this == STRUCT_AVMINE || *this == STRUCT_APMINE) {
+    if (*this == STRUCT_AVMINE || *this == STRUCT_APMINE || *this == STRUCT_TSDLIMP) {
         return (Coord_Move(Center_Coord(), DIR_N, CELL_LEPTON_H));
     }
 
@@ -6719,6 +6751,13 @@ int BuildingClass::Mission_Attack(void)
         break;
 
     case FIRE_OK:
+        /*
+        **	TS Limpet Mine: the shot is the drone leaping onto the vehicle, and the mine is spent.
+        */
+        if (TF_Limpet_Attach(this, primary)) {
+            delete this;
+            return (1);
+        }
         Fire_At(TarCom, primary);
         return (1);
 
@@ -7786,10 +7825,49 @@ void const* BuildingClass::Remap_Table(void)
  * HISTORY:                                                                                    *
  *   07/29/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
+/***********************************************************************************************
+ * TF_Limpet_Undeploy -- Packs a Limpet Mine back into its drone on the same cell.             *
+ *=============================================================================================*/
+static void TF_Limpet_Undeploy(BuildingClass* mine)
+{
+    CELL cell = Coord_Cell(mine->Coord);
+    fixed ratio = mine->Health_Ratio();
+    UnitClass* unit = new UnitClass(UNIT_TSLIMP, mine->House->Class->House);
+    if (unit == NULL) {
+        return;
+    }
+    mine->Limbo();
+    if (unit->Unlimbo(Cell_Coord(cell), DIR_N)) {
+        unit->Strength = max(1, (int)(unit->Class->MaxStrength * ratio));
+        unit->Assign_Mission(MISSION_GUARD);
+        delete mine;
+    } else {
+        delete unit;
+        mine->Unlimbo(Cell_Coord(cell), DIR_N);
+    }
+}
+
 int BuildingClass::Mission_Unload(void)
 {
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
+
+    /*
+    **	TS Limpet Mine: the deploy order runs the build-up backwards, then packs the mine into its drone.
+    */
+    if (*this == STRUCT_TSDLIMP) {
+        if (Status == 0) {
+            Do_Uncloak();
+            Begin_Mode(BSTATE_CONSTRUCTION);
+            IsReadyToCommence = false;
+            Status = 1;
+            return (1);
+        }
+        if (IsReadyToCommence) {
+            TF_Limpet_Undeploy(this);
+        }
+        return (1);
+    }
 
     /*
     **  STRUCT_TDWEAP routes to a verbatim port of TD's BuildingClass::

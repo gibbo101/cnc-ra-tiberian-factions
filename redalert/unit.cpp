@@ -341,6 +341,10 @@ UnitClass::UnitClass(UnitType classid, HousesType house)
     TunnelTick = 0;
     TunnelFacing = 0;
     TunnelDest = 0;
+    DeployState = DEPLOY_MOBILE;
+    DeployStep = 0;
+    DeployTick = 0;
+    DeployNav = TARGET_NONE;
     FireStreamTicks = 0;
     FireStreamTarget = TARGET_NONE;
     for (int hb = 0; hb < HARV_BLACKLIST_MAX; hb++) {
@@ -468,6 +472,12 @@ void UnitClass::AI(void)
     **	layer only gets to finish a track the unit was already on when the dig
     **	order arrived. Mission/team/cloak processing (FootClass::AI) still ticks.
     */
+    if (Class->IsDeployToFire) {
+        Deploy_AI();
+        if (!IsActive) {
+            return;
+        }
+    }
     Fire_Stream_AI();
 
     if (Is_In_Tunnel_Cycle()) {
@@ -997,6 +1007,15 @@ void UnitClass::Reload_AI(void)
  *=============================================================================================*/
 void UnitClass::Firing_AI(void)
 {
+    /*
+    **	A DeployToFire unit standing in range of its target sets down to fire (TS
+    **	Deploy_To_Fire); a target beyond its reach is walked toward first.
+    */
+    if (Class->IsDeployToFire && DeployState == DEPLOY_MOBILE && Target_Legal(TarCom) && !IsDriving
+        && !Target_Legal(NavCom) && Class->PrimaryWeapon != NULL && In_Range(TarCom, What_Weapon_Should_I_Use(TarCom))) {
+        Deploy_Begin(true);
+        return;
+    }
     if (Target_Legal(TarCom) && Class->PrimaryWeapon != NULL) {
 
         /*
@@ -1801,8 +1820,25 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
  *   the base DriveClass::Response_* (their normal RA vehicle voices) -- this override shadows  *
  *   DriveClass, so without the explicit base call RA vehicles go silent.                      *
  *=============================================================================================*/
+/*
+**	TS Limpet Drone: it answers in its own chirps (Firestorm [LIMPET] VoiceSelect/Move/Attack).
+*/
+static bool TF_Limpet_Voice(UnitClass const* unit, VocType a, VocType b)
+{
+    if (*unit != UNIT_TSLIMP) {
+        return (false);
+    }
+    if (AllowVoice) {
+        Sound_Effect(Sim_Random_Pick(0, 1) ? b : a, fixed(1), -(unit->ID + 1));
+    }
+    return (true);
+}
+
 void UnitClass::Response_Select(void)
 {
+    if (TF_Limpet_Voice(this, VOC_TS_LIMPQ3, VOC_TS_LIMPQ4)) {
+        return;
+    }
     if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
         if (!AllowVoice) {
             return;
@@ -1816,6 +1852,9 @@ void UnitClass::Response_Select(void)
 
 void UnitClass::Response_Move(void)
 {
+    if (TF_Limpet_Voice(this, VOC_TS_LIMPC3, VOC_TS_LIMPC4)) {
+        return;
+    }
     if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
         if (!AllowVoice) {
             return;
@@ -1829,6 +1868,9 @@ void UnitClass::Response_Move(void)
 
 void UnitClass::Response_Attack(void)
 {
+    if (TF_Limpet_Voice(this, VOC_TS_LIMPC3, VOC_TS_LIMPC4)) {
+        return;
+    }
     if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
         if (!AllowVoice) {
             return;
@@ -2176,6 +2218,57 @@ bool UnitClass::Try_To_Deploy(void)
     assert(IsActive);
 
     if (!Target_Legal(NavCom) && !IsRotating) {
+        /*
+        **	TS Limpet Drone: settles into a mine on the cell it stands on.
+        */
+        if (*this == UNIT_TSLIMP) {
+#if TF_DEV_BUILD
+#define TF_LIMP_TRACE(step)                                                                                 \
+    do {                                                                                                     \
+        const char* prof = getenv("USERPROFILE");                                                             \
+        char path[512];                                                                                      \
+        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : "."); \
+        FILE* lf = fopen(path, "a");                                                                          \
+        if (lf != NULL) {                                                                                    \
+            fprintf(lf, "frame=%d LIMPET-DEPLOY %s id=%d cell=%d\n", (int)Frame, step, (int)ID,                 \
+                    (int)Coord_Cell(Center_Coord()));                                                          \
+            fclose(lf);                                                                                      \
+        }                                                                                                    \
+    } while (0)
+#else
+#define TF_LIMP_TRACE(step)
+#endif
+            TF_LIMP_TRACE("begin");
+            Mark(MARK_UP);
+            CELL cell = Coord_Cell(Center_Coord());
+            if (!BuildingTypeClass::As_Reference(STRUCT_TSDLIMP).Legal_Placement(cell)) {
+                if (PlayerPtr == House) {
+                    Speak(VOX_DEPLOY);
+                }
+                Mark(MARK_DOWN);
+                IsDeploying = false;
+                return (false);
+            }
+            TF_LIMP_TRACE("placement legal");
+            BuildingClass* building = new BuildingClass(STRUCT_TSDLIMP, House->Class->House);
+            TF_LIMP_TRACE("mine constructed");
+            if (building != NULL && building->Unlimbo(Cell_Coord(cell))) {
+                TF_LIMP_TRACE("mine unlimboed");
+                building->Revealed(House);
+                TF_LIMP_TRACE("mine revealed");
+                building->Strength = max(1, (int)(Health_Ratio() * (int)building->Class->MaxStrength));
+                Stun();
+                TF_LIMP_TRACE("drone stunned, deleting");
+                delete this;
+                return (true);
+            }
+            TF_LIMP_TRACE("unlimbo failed");
+            delete building;
+            Mark(MARK_DOWN);
+            IsDeploying = false;
+            return (false);
+        }
+
         if (Class->Is_MCV()) {
 
             /*
@@ -2663,6 +2756,13 @@ int UnitClass::Shape_Number(void) const
     assert(Units.ID(this) == ID);
     assert(IsActive);
 
+    /*
+    **	TS Limpet Drone: no facings, a ten-frame crawl cycle.
+    */
+    if (*this == UNIT_TSLIMP) {
+        return (((::Frame + ID) / 2) % 10);
+    }
+
     int shapenum; // Working shape number.
     int facing = Dir_To_32(PrimaryFacing);
     int tfacing = Dir_To_32(SecondaryFacing);
@@ -2722,6 +2822,23 @@ int UnitClass::Shape_Number(void) const
         }
 
         if (Class->WalkFrames > 1) {
+            /*
+            **  A DeployToFire walker set down shows the deployed facing of its turret; mid-ladder
+            **  it shows the ladder frame, run forwards to set down and backwards to pack up.
+            */
+            if (Class->IsDeployToFire && DeployState != DEPLOY_MOBILE) {
+                int walk_end = Class->WalkFacings * (Class->WalkFrames + Class->FiringFrames);
+                if (DeployState == DEPLOY_DEPLOYED) {
+                    /*
+                    **  The barrels rest level and pitch up onto a target (TS raises BarrelPitch while
+                    **  it has one and drops it back after the shot): the second set of 32 facings.
+                    */
+                    int aimed = Target_Legal(TarCom) ? 32 : 0;
+                    return (walk_end + aimed + TechnoClass::BodyShape[Dir_To_32(SecondaryFacing)]);
+                }
+                int step = (DeployState == DEPLOY_DEPLOYING) ? (int)DeployStep : (Class->DeployFrames - 1 - (int)DeployStep);
+                return (walk_end + 64 + min(max(step, 0), Class->DeployFrames - 1));
+            }
             // BodyShape maps the clockwise DirType index into CCW frame space
             // (0=N advancing CCW) — the same space every 32-frame tileset and
             // the turret draw use. The walker tilesets are packed CCW too.
@@ -2900,7 +3017,7 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
     // Hover bob (TS-authentic): the hull gently rides up and down over its baked
     // drop shadow. Applied to y before both hull and turret draw (turret copies y),
     // so the rack rides with the hull.
-    if (Class->Type == UNIT_TSHVR) {
+    if (Class->Type == UNIT_TSHVR || Class->Type == UNIT_TSLIMP) {
         static const int _hover_bob[8] = {0, -1, -2, -2, -1, 0, 1, 1};
         y += _hover_bob[(Frame >> 2) & 7];
     }
@@ -2989,7 +3106,7 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
         **	If there is a turret, then it must be rendered as well. This may include
         **	firing animation if required.
         */
-        if (/*!Class->IsChunkyShape &&*/ Class->IsTurretEquipped) {
+        if (/*!Class->IsChunkyShape &&*/ Class->IsTurretEquipped && !Class->IsDeployToFire) {
             int xx = x;
             int yy = y;
 
@@ -3827,6 +3944,82 @@ bool UnitClass::Harvesting(void)
     return (true);
 }
 
+/*
+**	Starts the deploy ladder (deploy true) or the pack-up ladder. Any stride or path is
+**	dropped; a destination the unit was given is kept for after it has packed up.
+*/
+void UnitClass::Deploy_Begin(bool deploy)
+{
+    if (Target_Legal(NavCom)) {
+        DeployNav = NavCom;
+    }
+    Assign_Destination(TARGET_NONE);
+    Path[0] = FACING_NONE;
+    if (IsDriving) {
+        Stop_Driver();
+    }
+    Mark(MARK_CHANGE);
+    DeployState = deploy ? DEPLOY_DEPLOYING : DEPLOY_UNDEPLOYING;
+    DeployStep = 0;
+    DeployTick = 0;
+    Mark(MARK_CHANGE);
+
+    /*
+    **	TS sets a deploying unit down with its BuildingDrop sound (PLACE2); packing up plays it too.
+    */
+    Sound_Effect(VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
+}
+
+/*
+**	The DeployToFire stance machine, one tick a frame (TS's deployed Juggernaut is a
+**	building; here the unit keeps its stance itself). Set down, a move packs it up first;
+**	mid-ladder, moves wait; a ladder that finishes either settles the stance or releases
+**	the held move.
+*/
+void UnitClass::Deploy_AI(void)
+{
+    switch (DeployState) {
+    case DEPLOY_DEPLOYED:
+        if (Target_Legal(NavCom) || Target_Legal(DeployNav)) {
+            Deploy_Begin(false);
+        }
+        break;
+
+    case DEPLOY_DEPLOYING:
+    case DEPLOY_UNDEPLOYING:
+        if (Target_Legal(NavCom)) {
+            DeployNav = NavCom;
+            Assign_Destination(TARGET_NONE);
+        }
+        if (++DeployTick >= Class->DeployRate) {
+            DeployTick = 0;
+            DeployStep++;
+            Mark(MARK_CHANGE);
+            if ((int)DeployStep >= Class->DeployFrames) {
+                DeployStep = 0;
+                if (DeployState == DEPLOY_DEPLOYING) {
+                    DeployState = DEPLOY_DEPLOYED;
+                    SecondaryFacing.Set(PrimaryFacing.Current());
+                } else {
+                    DeployState = DEPLOY_MOBILE;
+                    if (Target_Legal(DeployNav)) {
+                        Assign_Destination(DeployNav);
+                        if (Mission != MISSION_ATTACK) {
+                            Assign_Mission(MISSION_MOVE);
+                        }
+                        DeployNav = TARGET_NONE;
+                    }
+                }
+                Mark(MARK_CHANGE);
+            }
+        }
+        break;
+
+    default:
+        break;
+    }
+}
+
 /***********************************************************************************************
  * UnitClass::Mission_Unload -- Handles unloading cargo.                                       *
  *                                                                                             *
@@ -3863,6 +4056,24 @@ int UnitClass::Mission_Unload(void)
     */
     if (Is_In_Tunnel_Cycle()) {
         return (TICKS_PER_SECOND / 2);
+    }
+    /*
+    **	The deploy order toggles a DeployToFire unit's stance; the ladder plays out in
+    **	Deploy_AI.
+    */
+    if (Class->IsDeployToFire) {
+        if (DeployState == DEPLOY_MOBILE) {
+            if (IsDriving) {
+                Stop_Driver();
+                return (5);
+            }
+            Deploy_Begin(true);
+        } else if (DeployState == DEPLOY_DEPLOYED) {
+            DeployNav = TARGET_NONE;
+            Deploy_Begin(false);
+        }
+        Assign_Mission(MISSION_GUARD);
+        return (1);
     }
 
     enum
@@ -4423,6 +4634,7 @@ int UnitClass::Mission_Unload(void)
     case UNIT_TDGMCV:
     case UNIT_TDNMCV:
     case UNIT_TSMCV:    // TS MCV — deploys STRUCT_TSFACT (the TS-tree gate).
+    case UNIT_TSLIMP:   // TS Limpet Drone — settles into STRUCT_TSDLIMP on its own cell.
         switch (Status) {
         case 0:
             Path[0] = FACING_NONE;
@@ -5186,6 +5398,13 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
         if (obj != this) {
 
             /*
+            **	TS Limpet Mine: driven over like a mine, whoever owns it.
+            */
+            if (obj->What_Am_I() == RTTI_BUILDING && (*(BuildingClass*)obj) == STRUCT_TSDLIMP) {
+                return (MOVE_OK);
+            }
+
+            /*
             ** If object is a land mine, allow movement if possible.
             */
             if (obj->What_Am_I() == RTTI_BUILDING
@@ -5512,7 +5731,7 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
     */
     if (action == ACTION_NONE && object->What_Am_I() == RTTI_BUILDING) {
         StructType blah = *((BuildingClass*)object);
-        if (blah == STRUCT_AVMINE || blah == STRUCT_APMINE)
+        if (blah == STRUCT_AVMINE || blah == STRUCT_APMINE || blah == STRUCT_TSDLIMP)
             return (ACTION_MOVE);
     }
 
@@ -5532,7 +5751,21 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
     **	Don't allow special deploy action unless there is something to deploy.
     */
     if (action == ACTION_SELF) {
-        if (Class->Is_MCV()) {
+        if (Class->IsDeployToFire) {
+            /*
+            **	The stance toggles anywhere the unit stands.
+            */
+        } else if (*this == UNIT_TSLIMP) {
+
+            /*
+            **	The Limpet Drone gets the no-deploy cursor where its mine cannot sit.
+            */
+            ((ObjectClass&)(*this)).Mark(MARK_UP);
+            if (!BuildingTypeClass::As_Reference(STRUCT_TSDLIMP).Legal_Placement(Coord_Cell(Center_Coord()))) {
+                action = ACTION_NO_DEPLOY;
+            }
+            ((ObjectClass&)(*this)).Mark(MARK_DOWN);
+        } else if (Class->Is_MCV()) {
 
             /*
             **	The MCV will get the no-deploy cursor if it couldn't
@@ -6309,6 +6542,9 @@ bool UnitClass::Ok_To_Move(DirType dir) const
  *=============================================================================================*/
 FireErrorType UnitClass::Can_Fire(TARGET target, int which) const
 {
+    if (Class->IsDeployToFire && DeployState != DEPLOY_DEPLOYED) {
+        return (FIRE_CANT);
+    }
     assert(Units.ID(this) == ID);
     assert(IsActive);
 
@@ -7632,6 +7868,9 @@ bool UnitClass::Should_Crush_It(TechnoClass const* it) const
  *=============================================================================================*/
 void UnitClass::Scatter(COORDINATE threat, bool forced, bool nokidding)
 {
+    if (Class->IsDeployToFire && DeployState != DEPLOY_MOBILE) {
+        return;
+    }
     assert(IsActive);
 
     if (Mission == MISSION_SLEEP || Mission == MISSION_STICKY || Mission == MISSION_UNLOAD)

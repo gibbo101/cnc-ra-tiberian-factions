@@ -90,6 +90,12 @@ public:
     int SpreadFactor;
 
     /*
+    **	TS Limpet Drone: a positive value makes the shot attach the firer to the target as a
+    **	limpet (the percentage of speed and turn rate taken away) instead of doing damage.
+    */
+    int LimpetFactor;
+
+    /*
     **	If this warhead type can destroy walls, then this flag will be true.
     */
     bool IsWallDestroyer : 1;

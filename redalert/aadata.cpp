@@ -290,6 +290,75 @@ static AircraftTypeClass const TsHunt(AIRCRAFT_TSHUNT,  // What kind of aircraft
                                       MISSION_ATTACK    // Default mission for aircraft.
 );
 
+// Tiberian Factions -- TS Orca Fighter (AIRCRAFT_TSORCA), TS rules [ORCA]: a VTOL gunship with two
+// Hellfire missiles a salvo, built and rearmed at the TS Helipad. Voxel render, 32 facings.
+static AircraftTypeClass const TsOrca(AIRCRAFT_TSORCA, // What kind of aircraft is this.
+                                      TXT_ORCA,         // Translated text (placeholder -- HD name via rules.ini Name=).
+                                      "TSORCA",         // INI name of aircraft (TS-prefixed; matches the TSORCA tileset).
+                                      0x0000,           // Vertical offset.
+                                      0x0040,           // Primary weapon offset.
+                                      0x0000,           // Primary weapon lateral offset.
+                                      false,            // Fixed wing aircraft? (no -- VTOL)
+                                      false,            // Equipped with a rotor? (no -- jet VTOL)
+                                      false,            // Custom rotor sets for each facing?
+                                      false,            // Can this aircraft land on clear terrain?
+                                      false,            // Is it invisible on radar? (TS RadarInvisible=no)
+                                      true,             // Can the player select it so as to give it orders?
+                                      true,             // Can it be assigned as a target for attack.
+                                      false,            // Is it insignificant (won't be announced)?
+                                      false,            // Is it immune to normal combat damage?
+                                      STRUCT_TSHPAD,    // Preferred landing building.
+                                      0xFF,             // Landing speed
+                                      32,               // Number of rotation stages (voxel facings 0-31).
+                                      MISSION_HUNT      // Default mission for aircraft.
+);
+
+// Tiberian Factions -- TS Orca Bomber (AIRCRAFT_TSORCAB), TS rules [ORCAB]: a VTOL bomber that drops
+// its bombs from over the target and rearms at the TS Helipad.
+static AircraftTypeClass const TsOrcaB(AIRCRAFT_TSORCAB, // What kind of aircraft is this.
+                                      TXT_ORCA,         // Translated text (placeholder -- HD name via rules.ini Name=).
+                                      "TSORCAB",         // INI name of aircraft (TS-prefixed; matches the TSORCAB tileset).
+                                      0x0000,           // Vertical offset.
+                                      0x0000,           // Primary weapon offset.
+                                      0x0000,           // Primary weapon lateral offset.
+                                      false,            // Fixed wing aircraft? (no -- VTOL)
+                                      false,            // Equipped with a rotor? (no -- jet VTOL)
+                                      false,            // Custom rotor sets for each facing?
+                                      false,            // Can this aircraft land on clear terrain?
+                                      false,            // Is it invisible on radar? (TS RadarInvisible=no)
+                                      true,             // Can the player select it so as to give it orders?
+                                      true,             // Can it be assigned as a target for attack.
+                                      false,            // Is it insignificant (won't be announced)?
+                                      false,            // Is it immune to normal combat damage?
+                                      STRUCT_TSHPAD,    // Preferred landing building.
+                                      0xFF,             // Landing speed
+                                      32,               // Number of rotation stages (voxel facings 0-31).
+                                      MISSION_HUNT      // Default mission for aircraft.
+);
+
+// Tiberian Factions -- TS Carryall (AIRCRAFT_TSCARRY), TS rules [TRNSPORT]: an unarmed VTOL that lifts
+// one vehicle and sets it down where sent; it lands on open ground when idle.
+static AircraftTypeClass const TsCarry(AIRCRAFT_TSCARRY, // What kind of aircraft is this.
+                                      TXT_ORCA,         // Translated text (placeholder -- HD name via rules.ini Name=).
+                                      "TSCARRY",         // INI name of aircraft (TS-prefixed; matches the TSCARRY tileset).
+                                      0x0000,           // Vertical offset.
+                                      0x0000,           // Primary weapon offset.
+                                      0x0000,           // Primary weapon lateral offset.
+                                      false,            // Fixed wing aircraft? (no -- VTOL)
+                                      false,            // Equipped with a rotor? (no -- jet VTOL)
+                                      false,            // Custom rotor sets for each facing?
+                                      true,            // Can this aircraft land on clear terrain?
+                                      false,            // Is it invisible on radar? (TS RadarInvisible=no)
+                                      true,             // Can the player select it so as to give it orders?
+                                      true,             // Can it be assigned as a target for attack.
+                                      false,            // Is it insignificant (won't be announced)?
+                                      false,            // Is it immune to normal combat damage?
+                                      STRUCT_TSHPAD,    // Preferred landing building.
+                                      0xFF,             // Landing speed
+                                      32,               // Number of rotation stages (voxel facings 0-31).
+                                      MISSION_GUARD      // Default mission for aircraft.
+);
+
 // Tiberian Factions -- TD Apache attack helicopter (AIRCRAFT_TDAPACHE), ported from TD's
 // AIRCRAFT_HELICOPTER (tiberiandawn/aadata.cpp AttackHeli, TXT_HELI). NOD-ONLY (HOUSEF_BAD).
 // A genuine TD port (own weapon + sprite, unlike the Chinook). The attack-heli AI -- Ammo,
@@ -525,6 +594,9 @@ void AircraftTypeClass::Init_Heap(void)
     new AircraftTypeClass(TdA10);  // MUST follow TdOrca to match the AIRCRAFT_TDA10 enum slot.
     new AircraftTypeClass(TDParaDropPlane); // MUST follow TdA10 to match the AIRCRAFT_TDPARADROP slot.
     new AircraftTypeClass(TsHunt);          // MUST follow TDParaDropPlane to match the AIRCRAFT_TSHUNT slot.
+    new AircraftTypeClass(TsOrca);          // MUST follow TsHunt to match the AIRCRAFT_TSORCA slot.
+    new AircraftTypeClass(TsOrcaB);         // MUST follow TsOrca to match the AIRCRAFT_TSORCAB slot.
+    new AircraftTypeClass(TsCarry);         // MUST follow TsOrcaB to match the AIRCRAFT_TSCARRY slot.
 }
 
 /***********************************************************************************************
@@ -872,6 +944,15 @@ void AircraftTypeClass::Dimensions(int& width, int& height) const
         // Round up so map-refresh bounding rect doesn't leave ghost trails.
         width = 256;
         height = 160;
+    } else if (Type == AIRCRAFT_TSCARRY) {
+        width = 40;
+        height = 28;
+    } else if (Type == AIRCRAFT_TSORCAB) {
+        width = 34;
+        height = 20;
+    } else if (Type == AIRCRAFT_TSORCA) {
+        width = 30;
+        height = 18;
     } else {
         width = 21;
         height = 20;

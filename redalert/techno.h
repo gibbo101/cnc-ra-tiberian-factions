@@ -200,6 +200,13 @@ public:
     StageClass CloakingDevice;
     CDTimerClass<FrameTimerClass> CloakDelay;
 
+    /*
+    **	TS Limpet Drone: the houses whose drone rides this object (one bit per HousesType) and
+    **	the throttle it puts on speed and turn rate while any does. A repair bay strips it.
+    */
+    unsigned LimpetType;
+    fixed LimpetSpeedFactor;
+
     /* (Targeting Computer)
     **	This is the target value for the item that this vehicle should ATTACK. If this
     **	is a vehicle with a turret, then it may differ from its movement destination.

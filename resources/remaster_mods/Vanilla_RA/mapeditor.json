@@ -1071,6 +1071,24 @@
       "flags": [
         "Turret"
       ]
+    },
+    {
+      "id": 143,
+      "name": "tsdlimp",
+      "display_name": "Limpet Mine",
+      "power_production": 0,
+      "power_usage": 0,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "Germany",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": []
     }
   ],
   "units": [
@@ -1413,6 +1431,41 @@
       ]
     },
     {
+      "id": 53,
+      "kind": "vehicle",
+      "name": "tsjugg",
+      "display_name": "Juggernaut",
+      "owner": "Germany",
+      "body_frames": [
+        "Frames08Cardinal"
+      ],
+      "walk_frames": 15,
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 54,
+      "kind": "vehicle",
+      "name": "tslimp",
+      "display_name": "Limpet Drone",
+      "owner": "Germany",
+      "body_frames": [
+        "Frames01Single"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": []
+    },
+    {
       "id": 39,
       "kind": "vehicle",
       "name": "tshmec",
@@ -1744,6 +1797,58 @@
       "flags": [
         "FixedWing"
       ]
+    },
+    {
+      "id": 13,
+      "kind": "aircraft",
+      "name": "tsorca",
+      "text_id": "TEXT_UNIT_TSORCA",
+      "owner": "Germany",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 14,
+      "kind": "aircraft",
+      "name": "tsorcab",
+      "text_id": "TEXT_UNIT_TSORCAB",
+      "owner": "Germany",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Armed"
+      ]
+    },
+    {
+      "id": 15,
+      "kind": "aircraft",
+      "name": "tscarry",
+      "text_id": "TEXT_UNIT_TSCARRY",
+      "owner": "Germany",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": []
     },
     {
       "id": 7,

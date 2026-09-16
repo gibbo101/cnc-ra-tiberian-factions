@@ -824,6 +824,250 @@ bool Read_Scenario(char* name)
     }
 #endif
 
+#if 0 // TF DEV TOGGLE: Juggernaut smoke: one spawned hunting, riflemen and a tank in range. Flip to 1 for testing.
+    /*
+    **  Spawns a Juggernaut three rows south of the player's MCV with a hunt order, and four
+    **  enemy riflemen with a light tank nine rows south, so a headless run shows it walk into
+    **  range, set down, fire its three shells and pack up again.
+    */
+    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr && (*Units.Ptr(i) == UNIT_MCV || *Units.Ptr(i) == UNIT_TSMCV)) {
+                home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                break;
+            }
+        }
+        HouseClass* enemy = NULL;
+        for (int h = HOUSE_MULTI1; h < HOUSE_COUNT && enemy == NULL; h++) {
+            HouseClass* hp = HouseClass::As_Pointer((HousesType)h);
+            if (hp != NULL && hp != PlayerPtr && !PlayerPtr->Is_Ally(hp)) {
+                enemy = hp;
+            }
+        }
+        if (home != 0) {
+            CELL jcell = Map.Nearby_Location(home + 1 * MAP_CELL_W + 3, SPEED_TRACK, -1, MZONE_NORMAL);
+            UnitClass* jugg = new UnitClass(UNIT_TSJUGG, PlayerPtr->Class->House);
+            if (jugg != NULL && (jcell == 0 || !jugg->Unlimbo(Cell_Coord(jcell), DIR_S))) {
+                delete jugg;
+                jugg = NULL;
+            }
+            if (jugg != NULL) {
+                jugg->Assign_Mission(MISSION_HUNT);
+            }
+            if (enemy != NULL) {
+                for (int dx = -2; dx <= 1; dx++) {
+                    CELL cell = Map.Nearby_Location(home + 7 * MAP_CELL_W + dx, SPEED_FOOT, -1, MZONE_NORMAL);
+                    InfantryClass* inf = new InfantryClass(INFANTRY_E1, enemy->Class->House);
+                    if (inf != NULL && (cell == 0 || !inf->Unlimbo(Cell_Coord(cell), DIR_N))) {
+                        delete inf;
+                    }
+                }
+                CELL tcell = Map.Nearby_Location(home + 7 * MAP_CELL_W + 3, SPEED_TRACK, -1, MZONE_NORMAL);
+                UnitClass* tank = new UnitClass(UNIT_LTANK, enemy->Class->House);
+                if (tank != NULL && (tcell == 0 || !tank->Unlimbo(Cell_Coord(tcell), DIR_N))) {
+                    delete tank;
+                }
+            }
+        }
+    }
+#endif
+
+#if 0 // TF DEV TOGGLE: Limpet smoke: a drone deploying in view and an enemy tank driving past. Flip to 1 for testing.
+    /*
+    **  Spawns a Limpet Drone two rows south of the player's MCV with a deploy order, and an enemy
+    **  light tank a row below it ordered a few cells east (inside the mine's reach, and quick enough
+    **  that the starting units' guns do not settle it first), so a headless run shows the build-up, the
+    **  cloak, and the mine leaping onto the tank (MOD_DEBUG_TSUNITS.txt LIMPET-ATTACH).
+    */
+    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr && (*Units.Ptr(i) == UNIT_MCV || *Units.Ptr(i) == UNIT_TSMCV)) {
+                home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                break;
+            }
+        }
+        HouseClass* enemy = NULL;
+        for (int h = HOUSE_MULTI1; h < HOUSE_COUNT && enemy == NULL; h++) {
+            HouseClass* hp = HouseClass::As_Pointer((HousesType)h);
+            if (hp != NULL && hp != PlayerPtr && !PlayerPtr->Is_Ally(hp)) {
+                enemy = hp;
+            }
+        }
+        if (home != 0) {
+            CELL lcell = Map.Nearby_Location(home + 2 * MAP_CELL_W + 2, SPEED_HOVER, -1, MZONE_NORMAL);
+            UnitClass* drone = new UnitClass(UNIT_TSLIMP, PlayerPtr->Class->House);
+            if (drone != NULL && (lcell == 0 || !drone->Unlimbo(Cell_Coord(lcell), DIR_S))) {
+                delete drone;
+                drone = NULL;
+            }
+            if (drone != NULL) {
+                drone->Assign_Mission(MISSION_UNLOAD);
+            }
+            if (enemy != NULL) {
+                CELL tcell = Map.Nearby_Location(home + 3 * MAP_CELL_W + 1, SPEED_TRACK, -1, MZONE_NORMAL);
+                UnitClass* tank = new UnitClass(UNIT_LTANK, enemy->Class->House);
+                if (tank != NULL && (tcell == 0 || !tank->Unlimbo(Cell_Coord(tcell), DIR_N))) {
+                    delete tank;
+                    tank = NULL;
+                }
+                if (tank != NULL) {
+                    tank->Assign_Mission(MISSION_MOVE);
+                    tank->Assign_Destination(::As_Target(Map.Nearby_Location(home + 3 * MAP_CELL_W + 4, SPEED_TRACK, -1, MZONE_NORMAL)));
+                }
+            }
+        }
+    }
+#endif
+
+#if 0 // TF DEV TOGGLE: deploy-key smoke: two TS MCVs spawned selected. Flip to 1 for testing.
+    /*
+    **  Spawns two TS MCVs six cells apart, three rows south of the player's start, and selects
+    **  both, so a headless tap of the deploy key shows whether the whole selection deploys.
+    */
+    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr && (*Units.Ptr(i) == UNIT_MCV || *Units.Ptr(i) == UNIT_TSMCV)) {
+                home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                break;
+            }
+        }
+        if (home != 0) {
+            Unselect_All();
+            static int const _try[][2] = {{4, -8}, {4, 6}, {-4, -8}, {-4, 6}, {6, 0}, {-6, 0}, {0, -8}, {0, 8}};
+            int placed = 0;
+            for (int t = 0; t < (int)ARRAY_SIZE(_try) && placed < 2; t++) {
+                int x = Cell_X(home) + _try[t][1];
+                int y = Cell_Y(home) + _try[t][0];
+                if (x < 2 || y < 2 || x >= MAP_CELL_W - 2 || y >= MAP_CELL_H - 2) {
+                    continue;
+                }
+                CELL want = XY_Cell(x, y);
+                if (!Map.In_Radar(want)) {
+                    continue;
+                }
+                CELL cell = Map.Nearby_Location(want, SPEED_TRACK, -1, MZONE_NORMAL);
+                if (cell == 0 || ::Distance(Cell_Coord(cell), Cell_Coord(home)) < CELL_LEPTON_W * 4) {
+                    continue;
+                }
+                UnitClass* mcv = new UnitClass(UNIT_TSMCV, PlayerPtr->Class->House);
+                if (mcv != NULL && !mcv->Unlimbo(Cell_Coord(cell), DIR_S)) {
+                    delete mcv;
+                    continue;
+                }
+                if (mcv != NULL) {
+                    mcv->Select();
+                    placed++;
+                }
+            }
+        }
+    }
+#endif
+
+#if 0 // TF DEV TOGGLE: TS aircraft smoke-spawn near start. Flip to 1 for testing.
+    /*
+    **  Spawns a TS Helipad with an Orca parked on it four cells north-west of the player's
+    **  start, an Orca Fighter, an Orca Bomber and a Carryall airborne to the east (the
+    **  Orcas hunting, the Carryall sent to lift the player's first vehicle), and three enemy
+    **  riflemen with a power plant nine cells south for them to work on.
+    */
+    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        UnitClass* lift = NULL;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr) {
+                bool const mcv = (*Units.Ptr(i) == UNIT_MCV || *Units.Ptr(i) == UNIT_TSMCV);
+                if (mcv || home == 0) {
+                    home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                }
+                if (!mcv) {
+                    lift = Units.Ptr(i);
+                }
+            }
+        }
+        HouseClass* enemy = NULL;
+        for (int h = HOUSE_MULTI1; h < HOUSE_COUNT && enemy == NULL; h++) {
+            HouseClass* hp = HouseClass::As_Pointer((HousesType)h);
+            if (hp != NULL && hp != PlayerPtr && !PlayerPtr->Is_Ally(hp)) {
+                enemy = hp;
+            }
+        }
+        if (home != 0) {
+            CELL padcell = home + 2 * MAP_CELL_W - 5;
+            BuildingClass* pad = new BuildingClass(BuildingTypes.Ptr((int)STRUCT_TSHPAD), PlayerPtr->Class->House);
+            if (pad != NULL && !pad->Unlimbo(Cell_Coord(padcell))) {
+                delete pad;
+                pad = NULL;
+            }
+            if (pad != NULL) {
+                AircraftClass* parked = new AircraftClass(AIRCRAFT_TSORCA, PlayerPtr->Class->House);
+                if (parked != NULL) {
+                    parked->Height = 0;
+                    if (parked->Unlimbo(pad->Docking_Coord(), parked->Pose_Dir())) {
+                        parked->Assign_Mission(MISSION_GUARD);
+                        parked->Transmit_Message(RADIO_HELLO, pad);
+                        pad->Transmit_Message(RADIO_TETHER);
+                    } else {
+                        delete parked;
+                    }
+                }
+            }
+            static AircraftType const _wing[] = {AIRCRAFT_TSORCA, AIRCRAFT_TSORCAB, AIRCRAFT_TSCARRY};
+            for (int i = 0; i < (int)ARRAY_SIZE(_wing); i++) {
+                AircraftClass* air = new AircraftClass(_wing[i], PlayerPtr->Class->House);
+                if (air == NULL) {
+                    break;
+                }
+                air->Height = ObjectClass::FLIGHT_LEVEL;
+                if (!air->Unlimbo(Cell_Coord(home + 2 + i * 2 + MAP_CELL_W), DIR_S)) {
+                    delete air;
+                    continue;
+                }
+                if (_wing[i] == AIRCRAFT_TSCARRY) {
+                    /*
+                    **  The Carryall arrives already carrying a light tank and is sent to set it
+                    **  down five cells east, the drop half of the exchange.
+                    */
+                    UnitClass* cargo = new UnitClass(UNIT_LTANK, PlayerPtr->Class->House);
+                    if (cargo != NULL) {
+                        cargo->Limbo();
+                        air->Attach(cargo);
+                    }
+                    CELL drop = Map.Nearby_Location(home + 2 * MAP_CELL_W + 9, SPEED_TRACK, -1, MZONE_NORMAL);
+                    if (drop != 0) {
+                        air->Assign_Destination(::As_Target(drop));
+                        air->Assign_Mission(MISSION_MOVE);
+                    } else {
+                        air->Assign_Mission(MISSION_GUARD);
+                    }
+                } else {
+                    air->Assign_Mission(MISSION_HUNT);
+                }
+            }
+            if (enemy != NULL) {
+                /*
+                **  Four enemy riflemen and a tank on the nearest open ground four rows south, so
+                **  the hunting Orcas have something in view to shoot.
+                */
+                for (int dx = -2; dx <= 1; dx++) {
+                    CELL cell = Map.Nearby_Location(home + 4 * MAP_CELL_W + dx, SPEED_FOOT, -1, MZONE_NORMAL);
+                    InfantryClass* inf = new InfantryClass(INFANTRY_E1, enemy->Class->House);
+                    if (inf != NULL && (cell == 0 || !inf->Unlimbo(Cell_Coord(cell), DIR_N))) {
+                        delete inf;
+                    }
+                }
+                CELL tcell = Map.Nearby_Location(home + 4 * MAP_CELL_W + 3, SPEED_TRACK, -1, MZONE_NORMAL);
+                UnitClass* tank = new UnitClass(UNIT_LTANK, enemy->Class->House);
+                if (tank != NULL && (tcell == 0 || !tank->Unlimbo(Cell_Coord(tcell), DIR_N))) {
+                    delete tank;
+                }
+            }
+        }
+    }
+#endif
+
 #if 0 // TF DEV TOGGLE: TS infantry smoke-spawn near start. Flip to 1 for testing.
     /*
     **  Spawns one of each TS infantry (plus a wounded Light Infantry for the Medic) three

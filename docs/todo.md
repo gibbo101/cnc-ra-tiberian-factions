@@ -1,3 +1,45 @@
+## RESUME HERE: play test 2026-09-16 (session ended 00:30, everything UNCOMMITTED on main)
+
+Desktop prefix = clean build, DLL 06e1c435, all `#if 0` harnesses off, no headless processes.
+Two crashes fixed tonight, both verified from minidumps (`_Except_<pid>.txt` + `.dmp` in
+`AppData/Roaming/CnCRemastered`, stack scan recipe in memory
+`feedback-dev-logs-never-read-an-object-after-take-damage`):
+- combat.cpp splash log read the hit object after Take_Damage (a kill deletes it). Fixed.
+- drive.cpp Start_Of_Move / While_Moving called Set_Speed (virtual) on a unit that a crate
+  destroyed inside Start_Driver (FootClass::Start_Driver -> Goodie_Check). Stock RA gap, now
+  guarded with IsActive checks on both failure paths.
+
+**Test list for the next session (all in the prefix, none seen by Luke yet)**
+1. Any unit onto a crate early on: no crash.
+2. Deployed Juggernaut: rest and firing at south and east headings. Barrels hinge at the
+   breech (`ts_pack_jugg.py` BARREL_HINGE), only the angle changes, aiming at 45 (Luke's pick).
+3. Juggernaut shelling a standing target 4-5 salvos: impacts vary per shot, some dead on
+   (scatter 0..BallisticScatter per shot, no proximity fuse, arc-end snap within a cell).
+   OPEN: before scatter the arc landed 1.5 cells off its aim (373-394 leptons, and 56-689 in the
+   last logged run). Every shell now logs `JUGG-LAUNCH from/aim/target/dist/frames/speed/riser/dir`
+   and `JUGG-SHELL ... aimoff=(dx,dy)` (offset from the fuse target) in
+   `Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt`. Read those first; the arc maths is in
+   bullet.cpp Unlimbo (BULLET_TSBALLISTIC2 block) and ObjectClass::AI (IsFalling).
+4. Orca Bomber on a building: two nose-first passes of five bombs (Ammo 10), banked loop via
+   TF_BOMB_LOOP waypoint 3 cells off the run line, then home. Body faces travel.
+5. Carryall onto a vehicle: OPEN, it landed on the vehicle and never lifted it. The LAND branch
+   now logs `CARRY landed loaded nav unit limbo uheight dist height cell`; read it.
+6. TS vehicle destroyed / TS building sold: TS Light Infantry (TechnoClass::Crew_Type and
+   BuildingClass::Crew_Type key off the "TS"/"TD" IniName prefix).
+7. Titan, Wolverine, Mk. II shadows; Carryall / Orca selection boxes (AircraftTypeClass::Dimensions).
+8. Limpet Drone deploy, attach, pack-up animation (still unverified from 09-15).
+
+Rules learnt tonight: never run headless unless Luke asks in so many words (it shuts his
+Steam down); cursors stay as they are (Luke: "leave it as arrows"); TS-authentic bomber sortie.
+
+## Mk. II cast shadow + walker shadows (2026-09-15 late)
+
+`vxl_render.py --shadow KX,KY` projects every voxel
+to the ground along the light (TS's walker art casts east, slightly south); the Mk. II ships that
+shadow from `ts35sh_hmec_<f>` on a 576 canvas (stub 72). Titan and Wolverine carry TS's own SHP
+shadow frames (`ts_shadow_from_shp.py`). All three deployed to the desktop; awaiting Luke's eye.
+Cursor decision: Luke said don't flip anything; the Carryall pickup keeps `icon_mount_unit`.
+
 ## Resource spill on destruction (Luke's idea, 2026-09-15, queued)
 
 TS spews Tiberium from a dying Tiberium-healing unit (the Ghost Stalker, now in) and scatters a
@@ -16,11 +58,89 @@ roster balance pass (see "TS roster balance pass" further down), then the releas
 - **Bug first:** a TD construction yard can offer the TS Radar (`docs/known-issues.md`).
 - **TS infantry:** Light Infantry, Disc Thrower, Medic, Engineer, Jumpjet Infantry, Ghost Stalker.
   All six are built on `main` (local commits, 2026-09-13); see "TS infantry status".
-- **TS aircraft:** Orca Fighter, Orca Bomber, Carryall. FIRST fix the TS Helipad (TSHPAD): it
-  does not operate as a helipad today (Luke, 2026-09-15), it should get a bib like the RA and
-  TD helipads, and the aircraft's spawn and return point on the pad must be right.
-- **Remaining vehicles:** Mobile Sensor Array, Juggernaut, Limpet Drone, Mobile EMP, Mobile War
-  Factory.
+- **TS aircraft:** BUILT 2026-09-15 (Luke away; uncommitted). Orca Fighter (TSORCA: TS
+  [Hellfire], TSHellfireMissile on RA's homing path with DRAGON art, TSOrcaAP warhead, Ammo
+  5), Orca Bomber (TSORCAB: TS [Bomb] as a Dropping TSBombShell with the TD bomblet art,
+  TSOrcaHE, Ammo 2, needs TSTECH; Range 1.5 so the VTOL sits over its target), Carryall
+  (TSCARRY: unarmed, lifts one friendly vehicle on a move click over it, hovers loaded, sets
+  it down on a move click over ground; the vehicle is drawn under it by name; needs TSDEPT).
+  Voxel renders at the fleet camera via scripts/ts_pack_aircraft.py (canvas 384/384/448,
+  ShapeSize 48/48/56, stubs in TFASSETS.MIX); TS voice set 30 (Orca pilot) for all three;
+  ORCAMIS1 report, ORCAUP1/ORCADWN1 take-off and landing, the Carryall uses the dropship's
+  DROPUP1/DROPDWN1. AI builds Orcas one per pad, every third a bomber. Cameos badged, manifest
+  and ModText done.
+  **TS Helipad fixed with them:** it was flagged a helipad and an aircraft factory but had no
+  TS aircraft to offer, and sat outside the four dock/rearm switches; now in them, no free
+  aircraft on build (TS GAHPAD), `Bib=yes` slab, and the dock seat moved from the RA pad's
+  (24,18) onto the landing octagon at (29,29). Headless runs: pad + bib render, Orcas dock on
+  the octagon, Carryall lifts and carries a vehicle (drawn slung under it), sets it down on
+  a move order and lands empty, and the Orcas killed a rifle squad on open ground leaving
+  bomb craters. Luke play-tests the lot tonight.
+- **Deploy key deploys every selected deployable (Luke's challenge, 2026-09-15):** the key
+  handler already looped the selection, but `TechnoClass::What_Action` answers ACTION_SELF
+  only with ONE object selected. `TF_DeployKeyBatch` (set for the loop) makes each selected
+  unit answer as if alone, for every faction's MCVs, transports, minelayers and the TS
+  deployables. Unit voices are held during the batch and TS units answer with TS's
+  DeploySound (27-I002, the crew's "deploying", bundled TSDEPLOY.WAV) once per press, as
+  TS's own deploy hotkey does (OpenTS init.cpp). Headless: a single selected TS MCV deploys
+  on the key; the two-unit case could not be staged (the spawn-and-select harness and the
+  launcher's selection list disagree) - Luke to press deploy with two MCVs selected. Dev
+  builds also take the order from `Documents/CnCRemastered/tf_deploy_now.flag`.
+- **Remaining vehicles:** Mobile Sensor Array, Mobile EMP, Mobile War Factory.
+  **Limpet Drone BUILT 2026-09-15 (uncommitted; headless run in progress):** the TS mechanic
+  as OpenTS has it. `UNIT_TSLIMP` is an unarmed hover crawler (LIMPED.SHP, ten frames cycled
+  by `Shape_Number`, no facings, hover locomotor) whose deploy order (`Try_To_Deploy`, the same
+  key/click as the MCV) settles it into `STRUCT_TSDLIMP` on its own cell: a 1x1 building that
+  is cloaked (`Cloakable=yes`), driven over like RA's mines (the four passability checks), and
+  armed with Firestorm's [LIMP] (range 2, TSLimpy warhead `LimpetFactor=35`). Its shot never
+  flies: `TF_Limpet_Attach` (building.cpp Mission_Attack FIRE_OK) sets the vehicle's
+  `TechnoClass::LimpetType` house bit and `LimpetSpeedFactor` 0.65 and the mine is deleted.
+  A limpeted vehicle drives and turns at 65% (drive.cpp) and scouts for the drone's owner
+  (TechnoClass::Look, second Sight_From as PlayerPtr); a repair bay strips it (RADIO_REPAIR).
+  Deploy on the selected mine (self click or the deploy key) packs it back into a drone
+  (`TF_Limpet_Undeploy` via MISSION_UNLOAD). Excluded from BuildingsLost and the any-building-
+  left check like the mines; mine-only threat scan = vehicles in range. NOT ported: TS's yellow
+  selection box on a limpeted unit (launcher draws the box) and EMP killing mines (emp-cannon
+  branch). Art: scripts/ts_pack_limpet.py (x5.0, unit 192 canvas, mine + build-up on a 48x48
+  stub so the standing drone fits); Firestorm ships no LIMPICON, so the cameo is the drone on
+  the blank XXICON plate (Luke may want a better one). Sounds LIMPBOM1 (attach), LIMPQ3/4
+  select, LIMPC3/4 move. AI does not build or use it yet.
+  **Play test 2026-09-15 evening (Luke):** aircraft facings were 90 deg off (the renders already start
+  at north counter-clockwise; the +8 rotation in scripts/ts_pack_aircraft.py removed; Luke: good and
+  correct). Orca Bomber ignored attack orders: Good_Fire_Location's ring search starts a cell inside
+  the weapon range and never ran for the 1.5-cell bomb, so every order fell to return-to-base; a
+  weapon under 3 cells now flies straight over the target. Carryall pickup shows the enter cursor
+  (the launcher has no tote cursor) and refuses a vehicle inside a war factory; per OpenTS the TS
+  Carryall hovers loaded and always lands and drops at a ground destination, which ours does.
+  Limpet Drone: cameo redone (the mine in house gold on E1ICON's backdrop), hover bob added, and
+  DEPLOY CRASHED Luke's game (no crash log; the mine was never drawn): dev builds now trace each
+  deploy step to MOD_DEBUG_TSUNITS.txt (LIMPET-DEPLOY lines) - Luke reproduces, the last line says
+  where. Deploy key with two Juggernauts deploys both (Luke: winner). Deploy and pack-up play TS's
+  BuildingDrop (PLACE2); TS has no pack-up sound of its own for the Juggernaut.
+  **Juggernaut deployed pose REDONE against TS itself (2026-09-15 evening):** the DJUGG_A cabin
+  frames run counter-clockwise like RA art and swing behind their pivot (they were mirrored); TS
+  rests the barrels LEVEL (its pitch scale is 64 = horizontal, StartPitch DIR_E) and raises them
+  only while aiming (Barrel_Pitch) - ported as two 32-facing sets, rest and aiming at 45 deg,
+  chosen by Shape_Number on Target_Legal(TarCom); 202 frames (120 walk, 32 rest, 32 aiming, 18
+  ladder). The seat was measured off TS's own pre-rendered deploy frame (DJUGGMK frame 0): bundle
+  8 TS px forward of the cabin pivot (breech in the cabin's middle) and 2 px below its centre,
+  matching the Firestorm wiki's in-game shot. Sheets: scratch jugg_vs_buildup2.png.
+  **Juggernaut headless-VERIFIED 2026-09-15 (uncommitted):** two runs: it spawned, set down, turned
+  the turret onto the target south (the drawn frame matches the shipped south frame) and its
+  three-shell salvo burst on the tank; barrels start at NORTH in the render set (index = facing).
+  Eye-pass items for Luke: the muzzle flash draws on the body, not the barrel tips; barrel seat.
+  **Juggernaut BUILT 2026-09-15:** TS turns it into a
+  building (DJUGG) and RA cannot turn one back, so it stays a UNIT with a deploy stance:
+  `UnitTypeClass::IsDeployToFire` (rules `DeployToFire=`, `DeployFrames=`, `DeployRate=`),
+  `UnitClass::DeployState` machine (`Deploy_AI`/`Deploy_Begin`): walks with no gun, the deploy
+  key or a target in range sets it down through the DJUGGMK ladder, deployed it fires from a
+  fixed stance with the turret facing baked into 32 composite frames (DJUGG base + DJUGG_A
+  turret + DJUGGBAR barrels pitched 30 deg at TS's .75 scale), a move packs it up first.
+  Firestorm [JUGG]/[Jugg90mm]/[Ballistic2]/[ARTYHE] values; weapons gained `MinimumRange=`
+  (techno.cpp Can_Fire). Art: scripts/ts_pack_jugg.py (170 frames, ShapeSize 56, stub in
+  TFASSETS.MIX), JUGGER1 report bundled. Barrel seat on the turret is a first pass for Luke's
+  eye. Firestorm assets live in expand01.mix (inner ECACHE01.MIX for SHPs, SOUNDS01.MIX for
+  AUDs, barrel voxel at the top level).
 - **EMP Pulse Cannon:** branch `emp-cannon` (`docs/emp-cannon-design.md`), stage A verified.
 - **Firestorm Generator:** new defensive logic; its wall panels are isometric like the dropped gate,
   so the art route is decided with Luke before building.
