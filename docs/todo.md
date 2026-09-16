@@ -1,4 +1,4 @@
-## RESUME HERE: play test 2026-09-16 (session ended 00:30, everything UNCOMMITTED on main)
+## RESUME HERE: play test 2026-09-16 (session ended 00:40; committed on main @ 0fe6fdea, not pushed)
 
 Desktop prefix = clean build, DLL 06e1c435, all `#if 0` harnesses off, no headless processes.
 Two crashes fixed tonight, both verified from minidumps (`_Except_<pid>.txt` + `.dmp` in
