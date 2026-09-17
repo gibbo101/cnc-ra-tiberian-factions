@@ -18,12 +18,13 @@ What went in, all signed off in play:
   packs back into its drone; drone and mine render at the mod's TS scale on one ground line; the
   cameo is the drone on TS's vehicle plate.
 
-**Next, in order:**
-1. **LAN test the Limpet Drone's function** — deploy, attach, the 65% slow, the scouting share.
-   Never verified; the Deck's battery was dead on 09-17.
-2. **Waypoint/rally marker shows the Allied emblem for TS GDI** — launcher-owned, see
+**Next, in order (Luke, 2026-09-17):**
+1. **The last GDI pieces — Mobile Sensor Array, Mobile EMP, Mobile War Factory.** Finishing the
+   roster comes before any verification or polish work below.
+2. **LAN test the Limpet Drone's function** — deploy, attach, the 65% slow, the scouting share.
+   Never verified; the Deck's battery was dead on 09-17, so it needs a charged Deck.
+3. **Waypoint/rally marker shows the Allied emblem for TS GDI** — launcher-owned, see
    `known-issues.md`. Needs the `radar-crest-ram-spike.md` RAM lever, not an atlas repaint.
-3. **Remaining TS GDI vehicles:** Mobile Sensor Array, Mobile EMP, Mobile War Factory.
 4. Then the TS roster balance pass, then the `TF_TS_GDI_FACTION` release switch and hazelnut's
    icon credit.
 
