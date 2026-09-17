@@ -13,7 +13,15 @@
 > the layer is gated on `BState != BSTATE_CONSTRUCTION`, so the cannon pops on only after
 > the 13-frame buildup ends. Fix options: draw it over the last buildup frames, or shorten
 > the buildup. Then stage B.
-> Luke: exact TS (no borrowing from RA), building first, Deck deploys, bib required.
+> Luke: exact TS (no borrowing from RA), building first, bib required.
+> **Play-testing is on the LINUX DESKTOP from 2026-09-17** (it was Deck-only before; Luke:
+> "we can do it on linux"). Deploy target is the local Proton prefix, as main's work uses.
+> **The branch was merged up to main on 2026-09-17** (219 commits: the TS GDI faction, its
+> infantry and aircraft, the Limpet Drone, the Juggernaut round), so stage B starts from a
+> tree that matches main. `[TSPULS]` gained `Germany` in its Owner list with that merge.
+> ⚠️ Rebuilding TFASSETS.MIX in a fresh worktree needs `scripts/_td_tems` copied in first: it
+> is gitignored, and `build_tfassets.sh` packs it only if the directory exists, so without it
+> the archive silently loses 324 staged terrain iconsets. Check the entry count (523 now).
 > **Stages:** A = building ✓built; B = superweapon (recharge, sidebar, targeting, the
 > ball); C = the pulse (stun timer on TechnoClass, every gate, sparkles, aircraft crash,
 > building power-off); D = diggers (`Force_Emerge`, BOOM rule); E = sounds + EVA. Neither
