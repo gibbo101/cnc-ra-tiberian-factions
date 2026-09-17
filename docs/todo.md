@@ -20,9 +20,16 @@ What went in, all signed off in play:
 
 **Next, in order (Luke, 2026-09-17):**
 1. **The last GDI pieces.** Finishing the roster comes before any verification or polish work
-   below:
-   - Mobile Sensor Array, Mobile EMP, Mobile War Factory;
-   - **the Firestorm Generator and its wall sections** (TSFIRE / TSFSDF, planned in
+   below, and the EMP arc leads because its pulse is what the Mobile EMP runs on (Luke,
+   2026-09-17):
+   - **EMP Pulse Cannon, stages B to E** — branch `emp-cannon`, worktree
+     `../tf-subterranean-worktree`, doc `docs/emp-cannon-design.md` **on that branch**. Stage A
+     (the building) is verified; B superweapon, **C the pulse (the stun timer on TechnoClass,
+     the gates, aircraft crash, building power-off)**, D diggers, E sounds and EVA. Deck-only
+     deploys for this arc, and it ships with the subterranean pair, never alone.
+   - **Mobile EMP** — needs stage C's pulse, so it follows straight on from it.
+   - Mobile Sensor Array, Mobile War Factory.
+   - **The Firestorm Generator and its wall sections** (TSFIRE / TSFSDF, planned in
      `ts-gdi-tree-plan.md` 19b) — new defensive logic, and the wall panels are isometric like
      the dropped gate, so the art route is agreed with Luke before anything is built.
 2. **LAN test the Limpet Drone's function** — deploy, attach, the 65% slow, the scouting share.
