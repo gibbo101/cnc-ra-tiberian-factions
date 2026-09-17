@@ -8,6 +8,18 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## Waypoint and rally markers show the Allied emblem for TS GDI (2026-09-17)
+
+- **Severity:** cosmetic. **Status:** open, needs the RAM lever.
+- The move/waypoint marker and the rally-point marker carry the Allied emblem when the player is
+  TS GDI, because that faction rides a decoupled Allied country house.
+- Launcher-owned, not ours: there is no rally or waypoint draw code in the DLL, and
+  `MT_COMMANDBAR_COMMON.MTD` has no waypoint or rally region. The marker is drawn from
+  `RA_UI_ALLIED_LOGO_SMALL` (`RA_UI_SOVIET_LOGO_SMALL` for the other side), chosen by side.
+- **A loose atlas repaint is not a fix** — it is global, so real Allied players would get a GDI
+  eagle on their own waypoints. The route is the RAM lever from `radar-crest-ram-spike.md`:
+  re-point ClientG's cached region record at match start, as the radar crest and the EVA lines do.
+
 ## RESOLVED: TS GDI War Factory: the under-door stripes take team colour, the apron's stay gold (2026-09-12)
 
 - **Severity:** cosmetic. **Status:** resolved 2026-09-12, verified in play. Every stripe is gold

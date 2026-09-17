@@ -1,36 +1,35 @@
-## RESUME HERE: play test 2026-09-16 (session ended 00:40; committed on main @ 0fe6fdea, not pushed)
+## RESUME HERE: play test 2026-09-17 (committed on main @ 4009e766, pushed)
 
-Desktop prefix = clean build, DLL 06e1c435, all `#if 0` harnesses off, no headless processes.
-Two crashes fixed tonight, both verified from minidumps (`_Except_<pid>.txt` + `.dmp` in
-`AppData/Roaming/CnCRemastered`, stack scan recipe in memory
-`feedback-dev-logs-never-read-an-object-after-take-damage`):
-- combat.cpp splash log read the hit object after Take_Damage (a kill deletes it). Fixed.
-- drive.cpp Start_Of_Move / While_Moving called Set_Speed (virtual) on a unit that a crate
-  destroyed inside Start_Driver (FootClass::Start_Driver -> Goodie_Check). Stock RA gap, now
-  guarded with IsActive checks on both failure paths.
+Desktop prefix = DLL `185b0e11`, matching `build/`. Dev build (logs and cheats in). The whole
+2026-09-16 test list was played and every item passed or was fixed in session; the Juggernaut and
+the Limpet Drone are done bar the LAN check below.
 
-**Test list for the next session (all in the prefix, none seen by Luke yet)**
-1. Any unit onto a crate early on: no crash.
-2. Deployed Juggernaut: rest and firing at south and east headings. Barrels hinge at the
-   breech (`ts_pack_jugg.py` BARREL_HINGE), only the angle changes, aiming at 45 (Luke's pick).
-3. Juggernaut shelling a standing target 4-5 salvos: impacts vary per shot, some dead on
-   (scatter 0..BallisticScatter per shot, no proximity fuse, arc-end snap within a cell).
-   OPEN: before scatter the arc landed 1.5 cells off its aim (373-394 leptons, and 56-689 in the
-   last logged run). Every shell now logs `JUGG-LAUNCH from/aim/target/dist/frames/speed/riser/dir`
-   and `JUGG-SHELL ... aimoff=(dx,dy)` (offset from the fuse target) in
-   `Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt`. Read those first; the arc maths is in
-   bullet.cpp Unlimbo (BULLET_TSBALLISTIC2 block) and ObjectClass::AI (IsFalling).
-4. Orca Bomber on a building: two nose-first passes of five bombs (Ammo 10), banked loop via
-   TF_BOMB_LOOP waypoint 3 cells off the run line, then home. Body faces travel.
-5. Carryall onto a vehicle: OPEN, it landed on the vehicle and never lifted it. The LAND branch
-   now logs `CARRY landed loaded nav unit limbo uheight dist height cell`; read it.
-6. TS vehicle destroyed / TS building sold: TS Light Infantry (TechnoClass::Crew_Type and
-   BuildingClass::Crew_Type key off the "TS"/"TD" IniName prefix).
-7. Titan, Wolverine, Mk. II shadows; Carryall / Orca selection boxes (AircraftTypeClass::Dimensions).
-8. Limpet Drone deploy, attach, pack-up animation (still unverified from 09-15).
+What went in, all signed off in play:
+- Juggernaut: the arc flies the true distance to its aim (RA's `::Distance()` approximation was
+  throwing every shell ~290 leptons long), scatter cut to 85 leptons rolled as the smaller of
+  two, and the fire point is now a generated per-facing table off the packed barrels
+  (`redalert/tsjugg_muzzle.h`). Its walk frames dropped 87 px onto the deployed ground line.
+- Deploy rules: a DeployToFire walker sets down only for an ordered attack, never inside its
+  weapon's minimum range, and `Approach_Target` now backs off to a cell between min and max.
+- Carryall: remembers the vehicle it was sent to lift (NavCom is cleared by the landing-zone
+  rewrite), sets it down where it carried it, comes off the map for that placement so it does
+  not block its own cell, stays in the top layer until it is actually down, box two cells high.
+- TS vehicles put out TS Light Infantry when destroyed; the Limpet Mine takes a move order and
+  packs back into its drone; drone and mine render at the mod's TS scale on one ground line; the
+  cameo is the drone on TS's vehicle plate.
 
-Rules learnt tonight: never run headless unless Luke asks in so many words (it shuts his
-Steam down); cursors stay as they are (Luke: "leave it as arrows"); TS-authentic bomber sortie.
+**Next, in order:**
+1. **LAN test the Limpet Drone's function** — deploy, attach, the 65% slow, the scouting share.
+   Never verified; the Deck's battery was dead on 09-17.
+2. **Waypoint/rally marker shows the Allied emblem for TS GDI** — launcher-owned, see
+   `known-issues.md`. Needs the `radar-crest-ram-spike.md` RAM lever, not an atlas repaint.
+3. **Remaining TS GDI vehicles:** Mobile Sensor Array, Mobile EMP, Mobile War Factory.
+4. Then the TS roster balance pass, then the `TF_TS_GDI_FACTION` release switch and hazelnut's
+   icon credit.
+
+New contracts from this round: `launcher-render-contracts.md` 13 (art px to leptons is canvas px
+x 4/3) and 14 (a unit and the building it deploys into must share a ground line).
+
 
 ## Mk. II cast shadow + walker shadows (2026-09-15 late)
 
@@ -55,7 +54,6 @@ TS GDI comes before a release, TS Nod or new arcs. "Finished" means all of the b
 roster balance pass (see "TS roster balance pass" further down), then the release switch
 (`TF_TS_GDI_FACTION`) and hazelnut's icon credit.
 
-- **Bug first:** a TD construction yard can offer the TS Radar (`docs/known-issues.md`).
 - **TS infantry:** Light Infantry, Disc Thrower, Medic, Engineer, Jumpjet Infantry, Ghost Stalker.
   All six are built on `main` (local commits, 2026-09-13); see "TS infantry status".
 - **TS aircraft:** BUILT 2026-09-15 (Luke away; uncommitted). Orca Fighter (TSORCA: TS

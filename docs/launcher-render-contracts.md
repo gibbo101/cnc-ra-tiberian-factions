@@ -227,6 +227,28 @@ The Juggernaut's first fire point was a trig formula built on "1 TS px = 2 lepto
 of the real rate: its shells left from near the hull centre in every pose, which looks close
 enough on screen at point-blank and is a cell and a half out at range 18.
 
+## 14. A unit and the building it deploys into must share a ground line (2026-09-17)
+
+The launcher centres a selection box on the object and draws its health bar above that box, and
+a unit's art anchors on its canvas centre. So where the art's lowest pixels sit relative to that
+centre is the unit's ground line, and it decides three things at once: whether the box brackets
+the feet, whether the bar clears the hull, and whether the sprite appears to jump when the object
+is replaced by another one on the same cell.
+
+Two stances of one entity, or a deployable and the building it becomes, must therefore agree:
+
+- The Juggernaut's walk frames sat 10 classic px north of its deployed frames, which read as a
+  gap under the box, a bar across the hull, and a hop north on pack-up. Fixed by dropping the
+  walk frames onto the deployed ground line (`WALK_DROP` in `scripts/ts_pack_jugg.py`).
+- The Limpet Mine sat 5.8 classic px below the cell centre where the drone's shadow sat 11.6, so
+  deploying hopped it north. Fixed by dropping the mine and its build-up onto the drone's line
+  (`BLDG_DROP` in `scripts/ts_pack_limpet.py`).
+
+Measure, do not eyeball: read the lowest opaque pixel per frame in full canvas space (add the
+meta `crop` offset) and divide by the density. For reference, TS's 1x1 buildings sit about +10 to
++12 classic px below the cell centre, and unit shadows sit further out again the taller the unit
+(Wolverine +13.9, Juggernaut deployed +18, Titan +22.8).
+
 ## House quality policy for TS-sourced assets (Luke, 2026-07-20)
 
 **Every unit, building, and weapon pulled from Tiberian Sun ships at the
