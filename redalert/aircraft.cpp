@@ -248,6 +248,7 @@ AircraftClass::AircraftClass(AircraftType classid, HousesType house)
     , AttacksRemaining(1)
 {
     TFBombsThisRun = 0;
+    TFCarryPickup = TARGET_NONE;
     /*
     **	For two shooters, clear out the second shot flag -- it will be set the first time
     **	the object fires. For non two shooters, set the flag since it will never be cleared
@@ -2108,8 +2109,25 @@ bool AircraftClass::TF_Carryall_Pickup_Pending(void) const
     if (*this != AIRCRAFT_TSCARRY || Is_Something_Attached()) {
         return (false);
     }
-    UnitClass const* unit = As_Unit(NavCom);
-    return (unit != NULL && !unit->IsInLimbo && House->Is_Ally(unit));
+    return (TF_Pickup_Unit() != NULL);
+}
+
+/*
+**	The vehicle this Carryall is out to lift, liftable right now. The navigation computer
+**	holds it while the aircraft flies in, but the move mission rewrites that target to a
+**	landing zone and clears it on arrival, so the order is remembered in TFCarryPickup and
+**	that is what answers once the aircraft is on the ground.
+*/
+UnitClass* AircraftClass::TF_Pickup_Unit(void) const
+{
+    UnitClass* unit = As_Unit(NavCom);
+    if (unit == NULL) {
+        unit = As_Unit(TFCarryPickup);
+    }
+    if (unit == NULL || !unit->IsActive || unit->IsInLimbo || unit->Height > 0 || !House->Is_Ally(unit)) {
+        return (NULL);
+    }
+    return (unit);
 }
 
 /*
@@ -2121,9 +2139,8 @@ bool AircraftClass::TF_Carryall_Pickup_Pending(void) const
 bool AircraftClass::TF_Carryall_Exchange(void)
 {
     if (!Is_Something_Attached()) {
-        UnitClass* unit = As_Unit(NavCom);
-        if (unit == NULL || unit->IsInLimbo || unit->Height > 0 || !House->Is_Ally(unit)
-            || Distance(unit) > 0x00C0) {
+        UnitClass* unit = TF_Pickup_Unit();
+        if (unit == NULL || Distance(unit) > 0x00C0) {
             return (false);
         }
         unit->Assign_Target(TARGET_NONE);
@@ -2131,6 +2148,7 @@ bool AircraftClass::TF_Carryall_Exchange(void)
         unit->Transmit_Message(RADIO_OVER_OUT);
         unit->Limbo();
         Attach(unit);
+        TFCarryPickup = TARGET_NONE;
         return (true);
     }
 
@@ -2487,11 +2505,12 @@ int AircraftClass::Mission_Move(void)
                     snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : ".");
                     FILE* lf = fopen(path, "a");
                     if (lf != NULL) {
-                        UnitClass* u = As_Unit(NavCom);
-                        fprintf(lf, "frame=%d CARRY landed loaded=%d nav=%08lx unit=%s limbo=%d uheight=%d dist=%d height=%d cell=%d\n",
-                                (int)Frame, (int)loaded, (unsigned long)NavCom, u ? u->Class->IniName : "none",
-                                u ? (int)u->IsInLimbo : -1, u ? (int)u->Height : -1, u ? (int)Distance(u) : -1, (int)Height,
-                                (int)Coord_Cell(Coord));
+                        UnitClass* u = TF_Pickup_Unit();
+                        fprintf(lf,
+                                "frame=%d CARRY landed loaded=%d nav=%08lx remembered=%08lx unit=%s limbo=%d uheight=%d dist=%d height=%d cell=%d\n",
+                                (int)Frame, (int)loaded, (unsigned long)NavCom, (unsigned long)TFCarryPickup,
+                                u ? u->Class->IniName : "none", u ? (int)u->IsInLimbo : -1, u ? (int)u->Height : -1,
+                                u ? (int)Distance(u) : -1, (int)Height, (int)Coord_Cell(Coord));
                         fclose(lf);
                     }
                 }
@@ -5567,6 +5586,15 @@ void AircraftClass::Assign_Destination(TARGET dest)
     assert(IsActive);
     if (dest == NavCom)
         return;
+
+    /*
+    **	An empty Carryall sent onto a friendly vehicle remembers it as its load. Only an
+    **	order naming a vehicle sets this; the landing-zone rewrites the move mission makes
+    **	on the way in leave it standing.
+    */
+    if (*this == AIRCRAFT_TSCARRY && !Is_Something_Attached() && As_Unit(dest) != NULL) {
+        TFCarryPickup = dest;
+    }
 
     if (Target_Legal(dest) && Class->IsFixedWing && (IsLanding || (Target_Legal(NavCom) && dest != NavCom))) {
         //	if (Target_Legal(dest) /*&& Class->IsFixedWing*/ && (IsLanding || (Target_Legal(NavCom) && dest != NavCom)))

@@ -529,6 +529,12 @@ static InfantryClass* TF_Airborne_Jumpjet(TARGET target)
 **	ballistic shot strikes a building, a wall or (once skipping) a cliff.
 */
 static double const TS_FLOATER_GRAVITY = 3.0;
+
+/*
+**	The widest a Juggernaut shell strays from its aim point, in leptons: a third of a cell,
+**	the range over which the artillery warhead still does most of its damage.
+*/
+static int const TS_JUGG_SCATTER = 85;
 static double const TS_DISC_ELASTICITY = 0.75;
 static int const TS_OBSTACLE_BAND = 150;
 
@@ -1652,11 +1658,14 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
         }
 
         /*
-        **	An inaccurate arcing shell lands up to BallisticScatter from its aim point, in any
-        **	direction, rolled afresh for every shot, so some shots land dead on and none is wild.
+        **	The Juggernaut's shell lands within TS_JUGG_SCATTER of its aim point, in any
+        **	direction, rolled afresh for every shot. The roll is the smaller of two, so the
+        **	cluster sits tight around the aim and a fair share of shells land dead on: damage
+        **	falls off as distance / (Spread * 5) leptons, so a shell a cell wide of its mark
+        **	scratches the paint.
         */
         if (*this == BULLET_TSBALLISTIC2) {
-            int scatter = Random_Pick(0, (int)Rule.BallisticScatter);
+            int scatter = min(Random_Pick(0, TS_JUGG_SCATTER), Random_Pick(0, TS_JUGG_SCATTER));
             tcoord = Coord_Move(tcoord, (DirType)Random_Pick(0, 255), scatter);
             dir = Direction(tcoord);
         }
@@ -1757,7 +1766,14 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
             **	constant half cell from where it was aimed.
             */
             if (*this == BULLET_TSBALLISTIC2) {
-                int dist = Distance(tcoord);
+                /*
+                **	The flight covers the true distance to the aim point. ::Distance() is the
+                **	cheap approximation (the bigger axis plus half the smaller), which overstates
+                **	a diagonal by up to an eighth and throws the shell that far beyond its aim.
+                */
+                double adx = (double)((int)Coord_X(tcoord) - (int)Coord_X(Coord));
+                double ady = (double)((int)Coord_Y(tcoord) - (int)Coord_Y(Coord));
+                int dist = (int)(sqrt(adx * adx + ady * ady) + 0.5);
                 int frames = max(4, (dist + speed - 1) / speed);
                 speed = max(1, (dist + frames - 1) / frames);
                 Fly_Speed(255, (MPHType)speed);

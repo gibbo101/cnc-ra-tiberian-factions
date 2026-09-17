@@ -1,6 +1,6 @@
 # Launcher render contracts — discoveries from the TS walker ports (2026-07-20)
 
-Six hard-won rules from porting the TS Titan (`UNIT_TSTITN`) and Mammoth Mk. II
+Hard-won rules from porting the TS Titan (`UNIT_TSTITN`) and Mammoth Mk. II
 (`UNIT_TSHMEC`) with a working railgun. Every one of these cost a build-test
 cycle to find; check this list BEFORE shipping any new unit art, anim, or
 beam weapon. Fix-site comments exist in code; this doc is the collected story.
@@ -214,6 +214,18 @@ Adding a stub line to `scripts/build_tfassets.sh` does nothing until the script 
 size, as a large blocky square: the Disc Thrower's TSDISCUS flew as a ~70x80 px block of its own
 colours until the rebuild. The rebuilt archive lists new entries by CRC, not name, so check the
 entry count against the committed copy (`mix_tools.py list`) rather than grepping for the name.
+
+## 13. Art px to leptons is canvas px x 4/3 (2026-09-17)
+
+A packed unit ships at 8x-classic density (canvas = ShapeSize x 8), so one canvas pixel is
+4/3 leptons and one TS SHP pixel at x6.4 is 8.53. Fire points, muzzle tables and any offset
+measured off packed art convert at that rate. Derive them in the packer and emit a table
+(`tstitn_muzzle.h`, `ts4tnk_muzzle.h`, `tsjugg_muzzle.h`) so the art and the offset cannot
+drift; a hand-dialled constant will read right beside the unit and miss by cells at range.
+
+The Juggernaut's first fire point was a trig formula built on "1 TS px = 2 leptons", a quarter
+of the real rate: its shells left from near the hull centre in every pose, which looks close
+enough on screen at point-blank and is a cell and a half out at range 18.
 
 ## House quality policy for TS-sourced assets (Luke, 2026-07-20)
 

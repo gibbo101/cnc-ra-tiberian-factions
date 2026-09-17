@@ -1008,13 +1008,22 @@ void UnitClass::Reload_AI(void)
 void UnitClass::Firing_AI(void)
 {
     /*
-    **	A DeployToFire unit standing in range of its target sets down to fire (TS
-    **	Deploy_To_Fire); a target beyond its reach is walked toward first.
+    **	A DeployToFire unit sets down to fire only on an attack it was ordered to make: a
+    **	target it merely noticed while guarding leaves it standing, so it never plants itself
+    **	on the way out of the factory. A target beyond its reach is walked toward first, and one
+    **	inside the weapon's minimum range is backed away from (Approach_Target picks the cell)
+    **	rather than set down on top of.
     */
     if (Class->IsDeployToFire && DeployState == DEPLOY_MOBILE && Target_Legal(TarCom) && !IsDriving
-        && !Target_Legal(NavCom) && Class->PrimaryWeapon != NULL && In_Range(TarCom, What_Weapon_Should_I_Use(TarCom))) {
-        Deploy_Begin(true);
-        return;
+        && !Target_Legal(NavCom) && Class->PrimaryWeapon != NULL
+        && (Mission == MISSION_ATTACK || Mission == MISSION_HUNT)) {
+        int which = What_Weapon_Should_I_Use(TarCom);
+        WeaponTypeClass const* weapon = (which == 1) ? Class->SecondaryWeapon : Class->PrimaryWeapon;
+        bool too_close = (weapon != NULL && weapon->MinRange > 0 && Distance(TarCom) < weapon->MinRange);
+        if (In_Range(TarCom, which) && !too_close) {
+            Deploy_Begin(true);
+            return;
+        }
     }
     if (Target_Legal(TarCom) && Class->PrimaryWeapon != NULL) {
 
@@ -1643,7 +1652,14 @@ ResultType UnitClass::Take_Damage(int& damage, int distance, WarheadType warhead
             if (Percent_Chance(50)) {
                 InfantryClass* i = 0;
 
-                if (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') {
+                if (Class->IniName[0] == 'T' && Class->IniName[1] == 'S') {
+                    /*
+                    **	Every TS vehicle -- armed or not -- puts out TS Light Infantry
+                    **	(INFANTRY_TSE1) as its survivor, matching the crew a sold TS
+                    **	building hands back.
+                    */
+                    i = new InfantryClass(INFANTRY_TSE1, House->Class->House);
+                } else if (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') {
                     /*
                     **	Tiberian Factions: EVERY TD vehicle -- armed or not, incl. the
                     **	MCV and Harvester -- drops the TD Minigunner (INFANTRY_TDE1), not

@@ -43,15 +43,17 @@ ISOTEMP="GTCNSTMK.SHP GTDEPTMK.SHP GTHPADMK.SHP GTPILEMK.SHP GTPOWRMK.SHP
          GTRADRMK.SHP GTSILOMK.SHP GTTECHMK.SHP GTWEAPMK.SHP NTREFNMK.SHP
          GTPLUGMK.SHP"
 
+# SMCH/SONI/APC and (from SIDEC01) HARV are TS's own vehicle cameos: the Limpet Drone has
+# no cameo of its own, and its plate is rebuilt from theirs.
 CONQUER="BRRKICON.SHP HELIICON.SHP RADRICON.SHP TECHICON.SHP WEAPICON.SHP TURBICON.SHP
          PLUGICON.SHP SEEKICON.SHP IONCICON.SHP RAD1ICON.SHP RAD2ICON.SHP RAD3ICON.SHP
-         PODSICON.SHP"
+         PODSICON.SHP SMCHICON.SHP SONIICON.SHP APCICON.SHP"
 
 # The remaining cameos live in the per-side sidebar archives rather than
 # CONQUER. SIDEC01 is GDI, SIDEC02 Nod; all three take the GDI variant, the
 # refinery included — its cameo differs between sides even though the tree
 # builds the structure itself from Nod's NTREFN art.
-SIDEC01="FIXICON.SHP REFICON.SHP SILOICON.SHP MCVICON.SHP"
+SIDEC01="FIXICON.SHP REFICON.SHP SILOICON.SHP MCVICON.SHP HARVICON.SHP"
 
 echo "== extracting =="
 python3 "$EXTRACT" "$TIBSUN" CACHE.MIX    extract "$RAW" UNITTEM.PAL CAMEO.PAL ANIM.PAL >/dev/null

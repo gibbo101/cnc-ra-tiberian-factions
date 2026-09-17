@@ -2901,6 +2901,7 @@ BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     , LastStrength(0)
     , PlacementDelay(0)
     , RallyPoint(TARGET_NONE)
+    , TFLimpetNav(TARGET_NONE)
 {
     // Diagnostic hook removed 2026-05-18. To re-enable, fprintf here to log
     // every BuildingClass instantiation with typeptr/IniName/Type/house. Used
@@ -3285,6 +3286,12 @@ void BuildingClass::Active_Click_With(ActionType action, CELL cell)
 
         COORDINATE coord = Map.Pixel_To_Coord(Get_Mouse_X(), Get_Mouse_Y());
         OutList.Add(EventClass(ANIM_MOVE_FLASH, PlayerPtr->Class->House, coord, 1 << PlayerPtr->Class->House));
+    } else if (action == ACTION_MOVE && *this == STRUCT_TSDLIMP) {
+        /*
+        **	A Limpet Mine sent somewhere packs back into its drone first; the destination
+        **	rides along on the unload mission and the drone leaves for it.
+        */
+        Player_Assign_Mission(MISSION_UNLOAD, TARGET_NONE, ::As_Target(cell));
     } else if (action == ACTION_MOVE && Can_Have_Rally_Point()) {
         /*
         **	TF: rally points (CFE Patch Redux port). Click ground to set.
@@ -3309,6 +3316,20 @@ void BuildingClass::Active_Click_With(ActionType action, CELL cell)
  *   05/28/1994 JLB : Created.                                                                 *
  *   11/02/1994 JLB : Checks for range before assigning target.                                *
  *=============================================================================================*/
+void BuildingClass::Assign_Destination(TARGET target)
+{
+    assert(IsActive);
+
+    /*
+    **	Only a Limpet Mine has anywhere to go: it keeps the cell so that the drone it packs
+    **	into can be sent there once the build-up has run backwards.
+    */
+    if (*this == STRUCT_TSDLIMP) {
+        TFLimpetNav = target;
+    }
+    TechnoClass::Assign_Destination(target);
+}
+
 void BuildingClass::Assign_Target(TARGET target)
 {
     assert(Buildings.ID(this) == ID);
@@ -5039,9 +5060,18 @@ ActionType BuildingClass::What_Action(CELL cell) const
     if (action == ACTION_NOMOVE && Can_Have_Rally_Point()) {
         action = ACTION_MOVE;
     }
-    if (action == ACTION_MOVE && !Can_Have_Rally_Point()
+    if (action == ACTION_MOVE && !Can_Have_Rally_Point() && *this != STRUCT_TSDLIMP
         && (!Class->Is_Construction_Yard() || !Is_MCV_Deploy())) {
         action = ACTION_NONE;
+    }
+
+    /*
+    **	A Limpet Mine takes a move order anywhere its drone could go: the order packs it up
+    **	and the drone walks off, so cells its own footprint could never be placed on qualify.
+    */
+    if (*this == STRUCT_TSDLIMP && (action == ACTION_NOMOVE || action == ACTION_NONE)
+        && Map.In_Radar(cell)) {
+        action = ACTION_MOVE;
     }
 
     /*
@@ -7832,6 +7862,7 @@ static void TF_Limpet_Undeploy(BuildingClass* mine)
 {
     CELL cell = Coord_Cell(mine->Coord);
     fixed ratio = mine->Health_Ratio();
+    TARGET nav = mine->TFLimpetNav;
     UnitClass* unit = new UnitClass(UNIT_TSLIMP, mine->House->Class->House);
     if (unit == NULL) {
         return;
@@ -7839,7 +7870,12 @@ static void TF_Limpet_Undeploy(BuildingClass* mine)
     mine->Limbo();
     if (unit->Unlimbo(Cell_Coord(cell), DIR_N)) {
         unit->Strength = max(1, (int)(unit->Class->MaxStrength * ratio));
-        unit->Assign_Mission(MISSION_GUARD);
+        if (Target_Legal(nav)) {
+            unit->Assign_Mission(MISSION_MOVE);
+            unit->Assign_Destination(nav);
+        } else {
+            unit->Assign_Mission(MISSION_GUARD);
+        }
         delete mine;
     } else {
         delete unit;

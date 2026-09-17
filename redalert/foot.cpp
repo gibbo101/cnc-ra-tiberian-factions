@@ -1003,7 +1003,20 @@ void FootClass::Approach_Target(void)
         int maxrange = Weapon_Range(primary);
         //		int maxrange = max(Weapon_Range(0), Weapon_Range(1));
 
-        if (!Target_Legal(NavCom) && (!In_Range(TarCom, primary) || !IsLocked)) {
+        /*
+        **	A weapon with a minimum range (TS artillery) cannot shoot a target standing on top
+        **	of it, so a target inside that range sends the unit looking for a cell as surely as
+        **	one out of reach does, and the sweep below only accepts cells beyond it.
+        */
+        TechnoTypeClass const& ttype = *Techno_Type_Class();
+        WeaponTypeClass const* weap = (primary == 1) ? ttype.SecondaryWeapon : ttype.PrimaryWeapon;
+        int minrange = (weap != NULL) ? (int)weap->MinRange : 0;
+        if (minrange > 0) {
+            minrange += CELL_LEPTON_W / 2;
+        }
+
+        if (!Target_Legal(NavCom)
+            && (!In_Range(TarCom, primary) || (minrange > 0 && Distance(TarCom) < minrange) || !IsLocked)) {
             //		if (!Target_Legal(NavCom) && (Distance(TarCom) > maxrange || !IsLocked)) {
 
             /*
@@ -1044,13 +1057,13 @@ void FootClass::Approach_Target(void)
             **	be found, then the target will be assigned as the movement destination
             **	and let "the chips fall where they may."
             */
-            for (int range = maxrange; range > 0x0080; range -= 0x0100) {
+            for (int range = maxrange; range > max(0x0080, minrange); range -= 0x0100) {
                 static int _angles[] = {0, 8, -8, 16, -16, 24, -24, 32, -32, 48, -48, 64, -64};
 
                 for (int index = 0; index < (sizeof(_angles) / sizeof(_angles[0])); index++) {
                     trycoord = Coord_Move(tcoord, (DirType)(dir + _angles[index]), range);
 
-                    if (::Distance(trycoord, tcoord) < range) {
+                    if (::Distance(trycoord, tcoord) < range && ::Distance(trycoord, tcoord) >= minrange) {
                         trycell = Coord_Cell(trycoord);
                         if (Map.In_Radar(trycell)
                             && Map[trycell].Is_Clear_To_Move(Techno_Type_Class()->Speed,

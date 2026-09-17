@@ -5,14 +5,16 @@
   TSDLIMP.ZIP (structures)      20 frames: DLIMPET body (healthy / damaged) under the
                                 DLIMP_A blink, 10 healthy then 10 damaged
   TSDLIMPMAKE.ZIP (structures)  19 frames: the DLIMPMK build-up (42 TS frames resampled)
-plus BuildIcon_TS_LimpetDrone.tga (Firestorm ships no LIMPICON: the gold mine on E1ICON's
-backdrop), the base RA_TSLIMP / RA_TSDLIMP sidebar entries, the ModText rows and the
+plus BuildIcon_TS_LimpetDrone.tga (Firestorm ships no LIMPICON: the gold drone on TS's
+vehicle cameo plate, rebuilt from the cameos that share it), the base RA_TSLIMP / RA_TSDLIMP sidebar entries, the ModText rows and the
 five LIMP*.AUD sounds as Data/AUDIO/TS<NAME>.WAV.
-Scale: TS SHP px x 5.0 (hq4x then LANCZOS), the largest that keeps the build-up's standing
-drone inside its canvas. Unit canvas 192 (ShapeSize 24 x 8): TS draws the hover drone well
-above its shadow, so the body is dropped to a short hover and the pair centred. Building
-canvases 256 (48x48 classic stub, a 1x1 plot): TS source (48,48), the mine's centre, lands on
-the canvas centre for the mine and its build-up alike, so the ladder ends where the mine sits.
+Scale: the drone runs at the mod-wide TS SHP factor F_UNIT (hq4x then LANCZOS) on a 192
+canvas (ShapeSize 24 x 8, the unit density); the mine and its build-up run at F_BLDG on 256
+canvases over a 48x48 classic stub, the building density being 5.33x rather than 8x, so both
+states come out the same TS-relative size on screen. TS draws the hover drone well above its
+shadow, so the body is dropped to a short hover and the pair centred. TS source (48,48), the
+mine's centre, lands on the canvas centre for the mine and its build-up alike, so the ladder
+ends where the mine sits.
 Inputs (set TS_ART_DIR): shp_limped, shp_dlimpet, shp_dlimp_a, shp_dlimpmk (ts_shp.py with
 UNITTEM.PAL), shp_xxicon (CAMEO.PAL, --no-remap), .raw/LIMP*.AUD.
 License: GPL v3.
@@ -32,11 +34,16 @@ MOD = inf.MOD
 STRUCT_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/STRUCTURES"
 STRUCT_XML = f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML"
 RAB = f"{MOD}/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
-F = 5.0
+F_UNIT = 6.4              # the mod-wide TS SHP factor (ts_pack_units_wave.py), at 8x-classic unit density
+F_BLDG = F_UNIT * 2.0 / 3.0  # buildings ship at 5.33x-classic, so their art scales by 2/3 to match on screen
 UNIT_CANVAS = 192
 BLDG_CANVAS = 256
 HOVER_DROP = 0    # TS px the airborne LIMPED body comes down toward its shadow: none, TS draws it hovering two px clear
-BLDG_ANCHOR = (48, 48)
+# The mine's base lands where the drone's shadow does, 11.6 classic px below the cell centre,
+# which is also where TS's other 1x1 buildings sit (TSPION +12, TSSEEK +10.3, TSPODS +9.4).
+# Anything higher and the mine jumps north of the drone the moment it deploys.
+BLDG_DROP = 31.0                                  # canvas px the mine and its build-up come down
+BLDG_ANCHOR = (48, 48 - BLDG_DROP / F_BLDG)
 SOUNDS = ("LIMPBOM1", "LIMPQ3", "LIMPQ4", "LIMPC3", "LIMPC4")
 
 
@@ -44,9 +51,11 @@ def frame(stem, i):
     return Image.open(f"{ART}/shp_{stem}/frame-{i:04d}.png").convert("RGBA")
 
 
-def crisp(img, canvas, anchor=None):
-    """hq4x then LANCZOS to F. The anchor (source px) lands on the canvas centre; by default
-    the centre of the image's opaque bounding box."""
+def crisp(img, canvas, anchor=None, factor=None):
+    """hq4x then LANCZOS to the given factor. The anchor (source px) lands on the canvas
+    centre; by default the centre of the image's opaque bounding box."""
+    if factor is None:
+        factor = F_UNIT
     if anchor is None:
         b = img.getbbox()
         anchor = ((b[0] + b[2]) / 2.0, (b[1] + b[3]) / 2.0)
@@ -54,9 +63,9 @@ def crisp(img, canvas, anchor=None):
     rgb.paste(img, (0, 0), img)
     big = hqx.hq4x(rgb).convert("RGBA")
     big.putalpha(img.split()[3].resize((img.width * 4, img.height * 4), Image.LANCZOS))
-    scaled = big.resize((round(img.width * F), round(img.height * F)), Image.LANCZOS)
+    scaled = big.resize((round(img.width * factor), round(img.height * factor)), Image.LANCZOS)
     out = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
-    inf.safe_paste(out, scaled, round(canvas / 2 - anchor[0] * F), round(canvas / 2 - anchor[1] * F))
+    inf.safe_paste(out, scaled, round(canvas / 2 - anchor[0] * factor), round(canvas / 2 - anchor[1] * factor))
     return out
 
 
@@ -84,7 +93,7 @@ def mine_frames():
         for b in range(10):
             comp = base.copy()
             comp.alpha_composite(frame("dlimp_a", b))
-            out.append(crisp(comp, BLDG_CANVAS, BLDG_ANCHOR))
+            out.append(crisp(comp, BLDG_CANVAS, BLDG_ANCHOR, F_BLDG))
     return out
 
 
@@ -92,7 +101,7 @@ def make_frames(count=19):
     # DLIMPMK.SHP: 42 build-up frames then 42 shadows, resampled to RA's ladder length.
     total = 42
     picks = [round(i * (total - 1) / (count - 1)) for i in range(count)]
-    return [crisp(inf.with_shadow(frame("dlimpmk", i), frame("dlimpmk", total + i)), BLDG_CANVAS, BLDG_ANCHOR)
+    return [crisp(inf.with_shadow(frame("dlimpmk", i), frame("dlimpmk", total + i)), BLDG_CANVAS, BLDG_ANCHOR, F_BLDG)
             for i in picks]
 
 
@@ -109,29 +118,55 @@ def patch_struct_tileset(name, count):
     print(f"patched RA_STRUCTURES.XML: {name} -> {count} tiles (replaced {removed})")
 
 
+VEHICLE_CAMEOS = ("SMCHICON", "SONIICON", "APCICON", "HARVICON", "MCVICON", "JUGGICON",
+                  "OTRNICON", "SEEKICON")
+CAMEO_FIT = 32   # the drone's height on the 48px plate: the fill TS's own vehicle cameos have
+
+
+def cameo_plate():
+    """TS's vehicle cameo backdrop, rebuilt from the cameos that share it: the darkest value
+    at each pixel drops every vehicle off its plate, and what the pile of them leaves in the
+    dark band is replaced with the quiet colour of its own row."""
+    import ts_shp
+    pal = ts_shp.load_pal(f"{ART}/.raw/CAMEO.PAL")
+    plates = []
+    for name in VEHICLE_CAMEOS:
+        _, frames = ts_shp.decode_shp(f"{ART}/.raw/{name}.SHP")
+        plates.append(ts_shp.frame_to_rgba(frames[0], pal).convert("RGB"))
+    w, h = plates[0].size
+    px = [p.load() for p in plates]
+    plate = Image.new("RGB", (w, h))
+    pp = plate.load()
+    for y in range(h):
+        for x in range(w):
+            pp[x, y] = sorted((sum(p[x, y]), p[x, y]) for p in px)[0][1]
+    for y in range(h):
+        edge = sorted((pp[x, y] for x in list(range(0, w // 6)) + list(range(w - w // 6, w))), key=sum)
+        quiet = edge[len(edge) // 2]
+        for x in range(w):
+            if sum(pp[x, y]) > sum(quiet) + 60 and (h * 0.18 < y < h * 0.74):
+                pp[x, y] = quiet
+    return plate.convert("RGBA")
+
+
 def cameo():
-    """No LIMPICON in Firestorm's archives: the settled mine in house gold on a TS cameo
-    backdrop (E1ICON's steel wall and floor, the figure's slot stretched out)."""
+    """No LIMPICON in Firestorm's archives: the drone in house gold, standing on TS's own
+    vehicle cameo plate rebuilt from the cameos that share it. The sidebar builds the drone,
+    so the drone is what the icon shows; it stands taller than it is wide and is fitted by
+    height."""
     import ts_shp
     pal = ts_shp.load_pal(f"{ART}/.raw/UNITTEM.PAL")
-    _, poses = ts_shp.decode_shp(f"{ART}/.raw/DLIMPET.SHP")
-    body = ts_shp.frame_to_rgba(poses[0], pal, remap=(16, 31), team=(232, 190, 60))
-    shadow = inf.with_shadow(Image.new("RGBA", body.size, (0, 0, 0, 0)), ts_shp.frame_to_rgba(poses[3], pal))
-    comp = shadow
-    comp.alpha_composite(body)
+    _, poses = ts_shp.decode_shp(f"{ART}/.raw/LIMPED.SHP")
+    comp = ts_shp.frame_to_rgba(poses[0], pal, remap=(16, 31), team=(232, 190, 60))
     comp = comp.crop(comp.getbbox())
     rgb = Image.new("RGB", comp.size, (0, 0, 0))
     rgb.paste(comp, (0, 0), comp)
     big = hqx.hq4x(rgb).convert("RGBA")
     big.putalpha(comp.split()[3].resize((comp.width * 4, comp.height * 4), Image.LANCZOS))
-    big = big.resize((40, round(big.height * 40 / big.width)), Image.LANCZOS)
-    scene = frame("e1icon", 0)
-    w, h = scene.size
-    back = Image.new("RGBA", (w, h))
-    back.paste(scene.crop((0, 0, 16, h)).resize((w // 2, h), Image.BILINEAR), (0, 0))
-    back.paste(scene.crop((w - 16, 0, w, h)).resize((w // 2, h), Image.BILINEAR), (w // 2, 0))
-    back = back.filter(ImageFilter.GaussianBlur(0.35))
-    back.alpha_composite(big, ((w - big.width) // 2, (h - big.height) // 2 + 5))
+    big = big.resize((round(big.width * CAMEO_FIT / big.height), CAMEO_FIT), Image.LANCZOS)
+    back = cameo_plate()
+    w, h = back.size
+    back.alpha_composite(big, ((w - big.width) // 2, (h - big.height) // 2 + 3))
     os.makedirs(f"{ART}/shp_limpicon", exist_ok=True)
     back.save(f"{ART}/shp_limpicon/frame-0000.png")
     inf.cameo("limpicon", "BuildIcon_TS_LimpetDrone")
