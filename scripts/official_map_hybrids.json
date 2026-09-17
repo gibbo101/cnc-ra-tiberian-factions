@@ -1,0 +1,3136 @@
+{
+ "scm01ea.ini": {
+  "fields": [
+   4498,
+   4515,
+   5214,
+   5265,
+   6464,
+   8078,
+   9699,
+   10836
+  ],
+  "mines": [
+   2788,
+   2853,
+   7093,
+   7398,
+   11539,
+   12082
+  ],
+  "mix": [
+   601,
+   283,
+   164
+  ],
+  "name": "Coastal Influence (4-6)",
+  "start_gap": 0.149,
+  "target": "about 50/50"
+ },
+ "scm03ea.ini": {
+  "fields": [
+   5970
+  ],
+  "mines": [
+   8238,
+   10969
+  ],
+  "mix": [
+   148,
+   290,
+   81
+  ],
+  "name": "Equal Opportunity (2)",
+  "start_gap": 0.117,
+  "target": "Ore-heavy"
+ },
+ "scm04ea.ini": {
+  "fields": [
+   10537
+  ],
+  "mines": [
+   5938,
+   9535,
+   9825,
+   12716
+  ],
+  "mix": [
+   275,
+   690,
+   76
+  ],
+  "name": "Marooned II (4-6)",
+  "start_gap": 0.122,
+  "target": "Ore-heavy"
+ },
+ "scm06ea.ini": {
+  "fields": [
+   3026
+  ],
+  "mines": [
+   4541,
+   6489,
+   8000,
+   10176
+  ],
+  "mix": [
+   119,
+   609,
+   111
+  ],
+  "name": "Isle of Fury (6-8)",
+  "start_gap": 0.176,
+  "target": "Ore-heavy"
+ },
+ "scm07ea.ini": {
+  "fields": [
+   4151,
+   8802
+  ],
+  "mines": [
+   4320,
+   4516,
+   12450,
+   12509
+  ],
+  "mix": [
+   657,
+   197,
+   68
+  ],
+  "name": "Ivory Wastelands (2-4)",
+  "start_gap": 0.059,
+  "target": "Tiberium-heavy"
+ },
+ "scm08ea.ini": {
+  "fields": [],
+  "mines": [
+   5586
+  ],
+  "mix": [
+   57,
+   170,
+   0
+  ],
+  "name": "Shallow Grave (4)",
+  "start_gap": 0.341,
+  "target": "Ore-heavy"
+ },
+ "scm100ea.ini": {
+  "fields": [
+   2076,
+   4708,
+   4842,
+   6117,
+   12098,
+   12231,
+   12304,
+   13259
+  ],
+  "mines": [
+   3032,
+   3156,
+   5777
+  ],
+  "mix": [
+   274,
+   703,
+   103
+  ],
+  "name": "Finger Lake (Medium)",
+  "start_gap": 0.189,
+  "target": "Ore-heavy"
+ },
+ "scm101ea.ini": {
+  "fields": [
+   5153,
+   5335,
+   6596,
+   8113
+  ],
+  "mines": [
+   4424,
+   7617,
+   8003,
+   10542,
+   10827
+  ],
+  "mix": [
+   338,
+   44,
+   55
+  ],
+  "name": "Tiger Core (Sm)",
+  "start_gap": 0.092,
+  "target": "Tiberium-heavy"
+ },
+ "scm102ea.ini": {
+  "fields": [
+   8501
+  ],
+  "mines": [
+   8495,
+   9681,
+   12066
+  ],
+  "mix": [
+   79,
+   329,
+   100
+  ],
+  "name": "Terrainspotting (Small)",
+  "start_gap": 0.185,
+  "target": "Ore-heavy"
+ },
+ "scm103ea.ini": {
+  "fields": [
+   5792,
+   6109,
+   6472,
+   6947,
+   8480
+  ],
+  "mines": [
+   8251,
+   11997
+  ],
+  "mix": [
+   110,
+   308,
+   81
+  ],
+  "name": "Glenboig (Small)",
+  "start_gap": 0.111,
+  "target": "Ore-heavy"
+ },
+ "scm104ea.ini": {
+  "fields": [
+   2240,
+   11736,
+   12867
+  ],
+  "mines": [
+   3111,
+   3494,
+   9445
+  ],
+  "mix": [
+   135,
+   606,
+   160
+  ],
+  "name": "Kabalo (Medium)",
+  "start_gap": 0.109,
+  "target": "Ore-heavy"
+ },
+ "scm105ea.ini": {
+  "fields": [
+   11819
+  ],
+  "mines": [
+   2644,
+   4562,
+   5074,
+   5282,
+   5667,
+   8940,
+   9707,
+   11305,
+   11941,
+   14059,
+   14190
+  ],
+  "mix": [
+   287,
+   496,
+   159
+  ],
+  "name": "Zambezi (Lg)",
+  "start_gap": 0.075,
+  "target": "Ore-heavy"
+ },
+ "scm106ea.ini": {
+  "fields": [],
+  "mines": [
+   4695,
+   4773,
+   5207,
+   5415,
+   7851,
+   8232
+  ],
+  "mix": [
+   204,
+   237,
+   62
+  ],
+  "name": "So Near So Far (Sm)",
+  "start_gap": 0.312,
+  "target": "about 50/50"
+ },
+ "scm107ea.ini": {
+  "fields": [
+   2067,
+   2127,
+   3355,
+   4304,
+   4393,
+   4793,
+   5653,
+   7001,
+   7729,
+   10269,
+   10811,
+   11484,
+   13782,
+   13898,
+   13996
+  ],
+  "mines": [
+   2225,
+   3308,
+   3566,
+   5740,
+   5870,
+   7762,
+   8273,
+   9068,
+   9326,
+   12095,
+   12482,
+   13074,
+   13803
+  ],
+  "mix": [
+   617,
+   158,
+   74
+  ],
+  "name": "No Way Out (Lg)",
+  "start_gap": 0.069,
+  "target": "Tiberium-heavy"
+ },
+ "scm109ea.ini": {
+  "fields": [],
+  "mines": [
+   2973,
+   3006,
+   3024,
+   3404,
+   5461,
+   5720,
+   6379,
+   9621,
+   13916,
+   14098,
+   14179
+  ],
+  "mix": [
+   433,
+   305,
+   61
+  ],
+  "name": "Pilgrim Fathers 2 (Medium)",
+  "start_gap": 0.252,
+  "target": "about 50/50"
+ },
+ "scm110ea.ini": {
+  "fields": [
+   688
+  ],
+  "mines": [
+   2766,
+   4003,
+   4187,
+   4291,
+   6054,
+   6069,
+   6983,
+   9143,
+   9180,
+   10187,
+   12083,
+   12486,
+   13898,
+   14167,
+   15029
+  ],
+  "mix": [
+   576,
+   239,
+   8
+  ],
+  "name": "Pip's Ice Tea (Lg)",
+  "start_gap": 0.133,
+  "target": "Tiberium-heavy"
+ },
+ "scm112ea.ini": {
+  "fields": [
+   3402,
+   5404,
+   7730,
+   9050
+  ],
+  "mines": [
+   2365,
+   2502
+  ],
+  "mix": [
+   157,
+   603,
+   104
+  ],
+  "name": "Eastern Seaboard (Lg)",
+  "start_gap": 0.134,
+  "target": "Ore-heavy"
+ },
+ "scm113ea.ini": {
+  "fields": [
+   8812,
+   9828
+  ],
+  "mines": [
+   3508,
+   3686,
+   5690,
+   6035,
+   11487,
+   11545,
+   12011,
+   13989,
+   14291
+  ],
+  "mix": [
+   212,
+   532,
+   129
+  ],
+  "name": "Hell Frozen Over (Lg)",
+  "start_gap": 0.139,
+  "target": "Ore-heavy"
+ },
+ "scm114ea.ini": {
+  "fields": [
+   6689
+  ],
+  "mines": [
+   7697,
+   7779,
+   7827,
+   10606,
+   10860
+  ],
+  "mix": [
+   131,
+   629,
+   121
+  ],
+  "name": "4 Corners (Medium)",
+  "start_gap": 0.236,
+  "target": "Ore-heavy"
+ },
+ "scm116ea.ini": {
+  "fields": [
+   11297
+  ],
+  "mines": [
+   5417,
+   6110,
+   10438,
+   11182,
+   11187
+  ],
+  "mix": [
+   109,
+   171,
+   96
+  ],
+  "name": "Water Works (Sm)",
+  "start_gap": 0.107,
+  "target": "Ore-heavy"
+ },
+ "scm117ea.ini": {
+  "fields": [
+   6511
+  ],
+  "mines": [
+   2226,
+   2281,
+   2484,
+   2538,
+   3119,
+   3414,
+   5036,
+   5535,
+   9005,
+   9264,
+   10339,
+   10710,
+   11194,
+   11282,
+   12123,
+   12472
+  ],
+  "mix": [
+   487,
+   140,
+   186
+  ],
+  "name": "Flood Lands (Medium)",
+  "start_gap": 0.148,
+  "target": "about 50/50"
+ },
+ "scm11ea.ini": {
+  "fields": [
+   6292
+  ],
+  "mines": [
+   6231,
+   7596,
+   11053,
+   11476
+  ],
+  "mix": [
+   131,
+   507,
+   156
+  ],
+  "name": "Island hoppers (4)",
+  "start_gap": 0.024,
+  "target": "Ore-heavy"
+ },
+ "scm120ea.ini": {
+  "fields": [
+   5692
+  ],
+  "mines": [],
+  "mix": [
+   180,
+   814,
+   0
+  ],
+  "name": "Forest Under Fire (Lg)",
+  "start_gap": 0.276,
+  "target": "Ore-heavy"
+ },
+ "scm121ea.ini": {
+  "fields": [
+   12752
+  ],
+  "mines": [
+   2528,
+   3170,
+   4271,
+   4385,
+   4396,
+   4773,
+   8135,
+   8900,
+   11089,
+   11099,
+   11859,
+   11994,
+   13333,
+   13848
+  ],
+  "mix": [
+   768,
+   149,
+   85
+  ],
+  "name": "Island Wars II (Lg)",
+  "start_gap": 0.227,
+  "target": "Tiberium-heavy"
+ },
+ "scm123ea.ini": {
+  "fields": [
+   7373
+  ],
+  "mines": [
+   7196,
+   8990
+  ],
+  "mix": [
+   237,
+   734,
+   48
+  ],
+  "name": "Bullseye (Lg)",
+  "start_gap": 0.134,
+  "target": "Ore-heavy"
+ },
+ "scm124ea.ini": {
+  "fields": [
+   2225,
+   2264,
+   5137,
+   5224,
+   6108,
+   8505,
+   9287,
+   10512,
+   11368
+  ],
+  "mines": [],
+  "mix": [
+   245,
+   1158,
+   242
+  ],
+  "name": "Things to Come (Lg)",
+  "start_gap": 0.097,
+  "target": "Ore-heavy"
+ },
+ "scm127ea.ini": {
+  "fields": [
+   5855,
+   6099,
+   6723,
+   7084,
+   12082
+  ],
+  "mines": [],
+  "mix": [
+   214,
+   599,
+   135
+  ],
+  "name": "Tundra Trouble",
+  "start_gap": 0.279,
+  "target": "Ore-heavy"
+ },
+ "scm129ea.ini": {
+  "fields": [
+   6876,
+   7601,
+   9389,
+   10182,
+   10728
+  ],
+  "mines": [
+   4032,
+   4670,
+   4802,
+   4803
+  ],
+  "mix": [
+   209,
+   484,
+   82
+  ],
+  "name": "Alaska Anarchy",
+  "start_gap": 0.227,
+  "target": "Ore-heavy"
+ },
+ "scm12ea.ini": {
+  "fields": [
+   9118,
+   10326
+  ],
+  "mines": [
+   2731,
+   2921,
+   4401,
+   6040,
+   8010,
+   10185,
+   13739
+  ],
+  "mix": [
+   572,
+   293,
+   141
+  ],
+  "name": "raraku (4-8)",
+  "start_gap": 0.121,
+  "target": "about 50/50"
+ },
+ "scm13ea.ini": {
+  "fields": [
+   8991,
+   12652
+  ],
+  "mines": [
+   2862,
+   3529,
+   4447,
+   5796,
+   7866,
+   8398,
+   9522,
+   9810,
+   9889,
+   10600,
+   11468,
+   11701
+  ],
+  "mix": [
+   826,
+   144,
+   217
+  ],
+  "name": "Central Conflict (6-8)",
+  "start_gap": 0.333,
+  "target": "Tiberium-heavy"
+ },
+ "scm14ea.ini": {
+  "fields": [],
+  "mines": [
+   3265,
+   3655,
+   11456,
+   11716
+  ],
+  "mix": [
+   266,
+   387,
+   169
+  ],
+  "name": "Combat Alley (4-6)",
+  "start_gap": 0.143,
+  "target": "Ore-heavy"
+ },
+ "scm15ea.ini": {
+  "fields": [],
+  "mines": [
+   2657,
+   2885,
+   4886,
+   6975,
+   8174,
+   11599,
+   13625
+  ],
+  "mix": [
+   509,
+   165,
+   293
+  ],
+  "name": "Island Wars (6-8)",
+  "start_gap": 0.215,
+  "target": "about 50/50"
+ },
+ "scm16ea.ini": {
+  "fields": [
+   8669,
+   12819
+  ],
+  "mines": [
+   2744,
+   10163,
+   13671
+  ],
+  "mix": [
+   299,
+   616,
+   155
+  ],
+  "name": "Desolation (6-8)",
+  "start_gap": 0.179,
+  "target": "Ore-heavy"
+ },
+ "scm17ea.ini": {
+  "fields": [
+   1605,
+   13020
+  ],
+  "mines": [
+   1858,
+   5947,
+   7236,
+   10420,
+   15036
+  ],
+  "mix": [
+   268,
+   322,
+   253
+  ],
+  "name": "No Escape (4-6)",
+  "start_gap": 0.061,
+  "target": "Ore-heavy"
+ },
+ "scm18ea.ini": {
+  "fields": [],
+  "mines": [
+   4868,
+   5287,
+   7519,
+   7802,
+   8003,
+   9248,
+   9783,
+   10476,
+   12034
+  ],
+  "mix": [
+   456,
+   217,
+   138
+  ],
+  "name": "No Man's Land (4-6)",
+  "start_gap": 0.112,
+  "target": "about 50/50"
+ },
+ "scm19ea.ini": {
+  "fields": [
+   4129,
+   9310
+  ],
+  "mines": [
+   4542,
+   4675,
+   9051,
+   11552,
+   11966,
+   11971
+  ],
+  "mix": [
+   260,
+   258,
+   257
+  ],
+  "name": "Normandy (4-6)",
+  "start_gap": 0.063,
+  "target": "Ore-heavy"
+ },
+ "scm20ea.ini": {
+  "fields": [],
+  "mines": [
+   6586,
+   7121
+  ],
+  "mix": [
+   89,
+   375,
+   54
+  ],
+  "name": "Pond Skirmish (2-4)",
+  "start_gap": 0.168,
+  "target": "Ore-heavy"
+ },
+ "scm21ea.ini": {
+  "fields": [],
+  "mines": [
+   4827,
+   5298,
+   9383,
+   11343,
+   11941
+  ],
+  "mix": [
+   306,
+   17,
+   151
+  ],
+  "name": "Ridge War (2-4)",
+  "start_gap": 0.3,
+  "target": "about 50/50"
+ },
+ "scm25ea.ini": {
+  "fields": [
+   5083,
+   10661
+  ],
+  "mines": [
+   3498,
+   3886,
+   4009,
+   8673,
+   11977
+  ],
+  "mix": [
+   253,
+   548,
+   105
+  ],
+  "name": "Bavarian Blast",
+  "start_gap": 0.124,
+  "target": "Ore-heavy"
+ },
+ "scm26ea.ini": {
+  "fields": [],
+  "mines": [
+   5424,
+   5549,
+   5551,
+   5805,
+   6851,
+   6853,
+   6977,
+   7108,
+   9425,
+   9555,
+   9807,
+   9810,
+   10669,
+   10795,
+   11051,
+   11054
+  ],
+  "mix": [
+   308,
+   47,
+   83
+  ],
+  "name": "undiscovered country",
+  "start_gap": 0.118,
+  "target": "about 50/50"
+ },
+ "scm28ea.ini": {
+  "fields": [
+   4670,
+   12088
+  ],
+  "mines": [
+   4917,
+   5170,
+   5301
+  ],
+  "mix": [
+   119,
+   279,
+   40
+  ],
+  "name": "sleepy valley",
+  "start_gap": 0.326,
+  "target": "Ore-heavy"
+ },
+ "scm29ea.ini": {
+  "fields": [],
+  "mines": [
+   6558,
+   6945,
+   10527,
+   11035
+  ],
+  "mix": [
+   184,
+   421,
+   29
+  ],
+  "name": "indirect fire",
+  "start_gap": 0.329,
+  "target": "Ore-heavy"
+ },
+ "scm30ea.ini": {
+  "fields": [
+   4453,
+   10201,
+   10341,
+   12201,
+   13373,
+   13621
+  ],
+  "mines": [
+   7303,
+   7688,
+   7701,
+   7713,
+   7943,
+   7968
+  ],
+  "mix": [
+   195,
+   428,
+   72
+  ],
+  "name": "snake river",
+  "start_gap": 0.082,
+  "target": "Ore-heavy"
+ },
+ "scm31ea.ini": {
+  "fields": [
+   3257,
+   5803,
+   6111,
+   6347,
+   9284,
+   11576
+  ],
+  "mines": [],
+  "mix": [
+   141,
+   518,
+   51
+  ],
+  "name": "snowy island",
+  "start_gap": 0.105,
+  "target": "Ore-heavy"
+ },
+ "scm32ea.ini": {
+  "fields": [
+   4968,
+   5716,
+   6624,
+   8293,
+   9051,
+   9946,
+   10213
+  ],
+  "mines": [
+   3229,
+   3355,
+   3614,
+   5798,
+   6186,
+   10190,
+   10316,
+   10320,
+   13744,
+   13998,
+   14128
+  ],
+  "mix": [
+   377,
+   330,
+   23
+  ],
+  "name": "Frostbit fjords",
+  "start_gap": 0.266,
+  "target": "about 50/50"
+ },
+ "scm33ea.ini": {
+  "fields": [
+   4429,
+   6844,
+   7324,
+   8120,
+   8140,
+   8768,
+   8874,
+   9625,
+   9710,
+   10792,
+   10973
+  ],
+  "mines": [
+   3764,
+   4278,
+   6117,
+   7014,
+   14135,
+   14141
+  ],
+  "mix": [
+   597,
+   265,
+   0
+  ],
+  "name": "Czech Mate",
+  "start_gap": 0.166,
+  "target": "Tiberium-heavy"
+ },
+ "scm35ea.ini": {
+  "fields": [],
+  "mines": [
+   4535,
+   9014,
+   9507,
+   10217,
+   11244,
+   13991
+  ],
+  "mix": [
+   231,
+   644,
+   0
+  ],
+  "name": "brother stalin",
+  "start_gap": 0.165,
+  "target": "Ore-heavy"
+ },
+ "scm36ea.ini": {
+  "fields": [
+   7437,
+   8915
+  ],
+  "mines": [
+   5543,
+   6184,
+   6234,
+   7131,
+   7431
+  ],
+  "mix": [
+   141,
+   523,
+   0
+  ],
+  "name": "C&C",
+  "start_gap": 0.264,
+  "target": "Ore-heavy"
+ },
+ "scm37ea.ini": {
+  "fields": [],
+  "mines": [
+   4271,
+   4444,
+   6007,
+   6386,
+   7436,
+   7686,
+   9738,
+   10107,
+   10383,
+   10489,
+   10541,
+   10878,
+   11487,
+   11947,
+   12069
+  ],
+  "mix": [
+   487,
+   64,
+   81
+  ],
+  "name": "D-Day",
+  "start_gap": 0.3,
+  "target": "Tiberium-heavy"
+ },
+ "scm38ea.ini": {
+  "fields": [],
+  "mines": [
+   3148,
+   8886,
+   13758
+  ],
+  "mix": [
+   181,
+   605,
+   0
+  ],
+  "name": "Land Ladder",
+  "start_gap": 0.103,
+  "target": "Ore-heavy"
+ },
+ "scm39ea.ini": {
+  "fields": [
+   3261,
+   4060,
+   7829,
+   12186,
+   12497
+  ],
+  "mines": [],
+  "mix": [
+   279,
+   282,
+   2
+  ],
+  "name": "Lotsa lakes",
+  "start_gap": 0.191,
+  "target": "about 50/50"
+ },
+ "scm40ea.ini": {
+  "fields": [
+   1078,
+   4434,
+   9308,
+   10828,
+   13225
+  ],
+  "mines": [],
+  "mix": [
+   154,
+   224,
+   118
+  ],
+  "name": "mylai delta",
+  "start_gap": 0.174,
+  "target": "Ore-heavy"
+ },
+ "scm41ea.ini": {
+  "fields": [
+   6607,
+   6838,
+   7764,
+   8487
+  ],
+  "mines": [
+   6996,
+   9403,
+   10404
+  ],
+  "mix": [
+   154,
+   474,
+   0
+  ],
+  "name": "oz",
+  "start_gap": 0.081,
+  "target": "Ore-heavy"
+ },
+ "scm42ea.ini": {
+  "fields": [
+   3528,
+   5446,
+   6035,
+   6737,
+   9572,
+   13620
+  ],
+  "mines": [
+   3220,
+   3690,
+   3730,
+   4205,
+   7348,
+   11929,
+   12698,
+   14178,
+   14184
+  ],
+  "mix": [
+   457,
+   407,
+   31
+  ],
+  "name": "ring of land",
+  "start_gap": 0.327,
+  "target": "about 50/50"
+ },
+ "scm44ea.ini": {
+  "fields": [
+   14525,
+   15056
+  ],
+  "mines": [
+   2631,
+   11865
+  ],
+  "mix": [
+   149,
+   385,
+   46
+  ],
+  "name": "united kingdom",
+  "start_gap": 0.19,
+  "target": "Ore-heavy"
+ },
+ "scm45ea.ini": {
+  "fields": [
+   4137,
+   5023,
+   6742,
+   7582,
+   8014,
+   8428,
+   9642
+  ],
+  "mines": [],
+  "mix": [
+   212,
+   473,
+   88
+  ],
+  "name": "united states",
+  "start_gap": 0.131,
+  "target": "Ore-heavy"
+ },
+ "scm46ea.ini": {
+  "fields": [
+   2379,
+   6934
+  ],
+  "mines": [
+   2327,
+   8132,
+   8897,
+   9017
+  ],
+  "mix": [
+   164,
+   334,
+   192
+  ],
+  "name": "Armourgarden",
+  "start_gap": 0.135,
+  "target": "Ore-heavy"
+ },
+ "scm47ea.ini": {
+  "fields": [
+   5454,
+   6805,
+   10320
+  ],
+  "mines": [],
+  "mix": [
+   63,
+   354,
+   50
+  ],
+  "name": "Australia (Long EW) - Warlord",
+  "start_gap": 0.109,
+  "target": "Ore-heavy"
+ },
+ "scm49ea.ini": {
+  "fields": [
+   4176,
+   7122,
+   8756
+  ],
+  "mines": [],
+  "mix": [
+   235,
+   720,
+   0
+  ],
+  "name": "Blow Holes",
+  "start_gap": 0.125,
+  "target": "Ore-heavy"
+ },
+ "scm50ea.ini": {
+  "fields": [],
+  "mines": [
+   4779,
+   5302,
+   6185,
+   7256,
+   8889,
+   9272,
+   10427,
+   10810
+  ],
+  "mix": [
+   323,
+   307,
+   0
+  ],
+  "name": "Bonsai",
+  "start_gap": 0.296,
+  "target": "about 50/50"
+ },
+ "scm51ea.ini": {
+  "fields": [],
+  "mines": [
+   6476,
+   6589,
+   7496,
+   7828,
+   8118,
+   8278,
+   8551,
+   10129,
+   10143,
+   11497,
+   11555,
+   11833,
+   11849
+  ],
+  "mix": [
+   516,
+   142,
+   37
+  ],
+  "name": "Camos Canyon",
+  "start_gap": 0.088,
+  "target": "Tiberium-heavy"
+ },
+ "scm52ea.ini": {
+  "fields": [],
+  "mines": [
+   2663,
+   5556,
+   6357,
+   7473,
+   12113
+  ],
+  "mix": [
+   232,
+   686,
+   0
+  ],
+  "name": "Camos Coves",
+  "start_gap": 0.11,
+  "target": "Ore-heavy"
+ },
+ "scm53ea.ini": {
+  "fields": [
+   8499
+  ],
+  "mines": [
+   4396,
+   5851,
+   7983,
+   8154,
+   8264,
+   11336
+  ],
+  "mix": [
+   287,
+   291,
+   0
+  ],
+  "name": "Camos Crossing",
+  "start_gap": 0.198,
+  "target": "about 50/50"
+ },
+ "scm54ea.ini": {
+  "fields": [
+   2146
+  ],
+  "mines": [
+   2356,
+   2641,
+   3054,
+   4372,
+   5081,
+   8726,
+   9320,
+   10516,
+   11979,
+   12819,
+   13653,
+   13803,
+   13992
+  ],
+  "mix": [
+   640,
+   252,
+   11
+  ],
+  "name": "Camos Cross",
+  "start_gap": 0.205,
+  "target": "Tiberium-heavy"
+ },
+ "scm56ea.ini": {
+  "fields": [
+   309,
+   320,
+   1093,
+   1107,
+   2104,
+   2513,
+   6460,
+   8516,
+   11577,
+   12599,
+   13378,
+   13393,
+   13882,
+   14401
+  ],
+  "mines": [],
+  "mix": [
+   415,
+   473,
+   77
+  ],
+  "name": "canyon river",
+  "start_gap": 0.108,
+  "target": "about 50/50"
+ },
+ "scm60ea.ini": {
+  "fields": [
+   3246,
+   3385,
+   4950,
+   5092
+  ],
+  "mines": [
+   11208
+  ],
+  "mix": [
+   202,
+   524,
+   43
+  ],
+  "name": "Italy",
+  "start_gap": 0.151,
+  "target": "Ore-heavy"
+ },
+ "scm61ea.ini": {
+  "fields": [],
+  "mines": [
+   4986,
+   5111,
+   5893,
+   6007,
+   6844,
+   7093,
+   7097
+  ],
+  "mix": [
+   171,
+   569,
+   30
+  ],
+  "name": "natural harbor",
+  "start_gap": 0.195,
+  "target": "Ore-heavy"
+ },
+ "scm64ea.ini": {
+  "fields": [
+   4455,
+   5762,
+   7110,
+   9467
+  ],
+  "mines": [],
+  "mix": [
+   158,
+   474,
+   216
+  ],
+  "name": "Malibu Fields",
+  "start_gap": 0.152,
+  "target": "Ore-heavy"
+ },
+ "scm66ea.ini": {
+  "fields": [
+   210,
+   5308,
+   6841,
+   8383
+  ],
+  "mines": [
+   12363,
+   15801,
+   16053
+  ],
+  "mix": [
+   230,
+   444,
+   118
+  ],
+  "name": "the mississippi",
+  "start_gap": 0.198,
+  "target": "Ore-heavy"
+ },
+ "scm67ea.ini": {
+  "fields": [
+   4251,
+   8407,
+   13790,
+   13874
+  ],
+  "mines": [],
+  "mix": [
+   114,
+   548,
+   33
+  ],
+  "name": "Normandy Landings",
+  "start_gap": 0.11,
+  "target": "Ore-heavy"
+ },
+ "scm68ea.ini": {
+  "fields": [],
+  "mines": [
+   4562,
+   5267,
+   5405,
+   6985,
+   8180,
+   9185,
+   9270,
+   9606,
+   10023,
+   10056,
+   11251,
+   11855
+  ],
+  "mix": [
+   669,
+   298,
+   8
+  ],
+  "name": "Ore Wars",
+  "start_gap": 0.175,
+  "target": "Tiberium-heavy"
+ },
+ "scm69ea.ini": {
+  "fields": [
+   203,
+   7261,
+   8639,
+   15179
+  ],
+  "mines": [
+   10078,
+   10202
+  ],
+  "mix": [
+   117,
+   712,
+   46
+  ],
+  "name": "Ponds",
+  "start_gap": 0.17,
+  "target": "Ore-heavy"
+ },
+ "scm73ea.ini": {
+  "fields": [
+   6812,
+   7525,
+   8171
+  ],
+  "mines": [
+   7234,
+   8260,
+   9153,
+   10306,
+   11073
+  ],
+  "mix": [
+   202,
+   563,
+   79
+  ],
+  "name": "River Islands",
+  "start_gap": 0.295,
+  "target": "Ore-heavy"
+ },
+ "scm75ea.ini": {
+  "fields": [],
+  "mines": [
+   8391,
+   10207,
+   10460,
+   11553,
+   11939,
+   12071
+  ],
+  "mix": [
+   47,
+   258,
+   21
+  ],
+  "name": "Rivers",
+  "start_gap": 0.087,
+  "target": "Ore-heavy"
+ },
+ "scm76ea.ini": {
+  "fields": [
+   7987,
+   9041,
+   9285,
+   11708
+  ],
+  "mines": [
+   4669
+  ],
+  "mix": [
+   127,
+   718,
+   91
+  ],
+  "name": "Scappa Flow",
+  "start_gap": 0.062,
+  "target": "Ore-heavy"
+ },
+ "scm77ea.ini": {
+  "fields": [
+   2833,
+   7495,
+   9788,
+   12327
+  ],
+  "mines": [],
+  "mix": [
+   140,
+   691,
+   139
+  ],
+  "name": "Snowball Fight",
+  "start_gap": 0.183,
+  "target": "Ore-heavy"
+ },
+ "scm78ea.ini": {
+  "fields": [
+   3390,
+   4143,
+   5182,
+   6603,
+   7488,
+   9266
+  ],
+  "mines": [],
+  "mix": [
+   123,
+   390,
+   38
+  ],
+  "name": "South America (Medium) - Warlord",
+  "start_gap": 0.112,
+  "target": "Ore-heavy"
+ },
+ "scm80ea.ini": {
+  "fields": [
+   9516
+  ],
+  "mines": [
+   8765
+  ],
+  "mix": [
+   135,
+   505,
+   73
+  ],
+  "name": "Straighter & Narrower",
+  "start_gap": 0.263,
+  "target": "Ore-heavy"
+ },
+ "scm81ea.ini": {
+  "fields": [
+   2733,
+   6807,
+   8149,
+   13031
+  ],
+  "mines": [
+   7518,
+   14109
+  ],
+  "mix": [
+   122,
+   605,
+   21
+  ],
+  "name": "The Bay",
+  "start_gap": 0.131,
+  "target": "Ore-heavy"
+ },
+ "scm82ea.ini": {
+  "fields": [
+   4162,
+   4165,
+   6305,
+   7784,
+   10616
+  ],
+  "mines": [],
+  "mix": [
+   288,
+   567,
+   150
+  ],
+  "name": "The Great Lakes",
+  "start_gap": 0.241,
+  "target": "Ore-heavy"
+ },
+ "scm83ea.ini": {
+  "fields": [],
+  "mines": [
+   6621,
+   7010,
+   9625,
+   10014,
+   12345,
+   13135,
+   13398
+  ],
+  "mix": [
+   127,
+   206,
+   76
+  ],
+  "name": "The Linked Lands",
+  "start_gap": 0.162,
+  "target": "Ore-heavy"
+ },
+ "scm85ea.ini": {
+  "fields": [],
+  "mines": [
+   4412,
+   4660,
+   4793,
+   6220
+  ],
+  "mix": [
+   80,
+   249,
+   107
+  ],
+  "name": "To The Core",
+  "start_gap": 0.233,
+  "target": "Ore-heavy"
+ },
+ "scm86ea.ini": {
+  "fields": [],
+  "mines": [
+   5563,
+   7341,
+   7721,
+   10174,
+   10177
+  ],
+  "mix": [
+   89,
+   254,
+   13
+  ],
+  "name": "Volcano",
+  "start_gap": 0.188,
+  "target": "Ore-heavy"
+ },
+ "scm87ea.ini": {
+  "fields": [],
+  "mines": [
+   2460,
+   4051,
+   7063,
+   8650,
+   8787,
+   9422,
+   10818,
+   12986,
+   13498
+  ],
+  "mix": [
+   275,
+   716,
+   37
+  ],
+  "name": "Wastelands",
+  "start_gap": 0.111,
+  "target": "Ore-heavy"
+ },
+ "scm88ea.ini": {
+  "fields": [
+   2081,
+   2102,
+   4567,
+   10031,
+   10076,
+   11225
+  ],
+  "mines": [
+   7021,
+   8155,
+   8279,
+   11487
+  ],
+  "mix": [
+   237,
+   583,
+   185
+  ],
+  "name": "Apres Peace (Medium)",
+  "start_gap": 0.182,
+  "target": "Ore-heavy"
+ },
+ "scm89ea.ini": {
+  "fields": [
+   2067
+  ],
+  "mines": [
+   5724,
+   5832,
+   8211
+  ],
+  "mix": [
+   129,
+   571,
+   129
+  ],
+  "name": "Return To Zion (Medium)",
+  "start_gap": 0.153,
+  "target": "Ore-heavy"
+ },
+ "scm90ea.ini": {
+  "fields": [
+   6364,
+   6836
+  ],
+  "mines": [
+   3645,
+   7231,
+   7726,
+   9423
+  ],
+  "mix": [
+   198,
+   521,
+   35
+  ],
+  "name": "Africa (Medium)",
+  "start_gap": 0.1,
+  "target": "Ore-heavy"
+ },
+ "scm91ea.ini": {
+  "fields": [],
+  "mines": [
+   3655,
+   3786,
+   4327,
+   4331,
+   7719,
+   10089,
+   10732,
+   11461,
+   11794
+  ],
+  "mix": [
+   388,
+   252,
+   81
+  ],
+  "name": "Snow Wars (Lg)",
+  "start_gap": 0.269,
+  "target": "about 50/50"
+ },
+ "scm92ea.ini": {
+  "fields": [
+   3885,
+   4830,
+   5139,
+   5300,
+   5713,
+   5813,
+   6205,
+   6444,
+   6681,
+   6732,
+   8146,
+   8760,
+   10198,
+   10331
+  ],
+  "mines": [
+   2410,
+   2797,
+   6965,
+   6967,
+   10001,
+   10259,
+   12354,
+   12562,
+   12622,
+   12741,
+   12949,
+   13003,
+   13030
+  ],
+  "mix": [
+   751,
+   184,
+   153
+  ],
+  "name": "The Ice Arena (Lg)",
+  "start_gap": 0.183,
+  "target": "Tiberium-heavy"
+ },
+ "scm94ea.ini": {
+  "fields": [],
+  "mines": [
+   2223,
+   2349,
+   3350,
+   5079,
+   5099,
+   7013,
+   7212,
+   9509,
+   9535,
+   9676,
+   12177,
+   12694
+  ],
+  "mix": [
+   523,
+   503,
+   18
+  ],
+  "name": "The Woods Today .... (Medium)",
+  "start_gap": 0.128,
+  "target": "about 50/50"
+ },
+ "scm95ea.ini": {
+  "fields": [],
+  "mines": [
+   472,
+   552,
+   1058,
+   1112,
+   1373,
+   1464,
+   3883,
+   3918,
+   4136,
+   4430,
+   11102,
+   11556,
+   11605,
+   11938,
+   11986,
+   12722,
+   15275,
+   15453,
+   15656,
+   15962
+  ],
+  "mix": [
+   649,
+   100,
+   110
+  ],
+  "name": "Be Shore (Long NS)",
+  "start_gap": 0.218,
+  "target": "Tiberium-heavy"
+ },
+ "scm96ea.ini": {
+  "fields": [
+   2110,
+   9141
+  ],
+  "mines": [
+   3437,
+   4076,
+   5944,
+   6074,
+   8097,
+   12099,
+   13123
+  ],
+  "mix": [
+   324,
+   949,
+   13
+  ],
+  "name": "The Garden (Medium)",
+  "start_gap": 0.098,
+  "target": "Ore-heavy"
+ },
+ "scm97ea.ini": {
+  "fields": [
+   3035,
+   6888,
+   10980,
+   13361,
+   13396,
+   13551,
+   13783
+  ],
+  "mines": [
+   5809,
+   6315,
+   12220
+  ],
+  "mix": [
+   339,
+   694,
+   164
+  ],
+  "name": "Devil Central Arena (Lg)",
+  "start_gap": 0.088,
+  "target": "Ore-heavy"
+ },
+ "scm98ea.ini": {
+  "fields": [
+   2720,
+   2779,
+   3396,
+   3891,
+   4508,
+   5264,
+   5710,
+   6608,
+   8014,
+   9565,
+   10093,
+   11615
+  ],
+  "mines": [
+   4291,
+   4840,
+   5050,
+   5805,
+   8740,
+   10197,
+   11542
+  ],
+  "mix": [
+   725,
+   180,
+   76
+  ],
+  "name": "The Sticky Bit (Lg)",
+  "start_gap": 0.125,
+  "target": "Tiberium-heavy"
+ },
+ "scm99ea.ini": {
+  "fields": [
+   12967,
+   15416,
+   15572
+  ],
+  "mines": [
+   301,
+   306
+  ],
+  "mix": [
+   173,
+   589,
+   101
+  ],
+  "name": "Run the Gauntlet (Medium)",
+  "start_gap": 0.268,
+  "target": "Ore-heavy"
+ },
+ "scmd2ea.ini": {
+  "fields": [
+   4797
+  ],
+  "mines": [
+   4702,
+   6694,
+   7092,
+   7493,
+   8273,
+   8537,
+   9816,
+   10165,
+   11055,
+   11741
+  ],
+  "mix": [
+   349,
+   151,
+   0
+  ],
+  "name": "Elysium (Small 4 players)",
+  "start_gap": 0.05,
+  "target": "Tiberium-heavy"
+ },
+ "scmd5ea.ini": {
+  "fields": [],
+  "mines": [
+   7122,
+   8229
+  ],
+  "mix": [
+   127,
+   119,
+   79
+  ],
+  "name": "Hades Frozen Over (Small 4 players)",
+  "start_gap": 0.11,
+  "target": "Ore-heavy"
+ },
+ "scmd6ea.ini": {
+  "fields": [
+   9256,
+   10842
+  ],
+  "mines": [
+   6206,
+   6585
+  ],
+  "mix": [
+   187,
+   182,
+   0
+  ],
+  "name": "Hastings (Small 4 players)",
+  "start_gap": 0.142,
+  "target": "about 50/50"
+ },
+ "scmd7ea.ini": {
+  "fields": [],
+  "mines": [
+   4166,
+   4285,
+   8124,
+   8784,
+   9173,
+   9821
+  ],
+  "mix": [
+   319,
+   142,
+   0
+  ],
+  "name": "Leipzip (Small 4 players)",
+  "start_gap": 0.304,
+  "target": "Tiberium-heavy"
+ },
+ "scme0ea.ini": {
+  "fields": [],
+  "mines": [
+   4673,
+   5316,
+   11204,
+   11966
+  ],
+  "mix": [
+   267,
+   0,
+   45
+  ],
+  "name": "Stalingrad (Small 4 players)",
+  "start_gap": 0.054,
+  "target": "Tiberium-heavy"
+ },
+ "scme1ea.ini": {
+  "fields": [],
+  "mines": [
+   6823,
+   10693
+  ],
+  "mix": [
+   114,
+   125,
+   0
+  ],
+  "name": "The Bulge (Small 4 players)",
+  "start_gap": 0.32,
+  "target": "about 50/50"
+ },
+ "scme4ea.ini": {
+  "fields": [],
+  "mines": [
+   5688,
+   5966,
+   9379,
+   10825
+  ],
+  "mix": [
+   239,
+   0,
+   43
+  ],
+  "name": "Zama (Small 4 players)",
+  "start_gap": 0.057,
+  "target": "Tiberium-heavy"
+ },
+ "scme6ea.ini": {
+  "fields": [],
+  "mines": [
+   4954,
+   8198,
+   8958
+  ],
+  "mix": [
+   132,
+   136,
+   103
+  ],
+  "name": "Cold Front (Medium 6 players)",
+  "start_gap": 0.245,
+  "target": "Ore-heavy"
+ },
+ "scme7ea.ini": {
+  "fields": [],
+  "mines": [
+   4654,
+   7052
+  ],
+  "mix": [
+   112,
+   464,
+   152
+  ],
+  "name": "Cold Pass (Medium 4 players)",
+  "start_gap": 0.273,
+  "target": "Ore-heavy"
+ },
+ "scme9ea.ini": {
+  "fields": [
+   4138
+  ],
+  "mines": [
+   4684,
+   10280
+  ],
+  "mix": [
+   103,
+   383,
+   93
+  ],
+  "name": "Frozen Valleys (Medium 6 players)",
+  "start_gap": 0.175,
+  "target": "Ore-heavy"
+ },
+ "scmf0ea.ini": {
+  "fields": [],
+  "mines": [
+   1731,
+   6085,
+   7622,
+   12861,
+   15550,
+   15795
+  ],
+  "mix": [
+   129,
+   379,
+   33
+  ],
+  "name": "Gold Coast (Medium 6 players)",
+  "start_gap": 0.107,
+  "target": "Ore-heavy"
+ },
+ "scmf2ea.ini": {
+  "fields": [
+   187
+  ],
+  "mines": [
+   3913,
+   7480,
+   9888,
+   12604,
+   14429
+  ],
+  "mix": [
+   342,
+   307,
+   20
+  ],
+  "name": "Icebergs (Medium 6 players)",
+  "start_gap": 0.181,
+  "target": "about 50/50"
+ },
+ "scmf3ea.ini": {
+  "fields": [],
+  "mines": [
+   697,
+   1591,
+   7128,
+   7504,
+   15011,
+   15558
+  ],
+  "mix": [
+   600,
+   126,
+   25
+  ],
+  "name": "In the Sun (Medium 4 players)",
+  "start_gap": 0.121,
+  "target": "Tiberium-heavy"
+ },
+ "scmf5ea.ini": {
+  "fields": [
+   4173,
+   4277
+  ],
+  "mines": [],
+  "mix": [
+   120,
+   403,
+   122
+  ],
+  "name": "Kananga (Medium 6 players)",
+  "start_gap": 0.303,
+  "target": "Ore-heavy"
+ },
+ "scmf8ea.ini": {
+  "fields": [],
+  "mines": [
+   8482,
+   9920,
+   10165
+  ],
+  "mix": [
+   110,
+   473,
+   81
+  ],
+  "name": "Middle Ground (Medium 8 players)",
+  "start_gap": 0.176,
+  "target": "Ore-heavy"
+ },
+ "scmg0ea.ini": {
+  "fields": [],
+  "mines": [
+   4273,
+   4425,
+   4531,
+   5066,
+   5172,
+   5452,
+   10705,
+   11599,
+   12238
+  ],
+  "mix": [
+   259,
+   697,
+   39
+  ],
+  "name": "Puddles (Medium 4 players)",
+  "start_gap": 0.099,
+  "target": "Ore-heavy"
+ },
+ "scmg1ea.ini": {
+  "fields": [],
+  "mines": [
+   828,
+   1601,
+   5593,
+   7850,
+   10189,
+   13768,
+   14013,
+   15268
+  ],
+  "mix": [
+   358,
+   227,
+   75
+  ],
+  "name": "Revenge (Medium 8 players)",
+  "start_gap": 0.208,
+  "target": "about 50/50"
+ },
+ "scmg3ea.ini": {
+  "fields": [],
+  "mines": [
+   4378,
+   5147,
+   7264,
+   7992,
+   8108,
+   8889,
+   8985
+  ],
+  "mix": [
+   410,
+   70,
+   58
+  ],
+  "name": "Shades (Medium 8 players)",
+  "start_gap": 0.188,
+  "target": "Tiberium-heavy"
+ },
+ "scmg4ea.ini": {
+  "fields": [],
+  "mines": [
+   4901,
+   15679,
+   15925,
+   16071
+  ],
+  "mix": [
+   162,
+   449,
+   0
+  ],
+  "name": "Sticks & Stones (Medium 4 players)",
+  "start_gap": 0.196,
+  "target": "Ore-heavy"
+ },
+ "scmg5ea.ini": {
+  "fields": [],
+  "mines": [
+   3399,
+   7593,
+   13636
+  ],
+  "mix": [
+   224,
+   222,
+   0
+  ],
+  "name": "Switch (Medium 4 players)",
+  "start_gap": 0.279,
+  "target": "about 50/50"
+ },
+ "scmg6ea.ini": {
+  "fields": [],
+  "mines": [
+   6098,
+   10416,
+   10833
+  ],
+  "mix": [
+   265,
+   90,
+   0
+  ],
+  "name": "The Boyne (Medium 4 players)",
+  "start_gap": 0.332,
+  "target": "Tiberium-heavy"
+ },
+ "scmg7ea.ini": {
+  "fields": [],
+  "mines": [
+   5188
+  ],
+  "mix": [
+   92,
+   421,
+   50
+  ],
+  "name": "The Keyes (Medium 6 players)",
+  "start_gap": 0.223,
+  "target": "Ore-heavy"
+ },
+ "scmh0ea.ini": {
+  "fields": [],
+  "mines": [
+   2737,
+   3017,
+   5278,
+   7400,
+   10025,
+   10474,
+   12967,
+   13018
+  ],
+  "mix": [
+   262,
+   0,
+   397
+  ],
+  "name": "A Pattern Of Islands (Large 8 players)",
+  "start_gap": 0.042,
+  "target": "Ore-heavy"
+ },
+ "scmh1ea.ini": {
+  "fields": [],
+  "mines": [
+   4158,
+   6377,
+   7474,
+   7612,
+   10583,
+   12986
+  ],
+  "mix": [
+   328,
+   154,
+   0
+  ],
+  "name": "Ashes To Ashes (Large 6 players)",
+  "start_gap": 0.176,
+  "target": "Tiberium-heavy"
+ },
+ "scmh2ea.ini": {
+  "fields": [],
+  "mines": [
+   6436,
+   6570,
+   6959,
+   7529,
+   10686,
+   12495
+  ],
+  "mix": [
+   185,
+   463,
+   70
+  ],
+  "name": "Baptism of Fire (Large 6 players)",
+  "start_gap": 0.151,
+  "target": "Ore-heavy"
+ },
+ "scmh3ea.ini": {
+  "fields": [],
+  "mines": [
+   2220,
+   2282,
+   2403,
+   2478,
+   2538,
+   2602,
+   10524,
+   10771,
+   11289,
+   13527,
+   13907,
+   14030
+  ],
+  "mix": [
+   365,
+   166,
+   115
+  ],
+  "name": "Big Fish, Small Pond (Large 6 players)",
+  "start_gap": 0.245,
+  "target": "about 50/50"
+ },
+ "scmh5ea.ini": {
+  "fields": [
+   10927
+  ],
+  "mines": [
+   2111,
+   3638,
+   4261,
+   4438,
+   4650,
+   6356,
+   6454,
+   6745,
+   7499,
+   7836,
+   8118,
+   9033,
+   10658,
+   11455,
+   11630,
+   13482,
+   14172,
+   14276
+  ],
+  "mix": [
+   603,
+   252,
+   0
+  ],
+  "name": "Bridgehead (Large 6 players)",
+  "start_gap": 0.164,
+  "target": "Tiberium-heavy"
+ },
+ "scmh7ea.ini": {
+  "fields": [
+   6162,
+   7312
+  ],
+  "mines": [
+   3795,
+   5159,
+   6506,
+   6583,
+   9836,
+   10703,
+   12474
+  ],
+  "mix": [
+   357,
+   269,
+   35
+  ],
+  "name": "Equal Shares (Large 4 players)",
+  "start_gap": 0.043,
+  "target": "about 50/50"
+ },
+ "scmh9ea.ini": {
+  "fields": [
+   4174,
+   9286
+  ],
+  "mines": [
+   4272,
+   4278,
+   5101,
+   6366,
+   7699,
+   9941,
+   13984,
+   14002,
+   14122,
+   14138
+  ],
+  "mix": [
+   560,
+   165,
+   27
+  ],
+  "name": "Habitat (Large 4 players)",
+  "start_gap": 0.133,
+  "target": "Tiberium-heavy"
+ },
+ "scmi0ea.ini": {
+  "fields": [
+   9415
+  ],
+  "mines": [
+   5062
+  ],
+  "mix": [
+   292,
+   700,
+   85
+  ],
+  "name": "Ice Queen (Large 4 players)",
+  "start_gap": 0.097,
+  "target": "Ore-heavy"
+ },
+ "scmi1ea.ini": {
+  "fields": [],
+  "mines": [
+   2401,
+   2662,
+   2869,
+   9490,
+   10130,
+   10188,
+   10567,
+   13420,
+   14054
+  ],
+  "mix": [
+   408,
+   290,
+   67
+  ],
+  "name": "Ice Station (Large 6 players)",
+  "start_gap": 0.206,
+  "target": "about 50/50"
+ },
+ "scmi4ea.ini": {
+  "fields": [
+   9310
+  ],
+  "mines": [
+   2986,
+   3052,
+   13600
+  ],
+  "mix": [
+   204,
+   508,
+   54
+  ],
+  "name": "Land Locked (Medium 8 players)",
+  "start_gap": 0.17,
+  "target": "Ore-heavy"
+ },
+ "scmi6ea.ini": {
+  "fields": [
+   2069,
+   2112,
+   2155,
+   7831,
+   7908,
+   11613,
+   11810
+  ],
+  "mines": [],
+  "mix": [
+   431,
+   350,
+   34
+  ],
+  "name": "Ore Garden (Large 8 players)",
+  "start_gap": 0.154,
+  "target": "about 50/50"
+ },
+ "scmj0ea.ini": {
+  "fields": [],
+  "mines": [
+   3150,
+   6051,
+   10286,
+   12749,
+   12841
+  ],
+  "mix": [
+   303,
+   312,
+   0
+  ],
+  "name": "Smugglers Cove (Large 6 players)",
+  "start_gap": 0.198,
+  "target": "about 50/50"
+ },
+ "scmj1ea.ini": {
+  "fields": [],
+  "mines": [
+   2533,
+   2654,
+   7114,
+   10025,
+   10342,
+   12699
+  ],
+  "mix": [
+   521,
+   206,
+   0
+  ],
+  "name": "Strathearn Valley (Large 6 players)",
+  "start_gap": 0.185,
+  "target": "Tiberium-heavy"
+ },
+ "scmj2ea.ini": {
+  "fields": [],
+  "mines": [
+   7144,
+   7725
+  ],
+  "mix": [
+   149,
+   555,
+   0
+  ],
+  "name": "The Cauldron (Large 6 players)",
+  "start_gap": 0.108,
+  "target": "Ore-heavy"
+ },
+ "scmj3ea.ini": {
+  "fields": [],
+  "mines": [
+   3277,
+   3759,
+   6734,
+   8881,
+   8916,
+   9235,
+   11757,
+   12340,
+   13369
+  ],
+  "mix": [
+   396,
+   392,
+   0
+  ],
+  "name": "The Finger (Large 8 players)",
+  "start_gap": 0.134,
+  "target": "about 50/50"
+ },
+ "scmj4ea.ini": {
+  "fields": [],
+  "mines": [
+   6745,
+   6953,
+   10059,
+   12449
+  ],
+  "mix": [
+   237,
+   119,
+   1
+  ],
+  "name": "The Web (Large 6 players)",
+  "start_gap": 0.279,
+  "target": "Tiberium-heavy"
+ },
+ "scmj5ea.ini": {
+  "fields": [],
+  "mines": [
+   2660,
+   7575,
+   10577
+  ],
+  "mix": [
+   189,
+   528,
+   0
+  ],
+  "name": "To The Core (Large 4 players)",
+  "start_gap": 0.062,
+  "target": "Ore-heavy"
+ },
+ "scmj7ea.ini": {
+  "fields": [],
+  "mines": [
+   5864,
+   6178,
+   10705,
+   10792
+  ],
+  "mix": [
+   459,
+   5,
+   314
+  ],
+  "name": "Umboto Gorge (Large 4 players)",
+  "start_gap": 0.088,
+  "target": "about 50/50"
+ },
+ "scmj8ea.ini": {
+  "fields": [],
+  "mines": [
+   2346,
+   2613,
+   6122,
+   7531,
+   9023,
+   9747,
+   10172,
+   10555
+  ],
+  "mix": [
+   501,
+   1,
+   164
+  ],
+  "name": "Waterfalls (Medium 8 players)",
+  "start_gap": 0.129,
+  "target": "Tiberium-heavy"
+ },
+ "scmj9ea.ini": {
+  "fields": [],
+  "mines": [
+   9702,
+   10004
+  ],
+  "mix": [
+   201,
+   395,
+   130
+  ],
+  "name": "Waterloo Revisited (Large 6 players)",
+  "start_gap": 0.277,
+  "target": "Ore-heavy"
+ },
+ "scmk2ea.ini": {
+  "fields": [],
+  "mines": [
+   1296,
+   1677,
+   1909,
+   2032,
+   2193,
+   2420,
+   3451,
+   3961,
+   4343,
+   5160,
+   5671,
+   5923,
+   10291,
+   10550,
+   10684,
+   10930,
+   12320,
+   12708,
+   12881,
+   13132,
+   13214,
+   13346,
+   13392,
+   13780,
+   14049,
+   14294,
+   14812
+  ],
+  "mix": [
+   1302,
+   443,
+   0
+  ],
+  "name": "Booby Traps (Mega 8 players)",
+  "start_gap": 0.21,
+  "target": "Tiberium-heavy"
+ },
+ "scmk4ea.ini": {
+  "fields": [],
+  "mines": [
+   580,
+   699,
+   7196,
+   7269,
+   8990,
+   9190,
+   15684,
+   15799
+  ],
+  "mix": [
+   949,
+   943,
+   0
+  ],
+  "name": "Circles of Death (Mega 8 players)",
+  "start_gap": 0.147,
+  "target": "about 50/50"
+ },
+ "scmk7ea.ini": {
+  "fields": [
+   12342
+  ],
+  "mines": [
+   3265,
+   3655,
+   7429,
+   8827,
+   13213
+  ],
+  "mix": [
+   512,
+   1203,
+   169
+  ],
+  "name": "Death Valley (Mega 8 players)",
+  "start_gap": 0.141,
+  "target": "Ore-heavy"
+ },
+ "scmk8ea.ini": {
+  "fields": [],
+  "mines": [
+   3341,
+   3607,
+   9408,
+   10309
+  ],
+  "mix": [
+   368,
+   0,
+   947
+  ],
+  "name": "Deep Six (Mega 8 players)",
+  "start_gap": 0.17,
+  "target": "Ore-heavy"
+ },
+ "scmk9ea.ini": {
+  "fields": [],
+  "mines": [
+   590,
+   1360,
+   1555,
+   1945,
+   4946,
+   5589,
+   5664,
+   6057,
+   7512,
+   7892,
+   7960,
+   8478,
+   8836,
+   9210,
+   9229,
+   9724,
+   11657,
+   12300,
+   12319,
+   12668,
+   13005,
+   13092,
+   13177,
+   14410,
+   15186,
+   15954
+  ],
+  "mix": [
+   1270,
+   398,
+   242
+  ],
+  "name": "Destruction Derby (Mega 8 players)",
+  "start_gap": 0.095,
+  "target": "Tiberium-heavy"
+ },
+ "scml4ea.ini": {
+  "fields": [],
+  "mines": [
+   4385,
+   4896,
+   5756,
+   6650,
+   6724,
+   7113,
+   8478,
+   8488,
+   9686,
+   10074,
+   11739,
+   12256,
+   12955,
+   13463
+  ],
+  "mix": [
+   829,
+   929,
+   0
+  ],
+  "name": "Innocents? (Mega 8 players)",
+  "start_gap": 0.188,
+  "target": "about 50/50"
+ },
+ "scml6ea.ini": {
+  "fields": [],
+  "mines": [
+   195,
+   324,
+   411,
+   494,
+   540,
+   623,
+   3833,
+   3962,
+   4025,
+   4152,
+   4444,
+   4493,
+   4522,
+   4571,
+   4622,
+   4649,
+   4807,
+   4936,
+   5222,
+   5351,
+   7555,
+   7684,
+   9535,
+   9602,
+   9662,
+   9717,
+   9731,
+   9756,
+   9774,
+   9844,
+   9885,
+   9903,
+   10076,
+   10205,
+   12795,
+   12924,
+   13659,
+   13698,
+   13788,
+   13827,
+   13849,
+   13873,
+   13978,
+   14000,
+   14736,
+   14794,
+   14865,
+   14921,
+   15089,
+   15218
+  ],
+  "mix": [
+   300,
+   0,
+   94
+  ],
+  "name": "King of the Hills Extreme (Mega 8 players)",
+  "start_gap": 0.076,
+  "target": "Tiberium-heavy"
+ },
+ "scml9ea.ini": {
+  "fields": [],
+  "mines": [
+   5166,
+   5941,
+   10769,
+   11018,
+   11603,
+   11761,
+   12266,
+   15717,
+   16113
+  ],
+  "mix": [
+   538,
+   1547,
+   0
+  ],
+  "name": "Potholes (Mega 8 players)",
+  "start_gap": 0.161,
+  "target": "Ore-heavy"
+ },
+ "scmm9ea.ini": {
+  "fields": [],
+  "mines": [
+   946,
+   1206,
+   1978,
+   9877,
+   10037,
+   10676,
+   10800,
+   15212,
+   15721,
+   16102
+  ],
+  "mix": [
+   708,
+   609,
+   134
+  ],
+  "name": "Water Werks (Mega 8 players)",
+  "start_gap": 0.152,
+  "target": "about 50/50"
+ }
+}

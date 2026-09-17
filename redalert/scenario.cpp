@@ -132,6 +132,39 @@ void TF_Sonic_Cloak_Mode_Refresh(void)
 #endif
 }
 
+/*
+**	Map reveal on its own. Documents/CnCRemastered/tf_dev_reveal.flag keeps the
+**	full-map cheat while tf_dev_off.flag has switched every other cheat off, so
+**	a fair AI test can still be watched from above. Read once, like the others.
+*/
+bool TF_Dev_Reveal(void)
+{
+#if TF_DEV_BUILD
+    if (TF_Dev_Cheats()) {
+        return true;
+    }
+    static int cached = -1;
+    if (cached < 0) {
+        cached = 0;
+        const char* h = getenv("USERPROFILE");
+        if (h == NULL)
+            h = getenv("HOME");
+        if (h != NULL) {
+            char p[512];
+            snprintf(p, sizeof(p), "%s/Documents/CnCRemastered/tf_dev_reveal.flag", h);
+            FILE* f = fopen(p, "r");
+            if (f != NULL) {
+                cached = 1;
+                fclose(f);
+            }
+        }
+    }
+    return cached != 0;
+#else
+    return false;
+#endif
+}
+
 bool TF_Dev_Cheats(void)
 {
 #if TF_DEV_BUILD
@@ -716,7 +749,7 @@ bool Read_Scenario(char* name)
     **  (TF_DEV_BUILD); runtime-gated by TF_Dev_Cheats() in dev builds.
     */
 #if TF_DEV_BUILD
-    if (TF_Dev_Cheats() && Session.Type != GAME_NORMAL && PlayerPtr != NULL && !PlayerPtr->IsVisionary) {
+    if (TF_Dev_Reveal() && Session.Type != GAME_NORMAL && PlayerPtr != NULL && !PlayerPtr->IsVisionary) {
         PlayerPtr->IsVisionary = true;
         for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {
             Map.Map_Cell(cell, PlayerPtr);
@@ -731,6 +764,7 @@ bool Read_Scenario(char* name)
     if (TF_Dev_Rich_Start() && Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
         PlayerPtr->Refund_Money(1000000);
     }
+
 #endif
 
     /*
@@ -784,6 +818,342 @@ bool Read_Scenario(char* name)
                         new TerrainClass(TERRAIN_TREE1, treecell);
                     }
                     break;
+                }
+            }
+        }
+    }
+#endif
+
+#if 0 // TF DEV TOGGLE: Juggernaut smoke: one spawned hunting, riflemen and a tank in range. Flip to 1 for testing.
+    /*
+    **  Spawns a Juggernaut three rows south of the player's MCV with a hunt order, and four
+    **  enemy riflemen with a light tank nine rows south, so a headless run shows it walk into
+    **  range, set down, fire its three shells and pack up again.
+    */
+    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr && (*Units.Ptr(i) == UNIT_MCV || *Units.Ptr(i) == UNIT_TSMCV)) {
+                home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                break;
+            }
+        }
+        HouseClass* enemy = NULL;
+        for (int h = HOUSE_MULTI1; h < HOUSE_COUNT && enemy == NULL; h++) {
+            HouseClass* hp = HouseClass::As_Pointer((HousesType)h);
+            if (hp != NULL && hp != PlayerPtr && !PlayerPtr->Is_Ally(hp)) {
+                enemy = hp;
+            }
+        }
+        if (home != 0) {
+            CELL jcell = Map.Nearby_Location(home + 1 * MAP_CELL_W + 3, SPEED_TRACK, -1, MZONE_NORMAL);
+            UnitClass* jugg = new UnitClass(UNIT_TSJUGG, PlayerPtr->Class->House);
+            if (jugg != NULL && (jcell == 0 || !jugg->Unlimbo(Cell_Coord(jcell), DIR_S))) {
+                delete jugg;
+                jugg = NULL;
+            }
+            if (jugg != NULL) {
+                jugg->Assign_Mission(MISSION_HUNT);
+            }
+            if (enemy != NULL) {
+                for (int dx = -2; dx <= 1; dx++) {
+                    CELL cell = Map.Nearby_Location(home + 7 * MAP_CELL_W + dx, SPEED_FOOT, -1, MZONE_NORMAL);
+                    InfantryClass* inf = new InfantryClass(INFANTRY_E1, enemy->Class->House);
+                    if (inf != NULL && (cell == 0 || !inf->Unlimbo(Cell_Coord(cell), DIR_N))) {
+                        delete inf;
+                    }
+                }
+                CELL tcell = Map.Nearby_Location(home + 7 * MAP_CELL_W + 3, SPEED_TRACK, -1, MZONE_NORMAL);
+                UnitClass* tank = new UnitClass(UNIT_LTANK, enemy->Class->House);
+                if (tank != NULL && (tcell == 0 || !tank->Unlimbo(Cell_Coord(tcell), DIR_N))) {
+                    delete tank;
+                }
+            }
+        }
+    }
+#endif
+
+#if 0 // TF DEV TOGGLE: Limpet smoke: a drone deploying in view and an enemy tank driving past. Flip to 1 for testing.
+    /*
+    **  Spawns a Limpet Drone two rows south of the player's MCV with a deploy order, and an enemy
+    **  light tank a row below it ordered a few cells east (inside the mine's reach, and quick enough
+    **  that the starting units' guns do not settle it first), so a headless run shows the build-up, the
+    **  cloak, and the mine leaping onto the tank (MOD_DEBUG_TSUNITS.txt LIMPET-ATTACH).
+    */
+    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr && (*Units.Ptr(i) == UNIT_MCV || *Units.Ptr(i) == UNIT_TSMCV)) {
+                home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                break;
+            }
+        }
+        HouseClass* enemy = NULL;
+        for (int h = HOUSE_MULTI1; h < HOUSE_COUNT && enemy == NULL; h++) {
+            HouseClass* hp = HouseClass::As_Pointer((HousesType)h);
+            if (hp != NULL && hp != PlayerPtr && !PlayerPtr->Is_Ally(hp)) {
+                enemy = hp;
+            }
+        }
+        if (home != 0) {
+            CELL lcell = Map.Nearby_Location(home + 2 * MAP_CELL_W + 2, SPEED_HOVER, -1, MZONE_NORMAL);
+            UnitClass* drone = new UnitClass(UNIT_TSLIMP, PlayerPtr->Class->House);
+            if (drone != NULL && (lcell == 0 || !drone->Unlimbo(Cell_Coord(lcell), DIR_S))) {
+                delete drone;
+                drone = NULL;
+            }
+            if (drone != NULL) {
+                drone->Assign_Mission(MISSION_UNLOAD);
+            }
+            if (enemy != NULL) {
+                CELL tcell = Map.Nearby_Location(home + 3 * MAP_CELL_W + 1, SPEED_TRACK, -1, MZONE_NORMAL);
+                UnitClass* tank = new UnitClass(UNIT_LTANK, enemy->Class->House);
+                if (tank != NULL && (tcell == 0 || !tank->Unlimbo(Cell_Coord(tcell), DIR_N))) {
+                    delete tank;
+                    tank = NULL;
+                }
+                if (tank != NULL) {
+                    tank->Assign_Mission(MISSION_MOVE);
+                    tank->Assign_Destination(::As_Target(Map.Nearby_Location(home + 3 * MAP_CELL_W + 4, SPEED_TRACK, -1, MZONE_NORMAL)));
+                }
+            }
+        }
+    }
+#endif
+
+#if 0 // TF DEV TOGGLE: deploy-key smoke: two TS MCVs spawned selected. Flip to 1 for testing.
+    /*
+    **  Spawns two TS MCVs six cells apart, three rows south of the player's start, and selects
+    **  both, so a headless tap of the deploy key shows whether the whole selection deploys.
+    */
+    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr && (*Units.Ptr(i) == UNIT_MCV || *Units.Ptr(i) == UNIT_TSMCV)) {
+                home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                break;
+            }
+        }
+        if (home != 0) {
+            Unselect_All();
+            static int const _try[][2] = {{4, -8}, {4, 6}, {-4, -8}, {-4, 6}, {6, 0}, {-6, 0}, {0, -8}, {0, 8}};
+            int placed = 0;
+            for (int t = 0; t < (int)ARRAY_SIZE(_try) && placed < 2; t++) {
+                int x = Cell_X(home) + _try[t][1];
+                int y = Cell_Y(home) + _try[t][0];
+                if (x < 2 || y < 2 || x >= MAP_CELL_W - 2 || y >= MAP_CELL_H - 2) {
+                    continue;
+                }
+                CELL want = XY_Cell(x, y);
+                if (!Map.In_Radar(want)) {
+                    continue;
+                }
+                CELL cell = Map.Nearby_Location(want, SPEED_TRACK, -1, MZONE_NORMAL);
+                if (cell == 0 || ::Distance(Cell_Coord(cell), Cell_Coord(home)) < CELL_LEPTON_W * 4) {
+                    continue;
+                }
+                UnitClass* mcv = new UnitClass(UNIT_TSMCV, PlayerPtr->Class->House);
+                if (mcv != NULL && !mcv->Unlimbo(Cell_Coord(cell), DIR_S)) {
+                    delete mcv;
+                    continue;
+                }
+                if (mcv != NULL) {
+                    mcv->Select();
+                    placed++;
+                }
+            }
+        }
+    }
+#endif
+
+#if 0 // TF DEV TOGGLE: TS aircraft smoke-spawn near start. Flip to 1 for testing.
+    /*
+    **  Spawns a TS Helipad with an Orca parked on it four cells north-west of the player's
+    **  start, an Orca Fighter, an Orca Bomber and a Carryall airborne to the east (the
+    **  Orcas hunting, the Carryall sent to lift the player's first vehicle), and three enemy
+    **  riflemen with a power plant nine cells south for them to work on.
+    */
+    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        UnitClass* lift = NULL;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr) {
+                bool const mcv = (*Units.Ptr(i) == UNIT_MCV || *Units.Ptr(i) == UNIT_TSMCV);
+                if (mcv || home == 0) {
+                    home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                }
+                if (!mcv) {
+                    lift = Units.Ptr(i);
+                }
+            }
+        }
+        HouseClass* enemy = NULL;
+        for (int h = HOUSE_MULTI1; h < HOUSE_COUNT && enemy == NULL; h++) {
+            HouseClass* hp = HouseClass::As_Pointer((HousesType)h);
+            if (hp != NULL && hp != PlayerPtr && !PlayerPtr->Is_Ally(hp)) {
+                enemy = hp;
+            }
+        }
+        if (home != 0) {
+            CELL padcell = home + 2 * MAP_CELL_W - 5;
+            BuildingClass* pad = new BuildingClass(BuildingTypes.Ptr((int)STRUCT_TSHPAD), PlayerPtr->Class->House);
+            if (pad != NULL && !pad->Unlimbo(Cell_Coord(padcell))) {
+                delete pad;
+                pad = NULL;
+            }
+            if (pad != NULL) {
+                AircraftClass* parked = new AircraftClass(AIRCRAFT_TSORCA, PlayerPtr->Class->House);
+                if (parked != NULL) {
+                    parked->Height = 0;
+                    if (parked->Unlimbo(pad->Docking_Coord(), parked->Pose_Dir())) {
+                        parked->Assign_Mission(MISSION_GUARD);
+                        parked->Transmit_Message(RADIO_HELLO, pad);
+                        pad->Transmit_Message(RADIO_TETHER);
+                    } else {
+                        delete parked;
+                    }
+                }
+            }
+            static AircraftType const _wing[] = {AIRCRAFT_TSORCA, AIRCRAFT_TSORCAB, AIRCRAFT_TSCARRY};
+            for (int i = 0; i < (int)ARRAY_SIZE(_wing); i++) {
+                AircraftClass* air = new AircraftClass(_wing[i], PlayerPtr->Class->House);
+                if (air == NULL) {
+                    break;
+                }
+                air->Height = ObjectClass::FLIGHT_LEVEL;
+                if (!air->Unlimbo(Cell_Coord(home + 2 + i * 2 + MAP_CELL_W), DIR_S)) {
+                    delete air;
+                    continue;
+                }
+                if (_wing[i] == AIRCRAFT_TSCARRY) {
+                    /*
+                    **  The Carryall arrives already carrying a light tank and is sent to set it
+                    **  down five cells east, the drop half of the exchange.
+                    */
+                    UnitClass* cargo = new UnitClass(UNIT_LTANK, PlayerPtr->Class->House);
+                    if (cargo != NULL) {
+                        cargo->Limbo();
+                        air->Attach(cargo);
+                    }
+                    CELL drop = Map.Nearby_Location(home + 2 * MAP_CELL_W + 9, SPEED_TRACK, -1, MZONE_NORMAL);
+                    if (drop != 0) {
+                        air->Assign_Destination(::As_Target(drop));
+                        air->Assign_Mission(MISSION_MOVE);
+                    } else {
+                        air->Assign_Mission(MISSION_GUARD);
+                    }
+                } else {
+                    air->Assign_Mission(MISSION_HUNT);
+                }
+            }
+            if (enemy != NULL) {
+                /*
+                **  Four enemy riflemen and a tank on the nearest open ground four rows south, so
+                **  the hunting Orcas have something in view to shoot.
+                */
+                for (int dx = -2; dx <= 1; dx++) {
+                    CELL cell = Map.Nearby_Location(home + 4 * MAP_CELL_W + dx, SPEED_FOOT, -1, MZONE_NORMAL);
+                    InfantryClass* inf = new InfantryClass(INFANTRY_E1, enemy->Class->House);
+                    if (inf != NULL && (cell == 0 || !inf->Unlimbo(Cell_Coord(cell), DIR_N))) {
+                        delete inf;
+                    }
+                }
+                CELL tcell = Map.Nearby_Location(home + 4 * MAP_CELL_W + 3, SPEED_TRACK, -1, MZONE_NORMAL);
+                UnitClass* tank = new UnitClass(UNIT_LTANK, enemy->Class->House);
+                if (tank != NULL && (tcell == 0 || !tank->Unlimbo(Cell_Coord(tcell), DIR_N))) {
+                    delete tank;
+                }
+            }
+        }
+    }
+#endif
+
+#if 0 // TF DEV TOGGLE: TS infantry smoke-spawn near start. Flip to 1 for testing.
+    /*
+    **  Spawns one of each TS infantry (plus a wounded Light Infantry for the Medic) three
+    **  cells south of the player's start, and four enemy riflemen four cells beyond them,
+    **  so a headless run sees every weapon fire without driving the sidebar.
+    */
+    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr) {
+                home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                break;
+            }
+        }
+        HouseClass* enemy = NULL;
+        for (int h = HOUSE_MULTI1; h < HOUSE_COUNT && enemy == NULL; h++) {
+            HouseClass* hp = HouseClass::As_Pointer((HousesType)h);
+            if (hp != NULL && hp != PlayerPtr && !PlayerPtr->Is_Ally(hp)) {
+                enemy = hp;
+            }
+        }
+        if (home != 0) {
+            static InfantryType const _roster[] = {INFANTRY_TSE1, INFANTRY_TSMEDIC, INFANTRY_TSE1,
+                                                   INFANTRY_TSE2, INFANTRY_TSENGINEER, INFANTRY_TSGHOST};
+            int const count = (int)ARRAY_SIZE(_roster);
+            int placed = 0;
+            int row = 0;
+            for (int dy = 2; dy <= 8 && placed < count; dy++) {
+                for (int dx = -6; dx <= 6 && placed < count; dx++) {
+                    CELL cell = home + dy * MAP_CELL_W + dx;
+                    if ((unsigned)cell >= MAP_CELL_TOTAL || Map[cell].Land_Type() != LAND_CLEAR
+                        || Map[cell].Cell_Techno() != NULL) {
+                        continue;
+                    }
+                    InfantryClass* inf = new InfantryClass(_roster[placed], PlayerPtr->Class->House);
+                    if (inf == NULL) {
+                        break;
+                    }
+                    if (!inf->Unlimbo(Cell_Coord(cell), DIR_S)) {
+                        delete inf;
+                        continue;
+                    }
+                    if (placed == 0) {
+                        inf->Strength = inf->Class->MaxStrength / 3;
+                    }
+                    row = dy;
+                    placed++;
+                }
+            }
+            bool const spawn_foes = true;
+            if (spawn_foes && enemy != NULL && placed > 0) {
+                int foes = 0;
+                for (int dy = row + 4; dy <= row + 10 && foes < 4; dy++) {
+                    for (int dx = -6; dx <= 6 && foes < 4; dx++) {
+                        CELL cell = home + dy * MAP_CELL_W + dx;
+                        if ((unsigned)cell >= MAP_CELL_TOTAL || Map[cell].Land_Type() != LAND_CLEAR
+                            || Map[cell].Cell_Techno() != NULL) {
+                            continue;
+                        }
+                        InfantryClass* inf = new InfantryClass(INFANTRY_E1, enemy->Class->House);
+                        if (inf == NULL) {
+                            break;
+                        }
+                        if (!inf->Unlimbo(Cell_Coord(cell), DIR_N)) {
+                            delete inf;
+                            continue;
+                        }
+                        foes++;
+                    }
+                }
+                /*
+                **  Flank riflemen level with the squad, west and east, so the Ghost fires on
+                **  more than one facing.
+                */
+                static int const _flank[] = {-10, 4, -10, 4};
+                static int const _flank_row[] = {0, 0, 1, 1};
+                for (int i = 0; i < (int)ARRAY_SIZE(_flank); i++) {
+                    CELL cell = home + (row + _flank_row[i]) * MAP_CELL_W + _flank[i];
+                    if ((unsigned)cell >= MAP_CELL_TOTAL || Map[cell].Land_Type() != LAND_CLEAR
+                        || Map[cell].Cell_Techno() != NULL) {
+                        continue;
+                    }
+                    InfantryClass* inf = new InfantryClass(INFANTRY_E1, enemy->Class->House);
+                    if (inf != NULL && !inf->Unlimbo(Cell_Coord(cell), DIR_N)) {
+                        delete inf;
+                    }
                 }
             }
         }
@@ -3245,6 +3615,14 @@ static void Create_Units(bool official)
     **  SSM/Arty/Bike/Buggy/Flame/Stealth=Nod). Distributed across RA's four
     **  tech-gated rows; Ally/Soviet columns are unchanged.
     */
+    /*
+    **  The TsGdiType column is the fifth faction's roster (Tiberian Sun GDI, the
+    **  GERMANY house): Titan and Wolverine as the mainline pair, the amphibious
+    **  APC in the transport row, the Hover MLRS as the fire-support row, and the
+    **  Disruptor at the top. The Mammoth Mk. II is deliberately absent -- it
+    **  arrives by dropship in this mod, and a free one at match start would be a
+    **  different game.
+    */
     static struct
     {
         int MinLevel;
@@ -3252,10 +3630,31 @@ static void Create_Units(bool official)
         UnitType SovietType[2];
         UnitType GdiType[2];
         UnitType NodType[2];
-    } utable[] = {{4, {UNIT_MTANK2, UNIT_LTANK}, {UNIT_MTANK, UNIT_NONE}, {UNIT_TDMTNK, UNIT_TDJEEP}, {UNIT_TDLTNK, UNIT_TDBGGY}},
-                  {5, {UNIT_APC, UNIT_NONE}, {UNIT_V2_LAUNCHER, UNIT_NONE}, {UNIT_TDAPC, UNIT_NONE}, {UNIT_TDBIKE, UNIT_NONE}},
-                  {8, {UNIT_ARTY, UNIT_JEEP}, {UNIT_MTANK, UNIT_NONE}, {UNIT_TDMLRS, UNIT_TDJEEP}, {UNIT_TDARTY, UNIT_TDFTNK}},
-                  {10, {UNIT_MTANK2, UNIT_MTANK2}, {UNIT_HTANK, UNIT_NONE}, {UNIT_TDHTNK, UNIT_NONE}, {UNIT_TDSTNK, UNIT_TDMSAM}}};
+        UnitType TsGdiType[2];
+    } utable[] = {{4,
+                   {UNIT_MTANK2, UNIT_LTANK},
+                   {UNIT_MTANK, UNIT_NONE},
+                   {UNIT_TDMTNK, UNIT_TDJEEP},
+                   {UNIT_TDLTNK, UNIT_TDBGGY},
+                   {UNIT_TSTITN, UNIT_TSSMEC}},
+                  {5,
+                   {UNIT_APC, UNIT_NONE},
+                   {UNIT_V2_LAUNCHER, UNIT_NONE},
+                   {UNIT_TDAPC, UNIT_NONE},
+                   {UNIT_TDBIKE, UNIT_NONE},
+                   {UNIT_TSAPC, UNIT_NONE}},
+                  {8,
+                   {UNIT_ARTY, UNIT_JEEP},
+                   {UNIT_MTANK, UNIT_NONE},
+                   {UNIT_TDMLRS, UNIT_TDJEEP},
+                   {UNIT_TDARTY, UNIT_TDFTNK},
+                   {UNIT_TSHVR, UNIT_TSSMEC}},
+                  {10,
+                   {UNIT_MTANK2, UNIT_MTANK2},
+                   {UNIT_HTANK, UNIT_NONE},
+                   {UNIT_TDHTNK, UNIT_NONE},
+                   {UNIT_TDSTNK, UNIT_TDMSAM},
+                   {UNIT_TSSONIC, UNIT_NONE}}};
     static int num_units[ARRAY_SIZE(utable)]; // # of each type of unit to create
     int tot_units;                            // total # units to create
 
@@ -3631,6 +4030,9 @@ static void Create_Units(bool official)
             */
             UnitType mcv_type = UNIT_AMCV;
             switch (hptr->ActLike) {
+            case HOUSE_GERMANY: // Tiberian Sun GDI -- the fifth faction starts on its own yard
+                mcv_type = UNIT_TSMCV;
+                break;
             case HOUSE_GOOD:
                 mcv_type = UNIT_TDGMCV;
                 break;
@@ -3709,28 +4111,6 @@ static void Create_Units(bool official)
                     }
                 }
             }
-
-            /*
-            **  Every HUMAN player starts with a TS MCV alongside the normal one, so the
-            **  ownership-gated TS tree is reachable without waiting on crate luck. Crates
-            **  keep their own rare roll regardless.
-            **
-            **  Human houses only: the AI cannot drive the TS tree, and handing it one
-            **  would give it a second yard it does not know what to do with.
-            **
-            **  This was a dev-build lever gated on TF_Dev_Cheats. It is now part of the
-            **  game proper, because a release build compiles the dev path out entirely
-            **  and the TS tree would be unreachable in exactly the builds people play.
-            */
-            if (hptr->IsHuman) {
-                Reserve_Unit();
-                UnitClass* tsmcv = new UnitClass(UNIT_TSMCV, house);
-                if (!Scan_Place_Object(tsmcv, centroid)) {
-                    delete tsmcv;
-                } else {
-                    tsmcv->Set_Mission(MISSION_GUARD);
-                }
-            }
         } else {
 
             /*
@@ -3770,11 +4150,14 @@ static void Create_Units(bool official)
                 **	were handed RA Allied tanks/jeeps -- the bug being fixed.)
                 */
                 const UnitType* upair;
-                if (hptr->ActLike == HOUSE_GOOD) {
+                HousesType const uside = hptr->ActLike;
+                if (Is_TS_GDI(uside)) {
+                    upair = utable[i].TsGdiType;
+                } else if (uside == HOUSE_GOOD) {
                     upair = utable[i].GdiType;
-                } else if (hptr->ActLike == HOUSE_BAD) {
+                } else if (uside == HOUSE_BAD) {
                     upair = utable[i].NodType;
-                } else if (hptr->ActLike == HOUSE_USSR || hptr->ActLike == HOUSE_UKRAINE) {
+                } else if (uside == HOUSE_USSR || uside == HOUSE_UKRAINE) {
                     upair = utable[i].SovietType;
                 } else {
                     upair = utable[i].AllyType;
@@ -3817,16 +4200,24 @@ static void Create_Units(bool official)
                 **	Allies/Soviet keep RA vanilla. (Note: Unlimbo calls
                 **	Enter_Idle_Mode(), which assigns the infantry to HUNT; we must
                 **	use Set_Mission() to override this state.)
+                **
+                **	Tiberian Sun GDI starts with NO infantry at all (Luke, 2026-09-05).
+                **	TS infantry is a later wave of the TS content work, and borrowing
+                **	TD's riflemen in the meantime puts the wrong era on the field.
                 */
                 int icount;
                 InfantryType itype;
-                if (hptr->ActLike == HOUSE_GOOD) {
+                HousesType const iside = hptr->ActLike;
+                if (Is_TS_GDI(iside)) {
+                    icount = 0;
+                    itype = INFANTRY_NONE;
+                } else if (iside == HOUSE_GOOD) {
                     icount = itable[i].GdiCount;
                     itype = itable[i].GdiType;
-                } else if (hptr->ActLike == HOUSE_BAD) {
+                } else if (iside == HOUSE_BAD) {
                     icount = itable[i].NodCount;
                     itype = itable[i].NodType;
-                } else if (hptr->ActLike == HOUSE_USSR || hptr->ActLike == HOUSE_UKRAINE) {
+                } else if (iside == HOUSE_USSR || iside == HOUSE_UKRAINE) {
                     icount = itable[i].SovietCount;
                     itype = itable[i].SovietType;
                 } else {

@@ -81,6 +81,7 @@ WeaponTypeClass::WeaponTypeClass(char const* name)
     , WarheadPtr(NULL)
     , ROF(0)
     , Range(0)
+    , MinRange(0)
     , Sound(VOC_NONE)
     , Anim(ANIM_NONE)
 {
@@ -211,6 +212,7 @@ bool WeaponTypeClass::Read_INI(CCINIClass& ini)
         }
         ROF = ini.Get_Int(Name(), "ROF", ROF);
         Range = ini.Get_Lepton(Name(), "Range", Range);
+        MinRange = ini.Get_Lepton(Name(), "MinimumRange", MinRange);
         Sound = ini.Get_VocType(Name(), "Report", Sound);
         Anim = ini.Get_AnimType(Name(), "Anim", Anim);
         IsCamera = ini.Get_Bool(Name(), "Camera", IsCamera);

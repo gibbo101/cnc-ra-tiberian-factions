@@ -1,7 +1,15 @@
 # AI Upgrade Plan — the post-v4.0 milestone
 
-**Status: Phase 0 + Phase 1 SHIPPED, Phase 2 (W2 faction separation) SHIPPED, W2.9 IN PROGRESS
-(2026-07-23).** Step 1 of W2.9 (role counting across lineages, own-faction-yard gate, build-order
+**Status (2026-09-03): Phase 0 + 1 SHIPPED, W2 + W2.9 SHIPPED, W4.1 cadence REVISED, W4 staging
+(Route B) + Hard attack-move BUILT, W3 economy-first BUILT — all on branch `ai-regression`
+(worktree `../tf-ai-worktree`), awaiting the verify game. Read `docs/ai-ab-2026-09-02/results.md`
+first: the measured A/B that reset the workstream (economy was never the regression; the
+count-only wave floor and starved defences were). Live pick-up in `todo.md` top block.**
+
+> **Timing note for every dial in this plan:** dials are written in sim ticks
+> (`TICKS_PER_SECOND` = 15) but the Remastered sim runs ~33 frames per real second at the
+> speed Luke plays, so "2 sim-minutes" is ~55 real seconds. Design in sim-minutes, read logs
+> in frames, and do not expect a 20-minute decay to fire at real minute 20. Step 1 of W2.9 (role counting across lineages, own-faction-yard gate, build-order
 restoration) is committed and verified in play; see `todo.md` for the live state and the two open
 findings it surfaced (attack cadence, scout destinations). This is the master plan
 for the AI-focus milestone, assembled from Luke's wishlist session (2026-07-16/17), the
@@ -371,6 +379,16 @@ retiring that need. Each of (b)/(c)/(d) should check whether it removes a remap 
 adding one.
 
 ### W3 — The brain: build planner + placement
+
+**W3 ECONOMY-FIRST BUILT 2026-09-02 (the first slice of item 1):** refinery target paced by
+sim-minutes (2 @2.5, 3 @6, 4 @10; vanilla ratio kept as a floor; HIGH while below pace),
+harvester fleet per tier (Hard 2 per refinery, Medium 1.5, Easy 1), infantry and combat-vehicle
+production yields while below target beyond a growing garrison (4 inf + 1/min, 2 veh + 1/2min),
+hold lifted by a hit in the last two minutes and capped at four minutes. Defences claim HIGH
+while under half the ratio, and the ratio is taken against the non-defence base. Watched
+working in a 4-Hard-AI Docklands match (4 refineries / 8-9 harvesters / 30 buildings by 12
+sim-min). **Still open in item 1:** tech ordering — tech centre / advanced comm / temple only
+arrive via the starvation rescue; Luke: after the pieces work together.
 1. **Staged build planner** replacing the shouting-urgency-slots model: coherent opening
    (economy first — fixes GDI/Nod eco passivity), then production, tech when affordable
    (fixes Temple starvation: power-gate + MEDIUM-starvation, house.cpp:6815/6607), defence
@@ -423,6 +441,17 @@ consecutive attack opportunities logged `WAVE-SHUFFLE (nothing sent)` and the fi
 `WAVE-LAUNCH` did not come until **frame ~27,500**. Player verdict: "both ais feeling sluggish
 and nothing like the vanilla ai." The 67% shuffle rate plus the interval between opportunities
 is the cause. Full log evidence in `todo.md`.
+
+**W4.1 CADENCE — REVISED 2026-09-02 after the A/B (`ai-ab-2026-09-02/`):** the count-only
+floor of 10 launched 18 tier-one units at four minutes and left nothing to defend with. The floor
+is now count AND value (8,000 credits at list cost, every tier) AND stage (a war factory must
+exist); value ceilings 18/22/26k by tier; the floor decays only for a strangled economy.
+**W4 STAGING (Route B) BUILT the same night:** committed ground units march to a cell nine short
+of the nearest DISCOVERED enemy building on the house's own landmass, gather (70% or four
+sim-minutes), and release together; Hard releases on the CFE attack-move with a six-minute
+shepherd that converts arrivals to hunt; no staging cell + Hard = attack-move from home; a
+gathering wave blocks relaunch; the ferry draft exempts wave members. Route A (TeamClass) not
+attempted. History below.
 
 **W4.1 CADENCE — IMPLEMENTED 2026-07-23, awaiting first play verification.** The measured cause
 is arithmetic, and all of it was EA's original (`REDALERT/HOUSE.CPP:5295` and `:5343`):

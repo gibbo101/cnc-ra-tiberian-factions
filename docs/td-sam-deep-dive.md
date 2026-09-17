@@ -47,6 +47,13 @@ Transition logic (TD `building.cpp:4281`):
 | `SAM_LOCKING` | not yet at N | `PrimaryFacing.Set_Desired(DIR_N)` | |
 | `SAM_LOWERING` | `Fetch_Stage() >= 63` | `SAM_UNDERGROUND` | `Set_Rate(0); Set_Stage(0); return TICKS_PER_SECOND` |
 
+**Our port deviates at `SAM_FIRING2` (2026-09-12, Luke's call).** After the second shot it goes
+back to `SAM_READY` while an air target remains, instead of TD's 3-second cooldown, lock and
+lower. TD's full cycle (rise ~32 ticks, two shots, 45-tick cooldown, turn, lower ~32, 15 ticks
+underground) delivered about a quarter of the Soviet SAM's damage per tick; staying up matches
+it. The site still turns north and lowers once nothing is left to shoot, and still takes half
+damage while underground, so it stays hard to kill shut and vulnerable in a fight.
+
 Note: TD's `Status` is a `char` field on `MissionClass` (TD `mission.h:62`). Default-init is `0` = `SAM_UNDERGROUND` — no explicit init in `Grand_Opening` needed.
 
 ### 2. The render path (TD `building.cpp:548-571`)

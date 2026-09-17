@@ -36,21 +36,51 @@ TEMPERAT="GTCNST.SHP GTCNST_A.SHP GTCNST_B.SHP GTCNST_C.SHP
           GTTECH.SHP GTTECH_A.SHP
           GTWEAP.SHP GTWEAP_A.SHP GTWEAP_B.SHP GTWEAP_C.SHP GTWEAPBB.SHP
           GTWEAP_D.SHP GTWEAP_1.SHP
-          NTREFN.SHP NTREFN_B.SHP NTREFNBB.SHP"
+          NTREFN.SHP NTREFN_A.SHP NTREFN_B.SHP NTREFN_C.SHP NTREFNBB.SHP
+          GTPLUG.SHP GTPLUG_A.SHP GTPLUG_B.SHP GTPLUG_C.SHP GTPLUG_D.SHP GTPLUG_E.SHP GTPLUG_F.SHP"
 
 ISOTEMP="GTCNSTMK.SHP GTDEPTMK.SHP GTHPADMK.SHP GTPILEMK.SHP GTPOWRMK.SHP
-         GTRADRMK.SHP GTSILOMK.SHP GTTECHMK.SHP GTWEAPMK.SHP NTREFNMK.SHP"
+         GTRADRMK.SHP GTSILOMK.SHP GTTECHMK.SHP GTWEAPMK.SHP NTREFNMK.SHP
+         GTPLUGMK.SHP"
 
-CONQUER="BRRKICON.SHP HELIICON.SHP RADRICON.SHP TECHICON.SHP WEAPICON.SHP"
+# SMCH/SONI/APC and (from SIDEC01) HARV are TS's own vehicle cameos: the Limpet Drone has
+# no cameo of its own, and its plate is rebuilt from theirs.
+CONQUER="BRRKICON.SHP HELIICON.SHP RADRICON.SHP TECHICON.SHP WEAPICON.SHP TURBICON.SHP
+         PLUGICON.SHP SEEKICON.SHP IONCICON.SHP RAD1ICON.SHP RAD2ICON.SHP RAD3ICON.SHP
+         PODSICON.SHP SMCHICON.SHP SONIICON.SHP APCICON.SHP"
 
 # The remaining cameos live in the per-side sidebar archives rather than
 # CONQUER. SIDEC01 is GDI, SIDEC02 Nod; all three take the GDI variant, the
 # refinery included — its cameo differs between sides even though the tree
 # builds the structure itself from Nod's NTREFN art.
-SIDEC01="FIXICON.SHP REFICON.SHP SILOICON.SHP"
+SIDEC01="FIXICON.SHP REFICON.SHP SILOICON.SHP MCVICON.SHP HARVICON.SHP"
 
 echo "== extracting =="
-python3 "$EXTRACT" "$TIBSUN" CACHE.MIX    extract "$RAW" UNITTEM.PAL CAMEO.PAL >/dev/null
+python3 "$EXTRACT" "$TIBSUN" CACHE.MIX    extract "$RAW" UNITTEM.PAL CAMEO.PAL ANIM.PAL >/dev/null
+# Ion strike effect art (anim SHPs, decoded by ts_pack_ion.py itself against
+# ANIM.PAL — kept out of $CONQUER so the cameo-palette loop doesn't touch them)
+# + the TS ION1 strike sound.
+python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" IONBEAM.SHP RING1.SHP >/dev/null
+python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" ION1.AUD >/dev/null
+# Drop-pod strike art (anim SHPs, decoded by ts_pack_pods.py against ANIM.PAL)
+# + the pod strafe gun sound.
+python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" DROPPOD.SHP DROPPOD2.SHP DROPEXP.SHP PODRING.SHP SMOKEY.SHP >/dev/null
+# Component tower weapons (decoded by ts_pack_towerfx.py): the Vulcan muzzle flashes, the
+# warheads' impact anims and the SAM trail against ANIM.PAL, the RPG canister and SAM missile
+# against UNITTEM.PAL, and the tower reports + impact sounds.
+python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" MGUN-N.SHP MGUN-NE.SHP MGUN-E.SHP MGUN-SE.SHP \
+    MGUN-S.SHP MGUN-SW.SHP MGUN-W.SHP MGUN-NW.SHP PIFFPIFF.SHP S_CLSN16.SHP S_CLSN22.SHP S_CLSN30.SHP \
+    S_CLSN42.SHP S_CLSN58.SHP XGRYSML1.SHP XGRYSML2.SHP EXPLOSML.SHP SMOKEY2.SHP CANISTER.SHP >/dev/null
+python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" CHAINGN1.AUD GLNCH4.AUD SAMSHOT1.AUD EXPNEW13.AUD EXPNEW14.AUD >/dev/null
+# The old TS Mammoth Tank [4TNK] (scripts/ts_pack_4tnk.py): hull, turret and barrel voxels
+# with their HVAs, and its cannon and tusk reports.
+python3 "$EXTRACT" "$TIBSUN" LOCAL.MIX    extract "$RAW" 4TNK.VXL 4TNK.HVA 4TNKTUR.VXL 4TNKTUR.HVA 4TNKBARL.VXL 4TNKBARL.HVA >/dev/null
+python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" 120MMX9.AUD MISL1.AUD >/dev/null
+python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" TSGUN4.AUD METEOR1.AUD >/dev/null
+# Hunter seeker droid sprite + the HuntSeekSpecial sidebar image (ts_pack_seeker.py) + its
+# detonation report.
+python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" GGHUNT.SHP DETNICON.SHP >/dev/null
+python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" HUNTER2.AUD >/dev/null
 python3 "$EXTRACT" "$TIBSUN" TEMPERAT.MIX extract "$RAW" $TEMPERAT >/dev/null
 python3 "$EXTRACT" "$TIBSUN" ISOTEMP.MIX  extract "$RAW" $ISOTEMP  >/dev/null
 python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" $CONQUER  >/dev/null

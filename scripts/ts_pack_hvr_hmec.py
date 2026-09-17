@@ -7,7 +7,8 @@ SHP inputs). Use for voxel re-renders of the two units. Inputs (TS_ART_DIR):
   hq_hvr_body, hq_hvr_tur   HVR.VXL / HVRTUR.VXL renders per the render ledger
                             (docs/launcher-render-contracts.md); the rack is --z-clip 10
   ts35_hmec_<f>             HMEC.VXL posed by HMEC.HVA frame f, 35 degree camera
-Follow with scripts/ts_reshadow.py TSHVR TSHMEC. License: GPL v3.
+  ts35sh_hmec_<f>           the same renders with --shadow 0.6,-0.2
+Follow with scripts/ts_reshadow.py TSHVR (the Mk. II carries its rendered shadow). License: GPL v3.
 """
 import io, json, os, zipfile
 from PIL import Image
@@ -109,39 +110,30 @@ for hf in WALK_HVA_FRAMES:
         b = Image.open(f"{ART}/{MDIR}_{hf}/frame-{i:04d}.png").getbbox()
         ux0, uy0 = min(ux0, b[0]), min(uy0, b[1])
         ux1, uy1 = max(ux1, b[2]), max(uy1, b[3])
-MARGIN = CANVAS_M // 16  # room for the drop shadow + a little air
+MARGIN = CANVAS_M // 16  # a little air around the body union
 F_M = min((CANVAS_M - MARGIN) / (ux1 - ux0), (CANVAS_M - MARGIN) / (uy1 - uy0))
-ox = round(CANVAS_M / 2 - (ux0 + ux1) / 2 * F_M)
-oy = round(CANVAS_M / 2 - (uy0 + uy1) / 2 * F_M)
-# Ground shadow (Luke, 2026-07-20, take 3): the FRAME'S OWN silhouette squashed
-# onto the ground plane — shaped like the mech at that exact facing and stride,
-# anchored at the ground line under the feet. Mostly-solid alpha because the
-# launcher discards pixels below ~128 alpha (soft gradients render as nothing).
-SQUASH = 0.22
-SH_ALPHA = 135
+# The cast shadow reaches east past the body union, so the frames ship on a
+# wider canvas than the fit (stub 72 = 576 / 8); the body stays centred at the
+# fit's scale, only the canvas around it grows.
+CANVAS_OUT = CANVAS_M + 96
+ox = round(CANVAS_OUT / 2 - (ux0 + ux1) / 2 * F_M)
+oy = round(CANVAS_OUT / 2 - (uy0 + uy1) / 2 * F_M)
+# Ground shadow: the voxel's own ground projection, rendered by vxl_render's
+# --shadow pass into the sibling set ts35sh_hmec_<f> (same camera, same
+# canvas, so the body-only union transform above places it unchanged). The
+# body-only set still owns the union fit, so the shadow's reach never
+# rescales the signed-off body.
+SDIR = MDIR.replace("_hmec", "sh_hmec")
+if not os.path.isdir(f"{ART}/{SDIR}_0"):
+    raise SystemExit(f"missing {SDIR}_<f>: render with --shadow 0.6,-0.2 (docs/launcher-render-contracts.md ledger)")
 mframes = []
 for facing in range(32):
     for hf in WALK_HVA_FRAMES:
-        im = Image.open(f"{ART}/{MDIR}_{hf}/frame-{facing:04d}.png").convert("RGBA")
+        im = Image.open(f"{ART}/{SDIR}_{hf}/frame-{facing:04d}.png").convert("RGBA")
         scaled = im.resize((round(im.width * F_M), round(im.height * F_M)), Image.LANCZOS)
-        out = Image.new("RGBA", (CANVAS_M, CANVAS_M), (0, 0, 0, 0))
-        # squashed own-silhouette shadow, HALF-TUCKED at THIS frame's feet line
-        # (anchoring to the union ground line floated the mech — the union
-        # bottom belongs to the deepest mid-stride frame, not this one)
-        bbs = scaled.getbbox()
-        if bbs:
-            feet_y = oy + bbs[3]                       # this frame's feet on the canvas
-            content_h = bbs[3] - bbs[1]
-            # FEET-ONLY shadow (Luke): the bottom ~13% of the silhouette IS the
-            # feet — each foot casts its own small pad exactly beneath itself.
-            feet_strip = scaled.split()[3].crop((bbs[0], bbs[1] + round(content_h * 0.87), bbs[2], bbs[3]))
-            sh_h = max(4, round(feet_strip.height * 0.7))
-            sil = feet_strip.resize((bbs[2] - bbs[0], sh_h), Image.LANCZOS)
-            sil = sil.point(lambda a: SH_ALPHA if a > 50 else 0)
-            sh_img = Image.new("RGBA", (bbs[2] - bbs[0], sh_h), (0, 0, 0, 0))
-            sh_img.paste(Image.new("RGBA", sh_img.size, (0, 0, 0, 255)), (0, 0), sil)
-            safe_paste(out, sh_img, ox + bbs[0] + 2, feet_y - sh_h + 3)
-        safe_paste(out, scaled, ox, oy)
+        out = Image.new("RGBA", (CANVAS_OUT, CANVAS_OUT), (0, 0, 0, 0))
+        # straight copy: a masked paste would multiply the shadow's alpha by itself
+        out.paste(scaled, (ox, oy))
         mframes.append(out)
 write_zip(f"{UNITS_DIR}/TSHMEC.ZIP", "tshmec", mframes)
 

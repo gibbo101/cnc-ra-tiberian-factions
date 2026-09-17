@@ -665,6 +665,15 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TSFlame");      // WARHEAD_TSFLAME (TS [Fire] verses for the Devil's Tongue stream)
     new WarheadTypeClass("TSFlameHit");   // WARHEAD_TSFLAMEHIT (pre-scaled TS fire burn delivery)
     new WarheadTypeClass("SonicWarhead"); // WARHEAD_SONIC (TS Disruptor SonicZap line damage — TS [SonicWarhead] verses)
+    new WarheadTypeClass("TSSA");         // WARHEAD_TSSA (TS [SA] small arms -- TS verses, the tower Vulcan's warhead)
+    new WarheadTypeClass("TSRPG");        // WARHEAD_TSRPG (TS [RPG] -- the tower RPG's warhead)
+    new WarheadTypeClass("TSSAMWH");      // WARHEAD_TSSAMWH (TS [SAMWH] -- the tower SAM's warhead)
+    new WarheadTypeClass("TSHE");         // WARHEAD_TSHE (TS [HE] -- the old TS Mammoth's tusk warhead)
+    new WarheadTypeClass("TSRailShot2");  // WARHEAD_TSRAILSHOT2 (TS [RailShot2] -- the Ghost Stalker's light railgun)
+    new WarheadTypeClass("TSOrcaAP");     // WARHEAD_TSORCAAP (TS [ORCAAP] -- the Orca Fighter's missiles)
+    new WarheadTypeClass("TSOrcaHE");     // WARHEAD_TSORCAHE (TS [ORCAHE] -- the Orca Bomber's bombs)
+    new WarheadTypeClass("TSArtyHE");
+    new WarheadTypeClass("TSLimpy");      // WARHEAD_TSLIMPY (Firestorm [LIMPY] -- the Limpet Drone attaches)     // WARHEAD_TSARTYHE (TS [ARTYHE] -- the Juggernaut's shells)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
@@ -756,6 +765,21 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("AssaultCannon");  // WEAPON_ASSAULTCANNON (TS Wolverine -- TS [AssaultCannon] verbatim, instant Invisible/SA chain)
     new WeaponTypeClass("TSFireball");     // WEAPON_TSFIREBALL (TS Devil's Tongue -- fire-stream particles, UnitClass::Fire_Stream_AI)
     new WeaponTypeClass("SonicZap");       // WEAPON_SONICZAP (TS Disruptor -- IsSonic piercing line through WARHEAD_SONIC)
+    new WeaponTypeClass("TSSuicide");      // WEAPON_TSSUICIDE (TS Hunter Seeker suicide bomb -- read by TF_Hunter_Seeker_Detonate, never fired)
+    new WeaponTypeClass("TSVulcanTower");  // WEAPON_TSVULCANTOWER (TS component tower Vulcan -- TS [VulcanTower] verbatim)
+    new WeaponTypeClass("TSRPGTower");     // WEAPON_TSRPGTOWER (TS component tower RPG -- TS [RPGTower] verbatim)
+    new WeaponTypeClass("TSRedEye2");      // WEAPON_TSREDEYE2 (TS component tower SAM -- TS [RedEye2] verbatim)
+    new WeaponTypeClass("TS120mmx");       // WEAPON_TS120MMX (TS Mammoth Tank cannon -- TS [120mmx] on the TDAPDS instant shell)
+    new WeaponTypeClass("TS4TNKTusk");     // WEAPON_TS4TNKTUSK (the old TS Mammoth's tusks -- TS [MammothTusk] verbatim)
+    new WeaponTypeClass("TSMinigun");      // WEAPON_TSMINIGUN (TS Light Infantry -- TS [Minigun] verbatim)
+    new WeaponTypeClass("TSGrenade");      // WEAPON_TSGRENADE (TS Disc Thrower -- TS [Grenade] with Firestorm's ROF)
+    new WeaponTypeClass("TSHeal");         // WEAPON_TSHEAL (TS Medic -- TS [Heal] verbatim)
+    new WeaponTypeClass("TSLtRail");       // WEAPON_TSLTRAIL (TS Ghost Stalker -- TS [LtRail] on the IsRailgun line path)
+    new WeaponTypeClass("TSJumpCannon");   // WEAPON_TSJUMPCANNON (TS Jumpjet Infantry -- TS [JumpCannon])
+    new WeaponTypeClass("TSHellfire");     // WEAPON_TSHELLFIRE (TS Orca Fighter -- TS [Hellfire])
+    new WeaponTypeClass("TSBomb");         // WEAPON_TSBOMB (TS Orca Bomber -- TS [Bomb])
+    new WeaponTypeClass("TSJugg90mm");
+    new WeaponTypeClass("TSLimpet");       // WEAPON_TSLIMP (TS Limpet Mine -- Firestorm [LIMP]; not "TSLimp": INI sections are case-blind and the drone is [TSLIMP])     // WEAPON_TSJUGG90MM (TS Juggernaut -- Firestorm [Jugg90mm])
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's
@@ -818,6 +842,8 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TSHoverMissile"))->IsTDPort = true;
     // TS120mm (Titan): TS [120mm] stats through the TDAPDS instant shell (TDMTNK's chain).
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TS120mm"))->IsTDPort = true;
+    // TS120mmx (old TS Mammoth Tank): TS [120mmx] stats through the same TDAPDS instant shell.
+    WeaponTypeClass::As_Pointer(Weapon_From_Name("TS120mmx"))->IsTDPort = true;
     // TD155mm (Artillery ARTY): TD WEAPON_155MM -- a high-damage (150) arcing HE bombardment shell
     // firing BULLET_TDHESHELL. IsTDPort for raw Speed (MPH_MEDIUM_FAST) + the AI_TD arc path.
     WeaponTypeClass::As_Pointer(Weapon_From_Name("TD155mm"))->IsTDPort = true;

@@ -3,3 +3,15 @@
 // Offsets from the building origin (plot NW corner), classic px.
 #define TSWEAP_SEAT_DEFAULT XYP_COORD(48, 29)
 #define TSWEAP_SEAT_TSTITN  XYP_COORD(48, 19)
+
+/*
+**	08-28 rebuild: door-mouth seat, leptons from the plot origin -- the packed
+**	shutter's centre column (2.38 cells, moved west 08-29) and a unit centre just inside the
+**	doorway (1.10 rows: the vehicle stands in the opening, its top under the raised shutter). The generated seats above are the old bay's.
+*/
+#define TSWEAP_SEAT_MOUTH XY_Coord(573, 219)  // TRACKED/WHEELED vehicles, from the ORIGIN CELL CENTRE (Coord): dialled by eye 08-29, SIGNED OFF -- do not re-derive
+/*
+**	Per-unit seats: the Titan stands two cells tall, so it seats deeper (row 0.40)
+**	with its feet at the threshold; everything else takes the mouth seat.
+*/
+#define TSWEAP_SEAT_MOUTH_MECH XY_Coord(597, 123)  // WALKERS (Titan, Wolverine, Mk. II): dialled by eye 08-29, SIGNED OFF -- do not re-derive

@@ -237,7 +237,7 @@ PACK_ARGS+=("$TMPDIR/tshvr_stub.shp:TSHVR.SHP")
 # only; 6 frames).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tstitn_stub.shp" 56 56 128
 PACK_ARGS+=("$TMPDIR/tstitn_stub.shp:TSTITN.SHP")
-python3 scripts/gen_stub_shp.py "$TMPDIR/tshmec_stub.shp" 60 60 256
+python3 scripts/gen_stub_shp.py "$TMPDIR/tshmec_stub.shp" 72 72 256
 PACK_ARGS+=("$TMPDIR/tshmec_stub.shp:TSHMEC.SHP")
 
 # Dropship-bay delivery pod -- the TS Dropship sprite (TSDSHP.ZIP, RA_VFX.XML).
@@ -268,6 +268,20 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tssonic_stub.shp" 56 56 64
 PACK_ARGS+=("$TMPDIR/tssonic_stub.shp:TSSONIC.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsapc_stub.shp" 48 48 64
 PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
+# TS aircraft (Orca Fighter / Orca Bomber / Carryall) -- HD-only voxel renders, 32
+# facings each; dims match each one's rules.ini ShapeSize.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsorca_stub.shp" 48 48 32
+PACK_ARGS+=("$TMPDIR/tsorca_stub.shp:TSORCA.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsorcab_stub.shp" 48 48 32
+PACK_ARGS+=("$TMPDIR/tsorcab_stub.shp:TSORCAB.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tscarry_stub.shp" 56 56 32
+PACK_ARGS+=("$TMPDIR/tscarry_stub.shp:TSCARRY.SHP")
+# TS Juggernaut -- 202 shapes: 120 walk + 32 deployed at rest + 32 deployed aiming + 18 deploy ladder.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsjugg_stub.shp" 56 56 202
+PACK_ARGS+=("$TMPDIR/tsjugg_stub.shp:TSJUGG.SHP")
+# TS Limpet Drone -- 10 crawl frames, no facings (24x24 = ShapeSize). Its mine's stubs sit with the buildings below.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tslimp_stub.shp" 24 24 10
+PACK_ARGS+=("$TMPDIR/tslimp_stub.shp:TSLIMP.SHP")
 # Subterranean pair (Devil's Tongue / Sub APC) -- 112 shapes each: 32 driving
 # + 40 dive + 40 emerge pitch-ladder frames (docs/subterranean-design.md).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tssubtank_stub.shp" 48 48 113
@@ -326,23 +340,27 @@ PACK_ARGS+=("$TMPDIR/tsprocld_stub.shp:TSPROCLD.SHP")
 ts_stub TSWEAP "$TMPDIR/tsweap_stub.shp" 168 126 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
 ts_stub TSWEAP "$TMPDIR/tsweapmk_stub.shp" 168 126 19
-# The bay-door overlay shares the building's canvas, so it needs the same stub
-# box or the launcher scales the door to whatever shape file it was handed.
-ts_stub TSWEAP "$TMPDIR/tsweap2_stub.shp" 168 126 18
-PACK_ARGS+=("$TMPDIR/tsweap2_stub.shp:TSWEAP2.SHP")
-# The overlay's floor band, split into its own layer under the exit clamp.
-ts_stub TSWEAP "$TMPDIR/tsweap2l_stub.shp" 168 126 18
-PACK_ARGS+=("$TMPDIR/tsweap2l_stub.shp:TSWEAP2L.SHP")
-# The lamp layer shares the canvas too: the 14-frame ping-pong idle cycle
-# (8 phases swept forward then back) x healthy/damaged.
-ts_stub TSWEAP "$TMPDIR/tsweaplt_stub.shp" 168 126 28
-PACK_ARGS+=("$TMPDIR/tsweaplt_stub.shp:TSWEAPLT.SHP")
+# The shutter and under-door layers share the building's canvas (08-28 rebuild).
+ts_stub TSWEAP "$TMPDIR/tsweapdr_stub.shp" 168 126 18
+PACK_ARGS+=("$TMPDIR/tsweapdr_stub.shp:TSWEAPDR.SHP")
+ts_stub TSWEAP "$TMPDIR/tsweapud_stub.shp" 168 126 4
+PACK_ARGS+=("$TMPDIR/tsweapud_stub.shp:TSWEAPUD.SHP")
+# The near face (hangar minus the opening), the idle cycle x healthy/damaged.
+ts_stub TSWEAP "$TMPDIR/tsweapnf_stub.shp" 168 126 64
+PACK_ARGS+=("$TMPDIR/tsweapnf_stub.shp:TSWEAPNF.SHP")
+ts_stub TSWEAP "$TMPDIR/tsweapnu_stub.shp" 168 126 64
+PACK_ARGS+=("$TMPDIR/tsweapnu_stub.shp:TSWEAPNU.SHP")
 # TSPILE 48x48: back to the grid-matched 2x2 plot width (the 60-overhang
 # compromise predates the tier-wide size drop, Luke 2026-08-04).
 ts_stub TSPILE "$TMPDIR/tspile_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tspile_stub.shp:TSPILE.SHP")
 ts_stub TSPILE "$TMPDIR/tspilemk_stub.shp" 48 48 19
 PACK_ARGS+=("$TMPDIR/tspilemk_stub.shp:TSPILEMAKE.SHP")
+# TS Limpet Mine on a 48x48 stub (the build-up's standing drone overhangs the 1x1 plot).
+ts_stub TSDLIMP "$TMPDIR/tsdlimp_stub.shp" 48 48 20
+PACK_ARGS+=("$TMPDIR/tsdlimp_stub.shp:TSDLIMP.SHP")
+ts_stub TSDLIMP "$TMPDIR/tsdlimpmk_stub.shp" 48 48 19
+PACK_ARGS+=("$TMPDIR/tsdlimpmk_stub.shp:TSDLIMPMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
 # TSRADR 48x96 on the 2x2 plot (TS-authentic Foundation=2x2): Obelisk
 # treatment, the dish tower rises a full row above the box. The 3x2/72x150
@@ -364,6 +382,54 @@ ts_stub TSPULS "$TMPDIR/tspulsmk_stub.shp" 48 48 13
 PACK_ARGS+=("$TMPDIR/tspulsmk_stub.shp:TSPULSMAKE.SHP")
 ts_stub TSPOWR "$TMPDIR/tspowrmk_stub.shp" 48 48 13
 PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
+# TSTURB 24x24 on a 1x1: the power-turbine addon's placement GHOST (it never
+# stands on the map — placement installs it into a TSPOWR). No MAKE stub: the
+# buildup state is unreachable.
+ts_stub TSTURB "$TMPDIR/tsturb_stub.shp" 24 24 2
+PACK_ARGS+=("$TMPDIR/tsturb_stub.shp:TSTURB.SHP")
+# TSWALL 33x60 (canvas 176x320: joined arms overshoot the cell edge): the TS concrete wall OVERLAY's classic stub
+# (the engine loads walls as non-theatre "<INI>.SHP" by IniName). 48 frames =
+# 16 join icons x 3 damage stages, RA's wall layout. Taller than the cell so a
+# north-south run's crest can rise above the cell's north edge. No MAKE stub:
+# walls never enumerate in the buildup state (dllinterface IsWall guard).
+ts_stub TSWALL "$TMPDIR/tswall_stub.shp" 33 60 48
+PACK_ARGS+=("$TMPDIR/tswall_stub.shp:TSWALL.SHP")
+# TS component tower family, same 33x60 canvas family as the wall (176x320 HD):
+# TSCTWR bare tower 2 frames (healthy/damaged) + rising buildup; TSVULC armed
+# tower = 32 facings x {idle, recoil, damaged idle, damaged recoil} like TDGUN.
+ts_stub TSCTWR "$TMPDIR/tsctwr_stub.shp" 33 60 2
+PACK_ARGS+=("$TMPDIR/tsctwr_stub.shp:TSCTWR.SHP")
+ts_stub TSCTWR "$TMPDIR/tsctwrmk_stub.shp" 33 60 17
+PACK_ARGS+=("$TMPDIR/tsctwrmk_stub.shp:TSCTWRMAKE.SHP")
+ts_stub TSVULC "$TMPDIR/tsvulc_stub.shp" 33 60 128
+PACK_ARGS+=("$TMPDIR/tsvulc_stub.shp:TSVULC.SHP")
+ts_stub TSVULC "$TMPDIR/tsvulcmk_stub.shp" 33 60 17
+PACK_ARGS+=("$TMPDIR/tsvulcmk_stub.shp:TSVULCMAKE.SHP")
+ts_stub TSROCK "$TMPDIR/tsrock_stub.shp" 33 60 128
+PACK_ARGS+=("$TMPDIR/tsrock_stub.shp:TSROCK.SHP")
+ts_stub TSROCK "$TMPDIR/tsrockmk_stub.shp" 33 60 17
+PACK_ARGS+=("$TMPDIR/tsrockmk_stub.shp:TSROCKMAKE.SHP")
+ts_stub TSCSAM "$TMPDIR/tscsam_stub.shp" 33 60 128
+PACK_ARGS+=("$TMPDIR/tscsam_stub.shp:TSCSAM.SHP")
+ts_stub TSCSAM "$TMPDIR/tscsammk_stub.shp" 33 60 17
+PACK_ARGS+=("$TMPDIR/tscsammk_stub.shp:TSCSAMMAKE.SHP")
+# TSPLUG 72x72 on the 3x2 plot (TS Upgrade Centre, addon host): the radar
+# height trick — square canvas, masts rise into the headroom above the box.
+ts_stub TSPLUG "$TMPDIR/tsplug_stub.shp" 72 72 2
+PACK_ARGS+=("$TMPDIR/tsplug_stub.shp:TSPLUG.SHP")
+ts_stub TSPLUG "$TMPDIR/tsplugmk_stub.shp" 72 72 19
+PACK_ARGS+=("$TMPDIR/tsplugmk_stub.shp:TSPLUGMAKE.SHP")
+# TSPION 24x24: the Ion Cannon Uplink plug's placement ghost (never on map).
+ts_stub TSPION "$TMPDIR/tspion_stub.shp" 24 24 2
+PACK_ARGS+=("$TMPDIR/tspion_stub.shp:TSPION.SHP")
+# TSPODS / TSSEEK 24x24: the Drop Pod Node and Seeker Control plug ghosts (never on map).
+ts_stub TSPODS "$TMPDIR/tspods_stub.shp" 24 24 2
+PACK_ARGS+=("$TMPDIR/tspods_stub.shp:TSPODS.SHP")
+ts_stub TSSEEK "$TMPDIR/tsseek_stub.shp" 24 24 2
+PACK_ARGS+=("$TMPDIR/tsseek_stub.shp:TSSEEK.SHP")
+# TSHUNT 24x24 x 8: the hunter seeker droid (aircraft; 192 canvas / 8, one facing x 8 spin frames).
+ts_stub TSHUNT "$TMPDIR/tshunt_stub.shp" 48 48 8
+PACK_ARGS+=("$TMPDIR/tshunt_stub.shp:TSHUNT.SHP")
 PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")
 # TSFACT 72x72 = the RA-conyard 3x3 box (BSIZE_33) + bib, content inside it
 # (the 4x3 tier read oversized next to the shrunk tier, Luke 2026-08-04).
@@ -371,9 +437,12 @@ ts_stub TSFACT "$TMPDIR/tsfact_stub.shp" 72 48 2
 PACK_ARGS+=("$TMPDIR/tsfact_stub.shp:TSFACT.SHP")
 ts_stub TSFACT "$TMPDIR/tsfactmk_stub.shp" 72 48 32
 PACK_ARGS+=("$TMPDIR/tsfactmk_stub.shp:TSFACTMAKE.SHP")
-ts_stub TSTECH "$TMPDIR/tstech_stub.shp" 72 48 2
+# TSTECH 72x72 (2026-08-31, radar height trick with TSPLUG): 3x2 plot kept,
+# square canvas so the dome + antenna rise instead of the legacy height-clamp
+# shrinking the whole building.
+ts_stub TSTECH "$TMPDIR/tstech_stub.shp" 72 72 2
 PACK_ARGS+=("$TMPDIR/tstech_stub.shp:TSTECH.SHP")
-ts_stub TSTECH "$TMPDIR/tstechmk_stub.shp" 72 48 19
+ts_stub TSTECH "$TMPDIR/tstechmk_stub.shp" 72 72 19
 PACK_ARGS+=("$TMPDIR/tstechmk_stub.shp:TSTECHMAKE.SHP")
 ts_stub TSSILO "$TMPDIR/tssilo_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tssilo_stub.shp:TSSILO.SHP")
@@ -381,6 +450,14 @@ ts_stub TSSILO "$TMPDIR/tssilomk_stub.shp" 48 48 19
 PACK_ARGS+=("$TMPDIR/tssilomk_stub.shp:TSSILOMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/railfx_stub.shp" 24 24 12
 PACK_ARGS+=("$TMPDIR/railfx_stub.shp:RAILFX.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsrailfxs_stub.shp" 24 24 12
+PACK_ARGS+=("$TMPDIR/tsrailfxs_stub.shp:TSRAILFXS.SHP")
+# TS Jumpjet Infantry: its own stub at E1's 50x39 carrying all 451 poses, since classic drawing
+# drops any frame past the shape's count and E1 has 438. TSBANG34 is its shot-down burst.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsjumpjet_stub.shp" 50 39 451
+PACK_ARGS+=("$TMPDIR/tsjumpjet_stub.shp:TSJUMPJET.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsbang34_stub.shp" 17 17 13
+PACK_ARGS+=("$TMPDIR/tsbang34_stub.shp:TSBANG34.SHP")
 # TS GUNFIRE muzzle flash (ANIM_TS_GUNFIRE) -- 3 frames, HD-only stub.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsgunfire_stub.shp" 24 24 3
 PACK_ARGS+=("$TMPDIR/tsgunfire_stub.shp:TSGUNFIRE.SHP")
@@ -394,10 +471,75 @@ PACK_ARGS+=("$TMPDIR/tssonicp_stub.shp:TSSONICP.SHP")
 # (TSDIG.ZIP is a 512 canvas, scripts/ts_pack_dig.py).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsdig_stub.shp" 64 64 37
 PACK_ARGS+=("$TMPDIR/tsdig_stub.shp:TSDIG.SHP")
+# TS ion strike pair (scripts/ts_pack_ion.py): beam canvas 120x3840 (matches the TD beam's ~4076 virtual px: TD draws at VirtualScale 0x200, ours at 0x100), ring
+# 832x408, both / 8 for the classic dims the launcher sizes the HD art off.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsionbm_stub.shp" 15 480 15
+PACK_ARGS+=("$TMPDIR/tsionbm_stub.shp:TSIONBM.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsionrng_stub.shp" 104 51 15
+PACK_ARGS+=("$TMPDIR/tsionrng_stub.shp:TSIONRNG.SHP")
+# TS drop-pod strike set (scripts/ts_pack_pods.py): husks 192x192, DROPEXP puff
+# 400x272, PODRING entry flash 400x208, SMOKEY trail 128x120, pod bullet body
+# 192x192 — all / 8 for the classic dims the launcher sizes the HD art off.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdpod1_stub.shp" 24 24 8
+PACK_ARGS+=("$TMPDIR/tsdpod1_stub.shp:TSDPOD1.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdpod2_stub.shp" 24 24 8
+PACK_ARGS+=("$TMPDIR/tsdpod2_stub.shp:TSDPOD2.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdrpexp_stub.shp" 50 34 12
+PACK_ARGS+=("$TMPDIR/tsdrpexp_stub.shp:TSDRPEXP.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspodrng_stub.shp" 50 26 20
+PACK_ARGS+=("$TMPDIR/tspodrng_stub.shp:TSPODRNG.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssmokey_stub.shp" 16 15 11
+PACK_ARGS+=("$TMPDIR/tssmokey_stub.shp:TSSMOKEY.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspodblt_stub.shp" 24 24 1
+PACK_ARGS+=("$TMPDIR/tspodblt_stub.shp:TSPODBLT.SHP")
 # TS fire-stream particle (BULLET_TSFIRE) -- 76 shapes (4 axes x 19 states), 20x20 box
 # (TSFIRE.ZIP is a 160 canvas, scripts/ts_pack_flame.py).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsfire_stub.shp" 20 20 76
 PACK_ARGS+=("$TMPDIR/tsfire_stub.shp:TSFIRE.SHP")
+
+# TS component tower weapon art (scripts/ts_pack_towerfx.py): the Vulcan's muzzle flashes, the
+# warheads' impacts, the SAM trail, the RPG canister and the SAM missile. Canvas = TS canvas x 4
+# rounded up to whole 8 px cells; stub = canvas / 8; frame counts match the zips.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgunn_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgunn_stub.shp:TSMGUNN.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgunne_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgunne_stub.shp:TSMGUNNE.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgune_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgune_stub.shp:TSMGUNE.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgunse_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgunse_stub.shp:TSMGUNSE.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmguns_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmguns_stub.shp:TSMGUNS.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgunsw_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgunsw_stub.shp:TSMGUNSW.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgunw_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgunw_stub.shp:TSMGUNW.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmgunnw_stub.shp" 9 9 3
+PACK_ARGS+=("$TMPDIR/tsmgunnw_stub.shp:TSMGUNNW.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspiff_stub.shp" 30 18 12
+PACK_ARGS+=("$TMPDIR/tspiff_stub.shp:TSPIFF.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsclsn16_stub.shp" 16 8 13
+PACK_ARGS+=("$TMPDIR/tsclsn16_stub.shp:TSCLSN16.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsclsn22_stub.shp" 22 11 13
+PACK_ARGS+=("$TMPDIR/tsclsn22_stub.shp:TSCLSN22.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsclsn30_stub.shp" 31 15 18
+PACK_ARGS+=("$TMPDIR/tsclsn30_stub.shp:TSCLSN30.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsclsn42_stub.shp" 44 21 18
+PACK_ARGS+=("$TMPDIR/tsclsn42_stub.shp:TSCLSN42.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsclsn58_stub.shp" 62 29 18
+PACK_ARGS+=("$TMPDIR/tsclsn58_stub.shp:TSCLSN58.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsxgry1_stub.shp" 10 10 15
+PACK_ARGS+=("$TMPDIR/tsxgry1_stub.shp:TSXGRY1.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsxgry2_stub.shp" 18 14 13
+PACK_ARGS+=("$TMPDIR/tsxgry2_stub.shp:TSXGRY2.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsexpsml_stub.shp" 14 12 14
+PACK_ARGS+=("$TMPDIR/tsexpsml_stub.shp:TSEXPSML.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tssmoky2_stub.shp" 8 7 11
+PACK_ARGS+=("$TMPDIR/tssmoky2_stub.shp:TSSMOKY2.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tscanist_stub.shp" 4 3 32
+PACK_ARGS+=("$TMPDIR/tscanist_stub.shp:TSCANIST.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsdiscus_stub.shp" 4 2 32
+PACK_ARGS+=("$TMPDIR/tsdiscus_stub.shp:TSDISCUS.SHP")
 
 # Repack into TFASSETS.MIX with TD-prefix renames.
 python3 scripts/mix_tools.py pack "$OUTMIX" "${PACK_ARGS[@]}"

@@ -167,6 +167,22 @@ enum TdSamState
     TDSAM_LOWERING,    // door anim frames 48-63
 };
 
+/*
+**	Whether a SAM site's target is in the air: an aircraft aloft, or a jumpjet flying in the
+**	top map layer, which TS counts as an air target too.
+*/
+static bool TF_SAM_Air_Target(TARGET target)
+{
+    if (!Target_Legal(target)) {
+        return (false);
+    }
+    if (Is_Target_Aircraft(target)) {
+        return (As_Aircraft(target)->Height != 0);
+    }
+    InfantryClass* inf = As_Infantry(target);
+    return (inf != NULL && inf->Is_Airborne_Jumpjet() && inf->In_Which_Layer() != LAYER_GROUND);
+}
+
 /***************************************************************************
 **	Center of building offset table.
 */
@@ -187,6 +203,7 @@ COORDINATE const BuildingClass::CenterOffset[BSIZE_COUNT] = {
 
     0x02000200L, // BSIZE_44 (4x4): x = 2 cells, y = 2 cells -- the centre CELL is row 2 col 2,
                  // which for TSPROC is the dock pad itself (an occupy hole).
+    0x01800280L, // BSIZE_53 (5x3): x = 2.5 cells, y = 1.5 cells -- centre CELL row 1 col 2 (hangar).
 };
 
 /***********************************************************************************************
@@ -289,6 +306,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         case STRUCT_SHPAD:
         case STRUCT_TDGHPAD:
         case STRUCT_TDNHPAD:
+        case STRUCT_TSHPAD:    // TS Helipad -- same rotary-aircraft dock semantics.
             if (from->What_Am_I() == RTTI_AIRCRAFT && !((AircraftClass const*)from)->Class->IsFixedWing) {
                 return (RADIO_ROGER);
             }
@@ -355,6 +373,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         case STRUCT_SHPAD:
         case STRUCT_TDGHPAD:
         case STRUCT_TDNHPAD:
+        case STRUCT_TSHPAD:    // TS Helipad -- repair-on-dock.
             Assign_Mission(MISSION_REPAIR);
             from->Assign_Mission(MISSION_SLEEP);
             return (RADIO_ROGER);
@@ -509,6 +528,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
             case STRUCT_SHPAD:
             case STRUCT_TDGHPAD:
             case STRUCT_TDNHPAD:
+            case STRUCT_TSHPAD:    // TS Helipad -- dock target is the building itself.
                 param = As_Target();
                 break;
 
@@ -844,40 +864,11 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         **  name. TD's overlay stands in so the pointer is never NULL, which
         **  would skip the draw outright.
         */
-        if (*this == STRUCT_TSWEAP && Strength > 1) {
-            int shapenum = Door_Stage();
-            if (Health_Ratio() <= Rule.ConditionYellow)
-                shapenum += 9;
-            Techno_Draw_Object_Virtual(Class->WarFactoryOverlayTs, shapenum, x, y, window, DIR_N, 0x0100, "TSWEAP2");
-
-            /*
-            **  The overlay's floor band (ramp lip, door-frame feet, wall
-            **  bases) draws as its own layer, sorted one notch under the
-            **  exit clamp: an emerging unit passes over the floor furniture
-            **  while the roof above it still covers the hull. Same stage
-            **  index as the door overlay it was split from.
-            */
-            Techno_Draw_Object_Virtual(Class->WarFactoryOverlayTs, shapenum, x, y, window, DIR_N, 0x0100, "TSWEAP2L");
-
-            /*
-            **  The idle lamps live in the near face, which is one static
-            **  image per damage run in TSWEAP2 -- frozen at phase 0. This
-            **  layer replays the face at the building's own idle stage
-            **  (TSWEAPLT: 8 phases healthy + 8 damaged, the same index the
-            **  body draw uses), riding one sort notch above the door
-            **  overlay. Skipped during construction: the face does not
-            **  exist under the buildup art.
-            */
-            if (BState != BSTATE_CONSTRUCTION) {
-                Techno_Draw_Object_Virtual(
-                    Class->WarFactoryOverlayTs, Shape_Number(), x, y, window, DIR_N, 0x0100, "TSWEAPLT");
-            }
-        }
-
         /*
-        **	TS refinery event layers, on the building's own canvas: the chimney
-        **	fireball while a burst plays and the dock lid while it opens/closes.
-        **	Damaged runs follow the healthy runs in each layer's tileset.
+        **	TS war factory (08-28 rebuild): the body is one sprite. The roll-up
+        **	shutter (GAWEAP_D, 9 stages + 9 damaged) is a layer sorted south of
+        **	the vehicle in the mouth, so it hides it while shut and reveals it
+        **	as it rises; the under-door floor (GAWEAP_1) shows while unloading.
         */
         /*
         **	TS EMP cannon: the PULSCAN voxel cannon (32 facings) rides on the dome,
@@ -889,16 +880,28 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             Techno_Draw_Object_Virtual(Class->TsPulseTurret, tshape, x, y + TSPULS_TURRET_Y, window, DIR_N, 0x0100, "TSPULST");
         }
 
-        if (*this == STRUCT_TSPROC && Strength > 1 && BState != BSTATE_CONSTRUCTION) {
+        if (*this == STRUCT_TSWEAP && Strength > 1) {
             int dmg = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
-            if (TsFlameStage >= 0) {
-                Techno_Draw_Object_Virtual(
-                    Class->TsRefineryFlame, TsFlameStage + dmg * 20, x, y, window, DIR_N, 0x0100, "TSPROCFR");
+            if (Mission == MISSION_UNLOAD) {
+                Techno_Draw_Object_Virtual(Class->TsWeapUnderDoor, dmg, x, y, window, DIR_N, 0x0100, "TSWEAPUD");
             }
-            if (TS_LID_ENABLED && Ts_Lid_Busy()) {
-                Techno_Draw_Object_Virtual(
-                    Class->TsRefineryLid, TsLidStage + dmg * 5, x, y, window, DIR_N, 0x0100, "TSPROCLD");
+            int stage = Door_Stage();
+            if (stage < 0) {
+                stage = 0;
             }
+            if (stage > 8) {
+                stage = 8;
+            }
+            /*
+            **	The near face: the whole hangar minus the opening, at the idle
+            **	phase, in front of a vehicle in the bay; the shutter over that.
+            */
+            if (Mission == MISSION_UNLOAD) {
+                Techno_Draw_Object_Virtual(Class->TsWeapFrontOpen, Shape_Number(), x, y, window, DIR_N, 0x0100, "TSWEAPNU");
+            } else {
+                Techno_Draw_Object_Virtual(Class->TsWeapFront, Shape_Number(), x, y, window, DIR_N, 0x0100, "TSWEAPNF");
+            }
+            Techno_Draw_Object_Virtual(Class->TsWeapShutter, stage + dmg * 9, x, y, window, DIR_N, 0x0100, "TSWEAPDR");
         }
 
         // WEAP2 overlay for vanilla RA WEAP / FAKEWEAP only. STRUCT_TDWEAP
@@ -1084,6 +1087,40 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
  * HISTORY:                                                                                    *
  *   07/29/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
+/*
+**	Upgrade Centre socket art: the tileset carries one full healthy+damaged
+**	block per visual state. Plug types are ordered dish (TSPION), dome
+**	(TSPODS), node (TSSEEK); blocks 1-3 are that type alone in socket 1 and
+**	blocks 4-9 are the ordered distinct pairs (first in socket 1, second in
+**	socket 2). ts_pack_tree.py emits the blocks in exactly this order.
+*/
+static int TF_Plug_Type_Index(StructType type)
+{
+    switch (type) {
+    case STRUCT_TSPION:
+        return (0);
+    case STRUCT_TSPODS:
+        return (1);
+    case STRUCT_TSSEEK:
+        return (2);
+    default:
+        return (-1);
+    }
+}
+
+int TF_Plug_Art_Block(StructType first, StructType second)
+{
+    int a = TF_Plug_Type_Index(first);
+    int b = TF_Plug_Type_Index(second);
+    if (a < 0) {
+        return (0);
+    }
+    if (b < 0 || b == a) {
+        return (1 + a);
+    }
+    return (4 + a * 2 + ((b > a) ? (b - 1) : b));
+}
+
 /***********************************************************************************************
  * BuildingClass::Ts_Lid_Open / Ts_Lid_Close -- Drive the TS refinery's dock lid.              *
  *                                                                                             *
@@ -1141,7 +1178,10 @@ int BuildingClass::Shape_Number(void) const
         **	If the building is deconstructing, then the display frame progresses
         **	from the end to the beginning. Reverse the shape number accordingly.
         */
-        if (Mission == MISSION_DECONSTRUCTION) {
+        /*
+        **	Selling runs the build-up backwards; so does a Limpet Mine packing itself into its drone.
+        */
+        if (Mission == MISSION_DECONSTRUCTION || (Mission == MISSION_UNLOAD && *this == STRUCT_TSDLIMP)) {
             shapenum = (Class->Anims[BState].Start + Class->Anims[BState].Count - 1) - shapenum;
         }
 
@@ -1274,6 +1314,29 @@ int BuildingClass::Shape_Number(void) const
                 }
             }
         }
+
+        /*
+        **	A building with installed addon plugs draws the art variant for its
+        **	upgrade level: the tileset carries one full healthy+damaged block
+        **	per level, so the level stride is twice the idle anim extent
+        **	(TSPOWR: 2 x 12 = 24, turbines baked onto the plant per level).
+        **
+        **	The Upgrade Centre's blocks are TYPE-KEYED, not level-keyed — its
+        **	plug types wear different art, so each socket must show the plug
+        **	actually installed in it (Luke, 2026-08-31; the level scheme
+        **	dressed a pod node as the ion dish). Block order matches
+        **	ts_pack_tree.py (TF_Plug_Art_Block): three single-plug blocks in
+        **	type order, then the six ordered distinct pairs (same-type pairs
+        **	are barred by the one-of-each rule, so nine blocks cover every
+        **	state).
+        */
+        if (UpgradeLevel != 0 && (*this == STRUCT_TSPOWR || *this == STRUCT_TSPLUG)) {
+            int block = UpgradeLevel;
+            if (*this == STRUCT_TSPLUG) {
+                block = TF_Plug_Art_Block(UpgradeTypes[0], (UpgradeLevel >= 2) ? UpgradeTypes[1] : STRUCT_NONE);
+            }
+            shapenum += block * 2 * (Class->Anims[BSTATE_IDLE].Start + Class->Anims[BSTATE_IDLE].Count);
+        }
     }
     return (shapenum);
 }
@@ -1355,6 +1418,10 @@ bool BuildingClass::Mark(MarkType mark)
 
                 case STRUCT_FENCE:
                     new OverlayClass(OVERLAY_FENCE, cell, House->Class->House);
+                    break;
+
+                case STRUCT_TSWALL:
+                    new OverlayClass(OVERLAY_TSWALL, cell, House->Class->House);
                     break;
 
                 default:
@@ -1799,6 +1866,19 @@ static bool TF_Stealth_Detector_In_Range(TechnoClass const* obj, int range)
             return (true);
         }
     }
+    /*
+    **	Scanner BUILDINGS (TS Sensors=yes — the TS Upgrade Centre) detect at
+    **	their own Sight range rather than the short foot-detector radius: a
+    **	fixed sensor structure covers its surroundings, TS-style.
+    */
+    for (int i = 0; i < Buildings.Count(); i++) {
+        BuildingClass* b = Buildings.Ptr(i);
+        if (b != NULL && b->IsActive && !b->IsInLimbo && !b->House->Is_Ally(owner)
+            && b->Class->IsScanner
+            && ::Distance(b->Center_Coord(), oc) <= b->Class->SightRange * CELL_LEPTON_W) {
+            return (true);
+        }
+    }
     return (false);
 }
 
@@ -2064,6 +2144,15 @@ void BuildingClass::Process_Stealth_Generators(void)
     }
 }
 
+/*
+**	Set while a component-tower plug is replacing the bare tower it was placed on.
+**	The replacement is an INSTALL, not a construction: the turret drops straight on,
+**	the way a power turbine or an upgrade-centre plug does, rather than the tower
+**	rebuilding itself from a hole in the ground. Set and consumed inside one
+**	synchronous Unlimbo, so a file-static is enough.
+*/
+static bool TFPlugInstallInProgress = false;
+
 /***********************************************************************************************
  * BuildingClass::Unlimbo -- Removes a building from limbo state.                              *
  *                                                                                             *
@@ -2123,6 +2212,10 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
                 otype = OVERLAY_FENCE;
                 break;
 
+            case STRUCT_TSWALL:
+                otype = OVERLAY_TSWALL;
+                break;
+
             default:
                 otype = OVERLAY_NONE;
                 break;
@@ -2142,9 +2235,86 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
     }
 
     /*
+    **	If this is an addon plug (TS PowersUpBuilding), it never gets unlimboed.
+    **	Instead it installs into the host building under the placement cell: the
+    **	host gains the plug's Power, is restored to full strength (TS behaviour —
+    **	the new hardware arrives with fresh armour), and the plug object is
+    **	consumed. Mirrors the wall divert above: `delete this` then return true
+    **	so the factory completes normally.
+    */
+    bool tf_plug_swap = false;
+
+    if (Class->PowersUpBuilding != STRUCT_NONE) {
+        BuildingClass* host = Map[Coord_Cell(coord)].Cell_Building();
+        /*
+        **	Component tower plugs (Vulcan, RPG, SAM) are the armed tower types
+        **	themselves: the bare tower makes way and this building takes its cell
+        **	and health ratio through the normal unlimbo below (buildup, house
+        **	bookkeeping and wall joins included). Sale refunds both (Refund_Amount).
+        */
+        bool swapped = false;
+        if (host != NULL && *host == STRUCT_TSCTWR && host->Can_Upgrade(Class, House)) {
+            coord = host->Coord;
+            fixed ratio = host->Health_Ratio();
+            host->Transmit_Message(RADIO_OVER_OUT);
+            host->Limbo();
+            delete host;
+            host = NULL;
+            Strength = (int)Class->MaxStrength * ratio;
+            if (Strength < 1) {
+                Strength = 1;
+            }
+            swapped = true;
+            tf_plug_swap = true;
+            TFPlugInstallInProgress = true;
+        }
+        if (!swapped) {
+        if (host != NULL && host->Can_Upgrade(Class, House)) {
+            int oldpower = host->Power_Output();
+            host->UpgradeTypes[host->UpgradeLevel++] = Class->Type;
+            host->House->Adjust_Power(host->Power_Output() - oldpower);
+            host->House->Adjust_Drain(Class->Drain);
+            host->Strength = host->Class->MaxStrength;
+            host->House->IsRecalcNeeded = true;
+            host->Mark(MARK_CHANGE);
+            /*
+            **	Sever the builder's placement radio link before self-deleting, as
+            **	the wall divert does. Who_Can_Build_Me skips builders that are in
+            **	radio contact, so a link left dangling here wedges the conyard
+            **	out of ALL further building placement.
+            */
+            Transmit_Message(RADIO_OVER_OUT);
+            delete this;
+            return (true);
+        }
+        return (false);
+        }
+    }
+
+    /*
+    **	A component tower placed onto a wall segment replaces it (TS wall tower):
+    **	the overlay goes before the tower takes the cell, and the neighbours'
+    **	joins are recomputed once the tower stands (below).
+    */
+    if (*this == STRUCT_TSCTWR) {
+        CellClass& tc = Map[Coord_Cell(coord)];
+        if (tc.Overlay == OVERLAY_TSWALL || tc.Overlay == OVERLAY_BRICK_WALL || tc.Overlay == OVERLAY_SANDBAG_WALL) {
+            tc.Overlay = OVERLAY_NONE;
+            tc.OverlayData = 0;
+            Detach_This_From_All(::As_Target(tc.Cell_Number()), true);
+            tc.Recalc_Attributes();
+            tc.Redraw_Objects();
+        }
+    }
+
+    /*
     **	Normal building unlimbo process.
     */
     if (TechnoClass::Unlimbo(coord, dir)) {
+
+        if (TF_Is_Wall_Tower(Class->Type)) {
+            Map[Coord_Cell(Coord)].Wall_Update(true);
+        }
 
         /*
         **	Ensure that the owning house knows about the
@@ -2227,6 +2397,20 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
             // else: building has no side bits in Ownable — preserve the
             // initial ActLike (House->ActLike). HOUSE_GOOD / HOUSE_BAD
             // players landing here keep their own identity.
+        }
+
+        /*
+        **	A component-tower plug installs rather than builds, so it never runs the
+        **	construction mission -- and that mission is where a new building frees its
+        **	builder ("You're free.") and runs Grand_Opening. Both have to happen here
+        **	instead. Leaving the radio link dangling wedges the construction yard out
+        **	of ALL further placement, because Who_Can_Build_Me skips a builder that is
+        **	in radio contact (object.cpp): the sidebar item builds, then cancels, and
+        **	nothing can be placed or selected afterwards.
+        */
+        if (tf_plug_swap) {
+            Transmit_Message(RADIO_OVER_OUT);
+            Grand_Opening();
         }
 
         return (true);
@@ -2720,6 +2904,7 @@ BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     , TsLidPhase(0)
     , TsLidStage(0)
     , TsLidTick(0)
+    , UpgradeLevel(0)
     , IsCaptured(false)
     , IsJamming(false)
     , IsJammed(false)
@@ -2734,6 +2919,7 @@ BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     , LastStrength(0)
     , PlacementDelay(0)
     , RallyPoint(TARGET_NONE)
+    , TFLimpetNav(TARGET_NONE)
 {
     // Diagnostic hook removed 2026-05-18. To re-enable, fprintf here to log
     // every BuildingClass instantiation with typeptr/IniName/Type/house. Used
@@ -2741,6 +2927,9 @@ BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     // BuildingTypeClass* from Create_One_Of (vs the StructType-based legacy
     // path that delegates through BuildingTypes.Ptr).
     House->Tracking_Add(this);
+    for (int uidx = 0; uidx < (int)(sizeof(UpgradeTypes) / sizeof(UpgradeTypes[0])); uidx++) {
+        UpgradeTypes[uidx] = STRUCT_NONE;
+    }
     IsSecondShot = !Class->Is_Two_Shooter();
     Strength = Class->MaxStrength;
     Ammo = Class->MaxAmmo;
@@ -2953,6 +3142,13 @@ void BuildingClass::Active_Click_With(ActionType action, ObjectClass* object)
     }
 
     /*
+    **	TS Limpet Mine: the deploy order (self click or the deploy key) packs it into its drone.
+    */
+    if (action == ACTION_SELF && *this == STRUCT_TSDLIMP) {
+        Player_Assign_Mission(MISSION_UNLOAD);
+    }
+
+    /*
     **	TF: rally points (CFE Patch Redux port). Alt+Click (force move) on a
     **	unit or building rallies onto that object.
     */
@@ -3108,6 +3304,12 @@ void BuildingClass::Active_Click_With(ActionType action, CELL cell)
 
         COORDINATE coord = Map.Pixel_To_Coord(Get_Mouse_X(), Get_Mouse_Y());
         OutList.Add(EventClass(ANIM_MOVE_FLASH, PlayerPtr->Class->House, coord, 1 << PlayerPtr->Class->House));
+    } else if (action == ACTION_MOVE && *this == STRUCT_TSDLIMP) {
+        /*
+        **	A Limpet Mine sent somewhere packs back into its drone first; the destination
+        **	rides along on the unload mission and the drone leaves for it.
+        */
+        Player_Assign_Mission(MISSION_UNLOAD, TARGET_NONE, ::As_Target(cell));
     } else if (action == ACTION_MOVE && Can_Have_Rally_Point()) {
         /*
         **	TF: rally points (CFE Patch Redux port). Click ground to set.
@@ -3132,6 +3334,20 @@ void BuildingClass::Active_Click_With(ActionType action, CELL cell)
  *   05/28/1994 JLB : Created.                                                                 *
  *   11/02/1994 JLB : Checks for range before assigning target.                                *
  *=============================================================================================*/
+void BuildingClass::Assign_Destination(TARGET target)
+{
+    assert(IsActive);
+
+    /*
+    **	Only a Limpet Mine has anywhere to go: it keeps the cell so that the drone it packs
+    **	into can be sent there once the build-up has run backwards.
+    */
+    if (*this == STRUCT_TSDLIMP) {
+        TFLimpetNav = target;
+    }
+    TechnoClass::Assign_Destination(target);
+}
+
 void BuildingClass::Assign_Target(TARGET target)
 {
     assert(Buildings.ID(this) == ID);
@@ -3560,58 +3776,33 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             break;
 
         case STRUCT_TSWEAP:
-            /*
-            **	The vehicle is placed in the bay still tethered and does not
-            **	move until Mission_Unload has run the shutter up. Facing is
-            **	DIR_SE because that is the way the TS bay points. (A
-            **	materialise-at-the-open-door variant was tried 2026-08-17
-            **	and rejected -- units spawn INSIDE, TD/RA-style.)
-            */
             if (Mission == MISSION_UNLOAD) {
                 return (1); // busy with the previous vehicle
             }
             ScenarioInit++;
             {
-                // Per-unit-type boarding point on the shared exit rail: the
-                // Titan seats at its own marker; everything else uses the
-                // default. The unload's Force_Track boards at the matching
-                // waypoint index -- seat and index are generated together.
-                bool is_titan = (base->What_Am_I() == RTTI_UNIT
-                                 && *(UnitClass*)base == UNIT_TSTITN);
-                COORDINATE seat = Coord_Add(Coord,
-                                            is_titan ? TSWEAP_SEAT_TSTITN
-                                                     : TSWEAP_SEAT_DEFAULT);
-                if (base->Unlimbo(seat, DIR_SE)) {
+                /*
+                **	TS (OpenTS Exit_Object): the vehicle exists from the moment
+                **	production completes, seated in the door mouth behind the shut
+                **	shutter, facing out. It is not drawn until the shutter is fully
+                **	up (UnitClass::Draw_It), then rides the exit rail south-east.
+                */
+                bool is_mech = false;
+                if (base->What_Am_I() == RTTI_UNIT) {
+                    UnitType ut = *(UnitClass*)base;
+                    is_mech = (ut == UNIT_TSTITN || ut == UNIT_TSSMEC || ut == UNIT_TSHMEC);
+                }
+                COORDINATE seat = Coord_Add(Coord, is_mech ? TSWEAP_SEAT_MOUTH_MECH : TSWEAP_SEAT_MOUTH);
+                /*
+                **	Facing = the exit rail's own direction (seat -> exit cell), so the
+                **	vehicle points exactly along the line it will drive.
+                */
+                COORDINATE exitc = Cell_Coord((CELL)(Coord_Cell(Coord) + (2 * MAP_CELL_W + 4)));
+                DirType outdir = Desired_Facing256(Coord_X(seat), Coord_Y(seat), Coord_X(exitc), Coord_Y(exitc));
+                if (base->Unlimbo(seat, outdir)) {
                     base->Mark(MARK_UP);
                     base->Coord = seat;
                     base->Mark(MARK_DOWN);
-#if TF_DEV_BUILD
-                // Spawn-position ground truth (2026-08-17): the exit point was
-                // dialled blind against screenshots for a whole session; this
-                // states what the engine actually did. Origin = the plot's NW
-                // cell; the XYP offset is measured from Coord, so any anchor
-                // surprise (cell-centre vs corner) shows up here.
-                {
-                    const char* up = getenv("USERPROFILE");
-                    char p[600];
-                    snprintf(p, sizeof(p), "%s/MOD_DEBUG_AI.txt", up ? up : ".");
-                    FILE* f = fopen(p, "a");
-                    if (f != NULL) {
-                        fprintf(f,
-                                "TSWEAP spawn: bldg Coord=%08lx (cell %d,%d) seat=%08lx "
-                                "(px %d,%d rel origin) unit '%s' Coord=%08lx\n",
-                                (unsigned long)Coord,
-                                Cell_X(Coord_Cell(Coord)),
-                                Cell_Y(Coord_Cell(Coord)),
-                                (unsigned long)seat,
-                                (int)(((Coord_X(seat) - Coord_X(Coord)) * 24) >> 8),
-                                (int)(((Coord_Y(seat) - Coord_Y(Coord)) * 24) >> 8),
-                                base->Class_Of().IniName,
-                                (unsigned long)base->Coord);
-                        fclose(f);
-                    }
-                }
-#endif
                     Transmit_Message(RADIO_HELLO, base);
                     Transmit_Message(RADIO_TETHER);
                     Assign_Mission(MISSION_UNLOAD);
@@ -3621,7 +3812,6 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             }
             ScenarioInit--;
             break;
-
         case STRUCT_TDAFLD:
             // STRUCT_TDAFLD — verbatim port of TD's case STRUCT_AIRSTRIP
             // (tiberiandawn/building.cpp:2263-2269). Cargo plane delivery
@@ -3688,6 +3878,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
         case STRUCT_KENNEL:
         case STRUCT_TDPYLE:     // TD GDI Barracks — shares BARRACKS exit-cell pattern (TD building.cpp:2288 aliases STRUCT_BARRACKS||STRUCT_HAND). See docs/td-tier1-verification.md.
         case STRUCT_TDHAND:     // TD Nod Hand of Nod — same BARRACKS||HAND alias in TD source. M4 Tier 3.
+        case STRUCT_TSPILE:     // TS Barracks: same exit-cell pattern, spawned at its doorway pixel.
 
             cell = Find_Exit_Cell(base);
             if (cell != 0) {
@@ -3821,7 +4012,13 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             **	routine will return failure. The calling routine will probably abandon this
             **	building in preference to building another.
             */
-            BaseNodeClass* node = Base.Next_Buildable(((BuildingClass*)base)->Class->Type);
+            /*
+            **	An addon plug installs into a standing building of its host type, so it
+            **	takes no base node, no ground near a remote yard and no flush: the host
+            **	itself occupies the cell, and a flush would wait on it forever.
+            */
+            bool plug = (((BuildingClass*)base)->Class->PowersUpBuilding != STRUCT_NONE);
+            BaseNodeClass* node = plug ? NULL : Base.Next_Buildable(((BuildingClass*)base)->Class->Type);
             COORDINATE coord = 0;
             if (node) {
                 coord = Cell_Coord(node->Cell);
@@ -3836,7 +4033,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 **	which packs the expansion tight around the yard. Water-bound
                 **	products still route through the naval scan below.
                 */
-                if (House->Center != 0 && ((BuildingClass*)base)->Class->Speed != SPEED_FLOAT
+                if (!plug && House->Center != 0 && ((BuildingClass*)base)->Class->Speed != SPEED_FLOAT
                     && ::Distance(Center_Coord(), House->Center)
                            > House->Radius + 10 * CELL_LEPTON_W) {
                     CELL nearcell = TF_Find_Cell_Near_Yard((BuildingClass*)base, this);
@@ -3854,7 +4051,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             }
 
             if (coord) {
-                if (Flush_For_Placement(base, Coord_Cell(coord))) {
+                if (!plug && Flush_For_Placement(base, Coord_Cell(coord))) {
                     return (1);
                 }
                 if (base->Unlimbo(coord)) {
@@ -4269,7 +4466,7 @@ bool BuildingClass::Limbo(void)
         **	Update the power status of the owner's house.
         */
         House->Adjust_Power(-Power_Output());
-        House->Adjust_Drain(-Class->Drain);
+        House->Adjust_Drain(-(Class->Drain + Upgrade_Drain()));
         House->Adjust_Capacity(-Class->Capacity, true);
         if (House == PlayerPtr) {
             Map.PowerClass::IsToRedraw = true;
@@ -4288,7 +4485,13 @@ bool BuildingClass::Limbo(void)
         //			IsInLimbo = false;
         //		}
     }
-    return (TechnoClass::Limbo());
+    bool tower = TF_Is_Wall_Tower(Class->Type);
+    CELL cell = Coord_Cell(Coord);
+    bool limboed = TechnoClass::Limbo();
+    if (limboed && tower) {
+        Map[cell].Wall_Update(true);
+    }
+    return (limboed);
 }
 
 /***********************************************************************************************
@@ -4346,6 +4549,13 @@ TARGET BuildingClass::Greatest_Threat(ThreatType threat) const
     **	already exited the 7.5-cell weapon range and the state machine bails
     **	to LOWERING without firing.
     */
+    /*
+    **	TS Limpet Mine: only a vehicle in reach is worth leaping onto.
+    */
+    if (*this == STRUCT_TSDLIMP) {
+        return (TechnoClass::Greatest_Threat(THREAT_VEHICLES | THREAT_RANGE));
+    }
+
     if (*this == STRUCT_TDSAM) {
         threat = threat | THREAT_AREA;
         if (Class->PrimaryWeapon != NULL && Class->PrimaryWeapon->Bullet->IsAntiAircraft) {
@@ -4393,7 +4603,7 @@ TARGET BuildingClass::Greatest_Threat(ThreatType threat) const
 bool BuildingClass::TDSAM_Try_Reacquire(void)
 {
     TARGET newtarget = Greatest_Threat(THREAT_NORMAL);
-    if (Target_Legal(newtarget) && Is_Target_Aircraft(newtarget) && As_Aircraft(newtarget)->Height != 0) {
+    if (TF_SAM_Air_Target(newtarget)) {
         Assign_Target(newtarget);
         return (true);
     }
@@ -4426,9 +4636,10 @@ void BuildingClass::Grand_Opening(bool captured)
 
         /*
         **	Adjust the owning house according to the power, drain, and Tiberium capacity that
-        **	this building has.
+        **	this building has. Installed addon plugs' drain rides along (relevant on
+        **	the captured re-open, where plugs are already present).
         */
-        House->Adjust_Drain(Class->Drain);
+        House->Adjust_Drain(Class->Drain + Upgrade_Drain());
         House->Adjust_Capacity(Class->Capacity);
         House->IsRecalcNeeded = true;
 
@@ -4534,6 +4745,12 @@ void BuildingClass::Grand_Opening(bool captured)
             case STRUCT_TDHPAD:
                 air = new AircraftClass(House->ActLike == HOUSE_BAD ? AIRCRAFT_TDAPACHE : AIRCRAFT_TDORCA,
                                         House->Class->House);
+                break;
+            case STRUCT_TSHPAD:
+                /*
+                **	A TS pad comes with no aircraft (TS GAHPAD); the Orcas are bought from it.
+                */
+                air = NULL;
                 break;
             default:
                 if (House->ActLike == HOUSE_USSR || House->ActLike == HOUSE_UKRAINE) {
@@ -4786,7 +5003,7 @@ ActionType BuildingClass::What_Action(ObjectClass const* object) const
                 break;
             }
 
-        } else {
+        } else if (*this != STRUCT_TSDLIMP) {
             action = ACTION_NONE;
         }
     }
@@ -4861,9 +5078,18 @@ ActionType BuildingClass::What_Action(CELL cell) const
     if (action == ACTION_NOMOVE && Can_Have_Rally_Point()) {
         action = ACTION_MOVE;
     }
-    if (action == ACTION_MOVE && !Can_Have_Rally_Point()
+    if (action == ACTION_MOVE && !Can_Have_Rally_Point() && *this != STRUCT_TSDLIMP
         && (!Class->Is_Construction_Yard() || !Is_MCV_Deploy())) {
         action = ACTION_NONE;
+    }
+
+    /*
+    **	A Limpet Mine takes a move order anywhere its drone could go: the order packs it up
+    **	and the drone walks off, so cells its own footprint could never be placed on qualify.
+    */
+    if (*this == STRUCT_TSDLIMP && (action == ACTION_NOMOVE || action == ACTION_NONE)
+        && Map.In_Radar(cell)) {
+        action = ACTION_MOVE;
     }
 
     /*
@@ -4959,6 +5185,12 @@ COORDINATE BuildingClass::Docking_Coord(void) const
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
+    if (*this == STRUCT_TSHPAD) {
+        /*
+        **	The TS pad's landing octagon is drawn on the lower-right cell of the 2x2 plot.
+        */
+        return (Coord_Add(Coord, XYP_COORD(29, 29)));
+    }
     if (Class->Is_Helipad()) {
         return (Coord_Add(Coord, XYP_COORD(24, 18)));
     }
@@ -5210,7 +5442,7 @@ bool BuildingClass::Captured(HouseClass* newowner)
 
         House->Adjust_Power(-Power_Output());
         LastStrength = 0;
-        House->Adjust_Drain(-Class->Drain);
+        House->Adjust_Drain(-(Class->Drain + Upgrade_Drain()));
         int booty = House->Adjust_Capacity(-Class->Capacity, true);
 
         /*
@@ -5437,7 +5669,7 @@ COORDINATE BuildingClass::Sort_Y(void) const
     **	Mines need to bias their sort location such that they are typically drawn
     **	before any objects that might overlap them.
     */
-    if (*this == STRUCT_AVMINE || *this == STRUCT_APMINE) {
+    if (*this == STRUCT_AVMINE || *this == STRUCT_APMINE || *this == STRUCT_TSDLIMP) {
         return (Coord_Move(Center_Coord(), DIR_N, CELL_LEPTON_H));
     }
 
@@ -5642,10 +5874,14 @@ bool Is_TS_Apron_Cell(CELL cell)
         **	them. Front-row cols 0-1 sit under the hangar's drawn SW corner
         **	and are OCCUPIED cells now; occupancy blocks placement there.
         */
-        {STRUCT_TSWEAP, 1 - MAP_CELL_W},           // pad col, row 0
-        {STRUCT_TSWEAP, 1},                        // pad col, row 1
-        {STRUCT_TSWEAP, MAP_CELL_W + 1},           // pad col, front row (SE concrete)
-        {STRUCT_TSWEAP, MAP_CELL_W},               // front row, col 2 (door corridor)
+        // 5x3 (08-28 rebuild): centre = row 1 col 2. Walkable, never buildable:
+        // the front row's concrete (row 2, cols 1-4) and the east column (col 4, rows 0-1).
+        {STRUCT_TSWEAP, MAP_CELL_W - 1},
+        {STRUCT_TSWEAP, MAP_CELL_W},
+        {STRUCT_TSWEAP, MAP_CELL_W + 1},
+        {STRUCT_TSWEAP, MAP_CELL_W + 2},
+        {STRUCT_TSWEAP, 2 - MAP_CELL_W},
+        {STRUCT_TSWEAP, 2},
     };
 
     for (int i = 0; i < (int)(sizeof(_to_centre) / sizeof(_to_centre[0])); i++) {
@@ -5901,7 +6137,13 @@ int BuildingClass::Mission_Construction(void)
             // when more separated buildings land, this check stays as a
             // range comparison so we don't have to per-IniName special-
             // case here.
-            if (Class->Is_Tiberian_Era()) {
+            if (Class->Is_TS_Era()) {
+                /*
+                **	Tiberian Sun has no construction loop: the building slams down and then
+                **	rises in silence (OpenTS plays only a per-building AuxSound1 during the
+                **	buildup, which no TS structure defines). Deliberate quiet, not a gap.
+                */
+            } else if (Class->Is_Tiberian_Era()) {
                 Sound_Effect(VOC_TD_CONSTRUCTION, Coord);
             } else {
                 Sound_Effect(VOC_CONSTRUCTION, Coord);
@@ -6274,7 +6516,7 @@ int BuildingClass::Mission_Attack(void)
             if ((Class->IsPowered && House->Power_Fraction() < 1) || IsJammed) {
                 return (1);
             }
-            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+            if (!TF_SAM_Air_Target(TarCom)) {
                 Assign_Target(TARGET_NONE);
                 Status = SAM_READY;
                 Assign_Mission(MISSION_GUARD);
@@ -6296,7 +6538,7 @@ int BuildingClass::Mission_Attack(void)
         **	The launcher is in the process of firing.
         */
         case SAM_FIRING:
-            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+            if (!TF_SAM_Air_Target(TarCom)) {
                 Assign_Target(TARGET_NONE);
                 Status = SAM_READY;
             } else {
@@ -6367,7 +6609,7 @@ int BuildingClass::Mission_Attack(void)
         **	Target tracking — rotate to face TarCom.
         */
         case TDSAM_READY:
-            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+            if (!TF_SAM_Air_Target(TarCom)) {
                 // Smarter SAMs: volley still loaded (0 shots fired) -- look for another
                 // air target and stay up to engage it before retracting to reload.
                 if (TDSAM_Try_Reacquire()) {
@@ -6393,7 +6635,7 @@ int BuildingClass::Mission_Attack(void)
         **	First shot.
         */
         case TDSAM_FIRING:
-            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+            if (!TF_SAM_Air_Target(TarCom)) {
                 // Smarter SAMs: volley still loaded (0 shots fired) -- reacquire and
                 // re-rotate onto the new target rather than wasting the surface cycle.
                 if (TDSAM_Try_Reacquire()) {
@@ -6425,7 +6667,7 @@ int BuildingClass::Mission_Attack(void)
         **	Re-rotate after shot 1.
         */
         case TDSAM_READY2:
-            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+            if (!TF_SAM_Air_Target(TarCom)) {
                 // Smarter SAMs: one missile left in this volley -- reacquire another air
                 // target and stay up to spend it before retracting to reload.
                 if (TDSAM_Try_Reacquire()) {
@@ -6451,7 +6693,7 @@ int BuildingClass::Mission_Attack(void)
         **	Second shot — also Primary (TDSAM has no secondary weapon).
         */
         case TDSAM_FIRING2:
-            if (!Target_Legal(TarCom) || !Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->Height == 0) {
+            if (!TF_SAM_Air_Target(TarCom)) {
                 // Smarter SAMs: one missile left in this volley -- reacquire and re-rotate
                 // onto the new target rather than retracting with a shot still loaded.
                 if (TDSAM_Try_Reacquire()) {
@@ -6470,9 +6712,15 @@ int BuildingClass::Mission_Attack(void)
                         Status = TDSAM_READY2;
                     } else {
                         if (error == FIRE_OK) {
+                            /*
+                            **	The launcher stays up and keeps firing while it has an air
+                            **	target, so a site in a fight matches the other SAMs' rate of
+                            **	fire; READY turns it north and lowers it once nothing is
+                            **	left to shoot.
+                            */
                             Fire_At(TarCom, 0);
-                            Status = TDSAM_LOCKING;
-                            return (TICKS_PER_SECOND * 3);
+                            Status = TDSAM_READY;
+                            return (1);
                         }
                     }
                 }
@@ -6551,6 +6799,13 @@ int BuildingClass::Mission_Attack(void)
         break;
 
     case FIRE_OK:
+        /*
+        **	TS Limpet Mine: the shot is the drone leaping onto the vehicle, and the mine is spent.
+        */
+        if (TF_Limpet_Attach(this, primary)) {
+            delete this;
+            return (1);
+        }
         Fire_At(TarCom, primary);
         return (1);
 
@@ -7490,7 +7745,8 @@ void BuildingClass::Enter_Idle_Mode(bool initial)
     */
     MissionType mission = MISSION_GUARD;
 
-    if (!initial || ScenarioInit || Debug_Map) {
+    if (!initial || ScenarioInit || Debug_Map || TFPlugInstallInProgress) {
+        TFPlugInstallInProgress = false;
         Begin_Mode(BSTATE_IDLE);
         mission = MISSION_GUARD;
     } else {
@@ -7617,10 +7873,55 @@ void const* BuildingClass::Remap_Table(void)
  * HISTORY:                                                                                    *
  *   07/29/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
+/***********************************************************************************************
+ * TF_Limpet_Undeploy -- Packs a Limpet Mine back into its drone on the same cell.             *
+ *=============================================================================================*/
+static void TF_Limpet_Undeploy(BuildingClass* mine)
+{
+    CELL cell = Coord_Cell(mine->Coord);
+    fixed ratio = mine->Health_Ratio();
+    TARGET nav = mine->TFLimpetNav;
+    UnitClass* unit = new UnitClass(UNIT_TSLIMP, mine->House->Class->House);
+    if (unit == NULL) {
+        return;
+    }
+    mine->Limbo();
+    if (unit->Unlimbo(Cell_Coord(cell), DIR_N)) {
+        unit->Strength = max(1, (int)(unit->Class->MaxStrength * ratio));
+        if (Target_Legal(nav)) {
+            unit->Assign_Mission(MISSION_MOVE);
+            unit->Assign_Destination(nav);
+        } else {
+            unit->Assign_Mission(MISSION_GUARD);
+        }
+        delete mine;
+    } else {
+        delete unit;
+        mine->Unlimbo(Cell_Coord(cell), DIR_N);
+    }
+}
+
 int BuildingClass::Mission_Unload(void)
 {
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
+
+    /*
+    **	TS Limpet Mine: the deploy order runs the build-up backwards, then packs the mine into its drone.
+    */
+    if (*this == STRUCT_TSDLIMP) {
+        if (Status == 0) {
+            Do_Uncloak();
+            Begin_Mode(BSTATE_CONSTRUCTION);
+            IsReadyToCommence = false;
+            Status = 1;
+            return (1);
+        }
+        if (IsReadyToCommence) {
+            TF_Limpet_Undeploy(this);
+        }
+        return (1);
+    }
 
     /*
     **  STRUCT_TDWEAP routes to a verbatim port of TD's BuildingClass::
@@ -7642,12 +7943,13 @@ int BuildingClass::Mission_Unload(void)
     */
     if (*this == STRUCT_TSWEAP) {
         /*
-        **	The handover cell is pinned to the pad corner the exit track is
-        **	authored into (the sheet's tile 13) -- the WEAP pattern:
-        **	CLEAR_BIB below scatters loiterers off it rather than routing
-        **	around them, and the freed unit vacates it via rally/scatter.
+        **	TS's factory cycle (OpenTS Do_MISSION_UNLOAD): open the shutter, keep
+        **	the exit cell clear, when the shutter is fully up put the vehicle on a
+        **	rail from its mouth seat straight out onto the exit cell, wait until
+        **	it has untethered, shut the door, idle.
         */
-        CELL cell = Coord_Cell(Coord) + (2 * MAP_CELL_W + 3); // XYCELL(3, 2) -- TSWEAP exit-track destination (generator-checked)
+        CELL cell = Coord_Cell(Coord) + (2 * MAP_CELL_W + 4); // XYCELL(4, 2): the pad's SE corner; ~SE of the mouth seat.
+                                                              // The rail ends on its centre, clear of the near face's lip.
         COORDINATE coord = Cell_Coord(cell);
         CellClass* cellptr = &Map[cell];
         enum
@@ -7661,13 +7963,9 @@ int BuildingClass::Mission_Unload(void)
         enum
         {
             DOOR_STAGES = 9,
-            // Ticks per stage. TS spreads its shutter over nine stages where
-            // RA's factory uses five, so RA's rate of 8 would take almost
-            // twice as long to open.
-            DOOR_RATE = 4
+            DOOR_RATE = 4 // ticks per stage: nine TS stages in the time RA's five take
         };
         UnitClass* unit;
-
         switch (Status) {
         case INITIAL:
             unit = (UnitClass*)Contact_With_Whom();
@@ -7678,10 +7976,6 @@ int BuildingClass::Mission_Unload(void)
             Open_Door(DOOR_RATE, DOOR_STAGES);
             Status = CLEAR_BIB;
             break;
-
-        /*
-        **	Warn anything loitering in the doorway to move aside.
-        */
         case CLEAR_BIB:
             if (cellptr != NULL && cellptr->Cell_Techno()) {
                 cellptr->Incoming(0, true, true);
@@ -7695,7 +7989,6 @@ int BuildingClass::Mission_Unload(void)
                 Status = OPEN;
             }
             break;
-
         case OPEN:
             if (Is_Door_Open()) {
                 unit = (UnitClass*)Contact_With_Whom();
@@ -7706,16 +7999,11 @@ int BuildingClass::Mission_Unload(void)
                         unit->ArchiveTarget = ::As_Target(House->Where_To_Go(unit));
                     }
                     /*
-                    **	Sort clamp for the whole rail: 64 leptons under the hangar
-                    **	overlay's south-edge key (+128), leaving headroom below it
-                    **	for the unit's sub-object draws (turret, shadow).
+                    **	No sort clamp on the rail: the near face has no pixels along
+                    **	the exit path below the awning, and a pinned key put the unit
+                    **	under the front-row pad tile (08-29 cast: cut by a cell edge).
                     */
-                    unit->TsExitSortClamp = Coord_Add(Sort_Y(), XY_Coord(0, 64));
-                    unit->Force_Track((*unit == UNIT_TSTITN)
-                                          ? DriveClass::OUT_OF_WEAPON_FACTORY_TS_TITAN
-                                          : DriveClass::OUT_OF_WEAPON_FACTORY_TS,
-                                      coord);
-                    unit->Set_Speed(128);
+                    unit->Rail_To(coord, Desired_Facing256(Coord_X(unit->Coord), Coord_Y(unit->Coord), Coord_X(coord), Coord_Y(coord)));
                     Status = LEAVE;
                 } else {
                     Close_Door(DOOR_RATE, DOOR_STAGES);
@@ -7723,29 +8011,22 @@ int BuildingClass::Mission_Unload(void)
                 }
             }
             break;
-
-        /*
-        **	Hold the shutter up until the vehicle is out from under it.
-        */
         case LEAVE:
             if (!IsTethered) {
                 Close_Door(DOOR_RATE, DOOR_STAGES);
                 Status = CLOSE;
             }
             break;
-
         case CLOSE:
             if (Is_Door_Closed()) {
                 Enter_Idle_Mode();
             }
             break;
-
         default:
             break;
         }
         return (MissionControl[Mission].Normal_Delay() + Random_Pick(0, 2));
     }
-
     if (*this == STRUCT_WEAP || *this == STRUCT_AWEAP || *this == STRUCT_SWEAP) {
         CELL cell = Coord_Cell(Coord) + Class->ExitList[0];
         COORDINATE coord = Cell_Coord(cell);
@@ -7997,10 +8278,97 @@ int BuildingClass::Power_Output(void) const
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
-    if (Class->Power) {
-        return (Class->Power * fixed(LastStrength, Class->MaxStrength));
+    int power = Class->Power + Upgrade_Power();
+    if (power) {
+        return (power * fixed(LastStrength, Class->MaxStrength));
     }
     return (0);
+}
+
+/*
+**	Total Power contributed by installed addon plugs (TS upgrades). Scales with
+**	the host's health via Power_Output like the building's own Power.
+*/
+int BuildingClass::Upgrade_Power(void) const
+{
+    int power = 0;
+    for (int i = 0; i < UpgradeLevel; i++) {
+        if (UpgradeTypes[i] != STRUCT_NONE) {
+            power += BuildingTypeClass::As_Reference(UpgradeTypes[i]).Power;
+        }
+    }
+    return (power);
+}
+
+/*
+**	Total power Drain of installed addon plugs. Rides the host at every
+**	Adjust_Drain site (open, limbo, capture) so plug drain lives and dies
+**	with its host exactly as the host's own drain does.
+*/
+int BuildingClass::Upgrade_Drain(void) const
+{
+    int drain = 0;
+    for (int i = 0; i < UpgradeLevel; i++) {
+        if (UpgradeTypes[i] != STRUCT_NONE) {
+            drain += BuildingTypeClass::As_Reference(UpgradeTypes[i]).Drain;
+        }
+    }
+    return (drain);
+}
+
+/*
+**	Selling a building also refunds the addon plugs installed in it, each at
+**	the same sell-back rate as the building itself.
+*/
+int BuildingClass::Refund_Amount(void) const
+{
+    int refund = TechnoClass::Refund_Amount();
+    if (Class->PowersUpBuilding == STRUCT_TSCTWR) {
+        int cost = BuildingTypeClass::As_Reference(STRUCT_TSCTWR).Raw_Cost() * House->CostBias;
+        if (House->IsHuman) {
+            cost = cost * Rule.RefundPercent;
+        }
+        refund += cost;
+    }
+    for (int i = 0; i < UpgradeLevel; i++) {
+        if (UpgradeTypes[i] != STRUCT_NONE) {
+            int cost = BuildingTypeClass::As_Reference(UpgradeTypes[i]).Raw_Cost() * House->CostBias;
+            if (House->IsHuman) {
+                cost = cost * Rule.RefundPercent;
+            }
+            refund += cost;
+        }
+    }
+    return (refund);
+}
+
+/*
+**	Would placing the given addon plug on this building install it here? True
+**	only for the plug's host type, same owner, with a free addon slot.
+**	(TS BuildingClass::Can_Upgrade.)
+*/
+bool BuildingClass::Can_Upgrade(BuildingTypeClass const* plug, HouseClass const* house) const
+{
+    if (plug == NULL || house != House) {
+        return (false);
+    }
+    if (plug->PowersUpBuilding == STRUCT_NONE || plug->PowersUpBuilding != Class->Type) {
+        return (false);
+    }
+    /*
+    **	One of each for SUPERWEAPON plugs: a second uplink adds nothing (the
+    **	special is house-level) and would waste a slot. Deviation from TS,
+    **	which allows duplicates (Luke, 2026-08-31). Resource plugs stack —
+    **	the power plant takes two turbines by design.
+    */
+    if (plug->Type == STRUCT_TSPION || plug->Type == STRUCT_TSPODS || plug->Type == STRUCT_TSSEEK) {
+        for (int i = 0; i < UpgradeLevel; i++) {
+            if (UpgradeTypes[i] == plug->Type) {
+                return (false);
+            }
+        }
+    }
+    return (UpgradeLevel < Class->UpgradesMax);
 }
 
 /***********************************************************************************************
@@ -8098,6 +8466,13 @@ InfantryType BuildingClass::Crew_Type(void) const
     */
     if (Class->IniName[0] == 'T' && Class->IniName[1] == 'D') {
         return (INFANTRY_TDE1);
+    }
+
+    /*
+    **	Every TS building's survivor is the TS rifleman, as TD's is the minigunner.
+    */
+    if (Class->IniName[0] == 'T' && Class->IniName[1] == 'S') {
+        return (INFANTRY_TSE1);
     }
     return (TechnoClass::Crew_Type());
 }
@@ -8634,6 +9009,13 @@ void BuildingClass::Factory_AI(void)
         TechnoClass* product = Factory->Get_Object();
         //		FactoryClass * fact = Factory;
 
+        /*
+        **	An addon plug deletes itself as it installs into its host, so what the product is
+        **	has to be read before it leaves the factory.
+        */
+        RTTIType product_rtti = product->What_Am_I();
+        StructType product_struct = (product_rtti == RTTI_BUILDING) ? ((BuildingClass*)product)->Class->Type : STRUCT_NONE;
+
         switch (Exit_Object(product)) {
 
         /*
@@ -8660,7 +9042,7 @@ void BuildingClass::Factory_AI(void)
         **	tracking logic that the requested object has been produced.
         */
         case 2:
-            switch (product->What_Am_I()) {
+            switch (product_rtti) {
             case RTTI_VESSEL:
                 House->JustBuiltVessel = ((VesselClass*)product)->Class->Type;
                 House->IsBuiltSomething = true;
@@ -8677,7 +9059,7 @@ void BuildingClass::Factory_AI(void)
                 break;
 
             case RTTI_BUILDING:
-                House->JustBuiltStructure = ((BuildingClass*)product)->Class->Type;
+                House->JustBuiltStructure = product_struct;
                 House->IsBuiltSomething = true;
                 break;
 
@@ -8826,6 +9208,21 @@ void BuildingClass::Factory_AI(void)
                         bool strip_host = (*this == STRUCT_AIRSTRIP || *this == STRUCT_TDAFLD
                                            || *this == STRUCT_TDGAFLD);
                         if (fixed_wing != strip_host) {
+                            techno = NULL;
+                        }
+                    }
+
+                    /*
+                    **	The dropship bay builds its deliveries and nothing else, and nothing
+                    **	else builds them (the Who_Can_Build_Me pairing); nor does it take an
+                    **	order it would refuse while reloading or with the Mk. II allowance in
+                    **	use. The house-level suggestion does not know which factory is asking,
+                    **	so the wrong one declines and leaves the order for the other.
+                    */
+                    if (techno != NULL && Class->ToBuild == RTTI_UNITTYPE) {
+                        UnitTypeClass const* ut = (UnitTypeClass const*)techno;
+                        if (TF_Is_Dropship_Delivered(ut) != (*this == STRUCT_TSDROP)
+                            || TF_Delivery_Order_Refused(House, RTTI_UNITTYPE, ut->Type)) {
                             techno = NULL;
                         }
                     }

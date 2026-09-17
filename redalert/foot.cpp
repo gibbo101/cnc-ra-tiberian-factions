@@ -817,6 +817,7 @@ int FootClass::Mission_Hunt(void)
         if (What_Am_I() == RTTI_INFANTRY
             && (((InfantryTypeClass const&)Class_Of()).Type == INFANTRY_RENOVATOR
                 || ((InfantryTypeClass const&)Class_Of()).Type == INFANTRY_TDE6 // TF: GDI/Nod engineer
+                || ((InfantryTypeClass const&)Class_Of()).Type == INFANTRY_TSENGINEER // TF: TS engineer
                 || ((InfantryTypeClass const&)Class_Of()).Type == INFANTRY_THIEF)) {
             Assign_Destination(TarCom);
             Assign_Mission(MISSION_CAPTURE);
@@ -1002,7 +1003,20 @@ void FootClass::Approach_Target(void)
         int maxrange = Weapon_Range(primary);
         //		int maxrange = max(Weapon_Range(0), Weapon_Range(1));
 
-        if (!Target_Legal(NavCom) && (!In_Range(TarCom, primary) || !IsLocked)) {
+        /*
+        **	A weapon with a minimum range (TS artillery) cannot shoot a target standing on top
+        **	of it, so a target inside that range sends the unit looking for a cell as surely as
+        **	one out of reach does, and the sweep below only accepts cells beyond it.
+        */
+        TechnoTypeClass const& ttype = *Techno_Type_Class();
+        WeaponTypeClass const* weap = (primary == 1) ? ttype.SecondaryWeapon : ttype.PrimaryWeapon;
+        int minrange = (weap != NULL) ? (int)weap->MinRange : 0;
+        if (minrange > 0) {
+            minrange += CELL_LEPTON_W / 2;
+        }
+
+        if (!Target_Legal(NavCom)
+            && (!In_Range(TarCom, primary) || (minrange > 0 && Distance(TarCom) < minrange) || !IsLocked)) {
             //		if (!Target_Legal(NavCom) && (Distance(TarCom) > maxrange || !IsLocked)) {
 
             /*
@@ -1043,13 +1057,13 @@ void FootClass::Approach_Target(void)
             **	be found, then the target will be assigned as the movement destination
             **	and let "the chips fall where they may."
             */
-            for (int range = maxrange; range > 0x0080; range -= 0x0100) {
+            for (int range = maxrange; range > max(0x0080, minrange); range -= 0x0100) {
                 static int _angles[] = {0, 8, -8, 16, -16, 24, -24, 32, -32, 48, -48, 64, -64};
 
                 for (int index = 0; index < (sizeof(_angles) / sizeof(_angles[0])); index++) {
                     trycoord = Coord_Move(tcoord, (DirType)(dir + _angles[index]), range);
 
-                    if (::Distance(trycoord, tcoord) < range) {
+                    if (::Distance(trycoord, tcoord) < range && ::Distance(trycoord, tcoord) >= minrange) {
                         trycell = Coord_Cell(trycoord);
                         if (Map.In_Radar(trycell)
                             && Map[trycell].Is_Clear_To_Move(Techno_Type_Class()->Speed,
@@ -1488,7 +1502,17 @@ void FootClass::Active_Click_With(ActionType action, CELL cell)
             ** off the edge of the map.
             */
             CellClass const* cellptr = &Map[::As_Cell(::As_Target(Center_Coord()))];
-            if (What_Am_I() != RTTI_AIRCRAFT) {
+            if (What_Am_I() == RTTI_INFANTRY && ((InfantryClass*)this)->Is_Jumpjet()) {
+
+                /*
+                **	A jumpjet goes wherever it is sent, flying if it cannot walk there (TS moves
+                **	it anywhere): only a cell it cannot stand on is swapped for the nearest one
+                **	it can, in any zone.
+                */
+                if (action == ACTION_NOMOVE) {
+                    cell = Map.Nearby_Location(cell, Techno_Type_Class()->Speed, -1, Techno_Type_Class()->MZone);
+                }
+            } else if (What_Am_I() != RTTI_AIRCRAFT) {
 
                 if (Can_Enter_Cell(Coord_Cell(Center_Coord())) == MOVE_OK) {
                     cell = Map.Nearby_Location(cell,

@@ -2,15 +2,15 @@
 
 **PROVEN on the Steam Deck, 2026-05-29** — placed the `COMMAND & CONQUER` logo into the in-game radar-slot faction crest, vanilla, no EMC.
 
-Companion to `config-meg-mod-delivery.md`: that doc is the front-end **data** lever (CONFIG.MEG → factions/missions/text); this is the **image** lever for the **in-game** UI. ⚠ **Scope:** the loose atlas override is honored by the **in-game** renderer only — the front-end shell ignores it (see the SCOPE note below + `front-end-texture-meg-spike.md`). So: in-game images via this loose override; front-end *data* via CONFIG.MEG; front-end *pixels* are not mod-deliverable.
+Companion to `config-meg-mod-delivery.md`: that doc is the front-end **data** lever (CONFIG.MEG → factions/missions/text); this is the **image** lever for the UI — **both in-game and front-end (scope re-corrected 2026-08-30)**. The shell (main menu, skirmish lobby, faction picker) renders the loose atlas AND loose standalone `Data/ART/TEXTURES/SRGB/*.DDS` screens — proven live via Reilsss CnCinRA (custom lobby picker icons verified at the `_03`–`_10` regions inside its loose atlas). The 05-29 "in-game only" scope limit came from a repaint test whose failure cause was never identified (likely a stale deployed copy); md5-verify the deployed atlas before judging any repaint. Detail: `front-end-texture-meg-spike.md`.
 
 ---
 
 ## TL;DR
 
-The Remastered launcher draws almost all 2D UI from one giant texture atlas — **`MT_COMMANDBAR_COMMON.TGA`** (6871×6716, 32-bit, in `TEXTURES_SRGB.MEG`) — with a sibling **`.MTD`** mapping `region-name → (x,y,w,h)`. **A mod ships a byte-edited copy of that `.TGA` loose in `Data/ART/TEXTURES/SRGB/` and the launcher loads it over the base.** Vanilla. No EMC. No `.MTD`/`.MTM` companions needed.
+The Remastered launcher draws almost all 2D UI from one giant texture atlas — **`MT_COMMANDBAR_COMMON.TGA`** (6871×6716, 32-bit, in `TEXTURES_SRGB.MEG`) — with a sibling **`.MTD`** mapping `region-name → (x,y,w,h)`. **A mod ships a byte-edited copy of that `.TGA` loose in `Data/ART/TEXTURES/SRGB/` and the launcher loads it over the base.** Vanilla. No EMC. No `.MTD`/`.MTM` companions needed — and none honored: a loose `.MTD` with altered region coords is IGNORED (probed live 2026-08-30, coord-swapped picker flags unchanged in the lobby). Region GEOMETRY is launcher-owned; only region PIXELS are moddable, and art must fit the stock region boxes.
 
-> ⚠️ **SCOPE (corrected 2026-05-29): this loose override is honored by the IN-GAME renderer only** (the sidebar/radar crest — that's what's PROVEN here). The **front-end shell** (main menu, skirmish lobby, faction picker) does **NOT** read the loose overlay — it renders from the base MEG. Confirmed: a loose atlas with the picker flags repainted never changed after a full restart. Front-end picker icons are instead repointed via `FACTIONS.XML`→`SmallIconName` (in CONFIG.MEG — see `config-meg-mod-delivery.md`), and that only resolves to the `UI_Multiplayer_PlayerSlot_Faction_NN` regions the front-end preloads (any other region → startup crash). Getting *custom pixels* into the front-end needs a MEG-delivery route — see **`front-end-texture-meg-spike.md`**.
+> **SCOPE (re-corrected 2026-08-30): the loose override reaches BOTH the in-game renderer AND the front-end shell.** Proven live on the desktop: Reilsss CnCinRA's loose atlas renders its custom picker icons in the skirmish lobby, and its standalone loose DDS render the main menu. The 05-29 "in-game only" limit was a bad test (repainted flags, no change after restart — the edited file most likely never reached the game; md5-verify the deployed atlas before judging a repaint). Two levers combine for the picker: `FACTIONS.XML`→`SmallIconName` (CONFIG.MEG) picks WHICH region — still only the preloaded `UI_Multiplayer_PlayerSlot_Faction_NN` regions, any other region → startup crash — and the loose atlas repaint controls that region's PIXELS (include the `_ON`/`_OVER` variants). See **`front-end-texture-meg-spike.md`** for the full 2026-08-30 result.
 
 ---
 
@@ -27,7 +27,7 @@ The Remastered launcher draws almost all 2D UI from one giant texture atlas — 
 
 | UI element | Region(s) | Keying |
 |---|---|---|
-| **In-game sidebar / radar faction crest** | **`UI_SIDEBAR_FACTIONLOGO_ALLIES` / `_SOVIET`** (794×713) | **per-SIDE** → faction-neutral only |
+| **In-game sidebar / radar faction crest** | **`UI_SIDEBAR_FACTIONLOGO_ALLIES` / `_SOVIET`** (794×713) | per-SIDE in data; **per-FACTION via the DLL RAM patch** (`radar-crest-ram-spike.md`, 2026-09-02) |
 | Lobby faction-pick big logo | `RA_UI_MULTIPLAYER_ALLIED/SOVIET_LOGO_LARGE_NORMAL`/`_HOVER`/`_SELECTED` (309–311) | per-side |
 | Lobby / player-list flag icon | `RA_UI_FLAG_ICON_<COUNTRY>` (SPAIN, TURKEY, … 73×40) | **per-COUNTRY** |
 | Small player-list logo | `RA_UI_ALLIED/SOVIET_LOGO_SMALL` | per-side |
@@ -37,7 +37,7 @@ We burned ~an afternoon editing `RA_UI_MULTIPLAYER_ALLIED_LOGO_LARGE_*` (the **l
 Native `UI_SIDEBAR_FACTIONLOGO_GDI`/`_NOD`/`_DINO` regions exist (Tiberian Dawn), but the RA launcher picks `ALLIES`/`SOVIET` for RA players, so they aren't auto-shown in RA.
 
 **Per-side vs per-country is the design constraint:**
-- In-game crest is **per-SIDE** → editing it is **faction-neutral** (hits everyone on that side). Great for "one logo for all" (we put the C&C logo). Can't be "GDI's logo only" in-game.
+- In-game crest is **per-SIDE on the data side** (the pixels you paint here are what Allied/Soviet see). GDI and Nod get the TD eagle/scorpion because the DLL re-points the launcher's cached region record at runtime — `radar-crest-ram-spike.md`. Both RA sides draw the ALLIES region for GDI *and* Nod.
 - Flags are **per-COUNTRY** → `RA_UI_FLAG_ICON_SPAIN`→GDI and `_TURKEY`→Nod are **Allied-safe** (England/USSR keep theirs). This is the clean lever for per-faction identity on the faction-SELECT screen.
 
 ---

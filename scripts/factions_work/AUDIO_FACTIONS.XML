@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+
+<AudioSystemFile>
+
+	<Faction>
+	</Faction>
+
+	<!-- Empty entries needed for observer and replays -->
+	<Faction Name="Replay">
+	</Faction>
+	<Faction Name="Random">
+	</Faction>
+
+	<!-- ************************************************************ FACTION 1 ************************************************************ -->
+
+	<Faction Name="Faction1">
+
+		<!-- We are not using these for C&C TD / RA, since we need to account for each game and SFX asset mode (Classic or Remastered) -->
+
+		<SFXMap>
+		</SFXMap>
+
+		<MusicMap>
+		</MusicMap>
+
+		<SpeechMap>
+		</SpeechMap>
+
+		<HUDVoicePitchPercent> 1.0 </HUDVoicePitchPercent>
+
+	</Faction>
+
+</AudioSystemFile>

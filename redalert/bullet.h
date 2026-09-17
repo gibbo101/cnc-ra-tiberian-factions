@@ -72,10 +72,49 @@ public:
     int TFStage;
     int TFDwell;
     int TFUnloaded;
+    /*
+    **	TSPODDROP: the house the pod's trooper belongs to (the pod has no
+    **	Payback techno — the granting plug never exists on the map), and the
+    **	compass direction the pod slides in from. HOUSE_NONE / DIR_N and
+    **	unused for every other bullet type.
+    */
+    HousesType TFPodHouse;
+    DirType TFPodApproach;
+    InfantryType TFPodType;
+    /*
+    **	TSLOBBED: how many times the disc has touched down; it goes off on the third.
+    **	Zero and unused for every other bullet type.
+    */
+    int TFBounces;
+    /*
+    **	TSLOBBED: the disc flies on TS's own ballistic step, so it carries a velocity in
+    **	leptons per frame and a position to fractions of a lepton (X and Y across the map, Z
+    **	above the ground); Coord and Height are the whole-lepton parts. Zero and unused for
+    **	every other bullet type.
+    */
+    double TFVelX;
+    double TFVelY;
+    double TFVelZ;
+    double TFPosX;
+    double TFPosY;
+    double TFPosZ;
     enum
     {
         TF_POD_CEILING = 1280,       // spawn altitude in leptons (5 cells of descent)
-        TF_POD_DEPART_CEILING = 2560 // the climb-out runs twice as high before the ship vanishes (Luke, 2026-08-13)
+        TF_POD_DEPART_CEILING = 2560, // the climb-out runs twice as high before the ship vanishes (Luke, 2026-08-13)
+
+        /*
+        **	TSPODDROP (the infantry drop pod, TS RULES.INI ground truth):
+        **	DropPodHeight=2000 leptons of altitude; DropPodSpeed=75 along the
+        **	0.79-rad slope splits ~53/53 leptons per frame horizontal/vertical
+        **	(cos/sin 0.79), a ~38-frame fall. Strafe damage deviates from TS
+        **	(Vulcan2 50, doubled): halved after play — five pods' combined
+        **	bursts were one-shotting power plants and barracks (Luke,
+        **	2026-08-31). The SA warhead keeps the ring lethal to infantry.
+        */
+        TF_POD_DROP_HEIGHT = 2000,
+        TF_POD_FALL_SPEED = 53,
+        TF_POD_STRAFE_DAMAGE = 25
     };
     /*---------------------------------------------------------------------
     **	Constructors, Destructors, and overloaded operators.
@@ -117,6 +156,8 @@ public:
 
     bool Is_Forced_To_Explode(COORDINATE& coord) const;
     void Bullet_Explodes(bool forced);
+    bool TS_Disc_Launch(COORDINATE coord);
+    void TS_Disc_AI(void);
     int Shape_Number(void) const;
     virtual LayerType In_Which_Layer(void) const;
     virtual COORDINATE Sort_Y(void) const;

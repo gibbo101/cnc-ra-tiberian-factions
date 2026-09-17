@@ -761,6 +761,17 @@ public:
     int Drain;
 
     /*
+    **	TS building-addon support (TS PowersUpBuilding=/Upgrades=). A type whose
+    **	PowersUpBuilding names another building type is a plug: it is built like
+    **	any building but never unlimbos onto the map — placing it on a matching
+    **	host installs it there (see BuildingClass::Unlimbo), adding its Power to
+    **	the host's output. UpgradesMax on the HOST type is how many plugs it
+    **	accepts. Plugs live and die with their host and refund on its sale.
+    */
+    StructType PowersUpBuilding;
+    int UpgradesMax;
+
+    /*
     **	This is the size of the building. This size value is a rough indication
     **	of the building's "footprint".
     */
@@ -881,6 +892,7 @@ public:
     **	one? Drives the TD construction and place-down audio.
     */
     bool Is_Tiberian_Era(void) const;
+    bool Is_TS_Era(void) const;
 
     virtual int Full_Name(void) const;
     virtual bool Read_INI(CCINIClass& ini);
@@ -928,6 +940,10 @@ public:
     **  borrowing another factory's overlay draws the door at its size.
     */
     static void const* WarFactoryOverlayTs;
+    static void const* TsWeapShutter;
+    static void const* TsWeapUnderDoor;
+    static void const* TsWeapFront;
+    static void const* TsWeapFrontOpen;
     static void const* TsRefineryFlame;
     static void const* TsPulseTurret; // TS EMP cannon PULSCAN layer (TSPULST.SHP stub, 32 facings)
     static void const* TsRefineryLid;
@@ -1025,6 +1041,16 @@ public:
     */
     int WalkFrames = 1;
     int WalkFacings = 32;
+    /*
+    **  Tiberian Factions -- TS DeployToFire (the Juggernaut). The unit walks with no gun,
+    **  sets down through DeployFrames of ladder art to fire from a fixed stance with a
+    **  turning turret, and packs up again before it moves. The tileset carries the walk
+    **  blocks, then 32 deployed facings, then the ladder. Parsed from `DeployToFire=` /
+    **  `DeployFrames=` / `DeployRate=` in rules.ini.
+    */
+    bool IsDeployToFire = false;
+    int DeployFrames = 0;
+    int DeployRate = 2;
 
     /*
     **  Tiberian Factions — TS walker firing animation (art.ini FiringFrames).
@@ -1318,6 +1344,12 @@ public:
     **	civilians as well as the flame thrower guys.
     */
     unsigned IsFraidyCat : 1;
+
+    /*
+    **	Tiberian Factions: a fearless soldier is never frightened by damage, so it never drops
+    **	prone (TS [Infantry] Fearless).
+    */
+    unsigned IsFearless : 1;
 
     /*
     **	This flags whether this infantry is actually a civilian. A

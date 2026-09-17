@@ -1602,6 +1602,74 @@ static UnitTypeClass const UnitTsTitn(UNIT_TSTITN,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
+// TS Juggernaut (UNIT_TSJUGG), Firestorm rules [JUGG]: a walker that sets down to fire
+// (DeployToFire) three arcing 90mm shells at long range. Art = JUGGER.SHP walk frames
+// (8 facings x 15) + the deployed DJUGG base with DJUGG_A turret facings and the
+// DJUGGBAR voxel barrels composited (scripts/ts_pack_jugg.py) + the DJUGGMK deploy ladder.
+// The turret is baked into the deployed frames, so IsTurretEquipped only drives the
+// turret facing; UnitClass::Draw_It skips the turret draw for DeployToFire units.
+static UnitTypeClass const UnitTsJugg(UNIT_TSJUGG,
+                                      TXT_LTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                      "TSJUGG",     // NAME: IniName.
+                                      ANIM_FBALL1,  // EXPLOSION: big fireball (TS TWLT070-scale death).
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0030,       // Vertical offset.
+                                      0x0000,       // Primary weapon offset (the shells leave the deployed turret centre).
+                                      0x0000,       // Primary weapon lateral offset.
+                                      0x0000,       // Secondary weapon offset (no secondary).
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      true,         // Can this be a goodie surprise from a crate? (TS CrateGoodie=yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (TS Crusher=yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      true,         // Is it equipped with a combat turret? (the deployed turret turns)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline (baked into the art).
+                                      MISSION_HUNT  // ORDERS: Default order.
+);
+
+// TS Limpet Drone (UNIT_TSLIMP), Firestorm rules [LIMPET]. Unarmed hover crawler
+// that deploys (unit.cpp Try_To_Deploy) into the cloaked STRUCT_TSDLIMP mine on
+// its own cell. Art = LIMPED.SHP, a ten-frame crawl cycle drawn by Shape_Number
+// with no facings (scripts/ts_pack_limpet.py). Classic = transparent 24x24 stub.
+static UnitTypeClass const UnitTsLimp(UNIT_TSLIMP,
+                                      TXT_LTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                      "TSLIMP",     // NAME: IniName.
+                                      ANIM_FRAG1,   // EXPLOSION: light-vehicle frag.
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0000,       // Vertical offset.
+                                      0x0000,       // Primary weapon offset (unarmed).
+                                      0x0000,       // Primary weapon lateral offset.
+                                      0x0000,       // Secondary weapon offset (no secondary).
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      false,        // Can this be a goodie surprise from a crate? (TS CrateGoodie=no)
+                                      false,        // Always use the given name for the vehicle?
+                                      false,        // Can this unit squash infantry? (TS Crusher=no)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      false,        // Is it equipped with a combat turret?
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages (the art has none; the locomotor still turns).
+                                      0,            // Turret center offset along body centerline.
+                                      MISSION_GUARD // ORDERS: Default order.
+);
+
 // TS Mammoth Mk. II (UNIT_TSHMEC), TS rules [HMEC]. GDI-only, NO rotating
 // turret (the twin railguns are hull-fixed — the walker turns to fire, which
 // is also what makes the railgun line-shot read correctly). Primary =
@@ -1742,6 +1810,41 @@ static UnitTypeClass const UnitTsSonic(UNIT_TSSONIC,
                                        32,           // Rotation stages.
                                        0,            // Turret center offset along body centerline (TS art TurretOffset=-64 is baked centered; the field is unused by the RA draw path).
                                        MISSION_HUNT  // ORDERS: Default order.
+);
+
+// The old TS Mammoth Tank (UNIT_TS4TNK), TS rules [4TNK] (TechLevel -1 in TS, crate-only;
+// buildable here). Turreted twin 120mmx cannon + MammothTusk AA missiles, self-healing
+// (rules.ini). TS: Strength=600, Armor=heavy, Sight=6, Speed=4, Cost=1700, Points=60,
+// ROT=5, Crusher=yes, CrateGoodie=yes. Art = 4TNK.VXL hull 0-31 + 4TNKTUR with 4TNKBARL
+// turret 32-63; no TurretOffset in TS art, so hull and turret share the voxel origin.
+// Weapon offsets start from the TD Mammoth's twin-barrel geometry.
+static UnitTypeClass const UnitTs4tnk(UNIT_TS4TNK,
+                                      TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                      "TS4TNK",     // NAME: IniName.
+                                      ANIM_ART_EXP1,// EXPLOSION: big fragment explosion.
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0020,       // Vertical offset.
+                                      0x00C0,       // Primary weapon offset along turret centerline.
+                                      0x0028,       // Primary weapon lateral offset (twin barrels alternate).
+                                      0x0008,       // Secondary weapon offset along turret centerline.
+                                      0x0040,       // Secondary weapon lateral offset (tusk pods).
+                                      true,         // Can this be a goodie surprise from a crate? (TS CrateGoodie=yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (TS Crusher=yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      true,         // Is it equipped with a combat turret? (TS Turret=yes)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline.
+                                      MISSION_HUNT  // ORDERS: Default order.
 );
 
 // TS Amphibious APC (UNIT_TSAPC), TS rules [APC]. Unarmed hover transport —
@@ -2141,6 +2244,9 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTsMdiv);    // UNIT_TSMDIV (Mech Division token)
     new UnitTypeClass(UnitTsSubTank); // UNIT_TSSUBTANK (Devil's Tongue)
     new UnitTypeClass(UnitTsSapc);    // UNIT_TSSAPC (Subterranean APC)
+    new UnitTypeClass(UnitTs4tnk);    // UNIT_TS4TNK (the old TS Mammoth Tank)
+    new UnitTypeClass(UnitTsJugg);    // UNIT_TSJUGG (Juggernaut)
+    new UnitTypeClass(UnitTsLimp);    // UNIT_TSLIMP (Limpet Drone)
 }
 
 /***********************************************************************************************
@@ -2312,6 +2418,7 @@ void UnitTypeClass::One_Time(void)
             {UNIT_TSHVR, UNIT_MTANK2},
             {UNIT_TSTITN, UNIT_MTANK2},
             {UNIT_TSHMEC, UNIT_HTANK},
+            {UNIT_TS4TNK, UNIT_HTANK}, // the old TS Mammoth Tank: HD voxel art under TS4TNK keys
             {UNIT_AMCV, UNIT_MCV},
             {UNIT_SMCV, UNIT_MCV},
             {UNIT_TDGMCV, UNIT_TDMCV},
@@ -2634,6 +2741,9 @@ bool UnitTypeClass::Read_INI(CCINIClass& ini)
         IsNoFireWhileMoving = ini.Get_Bool(IniName, "NoMovingFire", IsNoFireWhileMoving);
         WalkFrames = ini.Get_Int(IniName, "WalkFrames", WalkFrames);
         WalkFacings = ini.Get_Int(IniName, "WalkFacings", WalkFacings);
+        IsDeployToFire = ini.Get_Bool(IniName, "DeployToFire", IsDeployToFire);
+        DeployFrames = ini.Get_Int(IniName, "DeployFrames", DeployFrames);
+        DeployRate = max(1, ini.Get_Int(IniName, "DeployRate", DeployRate));
         FiringFrames = ini.Get_Int(IniName, "FiringFrames", FiringFrames);
         WalkRate = max(1, ini.Get_Int(IniName, "WalkRate", WalkRate));
         Speed = ini.Get_Bool(IniName, "Tracked", (Speed == SPEED_TRACK)) ? SPEED_TRACK : SPEED_WHEEL;

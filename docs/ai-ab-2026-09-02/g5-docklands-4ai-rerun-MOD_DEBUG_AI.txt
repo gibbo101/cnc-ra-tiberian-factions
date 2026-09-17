@@ -1,0 +1,2021 @@
+CNC_Set_Multiplayer_Data: scenario=0 num_players=5
+  slot[0] Name='76561198002612215' House=8 Color=0 Team=0 StartLoc=0 IsAI=0 GlyphxID=76561198002612215 AllyFlags=00000000
+  slot[0] NameHex=37363536313139383030323631323231350000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  slot[1] Name='AIPLAYER1' House=3 Color=1 Team=1 StartLoc=1 IsAI=1 GlyphxID=1055504538 AllyFlags=00000000
+  slot[1] NameHex=4149504c415945523100323631323231350000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  slot[2] Name='AIPLAYER2' House=2 Color=2 Team=2 StartLoc=2 IsAI=1 GlyphxID=2816534816 AllyFlags=00000000
+  slot[2] NameHex=4149504c415945523200323631323231350000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  slot[3] Name='AIPLAYER3' House=8 Color=3 Team=3 StartLoc=7 IsAI=1 GlyphxID=3504855478 AllyFlags=00000000
+  slot[3] NameHex=4149504c415945523300323631323231350000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+  slot[4] Name='AIPLAYER4' House=9 Color=4 Team=4 StartLoc=6 IsAI=1 GlyphxID=1317227541 AllyFlags=00000000
+  slot[4] NameHex=4149504c415945523400323631323231350000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+=== TF_AI_DIAG v3 (build-choice pool) ===
+  LOBBYREC k=0 n=1 team=1 diff=3 color=1 house=5 expect_color=1 expect_house=3 -> accept
+  LOBBYREC k=1 n=2 team=2 diff=3 color=2 house=4 expect_color=2 expect_house=2 -> accept
+  LOBBYREC k=2 n=3 team=3 diff=3 color=3 house=2 expect_color=3 expect_house=0 -> accept
+  LOBBYREC k=3 n=4 team=4 diff=3 color=4 house=3 expect_color=4 expect_house=1 -> accept
+  LOBBYREC k=0 n=1 team=1 diff=3 color=1 house=5 expect_color=1 expect_house=3 -> accept
+  LOBBYREC k=1 n=2 team=2 diff=3 color=2 house=4 expect_color=2 expect_house=2 -> accept
+  LOBBYREC k=2 n=3 team=3 diff=3 color=3 house=2 expect_color=3 expect_house=0 -> accept
+  LOBBYREC k=3 n=4 team=4 diff=3 color=4 house=3 expect_color=4 expect_house=1 -> accept
+  LOBBYSCAN site=1 frame=0 procs=1/1 sighits=2 best_count=4 ambiguous=0 roster=0000001e
+  LOBBYCAND site=1 count=2 disagree=0 roster=0000001e frame=0
+  CAND a=0 addr=11501cb8 region=113d2000/1848K prot=4 diff=3333 refs=-1 refwin=-1 base=00000000 vecref=-1 ntrip=0
+    PRE 00000000131b3deb00000000000000000000000000000000000000000000005e
+    REC0 4149504c4159455231007f0070f399024cbe950010d6ae110000000090193c110200000010c0a644247b8811f17a88116cf39902dcf399027091ad01ffffffffb4ff3ed536ff33c300000000000000000100000005000000000000000100000000ff2d9303000000010000000000000001000000002d66430000000000000000ff3f0000d8a4986a000000001bf7206400000000000000000000000000000000000000000000005a
+    REC1 4149504c4159455232007f0070f399024cbe950010d6ae110000000090193c110200000010c0a644247b8811f17a88116cf39902dcf399027091ad01ffffffffb4ff47d83dff52f000000000000000000200000004000000000000000100000000ff1a3a03000000020000000000000002000000302d66430000000000000000ff3f0000d8a4986a000000003bff37dc00000000000000000000000000000000000000000000008d
+  CAND a=1 addr=2fa558b8 region=2f9c6000/704K prot=4 diff=3333 refs=-1 refwin=-1 base=00000000 vecref=-1 ntrip=0
+    PRE 0000000000000000000000000000000000000000000000000000000000000000
+    REC0 4149504c4159455231007f0070f399024cbe950010d6ae110000000090193c110200000010c0a644247b8811f17a88116cf39902dcf399027091ad01ffffffffb4000000000000009ab8e93e0000000001000000050000000000000001000000000000000300000001000000000000000100000070f677490000000000000000ff3f0000d8a4986a0000000000000000000000000000000000000000000000000000000000000000
+    REC1 4149504c4159455232007f0070f399024cbe950010d6ae110000000090193c110200000010c0a644247b8811f17a88116cf39902dcf399027091ad01ffffffffb40000000000000020e9e0a70000000002000000040000000000000001000000000000000300000002000000000000000200000080c2e6450000000000000000ff3f0000d8a4986a0000000000000000000000000000000000000000000000000000000000000000
+  TEAMS slot=0 house=H12 team=0 allyslots=01
+  TEAMS slot=1 house=H13 team=1 allyslots=02
+  TEAMS slot=2 house=H14 team=2 allyslots=04
+  TEAMS slot=3 house=H15 team=3 allyslots=08
+  TEAMS slot=4 house=H16 team=4 allyslots=10
+  LOBBYREC k=0 n=1 team=1 diff=3 color=1 house=5 expect_color=1 expect_house=3 -> accept
+  LOBBYREC k=1 n=2 team=2 diff=3 color=2 house=4 expect_color=2 expect_house=2 -> accept
+  LOBBYREC k=2 n=3 team=3 diff=3 color=3 house=2 expect_color=3 expect_house=0 -> accept
+  LOBBYREC k=3 n=4 team=4 diff=3 color=4 house=3 expect_color=4 expect_house=1 -> accept
+  LOBBYREC k=0 n=1 team=1 diff=3 color=1 house=5 expect_color=1 expect_house=3 -> accept
+  LOBBYREC k=1 n=2 team=2 diff=3 color=2 house=4 expect_color=2 expect_house=2 -> accept
+  LOBBYREC k=2 n=3 team=3 diff=3 color=3 house=2 expect_color=3 expect_house=0 -> accept
+  LOBBYREC k=3 n=4 team=4 diff=3 color=4 house=3 expect_color=4 expect_house=1 -> accept
+  LOBBYSCAN site=0 frame=0 procs=1/1 sighits=2 best_count=4 ambiguous=0 roster=0000001e
+  LOBBYCAND site=0 count=2 disagree=0 roster=0000001e frame=0
+  CAND a=0 addr=11501cb8 region=113d2000/1848K prot=4 diff=3333 refs=-1 refwin=-1 base=00000000 vecref=-1 ntrip=0
+    PRE 00000000131b3deb00000000000000000000000000000000000000000000005e
+    REC0 4149504c4159455231007f0070f399024cbe950010d6ae110000000090193c110200000010c0a644247b8811f17a88116cf39902dcf399027091ad01ffffffffb4ff3ed536ff33c300000000000000000100000005000000000000000100000000ff2d9303000000010000000000000001000000002d66430000000000000000ff3f0000d8a4986a000000001bf7206400000000000000000000000000000000000000000000005a
+    REC1 4149504c4159455232007f0070f399024cbe950010d6ae110000000090193c110200000010c0a644247b8811f17a88116cf39902dcf399027091ad01ffffffffb4ff47d83dff52f000000000000000000200000004000000000000000100000000ff1a3a03000000020000000000000002000000302d66430000000000000000ff3f0000d8a4986a000000003bff37dc00000000000000000000000000000000000000000000008d
+  CAND a=1 addr=2fa558b8 region=2f9c6000/704K prot=4 diff=3333 refs=-1 refwin=-1 base=00000000 vecref=-1 ntrip=0
+    PRE 0000000000000000000000000000000000000000000000000000000000000000
+    REC0 4149504c4159455231007f0070f399024cbe950010d6ae110000000090193c110200000010c0a644247b8811f17a88116cf39902dcf399027091ad01ffffffffb4000000000000009ab8e93e0000000001000000050000000000000001000000000000000300000001000000000000000100000070f677490000000000000000ff3f0000d8a4986a0000000000000000000000000000000000000000000000000000000000000000
+    REC1 4149504c4159455232007f0070f399024cbe950010d6ae110000000090193c110200000010c0a644247b8811f17a88116cf39902dcf399027091ad01ffffffffb40000000000000020e9e0a70000000002000000040000000000000001000000000000000300000002000000000000000200000080c2e6450000000000000000ff3f0000d8a4986a0000000000000000000000000000000000000000000000000000000000000000
+HELLO IM H13 (ActLike=3) IN HARD MODE (IQ=5) [slot 1] rec_house=5 rec_color=1 ours_color=1
+HELLO IM H14 (ActLike=2) IN HARD MODE (IQ=5) [slot 2] rec_house=4 rec_color=2 ours_color=2
+HELLO IM H15 (ActLike=8) IN HARD MODE (IQ=5) [slot 3] rec_house=2 rec_color=3 ours_color=3
+HELLO IM H16 (ActLike=9) IN HARD MODE (IQ=5) [slot 4] rec_house=3 rec_color=4 ours_color=4
+CNC_Set_Difficulty(1) -> CDifficulty=2 IQ=5 humans=1 source=default-hard (client value ignored) ram_slots=4 s1=3 s2=3 s3=3 s4=3 (AI houses retro-applied)
+NAVAL-CENSUS wzones=3 z1=2499 z2=19 z3=54
+F0 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(3,34) wzones=3
+F0 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(37,35) wzones=3
+F0 H15 AL8 base=1 Tech=13 $10000 Pow=0 Drain=0 PF<1=0 CurB=0 Rad=0 hasinc=0 refQ=0 harvQ=0 tibShort=0 ABScan=00000000 | ROLE yard=0/0 weap=0/0 barr=0/0 hpad=0/0 fix=0/0 | TDPROC(cb=0,q=0) TDHAND(cb=0,q=0) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=0,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F0 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(25,77) wzones=3
+F0 H15 AL8 POOL(0): -> none
+F0 H16 AL9 base=1 Tech=13 $10000 Pow=0 Drain=0 PF<1=0 CurB=0 Rad=0 hasinc=0 refQ=0 harvQ=0 tibShort=0 ABScan=00000000 | ROLE yard=0/0 weap=0/0 barr=0/0 hpad=0/0 fix=0/0 | TDPROC(cb=0,q=0) TDHAND(cb=0,q=0) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=0,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F0 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(57,78) wzones=3
+F0 H16 AL9 POOL(0): -> none
+F67 H13 AL3 POOL(1): POWR(u1) -> WIN POWR(u1 aged=0)
+F67 H16 AL9 POOL(1): TDNUKE(u1) -> WIN TDNUKE(u1 aged=0)
+F68 H15 AL8 POOL(1): TDNUKE(u1) -> WIN TDNUKE(u1 aged=0)
+F69 H14 AL2 POOL(1): POWR(u1) -> WIN POWR(u1 aged=0)
+F100 H14 AL2 PROD start POWR (cat=6) at factory SFACT#3
+F100 H14 AL2 POOL(1): POWR(u1) -> WIN POWR(u1 aged=0)
+F101 H13 AL3 PROD start POWR (cat=6) at factory AFACT#0
+F101 H13 AL3 POOL(1): POWR(u1) -> WIN POWR(u1 aged=0)
+F131 H16 AL9 PROD start TDNUKE (cat=6) at factory TDNFACT#1
+F131 H16 AL9 POOL(1): TDNUKE(u1) -> WIN TDNUKE(u1 aged=0)
+F132 H15 AL8 PROD start TDNUKE (cat=6) at factory TDGFACT#2
+F132 H15 AL8 POOL(1): TDNUKE(u1) -> WIN TDNUKE(u1 aged=0)
+F317 H14 AL2 PROD start POWR (cat=6) at factory SFACT#3
+F317 H14 AL2 POOL(2): PROC(u3) BARR(u2) -> WIN PROC(u3 aged=0)
+F318 H13 AL3 PROD start POWR (cat=6) at factory AFACT#0
+F318 H13 AL3 POOL(2): PROC(u3) TENT(u2) -> WIN PROC(u3 aged=0)
+F402 H16 AL9 PROD start TDNUKE (cat=6) at factory TDNFACT#1
+F402 H16 AL9 POOL(2): TDPROC(u3) TDHAND(u2) -> WIN TDPROC(u3 aged=0)
+F403 H15 AL8 PROD start TDNUKE (cat=6) at factory TDGFACT#2
+F403 H15 AL8 POOL(2): TDPROC(u3) TDPYLE(u2) -> WIN TDPROC(u3 aged=0)
+F534 H14 AL2 PROD start PROC (cat=6) at factory SFACT#3
+F534 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(37,34) wzones=3
+F534 H14 AL2 POOL(1): BARR(u2) -> WIN BARR(u2 aged=0)
+F535 H13 AL3 PROD start PROC (cat=6) at factory AFACT#0
+F535 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(3,36) wzones=3
+F535 H13 AL3 POOL(1): TENT(u2) -> WIN TENT(u2 aged=0)
+F673 H16 AL9 PROD start TDPROC (cat=6) at factory TDNFACT#1
+F673 H16 AL9 base=1 Tech=13 $9400 Pow=200 Drain=0 PF<1=0 CurB=4 Rad=818 hasinc=0 refQ=1 harvQ=0 tibShort=0 ABScan=00000800 | ROLE yard=1/1 weap=0/0 barr=0/0 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=1) TDHAND(cb=1,q=0) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F673 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(59,78) wzones=3
+F673 H16 AL9 POOL(1): TDHAND(u2) -> WIN TDHAND(u2 aged=0)
+F674 H15 AL8 PROD start TDPROC (cat=6) at factory TDGFACT#2
+F674 H15 AL8 base=1 Tech=13 $9400 Pow=200 Drain=0 PF<1=0 CurB=4 Rad=665 hasinc=0 refQ=1 harvQ=0 tibShort=0 ABScan=00000800 | ROLE yard=1/1 weap=0/0 barr=0/0 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=1) TDHAND(cb=0,q=0) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F674 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(26,77) wzones=3
+F674 H15 AL8 POOL(1): TDPYLE(u2) -> WIN TDPYLE(u2 aged=0)
+F1268 H16 AL9 PROD start TDHAND (cat=6) at factory TDNFACT#1
+F1268 H16 AL9 base=1 Tech=13 $7400 Pow=200 Drain=40 PF<1=0 CurB=5 Rad=985 hasinc=1 refQ=1 harvQ=1 tibShort=0 ABScan=00001800 | ROLE yard=1/1 weap=0/0 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=1) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F1268 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(57,77) wzones=3
+F1268 H16 AL9 POOL(1): TDAFLD(u2) -> WIN TDAFLD(u2 aged=0)
+F1269 H15 AL8 PROD start TDPYLE (cat=6) at factory TDGFACT#2
+F1269 H15 AL8 base=1 Tech=13 $7400 Pow=200 Drain=40 PF<1=0 CurB=5 Rad=941 hasinc=1 refQ=1 harvQ=1 tibShort=0 ABScan=00001800 | ROLE yard=1/1 weap=0/0 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=1) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F1269 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(24,78) wzones=3
+F1269 H15 AL8 POOL(1): TDWEAP(u2) -> WIN TDWEAP(u2 aged=0)
+F1539 H16 AL9 PROD start TDAFLD (cat=6) at factory TDNFACT#1
+F1539 H16 AL9 POOL(2): TDGUN(u3) TDNHPAD(u1) -> WIN TDGUN(u3 aged=0)
+F1540 H15 AL8 PROD start TDWEAP (cat=6) at factory TDGFACT#2
+F1540 H15 AL8 POOL(2): TDGTWR(u3) TDGHPAD(u1) -> WIN TDGTWR(u3 aged=0)
+F1577 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F1578 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F1686 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F1687 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F1734 H16 AL9 SCOUT-DISPATCH infantry TDE4#0
+F1736 H16 AL9 SCOUT rtti=13 id=0 IQ=5 from=10424 dest=9881
+F1743 H15 AL8 SCOUT-DISPATCH infantry TDE2#1
+F1795 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F1891 H16 AL9 SCOUT-DISPATCH infantry TDE4#2
+F1893 H16 AL9 SCOUT rtti=13 id=2 IQ=5 from=10424 dest=7641
+F1904 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F1904 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F1909 H16 AL9 SCOUT rtti=13 id=2 IQ=5 from=10424 dest=4517
+F1939 H14 AL2 PROD start BARR (cat=6) at factory SFACT#3
+F1939 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(40,34) wzones=3
+F1939 H14 AL2 POOL(1): SWEAP(u2) -> WIN SWEAP(u2 aged=0)
+F1940 H13 AL3 PROD start TENT (cat=6) at factory AFACT#0
+F1940 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(4,35) wzones=3
+F1940 H13 AL3 POOL(1): AWEAP(u2) -> WIN AWEAP(u2 aged=0)
+F1972 H15 AL8 SCOUT-DISPATCH infantry TDE3#3
+F2013 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F2013 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F2122 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F2122 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F2122 H16 AL9 ECO-HOLD infantry ref=1/1 harv=1/2 $6944
+F2156 H14 AL2 PROD start SWEAP (cat=6) at factory SFACT#3
+F2156 H14 AL2 POOL(2): KENN(u2) FTUR(u3) -> WIN FTUR(u3 aged=0)
+F2157 H13 AL3 PROD start AWEAP (cat=6) at factory AFACT#0
+F2157 H13 AL3 POOL(1): GUN(u3) -> WIN GUN(u3 aged=0)
+F2204 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F2205 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F2224 H15 AL8 SCOUT rtti=13 id=3 IQ=5 from=11030 dest=10041
+F2231 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F2231 H15 AL8 ECO-HOLD infantry ref=1/1 harv=1/2 $6890
+F2260 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F2283 H13 AL3 SCOUT-DISPATCH infantry E1#12
+F2313 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F2379 H14 AL2 SCOUT-DISPATCH infantry E2#11
+F2422 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F2426 H13 AL3 SCOUT rtti=13 id=12 IQ=5 from=5637 dest=4517
+F2459 H14 AL2 SCOUT-DISPATCH infantry E2#15
+F2477 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F2477 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F2523 H13 AL3 SCOUT-DISPATCH infantry E3#14
+F2532 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F2554 H14 AL2 SCOUT rtti=13 id=11 IQ=5 from=5281 dest=4355
+F2641 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F2641 H14 AL2 ECO-HOLD infantry ref=1/2 harv=1/2 $6875
+F2647 H14 AL2 SCOUT rtti=13 id=15 IQ=5 from=4768 dest=9881
+F2694 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F2701 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F2701 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F2701 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F2735 H13 AL3 SCOUT rtti=13 id=14 IQ=5 from=4610 dest=9881
+F2749 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F2839 H15 AL8 WAVE-SHUFFLE (nothing sent) why=no-factory army=7 floor=10 ceiling=26 value=1260 floorvalue=8000 ceilingvalue=18000 iq=5 defences=0 sendpercent=80 forced=0
+F2966 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F3022 H16 AL9 ECO-HOLD infantry ref=1/2 harv=1/2 $7094
+F3030 H14 AL2 SCOUT rtti=13 id=11 IQ=5 from=6677 dest=10041
+F3064 H13 AL3 SCOUT-DISPATCH infantry E3#18
+F3131 H15 AL8 ECO-HOLD infantry ref=1/2 harv=1/2 $5820
+F3183 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F3238 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F3238 H13 AL3 ECO-HOLD infantry ref=1/2 harv=1/2 $4056
+F3313 H15 AL8 WAVE-SHUFFLE (nothing sent) why=no-factory army=7 floor=10 ceiling=26 value=1260 floorvalue=8000 ceilingvalue=18000 iq=5 defences=0 sendpercent=80 forced=0
+F3500 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F3538 H16 AL9 PROD start TDGUN (cat=6) at factory TDNFACT#1
+F3538 H16 AL9 base=1 Tech=13 $6536 Pow=200 Drain=90 PF<1=0 CurB=7 Rad=980 hasinc=1 refQ=1 harvQ=1 tibShort=0 ABScan=00211800 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=1) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F3538 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(58,78) wzones=3
+F3538 H16 AL9 POOL(4): TDPROC(u3) TDHAND(u1) TDFBNK(u3) TDNHPAD(u1) -> WIN TDPROC(u3 aged=0)
+F3539 H15 AL8 PROD start TDGTWR (cat=6) at factory TDGFACT#2
+F3539 H15 AL8 base=1 Tech=13 $5940 Pow=200 Drain=90 PF<1=0 CurB=7 Rad=871 hasinc=1 refQ=1 harvQ=1 tibShort=0 ABScan=00201804 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=1) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F3539 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(25,79) wzones=3
+F3539 H15 AL8 POOL(4): TDPROC(u3) TDPYLE(u1) TDGTWR(u3) TDGHPAD(u1) -> WIN TDPROC(u3 aged=0)
+F3541 H14 AL2 ECO-HOLD infantry ref=1/2 harv=1/2 $6785
+F3541 H16 AL9 SCOUT-DISPATCH infantry TDE4#4
+F3561 H14 AL2 PROD start FTUR (cat=6) at factory SFACT#3
+F3561 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(39,35) wzones=3
+F3561 H14 AL2 POOL(5): PROC(u3) BARR(u1) KENN(u2) FTUR(u3) TSLA(u2) -> WIN PROC(u3 aged=0)
+F3562 H13 AL3 PROD start GUN (cat=6) at factory AFACT#0
+F3562 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(5,37) wzones=3
+F3562 H13 AL3 POOL(3): PROC(u3) TENT(u1) PBOX(u3) -> WIN PROC(u3 aged=0)
+F3564 H16 AL9 PROD start TDHARV (cat=29) at factory TDAFLD#18
+F3577 H15 AL8 PROD start TDHARV (cat=29) at factory TDWEAP#19
+F3601 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F3601 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F3601 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F3603 H14 AL2 PROD start HARV (cat=29) at factory SWEAP#22
+F3604 H13 AL3 PROD start HARV (cat=29) at factory AWEAP#23
+F3609 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F3732 H15 AL8 SCOUT rtti=13 id=3 IQ=5 from=9871 dest=4355
+F3732 H15 AL8 SCOUT rtti=13 id=10 IQ=5 from=10393 dest=4517
+F3744 H15 AL8 SCOUT rtti=13 id=1 IQ=5 from=9877 dest=7641
+F3745 H15 AL8 SCOUT rtti=13 id=6 IQ=5 from=10392 dest=11761
+F3795 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=7 floor=10 ceiling=26 value=1260 floorvalue=8000 ceilingvalue=18000 iq=5 defences=0 sendpercent=80 forced=0
+F3818 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F3826 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F3922 H16 AL9 ECO-HOLD infantry ref=1/2 harv=2/2 $5332
+F3994 H14 AL2 PROD start PROC (cat=6) at factory SFACT#3
+F3994 H14 AL2 POOL(7): BARR(u1) KENN(u2) DOME(u2) FIX(u2) FTUR(u3) TSLA(u2) SPEN(u2) -> WIN FTUR(u3 aged=0)
+F4026 H15 AL8 PROD start TDPROC (cat=6) at factory TDGFACT#2
+F4026 H15 AL8 base=1 Tech=13 $4216 Pow=200 Drain=100 PF<1=0 CurB=8 Rad=972 hasinc=1 refQ=2 harvQ=2 tibShort=0 ABScan=00201804 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=2) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F4026 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(25,80) wzones=3
+F4026 H15 AL8 POOL(6): TDPYLE(u1) TDHQ(u2) TDFIX(u3) TDGTWR(u3) TDGHPAD(u2) TDGYARD(u2) -> WIN TDFIX(u3 aged=0)
+F4035 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F4090 H15 AL8 SCOUT rtti=13 id=10 IQ=5 from=9877 dest=7536
+F4091 H15 AL8 SCOUT rtti=13 id=1 IQ=5 from=9749 dest=4857
+F4093 H15 AL8 SCOUT rtti=13 id=6 IQ=5 from=10129 dest=10041
+F4095 H15 AL8 SCOUT rtti=13 id=3 IQ=5 from=9873 dest=4355
+F4100 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F4103 H13 AL3 PROD start PROC (cat=6) at factory AFACT#0
+F4103 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(5,37) wzones=3
+F4103 H13 AL3 POOL(4): TENT(u1) DOME(u2) FIX(u2) GUN(u3) -> WIN GUN(u3 aged=0)
+F4133 H16 AL9 PROD start TDPROC (cat=6) at factory TDNFACT#1
+F4133 H16 AL9 base=1 Tech=13 $5369 Pow=200 Drain=110 PF<1=0 CurB=8 Rad=897 hasinc=1 refQ=2 harvQ=2 tibShort=0 ABScan=00211800 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=2) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F4133 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(58,78) wzones=3
+F4133 H16 AL9 POOL(6): TDHAND(u1) TDHQ(u2) TDFIX(u2) TDFBNK(u3) TDNHPAD(u2) TDNPEN(u2) -> WIN TDFBNK(u3 aged=0)
+F4138 H13 AL3 ECO-HOLD infantry ref=2/2 harv=2/4 $2309
+F4144 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F4150 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F4162 H13 AL3 SCOUT rtti=13 id=18 IQ=5 from=7835 dest=10041
+F4166 H16 AL9 SCOUT rtti=13 id=7 IQ=5 from=10297 dest=11761
+F4166 H16 AL9 SCOUT rtti=13 id=22 IQ=5 from=10297 dest=7536
+F4181 H16 AL9 SCOUT rtti=13 id=22 IQ=5 from=10297 dest=4355
+F4182 H16 AL9 SCOUT rtti=13 id=7 IQ=5 from=10297 dest=4857
+F4209 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F4259 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F4274 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=10 floor=10 ceiling=26 value=2020 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F4361 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F4408 H15 AL8 SCOUT rtti=13 id=3 IQ=5 from=9867 dest=4517
+F4415 H13 AL3 SCOUT-DISPATCH infantry E1#21
+F4417 H15 AL8 SCOUT rtti=13 id=1 IQ=5 from=9867 dest=7641
+F4417 H15 AL8 SCOUT rtti=13 id=6 IQ=5 from=9610 dest=11761
+F4419 H15 AL8 SCOUT rtti=13 id=10 IQ=5 from=9738 dest=7536
+F4422 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F4433 H15 AL8 SCOUT rtti=13 id=1 IQ=5 from=9867 dest=4857
+F4433 H15 AL8 SCOUT rtti=13 id=6 IQ=5 from=9610 dest=10041
+F4433 H15 AL8 SCOUT rtti=13 id=10 IQ=5 from=9738 dest=4355
+F4440 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=8 floor=10 ceiling=26 value=1040 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F4441 H14 AL2 ECO-HOLD infantry ref=2/2 harv=2/4 $4522
+F4448 H15 AL8 SCOUT rtti=13 id=1 IQ=5 from=9867 dest=4517
+F4476 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F4501 H14 AL2 PROD start E6 (cat=14) at factory BARR#20
+F4537 H16 AL9 PROD start TDARTY (cat=29) at factory TDAFLD#18
+F4550 H15 AL8 PROD start TDJEEP (cat=29) at factory TDWEAP#19
+F4576 H14 AL2 PROD start 3TNK (cat=29) at factory SWEAP#22
+F4577 H13 AL3 PROD start ARTY (cat=29) at factory AWEAP#23
+F4621 H15 AL8 PROD start TDFIX (cat=6) at factory TDGFACT#2
+F4621 H15 AL8 base=1 Tech=13 $1413 Pow=200 Drain=140 PF<1=0 CurB=9 Rad=1160 hasinc=1 refQ=2 harvQ=3 tibShort=0 ABScan=00201804 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=2) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F4621 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(23,80) wzones=3
+F4621 H15 AL8 POOL(6): TDPYLE(u1) TDHQ(u2) TDGTWR(u3) TDHQ(u3) TDGHPAD(u2) TDGYARD(u2) -> WIN TDGTWR(u3 aged=0)
+F4693 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F4728 H16 AL9 PROD start TDFBNK (cat=6) at factory TDNFACT#1
+F4728 H16 AL9 base=1 Tech=13 $1759 Pow=200 Drain=150 PF<1=0 CurB=9 Rad=917 hasinc=1 refQ=2 harvQ=3 tibShort=0 ABScan=00211800 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=2) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F4728 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(59,77) wzones=3
+F4728 H16 AL9 POOL(7): TDNUK2(u2) TDHAND(u1) TDHQ(u2) TDFIX(u2) TDGUN(u2) TDNHPAD(u2) TDNPEN(u2) -> WIN TDNUK2(u2 aged=0)
+F4747 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=12 floor=10 ceiling=26 value=2480 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F4821 H15 AL8 PROD start TDHARV (cat=29) at factory TDWEAP#19
+F4862 H16 AL9 PROD start TDHARV (cat=29) at factory TDAFLD#18
+F4921 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=8 floor=10 ceiling=26 value=1040 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F4942 H15 AL8 SCOUT rtti=13 id=3 IQ=5 from=8973 dest=7641
+F4945 H15 AL8 SCOUT rtti=13 id=1 IQ=5 from=8718 dest=11761
+F4957 H15 AL8 SCOUT rtti=13 id=3 IQ=5 from=8973 dest=7536
+F4959 H15 AL8 SCOUT rtti=13 id=1 IQ=5 from=8718 dest=4355
+F4971 H15 AL8 SCOUT rtti=13 id=3 IQ=5 from=8973 dest=10041
+F5113 H15 AL8 SCOUT rtti=13 id=10 IQ=5 from=7178 dest=4857
+F5129 H13 AL3 PROD start E6 (cat=14) at factory TENT#21
+F5129 H15 AL8 SCOUT rtti=13 id=10 IQ=5 from=7178 dest=4517
+F5135 H13 AL3 SCOUT-DISPATCH infantry E3#25
+F5181 H13 AL3 PROD start HARV (cat=29) at factory AWEAP#23
+F5215 H16 AL9 PROD start TDNUK2 (cat=6) at factory TDNFACT#1
+F5215 H16 AL9 base=1 Tech=13 $1023 Pow=200 Drain=165 PF<1=0 CurB=10 Rad=986 hasinc=1 refQ=2 harvQ=4 tibShort=0 ABScan=00211800 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=2) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=1) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F5215 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(59,78) wzones=3
+F5215 H16 AL9 POOL(7): TDNUK2(u2) TDHAND(u1) TDHQ(u2) TDFIX(u2) TDGUN(u2) TDNHPAD(u2) TDNPEN(u2) -> WIN TDNUK2(u2 aged=0)
+F5225 H14 AL2 PROD start HARV (cat=29) at factory SWEAP#22
+F5226 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=12 floor=10 ceiling=26 value=2720 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F5341 H14 AL2 ECO-HOLD infantry ref=2/2 harv=3/4 $1985
+F5399 H14 AL2 PROD start FTUR (cat=6) at factory SFACT#3
+F5399 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(38,37) wzones=3
+F5399 H14 AL2 POOL(8): BARR(u1) KENN(u2) DOME(u2) FIX(u2) FTUR(u2) DOME(u3) TSLA(u2) SPEN(u2) -> WIN DOME(u3 aged=0)
+F5403 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=9 floor=10 ceiling=26 value=1990 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F5450 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=7 floor=10 ceiling=26 value=1800 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F5700 H15 AL8 SCOUT-DISPATCH unit TDJEEP#11
+F5700 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=10 floor=10 ceiling=26 value=2400 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F5810 H15 AL8 PROD start TDGTWR (cat=6) at factory TDGFACT#2
+F5810 H15 AL8 base=1 Tech=13 $1386 Pow=200 Drain=170 PF<1=0 CurB=10 Rad=1302 hasinc=1 refQ=2 harvQ=4 tibShort=0 ABScan=01201804 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=2) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F5810 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(23,79) wzones=3
+F5810 H15 AL8 POOL(7): TDNUK2(u2) TDPROC(u3) TDPYLE(u1) TDHQ(u2) TDGTWR(u2) TDGHPAD(u2) TDGYARD(u2) -> WIN TDPROC(u3 aged=0)
+F5811 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F5812 H15 AL8 PROD start TDMTNK (cat=29) at factory TDWEAP#19
+F5832 H14 AL2 PROD start DOME (cat=6) at factory SFACT#3
+F5832 H14 AL2 POOL(8): APWR(u2) PROC(u3) BARR(u1) KENN(u2) FIX(u2) FTUR(u2) TSLA(u2) SPEN(u2) -> WIN PROC(u3 aged=0)
+F5833 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F5835 H16 AL9 PROD start TDBGGY (cat=29) at factory TDAFLD#18
+F5864 H16 AL9 PROD start TDNUK2 (cat=6) at factory TDNFACT#1
+F5864 H16 AL9 base=1 Tech=13 $807 Pow=400 Drain=165 PF<1=0 CurB=11 Rad=1111 hasinc=1 refQ=2 harvQ=4 tibShort=0 ABScan=00211800 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=2) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F5864 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(58,78) wzones=3
+F5864 H16 AL9 POOL(8): TDPROC(u3) TDHAND(u1) TDAFLD(u1) TDHQ(u2) TDFIX(u2) TDGUN(u3) TDNHPAD(u2) TDNPEN(u2) -> WIN TDPROC(u3 aged=0)
+F5865 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F5878 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=9 floor=10 ceiling=26 value=1990 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F5920 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=7 floor=10 ceiling=26 value=1800 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F6052 H16 AL9 PROD start TDBGGY (cat=29) at factory TDAFLD#18
+F6121 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F6174 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=11 floor=10 ceiling=26 value=2500 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F6198 H14 AL2 PROD start HARV (cat=29) at factory SWEAP#22
+F6241 H14 AL2 ECO-HOLD infantry ref=2/3 harv=5/4 $296
+F6254 H14 AL2 SCOUT rtti=13 id=6 IQ=5 from=5287 dest=7641
+F6259 H14 AL2 SCOUT rtti=13 id=16 IQ=5 from=4515 dest=4857
+F6259 H14 AL2 SCOUT rtti=13 id=20 IQ=5 from=4647 dest=7536
+F6263 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F6269 H16 AL9 PROD start TDBGGY (cat=29) at factory TDAFLD#18
+F6297 H15 AL8 PROD start TDPROC (cat=6) at factory TDGFACT#2
+F6297 H15 AL8 base=1 Tech=13 $616 Pow=200 Drain=180 PF<1=0 CurB=11 Rad=1312 hasinc=1 refQ=3 harvQ=4 tibShort=0 ABScan=01201804 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=3) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F6297 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(23,79) wzones=3
+F6297 H15 AL8 POOL(8): TDNUK2(u2) TDPYLE(u1) TDWEAP(u1) TDHQ(u2) TDGTWR(u3) TDHQ(u3) TDGHPAD(u2) TDGYARD(u2) -> WIN TDGTWR(u3 aged=0)
+F6298 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F6352 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=10 floor=10 ceiling=26 value=2090 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F6353 H15 AL8 PROD start TDJEEP (cat=29) at factory TDWEAP#19
+F6394 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=7 floor=10 ceiling=26 value=1800 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F6535 H14 AL2 PROD start PROC (cat=6) at factory SFACT#3
+F6535 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(38,39) wzones=3
+F6535 H14 AL2 POOL(12): APWR(u2) BARR(u1) KENN(u2) SWEAP(u1) FIX(u2) FTUR(u3) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN FTUR(u3 aged=0)
+F6536 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F6624 H15 AL8 PROD start TDHARV (cat=29) at factory TDWEAP#19
+F6642 H16 AL9 PROD start TDBGGY (cat=29) at factory TDAFLD#18
+F6644 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=14 floor=10 ceiling=26 value=3860 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F6664 H13 AL3 SCOUT rtti=13 id=14 IQ=5 from=5385 dest=7641
+F6693 H16 AL9 PROD start TDPROC (cat=6) at factory TDNFACT#1
+F6693 H16 AL9 base=1 Tech=13 $57 Pow=600 Drain=165 PF<1=0 CurB=12 Rad=1244 hasinc=1 refQ=3 harvQ=4 tibShort=0 ABScan=00211800 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=3) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F6693 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(58,78) wzones=3
+F6693 H16 AL9 POOL(7): TDHAND(u1) TDAFLD(u1) TDHQ(u2) TDFIX(u2) TDGUN(u3) TDNHPAD(u2) TDNPEN(u2) -> WIN TDGUN(u3 aged=0)
+F6694 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F6723 H13 AL3 SCOUT rtti=13 id=14 IQ=5 from=5514 dest=7536
+F6723 H13 AL3 SCOUT rtti=28 id=13 IQ=5 from=8745 dest=11761
+F6739 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F6829 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=11 floor=10 ceiling=26 value=2190 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F6846 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F6867 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=7 floor=10 ceiling=26 value=1800 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F6892 H15 AL8 PROD start TDGTWR (cat=6) at factory TDGFACT#2
+F6892 H15 AL8 base=1 Tech=13 $29 Pow=200 Drain=220 PF<1=1 CurB=12 Rad=1499 hasinc=1 refQ=3 harvQ=6 tibShort=0 ABScan=01201804 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=3) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F6892 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(21,79) wzones=3
+F6892 H15 AL8 POOL(7): TDNUK2(u2) TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDHQ(u3) TDGHPAD(u2) TDGYARD(u2) -> WIN TDHQ(u3 aged=0)
+F6893 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F7007 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=14 floor=10 ceiling=26 value=3350 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F7091 H16 AL9 PROD start TDBGGY (cat=29) at factory TDAFLD#18
+F7112 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=13 floor=10 ceiling=26 value=3320 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F7141 H14 AL2 ECO-HOLD infantry ref=3/3 harv=5/6 $139
+F7279 H14 AL2 PROD start 3TNK (cat=29) at factory SWEAP#22
+F7298 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=11 floor=10 ceiling=26 value=2190 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F7325 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F7341 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=7 floor=10 ceiling=26 value=1500 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F7483 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=16 floor=10 ceiling=26 value=3850 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F7524 H16 AL9 PROD start TDHARV (cat=29) at factory TDAFLD#18
+F7589 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=14 floor=10 ceiling=26 value=3480 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F7685 H15 AL8 PROD start TDHQ (cat=6) at factory TDGFACT#2
+F7685 H15 AL8 base=1 Tech=13 $862 Pow=200 Drain=230 PF<1=1 CurB=13 Rad=1495 hasinc=1 refQ=3 harvQ=6 tibShort=0 ABScan=01201804 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=3) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=0) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F7685 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(22,79) wzones=3
+F7685 H15 AL8 POOL(6): TDNUK2(u2) TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDGHPAD(u2) TDGYARD(u2) -> WIN TDNUK2(u2 aged=0)
+F7686 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F7770 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=11 floor=10 ceiling=26 value=2190 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F7812 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=7 floor=10 ceiling=26 value=1500 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F7921 H15 AL8 PROD start TDHARV (cat=29) at factory TDWEAP#19
+F7940 H14 AL2 PROD start HARV (cat=29) at factory SWEAP#22
+F7952 H13 AL3 PROD start GUN (cat=6) at factory AFACT#0
+F7952 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(6,38) wzones=3
+F7952 H13 AL3 POOL(7): APWR(u2) PROC(u3) TENT(u1) DOME(u2) FIX(u2) PBOX(u2) DOME(u3) -> WIN PROC(u3 aged=0)
+F7953 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F7965 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=18 floor=10 ceiling=26 value=4450 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F7973 H15 AL8 SCOUT rtti=13 id=18 IQ=5 from=9998 dest=7641
+F7981 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F8018 H14 AL2 PROD start FTUR (cat=6) at factory SFACT#3
+F8018 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(38,41) wzones=3
+F8018 H14 AL2 POOL(9): APWR(u2) BARR(u1) KENN(u2) SWEAP(u1) FTUR(u2) SAM(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN APWR(u2 aged=0)
+F8036 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F8059 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=15 floor=10 ceiling=26 value=3640 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F8135 H16 AL9 PROD start TDGUN (cat=6) at factory TDNFACT#1
+F8135 H16 AL9 base=1 Tech=13 $71 Pow=600 Drain=205 PF<1=0 CurB=13 Rad=1413 hasinc=1 refQ=3 harvQ=6 tibShort=0 ABScan=00211800 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=3) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F8135 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(56,78) wzones=3
+F8135 H16 AL9 POOL(7): TDHAND(u1) TDAFLD(u1) TDHQ(u2) TDFIX(u2) TDFBNK(u2) TDNHPAD(u2) TDNPEN(u2) -> WIN TDHQ(u2 aged=0)
+F8136 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F8199 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F8244 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=11 floor=10 ceiling=26 value=2250 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F8288 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=8 floor=10 ceiling=26 value=1600 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F8437 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=18 floor=10 ceiling=26 value=4450 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F8530 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=15 floor=10 ceiling=26 value=3640 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F8658 H15 AL8 PROD start TDNUK2 (cat=6) at factory TDGFACT#2
+F8658 H15 AL8 base=1 Tech=13 $785 Pow=200 Drain=270 PF<1=1 CurB=14 Rad=1452 hasinc=1 refQ=3 harvQ=7 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=3) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=1) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F8658 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(22,79) wzones=3
+F8658 H15 AL8 POOL(7): TDNUK2(u2) TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDNUK2(u2 aged=0)
+F8659 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F8715 H14 AL2 PROD start APWR (cat=6) at factory SFACT#3
+F8715 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(38,41) wzones=3
+F8715 H14 AL2 POOL(8): APWR(u2) BARR(u1) KENN(u2) SWEAP(u1) FTUR(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN APWR(u2 aged=0)
+F8716 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F8719 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=12 floor=10 ceiling=26 value=2410 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F8761 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=8 floor=10 ceiling=26 value=1600 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F8894 H15 AL8 PROD start TDAPC (cat=29) at factory TDWEAP#19
+F8911 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=19 floor=10 ceiling=26 value=4750 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F8949 H14 AL2 PROD start V2RL (cat=29) at factory SWEAP#22
+F8999 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=16 floor=10 ceiling=26 value=3740 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F9027 H16 AL9 PROD start TDHQ (cat=6) at factory TDNFACT#1
+F9027 H16 AL9 base=1 Tech=13 $71 Pow=600 Drain=225 PF<1=0 CurB=14 Rad=1568 hasinc=1 refQ=3 harvQ=6 tibShort=0 ABScan=00211800 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=3) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F9027 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(56,77) wzones=3
+F9027 H16 AL9 POOL(7): TDPROC(u3) TDHAND(u1) TDAFLD(u1) TDFIX(u2) TDFBNK(u2) TDNHPAD(u2) TDNPEN(u2) -> WIN TDPROC(u3 aged=0)
+F9028 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F9028 H16 AL9 ECO-HOLD infantry ref=3/4 harv=6/6 $71
+F9046 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F9079 H16 AL9 PROD start TDHARV (cat=29) at factory TDAFLD#18
+F9200 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=13 floor=10 ceiling=26 value=2570 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F9239 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=8 floor=10 ceiling=26 value=1400 floorvalue=8000 ceilingvalue=18000 iq=5 defences=1 sendpercent=80 forced=0
+F9256 H14 AL2 PROD start APWR (cat=6) at factory SFACT#3
+F9256 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(38,40) wzones=3
+F9256 H14 AL2 POOL(12): PROC(u3) BARR(u1) KENN(u2) SWEAP(u1) FIX(u2) FTUR(u2) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN PROC(u3 aged=0)
+F9257 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F9257 H14 AL2 ECO-HOLD infantry ref=3/4 harv=7/6 $1736
+F9268 H13 AL3 PROD start HARV (cat=29) at factory AWEAP#23
+F9307 H15 AL8 PROD start TDNUK2 (cat=6) at factory TDGFACT#2
+F9307 H15 AL8 base=1 Tech=13 $1129 Pow=400 Drain=270 PF<1=0 CurB=15 Rad=1422 hasinc=1 refQ=3 harvQ=7 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=3) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F9307 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(22,79) wzones=3
+F9307 H15 AL8 POOL(9): TDPROC(u3) TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDPROC(u3 aged=0)
+F9308 H15 AL8 PROD start TDE6 (cat=14) at factory TDPYLE#17
+F9327 H15 AL8 ECO-HOLD infantry ref=3/4 harv=7/6 $1147
+F9379 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=20 floor=10 ceiling=26 value=4950 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F9381 H15 AL8 PROD start TDAPC (cat=29) at factory TDWEAP#19
+F9474 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=16 floor=10 ceiling=26 value=4280 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F9493 H13 AL3 PROD start PROC (cat=6) at factory AFACT#0
+F9493 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(6,38) wzones=3
+F9493 H13 AL3 POOL(5): APWR(u2) PROC(u3) TENT(u1) GUN(u2) DOME(u3) -> WIN PROC(u3 aged=0)
+F9494 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F9678 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=14 floor=10 ceiling=26 value=2670 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F9706 H14 AL2 PROD start 3TNK (cat=29) at factory SWEAP#22
+F9712 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=9 floor=10 ceiling=26 value=1500 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F9797 H14 AL2 PROD start PROC (cat=6) at factory SFACT#3
+F9797 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(37,40) wzones=3
+F9797 H14 AL2 POOL(11): BARR(u1) KENN(u2) SWEAP(u1) FIX(u2) FTUR(u2) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN KENN(u2 aged=0)
+F9851 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=20 floor=10 ceiling=26 value=4950 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F9868 H15 AL8 PROD start TDHTNK (cat=29) at factory TDWEAP#19
+F9901 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F9928 H16 AL9 ECO-HOLD infantry ref=3/4 harv=7/6 $4
+F9956 H15 AL8 PROD start TDPROC (cat=6) at factory TDGFACT#2
+F9956 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=18 floor=10 ceiling=26 value=5080 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F9956 H15 AL8 base=1 Tech=13 $1380 Pow=600 Drain=270 PF<1=0 CurB=16 Rad=1385 hasinc=1 refQ=4 harvQ=7 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F9956 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(22,79) wzones=3
+F9956 H15 AL8 POOL(8): TDPYLE(u1) TDWEAP(u1) TDGTWR(u3) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDGTWR(u3 aged=0)
+F10042 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F10116 H15 AL8 SCOUT rtti=13 id=23 IQ=5 from=10123 dest=11761
+F10130 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F10150 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=16 floor=10 ceiling=26 value=3470 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F10151 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F10157 H14 AL2 ECO-HOLD infantry ref=4/4 harv=7/8 $2129
+F10177 H15 AL8 SCOUT rtti=28 id=35 IQ=5 from=10907 dest=4355
+F10178 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F10179 H15 AL8 SCOUT rtti=28 id=39 IQ=5 from=10906 dest=4857
+F10180 H16 AL9 PROD start TDPROC (cat=6) at factory TDNFACT#1
+F10180 H16 AL9 base=1 Tech=13 $367 Pow=600 Drain=265 PF<1=0 CurB=15 Rad=1512 hasinc=1 refQ=4 harvQ=7 tibShort=0 ABScan=00211840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=4) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F10180 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(56,77) wzones=3
+F10180 H16 AL9 POOL(8): TDHAND(u1) TDAFLD(u1) TDFIX(u2) TDFBNK(u2) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) TDNPEN(u2) -> WIN TDFIX(u2 aged=0)
+F10182 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=9 floor=10 ceiling=26 value=1500 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F10196 H16 AL9 PROD start TDBIKE (cat=29) at factory TDAFLD#18
+F10206 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F10208 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F10231 H15 AL8 SCOUT rtti=13 id=34 IQ=5 from=10001 dest=7641
+F10232 H15 AL8 SCOUT rtti=13 id=47 IQ=5 from=8856 dest=11761
+F10236 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F10236 H15 AL8 SCOUT rtti=28 id=26 IQ=5 from=10648 dest=4355
+F10240 H15 AL8 SCOUT rtti=28 id=39 IQ=5 from=10906 dest=10041
+F10242 H15 AL8 SCOUT rtti=13 id=1 IQ=5 from=10259 dest=4857
+F10247 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F10261 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F10265 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F10293 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F10316 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F10322 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F10330 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=20 floor=10 ceiling=26 value=4950 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F10354 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F10355 H14 AL2 PROD start 3TNK (cat=29) at factory SWEAP#22
+F10385 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F10414 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F10434 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=20 floor=10 ceiling=26 value=5280 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F10444 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F10475 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F10505 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F10535 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F10563 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F10594 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F10624 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F10627 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=16 floor=10 ceiling=26 value=4320 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F10653 H16 AL9 PROD start TDHARV (cat=29) at factory TDAFLD#18
+F10654 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=9 floor=10 ceiling=26 value=1500 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F10655 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F10686 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F10692 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F10712 H15 AL8 PROD start TDGTWR (cat=6) at factory TDGFACT#2
+F10712 H15 AL8 base=1 Tech=13 $48 Pow=600 Drain=310 PF<1=0 CurB=17 Rad=1615 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F10712 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(20,79) wzones=3
+F10712 H15 AL8 POOL(8): TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDGTWR(u2 aged=0)
+F10716 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F10717 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F10747 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F10775 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F10777 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F10797 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=21 floor=10 ceiling=26 value=5150 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F10806 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F10836 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F10865 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F10882 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F10891 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F10896 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F10904 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=20 floor=10 ceiling=26 value=5480 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F10926 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F10937 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F10955 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F10958 H16 AL9 PROD start TDFIX (cat=6) at factory TDNFACT#1
+F10958 H16 AL9 base=1 Tech=13 $51 Pow=600 Drain=305 PF<1=0 CurB=16 Rad=1666 hasinc=1 refQ=4 harvQ=9 tibShort=0 ABScan=00211840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F10958 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(55,77) wzones=3
+F10958 H16 AL9 POOL(7): TDHAND(u1) TDAFLD(u1) TDFBNK(u3) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) TDNPEN(u2) -> WIN TDFBNK(u3 aged=0)
+F10959 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F10987 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F11004 H14 AL2 PROD start HARV (cat=29) at factory SWEAP#22
+F11018 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F11048 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F11078 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F11100 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=19 floor=10 ceiling=26 value=5470 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F11110 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F11132 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=7 floor=10 ceiling=26 value=1300 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F11138 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F11167 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F11196 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F11202 H14 AL2 PROD start KENN (cat=6) at factory SFACT#3
+F11202 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(37,40) wzones=3
+F11202 H14 AL2 POOL(10): BARR(u1) SWEAP(u1) FIX(u2) FTUR(u2) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN FIX(u2 aged=0)
+F11226 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F11235 H15 AL8 PROD start TDGTWR (cat=6) at factory TDGFACT#2
+F11235 H15 AL8 base=1 Tech=13 $809 Pow=600 Drain=320 PF<1=0 CurB=18 Rad=1542 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F11235 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(20,79) wzones=3
+F11235 H15 AL8 POOL(8): TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDGTWR(u2 aged=0)
+F11257 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F11263 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=22 floor=10 ceiling=26 value=5650 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F11286 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F11311 H14 AL2 PROD start FIX (cat=6) at factory SFACT#3
+F11311 H14 AL2 POOL(9): BARR(u1) SWEAP(u1) FTUR(u3) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN FTUR(u3 aged=0)
+F11316 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F11346 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F11349 H15 AL8 PROD start TDAPC (cat=29) at factory TDWEAP#19
+F11376 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F11383 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=22 floor=10 ceiling=26 value=7280 floorvalue=8000 ceilingvalue=18000 iq=5 defences=4 sendpercent=80 forced=0
+F11407 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F11411 H13 AL3 PROD start ARTY (cat=29) at factory AWEAP#23
+F11426 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F11428 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F11439 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F11467 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F11483 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F11498 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F11522 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F11527 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F11538 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F11558 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F11569 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=21 floor=10 ceiling=26 value=5790 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F11589 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F11601 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=10 ceiling=26 value=400 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F11617 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F11645 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F11675 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F11705 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F11705 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F11722 H15 AL8 PROD start TDGTWR (cat=6) at factory TDGFACT#2
+F11722 H15 AL8 base=1 Tech=13 $2831 Pow=600 Drain=330 PF<1=0 CurB=19 Rad=1570 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F11722 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(21,79) wzones=3
+F11722 H15 AL8 POOL(8): TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDGTWR(u2 aged=0)
+F11723 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F11735 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F11738 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=24 floor=10 ceiling=26 value=5860 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F11766 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F11796 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F11824 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F11836 H15 AL8 PROD start TDJEEP (cat=29) at factory TDWEAP#19
+F11853 H15 AL8 WAVE-SHUFFLE (nothing sent) why=roll-declined army=24 floor=10 ceiling=26 value=8080 floorvalue=8000 ceilingvalue=18000 iq=5 defences=5 sendpercent=95 forced=0
+F11854 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F11880 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F11886 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F11893 H16 AL9 FERRY-WAIT no-idle-lst a=0 b=0
+F11916 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F11935 H16 AL9 PROD start TDE6 (cat=14) at factory TDHAND#16
+F11945 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F11974 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F11977 H14 AL2 PROD start V2RL (cat=29) at factory SWEAP#22
+F12002 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F12030 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F12043 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=22 floor=10 ceiling=26 value=5890 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F12058 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F12058 H16 AL9 PROD start TDBGGY (cat=29) at factory TDAFLD#18
+F12061 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F12074 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=10 ceiling=26 value=500 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F12092 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F12107 H15 AL8 PROD start TDHTNK (cat=29) at factory TDWEAP#19
+F12113 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F12121 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F12123 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F12153 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F12168 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F12176 H14 AL2 PROD start FTUR (cat=6) at factory SFACT#3
+F12176 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F12176 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(37,40) wzones=3
+F12176 H14 AL2 POOL(9): BARR(u1) SWEAP(u1) FTUR(u2) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN FTUR(u2 aged=0)
+F12185 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F12209 H15 AL8 PROD start TDGTWR (cat=6) at factory TDGFACT#2
+F12209 H15 AL8 base=1 Tech=13 $2959 Pow=600 Drain=340 PF<1=0 CurB=20 Rad=1572 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F12209 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(21,79) wzones=3
+F12209 H15 AL8 POOL(8): TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDGTWR(u2 aged=0)
+F12209 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=23 floor=10 ceiling=26 value=5500 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F12216 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F12245 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F12260 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F12275 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F12275 H16 AL9 PROD start TDSTNK (cat=29) at factory TDAFLD#18
+F12303 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F12327 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=24 floor=10 ceiling=26 value=7720 floorvalue=8000 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F12333 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F12361 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F12390 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F12391 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F12393 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F12396 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F12421 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F12449 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F12451 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F12464 H14 AL2 PROD start V2RL (cat=29) at factory SWEAP#22
+F12478 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F12499 H16 AL9 PROD start TDFBNK (cat=6) at factory TDNFACT#1
+F12499 H16 AL9 base=1 Tech=13 $1502 Pow=600 Drain=335 PF<1=0 CurB=17 Rad=1827 hasinc=1 refQ=4 harvQ=9 tibShort=0 ABScan=01211840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F12499 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(54,77) wzones=3
+F12499 H16 AL9 POOL(7): TDHAND(u1) TDAFLD(u1) TDGUN(u2) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) TDNPEN(u2) -> WIN TDNHPAD(u2 aged=7771)
+F12502 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F12506 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F12510 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F12523 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=28 floor=10 ceiling=26 value=7210 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F12540 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F12546 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=4 floor=10 ceiling=26 value=800 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F12557 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F12564 H13 AL3 PROD start HARV (cat=29) at factory AWEAP#23
+F12570 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F12602 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F12609 H14 AL2 PROD start FTUR (cat=6) at factory SFACT#3
+F12609 H14 AL2 POOL(9): BARR(u1) SWEAP(u1) FTUR(u2) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN FTUR(u2 aged=0)
+F12632 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F12663 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F12666 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F12684 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=24 floor=10 ceiling=26 value=5600 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F12691 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F12696 H15 AL8 PROD start TDGTWR (cat=6) at factory TDGFACT#2
+F12696 H15 AL8 base=1 Tech=13 $2972 Pow=600 Drain=350 PF<1=0 CurB=21 Rad=1648 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F12696 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(21,79) wzones=3
+F12696 H15 AL8 POOL(8): TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDGTWR(u2 aged=0)
+F12715 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F12721 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F12738 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F12752 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F12783 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F12793 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F12802 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing-value army=26 floor=10 ceiling=26 value=7940 floorvalue=8000 ceilingvalue=18000 iq=5 defences=7 sendpercent=95 forced=0
+F12813 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F12844 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F12848 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F12873 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F12883 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F12901 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F12924 H16 AL9 PROD start TDARTY (cat=29) at factory TDAFLD#18
+F12931 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F12951 H14 AL2 PROD start V2RL (cat=29) at factory SWEAP#22
+F12961 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F12986 H16 AL9 PROD start TDNHPAD (cat=6) at factory TDNFACT#1
+F12986 H16 AL9 base=1 Tech=13 $1377 Pow=600 Drain=350 PF<1=0 CurB=18 Rad=1871 hasinc=1 refQ=4 harvQ=9 tibShort=0 ABScan=01211840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=1/1 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F12986 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(54,77) wzones=3
+F12986 H16 AL9 POOL(7): TDHAND(u1) TDAFLD(u1) TDGUN(u2) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) TDNPEN(u2) -> WIN TDNPEN(u2 aged=8258)
+F12992 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F13005 H14 AL2 WAVE-LAUNCH why=ceiling army=31 floor=10 ceiling=26 value=8170 floorvalue=8000 ceilingvalue=18000 iq=5 defences=4 sendpercent=80 forced=0
+F13005 H14 AL2 WAVE-STAGE stage=8620 roster=22
+F13015 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=6 floor=10 ceiling=26 value=1700 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F13016 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F13024 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F13042 H14 AL2 PROD start FTUR (cat=6) at factory SFACT#3
+F13042 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(37,41) wzones=3
+F13042 H14 AL2 POOL(9): BARR(u1) SWEAP(u1) FTUR(u2) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN FTUR(u2 aged=0)
+F13054 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F13071 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F13084 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4355
+F13100 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F13114 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7536
+F13126 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F13144 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=10041
+F13155 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F13162 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=23 floor=10 ceiling=26 value=5100 floorvalue=8000 ceilingvalue=18000 iq=5 defences=4 sendpercent=80 forced=0
+F13173 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4857
+F13181 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F13183 H15 AL8 PROD start TDGTWR (cat=6) at factory TDGFACT#2
+F13183 H15 AL8 base=1 Tech=13 $3659 Pow=600 Drain=360 PF<1=0 CurB=22 Rad=1642 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F13183 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(21,79) wzones=3
+F13183 H15 AL8 POOL(7): TDPYLE(u1) TDWEAP(u1) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDATWR(u2 aged=0)
+F13188 H15 AL8 PROD start TDMTNK (cat=29) at factory TDWEAP#19
+F13203 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=4517
+F13234 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=7641
+F13245 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F13264 H15 AL8 SCOUT rtti=13 id=13 IQ=5 from=9624 dest=11761
+F13269 H15 AL8 WAVE-LAUNCH why=ceiling army=28 floor=10 ceiling=26 value=9740 floorvalue=8000 ceilingvalue=18000 iq=5 defences=8 sendpercent=95 forced=0
+F13269 H15 AL8 WAVE-STAGE stage=10012 roster=27
+F13285 H16 AL9 PROD start TDSTNK (cat=29) at factory TDAFLD#18
+F13300 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F13325 H16 AL9 PROD start TDNPEN (cat=6) at factory TDNFACT#1
+F13325 H16 AL9 POOL(6): TDHAND(u1) TDAFLD(u1) TDGUN(u2) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) -> WIN TDGUN(u2 aged=0)
+F13370 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F13371 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F13372 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F13426 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F13438 H14 AL2 PROD start 3TNK (cat=29) at factory SWEAP#22
+F13475 H14 AL2 PROD start FTUR (cat=6) at factory SFACT#3
+F13475 H14 AL2 POOL(9): BARR(u1) SWEAP(u1) FTUR(u2) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN FTUR(u2 aged=0)
+F13480 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=4 floor=10 ceiling=26 value=1000 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F13481 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F13536 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F13591 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F13626 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F13634 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=24 floor=10 ceiling=26 value=6900 floorvalue=8000 ceilingvalue=18000 iq=5 defences=4 sendpercent=80 forced=0
+F13670 H15 AL8 PROD start TDATWR (cat=6) at factory TDGFACT#2
+F13670 H15 AL8 base=1 Tech=13 $4097 Pow=600 Drain=370 PF<1=0 CurB=23 Rad=1629 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F13670 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(21,79) wzones=3
+F13670 H15 AL8 POOL(8): TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDGTWR(u2 aged=0)
+F13700 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F13729 H15 AL8 PROD start TDJEEP (cat=29) at factory TDWEAP#19
+F13761 H13 AL3 PROD start PROC (cat=6) at factory AFACT#0
+F13761 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(8,39) wzones=3
+F13761 H13 AL3 POOL(5): APWR(u2) TENT(u1) AWEAP(u1) GUN(u3) DOME(u3) -> WIN GUN(u3 aged=0)
+F13814 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F13863 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F13908 H14 AL2 PROD start FTUR (cat=6) at factory SFACT#3
+F13908 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(37,41) wzones=3
+F13908 H14 AL2 POOL(9): BARR(u1) SWEAP(u1) FTUR(u2) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN FTUR(u2 aged=0)
+F13917 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F13934 H16 AL9 PROD start TDLTNK (cat=29) at factory TDAFLD#18
+F13949 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=10 ceiling=26 value=900 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F13952 H14 AL2 WAVE-RELEASE why=gathered mode=attack-move alive=21 arrived=15 roster=22 stage=8620 objective=5262
+F13972 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F13974 H16 NAVAL-PLACE TDNPEN cell=(53,69) ontarget=1 dist=2048 tzone=1 ok=267
+F13974 H16 AL9 PROD start TDGUN (cat=6) at factory TDNFACT#1
+F13974 H16 AL9 base=1 Tech=13 $1077 Pow=600 Drain=390 PF<1=0 CurB=20 Rad=1962 hasinc=1 refQ=4 harvQ=9 tibShort=0 ABScan=01215840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=1/1 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F13974 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(53,77) wzones=3
+F13974 H16 AL9 POOL(6): TDHAND(u1) TDAFLD(u1) TDFBNK(u2) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) -> WIN TDFBNK(u2 aged=0)
+F13974 H16 AL9 NAVAL-PICK LST ferry curV=0
+F13975 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F13994 H16 AL9 PROD start TDHELI (cat=2) at factory TDNHPAD#66
+F14000 H15 AL8 PROD start TDMTNK (cat=29) at factory TDWEAP#19
+F14013 H16 AL9 PROD start LST (cat=31) at factory TDNPEN#69
+F14013 H16 AL9 NAVAL-PICK TDNSUB curV=1 cap=4 enavy=0
+F14026 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F14081 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F14087 H14 AL2 PROD start 3TNK (cat=29) at factory SWEAP#22
+F14107 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=25 floor=10 ceiling=26 value=6150 floorvalue=8000 ceilingvalue=18000 iq=5 defences=4 sendpercent=80 forced=0
+F14190 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F14299 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F14306 H15 AL8 WAVE-RELEASE why=gathered mode=attack-move alive=27 arrived=21 roster=27 stage=10012 objective=9896
+F14341 H14 AL2 PROD start FTUR (cat=6) at factory SFACT#3
+F14341 H14 AL2 POOL(8): BARR(u1) SWEAP(u1) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN SAM(u2 aged=0)
+F14354 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F14367 H16 AL9 PROD start TDBGGY (cat=29) at factory TDAFLD#18
+F14411 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F14418 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=5 floor=10 ceiling=26 value=1300 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F14477 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F14500 H16 AL9 PROD start TDNSUB (cat=31) at factory TDNPEN#69
+F14500 H16 AL9 NAVAL-PICK TDNSUB curV=2 cap=4 enavy=0
+F14532 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F14541 H15 AL8 PROD start TDAPC (cat=29) at factory TDWEAP#19
+F14569 H16 AL9 PROD start TDFBNK (cat=6) at factory TDNFACT#1
+F14569 H16 AL9 base=1 Tech=13 $1052 Pow=600 Drain=400 PF<1=0 CurB=20 Rad=1870 hasinc=1 refQ=4 harvQ=9 tibShort=0 ABScan=01211840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F14569 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(54,77) wzones=3
+F14569 H16 AL9 POOL(6): TDHAND(u1) TDAFLD(u1) TDGUN(u2) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) -> WIN TDGUN(u2 aged=0)
+F14570 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F14571 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F14575 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F14575 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=25 floor=10 ceiling=26 value=6850 floorvalue=8000 ceilingvalue=18000 iq=5 defences=5 sendpercent=95 forced=0
+F14584 H16 AL9 PROD start TDFTNK (cat=29) at factory TDAFLD#18
+F14587 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F14618 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F14642 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F14643 H15 AL8 PROD start TDGTWR (cat=6) at factory TDGFACT#2
+F14643 H15 AL8 base=1 Tech=13 $3993 Pow=600 Drain=390 PF<1=0 CurB=24 Rad=1632 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F14643 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(21,79) wzones=3
+F14643 H15 AL8 POOL(7): TDPYLE(u1) TDWEAP(u1) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDATWR(u2 aged=0)
+F14680 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F14697 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F14727 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F14736 H14 AL2 PROD start 3TNK (cat=29) at factory SWEAP#22
+F14774 H14 AL2 PROD start SAM (cat=6) at factory SFACT#3
+F14774 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(37,41) wzones=3
+F14774 H14 AL2 POOL(9): BARR(u1) SWEAP(u1) FTUR(u2) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN FTUR(u2 aged=0)
+F14789 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F14840 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F14844 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F14895 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F14897 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=5 floor=10 ceiling=26 value=1100 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F14986 H14 AL2 WAVE-STRIKE hunt=1 living=14
+F15028 H15 AL8 PROD start TDJEEP (cat=29) at factory TDWEAP#19
+F15056 H16 AL9 PROD start TDGUN (cat=6) at factory TDNFACT#1
+F15056 H16 AL9 base=1 Tech=13 $263 Pow=600 Drain=415 PF<1=0 CurB=21 Rad=1804 hasinc=1 refQ=4 harvQ=9 tibShort=0 ABScan=01211840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F15056 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(54,77) wzones=3
+F15056 H16 AL9 POOL(6): TDHAND(u1) TDAFLD(u1) TDFBNK(u2) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) -> WIN TDFBNK(u2 aged=0)
+F15057 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F15058 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=28 floor=10 ceiling=26 value=7950 floorvalue=8000 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F15061 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F15125 H16 AL9 PROD start TDBGGY (cat=29) at factory TDAFLD#18
+F15130 H15 AL8 PROD start TDATWR (cat=6) at factory TDGFACT#2
+F15130 H15 AL8 base=1 Tech=13 $2982 Pow=600 Drain=400 PF<1=0 CurB=25 Rad=1666 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F15130 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(21,79) wzones=3
+F15130 H15 AL8 POOL(7): TDPYLE(u1) TDWEAP(u1) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDATWR(u2 aged=0)
+F15149 H16 AL9 PROD start TDNSUB (cat=31) at factory TDNPEN#69
+F15149 H16 AL9 NAVAL-PICK TDNSUB curV=3 cap=4 enavy=0
+F15169 H13 AL3 PROD start JEEP (cat=29) at factory AWEAP#23
+F15170 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F15211 H16 AL9 NAVAL-MASS rally=(56,71) wave=3
+F15221 H14 AL2 WAVE-STRIKE hunt=1 living=14
+F15262 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F15285 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F15292 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F15299 H15 AL8 PROD start TDHTNK (cat=29) at factory TDWEAP#19
+F15315 H14 AL2 PROD start FTUR (cat=6) at factory SFACT#3
+F15315 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(37,41) wzones=3
+F15315 H14 AL2 POOL(9): APWR(u2) BARR(u1) SWEAP(u1) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN APWR(u2 aged=0)
+F15342 H16 AL9 PROD start TDARTY (cat=29) at factory TDAFLD#18
+F15363 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=10 ceiling=26 value=300 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F15385 H14 AL2 PROD start V2RL (cat=29) at factory SWEAP#22
+F15401 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F15418 H15 AL8 WAVE-LAUNCH why=ceiling army=36 floor=10 ceiling=26 value=13440 floorvalue=8000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F15418 H15 AL8 WAVE-STAGE stage=9884 roster=20
+F15427 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F15460 H14 AL2 WAVE-STRIKE hunt=1 living=13
+F15510 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F15515 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F15529 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F15529 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=24 floor=10 ceiling=26 value=6450 floorvalue=8000 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F15541 H14 AL2 WAVE-STRIKE hunt=1 living=13
+F15541 H14 AL2 WAVE-LAUNCH why=ceiling army=35 floor=10 ceiling=26 value=10150 floorvalue=8000 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F15541 H14 AL2 WAVE-STAGE stage=5015 roster=22
+F15651 H16 AL9 PROD start TDFBNK (cat=6) at factory TDNFACT#1
+F15651 H16 AL9 base=1 Tech=13 $176 Pow=600 Drain=435 PF<1=0 CurB=22 Rad=1754 hasinc=1 refQ=4 harvQ=9 tibShort=0 ABScan=01211840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F15651 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(54,77) wzones=3
+F15651 H16 AL9 POOL(6): TDHAND(u1) TDAFLD(u1) TDGUN(u2) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) -> WIN TDGUN(u2 aged=0)
+F15652 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F15667 H16 AL9 PROD start TDARTY (cat=29) at factory TDAFLD#18
+F15711 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F15748 H14 AL2 PROD start APWR (cat=6) at factory SFACT#3
+F15748 H14 AL2 POOL(9): APWR(u2) BARR(u1) SWEAP(u1) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN SHPAD(u2 aged=7730)
+F15752 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F15766 H14 AL2 PROD start E6 (cat=14) at factory BARR#20
+F15819 H15 AL8 WAVE-RELEASE why=gathered mode=attack-move alive=20 arrived=14 roster=20 stage=9884 objective=9896
+F15836 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=10 ceiling=26 value=700 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F15861 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F15872 H14 AL2 PROD start 3TNK (cat=29) at factory SWEAP#22
+F15890 H13 AL3 PROD start HARV (cat=29) at factory AWEAP#23
+F15929 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F15984 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F15999 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=23 floor=10 ceiling=26 value=5800 floorvalue=8000 ceilingvalue=18000 iq=5 defences=7 sendpercent=95 forced=0
+F16039 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F16073 H14 AL2 PROD start SHPAD (cat=6) at factory SFACT#3
+F16073 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(37,42) wzones=3
+F16073 H14 AL2 POOL(9): BARR(u1) SWEAP(u1) FTUR(u2) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN AFLD(u2 aged=8055)
+F16094 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F16103 H15 AL8 PROD start TDATWR (cat=6) at factory TDGFACT#2
+F16103 H15 AL8 base=1 Tech=13 $2711 Pow=600 Drain=420 PF<1=0 CurB=26 Rad=1682 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F16103 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(20,79) wzones=3
+F16103 H15 AL8 POOL(8): TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDGHPAD(u2 aged=8418)
+F16149 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F16152 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F16204 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F16219 H14 AL2 SCOUT rtti=28 id=64 IQ=5 from=5925 dest=11761
+F16242 H16 AL9 PROD start TDNSUB (cat=31) at factory TDNPEN#69
+F16242 H16 AL9 NAVAL-PICK TDNSUB curV=4 cap=4 enavy=0
+F16261 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F16311 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=5 floor=10 ceiling=26 value=1400 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F16314 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F16322 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F16369 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F16370 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F16380 H15 AL8 PROD start TDJEEP (cat=29) at factory TDWEAP#19
+F16390 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F16395 H16 AL9 FERRY-START roster=5 pickup=(43,68) landing=(4,79)
+F16424 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F16471 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F16471 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=23 floor=10 ceiling=26 value=6150 floorvalue=8000 ceilingvalue=18000 iq=5 defences=7 sendpercent=95 forced=0
+F16479 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F16479 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F16521 H14 AL2 PROD start 3TNK (cat=29) at factory SWEAP#22
+F16534 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F16534 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F16566 H13 AL3 SCOUT rtti=13 id=34 IQ=5 from=4237 dest=4857
+F16568 H14 AL2 FERRY-WAIT no-idle-lst a=0 b=0
+F16575 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F16589 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F16610 H16 AL9 PROD start TDBGGY (cat=29) at factory TDAFLD#18
+F16651 H15 AL8 PROD start TDAPC (cat=29) at factory TDWEAP#19
+F16690 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F16714 H16 AL9 PROD start TDGUN (cat=6) at factory TDNFACT#1
+F16714 H16 AL9 base=1 Tech=13 $30 Pow=600 Drain=450 PF<1=0 CurB=23 Rad=1715 hasinc=1 refQ=4 harvQ=9 tibShort=0 ABScan=01211840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F16714 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(54,77) wzones=3
+F16714 H16 AL9 POOL(6): TDHAND(u1) TDAFLD(u1) TDFBNK(u2) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) -> WIN TDFBNK(u2 aged=0)
+F16769 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F16770 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F16781 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=10 ceiling=26 value=600 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F16807 H14 AL2 WAVE-SHUFFLE (nothing sent) why=staging army=29 floor=10 ceiling=26 value=9190 floorvalue=8000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F16809 H13 AL3 SCOUT rtti=13 id=34 IQ=5 from=4238 dest=4517
+F16945 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=21 floor=10 ceiling=26 value=5850 floorvalue=8000 ceilingvalue=18000 iq=5 defences=8 sendpercent=95 forced=0
+F16963 H16 AL9 PROD start TDBIKE (cat=29) at factory TDAFLD#18
+F17022 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F17058 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F17076 H15 AL8 PROD start TDGHPAD (cat=6) at factory TDGFACT#2
+F17076 H15 AL8 base=1 Tech=13 $1997 Pow=600 Drain=440 PF<1=0 CurB=27 Rad=1658 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01201844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=1/1 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F17076 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(21,79) wzones=3
+F17076 H15 AL8 POOL(8): TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) TDGYARD(u2) -> WIN TDGYARD(u2 aged=9391)
+F17077 H15 AL8 WAVE-LAUNCH why=ceiling army=38 floor=10 ceiling=26 value=14480 floorvalue=8000 ceilingvalue=18000 iq=5 defences=13 sendpercent=100 forced=1
+F17077 H15 AL8 WAVE-STAGE stage=10012 roster=11
+F17138 H15 AL8 PROD start TDJEEP (cat=29) at factory TDWEAP#19
+F17167 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F17183 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F17184 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F17215 H16 AL9 PROD start TDNSUB (cat=31) at factory TDNPEN#69
+F17215 H16 AL9 NAVAL-PICK TDNSUB curV=5 cap=4 enavy=0
+F17239 H15 AL8 PROD start TDE6 (cat=14) at factory TDPYLE#17
+F17254 H16 AL9 NAVAL-WAVE release massed=3 wave=3 cap=4
+F17254 H16 AL9 NAVAL-HUNT TDNSUB#1
+F17254 H16 AL9 NAVAL-HUNT TDNSUB#2
+F17254 H16 AL9 NAVAL-HUNT TDNSUB#3
+F17261 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=10 ceiling=26 value=900 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F17282 H14 AL2 WAVE-SHUFFLE (nothing sent) why=staging army=29 floor=10 ceiling=26 value=8280 floorvalue=8000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F17289 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F17292 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F17320 H15 AL8 WAVE-RELEASE why=gathered mode=attack-move alive=11 arrived=8 roster=11 stage=10012 objective=9896
+F17347 H15 AL8 PROD start TDGYARD (cat=6) at factory TDGFACT#2
+F17347 H15 AL8 POOL(7): TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) -> WIN TDGAFLD(u2 aged=8689)
+F17362 H13 AL3 PROD start GUN (cat=6) at factory AFACT#0
+F17362 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(9,39) wzones=3
+F17362 H13 AL3 POOL(5): APWR(u2) TENT(u1) AWEAP(u1) PBOX(u2) DOME(u3) -> WIN DOME(u3 aged=9410)
+F17409 H15 AL8 PROD start TDJEEP (cat=29) at factory TDWEAP#19
+F17416 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F17416 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=17 floor=10 ceiling=26 value=4850 floorvalue=8000 ceilingvalue=18000 iq=5 defences=8 sendpercent=95 forced=0
+F17493 H16 AL9 NAVAL-MASS rally=(59,68) wave=3
+F17510 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F17538 H13 AL3 SCOUT rtti=13 id=7 IQ=5 from=5132 dest=9881
+F17565 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F17580 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F17594 H16 AL9 PROD start TDARTY (cat=29) at factory TDAFLD#18
+F17617 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F17620 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F17635 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F17652 H16 AL9 NAVAL-WAVE release massed=3 wave=3 cap=4
+F17652 H16 AL9 NAVAL-HUNT TDNSUB#1
+F17652 H16 AL9 NAVAL-HUNT TDNSUB#2
+F17652 H16 AL9 NAVAL-HUNT TDNSUB#3
+F17680 H15 AL8 PROD start TDJEEP (cat=29) at factory TDWEAP#19
+F17702 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F17705 H16 AL9 PROD start TDFBNK (cat=6) at factory TDNFACT#1
+F17705 H16 AL9 base=1 Tech=13 $873 Pow=600 Drain=440 PF<1=0 CurB=23 Rad=1649 hasinc=1 refQ=4 harvQ=9 tibShort=0 ABScan=00211840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=4) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F17705 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(55,77) wzones=3
+F17705 H16 AL9 POOL(7): TDHAND(u1) TDAFLD(u1) TDFIX(u2) TDSAM(u3) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) -> WIN TDSAM(u3 aged=0)
+F17709 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F17734 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=5 floor=10 ceiling=26 value=1300 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F17744 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F17754 H14 AL2 WAVE-SHUFFLE (nothing sent) why=staging army=26 floor=10 ceiling=26 value=7920 floorvalue=8000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F17777 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F17832 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F17853 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F17890 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F17891 H16 AL9 NAVAL-MASS rally=(59,68) wave=3
+F17891 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=12 floor=10 ceiling=26 value=2900 floorvalue=8000 ceilingvalue=18000 iq=5 defences=9 sendpercent=100 forced=1
+F17951 H15 AL8 PROD start TDHTNK (cat=29) at factory TDWEAP#19
+F17996 H15 NAVAL-PLACE TDGYARD cell=(31,84) ontarget=1 dist=3200 tzone=1 ok=108
+F17996 H15 AL8 PROD start TDGAFLD (cat=6) at factory TDGFACT#2
+F17996 H15 AL8 base=1 Tech=13 $659 Pow=600 Drain=480 PF<1=0 CurB=29 Rad=1762 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01205844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=1/1 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F17996 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(21,79) wzones=3
+F17996 H15 AL8 POOL(7): TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) -> WIN TDGTWR(u2 aged=0)
+F17996 H15 AL8 NAVAL-PICK TDPT curV=0 cap=2 enavy=0
+F17999 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F18047 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F18047 H15 AL8 PROD start TDPT (cat=31) at factory TDGYARD#87
+F18047 H15 AL8 NAVAL-PICK TDPT curV=1 cap=2 enavy=0
+F18049 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F18076 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F18087 H16 AL9 PROD start TDSTNK (cat=29) at factory TDAFLD#18
+F18103 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F18104 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F18119 H14 AL2 SCOUT rtti=13 id=3 IQ=5 from=5161 dest=4355
+F18131 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F18158 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F18174 H14 AL2 PROD start AFLD (cat=6) at factory SFACT#3
+F18174 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(37,41) wzones=3
+F18174 H14 AL2 POOL(9): BARR(u1) SWEAP(u1) FTUR(u2) SAM(u3) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN SAM(u3 aged=0)
+F18206 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=5 floor=10 ceiling=26 value=1100 floorvalue=8000 ceilingvalue=18000 iq=5 defences=2 sendpercent=80 forced=0
+F18209 H14 AL2 SCOUT rtti=13 id=37 IQ=5 from=7202 dest=7641
+F18213 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F18238 H14 AL2 WAVE-SHUFFLE (nothing sent) why=staging army=27 floor=10 ceiling=26 value=7480 floorvalue=8000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F18268 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F18322 H14 AL2 PROD start V2RL (cat=29) at factory SWEAP#22
+F18323 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F18324 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F18348 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F18356 H16 AL9 PROD start TDNSUB (cat=31) at factory TDNPEN#69
+F18363 H16 AL9 PROD start TDSAM (cat=6) at factory TDNFACT#1
+F18363 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F18363 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=9 floor=10 ceiling=26 value=2500 floorvalue=8000 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F18363 H16 AL9 base=1 Tech=13 $402 Pow=600 Drain=415 PF<1=0 CurB=23 Rad=1571 hasinc=1 refQ=3 harvQ=9 tibShort=0 ABScan=00211840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=3) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F18363 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(56,77) wzones=3
+F18363 H16 AL9 POOL(8): TDPROC(u3) TDHAND(u1) TDAFLD(u1) TDFIX(u2) TDSAM(u2) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) -> WIN TDPROC(u3 aged=0)
+F18365 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F18419 H13 AL3 PROD start DOME (cat=6) at factory AFACT#0
+F18419 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(8,38) wzones=3
+F18419 H13 AL3 POOL(5): APWR(u2) PROC(u3) TENT(u1) AWEAP(u1) GUN(u2) -> WIN PROC(u3 aged=0)
+F18433 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F18439 H13 AL3 PROD start HARV (cat=29) at factory AWEAP#23
+F18450 H15 AL8 PROD start TDPT (cat=31) at factory TDGYARD#87
+F18450 H15 AL8 NAVAL-PICK TDPT curV=2 cap=2 enavy=0
+F18457 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F18505 H15 AL8 NAVAL-PATROL TDPT#5 dest=(76,46)
+F18573 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F18587 H15 AL8 NAVAL-IDLE TDPT#5 mission=2 cell=(32,82) zone=1/1 radio=0 tarcom=0 navcom=1
+F18611 H16 AL9 SCOUT rtti=13 id=62 IQ=5 from=10153 dest=7641
+F18627 H16 AL9 SCOUT rtti=13 id=62 IQ=5 from=10153 dest=4517
+F18628 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F18679 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=4 floor=10 ceiling=26 value=1000 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F18721 H14 AL2 WAVE-SHUFFLE (nothing sent) why=staging army=27 floor=10 ceiling=26 value=6940 floorvalue=8000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F18736 H16 AL9 PROD start TDSTNK (cat=29) at factory TDAFLD#18
+F18737 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F18743 H15 AL8 NAVAL-PATROL TDPT#5 dest=(33,86)
+F18792 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F18812 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F18836 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=9 floor=10 ceiling=26 value=1850 floorvalue=8000 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F18977 H15 AL8 NAVAL-PATROL TDPT#5 dest=(65,66)
+F18996 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F19055 H15 AL8 NAVAL-PATROL TDPT#5 dest=(40,92)
+F19105 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F19136 H15 AL8 NAVAL-PATROL TDPT#5 dest=(76,83)
+F19154 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=4 floor=10 ceiling=26 value=800 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F19199 H14 AL2 WAVE-RELEASE why=timeout mode=attack-move alive=7 arrived=0 roster=22 stage=5015 objective=4880
+F19199 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=22 floor=10 ceiling=26 value=6260 floorvalue=8000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F19218 H15 AL8 NAVAL-PATROL TDPT#5 dest=(72,43)
+F19241 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F19295 H15 AL8 NAVAL-PATROL TDPT#5 dest=(4,91)
+F19298 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F19298 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=9 floor=10 ceiling=26 value=2750 floorvalue=8000 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F19350 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F19380 H16 AL9 NAVAL-IDLE TDNSUB#2 mission=14 cell=(43,61) zone=1/1 radio=0 tarcom=1 navcom=0
+F19430 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F19443 H16 AL9 PROD start TDPROC (cat=6) at factory TDNFACT#1
+F19443 H16 AL9 base=1 Tech=13 $46 Pow=600 Drain=435 PF<1=0 CurB=24 Rad=1572 hasinc=1 refQ=4 harvQ=9 tibShort=0 ABScan=00211840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=4) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F19443 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(57,77) wzones=3
+F19443 H16 AL9 POOL(7): TDHAND(u1) TDAFLD(u1) TDFIX(u2) TDSAM(u2) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) -> WIN TDOBLI(u2 aged=9263)
+F19453 H15 AL8 NAVAL-PATROL TDPT#5 dest=(74,33)
+F19525 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F19535 H15 AL8 NAVAL-IDLE TDPT#5 mission=2 cell=(32,82) zone=1/1 radio=0 tarcom=0 navcom=1
+F19542 H16 AL9 NAVAL-WAVE release massed=3 wave=3 cap=4
+F19542 H16 AL9 NAVAL-HUNT TDNSUB#1
+F19542 H16 AL9 NAVAL-HUNT TDNSUB#3
+F19542 H16 AL9 NAVAL-HUNT TDNSUB#4
+F19616 H15 AL8 NAVAL-PATROL TDPT#5 dest=(74,90)
+F19616 H15 AL8 WAVE-STRIKE hunt=1 living=9
+F19619 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=5 floor=10 ceiling=26 value=1100 floorvalue=8000 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F19620 H13 AL3 PROD start PROC (cat=6) at factory AFACT#0
+F19620 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(9,39) wzones=3
+F19620 H13 AL3 POOL(6): APWR(u2) TENT(u1) AWEAP(u1) PBOX(u2) AGUN(u2) AHPAD(u2) -> WIN PBOX(u2 aged=16058)
+F19621 H13 AL3 PROD hold PROC pct=0 cash=22 at AFACT#0
+F19622 H16 AL9 NAVAL-MASS rally=(57,68) wave=3
+F19666 H13 AL3 PROD resume PROC pct=0 cash=94 at AFACT#0
+F19669 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=19 floor=10 ceiling=26 value=5840 floorvalue=8000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F19694 H15 AL8 NAVAL-PATROL TDPT#5 dest=(36,92)
+F19697 H16 AL9 PROD start TDFTNK (cat=29) at factory TDAFLD#18
+F19742 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F19749 H14 AL2 PROD start HIND (cat=2) at factory SHPAD#83
+F19755 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F19773 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F19780 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=11 floor=10 ceiling=26 value=2360 floorvalue=8000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F19840 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F19843 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F19860 H16 AL9 NAVAL-WAVE release massed=4 wave=3 cap=4
+F19860 H16 AL9 NAVAL-HUNT TDNSUB#1
+F19860 H16 AL9 NAVAL-HUNT TDNSUB#4
+F19898 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F19925 H15 AL8 NAVAL-PATROL TDPT#5 dest=(51,68)
+F19926 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F19932 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F19953 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F19987 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F20005 H15 AL8 NAVAL-PATROL TDPT#5 dest=(95,94)
+F20008 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F20014 H16 AL9 NAVAL-MASS rally=(55,68) wave=3
+F20015 H14 AL2 PROD start SAM (cat=6) at factory SFACT#3
+F20015 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(37,41) wzones=3
+F20015 H14 AL2 POOL(9): BARR(u1) SWEAP(u1) FTUR(u2) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) SPEN(u2) -> WIN SPEN(u2 aged=11997)
+F20063 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F20081 H15 AL8 NAVAL-PATROL TDPT#5 dest=(76,78)
+F20090 H16 AL9 NAVAL-WAVE release massed=3 wave=3 cap=4
+F20090 H16 AL9 NAVAL-HUNT TDNSUB#3
+F20090 H16 AL9 NAVAL-HUNT TDNSUB#4
+F20090 H16 AL9 NAVAL-HUNT TDNSUB#6
+F20093 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=5 floor=9 ceiling=26 value=1100 floorvalue=7200 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F20145 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=17 floor=9 ceiling=26 value=4000 floorvalue=7200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F20157 H15 AL8 NAVAL-PATROL TDPT#5 dest=(63,88)
+F20174 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F20204 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F20214 H16 AL9 PROD start TDOBLI (cat=6) at factory TDNFACT#1
+F20214 H16 AL9 base=1 Tech=13 $174 Pow=600 Drain=475 PF<1=0 CurB=25 Rad=1679 hasinc=1 refQ=4 harvQ=10 tibShort=0 ABScan=00211840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=4) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=0) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F20214 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(55,77) wzones=3
+F20214 H16 AL9 POOL(7): TDHAND(u1) TDAFLD(u1) TDFIX(u2) TDSAM(u2) TDOBLI(u2) TDTMPL(u2) TDNHPAD(u2) -> WIN TDTMPL(u2 aged=10034)
+F20233 H15 AL8 NAVAL-PATROL TDPT#5 dest=(28,94)
+F20247 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F20247 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=13 floor=9 ceiling=26 value=3100 floorvalue=7200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F20255 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F20342 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F20371 H15 AL8 PROD start TDGTWR (cat=6) at factory TDGFACT#2
+F20371 H15 AL8 base=1 Tech=13 $8 Pow=600 Drain=510 PF<1=0 CurB=30 Rad=1846 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01215844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=1/1 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=0) TDSTEAL(cb=0,q=0)
+F20371 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(21,79) wzones=3
+F20371 H15 AL8 POOL(7): TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDATWR(u2) TDEYE(u2) TDGHPAD(u2) TDGAFLD(u2) -> WIN TDEYE(u2 aged=9659)
+F20390 H15 AL8 NAVAL-PATROL TDPT#5 dest=(78,55)
+F20400 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F20404 H16 AL9 NAVAL-MASS rally=(58,68) wave=3
+F20410 H15 AL8 PROD start TDA10 (cat=2) at factory TDGAFLD#56
+F20438 H14 AL2 PROD start V2RL (cat=29) at factory SWEAP#22
+F20456 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F20471 H15 AL8 NAVAL-PATROL TDPT#5 dest=(71,36)
+F20499 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F20512 H13 AL3 PROD start JEEP (cat=29) at factory AWEAP#23
+F20520 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F20548 H15 AL8 NAVAL-PATROL TDPT#5 dest=(78,51)
+F20563 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=5 floor=9 ceiling=26 value=1300 floorvalue=7200 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F20578 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F20580 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F20587 H15 AL8 PROD start TDPT (cat=31) at factory TDGYARD#87
+F20624 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=22 floor=9 ceiling=26 value=5100 floorvalue=7200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F20630 H15 AL8 NAVAL-PATROL TDPT#5 dest=(32,91)
+F20630 H15 AL8 NAVAL-PATROL TDPT#7 dest=(32,89)
+F20630 H15 AL8 WAVE-STRIKE hunt=1 living=3
+F20630 H15 AL8 WAVE-LAUNCH why=roll army=18 floor=9 ceiling=26 value=8880 floorvalue=7200 ceilingvalue=18000 iq=5 defences=13 sendpercent=100 forced=1
+F20630 H15 AL8 WAVE-STAGE stage=10147 roster=13
+F20635 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F20706 H14 AL2 WAVE-STRIKE hunt=1 living=2
+F20712 H15 AL8 NAVAL-PATROL TDPT#5 dest=(71,77)
+F20712 H15 AL8 NAVAL-IDLE TDPT#7 mission=2 cell=(31,83) zone=1/1 radio=0 tarcom=0 navcom=1
+F20724 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=11 floor=9 ceiling=26 value=2900 floorvalue=7200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F20759 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F20760 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F20769 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F20788 H14 AL2 WAVE-STRIKE hunt=1 living=3
+F20793 H15 AL8 NAVAL-PATROL TDPT#5 dest=(57,34)
+F20793 H15 AL8 NAVAL-PATROL TDPT#7 dest=(83,92)
+F20814 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F20838 H16 AL9 PROD start TDFTNK (cat=29) at factory TDAFLD#18
+F20869 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F20870 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F20873 H15 AL8 NAVAL-PATROL TDPT#5 dest=(47,87)
+F20884 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F20927 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F20949 H15 AL8 NAVAL-PATROL TDPT#5 dest=(61,41)
+F20978 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F20982 H16 AL9 SCOUT rtti=13 id=18 IQ=5 from=8733 dest=7536
+F20993 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F20996 H16 AL9 SCOUT rtti=13 id=18 IQ=5 from=8733 dest=11761
+F21002 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F21017 H14 AL2 PROD start SPEN (cat=6) at factory SFACT#3
+F21017 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(37,41) wzones=3
+F21017 H14 AL2 POOL(8): BARR(u1) SWEAP(u1) FTUR(u2) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) -> WIN TSLA(u2 aged=11220)
+F21031 H15 AL8 NAVAL-PATROL TDPT#5 dest=(102,59)
+F21033 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F21035 H14 AL2 NAVAL-PICK LST ferry curV=0
+F21045 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=6 floor=9 ceiling=26 value=1400 floorvalue=7200 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F21066 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F21088 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F21102 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F21105 H14 AL2 FERRY-WAIT no-idle-lst a=0 b=0
+F21105 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=24 floor=9 ceiling=26 value=5300 floorvalue=7200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F21113 H15 AL8 NAVAL-PATROL TDPT#5 dest=(99,50)
+F21183 H14 AL2 WAVE-STRIKE hunt=1 living=4
+F21186 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F21191 H15 AL8 NAVAL-PATROL TDPT#5 dest=(64,68)
+F21201 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F21201 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=12 floor=9 ceiling=26 value=2600 floorvalue=7200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F21206 H14 AL2 PROD start MIG (cat=2) at factory AFLD#54
+F21269 H15 AL8 NAVAL-PATROL TDPT#5 dest=(68,62)
+F21293 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F21345 H15 AL8 NAVAL-PATROL TDPT#5 dest=(71,75)
+F21427 H15 AL8 NAVAL-PATROL TDPT#5 dest=(116,65)
+F21431 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F21431 H14 AL2 PROD start 3TNK (cat=29) at factory SWEAP#22
+F21466 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F21491 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F21503 H15 AL8 NAVAL-PATROL TDPT#5 dest=(75,62)
+F21516 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=6 floor=9 ceiling=26 value=1400 floorvalue=7200 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F21547 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F21577 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=27 floor=9 ceiling=26 value=6450 floorvalue=7200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F21581 H15 AL8 NAVAL-PATROL TDPT#5 dest=(63,58)
+F21593 H16 AL9 NAVAL-IDLE TDNSUB#4 mission=14 cell=(43,54) zone=1/1 radio=0 tarcom=1 navcom=0
+F21654 H14 AL2 WAVE-STRIKE hunt=1 living=3
+F21658 H15 AL8 NAVAL-PATROL TDPT#5 dest=(94,89)
+F21658 H15 AL8 NAVAL-IDLE TDPT#7 mission=2 cell=(31,83) zone=1/1 radio=0 tarcom=0 navcom=1
+F21674 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=13 floor=8 ceiling=26 value=3600 floorvalue=6400 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F21692 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F21736 H15 AL8 NAVAL-PATROL TDPT#5 dest=(63,87)
+F21814 H15 AL8 NAVAL-PATROL TDPT#5 dest=(40,94)
+F21829 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F21832 H16 AL9 FERRY-ABORT load-stall aboard=0 outside=1 dist=0
+F21869 H13 AL3 PROD start ARTY (cat=29) at factory AWEAP#23
+F21891 H15 AL8 NAVAL-PATROL TDPT#5 dest=(68,91)
+F21938 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F21939 H16 AL9 PROD start TDBIKE (cat=29) at factory TDAFLD#18
+F21967 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F21969 H15 AL8 NAVAL-PATROL TDPT#5 dest=(112,67)
+F21969 H15 AL8 NAVAL-PATROL TDPT#8 dest=(91,86)
+F21991 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=8 floor=8 ceiling=26 value=1900 floorvalue=6400 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F22014 H14 AL2 SCOUT rtti=13 id=26 IQ=5 from=7184 dest=7536
+F22020 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F22046 H15 AL8 PROD start TDEYE (cat=6) at factory TDGFACT#2
+F22046 H15 AL8 base=1 Tech=13 $104 Pow=500 Drain=520 PF<1=1 CurB=30 Rad=1905 hasinc=1 refQ=4 harvQ=8 tibShort=0 ABScan=01215844 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=1/1 fix=1/1 | TDPROC(cb=1,q=4) TDHAND(cb=0,q=0) TDWEAP(cb=1,q=1) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=0,q=0) TDEYE(cb=1,q=1) TDSTEAL(cb=0,q=0)
+F22046 H15 AL8 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(20,80) wzones=3
+F22046 H15 AL8 POOL(6): TDNUK2(u2) TDPYLE(u1) TDWEAP(u1) TDGTWR(u2) TDGHPAD(u2) TDGAFLD(u2) -> WIN TDNUK2(u2 aged=0)
+F22047 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=23 floor=8 ceiling=26 value=5870 floorvalue=6400 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F22047 H15 AL8 NAVAL-PATROL TDPT#5 dest=(68,35)
+F22128 H15 AL8 NAVAL-PATROL TDPT#5 dest=(71,43)
+F22150 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F22150 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=11 floor=8 ceiling=26 value=2400 floorvalue=6400 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F22204 H15 AL8 NAVAL-PATROL TDPT#5 dest=(67,95)
+F22263 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F22266 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F22280 H15 AL8 NAVAL-PATROL TDPT#5 dest=(67,36)
+F22356 H15 AL8 NAVAL-PATROL TDPT#5 dest=(83,90)
+F22393 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F22437 H15 AL8 NAVAL-PATROL TDPT#5 dest=(70,53)
+F22469 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=9 floor=8 ceiling=26 value=2200 floorvalue=6400 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F22513 H15 AL8 NAVAL-PATROL TDPT#5 dest=(82,77)
+F22514 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F22518 H13 AL3 PROD start JEEP (cat=29) at factory AWEAP#23
+F22531 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=23 floor=8 ceiling=26 value=5270 floorvalue=6400 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F22588 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F22591 H15 AL8 NAVAL-PATROL TDPT#5 dest=(76,60)
+F22591 H15 AL8 NAVAL-IDLE TDPT#7 mission=2 cell=(31,83) zone=1/1 radio=0 tarcom=0 navcom=1
+F22626 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=14 floor=8 ceiling=26 value=3210 floorvalue=6400 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F22668 H15 AL8 NAVAL-PATROL TDPT#5 dest=(25,94)
+F22694 H15 AL8 SCOUT rtti=13 id=39 IQ=5 from=10265 dest=4355
+F22695 H15 AL8 SCOUT rtti=13 id=47 IQ=5 from=11405 dest=7536
+F22697 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F22748 H15 AL8 NAVAL-PATROL TDPT#5 dest=(19,95)
+F22906 H15 AL8 NAVAL-PATROL TDPT#5 dest=(24,95)
+F22907 H13 AL3 PROD start PBOX (cat=6) at factory AFACT#0
+F22907 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(9,40) wzones=3
+F22907 H13 AL3 POOL(6): APWR(u2) TENT(u1) AWEAP(u1) GUN(u2) AGUN(u3) AHPAD(u2) -> WIN AGUN(u3 aged=0)
+F22946 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=6 floor=8 ceiling=26 value=2000 floorvalue=6400 ceilingvalue=18000 iq=5 defences=3 sendpercent=80 forced=0
+F22985 H15 AL8 NAVAL-PATROL TDPT#5 dest=(61,62)
+F22996 H15 AL8 SCOUT rtti=28 id=53 IQ=5 from=8333 dest=10041
+F23002 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=17 floor=8 ceiling=26 value=4490 floorvalue=6400 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F23022 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F23067 H15 AL8 NAVAL-PATROL TDPT#5 dest=(75,91)
+F23101 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F23101 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=6 floor=8 ceiling=26 value=1700 floorvalue=6400 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F23131 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F23143 H15 AL8 NAVAL-PATROL TDPT#5 dest=(55,35)
+F23167 H13 AL3 PROD start ARTY (cat=29) at factory AWEAP#23
+F23296 H15 AL8 NAVAL-PATROL TDPT#5 dest=(66,60)
+F23296 H15 AL8 NAVAL-PATROL TDPT#7 dest=(97,66)
+F23336 H16 AL9 NAVAL-IDLE TDNSUB#4 mission=2 cell=(52,69) zone=1/1 radio=0 tarcom=0 navcom=1
+F23340 H13 AL3 PROD start AGUN (cat=6) at factory AFACT#0
+F23340 H13 AL3 POOL(6): APWR(u2) TENT(u1) AWEAP(u1) GUN(u2) AGUN(u2) AHPAD(u2) -> WIN APWR(u2 aged=0)
+F23376 H15 AL8 NAVAL-PATROL TDPT#5 dest=(71,55)
+F23376 H15 AL8 NAVAL-PATROL TDPT#7 dest=(79,39)
+F23416 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=6 floor=7 ceiling=26 value=2000 floorvalue=5600 ceilingvalue=18000 iq=5 defences=4 sendpercent=80 forced=0
+F23452 H15 AL8 NAVAL-PATROL TDPT#5 dest=(85,79)
+F23452 H15 AL8 NAVAL-PATROL TDPT#7 dest=(46,86)
+F23452 H15 AL8 NAVAL-PATROL TDPT#8 dest=(80,48)
+F23456 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F23477 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=13 floor=7 ceiling=26 value=3970 floorvalue=5600 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F23522 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F23533 H15 AL8 NAVAL-PATROL TDPT#5 dest=(74,33)
+F23533 H15 AL8 NAVAL-PATROL TDPT#7 dest=(43,84)
+F23572 H13 AL3 SCOUT rtti=13 id=7 IQ=5 from=6416 dest=10041
+F23575 H13 AL3 SCOUT rtti=13 id=3 IQ=5 from=6287 dest=7641
+F23575 H16 AL9 NAVAL-WAVE release massed=3 wave=3 cap=4
+F23575 H16 AL9 NAVAL-HUNT TDNSUB#2
+F23575 H16 AL9 NAVAL-HUNT TDNSUB#4
+F23575 H16 AL9 NAVAL-HUNT TDNSUB#6
+F23575 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=7 floor=7 ceiling=26 value=1900 floorvalue=5600 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F23580 H13 AL3 SCOUT rtti=28 id=30 IQ=5 from=6672 dest=7536
+F23602 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F23615 H15 AL8 NAVAL-PATROL TDPT#5 dest=(100,47)
+F23615 H15 AL8 NAVAL-PATROL TDPT#7 dest=(69,93)
+F23651 H16 AL9 NAVAL-MASS rally=(55,68) wave=3
+F23684 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F23697 H15 AL8 NAVAL-PATROL TDPT#5 dest=(60,32)
+F23697 H15 AL8 NAVAL-PATROL TDPT#7 dest=(76,91)
+F23703 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F23746 H14 NAVAL-PLACE SPEN cell=(44,41) ontarget=1 dist=1792 tzone=1 ok=69
+F23754 H14 AL2 PROD start TSLA (cat=6) at factory SFACT#3
+F23754 H14 AL2 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(37,41) wzones=3
+F23754 H14 AL2 POOL(8): BARR(u1) SWEAP(u1) FTUR(u2) SAM(u2) TSLA(u2) STEK(u2) SHPAD(u2) AFLD(u2) -> WIN STEK(u2 aged=13957)
+F23771 H15 DEF-OFFLINE TDATWR#79 (power 499/520)
+F23771 H15 DEF-OFFLINE TDATWR#79 (power 499/520)
+F23771 H15 DEF-OFFLINE TDATWR#79 (power 499/520)
+F23776 H15 AL8 NAVAL-PATROL TDPT#5 dest=(41,90)
+F23776 H15 AL8 NAVAL-PATROL TDPT#7 dest=(82,41)
+F23779 H15 DEF-OFFLINE TDATWR#71 (power 499/520)
+F23779 H15 DEF-OFFLINE TDATWR#71 (power 499/520)
+F23779 H15 DEF-OFFLINE TDATWR#71 (power 499/520)
+F23789 H14 AL2 PROD start LST (cat=31) at factory SPEN#96
+F23789 H14 AL2 NAVAL-PICK SS curV=1 cap=4 enavy=3
+F23809 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F23824 H16 AL9 PROD start TDFTNK (cat=29) at factory TDAFLD#18
+F23852 H15 AL8 PROD start TDAPC (cat=29) at factory TDWEAP#19
+F23852 H15 AL8 NAVAL-PATROL TDPT#5 dest=(68,37)
+F23852 H15 AL8 NAVAL-PATROL TDPT#7 dest=(62,60)
+F23877 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F23891 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=6 floor=7 ceiling=26 value=2000 floorvalue=5600 ceilingvalue=18000 iq=5 defences=4 sendpercent=80 forced=0
+F23932 H15 AL8 NAVAL-PATROL TDPT#5 dest=(84,81)
+F23932 H15 AL8 NAVAL-PATROL TDPT#7 dest=(67,84)
+F23946 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=7 floor=7 ceiling=26 value=2710 floorvalue=5600 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F23951 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F23991 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F24009 H15 AL8 NAVAL-PATROL TDPT#5 dest=(99,49)
+F24009 H15 AL8 NAVAL-PATROL TDPT#7 dest=(72,90)
+F24034 H15 AL8 NAVAL-PICK TDPT curV=3 cap=4 enavy=3
+F24044 H13 AL3 PROD start JEEP (cat=29) at factory AWEAP#23
+F24057 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F24057 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=11 floor=7 ceiling=26 value=2300 floorvalue=5600 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F24090 H15 AL8 NAVAL-MASS rally=(32,81) wave=3
+F24090 H15 AL8 WAVE-SHUFFLE (nothing sent) why=staging army=13 floor=7 ceiling=26 value=8580 floorvalue=5600 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F24100 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F24190 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F24209 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F24229 H13 AL3 PROD start APWR (cat=6) at factory AFACT#0
+F24229 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(9,40) wzones=3
+F24229 H13 AL3 POOL(6): APWR(u2) TENT(u1) AWEAP(u1) PBOX(u2) AGUN(u2) AHPAD(u2) -> WIN APWR(u2 aged=0)
+F24248 H15 AL8 WAVE-RELEASE why=timeout mode=attack-move alive=4 arrived=0 roster=13 stage=10147 objective=7584
+F24318 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F24318 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F24351 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=8 floor=7 ceiling=26 value=2200 floorvalue=5600 ceilingvalue=18000 iq=5 defences=5 sendpercent=95 forced=0
+F24416 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=9 floor=7 ceiling=26 value=4070 floorvalue=5600 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F24453 H15 AL8 PROD start TDPT (cat=31) at factory TDGYARD#87
+F24453 H15 AL8 NAVAL-PICK TDDD curV=4 cap=4 enavy=3
+F24454 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F24533 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=11 floor=7 ceiling=26 value=2000 floorvalue=5600 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F24561 H15 AL8 WAVE-LAUNCH why=roll army=11 floor=7 ceiling=26 value=6980 floorvalue=5600 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F24561 H15 AL8 WAVE-STAGE stage=8476 roster=6
+F24742 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F24766 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F24769 H16 AL9 NAVAL-WAVE release massed=3 wave=3 cap=4
+F24769 H16 AL9 NAVAL-HUNT TDNSUB#2
+F24769 H16 AL9 NAVAL-HUNT TDNSUB#4
+F24769 H16 AL9 NAVAL-HUNT TDNSUB#6
+F24785 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F24832 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=5 floor=7 ceiling=26 value=1200 floorvalue=5600 ceilingvalue=18000 iq=5 defences=5 sendpercent=95 forced=0
+F24848 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F24866 H15 AL8 PROD start TDE1 (cat=14) at factory TDPYLE#17
+F24900 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=10 floor=7 ceiling=26 value=4110 floorvalue=5600 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F24929 H16 AL9 NAVAL-MASS rally=(58,68) wave=3
+F24948 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F25005 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F25005 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=8 floor=7 ceiling=26 value=1700 floorvalue=5600 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F25143 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F25148 H15 AL8 PROD start TDE6 (cat=14) at factory TDPYLE#17
+F25149 H13 AL3 PROD start 1TNK (cat=29) at factory AWEAP#23
+F25307 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=6 floor=6 ceiling=26 value=1300 floorvalue=4800 ceilingvalue=18000 iq=5 defences=5 sendpercent=95 forced=0
+F25319 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F25377 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=9 floor=6 ceiling=26 value=3160 floorvalue=4800 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F25434 H13 AL3 SCOUT rtti=13 id=25 IQ=5 from=4998 dest=11761
+F25459 H13 AL3 SCOUT rtti=13 id=23 IQ=5 from=7440 dest=4857
+F25461 H13 AL3 SCOUT rtti=13 id=26 IQ=5 from=7313 dest=4517
+F25473 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=5 floor=6 ceiling=26 value=900 floorvalue=4800 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F25558 H13 AL3 PROD start APWR (cat=6) at factory AFACT#0
+F25558 H13 AL3 NAVAL ok=0 zone=0 size=-19 enemycoastal=0 center=(10,40) wzones=3
+F25558 H13 AL3 POOL(6): APWR(u2) TENT(u1) AWEAP(u1) PBOX(u2) AGUN(u2) AHPAD(u2) -> WIN APWR(u2 aged=0)
+F25571 H15 DEF-OFFLINE TDATWR#79 (power 495/520)
+F25571 H15 DEF-OFFLINE TDATWR#79 (power 495/520)
+F25571 H15 DEF-OFFLINE TDATWR#79 (power 495/520)
+F25579 H15 DEF-OFFLINE TDATWR#71 (power 495/520)
+F25579 H15 DEF-OFFLINE TDATWR#71 (power 495/520)
+F25579 H15 DEF-OFFLINE TDATWR#71 (power 495/520)
+F25714 H15 AL8 PROD start TDDD (cat=31) at factory TDGYARD#87
+F25714 H15 AL8 NAVAL-PICK TDPT curV=4 cap=5 enavy=5
+F25715 H15 AL8 PROD hold TDDD pct=0 cash=15 at TDGYARD#87
+F25743 H15 AL8 NAVAL-WAVE release massed=3 wave=3 cap=5
+F25743 H15 AL8 NAVAL-HUNT TDPT#5
+F25743 H15 AL8 NAVAL-HUNT TDPT#7
+F25743 H15 AL8 NAVAL-HUNT TDPT#9
+F25760 H15 AL8 PROD resume TDDD pct=0 cash=21 at TDGYARD#87
+F25761 H15 AL8 PROD start TDAPC (cat=29) at factory TDWEAP#19
+F25762 H15 AL8 PROD hold TDAPC pct=0 cash=11 at TDWEAP#19
+F25767 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F25782 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=5 floor=6 ceiling=26 value=1400 floorvalue=4800 ceilingvalue=18000 iq=5 defences=5 sendpercent=95 forced=0
+F25807 H15 AL8 PROD resume TDAPC pct=0 cash=55 at TDWEAP#19
+F25857 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=9 floor=6 ceiling=26 value=3160 floorvalue=4800 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F25860 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F25875 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F25899 H15 AL8 NAVAL-MASS rally=(31,81) wave=3
+F25945 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F25945 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=6 ceiling=26 value=600 floorvalue=4800 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F25969 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F26145 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F26172 H14 AL2 PROD start V2RL (cat=29) at factory SWEAP#22
+F26200 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F26229 H14 AL2 PROD start SS (cat=31) at factory SPEN#96
+F26229 H14 AL2 NAVAL-PICK SS curV=2 cap=4 enavy=4
+F26245 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F26250 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F26252 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=6 floor=6 ceiling=26 value=1500 floorvalue=4800 ceilingvalue=18000 iq=5 defences=5 sendpercent=95 forced=0
+F26294 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F26294 H15 AL8 NAVAL-IDLE TDPT#5 mission=14 cell=(17,72) zone=1/1 radio=0 tarcom=1 navcom=0
+F26322 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=16 floor=6 ceiling=26 value=4590 floorvalue=4800 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F26392 H13 AL3 PROD start 1TNK (cat=29) at factory AWEAP#23
+F26403 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F26415 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=6 ceiling=26 value=600 floorvalue=4800 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F26423 H13 AL3 PROD start APWR (cat=6) at factory AFACT#0
+F26423 H13 AL3 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(9,41) wzones=3
+F26423 H13 AL3 POOL(8): TENT(u1) AWEAP(u1) FIX(u2) PBOX(u2) AGUN(u3) ATEK(u2) AHPAD(u2) SYRD(u2) -> WIN AGUN(u3 aged=0)
+F26512 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F26567 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F26622 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F26677 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F26728 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=9 floor=6 ceiling=26 value=2200 floorvalue=4800 ceilingvalue=18000 iq=5 defences=5 sendpercent=95 forced=0
+F26732 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F26734 H16 AL9 NAVAL-IDLE TDNSUB#2 mission=14 cell=(42,85) zone=1/1 radio=0 tarcom=1 navcom=0
+F26787 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F26798 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=13 floor=6 ceiling=26 value=4380 floorvalue=4800 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F26842 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F26887 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F26887 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=6 ceiling=26 value=400 floorvalue=4800 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F26897 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F26953 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F26964 H13 AL3 PROD start AGUN (cat=6) at factory AFACT#0
+F26964 H13 AL3 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(10,41) wzones=3
+F26964 H13 AL3 POOL(8): TENT(u1) AWEAP(u1) FIX(u2) PBOX(u2) AGUN(u2) ATEK(u2) AHPAD(u2) SYRD(u2) -> WIN FIX(u2 aged=0)
+F27018 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F27023 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F27092 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F27116 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F27188 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F27191 H13 AL3 PROD start ARTY (cat=29) at factory AWEAP#23
+F27194 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=17 floor=5 ceiling=26 value=3600 floorvalue=4000 ceilingvalue=18000 iq=5 defences=5 sendpercent=95 forced=0
+F27255 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F27269 H14 AL2 WAVE-LAUNCH why=roll army=11 floor=5 ceiling=26 value=4270 floorvalue=4000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F27269 H14 AL2 WAVE-STAGE stage=5016 roster=10
+F27356 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=5 ceiling=26 value=500 floorvalue=4000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F27389 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F27406 H15 AL8 NAVAL-WAVE release massed=3 wave=3 cap=5
+F27406 H15 AL8 NAVAL-HUNT TDPT#5
+F27406 H15 AL8 NAVAL-HUNT TDPT#7
+F27406 H15 AL8 NAVAL-HUNT TDPT#9
+F27517 H13 AL3 PROD start FIX (cat=6) at factory AFACT#0
+F27517 H13 AL3 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(10,41) wzones=3
+F27517 H13 AL3 POOL(7): TENT(u1) AWEAP(u1) PBOX(u2) AGUN(u2) ATEK(u2) AHPAD(u2) SYRD(u2) -> WIN AHPAD(u2 aged=7897)
+F27560 H15 AL8 NAVAL-MASS rally=(31,81) wave=3
+F27606 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F27638 H15 AL8 WAVE-SHUFFLE (nothing sent) why=staging army=6 floor=5 ceiling=26 value=6560 floorvalue=4000 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F27661 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F27668 H16 AL9 NAVAL-IDLE TDNSUB#2 mission=14 cell=(42,85) zone=1/1 radio=0 tarcom=1 navcom=0
+F27673 H13 AL3 WAVE-LAUNCH why=roll army=18 floor=5 ceiling=26 value=4100 floorvalue=4000 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F27673 H13 AL3 WAVE-STAGE stage=4887 roster=16
+F27689 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F27712 H13 AL3 PROD start JEEP (cat=29) at factory AWEAP#23
+F27716 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F27776 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F27830 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F27830 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=5 ceiling=26 value=200 floorvalue=4000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F27851 H15 AL8 SCOUT rtti=28 id=43 IQ=5 from=10777 dest=4857
+F27881 H14 AL2 PROD start MIG (cat=2) at factory AFLD#54
+F27910 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F27983 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F28079 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F28094 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F28116 H15 AL8 WAVE-SHUFFLE (nothing sent) why=staging army=6 floor=5 ceiling=26 value=6560 floorvalue=4000 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F28132 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F28141 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F28179 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F28194 H15 AL8 WAVE-RELEASE why=timeout mode=attack-move alive=1 arrived=0 roster=6 stage=8476 objective=9902
+F28211 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F28279 H15 DEF-OFFLINE TDATWR#71 (power 451/490)
+F28279 H15 DEF-OFFLINE TDATWR#71 (power 451/490)
+F28279 H15 DEF-OFFLINE TDATWR#71 (power 451/490)
+F28303 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=5 ceiling=26 value=200 floorvalue=4000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F28428 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F28433 H13 AL3 PROD start APC (cat=29) at factory AWEAP#23
+F28444 H14 AL2 WAVE-SHUFFLE (nothing sent) why=staging army=5 floor=5 ceiling=26 value=1530 floorvalue=4000 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F28588 H15 AL8 NAVAL-WAVE release massed=3 wave=3 cap=5
+F28588 H15 AL8 NAVAL-HUNT TDPT#5
+F28588 H15 AL8 NAVAL-HUNT TDPT#7
+F28588 H15 AL8 NAVAL-HUNT TDPT#9
+F28588 H15 AL8 WAVE-SHUFFLE (nothing sent) why=roll-declined army=6 floor=5 ceiling=26 value=6560 floorvalue=4000 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F28620 H16 AL9 NAVAL-IDLE TDNSUB#2 mission=14 cell=(48,87) zone=1/1 radio=0 tarcom=1 navcom=0
+F28645 H13 AL3 PROD start E6 (cat=14) at factory TENT#21
+F28701 H16 AL9 NAVAL-WAVE release massed=3 wave=3 cap=4
+F28701 H16 AL9 NAVAL-HUNT TDNSUB#3
+F28701 H16 AL9 NAVAL-HUNT TDNSUB#4
+F28701 H16 AL9 NAVAL-HUNT TDNSUB#6
+F28721 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F28721 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F28721 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F28729 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F28729 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F28729 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F28743 H15 AL8 NAVAL-MASS rally=(31,82) wave=3
+F28782 H16 AL9 NAVAL-MASS rally=(56,69) wave=3
+F28782 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F28782 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=5 ceiling=26 value=200 floorvalue=4000 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F28920 H14 AL2 WAVE-SHUFFLE (nothing sent) why=staging army=3 floor=4 ceiling=26 value=1270 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F29018 H13 AL3 PROD start AHPAD (cat=6) at factory AFACT#0
+F29018 H13 AL3 NAVAL ok=1 zone=1 size=2499 enemycoastal=0 center=(10,41) wzones=3
+F29018 H13 AL3 POOL(7): TENT(u1) AWEAP(u1) PBOX(u2) AGUN(u2) ATEK(u2) AHPAD(u2) SYRD(u2) -> WIN PBOX(u2 aged=0)
+F29055 H15 AL8 WAVE-SHUFFLE (nothing sent) why=roll-declined army=6 floor=4 ceiling=26 value=6560 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F29084 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F29251 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=200 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F29289 H15 AL8 NAVAL-IDLE TDPT#9 mission=14 cell=(22,93) zone=1/1 radio=0 tarcom=1 navcom=0
+F29400 H14 AL2 WAVE-SHUFFLE (nothing sent) why=staging army=2 floor=4 ceiling=26 value=1110 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F29475 H13 AL3 WAVE-SHUFFLE (nothing sent) why=staging army=8 floor=4 ceiling=26 value=2400 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F29524 H15 AL8 WAVE-SHUFFLE (nothing sent) why=roll-declined army=6 floor=4 ceiling=26 value=6560 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F29616 H15 DEF-OFFLINE TDATWR#84 (power 453/490)
+F29616 H15 DEF-OFFLINE TDATWR#84 (power 453/490)
+F29616 H15 DEF-OFFLINE TDATWR#84 (power 453/490)
+F29654 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F29668 H13 AL3 PROD start JEEP (cat=29) at factory AWEAP#23
+F29726 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F29726 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=200 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F29758 H15 AL8 NAVAL-WAVE release massed=3 wave=3 cap=5
+F29758 H15 AL8 NAVAL-HUNT TDPT#5
+F29758 H15 AL8 NAVAL-HUNT TDPT#7
+F29758 H15 AL8 NAVAL-HUNT TDPT#9
+F29875 H14 AL2 WAVE-SHUFFLE (nothing sent) why=staging army=1 floor=4 ceiling=26 value=950 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F29944 H13 AL3 WAVE-SHUFFLE (nothing sent) why=staging army=8 floor=4 ceiling=26 value=3100 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F29993 H15 AL8 NAVAL-MASS rally=(31,82) wave=3
+F29993 H15 AL8 WAVE-LAUNCH why=roll army=4 floor=4 ceiling=26 value=3560 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F29993 H15 AL8 WAVE-STAGE stage=10021 roster=2
+F30027 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F30043 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F30071 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F30071 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F30071 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F30079 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F30079 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F30079 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F30098 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F30195 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=0 floor=4 ceiling=26 value=0 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F30337 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F30347 H14 AL2 WAVE-SHUFFLE (nothing sent) why=staging army=2 floor=4 ceiling=26 value=1110 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F30386 H15 AL8 NAVAL-IDLE TDPT#7 mission=14 cell=(14,73) zone=1/1 radio=0 tarcom=1 navcom=0
+F30416 H13 AL3 WAVE-SHUFFLE (nothing sent) why=staging army=5 floor=4 ceiling=26 value=2200 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F30434 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F30477 H13 AL3 PROD start 1TNK (cat=29) at factory AWEAP#23
+F30519 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F30521 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F30521 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F30521 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F30523 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F30591 H16 AL9 NAVAL-WAVE release massed=3 wave=3 cap=4
+F30591 H16 AL9 NAVAL-HUNT TDNSUB#2
+F30591 H16 AL9 NAVAL-HUNT TDNSUB#4
+F30591 H16 AL9 NAVAL-HUNT TDNSUB#6
+F30672 H16 AL9 NAVAL-MASS rally=(57,70) wave=3
+F30672 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F30672 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=10 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F30712 H16 AL9 PROD start TDE3 (cat=14) at factory TDHAND#16
+F30815 H16 AL9 PROD start TDFTNK (cat=29) at factory TDAFLD#18
+F30816 H14 AL2 WAVE-SHUFFLE (nothing sent) why=staging army=4 floor=4 ceiling=26 value=1280 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F30893 H15 AL8 PROD start TDA10 (cat=2) at factory TDGAFLD#56
+F30894 H13 AL3 WAVE-SHUFFLE (nothing sent) why=staging army=5 floor=4 ceiling=26 value=2000 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F30894 H14 AL2 WAVE-RELEASE why=timeout mode=attack-move alive=2 arrived=0 roster=10 stage=5016 objective=4880
+F30975 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F31138 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=200 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F31294 H13 AL3 WAVE-RELEASE why=timeout mode=attack-move alive=5 arrived=0 roster=16 stage=4887 objective=5916
+F31297 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=950 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F31338 H15 AL8 NAVAL-IDLE TDPT#7 mission=14 cell=(16,72) zone=1/1 radio=0 tarcom=1 navcom=0
+F31373 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=4 floor=4 ceiling=26 value=1400 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F31375 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F31421 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F31421 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F31421 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F31615 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F31615 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1000 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F31773 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=0 floor=4 ceiling=26 value=0 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F31841 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=1300 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F31871 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F31871 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F31871 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F31879 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F31879 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F31879 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F31935 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F32085 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1000 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F32260 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=0 floor=4 ceiling=26 value=0 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F32311 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=1300 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F32321 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F32321 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F32321 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F32324 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F32554 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F32554 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1000 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F32724 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=20 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F32749 H15 AL8 WAVE-SHUFFLE (nothing sent) why=staging army=3 floor=4 ceiling=26 value=2860 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F32771 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F32771 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F32771 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F32784 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=1300 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F32885 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F32977 H14 AL2 PROD start HIND (cat=2) at factory SHPAD#83
+F33013 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F33022 H14 AL2 PROD start 3TNK (cat=29) at factory SWEAP#22
+F33025 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1000 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F33068 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F33204 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=6 floor=4 ceiling=26 value=1230 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F33221 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F33221 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F33221 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F33223 H15 AL8 WAVE-SHUFFLE (nothing sent) why=staging army=3 floor=4 ceiling=26 value=2860 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F33261 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=1010 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F33266 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F33385 H15 AL8 NAVAL-IDLE TDPT#7 mission=2 cell=(32,82) zone=1/1 radio=0 tarcom=0 navcom=1
+F33467 H15 AL8 NAVAL-WAVE release massed=3 wave=3 cap=5
+F33467 H15 AL8 NAVAL-HUNT TDPT#5
+F33467 H15 AL8 NAVAL-HUNT TDPT#7
+F33467 H15 AL8 NAVAL-HUNT TDPT#9
+F33506 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F33506 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1000 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F33624 H15 AL8 NAVAL-MASS rally=(32,79) wave=3
+F33624 H15 AL8 WAVE-RELEASE why=timeout mode=attack-move alive=1 arrived=0 roster=2 stage=10021 objective=9902
+F33662 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F33684 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=5 floor=4 ceiling=26 value=1220 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F33701 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=2860 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F33727 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=800 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F33843 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F33941 H16 AL9 NAVAL-PICK TDNSUB curV=4 cap=4 enavy=2
+F33967 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F33974 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1000 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F34121 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F34121 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F34121 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F34129 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F34129 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F34129 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F34161 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=6 floor=4 ceiling=26 value=1320 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F34168 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1660 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F34212 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F34215 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=800 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F34448 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F34448 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1000 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F34571 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F34571 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F34571 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F34579 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F34579 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F34579 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F34630 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=6 floor=4 ceiling=26 value=1320 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F34636 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1660 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F34687 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=800 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F34787 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F34888 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F34924 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1000 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F35021 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F35021 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F35021 H15 DEF-OFFLINE TDATWR#79 (power 453/490)
+F35029 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F35029 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F35029 H15 DEF-OFFLINE TDATWR#71 (power 453/490)
+F35105 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=4 floor=4 ceiling=26 value=1060 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F35111 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=1960 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F35159 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F35176 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=700 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F35396 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F35396 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=4 floor=4 ceiling=26 value=1200 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F35466 H15 DEF-OFFLINE TDATWR#84 (power 452/490)
+F35466 H15 DEF-OFFLINE TDATWR#84 (power 452/490)
+F35466 H15 DEF-OFFLINE TDATWR#84 (power 452/490)
+F35471 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F35471 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F35471 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F35584 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=1960 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F35585 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=800 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F35656 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=700 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F35745 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F35846 H14 AL2 PROD start E2 (cat=14) at factory BARR#20
+F35876 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=200 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F35921 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F35921 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F35921 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F35929 H15 DEF-OFFLINE TDATWR#71 (power 452/490)
+F35929 H15 DEF-OFFLINE TDATWR#71 (power 452/490)
+F35929 H15 DEF-OFFLINE TDATWR#71 (power 452/490)
+F36055 H13 AL3 PROD start E3 (cat=14) at factory TENT#21
+F36059 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=960 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F36067 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1660 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F36112 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F36125 H13 AL3 WAVE-STRIKE hunt=1 living=2
+F36125 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=800 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F36351 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F36351 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=200 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F36366 H15 DEF-OFFLINE TDATWR#84 (power 452/490)
+F36366 H15 DEF-OFFLINE TDATWR#84 (power 452/490)
+F36366 H15 DEF-OFFLINE TDATWR#84 (power 452/490)
+F36371 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F36371 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F36371 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F36531 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=960 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F36548 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=160 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F36602 H13 AL3 WAVE-STRIKE hunt=1 living=2
+F36602 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=800 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F36687 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F36757 H13 AL3 WAVE-STRIKE hunt=1 living=2
+F36822 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=0 floor=4 ceiling=26 value=0 floorvalue=3200 ceilingvalue=18000 iq=5 defences=11 sendpercent=100 forced=1
+F36923 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F37002 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=1020 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F37025 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=160 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F37041 H16 AL9 PROD start TDNSUB (cat=31) at factory TDNPEN#69
+F37041 H16 AL9 NAVAL-PICK TDNSUB curV=5 cap=4 enavy=2
+F37059 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F37071 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=800 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F37182 H16 AL9 PROD start TDTMPL (cat=6) at factory TDNFACT#1
+F37182 H16 AL9 base=1 Tech=13 $52 Pow=558 Drain=585 PF<1=1 CurB=25 Rad=1581 hasinc=1 refQ=3 harvQ=3 tibShort=0 ABScan=00211840 | ROLE yard=1/1 weap=1/1 barr=1/1 hpad=0/0 fix=0/0 | TDPROC(cb=1,q=3) TDHAND(cb=1,q=1) TDWEAP(cb=0,q=0) TDNUK(cb=-2,q=-2) TDNUK2(cb=1,q=2) TDFACT(cb=0,q=0) TDTMPL(cb=1,q=1) TDEYE(cb=0,q=0) TDSTEAL(cb=0,q=0)
+F37182 H16 AL9 NAVAL ok=1 zone=1 size=2499 enemycoastal=1 center=(57,78) wzones=3
+F37182 H16 AL9 POOL(6): TDNUK2(u2) TDPROC(u3) TDHAND(u1) TDAFLD(u1) TDSAM(u2) TDNHPAD(u2) -> WIN TDPROC(u3 aged=0)
+F37183 H16 AL9 PROD hold TDTMPL pct=0 cash=52 at TDNFACT#1
+F37228 H16 AL9 PROD hold TDTMPL pct=0 cash=11 at TDNFACT#1
+F37229 H16 AL9 PROD start TDE1 (cat=14) at factory TDHAND#16
+F37273 H16 AL9 PROD hold TDTMPL pct=0 cash=1 at TDNFACT#1
+F37293 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F37293 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=300 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F37318 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37363 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37408 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37453 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37482 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=1020 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F37498 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37502 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=160 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F37537 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=700 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F37543 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37588 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37633 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37643 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F37678 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37723 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37768 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37768 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=300 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F37813 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37858 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37903 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37948 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F37964 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=1020 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F37970 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=160 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F37993 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38003 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F38012 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=700 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F38038 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38083 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38128 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38171 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F38171 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F38171 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F38173 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38218 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38243 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F38243 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=300 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F38263 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38308 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38353 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38398 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38437 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=1020 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F38443 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38446 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=160 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F38483 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=700 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F38488 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38533 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38578 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38596 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F38621 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F38621 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F38621 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F38623 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38668 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38713 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38721 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=310 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F38758 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38803 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38848 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38893 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38896 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F38919 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing-value army=4 floor=4 ceiling=26 value=1120 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F38919 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=160 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F38938 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F38951 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F38957 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=700 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F38983 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39000 H14 AL2 NAVAL-MASS rally=(44,40) wave=3
+F39016 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F39028 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39073 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39118 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39140 H15 AL8 PROD start TDGMCV (cat=29) at factory TDWEAP#19
+F39163 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39194 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F39194 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=300 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F39208 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39253 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39298 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39343 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39388 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39389 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=800 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F39390 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=860 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F39429 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1000 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F39433 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39478 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39523 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39549 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F39568 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39613 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39658 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39669 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=0 floor=4 ceiling=26 value=0 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F39703 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39748 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39793 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39838 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39860 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=860 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F39871 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=800 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F39883 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39900 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1000 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F39905 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F39928 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F39971 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F39971 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F39971 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F39973 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40018 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40063 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40108 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40149 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F40149 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=0 floor=4 ceiling=26 value=0 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F40153 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40198 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40243 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40288 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40333 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40340 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=860 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F40347 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=800 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F40357 H15 AL8 PROD start TDE2 (cat=14) at factory TDPYLE#17
+F40366 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=1000 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F40378 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40421 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F40421 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F40421 H15 DEF-OFFLINE TDATWR#79 (power 452/490)
+F40423 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40468 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40505 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F40513 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40540 H15 AL8 PROD start TDE3 (cat=14) at factory TDPYLE#17
+F40558 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40603 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40607 H14 AL2 PROD start SS (cat=31) at factory SPEN#96
+F40607 H14 AL2 NAVAL-PICK SS curV=3 cap=4 enavy=4
+F40624 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=0 floor=4 ceiling=26 value=0 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F40630 H14 AL2 PROD start E1 (cat=14) at factory BARR#20
+F40648 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40693 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40738 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40783 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40804 H14 AL2 SCOUT rtti=13 id=1 IQ=5 from=7457 dest=4857
+F40812 H14 AL2 SCOUT rtti=13 id=2 IQ=5 from=5289 dest=11761
+F40813 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=860 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F40820 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=200 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F40828 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40833 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=700 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F40865 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F40873 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40918 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F40963 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F41008 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F41053 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F41098 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F41101 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F41101 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=100 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F41143 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F41188 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F41233 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F41278 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F41288 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=860 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F41298 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=3 floor=4 ceiling=26 value=210 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F41313 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=700 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F41323 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F41368 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F41413 H16 AL9 PROD hold TDTMPL pct=0 cash=0 at TDNFACT#1
+F41420 H16 AL9 PROD start TDE4 (cat=14) at factory TDHAND#16
+F41456 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F41458 H16 AL9 PROD hold TDTMPL pct=0 cash=30 at TDNFACT#1
+F41503 H16 AL9 PROD hold TDTMPL pct=0 cash=35 at TDNFACT#1
+F41548 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F41581 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing-value army=5 floor=4 ceiling=26 value=500 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F41593 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F41638 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F41683 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F41728 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F41754 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=860 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F41772 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=200 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F41773 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F41783 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=700 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F41816 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F41818 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F41863 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F41908 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F41930 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F41953 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F41971 H13 AL3 PROD start ARTY (cat=29) at factory AWEAP#23
+F41998 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42043 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42054 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F42054 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=100 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F42088 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42133 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42178 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42223 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42227 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=860 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F42248 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=0 floor=4 ceiling=26 value=0 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F42257 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=5 floor=4 ceiling=26 value=1610 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F42268 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42313 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42358 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42403 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42404 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F42448 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42493 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42525 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=100 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F42538 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42583 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42628 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42673 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42696 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=860 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F42718 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42720 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=0 floor=4 ceiling=26 value=0 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F42738 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=5 floor=4 ceiling=26 value=1610 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F42755 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F42763 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42808 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42853 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42898 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42943 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42988 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F42990 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F42990 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=100 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F43033 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43078 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43123 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43168 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43174 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=860 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F43195 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=0 floor=4 ceiling=26 value=0 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F43205 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=4 floor=4 ceiling=26 value=1510 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F43213 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43258 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43303 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43348 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43351 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F43393 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43438 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43458 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=100 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F43483 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43528 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43573 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43618 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43653 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=2 floor=4 ceiling=26 value=320 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F43663 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43668 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=0 floor=4 ceiling=26 value=0 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F43682 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=4 floor=4 ceiling=26 value=1510 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F43697 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F43708 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43753 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43798 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43843 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43888 H16 AL9 PROD hold TDTMPL pct=0 cash=3 at TDNFACT#1
+F43932 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F43932 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=100 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F43933 H16 AL9 PROD hold TDTMPL pct=0 cash=20 at TDNFACT#1
+F43978 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44023 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44068 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44113 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44125 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=160 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F44146 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=0 floor=4 ceiling=26 value=0 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F44150 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=4 floor=4 ceiling=26 value=1510 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F44158 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44203 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44248 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44293 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44302 H14 AL2 FERRY-WAIT no-assault a=0 b=1
+F44338 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44383 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44408 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=100 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F44428 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44473 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44518 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44545 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F44563 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44606 H15 AL8 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=160 floorvalue=3200 ceilingvalue=18000 iq=5 defences=14 sendpercent=100 forced=1
+F44608 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44614 H14 AL2 WAVE-SHUFFLE (nothing sent) why=massing army=0 floor=4 ceiling=26 value=0 floorvalue=3200 ceilingvalue=18000 iq=5 defences=10 sendpercent=100 forced=1
+F44617 H13 AL3 WAVE-SHUFFLE (nothing sent) why=massing-value army=5 floor=4 ceiling=26 value=1610 floorvalue=3200 ceilingvalue=18000 iq=5 defences=6 sendpercent=95 forced=0
+F44644 H16 AL9 NAVAL-IDLE TDNSUB#3 mission=14 cell=(46,52) zone=1/1 radio=0 tarcom=1 navcom=0
+F44653 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44674 H13 AL3 PROD start E1 (cat=14) at factory TENT#21
+F44698 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44743 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44788 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44833 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44878 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44880 H16 AL9 FERRY-WAIT no-assault a=0 b=1
+F44880 H16 AL9 WAVE-SHUFFLE (nothing sent) why=massing army=1 floor=4 ceiling=26 value=100 floorvalue=3200 ceilingvalue=18000 iq=5 defences=12 sendpercent=100 forced=1
+F44923 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1
+F44968 H16 AL9 PROD hold TDTMPL pct=0 cash=2 at TDNFACT#1

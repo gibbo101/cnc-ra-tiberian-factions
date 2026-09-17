@@ -299,6 +299,77 @@ struct SoundEffectNameStruct
     {"SONIC4", 1, IN_NOVAR},      // VOC_TS_SONIC4 — TS Disruptor sonic beam (WEAPON_SONICZAP Report=SONIC4), routed via RAC/RAR_SFX_SONIC4 (bundled WAV under TDR_SFX_CRUMBLE)
     {"FLAMTNK1", 1, IN_NOVAR},    // VOC_TS_FLAMTNK1 -- TS flame tank fire (WEAPON_TSFIREBALL Report=FLAMTNK1), routed via RAC/RAR_SFX_FLAMTNK1 (bundled WAV under TDR_SFX_TURRFIR5)
     {"SUBDRIL1", 1, IN_NOVAR},    // VOC_TS_SUBDRIL1 -- TS subterranean dig sound (UnitClass::Tunnel_AI), routed via RAC/RAR_SFX_SUBDRIL1 (bundled WAV under TDR_SFX_SAMMOTR2)
+    {"TSION1", 1, IN_NOVAR},      // VOC_TS_ION1 -- TS Ion Cannon strike (ANIM_TS_ION_BEAM), routed via RAC/RAR_SFX_TSION1 (bundled TSION1.WAV, own name)
+    {"TONE15", 10, IN_NOVAR},     // VOC_TD_MONEY_UP -- TD rising money tick (RAC/RAR_SFX_TONE15 -> TD?_SFX_TONE15.WAV)
+    {"TONE16", 10, IN_NOVAR},     // VOC_TD_MONEY_DOWN -- TD falling money tick (RAC/RAR_SFX_TONE16 -> TD?_SFX_TONE16.WAV)
+    {"CASHUPD", 10, IN_NOVAR},    // VOC_DLL_MONEY_UP -- RA rising money tick, DLL-fired alias (RAC/RAR_SFX_CASHUPD -> RA?_SFX_cashup1.WAV)
+    {"CASHDND", 10, IN_NOVAR},    // VOC_DLL_MONEY_DOWN -- RA falling money tick, DLL-fired alias (RAC/RAR_SFX_CASHDND -> RA?_SFX_cashdn1.WAV)
+    {"TSGUN4", 1, IN_NOVAR},      // VOC_TS_GUN4 -- TS Vulcan2 report: the drop pod's LZ strafe (RAC/RAR_SFX_TSGUN4 -> bundled TSGUN4.WAV, own name)
+    {"TSMETEOR", 1, IN_NOVAR},    // VOC_TS_METEOR -- TS meteor whoosh: the drop pod descent scream (RAC/RAR_SFX_TSMETEOR -> bundled TSMETEOR.WAV, own name)
+    {"TSHUNTR2", 1, IN_NOVAR},    // VOC_TS_HUNTER2 -- TS hunter seeker detonation (RAC/RAR_SFX_TSHUNTR2 -> bundled TSHUNTR2.WAV, own name)
+    {"TSCREDUP1", 10, IN_NOVAR},  // VOC_TS_MONEY_UP -- TS rising money tick (RAC/RAR_SFX_TSCREDUP1 -> bundled TSCREDUP1.WAV, own name)
+    {"TSCREDDWN1", 10, IN_NOVAR}, // VOC_TS_MONEY_DOWN -- TS falling money tick (RAC/RAR_SFX_TSCREDDWN1 -> bundled TSCREDDWN1.WAV, own name)
+    {"TSCOMMUP1", 1, IN_NOVAR},   // VOC_TS_RADAR_ON -- TS radar up (RAC/RAR_SFX_TSCOMMUP1 -> bundled TSCOMMUP1.WAV, own name)
+    {"TSRADARDN1", 1, IN_NOVAR},  // VOC_TS_RADAR_OFF -- TS radar down (RAC/RAR_SFX_TSRADARDN1 -> bundled TSRADARDN1.WAV, own name)
+    {"TSPLACE2", 10, IN_NOVAR},   // VOC_TS_PLACE_BUILDING_DOWN -- TS building slam (RAC/RAR_SFX_TSPLACE2 -> bundled TSPLACE2.WAV, own name)
+    {"TSCHAINGN1", 1, IN_NOVAR},  // VOC_TS_CHAINGN1 -- TS Vulcan tower (RAC/RAR_SFX_TSCHAINGN1 -> bundled TSCHAINGN1.WAV, own name)
+    {"TSGLNCH4", 1, IN_NOVAR},    // VOC_TS_GLNCH4 -- TS RPG tower (RAC/RAR_SFX_TSGLNCH4 -> bundled TSGLNCH4.WAV, own name)
+    {"TSSAMSHOT1", 1, IN_NOVAR},  // VOC_TS_SAMSHOT1 -- TS SAM tower (RAC/RAR_SFX_TSSAMSHOT1 -> bundled TSSAMSHOT1.WAV, own name)
+    {"TSEXPNEW13", 1, IN_NOVAR},  // VOC_TS_EXPNEW13 -- TS missile impact (RAC/RAR_SFX_TSEXPNEW13 -> bundled TSEXPNEW13.WAV, own name)
+    {"TSEXPNEW14", 1, IN_NOVAR},  // VOC_TS_EXPNEW14 -- TS grenade impact (RAC/RAR_SFX_TSEXPNEW14 -> bundled TSEXPNEW14.WAV, own name)
+    {"TS120MMX9", 1, IN_NOVAR},   // VOC_TS_120MMX9 -- TS Mammoth Tank cannon (RAC/RAR_SFX_TS120MMX9 -> bundled TS120MMX9.WAV, own name)
+    {"TSINFGUN3", 1, IN_NOVAR},   // VOC_TS_INFGUN3 -- TS Light Infantry minigun (RAC/RAR_SFX_TSINFGUN3 -> bundled TSINFGUN3.WAV, own name)
+    {"TSHEALER1", 1, IN_NOVAR},   // VOC_TS_HEALER1 -- TS Medic heal (RAC/RAR_SFX_TSHEALER1 -> bundled TSHEALER1.WAV, own name)
+    {"TSBIGGGUN1", 1, IN_NOVAR},  // VOC_TS_BIGGGUN1 -- TS Ghost Stalker railgun (RAC/RAR_SFX_TSBIGGGUN1 -> bundled TSBIGGGUN1.WAV, own name)
+    {"TSJUMPJET1", 1, IN_NOVAR},  // VOC_TS_JUMPJET1 -- TS Jumpjet Infantry cannon (RAC/RAR_SFX_TSJUMPJET1 -> bundled TSJUMPJET1.WAV, own name)
+
+    // TS Engineer / Medic / Ghost Stalker voice sets 19 / 20 / 14, single takes like the TD
+    // Commando's (localized RAC/RAR_SFX_TS<set>I<line>, scripts/ts_voices_build.py SINGLES).
+    {"TS19I000", 20, IN_NOVAR},   // VOC_TS_19I000
+    {"TS19I002", 20, IN_NOVAR},   // VOC_TS_19I002
+    {"TS19I006", 20, IN_NOVAR},   // VOC_TS_19I006
+    {"TS19I010", 20, IN_NOVAR},   // VOC_TS_19I010
+    {"TS19I016", 20, IN_NOVAR},   // VOC_TS_19I016
+    {"TS19I018", 20, IN_NOVAR},   // VOC_TS_19I018
+    {"TS20I000", 20, IN_NOVAR},   // VOC_TS_20I000
+    {"TS20I004", 20, IN_NOVAR},   // VOC_TS_20I004
+    {"TS20I006", 20, IN_NOVAR},   // VOC_TS_20I006
+    {"TS20I008", 20, IN_NOVAR},   // VOC_TS_20I008
+    {"TS20I010", 20, IN_NOVAR},   // VOC_TS_20I010
+    {"TS20I012", 20, IN_NOVAR},   // VOC_TS_20I012
+    {"TS20I016", 20, IN_NOVAR},   // VOC_TS_20I016
+    {"TS20I018", 20, IN_NOVAR},   // VOC_TS_20I018
+    {"TS20I020", 20, IN_NOVAR},   // VOC_TS_20I020
+    {"TS14I000", 20, IN_NOVAR},   // VOC_TS_14I000
+    {"TS14I002", 20, IN_NOVAR},   // VOC_TS_14I002
+    {"TS14I004", 20, IN_NOVAR},   // VOC_TS_14I004
+    {"TS14I008", 20, IN_NOVAR},   // VOC_TS_14I008
+    {"TS14I010", 20, IN_NOVAR},   // VOC_TS_14I010
+    {"TS14I012", 20, IN_NOVAR},   // VOC_TS_14I012
+    {"TS14I014", 20, IN_NOVAR},   // VOC_TS_14I014
+    {"TS14I016", 20, IN_NOVAR},   // VOC_TS_14I016
+    {"TSEXPNEW10", 1, IN_NOVAR},  // VOC_TS_EXPNEW10 -- TS small explosion, a jumpjet shot down (RAC/RAR_SFX_TSEXPNEW10 -> bundled TSEXPNEW10.WAV, own name)
+    {"TSORCAMIS1", 1, IN_NOVAR},  // VOC_TS_ORCAMIS1 -- TS Orca missile launch
+    {"TSORCAUP1", 1, IN_NOVAR},   // VOC_TS_ORCAUP1 -- TS Orca take-off
+    {"TSORCADWN1", 1, IN_NOVAR},  // VOC_TS_ORCADWN1 -- TS Orca landing
+    {"TS30I000", 20, IN_NOVAR},   // VOC_TS_30I000
+    {"TS30I002", 20, IN_NOVAR},   // VOC_TS_30I002
+    {"TS30I004", 20, IN_NOVAR},   // VOC_TS_30I004
+    {"TS30I006", 20, IN_NOVAR},   // VOC_TS_30I006
+    {"TS30I014", 20, IN_NOVAR},   // VOC_TS_30I014
+    {"TS30I016", 20, IN_NOVAR},   // VOC_TS_30I016
+    {"TS30I018", 20, IN_NOVAR},   // VOC_TS_30I018
+    {"TS30I022", 20, IN_NOVAR},   // VOC_TS_30I022
+    {"TS30I030", 20, IN_NOVAR},   // VOC_TS_30I030
+    {"TS30I034", 20, IN_NOVAR},   // VOC_TS_30I034
+    {"TS30I036", 20, IN_NOVAR},   // VOC_TS_30I036
+    {"TSDEPLOY", 1, IN_NOVAR},    // VOC_TS_DEPLOY -- TS DeploySound 27-I002, the deploy key's "deploying"
+    {"TSJUGGER1", 1, IN_NOVAR},   // VOC_TS_JUGGER1 -- TS Juggernaut cannon report
+    {"TSLIMPBOM1", 1, IN_NOVAR},  // VOC_TS_LIMPBOM1 -- TS Limpet Drone attaching
+    {"TSLIMPQ3", 20, IN_NOVAR},   // VOC_TS_LIMPQ3 -- TS Limpet Drone select
+    {"TSLIMPQ4", 20, IN_NOVAR},   // VOC_TS_LIMPQ4
+    {"TSLIMPC3", 20, IN_NOVAR},   // VOC_TS_LIMPC3 -- TS Limpet Drone move/attack
+    {"TSLIMPC4", 20, IN_NOVAR},   // VOC_TS_LIMPC4
 };
 
 //
@@ -738,6 +809,7 @@ void Init_SpeechTD(void)
     SpeechTD[VOX_REINFORCEMENTS]     = "TDREINFOR1";
     SpeechTD[VOX_CANCELED]           = "TDCANCEL1";
     SpeechTD[VOX_BUILDING]           = "TDBLDGING1";
+    SpeechTD[VOX_TRAINING]           = "TDBLDGING1"; // TD has no "Training": it says "Building" for units too
     SpeechTD[VOX_LOW_POWER]          = "TDLOPOWER1";
     SpeechTD[VOX_INSUFFICIENT_POWER] = "TDNOPOWER1";
     SpeechTD[VOX_NEED_MO_MONEY]      = "TDMOCASH1";
@@ -750,6 +822,87 @@ void Init_SpeechTD(void)
     SpeechTD[VOX_NEED_MO_CAPACITY]   = "TDSILOS1";
     SpeechTD[VOX_SUSPENDED]          = "TDONHOLD1";
     SpeechTD[VOX_REPAIRING]          = "TDREPAIR1";
+    SpeechTD[VOX_STRUCTURE_SOLD]     = "TDSTRUSLD1";
+    SpeechTD[VOX_STRUCTURE_DESTROYED] = "TDSTRCLOST";
+    SpeechTD[VOX_ABOMB_READY]        = "TDNUKAVAIL";
+    SpeechTD[VOX_ABOMB_LAUNCH]       = "TDNUKLNCH1";
+    SpeechTD[VOX_AIRCRAFT_LOST]      = "TDUNITLOST"; // TD has one "unit lost" for every arm
+    SpeechTD[VOX_SHIP_LOST]          = "TDUNITLOST";
+    SpeechTD[VOX_HQ_UNDER_ATTACK]    = "TDBASEATK1";
+}
+
+/*
+**  RA-voice overrides for lines whose launcher auto-fire is silence-stubbed
+**  (the radar recipe): the DLL refires these itself for every faction, so
+**  Allied/Soviet dispatch must resolve NEW event names (RAC/RAR_SFX_RAO*)
+**  whose samples are loose copies of the base RA EVA — the ORIGINAL event's
+**  sample name now points at a 44-byte silent stub. TD factions take
+**  SpeechTD[] first; this table is the everyone-else fallback. NULL = the
+**  RA Speech[] name is untouched by any stub, dispatch it as-is.
+*/
+/*
+**  Tiberian Sun GDI's own EVA. Same shape as SpeechTD[]: a filled slot is the
+**  sample name the DLL hands the launcher, a NULL slot falls back to the TD
+**  announcer (never RA's -- On_Speech drops a line no Tiberium-era side has a
+**  recording of). Samples ride the proven loose-file route: novel names resolve
+**  from <mod>\Data\AUDIO\EN-US as MS-ADPCM WAVs, registered as events in the
+**  mod's loose SFXEVENTSLOCALIZED.XML.
+*/
+char const* SpeechTS[VOX_COUNT] = {NULL};
+
+void Init_SpeechTS(void)
+{
+    static bool inited = false;
+    if (inited)
+        return;
+    inited = true;
+
+    SpeechTS[VOX_ACCOMPLISHED]       = "TSACCOM1";
+    SpeechTS[VOX_FAIL]               = "TSFAIL1";
+    SpeechTS[VOX_NO_FACTORY]         = "TSNOFACT1";
+    SpeechTS[VOX_CONSTRUCTION]       = "TSCONSTRU1";
+    SpeechTS[VOX_UNIT_READY]         = "TSUNITREDY";
+    SpeechTS[VOX_NEW_CONSTRUCT]      = "TSNEWOPT1";
+    SpeechTS[VOX_DEPLOY]             = "TSDEPLOY1";
+    SpeechTS[VOX_STRUCTURE_DESTROYED] = "TSSTRCLOST";
+    SpeechTS[VOX_NO_CASH]            = "TSNOCASH1";
+    SpeechTS[VOX_NEED_MO_MONEY]      = "TSNOCASH1"; // TS has one "insufficient funds"
+    SpeechTS[VOX_CONTROL_EXIT]       = "TSBATLCON1";
+    SpeechTS[VOX_REINFORCEMENTS]     = "TSREINFOR1";
+    SpeechTS[VOX_CANCELED]           = "TSCANCEL1";
+    SpeechTS[VOX_BUILDING]           = "TSBLDGING1";
+    SpeechTS[VOX_TRAINING]           = "TSTRAIN1";
+    SpeechTS[VOX_LOW_POWER]          = "TSLOPOWER1";
+    SpeechTS[VOX_INSUFFICIENT_POWER] = "TSLOPOWER1"; // TS warns on low power only
+    SpeechTS[VOX_BASE_UNDER_ATTACK]  = "TSBASEATK1";
+    SpeechTS[VOX_HQ_UNDER_ATTACK]    = "TSBASEATK1";
+    SpeechTS[VOX_PRIMARY_SELECTED]   = "TSPRIBLDG1";
+    SpeechTS[VOX_UNIT_LOST]          = "TSUNITLOST";
+    SpeechTS[VOX_AIRCRAFT_LOST]      = "TSUNITLOST"; // one "unit lost" for every arm
+    SpeechTS[VOX_SHIP_LOST]          = "TSUNITLOST";
+    SpeechTS[VOX_SELECT_TARGET]      = "TSSELECT1";
+    SpeechTS[VOX_NEED_MO_CAPACITY]   = "TSSILOS1";
+    SpeechTS[VOX_SUSPENDED]          = "TSONHOLD1";
+    SpeechTS[VOX_REPAIRING]          = "TSREPAIR1";
+    SpeechTS[VOX_STRUCTURE_SOLD]     = "TSSTRUSLD1";
+    SpeechTS[VOX_UNIT_REPAIRED]      = "TSUNITREPD";
+}
+
+char const* SpeechRAO[VOX_COUNT] = {NULL};
+
+void Init_SpeechRAO(void)
+{
+    static bool inited = false;
+    if (inited)
+        return;
+    inited = true;
+
+    // RAO names exist for lines whose stock sample is silence-stubbed (to
+    // mute the launcher's own faction-blind auto-fire) but which the DLL can
+    // still speak audibly. That only works MID-GAME: speech dispatched in the
+    // game-over window is dropped by the launcher, so endgame lines route
+    // through the era mailbox instead (dllinterface.cpp).
+    SpeechRAO[VOX_STRUCTURE_SOLD] = "RAOSTRUSLD1";
 }
 
 /***********************************************************************************************

@@ -1,6 +1,6 @@
 # Launcher render contracts — discoveries from the TS walker ports (2026-07-20)
 
-Six hard-won rules from porting the TS Titan (`UNIT_TSTITN`) and Mammoth Mk. II
+Hard-won rules from porting the TS Titan (`UNIT_TSTITN`) and Mammoth Mk. II
 (`UNIT_TSHMEC`) with a working railgun. Every one of these cost a build-test
 cycle to find; check this list BEFORE shipping any new unit art, anim, or
 beam weapon. Fix-site comments exist in code; this doc is the collected story.
@@ -207,6 +207,48 @@ bbox-centred paste **moves the sprite** even when every body pixel is in the sam
   panelling". The voxel render with real normals stays. Script kept for reference only (needs a
   scikit-image venv). Don't re-chase unless units are drawn larger than the game does.
 
+## 12. A new stub line does nothing until TFASSETS.MIX is rebuilt and committed (2026-09-13)
+
+Adding a stub line to `scripts/build_tfassets.sh` does nothing until the script is run and
+`CCDATA/TFASSETS.MIX` is committed. A new HD bullet with no classic stub draws at a fallback
+size, as a large blocky square: the Disc Thrower's TSDISCUS flew as a ~70x80 px block of its own
+colours until the rebuild. The rebuilt archive lists new entries by CRC, not name, so check the
+entry count against the committed copy (`mix_tools.py list`) rather than grepping for the name.
+
+## 13. Art px to leptons is canvas px x 4/3 (2026-09-17)
+
+A packed unit ships at 8x-classic density (canvas = ShapeSize x 8), so one canvas pixel is
+4/3 leptons and one TS SHP pixel at x6.4 is 8.53. Fire points, muzzle tables and any offset
+measured off packed art convert at that rate. Derive them in the packer and emit a table
+(`tstitn_muzzle.h`, `ts4tnk_muzzle.h`, `tsjugg_muzzle.h`) so the art and the offset cannot
+drift; a hand-dialled constant will read right beside the unit and miss by cells at range.
+
+The Juggernaut's first fire point was a trig formula built on "1 TS px = 2 leptons", a quarter
+of the real rate: its shells left from near the hull centre in every pose, which looks close
+enough on screen at point-blank and is a cell and a half out at range 18.
+
+## 14. A unit and the building it deploys into must share a ground line (2026-09-17)
+
+The launcher centres a selection box on the object and draws its health bar above that box, and
+a unit's art anchors on its canvas centre. So where the art's lowest pixels sit relative to that
+centre is the unit's ground line, and it decides three things at once: whether the box brackets
+the feet, whether the bar clears the hull, and whether the sprite appears to jump when the object
+is replaced by another one on the same cell.
+
+Two stances of one entity, or a deployable and the building it becomes, must therefore agree:
+
+- The Juggernaut's walk frames sat 10 classic px north of its deployed frames, which read as a
+  gap under the box, a bar across the hull, and a hop north on pack-up. Fixed by dropping the
+  walk frames onto the deployed ground line (`WALK_DROP` in `scripts/ts_pack_jugg.py`).
+- The Limpet Mine sat 5.8 classic px below the cell centre where the drone's shadow sat 11.6, so
+  deploying hopped it north. Fixed by dropping the mine and its build-up onto the drone's line
+  (`BLDG_DROP` in `scripts/ts_pack_limpet.py`).
+
+Measure, do not eyeball: read the lowest opaque pixel per frame in full canvas space (add the
+meta `crop` offset) and divide by the density. For reference, TS's 1x1 buildings sit about +10 to
++12 classic px below the cell centre, and unit shadows sit further out again the taller the unit
+(Wolverine +13.9, Juggernaut deployed +18, Titan +22.8).
+
 ## House quality policy for TS-sourced assets (Luke, 2026-07-20)
 
 **Every unit, building, and weapon pulled from Tiberian Sun ships at the
@@ -307,7 +349,10 @@ highest quality the pipeline can produce.** Concretely:
   38 px taller and sits 78 px lower, `--canvas 624`), TSMCV (yaw0 90, no reorder →
   `ts_pack_tsmcv.py`), TSHVR (yaw0 90, `--canvas 500`) + HVRTUR (**`--z-clip 10`** drum clip,
   `--canvas 660`) → `ts_pack_hvr_hmec.py`, TSHMEC (yaw0 90, **`--elev 35`**, `--hva HMEC.HVA
-  --hva-frame f` for f in 0 2 4 6 8 11 13 15, `--canvas 1000`, dirs `ts35_hmec_<f>`) → same script.
+  --hva-frame f` for f in 0 2 4 6 8 11 13 15, `--canvas 1000`, dirs `ts35_hmec_<f>`, PLUS the same
+  renders with **`--shadow 0.6,-0.2`** into `ts35sh_hmec_<f>`: the body set owns the union fit, the
+  shadow set is what ships; canvas 576 / stub 72 so the east-cast shadow of the E-facing barrel
+  fits; NOT in `ts_reshadow.py`) → same script.
   Aircraft: DSHP dropship `--yaw0 180 --elev 32 --canvas 656 --px-per-voxel 6.4 --team-green
   255,204,51` → `ts_pack_dropship.py`. After ANY repack: `ts_reshadow.py` (not on water frames), then
   `ts_recrop_to_shipped.py` — see contract 11. VXLs
@@ -326,8 +371,30 @@ highest quality the pipeline can produce.** Concretely:
   TDC_/TDR_-named events only fire in TD game context, never in our mod, but
   GUI events are game-agnostic and DO fire in RA mode (proven 2026-07-22:
   SFX_GUI_Generic_Bad_Sound plays SCOLD1, which the RAC_/RAR_-only census had
-  marked dormant). New sample names are IMPOSSIBLE (novel names crash
-  ClientG); overriding is the only channel.
+  marked dormant). ⭐ **THE DORMANT-HOST CONSTRAINT IS FALSIFIED (2026-08-31,
+  controlled live probe): NOVEL sample names RESOLVE from loose files.** A
+  novel-named copy of known-good bytes played on the EVA channel
+  (RAR_SFX_TDCONSTRU1 → "TSEVA_PROBE2_EN-US.MP3" → loose file, played), and a
+  same-name loose override of a localized sample played in the same run. Every
+  historical "novel name" failure was file FORMAT: the old crash was plain-PCM
+  hitting the ADPCM math (EIP 0x400000+0xAB5E69), and two 08-30 probes failed
+  as an actual MP3 / wrong-shape WAV. **The real rules: (1) format must be
+  MS-ADPCM WAV (the localized "MP3" entries are a lie — MEG members are
+  ADPCM WAVs, e.g. EVA lines stereo 44077 Hz align 140; SFX 22050 mono align
+  1024); (2) localized samples live under a locale dir (Data/AUDIO/EN-US/) and
+  the XML .MP3 extension maps to a .WAV member; (3) bad format fails silent or
+  crashes — md5+fmt-check files against a base sample of the same channel.**
+  Dormant hosts are now just a legacy technique (the 6 shipped ones keep
+  working); new audio ships under its OWN names. **END-TO-END PROVEN
+  2026-08-31: an actual TS EVA line played in-game** — TIBSUN.MIX SPEECH01.MIX
+  `00-I018.AUD` → ts_aud_decode.py → `ffmpeg -ac 2 -ar 44077 -c:a adpcm_ms`
+  (default align 1024 IS accepted on the EVA channel) → loose novel name →
+  localized event repoint. **PROVEN ON BOTH CHANNELS**: localized/EVA (TS EVA
+  line in-game) AND nonlocalized weapon-SFX (2026-08-31: MGUN2 repointed at a
+  novel-named 22050-mono MS-ADPCM WAV played on every minigunner shot). No
+  caveats remain — the dormant-host constraint is fully dead. Probe
+  side-lesson: never probe audio via the launcher-fired credit tick (any loose
+  override silences it — bad vehicle).
   Used so far: `BONUS_UNLOCK` (hover missile), `DINOATK1` (railgun),
   `DINODIE1` (Mk. II tusks), `DINOMOUT` (Titan 120mm), `DINOYES` (dropship
   landing DROPDWN1), `STRUGGLE` (dropship takeoff DROPUP1).

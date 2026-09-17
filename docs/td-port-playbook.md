@@ -9,6 +9,21 @@
 - `docs/td-building-separation-recipe.md` — building-specific separation steps
 - `docs/td-audio-routing-recipe.md` — audio MERGE pattern + SFXEVENTSNONLOCALIZED.XML
 
+## Before any code: the authenticity checklist (TD and TS ports; Luke, 2026-09-13)
+
+The source of truth is the era's own code: the TD source for TD entities, OpenTS
+(`reference/OpenTS/code`) for TS entities. Where a behaviour is the same in both games (engineer
+capture, medic heal), RA's mechanism is acceptable; where it is unique to the entity's game (the
+Disc Thrower's bouncing disc), it is ported. Reusing an RA engine path counts as RA logic even when
+the numbers on it are TS's.
+
+1. **Before building any port:** list each behaviour next to the TD/OpenTS function it comes
+   from. Anything without a source is a question for Luke, answered before code.
+2. **No "not modelled yet" in a commit.** An unported behaviour is a question for Luke, not a
+   to-do note.
+3. **Test the behaviour, not the picture.** A weapon is only verified once it hits a standing and
+   a moving target.
+
 ---
 
 ## 1. The architecture (Option A)
@@ -493,7 +508,7 @@ rules.ini now holds the **verbatim TD-source STRNTH** and the engine doubles it 
 
 **Status:** PARKED (low priority — the mouse affordance is a complete substitute). Spoofing `CNCObjectStruct.TypeName = "MCV"` for TDMCV did NOT fix it, so GlyphX isn't keying purely on the `TypeName` string. Next spike hypothesis: GlyphX keys on the numeric `DllObjectTypeEnum Type`. Full log in memory `[[project-mcv-deploy-hotkey-spike]]`.
 
-**Lesson:** before chasing a hotkey/UI bug for a TD-ported entity, determine whether the behavior lives in the DLL or GlyphX. If GlyphX, it may be unfixable from the mod side (cf. §3.x classic-mode spacebar limitation). Confirm the keying mechanism before investing time. For deploy/unload specifically: don't re-chase per-unit — it's one shared GlyphX gate, dead for all new TD types; document the mouse-click workaround for the player and move on.
+**Lesson:** before chasing a hotkey/UI bug for a TD-ported entity, determine whether the behavior lives in the DLL or GlyphX. If GlyphX, it may be unfixable from the mod side (cf. §3.x classic-mode spacebar limitation). Confirm the keying mechanism before investing time. For deploy/unload specifically: don't re-chase the STOCK key per-unit — it's one shared GlyphX gate, dead for all new TD types; the real route is the MOD-DEFINED hotkey lever (`config-meg-lever-audit.md` Tier 1 — chain complete, only our DLL handler missing; queued in `todo.md`). Until then, document the mouse-click workaround for the player.
 
 ---
 
@@ -650,6 +665,16 @@ Before declaring a TD-entity port "100% authentic":
 - [ ] Chain audit shows zero LEAKs (all sections TD-prefixed)
 - [ ] Enum entries added to `defines.h` before the `_COUNT` sentinel
 - [ ] Explicit `new XxxTypeClass(...)` registration in the right `data.cpp` / `rules.cpp`
+- [ ] **Map editor manifest:** entity added to `scripts/editor_manifest.py` (id = the enum
+      ordinal from `defines.h`) and `mapeditor.json` regenerated — the native editor learns
+      our types from that shipped manifest, not from its own source. Schema + field meanings:
+      `cnc-map-editor/docs/mapeditor-json.md`. (Terrain templates regenerate automatically;
+      buildings/units/infantry are the script's embedded tables.) Types with no vanilla
+      text id use `display_name` (the rules.ini `Name=`); walkers need `walk_frames`
+      (the rules.ini `WalkFrames=` — body packs as facing blocks of that stride, turret
+      block after the whole run). Take footprints/occupancy/frame layouts from the
+      **bdata.cpp/udata.cpp ctors and rules.ini**, never from the enum comments in
+      `defines.h` — those went stale once (TSPROC/TSWEAP) and cost a re-verification pass.
 - [ ] `IsTDPort = true` set after registration (for classes that have the flag)
 - [ ] Donor `ImageData` pointer copied if not a building (bullet/anim/aircraft)
 - [ ] Rules.ini values are TD-source raw values (with conversion comments if non-IsTDPort)

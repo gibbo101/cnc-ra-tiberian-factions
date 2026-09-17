@@ -37,6 +37,8 @@ def set_elevation(deg):
     SIN_E, COS_E = math.sin(ELEV), math.cos(ELEV)
 SS = 4  # supersample factor
 Z_CLIP = None  # --z-clip: drop model geometry below this height
+SHADOW = None  # --shadow KX,KY: cast a ground shadow, each voxel projected to z=0 along (KX, KY) per unit of height
+SHADOW_ALPHA = 150  # in the supersampled buffer; the LANCZOS downscale thins the edge below the launcher's cut
 
 LIGHT = np.array([-0.5, 0.6, 0.75])  # top, slightly NW
 LIGHT = LIGHT / np.linalg.norm(LIGHT)
@@ -204,9 +206,17 @@ def team_ramp(palette, remap, team_green):
     return pal
 
 
+# Palette indices inside the remap range drawn in a fixed palette colour instead of the
+# team ramp, as (index, source index) pairs: lets a model TS painted almost wholly in remap
+# keep team colour on chosen parts only.
+KEEP_COLOUR = ()
+
+
 def render_frame(model, yaw_deg, px_per_voxel, team_green, z_lift, canvas=None,
                  hva_mats=None, pitch_deg=0.0):
     pal = team_ramp(model['palette'], model['remap'], team_green)
+    for i, src in KEEP_COLOUR:
+        pal[i] = model['palette'][src]
     yaw = math.radians(yaw_deg)
     cy, sy_ = math.cos(yaw), math.sin(yaw)
     pitch = math.radians(pitch_deg)
@@ -296,6 +306,20 @@ def render_frame(model, yaw_deg, px_per_voxel, team_green, z_lift, canvas=None,
     img = np.zeros((H, W, 4), dtype=np.float32)
     zbuf = np.full((H, W), 1e9, dtype=np.float32)
     r = int(math.ceil(scale / 2)) + 1
+    if SHADOW is not None:
+        # The model's shadow on the ground: every voxel slid along the light's ground direction
+        # by its height, drawn flat under the body (the body overwrites it where they overlap).
+        kx, ky = SHADOW
+        gu = rx + rz * kx
+        gv = (ry + rz * ky) * SIN_E
+        gsu = (gu * scale + cx_px).astype(np.int32)
+        gsv = (cz_px - gv * scale).astype(np.int32)
+        for i in range(len(gsu)):
+            x0, y0 = gsu[i], gsv[i]
+            xlo, xhi = max(x0 - r, 0), min(x0 + r + 1, W)
+            ylo, yhi = max(y0 - r, 0), min(y0 + r + 1, H)
+            if xlo < xhi and ylo < yhi:
+                img[ylo:yhi, xlo:xhi, 3] = SHADOW_ALPHA
     order = np.argsort(-depth)  # far to near
     box = range(-r, r + 1)
     for i in order:
@@ -324,7 +348,8 @@ def main():
             '--team-green': '0,200,0', '--z-lift': '0', '--canvas': '0',
             '--hva': '', '--hva-frame': '0', '--elev': '54', '--ambient': '0.35', '--shade': 'ts',
             '--pitch': '0', '--normal-smooth': '0', '--height-elev': '',
-            '--z-clip': '', '--normals': 'vxl'}
+            '--z-clip': '', '--normals': 'vxl', '--attach': '', '--attach-hva': '',
+            '--keep-colour': '', '--shadow': ''}
     i = 2
     while i < len(args):
         opts[args[i]] = args[i + 1]
@@ -342,6 +367,9 @@ def main():
     Z_CLIP = float(opts['--z-clip']) if opts['--z-clip'] else None
 
     set_elevation(float(opts['--elev']))
+    global SHADOW
+    if opts['--shadow']:
+        SHADOW = tuple(float(x) for x in opts['--shadow'].split(','))
     if opts['--height-elev']:
         # Split camera: ground-plane foreshortening from --elev, VERTICAL
         # scale from this angle. Tall models keep the height read they had
@@ -357,10 +385,27 @@ def main():
     SHADE_MODEL = opts['--shade']
     assert SHADE_MODEL in ('ts', 'legacy'), '--shade ts|legacy'
 
+    global KEEP_COLOUR
+    if opts['--keep-colour']:
+        # "19" keeps index 19's own colour; "19:144" draws it in index 144's colour.
+        KEEP_COLOUR = tuple((int(a), int(b or a)) for a, _, b in
+                            (x.partition(':') for x in opts['--keep-colour'].split(',')))
     model = parse_vxl(vxl_path)
     hva_mats = None
     if opts['--hva']:
         hva_mats = parse_hva(opts['--hva'])[int(opts['--hva-frame'])]
+    # --attach renders a second model (a turret's barrel) in the same depth-sorted pass,
+    # each section placed by its own HVA, so the part hides and is hidden correctly at
+    # every facing instead of being pasted over the render.
+    if opts['--attach']:
+        part = parse_vxl(opts['--attach'])
+        identity = [np.hstack((np.eye(3, dtype=np.float32), np.zeros((3, 1), np.float32)))]
+        if hva_mats is None:
+            hva_mats = identity * len(model['sections'])
+        part_mats = (parse_hva(opts['--attach-hva'])[int(opts['--hva-frame'])]
+                     if opts['--attach-hva'] else identity * len(part['sections']))
+        model['sections'] = model['sections'] + part['sections']
+        hva_mats = list(hva_mats) + list(part_mats)
     os.makedirs(outdir, exist_ok=True)
     # first pass with fixed canvas: find biggest extent over all frames
     if canvas is None:

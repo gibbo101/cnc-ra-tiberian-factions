@@ -82,6 +82,8 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include "tsghost_muzzle.h"
+#include <math.h>
 
 // TF: attack-move (CFE port) -- launcher-side Shift state, per local player.
 extern bool DLL_Export_Get_Input_Key_State(KeyNumType key);
@@ -189,6 +191,10 @@ InfantryClass::InfantryClass(InfantryType classid, HousesType house)
     , Fear(FEAR_NONE)
     , StopDriverFrame(-1)
     , LookCell(0)
+    , JumpjetState(JJ_GROUNDED)
+    , JumpjetSpeed(0)
+    , JumpjetLanding(0)
+    , JumpjetWobble(0)
 {
     House->Tracking_Add(this);
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
@@ -326,10 +332,12 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
     ResultType res = RESULT_NONE;
 
     /*
-    **	Prone infantry take only half damage, but never below one damage point.
+    **	Prone infantry take the warhead's prone share of the damage (TS ProneDamage), or the
+    **	rules' global share from a warhead without one.
     */
     if (IsProne && damage > 0) {
-        damage = damage * Rule.ProneDamageBias;
+        WarheadTypeClass const* whead = WarheadTypeClass::As_Pointer(warhead);
+        damage = damage * ((whead != NULL && whead->HasProneDamage) ? whead->ProneDamage : Rule.ProneDamageBias);
     }
 
     /*
@@ -365,6 +373,40 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
         Mission = MISSION_NONE;
         Assign_Mission(MISSION_GUARD);
         Commence();
+
+        /*
+        **	A Tiberium-healing soldier spews Tiberium into its own cell and the four beside it
+        **	when it dies (TS TechnoClass::Take_Damage), each patch a young growth or a little
+        **	more where Tiberium already lies.
+        */
+        if (*this == INFANTRY_TSGHOST) {
+            static FacingType const _spew[] = {FACING_N, FACING_E, FACING_S, FACING_W};
+            CellClass* center = &Map[Coord_Cell(Center_Coord())];
+            for (int index = -1; index < (int)(sizeof(_spew) / sizeof(_spew[0])); index++) {
+                CellClass* cellptr = (index < 0) ? center : center->Adjacent_Cell(_spew[index]);
+                if (cellptr == NULL) {
+                    continue;
+                }
+                if (cellptr->Overlay == OVERLAY_TIB01) {
+                    cellptr->OverlayData = min((int)cellptr->OverlayData + Random_Pick(0, 2), 11);
+                    cellptr->Recalc_Attributes();
+                    cellptr->Redraw_Objects();
+                } else if (cellptr->Can_Tiberium_Germinate()) {
+                    new OverlayClass(OVERLAY_TIB01, cellptr->Cell_Number());
+                    cellptr->OverlayData = Random_Pick(0, 2);
+                }
+            }
+        }
+
+        /*
+        **	A jumpjet shot down in the air just bursts (TS [General] InfantryExplode=S_BANG34),
+        **	drawn where it was flying: screen-up is map-north, so north by its height.
+        */
+        if (Is_Airborne_Jumpjet()) {
+            new AnimClass(ANIM_TS_SBANG34, Coord_Move(Coord, DIR_N, Height));
+            delete this;
+            return (res);
+        }
 
         VocType sound;
         VocType altsound;
@@ -435,7 +477,7 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
         **	If an engineer is damaged and it is just sitting there, then tell it
         **	to go do something since it will definitely die if it doesn't.
         */
-        if (!House->IsHuman && *this == INFANTRY_RENOVATOR
+        if (!House->IsHuman && (*this == INFANTRY_RENOVATOR || *this == INFANTRY_TSENGINEER)
             && (Mission == MISSION_GUARD || Mission == MISSION_GUARD_AREA)) {
             Assign_Mission(MISSION_HUNT);
         }
@@ -447,10 +489,10 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
         if (source != NULL && Fear < FEAR_SCARED) {
             if (Class->IsFraidyCat) {
                 Fear = FEAR_PANIC;
-            } else {
+            } else if (!Class->IsFearless) {
                 Fear = FEAR_SCARED;
             }
-        } else {
+        } else if (!Class->IsFearless) {
 
             /*
             **	Increase the fear of the infantry by a bit. The fear increases more
@@ -485,6 +527,19 @@ ResultType InfantryClass::Take_Damage(int& damage, int distance, WarheadType war
  *=============================================================================================*/
 int InfantryClass::Shape_Number(WindowNumberType window) const
 {
+    /*
+    **	An airborne jumpjet draws TS's flight poses (JumpjetSequence), six frames per facing:
+    **	FireFly (388) while shooting, Fly (292) at speed, Hover (340) otherwise.
+    */
+    if (Is_Airborne_Jumpjet()) {
+        int facing = HumanShape[Dir_To_32(PrimaryFacing.Current())] * 6;
+        if (IsFiring) {
+            return (388 + facing + Fetch_Stage() % 6);
+        }
+        int pose = (JumpjetState == JJ_CRUISING && JumpjetSpeed * 5 > JUMPJET_MAX_SPEED * 4) ? 292 : 340;
+        return (pose + facing + (Frame / 2) % 6);
+    }
+
     /*
     **	Fetch the shape pointer to use for the infantry. This is controlled by what
     **	choreograph sequence the infantry is performing, it's facing, and whether it
@@ -584,6 +639,40 @@ void InfantryClass::Draw_It(int x, int y, WindowNumberType window) const
     x -= 2;
 
     /*
+    **	An airborne jumpjet's body is lifted by its height (Techno_Draw_Object does the lift).
+    **	Its shadow is the same frame darkened on the ground beneath it, as TS draws an airborne
+    **	infantry's (SHAPE_DARKEN); the helicopter shadow flags make the renderer draw it as a
+    **	shadow. The launcher places the selection box and health bar on the FIRST shape drawn,
+    **	so in the virtual window the body goes first and the shadow follows as its sub-object,
+    **	as a helicopter draws; the classic renderer wants the shadow underneath, so it draws it
+    **	first.
+    */
+    if (Is_Airborne_Jumpjet()) {
+        int lift = Lepton_To_Pixel(Height);
+        int body = Shape_Number(window);
+        bool const shadow = (Visual_Character() <= VISUAL_DARKEN);
+        if (window == WINDOW_VIRTUAL) {
+            Techno_Draw_Object(shapefile, body, x, y, window);
+        }
+        if (shadow) {
+            CC_Draw_Shape(this,
+                          shapefile,
+                          body,
+                          x + 1,
+                          y + 2,
+                          window,
+                          SHAPE_PREDATOR | SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_FADING,
+                          DisplayClass::FadingShade,
+                          NULL);
+        }
+        if (window != WINDOW_VIRTUAL) {
+            Techno_Draw_Object(shapefile, body, x, y, window);
+        }
+        FootClass::Draw_It(x, y - lift, window);
+        return;
+    }
+
+    /*
     **	Actually draw the root body of the unit.
     */
     Techno_Draw_Object(shapefile, Shape_Number(window), x, y, window);
@@ -636,10 +725,10 @@ void InfantryClass::Per_Cell_Process(PCPType why)
                 tech = cellptr->Cell_Techno();
             }
             if (tech != NULL && (tech->As_Target() == NavCom || tech->As_Target() == TarCom)) {
-                // Tiberian Factions: TDE6 (GDI/Nod engineer) shares RA's engineer
-                // capture/renovate execution path. Single-vs-multi capture is decided
-                // by the faction gate below (td_single).
-                if (*this == INFANTRY_RENOVATOR || *this == INFANTRY_TDE6) {
+                // Tiberian Factions: TDE6 (GDI/Nod engineer) and the TS Engineer share RA's
+                // engineer capture/renovate execution path. Single-vs-multi capture is
+                // decided by the gate below (td_single).
+                if (*this == INFANTRY_RENOVATOR || *this == INFANTRY_TDE6 || *this == INFANTRY_TSENGINEER) {
 
                     /*
                     **	An engineer will either mega-repair a friendly or allied
@@ -653,8 +742,9 @@ void InfantryClass::Per_Cell_Process(PCPType why)
                     if (tech->House->Is_Ally(House)) {
 #endif
                         // Tiberian Factions: TD engineers (TDE6) are capture-only — no
-                        // friendly mega-repair (TD-authentic). Only RA's RENOVATOR repairs.
-                        if (*this == INFANTRY_RENOVATOR) {
+                        // friendly mega-repair (TD-authentic). RA's RENOVATOR and the TS
+                        // Engineer restore a friendly building to full strength.
+                        if (*this == INFANTRY_RENOVATOR || *this == INFANTRY_TSENGINEER) {
                             if (tech->Trigger.Is_Valid()) {
                                 tech->Trigger->Spring(TEVENT_PLAYER_ENTERED, this);
                             }
@@ -669,8 +759,11 @@ void InfantryClass::Per_Cell_Process(PCPType why)
                         // GOOD/BAD) capture a building outright in a single use, like TD
                         // — ignore the health gate. Allied/Soviet engineers keep RA's
                         // Aftermath multi-engineer capture (damage to ConditionRed, then
-                        // the next engineer takes it). Gate is on the engineer's owner.
-                        bool td_single = (House->ActLike == HOUSE_GOOD || House->ActLike == HOUSE_BAD);
+                        // the next engineer takes it). Gate is on the engineer's owner,
+                        // except the TS Engineer, which always captures outright (TS
+                        // EngineerCaptureLevel=1).
+                        bool td_single = (House->ActLike == HOUSE_GOOD || House->ActLike == HOUSE_BAD
+                                          || *this == INFANTRY_TSENGINEER);
 #ifdef FIXIT_ENGINEER //	checked - ajw 9/28/98
                         if ((td_single || tech->Health_Ratio() <= EngineerCaptureLevel) && iscapturable) {
 #else
@@ -1318,7 +1411,23 @@ void InfantryClass::AI(void)
     **	Harvester and the unit-type Visceroid are inherently immune because this
     **	only hooks infantry. Tunable: the cadence mask and the damage value.
     */
-    if (In_Which_Layer() == LAYER_GROUND && !IsInLimbo
+    /*
+    **	The Ghost Stalker is TiberiumProof and TiberiumHeal: Tiberium never hurts it, and
+    **	while it stands in Tiberium below full health it regains a point every 0.6 seconds
+    **	(TS [General] TiberiumHeal=.010 minutes, 9 ticks), snapping to full once past the
+    **	green threshold as TS does.
+    */
+    if (*this == INFANTRY_TSGHOST && In_Which_Layer() == LAYER_GROUND && !IsInLimbo
+        && Map[Coord_Cell(Coord)].Overlay == OVERLAY_TIB01 && Strength > 0
+        && Health_Ratio() < Rule.ConditionGreen && ((Frame + ID) % 9) == 0) {
+        Strength++;
+        if (Health_Ratio() > Rule.ConditionGreen) {
+            Strength = Class->MaxStrength;
+        }
+        Mark(MARK_CHANGE);
+    }
+
+    if (In_Which_Layer() == LAYER_GROUND && !IsInLimbo && *this != INFANTRY_TSGHOST
         && Map[Coord_Cell(Coord)].Overlay == OVERLAY_TIB01) {
         if (((Frame + ID) % 50) == 0) { // TD-calibrated: ~28 tiles to kill a minigunner
             // Magnitude isn't in the released EA source, so these are the tuning
@@ -1578,7 +1687,7 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType) const
             ** If object is a land mine, allow movement
             */
             if (obj->What_Am_I() == RTTI_BUILDING) {
-                if ((*(BuildingClass*)obj) == STRUCT_AVMINE) {
+                if ((*(BuildingClass*)obj) == STRUCT_AVMINE || (*(BuildingClass*)obj) == STRUCT_TSDLIMP) {
                     obj = obj->Next;
                     continue;
                 } else {
@@ -1923,6 +2032,15 @@ FireErrorType InfantryClass::Can_Fire(TARGET target, int which) const
  *=============================================================================================*/
 COORDINATE InfantryClass::Fire_Coord(int which) const
 {
+    /*
+    **	The Ghost Stalker's railgun leaves the barrel as drawn on each facing, standing and
+    **	prone (muzzle table measured off the TS fire frames by scripts/ts_ghost_fire_points.py).
+    */
+    if (*this == INFANTRY_TSGHOST) {
+        short const* muzzle = _tsghost_muzzle[IsProne ? 1 : 0][HumanShape[Dir_To_32(PrimaryFacing.Current())]];
+        COORDINATE center = Center_Coord();
+        return (XY_Coord(Coord_X(center) + muzzle[0], Coord_Y(center) + muzzle[1]));
+    }
     COORDINATE coord = FootClass::Fire_Coord(which);
 
     /*
@@ -2167,6 +2285,13 @@ void InfantryClass::Scatter(COORDINATE threat, bool forced, bool nokidding)
 {
     assert(Infantry.ID(this) == ID);
     assert(IsActive);
+
+    /*
+    **	An airborne jumpjet has no ground path to scatter along.
+    */
+    if (Is_Airborne_Jumpjet()) {
+        return;
+    }
 
     /*
     **	A unit that is in the process of going somewhere will never scatter.
@@ -2491,7 +2616,18 @@ bool InfantryClass::Limbo(void)
     if (!IsInLimbo) {
         Stop_Driver();
 
-        Clear_Occupy_Bit(Coord);
+        /*
+        **	An airborne jumpjet holds no sub-cell spot of its own, only the one it reserved to
+        **	land on.
+        */
+        if (Is_Airborne_Jumpjet()) {
+            if (JumpjetLanding != 0) {
+                Clear_Occupy_Bit(JumpjetLanding);
+                JumpjetLanding = 0;
+            }
+        } else {
+            Clear_Occupy_Bit(Coord);
+        }
     }
     return (FootClass::Limbo());
 }
@@ -2731,6 +2867,23 @@ void InfantryClass::Response_Select(void)
             Sound_Effect(_cmd_select[Sim_Random_Pick(0, ARRAY_SIZE(_cmd_select) - 1)], fixed(1), ID + 1);
             return;
         }
+        // Tiberian Factions: the TS Engineer, Medic and Ghost Stalker answer in the voice sets
+        // TS gives them (19, 20 and 14), whoever owns them. Select = each set's VoiceSelect.
+        if (*this == INFANTRY_TSENGINEER) {
+            static VocType _v[] = {VOC_TS_19I000, VOC_TS_19I002, VOC_TS_19I006};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        if (*this == INFANTRY_TSMEDIC) {
+            static VocType _v[] = {VOC_TS_20I000, VOC_TS_20I004, VOC_TS_20I006};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        if (*this == INFANTRY_TSGHOST) {
+            static VocType _v[] = {VOC_TS_14I000, VOC_TS_14I002, VOC_TS_14I004};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
         // Tiberian Factions: GDI/Nod (HOUSE_GOOD/HOUSE_BAD) generic infantry use
         // the TD passive select voices ("yes sir / reporting / awaiting orders /
         // ready"). Special RA units (Tanya, dog, ...) aren't in their roster, so
@@ -2871,6 +3024,22 @@ void InfantryClass::Response_Move(void)
             static VocType _cmd_move[] = {VOC_TD_CMD_GOTIT, VOC_TD_CMD_NOPROB, VOC_TD_CMD_KEEPEM,
                                           VOC_TD_CMD_CMON, VOC_TD_CMD_LEFTY};
             Sound_Effect(_cmd_move[Sim_Random_Pick(0, ARRAY_SIZE(_cmd_move) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        // Tiberian Factions: TS Engineer / Medic / Ghost Stalker move = each set's VoiceMove.
+        if (*this == INFANTRY_TSENGINEER) {
+            static VocType _v[] = {VOC_TS_19I010, VOC_TS_19I016};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        if (*this == INFANTRY_TSMEDIC) {
+            static VocType _v[] = {VOC_TS_20I008, VOC_TS_20I010, VOC_TS_20I012};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        if (*this == INFANTRY_TSGHOST) {
+            static VocType _v[] = {VOC_TS_14I008, VOC_TS_14I010, VOC_TS_14I012, VOC_TS_14I014};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
             return;
         }
         // Tiberian Factions: GDI/Nod move-order voices (active confirmations,
@@ -3020,6 +3189,22 @@ void InfantryClass::Response_Attack(void)
             Sound_Effect(_cmd_attack[Sim_Random_Pick(0, ARRAY_SIZE(_cmd_attack) - 1)], fixed(1), ID + 1);
             return;
         }
+        // Tiberian Factions: TS Engineer / Medic / Ghost Stalker attack = each set's VoiceAttack.
+        if (*this == INFANTRY_TSENGINEER) {
+            static VocType _v[] = {VOC_TS_19I018, VOC_TS_19I016};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        if (*this == INFANTRY_TSMEDIC) {
+            static VocType _v[] = {VOC_TS_20I016, VOC_TS_20I018, VOC_TS_20I020};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
+        if (*this == INFANTRY_TSGHOST) {
+            static VocType _v[] = {VOC_TS_14I008, VOC_TS_14I010, VOC_TS_14I014, VOC_TS_14I016};
+            Sound_Effect(_v[Sim_Random_Pick(0, ARRAY_SIZE(_v) - 1)], fixed(1), ID + 1);
+            return;
+        }
         // Tiberian Factions: GDI/Nod attack-order voices (active confirmations,
         // no "movin' out"). See Response_Select for rationale.
         if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
@@ -3156,15 +3341,15 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
     ** renovate it.
     ** However, abort the whole thing if the building is a barrel or mine.
     */
-    if ((*this == INFANTRY_RENOVATOR || *this == INFANTRY_TDE6) && object->What_Am_I() == RTTI_BUILDING
-        && House->IsPlayerControl) {
+    if ((*this == INFANTRY_RENOVATOR || *this == INFANTRY_TDE6 || *this == INFANTRY_TSENGINEER)
+        && object->What_Am_I() == RTTI_BUILDING && House->IsPlayerControl) {
         BuildingClass const* bldg = (BuildingClass*)object;
         if (bldg->Class->IsRepairable) {
             if (House->Is_Ally(bldg)) {
-                // Tiberian Factions: only RA's RENOVATOR mega-repairs friendly buildings;
-                // TD engineers (TDE6) are capture-only. Fall through to the default action
-                // for a TDE6 over a friendly building (no repair cursor).
-                if (*this == INFANTRY_RENOVATOR) {
+                // Tiberian Factions: RA's RENOVATOR and the TS Engineer mega-repair friendly
+                // buildings; TD engineers (TDE6) are capture-only. Fall through to the default
+                // action for a TDE6 over a friendly building (no repair cursor).
+                if (*this == INFANTRY_RENOVATOR || *this == INFANTRY_TSENGINEER) {
                     if (bldg->Health_Ratio() == 1) {
                         return (ACTION_NO_GREPAIR);
                     }
@@ -3200,7 +3385,8 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
     if (Combat_Damage() < 0 && House->IsPlayerControl) {
         if (House->Is_Ally(object)) {
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
-            if ((object->What_Am_I() == RTTI_INFANTRY && object != this && *this == INFANTRY_MEDIC)
+            if ((object->What_Am_I() == RTTI_INFANTRY && object != this
+                 && (*this == INFANTRY_MEDIC || *this == INFANTRY_TSMEDIC))
                 || (*this == INFANTRY_MECHANIC
                     && (object->What_Am_I() == RTTI_UNIT || object->What_Am_I() == RTTI_AIRCRAFT))) {
 
@@ -3274,7 +3460,7 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
     */
     if (action == ACTION_NONE && object->What_Am_I() == RTTI_BUILDING && House->IsPlayerControl) {
         StructType blah = *((BuildingClass*)object);
-        if (blah == STRUCT_AVMINE || blah == STRUCT_APMINE) {
+        if (blah == STRUCT_AVMINE || blah == STRUCT_APMINE || blah == STRUCT_TSDLIMP) {
             /*
             **	Attack-move (CFE port): needed here so we can attack-move onto cells
             **	the InfantryClass level makes movable (e.g. landmines).
@@ -4004,6 +4190,51 @@ bool InfantryClass::Edge_Of_World_AI(void)
     return (false);
 }
 
+#if TF_DEV_BUILD
+/*
+**	Dev-build trace of a jumpjet's flight and fire decisions, one line per event, in
+**	Documents/CnCRemastered/tf_jumpjet.log.
+*/
+static void TF_Jumpjet_Log(InfantryClass const* inf, char const* what)
+{
+    static FILE* log = NULL;
+    if (log == NULL) {
+        char path[512];
+        const char* prof = getenv("USERPROFILE");
+        if (prof != NULL && prof[0] != '\0') {
+            snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_jumpjet.log", prof);
+        } else {
+            strcpy(path, "tf_jumpjet.log");
+        }
+        log = fopen(path, "w");
+        if (log == NULL) {
+            return;
+        }
+    }
+    int dist = Target_Legal(inf->NavCom) ? ::Distance(inf->Coord, As_Coord(inf->NavCom)) : -1;
+    fprintf(log,
+            "F%ld inf#%d state=%d h=%d spd=%d mission=%d q=%d doing=%d tar=%08X nav=%08X dist=%d cell=%d,%d face=%d want=%d firing=%d %s\n",
+            (long)Frame,
+            Infantry.ID(inf),
+            (int)inf->JumpjetState,
+            (int)inf->Height,
+            (int)inf->JumpjetSpeed,
+            (int)inf->Mission,
+            (int)inf->MissionQueue,
+            (int)inf->Doing,
+            (unsigned)inf->TarCom,
+            (unsigned)inf->NavCom,
+            dist,
+            (int)Cell_X(Coord_Cell(inf->Coord)),
+            (int)Cell_Y(Coord_Cell(inf->Coord)),
+            (int)inf->PrimaryFacing.Current(),
+            (int)inf->PrimaryFacing.Desired(),
+            (int)inf->IsFiring,
+            what);
+    fflush(log);
+}
+#endif
+
 /***********************************************************************************************
  * InfantryClass::Firing_AI -- Handles firing and combat AI for the infantry.                  *
  *                                                                                             *
@@ -4025,13 +4256,21 @@ void InfantryClass::Firing_AI(void)
         int primary = What_Weapon_Should_I_Use(TarCom);
 
         if (!IsFiring) {
-            switch (Can_Fire(TarCom, primary)) {
+            FireErrorType const fire_check = Can_Fire(TarCom, primary);
+#if TF_DEV_BUILD
+            if (Is_Airborne_Jumpjet() && (Frame % 15) == 0) {
+                char why[32];
+                snprintf(why, sizeof(why), "can_fire=%d", (int)fire_check);
+                TF_Jumpjet_Log(this, why);
+            }
+#endif
+            switch (fire_check) {
             case FIRE_ILLEGAL:
                 if (Combat_Damage(primary) < 0) {
                     ObjectClass* targ = As_Object(TarCom);
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
                     if (targ) {
-                        if ((targ->What_Am_I() == RTTI_INFANTRY && *this == INFANTRY_MEDIC)
+                        if ((targ->What_Am_I() == RTTI_INFANTRY && (*this == INFANTRY_MEDIC || *this == INFANTRY_TSMEDIC))
                             || (*this == INFANTRY_MECHANIC
                                 && (targ->What_Am_I() == RTTI_AIRCRAFT || targ->What_Am_I() == RTTI_UNIT))) {
 
@@ -4105,7 +4344,14 @@ void InfantryClass::Firing_AI(void)
             **	Target might have changed during the firing animation
             */
             if (Can_Fire(TarCom, primary) == FIRE_OK) {
+#if TF_DEV_BUILD
+                BulletClass* shot = Fire_At(TarCom, primary);
+                if (Is_Airborne_Jumpjet()) {
+                    TF_Jumpjet_Log(this, (shot != NULL) ? "fire bullet" : "fire NO-BULLET");
+                }
+#else
                 Fire_At(TarCom, primary);
+#endif
 
                 /*
                 **	Run away from slowly approaching projectiles.
@@ -4227,6 +4473,275 @@ void InfantryClass::Doing_AI(void)
     }
 }
 
+/*
+**	Should this jumpjet fly to the target rather than walk (TS InfantryClass::Should_JumpJet_Fly)?
+**	One already in the air stays in the air. On the ground it flies to a destination it cannot
+**	walk to. Otherwise it walks to a neighbouring cell, flies twelve or more cells or off the
+**	visible map, and in between flies only when the walk is longer than fifteen steps or no
+**	walk exists (TS Test_Cell_Walk).
+*/
+bool InfantryClass::Jumpjet_Should_Fly(TARGET target) const
+{
+    if (Is_Airborne_Jumpjet()) {
+        return (true);
+    }
+    CELL from = Coord_Cell(Coord);
+    CELL to = As_Cell(target);
+    if (Map[from].Zones[Class->MZone] != Map[to].Zones[Class->MZone]) {
+        return (true);
+    }
+    if (from == to) {
+        return (false);
+    }
+    int dist = max(abs((int)Cell_X(to) - (int)Cell_X(from)), abs((int)Cell_Y(to) - (int)Cell_Y(from)));
+    if (dist == 1) {
+        return (false);
+    }
+    if (dist >= 12 || !Map.In_Radar(from) || !Map.In_Radar(to)) {
+        return (true);
+    }
+    int walk = const_cast<InfantryClass*>(this)->Find_Path_AStar(NULL, from, to, CONQUER_PATH_MAX, MOVE_TEMP, -1);
+    return (walk == 0 || walk > 15);
+}
+
+/*
+**	Sets the jumpjet's height and slides it a distance along a heading. MARK_UP before and
+**	MARK_DOWN after keep its cell registration right (FootClass::Mark only touches the cell
+**	lists in the ground layer); its map-layer registration moves with it when the height
+**	crosses between the ground and top layers; and it looks about whenever it enters a new
+**	cell, as walking infantry do.
+*/
+void InfantryClass::Jumpjet_Move(int height, int distance, DirType heading)
+{
+    CELL oldcell = Coord_Cell(Coord);
+    Mark(MARK_UP);
+    LayerType layer = In_Which_Layer();
+    Height = height;
+    if (In_Which_Layer() != layer) {
+        Map.Remove(this, layer);
+        Map.Submit(this, In_Which_Layer());
+    }
+    if (distance > 0) {
+        COORDINATE next = Coord_Move(Coord, heading, distance);
+        if (Map.In_Radar(Coord_Cell(next))) {
+            Coord = next;
+        }
+    }
+    Mark(MARK_DOWN);
+    if (Coord_Cell(Coord) != oldcell) {
+        Look(true);
+    }
+}
+
+/*
+**	TS's jumpjet locomotor (OpenTS jumpjet.cpp), run in place of infantry movement while the
+**	jumpjet is in the air or about to take off. Returns whether it handled movement this tick.
+**
+**	Grounded: a move it would rather fly than walk lifts it off, giving up its sub-cell spot.
+**	Ascending: it climbs to cruise height, setting off once a quarter of the way up.
+**	Hovering: it holds station while it has a target, sets off when given somewhere else to be,
+**	and otherwise comes down. Cruising: it flies at its destination, easing to half speed inside
+**	two cells and to three tenths inside one; on arrival it hovers if it has a target and comes
+**	down if not. Descending: it reserves a free spot beneath it, drifts over it and settles,
+**	becoming ordinary infantry again; a destination a cell or more away sends it back up. While
+**	hovering or cruising it bobs about its flight level, which drops to three quarters of cruise
+**	height over the last cell when it has no target. Speed follows TS's step (see below), and
+**	it flies along its own turning facing, curving round to its heading, except while firing
+**	and while drifting onto its landing spot.
+*/
+bool InfantryClass::Jumpjet_AI(void)
+{
+#if TF_DEV_BUILD
+    int const entry_state = (int)JumpjetState;
+#endif
+    if (JumpjetState == JJ_GROUNDED) {
+        if (IsDriving || IsFiring || IsInLimbo || !Target_Legal(NavCom) || !Jumpjet_Should_Fly(NavCom)) {
+            return (false);
+        }
+        Clear_Occupy_Bit(Coord);
+        Path[0] = FACING_NONE;
+        JumpjetSpeed = 0;
+        JumpjetState = JJ_ASCENDING;
+        Do_Action(DO_STAND_READY, true);
+    }
+
+    IsDriving = false;
+    bool has_dest = Target_Legal(NavCom);
+    bool has_target = Target_Legal(TarCom);
+    COORDINATE dest = has_dest ? As_Coord(NavCom) : Coord;
+    DirType heading = PrimaryFacing.Current();
+    int height = Height;
+    int want = 0;
+    int level = JUMPJET_CRUISE;
+
+    switch (JumpjetState) {
+    case JJ_ASCENDING:
+        height = min(height + (int)JUMPJET_CLIMB, (int)JUMPJET_CRUISE);
+        if (height > JUMPJET_CRUISE / 4 && has_dest && ::Distance(Coord, dest) >= 20) {
+            heading = ::Direction(Coord, dest);
+            want = JUMPJET_MAX_SPEED;
+        }
+        if (height >= JUMPJET_CRUISE) {
+            JumpjetState = JJ_HOVERING;
+        }
+        break;
+
+    case JJ_HOVERING:
+        if (has_dest && ::Distance(Coord, dest) >= 20) {
+            JumpjetState = JJ_CRUISING;
+        } else if (!has_target) {
+            JumpjetState = JJ_DESCENDING;
+        }
+        break;
+
+    case JJ_CRUISING: {
+        if (!has_dest) {
+            JumpjetState = has_target ? JJ_HOVERING : JJ_DESCENDING;
+            break;
+        }
+        int dist = ::Distance(Coord, dest);
+        heading = ::Direction(Coord, dest);
+        if (dist < 20) {
+            JumpjetSpeed = 0;
+            JumpjetState = has_target ? JJ_HOVERING : JJ_DESCENDING;
+        } else if (dist < CELL_LEPTON_W) {
+            want = JUMPJET_MAX_SPEED * 3 / 10;
+            if (!has_target) {
+                level = JUMPJET_CRUISE * 3 / 4;
+            }
+        } else if (dist < CELL_LEPTON_W * 2) {
+            want = JUMPJET_MAX_SPEED / 2;
+        } else {
+            want = JUMPJET_MAX_SPEED;
+        }
+        break;
+    }
+
+    case JJ_DESCENDING: {
+        level = 0;
+        if (has_dest && ::Distance(Coord, dest) >= CELL_LEPTON_W) {
+            if (JumpjetLanding != 0) {
+                Clear_Occupy_Bit(JumpjetLanding);
+                JumpjetLanding = 0;
+            }
+            JumpjetState = JJ_ASCENDING;
+            break;
+        }
+
+        /*
+        **	Reserve the spot to come down on: the closest free one in this cell, or in the
+        **	nearest cell a soldier can stand in when this one is taken or impassable.
+        */
+        if (JumpjetLanding == 0) {
+            CELL cell = Coord_Cell(Coord);
+            COORDINATE spot = (Can_Enter_Cell(cell) == MOVE_OK) ? Map[cell].Closest_Free_Spot(Coord) : 0;
+            if (spot == 0) {
+                CELL nearcell = Map.Nearby_Location(cell, SPEED_FOOT, -1, Class->MZone);
+                if (nearcell != 0) {
+                    spot = Map[nearcell].Closest_Free_Spot(Cell_Coord(nearcell));
+                }
+            }
+            if (spot == 0) {
+                break;
+            }
+            JumpjetLanding = spot;
+            Set_Occupy_Bit(spot);
+        }
+
+        int dist = ::Distance(Coord, JumpjetLanding);
+        if (dist > 8) {
+            heading = ::Direction(Coord, JumpjetLanding);
+            want = min((int)(JUMPJET_MAX_SPEED * 3 / 10), dist * 4);
+        }
+        height = max(height - (int)JUMPJET_CLIMB, 0);
+
+        /*
+        **	Touch down on the reserved spot and rejoin the ground as ordinary infantry.
+        */
+        if (height == 0 && dist <= 8) {
+            JumpjetSpeed = 0;
+            Mark(MARK_UP);
+            LayerType layer = In_Which_Layer();
+            Height = 0;
+            Coord = JumpjetLanding;
+            if (In_Which_Layer() != layer) {
+                Map.Remove(this, layer);
+                Map.Submit(this, In_Which_Layer());
+            }
+            Mark(MARK_DOWN);
+            JumpjetLanding = 0;
+            JumpjetState = JJ_GROUNDED;
+#if TF_DEV_BUILD
+            TF_Jumpjet_Log(this, "landed");
+#endif
+            if (has_dest) {
+                Assign_Destination(TARGET_NONE);
+            }
+            Per_Cell_Process(PCP_END);
+            Look();
+            return (true);
+        }
+        break;
+    }
+
+    default:
+        break;
+    }
+
+#if TF_DEV_BUILD
+    if ((int)JumpjetState != entry_state) {
+        TF_Jumpjet_Log(this, "state");
+    } else if ((Frame % 30) == 0) {
+        TF_Jumpjet_Log(this, "tick");
+    }
+#endif
+
+    /*
+    **	The hover bob (TS Movement_AI): the height eases toward the flight level plus a sine of the
+    **	wobble deviation, one cycle every JUMPJET_WOBBLE_TICKS, and the cycle starts over whenever
+    **	it stops hovering or cruising.
+    */
+    if (JumpjetState == JJ_HOVERING || JumpjetState == JJ_CRUISING) {
+        JumpjetWobble++;
+        int bob = level + (int)(sin(JumpjetWobble * (2.0 * 3.14159265) / JUMPJET_WOBBLE_TICKS) * JUMPJET_WOBBLE);
+        height = (height < bob) ? min(height + (int)JUMPJET_CLIMB, bob) : max(height - (int)JUMPJET_CLIMB, bob);
+    } else {
+        JumpjetWobble = 0;
+    }
+
+    /*
+    **	TS's speed step: under the speed it wants it gains the acceleration, up to its top
+    **	speed, and over it it sheds one and a half times that, down to a stop; both can happen in
+    **	one tick. Outside the destination cell and still low on its climb, it loses a tenth of its
+    **	speed below half its flight level and another tenth below a quarter.
+    */
+    if (want > JumpjetSpeed) {
+        JumpjetSpeed = min((int)JumpjetSpeed + (int)JUMPJET_ACCEL, (int)JUMPJET_MAX_SPEED);
+    }
+    if (want < JumpjetSpeed) {
+        JumpjetSpeed = max((int)JumpjetSpeed - (int)JUMPJET_ACCEL * 3 / 2, 0);
+    }
+    if (Coord_Cell(Coord) != Coord_Cell(dest)) {
+        if (Height < level / 2) {
+            JumpjetSpeed = JumpjetSpeed * 9 / 10;
+        }
+        if (Height < level / 4) {
+            JumpjetSpeed = JumpjetSpeed * 9 / 10;
+        }
+    }
+
+    if (!IsFiring) {
+        PrimaryFacing.Set_Desired(heading);
+        if (PrimaryFacing.Is_Rotating()) {
+            PrimaryFacing.Rotation_Adjust(JUMPJET_TURN);
+        }
+    }
+
+    bool const along_facing = !IsFiring && JumpjetState != JJ_DESCENDING;
+    Jumpjet_Move(height, JumpjetSpeed / 4, along_facing ? PrimaryFacing.Current() : heading);
+    return (true);
+}
+
 /***********************************************************************************************
  * InfantryClass::Movement_AI -- This routine handles all infantry movement logic.             *
  *                                                                                             *
@@ -4255,6 +4770,14 @@ void InfantryClass::Movement_AI(void)
     */
     if (Mission == MISSION_MOVE && !Target_Legal(NavCom)) {
         Enter_Idle_Mode();
+    }
+
+    /*
+    **	A jumpjet's flight takes over its movement while it is in the air, or once it has been
+    **	sent somewhere it would rather fly than walk.
+    */
+    if (Is_Jumpjet() && Jumpjet_AI()) {
+        return;
     }
 
     if (!IsFiring && !IsFalling && Doing != DO_DOG_MAUL) {

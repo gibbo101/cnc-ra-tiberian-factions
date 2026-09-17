@@ -126,6 +126,7 @@ public:
     void Force_Track(int track, COORDINATE coord, int index = 0);
     bool Roll_Off_Seat(int px_east, int px_north);
     bool Roll_On_Seat(int px_east, int px_north);
+    bool Rail_To(COORDINATE dest, DirType face);
     bool On_TS_Exit_Track(void) const
     {
         return TrackNumber == OUT_OF_WEAPON_FACTORY_TS || TrackNumber == OUT_OF_WEAPON_FACTORY_TS_TITAN;
@@ -263,7 +264,7 @@ private:
     static TrackType const Track18[];
     static TrackType const Track19[];
     static TrackType const Track20[];
-    static TrackType Track21[32]; // ROLL_OFF_DOCK_SEAT, filled per use by Roll_Off_Seat().
+    static TrackType Track21[64]; // ROLL_OFF_DOCK_SEAT, filled per use by Roll_Off_Seat() / Rail_To().
     static TrackType const Track12[];
     static TrackType const Track11[];
     static TrackType const Track10[];

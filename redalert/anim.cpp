@@ -283,6 +283,17 @@ void AnimClass::Draw_It(int x, int y, WindowNumberType window) const
                 y += 12;
                 break;
 
+            /*
+            **  TS beam: the segment tiling runs flush to the canvas bottom,
+            **  so the art's bottom edge IS the impact point. Anchor it at
+            **  the cell centre where the damage, scorch and RING1 flash all
+            **  land — TD's half-cell drop would ground the tip a half cell
+            **  south of the burn mark.
+            */
+            case ANIM_TS_ION_BEAM:
+                flags = flags | SHAPE_BOTTOM;
+                break;
+
             case ANIM_FLAG:
                 x += (ICON_PIXEL_W / 2) - 2;
                 y += (3 * ICON_PIXEL_H / 4) - Get_Build_Frame_Height(shapefile);
@@ -459,7 +470,7 @@ short const* AnimClass::Overlap_List(void) const
         return (OverlapAtom);
     }
 
-    if (Class->Type == ANIM_TD_ION_CANNON) {
+    if (Class->Type == ANIM_TD_ION_CANNON || Class->Type == ANIM_TS_ION_BEAM) {
         return (OverlapTdIon);
     }
 
@@ -616,9 +627,14 @@ AnimClass::AnimClass(AnimType animnum, COORDINATE coord, unsigned char timedelay
     , SonicDamage(0)
     , SonicVictim(TARGET_NONE)
     , SonicFirer(TARGET_NONE)
+    , SonicHouse(HOUSE_NONE)
     , SonicDir(DIR_N)
     , SonicT(-1)
     , SonicTether(TARGET_NONE)
+    , RailSpeed(0.0f)
+    , RailBlend(0.0f)
+    , RailFade(0.0f)
+    , RailLife(0)
     , Loops(1)
     , IsToDelete(false)
     , IsBrandNew(true)
@@ -787,6 +803,130 @@ AnimClass::~AnimClass(void)
 #endif
 }
 
+/*
+**	A random step in [-0.5, 0.5], as TS's Random_Double(-0.5, 0.5), from the non-critical
+**	generator: railgun sparks are cosmetic.
+*/
+static double TF_Rail_Jitter(void)
+{
+    return (Sim_Random_Pick(-500, 500) / 1000.0);
+}
+
+/*
+**	Lays a TS railgun coil along a shot (OpenTS partsys.cpp ParticleSystemClass::Railgun_AI),
+**	from the muzzle at (sx, sy) across (dx, dy), dist leptons long. ParticlesPerCoord sparks per
+**	lepton sit on a helix of SpiralRadius around the line, turning SpiralDeltaPerCoord radians per
+**	lepton, each nudged by up to half PositionPerturbationCoefficient on every axis. Each drifts
+**	outward along its own point of the helix, bent by up to half MovementPerturbationCoefficient,
+**	at its particle Velocity plus a speed that random-walks from spark to spark, and lives MaxEC
+**	plus up to nine frames. The helix's height draws as a northward shift, as screen-up is
+**	map-north. The Ghost Stalker's light railgun ([SmallRailgunSys], [SmallRailgunPart]) and the
+**	Mk. II's ([LargeRailgunSys], [LargeRailgunPart]) differ only in these values. Returns the
+**	frames until the last spark fades.
+*/
+int TF_Railgun_Coil(bool small, int sx, int sy, int dx, int dy, int dist)
+{
+    struct RailgunSystemType
+    {
+        AnimType Spark;
+        double PerLepton;      // ParticlesPerCoord
+        double Radius;         // SpiralRadius
+        double Turn;           // SpiralDeltaPerCoord
+        double Position;       // PositionPerturbationCoefficient
+        double Movement;       // MovementPerturbationCoefficient
+        double VelocityJitter; // VelocityPerturbationCoefficient
+        double Velocity;       // the particle's Velocity
+        double ColorSpeed;     // the particle's ColorSpeed
+        int MaxEC;             // the particle's MaxEC
+    };
+    static RailgunSystemType const _small = {ANIM_TS_RAILFXS, .1, 6.0, .035, 20.0, .3, .6, .4, .03, 70};
+    static RailgunSystemType const _large = {ANIM_RAILFX, .15, 15.0, .03, 30.0, .4, .6, .3, .009, 70};
+    RailgunSystemType const& sys = small ? _small : _large;
+
+    if (dist <= 0) {
+        return (0);
+    }
+    double px = -(double)dy / dist;
+    double py = (double)dx / dist;
+    int count = (int)(dist * sys.PerLepton);
+    double walk = 0.0;
+    int longest = 0;
+    for (int i = 0; i < count; i++) {
+        double frac = (double)i / count;
+        double angle = dist * frac * sys.Turn;
+        double spiral[3] = {px * cos(angle), py * cos(angle), sin(angle)};
+
+        double pos[3];
+        pos[0] = sx + dx * frac + spiral[0] * sys.Radius + TF_Rail_Jitter() * sys.Position;
+        pos[1] = sy + dy * frac + spiral[1] * sys.Radius + TF_Rail_Jitter() * sys.Position;
+        pos[2] = spiral[2] * sys.Radius + TF_Rail_Jitter() * sys.Position;
+
+        double dir[3];
+        double length = 0.0;
+        for (int k = 0; k < 3; k++) {
+            dir[k] = spiral[k] + TF_Rail_Jitter() * sys.Movement;
+            length += dir[k] * dir[k];
+        }
+        length = sqrt(length);
+
+        double step = (TF_Rail_Jitter() + walk) * (sys.VelocityJitter * 0.5);
+        walk = (step > sys.VelocityJitter) ? sys.VelocityJitter : ((step < -sys.Movement) ? -sys.Movement : step);
+
+        int x = (int)pos[0];
+        int y = (int)(pos[1] - pos[2]);
+        if (x < 0 || y < 0) {
+            continue;
+        }
+        AnimClass* spark = new AnimClass(sys.Spark, XY_Coord(x, y));
+        if (spark == NULL) {
+            break;
+        }
+        for (int k = 0; k < 3; k++) {
+            spark->RailPos[k] = (float)pos[k];
+            spark->RailDir[k] = (length > 0.0) ? (float)(dir[k] / length) : 0.0f;
+        }
+        spark->RailSpeed = (float)(walk + sys.Velocity);
+        spark->RailBlend = 0.0f;
+        spark->RailFade = (float)sys.ColorSpeed;
+        spark->RailLife = sys.MaxEC + Sim_Random_Pick(0, 9);
+        spark->Set_Stage(0);
+        if (spark->RailLife > longest) {
+            longest = spark->RailLife;
+        }
+    }
+    return (longest);
+}
+
+/*
+**	One frame of a TS railgun spark (OpenTS ParticleClass::Railgun_Behavior_AI): it moves along
+**	its direction at its speed, the speed jittering by up to .05 either way, and its colour blends
+**	a further ColorSpeed plus up to .05 toward the second colour of its list, holding there once
+**	it arrives. The art is that blend as an even 12-frame ladder. It is gone when its life runs out.
+*/
+void AnimClass::Rail_Spark_AI(void)
+{
+    if (IsToDelete || --RailLife <= 0) {
+        delete this;
+        return;
+    }
+    for (int k = 0; k < 3; k++) {
+        RailPos[k] += RailDir[k] * RailSpeed;
+    }
+    RailSpeed += (float)(TF_Rail_Jitter() * 0.1);
+    RailBlend += RailFade + (float)((TF_Rail_Jitter() + 0.5) * 0.05);
+    if (RailBlend > 1.0f) {
+        RailBlend = 1.0f;
+    }
+    int x = (int)RailPos[0];
+    int y = (int)(RailPos[1] - RailPos[2]);
+    if (x < 0 || y < 0) {
+        delete this;
+        return;
+    }
+    Coord = XY_Coord(x, y);
+    Set_Stage((int)(RailBlend * 11.0f + 0.5f));
+}
+
 /***********************************************************************************************
  * AnimClass::AI -- This is the low level anim processor.                                      *
  *                                                                                             *
@@ -804,6 +944,11 @@ AnimClass::~AnimClass(void)
  *=============================================================================================*/
 void AnimClass::AI(void)
 {
+    if (Class->Type == ANIM_RAILFX || Class->Type == ANIM_TS_RAILFXS) {
+        Rail_Spark_AI();
+        return;
+    }
+
 #ifdef VIC
     assert(Anims.ID(this) == ID);
     assert(IsActive);
@@ -1008,14 +1153,15 @@ void AnimClass::AI(void)
                     ObjectClass* victims[8];
                     int vcount = 0;
                     /*
-                    **	Disruptors are immune to sonic damage, as in Tiberian
-                    **	Sun: a Disruptor group never hurts itself, only the
-                    **	units it is mixed with.
+                    **	Tiberian Sun's TypeImmune: a Disruptor takes no damage from
+                    **	a band fired by a Disruptor of its own house, so a Disruptor
+                    **	group never hurts itself. Enemy Disruptors, and allied ones
+                    **	of another house, are hit like anything else.
                     */
                     ObjectClass* firer = Target_Legal(SonicFirer) ? As_Object(SonicFirer) : NULL;
                     ObjectClass* occ = Map[Coord_Cell(Center_Coord())].Cell_Occupier();
                     while (occ != NULL && vcount < (int)(sizeof(victims) / sizeof(victims[0]))) {
-                        bool disruptor = occ->What_Am_I() == RTTI_UNIT && *((UnitClass*)occ) == UNIT_TSSONIC;
+                        bool disruptor = occ->What_Am_I() == RTTI_UNIT && *((UnitClass*)occ) == UNIT_TSSONIC && occ->Owner() == SonicHouse;
                         if (occ->Is_Techno() && occ != firer && !disruptor) {
                             victims[vcount++] = occ;
                         }
@@ -1029,7 +1175,8 @@ void AnimClass::AI(void)
                                 seen = true;
                             }
                         }
-                        bool disruptor = aimed != NULL && aimed->What_Am_I() == RTTI_UNIT && *((UnitClass*)aimed) == UNIT_TSSONIC;
+                        bool disruptor = aimed != NULL && aimed->What_Am_I() == RTTI_UNIT && *((UnitClass*)aimed) == UNIT_TSSONIC
+                                         && aimed->Owner() == SonicHouse;
                         if (aimed != NULL && !seen && aimed->Is_Techno() && !disruptor) {
                             victims[vcount++] = aimed;
                         }
@@ -1279,7 +1426,7 @@ void AnimClass::Middle(void)
     **  the beam visual ends. Spawning ART_EXP1 here fires it on the same
     **  frame as the damage, matching the visual impact moment.
     */
-    if (Class->Type == ANIM_TD_ION_CANNON) {
+    if (Class->Type == ANIM_TD_ION_CANNON || Class->Type == ANIM_TS_ION_BEAM) {
         /*
         **  Source = NULL deliberately. Explosion_Damage skips any object
         **  whose pointer matches the source (combat.cpp:211), so if we
@@ -1288,11 +1435,28 @@ void AnimClass::Middle(void)
         **  practice. Cost: kill credit isn't attributed to "GDI's Ion
         **  Cannon" — acceptable trade-off. (TD's source has the same
         **  loop but presumably this edge case wasn't exercised.)
+        **
+        **  The TS beam (uplink flavour) hits at the same moment with the
+        **  same numbers — flavour only, balance identical. No ART_EXP1
+        **  for it: TS's own impact visual is the RING1 ground flash the
+        **  fire site spawns beside the beam.
         */
         Explosion_Damage(Center_Coord(), 600, NULL, WARHEAD_TDPB);
-        AnimClass* impact_anim = new AnimClass(ANIM_ART_EXP1, Center_Coord(), 0, 1);
-        if (impact_anim != NULL) {
-            impact_anim->Set_Owner(OwnerHouse);
+        if (Class->Type == ANIM_TD_ION_CANNON) {
+            AnimClass* impact_anim = new AnimClass(ANIM_ART_EXP1, Center_Coord(), 0, 1);
+            if (impact_anim != NULL) {
+                impact_anim->Set_Owner(OwnerHouse);
+            }
+        } else {
+            /*
+            **  The TS strike's RING1 shockwave is not just visual: the 3x3
+            **  it sweeps takes real damage, making the uplink cannon the
+            **  successor to the TD original (which stays single-cell).
+            **  Centre damage is TD-identical; the ring hits at half.
+            */
+            for (FacingType face = FACING_N; face < FACING_COUNT; face++) {
+                Explosion_Damage(Adjacent_Cell(Center_Coord(), face), 600 / 2, NULL, WARHEAD_TDPB);
+            }
         }
     }
 

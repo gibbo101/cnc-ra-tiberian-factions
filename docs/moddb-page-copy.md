@@ -96,10 +96,6 @@ left to render badly.</p>
 RedAlert.dll (for example CFE Patch Redux). Disable other DLL mods first.</li>
 <li>Single-player skirmish is the tested mode. LAN works but crates have caused crashes,
 so turn crates off for LAN play.</li>
-<li>The deploy hotkey no longer works for any faction's MCV, now that all four factions field
-their own MCV type. This is a launcher limitation a mod cannot reach. Select the MCV and click
-it to deploy: the deploy cursor still works. The select-all (A) key also grabs harvesters and
-MCVs, so drag-select your army instead.</li>
 </ul>
 
 <h2>Source and licensing</h2>

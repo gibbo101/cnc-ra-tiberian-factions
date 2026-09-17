@@ -202,6 +202,15 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TDNapalm");      //	BULLET_TDNAPALM (TD A-10 napalm bomblet — ClassNapalm verbatim, BOMBLET sprite)
     new BulletTypeClass("TSFire");        //	BULLET_TSFIRE (TS fire-stream particle, FLAMEALL sprite)
     new BulletTypeClass("TSDropPod");     //	BULLET_TSDROPPOD (dropship bay delivery — falls like NukeDown, sets its cargo down, does no damage)
+    new BulletTypeClass("TSPodDrop");     //	BULLET_TSPODDROP (infantry drop pod — angled descent strafing the LZ, spawns its trooper + husk on touchdown)
+    new BulletTypeClass("TSHUNT");        //	BULLET_TSHUNTER (Hunter Seeker droid — homing kamikaze; draws the TSHUNT 8-frame spin, detonation is code)
+    new BulletTypeClass("TSLobbed2");     //	BULLET_TSLOBBED2 (TS RPG tower canister — accurate high arc, TSCANIST tumble)
+    new BulletTypeClass("TSAAHeatSeeker"); //	BULLET_TSAAHEATSEEKER (TS SAM tower and Mk. I missile — RA's MISSILE art on RA's homing path)
+    new BulletTypeClass("TSLobbed");      //	BULLET_TSLOBBED (TS Disc Thrower disc — accurate arc, TSDISCUS spin)
+    new BulletTypeClass("TSInvisible3");  //	BULLET_TSINVISIBLE3 (TS [Invisible3] — instant, unseen, air and ground)
+    new BulletTypeClass("TSHellfireMissile"); // BULLET_TSHELLFIRE (TS [AAHeatSeeker2] — the Orca Fighter's homing missile)
+    new BulletTypeClass("TSBombShell");   // BULLET_TSBOMBSHELL (TS [Cannon2] dropped by the Orca Bomber)
+    new BulletTypeClass("TSBallistic2");  // BULLET_TSBALLISTIC2 (Firestorm [Ballistic2] -- the Juggernaut's arcing shell)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per
@@ -303,6 +312,26 @@ void BulletTypeClass::One_Time(void)
     BulletTypeClass& tsdroppod = As_Reference(BULLET_TSDROPPOD);  // Dropship delivery -- own TSDSHP sprite (RA_VFX.XML, the TS Dropship voxel); donor passes Draw_It's NULL guard.
     if (tsdroppod.ImageData == NULL) {
         ((void const*&)tsdroppod.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tspoddrop = As_Reference(BULLET_TSPODDROP);  // Infantry drop pod -- own TSPODBLT sprite (RA_VFX.XML, the DROPPOD body); donor passes Draw_It's NULL guard.
+    if (tspoddrop.ImageData == NULL) {
+        ((void const*&)tspoddrop.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tshunter = As_Reference(BULLET_TSHUNTER);  // Hunter Seeker droid -- draws the TSHUNT tileset by name; donor passes Draw_It's NULL guard.
+    if (tshunter.ImageData == NULL) {
+        ((void const*&)tshunter.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tslobbed2 = As_Reference(BULLET_TSLOBBED2);  // RPG tower canister -- own TSCANIST sprite (RA_VFX.XML); donor passes Draw_It's NULL guard.
+    if (tslobbed2.ImageData == NULL) {
+        ((void const*&)tslobbed2.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tsheatseeker = As_Reference(BULLET_TSAAHEATSEEKER);  // SAM tower and Mk. I missile -- draws RA's MISSILE; donor passes Draw_It's NULL guard.
+    if (tsheatseeker.ImageData == NULL) {
+        ((void const*&)tsheatseeker.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tslobbed = As_Reference(BULLET_TSLOBBED);  // Disc Thrower disc -- own TSDISCUS sprite (RA_VFX.XML); donor passes Draw_It's NULL guard.
+    if (tslobbed.ImageData == NULL) {
+        ((void const*&)tslobbed.ImageData) = donor.ImageData;
     }
 }
 

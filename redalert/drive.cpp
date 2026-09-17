@@ -486,6 +486,37 @@ bool DriveClass::Roll_Off_Seat(int px_east, int px_north)
 }
 
 /***********************************************************************************************
+ * DriveClass::Rail_To -- Straight runtime rail from the unit's current spot to a coordinate.  *
+ *                                                                                             *
+ *    Fills the ROLL_OFF_DOCK_SEAT table with a 1 px-per-waypoint line from where the unit     *
+ *    stands to `dest`, holding `face`, and starts it. The war factory uses it to drive a       *
+ *    vehicle from its door-mouth seat onto the exit cell with no recentring step.             *
+ *=============================================================================================*/
+bool DriveClass::Rail_To(COORDINATE dest, DirType face)
+{
+    assert(IsActive);
+
+    int ex = (int)(short)(Coord_X(Coord) - Coord_X(dest));
+    int ny = (int)(short)(Coord_Y(Coord) - Coord_Y(dest));
+    int steps = (abs(ex) > abs(ny)) ? abs(ex) : abs(ny);
+    steps = (steps + PIXEL_LEPTON_W - 1) / PIXEL_LEPTON_W;
+    if (steps < 1) {
+        return (false);
+    }
+    if (steps > (int)(sizeof(Track21) / sizeof(Track21[0])) - 1) {
+        steps = (int)(sizeof(Track21) / sizeof(Track21[0])) - 1;
+    }
+    for (int i = 0; i <= steps; i++) {
+        Track21[i].Offset = XY_Coord((LEPTON)(short)(ex * (steps - i) / steps), (LEPTON)(short)(ny * (steps - i) / steps));
+        Track21[i].Facing = face;
+    }
+    Track21[steps].Offset = 0;
+    Force_Track(ROLL_OFF_DOCK_SEAT, dest);
+    Set_Speed(128);
+    return (true);
+}
+
+/***********************************************************************************************
  * DriveClass::Roll_On_Seat -- Drives a unit from its cell centre out onto a seat.             *
  *                                                                                             *
  *    The mirror of Roll_Off_Seat: a short straight rail from the cell centre to a point       *
@@ -751,8 +782,11 @@ bool DriveClass::While_Moving(void)
     **	visibly move on the map, then process accordingly.
     ** Slow the unit down if he's carrying a flag.
     */
-    MPHType maxspeed =
-        MPHType(min(Techno_Type_Class()->MaxSpeed * SpeedBias * House->GroundspeedBias, (int)MPH_LIGHT_SPEED));
+    int topspeed = Techno_Type_Class()->MaxSpeed * SpeedBias * House->GroundspeedBias;
+    if (LimpetType != 0) {
+        topspeed = topspeed * LimpetSpeedFactor; // a TS Limpet Drone rides along
+    }
+    MPHType maxspeed = MPHType(min(topspeed, (int)MPH_LIGHT_SPEED));
     if (IsFormationMove)
         maxspeed = FormationMaxSpeed;
 
@@ -899,6 +933,9 @@ bool DriveClass::While_Moving(void)
                                 memmove((char*)&Path[0], (char*)&Path[1], CONQUER_PATH_MAX - 1);
                                 Path[CONQUER_PATH_MAX - 1] = FACING_NONE;
                             } else {
+                                if (!IsActive) {   // a crate on the way in can have destroyed this unit
+                                    return (false);
+                                }
                                 Path[0] = FACING_NONE;
                                 TrackNumber = -1;
                                 actual = 0;
@@ -2656,6 +2693,13 @@ bool DriveClass::Start_Of_Move(void)
         IsNewNavCom = false;
         TrackIndex = 0;
         if (!Start_Driver(dest)) {
+            /*
+            **	The crate check inside Start_Driver can destroy this unit; nothing of it may be
+            **	touched after that, least of all a virtual call.
+            */
+            if (!IsActive) {
+                return (false);
+            }
             TrackNumber = -1;
             Path[0] = FACING_NONE;
             Set_Speed(0);
@@ -2745,7 +2789,11 @@ void DriveClass::AI(void)
         if ((Class->Speed == SPEED_FLOAT || Class->Speed == SPEED_HOVER || Class->Speed == SPEED_TRACK
              || (Class->Speed == SPEED_WHEEL && !Special.IsThreePoint))
             && PrimaryFacing.Is_Rotating()) {
-            if (PrimaryFacing.Rotation_Adjust(Class->ROT)) {
+            int rot = Class->ROT;
+            if (LimpetType != 0) {
+                rot = max(1, rot * LimpetSpeedFactor); // a TS Limpet Drone rides along
+            }
+            if (PrimaryFacing.Rotation_Adjust(rot)) {
                 Mark(MARK_CHANGE);
             }
 #else
@@ -3522,7 +3570,7 @@ DriveClass::TrackType const DriveClass::Track20[] = {
 **  the seat back to the cell centre, facing held, then Force_Tracks it. Lockstep-safe:
 **  filled from the same dials on every machine, immediately consumed.
 */
-DriveClass::TrackType DriveClass::Track21[32];
+DriveClass::TrackType DriveClass::Track21[64];
 
 DriveClass::RawTrackType const DriveClass::RawTracks[21] = {{Track1, -1, 0, -1},
                                                             {Track2, -1, 0, -1},

@@ -83,6 +83,22 @@ static short const ExitPyle[] = {XYCELL(1, 2),
                                  XYCELL(-1, 1),
                                  REFRESH_EOL};
 
+// TS Barracks: the doorway is drawn on the west column of the plot, so a soldier steps
+// straight out of it into the cell two rows down before trying the neighbours.
+static short const ExitTsPile[] = {XYCELL(0, 2),
+                                   XYCELL(1, 2),
+                                   XYCELL(-1, 2),
+                                   XYCELL(2, 2),
+                                   XYCELL(-1, 1),
+                                   XYCELL(2, 1),
+                                   XYCELL(-1, 0),
+                                   XYCELL(2, 0),
+                                   XYCELL(0, -1),
+                                   XYCELL(1, -1),
+                                   XYCELL(-1, -1),
+                                   XYCELL(2, -1),
+                                   REFRESH_EOL};
+
 static short const ExitSub[] = {XYCELL(0, 2), XYCELL(2, 2), XYCELL(-1, 2), XYCELL(1, 2), XYCELL(3, 2)};
 
 static short const ExitWeap[] =
@@ -115,12 +131,17 @@ static short const TsProcOList[] = {
 ** stay walkable concrete: veto'd by Is_TS_Apron_Cell, in the overlap list
 ** for redraw, and included in the 4x3 PLACEMENT grid so the ghost covers
 ** building + pad (Luke). */
-static short const TsWeapList[] = {0, 1, 2,
-                                   (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2,
-                                   (MCW * 2), (MCW * 2) + 1,
+/*
+**	TSWEAP (08-28 rebuild, 5x3): the hangar occupies rows 0-1 x cols 0-3. Row 2
+**	(the door's front row) and col 4 are walkable concrete; the roof art
+**	overhangs the row above the plot (overlap only).
+*/
+static short const TsWeapList[] = {0, 1, 2, 3,
+                                   (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2, (MCW * 1) + 3,
                                    REFRESH_EOL};
-static short const TsWeapOList[] = {3, (MCW * 1) + 3,
-                                    (MCW * 2) + 2, (MCW * 2) + 3,
+static short const TsWeapOList[] = {-MCW, -MCW + 1, -MCW + 2, -MCW + 3,
+                                    4, (MCW * 1) + 4,
+                                    (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3, (MCW * 2) + 4,
                                     REFRESH_EOL};
 /*
 **	Departure cells for the TS bay. The vehicle spawns at the door mouth over
@@ -128,9 +149,10 @@ static short const TsWeapOList[] = {3, (MCW * 1) + 3,
 **	directly under the door -- the natural first roll-out -- then the fan
 **	spreads south and south-east across the apron and off the plot.
 */
-static short const TsWeapExit[] = {XYCELL(2, 2), XYCELL(2, 3), XYCELL(3, 3), XYCELL(3, 2),
-                                   XYCELL(1, 3), XYCELL(4, 3), XYCELL(0, 3), XYCELL(-1, 2),
+static short const TsWeapExit[] = {XYCELL(3, 2), XYCELL(3, 3), XYCELL(4, 2), XYCELL(2, 2),
+                                   XYCELL(4, 3), XYCELL(2, 3), XYCELL(4, 1), XYCELL(1, 2),
                                    REFRESH_EOL};
+
 static short const List1100[] = {0, 1, REFRESH_EOL};
 static short const List1101[] = {0, 1, (MCW * 1) + 1, REFRESH_EOL};
 static short const List11[] = {0, 1, REFRESH_EOL};
@@ -1406,7 +1428,7 @@ static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            TXT_NONE,
                                            "TSPILE",
                                            FACING_NONE,
-                                           XYP_COORD(24, 47),  // Match TDPYLE/TENT.
+                                           XYP_COORD(20, 34),  // The foot of the doorway on the art's lower-left face, in classic px from the plot origin.
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,              // fake
@@ -1418,7 +1440,7 @@ static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            BSIZE_21,           // 2x1 + bib row = the 2x2 (incl bib) the bib-seated art
                                                                 // actually covers; the 2x2 plot's top row was dead grid
                                                                 // over empty ground (Luke, 2026-08-04 23:25).
-                                           (short const*)ExitPyle,
+                                           (short const*)ExitTsPile,
                                            (short const*)List21,
                                            NULL);
 
@@ -1473,7 +1495,7 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            // slide; the Titan seats at its own orange marker.
                                            // Spawn logging to MOD_DEBUG_AI.txt under
                                            // TF_DEV_BUILD.
-                                           TSWEAP_SEAT_DEFAULT,
+                                           TSWEAP_SEAT_MOUTH,
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,
@@ -1482,7 +1504,9 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory.
                                            DIR_N,
-                                           BSIZE_43,           // 4x3, TSPROC parity (2026-08-17 respec): hangar on the
+                                           BSIZE_53,           // 5x3 (08-28 rebuild): hangar rows 0-1 x cols 0-3 at the
+                                                               // refinery's art scale; row 2 + col 4 walkable concrete.
+                                                               // (superseded note follows) 4x3, TSPROC parity: hangar on the
                                                                // west 3 cols x rows 0-1, pad column + front row
                                                                // IN-plot as walkable concrete (Luke's original "similar
                                                                // to TS ref" call). The selection box is plot-centred by
@@ -1562,10 +1586,10 @@ static BuildingTypeClass const ClassTsDept(STRUCT_TSDEPT,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,          // Repair bay (not a factory).
                                            DIR_N,
-                                           BSIZE_33,           // TDFIX parity.
-                                           NULL,
-                                           (short const*)ListFix,
-                                           (short const*)OListFix);
+                                           BSIZE_33,           // TS Foundation=3x3: the bay art fills
+                                           NULL,               // the whole plot, so the corners are
+                                           (short const*)TsList33, // occupied, not free ground.
+                                           NULL);
 
 /*
 **  TSDROP (Dropship Bay) — Westwood's cut GADROP, finished rather than invented.
@@ -1597,6 +1621,298 @@ static BuildingTypeClass const ClassTsDrop(STRUCT_TSDROP,
                                            NULL,
                                            (short const*)ListWeap, // BLOCKING footprint = the deck's 3x2 = the plot.
                                            NULL);
+
+/*
+**  TSTURB (TS Power Turbine, GAPOWRUP) — a building ADDON, not a structure.
+**    Built from the sidebar like any building, but placement installs it into
+**    an already-placed TSPOWR (PowersUpBuilding wired in Init_Heap) instead of
+**    unlimboing: the plug object is consumed and the host's Power_Output rises
+**    by the plug's Power. The 1x1 footprint only shapes the placement ghost;
+**    it never occupies map cells. Stats in rules.ini [TSTURB] (TS [GAPOWRUP]).
+*/
+static BuildingTypeClass const ClassTsTurb(STRUCT_TSTURB,
+                                           TXT_NONE,
+                                           "TSTURB",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           false,
+                                           false, false,
+                                           true,               // simple damage imagery (single-frame art)
+                                           false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+/*
+**  TSCTWR (TS GDI Component Tower, GACTWR) — the bare wall joint. No weapon,
+**    no turret; wall runs terminate into it (cell.cpp Has_TS_Wall_Tower) and it
+**    takes ONE plug (UpgradesMax=1, Init_Heap). Two-frame simple-damage art
+**    (voxel drum + feet, scripts/ts_pack_towers.py). Sensors=yes -> IsScanner.
+**    Stats in rules.ini [TSCTWR] (TS [GACTWR]: cost 200, Str 500, Power=-10, TL2).
+**  TSVULC (TS Vulcan Cannon, GAVULC) — the tower's Vulcan plug, which is ALSO the
+**    armed tower type: PowersUpBuilding=TSCTWR makes it place like a plug (green
+**    only on a bare tower), and the Unlimbo divert swaps the bare tower for this
+**    building in place. Rotating turret, TDGUN frame layout. Primary=TSVulcanTower.
+*/
+static BuildingTypeClass const ClassTsCtwr(STRUCT_TSCTWR,
+                                           TXT_NONE,
+                                           "TSCTWR",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           false,               // always use the given name
+                                           false,               // IsWall
+                                           true,                // simple damage imagery (frame 1 = damaged)
+                                           false,               // invisible to radar
+                                           true,                // selectable
+                                           true,                // legal target
+                                           false,               // insignificant
+                                           false,               // theater specific
+                                           false,               // turret
+                                           true,                // remappable
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+static BuildingTypeClass const ClassTsVulc(STRUCT_TSVULC,
+                                           TXT_NONE,
+                                           "TSVULC",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0030,              // Vertical offset -- matches TURRET/TDGUN.
+                                           0x0080,              // Primary weapon offset -- matches TURRET/TDGUN.
+                                           0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           false,               // always use the given name
+                                           false,               // IsWall
+                                           false,               // simple damage imagery
+                                           false,               // invisible to radar
+                                           true,                // selectable
+                                           true,                // legal target
+                                           false,               // insignificant
+                                           false,               // theater specific
+                                           true,                // rotating turret
+                                           true,                // remappable
+                                           RTTI_NONE,
+                                           (DirType)208,        // Match TURRET starting facing.
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+// TSROCK / TSCSAM: the RPG and SAM plugs, same shape as TSVULC (docs above).
+static BuildingTypeClass const ClassTsRock(STRUCT_TSROCK,
+                                           TXT_NONE,
+                                           "TSROCK",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0030,              // Vertical offset -- matches TURRET/TDGUN.
+                                           0x0080,              // Primary weapon offset -- matches TURRET/TDGUN.
+                                           0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           false,               // always use the given name
+                                           false,               // IsWall
+                                           false,               // simple damage imagery
+                                           false,               // invisible to radar
+                                           true,                // selectable
+                                           true,                // legal target
+                                           false,               // insignificant
+                                           false,               // theater specific
+                                           true,                // rotating turret
+                                           true,                // remappable
+                                           RTTI_NONE,
+                                           (DirType)208,        // Match TURRET starting facing.
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+static BuildingTypeClass const ClassTsCsam(STRUCT_TSCSAM,
+                                           TXT_NONE,
+                                           "TSCSAM",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0030,              // Vertical offset -- matches TURRET/TDGUN.
+                                           0x0080,              // Primary weapon offset -- matches TURRET/TDGUN.
+                                           0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           false,               // always use the given name
+                                           false,               // IsWall
+                                           false,               // simple damage imagery
+                                           false,               // invisible to radar
+                                           true,                // selectable
+                                           true,                // legal target
+                                           false,               // insignificant
+                                           false,               // theater specific
+                                           true,                // rotating turret
+                                           true,                // remappable
+                                           RTTI_NONE,
+                                           (DirType)208,        // Match TURRET starting facing.
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+/*
+**  TSWALL (TS GDI Concrete Wall, GAWALL) — a wall-type building exactly like RA's
+**    BRIK: never stands on the map, placement converts it to OVERLAY_TSWALL
+**    (building.cpp Unlimbo + the placement-legality switch). Stats in rules.ini
+**    [TSWALL] (TS [GAWALL]: cost 50, TL6, Prerequisite=GAPILE, Adjacent=4).
+*/
+static BuildingTypeClass const ClassTsWall(STRUCT_TSWALL,
+                                           TXT_BRICK_WALL,
+                                           "TSWALL",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_NONE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           true,                // always use the given name
+                                           true,                // IsWall
+                                           false,               // simple damage imagery
+                                           false,               // invisible to radar
+                                           false,               // selectable
+                                           true,                // legal target
+                                           true,                // insignificant
+                                           false,               // theater specific
+                                           false,               // turret
+                                           false,               // remappable
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+/*
+**  TSPLUG (TS GDI Upgrade Centre, GAPLUG) — the 2-slot addon HOST of the
+**    upgrade mechanic (UpgradesMax wired in Init_Heap). Physically a TSTECH
+**    twin: 3x2 plot, GTPLUG art via the Stealth Recipe. Sensors=yes in TS —
+**    IsScanner set in Init_Heap; TF_Stealth_Detector_In_Range gives scanner
+**    BUILDINGS detection at their own Sight range. Stats in rules.ini
+**    [TSPLUG] (TS [GAPLUG]: cost 1000, Str 1000, Power=-150, TL10).
+*/
+static BuildingTypeClass const ClassTsPlug(STRUCT_TSPLUG,
+                                           TXT_NONE,
+                                           "TSPLUG",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           true,               // anim regulated (masts/lights cycle)
+                                           false, false, false, false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_32,           // TSTECH twin.
+                                           NULL,
+                                           (short const*)List32,
+                                           NULL);
+
+/*
+**  TSPION (Ion Cannon Uplink, GAPLUG3) — addon plug for TSPLUG, same
+**    never-on-the-map contract as TSTURB. While installed anywhere in the
+**    house, the TS Ion Cannon special (SPC_TS_ION_CANNON, its own slot
+**    beside the TD cannon's) is granted (house.cpp Super_Weapon_Handler).
+**    Stats in rules.ini [TSPION] (TS [GAPLUG3]: cost 1500,
+**    Power=-100, TL10).
+*/
+static BuildingTypeClass const ClassTsPion(STRUCT_TSPION,
+                                           TXT_NONE,
+                                           "TSPION",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           false,
+                                           false, false,
+                                           true,               // simple damage imagery (ghost art)
+                                           false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+/*
+**  TSPODS (Drop Pod Node) — our Firestorm-style plug for TSPLUG, same
+**    never-on-the-map contract as TSPION (base TS grants drop pods by
+**    script only, so this plug is our own invention). While installed
+**    anywhere in the house, the TS Drop Pod special (SPC_TS_DROPPODS) is
+**    granted (house.cpp Super_Weapon_Handler). Stats in rules.ini
+**    [TSPODS]; art = GTPLUG_D dome ghost, cameo RAD1ICON (ART.INI
+**    [GAPLUG_D] Cameo=).
+*/
+static BuildingTypeClass const ClassTsPods(STRUCT_TSPODS,
+                                           TXT_NONE,
+                                           "TSPODS",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           false,
+                                           false, false,
+                                           true,               // simple damage imagery (ghost art)
+                                           false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
+/*
+**  TSSEEK (Seeker Control, TS GAPLUG2) — addon plug for TSPLUG, same
+**    never-on-the-map contract as TSPION. While installed anywhere in the
+**    house, the Hunter Seeker special (SPC_TS_HUNTSEEK) is granted
+**    (house.cpp Super_Weapon_Handler). Stats in rules.ini [TSSEEK]; art =
+**    GTPLUG_E node ghost, cameo RAD2ICON (ART.INI [GAPLUG_E] Cameo=).
+*/
+static BuildingTypeClass const ClassTsSeek(STRUCT_TSSEEK,
+                                           TXT_NONE,
+                                           "TSSEEK",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           false,
+                                           false, false,
+                                           true,               // simple damage imagery (ghost art)
+                                           false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
 
 /*
 **  TDAFLD (Nod Airstrip) — 4×2 flat tile, ARMOR_STEEL, capturable, crewed.
@@ -1648,6 +1964,38 @@ static BuildingTypeClass const ClassTdAfld(STRUCT_TDAFLD,
                                            (short const*)TdList42,
                                            (short const*)NULL  // No overlap row.
 );
+
+// TS Limpet Mine (STRUCT_TSDLIMP), Firestorm [DLIMPET]: the Limpet Drone settled.
+// Never built from the sidebar (the drone deploys into it, and the deploy order
+// packs it back into UNIT_TSLIMP). Mine-like: driven over, cloaked (rules
+// Cloakable=yes), and its LIMP shot attaches the drone to a passing vehicle
+// instead of doing damage (TF_Limpet_Attach), after which the mine is spent.
+// Art = DLIMPET body + DLIMP_A blink (10 healthy + 10 damaged), DLIMPMK build-up.
+static BuildingTypeClass const ClassTsDlimp(STRUCT_TSDLIMP,
+                                            TXT_NONE,
+                                            "TSDLIMP",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_NORMAL,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            true,                // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            true,                // insignificant (never announced, never a base)
+                                            false,               // theater specific
+                                            false,               // rotating turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_11,
+                                            NULL,
+                                            (short const*)List1,
+                                            (short const*)NULL);
 
 /*
 **  TDHQ (Communications Center / Radar) — 2×2 radar dome, ARMOR_WOOD,
@@ -4243,6 +4591,10 @@ static BuildingTypeClass const ClassLarva2(STRUCT_LARVA2,
 void const* BuildingTypeClass::WarFactoryOverlay;
 void const* BuildingTypeClass::WarFactoryOverlayTd;
 void const* BuildingTypeClass::WarFactoryOverlayTs;
+void const* BuildingTypeClass::TsWeapShutter;
+void const* BuildingTypeClass::TsWeapUnderDoor;
+void const* BuildingTypeClass::TsWeapFront;
+void const* BuildingTypeClass::TsWeapFrontOpen;
 void const* BuildingTypeClass::TsRefineryFlame;
 void const* BuildingTypeClass::TsPulseTurret;
 void const* BuildingTypeClass::TsRefineryLid;
@@ -4330,6 +4682,8 @@ BuildingTypeClass::BuildingTypeClass(StructType type,
     , Capacity(0)
     , Power(0)
     , Drain(0)
+    , PowersUpBuilding(STRUCT_NONE)
+    , UpgradesMax(0)
     , Size(size)
     , ShapeWidth(0)
     , ShapeHeight(0)
@@ -4550,6 +4904,24 @@ bool BuildingTypeClass::Is_Helipad(void) const
 bool BuildingTypeClass::Is_Tiberian_Era(void) const
 {
     return (Type >= STRUCT_TDOBLI && Type <= STRUCT_TIBERIAN_LAST)
+           || (Type >= STRUCT_TS_TREE_FIRST && Type <= STRUCT_TS_TREE_LAST);
+}
+
+/***********************************************************************************************
+ * BuildingTypeClass::Is_TS_Era -- Is this one of the Tiberian Sun structures?                  *
+ *                                                                                             *
+ *    Narrower than Is_Tiberian_Era, which answers "TD or TS". TS's building audio differs      *
+ *    from both earlier games: it slams down with PLACE2 and then rises in SILENCE, where RA    *
+ *    and TD both run a construction rumble (OpenTS: BuildingSlam is played on placement, and   *
+ *    the buildup plays only a per-building AuxSound1, which no TS building defines -- it is    *
+ *    an aircraft take-off/landing field).                                                      *
+ *                                                                                             *
+ *    Keyed on the BUILDING, not the picked faction, like the other placement sounds: a TS      *
+ *    yard sounds like a TS yard whoever crated or captured it.                                 *
+ *=============================================================================================*/
+bool BuildingTypeClass::Is_TS_Era(void) const
+{
+    return (Type == STRUCT_TSPOWR)
            || (Type >= STRUCT_TS_TREE_FIRST && Type <= STRUCT_TS_TREE_LAST);
 }
 
@@ -4777,7 +5149,39 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsTech);        // STRUCT_TSTECH (TS Tech Center)
     new BuildingTypeClass(ClassTsDept);        // STRUCT_TSDEPT (TS Service Depot)
     new BuildingTypeClass(ClassTsDrop);        // STRUCT_TSDROP (TS Dropship Bay)
+    new BuildingTypeClass(ClassTsTurb);        // STRUCT_TSTURB (TS Power Turbine addon)
+    new BuildingTypeClass(ClassTsPlug);        // STRUCT_TSPLUG (TS Upgrade Centre, addon host)
+    new BuildingTypeClass(ClassTsPion);        // STRUCT_TSPION (Ion Cannon Uplink addon)
+    new BuildingTypeClass(ClassTsPods);        // STRUCT_TSPODS (Drop Pod Node addon)
+    new BuildingTypeClass(ClassTsSeek);        // STRUCT_TSSEEK (Seeker Control addon)
+    new BuildingTypeClass(ClassTsWall);        // STRUCT_TSWALL (TS concrete wall, overlay on placement)
+    new BuildingTypeClass(ClassTsCtwr);        // STRUCT_TSCTWR (TS component tower, bare wall joint)
+    new BuildingTypeClass(ClassTsVulc);        // STRUCT_TSVULC (TS Vulcan tower = the Vulcan plug)
+    new BuildingTypeClass(ClassTsRock);        // STRUCT_TSROCK (TS RPG tower = the RPG plug)
+    new BuildingTypeClass(ClassTsCsam);        // STRUCT_TSCSAM (TS SAM tower = the SAM plug)
+    new BuildingTypeClass(ClassTsDlimp);       // STRUCT_TSDLIMP (TS Limpet Mine)
+
     new BuildingTypeClass(ClassTsPuls);        // STRUCT_TSPULS (TS EMP Pulse Cannon)
+
+    /*
+    **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so
+    **	the plug relationships are set on the heap copies once all slots exist.
+    */
+    As_Reference(STRUCT_TSPOWR).UpgradesMax = 2;                     // TS [GAPOWR] Upgrades=2
+    As_Reference(STRUCT_TSTURB).PowersUpBuilding = STRUCT_TSPOWR;    // TS [GAPOWRUP]
+    As_Reference(STRUCT_TSPLUG).UpgradesMax = 2;                     // TS [GAPLUG] Upgrades=2
+    As_Reference(STRUCT_TSPLUG).IsScanner = true;                    // TS Sensors=yes: cloak detector
+    As_Reference(STRUCT_TSPION).PowersUpBuilding = STRUCT_TSPLUG;    // TS [GAPLUG3]
+    As_Reference(STRUCT_TSPODS).PowersUpBuilding = STRUCT_TSPLUG;    // our Firestorm-style pod node
+    As_Reference(STRUCT_TSSEEK).PowersUpBuilding = STRUCT_TSPLUG;    // TS [GAPLUG2]
+    As_Reference(STRUCT_TSCTWR).UpgradesMax = 1;                     // TS [GACTWR]: one plug per tower
+    As_Reference(STRUCT_TSCTWR).IsScanner = true;                    // TS Sensors=yes
+    As_Reference(STRUCT_TSVULC).PowersUpBuilding = STRUCT_TSCTWR;    // TS [GAVULC] PowersUpBuilding=gactwr
+    As_Reference(STRUCT_TSVULC).IsScanner = true;                    // the tower's sensor survives the swap
+    As_Reference(STRUCT_TSROCK).PowersUpBuilding = STRUCT_TSCTWR;    // TS [GAROCK]
+    As_Reference(STRUCT_TSROCK).IsScanner = true;
+    As_Reference(STRUCT_TSCSAM).PowersUpBuilding = STRUCT_TSCTWR;    // TS [GACSAM]
+    As_Reference(STRUCT_TSCSAM).IsScanner = true;
 }
 
 /***********************************************************************************************
@@ -4940,11 +5344,13 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 28, 3},  // GAPILE halved windows _A(4)+_B(4)+_C(7 flag) -> LCM 28
         {STRUCT_TSPROC, BSTATE_IDLE, 0, 16, 3}, // NAREFN _C deck lights (fireball + lid are event layers)
         {STRUCT_TSPROC, BSTATE_FULL, 0, 16, 3}, // customer approaching: lights keep cycling
-        {STRUCT_TSWEAP, BSTATE_IDLE, 0, 14, 3},  // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8, swept fwd+back (ping-pong, packer order)
+        {STRUCT_TSWEAP, BSTATE_IDLE, 0, 32, 3},  // GAWEAP _A/_B (Rate 400) + _C (Rate 800) baked at 32 steps  // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8, swept fwd+back (ping-pong, packer order)
         {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)
+        {STRUCT_TSDLIMP, BSTATE_IDLE, 0, 10, 3}, // DLIMP_A blink halved (10 healthy + 10 damaged)
         {STRUCT_TSTECH, BSTATE_IDLE, 0, 8, 3},   // GATECH _A halved (8 healthy + 8 damage-pocked dome)
         {STRUCT_TSDEPT, BSTATE_IDLE, 0, 35, 3},  // GADEPT _A halved(5)+_B whole(7, odd=no damaged half) -> LCM 35
+        {STRUCT_TSPLUG, BSTATE_IDLE, 0, 40, 3},  // GAPLUG windows _A(10)+_B(8)+_C(4) -> LCM 40
         // TSSILO is static (no TS idle anim): shape 0 healthy, 1 damaged.
     };
 
@@ -5012,8 +5418,14 @@ void BuildingTypeClass::One_Time(void)
     _makepath(fullname, NULL, NULL, (char const*)"TDWEAP2", ".SHP");
     WarFactoryOverlayTd = MFCD::Retrieve(fullname);
     // TS's bay-door overlay, sized to the war factory's own stub.
-    _makepath(fullname, NULL, NULL, (char const*)"TSWEAP2", ".SHP");
-    WarFactoryOverlayTs = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSWEAPDR", ".SHP");
+    TsWeapShutter = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSWEAPUD", ".SHP");
+    TsWeapUnderDoor = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSWEAPNF", ".SHP");
+    TsWeapFront = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSWEAPNU", ".SHP");
+    TsWeapFrontOpen = MFCD::Retrieve(fullname);
     // TS refinery event layers (fireball burst, dock lid), sized to its stub.
     _makepath(fullname, NULL, NULL, (char const*)"TSPROCFR", ".SHP");
     TsRefineryFlame = MFCD::Retrieve(fullname);
@@ -5537,24 +5949,12 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
         return (_ts_proc_place);
     }
     if (placement && Type == STRUCT_TSWEAP) {
-        /*
-        **	The 4x3 plot exactly: the hand-tucked pad (2026-08-17 evening)
-        **	keeps every concrete pixel inside the plot, so ghost, plot and
-        **	ground art all agree -- the ghost promises every cell the built
-        **	building's ground art occupies. Blocking stays the 3x2 hangar.
-        */
-        static short const _ts_weap_place[] = {0,
-                                               1,
-                                               2,
-                                               3,
-                                               MAP_CELL_W,
-                                               MAP_CELL_W + 1,
-                                               MAP_CELL_W + 2,
-                                               MAP_CELL_W + 3,
-                                               MAP_CELL_W * 2,
-                                               MAP_CELL_W * 2 + 1,
-                                               MAP_CELL_W * 2 + 2,
-                                               MAP_CELL_W * 2 + 3,
+        // The ghost follows the art: the hangar cells plus every cell the pad
+        // lands on -- the whole 5x3 except the bottom-left cell (0,2), which
+        // carries no concrete.
+        static short const _ts_weap_place[] = {0, 1, 2, 3, 4,
+                                               MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2, MAP_CELL_W + 3, MAP_CELL_W + 4,
+                                               MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2, MAP_CELL_W * 2 + 3, MAP_CELL_W * 2 + 4,
                                                REFRESH_EOL};
         return (_ts_weap_place);
     }
@@ -5662,7 +6062,7 @@ short const* BuildingTypeClass::Overlap_List(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Width(void) const
 {
-    static int width[BSIZE_COUNT] = {1, 2, 1, 2, 2, 3, 3, 4, 5, 4, 4};
+    static int width[BSIZE_COUNT] = {1, 2, 1, 2, 2, 3, 3, 4, 5, 4, 4, 5};
     return (width[Size]);
 }
 
@@ -5682,7 +6082,7 @@ int BuildingTypeClass::Width(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Height(bool bib) const
 {
-    static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5, 3, 4};
+    static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5, 3, 4, 3};
     /*
     **	The dropship bay's slab sits INSIDE its 3x3 (see Bib_And_Offset), so the
     **	placement grid must not grow a bib row -- the art already owns the space

@@ -1,3 +1,489 @@
+## RESUME HERE: play test 2026-09-17 (committed on main @ 4009e766, pushed)
+
+Desktop prefix = DLL `185b0e11`, matching `build/`. Dev build (logs and cheats in). The whole
+2026-09-16 test list was played and every item passed or was fixed in session; the Juggernaut and
+the Limpet Drone are done bar the LAN check below.
+
+What went in, all signed off in play:
+- Juggernaut: the arc flies the true distance to its aim (RA's `::Distance()` approximation was
+  throwing every shell ~290 leptons long), scatter cut to 85 leptons rolled as the smaller of
+  two, and the fire point is now a generated per-facing table off the packed barrels
+  (`redalert/tsjugg_muzzle.h`). Its walk frames dropped 87 px onto the deployed ground line.
+- Deploy rules: a DeployToFire walker sets down only for an ordered attack, never inside its
+  weapon's minimum range, and `Approach_Target` now backs off to a cell between min and max.
+- Carryall: remembers the vehicle it was sent to lift (NavCom is cleared by the landing-zone
+  rewrite), sets it down where it carried it, comes off the map for that placement so it does
+  not block its own cell, stays in the top layer until it is actually down, box two cells high.
+- TS vehicles put out TS Light Infantry when destroyed; the Limpet Mine takes a move order and
+  packs back into its drone; drone and mine render at the mod's TS scale on one ground line; the
+  cameo is the drone on TS's vehicle plate.
+
+**Next, in order (Luke, 2026-09-17):**
+1. **The last GDI pieces.** Finishing the roster comes before any verification or polish work
+   below, and the EMP arc leads because its pulse is what the Mobile EMP runs on (Luke,
+   2026-09-17):
+   - **EMP Pulse Cannon, stages B to E** — branch `emp-cannon`, worktree
+     `../tf-subterranean-worktree`, doc `docs/emp-cannon-design.md` **on that branch**. Stage A
+     (the building) is verified; B superweapon, **C the pulse (the stun timer on TechnoClass,
+     the gates, aircraft crash, building power-off)**, D diggers, E sounds and EVA. Deck-only
+     deploys for this arc, and it ships with the subterranean pair, never alone.
+   - **Mobile EMP** — needs stage C's pulse, so it follows straight on from it.
+   - Mobile Sensor Array, Mobile War Factory.
+   - **The Firestorm Generator and its wall sections** (TSFIRE / TSFSDF, planned in
+     `ts-gdi-tree-plan.md` 19b) — new defensive logic, and the wall panels are isometric like
+     the dropped gate, so the art route is agreed with Luke before anything is built.
+2. **LAN test the Limpet Drone's function** — deploy, attach, the 65% slow, the scouting share.
+   Never verified; the Deck's battery was dead on 09-17, so it needs a charged Deck.
+3. **Waypoint/rally marker shows the Allied emblem for TS GDI** — launcher-owned, see
+   `known-issues.md`. Needs the `radar-crest-ram-spike.md` RAM lever, not an atlas repaint.
+4. Then the TS roster balance pass, then the `TF_TS_GDI_FACTION` release switch and hazelnut's
+   icon credit.
+
+New contracts from this round: `launcher-render-contracts.md` 13 (art px to leptons is canvas px
+x 4/3) and 14 (a unit and the building it deploys into must share a ground line).
+
+
+## Mk. II cast shadow + walker shadows (2026-09-15 late)
+
+`vxl_render.py --shadow KX,KY` projects every voxel
+to the ground along the light (TS's walker art casts east, slightly south); the Mk. II ships that
+shadow from `ts35sh_hmec_<f>` on a 576 canvas (stub 72). Titan and Wolverine carry TS's own SHP
+shadow frames (`ts_shadow_from_shp.py`). All three deployed to the desktop; awaiting Luke's eye.
+Cursor decision: Luke said don't flip anything; the Carryall pickup keeps `icon_mount_unit`.
+
+## Resource spill on destruction (Luke's idea, 2026-09-15, queued)
+
+TS spews Tiberium from a dying Tiberium-healing unit (the Ghost Stalker, now in) and scatters a
+dying harvester's cargo into the cells around it; TS buildings never spill. Luke wants the
+mechanic extended: Tiberium silos and refineries (TS and TD) spill Tiberium when destroyed, and
+RA's silos and refinery spill Ore. Design knobs to settle first: how much (the credits the house
+loses when the capacity goes, valued per ore stage), where (the footprint plus its ring), and
+whether the TS/TD/RA harvesters get TS's cargo scatter too.
+
+## TS GDI to finish before anything else (Luke, 2026-09-13)
+
+TS GDI comes before a release, TS Nod or new arcs. "Finished" means all of the below, then the
+roster balance pass (see "TS roster balance pass" further down), then the release switch
+(`TF_TS_GDI_FACTION`) and hazelnut's icon credit.
+
+- **TS infantry:** Light Infantry, Disc Thrower, Medic, Engineer, Jumpjet Infantry, Ghost Stalker.
+  All six are built on `main` (local commits, 2026-09-13); see "TS infantry status".
+- **TS aircraft:** BUILT 2026-09-15 (Luke away; uncommitted). Orca Fighter (TSORCA: TS
+  [Hellfire], TSHellfireMissile on RA's homing path with DRAGON art, TSOrcaAP warhead, Ammo
+  5), Orca Bomber (TSORCAB: TS [Bomb] as a Dropping TSBombShell with the TD bomblet art,
+  TSOrcaHE, Ammo 2, needs TSTECH; Range 1.5 so the VTOL sits over its target), Carryall
+  (TSCARRY: unarmed, lifts one friendly vehicle on a move click over it, hovers loaded, sets
+  it down on a move click over ground; the vehicle is drawn under it by name; needs TSDEPT).
+  Voxel renders at the fleet camera via scripts/ts_pack_aircraft.py (canvas 384/384/448,
+  ShapeSize 48/48/56, stubs in TFASSETS.MIX); TS voice set 30 (Orca pilot) for all three;
+  ORCAMIS1 report, ORCAUP1/ORCADWN1 take-off and landing, the Carryall uses the dropship's
+  DROPUP1/DROPDWN1. AI builds Orcas one per pad, every third a bomber. Cameos badged, manifest
+  and ModText done.
+  **TS Helipad fixed with them:** it was flagged a helipad and an aircraft factory but had no
+  TS aircraft to offer, and sat outside the four dock/rearm switches; now in them, no free
+  aircraft on build (TS GAHPAD), `Bib=yes` slab, and the dock seat moved from the RA pad's
+  (24,18) onto the landing octagon at (29,29). Headless runs: pad + bib render, Orcas dock on
+  the octagon, Carryall lifts and carries a vehicle (drawn slung under it), sets it down on
+  a move order and lands empty, and the Orcas killed a rifle squad on open ground leaving
+  bomb craters. Luke play-tests the lot tonight.
+- **Deploy key deploys every selected deployable (Luke's challenge, 2026-09-15):** the key
+  handler already looped the selection, but `TechnoClass::What_Action` answers ACTION_SELF
+  only with ONE object selected. `TF_DeployKeyBatch` (set for the loop) makes each selected
+  unit answer as if alone, for every faction's MCVs, transports, minelayers and the TS
+  deployables. Unit voices are held during the batch and TS units answer with TS's
+  DeploySound (27-I002, the crew's "deploying", bundled TSDEPLOY.WAV) once per press, as
+  TS's own deploy hotkey does (OpenTS init.cpp). Headless: a single selected TS MCV deploys
+  on the key; the two-unit case could not be staged (the spawn-and-select harness and the
+  launcher's selection list disagree) - Luke to press deploy with two MCVs selected. Dev
+  builds also take the order from `Documents/CnCRemastered/tf_deploy_now.flag`.
+- **Remaining vehicles:** Mobile Sensor Array, Mobile EMP, Mobile War Factory.
+  **Limpet Drone BUILT 2026-09-15 (uncommitted; headless run in progress):** the TS mechanic
+  as OpenTS has it. `UNIT_TSLIMP` is an unarmed hover crawler (LIMPED.SHP, ten frames cycled
+  by `Shape_Number`, no facings, hover locomotor) whose deploy order (`Try_To_Deploy`, the same
+  key/click as the MCV) settles it into `STRUCT_TSDLIMP` on its own cell: a 1x1 building that
+  is cloaked (`Cloakable=yes`), driven over like RA's mines (the four passability checks), and
+  armed with Firestorm's [LIMP] (range 2, TSLimpy warhead `LimpetFactor=35`). Its shot never
+  flies: `TF_Limpet_Attach` (building.cpp Mission_Attack FIRE_OK) sets the vehicle's
+  `TechnoClass::LimpetType` house bit and `LimpetSpeedFactor` 0.65 and the mine is deleted.
+  A limpeted vehicle drives and turns at 65% (drive.cpp) and scouts for the drone's owner
+  (TechnoClass::Look, second Sight_From as PlayerPtr); a repair bay strips it (RADIO_REPAIR).
+  Deploy on the selected mine (self click or the deploy key) packs it back into a drone
+  (`TF_Limpet_Undeploy` via MISSION_UNLOAD). Excluded from BuildingsLost and the any-building-
+  left check like the mines; mine-only threat scan = vehicles in range. NOT ported: TS's yellow
+  selection box on a limpeted unit (launcher draws the box) and EMP killing mines (emp-cannon
+  branch). Art: scripts/ts_pack_limpet.py (x5.0, unit 192 canvas, mine + build-up on a 48x48
+  stub so the standing drone fits); Firestorm ships no LIMPICON, so the cameo is the drone on
+  the blank XXICON plate (Luke may want a better one). Sounds LIMPBOM1 (attach), LIMPQ3/4
+  select, LIMPC3/4 move. AI does not build or use it yet.
+  **Play test 2026-09-15 evening (Luke):** aircraft facings were 90 deg off (the renders already start
+  at north counter-clockwise; the +8 rotation in scripts/ts_pack_aircraft.py removed; Luke: good and
+  correct). Orca Bomber ignored attack orders: Good_Fire_Location's ring search starts a cell inside
+  the weapon range and never ran for the 1.5-cell bomb, so every order fell to return-to-base; a
+  weapon under 3 cells now flies straight over the target. Carryall pickup shows the enter cursor
+  (the launcher has no tote cursor) and refuses a vehicle inside a war factory; per OpenTS the TS
+  Carryall hovers loaded and always lands and drops at a ground destination, which ours does.
+  Limpet Drone: cameo redone (the mine in house gold on E1ICON's backdrop), hover bob added, and
+  DEPLOY CRASHED Luke's game (no crash log; the mine was never drawn): dev builds now trace each
+  deploy step to MOD_DEBUG_TSUNITS.txt (LIMPET-DEPLOY lines) - Luke reproduces, the last line says
+  where. Deploy key with two Juggernauts deploys both (Luke: winner). Deploy and pack-up play TS's
+  BuildingDrop (PLACE2); TS has no pack-up sound of its own for the Juggernaut.
+  **Juggernaut deployed pose REDONE against TS itself (2026-09-15 evening):** the DJUGG_A cabin
+  frames run counter-clockwise like RA art and swing behind their pivot (they were mirrored); TS
+  rests the barrels LEVEL (its pitch scale is 64 = horizontal, StartPitch DIR_E) and raises them
+  only while aiming (Barrel_Pitch) - ported as two 32-facing sets, rest and aiming at 45 deg,
+  chosen by Shape_Number on Target_Legal(TarCom); 202 frames (120 walk, 32 rest, 32 aiming, 18
+  ladder). The seat was measured off TS's own pre-rendered deploy frame (DJUGGMK frame 0): bundle
+  8 TS px forward of the cabin pivot (breech in the cabin's middle) and 2 px below its centre,
+  matching the Firestorm wiki's in-game shot. Sheets: scratch jugg_vs_buildup2.png.
+  **Juggernaut headless-VERIFIED 2026-09-15 (uncommitted):** two runs: it spawned, set down, turned
+  the turret onto the target south (the drawn frame matches the shipped south frame) and its
+  three-shell salvo burst on the tank; barrels start at NORTH in the render set (index = facing).
+  Eye-pass items for Luke: the muzzle flash draws on the body, not the barrel tips; barrel seat.
+  **Juggernaut BUILT 2026-09-15:** TS turns it into a
+  building (DJUGG) and RA cannot turn one back, so it stays a UNIT with a deploy stance:
+  `UnitTypeClass::IsDeployToFire` (rules `DeployToFire=`, `DeployFrames=`, `DeployRate=`),
+  `UnitClass::DeployState` machine (`Deploy_AI`/`Deploy_Begin`): walks with no gun, the deploy
+  key or a target in range sets it down through the DJUGGMK ladder, deployed it fires from a
+  fixed stance with the turret facing baked into 32 composite frames (DJUGG base + DJUGG_A
+  turret + DJUGGBAR barrels pitched 30 deg at TS's .75 scale), a move packs it up first.
+  Firestorm [JUGG]/[Jugg90mm]/[Ballistic2]/[ARTYHE] values; weapons gained `MinimumRange=`
+  (techno.cpp Can_Fire). Art: scripts/ts_pack_jugg.py (170 frames, ShapeSize 56, stub in
+  TFASSETS.MIX), JUGGER1 report bundled. Barrel seat on the turret is a first pass for Luke's
+  eye. Firestorm assets live in expand01.mix (inner ECACHE01.MIX for SHPs, SOUNDS01.MIX for
+  AUDs, barrel voxel at the top level).
+- **EMP Pulse Cannon:** branch `emp-cannon` (`docs/emp-cannon-design.md`), stage A verified.
+- **Firestorm Generator:** new defensive logic; its wall panels are isometric like the dropped gate,
+  so the art route is decided with Luke before building.
+
+## TS infantry status (2026-09-13; ALL SIX PASSED in play by 2026-09-15, Medic last)
+
+Built from the TS Barracks, all at RA/TD infantry height (`scripts/ts_pack_infantry.py`, x3.25):
+Light Infantry (passed in play), Disc Thrower, Engineer, Medic, Ghost Stalker (needs the TS Tech
+Center, one per house), Jumpjet Infantry (needs a TS Radar). The Engineer, Medic and Ghost answer
+in their own TS voice sets (19, 20 and 14); the others use the rifleman's set 15. The skirmish AI
+trains all six.
+
+**Seen working in a headless skirmish:** all five render at the right size; discs arc and burst
+(after the TFASSETS.MIX stub rebuild); the Ghost's orange beam and grey coil fire and kill a line
+of riflemen; Light Infantry go prone under fire; the Medic heals a wounded soldier to full.
+
+**Play test 2026-09-14 (desktop DLL 6be8bb4f), Luke: "NOT a good test session".**
+Passed: the disc goes off on water and on a skip into a cliff; the Jumpjet flies across a river.
+Failed or open, with the fix build (desktop DLL 79f67565, uncommitted on main):
+- Barracks door: TS infantry spawned at the bottom-centre of the bib, a cell under the doorway.
+  Cause: TSPILE reused the RA tent's exit pixel (24,47) on its 2x1 plot. Fixed: the exit is the
+  doorway foot (20,34) with a west-column exit list (`ExitTsPile`), and TSPILE takes the
+  barracks exit branch. Untested.
+- Jumpjet box: the health bar rose with the CenterCoordY probe but the bracket corners stayed on
+  the ground by the shadow, so the launcher places an infantry bracket from something other than
+  the exported centre. Probe 2 (Luke: "treat it like a helicopter"): an airborne jumpjet exports
+  as Type AIRCRAFT with ID+5000, because the launcher lifts an aircraft's bracket and bar by its
+  Altitude. Untested; watch for a selection glitch at take-off and landing.
+- Jumpjet attack in the air: the log (`Documents/CnCRemastered/tf_jumpjet.log`) showed the
+  target dropped 30 frames into the flight: techno.cpp's maintenance check clears a
+  non-aircraft's target that is out of range and in another map zone (the tower sat across
+  the river). Jumpjets are now exempt like aircraft, in that check and the attack-move one.
+  Second log (69cbf6b4): they reached the target and fired 228 shots hovering, but a new
+  target out of range left them hovering with no destination, and the attack mission never
+  ended when a target died. ROOT CAUSE: `MissionClass::AI` returns early for any infantry
+  with Height > 0, so no mission runs in flight (also why they cruised on with a dead
+  mission). Jumpjets now exempt there (DLL 642df368). PASSED (Luke, 2026-09-15: "looks like
+  theyre all good"; log: 62 shots, every one spawned a bullet, cruise/hover cycles and a
+  landing). Barracks doorway spawn PASSED.
+- Jumpjet box, probe 3 (69cbf6b4): the AIRCRAFT export changed nothing. The airborne draw put
+  the SHADOW first, making it the launcher's root object; body now draws first, as a
+  helicopter does. Luke: "almost, still a bit low, health bar covers the head" (box centred
+  about the feet). Probe 4 (642df368): back to the INFANTRY type, body root, CenterCoordY
+  lifted by Height. PASSED (Luke, 2026-09-15: "selection box fixes"). The launcher rule: the
+  box and bar follow the FIRST shape an object draws plus its exported centre; the Type field
+  and Altitude do nothing for them.
+- Disc Thrower "missing" on force-fire at friendlies: by TS's rule (OpenTS bullet.cpp) an ally
+  never sets the disc off, in flight or on a bounce, so a disc thrown at a friendly skips through
+  and bursts on the third touchdown. Not a bug. Retest against ENEMY infantry and a moving enemy
+  vehicle.
+- Ghost Stalker cameo washed out with green pixels: all six TS infantry cameos had been decoded
+  with the house-colour remap (palette 16-31 -> green). Re-decoded with `--no-remap` and
+  re-badged. Fixed, needs a look.
+- Ghost cameo disappeared once one was built. Luke: "we put a big red X on the mk2". Done the
+  Mk. II way: the one-per-house test left Can_Build for `TF_Delivery_Order_Refused`
+  (`TF_Ghost_At_Cap`), both sidebar fills paint `TSGHOST_LK` (dimmed, red X, baked by
+  `ts_mk2_cooldown_cameos.py`), the click gets "Cannot comply", and the AI weights a second
+  Ghost at 0. PASSED (Luke, 2026-09-15: "ghost stalker limit 1 confirmed"). ⚠ that script's regen wiped
+  the hand-written TSSUBTANK/TSSAPC entries that sat inside its block; restored OUTSIDE it.
+- Railgun colours are TS-authentic (TS RULES.INI): the Ghost's `SmallRailgunSys` LaserColor
+  255,128,0 (orange) with a grey coil (200,200,200)->(150,150,150); the Mk. II's
+  `LargeRailgunSys` LaserColor 25,20,255 (blue) with a coil (25,70,205)->(150,150,150). Luke
+  remembers them alike; Luke: "if ghost and mk2 were different so be it" (kept as TS has them).
+
+**Luke, 2026-09-15 00:40: "just tiberium heal, everything else pass" - every remaining item
+below PASSED, the Ghost Stalker's Tiberium heal last ("confirmed healing"). The heal cadence
+then moved from 1 s to TS's 0.6 s (TiberiumHeal=.010 minutes), uncommitted, untested.**
+
+**The 6be8bb4f list (all passed except the Tiberium heal):**
+- Disc Thrower: hits a standing soldier and a moving vehicle; a miss skips (two skips at
+  most, gone on the third touchdown); goes off on water; a first throw clears a cliff, a skip
+  into one goes off; flying low into an enemy building stops it.
+- Jumpjet movement: takes off for a long walk round a cliff, walks a one-cell move; crosses a
+  river with no land route (a click on the water goes to the nearest land).
+- Jumpjet flight: speed, quick acceleration, curved turns, the slower bob, lower over the last
+  cell with no target; take-off, landing, hover fire, click and box select in the air.
+- Jumpjet box: selection box and health bar follow it up (probe; may still sit on the ground).
+- Jumpjet vs anti-air: SAM targets it in the air (PASSED, Luke 2026-09-15). Still to see:
+  ground-only weapons refuse it; it bursts (S_BANG34) when shot down; its shadow.
+- Jumpjet on the ground: never goes prone (Fearless); a tank can't crush it.
+- Railguns (Ghost, Mk. II) on TS's particle coils: PASSED (Luke, 2026-09-15: "rail gun fine").
+- Prone damage: TS small arms and HE 70%, railguns and RPG full, Devil's Tongue 600%; RA and
+  TD weapons still 50%.
+- Still unchecked from before: TS Barracks cameos (Ghost only with a Tech Center, one per
+  house); Engineer capture and friendly repair; Ghost C4, Tiberium immunity and heal; sounds
+  (TSINFGUN3, TSHEALER1, TSBIGGGUN1, silent disc throw); the Engineer, Medic and Ghost voices
+  (restart after a deploy); the AI training the roster.
+- Known, not fixed: the Ghost's beam starts at his chest; facing west it looks like his head
+  (Luke). TS fire-point table ready (PrimaryFireFLH 100,0,100 projected per facing frame,
+  checked against TS's drawn muzzle flash), waiting on Luke's OK, and whether the Light
+  Infantry (80,0,85), Disc Thrower (60,0,100) and Jumpjet (100,0,120) get theirs too.
+
+**Railgun, prone and Jumpjet tuning build, desktop DLL 6be8bb4f (uncommitted, awaiting
+play):** the Jumpjet is also Fearless (never scared prone; `InfantryTypeClass::IsFearless`
+reads `Fearless=`) and uncrushable, as TS's [JUMPJET]. both railguns now run TS's particle system (`TF_Railgun_Coil` / `Rail_Spark_AI`):
+full-density coils of drifting sparks that blend colour as they age and live 70-79 frames,
+one thin beam line in the nearest palette colour, and no refire until the coil has faded.
+TS warheads carry their own ProneDamage. The Jumpjet flies on TS's [JumpjetControls]
+(Speed 14, Acceleration 2, TurnRate 4, sine bob at .15 a second), along its turning facing.
+
+**Fix build, desktop DLL 5060f7cb (uncommitted, awaiting play):** the disc now flies TS's own
+ballistic step (`TS_Disc_Launch` / `TS_Disc_AI`), and water or a cliff sets it off (Luke:
+"water, boom"; a first throw clears cliffs, a skip into one goes off). Jumpjets take a move
+anywhere and use TS's full walk-or-fly rule. The RA and TD SAM state machines accept an
+airborne jumpjet. The Jumpjet's exported centre is raised by its height as a probe: the
+launcher ignores `CenterCoordY` for building boxes, and this build shows whether it does the same
+for units. The Ghost's fire point is still open.
+
+**Audit against OpenTS (2026-09-13):** confirmed in code: prone damage is RA's one 50% where TS
+sets it per warhead (SA 70%, HE 70%, RailShot2 100%); the Jumpjet flies on OpenTS's C++
+defaults instead of TS RULES.INI [JumpjetControls] (Speed 14, Acceleration 2, TurnRate 4,
+WobblesPerSecond .15). Reported, not yet checked: TS Jumpjets are Fearless and uncrushable;
+TS splash falls off faster (`/3` against our `/2`); Tiberium damage runs on a timer instead of
+per cell entered; the Ghost heals in Tiberium at 60% of TS's rate and spills no Tiberium on
+death; RA death screams instead of TS's DEDMAN set. Disc ROF 80 and Jumpjet Speed 8 are
+Firestorm's values (FIRESTRM.INI). **Veterancy stays out (Luke, 2026-09-13):** if it ever comes in, it comes in for every
+faction's units, never TS alone.
+
+**Failed in Luke's play test (2026-09-13 evening, desktop DLL 21ba15cb):**
+- Disc Thrower cannot hit a unit: the disc lands short of the target cell and skips past it. Our
+  disc flies on RA's Riser/Fly_Speed approximation, which lands up to half a cell off; TS solves
+  the arc exactly (`Calculate_Projectile_Speed`/`Calculate_Projectile_Pitch` with floater
+  gravity, aimed at `Predict_Target_Coord`) and flies it on its own velocity step (OpenTS
+  bullet.cpp 534-763). Fix = port that flight. The disc also skips on water (OpenTS's bounce has no
+  water test, so TS does too) and over cliffs (RA cliffs have no height; TS's disc goes off
+  against a cliff face): the handling of both is Luke's call.
+- Jumpjet won't take off for a long walk round a cliff: ours flies only on a zone change or a
+  straight twelve cells. TS `Should_JumpJet_Fly` also walks a one-cell trip and flies a walk of
+  more than fifteen steps (`Test_Cell_Walk`); `Find_Path_AStar` with a NULL result path returns
+  that length.
+- Jumpjet won't cross a river with no land route: the move click is pulled back to a cell in the
+  unit's own zone (foot.cpp ACTION_MOVE/NOMOVE, `Nearby_Location` with the current zone). TS treats
+  jumpjets as move-anywhere (OpenTS foot.cpp 1667/4649).
+- Jumpjet selection box and health bar stay on the ground while it flies (screenshot); the
+  launcher places the box from the logical position, not the lifted draw.
+- SAM sites neither target nor fire at an airborne jumpjet: the RA SAM and TD SAM attack state
+  machines, and the TD SAM's reacquire, accept only `Is_Target_Aircraft` with Height > 0. The TS
+  SAM tower is `[TSCSAM]` (TSRedEye2); check its path too.
+- Ghost Stalker's beam started at his head (Luke's screencast 2026-09-15 00:21 confirmed it):
+  the infantry fire coordinate is the unit centre plus E1's VerticalOffset 0x35, which lands
+  at head height on this sprite. FIXED overnight 2026-09-15: `InfantryClass::Fire_Coord`
+  returns a per-facing muzzle for the Ghost, standing and prone, from
+  `redalert/tsghost_muzzle.h`, GENERATED by `scripts/ts_ghost_fire_points.py` off the TS fire
+  frames' own muzzle flash (bright yellow on alternate stages; north flashes on the even
+  stages above the head). Anchor maths: canvas centre = draw point = unit coord + (-2,+4)
+  classic px; 1 HD px = 2 leptons. VERIFIED headless 2026-09-15 00:40 (smoke-spawn harness,
+  flank riflemen added W/E): firing east the starburst and beam leave the barrel tip, up and
+  right of the figure, not the head. Clean desktop DLL da49d7ea. Harness lesson: the spawned
+  foes die within 25 s, so the screenshot burst must start right after the lobby Start.
+- The Ghost's orange beam is TS's: [SmallRailgunSys] LaserColor=255,128,0; the Mk. II's
+  [LargeRailgunSys] is 25,20,255.
+
+**Still to check in play:**
+- Sidebar: all five cameos at the TS Barracks, the Ghost only with a TS Tech Center, and its
+  cameo gone while one is alive.
+- Engineer: captures an enemy building in one go; restores a damaged friendly building to full.
+- Ghost Stalker: C4 on a building; stands in Tiberium unhurt and heals there.
+- Sounds: TSINFGUN3 (Light Infantry), TSHEALER1 (Medic), TSBIGGGUN1 (Ghost). The Disc
+  Thrower's throw is silent, as in TS.
+- Disc Thrower bounce: a disc that misses skips on (up to two skips, gone on the third
+  touchdown), and goes off early on an enemy it lands on or passes low over.
+- Voices: the Engineer, Medic and Ghost speak their own TS lines. Restart the game after a
+  deploy; the launcher caches sounds at launch.
+- AI: a TS GDI AI trains light infantry, disc throwers, jumpjets and up to two medics.
+- Jumpjet: see below.
+
+**Jumpjet Infantry** is a port of OpenTS's JumpjetLocomotionClass into `InfantryClass`
+(`Jumpjet_AI` in infantry.cpp), not a helicopter stand-in; the helicopter route stays the
+fallback. It walks a trip under twelve cells it can make on foot and flies anything else: it
+climbs to cruise height (200 leptons, between the layer boundary and the helicopters), flies
+straight with TS's hover bob, hovers while it has a target, and lands when idle. In the air it is
+an air target, as in TS: only anti-air weapons reach it, anti-air scans find it, hits land
+directly, and when shot down it bursts with TS's S_BANG34. Its JumpCannon fires TS's Invisible3,
+which hits air and ground. In flight its shadow is its own frame darkened on the ground, as TS
+draws one; TS's shadow frames for the flight poses are empty. To check in play: takeoff and
+landing, flying over buildings and water, click and box selection in the air, hovering fire,
+SAMs and anti-air units hitting it, ground-only weapons refusing it, the burst, the shadow.
+
+**Follow-ups:**
+- TS also flies a walk longer than fifteen steps; the straight twelve-cell test stands in for
+  that path length.
+- Jumpjet speed builds up over about eight seconds (OpenTS's JumpjetAcceleration .25); judge the
+  feel in play.
+
+## Open after the 2026-09-12 SAM session
+
+The SAM, Mk. I anti-air, RPG tower, Vulcan flash, War Factory door and stripes, and TS
+placement reach all passed in play on 2026-09-12. Still open:
+
+- Upgrade Centre AI is in but not yet seen in play: a TS GDI AI at Normal or Hard builds the
+  centre, the Ion Cannon Uplink, then Drop Pods or Seeker Control rolled per match. Confirm it
+  with the `PROD start TSPLUG` / `TSPION` / `TSPODS` / `TSSEEK` lines in `MOD_DEBUG_AI.txt`.
+- The AI aims its drop pods at the enemy's most valuable building (`Special_Weapon_AI`), which
+  lands infantry on the strongest point of a base; a better drop target is open.
+- Why the Nod SAM's missile flies at all: `[TDNike]` `Speed=100` reads as light speed
+  (`_Scale_To_256`), and `Unlimbo_TD` makes a visible light-speed missile immobile, yet play
+  shows it flying and hitting. Unexplained; look before changing any TD-port bullet speed.
+- The TD-port bullet path never damaged aircraft with `TSAAHeatSeeker`; the root cause inside
+  that path was not found. Any other TD-port AA bullet (`BULLET_TDPATRIOT`) may share it.
+
+## Coach day 2026-09-11: deep dives and feasibility checks (Luke, phone only)
+
+Luke is away from the PC and the Deck. The game runs headless on the desktop (Xvfb + Steam under
+`systemd-run --user`, Xvfb unpacked at `~/.local/opt/xvfb`) and he judges screenshots, clips and
+recordings. Each item ends in a researched answer with evidence; nothing gets built unless a dive
+shows a clear win and he says go.
+
+1. **TS Nod as the sixth faction**, on France, behind a build-time switch like
+   `TF_TS_GDI_FACTION`. Emblem ready: `scripts/tab_emblems/tsnod.png`. Recipe:
+   `docs/ts-gdi-faction.md` (CABAL from `SPEECH02.MIX`, one more `ERAS` entry in
+   `scripts/eva_mailbox_build.py`, a crest region, see 2).
+2. **Can the UI atlas grow?** Established 2026-09-10: the `.MTD` holds only pixel boxes, no atlas
+   size, and ClientG carries no size constant; an 8192x8192 atlas (stock art at its own coords,
+   magenta pad) loads, and the menu, lobby and TD sidebar all draw correctly. But ClientG's cached
+   region records match neither 6871x6716 nor 8192x8192, so the divisor is still unknown. Finish:
+   `scripts/atlas_grow_probe.py <atlas> <out>` → deploy (md5) → one match →
+   `scripts/clientg_ratio_scan.py` prints the effective W,H → `ATLAS_W=.. ATLAS_H=..
+   scripts/clientg_region_probe.py point UI_SIDEBAR_FACTIONLOGO_GDI 7000,100,794,713`; the crest
+   turning magenta means the new space is drawable. Then the crest needles (`dllinterface.cpp`
+   ~4120) and every script hardcoding 6871/6716 move to the new size. A loose `.MTD` stays
+   ignored, so new space is reachable only by re-pointing records. Restore the shipped atlas after.
+3. **AI runs the TS tree.** `TF_Roster_Side()` hands an AI that draws TS GDI the TD GDI roster,
+   and captured factories are invisible to the AI. Design: `docs/ai-upgrade-plan.md` §W2.9.
+   Verify with headless AI-vs-AI matches.
+4. **Pathfinding, TS against ours:** port from `reference/OpenTS` or fix ours (the A* entry
+   below, `docs/path-failure-livelock-design.md`), plus the one-off sim hang at F22357 from the
+   2026-09-02 AI A/B. Start from opents-pad's zone/subzone work (`1a14767`, `c604cf6` in
+   `~/Documents/development/opents-pad`).
+5. **Controller feasibility, opents-pad style:** can InstanceServerG read a pad under Proton
+   (`XInputGetState`), and which actions can the DLL issue itself versus what the launcher owns
+   (camera, cursor, sidebar and superweapon clicks; `docs/launcher-vs-dll-ownership.md`)? Crib
+   `opents-pad/docs/CONTROLLER.md`, `renegade-pad/docs/CONTROLLER.md`, `generals-pad/docs/PLAN.md`.
+   Pad-gated; keyboard and mouse stay stock.
+
+If time allows: the component tower weapon pass (below), the TS sidebar probes, group deploy,
+editor manifest entries for the component towers.
+
+---
+
+## TS GDI is on main — 2026-09-06 (merged, pushed, deployed to PC + Deck)
+
+`main` @ `5a9d91b9`. Canonical doc: `docs/ts-gdi-faction.md`. The merge also landed the
+**walls + component towers arc** (3 commits from 09-04) that had never reached main.
+
+**Signed off in play:** TS logo, TS EVA, TS unit voices, TS radar on/off, TS credit ticks,
+TS building slam + silent buildup, the crest flicker fix, and both ends of the era mailbox
+("cannot deploy here" TS for TS GDI, RA for a Soviet; "battle control terminated" on quit).
+
+**Release state:** `TF_TS_GDI_FACTION` defaults to 1 locally; `package-for-workshop.sh` builds
+with 0 and regenerates the staged front-end, so the faction sits on main WITHOUT shipping.
+Flip both when it is time to release it. Release builds also compile again — they had not since
+`9b28b8e0` (01-09), the crest patch's declarations having been left behind `TF_DEV_BUILD`.
+
+**NEXT SESSION (Luke, 2026-09-06 close): component tower TS WEAPON TUNING.** The three plug
+turrets fire `[TSVulcanTower]`/`[TSSA]`, `[TSRPGTower]`/`[TSRPG]` and `[TSRedEye2]`/`[TSSAMWH]`,
+ported TS-verbatim, but their **`Report=` sounds are stand-ins** — the TS originals `CHAINGN1`
+(Vulcan), `GLNCH4` (RPG) and `SAMSHOT1` (SAM) are still owed, as are muzzle anims. Stats live in
+`CCDATA/rules.ini`; TS ground truth is `reference/OpenTS` per the workspace CLAUDE.md, not wiki
+pages. Confirm with Luke at the start whether "tuning" means the stats, the sounds, or both —
+the 09-04 close also left "authentic weapon geometry" open, which is a different (art) job.
+Extraction recipe for the sounds is the one used for the radar pair and credit ticks this
+session: `tools/ts_extract.py` on SOUNDS.MIX → `scripts/ts_aud_decode.py` → ffmpeg `adpcm_ms`
+22050 mono → bundle under its own name → `RAC_/RAR_SFX_<NAME>` events in
+`SFXEVENTSNONLOCALIZED.XML` (⚠ check the event's PRESET volume — see the trap below).
+
+**Then, in rough order:**
+- **LAN test of the addressed credit tick.** Both machines are on the same build. Self-diagnosing:
+  joiners hear their own faction's tick (fixed), or the host hears everyone's (the id is a local
+  filter, fall back to the data-side flank in `building-sound-routing.md`).
+- **TS infantry** — TS GDI currently starts with no infantry at all, by Luke's call.
+- **TS GDI roster gap** (TS + Firestorm rules, checked 2026-09-11): all infantry (Light
+  Infantry, Disc Thrower, Medic, Engineer, Jumpjet Infantry, Ghost Stalker), Mobile Sensor
+  Array, Firestorm's Juggernaut, Limpet Drone, Mobile EM-Pulse and Mobile War Factory, and the
+  Orca Fighter, Orca Bomber and Carryall. **Plus TS's hidden Mammoth Tank `[4TNK]`** (TechLevel
+  -1 in TS, crate-only; 120mmx + MammothTusk, self-healing) — Luke wants to see how it
+  translates. Its voxels ship in `LOCAL.MIX` (`4TNK`/`4TNKTUR`/`4TNKBARL` + HVAs). The AI also
+  never builds the Dropship Bay (no Mk. II) or the Upgrade Centre (no 2-of-3 plugs).
+- **AI runs the TS tree** (2026-09-11): `TF_TS_Equivalent` mirrors each base role onto the TS
+  building, defences are the tower two-step (bare tower, then plug), turbines ride the power
+  role. Still owed: the Dropship Bay (Mk. II, Mech Division) and the Upgrade Centre's plugs.
+- **TS Nod** — same recipe on France: `HOUSEF_TSNOD (HOUSEF_FRANCE)`, `Faction9`, CABAL from
+  `SPEECH02.MIX`, one more `ERAS` entry in `scripts/eva_mailbox_build.py`, and a crest region
+  (the atlas is full — see the trap in `ts-gdi-faction.md`).
+- **TS Pavement (GAPAVE)** — do it alongside TS Nod (Luke, 2026-09-11). Placing it turns cells
+  into pavement ground: it keeps Tiberium creep off build space (Tiberium blocks placement) and
+  blocks subterranean units, which Nod fields. Costs: placement logic like the wall divert (the
+  building becomes ground, not an object) and square-grid ground art for RA's HD tileset, since
+  TS's pavement is isometric. Solve that art together with the Firestorm panels, which pose the
+  same isometric-versus-square question.
+- Component tower animations and authentic weapon geometry (the 09-04 arc's open queue).
+
+**Two traps this session left behind, both worth reading before similar work:**
+- A sound that is inaudible: walk the chain AFTER the sample (event → preset → mixer) before
+  touching the audio. The credit tick's preset pinned volume to 5 of 100 and cost eight rounds.
+- Adding a crest variant means adding it to FOUR places; a missing case falls through to a
+  plausible default rather than failing, and corrupts the scan log's `want=` while it is at it.
+
+## TS GDI is a playable faction — 2026-09-05 (branch `ts-gdi-faction`, verified, not merged)
+
+Full record: `docs/ts-gdi-faction.md`. Short version:
+
+- Pick "TS GDI" (picker row 6, the old Germany duplicate) and you start with a TS MCV and a TS
+  army, build the TS tree off the TD sidebar, hear TS's EVA and unit crews, and fly the TS GDI
+  eagle on the radar. All seven of those were confirmed in a live skirmish, driven headless.
+- The faction has a release switch: `TF_TS_GDI_FACTION` (defines.h, default 1).
+  `package-for-workshop.sh` builds with it at 0 and regenerates the staged picker data to
+  match, so TS GDI can sit on main unreleased. Flip both to ship it.
+- ⚠ FIXED IN PASSING: release builds have not compiled since `9b28b8e0` (2026-09-01) — the
+  crest patch was promoted to release but its forward declarations stayed inside
+  `#if TF_DEV_BUILD`. Nothing had been packaged since, so it went unseen.
+- NEXT: the six launcher-fired EVA lines still speak TD's recordings for TS GDI (the era mailbox
+  pads a TD/RA pair and carries hardcoded cache needles; a third era needs a three-way pad and
+  fresh needles). Then TS Nod on France, and AI support.
+- The AI cannot run the TS tree, so an AI that draws TS GDI is handed the TD GDI roster
+  (`TF_Roster_Side`). Revisit with the AI milestone's faction layer.
+- TS GDI fields TD GDI riflemen; TS has no infantry in the mod yet.
+- ⚠ The UI atlas is full: the TS crest had to claim `UI_OBSERVER_MAP_BG`. A sixth faction crest
+  needs another sacrifice of that kind.
+
+## Component towers + TS walls — 2026-09-04 (branch `ts-walls-towers` @ bdfcb850, pushed, not merged)
+
+Full record: `docs/ts-gdi-tree-plan.md` top block. Short version:
+
+- NEXT: component tower animations; authentic weapon geometry for Vulcan/SAM/RPG. Ask Luke
+  which the second means (firing anims on TS's sprites vs modelled turrets) before building.
+- The Deck is STALE — it was offline all evening and never got the day's builds.
+- Open cosmetic calls: a turret rises above the plot, and the RPG's launcher reaches ~8 px
+  past the east edge when aimed that way. Both normal; Luke to say if he wants them reined in.
+- Owed on the arc: editor manifest entries for the new types. No gate and no Nod wall: TS
+  draws both isometric, and the TS tree fences with the ordinary walls, as it does for the
+  dormant TS GDI wall.
+- The tower body still wants a real artist — `docs/ts-walls-towers-art-brief.md`, one object.
+
 # TODO / backlog
 
 Running list of things to do. Bugs/limitations live in `known-issues.md`; this is for chores,
@@ -5,6 +491,246 @@ maintenance, and queued tasks. Newest at top.
 
 ---
 
+## Hybrid maps: Tiberium slowly eats Ore where the fields meet (Luke, 2026-09-14)
+
+Today neither resource converts the other. Spreading only lands on an empty cell
+(`CellClass::Can_Tiberium_Germinate`, `redalert/cell.cpp`) and each field spreads as its own
+type (`CellClass::Spread_Tiberium`), so a Tiberium field and an Ore field that meet just hold a
+border. Wanted: Tiberium creeps into the Ore. The change sits in `Spread_Tiberium`: a dense TIB01
+cell with no empty neighbour turns an adjacent Ore cell into TIB01. That reverses the
+"stay distinct" rule written into `Spread_Tiberium`, and neither TD nor TS has Ore to copy, so
+Luke decides before it is built:
+
+- **Rate:** e.g. only full-density Tiberium, on the normal spread tick (a takeover of minutes).
+- **Gems:** eaten too, or safe as the prize resource.
+- **Density:** a converted cell starts as thin Tiberium, or keeps the Ore cell's value.
+
+The official maps themselves: `docs/official-map-hybrids.md` (Keep off the Grass done, the rest to
+survey and convert).
+
+## ⭐ AI "REGRESSION" A/B MEASURED 2026-09-02 — resume here for the AI workstream
+
+Luke felt the dev-build AI at the 15 Aug LAN (ts-units 2c83f4dc: Phase 1 + W2.9 + cadence +
+placement + scout spread + broke-order hold; NO naval arc) had regressed: "constant small
+streams of units to pick off", "not aggressive in its economy", "spamming infantry", "felt vs an
+easy enemy". Measured with two blind 1v1s on Keep off the Grass, Luke GDI vs one Nod AI, all
+dev cheats off, exact tag builds staged as extra mod folders in the desktop prefix
+(`TF_AB_400`, `TF_AB_420`, `TF_AB_0815`; worktrees `../tf-ab-*-worktree`):
+
+| | 4.0.0 (no fair fog, vanilla cadence) | 15 Aug build, Hard (IQ 5 confirmed) |
+|---|---|---|
+| match length | 16:28 | 9:04 |
+| AI gathered | 30,056 (~1.8k/min) | 16,400 (~1.8k/min) |
+| AI kills | 26 | 20 |
+| AI refineries / harvesters | 2 / 3 (by eye) | 2 / 3 (log) |
+| AI defences | several (by eye) | ONE gun turret all game |
+| AI waves | none seen before Luke's push at ~10 min | F8340 army=18 and F9975 army=15, both "roll" (Hard 60%); army 0-5 for the rest |
+
+**Findings (log `MOD_DEBUG_AI.txt`, frames ~33/s of game time):**
+1. **Economy did NOT regress** — identical income both builds. Vanilla RefineryRatio .16 rounds
+   to 2 refineries until 13 buildings; W3 staged planner is the fix, not a rollback.
+2. **Early waves at the count floor throw the army away.** W4.1's floor of 10 units is blind
+   to unit value and match stage: 18 tier-1 Nod units hit GDI medium tanks at ~4 min, 15 more
+   50 s later, then thirteen consecutive `WAVE-SHUFFLE massing army=0..5`. 4.0.0's flat 33%
+   roll + long interval kept that army home as base defence — that is the "more units at home"
+   Luke saw, and the "streams to eat" he felt.
+3. **Defences starve behind tech in the build pool.** DefenseRatio .4 wanted 5 defences at 12
+   buildings; the pool picks one MEDIUM item per cycle and TDFBNK lost to PROC/HQ/NUK2/NUK2/FIX
+   until F9711. The Nod turret→bunker alternation means no TDGUN is offered while bunkers <
+   turrets, so the base sat on one turret for six minutes. Cash pinned at $13-58 from ~3 min
+   (30 infantry vs 12 vehicles built).
+4. Fair fog barely features: 3 scouts, contact made early, nothing blocked after. Ferry/naval
+   not in the felt build at all. Broke-order hold fired once for 45 frames — not a factor.
+   Stat handicaps identical 4.2.0..main (all houses Normal = 1.0x) — not a factor.
+
+**Fixes landed on branch `ai-regression` the same night (worktree `../tf-ai-worktree`):**
+- `cd391414` (a)+(c): wave floor by army VALUE (8k credits) + war-factory stage gate, value
+  ceilings 18/22/26k by tier; defences claim HIGH under half the ratio. **PLAY-VERIFIED** (game
+  3: one 27-unit / 8,450-credit wave at ~6 min, 3 defences by min 5; outcome barely moved).
+- `f1909a4f` + `8fef3f23` (d): refinery target paced by sim-minutes (2 @2.5, 3 @6, 4 @10;
+  ratio rule kept as floor; HIGH while below pace), harvester fleet per tier (Hard 2/refinery,
+  Medium 1.5, Easy 1), infantry + combat-vehicle production yields while below target beyond a
+  4-inf/2-veh garrison, hold capped at 4 sim-min (`ECO-HOLD` diag). Also `tf_dev_reveal.flag`
+  (full map with every other cheat off). **UNVERIFIED.**
+- `8ffbceab` (b): staging — committed ground units MOVE to a cell 9 short of the nearest
+  DISCOVERED enemy building, gather (70% within 5 cells or 2 sim-min), then HUNT together
+  (`WAVE-STAGE` / `WAVE-RELEASE`). Blind house keeps per-unit hunt. **UNVERIFIED.**
+
+**Queued from the four-AI Docklands watch (Luke, 2026-09-02 late):**
+- Tech ordering: no house had a tech centre / advanced comm / temple after 12 sim-minutes of
+  four-refinery income (they arrive only via the 7500-frame starvation rescue). W3 build
+  planner item ("tech when affordable"); Luke: not yet, get the pieces working together first.
+- Ferry waits for sea control: a ferry op should only launch when the house's armed hulls at
+  least match the strongest enemy fleet seen on that water (or none seen and a patrol has
+  crossed); until then transports load and wait and the warship cap nudges up. First naval item
+  after the land pieces settle.
+- The 4-AI Docklands HANG (first run froze the sim at F22357, no dump; second run with the
+  watchdog armed ran past F40000 clean on the same build) — unexplained; watchdog script
+  `hang_stacks.sh` pattern: poll the AI log size, gdb `thread apply all bt` on stall.
+
+**Next:** one Hard game (Keep off the Grass, GDI vs Nod, no cheats but `tf_dev_reveal.flag`)
+reading ECO-HOLD / WAVE-STAGE / WAVE-RELEASE against `docs/ai-ab-2026-09-02/`; then W3
+placement + counter-composition. A/B record + logs: `docs/ai-ab-2026-09-02/`.
+
+---
+
+## Stretch goals: TS depower button + waypoint mode (Luke, 2026-09-02)
+
+Both behaviours are DLL-side (a building flagged off stops drawing/producing power and its
+defences idle; waypoints = a queued move-order list). The DLL polls the keyboard itself (the
+deploy key), so each can be a hotkey MODE that changes how the next launcher-delivered clicks
+are interpreted; mode cursors are CONFIG.MEG cursor data. New sidebar buttons cannot fire
+anything (a BUI button is a name the launcher must already wire), but a button whose command
+already reaches the DLL can be hijacked: the PING button arrives as a beacon request with a map
+cell (`CNC_Handle_Beacon_Request`) and beacons are useless in skirmish, so re-skin its icon and
+treat the request as "toggle power on the building at this cell" = a real depower button.
+Waypoint mode stays a hotkey unless a second DLL-reaching command turns up; a visual-only
+widget can show the mode state via the crest-style record re-point. Probe list for a real TS
+sidebar is in the entry below.
+
+---
+
+## TS sidebar: decided TD sidebar for now (Luke, 2026-09-02); three probes for later
+
+TS factions will use TD's HUD scene with their own logo (the FACTIONS.XML scene swap +
+crest re-point already give this); RA2 factions/units use RA's scene (no swap) until further
+work, same reasoning. A real TS sidebar is blocked by the full atlas (95.8%
+covered; TS art cannot go into TD's regions without taking them from GDI/Nod). Probes that
+decide it, cheapest first: (1) can a tactical scene widget's texture name be a standalone
+loose DDS instead of an atlas region (the shell loads backgrounds that way) — one widget in a
+probe CONFIG.MEG; (2) is a third scene loadable — copy Tactical_UI.bui under a new name (loose
+`Art/GUI/` or a new MEG member) and point one faction at it; (3) does a loose .MTD + larger
+TGA extend the region table. If (1) works the TS sidebar is a BUI restyle plus loose art.
+
+---
+
+## Group deploy on the backslash key (Luke, 2026-09-02: "a todo for another time")
+
+Vanilla: the self-click action is granted only when exactly ONE unit is selected
+(`TechnoClass::What_Action`, techno.cpp, `CurrentObject.Count() == 1`), so with a group selected
+neither the launcher's deploy key nor `TF_Self_Action_Selected` deploys anything. The extension:
+on a fresh backslash press with a group selected, evaluate each selected unit as if it were alone
+(swap `CurrentObject` down to that one unit around the `What_Action(self)` call, or test the
+per-class conditions directly: `Is_MCV()` + `Legal_Placement`, passengers aboard, minelayer with
+ammo) and give every deployable one its `MISSION_UNLOAD` via `Player_Assign_Mission`. MCVs each
+try their own spot; APCs/Chinooks all unload; minelayers all lay. Same for the TS Juggernaut /
+Tick Tank once they deploy. Small change in `TF_Self_Action_Selected` + rebuild; single-unit
+behaviour must stay identical.
+
+---
+
+## Bottom of the barrel: crest label colour on the TD plate (Luke, 2026-09-02: only if it proves hard to read)
+
+The launcher-drawn "GDI"/"Nod" text under the radar crest was coloured for RA's dark grid and now
+sits dark-on-grey on TD's metal plate. Probe = find the cached text-style record ClientG draws it
+from (same method as `radar-crest-ram-spike.md`) and recolour for GDI/Nod. Do nothing unless asked.
+
+## ✅ DONE 2026-09-01: RAM patch for the mailbox boot-cache (shipped; record in `docs/eva-ram-patch-spike.md`)
+
+Lift the per-boot voice lock (known-issues.md): at match start, find the cached sample blob in
+ClientG's memory and overwrite it in place with the era-correct bytes. Building blocks: the
+lobby resolver's proven cross-process scan (pid discovery + ReadProcessMemory,
+dllinterface.cpp Route B); payload pairs padded to EQUAL length so the write is always
+same-size; disk mailbox stays for the first-fire case. Open questions: does the cache hold
+file bytes (ADPCM) or decoded PCM (decode our payloads and search both); does
+WriteProcessMemory behave under Proton like the proven reads. Probe read-only first.
+
+---
+
+## ✅ DONE 2026-09-02: per-faction radar crest via RAM patch — shipped in the DLL, record in `docs/radar-crest-ram-spike.md` (follow-ups there: aspect, distinct Allied/Soviet crests). Original spike note kept below for history.
+
+Full plan: `docs/radar-crest-ram-spike.md`. The EVA RAM patch proved cross-process
+`WriteProcessMemory` into ClientG works under Proton, which is exactly the mechanism the
+2026-07-20 crest spike declined as "too fragile." Reopen it: stage-1 read-only probe to find the
+loaded ALLIES/SOVIET crest pixels in ClientG memory (raw BGRA / file bytes / DXT), then overwrite
+with the faction crest at match start. Decisive risk the probe settles cheaply: whether a
+CPU-readable copy exists at all, or the pixels are GPU-only after upload (the failure mode audio
+never had). Reuse `TF_Patch_ClientG_Cache`. After the crest: loading screens, other
+launcher-picked shell art.
+
+---
+
+## Superweapon power pass (Luke, 2026-08-31)
+
+Luke's verdict after the TS ion shockwave landed (600 centre + 300 x 8 ring, "guaranteed
+precision kill on a large building. I think I like it"): **other superweapons SHOULD be more
+powerful too.** Design pass over the full roster — RA nuke, TD nuke, chrono, iron curtain,
+paradrops, recon — weapon by weapon: what each should feel like, then the damage/radius/
+duration dials. The TS ion sets the bar: a superweapon should feel like an event, and each
+should keep a distinct identity (the ion pair proved flavour + role separation works).
+
+---
+
+## Era-scoped build-time rules (Luke, 2026-08-31 — stray thought, unplanned)
+
+Unanchor build-time rules from factions and tie them to the entity's ERA: RA rules for RA
+buildings, TD rules for TD buildings, TS rules for TS buildings — same shape as the shipped
+era door rule. Would systematize the per-entity TD build-time parity done ad hoc in 1.1.x.
+Needs a value-by-value read of the TD and TS sources first (TS = per-1000-credits rate +
+multi-factory bonus) before any design. Own arc when picked up.
+
+---
+
+## TS-era audio identity arc (Luke, 2026-08-31 — design as ONE piece)
+
+All unlocked by the novel-sample-name + faction-tick work (2026-08-31). One routing key,
+three surfaces, decided together:
+
+- **Design DECIDED (Luke, 2026-08-31): the voice follows the PICKED FACTION** — select TS
+  at skirmish faction-select, that team gets the TS EVA (and tick/radar) for the whole
+  game. Standard house-keyed routing on the future TS house (`ts-factions-feasibility.md`).
+  A live era-wide audio flip on TS MCV deploy was REJECTED — don't re-offer. (Aside, noted
+  not planned: production Speak() call sites know the source factory, so per-building
+  voices are technically possible.)
+- **Credit tick + radar: SOUNDS VERIFIED IN PLAY (2026-08-31 demo, "perfect" — reverted).**
+  TS assets confirmed: `CREDUP1`/`CREDDWN1` (tick) and `COMMUP1`/`RADARDN1` (radar
+  on/off), per TS rules.ini [AudioVisual]; all four in `SOUNDS.MIX` inside TIBSUN.MIX;
+  convert `ts_aud_decode.py` → `ffmpeg -c:a adpcm_ms -ar 22050 -ac 1`, ship under own
+  names. Tick: extend the shipped `CreditClass::AI` branch (`building-sound-routing.md`
+  §2). Radar: **per-faction dispatch ALREADY SHIPPED** — launcher auto-fire is
+  silent-stubbed (44-byte `RA?_SFX_RADARON2/RADARDN1.WAV`), DLL routes by HousesType to
+  `TFRADR*` (GDI/Nod) / `RAORAD*` (Allied/Soviet) events (comment block in the shipped
+  NONLOCALIZED XML ~line 6428) — TS = add a third event pair + route. ⚠ NEVER repoint the
+  silent-stubbed `radaron2/radardn1` events — that un-silences the launcher's auto-fire
+  and doubles the sound (the demo's first attempt proved it).
+- **EVA voice set**: `project-ts-eva-feasibility` memory — SPEECH01/02.MIX sourced,
+  delivery proven; ~20-30 lines per voice under own names, `SpeechTS[]`/`SpeechCABAL[]`
+  tables in `On_Speech`.
+- ⚠ VOC enum (defines.h) and SoundEffectName[] (audio.cpp) are ORDER-COUPLED — append in
+  both, same order.
+
+---
+
+## Front-end pixels via loose files — confirm from OUR mod, then use it (2026-08-30)
+
+The "shell ignores loose overrides" wall is FALSIFIED (see `front-end-texture-meg-spike.md`
+2026-08-30 update: Reilsss's loose atlas renders custom picker icons in the lobby; standalone
+loose DDS render the main menu). Queued:
+
+1. ~~Confirm from our mod structure~~ **DONE 2026-08-31, on camera**: repainted `_04`/`_05`
+   slot regions in our deployed loose atlas rendered in the lobby (test tile, then real art).
+   Bonus: starting-position markers are separate 40x40 regions
+   `UI_MAPSELECT_FACTION_NN` (`_04`=(4742,4278), `_05`=(1413,4297)) — painted AND verified
+   on the minimap in-game (Luke: "worked fine"). Full picker surface proven.
+2. Available whenever wanted: bespoke Allied/Soviet picker emblems (replaces the
+   country-flag compromise), TS GDI emblem for the selectable-side arc, TS-styled front-end
+   screens (menu/lobby/load — source art in TIBSUN.MIX). Slot regions are 150x80 + `_ON`/
+   `_OVER` variants; markers 40x40; region geometry fixed (loose `.MTD` ignored).
+
+Related queued arcs from the same evening's assessment: TS EVA/CABAL faction voices
+(sources confirmed; needs the dormant-host re-census + a TS house to route on — memory
+`project-ts-eva-feasibility`).
+
+(2026-08-30/31 audit probes ALL RESOLVED — results in the canonical docs: ⭐ NOVEL sample
+names RESOLVE from loose files — the dormant-host constraint is FALSIFIED, every historic
+failure was file format → full rules in `launcher-render-contracts.md` §dormant hosts
+(PROVEN ON BOTH CHANNELS 2026-08-31 — EVA/localized and weapon-SFX/nonlocalized, the
+MGUN2 minigunner probe); loose `.MTD` = ignored, region geometry launcher-owned →
+`ui-atlas-modding.md`; never probe audio via the credit tick.)
+
+---
+
+## ✅ DONE 2026-09-02: deploy/unload hotkey for non-RA units — the DLL polls the key itself (`TF_Deploy_Key_Tick`, docs/launcher-vs-dll-ownership.md); Luke to re-test APC/Chinook/minelayer/TS units at his PC
 ## TS buildings: theatre-aware art (found 2026-08-28 via the EMP cannon)
 
 TS ships every building in per-theatre variants named by the second letter (GT/NT =
@@ -621,7 +1347,7 @@ factions in skirmish (mouse self-click deploys); no em dashes in any user-facing
 
 ---
 
-## ⭐ Mod hotkeys — handler WORKS; delivery of a default binding UNSOLVED. Deferred to 4.2 (Luke, 2026-07-21)
+## ✅ RESOLVED 2026-09-02: deploy key no longer needs a binding — the DLL reads the default deploy key (backslash) straight from the keyboard (GetAsyncKeyState is cross-process under Wine). Mod Command 1 stays as an optional player-bound alias. History below.
 
 **Proven end to end (2026-07-21):** `CNCEnableModHotKeyGameCommands` True exposes Mod Command
 1-4 in Options > Controls; a player-bound key reaches

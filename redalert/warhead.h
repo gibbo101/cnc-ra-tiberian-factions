@@ -90,6 +90,12 @@ public:
     int SpreadFactor;
 
     /*
+    **	TS Limpet Drone: a positive value makes the shot attach the firer to the target as a
+    **	limpet (the percentage of speed and turn rate taken away) instead of doing damage.
+    */
+    int LimpetFactor;
+
+    /*
     **	If this warhead type can destroy walls, then this flag will be true.
     */
     bool IsWallDestroyer : 1;
@@ -108,6 +114,14 @@ public:
     **	Only effective against infantry?
     */
     bool IsOrganic : 1;
+
+    /*
+    **	Tiberian Factions: the share of this warhead's damage a prone soldier takes (TS gives
+    **	every warhead its own ProneDamage). A warhead without the key uses the rules' global
+    **	ProneDamage, as RA's all do.
+    */
+    bool HasProneDamage : 1;
+    fixed ProneDamage;
 
     /*
     **	The warhead damage is reduced depending on the the type of armor the

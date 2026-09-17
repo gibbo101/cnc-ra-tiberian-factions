@@ -30,6 +30,7 @@
 #include <cstdio>
 
 #include "function.h"
+#include <stdarg.h>
 #include <math.h>
 #include <tlhelp32.h>
 #include "keyframe.h"
@@ -92,6 +93,13 @@ extern char const* Speech[VOX_COUNT];
 // Init_SpeechTD (audio.cpp). NULL slots fall back to Speech[].
 extern char const* SpeechTD[VOX_COUNT];
 extern void Init_SpeechTD(void);
+#include "tf_eva_mailbox.h"
+// Tiberian Sun GDI's EVA (audio.cpp Init_SpeechTS). NULL slots fall back to SpeechTD[].
+extern char const* SpeechTS[VOX_COUNT];
+extern void Init_SpeechTS(void);
+// RA-voice renames for stub-silenced launcher lines (audio.cpp Init_SpeechRAO).
+extern char const* SpeechRAO[VOX_COUNT];
+extern void Init_SpeechRAO(void);
 
 /*
 ** Misc defines
@@ -664,7 +672,7 @@ void On_Sound_Effect(int sound_index, int variation, COORDINATE coord, int house
         /*
         **	Change the extension based on the variation and house accent requested.
         */
-        if (((1 << house) & HOUSEF_ALLIES) != 0) {
+        if (((1 << house) & HOUSEF_ALLIES) != 0 || Is_TS_GDI(house)) {
 
             /*
             **	For infantry, use a variation on the response. For vehicles, always
@@ -1054,18 +1062,19 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         strncpy(who->Name, player_info.Name, MPLAYER_NAME_MAX);
         who->Name[MPLAYER_NAME_MAX - 1] = 0; // Make sure it's terminated
 
-        // Tiberian Factions mod: hijack two of the orphaned country slots so the
-        // closed-source Remastered country picker can route to HOUSE_GOOD / HOUSE_BAD.
-        // Spain is fully orphaned (no scs* campaign files ship; only used as enum-
-        // iteration lower bound). Turkey's hidden +10% build-speed bonus
-        // (techno.cpp Time_To_Build) gates on ActLike==HOUSE_TURKEY, which is no
-        // longer true after this reassignment. France stays vanilla (Phase Tank).
-        // Cosmetic relabel of TXT_SPAIN / TXT_TURKEY → "GDI" / "Nod" handled in
-        // the mod's string-table overrides.
+        // Tiberian Factions mod: hijack two of the RA country slots so the closed-source
+        // Remastered country picker can route to HOUSE_GOOD / HOUSE_BAD. The picker lists
+        // countries in enum order and that order is launcher-owned, so the slots are chosen
+        // for where they sit in the list: Spain (first row) is GDI, Greece (second row) is
+        // Nod, then USSR and England read as the Soviet and Allied entries, and the
+        // remaining countries are duplicates wearing the same crests (Luke, 2026-09-02).
+        // Both hijacked countries are Allied-side to the launcher, which is what Nod needs
+        // (it draws the ALLIES HUD slot). Cosmetic relabels live in the mod's string-table
+        // overrides (scripts/loc_work/mastertext.edits.txt).
         if (player_info.House == HOUSE_SPAIN) {
             player_info.House = HOUSE_GOOD;
         }
-        if (player_info.House == HOUSE_TURKEY) {
+        if (player_info.House == HOUSE_GREECE) {
             player_info.House = HOUSE_BAD;
         }
 
@@ -1264,6 +1273,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Clear_Object_Selection(uint64 
     return true;
 }
 
+static bool TF_Select_All_Excludes(ObjectClass* object); // defined with the deploy-key code below
+
 extern "C" __declspec(dllexport) bool __cdecl CNC_Select_Object(uint64 player_id,
                                                                 int object_type_id,
                                                                 int object_to_select_id)
@@ -1293,6 +1304,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Select_Object(uint64 player_id
 
             if (obj && !obj->IsInLimbo && obj->House->IsPlayerControl
                 && Units.ID((UnitClass*)obj) == object_to_select_id) {
+                if (TF_Select_All_Excludes(obj)) {
+                    return false;
+                }
                 if (!obj->Is_Selected_By_Player()) {
                     obj->Select();
                     AllowVoice = false;
@@ -1640,6 +1654,16 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance(int scenario_in
  *
  * History: 1/7/2019 5:20PM - ST
  **************************************************************************************************/
+static void TF_Mailbox_Write_EVA_Voice(void);
+// The crest patch ships in release builds (its call sites below are unguarded), so its
+// declarations must not sit behind TF_DEV_BUILD -- only the two probes are dev-only.
+static void TF_Patch_ClientG_Crest(void);
+static void TF_Crest_Tick(void);
+#if TF_DEV_BUILD
+static void TF_Probe_ClientG_Cache(void);
+static void TF_Probe_ClientG_Crest(void);
+#endif
+
 extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int scenario_index,
                                                                            int scenario_variation,
                                                                            int scenario_direction,
@@ -1785,6 +1809,13 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
     Map.Render();
 
     Set_Palette(GamePalette.Get_Data());
+
+    TF_Mailbox_Write_EVA_Voice();
+    TF_Patch_ClientG_Crest();
+#if TF_DEV_BUILD
+    TF_Probe_ClientG_Cache();
+    TF_Probe_ClientG_Crest();
+#endif
 
     return true;
 }
@@ -2021,6 +2052,13 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const ch
 
     Set_Palette(GamePalette.Get_Data());
 
+    TF_Mailbox_Write_EVA_Voice();
+    TF_Patch_ClientG_Crest();
+#if TF_DEV_BUILD
+    TF_Probe_ClientG_Cache();
+    TF_Probe_ClientG_Crest();
+#endif
+
     return true;
 }
 
@@ -2088,6 +2126,162 @@ bool Debug_Write_Shape(const char* file_name, void const* shapefile, int shapenu
 // the difficulty code below, driven per-frame from CNC_Advance_Instance.
 static void TF_Lobby_Difficulty_Retry();
 
+/*
+**	Tiberian Factions -- the deploy key, owned by the DLL.
+**
+**	The launcher's COMMAND_CNC_DEPLOY_SELECTED_MCV only acts on a unit whose exported
+**	names are exactly "MCV" (ClientG compares an interned name id), so every faction MCV,
+**	APC, transport and minelayer lost its key. Instead of teaching the launcher, the DLL
+**	reads the keyboard itself: both processes share one Wine/Windows session, so
+**	GetAsyncKeyState sees the key from InstanceServerG. Each fresh press asks every
+**	selected object for its own self-action and acts only on ACTION_SELF -- the same rule
+**	as a self-click, so MCVs deploy, APCs / transports / Chinooks unload, minelayers lay,
+**	and anything deployable added later is covered. The key is the launcher's own default
+**	deploy binding (backslash, VK_OEM_5), so the stock MCV and every faction unit share it.
+*/
+bool TF_DeployKeyBatch = false; // set while the deploy key runs its selected-object loop (techno.cpp What_Action)
+
+static int TF_Self_Action_Selected(void)
+{
+    int acted = 0;
+    bool ts_unit = false;
+    /*
+    **	Every selected object deploys together with its own voice held, and TS units answer
+    **	with the crew's single "deploying" (TS's DeploySound), as TS's deploy key does.
+    */
+    TF_DeployKeyBatch = true;
+    AllowVoice = false;
+    for (int index = 0; index < CurrentObject.Count(); index++) {
+        ObjectClass* object = CurrentObject[index];
+        if (object == NULL || !object->IsActive) {
+            continue;
+        }
+        ActionType answer = object->What_Action(object);
+#if TF_DEV_BUILD
+        {
+            const char* up = getenv("USERPROFILE");
+            char lp[600];
+            snprintf(lp, sizeof(lp), "%s/MOD_DEBUG_HOTKEY.txt", up ? up : ".");
+            FILE* lf = fopen(lp, "a");
+            if (lf != NULL) {
+                fprintf(lf, "DEPLOY-KEY frame=%ld #%d/%d rtti=%d answer=%d\n", (long)Frame, index,
+                        CurrentObject.Count(), (int)object->What_Am_I(), (int)answer);
+                fclose(lf);
+            }
+        }
+#endif
+        if (answer != ACTION_SELF) {
+            continue;
+        }
+        object->Active_Click_With(ACTION_SELF, object);
+        acted++;
+        if (object->Is_Techno() && TF_Is_TS_Tree_Type(((TechnoClass*)object)->Techno_Type_Class())) {
+            ts_unit = true;
+        }
+    }
+    AllowVoice = true;
+    TF_DeployKeyBatch = false;
+    if (ts_unit) {
+        Sound_Effect(VOC_TS_DEPLOY, fixed(1), 1, 0, HOUSE_NONE);
+    }
+    return acted;
+}
+
+static long TF_SelectAllLatchUntil = -1; // frame until which a recent 'A' press still counts as held
+static const int TF_HUNTER_DRAW_SIZE = 90; // launcher draw box for the Hunter Seeker droid (tune by eye)
+
+static void TF_Sidebar_Log(const char* fmt, ...)
+{
+#if TF_DEV_BUILD
+    char cp[512]; const char* pr = getenv("USERPROFILE");
+    if (pr && pr[0]) snprintf(cp, sizeof(cp), "%s/Documents/CnCRemastered/MOD_DEBUG_SIDEBAR.txt", pr);
+    else strcpy(cp, "MOD_DEBUG_SIDEBAR.txt");
+    FILE* f = fopen(cp, "a");
+    if (!f) return;
+    fprintf(f, "frame=%d ", (int)Frame);
+    va_list ap; va_start(ap, fmt); vfprintf(f, fmt, ap); va_end(ap);
+    fprintf(f, "\n");
+    fclose(f);
+#endif
+}
+
+static void TF_Deploy_Key_Tick(void)
+{
+    static bool _was_down = false;
+    bool down = (GetAsyncKeyState(VK_OEM_5) & 0x8000) != 0;
+#if TF_DEV_BUILD
+    /*
+    **	Dev builds also take the deploy order from a flag file, for headless runs where no
+    **	keyboard reaches the game: Documents/CnCRemastered/tf_deploy_now.flag, consumed on sight.
+    */
+    if ((Frame % 15) == 0) {
+        const char* prof = getenv("USERPROFILE");
+        if (prof != NULL && prof[0] != '\0') {
+            char flag[512];
+            snprintf(flag, sizeof(flag), "%s/Documents/CnCRemastered/tf_deploy_now.flag", prof);
+            FILE* ff = fopen(flag, "r");
+            if (ff != NULL) {
+                fclose(ff);
+                remove(flag);
+                /*
+                **	The flag also selects the player's TS MCVs, since the launcher resets the
+                **	selection list at match start.
+                */
+                Unselect_All();
+                for (int u = 0; u < Units.Count(); u++) {
+                    UnitClass* unit = Units.Ptr(u);
+                    if (unit != NULL && unit->IsActive && !unit->IsInLimbo && unit->House == PlayerPtr
+                        && *unit == UNIT_TSMCV) {
+                        unit->Select();
+                    }
+                }
+                {
+                    char lp[600];
+                    snprintf(lp, sizeof(lp), "%s/MOD_DEBUG_HOTKEY.txt", prof);
+                    FILE* lf = fopen(lp, "a");
+                    if (lf != NULL) {
+                        fprintf(lf, "DEPLOY-FLAG frame=%ld selected=%d\n", (long)Frame, CurrentObject.Count());
+                        fclose(lf);
+                    }
+                }
+                down = true;
+            }
+        }
+    }
+#endif
+    if (down && !_was_down) {
+        int acted = TF_Self_Action_Selected();
+#if TF_DEV_BUILD
+        char msg[80];
+        snprintf(msg, sizeof(msg), "Deploy key: %d of %d selected", acted, CurrentObject.Count());
+        On_Message(msg, 5.0f, -1);
+#endif
+    }
+    _was_down = down;
+
+    // The launcher's select-all reaches CNC_Select_Object a frame or two after the key
+    // goes down, so remember a press briefly rather than requiring the key to still be held.
+    if (GetAsyncKeyState('A') & 0x8000) {
+        TF_SelectAllLatchUntil = (long)Frame + 10;
+    }
+}
+
+/*
+**	Select-all ('A') is launcher-driven: ClientG picks the objects and hands them to
+**	CNC_Select_Object one by one, excluding only the stock harvester and MCV by name id, so
+**	every faction harvester and MCV leaked into the army selection. While the key is held,
+**	the DLL applies the engine's own band-select rule to what the launcher hands over.
+*/
+static bool TF_Select_All_Excludes(ObjectClass* object)
+{
+    bool a_recent = ((GetAsyncKeyState('A') & 0x8000) != 0) || ((long)Frame <= TF_SelectAllLatchUntil);
+    if (!a_recent) {
+        return false;
+    }
+    return (object->What_Am_I() == RTTI_UNIT)
+           && (((UnitClass*)object)->Class->IsToHarvest || ((UnitClass*)object)->Class->Is_MCV());
+}
+
 // Player-facing announcements of the tier each AI actually got, queued at
 // difficulty-set time (client not rendering yet) and flushed from
 // CNC_Advance_Instance once the match is on screen.
@@ -2098,6 +2292,8 @@ static int TFHelloPendingCount = 0;
 static const char* TF_Side_Name(HousesType act_like)
 {
     switch (act_like) {
+    case HOUSE_GERMANY:
+        return "TS GDI";
     case HOUSE_GOOD:
         return "GDI";
     case HOUSE_BAD:
@@ -2169,6 +2365,13 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
     // Runs before the HELLO flush so a successful re-scan's announcements reach the
     // screen on the same frame they are queued.
     TF_Lobby_Difficulty_Retry();
+
+    // Keep the per-faction radar crest pointed at the picked side's crest (RAM patch).
+    TF_Crest_Tick();
+
+    // The deploy key, read straight from the keyboard (see TF_Deploy_Key_Tick).
+    TF_Deploy_Key_Tick();
+
 
     // Flush the queued difficulty announcements once the match is actually
     // rendering (messages sent at difficulty-set time are dropped).
@@ -3709,6 +3912,998 @@ void DLLExportClass::Shutdown(void)
 ** side-channel (display.cpp), so they degrade gracefully if the mod is
 ** later disabled.
 */
+/*
+** Tiberian Factions -- era-voice mailbox for the launcher's self-fired EVA
+** lines. "Cannot deploy here" (the placement-reject click is swallowed
+** client-side) and "battle control terminated" (fired during teardown) never
+** pass through On_Speech, so they cannot be faction-routed at dispatch. Their
+** samples, however, resolve from loose files under <mod>\Data\AUDIO\EN-US\,
+** so whenever a match starts the DLL copies the era-correct recording over
+** those sample names: the launcher stays faction-blind yet speaks the picked
+** side's voice. TD-era sides (ActLike GDI/Nod) get the TD lines, everyone
+** else the RA originals. The shipped TF_MBX_* files carry both sets of bytes;
+** the destination names are only ever created by this write, so a fresh
+** install falls back to the base MEG's RA samples until the first match. In
+** LAN games only the host machine runs the DLL: clients keep the RA voice for
+** these two lines (same limit as the faction credit tick).
+*/
+static char TF_ModRootPath[MAX_PATH]; // "<mod>\" incl. trailing separator
+
+static void TF_Patch_ClientG_Cache(int era);
+
+static bool TF_WriteFile_Into_Process(HANDLE proc, SIZE_T dest, const char* path)
+{
+    FILE* f = fopen(path, "rb");
+    if (f == NULL) {
+        return false;
+    }
+    fseek(f, 0, SEEK_END);
+    long len = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    if (len <= 0 || len > (1 << 20)) {
+        fclose(f);
+        return false;
+    }
+    unsigned char* buf = (unsigned char*)malloc(len);
+    if (buf == NULL) {
+        fclose(f);
+        return false;
+    }
+    bool ok = (fread(buf, 1, len, f) == (size_t)len);
+    fclose(f);
+    if (ok) {
+        SIZE_T wrote = 0;
+        ok = WriteProcessMemory(proc, (LPVOID)dest, buf, len, &wrote) && wrote == (SIZE_T)len;
+    }
+    free(buf);
+    return ok;
+}
+
+/*
+**	Which announcer a house hears. The generated table carries one payload per era for
+**	every launcher-fired line, so adding TS Nod's CABAL or RA2's announcers is a row in
+**	scripts/eva_mailbox_build.py's ERAS plus its recordings -- not another branch here.
+*/
+static int TF_Eva_Era(HousesType act_like)
+{
+    if (Is_TS_GDI(act_like)) {
+        return TF_EVA_ERA_TS;
+    }
+    if (act_like == HOUSE_GOOD || act_like == HOUSE_BAD) {
+        return TF_EVA_ERA_TD;
+    }
+    return TF_EVA_ERA_RA;
+}
+
+static void TF_Mailbox_Write_EVA_Voice(void)
+{
+    if (TF_ModRootPath[0] == 0) {
+        return;
+    }
+    const HouseClass* local = PlayerPtr;
+    if (local == NULL) {
+        for (int i = 0; i < Houses.Count(); i++) {
+            HouseClass* house = Houses.Ptr(i);
+            if (house != NULL && house->IsActive && house->IsHuman) {
+                local = house;
+                break;
+            }
+        }
+    }
+    if (local == NULL) {
+        return;
+    }
+    int const era = TF_Eva_Era(local->ActLike);
+
+    char dir[MAX_PATH];
+    snprintf(dir, sizeof(dir), "%sData\\AUDIO\\EN-US", TF_ModRootPath);
+    CreateDirectoryA(dir, NULL);
+    for (int i = 0; i < (int)(sizeof(TF_EvaMailboxLines) / sizeof(TF_EvaMailboxLines[0])); i++) {
+        char src[MAX_PATH];
+        char dst[MAX_PATH];
+        snprintf(src, sizeof(src), "%s\\%s", dir, TF_EvaMailboxLines[i].era[era].file);
+        snprintf(dst, sizeof(dst), "%s\\%s", dir, TF_EvaMailboxLines[i].dst);
+        CopyFileA(src, dst, FALSE);
+    }
+
+    // Also overwrite any already-cached copy in ClientG's memory, so an in-session faction
+    // switch corrects lines heard (and cached) before the switch (docs/eva-ram-patch-spike.md).
+    TF_Patch_ClientG_Cache(era);
+}
+
+static void TF_Patch_ClientG_Cache(int era)
+{
+    if (TF_ModRootPath[0] == 0) {
+        return;
+    }
+    char dir[MAX_PATH];
+    snprintf(dir, sizeof(dir), "%sData\\AUDIO\\EN-US", TF_ModRootPath);
+
+    /*
+    **	One row per line per era we are NOT playing: hunt that era's distinctive bytes, and
+    **	whatever they are found in is a cached copy of that era's payload, so the blob starts
+    **	at (hit - its file offset) and our own era's file is written over it. Every era's
+    **	payload for a line is the same byte length, which is what makes the write safe.
+    */
+    struct PatchRow
+    {
+        const unsigned char* wrong_needle;
+        int wrong_fileoff;
+        const char* correct_file;
+    };
+    int const line_count = (int)(sizeof(TF_EvaMailboxLines) / sizeof(TF_EvaMailboxLines[0]));
+    PatchRow rows[(sizeof(TF_EvaMailboxLines) / sizeof(TF_EvaMailboxLines[0])) * TF_EVA_ERA_COUNT];
+    int row_count = 0;
+    for (int i = 0; i < line_count; i++) {
+        for (int e = 0; e < TF_EVA_ERA_COUNT; e++) {
+            if (e == era) {
+                continue;
+            }
+            rows[row_count].wrong_needle = TF_EvaMailboxLines[i].era[e].needle;
+            rows[row_count].wrong_fileoff = TF_EvaMailboxLines[i].era[e].fileoff;
+            rows[row_count].correct_file = TF_EvaMailboxLines[i].era[era].file;
+            row_count++;
+        }
+    }
+
+    /*
+    **	Bucket the needles by their first byte. The heap walk below is the expensive part and
+    **	it used to be re-scanned once per row, which was tolerable at two eras and would not be
+    **	at six: this keeps the per-byte cost at roughly one compare however many eras exist.
+    */
+    int bucket_start[257];
+    int bucket_rows[(sizeof(TF_EvaMailboxLines) / sizeof(TF_EvaMailboxLines[0])) * TF_EVA_ERA_COUNT];
+    {
+        int counts[256];
+        memset(counts, 0, sizeof(counts));
+        for (int r = 0; r < row_count; r++) {
+            counts[rows[r].wrong_needle[0]]++;
+        }
+        int total = 0;
+        for (int c = 0; c < 256; c++) {
+            bucket_start[c] = total;
+            total += counts[c];
+        }
+        bucket_start[256] = total;
+        int fill[256];
+        memcpy(fill, bucket_start, sizeof(fill));
+        for (int r = 0; r < row_count; r++) {
+            bucket_rows[fill[rows[r].wrong_needle[0]]++] = r;
+        }
+    }
+
+    FILE* log = NULL;
+#if TF_DEV_BUILD
+    const char* up = getenv("USERPROFILE");
+    char logpath[512];
+    if (up != NULL) {
+        snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+        log = fopen(logpath, "a");
+    }
+    if (log) {
+        fprintf(log, "== patch at frame %d era=%d rows=%d ==\n", (int)Frame, era, row_count);
+    }
+#endif
+
+    static unsigned char scratch[1 << 20];
+    const int overlap = 32;
+
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) {
+        if (log) {
+            fclose(log);
+        }
+        return;
+    }
+    PROCESSENTRY32W pe;
+    pe.dwSize = sizeof(pe);
+    if (Process32FirstW(snap, &pe)) {
+        do {
+            if (_wcsicmp(pe.szExeFile, L"ClientG.exe") != 0) {
+                continue;
+            }
+            HANDLE proc = OpenProcess(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
+                                          | PROCESS_QUERY_INFORMATION,
+                                      FALSE, pe.th32ProcessID);
+            if (proc == NULL) {
+                if (log) {
+                    fprintf(log, "  OpenProcess(write) failed\n");
+                }
+                continue;
+            }
+            SIZE_T addr = 0;
+            MEMORY_BASIC_INFORMATION mbi;
+            while (VirtualQueryEx(proc, (LPCVOID)addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
+                SIZE_T region_base = (SIZE_T)mbi.BaseAddress;
+                SIZE_T region_size = mbi.RegionSize;
+                bool writable = (mbi.State == MEM_COMMIT)
+                                && (mbi.Protect == PAGE_READWRITE || mbi.Protect == PAGE_EXECUTE_READWRITE)
+                                && region_size <= ((SIZE_T)512 << 20);
+                if (writable) {
+                    for (SIZE_T off = 0; off < region_size; off += (sizeof(scratch) - overlap)) {
+                        SIZE_T want = region_size - off;
+                        if (want > sizeof(scratch)) {
+                            want = sizeof(scratch);
+                        }
+                        SIZE_T got = 0;
+                        if (!ReadProcessMemory(proc, (LPCVOID)(region_base + off), scratch, want, &got)
+                            || got == 0) {
+                            continue;
+                        }
+                        if (got >= (SIZE_T)TF_EVA_NEEDLE_LEN) {
+                            for (SIZE_T i = 0; i + TF_EVA_NEEDLE_LEN <= got; i++) {
+                                unsigned char const lead = scratch[i];
+                                for (int b = bucket_start[lead]; b < bucket_start[lead + 1]; b++) {
+                                    int const r = bucket_rows[b];
+                                    if (memcmp(scratch + i, rows[r].wrong_needle, TF_EVA_NEEDLE_LEN) != 0) {
+                                        continue;
+                                    }
+                                    SIZE_T hit = region_base + off + i;
+                                    SIZE_T blob = hit - rows[r].wrong_fileoff;
+                                    char path[MAX_PATH];
+                                    snprintf(path, sizeof(path), "%s\\%s", dir, rows[r].correct_file);
+                                    bool ok = TF_WriteFile_Into_Process(proc, blob, path);
+                                    if (log) {
+                                        fprintf(log, "  PATCH %s @blob %08x (hit %08x) -> %s\n",
+                                                ok ? "OK" : "FAIL", (unsigned int)blob, (unsigned int)hit,
+                                                rows[r].correct_file);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                SIZE_T next = region_base + region_size;
+                if (next <= addr) {
+                    break;
+                }
+                addr = next;
+            }
+            CloseHandle(proc);
+        } while (Process32NextW(snap, &pe));
+    }
+    CloseHandle(snap);
+    if (log) {
+        fflush(log);
+        fclose(log);
+    }
+}
+
+/*
+** Tiberian Factions -- per-faction radar crest (docs/radar-crest-ram-spike.md).
+** GDI and Nod load TD's HUD scene (FACTIONS.XML scene lists, scripts/factions_build.py),
+** which draws the TD logo regions directly but picks between them by RA side: Allied ->
+** UI_SIDEBAR_FACTIONLOGO_GDI, Soviet -> _NOD. Nod is an Allied-side country, so it would
+** draw the eagle. ClientG keeps one small cached record per referenced atlas region -- four
+** floats {v0, u0, w/W, h/H} of MT_COMMANDBAR_COMMON.TGA -- in writable heap, sampled every
+** frame; re-pointing the eagle record at the scorpion rect swaps the drawn crest with no
+** pixel data (the atlas lives only on the GPU after launch). The record is created lazily on
+** the first radar draw and a fresh per-match copy appears each match, so the patch is driven
+** per-frame for a short window from CNC_Advance_Instance (TF_Crest_Tick). RA sides load RA's
+** scene, whose crests are side-correct already; for them every slot wants its stock rect.
+*/
+struct TF_AtlasRect
+{
+    int x, y, w, h;
+};
+
+static void TF_Atlas_UV_Record(const TF_AtlasRect& r, float out[4], int nudge = 0)
+{
+    // Same arithmetic the launcher used to build the record (double divide, cast to float),
+    // so the bytes match its cached copies exactly. A rect we WRITE carries a per-slot
+    // sub-pixel nudge on u0 (nudge * 0.007 px; invisible) so two slots that share a target
+    // still leave distinguishable records and each restores to its own stock rect.
+    const double W = 6871.0, H = 6716.0; // MT_COMMANDBAR_COMMON.TGA
+    out[0] = (float)(r.y / H);
+    out[1] = (float)(r.x / W + nudge * 1e-6);
+    out[2] = (float)(r.w / W);
+    out[3] = (float)(r.h / H);
+}
+
+struct TF_CrestSlot
+{
+    float stock[4];    // the region the launcher points this slot at
+    float gdi[4];      // what a GDI player should see instead
+    float nod[4];      // what a Nod player should see instead
+    float tsgdi[4];    // what a Tiberian Sun GDI player should see instead
+    const float* want; // which of the four the local player should see
+};
+
+#define TF_CREST_SLOTS 2 // the TD GDI logo record, the TD NOD logo record
+
+// Session-persistent list of ClientG addresses that hold a radar-crest UV record, so the
+// per-frame driver can cheaply re-point them without re-scanning ClientG's whole heap. The
+// record is created lazily (first radar draw), a few frames after match start, and a fresh
+// per-match copy appears each match -- so a full scan runs for a short window each match and
+// discovered addresses are re-verified every frame.
+static SIZE_T TF_CrestAddr[512];
+static volatile int TF_CrestAddrCount = 0; // appended by the scan thread, read by the per-frame re-verify
+static int TF_CrestMatchStartFrame = -100000;
+static int TF_CrestScanNext = 0;           // index into the per-match scan schedule
+
+static void TF_Crest_Remember(SIZE_T addr)
+{
+    int n = TF_CrestAddrCount;
+    for (int i = 0; i < n; i++) {
+        if (TF_CrestAddr[i] == addr) {
+            return;
+        }
+    }
+    if (n < (int)(sizeof(TF_CrestAddr) / sizeof(TF_CrestAddr[0]))) {
+        TF_CrestAddr[n] = addr;
+        __asm__ __volatile__("" ::: "memory"); // the address lands before the count says it is there
+        TF_CrestAddrCount = n + 1;
+    }
+}
+
+// Build the two slots (ALLIES->GDI, SOVIET->NOD) for the current local player. Returns false
+// if there is no local player yet.
+static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
+{
+    const HouseClass* local = PlayerPtr;
+    if (local == NULL) {
+        for (int i = 0; i < Houses.Count(); i++) {
+            HouseClass* house = Houses.Ptr(i);
+            if (house != NULL && house->IsActive && house->IsHuman) {
+                local = house;
+                break;
+            }
+        }
+    }
+    if (local == NULL) {
+        return false;
+    }
+    bool gdi = (local->ActLike == HOUSE_GOOD);
+    bool nod = (local->ActLike == HOUSE_BAD);
+    bool tsgdi = Is_TS_GDI(local->ActLike);
+
+    static const TF_AtlasRect TD_LOGO_GDI = {1, 1875, 718, 706};    // UI_SIDEBAR_FACTIONLOGO_GDI
+    static const TF_AtlasRect TD_LOGO_NOD = {3778, 2221, 660, 660}; // UI_SIDEBAR_FACTIONLOGO_NOD
+    /*
+    **	Tiberian Sun GDI's own eagle. The atlas has no room left for a fifth crest, so it is
+    **	painted over UI_OBSERVER_MAP_BG -- TD-mode observer art an RA-mode match never draws
+    **	(scripts/crest_atlas_paint.py). The window is shorter than the region so the emblem
+    **	clears the label the launcher writes across the foot of the crest.
+    */
+    static const TF_AtlasRect TS_LOGO_GDI = {4220, 2883, 434, 400};
+    TF_Atlas_UV_Record(TD_LOGO_GDI, slots[0].stock);
+    TF_Atlas_UV_Record(TD_LOGO_GDI, slots[0].gdi, 1);
+    TF_Atlas_UV_Record(TD_LOGO_NOD, slots[0].nod, 1);
+    TF_Atlas_UV_Record(TS_LOGO_GDI, slots[0].tsgdi, 1);
+    TF_Atlas_UV_Record(TD_LOGO_NOD, slots[1].stock);
+    TF_Atlas_UV_Record(TD_LOGO_GDI, slots[1].gdi, 2);
+    TF_Atlas_UV_Record(TD_LOGO_NOD, slots[1].nod, 2);
+    TF_Atlas_UV_Record(TS_LOGO_GDI, slots[1].tsgdi, 2);
+
+    for (int s = 0; s < TF_CREST_SLOTS; s++) {
+        slots[s].want = tsgdi ? slots[s].tsgdi
+                              : (gdi ? slots[s].gdi : (nod ? slots[s].nod : slots[s].stock));
+    }
+    return true;
+}
+
+// Open ClientG.exe with the access this patch needs. Returns NULL if not found.
+static HANDLE TF_Open_ClientG(DWORD access)
+{
+    // The launcher's pid never changes for the life of this instance, so the process walk
+    // runs once; callers open a fresh handle per use (this is called every frame).
+    static DWORD cached_pid = 0;
+    if (cached_pid != 0) {
+        HANDLE proc = OpenProcess(access, FALSE, cached_pid);
+        if (proc != NULL) {
+            return proc;
+        }
+        cached_pid = 0;
+    }
+    HANDLE proc = NULL;
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) {
+        return NULL;
+    }
+    PROCESSENTRY32W pe;
+    pe.dwSize = sizeof(pe);
+    if (Process32FirstW(snap, &pe)) {
+        do {
+            if (_wcsicmp(pe.szExeFile, L"ClientG.exe") == 0) {
+                proc = OpenProcess(access, FALSE, pe.th32ProcessID);
+                if (proc != NULL) {
+                    cached_pid = pe.th32ProcessID;
+                }
+                break;
+            }
+        } while (Process32NextW(snap, &pe));
+    }
+    CloseHandle(snap);
+    return proc;
+}
+
+// Full scan: walk ClientG's private writable heap, and for every record currently holding
+// either slot's stock or faction rect, remember its address and write the wanted rect.
+static void TF_Crest_Full_Scan(const TF_CrestSlot* slots, FILE* log)
+{
+    bool gdi = (slots[0].want == slots[0].gdi);
+    bool nod = (slots[0].want == slots[0].nod);
+    bool tsgdi = (slots[0].want == slots[0].tsgdi);
+    // First-dword filter: a record's leading float (v0) must be one of ours before the
+    // 16-byte compares run, so the slots cost one bit test per 4-byte position.
+    static unsigned char bloom[8192];
+    memset(bloom, 0, sizeof(bloom));
+    for (int s = 0; s < TF_CREST_SLOTS; s++) {
+        const float* pats[4] = {slots[s].stock, slots[s].gdi, slots[s].nod, slots[s].tsgdi};
+        for (int q = 0; q < 4; q++) {
+            unsigned int u;
+            memcpy(&u, pats[q], 4);
+            unsigned int key = (u ^ (u >> 16)) & 0xFFFF;
+            bloom[key >> 3] |= (unsigned char)(1 << (key & 7));
+        }
+    }
+    HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
+                                  | PROCESS_QUERY_INFORMATION);
+    if (proc == NULL) {
+        return;
+    }
+    const int REC = 16;
+    static unsigned char scratch[1 << 20];
+    const int overlap = 32;
+    SIZE_T addr = 0;
+    MEMORY_BASIC_INFORMATION mbi;
+    while (VirtualQueryEx(proc, (LPCVOID)addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
+        SIZE_T region_base = (SIZE_T)mbi.BaseAddress;
+        SIZE_T region_size = mbi.RegionSize;
+        bool writable = (mbi.State == MEM_COMMIT) && (mbi.Type == MEM_PRIVATE)
+                        && (mbi.Protect == PAGE_READWRITE) && region_size <= ((SIZE_T)512 << 20);
+        if (writable) {
+            for (SIZE_T off = 0; off < region_size; off += (sizeof(scratch) - overlap)) {
+                SIZE_T want_bytes = region_size - off;
+                if (want_bytes > sizeof(scratch)) {
+                    want_bytes = sizeof(scratch);
+                }
+                SIZE_T got = 0;
+                if (!ReadProcessMemory(proc, (LPCVOID)(region_base + off), scratch, want_bytes, &got)
+                    || got < (SIZE_T)REC) {
+                    continue;
+                }
+                for (SIZE_T i = 0; i + REC <= got; i += 4) {
+                    unsigned int lead;
+                    memcpy(&lead, scratch + i, 4);
+                    unsigned int lkey = (lead ^ (lead >> 16)) & 0xFFFF;
+                    if (!(bloom[lkey >> 3] & (1 << (lkey & 7)))) {
+                        continue;
+                    }
+                    // A record is one of ours if it holds a slot's stock rect, or a faction
+                    // rect a previous match wrote. Paired slots share their faction rects, so
+                    // such a hit is attributed to the first of the pair; the write is the same.
+                    int slot = -1;
+                    const char* was = NULL;
+                    for (int s = 0; s < TF_CREST_SLOTS && slot < 0; s++) {
+                        if (memcmp(scratch + i, slots[s].stock, REC) == 0) {
+                            slot = s;
+                            was = "stock";
+                        } else if (memcmp(scratch + i, slots[s].gdi, REC) == 0) {
+                            slot = s;
+                            was = "gdi";
+                        } else if (memcmp(scratch + i, slots[s].nod, REC) == 0) {
+                            slot = s;
+                            was = "nod";
+                        } else if (memcmp(scratch + i, slots[s].tsgdi, REC) == 0) {
+                            slot = s;
+                            was = "tsgdi";
+                        }
+                    }
+                    if (slot < 0) {
+                        continue;
+                    }
+                    SIZE_T rec_addr = region_base + off + i;
+                    TF_Crest_Remember(rec_addr);
+                    if (memcmp(scratch + i, slots[slot].want, REC) == 0) {
+                        continue;
+                    }
+                    SIZE_T wrote = 0;
+                    bool ok = WriteProcessMemory(proc, (LPVOID)rec_addr, slots[slot].want, REC, &wrote)
+                              && wrote == (SIZE_T)REC;
+                    if (log) {
+                        static const char* const _slot_names[TF_CREST_SLOTS] = {"TDLOGO_GDI", "TDLOGO_NOD"};
+                        fprintf(log, "  scan slot %s @ %08x %s -> %s %s\n", _slot_names[slot],
+                                (unsigned int)rec_addr, was,
+                                tsgdi ? "tsgdi" : (gdi ? "gdi" : (nod ? "nod" : "stock")),
+                                ok ? "OK" : "FAIL");
+                    }
+                }
+            }
+        }
+        SIZE_T next = region_base + region_size;
+        if (next <= addr) {
+            break;
+        }
+        addr = next;
+    }
+    CloseHandle(proc);
+}
+
+// Cheap per-frame path: re-point only the already-discovered records. Reads 16 bytes each,
+// so it is safe to run every frame; self-heals a record ClientG rewrote back to its side crest.
+static void TF_Crest_Reverify(void)
+{
+    if (TF_CrestAddrCount == 0) {
+        return;
+    }
+    TF_CrestSlot slots[TF_CREST_SLOTS];
+    if (!TF_Crest_Slots(slots)) {
+        return;
+    }
+    HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
+                                  | PROCESS_QUERY_INFORMATION);
+    if (proc == NULL) {
+        return;
+    }
+    const int REC = 16;
+    for (int a = 0; a < TF_CrestAddrCount; a++) {
+        unsigned char cur[REC];
+        SIZE_T got = 0;
+        if (!ReadProcessMemory(proc, (LPCVOID)TF_CrestAddr[a], cur, REC, &got) || got != (SIZE_T)REC) {
+            continue;
+        }
+        int slot = -1;
+        for (int s = 0; s < TF_CREST_SLOTS && slot < 0; s++) {
+            if (memcmp(cur, slots[s].stock, REC) == 0 || memcmp(cur, slots[s].gdi, REC) == 0
+                || memcmp(cur, slots[s].nod, REC) == 0 || memcmp(cur, slots[s].tsgdi, REC) == 0) {
+                slot = s;
+            }
+        }
+        if (slot >= 0 && memcmp(cur, slots[slot].want, REC) != 0) {
+            SIZE_T wrote = 0;
+            WriteProcessMemory(proc, (LPVOID)TF_CrestAddr[a], slots[slot].want, REC, &wrote);
+        }
+    }
+    CloseHandle(proc);
+}
+
+// Reset the per-match window so the driver rescans for this match's freshly-created record.
+/*
+**  The sidebar build tab icons are the one HUD element the launcher names in CODE rather
+**  than in the scene file: it appends the state to a per-game prefix baked into ClientG
+**  ("UI_RA_Sidebar_TabIcon_Structure_" in RA mode, "UI_Sidebar_TabIcon_Structure_" in TD
+**  mode) and looks the region up by that name. So GDI/Nod, on TD's scene, still got RA's
+**  gold 130x64 icons squashed into TD's 100x60 tab widgets, in every state. Rewriting the
+**  four RA prefixes inside ClientG's image to the TD ones at match start makes the launcher
+**  itself look up TD's icons for every state, placement included; RA sides get the RA
+**  prefixes restored. The TD prefix is shorter, so the write always fits.
+*/
+static void TF_Patch_ClientG_Tab_Prefix(bool td_era)
+{
+    static const char* const _ra[4] = {"UI_RA_Sidebar_TabIcon_Structure_",
+                                       "UI_RA_Sidebar_TabIcon_Infantry_",
+                                       "UI_RA_Sidebar_TabIcon_Vehicles_",
+                                       "UI_RA_Sidebar_TabIcon_Supers_"};
+    static const char* const _td[4] = {"UI_Sidebar_TabIcon_Structure_",
+                                       "UI_Sidebar_TabIcon_Infantry_",
+                                       "UI_Sidebar_TabIcon_Vehicles_",
+                                       "UI_Sidebar_TabIcon_Supers_"};
+    // Located on every call: a slot reads as the RA string, or (after a TD-era match, the DLL
+    // instance having been recycled since) as the shorter TD string with the RA string's
+    // tail still behind its terminator -- which is also what tells it apart from the genuine
+    // TD prefix elsewhere in the image.
+    SIZE_T where[4] = {0, 0, 0, 0};
+    unsigned char patched[4][48];
+    size_t patched_len[4];
+    for (int k = 0; k < 4; k++) {
+        size_t ra_len = strlen(_ra[k]) + 1;
+        size_t td_len = strlen(_td[k]) + 1;
+        memcpy(patched[k], _td[k], td_len);
+        memcpy(patched[k] + td_len, _ra[k] + td_len, ra_len - td_len);
+        patched_len[k] = ra_len;
+    }
+
+    FILE* log = NULL;
+#if TF_DEV_BUILD
+    {
+        const char* up = getenv("USERPROFILE");
+        if (up != NULL) {
+            char logpath[512];
+            snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+            log = fopen(logpath, "a");
+        }
+    }
+#endif
+    HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
+                                  | PROCESS_QUERY_INFORMATION);
+    if (proc == NULL) {
+        if (log) {
+            fprintf(log, "  tab prefix: ClientG not opened (td_era=%d)\n", (int)td_era);
+            fclose(log);
+        }
+        return;
+    }
+    if (log) {
+        fprintf(log, "  tab prefix: td_era=%d\n", (int)td_era);
+    }
+    {
+        static unsigned char scratch[1 << 20];
+        const int overlap = 64;
+        SIZE_T addr = 0;
+        MEMORY_BASIC_INFORMATION mbi;
+        while (VirtualQueryEx(proc, (LPCVOID)addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
+            SIZE_T region_base = (SIZE_T)mbi.BaseAddress;
+            SIZE_T region_size = mbi.RegionSize;
+            bool image = (mbi.State == MEM_COMMIT) && (mbi.Type == MEM_IMAGE) && (mbi.Protect & 0xEE) != 0
+                         && region_size <= ((SIZE_T)256 << 20);
+            if (image) {
+                for (SIZE_T off = 0; off < region_size; off += (sizeof(scratch) - overlap)) {
+                    SIZE_T want = region_size - off;
+                    if (want > sizeof(scratch)) {
+                        want = sizeof(scratch);
+                    }
+                    SIZE_T got = 0;
+                    if (!ReadProcessMemory(proc, (LPCVOID)(region_base + off), scratch, want, &got) || got == 0) {
+                        continue;
+                    }
+                    for (int k = 0; k < 4; k++) {
+                        size_t n = patched_len[k]; // both forms are this long, terminators included
+                        if (where[k] != 0 || got < n) {
+                            continue;
+                        }
+                        for (SIZE_T i = 0; i + n <= got; i++) {
+                            if (scratch[i] == 'U'
+                                && (memcmp(scratch + i, _ra[k], n) == 0 || memcmp(scratch + i, patched[k], n) == 0)) {
+                                where[k] = region_base + off + i;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            SIZE_T next = region_base + region_size;
+            if (next <= addr) {
+                break;
+            }
+            addr = next;
+        }
+    }
+    for (int k = 0; k < 4; k++) {
+        if (where[k] == 0) {
+            continue;
+        }
+        const char* want = td_era ? _td[k] : _ra[k];
+        size_t n = strlen(want) + 1;
+        char cur[48];
+        SIZE_T got = 0;
+        if (ReadProcessMemory(proc, (LPCVOID)where[k], cur, n, &got) && got == n && memcmp(cur, want, n) == 0) {
+            continue;
+        }
+        DWORD old_protect = 0;
+        if (!VirtualProtectEx(proc, (LPVOID)where[k], n, PAGE_READWRITE, &old_protect)) {
+            if (log) {
+                fprintf(log, "  tab prefix %d @ %08x: VirtualProtectEx failed (%u)\n", k,
+                        (unsigned int)where[k], (unsigned)GetLastError());
+            }
+            continue;
+        }
+        SIZE_T wrote = 0;
+        WriteProcessMemory(proc, (LPVOID)where[k], want, n, &wrote);
+        DWORD tmp = 0;
+        VirtualProtectEx(proc, (LPVOID)where[k], n, old_protect, &tmp);
+        if (log) {
+            fprintf(log, "  tab prefix %d @ %08x -> %s %s (was %.32s)\n", k, (unsigned int)where[k], want,
+                    (wrote == (SIZE_T)n) ? "OK" : "FAIL", cur);
+        }
+    }
+    if (log) {
+        for (int k = 0; k < 4; k++) {
+            if (where[k] == 0) {
+                fprintf(log, "  tab prefix %d: not located\n", k);
+            }
+        }
+        fclose(log);
+    }
+    CloseHandle(proc);
+}
+
+static void TF_Patch_ClientG_Crest(void)
+{
+    TF_CrestMatchStartFrame = (int)Frame;
+    TF_CrestScanNext = 0;
+
+    TF_CrestSlot slots[TF_CREST_SLOTS];
+    if (TF_Crest_Slots(slots)) {
+        TF_Patch_ClientG_Tab_Prefix(slots[0].want != slots[0].stock);
+    }
+#if TF_DEV_BUILD
+    else {
+        const char* up = getenv("USERPROFILE");
+        if (up != NULL) {
+            char logpath[512];
+            snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+            FILE* log = fopen(logpath, "a");
+            if (log) {
+                fprintf(log, "  tab prefix: no local house at match start\n");
+                fclose(log);
+            }
+        }
+    }
+#endif
+}
+
+// The full scan reads the launcher's whole heap (hundreds of MB across processes), which
+// stalled the game for its duration when it ran on the game thread. It runs on a worker
+// thread instead, one at a time, from a private copy of the slot table taken on the game
+// thread; a request that arrives while a scan is still running is dropped (the next
+// scheduled one covers it).
+static TF_CrestSlot TF_CrestScanSlots[TF_CREST_SLOTS];
+static volatile LONG TF_CrestScanBusy = 0;
+
+static DWORD WINAPI TF_Crest_Scan_Thread(LPVOID)
+{
+    FILE* log = NULL;
+#if TF_DEV_BUILD
+    const char* up = getenv("USERPROFILE");
+    char logpath[512];
+    if (up != NULL) {
+        snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+        log = fopen(logpath, "a");
+    }
+    if (log) {
+        fprintf(log, "== crest scan frame %d known=%d ==\n", (int)Frame, TF_CrestAddrCount);
+    }
+#endif
+    TF_Crest_Full_Scan(TF_CrestScanSlots, log);
+    if (log) {
+        fflush(log);
+        fclose(log);
+    }
+    InterlockedExchange(&TF_CrestScanBusy, 0);
+    return 0;
+}
+
+static void TF_Crest_Request_Scan(void)
+{
+    TF_CrestSlot slots[TF_CREST_SLOTS];
+    if (!TF_Crest_Slots(slots)) {
+        return;
+    }
+    if (InterlockedCompareExchange(&TF_CrestScanBusy, 1, 0) != 0) {
+        return;
+    }
+    for (int s = 0; s < TF_CREST_SLOTS; s++) {
+        TF_CrestScanSlots[s] = slots[s];
+        /*
+        **	`want` points into its own slot; re-aim it at the copy. EVERY variant needs a
+        **	case here: a missing one does not fail loudly, it silently falls through to
+        **	stock, and the scan then spends the whole burst writing the WRONG crest while
+        **	the per-frame re-verify writes the right one -- which reads in game as the
+        **	crest flickering for the first ten seconds of a match. TS GDI was omitted here
+        **	when the fourth variant was added.
+        */
+        TF_CrestScanSlots[s].want = (slots[s].want == slots[s].gdi)     ? TF_CrestScanSlots[s].gdi
+                                    : (slots[s].want == slots[s].nod)   ? TF_CrestScanSlots[s].nod
+                                    : (slots[s].want == slots[s].tsgdi) ? TF_CrestScanSlots[s].tsgdi
+                                                                        : TF_CrestScanSlots[s].stock;
+    }
+    HANDLE thread = CreateThread(NULL, 0, TF_Crest_Scan_Thread, NULL, 0, NULL);
+    if (thread == NULL) {
+        InterlockedExchange(&TF_CrestScanBusy, 0);
+        return;
+    }
+    CloseHandle(thread);
+}
+
+// Driven every frame from CNC_Advance_Instance. Cheaply re-points known records each frame,
+// and requests a full heap scan at widening intervals over the first ~15 seconds of each
+// match to discover the record ClientG creates lazily on the first radar draw. On a fresh
+// launch the first scan sees nothing and the second or third catches the record; in later
+// matches the first scan finds everything and the rest confirm it.
+static void TF_Crest_Tick(void)
+{
+    // 169 cross-process reads per pass; every fifth frame keeps the self-heal invisible
+    // and the cost off the frame budget.
+    if (((int)Frame % 5) == 0) {
+        TF_Crest_Reverify();
+    }
+    // The burst covers records that existed before the atlas table was patched; records
+    // created later in the match are born from the patched table and need no scan.
+    static const int _scan_at[] = {0, 6, 12, 24, 48, 96, 192, 384};
+    const int count = (int)(sizeof(_scan_at) / sizeof(_scan_at[0]));
+    int since = (int)Frame - TF_CrestMatchStartFrame;
+    if (since >= 0 && TF_CrestScanNext < count && since >= _scan_at[TF_CrestScanNext]) {
+        TF_CrestScanNext++;
+        TF_Crest_Request_Scan();
+    }
+}
+
+#if TF_DEV_BUILD
+/*
+** Tiberian Factions -- stage-1 RAM-patch spike probe (docs/eva-ram-patch-spike.md).
+** READ-ONLY. Scans ClientG.exe's writable private memory for known needles taken
+** from the mailbox NODEPLY sample (the placement-reject line), in BOTH candidate
+** cache formats, and logs every hit to tf_cache_probe.log. It answers one question:
+** does ClientG cache the sample as ADPCM file bytes (found via the ADPCM needle ->
+** an in-place same-size overwrite is trivial) or as decoded PCM (found via the PCM
+** needle -> equal-length PCM handling required)? Reuses the lobby resolver's proven
+** cross-process scan (CreateToolhelp32Snapshot / OpenProcess / VirtualQueryEx /
+** ReadProcessMemory). Nothing is written to ClientG. Runs at match start; the useful
+** result comes on the SECOND match of a boot, after match 1 has fired (and cached)
+** the line -- misplace a building in match 1, then start match 2.
+*/
+struct TF_ProbeNeedle
+{
+    const char* name;
+    const unsigned char* bytes;
+    int len;
+};
+
+/*
+** Shared read-only scanner for the ClientG RAM probes: walks every committed, readable
+** region of ClientG.exe, logs every hit of every needle (address, region, protection, type)
+** and per-needle totals to tf_cache_probe.log. Nothing is written to ClientG.
+*/
+static void TF_Probe_ClientG_Needles(const TF_ProbeNeedle* needles, int needle_count, const char* tag)
+{
+    const char* up = getenv("USERPROFILE");
+    if (up == NULL) {
+        return;
+    }
+    char logpath[512];
+    snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+    FILE* log = fopen(logpath, "a");
+    if (log == NULL) {
+        return;
+    }
+    fprintf(log, "== probe %s at frame %d ==\n", tag, (int)Frame);
+
+    static unsigned char scratch[1 << 20];
+    const int overlap = 64; // >= max needle length, so a needle straddling two chunks is caught
+
+    HANDLE snap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (snap == INVALID_HANDLE_VALUE) {
+        fprintf(log, "  snapshot failed\n");
+        fclose(log);
+        return;
+    }
+    PROCESSENTRY32W pe;
+    pe.dwSize = sizeof(pe);
+    int hit_total[8] = {0};
+    int procs_found = 0, procs_opened = 0;
+    unsigned long long bytes_scanned = 0;
+    int regions_scanned = 0;
+    if (Process32FirstW(snap, &pe)) {
+        do {
+            if (_wcsicmp(pe.szExeFile, L"ClientG.exe") != 0) {
+                continue;
+            }
+            procs_found++;
+            HANDLE proc = OpenProcess(PROCESS_VM_READ | PROCESS_QUERY_INFORMATION, FALSE, pe.th32ProcessID);
+            if (proc == NULL) {
+                fprintf(log, "  ClientG pid %lu: OpenProcess failed\n", (unsigned long)pe.th32ProcessID);
+                continue;
+            }
+            procs_opened++;
+            SIZE_T addr = 0;
+            MEMORY_BASIC_INFORMATION mbi;
+            while (VirtualQueryEx(proc, (LPCVOID)addr, &mbi, sizeof(mbi)) == sizeof(mbi)) {
+                SIZE_T region_base = (SIZE_T)mbi.BaseAddress;
+                SIZE_T region_size = mbi.RegionSize;
+                // Scan any committed, readable region regardless of Type (PRIVATE/MAPPED/IMAGE):
+                // a loose-file sample may be memory-mapped (MAPPED) or copy-on-write, not only
+                // heap-loaded. Exclude only NOACCESS/GUARD.
+                bool readable = (mbi.State == MEM_COMMIT)
+                                && !(mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD))
+                                && (mbi.Protect != 0)
+                                && region_size <= ((SIZE_T)512 << 20);
+                if (readable) {
+                    regions_scanned++;
+                    for (SIZE_T off = 0; off < region_size; off += (sizeof(scratch) - overlap)) {
+                        SIZE_T want = region_size - off;
+                        if (want > sizeof(scratch)) {
+                            want = sizeof(scratch);
+                        }
+                        SIZE_T got = 0;
+                        if (!ReadProcessMemory(proc, (LPCVOID)(region_base + off), scratch, want, &got)
+                            || got == 0) {
+                            continue;
+                        }
+                        bytes_scanned += got;
+                        for (int ni = 0; ni < needle_count; ni++) {
+                            const unsigned char* nb = needles[ni].bytes;
+                            int nl = needles[ni].len;
+                            if ((SIZE_T)nl > got) {
+                                continue;
+                            }
+                            for (SIZE_T i = 0; i + nl <= got; i++) {
+                                if (scratch[i] == nb[0] && memcmp(scratch + i, nb, nl) == 0) {
+                                    if (hit_total[ni] < 32) {
+                                        fprintf(log, "  HIT %s @ %08x (region %08x size %08x prot %lx type %lx)\n",
+                                                needles[ni].name,
+                                                (unsigned int)(region_base + off + i),
+                                                (unsigned int)region_base, (unsigned int)region_size,
+                                                (unsigned long)mbi.Protect, (unsigned long)mbi.Type);
+                                    }
+                                    hit_total[ni]++;
+                                }
+                            }
+                        }
+                    }
+                }
+                SIZE_T next = region_base + region_size;
+                if (next <= addr) {
+                    break;
+                }
+                addr = next;
+            }
+            CloseHandle(proc);
+        } while (Process32NextW(snap, &pe));
+    }
+    CloseHandle(snap);
+    fprintf(log, "  clientg found=%d opened=%d regions=%d bytes=%llu\n",
+            procs_found, procs_opened, regions_scanned, bytes_scanned);
+    for (int ni = 0; ni < needle_count; ni++) {
+        fprintf(log, "  TOTAL %s: %d\n", needles[ni].name, hit_total[ni]);
+    }
+    fflush(log);
+    fclose(log);
+}
+
+static void TF_Probe_ClientG_Cache(void)
+{
+    // Needles: 20-byte ADPCM data-chunk slices (docs/eva-ram-patch-spike.md). Both channel
+    // variants of NODEPLY (Allied 22k = C, Soviet 44k = R) since which plays follows the
+    // player's country, plus construction-complete which fires in EVERY match (guaranteed
+    // cache) so a zero on it means the scan itself is not reaching the cache.
+    static const unsigned char nodeply_c[] = {0x1d, 0xf0, 0x0c, 0xbf, 0x0c, 0xfc, 0xf0, 0xeb, 0x02, 0xfe,
+                                              0xe4, 0x1f, 0xde, 0xdb, 0xed, 0xc1, 0x11, 0xef, 0x70, 0x01};
+    static const unsigned char nodeply_r[] = {0xdf, 0x02, 0x00, 0x05, 0x2e, 0xaf, 0x13, 0x11, 0xfe, 0xdf,
+                                              0x27, 0x11, 0x0d, 0xe0, 0x02, 0x12, 0x70, 0xfa, 0xf0, 0x44};
+    static const unsigned char tddeploy_c[] = {0xff, 0x9e, 0x02, 0x20, 0xb0, 0xed, 0xb0, 0x40, 0xff, 0x10,
+                                               0xbe, 0xe0, 0xff, 0xe0, 0x34, 0xff, 0x15, 0x12, 0x34, 0x70};
+    static const unsigned char tddeploy_r[] = {0x00, 0x11, 0x11, 0x00, 0x00, 0xaa, 0xdd, 0xff, 0x11, 0x33,
+                                               0x44, 0x44, 0x33, 0x00, 0xbb, 0xcc, 0xee, 0xdd, 0xee, 0x22};
+    static const unsigned char constru_c[] = {0x20, 0x12, 0x60, 0x0f, 0x06, 0x0f, 0x13, 0x02, 0x00, 0xf5,
+                                              0x0c, 0x30, 0xd0, 0x00, 0x0c, 0xf8, 0x00, 0x00, 0xfe, 0xa0};
+    static const unsigned char constru_r[] = {0x44, 0x11, 0x66, 0x22, 0x22, 0x22, 0x11, 0x22, 0xff, 0xcc,
+                                              0xdd, 0xaa, 0xee, 0xcc, 0x00, 0x00, 0x00, 0x22, 0x22, 0x33};
+    static const TF_ProbeNeedle needles[] = {
+        {"NODEPLY_C", nodeply_c, sizeof(nodeply_c)},
+        {"NODEPLY_R", nodeply_r, sizeof(nodeply_r)},
+        {"TDDEPLOY_C", tddeploy_c, sizeof(tddeploy_c)},
+        {"TDDEPLOY_R", tddeploy_r, sizeof(tddeploy_r)},
+        {"CONSTRU_C", constru_c, sizeof(constru_c)},
+        {"CONSTRU_R", constru_r, sizeof(constru_r)},
+    };
+    TF_Probe_ClientG_Needles(needles, (int)(sizeof(needles) / sizeof(needles[0])), "eva");
+}
+/*
+** Tiberian Factions -- per-faction radar crest, stage-1 RAM probe (docs/radar-crest-ram-spike.md).
+** READ-ONLY. Asks whether a CPU-readable copy of the radar-slot crest pixels exists in
+** ClientG.exe at match start. Needles are two 8-pixel opaque runs (rows 249 and 463 of the
+** 794x713 UI_SIDEBAR_FACTIONLOGO_ALLIES/_SOVIET regions, which currently hold identical
+** pixels) taken straight from the shipped MT_COMMANDBAR_COMMON.TGA, in BGRA (= the TGA file
+** bytes = the natural decoded layout) and RGBA. Two rows at the same x let the hit
+** addresses reveal the in-memory stride: 27484 = the whole atlas, 3176 = a cropped region
+** texture; the sign gives top- vs bottom-origin. Two hits per needle (one per region) with
+** the whole-atlas stride means the entire atlas is resident.
+*/
+static void TF_Probe_ClientG_Crest(void)
+{
+    static const unsigned char row249_bgra[] = {0x00, 0x01, 0x02, 0xff, 0x10, 0x0e, 0x0f, 0xff, 0x4f, 0x45, 0x40, 0xff,
+                                                0xab, 0x96, 0x87, 0xff, 0xd7, 0xbd, 0xa8, 0xff, 0xc8, 0xad, 0x97, 0xff,
+                                                0xcb, 0xae, 0x99, 0xff, 0xce, 0xb5, 0xa1, 0xff};
+    static const unsigned char row249_rgba[] = {0x02, 0x01, 0x00, 0xff, 0x0f, 0x0e, 0x10, 0xff, 0x40, 0x45, 0x4f, 0xff,
+                                                0x87, 0x96, 0xab, 0xff, 0xa8, 0xbd, 0xd7, 0xff, 0x97, 0xad, 0xc8, 0xff,
+                                                0x99, 0xae, 0xcb, 0xff, 0xa1, 0xb5, 0xce, 0xff};
+    static const unsigned char row463_bgra[] = {0xa6, 0x9b, 0x96, 0xff, 0x8e, 0x84, 0x7d, 0xff, 0x94, 0x89, 0x81, 0xff,
+                                                0x97, 0x8e, 0x83, 0xff, 0xa0, 0x99, 0x92, 0xff, 0x9b, 0x91, 0x8a, 0xff,
+                                                0xaa, 0xa0, 0x97, 0xff, 0x6a, 0x60, 0x56, 0xff};
+    static const unsigned char row463_rgba[] = {0x96, 0x9b, 0xa6, 0xff, 0x7d, 0x84, 0x8e, 0xff, 0x81, 0x89, 0x94, 0xff,
+                                                0x83, 0x8e, 0x97, 0xff, 0x92, 0x99, 0xa0, 0xff, 0x8a, 0x91, 0x9b, 0xff,
+                                                0x97, 0xa0, 0xaa, 0xff, 0x56, 0x60, 0x6a, 0xff};
+    static const TF_ProbeNeedle needles[] = {
+        {"CREST_R249_BGRA", row249_bgra, sizeof(row249_bgra)},
+        {"CREST_R249_RGBA", row249_rgba, sizeof(row249_rgba)},
+        {"CREST_R463_BGRA", row463_bgra, sizeof(row463_bgra)},
+        {"CREST_R463_RGBA", row463_rgba, sizeof(row463_rgba)},
+    };
+    TF_Probe_ClientG_Needles(needles, (int)(sizeof(needles) / sizeof(needles[0])), "crest");
+}
+#endif // TF_DEV_BUILD
+
 static void TF_Install_Bundled_Maps(const char* mod_path)
 {
     static bool _installed = false;
@@ -3729,6 +4924,8 @@ static void TF_Install_Bundled_Maps(const char* mod_path)
     }
     root[len - 6] = 0; // now "<mod>\" (keeps the trailing separator)
     _installed = true;
+    strncpy(TF_ModRootPath, root, sizeof(TF_ModRootPath));
+    TF_ModRootPath[sizeof(TF_ModRootPath) - 1] = 0;
 
     const char* profile = getenv("USERPROFILE");
     if (profile == NULL || profile[0] == 0) {
@@ -3975,13 +5172,19 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
         // GDI/Nod route to TFRADRON/TFRADROF (TD Comm Center / Power Down).
         // Mirrors the SpeechTD[] pattern in On_Speech.
         if (sound_effect_index == VOC_RADAR_ON || sound_effect_index == VOC_RADAR_OFF) {
+            /*
+            ** TS GDI has its own pair (TS rules [AudioVisual] RadarOn=COMMUP1 /
+            ** RadarOff=RADARDN1); it was borrowing TD's Comm Center audio while those
+            ** were unported, which is audibly the wrong era.
+            */
+            bool ts_faction = (player_ptr != NULL && Is_TS_GDI(player_ptr->ActLike));
             bool td_faction = (player_ptr != NULL
                                && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD));
             const char* name;
             if (sound_effect_index == VOC_RADAR_ON) {
-                name = td_faction ? "TFRADRON" : "RAORADON";
+                name = ts_faction ? "TSCOMMUP1" : (td_faction ? "TFRADRON" : "RAORADON");
             } else {
-                name = td_faction ? "TFRADROF" : "RAORADOF";
+                name = ts_faction ? "TSRADARDN1" : (td_faction ? "TFRADROF" : "RAORADOF");
             }
             strncpy(new_event.SoundEffect.SoundEffectName, name, 16);
             new_event.SoundEffect.SoundEffectName[15] = '\0';
@@ -4007,6 +5210,34 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
 #endif
         }
 
+        /*
+        ** TEMPORARY (2026-09-06): the credit tick and radar toggle are reported as playing
+        ** the wrong era. Log exactly which sample name leaves the DLL so the question is
+        ** measured rather than argued. Remove once the tick is confirmed.
+        */
+#if TF_DEV_BUILD
+        if (sound_effect_index == VOC_TS_MONEY_UP || sound_effect_index == VOC_TS_MONEY_DOWN
+            || sound_effect_index == VOC_TD_MONEY_UP || sound_effect_index == VOC_TD_MONEY_DOWN
+            || sound_effect_index == VOC_DLL_MONEY_UP || sound_effect_index == VOC_DLL_MONEY_DOWN
+            || sound_effect_index == VOC_RADAR_ON || sound_effect_index == VOC_RADAR_OFF
+            || sound_effect_index == VOC_TS_PLACE_BUILDING_DOWN
+            || sound_effect_index == VOC_TD_PLACE_BUILDING_DOWN
+            || sound_effect_index == VOC_PLACE_BUILDING_DOWN) {
+            const char* up = getenv("USERPROFILE");
+            if (up != NULL) {
+                char path[512];
+                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_sfx_dispatch.log", up);
+                FILE* f = fopen(path, "a");
+                if (f != NULL) {
+                    fprintf(f, "[sfx] voc=%d name=%s actlike=%d\n", sound_effect_index,
+                            new_event.SoundEffect.SoundEffectName,
+                            (player_ptr != NULL) ? (int)player_ptr->ActLike : -1);
+                    fclose(f);
+                }
+            }
+        }
+#endif
+
         // Tiberian Factions: per-faction unit-voice dispatch. GDI/Nod (ActLike
         // HOUSE_GOOD/HOUSE_BAD) get TD unit acknowledgments; Allied/Soviet keep
         // RA's voices (.V0x infantry / .R0x). Mirrors the radar/EVA SpeechTD
@@ -4016,7 +5247,16 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
         // takes via negative variation). Credit-tick routing was reverted (the
         // launcher owns the tick and the WAV stub didn't silence it).
         if (player_ptr != NULL
-            && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD)) {
+            && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD
+                || Is_TS_GDI(player_ptr->ActLike))) {
+            /*
+            ** Tiberian Sun GDI answers in its own crews' voices. TS keys these to
+            ** numbered voice sets rather than named events (set 15 = the GDI
+            ** rifleman, set 25 = the GDI vehicle crew); scripts/ts_voices_build.py
+            ** lands them under our own event names in the same four-extension
+            ** shape the TD set uses, so only the base name changes here.
+            */
+            bool const ts_voice = Is_TS_GDI(player_ptr->ActLike);
             const char* td_base = NULL;
             switch (sound_effect_index) {
             case VOC_ACKNOWL:    td_base = "TDACKNO";   break;
@@ -4033,6 +5273,27 @@ void DLLExportClass::On_Sound_Effect(const HouseClass* player_ptr,
             case VOC_VEHIC:      td_base = "TDVEHIC1";  break;
             case VOC_TD_UNIT1:   td_base = "TDUNIT1";   break;
             default:             break;
+            }
+            if (td_base != NULL && ts_voice) {
+                static const struct
+                {
+                    const char* td;
+                    const char* ts;
+                } _ts_bases[] = {
+                    {"TDACKNO", "TSACKNO"},       {"TDREPORT1", "TSREPORT1"},
+                    {"TDYESSIR1", "TSYESSIR1"},   {"TDREADY", "TSREADY"},
+                    {"TDAWAIT1", "TSAWAIT1"},     {"TDROGER", "TSROGER"},
+                    {"TDRITAWAY", "TSRITAWAY"},   {"TDUGOTIT", "TSUGOTIT"},
+                    {"TDAFFIRM1", "TSAFFIRM1"},   {"TDNOPROB", "TSNOPROB"},
+                    {"TDMOVOUT1", "TSMOVOUT1"},   {"TDVEHIC1", "TSVEHIC1"},
+                    {"TDUNIT1", "TSUNIT1"},
+                };
+                for (int i = 0; i < (int)(sizeof(_ts_bases) / sizeof(_ts_bases[0])); i++) {
+                    if (strcmp(td_base, _ts_bases[i].td) == 0) {
+                        td_base = _ts_bases[i].ts;
+                        break;
+                    }
+                }
             }
             if (td_base != NULL) {
                 // Infantry fire with positive variation (ID+1) -> direct .V01/.V03
@@ -4110,16 +5371,61 @@ void DLLExportClass::On_Speech(const HouseClass* player_ptr, int speech_index)
         // Tiberian Factions mod: side-conditional TD EVA dispatch. GDI/Nod
         // players get the TD voice variant (registered in mod-side
         // SFXEVENTSLOCALIZED.XML as RAC_SFX_TD<NAME> / RAR_SFX_TD<NAME>).
-        // Allied/Soviet keep RA's Speech[]. NULL SpeechTD[] slot also
-        // falls back to RA. Future per-side Nod voice would branch here.
+        // Allied/Soviet keep RA's Speech[]. A NULL SpeechTD[] slot is
+        // silence for GDI/Nod. Future per-side Nod voice would branch here.
         Init_SpeechTD();
+        Init_SpeechTS();
+        Init_SpeechRAO();
         char const* name = Speech[speech_index];
-        if (player_ptr != NULL
-            && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD)
-            && SpeechTD[speech_index] != NULL) {
+        bool ts_era = (player_ptr != NULL && Is_TS_GDI(player_ptr->ActLike));
+        bool td_era = (player_ptr != NULL
+                       && (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD));
+        if (ts_era) {
+            /*
+            ** Tiberian Sun GDI hears its own announcer or nothing at all -- the
+            ** same rule the TD sides follow one line below. Borrowing TD's EVA
+            ** for the lines TS never recorded would swap voices mid-match.
+            */
+            if (SpeechTS[speech_index] == NULL) {
+                return;
+            }
+            name = SpeechTS[speech_index];
+        } else if (td_era && SpeechTD[speech_index] != NULL) {
             name = SpeechTD[speech_index];
+        } else if (td_era && strncmp(name, "TD", 2) != 0) {
+            /*
+            ** A TD-era house never hears the RA announcer: a line TD has no
+            ** recording of (sonar pulse, chronosphere, crate upgrades...) is
+            ** dropped rather than spoken in the wrong voice.
+            */
+            return;
+        } else if (SpeechRAO[speech_index] != NULL) {
+            name = SpeechRAO[speech_index];
         }
         strncpy(new_event.Speech.SpeechName, name, 16);
+#if TF_DEV_BUILD
+        /*
+        **  TF speech-routing diagnostic: every speech event handed to the
+        **  launcher, with the routing inputs. If a line plays in the wrong
+        **  faction voice while this log shows the TD name was sent, the
+        **  launcher resolved by index, not name.
+        */
+        {
+            const char* up = getenv("USERPROFILE");
+            if (up != NULL) {
+                char path[512];
+                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_speech.log", up);
+                FILE* f = fopen(path, "a");
+                if (f != NULL) {
+                    fprintf(f, "[speech] idx=%d name=%s actlike=%d td_slot=%s\n",
+                            speech_index, name,
+                            (player_ptr != NULL) ? (int)player_ptr->ActLike : -1,
+                            (SpeechTD[speech_index] != NULL) ? SpeechTD[speech_index] : "(null)");
+                    fclose(f);
+                }
+            }
+        }
+#endif
     } else {
         strncpy(new_event.Speech.SpeechName, "BAD_SPEECH_INDEX", 16);
     }
@@ -4526,6 +5832,15 @@ void DLLExportClass::On_Multiplayer_Game_Over(void)
     }
 
     GameOver = true;
+
+    /*
+    **  No DLL-spoken endgame EVA: the launcher drops speech events dispatched
+    **  in the game-over window (TDACCOM1/TDFAIL1/RAOLOST1 all logged going
+    **  out and inaudible, while every mid-game dispatch plays). The
+    **  "Mission accomplished"/"Your mission has failed" lines are instead
+    **  faction-voiced through the era mailbox (TF_Mailbox_Write_EVA_Voice),
+    **  which the launcher's own auto-fire plays.
+    */
 
     EventCallbackStruct event;
 
@@ -5027,6 +6342,17 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         }
     }
 
+    /*
+    **	The Hunter Seeker droid draws off this width/height (a bullet's default is
+    **	tiny). Size it up here -- this is the launcher's actual draw box and it
+    **	reloads per match. Tune TF_HUNTER_DRAW_SIZE by eye.
+    */
+    if (object != NULL && object->What_Am_I() == RTTI_BULLET
+        && ((BulletTypeClass const&)object->Class_Of()).Type == BULLET_TSHUNTER) {
+        width = TF_HUNTER_DRAW_SIZE;
+        height = TF_HUNTER_DRAW_SIZE;
+    }
+
     // Diagnostic 2026-05-19: log Draw calls for every TD-prefixed building
     // to see what AssetName / shape_file_name / BState the engine passes per
     // frame. Used to diagnose the placement → buildup Petroglyph flash —
@@ -5138,27 +6464,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.SortOrder = ObjectList->Objects[TotalObjectCount].SortOrder + CurrentDrawCount;
     }
 
-    /*
-    **  Tiberian Factions -- the TS war factory's bay overlay sorts south of
-    **  the building it belongs to, so it draws IN FRONT of a vehicle standing
-    **  in the bay while the base draws behind it.
-    **
-    **  That sandwich is the whole scheme: the base holds only the patch of
-    **  building seen THROUGH the doorway, this overlay holds everything else,
-    **  so the opening is the one place a vehicle can render. Its art ends at
-    **  y=71.8 of the 72-pixel plot and the building sorts at y=36, so 384
-    **  leptons puts this layer on the hangar's southern edge -- covering the
-    **  vehicle for as long as it stands on the building, and yielding once it
-    **  has driven clear.
-    **
-    **  Keyed on AssetName, as EA's own shadow and WAKE reordering below is.
-    */
-    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAP2") == 0) {
-        // 128 leptons = 12 classic px: the 4x3 plot's centre sort point (y=36)
-        // to the hangar's south edge (y=48; was 384 for the old 72px hangar).
-        new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 128)) >> 3);
-    }
 
     /*
     **  The lamp layer rides one sort notch (8 leptons) above the door
@@ -5166,31 +6471,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  and must cover the overlay's frozen phase-0 lamps while staying a
     **  face -- everything the overlay covers, it covers.
     */
-    /*
-    **  The TS refinery's dock lid sits in the bay mouth under the parked
-    **  harvester's rear: sort it a half cell north of the building's line so
-    **  the truck (sorted on the pad) draws over it.
-    */
-    if (shape_file_name != NULL && strcmp(shape_file_name, "TSPROCLD") == 0) {
-        new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, (LEPTON)(short)-128)) >> 3);
-    }
 
-    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAPLT") == 0) {
-        new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 136)) >> 3);
-    }
-
-    /*
-    **  The overlay's floor band sorts one notch UNDER the exit clamp (+64):
-    **  a unit gliding out draws over the ramp lip and door-frame feet, while
-    **  anything parked deep in the bay (its own key north of here) stays
-    **  under them and the shut-door composite is unchanged.
-    */
-    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAP2L") == 0) {
-        new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 56)) >> 3);
-    }
     strncpy(new_object.TypeName, object->Class_Of().IniName, CNC_OBJECT_ASSET_NAME_LENGTH);
 
     if (shape_file_name != NULL) {
@@ -5215,24 +6496,26 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     }
 
     /*
-    **  The BASE (bay interior) sorts at the plot's NORTH edge, not the
-    **  building's centre line: it is the room's back wall, and a vehicle
-    **  standing anywhere in the plot must draw over it or the bay reads
-    **  empty through the open door. The centre-line default broke the
-    **  sandwich the moment the spawn point moved north of y=36 (2026-08-17
-    **  evening, the hand-dialled deep-bay spawn): the unit sorted under the
-    **  interior and vanished. Sort_Y is the plot centre (y=36 classic), so
-    **  -384 leptons puts this layer at y=0, north of any in-plot vehicle.
-    **  Keyed on the FINAL AssetName: the base draw reaches this export with
-    **  a NULL shape_file_name (same trap as the TSTITN bias above -- the
-    **  first cut keyed on shape_file_name and was dead code, proven in
-    **  tf_sort.log: overlay-base gap stayed 128 leptons). Exact match so
-    **  TSWEAPMAKE keeps the default sort; TSWEAP2 has its own key above.
+    **  TS war factory (08-28 rebuild): the roll-up shutter layer sorts south of
+    **  a vehicle seated in the door mouth (row 1.8 of the plot; the building's
+    **  own line is row 1.5), so the shut door covers it and the rising door
+    **  reveals it. +192 leptons = row 2.25, past any mouth seat.
     */
-    if (object->What_Am_I() == RTTI_BUILDING
-        && strcmp(new_object.AssetName, "TSWEAP") == 0) {
+    if (shape_file_name != NULL && (strcmp(shape_file_name, "TSWEAPNF") == 0 || strcmp(shape_file_name, "TSWEAPNU") == 0)) {
         new_object.SortOrder =
-            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, -384)) >> 3);
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 192)) >> 3);
+    }
+    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAPDR") == 0) {
+        new_object.SortOrder =
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 200)) >> 3);
+    }
+    /*
+    **  The base (the opening's interior) is the back wall: it sorts at the
+    **  plot's north edge so a vehicle seated anywhere in the bay draws over it.
+    */
+    if (object->What_Am_I() == RTTI_BUILDING && strcmp(new_object.AssetName, "TSWEAP") == 0) {
+        new_object.SortOrder =
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, (LEPTON)(short)-384)) >> 3);
     }
 
     /*
@@ -5543,6 +6826,13 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.CenterCoordX = Coord_X(object->Center_Coord());
         new_object.CenterCoordY = Coord_Y(object->Center_Coord());
         /*
+        **  An airborne jumpjet is drawn lifted by its height, and its exported centre rises
+        **  with it so the health bar sits over the body rather than over the shadow.
+        */
+        if (object->What_Am_I() == RTTI_INFANTRY && ((InfantryClass const*)object)->Is_Airborne_Jumpjet()) {
+            new_object.CenterCoordY -= object->Height;
+        }
+        /*
         **  TF: flat TS buildings (side-on iso art, ~0.7 h/w) sit in the SOUTH
         **  of their square plot, so a plot-centred selection box rides over
         **  empty ground to the north. Bias the exported centre south onto the
@@ -5551,6 +6841,14 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         **  256/24 leptons. Conyard art 48cl in the 72cl plot -> +12cl; WF
         **  51cl tucked 3 into the slab -> +14cl; barracks 32cl in 48 -> +8cl.
         */
+        if (object->What_Am_I() == RTTI_BULLET
+            && ((BulletTypeClass const&)object->Class_Of()).Type == BULLET_TSHUNTER) {
+            // The Hunter Seeker droid renders from its DimensionX/Y box (the
+            // bullet default 10x10 draws it tiny). Size it up.
+            dimx = 46;
+            dimy = 46;
+        }
+
         if (object->What_Am_I() == RTTI_BUILDING) {
             switch (((BuildingTypeClass const&)object->Class_Of()).Type) {
             // SELECTION-BOX CONTRACT (proven over four probe rounds,
@@ -5571,8 +6869,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 // canvas px = 96x49 classic. Position is launcher-owned on
                 // BOTH axes (six falsified probes; CenterCoordX was the
                 // sixth) -- size is the only dial.
-                dimx = 96;
-                dimy = 49;
+                dimx = 80; // 08-28 rebuild: body 76x56 classic on the 5x3 plot (position is launcher-owned)
+                dimy = 58;
                 break;
             case STRUCT_TSPILE:
                 dimy = 38; // 2x2 box, approved 2026-08-13
@@ -6383,18 +7681,7 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
         **	stays in step.
         */
         if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_1_AT_POSITION) {
-            int deployed = 0;
-            for (int index = 0; index < CurrentObject.Count(); index++) {
-                ObjectClass* object = CurrentObject[index];
-                if (object == NULL || !object->IsActive) {
-                    continue;
-                }
-                if (object->What_Action(object) != ACTION_SELF) {
-                    continue;
-                }
-                object->Active_Click_With(ACTION_SELF, object);
-                deployed++;
-            }
+            int deployed = TF_Self_Action_Selected();
 
 #if TF_DEV_BUILD // TF_DIAG -- first-test instrumentation for the mod hotkey chain.
             {
@@ -6545,6 +7832,9 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Sidebar_Request(Sidebar
         return;
     }
 
+    TF_Sidebar_Log("sidebar request type=%d buildable_type=%d buildable_id=%d cell=%d,%d",
+                   (int)request_type, buildable_type, buildable_id, (int)cell_x, (int)cell_y);
+
     switch (request_type) {
 
     // Changing right-click support for first put building on hold, and then subsequenct right-clicks to decrement that
@@ -6603,6 +7893,9 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_SuperWeapon_Request(Sup
     if (!DLLExportClass::Set_Player_Context(player_id)) {
         return;
     }
+
+    TF_Sidebar_Log("superweapon request type=%d buildable_type=%d buildable_id=%d at %d,%d",
+                   (int)request_type, buildable_type, buildable_id, x1, y1);
 
     switch (request_type) {
     case SUPERWEAPON_REQUEST_PLACE_SUPER_WEAPON:
@@ -6669,6 +7962,7 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_ControlGroup_Request(Co
 #define TF_FACTION_SOVIET 0x2
 #define TF_FACTION_GDI    0x4
 #define TF_FACTION_NOD    0x8
+#define TF_FACTION_TSGDI  0x10 /* the TS tree; badge digit 'G' */
 
 static int TF_Faction_Mask_From_Ownable(int ownable)
 {
@@ -6684,6 +7978,35 @@ static int TF_Faction_Mask_From_Ownable(int ownable)
     }
     if (ownable & HOUSEF_NOD) {
         mask |= TF_FACTION_NOD;
+    }
+    return mask;
+}
+
+/*
+** The faction an entry is badged as. TS-tree types are Owner= every side (the
+** yard is the gate), so their Ownable says nothing about faction; they are the
+** TS GDI faction, one emblem, and the badge rule is otherwise the same as for
+** the four RA/TD factions (Luke, 2026-08-30).
+*/
+static int TF_Entry_Faction_Mask(TechnoTypeClass const* type)
+{
+    if (type != NULL && TF_Is_TS_Tree_Type(type)) {
+        return TF_FACTION_TSGDI;
+    }
+    int mask = TF_Faction_Mask_From_Ownable(type != NULL ? type->Get_Ownable() : 0);
+    /*
+    ** The badge says which of the player's CONSTRUCTION YARDS can build the entry,
+    ** not which faction the player picked. A TS yard builds sandbags and the
+    ** concrete wall (the TS tree ships no wall of its own), so those two carry the
+    ** TS emblem alongside whichever other yards can build them -- exactly as
+    ** HouseClass::Can_Build lets a TS yard unlock them. Their Owner= lists never
+    ** mention the TS tree, so the bit has to be added here.
+    */
+    if (type != NULL && type->What_Am_I() == RTTI_BUILDINGTYPE) {
+        StructType st = ((BuildingTypeClass const*)type)->Type;
+        if (st == STRUCT_SANDBAG_WALL || st == STRUCT_BRICK_WALL) {
+            mask |= TF_FACTION_TSGDI;
+        }
     }
     return mask;
 }
@@ -6720,23 +8043,23 @@ static void TF_Dump_Faction_Masks(void)
 
     for (int i = 0; i < BuildingTypes.Count(); i++) {
         BuildingTypeClass const* t = BuildingTypes.Ptr(i);
-        fprintf(fp, "%s\t%d\n", t->IniName, TF_Faction_Mask_From_Ownable(t->Get_Ownable()));
+        fprintf(fp, "%s\t%d\n", t->IniName, TF_Entry_Faction_Mask(t));
     }
     for (int i = 0; i < UnitTypes.Count(); i++) {
         UnitTypeClass const* t = UnitTypes.Ptr(i);
-        fprintf(fp, "%s\t%d\n", t->IniName, TF_Faction_Mask_From_Ownable(t->Get_Ownable()));
+        fprintf(fp, "%s\t%d\n", t->IniName, TF_Entry_Faction_Mask(t));
     }
     for (int i = 0; i < InfantryTypes.Count(); i++) {
         InfantryTypeClass const* t = InfantryTypes.Ptr(i);
-        fprintf(fp, "%s\t%d\n", t->IniName, TF_Faction_Mask_From_Ownable(t->Get_Ownable()));
+        fprintf(fp, "%s\t%d\n", t->IniName, TF_Entry_Faction_Mask(t));
     }
     for (int i = 0; i < AircraftTypes.Count(); i++) {
         AircraftTypeClass const* t = AircraftTypes.Ptr(i);
-        fprintf(fp, "%s\t%d\n", t->IniName, TF_Faction_Mask_From_Ownable(t->Get_Ownable()));
+        fprintf(fp, "%s\t%d\n", t->IniName, TF_Entry_Faction_Mask(t));
     }
     for (int i = 0; i < VesselTypes.Count(); i++) {
         VesselTypeClass const* t = VesselTypes.Ptr(i);
-        fprintf(fp, "%s\t%d\n", t->IniName, TF_Faction_Mask_From_Ownable(t->Get_Ownable()));
+        fprintf(fp, "%s\t%d\n", t->IniName, TF_Entry_Faction_Mask(t));
     }
 
     fclose(fp);
@@ -6773,18 +8096,16 @@ static TF_ProducerMasks TF_Compute_Producer_Masks(HouseClass const* house)
             continue;
         }
         /*
-        ** TS-tree factories are faction-agnostic (Owner= all four sides), so
-        ** counting their Ownable here would claim the player produces from
-        ** every faction at once -- activating badges with combinations no art
-        ** was baked for (the <Missing> TSPOWR_F tooltip). They contribute
-        ** nothing to the faction-producer picture.
+        ** TS-tree factories are Owner= all four sides, so their Ownable would
+        ** claim the player produces from every faction at once. They are the
+        ** TS GDI faction: the TS yard, barracks, war factory, helipad and bay
+        ** each contribute that one bit to their category.
         */
-        if (building->Class->Type >= STRUCT_TS_TREE_FIRST && building->Class->Type <= STRUCT_TS_TREE_LAST) {
-            continue;
-        }
         RTTIType makes = building->Class->ToBuild;
         if (makes > RTTI_NONE && makes < RTTI_COUNT) {
-            masks.by_rtti[makes] |= TF_Faction_Mask_From_Ownable(building->Class->Get_Ownable());
+            bool const ts = (building->Class->Type == STRUCT_TSFACT
+                             || (building->Class->Type >= STRUCT_TS_TREE_FIRST && building->Class->Type <= STRUCT_TS_TREE_LAST));
+            masks.by_rtti[makes] |= ts ? TF_FACTION_TSGDI : TF_Faction_Mask_From_Ownable(building->Class->Get_Ownable());
         }
     }
     return masks;
@@ -6807,7 +8128,7 @@ static void TF_Apply_Cameo_Badge(char* asset_name, int entry_owner_mask, int hel
 
     int badge = 0;
     int held_count = 0;
-    for (int bit = 0x1; bit <= 0x8; bit <<= 1) {
+    for (int bit = 0x1; bit <= TF_FACTION_TSGDI; bit <<= 1) {
         if (held_mask & bit) {
             held_count++;
         }
@@ -6817,10 +8138,10 @@ static void TF_Apply_Cameo_Badge(char* asset_name, int entry_owner_mask, int hel
     }
 
     size_t length = strnlen(asset_name, CNC_OBJECT_ASSET_NAME_LENGTH);
-    /* Need room for '_' + one hex digit + NUL. */
+    /* Need room for '_' + one base-32 digit + NUL ('G' = the TS bit alone). */
     if (length + 3 <= CNC_OBJECT_ASSET_NAME_LENGTH) {
         asset_name[length] = '_';
-        asset_name[length + 1] = "0123456789ABCDEF"[badge & 0xF];
+        asset_name[length + 1] = "0123456789ABCDEFGHIJKLMNOPQRSTUV"[badge & 0x1F];
         asset_name[length + 2] = '\0';
     }
 }
@@ -6845,6 +8166,10 @@ static int TF_Special_Display_Mask(SpecialWeaponType id, HouseClass* house)
         return (TF_FACTION_SOVIET);
     case SPC_TD_ION_CANNON:
         return (TF_FACTION_GDI);
+    case SPC_TS_ION_CANNON:
+    case SPC_TS_DROPPODS:
+    case SPC_TS_HUNTSEEK:
+        return (TF_FACTION_TSGDI);
     case SPC_TD_NUKE:
     case SPC_TD_PARA_INFANTRY:
     case SPC_TD_SPY_MISSION:
@@ -6894,7 +8219,7 @@ static void TF_Apply_Special_Badge(char* asset_name, SpecialWeaponType id, House
         }
     }
     int held_count = 0;
-    for (int bit = 0x1; bit <= 0x8; bit <<= 1) {
+    for (int bit = 0x1; bit <= TF_FACTION_TSGDI; bit <<= 1) {
         if (held & bit) {
             held_count++;
         }
@@ -6910,7 +8235,12 @@ static void TF_Apply_Special_Badge(char* asset_name, SpecialWeaponType id, House
     char rest[CNC_OBJECT_ASSET_NAME_LENGTH];
     strncpy(rest, asset_name + 3, sizeof(rest) - 1);
     rest[sizeof(rest) - 1] = '\0';
-    snprintf(asset_name, CNC_OBJECT_ASSET_NAME_LENGTH, "S%X_%s", badge & 0xF, rest);
+    /*
+    **	Base-32 badge digit, matching the buildable badge (TS alone = 'G');
+    **	the old "%X" truncated the 0x10 TS bit to "S0_", a dead key.
+    */
+    snprintf(asset_name, CNC_OBJECT_ASSET_NAME_LENGTH, "S%c_%s",
+             "0123456789ABCDEFGHIJKLMNOPQRSTUV"[badge & 0x1F], rest);
 }
 
 /**************************************************************************************************
@@ -7153,18 +8483,8 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     int held = (category > RTTI_NONE && category < RTTI_COUNT)
                                    ? producer_masks.by_rtti[category]
                                    : 0;
-                    /*
-                    ** TS-tree entries are faction-agnostic (the TS yard is the
-                    ** gate, not a faction), so a faction badge is meaningless
-                    ** -- and their widened Owner mask would demand badge
-                    ** combinations no art was baked for (the blank-cameo bug).
-                    ** Zero held forces the pristine _0 variant.
-                    */
-                    if (TF_Is_TS_Tree_Type((TechnoTypeClass const*)tech)) {
-                        held = 0;
-                    }
                     TF_Apply_Cameo_Badge(sidebar_entry.AssetName,
-                                         TF_Faction_Mask_From_Ownable(tech->Get_Ownable()), held);
+                                         TF_Entry_Faction_Mask((TechnoTypeClass const*)tech), held);
                 }
 
                 if (super_weapon != nullptr) {
@@ -7221,6 +8541,15 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     */
                     if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                         && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(PlayerPtr)) {
+                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                 "%s_LK", tech->IniName);
+                    }
+
+                    /*
+                    ** A living Ghost Stalker locks its cameo the same way (one per house).
+                    */
+                    if (tech != NULL && sidebar_entry.Type == INFANTRY_TYPE
+                        && ((InfantryTypeClass const*)tech)->Type == INFANTRY_TSGHOST && TF_Ghost_At_Cap(PlayerPtr)) {
                         snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
                                  "%s_LK", tech->IniName);
                     }
@@ -7383,12 +8712,8 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         int held = (category > RTTI_NONE && category < RTTI_COUNT)
                                        ? producer_masks.by_rtti[category]
                                        : 0;
-                        /* TS-tree entries never badge (see the solo path). */
-                        if (TF_Is_TS_Tree_Type((TechnoTypeClass const*)tech)) {
-                            held = 0;
-                        }
                         TF_Apply_Cameo_Badge(sidebar_entry.AssetName,
-                                             TF_Faction_Mask_From_Ownable(tech->Get_Ownable()), held);
+                                             TF_Entry_Faction_Mask((TechnoTypeClass const*)tech), held);
                     }
 
                     if (super_weapon != nullptr) {
@@ -7437,6 +8762,15 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         */
                         if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
                             && ((UnitTypeClass const*)tech)->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(PlayerPtr)) {
+                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                     "%s_LK", tech->IniName);
+                        }
+
+                        /*
+                        ** Ghost Stalker cap LOCKED cameo -- matches the single-player path above.
+                        */
+                        if (tech != NULL && sidebar_entry.Type == INFANTRY_TYPE
+                            && ((InfantryTypeClass const*)tech)->Type == INFANTRY_TSGHOST && TF_Ghost_At_Cap(PlayerPtr)) {
                             snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
                                      "%s_LK", tech->IniName);
                         }
@@ -7625,6 +8959,38 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
             strncpy(weapon_name, "SW_IonCannon", 16);
         }
         break;
+    case SPC_TS_ION_CANNON:
+        // Tiberian Factions mod — the uplink-granted TS Ion Cannon: same
+        // launcher-side SW_ION_CANNON plumbing (cursor, cost handling) as
+        // the TD cannon, but AssetName "SW_TSIon" resolves the TS satellite
+        // cameo entry (RA_SW_TSION in RABUILDABLES.XML).
+        dll_weapon_type = SW_ION_CANNON;
+        if (weapon_name != NULL) {
+            strncpy(weapon_name, "SW_TSIon", 16);
+        }
+        break;
+    case SPC_TS_DROPPODS:
+        // Tiberian Factions mod — TS Drop Pod reinforcements: paratroop-class
+        // launcher plumbing (SW_PARA_INFANTRY is cost-suppression whitelisted),
+        // AssetName "SW_TSPods" resolves the TS PODSICON cameo entry.
+        dll_weapon_type = SW_PARA_INFANTRY;
+        if (weapon_name != NULL) {
+            strncpy(weapon_name, "SW_TSPods", 16);
+        }
+        break;
+    case SPC_TS_HUNTSEEK:
+        // Tiberian Factions mod -- TS Hunter Seeker. SW_SONAR_PULSE gives the launcher plumbing
+        // (a real super slot in the tab). The special launches itself the tick it is charged
+        // (HouseClass::Super_Weapon_Handler), so the launcher's targeting is never used and
+        // the cameo is a countdown. AssetName "SW_TSHunt" resolves the Hunter Seeker cameo (RA_SW_TSHUNT /
+        // BuildIcon_SW_TSHUNT in RABUILDABLES.XML) -- distinct from the real Sonar Pulse, which
+        // keeps its own "SW_SonarPulse" cameo. SonarPulse's ping is DLL-side (keyed on
+        // SPC_SONAR_PULSE), so routing here does not trigger it.
+        dll_weapon_type = SW_SONAR_PULSE;
+        if (weapon_name != NULL) {
+            strncpy(weapon_name, "SW_TSHunt", 16);
+        }
+        break;
     case SPC_TD_NUKE:
         // Tiberian Factions mod — route Nod Nuclear Strike to SW_NUKE.
         // SW_NUKE is on the RA launcher's no-$0 cost-suppression whitelist
@@ -7685,6 +9051,9 @@ void DLLExportClass::Fill_Sidebar_Entry_From_Special_Weapon(CNCSidebarEntryStruc
     case SPC_TD_NUKE:
     case SPC_TD_PARA_INFANTRY:
     case SPC_TD_SPY_MISSION:
+    case SPC_TS_ION_CANNON:
+    case SPC_TS_DROPPODS:
+    case SPC_TS_HUNTSEEK:
         Convert_Special_Weapon_Type(weapon_type, sidebar_entry_out.SuperWeaponType, sidebar_entry_out.AssetName);
         break;
     default:
@@ -7875,6 +9244,19 @@ bool DLLExportClass::Get_Placement_State(uint64 player_id, unsigned char* buffer
             CellClass* cellptr = &Map[cell];
             bool clear = cellptr->Is_Clear_To_Build(PlacementType[CurrentLocalPlayerIndex]->Speed);
 
+            /*
+            **	Addon plugs (TS PowersUpBuilding) place ONTO a host building, so the
+            **	usual clear-ground test is inverted: legal exactly on the cells of a
+            **	host the player can still upgrade, illegal everywhere else.
+            */
+            if (PlacementType[CurrentLocalPlayerIndex]->PowersUpBuilding != STRUCT_NONE) {
+                BuildingClass* host = cellptr->Cell_Building();
+                bool upgradable =
+                    (host != NULL && host->Can_Upgrade(PlacementType[CurrentLocalPlayerIndex], PlayerPtr));
+                pass = upgradable;
+                clear = upgradable;
+            }
+
             CNCPlacementCellInfoStruct& placement_cell_info = placement_info->CellInfo[index++];
             placement_cell_info.PassesProximityCheck = pass;
             placement_cell_info.GenerallyClear = clear;
@@ -7896,11 +9278,21 @@ bool DLLExportClass::Passes_Proximity_Check(CELL cell_in,
     **	cells to these are of friendly persuasion, then consider the proximity check to
     **	have been a success.
     */
+    /*
+    **	cell_in is the ghost's top-left. A tall TS building's placement list starts
+    **	with headroom rows above the ghost; only the ghost's own rows count, at their
+    **	true cells, so reach is measured from the ground the player sees.
+    */
+    int headroom = placement_type->Placement_Ghost_Rows_Above() * MAP_CELL_W;
     short const* occupy_list = placement_type->Occupy_List(true);
 
     while (*occupy_list != REFRESH_EOL) {
 
-        CELL center_cell = cell_in + *occupy_list++;
+        int offset = *occupy_list++;
+        if (offset < headroom) {
+            continue;
+        }
+        CELL center_cell = cell_in + offset - headroom;
 
         if (!Map.In_Radar(center_cell)) {
             return false;
@@ -9445,7 +10837,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             int off_x, off_y; // apron origin relative to the building's origin cell
         } _aprons[] = {
             // (0,0): both grids sit on their building's plot origin.
-            {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 0, 0},
+            {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 1, 0}, // 4x3 pad grid from col 1 of the 5x3 plot
             {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0},
         };
         for (int a = 0; a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {
@@ -9721,8 +11113,13 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             // pips tiberium GREEN with no art override and leaves real gems (other
             // maps' placed GEMS types) untouched. Verified from the RADARMAP
             // tileset + pip TGA colors, 2026-06-09.
+            // TSWALL likewise presents as BRIK for the launcher's wall/sell semantics
+            // (IsSellable below keys on the vanilla wall Type range) while its own
+            // AssetName picks the TSWALL tileset.
             overlay_entry.Type = (cell_ptr->Overlay == OVERLAY_TIB01)
                                      ? (short)OVERLAY_GEMS3
+                                     : (cell_ptr->Overlay == OVERLAY_TSWALL)
+                                     ? (short)OVERLAY_BRICK_WALL
                                      : (short)cell_ptr->Overlay;
             overlay_entry.Owner = (char)cell_ptr->Owner;
             overlay_entry.DrawFlags =
@@ -10936,6 +12333,37 @@ void DLLExportClass::Team_Units_Formation_Toggle_On(uint64 player_id)
     }
 }
 
+
+/*
+**	Tiberian Factions -- fire a house's credit tick AT THAT HOUSE.
+**
+**	The stock tick events are data-silenced and the DLL fires the era-correct one from the
+**	roll itself, which works for whoever is at the keyboard. In a LAN game that is only ever
+**	the host: a joiner has no game DLL mapped at all (reference-lan-mp-host-only-sim), so it
+**	can run nothing of ours. The host does simulate the joiner's house, though, and the sound
+**	callback carries a per-player id -- EA's own beacon addresses allies exactly this way
+**	(see CNC_Handle_Beacon_Request below) -- so the tick can be sent to the player whose
+**	credits actually moved rather than to whoever is local.
+**
+**	Whether the launcher forwards a remotely-addressed sound to that player's shell is
+**	launcher-internal and untested; if it does not, the host hears the other players' ticks
+**	and this needs the data-side flank instead (docs/building-sound-routing.md).
+*/
+void TF_Fire_Credit_Tick(HouseClass* house, bool is_up)
+{
+    if (house == NULL) {
+        return;
+    }
+    VocType voc;
+    if (Is_TS_GDI(house->ActLike)) {
+        voc = is_up ? VOC_TS_MONEY_UP : VOC_TS_MONEY_DOWN;
+    } else if (house->ActLike == HOUSE_GOOD || house->ActLike == HOUSE_BAD) {
+        voc = is_up ? VOC_TD_MONEY_UP : VOC_TD_MONEY_DOWN;
+    } else {
+        voc = is_up ? VOC_DLL_MONEY_UP : VOC_DLL_MONEY_DOWN;
+    }
+    DLLExportClass::On_Sound_Effect(house, (int)voc, "", 1, 0);
+}
 /**************************************************************************************************
  * CNC_Handle_Debug_Request -- Process a debug input request
  *

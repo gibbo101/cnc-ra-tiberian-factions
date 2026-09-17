@@ -581,6 +581,217 @@ static InfantryTypeClass const TdE1(INFANTRY_TDE1, // Infantry type number.
                                     0              // pointer to override remap table
 );
 
+/*
+**	TS Light Infantry. TS ART.INI [E1Sequence] as {frame, count, frames per facing}, on
+**	RA's DoType order. TS draws its infantry facings anticlockwise from north, the order
+**	HumanShape indexes, so the facing blocks need no reorder. TS has no gestures or
+**	salutes (the standing frame stands in) and only two deaths: Die1 for gunfire and fire,
+**	Die2 for the explosion and grenade deaths.
+*/
+static DoInfoStruct TsE1DoControls[DO_COUNT] = {
+    {0, 1, 1},     // DO_STAND_READY      Ready
+    {0, 1, 1},     // DO_STAND_GUARD      Guard
+    {86, 1, 6},    // DO_PRONE            Prone
+    {8, 6, 6},     // DO_WALK             Walk
+    {164, 6, 6},   // DO_FIRE_WEAPON      FireUp
+    {260, 2, 2},   // DO_LIE_DOWN         Down
+    {86, 6, 6},    // DO_CRAWL            Crawl
+    {276, 2, 2},   // DO_GET_UP           Up
+    {212, 6, 6},   // DO_FIRE_PRONE       FireProne
+    {56, 15, 0},   // DO_IDLE1            Idle1
+    {71, 14, 0},   // DO_IDLE2            Idle2
+    {134, 15, 0},  // DO_GUN_DEATH        Die1
+    {149, 15, 0},  // DO_EXPLOSION_DEATH  Die2
+    {149, 15, 0},  // DO_EXPLOSION2_DEATH Die2
+    {149, 15, 0},  // DO_GRENADE_DEATH    Die2
+    {134, 15, 0},  // DO_FIRE_DEATH       Die1
+    {0, 1, 1},     // DO_GESTURE1
+    {0, 1, 1},     // DO_SALUTE1
+    {0, 1, 1},     // DO_GESTURE2
+    {0, 1, 1},     // DO_SALUTE2
+    {0, 0, 0},     // DO_DOG_MAUL
+};
+static InfantryTypeClass const TsE1(INFANTRY_TSE1, // Infantry type number.
+                                    TXT_E1,        // Translate name number (display set via rules.ini Name=).
+                                    "TSE1",        // INI name for infantry.
+                                    0x0035,        // Vertical offset.
+                                    0x0010,        // Primary weapon offset along centerline.
+                                    false,         // Is this a female type?
+                                    true,          // Has crawling animation frames? (TS Crawls=yes)
+                                    false,         // Is this a civilian?
+                                    false,         // Does this unit use the override remap table?
+                                    false,         // Always use the given name for the infantry?
+                                    false,         // Theater specific graphic image?
+                                    PIP_FULL,      // Transport pip shape/color to use.
+                                    TsE1DoControls,
+                                    TsE1DoControls,
+                                    2,             // Frame of projectile launch (TS FireUp=2).
+                                    2,             // Frame of projectile launch while prone.
+                                    0              // pointer to override remap table
+);
+
+/*
+**	TS Disc Thrower (INFANTRY_TSE2). TS art.ini [E2] shares E1Sequence, so it uses the
+**	Light Infantry's table. The disc leaves the hand on FireUp=6, the stage after the six
+**	throw frames: Firing_AI sees that stage before Doing_AI ends the action.
+*/
+static InfantryTypeClass const TsE2(INFANTRY_TSE2, // Infantry type number.
+                                    TXT_E2,        // Translate name number (display set via rules.ini Name=).
+                                    "TSE2",        // INI name for infantry.
+                                    0x0035,        // Vertical offset.
+                                    0x0010,        // Primary weapon offset along centerline.
+                                    false,         // Is this a female type?
+                                    true,          // Has crawling animation frames? (TS Crawls=yes)
+                                    false,         // Is this a civilian?
+                                    false,         // Does this unit use the override remap table?
+                                    false,         // Always use the given name for the infantry?
+                                    false,         // Theater specific graphic image?
+                                    PIP_FULL,      // Transport pip shape/color to use.
+                                    TsE1DoControls,
+                                    TsE1DoControls,
+                                    6,             // Frame of projectile launch (TS FireUp=6).
+                                    6,             // Frame of projectile launch while prone.
+                                    0              // pointer to override remap table
+);
+
+/*
+**	TS Engineer (INFANTRY_TSENGINEER). TS art.ini [ENGINEER] shares E1Sequence; unarmed.
+*/
+static InfantryTypeClass const TsEngineer(INFANTRY_TSENGINEER, // Infantry type number.
+                                          TXT_E6,              // Translate name number (display set via rules.ini Name=).
+                                          "TSENGINEER",        // INI name for infantry.
+                                          0x0035,              // Vertical offset.
+                                          0x0010,              // Primary weapon offset along centerline.
+                                          false,               // Is this a female type?
+                                          true,                // Has crawling animation frames? (TS Crawls=yes)
+                                          false,               // Is this a civilian?
+                                          false,               // Does this unit use the override remap table?
+                                          false,               // Always use the given name for the infantry?
+                                          false,               // Theater specific graphic image?
+                                          PIP_ENGINEER,        // Transport pip shape/color to use.
+                                          TsE1DoControls,
+                                          TsE1DoControls,
+                                          2,                   // Frame of projectile launch (TS FireUp=2; unarmed).
+                                          2,                   // Frame of projectile launch while prone.
+                                          0                    // pointer to override remap table
+);
+
+/*
+**	TS Medic (INFANTRY_TSMEDIC), TS art.ini [MedicSequence]: E1Sequence's layout plus a
+**	15-frame heal at 292 drawn for every facing, used standing and prone alike.
+*/
+static DoInfoStruct TsMedicDoControls[DO_COUNT] = {
+    {0, 1, 1},     // DO_STAND_READY      Ready
+    {0, 1, 1},     // DO_STAND_GUARD      Guard
+    {86, 1, 6},    // DO_PRONE            Prone
+    {8, 6, 6},     // DO_WALK             Walk
+    {292, 15, 0},  // DO_FIRE_WEAPON      FireUp
+    {260, 2, 2},   // DO_LIE_DOWN         Down
+    {86, 6, 6},    // DO_CRAWL            Crawl
+    {276, 2, 2},   // DO_GET_UP           Up
+    {292, 15, 0},  // DO_FIRE_PRONE       FireProne
+    {56, 15, 0},   // DO_IDLE1            Idle1
+    {71, 14, 0},   // DO_IDLE2            Idle2
+    {134, 15, 0},  // DO_GUN_DEATH        Die1
+    {149, 15, 0},  // DO_EXPLOSION_DEATH  Die2
+    {149, 15, 0},  // DO_EXPLOSION2_DEATH Die2
+    {149, 15, 0},  // DO_GRENADE_DEATH    Die2
+    {134, 15, 0},  // DO_FIRE_DEATH       Die1
+    {0, 1, 1},     // DO_GESTURE1
+    {0, 1, 1},     // DO_SALUTE1
+    {0, 1, 1},     // DO_GESTURE2
+    {0, 1, 1},     // DO_SALUTE2
+    {0, 0, 0},     // DO_DOG_MAUL
+};
+static InfantryTypeClass const TsMedic(INFANTRY_TSMEDIC, // Infantry type number.
+                                       TXT_MEDIC,        // Translate name number (display set via rules.ini Name=).
+                                       "TSMEDIC",        // INI name for infantry.
+                                       0x0035,           // Vertical offset.
+                                       0x0010,           // Primary weapon offset along centerline.
+                                       false,            // Is this a female type?
+                                       true,             // Has crawling animation frames? (TS Crawls=yes)
+                                       false,            // Is this a civilian?
+                                       false,            // Does this unit use the override remap table?
+                                       false,            // Always use the given name for the infantry?
+                                       false,            // Theater specific graphic image?
+                                       PIP_ENGINEER,     // Transport pip shape/color to use (as RA's medic).
+                                       TsMedicDoControls,
+                                       TsMedicDoControls,
+                                       2,                // Frame of projectile launch (TS FireUp=2).
+                                       2,                // Frame of projectile launch while prone.
+                                       0                 // pointer to override remap table
+);
+
+/*
+**	TS Ghost Stalker (INFANTRY_TSGHOST). TS art.ini [GHOST] shares E1Sequence.
+*/
+static InfantryTypeClass const TsGhost(INFANTRY_TSGHOST, // Infantry type number.
+                                       TXT_E7,           // Translate name number (display set via rules.ini Name=).
+                                       "TSGHOST",        // INI name for infantry.
+                                       0x0035,           // Vertical offset.
+                                       0x0010,           // Primary weapon offset along centerline.
+                                       false,            // Is this a female type?
+                                       true,             // Has crawling animation frames? (TS Crawls=yes)
+                                       false,            // Is this a civilian?
+                                       false,            // Does this unit use the override remap table?
+                                       false,            // Always use the given name for the infantry?
+                                       false,            // Theater specific graphic image?
+                                       PIP_COMMANDO,     // Transport pip shape/color to use.
+                                       TsE1DoControls,
+                                       TsE1DoControls,
+                                       2,                // Frame of projectile launch (TS FireUp=2).
+                                       2,                // Frame of projectile launch while prone.
+                                       0                 // pointer to override remap table
+);
+
+/*
+**	TS Jumpjet Infantry (INFANTRY_TSJUMPJET), TS art.ini [JUMPJET] JumpjetSequence. The ground
+**	poses follow E1Sequence's layout with no prone set (Prone, Down and Up are the stand, Crawl
+**	the walk). Shape_Number draws the flight poses (Fly 292, Hover 340, FireFly 388) while it is
+**	airborne.
+*/
+static DoInfoStruct TsJumpjetDoControls[DO_COUNT] = {
+    {0, 1, 1},     // DO_STAND_READY      Ready
+    {0, 1, 1},     // DO_STAND_GUARD      Guard
+    {0, 1, 1},     // DO_PRONE            Prone
+    {8, 6, 6},     // DO_WALK             Walk
+    {164, 6, 6},   // DO_FIRE_WEAPON      FireUp
+    {0, 1, 1},     // DO_LIE_DOWN         Down
+    {8, 6, 6},     // DO_CRAWL            Crawl
+    {0, 1, 1},     // DO_GET_UP           Up
+    {164, 6, 6},   // DO_FIRE_PRONE       FireProne
+    {56, 15, 0},   // DO_IDLE1            Idle1
+    {71, 15, 0},   // DO_IDLE2            Idle2
+    {134, 15, 0},  // DO_GUN_DEATH        Die1
+    {149, 15, 0},  // DO_EXPLOSION_DEATH  Die2
+    {149, 15, 0},  // DO_EXPLOSION2_DEATH Die2
+    {149, 15, 0},  // DO_GRENADE_DEATH    Die2
+    {134, 15, 0},  // DO_FIRE_DEATH       Die1
+    {0, 1, 1},     // DO_GESTURE1
+    {0, 1, 1},     // DO_SALUTE1
+    {0, 1, 1},     // DO_GESTURE2
+    {0, 1, 1},     // DO_SALUTE2
+    {0, 0, 0},     // DO_DOG_MAUL
+};
+static InfantryTypeClass const TsJumpjet(INFANTRY_TSJUMPJET, // Infantry type number.
+                                         TXT_E1,             // Translate name number (display set via rules.ini Name=).
+                                         "TSJUMPJET",        // INI name for infantry.
+                                         0x0035,             // Vertical offset.
+                                         0x0010,             // Primary weapon offset along centerline.
+                                         false,              // Is this a female type?
+                                         false,              // Has crawling animation frames? (no prone set)
+                                         false,              // Is this a civilian?
+                                         false,              // Does this unit use the override remap table?
+                                         false,              // Always use the given name for the infantry?
+                                         false,              // Theater specific graphic image?
+                                         PIP_FULL,           // Transport pip shape/color to use.
+                                         TsJumpjetDoControls,
+                                         TsJumpjetDoControls,
+                                         2,                  // Frame of projectile launch (TS FireUp=2).
+                                         2,                  // Frame of projectile launch while prone.
+                                         0                   // pointer to override remap table
+);
+
 // Grenadiers
 static InfantryTypeClass const E2(INFANTRY_E2, // Infantry type number.
                                   TXT_E2,      // Translate name number for infantry type.
@@ -1380,6 +1591,7 @@ InfantryTypeClass::InfantryTypeClass(InfantryType type,
     , IsCrawling(is_crawling)
     , IsCapture(false)
     , IsFraidyCat(false)
+    , IsFearless(false)
     , IsCivilian(is_civilian)
     , IsBomber(false)
     , IsDog(false)
@@ -1502,6 +1714,12 @@ void InfantryTypeClass::Init_Heap(void)
     new InfantryTypeClass(TdE5);
     new InfantryTypeClass(TdE6);
     new InfantryTypeClass(TdRmbo);
+    new InfantryTypeClass(TsE1);
+    new InfantryTypeClass(TsE2);
+    new InfantryTypeClass(TsEngineer);
+    new InfantryTypeClass(TsMedic);
+    new InfantryTypeClass(TsGhost);
+    new InfantryTypeClass(TsJumpjet);
 }
 
 /***********************************************************************************************
@@ -1750,6 +1968,59 @@ void InfantryTypeClass::One_Time(void)
         ((void const*&)tde1.CameoData) = As_Reference(INFANTRY_E1).CameoData;
     }
 
+    InfantryTypeClass& tse1 = As_Reference(INFANTRY_TSE1);  // TS Light Infantry -- donor E1 (rifleman-sized render box).
+    if (tse1.ImageData == NULL) {
+        ((void const*&)tse1.ImageData) = As_Reference(INFANTRY_E1).ImageData;
+    }
+    if (tse1.CameoData == NULL) {
+        ((void const*&)tse1.CameoData) = As_Reference(INFANTRY_E1).CameoData;
+    }
+
+    InfantryTypeClass& tse2 = As_Reference(INFANTRY_TSE2);  // TS Disc Thrower -- donor E1 (packed on the E1 canvas like TSE1).
+    if (tse2.ImageData == NULL) {
+        ((void const*&)tse2.ImageData) = As_Reference(INFANTRY_E1).ImageData;
+    }
+    if (tse2.CameoData == NULL) {
+        ((void const*&)tse2.CameoData) = As_Reference(INFANTRY_E1).CameoData;
+    }
+
+    InfantryTypeClass& tseng = As_Reference(INFANTRY_TSENGINEER);  // TS Engineer -- donor E1 (packed on the E1 canvas like TSE1).
+    if (tseng.ImageData == NULL) {
+        ((void const*&)tseng.ImageData) = As_Reference(INFANTRY_E1).ImageData;
+    }
+    if (tseng.CameoData == NULL) {
+        ((void const*&)tseng.CameoData) = As_Reference(INFANTRY_E1).CameoData;
+    }
+
+    InfantryTypeClass& tsmedic = As_Reference(INFANTRY_TSMEDIC);  // TS Medic -- donor E1 (packed on the E1 canvas like TSE1).
+    if (tsmedic.ImageData == NULL) {
+        ((void const*&)tsmedic.ImageData) = As_Reference(INFANTRY_E1).ImageData;
+    }
+    if (tsmedic.CameoData == NULL) {
+        ((void const*&)tsmedic.CameoData) = As_Reference(INFANTRY_E1).CameoData;
+    }
+
+    InfantryTypeClass& tsghost = As_Reference(INFANTRY_TSGHOST);  // TS Ghost Stalker -- donor E1 (packed on the E1 canvas like TSE1).
+    if (tsghost.ImageData == NULL) {
+        ((void const*&)tsghost.ImageData) = As_Reference(INFANTRY_E1).ImageData;
+    }
+    if (tsghost.CameoData == NULL) {
+        ((void const*&)tsghost.CameoData) = As_Reference(INFANTRY_E1).CameoData;
+    }
+
+    /*
+    **	TS Jumpjet -- its own TSJUMPJET.SHP stub (TFASSETS.MIX) carries all 610 frames the flight
+    **	poses and ground shadows need; E1's 438 would cut them off. E1 stands in only if the stub
+    **	is missing.
+    */
+    InfantryTypeClass& tsjumpjet = As_Reference(INFANTRY_TSJUMPJET);
+    if (tsjumpjet.ImageData == NULL) {
+        ((void const*&)tsjumpjet.ImageData) = As_Reference(INFANTRY_E1).ImageData;
+    }
+    if (tsjumpjet.CameoData == NULL) {
+        ((void const*&)tsjumpjet.CameoData) = As_Reference(INFANTRY_E1).CameoData;
+    }
+
     InfantryTypeClass& tde2 = As_Reference(INFANTRY_TDE2);  // TD Grenadier — donor E2 (RA's grenadier).
     if (tde2.ImageData == NULL) {
         ((void const*&)tde2.ImageData) = As_Reference(INFANTRY_E2).ImageData;
@@ -1863,6 +2134,7 @@ bool InfantryTypeClass::Read_INI(CCINIClass& ini)
 {
     if (TechnoTypeClass::Read_INI(ini)) {
         IsFraidyCat = ini.Get_Bool(Name(), "Fraidycat", IsFraidyCat);
+        IsFearless = ini.Get_Bool(Name(), "Fearless", IsFearless);
         IsCapture = ini.Get_Bool(Name(), "Infiltrate", IsCapture);
         IsBomber = ini.Get_Bool(Name(), "C4", IsBomber);
         IsDog = ini.Get_Bool(Name(), "IsCanine", IsDog);

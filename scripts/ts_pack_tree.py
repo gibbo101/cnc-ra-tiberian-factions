@@ -43,6 +43,11 @@ if os.path.exists(STUB_MANIFEST):
         STUB_DIMS = json.load(_f)
 CANVAS_PER_CLASSIC_PX = 16.0 / 3.0
 
+# The affine scale each packed building actually shipped at (the fit's clamps
+# applied), for satellite art that must match — an addon plug's placement
+# ghost is scaled by its host's factor.
+FIT_FACTOR = {}
+
 
 # Source-pixel patches, (dirname) -> [((x, y), (x, y) to copy from)]. NTREFN's
 # rib foot carries three orange pixels that read as a red spark in HD
@@ -130,8 +135,11 @@ def tga_bytes(img):
     return buf.getvalue()
 
 
-def bake_hazard_gold(img):
+def bake_hazard_gold(img, top=0):
     """Burn TS's hazard stripes to their final gold, in place of the launcher.
+
+    Only rows from `top` down are baked, for art whose remap pixels above the
+    stripes are team colour that should stay house-coloured.
 
     The stripes are drawn in TS's house-REMAP range, so they arrive raw green.
     Ground art is never remapped and building art always is, which puts the
@@ -147,7 +155,7 @@ def bake_hazard_gold(img):
     Hazard markings are a fixed yellow in TS whoever owns the building, so a
     baked colour costs nothing."""
     px = img.load()
-    for y in range(img.height):
+    for y in range(top, img.height):
         for x in range(img.width):
             r, g, b, a = px[x, y]
             if a and g > 30 and g > r * 1.6 and g > b * 1.6:
@@ -196,7 +204,7 @@ def bleed_edges(img, rounds=3):
 #   lanczos-hard  Lanczos colour, 1-bit alpha: a soft silhouette over snow
 #              reads as a pale outline on a dark building (08-28 SS), so the
 #              edge stays hard and only the interior is smoothed.
-SCALER_MODE = {"TSPROC": "lanczos-hard"}
+SCALER_MODE = {"TSPROC": "lanczos-hard", "TSWEAP": "lanczos-hard"}
 CURRENT_INI = [None]
 
 
@@ -365,7 +373,8 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                     mk_clip_dir=None,
                     overlay_dir=None, fit_w=None, dst_x_px=None, door_spec=None,
                     apron_cells=None, front_ring=None, emblem=None,
-                    apron_canvas=None, pingpong=False):
+                    apron_canvas=None, pingpong=False, powerup_layers=None,
+                    powerup_blocks=None):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -463,6 +472,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         factor = min(factor, float(canvas_w) / (ux1 - ux0), float(canvas_h) / (uy1 - uy0))
         cx, cy = (ux0 + ux1) / 2.0, (uy0 + uy1) / 2.0
         dst_x = dst_y = None
+    FIT_FACTOR[ini] = factor
 
     mk_pad_erase = None
     mk_building_sil = None
@@ -558,6 +568,14 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 f"Bib_And_Offset offset in bdata.cpp together.")
         # Every emitted tile costs a stamped cell, so warn on any that is blank:
         # it is a cell taken off a neighbour for nothing.
+        # Pad pixels under the finished building's own silhouette are never
+        # seen and, being sorted by cell, could paint over a unit standing on
+        # the threshold: clear them (08-29, the one grey pixel on the seam).
+        if ini == "TSWEAP":
+            body_sil = place(base_h, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y).split()[3].point(lambda v: 255 if v > 0 else 0).filter(ImageFilter.MinFilter(3))
+            keep = ImageChops.subtract(apron.split()[3], body_sil)
+            apron = apron.copy()
+            apron.putalpha(keep)
         tiles = []
         blank = 0
         for r in range(grid_rows):
@@ -748,12 +766,106 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             out.putalpha(ImageChops.lighter(ImageChops.lighter(Image.composite(hard, a, pad_mask), fill), overlap))
             return out
         full = [[harden_over_pad(f) for f in run] for run in full]
+    # TSWEAP sandwich (08-28 rebuild): without a z-buffer the only way a vehicle
+    # reads INSIDE the bay is building art drawn in front of it. Front layer
+    # (<INI>NF) = every idle frame minus the door opening; the base tileset
+    # keeps only the opening's interior (same frame count, so Shape_Number
+    # indexes both). The opening = the union of the shutter layer's pixels.
+    if ini == "TSWEAP":
+        opening = Image.new("L", (canvas_w, canvas_h), 0)
+        for i in range(9):
+            fr = scaled(centre_on(load("shp_gtweap_d", i), base_h.size))
+            opening = ImageChops.lighter(opening, fr.split()[3].point(lambda v: 255 if v > 0 else 0))
+        opening = opening.filter(ImageFilter.MaxFilter(5))
+        # The jambs go to the back layer too: our vehicles are wider than the
+        # opening (Disruptor 318 canvas px vs a 153 px door), and a pillar
+        # slicing a vehicle in the mouth was the old bay's worst read. From the
+        # lintel down, cut a band as wide as the widest vehicle (+ margin)
+        # centred on the door; the roof above the lintel stays in front.
+        ob = opening.getbbox()
+        # The band starts under the OPEN shutter's bottom edge: the awning and
+        # the rolled shutter above it stay in front of the vehicle (nothing
+        # may show between the door roof and the hangar roof).
+        open_bb = scaled(centre_on(load("shp_gtweap_d", 8), base_h.size)).getbbox()
+        # Luke's read (08-28): the LEFT jamb renders over the vehicle, the vehicle
+        # renders over the RIGHT pillar (it exits SE past it). So the band runs
+        # from the door's left edge eastward to the widest vehicle's reach.
+        # x1 = the canvas edge: nothing of the front belongs east of the door
+        # below the awning (the open-doorway composite reaches x=772 and drew
+        # over units walking out -- 08-29 cast).
+        x0, y0, x1 = int(open_bb[0]) + 4, int(ob[1]), int(canvas_w) - 1
+        opening = Image.new("L", (canvas_w, canvas_h), 0)
+        # The band's LEFT boundary is Luke's yellow line (custom-art/
+        # tsweap-front-cut-line.json, drawn in Aseprite 08-28 along the left
+        # jamb's inner edge): everything left of it renders over the vehicle.
+        # Rows above/below the line extend its end points.
+        line_path = os.path.join(MOD, "..", "..", "custom-art", "tsweap-front-cut-line.json")
+        if not os.path.exists(line_path):
+            raise SystemExit(f"{ini}: front cut line missing: {line_path}")
+        line = json.load(open(line_path))
+        # The band's TOP follows the rolled (open) shutter's lower edge, which
+        # is a slanted line in the iso art, extended along its slant past the
+        # bar's ends: a flat top either lets a tall unit show above the bar or
+        # cuts it flat below it. Per column: y_top(x) = the fitted edge.
+        import numpy as np
+        oa = np.array(scaled(centre_on(load("shp_gtweap_d", 8), base_h.size)).split()[3]) > 0
+        cols, bots = [], []
+        for xx in range(oa.shape[1]):
+            ys_ = np.where(oa[:, xx])[0]
+            if len(ys_):
+                cols.append(xx)
+                bots.append(int(ys_.max()))
+        slope, intercept = np.polyfit(cols, bots, 1)
+        od = ImageDraw.Draw(opening)
+        for yy in range(int(min(bots)) - 20, canvas_h):
+            if line is not None:
+                lx = line["rows"].get(str(yy))
+                if lx is None:
+                    lx = line["x_top"] if yy < line["y_top"] else line["x_bot"]
+                lx = int(lx) + 1
+            else:
+                lx = x0
+            for xx in range(lx, max(x1, lx + 1) + 1):
+                if yy > slope * xx + intercept:
+                    opening.putpixel((xx, yy), 255)
+        y0 = int(min(bots))  # for the fill above
+        def cut(img, keep_inside):
+            out = img.copy()
+            a = out.split()[3]
+            out.putalpha(ImageChops.multiply(a, opening) if keep_inside else ImageChops.subtract(a, opening))
+            return out  # no fill above: it bridged the roof edge to the last lamp (08-29)
+        front = [[cut(f, False) for f in run] for run in full]
+        # The body has its door PAINTED SHUT (TS covers it with the under-door
+        # art, GAWEAP_1, while a unit leaves). Second front tileset for the
+        # unloading state: the open doorway composited over each idle frame.
+        ud_top = EXTRA_LAYER_BAKE[("TSWEAP", "UD")]
+        ud = [scaled(centre_on(bake_hazard_gold(load("shp_gtweap_1", i), ud_top), base_h.size)) for i in (0, 1)]
+        def with_doorway(img, r):
+            out = img.copy()
+            out.alpha_composite(ud[r])
+            return out
+        front_open = [[cut(with_doorway(f, r), False) for f in full[r]] for r in (0, 1)]
+        full = [[cut(f, True) for f in run] for run in full]
+        write_zip(f"{STRUCT_DIR}/{ini}NF.ZIP", f"{ini.lower()}nf", front[0] + front[1])
+        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}NF", len(front[0]) + len(front[1]))
+        write_zip(f"{STRUCT_DIR}/{ini}NU.ZIP", f"{ini.lower()}nu", front_open[0] + front_open[1])
+        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}NU", len(front_open[0]) + len(front_open[1]))
     # Sub-object layers on the building's own affine: TS anims that are not
     # part of the idle cycle (one-shots, event-driven). Each becomes
     # <INI><SUFFIX>.ZIP with the frames in source order, so the DLL indexes
     # them directly (healthy run first, damaged run second, TS convention).
     for suffix, dirname, indices in globals().get("EXTRA_LAYERS", {}).get(ini, []):
-        layer = [scaled(centre_on(load(dirname, i), base_h.size)) for i in indices]
+        clip = globals().get("EXTRA_LAYER_CLIPS", {}).get((ini, suffix))
+        bake_top = globals().get("EXTRA_LAYER_BAKE", {}).get((ini, suffix))
+        def load_clipped(i):
+            f = load(dirname, i)
+            if bake_top is not None:
+                f = bake_hazard_gold(f, bake_top)
+            if clip is not None and is_detached(f, clip):
+                f.paste((0, 0, 0, 0), clip)
+                keep_largest_component(f)
+            return f
+        layer = [scaled(centre_on(load_clipped(i), base_h.size)) for i in indices]
         write_zip(f"{STRUCT_DIR}/{ini}{suffix}.ZIP", f"{ini.lower()}{suffix.lower()}", layer)
         patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}{suffix}", len(layer))
     front_canvas = None
@@ -793,6 +905,30 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 f.paste((0, 0, 0, 0), (353, 402, 370, 443))
 
     frames = full[0] + full[1]
+    # Building-addon art variants (TS upgrades): one full healthy+damaged
+    # block appended per installed-plug level, each = the base composite plus
+    # the first L powerup anim layers (a shifted copy of the plant's own
+    # turbine anim, per the host's TS PowerUpNLoc anchors). Level 0 = the
+    # frames above, untouched, and every level rides the SAME affine — the
+    # fit is keyed to the level-0 union so installing a plug never moves the
+    # building. Shape_Number picks the block by UpgradeLevel * 2n.
+    if powerup_blocks:
+        # TYPE-KEYED variant blocks (the Upgrade Centre): each entry is the
+        # complete layer list for one visual state, emitted in order — the
+        # engine's Shape_Number block index must enumerate identically
+        # (building.cpp STRUCT_TSPLUG branch).
+        assert not pingpong, f"{ini}: powerup_blocks + pingpong not supported"
+        for block in powerup_blocks:
+            layered = list(anims) + list(block)
+            frames += [scaled(composite(base_h, layered, i, 1)) for i in range(n)]
+            frames += [scaled(composite(base_d, layered, i, 2)) for i in range(n)]
+    elif powerup_layers:
+        assert not pingpong, f"{ini}: powerup_layers + pingpong not supported"
+        layered = list(anims)
+        for spec in powerup_layers:
+            layered = layered + [spec]
+            frames += [scaled(composite(base_h, layered, i, 1)) for i in range(n)]
+            frames += [scaled(composite(base_d, layered, i, 2)) for i in range(n)]
     if emblem is not None:
         # Built frames only: during construction there is no deck to paint.
         # Damaged-run frames stamp against the healthy reference: same
@@ -994,7 +1130,8 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             f.putalpha(ImageChops.subtract(f.split()[3], erase))
     write_zip(f"{STRUCT_DIR}/{ini}MAKE.ZIP", f"{ini.lower()}make", mk)
 
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", ini, 2 * n)
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", ini,
+                  2 * n * (1 + len(powerup_blocks if powerup_blocks else (powerup_layers or []))))
     patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}MAKE", mk_count)
     print(f"{ini}: N={n} (idle anim count for the _anims[] entry)")
     return n
@@ -1076,8 +1213,6 @@ WAVE2 = [
      "shp_gtsilomk", 19, (256, 256), 250, "shp_siloicon", "TS Tiberium Silo", "Stores excess Tiberium."),
     ("TSHPAD", "shp_gthpad", ["shp_gthpad_a"],
      "shp_gthpadmk", 19, (256, 256), 256, "shp_heliicon", "TS Helipad", "Rearms Tiberian-era aircraft."),
-    ("TSTECH", "shp_gttech", ["shp_gttech_a"],
-     "shp_gttechmk", 19, (384, 256), 375, "shp_techicon", "TS Tech Center", "Unlocks advanced Tiberian technology."),
     ("TSDEPT", "shp_gtdept", ["shp_gtdept_a", "shp_gtdept_b"],
      "shp_gtdeptmk", 19, (384, 384), 382, "shp_fixicon", "TS Service Depot", "Repairs vehicles and aircraft."),
     # The dropship bay is the depot's apron plate promoted to a building of its
@@ -1103,7 +1238,7 @@ BIBS = {"TSHPAD": "shp_gthpadbb", "TSDEPT": "shp_gtdeptbb"}
 # APRON_CLIP: clip a building's concrete to its tile grid. Tried on TSWEAP
 # 2026-08-17 and REJECTED ("cutting the pad off looks like garbage" -- the
 # same hard-edge failure recorded 2026-08-05); the ghost grew to 5x3 instead.
-APRON_CLIP = set()
+APRON_CLIP = {"TSWEAP"}  # GAWEAPBB leaves a sliver east of the 5-wide plot; the pad must stay inside the placement ghost
 
 # EXTRA_LAYERS: event-driven TS anims shipped as sub-object layers (see
 # build_structure). TSPROC: FR = NTREFN_B fireball, 20 healthy + 20 damaged,
@@ -1112,12 +1247,79 @@ APRON_CLIP = set()
 EXTRA_LAYERS = {
     "TSPROC": [("FR", "shp_ntrefn_b", list(range(40))),
                ("LD", "shp_ntrefn_a", list(range(10)))],
+    # TSWEAP: DR = GAWEAP_D roll-up shutter, 9 stages. GAWEAP_D has no damaged
+    # frames: its second nine are TS shadow frames, which draw magenta. The DLL
+    # indexes stage + 9 when damaged, so the nine stages ship twice.
+    # UD = GAWEAP_1 under-door floor: frame 0 healthy, 1 damaged (2-3 are
+    # shadows, never indexed).
+    "TSWEAP": [("DR", "shp_gtweap_d", list(range(9)) * 2),
+               ("UD", "shp_gtweap_1", list(range(4)))],
     # EMP cannon turret: PULSCAN.VXL rendered 32 facings (fleet camera) at 1:1 TS
     # pixel scale (shp_pulscan_t, 1 voxel = 1 TS px); the DLL draws shape
     # BodyShape[facing] seated on the dome. NAPULS_A (a small 2D head) is unused,
     # as in TS.
     "TSPULS": [("T", "shp_pulscan_t", list(range(32)))],
 }
+
+# Source-space erase boxes on a sub-object layer, applied before the affine,
+# and only on frames where the box holds a piece detached from the main
+# body. TSWEAP DR: the door leaf's bottom-right tab (source x>=113, y>=113)
+# rolls up last and floats free in stages 5-7; the layer sorts above units,
+# so the tab drew over any hull crossing the right jamb. While the tab is
+# still joined to the leaf (shut and early stages) it is real door and stays.
+EXTRA_LAYER_CLIPS = {("TSWEAP", "DR"): (113, 113, 192, 168)}
+
+# Sub-object layers whose hazard stripes are baked gold, keyed to the first
+# source row baked. TSWEAP UD: GAWEAP_1's floor stripes (rows 118-133) go gold
+# to match the apron, which is ground art and never house-remapped; the team
+# block on the bay frame above them (rows 87-98) keeps its house colour. The
+# open-doorway front tileset (<INI>NU) composites the same art with the same bake.
+EXTRA_LAYER_BAKE = {("TSWEAP", "UD"): 110}
+
+
+def components(img):
+    """Opaque 4-connected islands of an RGBA image, largest first."""
+    from collections import deque
+    px = img.load()
+    w, h = img.size
+    seen = set()
+    comps = []
+    for y in range(h):
+        for x in range(w):
+            if px[x, y][3] and (x, y) not in seen:
+                q = deque([(x, y)])
+                seen.add((x, y))
+                comp = []
+                while q:
+                    cx, cy = q.popleft()
+                    comp.append((cx, cy))
+                    for nx, ny in ((cx + 1, cy), (cx - 1, cy), (cx, cy + 1), (cx, cy - 1)):
+                        if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in seen and px[nx, ny][3]:
+                            seen.add((nx, ny))
+                            q.append((nx, ny))
+                comps.append(comp)
+    comps.sort(key=len, reverse=True)
+    return comps
+
+
+def is_detached(img, box):
+    """True when no pixel inside `box` belongs to the image's largest island."""
+    comps = components(img)
+    if not comps:
+        return False
+    x0, y0, x1, y1 = box
+    return not any(x0 <= x < x1 and y0 <= y < y1 for x, y in comps[0])
+
+
+def keep_largest_component(img):
+    """Erase every opaque island except the largest (4-connected), in place:
+    a clipped layer must not leave detached fringe pixels that sort above
+    units."""
+    px = img.load()
+    comps = components(img)
+    for comp in comps[1:]:
+        for p in comp:
+            px[p] = (0, 0, 0, 0)
 
 # Emblem art lives IN the repo (resources/custom-cameos) — a Desktop copy
 # got Trash-cleaned 2026-08-16 and broke the pack.
@@ -1214,7 +1416,7 @@ SIZEPASS = [
     # dial only (contract #7). The door front dips into the top half of the
     # walkable bottom row; units drive out through it.
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
-     "shp_gtweapmk", 19, (896, 672), 40.5, 1.0, "shp_weapicon",
+     "shp_gtweapmk", 19, (896, 672), 51, 1.0, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
     # 2x1 plot + bib: the 48-tall stub centres on the 24-tall box, so the
     # canvas bottom is 12 classic below the plot edge. Margin 12 = building
@@ -1229,6 +1431,13 @@ SIZEPASS = [
     ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
      "shp_gtradrmk", 20, (256, 512), 21, 1.0, "shp_radricon",
      "TS Radar", "Provides radar coverage."),
+    # TSTECH on the radar height trick (Luke, 2026-08-31): keep the 3x2 plot,
+    # let the dome + antenna rise into a square canvas's headroom instead of
+    # the whole building shrinking to the old height-clamped legacy fit.
+    # margin 12 = (stub 72 − box 48)/2: content bottom on the plot's south edge.
+    ("TSTECH", "shp_gttech", ["shp_gttech_a"],
+     "shp_gttechmk", 19, (384, 384), 12, 1.0, "shp_techicon",
+     "TS Tech Center", "Unlocks advanced Tiberian technology."),
     # TS EMP Pulse Cannon (docs/emp-cannon-design.md). NAPULS is snow-theatre-only
     # art: NTPULS = temperate (NAPULS is the ARCTIC variant, TS 2nd-letter theatre code); static base (frame 0 / LIGHT damage), TSPOWR's
     # 2x2 fit. The PULSCAN voxel turret rides as the TSPULST layer (EXTRA_LAYERS).
@@ -1252,6 +1461,15 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
         fwd, back = list(range(0, 15)), list(range(13, 0, -1))
         dfwd, dback = list(range(15, 30)), list(range(28, 15, -1))
         anims = [("shp_gtradr_a", fwd + back, dfwd + dback)]
+    elif ini == "TSWEAP":
+        # From scratch (08-28): TS's three looping active anims baked into one
+        # 32-step idle -- _A (16f) and _B (8f) at Rate 400 advance every other
+        # step, _C (4f) at Rate 800 every step. Each SHP = healthy half +
+        # damaged half. The shutter and under-door are event layers (below).
+        def halves(d, n):
+            return (d, [i // 2 % n for i in range(32)], [n + i // 2 % n for i in range(32)])
+        anims = [halves("shp_gtweap_a", 16), halves("shp_gtweap_b", 8),
+                 ("shp_gtweap_c", [i % 4 for i in range(32)], [4 + i % 4 for i in range(32)])]
     else:
         anims = [loop(d) for d in anim_dirs]
     # Buildups pour and keep their pads. That double-draws the war factory's
@@ -1268,10 +1486,10 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     overlays = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb"}
     # Aprons ship as ground art, one tile per cell: (plot, tile grid), the grid
     # matching the building's SmudgeTypeClass in sdata.cpp.
-    aprons = {"TSWEAP": ((4, 3), (4, 3), (0, 0)), "TSPROC": ((4, 3), (5, 3), (0, 0))}
+    aprons = {"TSWEAP": ((5, 3), (4, 3), (1, 0)), "TSPROC": ((4, 3), (5, 3), (0, 0))}
     # TS drives the war factory bay with a separate 9-stage shutter over a
     # static interior (ART.INI: DoorAnim/DoorStages/UnderDoorAnim).
-    doors = {"TSWEAP": ("shp_gtweap_d", "shp_gtweap_1", 9)}
+    doors = {}  # TSWEAP's shutter is an EXTRA_LAYERS sub-object now (TSWEAPDR)
     build_structure(ini, base, 0, 1, anims, mk, mkc, cw, ch,
                     bib_dir=BIBS.get(ini), bottom_margin=margin, overscale=oscale,
                     mk_mask_dir=masks.get(ini), overlay_dir=overlays.get(ini),
@@ -1280,23 +1498,21 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     # columns: pin the building's width independently of the
                     # canvas, and anchor it on those columns rather than on
                     # the box centre.
-                    fit_w={"TSPROC": 384, "TSWEAP": 460}.get(ini),
+                    fit_w={"TSPROC": 384, "TSWEAP": 404}.get(ini),  # TSWEAP 404 = GTWEAP 98 src px at the refinery's 4.12
                     dst_x_px={"TSPROC": 304, "TSWEAP": 392}.get(ini),
                     apron_cells=aprons.get(ini),
                     # TSWEAP's pad is hand-authored (Luke, Aseprite, 2026-08-17):
                     # the committed canvas replaces the affine'd GTWEAPBB.
-                    apron_canvas={"TSWEAP": os.path.abspath(os.path.join(
-                        MOD, "..", "..", "custom-art",
-                        "tsweap-pad-canvas.png"))}.get(ini),
+                    apron_canvas=None,  # TS's own GAWEAPBB at the building's affine (08-28 restart)
                     # How far the near face encroaches into the bay opening.
                     # 0 = the hole is exactly what the shutter uncovers, so a
                     # vehicle is visible through the full opening and hidden
                     # everywhere else. Raise it to tuck the vehicle further
                     # behind the door frame.
-                    front_ring={"TSWEAP": 0}.get(ini),
+                    front_ring=None,
                     # The lamp cycle sweeps and returns (8 -> 14 frames);
                     # _anims[] Count and the TSWEAPLT stub must match.
-                    pingpong={"TSWEAP": True}.get(ini, False))
+                    pingpong=False)
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSFACT: TS Construction Yard on the RA-conyard 3x3 plot (BSIZE_33 +
@@ -1325,10 +1541,168 @@ if os.path.isdir(f"{ART}/shp_gtcnst"):
 # ---- TSPOWR: TS Power Plant (2x2, POWR donor 48x48 -> 256x256).
 # Content scaled to TDNUKE (content 256 full-width). Anims: _A fan 24, _B 12
 # -> N=24. Damaged base = GTPOWR frame 1 (LIGHT).
+# Addon variants: +1/+2 Power Turbines (TSTURB installs) as extra GTPOWR_B
+# layers shifted by TS's PowerUp1/2Loc pixel anchors (ART.INI [GAPOWR]:
+# (-24,+13) and (-48,0) from the shared canvas position; ZZ/YSort are draw
+# order only). The tileset grows to 3 x 24 frames; Shape_Number selects the
+# block by UpgradeLevel.
 if os.path.isdir(f"{ART}/shp_gtpowr"):
+    powerups = []
+    for name, (dx, dy) in (("up1", (-24, 13)), ("up2", (-48, 0))):
+        dst = f"{ART}/shp_gtpowr_b_{name}"
+        os.makedirs(dst, exist_ok=True)
+        for i in range(frame_count("shp_gtpowr_b")):
+            src = Image.open(f"{ART}/shp_gtpowr_b/frame-{i:04d}.png").convert("RGBA")
+            out = Image.new("RGBA", src.size, (0, 0, 0, 0))
+            out.paste(src, (dx, dy), src)
+            out.save(f"{dst}/frame-{i:04d}.png")
+        powerups.append(loop(f"shp_gtpowr_b_{name}"))
     build_structure("TSPOWR", "shp_gtpowr", 0, 1,
                     [loop("shp_gtpowr_a"), loop("shp_gtpowr_b")],
-                    "shp_gtpowrmk", 13, 256, 256, bottom_margin=0)
+                    "shp_gtpowrmk", 13, 256, 256, bottom_margin=0,
+                    powerup_layers=powerups)
+
+# ---- TSTURB: Power Turbine addon (TS GAPOWRUP). Never a map object — the
+# tileset exists for the sidebar placement GHOST only (the DLL installs the
+# plug into a TSPOWR and consumes it, building.cpp Unlimbo divert). Art = the
+# plant's own GTPOWR_B turbine sprite, cropped and scaled by the SAME factor
+# the plant's size-pass fit uses so the ghost reads at the installed size.
+if os.path.isdir(f"{ART}/shp_gtpowr_b"):
+    CURRENT_INI[0] = "TSTURB"
+    plant_frames = [load("shp_gtpowr", 0), load("shp_gtpowr", 1)]
+    for d in ("shp_gtpowr_a", "shp_gtpowr_b"):
+        plant_frames += [load(d, i) for i in range(frame_count(d))]
+    pboxes = [f.getbbox() for f in plant_frames if f.getbbox()]
+    plant_uw = max(b[2] for b in pboxes) - min(b[0] for b in pboxes)
+    factor = 256.0 / plant_uw
+    turb = load("shp_gtpowr_b", 0)
+    turb = hq_scale(turb.crop(turb.getbbox()), factor)
+    canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    canvas.paste(turb, ((128 - turb.width) // 2, (128 - turb.height) // 2), turb)
+    write_zip(f"{STRUCT_DIR}/TSTURB.ZIP", "tsturb", [canvas, canvas])
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSTURB", 2)
+    STUB_DIMS["TSTURB"] = [24, 24]
+    emit_sidebar_data("TSTURB", "Power Turbine",
+                      "Installs into a Tiberian Power Plant, adding 50 power. Two per plant.",
+                      "shp_turbicon")
+
+# ---- TSPLUG: TS GDI Upgrade Centre (3x2 TSTECH twin, GAPLUG art) + the Ion
+# Cannon Uplink plug (TSPION). GTPLUG anim windows: _A masts 20 real (10/10
+# halves), _B lights real 0-7 + 10-17 (halves at stride 10 with 2 pad frames),
+# _C 8 real (4/4) -> n = LCM(10,8,4) = 40. The uplink dish (GTPLUG_F, 15 real
+# frames, no damaged form) is the level-1 powerup layer at slot 1's PowerUp1Loc
+# anchor (0,0); its 15-frame cycle is resampled to 10 so it wraps cleanly
+# inside n=40. TSPION's own tileset is the placement GHOST only, scaled by the
+# centre's fit factor so the ghost reads at installed size.
+if os.path.isdir(f"{ART}/shp_gtplug"):
+    # Anim windows straight from TS ART.INI (the halved-windows convention is
+    # WRONG for this building — Luke caught the mid-sweep snap, 2026-08-31):
+    #   [GAPLUG_A]  LoopEnd=20, no ping-pong -> the full 20 frames are ONE
+    #               cycle, both runs (no damaged form).
+    #   [GAPLUG_B]  healthy 0-8 straight; [GAPLUG_BD] damaged = 10-19
+    #               PING-PONGED. Healthy trimmed to 8 (drops the 9th frame) so
+    #               n stays LCM(20,8,8)=40; damaged ping-pong resampled to 20.
+    #   [GAPLUG_C]  LoopEnd=8, no ping-pong -> full 8 both runs.
+    #   [GAPLUG_F]  (uplink dish) PingPong=yes -> 0..14,13..1 (28 steps),
+    #               resampled to 20, same both runs (no damaged form).
+    def resample(seq, count):
+        return [seq[round(k * (len(seq) - 1) / (count - 1))] for k in range(count)]
+    bd_pong = resample(list(range(10, 20)) + list(range(18, 10, -1)), 20)
+    dish_pong = resample(list(range(15)) + list(range(13, 0, -1)), 20)
+    # TYPE-KEYED socket art: each plug TYPE (dish = ion uplink GTPLUG_F, dome
+    # = pod node GTPLUG_D) is baked at BOTH socket anchors (ART.INI [GAPLUG]:
+    # PowerUp1Loc (0,0) = the right socket, first install; PowerUp2Loc
+    # (-24,-12) = the left socket, second install — the turbine shift
+    # precedent). Blocks enumerate every visual state, mirrored EXACTLY by
+    # Shape_Number's STRUCT_TSPLUG branch (building.cpp): 1 = dish@1,
+    # 2 = dome@1, 3 = node@1, then the six ordered distinct pairs 4 = dish+dome,
+    # 5 = dish+node, 6 = dome+dish, 7 = dome+node, 8 = node+dish, 9 = node+dome
+    # — building.cpp TF_Plug_Art_Block enumerates identically (type order
+    # dish, dome, node; pair block = 4 + a*2 + (b>a ? b-1 : b)).
+    # Seeker Control node (GTPLUG_E, ART.INI [GAPLUG_E] LoopEnd=14, no
+    # ping-pong, no damaged form) = the same straight 15-frame loop as the dome.
+    dome_seq = resample(list(range(15)), 20)
+    node_seq = resample(list(range(15)), 20)
+    plug_arts = [("f", "shp_gtplug_f", dish_pong), ("d", "shp_gtplug_d", dome_seq),
+                 ("e", "shp_gtplug_e", node_seq)]
+    for tag, srcdir, seq in plug_arts:
+        for slot, (dx, dy) in (("p1", (0, 0)), ("p2", (-24, -12))):
+            dst = f"{ART}/shp_gtplug_{tag}_{slot}"
+            os.makedirs(dst, exist_ok=True)
+            for k, i in enumerate(seq):
+                src = Image.open(f"{srcdir.replace('shp_', ART + '/shp_')}/frame-{i:04d}.png").convert("RGBA")
+                out = Image.new("RGBA", src.size, (0, 0, 0, 0))
+                out.paste(src, (dx, dy), src)
+                out.save(f"{dst}/frame-{k:04d}.png")
+    spin20 = list(range(20))
+    def plug_layer(tag, slot):
+        return (f"shp_gtplug_{tag}_{slot}", spin20, spin20)
+    build_structure("TSPLUG", "shp_gtplug", 0, 1,
+                    [("shp_gtplug_a", list(range(20)), list(range(20))),
+                     ("shp_gtplug_b", list(range(8)), bd_pong),
+                     ("shp_gtplug_c", list(range(8)), list(range(8)))],
+                    # The radar height trick: 3x2 plot, square canvas, masts in
+                    # the headroom. margin 12 = (stub 72 − box 48)/2.
+                    "shp_gtplugmk", 19, 384, 384, bottom_margin=12,
+                    powerup_blocks=[[plug_layer("f", "p1")],
+                                    [plug_layer("d", "p1")],
+                                    [plug_layer("e", "p1")],
+                                    [plug_layer("f", "p1"), plug_layer("d", "p2")],
+                                    [plug_layer("f", "p1"), plug_layer("e", "p2")],
+                                    [plug_layer("d", "p1"), plug_layer("f", "p2")],
+                                    [plug_layer("d", "p1"), plug_layer("e", "p2")],
+                                    [plug_layer("e", "p1"), plug_layer("f", "p2")],
+                                    [plug_layer("e", "p1"), plug_layer("d", "p2")]])
+    emit_sidebar_data("TSPLUG", "Upgrade Center",
+                      "Hosts superweapon upgrade plugs. Two slots. Detects cloaked units.",
+                      "shp_plugicon")
+
+    plug_factor = FIT_FACTOR["TSPLUG"]
+    CURRENT_INI[0] = "TSPION"
+    dish = load("shp_gtplug_f", 0)
+    dish = hq_scale(dish.crop(dish.getbbox()), plug_factor)
+    canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    canvas.paste(dish, ((128 - dish.width) // 2, (128 - dish.height) // 2), dish)
+    write_zip(f"{STRUCT_DIR}/TSPION.ZIP", "tspion", [canvas, canvas])
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPION", 2)
+    STUB_DIMS["TSPION"] = [24, 24]
+    # RAD3ICON is the uplink's real TS cameo (ART.INI [GAPLUG_F] Cameo=);
+    # IONCICON is the satellite — the SUPERWEAPON's targeting icon.
+    emit_sidebar_data("TSPION", "Ion Cannon Uplink",
+                      "Installs into an Upgrade Center, granting the Ion Cannon.",
+                      "shp_rad3icon")
+
+    # TSPODS: the Drop Pod Node plug (our Firestorm-style third plug — base TS
+    # grants pods by script only). Same never-on-the-map contract as TSPION:
+    # the tileset is the placement GHOST only (GAPLUG_D's dome, ART.INI
+    # Cameo=RAD1ICON). Host socket art per installed plug TYPE is the deferred
+    # art-matrix problem — the centre keeps its dish-only powerup art for now.
+    CURRENT_INI[0] = "TSPODS"
+    dome = load("shp_gtplug_d", 0)
+    dome = hq_scale(dome.crop(dome.getbbox()), plug_factor)
+    canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    canvas.paste(dome, ((128 - dome.width) // 2, (128 - dome.height) // 2), dome)
+    write_zip(f"{STRUCT_DIR}/TSPODS.ZIP", "tspods", [canvas, canvas])
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPODS", 2)
+    STUB_DIMS["TSPODS"] = [24, 24]
+    emit_sidebar_data("TSPODS", "Drop Pod Node",
+                      "Installs into an Upgrade Center, granting Drop Pod reinforcements.",
+                      "shp_rad1icon")
+
+    # TSSEEK: the Seeker Control plug (TS GAPLUG2). Same never-on-the-map
+    # contract: the tileset is the placement GHOST only (GAPLUG_E's node,
+    # ART.INI Cameo=RAD2ICON).
+    CURRENT_INI[0] = "TSSEEK"
+    node = load("shp_gtplug_e", 0)
+    node = hq_scale(node.crop(node.getbbox()), plug_factor)
+    canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    canvas.paste(node, ((128 - node.width) // 2, (128 - node.height) // 2), node)
+    write_zip(f"{STRUCT_DIR}/TSSEEK.ZIP", "tsseek", [canvas, canvas])
+    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSSEEK", 2)
+    STUB_DIMS["TSSEEK"] = [24, 24]
+    emit_sidebar_data("TSSEEK", "Seeker Control",
+                      "Installs into an Upgrade Center, granting the Hunter Seeker droid.",
+                      "shp_rad2icon")
 
 # ---- TSMCV (MCV.VXL render, 32 facings, canvas 384 = classic 48 x 8) ----
 if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(f"{UNITS_DIR}/TSMCV.ZIP"):

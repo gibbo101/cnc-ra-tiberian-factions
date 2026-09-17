@@ -53,7 +53,9 @@ FACTIONS = [
     (0x2, "soviet", "soviet.png"),
     (0x4, "GoodGuy", "gdi.png"),
     (0x8, "BadGuy", "nod.png"),
+    (0x10, "TS", "tsgdi.png"),  # the TS tree, badged as its own faction
 ]
+DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUV"  # base-32 mask digit; TS alone = 'G'
 
 # Measured from the shipped badged cameos against their pristine atlas crops.
 # EMBLEM_SIZE / EMBLEM_SPACING are the one- to three-emblem layout; four emblems
@@ -146,7 +148,7 @@ def pristine_sources(plain):
 
 def variant_key(asset, mask):
     """The AssetName the DLL writes to request this emblem combination."""
-    digit = "%X" % mask
+    digit = DIGITS[mask]
     if asset.startswith("SW_"):
         return "S" + digit + "_" + asset[3:]
     return asset + "_" + digit

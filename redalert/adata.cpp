@@ -2424,16 +2424,23 @@ static AnimTypeClass const ChemSW(ANIM_CHEM_SW, "TDCHEM-SW", 48, 9, false, false
 static AnimTypeClass const ChemW(ANIM_CHEM_W, "TDCHEM-W", 48, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 static AnimTypeClass const ChemNW(ANIM_CHEM_NW, "TDCHEM-NW", 48, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 13, 0, VOC_NONE, ANIM_NONE, 13, 0x200);
 
-// Tiberian Factions -- TS railgun particle spark (ANIM_RAILFX). TS renders the
-// railgun as a laser line plus particles spiraling around it; the beam is the
-// 3-line Lines[] draw (launcher ABI cap), so the spiral is a swarm of these
-// short-lived blue sparks spawned along a helix by the IsRailgun branch in
-// TechnoClass::Fire_At. Art = scripts/ts_gen_railfx.py: a 12-frame colour ladder
-// walking TS's [LargeRailgunPart] ColorList blue->grey then holding grey. 12 stages
-// x 4 ticks = 1.2 s: half TS's MaxEC, so the coil is gone before the 1.5 s refire
-// (TS locks the gun until its coil dies; we keep the gun's rate instead).
+// Tiberian Factions -- TS railgun particle spark (ANIM_RAILFX), the Mk. II's coil. TS
+// renders the railgun as a laser line plus particles spiralling around it; each spark is
+// one of TS's [LargeRailgunPart] particles, laid by TF_Railgun_Coil and moved each frame by
+// AnimClass::Rail_Spark_AI, which also sets its stage and ends it. Art =
+// scripts/ts_gen_railfx.py: a 12-frame ladder from the ColorList's blue to its grey.
 // Classic = transparent stub in TFASSETS.MIX.
 static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, false, false, false, false, false, false, false, 0, 4, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
+
+// Tiberian Factions -- TS light railgun particle (ANIM_TS_RAILFXS), the Ghost Stalker's
+// coil: one of TS's [SmallRailgunPart] particles, run like RAILFX, on a ladder from
+// (200,200,200) to (150,150,150). Art = scripts/ts_gen_railfx.py. Classic = transparent stub.
+static AnimTypeClass const TsRailFxS(ANIM_TS_RAILFXS, "TSRAILFXS", 24, 3, false, false, false, false, false, false, false, false, false, 0, 4, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
+
+// Tiberian Factions -- TS S_BANG34 (ANIM_TS_SBANG34), TS's [General] InfantryExplode: the burst
+// a jumpjet makes when it is shot down in the air. art.ini [S_BANG34]: Normalized, Translucent,
+// Crater, Scorch, Report=EXPNEW10. 13 frames (TSBANG34.ZIP, ts_pack_infantry.py EFFECTS).
+static AnimTypeClass const TsSBang34(ANIM_TS_SBANG34, "TSBANG34", 17, 5, false, true, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 13, 0, VOC_TS_EXPNEW10, ANIM_NONE, 13, 0x100);
 
 // Tiberian Factions -- TS Disruptor sonic wave (ANIM_TS_SONICWAVE). Art is ours
 // (TSSONICW.ZIP via scripts/ts_gen_sonicwave.py): TS has NO sonic-wave art to
@@ -2452,6 +2459,57 @@ static AnimTypeClass const RailFx(ANIM_RAILFX, "RAILFX", 24, 3, false, false, fa
 // decoded from TS DIG.SHP against ANIM.PAL). Not a ground-layer anim: it must
 // draw OVER the hull so the mound swallows the nose (docs/subterranean-design.md).
 static AnimTypeClass const TsDig(ANIM_TS_DIG, "TSDIG", 64, 18, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 37, 0, VOC_NONE, ANIM_NONE, 37, 0x100);
+
+// Tiberian Factions -- TS Ion Cannon strike pair (SPC_TS_ION_CANNON, the
+// uplink-granted superweapon; the TD Advanced Comm Centre's SPC_TD_ION_CANNON
+// keeps ANIM_TD_ION_CANNON).
+// Art = TSIONBM.ZIP / TSIONRNG.ZIP (scripts/ts_pack_ion.py: TS IONBEAM.SHP +
+// RING1.SHP decoded against ANIM.PAL at the 8/3 scale; the 120px beam segment
+// is pre-tiled tall since the launcher cannot tile TS's Tiled=yes anims).
+// The BEAM carries the damage + sound (anim.cpp Middle(), same 600/WARHEAD_TDPB
+// moment as the TD strike -- flavour only, balance identical) and anchors
+// SHAPE_BOTTOM at the cell like the TD beam. The RING is TS [General]
+// IonBlast=RING1: a flat one-shot ground flash, visual only, faster (TS rate
+// 300 vs the beam's 200). Classic = transparent stubs in TFASSETS.MIX.
+static AnimTypeClass const TsIonBeam(ANIM_TS_ION_BEAM, "TSIONBM", 48, 11, false, false, false, true, true, false, false, false, false, 0, 2, 0, 0, 0, 15, 0, VOC_TS_ION1, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsIonRing(ANIM_TS_ION_RING, "TSIONRNG", 48, 7, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 15, 0, VOC_NONE, ANIM_NONE, 15, 0x100);
+
+// Tiberian Factions -- TS Drop Pod strike set (SPC_TS_DROPPODS; TS [General]
+// DropPod=/DropPodPuff=/AtmosphereEntry= + the SMOKEY trail; OpenTS
+// droppod.cpp). Art = scripts/ts_pack_pods.py (ANIM.PAL, x4, canvas = classic
+// stub x 8). The husks are the "mark to leave" after a pod lands -- TS keeps
+// them forever; ours linger through 5 loop cycles then fade. Ground-layer so
+// the trooper walks OVER its own pod. DROPEXP rides on top (not ground);
+// PODRING is the flat entry flash at the spawn point; SMOKEY is the descent
+// trail, spawned by the pod bullet's AI every 6 frames.
+static AnimTypeClass const TsDropPod1(ANIM_TS_DROPPOD1, "TSDPOD1", 24, 4, false, false, false, false, false, false, true, false, false, 0, 4, 0, 0, 0, 8, 5, VOC_NONE, ANIM_NONE, 8, 0x100);
+static AnimTypeClass const TsDropPod2(ANIM_TS_DROPPOD2, "TSDPOD2", 24, 4, false, false, false, false, false, false, true, false, false, 0, 4, 0, 0, 0, 8, 5, VOC_NONE, ANIM_NONE, 8, 0x100);
+static AnimTypeClass const TsDropExp(ANIM_TS_DROPEXP, "TSDRPEXP", 50, 6, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
+static AnimTypeClass const TsPodRing(ANIM_TS_PODRING, "TSPODRNG", 50, 10, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 20, 0, VOC_NONE, ANIM_NONE, 20, 0x100);
+static AnimTypeClass const TsSmokey(ANIM_TS_SMOKEY, "TSSMOKEY", 16, 5, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 11, 0, VOC_NONE, ANIM_NONE, 11, 0x100);
+
+// Tiberian Factions -- TS component tower weapon art (scripts/ts_pack_towerfx.py, TS canvas x 4,
+// stub = canvas / 8). The Vulcan's MGUN-N..NW muzzle flashes, one per facing; the tower
+// warheads' impacts ([SA] PIFFPIFF, [RPG] S_CLSN16-58, [SAMWH] XGRYSML1/2 + EXPLOSML) with
+// art.ini's Normalized/Translucent/Crater/Scorch and Report= sounds; the SAM missile's SMOKEY2.
+static AnimTypeClass const TsMgunN(ANIM_TS_MGUN_N, "TSMGUNN", 9, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunNE(ANIM_TS_MGUN_NE, "TSMGUNNE", 9, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunE(ANIM_TS_MGUN_E, "TSMGUNE", 9, 1, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunSE(ANIM_TS_MGUN_SE, "TSMGUNSE", 9, 1, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunS(ANIM_TS_MGUN_S, "TSMGUNS", 9, 1, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunSW(ANIM_TS_MGUN_SW, "TSMGUNSW", 9, 1, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunW(ANIM_TS_MGUN_W, "TSMGUNW", 9, 1, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsMgunNW(ANIM_TS_MGUN_NW, "TSMGUNNW", 9, 0, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 3, 0, VOC_NONE, ANIM_NONE, 3, 0x100);
+static AnimTypeClass const TsPiffPiff(ANIM_TS_PIFFPIFF, "TSPIFF", 30, 6, false, false, false, false, false, false, false, false, false, 0, 2, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
+static AnimTypeClass const TsClsn16(ANIM_TS_CLSN16, "TSCLSN16", 16, 6, false, true, false, false, true, false, false, true, false, 0, 2, 0, 0, 0, 13, 0, VOC_TS_EXPNEW14, ANIM_NONE, 13, 0x100);
+static AnimTypeClass const TsClsn22(ANIM_TS_CLSN22, "TSCLSN22", 22, 6, false, true, false, false, true, false, false, true, false, 0, 2, 0, 0, 0, 13, 0, VOC_TS_EXPNEW14, ANIM_NONE, 13, 0x100);
+static AnimTypeClass const TsClsn30(ANIM_TS_CLSN30, "TSCLSN30", 31, 9, false, true, false, false, true, false, false, true, false, 0, 2, 0, 0, 0, 18, 0, VOC_TS_EXPNEW14, ANIM_NONE, 18, 0x100);
+static AnimTypeClass const TsClsn42(ANIM_TS_CLSN42, "TSCLSN42", 44, 9, false, true, false, false, true, false, false, true, false, 0, 2, 0, 0, 0, 18, 0, VOC_TS_EXPNEW14, ANIM_NONE, 18, 0x100);
+static AnimTypeClass const TsClsn58(ANIM_TS_CLSN58, "TSCLSN58", 62, 9, false, true, false, false, true, false, false, true, false, 0, 2, 0, 0, 0, 18, 0, VOC_TS_EXPNEW14, ANIM_NONE, 18, 0x100);
+static AnimTypeClass const TsXgrySml1(ANIM_TS_XGRYSML1, "TSXGRY1", 10, 2, false, false, false, false, false, false, false, true, false, 0, 2, 0, 0, 0, 15, 0, VOC_TS_EXPNEW13, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsXgrySml2(ANIM_TS_XGRYSML2, "TSXGRY2", 18, 5, false, false, false, false, false, false, false, true, false, 0, 2, 0, 0, 0, 13, 0, VOC_TS_EXPNEW13, ANIM_NONE, 13, 0x100);
+static AnimTypeClass const TsExploSml(ANIM_TS_EXPLOSML, "TSEXPSML", 14, 2, false, false, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 14, 0, VOC_TS_EXPNEW13, ANIM_NONE, 14, 0x100);
+static AnimTypeClass const TsSmokey2(ANIM_TS_SMOKEY2, "TSSMOKY2", 8, 7, false, false, false, false, false, false, false, true, false, 0, 2, 0, 0, 0, 11, 0, VOC_NONE, ANIM_NONE, 11, 0x100);
 
 static AnimTypeClass const TsSonicWave(ANIM_TS_SONICWAVE, "TSSONICW", 24, 7, false, false, false, false, false, false, false, false, false, 0, 5, 0, 0, 0, 25, 0, VOC_NONE, ANIM_NONE, 25, 0x100);
 
@@ -2608,13 +2666,42 @@ void AnimTypeClass::Init_Heap(void)
 #endif
 
     // MUST stay last, in this order: heap ID == registration order, and these
-    // five occupy the ANIM_RAILFX / ANIM_TS_SONICWAVE / ANIM_TS_SONICPULSE /
-    // ANIM_TS_GUNFIRE / ANIM_TS_DIG enum slots that follow the virtual anims.
+    // occupy the ANIM_RAILFX / ANIM_TS_SONICWAVE / ANIM_TS_SONICPULSE /
+    // ANIM_TS_GUNFIRE / ANIM_TS_DIG / ANIM_TS_ION_BEAM / ANIM_TS_ION_RING /
+    // ANIM_TS_DROPPOD1 / ANIM_TS_DROPPOD2 / ANIM_TS_DROPEXP /
+    // ANIM_TS_PODRING / ANIM_TS_SMOKEY enum slots that follow the virtual anims.
     new AnimTypeClass(RailFx);
     new AnimTypeClass(TsSonicWave);
     new AnimTypeClass(TsSonicPulse);
     new AnimTypeClass(TsGunfire);
     new AnimTypeClass(TsDig);
+    new AnimTypeClass(TsIonBeam);
+    new AnimTypeClass(TsIonRing);
+    new AnimTypeClass(TsDropPod1);
+    new AnimTypeClass(TsDropPod2);
+    new AnimTypeClass(TsDropExp);
+    new AnimTypeClass(TsPodRing);
+    new AnimTypeClass(TsSmokey);
+    new AnimTypeClass(TsMgunN);
+    new AnimTypeClass(TsMgunNE);
+    new AnimTypeClass(TsMgunE);
+    new AnimTypeClass(TsMgunSE);
+    new AnimTypeClass(TsMgunS);
+    new AnimTypeClass(TsMgunSW);
+    new AnimTypeClass(TsMgunW);
+    new AnimTypeClass(TsMgunNW);
+    new AnimTypeClass(TsPiffPiff);
+    new AnimTypeClass(TsClsn16);
+    new AnimTypeClass(TsClsn22);
+    new AnimTypeClass(TsClsn30);
+    new AnimTypeClass(TsClsn42);
+    new AnimTypeClass(TsClsn58);
+    new AnimTypeClass(TsXgrySml1);
+    new AnimTypeClass(TsXgrySml2);
+    new AnimTypeClass(TsExploSml);
+    new AnimTypeClass(TsSmokey2);
+    new AnimTypeClass(TsRailFxS);
+    new AnimTypeClass(TsSBang34);
 }
 
 /***********************************************************************************************

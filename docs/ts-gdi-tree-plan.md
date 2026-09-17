@@ -1,6 +1,105 @@
 # TS GDI tree — implementation plan (2026-08-01)
 
-## ⭐⭐⭐ RESUME HERE — NEXT (2026-08-28 late): **TS GDI war factory from scratch, OpenTS logic + the rails lesson** — start with its proper size vs the other TS buildings. Checkpoint tag `checkpoint-pre-tsproc-redo` = before the refinery re-look; refinery re-look CLOSED + signed off ("ref looks good", "harvester dock and undock is good!"), commits `659594df`…`a4267fec`. What the refinery re-look established (durable): (1) `art.ini`/`rules.ini` live-extracted from TIBSUN.MIX via `tools/ts_extract.py` (LOCAL.MIX); fire/spark anims decode against **ANIM.PAL with `--no-remap`** (`ts_shp.py`); (2) event anims ship as **sub-object layers** (`EXTRA_LAYERS` in `ts_pack_tree.py`, DLL draws via `Techno_Draw_Object_Virtual` keyed on AssetName) — fireball burst NAREFN_B on TS's random pause, lid NAREFN_A packed but OFF (`TS_LID_ENABLED`), lights NAREFN_C are the idle cycle; compositor anims **centre on the building canvas** (was a corner-paste bug); (3) art scaler per building (`SCALER_MODE`): TSPROC = `lanczos-hard` (smooth interior, hard edge — soft alpha shows terrain through as a pale/dark outline), pad stays hq4x, building grown 3 px over the pad in its own colour (launcher places the two layers a pixel apart in-game; offline composites never show it); (4) **the TS pad-seat dock (face iso-east on the pad, roll rail) was tried in play and REJECTED — Luke keeps the 08-06 reverse-in dock**; dock code is byte-identical to the checkpoint plus the **forward exit rail** (Track16/18, the WF idea) that cures the exit slide; (5) HORV bed-down body packed as TSHARV frames 32-63, wired, OFF (`TS_HORV_ENABLED`); (6) `Roll_Off_Seat`/`Roll_On_Seat` runtime rails (Track21) — rails are offsets from the DESTINATION, a nudged seat must never be handed straight to pathing. Desktop prefix = `a4267fec` build.
+## ⭐⭐⭐ RESUME HERE — **WALLS + COMPONENT TOWERS, branch `ts-walls-towers`, MERGED TO MAIN 2026-09-06 as part of the TS GDI faction merge (`main` @ `5a9d91b9`). 2026-09-04.**
+
+**Next session, Luke's pick:** (1) **component tower animations**, (2) **authentic weapon
+geometry for the Vulcan, SAM and RPG upgrades**. ⚠ Settle the second with Luke first: the three
+turrets currently ship as TS's own `GTCTWR_B/_C/_D` sprites composited onto the tower by
+`scripts/ts_pack_towers.py`. "Authentic geo weapons" could mean firing animations and muzzle art
+on those sprites, or replacing them with modelled turrets. Very different jobs — ask before building.
+
+**Deploy state.** Desktop prefix has the last DLL; the **Deck is STALE** (offline all evening,
+never received the day's builds). Deploy it before any Deck play. Both surfaces were in use, so
+every deploy this session checked `pgrep ClientG|InstanceServerG` first and aborted if the game
+was up — keep doing that.
+
+### What shipped
+
+**The construction yard grants the tech tree, never the faction** (Luke's rule: "our tech tree
+is faction agnostic — the only time a faction matters is the conyard you spawn with"). Take a
+Tiberian MCV as a Soviet and you get that tree. `HouseClass::Yard_Factions()` is the single
+source both gates read; the ownership gate used to reject anything the player's own house could
+not build before it ever looked at a yard, which was the bug. Applies to units and production
+too. Detail + the 82-building audit: memory `project-yard-grants-tree-rule`.
+
+**Walls.** The TS tree fences with **sandbags + the concrete wall** — a TS yard satisfies
+ownership for exactly those two (`TF_Is_TS_Yard_Wall`), not the chain link fence (Tiberian-era)
+nor RA's wire fences. `TSWALL` stays wired but dormant at `TechLevel=-1`; set it back to 6 to
+revive. Both walls carry the **TS cameo badge** — `TF_Entry_Faction_Mask` adds the TS bit and
+`scripts/cameo_work/faction_masks.txt` holds 29/31. Badges only render when a category is
+producible from 2+ yards, which is intended.
+
+**Component towers are standalone defences.** A wall run stops at one rather than binding into
+it, and a tower can no longer be placed onto a wall segment. Wall arms end **flush on the cell
+boundary** (the overshoot that closed wall-to-wall gaps was plainly visible poking into a
+tower's cell) and the tower's art sits on its own south edge for the same reason.
+
+**Tower + three plugs.** `TSCTWR` bare (200), `TSVULC` (150), `TSROCK` (600), `TSCSAM` (300),
+TS-authentic stats off the barracks. The plug **is** the armed tower type: placing it replaces
+the bare one in place, keeps its health ratio, and **installs rather than builds**. Sale refunds
+both. Weapons are TS verbatim: `[TSVulcanTower]`/`[TSSA]`, `[TSRPGTower]`/`[TSRPG]`,
+`[TSRedEye2]`/`[TSSAMWH]`. Reports are stand-ins pending the TS audio wave (CHAINGN1, GLNCH4,
+SAMSHOT1 owed); muzzle anims owed. The Wolverine's AssaultCannon also moved to `[TSSA]`.
+
+### Traps this session cost real time
+
+⚠ **The wedge bug, second occurrence.** Making a plug "plop in" skipped `MISSION_CONSTRUCTION`,
+which is *also* where a placed building frees its builder and runs `Grand_Opening`. The conyard
+stayed in radio contact forever and `Who_Can_Build_Me` skips such a builder, so every later
+placement built-then-cancelled and nothing could be selected. Fixed by doing both explicitly in
+the swap path (`building.cpp`, `tf_plug_swap`). Same class as the 2026-08-30 install bug — **any
+divert that bypasses the construction mission must free the builder itself.**
+
+⚠ Each turret set rotates about a **different pivot** (`GTCTWR_B` 23.08,13.69 / `_C` 23.99,11.37
+/ `_D` 24.03,11.12). One shared value threw the RPG ~9 px off its platform.
+
+⚠ Turret scale is **TS-authentic, ~0.75 of the body width**, measured from an in-game shot of
+all four towers. The smaller value picked earlier was judged against a redrawn body with a
+smaller platform and undershot badly.
+
+⚠ `GTCTWRMK`'s tail frames are **debris cels, not build stages** — shipping them flashed scraps
+at the end of the buildup. Filter by content area, then resample to the stub's frame count.
+
+⚠ The SAM's "dodgy pixels" are **TS's own art** (missile pod ends). Do not repaint Westwood's
+pixels.
+
+⚠ Two Blender traps: a world created through the API has a **near-black default colour**, so
+setting only its strength leaves everything the sun misses rendering black; and **beveling a box
+that carries non-uniform object scale** makes degenerate geometry that also renders black.
+
+### Art
+
+**Tower = TS's own sprite, unedited. Wall = the voxel packer at TS-measured proportions with tan
+piers** (Luke picked version 4 from a six-way sheet). Body width is **exactly one cell** so the
+art stays inside its plot and no longer overhangs the selection box, which the engine sizes from
+the plot. A turret still rises above the plot (height, not footprint) and the RPG's launcher
+reaches ~8 px past the east edge when aimed that way — both flagged, both fine unless Luke says
+otherwise.
+
+**Six attempts at a tower whose connectors face N/E/S/W were rejected** (voxel splats, two
+procedural Blender towers, a GPT redraw that invented its own connectors and kept the diagonals,
+uamila's Cults STL, and TS's sprite in place). Third-party models were pulled back out of the
+repo, so there is **no licence obligation**. The spec for a human artist is
+**`docs/ts-walls-towers-art-brief.md`** and the ask is now a single object, since the turrets are
+TS's own sprites and the walls fall back to TD concrete. TRELLIS locally is impossible on this
+box (needs 24 GB VRAM against 12, 15 GB disk free, no CUDA toolkit, Blackwell vs its pinned
+cu124).
+
+### Tooling added
+`scripts/ts_pack_walls.py` (wall art + 16 joins x 3 damage), `scripts/ts_pack_towers.py` (tower
+family from a swappable body dir; `TS_BODY_DIR`, `TS_BODY_W`, `TS_TURRET_K`, `TS_SEAT_DX/DY`),
+`scripts/ts_render_tower_glb.py` (any mesh -> our camera, repainted by geometry — the path a
+future artist mesh takes). `ts_blender_walls.py`, `ts_pack_blender.py` and `ts_blender_tower.py`
+are the superseded routes, kept for the record.
+
+## ⭐⭐⭐ RESUME HERE — **WF rebuild: BOTH DOOR SEATS SIGNED OFF 2026-08-29 evening (branch `wf-rebuild` HEAD `7df943d1`, desktop DLL `a0b4c9e4`).** `TSWEAP_SEAT_MOUTH_MECH` (597,123) for the walkers (Titan "PERFECTION", Wolverine PASS; Mk. II assumed) and `TSWEAP_SEAT_MOUTH` (573,219) for tracked/wheeled hulls ("we have our winner", called on the APC/harvester run). Both dialled live by Luke's EWNS marks, one build per nudge — do NOT re-derive. Vehicle-seat sweep (Disruptor, Hover MLRS, harvester, MCV) DONE 2026-08-30; merged to main `bd4734b5` and the merged desktop build played. WF arc CLOSED. NEXT: roster remainder (component towers first) or open-queue calls, Luke's pick. **Facts established 2026-08-29:**
+- ⚠ **`Coord` of the building = the ORIGIN CELL'S CENTRE, not the plot's NW corner.** Seat (lx,ly) → canvas (192 + lx/2, 208 + ly/2) on the 896x672 canvas (plot = 128 px/cell from canvas (128,144)). Left jamb = `resources/custom-art/tsweap-front-cut-line.json`.
+- **The "grey square bottom-right of the door"** = the door-leaf tab clip (`EXTRA_LAYER_CLIPS`) running on EVERY shutter frame, including the shut door where the tab is real leaf; the hole showed the flat interior and let hulls through. Fixed: `is_detached()` — the clip only fires on frames where the box holds pixels disconnected from the leaf (stages 5-7). Closing the hole also cured most of the "units drawn over the shutter" popping.
+- **One shared seat for everything was tried and REJECTED:** a walker's sprite centre sits well above its feet, a hull's centre is the hull, so the mech seat put vehicles too deep. Hence the split.
+- **Max zoom ≈ 1.3x** (NCC scale search of a capture against the 1x composite): 1 tile = 128 canvas px ≈ 166 screen px in Luke's max-zoom captures; his "12 px" ≈ 9 canvas px (applied as 12 canvas px = 24 leptons per notch).
+- **OpenTS ground truth (read 08-29):** TS draws the exiting unit from the BUILDING's second pass (`Draw_Extras`: unit, then door leaf over it, `building.cpp:923-970`); `Exit_Coord` = origin corner + (98,188) leptons; the door opens BEFORE the unit is told to move (`Do_MISSION_UNLOAD` INITIAL→CLEAR_BIB→OPEN→LEAVE→CLOSE); the raw track tables are STRIPPED from the OpenTS drop. What `f11f836b` binned was only "hide until the door is fully open", not this mechanism — but our DLL hands sprites + SortOrder to the launcher and cannot paint, so a building-pass unit draw is an unproven launcher contract. Stayed on the sort-band mechanism; it works with the hole closed.
+- A full `ts_pack_tree.py` run rewrites every ZIP's timestamps; compare zip member CRCs against HEAD and `git checkout` the content-identical ones. A full run also rewrites `scripts/ts_stub_dims.json` from its own buildings only, dropping the entries other packers own (towers, walls, the Hunter Seeker), and reorders `RA_STRUCTURES.XML`. Restore both from HEAD unless the run changed a frame count. `cmake -E copy_directory` the resources into build/ BEFORE rsync; md5 the changed ZIP too. Deploys are pgrep-gated (`InstanceServerG[.]exe|ClientG[.]exe`), and the game must be fully exited, not just at the menu.
+Previously signed off this arc: 5x3 L-footprint + 14-cell ghost, refinery-parity size, Lanczos-hard art, sandwich (front = hangar minus the aperture, cut LEFT along the yellow line, TOP along the rolled shutter's slanted edge, RIGHT open), open-doorway front while unloading, shutter layer +200, TS 5-state unload, `Rail_To` SE exit to XYCELL(4,2). Branch is OFF ts-units 66717e43 — rebase onto main (1d3d7f24) before merging.
 
 **DECK (2026-08-28 session, Luke on the Deck today): DLL `806e0cdb` = `f876b002` code (the
 dock-fix commit `58994541` is deliberately NOT deployed -- Luke: harvester work waits for the PC)
@@ -496,19 +595,6 @@ every plausible name. Don't go looking again.
 **TS power plant and TS radar place one tile below their placement grid**
 (reported in play 2026-08-24). Logged with first suspects in `known-issues.md`.
 
-### ⭐ THE ROSTER-WALK QUEUE (Luke, dictated 2026-08-21/22)
-
-Gaps he called out per unit while walking the roster. Order: Wolverine first,
-Harvester LAST.
-
-| Unit | Outstanding |
-|---|---|
-| **Wolverine** `TSSMEC` | ✅ COMPLETE 2026-08-24 (icon, firing animation, TSGUN4 sound, canopy dot) |
-| **Disruptor** `TSSONIC` | ~~sidebar icon~~ ✅; ~~sound~~ ✅; ~~weapon animation~~ ✅ band FINAL + firing behaviour + seat + muzzle, all SHIPPED 08-27/28 (OpenTS) |
-| **APC** `TSAPC` | ~~sidebar icon~~ ✅; ~~on-water art~~ ✅ apcw hull; ~~enter/exit~~ ✅ unload fixed; TS amphibious speed table — SHIPPED 08-28 |
-| **Harvester** `TSHARV` — **DO LAST** | ~~sidebar icon~~ ✅; **TD + RA refinery docking** |
-| **Mammoth Mk. II** | signed off; Luke wants **RA vs TS comparison videos** at some point (not a work item) |
-
 ### ✅ The four cameos — FIXED 2026-08-22, deployed, data-only (no DLL rebuild)
 
 ⭐ **The trap: `TF_Apply_Cameo_Badge` ALWAYS appends `_<hex>` to the sidebar
@@ -632,6 +718,9 @@ lightness pass (open queue 15) is the ONE exception that may still touch them.
 | **Titan** (`UNIT_TSTITN`) | 2026-08-21 | Signed off in the shadow walk, after the 6px fixed throw replaced the width fraction that had given it an 18px overhang. |
 | **Wolverine** (`UNIT_TSSMEC`) | 2026-08-24 ("wolverine signed off, nice one") | Complete: sidebar cameo, TS firing animation (art.ini `FiringFrames=4`, SMECH.SHP 104-135 — the flash is a sprite block, TS gives `[AssaultCannon]` no `Anim=`), TSGUN4 sound, and the canopy red dot (authentic TS ramp tail, tamed at the palette via `ts_shp.py --pal-override`). Shadow passed in the same load. |
 | **TS MCV** (`UNIT_TSMCV`) | 2026-08-20 | 32° render play-praised earlier in the wave. Final change: `Speed=3` → `5` to match the TD MCV family. ⚠ That speed edit was signed off BEFORE it reached play — see the caveat below. |
+| **Disruptor** (`UNIT_TSSONIC`) | 2026-08-28 | Band FINAL (no pulse; four ripple mechanisms falsified), OpenTS WaveClass firing behaviour, turret seat + horn-rooted muzzle, cameo, sound. |
+| **Amphibious APC** (`UNIT_TSAPC`) | 2026-08-28 ("perfection") | OpenTS pass: unload fix, apcw water hull frames, SPEED_AMPHIBIOUS + TS land table, cameo. |
+| **TS Harvester** (`UNIT_TSHARV`) | 2026-08-30 | Docking at the TS, TD and RA refineries closed 08-28 (ROLL_OFF_DOCK_SEAT rail); TS-harv-at-RA-refinery SIGNED OFF in play 2026-08-30; WF door seat swept 08-30. Cameo done. |
 
 **Titan (`UNIT_TSTITN`) was pulled off this list on 2026-08-20 and put back on
 2026-08-21**, signed off with the Hover MLRS and MCV once the shadow throw came
@@ -1557,18 +1646,20 @@ clause. Same literal-chain audit was needed for repair
    extra plot rows didn't read better than the round-1 fit. Left
    unresolved: whether the launcher centres boxes on the BSIZE plot or
    the placement-list rect (both were 4x5 in the played build).
-3. **TS WF placement-grid regression:** reads 4x3, should be 5x3 with the
-   4th (top) row build-blocked — the radar height trick. Suspect the 08-07
-   per-type `Occupy_List(placement=true)` split: the `_ts_weap_place`
-   literal is the 4x3 the launcher now draws.
-4. **TD-units-from-TS-factories tech leak** (and audit the reverse): TSPILE/
-   TSWEAP accepted as production sources for TD-era units. Decide the rule
-   with Luke first (strict era separation vs deliberate cross-era), then
-   audit both directions + what the sidebar offers with mixed-era factories.
-5. **WF pad lies outside the 4x3 plot** (geometrically must — the hangar
-   uses every column). Options: leave outside (current; `Is_TS_Apron_Cell`
-   keeps it unbuildable), clip at the plot edge (hard cut), return to 5x4.
-   **Undecided — Luke's call.**
+4. ✅ **Era rule + TS GDI badge — SHIPPED AND SIGNED OFF 2026-08-30 ("all passes",
+   `7436704f`..`e119fa66`).** TS units exit only TS factories and vice versa
+   (`Who_Can_Build_Me`; RA/TD were already door-strict via Owner-vs-ActLike);
+   power/refinery/repair cross-satisfy across all three eras; radar/tech stay
+   faction identity. TS tree = fifth badge faction (bit 0x10, digit 'G'), emblem
+   `scripts/tab_emblems/tsgdi.png` (Luke's weathered TS disc); Nod disc comes
+   with the Nod faction. ⚠ `cameo_variants_build.py` wipes hand entries inside
+   its block: TS `_G` entries live in their own appended XML block.
+   ⚠ **Merge-loss regression found + fixed same day (`adde7d6b`, Luke: "fixed,
+   working again"):** the 08-12 sidebar eviction guard (`Factory != -1` →
+   never evict) had been dropped by merge `61ef77f7` (main into ts-units);
+   Mk. II vanished on click, Mech Division after one drop. Restored, and bay
+   cargo now survives its cooldown/cap through the factory-only test. Lesson:
+   after any trunk merge, `git log -S` the known one-line guards.
 6. **Helipad footprint** — Luke floated 2x3+bib, my counter 2x2+bib (RA/TD
    parity + height trick if the art spills). His call; any footprint change
    needs a watched land-rearm cycle after.
@@ -1587,36 +1678,6 @@ clause. Same literal-chain audit was needed for repair
 10. Takeoff-crash soak: a week of play without an `_Except_` file (another
     clean night 2026-08-13/14, many Mech Division orders).
 
-**Art polish (parked):**
-11. WF door-to-pad seam: the real cure is stopping `hq_scale` bleeding black
-    at all — a global change touching every TS building, **wants Luke's OK**.
-12. Ramp stripes band yellow/green (the gold-bake test misses the darker
-    green bands).
-13. Titan parks ahead of the door — `TSTITN` frame registration sits +11.8
-    classic px below its box centre (every other unit within ±2.4). Fix the
-    registration or dial `ExitCoordinate` by eye — Luke's call.
-14. Refinery smoke continuity (blocky specks between puffs): drop near-empty
-    frames, soften the alpha floor, or check whether NTREFN_C (144-canvas,
-    needs offset compositing) is TS's own gap-filling second layer.
-15. Queued art nits: SMOKEY harvest puff port; voxel brightness pass
-    (TSHARV/TSMCV vs the TS screencast; + the dropship — "too dark",
-    Luke 2026-08-16); chunky intake pixels + black fringe
-    at the refinery bay mouth; damaged bay deck's stray remap-green pixel.
-15b. **Units pass: revisit unit angles per model** (Luke, 2026-08-18).
-    **MLRS half CLOSED**: its "facing step off" was diagnosed in `d9c188b6` as
-    the 54-vs-32 camera projection (10.9° apparent rotation at SE), not a
-    facing step, and the re-render plus the rack arc closed it — signed off
-    2026-08-19. TS MCV signed off 2026-08-20. Remaining models to audit:
-    TSHARV, TSAPC, TSSONIC, and TSHMEC (the Mk. II is the odd one out — it
-    renders at 35°, never came down to the 32° house camera with the other
-    four, and is absent from the render ledger).
-    Evidence SS `~/Pictures/Screenshots/Screenshot from 2026-08-18
-    00-42-31.png`: parked side by side, TS Harvester lines up with the TD
-    Medium Tank but the TS hover MLRS reads a facing step off. Per-model
-    render-facing dial via the labelled Desktop sheet loop
-    ([[feedback-voxel-facing-sheet-loop]] — the wave's "+8" rule does not
-    generalise); audit the whole TS voxel roster while at it.
-
 **Housekeeping:**
 16. Remove the `tf_orbit.flag` dead code (descent landed).
 17. Re-run the free dormant-host census before committing the roster's sound
@@ -1628,31 +1689,24 @@ clause. Same literal-chain audit was needed for repair
 
 **Restored / added 2026-08-13 evening (Luke's picks — the prune had dropped
 26 by mistake; he caught it):**
-26. **TS harvester poses at the TD and RA refineries** — the last unmade
-    placements (Luke's original 08-04 scope: "dock ALL 3 harvesters at the
-    TS refinery, and the TS harvester at the TD and RA refineries").
-    Current code: TS-at-TD = generic visible W-facing park (explicitly
-    skips the TD attach maneuver, `unit.cpp` ~1193); TS-at-RA = shares the
-    TDHARV visible-park branch, never dialled. Pose work is collaborative —
-    worked out with Luke's eye (Aseprite reference art prepared in
-    `~/Desktop/docking-art/`: all 3 harvesters full-canvas-aligned facings
-    + all 3 refineries incl. TDPROC's attach anims; see its INDEX.txt).
 27. **War factory descale to normal size (Luke, 2026-08-13).** The Mk. II
     now arrives by bay, so the 08-07 enlargement can come back down — see
     the hangar-resize table: **fit_w 416 is the floor (below ~416 the
     TSAPC stops fitting through the door); TD-exact width 395 would break
     the APC.** ⚠ Moves together with: the exit point (the y=42 two-pixel
     window re-derives from the new hangar span), the sandwich layer cut,
-    the sort band (must still reach the new south edge), the placement
-    grid (item 3 — fix in the same pass), and canvas+stub together.
+    the sort band (must still reach the new south edge), and canvas+stub together.
 
 **Roster remainder (the plan below):**
 19. Component towers TSVULC/TSCSAM/TSROCK — turreted TDGTWR pattern, NOT the
     static recipe (GTCTWR_B/_C/_D are 48-canvas TURRET rotation frames).
+19b. Gates (TSGATE), Firestorm generator + wall sections (TSFIRE/TSFSDF), EMP cannon
+    (branch) — added to the roster 2026-09-04 at Luke's call; see the buildings table
+    for the engine-work and art caveats (walls AND gates = generated voxel models rendered at the mod camera, per the
+    2026-09-04 art decision in the table). Each a medium arc with its own design doc, OpenTS as reference.
 20. Infantry TSE1/TSE2/TSGHOST (td-infantry-port-recipe adapted).
 21. Orcas TSORCA/TSORCAB (RA helipad rearm mechanics).
 22. TS audio wave (dormant-sample recipe; see 17).
-23. NTREFN_C refinery anim offset compositing (see 14).
 24. TS GDI/Nod badge emblems — Luke supplies; TS cameos stay pristine until
     then (they are exempt from faction badging).
 25. Phase-2 decisions with Luke (deferred list below).
@@ -1710,6 +1764,11 @@ IniName prefix throughout (dodges the TD HP-doubling hook). ✓ = shipped.
 | TSVULC | GAVULC (GACTWR_B art) | 2 | 350 | 500 | TSPILE | component tower + vulcan as ONE standalone turret; cost = tower 200 + vulcan 150 |
 | TSCSAM | GACSAM (GACTWR_C art?) | 5 | 500 | 500 | TSPILE, TSRADR | AA tower, same translation |
 | TSROCK | GAROCK (GACTWR_A art?) | 9 | 800 | 500 | TSPILE, TSTECH | RPG tower, same translation |
+| TSGATE | GAGATE_A/_B | 6 | 250 | 350 | TSPILE | **new mechanic** (RA has no gates): solid to enemies, passable to friendlies, opens on approach, joins walls. Port from OpenTS (`IsGate`, ~100 refs over building/cell/map/unit/infantry). **ART DECISION 2026-09-04 (Luke):** TS's GTGATE_A/B.SHP (42 frames, 144x96) are isometric diagonals; rotation-only and true inverse-iso re-projections were rendered and REJECTED ("hurts my eyes"); RA's concrete wall as a stand-in REJECTED ("I want the real deals"). Route = **generated voxel models** (posts + sliding panel) rendered through `scripts/vxl_render.py`'s `render_frame` at the mod camera — N/E/S/W and open/close frames from one grid, lighting matched to the TS vehicles. Luke judges a first sample before the arc opens. **Do Nod's too in the same arc (Luke, 2026-09-04): TS NAWALL + NAGATE_A/B, same generated-voxel route, Nod's styling.** |
+| TSWALL | GAWALL | 6 | 50 | 150 | TSPILE | Same art decision as the gate: GTWALL.SHP (96 frames, 48x48, 16 iso joins x 3 damage + shadows) cannot be made straight; generated voxel box segments, all 16 join states composed from boxes, rendered at the mod camera. Engine side: RA wall overlays are a hardcoded 5-slot set the launcher keys by name — decide new-slot vs re-art of BRIK when the arc opens (MAKE-suffix trap already handled). |
+| TSFIRE | GAFIRE | 9 | 2000 | 800 | TSTECH | Firestorm Generator, power -200: a toggled superweapon that raises the field on every TSFSDF for a timed burst. **New mechanic**, OpenTS reference. Added 2026-09-04 (Luke). |
+| TSFSDF | GAFSDF | 9 | 50 | 200 | TSFIRE | Firestorm Wall Section, power -2, IsBase=no: a 1x1 pillar, passable while the field is down, solid + lethal while up. GTFSDF.SHP (128 frames, 48x48) = pillar + ISOMETRIC diagonal field segments: reuse the pillar, ignore the field frames, draw the field ourselves as a straight beam between adjacent pillars along RA's grid (procedural, like the railgun/disruptor beams). OpenTS `IsFirestormWall`, `MAX_FIRESTORM_WALL_FRAMES 15`. |
+| TSEMPC | (Firestorm exp.) | — | — | — | — | EMP Pulse Cannon: branch `emp-cannon`, stage A verified, stages B-E open — `docs/emp-cannon-design.md`. Both sides in TS. |
 
 #### Vehicles (voxel renders @ 12 px/voxel unless noted)
 
@@ -1749,9 +1808,6 @@ IniName prefix throughout (dodges the TD HP-doubling hook). ✓ = shipped.
   Chinook lifts infantry only).
 - **LPST (Mobile Sensor Array)** — sensor/cloak-detect logic; revisit with
   the Stealth Generator `IsScanner` detectors.
-- **GAPLUG/2/3** (Upgrade Center + plugs) — upgrade-slot mechanic doesn't
-  exist; Ion Cannon Uplink could later host the existing Ion Cannon special
-  on the Temple-nuke pattern.
 - **GAFIRE/GAFSDF** (Firestorm) — wholly new defensive logic.
 - **NAPULS (EMP Cannon)** — EMP disable logic is new. *(An EMP arc is now
   planned in the subterranean instance's lane — coordinate before starting.)*

@@ -50,6 +50,7 @@
  * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 #include "function.h"
+#include <math.h>
 
 /***********************************************************************************************
  * BulletClass::BulletClass -- Bullet constructor.                                             *
@@ -85,6 +86,16 @@ BulletClass::BulletClass(BulletType id,
     , TFStage(0)
     , TFDwell(0)
     , TFUnloaded(0)
+    , TFPodHouse(HOUSE_NONE)
+    , TFPodApproach(DIR_N)
+    , TFPodType(INFANTRY_TDE1)
+    , TFBounces(0)
+    , TFVelX(0.0)
+    , TFVelY(0.0)
+    , TFVelZ(0.0)
+    , TFPosX(0.0)
+    , TFPosY(0.0)
+    , TFPosZ(0.0)
     , IsInaccurate(false)
     , IsToAnimate(false)
     , IsLocked(true)
@@ -499,6 +510,291 @@ bool BulletClass::Mark(MarkType mark)
     return (false);
 }
 
+/*
+**	The jumpjet a bullet is aimed at, if it is flying in the top map layer. Like an aircraft
+**	aloft it is off the cell lists, so a blast cannot find it; it takes its damage directly.
+*/
+static InfantryClass* TF_Airborne_Jumpjet(TARGET target)
+{
+    InfantryClass* inf = As_Infantry(target);
+    if (inf != NULL && inf->Is_Airborne_Jumpjet() && inf->In_Which_Layer() != LAYER_GROUND) {
+        return (inf);
+    }
+    return (NULL);
+}
+
+/*
+**	TS's constants for the Disc Thrower's disc: [General] Gravity=6 halved for a Floater,
+**	BulletTypeClass's default Elasticity, and the band above the ground inside which a
+**	ballistic shot strikes a building, a wall or (once skipping) a cliff.
+*/
+static double const TS_FLOATER_GRAVITY = 3.0;
+
+/*
+**	The widest a Juggernaut shell strays from its aim point, in leptons: a third of a cell,
+**	the range over which the artillery warhead still does most of its damage.
+*/
+static int const TS_JUGG_SCATTER = 85;
+static double const TS_DISC_ELASTICITY = 0.75;
+static int const TS_OBSTACLE_BAND = 150;
+
+/*
+**	TS's firing solution for a lobbed shot (OpenTS combat.cpp Calculate_Projectile_Angle): the
+**	launch angle that carries a shot at this speed, under this gravity, across a horizontal
+**	distance to a height difference. A reachable aim point has a flat and a lobbed answer;
+**	high_arc picks the lobbed one. Returns whether any answer exists.
+*/
+static bool TS_Projectile_Angle(bool high_arc, double speed, double distance, double height, double gravity, double& angle)
+{
+    double dx2 = (distance < 1.0) ? 1.0 : distance * distance;
+    double vsq = speed * speed;
+    double value = vsq * vsq - 2.0 * vsq * height * gravity - gravity * gravity * dx2;
+    if (value < 0.0) {
+        return (false);
+    }
+    double base = vsq - height * gravity;
+    double numerator = high_arc ? base - sqrt(value) : base + sqrt(value);
+    double cos2 = numerator / (((height * height) / dx2 + 1.0) * 2.0);
+    if (cos2 < 0.0) {
+        return (false);
+    }
+    double ratio = sqrt(cos2) / speed;
+    angle = acos(ratio > 1.0 ? 1.0 : ratio);
+    return (true);
+}
+
+/*
+**	Launches the Disc Thrower's disc as TS throws [Lobbed] (OpenTS TechnoClass::Fire_At). It
+**	leaves the thrower's hand at his fire height, aimed where the target will be: a moving
+**	vehicle is led by the ground it covers while the disc is in the air (Predict_Target_Coord).
+**	The launch speed carries the weapon's full range under the Floater's half gravity, capped
+**	at half the distance to the aim point, and the flat arc that lands on the aim point sets
+**	the angle. Returns false, throwing nothing, when no arc reaches the aim point.
+*/
+bool BulletClass::TS_Disc_Launch(COORDINATE coord)
+{
+    /*
+    **	RA's fire coordinate carries the hand height as a northward shift; the disc starts on
+    **	the ground beneath that point, at that height.
+    */
+    int lift = 0;
+    int range = CELL_LEPTON_W * 9 / 2;
+    if (Payback != NULL) {
+        TechnoTypeClass const* tclass = Payback->Techno_Type_Class();
+        lift = tclass->VerticalOffset;
+        coord = Coord_Move(coord, DIR_S, lift);
+        for (int which = 0; which < 2; which++) {
+            WeaponTypeClass const* weapon = (which == 0) ? tclass->PrimaryWeapon : tclass->SecondaryWeapon;
+            if (weapon != NULL && weapon->Bullet != NULL && weapon->Bullet->Type == BULLET_TSLOBBED) {
+                range = weapon->Range;
+                break;
+            }
+        }
+    }
+    int speed = (int)sqrt((double)range * TS_FLOATER_GRAVITY * 1.2);
+
+    COORDINATE tcoord = As_Coord(TarCom);
+    int theight = 0;
+    TechnoClass const* victim = As_Techno(TarCom);
+    if (victim != NULL) {
+        theight = victim->Height;
+        if (victim->What_Am_I() == RTTI_UNIT && ((UnitClass const*)victim)->IsDriving) {
+            UnitClass const* unit = (UnitClass const*)victim;
+            int maxspeed = min(unit->Class->MaxSpeed * unit->SpeedBias * unit->House->GroundspeedBias, (int)MPH_LIGHT_SPEED);
+            if (unit->IsFormationMove) {
+                maxspeed = unit->FormationMaxSpeed;
+            }
+            if (unit->Flagged != HOUSE_NONE) {
+                maxspeed /= 2;
+            }
+            int ground = maxspeed * fixed(unit->Speed, 256);
+            int travel = (int)(::Distance(coord, tcoord) / (speed * 0.9) * ground);
+            tcoord = Coord_Move(tcoord, unit->PrimaryFacing.Current(), travel);
+        }
+    }
+
+    double dx = (double)Coord_X(tcoord) - (double)Coord_X(coord);
+    double dy = (double)Coord_Y(tcoord) - (double)Coord_Y(coord);
+    double dz = (double)(theight - lift);
+    double planar = sqrt(dx * dx + dy * dy);
+    double length = sqrt(planar * planar + dz * dz);
+    if (speed > length / 2) {
+        speed = (int)(length / 2);
+    }
+
+    /*
+    **	The lobbed arc is taken only for an aim point higher than it is far away; the flat
+    **	answer can point downwards, which a second solve a lepton further out reveals.
+    */
+    bool high = (dz > 0.0 && planar < dz);
+    double angle = 0.0;
+    if (speed <= 0 || !TS_Projectile_Angle(high, speed, planar, dz, TS_FLOATER_GRAVITY, angle)) {
+        return (false);
+    }
+    if (!high) {
+        double test = angle;
+        TS_Projectile_Angle(false, speed, planar + 1.0, dz, TS_FLOATER_GRAVITY, test);
+        if (test < angle) {
+            angle = -angle;
+        }
+    }
+
+    Height = 0;
+    if (!ObjectClass::Unlimbo(coord)) {
+        return (false);
+    }
+    Map.Remove(this, In_Which_Layer());
+
+    double horizontal = speed * cos(angle);
+    TFVelX = (planar > 0.0) ? horizontal * dx / planar : 0.0;
+    TFVelY = (planar > 0.0) ? horizontal * dy / planar : 0.0;
+    TFVelZ = speed * sin(angle);
+    TFPosX = Coord_X(coord);
+    TFPosY = Coord_Y(coord);
+    TFPosZ = lift;
+    TFBounces = 0;
+    Height = lift;
+    IsFalling = false;
+    Riser = 0;
+    PrimaryFacing = ::Direction(coord, tcoord);
+
+    Map.Submit(this, In_Which_Layer());
+    return (true);
+}
+
+/*
+**	Flies the Disc Thrower's disc on TS's ballistic step for a Bouncy Floater (OpenTS
+**	BulletClass::AI, the unguided branch). Each frame half gravity pulls it down and it moves
+**	by its velocity. Flying under the obstacle band into a non-allied building or a wall
+**	strikes it. Striking the ground or an obstacle bounces it back at three quarters of its
+**	speed, unless an enemy stands in the cell it came from, the landing cell is water or a
+**	cliff, or it has touched down three times; any of those sets it off. Once it has skipped,
+**	flying low over a cliff sets it off too, though a first throw clears cliffs. In flight it
+**	goes off on any enemy within half a cell of it, and it goes off where it lies once it has
+**	slowed to a crawl near the ground. A disc that lands on someone near its target goes off
+**	on the target, as TS nudges a collision onto its victim.
+*/
+void BulletClass::TS_Disc_AI(void)
+{
+    ObjectClass::AI();
+    if (!IsActive) {
+        return;
+    }
+
+    COORDINATE const from = Coord;
+    bool forced = false;
+    bool collided = false;
+
+    TFVelZ -= TS_FLOATER_GRAVITY;
+    double x = TFPosX + TFVelX;
+    double y = TFPosY + TFVelY;
+    double z = TFPosZ + TFVelZ;
+
+    /*
+    **	A disc thrown off the edge of the map vanishes.
+    */
+    double const edge = (double)(MAP_CELL_W * CELL_LEPTON_W);
+    if (x < 0.0 || y < 0.0 || x >= edge || y >= edge || !Map.In_Radar(Coord_Cell(XY_Coord((int)x, (int)y)))) {
+        Mark();
+        delete this;
+        return;
+    }
+    COORDINATE coord = XY_Coord((int)x, (int)y);
+    CellClass& cell = Map[coord];
+    bool const low = (z >= 0.0 && z < TS_OBSTACLE_BAND);
+
+    bool obstacle = false;
+    if (low) {
+        BuildingClass* building = cell.Cell_Building();
+        if (building != NULL) {
+            obstacle = (building != Payback && (Payback == NULL || !Payback->House->Is_Ally(building)));
+        } else if (cell.Overlay != OVERLAY_NONE && OverlayTypeClass::As_Reference(cell.Overlay).IsWall) {
+            obstacle = true;
+        }
+    }
+
+    if (z < 0.0 || obstacle) {
+        z = 0.0;
+        TFVelX *= TS_DISC_ELASTICITY;
+        TFVelY *= TS_DISC_ELASTICITY;
+        TFVelZ *= -TS_DISC_ELASTICITY;
+
+        CELL fromcell = Coord_Cell(from);
+        TechnoClass* techno = Map[fromcell].Cell_Techno();
+        if ((Payback != NULL && fromcell == Coord_Cell(Payback->Center_Coord()))
+            || (techno != NULL && Payback != NULL && Payback->House->Is_Ally(techno))) {
+            techno = NULL;
+        }
+        if (techno != NULL && techno != Payback) {
+            forced = true;
+            collided = true;
+        }
+
+        LandType land = cell.Land_Type();
+        if (land == LAND_WATER || land == LAND_RIVER || land == LAND_ROCK) {
+            forced = true;
+        }
+
+        TFBounces++;
+        if (TFBounces >= 3) {
+            forced = true;
+        }
+    } else if (TFBounces > 0 && low && cell.Land_Type() == LAND_ROCK) {
+        forced = true;
+    }
+
+    if (!forced) {
+        TechnoClass* techno = cell.Cell_Techno();
+        if (techno != NULL && techno != Payback && (Payback == NULL || !Payback->House->Is_Ally(techno))) {
+            COORDINATE hit = techno->Center_Coord();
+            double hx = (double)Coord_X(hit) - x;
+            double hy = (double)Coord_Y(hit) - y;
+            double hz = (double)techno->Height - z;
+            if (sqrt(hx * hx + hy * hy + hz * hz) < CELL_LEPTON_W / 2) {
+                forced = true;
+                coord = hit;
+                x = Coord_X(hit);
+                y = Coord_Y(hit);
+                z = techno->Height;
+            }
+        }
+    }
+
+    double speed = sqrt(TFVelX * TFVelX + TFVelY * TFVelY + TFVelZ * TFVelZ);
+    if (speed < 10.0 && Height < 10) {
+        forced = true;
+    }
+
+    Mark();
+    LayerType layer = In_Which_Layer();
+    Coord = coord;
+    Height = (int)z;
+    TFPosX = x;
+    TFPosY = y;
+    TFPosZ = z;
+    if (In_Which_Layer() != layer) {
+        Map.Remove(this, layer);
+        Map.Submit(this, In_Which_Layer());
+    }
+
+    if (forced) {
+        if (collided && Target_Legal(TarCom)) {
+            COORDINATE tcoord = As_Coord(TarCom);
+            ObjectClass const* tobj = As_Object(TarCom);
+            double tz = (tobj != NULL) ? (double)tobj->Height : 0.0;
+            double mx = (double)Coord_X(tcoord) - x;
+            double my = (double)Coord_Y(tcoord) - y;
+            double mz = (z + tz) / 2.0 - tz;
+            double reach = (speed * 2.0 > CELL_LEPTON_W / 2) ? speed * 2.0 : (double)(CELL_LEPTON_W / 2);
+            if (sqrt(mx * mx + my * my + mz * mz) / 3.0 <= reach) {
+                Coord = tcoord;
+            }
+        }
+        Bullet_Explodes(true);
+        delete this;
+    }
+}
+
 /***********************************************************************************************
  * BulletClass::AI -- Logic processing for bullet.                                             *
  *                                                                                             *
@@ -524,8 +820,21 @@ void BulletClass::AI(void)
     **	Tiberian Factions mod: TD-ported bullets run TD's verbatim AI body via
     **	AI_TD(). No RA logic for TD entities per [[project-td-port-architecture]].
     */
+    /*
+    **	The TS SAM missile trails SMOKEY2 puffs (TS art.ini [DRAGON] Trailer=SMOKEY2), each
+    **	drawn where the missile appears: screen-up is map-north, so it sits north by its height.
+    */
+    if (*this == BULLET_TSAAHEATSEEKER && !IsInLimbo && (Frame % 3) == 0) {
+        new AnimClass(ANIM_TS_SMOKEY2, Coord_Move(Coord, DIR_N, Height));
+    }
+
     if (Class->IsTDPort) {
         AI_TD();
+        return;
+    }
+
+    if (*this == BULLET_TSLOBBED) {
+        TS_Disc_AI();
         return;
     }
 
@@ -543,8 +852,18 @@ void BulletClass::AI(void)
         **	stops at arrival and the flame fades about a third of its flight beyond it.
         */
         if (TFDwell <= 0) {
-            int frames = ::Distance(Coord, ::As_Coord(TarCom)) / max(1, MaxSpeed);
-            TFDwell = frames / 15 + 1; // TS: min_time / (FinalDamageState + 1) + 1
+            /*
+            **	Backstop only -- the stream spawner sizes the dwell at launch. A
+            **	particle reaching this with its target already dead must fade at the
+            **	minimum rate: As_Coord on a dead target is the map origin, and
+            **	measuring against that handed the flame a cross-map lifetime.
+            */
+            if (!Target_Legal(TarCom)) {
+                TFDwell = 1;
+            } else {
+                int frames = ::Distance(Coord, ::As_Coord(TarCom)) / max(1, MaxSpeed);
+                TFDwell = frames / 15 + 1; // TS: min_time / (FinalDamageState + 1) + 1
+            }
         }
         TFStage++;
         int state = TFStage / TFDwell;
@@ -720,12 +1039,156 @@ void BulletClass::AI(void)
         return;
     }
 
+    /*
+    **	The infantry drop pod streaks in along TS's fixed ~45-degree approach
+    **	(DropPodAngle 0.79): equal horizontal and vertical speed, so it spawns
+    **	one drop-height sideways from the LZ and arrives exactly as it grounds.
+    **	OpenTS droppod.cpp Process(), ported onto the bullet frame: SMOKEY
+    **	puffs trail the fall, the LZ takes doubled Vulcan2 fire while a
+    **	non-ally holds it, and touchdown spawns the trooper, the husk mark and
+    **	the DROPEXP puff -- or a C4-grade blast when the cell won't take the
+    **	trooper. Like the dropship, it returns before the ballistic code, so
+    **	the fuse and Physics never run.
+    */
+    /*
+    **	TS Hunter Seeker droid (SPC_TS_HUNTSEEK). A self-guided kamikaze on the
+    **	bullet frame -- the bullet's own AI deletes it cleanly, which the
+    **	aircraft attempt could not. It flies at altitude toward a random enemy
+    **	the granting house's picker chose (re-acquiring if that victim dies) and
+    **	detonates on contact: the target takes a forced lethal hit, a tight
+    **	splash lands, and the droid removes itself. Being airborne it is never
+    **	in the impact cell's occupier list, so a target's own death-explosion
+    **	(an explosive harvester) can never reach it. TFPodHouse carries the
+    **	firing house; TarCom is the current victim.
+    */
+    if (*this == BULLET_TSHUNTER) {
+        ObjectClass::AI();
+        if (!IsActive) {
+            return;
+        }
+        Mark(MARK_CHANGE);
+        LayerType layer = In_Which_Layer();
+
+        enum
+        {
+            HUNT_SPEED = 42,
+            HUNT_DETONATE = 160
+        };
+
+        if (!Target_Legal(TarCom)) {
+            HouseClass* hptr = (TFPodHouse != HOUSE_NONE) ? HouseClass::As_Pointer(TFPodHouse) : NULL;
+            TarCom = (hptr != NULL) ? TF_Hunter_Seeker_Acquire(hptr) : TARGET_NONE;
+        }
+
+        if (Target_Legal(TarCom)) {
+            COORDINATE tcoord = ::As_Coord(TarCom);
+            int dist = Distance(tcoord);
+            DirType dir = ::Direction(Coord, tcoord);
+            PrimaryFacing.Set(dir);
+
+            if (dist < HUNT_DETONATE) {
+                TechnoClass* victim = As_Techno(TarCom);
+                Sound_Effect(VOC_TS_HUNTER2, Coord);
+                if (victim != NULL && victim->IsActive) {
+                    int dmg = victim->Strength + 1000;
+                    victim->Take_Damage(dmg, 0, WARHEAD_HE, NULL, true);
+                }
+                Explosion_Damage(tcoord, 400, NULL, WARHEAD_HE);
+                new AnimClass(ANIM_FBALL1, tcoord);
+                delete this;
+                return;
+            }
+
+            Coord = Coord_Move(Coord, dir, HUNT_SPEED);
+        }
+
+        if (In_Which_Layer() != layer) {
+            Map.Remove(this, layer);
+            Map.Submit(this, In_Which_Layer());
+        }
+        return;
+    }
+
+    if (*this == BULLET_TSPODDROP) {
+        ObjectClass::AI();
+        if (!IsActive) {
+            return;
+        }
+        Mark(MARK_CHANGE);
+        LayerType layer = In_Which_Layer();
+        TFDwell++;
+
+        COORDINATE lz = ::As_Coord(TarCom);
+
+        if (Height > 0) {
+            Height -= TF_POD_FALL_SPEED;
+            Coord = Coord_Move(Coord, TFPodApproach, TF_POD_FALL_SPEED);
+
+            /*
+            **	The trail draws where the pod APPEARS: screen-up is map-north,
+            **	so the puff's coord is the pod shifted north by its altitude.
+            */
+            if (TFDwell % 6 == 0) {
+                new AnimClass(ANIM_TS_SMOKEY, Coord_Move(Coord, DIR_N, Height));
+            }
+            if (TFDwell % 3 == 0) {
+                TechnoClass* holder = Map[Coord_Cell(lz)].Cell_Techno();
+                HouseClass* hptr = (TFPodHouse != HOUSE_NONE) ? HouseClass::As_Pointer(TFPodHouse) : NULL;
+                if (holder != NULL && hptr != NULL && !hptr->Is_Ally(holder)) {
+                    COORDINATE hit = Coord_Scatter(lz, CELL_LEPTON_W / 3, false);
+                    Sound_Effect(VOC_TS_GUN4, Coord);
+                    Explosion_Damage(hit, 2 * TF_POD_STRAFE_DAMAGE, NULL, WARHEAD_SA);
+                    new AnimClass(ANIM_PIFFPIFF, hit);
+                }
+            }
+        } else {
+            Height = 0;
+            Coord = lz;
+
+            InfantryClass* trooper = new InfantryClass(TFPodType, TFPodHouse);
+            bool landed = (trooper != NULL) && trooper->Unlimbo(Coord, DIR_S);
+            if (landed) {
+                new AnimClass((Frame & 1) ? ANIM_TS_DROPPOD2 : ANIM_TS_DROPPOD1, Coord);
+                new AnimClass(ANIM_TS_DROPEXP, Coord);
+                trooper->Scatter(0, true);
+            } else {
+                if (trooper != NULL) {
+                    delete trooper;
+                }
+                Explosion_Damage(Coord, 100, NULL, WARHEAD_HE);
+                new AnimClass(ANIM_FBALL1, Coord);
+            }
+            delete this;
+            return;
+        }
+
+        if (In_Which_Layer() != layer) {
+            Map.Remove(this, layer);
+            Map.Submit(this, In_Which_Layer());
+        }
+        return;
+    }
+
     COORDINATE coord;
 
     ObjectClass::AI();
 
     if (!IsActive)
         return;
+
+    /*
+    **	The TS SAM missile climbs from the muzzle to flight level, rising half as fast
+    **	as it flies. Its map layer follows the height so Limbo removes it from the
+    **	right list.
+    */
+    if (*this == BULLET_TSAAHEATSEEKER && Height < FLIGHT_LEVEL) {
+        LayerType layer = In_Which_Layer();
+        Height = min(Height + max((int)MaxSpeed / 2, 16), (int)FLIGHT_LEVEL);
+        if (In_Which_Layer() != layer) {
+            Map.Remove(this, layer);
+            Map.Submit(this, In_Which_Layer());
+        }
+    }
 
     /*
     **	Ballistic objects are handled here.
@@ -859,7 +1322,10 @@ void BulletClass::AI(void)
         **	maintenance (usually nothing). Otherwise, explode and then
         **	delete the bullet.
         */
-        if (!forced && (Class->IsDropping || !Fuse_Checkup(Coord))) {
+        /*
+        **	The Juggernaut's shell has no proximity fuse: only the end of its arc brings it down.
+        */
+        if (!forced && (Class->IsDropping || *this == BULLET_TSBALLISTIC2 || !Fuse_Checkup(Coord))) {
             /*
             **	Certain projectiles lose strength when they travel.
             */
@@ -898,6 +1364,10 @@ int BulletClass::Shape_Number(void) const
     /*
     **	TF: FLAMEALL is 4 axis sets (N/S, NE/SW, E/W, NW/SE) x 19 ageing states.
     */
+    if (*this == BULLET_TSHUNTER) {
+        return ((Frame / 3) & 7);
+    }
+
     if (*this == BULLET_TSFIRE) {
         int state = TFStage / max(1, TFDwell);
         if (state > 18) {
@@ -1161,12 +1631,17 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
         return (Unlimbo_TD(coord, dir));
     }
 
+    if (*this == BULLET_TSLOBBED) {
+        return (TS_Disc_Launch(coord));
+    }
+
     /*
     **	Try to unlimbo the bullet as far as the base class is concerned. Use the already
     **	set direction and strength if the "punt" values were passed in. This allows a bullet
-    **	to be setup prior to being launched.
+    **	to be setup prior to being launched. The TS SAM missile leaves the launcher at
+    **	the muzzle and climbs to flight level in AI.
     */
-    if (!Class->IsHigh) {
+    if (!Class->IsHigh || *this == BULLET_TSAAHEATSEEKER) {
         Height = 0;
     }
     if (ObjectClass::Unlimbo(coord)) {
@@ -1179,6 +1654,19 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
         **	direction specified and let the chips fall where they may.
         */
         if (Class->ROT == 0 && !Class->IsDropping) {
+            dir = Direction(tcoord);
+        }
+
+        /*
+        **	The Juggernaut's shell lands within TS_JUGG_SCATTER of its aim point, in any
+        **	direction, rolled afresh for every shot. The roll is the smaller of two, so the
+        **	cluster sits tight around the aim and a fair share of shells land dead on: damage
+        **	falls off as distance / (Spread * 5) leptons, so a shell a cell wide of its mark
+        **	scratches the paint.
+        */
+        if (*this == BULLET_TSBALLISTIC2) {
+            int scatter = min(Random_Pick(0, TS_JUGG_SCATTER), Random_Pick(0, TS_JUGG_SCATTER));
+            tcoord = Coord_Move(tcoord, (DirType)Random_Pick(0, 255), scatter);
             dir = Direction(tcoord);
         }
 
@@ -1269,6 +1757,43 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
             Height = 1;
             Riser = ((Distance(tcoord) / 2) / (speed + 1)) * Rule.Gravity;
             Riser = max(Riser, 10);
+
+            /*
+            **	The Juggernaut's shell lands on the frame it reaches its aim point: the flight is cut
+            **	into whole frames, the ground speed set so those frames cover the range exactly, and
+            **	the climb chosen so the arc comes down on the last of them. The stock arithmetic
+            **	above rounds the climb independently of the speed and puts a fast shell down a
+            **	constant half cell from where it was aimed.
+            */
+            if (*this == BULLET_TSBALLISTIC2) {
+                /*
+                **	The flight covers the true distance to the aim point. ::Distance() is the
+                **	cheap approximation (the bigger axis plus half the smaller), which overstates
+                **	a diagonal by up to an eighth and throws the shell that far beyond its aim.
+                */
+                double adx = (double)((int)Coord_X(tcoord) - (int)Coord_X(Coord));
+                double ady = (double)((int)Coord_Y(tcoord) - (int)Coord_Y(Coord));
+                int dist = (int)(sqrt(adx * adx + ady * ady) + 0.5);
+                int frames = max(4, (dist + speed - 1) / speed);
+                speed = max(1, (dist + frames - 1) / frames);
+                Fly_Speed(255, (MPHType)speed);
+                Riser = max(1, (Rule.Gravity * (frames - 1)) / 2 - 1);
+#if TF_DEV_BUILD
+                {
+                    const char* prof = getenv("USERPROFILE");
+                    char path[512];
+                    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : ".");
+                    FILE* lf = fopen(path, "a");
+                    if (lf != NULL) {
+                        fprintf(lf, "frame=%d JUGG-LAUNCH from=(%d,%d) aim=(%d,%d) target=(%d,%d) dist=%d frames=%d speed=%d riser=%d dir=%d\n",
+                                (int)Frame, (int)Coord_X(Coord), (int)Coord_Y(Coord), (int)Coord_X(tcoord), (int)Coord_Y(tcoord),
+                                (int)Coord_X(As_Coord(TarCom)), (int)Coord_Y(As_Coord(TarCom)), dist, frames, speed,
+                                (int)Riser, (int)dir);
+                        fclose(lf);
+                    }
+                }
+#endif
+            }
         }
         if (Class->IsDropping) {
             IsFalling = true;
@@ -1637,7 +2162,7 @@ void BulletClass::AI_TD(void)
         **	BULLET_TOW gets 1/3 boost; other AA bullets get 1/2. Our TDSSM is
         **	the TD-port equivalent of TD's TOW.
         */
-        if (Class->IsAntiAircraft && As_Aircraft(TarCom) && Distance(TarCom) < 0x0080) {
+        if (Class->IsAntiAircraft && (As_Aircraft(TarCom) || TF_Airborne_Jumpjet(TarCom)) && Distance(TarCom) < 0x0080) {
             forced = true;
             if (*this == BULLET_SSM) {  // TD: BULLET_TOW
                 Strength += Strength / 3;
@@ -1687,16 +2212,20 @@ void BulletClass::AI_TD(void)
                 fflush(TF_TDPortLog);
             }
 #endif
-            if (!Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->In_Which_Layer() == LAYER_GROUND) {
+            if ((!Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->In_Which_Layer() == LAYER_GROUND)
+                && TF_Airborne_Jumpjet(TarCom) == NULL) {
                 Explosion_Damage(Coord, Strength, Payback, Class->ClassWarhead);
             } else {
 
                 /*
                 **	Special damage apply for SAM missiles. This is the only way that
-                **	missile damage affects the aircraft target.
+                **	missile damage affects an aircraft or airborne jumpjet target.
                 */
                 if (Distance(TarCom) < 0x0080) {
-                    AircraftClass* object = As_Aircraft(TarCom);
+                    TechnoClass* object = As_Aircraft(TarCom);
+                    if (object == NULL) {
+                        object = TF_Airborne_Jumpjet(TarCom);
+                    }
 
                     int str = Strength;
                     if (object)
@@ -1877,7 +2406,7 @@ bool BulletClass::Is_Forced_To_Explode(COORDINATE& coord) const
     /*
     **	Bullets are generally more effective when they are fired at aircraft.
     */
-    if (Class->IsAntiAircraft && As_Aircraft(TarCom) && Distance(TarCom) < 0x0080) {
+    if (Class->IsAntiAircraft && (As_Aircraft(TarCom) || TF_Airborne_Jumpjet(TarCom)) && Distance(TarCom) < 0x0080) {
         return (true);
     }
 
@@ -1906,6 +2435,29 @@ bool BulletClass::Is_Forced_To_Explode(COORDINATE& coord) const
 void BulletClass::Bullet_Explodes(bool forced)
 {
     /*
+    **	The Juggernaut's shell comes down on its (scattered) aim point when the arc ends within
+    **	a cell of it, so the flight's rounding never moves the burst off where it was rolled to land.
+    */
+    if (*this == BULLET_TSBALLISTIC2 && forced && Fuse_Target() != 0 && ::Distance(Coord, Fuse_Target()) < CELL_LEPTON_W) {
+        Coord = Fuse_Target();
+    }
+#if TF_DEV_BUILD
+    if (*this == BULLET_TSBALLISTIC2) {
+        const char* prof = getenv("USERPROFILE");
+        char path[512];
+        snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", prof ? prof : ".");
+        FILE* lf = fopen(path, "a");
+        if (lf != NULL) {
+            COORDINATE tc = Target_Legal(TarCom) ? As_Coord(TarCom) : 0;
+            fprintf(lf, "frame=%d JUGG-SHELL impact at=(%d,%d) off=(%d,%d) target=%s dist=%d aimoff=(%d,%d) forced=%d height=%d\n", (int)Frame,
+                    (int)Coord_X(Coord), (int)Coord_Y(Coord), (int)Coord_X(Coord) - (int)Coord_X(tc), (int)Coord_Y(Coord) - (int)Coord_Y(tc),
+                    Target_Legal(TarCom) ? "yes" : "none", tc ? (int)::Distance(Coord, tc) : -1,
+                    (int)Coord_X(Coord) - (int)Coord_X(Fuse_Target()), (int)Coord_Y(Coord) - (int)Coord_Y(Fuse_Target()), (int)forced, (int)Height);
+            fclose(lf);
+        }
+    }
+#endif
+    /*
     **	A delivery projectile arrives rather than detonating: it applies no damage at
     **	all, and its cargo is set down by the destructor, exactly as the dog bullet
     **	puts its dog back on the map. Returning here is the whole behaviour.
@@ -1933,9 +2485,26 @@ void BulletClass::Bullet_Explodes(bool forced)
     }
 
     /*
+    **	A TS arcing shell that lands near its target goes off on the target's centre, so
+    **	a target that moved during the flight still takes the full blast. Near means a
+    **	third of the landing distance is within the greater of half a cell and two
+    **	frames' flight, TS's own rule.
+    */
+    if (*this == BULLET_TSLOBBED2) {
+        TechnoClass* victim = As_Techno(TarCom);
+        if (victim != NULL && victim->IsActive && !victim->IsInLimbo) {
+            COORDINATE vcoord = victim->Center_Coord();
+            if (::Distance(Coord, vcoord) / 3 <= max(CELL_LEPTON_W / 2, (int)MaxSpeed * 2)) {
+                Coord = vcoord;
+            }
+        }
+    }
+
+    /*
     **	Non-aircraft targets apply damage to the ground.
     */
-    if (!Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->In_Which_Layer() == LAYER_GROUND) {
+    if ((!Is_Target_Aircraft(TarCom) || As_Aircraft(TarCom)->In_Which_Layer() == LAYER_GROUND)
+        && TF_Airborne_Jumpjet(TarCom) == NULL) {
         Explosion_Damage(Coord, Strength, Payback, Warhead);
         if (!IsActive)
             return;
@@ -1944,10 +2513,13 @@ void BulletClass::Bullet_Explodes(bool forced)
 
         /*
         **	Special damage apply for SAM missiles. This is the only way that missile
-        **	damage affects the aircraft target.
+        **	damage affects an aircraft or airborne jumpjet target.
         */
         if (Distance(TarCom) < 0x0080) {
-            AircraftClass* object = As_Aircraft(TarCom);
+            TechnoClass* object = As_Aircraft(TarCom);
+            if (object == NULL) {
+                object = TF_Airborne_Jumpjet(TarCom);
+            }
 
             int str = Strength;
             if (object)
@@ -1969,7 +2541,8 @@ void BulletClass::Bullet_Explodes(bool forced)
     */
     CellClass const* cellptr = &Map[Coord];
     LandType land = cellptr->Land_Type();
-    if (Is_Target_Aircraft(TarCom) && As_Aircraft(TarCom)->In_Which_Layer() == LAYER_TOP) {
+    if ((Is_Target_Aircraft(TarCom) && As_Aircraft(TarCom)->In_Which_Layer() == LAYER_TOP)
+        || TF_Airborne_Jumpjet(TarCom) != NULL) {
         land = LAND_NONE;
     }
 

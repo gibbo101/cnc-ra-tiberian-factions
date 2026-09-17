@@ -702,6 +702,13 @@ bool DisplayClass::Passes_Proximity_Check(ObjectTypeClass const* object,
     BuildingTypeClass const* building = (BuildingTypeClass const*)object;
 
     /*
+    **	A tall TS building's placement list starts with headroom rows above the ground
+    **	it stands on. trycell is the plot origin, so those rows sit above the ghost the
+    **	player sees; they do not count towards proximity.
+    */
+    int headroom = building->Placement_Ghost_Rows_Above() * MAP_CELL_W;
+
+    /*
     **	Scan through all cells that the building foundation would cover. If any adjacent
     **	cells to these are of friendly persuasion, then consider the proximity check to
     **	have been a success.
@@ -712,6 +719,10 @@ bool DisplayClass::Passes_Proximity_Check(ObjectTypeClass const* object,
     //	CELL cell = ZoneCell;
     if (building->Adjacent == 1) {
         while (*ptr != REFRESH_EOL && (retval == -1)) {
+            if (*ptr < headroom) {
+                ptr++;
+                continue;
+            }
             cell = trycell + *ptr++;
             //			cell = ZoneCell + ZoneOffset + *ptr++;
 
@@ -2917,6 +2928,32 @@ void DisplayClass::Select_These(COORDINATE coord1, COORDINATE coord2, bool addit
     }
 
     /*
+    **	Select any airborne jumpjets within the bounding box. Those in the top layer are off the
+    **	ground list; they are measured where they are drawn, lifted by their height.
+    */
+    for (int inf_index = 0; inf_index < Infantry.Count(); inf_index++) {
+        InfantryClass* inf = Infantry.Ptr(inf_index);
+        if (!inf->IsActive || inf->IsInLimbo || !inf->Is_Airborne_Jumpjet() || inf->In_Which_Layer() == LAYER_GROUND) {
+            continue;
+        }
+        COORDINATE ocoord = inf->Center_Coord();
+        int x = Coord_X(ocoord);
+        int y = Coord_Y(ocoord) - inf->Height;
+        if (inf->Class->IsSelectable && !inf->Is_Cloaked(PlayerPtr) && !inf->Is_Selected_By_Player() && x >= x1
+            && x <= x2 && y >= y1 && y <= y2) {
+            bool old_allow_voice = AllowVoice;
+            bool is_player_controlled = inf->House->IsPlayerControl;
+            AllowVoice &= is_player_controlled;
+            if (inf->Select(true)) {
+                if (is_player_controlled) {
+                    old_allow_voice = false;
+                }
+            }
+            AllowVoice = old_allow_voice;
+        }
+    }
+
+    /*
     ** If a mix of player and non-player controlled units were selected, make sure non-player controlled units are
     *de-selected
     */
@@ -3171,7 +3208,8 @@ int DisplayClass::TacticalClass::Action(unsigned flags, KeyNumType& key)
             // changes; ACTION_NUKE_BOMB is the closest cursor we can
             // reach from the mod side (crosshair-style targeting). If we
             // ever land launcher-side hooks, this becomes ACTION_TD_ION_CANNON.
-            if (Map.IsTargettingMode == SPC_TD_ION_CANNON) {
+            if (Map.IsTargettingMode == SPC_TD_ION_CANNON || Map.IsTargettingMode == SPC_TS_ION_CANNON
+                || Map.IsTargettingMode == SPC_TS_DROPPODS) {
                 action = ACTION_NUKE_BOMB;
             }
 

@@ -19,9 +19,10 @@ So this script:
      (Shape 0-11) and writes it into the mod's TILESETS dir (full replacement,
      same delivery pattern as RA_STRUCTURES.XML).
 
-Theatres: temperate (TD TEMPERATE art -> RA_TERRAIN_TEMPERATE.XML) and snow
-(TD WINTER art -> RA_TERRAIN_SNOW.XML -- TD winter Tiberium for the converted
-winter maps). Interior/desert is a later copy.
+Theatres: temperate (TD TEMPERATE art -> RA_TERRAIN_TEMPERATE.XML), interior
+(TD DESERT art -> RA_TERRAIN_INTERIOR.XML) and snow (TD WINTER art ->
+RA_TERRAIN_SNOW.XML, for RA's own snow maps). Pass theatre names (e.g. SNOW)
+to build only those; with none, every theatre is built.
 See memory project-tiberium-overlay-implementation.md.
 
 License: GPL v3 (inherited from Vanilla Conquer base).
@@ -29,6 +30,7 @@ License: GPL v3 (inherited from Vanilla Conquer base).
 import io
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -53,12 +55,15 @@ TD_TERRAIN_TEMP = TD_TERRAIN + r"\TEMPERATE"   # imported by build_td_tiles.py
 # RA theatre -> TD source theatre wiring. The TD MEG's per-tile subdir carries
 # the theatre suffix for WINTER ("TI1.WIN\TI1.WIN-NNNN.DDS") but NOT for
 # TEMPERATE ("TI1\TI1.TEM-NNNN.DDS") -- hence the explicit subdir/frame fmts.
-#   (RA theatre dir, tileset XML, TD MEG theatre dir, TD art suffix)
-# NOTE: no SNOW row -- TD winter maps live in RA's TEMPERATE slot (the TDW
-# template family); RA's snow theatre stays fully vanilla.
+#   (RA theatre dir, tileset XML, TD MEG theatre dir, TD art suffix, splice)
+# TD winter maps live in RA's TEMPERATE slot (the TDW template family); the SNOW
+# row is for RA's own snow maps (the official-map Tiberium/Ore hybrids).
+# splice=False rebuilds the mod tileset from the base one; splice=True adds the
+# tiles to the mod's existing tileset, which carries other scripts' tiles.
 THEATRES = [
-    ("TEMPERATE", "RA_TERRAIN_TEMPERATE.XML", "TEMPERATE", "TEM"),
-    ("INTERIOR", "RA_TERRAIN_INTERIOR.XML", "DESERT", "DES"),
+    ("TEMPERATE", "RA_TERRAIN_TEMPERATE.XML", "TEMPERATE", "TEM", False),
+    ("INTERIOR", "RA_TERRAIN_INTERIOR.XML", "DESERT", "DES", False),
+    ("SNOW", "RA_TERRAIN_SNOW.XML", "WINTER", "WIN", True),
 ]
 
 # Terrain HD assets to bundle into each theatre's tileset XML. Each:
@@ -181,6 +186,37 @@ def tile_block(name, stem, shape, mode):
     )
 
 
+def splice_tileset(work_dir, tileset_xml, ra_dir):
+    '''Install the theatre's ASSETS tiles into the mod's existing tileset,
+    replacing any earlier run of the same names and keeping the file's line
+    endings. The base tileset is copied in first if the mod has none yet.'''
+    out = TILESETS_DIR / tileset_xml
+    if not out.exists():
+        base = extract_from_meg(CONFIG_MEG, r"DATA\XML\TILESETS" + "\\" + tileset_xml,
+                                work_dir / "xml")
+        TILESETS_DIR.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(base, out)
+    raw = out.read_bytes()
+    crlf = b"\r\n" in raw
+    text = raw.decode("utf-8").replace("\r\n", "\n")
+    removed = 0
+    blocks = ""
+    for (name, stem, _td, n_frames, mode, only) in ASSETS:
+        if only is not None and ra_dir not in only:
+            continue
+        text, n = re.subn(r"[ \t]*<Tile>\s*<Key>\s*<Name>" + re.escape(name)
+                          + r"</Name>.*?</Tile>\n", "", text, flags=re.S)
+        removed += n
+        blocks += "".join(tile_block(name, stem, s, mode) for s in range(n_frames))
+    end = text.rindex("</Tiles>")
+    end = text.rindex("\n", 0, end) + 1
+    text = text[:end] + blocks + text[end:]
+    if crlf:
+        text = text.replace("\n", "\r\n")
+    out.write_bytes(text.encode("utf-8"))
+    print(f"  spliced {out} (+{blocks.count('<Tile>')} tiles, replaced {removed})")
+
+
 def patch_tileset(work_dir, tileset_xml, ra_dir):
     '''Extract the base theatre tileset XML, inject the theatre's ASSETS tiles,
     write to mod.'''
@@ -214,7 +250,10 @@ def main():
             sys.exit(f"Source MEG not found: {p}\nSet CNC_REMASTER_DATA.")
     work = Path("/tmp/tib_hd_build")
     work.mkdir(parents=True, exist_ok=True)
-    for (ra_dir, tileset_xml, td_dir, td_suffix) in THEATRES:
+    wanted = {a.upper() for a in sys.argv[1:]}
+    for (ra_dir, tileset_xml, td_dir, td_suffix, splice) in THEATRES:
+        if wanted and ra_dir not in wanted:
+            continue
         print(f"Building {ra_dir.lower()} terrain HD art (TD {td_dir.lower()})...")
         tex_dir = TEX_ROOT / ra_dir
         for (name, stem, td_name, n_frames, mode, only) in ASSETS:
@@ -229,7 +268,10 @@ def main():
                 build_loose(name, stem, src_dir, src_frame, n_frames, work, tex_dir)
             else:
                 build_zip(name, stem, src_dir, src_frame, n_frames, work, tex_dir)
-        patch_tileset(work, tileset_xml, ra_dir)
+        if splice:
+            splice_tileset(work, tileset_xml, ra_dir)
+        else:
+            patch_tileset(work, tileset_xml, ra_dir)
     print("Done. Deploy the mod and run a skirmish to verify rendering.")
 
 

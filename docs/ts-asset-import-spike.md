@@ -149,9 +149,13 @@ Extra hover verification items:
    Draw-scale (`Techno_Draw_Object` arg) also works but shears turret alignment
    (scales about the ground anchor per draw) and doesn't scale the health-bar/
    selection UI.
-4. **TS audio port (HOVRMIS1, the ClientG crash pair).** The launcher CANNOT
-   resolve novel SFXEvent sample names — a sample not in its audio MEGs crashes
-   `ClientG` in `SOUND_EFFECT_EVENT` (EIP 0xEB5E69, deterministic). Loose
+4. **TS audio port (HOVRMIS1, the ClientG crash pair).** SUPERSEDED 2026-08-31:
+   the launcher DOES resolve novel SFXEvent sample names from loose files —
+   proven with a controlled probe (novel-named known-good bytes played on the
+   EVA channel). This spike's crash (EIP 0xEB5E69 = 0x400000 + 0xAB5E69) was
+   the PCM-format crash site — format, not name novelty. The real rule is
+   FORMAT (MS-ADPCM WAV matching the channel's shape); canonical audio rules
+   now in `launcher-render-contracts.md` §dormant hosts. Historic recipe: loose
    `Data/AUDIO` WAVs can only OVERRIDE same-named MEG samples. And the override
    WAV must be **MS-ADPCM** (wFormatTag=2, like every MEG sample) — a plain PCM
    override plays a few times then crashes the mixer. Working recipe: decode the

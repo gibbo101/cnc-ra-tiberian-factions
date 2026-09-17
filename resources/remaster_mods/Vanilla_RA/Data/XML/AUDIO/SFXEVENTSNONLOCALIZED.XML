@@ -4099,7 +4099,7 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
 	<SFXEvent Name="RAC_SFX_cashdn1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
 		<IsPreset> False </IsPreset>
 		<SampleNamesList>
-			<entry> RAC_SFX_cashdn1.WAV </entry>
+			<entry> SILENTD.WAV </entry>
 		</SampleNamesList>
 	</SFXEvent>
 
@@ -4114,7 +4114,7 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
 	<SFXEvent Name="RAC_SFX_cashup1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
 		<IsPreset> False </IsPreset>
 		<SampleNamesList>
-			<entry> RAC_SFX_cashup1.WAV </entry>
+			<entry> SILENTD.WAV </entry>
 		</SampleNamesList>
 	</SFXEvent>
 
@@ -5064,7 +5064,7 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
 	<SFXEvent Name="RAR_SFX_cashdn1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
 		<IsPreset> False </IsPreset>
 		<SampleNamesList>
-			<entry> RAR_SFX_cashdn1.WAV </entry>
+			<entry> SILENTD.WAV </entry>
 		</SampleNamesList>
 	</SFXEvent>
 
@@ -5079,7 +5079,7 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
 	<SFXEvent Name="RAR_SFX_cashup1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
 		<IsPreset> False </IsPreset>
 		<SampleNamesList>
-			<entry> RAR_SFX_cashup1.WAV </entry>
+			<entry> SILENTD.WAV </entry>
 		</SampleNamesList>
 	</SFXEvent>
 
@@ -6042,6 +6042,27 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     </SampleNamesList>
   </SFXEvent>
 
+  <!-- TS Ion Cannon strike (ANIM_TS_ION_BEAM, the uplink-granted flavour):
+       TS's own ION1 sample bundled under its OWN name (loose Data/AUDIO/
+       TSION1.WAV, MS-ADPCM — the proven novel-name path, 2026-08-31). -->
+  <SFXEvent Name="RAC_SFX_TSION1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSION1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAR_SFX_TSION1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSION1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
   <!-- Obelisk of Light: warm-up charge -->
   <SFXEvent Name="RAC_SFX_OBELPOWR" Preset="_PRESET_MD_MOBIUS_2D">
     <IsPreset> False </IsPreset>
@@ -6625,6 +6646,182 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> TDR_SFX_STRUGGLE.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSEXPNEW13" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW13.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSEXPNEW13" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW13.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSEXPNEW14" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW14.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSEXPNEW14" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW14.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TS120MMX9" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TS120MMX9.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TS120MMX9" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TS120MMX9.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSINFGUN3" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSINFGUN3.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSINFGUN3" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSINFGUN3.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSHEALER1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSHEALER1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSHEALER1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSHEALER1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSBIGGGUN1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSBIGGGUN1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSBIGGGUN1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSBIGGGUN1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSJUMPJET1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSJUMPJET1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSJUMPJET1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSJUMPJET1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSEXPNEW10" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW10.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSEXPNEW10" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSEXPNEW10.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSCHAINGN1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSCHAINGN1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSCHAINGN1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSCHAINGN1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSGLNCH4" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSGLNCH4.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSGLNCH4" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSGLNCH4.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSSAMSHOT1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSSAMSHOT1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSSAMSHOT1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSSAMSHOT1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
   <SFXEvent Name="RAC_SFX_TSGUN4" Preset="_PRESET_MD_MOBIUS_2D">
     <IsPreset> False </IsPreset>
     <MinPitch>100</MinPitch>
@@ -6655,6 +6852,366 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     <MaxPitch>100</MaxPitch>
     <SampleNamesList>
       <entry> TDR_SFX_CRUMBLE.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+	<SFXEvent Name="RAC_SFX_TSPLACE2" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TSPLACE2.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_TSPLACE2" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TSPLACE2.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAC_SFX_TSCOMMUP1" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TSCOMMUP1.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_TSCOMMUP1" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TSCOMMUP1.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAC_SFX_TSRADARDN1" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TSRADARDN1.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_TSRADARDN1" Preset="_PRESET_MD_MOBIUS_2D">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TSRADARDN1.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAC_SFX_TSCREDUP1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TSCREDUP1.WAV </entry>
+		</SampleNamesList>
+		<MinVolume> 15 </MinVolume>
+		<MaxVolume> 15 </MaxVolume>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_TSCREDUP1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TSCREDUP1.WAV </entry>
+		</SampleNamesList>
+		<MinVolume> 15 </MinVolume>
+		<MaxVolume> 15 </MaxVolume>
+	</SFXEvent>
+
+	<SFXEvent Name="RAC_SFX_TSCREDDWN1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TSCREDDWN1.WAV </entry>
+		</SampleNamesList>
+		<MinVolume> 15 </MinVolume>
+		<MaxVolume> 15 </MaxVolume>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_TSCREDDWN1" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TSCREDDWN1.WAV </entry>
+		</SampleNamesList>
+		<MinVolume> 15 </MinVolume>
+		<MaxVolume> 15 </MaxVolume>
+	</SFXEvent>
+
+	<SFXEvent Name="RAC_SFX_TONE15" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDC_SFX_TONE15.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_TONE15" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDR_SFX_TONE15.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAC_SFX_TONE16" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDC_SFX_TONE16.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_TONE16" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> TDR_SFX_TONE16.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAC_SFX_CASHUPD" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> RAC_SFX_cashup1.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_CASHUPD" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> RAR_SFX_cashup1.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAC_SFX_CASHDND" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> RAC_SFX_cashdn1.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+	<SFXEvent Name="RAR_SFX_CASHDND" Preset="_PRESET_GUI_INGAME_CREDITS_TICK">
+		<IsPreset> False </IsPreset>
+		<SampleNamesList>
+			<entry> RAR_SFX_cashdn1.WAV </entry>
+		</SampleNamesList>
+	</SFXEvent>
+
+  <!-- Tiberian Factions: TS Vulcan2 report (drop pod LZ strafe) — bundled
+       TSGUN4.WAV, MS-ADPCM, own name. -->
+  <SFXEvent Name="RAC_SFX_TSGUN4" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSGUN4.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <!-- Tiberian Factions: TS Vulcan2 report (drop pod LZ strafe) — bundled
+       TSGUN4.WAV, MS-ADPCM, own name. -->
+  <SFXEvent Name="RAR_SFX_TSGUN4" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSGUN4.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <!-- Tiberian Factions: TS hunter seeker detonation (the SuicideBomb report) -
+       bundled TSHUNTR2.WAV, MS-ADPCM, own name. -->
+  <SFXEvent Name="RAC_SFX_TSHUNTR2" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSHUNTR2.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <!-- Tiberian Factions: TS hunter seeker detonation (the SuicideBomb report) -
+       bundled TSHUNTR2.WAV, MS-ADPCM, own name. -->
+  <SFXEvent Name="RAR_SFX_TSHUNTR2" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSHUNTR2.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <!-- Tiberian Factions: TS meteor whoosh (drop pod descent) - bundled
+       TSMETEOR.WAV, MS-ADPCM, own name. -->
+  <SFXEvent Name="RAC_SFX_TSMETEOR" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSMETEOR.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <!-- Tiberian Factions: TS meteor whoosh (drop pod descent) - bundled
+       TSMETEOR.WAV, MS-ADPCM, own name. -->
+  <SFXEvent Name="RAR_SFX_TSMETEOR" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSMETEOR.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+
+  <SFXEvent Name="RAC_SFX_TSORCAMIS1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSORCAMIS1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSORCAMIS1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSORCAMIS1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSORCAUP1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSORCAUP1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSORCAUP1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSORCAUP1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSORCADWN1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSORCADWN1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSORCADWN1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSORCADWN1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSDEPLOY" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSDEPLOY.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSDEPLOY" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSDEPLOY.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSJUGGER1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSJUGGER1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSJUGGER1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSJUGGER1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSLIMPBOM1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSLIMPBOM1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSLIMPBOM1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSLIMPBOM1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSLIMPQ3" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSLIMPQ3.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSLIMPQ3" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSLIMPQ3.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSLIMPQ4" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSLIMPQ4.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSLIMPQ4" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSLIMPQ4.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSLIMPC3" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSLIMPC3.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSLIMPC3" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSLIMPC3.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSLIMPC4" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSLIMPC4.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSLIMPC4" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSLIMPC4.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
 </SFXEvents>

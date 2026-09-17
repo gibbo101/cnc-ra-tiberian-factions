@@ -100,9 +100,8 @@ void CreditClass::Graphic_Logic(bool forced)
         **	effect was requested.
         */
         if (IsAudible) {
-            // NB: in REMASTER_BUILD this block does not run — GlyphX draws the
-            // credit counter and plays the tick itself, so the credit tick
-            // cannot be faction-routed from the DLL. See building-sound-routing.md.
+            // NB: in REMASTER_BUILD this block does not run (GlyphX owns the draw
+            // path); the faction-routed tick fires from CreditClass::AI instead.
             if (IsUp) {
                 Sound_Effect(VOC_MONEY_UP, fixed(1, 2));
             } else {
@@ -183,6 +182,10 @@ void CreditClass::Graphic_Logic(bool forced)
         BEnd(BENCH_TABS);
     }
 }
+
+// The credit tick, addressed to the house that earned it (dllinterface.cpp): in a LAN game
+// only the host runs a DLL, so a joiner's tick has to be sent to them.
+extern void TF_Fire_Credit_Tick(HouseClass* house, bool is_up);
 
 /***********************************************************************************************
  * CreditClass::AI -- Handles updating the credit display.                                     *
@@ -267,6 +270,32 @@ void CreditClass::AI(bool forced, HouseClass* player_ptr, bool logic_only)
         if (Current - adder != Current) {
             IsAudible = true;
             IsUp = (adder > 0);
+#ifdef REMASTER_BUILD
+            /*
+            **	GlyphX displays this roll (VisibleCredits.Current is exported as the
+            **	sidebar counter) but never branches on faction, so its stock tick
+            **	events are data-silenced and the tick is fired here instead, where
+            **	the owning faction is known. Local player's HUD only.
+            */
+            /*
+            **	Everyone else's tick goes to them, not to us. Only the host runs a DLL in a
+            **	LAN game, so without this a joiner's counter rolls in silence; the host's own
+            **	tick below is untouched, which keeps single player exactly as it was.
+            */
+            if (player_ptr != PlayerPtr && player_ptr != NULL && player_ptr->IsHuman
+                && Session.Type != GAME_NORMAL) {
+                TF_Fire_Credit_Tick(player_ptr, IsUp);
+            }
+            if (player_ptr == PlayerPtr) {
+                if (Is_TS_GDI(player_ptr->ActLike)) {
+                    Sound_Effect(IsUp ? VOC_TS_MONEY_UP : VOC_TS_MONEY_DOWN, fixed(1, 2));
+                } else if (player_ptr->ActLike == HOUSE_GOOD || player_ptr->ActLike == HOUSE_BAD) {
+                    Sound_Effect(IsUp ? VOC_TD_MONEY_UP : VOC_TD_MONEY_DOWN, fixed(1, 2));
+                } else {
+                    Sound_Effect(IsUp ? VOC_DLL_MONEY_UP : VOC_DLL_MONEY_DOWN, fixed(1, 2));
+                }
+            }
+#endif
         }
     }
     IsToRedraw = true;

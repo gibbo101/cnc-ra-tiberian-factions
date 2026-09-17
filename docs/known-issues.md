@@ -8,6 +8,116 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## Waypoint and rally markers show the Allied emblem for TS GDI (2026-09-17)
+
+- **Severity:** cosmetic. **Status:** open, needs the RAM lever.
+- The move/waypoint marker and the rally-point marker carry the Allied emblem when the player is
+  TS GDI, because that faction rides a decoupled Allied country house.
+- Launcher-owned, not ours: there is no rally or waypoint draw code in the DLL, and
+  `MT_COMMANDBAR_COMMON.MTD` has no waypoint or rally region. The marker is drawn from
+  `RA_UI_ALLIED_LOGO_SMALL` (`RA_UI_SOVIET_LOGO_SMALL` for the other side), chosen by side.
+- **A loose atlas repaint is not a fix** — it is global, so real Allied players would get a GDI
+  eagle on their own waypoints. The route is the RAM lever from `radar-crest-ram-spike.md`:
+  re-point ClientG's cached region record at match start, as the radar crest and the EVA lines do.
+
+## RESOLVED: TS GDI War Factory: the under-door stripes take team colour, the apron's stay gold (2026-09-12)
+
+- **Severity:** cosmetic. **Status:** resolved 2026-09-12, verified in play. Every stripe is gold
+  for every house: `EXTRA_LAYER_BAKE` in `scripts/ts_pack_tree.py` bakes `GTWEAP_1`'s floor
+  stripes (source rows 118-133) into both the under-door layer and the open-doorway front; the
+  team block on the bay frame keeps its house colour. The same pass stopped the damaged door
+  drawing magenta: `GAWEAP_D`'s second nine frames are TS shadow frames, not damaged ones.
+- Luke's screencast (2026-09-12, red team): the yellow and black hazard stripes inside the bay,
+  seen when the door opens, turn red while the apron's stripes stay gold.
+- Cause: TS paints both sets of stripes in remap (team-colour) pixels, in `GTWEAPBB` (the apron)
+  and `GTWEAP_1` (the bay under the door). Our apron is ground art, and the launcher never
+  house-remaps ground art, so its stripes were baked gold when the apron shipped (2026-08-07,
+  Luke accepted gold whoever owns the building). The bay art is ordinary building art, so its
+  remap pixels still recolour per house, and the two sets no longer match.
+- Proposed fix: bake the bay's stripe pixels gold in `scripts/ts_pack_tree.py`, the same
+  treatment as the apron, so every stripe is gold for every house. Team-coloured stripes
+  everywhere isn't available: the apron can't be remapped.
+
+---
+
+## Launcher drops DLL speech dispatched in the game-over window (2026-08-31)
+
+- **Severity:** limitation (worked around). **Status:** confirmed — do not retry refire there.
+- Play-proven (tf_speech.log + ears, 2026-08-31): speech events the DLL dispatches during /
+  after `On_Multiplayer_Game_Over` are discarded by the launcher — `TDACCOM1`, `TDFAIL1` and
+  `RAOLOST1` all logged going out through fully valid chains (events registered, samples
+  present) and stayed inaudible, while every mid-game dispatch plays. Stub + refire therefore
+  can never voice the endgame lines; they ride the era mailbox instead (below). Mid-game
+  stub + refire (structure sold) is unaffected and proven audible.
+
+---
+
+## Sim froze once in a 4-Hard-AI Docklands match — ⏳ OPEN, UNREPRODUCED (2026-09-02)
+
+First run of the `ai-regression` build: every DLL log stopped inside frame 22357 (~11 real
+minutes), ClientG kept spinning at ~60% CPU, no minidump, no A* fallback storm (3,385 fallbacks,
+astar log silent too). Second run, same build and lobby, ran to F45000 clean with a stall
+watchdog armed. Nothing in the last log lines stands out (a grenadier order, a forced Nod
+launch, an Allied strike conversion). Next occurrence: attach gdb before it hangs — poll the AI
+log size every 5 s and on a 20 s stall run `gdb -p <pid> -batch -ex 'thread apply all bt 30'`
+on ClientG (ptrace is allowed here; gdb attaches fine, only breakpoints never fire). Suspects
+in order: the new wave/eco code (house.cpp `TF_Wave_*`, `TF_Eco_*`), then the naval/ferry arc
+which had never soaked with four Hard AIs on that build.
+
+## RESOLVED: TD construction yard offers the TS Radar (Luke, 2026-09-02, seen with dev cheats on)
+
+Reported mid A/B: a GDI (TD) yard's sidebar listed the TS Radar. Cause: TS-tree buildings skip
+the faction-yard test, and the era door rule's shared pool lets a TD or RA refinery satisfy
+`TSPROC`, so TSRADR and TSSILO (then TSHPAD, once a leaked radar stood) appeared on a yard with
+no TS yard. Fixed by `576962c1` (2026-09-03): every TS building needs a standing TSFACT. That
+gate sat inside the skirmish-only block, so campaigns still leaked; on 2026-09-13 it moved ahead
+of the prerequisite loop for every game type. `MOD_DEBUG_CANBUILD.txt` is switched off in
+`house.cpp`, so it is not a diagnostic channel.
+
+## RESOLVED: mailbox EVA lines now follow the picked faction across an in-session switch (2026-09-01)
+
+- Was: ClientG caches each localized sample once per boot, so a faction switch without
+  relaunching kept the stale voice. FIXED by the RAM patch — the DLL overwrites the cached blob
+  in ClientG's memory at match start (`TF_Patch_ClientG_Cache`, dllinterface.cpp). All five
+  launcher-owned lines verified faction-correct both directions, no crash. Full record and the
+  five findings that made it work: `eva-ram-patch-spike.md`.
+
+---
+
+## MP clients keep RA voice on the mailbox-routed EVA lines (2026-08-31)
+
+- **Severity:** minor. **Status:** open, by design for now — same shape as the credit-tick limit.
+- "Cannot deploy here", "battle control terminated", "mission accomplished" and "your mission
+  has failed" are faction-voiced by the **era mailbox**: the launcher fires these at moments the
+  DLL never sees (client-side placement reject, teardown, the game-over window drop above), so
+  the DLL instead rewrites the loose `Data/AUDIO/EN-US/` sample files those events resolve,
+  copying era-correct bytes (`TF_MBX_*` payloads) at every match start
+  (`TF_Mailbox_Write_EVA_Voice`, dllinterface.cpp). In LAN MP only the host runs the DLL, so
+  client machines keep the shipped/base RA samples on those names. Structure sold is exempt —
+  it uses stub + mid-game dispatch, which the launcher routes per player, reaching clients.
+
+---
+
+## MP clients hear no credit tick (faction-routed tick, 2026-08-31)
+
+- **Severity:** minor. **Status:** fix BUILT 2026-09-05, awaiting a LAN test.
+- The faction-routed credit tick silences the launcher's stock `cashup1`/`cashdn1`
+  events and re-fires from the DLL for the local player only (`credits.cpp`
+  `CreditClass::AI`). In LAN MP the sim is host-only, so client HUDs get the
+  silenced events and no DLL fire — silent tick. The fix this entry called for is
+  now in: `TF_Fire_Credit_Tick` (dllinterface.cpp) hands the roll's own house to
+  `DLLExportClass::On_Sound_Effect`, so the tick is addressed to the player whose
+  credits moved instead of to whoever is local. The host's own tick still goes
+  through the unchanged path, so single player is untouched.
+- **What the LAN test decides.** EA's beacon addresses allied players exactly this
+  way (`CNC_Handle_Beacon_Request`), so the launcher plainly honours the id for
+  *some* events — but whether it forwards a remotely-addressed sound to that
+  player's shell is launcher-internal and unproven. Two outcomes: joiners hear
+  their own faction's tick (done), or **the host hears the other players' ticks**,
+  which means the id is a local filter only and the data-side flank is needed
+  instead (`building-sound-routing.md` §2). The failure mode is audible, so one
+  match settles it.
+
 ## TS building placement (ts-units branch)
 
 ### TS power plant and TS radar placement — FIXED 2026-08-28 (Luke: "fixed!")
@@ -530,16 +640,16 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ## Launcher / engine limitations (cannot be fixed from a mod — do not re-investigate)
 
-### Select-all (A) and Deploy (/) hotkeys ignore GDI/Nod harvester + MCV
-- **Severity:** minor, player-facing.
-- **Status:** WON'T FIX (launcher-hardcoded unit identity; not reachable from the DLL/mod).
-- **Workaround:** drag-box to select army; click the MCV with the deploy cursor to deploy. Documented in
-  the Workshop "Known limitations". MCV deploy hotkey spike resolved-negative (memory
-  `project-mcv-deploy-hotkey-spike`).
-- **Scope widens at W2 b3 (accepted by Luke, 2026-07-19):** the MCV split replaces the vanilla
-  `MCV`/`TDMCV` with four faction MCV types (`AMCV`/`SMCV`/`TDGMCV`/`TDNMCV`) in skirmish, so
-  the deploy hotkey stops working for **Allied and Soviet too** — the GlyphX gate keys on
-  vanilla enum identity and no new type can have it. Mouse self-click deploy remains for all.
+### Select-all (A) and Deploy hotkeys ignore faction harvesters + MCVs — ✅ FIXED 2026-09-02
+- **Was:** WON'T FIX (launcher-hardcoded unit identity). Now FIXED on the DLL side, no launcher
+  change: the DLL polls the deploy key itself (`GetAsyncKeyState`, cross-process) and runs the
+  generic self-action on the selection, so every faction MCV, APC, transport and minelayer
+  deploys/unloads on the stock backslash key; and while A is held the DLL vetoes harvesters and
+  MCVs in the launcher's select-all hand-over. Mechanism + the reverse-engineered launcher gate
+  (exported AssetName+TypeName must both be "MCV"): `launcher-vs-dll-ownership.md`. Verified
+  headless on GDI/Allied MCVs and a GDI harvester; Luke to re-test APC/Chinook/minelayer/TS units.
+- **Player-facing copy still says it's a limitation** (Workshop "Known limitations", ModDB page):
+  update at the next release.
 
 ### Classic graphics mode dropped (HD-only)
 - **Severity:** by-design, player-facing.
@@ -586,6 +696,12 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 ---
 
 ## Skirmish setup
+- **Candidate root cause (2026-09-16, fix deployed, awaiting a crates-on LAN):** a skirmish crash
+  with crates on was traced from its minidump to `DriveClass::Start_Of_Move`: `FootClass::Start_Driver`
+  runs `Goodie_Check` on the cell being entered, an explosion crate destroys the unit there, and the
+  stock code then calls the virtual `Set_Speed(0)` on the freed object (same gap in `While_Moving`).
+  Both failure paths now return when `IsActive` is clear. Only the simulating host runs the unit AI,
+  which fits "the host crashes". Verify with a crates-on LAN game before closing this entry.
 
 ### GDI/Nod skirmish "starting units" bonus gives RA units, not TD
 - **Severity:** minor.

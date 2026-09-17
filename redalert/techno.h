@@ -200,6 +200,13 @@ public:
     StageClass CloakingDevice;
     CDTimerClass<FrameTimerClass> CloakDelay;
 
+    /*
+    **	TS Limpet Drone: the houses whose drone rides this object (one bit per HousesType) and
+    **	the throttle it puts on speed and turn rate while any does. A repair bay strips it.
+    */
+    unsigned LimpetType;
+    fixed LimpetSpeedFactor;
+
     /* (Targeting Computer)
     **	This is the target value for the item that this vehicle should ATTACK. If this
     **	is a vehicle with a turret, then it may differ from its movement destination.
@@ -224,6 +231,13 @@ public:
     **	WaveClass per firer); a cut band shortens it.
     */
     int SonicBandEnd;
+
+    /*
+    **	Tiberian Factions: the game frame at which this object's last railgun coil has faded.
+    **	A railgun cannot fire again while its coil lives (TS keeps one railgun particle system
+    **	per firer and refuses the shot until it is gone).
+    */
+    int RailCoilEnd;
 
     /*
     **	The number of shot this object can fire before running out of ammo. If this

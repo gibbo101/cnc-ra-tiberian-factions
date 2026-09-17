@@ -64,9 +64,12 @@ WarheadTypeClass::WarheadTypeClass(char const* name)
     : ID(Warheads.ID(this))
     , IniName(name)
     , SpreadFactor(1)
+    , LimpetFactor(0)
     , IsWallDestroyer(false)
     , IsWoodDestroyer(false)
     , IsTiberiumDestroyer(false)
+    , HasProneDamage(false)
+    , ProneDamage(1)
     , IsOrganic(false)
     , ExplosionSet(0)
     , InfantryDeath(0)
@@ -159,11 +162,16 @@ bool WarheadTypeClass::Read_INI(CCINIClass& ini)
 {
     if (ini.Is_Present(Name())) {
         SpreadFactor = ini.Get_Int(Name(), "Spread", SpreadFactor);
+        LimpetFactor = ini.Get_Int(Name(), "LimpetFactor", LimpetFactor);
         IsWallDestroyer = ini.Get_Bool(Name(), "Wall", IsWallDestroyer);
         IsWoodDestroyer = ini.Get_Bool(Name(), "Wood", IsWoodDestroyer);
         IsTiberiumDestroyer = ini.Get_Bool(Name(), "Ore", IsTiberiumDestroyer);
         ExplosionSet = ini.Get_Int(Name(), "Explosion", ExplosionSet);
         InfantryDeath = ini.Get_Int(Name(), "InfDeath", InfantryDeath);
+        if (ini.Is_Present(Name(), "ProneDamage")) {
+            HasProneDamage = true;
+            ProneDamage = ini.Get_Fixed(Name(), "ProneDamage", ProneDamage);
+        }
 
         char buffer[128];
         if (ini.Get_String(Name(), "Verses", "100%%,100%%,100%%,100%%,100%%", buffer, sizeof(buffer))) {

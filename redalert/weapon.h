@@ -190,6 +190,12 @@ public:
     LEPTON Range;
 
     /*
+    **	Tiberian Factions: the range inside which the weapon cannot fire (TS MinimumRange);
+    **	zero for every weapon without the key.
+    */
+    LEPTON MinRange;
+
+    /*
     **	This is the typical sound generated when firing.
     */
     VocType Sound;

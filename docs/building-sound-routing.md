@@ -28,7 +28,8 @@ pointing at the TD WAVs (which already ship in the base MEGs).
 |---|---|---|---|
 | **Placement slam** | `VOC_PLACE_BUILDING_DOWN`=`PLACBLDG` (`house.cpp` place, `unit.cpp` MCV deploy) | `VOC_SLAM`=`HVYDOOR1` (TD `HOUSE.CPP:2933`) | **Shipped** `VOC_TD_PLACE_BUILDING_DOWN`, building-keyed |
 | **Construction loop** | `VOC_CONSTRUCTION`=`BUILD5` | `VOC_TD_CONSTRUCTION`=`CONSTRU2` (`building.cpp` Mission_Construction) | Shipped earlier |
-| **Credit tick** | `VOC_MONEY_UP/DOWN`=`CASHUP1/CASHDN1` (`credits.cpp:104/106`) | `VOC_UP/DOWN`=`TONE15`/`TONE16` (TD `CREDITS.CPP:98/100`) | **NOT ACHIEVABLE — launcher-driven** (see below) |
+| **Radar on/off** | `VOC_RADAR_ON/OFF`=`RADARON2`/`RADARDN1`, launcher auto-fire silenced, DLL re-fires | `TFRADRON`/`TFRADROF` (TD Comm Center / Power Down) | **Shipped**, player-keyed. TS GDI has its OWN pair from 2026-09-06: `TSCOMMUP1`/`TSRADARDN1` (TS rules `[AudioVisual] RadarOn=COMMUP1`, `RadarOff=RADARDN1`) — it was borrowing TD's, which is the wrong era. |
+| **Credit tick** | `VOC_MONEY_UP/DOWN`=`CASHUP1/CASHDN1` (`credits.cpp:104/106`) | `VOC_UP/DOWN`=`TONE15`/`TONE16` (TD `CREDITS.CPP:98/100`) | **Shipped** via silence-and-refire (see below). TS GDI joined 2026-09-05: `VOC_TS_MONEY_UP/DOWN` = TS's own `CREDUP1`/`CREDDWN1` (TS rules `[AudioVisual] CreditTicks=`), bundled under their own names. |
 | **Damaged** | *none* — RA plays no building hit-SFX | — | No action |
 | **Sell** | `VOC_CASHTURN` + EVA voice | `VOC_CASHTURN` (TD `HOUSE.CPP:4761`) — same | No action |
 | **Destroyed** | `VOC_KABOOM22` + `VOC_CRUMBLE` | none — TD's BUILDING/TECHNO play no building-death VOC; `KABOOM22` not in TD's table | Left as-is (user choice) |
@@ -45,19 +46,24 @@ can masquerade as "fixed" (e.g. the placement double vanished only because the n
 `HVYDOOR1` had no sample). **Checklist:** when adding a routed TD VOC, always also
 extract its WAV(s) into `Data/AUDIO/`.
 
-**2. The credit tick is launcher-DRIVEN in Remastered — not faction-routable.**
-(Confirmed 2026-05-28: pointing `RAR_SFX_cashup1`'s sample at a distinctive clip made
-the credit-*up* tick play that clip — so the launcher fires `RAR_SFX_cashup1`/`cashdn1`
-itself. The *sound* is therefore data-controllable **globally** via that SFXEvent, but
-the launcher fires it faction-blind, so it can't be made GDI/Nod-specific.)
-`CreditClass::Graphic_Logic`'s `IsAudible` sound path does **not run** under the
-Remastered HUD (the launcher animates the credit counter and plays the tick
-itself). Proven 2026-05-28: a diagnostic `fopen`+`fprintf` in that block produced
-**no** `MOD_DEBUG_CREDITS.txt` while other diagnostics (`MOD_DEBUG_CANBUILD.txt`)
-updated during the same session. So the DLL never emits `TONE15`/`TONE16`, and no
-amount of WAV-shipping or SFXEvent wiring can faction-route it — the launcher plays
-RA's `cashup1`/`cashdn1` regardless of faction. This re-confirms (with evidence) the
-earlier `drop launcher-locked credit tick` commit. **Don't re-attempt it.**
+**2. The credit tick — faction-routed via the silence-and-refire flank (VERIFIED IN
+PLAY 2026-08-31, Luke: "you magnificent beast" — GDI/Nod get the TD tick, RA factions
+unchanged).** The 2026-05-28 findings stand and are the
+foundation: the launcher fires `RA?_SFX_cashup1`/`cashdn1` itself, faction-blind
+(`Graphic_Logic`'s sound path never runs — proven by the empty-diagnostic-file
+technique), so no data wiring alone can faction-route it. BUT the DLL *drives the
+roll the launcher displays*: `HouseClass::AI` runs `VisibleCredits.AI(false, this,
+true)` per house, and `dllinterface.cpp:6966` exports `VisibleCredits.Current` as
+the sidebar counter. So the mechanism is: (a) data-silence the launcher's stock
+tick events (samples → `SILENTD.WAV`); (b) fire the tick from `CreditClass::AI`
+at the exact roll step, keyed on `ActLike` — GDI/Nod get TD `TONE15`/`TONE16`
+(VOC_TD_MONEY_UP/DOWN → RA?_SFX_TONE15/16 → TD?_SFX_TONE15/16.WAV, in-MEG),
+Allied/Soviet get the original RA samples under DLL-fired aliases
+(VOC_DLL_MONEY_UP/DOWN → RA?_SFX_CASHUPD/CASHDND → RA?_SFX_cashup1/cashdn1.WAV;
+fresh names needed because the stock event names are the silenced ones). Sync is
+exact by construction — the sound fires from the same step that moves the number.
+Known limitation: MP clients lose the tick (silenced events, DLL fires
+local-player-only) — see known-issues.
 *Diagnostic technique worth reusing: when unsure whether a sound is DLL- or
 launcher-driven, drop a `fopen`-append log at the DLL call site — an empty file
 while the game runs proves the launcher owns it.*

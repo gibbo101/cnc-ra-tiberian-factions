@@ -81,6 +81,8 @@ public:
     static void Init(void);
 
     virtual int Mission_Attack(void);
+    bool TF_Hunter_Seeker_AI(void);
+    void TF_Hunter_Seeker_Detonate(void);
     virtual int Mission_Unload(void);
     virtual int Mission_Hunt(void);
     virtual int Mission_Retreat(void);
@@ -106,6 +108,12 @@ public:
         return (SecondaryFacing.Current());
     }
     int Shape_Number(void) const;
+    bool TF_Carryall_Pickup_Pending(void) const;
+    unsigned char TFBombsThisRun; // Orca Bomber: bombs dropped on the current run (TS drops a stick per pass)
+    TARGET TFCarryPickup;         // Carryall: the vehicle it was sent to lift, remembered past the move mission's landing-zone rewrite
+    UnitClass* TF_Pickup_Unit(void) const;
+    bool TF_Carryall_Exchange(void);
+    void TF_Draw_Carried(int x, int y, WindowNumberType window) const;
     virtual MoveType Can_Enter_Cell(CELL cell, FacingType facing = FACING_NONE) const;
     virtual ObjectTypeClass const& Class_Of(void) const
     {

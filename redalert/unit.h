@@ -207,6 +207,26 @@ public:
     COORDINATE TunnelDest;      // underground destination (0 when idle)
 
     /*
+    **	TF: TS DeployToFire stance (the Juggernaut). Mobile it walks and cannot fire; it sets
+    **	down through the deploy ladder to fire from a fixed stance with a turning turret, and
+    **	packs up again before it honours a move. DeployNav keeps a destination given while it
+    **	is set down or mid-ladder.
+    */
+    enum DeployStateType : unsigned char
+    {
+        DEPLOY_MOBILE,
+        DEPLOY_DEPLOYING,
+        DEPLOY_DEPLOYED,
+        DEPLOY_UNDEPLOYING
+    };
+    unsigned char DeployState;
+    unsigned char DeployStep;
+    unsigned char DeployTick;
+    TARGET DeployNav;
+    void Deploy_AI(void);
+    void Deploy_Begin(bool deploy);
+
+    /*
     **	TF: TS FireballLauncher stream (Devil's Tongue). Frames of stream left after a
     **	shot and the target it plays toward; Fire_Stream_AI spawns a BULLET_TSFIRE
     **	particle every 4 of them (TS FireStreamSys SpawnFrames), alternating prongs.

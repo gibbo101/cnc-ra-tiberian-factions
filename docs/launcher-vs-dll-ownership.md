@@ -12,11 +12,19 @@ The Remastered front-end (Petroglyph "Mobius" engine, **native C++**) is **facti
 
 1. **The launcher only knows what crosses the boundary.** If a piece of state (faction/side, render mode, a specific sound trigger) isn't in an interface struct or the callback, the launcher cannot act on it.
 2. **Faction-aware behavior is DLL-emitter-only.** The launcher plays audio and renders UI from the *name/value* the DLL hands it; it never branches on the player's faction itself. The single lever for GDI/Nod-specific behavior is **the DLL choosing the name/value (keyed on `ActLike`) before it crosses**. This is exactly how our shipped radar / EVA / unit-voice routing works.
-3. **Whatever the launcher does autonomously is not mod-controllable from the DLL** — the credit-counter animation + tick, the classic/remaster view toggle, sidebar layout. (This is the *code* boundary — see the DATA caveat below.)
+3. **Whatever the launcher does autonomously is not mod-controllable from the DLL** — the credit-counter animation + tick, the classic/remaster view toggle. (This is the *code* boundary — see the DATA caveat below. Sidebar *layout* turned out to be data: each faction's `FACTIONS.XML` entry names its tactical scene, so GDI/Nod load TD's HUD, `faction-select-identity.md`.)
 
 **The DATA lever (added 2026-05-28).** Rules 1–3 are about launcher *code*. The *data the launcher reads from `CONFIG.MEG`* — faction defs (`FACTIONS.XML`), Mission Select (`INSTANCES.XML`), localized strings (`MASTERTEXTFILE`), theatres/tilesets, GUI lists — **is moddable AND Workshop-shippable**: a mod ships its own `Data/CONFIG.MEG` and the launcher loads it over the base (proven on the Deck). So **"launcher-owned" ≠ "unmoddable"** — ask whether a behaviour is driven by CONFIG.MEG **data** (moddable) or hardcoded in `ClientG.exe` **code** (not). Canonical: `config-meg-mod-delivery.md`.
 
 **The UI-image lever (added 2026-05-29).** Launcher 2D UI *images* — the sidebar faction crest, lobby logos, flags, buttons — live in the `MT_COMMANDBAR_COMMON.TGA` atlas and are **moddable** via a byte-edited loose `.TGA` in `Data/ART/TEXTURES/SRGB/` (vanilla, **no EMC**, proven on the Deck). So the real test is a **trichotomy**: CONFIG.MEG *data* and texture-atlas *images* are both moddable; only `ClientG.exe` *code* is the true lock. (The in-game sidebar emblem was first mis-filed as a code lock — it's an atlas image, `UI_SIDEBAR_FACTIONLOGO_ALLIES`.) Canonical: `ui-atlas-modding.md`.
+
+**The RAM lever (added 2026-09-02).** A fourth bucket sits between atlas images and ClientG code:
+ClientG's *runtime state* is writable from the DLL (`OpenProcess` + `WriteProcessMemory` into the
+sibling process, proven under Proton). Two walls fell this way: launcher-owned EVA lines
+(overwrite the cached sample blob, `eva-ram-patch-spike.md`) and the side-keyed radar crest /
+sidebar (re-point the cached per-region UV record, `radar-crest-ram-spike.md`). What it can do:
+change what an existing launcher-drawn element samples or plays. What it cannot: add widgets,
+change layout or behaviour — those remain code. Probe with `scripts/clientg_region_probe.py`.
 
 ---
 
@@ -97,9 +105,38 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 | Sidebar build icons / cost / progress | DLL supplies per-entry; launcher renders | **Partial** — DLL owns `AssetName`/cost/etc. | `CNCSidebarEntryStruct` |
 | HUD credit/power/timer **values** | DLL supplies values; launcher renders | Values yes, rendering no | `CNCSidebarStruct` |
 | Superweapon `$cost` line suppression | Launcher (`SW_` whitelist) | No | `reference-launcher-superweapon-cost-suppression` |
+| **Superweapon targeted-vs-instant firing** | **Launcher** (compiled, AssetName-keyed) | **No click-side seam** — a self-targeting super must launch itself on ready (Hunter Seeker, GPS-style); every click route is dead, see below | `HouseClass::Super_Weapon_Handler`; see below |
 | Win/lose stings, "under attack", low-power GUI SFX | Launcher (`Faction_Event_GUI_SFX_*`) | No (Allied/Soviet only — see below) | strings |
 
 ---
+
+### Sidebar build-tab icons: named in ClientG CODE, fixed by rewriting the prefix string (2026-09-04)
+
+GDI/Nod on TD's HUD scene still drew RA's gold 130x64 tab icons squashed into TD's 100x60
+tab widgets, in every state (off/on/bright/placement), while repair/sell/map/plates were TD.
+**Why these four only:** every other sidebar element is named in the scene file, so the
+TD scene swap fixed them. The tab icons are the one element the launcher names in code: it
+appends the state to a per-game prefix baked into `ClientG.exe` (`strings` shows both sets:
+`UI_Sidebar_TabIcon_Structure_` ... and `UI_RA_Sidebar_TabIcon_Structure_` ...) and looks the
+region up by that name; RA mode picks the RA prefix regardless of scene.
+
+**Fix (`TF_Patch_ClientG_Tab_Prefix`, called from `TF_Patch_ClientG_Crest` at match start):**
+locate the four RA prefix slots in ClientG's IMAGE (MEM_IMAGE regions) and
+`VirtualProtectEx` + `WriteProcessMemory` the TD prefix over them for TD-era players (shorter,
+NUL-terminated, always fits); write the RA prefix back for RA sides. Locate on EVERY call and
+by EITHER form: after a TD-era match a slot reads as the TD string with the RA tail still behind
+its terminator (which is also what tells it from the genuine TD prefix elsewhere in the image),
+and the DLL instance does not persist between matches, so nothing can be cached. Verified both
+ways in one launch (GDI green in every state incl. placement, Allied gold; Luke: "that's a win").
+
+**Two dead detours, recorded so nobody repeats them:** (1) re-pointing the drawn UV RECORDS
+(12 crest-style slots) works but every state's record is created on demand (first hover, first
+"ready", placement), so each shows gold until the next heap scan — and scanning often enough
+to hide that lags the game; (2) patching the atlas TABLE entry (`{w,h,x,y}` int32, name ptr 68
+bytes before the quad, second `{w,h}` copy 32 before) makes new records right at birth but
+still misses states born before the patch and needs the same heap walk. A code-side string
+is the cheapest lever when the launcher builds a name in code: **grep `strings ClientG.exe`
+for the name family before touching records.**
 
 ## The one new lead: the launcher's `FactionType` audio table — and why it can't help us
 
@@ -130,35 +167,96 @@ The MCV is recognised by IniName/numeric type, not an exported capability bit: `
 
 ### What this means
 - **BOTH the harvester AND the MCV leak on `a`** — Deck-confirmed 2026-06-03 (Luke). This **disproves** the earlier guess that `CanHarvest=true` (exported for `TDHARV`) would get the harvester excluded. The launcher's `a`-exclusion does **not** read the `CanHarvest` bit; it recognises RA's `HARV`/`MCV` by **hardcoded identity** (which is why the RA units don't leak but `TDHARV`/`TDMCV` do). The `ResourceHarvesterComponent` mapping evidently drives other harvester behaviour (resource UI/cursor), not the select-all filter.
-- **`a`-exclusion (both units) and `/`-deploy (MCV) are the closed-launcher wall** — same family as the MCV-deploy hotkey and the classic-mode spacebar.
+- **`a`-exclusion and `/`-deploy: SOLVED 2026-09-02 on the DLL side — see the section below.**
 - **The DLL-routed drag-box select IS fixed** — `should_exclude_from_selection` (display.cpp ~2827) now lists `UNIT_TDMCV`; `TDHARV` covered by `IsToHarvest`. Only the launcher-driven `a`/`/` army paths remain gated.
 
-### Per-frame export spoofs are a DEAD END — TESTED & CONFIRMED 2026-06-03
-Both `CNCObjectStruct.TypeName` (= `Class_Of().IniName`, dllinterface.cpp ~3755) and `AssetName` (= graphic name, ~3758-3760) are per-frame export fields. Spoofing them does **not** reach the launcher's `a`/`/` recognition:
-- **`TypeName="MCV"` spoof** (MCV-deploy spike): deploy `/` still did nothing.
-- **`AssetName`+`TypeName`→`"MCV"`/`"HARV"` spoof, Deck-tested 2026-06-03**: **no effect at all** — the GDI/Nod harvester/MCV **still rendered as their TD sprites** AND `a` **still selected them**. The launcher binds a unit's sprite + type identity **once, at object/type registration**, then references it by an internal handle; per-frame export-field overrides are simply ignored for an already-known unit. (This also means `AssetName` only matters at registration, not per-frame.)
-- **Conclusion:** the `a`-exclusion and `/`-deploy recognition live at the registered-type level inside `ClientG.exe`, unreachable from the DLL's per-frame export. There is **no per-frame field we can spoof**. Shipped as a Known Limitation on the Workshop page (v1.11). Don't re-test export-field spoofs.
-- **A Ghidra decompile of `ClientG.exe`** is the only route that could resolve it and is **not worth it** for cosmetic hotkey convenience — see the next section's cost/benefit bar.
+### The `/` and `a` walls are DOWN (2026-09-02) — the DLL owns both keys
 
----
+**Deploy (`/`, backslash by default):** the launcher's `COMMAND_CNC_DEPLOY_SELECTED_MCV`
+self-clicks the selected unit (it sends `INPUT_REQUEST_COMMAND_AT_POSITION` at the unit) **only
+when the exported `AssetName` AND `TypeName` are both exactly "MCV"** — proven live: aliasing
+both made a GDI MCV deploy by key; `TypeName` alone did not. (The 2026-06-03 "spoofs are a dead
+end" verdict was a bad test — that spoof never reached the launcher, the art stayed TD.) Since
+`AssetName` drives the art, the shipped fix bypasses the launcher: `TF_Deploy_Key_Tick`
+(`dllinterface.cpp`, per frame from `CNC_Advance_Instance`) polls `GetAsyncKeyState` for
+`VK_OEM_5` (backslash, the launcher's default deploy binding) — the DLL's InstanceServerG shares the Wine/Windows session with ClientG,
+so the key is visible cross-process — and on a fresh press runs `TF_Self_Action_Selected()`, the
+mod-command-1 rule (every selected object asked `What_Action(self)`, acted on only for
+`ACTION_SELF`). MCVs of every faction deploy, APCs/transports/Chinooks unload, minelayers lay,
+TS deployables follow for free. No binding, no XML, no RAM patch.
 
-## Diagnostic techniques that work here (reusable)
+**Select-all (`a`):** launcher-driven — ClientG picks the objects and hands them to
+`CNC_Clear_Object_Selection` + `CNC_Select_Object` one by one, excluding only the stock HARV/MCV
+by interned name id (ClientG interns unit names at startup; that object holds "HARV" at +0xaf8
+and "MCV" at +0xafc). The DLL now applies the engine's own band-select rule at the hand-over:
+`TF_Select_All_Excludes` refuses harvesters (`IsToHarvest`) and any `Is_MCV()` while A is down or
+was pressed within the last 10 frames (the launcher's round trip lands a frame or two after the
+key). Verified: minigunner selected by A, GDI MCV and GDI harvester not.
 
-- **"Is this sound DLL- or launcher-driven?"** Drop an `fopen`-append log at the DLL call site; an *empty* file while the game runs proves the launcher owns it. (Used to prove the credit tick. Use `%USERPROFILE%` paths — `reference-diagnostic-paths`.)
-- **"Does the launcher know about X?"** `strings -n N ClientG.exe | grep`. Demangled C++ symbols expose class/struct/enum names: `XMLTypeConverterClass<...>` shows exactly which XML→type conversions exist; `Faction_Event_GUI_SFX_*` enumerates the launcher's GUI-SFX vocabulary.
-- **"What can cross the boundary?"** Read `dllinterface.h` — it is the complete contract, nothing else gets through.
+ClientG facts for next time: command ids deploy = `0x1020`, select-all-on-screen = `0x101b`
+(name-registered at 0x14b1xxx); `CNC_Handle_*` strings are NOT in ClientG (InstanceServerG calls
+the DLL; ClientG talks over IPC); gdb attaches but neither hardware watchpoints nor int3
+breakpoints fired on this Wine process — `/proc/<pid>/mem` is the reliable probe.
 
----
+### Superweapon targeted-vs-instant firing: launcher-owned, DLL-blind, no click-side seam (2026-09-03)
 
-## When a Ghidra dive WOULD be worth it
+**Question:** can a superweapon cameo fire on a single click with no targeting cursor, the way
+the Hunter Seeker droid needed to (self-targeting -- a map click is meaningless for it)?
+**Answer: not at any resolution. The Hunter Seeker launches itself the tick it is charged
+(GPS-style, `HouseClass::Super_Weapon_Handler`), so the launcher only ever sees a countdown.**
 
-**Not now.** Source + strings answer every standing question, and the `FactionType` lead dead-ends on a negative a decompile would only re-confirm — at the cost of installing Ghidra and disassembling 34 MB of stripped, optimized native C++.
+**The launcher decision itself is a wall, proven two ways:**
+- The targeted-vs-instant choice is **compiled into ClientG**, keyed on the super's `AssetName`
+  string. Tested directly: `SW_SonarPulse` is targeted (cameo click opens a cursor, a map click
+  is required -- the 1996 sidebar fired it instantly, `sidebar.cpp` still carries that branch,
+  the launcher never calls it); `SW_GPS` is the one instant super, and it **auto-fires on its own
+  timer and never sends a `PLACE` request at all** -- so it can never round-trip into spawning
+  anything. No AssetName gives "instant AND spawns on demand".
+- The DLL is **blind to the launcher's targeting state**: `Map.IsTargettingMode` never moves when
+  a super cameo is clicked (logged per-frame to confirm), and `CNCSidebarEntryStruct` (the
+  DLL-to-launcher sidebar entry) has no "needs target" field to set. `CNC_Handle_Sidebar_Request`
+  only carries construction requests; `CNC_Handle_SuperWeapon_Request` only ever delivers
+  `SUPERWEAPON_REQUEST_PLACE_SUPER_WEAPON` with a target cell, after the launcher's own targeting
+  step -- the click itself never reaches the DLL.
 
-A decompile becomes worthwhile only if **both** hold: (a) we commit to genuine engine houses, **and** (b) we need the exact `House → FactionType/side` mapping logic — e.g., to learn whether new house slots could ever map to launcher faction/color/audio slots, or to extract the credit-counter animation parameters. Until then the value doesn't clear the cost.
+**Every click-side route was tried and is dead (all 2026-09-03, logged with a dev-only
+`MOD_DEBUG_SIDEBAR.txt` of every request the launcher sends):**
+- **Screen rectangle** (`GetAsyncKeyState`+`GetCursorPos` on the game thread, calibrated at
+  1920x1080): worked at 1080p only. The HUD is not screen-edge anchored on ultrawide (Luke's
+  5120x1440 cameo sat at x~3190 where the box expected ~4700). Rejected for shipping.
+- **Report the charged super as an unfinished build item** so the launcher's ordinary
+  construction click reaches the DLL as a sidebar request. The launcher sends NOTHING for a
+  super-tab entry reported "not started" or "building" (left click on the latter just voices
+  "insufficient power" if power is short). It DOES send hold/start requests for an entry
+  reported `ConstructionOnHold` -- and that shape draws the global **"Hold"** label on the
+  cameo, which is one master-text string shared by every paused build item, so it cannot be
+  relabelled for one entry. `Completed` + `ConstructionOnHold` together draw "Ready!" AND
+  "Hold" and route the click to the targeting cursor. The click channel and the "Hold" word
+  are the same launcher state; there is no per-entry lever on the word.
+- **`Type = SPECIAL` on a buildable** crashes the launcher on load (tab tag == super semantics).
+- **Buildable-aircraft route** (branch `hunter-seeker-production-wip`): lands in the aircraft
+  tab, crashes on load, cause unfound. Abandoned with the auto-launch decision.
+- Unprobed: watching the launcher's targeting-mode word in ClientG memory (a probe found a
+  clean idle=0/targeting=4 dword) -- would need per-match self-location and a per-super
+  identity field. Not needed once auto-launch was chosen.
 
----
+**⚠ A background polling thread does NOT work under Wine.** `GetAsyncKeyState` only stays current
+for the thread that owns the input queue; a `CreateThread`d poller running every few ms read
+nothing (0 detections across repeated tests). Poll on the game thread if this is ever needed again
+(the deploy key still does).
 
-## Engine gotchas migrated from cross-session memory (2026-07-15)
+**Cameo art is independent of the click-detect mechanism and is normal AssetName wiring**: give
+the super its own `RA_SW_<name>` entry in `RABUILDABLES.XML` with its own `BuildIcon`, and export
+that AssetName from `Convert_Special_Weapon_Type` while keeping whatever real `SW_` enum value
+gives the launcher plumbing you need (`SW_SONAR_PULSE` for the Hunter Seeker -- an ordinary
+targeted-super slot in the tab; the special is never ready long enough for targeting to run). This
+does not touch the real superweapon sharing that `SW_` enum value -- its own AssetName/cameo is
+untouched, and its own effect is keyed on its own `SPC_*` case, not the enum value.
+
+See `project-hunter-seeker-notarget-wall.md` (cross-session memory) for the full session log,
+traps (headless-only: pause-menu-freezes-the-poll, LAN lobby Start disabled under a mod, the
+insta-superweapon dev cheat masking the real recharge), and the verified end-to-end result
+(single click -> droid spawns -> flies to the AI -> wins, no crash).
 
 ### `this == PlayerPtr` is ALWAYS TRUE inside HouseClass::AI (REMASTER_BUILD)
 `HouseClass::AI()` opens with `Logic_Switch_Player_Context(this)` under `#ifdef REMASTER_BUILD`, so
