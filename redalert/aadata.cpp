@@ -945,8 +945,10 @@ void AircraftTypeClass::Dimensions(int& width, int& height) const
         width = 256;
         height = 160;
     } else if (Type == AIRCRAFT_TSCARRY) {
+        // Two cells high: the launcher centres the box on the aircraft, and the Carryall's
+        // hull stood above a shorter one.
         width = 40;
-        height = 28;
+        height = 48;
     } else if (Type == AIRCRAFT_TSORCAB) {
         width = 34;
         height = 20;

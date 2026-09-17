@@ -2156,8 +2156,21 @@ bool AircraftClass::TF_Carryall_Exchange(void)
     if (unit == NULL) {
         return (false);
     }
+    /*
+    **	The vehicle is set down where it was being carried, not at the centre of the cell
+    **	underneath: the Carryall touches down wherever it happens to be, so snapping the load
+    **	to the cell centre slid it most of a cell in a single frame.
+    **
+    **	A landed aircraft occupies its cell like anything else, so the carrier itself would
+    **	fail the load's legality check and send it to a neighbouring cell. It comes off the map
+    **	for the placement and goes back down afterwards; it takes off immediately either way.
+    */
     CELL cell = Coord_Cell(Coord);
-    COORDINATE spot = Cell_Coord(cell);
+    COORDINATE spot = Coord;
+    bool grounded = !IsInLimbo;
+    if (grounded) {
+        Mark(MARK_UP);
+    }
     if (unit->Can_Enter_Cell(cell) != MOVE_OK) {
         CELL nearby = Map.Nearby_Location(cell, unit->Techno_Type_Class()->Speed, -1, unit->Techno_Type_Class()->MZone);
         if (nearby != 0) {
@@ -2166,8 +2179,14 @@ bool AircraftClass::TF_Carryall_Exchange(void)
     }
     unit->Height = 0;
     if (!unit->Unlimbo(spot, SecondaryFacing.Current())) {
+        if (grounded) {
+            Mark(MARK_DOWN);
+        }
         Attach(unit);
         return (false);
+    }
+    if (grounded) {
+        Mark(MARK_DOWN);
     }
     unit->Assign_Mission(MISSION_GUARD);
     return (true);
@@ -5627,6 +5646,17 @@ void AircraftClass::Assign_Destination(TARGET dest)
 LayerType AircraftClass::In_Which_Layer(void) const
 {
     if (Class->IsFixedWing && Height > 0) {
+        return (LAYER_TOP);
+    }
+
+    /*
+    **	The Carryall keeps to the top layer until it is actually on the ground, rather than
+    **	dropping into the ground layer at two thirds of flight level as everything else does:
+    **	it descends onto the vehicle it is lifting, and the ground layer sorts that vehicle
+    **	over it. Set down it belongs in the ground layer, where it occupies its cell like any
+    **	other landed aircraft and still draws over a unit sharing it.
+    */
+    if (*this == AIRCRAFT_TSCARRY && Height > 0) {
         return (LAYER_TOP);
     }
     return (FootClass::In_Which_Layer());
