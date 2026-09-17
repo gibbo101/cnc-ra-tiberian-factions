@@ -19,8 +19,12 @@ What went in, all signed off in play:
   cameo is the drone on TS's vehicle plate.
 
 **Next, in order (Luke, 2026-09-17):**
-1. **The last GDI pieces — Mobile Sensor Array, Mobile EMP, Mobile War Factory.** Finishing the
-   roster comes before any verification or polish work below.
+1. **The last GDI pieces.** Finishing the roster comes before any verification or polish work
+   below:
+   - Mobile Sensor Array, Mobile EMP, Mobile War Factory;
+   - **the Firestorm Generator and its wall sections** (TSFIRE / TSFSDF, planned in
+     `ts-gdi-tree-plan.md` 19b) — new defensive logic, and the wall panels are isometric like
+     the dropped gate, so the art route is agreed with Luke before anything is built.
 2. **LAN test the Limpet Drone's function** — deploy, attach, the 65% slow, the scouting share.
    Never verified; the Deck's battery was dead on 09-17, so it needs a charged Deck.
 3. **Waypoint/rally marker shows the Allied emblem for TS GDI** — launcher-owned, see
