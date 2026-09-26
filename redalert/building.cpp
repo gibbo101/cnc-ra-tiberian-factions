@@ -110,6 +110,7 @@
 // TS war factory seats: per-unit-type boarding points on the Track19 exit
 // rail, GENERATED from the Aseprite SPAWN markers by wf_spawn_preview.py.
 #include "tsweap_exit_seats.inc"
+#include "tspuls_muzzle.h"
 #include <cstdio>
 #include <cmath>
 #include "rules.h"
@@ -7363,7 +7364,10 @@ int BuildingClass::Mission_Missile(void)
         };
         CELL dest = House->TFEMPDest;
         DirType aim = ::Direction(Center_Coord(), Cell_Coord(dest));
-        COORDINATE muzzle = Coord_Move(Coord_Move(Center_Coord(), aim, 0x0060), DIR_N, 0x0050);
+        // The barrel tip of the cannon frame drawn at this facing (scripts/ts_emp_muzzle.py).
+        short const* tip = _tspuls_muzzle[UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())]];
+        COORDINATE centre = Center_Coord();
+        COORDINATE muzzle = XY_Coord((int)Coord_X(centre) + tip[0], (int)Coord_Y(centre) + tip[1]);
 
         switch (Status) {
         case AIM:

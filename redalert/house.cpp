@@ -4249,6 +4249,32 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
         */
         if (SuperWeapon[SPC_TS_EMP].Is_Ready()) {
             BuildingClass* cannon = TF_EMP_Launch_Site(this, cell);
+#if TF_DEV_BUILD
+            /*
+            **	Why an E.M. Pulse order fired or was refused: power, and the nearest cannon's reach.
+            */
+            {
+                int nearest = -1;
+                for (int bi = 0; bi < Buildings.Count(); bi++) {
+                    BuildingClass* b = Buildings.Ptr(bi);
+                    if (b != NULL && *b == STRUCT_TSPULS && b->House == this && !b->IsInLimbo) {
+                        int d = ::Distance(Cell_Coord(cell), b->Center_Coord()) / CELL_LEPTON_W;
+                        if (nearest < 0 || d < nearest) {
+                            nearest = d;
+                        }
+                    }
+                }
+                const char* up = getenv("USERPROFILE");
+                char path[512];
+                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_emp.log", up ? up : ".");
+                FILE* lf = fopen(path, "a");
+                if (lf != NULL) {
+                    fprintf(lf, "frame=%d EMP order cell=(%d,%d) power=%d/%d nearest_cannon=%d cells -> %s\n", (int)Frame,
+                            Cell_X(cell), Cell_Y(cell), Power, Drain, nearest, cannon != NULL ? "FIRE" : "REFUSED");
+                    fclose(lf);
+                }
+            }
+#endif
             if (cannon != NULL) {
                 TFEMPDest = cell;
                 cannon->Assign_Mission(MISSION_MISSILE);
@@ -4257,6 +4283,12 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                 IsRecalcNeeded = true;
                 fired = true;
                 what = "TS_EMP";
+            } else if (this == PlayerPtr && Power_Fraction() < 1) {
+                /*
+                **	TS takes a cannon offline in low power; the announcer says why the order
+                **	went nowhere. Out of range stays silent, as TS shows it on the cursor.
+                */
+                Speak(VOX_INSUFFICIENT_POWER);
             }
             if (this == PlayerPtr) {
                 Map.Column[1].Flag_To_Redraw();
