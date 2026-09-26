@@ -25,6 +25,29 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
   `Create_Special_Reinforcement` frees the type on failure only when no team was made from
   it (a memberless team frees it itself).
 
+## The Dropship Bay shares the War Factory's build queue (2026-09-26)
+
+- **Severity:** major (gameplay). **Status:** open, planned.
+- Ordering a Mk. II or a Mech Division from the bay occupies the unit queue, so the War Factory
+  cannot build while the bay's order runs, and the other way round. Luke wants the bay independent,
+  as an airfield is.
+- Cause: a house has one factory per RTTI (`HouseClass::Fetch_Factory`, `UnitFactory`), and the
+  bay's products are units. Fix = a separate bay factory slot, routed by type
+  (`TF_Is_Dropship_Delivered`) at every lookup and busy check: about 24 sites across
+  `dllinterface.cpp` (sidebar start/hold/cancel, per-entry busy), `house.cpp` and `building.cpp`.
+  Re-verify the delivery cooldown, the Mk. II cap and the AI's bay orders afterwards.
+
+## "Unable to comply, building in progress" plays in the RA voice for GDI/Nod (2026-09-26)
+
+- **Severity:** cosmetic. **Status:** open, needs the EVA RAM patch.
+- Luke heard RA's `PROGRES1` as Nod. The DLL never sent it: `tf_speech.log` for that match has
+  no `idx=2` (`VOX_NO_FACTORY`) event, while every DLL send of that index routes correctly
+  (`TDBLDG1` for GDI/Nod, `TSNOFACT1` for TS GDI). So `ClientG` plays the line itself, like
+  cannot-deploy and structure-sold.
+- Route: add `PROGRES1` to the launcher-owned lines the EVA RAM patch overwrites at match start
+  (`eva-ram-patch-spike.md`), with `TDBLDG1` / `TSNOFACT1` as the per-era payloads under the
+  same-size rule.
+
 ## Waypoint and rally markers show the Allied emblem for TS GDI (2026-09-17)
 
 - **Severity:** cosmetic. **Status:** open, needs the RAM lever.
