@@ -8,6 +8,23 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## RESOLVED: Nod Airstrip stops delivering vehicles partway through a match (2026-09-26)
+
+- **Severity:** major (shipped in every release since the Airstrip went to TD's delivery code,
+  `434f2d7a`). **Status:** fixed on main and on `hotfix-4.2.1`; reported by a Workshop player
+  and reproduced by Luke.
+- Symptom: Nod vehicles sit at Ready and no cargo plane comes, for the AI and the player alike.
+  Selling and rebuilding the Airstrip does not help; infantry still builds.
+- Cause: every Airstrip delivery runs `Create_Special_Reinforcement`, which allocates a
+  transient `TeamTypeClass`. TD frees a transient type when its last team dies
+  (`tiberiandawn/team.cpp` `~TeamClass`); RA's destructor never did, so each delivery leaked
+  one slot. The pool is `[Maximums] TeamType=100`, shared by every house, so after 100
+  deliveries in a match (all Nod players combined) the allocation fails and `Exit_Object`
+  returns 0 forever. Luke's repro stalled at exactly delivery 100.
+- Fix: `~TeamClass` frees a transient type once its `Number` reaches 0, and
+  `Create_Special_Reinforcement` frees the type on failure only when no team was made from
+  it (a memberless team frees it itself).
+
 ## Waypoint and rally markers show the Allied emblem for TS GDI (2026-09-17)
 
 - **Severity:** cosmetic. **Status:** open, needs the RAM lever.
