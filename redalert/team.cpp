@@ -308,6 +308,14 @@ TeamClass::~TeamClass(void)
             }
             Trigger = nullptr;
         }
+
+        /*
+        **	A transient team type exists only to carry its teams (ad hoc reinforcements such as
+        **	the airstrip's cargo-plane deliveries), so it is freed with the last of them.
+        */
+        if (Class->IsTransient && Class->Number == 0) {
+            delete (TeamTypeClass*)Class;
+        }
     }
 }
 
