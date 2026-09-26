@@ -765,6 +765,14 @@ bool Read_Scenario(char* name)
         PlayerPtr->Refund_Money(1000000);
     }
 
+    /*
+    **  Dev builds start the human player 100,000 credits up, with the other dev cheats
+    **  (tf_dev_off.flag switches it off along with them). AI houses are untouched.
+    */
+    if (TF_Dev_Cheats() && Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        PlayerPtr->Refund_Money(100000);
+    }
+
 #endif
 
     /*
