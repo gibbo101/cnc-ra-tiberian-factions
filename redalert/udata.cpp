@@ -1847,8 +1847,8 @@ static UnitTypeClass const UnitTs4tnk(UNIT_TS4TNK,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
-// RA2 Apocalypse (UNIT_R2APOC), Yuri's Revenge rules [APOC] (art [MTNK]). An easter egg: a crate
-// find, and TS GDI builds it from the War Factory for now. Turreted twin 120mm cannon + Mammoth
+// RA2 Apocalypse (UNIT_R2APOC), Yuri's Revenge rules [APOC] (art [MTNK]). An easter egg found only
+// in crates. Turreted twin 120mm cannon + Mammoth
 // Tusk AA missiles, self-healing (rules.ini). YR: Strength=800, Armor=heavy, Sight=6, Speed=4,
 // Cost=1750, Points=60, ROT=5, Crusher=yes, CrateGoodie=yes. Fire points come from the generated
 // r2tanks_muzzle.h (techno.cpp Fire_Coord); the offsets here only seed the classic path.

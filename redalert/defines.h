@@ -1943,7 +1943,7 @@ typedef enum UnitType : char
     UNIT_TS4TNK,            // The old TS Mammoth Tank (TS [4TNK], TechLevel -1 in TS): twin 120mmx cannon + MammothTusk AA missiles, self-healing. Art = 4TNK.VXL hull 0-31 + 4TNKTUR/4TNKBARL turret 32-63 (scripts/ts_pack_4tnk.py).
     UNIT_TSJUGG,            // TS Juggernaut (Firestorm [JUGG]): a walker that sets down to fire three arcing 90mm shells at long range (DeployToFire). Art = JUGGER.SHP walk + DJUGG deployed facings + DJUGGMK ladder (scripts/ts_pack_jugg.py).
     UNIT_TSLIMP,            // TS Limpet Drone (Firestorm [LIMPET]): an unarmed hover crawler that deploys into the cloaked STRUCT_TSDLIMP mine. Art = LIMPED.SHP, a ten-frame crawl cycle with no facings (scripts/ts_pack_limpet.py).
-    UNIT_R2APOC,            // RA2 Apocalypse (YR [APOC], art MTNK): twin 120mm cannon + Mammoth Tusk AA missiles, self-healing, crusher. Easter egg: crate find, and TS GDI builds it for now. Art = MTNK.VXL hull 0-31 + MTNKTUR/MTNKBARL turret 32-63 (scripts/r2_pack_tanks.py).
+    UNIT_R2APOC,            // RA2 Apocalypse (YR [APOC], art MTNK): twin 120mm cannon + Mammoth Tusk AA missiles, self-healing, crusher. Easter egg: crate-only. Art = MTNK.VXL hull 0-31 + MTNKTUR/MTNKBARL turret 32-63 (scripts/r2_pack_tanks.py).
     UNIT_R2PRIS,            // RA2 Prism Tank (YR [SREF]): prism beam that forks onto nearby enemies. Easter egg alongside UNIT_R2APOC. Art = SREF.VXL hull 0-31 + SREFTUR turret 32-63 (scripts/r2_pack_tanks.py).
 
     UNIT_COUNT,
