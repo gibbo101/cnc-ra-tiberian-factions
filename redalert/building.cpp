@@ -4181,8 +4181,15 @@ void BuildingClass::Update_Buildables(void)
             break;
 
         case RTTI_BUILDINGTYPE:
+            /*
+            **	A building is offered only when one of the player's yards could build it: the
+            **	same test the sidebar evicts by (sidebarglyphx.cpp), so nothing is added only
+            **	to be evicted -- each such round trip makes the launcher announce "new
+            **	construction options" (an Allied wall offered to a TS GDI yard).
+            */
             for (i = 0; i < BuildingTypes.Count(); i++) {
-                if (PlayerPtr->Can_Build(BuildingTypes.Ptr(i), ActLike)) {
+                if (PlayerPtr->Can_Build(BuildingTypes.Ptr(i), ActLike)
+                    && BuildingTypes.Ptr(i)->Who_Can_Build_Me(true, true, PlayerPtr->Class->House) != NULL) {
                     if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
 #ifdef REMASTER_BUILD
                         Sidebar_Glyphx_Add(RTTI_BUILDINGTYPE, i, House, buildable_via_capture);
@@ -4338,7 +4345,9 @@ void BuildingClass::Update_Buildables(void)
 
         case RTTI_BUILDINGTYPE:
             for (i = STRUCT_FIRST; i < STRUCT_COUNT; i++) {
-                if (PlayerPtr->Can_Build(&BuildingTypeClass::As_Reference((StructType)i), ActLike)) {
+                if (PlayerPtr->Can_Build(&BuildingTypeClass::As_Reference((StructType)i), ActLike)
+                    && BuildingTypeClass::As_Reference((StructType)i).Who_Can_Build_Me(true, true, PlayerPtr->Class->House)
+                           != NULL) {
                     Map.Add(RTTI_BUILDINGTYPE, i);
                 }
             }
