@@ -872,9 +872,13 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         */
         /*
         **	TS EMP cannon: the PULSCAN voxel cannon (32 facings) rides on the dome,
-        **	turning with PrimaryFacing (Rotation_AI, TS ROT 12).
+        **	turning with PrimaryFacing (Rotation_AI, TS ROT 12). It appears over the last
+        **	three of the 13 build-up frames, so it is seated as the dome finishes rather
+        **	than a moment after; a building being sold drops it straight away.
         */
-        if (*this == STRUCT_TSPULS && Strength > 0 && BState != BSTATE_CONSTRUCTION) {
+        bool tspuls_cannon = BState != BSTATE_CONSTRUCTION
+                             || (Mission != MISSION_DECONSTRUCTION && Fetch_Stage() >= 10);
+        if (*this == STRUCT_TSPULS && Strength > 0 && tspuls_cannon) {
             static const int TSPULS_TURRET_Y = 10; // classic px: seat dial (Luke, 2026-08-29: 1:1 cannon, feet in the dome)
             int tshape = UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())];
             Techno_Draw_Object_Virtual(Class->TsPulseTurret, tshape, x, y + TSPULS_TURRET_Y, window, DIR_N, 0x0100, "TSPULST");
@@ -7335,6 +7339,47 @@ int BuildingClass::Mission_Missile(void)
 {
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
+
+    /*
+    **	Tiberian Factions -- the EMP Cannon firing the E.M. Pulse (OpenTS building.cpp
+    **	Mission_Missile): the cannon turns to the target, its pulse ball charges at the
+    **	barrel for 32 ticks, then the ball is lobbed at the cell on House->TFEMPDest.
+    */
+    if (*this == STRUCT_TSPULS) {
+        enum
+        {
+            AIM,
+            CHARGE,
+            DONE_FIRE
+        };
+        CELL dest = House->TFEMPDest;
+        DirType aim = ::Direction(Center_Coord(), Cell_Coord(dest));
+        COORDINATE muzzle = Coord_Move(Coord_Move(Center_Coord(), aim, 0x0060), DIR_N, 0x0050);
+
+        switch (Status) {
+        case AIM:
+            if (PrimaryFacing.Current() != aim || PrimaryFacing.Is_Rotating()) {
+                PrimaryFacing.Set_Desired(aim);
+                return (1);
+            }
+            new AnimClass(ANIM_TS_PULSBALL, muzzle);
+            Status = CHARGE;
+            return (32);
+
+        case CHARGE: {
+            BulletClass* ball = new BulletClass(BULLET_TSPULSBALL, ::As_Target(dest), this, 1, WARHEAD_NONE, MPH_ROCKET);
+            if (ball != NULL && !ball->Unlimbo(muzzle, aim)) {
+                delete ball;
+            }
+            Status = DONE_FIRE;
+            return (1);
+        }
+
+        default:
+            Assign_Mission(MISSION_GUARD);
+            return (1);
+        }
+    }
 
     /*
     **  Tiberian Factions mod — Temple of Nod launch sequence. Simpler than

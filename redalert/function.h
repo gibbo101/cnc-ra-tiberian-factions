@@ -156,6 +156,7 @@ extern BuildingClass* TF_House_Plug_Host(HouseClass const* house, StructType plu
 extern TARGET TF_Hunter_Seeker_Acquire(HouseClass const* house); // pick a random live visible enemy for the Hunter Seeker (aircraft.cpp)
 extern bool TF_Is_Dropship_Delivered(UnitTypeClass const* type); // Unit arrives by dropship bay; drives the factory binding, order gates + countdown (house.cpp)
 extern bool TF_Bay_Order(RTTIType type, int id); // An order the dropship bay's own factory slot builds (house.cpp)
+extern BuildingClass* TF_EMP_Launch_Site(HouseClass const* house, CELL cell); // Nearest powered EMP Cannon in range of a target cell, or NULL (house.cpp)
 enum { TF_PLACE_BAY = -2 }; // PLACE event cell for "the dropship bay's finished unit" (house.cpp Place_Object)
 extern bool TF_Mk2_At_Cap(HouseClass const* house); // House already fields its full Mk. II allowance (house.cpp; heap-counted, CSII fold unsafe)
 extern bool TF_DeployKeyBatch; // the deploy key is running its selected-object loop: self-actions answer for each object as if it were alone (dllinterface.cpp)

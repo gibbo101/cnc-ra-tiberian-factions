@@ -787,6 +787,7 @@ typedef enum SpecialWeaponType : char
     SPC_TS_ION_CANNON,    // TS Ion Cannon strike (ANIM_TS_ION_BEAM + RING1, sourced from the TSPION uplink plug)
     SPC_TS_DROPPODS,      // TS Drop Pod reinforcements (3 BULLET_TSPODDROP pods of infantry, sourced from the TSPODS plug)
     SPC_TS_HUNTSEEK,      // TS Hunter Seeker droid (a self-targeting kamikaze flyer, sourced from the TSSEEK plug)
+    SPC_TS_EMP,           // TS E.M. Pulse (TS [EMPulseSpecial]): the nearest powered EMP Cannon (STRUCT_TSPULS) in range lobs a pulse ball at the target
 
     SPC_COUNT,
     SPC_FIRST = 0,
@@ -1441,6 +1442,7 @@ typedef enum BulletType : char
     BULLET_TSHELLFIRE,      // TS [AAHeatSeeker2]: the Orca Fighter's homing missile, air and ground, on RA's homing path with DRAGON art.
     BULLET_TSBOMBSHELL,     // TS [Cannon2] as the Orca Bomber drops it: a falling bomb (RA Dropping) with the TD bomblet art.
     BULLET_TSBALLISTIC2,    // Firestorm [Ballistic2]: the Juggernaut's arcing, inaccurate 120MM shell.
+    BULLET_TSPULSBALL,      // TS [PulsPr]: the EMP Cannon's pulse ball, lobbed high at the E.M. Pulse target. Its landing plays the impact anim instead of doing damage.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -3094,6 +3096,9 @@ typedef enum AnimType : short
     ANIM_TS_SMOKEY2,    // TS SMOKEY2 puff: the SAM missile's trail (art.ini [DRAGON] Trailer=SMOKEY2).
     ANIM_TS_RAILFXS,    // TS light railgun particle: small grey spark spawned in a tight helix along the Ghost Stalker's beam ([SmallRailgunPart]).
     ANIM_TS_SBANG34,    // TS S_BANG34: the InfantryExplode burst a jumpjet makes when it is shot down.
+    ANIM_TS_PULSBALL,   // TS PULSBALL: the EMP Cannon's pulse ball charging at the barrel before it fires (23 frames).
+    ANIM_TS_PULSEFX1,   // TS PULSEFX1: an E.M. Pulse impact, flat on the ground (21 frames). TS picks this or PULSEFX2 at random.
+    ANIM_TS_PULSEFX2,   // TS PULSEFX2: the other E.M. Pulse impact (15 frames).
 
     ANIM_COUNT,
     ANIM_FIRST = 0

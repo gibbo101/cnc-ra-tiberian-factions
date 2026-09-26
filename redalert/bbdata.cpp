@@ -211,6 +211,7 @@ void BulletTypeClass::Init_Heap(void)
     new BulletTypeClass("TSHellfireMissile"); // BULLET_TSHELLFIRE (TS [AAHeatSeeker2] — the Orca Fighter's homing missile)
     new BulletTypeClass("TSBombShell");   // BULLET_TSBOMBSHELL (TS [Cannon2] dropped by the Orca Bomber)
     new BulletTypeClass("TSBallistic2");  // BULLET_TSBALLISTIC2 (Firestorm [Ballistic2] -- the Juggernaut's arcing shell)
+    new BulletTypeClass("TSPulsBall");    // BULLET_TSPULSBALL (TS [PulsPr] -- the EMP Cannon's lobbed pulse ball)
 
     // Tiberian Factions mod: mark every TD-ported bullet so BulletClass::AI /
     // Unlimbo dispatch to the verbatim TD code path. Per
@@ -332,6 +333,10 @@ void BulletTypeClass::One_Time(void)
     BulletTypeClass& tslobbed = As_Reference(BULLET_TSLOBBED);  // Disc Thrower disc -- own TSDISCUS sprite (RA_VFX.XML); donor passes Draw_It's NULL guard.
     if (tslobbed.ImageData == NULL) {
         ((void const*&)tslobbed.ImageData) = donor.ImageData;
+    }
+    BulletTypeClass& tspulsball = As_Reference(BULLET_TSPULSBALL);  // EMP pulse ball -- own TSPULSBL sprite (RA_VFX.XML); donor passes Draw_It's NULL guard.
+    if (tspulsball.ImageData == NULL) {
+        ((void const*&)tspulsball.ImageData) = donor.ImageData;
     }
 }
 

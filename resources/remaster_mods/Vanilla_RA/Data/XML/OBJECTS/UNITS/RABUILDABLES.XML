@@ -782,6 +782,25 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<!-- Tiberian Factions mod — the EMP Cannon's E.M. Pulse (SPC_TS_EMP): AssetName
+	     "SW_TSEmp" from Convert_Special_Weapon_Type, cameo = TS's PULSICON
+	     (scripts/ts_pack_emp.py). SG_TSEmp is the key a mixed-faction game asks for;
+	     it shows the same plain cameo. -->
+	<ObjectTypeClass Name="RA_SW_TSEMP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_SW_TSEMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_SW_TSEMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SW_TSEMP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SG_TSEMP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_SW_TSEMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_SW_TSEMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SW_TSEMP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 	<!-- Tiberian Factions mod — Nod paratroops super (SPC_TD_PARA_INFANTRY).
 	     AssetName "SW_TDParaInf" (distinct from the Soviet drop's
 	     "SW_ParaInfantry") so the tooltip resolves the Nod strings below and

@@ -722,6 +722,7 @@ HouseClass::HouseClass(HousesType house)
     , BuildAircraft(AIRCRAFT_NONE)
     , BuildVessel(VESSEL_NONE)
     , NukeDest(0)
+    , TFEMPDest(0)
     , Allies(0)
     , DamageTime(TICKS_PER_MINUTE * Rule.DamageDelay)
     , TeamTime(TICKS_PER_MINUTE * Rule.TeamDelay)
@@ -800,6 +801,13 @@ HouseClass::HouseClass(HousesType house)
     // [HuntSeekSpecial]: RechargeTime=12, IsPowered=true, no voices.
     new (&SuperWeapon[SPC_TS_HUNTSEEK])
         SuperClass(TICKS_PER_MINUTE * 12, true, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_INSUFFICIENT_POWER);
+
+    // Tiberian Factions mod — TS E.M. Pulse (EMP Cannon). TS rules.ini
+    // [EMPulseSpecial]: RechargeTime=4.5, IsPowered=true. TS records only a
+    // recharge line, so every other moment stays silent rather than borrow
+    // another era's announcer.
+    new (&SuperWeapon[SPC_TS_EMP])
+        SuperClass(TICKS_PER_MINUTE * 9 / 2, true, VOX_NONE, VOX_NONE, VOX_NONE, VOX_NONE);
 
     // Tiberian Factions mod — Nod Nuclear Strike. TD-authentic 14-minute
     // recharge per tiberiandawn/defines.h NUKE_GONE_TIME (14 *
@@ -984,6 +992,37 @@ bool TF_Is_Dropship_Delivered(UnitTypeClass const* type)
 **	factory's, so a human player's bay and war factory build side by side. Computer
 **	houses need no slot: each of their factory buildings holds its own production.
 */
+/*
+**	The EMP Cannon that fires the E.M. Pulse special at a cell: the house's nearest cannon that
+**	stands built and powered with the cell inside its weapon's reach, or NULL. TS
+**	[EMPulseWeapon] Range=40 cells, measured on cell deltas as TS does (OpenTS suprtype.cpp).
+*/
+BuildingClass* TF_EMP_Launch_Site(HouseClass const* house, CELL cell)
+{
+    enum { EMP_RANGE_CELLS = 40 };
+    if (house == NULL || cell <= 0 || house->Power_Fraction() < 1) {
+        return (NULL);
+    }
+    BuildingClass* best = NULL;
+    int bestdist = 0;
+    for (int index = 0; index < Buildings.Count(); index++) {
+        BuildingClass* b = Buildings.Ptr(index);
+        if (b == NULL || *b != STRUCT_TSPULS || b->House != house || b->IsInLimbo || b->Strength <= 0
+            || b->BState == BSTATE_CONSTRUCTION) {
+            continue;
+        }
+        CELL bc = Coord_Cell(b->Center_Coord());
+        int dx = Cell_X(cell) - Cell_X(bc);
+        int dy = Cell_Y(cell) - Cell_Y(bc);
+        int dist = dx * dx + dy * dy;
+        if (dist < EMP_RANGE_CELLS * EMP_RANGE_CELLS && (best == NULL || dist < bestdist)) {
+            best = b;
+            bestdist = dist;
+        }
+    }
+    return (best);
+}
+
 bool TF_Bay_Order(RTTIType type, int id)
 {
     return ((type == RTTI_UNITTYPE || type == RTTI_UNIT) && id >= 0 && id < UNIT_COUNT
@@ -2771,6 +2810,45 @@ void HouseClass::Super_Weapon_Handler(void)
     }
 
     /*
+    **  Tiberian Factions mod — TS E.M. Pulse (SPC_TS_EMP), granted while the house
+    **  has an EMP Cannon standing; its range and power are checked when it fires.
+    */
+    bool ts_emp_host = Get_Quantity(STRUCT_TSPULS) > 0;
+    if (SuperWeapon[SPC_TS_EMP].Is_Present()) {
+        if ((!ts_emp_host && !SuperWeapon[SPC_TS_EMP].Is_One_Time()) || IsDefeated) {
+            if (SuperWeapon[SPC_TS_EMP].Remove()) {
+                if (this == PlayerPtr) {
+                    if (Map.IsTargettingMode == SPC_TS_EMP) {
+                        Map.IsTargettingMode = SPC_NONE;
+                    }
+                    Map.Column[1].Flag_To_Redraw();
+                }
+                IsRecalcNeeded = true;
+            }
+        } else {
+            if (SuperWeapon[SPC_TS_EMP].Is_Ready() && !IsHuman) {
+                Special_Weapon_AI(SPC_TS_EMP);
+            }
+        }
+    } else {
+        if (ts_emp_host && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
+            SuperWeapon[SPC_TS_EMP].Enable(false, this == PlayerPtr, Power_Fraction() < 1);
+            if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
+                if (IsHuman) {
+#ifdef REMASTER_BUILD
+                    Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TS_EMP, this);
+#endif
+                }
+            } else {
+                if (this == PlayerPtr) {
+                    Map.Add(RTTI_SPECIAL, SPC_TS_EMP);
+                    Map.Column[1].Flag_To_Redraw();
+                }
+            }
+        }
+    }
+
+    /*
     **  Tiberian Factions mod — TS Drop Pod reinforcements (SPC_TS_DROPPODS),
     **  granted by the Drop Pod Node plug (TSPODS in a TSPLUG). Same shape as
     **  the TS Ion Cannon block above.
@@ -3942,6 +4020,13 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
                 continue;
             }
 
+            /*
+            **	The E.M. Pulse only reaches what an EMP Cannon of this house can hit.
+            */
+            if (id == SPC_TS_EMP && TF_EMP_Launch_Site(this, Coord_Cell(b->Center_Coord())) == NULL) {
+                continue;
+            }
+
             if (Percent_Chance(90) && (b->Value() > best || best == -1)) {
                 best = b->Value();
                 bestptr = b;
@@ -4156,6 +4241,30 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
     **  balance identical to the TD strike), the RING1 ground flash is
     **  visual only.
     */
+    case SPC_TS_EMP:
+        /*
+        **	The nearest powered EMP Cannon in range turns to the target, charges its
+        **	pulse ball and lobs it there (BuildingClass::Mission_Missile). With no
+        **	cannon in range the order is refused and the special stays ready.
+        */
+        if (SuperWeapon[SPC_TS_EMP].Is_Ready()) {
+            BuildingClass* cannon = TF_EMP_Launch_Site(this, cell);
+            if (cannon != NULL) {
+                TFEMPDest = cell;
+                cannon->Assign_Mission(MISSION_MISSILE);
+                cannon->Commence();
+                SuperWeapon[SPC_TS_EMP].Discharged(this == PlayerPtr);
+                IsRecalcNeeded = true;
+                fired = true;
+                what = "TS_EMP";
+            }
+            if (this == PlayerPtr) {
+                Map.Column[1].Flag_To_Redraw();
+                Map.IsTargettingMode = SPC_NONE;
+            }
+        }
+        break;
+
     case SPC_TS_ION_CANNON:
         if (SuperWeapon[SPC_TS_ION_CANNON].Is_Ready()) {
             AnimClass* ts_ion_anim = new AnimClass(ANIM_TS_ION_BEAM, Cell_Coord(cell), 0, 1);

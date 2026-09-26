@@ -486,6 +486,13 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsionbm_stub.shp" 15 480 15
 PACK_ARGS+=("$TMPDIR/tsionbm_stub.shp:TSIONBM.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsionrng_stub.shp" 104 51 15
 PACK_ARGS+=("$TMPDIR/tsionrng_stub.shp:TSIONRNG.SHP")
+# E.M. Pulse set (scripts/ts_pack_emp.py): pulse ball 64x64, the two impacts 1216x704, / 8.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspulsbl_stub.shp" 8 8 23
+PACK_ARGS+=("$TMPDIR/tspulsbl_stub.shp:TSPULSBL.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspulsf1_stub.shp" 152 88 21
+PACK_ARGS+=("$TMPDIR/tspulsf1_stub.shp:TSPULSF1.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspulsf2_stub.shp" 152 88 15
+PACK_ARGS+=("$TMPDIR/tspulsf2_stub.shp:TSPULSF2.SHP")
 # TS drop-pod strike set (scripts/ts_pack_pods.py): husks 192x192, DROPEXP puff
 # 400x272, PODRING entry flash 400x208, SMOKEY trail 128x120, pod bullet body
 # 192x192 — all / 8 for the classic dims the launcher sizes the HD art off.

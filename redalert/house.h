@@ -902,6 +902,7 @@ public:
     ** the Atomic Bomb state.
     */
     CELL NukeDest;
+    CELL TFEMPDest; // Where the EMP Cannon firing the E.M. Pulse special sends its pulse ball.
 
     /*
     ** Per-house credits class to track the visible credits state for each house. Redundant in the original game, but

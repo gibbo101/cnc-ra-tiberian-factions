@@ -8170,6 +8170,7 @@ static int TF_Special_Display_Mask(SpecialWeaponType id, HouseClass* house)
     case SPC_TS_ION_CANNON:
     case SPC_TS_DROPPODS:
     case SPC_TS_HUNTSEEK:
+    case SPC_TS_EMP:
         return (TF_FACTION_TSGDI);
     case SPC_TD_NUKE:
     case SPC_TD_PARA_INFANTRY:
@@ -8976,6 +8977,15 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
             strncpy(weapon_name, "SW_TSIon", 16);
         }
         break;
+    case SPC_TS_EMP:
+        // Tiberian Factions mod — the EMP Cannon's E.M. Pulse: the Ion Cannon's
+        // targeting plumbing (cursor, cost handling); AssetName "SW_TSEmp" resolves
+        // the TS PULSICON cameo entry (RA_SW_TSEMP in RABUILDABLES.XML).
+        dll_weapon_type = SW_ION_CANNON;
+        if (weapon_name != NULL) {
+            strncpy(weapon_name, "SW_TSEmp", 16);
+        }
+        break;
     case SPC_TS_DROPPODS:
         // Tiberian Factions mod — TS Drop Pod reinforcements: paratroop-class
         // launcher plumbing (SW_PARA_INFANTRY is cost-suppression whitelisted),
@@ -9061,6 +9071,7 @@ void DLLExportClass::Fill_Sidebar_Entry_From_Special_Weapon(CNCSidebarEntryStruc
     case SPC_TS_ION_CANNON:
     case SPC_TS_DROPPODS:
     case SPC_TS_HUNTSEEK:
+    case SPC_TS_EMP:
         Convert_Special_Weapon_Type(weapon_type, sidebar_entry_out.SuperWeaponType, sidebar_entry_out.AssetName);
         break;
     default:
