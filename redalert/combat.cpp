@@ -337,6 +337,14 @@ AnimType Combat_Anim(int damage, WarheadType warhead, LandType land)
         return (ANIM_NONE);
     }
 
+    /*
+    **	Tiberian Factions -- the Apocalypse's shells burst like the Mammoth Tank's 40-damage
+    **	120mm: the explosion size follows damage, and its 100 would pick the large fireball.
+    */
+    if (warhead == WARHEAD_R2APOCAP) {
+        damage = min(damage, 40);
+    }
+
     static AnimType _aplist[] = {
         ANIM_VEH_HIT3, // Small fragment throwing explosion -- burn/exp mix.
         ANIM_VEH_HIT2, //	Small fragment throwing explosion -- pop & sparkles.

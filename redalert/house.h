@@ -480,6 +480,7 @@ public:
     int UnitFactories;
     int VesselFactories;
     int BuildingFactories;
+    int DropFactories; // Dropship bays: counted apart from the war factories they share RTTI_UNIT with.
 
     /*
     **	This is the accumulation of the total power and drain factors. From these
@@ -498,6 +499,7 @@ public:
     int UnitFactory;
     int VesselFactory;
     int BuildingFactory;
+    int DropFactory; // The dropship bay's own production slot, so the bay never waits on the war factory.
 
     /*
     **	For human controlled houses, the current state of the radar map
@@ -704,8 +706,8 @@ public:
     bool Is_Allowed_To_Ally(HousesType house) const;
     void Do_All_To_Hunt(void) const;
     void Super_Weapon_Handler(void);
-    int* Factory_Counter(RTTIType rtti);
-    int Factory_Count(RTTIType rtti) const;
+    int* Factory_Counter(RTTIType rtti, bool bay = false);
+    int Factory_Count(RTTIType rtti, bool bay = false) const;
     DiffType Assign_Handicap(DiffType handicap);
     TARGET Find_Juicy_Target(COORDINATE coord) const;
     void Print_Zone_Stats(int x, int y, ZoneType zone, MonoClass* mono) const;
@@ -716,8 +718,8 @@ public:
     ZoneType Which_Zone(CELL cell) const;
     CELL Find_Cell_In_Zone(TechnoClass const* techno, ZoneType zone) const;
     ProdFailType Begin_Production(RTTIType type, int id);
-    ProdFailType Suspend_Production(RTTIType type);
-    ProdFailType Abandon_Production(RTTIType type);
+    ProdFailType Suspend_Production(RTTIType type, bool bay = false);
+    ProdFailType Abandon_Production(RTTIType type, bool bay = false);
     bool Place_Object(RTTIType type, CELL cell);
     bool Manual_Place(BuildingClass* builder, BuildingClass* object);
     void Special_Weapon_AI(SpecialWeaponType id);
@@ -794,8 +796,8 @@ public:
     bool Can_Build(RTTIType rtti, int type, HousesType house) const;
 
     // Factory controls.
-    FactoryClass* Fetch_Factory(RTTIType rtti) const;
-    void Set_Factory(RTTIType rtti, FactoryClass* factory);
+    FactoryClass* Fetch_Factory(RTTIType rtti, bool bay = false) const;
+    void Set_Factory(RTTIType rtti, FactoryClass* factory, bool bay = false);
 
     bool Can_Build(ObjectTypeClass const* type, HousesType house) const;
 

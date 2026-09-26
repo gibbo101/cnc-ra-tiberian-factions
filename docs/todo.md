@@ -25,8 +25,11 @@ What went in, all signed off in play:
    - **EMP Pulse Cannon, stages B to E** — branch `emp-cannon`, worktree
      `../tf-subterranean-worktree`, doc `docs/emp-cannon-design.md` **on that branch**. Stage A
      (the building) is verified; B superweapon, **C the pulse (the stun timer on TechnoClass,
-     the gates, aircraft crash, building power-off)**, D diggers, E sounds and EVA. Deck-only
-     deploys for this arc, and it ships with the subterranean pair, never alone.
+     the gates, aircraft crash, building power-off)**, D diggers, E sounds and EVA. The branch
+     was merged up to main on 2026-09-17 and its play-testing is on the **Linux desktop** now
+     (Luke), not the Deck. It ships with the subterranean pair, never alone. Open nit from
+     stage A: the cannon layer is gated on `BState != BSTATE_CONSTRUCTION`, so it pops on about
+     a second after the buildup ends.
    - **Mobile EMP** — needs stage C's pulse, so it follows straight on from it.
    - Mobile Sensor Array, Mobile War Factory.
    - **The Firestorm Generator and its wall sections** (TSFIRE / TSFSDF, planned in

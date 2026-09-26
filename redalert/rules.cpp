@@ -674,6 +674,8 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WarheadTypeClass("TSOrcaHE");     // WARHEAD_TSORCAHE (TS [ORCAHE] -- the Orca Bomber's bombs)
     new WarheadTypeClass("TSArtyHE");
     new WarheadTypeClass("TSLimpy");      // WARHEAD_TSLIMPY (Firestorm [LIMPY] -- the Limpet Drone attaches)     // WARHEAD_TSARTYHE (TS [ARTYHE] -- the Juggernaut's shells)
+    new WarheadTypeClass("R2ApocAP");     // WARHEAD_R2APOCAP (YR [ApocAP] -- the Apocalypse cannon)
+    new WarheadTypeClass("R2Comet");      // WARHEAD_R2COMET (YR [CometWH] -- the Prism Tank beam)
 
     Weapons.Set_Heap(WeaponMax);
     new WeaponTypeClass("Colt45");
@@ -780,6 +782,9 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("TSBomb");         // WEAPON_TSBOMB (TS Orca Bomber -- TS [Bomb])
     new WeaponTypeClass("TSJugg90mm");
     new WeaponTypeClass("TSLimpet");       // WEAPON_TSLIMP (TS Limpet Mine -- Firestorm [LIMP]; not "TSLimp": INI sections are case-blind and the drone is [TSLIMP])     // WEAPON_TSJUGG90MM (TS Juggernaut -- Firestorm [Jugg90mm])
+    new WeaponTypeClass("R2ApocCannon");   // WEAPON_R2APOCCANNON (YR [120mmx] -- the Apocalypse cannon)
+    new WeaponTypeClass("R2ApocTusk");     // WEAPON_R2APOCTUSK (YR [MammothTusk] -- the Apocalypse tusks)
+    new WeaponTypeClass("R2PrismBeam");    // WEAPON_R2PRISMBEAM (YR [Comet] -- the Prism Tank beam)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's

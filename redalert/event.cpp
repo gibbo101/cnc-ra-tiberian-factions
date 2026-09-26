@@ -606,7 +606,7 @@ void EventClass::Execute(void)
     **	object type, the factory can be inferred.
     */
     case SUSPEND:
-        Houses.Raw_Ptr(ID)->Suspend_Production(Data.Specific.Type);
+        Houses.Raw_Ptr(ID)->Suspend_Production(Data.Specific.Type, TF_Bay_Order(Data.Specific.Type, Data.Specific.ID));
         break;
 
     /*
@@ -614,7 +614,7 @@ void EventClass::Execute(void)
     **	object type. From the object type, the exact factory can be inferred.
     */
     case ABANDON:
-        Houses.Raw_Ptr(ID)->Abandon_Production(Data.Specific.Type);
+        Houses.Raw_Ptr(ID)->Abandon_Production(Data.Specific.Type, TF_Bay_Order(Data.Specific.Type, Data.Specific.ID));
         break;
 
     /*

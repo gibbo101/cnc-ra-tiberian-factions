@@ -249,6 +249,23 @@ meta `crop` offset) and divide by the density. For reference, TS's 1x1 buildings
 +12 classic px below the cell centre, and unit shadows sit further out again the taller the unit
 (Wolverine +13.9, Juggernaut deployed +18, Titan +22.8).
 
+## 15. Unit selection boxes follow EA's convention (2026-09-26)
+
+The launcher centres a unit's box on the unit. EA's vehicle art stands on a common ground line
+(+7.7 classic px, measured off 4TNK/HTNK) with the art above centre, and the box is sized so its
+top and sides hug the art while the slack falls below. Never move art onto the box centre: size
+the box in `UnitTypeClass::Dimensions` (`_art_boxes`) as width = art width, height = 2 × the
+art's reach above (or below) centre.
+
+Lowering the art onto the box centre makes a snug box but stands the unit about 7 classic px
+below EA's vehicles in the same cell row.
+
+Proven 2026-09-26: the launcher places a unit's box at the unit's centre and ignores
+`CenterCoordY` and `Altitude` for it, alone or together (as it ignores them for buildings,
+contract 7); only `DimensionX/Y` is ours. The airborne Jumpjet's lifted `CenterCoordY` does move
+its box, but that path is infantry in flight and does not carry over to a ground vehicle. Buildings differ: see contract 7, where the box is the
+plot's and the art must be seated on the plot.
+
 ## House quality policy for TS-sourced assets (Luke, 2026-07-20)
 
 **Every unit, building, and weapon pulled from Tiberian Sun ships at the

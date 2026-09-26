@@ -2,6 +2,15 @@
 
 All notable changes to **Tiberian Factions for Red Alert** are documented here.
 
+## [4.2.1] — 2026-09-26
+
+### Fixed
+- **Nod vehicles no longer get stuck at Ready.** After about a hundred vehicles
+  had been delivered to Nod Airstrips in one match (counting every Nod player,
+  AI included), no more cargo planes came: vehicles sat at Ready for everyone,
+  and rebuilding the Airstrip did not help. Airstrips now keep delivering for
+  the whole match.
+
 ## [4.2.0] — 2026-07-22
 
 ### Added

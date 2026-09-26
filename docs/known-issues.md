@@ -8,6 +8,50 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## RESOLVED: Nod Airstrip stops delivering vehicles partway through a match (2026-09-26)
+
+- **Severity:** major (shipped in every release since the Airstrip went to TD's delivery code,
+  `434f2d7a`). **Status:** fixed on main and on `hotfix-4.2.1`; reported by a Workshop player
+  and reproduced by Luke.
+- Symptom: Nod vehicles sit at Ready and no cargo plane comes, for the AI and the player alike.
+  Selling and rebuilding the Airstrip does not help; infantry still builds.
+- Cause: every Airstrip delivery runs `Create_Special_Reinforcement`, which allocates a
+  transient `TeamTypeClass`. TD frees a transient type when its last team dies
+  (`tiberiandawn/team.cpp` `~TeamClass`); RA's destructor never did, so each delivery leaked
+  one slot. The pool is `[Maximums] TeamType=100`, shared by every house, so after 100
+  deliveries in a match (all Nod players combined) the allocation fails and `Exit_Object`
+  returns 0 forever. Luke's repro stalled at exactly delivery 100.
+- Fix: `~TeamClass` frees a transient type once its `Number` reaches 0, and
+  `Create_Special_Reinforcement` frees the type on failure only when no team was made from
+  it (a memberless team frees it itself).
+
+## RESOLVED: The Dropship Bay shares the War Factory's build queue (2026-09-26)
+
+- **Severity:** major (gameplay). **Status:** resolved 2026-09-26, verified in play (Luke: "works
+  perfectly"). A human house now has a separate `DropFactory` slot and `DropFactories` count,
+  routed by `TF_Bay_Order(type, id)`; a finished bay unit leaves the sidebar with the
+  `TF_PLACE_BAY` cell. Computer houses were never affected: each of their factory buildings
+  holds its own production.
+- Ordering a Mk. II or a Mech Division from the bay occupies the unit queue, so the War Factory
+  cannot build while the bay's order runs, and the other way round. Luke wants the bay independent,
+  as an airfield is.
+- Cause: a house has one factory per RTTI (`HouseClass::Fetch_Factory`, `UnitFactory`), and the
+  bay's products are units. Fix = a separate bay factory slot, routed by type
+  (`TF_Is_Dropship_Delivered`) at every lookup and busy check: about 24 sites across
+  `dllinterface.cpp` (sidebar start/hold/cancel, per-entry busy), `house.cpp` and `building.cpp`.
+  Re-verify the delivery cooldown, the Mk. II cap and the AI's bay orders afterwards.
+
+## "Unable to comply, building in progress" plays in the RA voice for GDI/Nod (2026-09-26)
+
+- **Severity:** cosmetic. **Status:** open, needs the EVA RAM patch.
+- Luke heard RA's `PROGRES1` as Nod. The DLL never sent it: `tf_speech.log` for that match has
+  no `idx=2` (`VOX_NO_FACTORY`) event, while every DLL send of that index routes correctly
+  (`TDBLDG1` for GDI/Nod, `TSNOFACT1` for TS GDI). So `ClientG` plays the line itself, like
+  cannot-deploy and structure-sold.
+- Route: add `PROGRES1` to the launcher-owned lines the EVA RAM patch overwrites at match start
+  (`eva-ram-patch-spike.md`), with `TDBLDG1` / `TSNOFACT1` as the per-era payloads under the
+  same-size rule.
+
 ## Waypoint and rally markers show the Allied emblem for TS GDI (2026-09-17)
 
 - **Severity:** cosmetic. **Status:** open, needs the RAM lever.

@@ -1944,6 +1944,8 @@ typedef enum UnitType : char
     UNIT_TS4TNK,            // The old TS Mammoth Tank (TS [4TNK], TechLevel -1 in TS): twin 120mmx cannon + MammothTusk AA missiles, self-healing. Art = 4TNK.VXL hull 0-31 + 4TNKTUR/4TNKBARL turret 32-63 (scripts/ts_pack_4tnk.py).
     UNIT_TSJUGG,            // TS Juggernaut (Firestorm [JUGG]): a walker that sets down to fire three arcing 90mm shells at long range (DeployToFire). Art = JUGGER.SHP walk + DJUGG deployed facings + DJUGGMK ladder (scripts/ts_pack_jugg.py).
     UNIT_TSLIMP,            // TS Limpet Drone (Firestorm [LIMPET]): an unarmed hover crawler that deploys into the cloaked STRUCT_TSDLIMP mine. Art = LIMPED.SHP, a ten-frame crawl cycle with no facings (scripts/ts_pack_limpet.py).
+    UNIT_R2APOC,            // RA2 Apocalypse (YR [APOC], art MTNK): twin 120mm cannon + Mammoth Tusk AA missiles, self-healing, crusher. Easter egg: crate-only. Art = MTNK.VXL hull 0-31 + MTNKTUR/MTNKBARL turret 32-63 (scripts/r2_pack_tanks.py).
+    UNIT_R2PRIS,            // RA2 Prism Tank (YR [SREF]): prism beam that forks onto nearby enemies. Easter egg alongside UNIT_R2APOC. Art = SREF.VXL hull 0-31 + SREFTUR turret 32-63 (scripts/r2_pack_tanks.py).
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -3463,6 +3465,8 @@ typedef enum WarheadType : char
     WARHEAD_TSORCAHE, // TS Orca bomb warhead. TS [ORCAHE]: wide splash, verses 200/90/75/32/100%, InfDeath 2, ProneDamage 150%. Registered "TSOrcaHE".
     WARHEAD_TSARTYHE, // TS artillery warhead. TS [ARTYHE]: Spread 6, verses 100/85/68/35/35%, InfDeath 2, ProneDamage 150%. Registered "TSArtyHE".
     WARHEAD_TSLIMPY,  // TS Limpet warhead (Firestorm [LIMPY]): LimpetFactor 35 -- the shot attaches the drone instead of doing damage.
+    WARHEAD_R2APOCAP, // RA2 Apocalypse cannon warhead. YR [ApocAP] 11-class verses collapsed to RA's 5: 25/100/75/100/70%. Registered "R2ApocAP".
+    WARHEAD_R2COMET,  // RA2 Prism beam warhead. YR [CometWH] collapsed: 100/200/75/50/200%, a building and infantry melter. Registered "R2Comet".
 
     WARHEAD_COUNT,
     WARHEAD_FIRST = 0
@@ -3579,6 +3583,9 @@ typedef enum WeaponType : char
     WEAPON_TSBOMB,         // TS Orca Bomber bomb: TS [Bomb] (Dmg160/ROF10, TSOrcaHE warhead) dropped from over the target. Registered "TSBomb".
     WEAPON_TSJUGG90MM,     // TS Juggernaut cannon: Firestorm [Jugg90mm] (Dmg75/Burst3/ROF150/Range18/MinimumRange5, TSArtyHE, JUGGER1 report). Registered "TSJugg90mm".
     WEAPON_TSLIMP,         // TS Limpet Mine shot: Firestorm [LIMP] (Damage 1, ROF 80, Range 2, invisible bullet, TSLimpy, LIMPBOM1 report). Registered "TSLimpet".
+    WEAPON_R2APOCCANNON,   // RA2 Apocalypse cannon: YR [120mmx] (Dmg100/ROF80/Range5.75/Burst2, R2ApocAP). Registered "R2ApocCannon".
+    WEAPON_R2APOCTUSK,     // RA2 Apocalypse tusks: YR [MammothTusk] (Dmg50/Burst2/Range8, AA only). Registered "R2ApocTusk".
+    WEAPON_R2PRISMBEAM,    // RA2 Prism Tank beam: YR [Comet] (Dmg100/ROF100, IsPrismBeam draw + fork). Registered "R2PrismBeam".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -4314,6 +4321,48 @@ typedef enum VocType : short
     VOC_TS_LIMPQ4,       // TS Limpet Drone select chirp (LIMPQ4). Bundled TSLIMPQ4.WAV.
     VOC_TS_LIMPC3,       // TS Limpet Drone move/attack chirp (LIMPC3). Bundled TSLIMPC3.WAV.
     VOC_TS_LIMPC4,       // TS Limpet Drone move/attack chirp (LIMPC4). Bundled TSLIMPC4.WAV.
+    VOC_R2_VAPOSEA,   // Apocalypse select voice (vaposea). Bundled R2VAPOSEA.WAV.
+    VOC_R2_VAPOSEB,   // Apocalypse select voice (vaposeb). Bundled R2VAPOSEB.WAV.
+    VOC_R2_VAPOSEC,   // Apocalypse select voice (vaposec). Bundled R2VAPOSEC.WAV.
+    VOC_R2_VAPOSED,   // Apocalypse select voice (vaposed). Bundled R2VAPOSED.WAV.
+    VOC_R2_VAPOSEE,   // Apocalypse select voice (vaposee). Bundled R2VAPOSEE.WAV.
+    VOC_R2_VAPOMOA,   // Apocalypse move voice (vapomoa). Bundled R2VAPOMOA.WAV.
+    VOC_R2_VAPOMOB,   // Apocalypse move voice (vapomob). Bundled R2VAPOMOB.WAV.
+    VOC_R2_VAPOMOC,   // Apocalypse move voice (vapomoc). Bundled R2VAPOMOC.WAV.
+    VOC_R2_VAPOMOD,   // Apocalypse move voice (vapomod). Bundled R2VAPOMOD.WAV.
+    VOC_R2_VAPOMOE,   // Apocalypse move voice (vapomoe). Bundled R2VAPOMOE.WAV.
+    VOC_R2_VAPOATA,   // Apocalypse attack order voice (vapoata). Bundled R2VAPOATA.WAV.
+    VOC_R2_VAPOATB,   // Apocalypse attack order voice (vapoatb). Bundled R2VAPOATB.WAV.
+    VOC_R2_VAPOATC,   // Apocalypse attack order voice (vapoatc). Bundled R2VAPOATC.WAV.
+    VOC_R2_VAPOATD,   // Apocalypse attack order voice (vapoatd). Bundled R2VAPOATD.WAV.
+    VOC_R2_VAPOATE,   // Apocalypse attack order voice (vapoate). Bundled R2VAPOATE.WAV.
+    VOC_R2_VAPOATF,   // Apocalypse attack order voice (vapoatf). Bundled R2VAPOATF.WAV.
+    VOC_R2_VAPOSTAA,  // Apocalypse engine start (vapostaa). Bundled R2VAPOSTAA.WAV.
+    VOC_R2_VAPOSTAB,  // Apocalypse engine start (vapostab). Bundled R2VAPOSTAB.WAV.
+    VOC_R2_VAPOSTAC,  // Apocalypse engine start (vapostac). Bundled R2VAPOSTAC.WAV.
+    VOC_R2_VAPOAT1A,  // Apocalypse cannon report (vapoat1a). Bundled R2VAPOAT1A.WAV.
+    VOC_R2_VAPOAT2A,  // Apocalypse tusk launch (vapoat2a). Bundled R2VAPOAT2A.WAV.
+    VOC_R2_VAPOAT2B,  // Apocalypse tusk launch (vapoat2b). Bundled R2VAPOAT2B.WAV.
+    VOC_R2_VAPOAT2C,  // Apocalypse tusk launch (vapoat2c). Bundled R2VAPOAT2C.WAV.
+    VOC_R2_VPRISEA,   // Prism Tank select voice (vprisea). Bundled R2VPRISEA.WAV.
+    VOC_R2_VPRISEB,   // Prism Tank select voice (vpriseb). Bundled R2VPRISEB.WAV.
+    VOC_R2_VPRISEC,   // Prism Tank select voice (vprisec). Bundled R2VPRISEC.WAV.
+    VOC_R2_VPRISED,   // Prism Tank select voice (vprised). Bundled R2VPRISED.WAV.
+    VOC_R2_VPRISEE,   // Prism Tank select voice (vprisee). Bundled R2VPRISEE.WAV.
+    VOC_R2_VPRIMOA,   // Prism Tank move voice (vprimoa). Bundled R2VPRIMOA.WAV.
+    VOC_R2_VPRIMOB,   // Prism Tank move voice (vprimob). Bundled R2VPRIMOB.WAV.
+    VOC_R2_VPRIMOC,   // Prism Tank move voice (vprimoc). Bundled R2VPRIMOC.WAV.
+    VOC_R2_VPRIMOD,   // Prism Tank move voice (vprimod). Bundled R2VPRIMOD.WAV.
+    VOC_R2_VPRIMOE,   // Prism Tank move voice (vprimoe). Bundled R2VPRIMOE.WAV.
+    VOC_R2_VPRIATA,   // Prism Tank attack order voice (vpriata). Bundled R2VPRIATA.WAV.
+    VOC_R2_VPRIATB,   // Prism Tank attack order voice (vpriatb). Bundled R2VPRIATB.WAV.
+    VOC_R2_VPRIATC,   // Prism Tank attack order voice (vpriatc). Bundled R2VPRIATC.WAV.
+    VOC_R2_VPRIATD,   // Prism Tank attack order voice (vpriatd). Bundled R2VPRIATD.WAV.
+    VOC_R2_VPRIATE,   // Prism Tank attack order voice (vpriate). Bundled R2VPRIATE.WAV.
+    VOC_R2_VPRISTAA,  // Prism Tank engine start (vpristaa). Bundled R2VPRISTAA.WAV.
+    VOC_R2_VPRISTAB,  // Prism Tank engine start (vpristab). Bundled R2VPRISTAB.WAV.
+    VOC_R2_VPRISTAC,  // Prism Tank engine start (vpristac). Bundled R2VPRISTAC.WAV.
+    VOC_R2_VPRIATTA,  // Prism Tank beam (vpriatta). Bundled R2VPRIATTA.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0

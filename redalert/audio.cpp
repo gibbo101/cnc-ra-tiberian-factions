@@ -370,6 +370,48 @@ struct SoundEffectNameStruct
     {"TSLIMPQ4", 20, IN_NOVAR},   // VOC_TS_LIMPQ4
     {"TSLIMPC3", 20, IN_NOVAR},   // VOC_TS_LIMPC3 -- TS Limpet Drone move/attack
     {"TSLIMPC4", 20, IN_NOVAR},   // VOC_TS_LIMPC4
+    {"R2VAPOSEA", 20, IN_NOVAR},   // VOC_R2_VAPOSEA -- Apocalypse select voice
+    {"R2VAPOSEB", 20, IN_NOVAR},   // VOC_R2_VAPOSEB -- Apocalypse select voice
+    {"R2VAPOSEC", 20, IN_NOVAR},   // VOC_R2_VAPOSEC -- Apocalypse select voice
+    {"R2VAPOSED", 20, IN_NOVAR},   // VOC_R2_VAPOSED -- Apocalypse select voice
+    {"R2VAPOSEE", 20, IN_NOVAR},   // VOC_R2_VAPOSEE -- Apocalypse select voice
+    {"R2VAPOMOA", 20, IN_NOVAR},   // VOC_R2_VAPOMOA -- Apocalypse move voice
+    {"R2VAPOMOB", 20, IN_NOVAR},   // VOC_R2_VAPOMOB -- Apocalypse move voice
+    {"R2VAPOMOC", 20, IN_NOVAR},   // VOC_R2_VAPOMOC -- Apocalypse move voice
+    {"R2VAPOMOD", 20, IN_NOVAR},   // VOC_R2_VAPOMOD -- Apocalypse move voice
+    {"R2VAPOMOE", 20, IN_NOVAR},   // VOC_R2_VAPOMOE -- Apocalypse move voice
+    {"R2VAPOATA", 20, IN_NOVAR},   // VOC_R2_VAPOATA -- Apocalypse attack order voice
+    {"R2VAPOATB", 20, IN_NOVAR},   // VOC_R2_VAPOATB -- Apocalypse attack order voice
+    {"R2VAPOATC", 20, IN_NOVAR},   // VOC_R2_VAPOATC -- Apocalypse attack order voice
+    {"R2VAPOATD", 20, IN_NOVAR},   // VOC_R2_VAPOATD -- Apocalypse attack order voice
+    {"R2VAPOATE", 20, IN_NOVAR},   // VOC_R2_VAPOATE -- Apocalypse attack order voice
+    {"R2VAPOATF", 20, IN_NOVAR},   // VOC_R2_VAPOATF -- Apocalypse attack order voice
+    {"R2VAPOSTAA", 10, IN_NOVAR},  // VOC_R2_VAPOSTAA -- Apocalypse engine start
+    {"R2VAPOSTAB", 10, IN_NOVAR},  // VOC_R2_VAPOSTAB -- Apocalypse engine start
+    {"R2VAPOSTAC", 10, IN_NOVAR},  // VOC_R2_VAPOSTAC -- Apocalypse engine start
+    {"R2VAPOAT1A", 1, IN_NOVAR},  // VOC_R2_VAPOAT1A -- Apocalypse cannon report
+    {"R2VAPOAT2A", 1, IN_NOVAR},  // VOC_R2_VAPOAT2A -- Apocalypse tusk launch
+    {"R2VAPOAT2B", 1, IN_NOVAR},  // VOC_R2_VAPOAT2B -- Apocalypse tusk launch
+    {"R2VAPOAT2C", 1, IN_NOVAR},  // VOC_R2_VAPOAT2C -- Apocalypse tusk launch
+    {"R2VPRISEA", 20, IN_NOVAR},   // VOC_R2_VPRISEA -- Prism Tank select voice
+    {"R2VPRISEB", 20, IN_NOVAR},   // VOC_R2_VPRISEB -- Prism Tank select voice
+    {"R2VPRISEC", 20, IN_NOVAR},   // VOC_R2_VPRISEC -- Prism Tank select voice
+    {"R2VPRISED", 20, IN_NOVAR},   // VOC_R2_VPRISED -- Prism Tank select voice
+    {"R2VPRISEE", 20, IN_NOVAR},   // VOC_R2_VPRISEE -- Prism Tank select voice
+    {"R2VPRIMOA", 20, IN_NOVAR},   // VOC_R2_VPRIMOA -- Prism Tank move voice
+    {"R2VPRIMOB", 20, IN_NOVAR},   // VOC_R2_VPRIMOB -- Prism Tank move voice
+    {"R2VPRIMOC", 20, IN_NOVAR},   // VOC_R2_VPRIMOC -- Prism Tank move voice
+    {"R2VPRIMOD", 20, IN_NOVAR},   // VOC_R2_VPRIMOD -- Prism Tank move voice
+    {"R2VPRIMOE", 20, IN_NOVAR},   // VOC_R2_VPRIMOE -- Prism Tank move voice
+    {"R2VPRIATA", 20, IN_NOVAR},   // VOC_R2_VPRIATA -- Prism Tank attack order voice
+    {"R2VPRIATB", 20, IN_NOVAR},   // VOC_R2_VPRIATB -- Prism Tank attack order voice
+    {"R2VPRIATC", 20, IN_NOVAR},   // VOC_R2_VPRIATC -- Prism Tank attack order voice
+    {"R2VPRIATD", 20, IN_NOVAR},   // VOC_R2_VPRIATD -- Prism Tank attack order voice
+    {"R2VPRIATE", 20, IN_NOVAR},   // VOC_R2_VPRIATE -- Prism Tank attack order voice
+    {"R2VPRISTAA", 10, IN_NOVAR},  // VOC_R2_VPRISTAA -- Prism Tank engine start
+    {"R2VPRISTAB", 10, IN_NOVAR},  // VOC_R2_VPRISTAB -- Prism Tank engine start
+    {"R2VPRISTAC", 10, IN_NOVAR},  // VOC_R2_VPRISTAC -- Prism Tank engine start
+    {"R2VPRIATTA", 1, IN_NOVAR},  // VOC_R2_VPRIATTA -- Prism Tank beam
 };
 
 //

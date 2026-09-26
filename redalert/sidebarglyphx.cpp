@@ -444,12 +444,20 @@ bool SidebarGlyphxClass::StripClass::AI(KeyNumType& input, int, int)
                             switch (pending->What_Am_I()) {
                             case RTTI_VESSEL:
                             case RTTI_UNIT:
-                            case RTTI_AIRCRAFT:
-                                OutList.Add(EventClass(EventClass::PLACE, pending->What_Am_I(), -1));
+                            case RTTI_AIRCRAFT: {
+                                /*
+                                **	A dropship bay delivery names the bay's own factory slot in the
+                                **	event's cell, so it is never confused with a war factory unit
+                                **	finished in the same frame.
+                                */
+                                bool bay = pending->What_Am_I() == RTTI_UNIT
+                                           && TF_Is_Dropship_Delivered(((UnitClass*)pending)->Class);
+                                OutList.Add(EventClass(EventClass::PLACE, pending->What_Am_I(), (CELL)(bay ? TF_PLACE_BAY : -1)));
                                 if (!factory->Is_Blocked()) {
                                     Speak(VOX_UNIT_READY);
                                 }
                                 break;
+                            }
 
                             case RTTI_BUILDING:
                                 if (!factory->Is_Blocked()) {

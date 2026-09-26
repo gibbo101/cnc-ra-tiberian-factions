@@ -651,8 +651,12 @@ bool Create_Special_Reinforcement(HouseClass* house,
                 team->Members[1].Quantity = 1;
             }
 
+            /*
+            **	A failed reinforcement can still have created a (memberless) team from this type;
+            **	that team frees the type when it dies, so only an unused type is freed here.
+            */
             bool ok = Do_Reinforcements(team);
-            if (!ok)
+            if (!ok && team->Number == 0)
                 delete team;
             return (ok);
         }

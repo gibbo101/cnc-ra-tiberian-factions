@@ -6786,6 +6786,63 @@
 			<BuildIcon>BuildIcon_TS4TNK_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<!-- RA2 Apocalypse and Prism Tank (easter eggs): RA2's own cameos, unbadged on every variant; hand block, outside every generated one. -->
+	<ObjectTypeClass Name="RA_R2APOC" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_R2APOC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_R2APOC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_R2APOC</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_R2APOC_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_R2APOC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_R2APOC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_R2APOC</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_R2APOC_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_R2APOC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_R2APOC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_R2APOC</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_R2APOC_G_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_R2APOC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_R2APOC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_R2APOC</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_R2PRIS" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_R2PRIS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_R2PRIS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_R2PRIS</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_R2PRIS_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_R2PRIS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_R2PRIS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_R2PRIS</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_R2PRIS_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_R2PRIS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_R2PRIS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_R2PRIS</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_R2PRIS_G_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_R2PRIS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_R2PRIS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_R2PRIS</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<ObjectTypeClass Name="RA_TSSONIC" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_UNIT_TSSONIC</ObjectNameTextID>

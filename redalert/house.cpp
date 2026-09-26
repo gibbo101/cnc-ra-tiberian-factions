@@ -684,6 +684,7 @@ HouseClass::HouseClass(HousesType house)
     , InfantryFactories(0)
     , UnitFactories(0)
     , BuildingFactories(0)
+    , DropFactories(0)
     , VesselFactories(0)
     , Power(0)
     , Drain(0)
@@ -691,6 +692,7 @@ HouseClass::HouseClass(HousesType house)
     , InfantryFactory(-1)
     , UnitFactory(-1)
     , BuildingFactory(-1)
+    , DropFactory(-1)
     , VesselFactory(-1)
     , Radar(RADAR_NONE)
     , FlagLocation(TARGET_NONE)
@@ -975,6 +977,17 @@ bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type)
 bool TF_Is_Dropship_Delivered(UnitTypeClass const* type)
 {
     return (type != NULL && (type->Type == UNIT_TSHMEC || type->Type == UNIT_TSMDIV));
+}
+
+/*
+**	Whether an order goes to the dropship bay's own factory slot rather than the war
+**	factory's, so a human player's bay and war factory build side by side. Computer
+**	houses need no slot: each of their factory buildings holds its own production.
+*/
+bool TF_Bay_Order(RTTIType type, int id)
+{
+    return ((type == RTTI_UNITTYPE || type == RTTI_UNIT) && id >= 0 && id < UNIT_COUNT
+            && TF_Is_Dropship_Delivered(&UnitTypeClass::As_Reference((UnitType)id)));
 }
 
 /*
@@ -1912,7 +1925,7 @@ void HouseClass::AI(void)
     if (PlayerPtr == this) {
 
         if (SpeakMaxedDelay == 0 && Available_Money() < 100
-            && UnitFactories + BuildingFactories + InfantryFactories > 0) {
+            && UnitFactories + DropFactories + BuildingFactories + InfantryFactories > 0) {
             Speak(VOX_NEED_MO_MONEY);
             Map.Flash_Money();
             SpeakMaxedDelay = Options.Normalize_Delay(TICKS_PER_MINUTE * Rule.SpeakDelay);
@@ -3687,8 +3700,9 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
     bool initial_start = false;
     FactoryClass* fptr;
     TechnoTypeClass const* tech = Fetch_Techno_Type(type, id);
+    bool bay = TF_Bay_Order(type, id);
 
-    fptr = Fetch_Factory(type);
+    fptr = Fetch_Factory(type, bay);
 
     /*
     **	The dropship bay refuses its own orders here, the one point every
@@ -3713,7 +3727,7 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
         fptr = new FactoryClass();
         if (!fptr)
             return (PROD_CANT);
-        Set_Factory(type, fptr);
+        Set_Factory(type, fptr, bay);
         result = fptr->Set(*tech, *this);
         initial_start = true;
 
@@ -3723,7 +3737,7 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
         ** ST - 3/17/2020 2:03PM
         */
         if (!result) {
-            Set_Factory(type, NULL);
+            Set_Factory(type, NULL, bay);
             delete fptr;
             fptr = NULL;
         }
@@ -3772,11 +3786,11 @@ ProdFailType HouseClass::Begin_Production(RTTIType type, int id)
  * HISTORY:                                                                                    *
  *   05/08/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ProdFailType HouseClass::Suspend_Production(RTTIType type)
+ProdFailType HouseClass::Suspend_Production(RTTIType type, bool bay)
 {
     assert(Houses.ID(this) == ID);
 
-    FactoryClass* fptr = Fetch_Factory(type);
+    FactoryClass* fptr = Fetch_Factory(type, bay);
 
     /*
     **	If the house is already busy producing the requested object, then
@@ -3820,11 +3834,11 @@ ProdFailType HouseClass::Suspend_Production(RTTIType type)
  * HISTORY:                                                                                    *
  *   05/08/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-ProdFailType HouseClass::Abandon_Production(RTTIType type)
+ProdFailType HouseClass::Abandon_Production(RTTIType type, bool bay)
 {
     assert(Houses.ID(this) == ID);
 
-    FactoryClass* fptr = Fetch_Factory(type);
+    FactoryClass* fptr = Fetch_Factory(type, bay);
 
     /*
     **	If there is no factory to abandon, then return with a failure code.
@@ -3867,7 +3881,7 @@ ProdFailType HouseClass::Abandon_Production(RTTIType type)
     **	Abandon production of the object.
     */
     fptr->Abandon();
-    Set_Factory(type, NULL);
+    Set_Factory(type, NULL, bay);
     delete fptr;
 
     return (PROD_OK);
@@ -4645,8 +4659,17 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
 {
     assert(Houses.ID(this) == ID);
 
+    /*
+    **	A finished unit from the dropship bay arrives with the TF_PLACE_BAY cell, which
+    **	names the bay's slot; it exits like any finished unit (no cell).
+    */
+    bool bay = (cell == TF_PLACE_BAY);
+    if (bay) {
+        cell = -1;
+    }
+
     TechnoClass* tech = 0;
-    FactoryClass* factory = Fetch_Factory(type);
+    FactoryClass* factory = Fetch_Factory(type, bay);
 
     /*
     **	Only if there is a factory active for this type, can it be "placed".
@@ -4750,7 +4773,7 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                     */
                     factory->Set_Is_Blocked(false);
                     factory->Completed();
-                    Abandon_Production(type);
+                    Abandon_Production(type, bay);
 #ifdef REMASTER_BUILD
                     /*
                     ** Could be tied to an achievement. ST - 11/11/2019 11:56AM
@@ -4828,7 +4851,7 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                                     && ((BuildingClass*)tech)->Class->Is_TS_Era());
                     if (tech->Unlimbo(Cell_Coord(cell))) {
                         factory->Completed();
-                        Abandon_Production(type);
+                        Abandon_Production(type, bay);
 
                         if (PlayerPtr == this) {
                             Sound_Effect(ts_bldg ? VOC_TS_PLACE_BUILDING_DOWN
@@ -12361,12 +12384,12 @@ void HouseClass::Tracking_Add(TechnoClass const* techno)
  * HISTORY:                                                                                    *
  *   07/30/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-int* HouseClass::Factory_Counter(RTTIType rtti)
+int* HouseClass::Factory_Counter(RTTIType rtti, bool bay)
 {
     switch (rtti) {
     case RTTI_UNITTYPE:
     case RTTI_UNIT:
-        return (&UnitFactories);
+        return (bay ? &DropFactories : &UnitFactories);
 
     case RTTI_VESSELTYPE:
     case RTTI_VESSEL:
@@ -12411,7 +12434,7 @@ void HouseClass::Active_Remove(TechnoClass const* techno)
         return;
 
     if (techno->What_Am_I() == RTTI_BUILDING) {
-        int* fptr = Factory_Counter(((BuildingClass*)techno)->Class->ToBuild);
+        int* fptr = Factory_Counter(((BuildingClass*)techno)->Class->ToBuild, *((BuildingClass*)techno) == STRUCT_TSDROP);
         if (fptr != NULL) {
             *fptr = *fptr - 1;
         }
@@ -12439,7 +12462,7 @@ void HouseClass::Active_Add(TechnoClass const* techno)
         return;
 
     if (techno->What_Am_I() == RTTI_BUILDING) {
-        int* fptr = Factory_Counter(((BuildingClass*)techno)->Class->ToBuild);
+        int* fptr = Factory_Counter(((BuildingClass*)techno)->Class->ToBuild, *((BuildingClass*)techno) == STRUCT_TSDROP);
         if (fptr != NULL) {
             *fptr = *fptr + 1;
         }
@@ -12799,7 +12822,7 @@ int HouseClass::Get_Quantity(AircraftType aircraft)
  * HISTORY:                                                                                    *
  *   07/09/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-FactoryClass* HouseClass::Fetch_Factory(RTTIType rtti) const
+FactoryClass* HouseClass::Fetch_Factory(RTTIType rtti, bool bay) const
 {
     int factory_index = -1;
 
@@ -12811,7 +12834,7 @@ FactoryClass* HouseClass::Fetch_Factory(RTTIType rtti) const
 
     case RTTI_UNIT:
     case RTTI_UNITTYPE:
-        factory_index = UnitFactory;
+        factory_index = bay ? DropFactory : UnitFactory;
         break;
 
     case RTTI_BUILDING:
@@ -12863,7 +12886,7 @@ FactoryClass* HouseClass::Fetch_Factory(RTTIType rtti) const
  * HISTORY:                                                                                    *
  *   07/09/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-void HouseClass::Set_Factory(RTTIType rtti, FactoryClass* factory)
+void HouseClass::Set_Factory(RTTIType rtti, FactoryClass* factory, bool bay)
 {
     int* factory_index = 0;
 
@@ -12872,7 +12895,7 @@ void HouseClass::Set_Factory(RTTIType rtti, FactoryClass* factory)
     switch (rtti) {
     case RTTI_UNIT:
     case RTTI_UNITTYPE:
-        factory_index = &UnitFactory;
+        factory_index = bay ? &DropFactory : &UnitFactory;
         break;
 
     case RTTI_INFANTRY:
@@ -12924,9 +12947,9 @@ void HouseClass::Set_Factory(RTTIType rtti, FactoryClass* factory)
  * HISTORY:                                                                                    *
  *   07/30/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-int HouseClass::Factory_Count(RTTIType rtti) const
+int HouseClass::Factory_Count(RTTIType rtti, bool bay) const
 {
-    int const* ptr = ((HouseClass*)this)->Factory_Counter(rtti);
+    int const* ptr = ((HouseClass*)this)->Factory_Counter(rtti, bay);
     if (ptr != NULL) {
         return (*ptr);
     }

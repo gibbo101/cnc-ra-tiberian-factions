@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Package the old TS Mammoth Tank (TS [4TNK], TechLevel -1 in TS) as TS4TNK.
 
-TS4TNK.ZIP is 64 frames: hull 0-31 + turret 32-63 (the TSSONIC layout), on a 448
-canvas (ShapeSize 56), each render scaled by the TS voxel density 6.4/12 around the
+TS4TNK.ZIP is 64 frames: hull 0-31 + turret 32-63 (the TSSONIC layout), on a 512
+canvas (ShapeSize 64), each render scaled by the TS voxel density 6.4/12 around the
 voxel origin at the canvas centre (the vox_frames recipe in ts_pack_units_wave.py).
 The turret renders carry the barrel in the same depth-sorted pass (vxl_render.py
 --attach), so it hides and is hidden correctly at every facing. Also writes the
@@ -37,8 +37,11 @@ from ts_pack_pods import ART, MOD, RAW, write_zip, patch_tileset
 
 UNITS_DIR = f"{MOD}/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
 UNITS_XML = f"{MOD}/XML/TILESETS/RA_UNITS.XML"
-CANVAS = 448
-F_VOX = 6.4 / 12
+CANVAS = 512
+# The TS voxel density 6.4/12 draws the Mk. I at the RA Mammoth Tank's size (34.6 x 24.4
+# classic px, measured off EA's 4TNK); SCALE stays as the dial if that ever needs retuning.
+SCALE = 1.00
+F_VOX = 6.4 / 12 * SCALE
 def vox_frames(dirname):
     out = []
     for i in range(32):

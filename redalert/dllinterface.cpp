@@ -7320,7 +7320,8 @@ bool DLLExportClass::Get_Layer_State(uint64 player_id, unsigned char* buffer_in,
                         if (root_object.IsFactory) {
                             BuildingClass* building = (BuildingClass*)root_object.CNCInternalObjectPointer;
                             FactoryClass* factory = building->House->IsHuman
-                                                        ? building->House->Fetch_Factory(building->Class->ToBuild)
+                                                        ? building->House->Fetch_Factory(building->Class->ToBuild,
+                                                                                         *building == STRUCT_TSDROP)
                                                         : (FactoryClass*)building->Factory;
                             if (factory != nullptr) {
                                 for (int i = CurrentDrawCount - 1; i > 0; --i) {
@@ -8430,7 +8431,10 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                     break;
 
                 case RTTI_UNITTYPE:
-                    isbusy = (PlayerPtr->UnitFactory != -1);
+                    // The dropship bay's deliveries keep their own slot, busy only while the bay builds.
+                    isbusy = ((tech != NULL && TF_Bay_Order(RTTI_UNITTYPE, tech->ID)) ? PlayerPtr->DropFactory
+                                                                                    : PlayerPtr->UnitFactory)
+                             != -1;
                     isbusy |= Units.Avail() <= 0;
                     // Mk. II delivery cooldown: the cameo waits it out greyed rather
                     // than leaving the sidebar (Recalc keeps the entry alive).
@@ -8660,7 +8664,10 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         break;
 
                     case RTTI_UNITTYPE:
-                        isbusy = (PlayerPtr->UnitFactory != -1);
+                        // The dropship bay's deliveries keep their own slot (see the single-player path).
+                        isbusy = ((tech != NULL && TF_Bay_Order(RTTI_UNITTYPE, tech->ID)) ? PlayerPtr->DropFactory
+                                                                                        : PlayerPtr->UnitFactory)
+                                 != -1;
                         isbusy |= Units.Avail() <= 0;
                         // Mk. II delivery cooldown: greyed, not gone (matches the
                         // single-player path above).
@@ -9423,7 +9430,7 @@ bool DLLExportClass::Construction_Action(SidebarRequestEnum construction_action,
                         spc = buildable_id;
                     }
 
-                    FactoryClass* factory = PlayerPtr->Fetch_Factory((RTTIType)buildable_type);
+                    FactoryClass* factory = PlayerPtr->Fetch_Factory((RTTIType)buildable_type, TF_Bay_Order((RTTIType)buildable_type, buildable_id));
                     if (fnumber != -1) {
                         factory = Factories.Raw_Ptr(fnumber);
                     }
@@ -9612,7 +9619,7 @@ bool DLLExportClass::MP_Construction_Action(SidebarRequestEnum construction_acti
                         break;
 
                     case RTTI_UNITTYPE:
-                        genfactory = PlayerPtr->UnitFactory;
+                        genfactory = TF_Bay_Order(RTTI_UNITTYPE, buildable_id) ? PlayerPtr->DropFactory : PlayerPtr->UnitFactory;
                         break;
 
                     case RTTI_AIRCRAFTTYPE:
@@ -10002,7 +10009,7 @@ BuildingClass* DLLExportClass::Get_Pending_Placement_Object(uint64 player_id, in
                             break;
 
                         case RTTI_UNITTYPE:
-                            genfactory = PlayerPtr->UnitFactory;
+                            genfactory = TF_Bay_Order(RTTI_UNITTYPE, buildable_id) ? PlayerPtr->DropFactory : PlayerPtr->UnitFactory;
                             break;
 
                         case RTTI_AIRCRAFTTYPE:
@@ -10098,7 +10105,7 @@ BuildingClass* DLLExportClass::Get_Pending_Placement_Object(uint64 player_id, in
                                 break;
 
                             case RTTI_UNITTYPE:
-                                genfactory = PlayerPtr->UnitFactory;
+                                genfactory = TF_Bay_Order(RTTI_UNITTYPE, buildable_id) ? PlayerPtr->DropFactory : PlayerPtr->UnitFactory;
                                 break;
 
                             case RTTI_AIRCRAFTTYPE:

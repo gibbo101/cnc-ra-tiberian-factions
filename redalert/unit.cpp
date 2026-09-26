@@ -1850,9 +1850,54 @@ static bool TF_Limpet_Voice(UnitClass const* unit, VocType a, VocType b)
     return (true);
 }
 
+/*
+**	The RA2 tanks answer in their own Yuri's Revenge voices, whoever owns them, and a move
+**	order spools the engine up (YR MoveStart). Returns false for every other unit.
+*/
+enum TFVoiceKind { TF_VOICE_SELECT, TF_VOICE_MOVE, TF_VOICE_ATTACK };
+
+static bool TF_RA2_Voice(UnitClass const* unit, TFVoiceKind kind)
+{
+    static VocType const _apoc[3][6] = {
+        {VOC_R2_VAPOSEA, VOC_R2_VAPOSEB, VOC_R2_VAPOSEC, VOC_R2_VAPOSED, VOC_R2_VAPOSEE, VOC_NONE},
+        {VOC_R2_VAPOMOA, VOC_R2_VAPOMOB, VOC_R2_VAPOMOC, VOC_R2_VAPOMOD, VOC_R2_VAPOMOE, VOC_NONE},
+        {VOC_R2_VAPOATA, VOC_R2_VAPOATB, VOC_R2_VAPOATC, VOC_R2_VAPOATD, VOC_R2_VAPOATE, VOC_R2_VAPOATF},
+    };
+    static VocType const _pris[3][6] = {
+        {VOC_R2_VPRISEA, VOC_R2_VPRISEB, VOC_R2_VPRISEC, VOC_R2_VPRISED, VOC_R2_VPRISEE, VOC_NONE},
+        {VOC_R2_VPRIMOA, VOC_R2_VPRIMOB, VOC_R2_VPRIMOC, VOC_R2_VPRIMOD, VOC_R2_VPRIMOE, VOC_NONE},
+        {VOC_R2_VPRIATA, VOC_R2_VPRIATB, VOC_R2_VPRIATC, VOC_R2_VPRIATD, VOC_R2_VPRIATE, VOC_NONE},
+    };
+    static VocType const _apoc_start[3] = {VOC_R2_VAPOSTAA, VOC_R2_VAPOSTAB, VOC_R2_VAPOSTAC};
+    static VocType const _pris_start[3] = {VOC_R2_VPRISTAA, VOC_R2_VPRISTAB, VOC_R2_VPRISTAC};
+
+    VocType const* lines;
+    VocType const* starts;
+    if (*unit == UNIT_R2APOC) {
+        lines = _apoc[kind];
+        starts = _apoc_start;
+    } else if (*unit == UNIT_R2PRIS) {
+        lines = _pris[kind];
+        starts = _pris_start;
+    } else {
+        return (false);
+    }
+    if (AllowVoice) {
+        int count = (lines[5] == VOC_NONE) ? 5 : 6;
+        Sound_Effect(lines[Sim_Random_Pick(0, count - 1)], fixed(1), -(unit->ID + 1));
+    }
+    if (kind == TF_VOICE_MOVE) {
+        Sound_Effect(starts[Sim_Random_Pick(0, 2)], unit->Coord);
+    }
+    return (true);
+}
+
 void UnitClass::Response_Select(void)
 {
     if (TF_Limpet_Voice(this, VOC_TS_LIMPQ3, VOC_TS_LIMPQ4)) {
+        return;
+    }
+    if (TF_RA2_Voice(this, TF_VOICE_SELECT)) {
         return;
     }
     if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
@@ -1871,6 +1916,9 @@ void UnitClass::Response_Move(void)
     if (TF_Limpet_Voice(this, VOC_TS_LIMPC3, VOC_TS_LIMPC4)) {
         return;
     }
+    if (TF_RA2_Voice(this, TF_VOICE_MOVE)) {
+        return;
+    }
     if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
         if (!AllowVoice) {
             return;
@@ -1885,6 +1933,9 @@ void UnitClass::Response_Move(void)
 void UnitClass::Response_Attack(void)
 {
     if (TF_Limpet_Voice(this, VOC_TS_LIMPC3, VOC_TS_LIMPC4)) {
+        return;
+    }
+    if (TF_RA2_Voice(this, TF_VOICE_ATTACK)) {
         return;
     }
     if (PlayerPtr->ActLike == HOUSE_GOOD || PlayerPtr->ActLike == HOUSE_BAD) {
