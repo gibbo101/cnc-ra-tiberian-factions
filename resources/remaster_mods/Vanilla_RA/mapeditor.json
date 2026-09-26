@@ -1705,6 +1705,48 @@
       ]
     },
     {
+      "id": 55,
+      "kind": "vehicle",
+      "name": "r2apoc",
+      "display_name": "Apocalypse",
+      "owner": "Germany",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 56,
+      "kind": "vehicle",
+      "name": "r2pris",
+      "display_name": "Prism Tank",
+      "owner": "Germany",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
       "id": 7,
       "kind": "aircraft",
       "name": "tdc17",

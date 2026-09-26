@@ -1847,6 +1847,72 @@ static UnitTypeClass const UnitTs4tnk(UNIT_TS4TNK,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
+// RA2 Apocalypse (UNIT_R2APOC), Yuri's Revenge rules [APOC] (art [MTNK]). An easter egg: a crate
+// find, and TS GDI builds it from the War Factory for now. Turreted twin 120mm cannon + Mammoth
+// Tusk AA missiles, self-healing (rules.ini). YR: Strength=800, Armor=heavy, Sight=6, Speed=4,
+// Cost=1750, Points=60, ROT=5, Crusher=yes, CrateGoodie=yes. Fire points come from the generated
+// r2tanks_muzzle.h (techno.cpp Fire_Coord); the offsets here only seed the classic path.
+static UnitTypeClass const UnitR2Apoc(UNIT_R2APOC,
+                                      TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                      "R2APOC",     // NAME: IniName.
+                                      ANIM_ART_EXP1,// EXPLOSION: big fragment explosion.
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0020,       // Vertical offset.
+                                      0x00C0,       // Primary weapon offset along turret centerline.
+                                      0x0028,       // Primary weapon lateral offset (twin barrels alternate).
+                                      0x0008,       // Secondary weapon offset along turret centerline.
+                                      0x0040,       // Secondary weapon lateral offset (tusk pods).
+                                      true,         // Can this be a goodie surprise from a crate? (YR CrateGoodie=yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (YR Crusher=yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      true,         // Is it equipped with a combat turret? (YR Turret=yes)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline.
+                                      MISSION_HUNT  // ORDERS: Default order.
+);
+
+// RA2 Prism Tank (UNIT_R2PRIS), Yuri's Revenge rules [SREF]. The Apocalypse's easter-egg twin.
+// Turreted prism beam that forks onto nearby enemies (techno.cpp IsPrismBeam). YR: Strength=150,
+// Armor=light, Sight=8, Speed=4, Cost=1200, Points=50, ROT=5, Crusher=yes, CrateGoodie=yes.
+static UnitTypeClass const UnitR2Pris(UNIT_R2PRIS,
+                                      TXT_MTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                      "R2PRIS",     // NAME: IniName.
+                                      ANIM_FBALL1,  // EXPLOSION: big fireball.
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0020,       // Vertical offset.
+                                      0x0030,       // Primary weapon offset along turret centerline.
+                                      0x0000,       // Primary weapon lateral offset.
+                                      0x0000,       // Secondary weapon offset (none).
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      true,         // Can this be a goodie surprise from a crate? (YR CrateGoodie=yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (YR Crusher=yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      true,         // Is it equipped with a combat turret? (YR Turret=yes)
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline.
+                                      MISSION_HUNT  // ORDERS: Default order.
+);
+
 // TS Amphibious APC (UNIT_TSAPC), TS rules [APC]. Unarmed hover transport —
 // SPEED_HOVER stands in for the TS amphibious float (plan-approved deviation),
 // so it crosses water like the Hover MLRS. Passengers=5 via rules.ini; door
@@ -2247,6 +2313,8 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTs4tnk);    // UNIT_TS4TNK (the old TS Mammoth Tank)
     new UnitTypeClass(UnitTsJugg);    // UNIT_TSJUGG (Juggernaut)
     new UnitTypeClass(UnitTsLimp);    // UNIT_TSLIMP (Limpet Drone)
+    new UnitTypeClass(UnitR2Apoc);    // UNIT_R2APOC (RA2 Apocalypse)
+    new UnitTypeClass(UnitR2Pris);    // UNIT_R2PRIS (RA2 Prism Tank)
 }
 
 /***********************************************************************************************
@@ -2418,7 +2486,6 @@ void UnitTypeClass::One_Time(void)
             {UNIT_TSHVR, UNIT_MTANK2},
             {UNIT_TSTITN, UNIT_MTANK2},
             {UNIT_TSHMEC, UNIT_HTANK},
-            {UNIT_TS4TNK, UNIT_HTANK}, // the old TS Mammoth Tank: HD voxel art under TS4TNK keys
             {UNIT_AMCV, UNIT_MCV},
             {UNIT_SMCV, UNIT_MCV},
             {UNIT_TDGMCV, UNIT_TDMCV},
@@ -2545,6 +2612,44 @@ UnitTypeClass& UnitTypeClass::As_Reference(UnitType type)
  *=============================================================================================*/
 void UnitTypeClass::Dimensions(int& width, int& height) const
 {
+    /*
+    **	Tiberian Factions -- the HD voxel and walker units size their selection boxes the way
+    **	EA's own vehicles are boxed: the box is centred on the unit and its art stands on the
+    **	common ground line, so the box is as wide as the art and twice as tall as the art
+    **	reaches above the unit's centre (or below it, when that is further): the health bar
+    **	sits on the box's top edge and must clear the whole unit, masts and antennas
+    **	included. Values are the median over each unit's facings, in classic pixels, with
+    **	turrets at their draw seats (Hover_Rack_Seat, Sonic_Turret_Seat) and the Titan's
+    **	12 px draw lift applied.
+    */
+    static const struct {
+        UnitType type;
+        short width;
+        short height;
+    } _art_boxes[] = {
+        {UNIT_R2APOC, 36, 39},
+        {UNIT_R2PRIS, 34, 42},
+        {UNIT_TS4TNK, 35, 38},
+        {UNIT_TSSONIC, 38, 39},
+        {UNIT_TSHMEC, 42, 41},
+        {UNIT_TSHARV, 27, 21},
+        {UNIT_TSSMEC, 15, 26},
+        {UNIT_TSJUGG, 31, 32},
+        {UNIT_TSSUBTANK, 38, 35},
+        {UNIT_TSSAPC, 29, 29},
+        {UNIT_TSHVR, 30, 28},
+        {UNIT_TSTITN, 29, 61},
+        {UNIT_TSAPC, 31, 31},
+        {UNIT_TSMCV, 36, 29},
+        {UNIT_TSLIMP, 8, 22},
+    };
+    for (int i = 0; i < (int)ARRAY_SIZE(_art_boxes); i++) {
+        if (_art_boxes[i].type == Type) {
+            width = _art_boxes[i].width;
+            height = _art_boxes[i].height;
+            return;
+        }
+    }
     width = MaxSize - (MaxSize / 4);
     width = min(width, 48);
     height = MaxSize - (MaxSize / 4);

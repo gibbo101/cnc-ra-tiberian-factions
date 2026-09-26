@@ -268,6 +268,15 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tssonic_stub.shp" 56 56 64
 PACK_ARGS+=("$TMPDIR/tssonic_stub.shp:TSSONIC.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsapc_stub.shp" 48 48 64
 PACK_ARGS+=("$TMPDIR/tsapc_stub.shp:TSAPC.SHP")
+# Mammoth Mk. I -- HD-only voxel render on a 512 canvas (body+turret 64 frames).
+python3 scripts/gen_stub_shp.py "$TMPDIR/ts4tnk_stub.shp" 64 64 64
+PACK_ARGS+=("$TMPDIR/ts4tnk_stub.shp:TS4TNK.SHP")
+# RA2 easter-egg tanks (Apocalypse / Prism Tank) -- HD-only voxel renders, body+turret 64
+# frames; the stub's dims are the box the launcher fits each canvas into (canvas / 8).
+python3 scripts/gen_stub_shp.py "$TMPDIR/r2apoc_stub.shp" 56 56 64
+PACK_ARGS+=("$TMPDIR/r2apoc_stub.shp:R2APOC.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/r2pris_stub.shp" 48 48 64
+PACK_ARGS+=("$TMPDIR/r2pris_stub.shp:R2PRIS.SHP")
 # TS aircraft (Orca Fighter / Orca Bomber / Carryall) -- HD-only voxel renders, 32
 # facings each; dims match each one's rules.ini ShapeSize.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsorca_stub.shp" 48 48 32

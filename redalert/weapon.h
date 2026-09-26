@@ -136,9 +136,17 @@ public:
     unsigned IsSonic : 1;
 
     /*
+    **	Tiberian Factions mod: RA2 prism beam (the Prism Tank's Comet). The shot
+    **	draws RA2's magenta beam from the muzzle to the target and forks
+    **	AmbientDamage onto up to five enemies near the impact, each through the
+    **	weapon's own warhead.
+    */
+    unsigned IsPrismBeam : 1;
+
+    /*
     **	Tiberian Factions mod: TS `AmbientDamage=` -- the per-object damage the
-    **	railgun/sonic line pass applies. Only meaningful when IsRailgun or
-    **	IsSonic is set.
+    **	railgun/sonic line pass applies, or each prism fork's damage. Only
+    **	meaningful when IsRailgun, IsSonic or IsPrismBeam is set.
     */
     int AmbientDamage;
 
