@@ -1563,12 +1563,20 @@ bool SidebarClass::StripClass::AI(KeyNumType& input, int, int)
                             switch (pending->What_Am_I()) {
                             case RTTI_VESSEL:
                             case RTTI_UNIT:
-                            case RTTI_AIRCRAFT:
-                                OutList.Add(EventClass(EventClass::PLACE, pending->What_Am_I(), -1));
+                            case RTTI_AIRCRAFT: {
+                                /*
+                                **	A dropship bay delivery names the bay's own factory slot in the
+                                **	event's cell, so it is never confused with a war factory unit
+                                **	finished in the same frame.
+                                */
+                                bool bay = pending->What_Am_I() == RTTI_UNIT
+                                           && TF_Is_Dropship_Delivered(((UnitClass*)pending)->Class);
+                                OutList.Add(EventClass(EventClass::PLACE, pending->What_Am_I(), (CELL)(bay ? TF_PLACE_BAY : -1)));
                                 if (!factory->Is_Blocked()) {
                                     Speak(VOX_UNIT_READY);
                                 }
                                 break;
+                            }
 
                             case RTTI_BUILDING:
                                 Speak(VOX_CONSTRUCTION);
@@ -1692,7 +1700,10 @@ void SidebarClass::StripClass::Draw_It(bool complete)
                         **	If there is already a factory producing this kind of object, then all
                         **	objects of this type are displays in a disabled state.
                         */
-                        bool isbusy = (PlayerPtr->Fetch_Factory(Buildables[index].BuildableType) != NULL);
+                        bool isbusy = (PlayerPtr->Fetch_Factory(Buildables[index].BuildableType,
+                                                                TF_Bay_Order(Buildables[index].BuildableType,
+                                                                             Buildables[index].BuildableID))
+                                       != NULL);
                         if (!isbusy
                             && PlayerPtr->Is_Hack_Prevented(Buildables[index].BuildableType,
                                                             Buildables[index].BuildableID)) {
@@ -2000,7 +2011,7 @@ int SidebarClass::StripClass::SelectClass::Action(unsigned flags, KeyNumType& ke
     **	kind of factory is specified by the "genfactory" value. This can be used to see
     **	if the factory type is currently busy or not.
     */
-    FactoryClass* factory = PlayerPtr->Fetch_Factory(otype);
+    FactoryClass* factory = PlayerPtr->Fetch_Factory(otype, TF_Bay_Order(otype, oid));
 
     Map.Override_Mouse_Shape(MOUSE_NORMAL);
 

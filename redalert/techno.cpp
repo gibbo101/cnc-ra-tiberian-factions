@@ -8095,7 +8095,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             **  including the Aftermath AM-vs-AM 2-factory cap, to keep GDI/Nod symmetric
             **  with the RA factions.
             */
-            int td_divisor = hptr->Factory_Count(What_Am_I());
+            int td_divisor = hptr->Factory_Count(What_Am_I(), TF_Bay_Order(What_Am_I(), ID));
             if (td_divisor != 0) {
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
                 if (NewUnitsEnabled) {
@@ -8159,7 +8159,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         }
         time *= scale;
 
-        int divisor = hptr->Factory_Count(What_Am_I());
+        int divisor = hptr->Factory_Count(What_Am_I(), TF_Bay_Order(What_Am_I(), ID));
         if (divisor != 0) {
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
             // Hack: allow the multiple-factory bonus, but only up to two factories if

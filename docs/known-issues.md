@@ -25,9 +25,13 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
   `Create_Special_Reinforcement` frees the type on failure only when no team was made from
   it (a memberless team frees it itself).
 
-## The Dropship Bay shares the War Factory's build queue (2026-09-26)
+## RESOLVED: The Dropship Bay shares the War Factory's build queue (2026-09-26)
 
-- **Severity:** major (gameplay). **Status:** open, planned.
+- **Severity:** major (gameplay). **Status:** resolved 2026-09-26, verified in play (Luke: "works
+  perfectly"). A human house now has a separate `DropFactory` slot and `DropFactories` count,
+  routed by `TF_Bay_Order(type, id)`; a finished bay unit leaves the sidebar with the
+  `TF_PLACE_BAY` cell. Computer houses were never affected: each of their factory buildings
+  holds its own production.
 - Ordering a Mk. II or a Mech Division from the bay occupies the unit queue, so the War Factory
   cannot build while the bay's order runs, and the other way round. Luke wants the bay independent,
   as an airfield is.

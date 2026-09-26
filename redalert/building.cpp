@@ -1026,7 +1026,7 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         */
         FactoryClass* factory = NULL;
         if (House->IsHuman) {
-            factory = House->Fetch_Factory(Class->ToBuild);
+            factory = House->Fetch_Factory(Class->ToBuild, *this == STRUCT_TSDROP);
         } else {
             factory = Factory;
         }
@@ -4922,7 +4922,7 @@ ActionType BuildingClass::What_Action(ObjectClass const* object) const
 
     if (action == ACTION_SELF) {
         int index;
-        if (Class->Is_Factory() && PlayerPtr == House && *House->Factory_Counter(Class->ToBuild) > 1) {
+        if (Class->Is_Factory() && PlayerPtr == House && *House->Factory_Counter(Class->ToBuild, *this == STRUCT_TSDROP) > 1) {
             switch (Class->ToBuild) {
             case RTTI_INFANTRYTYPE:
             case RTTI_INFANTRY:
@@ -8494,7 +8494,8 @@ void BuildingClass::Detach_All(bool all)
     ** build that thing; if so, abandon production of it.
     */
     if (House) {
-        FactoryClass* factory = House->Fetch_Factory(Class->ToBuild);
+        bool bay = (*this == STRUCT_TSDROP);
+        FactoryClass* factory = House->Fetch_Factory(Class->ToBuild, bay);
 
         /*
         **	If a factory was found, then temporarily disable this building and then
@@ -8505,7 +8506,7 @@ void BuildingClass::Detach_All(bool all)
             TechnoClass* object = factory->Get_Object();
             IsInLimbo = true;
             if (object && !object->Techno_Type_Class()->Who_Can_Build_Me(true, false, House->Class->House)) {
-                House->Abandon_Production(Class->ToBuild);
+                House->Abandon_Production(Class->ToBuild, bay);
             }
             IsInLimbo = false;
         }
