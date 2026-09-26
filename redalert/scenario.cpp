@@ -4119,6 +4119,21 @@ static void Create_Units(bool official)
                     }
                 }
             }
+#if TF_DEV_BUILD
+            /*
+            **	Dev builds give the human player a Subterranean APC beside the MCV, so an EMP
+            **	pulse can be tested on a unit that is underground. Off with the other dev cheats.
+            */
+            if (TF_Dev_Cheats() && hptr->IsHuman) {
+                Reserve_Unit();
+                UnitClass* sapc = new UnitClass(UNIT_TSSAPC, house);
+                if (!Scan_Place_Object(sapc, centroid)) {
+                    delete sapc;
+                } else {
+                    sapc->Set_Mission(MISSION_GUARD);
+                }
+            }
+#endif
         } else {
 
             /*
