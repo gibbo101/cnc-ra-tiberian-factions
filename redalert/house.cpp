@@ -4194,8 +4194,7 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
             **  45-degree streak. A north/south approach fights the illusion
             **  (a south-approach pod draws two drop-heights off-screen and
             **  pops in at the last moment — seen in play, 2026-08-31).
-            **  Squad: three Minigunners, two Grenadiers (TS infantry
-            **  equivalents swap in when that roster lands — Luke).
+            **  Squad: three Light Infantry, two Disc Throwers.
             */
             for (int pd = 0; pd < 5; pd++) {
                 CELL podcell = cell;
@@ -4214,7 +4213,7 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                 if (pod != NULL) {
                     pod->TFPodHouse = Class->House;
                     pod->TFPodApproach = approach;
-                    pod->TFPodType = (pd < 3) ? INFANTRY_TDE1 : INFANTRY_TDE2;
+                    pod->TFPodType = (pd < 3) ? INFANTRY_TSE1 : INFANTRY_TSE2;
                     if (pod->Unlimbo(spawn, DIR_S)) {
                         Map.Remove(pod, pod->In_Which_Layer());
                         pod->Height = drop_h;
