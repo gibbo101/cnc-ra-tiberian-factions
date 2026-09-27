@@ -8621,6 +8621,15 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                  "%s_LK", tech->IniName);
                     }
 
+                    /*
+                    ** So does a Mobile War Factory while the house fields one.
+                    */
+                    if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
+                        && ((UnitTypeClass const*)tech)->Type == UNIT_TSMWAR && TF_Mwar_At_Cap(PlayerPtr)) {
+                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                 "%s_LK", tech->IniName);
+                    }
+
                     if (factory) {
                         if (factory->Is_Building()) {
                             sidebar_entry.Constructing = true;
@@ -8841,6 +8850,15 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                         */
                         if (tech != NULL && sidebar_entry.Type == INFANTRY_TYPE
                             && ((InfantryTypeClass const*)tech)->Type == INFANTRY_TSGHOST && TF_Ghost_At_Cap(PlayerPtr)) {
+                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                     "%s_LK", tech->IniName);
+                        }
+
+                        /*
+                        ** So does a Mobile War Factory while the house fields one.
+                        */
+                        if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
+                            && ((UnitTypeClass const*)tech)->Type == UNIT_TSMWAR && TF_Mwar_At_Cap(PlayerPtr)) {
                             snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
                                      "%s_LK", tech->IniName);
                         }

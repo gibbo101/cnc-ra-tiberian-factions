@@ -1815,6 +1815,22 @@
       "flags": []
     },
     {
+      "id": 59,
+      "kind": "vehicle",
+      "name": "tsmwar",
+      "display_name": "Mobile War Factory",
+      "owner": "Germany",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": []
+    },
+    {
       "id": 7,
       "kind": "aircraft",
       "name": "tdc17",

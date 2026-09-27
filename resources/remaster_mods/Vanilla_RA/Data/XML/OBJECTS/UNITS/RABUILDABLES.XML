@@ -6399,6 +6399,13 @@
 			<BuildIcon>BuildIcon_TSGHOST_LK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMWAR_LK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMWAR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMWAR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMWAR_LK</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END generated Mk2 cooldown countdown cameos -->
 	<!-- Hand-written entries: keep OUTSIDE the generated block above -->
 	<ObjectTypeClass Name="RA_TSSUBTANK" Classification="CNCBuildableObject" CanInstantiate="False">
@@ -6986,6 +6993,13 @@
 			<ObjectNameTextID>TEXT_STRUCTURE_TSDPSA</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSDPSA_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TS_SensorArray</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMWAR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMWAR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMWAR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MobileWarFactory</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	<!-- END hand-written TS-tree base cameo entries -->
@@ -11403,6 +11417,20 @@
 			<ObjectNameTextID>TEXT_UNIT_TSLPST</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TSLPST_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TSLPST_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMWAR_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMWAR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMWAR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MobileWarFactory</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMWAR_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMWAR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMWAR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMWAR_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

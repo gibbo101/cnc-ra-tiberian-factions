@@ -1956,6 +1956,7 @@ typedef enum UnitType : char
     UNIT_R2PRIS,            // RA2 Prism Tank (YR [SREF]): prism beam that forks onto nearby enemies. Easter egg alongside UNIT_R2APOC. Art = SREF.VXL hull 0-31 + SREFTUR turret 32-63 (scripts/r2_pack_tanks.py).
     UNIT_TSMEMP,            // TS Mobile EM-Pulse (Firestorm [MOBILEMP]): unarmed tracked support vehicle that charges, then deploys to set off a small E.M. Pulse round itself (UnitClass::EMP_Blast). Art = M_EMP.VXL, 32 facings (scripts/ts_pack_memp.py).
     UNIT_TSLPST,            // TS Mobile Sensor Array ([LPST]): unarmed tracked vehicle that turns south-east and deploys into STRUCT_TSDPSA. Art = LPST.VXL, 32 facings (scripts/ts_pack_sensor.py).
+    UNIT_TSMWAR,            // TS Mobile War Factory (Firestorm [MOBWARG]): slow, unarmed tracked vehicle, one at a time. Art = MWAR_NOD.VXL, 32 facings (scripts/ts_pack_mwf.py).
 
     UNIT_COUNT,
     UNIT_FIRST = 0

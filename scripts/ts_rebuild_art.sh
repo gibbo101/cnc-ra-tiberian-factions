@@ -93,6 +93,11 @@ python3 "$EXTRACT" "$TIBSUN" LOCAL.MIX    extract "$RAW" LPST.VXL LPST.HVA >/dev
 # expand01.mix, its blast anim and cameo in expand01's ECACHE01.MIX.
 EXPAND01="$(dirname "$TIBSUN")/expand01.mix"
 python3 "$EXTRACT" "$EXPAND01" -           extract "$RAW" M_EMP.VXL M_EMP.HVA >/dev/null
+# Mobile War Factory [MOBWARG] (ts_pack_mwf.py): the vehicle voxel and the deployed factory's
+# build-up at the top of expand01.mix, the factory art in ECACHE01.MIX, the cameo in E01SC01.MIX.
+python3 "$EXTRACT" "$EXPAND01" -           extract "$RAW" MWAR_NOD.VXL MWAR_NOD.HVA MWARMK.SHP >/dev/null
+python3 "$EXTRACT" "$EXPAND01" ECACHE01.MIX extract "$RAW" MWAR.SHP MWAR_1.SHP MWAR_2.SHP MWAR_D.SHP MWARBB.SHP >/dev/null
+python3 "$EXTRACT" "$EXPAND01" E01SC01.MIX extract "$RAW" MWARICON.SHP >/dev/null
 python3 "$EXTRACT" "$EXPAND01" ECACHE01.MIX extract "$RAW" MEMPFX.SHP MEMPICON.SHP >/dev/null
 python3 "$EXTRACT" "$TIBSUN" TEMPERAT.MIX extract "$RAW" $TEMPERAT >/dev/null
 python3 "$EXTRACT" "$TIBSUN" ISOTEMP.MIX  extract "$RAW" $ISOTEMP  >/dev/null

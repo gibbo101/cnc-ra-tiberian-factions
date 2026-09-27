@@ -17,7 +17,8 @@ same distance below the cell centre as the packed vehicle's median lowest pixel.
 
 Render (the voxel ledger in docs/launcher-render-contracts.md):
   vxl_render.py LPST.VXL renders_lpst --frames 32 --yaw0 90 --px-per-voxel 12
-      --team-green 0,200,0 --elev 32 --hva LPST.HVA --canvas 720
+      --team-green 0,380,0 --elev 32 --hva LPST.HVA --canvas 720
+(0,380,0: TS painted it in dark remap shades; the fleet's 0,200,0 read at half the APC's team colour)
 Follow with scripts/ts_reshadow.py TSLPST, then the cameo badge and variant scripts.
 
 Inputs (set TS_ART_DIR): renders_lpst, shp_gtdpsa, shp_gtdpsa_a, shp_gtdpsamk (ts_shp.py with

@@ -296,6 +296,8 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsmemp_stub.shp" 48 48 32
 PACK_ARGS+=("$TMPDIR/tsmemp_stub.shp:TSMEMP.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tslpst_stub.shp" 48 48 32
 PACK_ARGS+=("$TMPDIR/tslpst_stub.shp:TSLPST.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmwar_stub.shp" 48 48 32
+PACK_ARGS+=("$TMPDIR/tsmwar_stub.shp:TSMWAR.SHP")
 # Subterranean pair (Devil's Tongue / Sub APC) -- 112 shapes each: 32 driving
 # + 40 dive + 40 emerge pitch-ladder frames (docs/subterranean-design.md).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tssubtank_stub.shp" 48 48 113

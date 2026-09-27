@@ -56,7 +56,10 @@ def vox_frames(dirname):
         b = scaled.getbbox()
         if b and (ox + b[0] < 0 or oy + b[1] < 0 or ox + b[2] > CANVAS or oy + b[3] > CANVAS):
             raise SystemExit(f"{dirname} frame {i}: content clipped -- grow the canvas")
-        fr.alpha_composite(scaled, (max(ox, 0), max(oy, 0)))
+        # A render larger than the canvas lands at a negative offset: crop it so the voxel
+        # origin still falls on the canvas centre.
+        src = scaled.crop((max(-ox, 0), max(-oy, 0), scaled.width, scaled.height))
+        fr.alpha_composite(src, (max(ox, 0), max(oy, 0)))
         out.append(fr)
     return out
 

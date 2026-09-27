@@ -1237,6 +1237,20 @@ bool TF_Ghost_At_Cap(HouseClass const* house)
     return (false);
 }
 
+/*
+**	A house fields one Mobile War Factory at a time (FS BuildLimit=1).
+*/
+bool TF_Mwar_At_Cap(HouseClass const* house)
+{
+    for (int index = 0; index < Units.Count(); index++) {
+        UnitClass const* unit = Units.Ptr(index);
+        if (unit != NULL && unit->IsActive && unit->House == house && *unit == UNIT_TSMWAR) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
 
 
 /*
@@ -1292,7 +1306,7 @@ int HouseClass::Yard_Factions(void) const
 /*
 **	The single verdict on whether a capped order would be turned away: the dropship
 **	bay is still reloading, the house already fields its Mk. II allowance, or its
-**	Ghost Stalker is alive. Begin_Production enforces it; the sidebar click handlers
+**	Ghost Stalker or Mobile War Factory is alive. Begin_Production enforces it; the sidebar click handlers
 **	consult it first so EVA never acknowledges an order that is about to be refused.
 */
 bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id)
@@ -1313,6 +1327,9 @@ bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id)
     }
     if (TF_Is_Dropship_Delivered(utype) && house->TFDropBayTimer != 0) {
         return (true);
+    }
+    if (utype->Type == UNIT_TSMWAR) {
+        return (TF_Mwar_At_Cap(house));
     }
     return (utype->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(house));
 }
@@ -11812,11 +11829,11 @@ int HouseClass::AI_Unit(void)
             // automatically. UNIT_TDHARV must stay excluded or it gets lumped in with
             // combat picks and the AI spams harvesters, burning income. Vanilla only
             // excluded UNIT_HARVESTER.
-            // The Mobile EM-Pulse and Mobile Sensor Array are excluded as well: the AI has no
-            // logic to discharge the one or deploy the other.
+            // The Mobile EM-Pulse, Mobile Sensor Array and Mobile War Factory are excluded as
+            // well: the AI has no logic to discharge or deploy them.
             if (Can_Build(utype, ActLike) && utype->Type != UNIT_HARVESTER
                 && utype->Type != UNIT_TDHARV && utype->Type != UNIT_TSHARV && utype->Type != UNIT_TSMEMP
-                && utype->Type != UNIT_TSLPST
+                && utype->Type != UNIT_TSLPST && utype->Type != UNIT_TSMWAR
                 && !TF_Delivery_Order_Refused(this, RTTI_UNITTYPE, utype->Type)) {
                 /*
                 **	The dropship bay's deliveries weigh as combat units: the Mech Division

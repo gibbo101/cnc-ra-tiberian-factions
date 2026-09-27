@@ -40,12 +40,13 @@ UNITS = {
 }
 
 # Units whose cameo also gets a field-cap LOCKED variant: IniName -> its
-# pristine BuildIcon. Must mirror the TF_Mk2_At_Cap / TF_Ghost_At_Cap sidebar
-# swaps in dllinterface.cpp (the Mk. II field cap and the one-per-house Ghost
-# Stalker), not everything the bay delivers.
+# pristine BuildIcon. Must mirror the TF_Mk2_At_Cap / TF_Ghost_At_Cap / TF_Mwar_At_Cap
+# sidebar swaps in dllinterface.cpp (the Mk. II field cap, the one-per-house Ghost
+# Stalker and Mobile War Factory), not everything the bay delivers.
 LOCKED = {
     "TSHMEC": UNITS["TSHMEC"],
     "TSGHOST": "BuildIcon_TS_Ghost",
+    "TSMWAR": "BuildIcon_TS_MobileWarFactory",
 }
 
 SECONDS = 300  # 5:00
