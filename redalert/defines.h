@@ -4540,6 +4540,7 @@ typedef enum VoxType : short
     VOX_TD_GDI_STRUCTURE,
     VOX_TD_NOD_STRUCTURE,
     VOX_TD_ENEMY_UNIT,
+    VOX_TS_EMP_READY,
 
     VOX_COUNT,
     VOX_FIRST = 0

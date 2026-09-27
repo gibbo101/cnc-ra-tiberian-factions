@@ -348,6 +348,17 @@ void SuperClass::Impatient_Click(void) const
     }
 }
 
+/*
+**	Shortens a recharge under way to at most the given number of frames. The weapon still
+**	counts down and announces itself ready through AI(), unlike Forced_Charge.
+*/
+void SuperClass::Cap_Recharge(int frames)
+{
+    if (IsPresent && !IsReady && Control.Is_Active() && Control > frames) {
+        Control = frames;
+    }
+}
+
 /***********************************************************************************************
  * SuperClass::Forced_Charge -- Force the super weapon to full charge state.                   *
  *                                                                                             *

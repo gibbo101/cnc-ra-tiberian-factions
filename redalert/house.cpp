@@ -803,11 +803,11 @@ HouseClass::HouseClass(HousesType house)
         SuperClass(TICKS_PER_MINUTE * 12, true, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_INSUFFICIENT_POWER);
 
     // Tiberian Factions mod — TS E.M. Pulse (EMP Cannon). TS rules.ini
-    // [EMPulseSpecial]: RechargeTime=4.5, IsPowered=true. TS records only a
-    // recharge line, so every other moment stays silent rather than borrow
-    // another era's announcer.
+    // [EMPulseSpecial]: RechargeTime=4.5, IsPowered=true. TS records only the
+    // "E.M. pulse cannon ready" line, so every other moment stays silent rather
+    // than borrow another era's announcer.
     new (&SuperWeapon[SPC_TS_EMP])
-        SuperClass(TICKS_PER_MINUTE * 9 / 2, true, VOX_NONE, VOX_NONE, VOX_NONE, VOX_NONE);
+        SuperClass(TICKS_PER_MINUTE * 9 / 2, true, VOX_NONE, VOX_TS_EMP_READY, VOX_NONE, VOX_NONE);
 
     // Tiberian Factions mod — Nod Nuclear Strike. TD-authentic 14-minute
     // recharge per tiberiandawn/defines.h NUKE_GONE_TIME (14 *
@@ -2530,16 +2530,16 @@ void HouseClass::Super_Weapon_Handler(void)
 
 #if TF_DEV_BUILD
             /*
-            **  Dev cheat: human-owned superweapons hold full charge so a strike
-            **  can be tested without the multi-minute recharge wait. Quiet (no
-            **  ready announcement) and re-arms on the tick after a launch.
-            **  Runtime-gated like the instant-build cheat (tf_dev_off.flag).
+            **  Dev cheat: human-owned superweapons recharge in 5 seconds so a strike
+            **  can be tested without the multi-minute wait, and still announce
+            **  themselves ready. Runtime-gated like the instant-build cheat
+            **  (tf_dev_off.flag).
             */
             // TF: the Hunter Seeker is a repeatable click-to-fire weapon whose 12-minute
-            // recharge is a real mechanic, so it is excluded from the insta-charge cheat (its
-            // countdown must be visible/testable); other supers still hold charge for dev.
+            // recharge is a real mechanic, so it is excluded from the fast-recharge cheat (its
+            // countdown must be visible/testable).
             if (TF_Dev_Cheats() && IsHuman && !super->Is_Ready() && special != SPC_TS_HUNTSEEK) {
-                super->Forced_Charge(false);
+                super->Cap_Recharge(TICKS_PER_SECOND * 5);
             }
 #endif
 

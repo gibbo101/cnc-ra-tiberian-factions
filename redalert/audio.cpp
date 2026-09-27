@@ -811,6 +811,7 @@ int Sound_Effect(VocType voc, fixed volume, int variation, signed short pan_valu
     "TDGSTRUC1",  // VOX_TD_GDI_STRUCTURE
     "TDNSTRUC1",  // VOX_TD_NOD_STRUCTURE
     "TDENMYUNIT", // VOX_TD_ENEMY_UNIT
+    "TSEMPREADY", // VOX_TS_EMP_READY      (TS "E.M. pulse cannon ready")
 };
 
 static VoxType CurrentVoice = VOX_NONE;
@@ -929,6 +930,7 @@ void Init_SpeechTS(void)
     SpeechTS[VOX_REPAIRING]          = "TSREPAIR1";
     SpeechTS[VOX_STRUCTURE_SOLD]     = "TSSTRUSLD1";
     SpeechTS[VOX_UNIT_REPAIRED]      = "TSUNITREPD";
+    SpeechTS[VOX_TS_EMP_READY]       = "TSEMPREADY";
 }
 
 char const* SpeechRAO[VOX_COUNT] = {NULL};

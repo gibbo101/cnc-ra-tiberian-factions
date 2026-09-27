@@ -56,6 +56,7 @@ public:
     bool Suspend(bool on);
     bool Enable(bool onetime = false, bool player = false, bool quiet = false);
     void Forced_Charge(bool player = false);
+    void Cap_Recharge(int frames);
     bool AI(bool player = false);
     bool Remove(bool forced = false);
     void Impatient_Click(void) const;

@@ -13100,6 +13100,30 @@
       <Priority> 2 </Priority>
       <QueueIfCantPlay> True </QueueIfCantPlay>
    </LocalizedSFXEvent>
+   <!-- "E.M. pulse cannon ready" -->
+   <LocalizedSFXEvent Name="RAC_SFX_TSEMPREADY" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TS_SFX_EVA_EMPREADY_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
+   <!-- "E.M. pulse cannon ready" -->
+   <LocalizedSFXEvent Name="RAR_SFX_TSEMPREADY" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TS_SFX_EVA_EMPREADY_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
    <!-- "your mission has failed" -->
    <LocalizedSFXEvent Name="RAC_SFX_TSFAIL1" Preset="_PRESET_HUD">
       <SampleNamesList>
