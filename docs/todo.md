@@ -1,3 +1,19 @@
+## RESUME HERE: 2026-09-27
+
+`main` is 3 commits ahead of origin, NOT pushed (all verified in play): the construction-options
+fix (8bad2c61), TS Light Infantry and Disc Throwers in drop pods (be030e86), the Dropship Bay
+build-up upscale (fb166223). Push when Luke says.
+
+Next session, in order:
+1. **EMP arc** (branch `emp-cannon`, worktree `../tf-subterranean-worktree`): PLSECAN2 fire sound,
+   then stage C with Luke present. Resume from `docs/emp-cannon-design.md` there.
+2. **Bugs on main** (`docs/known-issues.md`): medics looping on hurt Jumpjet Infantry; the
+   Upgrade Center's missing RA slab.
+
+Parked until polish: the sprite upscale (branch `upscale-spike`, worktree
+`../tf-upscale-worktree`; `docs/sprite-upscale-spike.md` and `docs/sprite-upscale-rules.md`
+there). The desktop prefix holds the EMP build (DLL `c06c3061`) with the shipped art.
+
 ## RESUME HERE: play test 2026-09-17 (committed on main @ 4009e766, pushed)
 
 Desktop prefix = DLL `185b0e11`, matching `build/`. Dev build (logs and cheats in). The whole

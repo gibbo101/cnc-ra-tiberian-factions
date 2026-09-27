@@ -8,6 +8,34 @@ them. When an issue is fixed, move it to the "Resolved" section with the fix com
 
 ---
 
+## OPEN: Medics loop on a hurt Jumpjet Infantry (2026-09-27)
+
+- **Severity:** minor (medics stand re-targeting instead of healing anyone else).
+- A TS Medic picks a damaged Jumpjet Infantry as a heal target and tries forever, landed or not.
+- Cause: TS-authentic numbers. Jumpjet Infantry is `Armor=light`; the heal warhead `Organic` does
+  100% to no armour and 0% to everything else (TS `RULES.INI` agrees, so TS medics cannot heal
+  jumpjets either). The heal does nothing and is refused, but the target scan still offers it.
+- Fix (recommended, Luke to confirm): stop medics choosing a target their heal does 0% to. The
+  alternative, letting the heal reach jumpjets, is a deliberate deviation from TS.
+
+## OPEN: TS Upgrade Center shows no RA slab (2026-09-27)
+
+- **Severity:** minor (units cannot path round its bottom row the way they do round the others).
+- Every other TS GDI building sits on an RA concrete slab; the Upgrade Center (TSPLUG) does not,
+  though its setup matches the Tech Center exactly: `BSIZE_32`, `List32`, `Bib=yes` in rules.ini,
+  and the same stamp path (`building.cpp` Mark, `Bib_And_Offset` -> BIB2). Seen side by side
+  with a Tech Center in play. Suspect its add-on handling (plug install re-marks the building).
+
+## RESOLVED: "New construction options" on every building placement and superweapon shot (2026-09-27)
+
+- **Severity:** minor (a wrong announcer line, heard constantly).
+- Cause: `Update_Buildables` added any building the house could build (`Can_Build`), but the
+  sidebar evicts buildings no owned yard produces (`Who_Can_Build_Me`). The two disagreed (an
+  Allied wall offered to a TS GDI yard), so every recalc added and evicted the same building,
+  and each add played the launcher's "new construction options".
+- Fix: the add requires both tests (`building.cpp`, both `Update_Buildables` loops), commit
+  8bad2c61. Verified in play.
+
 ## RESOLVED: Nod Airstrip stops delivering vehicles partway through a match (2026-09-26)
 
 - **Severity:** major (shipped in every release since the Airstrip went to TD's delivery code,
