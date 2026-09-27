@@ -28,10 +28,13 @@
 > ⚠️ Rebuilding TFASSETS.MIX in a fresh worktree needs `scripts/_td_tems` copied in first: it
 > is gitignored, and `build_tfassets.sh` packs it only if the directory exists, so without it
 > the archive silently loses 324 staged terrain iconsets.
-> **Stages:** A = building ✓; B = superweapon ✓ verified; C = the pulse (built, hover settle to test: stun timer on
-> TechnoClass, every gate, sparkles, aircraft crash); D = diggers
-> (`Force_Emerge`, BOOM rule); E = sounds + EVA. Neither the subterranean pair nor this ships
-> to the Workshop without the other.
+> **Stages:** A = building ✓; B = superweapon ✓; C = the pulse and stun ✓ (TS rules kept: power,
+> construction and production carry on; hover units settle onto a still shadow); D = diggers ✓
+> (as TS: a stunned digger surfaces at the nearest ground, destroyed only if there is none;
+> sparks start on surfacing); E = sounds + EVA: fire sound ✓, the EVA recharge line (00-I158)
+> is what remains. Neither the subterranean pair nor this ships to the Workshop without the other.
+> The out-of-range targeting cursor is launcher-owned: the DLL is told nothing when aiming starts
+> (launcher-call probe, 2026-09-27), see main's `docs/todo.md` range-ring entry.
 
 ## TS ground truth (live-extracted TIBSUN.MIX rules/art + OpenTS)
 
@@ -132,9 +135,10 @@ AI skips stunned buildings.
   spark, pad-parked aircraft spared.
 
 ### Stage D -- diggers
-- Already built on `subterranean`: `UnitClass::Force_Emerge()` (legal cell -> surface +
-  stun; water/rock/building -> `Tunnel_Explode`). Wire from the pulse sweep. DIRTEXPL
-  (15 frames, 31x25, extracted) = the muffled underground death burst.
+- `TF_EMPulse` stuns every tunnelling unit in the spread and calls `Tunnel_Stop` (OpenTS
+  empulse.cpp + tunnel.cpp Stop_Moving): reroute to `Find_Emerge_Cell`, `Tunnel_Explode` if
+  none, carry on if within a cell's diagonal of the destination. A stunned digger keeps moving
+  (TS tunnel Process ignores power) but ignores new dig orders.
 
 ### Stage E -- audio
 - PLSECAN2 (cannon fire) + 00-I158 (EVA recharge) extracted; dormant-host recipe as
