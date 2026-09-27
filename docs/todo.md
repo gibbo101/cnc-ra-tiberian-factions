@@ -24,6 +24,25 @@ Parked until polish: the sprite upscale (branch `upscale-spike`, worktree
 `../tf-upscale-worktree`; `docs/sprite-upscale-spike.md` and `docs/sprite-upscale-rules.md`
 there). The desktop prefix holds the EMP stage C build (DLL `0e9d35fe`) with the shipped art.
 
+## Range rings for defences (Luke's idea, 2026-09-27, future feature, after TS GDI)
+
+Show a defence's coverage as a ring: round a selected defence, and following the cursor while
+one is being placed. Everything it needs reaches the DLL (launcher-call probe, 2026-09-27):
+`SIDEBAR_REQUEST_START_PLACEMENT` names what is being placed, `INPUT_REQUEST_MOUSE_MOVE` streams
+the cursor's map pixels throughout (map only, not over the sidebar), `SIDEBAR_REQUEST_PLACE` /
+`SIDEBAR_CANCEL_PLACE` end it. Draw with the launcher line renderer (`CNCObjectStruct::Lines`,
+3 per object, frames 0-4 only), spread over carrier entries in the layer export with
+`VisibleFlags` set to the owner alone, so nothing enters the simulation or another player's view.
+Prove one clean circle round a selected turret first.
+
+**The E.M. Pulse cannot get an aiming-only ring from the DLL side.** Clicking the cameo is
+handled entirely inside ClientG.exe: the targeting cursor and EVA's "select target" come from
+the launcher, and the probe saw no call at all (all 44 exports hooked; the per-frame traffic
+while aiming is identical to idle). The DLL hears only `SUPERWEAPON_REQUEST_PLACE_SUPER_WEAPON`
+and a `SIDEBAR_CANCEL_PLACE (-1,-1)` when targeting ends, fired or cancelled. Routes: show the
+ring while the Pulse is charged, or find ClientG's targeting flag with the RAM lever
+(`radar-crest-ram-spike.md`), polled off the game thread.
+
 ## RESUME HERE: play test 2026-09-17 (committed on main @ 4009e766, pushed)
 
 Desktop prefix = DLL `185b0e11`, matching `build/`. Dev build (logs and cheats in). The whole
