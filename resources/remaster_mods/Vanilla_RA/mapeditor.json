@@ -1747,6 +1747,22 @@
       ]
     },
     {
+      "id": 57,
+      "kind": "vehicle",
+      "name": "tsmemp",
+      "display_name": "Mobile EMP",
+      "owner": "Germany",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "turret_frames": [],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": []
+    },
+    {
       "id": 7,
       "kind": "aircraft",
       "name": "tdc17",

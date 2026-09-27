@@ -833,6 +833,7 @@ TechnoClass::TechnoClass(RTTIType rtti, int id, HousesType house)
     CFEPatchFlags = 0;
     AttackMoveBoatClock = 0;
     StunDuration = 0;
+    StunLength = 0;
 #ifdef REMASTER_BUILD
     if (Session.Type == GAME_NORMAL) {
         IsOwnedByPlayer = (PlayerPtr == House);
@@ -7295,7 +7296,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             /*
             ** Check if it's a Chrono tank, to show the recharge gauge.
             */
-            else if (What_Am_I() == RTTI_UNIT && *(UnitClass*)this == UNIT_CHRONOTANK) {
+            else if (What_Am_I() == RTTI_UNIT
+                     && (*(UnitClass*)this == UNIT_CHRONOTANK || *(UnitClass*)this == UNIT_TSMEMP)) {
                 for (int index = 0; index < 5; index++) {
                     int shape = PIP_EMPTY;
                     if (index < pips) {

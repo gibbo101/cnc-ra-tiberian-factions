@@ -6706,6 +6706,13 @@
 			<BuildIcon>BuildIcon_TS_AmphAPC</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMEMP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMEMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMEMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MobileEMP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<ObjectTypeClass Name="RA_TSDEPT" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TSDEPT</ObjectNameTextID>
@@ -11354,6 +11361,20 @@
 			<ObjectNameTextID>TEXT_UNIT_TSLIMP</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TSLIMP_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TSLIMP_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMEMP_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMEMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMEMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MobileEMP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMEMP_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMEMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMEMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMEMP_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

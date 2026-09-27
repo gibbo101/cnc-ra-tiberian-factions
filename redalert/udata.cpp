@@ -1913,6 +1913,39 @@ static UnitTypeClass const UnitR2Pris(UNIT_R2PRIS,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
+// TS Mobile EM-Pulse (UNIT_TSMEMP), Firestorm rules [MOBILEMP]. No weapon: it charges while it can
+// move and deploys to set off a small E.M. Pulse round itself (UnitClass::EMP_Blast). FS:
+// Strength=800, Armor=heavy, TechLevel=6, Sight=6, Speed=7, Cost=1000, Points=60, ROT=5,
+// Crusher=yes, CrateGoodie=yes, MaxCharge=1800. Art = M_EMP.VXL voxel render, 32 facings.
+static UnitTypeClass const UnitTsMemp(UNIT_TSMEMP,
+                                      TXT_APC,      // NAME: placeholder (HD display via rules.ini Name=).
+                                      "TSMEMP",     // NAME: IniName.
+                                      ANIM_FBALL1,  // EXPLOSION: big fireball.
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0000,       // Vertical offset.
+                                      0x0000,       // Primary weapon offset (unarmed).
+                                      0x0000,       // Primary weapon lateral offset.
+                                      0x0000,       // Secondary weapon offset.
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      true,         // Can this be a goodie surprise from a crate? (FS CrateGoodie=yes)
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (FS Crusher=yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      false,        // Is it equipped with a combat turret?
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline.
+                                      MISSION_GUARD // ORDERS: Default order.
+);
+
 // TS Amphibious APC (UNIT_TSAPC), TS rules [APC]. Unarmed hover transport —
 // SPEED_HOVER stands in for the TS amphibious float (plan-approved deviation),
 // so it crosses water like the Hover MLRS. Passengers=5 via rules.ini; door
@@ -2315,6 +2348,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTsLimp);    // UNIT_TSLIMP (Limpet Drone)
     new UnitTypeClass(UnitR2Apoc);    // UNIT_R2APOC (RA2 Apocalypse)
     new UnitTypeClass(UnitR2Pris);    // UNIT_R2PRIS (RA2 Prism Tank)
+    new UnitTypeClass(UnitTsMemp);    // UNIT_TSMEMP (Mobile EM-Pulse)
 }
 
 /***********************************************************************************************
@@ -2642,6 +2676,7 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
         {UNIT_TSAPC, 31, 31},
         {UNIT_TSMCV, 36, 29},
         {UNIT_TSLIMP, 8, 22},
+        {UNIT_TSMEMP, 34, 35},
     };
     for (int i = 0; i < (int)ARRAY_SIZE(_art_boxes); i++) {
         if (_art_boxes[i].type == Type) {
@@ -2680,6 +2715,10 @@ int UnitTypeClass::Max_Pips(void) const
 
     if (Type == UNIT_MINELAYER) {
         return (MaxAmmo);
+    }
+
+    if (Type == UNIT_TSMEMP) {
+        return (5);
     }
     return (Max_Passengers());
 }

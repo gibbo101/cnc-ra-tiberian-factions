@@ -1039,24 +1039,23 @@ BuildingClass* TF_EMP_Launch_Site(HouseClass const* house, CELL cell)
 }
 
 /*
-**	The E.M. Pulse landing at a cell (OpenTS empulse.cpp Create). Within Spread cells:
+**	The E.M. Pulse landing at a cell (OpenTS empulse.cpp Create). Within spread cells:
 **	aircraft taking off, landing or flying low crash, a Limpet Mine is destroyed, and
 **	every other building, every vehicle and ship, and every aircraft sitting on open
-**	ground is stunned for the pulse's duration. Only a cell's building is considered
+**	ground is stunned for duration frames. Only a cell's building is considered
 **	when it has one, so an aircraft parked on its pad is spared. A stunned vehicle stops
 **	where it is and sparks until the stun wears off; a building sparks only if it can pack
 **	up and move. A vehicle digging underground is stunned too: it makes for the nearest
 **	ground it can surface on, is destroyed if there is none, and sparks once it surfaces.
 **	Infantry are untouched. The source, if any, is spared.
 */
-void TF_EMPulse(CELL center, TechnoClass* source)
+void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
 {
     enum
     {
-        EMP_SPREAD = 11,          // TS [EMPuls] Spread
         EMP_AIRCRAFT_HEIGHT = 104 // TS one height level: an aircraft below it is not yet flying
     };
-    int const spread_sq = EMP_SPREAD * EMP_SPREAD;
+    int const spread_sq = spread * spread;
     int crashed = 0;
     int stunned_buildings = 0;
     int stunned_vehicles = 0;
@@ -1067,15 +1066,15 @@ void TF_EMPulse(CELL center, TechnoClass* source)
         AircraftClass* aircraft = Aircraft.Ptr(index);
         if (aircraft != NULL && aircraft->IsActive && !aircraft->IsInLimbo && aircraft->Strength > 0
             && aircraft->Height > 0 && aircraft->Height < EMP_AIRCRAFT_HEIGHT
-            && ::Distance(aircraft->Center_Coord(), Cell_Coord(center)) < EMP_SPREAD * CELL_LEPTON_W) {
+            && ::Distance(aircraft->Center_Coord(), Cell_Coord(center)) < spread * CELL_LEPTON_W) {
             int damage = aircraft->Strength;
             aircraft->Take_Damage(damage, 0, WARHEAD_HE, source, true);
             crashed++;
         }
     }
 
-    for (int y = -EMP_SPREAD; y <= EMP_SPREAD; y++) {
-        for (int x = -EMP_SPREAD; x <= EMP_SPREAD; x++) {
+    for (int y = -spread; y <= spread; y++) {
+        for (int x = -spread; x <= spread; x++) {
             if (x * x + y * y > spread_sq) {
                 continue;
             }
@@ -1105,7 +1104,7 @@ void TF_EMPulse(CELL center, TechnoClass* source)
                                 sparks->Attach_To(building);
                             }
                         }
-                        building->StunDuration = TechnoClass::EMP_STUN_FRAMES;
+                        building->EMP_Stun(duration);
                         stunned_buildings++;
                     }
                 }
@@ -1124,7 +1123,7 @@ void TF_EMPulse(CELL center, TechnoClass* source)
                                 sparks->Attach_To(aircraft);
                             }
                         }
-                        aircraft->StunDuration = TechnoClass::EMP_STUN_FRAMES;
+                        aircraft->EMP_Stun(duration);
                         stunned_aircraft++;
                     }
                     continue;
@@ -1143,7 +1142,7 @@ void TF_EMPulse(CELL center, TechnoClass* source)
                         sparks->Attach_To(vehicle);
                     }
                 }
-                vehicle->StunDuration = TechnoClass::EMP_STUN_FRAMES;
+                vehicle->EMP_Stun(duration);
                 vehicle->NavCom = TARGET_NONE;
                 vehicle->Path[0] = FACING_NONE;
                 vehicle->Clear_Navigation_List();
@@ -1165,7 +1164,7 @@ void TF_EMPulse(CELL center, TechnoClass* source)
         int dx = Cell_X(cell) - Cell_X(center);
         int dy = Cell_Y(cell) - Cell_Y(center);
         if (dx * dx + dy * dy < spread_sq) {
-            unit->StunDuration = TechnoClass::EMP_STUN_FRAMES;
+            unit->EMP_Stun(duration);
             unit->Tunnel_Stop();
             stunned_underground++;
         }
@@ -11813,8 +11812,9 @@ int HouseClass::AI_Unit(void)
             // automatically. UNIT_TDHARV must stay excluded or it gets lumped in with
             // combat picks and the AI spams harvesters, burning income. Vanilla only
             // excluded UNIT_HARVESTER.
+            // The Mobile EM-Pulse is excluded as well: the AI has no logic to discharge it.
             if (Can_Build(utype, ActLike) && utype->Type != UNIT_HARVESTER
-                && utype->Type != UNIT_TDHARV && utype->Type != UNIT_TSHARV
+                && utype->Type != UNIT_TDHARV && utype->Type != UNIT_TSHARV && utype->Type != UNIT_TSMEMP
                 && !TF_Delivery_Order_Refused(this, RTTI_UNITTYPE, utype->Type)) {
                 /*
                 **	The dropship bay's deliveries weigh as combat units: the Mech Division

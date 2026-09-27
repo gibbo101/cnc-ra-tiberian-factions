@@ -1948,6 +1948,7 @@ typedef enum UnitType : char
     UNIT_TSLIMP,            // TS Limpet Drone (Firestorm [LIMPET]): an unarmed hover crawler that deploys into the cloaked STRUCT_TSDLIMP mine. Art = LIMPED.SHP, a ten-frame crawl cycle with no facings (scripts/ts_pack_limpet.py).
     UNIT_R2APOC,            // RA2 Apocalypse (YR [APOC], art MTNK): twin 120mm cannon + Mammoth Tusk AA missiles, self-healing, crusher. Easter egg: crate-only. Art = MTNK.VXL hull 0-31 + MTNKTUR/MTNKBARL turret 32-63 (scripts/r2_pack_tanks.py).
     UNIT_R2PRIS,            // RA2 Prism Tank (YR [SREF]): prism beam that forks onto nearby enemies. Easter egg alongside UNIT_R2APOC. Art = SREF.VXL hull 0-31 + SREFTUR turret 32-63 (scripts/r2_pack_tanks.py).
+    UNIT_TSMEMP,            // TS Mobile EM-Pulse (Firestorm [MOBILEMP]): unarmed tracked support vehicle that charges, then deploys to set off a small E.M. Pulse round itself (UnitClass::EMP_Blast). Art = M_EMP.VXL, 32 facings (scripts/ts_pack_memp.py).
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -3100,6 +3101,7 @@ typedef enum AnimType : short
     ANIM_TS_PULSEFX1,   // TS PULSEFX1: an E.M. Pulse impact, flat on the ground (21 frames). TS picks this or PULSEFX2 at random.
     ANIM_TS_PULSEFX2,   // TS PULSEFX2: the other E.M. Pulse impact (15 frames).
     ANIM_TS_EMPFX,      // TS EMP_FX01: the sparks over an object stunned by an E.M. Pulse (27 frames, loops until the stun ends).
+    ANIM_TS_MEMPFX,     // TS MEMPFX: the Mobile EM-Pulse's blast, flat on the ground (12 frames).
 
     ANIM_COUNT,
     ANIM_FIRST = 0

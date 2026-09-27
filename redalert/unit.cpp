@@ -345,6 +345,7 @@ UnitClass::UnitClass(UnitType classid, HousesType house)
     DeployStep = 0;
     DeployTick = 0;
     DeployNav = TARGET_NONE;
+    EMPCharge = 0;
     FireStreamTicks = 0;
     FireStreamTarget = TARGET_NONE;
     for (int hb = 0; hb < HARV_BLACKLIST_MAX; hb++) {
@@ -479,6 +480,10 @@ void UnitClass::AI(void)
         }
     }
     Fire_Stream_AI();
+
+    if (*this == UNIT_TSMEMP && EMPCharge < EMP_CHARGE_FRAMES && !Is_Immobilized()) {
+        EMPCharge++;
+    }
 
     if (Is_In_Tunnel_Cycle()) {
         Tunnel_AI();
@@ -3096,7 +3101,7 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
     if (Class->Type == UNIT_TSHVR || Class->Type == UNIT_TSLIMP) {
         static const int _hover_bob[8] = {0, -1, -2, -2, -1, 0, 1, 1};
         if (Is_Immobilized()) {
-            int edge = min(EMP_STUN_FRAMES - StunDuration, StunDuration);
+            int edge = min(StunLength - StunDuration, StunDuration);
             y += min(3, max(0, edge) / 4);
         } else {
             y += _hover_bob[(Frame >> 2) & 7];
@@ -4715,6 +4720,11 @@ int UnitClass::Mission_Unload(void)
         }
         break;
 
+    case UNIT_TSMEMP:
+        EMP_Blast();
+        Assign_Mission(MISSION_GUARD);
+        return (1);
+
     case UNIT_MCV:
     case UNIT_TDMCV:    // TD MCV — same deploy AI as UNIT_MCV.
     case UNIT_AMCV:     // W2 b3 faction MCVs — same deploy AI, different yard
@@ -5853,6 +5863,14 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
                 action = ACTION_NO_DEPLOY;
             }
             ((ObjectClass&)(*this)).Mark(MARK_DOWN);
+        } else if (*this == UNIT_TSMEMP) {
+
+            /*
+            **	The Mobile EM-Pulse fires only on a full charge and never while stunned.
+            */
+            if (EMPCharge < EMP_CHARGE_FRAMES || Is_Immobilized()) {
+                action = ACTION_NO_DEPLOY;
+            }
         } else if (Class->Is_MCV()) {
 
             /*
@@ -6381,6 +6399,10 @@ int UnitClass::Pip_Count(void) const
 
     if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV || *this == UNIT_TSHARV)) {
         return ((Gold + Gems) / 4);
+    }
+
+    if (*this == UNIT_TSMEMP) {
+        return (EMPCharge * Class->Max_Pips() / EMP_CHARGE_FRAMES);
     }
 
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
@@ -8280,6 +8302,20 @@ static void TF_Tunnel_Log(UnitClass const* unit, char const* fmt, ...)
     (void)unit;
     (void)fmt;
 #endif
+}
+
+/*
+**	The Mobile EM-Pulse discharges (OpenTS unit.cpp EMPulse_Blast): on a full charge and
+**	when not stunned itself, a small pulse goes off round the vehicle, which is spared, and
+**	the charge starts again from nothing.
+*/
+void UnitClass::EMP_Blast(void)
+{
+    if (!Is_Immobilized() && EMPCharge >= EMP_CHARGE_FRAMES) {
+        new AnimClass(ANIM_TS_MEMPFX, Center_Coord());
+        TF_EMPulse(Coord_Cell(Center_Coord()), this, EMP_MOBILE_SPREAD, EMP_MOBILE_STUN_FRAMES);
+        EMPCharge = 0;
+    }
 }
 
 bool UnitClass::Is_Subterranean(void) const

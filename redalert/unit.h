@@ -227,6 +227,19 @@ public:
     void Deploy_Begin(bool deploy);
 
     /*
+    **	TF: the Mobile EM-Pulse's charge. It climbs a frame at a time while the vehicle is not
+    **	stunned; a full charge lets it deploy to set off its pulse (EMP_Blast).
+    */
+    enum
+    {
+        EMP_CHARGE_FRAMES = 1300,   // FS MaxCharge=1800 at TS Medium speed: 87 s
+        EMP_MOBILE_SPREAD = 3,      // cells, the span of its MEMPFX blast
+        EMP_MOBILE_STUN_FRAMES = 150 // 10 s
+    };
+    int EMPCharge;
+    void EMP_Blast(void);
+
+    /*
     **	TF: TS FireballLauncher stream (Devil's Tongue). Frames of stream left after a
     **	shot and the target it plays toward; Fire_Stream_AI spawns a BULLET_TSFIRE
     **	particle every 4 of them (TS FireStreamSys SpawnFrames), alternating prongs.
