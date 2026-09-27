@@ -43,6 +43,15 @@ and a `SIDEBAR_CANCEL_PLACE (-1,-1)` when targeting ends, fired or cancelled. Ro
 ring while the Pulse is charged, or find ClientG's targeting flag with the RAM lever
 (`radar-crest-ram-spike.md`), polled off the game thread.
 
+**Future spike, the targeting flag (Luke, 2026-09-27):** ClientG.exe is 32-bit at a fixed base
+(0x400000), so a global holding the superweapon being aimed would sit at a fixed address the DLL
+can read (4 bytes a frame, no heap walk). Find it Cheat-Engine-style from the Linux side:
+snapshot ClientG's writable memory idle / aiming / idle / aiming, keep addresses that flip with
+aiming, prefer the exe's static data, confirm across a relaunch. If it only lives on the heap, a
+pointer chain from a static root is needed. Fallback: sniff the cameo click with
+GetAsyncKeyState (a left click off the map that yields no sidebar request while a superweapon is
+ready); cheap but ambiguous with several supers ready, and host-only in LAN games.
+
 ## RESUME HERE: play test 2026-09-17 (committed on main @ 4009e766, pushed)
 
 Desktop prefix = DLL `185b0e11`, matching `build/`. Dev build (logs and cheats in). The whole
