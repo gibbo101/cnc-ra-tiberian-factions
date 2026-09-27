@@ -28,9 +28,9 @@ there). The desktop prefix holds the EMP stage C build (DLL `0e9d35fe`) with the
 
 Lore: a Chronosphere accident rips the TS faction back through time. So a TS player's opening
 units (MCV + escort, scenario.cpp's TS start roster) are held back at match start while a chrono
-vortex opens on their start position; EVA "Establishing battlefield control, standby"; the units
-come through one by one from the vortex centre, each with a flash, and fan out; the vortex closes;
-EVA "Battlefield control established" (TS `00-I200`, OpenTS vox.cpp VOX_CONTROL_ESTABLISHED).
+vortex opens on their start position; EVA "Establishing battlefield control, standby" (`00-I200`); the units come through one by one
+from the vortex centre, each with a flash, and fan out; the vortex closes; the text "battlefield
+control established" (see the lines below).
 - **The vortex:** RA Aftermath's chronal vortex is launcher-drawn and the DLL can place it
   (`launcher-render-contracts.md` 10: `VortexActive/X/Y` in `Get_Dynamic_Map_State`; draws a
   ~350 px whirlpool whatever Width/Height say, anchored at the coordinate's top-left). One slot
@@ -38,10 +38,17 @@ EVA "Battlefield control established" (TS `00-I200`, OpenTS vox.cpp VOX_CONTROL_
 - **Shroud:** gate `VortexActive` per player. `Get_Dynamic_Map_State` receives `player_id`
   (ignored today); send the vortex only to players who have the start cell revealed. Check a
   LAN game asks per player.
-- **The "standby" line:** plays at the start of TS GDI mission 1 (Luke) but is not named in
-  OpenTS's vox table. GDI1A.MAP's opening trigger fires action 19 with 174 and action 41 with
-  38/252; neither maps cleanly yet. Find it by ear from extracted SPEECH01.MIX lines, or
-  transcribe them (Whisper would install into tools/upscale/.venv).
+- **The lines (found 2026-09-27, all SPEECH01/02 lines transcribed with Whisper, now in
+  tools/upscale/.venv):** "Establishing battlefield control. Stand by." is `00-I200` in BOTH
+  voices (EVA SPEECH01, CABAL SPEECH02, separate recordings). OpenTS's VOX_CONTROL_ESTABLISHED
+  label is a misnomer: TS plays it from TAction_LOCK_INPUT (action 46) at mission start.
+  **EVA never recorded "established"**; CABAL has "Battle control established" only as the Nod
+  mission line `01-N008` (and "Establishing battle control. Please stand by." `01-N006`).
+  Candidates + transcript tables: ~/Desktop/ts-eva-candidates/.
+- **Text, as TS does it (Luke's screenshot):** post `****ESTABLISHING BATTLEFIELD CONTROL****.........Standby!`
+  to the top-left message area with the voice, and `****BATTLEFIELD CONTROL ESTABLISHED****`
+  (text only for GDI; CABAL can voice it for Nod) once the units are through. The DLL already
+  posts there (the lobby-difficulty HELLO messages).
 - **Fairness:** keep the arrival to about 5 s; AI TS players arrive the same way and must not
   act before their units exist.
 - **Fallback look:** the RA2 Chronosphere warp per unit (RA2 art pipeline from the
