@@ -1,3 +1,28 @@
+## RESUME HERE: 2026-09-28 (early hours)
+
+**First thing: Luke screencasts the Mobile War Factory's two open issues** (GNOME recorder,
+`~/Videos/Screencasts/`; pull frames with ffmpeg fps=6): (1) a Titan's antenna shows over the
+deployed MWF's lower roof, at the back, while it sits in the bay; (2) artefacting as a vehicle
+leaves the bay. Both are the doorway layering: the front cut line
+(`resources/custom-art/tsdweap-front-cut-line.json`) is an interim shift of the War Factory's,
+and mechs use the War Factory's mech seat. Fix from the frames (move the cut line, or an
+Aseprite file for Luke to drag per the seat-loop protocol; a forward mech seat for this factory
+only, or keep the vehicle hidden until it leaves the mouth). Then commit and the MWF is done.
+
+**Deploy first:** the worktree build has the prerequisite fix (a deployed MWF satisfies War
+Factory prerequisites, Firestorm PrerequisiteFactory); the desktop still runs DLL `d8d166d1`
+without it. Deploy `../tf-subterranean-worktree/build/remaster/Vanilla_RA/Data/RedAlert.dll`
+with the game closed and md5 it.
+
+Everything is on branch `emp-cannon` (worktree `../tf-subterranean-worktree`), NOT pushed:
+EMP arc complete (stages A-E, radius 3 to match the ring art, stun 30 s cannon / 10 s mobile),
+Mobile EMP, Mobile Sensor Array (ghost copies show cloaked/buried enemies to the sensor's owner,
+detection EVA), Mobile War Factory vehicle + deploy (`b5c7003e` checkpoint). Branch design doc:
+`docs/emp-cannon-design.md` there. After the MWF: the Firestorm Generator (art route to agree
+with Luke first, `ts-gdi-tree-plan.md` 19b), then the LAN Limpet test, then the queued
+range-ring and chrono-arrival features below. `main` is 11 commits ahead of origin (docs), not
+pushed.
+
 ## RESUME HERE: 2026-09-27 (evening)
 
 **First thing: remind Luke to test the hover settle** (he asked). Fire E.M. Pulse at a Hover
