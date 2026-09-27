@@ -266,6 +266,15 @@ contract 7); only `DimensionX/Y` is ours. The airborne Jumpjet's lifted `CenterC
 its box, but that path is infantry in flight and does not carry over to a ground vehicle. Buildings differ: see contract 7, where the box is the
 plot's and the art must be seated on the plot.
 
+## 16. Growing a unit's frame count doesn't add its tiles (2026-09-27)
+
+`ts_pack_infantry.patch_tileset` skips a unit already in `RA_UNITS.XML` ("already in, left as
+is"), so repacking a unit with more frames leaves the new shapes without a `<Tile>` entry and
+they draw as white boxes. After adding frames, add the new `<Tile>` entries by hand (or remove
+the unit's old block first so the helper writes them all), and grow the classic stub in
+`build_tfassets.sh` to the same count, then rebuild TFASSETS.MIX (contract 12). Hit twice on
+2026-09-27 splitting the Hover MLRS (64 -> 96) and Limpet Drone (10 -> 20) shadows.
+
 ## House quality policy for TS-sourced assets (Luke, 2026-07-20)
 
 **Every unit, building, and weapon pulled from Tiberian Sun ships at the

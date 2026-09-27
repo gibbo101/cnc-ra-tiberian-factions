@@ -5,10 +5,10 @@ MLRS and a Limpet Drone: in normal hover the whole unit, shadow included, bobs s
 before; stunned, the bob stops and the hull settles 3 px onto a still shadow, lifting back at
 the end of the 30 s. Then stage C gets his sign-off.
 
-`main` is 7 commits ahead of origin, NOT pushed (all verified in play): the Dropship Bay pad at
+`main` is 8 commits ahead of origin, NOT pushed (all verified in play): the Dropship Bay pad at
 twice the detail and its damaged-pad upscale (03164522, 4ca490b4), the construction-options fix
 (8bad2c61), TS Light Infantry and Disc Throwers in drop pods (be030e86), the bay build-up upscale
-(fb69b266), and two docs commits. Push when Luke says.
+(fb69b266), and three docs commits. Push when Luke says.
 
 Next session, in order:
 1. **EMP arc** (branch `emp-cannon` @ `aa2cccf2`, pushed; worktree `../tf-subterranean-worktree`):
