@@ -50,7 +50,8 @@ EVA "Battlefield control established" (TS `00-I200`, OpenTS vox.cpp VOX_CONTROL_
 ## Range rings for defences (Luke's idea, 2026-09-27, future feature, after TS GDI)
 
 Show a defence's coverage as a ring: round a selected defence, and following the cursor while
-one is being placed. Everything it needs reaches the DLL (launcher-call probe, 2026-09-27):
+one is being placed. The same pass draws the Sensor Array's reach (TS [GADPSA]
+HasRadialIndicator, RadialColor=0,200,0) and the EMP Cannon's (Luke, 2026-09-27). Everything it needs reaches the DLL (launcher-call probe, 2026-09-27):
 `SIDEBAR_REQUEST_START_PLACEMENT` names what is being placed, `INPUT_REQUEST_MOUSE_MOVE` streams
 the cursor's map pixels throughout (map only, not over the sidebar), `SIDEBAR_REQUEST_PLACE` /
 `SIDEBAR_CANCEL_PLACE` end it. Draw with the launcher line renderer (`CNCObjectStruct::Lines`,
