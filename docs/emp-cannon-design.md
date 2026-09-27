@@ -36,6 +36,45 @@
 > The out-of-range targeting cursor is launcher-owned: the DLL is told nothing when aiming starts
 > (launcher-call probe, 2026-09-27), see main's `docs/todo.md` range-ring entry.
 
+## Decisions and state, 2026-09-27/28 session (Luke's calls)
+
+**EMP Cannon (complete, verified):** blast radius **3 cells** (TS says 11; 11 swallowed a whole
+RA base, and 3 is what the PULSEFX ring covers on screen: "what the ring covers is what gets
+stunned"). Stun **30 s**. TS rules kept (power, construction and production carry on). EVA
+"E.M. pulse cannon ready" (`00-I158`) only; charging/not-ready stay silent as in TS. Dev
+superweapons recharge in 5 s (`SuperClass::Cap_Recharge`) so ready lines are heard in testing.
+Out-of-range targeting cursor: launcher-owned, the DLL is told nothing when aiming starts
+(launcher-call probe, all 44 exports); Luke is content with the current system.
+
+**Mobile EMP (`UNIT_TSMEMP`, verified):** radius **3** (its MEMPFX blast art), stun **10 s**
+(Luke raised it from 5 after play), charge **87 s** = TS's real time (FS MaxCharge 1800 at TS
+Medium speed); stays on the real timer in dev builds (Luke). Friendly fire kept. No pre-charged
+variant. Not built by the AI until it has discharge logic (Luke wants AI use eventually).
+
+**Mobile Sensor Array (`UNIT_TSLPST` -> `STRUCT_TSDPSA`, verified):** radius 25 (TS, may need
+tuning like the EMP). Cloaked and buried enemies in range are shown to the sensor's owner only,
+**never decloaked** (Luke): a ghost copy of their draw entries, enemy-owned (their colour and
+radar dot), see-through, unselectable. Cloaked ones can be attacked (the cell carries the attack
+action); buried ones only seen, as in TS. EVA "cloaked unit detected" / "subterranean unit
+detected" with a radar ping, 15 s apart per line. Deployed: not repairable, drag-selectable,
+box 35x36, PLACE2 on deploy and pack-up. Fallback if ghosts ever misbehave: decloak everything
+in range, buildings too (Luke).
+
+**Mobile War Factory (`UNIT_TSMWAR` -> `STRUCT_TSDWEAP`, checkpoint `b5c7003e`):** one at a time,
+deployed or not, locked cameo with the red X. Deployed = a TS war factory to the code
+(`Is_TS_War_Factory`), packed on the War Factory's exact affine; satisfies War Factory
+prerequisites (Firestorm PrerequisiteFactory). Pack-up is the deploy key only; self-click =
+primary, move = rally point. OPEN: the doorway (see main's `docs/todo.md` resume block).
+
+**Art habits agreed:** a labelled facings sheet goes to Luke's Desktop BEFORE a unit goes in
+game; building geometry is settled on a sheet first. Dark-remap TS hulls need a stronger team
+green (MWF 0,560,0, LPST 0,380,0; they plateau near 160 against the APC's 185).
+
+**Queued ideas (main's `docs/todo.md`):** range rings for defences, the EMP cannon and the
+sensor (placement ring follows the cursor; the DLL gets placement start and mouse moves);
+the TS chrono-vortex arrival at skirmish start, with EVA `00-I200` "Establishing battlefield
+control, stand by" and TS-style text messages (GDI EVA has no "established" recording).
+
 ## TS ground truth (live-extracted TIBSUN.MIX rules/art + OpenTS)
 
 **Building `[NAPULS]`** (rules.ini 4827): Strength 500, Armor heavy, Prerequisite Radar,
