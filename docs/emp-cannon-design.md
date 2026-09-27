@@ -1,25 +1,35 @@
 # EMP Pulse Cannon — TS port design + arc tracker
 
-> **⭐ RESUME HERE (2026-09-27: STAGE B VERIFIED on the desktop. Branch `emp-cannon` @ 2431dcfd,
-> desktop DLL `c06c3061`.)** E.M. Pulse charges, targets and fires the cannon (the TS Ion Cannon
-> pattern, `SPC_TS_EMP`). The pulse ball charges at the barrel tip from the generated table
-> `redalert/tspuls_muzzle.h` (`scripts/ts_emp_muzzle.py`; the tip-band average puts the south
-> facing between the twin rails; regenerate whenever TSPULST changes). An order in low power is
-> refused with "insufficient power"; out of range is refused silently, as in TS. The cannon draws
-> over the last build-up frames. Dev builds spawn a Subterranean APC at match start for surfacing
-> tests and log each order to `tf_emp.log`.
-> **Next:** the PLSECAN2 fire sound (pulled forward from stage E), then stage C with Luke present
-> (he wants to be there for the pulse and stun). Open: a "translucent white rectangle" on the
-> turret (the TSPULST frames are fully opaque; suspected baked highlight round the yellow core;
-> waiting for Luke's marked screenshot).
+> **⭐ RESUME HERE (2026-09-27 evening: STAGE C BUILT, desktop DLL `0e9d35fe`.)**
+> **FIRST THING NEXT SESSION: remind Luke to test the hover settle** (he asked for this):
+> fire E.M. Pulse at a Hover MLRS and a Limpet Drone and check (1) in normal hover the whole
+> unit, shadow included, bobs smoothly as before; (2) when stunned the bob stops and the hull
+> settles 3 px onto a still shadow over ~0.8 s, then lifts back over the last ~0.8 s of the
+> 30 s stun. Then sign off stage C.
+> Verified in play 2026-09-27: the PLSECAN2 fire sound; vehicles stun, spark and ignore orders;
+> buildings stop firing; an Orca on open ground is grounded, one on its pad is untouched (TS),
+> one taking off/landing/low crashes; the Pulse Cannon can be built off (`BaseNormal=yes`).
+> **Luke's rulings: keep TS rules.** 30 s stun (450 frames, `TechnoClass::EMP_STUN_FRAMES`);
+> TS tree only; a stunned power plant still produces power, a stunned (even only) conyard still
+> builds, factories keep producing, only conyards spark among buildings, pad-parked aircraft
+> are spared. Don't re-offer these as deviations.
+> Pulse = `TF_EMPulse` (house.cpp), a port of OpenTS empulse.cpp Create; gates in event.cpp,
+> Can_Fire, Can_Player_Move, DriveClass::AI, Try_To_Deploy, Process_Take_Off, radar
+> (`Has_Working_Radar`, low-power style), gap/stealth generators, launch site. Sparks =
+> `ANIM_TS_EMPFX` (EMP_FX01). Hover units carry split shadows (TSHVR 64-95 via
+> `ts_hover_split_shadow.py`, TSLIMP 10-19 via `ts_pack_limpet.py`); the shadow bobs WITH the
+> hull (a still shadow read as robotic), only the stun settle moves the hull onto it.
+> **Next:** stage D (diggers). OpenTS stuns an underground unit and it makes for the nearest
+> ground it can surface on, destroyed only if there is none -- gentler than our
+> `Force_Emerge` (surface here or explode). Port TS's version; ask Luke first.
 > **Play-testing is on the LINUX DESKTOP** (the local Proton prefix, as main's work uses). The
 > branch carries main's work through `9bb430c3` plus the verified fixes also on main (sidebar
 > construction-options, TS drop pod squad, bay build-up).
 > ⚠️ Rebuilding TFASSETS.MIX in a fresh worktree needs `scripts/_td_tems` copied in first: it
 > is gitignored, and `build_tfassets.sh` packs it only if the directory exists, so without it
 > the archive silently loses 324 staged terrain iconsets.
-> **Stages:** A = building ✓; B = superweapon ✓ verified; C = the pulse (stun timer on
-> TechnoClass, every gate, sparkles, aircraft crash, building power-off); D = diggers
+> **Stages:** A = building ✓; B = superweapon ✓ verified; C = the pulse (built, hover settle to test: stun timer on
+> TechnoClass, every gate, sparkles, aircraft crash); D = diggers
 > (`Force_Emerge`, BOOM rule); E = sounds + EVA. Neither the subterranean pair nor this ships
 > to the Workshop without the other.
 
@@ -106,22 +116,20 @@ AI skips stunned buildings.
   (Arcing, High, PULSBALL 23 frames animated, Speed 25) at the cell; on impact the
   warhead `WARHEAD_EMPULS` (Spread 11, TF `IsEMP` flag) creates the pulse instead of damage.
 
-### Stage C -- the pulse + stun
-- `TechnoClass::StunDuration` (int frames) + `Is_Immobilized()`; countdown in
-  `TechnoClass::AI`; buildings re-power at 0.
-- `EMPulse_Create(cell, spread=11, duration=1200, source)` as a free function
-  (`redalert/empulse.cpp`, OpenTS port): aircraft-on-ground crash, underground sweep (our
-  `Units` heap scan for `Is_Tunneling()` -> `Force_Emerge()`), building centre-cell test ->
-  power off + stun, cell occupants -> stun + sparkles anim attached.
-- Gates in RA: `Can_Fire` -> FIRE_BUSY; `DriveClass::AI` / `Start_Of_Move` / `Assign_Destination`
-  no-ops while stunned; `Scatter` no-op; DEPLOY/IDLE events ignored; buildings: `Is_Powered`
-  false + factory production suspended + defence fire blocked + repair blocked;
-  `Can_Player_Move` false; AI house skips stunned buildings; radar off if a stunned radar.
-- Anims: ANIM_TS_PULSEFX1 (21, 302x175 -> big ground-level flash + purple ring),
-  ANIM_TS_PULSEFX2 (15, dark residue ring), ANIM_TS_EMPFX (27, loop while stunned; RA anims
-  loop via Loops=-1 equivalent -- attach to the object, kill when the stun ends).
-- Duration: TS 1200 frames. TS logic runs at its own frame rate; RA is 15/s (80 s). Take
-  1200 verbatim first, then ask Luke.
+### Stage C -- the pulse + stun (built 2026-09-27, see the resume block)
+- `TechnoClass::StunDuration` + `Is_Immobilized()`, counted down in `TechnoClass::AI`; at 0 the
+  sparks end and a harvester goes back to harvesting (OpenTS techno.cpp AI).
+- `TF_EMPulse(cell, source)` (house.cpp), OpenTS empulse.cpp Create: aircraft at
+  0 < Height < 104 crash; within Spread 11 a cell's building (only, when it has one) is stunned
+  or, if a Limpet Mine, destroyed; otherwise its vehicles, ships and height-0 aircraft are
+  stunned, their navigation cleared, sparks attached. Infantry untouched (TS: cyborgs only, we
+  have none). Underground units skipped until stage D.
+- Gates: MEGAMISSION / IDLE / SCATTER / PRIMARY events ignored; `Can_Fire` FIRE_CANT;
+  `Can_Player_Move` false; `DriveClass::AI` finishes the current cell then holds;
+  `Try_To_Deploy` and `Process_Take_Off` refuse; radar off like low power; gap and stealth
+  generators off; a stunned cannon can't be the launch site.
+- TS rules kept (Luke): no power loss, construction and production carry on, only conyards
+  spark, pad-parked aircraft spared.
 
 ### Stage D -- diggers
 - Already built on `subterranean`: `UnitClass::Force_Emerge()` (legal cell -> surface +

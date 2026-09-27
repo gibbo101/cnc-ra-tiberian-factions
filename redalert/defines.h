@@ -3099,6 +3099,7 @@ typedef enum AnimType : short
     ANIM_TS_PULSBALL,   // TS PULSBALL: the EMP Cannon's pulse ball charging at the barrel before it fires (23 frames).
     ANIM_TS_PULSEFX1,   // TS PULSEFX1: an E.M. Pulse impact, flat on the ground (21 frames). TS picks this or PULSEFX2 at random.
     ANIM_TS_PULSEFX2,   // TS PULSEFX2: the other E.M. Pulse impact (15 frames).
+    ANIM_TS_EMPFX,      // TS EMP_FX01: the sparks over an object stunned by an E.M. Pulse (27 frames, loops until the stun ends).
 
     ANIM_COUNT,
     ANIM_FIRST = 0

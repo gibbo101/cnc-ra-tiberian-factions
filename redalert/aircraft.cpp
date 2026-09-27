@@ -4019,6 +4019,14 @@ bool AircraftClass::Process_Take_Off(void)
     assert(Aircraft.ID(this) == ID);
     assert(IsActive);
 
+    /*
+    **	An aircraft an E.M. Pulse caught on the ground stays down until the stun wears off.
+    */
+    if (Is_Immobilized() && Height == 0) {
+        IsTakingOff = false;
+        return (false);
+    }
+
     IsLanding = false;
     IsTakingOff = true;
 

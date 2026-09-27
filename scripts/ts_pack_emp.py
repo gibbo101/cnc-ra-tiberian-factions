@@ -7,17 +7,18 @@ flies as the projectile [PulsPr] (Image=PULSBALL, High, Lobber) to the target, w
 [EMPuls] warhead's AnimList plays PULSEFX1 then PULSEFX2 (OpenTS building.cpp Mission_Missile,
 bullet.cpp Detonate). All decoded against ANIM.PAL with no team remap, scaled x4 (TS cell
 48 px -> RA cell 192 canvas px, as ts_pack_ion.py), canvas = classic stub x 8
-(build_tfassets.sh: TSPULSBL 8x8, TSPULSF1 / TSPULSF2 152x88).
+(build_tfassets.sh: TSPULSBL 8x8, TSPULSF1 / TSPULSF2 152x88, TSEMPFX 20x18).
 
 - TSPULSBL.ZIP: PULSBALL's 23 frames. One tileset serves both the charge-up anim at the
   barrel and the projectile (rules.ini [TSPulsBall] Image=TSPULSBL, Frames=23).
 - TSPULSF1.ZIP / TSPULSF2.ZIP: PULSEFX1 (21 frames) and PULSEFX2 (15 frames), centred.
+- TSEMPFX.ZIP: EMP_FX01's 27 frames, the sparks over a stunned object.
 - BuildIcon_SW_TSEMP.tga: TS's PULSICON special cameo (CAMEO.PAL), flattened opaque (the
   launcher draws noise under transparent cameo pixels).
 - Data/AUDIO/TSPLSECAN2.WAV: the cannon's report ([EMPulseWeapon] Report=PLSECAN2) under its
   own sample name, Westwood AUD -> MS-ADPCM WAV.
 
-Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/{PULSBALL,PULSEFX1,PULSEFX2,PULSICON}.SHP,
+Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/{PULSBALL,PULSEFX1,PULSEFX2,PULSICON,EMP_FX01}.SHP,
 PLSECAN2.AUD, ANIM.PAL, CAMEO.PAL -- TIBSUN.MIX conquer.mix / cache.mix via tools/ts_extract.py.
 
 License: GPL v3.
@@ -35,6 +36,7 @@ ANIMS = (
     ("TSPULSBL", "PULSBALL.SHP", (64, 64)),
     ("TSPULSF1", "PULSEFX1.SHP", (1216, 704)),
     ("TSPULSF2", "PULSEFX2.SHP", (1216, 704)),
+    ("TSEMPFX", "EMP_FX01.SHP", (160, 144)),
 )
 
 

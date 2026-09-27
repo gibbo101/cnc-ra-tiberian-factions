@@ -820,6 +820,7 @@ public:
     void Update_Spied_Power_Plants(void);
     int Adjust_Capacity(int adjust, bool inanger = false);
     fixed Power_Fraction(void) const;
+    bool Has_Working_Radar(void) const;
     fixed Tiberium_Fraction(void) const;
     void Begin_Production(void)
     {

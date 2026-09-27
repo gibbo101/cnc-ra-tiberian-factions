@@ -2475,10 +2475,11 @@ void BulletClass::Bullet_Explodes(bool forced)
     /*
     **	The EMP Cannon's pulse ball does no damage: its landing plays one of the two
     **	pulse impacts, picked at random as TS does for an EMEffect warhead (OpenTS
-    **	combat.cpp Combat_Anim).
+    **	combat.cpp Combat_Anim), and sets off the pulse.
     */
     if (*this == BULLET_TSPULSBALL) {
         new AnimClass(Random_Pick(0, 1) ? ANIM_TS_PULSEFX2 : ANIM_TS_PULSEFX1, Coord);
+        TF_EMPulse(Coord_Cell(Coord), Payback);
         return;
     }
 

@@ -622,7 +622,7 @@ void EventClass::Execute(void)
     */
     case PRIMARY: {
         BuildingClass* building = Data.Target.Whom.As_Building();
-        if (building && building->IsActive) {
+        if (building && building->IsActive && !building->Is_Immobilized()) {
             building->Toggle_Primary();
         }
     } break;
@@ -653,7 +653,8 @@ void EventClass::Execute(void)
                    Data.MegaMission.Destination.As_TARGET());
         }
         techno = Data.MegaMission.Whom.As_Techno();
-        if (techno != NULL && techno->IsActive && techno->Strength > 0 && !techno->IsInLimbo) {
+        if (techno != NULL && techno->IsActive && techno->Strength > 0 && !techno->IsInLimbo
+            && !techno->Is_Immobilized()) {
 
             /*
             **	Fetch a pointer to the object of the mission. If there is an error with
@@ -843,7 +844,7 @@ void EventClass::Execute(void)
     case IDLE:
         techno = Data.Target.Whom.As_Techno();
         if (techno != NULL && techno->IsActive && !techno->IsInLimbo && !techno->IsTethered
-            && techno->What_Am_I() != RTTI_BUILDING) {
+            && techno->What_Am_I() != RTTI_BUILDING && !techno->Is_Immobilized()) {
             /*
             **	Attack-move (CFE port): a stop/idle order ends attack-move. Command 2
             **	sends an in-progress minelayer home rather than laying at the spot.
@@ -872,7 +873,8 @@ void EventClass::Execute(void)
     */
     case SCATTER:
         techno = Data.Target.Whom.As_Techno();
-        if (techno != NULL && techno->Is_Foot() && techno->IsActive && !techno->IsInLimbo && !techno->IsTethered) {
+        if (techno != NULL && techno->Is_Foot() && techno->IsActive && !techno->IsInLimbo && !techno->IsTethered
+            && !techno->Is_Immobilized()) {
             ((FootClass*)techno)->IsScattering = true;
             techno->Scatter(0, true, false);
         }

@@ -228,7 +228,8 @@ fi
 # against a sprite at THIS size and signed off 2026-08-19. Changing these
 # dims rescales the sprite and invalidates every dialled seat -- do not
 # "correct" it to 64x64 without redoing the whole seat arc.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tshvr_stub.shp" 48 48 64
+# 96 frames: hull 0-31, rack 32-63, shadow 64-95 (scripts/ts_hover_split_shadow.py).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tshvr_stub.shp" 48 48 96
 PACK_ARGS+=("$TMPDIR/tshvr_stub.shp:TSHVR.SHP")
 
 # TS walkers (Titan + Mammoth Mk. II) -- same HD-only stub pattern. Titan gets
@@ -288,8 +289,8 @@ PACK_ARGS+=("$TMPDIR/tscarry_stub.shp:TSCARRY.SHP")
 # TS Juggernaut -- 202 shapes: 120 walk + 32 deployed at rest + 32 deployed aiming + 18 deploy ladder.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsjugg_stub.shp" 56 56 202
 PACK_ARGS+=("$TMPDIR/tsjugg_stub.shp:TSJUGG.SHP")
-# TS Limpet Drone -- 10 crawl frames, no facings (24x24 = ShapeSize). Its mine's stubs sit with the buildings below.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tslimp_stub.shp" 24 24 10
+# TS Limpet Drone -- 10 crawl frames then their 10 shadows, no facings (24x24 = ShapeSize). Its mine's stubs sit with the buildings below.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tslimp_stub.shp" 24 24 20
 PACK_ARGS+=("$TMPDIR/tslimp_stub.shp:TSLIMP.SHP")
 # Subterranean pair (Devil's Tongue / Sub APC) -- 112 shapes each: 32 driving
 # + 40 dive + 40 emerge pitch-ladder frames (docs/subterranean-design.md).
@@ -486,13 +487,16 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsionbm_stub.shp" 15 480 15
 PACK_ARGS+=("$TMPDIR/tsionbm_stub.shp:TSIONBM.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsionrng_stub.shp" 104 51 15
 PACK_ARGS+=("$TMPDIR/tsionrng_stub.shp:TSIONRNG.SHP")
-# E.M. Pulse set (scripts/ts_pack_emp.py): pulse ball 64x64, the two impacts 1216x704, / 8.
+# E.M. Pulse set (scripts/ts_pack_emp.py): pulse ball 64x64, the two impacts 1216x704, the stun
+# sparks 160x144, / 8.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tspulsbl_stub.shp" 8 8 23
 PACK_ARGS+=("$TMPDIR/tspulsbl_stub.shp:TSPULSBL.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tspulsf1_stub.shp" 152 88 21
 PACK_ARGS+=("$TMPDIR/tspulsf1_stub.shp:TSPULSF1.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tspulsf2_stub.shp" 152 88 15
 PACK_ARGS+=("$TMPDIR/tspulsf2_stub.shp:TSPULSF2.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsempfx_stub.shp" 20 18 27
+PACK_ARGS+=("$TMPDIR/tsempfx_stub.shp:TSEMPFX.SHP")
 # TS drop-pod strike set (scripts/ts_pack_pods.py): husks 192x192, DROPEXP puff
 # 400x272, PODRING entry flash 400x208, SMOKEY trail 128x120, pod bullet body
 # 192x192 — all / 8 for the classic dims the launcher sizes the HD art off.

@@ -997,6 +997,21 @@ bool TF_Is_Dropship_Delivered(UnitTypeClass const* type)
 **	stands built and powered with the cell inside its weapon's reach, or NULL. TS
 **	[EMPulseWeapon] Range=40 cells, measured on cell deltas as TS does (OpenTS suprtype.cpp).
 */
+/*
+**	Whether the house has a radar building that an E.M. Pulse has not stunned.
+*/
+bool HouseClass::Has_Working_Radar(void) const
+{
+    for (int index = 0; index < Buildings.Count(); index++) {
+        BuildingClass const* b = Buildings.Ptr(index);
+        if (b != NULL && b->House == this && !b->IsInLimbo && !b->Is_Immobilized()
+            && (TF_Building_Scan_Bit(b->Class->Type) & STRUCTF_RADAR)) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
 BuildingClass* TF_EMP_Launch_Site(HouseClass const* house, CELL cell)
 {
     enum { EMP_RANGE_CELLS = 40 };
@@ -1008,7 +1023,7 @@ BuildingClass* TF_EMP_Launch_Site(HouseClass const* house, CELL cell)
     for (int index = 0; index < Buildings.Count(); index++) {
         BuildingClass* b = Buildings.Ptr(index);
         if (b == NULL || *b != STRUCT_TSPULS || b->House != house || b->IsInLimbo || b->Strength <= 0
-            || b->BState == BSTATE_CONSTRUCTION) {
+            || b->BState == BSTATE_CONSTRUCTION || b->Is_Immobilized()) {
             continue;
         }
         CELL bc = Coord_Cell(b->Center_Coord());
@@ -1021,6 +1036,137 @@ BuildingClass* TF_EMP_Launch_Site(HouseClass const* house, CELL cell)
         }
     }
     return (best);
+}
+
+/*
+**	The E.M. Pulse landing at a cell (OpenTS empulse.cpp Create). Within Spread cells:
+**	aircraft taking off, landing or flying low crash, a Limpet Mine is destroyed, and
+**	every other building, every vehicle and ship, and every aircraft sitting on open
+**	ground is stunned for the pulse's duration. Only a cell's building is considered
+**	when it has one, so an aircraft parked on its pad is spared. A stunned vehicle stops
+**	where it is and sparks until the stun wears off; a building sparks only if it can pack
+**	up and move. Infantry are untouched. The source, if any, is spared.
+*/
+void TF_EMPulse(CELL center, TechnoClass* source)
+{
+    enum
+    {
+        EMP_SPREAD = 11,          // TS [EMPuls] Spread
+        EMP_AIRCRAFT_HEIGHT = 104 // TS one height level: an aircraft below it is not yet flying
+    };
+    int const spread_sq = EMP_SPREAD * EMP_SPREAD;
+    int crashed = 0;
+    int stunned_buildings = 0;
+    int stunned_vehicles = 0;
+    int stunned_aircraft = 0;
+
+    for (int index = Aircraft.Count() - 1; index >= 0; index--) {
+        AircraftClass* aircraft = Aircraft.Ptr(index);
+        if (aircraft != NULL && aircraft->IsActive && !aircraft->IsInLimbo && aircraft->Strength > 0
+            && aircraft->Height > 0 && aircraft->Height < EMP_AIRCRAFT_HEIGHT
+            && ::Distance(aircraft->Center_Coord(), Cell_Coord(center)) < EMP_SPREAD * CELL_LEPTON_W) {
+            int damage = aircraft->Strength;
+            aircraft->Take_Damage(damage, 0, WARHEAD_HE, source, true);
+            crashed++;
+        }
+    }
+
+    for (int y = -EMP_SPREAD; y <= EMP_SPREAD; y++) {
+        for (int x = -EMP_SPREAD; x <= EMP_SPREAD; x++) {
+            if (x * x + y * y > spread_sq) {
+                continue;
+            }
+            int cx = Cell_X(center) + x;
+            int cy = Cell_Y(center) + y;
+            if (cx < 0 || cx >= MAP_CELL_W || cy < 0 || cy >= MAP_CELL_H) {
+                continue;
+            }
+            CELL cell = XY_Cell(cx, cy);
+            if (!Map.In_Radar(cell)) {
+                continue;
+            }
+            CellClass& cellptr = Map[cell];
+
+            BuildingClass* building = cellptr.Cell_Building();
+            if (building != NULL) {
+                if (building->IsActive && !building->IsInLimbo && building->Strength > 0
+                    && Coord_Cell(building->Center_Coord()) == cell) {
+                    if (*building == STRUCT_TSDLIMP) {
+                        int damage = building->Strength;
+                        building->Take_Damage(damage, 0, WARHEAD_HE, source, true);
+                    } else {
+                        if (!building->Is_Immobilized() && building->Class->Is_Construction_Yard()) {
+                            COORDINATE coord = Coord_Add(building->Center_Coord(), XY_Coord(CELL_LEPTON_W / 4, CELL_LEPTON_H / 4));
+                            AnimClass* sparks = new AnimClass(ANIM_TS_EMPFX, coord, Random_Pick(0, 25));
+                            if (sparks != NULL) {
+                                sparks->Attach_To(building);
+                            }
+                        }
+                        building->StunDuration = TechnoClass::EMP_STUN_FRAMES;
+                        stunned_buildings++;
+                    }
+                }
+                continue;
+            }
+
+            for (ObjectClass* obj = cellptr.Cell_Occupier(); obj != NULL; obj = obj->Next) {
+                RTTIType rtti = obj->What_Am_I();
+                if (rtti == RTTI_AIRCRAFT) {
+                    AircraftClass* aircraft = (AircraftClass*)obj;
+                    if (aircraft != source && aircraft->IsActive && !aircraft->IsInLimbo && aircraft->Strength > 0
+                        && aircraft->Height == 0) {
+                        if (!aircraft->Is_Immobilized()) {
+                            AnimClass* sparks = new AnimClass(ANIM_TS_EMPFX, aircraft->Center_Coord(), Random_Pick(0, 25));
+                            if (sparks != NULL) {
+                                sparks->Attach_To(aircraft);
+                            }
+                        }
+                        aircraft->StunDuration = TechnoClass::EMP_STUN_FRAMES;
+                        stunned_aircraft++;
+                    }
+                    continue;
+                }
+                if (rtti != RTTI_UNIT && rtti != RTTI_VESSEL) {
+                    continue;
+                }
+                DriveClass* vehicle = (DriveClass*)obj;
+                if (vehicle == source || !vehicle->IsActive || vehicle->IsInLimbo || vehicle->Strength <= 0
+                    || vehicle->Is_Tunneling()) {
+                    continue;
+                }
+                if (!vehicle->Is_Immobilized()) {
+                    AnimClass* sparks = new AnimClass(ANIM_TS_EMPFX, vehicle->Center_Coord(), Random_Pick(0, 25));
+                    if (sparks != NULL) {
+                        sparks->Attach_To(vehicle);
+                    }
+                }
+                vehicle->StunDuration = TechnoClass::EMP_STUN_FRAMES;
+                vehicle->NavCom = TARGET_NONE;
+                vehicle->Path[0] = FACING_NONE;
+                vehicle->Clear_Navigation_List();
+                stunned_vehicles++;
+            }
+        }
+    }
+
+#if TF_DEV_BUILD
+    const char* up = getenv("USERPROFILE");
+    char path[512];
+    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_emp.log", up ? up : ".");
+    FILE* lf = fopen(path, "a");
+    if (lf != NULL) {
+        fprintf(lf,
+                "frame=%d PULSE cell=%d,%d stunned buildings=%d vehicles=%d aircraft=%d crashed aircraft=%d\n",
+                (int)Frame,
+                Cell_X(center),
+                Cell_Y(center),
+                stunned_buildings,
+                stunned_vehicles,
+                stunned_aircraft,
+                crashed);
+        fclose(lf);
+    }
+#endif
 }
 
 bool TF_Bay_Order(RTTIType type, int id)
@@ -2181,7 +2327,7 @@ void HouseClass::AI(void)
         // Need to add in here where we activate it when only GPS is active.
         if (Map.Is_Radar_Active()) {
             if (ActiveBScan & STRUCTF_RADAR) {
-                if (Power_Fraction() < 1 && !IsGPSActive) {
+                if ((Power_Fraction() < 1 || !Has_Working_Radar()) && !IsGPSActive) {
                     Map.Radar_Activate(0);
                 }
             } else {
@@ -2192,7 +2338,7 @@ void HouseClass::AI(void)
 
         } else {
             if (IsGPSActive || (ActiveBScan & STRUCTF_RADAR)) {
-                if (Power_Fraction() >= 1 || IsGPSActive) {
+                if ((Power_Fraction() >= 1 && Has_Working_Radar()) || IsGPSActive) {
                     Map.Radar_Activate(1);
                 }
             } else {
@@ -2241,7 +2387,7 @@ void HouseClass::AI(void)
                 // the Buildings heap in LIMBO before it is placed on the map, so without
                 // this guard the sting fired the instant you clicked the radar in the
                 // sidebar instead of when you place it (= when it comes online).
-                if (rb != NULL && !rb->IsInLimbo && rb->House == PlayerPtr
+                if (rb != NULL && !rb->IsInLimbo && rb->House == PlayerPtr && !rb->Is_Immobilized()
                     && (*rb == STRUCT_RADAR || *rb == STRUCT_TDHQ || *rb == STRUCT_TDEYE || *rb == STRUCT_TSRADR)) {
                     radar_count++;
                 }

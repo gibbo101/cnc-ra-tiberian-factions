@@ -1702,12 +1702,12 @@ void BuildingClass::AI(void)
         }
 
         if (!IsJamming) {
-            if (House->Power_Fraction() >= 1) {
+            if (House->Power_Fraction() >= 1 && !Is_Immobilized()) {
                 Map.Jam_From(Coord_Cell(Center_Coord()), Rule.GapShroudRadius, House);
                 IsJamming = true;
             }
         } else {
-            if (House->Power_Fraction() < 1) {
+            if (House->Power_Fraction() < 1 || Is_Immobilized()) {
                 IsJamming = false;
                 Map.UnJam_From(Coord_Cell(Center_Coord()), Rule.GapShroudRadius, House);
             }
@@ -2108,7 +2108,7 @@ void BuildingClass::Process_Stealth_Generators(void)
     for (int i = 0; i < Buildings.Count() && gcount < MAX_GENS; i++) {
         BuildingClass* gen = Buildings.Ptr(i);
         if (gen != NULL && gen->IsActive && !gen->IsInLimbo && *gen == STRUCT_TDSTEALTH
-            && gen->House->Power_Fraction() >= 1) {
+            && gen->House->Power_Fraction() >= 1 && !gen->Is_Immobilized()) {
             gcoord[gcount] = gen->Center_Coord();
             ghouse[gcount] = gen->House;
             gcount++;
@@ -8719,6 +8719,9 @@ bool BuildingClass::Can_Player_Move(void) const
     **	produce ACTION_MOVE (and the launcher show a move cursor) so the
     **	ground click can reach Active_Click_With and set the rally point.
     */
+    if (Is_Immobilized()) {
+        return (false);
+    }
     return Can_Have_Rally_Point()
            || (Class->Is_Construction_Yard() && (Mission == MISSION_GUARD) && Special.IsMCVDeploy);
 }

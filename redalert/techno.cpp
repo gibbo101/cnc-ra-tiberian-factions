@@ -832,6 +832,7 @@ TechnoClass::TechnoClass(RTTIType rtti, int id, HousesType house)
     RememberedNavCom = TARGET_NONE;
     CFEPatchFlags = 0;
     AttackMoveBoatClock = 0;
+    StunDuration = 0;
 #ifdef REMASTER_BUILD
     if (Session.Type == GAME_NORMAL) {
         IsOwnedByPlayer = (PlayerPtr == House);
@@ -2756,6 +2757,25 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         assert(IsActive);
 
         /*
+        **	An E.M. Pulse stun wears off: the sparks stop and a harvester goes back to work
+        **	(OpenTS techno.cpp AI).
+        */
+        if (StunDuration > 0) {
+            StunDuration--;
+            if (StunDuration == 0) {
+                for (int index = 0; index < Anims.Count(); index++) {
+                    AnimClass* anim = Anims.Ptr(index);
+                    if (anim != NULL && anim->xObject == As_Target() && *anim == ANIM_TS_EMPFX) {
+                        anim->Loops = 0;
+                    }
+                }
+                if (What_Am_I() == RTTI_UNIT && ((UnitClass*)this)->Class->IsToHarvest && Mission != MISSION_UNLOAD) {
+                    ((UnitClass*)this)->Assign_Mission(MISSION_HARVEST);
+                }
+            }
+        }
+
+        /*
         **	Attack-move (CFE Patch Redux port, GPL v3). While a unit is in
         **	attack-move it ticks here every frame: it grabs targets of opportunity
         **	along the way, snaps back to MISSION_MOVE when they die, and gives up on
@@ -3336,6 +3356,13 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         **	A falling object is too busy falling to fire.
         */
         if (IsFalling) {
+            return (FIRE_CANT);
+        }
+
+        /*
+        **	Nothing fires while an E.M. Pulse has it stunned.
+        */
+        if (Is_Immobilized()) {
             return (FIRE_CANT);
         }
 
@@ -4837,7 +4864,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
     {
         assert(IsActive);
 
-        return (House->IsPlayerControl);
+        return (House->IsPlayerControl && !Is_Immobilized());
     }
 
     /***********************************************************************************************

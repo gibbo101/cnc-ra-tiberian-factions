@@ -2284,6 +2284,10 @@ bool UnitClass::Try_To_Deploy(void)
     assert(Units.ID(this) == ID);
     assert(IsActive);
 
+    if (Is_Immobilized()) {
+        return (false);
+    }
+
     if (!Target_Legal(NavCom) && !IsRotating) {
         /*
         **	TS Limpet Drone: settles into a mine on the cell it stands on.
@@ -3081,12 +3085,23 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
     // load-bearing. The earlier draw-scale hack sheared the turret off its hull
     // because scale is applied about the ground anchor per-draw; keep scale at 1.0.)
     //
-    // Hover bob (TS-authentic): the hull gently rides up and down over its baked
-    // drop shadow. Applied to y before both hull and turret draw (turret copies y),
-    // so the rack rides with the hull.
+    // Hover bob (TS-authentic): the whole unit, shadow included, gently rides up and
+    // down. Applied to y before both hull and turret draw (turret copies y), so the
+    // rack rides with the hull. Each hover unit's shadow is its own shape block (Hover
+    // MLRS 64-95, Limpet Drone 10-19) drawn first at shadow_y. An E.M. Pulse cuts the
+    // lift: the bob stops and the hull settles 3 px onto its shadow over the stun's
+    // first 12 frames, then rises again over its last 12 (TS HoverLocomotionClass
+    // Power_Off).
+    int shadow_y = y;
     if (Class->Type == UNIT_TSHVR || Class->Type == UNIT_TSLIMP) {
         static const int _hover_bob[8] = {0, -1, -2, -2, -1, 0, 1, 1};
-        y += _hover_bob[(Frame >> 2) & 7];
+        if (Is_Immobilized()) {
+            int edge = min(EMP_STUN_FRAMES - StunDuration, StunDuration);
+            y += min(3, max(0, edge) / 4);
+        } else {
+            y += _hover_bob[(Frame >> 2) & 7];
+            shadow_y = y;
+        }
     }
 
     /*
@@ -3131,6 +3146,12 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
         */
         if (*this == UNIT_ARTY && IsInRecoilState) {
             Recoil_Adjust(PrimaryFacing.Current(), x, y);
+        }
+
+        if (*this == UNIT_TSHVR && shapenum < 32) {
+            Techno_Draw_Object(shapefile, 64 + shapenum, x, shadow_y, window, rotation, scale);
+        } else if (*this == UNIT_TSLIMP && shapenum < 10) {
+            Techno_Draw_Object(shapefile, 10 + shapenum, x, shadow_y, window, rotation, scale);
         }
 
         /*
