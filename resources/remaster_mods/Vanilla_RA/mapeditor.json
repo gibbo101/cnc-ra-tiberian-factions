@@ -1125,6 +1125,24 @@
       "graphics_source": null,
       "z_order": "default",
       "flags": []
+    },
+    {
+      "id": 146,
+      "name": "tsdweap",
+      "display_name": "Mobile War Factory",
+      "power_production": 0,
+      "power_usage": 0,
+      "storage": 0,
+      "capturable": true,
+      "width": 5,
+      "height": 3,
+      "occupy_mask": null,
+      "owner": "Germany",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": []
     }
   ],
   "units": [

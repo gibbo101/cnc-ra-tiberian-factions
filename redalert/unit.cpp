@@ -2297,9 +2297,12 @@ bool UnitClass::Try_To_Deploy(void)
         /*
         **	TS Limpet Drone: settles into a mine on the cell it stands on. TS Mobile Sensor
         **	Array: turns south-east, where its build-up starts, and settles into the sensor.
+        **	TS Mobile War Factory: turns south-west and unfolds into the war factory round
+        **	it, the vehicle's cell the plot's centre (TS DeploysInto, Deploy_Facing).
         */
-        if (*this == UNIT_TSLIMP || *this == UNIT_TSLPST) {
-            StructType into = (*this == UNIT_TSLIMP) ? STRUCT_TSDLIMP : STRUCT_TSDPSA;
+        if (*this == UNIT_TSLIMP || *this == UNIT_TSLPST || *this == UNIT_TSMWAR) {
+            StructType into = TF_Deploys_Into();
+            DirType deploy_facing = (*this == UNIT_TSMWAR) ? DIR_SW : DIR_SE;
 #if TF_DEV_BUILD
 #define TF_LIMP_TRACE(step)                                                                                 \
     do {                                                                                                     \
@@ -2318,7 +2321,7 @@ bool UnitClass::Try_To_Deploy(void)
 #endif
             TF_LIMP_TRACE("begin");
             Mark(MARK_UP);
-            CELL cell = Coord_Cell(Center_Coord());
+            CELL cell = TF_Deploy_Origin();
             if (!BuildingTypeClass::As_Reference(into).Legal_Placement(cell)) {
                 if (PlayerPtr == House) {
                     Speak(VOX_DEPLOY);
@@ -2327,9 +2330,9 @@ bool UnitClass::Try_To_Deploy(void)
                 IsDeploying = false;
                 return (false);
             }
-            if (*this == UNIT_TSLPST && PrimaryFacing.Current() != DIR_SE) {
+            if (*this != UNIT_TSLIMP && PrimaryFacing.Current() != deploy_facing) {
                 Mark(MARK_DOWN);
-                Do_Turn(DIR_SE);
+                Do_Turn(deploy_facing);
                 IsDeploying = true;
                 return (true);
             }
@@ -2338,7 +2341,7 @@ bool UnitClass::Try_To_Deploy(void)
             TF_LIMP_TRACE("mine constructed");
             if (building != NULL && building->Unlimbo(Cell_Coord(cell))) {
                 TF_LIMP_TRACE("mine unlimboed");
-                if (into == STRUCT_TSDPSA) {
+                if (into != STRUCT_TSDLIMP) {
                     Sound_Effect(VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
                 }
                 building->Revealed(House);
@@ -4745,6 +4748,7 @@ int UnitClass::Mission_Unload(void)
     case UNIT_TSMCV:    // TS MCV — deploys STRUCT_TSFACT (the TS-tree gate).
     case UNIT_TSLIMP:   // TS Limpet Drone — settles into STRUCT_TSDLIMP on its own cell.
     case UNIT_TSLPST:   // TS Mobile Sensor Array — settles into STRUCT_TSDPSA on its own cell.
+    case UNIT_TSMWAR:   // TS Mobile War Factory — unfolds into STRUCT_TSDWEAP round its cell.
         switch (Status) {
         case 0:
             Path[0] = FACING_NONE;
@@ -5451,7 +5455,7 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
         && !(In_Radio_Contact() && IsTethered
              && Contact_With_Whom() != NULL
              && Contact_With_Whom()->What_Am_I() == RTTI_BUILDING
-             && *(BuildingClass*)Contact_With_Whom() == STRUCT_TSWEAP)) {
+             && ((BuildingClass*)Contact_With_Whom())->Is_TS_War_Factory())) {
         return (MOVE_NO);
     }
 
@@ -5865,15 +5869,14 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
             /*
             **	The stance toggles anywhere the unit stands.
             */
-        } else if (*this == UNIT_TSLIMP || *this == UNIT_TSLPST) {
+        } else if (TF_Deploys_Into() != STRUCT_NONE) {
 
             /*
-            **	The Limpet Drone and the Mobile Sensor Array get the no-deploy cursor where what
-            **	they deploy into cannot sit.
+            **	The Limpet Drone, Mobile Sensor Array and Mobile War Factory get the no-deploy
+            **	cursor where what they deploy into cannot sit.
             */
-            StructType into = (*this == UNIT_TSLIMP) ? STRUCT_TSDLIMP : STRUCT_TSDPSA;
             ((ObjectClass&)(*this)).Mark(MARK_UP);
-            if (!BuildingTypeClass::As_Reference(into).Legal_Placement(Coord_Cell(Center_Coord()))) {
+            if (!BuildingTypeClass::As_Reference(TF_Deploys_Into()).Legal_Placement(TF_Deploy_Origin())) {
                 action = ACTION_NO_DEPLOY;
             }
             ((ObjectClass&)(*this)).Mark(MARK_DOWN);
@@ -8316,6 +8319,37 @@ static void TF_Tunnel_Log(UnitClass const* unit, char const* fmt, ...)
     (void)unit;
     (void)fmt;
 #endif
+}
+
+/*
+**	The building a TS vehicle deploys into (TS DeploysInto), STRUCT_NONE for the rest.
+*/
+StructType UnitClass::TF_Deploys_Into(void) const
+{
+    if (*this == UNIT_TSLIMP) {
+        return (STRUCT_TSDLIMP);
+    }
+    if (*this == UNIT_TSLPST) {
+        return (STRUCT_TSDPSA);
+    }
+    if (*this == UNIT_TSMWAR) {
+        return (STRUCT_TSDWEAP);
+    }
+    return (STRUCT_NONE);
+}
+
+/*
+**	The cell that building's plot starts at: the vehicle's own cell for the one-cell ones,
+**	and for the war factory the cell two columns west and a row north, so the vehicle's cell
+**	is the centre of its 5x3 plot, where the build-up's first frame draws the vehicle.
+*/
+CELL UnitClass::TF_Deploy_Origin(void) const
+{
+    CELL cell = Coord_Cell(Center_Coord());
+    if (*this == UNIT_TSMWAR) {
+        return (cell - MAP_CELL_W - 2);
+    }
+    return (cell);
 }
 
 /*

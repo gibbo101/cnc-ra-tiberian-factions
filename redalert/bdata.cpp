@@ -1516,6 +1516,26 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            (short const*)TsWeapList,
                                            (short const*)TsWeapOList);
 
+// The Mobile War Factory deployed (Firestorm DGWEAP): a TS war factory on TSWEAP's plot, exits
+// and seats. Never built from the sidebar; the deploy order packs it into UNIT_TSMWAR.
+static BuildingTypeClass const ClassTsDweap(STRUCT_TSDWEAP,
+                                            TXT_NONE,
+                                            "TSDWEAP",
+                                            FACING_NONE,
+                                            TSWEAP_SEAT_MOUTH,
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,
+                                            false,
+                                            false, false, false, false,
+                                            true, true, false, false, false, true,
+                                            RTTI_UNITTYPE,      // Vehicle factory.
+                                            DIR_N,
+                                            BSIZE_53,
+                                            (short const*)TsWeapExit,
+                                            (short const*)TsWeapList,
+                                            (short const*)TsWeapOList);
+
 static BuildingTypeClass const ClassTsRadr(STRUCT_TSRADR,
                                            TXT_NONE,
                                            "TSRADR",
@@ -4625,6 +4645,10 @@ void const* BuildingTypeClass::TsWeapShutter;
 void const* BuildingTypeClass::TsWeapUnderDoor;
 void const* BuildingTypeClass::TsWeapFront;
 void const* BuildingTypeClass::TsWeapFrontOpen;
+void const* BuildingTypeClass::TsDweapShutter;
+void const* BuildingTypeClass::TsDweapUnderDoor;
+void const* BuildingTypeClass::TsDweapFront;
+void const* BuildingTypeClass::TsDweapFrontOpen;
 void const* BuildingTypeClass::TsRefineryFlame;
 void const* BuildingTypeClass::TsPulseTurret;
 void const* BuildingTypeClass::TsRefineryLid;
@@ -5002,6 +5026,7 @@ long TF_Building_Scan_Bit(int btype)
     case STRUCT_AWEAP:
     case STRUCT_SWEAP:
     case STRUCT_TSWEAP:
+    case STRUCT_TSDWEAP:
         return (STRUCTF_WEAP);
 
     case STRUCT_TDAFLD:
@@ -5193,6 +5218,7 @@ void BuildingTypeClass::Init_Heap(void)
 
     new BuildingTypeClass(ClassTsPuls);        // STRUCT_TSPULS (TS EMP Pulse Cannon)
     new BuildingTypeClass(ClassTsDpsa);        // STRUCT_TSDPSA (TS Sensor Array)
+    new BuildingTypeClass(ClassTsDweap);       // STRUCT_TSDWEAP (Mobile War Factory deployed)
 
     /*
     **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so
@@ -5375,6 +5401,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 28, 3},  // GAPILE halved windows _A(4)+_B(4)+_C(7 flag) -> LCM 28
         {STRUCT_TSPROC, BSTATE_IDLE, 0, 16, 3}, // NAREFN _C deck lights (fireball + lid are event layers)
         {STRUCT_TSPROC, BSTATE_FULL, 0, 16, 3}, // customer approaching: lights keep cycling
+        {STRUCT_TSDWEAP, BSTATE_IDLE, 0, 1, 0},  // MWAR has no idle animation
         {STRUCT_TSWEAP, BSTATE_IDLE, 0, 32, 3},  // GAWEAP _A/_B (Rate 400) + _C (Rate 800) baked at 32 steps  // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8, swept fwd+back (ping-pong, packer order)
         {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)
@@ -5458,6 +5485,15 @@ void BuildingTypeClass::One_Time(void)
     TsWeapFront = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSWEAPNU", ".SHP");
     TsWeapFrontOpen = MFCD::Retrieve(fullname);
+    // The Mobile War Factory's own set, on the same stub.
+    _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPDR", ".SHP");
+    TsDweapShutter = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPUD", ".SHP");
+    TsDweapUnderDoor = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPNF", ".SHP");
+    TsDweapFront = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPNU", ".SHP");
+    TsDweapFrontOpen = MFCD::Retrieve(fullname);
     // TS refinery event layers (fireball burst, dock lid), sized to its stub.
     _makepath(fullname, NULL, NULL, (char const*)"TSPROCFR", ".SHP");
     TsRefineryFlame = MFCD::Retrieve(fullname);
@@ -5592,6 +5628,7 @@ void BuildingTypeClass::One_Time(void)
             {STRUCT_TSPROC, STRUCT_TDPROC},
             {STRUCT_TSSILO, STRUCT_TDSILO},
             {STRUCT_TSWEAP, STRUCT_TDWEAP},
+            {STRUCT_TSDWEAP, STRUCT_TDWEAP},
             {STRUCT_TSRADR, STRUCT_TDHQ},
             {STRUCT_TSHPAD, STRUCT_TDHPAD},
             {STRUCT_TSTECH, STRUCT_TDEYE},
@@ -5980,7 +6017,7 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
                                                REFRESH_EOL};
         return (_ts_proc_place);
     }
-    if (placement && Type == STRUCT_TSWEAP) {
+    if (placement && (Type == STRUCT_TSWEAP || Type == STRUCT_TSDWEAP)) {
         // The ghost follows the art: the hangar cells plus every cell the pad
         // lands on -- the whole 5x3 except the bottom-left cell (0,2), which
         // carries no concrete.

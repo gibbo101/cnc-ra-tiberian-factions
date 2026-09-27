@@ -238,6 +238,8 @@ public:
     };
     int EMPCharge;
     void EMP_Blast(void);
+    StructType TF_Deploys_Into(void) const;
+    CELL TF_Deploy_Origin(void) const;
 
     /*
     **	TF: TS FireballLauncher stream (Devil's Tongue). Frames of stream left after a

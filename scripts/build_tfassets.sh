@@ -366,6 +366,19 @@ ts_stub TSWEAP "$TMPDIR/tsweapnf_stub.shp" 168 126 64
 PACK_ARGS+=("$TMPDIR/tsweapnf_stub.shp:TSWEAPNF.SHP")
 ts_stub TSWEAP "$TMPDIR/tsweapnu_stub.shp" 168 126 64
 PACK_ARGS+=("$TMPDIR/tsweapnu_stub.shp:TSWEAPNU.SHP")
+# The deployed Mobile War Factory, on TSWEAP's stub: no idle cycle, a 12-stage shutter.
+ts_stub TSDWEAP "$TMPDIR/tsdweap_stub.shp" 168 126 2
+PACK_ARGS+=("$TMPDIR/tsdweap_stub.shp:TSDWEAP.SHP")
+ts_stub TSDWEAP "$TMPDIR/tsdweapmk_stub.shp" 168 126 19
+PACK_ARGS+=("$TMPDIR/tsdweapmk_stub.shp:TSDWEAPMAKE.SHP")
+ts_stub TSDWEAP "$TMPDIR/tsdweapdr_stub.shp" 168 126 24
+PACK_ARGS+=("$TMPDIR/tsdweapdr_stub.shp:TSDWEAPDR.SHP")
+ts_stub TSDWEAP "$TMPDIR/tsdweapud_stub.shp" 168 126 4
+PACK_ARGS+=("$TMPDIR/tsdweapud_stub.shp:TSDWEAPUD.SHP")
+ts_stub TSDWEAP "$TMPDIR/tsdweapnf_stub.shp" 168 126 2
+PACK_ARGS+=("$TMPDIR/tsdweapnf_stub.shp:TSDWEAPNF.SHP")
+ts_stub TSDWEAP "$TMPDIR/tsdweapnu_stub.shp" 168 126 2
+PACK_ARGS+=("$TMPDIR/tsdweapnu_stub.shp:TSDWEAPNU.SHP")
 # TSPILE 48x48: back to the grid-matched 2x2 plot width (the 60-overhang
 # compromise predates the tier-wide size drop, Luke 2026-08-04).
 ts_stub TSPILE "$TMPDIR/tspile_stub.shp" 48 48 2

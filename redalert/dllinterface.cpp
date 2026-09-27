@@ -2158,6 +2158,14 @@ static int TF_Self_Action_Selected(void)
             continue;
         }
         ActionType answer = object->What_Action(object);
+        /*
+        **	A deployed Mobile War Factory answers a self-click as a factory (make it primary),
+        **	so its pack-up is the deploy key's alone, and only while its bay is empty.
+        */
+        if (object->What_Am_I() == RTTI_BUILDING && *(BuildingClass*)object == STRUCT_TSDWEAP
+            && ((BuildingClass*)object)->BState != BSTATE_CONSTRUCTION && !((BuildingClass*)object)->In_Radio_Contact()) {
+            answer = ACTION_SELF;
+        }
 #if TF_DEV_BUILD
         {
             const char* up = getenv("USERPROFILE");
@@ -6508,11 +6516,14 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  own line is row 1.5), so the shut door covers it and the rising door
     **  reveals it. +192 leptons = row 2.25, past any mouth seat.
     */
-    if (shape_file_name != NULL && (strcmp(shape_file_name, "TSWEAPNF") == 0 || strcmp(shape_file_name, "TSWEAPNU") == 0)) {
+    if (shape_file_name != NULL
+        && (strcmp(shape_file_name, "TSWEAPNF") == 0 || strcmp(shape_file_name, "TSWEAPNU") == 0
+            || strcmp(shape_file_name, "TSDWEAPNF") == 0 || strcmp(shape_file_name, "TSDWEAPNU") == 0)) {
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 192)) >> 3);
     }
-    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAPDR") == 0) {
+    if (shape_file_name != NULL
+        && (strcmp(shape_file_name, "TSWEAPDR") == 0 || strcmp(shape_file_name, "TSDWEAPDR") == 0)) {
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 200)) >> 3);
     }
@@ -6520,7 +6531,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  The base (the opening's interior) is the back wall: it sorts at the
     **  plot's north edge so a vehicle seated anywhere in the bay draws over it.
     */
-    if (object->What_Am_I() == RTTI_BUILDING && strcmp(new_object.AssetName, "TSWEAP") == 0) {
+    if (object->What_Am_I() == RTTI_BUILDING
+        && (strcmp(new_object.AssetName, "TSWEAP") == 0 || strcmp(new_object.AssetName, "TSDWEAP") == 0)) {
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, (LEPTON)(short)-384)) >> 3);
     }
@@ -6578,7 +6590,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         if (object != NULL) {
             if (object->What_Am_I() == RTTI_BUILDING) {
                 char const* n = object->Class_Of().IniName;
-                interesting = (n != NULL && (strcmp(n, "TSWEAP") == 0 || strcmp(n, "TDWEAP") == 0));
+                interesting = (n != NULL
+                               && (strcmp(n, "TSWEAP") == 0 || strcmp(n, "TSDWEAP") == 0 || strcmp(n, "TDWEAP") == 0));
             } else if (object->What_Am_I() == RTTI_UNIT) {
                 interesting = true;
             }
@@ -6870,6 +6883,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             // default foundation-derived box IS the approved 57x38 on the
             // art rows. TSDROP likewise (box on the deck's 3x2).
             case STRUCT_TSWEAP:
+            case STRUCT_TSDWEAP:
                 // Ensemble bbox (2026-08-17 evening): the hand-tucked pad
                 // centres the ensemble on the 4x3 plot, so the plot-centred
                 // box hugs the art with a size dial alone -- art 510x262
@@ -10956,6 +10970,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
         } _aprons[] = {
             // (0,0): both grids sit on their building's plot origin.
             {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 1, 0}, // 4x3 pad grid from col 1 of the 5x3 plot
+            {STRUCT_TSDWEAP, SMUDGE_TSDWEAPBB, 1, 0},
             {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0},
         };
         for (int a = 0; a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {

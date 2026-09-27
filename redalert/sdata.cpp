@@ -203,6 +203,18 @@ static SmudgeTypeClass const TsProcBib(SMUDGE_TSPROCBB,
                                        false // Is this a crater smudge?
 );
 
+/*
+**	The Mobile War Factory's concrete, on the war factory's own 4x3 pad grid.
+*/
+static SmudgeTypeClass const TsDweapBib(SMUDGE_TSDWEAPBB,
+                                        "TSDWEAPBB",
+                                        TXT_BIB,
+                                        4,
+                                        3,    // Width and height of smudge (in icons), as TSWEAPBB.
+                                        true, // Is this a building bib?
+                                        false // Is this a crater smudge?
+);
+
 /***********************************************************************************************
  * SmudgeTypeClass::SmudgeTypeClass -- Constructor for smudge type objects.                    *
  *                                                                                             *
@@ -314,6 +326,7 @@ void SmudgeTypeClass::Init_Heap(void)
     new SmudgeTypeClass(Bibx3);   // SMUDGE_BIB3
     new SmudgeTypeClass(TsWeapBib); // SMUDGE_TSWEAPBB
     new SmudgeTypeClass(TsProcBib); // SMUDGE_TSPROCBB
+    new SmudgeTypeClass(TsDweapBib); // SMUDGE_TSDWEAPBB
 }
 
 /***********************************************************************************************

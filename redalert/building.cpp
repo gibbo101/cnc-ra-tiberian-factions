@@ -122,7 +122,8 @@
 
 /*
 **	The vehicle a deployed TS building packs back into on a deploy or move order: the Limpet
-**	Mine into its drone, the Sensor Array into the Mobile Sensor Array. UNIT_NONE for the rest.
+**	Mine into its drone, the Sensor Array into the Mobile Sensor Array, the deployed Mobile War
+**	Factory into its vehicle. UNIT_NONE for the rest.
 */
 static UnitType TF_Packs_Into(BuildingClass const* building)
 {
@@ -131,6 +132,9 @@ static UnitType TF_Packs_Into(BuildingClass const* building)
     }
     if (*building == STRUCT_TSDPSA) {
         return (UNIT_TSLPST);
+    }
+    if (*building == STRUCT_TSDWEAP) {
+        return (UNIT_TSMWAR);
     }
     return (UNIT_NONE);
 }
@@ -717,7 +721,7 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
         if (*this == STRUCT_WEAP || *this == STRUCT_AWEAP || *this == STRUCT_SWEAP || *this == STRUCT_AIRSTRIP
             || *this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TSDEPT || *this == STRUCT_TDWEAP
-            || *this == STRUCT_TDAFLD || *this == STRUCT_TDGAFLD || *this == STRUCT_TSWEAP)
+            || *this == STRUCT_TDAFLD || *this == STRUCT_TDGAFLD || Is_TS_War_Factory())
             return (RADIO_RUN_AWAY);
         return (RADIO_ROGER);
 
@@ -900,28 +904,34 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             Techno_Draw_Object_Virtual(Class->TsPulseTurret, tshape, x, y + TSPULS_TURRET_Y, window, DIR_N, 0x0100, "TSPULST");
         }
 
-        if (*this == STRUCT_TSWEAP && Strength > 1) {
+        if (Is_TS_War_Factory() && Strength > 1) {
+            bool mobile = (*this == STRUCT_TSDWEAP);
+            int stages = TS_Door_Stages();
             int dmg = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
             if (Mission == MISSION_UNLOAD) {
-                Techno_Draw_Object_Virtual(Class->TsWeapUnderDoor, dmg, x, y, window, DIR_N, 0x0100, "TSWEAPUD");
+                Techno_Draw_Object_Virtual(mobile ? Class->TsDweapUnderDoor : Class->TsWeapUnderDoor, dmg, x, y, window,
+                                           DIR_N, 0x0100, mobile ? "TSDWEAPUD" : "TSWEAPUD");
             }
             int stage = Door_Stage();
             if (stage < 0) {
                 stage = 0;
             }
-            if (stage > 8) {
-                stage = 8;
+            if (stage > stages - 1) {
+                stage = stages - 1;
             }
             /*
             **	The near face: the whole hangar minus the opening, at the idle
             **	phase, in front of a vehicle in the bay; the shutter over that.
             */
             if (Mission == MISSION_UNLOAD) {
-                Techno_Draw_Object_Virtual(Class->TsWeapFrontOpen, Shape_Number(), x, y, window, DIR_N, 0x0100, "TSWEAPNU");
+                Techno_Draw_Object_Virtual(mobile ? Class->TsDweapFrontOpen : Class->TsWeapFrontOpen, Shape_Number(), x, y,
+                                           window, DIR_N, 0x0100, mobile ? "TSDWEAPNU" : "TSWEAPNU");
             } else {
-                Techno_Draw_Object_Virtual(Class->TsWeapFront, Shape_Number(), x, y, window, DIR_N, 0x0100, "TSWEAPNF");
+                Techno_Draw_Object_Virtual(mobile ? Class->TsDweapFront : Class->TsWeapFront, Shape_Number(), x, y, window,
+                                           DIR_N, 0x0100, mobile ? "TSDWEAPNF" : "TSWEAPNF");
             }
-            Techno_Draw_Object_Virtual(Class->TsWeapShutter, stage + dmg * 9, x, y, window, DIR_N, 0x0100, "TSWEAPDR");
+            Techno_Draw_Object_Virtual(mobile ? Class->TsDweapShutter : Class->TsWeapShutter, stage + dmg * stages, x, y,
+                                       window, DIR_N, 0x0100, mobile ? "TSDWEAPDR" : "TSWEAPDR");
         }
 
         // WEAP2 overlay for vanilla RA WEAP / FAKEWEAP only. STRUCT_TDWEAP
@@ -3430,7 +3440,7 @@ void BuildingClass::Active_Click_With(ActionType action, CELL cell)
 
         COORDINATE coord = Map.Pixel_To_Coord(Get_Mouse_X(), Get_Mouse_Y());
         OutList.Add(EventClass(ANIM_MOVE_FLASH, PlayerPtr->Class->House, coord, 1 << PlayerPtr->Class->House));
-    } else if (action == ACTION_MOVE && TF_Packs_Into(this) != UNIT_NONE) {
+    } else if (action == ACTION_MOVE && TF_Packs_Into(this) != UNIT_NONE && !Is_TS_War_Factory()) {
         /*
         **	A deployed TS building sent somewhere packs back into its vehicle first; the
         **	destination rides along on the unload mission and the vehicle leaves for it.
@@ -3902,6 +3912,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             break;
 
         case STRUCT_TSWEAP:
+        case STRUCT_TSDWEAP:
             if (Mission == MISSION_UNLOAD) {
                 return (1); // busy with the previous vehicle
             }
@@ -5222,7 +5233,7 @@ ActionType BuildingClass::What_Action(CELL cell) const
     **	A deployed TS building takes a move order anywhere its vehicle could go: the order packs
     **	it up and the vehicle drives off, so cells its own footprint could never sit on qualify.
     */
-    if (TF_Packs_Into(this) != UNIT_NONE && (action == ACTION_NOMOVE || action == ACTION_NONE)
+    if (TF_Packs_Into(this) != UNIT_NONE && !Is_TS_War_Factory() && (action == ACTION_NOMOVE || action == ACTION_NONE)
         && Map.In_Radar(cell)) {
         action = ACTION_MOVE;
     }
@@ -5769,7 +5780,7 @@ COORDINATE BuildingClass::Sort_Y(void) const
     **  behind the building.
     */
     if ((*this == STRUCT_REFINERY || *this == STRUCT_TDPROC || *this == STRUCT_TSPROC
-         || *this == STRUCT_TSWEAP)) {
+         || Is_TS_War_Factory())) {
         return (Center_Coord());
     }
     /*
@@ -5854,7 +5865,7 @@ bool Is_TS_Weap_Exit_Cell(CELL cell)
     }
     CELL origin = XY_Cell(x, y);
     BuildingClass const* b = Map[origin].Cell_Building();
-    return (b != NULL && *b == STRUCT_TSWEAP && Coord_Cell(b->Coord) == origin);
+    return (b != NULL && b->Is_TS_War_Factory() && Coord_Cell(b->Coord) == origin);
 }
 
 bool Is_Refinery_Dock_Cell(CELL cell)
@@ -5964,7 +5975,7 @@ bool Is_Refinery_Dock_Busy(CELL cell)
  *=============================================================================================*/
 bool Is_TS_Apron_Smudge(SmudgeType smudge)
 {
-    return (smudge == SMUDGE_TSWEAPBB || smudge == SMUDGE_TSPROCBB);
+    return (smudge == SMUDGE_TSWEAPBB || smudge == SMUDGE_TSPROCBB || smudge == SMUDGE_TSDWEAPBB);
 }
 
 bool Is_TS_Apron_Cell(CELL cell)
@@ -6017,6 +6028,12 @@ bool Is_TS_Apron_Cell(CELL cell)
         {STRUCT_TSWEAP, MAP_CELL_W + 2},
         {STRUCT_TSWEAP, 2 - MAP_CELL_W},
         {STRUCT_TSWEAP, 2},
+        {STRUCT_TSDWEAP, MAP_CELL_W - 1},
+        {STRUCT_TSDWEAP, MAP_CELL_W},
+        {STRUCT_TSDWEAP, MAP_CELL_W + 1},
+        {STRUCT_TSDWEAP, MAP_CELL_W + 2},
+        {STRUCT_TSDWEAP, 2 - MAP_CELL_W},
+        {STRUCT_TSDWEAP, 2},
     };
 
     for (int i = 0; i < (int)(sizeof(_to_centre) / sizeof(_to_centre[0])); i++) {
@@ -8062,6 +8079,9 @@ void const* BuildingClass::Remap_Table(void)
 static void TF_Pack_Up(BuildingClass* mine)
 {
     CELL cell = Coord_Cell(mine->Coord);
+    if (*mine == STRUCT_TSDWEAP) {
+        cell += MAP_CELL_W + 2; // the plot's centre, where the vehicle deployed
+    }
     fixed ratio = mine->Health_Ratio();
     TARGET nav = mine->TFPackNav;
     UnitType type = TF_Packs_Into(mine);
@@ -8069,7 +8089,7 @@ static void TF_Pack_Up(BuildingClass* mine)
     if (unit == NULL) {
         return;
     }
-    DirType facing = (type == UNIT_TSLPST) ? DIR_SE : DIR_N;
+    DirType facing = (type == UNIT_TSLPST) ? DIR_SE : ((type == UNIT_TSMWAR) ? DIR_SW : DIR_N);
     mine->Limbo();
     if (unit->Unlimbo(Cell_Coord(cell), facing)) {
         unit->Strength = max(1, (int)(unit->Class->MaxStrength * ratio));
@@ -8093,10 +8113,13 @@ int BuildingClass::Mission_Unload(void)
 
     /*
     **	A deployed TS building: the deploy order runs the build-up backwards, then packs it up.
+    **	A war factory also unloads the vehicles it builds; those are in radio contact with it,
+    **	a pack-up order never is.
     */
-    if (TF_Packs_Into(this) != UNIT_NONE) {
+    if (TF_Packs_Into(this) != UNIT_NONE
+        && (!Is_TS_War_Factory() || (!In_Radio_Contact() && (Status == 0 || BState == BSTATE_CONSTRUCTION)))) {
         if (Status == 0) {
-            if (*this == STRUCT_TSDPSA) {
+            if (*this != STRUCT_TSDLIMP) {
                 Sound_Effect(VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
             }
             Do_Uncloak();
@@ -8129,7 +8152,7 @@ int BuildingClass::Mission_Unload(void)
     **  centre, hull facing the direction of travel throughout. Organic
     **  pathing's first move is a cell-recentre leg that reads as a slide.
     */
-    if (*this == STRUCT_TSWEAP) {
+    if (Is_TS_War_Factory()) {
         /*
         **	TS's factory cycle (OpenTS Do_MISSION_UNLOAD): open the shutter, keep
         **	the exit cell clear, when the shutter is fully up put the vehicle on a
@@ -8148,10 +8171,10 @@ int BuildingClass::Mission_Unload(void)
             LEAVE,
             CLOSE
         };
+        int const DOOR_STAGES = TS_Door_Stages();
         enum
         {
-            DOOR_STAGES = 9,
-            DOOR_RATE = 4 // ticks per stage: nine TS stages in the time RA's five take
+            DOOR_RATE = 4 // ticks per stage
         };
         UnitClass* unit;
         switch (Status) {

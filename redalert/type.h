@@ -944,6 +944,10 @@ public:
     static void const* TsWeapUnderDoor;
     static void const* TsWeapFront;
     static void const* TsWeapFrontOpen;
+    static void const* TsDweapShutter; // the Mobile War Factory's TSDWEAPDR/UD/NF/NU layers
+    static void const* TsDweapUnderDoor;
+    static void const* TsDweapFront;
+    static void const* TsDweapFrontOpen;
     static void const* TsRefineryFlame;
     static void const* TsPulseTurret; // TS EMP cannon PULSCAN layer (TSPULST.SHP stub, 32 facings)
     static void const* TsRefineryLid;

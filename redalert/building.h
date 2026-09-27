@@ -433,6 +433,19 @@ public:
     **	TF: rally points (ported from CFE Patch Redux, GPL v3).
     */
     bool Can_Have_Rally_Point(void) const;
+
+    /*
+    **	The TS war factories (the War Factory and the deployed Mobile War Factory) share the bay:
+    **	plot, exits, seats and unload cycle. Only the shutter's stage count differs.
+    */
+    bool Is_TS_War_Factory(void) const
+    {
+        return (*this == STRUCT_TSWEAP || *this == STRUCT_TSDWEAP);
+    }
+    int TS_Door_Stages(void) const
+    {
+        return (*this == STRUCT_TSDWEAP) ? 12 : 9;
+    }
     bool Rally_Unit(TechnoClass& unit);
     TARGET Target_For_Rally_Point(const SpeedType speed = SPEED_TRACK) const;
     virtual void Set_Unselected_By_Player(HouseClass* player = NULL);

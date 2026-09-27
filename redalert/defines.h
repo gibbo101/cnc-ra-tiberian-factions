@@ -1660,6 +1660,7 @@ typedef enum StructType : short
 
     STRUCT_TSPULS, // TS EMP Pulse Cannon "TSPULS" (NAPULS, 2x2, snow-theatre art). Shapes 0-60 = the cannon head's 61-frame rotation on the dome (NAPULS_A), 61-121 = damaged; Shape_Number picks the frame from PrimaryFacing. Superweapon host for SPC_TS_EMP (docs/emp-cannon-design.md).
     STRUCT_TSDPSA, // TS Sensor Array "TSDPSA" ([GADPSA], 1x1): the Mobile Sensor Array deployed. Its owner sees cloaked and buried enemies within TF_SENSOR_RADIUS_CELLS (TF_Is_Sensed); the deploy order packs it back into UNIT_TSLPST. Art = GTDPSA + GTDPSA_A beacon, GTDPSAMK build-up (scripts/ts_pack_sensor.py).
+    STRUCT_TSDWEAP, // TS Mobile War Factory deployed "TSDWEAP" (Firestorm DGWEAP, art MWAR): a TS war factory on TSWEAP's 5x3 plot and geometry with a 12-stage shutter (Is_TS_War_Factory); the deploy order packs it back into UNIT_TSMWAR. Art: ts_pack_tree.py SIZEPASS on TSWEAP's affine.
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
 
@@ -1681,7 +1682,7 @@ typedef enum StructType : short
     **	Second range of BuildingTypeClass::Is_Tiberian_Era.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TSDPSA
+    STRUCT_TS_TREE_LAST = STRUCT_TSDWEAP
 } StructType;
 
 /*
@@ -2915,6 +2916,7 @@ typedef enum SmudgeType : char
     */
     SMUDGE_TSWEAPBB,
     SMUDGE_TSPROCBB,
+    SMUDGE_TSDWEAPBB,
 
     SMUDGE_COUNT,
     SMUDGE_FIRST = 0

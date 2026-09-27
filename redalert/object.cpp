@@ -2418,7 +2418,7 @@ BuildingClass* ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool legal, Hous
         **	constructs, the TS tree gates itself through Prerequisite=TSFACT.
         */
         if (RTTI != RTTI_BUILDINGTYPE) {
-            bool const ts_factory = (*building == STRUCT_TSWEAP || *building == STRUCT_TSPILE
+            bool const ts_factory = (building->Is_TS_War_Factory() || *building == STRUCT_TSPILE
                                      || *building == STRUCT_TSHPAD || *building == STRUCT_TSDROP);
             if (ts_factory != TF_Is_TS_Tree_Type((TechnoTypeClass const*)this)) {
                 continue;

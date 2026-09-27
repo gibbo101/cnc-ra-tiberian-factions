@@ -1238,13 +1238,19 @@ bool TF_Ghost_At_Cap(HouseClass const* house)
 }
 
 /*
-**	A house fields one Mobile War Factory at a time (FS BuildLimit=1).
+**	A house fields one Mobile War Factory at a time (FS BuildLimit=1), deployed or not.
 */
 bool TF_Mwar_At_Cap(HouseClass const* house)
 {
     for (int index = 0; index < Units.Count(); index++) {
         UnitClass const* unit = Units.Ptr(index);
         if (unit != NULL && unit->IsActive && unit->House == house && *unit == UNIT_TSMWAR) {
+            return (true);
+        }
+    }
+    for (int index = 0; index < Buildings.Count(); index++) {
+        BuildingClass const* building = Buildings.Ptr(index);
+        if (building != NULL && building->IsActive && building->House == house && *building == STRUCT_TSDWEAP) {
             return (true);
         }
     }
@@ -1670,6 +1676,12 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         **	works: a captured tech center satisfies its own faction's token.
         */
         if (t == STRUCT_POWER && Has_Building_Active(STRUCT_ADVANCED_POWER))
+            continue;
+        /*
+        **	A deployed Mobile War Factory is a war factory for every prerequisite (Firestorm
+        **	[General] PrerequisiteFactory / PrerequisiteGDIFactory list DGWEAP beside GAWEAP).
+        */
+        if (t == STRUCT_TSWEAP && Has_Building_Active(STRUCT_TSDWEAP))
             continue;
         /*
         **	The vanilla 'fact' token ([POWR]'s Prerequisite=fact). Post-split a house owns
