@@ -1,18 +1,28 @@
-## RESUME HERE: 2026-09-27
+## RESUME HERE: 2026-09-27 (evening)
 
-`main` is 3 commits ahead of origin, NOT pushed (all verified in play): the construction-options
-fix (8bad2c61), TS Light Infantry and Disc Throwers in drop pods (be030e86), the Dropship Bay
-build-up upscale (fb166223). Push when Luke says.
+**First thing: remind Luke to test the hover settle** (he asked). Fire E.M. Pulse at a Hover
+MLRS and a Limpet Drone: in normal hover the whole unit, shadow included, bobs smoothly as
+before; stunned, the bob stops and the hull settles 3 px onto a still shadow, lifting back at
+the end of the 30 s. Then stage C gets his sign-off.
+
+`main` is 7 commits ahead of origin, NOT pushed (all verified in play): the Dropship Bay pad at
+twice the detail and its damaged-pad upscale (03164522, 4ca490b4), the construction-options fix
+(8bad2c61), TS Light Infantry and Disc Throwers in drop pods (be030e86), the bay build-up upscale
+(fb69b266), and two docs commits. Push when Luke says.
 
 Next session, in order:
-1. **EMP arc** (branch `emp-cannon`, worktree `../tf-subterranean-worktree`): PLSECAN2 fire sound,
-   then stage C with Luke present. Resume from `docs/emp-cannon-design.md` there.
+1. **EMP arc** (branch `emp-cannon` @ `aa2cccf2`, pushed; worktree `../tf-subterranean-worktree`):
+   the fire sound and stage C (the pulse and stun) are built; everything but the hover settle is
+   verified in play. Luke's ruling: keep TS's rules (no power cut, construction and production
+   carry on, only conyards spark, pad-parked aircraft spared). Next is stage D, the diggers:
+   OpenTS makes a stunned underground unit surface at the nearest ground, destroyed only if there
+   is none; ask Luke before porting it. Resume from `docs/emp-cannon-design.md` there.
 2. **Bugs on main** (`docs/known-issues.md`): medics looping on hurt Jumpjet Infantry; the
    Upgrade Center's missing RA slab.
 
 Parked until polish: the sprite upscale (branch `upscale-spike`, worktree
 `../tf-upscale-worktree`; `docs/sprite-upscale-spike.md` and `docs/sprite-upscale-rules.md`
-there). The desktop prefix holds the EMP build (DLL `c06c3061`) with the shipped art.
+there). The desktop prefix holds the EMP stage C build (DLL `0e9d35fe`) with the shipped art.
 
 ## RESUME HERE: play test 2026-09-17 (committed on main @ 4009e766, pushed)
 
