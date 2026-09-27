@@ -24,6 +24,29 @@ Parked until polish: the sprite upscale (branch `upscale-spike`, worktree
 `../tf-upscale-worktree`; `docs/sprite-upscale-spike.md` and `docs/sprite-upscale-rules.md`
 there). The desktop prefix holds the EMP stage C build (DLL `0e9d35fe`) with the shipped art.
 
+## TS chrono arrival at skirmish start (Luke's idea, 2026-09-27, after the GDI roster)
+
+Lore: a Chronosphere accident rips the TS faction back through time. So a TS player's opening
+units (MCV + escort, scenario.cpp's TS start roster) are held back at match start while a chrono
+vortex opens on their start position; EVA "Establishing battlefield control, standby"; the units
+come through one by one from the vortex centre, each with a flash, and fan out; the vortex closes;
+EVA "Battlefield control established" (TS `00-I200`, OpenTS vox.cpp VOX_CONTROL_ESTABLISHED).
+- **The vortex:** RA Aftermath's chronal vortex is launcher-drawn and the DLL can place it
+  (`launcher-render-contracts.md` 10: `VortexActive/X/Y` in `Get_Dynamic_Map_State`; draws a
+  ~350 px whirlpool whatever Width/Height say, anchored at the coordinate's top-left). One slot
+  per map, and the real `ChronalVortex` owns it when active: stagger two TS players' arrivals.
+- **Shroud:** gate `VortexActive` per player. `Get_Dynamic_Map_State` receives `player_id`
+  (ignored today); send the vortex only to players who have the start cell revealed. Check a
+  LAN game asks per player.
+- **The "standby" line:** plays at the start of TS GDI mission 1 (Luke) but is not named in
+  OpenTS's vox table. GDI1A.MAP's opening trigger fires action 19 with 174 and action 41 with
+  38/252; neither maps cleanly yet. Find it by ear from extracted SPEECH01.MIX lines, or
+  transcribe them (Whisper would install into tools/upscale/.venv).
+- **Fairness:** keep the arrival to about 5 s; AI TS players arrive the same way and must not
+  act before their units exist.
+- **Fallback look:** the RA2 Chronosphere warp per unit (RA2 art pipeline from the
+  Apocalypse/Prism work).
+
 ## Range rings for defences (Luke's idea, 2026-09-27, future feature, after TS GDI)
 
 Show a defence's coverage as a ring: round a selected defence, and following the cursor while
