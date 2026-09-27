@@ -1045,7 +1045,9 @@ BuildingClass* TF_EMP_Launch_Site(HouseClass const* house, CELL cell)
 **	ground is stunned for the pulse's duration. Only a cell's building is considered
 **	when it has one, so an aircraft parked on its pad is spared. A stunned vehicle stops
 **	where it is and sparks until the stun wears off; a building sparks only if it can pack
-**	up and move. Infantry are untouched. The source, if any, is spared.
+**	up and move. A vehicle digging underground is stunned too: it makes for the nearest
+**	ground it can surface on, is destroyed if there is none, and sparks once it surfaces.
+**	Infantry are untouched. The source, if any, is spared.
 */
 void TF_EMPulse(CELL center, TechnoClass* source)
 {
@@ -1059,6 +1061,7 @@ void TF_EMPulse(CELL center, TechnoClass* source)
     int stunned_buildings = 0;
     int stunned_vehicles = 0;
     int stunned_aircraft = 0;
+    int stunned_underground = 0;
 
     for (int index = Aircraft.Count() - 1; index >= 0; index--) {
         AircraftClass* aircraft = Aircraft.Ptr(index);
@@ -1144,8 +1147,27 @@ void TF_EMPulse(CELL center, TechnoClass* source)
                 vehicle->NavCom = TARGET_NONE;
                 vehicle->Path[0] = FACING_NONE;
                 vehicle->Clear_Navigation_List();
+                if (rtti == RTTI_UNIT && ((UnitClass*)vehicle)->Is_In_Tunnel_Cycle()) {
+                    ((UnitClass*)vehicle)->Tunnel_Stop();
+                }
                 stunned_vehicles++;
             }
+        }
+    }
+
+    for (int index = Units.Count() - 1; index >= 0; index--) {
+        UnitClass* unit = Units.Ptr(index);
+        if (unit == NULL || unit == source || !unit->IsActive || unit->IsInLimbo || unit->Strength <= 0
+            || !unit->Is_Tunneling()) {
+            continue;
+        }
+        CELL cell = Coord_Cell(unit->Coord);
+        int dx = Cell_X(cell) - Cell_X(center);
+        int dy = Cell_Y(cell) - Cell_Y(center);
+        if (dx * dx + dy * dy < spread_sq) {
+            unit->StunDuration = TechnoClass::EMP_STUN_FRAMES;
+            unit->Tunnel_Stop();
+            stunned_underground++;
         }
     }
 
@@ -1156,12 +1178,13 @@ void TF_EMPulse(CELL center, TechnoClass* source)
     FILE* lf = fopen(path, "a");
     if (lf != NULL) {
         fprintf(lf,
-                "frame=%d PULSE cell=%d,%d stunned buildings=%d vehicles=%d aircraft=%d crashed aircraft=%d\n",
+                "frame=%d PULSE cell=%d,%d stunned buildings=%d vehicles=%d underground=%d aircraft=%d crashed aircraft=%d\n",
                 (int)Frame,
                 Cell_X(center),
                 Cell_Y(center),
                 stunned_buildings,
                 stunned_vehicles,
+                stunned_underground,
                 stunned_aircraft,
                 crashed);
         fclose(lf);

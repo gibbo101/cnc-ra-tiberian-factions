@@ -7526,6 +7526,9 @@ void UnitClass::Assign_Destination(TARGET target)
             }
         } else if (Is_Target_Cell(target)) {
             CELL cell = As_Cell(target);
+            if (Is_In_Tunnel_Cycle() && Is_Immobilized()) {
+                return;
+            }
             if (TunnelState == TUNNEL_TURNING || TunnelState == TUNNEL_DIGGING_IN
                 || TunnelState == TUNNEL_TUNNELING) {
                 Tunnel_To(Cell_Coord(cell));
@@ -8365,9 +8368,12 @@ void UnitClass::Tunnel_To(COORDINATE dest)
 **	A stop order. What it costs depends on how far the dig has gone (TS Stop_Moving):
 **	not yet committed = forget it, mid-ladder = level back out, underground = make for
 **	the nearest ground it can surface on, and with no such ground it stays buried for good.
+**	A vehicle underground within a cell's diagonal of its destination carries on to it.
 */
 void UnitClass::Tunnel_Stop(void)
 {
+    static const int CELL_LEPTON_DIAG = 362;
+
     TF_Tunnel_Log(this, "STOP");
     switch (TunnelState) {
     case TUNNEL_TURNING:
@@ -8381,6 +8387,9 @@ void UnitClass::Tunnel_Stop(void)
         break;
 
     case TUNNEL_TUNNELING: {
+        if (TunnelDest != 0 && ::Distance(Coord, TunnelDest) <= CELL_LEPTON_DIAG) {
+            break;
+        }
         CELL cell = Find_Emerge_Cell(Coord_Cell(Coord));
         if (cell == -1) {
             Tunnel_Explode();
@@ -8410,6 +8419,12 @@ void UnitClass::Tunnel_Begin_Emerge(void)
     Mark(MARK_DOWN);
     Sound_Effect(VOC_TS_SUBDRIL1, Coord);
     new AnimClass(ANIM_TS_DIG, Coord);
+    if (Is_Immobilized()) {
+        AnimClass* sparks = new AnimClass(ANIM_TS_EMPFX, Center_Coord(), Random_Pick(0, 25));
+        if (sparks != NULL) {
+            sparks->Attach_To(this);
+        }
+    }
     TF_Tunnel_Log(this, "EMERGE-BEGIN");
 }
 
