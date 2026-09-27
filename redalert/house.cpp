@@ -11812,9 +11812,11 @@ int HouseClass::AI_Unit(void)
             // automatically. UNIT_TDHARV must stay excluded or it gets lumped in with
             // combat picks and the AI spams harvesters, burning income. Vanilla only
             // excluded UNIT_HARVESTER.
-            // The Mobile EM-Pulse is excluded as well: the AI has no logic to discharge it.
+            // The Mobile EM-Pulse and Mobile Sensor Array are excluded as well: the AI has no
+            // logic to discharge the one or deploy the other.
             if (Can_Build(utype, ActLike) && utype->Type != UNIT_HARVESTER
                 && utype->Type != UNIT_TDHARV && utype->Type != UNIT_TSHARV && utype->Type != UNIT_TSMEMP
+                && utype->Type != UNIT_TSLPST
                 && !TF_Delivery_Order_Refused(this, RTTI_UNITTYPE, utype->Type)) {
                 /*
                 **	The dropship bay's deliveries weigh as combat units: the Mech Division

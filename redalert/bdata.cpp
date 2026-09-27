@@ -1997,6 +1997,36 @@ static BuildingTypeClass const ClassTsDlimp(STRUCT_TSDLIMP,
                                             (short const*)List1,
                                             (short const*)NULL);
 
+// TS Sensor Array (STRUCT_TSDPSA), TS [GADPSA]: the Mobile Sensor Array deployed. Never built
+// from the sidebar (the vehicle deploys into it, and the deploy order packs it back into
+// UNIT_TSLPST). Its owner sees cloaked and buried enemies in range (TF_Is_Sensed).
+// Art = GTDPSA body + GTDPSA_A beacon (5 healthy + 5 damaged), GTDPSAMK build-up.
+static BuildingTypeClass const ClassTsDpsa(STRUCT_TSDPSA,
+                                           TXT_NONE,
+                                           "TSDPSA",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_NORMAL,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           false,               // always use the given name
+                                           false,               // IsWall
+                                           false,               // simple damage imagery
+                                           false,               // invisible to radar
+                                           true,                // selectable
+                                           true,                // legal target
+                                           false,               // insignificant
+                                           false,               // theater specific
+                                           false,               // rotating turret
+                                           true,                // remappable
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
 /*
 **  TDHQ (Communications Center / Radar) — 2×2 radar dome, ARMOR_WOOD,
 **    capturable, crewed. Wholesale port of TD's STRUCT_RADAR per
@@ -5162,6 +5192,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsDlimp);       // STRUCT_TSDLIMP (TS Limpet Mine)
 
     new BuildingTypeClass(ClassTsPuls);        // STRUCT_TSPULS (TS EMP Pulse Cannon)
+    new BuildingTypeClass(ClassTsDpsa);        // STRUCT_TSDPSA (TS Sensor Array)
 
     /*
     **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so
@@ -5348,6 +5379,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)
         {STRUCT_TSDLIMP, BSTATE_IDLE, 0, 10, 3}, // DLIMP_A blink halved (10 healthy + 10 damaged)
+        {STRUCT_TSDPSA, BSTATE_IDLE, 0, 5, 4},   // GTDPSA_A beacon blink (5 healthy + 5 damaged, unlit)
         {STRUCT_TSTECH, BSTATE_IDLE, 0, 8, 3},   // GATECH _A halved (8 healthy + 8 damage-pocked dome)
         {STRUCT_TSDEPT, BSTATE_IDLE, 0, 35, 3},  // GADEPT _A halved(5)+_B whole(7, odd=no damaged half) -> LCM 35
         {STRUCT_TSPLUG, BSTATE_IDLE, 0, 40, 3},  // GAPLUG windows _A(10)+_B(8)+_C(4) -> LCM 40

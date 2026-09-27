@@ -812,6 +812,8 @@ int Sound_Effect(VocType voc, fixed volume, int variation, signed short pan_valu
     "TDNSTRUC1",  // VOX_TD_NOD_STRUCTURE
     "TDENMYUNIT", // VOX_TD_ENEMY_UNIT
     "TSEMPREADY", // VOX_TS_EMP_READY      (TS "E.M. pulse cannon ready")
+    "TSCLOAKDET", // VOX_TS_CLOAKED_DETECTED (TS "cloaked unit detected")
+    "TSSUBDET",   // VOX_TS_SUBTERRANEAN_DETECTED (TS "subterranean unit detected")
 };
 
 static VoxType CurrentVoice = VOX_NONE;
@@ -931,6 +933,8 @@ void Init_SpeechTS(void)
     SpeechTS[VOX_STRUCTURE_SOLD]     = "TSSTRUSLD1";
     SpeechTS[VOX_UNIT_REPAIRED]      = "TSUNITREPD";
     SpeechTS[VOX_TS_EMP_READY]       = "TSEMPREADY";
+    SpeechTS[VOX_TS_CLOAKED_DETECTED] = "TSCLOAKDET";
+    SpeechTS[VOX_TS_SUBTERRANEAN_DETECTED] = "TSSUBDET";
 }
 
 char const* SpeechRAO[VOX_COUNT] = {NULL};

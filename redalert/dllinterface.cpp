@@ -256,6 +256,7 @@ public:
     static BuildingClass* Get_Pending_Placement_Object(uint64 player_id, int buildable_type, int buildable_id);
     static bool Get_Placement_State(uint64 player_id, unsigned char* buffer_in, unsigned int buffer_size);
     static void Convert_Type(const ObjectClass* object, CNCObjectStruct& object_out);
+    static void Add_Sensor_Ghosts(ObjectClass const* object, unsigned int buffer_size);
     static void DLL_Draw_Intercept(int shape_number,
                                    int x,
                                    int y,
@@ -2371,6 +2372,12 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 
     // The deploy key, read straight from the keyboard (see TF_Deploy_Key_Tick).
     TF_Deploy_Key_Tick();
+
+    // Sensor Array sightings: "cloaked unit detected" / "subterranean unit detected".
+    TF_Sensor_Tick();
+
+    // Dev: the Sensor Array test's Sub APC digging under the player's base.
+    TF_Dev_Tunneller_Tick();
 
 
     // Flush the queued difficulty announcements once the match is actually
@@ -6875,6 +6882,12 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             case STRUCT_TSPILE:
                 dimy = 38; // 2x2 box, approved 2026-08-13
                 break;
+            case STRUCT_TSDPSA:
+                // The box hugs the base's sides and body (11 classic px above the cell centre
+                // to 7 below); the thin mast rises out of its top.
+                dimx = 35;
+                dimy = 36;
+                break;
             case STRUCT_TSPROC:
                 // Height approved 2026-08-13 round 1: the plot-centred box
                 // whose south edge sits right. Taller boxes only grow both
@@ -7228,6 +7241,53 @@ void DLLExportClass::DLL_Draw_Line_Intercept(int x, int y, int x1, int y1, unsig
  *
  * History: 1/29/2019 11:37AM - ST
  **************************************************************************************************/
+/*
+**	Sensor Array ghosts. A cloaked or buried object inside an enemy house's Sensor Array
+**	(TF_Is_Sensed) is shown to that house see-through: the object's draw entries are exported
+**	once more, uncloaked, translucent and visible to the sensing house alone. The copies keep the
+**	object's owner, so they wear its colour and show as its dot on the radar; they cannot be
+**	selected, and carry IDs clear of the real objects'. The object itself stays cloaked, and
+**	every other house sees it exactly as before.
+*/
+void DLLExportClass::Add_Sensor_Ghosts(ObjectClass const* object, unsigned int buffer_size)
+{
+    enum
+    {
+        GHOST_ID_OFFSET = 7000 // clear of the Disruptor disc's 5000
+    };
+    if (CurrentDrawCount <= 0 || !object->Is_Techno()) {
+        return;
+    }
+    TechnoClass const* techno = (TechnoClass const*)object;
+    if ((techno->Cloak != CLOAKED && !techno->Is_Tunneling()) || techno->Techno_Type_Class()->IsInvisible) {
+        return;
+    }
+    int const drawn = CurrentDrawCount;
+    for (int h = 0; h < Houses.Count(); h++) {
+        HouseClass const* house = Houses.Ptr(h);
+        if (house == NULL || !house->IsActive || techno->House->Is_Ally(house)
+            || !TF_Is_Sensed(house, techno->Center_Coord())) {
+            continue;
+        }
+        unsigned int memory_needed = sizeof(CNCObjectListStruct);
+        memory_needed += (TotalObjectCount + CurrentDrawCount + drawn + 10) * sizeof(CNCObjectStruct);
+        if (memory_needed >= buffer_size) {
+            return;
+        }
+        for (int i = 0; i < drawn; i++) {
+            CNCObjectStruct& ghost = ObjectList->Objects[TotalObjectCount + CurrentDrawCount];
+            memcpy(&ghost, &ObjectList->Objects[TotalObjectCount + i], sizeof(CNCObjectStruct));
+            ghost.VisibleFlags = 1U << house->Class->House;
+            ghost.IsSelectable = false;
+            ghost.IsSelectedMask = 0U;
+            ghost.ID += GHOST_ID_OFFSET;
+            ghost.Cloak = UNCLOAKED;
+            ghost.DrawFlags |= SHAPE_FADING;
+            CurrentDrawCount++;
+        }
+    }
+}
+
 bool DLLExportClass::Get_Layer_State(uint64 player_id, unsigned char* buffer_in, unsigned int buffer_size)
 {
     player_id;
@@ -7381,6 +7441,8 @@ bool DLLExportClass::Get_Layer_State(uint64 player_id, unsigned char* buffer_in,
                             }
                         }
                     }
+
+                    Add_Sensor_Ghosts(object, buffer_size);
 
                     TotalObjectCount += CurrentDrawCount;
                 }
@@ -10579,6 +10641,26 @@ bool DLLExportClass::Get_Player_Info_State(uint64 player_id, unsigned char* buff
         int index = 0;
         for (int y = top; y <= bottom; ++y) {
             for (int x = left; x <= right; ++x, ++index) {
+                /*
+                **	A cloaked enemy the player's Sensor Array shows (TF_Is_Sensed) is drawn as a
+                **	ghost the launcher does not treat as a target, so the cell carries the action
+                **	against that enemy instead of the action against the ground.
+                */
+                ObjectClass* sensed = NULL;
+                for (ObjectClass* o = Map[XY_Cell(x, y)].Cell_Occupier(); o != NULL; o = o->Next) {
+                    if (o->Is_Techno() && ((TechnoClass*)o)->Cloak == CLOAKED && !((TechnoClass*)o)->House->Is_Ally(PlayerPtr)
+                        && !((TechnoClass*)o)->Is_Cloaked(PlayerPtr)) {
+                        sensed = o;
+                        break;
+                    }
+                }
+                if (sensed != NULL) {
+                    Convert_Action_Type(action_object->What_Action(sensed),
+                                        (CurrentObject.Count() == 1) ? action_object : NULL,
+                                        sensed->As_Target(),
+                                        player_info->ActionWithSelected[index]);
+                    continue;
+                }
                 Convert_Action_Type(action_object->What_Action(XY_Cell(x, y)),
                                     (CurrentObject.Count() == 1) ? action_object : NULL,
                                     As_Target(XY_Cell(x, y)),

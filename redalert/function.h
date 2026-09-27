@@ -147,6 +147,10 @@ extern int TF_SonicThrobAmp;               // sonic band throb amplitude, percen
 extern int TF_SonicThrobPeriod;            // sonic band throb period in stages (fourth integer)
 extern void TF_Sonic_Cloak_Mode_Refresh(void);
 extern int TF_Railgun_Coil(bool small, int sx, int sy, int dx, int dy, int dist);
+extern void TF_Sensor_Tick(void); // announces newly sensed cloaked/buried enemies (building.cpp)
+extern bool TF_Is_Sensed(HouseClass const* house, COORDINATE coord); // inside a friendly Sensor Array's range (building.cpp)
+extern void TF_Dev_Tunneller(UnitClass* unit, CELL a, CELL b); // dev: a Sub APC digging to and fro (scenario.cpp)
+extern void TF_Dev_Tunneller_Tick(void);
 extern bool TF_Dev_Cheats(void); // TF dev-cheats runtime gate (see defines.h TF_DEV_BUILD)
 extern bool TF_Dev_Reveal(void); // full-map reveal on its own (tf_dev_reveal.flag) even when the other cheats are off
 extern long TF_Building_Scan_Bit(int btype); // building Type -> its BScan/ActiveBScan/OldBScan bit

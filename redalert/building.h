@@ -299,10 +299,10 @@ public:
     virtual void Assign_Destination(TARGET target);
 
     /*
-    **	A Limpet Mine given a move order packs back into its drone and the drone leaves for
-    **	this cell. No other building keeps a destination.
+    **	A deployed TS building (Limpet Mine, Sensor Array) given a move order packs back into
+    **	its vehicle and the vehicle leaves for this cell. No other building keeps a destination.
     */
-    TARGET TFLimpetNav;
+    TARGET TFPackNav;
     virtual bool Can_Demolish(void) const;
     virtual bool Can_Demolish_Unit(void) const;
     virtual bool Can_Capture(void) const;

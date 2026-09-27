@@ -6974,6 +6974,20 @@
 			<BuildIcon>BuildIcon_TS_LimpetDrone</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSLPST" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSLPST</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSLPST_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_SensorArray</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSDPSA" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSDPSA</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSDPSA_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_SensorArray</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END hand-written TS-tree base cameo entries -->
 
 	<ObjectTypeClass Name="RA_TSTURB" Classification="CNCBuildableObject" CanInstantiate="False">
@@ -11375,6 +11389,20 @@
 			<ObjectNameTextID>TEXT_UNIT_TSMEMP</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_UNIT_TSMEMP_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TSMEMP_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSLPST_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSLPST</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSLPST_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_SensorArray</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSLPST_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSLPST</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSLPST_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSLPST_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

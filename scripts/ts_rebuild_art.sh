@@ -37,7 +37,8 @@ TEMPERAT="GTCNST.SHP GTCNST_A.SHP GTCNST_B.SHP GTCNST_C.SHP
           GTWEAP.SHP GTWEAP_A.SHP GTWEAP_B.SHP GTWEAP_C.SHP GTWEAPBB.SHP
           GTWEAP_D.SHP GTWEAP_1.SHP
           NTREFN.SHP NTREFN_A.SHP NTREFN_B.SHP NTREFN_C.SHP NTREFNBB.SHP
-          GTPLUG.SHP GTPLUG_A.SHP GTPLUG_B.SHP GTPLUG_C.SHP GTPLUG_D.SHP GTPLUG_E.SHP GTPLUG_F.SHP"
+          GTPLUG.SHP GTPLUG_A.SHP GTPLUG_B.SHP GTPLUG_C.SHP GTPLUG_D.SHP GTPLUG_E.SHP GTPLUG_F.SHP
+          GTDPSA.SHP GTDPSA_A.SHP GTDPSAMK.SHP"
 
 ISOTEMP="GTCNSTMK.SHP GTDEPTMK.SHP GTHPADMK.SHP GTPILEMK.SHP GTPOWRMK.SHP
          GTRADRMK.SHP GTSILOMK.SHP GTTECHMK.SHP GTWEAPMK.SHP NTREFNMK.SHP
@@ -53,7 +54,7 @@ CONQUER="BRRKICON.SHP HELIICON.SHP RADRICON.SHP TECHICON.SHP WEAPICON.SHP TURBIC
 # CONQUER. SIDEC01 is GDI, SIDEC02 Nod; all three take the GDI variant, the
 # refinery included — its cameo differs between sides even though the tree
 # builds the structure itself from Nod's NTREFN art.
-SIDEC01="FIXICON.SHP REFICON.SHP SILOICON.SHP MCVICON.SHP HARVICON.SHP"
+SIDEC01="FIXICON.SHP REFICON.SHP SILOICON.SHP MCVICON.SHP HARVICON.SHP LPSTICON.SHP"
 
 echo "== extracting =="
 python3 "$EXTRACT" "$TIBSUN" CACHE.MIX    extract "$RAW" UNITTEM.PAL CAMEO.PAL ANIM.PAL >/dev/null
@@ -85,6 +86,14 @@ python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" HUNTER2.AUD >/dev/null
 # cameo, and the cannon's report.
 python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" PULSBALL.SHP PULSEFX1.SHP PULSEFX2.SHP PULSICON.SHP EMP_FX01.SHP >/dev/null
 python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" PLSECAN2.AUD >/dev/null
+# Mobile Sensor Array [LPST] (ts_pack_sensor.py): the vehicle voxel; its deployed building
+# GTDPSA, active anim and build-up ride in $TEMPERAT, its cameo in $SIDEC01.
+python3 "$EXTRACT" "$TIBSUN" LOCAL.MIX    extract "$RAW" LPST.VXL LPST.HVA >/dev/null
+# Mobile EM-Pulse [MOBILEMP] (ts_pack_memp.py) is Firestorm: the voxel sits at the top of
+# expand01.mix, its blast anim and cameo in expand01's ECACHE01.MIX.
+EXPAND01="$(dirname "$TIBSUN")/expand01.mix"
+python3 "$EXTRACT" "$EXPAND01" -           extract "$RAW" M_EMP.VXL M_EMP.HVA >/dev/null
+python3 "$EXTRACT" "$EXPAND01" ECACHE01.MIX extract "$RAW" MEMPFX.SHP MEMPICON.SHP >/dev/null
 python3 "$EXTRACT" "$TIBSUN" TEMPERAT.MIX extract "$RAW" $TEMPERAT >/dev/null
 python3 "$EXTRACT" "$TIBSUN" ISOTEMP.MIX  extract "$RAW" $ISOTEMP  >/dev/null
 python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" $CONQUER  >/dev/null

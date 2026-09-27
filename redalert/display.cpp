@@ -2886,7 +2886,13 @@ void DisplayClass::Select_These(COORDINATE coord1, COORDINATE coord2, bool addit
         **	Only try to select objects that are allowed to be selected, and are within the bounding box.
         */
         HouseClass* hptr = HouseClass::As_Pointer(obj->Owner());
-        if (obj->Class_Of().IsSelectable && obj->What_Am_I() != RTTI_BUILDING
+        /*
+        **	Buildings never join a drag selection, except the TS ones a vehicle deploys into (the
+        **	Sensor Array and Limpet Mine), which select like the vehicles they pack back into.
+        */
+        bool deployed_vehicle = obj->What_Am_I() == RTTI_BUILDING
+                                && (*(BuildingClass*)obj == STRUCT_TSDPSA || *(BuildingClass*)obj == STRUCT_TSDLIMP);
+        if (obj->Class_Of().IsSelectable && (obj->What_Am_I() != RTTI_BUILDING || deployed_vehicle)
             && (!obj->Is_Techno() || !((TechnoClass*)obj)->Is_Cloaked(PlayerPtr)) && x >= x1 && x <= x2 && y >= y1
             && y <= y2) {
             bool old_allow_voice = AllowVoice;

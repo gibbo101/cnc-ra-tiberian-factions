@@ -1659,6 +1659,7 @@ typedef enum StructType : short
     STRUCT_TSDLIMP, // TS Limpet Mine "TSDLIMP" (Firestorm DLIMPET, 1x1) — the drone settled: cloaked, driven over like a mine, fires its LimpetFactor warhead at a passing vehicle and is spent. The deploy order packs it back into UNIT_TSLIMP.
 
     STRUCT_TSPULS, // TS EMP Pulse Cannon "TSPULS" (NAPULS, 2x2, snow-theatre art). Shapes 0-60 = the cannon head's 61-frame rotation on the dome (NAPULS_A), 61-121 = damaged; Shape_Number picks the frame from PrimaryFacing. Superweapon host for SPC_TS_EMP (docs/emp-cannon-design.md).
+    STRUCT_TSDPSA, // TS Sensor Array "TSDPSA" ([GADPSA], 1x1): the Mobile Sensor Array deployed. Its owner sees cloaked and buried enemies within TF_SENSOR_RADIUS_CELLS (TF_Is_Sensed); the deploy order packs it back into UNIT_TSLPST. Art = GTDPSA + GTDPSA_A beacon, GTDPSAMK build-up (scripts/ts_pack_sensor.py).
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
 
@@ -1680,8 +1681,13 @@ typedef enum StructType : short
     **	Second range of BuildingTypeClass::Is_Tiberian_Era.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TSPULS
+    STRUCT_TS_TREE_LAST = STRUCT_TSDPSA
 } StructType;
+
+/*
+**	The Sensor Array's reach (TS [GADPSA] CloakRadiusInCells=25).
+*/
+#define TF_SENSOR_RADIUS_CELLS 25
 
 /*
 **	Upper bound on the BuildingTypes heap (vanilla enum entries + mod heap
@@ -1949,6 +1955,7 @@ typedef enum UnitType : char
     UNIT_R2APOC,            // RA2 Apocalypse (YR [APOC], art MTNK): twin 120mm cannon + Mammoth Tusk AA missiles, self-healing, crusher. Easter egg: crate-only. Art = MTNK.VXL hull 0-31 + MTNKTUR/MTNKBARL turret 32-63 (scripts/r2_pack_tanks.py).
     UNIT_R2PRIS,            // RA2 Prism Tank (YR [SREF]): prism beam that forks onto nearby enemies. Easter egg alongside UNIT_R2APOC. Art = SREF.VXL hull 0-31 + SREFTUR turret 32-63 (scripts/r2_pack_tanks.py).
     UNIT_TSMEMP,            // TS Mobile EM-Pulse (Firestorm [MOBILEMP]): unarmed tracked support vehicle that charges, then deploys to set off a small E.M. Pulse round itself (UnitClass::EMP_Blast). Art = M_EMP.VXL, 32 facings (scripts/ts_pack_memp.py).
+    UNIT_TSLPST,            // TS Mobile Sensor Array ([LPST]): unarmed tracked vehicle that turns south-east and deploys into STRUCT_TSDPSA. Art = LPST.VXL, 32 facings (scripts/ts_pack_sensor.py).
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -4543,6 +4550,8 @@ typedef enum VoxType : short
     VOX_TD_NOD_STRUCTURE,
     VOX_TD_ENEMY_UNIT,
     VOX_TS_EMP_READY,
+    VOX_TS_CLOAKED_DETECTED,
+    VOX_TS_SUBTERRANEAN_DETECTED,
 
     VOX_COUNT,
     VOX_FIRST = 0

@@ -121,6 +121,21 @@
 #include "sidebarglyphx.h"
 
 /*
+**	The vehicle a deployed TS building packs back into on a deploy or move order: the Limpet
+**	Mine into its drone, the Sensor Array into the Mobile Sensor Array. UNIT_NONE for the rest.
+*/
+static UnitType TF_Packs_Into(BuildingClass const* building)
+{
+    if (*building == STRUCT_TSDLIMP) {
+        return (UNIT_TSLIMP);
+    }
+    if (*building == STRUCT_TSDPSA) {
+        return (UNIT_TSLPST);
+    }
+    return (UNIT_NONE);
+}
+
+/*
 **	The TS refinery's dock lid is held off until the TS pad seat (harvester
 **	facing E on the lid position, HORV body) is in: on the reverse-in seat the
 **	lid shows beside the hull, which TS never does. Off = never opens, so
@@ -1184,9 +1199,9 @@ int BuildingClass::Shape_Number(void) const
         **	from the end to the beginning. Reverse the shape number accordingly.
         */
         /*
-        **	Selling runs the build-up backwards; so does a Limpet Mine packing itself into its drone.
+        **	Selling runs the build-up backwards; so does a deployed TS building packing itself up.
         */
-        if (Mission == MISSION_DECONSTRUCTION || (Mission == MISSION_UNLOAD && *this == STRUCT_TSDLIMP)) {
+        if (Mission == MISSION_DECONSTRUCTION || (Mission == MISSION_UNLOAD && TF_Packs_Into(this) != UNIT_NONE)) {
             shapenum = (Class->Anims[BState].Start + Class->Anims[BState].Count - 1) - shapenum;
         }
 
@@ -1840,6 +1855,112 @@ enum
     TF_STEALTH_DETECT_CELLS = 3, // how close an enemy detector must be to reveal a covered object
     TF_STEALTH_REVEAL_HOLD = 15  // frames a forced reveal is held before Cloaking_AI may recloak
 };
+
+/*
+**	Is the coordinate inside a working Sensor Array (STRUCT_TSDPSA) owned by this house or an
+**	ally (TS SensorArray / CloakRadiusInCells)? Cloaked and buried objects there are visible to
+**	that house and can be targeted by it; they stay hidden from everyone else. A sensor counts
+**	once its build-up has finished and until it starts packing up. The sensor list is gathered
+**	once a frame.
+*/
+bool TF_Is_Sensed(HouseClass const* house, COORDINATE coord)
+{
+    enum
+    {
+        MAX_SENSORS = 64
+    };
+    static long gathered = -1;
+    static int count = 0;
+    static COORDINATE where[MAX_SENSORS];
+    static HouseClass const* owner[MAX_SENSORS];
+
+    if (house == NULL) {
+        return (false);
+    }
+    if (gathered != Frame) {
+        gathered = Frame;
+        count = 0;
+        for (int i = 0; i < Buildings.Count() && count < MAX_SENSORS; i++) {
+            BuildingClass const* b = Buildings.Ptr(i);
+            if (b != NULL && *b == STRUCT_TSDPSA && b->IsActive && !b->IsInLimbo && b->Strength > 0
+                && b->BState != BSTATE_CONSTRUCTION && b->Mission != MISSION_UNLOAD) {
+                where[count] = b->Center_Coord();
+                owner[count] = b->House;
+                count++;
+            }
+        }
+    }
+    for (int i = 0; i < count; i++) {
+        if ((owner[i] == house || owner[i]->Is_Ally(house))
+            && ::Distance(where[i], coord) < TF_SENSOR_RADIUS_CELLS * CELL_LEPTON_W) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
+/*
+**	Sensor Array sightings (OpenTS TechnoClass::Update_Radar_Position): twice a second, each human
+**	house's newly sensed cloaked or buried enemies are announced -- "cloaked unit detected" or
+**	"subterranean unit detected" with a radar ping at the object -- at most once per line every
+**	15 seconds, as TS's radar events merge repeats. An object is new when it was not sensed on the
+**	previous scan.
+*/
+void TF_Sensor_Tick(void)
+{
+    enum
+    {
+        SCAN_FRAMES = TICKS_PER_SECOND / 2,
+        QUIET_FRAMES = TICKS_PER_SECOND * 15,
+        MAX_TRACKED = 32
+    };
+    static TARGET seen[HOUSE_COUNT][MAX_TRACKED];
+    static int seen_count[HOUSE_COUNT];
+    static long quiet_until[HOUSE_COUNT][2];
+    static long last_frame = -1;
+
+    if (Frame < last_frame) {
+        memset(seen_count, 0, sizeof(seen_count));
+        memset(quiet_until, 0, sizeof(quiet_until));
+    }
+    last_frame = Frame;
+    if (Frame % SCAN_FRAMES != 0) {
+        return;
+    }
+    for (int h = 0; h < Houses.Count(); h++) {
+        HouseClass* house = Houses.Ptr(h);
+        if (house == NULL || !house->IsActive || !house->IsHuman) {
+            continue;
+        }
+        int hid = house->Class->House;
+        TARGET now[MAX_TRACKED];
+        int now_count = 0;
+        for (int layer = 0; layer < 3 && now_count < MAX_TRACKED; layer++) {
+            int count = (layer == 0) ? Units.Count() : ((layer == 1) ? Vessels.Count() : Buildings.Count());
+            for (int i = 0; i < count && now_count < MAX_TRACKED; i++) {
+                TechnoClass* t = (layer == 0) ? (TechnoClass*)Units.Ptr(i)
+                                              : ((layer == 1) ? (TechnoClass*)Vessels.Ptr(i) : (TechnoClass*)Buildings.Ptr(i));
+                if (t == NULL || !t->IsActive || t->IsInLimbo || t->House->Is_Ally(house)
+                    || (t->Cloak != CLOAKED && !t->Is_Tunneling()) || !TF_Is_Sensed(house, t->Center_Coord())) {
+                    continue;
+                }
+                TARGET target = t->As_Target();
+                now[now_count++] = target;
+                bool known = false;
+                for (int k = 0; k < seen_count[hid] && !known; k++) {
+                    known = (seen[hid][k] == target);
+                }
+                int line = t->Is_Tunneling() ? 1 : 0;
+                if (!known && Frame >= quiet_until[hid][line]) {
+                    Speak(line ? VOX_TS_SUBTERRANEAN_DETECTED : VOX_TS_CLOAKED_DETECTED, house, t->Center_Coord());
+                    quiet_until[hid][line] = Frame + QUIET_FRAMES;
+                }
+            }
+        }
+        memcpy(seen[hid], now, now_count * sizeof(TARGET));
+        seen_count[hid] = now_count;
+    }
+}
 
 /*
 **	Is any enemy stealth-detector (a techno whose type has IsScanner: all infantry, the attack
@@ -2924,7 +3045,7 @@ BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     , LastStrength(0)
     , PlacementDelay(0)
     , RallyPoint(TARGET_NONE)
-    , TFLimpetNav(TARGET_NONE)
+    , TFPackNav(TARGET_NONE)
 {
     // Diagnostic hook removed 2026-05-18. To re-enable, fprintf here to log
     // every BuildingClass instantiation with typeptr/IniName/Type/house. Used
@@ -3147,9 +3268,9 @@ void BuildingClass::Active_Click_With(ActionType action, ObjectClass* object)
     }
 
     /*
-    **	TS Limpet Mine: the deploy order (self click or the deploy key) packs it into its drone.
+    **	A deployed TS building: the deploy order (self click or the deploy key) packs it up.
     */
-    if (action == ACTION_SELF && *this == STRUCT_TSDLIMP) {
+    if (action == ACTION_SELF && TF_Packs_Into(this) != UNIT_NONE) {
         Player_Assign_Mission(MISSION_UNLOAD);
     }
 
@@ -3309,10 +3430,10 @@ void BuildingClass::Active_Click_With(ActionType action, CELL cell)
 
         COORDINATE coord = Map.Pixel_To_Coord(Get_Mouse_X(), Get_Mouse_Y());
         OutList.Add(EventClass(ANIM_MOVE_FLASH, PlayerPtr->Class->House, coord, 1 << PlayerPtr->Class->House));
-    } else if (action == ACTION_MOVE && *this == STRUCT_TSDLIMP) {
+    } else if (action == ACTION_MOVE && TF_Packs_Into(this) != UNIT_NONE) {
         /*
-        **	A Limpet Mine sent somewhere packs back into its drone first; the destination
-        **	rides along on the unload mission and the drone leaves for it.
+        **	A deployed TS building sent somewhere packs back into its vehicle first; the
+        **	destination rides along on the unload mission and the vehicle leaves for it.
         */
         Player_Assign_Mission(MISSION_UNLOAD, TARGET_NONE, ::As_Target(cell));
     } else if (action == ACTION_MOVE && Can_Have_Rally_Point()) {
@@ -3344,11 +3465,11 @@ void BuildingClass::Assign_Destination(TARGET target)
     assert(IsActive);
 
     /*
-    **	Only a Limpet Mine has anywhere to go: it keeps the cell so that the drone it packs
-    **	into can be sent there once the build-up has run backwards.
+    **	Only a deployed TS building has anywhere to go: it keeps the cell so that the vehicle
+    **	it packs into can be sent there once the build-up has run backwards.
     */
-    if (*this == STRUCT_TSDLIMP) {
-        TFLimpetNav = target;
+    if (TF_Packs_Into(this) != UNIT_NONE) {
+        TFPackNav = target;
     }
     TechnoClass::Assign_Destination(target);
 }
@@ -5017,7 +5138,7 @@ ActionType BuildingClass::What_Action(ObjectClass const* object) const
                 break;
             }
 
-        } else if (*this != STRUCT_TSDLIMP) {
+        } else if (TF_Packs_Into(this) == UNIT_NONE) {
             action = ACTION_NONE;
         }
     }
@@ -5092,16 +5213,16 @@ ActionType BuildingClass::What_Action(CELL cell) const
     if (action == ACTION_NOMOVE && Can_Have_Rally_Point()) {
         action = ACTION_MOVE;
     }
-    if (action == ACTION_MOVE && !Can_Have_Rally_Point() && *this != STRUCT_TSDLIMP
+    if (action == ACTION_MOVE && !Can_Have_Rally_Point() && TF_Packs_Into(this) == UNIT_NONE
         && (!Class->Is_Construction_Yard() || !Is_MCV_Deploy())) {
         action = ACTION_NONE;
     }
 
     /*
-    **	A Limpet Mine takes a move order anywhere its drone could go: the order packs it up
-    **	and the drone walks off, so cells its own footprint could never be placed on qualify.
+    **	A deployed TS building takes a move order anywhere its vehicle could go: the order packs
+    **	it up and the vehicle drives off, so cells its own footprint could never sit on qualify.
     */
-    if (*this == STRUCT_TSDLIMP && (action == ACTION_NOMOVE || action == ACTION_NONE)
+    if (TF_Packs_Into(this) != UNIT_NONE && (action == ACTION_NOMOVE || action == ACTION_NONE)
         && Map.In_Radar(cell)) {
         action = ACTION_MOVE;
     }
@@ -7936,19 +8057,21 @@ void const* BuildingClass::Remap_Table(void)
  *   07/29/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
 /***********************************************************************************************
- * TF_Limpet_Undeploy -- Packs a Limpet Mine back into its drone on the same cell.             *
+ * TF_Pack_Up -- Packs a deployed TS building back into its vehicle on the same cell.          *
  *=============================================================================================*/
-static void TF_Limpet_Undeploy(BuildingClass* mine)
+static void TF_Pack_Up(BuildingClass* mine)
 {
     CELL cell = Coord_Cell(mine->Coord);
     fixed ratio = mine->Health_Ratio();
-    TARGET nav = mine->TFLimpetNav;
-    UnitClass* unit = new UnitClass(UNIT_TSLIMP, mine->House->Class->House);
+    TARGET nav = mine->TFPackNav;
+    UnitType type = TF_Packs_Into(mine);
+    UnitClass* unit = new UnitClass(type, mine->House->Class->House);
     if (unit == NULL) {
         return;
     }
+    DirType facing = (type == UNIT_TSLPST) ? DIR_SE : DIR_N;
     mine->Limbo();
-    if (unit->Unlimbo(Cell_Coord(cell), DIR_N)) {
+    if (unit->Unlimbo(Cell_Coord(cell), facing)) {
         unit->Strength = max(1, (int)(unit->Class->MaxStrength * ratio));
         if (Target_Legal(nav)) {
             unit->Assign_Mission(MISSION_MOVE);
@@ -7969,10 +8092,13 @@ int BuildingClass::Mission_Unload(void)
     assert(IsActive);
 
     /*
-    **	TS Limpet Mine: the deploy order runs the build-up backwards, then packs the mine into its drone.
+    **	A deployed TS building: the deploy order runs the build-up backwards, then packs it up.
     */
-    if (*this == STRUCT_TSDLIMP) {
+    if (TF_Packs_Into(this) != UNIT_NONE) {
         if (Status == 0) {
+            if (*this == STRUCT_TSDPSA) {
+                Sound_Effect(VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
+            }
             Do_Uncloak();
             Begin_Mode(BSTATE_CONSTRUCTION);
             IsReadyToCommence = false;
@@ -7980,7 +8106,7 @@ int BuildingClass::Mission_Unload(void)
             return (1);
         }
         if (IsReadyToCommence) {
-            TF_Limpet_Undeploy(this);
+            TF_Pack_Up(this);
         }
         return (1);
     }

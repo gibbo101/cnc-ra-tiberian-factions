@@ -294,6 +294,8 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tslimp_stub.shp" 24 24 20
 PACK_ARGS+=("$TMPDIR/tslimp_stub.shp:TSLIMP.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsmemp_stub.shp" 48 48 32
 PACK_ARGS+=("$TMPDIR/tsmemp_stub.shp:TSMEMP.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tslpst_stub.shp" 48 48 32
+PACK_ARGS+=("$TMPDIR/tslpst_stub.shp:TSLPST.SHP")
 # Subterranean pair (Devil's Tongue / Sub APC) -- 112 shapes each: 32 driving
 # + 40 dive + 40 emerge pitch-ladder frames (docs/subterranean-design.md).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tssubtank_stub.shp" 48 48 113
@@ -373,6 +375,10 @@ ts_stub TSDLIMP "$TMPDIR/tsdlimp_stub.shp" 48 48 20
 PACK_ARGS+=("$TMPDIR/tsdlimp_stub.shp:TSDLIMP.SHP")
 ts_stub TSDLIMP "$TMPDIR/tsdlimpmk_stub.shp" 48 48 19
 PACK_ARGS+=("$TMPDIR/tsdlimpmk_stub.shp:TSDLIMPMAKE.SHP")
+ts_stub TSDPSA "$TMPDIR/tsdpsa_stub.shp" 48 78 10
+PACK_ARGS+=("$TMPDIR/tsdpsa_stub.shp:TSDPSA.SHP")
+ts_stub TSDPSA "$TMPDIR/tsdpsamk_stub.shp" 48 78 19
+PACK_ARGS+=("$TMPDIR/tsdpsamk_stub.shp:TSDPSAMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
 # TSRADR 48x96 on the 2x2 plot (TS-authentic Foundation=2x2): Obelisk
 # treatment, the dish tower rises a full row above the box. The 3x2/72x150

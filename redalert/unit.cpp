@@ -2295,9 +2295,11 @@ bool UnitClass::Try_To_Deploy(void)
 
     if (!Target_Legal(NavCom) && !IsRotating) {
         /*
-        **	TS Limpet Drone: settles into a mine on the cell it stands on.
+        **	TS Limpet Drone: settles into a mine on the cell it stands on. TS Mobile Sensor
+        **	Array: turns south-east, where its build-up starts, and settles into the sensor.
         */
-        if (*this == UNIT_TSLIMP) {
+        if (*this == UNIT_TSLIMP || *this == UNIT_TSLPST) {
+            StructType into = (*this == UNIT_TSLIMP) ? STRUCT_TSDLIMP : STRUCT_TSDPSA;
 #if TF_DEV_BUILD
 #define TF_LIMP_TRACE(step)                                                                                 \
     do {                                                                                                     \
@@ -2317,7 +2319,7 @@ bool UnitClass::Try_To_Deploy(void)
             TF_LIMP_TRACE("begin");
             Mark(MARK_UP);
             CELL cell = Coord_Cell(Center_Coord());
-            if (!BuildingTypeClass::As_Reference(STRUCT_TSDLIMP).Legal_Placement(cell)) {
+            if (!BuildingTypeClass::As_Reference(into).Legal_Placement(cell)) {
                 if (PlayerPtr == House) {
                     Speak(VOX_DEPLOY);
                 }
@@ -2325,11 +2327,20 @@ bool UnitClass::Try_To_Deploy(void)
                 IsDeploying = false;
                 return (false);
             }
+            if (*this == UNIT_TSLPST && PrimaryFacing.Current() != DIR_SE) {
+                Mark(MARK_DOWN);
+                Do_Turn(DIR_SE);
+                IsDeploying = true;
+                return (true);
+            }
             TF_LIMP_TRACE("placement legal");
-            BuildingClass* building = new BuildingClass(STRUCT_TSDLIMP, House->Class->House);
+            BuildingClass* building = new BuildingClass(into, House->Class->House);
             TF_LIMP_TRACE("mine constructed");
             if (building != NULL && building->Unlimbo(Cell_Coord(cell))) {
                 TF_LIMP_TRACE("mine unlimboed");
+                if (into == STRUCT_TSDPSA) {
+                    Sound_Effect(VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
+                }
                 building->Revealed(House);
                 TF_LIMP_TRACE("mine revealed");
                 building->Strength = max(1, (int)(Health_Ratio() * (int)building->Class->MaxStrength));
@@ -4733,6 +4744,7 @@ int UnitClass::Mission_Unload(void)
     case UNIT_TDNMCV:
     case UNIT_TSMCV:    // TS MCV — deploys STRUCT_TSFACT (the TS-tree gate).
     case UNIT_TSLIMP:   // TS Limpet Drone — settles into STRUCT_TSDLIMP on its own cell.
+    case UNIT_TSLPST:   // TS Mobile Sensor Array — settles into STRUCT_TSDPSA on its own cell.
         switch (Status) {
         case 0:
             Path[0] = FACING_NONE;
@@ -5853,13 +5865,15 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
             /*
             **	The stance toggles anywhere the unit stands.
             */
-        } else if (*this == UNIT_TSLIMP) {
+        } else if (*this == UNIT_TSLIMP || *this == UNIT_TSLPST) {
 
             /*
-            **	The Limpet Drone gets the no-deploy cursor where its mine cannot sit.
+            **	The Limpet Drone and the Mobile Sensor Array get the no-deploy cursor where what
+            **	they deploy into cannot sit.
             */
+            StructType into = (*this == UNIT_TSLIMP) ? STRUCT_TSDLIMP : STRUCT_TSDPSA;
             ((ObjectClass&)(*this)).Mark(MARK_UP);
-            if (!BuildingTypeClass::As_Reference(STRUCT_TSDLIMP).Legal_Placement(Coord_Cell(Center_Coord()))) {
+            if (!BuildingTypeClass::As_Reference(into).Legal_Placement(Coord_Cell(Center_Coord()))) {
                 action = ACTION_NO_DEPLOY;
             }
             ((ObjectClass&)(*this)).Mark(MARK_DOWN);

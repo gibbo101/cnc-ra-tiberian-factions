@@ -1946,6 +1946,39 @@ static UnitTypeClass const UnitTsMemp(UNIT_TSMEMP,
                                       MISSION_GUARD // ORDERS: Default order.
 );
 
+// TS Mobile Sensor Array (UNIT_TSLPST), TS rules [LPST]. No weapon: it turns south-east and
+// deploys into STRUCT_TSDPSA, the sensor. TS: Strength=600, Armor=wood, TechLevel=6, Sight=10,
+// Speed=6, Cost=950, Points=30, ROT=5, Crusher=yes, RadarInvisible=yes. Art = LPST.VXL voxel
+// render, 32 facings.
+static UnitTypeClass const UnitTsLpst(UNIT_TSLPST,
+                                      TXT_APC,      // NAME: placeholder (HD display via rules.ini Name=).
+                                      "TSLPST",     // NAME: IniName.
+                                      ANIM_FBALL1,  // EXPLOSION: big fireball.
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0000,       // Vertical offset.
+                                      0x0000,       // Primary weapon offset (unarmed).
+                                      0x0000,       // Primary weapon lateral offset.
+                                      0x0000,       // Secondary weapon offset.
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      false,        // Can this be a goodie surprise from a crate?
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry? (TS Crusher=yes)
+                                      false,        // Does this unit harvest Tiberium?
+                                      true,         // Is invisible to radar? (TS RadarInvisible=yes)
+                                      false,        // Is it insignificant (won't be announced)?
+                                      false,        // Is it equipped with a combat turret?
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline.
+                                      MISSION_GUARD // ORDERS: Default order.
+);
+
 // TS Amphibious APC (UNIT_TSAPC), TS rules [APC]. Unarmed hover transport —
 // SPEED_HOVER stands in for the TS amphibious float (plan-approved deviation),
 // so it crosses water like the Hover MLRS. Passengers=5 via rules.ini; door
@@ -2349,6 +2382,7 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitR2Apoc);    // UNIT_R2APOC (RA2 Apocalypse)
     new UnitTypeClass(UnitR2Pris);    // UNIT_R2PRIS (RA2 Prism Tank)
     new UnitTypeClass(UnitTsMemp);    // UNIT_TSMEMP (Mobile EM-Pulse)
+    new UnitTypeClass(UnitTsLpst);    // UNIT_TSLPST (Mobile Sensor Array)
 }
 
 /***********************************************************************************************
@@ -2677,6 +2711,7 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
         {UNIT_TSMCV, 36, 29},
         {UNIT_TSLIMP, 8, 22},
         {UNIT_TSMEMP, 34, 35},
+        {UNIT_TSLPST, 32, 34},
     };
     for (int i = 0; i < (int)ARRAY_SIZE(_art_boxes); i++) {
         if (_art_boxes[i].type == Type) {
