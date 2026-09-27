@@ -1,31 +1,27 @@
 # EMP Pulse Cannon — TS port design + arc tracker
 
-> **⭐ RESUME HERE (2026-08-29 00:1x: STAGE A VERIFIED "looks good" on the Deck.
-> Branch `emp-cannon`, Deck DLL `39d86e742182` + turret zip `93c10aa67a8b`.)**
-> STRUCT_TSPULS "EMP Cannon": TS tree behind TSRADR, TechLevel 6, cost 1000, power -150,
-> 500 HP heavy, 2x2 whole-plot occupancy + bib. Art = **NTPULS (temperate)**; NAPULS is
-> the ARCTIC variant (TS 2nd-letter theatre code -- the first build used it and showed
-> snow drifts). Cannon = **PULSCAN voxel at 1:1** (1 voxel = 1 TS px, K=1/12 of the 12
-> px/voxel render) as the `TSPULST` sub-object layer, seat `TSPULS_TURRET_Y = +10` classic
-> px (dialled over three Deck sheets: -5 floated, 1.6x was "why bigger!?" -- Luke wants the
-> 1:1 cannon, just seated). NAPULS_A (a small 2D head) is unused, as in TS.
-> **Open nit (Luke, next session): "a good second where it's waiting for the turret"** --
-> the layer is gated on `BState != BSTATE_CONSTRUCTION`, so the cannon pops on only after
-> the 13-frame buildup ends. Fix options: draw it over the last buildup frames, or shorten
-> the buildup. Then stage B.
-> Luke: exact TS (no borrowing from RA), building first, bib required.
-> **Play-testing is on the LINUX DESKTOP from 2026-09-17** (it was Deck-only before; Luke:
-> "we can do it on linux"). Deploy target is the local Proton prefix, as main's work uses.
-> **The branch was merged up to main on 2026-09-17** (219 commits: the TS GDI faction, its
-> infantry and aircraft, the Limpet Drone, the Juggernaut round), so stage B starts from a
-> tree that matches main. `[TSPULS]` gained `Germany` in its Owner list with that merge.
+> **⭐ RESUME HERE (2026-09-27: STAGE B VERIFIED on the desktop. Branch `emp-cannon` @ 2431dcfd,
+> desktop DLL `c06c3061`.)** E.M. Pulse charges, targets and fires the cannon (the TS Ion Cannon
+> pattern, `SPC_TS_EMP`). The pulse ball charges at the barrel tip from the generated table
+> `redalert/tspuls_muzzle.h` (`scripts/ts_emp_muzzle.py`; the tip-band average puts the south
+> facing between the twin rails; regenerate whenever TSPULST changes). An order in low power is
+> refused with "insufficient power"; out of range is refused silently, as in TS. The cannon draws
+> over the last build-up frames. Dev builds spawn a Subterranean APC at match start for surfacing
+> tests and log each order to `tf_emp.log`.
+> **Next:** the PLSECAN2 fire sound (pulled forward from stage E), then stage C with Luke present
+> (he wants to be there for the pulse and stun). Open: a "translucent white rectangle" on the
+> turret (the TSPULST frames are fully opaque; suspected baked highlight round the yellow core;
+> waiting for Luke's marked screenshot).
+> **Play-testing is on the LINUX DESKTOP** (the local Proton prefix, as main's work uses). The
+> branch carries main's work through `9bb430c3` plus the verified fixes also on main (sidebar
+> construction-options, TS drop pod squad, bay build-up).
 > ⚠️ Rebuilding TFASSETS.MIX in a fresh worktree needs `scripts/_td_tems` copied in first: it
 > is gitignored, and `build_tfassets.sh` packs it only if the directory exists, so without it
-> the archive silently loses 324 staged terrain iconsets. Check the entry count (523 now).
-> **Stages:** A = building ✓built; B = superweapon (recharge, sidebar, targeting, the
-> ball); C = the pulse (stun timer on TechnoClass, every gate, sparkles, aircraft crash,
-> building power-off); D = diggers (`Force_Emerge`, BOOM rule); E = sounds + EVA. Neither
-> the subterranean pair nor this ships to the Workshop without the other.
+> the archive silently loses 324 staged terrain iconsets.
+> **Stages:** A = building ✓; B = superweapon ✓ verified; C = the pulse (stun timer on
+> TechnoClass, every gate, sparkles, aircraft crash, building power-off); D = diggers
+> (`Force_Emerge`, BOOM rule); E = sounds + EVA. Neither the subterranean pair nor this ships
+> to the Workshop without the other.
 
 ## TS ground truth (live-extracted TIBSUN.MIX rules/art + OpenTS)
 
