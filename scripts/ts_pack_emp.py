@@ -14,13 +14,15 @@ bullet.cpp Detonate). All decoded against ANIM.PAL with no team remap, scaled x4
 - TSPULSF1.ZIP / TSPULSF2.ZIP: PULSEFX1 (21 frames) and PULSEFX2 (15 frames), centred.
 - BuildIcon_SW_TSEMP.tga: TS's PULSICON special cameo (CAMEO.PAL), flattened opaque (the
   launcher draws noise under transparent cameo pixels).
+- Data/AUDIO/TSPLSECAN2.WAV: the cannon's report ([EMPulseWeapon] Report=PLSECAN2) under its
+  own sample name, Westwood AUD -> MS-ADPCM WAV.
 
 Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/{PULSBALL,PULSEFX1,PULSEFX2,PULSICON}.SHP,
-ANIM.PAL, CAMEO.PAL -- TIBSUN.MIX conquer.mix / cache.mix via tools/ts_extract.py.
+PLSECAN2.AUD, ANIM.PAL, CAMEO.PAL -- TIBSUN.MIX conquer.mix / cache.mix via tools/ts_extract.py.
 
 License: GPL v3.
 """
-import os, sys
+import os, subprocess, sys
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -61,6 +63,11 @@ def main():
     big = flat.resize((flat.width * 8, flat.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
     big.save(f"{ICON_DIR}/BuildIcon_SW_TSEMP.tga")
     print(f"wrote {ICON_DIR}/BuildIcon_SW_TSEMP.tga")
+
+    out_wav = f"{MOD}/AUDIO/TSPLSECAN2.WAV"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{RAW}/PLSECAN2.AUD",
+                    "-acodec", "adpcm_ms", out_wav], check=True)
+    print(f"wrote {out_wav}")
 
 
 if __name__ == "__main__":

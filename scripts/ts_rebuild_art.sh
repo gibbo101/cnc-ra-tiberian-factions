@@ -81,6 +81,10 @@ python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" TSGUN4.AUD METEOR1.AUD 
 # detonation report.
 python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" GGHUNT.SHP DETNICON.SHP >/dev/null
 python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" HUNTER2.AUD >/dev/null
+# EMP Pulse Cannon special (ts_pack_emp.py): the pulse ball, its impact rings, the special's
+# cameo, and the cannon's report.
+python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" PULSBALL.SHP PULSEFX1.SHP PULSEFX2.SHP PULSICON.SHP >/dev/null
+python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" PLSECAN2.AUD >/dev/null
 python3 "$EXTRACT" "$TIBSUN" TEMPERAT.MIX extract "$RAW" $TEMPERAT >/dev/null
 python3 "$EXTRACT" "$TIBSUN" ISOTEMP.MIX  extract "$RAW" $ISOTEMP  >/dev/null
 python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" $CONQUER  >/dev/null

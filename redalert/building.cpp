@@ -7381,8 +7381,12 @@ int BuildingClass::Mission_Missile(void)
 
         case CHARGE: {
             BulletClass* ball = new BulletClass(BULLET_TSPULSBALL, ::As_Target(dest), this, 1, WARHEAD_NONE, MPH_ROCKET);
-            if (ball != NULL && !ball->Unlimbo(muzzle, aim)) {
-                delete ball;
+            if (ball != NULL) {
+                if (ball->Unlimbo(muzzle, aim)) {
+                    Sound_Effect(VOC_TS_PLSECAN2, muzzle);
+                } else {
+                    delete ball;
+                }
             }
             Status = DONE_FIRE;
             return (1);
