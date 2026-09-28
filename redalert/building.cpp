@@ -3925,11 +3925,20 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 **	up (UnitClass::Draw_It), then rides the exit rail south-east.
                 */
                 bool is_mech = false;
+                bool is_titan = false;
                 if (base->What_Am_I() == RTTI_UNIT) {
                     UnitType ut = *(UnitClass*)base;
                     is_mech = (ut == UNIT_TSTITN || ut == UNIT_TSSMEC || ut == UNIT_TSHMEC);
+                    is_titan = (ut == UNIT_TSTITN);
                 }
                 COORDINATE seat = Coord_Add(Coord, is_mech ? TSWEAP_SEAT_MOUTH_MECH : TSWEAP_SEAT_MOUTH);
+                /*
+                **	The deployed Mobile War Factory's back roof sits lower than the War
+                **	Factory's, so the Titan seats 4 classic px south to keep its antenna under it.
+                */
+                if (is_titan && *this == STRUCT_TSDWEAP) {
+                    seat = Coord_Add(seat, XY_Coord(0, 43));
+                }
                 /*
                 **	Facing = the exit rail's own direction (seat -> exit cell), so the
                 **	vehicle points exactly along the line it will drive.

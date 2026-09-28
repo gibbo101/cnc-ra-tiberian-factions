@@ -743,6 +743,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         return out
 
     full = [[scaled(f) for f in healthy], [scaled(f) for f in damaged_frames]]
+    finish = lambda img: img
     # The building over its own apron: any partial-coverage pixel along the
     # join becomes opaque, so the silhouette GROWS onto the pad and no seam of
     # terrain shows between the two (soft edges showed the pad through as a
@@ -774,6 +775,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             out.putalpha(ImageChops.lighter(ImageChops.lighter(Image.composite(hard, a, pad_mask), fill), overlap))
             return out
         full = [[harden_over_pad(f) for f in run] for run in full]
+        finish = harden_over_pad
     # TSWEAP sandwich (08-28 rebuild): without a z-buffer the only way a vehicle
     # reads INSIDE the bay is building art drawn in front of it. Front layer
     # (<INI>NF) = every idle frame minus the door opening; the base tileset
@@ -847,13 +849,48 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # The body has its door PAINTED SHUT (TS covers it with the under-door
         # art, GAWEAP_1, while a unit leaves). Second front tileset for the
         # unloading state: the open doorway composited over each idle frame.
-        ud_top = EXTRA_LAYER_BAKE[(ini, "UD")]
-        ud = [scaled(centre_on(bake_hazard_gold(load(wf["under"], i), ud_top), base_h.size)) for i in (0, 1)]
-        def with_doorway(img, r):
-            out = img.copy()
-            out.alpha_composite(ud[r])
-            return out
-        front_open = [[cut(with_doorway(f, r), False) for f in full[r]] for r in (0, 1)]
+        ud_top = EXTRA_LAYER_BAKE.get((ini, "UD"))
+        ud_src = [centre_on(load(wf["under"], i) if ud_top is None else bake_hazard_gold(load(wf["under"], i), ud_top),
+                            base_h.size) for i in (0, 1)]
+        if wf.get("doorway_before_scale"):
+            # The under-door art also repaints the posts, arms and apron round the
+            # door; only the part inside the shutter's footprint belongs to the open
+            # doorway, so everything outside it stays the body's own art.
+            door_foot = Image.new("L", base_h.size, 0)
+            for i in range(wf["stages"]):
+                door_foot = ImageChops.lighter(door_foot, centre_on(load(wf["door"], i), base_h.size)
+                                               .split()[3].point(lambda v: 255 if v > 0 else 0))
+            # The door leaf painted into the body runs a pixel or two below the
+            # shutter's lower edge; the footprint reaches down to cover it (only
+            # down, so the posts beside the door stay the body's).
+            reach = door_foot
+            for dx, dy in ((0, 1), (0, 2), (1, 1)):
+                reach = ImageChops.lighter(reach, ImageChops.offset(door_foot, dx, dy))
+            for f in ud_src:
+                f.putalpha(ImageChops.multiply(f.split()[3], reach))
+        if wf.get("doorway_before_scale"):
+            # The under-door art repeats the door arms: laid over the body in
+            # source pixels and scaled once, the arms stay the body's own.
+            def with_doorway(r, i):
+                out = (healthy, damaged_frames)[r][i].copy()
+                out.alpha_composite(ud_src[r])
+                return finish(scaled(out))
+        else:
+            ud = [scaled(f) for f in ud_src]
+            def with_doorway(r, i):
+                out = full[r][i].copy()
+                out.alpha_composite(ud[r])
+                return out
+        front_open = [[cut(with_doorway(r, i), False) for i in range(len(full[r]))] for r in (0, 1)]
+        if wf.get("doorway_before_scale"):
+            # The under-door layer is that same composite over the under-door art's
+            # own footprint, so it meets the open front layer without a seam.
+            def doorway_layer(r):
+                out = with_doorway(r, 0)
+                foot = scaled(ud_src[r]).split()[3].point(lambda v: 255 if v > 0 else 0)
+                out.putalpha(ImageChops.multiply(out.split()[3], foot))
+                return out
+            doorway_under = [doorway_layer(r) for r in (0, 1)]
         full = [[cut(f, True) for f in run] for run in full]
         write_zip(f"{STRUCT_DIR}/{ini}NF.ZIP", f"{ini.lower()}nf", front[0] + front[1])
         patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}NF", len(front[0]) + len(front[1]))
@@ -875,6 +912,8 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 keep_largest_component(f)
             return f
         layer = [scaled(centre_on(load_clipped(i), base_h.size)) for i in indices]
+        if suffix == "UD" and WF_ART.get(ini, {}).get("doorway_before_scale"):
+            layer[0:2] = doorway_under
         write_zip(f"{STRUCT_DIR}/{ini}{suffix}.ZIP", f"{ini.lower()}{suffix.lower()}", layer)
         patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}{suffix}", len(layer))
     front_canvas = None
@@ -1260,9 +1299,11 @@ WF_ART = {
     "TSWEAP": dict(door="shp_gtweap_d", stages=9, under="shp_gtweap_1",
                    line="tsweap-front-cut-line.json"),
     # The Mobile War Factory deployed (Firestorm MWAR): TS's own 4x3 war factory geometry
-    # with a 12-stage shutter.
+    # with a 12-stage shutter. Its under-door art is clipped to the shutter's footprint
+    # and laid over the body before scaling (doorway_before_scale), so the posts, arms
+    # and apron look the same with the door open as shut.
     "TSDWEAP": dict(door="shp_mwar_d", stages=12, under="shp_mwar_1",
-                    line="tsdweap-front-cut-line.json"),
+                    line="tsdweap-front-cut-line.json", doorway_before_scale=True),
 }
 
 EXTRA_LAYERS = {
@@ -1298,7 +1339,9 @@ EXTRA_LAYER_CLIPS = {("TSWEAP", "DR"): (113, 113, 192, 168)}
 # to match the apron, which is ground art and never house-remapped; the team
 # block on the bay frame above them (rows 87-98) keeps its house colour. The
 # open-doorway front tileset (<INI>NU) composites the same art with the same bake.
-EXTRA_LAYER_BAKE = {("TSWEAP", "UD"): 110, ("TSDWEAP", "UD"): 110}
+# TSDWEAP has no entry: MWAR_1 paints its stripes orange, and its remap pixels
+# are wall paint that keeps the house colour.
+EXTRA_LAYER_BAKE = {("TSWEAP", "UD"): 110}
 
 
 def components(img):
