@@ -14,8 +14,9 @@ TEAM_LEVEL. C&C3 paints house colour over panels of very different brightness (t
 bright tan, the Predator's darker olive); normalising puts both at the green the shipped TS and
 RA2 units carry (post-shade median G about 145).
 
-Tread animation: the belts' U coordinate scrolls by --tread-phase link pitches (the model's
-tread_dudx sign moves the top run backwards, so rising phase reads as driving forwards).
+Tread animation: the belts' U coordinate scrolls by the tread phase in link pitches. Driving
+forwards, a track's top run travels forwards relative to the hull and its ground run backwards,
+so rising phase moves the top run the way the nose points (against the model's tread_dudx sign).
 
 Usage:
   c3_render.py <model.npz> <out_dir> --part hull|turret [--frames 32] [--tread-steps 3]
@@ -204,7 +205,7 @@ def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3, turre
         n[body] = pn
     if is_tread.any():
         tuv = uv[is_tread].copy()
-        tuv[:, 0] += m.dudx_sign * tread_phase * m.link_pitch
+        tuv[:, 0] -= m.dudx_sign * tread_phase * m.link_pitch
         rgb[is_tread] = sample(m.treads, tuv)[:, :3]
 
     lam = np.clip(n @ LIGHT, 0, 1)
