@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Build the era-mailbox EVA payloads and the DLL's lookup table, for N eras.
 
-Six EVA lines are fired by the launcher itself and never reach On_Speech: "cannot
+The EVA lines below are fired by the launcher itself and never reach On_Speech: "cannot
 deploy here", "battle control terminated", mission won, mission lost, "select
-target" and "insufficient power". The mod speaks them in the picked side's voice
+target", "insufficient power", "repairing" and "mission saved". The mod speaks them in the picked side's voice
 by writing the era-correct recording over the launcher's own sample names at match
 start, and by overwriting ClientG's already-cached copy so an in-session faction
 switch is corrected too (docs/eva-ram-patch-spike.md).
@@ -28,6 +28,7 @@ License: GPL v3.
 """
 import argparse
 import array
+import random
 import struct
 import subprocess
 import sys
@@ -62,6 +63,14 @@ LINES = {
     "SLCT":    ("RAC_SFX_EVA_SLCTTGT1_EN-US.WAV", "RAR_SFX_EVA_SLCTTGT1_EN-US.WAV"),
     "NOPOW":   ("RAC_SFX_EVA_NOPOWR1_EN-US.WAV", "RAR_SFX_EVA_NOPOWR1_EN-US.WAV"),
     "REPAIR":  ("RAC_SFX_EVA_REPAIR1_EN-US.WAV", "RAR_SFX_EVA_REPAIR1_EN-US.WAV"),
+    "SAVE":    ("RAC_SFX_EVA_SAVE1_EN-US.WAV", "RAR_SFX_EVA_SAVE1_EN-US.WAV"),
+}
+
+# Eras that never recorded a line stay silent on it (neither TD nor TS has a "mission
+# saved"). Their payload is inaudible noise rather than digital silence, seeded per era,
+# because the cache overwrite finds each era's copy by a byte pattern unique to it.
+SILENT = {
+    "SAVE": {"TD", "TS"},
 }
 
 # Tiberian Sun's recording of each line, by .AUD name in SPEECH01.MIX (GDI's EVA).
@@ -162,6 +171,8 @@ def build(ts_dir, out_dir):
 
             pcm = {}
             for era in ERAS:
+                if era in SILENT.get(tag, ()):
+                    continue
                 if era == "TS":
                     pcm[era] = ts_pcm(out_dir, tag, rate, ts_dir)
                 else:
@@ -174,6 +185,9 @@ def build(ts_dir, out_dir):
             # the same number of blocks and therefore the same byte count.
             longest = max(len(p) for p in pcm.values())
             total = ((longest + spb - 1) // spb) * spb
+            for era in SILENT.get(tag, ()):
+                rng = random.Random("%s_%s_%s" % (era, tag, chan))
+                pcm[era] = [rng.randint(-40, 40) for _ in range(total)]   # about -58 dBFS
 
             files = {}
             for era in ERAS:
