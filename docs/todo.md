@@ -128,8 +128,13 @@ What went in, all signed off in play:
    - **The Firestorm Generator and its wall sections** (TSFIRE / TSFSDF, planned in
      `ts-gdi-tree-plan.md` 19b) — new defensive logic, and the wall panels are isometric like
      the dropped gate, so the art route is agreed with Luke before anything is built.
-2. **LAN test the Limpet Drone's function** — deploy, attach, the 65% slow, the scouting share.
-   Never verified; the Deck's battery was dead on 09-17, so it needs a charged Deck.
+2. **LAN test (needs a second human)** — never verified; the Deck's battery was dead on 09-17, so
+   it needs a charged Deck.
+   - Limpet Drone: deploy, attach, the 65% slow, the scouting share.
+   - Firestorm Defense vs an enemy (branch `firestorm`, docs/firestorm-design.md stage D): an enemy
+     firing across a live wall has its shots eaten at the wall in sparks, a machine gunner
+     (instant-hit) included; enemy units cannot path across a live section; enemy aircraft over a
+     live section die; the field eating shots does not shorten it, damage landing on a section does.
 3. **Waypoint/rally marker shows the Allied emblem for TS GDI** — launcher-owned, see
    `known-issues.md`. Needs the `radar-crest-ram-spike.md` RAM lever, not an atlas repaint.
 4. Then the TS roster balance pass, then the `TF_TS_GDI_FACTION` release switch and hazelnut's
