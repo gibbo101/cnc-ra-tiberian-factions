@@ -1215,8 +1215,11 @@ def emit_sidebar_data(ini, display, desc, icon_dir):
                       "\t\t</CNCEncyclopediaComponent>\n"
                       "\t</ObjectTypeClass>\n" % (key, text_id, text_id, icon_name))
     if added:
-        idx = xml.rindex("</ObjectTypeClass>") + len("</ObjectTypeClass>")
-        xml = xml[:idx] + "\n\n" + added.rstrip("\n") + xml[idx:]
+        # Above cameo_variants_build.py's managed block: that tool rewrites everything between
+        # its markers from the entries outside them, so an entry appended inside is wiped.
+        marker = "\t<!-- BEGIN generated cameo mask variants"
+        idx = xml.index(marker) if marker in xml else xml.index("</ObjectTypeList>")
+        xml = xml[:idx] + added + xml[idx:]
         open(RAB, "w", encoding="utf-8").write(xml)
 
     CSV = f"{MOD}/Data/ModText.csv"
