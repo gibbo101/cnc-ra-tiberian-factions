@@ -163,13 +163,14 @@ Mammoth's LEFT/RIGHT also reorder the vertices). The scrolling itself is in the 
 mesh and scroll its U coordinate yourself:
 - Belt direction: on the top run of the belt (vertices in the top tenth of the tread's
   height range), take the median dU/dx over edges joining two top-run vertices (x = forward,
-  in model space). Scrolling U by +sign moves the top run backwards, which reads as driving
-  forwards.
+  in model space). Driving forwards, a track's top run travels FORWARDS relative to the hull
+  (its ground run is the part standing still on the ground), so scroll U by -sign as the
+  tread step rises: that moves the top run towards the nose.
 - Link pitch: autocorrelate the tread texture's column profile (mean luminance per column).
 
 > **TRAP 4: take the FIRST strong autocorrelation peak.** Two links correlate as well as one.
 > A step sized off the double pitch moves 2/3 of a link, and the eye reads it as the belt
-> rolling BACKWARDS. (Mammoth: 43 px of 256, not 85, which scores slightly higher. Predator:
+> rolling the wrong way. (Mammoth: 43 px of 256, not 85, which scores slightly higher. Predator:
 > 14 px.) The code searches from lag 4 and takes the first local maximum above 0.8 x the
 > best peak.
 
@@ -320,7 +321,7 @@ cells, vision 400 -> 6. C&C3 kills much faster per second than classic RA, so ex
 
 - A labelled sheet of all 32 facings with the turret seated as the engine will draw it.
 - A line-up beside existing tanks at the same classic-pixel scale.
-- A measured tread shift between consecutive steps (the belt's top run must move backwards).
+- A measured tread shift between consecutive steps (the belt's top run must move towards the nose).
 - Nothing clipped at the canvas edge, shadow included.
 
 ---
