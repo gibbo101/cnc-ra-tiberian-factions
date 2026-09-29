@@ -87,7 +87,7 @@ out, which suspends the field and resets its charge).
 
 ## RA port plan
 
-### Stage A -- the generator (STRUCT_TSFIRE, "TSFIRE")
+### Stage A -- the generator (STRUCT_TSFGEN, "TSFGEN")
 TS building pipeline (`ts_pack_tree.py`): GTFIRE 3x2 with the _B/_C anims baked into the idle
 cycle, GTFIREMK build-up, damaged frame. TS stats; prerequisite TSTECH; power -200; grants
 SPC_TS_FIRESTORM. Cameo: TS's FSDICON, TS-badged. Excluded from AI production at first.

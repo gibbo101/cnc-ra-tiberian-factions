@@ -98,6 +98,7 @@ BUILDINGS = [
     {'id': 144, 'name': 'tspuls', 'display_name': 'EMP Cannon', 'power_production': 0, 'power_usage': 150, 'storage': 0, 'capturable': True, 'width': 2, 'height': 2, 'occupy_mask': None, 'owner': 'Germany', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': []},
     {'id': 145, 'name': 'tsdpsa', 'display_name': 'Sensor Array', 'power_production': 0, 'power_usage': 0, 'storage': 0, 'capturable': False, 'width': 1, 'height': 1, 'occupy_mask': None, 'owner': 'Germany', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': []},
     {'id': 146, 'name': 'tsdweap', 'display_name': 'Mobile War Factory', 'power_production': 0, 'power_usage': 0, 'storage': 0, 'capturable': True, 'width': 5, 'height': 3, 'occupy_mask': None, 'owner': 'Germany', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': []},
+    {'id': 147, 'name': 'tsfgen', 'display_name': 'Firestorm Generator', 'power_production': 0, 'power_usage': 200, 'storage': 0, 'capturable': True, 'width': 3, 'height': 2, 'occupy_mask': None, 'owner': 'Germany', 'factory_overlay': None, 'frame_offset': 0, 'graphics_source': None, 'z_order': 'default', 'flags': ['Bib']},
 ]
 
 UNITS = [

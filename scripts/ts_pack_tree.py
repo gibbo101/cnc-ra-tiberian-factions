@@ -1519,6 +1519,11 @@ SIZEPASS = [
     ("TSPULS", "shp_napuls", [],
      "shp_napulsmk", 13, (256, 256), 0, 1.0, "shp_empicon",
      "EMP Cannon", "Fires an electromagnetic pulse that disables vehicles and structures."),
+    # TS Firestorm Generator (docs/firestorm-design.md): TS's 3x2 plot on the Tech Center's
+    # square-canvas height trick, the same donor and build-up count.
+    ("TSFGEN", "shp_gtfire", ["shp_gtfire_b", "shp_gtfire_c"],
+     "shp_gtfiremk", 19, (384, 384), 12, 1.0, "shp_fsdicon",
+     "Firestorm Generator", "Raises the Firestorm Defense along every Firestorm Wall Section."),
 ]
 
 for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc in SIZEPASS:
@@ -1545,6 +1550,15 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
             return (d, [i // 2 % n for i in range(32)], [n + i // 2 % n for i in range(32)])
         anims = [halves("shp_gtweap_a", 16), halves("shp_gtweap_b", 8),
                  ("shp_gtweap_c", [i % 4 for i in range(32)], [4 + i % 4 for i in range(32)])]
+    elif ini == "TSFGEN":
+        # TS's two looping active anims in one 48-step idle. TS Rate is frames per minute
+        # (OpenTS animtype.cpp: delay = TICKS_PER_MINUTE / Rate), so _B (16 frames, Rate 500)
+        # is the fast one and advances every step, _C (6 frames, Rate 220) every second step;
+        # both loop whole in 48. At the _anims[] rate of 2 ticks a step that is 7.5 and 3.75
+        # frames a second, TS's 8.3 and 3.7. Neither SHP has a damaged half (the second halves
+        # are empty), so the damaged run is the damaged base with the anims stopped, as in TS.
+        anims = [("shp_gtfire_b", [i % 16 for i in range(48)], [16] * 48),
+                 ("shp_gtfire_c", [(i // 2) % 6 for i in range(48)], [6] * 48)]
     else:
         anims = [loop(d) for d in anim_dirs]
     # Buildups pour and keep their pads. That double-draws the war factory's

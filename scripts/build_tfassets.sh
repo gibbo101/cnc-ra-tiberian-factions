@@ -477,6 +477,11 @@ ts_stub TSTECH "$TMPDIR/tstech_stub.shp" 72 72 2
 PACK_ARGS+=("$TMPDIR/tstech_stub.shp:TSTECH.SHP")
 ts_stub TSTECH "$TMPDIR/tstechmk_stub.shp" 72 72 19
 PACK_ARGS+=("$TMPDIR/tstechmk_stub.shp:TSTECHMAKE.SHP")
+# TSFGEN 72x72: the Firestorm Generator on the Tech Center's 3x2 plot and square canvas.
+ts_stub TSFGEN "$TMPDIR/tsfgen_stub.shp" 72 72 2
+PACK_ARGS+=("$TMPDIR/tsfgen_stub.shp:TSFGEN.SHP")
+ts_stub TSFGEN "$TMPDIR/tsfgenmk_stub.shp" 72 72 19
+PACK_ARGS+=("$TMPDIR/tsfgenmk_stub.shp:TSFGENMAKE.SHP")
 ts_stub TSSILO "$TMPDIR/tssilo_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tssilo_stub.shp:TSSILO.SHP")
 ts_stub TSSILO "$TMPDIR/tssilomk_stub.shp" 48 48 19
