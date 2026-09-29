@@ -49,6 +49,15 @@ data: TS's own `RULES.INI` / `ART.INI` (TIBSUN.MIX), which OpenTS does not carry
   charge interrupted by low power restarts from zero. A live section takes no damage, each hit drains
   damage/10 frames. EVA 00-I162 ready, 00-I170 offline (scripts/ts_eva_build.py). Live sections draw +32
   and block everyone (Is_Open_Firestorm_Section); killing and projectile stops are stage D.
+- **Stage D VERIFIED in play 2026-09-30 (everything not needing an enemy; the enemy-side checks are on the LAN
+  test list in main's docs/todo.md):** TF_Firestorm_Burn (house.cpp) each frame kills anything on the house's
+  live sections (own units too, WARHEAD_TSFLAMEHIT, forced) and any aircraft over one, the Hunter Seeker
+  excepted -- airborne damage is doubled because AircraftClass::Take_Damage halves it (it crept to 1 HP
+  otherwise). Shots: BulletClass::AI deletes any projectile in a hostile live cell with a spark, instant
+  shots are cut at the first hostile live cell on their path at launch (TF_Firestorm_On_Path); eaten shots
+  do not drain (TS). Visuals (scripts/ts_pack_firestorm_fx.py): ANIM_TS_FSIDLE columns flicker up from hubs
+  (every 8th frame, 1 in 16, never on straight runs), ANIM_TS_FSGRND at the wall / ANIM_TS_FSAIR at an
+  aircraft's height on every crossing. Next: stage E, correct control, designed with Luke.
 
 ## TS ground truth
 

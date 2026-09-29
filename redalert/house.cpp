@@ -1353,6 +1353,112 @@ void TF_Firestorm_Set(HouseClass* house, bool on)
     }
 }
 
+/*
+**	The live Firestorm Wall Section in `cell`, or NULL. `shooter` names a house whose own fire
+**	passes its own field (TS); pass NULL to find any live section.
+*/
+BuildingClass* TF_Firestorm_Wall_At(CELL cell, HouseClass const* shooter)
+{
+    if (!Map.In_Radar(cell)) {
+        return (NULL);
+    }
+    BuildingClass* b = Map[cell].Cell_Building();
+    if (b != NULL && *b == STRUCT_TSFSDF && !b->IsInLimbo && b->House->IsFirestormLive && (HouseClass const*)b->House != shooter) {
+        return (b);
+    }
+    return (NULL);
+}
+
+/*
+**	The first cell on the straight line from `from` to `to` holding a live section that stops
+**	`shooter`'s fire, or 0 when the line is clear.
+*/
+COORDINATE TF_Firestorm_On_Path(COORDINATE from, COORDINATE to, HouseClass const* shooter)
+{
+    int dist = ::Distance(from, to);
+    DirType dir = ::Direction(from, to);
+    CELL last = -1;
+    for (int d = 0; d <= dist; d += CELL_LEPTON_W / 4) {
+        COORDINATE c = Coord_Move(from, dir, d);
+        CELL cell = Coord_Cell(c);
+        if (cell != last) {
+            last = cell;
+            if (TF_Firestorm_Wall_At(cell, shooter) != NULL) {
+                return (Cell_Coord(cell));
+            }
+        }
+    }
+    return (TF_Firestorm_Wall_At(Coord_Cell(to), shooter) != NULL ? Cell_Coord(Coord_Cell(to)) : 0);
+}
+
+/*
+**	What a live field does each frame: anything on one of the house's sections dies (its own
+**	units too, as in TS), and so does any aircraft over one, at any height. The Hunter Seeker
+**	is built to ignore the field.
+*/
+void TF_Firestorm_Flare(COORDINATE wall, COORDINATE victim, int height)
+{
+    if (height > 100) {
+        new AnimClass(ANIM_TS_FSAIR, Coord_Move(victim, DIR_N, height));
+    } else {
+        new AnimClass(ANIM_TS_FSGRND, wall);
+    }
+}
+
+static void TF_Firestorm_Burn(HouseClass* house)
+{
+    for (int i = 0; i < Buildings.Count(); i++) {
+        BuildingClass* b = Buildings.Ptr(i);
+        if (b == NULL || !b->IsActive || b->IsInLimbo || *b != STRUCT_TSFSDF || !(b->House == house)) {
+            continue;
+        }
+        CELL cell = Coord_Cell(b->Coord);
+
+        /*
+        **	The field is a flicker of columns, not a solid sheet: every eighth frame each hub
+        **	(anything but a straight run) has a one-in-sixteen chance of throwing one up (TS).
+        */
+        if ((Frame % 8) == 0 && Random_Pick(0, 15) == 0) {
+            int joins = b->Shape_Number() & 15;
+            if (joins != 5 && joins != 10) {
+                new AnimClass(ANIM_TS_FSIDLE, b->Center_Coord());
+            }
+        }
+        /*
+        **	A death can take neighbours with it, so the chain is re-read after every kill.
+        */
+        for (int guard = 0; guard < 16; guard++) {
+            ObjectClass* victim = NULL;
+            for (ObjectClass* o = Map[cell].Cell_Occupier(); o != NULL; o = o->Next) {
+                RTTIType rtti = o->What_Am_I();
+                if (o->IsActive && o->Strength > 0
+                    && (rtti == RTTI_UNIT || rtti == RTTI_INFANTRY || rtti == RTTI_VESSEL)) {
+                    victim = o;
+                    break;
+                }
+            }
+            if (victim == NULL) {
+                break;
+            }
+            TF_Firestorm_Flare(b->Center_Coord(), victim->Center_Coord(), victim->Height);
+            int damage = victim->Strength;
+            victim->Take_Damage(damage, 0, WARHEAD_TSFLAMEHIT, NULL, true);
+        }
+    }
+    for (int i = 0; i < Aircraft.Count(); i++) {
+        AircraftClass* a = Aircraft.Ptr(i);
+        if (a == NULL || !a->IsActive || a->IsInLimbo || a->Strength <= 0 || *a == AIRCRAFT_TSHUNT) {
+            continue;
+        }
+        BuildingClass* wall = TF_Firestorm_Wall_At(Coord_Cell(a->Coord), NULL);
+        if (wall != NULL && wall->House == house) {
+            TF_Firestorm_Flare(wall->Center_Coord(), a->Center_Coord(), a->Height);
+            int damage = a->Strength * 2; // AircraftClass::Take_Damage halves damage while airborne
+            a->Take_Damage(damage, 0, WARHEAD_TSFLAMEHIT, NULL, true);
+        }
+    }
+}
+
 void TF_Wall_Line_Fill(HouseClass* house, StructType type, CELL cell)
 {
     BuildingTypeClass const& btype = BuildingTypeClass::As_Reference(type);
@@ -3200,6 +3306,9 @@ void HouseClass::Super_Weapon_Handler(void)
         if (this == PlayerPtr) {
             Map.Column[1].Flag_To_Redraw();
         }
+    }
+    if (IsFirestormLive) {
+        TF_Firestorm_Burn(this);
     }
     if (firestorm.Is_Present() && !firestorm.Is_Draining() && !firestorm.Is_Ready()) {
         if (Power_Fraction() < 1) {

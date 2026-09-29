@@ -828,6 +828,19 @@ void BulletClass::AI(void)
         new AnimClass(ANIM_TS_SMOKEY2, Coord_Move(Coord, DIR_N, Height));
     }
 
+    /*
+    **	A projectile flying into a live Firestorm is consumed by it, unless the field is its
+    **	shooter's own (TS).
+    */
+    if (!IsInLimbo) {
+        BuildingClass* wall = TF_Firestorm_Wall_At(Coord_Cell(Coord), Payback != NULL ? Payback->House : NULL);
+        if (wall != NULL) {
+            TF_Firestorm_Flare(wall->Center_Coord(), Coord, Height);
+            delete this;
+            return;
+        }
+    }
+
     if (Class->IsTDPort) {
         AI_TD();
         return;
@@ -1704,7 +1717,12 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
         **	location and dispense with the actual flight.
         */
         if (MaxSpeed == MPH_LIGHT_SPEED && Class->IsInvisible) {
-            Coord = tcoord;
+            /*
+            **	An instant shot stops at the first live Firestorm across its path, where the
+            **	field consumes it next frame (TS).
+            */
+            COORDINATE wall = TF_Firestorm_On_Path(Coord, tcoord, Payback != NULL ? Payback->House : NULL);
+            Coord = (wall != 0) ? wall : tcoord;
         }
 
         /*
@@ -1935,7 +1953,12 @@ bool BulletClass::Unlimbo_TD(COORDINATE coord, DirType dir)
         **	target location and dispense with the actual flight.
         */
         if (MaxSpeed == MPH_LIGHT_SPEED && Class->IsInvisible) {
-            Coord = tcoord;
+            /*
+            **	An instant shot stops at the first live Firestorm across its path, where the
+            **	field consumes it next frame (TS).
+            */
+            COORDINATE wall = TF_Firestorm_On_Path(Coord, tcoord, Payback != NULL ? Payback->House : NULL);
+            Coord = (wall != 0) ? wall : tcoord;
         }
 
         /*

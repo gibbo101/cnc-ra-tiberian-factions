@@ -3115,6 +3115,9 @@ typedef enum AnimType : short
     ANIM_TS_PULSEFX2,   // TS PULSEFX2: the other E.M. Pulse impact (15 frames).
     ANIM_TS_EMPFX,      // TS EMP_FX01: the sparks over an object stunned by an E.M. Pulse (27 frames, loops until the stun ends).
     ANIM_TS_MEMPFX,     // TS MEMPFX: the Mobile EM-Pulse's blast, flat on the ground (12 frames).
+    ANIM_TS_FSIDLE,     // TS FSIDLE: the crackling column that flickers over a live Firestorm Wall Section (19 frames, base at its coordinate).
+    ANIM_TS_FSGRND,     // TS FSGRND: sparks where something on the ground meets a live Firestorm (19 frames, base at its coordinate).
+    ANIM_TS_FSAIR,      // TS FSAIR: sparks where something in the air meets a live Firestorm (19 frames).
 
     ANIM_COUNT,
     ANIM_FIRST = 0
