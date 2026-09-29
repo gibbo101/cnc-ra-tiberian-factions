@@ -18,7 +18,7 @@ click-anywhere activation), stage D (the live field).
 - TS Nod wall: the original sprite is exported for the art author at `~/Desktop/ts-nod-walls` (PROMPT.txt there);
   when the HD art lands, port it like the TS GDI wall (`scripts/ts_pack_gdi_wall.py`, commit a8260356): TD's three
   wall damage stages, frames 0-47.
-- **Base the branch on `firestorm` once its stage B is committed and pushed** (or on main after firestorm merges):
+- **Base the branch on `firestorm` (stage B committed + pushed at 7e356cb5)** (or on main after firestorm merges):
   the 5-cell line fill (`house.cpp` TF_Wall_Line_Fill, TF_Is_Line_Fill_Type) and the wall placement code are
   exactly what gates must join, so a branch off plain `main` would rewrite the same functions.
 - Rules: never share a checkout (`git worktree add ../tf-gates-worktree -b gates <base>`); deploy only to the
