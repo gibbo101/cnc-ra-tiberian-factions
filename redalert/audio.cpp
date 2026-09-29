@@ -431,9 +431,6 @@ struct SoundEffectNameStruct
     {"C3MATD", 20, IN_NOVAR},  // VOC_C3MATD -- Mammoth Mk. III attack voice
     {"C3MATE", 20, IN_NOVAR},  // VOC_C3MATE -- Mammoth Mk. III attack voice
     {"C3MATF", 20, IN_NOVAR},  // VOC_C3MATF -- Mammoth Mk. III attack voice
-    {"C3MSTA", 10, IN_NOVAR},  // VOC_C3MSTA -- Mammoth Mk. III engine start
-    {"C3MSTB", 10, IN_NOVAR},  // VOC_C3MSTB -- Mammoth Mk. III engine start
-    {"C3MSTC", 10, IN_NOVAR},  // VOC_C3MSTC -- Mammoth Mk. III engine start
     {"C3MGUN", 1, IN_NOVAR},  // VOC_C3MGUN -- Mammoth Mk. III cannon (random take)
     {"C3MPOD", 1, IN_NOVAR},  // VOC_C3MPOD -- Mammoth Mk. III rocket pods (random take)
     {"C3PSEA", 20, IN_NOVAR},  // VOC_C3PSEA -- Predator select voice
@@ -453,9 +450,6 @@ struct SoundEffectNameStruct
     {"C3PATD", 20, IN_NOVAR},  // VOC_C3PATD -- Predator attack voice
     {"C3PATE", 20, IN_NOVAR},  // VOC_C3PATE -- Predator attack voice
     {"C3PATF", 20, IN_NOVAR},  // VOC_C3PATF -- Predator attack voice
-    {"C3PSTA", 10, IN_NOVAR},  // VOC_C3PSTA -- Predator engine start
-    {"C3PSTB", 10, IN_NOVAR},  // VOC_C3PSTB -- Predator engine start
-    {"C3PSTC", 10, IN_NOVAR},  // VOC_C3PSTC -- Predator engine start
     {"C3PGUN", 1, IN_NOVAR},  // VOC_C3PGUN -- Predator cannon (random take)
 };
 

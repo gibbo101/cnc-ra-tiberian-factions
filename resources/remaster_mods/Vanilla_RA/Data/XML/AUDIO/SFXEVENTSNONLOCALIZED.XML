@@ -8191,54 +8191,6 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> C3MATF.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
-  <SFXEvent Name="RAC_SFX_C3MSTA" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> C3MSTA.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-  <SFXEvent Name="RAR_SFX_C3MSTA" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> C3MSTA.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-  <SFXEvent Name="RAC_SFX_C3MSTB" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> C3MSTB.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-  <SFXEvent Name="RAR_SFX_C3MSTB" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> C3MSTB.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-  <SFXEvent Name="RAC_SFX_C3MSTC" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> C3MSTC.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-  <SFXEvent Name="RAR_SFX_C3MSTC" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> C3MSTC.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
   <SFXEvent Name="RAC_SFX_C3MGUN" Preset="_PRESET_MD_MOBIUS_2D">
     <IsPreset> False </IsPreset>
     <MinPitch>100</MinPitch>
@@ -8569,54 +8521,6 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
     <MaxPitch>100</MaxPitch>
     <SampleNamesList>
       <entry> C3PATF.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-  <SFXEvent Name="RAC_SFX_C3PSTA" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> C3PSTA.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-  <SFXEvent Name="RAR_SFX_C3PSTA" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> C3PSTA.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-  <SFXEvent Name="RAC_SFX_C3PSTB" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> C3PSTB.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-  <SFXEvent Name="RAR_SFX_C3PSTB" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> C3PSTB.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-  <SFXEvent Name="RAC_SFX_C3PSTC" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> C3PSTC.WAV </entry>
-    </SampleNamesList>
-  </SFXEvent>
-  <SFXEvent Name="RAR_SFX_C3PSTC" Preset="_PRESET_MD_MOBIUS_2D">
-    <IsPreset> False </IsPreset>
-    <MinPitch>100</MinPitch>
-    <MaxPitch>100</MaxPitch>
-    <SampleNamesList>
-      <entry> C3PSTC.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
   <SFXEvent Name="RAC_SFX_C3PGUN" Preset="_PRESET_MD_MOBIUS_2D">

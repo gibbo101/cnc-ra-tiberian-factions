@@ -13,7 +13,7 @@ The turret frames pivot on the turret bone, which sits off the hull centre (the 
 pixels for the draw and in leptons for fire coordinates, and per turret frame each fire point
 relative to the seat (projected through the render camera, 4/3 leptons per canvas px).
 
-Audio: each tank's own C&C3 crew voice, engine spool-up and weapon takes, re-encoded MS-ADPCM
+Audio: each tank's own C&C3 crew voice and weapon takes, re-encoded MS-ADPCM
 22050 Hz mono under C3 names. One sound event per VOC; a weapon event lists every take, and the
 launcher picks one per shot. The events sit between markers in SFXEVENTSNONLOCALIZED.XML.
 
@@ -108,13 +108,11 @@ SOUNDS = (
     [(f"C3MSE{c}", "mammoth", [f"GUMammo_VoiSelect{c.lower()}"]) for c in "ABCDEF"]
     + [(f"C3MMO{c}", "mammoth", [f"GUMammo_VoiMove{c.lower()}"]) for c in "ABCDEF"]
     + [(f"C3MAT{c}", "mammoth", [f"GUMammo_VoiAttack{c.lower()}"]) for c in "ABCDEF"]
-    + [(f"C3MST{c}", "mammoth", [f"GUMammo_moveStar{c.lower()}"]) for c in "ABC"]
     + [("C3MGUN", "mammoth", [f"GUMammo_wea1fire{c}" for c in "abcdefghijkl"]),
        ("C3MPOD", "mammoth", [f"GUMammo_wea2fire{c}" for c in "abcd"])]
     + [(f"C3PSE{c}", "predator", [f"GUPreda_VoiSelect{c.lower()}"]) for c in "ABCDEF"]
     + [(f"C3PMO{c}", "predator", [f"GUPreda_VoiMove{c.lower()}"]) for c in "ABCDE"]
     + [(f"C3PAT{c}", "predator", [f"GUPreda_VoiAttack{c.lower()}"]) for c in "ABCDEF"]
-    + [(f"C3PST{c}", "predator", [f"GUPreda_moveStar{c.lower()}"]) for c in "ABC"]
     + [("C3PGUN", "predator", [f"GUPreda_wea1fire{c}" for c in "abcdefghi"])]
 )
 SFX_XML = f"{MOD}/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML"

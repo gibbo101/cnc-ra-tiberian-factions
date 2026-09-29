@@ -1856,8 +1856,9 @@ static bool TF_Limpet_Voice(UnitClass const* unit, VocType a, VocType b)
 }
 
 /*
-**	The RA2 and C&C3 tanks answer in their own crews' voices, whoever owns them, and a move
-**	order spools the engine up (the source game's MoveStart). Returns false for every other unit.
+**	The RA2 and C&C3 tanks answer in their own crews' voices, whoever owns them. A move order
+**	also spools an RA2 tank's engine up (YR MoveStart); the C&C3 tanks answer with the voice
+**	alone, as C&C3 plays them. Returns false for every other unit.
 */
 enum TFVoiceKind { TF_VOICE_SELECT, TF_VOICE_MOVE, TF_VOICE_ATTACK };
 
@@ -1883,8 +1884,6 @@ static bool TF_RA2_Voice(UnitClass const* unit, TFVoiceKind kind)
         {VOC_C3PMOA, VOC_C3PMOB, VOC_C3PMOC, VOC_C3PMOD, VOC_C3PMOE, VOC_NONE},
         {VOC_C3PATA, VOC_C3PATB, VOC_C3PATC, VOC_C3PATD, VOC_C3PATE, VOC_C3PATF},
     };
-    static VocType const _c3mk3_start[3] = {VOC_C3MSTA, VOC_C3MSTB, VOC_C3MSTC};
-    static VocType const _c3pred_start[3] = {VOC_C3PSTA, VOC_C3PSTB, VOC_C3PSTC};
     static VocType const _apoc_start[3] = {VOC_R2_VAPOSTAA, VOC_R2_VAPOSTAB, VOC_R2_VAPOSTAC};
     static VocType const _pris_start[3] = {VOC_R2_VPRISTAA, VOC_R2_VPRISTAB, VOC_R2_VPRISTAC};
 
@@ -1898,10 +1897,10 @@ static bool TF_RA2_Voice(UnitClass const* unit, TFVoiceKind kind)
         starts = _pris_start;
     } else if (*unit == UNIT_C3MK3) {
         lines = _c3mk3[kind];
-        starts = _c3mk3_start;
+        starts = NULL;
     } else if (*unit == UNIT_C3PRED) {
         lines = _c3pred[kind];
-        starts = _c3pred_start;
+        starts = NULL;
     } else {
         return (false);
     }
@@ -1909,7 +1908,7 @@ static bool TF_RA2_Voice(UnitClass const* unit, TFVoiceKind kind)
         int count = (lines[5] == VOC_NONE) ? 5 : 6;
         Sound_Effect(lines[Sim_Random_Pick(0, count - 1)], fixed(1), -(unit->ID + 1));
     }
-    if (kind == TF_VOICE_MOVE) {
+    if (kind == TF_VOICE_MOVE && starts != NULL) {
         Sound_Effect(starts[Sim_Random_Pick(0, 2)], unit->Coord);
     }
     return (true);

@@ -4405,9 +4405,6 @@ typedef enum VocType : short
     VOC_C3MATD,    // Mammoth Mk. III attack voice. Bundled C&C3 sample(s) as C3MATD*.WAV.
     VOC_C3MATE,    // Mammoth Mk. III attack voice. Bundled C&C3 sample(s) as C3MATE*.WAV.
     VOC_C3MATF,    // Mammoth Mk. III attack voice. Bundled C&C3 sample(s) as C3MATF*.WAV.
-    VOC_C3MSTA,    // Mammoth Mk. III engine start. Bundled C&C3 sample(s) as C3MSTA*.WAV.
-    VOC_C3MSTB,    // Mammoth Mk. III engine start. Bundled C&C3 sample(s) as C3MSTB*.WAV.
-    VOC_C3MSTC,    // Mammoth Mk. III engine start. Bundled C&C3 sample(s) as C3MSTC*.WAV.
     VOC_C3MGUN,    // Mammoth Mk. III cannon (random take). Bundled C&C3 sample(s) as C3MGUN*.WAV.
     VOC_C3MPOD,    // Mammoth Mk. III rocket pods (random take). Bundled C&C3 sample(s) as C3MPOD*.WAV.
     VOC_C3PSEA,    // Predator select voice. Bundled C&C3 sample(s) as C3PSEA*.WAV.
@@ -4427,9 +4424,6 @@ typedef enum VocType : short
     VOC_C3PATD,    // Predator attack voice. Bundled C&C3 sample(s) as C3PATD*.WAV.
     VOC_C3PATE,    // Predator attack voice. Bundled C&C3 sample(s) as C3PATE*.WAV.
     VOC_C3PATF,    // Predator attack voice. Bundled C&C3 sample(s) as C3PATF*.WAV.
-    VOC_C3PSTA,    // Predator engine start. Bundled C&C3 sample(s) as C3PSTA*.WAV.
-    VOC_C3PSTB,    // Predator engine start. Bundled C&C3 sample(s) as C3PSTB*.WAV.
-    VOC_C3PSTC,    // Predator engine start. Bundled C&C3 sample(s) as C3PSTC*.WAV.
     VOC_C3PGUN,    // Predator cannon (random take). Bundled C&C3 sample(s) as C3PGUN*.WAV.
 
     VOC_COUNT,
