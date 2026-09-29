@@ -1,53 +1,35 @@
-## RESUME HERE: 2026-09-28 (early hours)
+## RESUME HERE: 2026-09-29
 
-**First thing: Luke screencasts the Mobile War Factory's two open issues** (GNOME recorder,
-`~/Videos/Screencasts/`; pull frames with ffmpeg fps=6): (1) a Titan's antenna shows over the
-deployed MWF's lower roof, at the back, while it sits in the bay; (2) artefacting as a vehicle
-leaves the bay. Both are the doorway layering: the front cut line
-(`resources/custom-art/tsdweap-front-cut-line.json`) is an interim shift of the War Factory's,
-and mechs use the War Factory's mech seat. Fix from the frames (move the cut line, or an
-Aseprite file for Luke to drag per the seat-loop protocol; a forward mech seat for this factory
-only, or keep the vehicle hidden until it leaves the mouth). Then commit and the MWF is done.
+**Two instances from 2026-09-30.** Each works in its own worktree and owns one deploy surface.
 
-**Deploy first:** the worktree build has the prerequisite fix (a deployed MWF satisfies War
-Factory prerequisites, Firestorm PrerequisiteFactory); the desktop still runs DLL `d8d166d1`
-without it. Deploy `../tf-subterranean-worktree/build/remaster/Vanilla_RA/Data/RedAlert.dll`
-with the game closed and md5 it.
+### Instance A: Firestorm Defense (branch `firestorm`, worktree `../tf-subterranean-worktree`, deploys to the DESKTOP)
+Design + tracker: `docs/firestorm-design.md` on that branch. Stage A (generator, STRUCT_TSFGEN) committed;
+stage B (Firestorm Wall Sections, STRUCT_TSFSDF) and the 5-cell line fill for every wall type are built and
+desktop-deployed, awaiting Luke's play test, then commit + push. Next: stage C (superweapon + charge-drain,
+click-anywhere activation), stage D (the live field).
 
-Everything is on branch `emp-cannon` (worktree `../tf-subterranean-worktree`), NOT pushed:
-EMP arc complete (stages A-E, radius 3 to match the ring art, stun 30 s cannon / 10 s mobile),
-Mobile EMP, Mobile Sensor Array (ghost copies show cloaked/buried enemies to the sensor's owner,
-detection EVA), Mobile War Factory vehicle + deploy (`b5c7003e` checkpoint). Branch design doc:
-`docs/emp-cannon-design.md` there. After the MWF: the Firestorm Generator (art route to agree
-with Luke first, `ts-gdi-tree-plan.md` 19b), then the LAN Limpet test, then the queued
-range-ring and chrono-arrival features below. `main` is 11 commits ahead of origin (docs), not
-pushed.
+### Instance B: gates for all six factions + the TS Nod wall (own worktree, deploys to the DECK `steamdeck` / 100.68.30.94)
+- Scope (Luke, 2026-09-29): "all factions can have gates now" -- TS GDI, TS Nod, RA Allies, RA Soviets, TD GDI,
+  TD Nod. Art v2 + README: `~/Downloads/cnc-gates-hd-v2/cnc-gates-hd/` (horizontal 3x1 / vertical 1x3 per gate,
+  open stages + damaged + destroyed, house-colour trim masks, end pieces joining a gate to the TS GDI wall or RA's
+  concrete wall BRIK). Engine: a gate building type per faction and orientation (blocks enemies, opens for own
+  units, closes behind them), walls count a gate's end cells as neighbours and draw the matching end piece, trim
+  converted to the launcher's remap range, the Allied status lights and the Soviet idle crackle.
+- TS Nod wall: the original sprite is exported for the art author at `~/Desktop/ts-nod-walls` (PROMPT.txt there);
+  when the HD art lands, port it like the TS GDI wall (`scripts/ts_pack_gdi_wall.py`, commit a8260356): TD's three
+  wall damage stages, frames 0-47.
+- **Base the branch on `firestorm` once its stage B is committed and pushed** (or on main after firestorm merges):
+  the 5-cell line fill (`house.cpp` TF_Wall_Line_Fill, TF_Is_Line_Fill_Type) and the wall placement code are
+  exactly what gates must join, so a branch off plain `main` would rewrite the same functions.
+- Rules: never share a checkout (`git worktree add ../tf-gates-worktree -b gates <base>`); deploy only to the
+  Deck; before the first deploy copy main's gitignored UI atlas
+  (`resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/MT_COMMANDBAR_COMMON.TGA`, md5 f3a75f8a) into the
+  worktree's resources AND build dir -- a stale or missing copy strips the lobby icons and crests; deploy
+  file by file or md5-check the atlas after any whole-folder rsync.
 
-## RESUME HERE: 2026-09-27 (evening)
-
-**First thing: remind Luke to test the hover settle** (he asked). Fire E.M. Pulse at a Hover
-MLRS and a Limpet Drone: in normal hover the whole unit, shadow included, bobs smoothly as
-before; stunned, the bob stops and the hull settles 3 px onto a still shadow, lifting back at
-the end of the 30 s. Then stage C gets his sign-off.
-
-`main` is 8 commits ahead of origin, NOT pushed (all verified in play): the Dropship Bay pad at
-twice the detail and its damaged-pad upscale (03164522, 4ca490b4), the construction-options fix
-(8bad2c61), TS Light Infantry and Disc Throwers in drop pods (be030e86), the bay build-up upscale
-(fb69b266), and three docs commits. Push when Luke says.
-
-Next session, in order:
-1. **EMP arc** (branch `emp-cannon` @ `aa2cccf2`, pushed; worktree `../tf-subterranean-worktree`):
-   the fire sound and stage C (the pulse and stun) are built; everything but the hover settle is
-   verified in play. Luke's ruling: keep TS's rules (no power cut, construction and production
-   carry on, only conyards spark, pad-parked aircraft spared). Next is stage D, the diggers:
-   OpenTS makes a stunned underground unit surface at the nearest ground, destroyed only if there
-   is none; ask Luke before porting it. Resume from `docs/emp-cannon-design.md` there.
-2. **Bugs on main** (`docs/known-issues.md`): medics looping on hurt Jumpjet Infantry; the
-   Upgrade Center's missing RA slab.
-
-Parked until polish: the sprite upscale (branch `upscale-spike`, worktree
-`../tf-upscale-worktree`; `docs/sprite-upscale-spike.md` and `docs/sprite-upscale-rules.md`
-there). The desktop prefix holds the EMP stage C build (DLL `0e9d35fe`) with the shipped art.
+Done and merged to `main` (f78d056b, pushed): the EMP Pulse Cannon arc, Mobile EMP, Mobile Sensor Array, Mobile
+War Factory, and TS GDI's HD concrete wall. Still open on `main` (`docs/known-issues.md`): medics looping on hurt
+Jumpjet Infantry; the Upgrade Center's missing RA slab. Then the LAN Limpet test and the queued features below.
 
 ## TS chrono arrival at skirmish start (Luke's idea, 2026-09-27, after the GDI roster)
 
