@@ -57,6 +57,24 @@ public:
     bool Enable(bool onetime = false, bool player = false, bool quiet = false);
     void Forced_Charge(bool player = false);
     void Cap_Recharge(int frames);
+
+    /*
+    **	Charge-drain (TS's Firestorm): a full charge is spent over `frames` while the effect
+    **	runs, the sidebar clock running back down; when it runs out, or the drain is ended
+    **	early, the weapon charges again from zero.
+    */
+    bool Start_Drain(int frames);
+    void End_Drain(bool player = false);
+    void Drain(int frames);
+    void Restart_Charge(bool player = false);
+    bool Is_Draining(void) const
+    {
+        return (IsDraining);
+    }
+    bool Drain_Expired(void) const
+    {
+        return (IsDraining && Control == 0);
+    }
     bool AI(bool player = false);
     bool Remove(bool forced = false);
     void Impatient_Click(void) const;
@@ -92,6 +110,8 @@ private:
     unsigned IsPresent : 1;
     unsigned IsOneTime : 1;
     unsigned IsReady : 1;
+    unsigned IsDraining : 1;
+    int DrainTime;
 
     CDTimerClass<FrameTimerClass> Control;
     int OldStage;

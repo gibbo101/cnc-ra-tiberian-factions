@@ -782,6 +782,24 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<!-- Tiberian Factions mod — the Firestorm Defense (SPC_TS_FIRESTORM): AssetName "SW_TSFire"
+	     from Convert_Special_Weapon_Type, cameo = TS's FSTDICON. SG_TSFire is the key a
+	     mixed-faction game asks for; it shows the same plain cameo. -->
+	<ObjectTypeClass Name="RA_SW_TSFIRE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_SW_TSFIRE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_SW_TSFIRE_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SW_TSFIRE</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SG_TSFIRE" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_SW_TSFIRE</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_SW_TSFIRE_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SW_TSFIRE</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 	<!-- Tiberian Factions mod — the EMP Cannon's E.M. Pulse (SPC_TS_EMP): AssetName
 	     "SW_TSEmp" from Convert_Special_Weapon_Type, cameo = TS's PULSICON
 	     (scripts/ts_pack_emp.py). SG_TSEmp is the key a mixed-faction game asks for;

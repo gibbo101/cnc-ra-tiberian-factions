@@ -625,6 +625,7 @@ HouseClass::HouseClass(HousesType house)
     , IsGPSActive(false)
     , IsBuiltSomething(false)
     , IsFirestormLive(false)
+    , IsFirestormPowerLow(false)
     , IsResigner(false)
     , IsGiverUpper(false)
     , IsParanoid(false)
@@ -809,6 +810,11 @@ HouseClass::HouseClass(HousesType house)
     // than borrow another era's announcer.
     new (&SuperWeapon[SPC_TS_EMP])
         SuperClass(TICKS_PER_MINUTE * 9 / 2, true, VOX_NONE, VOX_TS_EMP_READY, VOX_NONE, VOX_NONE);
+
+    // Tiberian Factions mod — TS Firestorm Defense (Firestorm Generator). TS rules.ini
+    // [FirestormSpecial]: RechargeTime=3, IsPowered, UseChargeDrain, RechargeVoice=00-I162.
+    new (&SuperWeapon[SPC_TS_FIRESTORM])
+        SuperClass(TICKS_PER_MINUTE * 3, true, VOX_NONE, VOX_TS_FIRESTORM_READY, VOX_NONE, VOX_NONE);
 
     // Tiberian Factions mod — Nod Nuclear Strike. TD-authentic 14-minute
     // recharge per tiberiandawn/defines.h NUKE_GONE_TIME (14 *
@@ -1324,6 +1330,27 @@ static bool TF_Is_Own_Wall_Section(HouseClass const* house, StructType type, CEL
     }
     BuildingClass const* b = c.Cell_Building();
     return (b != NULL && *b == type && b->House == house);
+}
+
+/*
+**	Raises or drops the house's Firestorm: every section it owns turns into the live wall or
+**	back into a walkable pad, and is redrawn. Dropping it is announced to its owner.
+*/
+void TF_Firestorm_Set(HouseClass* house, bool on)
+{
+    if (house == NULL || (bool)house->IsFirestormLive == on) {
+        return;
+    }
+    house->IsFirestormLive = on;
+    for (int i = 0; i < Buildings.Count(); i++) {
+        BuildingClass* b = Buildings.Ptr(i);
+        if (b != NULL && b->IsActive && !b->IsInLimbo && *b == STRUCT_TSFSDF && b->House == house) {
+            b->Mark(MARK_CHANGE);
+        }
+    }
+    if (!on && house == PlayerPtr) {
+        Speak(VOX_TS_FIRESTORM_OFFLINE);
+    }
 }
 
 void TF_Wall_Line_Fill(HouseClass* house, StructType type, CELL cell)
@@ -2699,7 +2726,7 @@ void HouseClass::Super_Weapon_Handler(void)
             **	Repeating super weapons that require power will be suspended if there
             **	is insufficient power available.
             */
-            if (!super->Is_Ready() && super->Is_Powered() && !super->Is_One_Time()) {
+            if (!super->Is_Ready() && super->Is_Powered() && !super->Is_One_Time() && !super->Is_Draining()) {
                 super->Suspend(Power_Fraction() < 1);
             }
         }
@@ -3153,6 +3180,59 @@ void HouseClass::Super_Weapon_Handler(void)
             } else {
                 if (this == PlayerPtr) {
                     Map.Add(RTTI_SPECIAL, SPC_TS_EMP);
+                    Map.Column[1].Flag_To_Redraw();
+                }
+            }
+        }
+    }
+
+    /*
+    **  Tiberian Factions mod — TS Firestorm Defense (SPC_TS_FIRESTORM), granted while the house
+    **  has a Firestorm Generator standing. The field drops when the drain runs out, the power
+    **  falls short or the last generator goes; a charge interrupted by low power starts again
+    **  from zero, as in TS.
+    */
+    bool ts_fs_host = Get_Quantity(STRUCT_TSFGEN) > 0;
+    SuperClass& firestorm = SuperWeapon[SPC_TS_FIRESTORM];
+    if (IsFirestormLive && (!ts_fs_host || Power_Fraction() < 1 || firestorm.Drain_Expired() || IsDefeated)) {
+        TF_Firestorm_Set(this, false);
+        firestorm.End_Drain(this == PlayerPtr);
+        if (this == PlayerPtr) {
+            Map.Column[1].Flag_To_Redraw();
+        }
+    }
+    if (firestorm.Is_Present() && !firestorm.Is_Draining() && !firestorm.Is_Ready()) {
+        if (Power_Fraction() < 1) {
+            IsFirestormPowerLow = true;
+        } else if (IsFirestormPowerLow) {
+            IsFirestormPowerLow = false;
+            firestorm.Restart_Charge();
+        }
+    }
+    if (firestorm.Is_Present()) {
+        if ((!ts_fs_host && !firestorm.Is_One_Time()) || IsDefeated) {
+            if (firestorm.Remove()) {
+                if (this == PlayerPtr) {
+                    if (Map.IsTargettingMode == SPC_TS_FIRESTORM) {
+                        Map.IsTargettingMode = SPC_NONE;
+                    }
+                    Map.Column[1].Flag_To_Redraw();
+                }
+                IsRecalcNeeded = true;
+            }
+        }
+    } else {
+        if (ts_fs_host && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
+            firestorm.Enable(false, this == PlayerPtr, Power_Fraction() < 1);
+            if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
+                if (IsHuman) {
+#ifdef REMASTER_BUILD
+                    Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TS_FIRESTORM, this);
+#endif
+                }
+            } else {
+                if (this == PlayerPtr) {
+                    Map.Add(RTTI_SPECIAL, SPC_TS_FIRESTORM);
                     Map.Column[1].Flag_To_Redraw();
                 }
             }
@@ -4605,6 +4685,26 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
                 Map.Column[1].Flag_To_Redraw();
                 Map.IsTargettingMode = SPC_NONE;
             }
+        }
+        break;
+
+    case SPC_TS_FIRESTORM:
+        /*
+        **	Raises the field wherever it is clicked (the cell is not used): a full charge
+        **	buys a third of its recharge time, TS's ChargeToDrainRatio of .333.
+        */
+        if (SuperWeapon[SPC_TS_FIRESTORM].Is_Ready() && Power_Fraction() >= 1) {
+            SuperWeapon[SPC_TS_FIRESTORM].Start_Drain(SuperWeapon[SPC_TS_FIRESTORM].Get_Recharge_Time() / 3);
+            TF_Firestorm_Set(this, true);
+            IsRecalcNeeded = true;
+            fired = true;
+            what = "TS_FIRESTORM";
+        } else if (this == PlayerPtr && Power_Fraction() < 1) {
+            Speak(VOX_INSUFFICIENT_POWER);
+        }
+        if (this == PlayerPtr) {
+            Map.Column[1].Flag_To_Redraw();
+            Map.IsTargettingMode = SPC_NONE;
         }
         break;
 

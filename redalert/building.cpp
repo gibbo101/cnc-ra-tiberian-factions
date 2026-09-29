@@ -2616,6 +2616,16 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
     ResultType res = RESULT_NONE;
     int shakes;
 
+    /*
+    **	A live Firestorm Wall Section takes no damage; each hit drains the field instead, a tenth
+    **	of a frame per point (TS DamageToFirestormDamageCoefficient=.1).
+    */
+    if (*this == STRUCT_TSFSDF && House->IsFirestormLive && !forced) {
+        House->SuperWeapon[SPC_TS_FIRESTORM].Drain(damage / 10);
+        damage = 0;
+        return (RESULT_NONE);
+    }
+
     if (this != source /*&& !Class->IsInsignificant*/) {
 
         if (source) {

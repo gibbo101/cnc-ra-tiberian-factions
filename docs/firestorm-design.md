@@ -41,6 +41,14 @@ data: TS's own `RULES.INI` / `ART.INI` (TIBSUN.MIX), which OpenTS does not carry
 - **Line fill for all walls VERIFIED in play 2026-09-29** (house.cpp TF_Wall_Line_Fill,
   called from Place_Object): sandbags, concrete, barbed wire, wood, chain link, fence, TS wall and
   the Firestorm sections; 5 cells; charged per section at Cost_Of x CostBias; stops when money runs out.
+- **Stage C VERIFIED in play 2026-09-29 (all 9 checks):** SPC_TS_FIRESTORM (targeted
+  SW_ION_CANNON route, AssetName "SW_TSFire", TS FSTDICON cameo). SuperClass charge-drain (Start_Drain /
+  End_Drain / Drain / Restart_Charge; the sidebar clock runs back down while draining; the dev 5 s recharge
+  cap and the low-power suspend skip a draining weapon). Full charge -> 1 minute of field; the field drops
+  when the drain runs out, the power falls short or the last generator goes, then charges from zero; a
+  charge interrupted by low power restarts from zero. A live section takes no damage, each hit drains
+  damage/10 frames. EVA 00-I162 ready, 00-I170 offline (scripts/ts_eva_build.py). Live sections draw +32
+  and block everyone (Is_Open_Firestorm_Section); killing and projectile stops are stage D.
 
 ## TS ground truth
 
@@ -51,7 +59,7 @@ data: TS's own `RULES.INI` / `ART.INI` (TIBSUN.MIX), which OpenTS does not carry
 | `[GAFIRE]` | Fire Storm Generator: Strength 800, heavy, Cost 2000, Power -200, TechLevel 9, Prerequisite GATECH, Adjacent 2, Sight 5, Capturable, Crewed, SuperWeapon=FirestormSpecial. Art: Foundation 3x2, ActiveAnim GAFIRE_C + ActiveAnimTwo GAFIRE_B, Buildup GAFIREMK, cameo FSDICON |
 | `[GAFSDF]` | Firestorm Wall Section: Strength 200, concrete, Cost 50, Power -2, Prerequisite GAFIRE, not repairable, not capturable, Selectable=no, IsBase=no, BaseNormal=no, FirestormWall=yes. Art: 1x1, cameo FSPICON |
 | `[FirestormSpecial]` | Type=Firestorm, RechargeTime=3 (minutes), IsPowered, UseChargeDrain, RechargeVoice=00-I162, sidebar FSTDICON |
-| `[General]` | ChargeToDrainRatio=.333 (drain = charge x 3), DamageToFirestormDamageCoefficient=.1 |
+| `[General]` | ChargeToDrainRatio=.333 (drain = charge x .333: a full charge = 1 minute of field), DamageToFirestormDamageCoefficient=.1 |
 | `[CombatDamage]` | FirestormWarhead=FirestormWH (100% vs every armour), DefaultFirestormExplosionSystem=FirestormSparkSys |
 | `[AudioVisual]` | FirestormActiveAnim=GAFSDF_A, FirestormIdleAnim=FSIDLE, FirestormGroundAnim=FSGRND, FirestormAirAnim=FSAIR |
 | `IgnoresFirestorm=yes` | the two hunter seekers |
@@ -60,7 +68,7 @@ data: TS's own `RULES.INI` / `ART.INI` (TIBSUN.MIX), which OpenTS does not carry
 
 **Charge-drain superweapon** (super.cpp, super.h:119-125). States SUSPENDED / CHARGING / READY /
 FIRESTORM_ON; placeable in any state but CHARGING (super.cpp:582).
-- READY -> ON: drain time = current charge x 3 (:335); `House->Activate_Firestorm()`.
+- READY -> ON: drain time = current charge x ChargeToDrainRatio (:335); TS's rules set it to .333, so a full 3-minute charge buys 1 minute of field (OpenTS's default of 3 is overridden); `House->Activate_Firestorm()`.
 - ON -> off early (click again): leftover drain turns back into charge (:328-330).
 - READY keeps charging, so a partial charge can be used (:389).
 - Drain runs out: wall drops, state CHARGING from zero (:397-401).
@@ -120,7 +128,7 @@ Prerequisite TSFIRE, cost / power per the open question.
 
 ### Stage C -- the superweapon and charge-drain (SPC_TS_FIRESTORM)
 RA's SuperClass has charge and power-suspend but no drain: add a drain phase for this special
-only (READY -> ON drains at 3x, runs out -> charge from zero; power loss or generator loss drops
+only (READY -> ON spends the charge over a third of the recharge time, runs out -> charge from zero; power loss or generator loss drops
 the field and resets). Activation through the targeted route (click anywhere). Sidebar shows the
 drain as the clock running back down. EVA 00-I162 ready, 00-I170 offline (TS SPEECH01).
 Hits on a live section drain charge x 0.1 instead of damaging it.

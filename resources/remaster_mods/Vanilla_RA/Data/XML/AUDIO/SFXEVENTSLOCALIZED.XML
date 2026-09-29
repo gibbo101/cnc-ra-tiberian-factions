@@ -13174,6 +13174,54 @@
       <Priority> 2 </Priority>
       <QueueIfCantPlay> True </QueueIfCantPlay>
    </LocalizedSFXEvent>
+   <!-- "Firestorm defense offline" -->
+   <LocalizedSFXEvent Name="RAC_SFX_TSFSOFFLN" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TS_SFX_EVA_FSOFFLN_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
+   <!-- "Firestorm defense offline" -->
+   <LocalizedSFXEvent Name="RAR_SFX_TSFSOFFLN" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TS_SFX_EVA_FSOFFLN_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
+   <!-- "Firestorm defense ready" -->
+   <LocalizedSFXEvent Name="RAC_SFX_TSFSREADY" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TS_SFX_EVA_FSREADY_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
+   <!-- "Firestorm defense ready" -->
+   <LocalizedSFXEvent Name="RAR_SFX_TSFSREADY" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TS_SFX_EVA_FSREADY_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
    <!-- "ion cannon ready" -->
    <LocalizedSFXEvent Name="RAC_SFX_TSIONREADY" Preset="_PRESET_HUD">
       <SampleNamesList>

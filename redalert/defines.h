@@ -788,6 +788,7 @@ typedef enum SpecialWeaponType : char
     SPC_TS_DROPPODS,      // TS Drop Pod reinforcements (3 BULLET_TSPODDROP pods of infantry, sourced from the TSPODS plug)
     SPC_TS_HUNTSEEK,      // TS Hunter Seeker droid (a self-targeting kamikaze flyer, sourced from the TSSEEK plug)
     SPC_TS_EMP,           // TS E.M. Pulse (TS [EMPulseSpecial]): the nearest powered EMP Cannon (STRUCT_TSPULS) in range lobs a pulse ball at the target
+    SPC_TS_FIRESTORM,     // TS Firestorm Defense (TS [FirestormSpecial], charge-drain): raises every Firestorm Wall Section the house owns while the Firestorm Generator (STRUCT_TSFGEN) stands and is powered
 
     SPC_COUNT,
     SPC_FIRST = 0,
@@ -4557,6 +4558,8 @@ typedef enum VoxType : short
     VOX_TS_EMP_READY,
     VOX_TS_CLOAKED_DETECTED,
     VOX_TS_SUBTERRANEAN_DETECTED,
+    VOX_TS_FIRESTORM_READY,
+    VOX_TS_FIRESTORM_OFFLINE,
 
     VOX_COUNT,
     VOX_FIRST = 0

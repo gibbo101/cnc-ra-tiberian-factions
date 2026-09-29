@@ -74,6 +74,8 @@ LINES = {
     "UNITREPD": ("00-I078", None,                         "unit repaired"),
     "IONREADY": ("00-I156", None,                         "ion cannon ready"),
     "EMPREADY": ("00-I158", None,                         "E.M. pulse cannon ready"),
+    "FSREADY":  ("00-I162", None,                         "Firestorm defense ready"),
+    "FSOFFLN":  ("00-I170", None,                         "Firestorm defense offline"),
     "CLOAKDET": ("00-I172", None,                         "cloaked unit detected"),
     "SUBDET":   ("00-I174", None,                         "subterranean unit detected"),
     "MISNWON":  ("00-I284", None,                         "you are victorious"),
