@@ -1,53 +1,19 @@
-## RESUME HERE: 2026-09-28 (early hours)
+## RESUME HERE: 2026-09-29
 
-**First thing: Luke screencasts the Mobile War Factory's two open issues** (GNOME recorder,
-`~/Videos/Screencasts/`; pull frames with ffmpeg fps=6): (1) a Titan's antenna shows over the
-deployed MWF's lower roof, at the back, while it sits in the bay; (2) artefacting as a vehicle
-leaves the bay. Both are the doorway layering: the front cut line
-(`resources/custom-art/tsdweap-front-cut-line.json`) is an interim shift of the War Factory's,
-and mechs use the War Factory's mech seat. Fix from the frames (move the cut line, or an
-Aseprite file for Luke to drag per the seat-loop protocol; a forward mech seat for this factory
-only, or keep the vehicle hidden until it leaves the mouth). Then commit and the MWF is done.
+**Firestorm Defense** on branch `firestorm` (worktree `../tf-subterranean-worktree`, off `main` @
+f78d056b). Design + tracker: `docs/firestorm-design.md` -- ground truth from TS's rules and OpenTS,
+Luke's decisions (pad art = round C; interim activation = targeted route, click anywhere; correct
+control designed later, then the Hunter Seeker revisit), stages A-E and the open questions. First:
+Luke answers the open questions, then stage A (the generator).
 
-**Deploy first:** the worktree build has the prerequisite fix (a deployed MWF satisfies War
-Factory prerequisites, Firestorm PrerequisiteFactory); the desktop still runs DLL `d8d166d1`
-without it. Deploy `../tf-subterranean-worktree/build/remaster/Vanilla_RA/Data/RedAlert.dll`
-with the game closed and md5 it.
+Done and merged to `main` (f78d056b, pushed): the EMP Pulse Cannon arc, Mobile EMP, Mobile Sensor
+Array, Mobile War Factory, and TS GDI's own HD concrete wall (TS yard walls = sandbags + that wall;
+art in `resources/custom-art/ts-gdi-wall-hd`, packed by `scripts/ts_pack_gdi_wall.py`). The gate
+for that wall is being drawn to join it; check its joins against the wall frames when it lands.
+TS Nod has its own wall (NAWALL) for when TS Nod comes.
 
-Everything is on branch `emp-cannon` (worktree `../tf-subterranean-worktree`), NOT pushed:
-EMP arc complete (stages A-E, radius 3 to match the ring art, stun 30 s cannon / 10 s mobile),
-Mobile EMP, Mobile Sensor Array (ghost copies show cloaked/buried enemies to the sensor's owner,
-detection EVA), Mobile War Factory vehicle + deploy (`b5c7003e` checkpoint). Branch design doc:
-`docs/emp-cannon-design.md` there. After the MWF: the Firestorm Generator (art route to agree
-with Luke first, `ts-gdi-tree-plan.md` 19b), then the LAN Limpet test, then the queued
-range-ring and chrono-arrival features below. `main` is 11 commits ahead of origin (docs), not
-pushed.
-
-## RESUME HERE: 2026-09-27 (evening)
-
-**First thing: remind Luke to test the hover settle** (he asked). Fire E.M. Pulse at a Hover
-MLRS and a Limpet Drone: in normal hover the whole unit, shadow included, bobs smoothly as
-before; stunned, the bob stops and the hull settles 3 px onto a still shadow, lifting back at
-the end of the 30 s. Then stage C gets his sign-off.
-
-`main` is 8 commits ahead of origin, NOT pushed (all verified in play): the Dropship Bay pad at
-twice the detail and its damaged-pad upscale (03164522, 4ca490b4), the construction-options fix
-(8bad2c61), TS Light Infantry and Disc Throwers in drop pods (be030e86), the bay build-up upscale
-(fb69b266), and three docs commits. Push when Luke says.
-
-Next session, in order:
-1. **EMP arc** (branch `emp-cannon` @ `aa2cccf2`, pushed; worktree `../tf-subterranean-worktree`):
-   the fire sound and stage C (the pulse and stun) are built; everything but the hover settle is
-   verified in play. Luke's ruling: keep TS's rules (no power cut, construction and production
-   carry on, only conyards spark, pad-parked aircraft spared). Next is stage D, the diggers:
-   OpenTS makes a stunned underground unit surface at the nearest ground, destroyed only if there
-   is none; ask Luke before porting it. Resume from `docs/emp-cannon-design.md` there.
-2. **Bugs on main** (`docs/known-issues.md`): medics looping on hurt Jumpjet Infantry; the
-   Upgrade Center's missing RA slab.
-
-Parked until polish: the sprite upscale (branch `upscale-spike`, worktree
-`../tf-upscale-worktree`; `docs/sprite-upscale-spike.md` and `docs/sprite-upscale-rules.md`
-there). The desktop prefix holds the EMP stage C build (DLL `0e9d35fe`) with the shipped art.
+Still open on `main` (`docs/known-issues.md`): medics looping on hurt Jumpjet Infantry; the
+Upgrade Center's missing RA slab. Then the LAN Limpet test and the queued features below.
 
 ## TS chrono arrival at skirmish start (Luke's idea, 2026-09-27, after the GDI roster)
 
