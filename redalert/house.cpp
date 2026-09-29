@@ -1260,19 +1260,18 @@ bool TF_Mwar_At_Cap(HouseClass const* house)
 
 
 /*
-**	The walls a TS construction yard provides. The TS tree ships no wall of its own
-**	and fences itself with SANDBAGS and the CONCRETE WALL (Luke, 2026-09-04) -- not
-**	the chain link fence, which is the Tiberian-era wall, nor RA's wire fences.
-**	Their own Owner= lists do not mention every faction, so a TS yard has to satisfy
-**	the ownership test for these two whoever is holding it.
+**	The shared walls a TS construction yard provides: SANDBAGS. Its concrete wall is
+**	the TS tree's own (STRUCT_TSWALL, gated by the TS yard like the rest of the tree),
+**	so RA's concrete wall is not among them. Sandbags' Owner= list does not mention
+**	every faction, so a TS yard has to satisfy the ownership test for them whoever
+**	is holding it.
 */
 static bool TF_Is_TS_Yard_Wall(ObjectTypeClass const* type)
 {
     if (type == NULL || type->What_Am_I() != RTTI_BUILDINGTYPE) {
         return (false);
     }
-    StructType st = ((BuildingTypeClass const*)type)->Type;
-    return (st == STRUCT_SANDBAG_WALL || st == STRUCT_BRICK_WALL);
+    return (((BuildingTypeClass const*)type)->Type == STRUCT_SANDBAG_WALL);
 }
 
 /***********************************************************************************************
@@ -1496,9 +1495,8 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     **	being that faction. The yard requirement itself is enforced below, so this only
     **	widens WHO may hold the yard, never what a yard unlocks.
     **
-    **	Walls are the one thing no yard lists: the TS tree has no wall of its own and
-    **	fences itself with the ordinary sandbag and concrete walls, so a TS yard
-    **	satisfies the test for a wall whatever the holder's faction.
+    **	Sandbags are the one thing no yard lists for the TS tree, so a TS yard
+    **	satisfies the test for them whatever the holder's faction.
     */
     bool yard_grants = ((own & Yard_Factions()) != 0);
     if (TF_Is_TS_Yard_Wall(type) && Has_Building_Active(STRUCT_TSFACT)) {
@@ -1594,10 +1592,8 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             bool ts_tree = TF_Is_TS_Tree_Type((TechnoTypeClass const*)type);
 
             /*
-            **	A TS yard satisfies the yard requirement for WALLS: the TS tree has no
-            **	wall of its own and fences itself with the ordinary sandbag and concrete
-            **	walls (Luke, 2026-09-04). Everything else still needs a yard whose
-            **	faction can build it.
+            **	A TS yard satisfies the yard requirement for SANDBAGS (TF_Is_TS_Yard_Wall).
+            **	Everything else still needs a yard whose faction can build it.
             */
             bool ts_walls = TF_Is_TS_Yard_Wall(type) && Has_Building_Active(STRUCT_TSFACT);
 

@@ -8073,15 +8073,13 @@ static int TF_Entry_Faction_Mask(TechnoTypeClass const* type)
     int mask = TF_Faction_Mask_From_Ownable(type != NULL ? type->Get_Ownable() : 0);
     /*
     ** The badge says which of the player's CONSTRUCTION YARDS can build the entry,
-    ** not which faction the player picked. A TS yard builds sandbags and the
-    ** concrete wall (the TS tree ships no wall of its own), so those two carry the
-    ** TS emblem alongside whichever other yards can build them -- exactly as
-    ** HouseClass::Can_Build lets a TS yard unlock them. Their Owner= lists never
-    ** mention the TS tree, so the bit has to be added here.
+    ** not which faction the player picked. A TS yard builds sandbags, so they carry
+    ** the TS emblem alongside whichever other yards can build them -- exactly as
+    ** HouseClass::Can_Build lets a TS yard unlock them. Their Owner= list never
+    ** mentions the TS tree, so the bit has to be added here.
     */
     if (type != NULL && type->What_Am_I() == RTTI_BUILDINGTYPE) {
-        StructType st = ((BuildingTypeClass const*)type)->Type;
-        if (st == STRUCT_SANDBAG_WALL || st == STRUCT_BRICK_WALL) {
+        if (((BuildingTypeClass const*)type)->Type == STRUCT_SANDBAG_WALL) {
             mask |= TF_FACTION_TSGDI;
         }
     }
