@@ -413,6 +413,50 @@ struct SoundEffectNameStruct
     {"R2VPRISTAC", 10, IN_NOVAR},  // VOC_R2_VPRISTAC -- Prism Tank engine start
     {"R2VPRIATTA", 1, IN_NOVAR},  // VOC_R2_VPRIATTA -- Prism Tank beam
     {"TSPLSECAN2", 1, IN_NOVAR},  // VOC_TS_PLSECAN2 -- TS EMP Pulse Cannon firing
+    {"C3MSEA", 20, IN_NOVAR},  // VOC_C3MSEA -- Mammoth Mk. III select voice
+    {"C3MSEB", 20, IN_NOVAR},  // VOC_C3MSEB -- Mammoth Mk. III select voice
+    {"C3MSEC", 20, IN_NOVAR},  // VOC_C3MSEC -- Mammoth Mk. III select voice
+    {"C3MSED", 20, IN_NOVAR},  // VOC_C3MSED -- Mammoth Mk. III select voice
+    {"C3MSEE", 20, IN_NOVAR},  // VOC_C3MSEE -- Mammoth Mk. III select voice
+    {"C3MSEF", 20, IN_NOVAR},  // VOC_C3MSEF -- Mammoth Mk. III select voice
+    {"C3MMOA", 20, IN_NOVAR},  // VOC_C3MMOA -- Mammoth Mk. III move voice
+    {"C3MMOB", 20, IN_NOVAR},  // VOC_C3MMOB -- Mammoth Mk. III move voice
+    {"C3MMOC", 20, IN_NOVAR},  // VOC_C3MMOC -- Mammoth Mk. III move voice
+    {"C3MMOD", 20, IN_NOVAR},  // VOC_C3MMOD -- Mammoth Mk. III move voice
+    {"C3MMOE", 20, IN_NOVAR},  // VOC_C3MMOE -- Mammoth Mk. III move voice
+    {"C3MMOF", 20, IN_NOVAR},  // VOC_C3MMOF -- Mammoth Mk. III move voice
+    {"C3MATA", 20, IN_NOVAR},  // VOC_C3MATA -- Mammoth Mk. III attack voice
+    {"C3MATB", 20, IN_NOVAR},  // VOC_C3MATB -- Mammoth Mk. III attack voice
+    {"C3MATC", 20, IN_NOVAR},  // VOC_C3MATC -- Mammoth Mk. III attack voice
+    {"C3MATD", 20, IN_NOVAR},  // VOC_C3MATD -- Mammoth Mk. III attack voice
+    {"C3MATE", 20, IN_NOVAR},  // VOC_C3MATE -- Mammoth Mk. III attack voice
+    {"C3MATF", 20, IN_NOVAR},  // VOC_C3MATF -- Mammoth Mk. III attack voice
+    {"C3MSTA", 10, IN_NOVAR},  // VOC_C3MSTA -- Mammoth Mk. III engine start
+    {"C3MSTB", 10, IN_NOVAR},  // VOC_C3MSTB -- Mammoth Mk. III engine start
+    {"C3MSTC", 10, IN_NOVAR},  // VOC_C3MSTC -- Mammoth Mk. III engine start
+    {"C3MGUN", 1, IN_NOVAR},  // VOC_C3MGUN -- Mammoth Mk. III cannon (random take)
+    {"C3MPOD", 1, IN_NOVAR},  // VOC_C3MPOD -- Mammoth Mk. III rocket pods (random take)
+    {"C3PSEA", 20, IN_NOVAR},  // VOC_C3PSEA -- Predator select voice
+    {"C3PSEB", 20, IN_NOVAR},  // VOC_C3PSEB -- Predator select voice
+    {"C3PSEC", 20, IN_NOVAR},  // VOC_C3PSEC -- Predator select voice
+    {"C3PSED", 20, IN_NOVAR},  // VOC_C3PSED -- Predator select voice
+    {"C3PSEE", 20, IN_NOVAR},  // VOC_C3PSEE -- Predator select voice
+    {"C3PSEF", 20, IN_NOVAR},  // VOC_C3PSEF -- Predator select voice
+    {"C3PMOA", 20, IN_NOVAR},  // VOC_C3PMOA -- Predator move voice
+    {"C3PMOB", 20, IN_NOVAR},  // VOC_C3PMOB -- Predator move voice
+    {"C3PMOC", 20, IN_NOVAR},  // VOC_C3PMOC -- Predator move voice
+    {"C3PMOD", 20, IN_NOVAR},  // VOC_C3PMOD -- Predator move voice
+    {"C3PMOE", 20, IN_NOVAR},  // VOC_C3PMOE -- Predator move voice
+    {"C3PATA", 20, IN_NOVAR},  // VOC_C3PATA -- Predator attack voice
+    {"C3PATB", 20, IN_NOVAR},  // VOC_C3PATB -- Predator attack voice
+    {"C3PATC", 20, IN_NOVAR},  // VOC_C3PATC -- Predator attack voice
+    {"C3PATD", 20, IN_NOVAR},  // VOC_C3PATD -- Predator attack voice
+    {"C3PATE", 20, IN_NOVAR},  // VOC_C3PATE -- Predator attack voice
+    {"C3PATF", 20, IN_NOVAR},  // VOC_C3PATF -- Predator attack voice
+    {"C3PSTA", 10, IN_NOVAR},  // VOC_C3PSTA -- Predator engine start
+    {"C3PSTB", 10, IN_NOVAR},  // VOC_C3PSTB -- Predator engine start
+    {"C3PSTC", 10, IN_NOVAR},  // VOC_C3PSTC -- Predator engine start
+    {"C3PGUN", 1, IN_NOVAR},  // VOC_C3PGUN -- Predator cannon (random take)
 };
 
 //

@@ -278,6 +278,10 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/r2apoc_stub.shp" 56 56 64
 PACK_ARGS+=("$TMPDIR/r2apoc_stub.shp:R2APOC.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/r2pris_stub.shp" 48 48 64
 PACK_ARGS+=("$TMPDIR/r2pris_stub.shp:R2PRIS.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/c3mk3_stub.shp" 64 64 128
+PACK_ARGS+=("$TMPDIR/c3mk3_stub.shp:C3MK3.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/c3pred_stub.shp" 48 48 128
+PACK_ARGS+=("$TMPDIR/c3pred_stub.shp:C3PRED.SHP")
 # TS aircraft (Orca Fighter / Orca Bomber / Carryall) -- HD-only voxel renders, 32
 # facings each; dims match each one's rules.ini ShapeSize.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsorca_stub.shp" 48 48 32
