@@ -844,6 +844,17 @@ MGUN2 minigunner probe); loose `.MTD` = ignored, region geometry launcher-owned 
 ---
 
 ## ✅ DONE 2026-09-02: deploy/unload hotkey for non-RA units — the DLL polls the key itself (`TF_Deploy_Key_Tick`, docs/launcher-vs-dll-ownership.md); Luke to re-test APC/Chinook/minelayer/TS units at his PC
+## TS buildings: theatre-aware art (found 2026-08-28 via the EMP cannon)
+
+TS ships every building in per-theatre variants named by the second letter (GT/NT =
+temperate, GA/NA = arctic; snow art carries baked snow drifts). Our TS tree packs only the
+temperate set, so on RA snow maps the TS buildings look temperate. If wanted: the engine's
+theatre-specific-art flag + a second HD tileset per building + the arctic decode
+(UNITSNO.PAL). Not started; cosmetic.
+
+---
+
+## Deploy/unload hotkey for non-RA units (Luke, 2026-08-28: "a shame the deploy key is hardcoded to RA units only through the launcher")
 
 The launcher's deploy key does nothing for the TD/TS transports (Sub APC unload had to be a
 click). Per docs/config-meg-lever-audit.md Tier 1 the mod-hotkey chain is mod-data end to end

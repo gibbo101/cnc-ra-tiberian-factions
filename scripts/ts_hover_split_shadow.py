@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """Split TSHVR's baked drop shadow into its own shape block.
 
-PARKED 2026-08-21, NOT PART OF THE BUILD. Once the ground units came down to
-EA's 6px throw, the Hover MLRS's longer 17px shadow read as its own thing and
-Luke's verdict on the bob as it stands was "looks ok", so the still-shadow
-experiment was never needed. Running this changes TSHVR from 64 to 96 frames
-and REQUIRES the matching draw-order change in UnitClass::Draw_It plus a 96
-frame classic stub in build_tfassets.sh -- the art alone would render the hull
-with no shadow at all. Left here complete because the analysis is done.
+Part of the build: UnitClass::Draw_It draws the shadow block first and the hull
+and rack over it, and the classic stub in build_tfassets.sh carries 96 frames. The
+shadow bobs with the hull in normal hover (a still shadow under a whole-pixel bob
+reads as robotic); the split is what lets an E.M. Pulse settle the hull onto a
+shadow that holds still. RA_UNITS.XML lists all 96 TSHVR tiles.
 
 WHY
 ---

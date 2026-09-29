@@ -722,6 +722,7 @@ HouseClass::HouseClass(HousesType house)
     , BuildAircraft(AIRCRAFT_NONE)
     , BuildVessel(VESSEL_NONE)
     , NukeDest(0)
+    , TFEMPDest(0)
     , Allies(0)
     , DamageTime(TICKS_PER_MINUTE * Rule.DamageDelay)
     , TeamTime(TICKS_PER_MINUTE * Rule.TeamDelay)
@@ -800,6 +801,13 @@ HouseClass::HouseClass(HousesType house)
     // [HuntSeekSpecial]: RechargeTime=12, IsPowered=true, no voices.
     new (&SuperWeapon[SPC_TS_HUNTSEEK])
         SuperClass(TICKS_PER_MINUTE * 12, true, VOX_NONE, VOX_NONE, VOX_NOT_READY, VOX_INSUFFICIENT_POWER);
+
+    // Tiberian Factions mod — TS E.M. Pulse (EMP Cannon). TS rules.ini
+    // [EMPulseSpecial]: RechargeTime=4.5, IsPowered=true. TS records only the
+    // "E.M. pulse cannon ready" line, so every other moment stays silent rather
+    // than borrow another era's announcer.
+    new (&SuperWeapon[SPC_TS_EMP])
+        SuperClass(TICKS_PER_MINUTE * 9 / 2, true, VOX_NONE, VOX_TS_EMP_READY, VOX_NONE, VOX_NONE);
 
     // Tiberian Factions mod — Nod Nuclear Strike. TD-authentic 14-minute
     // recharge per tiberiandawn/defines.h NUKE_GONE_TIME (14 *
@@ -984,6 +992,205 @@ bool TF_Is_Dropship_Delivered(UnitTypeClass const* type)
 **	factory's, so a human player's bay and war factory build side by side. Computer
 **	houses need no slot: each of their factory buildings holds its own production.
 */
+/*
+**	The EMP Cannon that fires the E.M. Pulse special at a cell: the house's nearest cannon that
+**	stands built and powered with the cell inside its weapon's reach, or NULL. TS
+**	[EMPulseWeapon] Range=40 cells, measured on cell deltas as TS does (OpenTS suprtype.cpp).
+*/
+/*
+**	Whether the house has a radar building that an E.M. Pulse has not stunned.
+*/
+bool HouseClass::Has_Working_Radar(void) const
+{
+    for (int index = 0; index < Buildings.Count(); index++) {
+        BuildingClass const* b = Buildings.Ptr(index);
+        if (b != NULL && b->House == this && !b->IsInLimbo && !b->Is_Immobilized()
+            && (TF_Building_Scan_Bit(b->Class->Type) & STRUCTF_RADAR)) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
+BuildingClass* TF_EMP_Launch_Site(HouseClass const* house, CELL cell)
+{
+    enum { EMP_RANGE_CELLS = 40 };
+    if (house == NULL || cell <= 0 || house->Power_Fraction() < 1) {
+        return (NULL);
+    }
+    BuildingClass* best = NULL;
+    int bestdist = 0;
+    for (int index = 0; index < Buildings.Count(); index++) {
+        BuildingClass* b = Buildings.Ptr(index);
+        if (b == NULL || *b != STRUCT_TSPULS || b->House != house || b->IsInLimbo || b->Strength <= 0
+            || b->BState == BSTATE_CONSTRUCTION || b->Is_Immobilized()) {
+            continue;
+        }
+        CELL bc = Coord_Cell(b->Center_Coord());
+        int dx = Cell_X(cell) - Cell_X(bc);
+        int dy = Cell_Y(cell) - Cell_Y(bc);
+        int dist = dx * dx + dy * dy;
+        if (dist < EMP_RANGE_CELLS * EMP_RANGE_CELLS && (best == NULL || dist < bestdist)) {
+            best = b;
+            bestdist = dist;
+        }
+    }
+    return (best);
+}
+
+/*
+**	The E.M. Pulse landing at a cell (OpenTS empulse.cpp Create). Within spread cells:
+**	aircraft taking off, landing or flying low crash, a Limpet Mine is destroyed, and
+**	every other building, every vehicle and ship, and every aircraft sitting on open
+**	ground is stunned for duration frames. Only a cell's building is considered
+**	when it has one, so an aircraft parked on its pad is spared. A stunned vehicle stops
+**	where it is and sparks until the stun wears off; a building sparks only if it can pack
+**	up and move. A vehicle digging underground is stunned too: it makes for the nearest
+**	ground it can surface on, is destroyed if there is none, and sparks once it surfaces.
+**	Infantry are untouched. The source, if any, is spared.
+*/
+void TF_EMPulse(CELL center, TechnoClass* source, int spread, int duration)
+{
+    enum
+    {
+        EMP_AIRCRAFT_HEIGHT = 104 // TS one height level: an aircraft below it is not yet flying
+    };
+    int const spread_sq = spread * spread;
+    int crashed = 0;
+    int stunned_buildings = 0;
+    int stunned_vehicles = 0;
+    int stunned_aircraft = 0;
+    int stunned_underground = 0;
+
+    for (int index = Aircraft.Count() - 1; index >= 0; index--) {
+        AircraftClass* aircraft = Aircraft.Ptr(index);
+        if (aircraft != NULL && aircraft->IsActive && !aircraft->IsInLimbo && aircraft->Strength > 0
+            && aircraft->Height > 0 && aircraft->Height < EMP_AIRCRAFT_HEIGHT
+            && ::Distance(aircraft->Center_Coord(), Cell_Coord(center)) < spread * CELL_LEPTON_W) {
+            int damage = aircraft->Strength;
+            aircraft->Take_Damage(damage, 0, WARHEAD_HE, source, true);
+            crashed++;
+        }
+    }
+
+    for (int y = -spread; y <= spread; y++) {
+        for (int x = -spread; x <= spread; x++) {
+            if (x * x + y * y > spread_sq) {
+                continue;
+            }
+            int cx = Cell_X(center) + x;
+            int cy = Cell_Y(center) + y;
+            if (cx < 0 || cx >= MAP_CELL_W || cy < 0 || cy >= MAP_CELL_H) {
+                continue;
+            }
+            CELL cell = XY_Cell(cx, cy);
+            if (!Map.In_Radar(cell)) {
+                continue;
+            }
+            CellClass& cellptr = Map[cell];
+
+            BuildingClass* building = cellptr.Cell_Building();
+            if (building != NULL) {
+                if (building->IsActive && !building->IsInLimbo && building->Strength > 0
+                    && Coord_Cell(building->Center_Coord()) == cell) {
+                    if (*building == STRUCT_TSDLIMP) {
+                        int damage = building->Strength;
+                        building->Take_Damage(damage, 0, WARHEAD_HE, source, true);
+                    } else {
+                        if (!building->Is_Immobilized() && building->Class->Is_Construction_Yard()) {
+                            COORDINATE coord = Coord_Add(building->Center_Coord(), XY_Coord(CELL_LEPTON_W / 4, CELL_LEPTON_H / 4));
+                            AnimClass* sparks = new AnimClass(ANIM_TS_EMPFX, coord, Random_Pick(0, 25));
+                            if (sparks != NULL) {
+                                sparks->Attach_To(building);
+                            }
+                        }
+                        building->EMP_Stun(duration);
+                        stunned_buildings++;
+                    }
+                }
+                continue;
+            }
+
+            for (ObjectClass* obj = cellptr.Cell_Occupier(); obj != NULL; obj = obj->Next) {
+                RTTIType rtti = obj->What_Am_I();
+                if (rtti == RTTI_AIRCRAFT) {
+                    AircraftClass* aircraft = (AircraftClass*)obj;
+                    if (aircraft != source && aircraft->IsActive && !aircraft->IsInLimbo && aircraft->Strength > 0
+                        && aircraft->Height == 0) {
+                        if (!aircraft->Is_Immobilized()) {
+                            AnimClass* sparks = new AnimClass(ANIM_TS_EMPFX, aircraft->Center_Coord(), Random_Pick(0, 25));
+                            if (sparks != NULL) {
+                                sparks->Attach_To(aircraft);
+                            }
+                        }
+                        aircraft->EMP_Stun(duration);
+                        stunned_aircraft++;
+                    }
+                    continue;
+                }
+                if (rtti != RTTI_UNIT && rtti != RTTI_VESSEL) {
+                    continue;
+                }
+                DriveClass* vehicle = (DriveClass*)obj;
+                if (vehicle == source || !vehicle->IsActive || vehicle->IsInLimbo || vehicle->Strength <= 0
+                    || vehicle->Is_Tunneling()) {
+                    continue;
+                }
+                if (!vehicle->Is_Immobilized()) {
+                    AnimClass* sparks = new AnimClass(ANIM_TS_EMPFX, vehicle->Center_Coord(), Random_Pick(0, 25));
+                    if (sparks != NULL) {
+                        sparks->Attach_To(vehicle);
+                    }
+                }
+                vehicle->EMP_Stun(duration);
+                vehicle->NavCom = TARGET_NONE;
+                vehicle->Path[0] = FACING_NONE;
+                vehicle->Clear_Navigation_List();
+                if (rtti == RTTI_UNIT && ((UnitClass*)vehicle)->Is_In_Tunnel_Cycle()) {
+                    ((UnitClass*)vehicle)->Tunnel_Stop();
+                }
+                stunned_vehicles++;
+            }
+        }
+    }
+
+    for (int index = Units.Count() - 1; index >= 0; index--) {
+        UnitClass* unit = Units.Ptr(index);
+        if (unit == NULL || unit == source || !unit->IsActive || unit->IsInLimbo || unit->Strength <= 0
+            || !unit->Is_Tunneling()) {
+            continue;
+        }
+        CELL cell = Coord_Cell(unit->Coord);
+        int dx = Cell_X(cell) - Cell_X(center);
+        int dy = Cell_Y(cell) - Cell_Y(center);
+        if (dx * dx + dy * dy < spread_sq) {
+            unit->EMP_Stun(duration);
+            unit->Tunnel_Stop();
+            stunned_underground++;
+        }
+    }
+
+#if TF_DEV_BUILD
+    const char* up = getenv("USERPROFILE");
+    char path[512];
+    snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_emp.log", up ? up : ".");
+    FILE* lf = fopen(path, "a");
+    if (lf != NULL) {
+        fprintf(lf,
+                "frame=%d PULSE cell=%d,%d stunned buildings=%d vehicles=%d underground=%d aircraft=%d crashed aircraft=%d\n",
+                (int)Frame,
+                Cell_X(center),
+                Cell_Y(center),
+                stunned_buildings,
+                stunned_vehicles,
+                stunned_underground,
+                stunned_aircraft,
+                crashed);
+        fclose(lf);
+    }
+#endif
+}
+
 bool TF_Bay_Order(RTTIType type, int id)
 {
     return ((type == RTTI_UNITTYPE || type == RTTI_UNIT) && id >= 0 && id < UNIT_COUNT
@@ -1030,22 +1237,41 @@ bool TF_Ghost_At_Cap(HouseClass const* house)
     return (false);
 }
 
+/*
+**	A house fields one Mobile War Factory at a time (FS BuildLimit=1), deployed or not.
+*/
+bool TF_Mwar_At_Cap(HouseClass const* house)
+{
+    for (int index = 0; index < Units.Count(); index++) {
+        UnitClass const* unit = Units.Ptr(index);
+        if (unit != NULL && unit->IsActive && unit->House == house && *unit == UNIT_TSMWAR) {
+            return (true);
+        }
+    }
+    for (int index = 0; index < Buildings.Count(); index++) {
+        BuildingClass const* building = Buildings.Ptr(index);
+        if (building != NULL && building->IsActive && building->House == house && *building == STRUCT_TSDWEAP) {
+            return (true);
+        }
+    }
+    return (false);
+}
+
 
 
 /*
-**	The walls a TS construction yard provides. The TS tree ships no wall of its own
-**	and fences itself with SANDBAGS and the CONCRETE WALL (Luke, 2026-09-04) -- not
-**	the chain link fence, which is the Tiberian-era wall, nor RA's wire fences.
-**	Their own Owner= lists do not mention every faction, so a TS yard has to satisfy
-**	the ownership test for these two whoever is holding it.
+**	The shared walls a TS construction yard provides: SANDBAGS. Its concrete wall is
+**	the TS tree's own (STRUCT_TSWALL, gated by the TS yard like the rest of the tree),
+**	so RA's concrete wall is not among them. Sandbags' Owner= list does not mention
+**	every faction, so a TS yard has to satisfy the ownership test for them whoever
+**	is holding it.
 */
 static bool TF_Is_TS_Yard_Wall(ObjectTypeClass const* type)
 {
     if (type == NULL || type->What_Am_I() != RTTI_BUILDINGTYPE) {
         return (false);
     }
-    StructType st = ((BuildingTypeClass const*)type)->Type;
-    return (st == STRUCT_SANDBAG_WALL || st == STRUCT_BRICK_WALL);
+    return (((BuildingTypeClass const*)type)->Type == STRUCT_SANDBAG_WALL);
 }
 
 /***********************************************************************************************
@@ -1085,7 +1311,7 @@ int HouseClass::Yard_Factions(void) const
 /*
 **	The single verdict on whether a capped order would be turned away: the dropship
 **	bay is still reloading, the house already fields its Mk. II allowance, or its
-**	Ghost Stalker is alive. Begin_Production enforces it; the sidebar click handlers
+**	Ghost Stalker or Mobile War Factory is alive. Begin_Production enforces it; the sidebar click handlers
 **	consult it first so EVA never acknowledges an order that is about to be refused.
 */
 bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id)
@@ -1106,6 +1332,9 @@ bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id)
     }
     if (TF_Is_Dropship_Delivered(utype) && house->TFDropBayTimer != 0) {
         return (true);
+    }
+    if (utype->Type == UNIT_TSMWAR) {
+        return (TF_Mwar_At_Cap(house));
     }
     return (utype->Type == UNIT_TSHMEC && TF_Mk2_At_Cap(house));
 }
@@ -1266,9 +1495,8 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     **	being that faction. The yard requirement itself is enforced below, so this only
     **	widens WHO may hold the yard, never what a yard unlocks.
     **
-    **	Walls are the one thing no yard lists: the TS tree has no wall of its own and
-    **	fences itself with the ordinary sandbag and concrete walls, so a TS yard
-    **	satisfies the test for a wall whatever the holder's faction.
+    **	Sandbags are the one thing no yard lists for the TS tree, so a TS yard
+    **	satisfies the test for them whatever the holder's faction.
     */
     bool yard_grants = ((own & Yard_Factions()) != 0);
     if (TF_Is_TS_Yard_Wall(type) && Has_Building_Active(STRUCT_TSFACT)) {
@@ -1364,10 +1592,8 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
             bool ts_tree = TF_Is_TS_Tree_Type((TechnoTypeClass const*)type);
 
             /*
-            **	A TS yard satisfies the yard requirement for WALLS: the TS tree has no
-            **	wall of its own and fences itself with the ordinary sandbag and concrete
-            **	walls (Luke, 2026-09-04). Everything else still needs a yard whose
-            **	faction can build it.
+            **	A TS yard satisfies the yard requirement for SANDBAGS (TF_Is_TS_Yard_Wall).
+            **	Everything else still needs a yard whose faction can build it.
             */
             bool ts_walls = TF_Is_TS_Yard_Wall(type) && Has_Building_Active(STRUCT_TSFACT);
 
@@ -1446,6 +1672,12 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         **	works: a captured tech center satisfies its own faction's token.
         */
         if (t == STRUCT_POWER && Has_Building_Active(STRUCT_ADVANCED_POWER))
+            continue;
+        /*
+        **	A deployed Mobile War Factory is a war factory for every prerequisite (Firestorm
+        **	[General] PrerequisiteFactory / PrerequisiteGDIFactory list DGWEAP beside GAWEAP).
+        */
+        if (t == STRUCT_TSWEAP && Has_Building_Active(STRUCT_TSDWEAP))
             continue;
         /*
         **	The vanilla 'fact' token ([POWR]'s Prerequisite=fact). Post-split a house owns
@@ -2142,7 +2374,7 @@ void HouseClass::AI(void)
         // Need to add in here where we activate it when only GPS is active.
         if (Map.Is_Radar_Active()) {
             if (ActiveBScan & STRUCTF_RADAR) {
-                if (Power_Fraction() < 1 && !IsGPSActive) {
+                if ((Power_Fraction() < 1 || !Has_Working_Radar()) && !IsGPSActive) {
                     Map.Radar_Activate(0);
                 }
             } else {
@@ -2153,7 +2385,7 @@ void HouseClass::AI(void)
 
         } else {
             if (IsGPSActive || (ActiveBScan & STRUCTF_RADAR)) {
-                if (Power_Fraction() >= 1 || IsGPSActive) {
+                if ((Power_Fraction() >= 1 && Has_Working_Radar()) || IsGPSActive) {
                     Map.Radar_Activate(1);
                 }
             } else {
@@ -2202,7 +2434,7 @@ void HouseClass::AI(void)
                 // the Buildings heap in LIMBO before it is placed on the map, so without
                 // this guard the sting fired the instant you clicked the radar in the
                 // sidebar instead of when you place it (= when it comes online).
-                if (rb != NULL && !rb->IsInLimbo && rb->House == PlayerPtr
+                if (rb != NULL && !rb->IsInLimbo && rb->House == PlayerPtr && !rb->Is_Immobilized()
                     && (*rb == STRUCT_RADAR || *rb == STRUCT_TDHQ || *rb == STRUCT_TDEYE || *rb == STRUCT_TSRADR)) {
                     radar_count++;
                 }
@@ -2322,16 +2554,16 @@ void HouseClass::Super_Weapon_Handler(void)
 
 #if TF_DEV_BUILD
             /*
-            **  Dev cheat: human-owned superweapons hold full charge so a strike
-            **  can be tested without the multi-minute recharge wait. Quiet (no
-            **  ready announcement) and re-arms on the tick after a launch.
-            **  Runtime-gated like the instant-build cheat (tf_dev_off.flag).
+            **  Dev cheat: human-owned superweapons recharge in 5 seconds so a strike
+            **  can be tested without the multi-minute wait, and still announce
+            **  themselves ready. Runtime-gated like the instant-build cheat
+            **  (tf_dev_off.flag).
             */
             // TF: the Hunter Seeker is a repeatable click-to-fire weapon whose 12-minute
-            // recharge is a real mechanic, so it is excluded from the insta-charge cheat (its
-            // countdown must be visible/testable); other supers still hold charge for dev.
+            // recharge is a real mechanic, so it is excluded from the fast-recharge cheat (its
+            // countdown must be visible/testable).
             if (TF_Dev_Cheats() && IsHuman && !super->Is_Ready() && special != SPC_TS_HUNTSEEK) {
-                super->Forced_Charge(false);
+                super->Cap_Recharge(TICKS_PER_SECOND * 5);
             }
 #endif
 
@@ -2764,6 +2996,45 @@ void HouseClass::Super_Weapon_Handler(void)
             } else {
                 if (this == PlayerPtr) {
                     Map.Add(RTTI_SPECIAL, SPC_TS_ION_CANNON);
+                    Map.Column[1].Flag_To_Redraw();
+                }
+            }
+        }
+    }
+
+    /*
+    **  Tiberian Factions mod — TS E.M. Pulse (SPC_TS_EMP), granted while the house
+    **  has an EMP Cannon standing; its range and power are checked when it fires.
+    */
+    bool ts_emp_host = Get_Quantity(STRUCT_TSPULS) > 0;
+    if (SuperWeapon[SPC_TS_EMP].Is_Present()) {
+        if ((!ts_emp_host && !SuperWeapon[SPC_TS_EMP].Is_One_Time()) || IsDefeated) {
+            if (SuperWeapon[SPC_TS_EMP].Remove()) {
+                if (this == PlayerPtr) {
+                    if (Map.IsTargettingMode == SPC_TS_EMP) {
+                        Map.IsTargettingMode = SPC_NONE;
+                    }
+                    Map.Column[1].Flag_To_Redraw();
+                }
+                IsRecalcNeeded = true;
+            }
+        } else {
+            if (SuperWeapon[SPC_TS_EMP].Is_Ready() && !IsHuman) {
+                Special_Weapon_AI(SPC_TS_EMP);
+            }
+        }
+    } else {
+        if (ts_emp_host && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
+            SuperWeapon[SPC_TS_EMP].Enable(false, this == PlayerPtr, Power_Fraction() < 1);
+            if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
+                if (IsHuman) {
+#ifdef REMASTER_BUILD
+                    Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TS_EMP, this);
+#endif
+                }
+            } else {
+                if (this == PlayerPtr) {
+                    Map.Add(RTTI_SPECIAL, SPC_TS_EMP);
                     Map.Column[1].Flag_To_Redraw();
                 }
             }
@@ -3942,6 +4213,13 @@ void HouseClass::Special_Weapon_AI(SpecialWeaponType id)
                 continue;
             }
 
+            /*
+            **	The E.M. Pulse only reaches what an EMP Cannon of this house can hit.
+            */
+            if (id == SPC_TS_EMP && TF_EMP_Launch_Site(this, Coord_Cell(b->Center_Coord())) == NULL) {
+                continue;
+            }
+
             if (Percent_Chance(90) && (b->Value() > best || best == -1)) {
                 best = b->Value();
                 bestptr = b;
@@ -4156,6 +4434,62 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
     **  balance identical to the TD strike), the RING1 ground flash is
     **  visual only.
     */
+    case SPC_TS_EMP:
+        /*
+        **	The nearest powered EMP Cannon in range turns to the target, charges its
+        **	pulse ball and lobs it there (BuildingClass::Mission_Missile). With no
+        **	cannon in range the order is refused and the special stays ready.
+        */
+        if (SuperWeapon[SPC_TS_EMP].Is_Ready()) {
+            BuildingClass* cannon = TF_EMP_Launch_Site(this, cell);
+#if TF_DEV_BUILD
+            /*
+            **	Why an E.M. Pulse order fired or was refused: power, and the nearest cannon's reach.
+            */
+            {
+                int nearest = -1;
+                for (int bi = 0; bi < Buildings.Count(); bi++) {
+                    BuildingClass* b = Buildings.Ptr(bi);
+                    if (b != NULL && *b == STRUCT_TSPULS && b->House == this && !b->IsInLimbo) {
+                        int d = ::Distance(Cell_Coord(cell), b->Center_Coord()) / CELL_LEPTON_W;
+                        if (nearest < 0 || d < nearest) {
+                            nearest = d;
+                        }
+                    }
+                }
+                const char* up = getenv("USERPROFILE");
+                char path[512];
+                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_emp.log", up ? up : ".");
+                FILE* lf = fopen(path, "a");
+                if (lf != NULL) {
+                    fprintf(lf, "frame=%d EMP order cell=(%d,%d) power=%d/%d nearest_cannon=%d cells -> %s\n", (int)Frame,
+                            Cell_X(cell), Cell_Y(cell), Power, Drain, nearest, cannon != NULL ? "FIRE" : "REFUSED");
+                    fclose(lf);
+                }
+            }
+#endif
+            if (cannon != NULL) {
+                TFEMPDest = cell;
+                cannon->Assign_Mission(MISSION_MISSILE);
+                cannon->Commence();
+                SuperWeapon[SPC_TS_EMP].Discharged(this == PlayerPtr);
+                IsRecalcNeeded = true;
+                fired = true;
+                what = "TS_EMP";
+            } else if (this == PlayerPtr && Power_Fraction() < 1) {
+                /*
+                **	TS takes a cannon offline in low power; the announcer says why the order
+                **	went nowhere. Out of range stays silent, as TS shows it on the cursor.
+                */
+                Speak(VOX_INSUFFICIENT_POWER);
+            }
+            if (this == PlayerPtr) {
+                Map.Column[1].Flag_To_Redraw();
+                Map.IsTargettingMode = SPC_NONE;
+            }
+        }
+        break;
+
     case SPC_TS_ION_CANNON:
         if (SuperWeapon[SPC_TS_ION_CANNON].Is_Ready()) {
             AnimClass* ts_ion_anim = new AnimClass(ANIM_TS_ION_BEAM, Cell_Coord(cell), 0, 1);
@@ -11503,8 +11837,11 @@ int HouseClass::AI_Unit(void)
             // automatically. UNIT_TDHARV must stay excluded or it gets lumped in with
             // combat picks and the AI spams harvesters, burning income. Vanilla only
             // excluded UNIT_HARVESTER.
+            // The Mobile EM-Pulse, Mobile Sensor Array and Mobile War Factory are excluded as
+            // well: the AI has no logic to discharge or deploy them.
             if (Can_Build(utype, ActLike) && utype->Type != UNIT_HARVESTER
-                && utype->Type != UNIT_TDHARV && utype->Type != UNIT_TSHARV
+                && utype->Type != UNIT_TDHARV && utype->Type != UNIT_TSHARV && utype->Type != UNIT_TSMEMP
+                && utype->Type != UNIT_TSLPST && utype->Type != UNIT_TSMWAR
                 && !TF_Delivery_Order_Refused(this, RTTI_UNITTYPE, utype->Type)) {
                 /*
                 **	The dropship bay's deliveries weigh as combat units: the Mech Division

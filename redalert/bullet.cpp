@@ -2473,6 +2473,19 @@ void BulletClass::Bullet_Explodes(bool forced)
     }
 
     /*
+    **	The EMP Cannon's pulse ball does no damage: its landing plays one of the two
+    **	pulse impacts, picked at random as TS does for an EMEffect warhead (OpenTS
+    **	combat.cpp Combat_Anim), and sets off the pulse. The pulse reaches 3 cells,
+    **	the span of the impact ring, so what the ring covers is what gets stunned.
+    */
+    if (*this == BULLET_TSPULSBALL) {
+        enum { EMP_CANNON_SPREAD = 3 };
+        new AnimClass(Random_Pick(0, 1) ? ANIM_TS_PULSEFX2 : ANIM_TS_PULSEFX1, Coord);
+        TF_EMPulse(Coord_Cell(Coord), Payback, EMP_CANNON_SPREAD, TechnoClass::EMP_STUN_FRAMES);
+        return;
+    }
+
+    /*
     **	When the target is reached, explode and do the damage
     **	required of it. For homing objects, don't force the explosion to
     **	match the target position. Non-homing projectiles adjust position so

@@ -832,6 +832,8 @@ TechnoClass::TechnoClass(RTTIType rtti, int id, HousesType house)
     RememberedNavCom = TARGET_NONE;
     CFEPatchFlags = 0;
     AttackMoveBoatClock = 0;
+    StunDuration = 0;
+    StunLength = 0;
 #ifdef REMASTER_BUILD
     if (Session.Type == GAME_NORMAL) {
         IsOwnedByPlayer = (PlayerPtr == House);
@@ -2325,22 +2327,29 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         return (Weapon_Range(0) - Distance(Cell_Coord(cell)));
     }
 
+    /*
+    **	Hidden from the house: cloaked or buried and not inside one of its Sensor Arrays, or of a
+    **	type that is always invisible.
+    */
     bool TechnoClass::Is_Cloaked(HousesType house, bool check_invisible) const
     {
-        const bool is_invisible = check_invisible && Techno_Type_Class()->IsInvisible;
-        return !House->Is_Ally(house) && ((Cloak == CLOAKED) || is_invisible || Is_Tunneling());
+        return (Is_Cloaked(HouseClass::As_Pointer(house), check_invisible));
     }
 
     bool TechnoClass::Is_Cloaked(HouseClass const* house, bool check_invisible) const
     {
-        const bool is_invisible = check_invisible && Techno_Type_Class()->IsInvisible;
-        return !House->Is_Ally(house) && ((Cloak == CLOAKED) || is_invisible || Is_Tunneling());
+        if (House->Is_Ally(house)) {
+            return (false);
+        }
+        if (check_invisible && Techno_Type_Class()->IsInvisible) {
+            return (true);
+        }
+        return ((Cloak == CLOAKED || Is_Tunneling()) && !TF_Is_Sensed(house, Center_Coord()));
     }
 
     bool TechnoClass::Is_Cloaked(ObjectClass const* object, bool check_invisible) const
     {
-        const bool is_invisible = check_invisible && Techno_Type_Class()->IsInvisible;
-        return !House->Is_Ally(object) && ((Cloak == CLOAKED) || is_invisible || Is_Tunneling());
+        return (Is_Cloaked(HouseClass::As_Pointer(object->Owner()), check_invisible));
     }
 
     /***********************************************************************************************
@@ -2754,6 +2763,25 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
     void TechnoClass::AI(void)
     {
         assert(IsActive);
+
+        /*
+        **	An E.M. Pulse stun wears off: the sparks stop and a harvester goes back to work
+        **	(OpenTS techno.cpp AI).
+        */
+        if (StunDuration > 0) {
+            StunDuration--;
+            if (StunDuration == 0) {
+                for (int index = 0; index < Anims.Count(); index++) {
+                    AnimClass* anim = Anims.Ptr(index);
+                    if (anim != NULL && anim->xObject == As_Target() && *anim == ANIM_TS_EMPFX) {
+                        anim->Loops = 0;
+                    }
+                }
+                if (What_Am_I() == RTTI_UNIT && ((UnitClass*)this)->Class->IsToHarvest && Mission != MISSION_UNLOAD) {
+                    ((UnitClass*)this)->Assign_Mission(MISSION_HARVEST);
+                }
+            }
+        }
 
         /*
         **	Attack-move (CFE Patch Redux port, GPL v3). While a unit is in
@@ -3336,6 +3364,13 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
         **	A falling object is too busy falling to fire.
         */
         if (IsFalling) {
+            return (FIRE_CANT);
+        }
+
+        /*
+        **	Nothing fires while an E.M. Pulse has it stunned.
+        */
+        if (Is_Immobilized()) {
             return (FIRE_CANT);
         }
 
@@ -4837,7 +4872,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
     {
         assert(IsActive);
 
-        return (House->IsPlayerControl);
+        return (House->IsPlayerControl && !Is_Immobilized());
     }
 
     /***********************************************************************************************
@@ -7268,7 +7303,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             /*
             ** Check if it's a Chrono tank, to show the recharge gauge.
             */
-            else if (What_Am_I() == RTTI_UNIT && *(UnitClass*)this == UNIT_CHRONOTANK) {
+            else if (What_Am_I() == RTTI_UNIT
+                     && (*(UnitClass*)this == UNIT_CHRONOTANK || *(UnitClass*)this == UNIT_TSMEMP)) {
                 for (int index = 0; index < 5; index++) {
                     int shape = PIP_EMPTY;
                     if (index < pips) {

@@ -782,6 +782,25 @@
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 
+	<!-- Tiberian Factions mod — the EMP Cannon's E.M. Pulse (SPC_TS_EMP): AssetName
+	     "SW_TSEmp" from Convert_Special_Weapon_Type, cameo = TS's PULSICON
+	     (scripts/ts_pack_emp.py). SG_TSEmp is the key a mixed-faction game asks for;
+	     it shows the same plain cameo. -->
+	<ObjectTypeClass Name="RA_SW_TSEMP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_SW_TSEMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_SW_TSEMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SW_TSEMP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SG_TSEMP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_SW_TSEMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_SW_TSEMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SW_TSEMP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+
 	<!-- Tiberian Factions mod — Nod paratroops super (SPC_TD_PARA_INFANTRY).
 	     AssetName "SW_TDParaInf" (distinct from the Soviet drop's
 	     "SW_ParaInfantry") so the tooltip resolves the Nod strings below and
@@ -6380,6 +6399,13 @@
 			<BuildIcon>BuildIcon_TSGHOST_LK</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMWAR_LK" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMWAR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMWAR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMWAR_LK</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- END generated Mk2 cooldown countdown cameos -->
 	<!-- Hand-written entries: keep OUTSIDE the generated block above -->
 	<ObjectTypeClass Name="RA_TSSUBTANK" Classification="CNCBuildableObject" CanInstantiate="False">
@@ -6396,6 +6422,22 @@
 			<BuildIcon>BuildIcon_TS_SubAPC</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+
+	<ObjectTypeClass Name="RA_TSPULS" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPULS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPULS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Puls</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSPULS_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSPULS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSPULS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Puls</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<!-- END generated Mk2 cooldown countdown cameos -->
 	<!-- BEGIN generated TS-tree badge variants (_G = the TS GDI emblem) -->
 	<ObjectTypeClass Name="RA_TSAPC_G" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
@@ -6671,6 +6713,13 @@
 			<BuildIcon>BuildIcon_TS_AmphAPC</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMEMP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMEMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMEMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MobileEMP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<ObjectTypeClass Name="RA_TSDEPT" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TSDEPT</ObjectNameTextID>
@@ -6930,6 +6979,34 @@
 			<ObjectNameTextID>TEXT_STRUCTURE_TSDLIMP</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSDLIMP_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TS_LimpetDrone</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSLPST" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSLPST</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSLPST_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_SensorArray</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSDPSA" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSDPSA</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSDPSA_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_SensorArray</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMWAR" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMWAR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMWAR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MobileWarFactory</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSDWEAP" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSDWEAP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSDWEAP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Dweap</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	<!-- END hand-written TS-tree base cameo entries -->
@@ -11321,6 +11398,48 @@
 			<BuildIcon>BuildIcon_TSLIMP_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMEMP_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMEMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMEMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MobileEMP</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMEMP_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMEMP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMEMP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMEMP_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSLPST_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSLPST</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSLPST_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_SensorArray</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSLPST_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSLPST</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSLPST_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSLPST_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMWAR_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMWAR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMWAR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_MobileWarFactory</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSMWAR_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_TSMWAR</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_TSMWAR_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSMWAR_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 
 	<ObjectTypeClass Name="RA_TSDLIMP_0" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
@@ -11407,6 +11526,13 @@
 			<ObjectNameTextID>TEXT_STRUCTURE_TSSEEK</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSSEEK_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TS_Seek</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSDWEAP_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSDWEAP</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSDWEAP_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_Dweap</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	<!-- END generated cameo mask variants -->

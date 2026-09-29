@@ -165,6 +165,50 @@ bool TF_Dev_Reveal(void)
 #endif
 }
 
+/*
+**	Sensor Array test: an enemy Sub APC that digs back and forth between two cells under the
+**	player's base. TF_Dev_Tunneller registers it; TF_Dev_Tunneller_Tick (every frame) sends it
+**	to the far end whenever it has been idle for ten seconds.
+*/
+static TARGET TFDevTunneller = TARGET_NONE;
+static CELL TFDevTunnelEnds[2] = {0, 0};
+
+void TF_Dev_Tunneller(UnitClass* unit, CELL a, CELL b)
+{
+    TFDevTunneller = unit->As_Target();
+    TFDevTunnelEnds[0] = a;
+    TFDevTunnelEnds[1] = b;
+}
+
+void TF_Dev_Tunneller_Tick(void)
+{
+#if TF_DEV_BUILD
+    static long idle_since = 0;
+    if (!Target_Legal(TFDevTunneller)) {
+        return;
+    }
+    UnitClass* unit = As_Unit(TFDevTunneller);
+    if (unit == NULL || !unit->IsActive || unit->IsInLimbo || *unit != UNIT_TSSAPC) {
+        TFDevTunneller = TARGET_NONE;
+        return;
+    }
+    if (unit->Is_In_Tunnel_Cycle() || unit->IsDriving || unit->Is_Immobilized()) {
+        idle_since = Frame;
+        return;
+    }
+    if (Frame - idle_since < TICKS_PER_SECOND * 10) {
+        return;
+    }
+    idle_since = Frame;
+    CELL here = Coord_Cell(unit->Center_Coord());
+    int da = Distance(Cell_Coord(here), Cell_Coord(TFDevTunnelEnds[0]));
+    int db = Distance(Cell_Coord(here), Cell_Coord(TFDevTunnelEnds[1]));
+    CELL go = (da > db) ? TFDevTunnelEnds[0] : TFDevTunnelEnds[1];
+    unit->Assign_Mission(MISSION_MOVE);
+    unit->Assign_Destination(::As_Target(go));
+#endif
+}
+
 bool TF_Dev_Cheats(void)
 {
 #if TF_DEV_BUILD
@@ -875,6 +919,63 @@ bool Read_Scenario(char* name)
                 UnitClass* tank = new UnitClass(UNIT_LTANK, enemy->Class->House);
                 if (tank != NULL && (tcell == 0 || !tank->Unlimbo(Cell_Coord(tcell), DIR_N))) {
                     delete tank;
+                }
+            }
+        }
+    }
+#endif
+
+#if 0 // TF DEV TOGGLE: Sensor Array test: a sleeping enemy Stealth Tank, a digging Sub APC and a deployed sensor. Flip to 1 for testing.
+    /*
+    **  Spawns an enemy TD Stealth Tank eight rows south of the player's MCV, told to sleep so it
+    **  stays cloaked and never gives itself away by firing, an enemy Sub APC that digs to and fro
+    **  under the base (TF_Dev_Tunneller), and a deployed Sensor Array for the player four rows
+    **  south of the MCV: the player should see both enemies and be able to target them.
+    */
+    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr && Units.Ptr(i)->Class->Is_MCV()) {
+                home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                break;
+            }
+        }
+        HouseClass* enemy = NULL;
+        for (int h = HOUSE_MULTI1; h < HOUSE_COUNT && enemy == NULL; h++) {
+            HouseClass* hp = HouseClass::As_Pointer((HousesType)h);
+            if (hp != NULL && hp != PlayerPtr && !PlayerPtr->Is_Ally(hp)) {
+                enemy = hp;
+            }
+        }
+        if (home != 0 && enemy != NULL) {
+            CELL scell = Map.Nearby_Location(home + 8 * MAP_CELL_W, SPEED_TRACK, -1, MZONE_NORMAL);
+            UnitClass* stank = new UnitClass(UNIT_TDSTNK, enemy->Class->House);
+            if (stank != NULL && (scell == 0 || !stank->Unlimbo(Cell_Coord(scell), DIR_N))) {
+                delete stank;
+                stank = NULL;
+            }
+            if (stank != NULL) {
+                stank->Assign_Mission(MISSION_SLEEP);
+            }
+            CELL north = Map.Nearby_Location(home - 8 * MAP_CELL_W, SPEED_TRACK, -1, MZONE_NORMAL);
+            CELL south = Map.Nearby_Location(home + 14 * MAP_CELL_W, SPEED_TRACK, -1, MZONE_NORMAL);
+            UnitClass* sapc = new UnitClass(UNIT_TSSAPC, enemy->Class->House);
+            if (sapc != NULL && (north == 0 || south == 0 || !sapc->Unlimbo(Cell_Coord(south), DIR_N))) {
+                delete sapc;
+                sapc = NULL;
+            }
+            if (sapc != NULL) {
+                TF_Dev_Tunneller(sapc, north, south);
+            }
+            for (int tries = 0; tries < 9; tries++) {
+                CELL scell = home + 4 * MAP_CELL_W + (tries % 3) - 1 + (tries / 3) * MAP_CELL_W;
+                if (BuildingTypeClass::As_Reference(STRUCT_TSDPSA).Legal_Placement(scell)) {
+                    BuildingClass* sensor = new BuildingClass(STRUCT_TSDPSA, PlayerPtr->Class->House);
+                    if (sensor != NULL && !sensor->Unlimbo(Cell_Coord(scell))) {
+                        delete sensor;
+                        continue;
+                    }
+                    break;
                 }
             }
         }

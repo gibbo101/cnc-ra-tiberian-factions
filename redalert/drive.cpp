@@ -2741,6 +2741,17 @@ void DriveClass::AI(void)
         return;
 
     /*
+    **	A vehicle stunned by an E.M. Pulse finishes the cell it is crossing and then
+    **	holds still until the stun wears off.
+    */
+    if (Is_Immobilized()) {
+        if (TrackNumber != -1) {
+            While_Moving();
+        }
+        return;
+    }
+
+    /*
     ** Is this a unit that's been teleported using the chronosphere, and if so,
     ** has his timer expired such that he needs to teleport back?
     */

@@ -13048,6 +13048,30 @@
       <Priority> 2 </Priority>
       <QueueIfCantPlay> True </QueueIfCantPlay>
    </LocalizedSFXEvent>
+   <!-- "cloaked unit detected" -->
+   <LocalizedSFXEvent Name="RAC_SFX_TSCLOAKDET" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TS_SFX_EVA_CLOAKDET_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
+   <!-- "cloaked unit detected" -->
+   <LocalizedSFXEvent Name="RAR_SFX_TSCLOAKDET" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TS_SFX_EVA_CLOAKDET_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
    <!-- "construction complete" -->
    <LocalizedSFXEvent Name="RAC_SFX_TSCONSTRU1" Preset="_PRESET_HUD">
       <SampleNamesList>
@@ -13094,6 +13118,30 @@
       </SampleNamesList>
       <LocalizedTextIDs>
          <entry> TEXT_SFX_TDC_SFX_DEPLOY1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
+   <!-- "E.M. pulse cannon ready" -->
+   <LocalizedSFXEvent Name="RAC_SFX_TSEMPREADY" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TS_SFX_EVA_EMPREADY_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
+   <!-- "E.M. pulse cannon ready" -->
+   <LocalizedSFXEvent Name="RAR_SFX_TSEMPREADY" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TS_SFX_EVA_EMPREADY_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
       </LocalizedTextIDs>
       <MinVolume> 100 </MinVolume>
       <MaxVolume> 100 </MaxVolume>
@@ -13504,6 +13552,30 @@
       </SampleNamesList>
       <LocalizedTextIDs>
          <entry> TEXT_SFX_TDC_SFX_STRUSLD1 </entry>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
+   <!-- "subterranean unit detected" -->
+   <LocalizedSFXEvent Name="RAC_SFX_TSSUBDET" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TS_SFX_EVA_SUBDET_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
+      </LocalizedTextIDs>
+      <MinVolume> 100 </MinVolume>
+      <MaxVolume> 100 </MaxVolume>
+      <Priority> 2 </Priority>
+      <QueueIfCantPlay> True </QueueIfCantPlay>
+   </LocalizedSFXEvent>
+   <!-- "subterranean unit detected" -->
+   <LocalizedSFXEvent Name="RAR_SFX_TSSUBDET" Preset="_PRESET_HUD">
+      <SampleNamesList>
+         <entry> TS_SFX_EVA_SUBDET_EN-US.MP3 </entry>
+      </SampleNamesList>
+      <LocalizedTextIDs>
       </LocalizedTextIDs>
       <MinVolume> 100 </MinVolume>
       <MaxVolume> 100 </MaxVolume>

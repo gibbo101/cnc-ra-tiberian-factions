@@ -228,7 +228,8 @@ fi
 # against a sprite at THIS size and signed off 2026-08-19. Changing these
 # dims rescales the sprite and invalidates every dialled seat -- do not
 # "correct" it to 64x64 without redoing the whole seat arc.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tshvr_stub.shp" 48 48 64
+# 96 frames: hull 0-31, rack 32-63, shadow 64-95 (scripts/ts_hover_split_shadow.py).
+python3 scripts/gen_stub_shp.py "$TMPDIR/tshvr_stub.shp" 48 48 96
 PACK_ARGS+=("$TMPDIR/tshvr_stub.shp:TSHVR.SHP")
 
 # TS walkers (Titan + Mammoth Mk. II) -- same HD-only stub pattern. Titan gets
@@ -288,9 +289,15 @@ PACK_ARGS+=("$TMPDIR/tscarry_stub.shp:TSCARRY.SHP")
 # TS Juggernaut -- 202 shapes: 120 walk + 32 deployed at rest + 32 deployed aiming + 18 deploy ladder.
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsjugg_stub.shp" 56 56 202
 PACK_ARGS+=("$TMPDIR/tsjugg_stub.shp:TSJUGG.SHP")
-# TS Limpet Drone -- 10 crawl frames, no facings (24x24 = ShapeSize). Its mine's stubs sit with the buildings below.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tslimp_stub.shp" 24 24 10
+# TS Limpet Drone -- 10 crawl frames then their 10 shadows, no facings (24x24 = ShapeSize). Its mine's stubs sit with the buildings below.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tslimp_stub.shp" 24 24 20
 PACK_ARGS+=("$TMPDIR/tslimp_stub.shp:TSLIMP.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmemp_stub.shp" 48 48 32
+PACK_ARGS+=("$TMPDIR/tsmemp_stub.shp:TSMEMP.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tslpst_stub.shp" 48 48 32
+PACK_ARGS+=("$TMPDIR/tslpst_stub.shp:TSLPST.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmwar_stub.shp" 48 48 32
+PACK_ARGS+=("$TMPDIR/tsmwar_stub.shp:TSMWAR.SHP")
 # Subterranean pair (Devil's Tongue / Sub APC) -- 112 shapes each: 32 driving
 # + 40 dive + 40 emerge pitch-ladder frames (docs/subterranean-design.md).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tssubtank_stub.shp" 48 48 113
@@ -359,6 +366,19 @@ ts_stub TSWEAP "$TMPDIR/tsweapnf_stub.shp" 168 126 64
 PACK_ARGS+=("$TMPDIR/tsweapnf_stub.shp:TSWEAPNF.SHP")
 ts_stub TSWEAP "$TMPDIR/tsweapnu_stub.shp" 168 126 64
 PACK_ARGS+=("$TMPDIR/tsweapnu_stub.shp:TSWEAPNU.SHP")
+# The deployed Mobile War Factory, on TSWEAP's stub: no idle cycle, a 12-stage shutter.
+ts_stub TSDWEAP "$TMPDIR/tsdweap_stub.shp" 168 126 2
+PACK_ARGS+=("$TMPDIR/tsdweap_stub.shp:TSDWEAP.SHP")
+ts_stub TSDWEAP "$TMPDIR/tsdweapmk_stub.shp" 168 126 19
+PACK_ARGS+=("$TMPDIR/tsdweapmk_stub.shp:TSDWEAPMAKE.SHP")
+ts_stub TSDWEAP "$TMPDIR/tsdweapdr_stub.shp" 168 126 24
+PACK_ARGS+=("$TMPDIR/tsdweapdr_stub.shp:TSDWEAPDR.SHP")
+ts_stub TSDWEAP "$TMPDIR/tsdweapud_stub.shp" 168 126 4
+PACK_ARGS+=("$TMPDIR/tsdweapud_stub.shp:TSDWEAPUD.SHP")
+ts_stub TSDWEAP "$TMPDIR/tsdweapnf_stub.shp" 168 126 2
+PACK_ARGS+=("$TMPDIR/tsdweapnf_stub.shp:TSDWEAPNF.SHP")
+ts_stub TSDWEAP "$TMPDIR/tsdweapnu_stub.shp" 168 126 2
+PACK_ARGS+=("$TMPDIR/tsdweapnu_stub.shp:TSDWEAPNU.SHP")
 # TSPILE 48x48: back to the grid-matched 2x2 plot width (the 60-overhang
 # compromise predates the tier-wide size drop, Luke 2026-08-04).
 ts_stub TSPILE "$TMPDIR/tspile_stub.shp" 48 48 2
@@ -370,6 +390,10 @@ ts_stub TSDLIMP "$TMPDIR/tsdlimp_stub.shp" 48 48 20
 PACK_ARGS+=("$TMPDIR/tsdlimp_stub.shp:TSDLIMP.SHP")
 ts_stub TSDLIMP "$TMPDIR/tsdlimpmk_stub.shp" 48 48 19
 PACK_ARGS+=("$TMPDIR/tsdlimpmk_stub.shp:TSDLIMPMAKE.SHP")
+ts_stub TSDPSA "$TMPDIR/tsdpsa_stub.shp" 48 78 10
+PACK_ARGS+=("$TMPDIR/tsdpsa_stub.shp:TSDPSA.SHP")
+ts_stub TSDPSA "$TMPDIR/tsdpsamk_stub.shp" 48 78 19
+PACK_ARGS+=("$TMPDIR/tsdpsamk_stub.shp:TSDPSAMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
 # TSRADR 48x96 on the 2x2 plot (TS-authentic Foundation=2x2): Obelisk
 # treatment, the dish tower rises a full row above the box. The 3x2/72x150
@@ -381,6 +405,14 @@ ts_stub TSRADR "$TMPDIR/tsradrmk_stub.shp" 48 96 20
 # still read oversized -- Luke, 2026-08-04).
 ts_stub TSPOWR "$TMPDIR/tspowr_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tspowr_stub.shp:TSPOWR.SHP")
+# TS EMP cannon: static base (healthy + damaged) on the 2x2 48x48 box; the PULSCAN
+# turret is the TSPULST layer (32 facings).
+ts_stub TSPULS "$TMPDIR/tspuls_stub.shp" 48 48 2
+ts_stub TSPULS "$TMPDIR/tspulst_stub.shp" 48 48 32
+PACK_ARGS+=("$TMPDIR/tspulst_stub.shp:TSPULST.SHP")
+PACK_ARGS+=("$TMPDIR/tspuls_stub.shp:TSPULS.SHP")
+ts_stub TSPULS "$TMPDIR/tspulsmk_stub.shp" 48 48 13
+PACK_ARGS+=("$TMPDIR/tspulsmk_stub.shp:TSPULSMAKE.SHP")
 ts_stub TSPOWR "$TMPDIR/tspowrmk_stub.shp" 48 48 13
 PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 # TSTURB 24x24 on a 1x1: the power-turbine addon's placement GHOST (it never
@@ -478,6 +510,18 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsionbm_stub.shp" 15 480 15
 PACK_ARGS+=("$TMPDIR/tsionbm_stub.shp:TSIONBM.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsionrng_stub.shp" 104 51 15
 PACK_ARGS+=("$TMPDIR/tsionrng_stub.shp:TSIONRNG.SHP")
+# E.M. Pulse set (scripts/ts_pack_emp.py): pulse ball 64x64, the two impacts 1216x704, the stun
+# sparks 160x144, / 8.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspulsbl_stub.shp" 8 8 23
+PACK_ARGS+=("$TMPDIR/tspulsbl_stub.shp:TSPULSBL.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspulsf1_stub.shp" 152 88 21
+PACK_ARGS+=("$TMPDIR/tspulsf1_stub.shp:TSPULSF1.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tspulsf2_stub.shp" 152 88 15
+PACK_ARGS+=("$TMPDIR/tspulsf2_stub.shp:TSPULSF2.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsempfx_stub.shp" 20 18 27
+PACK_ARGS+=("$TMPDIR/tsempfx_stub.shp:TSEMPFX.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsmempfx_stub.shp" 144 72 12
+PACK_ARGS+=("$TMPDIR/tsmempfx_stub.shp:TSMEMPFX.SHP")
 # TS drop-pod strike set (scripts/ts_pack_pods.py): husks 192x192, DROPEXP puff
 # 400x272, PODRING entry flash 400x208, SMOKEY trail 128x120, pod bullet body
 # 192x192 — all / 8 for the classic dims the launcher sizes the HD art off.

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Package the TS Limpet Drone (Firestorm) into the mod tree:
-  TSLIMP.ZIP (units)            10 frames: the LIMPED.SHP crawl cycle with its own shadows,
-                                no facings (unit.cpp Shape_Number cycles them by frame)
+  TSLIMP.ZIP (units)            20 frames: the LIMPED.SHP crawl cycle (0-9) and its own
+                                shadows (10-19), no facings (unit.cpp Shape_Number cycles the
+                                bodies by frame; Draw_It draws the matching shadow under each)
   TSDLIMP.ZIP (structures)      20 frames: DLIMPET body (healthy / damaged) under the
                                 DLIMP_A blink, 10 healthy then 10 damaged
   TSDLIMPMAKE.ZIP (structures)  19 frames: the DLIMPMK build-up (42 TS frames resampled)
@@ -70,18 +71,24 @@ def crisp(img, canvas, anchor=None, factor=None):
 
 
 def drone_frames():
-    # LIMPED.SHP: 10 poses then their 10 shadows. Every frame shares one anchor so the
-    # crawl cycle does not wander: the union box of the dropped bodies and shadows.
-    pairs = []
+    # LIMPED.SHP: 10 poses then their 10 shadows, packed the same way: bodies 0-9, shadows
+    # 10-19. UnitClass::Draw_It draws the shadow first at the ground y and the body over it
+    # at the hover y, so the body can bob, and settle under an E.M. Pulse, off a still
+    # shadow. Every frame shares one anchor so the crawl cycle does not wander: the union
+    # box of the dropped bodies and shadows.
+    bodies, shadows, pairs = [], [], []
     for i in range(10):
         body = frame("limped", i)
         dropped = Image.new("RGBA", body.size, (0, 0, 0, 0))
         dropped.alpha_composite(body, (0, HOVER_DROP))
+        shadow = inf.with_shadow(Image.new("RGBA", body.size, (0, 0, 0, 0)), frame("limped", 10 + i))
+        bodies.append(dropped)
+        shadows.append(shadow)
         pairs.append(inf.with_shadow(dropped, frame("limped", 10 + i)))
     boxes = [p.getbbox() for p in pairs]
     anchor = ((min(b[0] for b in boxes) + max(b[2] for b in boxes)) / 2.0,
               (min(b[1] for b in boxes) + max(b[3] for b in boxes)) / 2.0)
-    return [crisp(p, UNIT_CANVAS, anchor) for p in pairs]
+    return [crisp(p, UNIT_CANVAS, anchor) for p in bodies + shadows]
 
 
 def mine_frames():

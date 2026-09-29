@@ -787,6 +787,7 @@ typedef enum SpecialWeaponType : char
     SPC_TS_ION_CANNON,    // TS Ion Cannon strike (ANIM_TS_ION_BEAM + RING1, sourced from the TSPION uplink plug)
     SPC_TS_DROPPODS,      // TS Drop Pod reinforcements (3 BULLET_TSPODDROP pods of infantry, sourced from the TSPODS plug)
     SPC_TS_HUNTSEEK,      // TS Hunter Seeker droid (a self-targeting kamikaze flyer, sourced from the TSSEEK plug)
+    SPC_TS_EMP,           // TS E.M. Pulse (TS [EMPulseSpecial]): the nearest powered EMP Cannon (STRUCT_TSPULS) in range lobs a pulse ball at the target
 
     SPC_COUNT,
     SPC_FIRST = 0,
@@ -1441,6 +1442,7 @@ typedef enum BulletType : char
     BULLET_TSHELLFIRE,      // TS [AAHeatSeeker2]: the Orca Fighter's homing missile, air and ground, on RA's homing path with DRAGON art.
     BULLET_TSBOMBSHELL,     // TS [Cannon2] as the Orca Bomber drops it: a falling bomb (RA Dropping) with the TD bomblet art.
     BULLET_TSBALLISTIC2,    // Firestorm [Ballistic2]: the Juggernaut's arcing, inaccurate 120MM shell.
+    BULLET_TSPULSBALL,      // TS [PulsPr]: the EMP Cannon's pulse ball, lobbed high at the E.M. Pulse target. Its landing plays the impact anim instead of doing damage.
 
     BULLET_COUNT,
     BULLET_FIRST = 0
@@ -1656,6 +1658,9 @@ typedef enum StructType : short
     STRUCT_TSCSAM, // TS SAM Upgrade tower "TSCSAM" (GACSAM) — same pattern. Fires TSRedEye2 (AA-only homing missile). Powered.
     STRUCT_TSDLIMP, // TS Limpet Mine "TSDLIMP" (Firestorm DLIMPET, 1x1) — the drone settled: cloaked, driven over like a mine, fires its LimpetFactor warhead at a passing vehicle and is spent. The deploy order packs it back into UNIT_TSLIMP.
 
+    STRUCT_TSPULS, // TS EMP Pulse Cannon "TSPULS" (NAPULS, 2x2, snow-theatre art). Shapes 0-60 = the cannon head's 61-frame rotation on the dome (NAPULS_A), 61-121 = damaged; Shape_Number picks the frame from PrimaryFacing. Superweapon host for SPC_TS_EMP (docs/emp-cannon-design.md).
+    STRUCT_TSDPSA, // TS Sensor Array "TSDPSA" ([GADPSA], 1x1): the Mobile Sensor Array deployed. Its owner sees cloaked and buried enemies within TF_SENSOR_RADIUS_CELLS (TF_Is_Sensed); the deploy order packs it back into UNIT_TSLPST. Art = GTDPSA + GTDPSA_A beacon, GTDPSAMK build-up (scripts/ts_pack_sensor.py).
+    STRUCT_TSDWEAP, // TS Mobile War Factory deployed "TSDWEAP" (Firestorm DGWEAP, art MWAR): a TS war factory on TSWEAP's 5x3 plot and geometry with a 12-stage shutter (Is_TS_War_Factory); the deploy order packs it back into UNIT_TSMWAR. Art: ts_pack_tree.py SIZEPASS on TSWEAP's affine.
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
 
@@ -1677,8 +1682,13 @@ typedef enum StructType : short
     **	Second range of BuildingTypeClass::Is_Tiberian_Era.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TSDLIMP
+    STRUCT_TS_TREE_LAST = STRUCT_TSDWEAP
 } StructType;
+
+/*
+**	The Sensor Array's reach (TS [GADPSA] CloakRadiusInCells=25).
+*/
+#define TF_SENSOR_RADIUS_CELLS 25
 
 /*
 **	Upper bound on the BuildingTypes heap (vanilla enum entries + mod heap
@@ -1945,6 +1955,9 @@ typedef enum UnitType : char
     UNIT_TSLIMP,            // TS Limpet Drone (Firestorm [LIMPET]): an unarmed hover crawler that deploys into the cloaked STRUCT_TSDLIMP mine. Art = LIMPED.SHP, a ten-frame crawl cycle with no facings (scripts/ts_pack_limpet.py).
     UNIT_R2APOC,            // RA2 Apocalypse (YR [APOC], art MTNK): twin 120mm cannon + Mammoth Tusk AA missiles, self-healing, crusher. Easter egg: crate-only. Art = MTNK.VXL hull 0-31 + MTNKTUR/MTNKBARL turret 32-63 (scripts/r2_pack_tanks.py).
     UNIT_R2PRIS,            // RA2 Prism Tank (YR [SREF]): prism beam that forks onto nearby enemies. Easter egg alongside UNIT_R2APOC. Art = SREF.VXL hull 0-31 + SREFTUR turret 32-63 (scripts/r2_pack_tanks.py).
+    UNIT_TSMEMP,            // TS Mobile EM-Pulse (Firestorm [MOBILEMP]): unarmed tracked support vehicle that charges, then deploys to set off a small E.M. Pulse round itself (UnitClass::EMP_Blast). Art = M_EMP.VXL, 32 facings (scripts/ts_pack_memp.py).
+    UNIT_TSLPST,            // TS Mobile Sensor Array ([LPST]): unarmed tracked vehicle that turns south-east and deploys into STRUCT_TSDPSA. Art = LPST.VXL, 32 facings (scripts/ts_pack_sensor.py).
+    UNIT_TSMWAR,            // TS Mobile War Factory (Firestorm [MOBWARG]): slow, unarmed tracked vehicle, one at a time. Art = MWAR_NOD.VXL, 32 facings (scripts/ts_pack_mwf.py).
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -2903,6 +2916,7 @@ typedef enum SmudgeType : char
     */
     SMUDGE_TSWEAPBB,
     SMUDGE_TSPROCBB,
+    SMUDGE_TSDWEAPBB,
 
     SMUDGE_COUNT,
     SMUDGE_FIRST = 0
@@ -3093,6 +3107,11 @@ typedef enum AnimType : short
     ANIM_TS_SMOKEY2,    // TS SMOKEY2 puff: the SAM missile's trail (art.ini [DRAGON] Trailer=SMOKEY2).
     ANIM_TS_RAILFXS,    // TS light railgun particle: small grey spark spawned in a tight helix along the Ghost Stalker's beam ([SmallRailgunPart]).
     ANIM_TS_SBANG34,    // TS S_BANG34: the InfantryExplode burst a jumpjet makes when it is shot down.
+    ANIM_TS_PULSBALL,   // TS PULSBALL: the EMP Cannon's pulse ball charging at the barrel before it fires (23 frames).
+    ANIM_TS_PULSEFX1,   // TS PULSEFX1: an E.M. Pulse impact, flat on the ground (21 frames). TS picks this or PULSEFX2 at random.
+    ANIM_TS_PULSEFX2,   // TS PULSEFX2: the other E.M. Pulse impact (15 frames).
+    ANIM_TS_EMPFX,      // TS EMP_FX01: the sparks over an object stunned by an E.M. Pulse (27 frames, loops until the stun ends).
+    ANIM_TS_MEMPFX,     // TS MEMPFX: the Mobile EM-Pulse's blast, flat on the ground (12 frames).
 
     ANIM_COUNT,
     ANIM_FIRST = 0
@@ -4362,6 +4381,7 @@ typedef enum VocType : short
     VOC_R2_VPRISTAB,  // Prism Tank engine start (vpristab). Bundled R2VPRISTAB.WAV.
     VOC_R2_VPRISTAC,  // Prism Tank engine start (vpristac). Bundled R2VPRISTAC.WAV.
     VOC_R2_VPRIATTA,  // Prism Tank beam (vpriatta). Bundled R2VPRIATTA.WAV.
+    VOC_TS_PLSECAN2,     // TS EMP Pulse Cannon firing the pulse ball (PLSECAN2, [EMPulseWeapon] Report=). Bundled TSPLSECAN2.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0
@@ -4532,6 +4552,9 @@ typedef enum VoxType : short
     VOX_TD_GDI_STRUCTURE,
     VOX_TD_NOD_STRUCTURE,
     VOX_TD_ENEMY_UNIT,
+    VOX_TS_EMP_READY,
+    VOX_TS_CLOAKED_DETECTED,
+    VOX_TS_SUBTERRANEAN_DETECTED,
 
     VOX_COUNT,
     VOX_FIRST = 0

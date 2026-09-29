@@ -256,6 +256,7 @@ public:
     static BuildingClass* Get_Pending_Placement_Object(uint64 player_id, int buildable_type, int buildable_id);
     static bool Get_Placement_State(uint64 player_id, unsigned char* buffer_in, unsigned int buffer_size);
     static void Convert_Type(const ObjectClass* object, CNCObjectStruct& object_out);
+    static void Add_Sensor_Ghosts(ObjectClass const* object, unsigned int buffer_size);
     static void DLL_Draw_Intercept(int shape_number,
                                    int x,
                                    int y,
@@ -2157,6 +2158,14 @@ static int TF_Self_Action_Selected(void)
             continue;
         }
         ActionType answer = object->What_Action(object);
+        /*
+        **	A deployed Mobile War Factory answers a self-click as a factory (make it primary),
+        **	so its pack-up is the deploy key's alone, and only while its bay is empty.
+        */
+        if (object->What_Am_I() == RTTI_BUILDING && *(BuildingClass*)object == STRUCT_TSDWEAP
+            && ((BuildingClass*)object)->BState != BSTATE_CONSTRUCTION && !((BuildingClass*)object)->In_Radio_Contact()) {
+            answer = ACTION_SELF;
+        }
 #if TF_DEV_BUILD
         {
             const char* up = getenv("USERPROFILE");
@@ -2371,6 +2380,12 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 
     // The deploy key, read straight from the keyboard (see TF_Deploy_Key_Tick).
     TF_Deploy_Key_Tick();
+
+    // Sensor Array sightings: "cloaked unit detected" / "subterranean unit detected".
+    TF_Sensor_Tick();
+
+    // Dev: the Sensor Array test's Sub APC digging under the player's base.
+    TF_Dev_Tunneller_Tick();
 
 
     // Flush the queued difficulty announcements once the match is actually
@@ -6501,11 +6516,14 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  own line is row 1.5), so the shut door covers it and the rising door
     **  reveals it. +192 leptons = row 2.25, past any mouth seat.
     */
-    if (shape_file_name != NULL && (strcmp(shape_file_name, "TSWEAPNF") == 0 || strcmp(shape_file_name, "TSWEAPNU") == 0)) {
+    if (shape_file_name != NULL
+        && (strcmp(shape_file_name, "TSWEAPNF") == 0 || strcmp(shape_file_name, "TSWEAPNU") == 0
+            || strcmp(shape_file_name, "TSDWEAPNF") == 0 || strcmp(shape_file_name, "TSDWEAPNU") == 0)) {
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 192)) >> 3);
     }
-    if (shape_file_name != NULL && strcmp(shape_file_name, "TSWEAPDR") == 0) {
+    if (shape_file_name != NULL
+        && (strcmp(shape_file_name, "TSWEAPDR") == 0 || strcmp(shape_file_name, "TSDWEAPDR") == 0)) {
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 200)) >> 3);
     }
@@ -6513,7 +6531,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  The base (the opening's interior) is the back wall: it sorts at the
     **  plot's north edge so a vehicle seated anywhere in the bay draws over it.
     */
-    if (object->What_Am_I() == RTTI_BUILDING && strcmp(new_object.AssetName, "TSWEAP") == 0) {
+    if (object->What_Am_I() == RTTI_BUILDING
+        && (strcmp(new_object.AssetName, "TSWEAP") == 0 || strcmp(new_object.AssetName, "TSDWEAP") == 0)) {
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, (LEPTON)(short)-384)) >> 3);
     }
@@ -6571,7 +6590,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         if (object != NULL) {
             if (object->What_Am_I() == RTTI_BUILDING) {
                 char const* n = object->Class_Of().IniName;
-                interesting = (n != NULL && (strcmp(n, "TSWEAP") == 0 || strcmp(n, "TDWEAP") == 0));
+                interesting = (n != NULL
+                               && (strcmp(n, "TSWEAP") == 0 || strcmp(n, "TSDWEAP") == 0 || strcmp(n, "TDWEAP") == 0));
             } else if (object->What_Am_I() == RTTI_UNIT) {
                 interesting = true;
             }
@@ -6863,6 +6883,7 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             // default foundation-derived box IS the approved 57x38 on the
             // art rows. TSDROP likewise (box on the deck's 3x2).
             case STRUCT_TSWEAP:
+            case STRUCT_TSDWEAP:
                 // Ensemble bbox (2026-08-17 evening): the hand-tucked pad
                 // centres the ensemble on the 4x3 plot, so the plot-centred
                 // box hugs the art with a size dial alone -- art 510x262
@@ -6874,6 +6895,12 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 break;
             case STRUCT_TSPILE:
                 dimy = 38; // 2x2 box, approved 2026-08-13
+                break;
+            case STRUCT_TSDPSA:
+                // The box hugs the base's sides and body (11 classic px above the cell centre
+                // to 7 below); the thin mast rises out of its top.
+                dimx = 35;
+                dimy = 36;
                 break;
             case STRUCT_TSPROC:
                 // Height approved 2026-08-13 round 1: the plot-centred box
@@ -7228,6 +7255,53 @@ void DLLExportClass::DLL_Draw_Line_Intercept(int x, int y, int x1, int y1, unsig
  *
  * History: 1/29/2019 11:37AM - ST
  **************************************************************************************************/
+/*
+**	Sensor Array ghosts. A cloaked or buried object inside an enemy house's Sensor Array
+**	(TF_Is_Sensed) is shown to that house see-through: the object's draw entries are exported
+**	once more, uncloaked, translucent and visible to the sensing house alone. The copies keep the
+**	object's owner, so they wear its colour and show as its dot on the radar; they cannot be
+**	selected, and carry IDs clear of the real objects'. The object itself stays cloaked, and
+**	every other house sees it exactly as before.
+*/
+void DLLExportClass::Add_Sensor_Ghosts(ObjectClass const* object, unsigned int buffer_size)
+{
+    enum
+    {
+        GHOST_ID_OFFSET = 7000 // clear of the Disruptor disc's 5000
+    };
+    if (CurrentDrawCount <= 0 || !object->Is_Techno()) {
+        return;
+    }
+    TechnoClass const* techno = (TechnoClass const*)object;
+    if ((techno->Cloak != CLOAKED && !techno->Is_Tunneling()) || techno->Techno_Type_Class()->IsInvisible) {
+        return;
+    }
+    int const drawn = CurrentDrawCount;
+    for (int h = 0; h < Houses.Count(); h++) {
+        HouseClass const* house = Houses.Ptr(h);
+        if (house == NULL || !house->IsActive || techno->House->Is_Ally(house)
+            || !TF_Is_Sensed(house, techno->Center_Coord())) {
+            continue;
+        }
+        unsigned int memory_needed = sizeof(CNCObjectListStruct);
+        memory_needed += (TotalObjectCount + CurrentDrawCount + drawn + 10) * sizeof(CNCObjectStruct);
+        if (memory_needed >= buffer_size) {
+            return;
+        }
+        for (int i = 0; i < drawn; i++) {
+            CNCObjectStruct& ghost = ObjectList->Objects[TotalObjectCount + CurrentDrawCount];
+            memcpy(&ghost, &ObjectList->Objects[TotalObjectCount + i], sizeof(CNCObjectStruct));
+            ghost.VisibleFlags = 1U << house->Class->House;
+            ghost.IsSelectable = false;
+            ghost.IsSelectedMask = 0U;
+            ghost.ID += GHOST_ID_OFFSET;
+            ghost.Cloak = UNCLOAKED;
+            ghost.DrawFlags |= SHAPE_FADING;
+            CurrentDrawCount++;
+        }
+    }
+}
+
 bool DLLExportClass::Get_Layer_State(uint64 player_id, unsigned char* buffer_in, unsigned int buffer_size)
 {
     player_id;
@@ -7381,6 +7455,8 @@ bool DLLExportClass::Get_Layer_State(uint64 player_id, unsigned char* buffer_in,
                             }
                         }
                     }
+
+                    Add_Sensor_Ghosts(object, buffer_size);
 
                     TotalObjectCount += CurrentDrawCount;
                 }
@@ -7997,15 +8073,13 @@ static int TF_Entry_Faction_Mask(TechnoTypeClass const* type)
     int mask = TF_Faction_Mask_From_Ownable(type != NULL ? type->Get_Ownable() : 0);
     /*
     ** The badge says which of the player's CONSTRUCTION YARDS can build the entry,
-    ** not which faction the player picked. A TS yard builds sandbags and the
-    ** concrete wall (the TS tree ships no wall of its own), so those two carry the
-    ** TS emblem alongside whichever other yards can build them -- exactly as
-    ** HouseClass::Can_Build lets a TS yard unlock them. Their Owner= lists never
-    ** mention the TS tree, so the bit has to be added here.
+    ** not which faction the player picked. A TS yard builds sandbags, so they carry
+    ** the TS emblem alongside whichever other yards can build them -- exactly as
+    ** HouseClass::Can_Build lets a TS yard unlock them. Their Owner= list never
+    ** mentions the TS tree, so the bit has to be added here.
     */
     if (type != NULL && type->What_Am_I() == RTTI_BUILDINGTYPE) {
-        StructType st = ((BuildingTypeClass const*)type)->Type;
-        if (st == STRUCT_SANDBAG_WALL || st == STRUCT_BRICK_WALL) {
+        if (((BuildingTypeClass const*)type)->Type == STRUCT_SANDBAG_WALL) {
             mask |= TF_FACTION_TSGDI;
         }
     }
@@ -8170,6 +8244,7 @@ static int TF_Special_Display_Mask(SpecialWeaponType id, HouseClass* house)
     case SPC_TS_ION_CANNON:
     case SPC_TS_DROPPODS:
     case SPC_TS_HUNTSEEK:
+    case SPC_TS_EMP:
         return (TF_FACTION_TSGDI);
     case SPC_TD_NUKE:
     case SPC_TD_PARA_INFANTRY:
@@ -8558,6 +8633,15 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                  "%s_LK", tech->IniName);
                     }
 
+                    /*
+                    ** So does a Mobile War Factory while the house fields one.
+                    */
+                    if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
+                        && ((UnitTypeClass const*)tech)->Type == UNIT_TSMWAR && TF_Mwar_At_Cap(PlayerPtr)) {
+                        snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                 "%s_LK", tech->IniName);
+                    }
+
                     if (factory) {
                         if (factory->Is_Building()) {
                             sidebar_entry.Constructing = true;
@@ -8782,6 +8866,15 @@ bool DLLExportClass::Get_Sidebar_State(uint64 player_id, unsigned char* buffer_i
                                      "%s_LK", tech->IniName);
                         }
 
+                        /*
+                        ** So does a Mobile War Factory while the house fields one.
+                        */
+                        if (tech != NULL && sidebar_entry.Type == UNIT_TYPE
+                            && ((UnitTypeClass const*)tech)->Type == UNIT_TSMWAR && TF_Mwar_At_Cap(PlayerPtr)) {
+                            snprintf(sidebar_entry.AssetName, sizeof(sidebar_entry.AssetName),
+                                     "%s_LK", tech->IniName);
+                        }
+
                         if (factory) {
                             if (factory->Is_Building()) {
                                 sidebar_entry.Constructing = true;
@@ -8976,6 +9069,15 @@ void DLLExportClass::Convert_Special_Weapon_Type(SpecialWeaponType weapon_type,
             strncpy(weapon_name, "SW_TSIon", 16);
         }
         break;
+    case SPC_TS_EMP:
+        // Tiberian Factions mod — the EMP Cannon's E.M. Pulse: the Ion Cannon's
+        // targeting plumbing (cursor, cost handling); AssetName "SW_TSEmp" resolves
+        // the TS PULSICON cameo entry (RA_SW_TSEMP in RABUILDABLES.XML).
+        dll_weapon_type = SW_ION_CANNON;
+        if (weapon_name != NULL) {
+            strncpy(weapon_name, "SW_TSEmp", 16);
+        }
+        break;
     case SPC_TS_DROPPODS:
         // Tiberian Factions mod — TS Drop Pod reinforcements: paratroop-class
         // launcher plumbing (SW_PARA_INFANTRY is cost-suppression whitelisted),
@@ -9061,6 +9163,7 @@ void DLLExportClass::Fill_Sidebar_Entry_From_Special_Weapon(CNCSidebarEntryStruc
     case SPC_TS_ION_CANNON:
     case SPC_TS_DROPPODS:
     case SPC_TS_HUNTSEEK:
+    case SPC_TS_EMP:
         Convert_Special_Weapon_Type(weapon_type, sidebar_entry_out.SuperWeaponType, sidebar_entry_out.AssetName);
         break;
     default:
@@ -10568,6 +10671,26 @@ bool DLLExportClass::Get_Player_Info_State(uint64 player_id, unsigned char* buff
         int index = 0;
         for (int y = top; y <= bottom; ++y) {
             for (int x = left; x <= right; ++x, ++index) {
+                /*
+                **	A cloaked enemy the player's Sensor Array shows (TF_Is_Sensed) is drawn as a
+                **	ghost the launcher does not treat as a target, so the cell carries the action
+                **	against that enemy instead of the action against the ground.
+                */
+                ObjectClass* sensed = NULL;
+                for (ObjectClass* o = Map[XY_Cell(x, y)].Cell_Occupier(); o != NULL; o = o->Next) {
+                    if (o->Is_Techno() && ((TechnoClass*)o)->Cloak == CLOAKED && !((TechnoClass*)o)->House->Is_Ally(PlayerPtr)
+                        && !((TechnoClass*)o)->Is_Cloaked(PlayerPtr)) {
+                        sensed = o;
+                        break;
+                    }
+                }
+                if (sensed != NULL) {
+                    Convert_Action_Type(action_object->What_Action(sensed),
+                                        (CurrentObject.Count() == 1) ? action_object : NULL,
+                                        sensed->As_Target(),
+                                        player_info->ActionWithSelected[index]);
+                    continue;
+                }
                 Convert_Action_Type(action_object->What_Action(XY_Cell(x, y)),
                                     (CurrentObject.Count() == 1) ? action_object : NULL,
                                     As_Target(XY_Cell(x, y)),
@@ -10845,6 +10968,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
         } _aprons[] = {
             // (0,0): both grids sit on their building's plot origin.
             {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 1, 0}, // 4x3 pad grid from col 1 of the 5x3 plot
+            {STRUCT_TSDWEAP, SMUDGE_TSDWEAPBB, 1, 0},
             {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0},
         };
         for (int a = 0; a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {

@@ -300,6 +300,22 @@ public:
     mutable unsigned char AttackMoveBoatClock;
 
     /*
+    **	Frames left of an E.M. Pulse stun (TS StunDuration), and the length of the stun
+    **	that set it. While it runs the object cannot fire, move, deploy or take orders.
+    */
+    int StunDuration;
+    int StunLength;
+    enum
+    {
+        EMP_STUN_FRAMES = 450 // the EMP Cannon's pulse: 30 s at 15 frames a second
+    };
+    void EMP_Stun(int frames)
+    {
+        StunDuration = frames;
+        StunLength = frames;
+    }
+
+    /*
     ** Some additional padding in case we need to add data to the class and maintain backwards compatibility for
     *save/load
     */
@@ -450,6 +466,10 @@ public:
     virtual bool Is_Tunneling(void) const
     {
         return (false);
+    }
+    bool Is_Immobilized(void) const
+    {
+        return (StunDuration > 0);
     }
     bool Is_Cloaked(HousesType house, bool check_invisible = false) const;
     bool Is_Cloaked(HouseClass const* house, bool check_invisible = false) const;

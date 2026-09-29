@@ -345,6 +345,7 @@ UnitClass::UnitClass(UnitType classid, HousesType house)
     DeployStep = 0;
     DeployTick = 0;
     DeployNav = TARGET_NONE;
+    EMPCharge = 0;
     FireStreamTicks = 0;
     FireStreamTarget = TARGET_NONE;
     for (int hb = 0; hb < HARV_BLACKLIST_MAX; hb++) {
@@ -479,6 +480,10 @@ void UnitClass::AI(void)
         }
     }
     Fire_Stream_AI();
+
+    if (*this == UNIT_TSMEMP && EMPCharge < EMP_CHARGE_FRAMES && !Is_Immobilized()) {
+        EMPCharge++;
+    }
 
     if (Is_In_Tunnel_Cycle()) {
         Tunnel_AI();
@@ -2284,11 +2289,20 @@ bool UnitClass::Try_To_Deploy(void)
     assert(Units.ID(this) == ID);
     assert(IsActive);
 
+    if (Is_Immobilized()) {
+        return (false);
+    }
+
     if (!Target_Legal(NavCom) && !IsRotating) {
         /*
-        **	TS Limpet Drone: settles into a mine on the cell it stands on.
+        **	TS Limpet Drone: settles into a mine on the cell it stands on. TS Mobile Sensor
+        **	Array: turns south-east, where its build-up starts, and settles into the sensor.
+        **	TS Mobile War Factory: turns south-west and unfolds into the war factory round
+        **	it, the vehicle's cell the plot's centre (TS DeploysInto, Deploy_Facing).
         */
-        if (*this == UNIT_TSLIMP) {
+        if (*this == UNIT_TSLIMP || *this == UNIT_TSLPST || *this == UNIT_TSMWAR) {
+            StructType into = TF_Deploys_Into();
+            DirType deploy_facing = (*this == UNIT_TSMWAR) ? DIR_SW : DIR_SE;
 #if TF_DEV_BUILD
 #define TF_LIMP_TRACE(step)                                                                                 \
     do {                                                                                                     \
@@ -2307,8 +2321,8 @@ bool UnitClass::Try_To_Deploy(void)
 #endif
             TF_LIMP_TRACE("begin");
             Mark(MARK_UP);
-            CELL cell = Coord_Cell(Center_Coord());
-            if (!BuildingTypeClass::As_Reference(STRUCT_TSDLIMP).Legal_Placement(cell)) {
+            CELL cell = TF_Deploy_Origin();
+            if (!BuildingTypeClass::As_Reference(into).Legal_Placement(cell)) {
                 if (PlayerPtr == House) {
                     Speak(VOX_DEPLOY);
                 }
@@ -2316,11 +2330,20 @@ bool UnitClass::Try_To_Deploy(void)
                 IsDeploying = false;
                 return (false);
             }
+            if (*this != UNIT_TSLIMP && PrimaryFacing.Current() != deploy_facing) {
+                Mark(MARK_DOWN);
+                Do_Turn(deploy_facing);
+                IsDeploying = true;
+                return (true);
+            }
             TF_LIMP_TRACE("placement legal");
-            BuildingClass* building = new BuildingClass(STRUCT_TSDLIMP, House->Class->House);
+            BuildingClass* building = new BuildingClass(into, House->Class->House);
             TF_LIMP_TRACE("mine constructed");
             if (building != NULL && building->Unlimbo(Cell_Coord(cell))) {
                 TF_LIMP_TRACE("mine unlimboed");
+                if (into != STRUCT_TSDLIMP) {
+                    Sound_Effect(VOC_TS_PLACE_BUILDING_DOWN, Center_Coord());
+                }
                 building->Revealed(House);
                 TF_LIMP_TRACE("mine revealed");
                 building->Strength = max(1, (int)(Health_Ratio() * (int)building->Class->MaxStrength));
@@ -3081,12 +3104,23 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
     // load-bearing. The earlier draw-scale hack sheared the turret off its hull
     // because scale is applied about the ground anchor per-draw; keep scale at 1.0.)
     //
-    // Hover bob (TS-authentic): the hull gently rides up and down over its baked
-    // drop shadow. Applied to y before both hull and turret draw (turret copies y),
-    // so the rack rides with the hull.
+    // Hover bob (TS-authentic): the whole unit, shadow included, gently rides up and
+    // down. Applied to y before both hull and turret draw (turret copies y), so the
+    // rack rides with the hull. Each hover unit's shadow is its own shape block (Hover
+    // MLRS 64-95, Limpet Drone 10-19) drawn first at shadow_y. An E.M. Pulse cuts the
+    // lift: the bob stops and the hull settles 3 px onto its shadow over the stun's
+    // first 12 frames, then rises again over its last 12 (TS HoverLocomotionClass
+    // Power_Off).
+    int shadow_y = y;
     if (Class->Type == UNIT_TSHVR || Class->Type == UNIT_TSLIMP) {
         static const int _hover_bob[8] = {0, -1, -2, -2, -1, 0, 1, 1};
-        y += _hover_bob[(Frame >> 2) & 7];
+        if (Is_Immobilized()) {
+            int edge = min(StunLength - StunDuration, StunDuration);
+            y += min(3, max(0, edge) / 4);
+        } else {
+            y += _hover_bob[(Frame >> 2) & 7];
+            shadow_y = y;
+        }
     }
 
     /*
@@ -3131,6 +3165,12 @@ void UnitClass::Draw_It(int x, int y, WindowNumberType window) const
         */
         if (*this == UNIT_ARTY && IsInRecoilState) {
             Recoil_Adjust(PrimaryFacing.Current(), x, y);
+        }
+
+        if (*this == UNIT_TSHVR && shapenum < 32) {
+            Techno_Draw_Object(shapefile, 64 + shapenum, x, shadow_y, window, rotation, scale);
+        } else if (*this == UNIT_TSLIMP && shapenum < 10) {
+            Techno_Draw_Object(shapefile, 10 + shapenum, x, shadow_y, window, rotation, scale);
         }
 
         /*
@@ -4694,6 +4734,11 @@ int UnitClass::Mission_Unload(void)
         }
         break;
 
+    case UNIT_TSMEMP:
+        EMP_Blast();
+        Assign_Mission(MISSION_GUARD);
+        return (1);
+
     case UNIT_MCV:
     case UNIT_TDMCV:    // TD MCV — same deploy AI as UNIT_MCV.
     case UNIT_AMCV:     // W2 b3 faction MCVs — same deploy AI, different yard
@@ -4702,6 +4747,8 @@ int UnitClass::Mission_Unload(void)
     case UNIT_TDNMCV:
     case UNIT_TSMCV:    // TS MCV — deploys STRUCT_TSFACT (the TS-tree gate).
     case UNIT_TSLIMP:   // TS Limpet Drone — settles into STRUCT_TSDLIMP on its own cell.
+    case UNIT_TSLPST:   // TS Mobile Sensor Array — settles into STRUCT_TSDPSA on its own cell.
+    case UNIT_TSMWAR:   // TS Mobile War Factory — unfolds into STRUCT_TSDWEAP round its cell.
         switch (Status) {
         case 0:
             Path[0] = FACING_NONE;
@@ -5408,7 +5455,7 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
         && !(In_Radio_Contact() && IsTethered
              && Contact_With_Whom() != NULL
              && Contact_With_Whom()->What_Am_I() == RTTI_BUILDING
-             && *(BuildingClass*)Contact_With_Whom() == STRUCT_TSWEAP)) {
+             && ((BuildingClass*)Contact_With_Whom())->Is_TS_War_Factory())) {
         return (MOVE_NO);
     }
 
@@ -5822,16 +5869,25 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
             /*
             **	The stance toggles anywhere the unit stands.
             */
-        } else if (*this == UNIT_TSLIMP) {
+        } else if (TF_Deploys_Into() != STRUCT_NONE) {
 
             /*
-            **	The Limpet Drone gets the no-deploy cursor where its mine cannot sit.
+            **	The Limpet Drone, Mobile Sensor Array and Mobile War Factory get the no-deploy
+            **	cursor where what they deploy into cannot sit.
             */
             ((ObjectClass&)(*this)).Mark(MARK_UP);
-            if (!BuildingTypeClass::As_Reference(STRUCT_TSDLIMP).Legal_Placement(Coord_Cell(Center_Coord()))) {
+            if (!BuildingTypeClass::As_Reference(TF_Deploys_Into()).Legal_Placement(TF_Deploy_Origin())) {
                 action = ACTION_NO_DEPLOY;
             }
             ((ObjectClass&)(*this)).Mark(MARK_DOWN);
+        } else if (*this == UNIT_TSMEMP) {
+
+            /*
+            **	The Mobile EM-Pulse fires only on a full charge and never while stunned.
+            */
+            if (EMPCharge < EMP_CHARGE_FRAMES || Is_Immobilized()) {
+                action = ACTION_NO_DEPLOY;
+            }
         } else if (Class->Is_MCV()) {
 
             /*
@@ -6360,6 +6416,10 @@ int UnitClass::Pip_Count(void) const
 
     if ((*this == UNIT_HARVESTER || *this == UNIT_TDHARV || *this == UNIT_TSHARV)) {
         return ((Gold + Gems) / 4);
+    }
+
+    if (*this == UNIT_TSMEMP) {
+        return (EMPCharge * Class->Max_Pips() / EMP_CHARGE_FRAMES);
     }
 
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
@@ -7505,6 +7565,9 @@ void UnitClass::Assign_Destination(TARGET target)
             }
         } else if (Is_Target_Cell(target)) {
             CELL cell = As_Cell(target);
+            if (Is_In_Tunnel_Cycle() && Is_Immobilized()) {
+                return;
+            }
             if (TunnelState == TUNNEL_TURNING || TunnelState == TUNNEL_DIGGING_IN
                 || TunnelState == TUNNEL_TUNNELING) {
                 Tunnel_To(Cell_Coord(cell));
@@ -8258,6 +8321,51 @@ static void TF_Tunnel_Log(UnitClass const* unit, char const* fmt, ...)
 #endif
 }
 
+/*
+**	The building a TS vehicle deploys into (TS DeploysInto), STRUCT_NONE for the rest.
+*/
+StructType UnitClass::TF_Deploys_Into(void) const
+{
+    if (*this == UNIT_TSLIMP) {
+        return (STRUCT_TSDLIMP);
+    }
+    if (*this == UNIT_TSLPST) {
+        return (STRUCT_TSDPSA);
+    }
+    if (*this == UNIT_TSMWAR) {
+        return (STRUCT_TSDWEAP);
+    }
+    return (STRUCT_NONE);
+}
+
+/*
+**	The cell that building's plot starts at: the vehicle's own cell for the one-cell ones,
+**	and for the war factory the cell two columns west and a row north, so the vehicle's cell
+**	is the centre of its 5x3 plot, where the build-up's first frame draws the vehicle.
+*/
+CELL UnitClass::TF_Deploy_Origin(void) const
+{
+    CELL cell = Coord_Cell(Center_Coord());
+    if (*this == UNIT_TSMWAR) {
+        return (cell - MAP_CELL_W - 2);
+    }
+    return (cell);
+}
+
+/*
+**	The Mobile EM-Pulse discharges (OpenTS unit.cpp EMPulse_Blast): on a full charge and
+**	when not stunned itself, a small pulse goes off round the vehicle, which is spared, and
+**	the charge starts again from nothing.
+*/
+void UnitClass::EMP_Blast(void)
+{
+    if (!Is_Immobilized() && EMPCharge >= EMP_CHARGE_FRAMES) {
+        new AnimClass(ANIM_TS_MEMPFX, Center_Coord());
+        TF_EMPulse(Coord_Cell(Center_Coord()), this, EMP_MOBILE_SPREAD, EMP_MOBILE_STUN_FRAMES);
+        EMPCharge = 0;
+    }
+}
+
 bool UnitClass::Is_Subterranean(void) const
 {
     return (*this == UNIT_TSSUBTANK || *this == UNIT_TSSAPC);
@@ -8344,9 +8452,12 @@ void UnitClass::Tunnel_To(COORDINATE dest)
 **	A stop order. What it costs depends on how far the dig has gone (TS Stop_Moving):
 **	not yet committed = forget it, mid-ladder = level back out, underground = make for
 **	the nearest ground it can surface on, and with no such ground it stays buried for good.
+**	A vehicle underground within a cell's diagonal of its destination carries on to it.
 */
 void UnitClass::Tunnel_Stop(void)
 {
+    static const int CELL_LEPTON_DIAG = 362;
+
     TF_Tunnel_Log(this, "STOP");
     switch (TunnelState) {
     case TUNNEL_TURNING:
@@ -8360,6 +8471,9 @@ void UnitClass::Tunnel_Stop(void)
         break;
 
     case TUNNEL_TUNNELING: {
+        if (TunnelDest != 0 && ::Distance(Coord, TunnelDest) <= CELL_LEPTON_DIAG) {
+            break;
+        }
         CELL cell = Find_Emerge_Cell(Coord_Cell(Coord));
         if (cell == -1) {
             Tunnel_Explode();
@@ -8389,6 +8503,12 @@ void UnitClass::Tunnel_Begin_Emerge(void)
     Mark(MARK_DOWN);
     Sound_Effect(VOC_TS_SUBDRIL1, Coord);
     new AnimClass(ANIM_TS_DIG, Coord);
+    if (Is_Immobilized()) {
+        AnimClass* sparks = new AnimClass(ANIM_TS_EMPFX, Center_Coord(), Random_Pick(0, 25));
+        if (sparks != NULL) {
+            sparks->Attach_To(this);
+        }
+    }
     TF_Tunnel_Log(this, "EMERGE-BEGIN");
 }
 

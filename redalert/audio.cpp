@@ -412,6 +412,7 @@ struct SoundEffectNameStruct
     {"R2VPRISTAB", 10, IN_NOVAR},  // VOC_R2_VPRISTAB -- Prism Tank engine start
     {"R2VPRISTAC", 10, IN_NOVAR},  // VOC_R2_VPRISTAC -- Prism Tank engine start
     {"R2VPRIATTA", 1, IN_NOVAR},  // VOC_R2_VPRIATTA -- Prism Tank beam
+    {"TSPLSECAN2", 1, IN_NOVAR},  // VOC_TS_PLSECAN2 -- TS EMP Pulse Cannon firing
 };
 
 //
@@ -810,6 +811,9 @@ int Sound_Effect(VocType voc, fixed volume, int variation, signed short pan_valu
     "TDGSTRUC1",  // VOX_TD_GDI_STRUCTURE
     "TDNSTRUC1",  // VOX_TD_NOD_STRUCTURE
     "TDENMYUNIT", // VOX_TD_ENEMY_UNIT
+    "TSEMPREADY", // VOX_TS_EMP_READY      (TS "E.M. pulse cannon ready")
+    "TSCLOAKDET", // VOX_TS_CLOAKED_DETECTED (TS "cloaked unit detected")
+    "TSSUBDET",   // VOX_TS_SUBTERRANEAN_DETECTED (TS "subterranean unit detected")
 };
 
 static VoxType CurrentVoice = VOX_NONE;
@@ -928,6 +932,9 @@ void Init_SpeechTS(void)
     SpeechTS[VOX_REPAIRING]          = "TSREPAIR1";
     SpeechTS[VOX_STRUCTURE_SOLD]     = "TSSTRUSLD1";
     SpeechTS[VOX_UNIT_REPAIRED]      = "TSUNITREPD";
+    SpeechTS[VOX_TS_EMP_READY]       = "TSEMPREADY";
+    SpeechTS[VOX_TS_CLOAKED_DETECTED] = "TSCLOAKDET";
+    SpeechTS[VOX_TS_SUBTERRANEAN_DETECTED] = "TSSUBDET";
 }
 
 char const* SpeechRAO[VOX_COUNT] = {NULL};

@@ -299,10 +299,10 @@ public:
     virtual void Assign_Destination(TARGET target);
 
     /*
-    **	A Limpet Mine given a move order packs back into its drone and the drone leaves for
-    **	this cell. No other building keeps a destination.
+    **	A deployed TS building (Limpet Mine, Sensor Array) given a move order packs back into
+    **	its vehicle and the vehicle leaves for this cell. No other building keeps a destination.
     */
-    TARGET TFLimpetNav;
+    TARGET TFPackNav;
     virtual bool Can_Demolish(void) const;
     virtual bool Can_Demolish_Unit(void) const;
     virtual bool Can_Capture(void) const;
@@ -433,6 +433,19 @@ public:
     **	TF: rally points (ported from CFE Patch Redux, GPL v3).
     */
     bool Can_Have_Rally_Point(void) const;
+
+    /*
+    **	The TS war factories (the War Factory and the deployed Mobile War Factory) share the bay:
+    **	plot, exits, seats and unload cycle. Only the shutter's stage count differs.
+    */
+    bool Is_TS_War_Factory(void) const
+    {
+        return (*this == STRUCT_TSWEAP || *this == STRUCT_TSDWEAP);
+    }
+    int TS_Door_Stages(void) const
+    {
+        return (*this == STRUCT_TSDWEAP) ? 12 : 9;
+    }
     bool Rally_Unit(TechnoClass& unit);
     TARGET Target_For_Rally_Point(const SpeedType speed = SPEED_TRACK) const;
     virtual void Set_Unselected_By_Player(HouseClass* player = NULL);

@@ -2441,6 +2441,15 @@ static AnimTypeClass const TsRailFxS(ANIM_TS_RAILFXS, "TSRAILFXS", 24, 3, false,
 // a jumpjet makes when it is shot down in the air. art.ini [S_BANG34]: Normalized, Translucent,
 // Crater, Scorch, Report=EXPNEW10. 13 frames (TSBANG34.ZIP, ts_pack_infantry.py EFFECTS).
 static AnimTypeClass const TsSBang34(ANIM_TS_SBANG34, "TSBANG34", 17, 5, false, true, false, true, true, false, false, true, false, 0, 2, 0, 0, 0, 13, 0, VOC_TS_EXPNEW10, ANIM_NONE, 13, 0x100);
+// Tiberian Factions -- the EMP Cannon's E.M. Pulse (docs/emp-cannon-design.md). TSPULSBL is TS
+// PULSBALL charging at the barrel (the same tileset the flying ball draws), TSPULSF1 / TSPULSF2
+// are TS PULSEFX1 / PULSEFX2 flat on the ground at the landing, one picked at random as TS does.
+// Art = scripts/ts_pack_emp.py.
+static AnimTypeClass const TsPulsBall(ANIM_TS_PULSBALL, "TSPULSBL", 8, 4, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 23, 0, VOC_NONE, ANIM_NONE, 23, 0x100);
+static AnimTypeClass const TsMEmpFx(ANIM_TS_MEMPFX, "TSMEMPFX", 144, 6, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
+static AnimTypeClass const TsPulseFx1(ANIM_TS_PULSEFX1, "TSPULSF1", 152, 44, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 21, 0, VOC_NONE, ANIM_NONE, 21, 0x100);
+static AnimTypeClass const TsPulseFx2(ANIM_TS_PULSEFX2, "TSPULSF2", 152, 44, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 15, 0, VOC_NONE, ANIM_NONE, 15, 0x100);
+static AnimTypeClass const TsEmpFx(ANIM_TS_EMPFX, "TSEMPFX", 20, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 27, 27, -1, VOC_NONE, ANIM_NONE, 27, 0x100);
 
 // Tiberian Factions -- TS Disruptor sonic wave (ANIM_TS_SONICWAVE). Art is ours
 // (TSSONICW.ZIP via scripts/ts_gen_sonicwave.py): TS has NO sonic-wave art to
@@ -2702,6 +2711,11 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(TsSmokey2);
     new AnimTypeClass(TsRailFxS);
     new AnimTypeClass(TsSBang34);
+    new AnimTypeClass(TsPulsBall);
+    new AnimTypeClass(TsPulseFx1);
+    new AnimTypeClass(TsPulseFx2);
+    new AnimTypeClass(TsEmpFx);
+    new AnimTypeClass(TsMEmpFx);
 }
 
 /***********************************************************************************************

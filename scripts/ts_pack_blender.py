@@ -52,7 +52,8 @@ def write_zip(ini, frames):
 
 def main():
     render_dir = sys.argv[1]
-    which = set(sys.argv[2:]) or {"TSWALL", "TSCTWR", "TSVULC", "TSROCK", "TSCSAM"}
+    # TSWALL's shipped art is the HD GDI wall (ts_pack_gdi_wall.py); name TSWALL explicitly to repack the render.
+    which = set(sys.argv[2:]) or {"TSCTWR", "TSVULC", "TSROCK", "TSCSAM"}
     dims = json.load(open(W.STUB_MANIFEST))
     if "TSWALL" in which:
         write_zip("TSWALL", [load(render_dir, f"wall_j{j:02d}_d{d}") for d in range(3) for j in range(16)])

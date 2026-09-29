@@ -35,12 +35,21 @@ STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
 # is drawn at the wrong scale -- silently, with nothing else looking wrong.
 # build_tfassets.sh checks its stub literals against this file.
 STUB_DIMS = {}
+# A run only packs the buildings whose art is present, so start from the shipped
+# manifest and let this run overwrite its own entries; a fresh file would drop
+# every other building's stub dims and break build_tfassets.sh's check.
+if os.path.exists(STUB_MANIFEST):
+    with open(STUB_MANIFEST) as _f:
+        STUB_DIMS = json.load(_f)
 CANVAS_PER_CLASSIC_PX = 16.0 / 3.0
 
 # The affine scale each packed building actually shipped at (the fit's clamps
 # applied), for satellite art that must match — an addon plug's placement
 # ghost is scaled by its host's factor.
 FIT_FACTOR = {}
+# Each building's source-to-canvas transform (factor, src cx, src cy, dst x, dst y), so a
+# building drawn on another's TS geometry can be packed on exactly its affine.
+AFFINES = {}
 
 
 # Source-pixel patches, (dirname) -> [((x, y), (x, y) to copy from)]. NTREFN's
@@ -198,7 +207,7 @@ def bleed_edges(img, rounds=3):
 #   lanczos-hard  Lanczos colour, 1-bit alpha: a soft silhouette over snow
 #              reads as a pale outline on a dark building (08-28 SS), so the
 #              edge stays hard and only the interior is smoothed.
-SCALER_MODE = {"TSPROC": "lanczos-hard", "TSWEAP": "lanczos-hard"}
+SCALER_MODE = {"TSPROC": "lanczos-hard", "TSWEAP": "lanczos-hard", "TSDWEAP": "lanczos-hard"}
 CURRENT_INI = [None]
 
 
@@ -368,7 +377,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                     overlay_dir=None, fit_w=None, dst_x_px=None, door_spec=None,
                     apron_cells=None, front_ring=None, emblem=None,
                     apron_canvas=None, pingpong=False, powerup_layers=None,
-                    powerup_blocks=None):
+                    powerup_blocks=None, affine_from=None):
     """The Stealth Recipe compositor.
     anims = [(dirname, healthy_indices, damaged_indices), ...].
     Two fit modes:
@@ -466,6 +475,11 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         factor = min(factor, float(canvas_w) / (ux1 - ux0), float(canvas_h) / (uy1 - uy0))
         cx, cy = (ux0 + ux1) / 2.0, (uy0 + uy1) / 2.0
         dst_x = dst_y = None
+    if affine_from is not None:
+        # Same TS canvas and foundation as another building: take its transform, so this
+        # one lands where TS draws it relative to the same plot.
+        factor, cx, cy, dst_x, dst_y = AFFINES[affine_from]
+    AFFINES[ini] = (factor, cx, cy, dst_x, dst_y)
     FIT_FACTOR[ini] = factor
 
     mk_pad_erase = None
@@ -565,7 +579,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # Pad pixels under the finished building's own silhouette are never
         # seen and, being sorted by cell, could paint over a unit standing on
         # the threshold: clear them (08-29, the one grey pixel on the seam).
-        if ini == "TSWEAP":
+        if ini in WF_ART:
             body_sil = place(base_h, factor, canvas_w, canvas_h, cx, cy, dst_x, dst_y).split()[3].point(lambda v: 255 if v > 0 else 0).filter(ImageFilter.MinFilter(3))
             keep = ImageChops.subtract(apron.split()[3], body_sil)
             apron = apron.copy()
@@ -729,6 +743,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         return out
 
     full = [[scaled(f) for f in healthy], [scaled(f) for f in damaged_frames]]
+    finish = lambda img: img
     # The building over its own apron: any partial-coverage pixel along the
     # join becomes opaque, so the silhouette GROWS onto the pad and no seam of
     # terrain shows between the two (soft edges showed the pad through as a
@@ -760,15 +775,17 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             out.putalpha(ImageChops.lighter(ImageChops.lighter(Image.composite(hard, a, pad_mask), fill), overlap))
             return out
         full = [[harden_over_pad(f) for f in run] for run in full]
+        finish = harden_over_pad
     # TSWEAP sandwich (08-28 rebuild): without a z-buffer the only way a vehicle
     # reads INSIDE the bay is building art drawn in front of it. Front layer
     # (<INI>NF) = every idle frame minus the door opening; the base tileset
     # keeps only the opening's interior (same frame count, so Shape_Number
     # indexes both). The opening = the union of the shutter layer's pixels.
-    if ini == "TSWEAP":
+    if ini in WF_ART:
+        wf = WF_ART[ini]
         opening = Image.new("L", (canvas_w, canvas_h), 0)
-        for i in range(9):
-            fr = scaled(centre_on(load("shp_gtweap_d", i), base_h.size))
+        for i in range(wf["stages"]):
+            fr = scaled(centre_on(load(wf["door"], i), base_h.size))
             opening = ImageChops.lighter(opening, fr.split()[3].point(lambda v: 255 if v > 0 else 0))
         opening = opening.filter(ImageFilter.MaxFilter(5))
         # The jambs go to the back layer too: our vehicles are wider than the
@@ -780,7 +797,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # The band starts under the OPEN shutter's bottom edge: the awning and
         # the rolled shutter above it stay in front of the vehicle (nothing
         # may show between the door roof and the hangar roof).
-        open_bb = scaled(centre_on(load("shp_gtweap_d", 8), base_h.size)).getbbox()
+        open_bb = scaled(centre_on(load(wf["door"], wf["stages"] - 1), base_h.size)).getbbox()
         # Luke's read (08-28): the LEFT jamb renders over the vehicle, the vehicle
         # renders over the RIGHT pillar (it exits SE past it). So the band runs
         # from the door's left edge eastward to the widest vehicle's reach.
@@ -793,7 +810,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # tsweap-front-cut-line.json, drawn in Aseprite 08-28 along the left
         # jamb's inner edge): everything left of it renders over the vehicle.
         # Rows above/below the line extend its end points.
-        line_path = os.path.join(MOD, "..", "..", "custom-art", "tsweap-front-cut-line.json")
+        line_path = os.path.join(MOD, "..", "..", "custom-art", wf["line"])
         if not os.path.exists(line_path):
             raise SystemExit(f"{ini}: front cut line missing: {line_path}")
         line = json.load(open(line_path))
@@ -802,7 +819,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # bar's ends: a flat top either lets a tall unit show above the bar or
         # cuts it flat below it. Per column: y_top(x) = the fitted edge.
         import numpy as np
-        oa = np.array(scaled(centre_on(load("shp_gtweap_d", 8), base_h.size)).split()[3]) > 0
+        oa = np.array(scaled(centre_on(load(wf["door"], wf["stages"] - 1), base_h.size)).split()[3]) > 0
         cols, bots = [], []
         for xx in range(oa.shape[1]):
             ys_ = np.where(oa[:, xx])[0]
@@ -832,13 +849,48 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # The body has its door PAINTED SHUT (TS covers it with the under-door
         # art, GAWEAP_1, while a unit leaves). Second front tileset for the
         # unloading state: the open doorway composited over each idle frame.
-        ud_top = EXTRA_LAYER_BAKE[("TSWEAP", "UD")]
-        ud = [scaled(centre_on(bake_hazard_gold(load("shp_gtweap_1", i), ud_top), base_h.size)) for i in (0, 1)]
-        def with_doorway(img, r):
-            out = img.copy()
-            out.alpha_composite(ud[r])
-            return out
-        front_open = [[cut(with_doorway(f, r), False) for f in full[r]] for r in (0, 1)]
+        ud_top = EXTRA_LAYER_BAKE.get((ini, "UD"))
+        ud_src = [centre_on(load(wf["under"], i) if ud_top is None else bake_hazard_gold(load(wf["under"], i), ud_top),
+                            base_h.size) for i in (0, 1)]
+        if wf.get("doorway_before_scale"):
+            # The under-door art also repaints the posts, arms and apron round the
+            # door; only the part inside the shutter's footprint belongs to the open
+            # doorway, so everything outside it stays the body's own art.
+            door_foot = Image.new("L", base_h.size, 0)
+            for i in range(wf["stages"]):
+                door_foot = ImageChops.lighter(door_foot, centre_on(load(wf["door"], i), base_h.size)
+                                               .split()[3].point(lambda v: 255 if v > 0 else 0))
+            # The door leaf painted into the body runs a pixel or two below the
+            # shutter's lower edge; the footprint reaches down to cover it (only
+            # down, so the posts beside the door stay the body's).
+            reach = door_foot
+            for dx, dy in ((0, 1), (0, 2), (1, 1)):
+                reach = ImageChops.lighter(reach, ImageChops.offset(door_foot, dx, dy))
+            for f in ud_src:
+                f.putalpha(ImageChops.multiply(f.split()[3], reach))
+        if wf.get("doorway_before_scale"):
+            # The under-door art repeats the door arms: laid over the body in
+            # source pixels and scaled once, the arms stay the body's own.
+            def with_doorway(r, i):
+                out = (healthy, damaged_frames)[r][i].copy()
+                out.alpha_composite(ud_src[r])
+                return finish(scaled(out))
+        else:
+            ud = [scaled(f) for f in ud_src]
+            def with_doorway(r, i):
+                out = full[r][i].copy()
+                out.alpha_composite(ud[r])
+                return out
+        front_open = [[cut(with_doorway(r, i), False) for i in range(len(full[r]))] for r in (0, 1)]
+        if wf.get("doorway_before_scale"):
+            # The under-door layer is that same composite over the under-door art's
+            # own footprint, so it meets the open front layer without a seam.
+            def doorway_layer(r):
+                out = with_doorway(r, 0)
+                foot = scaled(ud_src[r]).split()[3].point(lambda v: 255 if v > 0 else 0)
+                out.putalpha(ImageChops.multiply(out.split()[3], foot))
+                return out
+            doorway_under = [doorway_layer(r) for r in (0, 1)]
         full = [[cut(f, True) for f in run] for run in full]
         write_zip(f"{STRUCT_DIR}/{ini}NF.ZIP", f"{ini.lower()}nf", front[0] + front[1])
         patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}NF", len(front[0]) + len(front[1]))
@@ -860,6 +912,8 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 keep_largest_component(f)
             return f
         layer = [scaled(centre_on(load_clipped(i), base_h.size)) for i in indices]
+        if suffix == "UD" and WF_ART.get(ini, {}).get("doorway_before_scale"):
+            layer[0:2] = doorway_under
         write_zip(f"{STRUCT_DIR}/{ini}{suffix}.ZIP", f"{ini.lower()}{suffix.lower()}", layer)
         patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}{suffix}", len(layer))
     front_canvas = None
@@ -1232,12 +1286,26 @@ BIBS = {"TSHPAD": "shp_gthpadbb", "TSDEPT": "shp_gtdeptbb"}
 # APRON_CLIP: clip a building's concrete to its tile grid. Tried on TSWEAP
 # 2026-08-17 and REJECTED ("cutting the pad off looks like garbage" -- the
 # same hard-edge failure recorded 2026-08-05); the ghost grew to 5x3 instead.
-APRON_CLIP = {"TSWEAP"}  # GAWEAPBB leaves a sliver east of the 5-wide plot; the pad must stay inside the placement ghost
+APRON_CLIP = {"TSWEAP", "TSDWEAP"}  # GAWEAPBB leaves a sliver east of the 5-wide plot; the pad must stay inside the placement ghost
 
 # EXTRA_LAYERS: event-driven TS anims shipped as sub-object layers (see
 # build_structure). TSPROC: FR = NTREFN_B fireball, 20 healthy + 20 damaged,
 # one burst per DLL trigger; LD = NTREFN_A dock lid, 5 healthy + 5 damaged,
 # played forward at dock start and reversed at dock end.
+# The TS war factories' bays: roll-up shutter, its stage count, the under-door interior,
+# and the front cut line (resources/custom-art) that splits the building into the layer
+# behind a vehicle in the doorway and the layer in front of it.
+WF_ART = {
+    "TSWEAP": dict(door="shp_gtweap_d", stages=9, under="shp_gtweap_1",
+                   line="tsweap-front-cut-line.json"),
+    # The Mobile War Factory deployed (Firestorm MWAR): TS's own 4x3 war factory geometry
+    # with a 12-stage shutter. Its under-door art is clipped to the shutter's footprint
+    # and laid over the body before scaling (doorway_before_scale), so the posts, arms
+    # and apron look the same with the door open as shut.
+    "TSDWEAP": dict(door="shp_mwar_d", stages=12, under="shp_mwar_1",
+                    line="tsdweap-front-cut-line.json", doorway_before_scale=True),
+}
+
 EXTRA_LAYERS = {
     "TSPROC": [("FR", "shp_ntrefn_b", list(range(40))),
                ("LD", "shp_ntrefn_a", list(range(10)))],
@@ -1248,6 +1316,14 @@ EXTRA_LAYERS = {
     # shadows, never indexed).
     "TSWEAP": [("DR", "shp_gtweap_d", list(range(9)) * 2),
                ("UD", "shp_gtweap_1", list(range(4)))],
+    # TSDWEAP: MWAR_D's 12 stages then 12 shadow frames; the stages ship twice as above.
+    "TSDWEAP": [("DR", "shp_mwar_d", list(range(12)) * 2),
+                ("UD", "shp_mwar_1", list(range(4)))],
+    # EMP cannon turret: PULSCAN.VXL rendered 32 facings (fleet camera) at 1:1 TS
+    # pixel scale (shp_pulscan_t, 1 voxel = 1 TS px); the DLL draws shape
+    # BodyShape[facing] seated on the dome. NAPULS_A (a small 2D head) is unused,
+    # as in TS.
+    "TSPULS": [("T", "shp_pulscan_t", list(range(32)))],
 }
 
 # Source-space erase boxes on a sub-object layer, applied before the affine,
@@ -1263,6 +1339,8 @@ EXTRA_LAYER_CLIPS = {("TSWEAP", "DR"): (113, 113, 192, 168)}
 # to match the apron, which is ground art and never house-remapped; the team
 # block on the bay frame above them (rows 87-98) keeps its house colour. The
 # open-doorway front tileset (<INI>NU) composites the same art with the same bake.
+# TSDWEAP has no entry: MWAR_1 paints its stripes orange, and its remap pixels
+# are wall paint that keeps the house colour.
 EXTRA_LAYER_BAKE = {("TSWEAP", "UD"): 110}
 
 
@@ -1407,6 +1485,11 @@ SIZEPASS = [
     ("TSWEAP", "shp_gtweap", ["shp_gtweap_a", "shp_gtweap_b", "shp_gtweap_c"],
      "shp_gtweapmk", 19, (896, 672), 51, 1.0, "shp_weapicon",
      "TS War Factory", "Produces Tiberian-era vehicles."),
+    # The Mobile War Factory deployed (Firestorm DGWEAP, art MWAR): packed on TSWEAP's exact
+    # affine (affine_from below), its build-up starting from the vehicle itself.
+    ("TSDWEAP", "shp_mwar", [],
+     "shp_mwarmk", 19, (896, 672), 51, 1.0, "shp_mwaricon",
+     "Mobile War Factory", "A deployed Mobile War Factory. Produces Tiberian-era vehicles."),
     # 2x1 plot + bib: the 48-tall stub centres on the 24-tall box, so the
     # canvas bottom is 12 classic below the plot edge. Margin 12 = building
     # ON the top (plot) row, slab owns the entire bottom row (Luke, 23:40).
@@ -1427,6 +1510,12 @@ SIZEPASS = [
     ("TSTECH", "shp_gttech", ["shp_gttech_a"],
      "shp_gttechmk", 19, (384, 384), 12, 1.0, "shp_techicon",
      "TS Tech Center", "Unlocks advanced Tiberian technology."),
+    # TS EMP Pulse Cannon (docs/emp-cannon-design.md). NAPULS is snow-theatre-only
+    # art: NTPULS = temperate (NAPULS is the ARCTIC variant, TS 2nd-letter theatre code); static base (frame 0 / LIGHT damage), TSPOWR's
+    # 2x2 fit. The PULSCAN voxel turret rides as the TSPULST layer (EXTRA_LAYERS).
+    ("TSPULS", "shp_napuls", [],
+     "shp_napulsmk", 13, (256, 256), 0, 1.0, "shp_empicon",
+     "EMP Cannon", "Fires an electromagnetic pulse that disables vehicles and structures."),
 ]
 
 for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc in SIZEPASS:
@@ -1466,10 +1555,11 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
     # Full apron (the 4x3-rectangle clip sliced hard edges through the
     # stripes -- Luke, 2026-08-05 01:20; the cliff-edge drape is a queued
     # design question, not solvable with a rectangle cut).
-    overlays = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb"}
+    overlays = {"TSPROC": "shp_ntrefnbb", "TSWEAP": "shp_gtweapbb", "TSDWEAP": "shp_mwarbb"}
     # Aprons ship as ground art, one tile per cell: (plot, tile grid), the grid
     # matching the building's SmudgeTypeClass in sdata.cpp.
-    aprons = {"TSWEAP": ((5, 3), (4, 3), (1, 0)), "TSPROC": ((4, 3), (5, 3), (0, 0))}
+    aprons = {"TSWEAP": ((5, 3), (4, 3), (1, 0)), "TSDWEAP": ((5, 3), (4, 3), (1, 0)),
+              "TSPROC": ((4, 3), (5, 3), (0, 0))}
     # TS drives the war factory bay with a separate 9-stage shutter over a
     # static interior (ART.INI: DoorAnim/DoorStages/UnderDoorAnim).
     doors = {}  # TSWEAP's shutter is an EXTRA_LAYERS sub-object now (TSWEAPDR)
@@ -1495,7 +1585,8 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     front_ring=None,
                     # The lamp cycle sweeps and returns (8 -> 14 frames);
                     # _anims[] Count and the TSWEAPLT stub must match.
-                    pingpong=False)
+                    pingpong=False,
+                    affine_from={"TSDWEAP": "TSWEAP"}.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
 # ---- TSFACT: TS Construction Yard on the RA-conyard 3x3 plot (BSIZE_33 +

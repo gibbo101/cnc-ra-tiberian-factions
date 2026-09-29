@@ -1516,6 +1516,26 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            (short const*)TsWeapList,
                                            (short const*)TsWeapOList);
 
+// The Mobile War Factory deployed (Firestorm DGWEAP): a TS war factory on TSWEAP's plot, exits
+// and seats. Never built from the sidebar; the deploy order packs it into UNIT_TSMWAR.
+static BuildingTypeClass const ClassTsDweap(STRUCT_TSDWEAP,
+                                            TXT_NONE,
+                                            "TSDWEAP",
+                                            FACING_NONE,
+                                            TSWEAP_SEAT_MOUTH,
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,
+                                            false,
+                                            false, false, false, false,
+                                            true, true, false, false, false, true,
+                                            RTTI_UNITTYPE,      // Vehicle factory.
+                                            DIR_N,
+                                            BSIZE_53,
+                                            (short const*)TsWeapExit,
+                                            (short const*)TsWeapList,
+                                            (short const*)TsWeapOList);
+
 static BuildingTypeClass const ClassTsRadr(STRUCT_TSRADR,
                                            TXT_NONE,
                                            "TSRADR",
@@ -1996,6 +2016,36 @@ static BuildingTypeClass const ClassTsDlimp(STRUCT_TSDLIMP,
                                             NULL,
                                             (short const*)List1,
                                             (short const*)NULL);
+
+// TS Sensor Array (STRUCT_TSDPSA), TS [GADPSA]: the Mobile Sensor Array deployed. Never built
+// from the sidebar (the vehicle deploys into it, and the deploy order packs it back into
+// UNIT_TSLPST). Its owner sees cloaked and buried enemies in range (TF_Is_Sensed).
+// Art = GTDPSA body + GTDPSA_A beacon (5 healthy + 5 damaged), GTDPSAMK build-up.
+static BuildingTypeClass const ClassTsDpsa(STRUCT_TSDPSA,
+                                           TXT_NONE,
+                                           "TSDPSA",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_NORMAL,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           false,               // always use the given name
+                                           false,               // IsWall
+                                           false,               // simple damage imagery
+                                           false,               // invisible to radar
+                                           true,                // selectable
+                                           true,                // legal target
+                                           false,               // insignificant
+                                           false,               // theater specific
+                                           false,               // rotating turret
+                                           true,                // remappable
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
 
 /*
 **  TDHQ (Communications Center / Radar) — 2×2 radar dome, ARMOR_WOOD,
@@ -2838,6 +2888,39 @@ static BuildingTypeClass const ClassTsPowr(STRUCT_TSPOWR,
                                            NULL,            // Preferred exit cell list.
                                            (short const*)List22_0011, // OCCUPYLIST: south row only.
                                            (short const*)List22_1100  // OVERLAPLIST: north art-spill row.
+);
+
+// TS EMP Pulse Cannon (STRUCT_TSPULS, TS rules [NAPULS]) -- docs/emp-cannon-design.md.
+// 2x2 like the power plant, but squat (a rock mound with the cannon head on its
+// dome), so it occupies the whole plot. No engine turret: the head's rotation is
+// baked into the building tileset (shapes 0-60), Shape_Number picks the facing.
+static BuildingTypeClass const ClassTsPuls(STRUCT_TSPULS,
+                                           TXT_POWER,       // NAME: placeholder (rules.ini Name= overrides).
+                                           "TSPULS",        // NAME: IniName (launcher tileset key).
+                                           FACING_S,        // Foundation direction from center of building.
+                                           XYP_COORD(0, 0), // Exit point for produced units.
+                                           REMAP_ALTERNATE, // Sidebar remap logic.
+                                           0x0000,          // Vertical offset.
+                                           0x0000,          // Primary weapon offset along turret centerline.
+                                           0x0000,          // Primary weapon lateral offset along turret centerline.
+                                           false,           // Is this building a fake (decoy?)
+                                           true,            // Animation rate is regulated for constant speed?
+                                           false,           // Always use the given name for the building?
+                                           false,           // Is this a wall type structure?
+                                           true,            // Simple (one frame) damage imagery?
+                                           false,           // Is it invisible to radar?
+                                           true,            // Can the player select this?
+                                           true,            // Is this a legal target for attack or move?
+                                           false,           // Is this an insignificant building?
+                                           false,           // Theater specific graphic image?
+                                           false,           // Does it have a rotating turret? (baked into the shapes)
+                                           true,            // Can the building be color remapped to indicate owner?
+                                           RTTI_NONE,       // The object type produced at this factory.
+                                           DIR_N,           // Starting idle frame to match construction.
+                                           BSIZE_22,        // 2x2, whole plot occupied.
+                                           NULL,            // Preferred exit cell list.
+                                           (short const*)List22,     // OCCUPYLIST: all four cells.
+                                           (short const*)List22_1100 // OVERLAPLIST: north art-spill row.
 );
 
 static BuildingTypeClass const ClassPower(STRUCT_POWER,
@@ -4562,7 +4645,12 @@ void const* BuildingTypeClass::TsWeapShutter;
 void const* BuildingTypeClass::TsWeapUnderDoor;
 void const* BuildingTypeClass::TsWeapFront;
 void const* BuildingTypeClass::TsWeapFrontOpen;
+void const* BuildingTypeClass::TsDweapShutter;
+void const* BuildingTypeClass::TsDweapUnderDoor;
+void const* BuildingTypeClass::TsDweapFront;
+void const* BuildingTypeClass::TsDweapFrontOpen;
 void const* BuildingTypeClass::TsRefineryFlame;
+void const* BuildingTypeClass::TsPulseTurret;
 void const* BuildingTypeClass::TsRefineryLid;
 void const* LightningShapes;
 
@@ -4938,6 +5026,7 @@ long TF_Building_Scan_Bit(int btype)
     case STRUCT_AWEAP:
     case STRUCT_SWEAP:
     case STRUCT_TSWEAP:
+    case STRUCT_TSDWEAP:
         return (STRUCTF_WEAP);
 
     case STRUCT_TDAFLD:
@@ -5127,6 +5216,10 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsCsam);        // STRUCT_TSCSAM (TS SAM tower = the SAM plug)
     new BuildingTypeClass(ClassTsDlimp);       // STRUCT_TSDLIMP (TS Limpet Mine)
 
+    new BuildingTypeClass(ClassTsPuls);        // STRUCT_TSPULS (TS EMP Pulse Cannon)
+    new BuildingTypeClass(ClassTsDpsa);        // STRUCT_TSDPSA (TS Sensor Array)
+    new BuildingTypeClass(ClassTsDweap);       // STRUCT_TSDWEAP (Mobile War Factory deployed)
+
     /*
     **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so
     **	the plug relationships are set on the heap copies once all slots exist.
@@ -5308,10 +5401,12 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 28, 3},  // GAPILE halved windows _A(4)+_B(4)+_C(7 flag) -> LCM 28
         {STRUCT_TSPROC, BSTATE_IDLE, 0, 16, 3}, // NAREFN _C deck lights (fireball + lid are event layers)
         {STRUCT_TSPROC, BSTATE_FULL, 0, 16, 3}, // customer approaching: lights keep cycling
+        {STRUCT_TSDWEAP, BSTATE_IDLE, 0, 1, 0},  // MWAR has no idle animation
         {STRUCT_TSWEAP, BSTATE_IDLE, 0, 32, 3},  // GAWEAP _A/_B (Rate 400) + _C (Rate 800) baked at 32 steps  // GAWEAP halved windows _A(8)+_B(4)+_C(2) -> LCM 8, swept fwd+back (ping-pong, packer order)
         {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)
         {STRUCT_TSDLIMP, BSTATE_IDLE, 0, 10, 3}, // DLIMP_A blink halved (10 healthy + 10 damaged)
+        {STRUCT_TSDPSA, BSTATE_IDLE, 0, 5, 4},   // GTDPSA_A beacon blink (5 healthy + 5 damaged, unlit)
         {STRUCT_TSTECH, BSTATE_IDLE, 0, 8, 3},   // GATECH _A halved (8 healthy + 8 damage-pocked dome)
         {STRUCT_TSDEPT, BSTATE_IDLE, 0, 35, 3},  // GADEPT _A halved(5)+_B whole(7, odd=no damaged half) -> LCM 35
         {STRUCT_TSPLUG, BSTATE_IDLE, 0, 40, 3},  // GAPLUG windows _A(10)+_B(8)+_C(4) -> LCM 40
@@ -5390,9 +5485,20 @@ void BuildingTypeClass::One_Time(void)
     TsWeapFront = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSWEAPNU", ".SHP");
     TsWeapFrontOpen = MFCD::Retrieve(fullname);
+    // The Mobile War Factory's own set, on the same stub.
+    _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPDR", ".SHP");
+    TsDweapShutter = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPUD", ".SHP");
+    TsDweapUnderDoor = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPNF", ".SHP");
+    TsDweapFront = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSDWEAPNU", ".SHP");
+    TsDweapFrontOpen = MFCD::Retrieve(fullname);
     // TS refinery event layers (fireball burst, dock lid), sized to its stub.
     _makepath(fullname, NULL, NULL, (char const*)"TSPROCFR", ".SHP");
     TsRefineryFlame = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSPULST", ".SHP");
+    TsPulseTurret = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSPROCLD", ".SHP");
     TsRefineryLid = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"LITNING", ".SHP");
@@ -5522,11 +5628,13 @@ void BuildingTypeClass::One_Time(void)
             {STRUCT_TSPROC, STRUCT_TDPROC},
             {STRUCT_TSSILO, STRUCT_TDSILO},
             {STRUCT_TSWEAP, STRUCT_TDWEAP},
+            {STRUCT_TSDWEAP, STRUCT_TDWEAP},
             {STRUCT_TSRADR, STRUCT_TDHQ},
             {STRUCT_TSHPAD, STRUCT_TDHPAD},
             {STRUCT_TSTECH, STRUCT_TDEYE},
             {STRUCT_TSDEPT, STRUCT_TDFIX},
             {STRUCT_TSDROP, STRUCT_TDFIX},
+            {STRUCT_TSPULS, STRUCT_POWER}, // TS EMP cannon: 2x2 donor for ImageData/BuildupData
         };
         for (int di = 0; di < (int)(sizeof(_td_bdonors) / sizeof(_td_bdonors[0])); di++) {
             BuildingTypeClass& b = As_Reference(_td_bdonors[di].td);
@@ -5909,7 +6017,7 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
                                                REFRESH_EOL};
         return (_ts_proc_place);
     }
-    if (placement && Type == STRUCT_TSWEAP) {
+    if (placement && (Type == STRUCT_TSWEAP || Type == STRUCT_TSDWEAP)) {
         // The ghost follows the art: the hangar cells plus every cell the pad
         // lands on -- the whole 5x3 except the bottom-left cell (0,2), which
         // carries no concrete.
