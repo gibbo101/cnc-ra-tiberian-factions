@@ -4388,6 +4388,7 @@ typedef enum VocType : short
     VOC_R2_VPRISTAC,  // Prism Tank engine start (vpristac). Bundled R2VPRISTAC.WAV.
     VOC_R2_VPRIATTA,  // Prism Tank beam (vpriatta). Bundled R2VPRIATTA.WAV.
     VOC_TS_PLSECAN2,     // TS EMP Pulse Cannon firing the pulse ball (PLSECAN2, [EMPulseWeapon] Report=). Bundled TSPLSECAN2.WAV.
+    VOC_TS_FIRSTRM1,     // TS Firestorm burning (FIRSTRM1, the Report= of FSIDLE/FSGRND/FSAIR). Bundled TSFIRSTRM1.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0

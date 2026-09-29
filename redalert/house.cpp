@@ -1398,6 +1398,7 @@ COORDINATE TF_Firestorm_On_Path(COORDINATE from, COORDINATE to, HouseClass const
 */
 void TF_Firestorm_Flare(COORDINATE wall, COORDINATE victim, int height)
 {
+    Sound_Effect(VOC_TS_FIRSTRM1, wall);
     if (height > 100) {
         new AnimClass(ANIM_TS_FSAIR, Coord_Move(victim, DIR_N, height));
     } else {
@@ -1422,6 +1423,7 @@ static void TF_Firestorm_Burn(HouseClass* house)
             int joins = b->Shape_Number() & 15;
             if (joins != 5 && joins != 10) {
                 new AnimClass(ANIM_TS_FSIDLE, b->Center_Coord());
+                Sound_Effect(VOC_TS_FIRSTRM1, b->Center_Coord());
             }
         }
         /*

@@ -65,6 +65,7 @@ python3 "$EXTRACT" "$TIBSUN" CACHE.MIX    extract "$RAW" UNITTEM.PAL CAMEO.PAL A
 python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" IONBEAM.SHP RING1.SHP >/dev/null
 # Firestorm field effects (decoded by ts_pack_firestorm_fx.py against ANIM.PAL).
 python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" FSIDLE.SHP FSGRND.SHP FSAIR.SHP >/dev/null
+python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" FIRSTRM1.AUD >/dev/null
 python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" ION1.AUD >/dev/null
 # Drop-pod strike art (anim SHPs, decoded by ts_pack_pods.py against ANIM.PAL)
 # + the pod strafe gun sound.

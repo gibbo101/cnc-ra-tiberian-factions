@@ -413,6 +413,7 @@ struct SoundEffectNameStruct
     {"R2VPRISTAC", 10, IN_NOVAR},  // VOC_R2_VPRISTAC -- Prism Tank engine start
     {"R2VPRIATTA", 1, IN_NOVAR},  // VOC_R2_VPRIATTA -- Prism Tank beam
     {"TSPLSECAN2", 1, IN_NOVAR},  // VOC_TS_PLSECAN2 -- TS EMP Pulse Cannon firing
+    {"TSFIRSTRM1", 5, IN_NOVAR},  // VOC_TS_FIRSTRM1 -- TS Firestorm burning
 };
 
 //

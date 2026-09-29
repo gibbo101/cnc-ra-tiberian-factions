@@ -15,18 +15,21 @@ Frame 0 of each is empty in TS and is dropped, leaving 19. TS's anim palette pai
 spark pixels in the remap greens; they are folded into the fire ramp so they never read as
 house colour.
 
-Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/{FSIDLE,FSGRND,FSAIR}.SHP and ANIM.PAL
+- Data/AUDIO/TSFIRSTRM1.WAV: FIRSTRM1, "Firestorm defense burning", the Report= all three anims
+  play, Westwood AUD -> MS-ADPCM WAV.
+
+Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/{FSIDLE,FSGRND,FSAIR}.SHP, FIRSTRM1.AUD and ANIM.PAL
 (TIBSUN.MIX conquer.mix / cache.mix via tools/ts_extract.py).
 
 License: GPL v3.
 """
-import os, sys
+import os, subprocess, sys
 from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import ts_shp
-from ts_pack_ion import write_zip, patch_tileset, VFX_DIR, XML, RAW, SCALE
+from ts_pack_ion import write_zip, patch_tileset, MOD, VFX_DIR, XML, RAW, SCALE
 
 # name, TS SHP, canvas (w, h), base on the canvas centre (True) or centred (False), alpha
 ANIMS = (
@@ -65,6 +68,11 @@ def main():
             frames.append(canvas)
         write_zip(f"{VFX_DIR}/{name}.ZIP", name.lower(), frames)
         patch_tileset(XML, name, len(frames))
+
+    out_wav = f"{MOD}/AUDIO/TSFIRSTRM1.WAV"
+    subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{RAW}/FIRSTRM1.AUD",
+                    "-acodec", "adpcm_ms", out_wav], check=True)
+    print(f"wrote {out_wav}")
 
 
 if __name__ == "__main__":
