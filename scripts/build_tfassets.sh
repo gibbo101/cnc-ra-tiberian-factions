@@ -482,6 +482,9 @@ ts_stub TSFGEN "$TMPDIR/tsfgen_stub.shp" 72 72 2
 PACK_ARGS+=("$TMPDIR/tsfgen_stub.shp:TSFGEN.SHP")
 ts_stub TSFGEN "$TMPDIR/tsfgenmk_stub.shp" 72 72 19
 PACK_ARGS+=("$TMPDIR/tsfgenmk_stub.shp:TSFGENMAKE.SHP")
+# TSFSDF 33x60, 64 frames: the Firestorm Wall Section on the wall packers' 176x320 canvas.
+ts_stub TSFSDF "$TMPDIR/tsfsdf_stub.shp" 33 60 64
+PACK_ARGS+=("$TMPDIR/tsfsdf_stub.shp:TSFSDF.SHP")
 ts_stub TSSILO "$TMPDIR/tssilo_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tssilo_stub.shp:TSSILO.SHP")
 ts_stub TSSILO "$TMPDIR/tssilomk_stub.shp" 48 48 19

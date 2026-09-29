@@ -446,6 +446,13 @@ public:
     {
         return (*this == STRUCT_TSDWEAP) ? 12 : 9;
     }
+    /*
+    **	A Firestorm Wall Section of a house whose field is down: a flat pad anyone can cross.
+    */
+    bool Is_Open_Firestorm_Section(void) const
+    {
+        return (*this == STRUCT_TSFSDF && !House->IsFirestormLive);
+    }
     bool Rally_Unit(TechnoClass& unit);
     TARGET Target_For_Rally_Point(const SpeedType speed = SPEED_TRACK) const;
     virtual void Set_Unselected_By_Player(HouseClass* player = NULL);

@@ -1687,7 +1687,8 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType) const
             ** If object is a land mine, allow movement
             */
             if (obj->What_Am_I() == RTTI_BUILDING) {
-                if ((*(BuildingClass*)obj) == STRUCT_AVMINE || (*(BuildingClass*)obj) == STRUCT_TSDLIMP) {
+                if ((*(BuildingClass*)obj) == STRUCT_AVMINE || (*(BuildingClass*)obj) == STRUCT_TSDLIMP
+                    || ((BuildingClass*)obj)->Is_Open_Firestorm_Section()) {
                     obj = obj->Next;
                     continue;
                 } else {
@@ -3460,7 +3461,8 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
     */
     if (action == ACTION_NONE && object->What_Am_I() == RTTI_BUILDING && House->IsPlayerControl) {
         StructType blah = *((BuildingClass*)object);
-        if (blah == STRUCT_AVMINE || blah == STRUCT_APMINE || blah == STRUCT_TSDLIMP) {
+        if (blah == STRUCT_AVMINE || blah == STRUCT_APMINE || blah == STRUCT_TSDLIMP
+            || ((BuildingClass*)object)->Is_Open_Firestorm_Section()) {
             /*
             **	Attack-move (CFE port): needed here so we can attack-move onto cells
             **	the InfantryClass level makes movable (e.g. landmines).

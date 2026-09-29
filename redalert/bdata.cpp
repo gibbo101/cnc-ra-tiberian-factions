@@ -1535,6 +1535,34 @@ static BuildingTypeClass const ClassTsFgen(STRUCT_TSFGEN,
                                            (short const*)List32,
                                            NULL);
 
+// TS Firestorm Wall Section ([GAFSDF]): a flat 1x1 pad, not selectable and insignificant as in TS,
+// with no build-up. BuildingClass::Shape_Number picks the frame from its neighbours.
+static BuildingTypeClass const ClassTsFsdf(STRUCT_TSFSDF,
+                                           TXT_NONE,
+                                           "TSFSDF",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           false,               // always use the given name
+                                           false,               // IsWall
+                                           false,               // simple damage imagery
+                                           false,               // invisible to radar
+                                           false,               // selectable
+                                           true,                // legal target
+                                           true,                // insignificant
+                                           false,               // theater specific
+                                           false,               // turret
+                                           true,                // remappable
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
 // The Mobile War Factory deployed (Firestorm DGWEAP): a TS war factory on TSWEAP's plot, exits
 // and seats. Never built from the sidebar; the deploy order packs it into UNIT_TSMWAR.
 static BuildingTypeClass const ClassTsDweap(STRUCT_TSDWEAP,
@@ -5239,6 +5267,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsDpsa);        // STRUCT_TSDPSA (TS Sensor Array)
     new BuildingTypeClass(ClassTsDweap);       // STRUCT_TSDWEAP (Mobile War Factory deployed)
     new BuildingTypeClass(ClassTsFgen);        // STRUCT_TSFGEN (TS Firestorm Generator)
+    new BuildingTypeClass(ClassTsFsdf);        // STRUCT_TSFSDF (TS Firestorm Wall Section)
 
     /*
     **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so

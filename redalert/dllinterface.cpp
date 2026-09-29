@@ -9244,7 +9244,14 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
                     }
                 }
             }
+            /*
+            **	Firestorm Wall Sections also reach out from the player's own sections, the way walls
+            **	reach out from walls; nothing else may use a section for its reach.
+            */
+            bool section_chain = (placement_type->Type == STRUCT_TSFSDF && base != NULL && *base == STRUCT_TSFSDF
+                                  && base->House->Class->House == PlayerPtr->Class->House);
             if ((base && base->House->Class->House == PlayerPtr->Class->House && base->Class->IsBase)
+                || section_chain
                 || ((placement_type->IsWall
                      || ((Map[cell].Smudge != SMUDGE_NONE) && SmudgeTypeClass::As_Reference(Map[cell].Smudge).IsBib))
                     && Map[cell].Owner == PlayerPtr->Class->House)) {

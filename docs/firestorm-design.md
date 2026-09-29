@@ -23,6 +23,25 @@ data: TS's own `RULES.INI` / `ART.INI` (TIBSUN.MIX), which OpenTS does not carry
   no cursor) is designed together (Luke has a different approach in mind than the Hunter Seeker's
   cameo-click reader). The Hunter Seeker is revisited with the same answer afterwards.
 
+## Status (2026-09-29 evening)
+
+- **Stage A (generator) VERIFIED and committed** (c4edb724): STRUCT_TSFGEN "TSFGEN" (TSFIRE is the
+  Devil's Tongue fire-stream particle's art name). Idle anims at TS's speeds: TS Rate is frames per
+  MINUTE (OpenTS animtype.cpp delay = TICKS_PER_MINUTE / Rate), _B every step, _C every 2nd, rate 2.
+- **Stage B (sections) VERIFIED in play 2026-09-29:** STRUCT_TSFSDF
+  "TSFSDF" 1x1, not selectable, insignificant, no build-up, $250, power -2, 200 HP concrete, prereq
+  TSFGEN, BaseNormal=no, Adjacent=3 (TS's default reach; GAFSDF sets none). Art `scripts/ts_pack_fsdf.py` (round C, pixel-identical to the approved
+  stills; damaged groups repeat the undamaged art for now). Frame = own neighbour sections +16
+  damaged +32 live (BuildingClass::Shape_Number). Walkable while `HouseClass::IsFirestormLive` is false
+  (the mine/Limpet pattern: Unit/Infantry Can_Enter_Cell + What_Action), sorts under units, doesn't
+  keep a player alive. Sections chain from other own sections (display.cpp TF_Section_Chains_To, and the launcher ghost's distance map in
+  dllinterface.cpp Calculate_Placement_Distances -- the ghost is the real gate); nothing else may use them
+  for adjacency. Sell: only while the field is down, removed at once, no
+  refund.
+- **Line fill for all walls VERIFIED in play 2026-09-29** (house.cpp TF_Wall_Line_Fill,
+  called from Place_Object): sandbags, concrete, barbed wire, wood, chain link, fence, TS wall and
+  the Firestorm sections; 5 cells; charged per section at Cost_Of x CostBias; stops when money runs out.
+
 ## TS ground truth
 
 ### Rules (TIBSUN.MIX RULES.INI)
@@ -132,7 +151,12 @@ Designed with Luke once A-D work.
 ## Queued after this arc
 
 - **Line fill for all walls** (above).
-- **The TS GDI gate** (`~/Downloads/ts-gdi-gate-hd`, same author and style as the wall): horizontal
-  and vertical, 3 cells, 10 open stages + damaged + destroyed. New engine type (blocks enemies, opens
-  for own units); the wall code must count the gate's end cells as wall neighbours so the collars
-  join; the trim is placeholder gold with masks for house colour.
+- **Gates for ALL SIX factions** (Luke, 2026-09-29: "all factions can have gates now"). Art v2 in
+  `~/Downloads/cnc-gates-hd-v2/cnc-gates-hd/` (same author as the TS GDI wall; README there): TS GDI,
+  TS Nod, RA Allies (Gap-Generator pylons, status lights), RA Soviets (Tesla arcs + idle crackle
+  frames), TD GDI (quonset barrier + silo towers), TD Nod (laser beams); horizontal 384x128 and
+  vertical 128x384, open stages + damaged + destroyed, house-colour trim masks. End pieces join a gate
+  to the TS GDI wall or RA's concrete wall (BRIK). Engine: a gate building type per faction and
+  orientation (blocks enemies, opens for own units, closes behind), walls count a gate's end cells as
+  neighbours and the matching end piece is drawn, trim converted to the remap range. Planned with
+  the TS Nod wall (art being drawn from `~/Desktop/ts-nod-walls`).

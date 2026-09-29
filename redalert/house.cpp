@@ -624,6 +624,7 @@ HouseClass::HouseClass(HousesType house)
     , IsThieved(false)
     , IsGPSActive(false)
     , IsBuiltSomething(false)
+    , IsFirestormLive(false)
     , IsResigner(false)
     , IsGiverUpper(false)
     , IsParanoid(false)
@@ -1272,6 +1273,123 @@ static bool TF_Is_TS_Yard_Wall(ObjectTypeClass const* type)
         return (false);
     }
     return (((BuildingTypeClass const*)type)->Type == STRUCT_SANDBAG_WALL);
+}
+
+/*
+**	Line fill (the TS / RA2 wall-building rule): placing a wall section within TF_WALL_FILL_RANGE
+**	cells in a straight line of another of the house's sections of the same type fills the cells
+**	between, provided every one of them is clear to build. Each filled section is charged like a
+**	normal build of it, and the fill stops where the money runs out.
+*/
+static const int TF_WALL_FILL_RANGE = 5;
+
+/*
+**	The overlay a wall-type building becomes when placed (BuildingClass::Mark), or OVERLAY_NONE
+**	for a line-fill type that stays a building.
+*/
+static OverlayType TF_Wall_Overlay(StructType type)
+{
+    switch (type) {
+    case STRUCT_BRICK_WALL:
+        return (OVERLAY_BRICK_WALL);
+    case STRUCT_BARBWIRE_WALL:
+        return (OVERLAY_BARBWIRE_WALL);
+    case STRUCT_SANDBAG_WALL:
+        return (OVERLAY_SANDBAG_WALL);
+    case STRUCT_WOOD_WALL:
+        return (OVERLAY_WOOD_WALL);
+    case STRUCT_CYCLONE_WALL:
+        return (OVERLAY_CYCLONE_WALL);
+    case STRUCT_FENCE:
+        return (OVERLAY_FENCE);
+    case STRUCT_TSWALL:
+        return (OVERLAY_TSWALL);
+    default:
+        return (OVERLAY_NONE);
+    }
+}
+
+bool TF_Is_Line_Fill_Type(BuildingTypeClass const* type)
+{
+    return (type != NULL
+            && ((type->IsWall && TF_Wall_Overlay(type->Type) != OVERLAY_NONE) || type->Type == STRUCT_TSFSDF));
+}
+
+static bool TF_Is_Own_Wall_Section(HouseClass const* house, StructType type, CELL cell)
+{
+    CellClass const& c = Map[cell];
+    OverlayType overlay = TF_Wall_Overlay(type);
+    if (overlay != OVERLAY_NONE) {
+        return (c.Overlay == overlay && c.Owner == house->Class->House);
+    }
+    BuildingClass const* b = c.Cell_Building();
+    return (b != NULL && *b == type && b->House == house);
+}
+
+void TF_Wall_Line_Fill(HouseClass* house, StructType type, CELL cell)
+{
+    BuildingTypeClass const& btype = BuildingTypeClass::As_Reference(type);
+    int const cost = btype.Cost_Of() * house->CostBias;
+    static FacingType const _dirs[] = {FACING_N, FACING_E, FACING_S, FACING_W};
+
+    for (int d = 0; d < (int)ARRAY_SIZE(_dirs); d++) {
+        /*
+        **	The nearest own section of this type along the line, if any is in range.
+        */
+        CELL c = cell;
+        int reach = 0;
+        for (int step = 1; step <= TF_WALL_FILL_RANGE; step++) {
+            c = Adjacent_Cell(c, _dirs[d]);
+            if (!Map.In_Radar(c)) {
+                break;
+            }
+            if (TF_Is_Own_Wall_Section(house, type, c)) {
+                reach = step;
+                break;
+            }
+        }
+        if (reach < 2) {
+            continue;
+        }
+
+        /*
+        **	Every cell between must be clear to build, or the line is left alone.
+        */
+        bool clear = true;
+        c = cell;
+        for (int step = 1; step < reach; step++) {
+            c = Adjacent_Cell(c, _dirs[d]);
+            if (!Map[c].Is_Clear_To_Build(btype.Speed)) {
+                clear = false;
+                break;
+            }
+        }
+        if (!clear) {
+            continue;
+        }
+
+        c = cell;
+        for (int step = 1; step < reach; step++) {
+            c = Adjacent_Cell(c, _dirs[d]);
+            if (house->Available_Money() < cost) {
+                return;
+            }
+            BuildingClass* section = new BuildingClass(type, house->Class->House);
+            if (section == NULL) {
+                return;
+            }
+            /*
+            **	A wall converts itself to its overlay and deletes the building inside Unlimbo,
+            **	so the object is never touched after a successful call.
+            */
+            if (section->Unlimbo(Cell_Coord(c))) {
+                house->Spend_Money(cost);
+            } else {
+                delete section;
+                break;
+            }
+        }
+    }
 }
 
 /***********************************************************************************************
@@ -5182,9 +5300,16 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                     // deletes itself in there, so tech cannot be touched afterwards.
                     bool ts_bldg = (tech->What_Am_I() == RTTI_BUILDING
                                     && ((BuildingClass*)tech)->Class->Is_TS_Era());
+                    StructType const fill = (tech->What_Am_I() == RTTI_BUILDING
+                                             && TF_Is_Line_Fill_Type(((BuildingClass*)tech)->Class))
+                                                ? ((BuildingClass*)tech)->Class->Type
+                                                : STRUCT_NONE;
                     if (tech->Unlimbo(Cell_Coord(cell))) {
                         factory->Completed();
                         Abandon_Production(type, bay);
+                        if (fill != STRUCT_NONE) {
+                            TF_Wall_Line_Fill(this, fill, cell);
+                        }
 
                         if (PlayerPtr == this) {
                             Sound_Effect(ts_bldg ? VOC_TS_PLACE_BUILDING_DOWN
@@ -14231,7 +14356,8 @@ void HouseClass::Check_Pertinent_Structures(void)
         BuildingClass* b = Buildings.Ptr(index);
 
         if (b && b->IsActive && b->House == this) {
-            if (!b->Class->IsWall && *b != STRUCT_APMINE && *b != STRUCT_AVMINE && *b != STRUCT_TSDLIMP) {
+            if (!b->Class->IsWall && *b != STRUCT_APMINE && *b != STRUCT_AVMINE && *b != STRUCT_TSDLIMP
+                && *b != STRUCT_TSFSDF) {
                 if (!Special.ModernBalance
                     || (*b != STRUCT_SHIP_YARD && *b != STRUCT_FAKE_YARD && *b != STRUCT_SUB_PEN
                         && *b != STRUCT_FAKE_PEN && *b != STRUCT_TDGYARD && *b != STRUCT_TDNPEN)) {

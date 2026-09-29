@@ -281,6 +281,12 @@ public:
     unsigned IsBuiltSomething : 1;
 
     /*
+    **	The Firestorm Defense is up: every Firestorm Wall Section the house owns is a lethal,
+    **	impassable wall instead of a walkable pad.
+    */
+    unsigned IsFirestormLive : 1;
+
+    /*
     ** Did this house lose via resignation?
     */
     unsigned IsResigner : 1;

@@ -1163,6 +1163,24 @@
       "flags": [
         "Bib"
       ]
+    },
+    {
+      "id": 148,
+      "name": "tsfsdf",
+      "display_name": "Firestorm Wall Section",
+      "power_production": 0,
+      "power_usage": 2,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "Germany",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "paved",
+      "flags": []
     }
   ],
   "units": [
