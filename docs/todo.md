@@ -15,9 +15,10 @@ click-anywhere activation), stage D (the live field).
   concrete wall BRIK). Engine: a gate building type per faction and orientation (blocks enemies, opens for own
   units, closes behind them), walls count a gate's end cells as neighbours and draw the matching end piece, trim
   converted to the launcher's remap range, the Allied status lights and the Soviet idle crackle.
-- TS Nod wall: the original sprite is exported for the art author at `~/Desktop/ts-nod-walls` (PROMPT.txt there);
-  when the HD art lands, port it like the TS GDI wall (`scripts/ts_pack_gdi_wall.py`, commit a8260356): TD's three
-  wall damage stages, frames 0-47.
+- TS Nod wall: HD art LANDED 2026-09-29 at `~/Downloads/ts-nod-wall-hd/` (README there; 64 frames in the GDI wall's
+  order, no house colour, plus `end-pieces/ts-nod-wall/` joining it to all six gates). Port it like the TS GDI wall
+  (`scripts/ts_pack_gdi_wall.py`, commit a8260356): TD's three wall damage stages, frames 0-47. Nothing builds it
+  until a TS Nod faction exists (docs/ts-factions-feasibility.md), so it can land as dormant art with the gates.
 - **Base the branch on `firestorm` (stage B committed + pushed at 7e356cb5)** (or on main after firestorm merges):
   the 5-cell line fill (`house.cpp` TF_Wall_Line_Fill, TF_Is_Line_Fill_Type) and the wall placement code are
   exactly what gates must join, so a branch off plain `main` would rewrite the same functions.
