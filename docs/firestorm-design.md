@@ -115,13 +115,24 @@ GAFSDF_A on hub pieces, FSIDLE columns at TS's rate, FSGRND/FSAIR on crossings.
 ### Stage E -- correct control, then the Hunter Seeker
 Designed with Luke once A-D work.
 
-## Open questions for Luke
+## Answered (Luke, 2026-09-29)
 
-1. **Friendly fire:** TS kills your own units that stand on or walk into a live section and eats
-   your allies' shots. Keep TS's rule?
-2. **Aircraft:** TS kills aircraft crossing a live section at any height. Keep?
-3. **Gap fill:** TS fills the gap to another of your sections up to 5 cells away when you place
-   one. Port it, or place every section by hand like RA walls?
-4. **Section cost:** TS's rules say 50, the original game (per OpenTS) charged 250. Which?
-5. **AI:** the TS AI never raises the field. Leave the generator out of AI production for now,
-   as with the other TS superweapons?
+1. **Friendly fire: TS's rule.** A live section kills your own units that stand on or walk into it,
+   and eats allies' shots; only the owner's shots pass.
+2. **Aircraft: TS's rule.** Aircraft whose cell is a live section die at any height.
+3. **Section cost: $250**, what TS players actually paid (OpenTS's hardcoded value), not the rules'
+   $50.
+4. **Line fill for ALL walls** (the Modern Wall Building / RA2 / TS behaviour): placing a wall within
+   **5 cells** in a straight line of another of your walls of the same type fills the gap when every
+   cell between is clear, **charging per section**. Covers sandbags, concrete, TD walls, the TS wall
+   and the Firestorm sections. The launcher owns the placement ghost, so the line appears on placing
+   the second end (no drag preview). Built after the Firestorm arc, with the gate.
+5. **AI:** the generator stays out of AI production for now (TS's AI never raises the field either).
+
+## Queued after this arc
+
+- **Line fill for all walls** (above).
+- **The TS GDI gate** (`~/Downloads/ts-gdi-gate-hd`, same author and style as the wall): horizontal
+  and vertical, 3 cells, 10 open stages + damaged + destroyed. New engine type (blocks enemies, opens
+  for own units); the wall code must count the gate's end cells as wall neighbours so the collars
+  join; the trim is placeholder gold with masks for house colour.
