@@ -108,7 +108,7 @@ class Model:
         return (4 + int(np.argmax(ac[4:]))) / w
 
 
-def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3):
+def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3, turret_on_hull_origin=False):
     E = math.radians(elev_deg)
     sinE, cosE = math.sin(E), math.cos(E)
     tri_part = m.part[m.tris[:, 0]]
@@ -117,7 +117,7 @@ def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3):
         origin = np.zeros(3)
     else:
         tsel = tri_part == 1
-        origin = np.array([m.turret_pivot[0], m.turret_pivot[1], 0.0])
+        origin = np.zeros(3) if turret_on_hull_origin else np.array([m.turret_pivot[0], m.turret_pivot[1], 0.0])
     tris = m.tris[tsel]
 
     yaw = math.radians(yaw_deg)
@@ -235,6 +235,9 @@ def main():
     ap.add_argument("--yaw0", type=float, default=90.0)
     ap.add_argument("--damaged", action="store_true")
     ap.add_argument("--only", type=str, default="", help="comma list of facings to render")
+    ap.add_argument("--stock-turret", action="store_true",
+                    help="turret frames stay where they sit on the hull at the hull's own heading, "
+                         "for a stock engine that draws every turret at the unit centre")
     a = ap.parse_args()
     m = Model(a.model, a.damaged)
     print(f"link pitch {m.link_pitch:.4f} U, scroll sign {m.dudx_sign:+.0f}")
@@ -246,7 +249,7 @@ def main():
             continue
         yaw = a.yaw0 + f * 360.0 / a.frames
         for st in range(steps):
-            img = render(m, yaw, a.part, a.ppu, a.canvas, a.elev, st / steps)
+            img = render(m, yaw, a.part, a.ppu, a.canvas, a.elev, st / steps, turret_on_hull_origin=a.stock_turret)
             img.save(os.path.join(a.out, f"frame-{f * steps + st:04d}.png"))
         print(f"facing {f}", flush=True)
 
