@@ -4220,21 +4220,6 @@ static void Create_Units(bool official)
                     }
                 }
             }
-#if TF_DEV_BUILD
-            /*
-            **	Dev builds give the human player a Mobile War Factory beside the MCV, the unit
-            **	under test. Off with the other dev cheats.
-            */
-            if (TF_Dev_Cheats() && hptr->IsHuman) {
-                Reserve_Unit();
-                UnitClass* test_unit = new UnitClass(UNIT_TSMWAR, house);
-                if (!Scan_Place_Object(test_unit, centroid)) {
-                    delete test_unit;
-                } else {
-                    test_unit->Set_Mission(MISSION_GUARD);
-                }
-            }
-#endif
         } else {
 
             /*
