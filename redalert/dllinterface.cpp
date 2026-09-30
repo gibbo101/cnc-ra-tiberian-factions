@@ -1660,6 +1660,8 @@ static void TF_Mailbox_Write_EVA_Voice(void);
 // declarations must not sit behind TF_DEV_BUILD -- only the two probes are dev-only.
 static void TF_Patch_ClientG_Crest(void);
 static void TF_Patch_ClientG_Click_Specials(void);
+static void TF_Tell_Launchers_Start(void);
+static void TF_Tell_Launchers_Tick(void);
 static void TF_Crest_Tick(void);
 #if TF_DEV_BUILD
 static void TF_Probe_ClientG_Cache(void);
@@ -1815,6 +1817,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
     TF_Mailbox_Write_EVA_Voice();
     TF_Patch_ClientG_Crest();
     TF_Patch_ClientG_Click_Specials();
+    TF_Tell_Launchers_Start();
 #if TF_DEV_BUILD
     TF_Probe_ClientG_Cache();
     TF_Probe_ClientG_Crest();
@@ -2058,6 +2061,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const ch
     TF_Mailbox_Write_EVA_Voice();
     TF_Patch_ClientG_Crest();
     TF_Patch_ClientG_Click_Specials();
+    TF_Tell_Launchers_Start();
 #if TF_DEV_BUILD
     TF_Probe_ClientG_Cache();
     TF_Probe_ClientG_Crest();
@@ -2380,6 +2384,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
 
     // Keep the per-faction radar crest pointed at the picked side's crest (RAM patch).
     TF_Crest_Tick();
+
+    // Tell every player's launcher which house its player is (TF_Tell_Launchers).
+    TF_Tell_Launchers_Tick();
 
     // The deploy key, read straight from the keyboard (see TF_Deploy_Key_Tick).
     TF_Deploy_Key_Tick();
@@ -3947,6 +3954,32 @@ void DLLExportClass::Shutdown(void)
 */
 static char TF_ModRootPath[MAX_PATH]; // "<mod>\" incl. trailing separator
 
+/*
+**	The house the local player picked. In the simulation that is the local human house; in a
+**	launcher (where TF_Launcher_Resident_Install keeps a copy of this DLL) it is what the host
+**	last told that launcher, HOUSE_NONE until then.
+*/
+static bool TF_InLauncher = false;
+static volatile LONG TF_LauncherActLike = HOUSE_NONE;
+
+static HousesType TF_Local_ActLike(void)
+{
+    if (TF_InLauncher) {
+        return (HousesType)TF_LauncherActLike;
+    }
+    const HouseClass* local = PlayerPtr;
+    if (local == NULL) {
+        for (int i = 0; i < Houses.Count(); i++) {
+            HouseClass* house = Houses.Ptr(i);
+            if (house != NULL && house->IsActive && house->IsHuman) {
+                local = house;
+                break;
+            }
+        }
+    }
+    return (local != NULL) ? local->ActLike : HOUSE_NONE;
+}
+
 static void TF_Patch_ClientG_Cache(int era);
 
 static bool TF_WriteFile_Into_Process(HANDLE proc, SIZE_T dest, const char* path)
@@ -3998,20 +4031,11 @@ static void TF_Mailbox_Write_EVA_Voice(void)
     if (TF_ModRootPath[0] == 0) {
         return;
     }
-    const HouseClass* local = PlayerPtr;
-    if (local == NULL) {
-        for (int i = 0; i < Houses.Count(); i++) {
-            HouseClass* house = Houses.Ptr(i);
-            if (house != NULL && house->IsActive && house->IsHuman) {
-                local = house;
-                break;
-            }
-        }
-    }
-    if (local == NULL) {
+    HousesType const act_like = TF_Local_ActLike();
+    if (act_like == HOUSE_NONE) {
         return;
     }
-    int const era = TF_Eva_Era(local->ActLike);
+    int const era = TF_Eva_Era(act_like);
 
     char dir[MAX_PATH];
     snprintf(dir, sizeof(dir), "%sData\\AUDIO\\EN-US", TF_ModRootPath);
@@ -4258,22 +4282,13 @@ static void TF_Crest_Remember(SIZE_T addr)
 // if there is no local player yet.
 static bool TF_Crest_Slots(TF_CrestSlot slots[TF_CREST_SLOTS])
 {
-    const HouseClass* local = PlayerPtr;
-    if (local == NULL) {
-        for (int i = 0; i < Houses.Count(); i++) {
-            HouseClass* house = Houses.Ptr(i);
-            if (house != NULL && house->IsActive && house->IsHuman) {
-                local = house;
-                break;
-            }
-        }
-    }
-    if (local == NULL) {
+    HousesType const act_like = TF_Local_ActLike();
+    if (act_like == HOUSE_NONE) {
         return false;
     }
-    bool gdi = (local->ActLike == HOUSE_GOOD);
-    bool nod = (local->ActLike == HOUSE_BAD);
-    bool tsgdi = Is_TS_GDI(local->ActLike);
+    bool gdi = (act_like == HOUSE_GOOD);
+    bool nod = (act_like == HOUSE_BAD);
+    bool tsgdi = Is_TS_GDI(act_like);
 
     static const TF_AtlasRect TD_LOGO_GDI = {1, 1875, 718, 706};    // UI_SIDEBAR_FACTIONLOGO_GDI
     static const TF_AtlasRect TD_LOGO_NOD = {3778, 2221, 660, 660}; // UI_SIDEBAR_FACTIONLOGO_NOD
@@ -4775,6 +4790,8 @@ static void TF_Patch_ClientG_Click_Specials(void)
 **	the patch goes into the launcher from inside; it stays after the DLL is unloaded, since
 **	every byte of it lives in ClientG's own image.
 */
+static const char* TF_Launcher_Resident_Install(void);
+
 void TF_Patch_Launcher_At_Load(void)
 {
     char exe[MAX_PATH] = "";
@@ -4783,6 +4800,7 @@ void TF_Patch_Launcher_At_Load(void)
     name = (name != NULL) ? name + 1 : exe;
     if (_stricmp(name, "ClientG.exe") == 0) {
         TF_Click_Specials_Log("launcher load", TF_Patch_Click_Specials_In(GetCurrentProcess()));
+        TF_Click_Specials_Log("launcher load", TF_Launcher_Resident_Install());
     }
 }
 
@@ -4894,6 +4912,248 @@ static void TF_Crest_Tick(void)
     if (since >= 0 && TF_CrestScanNext < count && since >= _scan_at[TF_CrestScanNext]) {
         TF_CrestScanNext++;
         TF_Crest_Request_Scan();
+    }
+}
+
+/***********************************************************************************************
+ * Launcher-resident faction patches: the crest, tab icons and EVA lines for every player.     *
+ *                                                                                             *
+ *    Only the host simulates a LAN game, so the host's DLL can patch only the host's          *
+ *    launcher. Every launcher loads this DLL at its own startup, though                       *
+ *    (TF_Patch_Launcher_At_Load), so there the DLL pins itself and hooks the launcher's       *
+ *    plugin event dispatcher (IncomingExternalGamePluginEventClass::Execute, 0x783B60, at     *
+ *    its type switch 0x783B82). At match start the host sends each human player a direct      *
+ *    message "@@TFL:<GlyphX id, 16 hex digits>:<house>" (TF_Tell_Launchers). The hook keeps   *
+ *    every such message off the screen (message kind at +0x19C set past the four the          *
+ *    launcher shows) and, when the id is this launcher's own player (cached by the launcher   *
+ *    at 0x1FB6D48, flagged at 0x1FB6D40), hands the house to a worker thread. The thread      *
+ *    runs the patches the host runs for itself, inside this launcher: the EVA mailbox and     *
+ *    cache, the tab icons and the crest, then the crest upkeep at 15 ticks a second. The heap *
+ *    scans never run on the launcher's own thread.                                            *
+ *=============================================================================================*/
+static volatile LONG TF_LauncherRequest = 0;
+static HANDLE TF_LauncherWake = NULL;
+
+static void TF_Launcher_Log(const char* fmt, ...)
+{
+#if TF_DEV_BUILD
+    const char* up = getenv("USERPROFILE");
+    if (up == NULL) {
+        return;
+    }
+    char logpath[512];
+    snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+    FILE* log = fopen(logpath, "a");
+    if (log == NULL) {
+        return;
+    }
+    fprintf(log, "  launcher: ");
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(log, fmt, ap);
+    va_end(ap);
+    fprintf(log, "\n");
+    fclose(log);
+#endif
+}
+
+static DWORD WINAPI TF_Launcher_Resident_Thread(LPVOID)
+{
+    /*
+    **	Three minutes of crest upkeep after each message covers the scan burst and the
+    **	re-verify self-heal through a match's opening; records born later come from the
+    **	patched atlas table and need none.
+    */
+    int ticks_left = 0;
+    for (;;) {
+        WaitForSingleObject(TF_LauncherWake, (ticks_left > 0) ? 1000 / 15 : INFINITE);
+        if (InterlockedExchange(&TF_LauncherRequest, 0) != 0) {
+            TF_Launcher_Log("house %d: applying", (int)TF_LauncherActLike);
+            TF_Mailbox_Write_EVA_Voice();
+            TF_Patch_ClientG_Crest();
+            ticks_left = 15 * 180;
+        }
+        if (ticks_left > 0) {
+            Frame++;
+            TF_Crest_Tick();
+            ticks_left--;
+        }
+    }
+    return 0;
+}
+
+static bool TF_Parse_Hex64(const char* text, unsigned long long& value)
+{
+    value = 0;
+    for (int i = 0; i < 16; i++) {
+        char c = text[i];
+        int digit = (c >= '0' && c <= '9') ? c - '0' : (c >= 'a' && c <= 'f') ? c - 'a' + 10 : -1;
+        if (digit < 0) {
+            return false;
+        }
+        value = (value << 4) | (unsigned)digit;
+    }
+    return true;
+}
+
+extern "C" void __cdecl TF_Launcher_Event_Hook(unsigned char* event)
+{
+    static const int MESSAGE_EVENT = 6;
+    if (*(int*)(event + 0x10) != MESSAGE_EVENT) {
+        return;
+    }
+    unsigned len = *(unsigned*)(event + 0x190);
+    unsigned cap = *(unsigned*)(event + 0x194);
+    const char* text = (cap >= 16) ? *(const char**)(event + 0x180) : (const char*)(event + 0x180);
+    if (text == NULL || len < 24 || memcmp(text, "@@TFL:", 6) != 0 || text[22] != ':') {
+        return;
+    }
+    *(int*)(event + 0x19C) = 0x7F;
+
+    unsigned long long target = 0;
+    if (!TF_Parse_Hex64(text + 6, target)) {
+        return;
+    }
+    int house = atoi(text + 23);
+    if (*(volatile unsigned char*)0x1FB6D40 == 0) {
+        TF_Launcher_Log("house %d for %08x%08x: no local player id yet", house, (unsigned)(target >> 32),
+                        (unsigned)target);
+        return;
+    }
+    unsigned long long local = *(volatile unsigned long long*)0x1FB6D48;
+    if (target != local) {
+        TF_Launcher_Log("house %d for %08x%08x, local %08x%08x: not ours", house, (unsigned)(target >> 32),
+                        (unsigned)target, (unsigned)(local >> 32), (unsigned)local);
+        return;
+    }
+    InterlockedExchange(&TF_LauncherActLike, house);
+    InterlockedExchange(&TF_LauncherRequest, 1);
+    if (TF_LauncherWake == NULL) {
+        TF_LauncherWake = CreateEventA(NULL, FALSE, FALSE, NULL);
+        HANDLE thread = CreateThread(NULL, 0, TF_Launcher_Resident_Thread, NULL, 0, NULL);
+        if (thread != NULL) {
+            CloseHandle(thread);
+        }
+    }
+    if (TF_LauncherWake != NULL) {
+        SetEvent(TF_LauncherWake);
+    }
+}
+
+static bool TF_Write_Own_Code(SIZE_T at, const unsigned char* bytes, size_t len)
+{
+    DWORD old_protect = 0;
+    if (!VirtualProtect((LPVOID)at, len, PAGE_EXECUTE_READWRITE, &old_protect)) {
+        return false;
+    }
+    memcpy((void*)at, bytes, len);
+    DWORD tmp = 0;
+    VirtualProtect((LPVOID)at, len, old_protect, &tmp);
+    FlushInstructionCache(GetCurrentProcess(), (LPCVOID)at, len);
+    return true;
+}
+
+/*
+**	Runs in the launcher's own process at the DLL's startup load: pins the DLL so the hook's
+**	target stays, takes the mod folder from the DLL's own path, and hooks the dispatcher.
+*/
+static const char* TF_Launcher_Resident_Install(void)
+{
+    static const SIZE_T DISPATCH = 0x783B82;
+    static const SIZE_T RESUME = 0x783B91;
+    static const SIZE_T UNKNOWN_EVENT = 0x786307;
+    static const SIZE_T CAVE = 0x1BE9240;
+    static const unsigned char stock[15] = {0x8B, 0x43, 0x10, 0x8D, 0x48, 0xFF, 0x83, 0xF9,
+                                            0x0D, 0x0F, 0x87, 0x76, 0x27, 0x00, 0x00};
+
+    unsigned char const* site = (unsigned char const*)DISPATCH;
+    if (memcmp(site, stock, sizeof(stock)) != 0) {
+        return "dispatcher: unknown launcher build, left alone";
+    }
+    unsigned char const* cave_now = (unsigned char const*)CAVE;
+    for (int i = 0; i < 40; i++) {
+        if (cave_now[i] != 0) {
+            return "dispatcher: cave in use, left alone";
+        }
+    }
+
+    HMODULE self = NULL;
+    if (!GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_PIN,
+                            (LPCSTR)&TF_Launcher_Event_Hook,
+                            &self)) {
+        return "dispatcher: could not pin the DLL";
+    }
+    char path[MAX_PATH] = "";
+    GetModuleFileNameA(self, path, sizeof(path));
+    char* data_dir = strrchr(path, '\\');
+    if (data_dir != NULL) {
+        *data_dir = 0;
+        data_dir = strrchr(path, '\\');
+    }
+    if (data_dir != NULL && _stricmp(data_dir + 1, "Data") == 0) {
+        data_dir[1] = 0;
+        strncpy(TF_ModRootPath, path, sizeof(TF_ModRootPath));
+        TF_ModRootPath[sizeof(TF_ModRootPath) - 1] = 0;
+    }
+
+    /*
+    **	pushad / push ebx / call TF_Launcher_Event_Hook / add esp,4 / popad, then the
+    **	dispatcher's own type check and switch jump.
+    */
+    unsigned char cave[33] = {0x60, 0x53, 0xB8, 0, 0, 0, 0, 0xFF, 0xD0, 0x83, 0xC4, 0x04, 0x61,
+                              0x8B, 0x43, 0x10, 0x8D, 0x48, 0xFF, 0x83, 0xF9, 0x0D,
+                              0x0F, 0x87, 0, 0, 0, 0, 0xE9, 0, 0, 0, 0};
+    SIZE_T hook = (SIZE_T)&TF_Launcher_Event_Hook;
+    memcpy(cave + 3, &hook, 4);
+    TF_Put_Rel32(cave + 24, CAVE + 28, UNKNOWN_EVENT);
+    TF_Put_Rel32(cave + 29, CAVE + 33, RESUME);
+    unsigned char jump[15] = {0xE9, 0, 0, 0, 0, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90};
+    TF_Put_Rel32(jump + 1, DISPATCH + 5, CAVE);
+
+    TF_InLauncher = true;
+    if (!TF_Write_Own_Code(CAVE, cave, sizeof(cave)) || !TF_Write_Own_Code(DISPATCH, jump, sizeof(jump))) {
+        TF_InLauncher = false;
+        return "dispatcher: write failed";
+    }
+    return "dispatcher hooked";
+}
+
+/*
+**	Host side: tells every human player's launcher which house its player is, at match start
+**	and twice more while joiners finish loading. The launcher-resident hook acts on the
+**	message addressed to its own player and hides them all.
+*/
+static int TF_TellLaunchersStart = -100000;
+static int TF_TellLaunchersNext = 0;
+
+static void TF_Tell_Launchers(void)
+{
+    for (int i = 0; i < Houses.Count(); i++) {
+        HouseClass* house = Houses.Ptr(i);
+        if (house == NULL || !house->IsActive || !house->IsHuman) {
+            continue;
+        }
+        unsigned long long id = (unsigned long long)DLLExportClass::Get_GlyphX_Player_ID(house);
+        char text[48];
+        snprintf(text, sizeof(text), "@@TFL:%08x%08x:%d", (unsigned)(id >> 32), (unsigned)id, (int)house->ActLike);
+        DLLExportClass::On_Message(house, text, 0.0f, MESSAGE_TYPE_DIRECT, -1);
+    }
+}
+
+static void TF_Tell_Launchers_Start(void)
+{
+    TF_TellLaunchersStart = (int)Frame;
+    TF_TellLaunchersNext = 0;
+}
+
+static void TF_Tell_Launchers_Tick(void)
+{
+    static const int _tell_at[] = {1, 45, 150};
+    int since = (int)Frame - TF_TellLaunchersStart;
+    if (since >= 0 && TF_TellLaunchersNext < (int)(sizeof(_tell_at) / sizeof(_tell_at[0]))
+        && since >= _tell_at[TF_TellLaunchersNext]) {
+        TF_TellLaunchersNext++;
+        TF_Tell_Launchers();
     }
 }
 

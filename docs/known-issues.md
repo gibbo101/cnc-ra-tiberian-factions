@@ -158,15 +158,10 @@ of the prerequisite loop for every game type. `MOD_DEBUG_CANBUILD.txt` is switch
 
 ## MP clients keep RA voice on the mailbox-routed EVA lines (2026-08-31)
 
-- **Severity:** minor. **Status:** open, by design for now — same shape as the credit-tick limit.
-- "Cannot deploy here", "battle control terminated", "mission accomplished" and "your mission
-  has failed" are faction-voiced by the **era mailbox**: the launcher fires these at moments the
-  DLL never sees (client-side placement reject, teardown, the game-over window drop above), so
-  the DLL instead rewrites the loose `Data/AUDIO/EN-US/` sample files those events resolve,
-  copying era-correct bytes (`TF_MBX_*` payloads) at every match start
-  (`TF_Mailbox_Write_EVA_Voice`, dllinterface.cpp). In LAN MP only the host runs the DLL, so
-  client machines keep the shipped/base RA samples on those names. Structure sold is exempt —
-  it uses stub + mid-game dispatch, which the launcher routes per player, reaching clients.
+- **Status: RESOLVED 2026-09-30** (verified in a LAN game, Deck host + desktop joiner). Every
+  launcher now keeps a copy of the DLL from its startup load and applies the EVA mailbox, cache
+  patch, tab icons and crest for its own player when the host's match-start message arrives
+  (`launcher-vs-dll-ownership.md`, "Launcher-resident patches").
 
 ---
 
