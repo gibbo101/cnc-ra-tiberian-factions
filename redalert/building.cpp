@@ -6044,18 +6044,18 @@ COORDINATE BuildingClass::Sort_Y(void) const
 **	laser switches silently.
 */
 static TFGateInfo const TFGates[] = {
-    {STRUCT_TSGATEH, true, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0},
-    {STRUCT_TSGATEV, false, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0},
-    {STRUCT_TSNGATEH, true, 7, 7, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0},
-    {STRUCT_TSNGATEV, false, 7, 7, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0},
-    {STRUCT_ALGATEH, true, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0},
-    {STRUCT_ALGATEV, false, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0},
-    {STRUCT_SVGATEH, true, 10, 1, VOC_TSLACHG2R, VOC_TESLA_POWER_UP, true, 3},
-    {STRUCT_SVGATEV, false, 10, 1, VOC_TSLACHG2R, VOC_TESLA_POWER_UP, true, 3},
-    {STRUCT_TDGGATEH, true, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0},
-    {STRUCT_TDGGATEV, false, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0},
-    {STRUCT_TDNGATEH, true, 10, 1, VOC_NONE, VOC_NONE, true, 0},
-    {STRUCT_TDNGATEV, false, 10, 1, VOC_NONE, VOC_NONE, true, 0},
+    {STRUCT_TSGATEH, true, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'S'},
+    {STRUCT_TSGATEV, false, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'S'},
+    {STRUCT_TSNGATEH, true, 7, 7, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'S'},
+    {STRUCT_TSNGATEV, false, 7, 7, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'S'},
+    {STRUCT_ALGATEH, true, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'R'},
+    {STRUCT_ALGATEV, false, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'R'},
+    {STRUCT_SVGATEH, true, 10, 1, VOC_TSLACHG2R, VOC_TESLA_POWER_UP, true, 3, 'R'},
+    {STRUCT_SVGATEV, false, 10, 1, VOC_TSLACHG2R, VOC_TESLA_POWER_UP, true, 3, 'R'},
+    {STRUCT_TDGGATEH, true, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'D'},
+    {STRUCT_TDGGATEV, false, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'D'},
+    {STRUCT_TDNGATEH, true, 10, 1, VOC_NONE, VOC_NONE, true, 0, 'D'},
+    {STRUCT_TDNGATEV, false, 10, 1, VOC_NONE, VOC_NONE, true, 0, 'D'},
 };
 
 TFGateInfo const* TF_Gate_Info(StructType t)

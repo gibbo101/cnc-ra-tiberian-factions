@@ -75,6 +75,7 @@ struct TFGateInfo
     VocType CloseSound;
     bool NeedsPower; // an energy gate stands open while its house is short of power
     int IdleFrames;  // shut-gate loop frames after the door frames (healthy, then damaged)
+    char Era;        // whose build sounds it takes: 'R' Red Alert, 'D' Tiberian Dawn, 'S' Tiberian Sun
 };
 TFGateInfo const* TF_Gate_Info(StructType t);
 

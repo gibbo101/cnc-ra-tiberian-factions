@@ -5358,6 +5358,10 @@ bool BuildingTypeClass::Is_Helipad(void) const
  *=============================================================================================*/
 bool BuildingTypeClass::Is_Tiberian_Era(void) const
 {
+    TFGateInfo const* gate = TF_Gate_Info(Type);
+    if (gate != NULL) {
+        return (gate->Era != 'R');
+    }
     return (Type >= STRUCT_TDOBLI && Type <= STRUCT_TIBERIAN_LAST)
            || (Type >= STRUCT_TS_TREE_FIRST && Type <= STRUCT_TS_TREE_LAST);
 }
@@ -5376,6 +5380,10 @@ bool BuildingTypeClass::Is_Tiberian_Era(void) const
  *=============================================================================================*/
 bool BuildingTypeClass::Is_TS_Era(void) const
 {
+    TFGateInfo const* gate = TF_Gate_Info(Type);
+    if (gate != NULL) {
+        return (gate->Era == 'S');
+    }
     return (Type == STRUCT_TSPOWR)
            || (Type >= STRUCT_TS_TREE_FIRST && Type <= STRUCT_TS_TREE_LAST);
 }
