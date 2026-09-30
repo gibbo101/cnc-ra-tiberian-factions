@@ -2776,28 +2776,29 @@ bool CellClass::Goodie_Check(FootClass* object)
             }
 
             /*
-            **  Tiberian Factions -- TS units ride the unit crate as rare finds a
-            **  lucky crate can field for ANY faction. 1-in-8 unit crates rolls the
-            **  TS table (Hover MLRS / Titan / Mammoth Mk. II, plus the Devil's
-            **  Tongue and Subterranean APC, which are Nod's and reach the field no
-            **  other way), which also carries Red Alert 2's Apocalypse and Prism Tank and C&C3's
-            **  Mammoth Mk. III and Predator.
+            **  Tiberian Factions -- skirmish and multiplayer unit crates draw evenly from one pool of
+            **  every faction's crate vehicles, whoever finds them: RA, TD, TS, RA2 and C&C3 alike, any
+            **  faction's MCV included when bases are on (the yard it deploys grants its own tech tree).
+            **  The superseded RA and TD MCVs stay out (the per-faction MCVs replace them), and so do
+            **  harvesters, which the free-harvester rule above hands out in the finder's own kind.
             */
-            if (utp == NULL && Session.Type != GAME_NORMAL && Random_Pick(0, 7) == 0) {
-                /*
-                **  1-in-4 of TS rolls (1-in-32 of unit crates) is the TS MCV: it
-                **  deploys the TS construction yard, opening the ownership-gated
-                **  TS tree for whoever found it (docs/ts-gdi-tree-plan.md). Only
-                **  on this RANDOM path — the force_mcv comeback branch must keep
-                **  handing a wiped player their own faction's MCV — and only with
-                **  bases on, matching the generic roll's Is_MCV guard.
-                */
-                if (Session.Options.Bases && Random_Pick(0, 3) == 0) {
-                    utp = &UnitTypeClass::As_Reference(UNIT_TSMCV);
-                } else {
-                    static UnitType const _ts_goodies[] = {UNIT_TSHVR, UNIT_TSTITN, UNIT_TSHMEC, UNIT_TSSUBTANK, UNIT_TSSAPC, UNIT_R2APOC, UNIT_R2PRIS, UNIT_C3MK3, UNIT_C3PRED};
-                    utp = &UnitTypeClass::As_Reference(_ts_goodies[Random_Pick(0, (int)ARRAY_SIZE(_ts_goodies) - 1)]);
+            if (utp == NULL && Session.Type != GAME_NORMAL) {
+                UnitType pool[UNIT_COUNT];
+                int count = 0;
+                for (UnitType u = UNIT_FIRST; u < UNIT_COUNT; u++) {
+                    UnitTypeClass const& ut = UnitTypeClass::As_Reference(u);
+                    if (!ut.IsCrateGoodie || ut.IsToHarvest || u == UNIT_MCV || u == UNIT_TDMCV) {
+                        continue;
+                    }
+                    if (ut.Is_MCV() && !Session.Options.Bases) {
+                        continue;
+                    }
+                    pool[count++] = u;
                 }
+                if (count == 0) {
+                    goto crate_money;
+                }
+                utp = &UnitTypeClass::As_Reference(pool[Random_Pick(0, count - 1)]);
             }
 
             /*

@@ -1915,7 +1915,7 @@ static UnitTypeClass const UnitR2Pris(UNIT_R2PRIS,
 );
 
 // C&C3 Mammoth Tank "Mk. III" (UNIT_C3MK3), Tiberium Wars GDIMammoth. TS GDI builds it at the TS war
-// factory with the tech centre; any faction can find one in the TS crate roll (cell.cpp). Turreted twin cannon + AA/AG rocket pods. The body tileset rolls its
+// factory with the tech centre; any faction can find one in a unit crate (cell.cpp). Turreted twin cannon + AA/AG rocket pods. The body tileset rolls its
 // treads through the walker gait (rules.ini WalkFrames=3); the turret seat and every fire point come
 // from the generated c3tanks.h (Turret_Adjust, techno.cpp Fire_Coord).
 static UnitTypeClass const UnitC3Mk3(UNIT_C3MK3,
@@ -1948,7 +1948,7 @@ static UnitTypeClass const UnitC3Mk3(UNIT_C3MK3,
 );
 
 // C&C3 Predator Tank (UNIT_C3PRED), Tiberium Wars GDIPredator. TS GDI builds it at the TS war factory;
-// any faction can find one in the TS crate roll (cell.cpp).
+// any faction can find one in a unit crate (cell.cpp).
 // Same tileset layout and generated seat/fire tables as UNIT_C3MK3; its turret sits aft of the hull centre.
 static UnitTypeClass const UnitC3Pred(UNIT_C3PRED,
                                       TXT_MTANK,    // NAME: placeholder (HD display via rules.ini Name=).
