@@ -1887,6 +1887,50 @@
       "flags": []
     },
     {
+      "id": 60,
+      "kind": "vehicle",
+      "name": "c3mk3",
+      "display_name": "Mammoth Mk. III",
+      "owner": "Germany",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "walk_frames": 3,
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
+      "id": 61,
+      "kind": "vehicle",
+      "name": "c3pred",
+      "display_name": "Predator",
+      "owner": "Germany",
+      "body_frames": [
+        "Frames32Full"
+      ],
+      "walk_frames": 3,
+      "turret_frames": [
+        "Frames32Full"
+      ],
+      "turret": null,
+      "turret2": null,
+      "turret_offset": 0,
+      "turret_y": 0,
+      "flags": [
+        "Turret",
+        "Armed"
+      ]
+    },
+    {
       "id": 7,
       "kind": "aircraft",
       "name": "tdc17",

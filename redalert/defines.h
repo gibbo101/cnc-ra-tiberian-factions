@@ -1961,6 +1961,8 @@ typedef enum UnitType : char
     UNIT_TSMEMP,            // TS Mobile EM-Pulse (Firestorm [MOBILEMP]): unarmed tracked support vehicle that charges, then deploys to set off a small E.M. Pulse round itself (UnitClass::EMP_Blast). Art = M_EMP.VXL, 32 facings (scripts/ts_pack_memp.py).
     UNIT_TSLPST,            // TS Mobile Sensor Array ([LPST]): unarmed tracked vehicle that turns south-east and deploys into STRUCT_TSDPSA. Art = LPST.VXL, 32 facings (scripts/ts_pack_sensor.py).
     UNIT_TSMWAR,            // TS Mobile War Factory (Firestorm [MOBWARG]): slow, unarmed tracked vehicle, one at a time. Art = MWAR_NOD.VXL, 32 facings (scripts/ts_pack_mwf.py).
+    UNIT_C3MK3,             // C&C3 Mammoth Tank, "Mk. III" (Tiberium Wars GDIMammoth): twin cannon + AA/AG rocket pods. Art = GUMAMM hull 32 facings x 3 tread steps (0-95) + turret 96-127 (scripts/c3_pack_tanks.py).
+    UNIT_C3PRED,            // C&C3 Predator Tank (Tiberium Wars GDIPredator): single cannon, turret seated aft of the hull centre. Art = GUPREDTANK, same layout as UNIT_C3MK3.
 
     UNIT_COUNT,
     UNIT_FIRST = 0
@@ -3610,6 +3612,9 @@ typedef enum WeaponType : char
     WEAPON_R2APOCCANNON,   // RA2 Apocalypse cannon: YR [120mmx] (Dmg100/ROF80/Range5.75/Burst2, R2ApocAP). Registered "R2ApocCannon".
     WEAPON_R2APOCTUSK,     // RA2 Apocalypse tusks: YR [MammothTusk] (Dmg50/Burst2/Range8, AA only). Registered "R2ApocTusk".
     WEAPON_R2PRISMBEAM,    // RA2 Prism Tank beam: YR [Comet] (Dmg100/ROF100, IsPrismBeam draw + fork). Registered "R2PrismBeam".
+    WEAPON_C3MK3CANNON,    // C&C3 Mammoth twin cannon: GDIMammothTankGun (2 shots, 500 dmg each, 2 s reload) at RA scale. Registered "C3Mk3Cannon".
+    WEAPON_C3MK3PODS,      // C&C3 Mammoth rocket pods: GDIMammothTankRocketPods (4 missiles, 300 dmg each in patch 1.9, 10 s reload), AA and AG. Registered "C3Mk3Pods".
+    WEAPON_C3PREDCANNON,   // C&C3 Predator cannon: GDIPredatorTankCannon (400 dmg, 2 s reload) at RA scale. Registered "C3PredCannon".
 
     WEAPON_COUNT,
     WEAPON_FIRST = 0
@@ -4389,6 +4394,44 @@ typedef enum VocType : short
     VOC_R2_VPRIATTA,  // Prism Tank beam (vpriatta). Bundled R2VPRIATTA.WAV.
     VOC_TS_PLSECAN2,     // TS EMP Pulse Cannon firing the pulse ball (PLSECAN2, [EMPulseWeapon] Report=). Bundled TSPLSECAN2.WAV.
     VOC_TS_FIRSTRM1,     // TS Firestorm burning (FIRSTRM1, the Report= of FSIDLE/FSGRND/FSAIR). Bundled TSFIRSTRM1.WAV.
+    VOC_C3MSEA,    // Mammoth Mk. III select voice. Bundled C&C3 sample(s) as C3MSEA*.WAV.
+    VOC_C3MSEB,    // Mammoth Mk. III select voice. Bundled C&C3 sample(s) as C3MSEB*.WAV.
+    VOC_C3MSEC,    // Mammoth Mk. III select voice. Bundled C&C3 sample(s) as C3MSEC*.WAV.
+    VOC_C3MSED,    // Mammoth Mk. III select voice. Bundled C&C3 sample(s) as C3MSED*.WAV.
+    VOC_C3MSEE,    // Mammoth Mk. III select voice. Bundled C&C3 sample(s) as C3MSEE*.WAV.
+    VOC_C3MSEF,    // Mammoth Mk. III select voice. Bundled C&C3 sample(s) as C3MSEF*.WAV.
+    VOC_C3MMOA,    // Mammoth Mk. III move voice. Bundled C&C3 sample(s) as C3MMOA*.WAV.
+    VOC_C3MMOB,    // Mammoth Mk. III move voice. Bundled C&C3 sample(s) as C3MMOB*.WAV.
+    VOC_C3MMOC,    // Mammoth Mk. III move voice. Bundled C&C3 sample(s) as C3MMOC*.WAV.
+    VOC_C3MMOD,    // Mammoth Mk. III move voice. Bundled C&C3 sample(s) as C3MMOD*.WAV.
+    VOC_C3MMOE,    // Mammoth Mk. III move voice. Bundled C&C3 sample(s) as C3MMOE*.WAV.
+    VOC_C3MMOF,    // Mammoth Mk. III move voice. Bundled C&C3 sample(s) as C3MMOF*.WAV.
+    VOC_C3MATA,    // Mammoth Mk. III attack voice. Bundled C&C3 sample(s) as C3MATA*.WAV.
+    VOC_C3MATB,    // Mammoth Mk. III attack voice. Bundled C&C3 sample(s) as C3MATB*.WAV.
+    VOC_C3MATC,    // Mammoth Mk. III attack voice. Bundled C&C3 sample(s) as C3MATC*.WAV.
+    VOC_C3MATD,    // Mammoth Mk. III attack voice. Bundled C&C3 sample(s) as C3MATD*.WAV.
+    VOC_C3MATE,    // Mammoth Mk. III attack voice. Bundled C&C3 sample(s) as C3MATE*.WAV.
+    VOC_C3MATF,    // Mammoth Mk. III attack voice. Bundled C&C3 sample(s) as C3MATF*.WAV.
+    VOC_C3MGUN,    // Mammoth Mk. III cannon (random take). Bundled C&C3 sample(s) as C3MGUN*.WAV.
+    VOC_C3MPOD,    // Mammoth Mk. III rocket pods (random take). Bundled C&C3 sample(s) as C3MPOD*.WAV.
+    VOC_C3PSEA,    // Predator select voice. Bundled C&C3 sample(s) as C3PSEA*.WAV.
+    VOC_C3PSEB,    // Predator select voice. Bundled C&C3 sample(s) as C3PSEB*.WAV.
+    VOC_C3PSEC,    // Predator select voice. Bundled C&C3 sample(s) as C3PSEC*.WAV.
+    VOC_C3PSED,    // Predator select voice. Bundled C&C3 sample(s) as C3PSED*.WAV.
+    VOC_C3PSEE,    // Predator select voice. Bundled C&C3 sample(s) as C3PSEE*.WAV.
+    VOC_C3PSEF,    // Predator select voice. Bundled C&C3 sample(s) as C3PSEF*.WAV.
+    VOC_C3PMOA,    // Predator move voice. Bundled C&C3 sample(s) as C3PMOA*.WAV.
+    VOC_C3PMOB,    // Predator move voice. Bundled C&C3 sample(s) as C3PMOB*.WAV.
+    VOC_C3PMOC,    // Predator move voice. Bundled C&C3 sample(s) as C3PMOC*.WAV.
+    VOC_C3PMOD,    // Predator move voice. Bundled C&C3 sample(s) as C3PMOD*.WAV.
+    VOC_C3PMOE,    // Predator move voice. Bundled C&C3 sample(s) as C3PMOE*.WAV.
+    VOC_C3PATA,    // Predator attack voice. Bundled C&C3 sample(s) as C3PATA*.WAV.
+    VOC_C3PATB,    // Predator attack voice. Bundled C&C3 sample(s) as C3PATB*.WAV.
+    VOC_C3PATC,    // Predator attack voice. Bundled C&C3 sample(s) as C3PATC*.WAV.
+    VOC_C3PATD,    // Predator attack voice. Bundled C&C3 sample(s) as C3PATD*.WAV.
+    VOC_C3PATE,    // Predator attack voice. Bundled C&C3 sample(s) as C3PATE*.WAV.
+    VOC_C3PATF,    // Predator attack voice. Bundled C&C3 sample(s) as C3PATF*.WAV.
+    VOC_C3PGUN,    // Predator cannon (random take). Bundled C&C3 sample(s) as C3PGUN*.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0

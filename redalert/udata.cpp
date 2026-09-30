@@ -49,6 +49,7 @@
 
 #include "function.h"
 #include "keyframe.h"
+#include "c3tanks.h"
 
 /*
 **	This is the list of animation stages to use when the harvester
@@ -1913,6 +1914,71 @@ static UnitTypeClass const UnitR2Pris(UNIT_R2PRIS,
                                       MISSION_HUNT  // ORDERS: Default order.
 );
 
+// C&C3 Mammoth Tank "Mk. III" (UNIT_C3MK3), Tiberium Wars GDIMammoth. Found only in unit crates, by any
+// faction (rules.ini TechLevel=-1, cell.cpp). Turreted twin cannon + AA/AG rocket pods. The body tileset rolls its
+// treads through the walker gait (rules.ini WalkFrames=3); the turret seat and every fire point come
+// from the generated c3tanks.h (Turret_Adjust, techno.cpp Fire_Coord).
+static UnitTypeClass const UnitC3Mk3(UNIT_C3MK3,
+                                     TXT_HTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                     "C3MK3",      // NAME: IniName.
+                                     ANIM_ART_EXP1,// EXPLOSION: big fragment explosion.
+                                     REMAP_NORMAL, // Sidebar remap logic.
+                                     0x0020,       // Vertical offset.
+                                     0x00C0,       // Primary weapon offset along turret centerline.
+                                     0x0028,       // Primary weapon lateral offset (twin barrels alternate).
+                                     0x0008,       // Secondary weapon offset along turret centerline.
+                                     0x0040,       // Secondary weapon lateral offset (rocket pods).
+                                     true,         // Can this be a goodie surprise from a crate?
+                                     false,        // Always use the given name for the vehicle?
+                                     true,         // Can this unit squash infantry?
+                                     false,        // Does this unit harvest Tiberium?
+                                     false,        // Is invisible to radar?
+                                     false,        // Is it insignificant (won't be announced)?
+                                     true,         // Is it equipped with a combat turret?
+                                     false,        // Does it have a rotating radar dish?
+                                     false,        // Is there an associated firing animation?
+                                     false,        // Must the turret be in a locked down position while moving?
+                                     false,        // Is this a gigundo-rotund-enormous unit?
+                                     false,        // Does the unit have a constant animation?
+                                     false,        // Is the unit capable of jamming radar?
+                                     false,        // Is the unit a mobile gap generator?
+                                     32,           // Rotation stages.
+                                     0,            // Turret center offset along body centerline.
+                                     MISSION_HUNT  // ORDERS: Default order.
+);
+
+// C&C3 Predator Tank (UNIT_C3PRED), Tiberium Wars GDIPredator. Found only in unit crates, by any
+// faction (rules.ini TechLevel=-1, cell.cpp).
+// Same tileset layout and generated seat/fire tables as UNIT_C3MK3; its turret sits aft of the hull centre.
+static UnitTypeClass const UnitC3Pred(UNIT_C3PRED,
+                                      TXT_MTANK,    // NAME: placeholder (HD display via rules.ini Name=).
+                                      "C3PRED",     // NAME: IniName.
+                                      ANIM_FBALL1,  // EXPLOSION: big fireball.
+                                      REMAP_NORMAL, // Sidebar remap logic.
+                                      0x0020,       // Vertical offset.
+                                      0x0080,       // Primary weapon offset along turret centerline.
+                                      0x0000,       // Primary weapon lateral offset.
+                                      0x0000,       // Secondary weapon offset (none).
+                                      0x0000,       // Secondary weapon lateral offset.
+                                      true,         // Can this be a goodie surprise from a crate?
+                                      false,        // Always use the given name for the vehicle?
+                                      true,         // Can this unit squash infantry?
+                                      false,        // Does this unit harvest Tiberium?
+                                      false,        // Is invisible to radar?
+                                      false,        // Is it insignificant (won't be announced)?
+                                      true,         // Is it equipped with a combat turret?
+                                      false,        // Does it have a rotating radar dish?
+                                      false,        // Is there an associated firing animation?
+                                      false,        // Must the turret be in a locked down position while moving?
+                                      false,        // Is this a gigundo-rotund-enormous unit?
+                                      false,        // Does the unit have a constant animation?
+                                      false,        // Is the unit capable of jamming radar?
+                                      false,        // Is the unit a mobile gap generator?
+                                      32,           // Rotation stages.
+                                      0,            // Turret center offset along body centerline.
+                                      MISSION_HUNT  // ORDERS: Default order.
+);
+
 // TS Mobile EM-Pulse (UNIT_TSMEMP), Firestorm rules [MOBILEMP]. No weapon: it charges while it can
 // move and deploys to set off a small E.M. Pulse round itself (UnitClass::EMP_Blast). FS:
 // Strength=800, Armor=heavy, TechLevel=6, Sight=6, Speed=7, Cost=1000, Points=60, ROT=5,
@@ -2416,6 +2482,8 @@ void UnitTypeClass::Init_Heap(void)
     new UnitTypeClass(UnitTsMemp);    // UNIT_TSMEMP (Mobile EM-Pulse)
     new UnitTypeClass(UnitTsLpst);    // UNIT_TSLPST (Mobile Sensor Array)
     new UnitTypeClass(UnitTsMwar);    // UNIT_TSMWAR (Mobile War Factory)
+    new UnitTypeClass(UnitC3Mk3);     // UNIT_C3MK3 (C&C3 Mammoth Tank Mk. III)
+    new UnitTypeClass(UnitC3Pred);    // UNIT_C3PRED (C&C3 Predator Tank)
 }
 
 /***********************************************************************************************
@@ -2730,6 +2798,8 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
     } _art_boxes[] = {
         {UNIT_R2APOC, 36, 39},
         {UNIT_R2PRIS, 34, 42},
+        {UNIT_C3MK3, 52, 44},
+        {UNIT_C3PRED, 32, 29},
         {UNIT_TS4TNK, 35, 38},
         {UNIT_TSSONIC, 38, 39},
         {UNIT_TSHMEC, 42, 41},
@@ -2858,6 +2928,16 @@ void UnitTypeClass::Turret_Adjust(DirType dir, int& x, int& y) const
 
     case UNIT_TSSONIC:
         Sonic_Turret_Seat(dir, x, y);
+        break;
+
+    case UNIT_C3MK3:
+        x += _c3mk3_seat_px[TechnoClass::BodyShape[Dir_To_32(dir)]][0];
+        y += _c3mk3_seat_px[TechnoClass::BodyShape[Dir_To_32(dir)]][1];
+        break;
+
+    case UNIT_C3PRED:
+        x += _c3pred_seat_px[TechnoClass::BodyShape[Dir_To_32(dir)]][0];
+        y += _c3pred_seat_px[TechnoClass::BodyShape[Dir_To_32(dir)]][1];
         break;
 
     default:

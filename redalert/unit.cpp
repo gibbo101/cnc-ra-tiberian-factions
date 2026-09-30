@@ -1856,8 +1856,9 @@ static bool TF_Limpet_Voice(UnitClass const* unit, VocType a, VocType b)
 }
 
 /*
-**	The RA2 tanks answer in their own Yuri's Revenge voices, whoever owns them, and a move
-**	order spools the engine up (YR MoveStart). Returns false for every other unit.
+**	The RA2 and C&C3 tanks answer in their own crews' voices, whoever owns them. A move order
+**	also spools an RA2 tank's engine up (YR MoveStart); the C&C3 tanks answer with the voice
+**	alone, as C&C3 plays them. Returns false for every other unit.
 */
 enum TFVoiceKind { TF_VOICE_SELECT, TF_VOICE_MOVE, TF_VOICE_ATTACK };
 
@@ -1873,6 +1874,16 @@ static bool TF_RA2_Voice(UnitClass const* unit, TFVoiceKind kind)
         {VOC_R2_VPRIMOA, VOC_R2_VPRIMOB, VOC_R2_VPRIMOC, VOC_R2_VPRIMOD, VOC_R2_VPRIMOE, VOC_NONE},
         {VOC_R2_VPRIATA, VOC_R2_VPRIATB, VOC_R2_VPRIATC, VOC_R2_VPRIATD, VOC_R2_VPRIATE, VOC_NONE},
     };
+    static VocType const _c3mk3[3][6] = {
+        {VOC_C3MSEA, VOC_C3MSEB, VOC_C3MSEC, VOC_C3MSED, VOC_C3MSEE, VOC_C3MSEF},
+        {VOC_C3MMOA, VOC_C3MMOB, VOC_C3MMOC, VOC_C3MMOD, VOC_C3MMOE, VOC_C3MMOF},
+        {VOC_C3MATA, VOC_C3MATB, VOC_C3MATC, VOC_C3MATD, VOC_C3MATE, VOC_C3MATF},
+    };
+    static VocType const _c3pred[3][6] = {
+        {VOC_C3PSEA, VOC_C3PSEB, VOC_C3PSEC, VOC_C3PSED, VOC_C3PSEE, VOC_C3PSEF},
+        {VOC_C3PMOA, VOC_C3PMOB, VOC_C3PMOC, VOC_C3PMOD, VOC_C3PMOE, VOC_NONE},
+        {VOC_C3PATA, VOC_C3PATB, VOC_C3PATC, VOC_C3PATD, VOC_C3PATE, VOC_C3PATF},
+    };
     static VocType const _apoc_start[3] = {VOC_R2_VAPOSTAA, VOC_R2_VAPOSTAB, VOC_R2_VAPOSTAC};
     static VocType const _pris_start[3] = {VOC_R2_VPRISTAA, VOC_R2_VPRISTAB, VOC_R2_VPRISTAC};
 
@@ -1884,6 +1895,12 @@ static bool TF_RA2_Voice(UnitClass const* unit, TFVoiceKind kind)
     } else if (*unit == UNIT_R2PRIS) {
         lines = _pris[kind];
         starts = _pris_start;
+    } else if (*unit == UNIT_C3MK3) {
+        lines = _c3mk3[kind];
+        starts = NULL;
+    } else if (*unit == UNIT_C3PRED) {
+        lines = _c3pred[kind];
+        starts = NULL;
     } else {
         return (false);
     }
@@ -1891,7 +1908,7 @@ static bool TF_RA2_Voice(UnitClass const* unit, TFVoiceKind kind)
         int count = (lines[5] == VOC_NONE) ? 5 : 6;
         Sound_Effect(lines[Sim_Random_Pick(0, count - 1)], fixed(1), -(unit->ID + 1));
     }
-    if (kind == TF_VOICE_MOVE) {
+    if (kind == TF_VOICE_MOVE && starts != NULL) {
         Sound_Effect(starts[Sim_Random_Pick(0, 2)], unit->Coord);
     }
     return (true);

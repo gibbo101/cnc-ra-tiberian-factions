@@ -785,6 +785,9 @@ bool RulesClass::Heap_Maximums(CCINIClass& ini)
     new WeaponTypeClass("R2ApocCannon");   // WEAPON_R2APOCCANNON (YR [120mmx] -- the Apocalypse cannon)
     new WeaponTypeClass("R2ApocTusk");     // WEAPON_R2APOCTUSK (YR [MammothTusk] -- the Apocalypse tusks)
     new WeaponTypeClass("R2PrismBeam");    // WEAPON_R2PRISMBEAM (YR [Comet] -- the Prism Tank beam)
+    new WeaponTypeClass("C3Mk3Cannon");    // WEAPON_C3MK3CANNON (C&C3 GDIMammothTankGun)
+    new WeaponTypeClass("C3Mk3Pods");      // WEAPON_C3MK3PODS (C&C3 GDIMammothTankRocketPods)
+    new WeaponTypeClass("C3PredCannon");   // WEAPON_C3PREDCANNON (C&C3 GDIPredatorTankCannon)
 
     // Tiberian Factions mod: mark TD-ported weapons so WeaponTypeClass::Read_INI
     // parses Speed= as raw MPHType (TD source convention) instead of RA's

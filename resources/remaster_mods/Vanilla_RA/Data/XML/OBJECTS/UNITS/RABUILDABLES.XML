@@ -6851,6 +6851,63 @@
 			<BuildIcon>BuildIcon_TS4TNK_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<!-- C&C3 Mammoth Mk. III and Predator: C&C3's own portraits, unbadged on every variant; hand block, outside every generated one. -->
+	<ObjectTypeClass Name="RA_C3MK3" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3MK3</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3MK3_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3MK3</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3MK3_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3MK3</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3MK3_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3MK3</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3MK3_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3MK3</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3MK3_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3MK3</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3MK3_G_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3MK3</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3MK3_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3MK3</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3PRED" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3PRED</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3PRED_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3PRED</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3PRED_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3PRED</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3PRED_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3PRED</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3PRED_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3PRED</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3PRED_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3PRED</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_C3PRED_G_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_C3PRED</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_C3PRED_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_C3PRED</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<!-- RA2 Apocalypse and Prism Tank (easter eggs): RA2's own cameos, unbadged on every variant; hand block, outside every generated one. -->
 	<ObjectTypeClass Name="RA_R2APOC" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
