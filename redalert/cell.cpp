@@ -2779,15 +2779,15 @@ bool CellClass::Goodie_Check(FootClass* object)
             **  Tiberian Factions -- skirmish and multiplayer unit crates draw evenly from one pool of
             **  every faction's crate vehicles, whoever finds them: RA, TD, TS, RA2 and C&C3 alike, any
             **  faction's MCV included when bases are on (the yard it deploys grants its own tech tree).
-            **  The superseded RA and TD MCVs stay out (the per-faction MCVs replace them), and so do
-            **  harvesters, which the free-harvester rule above hands out in the finder's own kind.
+            **  Harvesters are in too; every harvester docks at every refinery. The superseded RA and TD
+            **  MCVs stay out (the per-faction MCVs replace them).
             */
             if (utp == NULL && Session.Type != GAME_NORMAL) {
                 UnitType pool[UNIT_COUNT];
                 int count = 0;
                 for (UnitType u = UNIT_FIRST; u < UNIT_COUNT; u++) {
                     UnitTypeClass const& ut = UnitTypeClass::As_Reference(u);
-                    if (!ut.IsCrateGoodie || ut.IsToHarvest || u == UNIT_MCV || u == UNIT_TDMCV) {
+                    if (!ut.IsCrateGoodie || u == UNIT_MCV || u == UNIT_TDMCV) {
                         continue;
                     }
                     if (ut.Is_MCV() && !Session.Options.Bases) {
