@@ -468,11 +468,11 @@ PACK_ARGS+=("$TMPDIR/tsseek_stub.shp:TSSEEK.SHP")
 ts_stub TSHUNT "$TMPDIR/tshunt_stub.shp" 48 48 8
 PACK_ARGS+=("$TMPDIR/tshunt_stub.shp:TSHUNT.SHP")
 PACK_ARGS+=("$TMPDIR/tsradrmk_stub.shp:TSRADRMAKE.SHP")
-# TSFACT 72x72 = the RA-conyard 3x3 box (BSIZE_33) + bib, content inside it
-# (the 4x3 tier read oversized next to the shrunk tier, Luke 2026-08-04).
-ts_stub TSFACT "$TMPDIR/tsfact_stub.shp" 72 48 2
+# TSFACT 72x69 = the HD rebuild's 384x368 canvas: the 3x2 plot centred, the vault
+# rising into the headroom above it.
+ts_stub TSFACT "$TMPDIR/tsfact_stub.shp" 72 69 2
 PACK_ARGS+=("$TMPDIR/tsfact_stub.shp:TSFACT.SHP")
-ts_stub TSFACT "$TMPDIR/tsfactmk_stub.shp" 72 48 32
+ts_stub TSFACT "$TMPDIR/tsfactmk_stub.shp" 72 69 32
 PACK_ARGS+=("$TMPDIR/tsfactmk_stub.shp:TSFACTMAKE.SHP")
 # TSTECH 72x72 (2026-08-31, radar height trick with TSPLUG): 3x2 plot kept,
 # square canvas so the dome + antenna rise instead of the legacy height-clamp

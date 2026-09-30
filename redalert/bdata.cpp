@@ -5445,7 +5445,10 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TDSTEALTH, BSTATE_IDLE, 0, 16, 3},
         // TS tree (Stealth Recipe): composited TS active anims; damaged run =
         // second half of the tileset (generic +largest offset in Shape_Number).
-        {STRUCT_TSFACT, BSTATE_IDLE, 0, 30, 3},  // GACNST halved windows _A(10)+_B(5)+_C(15) -> LCM 30
+        // TSFACT (HD yard): idle 0-29 = fans(10) x roof lamps(15); active 30-49 = the hangar
+        // producing while a placed building goes up (Mission_Repair); damaged block at +50.
+        {STRUCT_TSFACT, BSTATE_IDLE, 0, 30, 4},
+        {STRUCT_TSFACT, BSTATE_ACTIVE, 30, 20, 3},
         {STRUCT_TSPOWR, BSTATE_IDLE, 0, 12, 3},  // GAPOWR halved windows _A(12)+_B(6) -> LCM 12
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 28, 3},  // GAPILE halved windows _A(4)+_B(4)+_C(7 flag) -> LCM 28
         {STRUCT_TSPROC, BSTATE_IDLE, 0, 16, 3}, // NAREFN _C deck lights (fireball + lid are event layers)

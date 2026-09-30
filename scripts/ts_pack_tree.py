@@ -1606,28 +1606,7 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
                     affine_from={"TSDWEAP": "TSWEAP"}.get(ini))
     emit_sidebar_data(ini, disp, desc, cameo)
 
-# ---- TSFACT: TS Construction Yard on the RA-conyard 3x3 plot (BSIZE_33 +
-# bib, stub 72x72; the 4x3 tier read oversized -- Luke, 2026-08-04). Art
-# union h/w = 0.67, so the plot-width fit stands ~48 classic inside the
-# 72-box. Anims: _A crane 20, _B light 10, _C crane-2 30 -> N=60. Damaged
-# base = GTCNST frame 1 (LIGHT).
-if os.path.isdir(f"{ART}/shp_gtcnst"):
-    # GTCNST_B (rotating light) breaks the healthy+damaged half convention:
-    # its 10 content frames are ONE full rotation (equal 614px every frame,
-    # continuous sweep) and its damaged form is the empty second half of the
-    # SHP. Halving it played half a rotation + snap-back — the radar-dish
-    # symptom. _A (crane) and _C (roof lights) halves ARE damaged variants.
-    light = ("shp_gtcnst_b", list(range(10)), list(range(10)))
-    # Flat art sits ON the bib slab like the TD conyard (Luke, 22:03 SS
-    # verdict; the centred experiment floated it off the slab). Foundation
-    # brackets extending over the empty north plot are accepted -- the
-    # selection box is launcher-fixed to the foundation.
-    # Canvas 384x256 since the 3x2 plot (2026-08-13): frame = plot, content
-    # flush bottom = art on the slab exactly as approved, box hugs the art.
-    build_structure("TSFACT", "shp_gtcnst", 0, 1,
-                    [loop("shp_gtcnst_a"), light, loop("shp_gtcnst_c")],
-                    "shp_gtcnstmk", 32, 384, 256, bottom_margin=0,
-                    overscale=1.0)
+# ---- TSFACT: packed from its HD rebuild by scripts/ts_pack_hd_buildings.py.
 
 # ---- TSPOWR: TS Power Plant (2x2, POWR donor 48x48 -> 256x256).
 # Content scaled to TDNUKE (content 256 full-width). Anims: _A fan 24, _B 12
