@@ -1590,11 +1590,13 @@ clause. Same literal-chain audit was needed for repair
   `ts_pack_units_wave.py` is worktree-relative.
 - `Find_Exit_Cell` dereferences its argument — guard before calling it from
   a state that runs after radio contact drops.
-- **`MT_COMMANDBAR_COMMON.TGA` (~176MB crest atlas) is NOT in git** — it
-  rides in `build/remaster/Vanilla_RA/` only; a fresh worktree build dir
-  lacks it and `rsync --delete` strips it from the deploy target (symptom:
-  vanilla Allied eagle in the radar). Recovery: the Workshop cache
-  `~/.steam/.../workshop/content/1213210/3729834253/`.
+- **`MT_COMMANDBAR_COMMON.TGA` (~176MB UI atlas: crests, TS emblems, lobby picker icons) is NOT
+  in git**, so every checkout carries its own copy and they DRIFT. The main checkout's copy is
+  canonical (md5 f3a75f8a, the 2026-09-10 TS gold-coin update); the Workshop 4.0 copy and old
+  worktree copies are older (d2001c24). A worktree deploy can strip it (`rsync --delete`: Allied
+  eagle in the radar) or overwrite the good copy with a stale one (2026-09-29: lobby back to country
+  flags). Before any whole-build deploy from a worktree, copy main's into the worktree's
+  `resources/` AND `build/remaster/Vanilla_RA/`, or deploy file by file.
 - Diagnostics land in `MOD_DEBUG_TSUNITS.txt` / `MOD_DEBUG_CANBUILD.txt`
   (⚠ sometimes in `pfx/drive_c/users/steamuser/` instead of
   `Documents/CnCRemastered/` — CWD drift; check both).
@@ -1766,8 +1768,8 @@ IniName prefix throughout (dodges the TD HP-doubling hook). ✓ = shipped.
 | TSROCK | GAROCK (GACTWR_A art?) | 9 | 800 | 500 | TSPILE, TSTECH | RPG tower, same translation |
 | TSGATE | GAGATE_A/_B | 6 | 250 | 350 | TSPILE | **new mechanic** (RA has no gates): solid to enemies, passable to friendlies, opens on approach, joins walls. Port from OpenTS (`IsGate`, ~100 refs over building/cell/map/unit/infantry). **ART DECISION 2026-09-04 (Luke):** TS's GTGATE_A/B.SHP (42 frames, 144x96) are isometric diagonals; rotation-only and true inverse-iso re-projections were rendered and REJECTED ("hurts my eyes"); RA's concrete wall as a stand-in REJECTED ("I want the real deals"). Route = **generated voxel models** (posts + sliding panel) rendered through `scripts/vxl_render.py`'s `render_frame` at the mod camera — N/E/S/W and open/close frames from one grid, lighting matched to the TS vehicles. Luke judges a first sample before the arc opens. **Do Nod's too in the same arc (Luke, 2026-09-04): TS NAWALL + NAGATE_A/B, same generated-voxel route, Nod's styling.** |
 | TSWALL | GAWALL | 6 | 50 | 150 | TSPILE | Same art decision as the gate: GTWALL.SHP (96 frames, 48x48, 16 iso joins x 3 damage + shadows) cannot be made straight; generated voxel box segments, all 16 join states composed from boxes, rendered at the mod camera. Engine side: RA wall overlays are a hardcoded 5-slot set the launcher keys by name — decide new-slot vs re-art of BRIK when the arc opens (MAKE-suffix trap already handled). |
-| TSFIRE | GAFIRE | 9 | 2000 | 800 | TSTECH | Firestorm Generator, power -200: a toggled superweapon that raises the field on every TSFSDF for a timed burst. **New mechanic**, OpenTS reference. Added 2026-09-04 (Luke). |
-| TSFSDF | GAFSDF | 9 | 50 | 200 | TSFIRE | Firestorm Wall Section, power -2, IsBase=no: a 1x1 pillar, passable while the field is down, solid + lethal while up. GTFSDF.SHP (128 frames, 48x48) = pillar + ISOMETRIC diagonal field segments: reuse the pillar, ignore the field frames, draw the field ourselves as a straight beam between adjacent pillars along RA's grid (procedural, like the railgun/disruptor beams). OpenTS `IsFirestormWall`, `MAX_FIRESTORM_WALL_FRAMES 15`. |
+| TSFGEN (built as TSFGEN: TSFIRE is the fire-stream particle's art name) | GAFIRE | 9 | 2000 | 800 | TSTECH | Firestorm Generator, power -200: a toggled superweapon that raises the field on every TSFSDF for a timed burst. **New mechanic**, OpenTS reference. Added 2026-09-04 (Luke). |
+| TSFSDF | GAFSDF | 9 | 250 (what TS charged) | 200 | TSFGEN | Firestorm Wall Section, power -2, IsBase=no: a flat 1x1 pad, passable while the field is down, lethal wall while up. BUILT on branch `firestorm`: GTFSDF is a pad + rail per neighbour set (0-15 normal, 16-31 destroyed, 32-47 live, 48-63 live destroyed), rebuilt symmetric from TS's pixels for the square grid (`scripts/ts_pack_fsdf.py`); the field is TS's FSIDLE columns, not a drawn beam. See `docs/firestorm-design.md` there. |
 | TSEMPC | (Firestorm exp.) | — | — | — | — | EMP Pulse Cannon: branch `emp-cannon`, stage A verified, stages B-E open — `docs/emp-cannon-design.md`. Both sides in TS. |
 
 #### Vehicles (voxel renders @ 12 px/voxel unless noted)
@@ -1832,7 +1834,10 @@ Generator. Per building:
 
 1. **Extract** (temperate 'T' names): base `GT<X>.SHP`, active anims
    `GT<X>_A/_B/_C.SHP` (art.ini `ActiveAnim*=`; damaged variants are usually
-   the second half of the same SHP), buildup `GT<X>MK.SHP` (ISOTEMP.MIX),
+   the second half of the same SHP -- or EMPTY, as GAFIRE's, in which case the
+   damaged run is the damaged base with the anims stopped). An anim's `Rate=` is
+   FRAMES PER MINUTE (OpenTS animtype.cpp: delay = TICKS_PER_MINUTE / Rate), so a
+   higher Rate is FASTER; bake the idle cycle to those speeds. Buildup `GT<X>MK.SHP` (ISOTEMP.MIX),
    cameo per art.ini `Cameo=` (SIDEC01.MIX, decode with CAMEO.PAL).
    Bases/anims decode with UNITTEM.PAL.
 2. **Compose** the stealth-gen layout: N healthy frames = healthy base +
@@ -1847,7 +1852,8 @@ Generator. Per building:
    count): TSPOWR→TDNUKE, TSPILE→TDPYLE, TSPROC→TDPROC, TSWEAP→TDWEAP,
    TSRADR→TDHQ, TSHPAD→TDHPAD, TSTECH→TDEYE, TSDEPT→TDFIX, TSSILO→TDSILO,
    TSFACT→RA FACT (TD yards are 3x2), towers→TDGTWR/TDSAM/TDATWR-class 1x1s.
-5. **Engine:** enum append INSIDE the TS block tail (move
+5. **Engine:** pick an IniName no other tileset uses (grep RA_*.XML and TFASSETS: TSFIRE was
+   already the fire-stream particle's), enum append INSIDE the TS block tail (move
    `STRUCT_TS_TREE_LAST`), heap `new` at the marked Init_Heap tail,
    `_td_bdonors` entry, `TF_Building_Scan_Bit` shadow, role tests, and an
    `_anims[]` entry `{STRUCT_TSX, BSTATE_IDLE, 0, N, 3}` (stealth-gen line

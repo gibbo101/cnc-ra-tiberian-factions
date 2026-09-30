@@ -135,9 +135,8 @@ What went in, all signed off in play:
      a second after the buildup ends.
    - **Mobile EMP** — needs stage C's pulse, so it follows straight on from it.
    - Mobile Sensor Array, Mobile War Factory.
-   - **The Firestorm Generator and its wall sections** (TSFIRE / TSFSDF, planned in
-     `ts-gdi-tree-plan.md` 19b) — new defensive logic, and the wall panels are isometric like
-     the dropped gate, so the art route is agreed with Luke before anything is built.
+   - **The Firestorm Generator and its wall sections** — DONE on branch `firestorm` (stages A-D +
+     sound, 2026-09-30; `docs/firestorm-design.md` there). Remaining: stage E control rework.
 2. **LAN test (needs a second human)** — never verified; the Deck's battery was dead on 09-17, so
    it needs a charged Deck.
    - Limpet Drone: deploy, attach, the 65% slow, the scouting share.
@@ -263,8 +262,8 @@ roster balance pass (see "TS roster balance pass" further down), then the releas
   eye. Firestorm assets live in expand01.mix (inner ECACHE01.MIX for SHPs, SOUNDS01.MIX for
   AUDs, barrel voxel at the top level).
 - **EMP Pulse Cannon:** branch `emp-cannon` (`docs/emp-cannon-design.md`), stage A verified.
-- **Firestorm Generator:** new defensive logic; its wall panels are isometric like the dropped gate,
-  so the art route is decided with Luke before building.
+- **Firestorm Generator:** built on branch `firestorm` (STRUCT_TSFGEN / STRUCT_TSFSDF,
+  `docs/firestorm-design.md`); the wall panels were rebuilt from TS's pixels for the square grid.
 
 ## TS infantry status (2026-09-13; ALL SIX PASSED in play by 2026-09-15, Medic last)
 
@@ -549,8 +548,9 @@ session: `tools/ts_extract.py` on SOUNDS.MIX → `scripts/ts_aud_decode.py` → 
   into pavement ground: it keeps Tiberium creep off build space (Tiberium blocks placement) and
   blocks subterranean units, which Nod fields. Costs: placement logic like the wall divert (the
   building becomes ground, not an object) and square-grid ground art for RA's HD tileset, since
-  TS's pavement is isometric. Solve that art together with the Firestorm panels, which pose the
-  same isometric-versus-square question.
+  TS's pavement is isometric. The Firestorm panels solved the same question (2026-09-29): TS's
+  pixels un-projected to overhead and rebuilt symmetric (`scripts/ts_pack_fsdf.py`, firestorm
+  branch); or commission HD art from the image AI that drew the walls, gates and tower.
 - Component tower animations and authentic weapon geometry (the 09-04 arc's open queue).
 
 **Two traps this session left behind, both worth reading before similar work:**
