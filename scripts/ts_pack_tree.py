@@ -1327,6 +1327,11 @@ EXTRA_LAYERS = {
     # BodyShape[facing] seated on the dome. NAPULS_A (a small 2D head) is unused,
     # as in TS.
     "TSPULS": [("T", "shp_pulscan_t", list(range(32)))],
+    # TS Service Depot: RP = GTDEPT_D, the pad's repair glow (white flash fading to the pad's
+    # grey), 7 healthy + 7 damaged frames; the DLL loops it while a unit is being repaired
+    # (ART.INI [GADEPT] ProductionAnim; AnimActive=0,7,2). GADEPT_C1-C3 are referenced by
+    # ART.INI but exist in no TS or Firestorm mix.
+    "TSDEPT": [("RP", "shp_gtdept_d", list(range(14)))],
 }
 
 # Source-space erase boxes on a sub-object layer, applied before the affine,

@@ -273,6 +273,7 @@ bool TF_Dev_Rich_Start(void)
 
 extern int PreserveVQAScreen;
 
+
 void Display_Briefing_Text_GlyphX();
 
 extern void GlyphX_Assign_Houses(void); // ST - 8/8/2019 12:35PM

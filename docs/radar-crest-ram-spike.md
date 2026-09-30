@@ -131,7 +131,8 @@ means re-skinning and re-arranging RA's widgets, not adding to them.
   Verified in play: Allied → chevron, Soviet → pentagon. Also learned: **Soviet countries draw
   the SOVIET slot** (unpatched record), so the routing is GDI/Nod/Allied → ALLIES, Soviet → SOVIET.
   All four factions now show their own crest with the TD pair re-pointed and the RA pair stock.
-- LAN clients keep the stock crest (no DLL there) — same limit as the EVA mailbox.
+- LAN joiners get their crest too (2026-09-30): the launcher-resident copy of the DLL runs this
+  patch for its own player (`launcher-vs-dll-ownership.md`, "Launcher-resident patches").
 - Live-testing tool: with the game running headless, `/proc/<ClientG pid>/mem` is read/write
   from Bash (same uid), so a hypothesis costs one Python write + one screenshot, no DLL rebuild.
   That is how findings 1 and 3 were established in minutes.

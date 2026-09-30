@@ -590,6 +590,16 @@ if ((td_single || tech->Health_Ratio() <= EngineerCaptureLevel) && iscapturable)
 
 ---
 
+### 3.28 — A per-step check in `Start_Of_Move` misses two-cell curves (`F_D` tracks)
+
+**Symptom:** a check keyed on the next cell (`dest` in `DriveClass::Start_Of_Move`) fires on some approaches and silently never fires on others (TS Service Depot drive-on, 2026-09-30: the vehicle sometimes curved straight onto the depot's middle cell with no log line).
+
+**Cause:** when the path bends, the track chosen from `Path[0]`/`Path[1]` can be a two-cell curve (`TrackControl[...].Flag & F_D`). Then `dest` moves on to the *second* cell (`dest = Adjacent_Cell(dest, nextface)`), so a unit whose curve ends on the target cell never has it as the first `dest`.
+
+**Fix:** also check whether the cell after `dest` (`Adjacent_Cell(dest, Path[1])`) is the target, and if so force a straight step into the cell before it (`nextface = facing`). The next `Start_Of_Move` then sees the target as `dest`. Worked example: `straight_in` in `drive.cpp`.
+
+---
+
 ## 4. Templates to copy
 
 ### 4.1 — Bullet TD-port: add field, set on registration, dispatch

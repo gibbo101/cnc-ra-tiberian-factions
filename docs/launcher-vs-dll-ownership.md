@@ -105,7 +105,7 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 | Sidebar build icons / cost / progress | DLL supplies per-entry; launcher renders | **Partial** — DLL owns `AssetName`/cost/etc. | `CNCSidebarEntryStruct` |
 | HUD credit/power/timer **values** | DLL supplies values; launcher renders | Values yes, rendering no | `CNCSidebarStruct` |
 | Superweapon `$cost` line suppression | Launcher (`SW_` whitelist) | No | `reference-launcher-superweapon-cost-suppression` |
-| **Superweapon targeted-vs-instant firing** | **Launcher** (compiled, AssetName-keyed) | **No click-side seam** — a self-targeting super must launch itself on ready (Hunter Seeker, GPS-style); every click route is dead, see below | `HouseClass::Super_Weapon_Handler`; see below |
+| **Superweapon targeted-vs-instant firing** | **Launcher** (compiled: the cameo left-click handler forks on the entry being a superweapon) | **Yes, by a runtime code patch of ClientG** (every player; see "Launcher-resident patches"). Data levers are dead; see below | `TF_Patch_ClientG_Click_Specials`; see below |
 | Win/lose stings, "under attack", low-power GUI SFX | Launcher (`Faction_Event_GUI_SFX_*`) | No (Allied/Soviet only — see below) | strings |
 
 ---
@@ -198,52 +198,87 @@ ClientG facts for next time: command ids deploy = `0x1020`, select-all-on-screen
 the DLL; ClientG talks over IPC); gdb attaches but neither hardware watchpoints nor int3
 breakpoints fired on this Wine process — `/proc/<pid>/mem` is the reliable probe.
 
-### Superweapon targeted-vs-instant firing: launcher-owned, DLL-blind, no click-side seam (2026-09-03)
+### Superweapon targeted-vs-instant firing: launcher code, reachable by a runtime patch (2026-09-30)
 
-**Question:** can a superweapon cameo fire on a single click with no targeting cursor, the way
-the Hunter Seeker droid needed to (self-targeting -- a map click is meaningless for it)?
-**Answer: not at any resolution. The Hunter Seeker launches itself the tick it is charged
-(GPS-style, `HouseClass::Super_Weapon_Handler`), so the launcher only ever sees a countdown.**
+**Question:** can a superweapon cameo act on a single left click with no targeting cursor (the
+Firestorm's on/off, the Hunter Seeker's launch)? **Yes, on the host, by patching the launcher's
+click handler in memory, in every player's launcher. No data lever exists.**
 
-**The launcher decision itself is a wall, proven two ways:**
-- The targeted-vs-instant choice is **compiled into ClientG**, keyed on the super's `AssetName`
-  string. Tested directly: `SW_SonarPulse` is targeted (cameo click opens a cursor, a map click
-  is required -- the 1996 sidebar fired it instantly, `sidebar.cpp` still carries that branch,
-  the launcher never calls it); `SW_GPS` is the one instant super, and it **auto-fires on its own
-  timer and never sends a `PLACE` request at all** -- so it can never round-trip into spawning
-  anything. No AssetName gives "instant AND spawns on demand".
-- The DLL is **blind to the launcher's targeting state**: `Map.IsTargettingMode` never moves when
-  a super cameo is clicked (logged per-frame to confirm), and `CNCSidebarEntryStruct` (the
-  DLL-to-launcher sidebar entry) has no "needs target" field to set. `CNC_Handle_Sidebar_Request`
-  only carries construction requests; `CNC_Handle_SuperWeapon_Request` only ever delivers
-  `SUPERWEAPON_REQUEST_PLACE_SUPER_WEAPON` with a target cell, after the launcher's own targeting
-  step -- the click itself never reaches the DLL.
+**The launcher's cameo left-click handler** (ClientG `0x73E950`; right click is `0x73EDF0`) reads
+its own copy of each sidebar entry: `+0x18` BuildableType, `+0x1C` BuildableID, `+0x20` Type
+(DllObjectTypeEnum), `+0x24` SuperWeaponType, `+0x44` Completed, `+0x45` Constructing, `+0x46`
+ConstructionOnHold, `+0x47` Busy. It forks at `0x73EA39` on `Type == SPECIAL`:
+- **SPECIAL, Completed:** plays "select target" and calls `0x1689200`, which stores the entry's
+  type/id/name/SW type and sets the input-mode global `0x20F1C90` to 4 (targeting). Nothing is
+  sent to the DLL until the map click (`SUPERWEAPON_REQUEST_PLACE_SUPER_WEAPON`) or the cancel
+  (`SIDEBAR_CANCEL_PLACE -1,-1`).
+- **SPECIAL, not Completed:** local sound only (or nothing). Nothing is sent.
+- **Any other Type:** the build path, which sends `START_CONSTRUCTION` (or `_MULTI`) with the
+  entry's BuildableType/ID at `0x73ECE9`.
 
-**Every click-side route was tried and is dead (all 2026-09-03, logged with a dev-only
-`MOD_DEBUG_SIDEBAR.txt` of every request the launcher sends):**
-- **Screen rectangle** (`GetAsyncKeyState`+`GetCursorPos` on the game thread, calibrated at
-  1920x1080): worked at 1080p only. The HUD is not screen-edge anchored on ultrawide (Luke's
-  5120x1440 cameo sat at x~3190 where the box expected ~4700). Rejected for shipping.
-- **Report the charged super as an unfinished build item** so the launcher's ordinary
-  construction click reaches the DLL as a sidebar request. The launcher sends NOTHING for a
-  super-tab entry reported "not started" or "building" (left click on the latter just voices
-  "insufficient power" if power is short). It DOES send hold/start requests for an entry
-  reported `ConstructionOnHold` -- and that shape draws the global **"Hold"** label on the
-  cameo, which is one master-text string shared by every paused build item, so it cannot be
-  relabelled for one entry. `Completed` + `ConstructionOnHold` together draw "Ready!" AND
-  "Hold" and route the click to the targeting cursor. The click channel and the "Hold" word
-  are the same launcher state; there is no per-entry lever on the word.
-- **`Type = SPECIAL` on a buildable** crashes the launcher on load (tab tag == super semantics).
-- **Buildable-aircraft route** (branch `hunter-seeker-production-wip`): lands in the aircraft
-  tab, crashes on load, cause unfound. Abandoned with the auto-launch decision.
-- Unprobed: watching the launcher's targeting-mode word in ClientG memory (a probe found a
-  clean idle=0/targeting=4 dword) -- would need per-match self-location and a per-super
-  identity field. Not needed once auto-launch was chosen.
+`0x20F1C90` is the launcher's input mode (0 idle, 4 superweapon targeting, 5 building placement);
+it is a static global, since ClientG loads at its fixed base `0x400000` and has no relocations.
+The DLL can also start targeting itself: `CALLBACK_EVENT_SPECIAL_WEAPON_TARGETTING` lands in
+`0x1689130` (the Chronosphere's second step uses it).
 
-**⚠ A background polling thread does NOT work under Wine.** `GetAsyncKeyState` only stays current
-for the thread that owns the input queue; a `CreateThread`d poller running every few ms read
-nothing (0 detections across repeated tests). Poll on the game thread if this is ever needed again
-(the deploy key still does).
+**The patch** (`TF_Patch_ClientG_Click_Specials`, dllinterface.cpp, applied at every match start,
+idempotent, lives as long as the launcher process): the 12 bytes at the fork become a jump into
+the zero-filled tail of ClientG's last code page (`0x1BE91A0`), where a few instructions redo the
+original test and send the entries listed in `TF_ClickSpecials` (`RTTI_SPECIAL` plus the Firestorm's
+and the Hunter Seeker's ids) to the build send in every state. Every other entry runs the original
+code. Both spots are checked byte for byte first; a different launcher build is left alone. The
+request arrives in `CNC_Handle_Sidebar_Request`. The cameo stays in the superweapon tab with its
+normal clock and "Ready!". To add a superweapon, add it to `TF_ClickSpecials` and give it an order
+in `Place_Special_Blast`.
+
+**What the Deck probe established (2026-09-30), for any future data-only idea:**
+- The tab is chosen by `Type` alone. `UNIT_TYPE` goes to the vehicle tab even with an `SW_` type
+  set; `UNKNOWN` and `OBJECT` make the cameo vanish. SuperWeaponType, Busy, Fake and a non-special
+  BuildableType under a SPECIAL Type change nothing about the tab or the left click.
+- In the superweapon tab the RIGHT click always reaches the DLL: `HOLD` when idle, `CANCEL` when
+  ready or on hold. `ConstructionOnHold` draws the shared "Hold" word.
+- A non-special Type's left click reaches the DLL as `START_CONSTRUCTION`, but in its own tab.
+
+**LAN:** the patch also goes in at each launcher's own startup load of the DLL, so a joiner's
+launcher gets it too (see "Launcher-resident patches" below).
+
+### Launcher-resident patches: LAN joiners get every launcher patch (2026-09-30)
+
+Only the host simulates a LAN game ([[reference-lan-mp-host-only-sim]]), so everything the DLL
+did to a launcher (crest, TD tab icons, era EVA lines, click specials) used to reach the host's
+launcher only. **But ClientG loads the mod's DLL itself, briefly, at its own startup, on every
+machine** (dev `tf_dll_load.log`: `attach ... ClientG.exe`, then `detach` a moment later). That
+load is the way in:
+
+- `DllMain` -> `TF_Patch_Launcher_At_Load` (only when the process is ClientG.exe) writes the
+  click-special patch in-process, pins the DLL (`GetModuleHandleEx` PIN) and hooks the launcher's
+  plugin event dispatcher (`IncomingExternalGamePluginEventClass::Execute` 0x783B60, at its type
+  switch 0x783B82; the hook code sits at 0x1BE9240 beside the click patch).
+- At match start, and 45 and 150 frames later, the host sends every human player a direct message
+  `@@TFL:<GlyphX id, 16 hex>:<house>` (`TF_Tell_Launchers`). In the launcher a message event is
+  type 6 with its text as a std::string at +0x180; the hook sets its kind (+0x19C) past the four
+  the launcher shows, so it never reaches the screen, and compares the id with the launcher's own
+  player id (cached by ClientG at 0x1FB6D48, flagged at 0x1FB6D40).
+- For its own player the hook wakes a worker thread in that launcher, which runs the same
+  functions the host runs (`TF_Mailbox_Write_EVA_Voice`, `TF_Patch_ClientG_Crest`, then
+  `TF_Crest_Tick` at 15 ticks a second for three minutes), with the house from the message
+  (`TF_Local_ActLike`). The heap scans stay off the launcher's thread.
+- Verified 2026-09-30 in a LAN game (Deck host, desktop joiner, both TS GDI): the joiner's tab
+  icons, crest and launcher-played EVA lines all follow its faction, and no message text shows.
+
+**The keys** (`TF_Patch_Launcher_Keys_In`, same startup load): the launcher's tactical command
+dispatcher (0x168A1B0, command number at `[cmd+0x24]`) jumps through a table at 0x168AD74 for
+commands 0x1006 on. Deploy (0x1020, slot 10) now runs a stub that becomes mod command 1 and joins the
+mod-command send (0x168ABDB), so every player's deploy key reaches the host's generic
+`TF_Self_Action_Selected` (debounced per house: on the host the keyboard read fires too).
+Select all on screen (0x101B, slot 8) and in world (0x101A, slot 7) first re-run the dispatcher on
+the same command numbered as mod command 2 (0x1033), which latches that house's harvester and MCV
+filter on the host (`TF_Select_All_Excludes`), then run the stock handler. Verified in LAN
+2026-09-30. Still host-only: the dev cheats (they follow the host's local player).
+
+**Superseded (2026-09-03):** the screen-rectangle click reader (`GetAsyncKeyState` +
+`GetCursorPos`, 1080p only) and the "report it as an unfinished build item" routes. The Hunter
+Seeker launches itself on ready because no click route existed then.
 
 **Cameo art is independent of the click-detect mechanism and is normal AssetName wiring**: give
 the super its own `RA_SW_<name>` entry in `RABUILDABLES.XML` with its own `BuildIcon`, and export
