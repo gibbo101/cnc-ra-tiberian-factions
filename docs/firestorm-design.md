@@ -17,14 +17,22 @@ Open, in order:
 3. **Placement-preview probe** for the line fill (can the DLL see the cursor cell while a wall
    is placed; `INPUT_REQUEST_MOUSE_MOVE` returns early without legacy rendering).
 4. Enemy-side checks are on main's LAN test list (`docs/todo.md` item 2).
-5. **TS Service Depot (Luke, LAN test 2026-09-30):** units do not sit on the bay's centre and there
-   is no repair animation. TS (OpenTS building.cpp:5490-5690): the unit docks within a quarter cell
-   of Center_Coord (hover 0x96) and powers off; repair start = GADEPT_A lights off, GADEPT_C1 (gantry
-   down) + GADEPT_D (repair) with C2 during; end = D and C2 stop, C3 (gantry up), lights back, EVA
-   "unit repaired". Ours has only the idle _A/_B. Needs the four anims packed (sheet first) and the
-   sequence in Mission_Repair; dock offset from a screenshot.
+5. **TS Service Depot** (2026-09-30, played on the Deck): the pad glow (TSDEPTRP = GTDEPT_D frames
+   0-13, drawn while BSTATE_ACTIVE; GADEPT_C1-C3 exist in no TS mix) works. The depot's 3x3 is solid,
+   so a vehicle standing on it may cross its cells to leave, the gantry cells (west column, top two:
+   TF_Depot_Is_Gantry) stay closed to every vehicle, and exits are two cells out: repaired vehicles
+   drive off cleanly. The pad ring's centre is 6 px east / 9 px south of the middle cell
+   (Docking_Coord); DriveClass::Start_Of_Move drives the last step onto it (Rail_To), but only some
+   approaches get there, the rest repair on the middle cell. Luke: "leave it there", it gets fixed on
+   the HD pad (TS HD Project, `~/Desktop/ts-buildings-hd-handoff/10-TSDEPT/PROMPT.txt`): once the HD
+   ring is centred on the middle cell, TS_DEPOT_SEAT_EAST_PX/SOUTH_PX go to 0 and the drive-on rail
+   comes out. Glide approaches (Roll_On_Seat) were tried and rejected by Luke.
 6. **Light orange selection box on a limpeted unit:** moved to post-release (Luke, 2026-09-30),
    `docs/todo.md` "Post-release".
+7. **Wall-section seam watch:** the launcher places a sprite half its classic stub width from its
+   centre, so an odd stub width lands ~2.7 HD px east. TSFSDF is 33x60 (`build_tfassets.sh`, ~line
+   544). The walls branch moved the TS walls and towers to 192-wide canvases (stub 36) for this; if a
+   section ever shows a seam beside an even-stub piece (gates, BRIK), pad TSFSDF the same way.
 
 ## Decisions (Luke)
 
