@@ -59,14 +59,21 @@ public:
     void Cap_Recharge(int frames);
 
     /*
-    **	Charge-drain (TS's Firestorm): a full charge is spent over `frames` while the effect
-    **	runs, the sidebar clock running back down; when it runs out, or the drain is ended
-    **	early, the weapon charges again from zero.
+    **	Charge-drain (TS's Firestorm): the charge held is spent over `frames` while the effect
+    **	runs, the sidebar clock running back down. When the drain runs out or is ended, the
+    **	weapon charges again from zero; when the player stops it early, what is left comes back
+    **	as charge and the weapon stays usable while it charges on to full.
     */
     bool Start_Drain(int frames);
     void End_Drain(bool player = false);
+    void Stop_Drain(int ratio);
     void Drain(int frames);
     void Restart_Charge(bool player = false);
+    int Charge(void) const;
+    bool Can_Start_Drain(void) const
+    {
+        return (IsPresent && !IsDraining && (IsReady || IsPartCharged));
+    }
     bool Is_Draining(void) const
     {
         return (IsDraining);
@@ -111,6 +118,7 @@ private:
     unsigned IsOneTime : 1;
     unsigned IsReady : 1;
     unsigned IsDraining : 1;
+    unsigned IsPartCharged : 1;
     int DrainTime;
 
     CDTimerClass<FrameTimerClass> Control;

@@ -125,6 +125,8 @@ void Set_Resfactor_Globals(int resfactor)
 }
 
 #if defined REMASTER_BUILD && defined _WIN32
+void TF_Patch_Launcher_At_Load(void);
+
 BOOL WINAPI DllMain(HINSTANCE instance, unsigned int fdwReason, void* lpvReserved)
 {
     lpvReserved;
@@ -133,9 +135,51 @@ BOOL WINAPI DllMain(HINSTANCE instance, unsigned int fdwReason, void* lpvReserve
 
     case DLL_PROCESS_ATTACH:
         ProgramInstance = instance;
+        TF_Patch_Launcher_At_Load();
+#if TF_DEV_BUILD
+        /*
+        **	Dev: every load of the DLL, with the process and the time, goes to
+        **	Documents/CnCRemastered/tf_dll_load.log, to show when a machine loads it outside a
+        **	match it simulates (a LAN joiner).
+        */
+        {
+            const char* up = getenv("USERPROFILE");
+            if (up != NULL) {
+                char path[512];
+                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_dll_load.log", up);
+                FILE* f = fopen(path, "a");
+                if (f != NULL) {
+                    char exe[MAX_PATH] = "";
+                    GetModuleFileNameA(NULL, exe, sizeof(exe));
+                    SYSTEMTIME t;
+                    GetLocalTime(&t);
+                    fprintf(f, "%02d:%02d:%02d attach pid %lu %s\n", t.wHour, t.wMinute, t.wSecond,
+                            (unsigned long)GetCurrentProcessId(), exe);
+                    fclose(f);
+                }
+            }
+        }
+#endif
         break;
 
     case DLL_PROCESS_DETACH:
+#if TF_DEV_BUILD
+        {
+            const char* up = getenv("USERPROFILE");
+            if (up != NULL) {
+                char path[512];
+                snprintf(path, sizeof(path), "%s/Documents/CnCRemastered/tf_dll_load.log", up);
+                FILE* f = fopen(path, "a");
+                if (f != NULL) {
+                    SYSTEMTIME t;
+                    GetLocalTime(&t);
+                    fprintf(f, "%02d:%02d:%02d detach pid %lu\n", t.wHour, t.wMinute, t.wSecond,
+                            (unsigned long)GetCurrentProcessId());
+                    fclose(f);
+                }
+            }
+        }
+#endif
         /*
         ** Red Alert doesn't clean up memory. Do some of that here.
         */

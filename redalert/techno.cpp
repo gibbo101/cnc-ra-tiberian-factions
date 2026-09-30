@@ -7811,11 +7811,20 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             Map.Sight_From(Coord_Cell(Coord), sight_range, House, incremental);
 
             /*
-            **	TS Limpet Drone: a limpeted object scouts for the drone's owner as well.
+            **	TS Limpet Drone: a limpeted object scouts for every house whose drone rides it.
+            **	Each house keeps its own shroud and the host simulates them all, so the sight goes
+            **	to each such house rather than to the local player.
             */
-            if (LimpetType != 0 && PlayerPtr != NULL && PlayerPtr != House
-                && (LimpetType & (1u << PlayerPtr->Class->House)) != 0) {
-                Map.Sight_From(Coord_Cell(Coord), sight_range, PlayerPtr, incremental);
+            if (LimpetType != 0) {
+                for (int h = 0; h < HOUSE_COUNT && h < 32; h++) {
+                    if ((LimpetType & (1u << h)) == 0) {
+                        continue;
+                    }
+                    HouseClass* limpeter = HouseClass::As_Pointer((HousesType)h);
+                    if (limpeter != NULL && limpeter != House) {
+                        Map.Sight_From(Coord_Cell(Coord), sight_range, limpeter, incremental);
+                    }
+                }
             }
 
 #if (0) // Leaving this here for posterity, in case we need it for revealing allies. ST - 10/17/2019 10:51AM

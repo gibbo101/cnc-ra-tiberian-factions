@@ -2816,10 +2816,7 @@ void HouseClass::Super_Weapon_Handler(void)
             **  themselves ready. Runtime-gated like the instant-build cheat
             **  (tf_dev_off.flag).
             */
-            // TF: the Hunter Seeker is a repeatable click-to-fire weapon whose 12-minute
-            // recharge is a real mechanic, so it is excluded from the fast-recharge cheat (its
-            // countdown must be visible/testable).
-            if (TF_Dev_Cheats() && IsHuman && !super->Is_Ready() && special != SPC_TS_HUNTSEEK) {
+            if (TF_Dev_Cheats() && IsHuman && !super->Is_Ready()) {
                 super->Cap_Recharge(TICKS_PER_SECOND * 5);
             }
 #endif
@@ -3413,11 +3410,11 @@ void HouseClass::Super_Weapon_Handler(void)
             }
         } else {
             /*
-            **  The droid finds its own victim, so it launches the tick it is
-            **  charged, for every house (GPS-style): the launcher never sees a
-            **  ready cameo, so it never opens a targeting cursor for it.
+            **  The droid finds its own victim. A computer house launches it the tick
+            **  it is charged; a human launches it with one click on the cameo
+            **  (TF_Patch_ClientG_Click_Specials sends that click to the DLL).
             */
-            if (SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready()) {
+            if (!IsHuman && SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready()) {
                 Place_Special_Blast(SPC_TS_HUNTSEEK, 0);
             }
         }
@@ -4805,11 +4802,17 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
 
     case SPC_TS_FIRESTORM:
         /*
-        **	Raises the field wherever it is clicked (the cell is not used): a full charge
-        **	buys a third of its recharge time, TS's ChargeToDrainRatio of .333.
+        **	One order raises the field, the next drops it (the cell is not used). The field
+        **	lasts a third of the charge it spends, TS's ChargeToDrainRatio of .333; dropped
+        **	early, what is left comes back as three times the charge and the weapon stays
+        **	usable while it charges on.
         */
-        if (SuperWeapon[SPC_TS_FIRESTORM].Is_Ready() && Power_Fraction() >= 1) {
-            SuperWeapon[SPC_TS_FIRESTORM].Start_Drain(SuperWeapon[SPC_TS_FIRESTORM].Get_Recharge_Time() / 3);
+        if (SuperWeapon[SPC_TS_FIRESTORM].Is_Draining()) {
+            SuperWeapon[SPC_TS_FIRESTORM].Stop_Drain(3);
+            TF_Firestorm_Set(this, false);
+            IsRecalcNeeded = true;
+        } else if (Power_Fraction() >= 1
+                   && SuperWeapon[SPC_TS_FIRESTORM].Start_Drain(SuperWeapon[SPC_TS_FIRESTORM].Charge() / 3)) {
             TF_Firestorm_Set(this, true);
             IsRecalcNeeded = true;
             fired = true;
