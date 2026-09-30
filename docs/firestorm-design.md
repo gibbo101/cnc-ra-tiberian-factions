@@ -7,17 +7,26 @@ data: TS's own `RULES.INI` / `ART.INI` (TIBSUN.MIX), which OpenTS does not carry
 
 ## RESUME HERE (2026-09-30 evening)
 
-Stages A-E are DONE and verified in play on the Deck. `firestorm` = main + stage E.
+Stages A-E are DONE and verified in play on the Deck, and LAN parity for every launcher patch is done
+(click specials, crest, tab icons, EVA, deploy and select-all keys; `launcher-vs-dll-ownership.md`).
+`firestorm` = main + stage E + LAN work, local, not pushed.
 
 Open, in order:
-1. **Hunter Seeker on the same click route** (Luke, 2026-09-30): one left click, no cursor. It
-   launches itself on ready today only because no click route existed.
-2. **LAN** (Luke: "we need to make LAN work"): the click patch reaches only the host's launcher.
-   A joiner's stock launcher still gives the cursor route (on only; the cameo is not clickable
-   while draining). No data lever exists (`launcher-vs-dll-ownership.md`).
+1. ~~Hunter Seeker on the same click route~~ DONE (5a7fb2a9, LAN-verified).
+2. ~~LAN~~ DONE (5a7fb2a9, 8f85c28e, 4a447d6c, LAN-verified).
 3. **Placement-preview probe** for the line fill (can the DLL see the cursor cell while a wall
    is placed; `INPUT_REQUEST_MOUSE_MOVE` returns early without legacy rendering).
 4. Enemy-side checks are on main's LAN test list (`docs/todo.md` item 2).
+5. **TS Service Depot (Luke, LAN test 2026-09-30):** units do not sit on the bay's centre and there
+   is no repair animation. TS (OpenTS building.cpp:5490-5690): the unit docks within a quarter cell
+   of Center_Coord (hover 0x96) and powers off; repair start = GADEPT_A lights off, GADEPT_C1 (gantry
+   down) + GADEPT_D (repair) with C2 during; end = D and C2 stop, C3 (gantry up), lights back, EVA
+   "unit repaired". Ours has only the idle _A/_B. Needs the four anims packed (sheet first) and the
+   sequence in Mission_Repair; dock offset from a screenshot.
+6. **Light orange selection box on a limpeted unit (Luke):** TS draws a limpeted object's bracket
+   from another frame set (OpenTS techno.cpp:1455). The launcher tints CNC_SELECT_BOX.TGA (white,
+   atlas 3027,4088 128x128) per draw; no data lever (SpiedByFlags draws the spy panel frame, not a
+   box). Route: find the tint in ClientG and patch it, keyed on a field the DLL sets.
 
 ## Decisions (Luke)
 
