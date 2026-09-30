@@ -5,26 +5,19 @@ Firestorm Generator (`GAFIRE`) and Firestorm Wall Sections (`GAFSDF`) for the TS
 Roster entry: `ts-gdi-tree-plan.md` 19b. Engine reference: OpenTS (`reference/OpenTS/code/`);
 data: TS's own `RULES.INI` / `ART.INI` (TIBSUN.MIX), which OpenTS does not carry.
 
-## RESUME HERE (2026-09-30, for a fresh session)
+## RESUME HERE (2026-09-30 evening)
 
-Stages A-D + sound are DONE and verified; `firestorm` is pushed (tip 9a315a2f). The desktop is SHARED with
-the C&C3 tanks instance: it runs their combined build (branch c3-combined, local to
-../tf-c3combined-worktree = firestorm + c3-mammoth), and every desktop deploy is announced to that instance
-first (never over a live game). A firestorm-only DLL would strip the tanks, so DLL changes go out through
-their combined rebuild (or merge firestorm into c3-combined yourself, announce, deploy file by file with the
-atlas held at f3a75f8a).
+Stages A-E are DONE and verified in play on the Deck. `firestorm` = main + stage E.
 
 Open, in order:
-1. **Line fill all-or-nothing (9a315a2f)**: built, pushed, awaiting a combined rebuild + Luke's check (a gap the
-   house cannot pay for in full stays empty, "insufficient funds" plays; the clicked piece is still placed).
-2. **Placement-preview probe**: can the DLL know the cursor cell while the player places a wall? The launcher
-   sends INPUT_REQUEST_MOUSE_MOVE (dllinterface.cpp ~7579) but the handler returns early when legacy rendering
-   is off. Probe: log x1/y1 (and Map.Pixel_To_Coord after Adjust_Internal_View) while Luke moves a wall's
-   placement ghost. If it works, draw faded copies of the fill pieces (the Sensor Array's ghost-draw route,
-   DLLExportClass::Add_Sensor_Ghosts) in the cells TF_Wall_Line_Fill would take.
-3. **Stage E, correct control** -- design with Luke FIRST (he has an approach in mind that is not the Hunter
-   Seeker's cameo-click reader). Then the Hunter Seeker gets the same answer.
-4. Enemy-side checks are on main's LAN test list (docs/todo.md item 2).
+1. **Hunter Seeker on the same click route** (Luke, 2026-09-30): one left click, no cursor. It
+   launches itself on ready today only because no click route existed.
+2. **LAN** (Luke: "we need to make LAN work"): the click patch reaches only the host's launcher.
+   A joiner's stock launcher still gives the cursor route (on only; the cameo is not clickable
+   while draining). No data lever exists (`launcher-vs-dll-ownership.md`).
+3. **Placement-preview probe** for the line fill (can the DLL see the cursor cell while a wall
+   is placed; `INPUT_REQUEST_MOUSE_MOVE` returns early without legacy rendering).
+4. Enemy-side checks are on main's LAN test list (`docs/todo.md` item 2).
 
 ## Decisions (Luke)
 
@@ -37,14 +30,23 @@ Open, in order:
   `scripts/` with stage B). Dead ends, not to re-offer: rotating TS's sprite as-is (lopsided
   lighting, dish off-centre), the 32-deg squash of hub/east-west rails (hub not square, rails
   unequal), a generated flat rim, Blender geometry.
-- **Activation, interim** (2026-09-29): the targeted-superweapon route the EMP Cannon uses. Click
-  the cameo, the launcher's targeting cursor comes up, click ANYWHERE; the DLL ignores the cell
-  and raises the field. No early switch-off in this route.
-- **Correct control later**: once everything works, a proper control (one click on, one click off,
-  no cursor) is designed together (Luke has a different approach in mind than the Hunter Seeker's
-  cameo-click reader). The Hunter Seeker is revisited with the same answer afterwards.
+- **Control = TS's** (2026-09-30): left click the cameo, the field goes up at once (no cursor, no
+  "select target"); left click again while it is up, it drops and what is left comes back as
+  charge, and the weapon stays usable while it charges on. Must stay in the superweapon tab.
+  Screen-position click readers are ruled out ("we own the source").
 
-## Status (2026-09-29 evening)
+## Status
+
+- **Stage E (control) VERIFIED in play 2026-09-30 (Deck, all five checks):** the launcher's
+  cameo left-click handler is patched in memory at match start (`TF_Patch_ClientG_Firestorm_Click`,
+  dllinterface.cpp; mechanism and ClientG addresses in `launcher-vs-dll-ownership.md`), so a left
+  click on the Firestorm arrives as a build request. `CNC_Handle_Sidebar_Request` turns it into
+  `SPECIAL_PLACE` (clicks within a third of a second count once). `Place_Special_Blast` toggles:
+  draining -> `SuperClass::Stop_Drain(3)` (OpenTS super.cpp:327: leftover drain x3 back as charge,
+  `IsPartCharged` keeps it usable while it charges on, no "ready" line when it tops up); otherwise
+  `Start_Drain(Charge() / 3)`, so a part charge buys a shorter field. Runs out, low power or no
+  generator: charging from zero, not usable, as before. Dev builds spawn the player a Firestorm
+  Generator and three TS Power Plants at skirmish start (`scenario.cpp`, `TF_Dev_Cheats`).
 
 - **Stage A (generator) VERIFIED and committed** (c4edb724): STRUCT_TSFGEN "TSFGEN" (TSFIRE is the
   Devil's Tongue fire-stream particle's art name). Idle anims at TS's speeds: TS Rate is frames per
@@ -171,7 +173,7 @@ Live sections: impassable to all (zone recompute on toggle), occupants and entra
 GAFSDF_A on hub pieces, FSIDLE columns at TS's rate, FSGRND/FSAIR on crossings.
 
 ### Stage E -- correct control, then the Hunter Seeker
-Designed with Luke once A-D work.
+Done: see Status. The Hunter Seeker takes the same click route next.
 
 ## Answered (Luke, 2026-09-29)
 

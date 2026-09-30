@@ -70,6 +70,7 @@ SuperClass::SuperClass(int recharge, bool powered, VoxType charging, VoxType rea
     , IsOneTime(false)
     , IsReady(false)
     , IsDraining(false)
+    , IsPartCharged(false)
     , DrainTime(0)
     , Control(0)
     , OldStage(-1)
@@ -143,6 +144,7 @@ bool SuperClass::Enable(bool onetime, bool player, bool quiet)
     if (!IsPresent) {
         IsPresent = true;
         IsOneTime = onetime;
+        IsPartCharged = false;
         bool retval = Recharge(player && !quiet);
         if (quiet)
             Suspend(true);
@@ -171,6 +173,7 @@ bool SuperClass::Remove(bool forced)
 {
     if (IsPresent && (!IsOneTime || forced)) {
         IsReady = false;
+        IsPartCharged = false;
         IsPresent = false;
         return (true);
     }
@@ -282,9 +285,10 @@ bool SuperClass::AI(bool player)
         } else {
             if (Control == 0) {
                 IsReady = true;
-                if (player) {
+                if (player && !IsPartCharged) {
                     Speak(VoxRecharge);
                 }
+                IsPartCharged = false;
                 return (true);
             } else {
                 if (Anim_Stage() != OldStage) {
@@ -402,14 +406,16 @@ void SuperClass::Forced_Charge(bool player)
 }
 
 /*
-**	Charge-drain: spends the full charge over `frames`. Only a ready weapon starts draining.
+**	Charge-drain: spends the charge held over `frames`. Only a ready weapon, or one stopped
+**	early and still charging on, starts draining.
 */
 bool SuperClass::Start_Drain(int frames)
 {
-    if (!IsPresent || !IsReady || frames <= 0) {
+    if (!Can_Start_Drain() || frames <= 0) {
         return (false);
     }
     IsReady = false;
+    IsPartCharged = false;
     IsDraining = true;
     DrainTime = frames;
     OldStage = -1;
@@ -432,6 +438,39 @@ void SuperClass::End_Drain(bool player)
 }
 
 /*
+**	Stops a drain early: what is left of it comes back as charge, `ratio` frames of charge for
+**	each frame of drain, and the weapon stays usable while it charges on to full.
+*/
+void SuperClass::Stop_Drain(int ratio)
+{
+    if (!IsDraining) {
+        return;
+    }
+    int charge = Control.Value() * ratio;
+    IsDraining = false;
+    DrainTime = 0;
+    OldStage = -1;
+    IsPartCharged = true;
+    Control.Start();
+    Control = (charge < RechargeTime) ? RechargeTime - charge : 0;
+}
+
+/*
+**	Frames of charge held: the whole recharge time when ready, else what has charged so far.
+*/
+int SuperClass::Charge(void) const
+{
+    if (!IsPresent || IsDraining) {
+        return (0);
+    }
+    if (IsReady) {
+        return (RechargeTime);
+    }
+    int left = Control.Value();
+    return (left < RechargeTime ? RechargeTime - left : 0);
+}
+
+/*
 **	Takes `frames` off what is left of the drain.
 */
 void SuperClass::Drain(int frames)
@@ -449,6 +488,7 @@ void SuperClass::Restart_Charge(bool player)
 {
     if (IsPresent && !IsDraining) {
         IsReady = false;
+        IsPartCharged = false;
         Recharge(player);
     }
 }
