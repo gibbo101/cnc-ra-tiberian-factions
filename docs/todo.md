@@ -19,6 +19,16 @@ click-anywhere activation), stage D (the live field).
   order, no house colour, plus `end-pieces/ts-nod-wall/` joining it to all six gates). Port it like the TS GDI wall
   (`scripts/ts_pack_gdi_wall.py`, commit a8260356): TD's three wall damage stages, frames 0-47. Nothing builds it
   until a TS Nod faction exists (docs/ts-factions-feasibility.md), so it can land as dormant art with the gates.
+- TS GDI Component Tower: HD art LANDED 2026-09-30 at `~/Downloads/ts-gdi-component-tower-hd/` (README there; same
+  author and camera as the walls: 32 deg looking north, 176x320 canvas = the existing TSCTWR slot, 17-frame
+  build-up = the existing TSCTWRMAKE count, so the tower and build-up drop in via a packer like
+  `scripts/ts_pack_gdi_wall.py`). Engine work: draw a `couplings/coupling-{N,E,S,W}` sleeve for each side that has
+  ANY wall next to it (frame set 00/01/02 follows the tower's state), the `ends/end-{gdi,nod,brik}-{N,S}` wall piece
+  north/south by the neighbour's wall type, and the `light/` lamp overlay (TS GTCTWR_A); draw order is in the
+  README. The engine type already exists (STRUCT_TSCTWR, walls join it incl. BRIK/SBAG via Has_TS_Wall_Tower; the
+  Vulcan/RPG/SAM plugs swap it for the armed type) -- the plug turrets' seats on the top were dialled against the
+  old art and need re-checking on the new top (facings sheet first). Current tower art is uamila's STL render
+  (CC BY-NC credit, `project-ts-walls-towers-arc-2026-09-04` memory): this replaces it.
 - **Base the branch on `firestorm` (stage B committed + pushed at 7e356cb5)** (or on main after firestorm merges):
   the 5-cell line fill (`house.cpp` TF_Wall_Line_Fill, TF_Is_Line_Fill_Type) and the wall placement code are
   exactly what gates must join, so a branch off plain `main` would rewrite the same functions.
