@@ -1872,6 +1872,36 @@ static BuildingTypeClass const ClassTsWall(STRUCT_TSWALL,
                                            (short const*)NULL);
 
 /*
+**  TSNWALL (TS Nod Wall, NAWALL) -- TSWALL's twin for the Nod tree: placement converts it
+**    to OVERLAY_TSNWALL. Stats in rules.ini [TSNWALL] (TS [NAWALL] matches GAWALL).
+*/
+static BuildingTypeClass const ClassTsNwall(STRUCT_TSNWALL,
+                                            TXT_BRICK_WALL,
+                                            "TSNWALL",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_NONE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            true,                // always use the given name
+                                            true,                // IsWall
+                                            false,               // simple damage imagery
+                                            false,               // invisible to radar
+                                            false,               // selectable
+                                            true,                // legal target
+                                            true,                // insignificant
+                                            false,               // theater specific
+                                            false,               // turret
+                                            false,               // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_11,
+                                            NULL,
+                                            (short const*)List1,
+                                            (short const*)NULL);
+
+/*
 **  TSPLUG (TS GDI Upgrade Centre, GAPLUG) — the 2-slot addon HOST of the
 **    upgrade mechanic (UpgradesMax wired in Init_Heap). Physically a TSTECH
 **    twin: 3x2 plot, GTPLUG art via the Stealth Recipe. Sensors=yes in TS —
@@ -5268,6 +5298,7 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsDweap);       // STRUCT_TSDWEAP (Mobile War Factory deployed)
     new BuildingTypeClass(ClassTsFgen);        // STRUCT_TSFGEN (TS Firestorm Generator)
     new BuildingTypeClass(ClassTsFsdf);        // STRUCT_TSFSDF (TS Firestorm Wall Section)
+    new BuildingTypeClass(ClassTsNwall);       // STRUCT_TSNWALL (TS Nod wall, overlay on placement)
 
     /*
     **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so

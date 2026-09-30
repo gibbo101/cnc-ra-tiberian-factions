@@ -8073,15 +8073,13 @@ static int TF_Entry_Faction_Mask(TechnoTypeClass const* type)
     int mask = TF_Faction_Mask_From_Ownable(type != NULL ? type->Get_Ownable() : 0);
     /*
     ** The badge says which of the player's CONSTRUCTION YARDS can build the entry,
-    ** not which faction the player picked. A TS yard builds sandbags, so they carry
-    ** the TS emblem alongside whichever other yards can build them -- exactly as
-    ** HouseClass::Can_Build lets a TS yard unlock them. Their Owner= list never
-    ** mentions the TS tree, so the bit has to be added here.
+    ** not which faction the player picked. A TS yard builds sandbags and RA's concrete
+    ** wall, so they carry the TS emblem alongside whichever other yards can build
+    ** them -- exactly as HouseClass::Can_Build lets a TS yard unlock them. Their
+    ** Owner= lists never mention the TS tree, so the bit has to be added here.
     */
-    if (type != NULL && type->What_Am_I() == RTTI_BUILDINGTYPE) {
-        if (((BuildingTypeClass const*)type)->Type == STRUCT_SANDBAG_WALL) {
-            mask |= TF_FACTION_TSGDI;
-        }
+    if (TF_Is_TS_Yard_Wall(type)) {
+        mask |= TF_FACTION_TSGDI;
     }
     return mask;
 }
@@ -9370,7 +9368,8 @@ bool DLLExportClass::Get_Placement_State(uint64 player_id, unsigned char* buffer
                 cell, PlacementType[CurrentLocalPlayerIndex], PlacementDistance[CurrentLocalPlayerIndex]);
 
             CellClass* cellptr = &Map[cell];
-            bool clear = cellptr->Is_Clear_To_Build(PlacementType[CurrentLocalPlayerIndex]->Speed);
+            bool clear = cellptr->Is_Clear_To_Build(PlacementType[CurrentLocalPlayerIndex]->Speed)
+                         || cellptr->Takes_Tower_On_Wall(PlacementType[CurrentLocalPlayerIndex]);
 
             /*
             **	Addon plugs (TS PowersUpBuilding) place ONTO a host building, so the
@@ -9424,6 +9423,13 @@ bool DLLExportClass::Passes_Proximity_Check(CELL cell_in,
 
         if (!Map.In_Radar(center_cell)) {
             return false;
+        }
+
+        /*
+        **	A component tower onto a wall segment: in reach on the player's own wall only.
+        */
+        if (Map[center_cell].Takes_Tower_On_Wall(placement_type)) {
+            return (Map[center_cell].Owner == PlayerPtr->Class->House);
         }
 
         if (placement_distance[center_cell] <= (placement_type->Adjacent + 1)) {
@@ -11267,7 +11273,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             // AssetName picks the TSWALL tileset.
             overlay_entry.Type = (cell_ptr->Overlay == OVERLAY_TIB01)
                                      ? (short)OVERLAY_GEMS3
-                                     : (cell_ptr->Overlay == OVERLAY_TSWALL)
+                                     : (cell_ptr->Overlay == OVERLAY_TSWALL || cell_ptr->Overlay == OVERLAY_TSNWALL)
                                      ? (short)OVERLAY_BRICK_WALL
                                      : (short)cell_ptr->Overlay;
             overlay_entry.Owner = (char)cell_ptr->Owner;

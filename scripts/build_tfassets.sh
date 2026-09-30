@@ -431,6 +431,9 @@ PACK_ARGS+=("$TMPDIR/tsturb_stub.shp:TSTURB.SHP")
 # walls never enumerate in the buildup state (dllinterface IsWall guard).
 ts_stub TSWALL "$TMPDIR/tswall_stub.shp" 33 60 48
 PACK_ARGS+=("$TMPDIR/tswall_stub.shp:TSWALL.SHP")
+# TSNWALL: the TS Nod wall overlay's classic stub, TSWALL's twin.
+ts_stub TSNWALL "$TMPDIR/tsnwall_stub.shp" 33 60 48
+PACK_ARGS+=("$TMPDIR/tsnwall_stub.shp:TSNWALL.SHP")
 # TS component tower family, same 33x60 canvas family as the wall (176x320 HD):
 # TSCTWR bare tower 2 frames (healthy/damaged) + rising buildup; TSVULC armed
 # tower = 32 facings x {idle, recoil, damaged idle, damaged recoil} like TDGUN.

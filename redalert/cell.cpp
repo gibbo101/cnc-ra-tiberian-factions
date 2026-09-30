@@ -1776,6 +1776,17 @@ bool CellClass::Has_TS_Wall_Tower(void) const
     return (false);
 }
 
+/*
+**	Can a building of this type be placed onto this cell's wall segment, replacing it?
+**	Only a bare component tower can, onto a wall that joins towers, with nothing else
+**	standing in the cell. Whose wall it is is the proximity check's business.
+*/
+bool CellClass::Takes_Tower_On_Wall(BuildingTypeClass const* type) const
+{
+    return (type != NULL && type->Type == STRUCT_TSCTWR && TF_Is_Tower_Joint_Wall(Overlay)
+            && Cell_Occupier() == NULL);
+}
+
 void CellClass::Wall_Update(bool force)
 {
     /*
@@ -1809,10 +1820,12 @@ void CellClass::Wall_Update(bool force)
             for (unsigned i = 0; i < (sizeof(_offsets) / sizeof(_offsets[0]) - 1); i++) {
                 CellClass* adjcell = newcell->Adjacent_Cell(_offsets[i]);
                 /*
-                **	Component towers are standalone defences, not wall pieces (Luke,
-                **	2026-09-04): a wall run stops at one rather than binding into it.
+                **	A wall that joins component towers runs into a tower next to it,
+                **	up to the coupling on the tower's side.
                 */
-                if (adjcell && adjcell->Overlay == newcell->Overlay) {
+                if (adjcell
+                    && (adjcell->Overlay == newcell->Overlay
+                        || (TF_Is_Tower_Joint_Wall(newcell->Overlay) && adjcell->Has_TS_Wall_Tower()))) {
                     icon |= 1 << i;
                 }
             }
@@ -1825,7 +1838,7 @@ void CellClass::Wall_Update(bool force)
             */
             // Tiberian Factions -- TSWALL shares BRIK's 16x3 frame layout: past the
             // third damage stage there is no art, so the wall is gone.
-            if (newcell->Overlay == OVERLAY_TSWALL && newcell->OverlayData == 48) {
+            if ((newcell->Overlay == OVERLAY_TSWALL || newcell->Overlay == OVERLAY_TSNWALL) && newcell->OverlayData == 48) {
                 newcell->Overlay = OVERLAY_NONE;
                 newcell->OverlayData = 0;
                 Detach_This_From_All(::As_Target(newcell->Cell_Number()), true);

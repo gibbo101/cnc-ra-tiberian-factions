@@ -904,6 +904,57 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             Techno_Draw_Object_Virtual(Class->TsPulseTurret, tshape, x, y + TSPULS_TURRET_Y, window, DIR_N, 0x0100, "TSPULST");
         }
 
+        /*
+        **	Component towers, drawn over the body in this order: the north wall's end (behind the
+        **	tower, with the tower's own pixels cut out), then per side a link to a finished tower
+        **	there or a coupling for a joining wall, the south wall's end over the coupling's mouth,
+        **	the turret of an armed tower, and the door lamp while the house has power (TS GACTWR_A:
+        **	frames 1-5 looping, Rate=220). Both towers of a pair draw their shared link whole.
+        **	Layer frames: scripts/ts_pack_ctwr_hd.py.
+        */
+        if (TF_Is_Wall_Tower(Class->Type) && Strength > 0) {
+            static const FacingType sides[4] = {FACING_N, FACING_E, FACING_S, FACING_W};
+            int dmg = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
+            int kind[4];
+            int link[4];
+            CELL cell = Coord_Cell(Coord);
+            for (int i = 0; i < 4; i++) {
+                CELL adj = Adjacent_Cell(cell, sides[i]);
+                OverlayType o = Map.In_Radar(adj) ? Map[adj].Overlay : OVERLAY_NONE;
+                kind[i] = (o == OVERLAY_TSWALL) ? 0 : (o == OVERLAY_TSNWALL) ? 1 : (o == OVERLAY_BRICK_WALL) ? 2 : -1;
+                link[i] = -1;
+                BuildingClass const* other = Map.In_Radar(adj) ? Map[adj].Cell_Building() : NULL;
+                if (other != NULL && other != this && other->Strength > 0 && TF_Is_Wall_Tower(other->Class->Type)
+                    && other->BState != BSTATE_CONSTRUCTION && other->Mission != MISSION_DECONSTRUCTION) {
+                    link[i] = (other->Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
+                }
+            }
+            void const* shp = Get_Image_Data();
+            if (kind[0] >= 0) {
+                Techno_Draw_Object_Virtual(shp, 14 + kind[0] * 2 + dmg, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+            }
+            for (int i = 0; i < 4; i++) {
+                if (link[i] >= 0) {
+                    Techno_Draw_Object_Virtual(shp, 26 + i * 4 + dmg * 2 + link[i], x, y, window, DIR_N, 0x0100, "TSCTWRX");
+                } else if (kind[i] >= 0) {
+                    Techno_Draw_Object_Virtual(shp, i * 2 + dmg, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+                }
+            }
+            if (kind[2] >= 0) {
+                Techno_Draw_Object_Virtual(shp, 8 + kind[2] * 2 + dmg, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+            }
+            char const* turret = (*this == STRUCT_TSVULC) ? "TSVULCT"
+                                 : (*this == STRUCT_TSROCK) ? "TSROCKT"
+                                 : (*this == STRUCT_TSCSAM) ? "TSCSAMT"
+                                 : NULL;
+            if (turret != NULL) {
+                Techno_Draw_Object_Virtual(shp, Shape_Number(), x, y, window, DIR_N, 0x0100, turret);
+            }
+            if (House->Power_Fraction() >= 1) {
+                Techno_Draw_Object_Virtual(shp, 20 + 1 + (Frame / 4) % 5, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+            }
+        }
+
         if (Is_TS_War_Factory() && Strength > 1) {
             bool mobile = (*this == STRUCT_TSDWEAP);
             int stages = TS_Door_Stages();
@@ -1475,6 +1526,10 @@ bool BuildingClass::Mark(MarkType mark)
 
                 case STRUCT_TSWALL:
                     new OverlayClass(OVERLAY_TSWALL, cell, House->Class->House);
+                    break;
+
+                case STRUCT_TSNWALL:
+                    new OverlayClass(OVERLAY_TSNWALL, cell, House->Class->House);
                     break;
 
                 default:
@@ -2375,6 +2430,10 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
                 otype = OVERLAY_TSWALL;
                 break;
 
+            case STRUCT_TSNWALL:
+                otype = OVERLAY_TSNWALL;
+                break;
+
             default:
                 otype = OVERLAY_NONE;
                 break;
@@ -2457,7 +2516,7 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
     */
     if (*this == STRUCT_TSCTWR) {
         CellClass& tc = Map[Coord_Cell(coord)];
-        if (tc.Overlay == OVERLAY_TSWALL || tc.Overlay == OVERLAY_BRICK_WALL || tc.Overlay == OVERLAY_SANDBAG_WALL) {
+        if (TF_Is_Tower_Joint_Wall(tc.Overlay)) {
             tc.Overlay = OVERLAY_NONE;
             tc.OverlayData = 0;
             Detach_This_From_All(::As_Target(tc.Cell_Number()), true);

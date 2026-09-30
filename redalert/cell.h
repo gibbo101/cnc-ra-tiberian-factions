@@ -61,6 +61,16 @@ inline bool TF_Is_Wall_Tower(StructType t)
     return (t == STRUCT_TSCTWR || t == STRUCT_TSVULC || t == STRUCT_TSROCK || t == STRUCT_TSCSAM);
 }
 
+/*
+**	The walls that join a component tower: RA's concrete wall and the TS GDI and Nod
+**	walls. They run into the tower's couplings, and a bare tower may be placed onto
+**	one of its owner's segments, replacing it.
+*/
+inline bool TF_Is_Tower_Joint_Wall(OverlayType o)
+{
+    return (o == OVERLAY_BRICK_WALL || o == OVERLAY_TSWALL || o == OVERLAY_TSNWALL);
+}
+
 class CellClass
 {
 public:
@@ -368,6 +378,7 @@ public:
     int Tiberium_Adjust(bool pregame = false);
     void Wall_Update(bool force = false);
     bool Has_TS_Wall_Tower(void) const;
+    bool Takes_Tower_On_Wall(BuildingTypeClass const* type) const;
     void Concrete_Calc(void);
     void Recalc_Attributes(void);
     int Reduce_Tiberium(int levels);

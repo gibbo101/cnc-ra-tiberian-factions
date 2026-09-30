@@ -137,6 +137,7 @@
 #include "r2tanks_muzzle.h"
 #include "c3tanks.h"
 #include "tsjugg_muzzle.h"
+#include "tsctwr_seat.h"
 #include "utracker.h"
 
 /***************************************************************************
@@ -660,8 +661,8 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
     **  tips, the RPG's tubes and the SAM's launch face. Each is a point ahead of the turret
     **  pivot, to its left and lifted above it, turned with the displayed turret frame and
     **  foreshortened 2:1 like the art. Values are canvas pixels of the packed art
-    **  (scripts/ts_pack_towers.py): 2 leptons per pixel, the pivot 2 px east and 56 px
-    **  north of the building centre.
+    **  (scripts/ts_pack_ctwr_hd.py): 2 leptons per pixel, measured from the turret pivot
+    **  the packer writes to tsctwr_seat.h.
     */
     if (What_Am_I() == RTTI_BUILDING) {
         StructType stype = ((BuildingClass const*)this)->Class->Type;
@@ -674,8 +675,8 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
             }
             double t = Dir_To_32(dir) * (6.28318530718 / 32.0);
             double s = sin(t), c = cos(t);
-            double px = 2.0 + fwd * s - left * c;
-            double py = -56.0 - 0.5 * fwd * c - 0.5 * left * s - lift;
+            double px = TSCTWR_PIVOT_EAST_PX + fwd * s - left * c;
+            double py = -TSCTWR_PIVOT_NORTH_PX - 0.5 * fwd * c - 0.5 * left * s - lift;
             COORDINATE centre = Center_Coord();
             return XY_Coord((int)Coord_X(centre) + (int)floor(px * 2.0 + 0.5),
                             (int)Coord_Y(centre) + (int)floor(py * 2.0 + 0.5));
@@ -8571,7 +8572,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             } else if (build) {
                 // The TS apron veto lives inside Is_Clear_To_Build (the choke
                 // point the launcher's placement preview also uses).
-                if (!Map[cell].Is_Clear_To_Build(Speed)) {
+                if (!Map[cell].Is_Clear_To_Build(Speed)
+                    && !Map[cell].Takes_Tower_On_Wall((BuildingTypeClass const*)this)) {
                     return (0);
                 }
             } else {
