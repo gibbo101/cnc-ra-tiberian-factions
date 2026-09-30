@@ -1777,14 +1777,32 @@ bool CellClass::Has_TS_Wall_Tower(void) const
 }
 
 /*
-**	Can a building of this type be placed onto this cell's wall segment, replacing it?
-**	Only a bare component tower can, onto a wall that joins towers, with nothing else
-**	standing in the cell. Whose wall it is is the proximity check's business.
+**	Is there a gate in this cell running along the given axis (east-west or north-south)? A
+**	wall beside a gate's end on that axis runs into the gate's end piece.
 */
-bool CellClass::Takes_Tower_On_Wall(BuildingTypeClass const* type) const
+bool CellClass::Has_Gate_Along(bool east_west) const
 {
-    return (type != NULL && type->Type == STRUCT_TSCTWR && TF_Is_Tower_Joint_Wall(Overlay)
-            && Cell_Occupier() == NULL);
+    for (ObjectClass* obj = Cell_Occupier(); obj != NULL; obj = obj->Next) {
+        if (obj->What_Am_I() == RTTI_BUILDING) {
+            BuildingClass* b = (BuildingClass*)obj;
+            TFGateInfo const* gate = TF_Gate_Info(b->Class->Type);
+            if (gate != NULL && b->Strength > 0 && gate->Horizontal == east_west) {
+                return (true);
+            }
+        }
+    }
+    return (false);
+}
+
+/*
+**	Can a building of this type be placed onto this cell's wall segment, replacing it?
+**	Only a bare component tower or a gate can, onto a wall that joins them, with nothing
+**	else standing in the cell. Whose wall it is is the proximity check's business.
+*/
+bool CellClass::Takes_Building_On_Wall(BuildingTypeClass const* type) const
+{
+    return (type != NULL && (type->Type == STRUCT_TSCTWR || TF_Gate_Info(type->Type) != NULL)
+            && TF_Is_Tower_Joint_Wall(Overlay) && Cell_Occupier() == NULL);
 }
 
 void CellClass::Wall_Update(bool force)
@@ -1820,12 +1838,13 @@ void CellClass::Wall_Update(bool force)
             for (unsigned i = 0; i < (sizeof(_offsets) / sizeof(_offsets[0]) - 1); i++) {
                 CellClass* adjcell = newcell->Adjacent_Cell(_offsets[i]);
                 /*
-                **	A wall that joins component towers runs into a tower next to it,
-                **	up to the coupling on the tower's side.
+                **	A wall that joins component towers runs into a tower next to it, up to
+                **	the coupling on the tower's side, and into a gate's end along its axis.
                 */
+                bool joint = TF_Is_Tower_Joint_Wall(newcell->Overlay);
                 if (adjcell
-                    && (adjcell->Overlay == newcell->Overlay
-                        || (TF_Is_Tower_Joint_Wall(newcell->Overlay) && adjcell->Has_TS_Wall_Tower()))) {
+                    && (adjcell->Overlay == newcell->Overlay || (joint && adjcell->Has_TS_Wall_Tower())
+                        || (joint && adjcell->Has_Gate_Along(i == 1 || i == 3)))) {
                     icon |= 1 << i;
                 }
             }

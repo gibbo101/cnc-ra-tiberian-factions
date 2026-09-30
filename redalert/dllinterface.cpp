@@ -9369,7 +9369,7 @@ bool DLLExportClass::Get_Placement_State(uint64 player_id, unsigned char* buffer
 
             CellClass* cellptr = &Map[cell];
             bool clear = cellptr->Is_Clear_To_Build(PlacementType[CurrentLocalPlayerIndex]->Speed)
-                         || cellptr->Takes_Tower_On_Wall(PlacementType[CurrentLocalPlayerIndex]);
+                         || cellptr->Takes_Building_On_Wall(PlacementType[CurrentLocalPlayerIndex]);
 
             /*
             **	Addon plugs (TS PowersUpBuilding) place ONTO a host building, so the
@@ -9413,6 +9413,27 @@ bool DLLExportClass::Passes_Proximity_Check(CELL cell_in,
     int headroom = placement_type->Placement_Ghost_Rows_Above() * MAP_CELL_W;
     short const* occupy_list = placement_type->Occupy_List(true);
 
+    /*
+    **	A component tower or gate onto wall segments: in reach when it covers one of the
+    **	player's own, never onto anyone else's.
+    */
+    bool own_wall = false;
+    for (short const* w = occupy_list; *w != REFRESH_EOL; w++) {
+        if (*w < headroom) {
+            continue;
+        }
+        CELL wcell = cell_in + *w - headroom;
+        if (Map.In_Radar(wcell) && Map[wcell].Takes_Building_On_Wall(placement_type)) {
+            if (Map[wcell].Owner != PlayerPtr->Class->House) {
+                return (false);
+            }
+            own_wall = true;
+        }
+    }
+    if (own_wall) {
+        return (true);
+    }
+
     while (*occupy_list != REFRESH_EOL) {
 
         int offset = *occupy_list++;
@@ -9423,13 +9444,6 @@ bool DLLExportClass::Passes_Proximity_Check(CELL cell_in,
 
         if (!Map.In_Radar(center_cell)) {
             return false;
-        }
-
-        /*
-        **	A component tower onto a wall segment: in reach on the player's own wall only.
-        */
-        if (Map[center_cell].Takes_Tower_On_Wall(placement_type)) {
-            return (Map[center_cell].Owner == PlayerPtr->Class->House);
         }
 
         if (placement_distance[center_cell] <= (placement_type->Adjacent + 1)) {

@@ -159,6 +159,8 @@ static short const List11[] = {0, 1, REFRESH_EOL};
 static short const List12[] = {MCW, REFRESH_EOL};
 static short const List1[] = {0, REFRESH_EOL};
 static short const List21[] = {0, 1, REFRESH_EOL};
+static short const List31[] = {0, 1, 2, REFRESH_EOL};
+static short const List13[] = {0, MCW, MCW * 2, REFRESH_EOL};
 static short const List22[] = {0, 1, MCW, MCW + 1, REFRESH_EOL};
 static short const List22_0011[] = {MCW, MCW + 1, REFRESH_EOL};
 static short const List22_1100[] = {0, 1, REFRESH_EOL};
@@ -1900,6 +1902,328 @@ static BuildingTypeClass const ClassTsNwall(STRUCT_TSNWALL,
                                             NULL,
                                             (short const*)List1,
                                             (short const*)NULL);
+
+/*
+**  TSGATEH / TSGATEV (TS GDI Gate, GAGATE_A east-west / GAGATE_B north-south) -- a real
+**    building standing in a wall line. Its owner and allies path through it; it opens as one
+**    comes up and closes once its footprint is clear (BuildingClass::Open_Gate, Gate_AI).
+**    Stats in rules.ini (TS [GAGATE_A]: cost 250, Str 350, heavy, TL6, Prerequisite=GAPILE).
+*/
+static BuildingTypeClass const ClassTsGateH(STRUCT_TSGATEH,
+                                            TXT_NONE,
+                                            "TSGATEH",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            false,               // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            false,               // insignificant
+                                            false,               // theater specific
+                                            false,               // turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_31,
+                                            NULL,
+                                            (short const*)List31,
+                                            (short const*)NULL);
+
+static BuildingTypeClass const ClassTsGateV(STRUCT_TSGATEV,
+                                            TXT_NONE,
+                                            "TSGATEV",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            false,               // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            false,               // insignificant
+                                            false,               // theater specific
+                                            false,               // turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_13,
+                                            NULL,
+                                            (short const*)List13,
+                                            (short const*)NULL);
+
+/*
+**  The other gates: TSGATEH/V's twins with their own art and door timing (building.cpp TFGates).
+*/
+static BuildingTypeClass const ClassTSNGATEH(STRUCT_TSNGATEH,
+                                            TXT_NONE,
+                                            "TSNGATEH",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            false,               // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            false,               // insignificant
+                                            false,               // theater specific
+                                            false,               // turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_31,
+                                            NULL,
+                                            (short const*)List31,
+                                            (short const*)NULL);
+
+static BuildingTypeClass const ClassTSNGATEV(STRUCT_TSNGATEV,
+                                            TXT_NONE,
+                                            "TSNGATEV",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            false,               // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            false,               // insignificant
+                                            false,               // theater specific
+                                            false,               // turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_13,
+                                            NULL,
+                                            (short const*)List13,
+                                            (short const*)NULL);
+
+static BuildingTypeClass const ClassALGATEH(STRUCT_ALGATEH,
+                                            TXT_NONE,
+                                            "ALGATEH",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            false,               // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            false,               // insignificant
+                                            false,               // theater specific
+                                            false,               // turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_31,
+                                            NULL,
+                                            (short const*)List31,
+                                            (short const*)NULL);
+
+static BuildingTypeClass const ClassALGATEV(STRUCT_ALGATEV,
+                                            TXT_NONE,
+                                            "ALGATEV",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            false,               // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            false,               // insignificant
+                                            false,               // theater specific
+                                            false,               // turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_13,
+                                            NULL,
+                                            (short const*)List13,
+                                            (short const*)NULL);
+
+static BuildingTypeClass const ClassSVGATEH(STRUCT_SVGATEH,
+                                            TXT_NONE,
+                                            "SVGATEH",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            false,               // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            false,               // insignificant
+                                            false,               // theater specific
+                                            false,               // turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_31,
+                                            NULL,
+                                            (short const*)List31,
+                                            (short const*)NULL);
+
+static BuildingTypeClass const ClassSVGATEV(STRUCT_SVGATEV,
+                                            TXT_NONE,
+                                            "SVGATEV",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            false,               // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            false,               // insignificant
+                                            false,               // theater specific
+                                            false,               // turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_13,
+                                            NULL,
+                                            (short const*)List13,
+                                            (short const*)NULL);
+
+static BuildingTypeClass const ClassTDGGATEH(STRUCT_TDGGATEH,
+                                            TXT_NONE,
+                                            "TDGGATEH",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            false,               // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            false,               // insignificant
+                                            false,               // theater specific
+                                            false,               // turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_31,
+                                            NULL,
+                                            (short const*)List31,
+                                            (short const*)NULL);
+
+static BuildingTypeClass const ClassTDGGATEV(STRUCT_TDGGATEV,
+                                            TXT_NONE,
+                                            "TDGGATEV",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            false,               // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            false,               // insignificant
+                                            false,               // theater specific
+                                            false,               // turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_13,
+                                            NULL,
+                                            (short const*)List13,
+                                            (short const*)NULL);
+
+static BuildingTypeClass const ClassTDNGATEH(STRUCT_TDNGATEH,
+                                            TXT_NONE,
+                                            "TDNGATEH",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            false,               // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            false,               // insignificant
+                                            false,               // theater specific
+                                            false,               // turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_31,
+                                            NULL,
+                                            (short const*)List31,
+                                            (short const*)NULL);
+
+static BuildingTypeClass const ClassTDNGATEV(STRUCT_TDNGATEV,
+                                            TXT_NONE,
+                                            "TDNGATEV",
+                                            FACING_NONE,
+                                            XYP_COORD(0, 0),
+                                            REMAP_ALTERNATE,
+                                            0x0000, 0x0000, 0x0000,
+                                            false,               // fake
+                                            false,               // regulated anim
+                                            false,               // always use the given name
+                                            false,               // IsWall
+                                            false,               // simple damage imagery
+                                            false,               // invisible to radar
+                                            true,                // selectable
+                                            true,                // legal target
+                                            false,               // insignificant
+                                            false,               // theater specific
+                                            false,               // turret
+                                            true,                // remappable
+                                            RTTI_NONE,
+                                            DIR_N,
+                                            BSIZE_13,
+                                            NULL,
+                                            (short const*)List13,
+                                            (short const*)NULL);
+
 
 /*
 **  TSPLUG (TS GDI Upgrade Centre, GAPLUG) — the 2-slot addon HOST of the
@@ -5299,6 +5623,18 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsFgen);        // STRUCT_TSFGEN (TS Firestorm Generator)
     new BuildingTypeClass(ClassTsFsdf);        // STRUCT_TSFSDF (TS Firestorm Wall Section)
     new BuildingTypeClass(ClassTsNwall);       // STRUCT_TSNWALL (TS Nod wall, overlay on placement)
+    new BuildingTypeClass(ClassTsGateH);       // STRUCT_TSGATEH (TS GDI gate, east-west)
+    new BuildingTypeClass(ClassTsGateV);       // STRUCT_TSGATEV (TS GDI gate, north-south)
+    new BuildingTypeClass(ClassTSNGATEH);
+    new BuildingTypeClass(ClassTSNGATEV);
+    new BuildingTypeClass(ClassALGATEH);
+    new BuildingTypeClass(ClassALGATEV);
+    new BuildingTypeClass(ClassSVGATEH);
+    new BuildingTypeClass(ClassSVGATEV);
+    new BuildingTypeClass(ClassTDGGATEH);
+    new BuildingTypeClass(ClassTDGGATEV);
+    new BuildingTypeClass(ClassTDNGATEH);
+    new BuildingTypeClass(ClassTDNGATEV);
 
     /*
     **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so
@@ -6213,7 +6549,7 @@ short const* BuildingTypeClass::Overlap_List(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Width(void) const
 {
-    static int width[BSIZE_COUNT] = {1, 2, 1, 2, 2, 3, 3, 4, 5, 4, 4, 5};
+    static int width[BSIZE_COUNT] = {1, 2, 1, 2, 2, 3, 3, 4, 5, 4, 4, 5, 3, 1};
     return (width[Size]);
 }
 
@@ -6233,7 +6569,7 @@ int BuildingTypeClass::Width(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Height(bool bib) const
 {
-    static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5, 3, 4, 3};
+    static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5, 3, 4, 3, 1, 3};
     /*
     **	The dropship bay's slab sits INSIDE its 3x3 (see Bib_And_Offset), so the
     **	placement grid must not grow a bib row -- the art already owns the space

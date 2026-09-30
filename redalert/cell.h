@@ -62,9 +62,26 @@ inline bool TF_Is_Wall_Tower(StructType t)
 }
 
 /*
-**	The walls that join a component tower: RA's concrete wall and the TS GDI and Nod
-**	walls. They run into the tower's couplings, and a bare tower may be placed onto
-**	one of its owner's segments, replacing it.
+**	Gates: one entry per gate type. Stages = door frames from shut to open; Rate = game ticks
+**	per door frame, so the energy gates (laser, Tesla) switch faster than the sliding ones.
+*/
+struct TFGateInfo
+{
+    StructType Type;
+    bool Horizontal;
+    int Stages;
+    int Rate;
+    VocType OpenSound;
+    VocType CloseSound;
+    bool NeedsPower; // an energy gate stands open while its house is short of power
+    int IdleFrames;  // shut-gate loop frames after the door frames (healthy, then damaged)
+};
+TFGateInfo const* TF_Gate_Info(StructType t);
+
+/*
+**	The walls that join a component tower or a gate: RA's concrete wall and the TS GDI
+**	and Nod walls. They run into the tower's couplings and the gate's end pieces, and a
+**	bare tower or a gate may be placed onto its owner's segments, replacing them.
 */
 inline bool TF_Is_Tower_Joint_Wall(OverlayType o)
 {
@@ -378,7 +395,8 @@ public:
     int Tiberium_Adjust(bool pregame = false);
     void Wall_Update(bool force = false);
     bool Has_TS_Wall_Tower(void) const;
-    bool Takes_Tower_On_Wall(BuildingTypeClass const* type) const;
+    bool Takes_Building_On_Wall(BuildingTypeClass const* type) const;
+    bool Has_Gate_Along(bool east_west) const;
     void Concrete_Calc(void);
     void Recalc_Attributes(void);
     int Reduce_Tiberium(int levels);

@@ -452,6 +452,9 @@ struct SoundEffectNameStruct
     {"C3PATE", 20, IN_NOVAR},  // VOC_C3PATE -- Predator attack voice
     {"C3PATF", 20, IN_NOVAR},  // VOC_C3PATF -- Predator attack voice
     {"C3PGUN", 1, IN_NOVAR},  // VOC_C3PGUN -- Predator cannon (random take)
+    {"TSGATEDWN1", 5, IN_NOVAR},  // VOC_TS_GATEDWN1 -- TS gate lowering
+    {"TSGATEUP1", 5, IN_NOVAR},   // VOC_TS_GATEUP1 -- TS gate rising
+    {"TSLACHG2R", 5, IN_NOVAR},   // VOC_TSLACHG2R -- Tesla gate arcs winding down
 };
 
 //
