@@ -788,6 +788,7 @@ typedef enum SpecialWeaponType : char
     SPC_TS_DROPPODS,      // TS Drop Pod reinforcements (3 BULLET_TSPODDROP pods of infantry, sourced from the TSPODS plug)
     SPC_TS_HUNTSEEK,      // TS Hunter Seeker droid (a self-targeting kamikaze flyer, sourced from the TSSEEK plug)
     SPC_TS_EMP,           // TS E.M. Pulse (TS [EMPulseSpecial]): the nearest powered EMP Cannon (STRUCT_TSPULS) in range lobs a pulse ball at the target
+    SPC_TS_FIRESTORM,     // TS Firestorm Defense (TS [FirestormSpecial], charge-drain): raises every Firestorm Wall Section the house owns while the Firestorm Generator (STRUCT_TSFGEN) stands and is powered
 
     SPC_COUNT,
     SPC_FIRST = 0,
@@ -1661,6 +1662,8 @@ typedef enum StructType : short
     STRUCT_TSPULS, // TS EMP Pulse Cannon "TSPULS" (NAPULS, 2x2, snow-theatre art). Shapes 0-60 = the cannon head's 61-frame rotation on the dome (NAPULS_A), 61-121 = damaged; Shape_Number picks the frame from PrimaryFacing. Superweapon host for SPC_TS_EMP (docs/emp-cannon-design.md).
     STRUCT_TSDPSA, // TS Sensor Array "TSDPSA" ([GADPSA], 1x1): the Mobile Sensor Array deployed. Its owner sees cloaked and buried enemies within TF_SENSOR_RADIUS_CELLS (TF_Is_Sensed); the deploy order packs it back into UNIT_TSLPST. Art = GTDPSA + GTDPSA_A beacon, GTDPSAMK build-up (scripts/ts_pack_sensor.py).
     STRUCT_TSDWEAP, // TS Mobile War Factory deployed "TSDWEAP" (Firestorm DGWEAP, art MWAR): a TS war factory on TSWEAP's 5x3 plot and geometry with a 12-stage shutter (Is_TS_War_Factory); the deploy order packs it back into UNIT_TSMWAR. Art: ts_pack_tree.py SIZEPASS on TSWEAP's affine.
+    STRUCT_TSFGEN, // TS Firestorm Generator "TSFGEN" ([GAFIRE], 3x2 like TSTECH): hosts the Firestorm Defense that raises every Firestorm Wall Section the house owns (docs/firestorm-design.md). Art: GTFIRE + _B/_C baked into a 48-step idle, ts_pack_tree.py SIZEPASS.
+    STRUCT_TSFSDF, // TS Firestorm Wall Section "TSFSDF" ([GAFSDF], 1x1): one per cell, walkable while the house's field is down, a lethal wall while it is up (HouseClass::IsFirestormLive). Frame = own neighbour sections N1 E2 S4 W8, +16 damaged, +32 live. Art: scripts/ts_pack_fsdf.py.
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
 
@@ -1682,7 +1685,7 @@ typedef enum StructType : short
     **	Second range of BuildingTypeClass::Is_Tiberian_Era.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TSDWEAP
+    STRUCT_TS_TREE_LAST = STRUCT_TSFSDF
 } StructType;
 
 /*
@@ -3112,6 +3115,9 @@ typedef enum AnimType : short
     ANIM_TS_PULSEFX2,   // TS PULSEFX2: the other E.M. Pulse impact (15 frames).
     ANIM_TS_EMPFX,      // TS EMP_FX01: the sparks over an object stunned by an E.M. Pulse (27 frames, loops until the stun ends).
     ANIM_TS_MEMPFX,     // TS MEMPFX: the Mobile EM-Pulse's blast, flat on the ground (12 frames).
+    ANIM_TS_FSIDLE,     // TS FSIDLE: the crackling column that flickers over a live Firestorm Wall Section (19 frames, base at its coordinate).
+    ANIM_TS_FSGRND,     // TS FSGRND: sparks where something on the ground meets a live Firestorm (19 frames, base at its coordinate).
+    ANIM_TS_FSAIR,      // TS FSAIR: sparks where something in the air meets a live Firestorm (19 frames).
 
     ANIM_COUNT,
     ANIM_FIRST = 0
@@ -4382,6 +4388,7 @@ typedef enum VocType : short
     VOC_R2_VPRISTAC,  // Prism Tank engine start (vpristac). Bundled R2VPRISTAC.WAV.
     VOC_R2_VPRIATTA,  // Prism Tank beam (vpriatta). Bundled R2VPRIATTA.WAV.
     VOC_TS_PLSECAN2,     // TS EMP Pulse Cannon firing the pulse ball (PLSECAN2, [EMPulseWeapon] Report=). Bundled TSPLSECAN2.WAV.
+    VOC_TS_FIRSTRM1,     // TS Firestorm burning (FIRSTRM1, the Report= of FSIDLE/FSGRND/FSAIR). Bundled TSFIRSTRM1.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0
@@ -4555,6 +4562,8 @@ typedef enum VoxType : short
     VOX_TS_EMP_READY,
     VOX_TS_CLOAKED_DETECTED,
     VOX_TS_SUBTERRANEAN_DETECTED,
+    VOX_TS_FIRESTORM_READY,
+    VOX_TS_FIRESTORM_OFFLINE,
 
     VOX_COUNT,
     VOX_FIRST = 0

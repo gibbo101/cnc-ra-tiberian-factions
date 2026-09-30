@@ -1143,6 +1143,44 @@
       "graphics_source": null,
       "z_order": "default",
       "flags": []
+    },
+    {
+      "id": 147,
+      "name": "tsfgen",
+      "display_name": "Firestorm Generator",
+      "power_production": 0,
+      "power_usage": 200,
+      "storage": 0,
+      "capturable": true,
+      "width": 3,
+      "height": 2,
+      "occupy_mask": null,
+      "owner": "Germany",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "default",
+      "flags": [
+        "Bib"
+      ]
+    },
+    {
+      "id": 148,
+      "name": "tsfsdf",
+      "display_name": "Firestorm Wall Section",
+      "power_production": 0,
+      "power_usage": 2,
+      "storage": 0,
+      "capturable": false,
+      "width": 1,
+      "height": 1,
+      "occupy_mask": null,
+      "owner": "Germany",
+      "factory_overlay": null,
+      "frame_offset": 0,
+      "graphics_source": null,
+      "z_order": "paved",
+      "flags": []
     }
   ],
   "units": [

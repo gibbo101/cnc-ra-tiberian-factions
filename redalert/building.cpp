@@ -1199,6 +1199,29 @@ int BuildingClass::Shape_Number(void) const
     }
 
     /*
+    **	Firestorm Wall Section: the rail reaches towards every neighbouring section of the same
+    **	house (N1 E2 S4 W8), +16 when damaged, +32 while the house's field is up.
+    */
+    if (*this == STRUCT_TSFSDF) {
+        static FacingType const _sides[] = {FACING_N, FACING_E, FACING_S, FACING_W};
+        int joins = 0;
+        CELL cell = Coord_Cell(Coord);
+        for (int i = 0; i < 4; i++) {
+            BuildingClass const* n = Map[Adjacent_Cell(cell, _sides[i])].Cell_Building();
+            if (n != NULL && *n == STRUCT_TSFSDF && n->House == House && !n->IsInLimbo) {
+                joins |= (1 << i);
+            }
+        }
+        if (Health_Ratio() <= Rule.ConditionYellow) {
+            joins += 16;
+        }
+        if (House->IsFirestormLive) {
+            joins += 32;
+        }
+        return (joins);
+    }
+
+    /*
     **	The shape file to use for rendering depends on whether the building
     **	is undergoing construction or not.
     */
@@ -2592,6 +2615,16 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
 
     ResultType res = RESULT_NONE;
     int shakes;
+
+    /*
+    **	A live Firestorm Wall Section takes no damage; each hit drains the field instead, a tenth
+    **	of a frame per point (TS DamageToFirestormDamageCoefficient=.1).
+    */
+    if (*this == STRUCT_TSFSDF && House->IsFirestormLive && !forced) {
+        House->SuperWeapon[SPC_TS_FIRESTORM].Drain(damage / 10);
+        damage = 0;
+        return (RESULT_NONE);
+    }
 
     if (this != source /*&& !Class->IsInsignificant*/) {
 
@@ -5018,6 +5051,18 @@ void BuildingClass::Sell_Back(int control)
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
 
+    /*
+    **	A Firestorm Wall Section has no build-up to run backwards: sold while its field is down,
+    **	it is simply removed, with no refund (TS).
+    */
+    if (*this == STRUCT_TSFSDF) {
+        if (control != 0 && Is_Open_Firestorm_Section()) {
+            Limbo();
+            delete this;
+        }
+        return;
+    }
+
     if (Class->Get_Buildup_Data()) {
         bool decon = false;
         switch (control) {
@@ -5824,7 +5869,7 @@ COORDINATE BuildingClass::Sort_Y(void) const
     **	Mines need to bias their sort location such that they are typically drawn
     **	before any objects that might overlap them.
     */
-    if (*this == STRUCT_AVMINE || *this == STRUCT_APMINE || *this == STRUCT_TSDLIMP) {
+    if (*this == STRUCT_AVMINE || *this == STRUCT_APMINE || *this == STRUCT_TSDLIMP || *this == STRUCT_TSFSDF) {
         return (Coord_Move(Center_Coord(), DIR_N, CELL_LEPTON_H));
     }
 
@@ -6133,6 +6178,10 @@ bool BuildingClass::Can_Demolish(void) const
 
     if (Class->IsUnsellable)
         return (false);
+
+    if (*this == STRUCT_TSFSDF) {
+        return (Is_Open_Firestorm_Section());
+    }
 
     if (Class->Get_Buildup_Data() && BState != BSTATE_CONSTRUCTION && Mission != MISSION_DECONSTRUCTION
         && Mission != MISSION_CONSTRUCTION) {

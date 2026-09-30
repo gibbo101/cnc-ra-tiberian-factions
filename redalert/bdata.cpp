@@ -1516,6 +1516,53 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            (short const*)TsWeapList,
                                            (short const*)TsWeapOList);
 
+// TS Firestorm Generator ([GAFIRE]): the Firestorm Defense's host, on the Tech Center's 3x2 plot.
+static BuildingTypeClass const ClassTsFgen(STRUCT_TSFGEN,
+                                           TXT_NONE,
+                                           "TSFGEN",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,
+                                           true,               // anim regulated
+                                           false, false, false, false,
+                                           true, true, false, false, false, true,
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_32,           // TS-authentic 3x2.
+                                           NULL,
+                                           (short const*)List32,
+                                           NULL);
+
+// TS Firestorm Wall Section ([GAFSDF]): a flat 1x1 pad, not selectable and insignificant as in TS,
+// with no build-up. BuildingClass::Shape_Number picks the frame from its neighbours.
+static BuildingTypeClass const ClassTsFsdf(STRUCT_TSFSDF,
+                                           TXT_NONE,
+                                           "TSFSDF",
+                                           FACING_NONE,
+                                           XYP_COORD(0, 0),
+                                           REMAP_ALTERNATE,
+                                           0x0000, 0x0000, 0x0000,
+                                           false,               // fake
+                                           false,               // regulated anim
+                                           false,               // always use the given name
+                                           false,               // IsWall
+                                           false,               // simple damage imagery
+                                           false,               // invisible to radar
+                                           false,               // selectable
+                                           true,                // legal target
+                                           true,                // insignificant
+                                           false,               // theater specific
+                                           false,               // turret
+                                           true,                // remappable
+                                           RTTI_NONE,
+                                           DIR_N,
+                                           BSIZE_11,
+                                           NULL,
+                                           (short const*)List1,
+                                           (short const*)NULL);
+
 // The Mobile War Factory deployed (Firestorm DGWEAP): a TS war factory on TSWEAP's plot, exits
 // and seats. Never built from the sidebar; the deploy order packs it into UNIT_TSMWAR.
 static BuildingTypeClass const ClassTsDweap(STRUCT_TSDWEAP,
@@ -5219,6 +5266,8 @@ void BuildingTypeClass::Init_Heap(void)
     new BuildingTypeClass(ClassTsPuls);        // STRUCT_TSPULS (TS EMP Pulse Cannon)
     new BuildingTypeClass(ClassTsDpsa);        // STRUCT_TSDPSA (TS Sensor Array)
     new BuildingTypeClass(ClassTsDweap);       // STRUCT_TSDWEAP (Mobile War Factory deployed)
+    new BuildingTypeClass(ClassTsFgen);        // STRUCT_TSFGEN (TS Firestorm Generator)
+    new BuildingTypeClass(ClassTsFsdf);        // STRUCT_TSFSDF (TS Firestorm Wall Section)
 
     /*
     **	Addon wiring (TS PowersUpBuilding=/Upgrades=). The statics are const, so
@@ -5408,6 +5457,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSDLIMP, BSTATE_IDLE, 0, 10, 3}, // DLIMP_A blink halved (10 healthy + 10 damaged)
         {STRUCT_TSDPSA, BSTATE_IDLE, 0, 5, 4},   // GTDPSA_A beacon blink (5 healthy + 5 damaged, unlit)
         {STRUCT_TSTECH, BSTATE_IDLE, 0, 8, 3},   // GATECH _A halved (8 healthy + 8 damage-pocked dome)
+        {STRUCT_TSFGEN, BSTATE_IDLE, 0, 48, 2},  // GAFIRE _B (16) every step + _C (6) every 2nd step -> 48, TS's rates; damaged = anims stopped
         {STRUCT_TSDEPT, BSTATE_IDLE, 0, 35, 3},  // GADEPT _A halved(5)+_B whole(7, odd=no damaged half) -> LCM 35
         {STRUCT_TSPLUG, BSTATE_IDLE, 0, 40, 3},  // GAPLUG windows _A(10)+_B(8)+_C(4) -> LCM 40
         // TSSILO is static (no TS idle anim): shape 0 healthy, 1 damaged.
@@ -5632,6 +5682,7 @@ void BuildingTypeClass::One_Time(void)
             {STRUCT_TSRADR, STRUCT_TDHQ},
             {STRUCT_TSHPAD, STRUCT_TDHPAD},
             {STRUCT_TSTECH, STRUCT_TDEYE},
+            {STRUCT_TSFGEN, STRUCT_TDEYE},
             {STRUCT_TSDEPT, STRUCT_TDFIX},
             {STRUCT_TSDROP, STRUCT_TDFIX},
             {STRUCT_TSPULS, STRUCT_POWER}, // TS EMP cannon: 2x2 donor for ImageData/BuildupData

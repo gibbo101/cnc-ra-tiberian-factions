@@ -477,6 +477,14 @@ ts_stub TSTECH "$TMPDIR/tstech_stub.shp" 72 72 2
 PACK_ARGS+=("$TMPDIR/tstech_stub.shp:TSTECH.SHP")
 ts_stub TSTECH "$TMPDIR/tstechmk_stub.shp" 72 72 19
 PACK_ARGS+=("$TMPDIR/tstechmk_stub.shp:TSTECHMAKE.SHP")
+# TSFGEN 72x72: the Firestorm Generator on the Tech Center's 3x2 plot and square canvas.
+ts_stub TSFGEN "$TMPDIR/tsfgen_stub.shp" 72 72 2
+PACK_ARGS+=("$TMPDIR/tsfgen_stub.shp:TSFGEN.SHP")
+ts_stub TSFGEN "$TMPDIR/tsfgenmk_stub.shp" 72 72 19
+PACK_ARGS+=("$TMPDIR/tsfgenmk_stub.shp:TSFGENMAKE.SHP")
+# TSFSDF 33x60, 64 frames: the Firestorm Wall Section on the wall packers' 176x320 canvas.
+ts_stub TSFSDF "$TMPDIR/tsfsdf_stub.shp" 33 60 64
+PACK_ARGS+=("$TMPDIR/tsfsdf_stub.shp:TSFSDF.SHP")
 ts_stub TSSILO "$TMPDIR/tssilo_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tssilo_stub.shp:TSSILO.SHP")
 ts_stub TSSILO "$TMPDIR/tssilomk_stub.shp" 48 48 19
@@ -522,6 +530,13 @@ python3 scripts/gen_stub_shp.py "$TMPDIR/tsempfx_stub.shp" 20 18 27
 PACK_ARGS+=("$TMPDIR/tsempfx_stub.shp:TSEMPFX.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tsmempfx_stub.shp" 144 72 12
 PACK_ARGS+=("$TMPDIR/tsmempfx_stub.shp:TSMEMPFX.SHP")
+# Firestorm field effects (scripts/ts_pack_firestorm_fx.py), canvas / 8.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfsidle_stub.shp" 12 136 19
+PACK_ARGS+=("$TMPDIR/tsfsidle_stub.shp:TSFSIDLE.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfsgrnd_stub.shp" 12 66 19
+PACK_ARGS+=("$TMPDIR/tsfsgrnd_stub.shp:TSFSGRND.SHP")
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsfsair_stub.shp" 12 28 19
+PACK_ARGS+=("$TMPDIR/tsfsair_stub.shp:TSFSAIR.SHP")
 # TS drop-pod strike set (scripts/ts_pack_pods.py): husks 192x192, DROPEXP puff
 # 400x272, PODRING entry flash 400x208, SMOKEY trail 128x120, pod bullet body
 # 192x192 — all / 8 for the classic dims the launcher sizes the HD art off.

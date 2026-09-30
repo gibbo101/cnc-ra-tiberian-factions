@@ -624,6 +624,8 @@ HouseClass::HouseClass(HousesType house)
     , IsThieved(false)
     , IsGPSActive(false)
     , IsBuiltSomething(false)
+    , IsFirestormLive(false)
+    , IsFirestormPowerLow(false)
     , IsResigner(false)
     , IsGiverUpper(false)
     , IsParanoid(false)
@@ -808,6 +810,11 @@ HouseClass::HouseClass(HousesType house)
     // than borrow another era's announcer.
     new (&SuperWeapon[SPC_TS_EMP])
         SuperClass(TICKS_PER_MINUTE * 9 / 2, true, VOX_NONE, VOX_TS_EMP_READY, VOX_NONE, VOX_NONE);
+
+    // Tiberian Factions mod — TS Firestorm Defense (Firestorm Generator). TS rules.ini
+    // [FirestormSpecial]: RechargeTime=3, IsPowered, UseChargeDrain, RechargeVoice=00-I162.
+    new (&SuperWeapon[SPC_TS_FIRESTORM])
+        SuperClass(TICKS_PER_MINUTE * 3, true, VOX_NONE, VOX_TS_FIRESTORM_READY, VOX_NONE, VOX_NONE);
 
     // Tiberian Factions mod — Nod Nuclear Strike. TD-authentic 14-minute
     // recharge per tiberiandawn/defines.h NUKE_GONE_TIME (14 *
@@ -1272,6 +1279,255 @@ static bool TF_Is_TS_Yard_Wall(ObjectTypeClass const* type)
         return (false);
     }
     return (((BuildingTypeClass const*)type)->Type == STRUCT_SANDBAG_WALL);
+}
+
+/*
+**	Line fill (the TS / RA2 wall-building rule): placing a wall section within TF_WALL_FILL_RANGE
+**	cells in a straight line of another of the house's sections of the same type fills the cells
+**	between, provided every one of them is clear to build. Each filled section is charged like a
+**	normal build of it; a gap the house cannot pay for in full is left empty.
+*/
+static const int TF_WALL_FILL_RANGE = 5;
+
+/*
+**	The overlay a wall-type building becomes when placed (BuildingClass::Mark), or OVERLAY_NONE
+**	for a line-fill type that stays a building.
+*/
+static OverlayType TF_Wall_Overlay(StructType type)
+{
+    switch (type) {
+    case STRUCT_BRICK_WALL:
+        return (OVERLAY_BRICK_WALL);
+    case STRUCT_BARBWIRE_WALL:
+        return (OVERLAY_BARBWIRE_WALL);
+    case STRUCT_SANDBAG_WALL:
+        return (OVERLAY_SANDBAG_WALL);
+    case STRUCT_WOOD_WALL:
+        return (OVERLAY_WOOD_WALL);
+    case STRUCT_CYCLONE_WALL:
+        return (OVERLAY_CYCLONE_WALL);
+    case STRUCT_FENCE:
+        return (OVERLAY_FENCE);
+    case STRUCT_TSWALL:
+        return (OVERLAY_TSWALL);
+    default:
+        return (OVERLAY_NONE);
+    }
+}
+
+bool TF_Is_Line_Fill_Type(BuildingTypeClass const* type)
+{
+    return (type != NULL
+            && ((type->IsWall && TF_Wall_Overlay(type->Type) != OVERLAY_NONE) || type->Type == STRUCT_TSFSDF));
+}
+
+static bool TF_Is_Own_Wall_Section(HouseClass const* house, StructType type, CELL cell)
+{
+    CellClass const& c = Map[cell];
+    OverlayType overlay = TF_Wall_Overlay(type);
+    if (overlay != OVERLAY_NONE) {
+        return (c.Overlay == overlay && c.Owner == house->Class->House);
+    }
+    BuildingClass const* b = c.Cell_Building();
+    return (b != NULL && *b == type && b->House == house);
+}
+
+/*
+**	Raises or drops the house's Firestorm: every section it owns turns into the live wall or
+**	back into a walkable pad, and is redrawn. Dropping it is announced to its owner.
+*/
+void TF_Firestorm_Set(HouseClass* house, bool on)
+{
+    if (house == NULL || (bool)house->IsFirestormLive == on) {
+        return;
+    }
+    house->IsFirestormLive = on;
+    for (int i = 0; i < Buildings.Count(); i++) {
+        BuildingClass* b = Buildings.Ptr(i);
+        if (b != NULL && b->IsActive && !b->IsInLimbo && *b == STRUCT_TSFSDF && b->House == house) {
+            b->Mark(MARK_CHANGE);
+        }
+    }
+    if (!on && house == PlayerPtr) {
+        Speak(VOX_TS_FIRESTORM_OFFLINE);
+    }
+}
+
+/*
+**	The live Firestorm Wall Section in `cell`, or NULL. `shooter` names a house whose own fire
+**	passes its own field (TS); pass NULL to find any live section.
+*/
+BuildingClass* TF_Firestorm_Wall_At(CELL cell, HouseClass const* shooter)
+{
+    if (!Map.In_Radar(cell)) {
+        return (NULL);
+    }
+    BuildingClass* b = Map[cell].Cell_Building();
+    if (b != NULL && *b == STRUCT_TSFSDF && !b->IsInLimbo && b->House->IsFirestormLive && (HouseClass const*)b->House != shooter) {
+        return (b);
+    }
+    return (NULL);
+}
+
+/*
+**	The first cell on the straight line from `from` to `to` holding a live section that stops
+**	`shooter`'s fire, or 0 when the line is clear.
+*/
+COORDINATE TF_Firestorm_On_Path(COORDINATE from, COORDINATE to, HouseClass const* shooter)
+{
+    int dist = ::Distance(from, to);
+    DirType dir = ::Direction(from, to);
+    CELL last = -1;
+    for (int d = 0; d <= dist; d += CELL_LEPTON_W / 4) {
+        COORDINATE c = Coord_Move(from, dir, d);
+        CELL cell = Coord_Cell(c);
+        if (cell != last) {
+            last = cell;
+            if (TF_Firestorm_Wall_At(cell, shooter) != NULL) {
+                return (Cell_Coord(cell));
+            }
+        }
+    }
+    return (TF_Firestorm_Wall_At(Coord_Cell(to), shooter) != NULL ? Cell_Coord(Coord_Cell(to)) : 0);
+}
+
+/*
+**	What a live field does each frame: anything on one of the house's sections dies (its own
+**	units too, as in TS), and so does any aircraft over one, at any height. The Hunter Seeker
+**	is built to ignore the field.
+*/
+void TF_Firestorm_Flare(COORDINATE wall, COORDINATE victim, int height)
+{
+    Sound_Effect(VOC_TS_FIRSTRM1, wall);
+    if (height > 100) {
+        new AnimClass(ANIM_TS_FSAIR, Coord_Move(victim, DIR_N, height));
+    } else {
+        new AnimClass(ANIM_TS_FSGRND, wall);
+    }
+}
+
+static void TF_Firestorm_Burn(HouseClass* house)
+{
+    for (int i = 0; i < Buildings.Count(); i++) {
+        BuildingClass* b = Buildings.Ptr(i);
+        if (b == NULL || !b->IsActive || b->IsInLimbo || *b != STRUCT_TSFSDF || !(b->House == house)) {
+            continue;
+        }
+        CELL cell = Coord_Cell(b->Coord);
+
+        /*
+        **	The field is a flicker of columns, not a solid sheet: every eighth frame each hub
+        **	(anything but a straight run) has a one-in-sixteen chance of throwing one up (TS).
+        */
+        if ((Frame % 8) == 0 && Random_Pick(0, 15) == 0) {
+            int joins = b->Shape_Number() & 15;
+            if (joins != 5 && joins != 10) {
+                new AnimClass(ANIM_TS_FSIDLE, b->Center_Coord());
+                Sound_Effect(VOC_TS_FIRSTRM1, b->Center_Coord());
+            }
+        }
+        /*
+        **	A death can take neighbours with it, so the chain is re-read after every kill.
+        */
+        for (int guard = 0; guard < 16; guard++) {
+            ObjectClass* victim = NULL;
+            for (ObjectClass* o = Map[cell].Cell_Occupier(); o != NULL; o = o->Next) {
+                RTTIType rtti = o->What_Am_I();
+                if (o->IsActive && o->Strength > 0
+                    && (rtti == RTTI_UNIT || rtti == RTTI_INFANTRY || rtti == RTTI_VESSEL)) {
+                    victim = o;
+                    break;
+                }
+            }
+            if (victim == NULL) {
+                break;
+            }
+            TF_Firestorm_Flare(b->Center_Coord(), victim->Center_Coord(), victim->Height);
+            int damage = victim->Strength;
+            victim->Take_Damage(damage, 0, WARHEAD_TSFLAMEHIT, NULL, true);
+        }
+    }
+    for (int i = 0; i < Aircraft.Count(); i++) {
+        AircraftClass* a = Aircraft.Ptr(i);
+        if (a == NULL || !a->IsActive || a->IsInLimbo || a->Strength <= 0 || *a == AIRCRAFT_TSHUNT) {
+            continue;
+        }
+        BuildingClass* wall = TF_Firestorm_Wall_At(Coord_Cell(a->Coord), NULL);
+        if (wall != NULL && wall->House == house) {
+            TF_Firestorm_Flare(wall->Center_Coord(), a->Center_Coord(), a->Height);
+            int damage = a->Strength * 2; // AircraftClass::Take_Damage halves damage while airborne
+            a->Take_Damage(damage, 0, WARHEAD_TSFLAMEHIT, NULL, true);
+        }
+    }
+}
+
+void TF_Wall_Line_Fill(HouseClass* house, StructType type, CELL cell)
+{
+    BuildingTypeClass const& btype = BuildingTypeClass::As_Reference(type);
+    int const cost = btype.Cost_Of() * house->CostBias;
+    static FacingType const _dirs[] = {FACING_N, FACING_E, FACING_S, FACING_W};
+
+    for (int d = 0; d < (int)ARRAY_SIZE(_dirs); d++) {
+        /*
+        **	The nearest own section of this type along the line, if any is in range.
+        */
+        CELL c = cell;
+        int reach = 0;
+        for (int step = 1; step <= TF_WALL_FILL_RANGE; step++) {
+            c = Adjacent_Cell(c, _dirs[d]);
+            if (!Map.In_Radar(c)) {
+                break;
+            }
+            if (TF_Is_Own_Wall_Section(house, type, c)) {
+                reach = step;
+                break;
+            }
+        }
+        if (reach < 2) {
+            continue;
+        }
+
+        /*
+        **	Every cell between must be clear to build, or the line is left alone.
+        */
+        bool clear = true;
+        c = cell;
+        for (int step = 1; step < reach; step++) {
+            c = Adjacent_Cell(c, _dirs[d]);
+            if (!Map[c].Is_Clear_To_Build(btype.Speed)) {
+                clear = false;
+                break;
+            }
+        }
+        if (!clear) {
+            continue;
+        }
+        if (house->Available_Money() < cost * (reach - 1)) {
+            if (house == PlayerPtr) {
+                Speak(VOX_NO_CASH);
+            }
+            continue;
+        }
+
+        c = cell;
+        for (int step = 1; step < reach; step++) {
+            c = Adjacent_Cell(c, _dirs[d]);
+            BuildingClass* section = new BuildingClass(type, house->Class->House);
+            if (section == NULL) {
+                return;
+            }
+            /*
+            **	A wall converts itself to its overlay and deletes the building inside Unlimbo,
+            **	so the object is never touched after a successful call.
+            */
+            if (section->Unlimbo(Cell_Coord(c))) {
+                house->Spend_Money(cost);
+            } else {
+                delete section;
+                break;
+            }
+        }
+    }
 }
 
 /***********************************************************************************************
@@ -2581,7 +2837,7 @@ void HouseClass::Super_Weapon_Handler(void)
             **	Repeating super weapons that require power will be suspended if there
             **	is insufficient power available.
             */
-            if (!super->Is_Ready() && super->Is_Powered() && !super->Is_One_Time()) {
+            if (!super->Is_Ready() && super->Is_Powered() && !super->Is_One_Time() && !super->Is_Draining()) {
                 super->Suspend(Power_Fraction() < 1);
             }
         }
@@ -3035,6 +3291,62 @@ void HouseClass::Super_Weapon_Handler(void)
             } else {
                 if (this == PlayerPtr) {
                     Map.Add(RTTI_SPECIAL, SPC_TS_EMP);
+                    Map.Column[1].Flag_To_Redraw();
+                }
+            }
+        }
+    }
+
+    /*
+    **  Tiberian Factions mod — TS Firestorm Defense (SPC_TS_FIRESTORM), granted while the house
+    **  has a Firestorm Generator standing. The field drops when the drain runs out, the power
+    **  falls short or the last generator goes; a charge interrupted by low power starts again
+    **  from zero, as in TS.
+    */
+    bool ts_fs_host = Get_Quantity(STRUCT_TSFGEN) > 0;
+    SuperClass& firestorm = SuperWeapon[SPC_TS_FIRESTORM];
+    if (IsFirestormLive && (!ts_fs_host || Power_Fraction() < 1 || firestorm.Drain_Expired() || IsDefeated)) {
+        TF_Firestorm_Set(this, false);
+        firestorm.End_Drain(this == PlayerPtr);
+        if (this == PlayerPtr) {
+            Map.Column[1].Flag_To_Redraw();
+        }
+    }
+    if (IsFirestormLive) {
+        TF_Firestorm_Burn(this);
+    }
+    if (firestorm.Is_Present() && !firestorm.Is_Draining() && !firestorm.Is_Ready()) {
+        if (Power_Fraction() < 1) {
+            IsFirestormPowerLow = true;
+        } else if (IsFirestormPowerLow) {
+            IsFirestormPowerLow = false;
+            firestorm.Restart_Charge();
+        }
+    }
+    if (firestorm.Is_Present()) {
+        if ((!ts_fs_host && !firestorm.Is_One_Time()) || IsDefeated) {
+            if (firestorm.Remove()) {
+                if (this == PlayerPtr) {
+                    if (Map.IsTargettingMode == SPC_TS_FIRESTORM) {
+                        Map.IsTargettingMode = SPC_NONE;
+                    }
+                    Map.Column[1].Flag_To_Redraw();
+                }
+                IsRecalcNeeded = true;
+            }
+        }
+    } else {
+        if (ts_fs_host && (IsHuman || IQ >= Rule.IQSuperWeapons)) {
+            firestorm.Enable(false, this == PlayerPtr, Power_Fraction() < 1);
+            if (Session.Type == GAME_GLYPHX_MULTIPLAYER) {
+                if (IsHuman) {
+#ifdef REMASTER_BUILD
+                    Sidebar_Glyphx_Add(RTTI_SPECIAL, SPC_TS_FIRESTORM, this);
+#endif
+                }
+            } else {
+                if (this == PlayerPtr) {
+                    Map.Add(RTTI_SPECIAL, SPC_TS_FIRESTORM);
                     Map.Column[1].Flag_To_Redraw();
                 }
             }
@@ -4490,6 +4802,26 @@ bool HouseClass::Place_Special_Blast(SpecialWeaponType id, CELL cell)
         }
         break;
 
+    case SPC_TS_FIRESTORM:
+        /*
+        **	Raises the field wherever it is clicked (the cell is not used): a full charge
+        **	buys a third of its recharge time, TS's ChargeToDrainRatio of .333.
+        */
+        if (SuperWeapon[SPC_TS_FIRESTORM].Is_Ready() && Power_Fraction() >= 1) {
+            SuperWeapon[SPC_TS_FIRESTORM].Start_Drain(SuperWeapon[SPC_TS_FIRESTORM].Get_Recharge_Time() / 3);
+            TF_Firestorm_Set(this, true);
+            IsRecalcNeeded = true;
+            fired = true;
+            what = "TS_FIRESTORM";
+        } else if (this == PlayerPtr && Power_Fraction() < 1) {
+            Speak(VOX_INSUFFICIENT_POWER);
+        }
+        if (this == PlayerPtr) {
+            Map.Column[1].Flag_To_Redraw();
+            Map.IsTargettingMode = SPC_NONE;
+        }
+        break;
+
     case SPC_TS_ION_CANNON:
         if (SuperWeapon[SPC_TS_ION_CANNON].Is_Ready()) {
             AnimClass* ts_ion_anim = new AnimClass(ANIM_TS_ION_BEAM, Cell_Coord(cell), 0, 1);
@@ -5182,9 +5514,16 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                     // deletes itself in there, so tech cannot be touched afterwards.
                     bool ts_bldg = (tech->What_Am_I() == RTTI_BUILDING
                                     && ((BuildingClass*)tech)->Class->Is_TS_Era());
+                    StructType const fill = (tech->What_Am_I() == RTTI_BUILDING
+                                             && TF_Is_Line_Fill_Type(((BuildingClass*)tech)->Class))
+                                                ? ((BuildingClass*)tech)->Class->Type
+                                                : STRUCT_NONE;
                     if (tech->Unlimbo(Cell_Coord(cell))) {
                         factory->Completed();
                         Abandon_Production(type, bay);
+                        if (fill != STRUCT_NONE) {
+                            TF_Wall_Line_Fill(this, fill, cell);
+                        }
 
                         if (PlayerPtr == this) {
                             Sound_Effect(ts_bldg ? VOC_TS_PLACE_BUILDING_DOWN
@@ -14231,7 +14570,8 @@ void HouseClass::Check_Pertinent_Structures(void)
         BuildingClass* b = Buildings.Ptr(index);
 
         if (b && b->IsActive && b->House == this) {
-            if (!b->Class->IsWall && *b != STRUCT_APMINE && *b != STRUCT_AVMINE && *b != STRUCT_TSDLIMP) {
+            if (!b->Class->IsWall && *b != STRUCT_APMINE && *b != STRUCT_AVMINE && *b != STRUCT_TSDLIMP
+                && *b != STRUCT_TSFSDF) {
                 if (!Special.ModernBalance
                     || (*b != STRUCT_SHIP_YARD && *b != STRUCT_FAKE_YARD && *b != STRUCT_SUB_PEN
                         && *b != STRUCT_FAKE_PEN && *b != STRUCT_TDGYARD && *b != STRUCT_TDNPEN)) {

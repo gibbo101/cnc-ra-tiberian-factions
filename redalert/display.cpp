@@ -669,6 +669,16 @@ void DisplayClass::Set_Cursor_Shape(short const* list)
  *   06/07/1994 JLB : Handles concrete check.                                                  *
  *   10/11/1994 BWG : Added IsProximate check for ore refineries                               *
  *=============================================================================================*/
+/*
+**	Firestorm Wall Sections chain from one another the way walls do; nothing else may use a section
+**	to extend the base (TS BaseNormal=no).
+*/
+static bool TF_Section_Chains_To(BuildingTypeClass const* building, TechnoClass const* neighbour, HousesType house)
+{
+    return (building->Type == STRUCT_TSFSDF && neighbour != NULL && neighbour->What_Am_I() == RTTI_BUILDING
+            && *(BuildingClass const*)neighbour == STRUCT_TSFSDF && neighbour->House->Class->House == house);
+}
+
 bool DisplayClass::Passes_Proximity_Check(ObjectTypeClass const* object,
                                           HousesType house,
                                           short const* list,
@@ -766,6 +776,10 @@ bool DisplayClass::Passes_Proximity_Check(ObjectTypeClass const* object,
                     retval = true;
                     break;
                 }
+                if (TF_Section_Chains_To(building, base, house)) {
+                    retval = true;
+                    break;
+                }
 
                 /* BG: modifications to allow buildings one cell away from other buildings.
                 ** This is done by scanning each cell that fails the check (hence getting
@@ -796,6 +810,10 @@ bool DisplayClass::Passes_Proximity_Check(ObjectTypeClass const* object,
                         retval = true;
                         break;
                     }
+                    if (TF_Section_Chains_To(building, newbase, house)) {
+                        retval = true;
+                        break;
+                    }
                 }
                 if (retval != -1)
                     break;
@@ -821,7 +839,8 @@ bool DisplayClass::Passes_Proximity_Check(ObjectTypeClass const* object,
         if (building->Adjacent > 1) {
             for (int index = 0; index < Buildings.Count(); index++) {
                 BuildingClass* obj = Buildings.Ptr(index);
-                if (obj != NULL && !obj->IsInLimbo && obj->House->Class->House == house && obj->Class->IsBase) {
+                if (obj != NULL && !obj->IsInLimbo && obj->House->Class->House == house
+                    && (obj->Class->IsBase || TF_Section_Chains_To(building, obj, house))) {
                     int centdist = ::Distance(obj->Center_Coord(), Cell_Coord(cell));
                     centdist /= CELL_LEPTON_W;
                     centdist -= (obj->Class->Width() + obj->Class->Height()) / 2;
@@ -3215,7 +3234,8 @@ int DisplayClass::TacticalClass::Action(unsigned flags, KeyNumType& key)
             // reach from the mod side (crosshair-style targeting). If we
             // ever land launcher-side hooks, this becomes ACTION_TD_ION_CANNON.
             if (Map.IsTargettingMode == SPC_TD_ION_CANNON || Map.IsTargettingMode == SPC_TS_ION_CANNON
-                || Map.IsTargettingMode == SPC_TS_DROPPODS || Map.IsTargettingMode == SPC_TS_EMP) {
+                || Map.IsTargettingMode == SPC_TS_DROPPODS || Map.IsTargettingMode == SPC_TS_EMP
+                || Map.IsTargettingMode == SPC_TS_FIRESTORM) {
                 action = ACTION_NUKE_BOMB;
             }
 

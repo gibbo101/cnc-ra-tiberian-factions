@@ -5519,6 +5519,18 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
             }
 
             /*
+            **	Firestorm Wall Section: a pad anyone crosses while its field is down, a wall while up.
+            **	An open pad is passed over so whatever else stands in the cell is still weighed.
+            */
+            if (obj->What_Am_I() == RTTI_BUILDING && (*(BuildingClass*)obj) == STRUCT_TSFSDF) {
+                if (!((BuildingClass*)obj)->Is_Open_Firestorm_Section()) {
+                    return (MOVE_NO);
+                }
+                obj = obj->Next;
+                continue;
+            }
+
+            /*
             ** If object is a land mine, allow movement if possible.
             */
             if (obj->What_Am_I() == RTTI_BUILDING
@@ -5845,7 +5857,8 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
     */
     if (action == ACTION_NONE && object->What_Am_I() == RTTI_BUILDING) {
         StructType blah = *((BuildingClass*)object);
-        if (blah == STRUCT_AVMINE || blah == STRUCT_APMINE || blah == STRUCT_TSDLIMP)
+        if (blah == STRUCT_AVMINE || blah == STRUCT_APMINE || blah == STRUCT_TSDLIMP
+            || ((BuildingClass*)object)->Is_Open_Firestorm_Section())
             return (ACTION_MOVE);
     }
 

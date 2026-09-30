@@ -2446,6 +2446,9 @@ static AnimTypeClass const TsSBang34(ANIM_TS_SBANG34, "TSBANG34", 17, 5, false, 
 // are TS PULSEFX1 / PULSEFX2 flat on the ground at the landing, one picked at random as TS does.
 // Art = scripts/ts_pack_emp.py.
 static AnimTypeClass const TsPulsBall(ANIM_TS_PULSBALL, "TSPULSBL", 8, 4, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 23, 0, VOC_NONE, ANIM_NONE, 23, 0x100);
+static AnimTypeClass const TsFsIdle(ANIM_TS_FSIDLE, "TSFSIDLE", 136, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 19, 0, VOC_NONE, ANIM_NONE, 19, 0x100);
+static AnimTypeClass const TsFsGrnd(ANIM_TS_FSGRND, "TSFSGRND", 66, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 19, 0, VOC_NONE, ANIM_NONE, 19, 0x100);
+static AnimTypeClass const TsFsAir(ANIM_TS_FSAIR, "TSFSAIR", 28, 9, false, false, false, false, false, false, false, false, false, 0, 1, 0, 0, 0, 19, 0, VOC_NONE, ANIM_NONE, 19, 0x100);
 static AnimTypeClass const TsMEmpFx(ANIM_TS_MEMPFX, "TSMEMPFX", 144, 6, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 12, 0, VOC_NONE, ANIM_NONE, 12, 0x100);
 static AnimTypeClass const TsPulseFx1(ANIM_TS_PULSEFX1, "TSPULSF1", 152, 44, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 21, 0, VOC_NONE, ANIM_NONE, 21, 0x100);
 static AnimTypeClass const TsPulseFx2(ANIM_TS_PULSEFX2, "TSPULSF2", 152, 44, false, false, false, false, false, false, true, false, false, 0, 1, 0, 0, 0, 15, 0, VOC_NONE, ANIM_NONE, 15, 0x100);
@@ -2716,6 +2719,9 @@ void AnimTypeClass::Init_Heap(void)
     new AnimTypeClass(TsPulseFx2);
     new AnimTypeClass(TsEmpFx);
     new AnimTypeClass(TsMEmpFx);
+    new AnimTypeClass(TsFsIdle);
+    new AnimTypeClass(TsFsGrnd);
+    new AnimTypeClass(TsFsAir);
 }
 
 /***********************************************************************************************

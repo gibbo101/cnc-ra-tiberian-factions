@@ -38,17 +38,18 @@ TEMPERAT="GTCNST.SHP GTCNST_A.SHP GTCNST_B.SHP GTCNST_C.SHP
           GTWEAP_D.SHP GTWEAP_1.SHP
           NTREFN.SHP NTREFN_A.SHP NTREFN_B.SHP NTREFN_C.SHP NTREFNBB.SHP
           GTPLUG.SHP GTPLUG_A.SHP GTPLUG_B.SHP GTPLUG_C.SHP GTPLUG_D.SHP GTPLUG_E.SHP GTPLUG_F.SHP
-          GTDPSA.SHP GTDPSA_A.SHP GTDPSAMK.SHP"
+          GTDPSA.SHP GTDPSA_A.SHP GTDPSAMK.SHP
+          GTFIRE.SHP GTFIRE_B.SHP GTFIRE_C.SHP GTFSDF.SHP"
 
 ISOTEMP="GTCNSTMK.SHP GTDEPTMK.SHP GTHPADMK.SHP GTPILEMK.SHP GTPOWRMK.SHP
          GTRADRMK.SHP GTSILOMK.SHP GTTECHMK.SHP GTWEAPMK.SHP NTREFNMK.SHP
-         GTPLUGMK.SHP"
+         GTPLUGMK.SHP GTFIREMK.SHP"
 
 # SMCH/SONI/APC and (from SIDEC01) HARV are TS's own vehicle cameos: the Limpet Drone has
 # no cameo of its own, and its plate is rebuilt from theirs.
 CONQUER="BRRKICON.SHP HELIICON.SHP RADRICON.SHP TECHICON.SHP WEAPICON.SHP TURBICON.SHP
          PLUGICON.SHP SEEKICON.SHP IONCICON.SHP RAD1ICON.SHP RAD2ICON.SHP RAD3ICON.SHP
-         PODSICON.SHP SMCHICON.SHP SONIICON.SHP APCICON.SHP"
+         PODSICON.SHP SMCHICON.SHP SONIICON.SHP APCICON.SHP FSDICON.SHP FSPICON.SHP"
 
 # The remaining cameos live in the per-side sidebar archives rather than
 # CONQUER. SIDEC01 is GDI, SIDEC02 Nod; all three take the GDI variant, the
@@ -62,6 +63,9 @@ python3 "$EXTRACT" "$TIBSUN" CACHE.MIX    extract "$RAW" UNITTEM.PAL CAMEO.PAL A
 # ANIM.PAL — kept out of $CONQUER so the cameo-palette loop doesn't touch them)
 # + the TS ION1 strike sound.
 python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" IONBEAM.SHP RING1.SHP >/dev/null
+# Firestorm field effects (decoded by ts_pack_firestorm_fx.py against ANIM.PAL).
+python3 "$EXTRACT" "$TIBSUN" CONQUER.MIX  extract "$RAW" FSIDLE.SHP FSGRND.SHP FSAIR.SHP >/dev/null
+python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" FIRSTRM1.AUD >/dev/null
 python3 "$EXTRACT" "$TIBSUN" SOUNDS.MIX   extract "$RAW" ION1.AUD >/dev/null
 # Drop-pod strike art (anim SHPs, decoded by ts_pack_pods.py against ANIM.PAL)
 # + the pod strafe gun sound.
