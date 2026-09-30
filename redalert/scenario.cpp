@@ -873,27 +873,33 @@ bool Read_Scenario(char* name)
     }
 
     /*
-    **  Dev builds also start the human player with a Firestorm Generator and three TS Power
-    **  Plants (the generator's 200 plus room for fifty wall sections) on clear ground round the
-    **  start, so the field can be tested without building up to the Tech Center.
+    **  Dev builds also start every human player with a Firestorm Generator and three TS Power
+    **  Plants (the generator's 200 plus room for fifty wall sections) on clear ground round
+    **  their start, so the field can be tested without building up to the Tech Center.
     */
-    if (TF_Dev_Cheats() && Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
-        CELL home = 0;
-        for (int i = 0; i < Units.Count(); i++) {
-            UnitClass* u = Units.Ptr(i);
-            if (u->House == PlayerPtr && (home == 0 || *u == UNIT_MCV || *u == UNIT_TSMCV)) {
-                home = Coord_Cell(u->Center_Coord());
-            }
-        }
-        static StructType const _base[] = {STRUCT_TSFGEN, STRUCT_TSPOWR, STRUCT_TSPOWR, STRUCT_TSPOWR};
-        for (int b = 0; home != 0 && b < (int)ARRAY_SIZE(_base); b++) {
-            CELL spot = TF_Dev_Find_Build_Spot(_base[b], home);
-            if (spot == 0) {
+    if (TF_Dev_Cheats() && Session.Type != GAME_NORMAL) {
+        for (int h = 0; h < Houses.Count(); h++) {
+            HouseClass* house = Houses.Ptr(h);
+            if (house == NULL || !house->IsHuman) {
                 continue;
             }
-            BuildingClass* bld = new BuildingClass(BuildingTypes.Ptr((int)_base[b]), PlayerPtr->Class->House);
-            if (bld != NULL && !bld->Unlimbo(Cell_Coord(spot))) {
-                delete bld;
+            CELL home = 0;
+            for (int i = 0; i < Units.Count(); i++) {
+                UnitClass* u = Units.Ptr(i);
+                if (u->House == house && (home == 0 || *u == UNIT_MCV || *u == UNIT_TSMCV)) {
+                    home = Coord_Cell(u->Center_Coord());
+                }
+            }
+            static StructType const _base[] = {STRUCT_TSFGEN, STRUCT_TSPOWR, STRUCT_TSPOWR, STRUCT_TSPOWR};
+            for (int b = 0; home != 0 && b < (int)ARRAY_SIZE(_base); b++) {
+                CELL spot = TF_Dev_Find_Build_Spot(_base[b], home);
+                if (spot == 0) {
+                    continue;
+                }
+                BuildingClass* bld = new BuildingClass(BuildingTypes.Ptr((int)_base[b]), house->Class->House);
+                if (bld != NULL && !bld->Unlimbo(Cell_Coord(spot))) {
+                    delete bld;
+                }
             }
         }
     }

@@ -1659,7 +1659,7 @@ static void TF_Mailbox_Write_EVA_Voice(void);
 // The crest patch ships in release builds (its call sites below are unguarded), so its
 // declarations must not sit behind TF_DEV_BUILD -- only the two probes are dev-only.
 static void TF_Patch_ClientG_Crest(void);
-static void TF_Patch_ClientG_Firestorm_Click(void);
+static void TF_Patch_ClientG_Click_Specials(void);
 static void TF_Crest_Tick(void);
 #if TF_DEV_BUILD
 static void TF_Probe_ClientG_Cache(void);
@@ -1814,7 +1814,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance_Variation(int s
 
     TF_Mailbox_Write_EVA_Voice();
     TF_Patch_ClientG_Crest();
-    TF_Patch_ClientG_Firestorm_Click();
+    TF_Patch_ClientG_Click_Specials();
 #if TF_DEV_BUILD
     TF_Probe_ClientG_Cache();
     TF_Probe_ClientG_Crest();
@@ -2057,7 +2057,7 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Custom_Instance(const ch
 
     TF_Mailbox_Write_EVA_Voice();
     TF_Patch_ClientG_Crest();
-    TF_Patch_ClientG_Firestorm_Click();
+    TF_Patch_ClientG_Click_Specials();
 #if TF_DEV_BUILD
     TF_Probe_ClientG_Cache();
     TF_Probe_ClientG_Crest();
@@ -4616,20 +4616,40 @@ static void TF_Patch_ClientG_Tab_Prefix(bool td_era)
     CloseHandle(proc);
 }
 
+/*
+**	Superweapons whose cameo acts on one left click, with no targeting cursor: the Firestorm
+**	(on/off) and the Hunter Seeker (launch). The launcher patch below sends their clicks to the
+**	DLL as build requests, and CNC_Handle_Sidebar_Request turns those into the order.
+*/
+static SpecialWeaponType const TF_ClickSpecials[] = {SPC_TS_FIRESTORM, SPC_TS_HUNTSEEK};
+
+static int TF_Click_Special_Index(int buildable_type, int buildable_id)
+{
+    if (buildable_type == RTTI_SPECIAL) {
+        for (int i = 0; i < (int)ARRAY_SIZE(TF_ClickSpecials); i++) {
+            if (buildable_id == TF_ClickSpecials[i]) {
+                return (i);
+            }
+        }
+    }
+    return (-1);
+}
+
 /***********************************************************************************************
- * TF_Patch_ClientG_Firestorm_Click -- A left click on the Firestorm's cameo reaches the DLL.  *
+ * TF_Patch_ClientG_Click_Specials -- A left click on a click special's cameo reaches the DLL. *
  *                                                                                             *
  *    ClientG's cameo left-click handler (0x73E950) forks at 0x73EA39 on "is this entry a      *
  *    superweapon?": a ready superweapon opens the launcher's targeting cursor, any other      *
  *    entry falls through to the build request send at 0x73ECE9. The patch jumps from the      *
  *    fork to a few instructions in the zero-filled tail of ClientG's last code page, which    *
- *    send the Firestorm's entry (RTTI_SPECIAL, SPC_TS_FIRESTORM) straight to the build send   *
- *    in every state and put every other entry back on the original path. The request lands   *
- *    in CNC_Handle_Sidebar_Request, which switches the field.                                 *
+ *    send the entries in TF_ClickSpecials straight to the build send in every state and put   *
+ *    every other entry back on the original path.                                             *
  *                                                                                             *
  *    ClientG loads at its fixed base (no relocations), so the addresses hold for the shipped  *
  *    build. Both spots are checked byte for byte first; a launcher that differs is left       *
- *    alone and the Firestorm keeps the targeting route. Idempotent across matches.            *
+ *    alone and these superweapons keep the targeting route. The patch lives as long as the   *
+ *    launcher process, across matches; an older version of it is replaced with the fork       *
+ *    set back to stock while the new instructions go in.                                      *
  *=============================================================================================*/
 static void TF_Put_Rel32(unsigned char* at, SIZE_T next, SIZE_T target)
 {
@@ -4637,7 +4657,7 @@ static void TF_Put_Rel32(unsigned char* at, SIZE_T next, SIZE_T target)
     memcpy(at, &rel, 4);
 }
 
-static void TF_Patch_ClientG_Firestorm_Click(void)
+static const char* TF_Patch_Click_Specials_In(HANDLE proc)
 {
     static const SIZE_T FORK = 0x73EA39;
     static const SIZE_T SUPER_PATH = 0x73EA45;
@@ -4649,51 +4669,38 @@ static void TF_Patch_ClientG_Firestorm_Click(void)
     /*
     **	mov ecx,[esi+20h] / cmp ecx,SPECIAL / jne OTHER_TYPES      -- the original fork
     **	cmp [esi+18h],RTTI_SPECIAL / jne SUPER_PATH                 -- entry's BuildableType
-    **	cmp [esi+1Ch],SPC_TS_FIRESTORM / jne SUPER_PATH             -- entry's BuildableID
-    **	jmp BUILD_SEND
+    **	cmp [esi+1Ch],<id> / je BUILD_SEND                          -- entry's BuildableID, per special
+    **	jmp SUPER_PATH
     */
-    unsigned char cave[37] = {0x8B, 0x4E, 0x20, 0x83, 0xF9, 0x0B, 0x0F, 0x85, 0, 0, 0, 0,
-                              0x83, 0x7E, 0x18, (unsigned char)RTTI_SPECIAL, 0x0F, 0x85, 0, 0, 0, 0,
-                              0x83, 0x7E, 0x1C, (unsigned char)SPC_TS_FIRESTORM, 0x0F, 0x85, 0, 0, 0, 0,
-                              0xE9, 0, 0, 0, 0};
+    enum { HEAD = 22, PER_SPECIAL = 10, TAIL = 5, CAVE_MAX = HEAD + PER_SPECIAL * 8 + TAIL };
+    unsigned char cave[CAVE_MAX] = {0x8B, 0x4E, 0x20, 0x83, 0xF9, 0x0B, 0x0F, 0x85, 0, 0, 0, 0,
+                                    0x83, 0x7E, 0x18, (unsigned char)RTTI_SPECIAL, 0x0F, 0x85, 0, 0, 0, 0};
     TF_Put_Rel32(cave + 8, CAVE + 12, OTHER_TYPES);
     TF_Put_Rel32(cave + 18, CAVE + 22, SUPER_PATH);
-    TF_Put_Rel32(cave + 28, CAVE + 32, SUPER_PATH);
-    TF_Put_Rel32(cave + 33, CAVE + 37, BUILD_SEND);
+    size_t len = HEAD;
+    for (int i = 0; i < (int)ARRAY_SIZE(TF_ClickSpecials) && len + PER_SPECIAL + TAIL <= CAVE_MAX; i++) {
+        unsigned char const test[6] = {0x83, 0x7E, 0x1C, (unsigned char)TF_ClickSpecials[i], 0x0F, 0x84};
+        memcpy(cave + len, test, sizeof(test));
+        TF_Put_Rel32(cave + len + 6, CAVE + len + PER_SPECIAL, BUILD_SEND);
+        len += PER_SPECIAL;
+    }
+    cave[len] = 0xE9;
+    TF_Put_Rel32(cave + len + 1, CAVE + len + TAIL, SUPER_PATH);
+    len += TAIL;
     unsigned char fork[12] = {0xE9, 0, 0, 0, 0, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90};
     TF_Put_Rel32(fork + 1, FORK + 5, CAVE);
 
-    FILE* log = NULL;
-#if TF_DEV_BUILD
-    {
-        const char* up = getenv("USERPROFILE");
-        if (up != NULL) {
-            char logpath[512];
-            snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
-            log = fopen(logpath, "a");
-        }
-    }
-#endif
-    HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
-                                  | PROCESS_QUERY_INFORMATION);
-    if (proc == NULL) {
-        if (log) {
-            fprintf(log, "  firestorm click: ClientG not opened\n");
-            fclose(log);
-        }
-        return;
-    }
-
     unsigned char cur_fork[sizeof(fork)];
-    unsigned char cur_cave[sizeof(cave)];
+    unsigned char cur_cave[CAVE_MAX];
     SIZE_T got_fork = 0;
     SIZE_T got_cave = 0;
     ReadProcessMemory(proc, (LPCVOID)FORK, cur_fork, sizeof(cur_fork), &got_fork);
-    ReadProcessMemory(proc, (LPCVOID)CAVE, cur_cave, sizeof(cur_cave), &got_cave);
-    bool readable = (got_fork == sizeof(cur_fork) && got_cave == sizeof(cur_cave));
-    bool cave_ours = readable && memcmp(cur_cave, cave, sizeof(cave)) == 0;
+    ReadProcessMemory(proc, (LPCVOID)CAVE, cur_cave, len, &got_cave);
+    bool readable = (got_fork == sizeof(cur_fork) && got_cave == len);
+    bool cave_current = readable && memcmp(cur_cave, cave, len) == 0;
+    bool cave_older = readable && memcmp(cur_cave, cave, 12) == 0;
     bool cave_free = readable;
-    for (size_t i = 0; cave_free && i < sizeof(cur_cave); i++) {
+    for (size_t i = 0; cave_free && i < len; i++) {
         cave_free = (cur_cave[i] == 0);
     }
     bool fork_ours = readable && memcmp(cur_fork, fork, sizeof(fork)) == 0;
@@ -4702,15 +4709,15 @@ static void TF_Patch_ClientG_Firestorm_Click(void)
     const char* result = "already patched";
     if (!readable) {
         result = "not readable, left alone";
-    } else if (!(fork_ours && cave_ours)) {
-        if (!(fork_stock || fork_ours) || !(cave_free || cave_ours)) {
+    } else if (!(fork_ours && cave_current)) {
+        if (!(fork_stock || fork_ours) || !(cave_free || cave_older)) {
             result = "unknown launcher build, left alone";
         } else {
             result = "patched";
-            SIZE_T spots[2] = {CAVE, FORK};
-            unsigned char const* bytes[2] = {cave, fork};
-            SIZE_T sizes[2] = {sizeof(cave), sizeof(fork)};
-            for (int k = 0; k < 2; k++) {
+            SIZE_T spots[3] = {FORK, CAVE, FORK};
+            unsigned char const* bytes[3] = {stock, cave, fork};
+            SIZE_T sizes[3] = {sizeof(stock), len, sizeof(fork)};
+            for (int k = fork_ours ? 0 : 1; k < 3; k++) {
                 DWORD old_protect = 0;
                 SIZE_T wrote = 0;
                 if (!VirtualProtectEx(proc, (LPVOID)spots[k], sizes[k], PAGE_EXECUTE_READWRITE, &old_protect)) {
@@ -4728,11 +4735,55 @@ static void TF_Patch_ClientG_Firestorm_Click(void)
             }
         }
     }
-    if (log) {
-        fprintf(log, "  firestorm click: %s\n", result);
-        fclose(log);
+    return (result);
+}
+
+static void TF_Click_Specials_Log(const char* where, const char* result)
+{
+#if TF_DEV_BUILD
+    const char* up = getenv("USERPROFILE");
+    if (up != NULL) {
+        char logpath[512];
+        snprintf(logpath, sizeof(logpath), "%s/Documents/CnCRemastered/tf_cache_probe.log", up);
+        FILE* log = fopen(logpath, "a");
+        if (log != NULL) {
+            fprintf(log, "  click specials (%s): %s\n", where, result);
+            fclose(log);
+        }
     }
+#endif
+}
+
+/*
+**	Match start, from the simulation process: patches the launcher across processes.
+*/
+static void TF_Patch_ClientG_Click_Specials(void)
+{
+    HANDLE proc = TF_Open_ClientG(PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION
+                                  | PROCESS_QUERY_INFORMATION);
+    if (proc == NULL) {
+        TF_Click_Specials_Log("match start", "ClientG not opened");
+        return;
+    }
+    TF_Click_Specials_Log("match start", TF_Patch_Click_Specials_In(proc));
     CloseHandle(proc);
+}
+
+/*
+**	The launcher loads this DLL briefly at its own startup, on every machine with the mod,
+**	LAN joiners included, whose simulations never load it. When that load is in ClientG.exe,
+**	the patch goes into the launcher from inside; it stays after the DLL is unloaded, since
+**	every byte of it lives in ClientG's own image.
+*/
+void TF_Patch_Launcher_At_Load(void)
+{
+    char exe[MAX_PATH] = "";
+    GetModuleFileNameA(NULL, exe, sizeof(exe));
+    const char* name = strrchr(exe, '\\');
+    name = (name != NULL) ? name + 1 : exe;
+    if (_stricmp(name, "ClientG.exe") == 0) {
+        TF_Click_Specials_Log("launcher load", TF_Patch_Click_Specials_In(GetCurrentProcess()));
+    }
 }
 
 static void TF_Patch_ClientG_Crest(void)
@@ -8031,22 +8082,25 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Sidebar_Request(Sidebar
         return;
     }
 
-    TF_Sidebar_Log("sidebar request type=%d buildable_type=%d buildable_id=%d cell=%d,%d",
-                   (int)request_type, buildable_type, buildable_id, (int)cell_x, (int)cell_y);
+    TF_Sidebar_Log("sidebar request type=%d buildable_type=%d buildable_id=%d cell=%d,%d house=%d",
+                   (int)request_type, buildable_type, buildable_id, (int)cell_x, (int)cell_y,
+                   (PlayerPtr != NULL) ? (int)PlayerPtr->Class->House : -1);
 
     /*
-    **	A left click on the Firestorm's cameo arrives as a build request (TF_Patch_ClientG_Firestorm_Click)
-    **	and switches the field on or off. Clicks closer together than a third of a second count
+    **	A left click on a click special's cameo arrives as a build request
+    **	(TF_Patch_ClientG_Click_Specials) and gives its order: the Firestorm goes on or off, the
+    **	Hunter Seeker launches. Clicks on one cameo closer together than a third of a second count
     **	once, so a double click cannot raise and drop the field in one go.
     */
-    if (buildable_type == RTTI_SPECIAL && buildable_id == SPC_TS_FIRESTORM
-        && (request_type == SIDEBAR_REQUEST_START_CONSTRUCTION
-            || request_type == SIDEBAR_REQUEST_START_CONSTRUCTION_MULTI)) {
-        static long last_toggle[HOUSE_COUNT];
-        int h = PlayerPtr->Class->House;
-        if (last_toggle[h] == 0 || Frame - last_toggle[h] >= TICKS_PER_SECOND / 3 || Frame < last_toggle[h]) {
-            last_toggle[h] = Frame;
-            OutList.Add(EventClass(EventClass::SPECIAL_PLACE, SPC_TS_FIRESTORM, (CELL)0));
+    int click_special = TF_Click_Special_Index(buildable_type, buildable_id);
+    if (click_special >= 0) {
+        if (request_type == SIDEBAR_REQUEST_START_CONSTRUCTION || request_type == SIDEBAR_REQUEST_START_CONSTRUCTION_MULTI) {
+            static long last_click[HOUSE_COUNT][ARRAY_SIZE(TF_ClickSpecials)];
+            long& last = last_click[PlayerPtr->Class->House][click_special];
+            if (last == 0 || Frame - last >= TICKS_PER_SECOND / 3 || Frame < last) {
+                last = Frame;
+                OutList.Add(EventClass(EventClass::SPECIAL_PLACE, TF_ClickSpecials[click_special], (CELL)0));
+            }
         }
         return;
     }
@@ -8110,8 +8164,9 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_SuperWeapon_Request(Sup
         return;
     }
 
-    TF_Sidebar_Log("superweapon request type=%d buildable_type=%d buildable_id=%d at %d,%d",
-                   (int)request_type, buildable_type, buildable_id, x1, y1);
+    TF_Sidebar_Log("superweapon request type=%d buildable_type=%d buildable_id=%d at %d,%d house=%d",
+                   (int)request_type, buildable_type, buildable_id, x1, y1,
+                   (PlayerPtr != NULL) ? (int)PlayerPtr->Class->House : -1);
 
     switch (request_type) {
     case SUPERWEAPON_REQUEST_PLACE_SUPER_WEAPON:

@@ -105,7 +105,7 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 | Sidebar build icons / cost / progress | DLL supplies per-entry; launcher renders | **Partial** — DLL owns `AssetName`/cost/etc. | `CNCSidebarEntryStruct` |
 | HUD credit/power/timer **values** | DLL supplies values; launcher renders | Values yes, rendering no | `CNCSidebarStruct` |
 | Superweapon `$cost` line suppression | Launcher (`SW_` whitelist) | No | `reference-launcher-superweapon-cost-suppression` |
-| **Superweapon targeted-vs-instant firing** | **Launcher** (compiled: the cameo left-click handler forks on the entry being a superweapon) | **Yes, by a runtime code patch of ClientG** (host only). Data levers are dead; see below | `TF_Patch_ClientG_Firestorm_Click`; see below |
+| **Superweapon targeted-vs-instant firing** | **Launcher** (compiled: the cameo left-click handler forks on the entry being a superweapon) | **Yes, by a runtime code patch of ClientG** (host only). Data levers are dead; see below | `TF_Patch_ClientG_Click_Specials`; see below |
 | Win/lose stings, "under attack", low-power GUI SFX | Launcher (`Faction_Event_GUI_SFX_*`) | No (Allied/Soviet only — see below) | strings |
 
 ---
@@ -221,13 +221,15 @@ it is a static global, since ClientG loads at its fixed base `0x400000` and has 
 The DLL can also start targeting itself: `CALLBACK_EVENT_SPECIAL_WEAPON_TARGETTING` lands in
 `0x1689130` (the Chronosphere's second step uses it).
 
-**The patch** (`TF_Patch_ClientG_Firestorm_Click`, dllinterface.cpp, applied at every match start,
-idempotent): the 12 bytes at the fork become a jump into the zero-filled tail of ClientG's last
-code page (`0x1BE91A0`), where 37 bytes redo the original test and send the Firestorm's entry
-(`RTTI_SPECIAL`, `SPC_TS_FIRESTORM`) to the build send in every state. Every other entry runs the
-original code. Both spots are checked byte for byte first; a different launcher build is left
-alone. The request arrives in `CNC_Handle_Sidebar_Request`. The cameo stays in the superweapon
-tab with its normal clock and "Ready!".
+**The patch** (`TF_Patch_ClientG_Click_Specials`, dllinterface.cpp, applied at every match start,
+idempotent, lives as long as the launcher process): the 12 bytes at the fork become a jump into
+the zero-filled tail of ClientG's last code page (`0x1BE91A0`), where a few instructions redo the
+original test and send the entries listed in `TF_ClickSpecials` (`RTTI_SPECIAL` plus the Firestorm's
+and the Hunter Seeker's ids) to the build send in every state. Every other entry runs the original
+code. Both spots are checked byte for byte first; a different launcher build is left alone. The
+request arrives in `CNC_Handle_Sidebar_Request`. The cameo stays in the superweapon tab with its
+normal clock and "Ready!". To add a superweapon, add it to `TF_ClickSpecials` and give it an order
+in `Place_Special_Blast`.
 
 **What the Deck probe established (2026-09-30), for any future data-only idea:**
 - The tab is chosen by `Type` alone. `UNIT_TYPE` goes to the vehicle tab even with an `SW_` type

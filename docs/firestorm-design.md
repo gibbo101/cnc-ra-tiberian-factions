@@ -38,7 +38,7 @@ Open, in order:
 ## Status
 
 - **Stage E (control) VERIFIED in play 2026-09-30 (Deck, all five checks):** the launcher's
-  cameo left-click handler is patched in memory at match start (`TF_Patch_ClientG_Firestorm_Click`,
+  cameo left-click handler is patched in memory at match start (`TF_Patch_ClientG_Click_Specials`,
   dllinterface.cpp; mechanism and ClientG addresses in `launcher-vs-dll-ownership.md`), so a left
   click on the Firestorm arrives as a build request. `CNC_Handle_Sidebar_Request` turns it into
   `SPECIAL_PLACE` (clicks within a third of a second count once). `Place_Special_Blast` toggles:

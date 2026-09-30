@@ -2815,10 +2815,7 @@ void HouseClass::Super_Weapon_Handler(void)
             **  themselves ready. Runtime-gated like the instant-build cheat
             **  (tf_dev_off.flag).
             */
-            // TF: the Hunter Seeker is a repeatable click-to-fire weapon whose 12-minute
-            // recharge is a real mechanic, so it is excluded from the fast-recharge cheat (its
-            // countdown must be visible/testable).
-            if (TF_Dev_Cheats() && IsHuman && !super->Is_Ready() && special != SPC_TS_HUNTSEEK) {
+            if (TF_Dev_Cheats() && IsHuman && !super->Is_Ready()) {
                 super->Cap_Recharge(TICKS_PER_SECOND * 5);
             }
 #endif
@@ -3412,11 +3409,11 @@ void HouseClass::Super_Weapon_Handler(void)
             }
         } else {
             /*
-            **  The droid finds its own victim, so it launches the tick it is
-            **  charged, for every house (GPS-style): the launcher never sees a
-            **  ready cameo, so it never opens a targeting cursor for it.
+            **  The droid finds its own victim. A computer house launches it the tick
+            **  it is charged; a human launches it with one click on the cameo
+            **  (TF_Patch_ClientG_Click_Specials sends that click to the DLL).
             */
-            if (SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready()) {
+            if (!IsHuman && SuperWeapon[SPC_TS_HUNTSEEK].Is_Ready()) {
                 Place_Special_Blast(SPC_TS_HUNTSEEK, 0);
             }
         }
