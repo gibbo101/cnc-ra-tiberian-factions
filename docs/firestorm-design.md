@@ -23,10 +23,8 @@ Open, in order:
    down) + GADEPT_D (repair) with C2 during; end = D and C2 stop, C3 (gantry up), lights back, EVA
    "unit repaired". Ours has only the idle _A/_B. Needs the four anims packed (sheet first) and the
    sequence in Mission_Repair; dock offset from a screenshot.
-6. **Light orange selection box on a limpeted unit (Luke):** TS draws a limpeted object's bracket
-   from another frame set (OpenTS techno.cpp:1455). The launcher tints CNC_SELECT_BOX.TGA (white,
-   atlas 3027,4088 128x128) per draw; no data lever (SpiedByFlags draws the spy panel frame, not a
-   box). Route: find the tint in ClientG and patch it, keyed on a field the DLL sets.
+6. **Light orange selection box on a limpeted unit:** moved to post-release (Luke, 2026-09-30),
+   `docs/todo.md` "Post-release".
 
 ## Decisions (Luke)
 

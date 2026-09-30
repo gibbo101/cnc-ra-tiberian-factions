@@ -42,6 +42,17 @@ Done and merged to `main` (f78d056b, pushed): the EMP Pulse Cannon arc, Mobile E
 War Factory, and TS GDI's HD concrete wall. Still open on `main` (`docs/known-issues.md`): medics looping on hurt
 Jumpjet Infantry; the Upgrade Center's missing RA slab. Then the LAN Limpet test and the queued features below.
 
+## Post-release (after the next Workshop release)
+
+- **Light orange selection box on a limpeted unit** (Luke, 2026-09-30). TS draws a limpeted
+  object's selection bracket from another frame set (OpenTS techno.cpp:1455). In the Remastered
+  launcher the box is `CNC_SELECT_BOX.TGA` (white, atlas 3027,4088 128x128), tinted as it is drawn;
+  no data lever reaches the tint (`SpiedByFlags` draws the spied-production panel frame, not a box).
+  Route: find the tint in ClientG and patch it at the launcher's startup load, keyed on a field the
+  DLL sets for limpeted objects, the way the click and key patches work
+  (`launcher-vs-dll-ownership.md`, "Launcher-resident patches"). The limpet's gameplay (attach,
+  slow, sight share, LAN) is done and verified 2026-09-30.
+
 ## TS chrono arrival at skirmish start (Luke's idea, 2026-09-27, after the GDI roster)
 
 Lore: a Chronosphere accident rips the TS faction back through time. So a TS player's opening
