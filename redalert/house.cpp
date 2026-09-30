@@ -1285,7 +1285,7 @@ static bool TF_Is_TS_Yard_Wall(ObjectTypeClass const* type)
 **	Line fill (the TS / RA2 wall-building rule): placing a wall section within TF_WALL_FILL_RANGE
 **	cells in a straight line of another of the house's sections of the same type fills the cells
 **	between, provided every one of them is clear to build. Each filled section is charged like a
-**	normal build of it, and the fill stops where the money runs out.
+**	normal build of it; a gap the house cannot pay for in full is left empty.
 */
 static const int TF_WALL_FILL_RANGE = 5;
 
@@ -1502,13 +1502,16 @@ void TF_Wall_Line_Fill(HouseClass* house, StructType type, CELL cell)
         if (!clear) {
             continue;
         }
+        if (house->Available_Money() < cost * (reach - 1)) {
+            if (house == PlayerPtr) {
+                Speak(VOX_NO_CASH);
+            }
+            continue;
+        }
 
         c = cell;
         for (int step = 1; step < reach; step++) {
             c = Adjacent_Cell(c, _dirs[d]);
-            if (house->Available_Money() < cost) {
-                return;
-            }
             BuildingClass* section = new BuildingClass(type, house->Class->House);
             if (section == NULL) {
                 return;
