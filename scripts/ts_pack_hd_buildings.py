@@ -169,7 +169,7 @@ def main(argv):
             pack(f"{ini}I", cl, cm, size)
             print(f"{ini}I: {compare[ini]} on the same canvas")
     with open(STUB_MANIFEST, "w") as f:
-        json.dump(stubs, f, indent=1, sort_keys=True)
+        json.dump(stubs, f, indent=1)
         f.write("\n")
 
 
