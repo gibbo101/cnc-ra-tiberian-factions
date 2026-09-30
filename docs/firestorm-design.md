@@ -5,6 +5,27 @@ Firestorm Generator (`GAFIRE`) and Firestorm Wall Sections (`GAFSDF`) for the TS
 Roster entry: `ts-gdi-tree-plan.md` 19b. Engine reference: OpenTS (`reference/OpenTS/code/`);
 data: TS's own `RULES.INI` / `ART.INI` (TIBSUN.MIX), which OpenTS does not carry.
 
+## RESUME HERE (2026-09-30, for a fresh session)
+
+Stages A-D + sound are DONE and verified; `firestorm` is pushed (tip 9a315a2f). The desktop is SHARED with
+the C&C3 tanks instance: it runs their combined build (branch c3-combined, local to
+../tf-c3combined-worktree = firestorm + c3-mammoth), and every desktop deploy is announced to that instance
+first (never over a live game). A firestorm-only DLL would strip the tanks, so DLL changes go out through
+their combined rebuild (or merge firestorm into c3-combined yourself, announce, deploy file by file with the
+atlas held at f3a75f8a).
+
+Open, in order:
+1. **Line fill all-or-nothing (9a315a2f)**: built, pushed, awaiting a combined rebuild + Luke's check (a gap the
+   house cannot pay for in full stays empty, "insufficient funds" plays; the clicked piece is still placed).
+2. **Placement-preview probe**: can the DLL know the cursor cell while the player places a wall? The launcher
+   sends INPUT_REQUEST_MOUSE_MOVE (dllinterface.cpp ~7579) but the handler returns early when legacy rendering
+   is off. Probe: log x1/y1 (and Map.Pixel_To_Coord after Adjust_Internal_View) while Luke moves a wall's
+   placement ghost. If it works, draw faded copies of the fill pieces (the Sensor Array's ghost-draw route,
+   DLLExportClass::Add_Sensor_Ghosts) in the cells TF_Wall_Line_Fill would take.
+3. **Stage E, correct control** -- design with Luke FIRST (he has an approach in mind that is not the Hunter
+   Seeker's cameo-click reader). Then the Hunter Seeker gets the same answer.
+4. Enemy-side checks are on main's LAN test list (docs/todo.md item 2).
+
 ## Decisions (Luke)
 
 - **Pad art = round C** (2026-09-29, "go with c!"): TS's pixels rebuilt for RA's grid. Square
