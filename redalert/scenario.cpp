@@ -273,60 +273,6 @@ bool TF_Dev_Rich_Start(void)
 
 extern int PreserveVQAScreen;
 
-#if TF_DEV_BUILD
-/***********************************************************************************************
- * TF_Dev_Find_Build_Spot -- Nearest clear plot for a dev-spawned building.                    *
- *                                                                                             *
- *    Searches square rings outward from the start cell for an origin whose whole footprint    *
- *    is on the map, clear to build and at least four cells from the start (the MCV's deploy   *
- *    ground), with a one-cell lane of no buildings round it.                                  *
- *                                                                                             *
- * INPUT:   type  -- the building to place.                                                    *
- *          home  -- the player's start cell.                                                  *
- *                                                                                             *
- * OUTPUT:  Returns the origin cell, or 0 if no plot within twelve cells is clear.             *
- *=============================================================================================*/
-static CELL TF_Dev_Find_Build_Spot(StructType type, CELL home)
-{
-    short const* occupy = BuildingTypes.Ptr((int)type)->Occupy_List();
-    int const hx = Cell_X(home);
-    int const hy = Cell_Y(home);
-    for (int r = 4; r <= 12; r++) {
-        for (int dy = -r; dy <= r; dy++) {
-            for (int dx = -r; dx <= r; dx++) {
-                if (abs(dx) != r && abs(dy) != r) {
-                    continue;
-                }
-                CELL origin = XY_Cell(hx + dx, hy + dy);
-                bool fits = true;
-                for (short const* o = occupy; fits && *o != REFRESH_EOL; o++) {
-                    CELL c = origin + *o;
-                    int cx = Cell_X(c);
-                    int cy = Cell_Y(c);
-                    if (!Map.In_Radar(c) || abs(cx - (hx + dx)) > 4 || !Map[c].Is_Clear_To_Build()
-                        || (abs(cx - hx) < 4 && abs(cy - hy) < 4)) {
-                        fits = false;
-                        break;
-                    }
-                    for (int ny = -1; fits && ny <= 1; ny++) {
-                        for (int nx = -1; nx <= 1; nx++) {
-                            CELL n = XY_Cell(cx + nx, cy + ny);
-                            if (Map.In_Radar(n) && Map[n].Cell_Building() != NULL) {
-                                fits = false;
-                                break;
-                            }
-                        }
-                    }
-                }
-                if (fits) {
-                    return origin;
-                }
-            }
-        }
-    }
-    return 0;
-}
-#endif
 
 void Display_Briefing_Text_GlyphX();
 
@@ -870,38 +816,6 @@ bool Read_Scenario(char* name)
     */
     if (TF_Dev_Cheats() && Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
         PlayerPtr->Refund_Money(100000);
-    }
-
-    /*
-    **  Dev builds also start every human player with a Firestorm Generator and three TS Power
-    **  Plants (the generator's 200 plus room for fifty wall sections) on clear ground round
-    **  their start, so the field can be tested without building up to the Tech Center.
-    */
-    if (TF_Dev_Cheats() && Session.Type != GAME_NORMAL) {
-        for (int h = 0; h < Houses.Count(); h++) {
-            HouseClass* house = Houses.Ptr(h);
-            if (house == NULL || !house->IsHuman) {
-                continue;
-            }
-            CELL home = 0;
-            for (int i = 0; i < Units.Count(); i++) {
-                UnitClass* u = Units.Ptr(i);
-                if (u->House == house && (home == 0 || *u == UNIT_MCV || *u == UNIT_TSMCV)) {
-                    home = Coord_Cell(u->Center_Coord());
-                }
-            }
-            static StructType const _base[] = {STRUCT_TSFGEN, STRUCT_TSPOWR, STRUCT_TSPOWR, STRUCT_TSPOWR};
-            for (int b = 0; home != 0 && b < (int)ARRAY_SIZE(_base); b++) {
-                CELL spot = TF_Dev_Find_Build_Spot(_base[b], home);
-                if (spot == 0) {
-                    continue;
-                }
-                BuildingClass* bld = new BuildingClass(BuildingTypes.Ptr((int)_base[b]), house->Class->House);
-                if (bld != NULL && !bld->Unlimbo(Cell_Coord(spot))) {
-                    delete bld;
-                }
-            }
-        }
     }
 
 #endif
