@@ -322,6 +322,23 @@ static OverlayTypeClass const Tswall(OVERLAY_TSWALL, // Overlay type number.
                                      true,           // Is this a wall type?
                                      false           // Is this a crate?
 );
+// Tiberian Factions -- TS Nod wall (TS [NAWALL]: the same stats as GAWALL). Built like Tswall.
+static OverlayTypeClass const Tsnwall(OVERLAY_TSNWALL, // Overlay type number.
+                                      "TSNWALL",       // INI name of overlay.
+                                      TXT_BRICK_WALL,  // Full name of overlay.
+                                      LAND_WALL,       // What kind of ground is it?
+                                      3,               // If this is a wall, how many damage levels?
+                                      50,              // If this is a wall, how many damage points can it take per level?
+                                      true,            // Visible on the radar map?
+                                      false,           // Is it a wooden overlay (affected by fire)?
+                                      true,            // Targetable as a destroyable overlay?
+                                      false,           // Crushable by tracked vehicle?
+                                      false,           // Is this harvestable Tiberium?
+                                      true,            // Stops low level bullets in flight?
+                                      false,           // Theater specific art?
+                                      true,            // Is this a wall type?
+                                      false            // Is this a crate?
+);
 static OverlayTypeClass const V12(OVERLAY_V12, // Overlay type number.
                                   "V12",       // INI name of overlay.
                                   TXT_CIV12,   // Full name of overlay.
@@ -646,6 +663,7 @@ void OverlayTypeClass::Init_Heap(void)
     // last so the positional heap (As_Reference = OverlayTypes.Ptr(type)) matches.
     new OverlayTypeClass(Tib01);      // OVERLAY_TIB01 (Tiberian Factions)
     new OverlayTypeClass(Tswall);     // OVERLAY_TSWALL (Tiberian Factions, TS GDI wall)
+    new OverlayTypeClass(Tsnwall);    // OVERLAY_TSNWALL (Tiberian Factions, TS Nod wall)
 }
 
 /***********************************************************************************************
@@ -928,7 +946,7 @@ void OverlayTypeClass::Init(TheaterType theater)
             }
             // TSWALL ships a classic stub in TFASSETS.MIX; if it is ever missing,
             // borrow BRIK's frames so the NULL guards pass and the HD art still draws.
-            if (index == OVERLAY_TSWALL && overlay.ImageData == NULL) {
+            if ((index == OVERLAY_TSWALL || index == OVERLAY_TSNWALL) && overlay.ImageData == NULL) {
                 overlay.ImageData = As_Reference(OVERLAY_BRICK_WALL).Get_Image_Data();
             }
 

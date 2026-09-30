@@ -1664,6 +1664,19 @@ typedef enum StructType : short
     STRUCT_TSDWEAP, // TS Mobile War Factory deployed "TSDWEAP" (Firestorm DGWEAP, art MWAR): a TS war factory on TSWEAP's 5x3 plot and geometry with a 12-stage shutter (Is_TS_War_Factory); the deploy order packs it back into UNIT_TSMWAR. Art: ts_pack_tree.py SIZEPASS on TSWEAP's affine.
     STRUCT_TSFGEN, // TS Firestorm Generator "TSFGEN" ([GAFIRE], 3x2 like TSTECH): hosts the Firestorm Defense that raises every Firestorm Wall Section the house owns (docs/firestorm-design.md). Art: GTFIRE + _B/_C baked into a 48-step idle, ts_pack_tree.py SIZEPASS.
     STRUCT_TSFSDF, // TS Firestorm Wall Section "TSFSDF" ([GAFSDF], 1x1): one per cell, walkable while the house's field is down, a lethal wall while it is up (HouseClass::IsFirestormLive). Frame = own neighbour sections N1 E2 S4 W8, +16 damaged, +32 live. Art: scripts/ts_pack_fsdf.py.
+    STRUCT_TSNWALL, // TS Nod Wall "TSNWALL" (NAWALL) — wall-type building: placement converts it to OVERLAY_TSNWALL (building.cpp), like BRIK and TSWALL. HD art: scripts/ts_pack_gdi_wall.py --nod.
+    STRUCT_TSGATEH, // TS GDI Gate, east-west "TSGATEH" (GAGATE_A, 3x1): stands in a wall line; owner and allies path through it, it opens as one comes up and closes behind (BuildingClass::Open_Gate). Art: scripts/ts_pack_gates.py.
+    STRUCT_TSGATEV, // TS GDI Gate, north-south "TSGATEV" (GAGATE_B, 1x3): TSGATEH turned.
+    STRUCT_TSNGATEH, // TS Nod Gate, east-west "TSNGATEH" (3x1): a gate like TSGATEH, its own art and door timing (building.cpp TFGates).
+    STRUCT_TSNGATEV, // TS Nod Gate, north-south "TSNGATEV" (1x3).
+    STRUCT_ALGATEH, // Allied Gate, east-west "ALGATEH" (3x1): a gate like TSGATEH, its own art and door timing (building.cpp TFGates).
+    STRUCT_ALGATEV, // Allied Gate, north-south "ALGATEV" (1x3).
+    STRUCT_SVGATEH, // Soviet Tesla Gate, east-west "SVGATEH" (3x1): a gate like TSGATEH, its own art and door timing (building.cpp TFGates).
+    STRUCT_SVGATEV, // Soviet Tesla Gate, north-south "SVGATEV" (1x3).
+    STRUCT_TDGGATEH, // TD GDI Gate, east-west "TDGGATEH" (3x1): a gate like TSGATEH, its own art and door timing (building.cpp TFGates).
+    STRUCT_TDGGATEV, // TD GDI Gate, north-south "TDGGATEV" (1x3).
+    STRUCT_TDNGATEH, // TD Nod Laser Gate, east-west "TDNGATEH" (3x1): a gate like TSGATEH, its own art and door timing (building.cpp TFGates).
+    STRUCT_TDNGATEV, // TD Nod Laser Gate, north-south "TDNGATEV" (1x3).
     STRUCT_COUNT,
     STRUCT_FIRST = 0,
 
@@ -1685,7 +1698,7 @@ typedef enum StructType : short
     **	Second range of BuildingTypeClass::Is_Tiberian_Era.
     */
     STRUCT_TS_TREE_FIRST = STRUCT_TSFACT,
-    STRUCT_TS_TREE_LAST = STRUCT_TSFSDF
+    STRUCT_TS_TREE_LAST = STRUCT_TDNGATEV
 } StructType;
 
 /*
@@ -1810,6 +1823,9 @@ typedef enum OverlayType : char
     // precedent: sprite by name, behaviour by Type). 16 join icons x 3 damage
     // stages in OverlayData, RA's wall layout; 48 = destroyed (cell.cpp Wall_Update).
     OVERLAY_TSWALL,
+    // Tiberian Factions -- TS Nod wall (NAWALL), the same arrangement as OVERLAY_TSWALL:
+    // exported as OVERLAY_BRICK_WALL, drawn by AssetName "TSNWALL", 48 = destroyed.
+    OVERLAY_TSNWALL,
 
     OVERLAY_COUNT,
     OVERLAY_FIRST = 0
@@ -3869,6 +3885,8 @@ typedef enum BSizeType : char
     BSIZE_43, // TS-authentic wide footprints. Appended at the tail: Width()/Height()/CenterOffset are positional tables.
     BSIZE_44, // TSPROC: 4x3 building + the south apron row as real footprint (no cliff drape).
     BSIZE_53, // TSWEAP: hangar on rows 0-1 x cols 0-3, row 2 + col 4 walkable concrete (08-28 rebuild).
+    BSIZE_31, // Gates, east-west.
+    BSIZE_13, // Gates, north-south.
 
     BSIZE_COUNT
 } BSizeType;
@@ -4432,6 +4450,9 @@ typedef enum VocType : short
     VOC_C3PATE,    // Predator attack voice. Bundled C&C3 sample(s) as C3PATE*.WAV.
     VOC_C3PATF,    // Predator attack voice. Bundled C&C3 sample(s) as C3PATF*.WAV.
     VOC_C3PGUN,    // Predator cannon (random take). Bundled C&C3 sample(s) as C3PGUN*.WAV.
+    VOC_TS_GATEDWN1, // TS gate lowering (GATEDWN1, [General] GateDown=). Bundled TSGATEDWN1.WAV.
+    VOC_TS_GATEUP1,  // TS gate rising (GATEUP1, [General] GateUp=). Bundled TSGATEUP1.WAV.
+    VOC_TSLACHG2R,   // The Tesla Coil charge-up (TSLACHG2) reversed: the Tesla gate's arcs winding down. Bundled TSLACHG2R.WAV.
 
     VOC_COUNT,
     VOC_FIRST = 0

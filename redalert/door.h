@@ -91,6 +91,8 @@ public:
     };
     bool Open_Door(int rate, int stages);
     bool Close_Door(int rate, int stages);
+    int Door_Position(void) const;
+    bool Reopen_Door(void);
     bool Is_Door_Open(void) const
     {
         return (State == IS_OPEN);

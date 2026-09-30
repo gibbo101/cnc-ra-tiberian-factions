@@ -429,26 +429,81 @@ PACK_ARGS+=("$TMPDIR/tsturb_stub.shp:TSTURB.SHP")
 # 16 join icons x 3 damage stages, RA's wall layout. Taller than the cell so a
 # north-south run's crest can rise above the cell's north edge. No MAKE stub:
 # walls never enumerate in the buildup state (dllinterface IsWall guard).
-ts_stub TSWALL "$TMPDIR/tswall_stub.shp" 33 60 48
+ts_stub TSWALL "$TMPDIR/tswall_stub.shp" 36 60 48
 PACK_ARGS+=("$TMPDIR/tswall_stub.shp:TSWALL.SHP")
+# TSNWALL: the TS Nod wall overlay's classic stub, TSWALL's twin.
+ts_stub TSNWALL "$TMPDIR/tsnwall_stub.shp" 36 60 48
+PACK_ARGS+=("$TMPDIR/tsnwall_stub.shp:TSNWALL.SHP")
+# TS GDI gates (HD canvas = the footprint): east-west 72x24, north-south 24x72; 20 door frames
+# (10 stages, healthy + damaged) and the 10-frame rise out of the slot.
+ts_stub TSGATEH "$TMPDIR/tsgateh_stub.shp" 72 24 20
+PACK_ARGS+=("$TMPDIR/tsgateh_stub.shp:TSGATEH.SHP")
+ts_stub TSGATEH "$TMPDIR/tsgatehmk_stub.shp" 72 24 10
+PACK_ARGS+=("$TMPDIR/tsgatehmk_stub.shp:TSGATEHMAKE.SHP")
+ts_stub TSGATEV "$TMPDIR/tsgatev_stub.shp" 24 72 20
+PACK_ARGS+=("$TMPDIR/tsgatev_stub.shp:TSGATEV.SHP")
+ts_stub TSGATEV "$TMPDIR/tsgatevmk_stub.shp" 24 72 10
+PACK_ARGS+=("$TMPDIR/tsgatevmk_stub.shp:TSGATEVMAKE.SHP")
+# The other gates: the same canvases, each with its own door frame count (the Tesla gate's
+# 20 door frames are followed by its 6 shut-loop frames).
+ts_stub TSNGATEH "$TMPDIR/tsngateh_stub.shp" 72 24 14
+PACK_ARGS+=("$TMPDIR/tsngateh_stub.shp:TSNGATEH.SHP")
+ts_stub TSNGATEH "$TMPDIR/tsngatehmk_stub.shp" 72 24 7
+PACK_ARGS+=("$TMPDIR/tsngatehmk_stub.shp:TSNGATEHMAKE.SHP")
+ts_stub TSNGATEV "$TMPDIR/tsngatev_stub.shp" 24 72 14
+PACK_ARGS+=("$TMPDIR/tsngatev_stub.shp:TSNGATEV.SHP")
+ts_stub TSNGATEV "$TMPDIR/tsngatevmk_stub.shp" 24 72 7
+PACK_ARGS+=("$TMPDIR/tsngatevmk_stub.shp:TSNGATEVMAKE.SHP")
+ts_stub ALGATEH "$TMPDIR/algateh_stub.shp" 72 24 20
+PACK_ARGS+=("$TMPDIR/algateh_stub.shp:ALGATEH.SHP")
+ts_stub ALGATEH "$TMPDIR/algatehmk_stub.shp" 72 24 10
+PACK_ARGS+=("$TMPDIR/algatehmk_stub.shp:ALGATEHMAKE.SHP")
+ts_stub ALGATEV "$TMPDIR/algatev_stub.shp" 24 72 20
+PACK_ARGS+=("$TMPDIR/algatev_stub.shp:ALGATEV.SHP")
+ts_stub ALGATEV "$TMPDIR/algatevmk_stub.shp" 24 72 10
+PACK_ARGS+=("$TMPDIR/algatevmk_stub.shp:ALGATEVMAKE.SHP")
+ts_stub SVGATEH "$TMPDIR/svgateh_stub.shp" 72 24 26
+PACK_ARGS+=("$TMPDIR/svgateh_stub.shp:SVGATEH.SHP")
+ts_stub SVGATEH "$TMPDIR/svgatehmk_stub.shp" 72 24 10
+PACK_ARGS+=("$TMPDIR/svgatehmk_stub.shp:SVGATEHMAKE.SHP")
+ts_stub SVGATEV "$TMPDIR/svgatev_stub.shp" 24 72 26
+PACK_ARGS+=("$TMPDIR/svgatev_stub.shp:SVGATEV.SHP")
+ts_stub SVGATEV "$TMPDIR/svgatevmk_stub.shp" 24 72 10
+PACK_ARGS+=("$TMPDIR/svgatevmk_stub.shp:SVGATEVMAKE.SHP")
+ts_stub TDGGATEH "$TMPDIR/tdggateh_stub.shp" 72 24 20
+PACK_ARGS+=("$TMPDIR/tdggateh_stub.shp:TDGGATEH.SHP")
+ts_stub TDGGATEH "$TMPDIR/tdggatehmk_stub.shp" 72 24 10
+PACK_ARGS+=("$TMPDIR/tdggatehmk_stub.shp:TDGGATEHMAKE.SHP")
+ts_stub TDGGATEV "$TMPDIR/tdggatev_stub.shp" 24 72 20
+PACK_ARGS+=("$TMPDIR/tdggatev_stub.shp:TDGGATEV.SHP")
+ts_stub TDGGATEV "$TMPDIR/tdggatevmk_stub.shp" 24 72 10
+PACK_ARGS+=("$TMPDIR/tdggatevmk_stub.shp:TDGGATEVMAKE.SHP")
+ts_stub TDNGATEH "$TMPDIR/tdngateh_stub.shp" 72 24 20
+PACK_ARGS+=("$TMPDIR/tdngateh_stub.shp:TDNGATEH.SHP")
+ts_stub TDNGATEH "$TMPDIR/tdngatehmk_stub.shp" 72 24 10
+PACK_ARGS+=("$TMPDIR/tdngatehmk_stub.shp:TDNGATEHMAKE.SHP")
+ts_stub TDNGATEV "$TMPDIR/tdngatev_stub.shp" 24 72 20
+PACK_ARGS+=("$TMPDIR/tdngatev_stub.shp:TDNGATEV.SHP")
+ts_stub TDNGATEV "$TMPDIR/tdngatevmk_stub.shp" 24 72 10
+PACK_ARGS+=("$TMPDIR/tdngatevmk_stub.shp:TDNGATEVMAKE.SHP")
 # TS component tower family, same 33x60 canvas family as the wall (176x320 HD):
 # TSCTWR bare tower 2 frames (healthy/damaged) + rising buildup; TSVULC armed
 # tower = 32 facings x {idle, recoil, damaged idle, damaged recoil} like TDGUN.
-ts_stub TSCTWR "$TMPDIR/tsctwr_stub.shp" 33 60 2
+ts_stub TSCTWR "$TMPDIR/tsctwr_stub.shp" 36 60 2
 PACK_ARGS+=("$TMPDIR/tsctwr_stub.shp:TSCTWR.SHP")
-ts_stub TSCTWR "$TMPDIR/tsctwrmk_stub.shp" 33 60 17
+ts_stub TSCTWR "$TMPDIR/tsctwrmk_stub.shp" 36 60 17
 PACK_ARGS+=("$TMPDIR/tsctwrmk_stub.shp:TSCTWRMAKE.SHP")
-ts_stub TSVULC "$TMPDIR/tsvulc_stub.shp" 33 60 128
+ts_stub TSVULC "$TMPDIR/tsvulc_stub.shp" 36 60 128
 PACK_ARGS+=("$TMPDIR/tsvulc_stub.shp:TSVULC.SHP")
-ts_stub TSVULC "$TMPDIR/tsvulcmk_stub.shp" 33 60 17
+ts_stub TSVULC "$TMPDIR/tsvulcmk_stub.shp" 36 60 17
 PACK_ARGS+=("$TMPDIR/tsvulcmk_stub.shp:TSVULCMAKE.SHP")
-ts_stub TSROCK "$TMPDIR/tsrock_stub.shp" 33 60 128
+ts_stub TSROCK "$TMPDIR/tsrock_stub.shp" 36 60 128
 PACK_ARGS+=("$TMPDIR/tsrock_stub.shp:TSROCK.SHP")
-ts_stub TSROCK "$TMPDIR/tsrockmk_stub.shp" 33 60 17
+ts_stub TSROCK "$TMPDIR/tsrockmk_stub.shp" 36 60 17
 PACK_ARGS+=("$TMPDIR/tsrockmk_stub.shp:TSROCKMAKE.SHP")
-ts_stub TSCSAM "$TMPDIR/tscsam_stub.shp" 33 60 128
+ts_stub TSCSAM "$TMPDIR/tscsam_stub.shp" 36 60 128
 PACK_ARGS+=("$TMPDIR/tscsam_stub.shp:TSCSAM.SHP")
-ts_stub TSCSAM "$TMPDIR/tscsammk_stub.shp" 33 60 17
+ts_stub TSCSAM "$TMPDIR/tscsammk_stub.shp" 36 60 17
 PACK_ARGS+=("$TMPDIR/tscsammk_stub.shp:TSCSAMMAKE.SHP")
 # TSPLUG 72x72 on the 3x2 plot (TS Upgrade Centre, addon host): the radar
 # height trick — square canvas, masts rise into the headroom above the box.

@@ -6689,6 +6689,97 @@
 			<BuildIcon>BuildIcon_TSWALL_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNGATEH_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNGATEH_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNGATEV_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNGATEV_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_ALGATEH_1" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_ALGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_ALGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_ALGATEH_1</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_ALGATEV_1" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_ALGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_ALGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_ALGATEV_1</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SVGATEH_2" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_SVGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_SVGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SVGATEH_2</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SVGATEV_2" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_SVGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_SVGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SVGATEV_2</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDGGATEH_4" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDGGATEH_4</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDGGATEV_4" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDGGATEV_4</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDNGATEH_8" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDNGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDNGATEH_8</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDNGATEV_8" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDNGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDNGATEV_8</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSGATEH_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSGATEH_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSGATEV_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSGATEV_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNWALL_G" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNWALL</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNWALL_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNWALL_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<ObjectTypeClass Name="RA_TSCTWR_G" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TSCTWR</ObjectNameTextID>
@@ -7121,11 +7212,193 @@
 			<BuildIcon>BuildIcon_TS_Wall</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNGATEH" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNGATEV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_ALGATEH" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_ALGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_ALGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_ALGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_ALGATEV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_ALGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_ALGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_ALGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SVGATEH" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_SVGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_SVGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SVGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SVGATEV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_SVGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_SVGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SVGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDGGATEH" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDGGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDGGATEV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDGGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDNGATEH" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDNGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDNGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDNGATEV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDNGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDNGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSGATEH" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_GateH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSGATEV" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_GateV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNWALL" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNWALL</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNWALL_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_NWall</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 	<ObjectTypeClass Name="RA_TSWALL_0" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
 			<ObjectNameTextID>TEXT_STRUCTURE_TSWALL</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSWALL_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TS_Wall</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNGATEH_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNGATEV_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_ALGATEH_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_ALGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_ALGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_ALGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_ALGATEV_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_ALGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_ALGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_ALGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SVGATEH_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_SVGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_SVGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SVGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SVGATEV_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_SVGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_SVGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SVGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDGGATEH_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDGGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDGGATEV_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDGGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDNGATEH_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDNGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDNGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDNGATEV_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDNGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDNGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSGATEH_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_GateH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSGATEV_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_GateV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNWALL_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNWALL</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNWALL_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_NWall</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 	<ObjectTypeClass Name="RA_TSCTWR" Classification="CNCBuildableObject" CanInstantiate="False">
@@ -11179,6 +11452,97 @@
 			<BuildIcon>BuildIcon_TSWALL_G</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNGATEH_G_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNGATEH_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNGATEV_G_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNGATEV_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_ALGATEH_1_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_ALGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_ALGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_ALGATEH_1</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_ALGATEV_1_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_ALGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_ALGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_ALGATEV_1</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SVGATEH_2_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_SVGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_SVGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SVGATEH_2</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SVGATEV_2_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_SVGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_SVGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SVGATEV_2</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDGGATEH_4_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDGGATEH_4</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDGGATEV_4_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDGGATEV_4</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDNGATEH_8_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDNGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDNGATEH_8</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDNGATEV_8_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDNGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDNGATEV_8</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSGATEH_G_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSGATEH_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSGATEV_G_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSGATEV_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNWALL_G_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNWALL</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNWALL_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNWALL_G</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
 
 	<ObjectTypeClass Name="RA_TSCTWR_G_0" Classification="CNCBuildableObject" CanInstantiate="False">
 		<CNCEncyclopediaComponent>
@@ -11579,6 +11943,97 @@
 			<ObjectNameTextID>TEXT_STRUCTURE_TSWALL</ObjectNameTextID>
 			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSWALL_DESC</ObjectDescriptionTextID>
 			<BuildIcon>BuildIcon_TS_Wall</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNGATEH_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNGATEV_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TSNGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_ALGATEH_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_ALGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_ALGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_ALGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_ALGATEV_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_ALGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_ALGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_ALGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SVGATEH_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_SVGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_SVGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SVGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_SVGATEV_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_SVGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_SVGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_SVGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDGGATEH_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDGGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDGGATEV_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDGGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDGGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDGGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDNGATEH_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDNGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDNGATEH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TDNGATEV_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TDNGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TDNGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TDNGATEV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSGATEH_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSGATEH</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSGATEH_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_GateH</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSGATEV_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSGATEV</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSGATEV_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_GateV</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_TSNWALL_0_0" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_STRUCTURE_TSNWALL</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_STRUCTURE_TSNWALL_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_TS_NWall</BuildIcon>
 		</CNCEncyclopediaComponent>
 	</ObjectTypeClass>
 

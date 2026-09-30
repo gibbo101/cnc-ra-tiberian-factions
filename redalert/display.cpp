@@ -719,6 +719,33 @@ bool DisplayClass::Passes_Proximity_Check(ObjectTypeClass const* object,
     int headroom = building->Placement_Ghost_Rows_Above() * MAP_CELL_W;
 
     /*
+    **	A component tower or gate placed onto wall segments is in reach when it covers one of
+    **	the house's own, and never onto anyone else's.
+    */
+    int own_walls = 0;
+    for (ptr = list; *ptr != REFRESH_EOL; ptr++) {
+        if (*ptr < headroom) {
+            continue;
+        }
+        CELL wcell = trycell + *ptr;
+        if (In_Radar(wcell) && (*this)[wcell].Takes_Building_On_Wall(building)) {
+            if ((*this)[wcell].Owner != house) {
+                if (house == PlayerPtr->Class->House) {
+                    PassedProximity = false;
+                }
+                return (false);
+            }
+            own_walls++;
+        }
+    }
+    if (own_walls > 0) {
+        if (house == PlayerPtr->Class->House) {
+            PassedProximity = true;
+        }
+        return (true);
+    }
+
+    /*
     **	Scan through all cells that the building foundation would cover. If any adjacent
     **	cells to these are of friendly persuasion, then consider the proximity check to
     **	have been a success.

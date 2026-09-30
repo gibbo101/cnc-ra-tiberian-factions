@@ -5536,6 +5536,17 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
             }
 
             /*
+            **	Gate: its owner and allies path through it shut or open (it opens as they reach it,
+            **	TF_Gate_Lets_Through); anyone else only while it stands open, and otherwise meets it
+            **	as an enemy building.
+            */
+            if (obj->What_Am_I() == RTTI_BUILDING && TF_Gate_Info(((BuildingClass*)obj)->Class->Type) != NULL
+                && (((BuildingClass*)obj)->House->Is_Ally(House) || ((BuildingClass*)obj)->Is_Gate_Open())) {
+                obj = obj->Next;
+                continue;
+            }
+
+            /*
             **	Firestorm Wall Section: a pad anyone crosses while its field is down, a wall while up.
             **	An open pad is passed over so whatever else stands in the cell is still weighed.
             */
@@ -5891,6 +5902,14 @@ ActionType UnitClass::What_Action(ObjectClass const* object) const
         if (blah == STRUCT_AVMINE || blah == STRUCT_APMINE || blah == STRUCT_TSDLIMP
             || ((BuildingClass*)object)->Is_Open_Firestorm_Section())
             return (ACTION_MOVE);
+    }
+
+    /*
+    **	A click on a gate the unit may pass through is a move order onto it.
+    */
+    if ((action == ACTION_NONE || action == ACTION_SELECT) && object->What_Am_I() == RTTI_BUILDING
+        && TF_Gate_Info(((BuildingClass*)object)->Class->Type) != NULL && House->Is_Ally(object)) {
+        return (ACTION_MOVE);
     }
 
     /*

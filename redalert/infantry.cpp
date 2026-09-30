@@ -1684,6 +1684,16 @@ MoveType InfantryClass::Can_Enter_Cell(CELL cell, FacingType) const
             }
 
             /*
+            **	Gate: its owner and allies path through it shut or open (it opens as they reach it,
+            **	TF_Gate_Lets_Through); anyone else only while it stands open.
+            */
+            if (obj->What_Am_I() == RTTI_BUILDING && TF_Gate_Info(((BuildingClass*)obj)->Class->Type) != NULL
+                && (((BuildingClass*)obj)->House->Is_Ally(House) || ((BuildingClass*)obj)->Is_Gate_Open())) {
+                obj = obj->Next;
+                continue;
+            }
+
+            /*
             ** If object is a land mine, allow movement
             */
             if (obj->What_Am_I() == RTTI_BUILDING) {
@@ -3477,6 +3487,14 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
     }
 
     /*
+    **	A click on a gate the soldier may pass through is a move order onto it.
+    */
+    if ((action == ACTION_NONE || action == ACTION_SELECT) && object->What_Am_I() == RTTI_BUILDING
+        && TF_Gate_Info(((BuildingClass*)object)->Class->Type) != NULL && House->Is_Ally(object)) {
+        return (ACTION_MOVE);
+    }
+
+    /*
     **	There is no self-select action available for infantry types.
     */
     if (action == ACTION_SELF) {
@@ -5005,7 +5023,14 @@ void InfantryClass::Movement_AI(void)
                 COORDINATE acoord = Adjacent_Cell(Coord, Path[0]);
                 CELL acell = Coord_Cell(acoord);
 
-                if (Can_Enter_Cell(acell) != MOVE_OK) {
+                /*
+                **	A friendly gate ahead opens as the soldier reaches it; he holds, keeping his
+                **	path, until the door is fully up.
+                */
+                if (Can_Enter_Cell(acell) == MOVE_OK && !TF_Gate_Lets_Through(this, acell)) {
+                    Stop_Driver();
+
+                } else if (Can_Enter_Cell(acell) != MOVE_OK) {
 
                     if ((Mission == MISSION_MOVE || Mission == MISSION_ENTER)
                         && !IsTethered /*&& House->IsHuman*/ && Distance(NavCom) < Rule.CloseEnoughDistance) {

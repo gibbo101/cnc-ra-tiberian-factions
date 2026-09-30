@@ -913,7 +913,15 @@ bool DriveClass::While_Moving(void)
 
                         c = Adjacent_Cell(c, nextface);
 
-                        switch (Can_Enter_Cell(Coord_Cell(c), nextface)) {
+                        /*
+                        **	A friendly gate in the next cell is asked to open now; until it is up
+                        **	the unit does not chain into it, and waits for it at the cell edge.
+                        */
+                        MoveType jump = Can_Enter_Cell(Coord_Cell(c), nextface);
+                        if (jump == MOVE_OK && !TF_Gate_Lets_Through(this, Coord_Cell(c))) {
+                            jump = MOVE_MOVING_BLOCK;
+                        }
+                        switch (jump) {
                         case MOVE_OK:
                             IsOnShortTrack = false; // Shouldn't be necessary, but...
                             TrackNumber = tnum;
@@ -2511,6 +2519,16 @@ bool DriveClass::Start_Of_Move(void)
         MoveType cando = Can_Enter_Cell(destcell, facing);
         Mark(MARK_DOWN);
 
+        /*
+        **	A friendly gate ahead opens as the unit reaches it; the unit holds, keeping its
+        **	path, until the door is fully up.
+        */
+        if (cando == MOVE_OK && !TF_Gate_Lets_Through(this, destcell)) {
+            Stop_Driver();
+            TrackNumber = -1;
+            return (true);
+        }
+
         if (cando != MOVE_OK) {
 
             /*
@@ -2682,6 +2700,9 @@ bool DriveClass::Start_Of_Move(void)
                         dest = Adjacent_Cell(dest, nextface);
                         destcell = Coord_Cell(dest);
                         cando = Can_Enter_Cell(destcell);
+                        if (cando == MOVE_OK && !TF_Gate_Lets_Through(this, destcell)) {
+                            cando = MOVE_MOVING_BLOCK;
+                        }
                     }
                     if (!IsActive)
                         return (false);

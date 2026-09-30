@@ -8633,10 +8633,8 @@ static int TF_Entry_Faction_Mask(TechnoTypeClass const* type)
     ** HouseClass::Can_Build lets a TS yard unlock them. Their Owner= list never
     ** mentions the TS tree, so the bit has to be added here.
     */
-    if (type != NULL && type->What_Am_I() == RTTI_BUILDINGTYPE) {
-        if (((BuildingTypeClass const*)type)->Type == STRUCT_SANDBAG_WALL) {
-            mask |= TF_FACTION_TSGDI;
-        }
+    if (TF_Is_TS_Yard_Wall(type)) {
+        mask |= TF_FACTION_TSGDI;
     }
     return mask;
 }
@@ -9925,7 +9923,8 @@ bool DLLExportClass::Get_Placement_State(uint64 player_id, unsigned char* buffer
                 cell, PlacementType[CurrentLocalPlayerIndex], PlacementDistance[CurrentLocalPlayerIndex]);
 
             CellClass* cellptr = &Map[cell];
-            bool clear = cellptr->Is_Clear_To_Build(PlacementType[CurrentLocalPlayerIndex]->Speed);
+            bool clear = cellptr->Is_Clear_To_Build(PlacementType[CurrentLocalPlayerIndex]->Speed)
+                         || cellptr->Takes_Building_On_Wall(PlacementType[CurrentLocalPlayerIndex]);
 
             /*
             **	Addon plugs (TS PowersUpBuilding) place ONTO a host building, so the
@@ -9968,6 +9967,27 @@ bool DLLExportClass::Passes_Proximity_Check(CELL cell_in,
     */
     int headroom = placement_type->Placement_Ghost_Rows_Above() * MAP_CELL_W;
     short const* occupy_list = placement_type->Occupy_List(true);
+
+    /*
+    **	A component tower or gate onto wall segments: in reach when it covers one of the
+    **	player's own, never onto anyone else's.
+    */
+    bool own_wall = false;
+    for (short const* w = occupy_list; *w != REFRESH_EOL; w++) {
+        if (*w < headroom) {
+            continue;
+        }
+        CELL wcell = cell_in + *w - headroom;
+        if (Map.In_Radar(wcell) && Map[wcell].Takes_Building_On_Wall(placement_type)) {
+            if (Map[wcell].Owner != PlayerPtr->Class->House) {
+                return (false);
+            }
+            own_wall = true;
+        }
+    }
+    if (own_wall) {
+        return (true);
+    }
 
     while (*occupy_list != REFRESH_EOL) {
 
@@ -11822,7 +11842,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             // AssetName picks the TSWALL tileset.
             overlay_entry.Type = (cell_ptr->Overlay == OVERLAY_TIB01)
                                      ? (short)OVERLAY_GEMS3
-                                     : (cell_ptr->Overlay == OVERLAY_TSWALL)
+                                     : (cell_ptr->Overlay == OVERLAY_TSWALL || cell_ptr->Overlay == OVERLAY_TSNWALL)
                                      ? (short)OVERLAY_BRICK_WALL
                                      : (short)cell_ptr->Overlay;
             overlay_entry.Owner = (char)cell_ptr->Owner;

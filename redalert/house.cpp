@@ -1267,13 +1267,12 @@ bool TF_Mwar_At_Cap(HouseClass const* house)
 
 
 /*
-**	The shared walls a TS construction yard provides: SANDBAGS. Its concrete wall is
-**	the TS tree's own (STRUCT_TSWALL, gated by the TS yard like the rest of the tree),
-**	so RA's concrete wall is not among them. Sandbags' Owner= list does not mention
-**	every faction, so a TS yard has to satisfy the ownership test for them whoever
+**	The shared wall a TS construction yard provides: SANDBAGS, beside the TS tree's own
+**	walls (gated by the TS yard like the rest of the tree). Sandbags' Owner= list does not
+**	mention every faction, so a TS yard has to satisfy the ownership test for them whoever
 **	is holding it.
 */
-static bool TF_Is_TS_Yard_Wall(ObjectTypeClass const* type)
+bool TF_Is_TS_Yard_Wall(ObjectTypeClass const* type)
 {
     if (type == NULL || type->What_Am_I() != RTTI_BUILDINGTYPE) {
         return (false);
@@ -1310,6 +1309,8 @@ static OverlayType TF_Wall_Overlay(StructType type)
         return (OVERLAY_FENCE);
     case STRUCT_TSWALL:
         return (OVERLAY_TSWALL);
+    case STRUCT_TSNWALL:
+        return (OVERLAY_TSNWALL);
     default:
         return (OVERLAY_NONE);
     }
@@ -1751,8 +1752,8 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     **	being that faction. The yard requirement itself is enforced below, so this only
     **	widens WHO may hold the yard, never what a yard unlocks.
     **
-    **	Sandbags are the one thing no yard lists for the TS tree, so a TS yard
-    **	satisfies the test for them whatever the holder's faction.
+    **	Sandbags are the one wall no yard lists for the TS tree, so a TS yard satisfies
+    **	the test for them whatever the holder's faction.
     */
     bool yard_grants = ((own & Yard_Factions()) != 0);
     if (TF_Is_TS_Yard_Wall(type) && Has_Building_Active(STRUCT_TSFACT)) {
@@ -6752,6 +6753,10 @@ void HouseClass::Sell_Wall(CELL cell)
 
                 case OVERLAY_TSWALL:
                     btype = &BuildingTypeClass::As_Reference(STRUCT_TSWALL);
+                    break;
+
+                case OVERLAY_TSNWALL:
+                    btype = &BuildingTypeClass::As_Reference(STRUCT_TSNWALL);
                     break;
 
                 default:

@@ -7102,6 +7102,54 @@ WARNING: This file was written by [PETROGLYPH\Mike_Legg] using the Petroglyph SF
       <entry> TSFIRSTRM1.WAV </entry>
     </SampleNamesList>
   </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSGATEDWN1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSGATEDWN1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSGATEDWN1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSGATEDWN1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSGATEUP1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSGATEUP1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSGATEUP1" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSGATEUP1.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAC_SFX_TSLACHG2R" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSLACHG2R.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
+  <SFXEvent Name="RAR_SFX_TSLACHG2R" Preset="_PRESET_MD_MOBIUS_2D">
+    <IsPreset> False </IsPreset>
+    <MinPitch>100</MinPitch>
+    <MaxPitch>100</MaxPitch>
+    <SampleNamesList>
+      <entry> TSLACHG2R.WAV </entry>
+    </SampleNamesList>
+  </SFXEvent>
   <SFXEvent Name="RAC_SFX_TSORCAUP1" Preset="_PRESET_MD_MOBIUS_2D">
     <IsPreset> False </IsPreset>
     <MinPitch>100</MinPitch>

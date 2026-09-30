@@ -155,6 +155,8 @@ extern bool TF_Dev_Cheats(void); // TF dev-cheats runtime gate (see defines.h TF
 extern bool TF_Dev_Reveal(void); // full-map reveal on its own (tf_dev_reveal.flag) even when the other cheats are off
 extern long TF_Building_Scan_Bit(int btype); // building Type -> its BScan/ActiveBScan/OldBScan bit
 extern bool TF_Is_TS_Tree_Type(TechnoTypeClass const* type); // Prerequisite= names a TS-tree building (house.cpp)
+extern bool TF_Is_TS_Yard_Wall(ObjectTypeClass const* type); // a shared wall the TS yard also builds (house.cpp)
+extern bool TF_Gate_Lets_Through(FootClass* foot, CELL cell); // opens a friendly gate ahead; true once passable (building.cpp)
 extern BuildingClass* TF_Firestorm_Wall_At(CELL cell, HouseClass const* shooter);       // live section stopping shooter's fire (house.cpp)
 extern COORDINATE TF_Firestorm_On_Path(COORDINATE from, COORDINATE to, HouseClass const* shooter); // first such wall on a line (house.cpp)
 extern void TF_Firestorm_Flare(COORDINATE wall, COORDINATE victim, int height); // TS's spark where something meets the field (house.cpp)

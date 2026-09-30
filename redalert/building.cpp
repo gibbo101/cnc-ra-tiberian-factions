@@ -224,6 +224,8 @@ COORDINATE const BuildingClass::CenterOffset[BSIZE_COUNT] = {
     0x02000200L, // BSIZE_44 (4x4): x = 2 cells, y = 2 cells -- the centre CELL is row 2 col 2,
                  // which for TSPROC is the dock pad itself (an occupy hole).
     0x01800280L, // BSIZE_53 (5x3): x = 2.5 cells, y = 1.5 cells -- centre CELL row 1 col 2 (hangar).
+    0x00800180L, // BSIZE_31 (3x1): x = 1.5 cells, y = 0.5 cells.
+    0x01800080L, // BSIZE_13 (1x3): x = 0.5 cells, y = 1.5 cells.
 };
 
 /***********************************************************************************************
@@ -912,6 +914,106 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         }
 
         /*
+        **	Component towers, drawn over the body in this order: the north wall's end (behind the
+        **	tower, with the tower's own pixels cut out), then per side a link to a finished tower
+        **	there, a connector to a gate's end, or a coupling for a joining wall, the south wall's
+        **	end over the coupling's mouth,
+        **	the turret of an armed tower, and the door lamp while the house has power (TS GACTWR_A:
+        **	frames 1-5 looping, Rate=220). Both towers of a pair draw their shared link whole.
+        **	Layer frames: scripts/ts_pack_ctwr_hd.py.
+        */
+        if (TF_Is_Wall_Tower(Class->Type) && Strength > 0) {
+            static const FacingType sides[4] = {FACING_N, FACING_E, FACING_S, FACING_W};
+            int dmg = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
+            int kind[4];
+            int link[4];
+            bool gate_end[4];
+            CELL cell = Coord_Cell(Coord);
+            for (int i = 0; i < 4; i++) {
+                CELL adj = Adjacent_Cell(cell, sides[i]);
+                OverlayType o = Map.In_Radar(adj) ? Map[adj].Overlay : OVERLAY_NONE;
+                kind[i] = (o == OVERLAY_TSWALL) ? 0 : (o == OVERLAY_TSNWALL) ? 1 : (o == OVERLAY_BRICK_WALL) ? 2 : -1;
+                gate_end[i] = Map.In_Radar(adj) && Map[adj].Has_Gate_Along(i == 1 || i == 3);
+                link[i] = -1;
+                BuildingClass const* other = Map.In_Radar(adj) ? Map[adj].Cell_Building() : NULL;
+                if (other != NULL && other != this && other->Strength > 0 && TF_Is_Wall_Tower(other->Class->Type)
+                    && other->BState != BSTATE_CONSTRUCTION && other->Mission != MISSION_DECONSTRUCTION) {
+                    link[i] = (other->Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
+                }
+            }
+            void const* shp = Get_Image_Data();
+            if (kind[0] >= 0) {
+                Techno_Draw_Object_Virtual(shp, 14 + kind[0] * 2 + dmg, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+            }
+            for (int i = 0; i < 4; i++) {
+                if (link[i] >= 0) {
+                    Techno_Draw_Object_Virtual(shp, 26 + i * 4 + dmg * 2 + link[i], x, y, window, DIR_N, 0x0100, "TSCTWRX");
+                } else if (gate_end[i]) {
+                    Techno_Draw_Object_Virtual(shp, 42 + i * 2 + dmg, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+                } else if (kind[i] >= 0) {
+                    Techno_Draw_Object_Virtual(shp, i * 2 + dmg, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+                }
+            }
+            if (kind[2] >= 0) {
+                Techno_Draw_Object_Virtual(shp, 8 + kind[2] * 2 + dmg, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+            }
+            char const* turret = (*this == STRUCT_TSVULC) ? "TSVULCT"
+                                 : (*this == STRUCT_TSROCK) ? "TSROCKT"
+                                 : (*this == STRUCT_TSCSAM) ? "TSCSAMT"
+                                 : NULL;
+            if (turret != NULL) {
+                Techno_Draw_Object_Virtual(shp, Shape_Number(), x, y, window, DIR_N, 0x0100, turret);
+            }
+            if (House->Power_Fraction() >= 1) {
+                Techno_Draw_Object_Virtual(shp, 20 + 1 + (Frame / 4) % 5, x, y, window, DIR_N, 0x0100, "TSCTWRX");
+            }
+        }
+
+        /*
+        **	Gates: the end piece of a wall running into each end along the gate's axis, or the part of
+        **	a finished component tower's connector that reaches into the gate's end cell (the tower
+        **	draws the rest). The north end of a north-south gate belongs behind the gate, so its
+        **	frames come pre-composited under each gate frame. Layer frames: scripts/ts_pack_gates.py.
+        */
+        TFGateInfo const* gate = TF_Gate_Info(Class->Type);
+        if (gate != NULL && Strength > 0) {
+            char layer[16];
+            snprintf(layer, sizeof(layer), "%sX", Class->IniName);
+            int dmg = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
+            CELL origin = Coord_Cell(Coord);
+            CELL ends[2] = {gate->Horizontal ? Adjacent_Cell(origin, FACING_W) : Adjacent_Cell(origin, FACING_N),
+                            gate->Horizontal ? (CELL)(origin + 3) : (CELL)(origin + 3 * MAP_CELL_W)};
+            void const* shp = Get_Image_Data();
+            char tower_layer[16];
+            snprintf(tower_layer, sizeof(tower_layer), "%sL", Class->IniName);
+            int frames = 2 * gate->Stages + 2 * gate->IdleFrames;
+            for (int e = 0; e < 2; e++) {
+                if (!Map.In_Radar(ends[e])) {
+                    continue;
+                }
+                BuildingClass const* tower = Map[ends[e]].Cell_Building();
+                if (tower != NULL && tower->Strength > 0 && TF_Is_Wall_Tower(tower->Class->Type)
+                    && tower->BState != BSTATE_CONSTRUCTION) {
+                    int tdmg = (tower->Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
+                    if (gate->Horizontal) {
+                        Techno_Draw_Object_Virtual(shp, e * 2 + tdmg, x, y, window, DIR_N, 0x0100, tower_layer);
+                    } else if (e == 0) {
+                        Techno_Draw_Object_Virtual(shp, tdmg * frames + Shape_Number(), x, y, window, DIR_N, 0x0100, tower_layer);
+                    }
+                    continue;
+                }
+                OverlayType o = Map[ends[e]].Overlay;
+                int kind = (o == OVERLAY_TSWALL) ? 0 : (o == OVERLAY_TSNWALL) ? 1 : (o == OVERLAY_BRICK_WALL) ? 2 : -1;
+                if (kind < 0) {
+                    continue;
+                }
+                int frame = gate->Horizontal ? (kind * 4 + e * 2 + dmg)
+                                             : (e == 0 ? 6 + kind * frames + Shape_Number() : kind * 2 + dmg);
+                Techno_Draw_Object_Virtual(shp, frame, x, y, window, DIR_N, 0x0100, layer);
+            }
+        }
+
+        /*
         **	TS Service Depot: while a unit is being repaired the pad glows (GTDEPT_D, ART.INI
         **	[GADEPT] ProductionAnim), a white flash fading to the pad's grey, one frame every two
         **	game frames (AnimActive=0,7,2); a damaged depot plays the cracked pad's run.
@@ -1216,6 +1318,21 @@ int BuildingClass::Shape_Number(void) const
     }
 
     /*
+    **	Gates: the door from shut (0) to open, then the same run damaged.
+    */
+    TFGateInfo const* gate = TF_Gate_Info(Class->Type);
+    if (gate != NULL && BState != BSTATE_CONSTRUCTION) {
+        int damaged = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
+        if (gate->IdleFrames > 0 && Is_Door_Closed()) {
+            int step = (Frame / 3) % (gate->IdleFrames + 1);
+            if (step > 0) {
+                return (2 * gate->Stages + damaged * gate->IdleFrames + step - 1);
+            }
+        }
+        return (Door_Position() + damaged * gate->Stages);
+    }
+
+    /*
     **	Firestorm Wall Section: the rail reaches towards every neighbouring section of the same
     **	house (N1 E2 S4 W8), +16 when damaged, +32 while the house's field is up.
     */
@@ -1494,6 +1611,10 @@ bool BuildingClass::Mark(MarkType mark)
                     new OverlayClass(OVERLAY_TSWALL, cell, House->Class->House);
                     break;
 
+                case STRUCT_TSNWALL:
+                    new OverlayClass(OVERLAY_TSNWALL, cell, House->Class->House);
+                    break;
+
                 default:
                     break;
                 }
@@ -1553,6 +1674,8 @@ void BuildingClass::AI(void)
 {
     assert(Buildings.ID(this) == ID);
     assert(IsActive);
+
+    Gate_AI();
 
     /*
     **	TS refinery event layers: fireball burst with a random pause between
@@ -2392,6 +2515,10 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
                 otype = OVERLAY_TSWALL;
                 break;
 
+            case STRUCT_TSNWALL:
+                otype = OVERLAY_TSNWALL;
+                break;
+
             default:
                 otype = OVERLAY_NONE;
                 break;
@@ -2468,18 +2595,22 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
     }
 
     /*
-    **	A component tower placed onto a wall segment replaces it (TS wall tower):
-    **	the overlay goes before the tower takes the cell, and the neighbours'
-    **	joins are recomputed once the tower stands (below).
+    **	A component tower or a gate placed onto wall segments replaces them (TS wall tower,
+    **	TS gate): the overlays go before the building takes the cells, and the neighbours'
+    **	joins are recomputed once it stands (below).
     */
-    if (*this == STRUCT_TSCTWR) {
-        CellClass& tc = Map[Coord_Cell(coord)];
-        if (tc.Overlay == OVERLAY_TSWALL || tc.Overlay == OVERLAY_BRICK_WALL || tc.Overlay == OVERLAY_SANDBAG_WALL) {
-            tc.Overlay = OVERLAY_NONE;
-            tc.OverlayData = 0;
-            Detach_This_From_All(::As_Target(tc.Cell_Number()), true);
-            tc.Recalc_Attributes();
-            tc.Redraw_Objects();
+    bool joins_walls = (TF_Is_Wall_Tower(Class->Type) || TF_Gate_Info(Class->Type) != NULL);
+    if (*this == STRUCT_TSCTWR || TF_Gate_Info(Class->Type) != NULL) {
+        short const* offset = Class->Occupy_List();
+        while (offset != NULL && *offset != REFRESH_EOL) {
+            CellClass& tc = Map[(CELL)(Coord_Cell(coord) + *offset++)];
+            if (TF_Is_Tower_Joint_Wall(tc.Overlay)) {
+                tc.Overlay = OVERLAY_NONE;
+                tc.OverlayData = 0;
+                Detach_This_From_All(::As_Target(tc.Cell_Number()), true);
+                tc.Recalc_Attributes();
+                tc.Redraw_Objects();
+            }
         }
     }
 
@@ -2488,8 +2619,11 @@ bool BuildingClass::Unlimbo(COORDINATE coord, DirType dir)
     */
     if (TechnoClass::Unlimbo(coord, dir)) {
 
-        if (TF_Is_Wall_Tower(Class->Type)) {
-            Map[Coord_Cell(Coord)].Wall_Update(true);
+        if (joins_walls) {
+            short const* offset = Class->Occupy_List();
+            while (offset != NULL && *offset != REFRESH_EOL) {
+                Map[(CELL)(Coord_Cell(Coord) + *offset++)].Wall_Update(true);
+            }
         }
 
         /*
@@ -3106,6 +3240,7 @@ BuildingClass::BuildingClass(BuildingTypeClass const* typeptr, HousesType house)
     , PlacementDelay(0)
     , RallyPoint(TARGET_NONE)
     , TFPackNav(TARGET_NONE)
+    , GateHold(0)
 {
     // Diagnostic hook removed 2026-05-18. To re-enable, fprintf here to log
     // every BuildingClass instantiation with typeptr/IniName/Type/house. Used
@@ -4690,11 +4825,14 @@ bool BuildingClass::Limbo(void)
         //			IsInLimbo = false;
         //		}
     }
-    bool tower = TF_Is_Wall_Tower(Class->Type);
+    bool joins_walls = (TF_Is_Wall_Tower(Class->Type) || TF_Gate_Info(Class->Type) != NULL);
     CELL cell = Coord_Cell(Coord);
     bool limboed = TechnoClass::Limbo();
-    if (limboed && tower) {
-        Map[cell].Wall_Update(true);
+    if (limboed && joins_walls) {
+        short const* offset = Class->Occupy_List();
+        while (offset != NULL && *offset != REFRESH_EOL) {
+            Map[(CELL)(cell + *offset++)].Wall_Update(true);
+        }
     }
     return (limboed);
 }
@@ -5894,6 +6032,14 @@ COORDINATE BuildingClass::Sort_Y(void) const
         return (Coord_Move(Center_Coord(), DIR_N, CELL_LEPTON_H));
     }
 
+    /*
+    **	A gate sorts just north of its own northern row, so a unit anywhere in the gate draws
+    **	over it while a building north of it still draws first.
+    */
+    if (TF_Gate_Info(Class->Type) != NULL) {
+        return (Coord_Move(Center_Coord(), DIR_N, (Class->Height() * CELL_LEPTON_H) / 2 + CELL_LEPTON_H / 4));
+    }
+
     return (Coord_Add(Center_Coord(), XY_Coord(0, (Class->Height() * 256) / 3)));
 }
 
@@ -5911,6 +6057,139 @@ COORDINATE BuildingClass::Sort_Y(void) const
  *    a STRUCT_REFINERY centre, or its DIR_NE neighbour is a STRUCT_TDPROC centre. Pure cell    *
  *    geometry + a building-pointer read -> cheap and lockstep-deterministic.                   *
  *=============================================================================================*/
+/*
+**	Gate types. The sliding gates take TS's timing: the door travels in DeployTime=.044 game
+**	minutes whatever its frame count. The energy gates (Soviet Tesla, TD Nod laser) switch about
+**	four times faster, and both stand open while their house is short of power. The Tesla gate's
+**	arcs wind down as it opens (the Tesla Coil's charge-up reversed) and charge up as it closes; the
+**	laser switches silently.
+*/
+static TFGateInfo const TFGates[] = {
+    {STRUCT_TSGATEH, true, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'S'},
+    {STRUCT_TSGATEV, false, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'S'},
+    {STRUCT_TSNGATEH, true, 7, 7, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'S'},
+    {STRUCT_TSNGATEV, false, 7, 7, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'S'},
+    {STRUCT_ALGATEH, true, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'R'},
+    {STRUCT_ALGATEV, false, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'R'},
+    {STRUCT_SVGATEH, true, 10, 1, VOC_TSLACHG2R, VOC_TESLA_POWER_UP, true, 3, 'R'},
+    {STRUCT_SVGATEV, false, 10, 1, VOC_TSLACHG2R, VOC_TESLA_POWER_UP, true, 3, 'R'},
+    {STRUCT_TDGGATEH, true, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'D'},
+    {STRUCT_TDGGATEV, false, 10, 4, VOC_TS_GATEDWN1, VOC_TS_GATEUP1, false, 0, 'D'},
+    {STRUCT_TDNGATEH, true, 10, 1, VOC_NONE, VOC_NONE, true, 0, 'D'},
+    {STRUCT_TDNGATEV, false, 10, 1, VOC_NONE, VOC_NONE, true, 0, 'D'},
+};
+
+TFGateInfo const* TF_Gate_Info(StructType t)
+{
+    for (int i = 0; i < (int)(sizeof(TFGates) / sizeof(TFGates[0])); i++) {
+        if (TFGates[i].Type == t) {
+            return (&TFGates[i]);
+        }
+    }
+    return (NULL);
+}
+
+/*
+**	How long an open gate stands once its footprint is clear (TS GateCloseDelay=.2 minutes).
+*/
+static const int TF_GATE_HOLD = TICKS_PER_MINUTE / 5;
+
+/*
+**	A friendly unit about to enter the gate asks it to open. The gate starts opening (or turns
+**	round if it was closing) and answers true only once the door is fully up; the asker waits
+**	until then. A gate still being built or being sold never lets anyone in.
+*/
+bool BuildingClass::Open_Gate(void)
+{
+    TFGateInfo const* gate = TF_Gate_Info(Class->Type);
+    if (gate == NULL) {
+        return (true);
+    }
+    if (BState == BSTATE_CONSTRUCTION || Mission == MISSION_DECONSTRUCTION) {
+        return (false);
+    }
+    GateHold = TF_GATE_HOLD;
+    if (Is_Door_Open()) {
+        return (true);
+    }
+    if ((Reopen_Door() || (Is_Door_Closed() && Open_Door(gate->Rate, gate->Stages))) && gate->OpenSound != VOC_NONE) {
+        Sound_Effect(gate->OpenSound, Center_Coord());
+    }
+    Mark(MARK_CHANGE_REDRAW);
+    return (false);
+}
+
+/*
+**	An open gate holds while anything stands in its footprint and closes once the hold runs out.
+*/
+void BuildingClass::Gate_AI(void)
+{
+    TFGateInfo const* gate = TF_Gate_Info(Class->Type);
+    if (gate == NULL || BState == BSTATE_CONSTRUCTION) {
+        return;
+    }
+    if (Is_Door_Opening() || Is_Door_Closing() || (gate->IdleFrames > 0 && Is_Door_Closed())) {
+        Mark(MARK_CHANGE_REDRAW);
+    }
+
+    /*
+    **	An energy gate without power drops its field: it opens and stays open to everyone.
+    */
+    if (gate->NeedsPower && House->Power_Fraction() < 1) {
+        GateHold = TF_GATE_HOLD;
+        if ((Reopen_Door() || (Is_Door_Closed() && Open_Door(gate->Rate, gate->Stages))) && gate->OpenSound != VOC_NONE) {
+            Sound_Effect(gate->OpenSound, Center_Coord());
+        }
+        return;
+    }
+
+
+    if (!Is_Door_Open()) {
+        return;
+    }
+    short const* offset = Class->Occupy_List();
+    while (offset != NULL && *offset != REFRESH_EOL) {
+        CELL cell = Coord_Cell(Coord) + *offset++;
+        for (ObjectClass* obj = Map[cell].Cell_Occupier(); obj != NULL; obj = obj->Next) {
+            if (obj != this) {
+                GateHold = TF_GATE_HOLD;
+                break;
+            }
+        }
+    }
+    if (GateHold == 0) {
+        Close_Door(gate->Rate, gate->Stages);
+        if (gate->CloseSound != VOC_NONE) {
+            Sound_Effect(gate->CloseSound, Center_Coord());
+        }
+        Mark(MARK_CHANGE_REDRAW);
+    }
+}
+
+/*
+**	May this unit step into the cell now? A friendly gate there is asked to open and lets the
+**	unit in once it is fully open; anyone else gets in only while it stands open. A cell with
+**	no gate always answers yes.
+*/
+bool TF_Gate_Lets_Through(FootClass* foot, CELL cell)
+{
+    if (foot == NULL || !Map.In_Radar(cell)) {
+        return (true);
+    }
+    for (ObjectClass* obj = Map[cell].Cell_Occupier(); obj != NULL; obj = obj->Next) {
+        if (obj != foot && obj->What_Am_I() == RTTI_BUILDING) {
+            BuildingClass* gate = (BuildingClass*)obj;
+            if (TF_Gate_Info(gate->Class->Type) != NULL) {
+                if (gate->House->Is_Ally(foot->House)) {
+                    return (gate->Open_Gate());
+                }
+                return (gate->Is_Gate_Open());
+            }
+        }
+    }
+    return (true);
+}
+
 /***********************************************************************************************
  * Is_TS_Weap_Exit_Cell -- Is this cell the TS war factory's doorstep?                         *
  *                                                                                             *

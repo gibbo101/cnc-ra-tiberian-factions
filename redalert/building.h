@@ -315,6 +315,17 @@ public:
     **	its vehicle and the vehicle leaves for this cell. No other building keeps a destination.
     */
     TARGET TFPackNav;
+
+    /*
+    **	A gate standing open holds until this runs out; anything in its footprint rewinds it.
+    */
+    CDTimerClass<FrameTimerClass> GateHold;
+    bool Open_Gate(void);
+    bool Is_Gate_Open(void) const
+    {
+        return (TF_Gate_Info(Class->Type) != NULL && Is_Door_Open());
+    }
+    void Gate_AI(void);
     virtual bool Can_Demolish(void) const;
     virtual bool Can_Demolish_Unit(void) const;
     virtual bool Can_Capture(void) const;

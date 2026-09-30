@@ -156,6 +156,40 @@ bool DoorClass::Close_Door(int rate, int stages)
     return (false);
 }
 
+/*
+**	How far open the door stands, from 0 (shut) to the last stage of the travel (fully open),
+**	whichever way it is moving.
+*/
+int DoorClass::Door_Position(void) const
+{
+    switch (State) {
+    case IS_OPENING:
+        return (Control.Fetch_Stage());
+
+    case IS_CLOSING:
+        return (Stages - Control.Fetch_Stage());
+
+    case IS_OPEN:
+        return (Stages);
+    }
+    return (0);
+}
+
+/*
+**	Turn a closing door round where it stands, at the rate it was closing. A door doing
+**	anything else is left alone. Returns whether the door was turned.
+*/
+bool DoorClass::Reopen_Door(void)
+{
+    if (State != IS_CLOSING) {
+        return (false);
+    }
+    int position = Stages - Control.Fetch_Stage();
+    State = IS_OPENING;
+    Control.Set_Stage(position);
+    return (true);
+}
+
 /***********************************************************************************************
  * DoorClass::Door_Stage -- Fetches the current door animation frame.                          *
  *                                                                                             *
