@@ -490,9 +490,10 @@ bool DriveClass::Roll_Off_Seat(int px_east, int px_north)
  *                                                                                             *
  *    Fills the ROLL_OFF_DOCK_SEAT table with a 1 px-per-waypoint line from where the unit     *
  *    stands to `dest`, holding `face`, and starts it. The war factory uses it to drive a       *
- *    vehicle from its door-mouth seat onto the exit cell with no recentring step.             *
+ *    vehicle from its door-mouth seat onto the exit cell with no recentring step. Given       *
+ *    `from_face`, the facing turns evenly from it to `face` along the rail instead.           *
  *=============================================================================================*/
-bool DriveClass::Rail_To(COORDINATE dest, DirType face)
+bool DriveClass::Rail_To(COORDINATE dest, DirType face, int from_face)
 {
     assert(IsActive);
 
@@ -506,9 +507,10 @@ bool DriveClass::Rail_To(COORDINATE dest, DirType face)
     if (steps > (int)(sizeof(Track21) / sizeof(Track21[0])) - 1) {
         steps = (int)(sizeof(Track21) / sizeof(Track21[0])) - 1;
     }
+    int turn = (from_face < 0) ? 0 : (int)(signed char)(face - (DirType)from_face);
     for (int i = 0; i <= steps; i++) {
         Track21[i].Offset = XY_Coord((LEPTON)(short)(ex * (steps - i) / steps), (LEPTON)(short)(ny * (steps - i) / steps));
-        Track21[i].Facing = face;
+        Track21[i].Facing = (DirType)(face - turn + turn * i / steps);
     }
     Track21[steps].Offset = 0;
     Force_Track(ROLL_OFF_DOCK_SEAT, dest);
@@ -2453,6 +2455,37 @@ bool DriveClass::Start_Of_Move(void)
     dir = Facing_Dir(facing);
 
     /*
+    **	TS Service Depot: the pad is drawn off the depot's middle cell (BuildingClass::
+    **	Docking_Coord). A vehicle docking there takes the cell before the pad as a straight
+    **	step, never a two-cell curve, then drives its last step straight onto the pad, steering
+    **	on to it as it goes. A vehicle standing on the pad turns to its next cell and drives
+    **	straight off, steering back onto the path's heading by the time it gets there.
+    */
+    COORDINATE rail_end = 0;
+    DirType rail_face = dir;
+    bool straight_in = false;
+    if (What_Am_I() == RTTI_UNIT) {
+        BuildingClass* here = Map[Coord].Cell_Building();
+        TechnoClass* contact = Contact_With_Whom();
+        if (here != NULL && *here == STRUCT_TSDEPT && Coord == here->Docking_Coord()) {
+            rail_end = dest;
+            dir = Desired_Facing256(Coord_X(Coord), Coord_Y(Coord), Coord_X(rail_end), Coord_Y(rail_end));
+        } else if (Mission == MISSION_ENTER && contact != NULL && contact->What_Am_I() == RTTI_BUILDING
+                   && *(BuildingClass*)contact == STRUCT_TSDEPT
+                   && As_Cell(NavCom) == Coord_Cell(contact->Center_Coord())) {
+            CELL padcell = As_Cell(NavCom);
+            if (Coord_Cell(dest) == padcell) {
+                rail_end = ((BuildingClass*)contact)->Docking_Coord();
+                rail_face = Desired_Facing256(Coord_X(Coord), Coord_Y(Coord), Coord_X(rail_end), Coord_Y(rail_end));
+                dir = (abs((int)(signed char)(rail_face - PrimaryFacing.Current())) <= 64) ? PrimaryFacing.Current()
+                                                                                             : rail_face;
+            } else if (Path[1] != FACING_NONE && Coord_Cell(Adjacent_Cell(dest, Path[1])) == padcell) {
+                straight_in = true;
+            }
+        }
+    }
+
+    /*
     **	Set the facing correctly if it isn't already correct. This
     **	means starting a rotation track if necessary.
     */
@@ -2608,11 +2641,23 @@ bool DriveClass::Start_Of_Move(void)
 
             Overrun_Square(Coord_Cell(dest), true);
 
+            if (rail_end != 0) {
+                memmove((char*)&Path[0], (char*)&Path[1], CONQUER_PATH_MAX - 1);
+                Path[CONQUER_PATH_MAX - 1] = FACING_NONE;
+                IsNewNavCom = false;
+                Rail_To(rail_end, rail_face, PrimaryFacing.Current());
+                if (!IsActive) {
+                    return (false);
+                }
+                Set_Speed(speed);
+                return (false);
+            }
+
             /*
             **	Determine which track to use (based on recorded path).
             */
             FacingType nextface = Path[1];
-            if (nextface == FACING_NONE)
+            if (nextface == FACING_NONE || straight_in)
                 nextface = facing;
 
             IsOnShortTrack = false;

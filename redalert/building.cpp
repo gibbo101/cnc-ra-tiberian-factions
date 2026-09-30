@@ -379,6 +379,13 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
         case STRUCT_REPAIR:
         case STRUCT_TDFIX:    // TD Service Depot — same RADIO_IM_IN repair-bay handshake.
         case STRUCT_TSDEPT:   // TS Service Depot.
+            /*
+            **	A unit already in for repair that reports in again (the end of its drive onto
+            **	the TS pad's seat) is acknowledged without restarting the repair.
+            */
+            if (Contact_With_Whom() == from && (Mission == MISSION_REPAIR || MissionQueue == MISSION_REPAIR)) {
+                return (RADIO_ROGER);
+            }
             IsReadyToCommence = true;
             Assign_Mission(MISSION_REPAIR);
             from->Assign_Mission(MISSION_SLEEP);
@@ -902,6 +909,16 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
             static const int TSPULS_TURRET_Y = 10; // classic px: seat dial (Luke, 2026-08-29: 1:1 cannon, feet in the dome)
             int tshape = UnitClass::BodyShape[Dir_To_32(PrimaryFacing.Current())];
             Techno_Draw_Object_Virtual(Class->TsPulseTurret, tshape, x, y + TSPULS_TURRET_Y, window, DIR_N, 0x0100, "TSPULST");
+        }
+
+        /*
+        **	TS Service Depot: while a unit is being repaired the pad glows (GTDEPT_D, ART.INI
+        **	[GADEPT] ProductionAnim), a white flash fading to the pad's grey, one frame every two
+        **	game frames (AnimActive=0,7,2); a damaged depot plays the cracked pad's run.
+        */
+        if (*this == STRUCT_TSDEPT && BState == BSTATE_ACTIVE && Strength > 0) {
+            int glow = ((int)Frame / 2) % 7 + ((Health_Ratio() <= Rule.ConditionYellow) ? 7 : 0);
+            Techno_Draw_Object_Virtual(Get_Image_Data(), glow, x, y, window, DIR_N, 0x0100, "TSDEPTRP");
         }
 
         if (Is_TS_War_Factory() && Strength > 1) {
@@ -5403,6 +5420,10 @@ COORDINATE BuildingClass::Docking_Coord(void) const
         // (TDC17) lands at the centre-front of the 4×2 strip.
         return (Coord_Add(Coord, XYP_COORD(18, 30)));
     }
+    if (*this == STRUCT_TSDEPT) {
+        return (Coord_Add(Center_Coord(),
+                          XY_Coord(TS_DEPOT_SEAT_EAST_PX * PIXEL_LEPTON_W, TS_DEPOT_SEAT_SOUTH_PX * PIXEL_LEPTON_W)));
+    }
     return (TechnoClass::Docking_Coord());
 }
 
@@ -6289,7 +6310,8 @@ int BuildingClass::Mission_Guard(void)
             if ((*this == STRUCT_REPAIR || *this == STRUCT_TDFIX || *this == STRUCT_TSDEPT)
                 && In_Radio_Contact() && Contact_With_Whom()->Is_Techno()
                 && ((TechnoClass*)Contact_With_Whom())->Mission == MISSION_ENTER
-                && Distance(Contact_With_Whom()) < 0x0040 && Transmit_Message(RADIO_NEED_TO_MOVE) == RADIO_ROGER) {
+                && TF_Depot_Reach(Contact_With_Whom()) < 0x0040
+                && Transmit_Message(RADIO_NEED_TO_MOVE) == RADIO_ROGER) {
 
                 Assign_Mission(MISSION_REPAIR);
                 return (1);
@@ -7256,6 +7278,36 @@ int BuildingClass::Mission_Harvest_TD(void)
  *   06/25/1995 JLB : Handles repair facility                                                  *
  *   07/29/1995 JLB : Repair rate is controlled by power rating.                               *
  *=============================================================================================*/
+/***********************************************************************************************
+ * BuildingClass::TF_Depot_Reach -- How far a repair customer is from where it should stop.    *
+ *                                                                                             *
+ *    A repair bay's customer stops on the building's centre; at the TS Service Depot it       *
+ *    stops on the pad's seat (Docking_Coord) instead, or on the middle cell's centre if it    *
+ *    was already standing there, so the nearer of the two counts.                             *
+ *=============================================================================================*/
+int BuildingClass::TF_Depot_Reach(TechnoClass const* customer) const
+{
+    int reach = Distance(customer);
+    if (*this == STRUCT_TSDEPT) {
+        int seat = ::Distance(Docking_Coord(), customer->Center_Coord());
+        if (seat < reach) {
+            reach = seat;
+        }
+    }
+    return (reach);
+}
+
+/***********************************************************************************************
+ * BuildingClass::TF_Depot_Is_Gantry -- Is this one of the TS Service Depot's gantry cells?    *
+ *                                                                                             *
+ *    The gantry stands on the west column's top two cells; no vehicle drives through it.      *
+ *=============================================================================================*/
+bool BuildingClass::TF_Depot_Is_Gantry(CELL cell) const
+{
+    CELL origin = Coord_Cell(Coord);
+    return (cell == origin || cell == origin + MAP_CELL_W);
+}
+
 int BuildingClass::Mission_Repair(void)
 {
     assert(Buildings.ID(this) == ID);
@@ -7315,7 +7367,8 @@ int BuildingClass::Mission_Repair(void)
                     distance = 0x80;
                 }
             }
-            if (Transmit_Message(RADIO_NEED_TO_MOVE) == RADIO_ROGER && Distance(Contact_With_Whom()) < distance) {
+            int reach = TF_Depot_Reach(tech);
+            if (Transmit_Message(RADIO_NEED_TO_MOVE) == RADIO_ROGER && reach < distance) {
                 Status = IDLE;
                 return (TICKS_PER_SECOND / 4);
             }

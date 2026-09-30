@@ -56,6 +56,18 @@ class BuildingClass : public TechnoClass
 {
 public:
     /*
+    **	TS Service Depot: its pad is drawn off the middle cell's centre, this many classic pixels
+    **	east and south of it (the ring's centre on the packed art); units sit and aircraft land there.
+    */
+    enum
+    {
+        TS_DEPOT_SEAT_EAST_PX = 6,
+        TS_DEPOT_SEAT_SOUTH_PX = 9
+    };
+    int TF_Depot_Reach(TechnoClass const* customer) const;
+    bool TF_Depot_Is_Gantry(CELL cell) const;
+
+    /*
     **	This points to the control data that gives this building its characteristics.
     */
     CCPtr<BuildingTypeClass> Class;

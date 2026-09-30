@@ -5559,6 +5559,20 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
             }
 
             /*
+            **	TS Service Depot: its whole 3x3 is solid. The gantry's cells stay closed to every
+            **	vehicle; the rest are open to its customer and to any vehicle standing on the
+            **	depot, so one left on the pad after the repair can drive off.
+            */
+            if (obj->What_Am_I() == RTTI_BUILDING && *(BuildingClass*)obj == STRUCT_TSDEPT) {
+                if (((BuildingClass*)obj)->TF_Depot_Is_Gantry(cell)) {
+                    return (MOVE_NO);
+                }
+                if (Map[Coord].Cell_Building() == obj) {
+                    return (MOVE_OK);
+                }
+            }
+
+            /*
             **	Always allow entry if trying to move on a cell with
             **	authorization from the occupier.
             */
@@ -7008,6 +7022,7 @@ bool UnitClass::DoSmarterRunAway(void)
     }
 
     const CELL mycell = Coord_Cell(Coord);
+    const bool tsdepot = (*beneathme == STRUCT_TSDEPT);
     int bestscore = 0;
     CELL bestcell = 0;
     FacingType bestdirection = FACING_NONE;
@@ -7021,9 +7036,14 @@ bool UnitClass::DoSmarterRunAway(void)
             continue;
         }
         /*
-        **	Since the pad is a + shape, go an extra cell in the cardinal directions.
+        **	Since the pad is a + shape, go an extra cell in the cardinal directions. The TS
+        **	Service Depot is solid all round, so its exits are all two cells out, never
+        **	through the gantry.
         */
-        if (((int)face) % 2 == 0) {
+        if (tsdepot && beneathme->TF_Depot_Is_Gantry(newcell)) {
+            continue;
+        }
+        if (((int)face) % 2 == 0 || tsdepot) {
             newcell = Adjacent_Cell(newcell, face);
             if (!Map.In_Radar(newcell)) {
                 continue;

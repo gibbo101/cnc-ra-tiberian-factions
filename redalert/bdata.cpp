@@ -5459,6 +5459,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSTECH, BSTATE_IDLE, 0, 8, 3},   // GATECH _A halved (8 healthy + 8 damage-pocked dome)
         {STRUCT_TSFGEN, BSTATE_IDLE, 0, 48, 2},  // GAFIRE _B (16) every step + _C (6) every 2nd step -> 48, TS's rates; damaged = anims stopped
         {STRUCT_TSDEPT, BSTATE_IDLE, 0, 35, 3},  // GADEPT _A halved(5)+_B whole(7, odd=no damaged half) -> LCM 35
+        {STRUCT_TSDEPT, BSTATE_ACTIVE, 0, 35, 3}, // repairing: the same lights, the pad glow on top (TSDEPTRP)
         {STRUCT_TSPLUG, BSTATE_IDLE, 0, 40, 3},  // GAPLUG windows _A(10)+_B(8)+_C(4) -> LCM 40
         // TSSILO is static (no TS idle anim): shape 0 healthy, 1 damaged.
     };
