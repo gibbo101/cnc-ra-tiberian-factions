@@ -7011,9 +7011,15 @@ int BuildingClass::Mission_Attack(void)
     case FIRE_OK:
         /*
         **	TS Limpet Mine: the shot is the drone leaping onto the vehicle, and the mine is spent.
+        **	A vehicle it cannot attach to (one already carrying this house's drone) gets no shot at
+        **	all, as in TS; the mine drops it and waits for another.
         */
-        if (TF_Limpet_Attach(this, primary)) {
-            delete this;
+        if (*this == STRUCT_TSDLIMP) {
+            if (TF_Limpet_Attach(this, primary)) {
+                delete this;
+            } else {
+                Assign_Target(TARGET_NONE);
+            }
             return (1);
         }
         Fire_At(TarCom, primary);

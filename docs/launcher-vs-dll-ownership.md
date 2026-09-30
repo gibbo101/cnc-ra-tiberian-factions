@@ -266,8 +266,15 @@ load is the way in:
 - Verified 2026-09-30 in a LAN game (Deck host, desktop joiner, both TS GDI): the joiner's tab
   icons, crest and launcher-played EVA lines all follow its faction, and no message text shows.
 
-Still host-only: the dev cheats (they follow the host's local player), and the two keys the DLL
-reads straight from the host's keyboard (deploy, select-all `a`).
+**The keys** (`TF_Patch_Launcher_Keys_In`, same startup load): the launcher's tactical command
+dispatcher (0x168A1B0, command number at `[cmd+0x24]`) jumps through a table at 0x168AD74 for
+commands 0x1006 on. Deploy (0x1020, slot 10) now runs a stub that becomes mod command 1 and joins the
+mod-command send (0x168ABDB), so every player's deploy key reaches the host's generic
+`TF_Self_Action_Selected` (debounced per house: on the host the keyboard read fires too).
+Select all on screen (0x101B, slot 8) and in world (0x101A, slot 7) first re-run the dispatcher on
+the same command numbered as mod command 2 (0x1033), which latches that house's harvester and MCV
+filter on the host (`TF_Select_All_Excludes`), then run the stock handler. Verified in LAN
+2026-09-30. Still host-only: the dev cheats (they follow the host's local player).
 
 **Superseded (2026-09-03):** the screen-rectangle click reader (`GetAsyncKeyState` +
 `GetCursorPos`, 1080p only) and the "report it as an unfinished build item" routes. The Hunter

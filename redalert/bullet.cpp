@@ -1336,9 +1336,11 @@ void BulletClass::AI(void)
         **	delete the bullet.
         */
         /*
-        **	The Juggernaut's shell has no proximity fuse: only the end of its arc brings it down.
+        **	The Juggernaut's shell and the EMP pulse ball have no proximity fuse: only the end of
+        **	the arc brings them down.
         */
-        if (!forced && (Class->IsDropping || *this == BULLET_TSBALLISTIC2 || !Fuse_Checkup(Coord))) {
+        if (!forced
+            && (Class->IsDropping || *this == BULLET_TSBALLISTIC2 || *this == BULLET_TSPULSBALL || !Fuse_Checkup(Coord))) {
             /*
             **	Certain projectiles lose strength when they travel.
             */
@@ -1777,13 +1779,13 @@ bool BulletClass::Unlimbo(COORDINATE coord, DirType dir)
             Riser = max(Riser, 10);
 
             /*
-            **	The Juggernaut's shell lands on the frame it reaches its aim point: the flight is cut
-            **	into whole frames, the ground speed set so those frames cover the range exactly, and
-            **	the climb chosen so the arc comes down on the last of them. The stock arithmetic
-            **	above rounds the climb independently of the speed and puts a fast shell down a
-            **	constant half cell from where it was aimed.
+            **	The Juggernaut's shell and the EMP Cannon's pulse ball land on the frame they reach
+            **	their aim point: the flight is cut into whole frames, the ground speed set so those
+            **	frames cover the range exactly, and the climb chosen so the arc comes down on the
+            **	last of them. The stock arithmetic above rounds the climb independently of the speed
+            **	and puts a fast shell down a constant half cell from where it was aimed.
             */
-            if (*this == BULLET_TSBALLISTIC2) {
+            if (*this == BULLET_TSBALLISTIC2 || *this == BULLET_TSPULSBALL) {
                 /*
                 **	The flight covers the true distance to the aim point. ::Distance() is the
                 **	cheap approximation (the bigger axis plus half the smaller), which overstates
@@ -2458,10 +2460,12 @@ bool BulletClass::Is_Forced_To_Explode(COORDINATE& coord) const
 void BulletClass::Bullet_Explodes(bool forced)
 {
     /*
-    **	The Juggernaut's shell comes down on its (scattered) aim point when the arc ends within
-    **	a cell of it, so the flight's rounding never moves the burst off where it was rolled to land.
+    **	The Juggernaut's shell and the EMP pulse ball come down on their aim point when the arc
+    **	ends within a cell of it, so the flight's rounding never moves the burst off where it was
+    **	aimed (for the Juggernaut, where its scatter was rolled to land).
     */
-    if (*this == BULLET_TSBALLISTIC2 && forced && Fuse_Target() != 0 && ::Distance(Coord, Fuse_Target()) < CELL_LEPTON_W) {
+    if ((*this == BULLET_TSBALLISTIC2 || *this == BULLET_TSPULSBALL) && forced && Fuse_Target() != 0
+        && ::Distance(Coord, Fuse_Target()) < CELL_LEPTON_W) {
         Coord = Fuse_Target();
     }
 #if TF_DEV_BUILD

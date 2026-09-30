@@ -2151,6 +2151,20 @@ bool TF_DeployKeyBatch = false; // set while the deploy key runs its selected-ob
 
 static int TF_Self_Action_Selected(void)
 {
+    /*
+    **	On the host one press arrives twice, from the keyboard read and from its own launcher's
+    **	deploy command (TF_Patch_Click_Specials_In); it counts once per house, so a Mobile War
+    **	Factory that has just deployed is not packed straight back up.
+    */
+    static long last_press[HOUSE_COUNT];
+    if (PlayerPtr != NULL) {
+        long& last = last_press[PlayerPtr->Class->House];
+        if (last != 0 && Frame >= last && Frame - last < TICKS_PER_SECOND / 2) {
+            return 0;
+        }
+        last = Frame;
+    }
+
     int acted = 0;
     bool ts_unit = false;
     /*
@@ -2203,7 +2217,7 @@ static int TF_Self_Action_Selected(void)
     return acted;
 }
 
-static long TF_SelectAllLatchUntil = -1; // frame until which a recent 'A' press still counts as held
+static long TF_SelectAllLatchUntil[HOUSE_COUNT]; // per house: frame until which a select-all order still counts as fresh
 static const int TF_HUNTER_DRAW_SIZE = 90; // launcher draw box for the Hunter Seeker droid (tune by eye)
 
 static void TF_Sidebar_Log(const char* fmt, ...)
@@ -2268,30 +2282,33 @@ static void TF_Deploy_Key_Tick(void)
     if (down && !_was_down) {
         int acted = TF_Self_Action_Selected();
 #if TF_DEV_BUILD
-        char msg[80];
-        snprintf(msg, sizeof(msg), "Deploy key: %d of %d selected", acted, CurrentObject.Count());
-        On_Message(msg, 5.0f, -1);
+        if (acted > 0) {
+            char msg[80];
+            snprintf(msg, sizeof(msg), "Deploy key: %d of %d selected", acted, CurrentObject.Count());
+            On_Message(msg, 5.0f, -1);
+        }
 #endif
     }
     _was_down = down;
 
     // The launcher's select-all reaches CNC_Select_Object a frame or two after the key
     // goes down, so remember a press briefly rather than requiring the key to still be held.
-    if (GetAsyncKeyState('A') & 0x8000) {
-        TF_SelectAllLatchUntil = (long)Frame + 10;
+    if ((GetAsyncKeyState('A') & 0x8000) != 0 && PlayerPtr != NULL) {
+        TF_SelectAllLatchUntil[PlayerPtr->Class->House] = (long)Frame + 10;
     }
 }
 
 /*
 **	Select-all ('A') is launcher-driven: ClientG picks the objects and hands them to
 **	CNC_Select_Object one by one, excluding only the stock harvester and MCV by name id, so
-**	every faction harvester and MCV leaked into the army selection. While the key is held,
-**	the DLL applies the engine's own band-select rule to what the launcher hands over.
+**	every faction harvester and MCV leaked into the army selection. For a moment after a
+**	house's select-all order (its launcher's mod command 2, or on the host its own 'A' key),
+**	the DLL applies the engine's own band-select rule to what that house's launcher hands over.
 */
 static bool TF_Select_All_Excludes(ObjectClass* object)
 {
-    bool a_recent = ((GetAsyncKeyState('A') & 0x8000) != 0) || ((long)Frame <= TF_SelectAllLatchUntil);
-    if (!a_recent) {
+    long const until = (PlayerPtr != NULL) ? TF_SelectAllLatchUntil[PlayerPtr->Class->House] : 0;
+    if (until == 0 || (long)Frame > until) {
         return false;
     }
     return (object->What_Am_I() == RTTI_UNIT)
@@ -4791,6 +4808,7 @@ static void TF_Patch_ClientG_Click_Specials(void)
 **	every byte of it lives in ClientG's own image.
 */
 static const char* TF_Launcher_Resident_Install(void);
+static const char* TF_Patch_Launcher_Keys_In(void);
 
 void TF_Patch_Launcher_At_Load(void)
 {
@@ -4801,6 +4819,7 @@ void TF_Patch_Launcher_At_Load(void)
     if (_stricmp(name, "ClientG.exe") == 0) {
         TF_Click_Specials_Log("launcher load", TF_Patch_Click_Specials_In(GetCurrentProcess()));
         TF_Click_Specials_Log("launcher load", TF_Launcher_Resident_Install());
+        TF_Click_Specials_Log("launcher load", TF_Patch_Launcher_Keys_In());
     }
 }
 
@@ -5116,6 +5135,77 @@ static const char* TF_Launcher_Resident_Install(void)
         return "dispatcher: write failed";
     }
     return "dispatcher hooked";
+}
+
+/*
+**	Runs in the launcher's own process at the DLL's startup load: routes the deploy and
+**	select-all keys through the launcher's mod commands, so they reach the host for every
+**	player. The launcher's tactical command dispatcher (0x168A1B0) jumps through a table at
+**	0x168AD74 for commands 0x1006 on; three of its slots are re-pointed:
+**	  deploy 0x1020 -> a stub that becomes mod command 1 (0x1032) and joins the mod-command
+**	    send; the host deploys that player's selection (TF_Self_Action_Selected), where the
+**	    launcher's own deploy only acted on units named "MCV".
+**	  select all on screen 0x101B / in world 0x101A -> a stub that first runs the dispatcher on
+**	    the same command re-numbered as mod command 2 (0x1033), so the host hears the order
+**	    before the objects arrive (TF_Select_All_Excludes), then the stock handler.
+*/
+static const char* TF_Patch_Launcher_Keys_In(void)
+{
+    static const SIZE_T DISPATCH = 0x168A1B0;
+    static const SIZE_T MOD_SEND = 0x168ABDB;
+    static const SIZE_T TABLE = 0x168AD74;
+    static const SIZE_T CAVE = 0x1BE9280;
+    struct Slot
+    {
+        int index;
+        SIZE_T stock;
+        unsigned command;
+    };
+    static const Slot deploy = {10, 0x168AB18, 0x1020};
+    static const Slot selects[2] = {{8, 0x168A830, 0x101B}, {7, 0x168A9E7, 0x101A}};
+
+    SIZE_T const deploy_slot = TABLE + deploy.index * 4;
+    if (*(SIZE_T const*)deploy_slot != deploy.stock || *(SIZE_T const*)(TABLE + selects[0].index * 4) != selects[0].stock
+        || *(SIZE_T const*)(TABLE + selects[1].index * 4) != selects[1].stock) {
+        return "keys: unknown launcher build, left alone";
+    }
+    for (int i = 0; i < 0x60; i++) {
+        if (((unsigned char const*)CAVE)[i] != 0) {
+            return "keys: cave in use, left alone";
+        }
+    }
+
+    /*
+    **	mov ebx,0x1032 / jmp MOD_SEND
+    */
+    unsigned char deploy_stub[10] = {0xBB, 0x32, 0x10, 0x00, 0x00, 0xE9, 0, 0, 0, 0};
+    TF_Put_Rel32(deploy_stub + 6, CAVE + 10, MOD_SEND);
+    if (!TF_Write_Own_Code(CAVE, deploy_stub, sizeof(deploy_stub))) {
+        return "keys: write failed";
+    }
+    SIZE_T target = CAVE;
+    if (!TF_Write_Own_Code(deploy_slot, (unsigned char const*)&target, 4)) {
+        return "keys: write failed";
+    }
+
+    /*
+    **	mov [edi+24h],0x1033 / push edi / mov ecx,esi / call DISPATCH /
+    **	mov [edi+24h],<command> / jmp <stock handler>
+    */
+    for (int s = 0; s < 2; s++) {
+        SIZE_T const at = CAVE + 0x20 + s * 0x20;
+        unsigned char stub[27] = {0xC7, 0x47, 0x24, 0x33, 0x10, 0x00, 0x00, 0x57, 0x8B, 0xCE, 0xE8, 0, 0, 0, 0,
+                                  0xC7, 0x47, 0x24, 0, 0, 0, 0, 0xE9, 0, 0, 0, 0};
+        TF_Put_Rel32(stub + 11, at + 15, DISPATCH);
+        memcpy(stub + 18, &selects[s].command, 4);
+        TF_Put_Rel32(stub + 23, at + 27, selects[s].stock);
+        target = at;
+        if (!TF_Write_Own_Code(at, stub, sizeof(stub))
+            || !TF_Write_Own_Code(TABLE + selects[s].index * 4, (unsigned char const*)&target, 4)) {
+            return "keys: write failed";
+        }
+    }
+    return "keys routed through mod commands";
 }
 
 /*
@@ -8190,6 +8280,15 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
         **	The action is issued through the ordinary queued mission path, so multiplayer
         **	stays in step.
         */
+        /*
+        **	Mod command 2 -- a select-all order. Every launcher sends it just before its own
+        **	select-all hands the objects over (TF_Patch_Launcher_Keys_In), so that house's
+        **	selection gets the harvester and MCV filter (TF_Select_All_Excludes).
+        */
+        if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_2_AT_POSITION && PlayerPtr != NULL) {
+            TF_SelectAllLatchUntil[PlayerPtr->Class->House] = (long)Frame + 10;
+        }
+
         if (input_event == INPUT_REQUEST_MOD_GAME_COMMAND_1_AT_POSITION) {
             int deployed = TF_Self_Action_Selected();
 
@@ -8207,9 +8306,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Handle_Input(InputRequestEnum 
                             deployed);
                     fclose(f);
                 }
-                char msg[80];
-                snprintf(msg, sizeof(msg), "Deploy key: %d of %d selected", deployed, CurrentObject.Count());
-                On_Message(msg, 5.0f, -1);
+                if (deployed > 0) {
+                    char msg[80];
+                    snprintf(msg, sizeof(msg), "Deploy key: %d of %d selected", deployed, CurrentObject.Count());
+                    On_Message(msg, 5.0f, -1);
+                }
             }
 #endif
         }
