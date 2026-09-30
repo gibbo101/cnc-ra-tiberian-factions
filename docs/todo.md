@@ -3,10 +3,10 @@
 **Two instances from 2026-09-30.** Each works in its own worktree and owns one deploy surface.
 
 ### Instance A: Firestorm Defense (branch `firestorm`, worktree `../tf-subterranean-worktree`, deploys to the DESKTOP)
-Design + tracker: `docs/firestorm-design.md` on that branch. Stage A (generator, STRUCT_TSFGEN) committed;
-stage B (Firestorm Wall Sections, STRUCT_TSFSDF) and the 5-cell line fill for every wall type are built and
-desktop-deployed, awaiting Luke's play test, then commit + push. Next: stage C (superweapon + charge-drain,
-click-anywhere activation), stage D (the live field).
+Stages A-D + sound DONE and verified (pushed). Resume from the RESUME HERE block at the top of
+`docs/firestorm-design.md` on that branch: line fill all-or-nothing awaiting a check, the placement-preview probe,
+then stage E (control rework, design with Luke first). The desktop is shared with the C&C3 tanks instance
+(combined build, announce every deploy).
 
 ### Instance B: gates for all six factions + the TS Nod wall (own worktree, deploys to the DECK `steamdeck` / 100.68.30.94)
 - Scope (Luke, 2026-09-29): "all factions can have gates now" -- TS GDI, TS Nod, RA Allies, RA Soviets, TD GDI,
