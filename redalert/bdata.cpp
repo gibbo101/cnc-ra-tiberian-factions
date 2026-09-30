@@ -5787,6 +5787,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TDGFACT, BSTATE_ACTIVE, 4, 20, 3},
         {STRUCT_TDGFACT, BSTATE_IDLE, 0, 4, 3},
         {STRUCT_SFACT, BSTATE_ACTIVE, 0, 26, 3},
+        {STRUCT_AFACT, BSTATE_ACTIVE, 0, 26, 3},
         // M4 Tier 3 — TDPROC harvester dock state machine. TD-authentic per
         // tiberiandawn/bdata.cpp:3801-3805. IDLE 0-5 normal; FULL 6-11 plays
         // when Capacity is reached (flashing lights); ACTIVE 12-18 (docking);
