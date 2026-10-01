@@ -1,0 +1,28 @@
+# The Tiberian Factions startup intro montage. Hell March Remastered, 120 BPM: 1 beat = 15 frames at 30 fps.
+# movie	first_frame	beats	note
+# --- 2-second shots (4 beats) from the first big accent at 4.28 s; the band enters at 32.28 s on the cut into the 15th ---
+RA/V2ROCKET	225	4	V2 battery launch at sunset
+TD/NUKE	440	4	missile rises up the silo
+TS/COUP	105	4	Nod wall lasers shoot back at the Wolverines
+RA/TESLA	195	4	Tesla coil fries a tank
+TD/OBEL	630	4	Obelisk lasers the humvees
+TS/MECHATAK	266	4	three Titans fire their cannons
+RA/MIG	1140	4	MiG missiles hit the tank
+TD/AKIRA	1170	4	Ion Cannon hits the watchtower
+TS/KILLMECH	160	4	Banshees kill a Mammoth Mk II
+RA/OVERRUN	270	4	Soviet tank rolls over the camera
+TD/STEALTH	640	4	Stealth Tank decloaks, base explodes
+TS/UNSTPBLE	100	4	Mammoth Mk II through a Nod base
+RA/CRONFAIL	120	4	Chronosphere overload
+TD/NOD9	1500	4	flame tanks, fireball (1080p)
+TS/ORCASTRK	105	4	Orca strike
+RA/TRINITY	210	4	nuke by the Eiffel Tower
+# --- half-second cuts (1 beat) from the hit two bars into the band (36.28 s) to the next phrase (40.28 s) ---
+RA/AAGUN	470	1	AA gun downs a fighter
+TD/SAMSITE	200	1	SAM kills a jet
+TS/MEKATAK2	160	1	Titan fireball
+RA/OILDRUM	420	1	fuel depot chain explosion
+TD/NAPALM	700	1	napalm
+TS/EMPULSE	220	1	EMP pulse
+RA/SITDUCK	900	1	battleship explodes
+TD/IONTEST	380	1	Ion Cannon test

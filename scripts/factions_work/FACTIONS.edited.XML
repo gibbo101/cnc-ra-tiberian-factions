@@ -3212,7 +3212,7 @@
 				</Entry>
 				<Entry>
 					<Key>UI_Skirmish_GameLobby</Key>
-					<Value>RA/RA_UI_Skirmish_GameLobby</Value>
+					<Value>UI_Skirmish_GameLobby</Value>      
 				</Entry>
 				<Entry>
 					<Key>UI_GameLobby</Key>
@@ -3224,11 +3224,11 @@
 				</Entry>
 				<Entry>
 					<Key>UI_LAN_GameLobby</Key>
-					<Value>RA/RA_UI_LAN_GameLobby</Value>
+					<Value>UI_LAN_GameLobby</Value>      
 				</Entry>
 				<Entry>
 					<Key>UI_LAN_MultiplayerMenu</Key>
-					<Value>RA/RA_UI_LAN_MultiplayerMenu</Value>
+					<Value>UI_LAN_MultiplayerMenu</Value>      
 				</Entry>
 				<Entry>
 					<Key>UI_LoadingScreen</Key>
@@ -3268,7 +3268,7 @@
         </Entry>
         <Entry>
           <Key>UI_WorkshopMap_Browse</Key>
-          <Value>RA/RA_UI_WorkshopMap_Browse</Value>
+          <Value>UI_WorkshopMap_Browse</Value>      
         </Entry>
         <Entry>
           <Key>UI_SyncMap</Key>
