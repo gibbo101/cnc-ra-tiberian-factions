@@ -11,7 +11,9 @@ Pristine art comes from the launcher's UI atlas, MT_COMMANDBAR_COMMON.TGA in
 TEXTURES_SRGB.MEG, whose .MTD sidecar maps region-name -> (x, y, w, h). Cameos
 exist ONLY as regions of that atlas; there is no per-cameo file anywhere in the
 game install. Rebuilding from the atlas every run is what keeps this idempotent
--- re-badging an already-badged file would stack emblems.
+-- re-badging an already-badged file would stack emblems. A cameo with no atlas
+region is read from its loose BuildIcon_<name>.tga. scripts/asset_packs.py routes
+every cameo path: a plain cameo to its pack, the badged variants to the mod's own tree.
 
 Naming, kept inside AssetName[16]:
   buildables    <IniName>_<mask>     e.g. TDNUKE_C
@@ -25,6 +27,7 @@ Usage: scripts/cameo_badge_build.py [--dry-run] [ININAME ...]
 License: GPL v3.
 """
 import json
+import os
 import re
 import struct
 import sys
@@ -33,15 +36,16 @@ from pathlib import Path
 
 from PIL import Image
 
+import asset_packs
+import stage_asset_packs
+
 Image.MAX_IMAGE_PIXELS = None
 
 ROOT = Path(__file__).resolve().parent.parent
 WORK = ROOT / "scripts/cameo_work"
 EMBLEMS = ROOT / "scripts/tab_emblems"
-OUT = ROOT / "resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB"
 RULES = ROOT / "resources/remaster_mods/Vanilla_RA/CCDATA/rules.ini"
 MASKS = WORK / "faction_masks.txt"
-XML = ROOT / "resources/remaster_mods/Vanilla_RA/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
 ICON_MAP = WORK / "plain_icon_map.json"
 ATLAS = WORK / "MT_COMMANDBAR_COMMON.TGA"
 MTD = WORK / "MT_COMMANDBAR_COMMON.MTD"
@@ -122,6 +126,13 @@ def owner_sets():
     return out
 
 
+def buildables_text():
+    """The mod's buildables XML with every pack's sidebar entries merged in, as the build stages it."""
+    own = asset_packs.buildables_xml_of(None)
+    rel = os.path.relpath(own, asset_packs.data_root(None))
+    return stage_asset_packs.merged(rel, asset_packs.buildables_xml_of, "ObjectTypeList")
+
+
 def pristine_sources(plain):
     """Entry name -> the unbadged art it should be built from.
 
@@ -130,7 +141,7 @@ def pristine_sources(plain):
     and would stack emblems. Everything else is still pointing at unbadged art,
     so its current BuildIcon is the pristine source.
     """
-    xml = XML.read_text(encoding="utf-8")
+    xml = buildables_text()
     xml = re.sub(
         r"\t<!-- BEGIN generated.*?END generated unbadged cameo variants -->\n?", "", xml, flags=re.S
     )
@@ -208,7 +219,7 @@ def main(argv):
             x, y, w, h = box
             pristine = atlas.crop((x, y, x + w, y + h)).convert("RGBA")
         else:
-            loose = OUT / f"{region_name}.tga"
+            loose = Path(asset_packs.cameo_tga(region_name))
             if not loose.exists():
                 print(f"  WARN {asset}: no atlas region and no loose {region_name}.tga")
                 skipped += 1
@@ -232,7 +243,7 @@ def main(argv):
                     )
                     slot += 1
             if not dry_run:
-                cameo.save(OUT / f"BuildIcon_{key}.tga")
+                cameo.save(asset_packs.cameo_tga(f"BuildIcon_{key}"))
             written += 1
 
     verb = "would write" if dry_run else "wrote"

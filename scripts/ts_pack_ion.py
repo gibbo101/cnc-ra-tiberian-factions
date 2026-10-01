@@ -14,9 +14,12 @@ cell 192 canvas px, the TSDIG contract), canvas = classic stub x 8
 
 Also emits:
 - BuildIcon_SW_TSION.tga — the TS satellite cameo (IONCICON, CAMEO.PAL) for
-  the specials column when the uplink is the grantor (AssetName "SW_TSIon").
-- Data/AUDIO/TSION1.WAV — TS's ION1 strike sound under its OWN sample name
+  the specials column when the uplink is the grantor (AssetName "SW_TSIon"), in the
+  mod's own tree.
+- AUDIO/TSION1.WAV — TS's ION1 strike sound under its OWN sample name
   (ffmpeg: Westwood AUD -> MS-ADPCM WAV, the proven novel-name format rules).
+Anims, their TS_VFX.XML tile runs and the sound go to the tree asset_packs.py routes each
+name to (the TS packs).
 
 Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/{IONBEAM.SHP,RING1.SHP,ANIM.PAL,
 CAMEO.PAL,ION1.AUD} — extracted by scripts/ts_rebuild_art.sh.
@@ -32,11 +35,8 @@ if not ART:
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import ts_shp
+import asset_packs
 
-MOD = os.path.abspath(os.path.join(HERE, "..", "resources", "remaster_mods", "Vanilla_RA", "Data"))
-VFX_DIR = f"{MOD}/ART/TEXTURES/SRGB/RED_ALERT/VFX"
-ICON_DIR = f"{MOD}/ART/TEXTURES/SRGB"
-XML = f"{MOD}/XML/TILESETS/RA_VFX.XML"
 RAW = f"{ART}/.raw"
 SCALE = 4.0
 BEAM_SEGMENTS = 8  # 8 x 480 = 3840 canvas px. The TD beam's art is 2038px but renders at VirtualScale 0x200 (adata.cpp) = ~4076 virtual px; ours draws at 0x100 to keep the narrow TS column width, so the height must be tiled in at pack time (Luke: the TD beam enters from the top of the screen; the TS one must too)
@@ -71,7 +71,7 @@ def patch_tileset(xml_path, name, count):
     blocks = "".join(block % (name, i, f"{sub}\\{sub}-{i:04d}.tga") for i in range(count))
     idx = xml.rindex("</Tiles>")
     open(xml_path, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
-    print(f"patched RA_VFX.XML: {name} -> {count} tiles")
+    print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles")
 
 
 def decode(shp, pal, remap=None):
@@ -91,8 +91,8 @@ def main():
         for s in range(BEAM_SEGMENTS):
             canvas.alpha_composite(seg, (x, canvas.height - (s + 1) * seg.height))
         beam.append(canvas)
-    write_zip(f"{VFX_DIR}/TSIONBM.ZIP", "tsionbm", beam)
-    patch_tileset(XML, "TSIONBM", len(beam))
+    write_zip(asset_packs.art_zip("TSIONBM", "VFX"), "tsionbm", beam)
+    patch_tileset(asset_packs.tileset_xml("TSIONBM", "VFX"), "TSIONBM", len(beam))
 
     # Ring: centred, x4.
     ring = []
@@ -102,18 +102,18 @@ def main():
         canvas.alpha_composite(scaled, (round(canvas.width / 2 - scaled.width / 2),
                                         round(canvas.height / 2 - scaled.height / 2)))
         ring.append(canvas)
-    write_zip(f"{VFX_DIR}/TSIONRNG.ZIP", "tsionrng", ring)
-    patch_tileset(XML, "TSIONRNG", len(ring))
+    write_zip(asset_packs.art_zip("TSIONRNG", "VFX"), "tsionrng", ring)
+    patch_tileset(asset_packs.tileset_xml("TSIONRNG", "VFX"), "TSIONRNG", len(ring))
 
     # The TS satellite cameo for the uplink-granted special.
     cameo_pal = ts_shp.load_pal(f"{RAW}/CAMEO.PAL")
     _, _, icon = decode("IONCICON.SHP", cameo_pal)[0]
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(f"{ICON_DIR}/BuildIcon_SW_TSION.tga")
-    print(f"wrote {ICON_DIR}/BuildIcon_SW_TSION.tga")
+    big.save(asset_packs.cameo_tga("BuildIcon_SW_TSION"))
+    print(f"wrote {asset_packs.cameo_tga('BuildIcon_SW_TSION')}")
 
     # TS ION1 strike sound under its own sample name (novel-name path).
-    out_wav = f"{MOD}/AUDIO/TSION1.WAV"
+    out_wav = asset_packs.sound_wav("TSION1.WAV")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{RAW}/ION1.AUD",
                     "-acodec", "adpcm_ms", out_wav], check=True)
     print(f"wrote {out_wav}")

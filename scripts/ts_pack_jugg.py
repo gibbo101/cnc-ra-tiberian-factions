@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
-"""Package the TS Juggernaut (Firestorm) into the mod tree as TSJUGG.ZIP, 202 frames:
+"""Package the TS Juggernaut (Firestorm) into the TS-Graphics-Pack as TSJUGG.ZIP, 202 frames:
   0-119    walk: 8 facings (CCW from N) x 15 frames, JUGGER.SHP poses with their own shadows
   120-151  deployed at rest: DJUGG base + DJUGG_A cabin (32 facings, CCW from N, swinging behind
            its pivot) + the DJUGGBAR voxel barrels level, seated in the cabin's side
   152-183  deployed aiming: the same with the barrels pitched 45 degrees (TS raises BarrelPitch
            onto a target and drops it back to level after the shot)
   184-201  the DJUGGMK deploy ladder (18 frames), played backwards to pack up
-plus BuildIcon_TS_Juggernaut.tga, the base RA_TSJUGG sidebar entry and the ModText rows.
+plus BuildIcon_TS_Juggernaut.tga, the base RA_TSJUGG sidebar entry and the ModText rows (art,
+cameo, tiles and sidebar entry in the tree asset_packs.py routes each name to; ModText in the mod).
 Scale: TS SHP px x 6.4 (the walker house factor, hq4x then LANCZOS) on a 448 canvas
 (ShapeSize 56); the barrel render (12 px/voxel) scales by 6.4/12. Every source canvas is
 placed by its centre on the tileset canvas centre (model space, the launcher's anchor).
@@ -24,6 +25,7 @@ import hqx
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import asset_packs
 import ts_pack_infantry as inf
 
 ART = inf.ART
@@ -180,7 +182,7 @@ def main():
     write_muzzle_table(tips)
     frames = walk + dep + lad
     assert len(frames) == 202
-    inf.write_zip(f"{inf.UNITS_DIR}/TSJUGG.ZIP", "tsjugg", frames)
+    inf.write_zip(asset_packs.art_zip("TSJUGG", "UNITS"), "tsjugg", frames)
     inf.patch_tileset("TSJUGG", len(frames))
     inf.cameo("juggicon", "BuildIcon_TS_Juggernaut")
     inf.sidebar("TSJUGG", "BuildIcon_TS_Juggernaut")

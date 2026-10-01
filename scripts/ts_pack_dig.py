@@ -11,7 +11,8 @@ lands on a 512 canvas (64x64 classic stub x 8), model-space centred so the
 mound sits on the vehicle's draw anchor like the TS anim does.
 
 Inputs (set TS_ART_DIR): $TS_ART_DIR/raw/DIG.SHP + $TS_ART_DIR/raw/ANIM.PAL
-Outputs: Data/ART/.../RED_ALERT/VFX/TSDIG.ZIP + 37 TSDIG tiles in RA_VFX.XML.
+Outputs: Data/ART/.../RED_ALERT/VFX/TSDIG.ZIP + 37 TSDIG tiles in TS_VFX.XML, in the
+TS-Graphics-Pack (asset_packs.py routes the name).
 The classic stub (TSDIG.SHP, 64x64x37) is built by scripts/build_tfassets.sh.
 """
 import io, json, os, re, sys, zipfile
@@ -22,11 +23,9 @@ if not ART:
     raise SystemExit("set TS_ART_DIR to the directory holding raw/DIG.SHP and raw/ANIM.PAL")
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import asset_packs
 import ts_shp
 
-MOD = os.path.abspath(os.path.join(HERE, "..", "resources", "remaster_mods", "Vanilla_RA", "Data"))
-VFX_DIR = f"{MOD}/ART/TEXTURES/SRGB/RED_ALERT/VFX"
-XML = f"{MOD}/XML/TILESETS/RA_VFX.XML"
 NAME = "TSDIG"
 SCALE = 4.0
 CANVAS = 512
@@ -61,7 +60,7 @@ def patch_tileset(xml_path, name, count):
     blocks = "".join(block % (name, i, f"{sub}\\{sub}-{i:04d}.tga") for i in range(count))
     idx = xml.rindex("</Tiles>")
     open(xml_path, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
-    print(f"patched RA_VFX.XML: {name} -> {count} tiles")
+    print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles")
 
 
 def main():
@@ -74,8 +73,8 @@ def main():
         out = Image.new("RGBA", (CANVAS, CANVAS), (0, 0, 0, 0))
         out.alpha_composite(scaled, (round(CANVAS / 2 - scaled.width / 2), round(CANVAS / 2 - scaled.height / 2)))
         frames.append(out)
-    write_zip(f"{VFX_DIR}/{NAME}.ZIP", NAME.lower(), frames)
-    patch_tileset(XML, NAME, len(frames))
+    write_zip(asset_packs.art_zip(NAME, "VFX"), NAME.lower(), frames)
+    patch_tileset(asset_packs.tileset_xml(NAME, "VFX"), NAME, len(frames))
 
 
 if __name__ == "__main__":

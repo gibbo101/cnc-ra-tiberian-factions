@@ -20,6 +20,8 @@ Frames (TS's order, neighbour bits N1 E2 S4 W8 within each group of 16):
    0-15 normal, 16-31 normal damaged, 32-47 field up, 48-63 field up damaged.
 The damaged groups repeat the undamaged art until damaged art is signed off.
 Canvas 176x320 with the cell centred, the wall packers' (and the TSFSDF classic stub's) canvas.
+TSFSDF.ZIP, its TS_STRUCTURES.XML tile run and BuildIcon_TS_Fsdf.tga go to the TS-Graphics-Pack
+(asset_packs.py routes each name).
 
 Inputs: $TS_ART_DIR/shp_gtfsdf (scripts/ts_rebuild_art.sh), $TS_ART_DIR/shp_fspicon (cameo).
 Usage: TS_ART_DIR=~/Desktop/ts-art scripts/ts_pack_fsdf.py
@@ -32,6 +34,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter
 SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPTS)
 import hqx
+import asset_packs
 import ts_pack_walls as W
 
 ART = os.environ.get("TS_ART_DIR")
@@ -187,7 +190,7 @@ def build(base):
 def main():
     normal, live = build(0), build(32)
     frames = normal + normal + live + live
-    out_zip = f"{W.STRUCT_DIR}/TSFSDF.ZIP"
+    out_zip = asset_packs.art_zip("TSFSDF", "STRUCTURES")
     with zipfile.ZipFile(out_zip, "w", zipfile.ZIP_DEFLATED) as z:
         for i, cv in enumerate(frames):
             bbox = cv.getbbox() or (0, 0, CW, CH)
@@ -196,13 +199,13 @@ def main():
             z.writestr(f"tsfsdf-{i:04d}.tga", buf.getvalue())
             z.writestr(f"tsfsdf-{i:04d}.meta", json.dumps({"size": [CW, CH], "crop": list(bbox)}))
     print(f"wrote {out_zip} ({len(frames)} frames)")
-    W.patch_tileset(W.TILESET, "TSFSDF", len(frames))
+    W.patch_tileset(asset_packs.tileset_xml("TSFSDF", "STRUCTURES"), "TSFSDF", len(frames))
 
     icon = os.path.join(ART, "shp_fspicon", "frame-0000.png")
     if os.path.exists(icon):
         im = Image.open(icon)
         big = im.resize((im.width * 8, im.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-        big.save(f"{W.MOD}/Data/ART/TEXTURES/SRGB/BuildIcon_TS_Fsdf.tga")
+        big.save(asset_packs.cameo_tga("BuildIcon_TS_Fsdf"))
         print("wrote BuildIcon_TS_Fsdf.tga")
 
 

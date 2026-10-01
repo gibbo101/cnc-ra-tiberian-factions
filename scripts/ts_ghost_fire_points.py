@@ -15,8 +15,10 @@ import zipfile
 from pathlib import Path
 from PIL import Image
 
+import asset_packs
+
 ROOT = Path(__file__).resolve().parent.parent
-ZIP = ROOT / "resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS/TSGHOST.ZIP"
+ZIP = Path(asset_packs.art_zip("TSGHOST", "UNITS"))
 OUT = ROOT / "redalert/tsghost_muzzle.h"
 CANVAS = (267, 208)
 HD_PER_CLASSIC = 128 / 24

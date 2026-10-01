@@ -10,11 +10,12 @@ building has one), each frame carrying every overlay's frame i mod its length, s
 overlay holds still. The damaged block starts where the healthy one ends, which is where
 Shape_Number looks for it (the largest end of the IDLE and ACTIVE ranges in bdata.cpp).
 
-Written per building (RA_STRUCTURES.XML patched in place):
+Written per building, to the asset pack scripts/asset_packs.py routes each name to (the
+TS-HD-Graphics-Pack), its tileset XML patched in place:
   <INI>.ZIP       the tileset frames
   <INI>MAKE.ZIP   the build-up, when the building builds up on the map
-Units go to UNITS/ (RA_UNITS.XML), and a building's concrete apron is cut from its layer into
-128 px ground tiles, one per cell of its smudge, the same in every theatre. A unit whose shells
+Units go to UNITS/, and a building's concrete apron is cut from its layer into 128 px ground
+tiles, one per cell of its smudge, the same in every theatre. A unit whose shells
 leave a barrel drawn in its frames also writes redalert/<ini>_muzzle.h: the barrel tip per
 turret facing, in leptons from the unit's position, read from the art's muzzle table.
 
@@ -30,17 +31,13 @@ import io, json, os, re, sys, zipfile
 import numpy as np
 from PIL import Image
 
+import asset_packs
+
 SCRIPTS = os.path.dirname(os.path.abspath(__file__))
-MOD = os.path.join(SCRIPTS, "..", "resources", "remaster_mods", "Vanilla_RA")
 SRC = os.path.join(SCRIPTS, "..", "resources", "custom-art", "ts-buildings-hd")
 UNITS_SRC = os.path.join(SCRIPTS, "..", "resources", "custom-art", "ts-units-hd")
 REDALERT = os.path.join(SCRIPTS, "..", "redalert")
-STRUCT_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/STRUCTURES"
-UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-TERRAIN_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/TERRAIN"
 THEATRES = ("TEMPERATE", "SNOW", "INTERIOR")
-XML = f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML"
-UNITS_XML = f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML"
 STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
 HAZE_ALPHA = 4
 
@@ -285,7 +282,7 @@ def tile_block(name, shape):
             % (name, shape, name.lower(), name.lower(), shape))
 
 
-def patch_in_place(name, count, xml_path=XML):
+def patch_in_place(name, count, xml_path):
     """Install exactly `count` tiles for `name` where its tiles already stand (appended when
     it has none), leaving every other tile of the file where it is."""
     with open(xml_path, encoding="utf-8", newline="") as f:
@@ -306,12 +303,12 @@ def patch_in_place(name, count, xml_path=XML):
 
 
 def pack(name, tiles, make, size):
-    os.makedirs(STRUCT_DIR, exist_ok=True)
-    write_zip(f"{STRUCT_DIR}/{name}.ZIP", name.lower(), [clean(pad_to(i, *size)) for i in tiles])
-    patch_in_place(name, len(tiles))
+    write_zip(asset_packs.art_zip(name, "STRUCTURES"), name.lower(), [clean(pad_to(i, *size)) for i in tiles])
+    patch_in_place(name, len(tiles), asset_packs.tileset_xml(name, "STRUCTURES"))
     if make:
-        write_zip(f"{STRUCT_DIR}/{name}MAKE.ZIP", f"{name.lower()}make", [clean(pad_to(i, *size)) for i in make])
-        patch_in_place(f"{name}MAKE", len(make))
+        write_zip(asset_packs.art_zip(f"{name}MAKE", "STRUCTURES"), f"{name.lower()}make",
+                  [clean(pad_to(i, *size)) for i in make])
+        patch_in_place(f"{name}MAKE", len(make), asset_packs.tileset_xml(f"{name}MAKE", "STRUCTURES"))
 
 
 def pack_unit(name, spec):
@@ -319,8 +316,8 @@ def pack_unit(name, spec):
     src = os.path.join(spec.get("root", SRC), spec["src"])
     digits = spec.get("digits", 2)
     tiles = [Image.open(os.path.join(src, f"{path}-{i:0{digits}d}.png")).convert("RGBA") for i in range(count)]
-    write_zip(f"{UNITS_DIR}/{name}.ZIP", name.lower(), [clean(i) for i in tiles])
-    patch_in_place(name, count, UNITS_XML)
+    write_zip(asset_packs.art_zip(name, "UNITS"), name.lower(), [clean(i) for i in tiles])
+    patch_in_place(name, count, asset_packs.tileset_xml(name, "UNITS"))
     if spec.get("muzzle"):
         write_muzzle(name, os.path.join(src, spec["muzzle"]), tiles[0].size)
 
@@ -359,7 +356,7 @@ def pack_apron(name, spec):
     tiles = [layer.crop((x0 + 128 * c, y0 + 128 * r, x0 + 128 * (c + 1), y0 + 128 * (r + 1)))
              for r in range(rows) for c in range(cols)]
     for theatre in THEATRES:
-        path = f"{TERRAIN_DIR}/{theatre}/{name}.ZIP"
+        path = asset_packs.art_zip(name, f"TERRAIN_{theatre}")
         with zipfile.ZipFile(path, "w") as z:
             for i, img in enumerate(tiles):
                 buf = io.BytesIO()
@@ -369,7 +366,7 @@ def pack_apron(name, spec):
                                       json.dumps({"size": [128, 128], "crop": [0, 0, 128, 128]}))):
                     z.writestr(zipfile.ZipInfo(member, date_time=(1980, 1, 1, 0, 0, 0)), data, zipfile.ZIP_DEFLATED)
         print(f"wrote {os.path.relpath(path)} ({len(tiles)} tiles)")
-        patch_in_place(name, len(tiles), f"{MOD}/Data/XML/TILESETS/RA_TERRAIN_{theatre}.XML")
+        patch_in_place(name, len(tiles), asset_packs.tileset_xml(name, f"TERRAIN_{theatre}"))
 
 
 def main(argv):

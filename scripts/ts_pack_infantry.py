@@ -10,9 +10,10 @@ frames them. TS draws infantry facings anticlockwise from north, the order the
 engine's HumanShape indexes, so frames keep TS's order and the DO table in idata.cpp
 indexes them directly.
 
-Writes, per unit: UNITS/<INI>.ZIP + its RA_UNITS.XML tile run, BuildIcon_TS_<Name>.tga
-from the TS cameo, the base RA_<INI> / RA_<INI>_0 RABUILDABLES entries and the ModText
-rows. The TS-badged _G variant comes from the TS-tree badge tooling, not from here.
+Writes, per unit: UNITS/<INI>.ZIP + its TS_UNITS.XML tile run, BuildIcon_TS_<Name>.tga
+from the TS cameo, the base RA_<INI> TSBUILDABLES.XML entry and the ModText rows; art,
+cameos, sounds and XML go to the tree asset_packs.py routes each name to (the TS packs).
+The TS-badged _G variant comes from the TS-tree badge tooling, not from here.
 
 Inputs (set TS_ART_DIR): shp_<shp> decoded against UNITTEM.PAL and shp_<cameo> against
 CAMEO.PAL (scripts/ts_shp.py).
@@ -26,15 +27,13 @@ from PIL import Image
 import hqx
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import asset_packs
 
 ART = os.environ.get("TS_ART_DIR")
 if not ART:
     raise SystemExit("set TS_ART_DIR to the extracted/rendered TS art directory")
-MOD = os.environ.get("TF_MOD_DIR", os.path.normpath(os.path.join(HERE, "..", "resources/remaster_mods/Vanilla_RA")))
-UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-ICON_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB"
-UNITS_XML = f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML"
-RAB = f"{MOD}/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
+MOD = os.environ.get("TF_MOD_DIR", asset_packs.MOD)
 CSV = f"{MOD}/Data/ModText.csv"
 
 CANVAS = (267, 208)          # the TD Minigunner's HD canvas
@@ -74,7 +73,7 @@ EFFECTS = {
     "TSJUMPJET": (("S_BANG34.SHP", "TSBANG34"),),  # [General] InfantryExplode: shot down in flight
 }
 
-# ini -> TS sounds the unit brings with it, each shipped as Data/AUDIO/TS<name>.WAV.
+# ini -> TS sounds the unit brings with it, each shipped as AUDIO/TS<name>.WAV in its pack.
 SOUNDS = {
     "TSJUMPJET": ("JUMPJET1", "EXPNEW10"),  # [JumpCannon] Report, [S_BANG34] Report
 }
@@ -146,39 +145,51 @@ def place(img):
 
 
 def patch_tileset(name, count):
-    xml = open(UNITS_XML, encoding="utf-8").read()
+    units_xml = asset_packs.tileset_xml(name, "UNITS")
+    xml = open(units_xml, encoding="utf-8").read()
     if f"<Name>{name}</Name>" in xml:
-        print(f"{name} already in RA_UNITS.XML, left as is")
+        print(f"{name} already in {os.path.basename(units_xml)}, left as is")
         return
     tile = ("\t<Tile>\n\t\t<Key>\n\t\t\t<Name>%s</Name>\n\t\t\t<Shape>%d</Shape>\n\t\t</Key>\n"
             "\t\t<Value>\n\t\t\t<Frames>\n\t\t\t\t<Frame>%s</Frame>\n\t\t\t</Frames>\n\t\t</Value>\n\t</Tile>\n")
     blocks = "".join(tile % (name, s, f"{name.lower()}\\{name.lower()}-{s:04d}.tga") for s in range(count))
     idx = xml.rindex("</Tiles>")
-    open(UNITS_XML, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
-    print(f"patched RA_UNITS.XML: +{count} {name} tiles")
+    open(units_xml, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
+    print(f"patched {os.path.basename(units_xml)}: +{count} {name} tiles")
 
 
 def cameo(stem, icon):
     icon_img = Image.open(f"{ART}/shp_{stem}/frame-0000.png").convert("RGBA")
     big = icon_img.resize((icon_img.width * 8, icon_img.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(f"{ICON_DIR}/{icon}.tga")
+    big.save(asset_packs.cameo_tga(icon))
     print(f"wrote {icon}.tga")
 
 
 HAND_END = "\t<!-- END hand-written TS-tree base cameo entries -->"
 
 
-def sidebar(ini, icon):
-    """The base RA_<INI> entry naming the pristine cameo, in the hand-written TS-tree
-    block. The _0 and _G variants are generated from it: add the type to
-    cameo_work/faction_masks.txt, run cameo_badge_build.py <INI> for the badged art,
-    then cameo_variants_build.py."""
-    xml = open(RAB, encoding="utf-8").read()
-    key = f"RA_{ini}"
+def add_entry(key, icon, entry):
+    """Add a base sidebar entry to the buildables XML of its cameo's tree, unless it is there:
+    in the hand-written TS-tree block when the file has one, otherwise at the end of a pack's
+    file, whose entries are listed loose."""
+    rab = asset_packs.buildables_xml(icon)
+    xml = open(rab, encoding="utf-8").read()
     if f'"{key}"' in xml:
         return
-    if HAND_END not in xml:
-        raise SystemExit("RABUILDABLES.XML has no hand-written TS-tree block; place the entry by hand")
+    end = HAND_END
+    if end not in xml and asset_packs.cameo_pack(icon):
+        end = "</ObjectTypeList>"
+    if end not in xml:
+        raise SystemExit(f"{os.path.basename(rab)} has no hand-written TS-tree block; place the entry by hand")
+    open(rab, "w", encoding="utf-8").write(xml.replace(end, entry + end, 1))
+    print(f"patched {os.path.basename(rab)}: {key}")
+
+
+def sidebar(ini, icon):
+    """The base RA_<INI> entry naming the pristine cameo (add_entry). The _0 and _G
+    variants are generated from it: add the type to cameo_work/faction_masks.txt, run
+    cameo_badge_build.py <INI> for the badged art, then cameo_variants_build.py."""
+    key = f"RA_{ini}"
     entry = ('\t<ObjectTypeClass Name="%s" Classification="CNCBuildableObject" CanInstantiate="False">\n'
              "\t\t<CNCEncyclopediaComponent>\n"
              "\t\t\t<ObjectNameTextID>TEXT_UNIT_%s</ObjectNameTextID>\n"
@@ -186,8 +197,7 @@ def sidebar(ini, icon):
              "\t\t\t<BuildIcon>%s</BuildIcon>\n"
              "\t\t</CNCEncyclopediaComponent>\n"
              "\t</ObjectTypeClass>\n" % (key, ini, ini, icon))
-    open(RAB, "w", encoding="utf-8").write(xml.replace(HAND_END, entry + HAND_END, 1))
-    print(f"patched RABUILDABLES.XML: {key}")
+    add_entry(key, icon, entry)
 
 
 def text_rows(ini, display, desc):
@@ -214,7 +224,7 @@ def pack(ini):
     for i in range(poses):
         pose, shadow = frame(stem, i), frame(stem, i + poses)
         frames.append(place(with_shadow(pose, shadow) if i < first_flight else pose))
-    write_zip(f"{UNITS_DIR}/{ini}.ZIP", ini.lower(), frames)
+    write_zip(asset_packs.art_zip(ini, "UNITS"), ini.lower(), frames)
     patch_tileset(ini, len(frames))
     cameo(cameo_stem, icon)
     sidebar(ini, icon)
@@ -235,7 +245,7 @@ def pack(ini):
         subprocess.run([sys.executable, f"{HERE}/ts_aud_decode.py", f"{ART}/.raw/{aud}.AUD", pcm],
                        check=True, stdout=subprocess.DEVNULL)
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", pcm, "-c:a", "adpcm_ms",
-                        "-ar", "22050", "-ac", "1", f"{MOD}/Data/AUDIO/TS{aud}.WAV"], check=True)
+                        "-ar", "22050", "-ac", "1", asset_packs.sound_wav(f"TS{aud}")], check=True)
         print(f"wrote TS{aud}.WAV")
 
 

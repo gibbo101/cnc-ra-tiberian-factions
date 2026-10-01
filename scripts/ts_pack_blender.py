@@ -4,7 +4,8 @@
 Each render is a square-pixel orthographic frame at 2x whose centre is the
 cell centre at ground level. Packing = stretch vertically by 1/sin(32) so the
 ground plane is 1:1 (the base game's HD wall cheat), downsample to the
-176x320 canvas, crop + meta, and patch RA_STRUCTURES.XML. Canvas and stubs
+176x320 canvas, crop + meta, and patch TSHD_STRUCTURES.XML. The ZIPs and tiles go to
+the TS-HD-Graphics-Pack (asset_packs.py routes each name). Canvas and stubs
 (33x60) are the ones ts_pack_walls.py / build_tfassets.sh already declare.
 
   TSWALL       wall_j{joins:02d}_d{stage}.png   -> 48 frames (joins + 16 x stage)
@@ -21,6 +22,7 @@ from PIL import Image
 
 SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPTS)
+import asset_packs
 import ts_pack_walls as W
 
 CANVAS_W, CANVAS_H = W.CANVAS_W, W.CANVAS_H
@@ -39,7 +41,7 @@ def load(render_dir, name):
 
 def write_zip(ini, frames):
     low = ini.lower()
-    out_zip = f"{W.STRUCT_DIR}/{ini}.ZIP"
+    out_zip = asset_packs.art_zip(ini, "STRUCTURES")
     with zipfile.ZipFile(out_zip, "w", zipfile.ZIP_DEFLATED) as z:
         for i, cv in enumerate(frames):
             bbox = cv.getbbox() or (0, 0, CANVAS_W, CANVAS_H)
@@ -47,7 +49,7 @@ def write_zip(ini, frames):
             z.writestr(f"{low}-{i:04d}.tga", buf.getvalue())
             z.writestr(f"{low}-{i:04d}.meta", json.dumps({"size": [CANVAS_W, CANVAS_H], "crop": list(bbox)}))
     print(f"wrote {out_zip} ({len(frames)} frames)")
-    W.patch_tileset(W.TILESET, ini, len(frames))
+    W.patch_tileset(asset_packs.tileset_xml(ini, "STRUCTURES"), ini, len(frames))
 
 
 def main():

@@ -3,7 +3,9 @@
 
 Each gate ships as two building types, horizontal (3x1) and vertical (1x3). The source frames
 are exactly the footprint (384x128 / 128x384) and ship on a canvas of that size, centred on the
-plot like every building. Frame sets written per type (RA_STRUCTURES.XML patched):
+plot like every building. Each type's frame sets and tile runs go to the tree asset_packs.py
+routes its name to: the TS gates to the TS-HD-Graphics-Pack (TSHD_STRUCTURES.XML), the RA and TD
+gates to the mod's own (RA_STRUCTURES.XML). Frame sets written per type:
 
   <INI>       2 x stages  the door from shut (0) to open (stages-1), then the same damaged;
                           a gate in IDLE follows them with its shut loop (healthy, then damaged)
@@ -33,9 +35,10 @@ House colour: the trim masks (white = house colour) repaint their pixels pure gr
 pixel's own luminance, normalised over the gate's trim, which is what the launcher's hue remap
 turns into the player's colour (docs/cnc3-to-remastered-sprites.md, section 7).
 
-The TS gate's door sounds (GATEDWN1 opening, GATEUP1 closing) are converted to Data/AUDIO when
-TS_ART_DIR is set (its .raw holds the AUDs, extracted by scripts/ts_rebuild_art.sh), and the Tesla
-gate's wind-down (TSLACHG2R.WAV, the Tesla Coil charge-up reversed) is made from the game's SFX3D.MEG.
+The TS gate's door sounds (GATEDWN1 opening, GATEUP1 closing) are converted to the TS-SFX-Pack's
+AUDIO when TS_ART_DIR is set (its .raw holds the AUDs, extracted by scripts/ts_rebuild_art.sh), and
+the Tesla gate's wind-down (TSLACHG2R.WAV in the mod's own AUDIO, the Tesla Coil charge-up reversed)
+is made from the game's SFX3D.MEG.
 
 Usage: ts_pack_gates.py [GATE ...]      (default: every gate in GATES)
 License: GPL v3.
@@ -46,6 +49,7 @@ from PIL import Image
 
 SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPTS)
+import asset_packs
 import ts_pack_walls as W
 
 ART = os.path.join(SCRIPTS, "..", "resources", "custom-art")
@@ -178,7 +182,7 @@ def symmetric_crop(bbox, w, h):
 def write_zip(ini, frames):
     low = ini.lower()
     w, h = frames[0].size
-    out_zip = f"{W.STRUCT_DIR}/{ini}.ZIP"
+    out_zip = asset_packs.art_zip(ini, "STRUCTURES")
     with zipfile.ZipFile(out_zip, "w", zipfile.ZIP_DEFLATED) as z:
         for i, cv in enumerate(frames):
             bbox = symmetric_crop(cv.getbbox() or (0, 0, w, h), w, h)
@@ -186,7 +190,7 @@ def write_zip(ini, frames):
             z.writestr(f"{low}-{i:04d}.tga", buf.getvalue())
             z.writestr(f"{low}-{i:04d}.meta", json.dumps({"size": [w, h], "crop": list(bbox)}))
     print(f"wrote {out_zip} ({len(frames)} frames)")
-    W.patch_tileset(W.TILESET, ini, len(frames))
+    W.patch_tileset(asset_packs.tileset_xml(ini, "STRUCTURES"), ini, len(frames))
 
 
 def pack(gate):
@@ -227,14 +231,13 @@ def pack(gate):
 
 
 def sounds():
-    audio = os.path.join(SCRIPTS, "..", "resources", "remaster_mods", "Vanilla_RA", "Data", "AUDIO")
     # The Tesla gate winding down: RA's Tesla Coil charge-up played backwards.
     sfx = os.path.expanduser("~/.steam/steam/steamapps/common/CnCRemastered/Data/SFX3D.MEG")
     tmp = os.path.join(os.environ.get("TMPDIR", "/tmp"), "tf_gate_sfx")
     subprocess.run([sys.executable, os.path.join(SCRIPTS, "meg_extract.py"), "extract", sfx,
                     "RAR_SFX_TSLACHG2.WAV", tmp], check=True, stdout=subprocess.DEVNULL)
     src = next(os.path.join(d, f) for d, _, fs in os.walk(tmp) for f in fs if f.upper() == "RAR_SFX_TSLACHG2.WAV")
-    out_wav = os.path.join(audio, "TSLACHG2R.WAV")
+    out_wav = asset_packs.sound_wav("TSLACHG2R")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", src, "-af", "areverse",
                     "-acodec", "adpcm_ms", out_wav], check=True)
     print(f"wrote {out_wav}")
@@ -243,7 +246,7 @@ def sounds():
         print("TS_ART_DIR not set: TS gate sounds not converted")
         return
     for name in ("GATEDWN1", "GATEUP1"):
-        out_wav = os.path.join(audio, f"TS{name}.WAV")
+        out_wav = asset_packs.sound_wav(f"TS{name}")
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", os.path.join(raw, f"{name}.AUD"),
                         "-acodec", "adpcm_ms", out_wav], check=True)
         print(f"wrote {out_wav}")

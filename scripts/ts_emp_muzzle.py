@@ -13,9 +13,10 @@ import io, json, math, os, zipfile
 from PIL import Image
 import numpy as np
 
+import asset_packs
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-ZIP = os.path.join(HERE, "..", "resources", "remaster_mods", "Vanilla_RA", "Data", "ART", "TEXTURES",
-                   "SRGB", "RED_ALERT", "STRUCTURES", "TSPULST.ZIP")
+ZIP = asset_packs.art_zip("TSPULST", "STRUCTURES")
 OUT = os.path.join(HERE, "..", "redalert", "tspuls_muzzle.h")
 STUB = 48                 # classic px the canvas maps onto
 TURRET_Y = 10             # classic px: building.cpp TSPULS_TURRET_Y

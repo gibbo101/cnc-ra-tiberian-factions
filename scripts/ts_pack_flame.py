@@ -8,7 +8,8 @@ team remap, hq4x per the house policy, model-space centred on a 160 canvas
 (20x20 classic stub x 8: 32 TS px = 2/3 of a TS cell = 2/3 of an RA cell).
 
 Inputs: $TS_ART_DIR/raw/FLAMEALL.SHP + $TS_ART_DIR/raw/ANIM.PAL
-Outputs: RED_ALERT/VFX/TSFIRE.ZIP + 76 TSFIRE tiles in RA_VFX.XML.
+Outputs: RED_ALERT/VFX/TSFIRE.ZIP + 76 TSFIRE tiles in TS_VFX.XML, in the TS-Graphics-Pack
+(asset_packs.py routes the name).
 """
 import io, json, os, re, sys, zipfile
 from PIL import Image
@@ -19,10 +20,8 @@ if not ART:
     raise SystemExit("set TS_ART_DIR")
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import asset_packs
 import ts_shp
-MOD = os.path.abspath(os.path.join(HERE, "..", "resources", "remaster_mods", "Vanilla_RA", "Data"))
-VFX_DIR = f"{MOD}/ART/TEXTURES/SRGB/RED_ALERT/VFX"
-XML = f"{MOD}/XML/TILESETS/RA_VFX.XML"
 NAME = "TSFIRE"
 CANVAS = 160
 
@@ -52,7 +51,7 @@ def patch_tileset(xml_path, name, count):
     blocks = "".join(block % (name, i, f"{sub}\\{sub}-{i:04d}.tga") for i in range(count))
     idx = xml.rindex("</Tiles>")
     open(xml_path, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
-    print(f"patched RA_VFX.XML: {name} -> {count} tiles")
+    print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles")
 
 
 def main():
@@ -68,8 +67,8 @@ def main():
         out = Image.new("RGBA", (CANVAS, CANVAS), (0, 0, 0, 0))
         out.alpha_composite(big, (round(CANVAS / 2 - big.width / 2), round(CANVAS / 2 - big.height / 2)))
         frames.append(out)
-    write_zip(f"{VFX_DIR}/{NAME}.ZIP", NAME.lower(), frames)
-    patch_tileset(XML, NAME, len(frames))
+    write_zip(asset_packs.art_zip(NAME, "VFX"), NAME.lower(), frames)
+    patch_tileset(asset_packs.tileset_xml(NAME, "VFX"), NAME, len(frames))
 
 
 if __name__ == "__main__":

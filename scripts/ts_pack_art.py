@@ -3,18 +3,19 @@
   - TSHVR.ZIP        64 frames (body 0-31 + turret 32-63), 192px canvas
   - TSPOWR.ZIP       2 frames (healthy, damaged), 256px canvas
   - TSPOWRMAKE.ZIP   13 buildup frames, 256px canvas
-  - RA_UNITS.XML / RA_STRUCTURES.XML tile runs
-  - RABUILDABLES.XML entries + ModText.csv strings
+  - TS_UNITS.XML / TS_STRUCTURES.XML tile runs
+  - TSBUILDABLES.XML entries + ModText.csv strings
   - loose BuildIcon_TS_*.tga cameos
+Art, cameos and XML go to the tree asset_packs.py routes each name to (the TS-Graphics-Pack).
 """
-import io, json, os, re, zipfile
+import io, json, os, re, sys, zipfile
 from PIL import Image
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import asset_packs
+
 SCRATCH = os.environ.get("TS_RENDER_DIR", os.path.dirname(os.path.abspath(__file__)))
-MOD = "/home/gibbo101/Documents/development/cnc-remastered-mods/cnc-ra-tiberian-factions/resources/remaster_mods/Vanilla_RA"
-UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-STRUCT_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/STRUCTURES"
-ICON_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB"
+MOD = asset_packs.MOD
 
 
 def crop_box(img):
@@ -74,24 +75,24 @@ for i in range(32):
     frames.append(scale_center(Image.open(f"{SCRATCH}/renders_hvr_body/frame-{i:04d}.png"), factor, CANVAS_U))
 for i in range(32):
     frames.append(scale_center(Image.open(f"{SCRATCH}/renders_hvr_tur/frame-{i:04d}.png"), factor, CANVAS_U))
-write_zip(f"{UNITS_DIR}/TSHVR.ZIP", "tshvr", frames)
+write_zip(asset_packs.art_zip("TSHVR", "UNITS"), "tshvr", frames)
 
 # ---- TSPOWR building ----
 CANVAS_B = 256
 bfactor = 256.0 / 96.0
 pframes = [crisp_scale(Image.open(f"{SCRATCH}/shp_gtpowr/frame-{i:04d}.png"), bfactor, CANVAS_B) for i in (0, 2)]
-write_zip(f"{STRUCT_DIR}/TSPOWR.ZIP", "tspowr", pframes)
+write_zip(asset_packs.art_zip("TSPOWR", "STRUCTURES"), "tspowr", pframes)
 
 MK_PICK = [0, 2, 3, 5, 6, 8, 10, 11, 13, 14, 16, 18, 19]
 mframes = [crisp_scale(Image.open(f"{SCRATCH}/shp_gtpowrmk/frame-{i:04d}.png"), bfactor, CANVAS_B) for i in MK_PICK]
-write_zip(f"{STRUCT_DIR}/TSPOWRMAKE.ZIP", "tspowrmake", mframes)
+write_zip(asset_packs.art_zip("TSPOWRMAKE", "STRUCTURES"), "tspowrmake", mframes)
 
 # ---- BuildIcons ----
 for src, out in [("shp_hovricon", "BuildIcon_TS_HoverMLRS"), ("shp_powricon", "BuildIcon_TS_PowerPlant")]:
     icon = Image.open(f"{SCRATCH}/{src}/frame-0000.png")
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(f"{ICON_DIR}/{out}.tga")
-    print(f"wrote {ICON_DIR}/{out}.tga")
+    big.save(asset_packs.cameo_tga(out))
+    print(f"wrote {asset_packs.cameo_tga(out)}")
 
 # ---- Tileset XML ----
 def tile_block(name, shape, frame_path):
@@ -110,13 +111,11 @@ def patch_tileset(xml_path, name, count):
     open(xml_path, "w", encoding="utf-8").write(xml)
     print(f"patched {os.path.basename(xml_path)}: +{count} {name} tiles")
 
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSHVR", 64)
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPOWR", 2)
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPOWRMAKE", 13)
+patch_tileset(asset_packs.tileset_xml("TSHVR", "UNITS"), "TSHVR", 64)
+patch_tileset(asset_packs.tileset_xml("TSPOWR", "STRUCTURES"), "TSPOWR", 2)
+patch_tileset(asset_packs.tileset_xml("TSPOWRMAKE", "STRUCTURES"), "TSPOWRMAKE", 13)
 
-# ---- RABUILDABLES ----
-RAB = f"{MOD}/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
-xml = open(RAB, encoding="utf-8").read()
+# ---- Sidebar entries, in the buildables XML of each cameo's tree ----
 def buildable(name, text, icon):
     return ('\t<ObjectTypeClass Name="%s" Classification="CNCBuildableObject" CanInstantiate="False">\n'
             "\t\t<CNCEncyclopediaComponent>\n"
@@ -125,17 +124,18 @@ def buildable(name, text, icon):
             "\t\t\t<BuildIcon>%s</BuildIcon>\n"
             "\t\t</CNCEncyclopediaComponent>\n"
             "\t</ObjectTypeClass>\n" % (name, text, text, icon))
-added = ""
-if "RA_TSHVR" not in xml:
-    added += buildable("RA_TSHVR", "TEXT_UNIT_TSHVR", "BuildIcon_TS_HoverMLRS")
-if "RA_TSPOWR" not in xml:
-    added += buildable("RA_TSPOWR", "TEXT_STRUCTURE_TSPOWR", "BuildIcon_TS_PowerPlant")
-if added:
-    m = re.search(r"</ObjectTypeClass>\s*</AssetDeclaration>", xml)
+added = {}
+for key, text_id, icon in [("RA_TSHVR", "TEXT_UNIT_TSHVR", "BuildIcon_TS_HoverMLRS"),
+                           ("RA_TSPOWR", "TEXT_STRUCTURE_TSPOWR", "BuildIcon_TS_PowerPlant")]:
+    rab = asset_packs.buildables_xml(icon)
+    if key not in open(rab, encoding="utf-8").read():
+        added[rab] = added.get(rab, "") + buildable(key, text_id, icon)
+for rab, entries in added.items():
+    xml = open(rab, encoding="utf-8").read()
     idx = xml.rindex("</ObjectTypeClass>") + len("</ObjectTypeClass>")
-    xml = xml[:idx] + "\n\n" + added.rstrip("\n") + xml[idx:]
-    open(RAB, "w", encoding="utf-8").write(xml)
-    print("patched RABUILDABLES.XML")
+    xml = xml[:idx] + "\n\n" + entries.rstrip("\n") + xml[idx:]
+    open(rab, "w", encoding="utf-8").write(xml)
+    print(f"patched {os.path.basename(rab)}")
 
 # ---- ModText.csv (UTF-16) ----
 CSV = f"{MOD}/Data/ModText.csv"

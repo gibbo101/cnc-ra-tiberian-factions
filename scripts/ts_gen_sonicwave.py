@@ -43,9 +43,13 @@ so the game runs ~40 ticks/s there and the stage delay is 5.
 Tuning lives entirely in the constants below.
 
 Usage:  ts_gen_sonicwave.py [OUTDIR]
+Without OUTDIR the ZIPs and their TS_VFX.XML tile runs go to the TS-Graphics-Pack
+(asset_packs.py routes each name); with it, only the ZIPs are written, there.
 """
 import io, json, math, os, re, sys, zipfile
 from PIL import Image, ImageDraw, ImageFilter
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import asset_packs
 
 CANVAS = 128          # 5.33 canvas px per classic px -> 24 classic dim, as RAILFX
 FRAMES = 25           # anim stages at 5 ticks each (adata.cpp): ~3.2s at Luke's ~40 tick/s game speed, the TS band's life
@@ -198,23 +202,25 @@ def patch_tileset(xml_path, name, count):
     print(f'patched {os.path.basename(xml_path)}: {name} -> {count} tiles')
 
 
+def zip_path(name):
+    """The ZIP for a name: in OUTDIR when given, else where asset_packs.py routes it."""
+    if len(sys.argv) > 1:
+        return os.path.join(os.path.abspath(sys.argv[1]), f'{name}.ZIP')
+    return asset_packs.art_zip(name, 'VFX')
+
+
 def main():
-    mod = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..',
-                       'resources', 'remaster_mods', 'Vanilla_RA', 'Data')
-    outdir = sys.argv[1] if len(sys.argv) > 1 else (
-        os.path.join(mod, 'ART', 'TEXTURES', 'SRGB', 'RED_ALERT', 'VFX'))
-    outdir = os.path.abspath(outdir)
     frames = [wave(i) for i in range(FRAMES)]
-    path = os.path.join(outdir, 'TSSONICW.ZIP')
+    path = zip_path('TSSONICW')
     write_zip(path, 'tssonicw', frames)
     print(f'wrote {path} ({len(frames)} frames, {CANVAS}px canvas)')
     pframes = [pulse(i) for i in range(PULSE_FRAMES)]
-    ppath = os.path.join(outdir, 'TSSONICP.ZIP')
+    ppath = zip_path('TSSONICP')
     write_zip(ppath, 'tssonicp', pframes)
     print(f'wrote {ppath} ({len(pframes)} frames)')
     if len(sys.argv) <= 1:
-        patch_tileset(os.path.join(mod, 'XML', 'TILESETS', 'RA_VFX.XML'), 'TSSONICW', FRAMES)
-        patch_tileset(os.path.join(mod, 'XML', 'TILESETS', 'RA_VFX.XML'), 'TSSONICP', PULSE_FRAMES)
+        patch_tileset(asset_packs.tileset_xml('TSSONICW', 'VFX'), 'TSSONICW', FRAMES)
+        patch_tileset(asset_packs.tileset_xml('TSSONICP', 'VFX'), 'TSSONICP', PULSE_FRAMES)
 
 
 if __name__ == '__main__':

@@ -15,7 +15,12 @@ relative to the seat (projected through the render camera, 4/3 leptons per canva
 
 Audio: each tank's own C&C3 crew voice and weapon takes, re-encoded MS-ADPCM
 22050 Hz mono under C3 names. One sound event per VOC; a weapon event lists every take, and the
-launcher picks one per shot. The events sit between markers in SFXEVENTSNONLOCALIZED.XML.
+launcher picks one per shot. The events sit between markers in each pack's
+SFXEVENTSNONLOCALIZED_CNC3.XML: the weapon takes in CNC3-SFX-Pack, the crew voices in
+CNC3-Voices-eng.
+
+Art ZIPs, tiles, cameos, WAVs and sound events land where scripts/asset_packs.py routes each name;
+the build merges the packs into the mod.
 
 Inputs (set C3_ART_DIR): renders/<model>_{hull,turret}/frame-NNNN.png and model/<model>.npz
 from tools/cnc3/c3_extract_model.py (workspace), cameo/<NAME>.png, audio/<model>/<C&C3 name>.wav.
@@ -35,12 +40,9 @@ from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from ts_reshadow import drop_shadow, EA_DX, EA_DY  # noqa: E402
+import asset_packs  # noqa: E402
 
 ART = os.environ.get("C3_ART_DIR")
-MOD = os.path.abspath(os.path.join(HERE, "..", "resources", "remaster_mods", "Vanilla_RA", "Data"))
-UNITS_DIR = f"{MOD}/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-UNITS_XML = f"{MOD}/XML/TILESETS/RA_UNITS.XML"
-ICON_DIR = f"{MOD}/ART/TEXTURES/SRGB"
 HEADER = os.path.join(HERE, "..", "redalert", "c3tanks.h")
 
 RENDER_PPU = 13.0
@@ -93,14 +95,15 @@ def write_zip(path, name, frames):
 def patch_tileset(name, count):
     import re
     sub = name.lower()
-    xml = open(UNITS_XML, encoding="utf-8").read()
+    units_xml = asset_packs.tileset_xml(name, "UNITS")
+    xml = open(units_xml, encoding="utf-8").read()
     xml = re.sub(r"\t*<Tile>\s*<Key>\s*<Name>" + re.escape(name) + r"</Name>.*?</Tile>\n?", "", xml, flags=re.S)
     block = ('\t<Tile>\n\t\t<Key>\n\t\t\t<Name>%s</Name>\n\t\t\t<Shape>%d</Shape>\n\t\t</Key>\n'
              '\t\t<Value>\n\t\t\t<Frames>\n\t\t\t\t<Frame>%s</Frame>\n\t\t\t</Frames>\n\t\t</Value>\n\t</Tile>\n')
     blocks = "".join(block % (name, i, f"{sub}\\{sub}-{i:04d}.tga") for i in range(count))
     idx = xml.rindex("</Tiles>")
-    open(UNITS_XML, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
-    print(f"patched RA_UNITS.XML: {name} -> {count} tiles")
+    open(units_xml, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
+    print(f"patched {os.path.basename(units_xml)}: {name} -> {count} tiles")
 
 
 # VOC stem -> (model, C&C3 sample names). The stems are the VOC table names in audio.cpp.
@@ -115,38 +118,45 @@ SOUNDS = (
     + [(f"C3PAT{c}", "predator", [f"GUPreda_VoiAttack{c.lower()}"]) for c in "ABCDEF"]
     + [("C3PGUN", "predator", [f"GUPreda_wea1fire{c}" for c in "abcdefghi"])]
 )
-SFX_XML = f"{MOD}/XML/AUDIO/SFXEVENTSNONLOCALIZED.XML"
 SFX_BEGIN = "  <!-- BEGIN C&C3 tank sounds (scripts/c3_pack_tanks.py) -->"
 SFX_END = "  <!-- END C&C3 tank sounds -->"
 
 
 def write_audio():
+    """Each event goes in the sound-event XML of the pack its takes belong to, one marked block
+    per file."""
     import subprocess
-    events = []
+    events = {}
     for stem, model, samples in SOUNDS:
         files = []
         for i, sample in enumerate(samples):
             wav = stem if len(samples) == 1 else f"{stem}{i + 1}"
+            dst = asset_packs.sound_wav(wav)
+            os.makedirs(os.path.dirname(dst), exist_ok=True)
             subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{ART}/audio/{model}/{sample}.wav",
-                            "-c:a", "adpcm_ms", "-ar", "22050", "-ac", "1", f"{MOD}/AUDIO/{wav}.WAV"], check=True)
+                            "-c:a", "adpcm_ms", "-ar", "22050", "-ac", "1", dst], check=True)
             files.append(f"{wav}.WAV")
         entries = "".join(f"      <entry> {f} </entry>\n" for f in files)
+        sfx_xml = asset_packs.sfx_xml(files[0], localized=False)
         for side in ("RAC", "RAR"):
-            events.append(f'  <SFXEvent Name="{side}_SFX_{stem}" Preset="_PRESET_MD_MOBIUS_2D">\n'
-                          "    <IsPreset> False </IsPreset>\n    <MinPitch>100</MinPitch>\n"
-                          "    <MaxPitch>100</MaxPitch>\n    <SampleNamesList>\n"
-                          f"{entries}    </SampleNamesList>\n  </SFXEvent>\n")
-    xml = open(SFX_XML, encoding="utf-8").read()
-    block = SFX_BEGIN + "\n" + "".join(events) + SFX_END + "\n"
-    if SFX_BEGIN in xml:
-        a = xml.index(SFX_BEGIN)
-        b = xml.index(SFX_END) + len(SFX_END) + 1
-        xml = xml[:a] + block + xml[b:]
-    else:
-        idx = xml.rindex("</")
-        xml = xml[:idx] + block + xml[idx:]
-    open(SFX_XML, "w", encoding="utf-8").write(xml)
-    print(f"wrote {len(SOUNDS)} sound events ({sum(len(x[2]) for x in SOUNDS)} samples)")
+            events.setdefault(sfx_xml, []).append(
+                f'  <SFXEvent Name="{side}_SFX_{stem}" Preset="_PRESET_MD_MOBIUS_2D">\n'
+                "    <IsPreset> False </IsPreset>\n    <MinPitch>100</MinPitch>\n"
+                "    <MaxPitch>100</MaxPitch>\n    <SampleNamesList>\n"
+                f"{entries}    </SampleNamesList>\n  </SFXEvent>\n")
+    for sfx_xml, file_events in events.items():
+        xml = open(sfx_xml, encoding="utf-8").read()
+        block = SFX_BEGIN + "\n" + "".join(file_events) + SFX_END + "\n"
+        if SFX_BEGIN in xml:
+            a = xml.index(SFX_BEGIN)
+            b = xml.index(SFX_END) + len(SFX_END) + 1
+            xml = xml[:a] + block + xml[b:]
+        else:
+            idx = xml.rindex("</")
+            xml = xml[:idx] + block + xml[idx:]
+        open(sfx_xml, "w", encoding="utf-8").write(xml)
+    print(f"wrote {len(SOUNDS)} sound events ({sum(len(x[2]) for x in SOUNDS)} samples) "
+          f"into {len(events)} files")
 
 
 def write_cameo(name):
@@ -161,7 +171,7 @@ def write_cameo(name):
     band = round(flat.width * 3 / 4)
     top = (flat.height - band) // 2
     flat = flat.crop((0, top, flat.width, top + band))
-    flat.resize((341, 256), Image.LANCZOS).save(f"{ICON_DIR}/BuildIcon_{name}.tga")
+    flat.resize((341, 256), Image.LANCZOS).save(asset_packs.cameo_tga(f"BuildIcon_{name}"))
     print(f"wrote BuildIcon_{name}.tga")
 
 
@@ -226,7 +236,7 @@ def main():
                   for i in range(32 * TREAD_STEPS)]
         frames += [packed(f"{ART}/renders/{model}_turret/frame-{i:04d}.png", canvas, False)
                    for i in range(32)]
-        write_zip(f"{UNITS_DIR}/{name}.ZIP", name.lower(), frames)
+        write_zip(asset_packs.art_zip(name, "UNITS"), name.lower(), frames)
         patch_tileset(name, len(frames))
         write_cameo(name)
     write_header()

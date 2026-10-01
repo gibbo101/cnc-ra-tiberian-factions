@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ObjectTypeList>
+	<ObjectTypeClass Name="RA_R2APOC" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_R2APOC</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_R2APOC_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_R2APOC</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+	<ObjectTypeClass Name="RA_R2PRIS" Classification="CNCBuildableObject" CanInstantiate="False">
+		<CNCEncyclopediaComponent>
+			<ObjectNameTextID>TEXT_UNIT_R2PRIS</ObjectNameTextID>
+			<ObjectDescriptionTextID>TEXT_UNIT_R2PRIS_DESC</ObjectDescriptionTextID>
+			<BuildIcon>BuildIcon_R2PRIS</BuildIcon>
+		</CNCEncyclopediaComponent>
+	</ObjectTypeClass>
+</ObjectTypeList>

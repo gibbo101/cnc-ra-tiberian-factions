@@ -21,7 +21,11 @@ Cameos: RA2's own MTNKICON / SREFICON (language.mix -> cameo.mix), decoded with 
 cameo.pal and flattened opaque (the launcher draws noise under transparent cameo pixels).
 
 Audio: Yuri's Revenge's unit sets (langmd.mix -> audiomd.mix -> audio.bag/idx, decoded to PCM
-by tools/ra2_bag_extract.py), re-encoded MS-ADPCM 22050 mono under their own R2 names.
+by tools/ra2_bag_extract.py), re-encoded MS-ADPCM 22050 mono under their own R2 names. Their
+sound events are hand-written in the RA2 packs' SFXEVENTSNONLOCALIZED_RA2.XML.
+
+Art ZIPs, tiles, cameos and WAVs land where scripts/asset_packs.py routes each name (the RA2
+packs); the build merges the packs into the mod.
 
 Also writes redalert/r2tanks_muzzle.h: RA2's FLHs projected through the render camera per
 turret frame, so shells, missiles and the prism beam leave the art's barrel tips.
@@ -38,12 +42,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import ts_shp
 from ts_reshadow import drop_shadow, EA_DX, EA_DY
+import asset_packs
 
 ART = os.environ.get("R2_ART_DIR")
-MOD = os.path.abspath(os.path.join(HERE, "..", "resources", "remaster_mods", "Vanilla_RA", "Data"))
-UNITS_DIR = f"{MOD}/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-UNITS_XML = f"{MOD}/XML/TILESETS/RA_UNITS.XML"
-ICON_DIR = f"{MOD}/ART/TEXTURES/SRGB"
 MUZZLE_H = os.path.join(HERE, "..", "redalert", "r2tanks_muzzle.h")
 
 # The TS voxel density 6.4/12, times RA2's cell ratio: RA2 draws voxels at TS's size onto a
@@ -122,14 +123,15 @@ def write_zip(path, name, frames):
 def patch_tileset(name, count):
     import re
     sub = name.lower()
-    xml = open(UNITS_XML, encoding="utf-8").read()
+    units_xml = asset_packs.tileset_xml(name, "UNITS")
+    xml = open(units_xml, encoding="utf-8").read()
     xml = re.sub(r"\t*<Tile>\s*<Key>\s*<Name>" + re.escape(name) + r"</Name>.*?</Tile>\n?", "", xml, flags=re.S)
     block = ('\t<Tile>\n\t\t<Key>\n\t\t\t<Name>%s</Name>\n\t\t\t<Shape>%d</Shape>\n\t\t</Key>\n'
              '\t\t<Value>\n\t\t\t<Frames>\n\t\t\t\t<Frame>%s</Frame>\n\t\t\t</Frames>\n\t\t</Value>\n\t</Tile>\n')
     blocks = "".join(block % (name, i, f"{sub}\\{sub}-{i:04d}.tga") for i in range(count))
     idx = xml.rindex("</Tiles>")
-    open(UNITS_XML, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
-    print(f"patched RA_UNITS.XML: {name} -> {count} tiles")
+    open(units_xml, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
+    print(f"patched {os.path.basename(units_xml)}: {name} -> {count} tiles")
 
 
 def write_cameo(name, shp):
@@ -139,17 +141,20 @@ def write_cameo(name, shp):
     flat = Image.new("RGBA", icon.size, (0, 0, 0, 255))
     flat.alpha_composite(icon)
     big = flat.resize((flat.width * 8, flat.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    path = f"{ICON_DIR}/BuildIcon_{name}.tga"
+    path = asset_packs.cameo_tga(f"BuildIcon_{name}")
     big.save(path)
     print(f"wrote {path}")
 
 
 def write_audio():
+    dirs = set()
     for s in SAMPLES:
-        out_wav = f"{MOD}/AUDIO/{stem(s)}.WAV"
+        out_wav = asset_packs.sound_wav(stem(s))
+        os.makedirs(os.path.dirname(out_wav), exist_ok=True)
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{ART}/raw/{s}.wav",
                         "-c:a", "adpcm_ms", "-ar", "22050", "-ac", "1", out_wav], check=True)
-    print(f"wrote {len(SAMPLES)} samples to {MOD}/AUDIO/R2*.WAV")
+        dirs.add(os.path.dirname(out_wav))
+    print(f"wrote {len(SAMPLES)} samples to {', '.join(sorted(dirs))}")
 
 
 def project(fwd, lat, hgt):
@@ -194,7 +199,7 @@ def main():
         raise SystemExit("set R2_ART_DIR (holding renders/, raw/, ra2/)")
     for name, canvas, hull, turret, cameo in UNITS:
         frames = vox_frames(hull, canvas, True) + vox_frames(turret, canvas, False)
-        write_zip(f"{UNITS_DIR}/{name}.ZIP", name.lower(), frames)
+        write_zip(asset_packs.art_zip(name, "UNITS"), name.lower(), frames)
         patch_tileset(name, len(frames))
         write_cameo(name, cameo)
     write_audio()

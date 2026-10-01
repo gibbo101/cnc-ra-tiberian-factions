@@ -17,9 +17,10 @@ damage stage (0..2). 48 frames on a 128x320 canvas whose centre is the cell
 centre; the classic stub is 24x60 (build_tfassets.sh). Damage stages are the
 healthy model with progressively broken crest and darkened faces.
 
-Outputs: Data/ART/TEXTURES/SRGB/RED_ALERT/STRUCTURES/TSWALL.ZIP, the
-RA_STRUCTURES.XML tile run, BuildIcon_TS_Wall.tga (from WALLICON, CAMEO.PAL),
-and scripts/ts_stub_dims.json's TSWALL entry.
+Outputs, each in the tree asset_packs.py routes its name to: TSWALL.ZIP and its
+TSHD_STRUCTURES.XML tile run (TS-HD-Graphics-Pack), BuildIcon_TS_Wall.tga
+(TS-Graphics-Pack, from WALLICON, CAMEO.PAL), and scripts/ts_stub_dims.json's
+TSWALL entry.
 
 Usage: ts_pack_walls.py [--preview <out.png>]   (preview = a composed scene only)
 License: GPL v3.
@@ -31,11 +32,8 @@ from PIL import Image
 SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPTS)
 import vxl_render as vr
+import asset_packs
 
-MOD = os.path.abspath(os.path.join(SCRIPTS, "..", "resources/remaster_mods/Vanilla_RA"))
-STRUCT_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/STRUCTURES"
-ICON_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB"
-TILESET = f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML"
 STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
 ART = os.environ.get("TS_ART_DIR", "")
 
@@ -248,9 +246,9 @@ def pack():
             occ, col = wall_grid(joins)
             occ, col = damage(occ, col, stage, seed=1000 * stage + joins)
             frames.append(on_canvas(render(occ, col)))
-    os.makedirs(STRUCT_DIR, exist_ok=True)
+    out_zip = asset_packs.art_zip(INI, "STRUCTURES")
+    os.makedirs(os.path.dirname(out_zip), exist_ok=True)
     low = INI.lower()
-    out_zip = f"{STRUCT_DIR}/{INI}.ZIP"
     with zipfile.ZipFile(out_zip, "w", zipfile.ZIP_DEFLATED) as z:
         for i, cv in enumerate(frames):
             bbox = cv.getbbox() or (0, 0, CANVAS_W, CANVAS_H)
@@ -260,7 +258,7 @@ def pack():
             z.writestr(f"{low}-{i:04d}.meta",
                        json.dumps({"size": [CANVAS_W, CANVAS_H], "crop": [bbox[0], bbox[1], bbox[2], bbox[3]]}))
     print(f"wrote {out_zip} ({len(frames)} frames)")
-    patch_tileset(TILESET, INI, len(frames))
+    patch_tileset(asset_packs.tileset_xml(INI, "STRUCTURES"), INI, len(frames))
     dims = json.load(open(STUB_MANIFEST)) if os.path.exists(STUB_MANIFEST) else {}
     dims[INI] = [CANVAS_W * 3 // 16, CANVAS_H * 3 // 16]
     json.dump(dims, open(STUB_MANIFEST, "w"), indent=1)
@@ -269,8 +267,8 @@ def pack():
     if icon_dir and os.path.isdir(icon_dir):
         icon = Image.open(f"{icon_dir}/frame-0000.png").convert("RGBA")
         big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-        big.save(f"{ICON_DIR}/BuildIcon_TS_Wall.tga")
-        print(f"wrote {ICON_DIR}/BuildIcon_TS_Wall.tga")
+        big.save(asset_packs.cameo_tga("BuildIcon_TS_Wall"))
+        print(f"wrote {asset_packs.cameo_tga('BuildIcon_TS_Wall')}")
     else:
         print("no shp_wallicon in TS_ART_DIR: cameo not written")
 

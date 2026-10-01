@@ -9,12 +9,16 @@ even when every body pixel is in the same place. This keeps the shipped rect
 per frame, first sliding the new canvas onto the shipped one (alpha-mask cross
 correlation, so a pack whose placement drifted from the shipped zip is undone), then
 pastes the new pixels into it.
-usage: ts_recrop_to_shipped.py <git-rev> <NAME> [NAME...]   (zips under UNITS/)
+usage: ts_recrop_to_shipped.py <git-rev> <NAME> [NAME...]   (zips under UNITS/ of each name's pack)
+The shipped zip is read from <git-rev> at the name's pack path, or at the mod's own
+UNITS/ path when the revision holds it there.
 License: GPL v3.
 """
 import io, json, os, subprocess, sys, zipfile
 import numpy as np
 from PIL import Image
+
+import asset_packs
 
 MAX_SHIFT = 64  # pixels; a relight never legitimately moves content further
 
@@ -32,8 +36,8 @@ def best_shift(old_mask, new_mask):
         return 0, 0
     return int(dx), int(dy)
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-UNITS = "resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
+ROOT = asset_packs.REPO
+MOD_UNITS = "resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
 
 
 def tga_bytes(img):
@@ -42,12 +46,20 @@ def tga_bytes(img):
     return buf.getvalue()
 
 
+def shipped_zip(rev, name, path):
+    """The zip as it stands at rev: at its pack path, else at the mod's own UNITS/ path."""
+    for rel in dict.fromkeys((os.path.relpath(path, ROOT), f"{MOD_UNITS}/{name.upper()}.ZIP")):
+        r = subprocess.run(["git", "-C", ROOT, "show", f"{rev}:{rel}"], capture_output=True)
+        if r.returncode == 0:
+            return zipfile.ZipFile(io.BytesIO(r.stdout))
+    raise SystemExit(f"{name}: no {name}.ZIP at {rev}")
+
+
 def main():
     rev, names = sys.argv[1], sys.argv[2:]
     for name in names:
-        path = f"{ROOT}/{UNITS}/{name}.ZIP"
-        old = zipfile.ZipFile(io.BytesIO(subprocess.run(
-            ["git", "-C", ROOT, "show", f"{rev}:{UNITS}/{name}.ZIP"], capture_output=True, check=True).stdout))
+        path = asset_packs.art_zip(name, "UNITS")
+        old = shipped_zip(rev, name, path)
         new = zipfile.ZipFile(path)
         out = io.BytesIO()
         changed = 0

@@ -241,7 +241,7 @@ PACK_ARGS+=("$TMPDIR/tstitn_stub.shp:TSTITN.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tshmec_stub.shp" 72 72 256
 PACK_ARGS+=("$TMPDIR/tshmec_stub.shp:TSHMEC.SHP")
 
-# Dropship-bay delivery pod -- the TS Dropship sprite (TSDSHP.ZIP, RA_VFX.XML).
+# Dropship-bay delivery pod -- the TS Dropship sprite (TSDSHP.ZIP, TS-Graphics-Pack TS_VFX.XML).
 # Bullet art, single west-facing frame. The launcher sizes HD art off the
 # classic dims, so without this stub the pod inherits its donor's
 # little-missile dims and the dropship renders TINY (live report, 2026-08-12).

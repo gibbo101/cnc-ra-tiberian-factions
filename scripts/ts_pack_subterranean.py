@@ -16,6 +16,9 @@ Inputs (set TS_ART_DIR to the extraction/render dir):
   $TS_ART_DIR/renders_subtank|renders_sapc/frame-NNNN.png          (32, fleet cam)
   $TS_ART_DIR/renders_{unit}_{dive|emerge}_{8,16,24,32,40}/frame-NNNN.png (8 each)
   $TS_ART_DIR/{SUBTICON,SAPCICON}.SHP + CAMEO.PAL
+
+Art, cameos, TS_UNITS.XML and TSBUILDABLES.XML entries go to the tree asset_packs.py routes
+each name to (the TS-Graphics-Pack); the ModText rows to the mod's own ModText.csv.
 """
 import io, json, os, re, sys, zipfile
 from PIL import Image
@@ -25,10 +28,9 @@ if not ART:
     raise SystemExit("set TS_ART_DIR to the extracted/rendered TS art directory")
 MOD = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
                                    "resources", "remaster_mods", "Vanilla_RA"))
-UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-ICON_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB"
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import asset_packs
 import ts_shp
 
 F_VOX = 6.4 / 12.0   # 12 px/voxel renders -> canvas px (1 voxel ~= 1 TS SHP px)
@@ -125,8 +127,8 @@ def unit_frames(render_base, rot32, rot8):
     return frames
 
 
-write_zip(f"{UNITS_DIR}/TSSUBTANK.ZIP", "tssubtank", unit_frames("subtank", 0, 0))
-write_zip(f"{UNITS_DIR}/TSSAPC.ZIP", "tssapc", unit_frames("sapc", 0, 0))
+write_zip(asset_packs.art_zip("TSSUBTANK", "UNITS"), "tssubtank", unit_frames("subtank", 0, 0))
+write_zip(asset_packs.art_zip("TSSAPC", "UNITS"), "tssapc", unit_frames("sapc", 0, 0))
 
 # ---- BuildIcons (CAMEO.PAL decodes) ----
 pal = ts_shp.load_pal(f"{ART}/CAMEO.PAL")
@@ -138,8 +140,8 @@ for shp, out in [("SUBTICON", "BuildIcon_TS_DevilsTongue"),
     size, frs = ts_shp.decode_shp(f"{ART}/{shp}.SHP")
     icon = ts_shp.frame_to_rgba(frs[0], pal, remap=None)
     big = hqx.hq4x(icon.convert("RGB")).convert("RGBA").resize((341, 256), Image.LANCZOS)
-    big.save(f"{ICON_DIR}/{out}.tga")
-    print(f"wrote {ICON_DIR}/{out}.tga")
+    big.save(asset_packs.cameo_tga(out))
+    print(f"wrote {asset_packs.cameo_tga(out)}")
 
 # ---- Tileset XML (replace-capable) ----
 def tile_block(name, shape, frame_path):
@@ -159,12 +161,10 @@ def patch_tileset(xml_path, name, count):
     open(xml_path, "w", encoding="utf-8").write(xml)
     print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles")
 
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSSUBTANK", 112)
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSSAPC", 112)
+patch_tileset(asset_packs.tileset_xml("TSSUBTANK", "UNITS"), "TSSUBTANK", 112)
+patch_tileset(asset_packs.tileset_xml("TSSAPC", "UNITS"), "TSSAPC", 112)
 
-# ---- RABUILDABLES ----
-RAB = f"{MOD}/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
-xml = open(RAB, encoding="utf-8").read()
+# ---- Sidebar entries, in the buildables XML of each cameo's tree ----
 def buildable(name, text, icon):
     return ('\t<ObjectTypeClass Name="%s" Classification="CNCBuildableObject" CanInstantiate="False">\n'
             "\t\t<CNCEncyclopediaComponent>\n"
@@ -173,16 +173,18 @@ def buildable(name, text, icon):
             "\t\t\t<BuildIcon>%s</BuildIcon>\n"
             "\t\t</CNCEncyclopediaComponent>\n"
             "\t</ObjectTypeClass>\n" % (name, text, text, icon))
-added = ""
+added = {}
 for ini, icon in [("TSSUBTANK", "BuildIcon_TS_DevilsTongue"),
                   ("TSSAPC", "BuildIcon_TS_SubAPC")]:
-    if f"RA_{ini}" not in xml:
-        added += buildable(f"RA_{ini}", f"TEXT_UNIT_{ini}", icon)
-if added:
+    rab = asset_packs.buildables_xml(icon)
+    if f"RA_{ini}" not in open(rab, encoding="utf-8").read():
+        added[rab] = added.get(rab, "") + buildable(f"RA_{ini}", f"TEXT_UNIT_{ini}", icon)
+for rab, entries in added.items():
+    xml = open(rab, encoding="utf-8").read()
     idx = xml.rindex("</ObjectTypeClass>") + len("</ObjectTypeClass>")
-    xml = xml[:idx] + "\n\n" + added.rstrip("\n") + xml[idx:]
-    open(RAB, "w", encoding="utf-8").write(xml)
-    print("patched RABUILDABLES.XML")
+    xml = xml[:idx] + "\n\n" + entries.rstrip("\n") + xml[idx:]
+    open(rab, "w", encoding="utf-8").write(xml)
+    print(f"patched {os.path.basename(rab)}")
 
 # ---- ModText.csv (UTF-16) ----
 CSV = f"{MOD}/Data/ModText.csv"

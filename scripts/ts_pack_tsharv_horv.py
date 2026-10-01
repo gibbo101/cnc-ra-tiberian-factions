@@ -10,17 +10,18 @@ HARV's bboxes and applied to both) so the two bodies sit on the same pivot
 and the swap is a pure pose change. After packing, run
   scripts/ts_recrop_to_shipped.py <rev> TSHARV
 so frames 0-31 keep the shipped crop rects; 32-63 are new and keep their
-own centre-symmetric crops (same anchoring contract).
+own centre-symmetric crops (same anchoring contract). The ZIP and its
+TS_UNITS.XML tile run go to the TS-Graphics-Pack (asset_packs.py routes the name).
 
 Usage: TS_ART_DIR=~/Desktop/ts-art scripts/ts_pack_tsharv_horv.py
 """
-import io, json, math, os, re, zipfile
+import io, json, math, os, re, sys, zipfile
 from PIL import Image
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import asset_packs
+
 ART = os.environ["TS_ART_DIR"]
-MOD = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
-                                   "resources", "remaster_mods", "Vanilla_RA"))
-UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
 F_VOX = 6.4 / 12.0
 CANVAS, SCALE, SHADOW = 384, 0.75, (6, 25)
 
@@ -121,5 +122,5 @@ horv = face_fix(vox_frames("renders_horv"))
 shifts = orbit_shifts(harv)
 harv = [drop_shadow(f, *SHADOW) for f in shift(harv, shifts)]
 horv = [drop_shadow(f, *SHADOW) for f in shift(horv, shifts)]
-write_zip(f"{UNITS_DIR}/TSHARV.ZIP", "tsharv", harv + horv)
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSHARV", 64)
+write_zip(asset_packs.art_zip("TSHARV", "UNITS"), "tsharv", harv + horv)
+patch_tileset(asset_packs.tileset_xml("TSHARV", "UNITS"), "TSHARV", 64)

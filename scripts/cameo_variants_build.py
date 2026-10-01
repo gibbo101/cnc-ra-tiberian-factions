@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """Generate the faction-mask sidebar cameo variants in RABUILDABLES.XML.
 
+The variants derive from every plain sidebar entry, the mod's own and the asset
+packs' (scripts/asset_packs.py), read as the build merges them; the generated
+block itself is written to the mod's own RABUILDABLES.XML.
+
 Every buildable gets a sibling ObjectTypeClass per faction-badge combination it
 can display. The DLL writes `<IniName>_<hex>` into CNCSidebarEntryStruct::
 AssetName on each sidebar refresh, where <hex> is the set of the player's own
@@ -30,18 +34,21 @@ TS-tree _G variants are appended by hand in their own block, not by this tool.
 License: GPL v3.
 """
 import json
+import os
 import re
 import struct
 import sys
 from itertools import combinations
 from pathlib import Path
 
+import asset_packs
+import stage_asset_packs
+
 ROOT = Path(__file__).resolve().parent.parent
-XML = ROOT / "resources/remaster_mods/Vanilla_RA/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
+XML = Path(asset_packs.buildables_xml_of(None))
 MAP = ROOT / "scripts/cameo_work/plain_icon_map.json"
 MASKS = ROOT / "scripts/cameo_work/faction_masks.txt"
 MTD = ROOT / "scripts/cameo_work/MT_COMMANDBAR_COMMON.MTD"
-ART = ROOT / "resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB"
 
 FACTION_BITS = [0x1, 0x2, 0x4, 0x8, 0x10]  # 0x10 = the TS tree, digit 'G'
 DIGITS = "0123456789ABCDEFGHIJKLMNOPQRSTUV"
@@ -63,15 +70,16 @@ def art_resolver():
     """Return a predicate: does this BuildIcon name resolve to real art?
 
     Real = a named region in the launcher UI atlas, or a loose .tga this mod
-    ships. An entry whose pristine art resolves to neither cannot render, so its
-    variants are omitted rather than left as dangling references.
+    or one of its asset packs ships. An entry whose pristine art resolves to
+    neither cannot render, so its variants are omitted rather than left as
+    dangling references.
     """
     raw = MTD.read_bytes()
 
     def resolves(icon):
         if raw.find(icon.upper().encode() + b".TGA") >= 0:
             return True
-        return (ART / f"{icon}.tga").exists()
+        return os.path.exists(asset_packs.cameo_tga(icon))
 
     return resolves
 
@@ -96,8 +104,15 @@ def subsets(mask):
             yield sum(combo)
 
 
+def buildables_text():
+    """The mod's buildables XML with every pack's sidebar entries merged in, as the build stages it."""
+    rel = os.path.relpath(str(XML), asset_packs.data_root(None))
+    return stage_asset_packs.merged(rel, asset_packs.buildables_xml_of, "ObjectTypeList")
+
+
 def main():
     xml = XML.read_text(encoding="utf-8")
+    merged = buildables_text()
     plain = json.loads(MAP.read_text(encoding="utf-8"))
     masks = load_masks()
     resolves = art_resolver()
@@ -105,22 +120,21 @@ def main():
     # Drop any previously generated block so re-runs never stack. Matches both
     # this generator's block and the earlier "unbadged cameo variants" block it
     # superseded.
-    xml = re.sub(
+    generated_block = (
         r"\t<!-- BEGIN generated (?:unbadged cameo variants|cameo mask variants).*?"
-        r"<!-- END generated (?:unbadged cameo variants|cameo mask variants) -->\n?",
-        "",
-        xml,
-        flags=re.S,
+        r"<!-- END generated (?:unbadged cameo variants|cameo mask variants) -->\n?"
     )
+    xml = re.sub(generated_block, "", xml, flags=re.S)
+    merged = re.sub(generated_block, "", merged, flags=re.S)
 
     # Keys already defined outside the generated block (e.g. a hand-added _0
     # sibling) must not be emitted again -- the launcher gets one definition.
-    existing = set(re.findall(r'Name="(RA_[A-Za-z0-9_]+)"', xml))
+    existing = set(re.findall(r'Name="(RA_[A-Za-z0-9_]+)"', merged))
 
     blocks = []
     for m in re.finditer(
         r'<ObjectTypeClass Name="(RA_[A-Za-z0-9_]+)" Classification="CNCBuildableObject".*?</ObjectTypeClass>',
-        xml,
+        merged,
         re.S,
     ):
         entry_name = m.group(1)

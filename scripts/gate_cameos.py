@@ -16,11 +16,11 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import asset_packs
 import cameo_badge_build as badges
 
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 CUSTOM = os.path.join(ROOT, "resources", "custom-cameos")
-SRGB = os.path.join(ROOT, "resources", "remaster_mods", "Vanilla_RA", "Data", "ART", "TEXTURES", "SRGB")
 ART = os.path.join(ROOT, "resources", "custom-art", "cnc-gates-hd")
 
 GATES = [  # folder, frame prefix, INI stem, cameo stems (east-west, north-south), faction bit
@@ -64,7 +64,7 @@ def main():
             cameo.save(os.path.join(CUSTOM, icon + ".png"))
             b = cameo.copy()
             b.alpha_composite(emblem, badges.EMBLEM_ORIGIN)
-            b.save(os.path.join(SRGB, f"BuildIcon_{key}_{digit}.tga"))
+            b.save(asset_packs.cameo_tga(f"BuildIcon_{key}_{digit}"))
             print("wrote", icon, "and", f"BuildIcon_{key}_{digit}")
 
 

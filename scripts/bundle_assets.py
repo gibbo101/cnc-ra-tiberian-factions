@@ -36,6 +36,7 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
+import asset_packs                  # noqa: E402
 import buildings_manifest          # noqa: E402
 import meg_extract                  # noqa: E402  -- reused for MEG reads
 
@@ -43,7 +44,6 @@ REPO_ROOT          = SCRIPT_DIR.parent
 MOD_ROOT           = REPO_ROOT / "resources/remaster_mods/Vanilla_RA"
 STRUCTURES_DIR     = MOD_ROOT / "Data/ART/TEXTURES/SRGB/RED_ALERT/STRUCTURES"
 RA_STRUCTURES_XML  = MOD_ROOT / "Data/XML/TILESETS/RA_STRUCTURES.XML"
-RABUILDABLES_XML   = MOD_ROOT / "Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
 
 # Source MEG file. Default path is the standard Steam install; override with
 # CNC_REMASTER_DATA env var when running from a different machine.
@@ -272,19 +272,23 @@ def strip_buildable_block(content, td_ininame):
 def patch_rabuildables_xml(td_ininame, text_id_name, text_id_desc, build_icon, *, dry_run=False):
     '''Insert/replace the `RA_TDxxx` ObjectTypeClass block.
 
-    Existing blocks for `td_ininame` are stripped first. Insertion point is
-    immediately before the closing `</ObjectTypeList>`. Subsequent entries
-    accumulate in source order, which matches the existing TDNUKE/TDNUK2 layout.
+    The block goes to the buildables XML asset_packs assigns it: RABUILDABLES.XML,
+    or an asset pack's <PREFIX>BUILDABLES.XML when the object and its cameo both
+    belong to that pack. Existing blocks for `td_ininame` are stripped first.
+    Insertion point is immediately before the closing `</ObjectTypeList>`.
+    Subsequent entries accumulate in source order, which matches the existing
+    TDNUKE/TDNUK2 layout.
     '''
-    content = RABUILDABLES_XML.read_text(encoding="utf-8")
+    new_block = emit_buildable_block(td_ininame, text_id_name, text_id_desc, build_icon)
+    xml_path = Path(asset_packs.buildables_xml_of(asset_packs.entry_pack("ObjectTypeList", new_block)))
+    content = xml_path.read_text(encoding="utf-8")
     original = content
 
     content = strip_buildable_block(content, td_ininame)
-    new_block = emit_buildable_block(td_ininame, text_id_name, text_id_desc, build_icon)
 
     close_idx = content.rfind("</ObjectTypeList>")
     if close_idx < 0:
-        raise RuntimeError("Couldn't find </ObjectTypeList> close tag in RABUILDABLES.XML")
+        raise RuntimeError(f"Couldn't find </ObjectTypeList> close tag in {xml_path.name}")
 
     # Preserve any existing comment header or blank line just before the close.
     # We insert with a leading blank line so multiple entries are visually
@@ -293,7 +297,7 @@ def patch_rabuildables_xml(td_ininame, text_id_name, text_id_desc, build_icon, *
 
     changed = (content != original)
     if changed and not dry_run:
-        RABUILDABLES_XML.write_text(content, encoding="utf-8", newline="\n")
+        xml_path.write_text(content, encoding="utf-8", newline="\n")
     return changed
 
 

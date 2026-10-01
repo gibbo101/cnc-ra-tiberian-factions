@@ -6,7 +6,8 @@ canvas (ShapeSize 64), each render scaled by the TS voxel density 6.4/12 around 
 voxel origin at the canvas centre (the vox_frames recipe in ts_pack_units_wave.py).
 The turret renders carry the barrel in the same depth-sorted pass (vxl_render.py
 --attach), so it hides and is hidden correctly at every facing. Also writes the
-RA_UNITS.XML tile run and the cannon + tusk reports under their own names.
+TS_UNITS.XML tile run and the cannon + tusk reports under their own names, each in the
+tree asset_packs.py routes its name to (the TS packs).
 
 Renders (the voxel ledger in docs/launcher-render-contracts.md, one canvas for both):
   vxl_render.py 4TNK.VXL    renders_4tnk    --frames 32 --yaw0 90 --px-per-voxel 12
@@ -33,10 +34,9 @@ from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
-from ts_pack_pods import ART, MOD, RAW, write_zip, patch_tileset
+import asset_packs
+from ts_pack_pods import ART, RAW, write_zip, patch_tileset
 
-UNITS_DIR = f"{MOD}/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-UNITS_XML = f"{MOD}/XML/TILESETS/RA_UNITS.XML"
 CANVAS = 512
 # The TS voxel density 6.4/12 draws the Mk. I at the RA Mammoth Tank's size (34.6 x 24.4
 # classic px, measured off EA's 4TNK); SCALE stays as the dial if that ever needs retuning.
@@ -107,11 +107,11 @@ def write_muzzle_header():
 
 def main():
     frames = vox_frames("renders_4tnk") + vox_frames("renders_4tnktur")
-    write_zip(f"{UNITS_DIR}/TS4TNK.ZIP", "ts4tnk", frames)
-    patch_tileset(UNITS_XML, "TS4TNK", len(frames))
+    write_zip(asset_packs.art_zip("TS4TNK", "UNITS"), "ts4tnk", frames)
+    patch_tileset(asset_packs.tileset_xml("TS4TNK", "UNITS"), "TS4TNK", len(frames))
     for aud in ("120MMX9", "MISL1"):
         pcm = f"{RAW}/{aud}.pcm.wav"
-        out_wav = f"{MOD}/AUDIO/TS{aud}.WAV"
+        out_wav = asset_packs.sound_wav(f"TS{aud}")
         subprocess.run([sys.executable, f"{HERE}/ts_aud_decode.py", f"{RAW}/{aud}.AUD", pcm],
                        check=True, stdout=subprocess.DEVNULL)
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", pcm,

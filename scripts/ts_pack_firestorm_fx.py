@@ -15,8 +15,11 @@ Frame 0 of each is empty in TS and is dropped, leaving 19. TS's anim palette pai
 spark pixels in the remap greens; they are folded into the fire ramp so they never read as
 house colour.
 
-- Data/AUDIO/TSFIRSTRM1.WAV: FIRSTRM1, "Firestorm defense burning", the Report= all three anims
+- AUDIO/TSFIRSTRM1.WAV: FIRSTRM1, "Firestorm defense burning", the Report= all three anims
   play, Westwood AUD -> MS-ADPCM WAV.
+
+Anims, their TS_VFX.XML tile runs and the sound go to the tree asset_packs.py routes each
+name to (the TS packs).
 
 Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/{FSIDLE,FSGRND,FSAIR}.SHP, FIRSTRM1.AUD and ANIM.PAL
 (TIBSUN.MIX conquer.mix / cache.mix via tools/ts_extract.py).
@@ -28,8 +31,9 @@ from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import asset_packs
 import ts_shp
-from ts_pack_ion import write_zip, patch_tileset, MOD, VFX_DIR, XML, RAW, SCALE
+from ts_pack_ion import write_zip, patch_tileset, RAW, SCALE
 
 # name, TS SHP, canvas (w, h), base on the canvas centre (True) or centred (False), alpha
 ANIMS = (
@@ -66,10 +70,10 @@ def main():
                 raise SystemExit(f"{name}: {scaled.size} does not fit the {cw}x{ch} canvas")
             canvas.alpha_composite(scaled, (ox, oy))
             frames.append(canvas)
-        write_zip(f"{VFX_DIR}/{name}.ZIP", name.lower(), frames)
-        patch_tileset(XML, name, len(frames))
+        write_zip(asset_packs.art_zip(name, "VFX"), name.lower(), frames)
+        patch_tileset(asset_packs.tileset_xml(name, "VFX"), name, len(frames))
 
-    out_wav = f"{MOD}/AUDIO/TSFIRSTRM1.WAV"
+    out_wav = asset_packs.sound_wav("TSFIRSTRM1")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{RAW}/FIRSTRM1.AUD",
                     "-acodec", "adpcm_ms", out_wav], check=True)
     print(f"wrote {out_wav}")

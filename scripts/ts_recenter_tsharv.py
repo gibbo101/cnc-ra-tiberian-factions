@@ -19,9 +19,9 @@ Idempotent-safe (a centred input fits a zero-amplitude circle and shifts by
 import io, json, math, os, zipfile
 from PIL import Image
 
-MOD = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
-                                   "resources", "remaster_mods", "Vanilla_RA"))
-ZIP = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS/TSHARV.ZIP"
+import asset_packs
+
+ZIP = asset_packs.art_zip("TSHARV", "UNITS")
 NAME = "tsharv"
 N = 32
 OUT_CANVAS = 384
