@@ -33,11 +33,7 @@ LINES = (('TIBERIAN', (488, 22, 1442, 102)), ('FACTIONS', (470, 180, 1460, 286))
 
 
 def stock_logo():
-    data, files = meg_extract.open_meg(TEXTURES_MEG)
-    for name, size, off in files:
-        if name.upper() == STOCK_LOGO:
-            return Image.open(io.BytesIO(data[off:off + size])).convert('RGBA')
-    sys.exit(f'{STOCK_LOGO} not found in {TEXTURES_MEG}')
+    return Image.open(io.BytesIO(meg_extract.read_member(TEXTURES_MEG, STOCK_LOGO))).convert('RGBA')
 
 
 def blur(arr, r):

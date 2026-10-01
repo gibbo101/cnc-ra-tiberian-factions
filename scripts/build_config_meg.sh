@@ -50,6 +50,8 @@ BASE_LOC="scripts/loc_work/MASTERTEXTFILE_EN-US.base.LOC"
 EDIT_LOC="scripts/loc_work/MASTERTEXTFILE_EN-US.edited.LOC"
 BASE_FAC="scripts/factions_work/FACTIONS.base.XML"
 EDIT_FAC="scripts/factions_work/FACTIONS.edited.XML"
+BASE_GUI="scripts/gui_work/GUITEXTURESETS.base.XML"
+EDIT_GUI="scripts/gui_work/GUITEXTURESETS.edited.XML"
 
 echo "==> Rebuilding edited RA_MAIN_MENU.BUI from base"
 python3 scripts/bui_mainmenu_build.py "$BASE_BUI" "$EDIT_BUI"
@@ -63,6 +65,9 @@ python3 scripts/musicevents_build.py "$BASE_MUS" "$MUS_LIST" "$EDIT_MUS"
 echo "==> Rebuilding edited MASTERTEXTFILE_EN-US.LOC from base (Unholy Alliance checkbox)"
 python3 scripts/loc_relabel.py "$BASE_LOC" "$EDIT_LOC" @scripts/loc_work/mastertext.edits.txt "${LOC_OVERRIDES[@]}"
 
+echo "==> Rebuilding GUITEXTURESETS.XML from base (the main menu's own steel button set)"
+python3 scripts/gui_texturesets_build.py "$BASE_GUI" "$EDIT_GUI"
+
 echo "==> Repacking $MEG with the edited BUI + MUSICEVENTS + MASTERTEXT (in place)"
 echo "==> Rebuilding FACTIONS.XML from base (picker order + full-size GDI/Nod plates)"
 python3 scripts/factions_build.py "$BASE_FAC" "$EDIT_FAC"
@@ -70,7 +75,8 @@ python3 scripts/meg_pack.py repack "$MEG" "$MEG.tmp" \
     "RA_MAIN_MENU.BUI=$EDIT_BUI" \
     "DATA\\ART\\GUI\\RA_TACTICAL_UI.BUI=$EDIT_HUD" \
     "MUSICEVENTS.XML=$EDIT_MUS" "MASTERTEXTFILE_EN-US.LOC=$EDIT_LOC" \
-    "DATA\\XML\\OBJECTS\\MISC\\FACTIONS.XML=$EDIT_FAC"
+    "DATA\\XML\\OBJECTS\\MISC\\FACTIONS.XML=$EDIT_FAC" \
+    "DATA\\ART\\GUI\\GUITEXTURESETS.XML=$EDIT_GUI"
 mv "$MEG.tmp" "$MEG"
 
 
@@ -85,6 +91,8 @@ python3 scripts/meg_extract.py extract "$MEG" "MASTERTEXTFILE_EN-US.LOC" /tmp/_m
 cmp "/tmp/_megverify/MASTERTEXTFILE_EN-US.LOC" "$EDIT_LOC" && echo "OK: MASTERTEXT in CONFIG.MEG matches edited copy"
 python3 scripts/meg_extract.py extract "$MEG" "MISC\\FACTIONS.XML" /tmp/_megverify >/dev/null
 cmp "/tmp/_megverify/FACTIONS.XML" "$EDIT_FAC" && echo "OK: FACTIONS in CONFIG.MEG matches edited copy"
+python3 scripts/meg_extract.py extract "$MEG" "GUI\\GUITEXTURESETS.XML" /tmp/_megverify >/dev/null
+cmp "/tmp/_megverify/GUITEXTURESETS.XML" "$EDIT_GUI" && echo "OK: GUITEXTURESETS in CONFIG.MEG matches edited copy"
 echo "==> Validating shipped XML"
 python3 scripts/validate_shipped_xml.py resources/remaster_mods/
 

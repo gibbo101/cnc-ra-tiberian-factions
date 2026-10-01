@@ -63,6 +63,30 @@ def open_meg(path):
     return data, files
 
 
+def read_member(path, name):
+    """One member's bytes, matched case-insensitively on its full path, reading only the
+    header and that member (the texture MEGs run to gigabytes)."""
+    with open(path, "rb") as f:
+        head = f.read(8)
+        off = 8 if struct.unpack_from("<I", head, 0)[0] in (0xFFFFFFFF, 0x8FFFFFFF) else 0
+        f.seek(off + 4)
+        num_files, num_strings, string_table_size = struct.unpack("<III", f.read(12))
+        table = f.read(string_table_size + num_files * SUBFILE_RECORD_SIZE)
+        strings, s_off = [], 0
+        for _ in range(num_strings):
+            slen = struct.unpack_from("<H", table, s_off)[0]
+            strings.append(table[s_off + 2:s_off + 2 + slen].decode("latin-1"))
+            s_off += 2 + slen
+        for i in range(num_files):
+            rec = table[string_table_size + i * SUBFILE_RECORD_SIZE:
+                        string_table_size + (i + 1) * SUBFILE_RECORD_SIZE]
+            _flags, _crc, _idx, size, dat_off, name_idx = struct.unpack("<HIiIIH", rec)
+            if strings[name_idx].upper() == name.upper():
+                f.seek(dat_off)
+                return f.read(size)
+    raise KeyError(f"{name} not in {path}")
+
+
 def cmd_list(meg_path, pattern=None):
     _, files = open_meg(meg_path)
     for name, size, _ in files:
