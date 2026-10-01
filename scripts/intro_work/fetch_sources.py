@@ -4,7 +4,7 @@
 For every movie named in the shot list it writes the record fmvlib.py's `fullres` reads
 (meta/<GAME>/<MOVIE>.json): Remastered Bink 2 movies are read in place from their MEG archive,
 and Tiberian Sun VQAs are copied out of their MIX (or the loose file) into sources/TS/. It also
-extracts the music the cut uses into audio/ (Hell March, and the stock intro's logo tune), installs the decoding tools into tools/ and builds
+extracts the music the cut uses into audio/ (Hell March), installs the decoding tools into tools/ and builds
 tools/bk2dump/bk2dump.exe, which decodes Bink 2 through the game's own bink2w32.dll under Wine.
 
 The library lives at $TF_FMV_LIB, default ~/Desktop/Tiberian Factions/tf-intro-lib.
@@ -32,7 +32,6 @@ MOVIE_MEGS = {'RA': 'MOVIES_RA.MEG', 'TD': 'MOVIES_TD.MEG'}
 TS_MIXES = ('MOVIES01.MIX', 'MOVIES02.MIX', 'movies03.mix')
 MUSIC = {'RAR_MUS_HELL_MARCH.WAV': 'RAR_MUS_HELL_MARCH_pcm16.wav',
          'RAB_MUS_HELL_MARCH_FKTS.WAV': 'RAB_MUS_HELL_MARCH_FKTS.WAV'}
-LOGO_TUNE = ('RA', 'REDINTRO', 'REDINTRO_logo.wav')   # the stock intro's audio, for its logo tune
 
 
 def shot_movies(path):
@@ -120,15 +119,6 @@ def fetch_music():
                 break
         else:
             sys.exit(f'{entry} not found in {archive}')
-    game, name, dst = LOGO_TUNE
-    record = bink2_record(game, name)
-    tmp = audio / f'{name}.BK2'
-    with open(record['container'], 'rb') as f:
-        f.seek(record['offset'])
-        tmp.write_bytes(f.read(record['source_bytes']))
-    subprocess.run(['ffmpeg', '-v', 'error', '-y', '-i', str(tmp), '-vn', '-c:a', 'pcm_s16le',
-                    '-ar', '44100', '-ac', '2', str(audio / dst)], check=True)
-    tmp.unlink()
 
 
 def main(shots):

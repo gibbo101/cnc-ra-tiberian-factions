@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Build the Tiberian Factions intro montage from a shot list, cut to the Remastered Hell March.
 
-It opens in place of Red Alert's logo animation, to that animation's own logo tune (the stock
-REDINTRO's audio): the fire Tiberian Factions title slams in where the C&C logo did, and the six
-faction emblems pop in on the metal hits that land the RED ALERT letters. Where the stock intro
-moves on to its targeting scope, a flash cuts to the montage on Hell March's opening hit. Each
-shot fills a steel-bezelled window over
+It opens in place of Red Alert's logo animation, with Hell March from its first note: the fire
+Tiberian Factions title slams in on the opening hit and the six faction emblems pop in one per
+beat. Two bars in, on the first big accent, a flash cuts to the montage. Each shot fills a
+steel-bezelled window over
 the menu's smoke backdrop (the low-res FMV stays sharp at window size, as Retaliation's framed
 inset did) and lasts a whole number of beats (120 BPM: one beat is 15 frames at 30 fps), so
-cuts land on the beat. The band's entry gets a flash; the last shot ends on a bar downbeat where
-Hell March fades out under a white flash to the menu.
+cuts land on the beat. The band's entry gets a flash on the cut it falls on; the last shot ends
+on the phrase two bars after the quick cuts begin, where Hell March fades out under a white flash
+to the menu.
 The launcher fits the movie inside the screen and, about 10 s in, reveals the menu wherever the
 movie doesn't cover it. The movie is 16:9, so it fills 16:9 screens; on 16:10 (the Steam Deck)
 the bands above and below show the menu background's margins, which menu_art.py makes the same
@@ -39,18 +39,11 @@ import title_art  # noqa: E402
 FPS, W, H = 30, 1920, 1080
 BEAT = 15                                  # frames per beat at 120 BPM
 WINDOW = (240, 135, 1440, 810)             # x, y, w, h of the video window
-LOGO_TUNE = LIB / 'audio/REDINTRO_logo.wav'
-TITLE_HIT = 0.505                          # logo tune hit the title slams in on (s)
-EMBLEM_HITS = (1.596, 1.73, 1.811, 1.898, 2.032, 2.264)   # the RED ALERT letter slams
-# The launcher stalls every startup movie for about a second on the Steam Deck (the stock intro
-# too), freezing picture and sound, at a moment that has fallen 3.85-4.1 s in. The logo tune is
-# cut just before that and Hell March comes in just after, so the stall lands in the breath
-# between them and nothing audible is cut.
-LOGO_TUNE_END = 3.80                       # where the logo tune is cut (s)
-OPENING_FRAMES = 128                       # Hell March's opening hit and the montage at 4.267 s
-HELL_MARCH_HIT = 0.279                     # the opening hit's time in Hell March (s)
+HELL_MARCH_HIT = 0.279                     # the opening hit, which the title slams in on (s)
+OPENING_FRAMES = 128                       # two bars later, the first big accent: the montage (4.267 s)
 OUTRO_FRAMES = 60                          # white flash on the final hit, fading to black with its tail
-FINAL_HIT = 36.281                         # the bar downbeat the last shot ends on (s)
+BAND_ENTRY = 32.276                        # the band comes in (s); a cut falls on it
+FINAL_HIT = 40.281                         # the phrase the last shot ends on (s)
 FKTS = LIB / 'audio/RAB_MUS_HELL_MARCH_FKTS.WAV'
 FKTS_STAB, FKTS_GAIN = 211.835, 0.665      # its final stab, scaled to the Remastered level
 MUSIC = LIB / 'audio/RAR_MUS_HELL_MARCH_pcm16.wav'
@@ -152,13 +145,13 @@ def emblem(name, h):
 
 
 def opening(bg):
-    """Black until the title slams in on its hit, then each emblem pops in on its letter slam."""
+    """Black until the title slams in on Hell March's opening hit, then one emblem pops in per beat."""
     title = title_art.render()
     title = title.resize((1300, round(title.height * 1300 / title.width)), Image.LANCZOS)
     marks = [emblem(n, 170) for n in EMBLEMS]
     xs = [960 + (i - 2.5) * 230 for i in range(6)]
-    title_frame = round(TITLE_HIT * FPS)
-    emblem_frames = [round(t * FPS) for t in EMBLEM_HITS]
+    title_frame = round(HELL_MARCH_HIT * FPS)
+    emblem_frames = [title_frame + BEAT * (i + 1) for i in range(len(EMBLEMS))]
     frames = []
     for f in range(OPENING_FRAMES):
         if f < title_frame:
@@ -194,7 +187,7 @@ def render(shots):
     base = framed(bg)
     yield from opening(bg)
     start = OPENING_FRAMES
-    band_entry = start + sum(b for _, _, b in shots if b >= 4) * BEAT
+    band_entry = round(BAND_ENTRY * FPS)
     n = start
     for movie, first, beats in shots:
         pictures, box = shot_frames(movie, first, beats)
@@ -216,19 +209,14 @@ def load_wav(path):
 
 
 def music(seconds, ending):
-    """The logo tune, a breath, then Hell March from its opening hit to the final downbeat, then
-    the ending:
+    """Hell March from its first note to the final downbeat, then the ending:
     A: the Remastered downbeat hit itself rings out through a short echo;
     B: Frank Klepacki and the Tiberian Sons' final stab (FKTS) lands on the downbeat;
     C: Hell March plays on through the white flash and fades out (the menu's own music, the
        Retaliation remix, fades in after it)."""
     rate = 44100
-    logo = load_wav(LOGO_TUNE)[:int(LOGO_TUNE_END * rate)].copy()
-    logo[-int(0.06 * rate):] *= np.linspace(1, 0, int(0.06 * rate))[:, None]
-    hell_march_in = OPENING_FRAMES / FPS
-    breath = np.zeros((int(hell_march_in * rate) - len(logo), 2))
-    rar = np.concatenate([logo, breath, load_wav(MUSIC)[int(HELL_MARCH_HIT * rate):]])
-    cut = int((hell_march_in + FINAL_HIT - HELL_MARCH_HIT) * rate)
+    rar = load_wav(MUSIC)
+    cut = int(FINAL_HIT * rate)
     body = rar[:cut].copy()
     body[-176:] *= np.linspace(1, 0, 176)[:, None]
     tail_len = int(seconds * rate) - cut
