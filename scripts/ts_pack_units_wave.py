@@ -5,7 +5,8 @@
   - TSSONIC.ZIP  64 frames (body 0-31 + turret 32-63, TSHVR layout), 448 canvas, ShapeSize 56
   - TSAPC.ZIP    32 frames (voxel body facings), 384 canvas, ShapeSize 48
   - BuildIcon_TS_{Harvester,Wolverine,Disruptor,AmphAPC}.tga (TS cameos, CAMEO.PAL)
-  - RA_UNITS.XML tile runs (REPLACING any existing entries), RABUILDABLES.XML, ModText.csv
+  - TS_UNITS.XML tile runs (REPLACING any existing entries), TSBUILDABLES.XML, ModText.csv
+Art, cameos and XML go to the tree asset_packs.py routes each name to (the TS-Graphics-Pack).
 
 Density: all TS units ship at 8x-classic (canvas = ShapeSize * 8). 1 TS voxel at
 12 px/voxel ~= 1 TS SHP px * 6.4 (the Titan F_T), so voxel renders scale by
@@ -28,10 +29,9 @@ if not ART:
 # hardcoded absolute repo path -- the parallel-instance rule).
 MOD = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
                                    "resources", "remaster_mods", "Vanilla_RA"))
-UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-ICON_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB"
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import asset_packs
 import ts_shp
 
 F_SHP = 6.4          # TS SHP px -> canvas px (the Titan house factor)
@@ -166,12 +166,12 @@ def recenter_orbit(frames):
 # next to the TD harvester) and pack scale 0.75 (Luke, final size call 2026-08-05; 0.533 read ridiculously
 # small in the field; 0.80 read big — Luke's split, 2026-08-05).
 if os.path.isdir(f"{ART}/renders_harv"):
-    write_zip(f"{UNITS_DIR}/TSHARV.ZIP", "tsharv",
+    write_zip(asset_packs.art_zip("TSHARV", "UNITS"), "tsharv",
               recenter_orbit(face_fix(vox_frames("renders_harv", 384, shadow=(6, 25), scale=0.75))))
 else:
     print("TSHARV: SKIP (no renders_harv)")
 if os.path.isdir(f"{ART}/renders_apc"):
-    write_zip(f"{UNITS_DIR}/TSAPC.ZIP", "tsapc", face_fix(vox_frames("renders_apc", 384, shadow=(7, 30))))
+    write_zip(asset_packs.art_zip("TSAPC", "UNITS"), "tsapc", face_fix(vox_frames("renders_apc", 384, shadow=(7, 30))))
 else:
     print("TSAPC: SKIP (no renders_apc)")
 
@@ -181,7 +181,7 @@ if os.path.isdir(f"{ART}/renders_sonic"):
     # Turret: no shadow, canvas-centered, same frame order as the body.
     tur = vox_frames("renders_sonictur", 448)
     sonic += tur  # turret renders line up with the hull renders index-for-index (facing sheet, 2026-08-25)
-    write_zip(f"{UNITS_DIR}/TSSONIC.ZIP", "tssonic", sonic)
+    write_zip(asset_packs.art_zip("TSSONIC", "UNITS"), "tssonic", sonic)
 else:
     print("TSSONIC: SKIP (no renders_sonic)")
 
@@ -224,7 +224,7 @@ if os.path.isdir(f"{ART}/shp_smech"):
                              F_SHP, CANVAS_S,
                              (47.5, feet_src), (CANVAS_S / 2, feet_dst))
             frames.append(drop_shadow(fr, 4, 15))
-    write_zip(f"{UNITS_DIR}/TSSMEC.ZIP", "tssmec", frames)
+    write_zip(asset_packs.art_zip("TSSMEC", "UNITS"), "tssmec", frames)
 else:
     print("TSSMEC: SKIP (no shp_smech)")
 
@@ -241,8 +241,8 @@ if os.path.exists(f"{ART}/CAMEO.PAL"):
         size, frs = ts_shp.decode_shp(f"{ART}/{shp}.SHP")
         icon = ts_shp.frame_to_rgba(frs[0], pal, (16, 31), (0, 200, 0))
         big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-        big.save(f"{ICON_DIR}/{out}.tga")
-        print(f"wrote {ICON_DIR}/{out}.tga")
+        big.save(asset_packs.cameo_tga(out))
+        print(f"wrote {asset_packs.cameo_tga(out)}")
 
 # ---- Tileset XML (replace-capable) ----
 def tile_block(name, shape, frame_path):
@@ -262,14 +262,12 @@ def patch_tileset(xml_path, name, count):
     open(xml_path, "w", encoding="utf-8").write(xml)
     print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles")
 
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSHARV", 32)
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSSMEC", 96 + 32)
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSSONIC", 64)
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSAPC", 32)
+patch_tileset(asset_packs.tileset_xml("TSHARV", "UNITS"), "TSHARV", 32)
+patch_tileset(asset_packs.tileset_xml("TSSMEC", "UNITS"), "TSSMEC", 96 + 32)
+patch_tileset(asset_packs.tileset_xml("TSSONIC", "UNITS"), "TSSONIC", 64)
+patch_tileset(asset_packs.tileset_xml("TSAPC", "UNITS"), "TSAPC", 32)
 
-# ---- RABUILDABLES ----
-RAB = f"{MOD}/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
-xml = open(RAB, encoding="utf-8").read()
+# ---- Sidebar entries, in the buildables XML of each cameo's tree ----
 def buildable(name, text, icon):
     return ('\t<ObjectTypeClass Name="%s" Classification="CNCBuildableObject" CanInstantiate="False">\n'
             "\t\t<CNCEncyclopediaComponent>\n"
@@ -278,16 +276,18 @@ def buildable(name, text, icon):
             "\t\t\t<BuildIcon>%s</BuildIcon>\n"
             "\t\t</CNCEncyclopediaComponent>\n"
             "\t</ObjectTypeClass>\n" % (name, text, text, icon))
-added = ""
+added = {}
 for ini, icon in [("TSHARV", "BuildIcon_TS_Harvester"), ("TSSMEC", "BuildIcon_TS_Wolverine"),
                   ("TSSONIC", "BuildIcon_TS_Disruptor"), ("TSAPC", "BuildIcon_TS_AmphAPC")]:
-    if f"RA_{ini}" not in xml:
-        added += buildable(f"RA_{ini}", f"TEXT_UNIT_{ini}", icon)
-if added:
+    rab = asset_packs.buildables_xml(icon)
+    if f"RA_{ini}" not in open(rab, encoding="utf-8").read():
+        added[rab] = added.get(rab, "") + buildable(f"RA_{ini}", f"TEXT_UNIT_{ini}", icon)
+for rab, entries in added.items():
+    xml = open(rab, encoding="utf-8").read()
     idx = xml.rindex("</ObjectTypeClass>") + len("</ObjectTypeClass>")
-    xml = xml[:idx] + "\n\n" + added.rstrip("\n") + xml[idx:]
-    open(RAB, "w", encoding="utf-8").write(xml)
-    print("patched RABUILDABLES.XML")
+    xml = xml[:idx] + "\n\n" + entries.rstrip("\n") + xml[idx:]
+    open(rab, "w", encoding="utf-8").write(xml)
+    print(f"patched {os.path.basename(rab)}")
 
 # ---- ModText.csv (UTF-16) ----
 CSV = f"{MOD}/Data/ModText.csv"

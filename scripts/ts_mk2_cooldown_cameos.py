@@ -13,7 +13,8 @@ its full Mk. II allowance, or its one Ghost Stalker, the DLL swaps the cameo to
 <Ini>_LK the same way, and the click is refused with "Cannot comply" instead of
 a false "Building" / "Training" ack.
 
-Emits:
+Reads each unit's pristine BuildIcon from the tree scripts/asset_packs.py routes
+it to (the TS cameos are in TS-Graphics-Pack). Emits, in the mod's own tree:
   Data/ART/TEXTURES/SRGB/BuildIcon_TSHMEC_CD<sss>.tga   (sss = 001..300)
   Data/ART/TEXTURES/SRGB/BuildIcon_<Ini>_LK.tga         (field-cap locked)
   RABUILDABLES.XML ObjectTypeClass entries RA_TSHMEC_CD<sss> / RA_<Ini>_LK
@@ -22,13 +23,14 @@ Idempotent: re-running replaces the generated XML block and overwrites the art.
 
 License: GPL v3.
 """
+import os
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageEnhance, ImageFont
 
-ROOT = Path(__file__).resolve().parent.parent
-SRGB = ROOT / "resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB"
-XML = ROOT / "resources/remaster_mods/Vanilla_RA/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
+import asset_packs
+
+XML = Path(asset_packs.buildables_xml_of(None))
 FONT = "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf"
 
 # Every unit the dropship bay delivers: IniName -> its pristine BuildIcon.
@@ -69,7 +71,7 @@ TEMPLATE = """\t<ObjectTypeClass Name="RA_{ini}_{tag}" Classification="CNCBuilda
 
 def bake_art():
     for ini, icon in UNITS.items():
-        base = Image.open(SRGB / f"{icon}.tga").convert("RGBA")
+        base = Image.open(asset_packs.cameo_tga(icon)).convert("RGBA")
         dimmed = ImageEnhance.Brightness(base).enhance(0.40)
         font = ImageFont.truetype(FONT, int(base.height * 0.42))
         for secs in range(1, SECONDS + 1):
@@ -81,13 +83,14 @@ def bake_art():
                        (img.height - (bb[3] - bb[1])) // 2 - bb[1]),
                       text, font=font, fill=GOLD,
                       stroke_width=6, stroke_fill=OUTLINE)
-            img.save(SRGB / f"BuildIcon_{ini}_CD{secs:03d}.tga")
-        print(f"baked {SECONDS} countdown cameos for {ini} into {SRGB}")
+            out = asset_packs.cameo_tga(f"BuildIcon_{ini}_CD{secs:03d}")
+            img.save(out)
+        print(f"baked {SECONDS} countdown cameos for {ini} into {os.path.dirname(out)}")
 
 
 def bake_locked():
     for ini, icon in LOCKED.items():
-        base = Image.open(SRGB / f"{icon}.tga").convert("RGBA")
+        base = Image.open(asset_packs.cameo_tga(icon)).convert("RGBA")
         img = ImageEnhance.Brightness(base).enhance(0.40)
         draw = ImageDraw.Draw(img)
         w, h = img.size
@@ -98,8 +101,9 @@ def bake_locked():
             draw.line([start, end], fill=OUTLINE, width=max(2, int(h * 0.16)))
         for start, end in strokes:
             draw.line([start, end], fill=RED, width=max(1, int(h * 0.09)))
-        img.save(SRGB / f"BuildIcon_{ini}_LK.tga")
-        print(f"baked locked cameo BuildIcon_{ini}_LK into {SRGB}")
+        out = asset_packs.cameo_tga(f"BuildIcon_{ini}_LK")
+        img.save(out)
+        print(f"baked locked cameo BuildIcon_{ini}_LK into {os.path.dirname(out)}")
 
 
 def inject_xml():

@@ -5,7 +5,8 @@ The delivery projectile wears TSDSHP instead of the falling nuke: a single
 south-facing frame (the pod always flies due south onto the deck, and the
 bullet is faceless with Frames=1, so shape 0 is the whole show). Follows the
 TDMISSILE arrangement exactly: frame ZIP under VFX/, a Tile entry in
-RA_VFX.XML, classic-side donor ImageData in bbdata One_Time.
+TS_VFX.XML (both in the TS-Graphics-Pack, routed by asset_packs.py),
+classic-side donor ImageData in bbdata One_Time.
 
 Input: a vxl_render.py output frame, path passed as argv[1]
        (default: the session render of DSHP.VXL at --yaw0 270).
@@ -22,9 +23,11 @@ from pathlib import Path
 
 from PIL import Image
 
-ROOT = Path(__file__).resolve().parent.parent
-VFX_DIR = ROOT / "resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/RED_ALERT/VFX"
-VFX_XML = ROOT / "resources/remaster_mods/Vanilla_RA/Data/XML/TILESETS/RA_VFX.XML"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import asset_packs
+
+ZIP_PATH = Path(asset_packs.art_zip("TSDSHP", "VFX"))
+VFX_XML = Path(asset_packs.tileset_xml("TSDSHP", "VFX"))
 
 BEGIN = "\t\t\t<!-- BEGIN generated TSDSHP drop-pod sprite (scripts/ts_pack_dropship.py) -->"
 END = "\t\t\t<!-- END generated TSDSHP drop-pod sprite -->"
@@ -73,8 +76,8 @@ def main():
                                     (img.height - small.height) // 2))
         frames.append(pad)
 
-    VFX_DIR.mkdir(parents=True, exist_ok=True)
-    zpath = VFX_DIR / "TSDSHP.ZIP"
+    ZIP_PATH.parent.mkdir(parents=True, exist_ok=True)
+    zpath = ZIP_PATH
     with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
         for n, f in enumerate(frames):
             bb = f.getbbox() or (0, 0, f.width, f.height)

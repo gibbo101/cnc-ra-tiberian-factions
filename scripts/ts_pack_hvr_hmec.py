@@ -8,16 +8,16 @@ SHP inputs). Use for voxel re-renders of the two units. Inputs (TS_ART_DIR):
                             (docs/launcher-render-contracts.md); the rack is --z-clip 10
   ts35_hmec_<f>             HMEC.VXL posed by HMEC.HVA frame f, 35 degree camera
   ts35sh_hmec_<f>           the same renders with --shadow 0.6,-0.2
+The zips go to the TS-Graphics-Pack (asset_packs.py routes each name).
 Follow with scripts/ts_reshadow.py TSHVR (the Mk. II carries its rendered shadow). License: GPL v3.
 """
-import io, json, os, zipfile
+import io, json, os, sys, zipfile
 from PIL import Image
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import asset_packs
 ART = os.environ.get("TS_ART_DIR")
 if not ART:
     raise SystemExit("set TS_ART_DIR to the rendered TS art directory")
-MOD = os.environ.get("TF_MOD_DIR", os.path.abspath(os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "..", "resources", "remaster_mods", "Vanilla_RA")))
-UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
 WALK_HVA_FRAMES = [0, 2, 4, 6, 8, 11, 13, 15]  # 8 stages sampled from the 17-frame HVA gait
 
 def tga_bytes(img):
@@ -135,7 +135,7 @@ for facing in range(32):
         # straight copy: a masked paste would multiply the shadow's alpha by itself
         out.paste(scaled, (ox, oy))
         mframes.append(out)
-write_zip(f"{UNITS_DIR}/TSHMEC.ZIP", "tshmec", mframes)
+write_zip(asset_packs.art_zip("TSHMEC", "UNITS"), "tshmec", mframes)
 
 # ---- TSHVR (Hover MLRS): HQ remake, body 0-31 + turret 32-63, 192 canvas ----
 # Reproduces the SIGNED-OFF geometry from the 12 px/voxel renders: hull width
@@ -176,4 +176,4 @@ if os.path.isdir(f"{ART}/hq_hvr_body"):
         out = Image.new("RGBA", (CANVAS_H, CANVAS_H), (0, 0, 0, 0))
         safe_paste(out, scaled, round(96 - scaled.width / 2), round(96 - scaled.height / 2))
         hframes.append(out)
-    write_zip(f"{UNITS_DIR}/TSHVR.ZIP", "tshvr", hframes)
+    write_zip(asset_packs.art_zip("TSHVR", "UNITS"), "tshvr", hframes)

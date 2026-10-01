@@ -7,8 +7,9 @@
                           in ts_pack_units_wave.py / ts_pack_4tnk.py).
   TSMEMPFX.ZIP (vfx)      12 frames: MEMPFX, the vehicle's pulse blast, at TS scale x4 on a
                           1152x576 canvas (classic stub 144x72), decoded against ANIM.PAL.
-  BuildIcon_TS_MobileEMP.tga, the base RA_TSMEMP sidebar entry (in the hand-written TS-tree
-  block of RABUILDABLES.XML, next to RA_TSAPC) and the ModText rows.
+  BuildIcon_TS_MobileEMP.tga, the base RA_TSMEMP sidebar entry (in TSBUILDABLES.XML, next to
+  RA_TSAPC) and the ModText rows. Art, cameo and XML go to the tree asset_packs.py routes each
+  name to (the TS-Graphics-Pack).
 
 Render (the voxel ledger in docs/launcher-render-contracts.md):
   vxl_render.py M_EMP.VXL renders_memp --frames 32 --yaw0 90 --px-per-voxel 12
@@ -28,13 +29,10 @@ from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import ts_shp
-from ts_pack_pods import ART, MOD, RAW, VFX_DIR, ICON_DIR, write_zip, patch_tileset
+import asset_packs
+from ts_pack_pods import ART, RAW, write_zip, patch_tileset
 
-UNITS_DIR = f"{MOD}/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-UNITS_XML = f"{MOD}/XML/TILESETS/RA_UNITS.XML"
-VFX_XML = f"{MOD}/XML/TILESETS/RA_VFX.XML"
-RAB = f"{MOD}/XML/OBJECTS/UNITS/RABUILDABLES.XML"
-CSV = f"{MOD}/ModText.csv"
+CSV = f"{asset_packs.MOD}/Data/ModText.csv"
 CANVAS = 384
 F_VOX = 6.4 / 12
 FX_SCALE = 4.0
@@ -88,13 +86,14 @@ def cameo():
     flat = Image.new("RGBA", icon.size, (0, 0, 0, 255))
     flat.alpha_composite(icon)
     big = flat.resize((flat.width * 8, flat.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    path = f"{ICON_DIR}/BuildIcon_TS_MobileEMP.tga"
+    path = asset_packs.cameo_tga("BuildIcon_TS_MobileEMP")
     big.save(path)
     print(f"wrote {path}")
 
 
 def sidebar_entry():
-    xml = open(RAB, encoding="utf-8").read()
+    rab = asset_packs.buildables_xml("BuildIcon_TS_MobileEMP")
+    xml = open(rab, encoding="utf-8").read()
     if 'Name="RA_TSMEMP"' in xml:
         return
     anchor = '\t<ObjectTypeClass Name="RA_TSAPC" '
@@ -107,8 +106,8 @@ def sidebar_entry():
              "\t\t\t<BuildIcon>BuildIcon_TS_MobileEMP</BuildIcon>\n"
              "\t\t</CNCEncyclopediaComponent>\n"
              "\t</ObjectTypeClass>\n")
-    open(RAB, "w", encoding="utf-8").write(xml[:end] + entry + xml[end:])
-    print("added RA_TSMEMP to RABUILDABLES.XML")
+    open(rab, "w", encoding="utf-8").write(xml[:end] + entry + xml[end:])
+    print(f"added RA_TSMEMP to {os.path.basename(rab)}")
 
 
 def text_rows():
@@ -129,11 +128,11 @@ def text_rows():
 
 def main():
     frames = vox_frames("renders_memp")
-    write_zip(f"{UNITS_DIR}/TSMEMP.ZIP", "tsmemp", frames)
-    patch_tileset(UNITS_XML, "TSMEMP", len(frames))
+    write_zip(asset_packs.art_zip("TSMEMP", "UNITS"), "tsmemp", frames)
+    patch_tileset(asset_packs.tileset_xml("TSMEMP", "UNITS"), "TSMEMP", len(frames))
     fx = blast_frames()
-    write_zip(f"{VFX_DIR}/TSMEMPFX.ZIP", "tsmempfx", fx)
-    patch_tileset(VFX_XML, "TSMEMPFX", len(fx))
+    write_zip(asset_packs.art_zip("TSMEMPFX", "VFX"), "tsmempfx", fx)
+    patch_tileset(asset_packs.tileset_xml("TSMEMPFX", "VFX"), "TSMEMPFX", len(fx))
     cameo()
     sidebar_entry()
     text_rows()

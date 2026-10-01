@@ -17,7 +17,8 @@ stub, biggest frame) is what the stubs and the AnimTypeClass entries follow.
 
 Sounds decode with ts_aud_decode.py (ffmpeg's own AUD reader errors at end of
 file), then encode MS-ADPCM WAV, 22050 Hz mono, under their own
-TS-prefixed names (the proven novel-name format).
+TS-prefixed names (the proven novel-name format). Anims, their TS_VFX.XML tile runs and
+the sounds go to the tree asset_packs.py routes each name to (the TS packs).
 
 Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/ from scripts/ts_rebuild_art.sh.
 
@@ -30,7 +31,8 @@ import hqx
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import ts_shp
-from ts_pack_pods import MOD, RAW, VFX_DIR, XML, write_zip, patch_tileset
+import asset_packs
+from ts_pack_pods import RAW, write_zip, patch_tileset
 
 
 def hq4x(im):
@@ -62,8 +64,8 @@ def pack(shp, name, pal, drop_empty=False, order=None, count=None):
     frames, (cw, ch) = frames_of(shp, pal, drop_empty)
     if order is not None:
         frames = [frames[order(k, len(frames))] for k in range(count or len(frames))]
-    write_zip(f"{VFX_DIR}/{name}.ZIP", name.lower(), frames)
-    patch_tileset(XML, name, len(frames))
+    write_zip(asset_packs.art_zip(name, "VFX"), name.lower(), frames)
+    patch_tileset(asset_packs.tileset_xml(name, "VFX"), name, len(frames))
     biggest = max(range(len(frames)), key=lambda i: sum(1 for a in frames[i].getdata(3) if a >= 128))
     print(f"SUMMARY {name} frames={len(frames)} canvas={cw}x{ch} stub={cw // 8}x{ch // 8} biggest={biggest}")
 
@@ -96,7 +98,7 @@ def main():
 
     for aud in ("CHAINGN1", "GLNCH4", "SAMSHOT1", "EXPNEW13", "EXPNEW14"):
         pcm = f"{RAW}/{aud}.pcm.wav"
-        out_wav = f"{MOD}/AUDIO/TS{aud}.WAV"
+        out_wav = asset_packs.sound_wav(f"TS{aud}")
         subprocess.run([sys.executable, f"{HERE}/ts_aud_decode.py", f"{RAW}/{aud}.AUD", pcm],
                        check=True, stdout=subprocess.DEVNULL)
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", pcm,

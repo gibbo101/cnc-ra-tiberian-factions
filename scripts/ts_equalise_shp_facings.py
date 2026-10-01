@@ -13,8 +13,8 @@ import io, os, sys, zipfile
 import numpy as np
 from PIL import Image
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-UNITS = f"{ROOT}/resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
+import asset_packs
+
 LAYOUT = {
     "TSSMEC": [(0, 12, 8), (96, 4, 8)],          # walk, firing
     "TSTITN": [(0, 12, 8), (96, 1, 32)],         # walk, turret facings
@@ -35,7 +35,7 @@ def body_lum(a):
 
 def main():
     for name in sys.argv[1:]:
-        path = f"{UNITS}/{name}.ZIP"
+        path = asset_packs.art_zip(name, "UNITS")
         z = zipfile.ZipFile(path)
         base = name.lower()
         frames = {}

@@ -8,17 +8,18 @@ Usage: facing_focus.py W          (N NW W SW S SE E NE)
 import io, json, os, sys, zipfile
 from PIL import Image, ImageDraw
 
+import asset_packs
+
 REF = "/home/gibbo101/Pictures/Screenshots/Screenshot from 2026-07-20 21-59-32.png"
 RING = {"N": (487, 105), "NW": (285, 195), "W": (170, 350), "SW": (275, 480),
         "S": (465, 590), "SE": (665, 490), "E": (790, 360), "NE": (675, 190)}
 ORDER = ["N", "NW", "W", "SW", "S", "SE", "E", "NE"]
-MOD = "/home/gibbo101/Documents/development/cnc-remastered-mods/cnc-ra-tiberian-factions/resources/remaster_mods/Vanilla_RA"
 OUT = os.path.expanduser("~/Desktop/tf-previews")
 
 facing = (sys.argv[1] if len(sys.argv) > 1 else "W").upper()
 i = ORDER.index(facing)
 
-z = zipfile.ZipFile(f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS/TSTITN.ZIP")
+z = zipfile.ZipFile(asset_packs.art_zip("TSTITN", "UNITS"))
 def fr(s):
     meta = json.loads(z.read(f"tstitn-{s:04d}.meta"))
     tga = Image.open(io.BytesIO(z.read(f"tstitn-{s:04d}.tga"))).convert("RGBA")

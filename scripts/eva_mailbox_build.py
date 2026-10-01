@@ -36,14 +36,14 @@ import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import asset_packs  # noqa: E402
 import msadpcm  # noqa: E402
 
 ROOT = Path(__file__).resolve().parent.parent
 WORKSPACE = ROOT.parent
-AUDIO = ROOT / "resources/remaster_mods/Vanilla_RA/Data/AUDIO/EN-US"
-# The RA and TD recordings come from a frozen snapshot, never from AUDIO: the files in
-# AUDIO are this script's own output, so reading them back would add one more ADPCM
-# generation on every run. See scripts/eva_work/README.md.
+# The RA and TD recordings come from a frozen snapshot, never from the mod's
+# Data/AUDIO/EN-US: the files there are this script's own output, so reading them back
+# would add one more ADPCM generation on every run. See scripts/eva_work/README.md.
 SRC = ROOT / "scripts/eva_work/src"
 HEADER = ROOT / "redalert/tf_eva_mailbox.h"
 TS_EXTRACT = WORKSPACE / "tools/ts_extract.py"
@@ -265,7 +265,7 @@ def main():
             print("--check: nothing written")
             return
         for f in tmp.glob("TF_MBX_*.WAV"):
-            (AUDIO / f.name).write_bytes(f.read_bytes())
+            Path(asset_packs.sound_wav(f.name, localized=True)).write_bytes(f.read_bytes())
         # The shipped runtime seeds ARE the RA payloads, byte for byte. ClientG caches
         # whatever sits at the launcher's sample name when it starts, so on a fresh install
         # the cached blob is the seed -- and the cache overwrite can only find it if the
@@ -273,9 +273,10 @@ def main():
         # session of a new install silently keeps the RA voice.
         for tag, chan, dst, _ in rows:
             src = tmp / payload_name("RA", tag, chan)
-            (AUDIO / dst).write_bytes(src.read_bytes())
+            seed = Path(asset_packs.sound_wav(dst, localized=True))
+            seed.write_bytes(src.read_bytes())
         emit_header(rows, HEADER)
-        print("payloads + %d runtime seeds written to %s" % (len(rows), AUDIO))
+        print("payloads + %d runtime seeds written to %s" % (len(rows), seed.parent))
 
 
 if __name__ == "__main__":

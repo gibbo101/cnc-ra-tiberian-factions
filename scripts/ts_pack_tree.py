@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Package TS GDI tree art into the mod tree (docs/ts-gdi-tree-plan.md §Stealth Recipe).
+"""Package TS GDI tree art into its asset pack (docs/ts-gdi-tree-plan.md §Stealth Recipe).
 
 Per-building compositor: healthy run = base + active anims cycling (N = LCM of
 anim lengths; TS anim SHPs carry N real frames + N EMPTY frames — damaged
@@ -10,20 +10,20 @@ only (empties render as the launcher's purple placeholder), resampled to the
 donor's construction-anim count.
 
 Inputs: $TS_ART_DIR holding shp_* dirs from ts_shp.py + renders_* from
-vxl_render.py.
+vxl_render.py. Outputs: art ZIPs, tileset entries, cameos and plain sidebar entries
+go where scripts/asset_packs.py routes each name; the _0 sidebar variants and the
+ModText rows go in the mod's own tree.
 """
 import io, json, math, os, sys, zipfile
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 import hqx
+import asset_packs
 
 ART = os.environ.get("TS_ART_DIR")
 if not ART:
     raise SystemExit("set TS_ART_DIR")
 MOD = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
                                    "resources/remaster_mods/Vanilla_RA"))
-UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-STRUCT_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/STRUCTURES"
-ICON_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB"
 
 
 SCRIPTS = os.path.dirname(os.path.abspath(__file__))
@@ -312,6 +312,7 @@ def stamp_emblem(img, path, frac, squash, dx=0, dy=0, ref=None):
 
 
 def write_zip(path, name, frames):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
         for i, img in enumerate(frames):
             base = f"{name}-{i:04d}"
@@ -355,7 +356,8 @@ GAME_DATA = os.environ.get("CNC_REMASTER_DATA",
 def ensure_tileset(xml_name):
     """Path to the mod's copy of a terrain tileset, extracting the vanilla one
     from CONFIG.MEG the first time. A mod tileset REPLACES the base file, so a
-    theatre we want to add one tile to has to ship the whole thing."""
+    theatre we want to add one tile to has to ship the whole thing; the build
+    merges a pack's terrain tiles into this copy."""
     import subprocess
     path = f"{MOD}/Data/XML/TILESETS/{xml_name}"
     if not os.path.exists(path):
@@ -603,12 +605,12 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         # draws over a vehicle standing on it. Concrete looks the same in every
         # theatre, so all three get the same art.
         for theatre, xml_name in TERRAIN_THEATRES:
-            tex_dir = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/TERRAIN/{theatre}"
-            os.makedirs(tex_dir, exist_ok=True)
-            write_zip(f"{tex_dir}/{ini}BB.ZIP", f"{ini.lower()}bb", tiles)
-            patch_tileset(ensure_tileset(xml_name), f"{ini}BB", len(tiles))
+            ensure_tileset(xml_name)
+            kind = f"TERRAIN_{theatre}"
+            write_zip(asset_packs.art_zip(f"{ini}BB", kind), f"{ini.lower()}bb", tiles)
+            patch_tileset(asset_packs.tileset_xml(f"{ini}BB", kind), f"{ini}BB", len(tiles))
         # A same-named structure tile would shadow the terrain one.
-        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}BB", 0)
+        patch_tileset(asset_packs.tileset_xml(f"{ini}BB", "STRUCTURES"), f"{ini}BB", 0)
 
     # THE BAY FRONT PIECE. Tiberian Sun resolves occlusion with a per-pixel
     # depth buffer (ART.INI NormalZAdjust / ZShapePointMove), so GAWEAP is a
@@ -892,10 +894,10 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
                 return out
             doorway_under = [doorway_layer(r) for r in (0, 1)]
         full = [[cut(f, True) for f in run] for run in full]
-        write_zip(f"{STRUCT_DIR}/{ini}NF.ZIP", f"{ini.lower()}nf", front[0] + front[1])
-        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}NF", len(front[0]) + len(front[1]))
-        write_zip(f"{STRUCT_DIR}/{ini}NU.ZIP", f"{ini.lower()}nu", front_open[0] + front_open[1])
-        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}NU", len(front_open[0]) + len(front_open[1]))
+        write_zip(asset_packs.art_zip(f"{ini}NF", "STRUCTURES"), f"{ini.lower()}nf", front[0] + front[1])
+        patch_tileset(asset_packs.tileset_xml(f"{ini}NF", "STRUCTURES"), f"{ini}NF", len(front[0]) + len(front[1]))
+        write_zip(asset_packs.art_zip(f"{ini}NU", "STRUCTURES"), f"{ini.lower()}nu", front_open[0] + front_open[1])
+        patch_tileset(asset_packs.tileset_xml(f"{ini}NU", "STRUCTURES"), f"{ini}NU", len(front_open[0]) + len(front_open[1]))
     # Sub-object layers on the building's own affine: TS anims that are not
     # part of the idle cycle (one-shots, event-driven). Each becomes
     # <INI><SUFFIX>.ZIP with the frames in source order, so the DLL indexes
@@ -914,8 +916,8 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         layer = [scaled(centre_on(load_clipped(i), base_h.size)) for i in indices]
         if suffix == "UD" and WF_ART.get(ini, {}).get("doorway_before_scale"):
             layer[0:2] = doorway_under
-        write_zip(f"{STRUCT_DIR}/{ini}{suffix}.ZIP", f"{ini.lower()}{suffix.lower()}", layer)
-        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}{suffix}", len(layer))
+        write_zip(asset_packs.art_zip(f"{ini}{suffix}", "STRUCTURES"), f"{ini.lower()}{suffix.lower()}", layer)
+        patch_tileset(asset_packs.tileset_xml(f"{ini}{suffix}", "STRUCTURES"), f"{ini}{suffix}", len(layer))
     front_canvas = None
     if front_masks is not None:
         white = Image.new("RGB", base_h.size, (255, 255, 255))
@@ -985,7 +987,7 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
         healthy_ref = frames[0]
         frames = [stamp_emblem(f, *emblem, ref=(healthy_ref if i >= n_healthy else None))
                   for i, f in enumerate(frames)]
-    write_zip(f"{STRUCT_DIR}/{ini}.ZIP", ini.lower(), frames)
+    write_zip(asset_packs.art_zip(ini, "STRUCTURES"), ini.lower(), frames)
 
     if door_spec is not None:
         # Door overlay, the WEAP2 scheme: TS draws a roll-up shutter
@@ -1060,18 +1062,18 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             ImageDraw.Draw(band).rectangle([0, band_top, canvas_w, canvas_h], fill=255)
             low_frames = [split_alpha(f, band, True) for f in door_frames]
             door_frames = [split_alpha(f, band, False) for f in door_frames]
-            write_zip(f"{STRUCT_DIR}/{ini}2L.ZIP", f"{ini.lower()}2l", low_frames)
-            patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}2L", len(low_frames))
-        write_zip(f"{STRUCT_DIR}/{ini}2.ZIP", f"{ini.lower()}2", door_frames)
-        patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}2", len(door_frames))
+            write_zip(asset_packs.art_zip(f"{ini}2L", "STRUCTURES"), f"{ini.lower()}2l", low_frames)
+            patch_tileset(asset_packs.tileset_xml(f"{ini}2L", "STRUCTURES"), f"{ini}2L", len(low_frames))
+        write_zip(asset_packs.art_zip(f"{ini}2", "STRUCTURES"), f"{ini.lower()}2", door_frames)
+        patch_tileset(asset_packs.tileset_xml(f"{ini}2", "STRUCTURES"), f"{ini}2", len(door_frames))
 
         if front_canvas is not None:
             # The lamp layer (see the lamp_runs cut above): the full face per
             # phase, healthy run then damaged, indexed by the SAME shape number
             # as the body draw (Fetch_Stage + damaged offset in Shape_Number).
             lamp_frames = lamp_runs[0] + lamp_runs[1]
-            write_zip(f"{STRUCT_DIR}/{ini}LT.ZIP", f"{ini.lower()}lt", lamp_frames)
-            patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}LT", len(lamp_frames))
+            write_zip(asset_packs.art_zip(f"{ini}LT", "STRUCTURES"), f"{ini.lower()}lt", lamp_frames)
+            patch_tileset(asset_packs.tileset_xml(f"{ini}LT", "STRUCTURES"), f"{ini}LT", len(lamp_frames))
 
     # TS buildups pour the concrete pad first and keep it throughout; with
     # the pad dropped from the finished art (grid-sized buildings + RA slab),
@@ -1176,51 +1178,52 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
             erase = ImageChops.subtract(erase, keep)
         for f in mk:
             f.putalpha(ImageChops.subtract(f.split()[3], erase))
-    write_zip(f"{STRUCT_DIR}/{ini}MAKE.ZIP", f"{ini.lower()}make", mk)
+    write_zip(asset_packs.art_zip(f"{ini}MAKE", "STRUCTURES"), f"{ini.lower()}make", mk)
 
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", ini,
+    patch_tileset(asset_packs.tileset_xml(ini, "STRUCTURES"), ini,
                   2 * n * (1 + len(powerup_blocks if powerup_blocks else (powerup_layers or []))))
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", f"{ini}MAKE", mk_count)
+    patch_tileset(asset_packs.tileset_xml(f"{ini}MAKE", "STRUCTURES"), f"{ini}MAKE", mk_count)
     print(f"{ini}: N={n} (idle anim count for the _anims[] entry)")
     return n
 
 
 def emit_sidebar_data(ini, display, desc, icon_dir):
-    """BuildIcon TGA from the TS cameo + RABUILDABLES (name + pristine _0) +
-    ModText rows. TS-tree entries are never faction-badged, so only _0 exists."""
+    """BuildIcon TGA from the TS cameo + sidebar entries (the plain one in its
+    pack's buildables XML, the pristine _0 in RABUILDABLES) + ModText rows.
+    TS-tree entries are never faction-badged, so only _0 exists."""
     import re
     icon_name = f"BuildIcon_TS_{ini[2:].title()}"
+    icon_path = asset_packs.cameo_tga(icon_name)
+    os.makedirs(os.path.dirname(icon_path), exist_ok=True)
     # Hand-made art in resources/custom-cameos is canonical for its icon name;
     # only generate from the TS cameo when no override exists.
     custom = os.path.abspath(f"{MOD}/../../custom-cameos/{icon_name}.png")
     if os.path.exists(custom):
-        Image.open(custom).convert("RGBA").resize((341, 256), Image.LANCZOS).save(
-            f"{ICON_DIR}/{icon_name}.tga")
+        Image.open(custom).convert("RGBA").resize((341, 256), Image.LANCZOS).save(icon_path)
     else:
         icon = Image.open(f"{ART}/{icon_dir}/frame-0000.png")
         big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-        big.save(f"{ICON_DIR}/{icon_name}.tga")
+        big.save(icon_path)
 
-    RAB = f"{MOD}/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
-    xml = open(RAB, encoding="utf-8").read()
     text_id = f"TEXT_STRUCTURE_{ini}"
-    added = ""
     for key in (f"RA_{ini}", f"RA_{ini}_0"):
-        if f'"{key}"' not in xml:
-            added += ('\t<ObjectTypeClass Name="%s" Classification="CNCBuildableObject" CanInstantiate="False">\n'
-                      "\t\t<CNCEncyclopediaComponent>\n"
-                      "\t\t\t<ObjectNameTextID>%s</ObjectNameTextID>\n"
-                      "\t\t\t<ObjectDescriptionTextID>%s_DESC</ObjectDescriptionTextID>\n"
-                      "\t\t\t<BuildIcon>%s</BuildIcon>\n"
-                      "\t\t</CNCEncyclopediaComponent>\n"
-                      "\t</ObjectTypeClass>\n" % (key, text_id, text_id, icon_name))
-    if added:
+        entry = ('\t<ObjectTypeClass Name="%s" Classification="CNCBuildableObject" CanInstantiate="False">\n'
+                 "\t\t<CNCEncyclopediaComponent>\n"
+                 "\t\t\t<ObjectNameTextID>%s</ObjectNameTextID>\n"
+                 "\t\t\t<ObjectDescriptionTextID>%s_DESC</ObjectDescriptionTextID>\n"
+                 "\t\t\t<BuildIcon>%s</BuildIcon>\n"
+                 "\t\t</CNCEncyclopediaComponent>\n"
+                 "\t</ObjectTypeClass>\n" % (key, text_id, text_id, icon_name))
+        rab = asset_packs.buildables_xml_of(asset_packs.entry_pack("ObjectTypeList", entry))
+        xml = open(rab, encoding="utf-8").read()
+        if f'"{key}"' in xml:
+            continue
         # Above cameo_variants_build.py's managed block: that tool rewrites everything between
         # its markers from the entries outside them, so an entry appended inside is wiped.
         marker = "\t<!-- BEGIN generated cameo mask variants"
         idx = xml.index(marker) if marker in xml else xml.index("</ObjectTypeList>")
-        xml = xml[:idx] + added + xml[idx:]
-        open(RAB, "w", encoding="utf-8").write(xml)
+        xml = xml[:idx] + entry + xml[idx:]
+        open(rab, "w", encoding="utf-8").write(xml)
 
     CSV = f"{MOD}/Data/ModText.csv"
     raw = open(CSV, "rb").read()
@@ -1675,8 +1678,8 @@ if os.path.isdir(f"{ART}/shp_gtpowr_b"):
     turb = hq_scale(turb.crop(turb.getbbox()), factor)
     canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
     canvas.paste(turb, ((128 - turb.width) // 2, (128 - turb.height) // 2), turb)
-    write_zip(f"{STRUCT_DIR}/TSTURB.ZIP", "tsturb", [canvas, canvas])
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSTURB", 2)
+    write_zip(asset_packs.art_zip("TSTURB", "STRUCTURES"), "tsturb", [canvas, canvas])
+    patch_tileset(asset_packs.tileset_xml("TSTURB", "STRUCTURES"), "TSTURB", 2)
     STUB_DIMS["TSTURB"] = [24, 24]
     emit_sidebar_data("TSTURB", "Power Turbine",
                       "Installs into a Tiberian Power Plant, adding 50 power. Two per plant.",
@@ -1759,8 +1762,8 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
     dish = hq_scale(dish.crop(dish.getbbox()), plug_factor)
     canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
     canvas.paste(dish, ((128 - dish.width) // 2, (128 - dish.height) // 2), dish)
-    write_zip(f"{STRUCT_DIR}/TSPION.ZIP", "tspion", [canvas, canvas])
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPION", 2)
+    write_zip(asset_packs.art_zip("TSPION", "STRUCTURES"), "tspion", [canvas, canvas])
+    patch_tileset(asset_packs.tileset_xml("TSPION", "STRUCTURES"), "TSPION", 2)
     STUB_DIMS["TSPION"] = [24, 24]
     # RAD3ICON is the uplink's real TS cameo (ART.INI [GAPLUG_F] Cameo=);
     # IONCICON is the satellite — the SUPERWEAPON's targeting icon.
@@ -1778,8 +1781,8 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
     dome = hq_scale(dome.crop(dome.getbbox()), plug_factor)
     canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
     canvas.paste(dome, ((128 - dome.width) // 2, (128 - dome.height) // 2), dome)
-    write_zip(f"{STRUCT_DIR}/TSPODS.ZIP", "tspods", [canvas, canvas])
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSPODS", 2)
+    write_zip(asset_packs.art_zip("TSPODS", "STRUCTURES"), "tspods", [canvas, canvas])
+    patch_tileset(asset_packs.tileset_xml("TSPODS", "STRUCTURES"), "TSPODS", 2)
     STUB_DIMS["TSPODS"] = [24, 24]
     emit_sidebar_data("TSPODS", "Drop Pod Node",
                       "Installs into an Upgrade Center, granting Drop Pod reinforcements.",
@@ -1793,15 +1796,15 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
     node = hq_scale(node.crop(node.getbbox()), plug_factor)
     canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
     canvas.paste(node, ((128 - node.width) // 2, (128 - node.height) // 2), node)
-    write_zip(f"{STRUCT_DIR}/TSSEEK.ZIP", "tsseek", [canvas, canvas])
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSSEEK", 2)
+    write_zip(asset_packs.art_zip("TSSEEK", "STRUCTURES"), "tsseek", [canvas, canvas])
+    patch_tileset(asset_packs.tileset_xml("TSSEEK", "STRUCTURES"), "TSSEEK", 2)
     STUB_DIMS["TSSEEK"] = [24, 24]
     emit_sidebar_data("TSSEEK", "Seeker Control",
                       "Installs into an Upgrade Center, granting the Hunter Seeker droid.",
                       "shp_rad2icon")
 
 # ---- TSMCV (MCV.VXL render, 32 facings, canvas 384 = classic 48 x 8) ----
-if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(f"{UNITS_DIR}/TSMCV.ZIP"):
+if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(asset_packs.art_zip("TSMCV", "UNITS")):
     def scale_center(img, factor, canvas):
         nw, nh = round(img.width * factor), round(img.height * factor)
         scaled = img.resize((nw, nh), Image.LANCZOS)
@@ -1813,15 +1816,16 @@ if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(f"{UNITS_DIR}/TS
     factor = 280.0 / (b[2] - b[0])
     frames = [scale_center(Image.open(f"{ART}/renders_tsmcv/frame-{i:04d}.png"), factor, 384)
               for i in range(32)]
-    write_zip(f"{UNITS_DIR}/TSMCV.ZIP", "tsmcv", frames)
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSMCV", 32)
+    write_zip(asset_packs.art_zip("TSMCV", "UNITS"), "tsmcv", frames)
+    patch_tileset(asset_packs.tileset_xml("TSMCV", "UNITS"), "TSMCV", 32)
 
 # ---- BuildIcon for the (future-buildable) TSMCV ----
-if os.path.isdir(f"{ART}/shp_mcvicon") and not os.path.exists(f"{ICON_DIR}/BuildIcon_TS_MCV.tga"):
+MCV_ICON = asset_packs.cameo_tga("BuildIcon_TS_MCV")
+if os.path.isdir(f"{ART}/shp_mcvicon") and not os.path.exists(MCV_ICON):
     icon = Image.open(f"{ART}/shp_mcvicon/frame-0000.png")
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(f"{ICON_DIR}/BuildIcon_TS_MCV.tga")
-    print(f"wrote {ICON_DIR}/BuildIcon_TS_MCV.tga")
+    big.save(MCV_ICON)
+    print(f"wrote {MCV_ICON}")
 
 with open(STUB_MANIFEST, "w") as f:
     json.dump(STUB_DIMS, f, indent=1, sort_keys=True)

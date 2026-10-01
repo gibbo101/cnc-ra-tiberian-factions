@@ -11,12 +11,13 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path("scripts").resolve()))
+import asset_packs
 import cameo_badge_build as cb
 from PIL import Image
 
 region = cb.load_regions()
 atlas = Image.open(cb.ATLAS)
-XML = Path("resources/remaster_mods/Vanilla_RA/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML")
+XML = Path(asset_packs.buildables_xml_of(None))
 
 # rest-of-key -> (pristine region, [badge masks], name text id, desc text id)
 SPECIALS = {
@@ -54,7 +55,7 @@ def bake(pristine, mask, out_name):
                 em = Image.open(cb.EMBLEMS / fn).convert("RGBA").resize((size, size), Image.LANCZOS)
                 cameo.alpha_composite(em, (cb.EMBLEM_ORIGIN[0] + slot * spacing, cb.EMBLEM_ORIGIN[1]))
                 slot += 1
-    cameo.save(cb.OUT / f"{out_name}.tga")
+    cameo.save(asset_packs.cameo_tga(out_name))
 
 
 entries = []

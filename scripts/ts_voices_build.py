@@ -15,6 +15,10 @@ does in Tiberian Sun.
 The DLL sends the bare event name (dllinterface.cpp, On_Sound_Effect) and the
 launcher prefixes RAC_ or RAR_. One recording serves both, as with the TD set.
 
+The WAVs and the generated event block live in the TS-Voices-eng pack
+(Data/AUDIO/EN-US and SFXEVENTSLOCALIZED_TS.XML), routed by sample name through
+scripts/asset_packs.py; the build merges the pack into the mod.
+
 Idempotent: re-running rewrites the generated XML block and the WAVs in place.
 
 usage: ts_voices_build.py [--ts-dir <Tiberian Sun install>]
@@ -27,12 +31,12 @@ import sys
 import tempfile
 from pathlib import Path
 
+import asset_packs
+
 ROOT = Path(__file__).resolve().parent.parent
 WORKSPACE = ROOT.parent
 TS_EXTRACT = WORKSPACE / "tools/ts_extract.py"
 AUD_DECODE = ROOT / "scripts/ts_aud_decode.py"
-AUDIO_OUT = ROOT / "resources/remaster_mods/Vanilla_RA/Data/AUDIO/EN-US"
-XML = ROOT / "resources/remaster_mods/Vanilla_RA/Data/XML/AUDIO/SFXEVENTSLOCALIZED.XML"
 DEFAULT_TS = Path.home() / ".steam/steam/steamapps/common/Command & Conquer Tiberian Sun"
 
 BEGIN = "   <!-- BEGIN generated TS GDI unit-voice events (scripts/ts_voices_build.py) -->"
@@ -105,7 +109,8 @@ def encode(tmp, base, ext, aud):
     pcm = tmp / ("%s%s.pcm.wav" % (base, ext))
     subprocess.run([sys.executable, str(AUD_DECODE), str(tmp / ("%s.AUD" % aud)), str(pcm)],
                    check=True, capture_output=True)
-    dst = AUDIO_OUT / ("%s.WAV" % sample_name(base, ext))
+    dst = Path(asset_packs.sound_wav("%s.WAV" % sample_name(base, ext), localized=True))
+    dst.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(pcm),
                     "-ac", "2", "-ar", str(RATE), "-c:a", "adpcm_ms", str(dst)], check=True)
     return dst
@@ -125,8 +130,14 @@ def event(name, sample):
         "   </LocalizedSFXEvent>\n" % (name, sample))
 
 
+def events_xml():
+    """The localized sound-event XML that holds the voice block, routed by its samples."""
+    return Path(asset_packs.sfx_xml(sample_name(min(VOICES), EXTS[0]), localized=True))
+
+
 def write_xml():
-    text = XML.read_text(encoding="utf-8", errors="surrogateescape")
+    xml = events_xml()
+    text = xml.read_text(encoding="utf-8", errors="surrogateescape")
     body = [BEGIN + "\n"]
     count = 0
     for base in sorted(VOICES):
@@ -151,7 +162,7 @@ def write_xml():
     else:
         close = text.rfind("</LocalizedSFXEvents>")
         text = text[:close] + "\n" + block + "\n" + text[close:]
-    XML.write_text(text, encoding="utf-8", errors="surrogateescape")
+    xml.write_text(text, encoding="utf-8", errors="surrogateescape")
     return count
 
 
@@ -160,7 +171,6 @@ def main():
     ap.add_argument("--ts-dir", default=str(DEFAULT_TS))
     args = ap.parse_args()
 
-    AUDIO_OUT.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
         print("extracted %d voice lines from SOUNDS.MIX" % extract(args.ts_dir, tmp))
@@ -172,7 +182,7 @@ def main():
         for aud in SINGLES:
             dst = encode(tmp, single_base(aud), "", aud)
             print("  %-10s      %s -> %s" % (single_base(aud), aud, dst.name))
-    print("registered %d events in %s" % (write_xml(), XML.name))
+    print("registered %d events in %s" % (write_xml(), events_xml().name))
 
 
 if __name__ == "__main__":

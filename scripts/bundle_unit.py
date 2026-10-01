@@ -10,6 +10,8 @@ For a TD entity NAME (e.g. E1) and our IniName (e.g. TDE1):
   2. Clone the existing <NAME> tileset block in RA_UNITS.XML into a <ININAME>
      block (verbatim structure, frame paths re-pointed to <ininame>\\...), so the
      format is guaranteed identical. Idempotent.
+  The ZIP and the cloned block land in the tree asset_packs assigns <ININAME>:
+  the mod's own (RA_UNITS.XML) or an asset pack's (<PREFIX>_UNITS.XML).
   3. Wire the sidebar cameo via bundle_assets.patch_rabuildables_xml — the SAME
      path the buildings use. Per docs/adding-td-buildings.md the <BuildIcon> just
      references a vanilla TD BuildIcon name already in the launcher PAK
@@ -33,15 +35,12 @@ from bundle_assets import (  # noqa: E402  reuse the proven, documented helpers
     count_frames,
     source_meg_path,
     patch_rabuildables_xml,
-    MOD_ROOT,
 )
-
-UNITS_DIR    = MOD_ROOT / "Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-RA_UNITS_XML = MOD_ROOT / "Data/XML/TILESETS/RA_UNITS.XML"
+import asset_packs  # noqa: E402
 
 
 def repack_zip(td_asset, ininame, meg_path):
-    dest = UNITS_DIR / f"{ininame}.ZIP"
+    dest = Path(asset_packs.art_zip(ininame, "UNITS"))
     tmp = dest.with_suffix(".extracted.zip")
     if not extract_named_zip(meg_path, f"{td_asset}.ZIP", tmp):
         raise RuntimeError(f"{td_asset}.ZIP not found in {meg_path}")
@@ -54,7 +53,8 @@ def repack_zip(td_asset, ininame, meg_path):
 
 
 def clone_tileset_block(td_asset, ininame, donor=None, frame_count=None):
-    """Clone the contiguous <donor> Tile run in RA_UNITS.XML into <ininame>.
+    """Clone the contiguous <donor> Tile run into <ininame>, each read from and
+    written to the UNITS tileset XML of its own tree.
 
     `donor` defaults to `td_asset` (the usual case: RA already ships a tileset
     block under the TD asset's name, e.g. E1/E4). When the TD unit has NO RA
@@ -71,7 +71,9 @@ def clone_tileset_block(td_asset, ininame, donor=None, frame_count=None):
     0..N-1 and each re-points to <ininame>-NNNN, so frames==tiles always.
     """
     donor = donor or td_asset
-    content = RA_UNITS_XML.read_text(encoding="utf-8")
+    xml_path = Path(asset_packs.tileset_xml(ininame, "UNITS"))
+    donor_xml = Path(asset_packs.tileset_xml(donor, "UNITS"))
+    content = xml_path.read_text(encoding="utf-8")
 
     # Idempotent: strip any prior <ininame> tiles.
     content = re.sub(
@@ -80,9 +82,10 @@ def clone_tileset_block(td_asset, ininame, donor=None, frame_count=None):
 
     tiles = re.findall(
         rf"[ \t]*<Tile>\s*<Key>\s*<Name>{donor}</Name>.*?</Tile>\n",
-        content, flags=re.DOTALL)
+        content if donor_xml == xml_path else donor_xml.read_text(encoding="utf-8"),
+        flags=re.DOTALL)
     if not tiles:
-        raise RuntimeError(f"No <Name>{donor}</Name> tiles found in RA_UNITS.XML")
+        raise RuntimeError(f"No <Name>{donor}</Name> tiles found in {donor_xml.name}")
 
     # When the donor's frame count doesn't match the TD asset, slice the
     # Shape-ordered run to the exact ZIP frame count (donor must have enough).
@@ -102,9 +105,9 @@ def clone_tileset_block(td_asset, ininame, donor=None, frame_count=None):
     # Insert before the (single) </Tiles> close, preserving its indentation.
     m = re.search(r"\n[ \t]*</Tiles>", content)
     if not m:
-        raise RuntimeError("No </Tiles> close tag in RA_UNITS.XML")
+        raise RuntimeError(f"No </Tiles> close tag in {xml_path.name}")
     content = content[:m.start()] + "\n" + block.rstrip("\n") + content[m.start():]
-    RA_UNITS_XML.write_text(content, encoding="utf-8", newline="\n")
+    xml_path.write_text(content, encoding="utf-8", newline="\n")
     return len(tiles)
 
 
@@ -116,7 +119,7 @@ def main():
     ap.add_argument("--text-name", required=True, help="ObjectNameTextID")
     ap.add_argument("--text-desc", required=True, help="ObjectDescriptionTextID")
     ap.add_argument("--tileset-donor", default=None,
-                    help="RA_UNITS.XML block to clone when the TD asset has no RA "
+                    help="UNITS tileset block to clone when the TD asset has no RA "
                          "equivalent (e.g. E4 for E5 chem warrior). Defaults to td_asset.")
     ap.add_argument("--source", choices=["td", "ra"], default="td",
                     help="Which vanilla MEG the asset ZIP comes from: td = "
@@ -133,7 +136,7 @@ def main():
     patch_rabuildables_xml(args.ininame, args.text_name, args.text_desc, args.build_icon)
 
     print(f"  ZIP:          {zip_dest}  ({frames} frames)")
-    print(f"  RA_UNITS.XML: {tiles} <{args.ininame}> tiles")
+    print(f"  {Path(asset_packs.tileset_xml(args.ininame, 'UNITS')).name}: {tiles} <{args.ininame}> tiles")
     print(f"  RABUILDABLES: RA_{args.ininame}  (cameo {args.build_icon})")
     if frames != tiles:
         print(f"  WARNING: frame count ({frames}) != tile count ({tiles})")

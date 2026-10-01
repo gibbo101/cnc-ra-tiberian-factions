@@ -15,12 +15,14 @@ import zipfile
 
 from PIL import Image
 
+import asset_packs
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 ART = os.environ.get("TS_ART_DIR")
 if not ART:
     raise SystemExit("set TS_ART_DIR")
-MOD = os.environ.get("TF_MOD_DIR", os.path.normpath(os.path.join(HERE, "..", "resources/remaster_mods/Vanilla_RA")))
-UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
+# TF_MOD_DIR names another checkout's resources/remaster_mods/Vanilla_RA: its repo's pack is used
+MOD = os.environ.get("TF_MOD_DIR")
 SHADOW_RGB = (170, 0, 170)   # ts_shp.py's decode of the TS shadow index
 SHADOW_ALPHA = 128           # the Juggernaut's, the house convention for TS-own shadows
 OLD_ALPHA = 191              # the packers' drop_shadow plateau
@@ -88,8 +90,16 @@ def write_zip(path, name, frames):
     print(f"wrote {path} ({len(frames)} frames)")
 
 
+def unit_zip(name):
+    path = asset_packs.art_zip(name, "UNITS")
+    if MOD:
+        repo = os.path.normpath(os.path.join(MOD, "..", "..", ".."))
+        path = os.path.join(repo, os.path.relpath(path, asset_packs.REPO))
+    return path
+
+
 def load_zip(name):
-    z = zipfile.ZipFile(f"{UNITS_DIR}/{name}.ZIP")
+    z = zipfile.ZipFile(unit_zip(name))
     names = sorted(n[:-4] for n in z.namelist() if n.endswith(".tga"))
     frames = []
     for n in names:
@@ -114,7 +124,7 @@ def titan():
             out.append(comp)
         else:
             out.append(body)
-    write_zip(f"{UNITS_DIR}/TSTITN.ZIP", "tstitn", out)
+    write_zip(unit_zip("TSTITN"), "tstitn", out)
 
 
 def wolverine():
@@ -141,7 +151,7 @@ def wolverine():
         comp = shadow_layer(shp("smech", 136 + src), canvas, ox, oy)
         comp.alpha_composite(body)
         out.append(comp)
-    write_zip(f"{UNITS_DIR}/TSSMEC.ZIP", "tssmec", out)
+    write_zip(unit_zip("TSSMEC"), "tssmec", out)
 
 
 if __name__ == "__main__":

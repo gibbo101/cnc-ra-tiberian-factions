@@ -9,8 +9,8 @@ Usage: preview_to_desktop.py [TSTITN] [TSHMEC] [TSHVR]   (default: all)
 import io, json, os, sys, zipfile
 from PIL import Image, ImageDraw
 
-MOD = "/home/gibbo101/Documents/development/cnc-remastered-mods/cnc-ra-tiberian-factions/resources/remaster_mods/Vanilla_RA"
-UNITS = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
+import asset_packs
+
 OUT = os.path.expanduser("~/Desktop/tf-previews")
 LABELS = ["N", "NW", "W", "SW", "S", "SE", "E", "NE"]
 
@@ -32,7 +32,7 @@ def frame(z, pre, s):
 
 def sheet_for(name):
     zn, pre, body, turret = SPECS[name]
-    z = zipfile.ZipFile(f"{UNITS}/{zn}")
+    z = zipfile.ZipFile(os.path.join(asset_packs.art_dir(name, "UNITS"), zn))
     cell = 300
     sheet = Image.new("RGB", (8 * cell, cell + 30), (120, 116, 100))
     dr = ImageDraw.Draw(sheet)

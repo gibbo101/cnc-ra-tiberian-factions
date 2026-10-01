@@ -1,0 +1,9 @@
+{
+    "name": "TS-HD-Graphics-Pack",
+    "description": "Tiberian Sun walls, gates and component towers, rebuilt as HD art, for Red Alert Remastered mods.",
+    "author": "gibbo101",
+    "load_order": 2,
+    "version_high": 1,
+    "version_low": 0,
+    "game_type": "RA"
+}

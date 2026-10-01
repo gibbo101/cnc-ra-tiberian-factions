@@ -12,6 +12,9 @@ $TS_RAW_DIR):
   + the TS-tree badged BuildIcon_SG_TSHUNT (tsgdi emblem, cameo_badge_build layout).
 - HUNTER2.AUD (SOUNDS.MIX): the SuicideBomb report -> TSHUNTR2.WAV, MS-ADPCM,
   under its own name.
+Each file goes to the tree asset_packs.py routes its name to: the droid art and TS_UNITS.XML
+tiles to the TS-Graphics-Pack, the sound to the TS-SFX-Pack, the SW_/SG_ superweapon cameos
+to the mod's own tree.
 """
 import io, json, os, re, subprocess, sys, zipfile
 from PIL import Image
@@ -19,16 +22,13 @@ import hqx
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import asset_packs
 import ts_shp
 
 ART = os.environ.get("TS_ART_DIR")
 RAW = os.environ.get("TS_RAW_DIR") or (f"{ART}/.raw" if ART else None)
 if not RAW:
     raise SystemExit("set TS_ART_DIR (holding .raw/) or TS_RAW_DIR")
-MOD = os.path.abspath(os.path.join(HERE, "..", "resources", "remaster_mods", "Vanilla_RA", "Data"))
-UNITS_DIR = f"{MOD}/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-ICON_DIR = f"{MOD}/ART/TEXTURES/SRGB"
-XML = f"{MOD}/XML/TILESETS/RA_UNITS.XML"
 EMBLEM = os.path.join(HERE, "tab_emblems", "tsgdi.png")
 CANVAS = 384
 SCALE = 4
@@ -90,22 +90,22 @@ def main():
         canvas = Image.new("RGBA", (CANVAS, CANVAS), (0, 0, 0, 0))
         canvas.alpha_composite(big, ((CANVAS - big.width) // 2, (CANVAS - big.height) // 2))
         frames.append(canvas)
-    write_zip(f"{UNITS_DIR}/TSHUNT.ZIP", "tshunt", frames)
-    patch_tileset(XML, "TSHUNT", len(frames))
+    write_zip(asset_packs.art_zip("TSHUNT", "UNITS"), "tshunt", frames)
+    patch_tileset(asset_packs.tileset_xml("TSHUNT", "UNITS"), "TSHUNT", len(frames))
 
     cameo_pal = ts_shp.load_pal(f"{RAW}/CAMEO.PAL")
     icon = decode("DETNICON.SHP", cameo_pal)[0]
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(f"{ICON_DIR}/BuildIcon_SW_TSHUNT.tga")
-    print(f"wrote {ICON_DIR}/BuildIcon_SW_TSHUNT.tga")
+    big.save(asset_packs.cameo_tga("BuildIcon_SW_TSHUNT"))
+    print(f"wrote {asset_packs.cameo_tga('BuildIcon_SW_TSHUNT')}")
     # TS-tree badge (the 'G' digit key): cameo_badge_build's emblem layout.
     badged = big.convert("RGBA")
     emblem = Image.open(EMBLEM).convert("RGBA").resize((90, 90), Image.LANCZOS)
     badged.alpha_composite(emblem, (12, 12))
-    badged.save(f"{ICON_DIR}/BuildIcon_SG_TSHUNT.tga")
-    print(f"wrote {ICON_DIR}/BuildIcon_SG_TSHUNT.tga")
+    badged.save(asset_packs.cameo_tga("BuildIcon_SG_TSHUNT"))
+    print(f"wrote {asset_packs.cameo_tga('BuildIcon_SG_TSHUNT')}")
 
-    out_wav = f"{MOD}/AUDIO/TSHUNTR2.WAV"
+    out_wav = asset_packs.sound_wav("TSHUNTR2")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{RAW}/HUNTER2.AUD",
                     "-acodec", "adpcm_ms", out_wav], check=True)
     print(f"wrote {out_wav}")

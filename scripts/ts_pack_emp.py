@@ -14,9 +14,11 @@ bullet.cpp Detonate). All decoded against ANIM.PAL with no team remap, scaled x4
 - TSPULSF1.ZIP / TSPULSF2.ZIP: PULSEFX1 (21 frames) and PULSEFX2 (15 frames), centred.
 - TSEMPFX.ZIP: EMP_FX01's 27 frames, the sparks over a stunned object.
 - BuildIcon_SW_TSEMP.tga: TS's PULSICON special cameo (CAMEO.PAL), flattened opaque (the
-  launcher draws noise under transparent cameo pixels).
-- Data/AUDIO/TSPLSECAN2.WAV: the cannon's report ([EMPulseWeapon] Report=PLSECAN2) under its
+  launcher draws noise under transparent cameo pixels), in the mod's own tree.
+- AUDIO/TSPLSECAN2.WAV: the cannon's report ([EMPulseWeapon] Report=PLSECAN2) under its
   own sample name, Westwood AUD -> MS-ADPCM WAV.
+Anims, their TS_VFX.XML tile runs and the sound go to the tree asset_packs.py routes each
+name to (the TS packs).
 
 Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/{PULSBALL,PULSEFX1,PULSEFX2,PULSICON,EMP_FX01}.SHP,
 PLSECAN2.AUD, ANIM.PAL, CAMEO.PAL -- TIBSUN.MIX conquer.mix / cache.mix via tools/ts_extract.py.
@@ -28,8 +30,9 @@ from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import asset_packs
 import ts_shp
-from ts_pack_ion import write_zip, patch_tileset, MOD, VFX_DIR, ICON_DIR, XML, RAW, SCALE
+from ts_pack_ion import write_zip, patch_tileset, RAW, SCALE
 
 # name, TS SHP, canvas (w, h)
 ANIMS = (
@@ -54,8 +57,8 @@ def main():
                 raise SystemExit(f"{name}: {scaled.size} does not fit the {cw}x{ch} canvas")
             canvas.alpha_composite(scaled, (ox, oy))
             frames.append(canvas)
-        write_zip(f"{VFX_DIR}/{name}.ZIP", name.lower(), frames)
-        patch_tileset(XML, name, len(frames))
+        write_zip(asset_packs.art_zip(name, "VFX"), name.lower(), frames)
+        patch_tileset(asset_packs.tileset_xml(name, "VFX"), name, len(frames))
 
     cameo_pal = ts_shp.load_pal(f"{RAW}/CAMEO.PAL")
     (_, _), raw = ts_shp.decode_shp(f"{RAW}/PULSICON.SHP")
@@ -63,10 +66,10 @@ def main():
     flat = Image.new("RGBA", icon.size, (0, 0, 0, 255))
     flat.alpha_composite(icon)
     big = flat.resize((flat.width * 8, flat.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(f"{ICON_DIR}/BuildIcon_SW_TSEMP.tga")
-    print(f"wrote {ICON_DIR}/BuildIcon_SW_TSEMP.tga")
+    big.save(asset_packs.cameo_tga("BuildIcon_SW_TSEMP"))
+    print(f"wrote {asset_packs.cameo_tga('BuildIcon_SW_TSEMP')}")
 
-    out_wav = f"{MOD}/AUDIO/TSPLSECAN2.WAV"
+    out_wav = asset_packs.sound_wav("TSPLSECAN2")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{RAW}/PLSECAN2.AUD",
                     "-acodec", "adpcm_ms", out_wav], check=True)
     print(f"wrote {out_wav}")

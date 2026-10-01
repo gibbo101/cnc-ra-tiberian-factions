@@ -11,29 +11,27 @@
                  WINDOW_VIRTUAL anim draws ignore the stage cap (anim.cpp:328),
                  so dying sparks request shapes >= Stages — blanks absorb them
                  instead of the launcher's white placeholder box.
-  - RA_UNITS.XML / RA_VFX.XML tile runs (REPLACING any existing entries),
-    RABUILDABLES.XML, ModText.csv, BuildIcons (TS cameos via CAMEO.PAL).
+  - TS_UNITS.XML / TS_VFX.XML tile runs (REPLACING any existing entries),
+    TSBUILDABLES.XML, ModText.csv, BuildIcons (TS cameos via CAMEO.PAL).
+Art, cameos and XML go to the tree asset_packs.py routes each name to (the TS-Graphics-Pack).
 
 Inputs (set TS_ART_DIR):
   $TS_ART_DIR/shp_mmch/frame-NNNN.png       decoded MMCH.SHP (ts_shp.py, UNITTEM.PAL)
   $TS_ART_DIR/walk_hmec_<f>/frame-NNNN.png  HMEC walk renders, f in WALK_HVA_FRAMES
   $TS_ART_DIR/shp_mmchicon2, shp_hmecicon2  decoded TS cameos (CAMEO.PAL!)
 """
-import io, json, os, re, zipfile
+import io, json, os, re, sys, zipfile
 from PIL import Image
 import hqx
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import asset_packs
 
 ART = os.environ.get("TS_ART_DIR")
 if not ART:
     raise SystemExit("set TS_ART_DIR to the extracted/rendered TS art directory")
-# TF_MOD_DIR overrides so worktree checkouts pack into their own resources
-# (the hardcoded default bit the ts-units worktree, 2026-08-18).
-MOD = os.environ.get(
-    "TF_MOD_DIR",
-    "/home/gibbo101/Documents/development/cnc-remastered-mods/cnc-ra-tiberian-factions/resources/remaster_mods/Vanilla_RA")
-UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-VFX_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/VFX"
-ICON_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB"
+# The mod tree of this script's checkout (ModText.csv, custom cameos); TF_MOD_DIR overrides it.
+MOD = os.environ.get("TF_MOD_DIR", asset_packs.MOD)
 
 WALK_HVA_FRAMES = [0, 2, 4, 6, 8, 11, 13, 15]  # 8 stages sampled from the 17-frame HVA gait
 
@@ -225,7 +223,7 @@ for s in range(32):                       # out s (CCW) <- src (32-s)%32 (CW)
         comp.alpha_composite(torso)
         safe_paste(comp, bar, bx, by)
     frames.append(comp)
-write_zip(f"{UNITS_DIR}/TSTITN.ZIP", "tstitn", frames)
+write_zip(asset_packs.art_zip("TSTITN", "UNITS"), "tstitn", frames)
 
 # generated per-facing muzzle table (leptons, world x-east/y-south) — included
 # by techno.cpp Fire_Coord for UNIT_TSTITN so shells + muzzle flash track the
@@ -236,7 +234,7 @@ hdr += "static const short _tstitn_muzzle[32][2] = {\n"
 for dx, dy in MUZZLE_TABLE:
     hdr += f"    {{{dx}, {dy}}},\n"
 hdr += "};\n"
-open("/home/gibbo101/Documents/development/cnc-remastered-mods/cnc-ra-tiberian-factions/redalert/tstitn_muzzle.h", "w").write(hdr)
+open(os.path.join(asset_packs.REPO, "redalert", "tstitn_muzzle.h"), "w").write(hdr)
 print("wrote redalert/tstitn_muzzle.h (muzzle table)")
 
 # ---- TSHMEC (Mammoth Mk II): 32 facings x 8 walk stages ----
@@ -291,7 +289,7 @@ for facing in range(32):
             safe_paste(out, sh_img, ox + bbs[0] + 2, feet_y - sh_h + 3)
         safe_paste(out, scaled, ox, oy)
         mframes.append(out)
-write_zip(f"{UNITS_DIR}/TSHMEC.ZIP", "tshmec", mframes)
+write_zip(asset_packs.art_zip("TSHMEC", "UNITS"), "tshmec", mframes)
 
 # ---- TSHVR (Hover MLRS): HQ remake, body 0-31 + turret 32-63, 192 canvas ----
 # Reproduces the SIGNED-OFF geometry from the 12 px/voxel renders: hull width
@@ -332,10 +330,11 @@ if os.path.isdir(f"{ART}/hq_hvr_body"):
         out = Image.new("RGBA", (CANVAS_H, CANVAS_H), (0, 0, 0, 0))
         safe_paste(out, scaled, round(96 - scaled.width / 2), round(96 - scaled.height / 2))
         hframes.append(out)
-    write_zip(f"{UNITS_DIR}/TSHVR.ZIP", "tshvr", hframes)
+    write_zip(asset_packs.art_zip("TSHVR", "UNITS"), "tshvr", hframes)
 
 # ---- RAILFX: repack existing 6 real frames + 6 blank pad shapes ----
-src = zipfile.ZipFile(f"{VFX_DIR}/RAILFX.ZIP")
+RAILFX_ZIP = asset_packs.art_zip("RAILFX", "VFX")
+src = zipfile.ZipFile(RAILFX_ZIP)
 real = []
 for i in range(6):
     meta = json.loads(src.read(f"railfx-{i:04d}.meta"))
@@ -343,7 +342,7 @@ for i in range(6):
     real.append((tga, meta))
 blank = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
 blank_tga = tga_bytes(blank.crop((0, 0, 2, 2)))
-with zipfile.ZipFile(f"{VFX_DIR}/RAILFX.ZIP", "w", zipfile.ZIP_DEFLATED) as z:
+with zipfile.ZipFile(RAILFX_ZIP, "w", zipfile.ZIP_DEFLATED) as z:
     for i, (tga, meta) in enumerate(real):
         z.writestr(f"railfx-{i:04d}.tga", tga)
         z.writestr(f"railfx-{i:04d}.meta", json.dumps(meta))
@@ -359,13 +358,13 @@ for src_d, out in [("shp_mmchicon2", "BuildIcon_TS_Titan"),
     custom = os.path.abspath(f"{MOD}/../../custom-cameos/{out}.png")
     if os.path.exists(custom):
         Image.open(custom).convert("RGBA").resize((341, 256), Image.LANCZOS).save(
-            f"{ICON_DIR}/{out}.tga")
-        print(f"custom {ICON_DIR}/{out}.tga")
+            asset_packs.cameo_tga(out))
+        print(f"custom {asset_packs.cameo_tga(out)}")
         continue
     icon = Image.open(f"{ART}/{src_d}/frame-0000.png")
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(f"{ICON_DIR}/{out}.tga")
-    print(f"wrote {ICON_DIR}/{out}.tga")
+    big.save(asset_packs.cameo_tga(out))
+    print(f"wrote {asset_packs.cameo_tga(out)}")
 
 # ---- Tileset XML (replace-capable) ----
 def tile_block(name, shape, frame_path):
@@ -386,15 +385,13 @@ def patch_tileset(xml_path, name, count, subdir=None):
     open(xml_path, "w", encoding="utf-8").write(xml)
     print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles")
 
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSTITN", 128)
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSHMEC", 256)
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_VFX.XML", "RAILFX", 12)
+patch_tileset(asset_packs.tileset_xml("TSTITN", "UNITS"), "TSTITN", 128)
+patch_tileset(asset_packs.tileset_xml("TSHMEC", "UNITS"), "TSHMEC", 256)
+patch_tileset(asset_packs.tileset_xml("RAILFX", "VFX"), "RAILFX", 12)
 if os.path.isdir(f"{ART}/hq_hvr_body"):
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSHVR", 64)
+    patch_tileset(asset_packs.tileset_xml("TSHVR", "UNITS"), "TSHVR", 64)
 
-# ---- RABUILDABLES ----
-RAB = f"{MOD}/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
-xml = open(RAB, encoding="utf-8").read()
+# ---- Sidebar entries, in the buildables XML of each cameo's tree ----
 def buildable(name, text, icon):
     return ('\t<ObjectTypeClass Name="%s" Classification="CNCBuildableObject" CanInstantiate="False">\n'
             "\t\t<CNCEncyclopediaComponent>\n"
@@ -403,16 +400,17 @@ def buildable(name, text, icon):
             "\t\t\t<BuildIcon>%s</BuildIcon>\n"
             "\t\t</CNCEncyclopediaComponent>\n"
             "\t</ObjectTypeClass>\n" % (name, text, text, icon))
-added = ""
-if "RA_TSTITN" not in xml:
-    added += buildable("RA_TSTITN", "TEXT_UNIT_TSTITN", "BuildIcon_TS_Titan")
-if "RA_TSHMEC" not in xml:
-    added += buildable("RA_TSHMEC", "TEXT_UNIT_TSHMEC", "BuildIcon_TS_MammothMk2")
-if added:
+added = {}
+for ini, icon in [("TSTITN", "BuildIcon_TS_Titan"), ("TSHMEC", "BuildIcon_TS_MammothMk2")]:
+    rab = asset_packs.buildables_xml(icon)
+    if f"RA_{ini}" not in open(rab, encoding="utf-8").read():
+        added[rab] = added.get(rab, "") + buildable(f"RA_{ini}", f"TEXT_UNIT_{ini}", icon)
+for rab, entries in added.items():
+    xml = open(rab, encoding="utf-8").read()
     idx = xml.rindex("</ObjectTypeClass>") + len("</ObjectTypeClass>")
-    xml = xml[:idx] + "\n\n" + added.rstrip("\n") + xml[idx:]
-    open(RAB, "w", encoding="utf-8").write(xml)
-    print("patched RABUILDABLES.XML")
+    xml = xml[:idx] + "\n\n" + entries.rstrip("\n") + xml[idx:]
+    open(rab, "w", encoding="utf-8").write(xml)
+    print(f"patched {os.path.basename(rab)}")
 
 # ---- ModText.csv (UTF-16) ----
 CSV = f"{MOD}/Data/ModText.csv"

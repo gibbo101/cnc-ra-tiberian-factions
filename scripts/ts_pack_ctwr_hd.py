@@ -2,7 +2,8 @@
 """Pack the HD TS GDI Component Tower (resources/custom-art/ts-gdi-component-tower-hd).
 
 The source frames are already on the tower family's 176x320 canvas with the cell's centre
-on the canvas centre, so they ship as drawn. Frame sets written (RA_STRUCTURES.XML patched):
+on the canvas centre, so they ship as drawn. Frame sets written to the TS-HD-Graphics-Pack
+(TSHD_STRUCTURES.XML patched; ts_pack_towers.write_zip routes each name by asset_packs.py):
 
   TSCTWR       2    healthy, damaged
   TSCTWRMAKE   17   build-up (also written as each armed tower's <ini>MAKE)

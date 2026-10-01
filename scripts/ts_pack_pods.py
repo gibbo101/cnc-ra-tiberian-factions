@@ -15,9 +15,11 @@ TSPODRNG 50x26, TSSMOKEY 16x15).
 
 Also emits:
 - BuildIcon_SW_TSPODS.tga — TS's PODSICON (CAMEO.PAL) for the specials column
-  (AssetName "SW_TSPods").
-- Data/AUDIO/TSGUN4.WAV — the Vulcan2 strafe report under its OWN sample name
+  (AssetName "SW_TSPods"), in the mod's own tree.
+- AUDIO/TSGUN4.WAV — the Vulcan2 strafe report under its OWN sample name
   (ffmpeg: Westwood AUD -> MS-ADPCM WAV, the proven novel-name format rules).
+Anims, their TS_VFX.XML tile runs and the sounds go to the tree asset_packs.py routes each
+name to (the TS packs).
 
 Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/{DROPPOD.SHP,DROPPOD2.SHP,
 DROPEXP.SHP,PODRING.SHP,SMOKEY.SHP,ANIM.PAL,CAMEO.PAL,TSGUN4.AUD} —
@@ -34,11 +36,8 @@ if not ART:
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import ts_shp
+import asset_packs
 
-MOD = os.path.abspath(os.path.join(HERE, "..", "resources", "remaster_mods", "Vanilla_RA", "Data"))
-VFX_DIR = f"{MOD}/ART/TEXTURES/SRGB/RED_ALERT/VFX"
-ICON_DIR = f"{MOD}/ART/TEXTURES/SRGB"
-XML = f"{MOD}/XML/TILESETS/RA_VFX.XML"
 RAW = f"{ART}/.raw"
 SCALE = 4.0
 
@@ -72,7 +71,7 @@ def patch_tileset(xml_path, name, count):
     blocks = "".join(block % (name, i, f"{sub}\\{sub}-{i:04d}.tga") for i in range(count))
     idx = xml.rindex("</Tiles>")
     open(xml_path, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
-    print(f"patched RA_VFX.XML: {name} -> {count} tiles")
+    print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles")
 
 
 def decode(shp, pal, remap=None):
@@ -90,8 +89,8 @@ def pack_anim(shp, name, canvas_w, canvas_h, pal, frames=None):
         canvas.alpha_composite(seg, (round(canvas_w / 2 - seg.width / 2),
                                      round(canvas_h / 2 - seg.height / 2)))
         out.append(canvas)
-    write_zip(f"{VFX_DIR}/{name}.ZIP", name.lower(), out)
-    patch_tileset(XML, name, len(out))
+    write_zip(asset_packs.art_zip(name, "VFX"), name.lower(), out)
+    patch_tileset(asset_packs.tileset_xml(name, "VFX"), name, len(out))
     return len(out)
 
 
@@ -112,13 +111,13 @@ def main():
     cameo_pal = ts_shp.load_pal(f"{RAW}/CAMEO.PAL")
     _, _, icon = decode("PODSICON.SHP", cameo_pal)[0]
     big = icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    big.save(f"{ICON_DIR}/BuildIcon_SW_TSPODS.tga")
-    print(f"wrote {ICON_DIR}/BuildIcon_SW_TSPODS.tga")
+    big.save(asset_packs.cameo_tga("BuildIcon_SW_TSPODS"))
+    print(f"wrote {asset_packs.cameo_tga('BuildIcon_SW_TSPODS')}")
 
     # The Vulcan2 strafe report + the meteor descent whoosh under their own
     # sample names (novel-name path).
     for aud, wav in (("TSGUN4.AUD", "TSGUN4.WAV"), ("METEOR1.AUD", "TSMETEOR.WAV")):
-        out_wav = f"{MOD}/AUDIO/{wav}"
+        out_wav = asset_packs.sound_wav(wav)
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", f"{RAW}/{aud}",
                         "-acodec", "adpcm_ms", out_wav], check=True)
         print(f"wrote {out_wav}")

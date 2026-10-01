@@ -7,6 +7,8 @@
                                 then the damaged body, which TS leaves unlit (5 damaged).
   TSDPSAMAKE.ZIP (structures)   19 frames: the GTDPSAMK build-up (36 TS frames resampled).
   BuildIcon_TS_SensorArray.tga, the base RA_TSLPST / RA_TSDPSA entries and the ModText rows.
+Art, cameo, tiles and sidebar entries go to the tree asset_packs.py routes each name to (the
+TS-Graphics-Pack); the ModText rows to the mod's own ModText.csv.
 
 Scale: the building runs at the Limpet mine's F_BLDG (4.27 HD px per TS px, 0.8 classic px per
 TS px, the same TS-relative size as the voxel units), so the sensor keeps its vehicle's size when
@@ -37,16 +39,14 @@ from PIL import Image
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import hqx
+import asset_packs
 import ts_shp
 import ts_pack_infantry as inf
 import ts_pack_limpet as limp
 from ts_pack_memp import vox_frames, CANVAS as UNIT_CANVAS
 
 ART = inf.ART
-MOD = inf.MOD
 RAW = f"{ART}/.raw"
-STRUCT_DIR = limp.STRUCT_DIR
-ICON_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB"
 F_BLDG = limp.F_BLDG
 BLDG_W, BLDG_H = 256, 416
 BLDG_DENSITY = 256 / 48          # canvas px per classic px for buildings
@@ -107,24 +107,24 @@ def cameo():
     flat = Image.new("RGBA", icon.size, (0, 0, 0, 255))
     flat.alpha_composite(icon)
     big = flat.resize((flat.width * 8, flat.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    path = f"{ICON_DIR}/BuildIcon_TS_SensorArray.tga"
+    path = asset_packs.cameo_tga("BuildIcon_TS_SensorArray")
     big.save(path)
     print(f"wrote {path}")
 
 
 def main():
     unit = vox_frames("renders_lpst")
-    inf.write_zip(f"{inf.UNITS_DIR}/TSLPST.ZIP", "tslpst", unit)
+    inf.write_zip(asset_packs.art_zip("TSLPST", "UNITS"), "tslpst", unit)
     inf.patch_tileset("TSLPST", len(unit))
 
     ground = vehicle_ground_line(unit)
     anchor = (BODY_CX, BODY_BOTTOM - ground * BLDG_DENSITY / F_BLDG)
     print(f"vehicle ground line {ground:.1f} classic px below centre -> building anchor {anchor[1]:.1f}")
     sensor = sensor_frames(anchor)
-    inf.write_zip(f"{STRUCT_DIR}/TSDPSA.ZIP", "tsdpsa", sensor)
+    inf.write_zip(asset_packs.art_zip("TSDPSA", "STRUCTURES"), "tsdpsa", sensor)
     limp.patch_struct_tileset("TSDPSA", len(sensor))
     make = make_frames(anchor)
-    inf.write_zip(f"{STRUCT_DIR}/TSDPSAMAKE.ZIP", "tsdpsamake", make)
+    inf.write_zip(asset_packs.art_zip("TSDPSAMAKE", "STRUCTURES"), "tsdpsamake", make)
     limp.patch_struct_tileset("TSDPSAMAKE", len(make))
 
     cameo()

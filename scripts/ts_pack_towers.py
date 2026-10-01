@@ -18,7 +18,8 @@ Everything registers off the TEAM-COLOUR RING on the platform, which both the TS
 body and any redrawn body carry: the ring's width sets the turret's scale and the
 ring's centre sets where the turret sits, so a new body needs no hand-dialled seat.
 
-Frame sets written (RA_STRUCTURES.XML patched to match):
+Frame sets written (TSHD_STRUCTURES.XML patched to match), in the TS-HD-Graphics-Pack, with
+the BuildIcon_TS_* cameos in the TS-Graphics-Pack (each name routed by asset_packs.py):
   TSCTWR       2      body healthy, body damaged
   TSCTWRMAKE   17     construction; from the body's own buildup frames if it has
                       them, otherwise a rise-from-the-ground mask reveal
@@ -45,6 +46,7 @@ import hqx
 
 SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPTS)
+import asset_packs
 import ts_pack_walls as W
 
 ART = os.environ.get("TS_ART_DIR", "")
@@ -234,7 +236,7 @@ def rising_buildup(body, count):
 
 def write_zip(ini, frames):
     low = ini.lower()
-    out_zip = f"{W.STRUCT_DIR}/{ini}.ZIP"
+    out_zip = asset_packs.art_zip(ini, "STRUCTURES")
     with zipfile.ZipFile(out_zip, "w", zipfile.ZIP_DEFLATED) as z:
         for i, cv in enumerate(frames):
             bbox = cv.getbbox() or (0, 0, CANVAS_W, CANVAS_H)
@@ -242,7 +244,7 @@ def write_zip(ini, frames):
             z.writestr(f"{low}-{i:04d}.tga", buf.getvalue())
             z.writestr(f"{low}-{i:04d}.meta", json.dumps({"size": [CANVAS_W, CANVAS_H], "crop": list(bbox)}))
     print(f"wrote {out_zip} ({len(frames)} frames)")
-    W.patch_tileset(W.TILESET, ini, len(frames))
+    W.patch_tileset(asset_packs.tileset_xml(ini, "STRUCTURES"), ini, len(frames))
 
 
 def cameo(icon_dir, name):
@@ -251,7 +253,7 @@ def cameo(icon_dir, name):
         print(f"no {icon_dir}: cameo {name} not written"); return
     icon = Image.open(src).convert("RGBA")
     icon.resize((icon.width * 8, icon.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS).save(
-        f"{W.ICON_DIR}/{name}.tga")
+        asset_packs.cameo_tga(name))
     print(f"wrote {name}.tga")
 
 

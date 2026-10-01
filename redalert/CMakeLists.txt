@@ -212,6 +212,7 @@ if(BUILD_REMASTERRA)
 
     add_custom_command(TARGET RedAlert POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/resources/remaster_mods/Vanilla_RA ${CMAKE_BINARY_DIR}/Vanilla_RA
+        COMMAND python3 ${CMAKE_SOURCE_DIR}/scripts/stage_asset_packs.py ${CMAKE_BINARY_DIR}/Vanilla_RA
         COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/Vanilla_RA/Data
         COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:RedAlert> ${CMAKE_BINARY_DIR}/Vanilla_RA/Data/
     )

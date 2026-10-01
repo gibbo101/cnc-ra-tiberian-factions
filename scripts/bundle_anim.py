@@ -18,6 +18,9 @@ engine anim set we must:
 3. Insert the matching `<Tile>` blocks into `RA_VFX.XML` so the launcher
    overlay can resolve `<PREFIX>-<dir>` by name at the firing facing.
 
+The ZIPs and tile blocks land in the tree asset_packs assigns `<PREFIX>-<dir>`:
+the mod's own (`RA_VFX.XML`) or an asset pack's (`<PACK PREFIX>_VFX.XML`).
+
 The DLL side (8 `ANIM_<X>_*` types + the `techno.cpp` Fire_At dispatch +
 the donor-ImageData fix in `AnimTypeClass::One_Time`) is hand-written; this
 script only handles the on-disk art + tileset. Worked examples: TDFLAME
@@ -38,13 +41,11 @@ from pathlib import Path
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPT_DIR))
+import asset_packs                 # noqa: E402
 import bundle_assets               # noqa: E402  -- reuse repack/count/emit/strip
 import meg_extract                 # noqa: E402
 
 REPO_ROOT  = SCRIPT_DIR.parent
-MOD_ROOT   = REPO_ROOT / "resources/remaster_mods/Vanilla_RA"
-VFX_DIR    = MOD_ROOT / "Data/ART/TEXTURES/SRGB/RED_ALERT/VFX"
-RA_VFX_XML = MOD_ROOT / "Data/XML/TILESETS/RA_VFX.XML"
 
 # Facing order matches the engine's ANIM_<X>_N .. ANIM_<X>_NW enum block
 # (Dir_Facing order: N, NE, E, SE, S, SW, W, NW).
@@ -52,13 +53,14 @@ DIRECTIONS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
 
 
 def patch_ra_vfx_xml(td_name, frame_basename, frame_count, *, dry_run=False):
-    '''Insert/replace `<Tile>` blocks for `td_name` in RA_VFX.XML.
+    '''Insert/replace `<Tile>` blocks for `td_name` in its VFX tileset XML.
 
     Reuses bundle_assets' format-identical emit/strip helpers (RA_VFX uses
     the same Tile/Key/Name/Shape/Value/Frames indentation as RA_STRUCTURES),
     inserting before the `</Tiles>` close of the RA_VFX TilesetTypeClass.
     '''
-    content = RA_VFX_XML.read_text(encoding="utf-8")
+    vfx_xml = Path(asset_packs.tileset_xml(td_name, "VFX"))
+    content = vfx_xml.read_text(encoding="utf-8")
     original = content
 
     content = bundle_assets.strip_tileset_entries(content, td_name)
@@ -68,27 +70,27 @@ def patch_ra_vfx_xml(td_name, frame_basename, frame_count, *, dry_run=False):
 
     close_match = re.search(r"\t\t</Tiles>", content)
     if close_match is None:
-        raise RuntimeError("Couldn't find </Tiles> close tag in RA_VFX.XML")
+        raise RuntimeError(f"Couldn't find </Tiles> close tag in {vfx_xml.name}")
     insert_at = close_match.start()
     content = content[:insert_at] + new_block + content[insert_at:]
 
     changed = (content != original)
     if changed and not dry_run:
-        RA_VFX_XML.write_text(content, encoding="utf-8", newline="\n")
+        vfx_xml.write_text(content, encoding="utf-8", newline="\n")
     return changed
 
 
 def bundle_direction(base, prefix, direction, meg_path, *, dry_run=False):
     '''Extract + repack one `<base>-<dir>.ZIP` → `<prefix>-<dir>.ZIP` and
-    patch its RA_VFX.XML tile blocks. Returns (frame_count, xml_changed).'''
+    patch its VFX tileset tile blocks. Returns (frame_count, xml_changed).'''
     src_name  = f"{base}-{direction}.ZIP"          # e.g. CHEM-N.ZIP
     td_name   = f"{prefix}-{direction}"            # tileset key, e.g. TDCHEM-N
-    dest_zip  = VFX_DIR / f"{td_name}.ZIP"         # TDCHEM-N.ZIP
+    dest_zip  = Path(asset_packs.art_zip(td_name, "VFX"))   # TDCHEM-N.ZIP
     old_pfx   = f"{base.lower()}-{direction.lower()}"   # chem-n
     new_pfx   = f"{prefix.lower()}-{direction.lower()}" # tdchem-n
 
     if not dry_run:
-        VFX_DIR.mkdir(parents=True, exist_ok=True)
+        dest_zip.parent.mkdir(parents=True, exist_ok=True)
         tmp = dest_zip.with_suffix(".extracted.zip")
         try:
             if not bundle_assets.extract_named_zip(meg_path, src_name, tmp):
@@ -128,9 +130,10 @@ def main():
         total_xml_changed = total_xml_changed or changed
         verb = "would write" if args.dry_run else "wrote"
         print(f"[bundle_anim] {args.prefix}-{d}: {verb} "
-              f"{(VFX_DIR / f'{args.prefix}-{d}.ZIP').relative_to(REPO_ROOT)} "
+              f"{Path(asset_packs.art_zip(f'{args.prefix}-{d}', 'VFX')).relative_to(REPO_ROOT)} "
               f"({frames} frames), xml={'patched' if changed else 'unchanged'}")
-    print(f"[bundle_anim] done — RA_VFX.XML {'patched' if total_xml_changed else 'unchanged'}")
+    print(f"[bundle_anim] done — {Path(asset_packs.tileset_xml(f'{args.prefix}-{DIRECTIONS[0]}', 'VFX')).name} "
+          f"{'patched' if total_xml_changed else 'unchanged'}")
     return 0
 
 

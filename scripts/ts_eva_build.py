@@ -3,9 +3,10 @@
 
 Extracts the GDI announcer's lines from the Tiberian Sun install (TIBSUN.MIX ->
 SPEECH01.MIX -> 00-Ixxx.AUD), re-encodes each to the MS-ADPCM WAV shape the
-launcher's localized audio channel accepts, ships them loose under
-Data/AUDIO/EN-US, and registers one event per line in the mod's loose
-SFXEVENTSLOCALIZED.XML.
+launcher's localized audio channel accepts, ships them loose under the
+TS-EVA-eng pack's Data/AUDIO/EN-US, and registers one event per line in that
+pack's SFXEVENTSLOCALIZED_TS.XML (scripts/asset_packs.py routes both by sample
+name; the build merges the pack into the mod).
 
 The DLL hands the launcher the bare event name (SpeechTS[] in audio.cpp); the
 launcher prefixes RAC_ or RAR_ for classic and remastered audio. Only one
@@ -30,12 +31,12 @@ import sys
 import tempfile
 from pathlib import Path
 
+import asset_packs
+
 ROOT = Path(__file__).resolve().parent.parent
 WORKSPACE = ROOT.parent
 TS_EXTRACT = WORKSPACE / "tools/ts_extract.py"
 AUD_DECODE = ROOT / "scripts/ts_aud_decode.py"
-AUDIO_OUT = ROOT / "resources/remaster_mods/Vanilla_RA/Data/AUDIO/EN-US"
-XML = ROOT / "resources/remaster_mods/Vanilla_RA/Data/XML/AUDIO/SFXEVENTSLOCALIZED.XML"
 DEFAULT_TS = Path.home() / ".steam/steam/steamapps/common/Command & Conquer Tiberian Sun"
 
 BEGIN = "   <!-- BEGIN generated TS GDI EVA events (scripts/ts_eva_build.py) -->"
@@ -108,7 +109,8 @@ def encode(tmp, key, aud):
     pcm = tmp / ("%s.pcm.wav" % key)
     subprocess.run([sys.executable, str(AUD_DECODE), str(tmp / ("%s.AUD" % aud)), str(pcm)],
                    check=True, capture_output=True)
-    dst = AUDIO_OUT / ("TS_SFX_EVA_%s_EN-US.WAV" % key)
+    dst = Path(asset_packs.sound_wav("TS_SFX_EVA_%s_EN-US.WAV" % key, localized=True))
+    dst.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(pcm),
                     "-ac", "2", "-ar", str(RATE), "-c:a", "adpcm_ms", str(dst)], check=True)
     return dst
@@ -132,8 +134,14 @@ def event(name, sample, text_id, says):
         "   </LocalizedSFXEvent>\n" % (says, name, sample, subtitle))
 
 
+def events_xml():
+    """The localized sound-event XML that holds the EVA block, routed by its samples."""
+    return Path(asset_packs.sfx_xml("TS_SFX_EVA_%s_EN-US.MP3" % min(LINES), localized=True))
+
+
 def write_xml():
-    text = XML.read_text(encoding="utf-8", errors="surrogateescape")
+    xml = events_xml()
+    text = xml.read_text(encoding="utf-8", errors="surrogateescape")
     body = [BEGIN + "\n"]
     for key in sorted(LINES):
         _, text_id, says = LINES[key]
@@ -150,7 +158,7 @@ def write_xml():
     else:
         close = text.rfind("</LocalizedSFXEvents>")
         text = text[:close] + "\n" + block + "\n" + text[close:]
-    XML.write_text(text, encoding="utf-8", errors="surrogateescape")
+    xml.write_text(text, encoding="utf-8", errors="surrogateescape")
     return len(LINES) * 2
 
 
@@ -159,7 +167,6 @@ def main():
     ap.add_argument("--ts-dir", default=str(DEFAULT_TS))
     args = ap.parse_args()
 
-    AUDIO_OUT.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory() as td:
         tmp = Path(td)
         print("extracted %d lines from SPEECH01.MIX" % extract(args.ts_dir, tmp))
@@ -167,7 +174,7 @@ def main():
             aud = LINES[key][0]
             dst = encode(tmp, key, aud)
             print("  %-9s %s -> %s (%d bytes)" % (key, aud, dst.name, dst.stat().st_size))
-    print("registered %d events in %s" % (write_xml(), XML.name))
+    print("registered %d events in %s" % (write_xml(), events_xml().name))
 
 
 if __name__ == "__main__":

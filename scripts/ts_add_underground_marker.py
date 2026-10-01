@@ -11,10 +11,9 @@ Re-runnable: replaces shape 112 if present and re-declares 113 tiles.
 import io, json, math, os, re, sys, zipfile
 from PIL import Image
 
+import asset_packs
+
 HERE = os.path.dirname(os.path.abspath(__file__))
-MOD = os.path.abspath(os.path.join(HERE, "..", "resources", "remaster_mods", "Vanilla_RA", "Data"))
-UNITS_DIR = f"{MOD}/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
-XML = f"{MOD}/XML/TILESETS/RA_UNITS.XML"
 CANVAS = 384
 MARKER = 112
 
@@ -72,7 +71,7 @@ def patch_tileset(xml_path, name, count):
     blocks = "".join(block % (name, i, f"{sub}\\{sub}-{i:04d}.tga") for i in range(count))
     idx = xml.rindex("</Tiles>")
     open(xml_path, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
-    print(f"patched RA_UNITS.XML: {name} -> {count} tiles")
+    print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles")
 
 
 if __name__ == "__main__":
@@ -81,5 +80,5 @@ if __name__ == "__main__":
     if out:
         img.save(out); print("preview", out); sys.exit()
     for name in ("TSSUBTANK", "TSSAPC"):
-        append_marker(f"{UNITS_DIR}/{name}.ZIP", name.lower(), img)
-        patch_tileset(XML, name, MARKER + 1)
+        append_marker(asset_packs.art_zip(name, "UNITS"), name.lower(), img)
+        patch_tileset(asset_packs.tileset_xml(name, "UNITS"), name, MARKER + 1)

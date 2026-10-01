@@ -3,7 +3,8 @@
   - UNITS/<INI>.ZIP: 32 voxel-render facings, model-space placement on a square canvas
     (canvas = ShapeSize x 8), no baked shadow: aircraft get the engine's air shadow.
   - BuildIcon_TS_<Name>.tga from the TS cameo (CAMEO.PAL, no remap), the base RA_<INI>
-    entry in RABUILDABLES.XML's hand-written TS block, and the ModText rows.
+    entry in TSBUILDABLES.XML, and the ModText rows.
+  Art, cameos and XML go to the tree asset_packs.py routes each name to (the TS-Graphics-Pack).
 Inputs (set TS_ART_DIR):
   $TS_ART_DIR/renders_orca|renders_orcab|renders_trnsport/frame-NNNN.png
       (scripts/vxl_render.py --frames 32 --yaw0 90 --px-per-voxel 12 --elev 32 --hva)
@@ -17,10 +18,10 @@ from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import asset_packs
 import ts_pack_infantry as inf   # write_zip, patch_tileset, cameo, sidebar, text_rows
 
 ART = inf.ART
-UNITS_DIR = inf.UNITS_DIR
 F_VOX = 6.4 / 12.0   # 12 px/voxel renders -> canvas px (the fleet factor)
 
 # ini -> (render dir, canvas px, cameo stem, icon name, display name, description)
@@ -61,7 +62,7 @@ def face_fix(frames):
 def pack(ini):
     dirname, canvas, cameo_stem, icon, display, desc = AIRCRAFT[ini]
     frames = face_fix(vox_frames(dirname, canvas))
-    inf.write_zip(f"{UNITS_DIR}/{ini}.ZIP", ini.lower(), frames)
+    inf.write_zip(asset_packs.art_zip(ini, "UNITS"), ini.lower(), frames)
     inf.patch_tileset(ini, len(frames))
     inf.cameo(cameo_stem, icon)
     inf.sidebar(ini, icon)

@@ -8,6 +8,8 @@ UnitClass::Shape_Number adds 32 on water. Render the hull with the SAME camera a
 the body (vxl_render.py --frames 32 --px-per-voxel 12 --yaw0 0 --elev 32; the
 shipped body render was reproduced to the pixel at elev 32) and pack it with the
 body's placement: F_VOX scale, 384 canvas, (7,30) shadow, +8 face fix.
+TSAPC.ZIP and its TS_UNITS.XML tile run are in the TS-Graphics-Pack (asset_packs.py
+routes the name).
 
 Usage:  ts_pack_tsapc_water.py <renders_apcw dir>
 """
@@ -15,10 +17,10 @@ import io, json, os, sys, zipfile
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-MOD = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
-                                   "resources", "remaster_mods", "Vanilla_RA"))
-ZIP = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS/TSAPC.ZIP"
-XML = f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML"
+import asset_packs
+
+ZIP = asset_packs.art_zip("TSAPC", "UNITS")
+XML = asset_packs.tileset_xml("TSAPC", "UNITS")
 F_VOX = 6.4 / 12.0
 CANVAS = 384
 SHADOW = (7, 30)

@@ -54,9 +54,7 @@ Usage:  ts_reshadow.py [--dry-run] [UNIT ...]
 import io, json, os, sys, zipfile
 from PIL import Image
 
-MOD = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                   "..", "resources", "remaster_mods", "Vanilla_RA"))
-UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
+import asset_packs
 
 # ABSOLUTE PIXELS, applied to every unit whatever its size. Do not re-express
 # these as a fraction of the sprite: two rounds were rejected in play for doing
@@ -172,7 +170,7 @@ def write_zip(path, name, frames):
 
 
 def process(unit, dry_run):
-    path = f"{UNITS_DIR}/{unit}.ZIP"
+    path = asset_packs.art_zip(unit, "UNITS")
     if not os.path.exists(path):
         print(f"{unit}: MISSING {path}")
         return

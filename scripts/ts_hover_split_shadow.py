@@ -5,7 +5,7 @@ Part of the build: UnitClass::Draw_It draws the shadow block first and the hull
 and rack over it, and the classic stub in build_tfassets.sh carries 96 frames. The
 shadow bobs with the hull in normal hover (a still shadow under a whole-pixel bob
 reads as robotic); the split is what lets an E.M. Pulse settle the hull onto a
-shadow that holds still. RA_UNITS.XML lists all 96 TSHVR tiles.
+shadow that holds still. TS_UNITS.XML (the TS Graphics Pack's tileset) lists all 96 TSHVR tiles.
 
 WHY
 ---
@@ -36,7 +36,8 @@ Usage:  ts_hover_split_shadow.py [--dry-run]
 import io, json, os, sys, zipfile
 from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from ts_reshadow import (UNITS_DIR, EA_ALPHA, OFFSET_OVERRIDE, uncrop,
+import asset_packs
+from ts_reshadow import (EA_ALPHA, OFFSET_OVERRIDE, uncrop,
                          find_shadow_alpha, strip_shadow, write_zip, tga_bytes)
 
 UNIT = "TSHVR"
@@ -54,7 +55,7 @@ def silhouette(frame, dx, dy, alpha):
 
 def main():
     dry = "--dry-run" in sys.argv
-    path = f"{UNITS_DIR}/{UNIT}.ZIP"
+    path = asset_packs.art_zip(UNIT, "UNITS")
     src = zipfile.ZipFile(path)
     names = sorted(n[:-4] for n in src.namelist() if n.endswith(".tga"))
     stem = names[0].rsplit("-", 1)[0]

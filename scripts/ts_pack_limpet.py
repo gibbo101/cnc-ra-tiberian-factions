@@ -8,7 +8,9 @@
   TSDLIMPMAKE.ZIP (structures)  19 frames: the DLIMPMK build-up (42 TS frames resampled)
 plus BuildIcon_TS_LimpetDrone.tga (Firestorm ships no LIMPICON: the gold drone on TS's
 vehicle cameo plate, rebuilt from the cameos that share it), the base RA_TSLIMP / RA_TSDLIMP sidebar entries, the ModText rows and the
-five LIMP*.AUD sounds as Data/AUDIO/TS<NAME>.WAV.
+five LIMP*.AUD sounds as TS<NAME>.WAV. Art, cameo, tiles, sidebar entries and sounds go to the
+tree asset_packs.py routes each name to (the TS-Graphics-Pack and TS-SFX-Pack); the ModText rows
+to the mod's own ModText.csv.
 Scale: the drone runs at the mod-wide TS SHP factor F_UNIT (hq4x then LANCZOS) on a 192
 canvas (ShapeSize 24 x 8, the unit density); the mine and its build-up run at F_BLDG on 256
 canvases over a 48x48 classic stub, the building density being 5.33x rather than 8x, so both
@@ -28,13 +30,10 @@ import hqx
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import asset_packs
 import ts_pack_infantry as inf
 
 ART = inf.ART
-MOD = inf.MOD
-STRUCT_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/STRUCTURES"
-STRUCT_XML = f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML"
-RAB = f"{MOD}/Data/XML/OBJECTS/UNITS/RABUILDABLES.XML"
 F_UNIT = 6.4              # the mod-wide TS SHP factor (ts_pack_units_wave.py), at 8x-classic unit density
 F_BLDG = F_UNIT * 2.0 / 3.0  # buildings ship at 5.33x-classic, so their art scales by 2/3 to match on screen
 UNIT_CANVAS = 192
@@ -114,15 +113,16 @@ def make_frames(count=19):
 
 def patch_struct_tileset(name, count):
     import re
-    xml = open(STRUCT_XML, encoding="utf-8").read()
+    path = asset_packs.tileset_xml(name, "STRUCTURES")
+    xml = open(path, encoding="utf-8").read()
     pat = re.compile(r"\t<Tile>\n\t\t<Key>\n\t\t\t<Name>" + re.escape(name) + r"</Name>.*?</Tile>\n", re.S)
     xml, removed = pat.subn("", xml)
     tile = ("\t<Tile>\n\t\t<Key>\n\t\t\t<Name>%s</Name>\n\t\t\t<Shape>%d</Shape>\n\t\t</Key>\n"
             "\t\t<Value>\n\t\t\t<Frames>\n\t\t\t\t<Frame>%s\\%s-%04d.tga</Frame>\n\t\t\t</Frames>\n\t\t</Value>\n\t</Tile>\n")
     blocks = "".join(tile % (name, s, name.lower(), name.lower(), s) for s in range(count))
     idx = xml.rindex("</Tiles>")
-    open(STRUCT_XML, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
-    print(f"patched RA_STRUCTURES.XML: {name} -> {count} tiles (replaced {removed})")
+    open(path, "w", encoding="utf-8").write(xml[:idx] + blocks + xml[idx:])
+    print(f"patched {os.path.basename(path)}: {name} -> {count} tiles (replaced {removed})")
 
 
 VEHICLE_CAMEOS = ("SMCHICON", "SONIICON", "APCICON", "HARVICON", "MCVICON", "JUGGICON",
@@ -181,11 +181,8 @@ def cameo():
 
 def sidebar_building(ini, icon):
     """Base RA_<INI> entry for a structure that never reaches the sidebar (name/description
-    lookups only), in the hand-written TS-tree block like the unit entries."""
-    xml = open(RAB, encoding="utf-8").read()
+    lookups only), placed like the unit entries (ts_pack_infantry.add_entry)."""
     key = f"RA_{ini}"
-    if f'"{key}"' in xml:
-        return
     entry = ('\t<ObjectTypeClass Name="%s" Classification="CNCBuildableObject" CanInstantiate="False">\n'
              "\t\t<CNCEncyclopediaComponent>\n"
              "\t\t\t<ObjectNameTextID>TEXT_STRUCTURE_%s</ObjectNameTextID>\n"
@@ -193,8 +190,7 @@ def sidebar_building(ini, icon):
              "\t\t\t<BuildIcon>%s</BuildIcon>\n"
              "\t\t</CNCEncyclopediaComponent>\n"
              "\t</ObjectTypeClass>\n" % (key, ini, ini, icon))
-    open(RAB, "w", encoding="utf-8").write(xml.replace(inf.HAND_END, entry + inf.HAND_END, 1))
-    print(f"patched RABUILDABLES.XML: {key}")
+    inf.add_entry(key, icon, entry)
 
 
 def text_rows_building(ini, display, desc):
@@ -220,19 +216,19 @@ def sounds():
         subprocess.run([sys.executable, f"{HERE}/ts_aud_decode.py", f"{ART}/.raw/{aud}.AUD", pcm],
                        check=True, stdout=subprocess.DEVNULL)
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", pcm, "-c:a", "adpcm_ms",
-                        "-ar", "22050", "-ac", "1", f"{MOD}/Data/AUDIO/TS{aud}.WAV"], check=True)
+                        "-ar", "22050", "-ac", "1", asset_packs.sound_wav(f"TS{aud}")], check=True)
         print(f"wrote TS{aud}.WAV")
 
 
 def main():
     drone = drone_frames()
-    inf.write_zip(f"{inf.UNITS_DIR}/TSLIMP.ZIP", "tslimp", drone)
+    inf.write_zip(asset_packs.art_zip("TSLIMP", "UNITS"), "tslimp", drone)
     inf.patch_tileset("TSLIMP", len(drone))
     mine = mine_frames()
-    inf.write_zip(f"{STRUCT_DIR}/TSDLIMP.ZIP", "tsdlimp", mine)
+    inf.write_zip(asset_packs.art_zip("TSDLIMP", "STRUCTURES"), "tsdlimp", mine)
     patch_struct_tileset("TSDLIMP", len(mine))
     make = make_frames()
-    inf.write_zip(f"{STRUCT_DIR}/TSDLIMPMAKE.ZIP", "tsdlimpmake", make)
+    inf.write_zip(asset_packs.art_zip("TSDLIMPMAKE", "STRUCTURES"), "tsdlimpmake", make)
     patch_struct_tileset("TSDLIMPMAKE", len(make))
     cameo()
     inf.sidebar("TSLIMP", "BuildIcon_TS_LimpetDrone")

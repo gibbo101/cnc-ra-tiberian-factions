@@ -10,14 +10,16 @@ even ladder: frame 0 is the start colour, frame 11 the end colour.
   RAILFX     [LargeRailgunPart] (Mammoth Mk. II): (25,70,205) -> (150,150,150).
   TSRAILFXS  [SmallRailgunPart] (Ghost Stalker): (200,200,200) -> (150,150,150).
 
-A new spark also needs its RA_VFX.XML tile run (ts_pack_pods.patch_tileset) and a
-classic stub in build_tfassets.sh.
+A new spark also needs its tile run in the tileset XML asset_packs.tileset_xml(name, "VFX")
+names (ts_pack_pods.patch_tileset) and a classic stub in build_tfassets.sh.
 
 Usage:  ts_gen_railfx.py [OUTDIR] [NAME ...]      default: every spark
+Without OUTDIR each ZIP goes where asset_packs.py routes its name (the TS-Graphics-Pack).
 """
 import os, sys
 from PIL import Image, ImageDraw, ImageFilter
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import asset_packs
 from ts_gen_sonicwave import write_zip
 
 CANVAS = 128
@@ -50,13 +52,10 @@ def spark(i, start, end):
 
 
 def main():
-    mod = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..',
-                       'resources', 'remaster_mods', 'Vanilla_RA', 'Data')
-    outdir = sys.argv[1] if len(sys.argv) > 1 else (
-        os.path.join(mod, 'ART', 'TEXTURES', 'SRGB', 'RED_ALERT', 'VFX'))
+    outdir = sys.argv[1] if len(sys.argv) > 1 else None
     for name in (sys.argv[2:] or list(SPARKS)):
         start, end = SPARKS[name]
-        path = os.path.join(os.path.abspath(outdir), f'{name}.ZIP')
+        path = os.path.join(os.path.abspath(outdir), f'{name}.ZIP') if outdir else asset_packs.art_zip(name, 'VFX')
         write_zip(path, name.lower(), [spark(i, start, end) for i in range(FRAMES)])
         print(f'wrote {path} ({FRAMES} frames)')
 

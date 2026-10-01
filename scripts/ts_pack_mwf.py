@@ -4,6 +4,8 @@
   TSMWAR.ZIP (units)   32 frames: the MWAR_NOD.VXL hull, one per facing, on a 384 canvas
                        (ShapeSize 48) at the TS voxel density 6.4/12 (ts_pack_memp.py).
   BuildIcon_TS_MobileWarFactory.tga, the base RA_TSMWAR sidebar entry and the ModText rows.
+Art, cameo, tiles and sidebar entry go to the tree asset_packs.py routes each name to (the
+TS-Graphics-Pack); the ModText rows to the mod's own ModText.csv.
 
 Render (the voxel ledger in docs/launcher-render-contracts.md):
   vxl_render.py MWAR_NOD.VXL renders_mwar --frames 32 --yaw0 90 --px-per-voxel 12
@@ -24,12 +26,12 @@ from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import asset_packs
 import ts_shp
 import ts_pack_infantry as inf
 from ts_pack_memp import vox_frames
 
 RAW = f"{inf.ART}/.raw"
-ICON_DIR = f"{inf.MOD}/Data/ART/TEXTURES/SRGB"
 
 
 def cameo():
@@ -39,14 +41,14 @@ def cameo():
     flat = Image.new("RGBA", icon.size, (0, 0, 0, 255))
     flat.alpha_composite(icon)
     big = flat.resize((flat.width * 8, flat.height * 8), Image.NEAREST).resize((341, 256), Image.LANCZOS)
-    path = f"{ICON_DIR}/BuildIcon_TS_MobileWarFactory.tga"
+    path = asset_packs.cameo_tga("BuildIcon_TS_MobileWarFactory")
     big.save(path)
     print(f"wrote {path}")
 
 
 def main():
     unit = vox_frames("renders_mwar")
-    inf.write_zip(f"{inf.UNITS_DIR}/TSMWAR.ZIP", "tsmwar", unit)
+    inf.write_zip(asset_packs.art_zip("TSMWAR", "UNITS"), "tsmwar", unit)
     inf.patch_tileset("TSMWAR", len(unit))
     cameo()
     inf.sidebar("TSMWAR", "BuildIcon_TS_MobileWarFactory")

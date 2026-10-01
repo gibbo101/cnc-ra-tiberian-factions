@@ -1,0 +1,9 @@
+{
+    "name": "CNC3-Voices-eng",
+    "description": "Command & Conquer 3 unit voice lines (English), for Red Alert Remastered mods.",
+    "author": "gibbo101",
+    "load_order": 2,
+    "version_high": 1,
+    "version_low": 0,
+    "game_type": "RA"
+}

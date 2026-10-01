@@ -8,7 +8,9 @@ stages (healthy, damaged, heavily damaged: frames 0-47); the source's fourth, ru
 is not shipped. Each frame sits on the wall packers' 176x320 canvas with the cell's centre
 on the canvas centre, the same anchoring the classic TSWALL stub declares.
 
-The art's generator lives beside the frames (src/); regenerate there, then re-run this.
+The ZIP and its TSHD_STRUCTURES.XML tile run go to the TS-HD-Graphics-Pack (asset_packs.py
+routes the name). The art's generator lives beside the frames (src/); regenerate there, then
+re-run this.
 Usage: ts_pack_gdi_wall.py [--nod]
 License: GPL v3.
 """
@@ -17,6 +19,7 @@ from PIL import Image
 
 SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, SCRIPTS)
+import asset_packs
 import ts_pack_walls as W
 
 ART = os.path.join(SCRIPTS, "..", "resources", "custom-art")
@@ -43,7 +46,7 @@ def main():
         cv.paste(art, ((CANVAS_W - CELL) // 2, (CANVAS_H - CELL) // 2))
         frames.append(cv)
     low = tileset.lower()
-    out_zip = f"{W.STRUCT_DIR}/{tileset}.ZIP"
+    out_zip = asset_packs.art_zip(tileset, "STRUCTURES")
     with zipfile.ZipFile(out_zip, "w", zipfile.ZIP_DEFLATED) as z:
         for i, cv in enumerate(frames):
             bbox = cv.getbbox() or (0, 0, CANVAS_W, CANVAS_H)
@@ -51,7 +54,7 @@ def main():
             z.writestr(f"{low}-{i:04d}.tga", buf.getvalue())
             z.writestr(f"{low}-{i:04d}.meta", json.dumps({"size": [CANVAS_W, CANVAS_H], "crop": list(bbox)}))
     print(f"wrote {out_zip} ({len(frames)} frames)")
-    W.patch_tileset(W.TILESET, tileset, len(frames))
+    W.patch_tileset(asset_packs.tileset_xml(tileset, "STRUCTURES"), tileset, len(frames))
     dims = json.load(open(W.STUB_MANIFEST))
     dims[tileset] = [CANVAS_W * 3 // 16, CANVAS_H * 3 // 16]
     json.dump(dims, open(W.STUB_MANIFEST, "w"), indent=1)

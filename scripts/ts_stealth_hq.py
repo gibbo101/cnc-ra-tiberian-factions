@@ -20,7 +20,7 @@ import hqx
 ART = os.environ.get("TS_ART_DIR")
 if not ART:
     raise SystemExit("set TS_ART_DIR")
-MOD = "/home/gibbo101/Documents/development/cnc-remastered-mods/cnc-ra-tiberian-factions/resources/remaster_mods/Vanilla_RA"
+MOD = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "resources", "remaster_mods", "Vanilla_RA")
 STRUCT_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/STRUCTURES"
 
 CANVAS = (256, 128)
