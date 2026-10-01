@@ -70,15 +70,18 @@ Override the SSH target with `DECK_HOST=user@hostname ./deploy.sh` if your Deck 
 ## Credits
 
 - **EA / Petroglyph:** original Tiberian Dawn (1995) and Red Alert (1996), and the 2020 Remastered Collection.
+- **Westwood Studios / EA:** Tiberian Sun (1999) and Red Alert 2 (2000), and **EA Los Angeles:** Command & Conquer 3: Tiberium Wars (2007), whose art and audio the [asset packs](asset-packs/) carry.
+- **hazelnut** ([SteamGridDB](https://www.steamgriddb.com/)): the Tiberian Sun GDI emblem on the TS GDI faction's cameo badges and faction icon.
 - **[The Assembly Armada](https://github.com/TheAssemblyArmada):** Vanilla Conquer maintainers.
 
 This mod is not endorsed by or affiliated with Electronic Arts.
 
 ## Acknowledgements & Inspiration
 
-This project doesn't bundle these mods, but their work shaped how we approached the engine. Thanks to:
+None of these are bundled, but their work shaped how we approached the engine. Thanks to:
 
 - **Reilsss**, [Reilsss's Command & Conquer in Red Alert](https://steamcommunity.com/sharedfiles/filedetails/?id=2853520457): asset-replacement approach for reimagining RA factions as GDI/Nod.
 - **DontCryJustDie**, [TD-Assets](https://steamcommunity.com/sharedfiles/filedetails/?id=3003163891): TD art and audio surfaced into the RA engine; reference for the `TD`-prefixed naming convention.
 - **JohnnyJigglez**, [EMC (Enhanced Modding Capabilities)](https://www.nexusmods.com/commandandconquerremastered/mods/21): INI-driven custom buildings/vehicles patterns informed our extensibility approach.
 - **ChthonVII**, [CFE Patch Redux](https://steamcommunity.com/sharedfiles/filedetails/?id=2268301299): engine-fix reference.
+- **The OpenTS Developers**, [OpenTS](https://github.com/OpenTS-Developers/OpenTS): open-source Tiberian Sun reimplementation; the reference for the Tiberian Sun units' stats, weapons and rules, and for porting TS behaviours such as subterranean travel.
