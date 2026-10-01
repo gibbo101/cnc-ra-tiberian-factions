@@ -21,7 +21,10 @@ Workshop map browser at TD's, whose green panels match the mod's menu.
   UI_CUSTOM_MAP_FILE_ENTRY.BUI
   BUTTONFACTIONCOMBOBOX.BUI    the slot's faction picture (Combo_Quad) is sized for TD's small
                                square icons; RA's picker emblems are 150x80 plates, so it takes the
-                               on-screen size RA's own slot gives them, about its centre.
+                               on-screen size RA's own slot gives them, about its centre. Its
+                               drop-down list (Combo_Listbox) is three rows tall for TD's factions,
+                               with a blank scroll bar; it is made eight rows tall, one per RA country, so every row
+                               the launcher lists is on show.
 
 Each file keeps its byte size (bui_tree.py).
 """
@@ -39,6 +42,9 @@ HEADER_LABELS = (b'16 Point Outline', b'G16')
 FACTION_QUAD = b'Combo_Quad'
 STOCK_QUAD = (0.266, 0.029, 0.4787, 0.1484)
 RA_SIZED_QUAD = (0.1332, 0.0417, 0.7442, 0.1231)
+FACTION_LIST = b'Combo_Listbox'
+STOCK_LIST = (0.0426, 0.2097, 0.7234, 0.5774)
+LIST_ROWS = (3, 8)
 
 
 def td_screen(green_buttons, header_labels):
@@ -91,6 +97,13 @@ def faction_quad(roots):
     got = tuple(round(v, 4) for v in struct.unpack_from('<4f', widget, at))
     assert got == STOCK_QUAD, f'faction picture rect is {got}'
     struct.pack_into('<4f', widget, at, *RA_SIZED_QUAD)
+    lists = headers(roots, FACTION_LIST)
+    assert len(lists) == 1, f'found {len(lists)} faction lists'
+    widget, at = micro_floats(lists[0], 0x02)
+    got = tuple(round(v, 4) for v in struct.unpack_from('<4f', widget, at))
+    assert got == STOCK_LIST, f'faction list rect is {got}'
+    x, y, w, h = struct.unpack_from('<4f', widget, at)
+    struct.pack_into('<4f', widget, at, x, y, w, h * LIST_ROWS[1] / LIST_ROWS[0])
 
 
 EDITS = {'UI_SKIRMISH_GAMELOBBY': td_screen(4, 4), 'UI_LAN_GAMELOBBY': td_screen(5, 4),
