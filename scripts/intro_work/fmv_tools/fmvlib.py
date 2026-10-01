@@ -36,7 +36,7 @@ import tempfile
 
 from PIL import Image, ImageDraw, ImageFont
 
-ROOT = os.path.expanduser('~/Desktop/tf-intro-fmv')
+ROOT = os.environ.get('TF_FMV_LIB', os.path.expanduser('~/Desktop/Tiberian Factions/tf-intro-lib'))
 TOOLS = os.path.join(ROOT, 'tools')
 BK2DUMP_DIR = os.path.join(TOOLS, 'bk2dump')
 WINEPREFIX = os.path.expanduser('~/.local/opt/wine-fmv')

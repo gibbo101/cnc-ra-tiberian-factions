@@ -62,6 +62,22 @@ Jumpjet Infantry; the Upgrade Center's missing RA slab. Then the LAN Limpet test
   (`launcher-vs-dll-ownership.md`, "Launcher-resident patches"). The limpet's gameplay (attach,
   slow, sight share, LAN) is done and verified 2026-09-30.
 
+## Backlog: defer the launcher's Workshop map hashing past the startup intro (Luke, 2026-10-01)
+
+On slower machines (the Steam Deck) every startup movie, the stock one too, freezes for about a
+second some 4 s in. `log/EventsLog_0.txt` shows why: the launcher handles its Workshop database
+reply (`[pgugc] got a data file callback`, fetched from `GAMECONSTANTS.XML` PGUGCConstants
+`DatabaseDownloadURL`) as soon as the movie dialog opens, unpacks it on a worker thread for ~3 s,
+then on the MAIN thread computes `[PGUGC::UGC::Recalculate_Values] SHA256` for every local custom
+map (49 maps, ~17 ms each, ~0.8 s on the Deck) before `caching local ugc ... found N maps`. No data
+setting moves it. The intro (v7) is built around it: the stall lands in the breath between the
+logo tune and Hell March (`scripts/intro_work/README.md`).
+
+Spike: a launcher-resident patch from the DLL (like the click and key patches,
+`launcher-vs-dll-ownership.md`) that holds the database reply, or the hashing, until the movie
+dialog closes. Start from the log strings above. Test the Workshop map browser, custom-map lists
+and a LAN game afterwards: a wrong patch can break them.
+
 ## TS chrono arrival at skirmish start (Luke's idea, 2026-09-27, after the GDI roster)
 
 Lore: a Chronosphere accident rips the TS faction back through time. So a TS player's opening
