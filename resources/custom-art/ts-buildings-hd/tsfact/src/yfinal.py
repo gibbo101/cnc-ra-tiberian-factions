@@ -100,7 +100,7 @@ def prod(vname, ss=4, frames=None):
 
 # where the deploying MCV's centre stands on each view's canvas: the middle cell of the plot's
 # south row (the unit's cell; the yard's origin is the cell north-west of it)
-DEPLOY_PX = {'iso': (192.0, 192.0), 'ra': (192.0, 52.0 + 192.0), 'ra25': (248.0, 48.0 + 192.0)}
+DEPLOY_PX = {'iso': (192.0, 192.0), 'ra': (192.0, 52.0 + 192.0), 'ra25': (200.0, 16.0 + 192.0)}
 
 
 def ground_at(view, sx, sy):

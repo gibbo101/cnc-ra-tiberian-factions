@@ -24,15 +24,16 @@ def ra_view(head=40, ss=hd.SS, look=(0, -1)):
     return hd.ra_view((PLOT[0], H), (PLOT[0] / 2, oy), ss=ss, look=look)
 
 
-def ra_turned_view(ss=hd.SS, yaw=25.0, scale=0.88, size=(496, 352)):
+def ra_turned_view(ss=hd.SS, yaw=25.0, scale=0.795, shift_x=-12.3, size=(400, 288)):
     """the RA grid camera turned `yaw` degrees, like EA's RA and TD construction yards: the arch to the
-    lower left and the east side showing, at `scale`. The 3x2 plot is centred in the canvas and the
-    pad's nearest corner sits on the plot's south edge."""
+    lower left and the east side showing. The 3x2 plot is centred in the canvas; `scale` and `shift_x`
+    fit the turned yard (its pad's west corner is cut, so it is lopsided) inside the plot's three
+    columns, and the pad's nearest corner sits on the plot's south edge."""
     th = np.deg2rad(yaw)
     T = (np.sin(th), np.cos(th))
     W, H = size
     oy = (H + PLOT[1]) / 2 - scale * np.sin(np.deg2rad(32.0)) * 192.0 * (abs(T[0]) + abs(T[1]))
-    return hd.View((-T[0], -T[1]), 32.0, scale, (W, H), (W / 2, oy), margin=(64, 64), ss=ss)
+    return hd.View((-T[0], -T[1]), 32.0, scale, (W, H), (W / 2 + shift_x, oy), margin=(64, 64), ss=ss)
 
 
 def render(view, model_kw=None, fan_angle=0.0, lamps=1.0, want=('img', 'trim'), level=0):
