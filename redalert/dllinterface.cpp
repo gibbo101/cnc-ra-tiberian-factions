@@ -7104,10 +7104,10 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
     **  and of every vehicle -- so the ordering can be read off rather than
     **  reasoned about. Build a vehicle at each factory and diff the two.
     **
-    **  Per [[feedback-keep-diagnostics-until-v1]] this stays in source; flip
-    **  to #if 0 to silence it.
+    **  Per [[feedback-keep-diagnostics-until-v1]] this stays in source, off;
+    **  flip to #if 1 to trace. It writes a line per draw, every frame.
     */
-#if 1 // TF DIAG — war factory sort order (on: chasing the roof leak 2026-08-07 22:35).
+#if 0 // TF DIAG — war factory sort order.
     {
         bool interesting = false;
         if (object != NULL) {
