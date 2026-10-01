@@ -1260,8 +1260,6 @@ def loop(d):
 # moved to SIZEPASS below) ----
 # (ini, base_dir, anims_dirs, mk_dir, mk_count, canvas, target_w, cameo_dir, name, desc)
 WAVE2 = [
-    ("TSSILO", "shp_gtsilo", [],
-     "shp_gtsilomk", 19, (256, 256), 250, "shp_siloicon", "TS Tiberium Silo", "Stores excess Tiberium."),
     ("TSHPAD", "shp_gthpad", ["shp_gthpad_a"],
      "shp_gthpadmk", 19, (256, 256), 256, "shp_heliicon", "TS Helipad", "Rearms Tiberian-era aircraft."),
     ("TSDEPT", "shp_gtdept", ["shp_gtdept_a", "shp_gtdept_b"],
@@ -1613,14 +1611,16 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
 
 # ---- TSFACT: packed from its HD rebuild by scripts/ts_pack_hd_buildings.py.
 
-# ---- TSPOWR and TSTURB: packed from their HD rebuild by scripts/ts_pack_hd_buildings.py
-# (the plant per turbine level, and the turbine's placement ghost). Only the turbine's
-# sidebar entry is emitted here.
+# ---- TSPOWR, TSTURB and TSSILO: packed from their HD rebuild by
+# scripts/ts_pack_hd_buildings.py. Only their sidebar entries are emitted here.
 if os.path.isdir(f"{ART}/shp_turbicon"):
     CURRENT_INI[0] = "TSTURB"
     emit_sidebar_data("TSTURB", "Power Turbine",
                       "Installs into a Tiberian Power Plant, adding 50 power. Two per plant.",
                       "shp_turbicon")
+if os.path.isdir(f"{ART}/shp_siloicon"):
+    CURRENT_INI[0] = "TSSILO"
+    emit_sidebar_data("TSSILO", "TS Tiberium Silo", "Stores excess Tiberium.", "shp_siloicon")
 
 # ---- TSPLUG: TS GDI Upgrade Centre (3x2 TSTECH twin, GAPLUG art) + the Ion
 # Cannon Uplink plug (TSPION). GTPLUG anim windows: _A masts 20 real (10/10

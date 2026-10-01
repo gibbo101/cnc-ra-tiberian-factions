@@ -1478,6 +1478,23 @@ int BuildingClass::Shape_Number(void) const
                         shapenum += 5;
                     }
 
+                } else if (*this == STRUCT_TSSILO) {
+
+                    /*
+                    **	The TS silo shows its Tiberium through the glass at four levels (empty, a
+                    **	third, two thirds, full). Each level is a block of the lamps' idle loop,
+                    **	healthy then damaged.
+                    */
+                    int const loop = Class->Anims[BSTATE_IDLE].Start + Class->Anims[BSTATE_IDLE].Count;
+                    int level = 0;
+                    if (House->Capacity) {
+                        level = (House->Tiberium * 4) / House->Capacity;
+                    }
+                    shapenum += Bound(level, 0, 3) * 2 * loop;
+                    if (Health_Ratio() <= Rule.ConditionYellow) {
+                        shapenum += loop;
+                    }
+
                 } else {
 
                     /*

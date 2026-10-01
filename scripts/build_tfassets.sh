@@ -546,7 +546,7 @@ ts_stub TSFSDF "$TMPDIR/tsfsdf_stub.shp" 33 60 64
 PACK_ARGS+=("$TMPDIR/tsfsdf_stub.shp:TSFSDF.SHP")
 ts_stub TSSILO "$TMPDIR/tssilo_stub.shp" 48 48 2
 PACK_ARGS+=("$TMPDIR/tssilo_stub.shp:TSSILO.SHP")
-ts_stub TSSILO "$TMPDIR/tssilomk_stub.shp" 48 48 19
+ts_stub TSSILO "$TMPDIR/tssilomk_stub.shp" 48 48 24
 PACK_ARGS+=("$TMPDIR/tssilomk_stub.shp:TSSILOMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/railfx_stub.shp" 24 24 12
 PACK_ARGS+=("$TMPDIR/railfx_stub.shp:RAILFX.SHP")

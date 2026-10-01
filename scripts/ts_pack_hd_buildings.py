@@ -35,7 +35,9 @@ HAZE_ALPHA = 4
 
 # ini: the source folder, the build-up as (path prefix, frames) or None, and the tileset
 # frames, either frames=(path prefix, count) or base=path prefix with runs=[(frames,
-# overlays)], overlays as (path prefix, healthy frames, damaged frames). Paths take -NN.png.
+# overlays)], overlays as (path prefix, healthy frames, damaged frames). blocks=[overlays, ...]
+# repeats the whole healthy + damaged set once per entry with those overlays drawn first.
+# Paths take -NN.png.
 BUILDINGS = {
     "TSFACT": dict(src="tsfact", make=("build-up/construction-yard-build", 32),
                    base="yard/construction-yard", runs=[
@@ -55,6 +57,12 @@ BUILDINGS = {
                    frames=("loop/power-plant-loop", 72)),
     # the turbine's placement ghost; it never stands on the map, it installs into a plant
     "TSTURB": dict(src="tspowr", make=None, frames=("pod-128/power-pod", 2)),
+    # one block per fill level (empty, a third, two thirds, full: the Tiberium through the glass),
+    # each the lamps' 16-frame loop healthy then damaged: the block Shape_Number picks by how
+    # full the house's storage is
+    "TSSILO": dict(src="tssilo", make=("build-up/silo-build", 24), base="silo/silo",
+                   blocks=[[("A-tiberium/silo-tiberium", [lv], [lv + 4])] for lv in range(4)],
+                   runs=[(16, [("B-lamps/silo-lamps", range(0, 16), range(16, 32))])]),
 }
 
 
@@ -83,15 +91,16 @@ def frames(src, spec):
         tiles = [load(path, i) for i in range(count)]
     else:
         tiles = []
-        for state in (0, 1):
-            base = load(spec["base"], state)
-            for count, overlays in spec["runs"]:
-                for i in range(count):
-                    img = base.copy()
-                    for path, healthy, damaged in overlays:
-                        seq = (healthy, damaged)[state]
-                        img.alpha_composite(load(path, seq[i % len(seq)]))
-                    tiles.append(img)
+        for block in spec.get("blocks", [[]]):
+            for state in (0, 1):
+                base = load(spec["base"], state)
+                for count, overlays in spec["runs"]:
+                    for i in range(count):
+                        img = base.copy()
+                        for path, healthy, damaged in block + overlays:
+                            seq = (healthy, damaged)[state]
+                            img.alpha_composite(load(path, seq[i % len(seq)]))
+                        tiles.append(img)
     make = []
     if spec["make"]:
         path, count = spec["make"]

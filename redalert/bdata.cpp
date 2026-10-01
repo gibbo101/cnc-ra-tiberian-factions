@@ -5826,6 +5826,7 @@ void BuildingTypeClass::One_Time(void)
         // producing while a placed building goes up (Mission_Repair); damaged block at +50.
         {STRUCT_TSFACT, BSTATE_IDLE, 0, 30, 4},
         {STRUCT_TSFACT, BSTATE_ACTIVE, 30, 20, 3},
+        {STRUCT_TSSILO, BSTATE_IDLE, 0, 16, 4},  // HD silo: the blades' lamps; one 32-frame block per fill level
         {STRUCT_TSPOWR, BSTATE_IDLE, 0, 12, 4},  // HD plant: tower lights + pods turning; one 24-frame block per turbine level
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 28, 3},  // GAPILE halved windows _A(4)+_B(4)+_C(7 flag) -> LCM 28
         {STRUCT_TSPROC, BSTATE_IDLE, 0, 16, 3}, // NAREFN _C deck lights (fireball + lid are event layers)
