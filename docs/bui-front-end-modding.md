@@ -8,8 +8,8 @@
 
 ## TL;DR — what this buys us (and what it doesn't)
 
-- **YES — cosmetic reshape of EXISTING widgets** on any front-end/HUD screen: reposition, resize, hide/show, retint, and same-length texture/text-key swaps. **Proven on both surfaces:** the front-end (main-menu reorder ships in production) **and** the in-game HUD (Deck-confirmed 2026-07-11 — a hide edit on `RA_TACTICAL_UI.BUI`'s Soviet faction-logo rect removed that logo live in a skirmish).
-- **NO — adding new options/structure.** You cannot add a widget/row/screen, because (a) any payload growth violates the same-size rule below, and (b) the things we'd *want* to add are code-populated from compiled C++ enums/type-managers in `ClientG.exe`, not from `.bui` data.
+- **YES — cosmetic reshape of EXISTING widgets** on any front-end/HUD screen: reposition, resize, hide/show, retint, retexture and restyle text (strings may change length), plus nodes the launcher already reads (effects, font styles). Whole front-end screens can be swapped for TD's through `FACTIONS.XML` (2026-10-01 section). **Proven on both surfaces:** the front-end (main-menu reorder ships in production) **and** the in-game HUD (Deck-confirmed 2026-07-11 — a hide edit on `RA_TACTICAL_UI.BUI`'s Soviet faction-logo rect removed that logo live in a skirmish).
+- **NO — adding new options or behaviour.** The things we'd *want* to add are code-populated from compiled C++ enums/type-managers in `ClientG.exe`, not from `.bui` data. (Payload growth itself is fine while it recompresses under the file's size.)
 - Treat this as a **polish / faction-identity** capability, not a feature unlock. It does **not** revive the 5th-faction or playable-GDI/Nod-campaign goals — those stay dead on engine walls.
 
 ---
@@ -57,8 +57,8 @@ The broader property vocabulary seen in scene graphs (esp. `RA_TACTICAL_UI.BUI`)
 3. **Pad the file back to the exact original member size** with trailing `0x00`. The loader reads only `csize` bytes, so the pad is ignored (verified: our shipped 5274-byte `RA_MAIN_MENU.BUI` is base-size with trailing pad, over a same-length edited payload).
 
 Consequences:
-- Big/compressible screens have generous pad budgets (map-select ~316 B, tactical HUD ~421 B). Tiny files have almost none — `BUTTONFACTIONCOMBOBOX.BUI` has only ~3 B of L9 headroom, so it is nearly unmoddable even for same-length edits.
-- **Structural growth is impossible** — a new widget/row grows the payload past the cap, so it cannot use the pad path at all. This is the hard wall against "add an option."
+- Big/compressible screens have generous pad budgets (map-select ~316 B, tactical HUD ~421 B). Tiny files have almost none (`BUTTONFACTIONCOMBOBOX.BUI` ~3 B, `UI_CUSTOM_MAP_FILE_ENTRY.BUI` 0 B): float edits and shorter strings still fit, and emptying placeholder text the launcher overwrites frees more (see the 2026-10-01 section).
+- **Growth is fine while it compresses under the cap.** A longer string, an extra leaf or a whole appended node is safe if the recompressed stream still fits the file's size. `scripts/bui_tree.py` parses the tree, lets you edit nodes, and writes it back at the base's size; containers count children, so only the edited leaf's size changes. A large addition (a whole new screen section) still won't fit.
 
 ---
 
@@ -78,6 +78,8 @@ Consequences:
 9. ship that CONFIG.MEG in the mod
 ```
 
+Newer builders (`bui_dialogbox_build.py`, `bui_loadingscreen_build.py`, `bui_lobby_build.py`, `fontlib_build.py`) use `scripts/bui_tree.py` instead of byte offsets: `load(base)`, edit nodes (`headers()` finds a widget by name, `micro_floats()` its rect or tint, `replace_texture_set()` a set name), then `write_same_size(...)`.
+
 Always edit from the **pristine base** member and re-derive offsets against expected values (the base can shift between game patches) — `bui_mainmenu_build.py` asserts a table of expected rects for exactly this reason.
 
 ---
@@ -92,11 +94,19 @@ Always edit from the **pristine base** member and re-derive offsets against expe
 | **W4 in-game tactical HUD** | **SOLVED 2026-09-02 by data: `FACTIONS.XML` scene lists — GDI/Nod load TD's `Tactical_UI.bui`, RA sides keep `RA_Tactical_UI.bui` with the side label hidden (`faction-select-identity.md`). Per-faction logos in the RA scene were the DLL RAM patch (`radar-crest-ram-spike.md`)** | Cosmetic edits (reposition/retint/hide/retexture) of existing HUD widgets are real and shippable, and structural widget insertion now works too (format cracked — see the RESOLVED NEGATIVE section). But **per-faction GDI/Nod crests are engine-walled**: ClientG's compiled mapping sends all RA Allied-side countries (incl. our GDI=Spain, Nod=Turkey) to `SideBar_FactionLogo_Allies` and Soviet-side to `_Soviet`; `_GDI`/`_NOD` are TD-mode-only lookups. HUD identity via `.bui` is limited to **side-level or mod-wide** styling. Builder: `scripts/bui_work/faction_logos_build.py`. |
 | **W5 `a` / `/` select-all/deploy hotkey classification** | **SOLVED 2026-09-02 on the DLL side, not via BUI** (`launcher-vs-dll-ownership.md`: the DLL polls the key itself and vetoes the launcher's select-all hand-over) | Hardcoded in ClientG (`RTSInputManagerClass`, registered-type identity); not expressed in any `.bui` or shipped script. Per-frame export spoofs already Deck-proven no-op. |
 
-**The line to remember:** cosmetic reshape of existing widgets = reachable; new options/structure = not.
+**The line to remember:** reshaping, retexturing and recolouring existing widgets, and adding nodes the launcher already reads (effects, font styles), is reachable; new options or behaviour the launcher has no code for is not.
 
 ### ClickScript / Lua
 
-ClientG embeds a ClickScript bytecode VM and a full Lua (pglua) VM, and there's a `SERVER_TO_CLIENT_CLICK_SCRIPT_EVENT`. This is a **behaviour** layer, but: it is not a DLL lever (our CNC callback has no clickscript member — host-originated only), and list/roster population that we'd want to change is compiled-C++, not script-driven. Treat scripting as out of reach for our goals until a specific, evidence-backed need appears. (Not fully mapped — the one remaining thread if shell-*behaviour* ever becomes a target.)
+ClientG embeds a ClickScript bytecode VM and a full Lua (pglua) VM, and there's a `SERVER_TO_CLIENT_CLICK_SCRIPT_EVENT`. This is a **behaviour** layer, but: it is not a DLL lever (our CNC callback has no clickscript member — host-originated only), and list/roster population that we'd want to change is compiled-C++, not script-driven. Treat scripting as out of reach for our goals until a specific, evidence-backed need appears. (Not fully mapped — the one remaining thread if shell-*behaviour* ever becomes a target.) No `.lua` ships in any MEG (checked 2026-10-01), and every keyframe animation in a shipping `.bui` is started by name from ClientG, so neither is a route to new motion.
+
+## Front-end screens, text and motion (2026-10-01)
+
+- **Which screen opens is data.** The RA front end takes its screens from the Soviet entry (Faction5) `GUIFileNames` in `FACTIONS.XML` (lobbies, LAN, Workshop browser, loading screen, DialogBox…). Pointing a key at TD's screen name (no `RA/` prefix) swaps the whole screen. Proven for the skirmish lobby, LAN lobby, LAN match list and Workshop browser (`factions_build.py` FRONT_END).
+- **Text colour:** `FONTLIBRARY.BFD` is a flat list of named styles `[name, face, props]`, colour at `0b 10`. New styles can be appended (`fontlib_build.py`: G16/G18/G18R/G15R). The launcher recolours some text widgets it names (`Combo_Text`, `Map_Name_Text`), so a tint doesn't hold there. Use a coloured style.
+- **Bytes:** placeholder text the launcher overwrites (`Player_Name`, `A Path Beyond`, the dialog caption) can be emptied to free room in tiny files. Pure (0, 1, 0) tints compress best.
+- **Motion:** the loading spinner is a fixed 4×4 grid at 24 fps (0.67 s loop). Keyframe animations in `.bui` files only play when ClientG starts them by name, and no `.lua` ships. GUIEFFECTS sheens attach with an `id 0x16` leaf and loop by themselves. The fullscreen variant (Logo_Sheen) multiplies the widget's alpha by the texture's and adds its colour.
+- **Atlas plates:** TD's lobby fills are about 10% alpha, and plates show about 1.47× brighter in game than their texture values (`lobby_art.py`).
 
 ---
 
@@ -105,7 +115,7 @@ ClientG embeds a ClickScript bytecode VM and a full Lua (pglua) VM, and there's 
 - **Boot crash on size change** is the dominant risk — never let a member's outer byte size drift from base. The pad-to-exact-size step is mandatory.
 - **Recompress overflow** — if `len(comp) > original_csize` you cannot pad down; rework/shrink the edit. Thin budgets on small files.
 - **Structural corruption** — unbalanced/over-deep chunks trip ChunkFile's depth/close guards → load abort. Don't restructure; edit in place.
-- **Safe envelope** = same-decompressed-length only: in-place rect/tint float overwrites at verified `02 10`/`03 10` tags, 1-byte flag flips, and equal-length ASCII string swaps. Length-changing string edits require patching the local `u16` length prefix **and** any enclosing chunk-size field — traceable but not zero-risk given the partial grammar.
+- **Safe envelope** = edits through `scripts/bui_tree.py` (or in-place float and flag overwrites at verified `02 10`/`03 10` tags): string leaves may change length, leaves may be added to a container (its count follows), and the result must recompress under the base's size. Texture-set names are micro-chunks inside a header leaf (`0f <size> <u16 len>`); `replace_texture_set` rewrites one and its leaf's size.
 - **Residual uncertainty (now small):** the main-menu artifact proves pad-tolerance + same-size-safety **for a `.bui`**, so the earlier "Deck-unconfirmed" caveats are largely retired. What remains unproven is that *other* screens (HUD/map-select) render correctly in-context after a same-size edit — mechanically identical to the proven case, but not yet observed.
 
 ---

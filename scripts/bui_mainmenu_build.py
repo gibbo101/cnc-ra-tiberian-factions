@@ -4,6 +4,9 @@ Rebuild RA_MAIN_MENU.BUI with our custom main-menu layout:
   - remove START NEW GAME (no GDI/Nod campaign exists)
   - promote MISSION SELECT to the top
   - close the gap so the remaining 9 buttons are a contiguous list
+  - draw the buttons with the menu's own steel texture set and green labels
+  - green BUILD / VERSION lines, TD's neutral box sheen, and the Bonus Gallery's
+    new-content glow in green on its own row
 
 HOW THE .BUI WORKS (see memory: project-main-menu-bui-spike)
   File = 0x24-byte "CH" header + zlib stream.
@@ -15,10 +18,11 @@ HOW THE .BUI WORKS (see memory: project-main-menu-bui-spike)
   button (frame + label move together).
 
 THE KEY CONSTRAINT
-  The launcher CRASHES on load if the BUI file size changes. So every edit must
-  keep the DECOMPRESSED length constant (edit floats in place; never add/remove
-  bytes), and after recompressing we PAD the file back to the original byte size
-  with trailing zeros. zlib stops at its own stream end, so the pad is ignored.
+  The launcher CRASHES on load if the BUI file size changes. Rect and tint edits
+  overwrite floats in place; a string may change length inside its own leaf node,
+  since containers count children rather than bytes. After recompressing we PAD
+  the file back to the original byte size with trailing zeros (zlib stops at its
+  own stream end, so the pad is ignored); the stream must fit inside that size.
 
 GOTCHAS
   - Tag offsets must be found by exact `b'\x02\x10'` position; eyeballing is off.
@@ -78,6 +82,50 @@ set_y(4685, 0.4973)   # BONUS GALLERY    -> row 5
 set_y(7171, 0.5967)   # OPTIONS          -> row 6
 set_y(7579, 0.6962)   # HELP             -> row 7
 set_y(7966, 0.7957)   # EXIT GAME        -> row 8
+
+# --- the Bonus Gallery's new-content glow follows its button up a row ---------
+assert rd(5090) == (0.0, 0.5895, 1.0, 0.1175), 'bonus notification rect moved'
+set_y(5090, 0.4901)   # keeps the stock 0.0072 offset above BONUS GALLERY
+
+# --- the BUILD / VERSION lines: green like the button labels, not RA red -------
+for off in (11977, 12271):
+    assert raw[off:off+2] == b'\x03\x10' and rd(off)[:3] == (0.6863, 0.0, 0.0), f'tint@{off} moved'
+    struct.pack_into('<4f', raw, off + 2, 0.40, 0.85, 0.40, 1.0)
+
+# --- buttons: the menu's own steel texture set and green labels --------------
+# The stock set is shared with the in-game sell/repair buttons, so the menu names its own
+# (built by gui_texturesets_build.py, same length). The label style is FONTLIBRARY.BFD's
+# "24 Point Regular Outline Green", the one TD's menu uses: a string property is a leaf node
+# [u32 id=3][u32 size][u16 len][ascii] and containers count children rather than bytes, so
+# the longer name only changes its own leaf header (docs/bui-front-end-modding.md).
+def string_leaf(s):
+    return struct.pack('<IIH', 3, len(s) + 2, len(s)) + s
+
+STOCK_SET, MENU_SET = b'TacticalSidebarSellRepairButton', b'TF_MainMenuSteelButton_Textures'
+RED_LABEL = string_leaf(b'24 Point Regular Outline Red')
+GREEN_LABEL = string_leaf(b'24 Point Regular Outline Green')
+assert len(MENU_SET) == len(STOCK_SET)
+assert raw.count(STOCK_SET) == 11 and raw.count(RED_LABEL) == 11, 'base BUI changed; recount buttons'
+raw = bytearray(bytes(raw).replace(STOCK_SET, MENU_SET).replace(RED_LABEL, GREEN_LABEL))
+
+# --- the box's sweeping sheen: TD's neutral effect instead of RA's red one ----
+# GUIEFFECTS.CFX: Scanline_Sheen_Red draws ra_ui_scan_sheen_red, Scanline_Sheen ui_scan_sheen.
+# An effect name is a leaf [u32 id=0x16][u32 size][17 <len+2>][u16 len][ascii], encoded as in
+# TD's screens.
+def effect_leaf(s):
+    return struct.pack('<IIBBH', 0x16, len(s) + 4, 0x17, len(s) + 2, len(s)) + s
+
+RED_SHEEN, PLAIN_SHEEN = effect_leaf(b'Scanline_Sheen_Red'), effect_leaf(b'Scanline_Sheen')
+assert raw.count(RED_SHEEN) == 1, 'base BUI changed; find the sheen effect again'
+raw = bytearray(bytes(raw).replace(RED_SHEEN, PLAIN_SHEEN))
+
+# --- the new-content glow in TD green (texture leaf: id 2, same shape as a string) -----
+def texture_leaf(s):
+    return struct.pack('<IIH', 2, len(s) + 2, len(s)) + s
+
+RED_GLOW, GREEN_GLOW = texture_leaf(b'ra_ui_bonusbuttonhighlight'), texture_leaf(b'ui_bonusbuttonhighlight')
+assert raw.count(RED_GLOW) == 1, 'base BUI changed; find the bonus glow again'
+raw = bytearray(bytes(raw).replace(RED_GLOW, GREEN_GLOW))
 
 # --- recompress, fix header, pad back to the ORIGINAL file size --------------
 comp = zlib.compress(bytes(raw), 9)

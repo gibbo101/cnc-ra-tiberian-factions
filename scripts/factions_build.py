@@ -17,6 +17,10 @@ change size (offsets resolve against the base archive):
     swapped, so those factions
     load TD's HUD scene (wide sell/repair/map bar, TD power meter, no side label) while the RA
     sides keep RA's. Same bytes, just exchanged.
+  * FRONT_END: the RA front end takes its screens from the Soviet entry's (Faction5) GUIFileNames.
+    Its skirmish lobby, LAN lobby, LAN match list and Workshop map browser are pointed at Tiberian
+    Dawn's own screens, green where RA's are red; each value is shorter, and its line is padded
+    with spaces after the closing tag.
   * HIDE (optional, off by default): entries named on the command line are wrapped in XML
     comments; the launcher keeps a blank, still-selectable row for each, which is why it is off.
 
@@ -34,6 +38,9 @@ TD_HUD = ['Faction3', 'Faction4']
 # TF_TS_GDI_FACTION=0 the row is an Allied duplicate and keeps RA's HUD scene.
 if os.environ.get('TF_TS_GDI_FACTION', '1') != '0':
     TD_HUD.append('Faction8')
+FRONT_END = {'Faction5': [(b'<Value>RA/RA_UI_%s</Value>' % s, b'<Value>UI_%s</Value>' % s)
+                          for s in (b'Skirmish_GameLobby', b'LAN_GameLobby', b'LAN_MultiplayerMenu',
+                                    b'WorkshopMap_Browse')]}
 SCENE_TD = b'Art/GUI/Tactical_UI.bui'
 SCENE_RA = b'Art/GUI/RA_Tactical_UI.bui'
 
@@ -71,6 +78,9 @@ def main(base, out, hide):
             swapped = block.replace(SCENE_TD, b'\0SWAP\0').replace(SCENE_RA, SCENE_TD).replace(b'\0SWAP\0', SCENE_RA)
             assert len(swapped) == len(block), name
             block = swapped
+        for old, new in FRONT_END.get(name, []):
+            assert block.count(old) == 1, (name, old)
+            block = block.replace(old, new + b' ' * (len(old) - len(new)))
         if name in hide:
             inner = block.replace(b'<!--', b'<!  ').replace(b'-->', b'  >').replace(b'--', b'- ')
             wrapped = b'<!--' + inner + b'-->'

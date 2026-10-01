@@ -2184,10 +2184,10 @@
 
 	<MusicEvent Name="RAC_MUS_RA_MAIN_MENU">
 		<PlayList>
-			<Entry> RAC_MUS_INTRO_MENU.WAV </Entry>
+			<Entry> RAC_MUS_Hell_March_Retaliation_Remix.WAV </Entry>
 		</PlayList>
 		<VolumePercent> 50 </VolumePercent>
-		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<FadeInSeconds> 3.0 </FadeInSeconds>
 		<ContinueLastSample> No </ContinueLastSample>
 		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
 		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
@@ -2417,10 +2417,10 @@
 
 	<MusicEvent Name="RAR_MUS_RA_MAIN_MENU">
 		<PlayList>
-			<Entry> RAR_MUS_INTRO_MENU.WAV </Entry>
+			<Entry> RAR_MUS_Hell_March_Retaliation_Remix.WAV </Entry>
 		</PlayList>
 		<VolumePercent> 50 </VolumePercent>
-		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<FadeInSeconds> 3.0 </FadeInSeconds>
 		<ContinueLastSample> No </ContinueLastSample>
 		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
 		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
@@ -2665,10 +2665,10 @@
 
 	<MusicEvent Name="RAB_MUS_RA_MAIN_MENU">
 		<PlayList>
-			<Entry> RAR_MUS_INTRO_MENU.WAV </Entry>
+			<Entry> RAR_MUS_Hell_March_Retaliation_Remix.WAV </Entry>
 		</PlayList>
 		<VolumePercent> 50 </VolumePercent>
-		<FadeInSeconds> 0.0 </FadeInSeconds>
+		<FadeInSeconds> 3.0 </FadeInSeconds>
 		<ContinueLastSample> No </ContinueLastSample>
 		<ContinueLastSampleThreshold> 0.75 </ContinueLastSampleThreshold>
 		<FadeOutPrevSeconds> 1.0 </FadeOutPrevSeconds>
@@ -2892,4 +2892,4 @@
 	<!-- JUKEBOX list is Built by <MusicJukeboxTracksList> in Audio_System_Constants.xml -->
 
 
-<!-- pad                                                                                                                                                                --><!--                                                                                                                                                                                                                                                                                                                                                                                      --></MusicEvents>
+<!-- pad                                                                                                                                                                --><!--                                                                                                                                                                                                                                                                                                                                --></MusicEvents>
