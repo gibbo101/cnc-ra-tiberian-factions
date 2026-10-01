@@ -1,29 +1,24 @@
 #!/usr/bin/env python3
-"""Pack the HD TS buildings (resources/custom-art/ts-buildings-hd/<ini>/) into the mod tree.
+"""Pack the HD TS buildings (resources/custom-art/ts-buildings-hd/<src>/) into the mod tree.
 
-Each source folder holds one building drawn on RA's square grid, its plot centred in the canvas:
-  yard/<prefix>-00.png, -01.png      healthy, damaged
-  build-up/<prefix>-build-NN.png     the construction frames
-  <overlay dir>/<prefix>-<tag>-NN.png   idle overlays, drawn over the building frame of the same state
-(-trim.png masks sit beside every frame and are not packed.)
+Each source folder holds buildings drawn on RA's square grid, the plot centred in the canvas
+(-trim.png masks sit beside every frame and are not packed). A building's tileset frames are
+either finished frames taken as they are, or composed: the building (healthy, damaged) with
+overlays drawn over it, per state the runs in order (the idle loop, then the active run when the
+building has one), each frame carrying every overlay's frame i mod its length, so a one-frame
+overlay holds still. The damaged block starts where the healthy one ends, which is where
+Shape_Number looks for it (the largest end of the IDLE and ACTIVE ranges in bdata.cpp).
 
-Written per building (RA_STRUCTURES.XML patched):
-  <INI>.ZIP       per state, healthy then damaged: the idle loop, then the active run when the
-                  building has one. Each frame is the building with every overlay's frame
-                  (i mod its length) drawn over it, so a one-frame overlay holds still. The damaged
-                  block starts where the healthy one ends, which is where Shape_Number looks for it
-                  (the largest end of the IDLE and ACTIVE ranges in bdata.cpp).
-  <INI>MAKE.ZIP   the build-up
+Written per building (RA_STRUCTURES.XML patched in place):
+  <INI>.ZIP       the tileset frames
+  <INI>MAKE.ZIP   the build-up, when the building builds up on the map
 
 The canvas is padded evenly to a height that is a multiple of 16, so the classic stub
 (canvas x 3/16, scripts/ts_stub_dims.json) is a whole number and the plot stays centred.
 Pixels at alpha 4 or less are cleared: they are invisible, and a veil of them over the
 canvas would stop every frame cropping.
 
---compare INI=DIR packs DIR's frames (same layout, e.g. the TS-angle render) on the same
-canvas as INI under the names <INI>I / <INI>IMAKE, for a side-by-side view in game.
-
-Usage: ts_pack_hd_buildings.py [INI ...] [--compare INI=DIR]
+Usage: ts_pack_hd_buildings.py [INI ...]
 License: GPL v3.
 """
 import io, json, os, re, sys, zipfile
@@ -38,21 +33,28 @@ XML = f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML"
 STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
 HAZE_ALPHA = 4
 
-# ini: source prefix, build-up frames, and the animation runs in tileset order, each
-# (frames, overlays) with overlays as (dir, tag, healthy frames, damaged frames). The runs
-# match the building's BSTATE_IDLE / BSTATE_ACTIVE entries in bdata.cpp.
+# ini: the source folder, the build-up as (path prefix, frames) or None, and the tileset
+# frames, either frames=(path prefix, count) or base=path prefix with runs=[(frames,
+# overlays)], overlays as (path prefix, healthy frames, damaged frames). Paths take -NN.png.
 BUILDINGS = {
-    "TSFACT": dict(prefix="construction-yard", make=32, runs=[
+    "TSFACT": dict(src="tsfact", make=("build-up/construction-yard-build", 32),
+                   base="yard/construction-yard", runs=[
         # idle: fans turning, the door lamp sweeping, the roof lamps pulsing
-        (30, [("A-fans", "fans", range(0, 10), range(10, 20)),
-              ("B-door-lamp", "door-lamp", range(0, 10), range(10, 20)),
-              ("C-roof-lamps", "roof-lamps", range(0, 15), range(15, 30))]),
+        (30, [("A-fans/construction-yard-fans", range(0, 10), range(10, 20)),
+              ("B-door-lamp/construction-yard-door-lamp", range(0, 10), range(10, 20)),
+              ("C-roof-lamps/construction-yard-roof-lamps", range(0, 15), range(15, 30))]),
         # active, while a placed building goes up: the hangar lights up and the claw builds a
         # crate; the roof lamps hold steady and the door lamp is off (the producing art covers it)
-        (20, [("A-fans", "fans", range(0, 10), range(10, 20)),
-              ("C-roof-lamps", "roof-lamps", [8], [23]),
-              ("D-producing", "producing", range(0, 20), range(0, 20))]),
+        (20, [("A-fans/construction-yard-fans", range(0, 10), range(10, 20)),
+              ("C-roof-lamps/construction-yard-roof-lamps", [8], [23]),
+              ("D-producing/construction-yard-producing", range(0, 20), range(0, 20))]),
     ]),
+    # one block per turbine level (1, 2, 3 pods), each 12 healthy then 12 damaged frames of
+    # the tower's lights and the pods turning: the block Shape_Number picks by UpgradeLevel
+    "TSPOWR": dict(src="tspowr", make=("build-up/power-plant-build", 24),
+                   frames=("loop/power-plant-loop", 72)),
+    # the turbine's placement ghost; it never stands on the map, it installs into a plant
+    "TSTURB": dict(src="tspowr", make=None, frames=("pod-128/power-pod", 2)),
 }
 
 
@@ -73,23 +75,28 @@ def pad_to(img, w, h):
 
 
 def frames(src, spec):
-    p = spec["prefix"]
+    def load(path, i):
+        return Image.open(os.path.join(src, f"{path}-{i:02d}.png")).convert("RGBA")
 
-    def load(*parts):
-        return Image.open(os.path.join(src, *parts)).convert("RGBA")
-
-    loop = []
-    for state in (0, 1):
-        base = load("yard", f"{p}-{state:02d}.png")
-        for count, overlays in spec["runs"]:
-            for i in range(count):
-                img = base.copy()
-                for d, tag, healthy, damaged in overlays:
-                    seq = (healthy, damaged)[state]
-                    img.alpha_composite(load(d, f"{p}-{tag}-{seq[i % len(seq)]:02d}.png"))
-                loop.append(img)
-    make = [load("build-up", f"{p}-build-{i:02d}.png") for i in range(spec["make"])]
-    return loop, make
+    if "frames" in spec:
+        path, count = spec["frames"]
+        tiles = [load(path, i) for i in range(count)]
+    else:
+        tiles = []
+        for state in (0, 1):
+            base = load(spec["base"], state)
+            for count, overlays in spec["runs"]:
+                for i in range(count):
+                    img = base.copy()
+                    for path, healthy, damaged in overlays:
+                        seq = (healthy, damaged)[state]
+                        img.alpha_composite(load(path, seq[i % len(seq)]))
+                    tiles.append(img)
+    make = []
+    if spec["make"]:
+        path, count = spec["make"]
+        make = [load(path, i) for i in range(count)]
+    return tiles, make
 
 
 def canvas_for(imgs):
@@ -142,32 +149,26 @@ def patch_in_place(name, count):
     print(f"patched RA_STRUCTURES.XML: {name} -> {count} tiles (replaced {len(runs)})")
 
 
-def pack(name, loop, make, size):
-    loop = [clean(pad_to(i, *size)) for i in loop]
-    make = [clean(pad_to(i, *size)) for i in make]
+def pack(name, tiles, make, size):
     os.makedirs(STRUCT_DIR, exist_ok=True)
-    write_zip(f"{STRUCT_DIR}/{name}.ZIP", name.lower(), loop)
-    write_zip(f"{STRUCT_DIR}/{name}MAKE.ZIP", f"{name.lower()}make", make)
-    patch_in_place(name, len(loop))
-    patch_in_place(f"{name}MAKE", len(make))
+    write_zip(f"{STRUCT_DIR}/{name}.ZIP", name.lower(), [clean(pad_to(i, *size)) for i in tiles])
+    patch_in_place(name, len(tiles))
+    if make:
+        write_zip(f"{STRUCT_DIR}/{name}MAKE.ZIP", f"{name.lower()}make", [clean(pad_to(i, *size)) for i in make])
+        patch_in_place(f"{name}MAKE", len(make))
 
 
 def main(argv):
-    compare = dict(argv[i + 1].split("=", 1) for i, a in enumerate(argv) if a == "--compare")
     names = [a for a in argv if a in BUILDINGS] or list(BUILDINGS)
     with open(STUB_MANIFEST) as f:
         stubs = json.load(f)
     for ini in names:
         spec = BUILDINGS[ini]
-        loop, make = frames(os.path.join(SRC, ini.lower()), spec)
-        size = canvas_for(loop + make)
-        pack(ini, loop, make, size)
+        tiles, make = frames(os.path.join(SRC, spec["src"]), spec)
+        size = canvas_for(tiles + make)
+        pack(ini, tiles, make, size)
         stubs[ini] = [size[0] * 3 // 16, size[1] * 3 // 16]
         print(f"{ini}: canvas {size[0]}x{size[1]}, stub {stubs[ini][0]}x{stubs[ini][1]}")
-        if ini in compare:
-            cl, cm = frames(os.path.expanduser(compare[ini]), spec)
-            pack(f"{ini}I", cl, cm, size)
-            print(f"{ini}I: {compare[ini]} on the same canvas")
     with open(STUB_MANIFEST, "w") as f:
         json.dump(stubs, f, indent=1)
         f.write("\n")

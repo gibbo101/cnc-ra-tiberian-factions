@@ -3281,15 +3281,12 @@ static BuildingTypeClass const ClassTsPowr(STRUCT_TSPOWR,
                                            true,            // Can the building be color remapped to indicate owner?
                                            RTTI_NONE,       // The object type produced at this factory.
                                            DIR_N,           // Starting idle frame to match construction.
-                                           BSIZE_22,        // TS-authentic 2x2 box; the tower is tall, so only the
-                                                            // south row is real footprint (Luke, 2026-08-13): the
-                                                            // north tile is art spill -- units walk it, buildings
-                                                            // place there, the RA slab bib below completes a 2x2
-                                                            // total plot. Tesla/Obelisk pattern.
+                                           BSIZE_22,        // TS-authentic 2x2: the cooling tower stands on the
+                                                            // north-west cell and the three turbine sockets on the
+                                                            // other three, so the whole plot is footprint.
                                            NULL,            // Preferred exit cell list.
-                                           (short const*)List22_0011, // OCCUPYLIST: south row only.
-                                           (short const*)List22_1100  // OVERLAPLIST: north art-spill row.
-);
+                                           (short const*)List22, // OCCUPYLIST: the whole 2x2.
+                                           (short const*)NULL);
 
 // TS EMP Pulse Cannon (STRUCT_TSPULS, TS rules [NAPULS]) -- docs/emp-cannon-design.md.
 // 2x2 like the power plant, but squat (a rock mound with the cannon head on its
@@ -5827,7 +5824,7 @@ void BuildingTypeClass::One_Time(void)
         // producing while a placed building goes up (Mission_Repair); damaged block at +50.
         {STRUCT_TSFACT, BSTATE_IDLE, 0, 30, 4},
         {STRUCT_TSFACT, BSTATE_ACTIVE, 30, 20, 3},
-        {STRUCT_TSPOWR, BSTATE_IDLE, 0, 12, 3},  // GAPOWR halved windows _A(12)+_B(6) -> LCM 12
+        {STRUCT_TSPOWR, BSTATE_IDLE, 0, 12, 4},  // HD plant: tower lights + pods turning; one 24-frame block per turbine level
         {STRUCT_TSPILE, BSTATE_IDLE, 0, 28, 3},  // GAPILE halved windows _A(4)+_B(4)+_C(7 flag) -> LCM 28
         {STRUCT_TSPROC, BSTATE_IDLE, 0, 16, 3}, // NAREFN _C deck lights (fireball + lid are event layers)
         {STRUCT_TSPROC, BSTATE_FULL, 0, 16, 3}, // customer approaching: lights keep cycling

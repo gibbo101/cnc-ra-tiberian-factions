@@ -1613,50 +1613,11 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
 
 # ---- TSFACT: packed from its HD rebuild by scripts/ts_pack_hd_buildings.py.
 
-# ---- TSPOWR: TS Power Plant (2x2, POWR donor 48x48 -> 256x256).
-# Content scaled to TDNUKE (content 256 full-width). Anims: _A fan 24, _B 12
-# -> N=24. Damaged base = GTPOWR frame 1 (LIGHT).
-# Addon variants: +1/+2 Power Turbines (TSTURB installs) as extra GTPOWR_B
-# layers shifted by TS's PowerUp1/2Loc pixel anchors (ART.INI [GAPOWR]:
-# (-24,+13) and (-48,0) from the shared canvas position; ZZ/YSort are draw
-# order only). The tileset grows to 3 x 24 frames; Shape_Number selects the
-# block by UpgradeLevel.
-if os.path.isdir(f"{ART}/shp_gtpowr"):
-    powerups = []
-    for name, (dx, dy) in (("up1", (-24, 13)), ("up2", (-48, 0))):
-        dst = f"{ART}/shp_gtpowr_b_{name}"
-        os.makedirs(dst, exist_ok=True)
-        for i in range(frame_count("shp_gtpowr_b")):
-            src = Image.open(f"{ART}/shp_gtpowr_b/frame-{i:04d}.png").convert("RGBA")
-            out = Image.new("RGBA", src.size, (0, 0, 0, 0))
-            out.paste(src, (dx, dy), src)
-            out.save(f"{dst}/frame-{i:04d}.png")
-        powerups.append(loop(f"shp_gtpowr_b_{name}"))
-    build_structure("TSPOWR", "shp_gtpowr", 0, 1,
-                    [loop("shp_gtpowr_a"), loop("shp_gtpowr_b")],
-                    "shp_gtpowrmk", 13, 256, 256, bottom_margin=0,
-                    powerup_layers=powerups)
-
-# ---- TSTURB: Power Turbine addon (TS GAPOWRUP). Never a map object — the
-# tileset exists for the sidebar placement GHOST only (the DLL installs the
-# plug into a TSPOWR and consumes it, building.cpp Unlimbo divert). Art = the
-# plant's own GTPOWR_B turbine sprite, cropped and scaled by the SAME factor
-# the plant's size-pass fit uses so the ghost reads at the installed size.
-if os.path.isdir(f"{ART}/shp_gtpowr_b"):
+# ---- TSPOWR and TSTURB: packed from their HD rebuild by scripts/ts_pack_hd_buildings.py
+# (the plant per turbine level, and the turbine's placement ghost). Only the turbine's
+# sidebar entry is emitted here.
+if os.path.isdir(f"{ART}/shp_turbicon"):
     CURRENT_INI[0] = "TSTURB"
-    plant_frames = [load("shp_gtpowr", 0), load("shp_gtpowr", 1)]
-    for d in ("shp_gtpowr_a", "shp_gtpowr_b"):
-        plant_frames += [load(d, i) for i in range(frame_count(d))]
-    pboxes = [f.getbbox() for f in plant_frames if f.getbbox()]
-    plant_uw = max(b[2] for b in pboxes) - min(b[0] for b in pboxes)
-    factor = 256.0 / plant_uw
-    turb = load("shp_gtpowr_b", 0)
-    turb = hq_scale(turb.crop(turb.getbbox()), factor)
-    canvas = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
-    canvas.paste(turb, ((128 - turb.width) // 2, (128 - turb.height) // 2), turb)
-    write_zip(f"{STRUCT_DIR}/TSTURB.ZIP", "tsturb", [canvas, canvas])
-    patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML", "TSTURB", 2)
-    STUB_DIMS["TSTURB"] = [24, 24]
     emit_sidebar_data("TSTURB", "Power Turbine",
                       "Installs into a Tiberian Power Plant, adding 50 power. Two per plant.",
                       "shp_turbicon")

@@ -405,9 +405,9 @@ PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
 ts_stub TSRADR "$TMPDIR/tsradr_stub.shp" 48 96 2
 PACK_ARGS+=("$TMPDIR/tsradr_stub.shp:TSRADR.SHP")
 ts_stub TSRADR "$TMPDIR/tsradrmk_stub.shp" 48 96 20
-# TSPOWR 48x48 on the TS-authentic 2x2 grid, same plot as RA POWR (66-on-3x2
-# still read oversized -- Luke, 2026-08-04).
-ts_stub TSPOWR "$TMPDIR/tspowr_stub.shp" 48 48 2
+# TSPOWR 48x51 = the HD rebuild's 256x272 canvas: the 2x2 plot centred, the cooling
+# tower rising into the headroom above it.
+ts_stub TSPOWR "$TMPDIR/tspowr_stub.shp" 48 51 2
 PACK_ARGS+=("$TMPDIR/tspowr_stub.shp:TSPOWR.SHP")
 # TS EMP cannon: static base (healthy + damaged) on the 2x2 48x48 box; the PULSCAN
 # turret is the TSPULST layer (32 facings).
@@ -417,7 +417,7 @@ PACK_ARGS+=("$TMPDIR/tspulst_stub.shp:TSPULST.SHP")
 PACK_ARGS+=("$TMPDIR/tspuls_stub.shp:TSPULS.SHP")
 ts_stub TSPULS "$TMPDIR/tspulsmk_stub.shp" 48 48 13
 PACK_ARGS+=("$TMPDIR/tspulsmk_stub.shp:TSPULSMAKE.SHP")
-ts_stub TSPOWR "$TMPDIR/tspowrmk_stub.shp" 48 48 13
+ts_stub TSPOWR "$TMPDIR/tspowrmk_stub.shp" 48 51 24
 PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")
 # TSTURB 24x24 on a 1x1: the power-turbine addon's placement GHOST (it never
 # stands on the map — placement installs it into a TSPOWR). No MAKE stub: the
