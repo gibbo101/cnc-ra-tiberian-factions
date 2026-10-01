@@ -383,11 +383,11 @@ ts_stub TSDWEAP "$TMPDIR/tsdweapnf_stub.shp" 168 126 2
 PACK_ARGS+=("$TMPDIR/tsdweapnf_stub.shp:TSDWEAPNF.SHP")
 ts_stub TSDWEAP "$TMPDIR/tsdweapnu_stub.shp" 168 126 2
 PACK_ARGS+=("$TMPDIR/tsdweapnu_stub.shp:TSDWEAPNU.SHP")
-# TSPILE 48x48: back to the grid-matched 2x2 plot width (the 60-overhang
-# compromise predates the tier-wide size drop, Luke 2026-08-04).
-ts_stub TSPILE "$TMPDIR/tspile_stub.shp" 48 48 2
+# TSPILE 48x72 = the HD barracks' 256x384 canvas centred on its 2x1 plot: the bunkers on the
+# plot row, the masts and flag in the row behind, empty canvas over the bib row in front.
+ts_stub TSPILE "$TMPDIR/tspile_stub.shp" 48 72 2
 PACK_ARGS+=("$TMPDIR/tspile_stub.shp:TSPILE.SHP")
-ts_stub TSPILE "$TMPDIR/tspilemk_stub.shp" 48 48 19
+ts_stub TSPILE "$TMPDIR/tspilemk_stub.shp" 48 72 24
 PACK_ARGS+=("$TMPDIR/tspilemk_stub.shp:TSPILEMAKE.SHP")
 # TS Limpet Mine on a 48x48 stub (the build-up's standing drone overhangs the 1x1 plot).
 ts_stub TSDLIMP "$TMPDIR/tsdlimp_stub.shp" 48 48 20

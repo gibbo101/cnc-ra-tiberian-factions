@@ -301,9 +301,9 @@ of riflemen; Light Infantry go prone under fire; the Medic heals a wounded soldi
 Passed: the disc goes off on water and on a skip into a cliff; the Jumpjet flies across a river.
 Failed or open, with the fix build (desktop DLL 79f67565, uncommitted on main):
 - Barracks door: TS infantry spawned at the bottom-centre of the bib, a cell under the doorway.
-  Cause: TSPILE reused the RA tent's exit pixel (24,47) on its 2x1 plot. Fixed: the exit is the
-  doorway foot (20,34) with a west-column exit list (`ExitTsPile`), and TSPILE takes the
-  barracks exit branch. Untested.
+  Cause: TSPILE reused the RA tent's exit pixel (24,47) on its 2x1 plot. On the HD barracks
+  (branch `ts-buildings-hd`) the exit is the foot of the entrance steps (32,23), the exit list
+  (`ExitTsPile`) tries the east column first, and TSPILE takes the barracks exit branch. Untested.
 - Jumpjet box: the health bar rose with the CenterCoordY probe but the bracket corners stayed on
   the ground by the shadow, so the launcher places an infantry bracket from something other than
   the exported centre. Probe 2 (Luke: "treat it like a helicopter"): an airborne jumpjet exports

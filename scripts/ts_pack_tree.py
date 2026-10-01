@@ -1499,9 +1499,6 @@ SIZEPASS = [
     # 2x1 plot + bib: the 48-tall stub centres on the 24-tall box, so the
     # canvas bottom is 12 classic below the plot edge. Margin 12 = building
     # ON the top (plot) row, slab owns the entire bottom row (Luke, 23:40).
-    ("TSPILE", "shp_gtpile", ["shp_gtpile_a", "shp_gtpile_b", "shp_gtpile_c"],
-     "shp_gtpilemk", 19, (256, 256), 12, 1.0, "shp_brrkicon",
-     "TS Barracks", "Trains Tiberian-era infantry."),
     # Back to the TS-authentic 2x2 plot (stub 48x96, Obelisk treatment);
     # the 3x2 size-up made the 2x2 power plant "look like a toy" (Luke,
     # 2026-08-04). Margin 21 = art bottom 3 classic below the plot's south
@@ -1611,8 +1608,11 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
 
 # ---- TSFACT: packed from its HD rebuild by scripts/ts_pack_hd_buildings.py.
 
-# ---- TSPOWR, TSTURB and TSSILO: packed from their HD rebuild by
+# ---- TSPOWR, TSTURB, TSSILO and TSPILE: packed from their HD rebuild by
 # scripts/ts_pack_hd_buildings.py. Only their sidebar entries are emitted here.
+if os.path.isdir(f"{ART}/shp_brrkicon"):
+    CURRENT_INI[0] = "TSPILE"
+    emit_sidebar_data("TSPILE", "TS Barracks", "Trains Tiberian-era infantry.", "shp_brrkicon")
 if os.path.isdir(f"{ART}/shp_turbicon"):
     CURRENT_INI[0] = "TSTURB"
     emit_sidebar_data("TSTURB", "Power Turbine",

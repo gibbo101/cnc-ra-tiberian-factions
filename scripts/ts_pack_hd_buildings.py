@@ -37,7 +37,8 @@ HAZE_ALPHA = 4
 # frames, either frames=(path prefix, count) or base=path prefix with runs=[(frames,
 # overlays)], overlays as (path prefix, healthy frames, damaged frames). blocks=[overlays, ...]
 # repeats the whole healthy + damaged set once per entry with those overlays drawn first.
-# Paths take -NN.png.
+# pad_bottom adds that many transparent px under every frame, for art drawn on a plot deeper
+# than the building's own (the canvas centres on the building's plot). Paths take -NN.png.
 BUILDINGS = {
     "TSFACT": dict(src="tsfact", make=("build-up/construction-yard-build", 32),
                    base="yard/construction-yard", runs=[
@@ -60,6 +61,14 @@ BUILDINGS = {
     # one block per fill level (empty, a third, two thirds, full: the Tiberium through the glass),
     # each the lamps' 16-frame loop healthy then damaged: the block Shape_Number picks by how
     # full the house's storage is
+    # the bunkers on the 2x1 plot row: the art is drawn on a 2x2, its foundation's south edge on
+    # the south edge, so 128 px under it centres the canvas on the 2x1 with the bib row in front.
+    # Idle: the flag waving (7) under the entrance lamps and the mast's beacon (8): 56 frames
+    "TSPILE": dict(src="tspile", make=("build-up/barracks-build", 24), base="building/barracks", runs=[
+        (56, [("C-flag/barracks-flag", range(0, 7), range(7, 14)),
+              ("A-lamps/barracks-lamps", range(0, 8), range(8, 16)),
+              ("B-beacon/barracks-beacon", range(0, 8), range(8, 16))]),
+    ], pad_bottom=128),
     "TSSILO": dict(src="tssilo", make=("build-up/silo-build", 24), base="silo/silo",
                    blocks=[[("A-tiberium/silo-tiberium", [lv], [lv + 4])] for lv in range(4)],
                    runs=[(16, [("B-lamps/silo-lamps", range(0, 16), range(16, 32))])]),
@@ -79,6 +88,12 @@ def pad_to(img, w, h):
         raise SystemExit(f"cannot centre a {img.size} frame on {w}x{h}")
     out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     out.paste(img, ((w - img.width) // 2, (h - img.height) // 2))
+    return out
+
+
+def pad_under(img, px):
+    out = Image.new("RGBA", (img.width, img.height + px), (0, 0, 0, 0))
+    out.paste(img, (0, 0))
     return out
 
 
@@ -174,6 +189,9 @@ def main(argv):
     for ini in names:
         spec = BUILDINGS[ini]
         tiles, make = frames(os.path.join(SRC, spec["src"]), spec)
+        if spec.get("pad_bottom"):
+            tiles = [pad_under(i, spec["pad_bottom"]) for i in tiles]
+            make = [pad_under(i, spec["pad_bottom"]) for i in make]
         size = canvas_for(tiles + make)
         pack(ini, tiles, make, size)
         stubs[ini] = [size[0] * 3 // 16, size[1] * 3 // 16]
