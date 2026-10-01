@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Give the packed Titan (TSTITN) and Wolverine (TSSMEC) zips Tiberian Sun's own cast shadows.
-Their SHPs carry a shadow frame for every body frame (MMCH from 152, SMECH from 136). This pass
+"""Give the packed Wolverine (TSSMEC) zip Tiberian Sun's own cast shadows.
+Its SHP carries a shadow frame for every body frame (SMECH from 136). This pass
 opens the shipped zip, drops the synthetic offset-silhouette shadow the packer laid down (a flat
 alpha-191 black plateau, the same detection ts_reshadow.py uses), and composites the TS shadow
 frame under each body frame through the packer's own transform, so nothing about the body moves.
-Turret frames carry no shadow. Run after any repack of either unit; ts_reshadow.py skips both.
-Inputs (TS_ART_DIR): shp_mmch, shp_smech (ts_shp.py with UNITTEM.PAL). License: GPL v3.
+Run after any repack of the unit; ts_reshadow.py skips it. The Titan's HD frames carry their own
+shadow (scripts/ts_pack_hd_buildings.py).
+Inputs (TS_ART_DIR): shp_smech (ts_shp.py with UNITTEM.PAL). License: GPL v3.
 """
 import io
 import json
@@ -25,7 +26,6 @@ SHADOW_RGB = (170, 0, 170)   # ts_shp.py's decode of the TS shadow index
 SHADOW_ALPHA = 128           # the Juggernaut's, the house convention for TS-own shadows
 OLD_ALPHA = 191              # the packers' drop_shadow plateau
 F = 6.4                      # the walker house factor, both packers
-WALK_PICK = [0, 1, 2, 4, 5, 6, 8, 9, 10, 11, 13, 14]   # ts_pack_walkers.py's 12 of the Titan's 15
 
 
 def shp(stem, i):
@@ -98,25 +98,6 @@ def load_zip(name):
     return frames
 
 
-def titan():
-    """TSTITN: 8 facings x 12 walk (WALK_PICK of MMCH's 15) + 32 turret; anchor (47.5, 55) -> (224, 386)."""
-    canvas = 448
-    ox, oy = round(224 - 47.5 * F), round(386 - 55.0 * F)
-    frames = load_zip("TSTITN")
-    out = []
-    for k, fr in enumerate(frames):
-        body = strip_old(fr)
-        if k < 96:
-            f, s = k // 12, WALK_PICK[k % 12]
-            src = ((8 - f) % 8) * 15 + s
-            comp = shadow_layer(shp("mmch", 152 + src), canvas, ox, oy)
-            comp.alpha_composite(body)
-            out.append(comp)
-        else:
-            out.append(body)
-    write_zip(f"{UNITS_DIR}/TSTITN.ZIP", "tstitn", out)
-
-
 def wolverine():
     """TSSMEC: 8 x 12 walk + 8 x 4 firing (SMECH 104+); feet-row anchor from the walk union."""
     canvas = 384
@@ -145,8 +126,6 @@ def wolverine():
 
 
 if __name__ == "__main__":
-    which = sys.argv[1:] or ["TSTITN", "TSSMEC"]
-    if "TSTITN" in which:
-        titan()
+    which = sys.argv[1:] or ["TSSMEC"]
     if "TSSMEC" in which:
         wolverine()

@@ -6,7 +6,7 @@ facing away from TS's light reads a step darker than the same mech facing into
 it (Wolverine SE vs S). Each facing block is scaled so its mean body luminance
 matches the brightest block; shading inside a frame and the shadow layer are
 untouched. Idempotent. Blocks: (first frame, frames per facing, facings).
-usage: ts_equalise_shp_facings.py TSSMEC|TSTITN ...
+usage: ts_equalise_shp_facings.py TSSMEC ...
 License: GPL v3.
 """
 import io, os, sys, zipfile
@@ -17,7 +17,6 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 UNITS = f"{ROOT}/resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
 LAYOUT = {
     "TSSMEC": [(0, 12, 8), (96, 4, 8)],          # walk, firing
-    "TSTITN": [(0, 12, 8), (96, 1, 32)],         # walk, turret facings
 }
 
 

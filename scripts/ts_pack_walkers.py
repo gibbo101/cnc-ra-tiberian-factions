@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 """Package the TS walker units into the mod tree (walk-animation layout):
-  - TSTITN.ZIP   152 frames: body walk 0-119 (8 facings x 15 walk frames,
-                 1:1 with MMCH.SHP frames 0-119) + turret 120-151 (32 facings).
-                 One shared source-canvas transform keeps the turret registered
-                 on the hull. rules.ini: WalkFrames=15 WalkFacings=8.
+  - TSTITN       art packed by scripts/ts_pack_hd_buildings.py; its cameo,
+                 buildable entry and text are written here.
   - TSHMEC.ZIP   256 frames: 32 facings x 8 walk stages from the HVA-posed
                  voxel renders (walk_hmec_<hva>/frame-<facing>.png).
                  rules.ini: WalkFrames=8 WalkFacings=32. No turret.
@@ -15,7 +13,6 @@
     RABUILDABLES.XML, ModText.csv, BuildIcons (TS cameos via CAMEO.PAL).
 
 Inputs (set TS_ART_DIR):
-  $TS_ART_DIR/shp_mmch/frame-NNNN.png       decoded MMCH.SHP (ts_shp.py, UNITTEM.PAL)
   $TS_ART_DIR/walk_hmec_<f>/frame-NNNN.png  HMEC walk renders, f in WALK_HVA_FRAMES
   $TS_ART_DIR/shp_mmchicon2, shp_hmecicon2  decoded TS cameos (CAMEO.PAL!)
 """
@@ -106,138 +103,8 @@ def drop_shadow(frame, dx, dy, alpha=191):
     return out
 
 
-# ---- TSTITN (Titan): walk layout, one shared transform ----
-# 448 canvas at the 56x56 stub = the 8x-classic density all TS units ship at
-# (house policy: maximum quality). Same on-screen size; double pixels for the
-# CFE zoom levels, and the voxel cannon renders at half the downscale.
-CANVAS_T = 448
-F_T = 6.4
-ANCHOR_SRC = (47.5, 55.0)   # source canvas center x, feet row
-ANCHOR_DST = (224.0, 386.0) # feet placed so the whole assembly centers on the
-                            # canvas center (the launcher's draw anchor) —
-                            # feet-low placement was the floating-selection-box bug
-
-mm = lambda i: Image.open(f"{ART}/shp_mmch/frame-{i:04d}.png").convert("RGBA")
-frames = []
-# MMCH.SHP orders facings CLOCKWISE (0=N); the engine's frame space (BodyShape)
-# is CCW 0=N — reorder both the body facing blocks and the turret run.
-# 12 of the 15 walk frames per facing: total tileset = 8*12 + 32 = 128 shapes,
-# keeping every index <= 127 (larger indexes die in the launcher sub-object path).
-WALK_PICK = [0, 1, 2, 4, 5, 6, 8, 9, 10, 11, 13, 14]
-for f in range(8):                        # body: out facing f (CCW) <- src block (8-f)%8 (CW)
-    src_block = (8 - f) % 8
-    for s in WALK_PICK:
-        fr = crisp_place(mm(src_block * 15 + s), F_T, CANVAS_T, ANCHOR_SRC, ANCHOR_DST)
-        frames.append(drop_shadow(fr, 4, 18))
-# Turret = SHP torso + the VOXEL cannon barrel composited per facing. TS draws
-# the Titan's cannon from MMCHBARL.VXL at runtime (art.ini PBarrelLength) — it
-# is NOT in the SHP frames, which is why the ported torso had no gun. The
-# barrel render's canvas center is the voxel origin = the mount point, so we
-# place that at the torso's barrel port. Barrel goes UNDER the torso when
-# pointing away (N half), OVER when toward the camera.
-import math as _math
-MUZZLE_TABLE = []  # (dx, dy) leptons from unit center, per CCW turret facing
-# hand-corrections to the auto-estimated muzzle tip (px, compass anchors
-# N,NW,W,SW,S,SE,E,NE — interpolated across 32 facings like FACING_TWEAKS).
-# N: the away-facing barrel foreshortens the along-aim tip estimate.
-MUZZLE_TWEAKS = [(7, -3), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0), (0, 0)]
-BARL_SCALE = 0.55          # 1 voxel ≈ 1 TS SHP px: barrel at 12px/voxel * 0.29 ≈ SHP px * 3.2 (F_T)
-PORT_FWD = 32              # gun port: forward of the turret anchor along the aim
-PORT_LAT = 18             # onto the right flank (TS FLH lateral -50)
-PORT_UP = 30               # ...and up at the pod's gun height (final px)
-# (dx, dy) per compass anchor N,NW,W,SW,S,SE,E,NE — CCW index s/4
-FACING_TWEAKS = [(21, 46), (46, 29), (53, 46), (20, -12), (-34, -26), (-63, 18), (-53, 46), (-7, 52)]
-VERT = 0.50                # ground-plane vertical foreshortening at the TS-native ~30° camera (the barrel renders at 30° to MATCH the TS SHP torso's own drawing camera — a 54° barrel on 30° art reads long and over-vertical at N/S)
-for s in range(32):                       # out s (CCW) <- src (32-s)%32 (CW)
-    torso = crisp_place(mm(120 + (32 - s) % 32), F_T, CANVAS_T, ANCHOR_SRC, ANCHOR_DST)
-    bar = Image.open(f"{ART}/ts30_titanbarl/frame-{s:04d}.png").convert("RGBA")
-    # TS's own renderer draws toward-viewer (south-arc) barrels longer than a
-    # pure orthographic 30° projection — stretch vertically to match the
-    # reference (S barrel reaches past the pod's bottom in TS).
-    # uniform scale at every facing (Luke 2026-07-20 — the earlier south-arc
-    # stretch made S barrels longer than the rest; removed)
-    bar = bar.resize((round(bar.width * BARL_SCALE),
-                      round(bar.height * BARL_SCALE)), Image.LANCZOS)
-    # Attach the barrel's REAR to the pod's gun port (rotated per facing).
-    # The voxel's own origin offsets don't line up with the SHP torso's port,
-    # so anchor empirically: aim vector on screen, port = anchor + aim*fwd - up,
-    # barrel rear = content center - aim * half-length-along-aim.
-    theta = _math.radians(s * 11.25)                  # CCW from N
-    ax, ay = -_math.sin(theta), -_math.cos(theta) * VERT
-    bb = bar.getbbox()
-    if bb:
-        # exact rear point: the barrel pixels most opposite the aim direction
-        # (the bbox-projection approximation left the barrel floating off the
-        # pod at diagonal facings)
-        import numpy as _np
-        alpha = _np.array(bar)[..., 3]
-        ys, xs = _np.nonzero(alpha > 40)
-        proj = xs * ax + ys * ay
-        cut = _np.percentile(proj, 8)
-        sel = proj <= cut
-        rear_x, rear_y = float(xs[sel].mean()), float(ys[sel].mean())
-        # lateral mount: the cannon sits on the Titan's RIGHT flank (TS
-        # PrimaryFireFLH lateral -50). Screen-space right-of-aim rotates with
-        # the facing: (cos th, -sin th * VERT). At S this puts the cannon on
-        # the viewer's left; at N it tucks behind the pod.
-        rx_, ry_ = _math.cos(theta), -_math.sin(theta) * VERT
-        port_x = CANVAS_T / 2 + ax * PORT_FWD + rx_ * PORT_LAT
-        port_y = CANVAS_T / 2 + ay * PORT_FWD + ry_ * PORT_LAT - PORT_UP
-        # per-facing hand tweaks (dx, dy in final px) at the 8 compass anchors,
-        # linearly interpolated across the 32 turret facings — tuned one facing
-        # at a time against the TS reference with Luke
-        a8 = s / 4.0
-        i0, i1 = int(a8) % 8, (int(a8) + 1) % 8
-        frac = a8 - int(a8)
-        tw0, tw1 = FACING_TWEAKS[i0], FACING_TWEAKS[i1]
-        port_x += tw0[0] * (1 - frac) + tw1[0] * frac
-        port_y += tw0[1] * (1 - frac) + tw1[1] * frac
-        # away-facings: tuck the barrel deeper behind the pod (the rear-point
-        # estimate runs high on near-vertical barrels, leaving a float gap)
-        tuck = 30 if (s <= 4 or s >= 28) else 0
-        bx = round(port_x - rear_x - ax * tuck)
-        by = round(port_y - rear_y - ay * tuck)
-    else:
-        bx = by = 0
-    # record the muzzle tip (extreme barrel pixels along the aim) for the
-    # generated Fire_Coord table — art and fire-point stay in lockstep
-    if bb:
-        tip_sel = proj >= _np.percentile(proj, 97)
-        tip_x = float(xs[tip_sel].mean()) + bx
-        tip_y = float(ys[tip_sel].mean()) + by
-        mtw0, mtw1 = MUZZLE_TWEAKS[i0], MUZZLE_TWEAKS[i1]
-        tip_x += mtw0[0] * (1 - frac) + mtw1[0] * frac
-        tip_y += mtw0[1] * (1 - frac) + mtw1[1] * frac
-        MUZZLE_TABLE.append((round((tip_x - CANVAS_T / 2) * 4 / 3), round((tip_y - CANVAS_T / 2) * 4 / 3)))
-    else:
-        MUZZLE_TABLE.append((0, 0))
-    comp = Image.new("RGBA", (CANVAS_T, CANVAS_T), (0, 0, 0, 0))
-    # The cannon mounts on the Titan's RIGHT flank (Luke, from the TS ref):
-    # when the unit faces the EASTERN compass half we see its LEFT side, so
-    # the cannon is on the far flank and draws UNDER the body; western half
-    # (right flank toward camera) draws OVER. (CCW index s: 1-15 = facing
-    # NNW..SSW-through-west? no — s maps CCW so 1..15 = the compass EAST half.)
-    right_flank_away = (s <= 15)  # includes N (s=0): barrel points away, tip peeks over the pod (TS close-up ref 2026-07-20 23:13)
-    if right_flank_away:
-        safe_paste(comp, bar, bx, by)
-        comp.alpha_composite(torso)
-    else:
-        comp.alpha_composite(torso)
-        safe_paste(comp, bar, bx, by)
-    frames.append(comp)
-write_zip(f"{UNITS_DIR}/TSTITN.ZIP", "tstitn", frames)
-
-# generated per-facing muzzle table (leptons, world x-east/y-south) — included
-# by techno.cpp Fire_Coord for UNIT_TSTITN so shells + muzzle flash track the
-# hand-tuned barrel anchors exactly
-hdr = "// GENERATED by scripts/ts_pack_walkers.py — do not hand-edit.\n"
-hdr += "// Per-CCW-turret-facing muzzle offsets (leptons from unit center).\n"
-hdr += "static const short _tstitn_muzzle[32][2] = {\n"
-for dx, dy in MUZZLE_TABLE:
-    hdr += f"    {{{dx}, {dy}}},\n"
-hdr += "};\n"
-open("/home/gibbo101/Documents/development/cnc-remastered-mods/cnc-ra-tiberian-factions/redalert/tstitn_muzzle.h", "w").write(hdr)
-print("wrote redalert/tstitn_muzzle.h (muzzle table)")
+# TSTITN (Titan) is packed from its HD art by scripts/ts_pack_hd_buildings.py, with its
+# muzzle table (redalert/tstitn_muzzle.h).
 
 # ---- TSHMEC (Mammoth Mk II): 32 facings x 8 walk stages ----
 # Render set preference: ts35_hmec (12 px/voxel at 35° elevation — the TS
@@ -386,7 +253,6 @@ def patch_tileset(xml_path, name, count, subdir=None):
     open(xml_path, "w", encoding="utf-8").write(xml)
     print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles")
 
-patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSTITN", 128)
 patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML", "TSHMEC", 256)
 patch_tileset(f"{MOD}/Data/XML/TILESETS/RA_VFX.XML", "RAILFX", 12)
 if os.path.isdir(f"{ART}/hq_hvr_body"):
