@@ -100,9 +100,10 @@ def materials(r, p=PL.P, occ=None, lights=None, beacon=None, flag_t=None):
     put(berm & ~band, bc)
     bb = (berm & ~band).astype(np.float32)
     bz += 0.3 * ((bj | cj).astype(np.float32) - 0.2) * bb
-    # red-brown corrugated panels part-way up the long faces, strips between the east ends' hatches; a dark foot
+    # corrugated panels part-way up the long faces and strips between the east ends' hatches, in house
+    # colour; a dark foot
     rib = np.sin(along * 2 * np.pi / 3.0)
-    pc = BAND_C * g1 * (1 + 0.08 * rib)[..., None]
+    pc = house * (1 + 0.08 * rib)[..., None]
     pc = np.where((phase(along, 24.0, 0.0) < 0.7)[..., None], pc * 0.7, pc)
     put(panel, pc)
     put(band, np.array([104, 90, 64.]) * g1)
