@@ -1481,9 +1481,10 @@ static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_22,           // TS-authentic 2x2.
+                                           BSIZE_21,           // 2x1 with the bib row in front, like the TD silo:
+                                                                // the silo stands on the plot row.
                                            NULL,
-                                           (short const*)List22,
+                                           (short const*)List21,
                                            (short const*)NULL);
 
 static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,

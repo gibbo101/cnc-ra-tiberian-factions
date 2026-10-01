@@ -33,9 +33,23 @@ XML = f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML"
 STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
 HAZE_ALPHA = 4
 
+# The launcher recolours every green of a building to its owner's colour, so Tiberium seen in a
+# building is drawn in the yellow-green TD's silo shows in game (hue ~77), luminance kept.
+TIBERIUM = np.array([191.0, 231.0, 90.0])
+
+
+def tiberium(img):
+    a = np.asarray(img).astype(np.float32)
+    lum = a[..., :3] @ np.array([0.299, 0.587, 0.114], np.float32)
+    rgb = TIBERIUM[None, None, :] * (lum / (TIBERIUM @ np.array([0.299, 0.587, 0.114])))[..., None]
+    a[..., :3] = np.clip(rgb, 0, 255)
+    return Image.fromarray(a.round().astype(np.uint8), "RGBA")
+
+
 # ini: the source folder, the build-up as (path prefix, frames) or None, and the tileset
 # frames, either frames=(path prefix, count) or base=path prefix with runs=[(frames,
-# overlays)], overlays as (path prefix, healthy frames, damaged frames). blocks=[overlays, ...]
+# overlays)], overlays as (path prefix, healthy frames, damaged frames[, recolour]), recolour
+# a function applied to the overlay before it is drawn. blocks=[overlays, ...]
 # repeats the whole healthy + damaged set once per entry with those overlays drawn first.
 # pad_bottom adds that many transparent px under every frame, for art drawn on a plot deeper
 # than the building's own (the canvas centres on the building's plot). Paths take -NN.png.
@@ -69,9 +83,10 @@ BUILDINGS = {
               ("A-lamps/barracks-lamps", range(0, 8), range(8, 16)),
               ("B-beacon/barracks-beacon", range(0, 8), range(8, 16))]),
     ], pad_bottom=128),
+    # The silo stands on its 2x1 plot row with the bib row in front, seated like the barracks.
     "TSSILO": dict(src="tssilo", make=("build-up/silo-build", 24), base="silo/silo",
-                   blocks=[[("A-tiberium/silo-tiberium", [lv], [lv + 4])] for lv in range(4)],
-                   runs=[(16, [("B-lamps/silo-lamps", range(0, 16), range(16, 32))])]),
+                   blocks=[[("A-tiberium/silo-tiberium", [lv], [lv + 4], tiberium)] for lv in range(4)],
+                   runs=[(16, [("B-lamps/silo-lamps", range(0, 16), range(16, 32))])], pad_bottom=128),
 }
 
 
@@ -112,9 +127,10 @@ def frames(src, spec):
                 for count, overlays in spec["runs"]:
                     for i in range(count):
                         img = base.copy()
-                        for path, healthy, damaged in block + overlays:
+                        for path, healthy, damaged, *recolour in block + overlays:
                             seq = (healthy, damaged)[state]
-                            img.alpha_composite(load(path, seq[i % len(seq)]))
+                            o = load(path, seq[i % len(seq)])
+                            img.alpha_composite(recolour[0](o) if recolour else o)
                         tiles.append(img)
     make = []
     if spec["make"]:

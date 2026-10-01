@@ -544,9 +544,11 @@ PACK_ARGS+=("$TMPDIR/tsfgenmk_stub.shp:TSFGENMAKE.SHP")
 # TSFSDF 33x60, 64 frames: the Firestorm Wall Section on the wall packers' 176x320 canvas.
 ts_stub TSFSDF "$TMPDIR/tsfsdf_stub.shp" 33 60 64
 PACK_ARGS+=("$TMPDIR/tsfsdf_stub.shp:TSFSDF.SHP")
-ts_stub TSSILO "$TMPDIR/tssilo_stub.shp" 48 48 2
+# TSSILO 48x72 = the HD silo's 256x384 canvas centred on its 2x1 plot: the silo on the plot row,
+# empty canvas over the bib row in front.
+ts_stub TSSILO "$TMPDIR/tssilo_stub.shp" 48 72 2
 PACK_ARGS+=("$TMPDIR/tssilo_stub.shp:TSSILO.SHP")
-ts_stub TSSILO "$TMPDIR/tssilomk_stub.shp" 48 48 24
+ts_stub TSSILO "$TMPDIR/tssilomk_stub.shp" 48 72 24
 PACK_ARGS+=("$TMPDIR/tssilomk_stub.shp:TSSILOMAKE.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/railfx_stub.shp" 24 24 12
 PACK_ARGS+=("$TMPDIR/railfx_stub.shp:RAILFX.SHP")
