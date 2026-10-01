@@ -49,9 +49,9 @@ PACKS = {
     "CNC3-Voices-eng": "CNC3",
 }
 
-# HD rebuilds of TS objects (resources/custom-art): each base name with its companion layers
+# HD rebuilds of TS objects (resources/custom-art): every art name that starts with one of these,
+# so an object's MAKE, door, lamp, turret and apron layers travel with it
 TS_HD = ("TSWALL", "TSNWALL", "TSGATEH", "TSGATEV", "TSNGATEH", "TSNGATEV", "TSCTWR", "TSVULC", "TSROCK", "TSCSAM")
-TS_HD_LAYERS = ("", "MAKE", "L", "X", "T")
 
 # tileset kinds: RA_<KIND>.XML in the mod; art folder under RED_ALERT/
 KINDS = ("UNITS", "STRUCTURES", "VFX", "TERRAIN_TEMPERATE", "TERRAIN_SNOW", "TERRAIN_INTERIOR")
@@ -63,9 +63,8 @@ def graphics_pack(name):
     if n.startswith("TSLA"):
         return None
     if n.startswith("TS") or n == "RAILFX":
-        for base in TS_HD:
-            if n.startswith(base) and n[len(base):] in TS_HD_LAYERS:
-                return "TS-HD-Graphics-Pack"
+        if n.startswith(TS_HD):
+            return "TS-HD-Graphics-Pack"
         return "TS-Graphics-Pack"
     if n.startswith("R2"):
         return "RA2-Graphics-Pack"
