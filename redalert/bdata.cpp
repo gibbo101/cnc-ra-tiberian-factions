@@ -1430,7 +1430,7 @@ static BuildingTypeClass const ClassTsPile(STRUCT_TSPILE,
                                            TXT_NONE,
                                            "TSPILE",
                                            FACING_NONE,
-                                           XYP_COORD(32, 23),  // The foot of the entrance steps, in classic px from the plot's top-left corner.
+                                           XYP_COORD(35, 23),  // The foot of the entrance steps, in classic px from the plot's top-left corner.
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,              // fake
