@@ -818,48 +818,6 @@ bool Read_Scenario(char* name)
         PlayerPtr->Refund_Money(100000);
     }
 
-    /*
-    **  Dev builds also start the human player with a full RA and a full TD harvester beside
-    **  their first unit, so each truck's dock at any refinery can be watched, and a Titan.
-    */
-    if (TF_Dev_Cheats() && Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
-        UnitClass* start = NULL;
-        for (int i = 0; i < Units.Count() && start == NULL; i++) {
-            if (Units.Ptr(i)->House == PlayerPtr) {
-                start = Units.Ptr(i);
-            }
-        }
-        static UnitType const _trucks[] = {UNIT_HARVESTER, UNIT_TDHARV};
-        for (int t = 0; start != NULL && t < (int)(sizeof(_trucks) / sizeof(_trucks[0])); t++) {
-            UnitClass* truck = new UnitClass(_trucks[t], PlayerPtr->Class->House);
-            if (truck == NULL) {
-                continue;
-            }
-            for (int i = 1; i < 12 && truck->IsInLimbo; i++) {
-                truck->Unlimbo(Cell_Coord(truck->Nearby_Location(start, i)), DIR_S);
-            }
-            if (truck->IsInLimbo) {
-                delete truck;
-                continue;
-            }
-            truck->Tiberium = Rule.BailCount;
-            truck->Assign_Mission(MISSION_HARVEST);
-        }
-
-        /*
-        **  ...and a Titan, standing guard beside the trucks.
-        */
-        UnitClass* titan = (start != NULL) ? new UnitClass(UNIT_TSTITN, PlayerPtr->Class->House) : NULL;
-        for (int i = 1; titan != NULL && i < 12 && titan->IsInLimbo; i++) {
-            titan->Unlimbo(Cell_Coord(titan->Nearby_Location(start, i)), DIR_S);
-        }
-        if (titan != NULL && titan->IsInLimbo) {
-            delete titan;
-        } else if (titan != NULL) {
-            titan->Assign_Mission(MISSION_GUARD);
-        }
-    }
-
 #endif
 
     /*

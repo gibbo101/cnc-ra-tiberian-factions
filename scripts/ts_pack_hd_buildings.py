@@ -68,6 +68,65 @@ def lane_gold(img):
     return Image.fromarray(a, "RGBA")
 
 
+# The pad is drawn about the door's centre line (x 206.5): its seams and ring are centred on the lane. Its west
+# half steps back in beside the building; the east half takes the same outline, the west half mirrored, so no
+# grey patch runs up beside the building there. The lane keeps its own stripes.
+WEAP_AXIS2 = 413
+
+
+def weap_pad(img):
+    a = np.asarray(lane_gold(img)).copy()
+    x0, y0, x1, y1 = WEAP_LANE
+    keep = a.copy()
+    for x in range(WEAP_AXIS2 // 2 + 1, a.shape[1]):
+        a[:, x] = keep[:, WEAP_AXIS2 - x]
+    a[y0:y1, x0:x1] = keep[y0:y1, x0:x1]
+    return Image.fromarray(a, "RGBA")
+
+
+# The fifth lamp on the beam over the door, on the east pillar's face (x 307-325, y 233-259), comes out: the
+# pillar is filled in from its face beside the lamp, its edge (x 316-318, where the rows above show one) from those
+# rows, and what lies east of the edge from the column just past the lamp.
+LAMP5 = (307, 233, 326, 260)
+LAMP5_EDGE = (316, 319)
+
+
+def drop_lamp5(img):
+    a = np.asarray(img).copy()
+    x0, y0, x1, y1 = LAMP5
+    e0, e1 = LAMP5_EDGE
+    for y in range(y0, y1):
+        for x in range(x0, x1):
+            if x < e0:
+                a[y, x] = a[y, x - 14]
+            elif x < e1 and a[y0 - 2, x, 3] >= 64:
+                a[y, x] = a[y0 - 2, x]
+            else:
+                a[y, x] = a[y, x1 + 1]
+    return Image.fromarray(a, "RGBA")
+
+
+def bay_lamp5_shadow(img):
+    """The ground shadow where the fifth lamp hung over it: the bay layer leaves the lamp's pixels to the
+    near face, so the hole it leaves takes the shadow of the column just east of it (x 324)."""
+    a = np.asarray(img).copy()
+    for y in range(LAMP5[1], LAMP5[3]):
+        for x in range(LAMP5_EDGE[0] + 1, 324):
+            if a[y, x, 3] == 0:
+                a[y, x] = a[y, 324]
+    return Image.fromarray(a, "RGBA")
+
+
+# The door lamps' light run over four lamps: TS's sixteen frames, its fifth lamp gone, the steps where the light
+# sat on it dropped and the ends held.
+LAMP_RUN = [0, 1, 2, 3, 4, 5, 5, 9, 10, 11, 12, 13, 14, 15, 0, 0]
+
+
+def weap_build(img, i):
+    img = lane_gold(img)
+    return drop_lamp5(img) if i >= 16 else img
+
+
 def weap_bay(img):
     """The war factory's under-door layer kept to its doorway (the shut door's own outline, 2 px
     wider): the art carries a copy of the apron round it, which the apron tiles already draw."""
@@ -148,23 +207,22 @@ BUILDINGS = {
     # its front: the building in front of the dock lane, the idle loop's frames masked to it, drawn over a docked
     # truck so it backs in under the deck
     "TSPROCNF": dict(src="tsproc", make=None, frames=("front/refinery-front", 32)),
-    # The war factory on RA's 3x3 slot, door south: drawn on a 3x4 canvas whose top row is empty but for the
-    # build-up's raised poles, so 96 px off the top and 32 under centre the canvas on the 3x3 plot. Its body is
+    # The war factory on its 3x4 plot, door south: RA's 3x3 war factory slot with an empty row behind it, the art's
+    # own canvas centred on it (the build-up's raised poles reach into the empty row). Its body is
     # the door bay with the building's ground shadow, under units; the near face (the rest of the building,
-    # with the door lamps (16), the roof lamps (8) and the fans (4) over 32 idle steps) and the roll-up door
+    # with the door lamps (16, a four-lamp run), the roof lamps (8) and the fans (4) over 32 idle steps) and the roll-up door
     # draw over a vehicle in the bay. The under-door is the bay seen with the door up, and its build-up the 26
     # frames of TS's GTWEAPMK order.
-    "TSWEAP": dict(src="tsweap", make=("build-up/war-factory-build", 26), make_recolour=lane_gold,
-                   base="building-bay/war-factory-bay", runs=[(32, [])], crop_top=96, pad_bottom=32),
-    "TSWEAPNF": dict(src="tsweap", make=None, base="2-over-units/war-factory-over", runs=[
-        (32, [("A-lamps/war-factory-lamps", range(0, 16), range(16, 32)),
+    "TSWEAP": dict(src="tsweap", make=("build-up/war-factory-build", 26), make_fix=weap_build,
+                   base="building-bay/war-factory-bay", recolour=bay_lamp5_shadow, runs=[(32, [])]),
+    "TSWEAPNF": dict(src="tsweap", make=None, base="2-over-units/war-factory-over", recolour=drop_lamp5, runs=[
+        (32, [("A-lamps/war-factory-lamps", LAMP_RUN, range(16, 32)),
               ("B-lamps/war-factory-lamps-b", range(0, 8), range(8, 16)),
               ("C-fans/war-factory-fans", range(0, 4), range(4, 8))]),
-    ], crop_top=96, pad_bottom=32),
-    "TSWEAPDR": dict(src="tsweap", make=None, frames=("D-door/war-factory-door", 9), repeat=2,
-                     crop_top=96, pad_bottom=32),
+    ]),
+    "TSWEAPDR": dict(src="tsweap", make=None, frames=("D-door/war-factory-door", 9), repeat=2),
     "TSWEAPUD": dict(src="tsweap", make=None, frames=("1-under-door/war-factory-under", 2), repeat=2,
-                     recolour=weap_bay, crop_top=96, pad_bottom=32),
+                     recolour=weap_bay),
 }
 # The open-door near face is the same layer: the door is its own layer here.
 BUILDINGS["TSWEAPNU"] = BUILDINGS["TSWEAPNF"]
@@ -183,7 +241,7 @@ UNITS = {
 APRONS = {
     "TSPROCBB": dict(src="tsproc", layer="bib/refinery-bib-00", origin=(112, 272), cells=(5, 3)),
     "TSWEAPBB": dict(src="tsweap", layer="bib/war-factory-bib-00", origin=(16, 128), cells=(3, 3),
-                     recolour=lane_gold),
+                     recolour=weap_pad),
 }
 
 
@@ -249,6 +307,8 @@ def frames(src, spec):
         tiles = [spec["recolour"](i) for i in tiles]
     if spec.get("make_recolour"):
         make = [spec["make_recolour"](i) for i in make]
+    if spec.get("make_fix"):
+        make = [spec["make_fix"](img, i) for i, img in enumerate(make)]
     return tiles, make
 
 

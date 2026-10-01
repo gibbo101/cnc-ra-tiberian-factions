@@ -172,8 +172,8 @@ static SmudgeTypeClass const Bibx3(SMUDGE_BIB3,
 );
 
 /*
-**	TS War Factory concrete apron: one tile per cell of its 3x3 slot, in reading
-**	order from the north-west corner, cut from the HD art's bib layer by
+**	TS War Factory concrete apron: one tile per cell of rows 1-3 of its 3x4 plot,
+**	in reading order from the north-west corner, cut from the HD art's bib layer by
 **	scripts/ts_pack_hd_buildings.py. The map export draws it under the building
 **	(the _aprons table in dllinterface.cpp); it is never stamped into cells.
 */

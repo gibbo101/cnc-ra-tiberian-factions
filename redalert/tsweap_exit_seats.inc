@@ -9,7 +9,7 @@
 **	shutter's centre column (2.38 cells, moved west 08-29) and a unit centre just inside the
 **	doorway (1.10 rows: the vehicle stands in the opening, its top under the raised shutter). The generated seats above are the old bay's.
 */
-#define TSWEAP_SEAT_MOUTH XY_Coord(573, 219)  // TRACKED/WHEELED vehicles, from the ORIGIN CELL CENTRE (Coord): dialled by eye 08-29, SIGNED OFF -- do not re-derive
+#define TSWEAP_SEAT_MOUTH XY_Coord(573, 219)  // TRACKED/WHEELED vehicles, from the building's Coord (the plot's north-west corner): dialled by eye 08-29, SIGNED OFF -- do not re-derive
 /*
 **	Per-unit seats: the Titan stands two cells tall, so it seats deeper (row 0.40)
 **	with its feet at the threshold; everything else takes the mouth seat.
@@ -17,10 +17,18 @@
 #define TSWEAP_SEAT_MOUTH_MECH XY_Coord(597, 123)  // WALKERS (Titan, Wolverine, Mk. II): dialled by eye 08-29, SIGNED OFF -- do not re-derive
 
 /*
-**	The TS War Factory on RA's 3x3 slot (STRUCT_TSWEAP), door south: seats on the door's centre line,
-**	leptons from the origin cell's centre. The door's threshold is 490 leptons below the plot's north
-**	edge. A vehicle waits half a cell inside it; a walker's art stands 0.84 rows below its position,
-**	so it waits deeper with its feet on the threshold. Both leave straight south to XYCELL(1, 2).
+**	The TS War Factory on its 3x4 plot (STRUCT_TSWEAP), door south: seats on the door's centre line,
+**	leptons from the building's Coord (the plot's north-west corner). The door's threshold is 746
+**	leptons below the plot's north edge. A vehicle waits half a cell inside it; a walker's art stands
+**	0.84 rows below its position, so it waits deeper with its feet on the threshold. Both leave
+**	straight south to XYCELL(1, 3)'s centre, (384, 896).
 */
-#define TSWEAP3_SEAT XY_Coord(256, 234)
-#define TSWEAP3_SEAT_MECH XY_Coord(256, 146)
+#define TSWEAP3_SEAT XY_Coord(384, 618)
+#define TSWEAP3_SEAT_MECH XY_Coord(384, 530)
+/*
+**	A unit riding out of the door draws under the near face and the door until its body has cleared the
+**	threshold: a vehicle for the whole rail, onto XYCELL(1, 3)'s centre; a walker, whose art stands 0.73 rows
+**	below its position, once its position is this far below the plot's north edge (its body half a cell past
+**	the threshold).
+*/
+#define TSWEAP3_WALKER_CLEAR 624

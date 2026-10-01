@@ -1641,7 +1641,7 @@ typedef enum StructType : short
     STRUCT_TSPILE, // TS Barracks "TSPILE" (GAPILE, 2x2) — infantry factory.
     STRUCT_TSPROC, // TS Tiberium Refinery "TSPROC" (PROC/NAREFN art, 4x3 plot, dock-pad corner free — bdata.cpp TsProcList) — free harvester at build.
     STRUCT_TSSILO, // TS Silo "TSSILO" (GASILO; 2x1 TD-parity).
-    STRUCT_TSWEAP, // TS War Factory "TSWEAP" (GAWEAP; RA's 3x3 slot, door south, hall on rows 0-1 — bdata.cpp TsWeap3List) — vehicle factory.
+    STRUCT_TSWEAP, // TS War Factory "TSWEAP" (GAWEAP; 3x4 plot, door south: an empty back row that is ordinary ground, the hall on rows 1-2, concrete on row 3 — bdata.cpp TsWeap3List) — vehicle factory.
     STRUCT_TSRADR, // TS Radar "TSRADR" (GARADR, 2x2).
     STRUCT_TSHPAD, // TS Helipad "TSHPAD" (GAHPAD, 2x2) — aircraft factory.
     STRUCT_TSTECH, // TS Tech Center "TSTECH" (GATECH, 2x2 TD-parity).
@@ -3887,6 +3887,7 @@ typedef enum BSizeType : char
     BSIZE_53, // TSWEAP: hangar on rows 0-1 x cols 0-3, row 2 + col 4 walkable concrete (08-28 rebuild).
     BSIZE_31, // Gates, east-west.
     BSIZE_13, // Gates, north-south.
+    BSIZE_34, // TSWEAP: RA's 3x3 war factory slot with an empty row behind it, so the box rises over the roof; the row is ordinary ground.
 
     BSIZE_COUNT
 } BSizeType;

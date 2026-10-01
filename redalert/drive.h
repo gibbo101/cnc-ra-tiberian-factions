@@ -135,6 +135,10 @@ public:
     {
         return TrackNumber == OUT_OF_WEAPON_FACTORY_TS_TITAN;
     }
+    bool On_Rail(void) const
+    {
+        return TrackNumber == ROLL_OFF_DOCK_SEAT;
+    }
     virtual bool Stop_Driver(void);
 
     void Mark_Track(COORDINATE headto, MarkType type);

@@ -150,22 +150,22 @@ static short const TsWeapExit[] = {XYCELL(3, 2), XYCELL(3, 3), XYCELL(4, 2), XYC
                                    XYCELL(4, 3), XYCELL(2, 3), XYCELL(4, 1), XYCELL(1, 2),
                                    REFRESH_EOL};
 /*
-**	The TS War Factory on RA's 3x3 slot: the hall fills the back two rows; the front row is walkable
-**	concrete with the door's lane down its middle. The art reaches a little past the plot on every
-**	side (the roof's poles while it builds, the shadow east, debris west when damaged), and over the
-**	front row.
+**	The TS War Factory, 3x4: RA's 3x3 war factory slot with an empty row behind it, which centres the
+**	selection box over the roof and is otherwise ordinary ground. The hall fills rows 1-2 and row 3 is
+**	walkable concrete with the door's lane down its middle. The art reaches a little past the slot
+**	(the shadow east, debris west when damaged, the build-up's raised poles into row 0), and over row 3.
 */
-static short const TsWeap3List[] = {0, 1, 2, MCW, MCW + 1, MCW + 2, REFRESH_EOL};
-static short const TsWeap3OList[] = {-MCW - 1, -MCW, -MCW + 1, -MCW + 2, -MCW + 3,
-                                     -1, 3, MCW - 1, MCW + 3,
-                                     (MCW * 2) - 1, (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
+static short const TsWeap3List[] = {MCW, MCW + 1, MCW + 2, (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, REFRESH_EOL};
+static short const TsWeap3OList[] = {-1, 0, 1, 2, 3,
+                                     MCW - 1, MCW + 3, (MCW * 2) - 1, (MCW * 2) + 3,
+                                     (MCW * 3) - 1, (MCW * 3), (MCW * 3) + 1, (MCW * 3) + 2, (MCW * 3) + 3,
                                      REFRESH_EOL};
 /*
 **	Units leave straight south down the lane to the bottom-middle cell, then spread across the row
 **	south of the plot.
 */
-static short const TsWeap3Exit[] = {XYCELL(1, 2), XYCELL(1, 3), XYCELL(0, 3), XYCELL(2, 3),
-                                    XYCELL(0, 2), XYCELL(2, 2), REFRESH_EOL};
+static short const TsWeap3Exit[] = {XYCELL(1, 3), XYCELL(1, 4), XYCELL(0, 4), XYCELL(2, 4),
+                                    XYCELL(0, 3), XYCELL(2, 3), REFRESH_EOL};
 
 static short const List1100[] = {0, 1, REFRESH_EOL};
 static short const List1101[] = {0, 1, (MCW * 1) + 1, REFRESH_EOL};
@@ -1517,8 +1517,8 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory.
                                            DIR_N,
-                                           BSIZE_33,           // RA's 3x3 slot: the hall on rows 0-1, the front row
-                                                               // walkable concrete.
+                                           BSIZE_34,           // an empty back row, the hall on rows 1-2, walkable
+                                                               // concrete on row 3.
                                            (short const*)TsWeap3Exit,
                                            (short const*)TsWeap3List,
                                            (short const*)TsWeap3OList);
@@ -6462,16 +6462,17 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
         return (_ts_proc_place);
     }
     if (placement && Type == STRUCT_TSWEAP) {
-        // The ghost covers the whole 3x3: the hall and the concrete in front of the door.
-        static short const _ts_weap3_place[] = {0,
-                                                1,
-                                                2,
-                                                MAP_CELL_W,
+        // The ghost covers the hall and the concrete in front of it. The plot's back row only
+        // centres the selection box over the roof; nothing of the building stands there.
+        static short const _ts_weap3_place[] = {MAP_CELL_W,
                                                 MAP_CELL_W + 1,
                                                 MAP_CELL_W + 2,
                                                 MAP_CELL_W * 2,
                                                 MAP_CELL_W * 2 + 1,
                                                 MAP_CELL_W * 2 + 2,
+                                                MAP_CELL_W * 3,
+                                                MAP_CELL_W * 3 + 1,
+                                                MAP_CELL_W * 3 + 2,
                                                 REFRESH_EOL};
         return (_ts_weap3_place);
     }
@@ -6594,7 +6595,7 @@ short const* BuildingTypeClass::Overlap_List(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Width(void) const
 {
-    static int width[BSIZE_COUNT] = {1, 2, 1, 2, 2, 3, 3, 4, 5, 4, 4, 5, 3, 1};
+    static int width[BSIZE_COUNT] = {1, 2, 1, 2, 2, 3, 3, 4, 5, 4, 4, 5, 3, 1, 3};
     return (width[Size]);
 }
 
@@ -6614,7 +6615,7 @@ int BuildingTypeClass::Width(void) const
  *=============================================================================================*/
 int BuildingTypeClass::Height(bool bib) const
 {
-    static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5, 3, 4, 3, 1, 3};
+    static int height[BSIZE_COUNT] = {1, 1, 2, 2, 3, 2, 3, 2, 5, 3, 4, 3, 1, 3, 4};
     /*
     **	The dropship bay's slab sits INSIDE its 3x3 (see Bib_And_Offset), so the
     **	placement grid must not grow a bib row -- the art already owns the space

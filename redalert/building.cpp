@@ -226,6 +226,7 @@ COORDINATE const BuildingClass::CenterOffset[BSIZE_COUNT] = {
     0x01800280L, // BSIZE_53 (5x3): x = 2.5 cells, y = 1.5 cells -- centre CELL row 1 col 2 (hangar).
     0x00800180L, // BSIZE_31 (3x1): x = 1.5 cells, y = 0.5 cells.
     0x01800080L, // BSIZE_13 (1x3): x = 0.5 cells, y = 1.5 cells.
+    0x02000180L, // BSIZE_34 (3x4): x = 1.5 cells, y = 2 cells -- centre CELL row 2 col 1 (the hall).
 };
 
 /***********************************************************************************************
@@ -6254,7 +6255,7 @@ bool TF_Gate_Lets_Through(FootClass* foot, CELL cell)
  *    it back through the building it is trying to leave. Same treatment as the refinery dock  *
  *    pad below: everything except the vehicle currently leaving reads the cell as impassable. *
  *                                                                                             *
- *    The War Factory's doorstep is XYCELL(1,2), the middle of the concrete in front of its    *
+ *    The War Factory's doorstep is XYCELL(1,3), the middle of the concrete in front of its    *
  *    door; the deployed Mobile War Factory's is XYCELL(4,3), one row south of its 5x3 plot on *
  *    the eastern column, where its bay points.                                                *
  *=============================================================================================*/
@@ -6266,15 +6267,17 @@ bool Is_TS_Weap_Exit_Cell(CELL cell)
 
     /*
     **	Walk back from the candidate to where each war factory's north-west
-    **	corner would be, and confirm one of that type actually occupies it.
+    **	corner would be, and confirm one of that type stands there, read from a
+    **	cell it occupies (the War Factory's back row is open ground).
     */
     static const struct
     {
         StructType type;
         int dx, dy;
+        int probe;
     } _doorsteps[] = {
-        {STRUCT_TSWEAP, 1, 2},
-        {STRUCT_TSDWEAP, 4, 3},
+        {STRUCT_TSWEAP, 1, 3, MAP_CELL_W},
+        {STRUCT_TSDWEAP, 4, 3, 0},
     };
     for (int i = 0; i < (int)(sizeof(_doorsteps) / sizeof(_doorsteps[0])); i++) {
         int x = Cell_X(cell) - _doorsteps[i].dx;
@@ -6283,7 +6286,7 @@ bool Is_TS_Weap_Exit_Cell(CELL cell)
             continue;
         }
         CELL origin = XY_Cell(x, y);
-        BuildingClass const* b = Map[origin].Cell_Building();
+        BuildingClass const* b = Map[(CELL)(origin + _doorsteps[i].probe)].Cell_Building();
         if (b != NULL && *b == _doorsteps[i].type && Coord_Cell(b->Coord) == origin) {
             return (true);
         }
@@ -6465,8 +6468,8 @@ bool Is_TS_Apron_Cell(CELL cell)
         {STRUCT_TSPROC, 0 - MAP_CELL_W},
         {STRUCT_TSPROC, 1 - MAP_CELL_W},
 
-        // The War Factory on RA's 3x3 slot: centre = row 1 col 1. Walkable, never buildable: the
-        // front row's concrete (row 2, cols 0-2), the door's lane down its middle.
+        // The War Factory, 3x4: centre = row 2 col 1 (the hall). Walkable, never buildable: the
+        // concrete in front of the door (row 3, the door's lane down its middle).
         {STRUCT_TSWEAP, MAP_CELL_W - 1},
         {STRUCT_TSWEAP, MAP_CELL_W},
         {STRUCT_TSWEAP, MAP_CELL_W + 1},
