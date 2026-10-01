@@ -22,8 +22,9 @@ Usage:
   c3_render.py <model.npz> <out_dir> --part hull|turret [--frames 32] [--tread-steps 3]
                [--ppu 13] [--canvas 1000] [--damaged]
 Writes frame-FFFF.png (hull: frame = facing * tread_steps + step; turret: frame = facing).
-Hull renders pivot on the model origin (ground under the hull centre); turret renders pivot
-on the turret bone, which the pack step seats per hull facing.
+Hull renders pivot on the ground point under the centre of the hull's own footprint, so the
+hull sits centred on the canvas as EA's vehicles do; turret renders pivot on the turret bone,
+which the pack step seats per hull facing.
 
 License: GPL v3.
 """
@@ -70,12 +71,21 @@ def sample(tex, uv):
             + (tex[y1, x0] * (1 - fx) + tex[y1, x1] * fx) * fy)
 
 
+def hull_centre(d):
+    """Ground point under the centre of the hull's bounding box (hull and treads, no turret)."""
+    used = np.zeros(len(d["pos"]), bool)
+    used[np.unique(d["tris"])] = True
+    p = d["pos"][used & (d["part"] != 1)]
+    return np.array([(p[:, 0].min() + p[:, 0].max()) / 2, (p[:, 1].min() + p[:, 1].max()) / 2, 0.0])
+
+
 class Model:
     def __init__(self, path, damaged=False):
         d = np.load(path)
         self.pos, self.nrm, self.tan, self.bin = d["pos"], d["nrm"], d["tan"], d["bin"]
         self.uv, self.tris, self.part, self.mat = d["uv"], d["tris"], d["part"], d["mat"]
         self.turret_pivot = d["turret_pivot"]
+        self.hull_centre = hull_centre(d)
         self.dudx_sign = 1.0 if float(d["tread_dudx"]) >= 0 else -1.0
         tex = dict(d["textures"])
         base = os.path.dirname(path)
@@ -115,10 +125,10 @@ def render(m, yaw_deg, part, ppu, canvas, elev_deg, tread_phase=0.0, ss=3, turre
     tri_part = m.part[m.tris[:, 0]]
     if part == "hull":
         tsel = tri_part != 1
-        origin = np.zeros(3)
+        origin = m.hull_centre
     else:
         tsel = tri_part == 1
-        origin = np.zeros(3) if turret_on_hull_origin else np.array([m.turret_pivot[0], m.turret_pivot[1], 0.0])
+        origin = m.hull_centre if turret_on_hull_origin else np.array([m.turret_pivot[0], m.turret_pivot[1], 0.0])
     tris = m.tris[tsel]
 
     yaw = math.radians(yaw_deg)

@@ -152,8 +152,8 @@ u32 namePtr, u32 index}`, mapping sub-mesh name to the pivot it is bound to.
 Tag each vertex by its pivot's ancestry: anything under the turret bone (`BONE_TURRET` on
 the Mammoth, `TURRET` on the Predator, which includes the barrels, pods and muzzle bones) is
 turret; tread meshes are treads; everything else is hull. The turret pivot is NOT always at
-the hull centre (the Predator's is 7.6 C&C3 units aft), so keep its position: you need it
-to seat the turret sprite per hull facing.
+the hull centre (the Predator's is 4.2 C&C3 units aft of it, the Mammoth's 3.1 forward), so
+keep its position: you need it to seat the turret sprite per hull facing.
 
 ### Treads
 C&C3 swaps whole tread meshes by state (`TREADSSTOP`, `TREADSMOVE`, `TREADSLEFT`,
@@ -240,8 +240,10 @@ rather than using Blender: you need exact control of camera, light and colour.
   relative sizes, render at 2x or more, then downscale with LANCZOS. Ours: render at 13 px
   per C&C3 unit, pack at 6.
 - **Antialiasing:** supersample (3x), then box-average with premultiplied alpha.
-- **Parts:** render hull frames (hull + treads) around the model origin: the ground point
-  (lowest Z) under the centre of the whole assembled model's bounding box. Render turret
+- **Parts:** render hull frames (hull + treads) around the ground point under the centre of
+  the hull's own bounding box, turret excluded. EA's hulls sit centred on the canvas. The
+  model origin is the centre of the whole assembled model, barrels included, so a hull drawn
+  around it sits off-centre towards the rear (about 3 classic px on both tanks). Render turret
   frames around the ground point under the turret pivot (the pivot's X and Y, Z = 0), so the
   turret's seat is a pure ground-plane offset and the turret keeps its height in the art.
 
@@ -281,9 +283,10 @@ rather than using Blender: you need exact control of camera, light and colour.
 ## 8. DLL side (needs a Vanilla Conquer based DLL)
 
 - **Turret seat:** the stock turret draws at the unit centre. For an off-centre turret pivot,
-  generate a 32-entry table per hull facing (the pivot's ground point rotated and projected,
-  in classic px = packed px / 8) and add it in `UnitTypeClass::Turret_Adjust`, which is
-  called with the hull facing. Emit it from the packer so art and code cannot drift.
+  generate a 32-entry table per hull facing (the pivot's ground point relative to the hull
+  centre, rotated and projected, in classic px = packed px / 8) and add it in
+  `UnitTypeClass::Turret_Adjust`, which is called with the hull facing. Emit it from the
+  packer so art and code cannot drift.
 - **Rolling treads:** the stock engine has one body frame per facing. Add a per-type step count
   and pick `facing * steps + ((frame + unitID) / rate) % steps` while the unit is driving and
   not rotating in place (step 0 otherwise). Size the rate so a link travels about as fast as

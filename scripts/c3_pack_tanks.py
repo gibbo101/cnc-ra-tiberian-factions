@@ -8,10 +8,11 @@ Tileset layout per tank (the walker gait layout, contract 2 keeps the turret und
 Hull frames carry EA's baked drop shadow (ts_reshadow.py). Renders come from c3_render.py at
 RENDER_PPU pixels per C&C3 unit and pack at PACK_PPU, on canvas = ShapeSize x 8.
 
-The turret frames pivot on the turret bone, which sits off the hull centre (the Predator's by
-7.6 C&C3 units aft). redalert/c3tanks.h carries, per hull facing, the turret seat in classic
-pixels for the draw and in leptons for fire coordinates, and per turret frame each fire point
-relative to the seat (projected through the render camera, 4/3 leptons per canvas px).
+Hull frames are centred on the hull's own footprint. The turret frames pivot on the turret
+bone, which sits off that centre (the Mammoth's forward, the Predator's aft).
+redalert/c3tanks.h carries, per hull facing, the turret seat in classic pixels for the draw and
+in leptons for fire coordinates, and per turret frame each fire point relative to the seat
+(projected through the render camera, 4/3 leptons per canvas px).
 
 Audio: each tank's own C&C3 crew voice and weapon takes, re-encoded MS-ADPCM
 22050 Hz mono under C3 names. One sound event per VOC; a weapon event lists every take, and the
@@ -41,6 +42,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from ts_reshadow import drop_shadow, EA_DX, EA_DY  # noqa: E402
 import asset_packs  # noqa: E402
+from c3_render import hull_centre  # noqa: E402
 
 ART = os.environ.get("C3_ART_DIR")
 HEADER = os.path.join(HERE, "..", "redalert", "c3tanks.h")
@@ -191,7 +193,8 @@ def tables(model, weapons):
     d = np.load(f"{ART}/model/{model}.npz")
     pivots = dict(zip(d["pivot_names"], d["pivot_pos"]))
     tp = d["turret_pivot"]
-    seat = [project((tp[0], tp[1], 0.0), facing_yaw(f)) for f in range(32)]
+    hc = hull_centre(d)
+    seat = [project((tp[0] - hc[0], tp[1] - hc[1], 0.0), facing_yaw(f)) for f in range(32)]
     fire = []
     for sides in weapons:
         fire.append([[project(pivots[p] - np.array([tp[0], tp[1], 0.0]), facing_yaw(f)) for f in range(32)]

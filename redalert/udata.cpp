@@ -2798,8 +2798,8 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
     } _art_boxes[] = {
         {UNIT_R2APOC, 36, 39},
         {UNIT_R2PRIS, 34, 42},
-        {UNIT_C3MK3, 52, 44},
-        {UNIT_C3PRED, 32, 29},
+        {UNIT_C3MK3, 52, 41},
+        {UNIT_C3PRED, 32, 28},
         {UNIT_TS4TNK, 35, 38},
         {UNIT_TSSONIC, 38, 39},
         {UNIT_TSHMEC, 42, 41},
