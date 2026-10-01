@@ -3553,6 +3553,12 @@ bool CellClass::Can_Tiberium_Germinate(void) const
     if (Overlay != OVERLAY_NONE)
         return (false);
 
+    /*
+    **	A TS building's concrete apron (the refinery's dock and lane) stays clear of Tiberium.
+    */
+    if (Is_TS_Apron_Cell(Cell_Number()))
+        return (false);
+
     return (true);
 }
 

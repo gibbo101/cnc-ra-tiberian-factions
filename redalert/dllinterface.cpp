@@ -7045,6 +7045,15 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
         new_object.SortOrder =
             (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 192)) >> 3);
     }
+    /*
+    **  The TS refinery's front: a docked truck sits up to 127 leptons south of the building's
+    **  centre and sorts 128 further (UnitClass::Sort_Y), so the front sorts at +288 to draw over
+    **  it; anything on the lane's mouth or the plate (+384) still draws over the front.
+    */
+    if (shape_file_name != NULL && strcmp(shape_file_name, "TSPROCNF") == 0) {
+        new_object.SortOrder =
+            (ExportLayer << 29) + (Coord_Add(object->Sort_Y(), XY_Coord(0, 288)) >> 3);
+    }
     if (shape_file_name != NULL
         && (strcmp(shape_file_name, "TSWEAPDR") == 0 || strcmp(shape_file_name, "TSDWEAPDR") == 0)) {
         new_object.SortOrder =
@@ -7114,7 +7123,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             if (object->What_Am_I() == RTTI_BUILDING) {
                 char const* n = object->Class_Of().IniName;
                 interesting = (n != NULL
-                               && (strcmp(n, "TSWEAP") == 0 || strcmp(n, "TSDWEAP") == 0 || strcmp(n, "TDWEAP") == 0));
+                               && (strcmp(n, "TSWEAP") == 0 || strcmp(n, "TSDWEAP") == 0 || strcmp(n, "TDWEAP") == 0
+                                   || strcmp(n, "TSPROC") == 0));
             } else if (object->What_Am_I() == RTTI_UNIT) {
                 interesting = true;
             }
@@ -7245,7 +7255,16 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             }
 #endif
             const BuildingTypeClass* building_type = building->Class;
-            short const* occupy_list = building_type->Occupy_List();
+            /*
+            **	The launcher draws a unit behind a building by the cells it is handed here. The TS
+            **	refinery's north row is open ground under its stacks, so it is handed with the
+            **	blocking cells: units walking there pass behind the art. The dock pad, the east
+            **	column and the lane stay out, so a truck in them draws in front.
+            */
+            static short const _ts_proc_render[] = {
+                0, 1, 2, 3, MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, REFRESH_EOL};
+            short const* occupy_list =
+                (building_type->Type == STRUCT_TSPROC) ? _ts_proc_render : building_type->Occupy_List();
             if (occupy_list) {
                 while (*occupy_list != REFRESH_EOL && new_object.OccupyListLength < MAX_OCCUPY_CELLS) {
                     new_object.OccupyList[new_object.OccupyListLength] = *occupy_list;
@@ -7404,8 +7423,9 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             // art-geometry/design problem, not an export problem.
             // TSFACT needs no case since the 3x2 plot (2026-08-13): the
             // default foundation-derived box IS the approved 57x38 on the
-            // art rows. TSDROP likewise (box on the deck's 3x2), and TSTECH
-            // (3 across the building's row and the dome's row).
+            // art rows. TSDROP likewise (box on the deck's 3x2), TSTECH
+            // (3 across the building's row and the dome's row) and TSPROC
+            // (4 across and 3 high over the whole plot).
             case STRUCT_TSWEAP:
             case STRUCT_TSDWEAP:
                 // Ensemble bbox (2026-08-17 evening): the hand-tucked pad
@@ -7425,17 +7445,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 // to 7 below); the thin mast rises out of its top.
                 dimx = 35;
                 dimy = 36;
-                break;
-            case STRUCT_TSPROC:
-                // Height approved 2026-08-13 round 1: the plot-centred box
-                // whose south edge sits right. Taller boxes only grow both
-                // ways (see contract above); the PositionY probe (round 5)
-                // moved the SPRITE, not the box -- the draw rect IS the art
-                // anchor. The remaining fix path for off-centre boxes is
-                // stub/canvas geometry, with TDFACT as the working control.
-                new_object.CenterCoordX -= 78;
-                dimx = 90;
-                dimy = 32;
                 break;
             default:
                 break;
@@ -9777,28 +9786,29 @@ void DLLExportClass::Calculate_Placement_Distances(BuildingTypeClass* placement_
             BuildingClass* base = (BuildingClass*)Map[cell].Cell_Find_Object(RTTI_BUILDING);
             if (base == NULL) {
                 /*
-                **	TSPROC's walkable holes (dock pad + apron column + the
-                **	south apron row) carry no building object but ARE part of
-                **	its 4x3 footprint -- seed them too, or placement reach
-                **	ends a square short past the pad (Luke, 2026-08-05 00:33).
-                **	Offsets run from the hole cell back to the centre (= the
-                **	dock pad, so the pad's own offset is 0 -- counted loop).
+                **	TSPROC's open cells (the north row under the stacks, the dock
+                **	pad, the east column, the lane's mouth and the plate) carry no
+                **	building object but ARE part of its 4x3 footprint -- seed them
+                **	too, or placement reach ends a square short. Offsets run from
+                **	the open cell back to the centre (= the dock pad, so the pad's
+                **	own offset is 0 -- counted loop).
                 */
                 static short const _ts_holes[] = {0,
                                                   1,
-                                                  1 - MAP_CELL_W,
-                                                  MAP_CELL_W - 2,
-                                                  MAP_CELL_W - 1,
                                                   MAP_CELL_W,
-                                                  MAP_CELL_W + 1};
+                                                  MAP_CELL_W + 1,
+                                                  -2 - MAP_CELL_W,
+                                                  -1 - MAP_CELL_W,
+                                                  0 - MAP_CELL_W,
+                                                  1 - MAP_CELL_W};
                 for (int h = 0; h < (int)(sizeof(_ts_holes) / sizeof(_ts_holes[0])); h++) {
                     CELL c2 = (CELL)(cell - _ts_holes[h]);
                     /*
                     **	c2 (the would-be pad) is an occupy hole -- resolve the
-                    **	building via the occupied cell north of it (same
-                    **	dead-lookup fix as Is_TS_Apron_Cell).
+                    **	building via the occupied cell west of it (as
+                    **	Is_TS_Apron_Cell does).
                     */
-                    CELL b2cell = (CELL)(c2 - MAP_CELL_W);
+                    CELL b2cell = (CELL)(c2 - 1);
                     if (!Map.In_Radar(c2) || !Map.In_Radar(b2cell)) {
                         continue;
                     }
@@ -11559,11 +11569,11 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             StructType owner;
             SmudgeType apron;
             int off_x, off_y; // apron origin relative to the building's origin cell
+            int probe;        // a cell the building occupies, relative to its origin cell
         } _aprons[] = {
-            // (0,0): both grids sit on their building's plot origin.
-            {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 1, 0}, // 4x3 pad grid from col 1 of the 5x3 plot
-            {STRUCT_TSDWEAP, SMUDGE_TSDWEAPBB, 1, 0},
-            {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0},
+            {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 1, 0, 0}, // 4x3 pad grid from col 1 of the 5x3 plot
+            {STRUCT_TSDWEAP, SMUDGE_TSDWEAPBB, 1, 0, 0},
+            {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0, MAP_CELL_W}, // its north row is open: probe (0,1)
         };
         for (int a = 0; a < (int)(sizeof(_aprons) / sizeof(_aprons[0])); a++) {
             const SmudgeTypeClass& apron_type = SmudgeTypeClass::As_Reference(_aprons[a].apron);
@@ -11574,7 +11584,11 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
                     if (origin < 0 || origin >= MAP_CELL_TOTAL) {
                         continue;
                     }
-                    BuildingClass* apron_owner = Map[(CELL)origin].Cell_Building();
+                    int probe = origin + _aprons[a].probe;
+                    if (probe < 0 || probe >= MAP_CELL_TOTAL) {
+                        continue;
+                    }
+                    BuildingClass* apron_owner = Map[(CELL)probe].Cell_Building();
                     if (apron_owner == NULL || *apron_owner != _aprons[a].owner
                         || Coord_Cell(apron_owner->Coord) != (CELL)origin) {
                         continue;

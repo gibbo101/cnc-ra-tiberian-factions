@@ -261,7 +261,9 @@ PACK_ARGS+=("$TMPDIR/tsmdiv_stub.shp:TSMDIV.SHP")
 # TS units wave (Harvester / Wolverine / Disruptor / Amphibious APC) -- same
 # HD-only stub pattern; frame counts match the HD zips (rot-only, walk, or
 # body+turret) and dims match each unit's rules.ini ShapeSize.
-python3 scripts/gen_stub_shp.py "$TMPDIR/tsharv_stub.shp" 64 64 64
+# TSHARV 72x72: its 384 canvas at EA's own density (5.33 canvas px per classic px), so the HD truck's
+# pixels draw one for one with EA's TD and RA harvesters'.
+python3 scripts/gen_stub_shp.py "$TMPDIR/tsharv_stub.shp" 72 72 64
 PACK_ARGS+=("$TMPDIR/tsharv_stub.shp:TSHARV.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tssmec_stub.shp" 48 48 128
 PACK_ARGS+=("$TMPDIR/tssmec_stub.shp:TSSMEC.SHP")
@@ -335,24 +337,22 @@ PY
     python3 scripts/gen_stub_shp.py "$2" "$3" "$4" "$5"
 }
 
-# TSPROC 72x126: art width-fit to the FULL 3x3 PLOT (72 classic; the 96-wide
-# 4-cell fit read oversized next to the 2x2 tier — Luke, 2026-08-04). The
-# building content is only 94 src px wide (the TS concrete apron is not
-# drawn), so the plot-width fit runs at 4.09x — disc + chimney + smoke is
-# ~90 classic px tall at that scale. The stub is sized so the DISC BOTTOM
-# lands exactly on the plot's south edge. 138x150 = the BSIZE_44
-# foundation: one extra cell (24 classic) of canvas at the BOTTOM offsets
-# the half-cell-south anchor move so the art stays pixel-static on the plot.
+# TSPROC 138x174 = the HD refinery's 736x928 canvas centred on its 4x3 plot: the
+# building turned 22.5 degrees inside the plot's columns, the bib on its south edge.
 ts_stub TSPROC "$TMPDIR/tsproc_stub.shp" 138 174 2
 PACK_ARGS+=("$TMPDIR/tsproc_stub.shp:TSPROC.SHP")
-ts_stub TSPROC "$TMPDIR/tsprocmk_stub.shp" 138 174 19
+ts_stub TSPROC "$TMPDIR/tsprocmk_stub.shp" 138 174 24
 PACK_ARGS+=("$TMPDIR/tsprocmk_stub.shp:TSPROCMAKE.SHP")
-# The refinery's event layers share its canvas: the chimney fireball burst
-# (20 healthy + 20 damaged) and the dock lid (5 + 5).
+# The refinery's event layers share its canvas: the flare stack's fire (20 lit,
+# then 20 empty) and the dock lid (5 + 5).
 ts_stub TSPROC "$TMPDIR/tsprocfr_stub.shp" 138 174 40
 PACK_ARGS+=("$TMPDIR/tsprocfr_stub.shp:TSPROCFR.SHP")
 ts_stub TSPROC "$TMPDIR/tsprocld_stub.shp" 138 174 10
 PACK_ARGS+=("$TMPDIR/tsprocld_stub.shp:TSPROCLD.SHP")
+# ...and its front, drawn over a docked truck: the idle loop's 32 frames masked to the building in front of
+# the dock lane.
+ts_stub TSPROC "$TMPDIR/tsprocnf_stub.shp" 138 174 32
+PACK_ARGS+=("$TMPDIR/tsprocnf_stub.shp:TSPROCNF.SHP")
 # TSWEAP 144x126: the 5x4 plot is 120x96 classic, and the extra 12 classic a
 # side carries the concrete pad's overhang east and south. The hangar fits to
 # 4 cells (96 classic) via the packer's fit_w -- the width a Mammoth Mk. II

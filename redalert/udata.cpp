@@ -2803,7 +2803,7 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
         {UNIT_TS4TNK, 35, 38},
         {UNIT_TSSONIC, 38, 39},
         {UNIT_TSHMEC, 42, 41},
-        {UNIT_TSHARV, 27, 21},
+        {UNIT_TSHARV, 37, 28},
         {UNIT_TSSMEC, 15, 26},
         {UNIT_TSJUGG, 31, 32},
         {UNIT_TSSUBTANK, 38, 35},

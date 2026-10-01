@@ -570,17 +570,10 @@ RadioMessageType BuildingClass::Receive_Message(RadioClass* from, RadioMessageTy
 
             case STRUCT_TSPROC:
                 /*
-                **	TD/TS trucks line up on the SE PLATE cell (the diagonal
-                **	apron hole), then their entry tracks reverse them dead
-                **	straight NW along their facing axis into the bay mouth.
-                **	The RA ore truck keeps the ramp-foot cell one row south
-                **	of the pad (its E-facing tip-up seats against the intake
-                **	from there).
+                **	Every truck lines up on the plate cell south-east of the
+                **	pad, then reverses up the dock lane into its seat.
                 */
                 param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W + 1));
-                if (from != NULL && from->What_Am_I() == RTTI_UNIT && *((UnitClass*)from) == UNIT_HARVESTER) {
-                    param = ::As_Target((CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W));
-                }
                 break;
 
             case STRUCT_REFINERY:
@@ -893,6 +886,25 @@ void BuildingClass::Draw_It(int x, int y, WindowNumberType window) const
         **  name. TD's overlay stands in so the pointer is never NULL, which
         **  would skip the draw outright.
         */
+        /*
+        **	TS refinery layers, on the building's own canvas: its front (the building in front of
+        **	the dock lane, at the idle phase), which sorts south of a docked truck so the truck
+        **	backs in under the deck; the flare stack's fire while a burst plays (its 20 lit frames
+        **	serve both states); and the dock lid while it opens and closes (a healthy run, then a
+        **	damaged one).
+        */
+        if (*this == STRUCT_TSPROC && Strength > 1 && BState != BSTATE_CONSTRUCTION) {
+            int dmg = (Health_Ratio() <= Rule.ConditionYellow) ? 1 : 0;
+            Techno_Draw_Object_Virtual(Class->TsRefineryFront, Shape_Number(), x, y, window, DIR_N, 0x0100, "TSPROCNF");
+            if (TsFlameStage >= 0) {
+                Techno_Draw_Object_Virtual(Class->TsRefineryFlame, TsFlameStage, x, y, window, DIR_N, 0x0100, "TSPROCFR");
+            }
+            if (TS_LID_ENABLED && Ts_Lid_Busy()) {
+                Techno_Draw_Object_Virtual(
+                    Class->TsRefineryLid, TsLidStage + dmg * 5, x, y, window, DIR_N, 0x0100, "TSPROCLD");
+            }
+        }
+
         /*
         **	TS war factory (08-28 rebuild): the body is one sprite. The roll-up
         **	shutter (GAWEAP_D, 9 stages + 9 damaged) is a layer sorted south of
@@ -5012,11 +5024,11 @@ void BuildingClass::Grand_Opening(bool captured)
             && !captured && !Debug_Map
             && (!House->IsHuman || PurchasePrice == 0 || PurchasePrice > Class->Raw_Cost())) {
             /*
-            **	TSPROC's free harvester appears ON the dock pad, which on the
-            **	4x4 foundation is the centre cell itself (DIR_S would be the
-            **	ramp foot, one row further out than the verified spawn).
+            **	TSPROC's free harvester appears on the plate (south-east of the
+            **	dock pad, the centre cell) facing out, where a truck stands once it
+            **	has unloaded, so it drives away from the dock lane.
             */
-            CELL cell = (*this == STRUCT_TSPROC) ? Coord_Cell(Center_Coord())
+            CELL cell = (*this == STRUCT_TSPROC) ? (CELL)(Coord_Cell(Center_Coord()) + MAP_CELL_W + 1)
                                                  : Coord_Cell(Adjacent_Cell(Center_Coord(), DIR_S));
 
             // Tiberian Factions: STRUCT_TDPROC spawns UNIT_TDHARV (TD-art
@@ -5050,7 +5062,7 @@ void BuildingClass::Grand_Opening(bool captured)
                 **	Try to place down the harvesters. If it could not be placed, then try
                 **	to place it in a nearby location.
                 */
-                if (!unit->Unlimbo(Cell_Coord(cell), DIR_W)) {
+                if (!unit->Unlimbo(Cell_Coord(cell), (*this == STRUCT_TSPROC) ? DIR_SE : DIR_W)) {
                     /*
                     **	Check multiple times for clear locations.
                     */
@@ -5068,8 +5080,26 @@ void BuildingClass::Grand_Opening(bool captured)
                     if (unit->IsInLimbo) {
                         House->Refund_Money(unit->Class->Cost_Of());
                         delete unit;
+                        unit = NULL;
                     }
                 }
+#if TF_DEV_BUILD
+                if (*this == STRUCT_TSPROC) {
+                    char dpath[512];
+                    const char* dprof = getenv("USERPROFILE");
+                    if (dprof != NULL && dprof[0] != '\0') {
+                        snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
+                    } else {
+                        strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
+                    }
+                    FILE* dlog = fopen(dpath, "a");
+                    if (dlog != NULL) {
+                        fprintf(dlog, "frame=%d FREE-HARV placed=%s cell=%d pad=%d\n", Frame, (unit != NULL) ? "yes" : "NO (refunded)",
+                                (unit != NULL) ? Coord_Cell(unit->Coord) : -1, Coord_Cell(Center_Coord()));
+                        fclose(dlog);
+                    }
+                }
+#endif
             } else {
 
                 /*
@@ -6257,12 +6287,12 @@ bool Is_Refinery_Dock_Cell(CELL cell)
     }
 
     /*
-    **	TS refinery: dock pad = the 4x4 foundation's centre cell itself. The
+    **	TS refinery: dock pad = the 4x3 foundation's centre cell itself. The
     **	pad is an occupy HOLE (no building in its occupier chain), so the
-    **	building pointer is read from the occupied cell one row N; the centre
+    **	building pointer is read from the occupied cell to its west; the centre
     **	check then points back at the candidate cell.
     */
-    CELL tsncell = Adjacent_Cell(cell, FACING_N);
+    CELL tsncell = Adjacent_Cell(cell, FACING_W);
     if ((unsigned)tsncell < MAP_CELL_TOTAL) {
         BuildingClass const* b = Map[tsncell].Cell_Building();
         if (b != NULL && *b == STRUCT_TSPROC && Coord_Cell(b->Center_Coord()) == cell) {
@@ -6286,6 +6316,34 @@ bool Is_Refinery_Dock_Cell(CELL cell)
 }
 
 /***********************************************************************************************
+ * TS_Refinery_Lane_Owner -- The TS refinery whose dock lane holds this cell.                  *
+ *                                                                                             *
+ *    The lane is the pad and its east, south and south-east neighbours: the plate the truck   *
+ *    lines up on, the cells it reverses across into the seat and drives back out over. The   *
+ *    rails in and out don't check who is standing there, so the lane belongs to the truck    *
+ *    in radio contact with the refinery and every other unit reads it as impassable.          *
+ *=============================================================================================*/
+BuildingClass* TS_Refinery_Lane_Owner(CELL cell)
+{
+    if ((unsigned)cell >= MAP_CELL_TOTAL) {
+        return (NULL);
+    }
+    int const _back[] = {0, 1, MAP_CELL_W, MAP_CELL_W + 1};
+    for (int i = 0; i < (int)(sizeof(_back) / sizeof(_back[0])); i++) {
+        CELL pad = (CELL)(cell - _back[i]);
+        if ((unsigned)pad >= MAP_CELL_TOTAL || Cell_Y(pad) != Cell_Y(cell) - (i >= 2)
+            || (unsigned)(pad - 1) >= MAP_CELL_TOTAL) {
+            continue;
+        }
+        BuildingClass* b = Map[(CELL)(pad - 1)].Cell_Building();
+        if (b != NULL && *b == STRUCT_TSPROC && Coord_Cell(b->Center_Coord()) == pad) {
+            return (b);
+        }
+    }
+    return (NULL);
+}
+
+/***********************************************************************************************
  * Is_Refinery_Dock_Busy -- Is this dock pad's refinery mid-attach-unload?                     *
  *                                                                                             *
  *    True while the refinery that owns this dock pad has a harvester ATTACHED (limbo'd,       *
@@ -6300,7 +6358,8 @@ bool Is_Refinery_Dock_Busy(CELL cell)
     /*
     **	centre_is_pad: TSPROC's centre cell IS its dock pad (an occupy hole),
     **	so the building pointer comes from the occupied cell in `facing`
-    **	direction while the centre check points back at the pad cell itself.
+    **	direction (west of the pad) while the centre check points back at the
+    **	pad cell itself.
     */
     struct
     {
@@ -6308,7 +6367,7 @@ bool Is_Refinery_Dock_Busy(CELL cell)
         StructType type;
         bool centre_is_pad;
     } const _pads[] = {
-        {FACING_N, STRUCT_REFINERY, false}, {FACING_N, STRUCT_TSPROC, true}, {FACING_NE, STRUCT_TDPROC, false}};
+        {FACING_N, STRUCT_REFINERY, false}, {FACING_W, STRUCT_TSPROC, true}, {FACING_NE, STRUCT_TDPROC, false}};
     for (int i = 0; i < (int)(sizeof(_pads) / sizeof(_pads[0])); i++) {
         CELL rcell = Adjacent_Cell(cell, _pads[i].facing);
         if ((unsigned)rcell >= MAP_CELL_TOTAL) {
@@ -6376,12 +6435,13 @@ bool Is_TS_Apron_Cell(CELL cell)
         **	TSPROC, 4x3: centre = the dock pad, so the pad's own offset is 0.
         */
         {STRUCT_TSPROC, 0},              // the dock pad itself (occupy hole)
-        {STRUCT_TSPROC, MAP_CELL_W - 2}, // apron row, col 0
-        {STRUCT_TSPROC, MAP_CELL_W - 1}, // apron row, col 1
-        {STRUCT_TSPROC, MAP_CELL_W},     // apron row, col 2 (ramp foot)
-        {STRUCT_TSPROC, MAP_CELL_W + 1}, // apron row, col 3
-        {STRUCT_TSPROC, 1 - MAP_CELL_W}, // east col, row 0
+        {STRUCT_TSPROC, MAP_CELL_W},     // south row, col 2 (the lane's mouth)
+        {STRUCT_TSPROC, MAP_CELL_W + 1}, // south row, col 3 (the plate)
         {STRUCT_TSPROC, 1},              // east col, row 1
+        {STRUCT_TSPROC, -2 - MAP_CELL_W}, // north row (headroom under the stacks), cols 0-3
+        {STRUCT_TSPROC, -1 - MAP_CELL_W},
+        {STRUCT_TSPROC, 0 - MAP_CELL_W},
+        {STRUCT_TSPROC, 1 - MAP_CELL_W},
 
         /*
         **	TSWEAP, 4x3: centre = row 1, col 2, a solid hangar cell. The
@@ -6419,12 +6479,11 @@ bool Is_TS_Apron_Cell(CELL cell)
         **	directly. The refinery's centre is the dock pad, an occupy HOLE
         **	that can never answer -- Cell_Building walks the occupier chain
         **	only, and overlap cells live in a separate array -- so fall back
-        **	to the occupied cell directly north of it. This lookup being
-        **	pad-anchored is why the veto was silently dead for a while.
+        **	to the occupied cell directly west of it.
         */
         BuildingClass const* b = Map[centre].Cell_Building();
         if (b == NULL) {
-            CELL bcell = (CELL)(centre - MAP_CELL_W);
+            CELL bcell = (CELL)(centre - 1);
             if ((unsigned)bcell >= MAP_CELL_TOTAL) {
                 continue;
             }
@@ -9589,15 +9648,15 @@ COORDINATE BuildingClass::Target_Coord(void) const
 
     /*
     **	TS buildings whose plot centre is not real footprint make the default
-    **	aim point land on an unoccupied cell -- TSPROC's centre is the dock-lane
-    **	hole, and the tall buildings' north row is art spill. A shot resolving
+    **	aim point land on an unoccupied cell -- TSPROC's centre is the dock pad,
+    **	and the tall buildings' north row is art spill. A shot resolving
     **	into such a cell damages nothing (the Mk. II railgun sweep collects
     **	victims per crossed cell; splash weapons pay adjacent-cell falloff).
     **	Aim at a cell the building always occupies.
     */
     if (*this == STRUCT_TSPROC) {
-        // Solid top row, on the building's centre line.
-        return XY_Coord(Coord_X(coord), Coord_Y(Cell_Coord(Coord_Cell(Coord))));
+        // The occupied cell west of the dock pad (column 1, row 1).
+        return XY_Coord(Coord_X(coord) - CELL_LEPTON_W, Coord_Y(coord));
     }
     if (*this == STRUCT_TSPOWR || *this == STRUCT_TSRADR || *this == STRUCT_TSTECH) {
         // The south row is the only real footprint.

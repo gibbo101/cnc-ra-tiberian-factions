@@ -12,13 +12,15 @@ Shape_Number looks for it (the largest end of the IDLE and ACTIVE ranges in bdat
 Written per building (RA_STRUCTURES.XML patched in place):
   <INI>.ZIP       the tileset frames
   <INI>MAKE.ZIP   the build-up, when the building builds up on the map
+Units go to UNITS/ (RA_UNITS.XML), and a building's concrete apron is cut from its layer into
+128 px ground tiles, one per cell of its smudge, the same in every theatre.
 
 The canvas is padded evenly to a height that is a multiple of 16, so the classic stub
 (canvas x 3/16, scripts/ts_stub_dims.json) is a whole number and the plot stays centred.
 Pixels at alpha 4 or less are cleared: they are invisible, and a veil of them over the
 canvas would stop every frame cropping.
 
-Usage: ts_pack_hd_buildings.py [INI ...]
+Usage: ts_pack_hd_buildings.py [INI ...]   (buildings, units and aprons by ini; none = all)
 License: GPL v3.
 """
 import io, json, os, re, sys, zipfile
@@ -29,7 +31,11 @@ SCRIPTS = os.path.dirname(os.path.abspath(__file__))
 MOD = os.path.join(SCRIPTS, "..", "resources", "remaster_mods", "Vanilla_RA")
 SRC = os.path.join(SCRIPTS, "..", "resources", "custom-art", "ts-buildings-hd")
 STRUCT_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/STRUCTURES"
+UNITS_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/UNITS"
+TERRAIN_DIR = f"{MOD}/Data/ART/TEXTURES/SRGB/RED_ALERT/TERRAIN"
+THEATRES = ("TEMPERATE", "SNOW", "INTERIOR")
 XML = f"{MOD}/Data/XML/TILESETS/RA_STRUCTURES.XML"
+UNITS_XML = f"{MOD}/Data/XML/TILESETS/RA_UNITS.XML"
 STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
 HAZE_ALPHA = 4
 
@@ -84,15 +90,33 @@ BUILDINGS = {
               ("A-lamps/barracks-lamps", range(0, 8), range(8, 16)),
               ("B-beacon/barracks-beacon", range(0, 8), range(8, 16))]),
     ], pad_bottom=128),
-    # The silo stands on its 2x1 plot row with the bib row in front, seated like the barracks.
     # TS's wedge its own way round, drawn on a 3x1 row: 128 px over it centre the canvas on the 3x2
     # plot, the wedge on the south row, the fins and dome in the north row, the bib row in front.
     # Idle: the dome's panels pulse (8), healthy then damaged.
     "TSTECH": dict(src="tstech", make=("build-up/tech-center-build", 24),
                    frames=("loop/tech-center-loop", 16), pad_top=128),
+    # The silo stands on its 2x1 plot row with the bib row in front, seated like the barracks.
     "TSSILO": dict(src="tssilo", make=("build-up/silo-build", 24), base="silo/silo",
                    blocks=[[("A-tiberium/silo-tiberium", [lv], [lv + 4], tiberium)] for lv in range(4)],
                    runs=[(16, [("B-lamps/silo-lamps", range(0, 16), range(16, 32))])], pad_bottom=128),
+    # The refinery turned 22.5 degrees on its 4x3 plot. Idle: the dock lamps (16), healthy then
+    # damaged; the flare stack's fire is its own layer (20 lit frames, then 20 empty).
+    "TSPROC": dict(src="tsproc", make=("build-up/refinery-build", 24), frames=("loop/refinery-loop", 32)),
+    "TSPROCFR": dict(src="tsproc", make=None, frames=("B-fire/refinery-fire", 40)),
+    # its front: the building in front of the dock lane, the idle loop's frames masked to it, drawn over a docked
+    # truck so it backs in under the deck
+    "TSPROCNF": dict(src="tsproc", make=None, frames=("front/refinery-front", 32)),
+}
+
+# ini: the source folder and the frames (path prefix, count) on the unit's own canvas.
+UNITS = {
+    "TSHARV": dict(src="tsproc", frames=("harvester/harvester", 64)),
+}
+
+# smudge ini: the source folder, the apron's layer on its building's canvas, where the smudge's
+# north-west cell starts on that canvas, and the smudge's size in cells (sdata.cpp).
+APRONS = {
+    "TSPROCBB": dict(src="tsproc", layer="bib/refinery-bib-00", origin=(112, 272), cells=(5, 3)),
 }
 
 
@@ -187,10 +211,10 @@ def tile_block(name, shape):
             % (name, shape, name.lower(), name.lower(), shape))
 
 
-def patch_in_place(name, count):
+def patch_in_place(name, count, xml_path=XML):
     """Install exactly `count` tiles for `name` where its tiles already stand (appended when
     it has none), leaving every other tile of the file where it is."""
-    with open(XML, encoding="utf-8", newline="") as f:
+    with open(xml_path, encoding="utf-8", newline="") as f:
         xml = f.read()
     nl = "\r\n" if "\r\n" in xml else "\n"
     blocks = "".join(tile_block(name, s) for s in range(count)).replace("\n", nl)
@@ -202,9 +226,9 @@ def patch_in_place(name, count):
     else:
         idx = xml.rindex("</Tiles>")
         xml = xml[:idx] + blocks + xml[idx:]
-    with open(XML, "w", encoding="utf-8", newline="") as f:
+    with open(xml_path, "w", encoding="utf-8", newline="") as f:
         f.write(xml)
-    print(f"patched RA_STRUCTURES.XML: {name} -> {count} tiles (replaced {len(runs)})")
+    print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles (replaced {len(runs)})")
 
 
 def pack(name, tiles, make, size):
@@ -216,8 +240,43 @@ def pack(name, tiles, make, size):
         patch_in_place(f"{name}MAKE", len(make))
 
 
+def pack_unit(name, spec):
+    path, count = spec["frames"]
+    src = os.path.join(SRC, spec["src"])
+    tiles = [Image.open(os.path.join(src, f"{path}-{i:02d}.png")).convert("RGBA") for i in range(count)]
+    write_zip(f"{UNITS_DIR}/{name}.ZIP", name.lower(), [clean(i) for i in tiles])
+    patch_in_place(name, count, UNITS_XML)
+
+
+def pack_apron(name, spec):
+    """One full 128 px tile per smudge cell, row by row from the north-west; the tileset entries
+    already name every cell, so only the archives are written."""
+    layer = clean(Image.open(os.path.join(SRC, spec["src"], spec["layer"] + ".png")).convert("RGBA"))
+    (x0, y0), (cols, rows) = spec["origin"], spec["cells"]
+    tiles = [layer.crop((x0 + 128 * c, y0 + 128 * r, x0 + 128 * (c + 1), y0 + 128 * (r + 1)))
+             for r in range(rows) for c in range(cols)]
+    for theatre in THEATRES:
+        path = f"{TERRAIN_DIR}/{theatre}/{name}.ZIP"
+        with zipfile.ZipFile(path, "w") as z:
+            for i, img in enumerate(tiles):
+                buf = io.BytesIO()
+                img.save(buf, format="TGA")
+                for member, data in ((f"{name.lower()}-{i:04d}.tga", buf.getvalue()),
+                                     (f"{name.lower()}-{i:04d}.meta",
+                                      json.dumps({"size": [128, 128], "crop": [0, 0, 128, 128]}))):
+                    z.writestr(zipfile.ZipInfo(member, date_time=(1980, 1, 1, 0, 0, 0)), data, zipfile.ZIP_DEFLATED)
+        print(f"wrote {os.path.relpath(path)} ({len(tiles)} tiles)")
+
+
 def main(argv):
-    names = [a for a in argv if a in BUILDINGS] or list(BUILDINGS)
+    every = list(BUILDINGS) + list(UNITS) + list(APRONS)
+    asked = [a for a in argv if a in every] or every
+    for name in asked:
+        if name in UNITS:
+            pack_unit(name, UNITS[name])
+        elif name in APRONS:
+            pack_apron(name, APRONS[name])
+    names = [a for a in asked if a in BUILDINGS]
     with open(STUB_MANIFEST) as f:
         stubs = json.load(f)
     for ini in names:

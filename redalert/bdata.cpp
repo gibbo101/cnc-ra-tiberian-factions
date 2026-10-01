@@ -113,16 +113,13 @@ static short const List010111100[] = {1, (MCW * 1), (MCW * 1) + 1, (MCW * 1) + 2
 static short const List0111[] = {1, (MCW * 1), (MCW * 1) + 1, REFRESH_EOL};
 static short const List1000[] = {0, REFRESH_EOL};
 static short const List101000011[] = {0, 2, (MCW * 2) + 1, (MCW * 2) + 2, REFRESH_EOL};
-/* TSPROC (4x3: 2 building rows + apron row, tall art overhangs the row
-** north of the plot): building = the west-3x2 block minus ONLY the SE dock
-** pad (the cell under the apron's hazard ramp -- must stay enterable for
-** docking harvesters). Occupying all but the pad gives a clean placement
-** grid whose one missing corner IS the dock bay (the RA dock-lane-holes
-** list drew a broken tetris piece -- Luke, 2026-08-04 23:15). */
-static short const TsProcList[] = {0, 1, 2,
-                                   (MCW * 1), (MCW * 1) + 1, REFRESH_EOL};
+/* TSPROC (4x3): the umbrella stands on the west half of the south two rows, so those four cells block.
+** The north row is headroom units walk behind (the stacks and the back of the deck rise into it); the dock
+** pad (2,1), the east column and the lane mouth (2,2) stay open for the harvesters. The placement list
+** (Occupy_List with placement) still claims the whole 4x3. */
+static short const TsProcList[] = {(MCW * 1), (MCW * 1) + 1, (MCW * 2), (MCW * 2) + 1, REFRESH_EOL};
 static short const TsProcOList[] = {
-    MCW + 2, 3, MCW + 3, (MCW * 2) + 2, (MCW * 2) + 3, REFRESH_EOL};
+    0, 1, 2, 3, MCW + 2, MCW + 3, (MCW * 2) + 2, (MCW * 2) + 3, REFRESH_EOL};
 /* TSWEAP: the Mk. II arrives by dropship bay now, so the hangar no longer
 ** passes a 40px sprite. The 70x44 hangar art is anchored on the west-3x2
 ** block, and its drawn SW corner spills into front-row cols 0-1 -- those two
@@ -1464,8 +1461,8 @@ static BuildingTypeClass const ClassTsProc(STRUCT_TSPROC,
                                                                // overhangs the row NORTH of the plot (radar treatment),
                                                                // so units can walk behind it. Centre CELL = the dock pad.
                                            NULL,
-                                           (short const*)TsProcList,   // Blocking: the 3x2 building minus the dock pad.
-                                           (short const*)TsProcOList); // Overlap: pad + apron column + ramp row (art redraw).
+                                           (short const*)TsProcList,   // Blocking: the umbrella's 2x2 in the south-west.
+                                           (short const*)TsProcOList); // Overlap: the north row, the pad, the east column and the lane mouth.
 
 static BuildingTypeClass const ClassTsSilo(STRUCT_TSSILO,
                                            TXT_NONE,
@@ -5056,6 +5053,7 @@ void const* BuildingTypeClass::TsDweapFrontOpen;
 void const* BuildingTypeClass::TsRefineryFlame;
 void const* BuildingTypeClass::TsPulseTurret;
 void const* BuildingTypeClass::TsRefineryLid;
+void const* BuildingTypeClass::TsRefineryFront;
 void const* LightningShapes;
 
 /***********************************************************************************************
@@ -5937,6 +5935,8 @@ void BuildingTypeClass::One_Time(void)
     TsPulseTurret = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"TSPROCLD", ".SHP");
     TsRefineryLid = MFCD::Retrieve(fullname);
+    _makepath(fullname, NULL, NULL, (char const*)"TSPROCNF", ".SHP");
+    TsRefineryFront = MFCD::Retrieve(fullname);
     _makepath(fullname, NULL, NULL, (char const*)"LITNING", ".SHP");
     LightningShapes = MFCD::Retrieve(fullname);
 

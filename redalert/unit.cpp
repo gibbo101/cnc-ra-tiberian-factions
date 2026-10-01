@@ -1075,6 +1075,59 @@ void UnitClass::Firing_AI(void)
     }
 }
 
+/*
+**	The TS refinery's dock: the plate cell south-east of the pad is every truck's line-up, the
+**	truck faces up the lane on its own frame 22 from line-up to drive-off, and its seat is in the
+**	pad cell. The TS and TD trucks back into the bay until a quarter of them is under the deck; the RA
+**	truck's tall bed stops it at the bay's mouth.
+*/
+static const DirType TS_DOCK_DIR = (DirType)80;
+static const int TS_DOCK_SEAT_EAST = -61;   // leptons east of the pad cell's centre
+static const int TS_DOCK_SEAT_SOUTH = 106;  // leptons south; inside the pad cell, so the dock handshake holds
+static const int TS_DOCK_SEAT_RA_EAST = 3;
+static const int TS_DOCK_SEAT_RA_SOUTH = 123;
+
+static bool Docked_At_TS_Refinery(TechnoClass const* dock)
+{
+    return (dock != NULL && dock->What_Am_I() == RTTI_BUILDING && *((BuildingClass*)dock) == STRUCT_TSPROC);
+}
+
+static COORDINATE TS_Dock_Seat(CELL pad, UnitType truck)
+{
+    COORDINATE centre = Cell_Coord(pad);
+    if (truck == UNIT_HARVESTER) {
+        return (XY_Coord(Coord_X(centre) + TS_DOCK_SEAT_RA_EAST, Coord_Y(centre) + TS_DOCK_SEAT_RA_SOUTH));
+    }
+    return (XY_Coord(Coord_X(centre) + TS_DOCK_SEAT_EAST, Coord_Y(centre) + TS_DOCK_SEAT_SOUTH));
+}
+
+/*
+**	The plate cell's centre for a TS refinery, or 0 for any other dock.
+*/
+static COORDINATE TS_Dock_Plate(TechnoClass const* dock)
+{
+    if (!Docked_At_TS_Refinery(dock)) {
+        return (0);
+    }
+    return (Cell_Coord((CELL)(Coord_Cell(dock->Center_Coord()) + MAP_CELL_W + 1)));
+}
+
+/*
+**	A cell near the refinery for a harvester to wait on: Nearby_Location's spread pick, stepping
+**	past any TS refinery dock lane, which only the docking truck may stand in.
+*/
+static CELL Refinery_Waiting_Cell(UnitClass const* harv, BuildingClass const* refinery)
+{
+    CELL first = harv->Nearby_Location(refinery, harv->ID);
+    for (int i = 0; i < 10; i++) {
+        CELL cell = harv->Nearby_Location(refinery, harv->ID + i);
+        if (cell != 0 && TS_Refinery_Lane_Owner(cell) == NULL) {
+            return (cell);
+        }
+    }
+    return (first);
+}
+
 /***********************************************************************************************
  * UnitClass::Receive_Message -- Handles receiving a radio message.                            *
  *                                                                                             *
@@ -1130,6 +1183,22 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
     case RADIO_BACKUP_NOW:
         DriveClass::Receive_Message(from, message, param);
         /*
+        **	TS refinery: turn to the dock facing on the plate cell, then reverse up the lane on
+        **	a rail into the seat. RADIO_IM_IN comes from Per_Cell_Process at the rail's end;
+        **	the plate-cell gate keeps a re-polled BACKUP_NOW from starting a second rail.
+        */
+        if (Docked_At_TS_Refinery(Contact_With_Whom())) {
+            CELL pad = Coord_Cell(Contact_With_Whom()->Center_Coord());
+            if (PrimaryFacing != TS_DOCK_DIR) {
+                if (!IsRotating) {
+                    Do_Turn(TS_DOCK_DIR);
+                }
+            } else if (!IsDriving && Coord_Cell(Center_Coord()) == (CELL)(pad + MAP_CELL_W + 1)) {
+                Rail_To(TS_Dock_Seat(pad, Class->Type), TS_DOCK_DIR);
+            }
+            return (RADIO_ROGER);
+        }
+        /*
         **	UNIT_TDHARV path — verbatim port of TD's RADIO_BACKUP_NOW handler
         **	(tiberiandawn/unit.cpp:557-567). Harvester turns DIR_SW (TD-
         **	authentic facing — RA uses DIR_W which looks wrong for our 64-
@@ -1156,88 +1225,8 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
             **	uses the attach maneuver + Limbo (falls through below). DIR_SW = one-line dial.
             */
             TechnoClass* rdock = Contact_With_Whom();
-            bool ts_ref = (rdock != NULL && rdock->What_Am_I() == RTTI_BUILDING
-                           && *((BuildingClass*)rdock) == STRUCT_TSPROC);
             bool ra_ref = (rdock != NULL && rdock->What_Am_I() == RTTI_BUILDING
                            && *((BuildingClass*)rdock) == STRUCT_REFINERY);
-            if (ts_ref) {
-                /*
-                **	TS refinery: line up nose-SE on the pad, then REVERSE
-                **	west into the bay mouth on Track15 (Luke's line-up-then-
-                **	reverse spec; endpoint = the agreed composite pose).
-                **	RADIO_IM_IN comes from Per_Cell_Process at track end,
-                **	same as the TD attach dock -- transmitting it here would
-                **	skip the reverse. The pad-cell gate keeps a re-polled
-                **	BACKUP_NOW from chaining a second track a cell deeper.
-                */
-#if TF_DEV_BUILD
-                {
-                    static int s_diag_frame = -1;
-                    if (Frame != s_diag_frame && (Frame % 15) == 0) {
-                        s_diag_frame = Frame;
-                        char dpath[512];
-                        const char* dprof = getenv("USERPROFILE");
-                        if (dprof != NULL && dprof[0] != '\0') {
-                            snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
-                        } else {
-                            strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
-                        }
-                        FILE* dlog = fopen(dpath, "a");
-                        if (dlog != NULL) {
-                            BuildingClass* bb = (BuildingClass*)rdock;
-                            fprintf(dlog,
-                                    "frame=%d DOCK-DIAG harv=%s hcoord=%08lX hcell=%d bldgcoord=%08lX "
-                                    "bldgcentre=%08lX centrecell=%d rotating=%d driving=%d facing=%d gate=%d\n",
-                                    Frame, Class->IniName, (unsigned long)Center_Coord(),
-                                    Coord_Cell(Center_Coord()), (unsigned long)bb->Coord,
-                                    (unsigned long)bb->Center_Coord(), Coord_Cell(bb->Center_Coord()),
-                                    (int)IsRotating, (int)IsDriving, (int)PrimaryFacing,
-                                    (int)(Coord_Cell(Center_Coord()) == Coord_Cell(bb->Center_Coord())));
-                            fclose(dlog);
-                        }
-                    }
-                }
-#endif
-                DirType lineup_facing = (*this == UNIT_TDHARV) ? (DirType)94 : (DirType)92;
-                if (!IsRotating && PrimaryFacing != lineup_facing) {
-                    Do_Turn(lineup_facing);
-                } else if (!IsDriving
-                           && Coord_Cell(Center_Coord())
-                                  == (CELL)(Coord_Cell(((BuildingClass*)rdock)->Center_Coord()) + MAP_CELL_W + 1)) {
-                    /*
-                    **	Aimed reverse, mirrored side (Luke's attempt 2): the
-                    **	parks sit 35 leptons the OTHER side of the pure-SE
-                    **	diagonal (TSHARV pad+(22,92), TDHARV pad+(-8,34));
-                    **	the truck reverses dead straight at the line's own
-                    **	facing (89/92) and pivots to TRUE SE as it settles
-                    **	(see Mission_Unload). Both parks stay inside the pad
-                    **	cell, so the IM_IN handshake never flips.
-                    */
-                    COORDINATE padc = Cell_Coord(Coord_Cell(((BuildingClass*)rdock)->Center_Coord()));
-                    bool td_truck = (*this == UNIT_TDHARV);
-                    COORDINATE track_end = Coord_Add(padc, td_truck ? XY_Coord(3, 23) : XY_Coord(40, 74));
-#if TF_DEV_BUILD
-                    {
-                        char dpath[512];
-                        const char* dprof = getenv("USERPROFILE");
-                        if (dprof != NULL && dprof[0] != '\0') {
-                            snprintf(dpath, sizeof(dpath), "%s/Documents/CnCRemastered/MOD_DEBUG_TSUNITS.txt", dprof);
-                        } else {
-                            strcpy(dpath, "MOD_DEBUG_TSUNITS.txt");
-                        }
-                        FILE* dlog = fopen(dpath, "a");
-                        if (dlog != NULL) {
-                            fprintf(dlog, "frame=%d DOCK-TRACK harv=%s from=%08lX to=%08lX\n", Frame,
-                                    Class->IniName, (unsigned long)Center_Coord(), (unsigned long)track_end);
-                            fclose(dlog);
-                        }
-                    }
-#endif
-                    Force_Track(td_truck ? BACKUP_INTO_REFINERY_SE_TD : BACKUP_INTO_REFINERY_SE, track_end);
-                    Set_Speed(128);
-                }
-                return (RADIO_ROGER);
-            }
             if (ra_ref || *this == UNIT_TSHARV) {
                 // RA refinery keeps the plain DIR_SW visible park on the
                 // apron cell with the direct IM_IN handshake. The TS harvester
@@ -1271,19 +1260,9 @@ RadioMessageType UnitClass::Receive_Message(RadioClass* from, RadioMessageType m
             return (RADIO_ROGER);
         }
 
-        {
-            // RA harvester at the TS refinery parks facing E -- its tip-up dump
-            // run is E-facing art and Luke's pose has the bed against the
-            // intake. Everywhere else keeps the vanilla DIR_W.
-            TechnoClass* gdock = Contact_With_Whom();
-            DirType gdir = (gdock != NULL && gdock->What_Am_I() == RTTI_BUILDING
-                            && *((BuildingClass*)gdock) == STRUCT_TSPROC)
-                               ? DIR_E
-                               : DIR_W;
-            if (!IsRotating && PrimaryFacing != gdir) {
-                Do_Turn(gdir);
-                return (RADIO_ROGER);
-            }
+        if (!IsRotating && PrimaryFacing != DIR_W) {
+            Do_Turn(DIR_W);
+            return (RADIO_ROGER);
         }
         {
             if (!IsDriving) {
@@ -2555,13 +2534,14 @@ void UnitClass::Per_Cell_Process(PCPType why)
                 /*
                 **	Either-cell match: the truck's own cell covers the TD
                 **	attach dock (truck INSIDE the building's occupy row), the
-                **	north neighbour covers every visible park (RA apron and
-                **	the TSPROC pad, whose own cell is an occupy HOLE that
-                **	Cell_Building can never resolve -- the occupier chain
+                **	north neighbour covers the RA apron park, and the west
+                **	neighbour the TSPROC pad, whose own cell is an occupy HOLE
+                **	that Cell_Building can never resolve (the occupier chain
                 **	doesn't include overlap-only cells).
                 */
                 bool cell_match = (whom == Map[cell].Cell_Building())
-                                  || (whom == Map[CELL(cell - MAP_CELL_W)].Cell_Building());
+                                  || (whom == Map[CELL(cell - MAP_CELL_W)].Cell_Building())
+                                  || (Docked_At_TS_Refinery(whom) && whom == Map[CELL(cell - 1)].Cell_Building());
                 if (cell_match) {
                     switch (Transmit_Message(RADIO_IM_IN, whom)) {
                     case RADIO_ROGER:
@@ -3012,9 +2992,12 @@ int UnitClass::Shape_Number(void) const
             ** If the harvester's dumping a load of ore, show that animation.
             ** Tiberian Factions: UNIT_TDHARV skips the dump-anim shape calc
             ** for the same reason it skips the load-anim — TD's 64-frame
-            ** harvester sprite doesn't carry the +96 dump frames.
+            ** harvester sprite doesn't carry the +96 dump frames. The RA
+            ** truck's dump faces west only, so at the TS refinery's lane it
+            ** unloads on its body frame.
             */
-            if (IsDumping && *this != UNIT_TDHARV && *this != UNIT_TSHARV) {
+            if (IsDumping && *this != UNIT_TDHARV && *this != UNIT_TSHARV
+                && !Docked_At_TS_Refinery(Contact_With_Whom())) {
                 unsigned stage = Fetch_Stage();
 #ifdef FIXIT_CSII //	checked - ajw 9/28/98
                 if (*this == UNIT_MAD) {
@@ -4210,12 +4193,18 @@ int UnitClass::Mission_Unload(void)
     };
     DirType dir;
     CELL cell;
+    COORDINATE ts_plate;
 
     switch (Class->Type) {
     case UNIT_HARVESTER:
-        if (PrimaryFacing != DIR_W) {
+        /*
+        **	The RA truck unloads facing west, where its tip-up art faces; at the TS refinery it
+        **	keeps the dock facing it backed in on, and unloads on its body frame.
+        */
+        dir = Docked_At_TS_Refinery(Contact_With_Whom()) ? TS_DOCK_DIR : DIR_W;
+        if (PrimaryFacing != dir) {
             if (!IsRotating) {
-                Do_Turn(DIR_W);
+                Do_Turn(dir);
             }
             return (5);
         }
@@ -4248,17 +4237,6 @@ int UnitClass::Mission_Unload(void)
                 Coord = Coord_Add(Coord, XYP_Coord(RA_AT_TD_NUDGE_RIGHT, 0));
                 Mark(MARK_DOWN);
             }
-            /*
-            **	RA harvester at the TS refinery: seat the tip-up against the
-            **	intake from the south pad cell (Luke's Aseprite pose 467,548 --
-            **	5 px west, 8 px north of the cell centre). VISUAL DIAL.
-            */
-            if (dockb != NULL && dockb->What_Am_I() == RTTI_BUILDING
-                && *((BuildingClass*)dockb) == STRUCT_TSPROC) {
-                Mark(MARK_UP);
-                Coord = Coord_Add(Coord, XYP_Coord(-5, -8));
-                Mark(MARK_DOWN);
-            }
             break;
         }
 
@@ -4289,6 +4267,7 @@ int UnitClass::Mission_Unload(void)
 
         IsDumping = false;
         Tiberium = Gold = Gems = 0; // defensive; AI() already drained the load
+        ts_plate = TS_Dock_Plate(Contact_With_Whom());
         /*
         **	Tiberian Factions B2 -- unload finished: tell the refinery now (frees the
         **	dock + triggers ReconsiderRefinery for queued harvesters), then break radio
@@ -4315,6 +4294,13 @@ int UnitClass::Mission_Unload(void)
 #endif
         Transmit_Message(RADIO_OVER_OUT);
         Assign_Mission(MISSION_HARVEST);
+        /*
+        **	The TS dock's seat is off its cell's centre: drive forward down the lane to the plate
+        **	cell before pathing takes over, so the first move is not a sideways recentre.
+        */
+        if (ts_plate) {
+            Rail_To(ts_plate, TS_DOCK_DIR);
+        }
         break;
 
     case UNIT_TSHARV: // TS harvester: no dump frames on the voxel sprite either -- same
@@ -4412,12 +4398,11 @@ int UnitClass::Mission_Unload(void)
                 Mark(MARK_DOWN);
             }
             /*
-            **	Settling pivot: the aimed reverse arrives one facing notch
-            **	off true SE; straighten into the dock like any vehicle
-            **	obeying a turn order.
+            **	The rail holds the dock facing; a truck knocked off it turns
+            **	back before it unloads.
             */
-            if (ts_dock && PrimaryFacing != DIR_SE) {
-                Do_Turn(DIR_SE);
+            if (ts_dock && PrimaryFacing != TS_DOCK_DIR) {
+                Do_Turn(TS_DOCK_DIR);
             }
 
 #if TF_DEV_BUILD
@@ -4562,15 +4547,10 @@ int UnitClass::Mission_Unload(void)
             */
             if (ts_bay_exit) {
                 /*
-                **	Forward exit rail (the war-factory idea): the bay seat is off
-                **	the cell centre, so the drive logic's first move would
-                **	recentre it in one step -- a slide. Track16/18 start exactly
-                **	on the TSHARV/TDHARV seats and drive forward SE onto the plate
-                **	cell, the line-up cell of the approach.
+                **	The seat is off its cell's centre: drive forward down the lane to the plate cell
+                **	before pathing takes over, so the first move is not a sideways recentre.
                 */
-                COORDINATE plate = Cell_Coord((CELL)(Coord_Cell(exref->Center_Coord()) + MAP_CELL_W + 1));
-                Force_Track((*this == UNIT_TDHARV) ? OUT_OF_REFINERY_SE_TD : OUT_OF_REFINERY_SE, plate);
-                Set_Speed(128);
+                Rail_To(TS_Dock_Plate(exref), TS_DOCK_DIR);
             } else {
                 if (*this == UNIT_TSHARV) {
                     Roll_Off_Seat(td_bay_exit ? TS_AT_TD_NUDGE_RIGHT : TS_AT_RA_NUDGE_RIGHT,
@@ -5140,7 +5120,7 @@ int UnitClass::Mission_Harvest(void)
                     IsUseless = false;
                     BuildingClass* refinery = Find_Best_Refinery();
                     if (refinery != NULL) {
-                        CELL home = Nearby_Location(refinery, ID); // per-harvester locationmod -> spread, don't pile up
+                        CELL home = Refinery_Waiting_Cell(this, refinery); // per-harvester spread, don't pile up
                         if (home != 0 && Distance(::As_Target(home)) > (CELL_LEPTON_W * 4)) {
                             Assign_Destination(::As_Target(home));
                         }
@@ -5235,12 +5215,11 @@ int UnitClass::Mission_Harvest(void)
                     **	Refinery busy: queue up near it. (CFE notes RA's
                     **	Nearby_Location(from) picks a cell near `from`, not
                     **	near self — which is exactly what we want here.)
-                    **	TF dock staging: pass our heap ID as the locationmod so each queued
-                    **	harvester picks a DIFFERENT one of the refinery's nearby clear cells
-                    **	(Nearby_Location returns topten[(Frame+locationmod) % count]) instead of
-                    **	all piling onto the same cell and wedging the dock approach.
+                    **	TF dock staging: each queued harvester picks a DIFFERENT one of the
+                    **	refinery's nearby clear cells (Refinery_Waiting_Cell) instead of all
+                    **	piling onto the same cell and wedging the dock approach.
                     */
-                    Assign_Destination(::As_Target(Nearby_Location(nearest, ID)));
+                    Assign_Destination(::As_Target(Refinery_Waiting_Cell(this, nearest)));
                 }
             }
         }
@@ -5269,7 +5248,7 @@ int UnitClass::Mission_Harvest(void)
         */
         BuildingClass* refinery = Find_Best_Refinery();
         if (refinery != NULL) {
-            CELL home = Nearby_Location(refinery, ID);
+            CELL home = Refinery_Waiting_Cell(this, refinery);
             if (home != 0 && Distance(::As_Target(home)) > (CELL_LEPTON_W * 4)) {
                 Assign_Destination(::As_Target(home));
                 Assign_Mission(MISSION_MOVE);
@@ -5460,6 +5439,17 @@ MoveType UnitClass::Can_Enter_Cell(CELL cell, FacingType) const
     if (!ScenarioInit && Is_Refinery_Dock_Cell(cell)
         && (!Class->IsToHarvest || Is_Refinery_Dock_Busy(cell))) {
         return (MOVE_NO);
+    }
+
+    /*
+    **	A TS refinery's dock lane belongs to the truck docking there. A unit being placed (still in
+    **	limbo, e.g. the refinery's free harvester on its plate) may land in it.
+    */
+    if (!ScenarioInit && !IsInLimbo) {
+        BuildingClass const* lane = TS_Refinery_Lane_Owner(cell);
+        if (lane != NULL && !(In_Radio_Contact() && Contact_With_Whom() == lane)) {
+            return (MOVE_NO);
+        }
     }
 
     /*
