@@ -39,9 +39,10 @@ L_CAM_TS = np.array([-0.62, 0.16, 0.77]); L_CAM_TS = L_CAM_TS / np.linalg.norm(L
 LS_CAM_TS = np.array([-0.70, -0.05, 0.71]); LS_CAM_TS = LS_CAM_TS / np.linalg.norm(LS_CAM_TS)
 
 
-def ra_view(size, origin, ppu=1.0, margin=(64, 64), ss=SS):
-    """RA grid: a true orthographic camera 32 degrees above the ground, looking north (the tower's)."""
-    return View((0, -1), 32.0, ppu, size, origin, margin=margin, ss=ss)
+def ra_view(size, origin, ppu=1.0, margin=(64, 64), ss=SS, look=(0, -1)):
+    """RA grid: a true orthographic camera 32 degrees above the ground, looking north (the tower's).
+    look=(-1, 0) turns the building a quarter turn on screen: its east face to the front."""
+    return View(look, 32.0, ppu, size, origin, margin=margin, ss=ss)
 
 
 def ts_view(size, origin, ppu, margin=(64, 64), ss=SS):
@@ -251,9 +252,14 @@ class ShadowMap:
         acc = np.zeros(np.shape(X), np.float32); n = 0
         for oy in range(-pcf, pcf + 1):
             for ox in range(-pcf, pcf + 1):
-                i = np.clip(np.floor(sx + 0.5 * ox).astype(int), 0, lv.W - 1)
-                j = np.clip(np.floor(sy + 0.5 * oy).astype(int), 0, lv.Hc - 1)
-                acc += (self.depth[j, i] > d + bias)
+                ii = np.floor(sx + 0.5 * ox).astype(int)
+                jj = np.floor(sy + 0.5 * oy).astype(int)
+                # a point the light map does not cover lies outside the scene's bounds: nothing there
+                # casts onto it, so it is never in shadow
+                inside = (ii >= 0) & (ii < lv.W) & (jj >= 0) & (jj < lv.Hc)
+                i = np.clip(ii, 0, lv.W - 1)
+                j = np.clip(jj, 0, lv.Hc - 1)
+                acc += inside & (self.depth[j, i] > d + bias)
                 n += 1
         return acc / n
 

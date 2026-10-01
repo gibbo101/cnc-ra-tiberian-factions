@@ -328,16 +328,15 @@ def scene(X, Y, p=P, prog=None, crane_pose=None, open_roof=0.0, crate=None):
     slab(np.full_like(X, tail[2] + 12), np.full_like(X, max(tail[2] - 10, 0)), CWEIGHT, cw, 'cweight')
     # claw under the tip: a cable and a three-fingered grab (or lying on the ground when it has fallen)
     cx_, cy_, cz_ = cr.get('claw_at', (tx, ty, tz - cr['claw_drop']))
-    if g['crane'] < 0.5:
-        cx_, cy_, cz_ = -500.0, -500.0, 0.0                                        # the claw goes on last
-    dc = np.hypot(X - cx_, Y - cy_)
-    if 'claw_at' not in cr and g['crane'] >= 0.5:
-        slab(np.full_like(X, tz - 3.0), np.full_like(X, cz_ + 8), CLAW, dc <= 1.6, 'cable')
-    ang = np.arctan2(Y - cy_, X - cx_)
-    finger = (np.abs(np.mod(ang * 3 / (2 * np.pi) + 0.5, 1.0) - 0.5) < 0.11) & (dc <= 15.0)
-    zf = cz_ + 8 - 1.1 * dc
-    slab(zf + 5.0, zf - 3.0, CLAW, finger, 'fingers')
-    slab(np.full_like(X, cz_ + 14), np.full_like(X, cz_ + 5), CLAW, dc <= 7.0, 'grab')
+    if g['crane'] >= 0.5 or 'claw_at' in cr:                                   # the claw goes on last
+        dc = np.hypot(X - cx_, Y - cy_)
+        if 'claw_at' not in cr:
+            slab(np.full_like(X, tz - 3.0), np.full_like(X, cz_ + 8), CLAW, dc <= 1.6, 'cable')
+        ang = np.arctan2(Y - cy_, X - cx_)
+        finger = (np.abs(np.mod(ang * 3 / (2 * np.pi) + 0.5, 1.0) - 0.5) < 0.11) & (dc <= 15.0)
+        zf = cz_ + 8 - 1.1 * dc
+        slab(zf + 5.0, zf - 3.0, CLAW, finger, 'fingers')
+        slab(np.full_like(X, cz_ + 14), np.full_like(X, cz_ + 5), CLAW, dc <= 7.0, 'grab')
     if crate is not None:
         cx, cy, cs = crate
         if cs > 0.5:

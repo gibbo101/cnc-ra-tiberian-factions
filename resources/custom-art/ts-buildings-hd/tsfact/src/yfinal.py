@@ -15,10 +15,12 @@ import yanim as A, yrender as R, ymat as M, ybuild as B, yard as Y
 
 PKG = '/home/claude/work/out/ts-gdi-construction-yard-hd'
 NAME = 'construction-yard'
-VIEWS = {'iso': 'ts-angle', 'ra': 'ra-grid'}
+VIEWS = {'iso': 'ts-angle', 'ra': 'ra-grid', 'ra25': 'ra-grid-25'}
 
 
 def view_of(name, ss):
+    if name == 'ra25':
+        return R.ra_turned_view(ss)
     return R.iso_view(ss) if name == 'iso' else R.ra_view(52, ss)
 
 
@@ -98,7 +100,7 @@ def prod(vname, ss=4, frames=None):
 
 # where the deploying MCV's centre stands on each view's canvas: the middle cell of the plot's
 # south row (the unit's cell; the yard's origin is the cell north-west of it)
-DEPLOY_PX = {'iso': (192.0, 192.0), 'ra': (192.0, 52.0 + 192.0)}
+DEPLOY_PX = {'iso': (192.0, 192.0), 'ra': (192.0, 52.0 + 192.0), 'ra25': (248.0, 48.0 + 192.0)}
 
 
 def ground_at(view, sx, sy):
@@ -112,7 +114,11 @@ def build(vname, ss=4, frames=None):
     out = f'{PKG}/{VIEWS[vname]}'
     view = view_of(vname, ss)
     Y.MCV_FROM = ground_at(view, *DEPLOY_PX[vname])
-    print(vname, 'MCV deploys at world (%.1f, %.1f)' % Y.MCV_FROM, flush=True)
+    # the unit faces south-west on screen when it deploys: that direction in the world, as a turn
+    # from the parked MCV's heading (cab west)
+    sw = np.array([view.T[0] - view.R[0], view.T[1] - view.R[1]])
+    Y.MCV_TURN = float(np.arctan2(-sw[1], -sw[0]))
+    print(vname, 'MCV deploys at world (%.1f, %.1f), turned %.1f deg' % (Y.MCV_FROM + (np.rad2deg(Y.MCV_TURN),)), flush=True)
     last = len(B.SEQ) - 1
     for i in (frames if frames is not None else range(len(B.SEQ))):
         t0 = time.time()

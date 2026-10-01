@@ -16,12 +16,23 @@ def iso_view(ss=hd.SS):
     return hd.ts_view(PLOT, (3 * (72 - 14), 3 * (108 - 55.5)), 3 * hd.TS_PPU, ss=ss)
 
 
-def ra_view(head=40, ss=hd.SS):
-    """canvas grown by `head` px top and bottom; the plot at y head .. head+256; pad's south edge on the
-    plot's south edge."""
+def ra_view(head=40, ss=hd.SS, look=(0, -1)):
+    """canvas grown by `head` px top and bottom; the plot at y head .. head+256; the pad's near edge on
+    the plot's south edge (the pad is square, so any quarter turn of `look` keeps the footprint)."""
     H = PLOT[1] + 2 * head
     oy = head + PLOT[1] - np.sin(np.deg2rad(32.0)) * 192.0
-    return hd.ra_view((PLOT[0], H), (PLOT[0] / 2, oy), ss=ss)
+    return hd.ra_view((PLOT[0], H), (PLOT[0] / 2, oy), ss=ss, look=look)
+
+
+def ra_turned_view(ss=hd.SS, yaw=25.0, scale=0.88, size=(496, 352)):
+    """the RA grid camera turned `yaw` degrees, like EA's RA and TD construction yards: the arch to the
+    lower left and the east side showing, at `scale`. The 3x2 plot is centred in the canvas and the
+    pad's nearest corner sits on the plot's south edge."""
+    th = np.deg2rad(yaw)
+    T = (np.sin(th), np.cos(th))
+    W, H = size
+    oy = (H + PLOT[1]) / 2 - scale * np.sin(np.deg2rad(32.0)) * 192.0 * (abs(T[0]) + abs(T[1]))
+    return hd.View((-T[0], -T[1]), 32.0, scale, (W, H), (W / 2, oy), margin=(64, 64), ss=ss)
 
 
 def render(view, model_kw=None, fan_angle=0.0, lamps=1.0, want=('img', 'trim'), level=0):
