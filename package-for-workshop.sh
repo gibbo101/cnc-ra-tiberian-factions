@@ -77,6 +77,19 @@ TF_TS_GDI_FACTION=0 TF_MEG_TARGET="$STAGE_DIR/$SUBFOLDER_NAME/Data/CONFIG.MEG" \
 TF_TS_GDI_FACTION=0 python3 scripts/picker_emblems_paint.py \
     "$STAGE_DIR/$SUBFOLDER_NAME/Data/ART/TEXTURES/SRGB/MT_COMMANDBAR_COMMON.TGA"
 
+# --- Startup intro: gitignored, so make sure the locked cut is what ships -------
+STAGED_INTRO="$STAGE_DIR/$SUBFOLDER_NAME/Data/ART/MOVIES/RA/REDINTRO.BK2"
+WANT_INTRO="$(cat scripts/intro_work/REDINTRO.md5)"
+if [[ ! -f "$STAGED_INTRO" ]]; then
+    echo "ERROR: no startup intro in the staged mod. Build it: scripts/intro_work/build_intro.sh" >&2
+    exit 1
+fi
+if [[ "$(md5sum "$STAGED_INTRO" | cut -d' ' -f1)" != "$WANT_INTRO" ]]; then
+    echo "ERROR: staged REDINTRO.BK2 is not the locked cut (want md5 $WANT_INTRO)." >&2
+    exit 1
+fi
+echo "✓ Startup intro is the locked cut ($WANT_INTRO)"
+
 # --- Strip debug symbols from the shipped DLL --------------------------------
 # The remaster preset builds RelWithDebInfo, embedding ~25MB of DWARF debug
 # sections (.debug_info/.debug_line/...) that bloat RedAlert.dll from ~2MB to
