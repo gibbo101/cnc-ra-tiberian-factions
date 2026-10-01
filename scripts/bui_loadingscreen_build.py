@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """
-Rebuild RA_UI_LOADINGSCREEN.BUI so the loading spinner shows the faction emblem row with a glint.
+Rebuild RA_UI_LOADINGSCREEN.BUI in the mod's green: the loading spinner shows the faction emblem
+row with a glint, the map-name and player-list frames use Tiberian Dawn's green frames, and the
+hint line takes TD's green tint.
 
 The screen holds the spinner twice, in its singleplayer and multiplayer layouts (skirmish uses the
 multiplayer one); both get the same treatment.
@@ -12,6 +14,8 @@ the shape of the emblem row loading_art.py draws into every frame of its texture
 container gains the Logo_Sheen effect leaf, the way the menu box carries its sheen: an id 0x16
 leaf [0x17][size][u16 len][name] before the closing id 0x27 leaf. The tree is serialised again
 (container counts follow their children) and the file keeps the base's byte size.
+
+The frames and the hint tint are the values TD's own UI_LOADINGSCREEN.BUI gives the same widgets.
 """
 import struct
 import sys
@@ -25,21 +29,40 @@ QUAD = b'LoadingTwiddle_Quad'
 STOCK_RECTS = [(0.4671, 0.6111, 0.0659, 0.1574), (0.4671, 0.7593, 0.0659, 0.1574)]
 WIDEN = 5.5
 EFFECT = b'Logo_Sheen'
+FRAMES = (b'ra_ui_loadscreenframes', b'ui_loadscreenframes')
+HINT = b'Hint_Text'
+STOCK_TINT, HINT_TINT = (1.0, 1.0, 1.0, 1.0), (0.502, 1.0, 0.0, 1.0)
 
 
 def effect_leaf(name):
     return [0x16, bytearray(bytes([0x17, len(name) + 2]) + struct.pack('<H', len(name)) + name)]
 
 
-def find_headers(node):
-    """The header containers (id 0x0b) whose name leaf is QUAD, in file order."""
+def find_headers(node, name):
+    """The header containers (id 0 or 0x0b) whose name leaf is `name`, in file order."""
     nid, body = node
     if not isinstance(body, list):
         return []
-    if nid == 0x0b and any(c[0] == 5 and not isinstance(c[1], list) and string_value(c[1]) == QUAD
-                           for c in body):
+    if nid in (0, 0x0b) and any(c[0] == 5 and not isinstance(c[1], list) and string_value(c[1]) == name
+                                for c in body):
         return [node]
-    return [h for child in body for h in find_headers(child)]
+    return [h for child in body for h in find_headers(child, name)]
+
+
+def leaves(node):
+    if isinstance(node[1], list):
+        for child in node[1]:
+            yield from leaves(child)
+    else:
+        yield node
+
+
+def tint(header, stock, new):
+    widget = header[1][0][1]
+    tag = widget.find(b'\x03\x10')
+    got = tuple(round(v, 3) for v in struct.unpack_from('<4f', widget, tag + 2))
+    assert got == stock, f'tint is {got}, expected {stock}'
+    struct.pack_into('<4f', widget, tag + 2, *new)
 
 
 def restyle(header, stock_rect):
@@ -57,10 +80,19 @@ def restyle(header, stock_rect):
 def main(base, out):
     d = open(base, 'rb').read()
     roots = parse_all(zlib.decompress(d[HEADER:]))
-    headers = [h for r in roots for h in find_headers(r)]
+    headers = [h for r in roots for h in find_headers(r, QUAD)]
     assert len(headers) == len(STOCK_RECTS), f'found {len(headers)} spinners'
     for header, rect in zip(headers, STOCK_RECTS):
         restyle(header, rect)
+
+    frames = [lf for r in roots for lf in leaves(r) if lf[0] == 2 and string_value(lf[1]) == FRAMES[0]]
+    assert len(frames) == 1, f'found {len(frames)} frame textures'
+    frames[0][1] = bytearray(struct.pack('<H', len(FRAMES[1])) + FRAMES[1])
+
+    hints = [h for r in roots for h in find_headers(r, HINT)]
+    assert len(hints) == 2, f'found {len(hints)} hint lines'
+    for header in hints:
+        tint(header, STOCK_TINT, HINT_TINT)
 
     edited = b''.join(serialise(r) for r in roots)
     parse_all(edited)
