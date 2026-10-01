@@ -3281,12 +3281,14 @@ static BuildingTypeClass const ClassTsPowr(STRUCT_TSPOWR,
                                            true,            // Can the building be color remapped to indicate owner?
                                            RTTI_NONE,       // The object type produced at this factory.
                                            DIR_N,           // Starting idle frame to match construction.
-                                           BSIZE_22,        // TS-authentic 2x2: the cooling tower stands on the
-                                                            // north-west cell and the three turbine sockets on the
-                                                            // other three, so the whole plot is footprint.
+                                           BSIZE_22,        // TS-authentic 2x2 box; only the south row is footprint:
+                                                            // the north row is art headroom that units walk behind
+                                                            // and buildings place on, and the bib below completes
+                                                            // a 2x2 total plot (the radar height trick).
                                            NULL,            // Preferred exit cell list.
-                                           (short const*)List22, // OCCUPYLIST: the whole 2x2.
-                                           (short const*)NULL);
+                                           (short const*)List22_0011, // OCCUPYLIST: south row only.
+                                           (short const*)List22_1100  // OVERLAPLIST: north art row.
+);
 
 // TS EMP Pulse Cannon (STRUCT_TSPULS, TS rules [NAPULS]) -- docs/emp-cannon-design.md.
 // 2x2 like the power plant, but squat (a rock mound with the cannon head on its
