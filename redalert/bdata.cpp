@@ -129,7 +129,7 @@ static short const TsProcOList[] = {
 ** for redraw, and included in the 4x3 PLACEMENT grid so the ghost covers
 ** building + pad (Luke). */
 /*
-**	TSWEAP (08-28 rebuild, 5x3): the hangar occupies rows 0-1 x cols 0-3. Row 2
+**	The deployed Mobile War Factory (TSDWEAP, 5x3): the hangar occupies rows 0-1 x cols 0-3. Row 2
 **	(the door's front row) and col 4 are walkable concrete; the roof art
 **	overhangs the row above the plot (overlap only).
 */
@@ -149,6 +149,23 @@ static short const TsWeapOList[] = {-MCW, -MCW + 1, -MCW + 2, -MCW + 3,
 static short const TsWeapExit[] = {XYCELL(3, 2), XYCELL(3, 3), XYCELL(4, 2), XYCELL(2, 2),
                                    XYCELL(4, 3), XYCELL(2, 3), XYCELL(4, 1), XYCELL(1, 2),
                                    REFRESH_EOL};
+/*
+**	The TS War Factory on RA's 3x3 slot: the hall fills the back two rows; the front row is walkable
+**	concrete with the door's lane down its middle. The art reaches a little past the plot on every
+**	side (the roof's poles while it builds, the shadow east, debris west when damaged), and over the
+**	front row.
+*/
+static short const TsWeap3List[] = {0, 1, 2, MCW, MCW + 1, MCW + 2, REFRESH_EOL};
+static short const TsWeap3OList[] = {-MCW - 1, -MCW, -MCW + 1, -MCW + 2, -MCW + 3,
+                                     -1, 3, MCW - 1, MCW + 3,
+                                     (MCW * 2) - 1, (MCW * 2), (MCW * 2) + 1, (MCW * 2) + 2, (MCW * 2) + 3,
+                                     REFRESH_EOL};
+/*
+**	Units leave straight south down the lane to the bottom-middle cell, then spread across the row
+**	south of the plot.
+*/
+static short const TsWeap3Exit[] = {XYCELL(1, 2), XYCELL(1, 3), XYCELL(0, 3), XYCELL(2, 3),
+                                    XYCELL(0, 2), XYCELL(2, 2), REFRESH_EOL};
 
 static short const List1100[] = {0, 1, REFRESH_EOL};
 static short const List1101[] = {0, 1, (MCW * 1) + 1, REFRESH_EOL};
@@ -1489,13 +1506,9 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            TXT_NONE,
                                            "TSWEAP",
                                            FACING_NONE,
-                                           // The default bay seat (the sheet's magenta SPAWN
-                                           // marker). Units leave on their type's generated
-                                           // exit rail (Track19/20) -- no recentre leg, no
-                                           // slide; the Titan seats at its own orange marker.
-                                           // Spawn logging to MOD_DEBUG_AI.txt under
-                                           // TF_DEV_BUILD.
-                                           TSWEAP_SEAT_MOUTH,
+                                           // A vehicle's seat in the bay; walkers seat deeper
+                                           // (Exit_Object).
+                                           TSWEAP3_SEAT,
                                            REMAP_ALTERNATE,
                                            0x0000, 0x0000, 0x0000,
                                            false,
@@ -1504,17 +1517,11 @@ static BuildingTypeClass const ClassTsWeap(STRUCT_TSWEAP,
                                            true, true, false, false, false, true,
                                            RTTI_UNITTYPE,      // Vehicle factory.
                                            DIR_N,
-                                           BSIZE_53,           // 5x3 (08-28 rebuild): hangar rows 0-1 x cols 0-3 at the
-                                                               // refinery's art scale; row 2 + col 4 walkable concrete.
-                                                               // (superseded note follows) 4x3, TSPROC parity: hangar on the
-                                                               // west 3 cols x rows 0-1, pad column + front row
-                                                               // IN-plot as walkable concrete (Luke's original "similar
-                                                               // to TS ref" call). The selection box is plot-centred by
-                                                               // the launcher; the export case sizes it to the
-                                                               // ENSEMBLE, the refinery pattern.
-                                           (short const*)TsWeapExit,
-                                           (short const*)TsWeapList,
-                                           (short const*)TsWeapOList);
+                                           BSIZE_33,           // RA's 3x3 slot: the hall on rows 0-1, the front row
+                                                               // walkable concrete.
+                                           (short const*)TsWeap3Exit,
+                                           (short const*)TsWeap3List,
+                                           (short const*)TsWeap3OList);
 
 // TS Firestorm Generator ([GAFIRE]): the Firestorm Defense's host, on the Tech Center's 3x2 plot.
 static BuildingTypeClass const ClassTsFgen(STRUCT_TSFGEN,
@@ -6454,7 +6461,21 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
                                                REFRESH_EOL};
         return (_ts_proc_place);
     }
-    if (placement && (Type == STRUCT_TSWEAP || Type == STRUCT_TSDWEAP)) {
+    if (placement && Type == STRUCT_TSWEAP) {
+        // The ghost covers the whole 3x3: the hall and the concrete in front of the door.
+        static short const _ts_weap3_place[] = {0,
+                                                1,
+                                                2,
+                                                MAP_CELL_W,
+                                                MAP_CELL_W + 1,
+                                                MAP_CELL_W + 2,
+                                                MAP_CELL_W * 2,
+                                                MAP_CELL_W * 2 + 1,
+                                                MAP_CELL_W * 2 + 2,
+                                                REFRESH_EOL};
+        return (_ts_weap3_place);
+    }
+    if (placement && Type == STRUCT_TSDWEAP) {
         // The ghost follows the art: the hangar cells plus every cell the pad
         // lands on -- the whole 5x3 except the bottom-left cell (0,2), which
         // carries no concrete.

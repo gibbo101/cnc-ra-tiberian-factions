@@ -1641,7 +1641,7 @@ typedef enum StructType : short
     STRUCT_TSPILE, // TS Barracks "TSPILE" (GAPILE, 2x2) — infantry factory.
     STRUCT_TSPROC, // TS Tiberium Refinery "TSPROC" (PROC/NAREFN art, 4x3 plot, dock-pad corner free — bdata.cpp TsProcList) — free harvester at build.
     STRUCT_TSSILO, // TS Silo "TSSILO" (GASILO; 2x1 TD-parity).
-    STRUCT_TSWEAP, // TS War Factory "TSWEAP" (GAWEAP; 5x3 plot, 4x2 blocking — bdata.cpp TsWeapList) — vehicle factory.
+    STRUCT_TSWEAP, // TS War Factory "TSWEAP" (GAWEAP; RA's 3x3 slot, door south, hall on rows 0-1 — bdata.cpp TsWeap3List) — vehicle factory.
     STRUCT_TSRADR, // TS Radar "TSRADR" (GARADR, 2x2).
     STRUCT_TSHPAD, // TS Helipad "TSHPAD" (GAHPAD, 2x2) — aircraft factory.
     STRUCT_TSTECH, // TS Tech Center "TSTECH" (GATECH, 2x2 TD-parity).

@@ -49,6 +49,45 @@ HAZE_ALPHA = 4
 TIBERIUM = np.array([191.0, 231.0, 90.0])
 
 
+# The war factory's hazard stripes, on the lane from its door (x 128-284, y 370-416 of its source canvas).
+# The apron under them is ground art, which the launcher never recolours, so the stripes there and on the
+# building layers that show the same lane are all burnt to the gold the launcher makes of that green ramp,
+# (v, 0.82v, 0), and the two meet without a seam. Hazard markings are yellow in TS whoever owns them.
+WEAP_LANE = (128, 370, 284, 416)
+
+
+def lane_gold(img):
+    """The lane's house green, antialiased edges included, as gold: a pixel's green beyond its red
+    and blue is the stripe's share of it, and that share turns from (0, e, 0) to (e, 0.82e, 0)."""
+    a = np.asarray(img).copy()
+    x0, y0, x1, y1 = WEAP_LANE
+    box = a[y0:y1, x0:x1].astype(np.int32)
+    r, g, b = box[..., 0].copy(), box[..., 1].copy(), box[..., 2].copy()
+    e = g - np.maximum(r, b)
+    hit = (box[..., 3] > 0) & (e > 4)
+    box[hit, 0] = np.minimum(r[hit] + e[hit], 255)
+    box[hit, 1] = np.maximum(r[hit], b[hit]) + np.round(e[hit] * 0.82)
+    a[y0:y1, x0:x1] = box.astype(np.uint8)
+    return Image.fromarray(a, "RGBA")
+
+
+def weap_bay(img):
+    """The war factory's under-door layer kept to its doorway (the shut door's own outline, 2 px
+    wider): the art carries a copy of the apron round it, which the apron tiles already draw."""
+    door = Image.open(os.path.join(SRC, "tsweap", "D-door", "war-factory-door-00.png")).convert("RGBA")
+    hole = np.asarray(door)[..., 3] > 0
+    for _ in range(2):
+        grown = hole.copy()
+        grown[1:] |= hole[:-1]
+        grown[:-1] |= hole[1:]
+        grown[:, 1:] |= hole[:, :-1]
+        grown[:, :-1] |= hole[:, 1:]
+        hole = grown
+    a = np.asarray(lane_gold(img)).copy()
+    a[~hole] = 0
+    return Image.fromarray(a, "RGBA")
+
+
 def tiberium(img):
     a = np.asarray(img).astype(np.float32)
     lum = a[..., :3] @ np.array([0.299, 0.587, 0.114], np.float32)
@@ -64,7 +103,8 @@ def tiberium(img):
 # repeats the whole healthy + damaged set once per entry with those overlays drawn first.
 # pad_bottom / pad_top add that many transparent px under / over every frame and crop_top cuts
 # that many empty px off the top, for art drawn on a plot of another depth than the building's own (the canvas
-# centres on the building's plot). Paths take -NN.png.
+# centres on the building's plot). repeat=n plays the frames n times over (one set for both states), and
+# recolour / make_recolour apply a function to every tileset / build-up frame as it loads. Paths take -NN.png.
 BUILDINGS = {
     "TSFACT": dict(src="tsfact", make=("build-up/construction-yard-build", 32),
                    base="yard/construction-yard", runs=[
@@ -111,7 +151,26 @@ BUILDINGS = {
     # its front: the building in front of the dock lane, the idle loop's frames masked to it, drawn over a docked
     # truck so it backs in under the deck
     "TSPROCNF": dict(src="tsproc", make=None, frames=("front/refinery-front", 32)),
+    # The war factory on RA's 3x3 slot, door south: drawn on a 3x4 canvas whose top row is empty but for the
+    # build-up's raised poles, so 96 px off the top and 32 under centre the canvas on the 3x3 plot. Its body is
+    # the door bay with the building's ground shadow, under units; the near face (the rest of the building,
+    # with the door lamps (16), the roof lamps (8) and the fans (4) over 32 idle steps) and the roll-up door
+    # draw over a vehicle in the bay. The under-door is the bay seen with the door up, and its build-up the 26
+    # frames of TS's GTWEAPMK order.
+    "TSWEAP": dict(src="tsweap", make=("build-up/war-factory-build", 26), make_recolour=lane_gold,
+                   base="building-bay/war-factory-bay", runs=[(32, [])], crop_top=96, pad_bottom=32),
+    "TSWEAPNF": dict(src="tsweap", make=None, base="2-over-units/war-factory-over", runs=[
+        (32, [("A-lamps/war-factory-lamps", range(0, 16), range(16, 32)),
+              ("B-lamps/war-factory-lamps-b", range(0, 8), range(8, 16)),
+              ("C-fans/war-factory-fans", range(0, 4), range(4, 8))]),
+    ], crop_top=96, pad_bottom=32),
+    "TSWEAPDR": dict(src="tsweap", make=None, frames=("D-door/war-factory-door", 9), repeat=2,
+                     crop_top=96, pad_bottom=32),
+    "TSWEAPUD": dict(src="tsweap", make=None, frames=("1-under-door/war-factory-under", 2), repeat=2,
+                     recolour=weap_bay, crop_top=96, pad_bottom=32),
 }
+# The open-door near face is the same layer: the door is its own layer here.
+BUILDINGS["TSWEAPNU"] = BUILDINGS["TSWEAPNF"]
 
 # ini: the source folder and the frames (path prefix, count) on the unit's own canvas. root
 # overrides the folder the source sits in, digits the frame number's width, and muzzle names the
@@ -126,6 +185,8 @@ UNITS = {
 # north-west cell starts on that canvas, and the smudge's size in cells (sdata.cpp).
 APRONS = {
     "TSPROCBB": dict(src="tsproc", layer="bib/refinery-bib-00", origin=(112, 272), cells=(5, 3)),
+    "TSWEAPBB": dict(src="tsweap", layer="bib/war-factory-bib-00", origin=(16, 128), cells=(3, 3),
+                     recolour=lane_gold),
 }
 
 
@@ -169,7 +230,7 @@ def frames(src, spec):
 
     if "frames" in spec:
         path, count = spec["frames"]
-        tiles = [load(path, i) for i in range(count)]
+        tiles = [load(path, i) for i in range(count)] * spec.get("repeat", 1)
     else:
         tiles = []
         for block in spec.get("blocks", [[]]):
@@ -187,6 +248,10 @@ def frames(src, spec):
     if spec["make"]:
         path, count = spec["make"]
         make = [load(path, i) for i in range(count)]
+    if spec.get("recolour"):
+        tiles = [spec["recolour"](i) for i in tiles]
+    if spec.get("make_recolour"):
+        make = [spec["make_recolour"](i) for i in make]
     return tiles, make
 
 
@@ -286,9 +351,10 @@ def write_muzzle(name, table, size):
 
 
 def pack_apron(name, spec):
-    """One full 128 px tile per smudge cell, row by row from the north-west; the tileset entries
-    already name every cell, so only the archives are written."""
-    layer = clean(Image.open(os.path.join(SRC, spec["src"], spec["layer"] + ".png")).convert("RGBA"))
+    """One full 128 px tile per smudge cell, row by row from the north-west, in every theatre's
+    archive and tileset."""
+    layer = Image.open(os.path.join(SRC, spec["src"], spec["layer"] + ".png")).convert("RGBA")
+    layer = clean(spec["recolour"](layer) if spec.get("recolour") else layer)
     (x0, y0), (cols, rows) = spec["origin"], spec["cells"]
     tiles = [layer.crop((x0 + 128 * c, y0 + 128 * r, x0 + 128 * (c + 1), y0 + 128 * (r + 1)))
              for r in range(rows) for c in range(cols)]
@@ -303,6 +369,7 @@ def pack_apron(name, spec):
                                       json.dumps({"size": [128, 128], "crop": [0, 0, 128, 128]}))):
                     z.writestr(zipfile.ZipInfo(member, date_time=(1980, 1, 1, 0, 0, 0)), data, zipfile.ZIP_DEFLATED)
         print(f"wrote {os.path.relpath(path)} ({len(tiles)} tiles)")
+        patch_in_place(name, len(tiles), f"{MOD}/Data/XML/TILESETS/RA_TERRAIN_{theatre}.XML")
 
 
 def main(argv):

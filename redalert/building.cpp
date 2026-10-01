@@ -4134,9 +4134,11 @@ int BuildingClass::Exit_Object(TechnoClass* base)
             {
                 /*
                 **	TS (OpenTS Exit_Object): the vehicle exists from the moment
-                **	production completes, seated in the door mouth behind the shut
-                **	shutter, facing out. It is not drawn until the shutter is fully
-                **	up (UnitClass::Draw_It), then rides the exit rail south-east.
+                **	production completes, seated in the bay behind the shut door,
+                **	facing out. It is not drawn until the door is fully up
+                **	(UnitClass::Draw_It), then rides the exit rail onto the doorstep:
+                **	straight south from the War Factory, south-east from the deployed
+                **	Mobile War Factory.
                 */
                 bool is_mech = false;
                 bool is_titan = false;
@@ -4145,7 +4147,13 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                     is_mech = (ut == UNIT_TSTITN || ut == UNIT_TSSMEC || ut == UNIT_TSHMEC);
                     is_titan = (ut == UNIT_TSTITN);
                 }
-                COORDINATE seat = Coord_Add(Coord, is_mech ? TSWEAP_SEAT_MOUTH_MECH : TSWEAP_SEAT_MOUTH);
+                bool slot3 = (*this == STRUCT_TSWEAP);
+                COORDINATE seat;
+                if (slot3) {
+                    seat = Coord_Add(Coord, is_mech ? TSWEAP3_SEAT_MECH : TSWEAP3_SEAT);
+                } else {
+                    seat = Coord_Add(Coord, is_mech ? TSWEAP_SEAT_MOUTH_MECH : TSWEAP_SEAT_MOUTH);
+                }
                 /*
                 **	The deployed Mobile War Factory's back roof sits lower than the War
                 **	Factory's, so the Titan seats 4 classic px south to keep its antenna under it.
@@ -4157,7 +4165,7 @@ int BuildingClass::Exit_Object(TechnoClass* base)
                 **	Facing = the exit rail's own direction (seat -> exit cell), so the
                 **	vehicle points exactly along the line it will drive.
                 */
-                COORDINATE exitc = Cell_Coord((CELL)(Coord_Cell(Coord) + (2 * MAP_CELL_W + 4)));
+                COORDINATE exitc = Cell_Coord((CELL)(Coord_Cell(Coord) + TS_Weap_Exit_Offset()));
                 DirType outdir = Desired_Facing256(Coord_X(seat), Coord_Y(seat), Coord_X(exitc), Coord_Y(exitc));
                 if (base->Unlimbo(seat, outdir)) {
                     base->Mark(MARK_UP);
@@ -6238,16 +6246,17 @@ bool TF_Gate_Lets_Through(FootClass* foot, CELL cell)
 }
 
 /***********************************************************************************************
- * Is_TS_Weap_Exit_Cell -- Is this cell the TS war factory's doorstep?                         *
+ * Is_TS_Weap_Exit_Cell -- Is this cell a TS war factory's doorstep?                          *
  *                                                                                             *
- *    A vehicle leaving the TS bay drives south-east one tile before it is free to turn, so    *
- *    that tile has to stay empty. An idle guard or a parked tank standing on it makes the      *
+ *    A vehicle leaving the TS bay rides a rail onto its doorstep before it is free to turn,   *
+ *    so that tile has to stay empty. An idle guard or a parked tank standing on it makes the  *
  *    new vehicle path around its own doorway -- the reverse-then-forward jink -- and shoves    *
  *    it back through the building it is trying to leave. Same treatment as the refinery dock  *
  *    pad below: everything except the vehicle currently leaving reads the cell as impassable. *
  *                                                                                             *
- *    The doorstep is the first entry of TsWeapExit, XYCELL(3,3): one row south of the 4x3     *
- *    plot, on its eastern column, which is where the bay points.                              *
+ *    The War Factory's doorstep is XYCELL(1,2), the middle of the concrete in front of its    *
+ *    door; the deployed Mobile War Factory's is XYCELL(4,3), one row south of its 5x3 plot on *
+ *    the eastern column, where its bay points.                                                *
  *=============================================================================================*/
 bool Is_TS_Weap_Exit_Cell(CELL cell)
 {
@@ -6256,17 +6265,30 @@ bool Is_TS_Weap_Exit_Cell(CELL cell)
     }
 
     /*
-    **	Walk back from the candidate to where the war factory's north-west
-    **	corner would be, and confirm a TSWEAP actually occupies it.
+    **	Walk back from the candidate to where each war factory's north-west
+    **	corner would be, and confirm one of that type actually occupies it.
     */
-    int x = Cell_X(cell) - 4;
-    int y = Cell_Y(cell) - 3;
-    if (x < 0 || y < 0) {
-        return (false);
+    static const struct
+    {
+        StructType type;
+        int dx, dy;
+    } _doorsteps[] = {
+        {STRUCT_TSWEAP, 1, 2},
+        {STRUCT_TSDWEAP, 4, 3},
+    };
+    for (int i = 0; i < (int)(sizeof(_doorsteps) / sizeof(_doorsteps[0])); i++) {
+        int x = Cell_X(cell) - _doorsteps[i].dx;
+        int y = Cell_Y(cell) - _doorsteps[i].dy;
+        if (x < 0 || y < 0) {
+            continue;
+        }
+        CELL origin = XY_Cell(x, y);
+        BuildingClass const* b = Map[origin].Cell_Building();
+        if (b != NULL && *b == _doorsteps[i].type && Coord_Cell(b->Coord) == origin) {
+            return (true);
+        }
     }
-    CELL origin = XY_Cell(x, y);
-    BuildingClass const* b = Map[origin].Cell_Building();
-    return (b != NULL && b->Is_TS_War_Factory() && Coord_Cell(b->Coord) == origin);
+    return (false);
 }
 
 bool Is_Refinery_Dock_Cell(CELL cell)
@@ -6443,22 +6465,13 @@ bool Is_TS_Apron_Cell(CELL cell)
         {STRUCT_TSPROC, 0 - MAP_CELL_W},
         {STRUCT_TSPROC, 1 - MAP_CELL_W},
 
-        /*
-        **	TSWEAP, 4x3: centre = row 1, col 2, a solid hangar cell. The
-        **	concrete pad column (col 3) + the door corridor (front row,
-        **	cols 2-3) are IN-plot walkable holes -- units drive out of the
-        **	door through them. All veto'd -- no building object stands on
-        **	them. Front-row cols 0-1 sit under the hangar's drawn SW corner
-        **	and are OCCUPIED cells now; occupancy blocks placement there.
-        */
-        // 5x3 (08-28 rebuild): centre = row 1 col 2. Walkable, never buildable:
-        // the front row's concrete (row 2, cols 1-4) and the east column (col 4, rows 0-1).
+        // The War Factory on RA's 3x3 slot: centre = row 1 col 1. Walkable, never buildable: the
+        // front row's concrete (row 2, cols 0-2), the door's lane down its middle.
         {STRUCT_TSWEAP, MAP_CELL_W - 1},
         {STRUCT_TSWEAP, MAP_CELL_W},
         {STRUCT_TSWEAP, MAP_CELL_W + 1},
-        {STRUCT_TSWEAP, MAP_CELL_W + 2},
-        {STRUCT_TSWEAP, 2 - MAP_CELL_W},
-        {STRUCT_TSWEAP, 2},
+        // The deployed Mobile War Factory, 5x3: centre = row 1 col 2. Walkable, never buildable:
+        // the front row's concrete (row 2, cols 1-4) and the east column (col 4, rows 0-1).
         {STRUCT_TSDWEAP, MAP_CELL_W - 1},
         {STRUCT_TSDWEAP, MAP_CELL_W},
         {STRUCT_TSDWEAP, MAP_CELL_W + 1},
@@ -8631,8 +8644,7 @@ int BuildingClass::Mission_Unload(void)
         **	rail from its mouth seat straight out onto the exit cell, wait until
         **	it has untethered, shut the door, idle.
         */
-        CELL cell = Coord_Cell(Coord) + (2 * MAP_CELL_W + 4); // XYCELL(4, 2): the pad's SE corner; ~SE of the mouth seat.
-                                                              // The rail ends on its centre, clear of the near face's lip.
+        CELL cell = Coord_Cell(Coord) + TS_Weap_Exit_Offset(); // the rail ends on this cell's centre
         COORDINATE coord = Cell_Coord(cell);
         CellClass* cellptr = &Map[cell];
         enum

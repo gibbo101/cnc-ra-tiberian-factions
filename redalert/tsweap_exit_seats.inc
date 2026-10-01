@@ -15,3 +15,12 @@
 **	with its feet at the threshold; everything else takes the mouth seat.
 */
 #define TSWEAP_SEAT_MOUTH_MECH XY_Coord(597, 123)  // WALKERS (Titan, Wolverine, Mk. II): dialled by eye 08-29, SIGNED OFF -- do not re-derive
+
+/*
+**	The TS War Factory on RA's 3x3 slot (STRUCT_TSWEAP), door south: seats on the door's centre line,
+**	leptons from the origin cell's centre. The door's threshold is 490 leptons below the plot's north
+**	edge. A vehicle waits half a cell inside it; a walker's art stands 0.84 rows below its position,
+**	so it waits deeper with its feet on the threshold. Both leave straight south to XYCELL(1, 2).
+*/
+#define TSWEAP3_SEAT XY_Coord(256, 234)
+#define TSWEAP3_SEAT_MECH XY_Coord(256, 146)

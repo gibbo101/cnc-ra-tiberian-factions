@@ -353,22 +353,20 @@ PACK_ARGS+=("$TMPDIR/tsprocld_stub.shp:TSPROCLD.SHP")
 # the dock lane.
 ts_stub TSPROC "$TMPDIR/tsprocnf_stub.shp" 138 174 32
 PACK_ARGS+=("$TMPDIR/tsprocnf_stub.shp:TSPROCNF.SHP")
-# TSWEAP 144x126: the 5x4 plot is 120x96 classic, and the extra 12 classic a
-# side carries the concrete pad's overhang east and south. The hangar fits to
-# 4 cells (96 classic) via the packer's fit_w -- the width a Mammoth Mk. II
-# needs to clear the bay door.
-ts_stub TSWEAP "$TMPDIR/tsweap_stub.shp" 168 126 2
+# TSWEAP 78x84 = the HD war factory's 416x448 canvas centred on RA's 3x3 slot (72x72 classic): the
+# roof's raised poles while it builds reach over the north edge, the shadow and debris past the sides.
+ts_stub TSWEAP "$TMPDIR/tsweap_stub.shp" 78 84 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
-ts_stub TSWEAP "$TMPDIR/tsweapmk_stub.shp" 168 126 19
-# The shutter and under-door layers share the building's canvas (08-28 rebuild).
-ts_stub TSWEAP "$TMPDIR/tsweapdr_stub.shp" 168 126 18
+ts_stub TSWEAP "$TMPDIR/tsweapmk_stub.shp" 78 84 26
+# The door, under-door and near-face layers share the building's canvas.
+ts_stub TSWEAP "$TMPDIR/tsweapdr_stub.shp" 78 84 18
 PACK_ARGS+=("$TMPDIR/tsweapdr_stub.shp:TSWEAPDR.SHP")
-ts_stub TSWEAP "$TMPDIR/tsweapud_stub.shp" 168 126 4
+ts_stub TSWEAP "$TMPDIR/tsweapud_stub.shp" 78 84 4
 PACK_ARGS+=("$TMPDIR/tsweapud_stub.shp:TSWEAPUD.SHP")
-# The near face (hangar minus the opening), the idle cycle x healthy/damaged.
-ts_stub TSWEAP "$TMPDIR/tsweapnf_stub.shp" 168 126 64
+# The near face (the building but for its door bay), the idle cycle x healthy/damaged.
+ts_stub TSWEAP "$TMPDIR/tsweapnf_stub.shp" 78 84 64
 PACK_ARGS+=("$TMPDIR/tsweapnf_stub.shp:TSWEAPNF.SHP")
-ts_stub TSWEAP "$TMPDIR/tsweapnu_stub.shp" 168 126 64
+ts_stub TSWEAP "$TMPDIR/tsweapnu_stub.shp" 78 84 64
 PACK_ARGS+=("$TMPDIR/tsweapnu_stub.shp:TSWEAPNU.SHP")
 # The deployed Mobile War Factory, on TSWEAP's stub: no idle cycle, a 12-stage shutter.
 ts_stub TSDWEAP "$TMPDIR/tsdweap_stub.shp" 168 126 2

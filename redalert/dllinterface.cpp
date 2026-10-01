@@ -7427,6 +7427,10 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             // (3 across the building's row and the dome's row) and TSPROC
             // (4 across and 3 high over the whole plot).
             case STRUCT_TSWEAP:
+                // The hall on the back two rows of the 3x3 slot, 3 cells across.
+                dimx = 70;
+                dimy = 50;
+                break;
             case STRUCT_TSDWEAP:
                 // Ensemble bbox (2026-08-17 evening): the hand-tucked pad
                 // centres the ensemble on the 4x3 plot, so the plot-centred
@@ -11571,7 +11575,7 @@ void DLLExportClass::Cell_Class_Draw_It(CNCDynamicMapStruct* dynamic_map,
             int off_x, off_y; // apron origin relative to the building's origin cell
             int probe;        // a cell the building occupies, relative to its origin cell
         } _aprons[] = {
-            {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 1, 0, 0}, // 4x3 pad grid from col 1 of the 5x3 plot
+            {STRUCT_TSWEAP, SMUDGE_TSWEAPBB, 0, 0, 0}, // the whole 3x3 slot
             {STRUCT_TSDWEAP, SMUDGE_TSDWEAPBB, 1, 0, 0},
             {STRUCT_TSPROC, SMUDGE_TSPROCBB, 0, 0, MAP_CELL_W}, // its north row is open: probe (0,1)
         };
