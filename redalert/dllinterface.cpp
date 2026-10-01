@@ -7404,7 +7404,8 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             // art-geometry/design problem, not an export problem.
             // TSFACT needs no case since the 3x2 plot (2026-08-13): the
             // default foundation-derived box IS the approved 57x38 on the
-            // art rows. TSDROP likewise (box on the deck's 3x2).
+            // art rows. TSDROP likewise (box on the deck's 3x2), and TSTECH
+            // (3 across the building's row and the dome's row).
             case STRUCT_TSWEAP:
             case STRUCT_TSDWEAP:
                 // Ensemble bbox (2026-08-17 evening): the hand-tucked pad
@@ -7418,9 +7419,6 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 break;
             case STRUCT_TSPILE:
                 dimy = 38; // 2x2 box, approved 2026-08-13
-                break;
-            case STRUCT_TSTECH:
-                dimx = 38; // 2x2 box over the dome's row and the building's row of the 3x2 plot
                 break;
             case STRUCT_TSDPSA:
                 // The box hugs the base's sides and body (11 classic px above the cell centre
