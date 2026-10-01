@@ -4,12 +4,13 @@
 Source is the stock UI_RA_MAINLOGO.DDS (1948x552) read from the game's TEXTURES_SRGB.MEG. The steel
 wings and the red RED ALERT stay untouched; the gold COMMAND & CONQUER stack is erased (a V-shaped
 cut following the plate's top edge, with the Q's tail patched from the steel beside it) and replaced
-by gold TIBERIAN / rule / FACTIONS lettering:
+by TIBERIAN / rule / FACTIONS in Tiberian Sun's molten style:
   * font Archivo Black (SIL OFL, title_work/), per-glyph tracking 0.10, each word stretched to its box;
-  * gold face = 75% "foil" (the original C&C letter faces push-pull-filled across the plate) + 25%
-    a vertical gold gradient, with light grain, a top-left bevel, a thin dark outline and a soft
-    drop shadow offset (-9, +9);
-  * the rule between the words is the original's two tips with a crossfaded middle.
+  * the letter faces are filled with the molten texture of the TIBERIAN on Tiberian Sun's logo
+    (title_work/key-art/tiberiansun-logo_2x.png), push-pull-filled and stretched over each line,
+    inside a thin gold bevel rim, as on that logo; light grain, a top-left bevel, a thin dark
+    outline and a soft drop shadow offset (-9, +9);
+  * the rule between the words stays gold: the original's two tips with a crossfaded middle.
 Output is deterministic (fixed noise seed).
 
 usage: title_art.py <out.png>
@@ -30,6 +31,8 @@ TEXTURES_MEG = Path.home() / '.steam/steam/steamapps/common/CnCRemastered/Data/T
 STOCK_LOGO = 'DATA\\ART\\TEXTURES\\SRGB\\UI_RA_MAINLOGO.DDS'
 FONT = SCRIPT_DIR / 'title_work/ArchivoBlack-Regular.ttf'
 LINES = (('TIBERIAN', (488, 22, 1442, 102)), ('FACTIONS', (470, 180, 1460, 286)))
+FIRE_LOGO = SCRIPT_DIR / 'title_work/key-art/tiberiansun-logo_2x.png'
+FIRE_LETTERS = (70, 270, 1180, 410)    # the TIBERIAN wordmark on that logo
 
 
 def stock_logo():
@@ -73,25 +76,31 @@ def erase_cnc(a):
     return out
 
 
-def foil_field(a):
-    """The original gold letter faces, push-pull-filled outward to cover the whole plate."""
-    face = (a[..., 3] > 250) & (a[..., 0] > 170) & (a[..., 1] > 120) & (a[..., 2] < 150)
-    face[320:, :] = False
-    face[:, :470] = False
-    face[:, 1500:] = False
+def fire_field(size):
+    """Tiberian Sun's molten letter faces, push-pull-filled to a solid texture and stretched over
+    each title line (with a 20 px margin), black elsewhere."""
+    x0, y0, x1, y1 = FIRE_LETTERS
+    a = np.asarray(Image.open(FIRE_LOGO).convert('RGBA')).astype(float)[y0:y1, x0:x1]
+    face = (a[..., 3] > 250) & (a[..., 0] > 190) & (a[..., 1] > 60) & (a[..., 1] < 215) & (a[..., 2] < 110)
     fm = np.array(Image.fromarray((face * 255).astype('uint8')).filter(ImageFilter.MinFilter(5))) > 0
     rgb = a[..., :3] * fm[..., None]
     w = fm.astype(float)
     acc = np.zeros_like(rgb)
     accw = np.zeros_like(w)
-    for r in (2, 4, 8, 16, 32):
+    for r in (2, 4, 8, 16, 32, 64):
         br = np.stack([blur(rgb[..., i], r) for i in range(3)], -1)
         bw = blur(w, r)
         take = (accw < 0.5) & (bw > 1e-3)
         acc[take] = br[take] / bw[take, None]
         accw[take] = 1
     acc[fm] = a[fm, :3]
-    return acc
+    texture = Image.fromarray(acc.clip(0, 255).astype('uint8'))
+    width, height = size
+    field = np.zeros((height, width, 3))
+    for _, (bx0, by0, bx1, by1) in LINES:
+        stretched = texture.resize((bx1 - bx0 + 40, by1 - by0 + 40), Image.LANCZOS)
+        field[by0 - 20:by1 + 20, bx0 - 20:bx1 + 20] = np.asarray(stretched)
+    return field
 
 
 def text_mask(txt, box, size, track=0.10):
@@ -134,6 +143,17 @@ def gold(mask, y0, y1, foil, rng):
     return col, m
 
 
+def molten(col, m, fire):
+    """The molten fill, bevel-lit, inside a thin rim of the plain lettering colour."""
+    fill = np.clip(0.9 * fire + 0.1 * col, 0, 255)
+    gy, gx = np.gradient(blur(m, 2.2))
+    shade = (-gx * 0.6 - gy * 0.8) * 14
+    fill = np.clip(fill + shade[..., None] * np.array([255, 200, 120.]), 0, 255)
+    inner = np.asarray(Image.fromarray((m * 255).astype('uint8')).filter(ImageFilter.MinFilter(9))).astype(float) / 255
+    rim = np.clip(m - blur(inner, 1.0), 0, 1)[..., None]
+    return fill * (1 - rim) + col * rim
+
+
 def comp(base, col, m, shadow_off=(-9, 9)):
     out = np.array(base).astype(float)
 
@@ -157,11 +177,11 @@ def render():
     stock = stock_logo()
     a = np.array(stock).astype(int)
     img = Image.fromarray(erase_cnc(a).astype('uint8')).convert('RGBA')
-    foil = foil_field(a.astype(float))
+    fire = fire_field(img.size)
     rng = np.random.default_rng(7)
     for txt, box in LINES:
-        col, m = gold(text_mask(txt, box, img.size), box[1], box[3], foil, rng)
-        img = comp(img, col, m)
+        col, m = gold(text_mask(txt, box, img.size), box[1], box[3], fire, rng)
+        img = comp(img, molten(col, m, fire), m)
     img.alpha_composite(stock.crop((560, 112, 902, 156)), (560, 112))
     src = a.astype(float)
     cl, cr = src[112:156, 895], src[112:156, 1046]
