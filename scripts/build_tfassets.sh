@@ -529,11 +529,11 @@ ts_stub TSFACT "$TMPDIR/tsfact_stub.shp" 75 54 2
 PACK_ARGS+=("$TMPDIR/tsfact_stub.shp:TSFACT.SHP")
 ts_stub TSFACT "$TMPDIR/tsfactmk_stub.shp" 75 54 32
 PACK_ARGS+=("$TMPDIR/tsfactmk_stub.shp:TSFACTMAKE.SHP")
-# TSTECH 48x72 = the HD tech centre's 256x384 canvas centred on its 2x2 plot: the wedge on the plot,
-# the bib row in front; only the plot's south row blocks (the radar height trick).
-ts_stub TSTECH "$TMPDIR/tstech_stub.shp" 48 72 2
+# TSTECH 78x93 = the HD tech centre's 416x496 canvas centred on its 3x2 plot: the wedge on the south
+# row, the fins and dome in the north row (walk-behind headroom), the bib row in front.
+ts_stub TSTECH "$TMPDIR/tstech_stub.shp" 78 93 2
 PACK_ARGS+=("$TMPDIR/tstech_stub.shp:TSTECH.SHP")
-ts_stub TSTECH "$TMPDIR/tstechmk_stub.shp" 48 72 24
+ts_stub TSTECH "$TMPDIR/tstechmk_stub.shp" 78 93 24
 PACK_ARGS+=("$TMPDIR/tstechmk_stub.shp:TSTECHMAKE.SHP")
 # TSFGEN 72x72: the Firestorm Generator on the Tech Center's 3x2 plot and square canvas.
 ts_stub TSFGEN "$TMPDIR/tsfgen_stub.shp" 72 72 2

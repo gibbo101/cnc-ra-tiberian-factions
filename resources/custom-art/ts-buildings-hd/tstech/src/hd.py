@@ -251,9 +251,14 @@ class ShadowMap:
         acc = np.zeros(np.shape(X), np.float32); n = 0
         for oy in range(-pcf, pcf + 1):
             for ox in range(-pcf, pcf + 1):
-                i = np.clip(np.floor(sx + 0.5 * ox).astype(int), 0, lv.W - 1)
-                j = np.clip(np.floor(sy + 0.5 * oy).astype(int), 0, lv.Hc - 1)
-                acc += (self.depth[j, i] > d + bias)
+                ii = np.floor(sx + 0.5 * ox).astype(int)
+                jj = np.floor(sy + 0.5 * oy).astype(int)
+                # a point the light map does not cover lies outside the scene's bounds: nothing there
+                # casts onto it, so it is never in shadow
+                inside = (ii >= 0) & (ii < lv.W) & (jj >= 0) & (jj < lv.Hc)
+                i = np.clip(ii, 0, lv.W - 1)
+                j = np.clip(jj, 0, lv.Hc - 1)
+                acc += inside & (self.depth[j, i] > d + bias)
                 n += 1
         return acc / n
 

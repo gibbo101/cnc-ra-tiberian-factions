@@ -14,7 +14,7 @@ from pfinal import overlay, save
 
 PKG = os.environ.get('PKG', '/home/claude/work/out/ts-gdi-tech-center-hd')
 NAME = 'tech-center'
-VIEWS = {'iso': 'ts-angle', 'ra': 'ra-grid'}
+VIEWS = {'iso': 'ts-angle', 'ra': 'ra-grid', 'ra31': 'ra-3x1', 'ra31t': 'ra-3x1-25'}
 A_N = 8
 
 

@@ -166,6 +166,7 @@ static short const List22_0011[] = {MCW, MCW + 1, REFRESH_EOL};
 static short const List22_1100[] = {0, 1, REFRESH_EOL};
 static short const List2[] = {0, 1, MCW + 1, MCW, REFRESH_EOL};
 static short const List32[] = {0, 1, 2, MCW, MCW + 1, MCW + 2, REFRESH_EOL};
+static short const List32_000111[] = {MCW, MCW + 1, MCW + 2, REFRESH_EOL};
 // static short const List42[] = {0, 1, 2, 3, MCW, MCW+1, MCW+2, MCW+3, REFRESH_EOL};
 static short const ListFix[] = {1, MCW, MCW + 1, MCW + 2, MCW + MCW + 1, REFRESH_EOL};
 // Full 3x3 slab, no passable corners: the dropship bay's deck art fills its
@@ -1637,13 +1638,13 @@ static BuildingTypeClass const ClassTsTech(STRUCT_TSTECH,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_22,           // 2x2 with the bib row in front: TS's wedge turned long
-                                                                // and thin. Only the south row is footprint; the north
-                                                                // row is headroom units walk behind (the radar height
-                                                                // trick, as the power plant).
+                                           BSIZE_32,           // TS's wedge its own way round on the south row, the bib
+                                                                // row in front. Only the south row is footprint; the
+                                                                // fins and dome stand in the north row, headroom units
+                                                                // walk behind (the radar height trick, as the power plant).
                                            NULL,
-                                           (short const*)List22_0011, // OCCUPYLIST: south row only.
-                                           (short const*)List22_1100); // OVERLAPLIST: north art row.
+                                           (short const*)List32_000111, // OCCUPYLIST: south row only.
+                                           (short const*)List31);       // OVERLAPLIST: north art row.
 
 static BuildingTypeClass const ClassTsDept(STRUCT_TSDEPT,
                                            TXT_NONE,
@@ -6465,7 +6466,7 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
     }
 
     /*
-    **	The tall 2x2 buildings (power plant, radar, tech centre) occupy only their south row;
+    **	The tall buildings (power plant, radar, tech centre) occupy only their south row;
     **	the north row is art headroom units walk behind. Their PLACEMENT list
     **	still spans the full declared box: the launcher anchors the placement
     **	cursor on the BSIZE origin, so a south-row-only ghost draws one cell
@@ -6474,7 +6475,7 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
     **	on its top row, and the headroom row is demanded clear at placement
     **	(the radar height trick); blocking stays south-row-only.
     */
-    if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSTECH)) {
+    if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR)) {
         /*
         **	Legality spans headroom + pads + bib: three rows from the plot
         **	origin. The GHOST the launcher draws is only the two ground rows
@@ -6485,6 +6486,11 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
         static short const _ts_tall22_place[] = {0, 1, MAP_CELL_W, MAP_CELL_W + 1,
                                                   MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, REFRESH_EOL};
         return (_ts_tall22_place);
+    }
+    if (placement && Type == STRUCT_TSTECH) {
+        static short const _ts_tall32_place[] = {0, 1, 2, MAP_CELL_W, MAP_CELL_W + 1, MAP_CELL_W + 2,
+                                                  MAP_CELL_W * 2, MAP_CELL_W * 2 + 1, MAP_CELL_W * 2 + 2, REFRESH_EOL};
+        return (_ts_tall32_place);
     }
 
     SmudgeType bib = SMUDGE_NONE;
@@ -6619,7 +6625,7 @@ int BuildingTypeClass::Height(bool bib) const
 **	Rows of the placement list that are art headroom above the ground the
 **	player aims: the launcher draws those cells as ghost too, so the sidebar
 **	export drops them and Place() anchors the plot that many rows north of
-**	the cell the launcher sends. Only the tall 2x2 buildings have any.
+**	the cell the launcher sends. Only the tall buildings have any.
 */
 int BuildingTypeClass::Placement_Ghost_Rows_Above(void) const
 {

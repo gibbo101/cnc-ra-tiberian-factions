@@ -9590,7 +9590,7 @@ COORDINATE BuildingClass::Target_Coord(void) const
     /*
     **	TS buildings whose plot centre is not real footprint make the default
     **	aim point land on an unoccupied cell -- TSPROC's centre is the dock-lane
-    **	hole, and the tall 2x2 buildings' north row is art spill. A shot resolving
+    **	hole, and the tall buildings' north row is art spill. A shot resolving
     **	into such a cell damages nothing (the Mk. II railgun sweep collects
     **	victims per crossed cell; splash weapons pay adjacent-cell falloff).
     **	Aim at a cell the building always occupies.

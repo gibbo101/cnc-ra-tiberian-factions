@@ -7419,6 +7419,9 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
             case STRUCT_TSPILE:
                 dimy = 38; // 2x2 box, approved 2026-08-13
                 break;
+            case STRUCT_TSTECH:
+                dimx = 38; // 2x2 box over the dome's row and the building's row of the 3x2 plot
+                break;
             case STRUCT_TSDPSA:
                 // The box hugs the base's sides and body (11 classic px above the cell centre
                 // to 7 below); the thin mast rises out of its top.
