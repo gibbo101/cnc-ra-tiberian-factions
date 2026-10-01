@@ -7,6 +7,9 @@
 #    scripts/bui_mainmenu_build.py (see memory: project-main-menu-bui-spike)
 #  - the menu's confirmation box (RA_DIALOGBOX_SOVIET.BUI) in TD's green frame with the
 #    menu's steel buttons, rebuilt from its base by scripts/bui_dialogbox_build.py
+#  - the loading screen's spinner as the faction emblem row with a glint
+#    (RA_UI_LOADINGSCREEN.BUI, by scripts/bui_loadingscreen_build.py; its textures
+#    come from scripts/loading_art.py)
 #  - GAMECONSTANTS.XML with CFE Patch Redux pixel-perfect zoom factors,
 #    rebuilt same-size from the pristine base by scripts/gameconstants_build.py
 #    (see docs/cfe-port-plan.md). The same artifact is also staged loose at
@@ -39,6 +42,8 @@ BASE_BUI="scripts/bui_work/RA_MAIN_MENU.base.BUI"
 EDIT_BUI="scripts/bui_work/RA_MAIN_MENU.edited.BUI"
 BASE_DLG="scripts/bui_work/RA_DIALOGBOX_SOVIET.base.BUI"
 EDIT_DLG="scripts/bui_work/RA_DIALOGBOX_SOVIET.edited.BUI"
+BASE_LOAD="scripts/bui_work/RA_UI_LOADINGSCREEN.base.BUI"
+EDIT_LOAD="scripts/bui_work/RA_UI_LOADINGSCREEN.edited.BUI"
 BASE_HUD="scripts/bui_work/RA_TACTICAL_UI.base.BUI"
 EDIT_HUD="scripts/bui_work/RA_TACTICAL_UI.edited.BUI"
 BASE_GC="scripts/gc_work/GAMECONSTANTS.base.XML"
@@ -63,6 +68,9 @@ python3 scripts/bui_mainmenu_build.py "$BASE_BUI" "$EDIT_BUI"
 echo "==> Rebuilding edited RA_DIALOGBOX_SOVIET.BUI from base (the menu's confirmation box)"
 python3 scripts/bui_dialogbox_build.py "$BASE_DLG" "$EDIT_DLG"
 
+echo "==> Rebuilding edited RA_UI_LOADINGSCREEN.BUI from base (emblem row with a glint)"
+python3 scripts/bui_loadingscreen_build.py "$BASE_LOAD" "$EDIT_LOAD"
+
 echo "==> Rebuilding edited RA_TACTICAL_UI.BUI from base (side label under the crest hidden)"
 python3 scripts/bui_work/hud_label_hide_build.py "$BASE_HUD" "$EDIT_HUD"
 
@@ -82,6 +90,7 @@ python3 scripts/meg_pack.py repack "$MEG" "$MEG.tmp" \
     "RA_MAIN_MENU.BUI=$EDIT_BUI" \
     "DATA\\ART\\GUI\\RA_TACTICAL_UI.BUI=$EDIT_HUD" \
     "DATA\\ART\\GUI\\RA\\RA_DIALOGBOX_SOVIET.BUI=$EDIT_DLG" \
+    "DATA\\ART\\GUI\\RA\\RA_UI_LOADINGSCREEN.BUI=$EDIT_LOAD" \
     "MUSICEVENTS.XML=$EDIT_MUS" "MASTERTEXTFILE_EN-US.LOC=$EDIT_LOC" \
     "DATA\\XML\\OBJECTS\\MISC\\FACTIONS.XML=$EDIT_FAC" \
     "DATA\\ART\\GUI\\GUITEXTURESETS.XML=$EDIT_GUI"
@@ -95,6 +104,8 @@ python3 scripts/meg_extract.py extract "$MEG" "RA_TACTICAL_UI.BUI" /tmp/_megveri
 cmp "/tmp/_megverify/RA_TACTICAL_UI.BUI" "$EDIT_HUD" && echo "OK: HUD BUI in CONFIG.MEG matches edited copy"
 python3 scripts/meg_extract.py extract "$MEG" "RA_DIALOGBOX_SOVIET.BUI" /tmp/_megverify >/dev/null
 cmp "/tmp/_megverify/RA_DIALOGBOX_SOVIET.BUI" "$EDIT_DLG" && echo "OK: dialog BUI in CONFIG.MEG matches edited copy"
+python3 scripts/meg_extract.py extract "$MEG" "RA_UI_LOADINGSCREEN.BUI" /tmp/_megverify >/dev/null
+cmp "/tmp/_megverify/RA_UI_LOADINGSCREEN.BUI" "$EDIT_LOAD" && echo "OK: loading screen BUI in CONFIG.MEG matches edited copy"
 python3 scripts/meg_extract.py extract "$MEG" "MUSICEVENTS.XML" /tmp/_megverify >/dev/null
 cmp "/tmp/_megverify/MUSICEVENTS.XML" "$EDIT_MUS" && echo "OK: MUSICEVENTS in CONFIG.MEG matches edited copy"
 python3 scripts/meg_extract.py extract "$MEG" "MASTERTEXTFILE_EN-US.LOC" /tmp/_megverify >/dev/null
