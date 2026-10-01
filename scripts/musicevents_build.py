@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Rebuild MUSICEVENTS.XML with the mod's skirmish music playlist.
 
-Emits the RA_MULTIPLAYER_MODE remastered playlist (`RAR_MUS_RA_MULTIPLAYER_MODE`)
-carrying the full mod track list: every remastered RA track, the remastered TD
+Sets the RA main-menu music to the Hell March Retaliation remix (MENU_TRACKS), and emits the
+RA_MULTIPLAYER_MODE remastered playlist (`RAR_MUS_RA_MULTIPLAYER_MODE`) carrying the full mod
+track list: every remastered RA track, the remastered TD
 tracks minus the excluded cues, and the RA+TD bonus tracks.
 
 The Classic (`RAC_`) and Bonus (`RAB_`) playlists pass through untouched, so a
@@ -25,6 +26,15 @@ import re
 import sys
 
 EVENT = "RAR_MUS_RA_MULTIPLAYER_MODE"
+
+# The main menu plays the Hell March Retaliation remix, fading in after the startup intro's
+# Hell March fades out. Each audio setting gets its own era's remix.
+MENU_TRACKS = {
+    "RAR_MUS_RA_MAIN_MENU": "RAR_MUS_Hell_March_Retaliation_Remix.WAV",
+    "RAB_MUS_RA_MAIN_MENU": "RAR_MUS_Hell_March_Retaliation_Remix.WAV",
+    "RAC_MUS_RA_MAIN_MENU": "RAC_MUS_Hell_March_Retaliation_Remix.WAV",
+}
+MENU_FADE_IN = "3.0"
 
 # Remastered TD tracks excluded from the rotation.
 # Menu/title cues and score-screen stingers: all under a minute, they cut in
@@ -103,6 +113,17 @@ def main(base_path, listing_path, out_path):
     if not m:
         sys.exit(f"ERROR: {EVENT} block not found in base")
     out = base.replace(m.group(1), render_block(m.group(1), tracks, eol))
+
+    for name, track in MENU_TRACKS.items():
+        mm = re.search(rf'(\t<MusicEvent Name="{name}".*?</MusicEvent>)', out, re.S)
+        if not mm:
+            sys.exit(f"ERROR: {name} block not found in base")
+        block, n1 = re.subn(r"<Entry> \S+ </Entry>", f"<Entry> {track} </Entry>", mm.group(1))
+        block, n2 = re.subn(r"<FadeInSeconds> [0-9.]+ </FadeInSeconds>",
+                            f"<FadeInSeconds> {MENU_FADE_IN} </FadeInSeconds>", block)
+        if (n1, n2) != (1, 1):
+            sys.exit(f"ERROR: {name} is not a one-track event with a fade-in")
+        out = out.replace(mm.group(1), block)
 
     def size(s):
         return len(s.encode("utf-8", "surrogateescape"))
