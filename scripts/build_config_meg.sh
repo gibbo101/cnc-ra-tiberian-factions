@@ -10,6 +10,12 @@
 #  - the loading screen's spinner as the faction emblem row with a glint
 #    (RA_UI_LOADINGSCREEN.BUI, by scripts/bui_loadingscreen_build.py; its textures
 #    come from scripts/loading_art.py)
+#  - Tiberian Dawn's skirmish lobby, LAN lobby, LAN match list and Workshop map browser on
+#    RA's steel backdrop (UI_SKIRMISH_GAMELOBBY.BUI and its LAN/Workshop siblings, by
+#    scripts/bui_lobby_build.py, which also sizes its faction picture for RA's emblems
+#    in BUTTONFACTIONCOMBOBOX.BUI and sets the text on its steel slots and rows in green);
+#    factions_build.py points the RA front end at them
+#  - the mod's green text styles in FONTLIBRARY.BFD (scripts/fontlib_build.py)
 #  - GAMECONSTANTS.XML with CFE Patch Redux pixel-perfect zoom factors,
 #    rebuilt same-size from the pristine base by scripts/gameconstants_build.py
 #    (see docs/cfe-port-plan.md). The same artifact is also staged loose at
@@ -44,6 +50,14 @@ BASE_DLG="scripts/bui_work/RA_DIALOGBOX_SOVIET.base.BUI"
 EDIT_DLG="scripts/bui_work/RA_DIALOGBOX_SOVIET.edited.BUI"
 BASE_LOAD="scripts/bui_work/RA_UI_LOADINGSCREEN.base.BUI"
 EDIT_LOAD="scripts/bui_work/RA_UI_LOADINGSCREEN.edited.BUI"
+BASE_LOBBY="scripts/bui_work/UI_SKIRMISH_GAMELOBBY.base.BUI"
+EDIT_LOBBY="scripts/bui_work/UI_SKIRMISH_GAMELOBBY.edited.BUI"
+TD_SCREENS="UI_LAN_GAMELOBBY UI_LAN_MULTIPLAYERMENU UI_WORKSHOPMAP_BROWSE BUTTONPLAYERNAMECOMBOBOX BUTTONTEAMCOMBOBOX UI_LISTBOX_MAPSELECT_ENTRY UI_LISTBOX_LAN_ENTRY"
+BASE_FCOMBO="scripts/bui_work/BUTTONFACTIONCOMBOBOX.base.BUI"
+BASE_FONT="scripts/font_work/FONTLIBRARY.base.BFD"
+EDIT_FONT="scripts/font_work/FONTLIBRARY.edited.BFD"
+EDIT_CUSTOM="scripts/bui_work/UI_CUSTOM_MAP_FILE_ENTRY.edited.BUI"
+EDIT_FCOMBO="scripts/bui_work/BUTTONFACTIONCOMBOBOX.edited.BUI"
 BASE_HUD="scripts/bui_work/RA_TACTICAL_UI.base.BUI"
 EDIT_HUD="scripts/bui_work/RA_TACTICAL_UI.edited.BUI"
 BASE_GC="scripts/gc_work/GAMECONSTANTS.base.XML"
@@ -71,6 +85,16 @@ python3 scripts/bui_dialogbox_build.py "$BASE_DLG" "$EDIT_DLG"
 echo "==> Rebuilding edited RA_UI_LOADINGSCREEN.BUI from base (emblem row with a glint)"
 python3 scripts/bui_loadingscreen_build.py "$BASE_LOAD" "$EDIT_LOAD"
 
+echo "==> Rebuilding edited UI_SKIRMISH_GAMELOBBY.BUI from base (TD lobby, RA backdrop)"
+python3 scripts/bui_lobby_build.py "$BASE_LOBBY" "$EDIT_LOBBY"
+python3 scripts/bui_lobby_build.py "$BASE_FCOMBO" "$EDIT_FCOMBO"
+for n in $TD_SCREENS UI_CUSTOM_MAP_FILE_ENTRY; do
+    python3 scripts/bui_lobby_build.py "scripts/bui_work/$n.base.BUI" "scripts/bui_work/$n.edited.BUI"
+done
+
+echo "==> Rebuilding FONTLIBRARY.BFD from base (the mod's green text styles)"
+python3 scripts/fontlib_build.py "$BASE_FONT" "$EDIT_FONT"
+
 echo "==> Rebuilding edited RA_TACTICAL_UI.BUI from base (side label under the crest hidden)"
 python3 scripts/bui_work/hud_label_hide_build.py "$BASE_HUD" "$EDIT_HUD"
 
@@ -91,6 +115,11 @@ python3 scripts/meg_pack.py repack "$MEG" "$MEG.tmp" \
     "DATA\\ART\\GUI\\RA_TACTICAL_UI.BUI=$EDIT_HUD" \
     "DATA\\ART\\GUI\\RA\\RA_DIALOGBOX_SOVIET.BUI=$EDIT_DLG" \
     "DATA\\ART\\GUI\\RA\\RA_UI_LOADINGSCREEN.BUI=$EDIT_LOAD" \
+    "DATA\\ART\\GUI\\UI_SKIRMISH_GAMELOBBY.BUI=$EDIT_LOBBY" \
+    "DATA\\ART\\GUI\\BUTTONFACTIONCOMBOBOX.BUI=$EDIT_FCOMBO" \
+    $(for n in $TD_SCREENS; do printf '%s ' "DATA\\ART\\GUI\\$n.BUI=scripts/bui_work/$n.edited.BUI"; done) \
+    "DATA\\ART\\GUI\\CNC\\UI_CUSTOM_MAP_FILE_ENTRY.BUI=$EDIT_CUSTOM" \
+    "DATA\\ART\\GUI\\FONTLIBRARY.BFD=$EDIT_FONT" \
     "MUSICEVENTS.XML=$EDIT_MUS" "MASTERTEXTFILE_EN-US.LOC=$EDIT_LOC" \
     "DATA\\XML\\OBJECTS\\MISC\\FACTIONS.XML=$EDIT_FAC" \
     "DATA\\ART\\GUI\\GUITEXTURESETS.XML=$EDIT_GUI"
@@ -106,6 +135,18 @@ python3 scripts/meg_extract.py extract "$MEG" "RA_DIALOGBOX_SOVIET.BUI" /tmp/_me
 cmp "/tmp/_megverify/RA_DIALOGBOX_SOVIET.BUI" "$EDIT_DLG" && echo "OK: dialog BUI in CONFIG.MEG matches edited copy"
 python3 scripts/meg_extract.py extract "$MEG" "RA_UI_LOADINGSCREEN.BUI" /tmp/_megverify >/dev/null
 cmp "/tmp/_megverify/RA_UI_LOADINGSCREEN.BUI" "$EDIT_LOAD" && echo "OK: loading screen BUI in CONFIG.MEG matches edited copy"
+python3 scripts/meg_extract.py extract "$MEG" "GUI\\UI_SKIRMISH_GAMELOBBY.BUI" /tmp/_megverify >/dev/null
+cmp "/tmp/_megverify/UI_SKIRMISH_GAMELOBBY.BUI" "$EDIT_LOBBY" && echo "OK: lobby BUI in CONFIG.MEG matches edited copy"
+python3 scripts/meg_extract.py extract "$MEG" "GUI\\BUTTONFACTIONCOMBOBOX.BUI" /tmp/_megverify >/dev/null
+cmp "/tmp/_megverify/BUTTONFACTIONCOMBOBOX.BUI" "$EDIT_FCOMBO" && echo "OK: faction combo BUI in CONFIG.MEG matches edited copy"
+python3 scripts/meg_extract.py extract "$MEG" "CNC\\UI_CUSTOM_MAP_FILE_ENTRY.BUI" /tmp/_megverify >/dev/null
+cmp "/tmp/_megverify/UI_CUSTOM_MAP_FILE_ENTRY.BUI" "$EDIT_CUSTOM" && echo "OK: custom map entry in CONFIG.MEG matches edited copy"
+python3 scripts/meg_extract.py extract "$MEG" "GUI\\FONTLIBRARY.BFD" /tmp/_megverify >/dev/null
+cmp "/tmp/_megverify/FONTLIBRARY.BFD" "$EDIT_FONT" && echo "OK: FONTLIBRARY in CONFIG.MEG matches edited copy"
+for n in $TD_SCREENS; do
+    python3 scripts/meg_extract.py extract "$MEG" "GUI\\$n.BUI" /tmp/_megverify >/dev/null
+    cmp "/tmp/_megverify/$n.BUI" "scripts/bui_work/$n.edited.BUI" && echo "OK: $n in CONFIG.MEG matches edited copy"
+done
 python3 scripts/meg_extract.py extract "$MEG" "MUSICEVENTS.XML" /tmp/_megverify >/dev/null
 cmp "/tmp/_megverify/MUSICEVENTS.XML" "$EDIT_MUS" && echo "OK: MUSICEVENTS in CONFIG.MEG matches edited copy"
 python3 scripts/meg_extract.py extract "$MEG" "MASTERTEXTFILE_EN-US.LOC" /tmp/_megverify >/dev/null
