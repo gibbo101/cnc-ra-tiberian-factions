@@ -23,7 +23,7 @@ Workshop map browser at TD's, whose green panels match the mod's menu.
                                square icons; RA's picker emblems are 150x80 plates, so it takes the
                                on-screen size RA's own slot gives them, about its centre. Its
                                drop-down list (Combo_Listbox) is three rows tall for TD's factions,
-                               with a blank scroll bar; it is made eight rows tall, one per RA country, so every row
+                               with a blank scroll bar; it is made nine rows tall, one per RA country and one for Random, so every row
                                the launcher lists is on show.
 
 Each file keeps its byte size (bui_tree.py).
@@ -44,7 +44,7 @@ STOCK_QUAD = (0.266, 0.029, 0.4787, 0.1484)
 RA_SIZED_QUAD = (0.1332, 0.0417, 0.7442, 0.1231)
 FACTION_LIST = b'Combo_Listbox'
 STOCK_LIST = (0.0426, 0.2097, 0.7234, 0.5774)
-LIST_ROWS = (3, 8)
+LIST_ROWS = (3, 9)
 
 
 def td_screen(green_buttons, header_labels):
