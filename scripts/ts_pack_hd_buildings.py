@@ -51,8 +51,9 @@ def tiberium(img):
 # overlays)], overlays as (path prefix, healthy frames, damaged frames[, recolour]), recolour
 # a function applied to the overlay before it is drawn. blocks=[overlays, ...]
 # repeats the whole healthy + damaged set once per entry with those overlays drawn first.
-# pad_bottom adds that many transparent px under every frame, for art drawn on a plot deeper
-# than the building's own (the canvas centres on the building's plot). Paths take -NN.png.
+# pad_bottom adds that many transparent px under every frame and crop_top cuts that many empty
+# px off the top, for art drawn on a plot of another depth than the building's own (the canvas
+# centres on the building's plot). Paths take -NN.png.
 BUILDINGS = {
     "TSFACT": dict(src="tsfact", make=("build-up/construction-yard-build", 32),
                    base="yard/construction-yard", runs=[
@@ -84,6 +85,11 @@ BUILDINGS = {
               ("B-beacon/barracks-beacon", range(0, 8), range(8, 16))]),
     ], pad_bottom=128),
     # The silo stands on its 2x1 plot row with the bib row in front, seated like the barracks.
+    # TS's wedge turned long and thin, drawn on a 2x3 with its south edge on the south edge: the top
+    # 128 px are empty, so cutting them centres the canvas on the 2x2 plot with the bib row in front.
+    # Idle: the dome's panels pulse (8), healthy then damaged.
+    "TSTECH": dict(src="tstech", make=("build-up/tech-center-build", 24),
+                   frames=("loop/tech-center-loop", 16), crop_top=128),
     "TSSILO": dict(src="tssilo", make=("build-up/silo-build", 24), base="silo/silo",
                    blocks=[[("A-tiberium/silo-tiberium", [lv], [lv + 4], tiberium)] for lv in range(4)],
                    runs=[(16, [("B-lamps/silo-lamps", range(0, 16), range(16, 32))])], pad_bottom=128),
@@ -104,6 +110,12 @@ def pad_to(img, w, h):
     out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
     out.paste(img, ((w - img.width) // 2, (h - img.height) // 2))
     return out
+
+
+def crop_above(img, px):
+    if np.asarray(img)[:px, :, 3].max() > HAZE_ALPHA:
+        raise SystemExit(f"cannot cut {px} px off the top: art stands there")
+    return img.crop((0, px, img.width, img.height))
 
 
 def pad_under(img, px):
@@ -205,6 +217,9 @@ def main(argv):
     for ini in names:
         spec = BUILDINGS[ini]
         tiles, make = frames(os.path.join(SRC, spec["src"]), spec)
+        if spec.get("crop_top"):
+            tiles = [crop_above(i, spec["crop_top"]) for i in tiles]
+            make = [crop_above(i, spec["crop_top"]) for i in make]
         if spec.get("pad_bottom"):
             tiles = [pad_under(i, spec["pad_bottom"]) for i in tiles]
             make = [pad_under(i, spec["pad_bottom"]) for i in make]

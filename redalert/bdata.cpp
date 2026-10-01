@@ -1637,10 +1637,13 @@ static BuildingTypeClass const ClassTsTech(STRUCT_TSTECH,
                                            true, true, false, false, false, true,
                                            RTTI_NONE,
                                            DIR_N,
-                                           BSIZE_32,           // TS-authentic 3x2.
+                                           BSIZE_22,           // 2x2 with the bib row in front: TS's wedge turned long
+                                                                // and thin. Only the south row is footprint; the north
+                                                                // row is headroom units walk behind (the radar height
+                                                                // trick, as the power plant).
                                            NULL,
-                                           (short const*)List32,
-                                           NULL);
+                                           (short const*)List22_0011, // OCCUPYLIST: south row only.
+                                           (short const*)List22_1100); // OVERLAPLIST: north art row.
 
 static BuildingTypeClass const ClassTsDept(STRUCT_TSDEPT,
                                            TXT_NONE,
@@ -5837,7 +5840,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)
         {STRUCT_TSDLIMP, BSTATE_IDLE, 0, 10, 3}, // DLIMP_A blink halved (10 healthy + 10 damaged)
         {STRUCT_TSDPSA, BSTATE_IDLE, 0, 5, 4},   // GTDPSA_A beacon blink (5 healthy + 5 damaged, unlit)
-        {STRUCT_TSTECH, BSTATE_IDLE, 0, 8, 3},   // GATECH _A halved (8 healthy + 8 damage-pocked dome)
+        {STRUCT_TSTECH, BSTATE_IDLE, 0, 8, 4},   // HD tech centre: the dome's panels pulse (8 healthy + 8 damaged)
         {STRUCT_TSFGEN, BSTATE_IDLE, 0, 48, 2},  // GAFIRE _B (16) every step + _C (6) every 2nd step -> 48, TS's rates; damaged = anims stopped
         {STRUCT_TSDEPT, BSTATE_IDLE, 0, 35, 3},  // GADEPT _A halved(5)+_B whole(7, odd=no damaged half) -> LCM 35
         {STRUCT_TSDEPT, BSTATE_ACTIVE, 0, 35, 3}, // repairing: the same lights, the pad glow on top (TSDEPTRP)
@@ -6462,7 +6465,7 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
     }
 
     /*
-    **	The tall 2x2 towers (power plant, radar) occupy only their south row;
+    **	The tall 2x2 buildings (power plant, radar, tech centre) occupy only their south row;
     **	the north row is art headroom units walk behind. Their PLACEMENT list
     **	still spans the full declared box: the launcher anchors the placement
     **	cursor on the BSIZE origin, so a south-row-only ghost draws one cell
@@ -6471,7 +6474,7 @@ short const* BuildingTypeClass::Occupy_List(bool placement) const
     **	on its top row, and the headroom row is demanded clear at placement
     **	(the radar height trick); blocking stays south-row-only.
     */
-    if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR)) {
+    if (placement && (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSTECH)) {
         /*
         **	Legality spans headroom + pads + bib: three rows from the plot
         **	origin. The GHOST the launcher draws is only the two ground rows
@@ -6616,11 +6619,11 @@ int BuildingTypeClass::Height(bool bib) const
 **	Rows of the placement list that are art headroom above the ground the
 **	player aims: the launcher draws those cells as ghost too, so the sidebar
 **	export drops them and Place() anchors the plot that many rows north of
-**	the cell the launcher sends. Only the tall 2x2 towers have any.
+**	the cell the launcher sends. Only the tall 2x2 buildings have any.
 */
 int BuildingTypeClass::Placement_Ghost_Rows_Above(void) const
 {
-    if (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR) {
+    if (Type == STRUCT_TSPOWR || Type == STRUCT_TSRADR || Type == STRUCT_TSTECH) {
         return (1);
     }
     return (0);

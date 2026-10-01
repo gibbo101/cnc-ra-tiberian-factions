@@ -49086,6 +49086,61 @@
 	</Tile>
 	<Tile>
 		<Key>
+			<Name>TSTECHMAKE</Name>
+			<Shape>19</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tstechmake\tstechmake-0019.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSTECHMAKE</Name>
+			<Shape>20</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tstechmake\tstechmake-0020.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSTECHMAKE</Name>
+			<Shape>21</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tstechmake\tstechmake-0021.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSTECHMAKE</Name>
+			<Shape>22</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tstechmake\tstechmake-0022.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
+			<Name>TSTECHMAKE</Name>
+			<Shape>23</Shape>
+		</Key>
+		<Value>
+			<Frames>
+				<Frame>tstechmake\tstechmake-0023.tga</Frame>
+			</Frames>
+		</Value>
+	</Tile>
+	<Tile>
+		<Key>
 			<Name>TSFACT</Name>
 			<Shape>0</Shape>
 		</Key>

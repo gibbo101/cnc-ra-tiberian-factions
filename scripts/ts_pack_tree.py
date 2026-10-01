@@ -1506,13 +1506,6 @@ SIZEPASS = [
     ("TSRADR", "shp_gtradr", ["shp_gtradr_a"],
      "shp_gtradrmk", 20, (256, 512), 21, 1.0, "shp_radricon",
      "TS Radar", "Provides radar coverage."),
-    # TSTECH on the radar height trick (Luke, 2026-08-31): keep the 3x2 plot,
-    # let the dome + antenna rise into a square canvas's headroom instead of
-    # the whole building shrinking to the old height-clamped legacy fit.
-    # margin 12 = (stub 72 − box 48)/2: content bottom on the plot's south edge.
-    ("TSTECH", "shp_gttech", ["shp_gttech_a"],
-     "shp_gttechmk", 19, (384, 384), 12, 1.0, "shp_techicon",
-     "TS Tech Center", "Unlocks advanced Tiberian technology."),
     # TS EMP Pulse Cannon (docs/emp-cannon-design.md). NAPULS is snow-theatre-only
     # art: NTPULS = temperate (NAPULS is the ARCTIC variant, TS 2nd-letter theatre code); static base (frame 0 / LIGHT damage), TSPOWR's
     # 2x2 fit. The PULSCAN voxel turret rides as the TSPULST layer (EXTRA_LAYERS).
@@ -1608,8 +1601,11 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
 
 # ---- TSFACT: packed from its HD rebuild by scripts/ts_pack_hd_buildings.py.
 
-# ---- TSPOWR, TSTURB, TSSILO and TSPILE: packed from their HD rebuild by
+# ---- TSPOWR, TSTURB, TSSILO, TSPILE and TSTECH: packed from their HD rebuild by
 # scripts/ts_pack_hd_buildings.py. Only their sidebar entries are emitted here.
+if os.path.isdir(f"{ART}/shp_techicon"):
+    CURRENT_INI[0] = "TSTECH"
+    emit_sidebar_data("TSTECH", "TS Tech Center", "Unlocks advanced Tiberian technology.", "shp_techicon")
 if os.path.isdir(f"{ART}/shp_brrkicon"):
     CURRENT_INI[0] = "TSPILE"
     emit_sidebar_data("TSPILE", "TS Barracks", "Trains Tiberian-era infantry.", "shp_brrkicon")
