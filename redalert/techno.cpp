@@ -1733,6 +1733,25 @@ fixed TechnoClass::Area_Modify(CELL cell) const
     return (odds);
 }
 
+
+/*
+**	Tiberian Factions -- a healer only takes a target its heal can change. A heal warhead with a 0%
+**	modifier against the target's armour (Tiberian Sun's Organic heal against a Jumpjet
+**	Infantry's light armour) is refused when fired, so offering that target leaves the healer
+**	re-targeting it forever instead of healing anyone else.
+*/
+bool TF_Heal_Affects(TechnoClass const* healer, ObjectClass const* target)
+{
+    if (healer == NULL || target == NULL || !target->Is_Techno()) {
+        return (true);
+    }
+    WeaponTypeClass const* weapon = healer->Techno_Type_Class()->PrimaryWeapon;
+    if (weapon == NULL || weapon->WarheadPtr == NULL) {
+        return (true);
+    }
+    return (weapon->WarheadPtr->Modifier[((TechnoClass const*)target)->Techno_Type_Class()->Armor] != 0);
+}
+
 /***********************************************************************************************
  * TechnoClass::Evaluate_Object -- Determines score value of specified object.                 *
  *                                                                                             *
@@ -1841,7 +1860,7 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
     bool is_ally = House->Is_Ally(object);
     bool is_medic = Combat_Damage() < 0;
     bool green_health = object->Health_Ratio() == Rule.ConditionGreen;
-    if ((is_ally && (!is_medic || green_health)) || (!is_ally && is_medic)) {
+    if ((is_ally && (!is_medic || green_health || !TF_Heal_Affects(this, object))) || (!is_ally && is_medic)) {
         BEnd(BENCH_EVAL_OBJECT);
         return (false);
     }
@@ -2209,7 +2228,8 @@ bool TechnoClass::Evaluate_Object(ThreatType method,
             if (tentative != this) {
                 if (tentative->Is_Techno()) {
                     if (Combat_Damage() < 0) {
-                        if (tentative->Health_Ratio() < Rule.ConditionGreen && House->Is_Ally(tentative))
+                        if (tentative->Health_Ratio() < Rule.ConditionGreen && House->Is_Ally(tentative)
+                            && TF_Heal_Affects(this, tentative))
                             break;
                     } else {
                         if (!House->Is_Ally(tentative))
