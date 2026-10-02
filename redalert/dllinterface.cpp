@@ -7450,15 +7450,14 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 dimy = 36;
                 break;
             case STRUCT_TSPROC:
-                // Height approved 2026-08-13 round 1: the plot-centred box
-                // whose south edge sits right. Taller boxes only grow both
-                // ways (see contract above); the PositionY probe (round 5)
-                // moved the SPRITE, not the box -- the draw rect IS the art
-                // anchor. The remaining fix path for off-centre boxes is
-                // stub/canvas geometry, with TDFACT as the working control.
+                // Three cells tall, so the box takes in the umbrella deck as well as the
+                // apron. It grows both ways about the plot centre (see contract above),
+                // so its south edge runs a little past the apron's. The PositionY probe
+                // moved the SPRITE, not the box -- the draw rect IS the art anchor; an
+                // off-centre box needs stub/canvas geometry, with TDFACT as the control.
                 new_object.CenterCoordX -= 78;
                 dimx = 90;
-                dimy = 32;
+                dimy = 3 * ICON_PIXEL_H;
                 break;
             default:
                 break;

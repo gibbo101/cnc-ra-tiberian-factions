@@ -2768,6 +2768,15 @@ ResultType BuildingClass::Take_Damage(int& damage, int distance, WarheadType war
     int shakes;
 
     /*
+    **	A blossom tree takes no damage of any kind, forced included, as TD's blossom trees are
+    **	immune to combat damage. Its art has no damaged frames to show.
+    */
+    if (*this == STRUCT_TDBLOSSOM) {
+        damage = 0;
+        return (RESULT_NONE);
+    }
+
+    /*
     **	A live Firestorm Wall Section takes no damage; each hit drains the field instead, a tenth
     **	of a frame per point (TS DamageToFirestormDamageCoefficient=.1).
     */

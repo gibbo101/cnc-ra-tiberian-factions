@@ -1019,6 +1019,20 @@ void UnitClass::Firing_AI(void)
     **	inside the weapon's minimum range is backed away from (Approach_Target picks the cell)
     **	rather than set down on top of.
     */
+    /*
+    **	On attack-move (how the AI releases its attack waves) targets are picked up while the
+    **	move order still stands, so one within reach turns the walk into that attack: the unit
+    **	stops and sets down below, and attack-move walks it on once the target is gone.
+    */
+    if (Class->IsDeployToFire && DeployState == DEPLOY_MOBILE && AttackMove && Mission == MISSION_MOVE
+        && Target_Legal(TarCom) && Class->PrimaryWeapon != NULL) {
+        int which = What_Weapon_Should_I_Use(TarCom);
+        WeaponTypeClass const* weapon = (which == 1) ? Class->SecondaryWeapon : Class->PrimaryWeapon;
+        bool too_close = (weapon != NULL && weapon->MinRange > 0 && Distance(TarCom) < weapon->MinRange);
+        if (In_Range(TarCom, which) && !too_close) {
+            AttackMoveEnterAttackMode();
+        }
+    }
     if (Class->IsDeployToFire && DeployState == DEPLOY_MOBILE && Target_Legal(TarCom) && !IsDriving
         && !Target_Legal(NavCom) && Class->PrimaryWeapon != NULL
         && (Mission == MISSION_ATTACK || Mission == MISSION_HUNT)) {

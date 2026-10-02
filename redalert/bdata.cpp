@@ -6819,6 +6819,14 @@ bool BuildingTypeClass::Read_INI(CCINIClass& ini)
 {
     if (TechnoTypeClass::Read_INI(ini)) {
         /*
+        **  The blossom tree is immune to combat damage, as TD's is (SPLIT2/SPLIT3); its
+        **  Take_Damage refuses forced damage as well.
+        */
+        if (Type == STRUCT_TDBLOSSOM) {
+            IsImmune = true;
+        }
+
+        /*
         **  TD buildings carry DOUBLE their listed hit points. TD's
         **  BuildingTypeClass ctor passes strength*2 to TechnoTypeClass
         **  (tiberiandawn/bdata.cpp:3706) — a doubling RA's engine does not have,
