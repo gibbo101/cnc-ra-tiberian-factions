@@ -76,14 +76,14 @@ def lane_gold(img):
     return Image.fromarray(a, "RGBA")
 
 
-def decal_art(path, width):
-    """The emblem as a flat disc seen by RA's camera, width px across. Its black field is keyed out softly,
-    so the edges stay antialiased."""
+def decal_art(path, width, squash=GROUND_SQUASH):
+    """The emblem as a flat disc seen by RA's camera, width px across (squash=1: seen from straight above).
+    Its black field is keyed out softly, so the edges stay antialiased."""
     rgb = np.asarray(Image.open(path).convert("RGB")).astype(np.float32)
     alpha = np.clip((rgb.sum(2) - 20) / 70, 0, 1) * 255
     art = Image.fromarray(np.dstack([rgb, alpha]).round().astype(np.uint8), "RGBA")
     art = art.crop(art.getbbox())
-    return art.resize((width, round(width * GROUND_SQUASH)), Image.LANCZOS)
+    return art.resize((width, round(width * squash)), Image.LANCZOS)
 
 
 def paint_decal(img, decal, healthy=None):
