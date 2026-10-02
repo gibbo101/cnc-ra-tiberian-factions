@@ -60,7 +60,7 @@ CDFileClass::SearchDriveType* CDFileClass::First = 0;
 
 int CDFileClass::CurrentCDDrive = 0;
 int CDFileClass::LastCDDrive = 0;
-char CDFileClass::RawPath[512] = {0};
+char CDFileClass::RawPath[16384] = {0};
 
 CDFileClass::CDFileClass(char const* filename)
     : IsDisabled(false)
@@ -203,7 +203,7 @@ int CDFileClass::Set_Search_Drives(char* pathlist)
     ** Save the path as it was passed in so we can parse it again later.
     ** Check for the case where RawPath was passed in.
     */
-    if (pathlist != RawPath) {
+    if (pathlist != RawPath && strlen(RawPath) + 1 + strlen(pathlist) < sizeof(RawPath)) {
         strcat(RawPath, ";");
         strcat(RawPath, pathlist);
     }
