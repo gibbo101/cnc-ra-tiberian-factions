@@ -19,6 +19,15 @@ Built in its own frame ("local": X east, Y south as TS draws it, units 1 cell = 
 
 Layouts (scene(..., layout=)): 'ts' TS's own placement (the TS-angle view); 'ra' turned a quarter clockwise so the
 door faces south (RA's camera): world (X, Y) = (-y, x) of the local frame, a 3 x 4 plot.
+RA grid round 2 (Luke's play test, 2026-10-02): 'ra' is symmetric about the door's centre line (local y = YC): the
+west side's slope (panel, frame, poles, roof beam, sill), its fender and the fascia get a mirrored twin on the east
+(local north) side in place of the north fender, its vent and its green cap; the hall's north wall moves in to match;
+four lamps on the door beam (the end one over the old fender goes); the apron symmetric (its west half mirrored), no grey
+patch; the build-up's slab = the apron (+ the hall's footprint, hidden under the hall); the build-up's poles lie along
+the slope's foot (the back one pointing north, the front one south) and stand up there, so nothing leaves the canvas.
+The one-offs stay where they are: the west block and its machinery, the roof's machinery. The green unit on the
+south fender is mirrored too (Luke, 08:19), onto the east twin fender between the twin slope and the door.
+'ra1' is the first round's RA layout (TS's sides, not mirrored).
 """
 import numpy as np
 import hd
@@ -72,13 +81,17 @@ P = dict(
              # the hazard lane: the door's width, centred on it (Luke: TS's ran off to the north fender's side); the
              # bib's seams fan out from its far end, on the door's centre line too
              lane=dict(x=(-6.0, 72.0), y=(-73.0, 76.0), period=18.0), fan=(80.0, 1.5),
-             grey=((-64.0, -192.0), (6.0, -192.0), (6.0, -110.0))),
+             grey=((-64.0, -192.0), (6.0, -192.0), (6.0, -110.0)),
+             # RA round 2: the outline's west half (local y > YC) and its mirror; no grey patch
+             sympoly=((0.0, -97.0), (-32.0, -109.0), (-50.0, -147.0), (-44.0, -189.0), (150.0, -189.0), (256.0, -81.0),
+                      (256.0, 84.0), (150.0, 192.0), (-44.0, 192.0), (-50.0, 150.0), (-32.0, 112.0), (0.0, 100.0))),
     # the construction slab of the build-up (GTWEAPMK 0-17): the bib's outline plus the building's footprint
     slab=dict(poly=((-250.0, -150.0), (-196.0, -192.0), (132.0, -192.0), (256.0, -72.0), (256.0, 84.0), (150.0, 192.0),
                     (-176.0, 192.0), (-250.0, 150.0)), h=2.0),
 )
 
-LAYOUTS = {'ts': dict(turn=False), 'ra': dict(turn=True)}
+LAYOUTS = {'ts': dict(turn=False), 'ra': dict(turn=True, sym=True), 'ra1': dict(turn=True)}
+YC = 1.5                    # the door's centre line (local y): the bay runs y -73..76
 
 
 def to_local(X, Y, layout='ts'):
@@ -156,6 +169,9 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
     p = P if p is None else p
     g = dict(DONE); g.update(prog or {})
     x, y = to_local(X, Y, layout)
+    sym = LAYOUTS[layout].get('sym', False)
+    # the RA grid's mirror (round 2): parts of the west side evaluated at ym appear on both sides of the door's line
+    ym = np.where(y < YC, 2 * YC - y, y) if sym else y
     H = np.zeros_like(X); C = np.zeros(X.shape, np.int16)
     slabs = []
     extra = {}
@@ -178,13 +194,24 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
 
     if pad:
         q = p['pad']
-        m = in_poly(x, y, q['poly'])
+        poly = q['sympoly'] if sym else q['poly']
+        m = in_poly(x, y, poly)
         if g['padtex'] < 1.0:
             # the build-up's grey construction slab (GTWEAPMK 0-17): grows out from the middle of the foundation and
             # stays under everything until the apron gets its colour (18)
             sl = p['slab']
             grow = np.clip(g['slab'], 0, 1)
-            ms = in_poly(x / max(grow, 1e-3), y / max(grow, 1e-3), sl['poly']) if grow > 0 else np.zeros_like(m)
+            gx_, gy_ = x / max(grow, 1e-3), y / max(grow, 1e-3)
+            if grow <= 0:
+                ms = np.zeros_like(m)
+            elif sym:
+                # round 2: the apron's own outline (so it doesn't change shape when the building completes), and the
+                # hall's footprint (2 units in: the hall covers it once it stands)
+                hh = p['hall']
+                ms = in_poly(gx_, gy_, poly) | inbox(gx_, gy_, (hh['x'][0] + 2, hh['x'][1] - 2),
+                                                     (2 * YC - hh['y'][1] + 2, hh['y'][1] - 2))
+            else:
+                ms = in_poly(gx_, gy_, sl['poly'])
             put(np.where(ms & (g['slab'] > 0), sl['h'], 0.0), SLAB)
         m = m & (g['pad'] > 0)
         put(np.where(m, q['h'], 0.0), PAD)
@@ -198,7 +225,8 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
     hz = h['z'] * g['hall']
     # ---- the hall: a block with a flat roof (the west block takes its south-west corner); the bay runs through its
     #      east end: floor at the ground, a ceiling slab over it, a dark back wall
-    hall = inbox(x, y, h['x'], h['y']) & ~inbox(x, y, w['x'], w['y'])
+    hall_y = (2 * YC - h['y'][1], h['y'][1]) if sym else h['y']      # round 2: the north wall mirrors the south one
+    hall = inbox(x, y, h['x'], hall_y) & ~inbox(x, y, w['x'], w['y'])
     bay = inbox(x, y, b['x'], b['y'])
     if g['hall'] > 0:
         put(np.where(hall & ~bay, hz, 0.0), HALL)
@@ -230,7 +258,7 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
     # ---- the green fascia along the top of the hall's south side (above the panel)
     if g['panel'] > 0:
         f = p['fascia']
-        put(np.where(inbox(x, y, f['x'], f['y']), f['z'] * min(1.0, g['hall']), 0.0), FASCIA)
+        put(np.where(inbox(x, ym, f['x'], f['y']), f['z'] * min(1.0, g['hall']), 0.0), FASCIA)
     # ---- the door: straight, then a quarter circle back into the roof; rolled up `door` of the way (GTWEAP_D)
     d = p['door']
     if g['door'] > 0:
@@ -245,13 +273,13 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
     # ---- the fenders: quarter-round plates either side of the door, standing proud of it
     j = p['jamb']
     if g['jambs'] > 0:
-        for (ya, yb) in j['ys']:
-            m = inbox(x, y, (j['back'], j['xb'] + j['A']), (ya, yb))
+        for (ya, yb) in (j['ys'][:1] if sym else j['ys']):        # round 2: the south fender and its mirror
+            m = inbox(x, ym, (j['back'], j['xb'] + j['A']), (ya, yb))
             uu = np.clip((x - j['xb']) / j['A'], 0.0, 1.0)
             zj = np.where(x <= j['xb'], j['B'], j['B'] * np.sqrt(np.clip(1 - uu * uu, 0, None)))
             put(np.where(m, zj * g['jambs'], 0.0), JAMB)
     nc = p['ncap']
-    if g['ncap'] > 0:
+    if g['ncap'] > 0 and not sym:
         ncm = inbox(x, y, nc['x'], nc['y'])
         zcap = nc['z'] - np.clip(x - (nc['x'][1] - nc['bevel']), 0, None)      # a bevel along its east top edge
         zb = nc['bot'] + (1 - g['ncap']) * 40.0
@@ -259,13 +287,18 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
     # ---- the north band (green) and the lamp beam with its five lamps
     if g['roof'] > 0:
         ns = p['nstrip']
-        put(np.where(inbox(x, y, ns['x'], ns['y']), ns['z'] * min(1.0, g['hall']) * min(1.0, g['roof'] * 2), 0.0), NSTRIP)
+        # round 2: only behind the twin slope's back pole, along the moved north wall
+        nsx, nsy = ((ns['x'][0], p['panel']['poles'][0] - 6.0), (2 * YC - h['y'][1], 2 * YC - h['y'][1] + 24.0)) if sym \
+            else (ns['x'], ns['y'])
+        put(np.where(inbox(x, y, nsx, nsy), ns['z'] * min(1.0, g['hall']) * min(1.0, g['roof'] * 2), 0.0), NSTRIP)
     if g['beam'] > 0:
         bm = p['beam']
-        put(np.where(inbox(x, y, bm['x'], bm['y']), bm['z'] * g['beam'], 0.0), BEAM)
+        bmy = (2 * YC - bm['y'][1], bm['y'][1]) if sym else bm['y']        # round 2: over the door, end to end
+        put(np.where(inbox(x, y, bm['x'], bmy), bm['z'] * g['beam'], 0.0), BEAM)
     la = p['lampsA']
-    for k in range(5):
-        if g['lampsA'] * 5 > k:
+    ks = (1, 2, 3, 4) if sym else (0, 1, 2, 3, 4)                         # round 2: four (the end one over the fender goes)
+    for i_, k in enumerate(ks):
+        if g['lampsA'] * len(ks) > i_:
             cy = la['y0'] + k * la['dy']
             rr = np.hypot(x - la['x'], y - cy)
             dome = la['z'] - la['r'] + np.sqrt(np.clip(la['r'] ** 2 - rr ** 2, 0, None)) * 1.6
@@ -279,7 +312,13 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
         sm = inbox(x, y, sl['x'], sl['y'])
         rib = np.abs(((y - sl['y'][0]) % sl['period']) - sl['period'] / 2) / (sl['period'] / 2)      # 1 at the gaps
         put(np.where(sm, h['z'] + (sl['z'][1] - (sl['z'][1] - sl['z'][0]) * 0.5 * rib - h['z']) * g['roof'], 0.0), ROOF)
-        for (bx, by, bz) in p['rust']:
+        rusts = p['rust']
+        if sym:
+            # round 2 (Luke, 07:33): the rust housing on the north edge pulls in off the fascia's mirrored twin, so the
+            # green strip from the door's fender to the slope runs unbroken on the east side as it does on the west
+            fy = 2 * YC - p['fascia']['y'][0] + 4.0
+            rusts = [(bx, (max(by[0], fy), by[1]), bz) for (bx, by, bz) in rusts]
+        for (bx, by, bz) in rusts:
             put(np.where(inbox(x, y, bx, by), h['z'] + (bz - h['z']) * g['roof'], 0.0), MACH)
         for (bx, by, bz) in p['darkm']:
             put(np.where(inbox(x, y, bx, by), h['z'] + (bz - h['z']) * g['roof'], 0.0), GREY)
@@ -312,14 +351,15 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
         nb = p['nwbox']
         put(np.where(inbox(x, y, nb['x'], nb['y']), h['z'] + (nb['z'] - h['z']) * g['fans'], 0.0), MACH)
     # ---- the sloped panel and its poles (build-up: the poles lie on the ground pointing south, stand up, then lean
-    #      back onto the hall; the panel goes in after), the sill at its foot
+    #      back onto the hall; the panel goes in after), the sill at its foot.  All at ym: on the RA grid (round 2) the
+    #      east side gets the mirror image (lit as its own surface: the light isn't mirrored)
     pn = p['panel']
-    zp = pn['s'] * (pn['y0'] - y)
+    zp = pn['s'] * (pn['y0'] - ym)
     xl, xr = pn['poles'][0] - pn['pw'] / 2, pn['poles'][1] + pn['pw'] / 2
     if g['panel'] <= 0 and g['pframe'] > 0:
         # the build-up's panel frame (GTWEAPMK 6-14): the slope's skeleton, upright ribs in threes, rising up the slope
         # from its foot; TS fills its skin in at 15
-        under = (y >= h['y'][1] - 1) & (y <= pn['y0']) & (x >= xl) & (x <= xr)
+        under = (ym >= h['y'][1] - 1) & (ym <= pn['y0']) & (x >= xl) & (x <= xr)
         zp_c = np.clip(zp, 0, h['z'])
         ph_ = (x - pn['x'][0]) % 26.0
         rib = ((np.abs(ph_ - 5.0) < 1.3) | (np.abs(ph_ - 10.0) < 1.3) | (np.abs(ph_ - 15.0) < 1.3)) & \
@@ -327,7 +367,7 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
         zsk = np.where(rib, zp_c + 2.0, np.maximum(zp_c - 1.5, 0.0))
         put(np.where(under & (zp_c <= g['pframe'] * h['z'] + 0.5), zsk, 0.0), FRAME)
     if g['panel'] > 0:
-        under = (y >= h['y'][1] - 1) & (y <= pn['y0']) & (x >= xl) & (x <= xr)
+        under = (ym >= h['y'][1] - 1) & (ym <= pn['y0']) & (x >= xl) & (x <= xr)
         zp_c = np.clip(zp, 0, h['z'])
         put(np.where(under, zp_c, 0.0), FRAME)
         green = under & (x >= pn['x'][0]) & (x <= pn['x'][1]) & (zp >= pn['z'][0]) & (zp <= pn['z'][1])
@@ -349,28 +389,37 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
             for px_ in pn['poles']:
                 pm = np.abs(x - px_) <= pn['pw'] / 2
                 if st_ < 0.05:
-                    put(np.where(pm & (np.abs(y - yb) <= pn['pw'] / 2), Lt, 0.0), FRAME)
+                    put(np.where(pm & (np.abs(ym - yb) <= pn['pw'] / 2), Lt, 0.0), FRAME)
                 else:
-                    tt = (yb - y) / st_
+                    tt = (yb - ym) / st_
                     ok = pm & (tt >= -1.0) & (tt <= Lt)
                     zc_ = np.clip(tt, 0, Lt) * ct_
                     half = pn['ph'] / st_
                     slab(np.minimum(zc_ + half, Lt * ct_ + pn['ph']), np.maximum(zc_ - half, 0.0), FRAME, ok, 'pole')
-        for px_ in (() if tall else pn['poles']):
+        if sym and q < 0.45:
+            # RA round 2: the poles lie along the slope's foot (the back one pointing north, the front one south) and
+            # stand up there, rising in the x-z plane (TS's lie out sideways: off the RA canvas)
+            for px_, sgn in zip(pn['poles'], (-1.0, 1.0)):
+                pm = np.abs(ym - pn['y0']) <= pn['pw'] / 2
+                tt = (x - px_) * sgn / ca                                   # distance along the pole
+                ok = pm & (tt >= -2) & (tt <= L)
+                zc_ = np.clip(tt, 0, L) * sa
+                th = pn['ph'] / max(abs(ca), 0.2)
+                slab(zc_ + th, np.maximum(zc_ - th, 0), FRAME, ok, 'pole')
+        for px_ in (() if (tall or (sym and q < 0.45)) else pn['poles']):
             # the pole as a slab: points (y, z) along its axis from the foot (y0, 0), thickness ph
-            along = (y - pn['y0']) * ca                                     # signed distance along the axis (on plan)
             pm = (np.abs(x - px_) <= pn['pw'] / 2)
             if abs(ca) < 1e-3 or (q < 1.0 and ang > np.pi / 2 and abs(ca) < 0.1):    # (near) upright: a column
-                put(np.where(pm & (np.abs(y - pn['y0']) <= pn['pw'] / 2), L, 0.0), FRAME)
+                put(np.where(pm & (np.abs(ym - pn['y0']) <= pn['pw'] / 2), L, 0.0), FRAME)
             elif q < 1.0 and ang > np.pi / 2:
                 # leaning back onto the hall (build-up only): a bar through the air from its foot, not a fin under it
-                tt = (y - pn['y0']) / ca
+                tt = (ym - pn['y0']) / ca
                 ok = pm & (tt >= -1.0) & (tt <= L)
                 zc_ = np.clip(tt, 0, L) * sa
                 half = pn['ph'] / abs(ca)
                 slab(np.minimum(zc_ + half, L * sa + pn['ph']), np.maximum(zc_ - half, 0.0), FRAME, ok, 'pole')
             else:
-                tt = (y - pn['y0']) / ca                                    # distance along the pole
+                tt = (ym - pn['y0']) / ca                                   # distance along the pole
                 ok = pm & (tt >= -2) & (tt <= L)
                 zc_ = np.clip(tt, 0, L) * sa
                 if ang <= np.pi / 2 + 1e-6 and sa < 0.999:
@@ -379,22 +428,24 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
                     put(np.where(ok, np.clip(zc_ + pn['ph'], 0, h['z'] + 6), 0.0), FRAME)
     if g['slab'] >= 1.0 and g['poles'] > 0:
         s0_, s1_, sh = pn['sill']
-        put(np.where((y >= s0_) & (y <= s1_) & (x >= xl - 20) & (x <= -12.0), sh, 0.0), SILL)
+        put(np.where((ym >= s0_) & (ym <= s1_) & (x >= xl - 20) & (x <= -12.0), sh, 0.0), SILL)
     # ---- the green unit on the south fender, on a dark bracket, a red band round it
     gb = p['gblock']
     if g['ncap'] > 0:
-        u_ = ((x - gb['c'][0]) + (y - gb['c'][1])) / np.sqrt(2)          # towards TS's camera (south-east)
-        v_ = ((x - gb['c'][0]) - (y - gb['c'][1])) / np.sqrt(2)          # across it (north-east)
+        # round 2 (Luke, 08:19): the unit is mirrored too, onto the east twin fender between the twin slope and the door
+        yg = ym if sym else y
+        u_ = ((x - gb['c'][0]) + (yg - gb['c'][1])) / np.sqrt(2)         # towards TS's camera (south-east)
+        v_ = ((x - gb['c'][0]) - (yg - gb['c'][1])) / np.sqrt(2)         # across it (north-east)
         gm = (np.abs(u_) <= gb['d'] / 2) & (np.abs(v_) <= gb['w'] / 2)
         bxx, byy, bzz = gb['bracket']
-        slab(np.full_like(X, bzz[1]), np.full_like(X, bzz[0]), PLINTH, inbox(x, y, bxx, byy), 'bracket')
+        slab(np.full_like(X, bzz[1]), np.full_like(X, bzz[0]), PLINTH, inbox(x, yg, bxx, byy), 'bracket')
         slab(np.full_like(X, gb['z'][1]), np.full_like(X, gb['z'][0]), GBLOCK, gm, 'gblock')
         gt = gb['top']
         gtm = (np.abs(u_ - gt['off']) <= gt['d'] / 2) & (np.abs(v_) <= gt['w'] / 2)
         slab(np.full_like(X, gt['z']), np.full_like(X, gb['z'][1]), GBLOCK, gtm, 'gtop')
     if g['beam'] > 0:
         rb = p['rbeam']
-        put(np.where(inbox(x, y, rb['x'], rb['y']), rb['z'] * g['beam'], 0.0), FRAME)
+        put(np.where(inbox(x, ym, rb['x'], rb['y']), rb['z'] * g['beam'], 0.0), FRAME)
     # ---- carve the bay out: whatever stands on the roof over it is a slab from the bay's ceiling up, the bay's floor
     #      under it (the heightfield can't overhang)
     if g['hall'] > 0:

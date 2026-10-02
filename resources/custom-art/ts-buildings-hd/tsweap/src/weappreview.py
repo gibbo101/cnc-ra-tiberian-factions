@@ -162,7 +162,8 @@ def exit_marks(pk, out):
     x0, y0, x1, y1 = WR.PLOT['ra']
     panels = []
     for rows_, top in ((4, 0), (3, 128)):
-        im = P.on_bg(pk.base('ra', 0)).crop((0, top, 416, 512))
+        W_ = WR.canvas_of('ra')[0]
+        im = P.on_bg(pk.base('ra', 0)).crop((0, top, W_, 512))
         d = ImageDraw.Draw(im)
         for i in range(4):
             d.line([(x0 + i * 128, 0), (x0 + i * 128, im.height - 1)], fill=(255, 255, 0, 160))
@@ -172,9 +173,9 @@ def exit_marks(pk, out):
         im = im.resize((int(im.width * z), int(im.height * z)), Image.LANCZOS)
         pts = [(n, px, py - top) for n, px, py in pts0]
         draw_marks(im, pts, z)
-        cx, cy = 208.0, im.height / z / 2.0
-        txt = [f'3 x {rows_} plot: canvas 416 x {512 - top}' + ('' if not top else f' (y {top}-512 of the frames)'),
-               f'plot x 16-400, y 0-{512 - top}, centre ({cx:.0f}, {cy:.0f})', 'from the plot centre, in leptons (2 per px):']
+        cx, cy = (x0 + x1) / 2.0, im.height / z / 2.0
+        txt = [f'3 x {rows_} plot: canvas {W_} x {512 - top}' + ('' if not top else f' (y {top}-512 of the frames)'),
+               f'plot x {x0}-{x1}, y 0-{512 - top}, centre ({cx:.0f}, {cy:.0f})', 'from the plot centre, in leptons (2 per px):']
         txt += [f'  {n}: {2 * (px - cx):+.0f}, {2 * (py - cy):+.0f}' for n, px, py in pts]
         T = Image.new('RGBA', (im.width, im.height + 30 + 16 * len(txt) + 8), DARK)
         T.paste(im, (0, 30))

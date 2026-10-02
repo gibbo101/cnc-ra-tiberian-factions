@@ -43,6 +43,16 @@ if os.path.exists(STUB_MANIFEST):
         STUB_DIMS = json.load(_f)
 CANVAS_PER_CLASSIC_PX = 16.0 / 3.0
 
+# The objects scripts/ts_pack_hd_buildings.py packs from their HD rebuilds. This script still composes some of
+# them (the Mobile War Factory takes the war factory's affine), but never writes their art, tiles or stubs.
+import ts_pack_hd_buildings as _hd
+HD_OWNED = set(_hd.BUILDINGS) | set(_hd.UNITS) | set(_hd.APRONS)
+
+
+def hd_owned(name):
+    n = name.upper()
+    return n in HD_OWNED or (n.endswith("MAKE") and n[:-4] in HD_OWNED)
+
 # The affine scale each packed building actually shipped at (the fit's clamps
 # applied), for satellite art that must match — an addon plug's placement
 # ghost is scaled by its host's factor.
@@ -312,6 +322,9 @@ def stamp_emblem(img, path, frac, squash, dx=0, dy=0, ref=None):
 
 
 def write_zip(path, name, frames):
+    if hd_owned(name):
+        print(f"{name.upper()}: HD art (ts_pack_hd_buildings.py), not written")
+        return
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with zipfile.ZipFile(path, "w", zipfile.ZIP_DEFLATED) as z:
         for i, img in enumerate(frames):
@@ -332,6 +345,8 @@ def tile_block(name, shape):
 def patch_tileset(xml_path, name, count):
     """Install exactly `count` tile entries for `name`, replacing any existing run."""
     import re
+    if hd_owned(name):
+        return
     xml = open(xml_path, encoding="utf-8").read()
     pat = re.compile(r"\t<Tile>\n\t\t<Key>\n\t\t\t<Name>" + re.escape(name) + r"</Name>.*?</Tile>\n", re.S)
     xml, removed = pat.subn("", xml)
@@ -392,7 +407,8 @@ def build_structure(ini, base_dir, healthy_f, damaged_f, anims, mk_dir, mk_count
       symmetrically — content placed low lands on the passable row below the
       plot (the TS apron row)."""
     CURRENT_INI[0] = ini
-    STUB_DIMS[ini] = [round(canvas_w / CANVAS_PER_CLASSIC_PX), round(canvas_h / CANVAS_PER_CLASSIC_PX)]
+    if not hd_owned(ini):
+        STUB_DIMS[ini] = [round(canvas_w / CANVAS_PER_CLASSIC_PX), round(canvas_h / CANVAS_PER_CLASSIC_PX)]
 
     n = 1
     for spec in anims:
@@ -1605,7 +1621,9 @@ for ini, base, anim_dirs, mk, mkc, (cw, ch), margin, oscale, cameo, disp, desc i
 # ---- TSFACT: packed from its HD rebuild by scripts/ts_pack_hd_buildings.py.
 
 # ---- TSPOWR, TSTURB, TSSILO, TSPILE and TSTECH: packed from their HD rebuild by
-# scripts/ts_pack_hd_buildings.py. Only their sidebar entries are emitted here.
+# scripts/ts_pack_hd_buildings.py. Only their sidebar entries are emitted here. The radar, war factory,
+# refinery, helipad, service depot and dropship bay rows above still compose, for their sidebar entries and
+# the Mobile War Factory's affine, but write no art (hd_owned).
 if os.path.isdir(f"{ART}/shp_techicon"):
     CURRENT_INI[0] = "TSTECH"
     emit_sidebar_data("TSTECH", "TS Tech Center", "Unlocks advanced Tiberian technology.", "shp_techicon")
@@ -1738,22 +1756,6 @@ if os.path.isdir(f"{ART}/shp_gtplug"):
     emit_sidebar_data("TSSEEK", "Seeker Control",
                       "Installs into an Upgrade Center, granting the Hunter Seeker droid.",
                       "shp_rad2icon")
-
-# ---- TSMCV (MCV.VXL render, 32 facings, canvas 384 = classic 48 x 8) ----
-if os.path.isdir(f"{ART}/renders_tsmcv") and not os.path.exists(asset_packs.art_zip("TSMCV", "UNITS")):
-    def scale_center(img, factor, canvas):
-        nw, nh = round(img.width * factor), round(img.height * factor)
-        scaled = img.resize((nw, nh), Image.LANCZOS)
-        out = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
-        out.paste(scaled, ((canvas - nw) // 2, (canvas - nh) // 2), scaled)
-        return out
-    side = Image.open(f"{ART}/renders_tsmcv/frame-0008.png")
-    b = side.getbbox()
-    factor = 280.0 / (b[2] - b[0])
-    frames = [scale_center(Image.open(f"{ART}/renders_tsmcv/frame-{i:04d}.png"), factor, 384)
-              for i in range(32)]
-    write_zip(asset_packs.art_zip("TSMCV", "UNITS"), "tsmcv", frames)
-    patch_tileset(asset_packs.tileset_xml("TSMCV", "UNITS"), "TSMCV", 32)
 
 # ---- BuildIcon for the (future-buildable) TSMCV ----
 MCV_ICON = asset_packs.cameo_tga("BuildIcon_TS_MCV")

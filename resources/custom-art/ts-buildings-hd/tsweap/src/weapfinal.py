@@ -171,12 +171,14 @@ def door(vname, ss=4):
 
 
 def bib_frame(vname, ss, level=0, prog=None):
-    pb, v = WR.prep(vname + '-bib', ss, pad=True, level=level, prog=prog)
+    wn = vname + '-bib'
+    win = WR.WIN.get(wn + '-build', WR.WIN[wn]) if prog is not None else WR.WIN[wn]     # the slab is bigger
+    pb, v = WR.prep(wn, ss, pad=True, level=level, prog=prog, win=win)
     col, tm = pb.shade()
     img = pb.r.compose(col, ground=False, outline=False)
     trim = Image.fromarray((down(tm, v.ss) * 255).round().astype(np.uint8), 'L')
     del pb
-    return WR.on_canvas(img, vname + '-bib'), WR.on_canvas(trim, vname + '-bib')
+    return WR.on_canvas(img, wn, win=win), WR.on_canvas(trim, wn, win=win)
 
 
 def bib(vname, ss=4):
@@ -242,6 +244,12 @@ def under(vname, ss=4, reuse=False):
         a1 = np.array(b1)[..., 3].astype(np.float32) / 255.0
         tt = btrim * (1 - ash)
         tt = np.array(t1).astype(np.float32) * a1 + tt * (1 - a1)
+        if M.LAYOUTS[WR.LAYOUT[WR.base(vname)]].get('sym', False):
+            # RA round 2 (as the mod cut it): only the doorway, the shut door's outline 2 px wider; the apron copy
+            # round it dropped (bib + building-bay already draw it)
+            reg = ndimage.binary_dilation(dshut, iterations=2)
+            ca = np.array(comp); ca[~reg] = 0
+            comp = Image.fromarray(ca, 'RGBA'); tt = np.where(reg, tt, 0.0)
         save(comp, Image.fromarray(tt.round().astype(np.uint8), 'L'), f'{out}/1-under-door/{NAME}-under-{level:02d}.png')
         print(vname, 'under', level, '%.0fs' % (time.time() - t0), flush=True)
 
@@ -249,14 +257,15 @@ def under(vname, ss=4, reuse=False):
 def build(vname, ss=4, frames=None):
     out = f'{PKG}/{VIEWS[vname]}'
     n = len(WB.SEQ)
+    wb = WR.WIN.get(vname + '-build')            # a wider window where the build-up's poles reach further
     for i in (frames if frames is not None else range(n)):
         t0 = time.time()
         last = i == n - 1
         g = None if last else WB.SEQ[i]
         bimg, btrim = bib_frame(vname, ss, 0, prog=g)
-        pr, v = WR.prep(vname, ss, prog=g)
+        pr, v = WR.prep(vname, ss, prog=g, win=wb)
         img, trim = pr.frame(want_trim=True)
-        img, trim = canvas(img, vname), canvas(trim, vname)
+        img, trim = WR.on_canvas(img, vname, win=wb), WR.on_canvas(trim, vname, win=wb)
         del pr
         comp = bimg.copy(); comp.alpha_composite(img)
         a = np.array(img)[..., 3:4].astype(np.float32) / 255.0

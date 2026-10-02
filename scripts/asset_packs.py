@@ -52,7 +52,8 @@ PACKS = {
 # HD rebuilds of TS objects (resources/custom-art): every art name that starts with one of these,
 # so an object's MAKE, door, lamp, turret and apron layers travel with it
 TS_HD = ("TSWALL", "TSNWALL", "TSGATEH", "TSGATEV", "TSNGATEH", "TSNGATEV", "TSCTWR", "TSVULC", "TSROCK", "TSCSAM",
-         "TSFACT", "TSPILE", "TSPOWR", "TSSILO", "TSTECH", "TSTURB", "TSPROC", "TSWEAP", "TSHARV", "TSTITN")
+         "TSFACT", "TSPILE", "TSPOWR", "TSSILO", "TSTECH", "TSTURB", "TSPROC", "TSWEAP", "TSHARV", "TSTITN",
+         "TSMCV", "TSSMEC", "TSRADR", "TSDPSA", "TSDEPT", "TSHPAD", "TSDROP")
 
 # tileset kinds: RA_<KIND>.XML in the mod; art folder under RED_ALERT/
 KINDS = ("UNITS", "STRUCTURES", "VFX", "TERRAIN_TEMPERATE", "TERRAIN_SNOW", "TERRAIN_INTERIOR")

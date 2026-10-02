@@ -2429,7 +2429,7 @@ static BuildingTypeClass const ClassTsDlimp(STRUCT_TSDLIMP,
 // TS Sensor Array (STRUCT_TSDPSA), TS [GADPSA]: the Mobile Sensor Array deployed. Never built
 // from the sidebar (the vehicle deploys into it, and the deploy order packs it back into
 // UNIT_TSLPST). Its owner sees cloaked and buried enemies in range (TF_Is_Sensed).
-// Art = GTDPSA body + GTDPSA_A beacon (5 healthy + 5 damaged), GTDPSAMK build-up.
+// Art = its HD rebuild: the body under the head's flash (5 healthy, then 5 damaged and unlit), 36 build-up frames.
 static BuildingTypeClass const ClassTsDpsa(STRUCT_TSDPSA,
                                            TXT_NONE,
                                            "TSDPSA",
@@ -5845,7 +5845,7 @@ void BuildingTypeClass::One_Time(void)
         {STRUCT_TSRADR, BSTATE_IDLE, 0, 28, 3},  // GARADR _A dish: 15-frame half-sweep baked as fwd+reverse ping-pong (28); damaged = torn-dish run at +28
         {STRUCT_TSHPAD, BSTATE_IDLE, 0, 8, 3},   // GAHPAD _A halved (8 healthy + 8 damaged)
         {STRUCT_TSDLIMP, BSTATE_IDLE, 0, 10, 3}, // DLIMP_A blink halved (10 healthy + 10 damaged)
-        {STRUCT_TSDPSA, BSTATE_IDLE, 0, 5, 4},   // GTDPSA_A beacon blink (5 healthy + 5 damaged, unlit)
+        {STRUCT_TSDPSA, BSTATE_IDLE, 0, 5, 4},   // HD sensor: the head's flash (5 healthy + 5 damaged, unlit)
         {STRUCT_TSTECH, BSTATE_IDLE, 0, 8, 4},   // HD tech centre: the dome's panels pulse (8 healthy + 8 damaged)
         {STRUCT_TSFGEN, BSTATE_IDLE, 0, 48, 2},  // GAFIRE _B (16) every step + _C (6) every 2nd step -> 48, TS's rates; damaged = anims stopped
         {STRUCT_TSDEPT, BSTATE_IDLE, 0, 35, 3},  // GADEPT _A halved(5)+_B whole(7, odd=no damaged half) -> LCM 35

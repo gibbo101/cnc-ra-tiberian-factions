@@ -2012,7 +2012,7 @@ static UnitTypeClass const UnitTsMemp(UNIT_TSMEMP,
                                       MISSION_GUARD // ORDERS: Default order.
 );
 
-// TS Mobile Sensor Array (UNIT_TSLPST), TS rules [LPST]. No weapon: it turns south-east and
+// TS Mobile Sensor Array (UNIT_TSLPST), TS rules [LPST]. No weapon: it turns east and
 // deploys into STRUCT_TSDPSA, the sensor. TS: Strength=600, Armor=wood, TechLevel=6, Sight=10,
 // Speed=6, Cost=950, Points=30, ROT=5, Crusher=yes, RadarInvisible=yes. Art = LPST.VXL voxel
 // render, 32 facings.
@@ -2804,7 +2804,7 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
         {UNIT_TSSONIC, 38, 39},
         {UNIT_TSHMEC, 42, 41},
         {UNIT_TSHARV, 37, 28},
-        {UNIT_TSSMEC, 15, 26},
+        {UNIT_TSSMEC, 14, 27},
         {UNIT_TSJUGG, 31, 32},
         {UNIT_TSSUBTANK, 38, 35},
         {UNIT_TSSAPC, 29, 29},

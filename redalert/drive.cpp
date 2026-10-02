@@ -2463,7 +2463,7 @@ bool DriveClass::Start_Of_Move(void)
     dir = Facing_Dir(facing);
 
     /*
-    **	TS Service Depot: the pad is drawn off the depot's middle cell (BuildingClass::
+    **	TS Service Depot: the pad is drawn in front of the gantry, off its cell's centre (BuildingClass::
     **	Docking_Coord). A vehicle docking there takes the cell before the pad as a straight
     **	step, never a two-cell curve, then drives its last step straight onto the pad, steering
     **	on to it as it goes. A vehicle standing on the pad turns to its next cell and drives
@@ -2480,7 +2480,7 @@ bool DriveClass::Start_Of_Move(void)
             dir = Desired_Facing256(Coord_X(Coord), Coord_Y(Coord), Coord_X(rail_end), Coord_Y(rail_end));
         } else if (Mission == MISSION_ENTER && contact != NULL && contact->What_Am_I() == RTTI_BUILDING
                    && *(BuildingClass*)contact == STRUCT_TSDEPT
-                   && As_Cell(NavCom) == Coord_Cell(contact->Center_Coord())) {
+                   && As_Cell(NavCom) == Coord_Cell(((BuildingClass*)contact)->Docking_Coord())) {
             CELL padcell = As_Cell(NavCom);
             if (Coord_Cell(dest) == padcell) {
                 rail_end = ((BuildingClass*)contact)->Docking_Coord();

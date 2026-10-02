@@ -195,11 +195,8 @@ bbox-centred paste **moves the sprite** even when every body pixel is in the sam
   shades brighter on its own table), and **carries no shadow** (a hull in water keeps its shadow under
   the surface, as RA's ships do — Luke: "much better"). **Never run `ts_reshadow.py` over the water
   frames.**
-- Titan and Wolverine are TS SHPs (MMCH/SMECH), not renders, with TS's light baked per facing (a mech
-  turned away from the light read a step darker: Wolverine SE vs S, Titan N a quarter under NE).
-  `scripts/ts_equalise_shp_facings.py` levels each facing block to the brightest block's mean body
-  luminance (idempotent; in-frame shading and shadows untouched). The Titan's cannon barrel
-  (`MMCHBARL.VXL`, 30° render inside the walkers script) is still legacy-lit — needs the Titan inputs.
+- The Titan, Wolverine, MCV and harvester are HD rebuilds, rendered from 3D models with one light for
+  every facing (`scripts/ts_pack_hd_buildings.py` UNITS; the models are in the TS-HD pack's `3d/`).
 - **Voxel-mesh upscale: SPIKED AND REJECTED (2026-08-28, harvester A/B in-game).** `scripts/vxl_mesh_render.py`
   (marching cubes + Taubin smoothing + denoised vertex colours, TS lighting) renders a smoother hull,
   but at game sprite scale the 1-voxel ribs and panel lines ARE the detail, and any smoothing that
@@ -369,11 +366,10 @@ highest quality the pipeline can produce.** Concretely:
   EVERY ground-vehicle voxel renders at `--elev 32`; the vxl_render default
   is 54 and reads alien next to RA art. Current renders, all
   `--px-per-voxel 12 --team-green 0,200,0 --elev 32`:
-  TSHARV (yaw0 0 + wave face_fix, pack scale 0.75), TSAPC (yaw0 0 + face_fix; water hull
+  TSAPC (yaw0 0 + face_fix; water hull
   `apcw.vxl` same camera → `ts_pack_tsapc_water.py`), TSSONIC (yaw0 90, no reorder, `--canvas 628`)
   + SONICTUR (**`--hva SONICTUR.HVA`** — the turret's pose is in the HVA; without it the render is
-  38 px taller and sits 78 px lower, `--canvas 624`), TSMCV (yaw0 90, no reorder →
-  `ts_pack_tsmcv.py`), TSHVR (yaw0 90, `--canvas 500`) + HVRTUR (**`--z-clip 10`** drum clip,
+  38 px taller and sits 78 px lower, `--canvas 624`), TSHVR (yaw0 90, `--canvas 500`) + HVRTUR (**`--z-clip 10`** drum clip,
   `--canvas 660`) → `ts_pack_hvr_hmec.py`, TSHMEC (yaw0 90, **`--elev 35`**, `--hva HMEC.HVA
   --hva-frame f` for f in 0 2 4 6 8 11 13 15, `--canvas 1000`, dirs `ts35_hmec_<f>`, PLUS the same
   renders with **`--shadow 0.6,-0.2`** into `ts35sh_hmec_<f>`: the body set owns the union fit, the

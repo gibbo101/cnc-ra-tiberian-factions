@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
-"""Package the TS units wave (TSHARV / TSSMEC / TSSONIC / TSAPC) into the mod tree:
-  - TSHARV.ZIP   32 frames (voxel body facings), 384 canvas, ShapeSize 48
-  - TSSMEC.ZIP  128 frames (12-step walk + 4-step firing, x 8 facings), 384 canvas
+"""Package the TS units wave (TSSONIC / TSAPC, and the cameos of TSHARV and TSSMEC, whose art is
+the HD rebuilds' in scripts/ts_pack_hd_buildings.py) into the mod tree:
   - TSSONIC.ZIP  64 frames (body 0-31 + turret 32-63, TSHVR layout), 448 canvas, ShapeSize 56
   - TSAPC.ZIP    32 frames (voxel body facings), 384 canvas, ShapeSize 48
   - BuildIcon_TS_{Harvester,Wolverine,Disruptor,AmphAPC}.tga (TS cameos, CAMEO.PAL)
@@ -13,14 +12,12 @@ Density: all TS units ship at 8x-classic (canvas = ShapeSize * 8). 1 TS voxel at
 6.4/12 and SHP frames by 6.4 -- every unit lands TS-relative-size-consistent.
 
 Inputs (set TS_ART_DIR to the extraction dir):
-  $TS_ART_DIR/renders_harv|renders_apc|renders_sonic|renders_sonictur/frame-NNNN.png
+  $TS_ART_DIR/renders_apc|renders_sonic|renders_sonictur/frame-NNNN.png
       (scripts/vxl_render.py at --px-per-voxel 12, 32 frames)
-  $TS_ART_DIR/shp_smech/frame-NNNN.png   decoded SMECH.SHP (ts_shp.py, UNITTEM.PAL)
   $TS_ART_DIR/{HARVICON,SMCHICON,SONIICON,APCICON}.SHP + CAMEO.PAL
 """
 import io, json, os, re, sys, zipfile
 from PIL import Image
-import hqx
 
 ART = os.environ.get("TS_ART_DIR")
 if not ART:
@@ -88,22 +85,6 @@ def drop_shadow(frame, dx, dy, alpha=191):
     return out
 
 
-def crisp_place(img, factor, canvas, anchor_src, anchor_dst):
-    """hq4x upscale then LANCZOS; anchor_src (source px) lands at anchor_dst."""
-    rgb = Image.new("RGB", img.size, (0, 0, 0))
-    rgb.paste(img, (0, 0), img)
-    big = hqx.hq4x(rgb).convert("RGBA")
-    alpha = img.split()[3].resize((img.width * 4, img.height * 4), Image.LANCZOS)
-    big.putalpha(alpha)
-    nw, nh = round(img.width * factor), round(img.height * factor)
-    scaled = big.resize((nw, nh), Image.LANCZOS)
-    out = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
-    ox = round(anchor_dst[0] - anchor_src[0] * factor)
-    oy = round(anchor_dst[1] - anchor_src[1] * factor)
-    safe_paste(out, scaled, ox, oy)
-    return out
-
-
 def vox_frames(dirname, canvas, count=32, shadow=None, scale=1.0):
     """Model-space placement: each render canvas (center = voxel origin)
     scaled by F_VOX and centered -- the launcher anchors the canvas center at
@@ -129,47 +110,13 @@ def vox_frames(dirname, canvas, count=32, shadow=None, scale=1.0):
     return out
 
 
-# ---- TSHARV / TSAPC: plain 32-facing voxel bodies ----
+# ---- TSAPC: a plain 32-facing voxel body ----
 # These renders start at EAST and advance CCW; RA frame space is 0=N CCW,
 # so rotate by +8 (cardinal-verified 2026-08-04: without it the hull drives
 # 90 degrees off its heading).
 def face_fix(frames):
     return [frames[(i + 8) % 32] for i in range(32)]
 
-
-def recenter_orbit(frames):
-    """The HARV voxel model is origin-offset, so origin-at-centre placement
-    makes the hull ORBIT the front cab across facings instead of turning in
-    place. Fit the per-facing bbox centres to c + (A cos t, B sin t) and
-    shift each frame onto the fitted circle — smooth (no bbox-noise jitter,
-    the MLRS trap) yet exactly rigid-body. Run scripts/ts_recenter_tsharv.py
-    for the zip-level equivalent when render sources are absent."""
-    import math
-    n = len(frames)
-    boxes = [f.getbbox() for f in frames]
-    def fit(vals):
-        a = sum(vals) / n
-        b = sum(v * math.cos(2 * math.pi * i / n) for i, v in enumerate(vals)) * 2 / n
-        c = sum(v * math.sin(2 * math.pi * i / n) for i, v in enumerate(vals)) * 2 / n
-        return lambda i: a + b * math.cos(2 * math.pi * i / n) + c * math.sin(2 * math.pi * i / n)
-    fx = fit([(b[0] + b[2]) / 2 for b in boxes])
-    fy = fit([(b[1] + b[3]) / 2 for b in boxes])
-    out = []
-    for i, f in enumerate(frames):
-        fr = Image.new("RGBA", f.size, (0, 0, 0, 0))
-        safe_paste(fr, f, round(f.width / 2 - fx(i)), round(f.height / 2 - fy(i)))
-        out.append(fr)
-    return out
-# TSHARV: recentred 384/ShapeSize 48 (the orbit fix pulls the rotation
-# envelope back inside the 48-class canvas). Renders = vxl_render.py
-# --elev 32 (Luke's angle pick, 2026-08-04 — the 54-default read top-down
-# next to the TD harvester) and pack scale 0.75 (Luke, final size call 2026-08-05; 0.533 read ridiculously
-# small in the field; 0.80 read big — Luke's split, 2026-08-05).
-if os.path.isdir(f"{ART}/renders_harv"):
-    write_zip(asset_packs.art_zip("TSHARV", "UNITS"), "tsharv",
-              recenter_orbit(face_fix(vox_frames("renders_harv", 384, shadow=(6, 25), scale=0.75))))
-else:
-    print("TSHARV: SKIP (no renders_harv)")
 if os.path.isdir(f"{ART}/renders_apc"):
     write_zip(asset_packs.art_zip("TSAPC", "UNITS"), "tsapc", face_fix(vox_frames("renders_apc", 384, shadow=(7, 30))))
 else:
@@ -184,49 +131,6 @@ if os.path.isdir(f"{ART}/renders_sonic"):
     write_zip(asset_packs.art_zip("TSSONIC", "UNITS"), "tssonic", sonic)
 else:
     print("TSSONIC: SKIP (no renders_sonic)")
-
-# ---- TSSMEC: SHP walker, 12-step walk x 8 facings ----
-# SMECH.SHP: walk 0-95 (12/facing, CW facing blocks, 0=N), standing 96-103,
-# firing 104-135, shadows 136-271 (unused). Engine frame space is CCW 0=N:
-# out facing f <- src block (8-f)%8 (the MMCH reorder).
-CANVAS_S = 384
-SMECH_FIRE_BASE = 104   # SMECH.SHP: walk 0-95, standing 96-103, firing 104-135
-SMECH_FIRE_FRAMES = 4   # art.ini [SMECH] FiringFrames=4
-if os.path.isdir(f"{ART}/shp_smech"):
-    sm = lambda i: Image.open(f"{ART}/shp_smech/frame-{i:04d}.png").convert("RGBA")
-    ux0, uy0, ux1, uy1 = 1e9, 1e9, -1e9, -1e9
-    for i in range(96):
-        b = sm(i).getbbox()
-        if b:
-            ux0, uy0 = min(ux0, b[0]), min(uy0, b[1])
-            ux1, uy1 = max(ux1, b[2]), max(uy1, b[3])
-    # Feet-row anchoring (no per-frame bob jitter): union feet row lands so the
-    # union content box centers on the canvas center.
-    feet_src = uy1
-    content_h = (uy1 - uy0) * F_SHP
-    feet_dst = CANVAS_S / 2 + content_h / 2
-    frames = []
-    for f in range(8):
-        src_block = (8 - f) % 8
-        for s in range(12):
-            fr = crisp_place(sm(src_block * 12 + s), F_SHP, CANVAS_S,
-                             (47.5, feet_src), (CANVAS_S / 2, feet_dst))
-            frames.append(drop_shadow(fr, 4, 15))
-    # Firing block appended after the walk cycle: art.ini [SMECH] FiringFrames=4,
-    # SHP 104-135 laid out as 8 facing blocks of 4 (flash on sub-frames 0 and 2).
-    # The anchor pair is the WALK union's -- feet_src/feet_dst are deliberately
-    # NOT recomputed over the firing frames, so the mech holds its ground when it
-    # opens fire and every already-approved walk frame stays byte-identical.
-    for f in range(8):
-        src_block = (8 - f) % 8
-        for s in range(SMECH_FIRE_FRAMES):
-            fr = crisp_place(sm(SMECH_FIRE_BASE + src_block * SMECH_FIRE_FRAMES + s),
-                             F_SHP, CANVAS_S,
-                             (47.5, feet_src), (CANVAS_S / 2, feet_dst))
-            frames.append(drop_shadow(fr, 4, 15))
-    write_zip(asset_packs.art_zip("TSSMEC", "UNITS"), "tssmec", frames)
-else:
-    print("TSSMEC: SKIP (no shp_smech)")
 
 # ---- BuildIcons (CAMEO.PAL decodes) ----
 if os.path.exists(f"{ART}/CAMEO.PAL"):
@@ -262,8 +166,6 @@ def patch_tileset(xml_path, name, count):
     open(xml_path, "w", encoding="utf-8").write(xml)
     print(f"patched {os.path.basename(xml_path)}: {name} -> {count} tiles")
 
-patch_tileset(asset_packs.tileset_xml("TSHARV", "UNITS"), "TSHARV", 32)
-patch_tileset(asset_packs.tileset_xml("TSSMEC", "UNITS"), "TSSMEC", 96 + 32)
 patch_tileset(asset_packs.tileset_xml("TSSONIC", "UNITS"), "TSSONIC", 64)
 patch_tileset(asset_packs.tileset_xml("TSAPC", "UNITS"), "TSAPC", 32)
 

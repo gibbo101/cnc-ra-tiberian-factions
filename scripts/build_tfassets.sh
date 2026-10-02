@@ -353,21 +353,21 @@ PACK_ARGS+=("$TMPDIR/tsprocld_stub.shp:TSPROCLD.SHP")
 # the dock lane.
 ts_stub TSPROC "$TMPDIR/tsprocnf_stub.shp" 138 174 32
 PACK_ARGS+=("$TMPDIR/tsprocnf_stub.shp:TSPROCNF.SHP")
-# TSWEAP 78x96 = the HD war factory's 416x512 canvas centred on its 3x4 plot (72x96 classic): RA's 3x3
-# war factory slot with an empty row behind, which the roof overhangs; the shadow and debris reach past
-# the sides.
-ts_stub TSWEAP "$TMPDIR/tsweap_stub.shp" 78 96 2
+# TSWEAP 90x96 = the HD war factory's 480x512 canvas centred on its 3x4 plot (72x96 classic): RA's 3x3
+# war factory slot with an empty row behind, which the build-up's raised poles reach into; the shadow and
+# debris reach past the sides.
+ts_stub TSWEAP "$TMPDIR/tsweap_stub.shp" 90 96 2
 PACK_ARGS+=("$TMPDIR/tsweap_stub.shp:TSWEAP.SHP")
-ts_stub TSWEAP "$TMPDIR/tsweapmk_stub.shp" 78 96 26
+ts_stub TSWEAP "$TMPDIR/tsweapmk_stub.shp" 90 96 26
 # The door, under-door and near-face layers share the building's canvas.
-ts_stub TSWEAP "$TMPDIR/tsweapdr_stub.shp" 78 96 18
+ts_stub TSWEAP "$TMPDIR/tsweapdr_stub.shp" 90 96 18
 PACK_ARGS+=("$TMPDIR/tsweapdr_stub.shp:TSWEAPDR.SHP")
-ts_stub TSWEAP "$TMPDIR/tsweapud_stub.shp" 78 96 4
+ts_stub TSWEAP "$TMPDIR/tsweapud_stub.shp" 90 96 4
 PACK_ARGS+=("$TMPDIR/tsweapud_stub.shp:TSWEAPUD.SHP")
 # The near face (the building but for its door bay), the idle cycle x healthy/damaged.
-ts_stub TSWEAP "$TMPDIR/tsweapnf_stub.shp" 78 96 64
+ts_stub TSWEAP "$TMPDIR/tsweapnf_stub.shp" 90 96 64
 PACK_ARGS+=("$TMPDIR/tsweapnf_stub.shp:TSWEAPNF.SHP")
-ts_stub TSWEAP "$TMPDIR/tsweapnu_stub.shp" 78 96 64
+ts_stub TSWEAP "$TMPDIR/tsweapnu_stub.shp" 90 96 64
 PACK_ARGS+=("$TMPDIR/tsweapnu_stub.shp:TSWEAPNU.SHP")
 # The deployed Mobile War Factory, on TSWEAP's stub: no idle cycle, a 12-stage shutter.
 ts_stub TSDWEAP "$TMPDIR/tsdweap_stub.shp" 168 126 2
@@ -395,15 +395,30 @@ ts_stub TSDLIMP "$TMPDIR/tsdlimpmk_stub.shp" 48 48 19
 PACK_ARGS+=("$TMPDIR/tsdlimpmk_stub.shp:TSDLIMPMAKE.SHP")
 ts_stub TSDPSA "$TMPDIR/tsdpsa_stub.shp" 48 78 10
 PACK_ARGS+=("$TMPDIR/tsdpsa_stub.shp:TSDPSA.SHP")
-ts_stub TSDPSA "$TMPDIR/tsdpsamk_stub.shp" 48 78 19
+ts_stub TSDPSA "$TMPDIR/tsdpsamk_stub.shp" 48 78 36
 PACK_ARGS+=("$TMPDIR/tsdpsamk_stub.shp:TSDPSAMAKE.SHP")
 PACK_ARGS+=("$TMPDIR/tsweapmk_stub.shp:TSWEAPMAKE.SHP")
-# TSRADR 48x96 on the 2x2 plot (TS-authentic Foundation=2x2): Obelisk
-# treatment, the dish tower rises a full row above the box. The 3x2/72x150
-# size-up read oversized next to the 2x2 power plant (Luke, 2026-08-04).
-ts_stub TSRADR "$TMPDIR/tsradr_stub.shp" 48 96 2
+# TSRADR 48x111 = the HD radar's 256x592 canvas centred on its 2x2 plot: the tower and its antennas
+# rise into the headroom above.
+ts_stub TSRADR "$TMPDIR/tsradr_stub.shp" 48 111 2
 PACK_ARGS+=("$TMPDIR/tsradr_stub.shp:TSRADR.SHP")
-ts_stub TSRADR "$TMPDIR/tsradrmk_stub.shp" 48 96 20
+ts_stub TSRADR "$TMPDIR/tsradrmk_stub.shp" 48 111 26
+# TSDEPT 72x72 = the HD service depot's 384x384 canvas, its 3x3 plot; its repair flash (TSDEPTRP)
+# draws on the same stub.
+ts_stub TSDEPT "$TMPDIR/tsdept_stub.shp" 72 72 2
+PACK_ARGS+=("$TMPDIR/tsdept_stub.shp:TSDEPT.SHP")
+ts_stub TSDEPT "$TMPDIR/tsdeptmk_stub.shp" 72 72 19
+PACK_ARGS+=("$TMPDIR/tsdeptmk_stub.shp:TSDEPTMAKE.SHP")
+# TSHPAD 48x48 = the HD helipad's 256x256 canvas, its 2x2 plot.
+ts_stub TSHPAD "$TMPDIR/tshpad_stub.shp" 48 48 2
+PACK_ARGS+=("$TMPDIR/tshpad_stub.shp:TSHPAD.SHP")
+ts_stub TSHPAD "$TMPDIR/tshpadmk_stub.shp" 48 48 24
+PACK_ARGS+=("$TMPDIR/tshpadmk_stub.shp:TSHPADMAKE.SHP")
+# TSDROP 72x48 = the HD dropship bay's 384x256 canvas, its 3x2 plot.
+ts_stub TSDROP "$TMPDIR/tsdrop_stub.shp" 72 48 2
+PACK_ARGS+=("$TMPDIR/tsdrop_stub.shp:TSDROP.SHP")
+ts_stub TSDROP "$TMPDIR/tsdropmk_stub.shp" 72 48 19
+PACK_ARGS+=("$TMPDIR/tsdropmk_stub.shp:TSDROPMAKE.SHP")
 # TSPOWR 48x51 = the HD rebuild's 256x272 canvas: the 2x2 plot centred, the cooling
 # tower rising into the headroom above it.
 ts_stub TSPOWR "$TMPDIR/tspowr_stub.shp" 48 51 2

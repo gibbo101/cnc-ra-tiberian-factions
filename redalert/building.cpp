@@ -5598,9 +5598,10 @@ COORDINATE BuildingClass::Docking_Coord(void) const
 
     if (*this == STRUCT_TSHPAD) {
         /*
-        **	The TS pad's landing octagon is drawn on the lower-right cell of the 2x2 plot.
+        **	The TS pad's landing circle is drawn across the 2x2 plot's middle, a quarter of a cell
+        **	below its centre.
         */
-        return (Coord_Add(Coord, XYP_COORD(29, 29)));
+        return (Coord_Add(Coord, XY_Coord(256, 320)));
     }
     if (Class->Is_Helipad()) {
         return (Coord_Add(Coord, XYP_COORD(24, 18)));
@@ -5615,8 +5616,7 @@ COORDINATE BuildingClass::Docking_Coord(void) const
         return (Coord_Add(Coord, XYP_COORD(18, 30)));
     }
     if (*this == STRUCT_TSDEPT) {
-        return (Coord_Add(Center_Coord(),
-                          XY_Coord(TS_DEPOT_SEAT_EAST_PX * PIXEL_LEPTON_W, TS_DEPOT_SEAT_SOUTH_PX * PIXEL_LEPTON_W)));
+        return (Coord_Add(Center_Coord(), XY_Coord(TS_DEPOT_SEAT_X_LEP, TS_DEPOT_SEAT_Y_LEP)));
     }
     return (TechnoClass::Docking_Coord());
 }
@@ -7671,12 +7671,15 @@ int BuildingClass::TF_Depot_Reach(TechnoClass const* customer) const
 /***********************************************************************************************
  * BuildingClass::TF_Depot_Is_Gantry -- Is this one of the TS Service Depot's gantry cells?    *
  *                                                                                             *
- *    The gantry stands on the west column's top two cells; no vehicle drives through it.      *
+ *    The gantry and its machine stand across the plot's back two rows; no vehicle drives       *
+ *    through them.                                                                            *
  *=============================================================================================*/
 bool BuildingClass::TF_Depot_Is_Gantry(CELL cell) const
 {
     CELL origin = Coord_Cell(Coord);
-    return (cell == origin || cell == origin + MAP_CELL_W);
+    int dx = Cell_X(cell) - Cell_X(origin);
+    int dy = Cell_Y(cell) - Cell_Y(origin);
+    return (dx >= 0 && dx < 3 && dy >= 0 && dy < 2);
 }
 
 int BuildingClass::Mission_Repair(void)
@@ -8577,7 +8580,7 @@ static void TF_Pack_Up(BuildingClass* mine)
     if (unit == NULL) {
         return;
     }
-    DirType facing = (type == UNIT_TSLPST) ? DIR_SE : ((type == UNIT_TSMWAR) ? DIR_SW : DIR_N);
+    DirType facing = (type == UNIT_TSLPST) ? DIR_E : ((type == UNIT_TSMWAR) ? DIR_SW : DIR_N);
     mine->Limbo();
     if (unit->Unlimbo(Cell_Coord(cell), facing)) {
         unit->Strength = max(1, (int)(unit->Class->MaxStrength * ratio));

@@ -80,16 +80,14 @@ EA_ALPHA = 191
 # hull's reads as float rather than as error. Keep its approved values.
 OFFSET_OVERRIDE = {"TSHVR": (5, 17)}
 
-# TSTITN and TSHARV carry their HD art's own shadows (scripts/ts_pack_hd_buildings.py) and TSSMEC
-# Tiberian Sun's own shadow frames (scripts/ts_shadow_from_shp.py); none is re-shadowed here.
-UNITS = ["TS4TNK", "TSAPC", "TSHVR", "TSLPST", "TSMCV", "TSMEMP", "TSMWAR", "TSSONIC"]
+# TSTITN, TSHARV, TSMCV and TSSMEC carry their HD art's own shadows (scripts/ts_pack_hd_buildings.py);
+# none is re-shadowed here.
+UNITS = ["TS4TNK", "TSAPC", "TSHVR", "TSLPST", "TSMEMP", "TSMWAR", "TSSONIC"]
 
 # Whether a unit currently carries a shadow is DETECTED from the art (a flat
 # pure-black alpha plateau), never hardcoded -- that keeps the pass idempotent
 # and safe to re-run while a tuning round converges, and it preserves each
-# unit's body/turret frame split without listing frame ranges. TSMCV was the
-# one unit that started with no shadow layer at all; it has one now, and
-# detection picked that up on its own.
+# unit's body/turret frame split without listing frame ranges.
 
 
 def tga_bytes(img):

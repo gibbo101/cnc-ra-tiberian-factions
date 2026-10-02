@@ -2292,13 +2292,13 @@ bool UnitClass::Try_To_Deploy(void)
     if (!Target_Legal(NavCom) && !IsRotating) {
         /*
         **	TS Limpet Drone: settles into a mine on the cell it stands on. TS Mobile Sensor
-        **	Array: turns south-east, where its build-up starts, and settles into the sensor.
+        **	Array: turns east, broadside to the camera as its build-up starts, and settles into the sensor.
         **	TS Mobile War Factory: turns south-west and unfolds into the war factory round
         **	it, the vehicle's cell the plot's centre (TS DeploysInto, Deploy_Facing).
         */
         if (*this == UNIT_TSLIMP || *this == UNIT_TSLPST || *this == UNIT_TSMWAR) {
             StructType into = TF_Deploys_Into();
-            DirType deploy_facing = (*this == UNIT_TSMWAR) ? DIR_SW : DIR_SE;
+            DirType deploy_facing = (*this == UNIT_TSMWAR) ? DIR_SW : ((*this == UNIT_TSLPST) ? DIR_E : DIR_SE);
 #if TF_DEV_BUILD
 #define TF_LIMP_TRACE(step)                                                                                 \
     do {                                                                                                     \

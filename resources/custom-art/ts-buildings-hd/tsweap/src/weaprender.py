@@ -2,7 +2,8 @@
   TS angle (iso): TS's own layout at the mod's scale and place on the mod's 896x672 canvas (TS frame x4.125, TS px
                   (0, 0) at canvas (50, -190); TS's ground centre at frame px (108, 126)).
   RA grid  (ra):  RA's camera (32 degrees, looking north), the building turned a quarter so the door faces south, on a
-                  3 x 4 plot (384 x 512) centred in a 416 x 512 canvas, the foundation's south edge on the plot's.
+                  3 x 4 plot (384 x 512) centred in a RA_W x 512 canvas (round 2: 480, was 416), the foundation's south
+                  edge on the plot's; the build-up rendered over the whole canvas (round 1's window cut its tall poles).
 Both are rendered in a window of the canvas that holds the building and its shadow, then placed on the canvas."""
 import os, sys, time
 import numpy as np
@@ -10,10 +11,14 @@ from PIL import Image
 import hd, brender as BR, weap as M, weapmat as MM
 
 ISO_K, ISO_O, TS_GROUND = 4.125, (50.0, -190.0), (108.0, 126.0)
-CANVAS = {'iso': (896, 672), 'ra': (416, 512)}
-PLOT = {'iso': (128, 144, 768, 528), 'ra': (16, 0, 400, 512)}
-WIN = {'iso': (150, 56, 790, 476), 'ra': (0, 96, 416, 512),          # x0, y0, x1, y1 on the canvas
-       'iso-bib': (290, 220, 800, 476), 'ra-bib': (0, 230, 416, 512)}
+RA_W = int(os.environ.get('WEAP_RA_W', 480))                         # the RA canvas's width (round 2: 480)
+CANVAS = {'iso': (896, 672), 'ra': (RA_W, 512)}
+PLOT = {'iso': (128, 144, 768, 528), 'ra': ((RA_W - 384) // 2, 0, (RA_W + 384) // 2, 512)}
+WIN = {'iso': (150, 56, 790, 476), 'ra': (0, 96, RA_W, 512),          # x0, y0, x1, y1 on the canvas
+       'ra-build': (0, 0, RA_W, 512),                                   # the build-up's tall poles reach y ~70
+       'iso-bib': (290, 220, 800, 476), 'ra-bib': (0, 230, RA_W, 512),
+       'iso-build': (80, 16, 800, 476),                                 # the build-up's poles lie and stand further out
+       'iso-bib-build': (150, 160, 800, 476)}                           # and its construction slab spreads further
 BOUNDS = {'iso': ((-300, 300), (-260, 260), 270), 'ra': ((-280, 280), (-580, 320), 270)}
 ZMAX = 270.0
 LAYOUT = {'iso': 'ts', 'ra': 'ra'}

@@ -50,6 +50,9 @@ A_LEVELS = (0.0, 0.21, 0.4, 0.71, 1.0)
 A_SEQ = ((0, 0, 0, 1, 3), (0, 0, 0, 4, 2), (0, 0, 1, 3, 1), (0, 0, 4, 2, 0), (0, 1, 3, 1, 0), (0, 4, 2, 0, 0),
          (1, 3, 1, 0, 0), (4, 2, 0, 0, 0), (3, 1, 0, 0, 0), (2, 4, 0, 0, 0), (1, 3, 1, 0, 0), (0, 2, 4, 0, 0),
          (0, 1, 3, 1, 0), (0, 0, 2, 4, 0), (0, 0, 1, 3, 1), (0, 0, 0, 2, 4))
+# RA round 2 (Luke): four lamps (the end one over the old north fender gone), the light run as the mod reordered TS's
+# 16 frames for them: TS frames 0 1 2 3 4 5 5 9 10 11 12 13 14 15 0 0 (lamp 0 left out)
+A_MAP_SYM = (0, 1, 2, 3, 4, 5, 5, 9, 10, 11, 12, 13, 14, 15, 0, 0)
 # GTWEAP_B: three lamps, the outer two against the middle one (8 frames): off, dim, mid, bright, hot
 B_COL = (np.array([86, 86, 86.]), np.array([129, 43, 24.]), np.array([190, 40, 0.]), np.array([244, 73, 0.]),
          np.array([255, 179, 42.]))
@@ -71,6 +74,8 @@ def materials(r, p=None, occ=None, lampsA=None, lampsB=None, fans=0, **kw):
     lay = layout_of(r)
     p = M.P if p is None else p
     x, y = M.to_local(r.x, r.y, lay)
+    sym = M.LAYOUTS[lay].get('sym', False)
+    ym = np.where(y < M.YC, 2 * M.YC - y, y) if sym else y           # RA round 2: the mirrored side's coordinates
     z, comp = r.z, r.comp
     nx, ny, nz = r.nx, r.ny, r.nz
     # local normals (the layout turns the building)
@@ -143,7 +148,7 @@ def materials(r, p=None, occ=None, lampsA=None, lampsB=None, fans=0, **kw):
     jseam = (np.abs(((tcurve / (np.pi / 2)) * 5.0) % 1.0 - 0.5) > 0.46)
     jc = mix(OLIVE * g1, OLIVE_D * g1, smoothstep(40.0, 0.0, z) * 0.5 + 0.3 * jseam)
     v = j['vent']
-    vent = jamb & (y >= v['y'][0]) & (y <= v['y'][1]) & (z >= v['z'][0]) & (z <= v['z'][1]) & (lnx > 0.3)
+    vent = jamb & (y >= v['y'][0]) & (y <= v['y'][1]) & (z >= v['z'][0]) & (z <= v['z'][1]) & (lnx > 0.3) & (not sym)
     jc = np.where(vent[..., None], np.where((phase(z, 4.0, 0.0) < 1.6)[..., None], BLACK * g1, REDC * 0.6 * g1), jc)
     put(jamb, jc)
     # ---- the door: grey steel slats across it (they roll up with it), a diagonal brace over its straight part
@@ -193,7 +198,7 @@ def materials(r, p=None, occ=None, lampsA=None, lampsB=None, fans=0, **kw):
     # ---- house green: the panel (two seams across it), the west block (a seam), the fascia, the north band, the
     #      cap, the roof strip, the green unit (a red band round it, a dark vent on its top box)
     pn = p['panel']
-    pseam = (np.abs(((pn['y0'] - y) % 34.0) - 17.0) > 16.4)
+    pseam = (np.abs(((pn['y0'] - ym) % 34.0) - 17.0) > 16.4)
     put(comp == M.PANEL, house * (1 - 0.14 * pseam)[..., None])
     w = p['west']
     wseam = np.abs(x - w['seam']) < 1.0
@@ -217,7 +222,8 @@ def materials(r, p=None, occ=None, lampsA=None, lampsB=None, fans=0, **kw):
     if lampsA is not None and la.any():
         q = p['lampsA']
         k_ = np.clip(np.round((y - q['y0']) / q['dy']), 0, 4).astype(int)
-        lev = np.array([A_LEVELS[v_] for v_ in A_SEQ[lampsA % 16]], np.float32)[k_]
+        seq = A_SEQ[A_MAP_SYM[lampsA % 16]] if sym else A_SEQ[lampsA % 16]
+        lev = np.array([A_LEVELS[v_] for v_ in seq], np.float32)[k_]
         lit = mix(GLASS_A * g1, np.array([236, 236, 240.]), lev)
         put(la, lit)
         emit = np.where(la[..., None], np.array([120, 120, 126.]) * lev[..., None], emit)
@@ -247,6 +253,13 @@ def materials(r, p=None, occ=None, lampsA=None, lampsB=None, fans=0, **kw):
     if pad.any():
         q = p['pad']
         fxc, fyc = q['fan']
+        yl = y                                       # the lane's stripes keep their own (unmirrored) run
+        if sym:
+            # RA round 2: the apron's west half mirrored onto its east half (its texture too), as the mod made it
+            y = ym
+            pfine = sample(NOISE_FINE, x, y)
+            pmott = sample(NOISE_MOTTLE, x * 0.7 + 31, y * 0.7 + 17)
+            g1 = (1 + pfine * 0.035 + pmott * 0.05)[..., None]
         ang = np.degrees(np.arctan2(y - fyc, x - fxc))
         rr = np.hypot(x - fxc, y - fyc)
         fan_ = (ang > -75.0) & (ang < 135.0)                                    # the seams fan out away from the door
@@ -257,11 +270,12 @@ def materials(r, p=None, occ=None, lampsA=None, lampsB=None, fans=0, **kw):
         dirt = np.clip(smoothstep(0.0, 1.3, sample(NOISE_MOTTLE, x * 0.8 + 50, y * 0.8 + 7)) * 0.6 + edge_d * 0.7, 0, 0.9)
         pc = mix(PADC * g1 * (1 - 0.12 * seam_r - 0.12 * seam_c - 0.2 * crack)[..., None], SAND * g1, dirt)
         pc = np.where((seam_r | seam_c)[..., None], mix(pc, SEAMC * g1, 0.35), pc)
-        grey_ = M.in_poly(x, y, q['grey'])
-        pc = np.where(grey_[..., None], PATCH * g1, pc)
+        if not sym:
+            grey_ = M.in_poly(x, y, q['grey'])
+            pc = np.where(grey_[..., None], PATCH * g1, pc)
         ln = q['lane']
         cs = comp == M.CHEV
-        stripe = phase(x + y, ln['period'], 0.0) < ln['period'] / 4
+        stripe = phase(x + yl, ln['period'], 0.0) < ln['period'] / 4
         sc = np.where(stripe[..., None], house, BLACK * g1)
         tex = r.field('padtex', 1.0)
         plain = SLABC * g1

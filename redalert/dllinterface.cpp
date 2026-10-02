@@ -7501,10 +7501,10 @@ void DLLExportClass::DLL_Draw_Intercept(int shape_number,
                 dimy = 38; // 2x2 box, approved 2026-08-13
                 break;
             case STRUCT_TSDPSA:
-                // The box hugs the base's sides and body (11 classic px above the cell centre
-                // to 7 below); the thin mast rises out of its top.
-                dimx = 35;
-                dimy = 36;
+                // The box hugs the vehicle's sides (14 classic px west of the cell centre to 13
+                // east) and its body; the thin mast rises out of its top.
+                dimx = 28;
+                dimy = 24;
                 break;
             default:
                 break;

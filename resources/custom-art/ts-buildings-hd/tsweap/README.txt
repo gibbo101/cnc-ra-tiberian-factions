@@ -5,6 +5,32 @@ with the same renderer as the Construction Yard, Power Plant, Barracks, Silo, Te
 Tower: same materials, light, shadow (baked in at ~75% black) and outline. Fit to TS's frame: silhouette 0.94, house
 green 0.96; the lamps within a pixel of TS's.
 
+ROUND 2 (your play test, 2026-10-02): the RA grid version reworked to your brief (art-chat-round-2/PROMPT.txt), all of
+it built into the model (its 'ra' layout), so the frames come out that way without the mod touching them:
+  1  the green slope on the west, with its frame, poles, roof beam, sill and its fender beside the door, mirrored onto
+     the east side about the door's centre line, in place of the north fender, its vent and its green cap; lit as the
+     model's own east-facing surface (so darker than the west one); the apron tucks in under both slopes; the door,
+     its jambs, the lintel and the beam over the door as they were; the west block and the roof's machinery stay where
+     they are. The green unit (the box with the red band on the fender between the slope and the door) is mirrored
+     too, onto the east fender (your note this morning). Damaged: TS's hole stays in the west slope and TS's crushed
+     unit stays west; the east slope gets soot and cracks, the east unit dents and soot (its red band kept).
+     Also this morning: one rust housing on the roof's north edge sat over the east twin of the green strip along the
+     slope's top; it is pulled in off the edge, so that strip runs unbroken on both sides too.
+  2  four lamps on the beam over the door (the east one gone), the light run as the mod reordered it (TS's frames 0 1 2
+     3 4 5 5 9 10 11 12 13 14 15 0 0, the fifth lamp left out); 16 empty for the damaged state as before. The four sit
+     where they were: their middle is 3.5 px east of the door's centre line.
+  3  the apron symmetric about the door's centre line (its west half mirrored, its texture and its damage too), TS's
+     grey patch gone; the lane's stripes run as before (house green: the mod turns them gold). The build-up's slab is
+     the apron's own outline (plus the hall's footprint, hidden under the hall once it stands), so nothing changes
+     shape when the building completes.
+  4  nothing clipped: the canvas is 480x512 (the plot x 48-432, y 0-512, centred). The build-up's poles now lie along
+     each slope's foot (the back one pointing north, the front one south) and stand up there (TS's lie out sideways,
+     132 px past the old canvas's edge); round 1's window also cut their tops in frames 12-14: fixed. Only the long
+     shadows of the east poles, standing in build-up 07-13, fade out over the canvas's last 14 px, as you chose.
+  1-under-door: only the doorway, the shut door's outline 2 px wider (as the mod cut it).
+  Same layers, names and frame counts as round 1. The TS-angle frames are unchanged except the build-up: round 1's
+  render windows cut the poles (03-14) and the construction slab (03-08) there; 03-19 are re-rendered whole.
+
 ts-angle/  TS's own camera, lit from TS's side so it reads like the sprite. CANVAS 896x672: the canvas, scale and place
            the war factory has in the mod now (TS's frame x4.125, TS px (0, 0) at canvas (50, -190), fitted to
            in-mod/tsweapmake-0018.png). Drops in over the current frames. The door opening is where the mod's art has
@@ -14,26 +40,28 @@ ts-angle/  TS's own camera, lit from TS's side so it reads like the sprite. CANV
 ra-grid/   On RA's square grid: RA's camera (orthographic, 32 degrees above the ground, looking north), the building
            turned a quarter clockwise so the door faces south, to the camera, as RA's and TD's war factories do (your
            call). TS's door size is kept (the Titan doesn't have to fit: the door draws over it).
-           CANVAS 416x512: TS's 4x3 foundation turned is 3 wide x 4 deep, a 384x512 plot, centred, 16 px spare each
+           Round 2: symmetric about the door's centre line (see above).
+           CANVAS 480x512: TS's 4x3 foundation turned is 3 wide x 4 deep, a 384x512 plot, centred, 48 px spare each
            side. The foundation's south edge is on the plot's south edge; everything (shadow included) is inside.
            RA's camera squashes depth (x0.53, as on every building so far), so the 4-deep foundation draws 271 px
            deep: counting the 3x4 plot's rows from the back, the roof is drawn on row 2, the walls, door and fenders
            on row 3, the apron on row 4, and row 1 (the top 128 px) is empty in every frame. So the same frames also
-           fit RA's own WEAP plot, 3x3: crop y 128-512 (canvas 416x384): the hall on the back 2 rows, the apron on
+           fit RA's own WEAP plot, 3x3: crop y 128-512 (canvas 480x384): the hall on the back 2 rows, the apron on
            the front row, the exit at the top of the bottom-middle cell, as RA's WEAP. Your call;
            previews/exit-and-jambs.png shows both.
-             3x4, canvas 416x512 (plot centre (208, 256)):
-               exit (206.5, 373.2), left jamb (132.0, 373.2), right jamb (281.0, 373.2)
+             3x4, canvas 480x512 (plot centre (240, 256)):
+               exit (238.5, 373.2), left jamb (164.0, 373.2), right jamb (313.0, 373.2)
                in leptons from the plot centre (2 per px): exit -3, +234, left jamb -152, +234, right jamb +146, +234
-             3x3, canvas 416x384 (frames cropped to y 128-512; plot centre (208, 192)):
-               exit (206.5, 245.2), left jamb (132.0, 245.2), right jamb (281.0, 245.2)
+             3x3, canvas 480x384 (frames cropped to y 128-512; plot centre (240, 192)):
+               exit (238.5, 245.2), left jamb (164.0, 245.2), right jamb (313.0, 245.2)
                in leptons from the plot centre: exit -3, +106, left jamb -152, +106, right jamb +146, +106
            Units roll out of the door straight down the screen (south), over the apron and off the plot.
-           To put a frame on the mod's 896x672 canvas instead, paste it at (240, 80) (3x4) or (240, 144) (3x3): the
+           To put a frame on the mod's 896x672 canvas instead, paste it at (208, 80) (3x4) or (208, 144) (3x3): the
            plot stays centred on the canvas.
 COLOUR     Green = house colour: the sloped panel on the south side and the fascia over it, the west block, the north
            fender's cap, the band along the roof's north edge, the green unit on the south fender, the small green
-           strip on the roof, and the hazard stripes in the lane in front of the door. Exactly the yard's green. Every
+           strip on the roof, and the hazard stripes in the lane in front of the door (RA grid, round 2: the twin
+           slope and fascia on the east too; no north fender cap; the band only behind the twin slope). Exactly the yard's green. Every
            frame has a -trim.png (white = house colour, antialiased). The lamps are not house colour.
 
 What it is (read from TS's frames; GTWEAPMK shows how it goes together):
@@ -84,12 +112,13 @@ building-bay/war-factory-bay-00, -01
                                   red lights; in the TS angle the north fender and its cap, as TS's), on a copy of the
                                   bib as TS's, with the building's ground shadow on that bib exactly as building-bay
                                   draws it. So it goes over building-bay without losing or doubling the shadow. Drawn
-                                  at ground level, under units.
+                                  at ground level, under units. RA grid (round 2): only the doorway (the shut door's
+                                  outline 2 px wider), as the mod cut it.
 D-door/war-factory-door-00..08    GTWEAP_D, the door: 00 shut .. 08 rolled up (TS's 9 frames). Drawn over everything,
                                   as TS's. One set for both states: TS's damaged building leaves the door as it is.
 A-lamps/war-factory-lamps-00..31  GTWEAP_A, the five white lamps on the beam over the door: a light runs along them
                                   and back (00-15, TS's levels). 16-31 empty, as TS's: the damaged building's lamps are
-                                  dark.
+                                  dark. RA grid (round 2): four lamps, the run as the mod reordered it.
 B-lamps/war-factory-lamps-b-00..15
                                   GTWEAP_B, the three small lamps on the roof: the outer two and the middle one blink
                                   in turn, orange to red (00-07). 08-15 empty, as TS's.
@@ -109,6 +138,8 @@ build-up/war-factory-build-00..25
     then the fan platform with its fans. 24: the apron gets its colour; 25: the building (no frame is half grey, half
     house colour: the trim couldn't carry it). 25 is the finished building on its bib (bib-00 + building-00).
     TSWEAPMAKE.ZIP has 19 frames: drop 02, 05, 09, 13, 16, 20, 23 or play all 26 faster.
+    RA grid (round 2): the poles lie along each slope's foot (north and south) and stand up there, both slopes' poles
+    at once; the slab is the apron's outline.
 
 How the layers stack (TS's order; the shadows are baked into building-bay, so keep it drawn under 1-under-door):
   idle                      bib, building-bay, A, B, C, with 2-over-units over units (or bib, building, A, B, C)
@@ -129,8 +160,9 @@ previews/  the building on its own; both states next to TS's; the mod's frames (
            (shut; both states), "bib" and "bib-damaged". Markers: "exit" (the door's middle at the floor), "bay-
            inside", "jamb-left" / "jamb-right" (seen from outside: left = TS's south fender, the west one on the RA
            grid), "lamp-a1".."lamp-a5", "lamp-b1".."lamp-b3", "fan-1", "fan-2". Cameras: "camera-ts-angle" (renders
-           896x672 = the ts-angle frames) and "camera-ra-grid" (416x512 = the ra-grid frames; RA's camera looks at the
-           door). The door's track is in the file's extras: straight up 40 units, then round a quarter circle of
+           896x672 = the ts-angle frames) and "camera-ra-grid" (416x512 = round 1's ra-grid frames; RA's camera looks at
+           the door). The .glb is round 1's model: TS's sides (the RA grid's round 2 mirror is a switch in weap.py's
+           'ra' layout). The door's track is in the file's extras: straight up 40 units, then round a quarter circle of
            radius 49 centred 49 behind the door's face at height 40, into the roof.
            Axes: x east, y up, z south. 1.0 = one cell = 128 units = 128 px on the RA grid. Origin: the foundation's
            centre on the ground. COLOR_0 = the materials' colours (no light, shadow or outline baked in), COLOR_1 =
