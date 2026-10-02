@@ -23,6 +23,7 @@ All files are glTF 2.0 binary (`.glb`), which Blender, Godot and most engines op
 | `service-depot.glb` | GADEPT (art GTDEPT) | TSDEPT | pad, depot (the gantry), each with -damaged; arm | arm-pivot, pad-centre |
 | `dropship-bay.glb` | GADROP (cut from the game) | TSDROP | pad, pad-damaged | pad-centre |
 | `sensor-array.glb` | GADPSA (art GTDPSA) | TSDPSA | sensor-array, -damaged (deployed), sensor-array-stowed (mast down, outriggers in) | mast-pivot (the mast swings about the north-south axis through it), dish-centre |
+| `upgrade-center.glb` | GAPLUG (art GTPLUG) | TSPLUG, with TSPION, TSPODS, TSSEEK | upgrade-center, -damaged (with the dish); plug-drop-pod-node, plug-seeker-control, plug-ion-cannon-uplink (each in the east socket; 1.0 west for the west socket) | socket-west, socket-east, dish-pivot, slot-top, slot-bottom, lamp-low, lamp-high |
 
 The war factory is Tiberian Sun's own shape, its door facing east (+x). The refinery's dock is on its east side,
 as in Tiberian Sun. The dropship bay's deck carries GDI's weathered eagle in its vertex colours, where the game

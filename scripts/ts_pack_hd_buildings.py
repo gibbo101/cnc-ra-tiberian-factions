@@ -228,6 +228,22 @@ BUILDINGS = {
     # The dropship bay's pad, centred on its 3x2 plot: the art comes on a wider canvas round a 3x3, cut to
     # the 3x2 here so the pad's centre is the plot's. GDI's eagle is painted across the deck inside the band,
     # over the gratings, from the build-up frame that paints the band on.
+    # The upgrade center on its 3x2 plot, turned a quarter (TS's east end to the camera). Its idle loop
+    # is baked per plug combination in the order building.cpp's TF_Plug_Art_Block numbers them: none,
+    # each plug alone in the right-hand socket, then each ordered pair (right, left), plugs taken
+    # ion, pods, seeker. Each block is 40 healthy then 40 damaged frames of the dish, lamps and slot.
+    "TSPLUG": dict(src="tsplug", make=("build-up/upgrade-center-build", 24),
+                   combos=("none", "right-ion", "right-pods", "right-seeker", "right-ion_left-pods",
+                           "right-ion_left-seeker", "right-pods_left-ion", "right-pods_left-seeker",
+                           "right-seeker_left-ion", "right-seeker_left-pods"),
+                   base="base/{combo}/upgrade-center-{combo}", loop=40,
+                   overlays=(("A-dish/upgrade-center-dish", 20), ("B-lamps/upgrade-center-lamps", 10),
+                             ("C-slot/upgrade-center-slot", 8))),
+    # The plugs' placement ghosts (never on the map: a plug installs into an upgrade center), healthy
+    # and damaged, standing in the right-hand socket's window.
+    "TSPION": dict(src="tsplug", make=None, frames=("plugs/ion-cannon-uplink/ion-cannon-uplink", 16), pick=(0, 15)),
+    "TSPODS": dict(src="tsplug", make=None, frames=("plugs/drop-pod-node/drop-pod-node", 16), pick=(0, 15)),
+    "TSSEEK": dict(src="tsplug", make=None, frames=("plugs/seeker-control/seeker-control", 16), pick=(0, 15)),
     "TSDROP": dict(src="tsdrop", make=("build-up/dropbay-build", 19), frames=("building/dropbay", 2),
                    crop=(192, 226, 576, 482), decal=dict(art=EAGLE, centre=(384, 338), width=180, from_make=14)),
 }
@@ -328,7 +344,19 @@ def frames(src, spec):
 
     if "frames" in spec:
         path, count = spec["frames"]
-        tiles = [load(path, i) for i in range(count)] * spec.get("repeat", 1)
+        tiles = [load(path, i) for i in spec.get("pick", range(count))] * spec.get("repeat", 1)
+    elif "combos" in spec:
+        # One block per combination: its base (healthy, then damaged) with the idle overlays looping
+        # over it, each overlay's damaged frames following its healthy ones.
+        tiles = []
+        for combo in spec["combos"]:
+            for state in (0, 1):
+                base = load(spec["base"].format(combo=combo), state)
+                for t in range(spec["loop"]):
+                    img = base.copy()
+                    for path, n in spec["overlays"]:
+                        img.alpha_composite(load(path, t % n + n * state))
+                    tiles.append(img)
     else:
         tiles = []
         for block in spec.get("blocks", [[]]):

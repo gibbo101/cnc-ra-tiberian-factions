@@ -519,11 +519,11 @@ ts_stub TSCSAM "$TMPDIR/tscsam_stub.shp" 36 60 128
 PACK_ARGS+=("$TMPDIR/tscsam_stub.shp:TSCSAM.SHP")
 ts_stub TSCSAM "$TMPDIR/tscsammk_stub.shp" 36 60 17
 PACK_ARGS+=("$TMPDIR/tscsammk_stub.shp:TSCSAMMAKE.SHP")
-# TSPLUG 72x72 on the 3x2 plot (TS Upgrade Centre, addon host): the radar
-# height trick — square canvas, masts rise into the headroom above the box.
-ts_stub TSPLUG "$TMPDIR/tsplug_stub.shp" 72 72 2
+# TSPLUG 72x84 = the HD upgrade center's 384x448 canvas centred on its 3x2 plot (TS Upgrade
+# Centre, addon host): the antennas rise into the headroom above the box.
+ts_stub TSPLUG "$TMPDIR/tsplug_stub.shp" 72 84 2
 PACK_ARGS+=("$TMPDIR/tsplug_stub.shp:TSPLUG.SHP")
-ts_stub TSPLUG "$TMPDIR/tsplugmk_stub.shp" 72 72 19
+ts_stub TSPLUG "$TMPDIR/tsplugmk_stub.shp" 72 84 24
 PACK_ARGS+=("$TMPDIR/tsplugmk_stub.shp:TSPLUGMAKE.SHP")
 # TSPION 24x24: the Ion Cannon Uplink plug's placement ghost (never on map).
 ts_stub TSPION "$TMPDIR/tspion_stub.shp" 24 24 2

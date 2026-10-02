@@ -55,7 +55,7 @@ TS_HD = ("TSWALL", "TSNWALL", "TSGATEH", "TSGATEV", "TSNGATEH", "TSNGATEV", "TSC
          "TSFACT", "TSPILE", "TSPOWR", "TSSILO", "TSTECH", "TSTURB", "TSPROC", "TSWEAP", "TSHARV", "TSTITN",
          "TSMCV", "TSSMEC", "TSRADR", "TSDPSA", "TSDEPT", "TSHPAD", "TSDROP", "TS4TNK", "TSAPC", "TSCARRY",
          "TSDSHP", "TSHMEC", "TSHVR", "TSLPST", "TSMEMP", "TSMWAR", "TSORCA", "TSSAPC", "TSSUBTANK", "TSHUNT",
-         "TSJUGG", "TSLIMP")
+         "TSJUGG", "TSLIMP", "TSPLUG", "TSPION", "TSPODS", "TSSEEK")
 # ...and these names exactly: other art that starts with them stays in the TS pack (the Disruptor's
 # sonic wave, TSSONICW and TSSONICP)
 TS_HD_EXACT = ("TSSONIC",)
