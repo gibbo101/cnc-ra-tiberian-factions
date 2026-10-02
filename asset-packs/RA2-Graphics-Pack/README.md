@@ -8,6 +8,8 @@ Red Alert 2 units and sidebar cameos as HD sprites, for Command & Conquer Remast
 
 **Sidebar cameos** (2): BuildIcon_R2APOC, BuildIcon_R2PRIS
 
+**3D models** (2): apocalypse-tank, prism-tank. The HD rebuilds as glTF models, in `3d/`; `3d/README.md` lists their parts and conventions. The game does not use them.
+
 ## Using it
 
 1. Copy the files under this pack's `Data/` folder into your mod's `Data/` folder, keeping the paths.

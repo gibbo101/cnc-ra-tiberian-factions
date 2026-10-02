@@ -37,18 +37,38 @@ def camera():
     return RR.Cam((0, -1), ELEV, PPU, ORIGIN)
 
 
-def ship(unit, ss=4, sky=True, house=None):
-    """frame 0: facing west (the mod's facing 8)."""
+def camera_facing(k):
+    """the camera for the ship at the mod's facing k (32, counter-clockwise from north: 0 N, 8 W, 16 S, 24 E).  The ship
+    turns about the vertical through the canvas centre, where the game puts the unit: frame 0 (facing 8) has the
+    voxel's own origin there, 7.7 voxels behind TS's HVA origin (the HVA's shift), so every facing turns in place
+    about it and facing 8 is frame 0 exactly."""
+    if k % 32 == 8:
+        return camera()
+    ax = (CANVAS[0] / 2 - ORIGIN[0]) / PPU          # the axis: this far east of the HVA origin at facing 8
+    th = 2 * np.pi * k / 32
+    fwd = np.array([-np.sin(th), -np.cos(th)])      # facing k's forward (x east, y south)
+    p = np.array([ax, 0.0]) + ax * fwd              # the HVA origin's place at facing k, from its place at facing 8
+    sE = np.sin(np.deg2rad(ELEV))
+    return RR.Cam((0, -1), ELEV, PPU, (ORIGIN[0] + PPU * p[0], ORIGIN[1] + PPU * sE * p[1]))
+
+
+def facing(unit, k, ss=4, sky=True, house=None):
+    """the ship level at the mod's facing k (32, counter-clockwise from north), turned about the canvas centre."""
     old = VR.GREEN
     if house is not None:
         VR.GREEN = np.asarray(house, np.float32)
     try:
-        img, trim = VR.frame(unit, 8, 0, camera(), CANVAS, BOUNDS, ss=ss, sky=sky, px_scale=PX_SCALE,
+        img, trim = VR.frame(unit, k % 32, 0, camera_facing(k), CANVAS, BOUNDS, ss=ss, sky=sky, px_scale=PX_SCALE,
                              sharp={i: 2.0 for i in range(len(unit.sections))}, speckle=(0.75, 1.2), grime_z=0,
                              ts_normals=TSN, with_shadow=False, ground_ao=False)
     finally:
         VR.GREEN = old
     return img, trim
+
+
+def ship(unit, ss=4, sky=True, house=None):
+    """frame 0: facing west (the mod's facing 8)."""
+    return facing(unit, 8, ss, sky, house)
 
 
 def scaled(img, s):

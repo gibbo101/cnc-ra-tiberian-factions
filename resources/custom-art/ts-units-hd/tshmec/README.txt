@@ -21,7 +21,8 @@ HMEC.HVA exactly as TS poses them, drawn the way the HD buildings and units are.
   solid's convex edges (so its corners read as pressed plate); where two boxes of a section meet, nothing shows.
   The shading rounds every edge that faces the air, and carries TS's own voxel normals as a layer of detail (the
   bevels, seams and slots TS shades into its voxels), so the pods' bevelled edges and the body's seams read as in
-  TS.
+  TS; each voxel's normal tilts the shading 25 degrees at most, so TS's odd single voxels shade as seams, not as
+  black specks.
 - Colours: TS's own.  Every surface takes the palette colour (UNITTEM.PAL) of the voxels just inside it; TS's
   single voxels of darker or lighter speckle are held near the colour round them, while its near-black and
   near-white voxels (slots, rails, highlights) keep their colour.  House colour is pure green 0,214,0 x

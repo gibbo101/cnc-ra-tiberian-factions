@@ -1,8 +1,5 @@
 #!/usr/bin/env python3
-"""Package the TS Limpet Drone (Firestorm) into the mod tree:
-  TSLIMP.ZIP (units)            20 frames: the LIMPED.SHP crawl cycle (0-9) and its own
-                                shadows (10-19), no facings (unit.cpp Shape_Number cycles the
-                                bodies by frame; Draw_It draws the matching shadow under each)
+"""Package the TS Limpet Drone's mine (Firestorm) into the mod tree:
   TSDLIMP.ZIP (structures)      20 frames: DLIMPET body (healthy / damaged) under the
                                 DLIMP_A blink, 10 healthy then 10 damaged
   TSDLIMPMAKE.ZIP (structures)  19 frames: the DLIMPMK build-up (42 TS frames resampled)
@@ -10,22 +7,21 @@ plus BuildIcon_TS_LimpetDrone.tga (Firestorm ships no LIMPICON: the gold drone o
 vehicle cameo plate, rebuilt from the cameos that share it), the base RA_TSLIMP / RA_TSDLIMP sidebar entries, the ModText rows and the
 five LIMP*.AUD sounds as TS<NAME>.WAV. Art, cameo, tiles, sidebar entries and sounds go to the
 tree asset_packs.py routes each name to (the TS-Graphics-Pack and TS-SFX-Pack); the ModText rows
-to the mod's own ModText.csv.
-Scale: the drone runs at the mod-wide TS SHP factor F_UNIT (hq4x then LANCZOS) on a 192
-canvas (ShapeSize 24 x 8, the unit density); the mine and its build-up run at F_BLDG on 256
-canvases over a 48x48 classic stub, the building density being 5.33x rather than 8x, so both
-states come out the same TS-relative size on screen. TS draws the hover drone well above its
-shadow, so the body is dropped to a short hover and the pair centred. TS source (48,48), the
+to the mod's own ModText.csv. The drone's own art (TSLIMP: its blink 0-9 and its shadows 10-19)
+is the HD rebuild's, packed by scripts/ts_pack_hd_buildings.py.
+Scale: the mine and its build-up run at F_BLDG on 256 canvases over a 48x48 classic stub: the
+building density is 5.33x rather than the units' 8x, so F_BLDG is 2/3 of the units' TS SHP factor
+F_UNIT and the mine comes out the same TS-relative size as the drone. TS source (48,48), the
 mine's centre, lands on the canvas centre for the mine and its build-up alike, so the ladder
 ends where the mine sits.
-Inputs (set TS_ART_DIR): shp_limped, shp_dlimpet, shp_dlimp_a, shp_dlimpmk (ts_shp.py with
+Inputs (set TS_ART_DIR): shp_dlimpet, shp_dlimp_a, shp_dlimpmk (ts_shp.py with
 UNITTEM.PAL), shp_xxicon (CAMEO.PAL, --no-remap), .raw/LIMP*.AUD.
 License: GPL v3.
 """
 import os
 import subprocess
 import sys
-from PIL import Image, ImageFilter
+from PIL import Image
 import hqx
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -36,9 +32,7 @@ import ts_pack_infantry as inf
 ART = inf.ART
 F_UNIT = 6.4              # the mod-wide TS SHP factor (ts_pack_units_wave.py), at 8x-classic unit density
 F_BLDG = F_UNIT * 2.0 / 3.0  # buildings ship at 5.33x-classic, so their art scales by 2/3 to match on screen
-UNIT_CANVAS = 192
 BLDG_CANVAS = 256
-HOVER_DROP = 0    # TS px the airborne LIMPED body comes down toward its shadow: none, TS draws it hovering two px clear
 # The mine's base lands where the drone's shadow does, 11.6 classic px below the cell centre,
 # which is also where TS's other 1x1 buildings sit (TSPION +12, TSSEEK +10.3, TSPODS +9.4).
 # Anything higher and the mine jumps north of the drone the moment it deploys.
@@ -67,27 +61,6 @@ def crisp(img, canvas, anchor=None, factor=None):
     out = Image.new("RGBA", (canvas, canvas), (0, 0, 0, 0))
     inf.safe_paste(out, scaled, round(canvas / 2 - anchor[0] * factor), round(canvas / 2 - anchor[1] * factor))
     return out
-
-
-def drone_frames():
-    # LIMPED.SHP: 10 poses then their 10 shadows, packed the same way: bodies 0-9, shadows
-    # 10-19. UnitClass::Draw_It draws the shadow first at the ground y and the body over it
-    # at the hover y, so the body can bob, and settle under an E.M. Pulse, off a still
-    # shadow. Every frame shares one anchor so the crawl cycle does not wander: the union
-    # box of the dropped bodies and shadows.
-    bodies, shadows, pairs = [], [], []
-    for i in range(10):
-        body = frame("limped", i)
-        dropped = Image.new("RGBA", body.size, (0, 0, 0, 0))
-        dropped.alpha_composite(body, (0, HOVER_DROP))
-        shadow = inf.with_shadow(Image.new("RGBA", body.size, (0, 0, 0, 0)), frame("limped", 10 + i))
-        bodies.append(dropped)
-        shadows.append(shadow)
-        pairs.append(inf.with_shadow(dropped, frame("limped", 10 + i)))
-    boxes = [p.getbbox() for p in pairs]
-    anchor = ((min(b[0] for b in boxes) + max(b[2] for b in boxes)) / 2.0,
-              (min(b[1] for b in boxes) + max(b[3] for b in boxes)) / 2.0)
-    return [crisp(p, UNIT_CANVAS, anchor) for p in bodies + shadows]
 
 
 def mine_frames():
@@ -221,9 +194,6 @@ def sounds():
 
 
 def main():
-    drone = drone_frames()
-    inf.write_zip(asset_packs.art_zip("TSLIMP", "UNITS"), "tslimp", drone)
-    inf.patch_tileset("TSLIMP", len(drone))
     mine = mine_frames()
     inf.write_zip(asset_packs.art_zip("TSDLIMP", "STRUCTURES"), "tsdlimp", mine)
     patch_struct_tileset("TSDLIMP", len(mine))
@@ -242,7 +212,7 @@ def main():
     sounds()
     out = os.environ.get("TSLIMP_SHEET")
     if out:
-        cols = drone + mine[::2] + make[::3]
+        cols = mine[::2] + make[::3]
         w = 256
         sh = Image.new("RGBA", (w * 10, w * ((len(cols) + 9) // 10)), (70, 110, 70, 255))
         for k, fr in enumerate(cols):

@@ -51,6 +51,10 @@ circle of radius 49 into the roof) are in each file's extras.
 | `orca-bomber.glb` | ORCAB | TSORCAB | hull | |
 | `carryall.glb` | TRNSPORT | TSCARRY | hull | |
 | `dropship.glb` | DSHP | TSDSHP | hull | |
+| `juggernaut.glb` | JUGG (walking) | TSJUGG | body (with the barrel housings), legs | walk (15 steps, 0.2 s each, looping) |
+| `juggernaut-deployed.glb` | JUGG (deployed) | TSJUGG | base (as deployed facing south-west), cabin turned east, barrels on a hinge; muzzle_left, muzzle_middle and muzzle_right markers | aim (the barrels raised to 45 degrees and back) |
+| `hunter-seeker.glb` | GHUNTER | TSHUNT | the droid | |
+| `limpet-drone.glb` | LIMPET | TSLIMP | the drone; light_left and light_right markers | |
 
 Units face east (+x) with their position at the origin, on the ground; the aircraft's origin is the voxel's own. For a
 sprite in 32 facings (0 north, 8 west, 16 south, 24 east), facing f is the model turned (f - 24) x 11.25 degrees

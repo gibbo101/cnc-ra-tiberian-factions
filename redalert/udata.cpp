@@ -1604,9 +1604,9 @@ static UnitTypeClass const UnitTsTitn(UNIT_TSTITN,
 );
 
 // TS Juggernaut (UNIT_TSJUGG), Firestorm rules [JUGG]: a walker that sets down to fire
-// (DeployToFire) three arcing 90mm shells at long range. Art = JUGGER.SHP walk frames
-// (8 facings x 15) + the deployed DJUGG base with DJUGG_A turret facings and the
-// DJUGGBAR voxel barrels composited (scripts/ts_pack_jugg.py) + the DJUGGMK deploy ladder.
+// (DeployToFire) three arcing 90mm shells at long range. Art = the HD rebuild: the walk
+// (8 facings x 15) + the deployed piece in 32 facings, at rest and aiming, its barrels
+// drawn in + the deploy ladder (scripts/ts_pack_hd_buildings.py).
 // The turret is baked into the deployed frames, so IsTurretEquipped only drives the
 // turret facing; UnitClass::Draw_It skips the turret draw for DeployToFire units.
 static UnitTypeClass const UnitTsJugg(UNIT_TSJUGG,
@@ -1640,8 +1640,8 @@ static UnitTypeClass const UnitTsJugg(UNIT_TSJUGG,
 
 // TS Limpet Drone (UNIT_TSLIMP), Firestorm rules [LIMPET]. Unarmed hover crawler
 // that deploys (unit.cpp Try_To_Deploy) into the cloaked STRUCT_TSDLIMP mine on
-// its own cell. Art = LIMPED.SHP, a ten-frame crawl cycle drawn by Shape_Number
-// with no facings (scripts/ts_pack_limpet.py). Classic = transparent 24x24 stub.
+// its own cell. Art = the HD rebuild of LIMPED.SHP, a ten-frame blink drawn by Shape_Number
+// with no facings (scripts/ts_pack_hd_buildings.py). Classic = transparent 24x24 stub.
 static UnitTypeClass const UnitTsLimp(UNIT_TSLIMP,
                                       TXT_LTANK,    // NAME: placeholder (HD display via rules.ini Name=).
                                       "TSLIMP",     // NAME: IniName.

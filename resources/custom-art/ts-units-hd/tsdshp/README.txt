@@ -6,9 +6,15 @@ frames/     tsdshp-0000.png ... tsdshp-0003.png, the mod's 4 frames on its 656 x
               0       the ship, side-on and level, facing west, in GDI's gold
               1-3     frame 0 scaled to 55%, 70% and 85% about the canvas centre, as your packer makes the shadow
                       frames (regenerate them from frame 0 as before if you prefer)
+facings/    tsdshp-0000.png ... tsdshp-0031.png, the ship in all 32 directions, counter-clockwise from north (0 N, 8 W,
+            16 S, 24 E, as your other units), level, on the same 656 x 656 canvas at the same size and in the same gold,
+            each with an all-black -trim.png.  It turns about the canvas centre (where the game puts the unit), so
+            facing 8 is frames/ frame 0 exactly.  Shadow frames for them come from your packer, as for frame 0.
 previews/   ship.png                 frame 0 beside the mod's current frame 0
             shadow-frames.png        frames 1-3 beside the mod's
             scale.png                next to EA's C-17 and Badger, as the game draws them
+            facings.png              every fourth direction (facings/)
+            facings-turn.gif         all 32 directions in turn
 ts-dshp-hd-3d/   the 3D model, in its own zip (ts-dshp-hd-3d.zip) next to this folder:
             tsdshp.glb   the model in TS's own colours (the remap parts in house colour), with the mod's camera
 src/        the model builder, the renderer and the checks (see Rebuilding below)
@@ -71,6 +77,9 @@ Judgement calls (each one easy to change)
 - TS's single-voxel speckle held near the colour round it (its paint is speckled voxel by voxel).
 - The gold is measured from the mod's current frame (TS's remap voxels as the mod shows them now), not
   picked by eye.
+- The 32 directions turn about the canvas centre, the unit's place in the game, where frame 0 has the voxel's own
+  origin; TS's HVA origin is 7.7 voxels (49 px) further forward, and turning about it would swing the ship round
+  the canvas instead of turning it in place.
 
 
 Rebuilding (src/)
@@ -84,5 +93,7 @@ export3d.py) and the voxel reader (vxl.py) are included; paths.py says where the
   vdeliver.py, vcheck.py    renders, previews and checks a unit from its spec
   dshprender.py          the frame, the camera and the shadow frames;  dshpspec.py  its frames, previews, README
   dshpexport.py          the .glb
+  dshpfacings.py         the 32 directions (facings/), their previews and checks
     PKG=out python3 vdeliver.py dshpspec render 0 1      renders frames/
+    PKG=out python3 dshpfacings.py render 0 1           renders facings/
 
