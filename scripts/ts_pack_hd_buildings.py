@@ -27,7 +27,7 @@ canvas would stop every frame cropping.
 Usage: ts_pack_hd_buildings.py [INI ...]   (buildings, units and aprons by ini; none = all)
 License: GPL v3.
 """
-import io, json, os, re, sys, zipfile
+import io, json, math, os, re, sys, zipfile
 import numpy as np
 from PIL import Image
 
@@ -40,6 +40,14 @@ REDALERT = os.path.join(SCRIPTS, "..", "redalert")
 THEATRES = ("TEMPERATE", "SNOW", "INTERIOR")
 STUB_MANIFEST = f"{SCRIPTS}/ts_stub_dims.json"
 HAZE_ALPHA = 4
+
+# GDI's weathered eagle, painted on the dropship bay's deck. It comes on a black field with no alpha of its own.
+EAGLE = os.path.join(SCRIPTS, "..", "resources", "custom-cameos", "ts-gdi-logo.png")
+# RA's camera looks down at 32 degrees, so a flat disc on the ground is drawn sin(32) as tall as it is wide.
+GROUND_SQUASH = math.sin(math.radians(32))
+LUMA = np.array([0.299, 0.587, 0.114], np.float32)
+# Paint covers this much of the deck under it; the rest shows through as wear.
+PAINT_COVER = 0.92
 
 # The launcher recolours every green of a building to its owner's colour, so Tiberium seen in a
 # building is drawn in the yellow-green TD's silo shows in game (hue ~77), luminance kept.
@@ -68,6 +76,61 @@ def lane_gold(img):
     return Image.fromarray(a, "RGBA")
 
 
+def decal_art(path, width):
+    """The emblem as a flat disc seen by RA's camera, width px across. Its black field is keyed out softly,
+    so the edges stay antialiased."""
+    rgb = np.asarray(Image.open(path).convert("RGB")).astype(np.float32)
+    alpha = np.clip((rgb.sum(2) - 20) / 70, 0, 1) * 255
+    art = Image.fromarray(np.dstack([rgb, alpha]).round().astype(np.uint8), "RGBA")
+    art = art.crop(art.getbbox())
+    return art.resize((width, round(width * GROUND_SQUASH)), Image.LANCZOS)
+
+
+def paint_decal(img, decal, healthy=None):
+    """The frame with the decal painted on its flat deck, centred at decal["centre"]: the paint takes the
+    deck's own light and texture, and the deck's lamps shine through it. healthy, given for a damaged frame,
+    is the same frame undamaged: the paint is gone where the deck is gone, under rubble and where the deck
+    burnt black, and darkens with the scorch around that. The paint must not reach the house-colour band."""
+    art = decal_art(decal["art"], decal["width"])
+    d = np.asarray(art).astype(np.float32)
+    h, w = d.shape[:2]
+    x0 = round(decal["centre"][0] - w / 2)
+    y0 = round(decal["centre"][1] - h / 2)
+    out = np.asarray(img).astype(np.float32).copy()
+    deck = out[y0:y0 + h, x0:x0 + w]
+    ref = np.asarray(healthy if healthy is not None else img).astype(np.float32)[y0:y0 + h, x0:x0 + w]
+    lum, ref_lum = deck[..., :3] @ LUMA, ref[..., :3] @ LUMA
+    a = d[..., 3] / 255
+    band = (ref[..., 3] > 0) & (ref[..., 1] - np.maximum(ref[..., 0], ref[..., 2]) > 30)
+    if (band & (a > 0.01)).any():
+        raise SystemExit(f"the decal at {decal['centre']} reaches the house-colour band")
+    flat = np.median(ref_lum[a > 0])
+    a = a * PAINT_COVER
+    if healthy is not None:
+        ratio = lum / np.maximum(ref_lum, 1)
+        tint = np.abs(deck[..., :3] / np.maximum(lum, 1)[..., None]
+                      - ref[..., :3] / np.maximum(ref_lum, 1)[..., None]).sum(2)
+        a = (a * deck[..., 3] / 255
+             * (1 - np.clip((lum - ref_lum - 15) / 20, 0, 1))     # rubble lying on the deck
+             * (1 - np.clip((tint - 0.15) / 0.15, 0, 1))          # debris of other materials
+             * np.clip((ratio - 0.45) / 0.35, 0, 1))              # deck burnt black
+    paint = d[..., :3] * np.clip(lum / flat, 0, 1.3)[..., None]
+    rgb = deck[..., :3] * (1 - a[..., None]) + paint * a[..., None]
+    lamp = np.clip((ref_lum - flat - 12) / 20, 0, 1)[..., None]
+    deck[..., :3] = rgb + lamp * (np.maximum(rgb, deck[..., :3]) - rgb)
+    return Image.fromarray(out.round().clip(0, 255).astype(np.uint8), "RGBA")
+
+
+def with_decal(tiles, make, decal):
+    """Tiles healthy then damaged, each damaged frame against its healthy twin, and the build-up from frame
+    decal["from_make"] on, all with the decal painted."""
+    half = len(tiles) // 2
+    tiles = ([paint_decal(t, decal) for t in tiles[:half]]
+             + [paint_decal(t, decal, tiles[i]) for i, t in enumerate(tiles[half:])])
+    make = make[:decal["from_make"]] + [paint_decal(m, decal) for m in make[decal["from_make"]:]]
+    return tiles, make
+
+
 def tiberium(img):
     a = np.asarray(img).astype(np.float32)
     lum = a[..., :3] @ np.array([0.299, 0.587, 0.114], np.float32)
@@ -84,7 +147,9 @@ def tiberium(img):
 # pad_bottom / pad_top add that many transparent px under / over every frame and crop_top cuts
 # that many empty px off the top, for art drawn on a plot of another depth than the building's own (the canvas
 # centres on the building's plot); crop=(x0, y0, x1, y1) cuts every frame to that box, which holds all the art. repeat=n plays the frames n times over (one set for both states), and
-# recolour / make_recolour apply a function to every tileset / build-up frame as it loads. Paths take -NN.png.
+# recolour / make_recolour apply a function to every tileset / build-up frame as it loads, and decal=dict(art, centre,
+# width, from_make) paints a flat emblem on the deck (source canvas px), the build-up from frame from_make on.
+# Paths take -NN.png.
 BUILDINGS = {
     "TSFACT": dict(src="tsfact", make=("build-up/construction-yard-build", 32),
                    base="yard/construction-yard", runs=[
@@ -161,9 +226,10 @@ BUILDINGS = {
     # then damaged.
     "TSHPAD": dict(src="tshpad", make=("build-up/helipad-build", 24), frames=("loop/helipad-loop", 16)),
     # The dropship bay's pad, centred on its 3x2 plot: the art comes on a wider canvas round a 3x3, cut to
-    # the 3x2 here so the pad's centre is the plot's.
+    # the 3x2 here so the pad's centre is the plot's. GDI's eagle is painted on the open deck in front of the
+    # gratings, from the build-up frame that paints the band on.
     "TSDROP": dict(src="tsdrop", make=("build-up/dropbay-build", 19), frames=("building/dropbay", 2),
-                   crop=(192, 226, 576, 482)),
+                   crop=(192, 226, 576, 482), decal=dict(art=EAGLE, centre=(384, 350), width=140, from_make=14)),
 }
 # The open-door near face is the same layer: the door is its own layer here.
 BUILDINGS["TSWEAPNU"] = BUILDINGS["TSWEAPNF"]
@@ -393,6 +459,8 @@ def main(argv):
     for ini in names:
         spec = BUILDINGS[ini]
         tiles, make = frames(os.path.join(SRC, spec["src"]), spec)
+        if spec.get("decal"):
+            tiles, make = with_decal(tiles, make, spec["decal"])
         if spec.get("crop"):
             tiles = [crop_to(i, spec["crop"]) for i in tiles]
             make = [crop_to(i, spec["crop"]) for i in make]
