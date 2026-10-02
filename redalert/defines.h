@@ -1221,6 +1221,16 @@ inline HousesType operator++(HousesType& ht)
 #define TF_TS_GDI_FACTION 1
 #endif
 
+// TF_TD_MAPS is the switch for the converted Tiberian Dawn maps and their terrain.
+// At 1 the mod installs the maps in <mod>/CustomMaps/ and reads the TD tile cells
+// they carry in [TFTDTiles]. At 0 neither happens: the maps and the TD terrain art
+// sit outside the mod (parked/td-maps/), any copies an earlier version installed in
+// Local_Custom_Maps are removed, and a converted map that turns up anyway loads its
+// vanilla-safe [MapPack]. The TD template types stay registered either way.
+#ifndef TF_TD_MAPS
+#define TF_TD_MAPS 0
+#endif
+
 #if TF_TS_GDI_FACTION
 #define HOUSEF_ALLIES (HOUSEF_ENGLAND | HOUSEF_SPAIN | HOUSEF_GREECE | HOUSEF_FRANCE | HOUSEF_TURKEY)
 #define HOUSEF_TSGDI  (HOUSEF_GERMANY)

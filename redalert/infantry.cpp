@@ -3402,7 +3402,7 @@ ActionType InfantryClass::What_Action(ObjectClass const* object) const
                 || (*this == INFANTRY_MECHANIC
                     && (object->What_Am_I() == RTTI_UNIT || object->What_Am_I() == RTTI_AIRCRAFT))) {
 
-                if (object->Health_Ratio() < Rule.ConditionGreen) {
+                if (object->Health_Ratio() < Rule.ConditionGreen && TF_Heal_Affects(this, object)) {
                     // If it's a mechanic force-moving into an APC, don't try to heal it.
                     if (*this == INFANTRY_MECHANIC && object->What_Am_I() == RTTI_UNIT
                         && (*(UnitClass*)object == UNIT_APC || *(UnitClass*)object == UNIT_TDAPC
@@ -4295,7 +4295,7 @@ void InfantryClass::Firing_AI(void)
                             || (*this == INFANTRY_MECHANIC
                                 && (targ->What_Am_I() == RTTI_AIRCRAFT || targ->What_Am_I() == RTTI_UNIT))) {
 
-                            if (targ->Health_Ratio() >= Rule.ConditionGreen) {
+                            if (targ->Health_Ratio() >= Rule.ConditionGreen || !TF_Heal_Affects(this, targ)) {
                                 Assign_Target(TARGET_NONE);
                             }
                         }

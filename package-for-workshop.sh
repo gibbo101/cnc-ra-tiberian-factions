@@ -35,47 +35,28 @@ SUBFOLDER_NAME="Vanilla_RA"
 # VC_CXX_FLAGS explicitly for local builds; a bare `cmake --workflow` reuses the
 # cached release flags and would (harmlessly) build a no-cheats local DLL.
 #
-# It also builds with -DTF_TS_GDI_FACTION=0, so the fifth faction (Tiberian Sun GDI) is
-# compiled out of a release: Germany goes back to being an Allied country duplicate, the
-# TS yard grants no tree of its own, and the picker data below is regenerated to match.
-# The faction can therefore sit finished on main without shipping. Flip both this flag and
-# the one in the staged-data step below when it is time to release it.
-echo "==> Release build (TF_DEV_BUILD=0 — dev cheats compiled out; TF_TS_GDI_FACTION=0 — fifth faction out)"
+# The fifth faction (Tiberian Sun GDI) ships: TF_TS_GDI_FACTION keeps its default of 1, so the
+# DLL and the repo's CONFIG.MEG and picker art are already in release shape.
+echo "==> Release build (TF_DEV_BUILD=0 — dev cheats compiled out)"
 CMAKE_TOOLCHAIN_FILE=cmake/i686-mingw-w64-toolchain.cmake \
-  VC_CXX_FLAGS="-w;-fpermissive;-DTF_DEV_BUILD=0;-DTF_TS_GDI_FACTION=0" \
+  VC_CXX_FLAGS="-w;-fpermissive;-DTF_DEV_BUILD=0" \
   cmake --workflow --preset remaster
 
-if [[ ! -d "$BUILD_DIR" ]]; then
-    echo "ERROR: $BUILD_DIR not found after the release build." >&2
+# The build's copy step never deletes, so build/ can hold files the source no longer has. The
+# mod folder is staged again from scratch: the mod's own tree, the asset packs, the DLL.
+BUILT_DLL="build/remaster/RelWithDebInfo/RedAlert.dll"
+if [[ ! -f "$BUILT_DLL" ]]; then
+    echo "ERROR: $BUILT_DLL not found after the release build." >&2
     exit 1
 fi
+rm -rf "$BUILD_DIR"
+python3 scripts/stage_asset_packs.py --full "$BUILD_DIR"
+cp "$BUILT_DLL" "$BUILD_DIR/Data/RedAlert.dll"
 
 mkdir -p "$STAGE_DIR/$SUBFOLDER_NAME"
 # Remove any existing symlink at the destination (legacy from earlier script versions)
 [[ -L "$STAGE_DIR/$SUBFOLDER_NAME" ]] && rm "$STAGE_DIR/$SUBFOLDER_NAME" && mkdir -p "$STAGE_DIR/$SUBFOLDER_NAME"
 rsync -a --delete "$BUILD_DIR/" "$STAGE_DIR/$SUBFOLDER_NAME/"
-
-# --- Release front-end: the fifth faction's picker row goes back to "Allies" -------------
-# The DLL above has TS GDI compiled out, so the launcher data must agree or the Germany row
-# would still read "TS GDI" and wear its emblem while playing as an Allied duplicate. Both
-# edits are made against the STAGED copies only; the repo keeps the dev shape.
-#
-# build_config_meg.sh rewrites two generated intermediates as a side effect, so they are
-# snapshotted and put back — a package run must not leave the working tree in release shape.
-echo "==> Release front-end (fifth faction hidden)"
-_KEEP="$(mktemp -d)"
-cp scripts/loc_work/MASTERTEXTFILE_EN-US.edited.LOC "$_KEEP/" 2>/dev/null || true
-cp scripts/factions_work/FACTIONS.edited.XML "$_KEEP/" 2>/dev/null || true
-restore_intermediates() {
-    cp "$_KEEP/MASTERTEXTFILE_EN-US.edited.LOC" scripts/loc_work/ 2>/dev/null || true
-    cp "$_KEEP/FACTIONS.edited.XML" scripts/factions_work/ 2>/dev/null || true
-    rm -rf "$_KEEP"
-}
-trap restore_intermediates EXIT
-TF_TS_GDI_FACTION=0 TF_MEG_TARGET="$STAGE_DIR/$SUBFOLDER_NAME/Data/CONFIG.MEG" \
-    bash scripts/build_config_meg.sh
-TF_TS_GDI_FACTION=0 python3 scripts/picker_emblems_paint.py \
-    "$STAGE_DIR/$SUBFOLDER_NAME/Data/ART/TEXTURES/SRGB/MT_COMMANDBAR_COMMON.TGA"
 
 # --- Startup intro: gitignored, so make sure the locked cut is what ships -------
 STAGED_INTRO="$STAGE_DIR/$SUBFOLDER_NAME/Data/ART/MOVIES/RA/REDINTRO.BK2"

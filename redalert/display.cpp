@@ -4985,7 +4985,7 @@ void DisplayClass::Read_INI(CCINIClass& ini)
     */
     static char const* const TFTDTILES = "TFTDTiles";
     TF_TDWinterMap = false;
-    len = ini.Get_UUBlock(TFTDTILES, _staging_buffer, sizeof(_staging_buffer));
+    len = TF_TD_MAPS ? ini.Get_UUBlock(TFTDTILES, _staging_buffer, sizeof(_staging_buffer)) : 0;
     if (len > 0) {
         BufferStraw tdstraw(_staging_buffer, len);
         LCWStraw decomp(LCWStraw::DECOMPRESS);

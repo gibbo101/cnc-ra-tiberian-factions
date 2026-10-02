@@ -172,6 +172,7 @@ enum { TF_PLACE_BAY = -2 }; // PLACE event cell for "the dropship bay's finished
 extern bool TF_Mk2_At_Cap(HouseClass const* house); // House already fields its full Mk. II allowance (house.cpp; heap-counted, CSII fold unsafe)
 extern bool TF_DeployKeyBatch; // the deploy key is running its selected-object loop: self-actions answer for each object as if it were alone (dllinterface.cpp)
 extern bool TF_Limpet_Attach(TechnoClass* mine, int which); // a limpet mine's shot attaches its drone to the vehicle it targets (techno.cpp)
+extern bool TF_Heal_Affects(TechnoClass const* healer, ObjectClass const* target); // the healer's heal changes the target's strength (techno.cpp)
 extern bool TF_Mwar_At_Cap(HouseClass const* house); // House already fields its Mobile War Factory (house.cpp; heap-counted)
 extern bool TF_Ghost_At_Cap(HouseClass const* house); // House already fields its Ghost Stalker (house.cpp; heap-counted)
 extern bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id); // Begin_Production would turn this order away (bay reloading / Mk. II cap / Ghost Stalker cap); gates the EVA ack too (house.cpp)

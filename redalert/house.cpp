@@ -5408,7 +5408,7 @@ bool HouseClass::Place_Object(RTTIType type, CELL cell)
                 // call (rtti, intheory, builder match, TDAFLD quantity). Useful
                 // for diagnosing factory-stall / wrong-builder issues. Per
                 // [[feedback-keep-diagnostics-until-v1]].
-#if 1
+#if 0
                 {
                     static FILE* s_pol = NULL;
                     if (s_pol == NULL) {
@@ -12184,11 +12184,12 @@ int HouseClass::AI_Unit(void)
             // automatically. UNIT_TDHARV must stay excluded or it gets lumped in with
             // combat picks and the AI spams harvesters, burning income. Vanilla only
             // excluded UNIT_HARVESTER.
-            // The Mobile EM-Pulse, Mobile Sensor Array and Mobile War Factory are excluded as
-            // well: the AI has no logic to discharge or deploy them.
+            // The Mobile EM-Pulse, Mobile Sensor Array, Mobile War Factory and Limpet Drone are
+            // excluded as well: the AI has no logic to discharge or deploy them. Limpet Drones are
+            // for human players and scripted mission events.
             if (Can_Build(utype, ActLike) && utype->Type != UNIT_HARVESTER
                 && utype->Type != UNIT_TDHARV && utype->Type != UNIT_TSHARV && utype->Type != UNIT_TSMEMP
-                && utype->Type != UNIT_TSLPST && utype->Type != UNIT_TSMWAR
+                && utype->Type != UNIT_TSLPST && utype->Type != UNIT_TSMWAR && utype->Type != UNIT_TSLIMP
                 && !TF_Delivery_Order_Refused(this, RTTI_UNITTYPE, utype->Type)) {
                 /*
                 **	The dropship bay's deliveries weigh as combat units: the Mech Division
