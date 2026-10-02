@@ -43,7 +43,7 @@ GAMES = {
 
 ABOUT = {
     "TS-Graphics-Pack": "Tiberian Sun units, structures, effects and sidebar cameos as HD sprites",
-    "TS-HD-Graphics-Pack": "Tiberian Sun walls, gates and component towers, rebuilt as HD art",
+    "TS-HD-Graphics-Pack": "Tiberian Sun GDI buildings, units, walls, gates and component towers, rebuilt as HD art",
     "TS-SFX-Pack": "Tiberian Sun weapon, unit and structure sound effects",
     "TS-EVA-eng": "Tiberian Sun EVA announcer lines (English)",
     "TS-Voices-eng": "Tiberian Sun unit voice lines (English)",
@@ -89,6 +89,14 @@ def listing(pack):
     return out
 
 
+def models_of(pack):
+    """The pack's 3D models (asset-packs/<Pack>/3d/*.glb), by name."""
+    d = os.path.join(A.PACKS_DIR, pack, "3d")
+    if not os.path.isdir(d):
+        return []
+    return sorted(f[:-4] for f in os.listdir(d) if f.lower().endswith(".glb"))
+
+
 def xml_targets(pack):
     """(pack XML path relative to the pack, the mod file its entries go into)."""
     rows = []
@@ -108,6 +116,11 @@ def readme(pack):
     lines += ["## Contents", ""]
     for title, names in listing(pack).items():
         lines.append(f"**{title}** ({len(names)}): " + ", ".join(names))
+        lines.append("")
+    models = models_of(pack)
+    if models:
+        lines.append(f"**3D models** ({len(models)}): " + ", ".join(models) + ". The HD rebuilds as glTF models, "
+                     "in `3d/`; `3d/README.md` lists their parts and conventions. The game does not use them.")
         lines.append("")
     lines += ["## Using it", "",
               "1. Copy the files under this pack's `Data/` folder into your mod's `Data/` folder, keeping the paths.",

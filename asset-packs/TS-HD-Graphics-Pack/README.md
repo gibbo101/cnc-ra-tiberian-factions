@@ -1,10 +1,20 @@
 # TS-HD-Graphics-Pack
 
-Tiberian Sun walls, gates and component towers, rebuilt as HD art, for Command & Conquer Remastered Collection mods (Red Alert). One of the asset packs from [Tiberian Factions](https://github.com/gibbo101/cnc-ra-tiberian-factions).
+Tiberian Sun GDI buildings, units, walls, gates and component towers, rebuilt as HD art, for Command & Conquer Remastered Collection mods (Red Alert). One of the asset packs from [Tiberian Factions](https://github.com/gibbo101/cnc-ra-tiberian-factions).
 
 ## Contents
 
-**Structures** (30): TSCSAM, TSCSAMMAKE, TSCSAMT, TSCTWR, TSCTWRMAKE, TSCTWRX, TSGATEH, TSGATEHL, TSGATEHMAKE, TSGATEHX, TSGATEV, TSGATEVL, TSGATEVMAKE, TSGATEVX, TSNGATEH, TSNGATEHL, TSNGATEHMAKE, TSNGATEHX, TSNGATEV, TSNGATEVL, TSNGATEVMAKE, TSNGATEVX, TSNWALL, TSROCK, TSROCKMAKE, TSROCKT, TSVULC, TSVULCMAKE, TSVULCT, TSWALL
+**Units** (2): TSHARV, TSTITN
+
+**Structures** (55): TSCSAM, TSCSAMMAKE, TSCSAMT, TSCTWR, TSCTWRMAKE, TSCTWRX, TSFACT, TSFACTMAKE, TSGATEH, TSGATEHL, TSGATEHMAKE, TSGATEHX, TSGATEV, TSGATEVL, TSGATEVMAKE, TSGATEVX, TSNGATEH, TSNGATEHL, TSNGATEHMAKE, TSNGATEHX, TSNGATEV, TSNGATEVL, TSNGATEVMAKE, TSNGATEVX, TSNWALL, TSPILE, TSPILEMAKE, TSPOWR, TSPOWRMAKE, TSPROC, TSPROCFR, TSPROCLD, TSPROCMAKE, TSPROCNF, TSROCK, TSROCKMAKE, TSROCKT, TSSILO, TSSILOMAKE, TSTECH, TSTECHMAKE, TSTURB, TSVULC, TSVULCMAKE, TSVULCT, TSWALL, TSWEAP, TSWEAP2, TSWEAP2L, TSWEAPDR, TSWEAPLT, TSWEAPMAKE, TSWEAPNF, TSWEAPNU, TSWEAPUD
+
+**Terrain (temperate)** (2): TSPROCBB, TSWEAPBB
+
+**Terrain (snow)** (2): TSPROCBB, TSWEAPBB
+
+**Terrain (interior)** (2): TSPROCBB, TSWEAPBB
+
+**3D models** (16): barracks, construction-yard, dropship-bay, harvester, helipad, mcv, power-plant, radar, refinery, sensor-array, service-depot, silo, tech-center, titan, war-factory, wolverine. The HD rebuilds as glTF models, in `3d/`; `3d/README.md` lists their parts and conventions. The game does not use them.
 
 ## Using it
 
