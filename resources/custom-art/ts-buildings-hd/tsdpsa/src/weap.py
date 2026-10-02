@@ -95,6 +95,16 @@ LAYOUTS = {'ts': dict(turn=False), 'ra': dict(turn=True, sym=True), 'ra1': dict(
 YC = 1.5                    # the door's centre line (local y): the bay runs y -73..76
 
 
+def lamp_y(p, k, sym=False):
+    """the y of GTWEAP_A's lamp k on the beam over the door.  Round 2 (sym): the four that stay (1-4) centred on the
+    door's centre line (Luke, 09:12: their middle was 3.5 east of it)."""
+    la = p['lampsA']
+    y = la['y0'] + k * la['dy']
+    if sym:
+        y += YC - (2 * la['y0'] + 5 * la['dy']) / 2.0          # the middle of lamps 1 and 4 onto YC
+    return y
+
+
 def to_local(X, Y, layout='ts'):
     """world ground position -> the building's own frame"""
     if LAYOUTS[layout]['turn']:
@@ -300,7 +310,7 @@ def scene(X, Y, p=None, layout='ts', prog=None, pad=False, door=0.0, merge=True)
     ks = (1, 2, 3, 4) if sym else (0, 1, 2, 3, 4)                         # round 2: four (the end one over the fender goes)
     for i_, k in enumerate(ks):
         if g['lampsA'] * len(ks) > i_:
-            cy = la['y0'] + k * la['dy']
+            cy = lamp_y(p, k, sym)
             rr = np.hypot(x - la['x'], y - cy)
             dome = la['z'] - la['r'] + np.sqrt(np.clip(la['r'] ** 2 - rr ** 2, 0, None)) * 1.6
             slab(dome, np.full_like(X, p['beam']['z'] - 4.0), LAMPA, rr <= la['r'], 'lampA')

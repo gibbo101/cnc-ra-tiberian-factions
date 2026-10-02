@@ -14,7 +14,7 @@ GREEN = np.array([0, 214, 0.])
 OCHRE = np.array([228, 178, 92.])           # the hull (TS 190,145,60 .. 238,174,72 lit)
 OCHRE_D = np.array([196, 150, 72.])
 WEDGEC = np.array([150, 116, 62.])           # the mast's housing: TS draws it brown (89-153, 72-121, 40-56)
-TAN = np.array([226, 188, 116.])            # the mast (TS 198,157,105 / 206,182,113)
+TAN = np.array([244, 210, 142.])            # the mast: light tan (TS 198,157,105 / 206,182,113, 255,234,105 lit)
 STRIPE = np.array([252, 222, 96.])          # TS 255,226,101
 TRACKC = np.array([64, 64, 66.])
 LINKC = np.array([104, 104, 108.])
@@ -151,6 +151,10 @@ def materials(r, p=None, occ=None, flash=None, level=0, **kw):
         mc = np.where(panel[..., None], house * (1 - 0.14 * pseam)[..., None], mc)
         put(ms, mc)
         bz -= 0.25 * ring * ms
+        # a fill on the mast (TS lights its round mast light tan right across: our sun leaves its camera-facing middle
+        # dim), stronger in TS's own view; none on the house-green panel (its colour stays exact)
+        fill = (0.24 if lay == 'ts' else 0.08) * (ms & ~panel & ~chan)
+        emit = emit + alb * fill[..., None]
     # ---- the radar dish: its hollow dark grey with panel rings and gores, a light rim; its back darker, ribbed; exact
     #      normals from its paraboloid; the light bar (A) up its hollow from the middle to the rim
     hdm = comp == M.HEAD

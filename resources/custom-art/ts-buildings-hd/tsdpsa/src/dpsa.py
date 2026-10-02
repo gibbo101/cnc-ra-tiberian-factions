@@ -38,7 +38,7 @@ P = dict(
     pod=dict(x=(6.0, 18.0), y=(-27.0, -13.0), z=41.0),
     # mast: pivot (x, y, z), radius, length below / above the pivot; the green panel's span along the axis and its
     # half-width (degrees round the axis from due south)
-    mast=dict(pivot=(-37.5, 19.0, 48.0), r=14.0, below=26.0, above=102.0, green=dict(s=(6.0, 50.0), half=38.0),
+    mast=dict(pivot=(-37.5, 19.0, 47.5), r=12.0, below=26.0, above=102.0, green=dict(s=(6.0, 50.0), half=38.0),
               brackets=dict(x=(-46.0, -29.0), ys=((34.0, 41.0), (-2.0, 4.0)), z=41.0, r=7.0)),
     # the head: a radar dish (a paraboloid: rim radius R, depth, shell t) on a turntable and a short post on the mast's
     # top; it faces south-east (towards TS's camera) at `el` degrees up; pivot = the post's top, relative to the mast's
