@@ -3952,7 +3952,8 @@ void DLLExportClass::Shutdown(void)
 ** (bundled maps stay in sync with the mod version); other filenames are
 ** never touched. The maps themselves are vanilla-safe via the [TFTDTiles]
 ** side-channel (display.cpp), so they degrade gracefully if the mod is
-** later disabled.
+** later disabled. With TF_TD_MAPS at 0 nothing is copied and the installed
+** copies are deleted instead.
 */
 /*
 ** Tiberian Factions -- era-voice mailbox for the launcher's self-fired EVA
@@ -5474,6 +5475,29 @@ static void TF_Install_Bundled_Maps(const char* mod_path)
     CreateDirectoryA(dst_dir, NULL);
     strncat(dst_dir, "\\Red_Alert", sizeof(dst_dir) - strlen(dst_dir) - 1);
     CreateDirectoryA(dst_dir, NULL);
+
+#if !TF_TD_MAPS
+    /*
+    ** The converted TD maps are not part of this build: remove the copies an
+    ** earlier version installed, by their exact synthetic names (map 1..31,
+    ** each an mpr+tga+json triplet).
+    */
+    static char const* const exts[] = {"MPR", "TGA", "JSON"};
+    for (int map = 1; map <= 0x1F; map++) {
+        for (int e = 0; e < (int)(sizeof(exts) / sizeof(exts[0])); e++) {
+            char dst[MAX_PATH];
+            snprintf(dst,
+                     sizeof(dst),
+                     "%s\\UGC_F1BE%012X_%016X_MAPDATA.%s",
+                     dst_dir,
+                     (unsigned)map,
+                     (unsigned)map,
+                     exts[e]);
+            DeleteFileA(dst);
+        }
+    }
+    return;
+#endif
 
     char pattern[MAX_PATH];
     snprintf(pattern, sizeof(pattern), "%sCustomMaps\\*", root);

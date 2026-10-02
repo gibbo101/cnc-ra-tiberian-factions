@@ -1,5 +1,11 @@
 # Importing TD skirmish maps into the RA mod — feasibility + plan (2026-06-03)
 
+> **OUT OF THE MOD FROM 5.0.0 (2026-10-02).** The 31 converted maps and the TD terrain art
+> (temperate, winter, desert) were taken out of the mod: DontCryJustDie reported they raise
+> video-memory use for everyone, and some were broken. They sit in `parked/td-maps/` (its README
+> says how to bring them back) and are planned to return as their own Workshop item. `TF_TD_MAPS`
+> in `redalert/defines.h` switches the DLL side.
+
 > **PARTLY SHIPPED (v2.0.0).** The temperate/winter tiers landed — the 31-map TD
 > pack ships via `<mod>/CustomMaps/` (DLL self-installs to `Local_Custom_Maps`; see
 > [[project-td-skirmish-map-import-findings]]). The "no clean importer" framing below

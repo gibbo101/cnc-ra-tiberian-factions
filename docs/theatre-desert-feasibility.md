@@ -1,5 +1,11 @@
 # Theatres & desert in RA Remastered — feasibility (mapped 2026-05-29)
 
+> **OUT OF THE MOD FROM 5.0.0 (2026-10-02).** The 31 converted maps and the TD terrain art
+> (temperate, winter, desert) were taken out of the mod: DontCryJustDie reported they raise
+> video-memory use for everyone, and some were broken. They sit in `parked/td-maps/` (its README
+> says how to bring them back) and are planned to return as their own Workshop item. `TF_TD_MAPS`
+> in `redalert/defines.h` switches the DLL side.
+
 > **✅ OPTION B PROVEN IN-GAME 2026-07-19 (overnight desktop session).** The interior-slot
 > hijack renders full HD desert in a live RA skirmish: TD `scm05ea` transcoded with
 > `td_map_to_ra.py` (Theater=INTERIOR, 0 unmapped, 73 templates via ported TD tiles),
