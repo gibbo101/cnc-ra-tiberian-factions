@@ -26,7 +26,7 @@ All files are glTF 2.0 binary (`.glb`), which Blender, Godot and most engines op
 
 The war factory is Tiberian Sun's own shape, its door facing east (+x). The refinery's dock is on its east side,
 as in Tiberian Sun. The dropship bay's deck carries GDI's weathered eagle in its vertex colours, where the game
-draws it, in front of the gratings; on the damaged pad it is burnt away in the blast. The radar's dish sweep and the war factory door's track (straight up 40 units, then a quarter
+draws it, across the deck inside the band; on the damaged pad it is burnt away in the blast. The radar's dish sweep and the war factory door's track (straight up 40 units, then a quarter
 circle of radius 49 into the roof) are in each file's extras.
 
 ## Units

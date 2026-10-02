@@ -226,10 +226,10 @@ BUILDINGS = {
     # then damaged.
     "TSHPAD": dict(src="tshpad", make=("build-up/helipad-build", 24), frames=("loop/helipad-loop", 16)),
     # The dropship bay's pad, centred on its 3x2 plot: the art comes on a wider canvas round a 3x3, cut to
-    # the 3x2 here so the pad's centre is the plot's. GDI's eagle is painted on the open deck in front of the
-    # gratings, from the build-up frame that paints the band on.
+    # the 3x2 here so the pad's centre is the plot's. GDI's eagle is painted across the deck inside the band,
+    # over the gratings, from the build-up frame that paints the band on.
     "TSDROP": dict(src="tsdrop", make=("build-up/dropbay-build", 19), frames=("building/dropbay", 2),
-                   crop=(192, 226, 576, 482), decal=dict(art=EAGLE, centre=(384, 350), width=140, from_make=14)),
+                   crop=(192, 226, 576, 482), decal=dict(art=EAGLE, centre=(384, 338), width=180, from_make=14)),
 }
 # The open-door near face is the same layer: the door is its own layer here.
 BUILDINGS["TSWEAPNU"] = BUILDINGS["TSWEAPNF"]
