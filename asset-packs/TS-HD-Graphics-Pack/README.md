@@ -4,9 +4,11 @@ Tiberian Sun GDI buildings, units, walls, gates and component towers, rebuilt as
 
 ## Contents
 
-**Units** (4): TSHARV, TSMCV, TSSMEC, TSTITN
+**Units** (17): TS4TNK, TSAPC, TSCARRY, TSHARV, TSHMEC, TSHVR, TSLPST, TSMCV, TSMEMP, TSMWAR, TSORCA, TSORCAB, TSSAPC, TSSMEC, TSSONIC, TSSUBTANK, TSTITN
 
 **Structures** (66): TSCSAM, TSCSAMMAKE, TSCSAMT, TSCTWR, TSCTWRMAKE, TSCTWRX, TSDEPT, TSDEPTMAKE, TSDEPTRP, TSDPSA, TSDPSAMAKE, TSDROP, TSDROPMAKE, TSFACT, TSFACTMAKE, TSGATEH, TSGATEHL, TSGATEHMAKE, TSGATEHX, TSGATEV, TSGATEVL, TSGATEVMAKE, TSGATEVX, TSHPAD, TSHPADMAKE, TSNGATEH, TSNGATEHL, TSNGATEHMAKE, TSNGATEHX, TSNGATEV, TSNGATEVL, TSNGATEVMAKE, TSNGATEVX, TSNWALL, TSPILE, TSPILEMAKE, TSPOWR, TSPOWRMAKE, TSPROC, TSPROCFR, TSPROCLD, TSPROCMAKE, TSPROCNF, TSRADR, TSRADRMAKE, TSROCK, TSROCKMAKE, TSROCKT, TSSILO, TSSILOMAKE, TSTECH, TSTECHMAKE, TSTURB, TSVULC, TSVULCMAKE, TSVULCT, TSWALL, TSWEAP, TSWEAP2, TSWEAP2L, TSWEAPDR, TSWEAPLT, TSWEAPMAKE, TSWEAPNF, TSWEAPNU, TSWEAPUD
+
+**Effects** (2): TSDSHP, TSMEMPFX
 
 **Terrain (temperate)** (2): TSPROCBB, TSWEAPBB
 
@@ -14,7 +16,7 @@ Tiberian Sun GDI buildings, units, walls, gates and component towers, rebuilt as
 
 **Terrain (interior)** (2): TSPROCBB, TSWEAPBB
 
-**3D models** (16): barracks, construction-yard, dropship-bay, harvester, helipad, mcv, power-plant, radar, refinery, sensor-array, service-depot, silo, tech-center, titan, war-factory, wolverine. The HD rebuilds as glTF models, in `3d/`; `3d/README.md` lists their parts and conventions. The game does not use them.
+**3D models** (31): apc, apc-water, barracks, carryall, construction-yard, devils-tongue, disruptor, dropship, dropship-bay, harvester, helipad, hover-mlrs, mammoth-mk1, mammoth-mk2, mcv, mobile-emp-cannon, mobile-sensor-array, mobile-war-factory, orca-bomber, orca-fighter, power-plant, radar, refinery, sensor-array, service-depot, silo, subterranean-apc, tech-center, titan, war-factory, wolverine. The HD rebuilds as glTF models, in `3d/`; `3d/README.md` lists their parts and conventions. The game does not use them.
 
 ## Using it
 

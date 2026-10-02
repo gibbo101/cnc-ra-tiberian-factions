@@ -228,7 +228,7 @@ fi
 # against a sprite at THIS size and signed off 2026-08-19. Changing these
 # dims rescales the sprite and invalidates every dialled seat -- do not
 # "correct" it to 64x64 without redoing the whole seat arc.
-# 96 frames: hull 0-31, rack 32-63, shadow 64-95 (scripts/ts_hover_split_shadow.py).
+# 96 frames: hull 0-31, rack 32-63, shadow 64-95 (the HD art's own shadow block).
 python3 scripts/gen_stub_shp.py "$TMPDIR/tshvr_stub.shp" 48 48 96
 PACK_ARGS+=("$TMPDIR/tshvr_stub.shp:TSHVR.SHP")
 
@@ -241,7 +241,7 @@ PACK_ARGS+=("$TMPDIR/tstitn_stub.shp:TSTITN.SHP")
 python3 scripts/gen_stub_shp.py "$TMPDIR/tshmec_stub.shp" 72 72 256
 PACK_ARGS+=("$TMPDIR/tshmec_stub.shp:TSHMEC.SHP")
 
-# Dropship-bay delivery pod -- the TS Dropship sprite (TSDSHP.ZIP, TS-Graphics-Pack TS_VFX.XML).
+# Dropship-bay delivery pod -- the TS Dropship sprite (TSDSHP.ZIP, TS-HD-Graphics-Pack TSHD_VFX.XML).
 # Bullet art, single west-facing frame. The launcher sizes HD art off the
 # classic dims, so without this stub the pod inherits its donor's
 # little-missile dims and the dropship renders TINY (live report, 2026-08-12).

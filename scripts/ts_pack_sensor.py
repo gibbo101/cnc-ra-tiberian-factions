@@ -1,20 +1,11 @@
 #!/usr/bin/env python3
-"""Package the TS Mobile Sensor Array ([LPST]) and the entries of the sensor it deploys into ([GADPSA]).
+"""The sidebar side of the TS Mobile Sensor Array ([LPST], TSLPST) and of the sensor it deploys into
+([GADPSA], TSDPSA): BuildIcon_TS_SensorArray.tga, the base RA_TSLPST / RA_TSDPSA entries and the
+ModText rows. Their art is the HD rebuilds', packed by scripts/ts_pack_hd_buildings.py. The cameo
+and sidebar entries go to the tree asset_packs.py routes each name to; the ModText rows to the
+mod's own ModText.csv. Follow with the cameo badge and variant scripts.
 
-  TSLPST.ZIP (units)            32 frames: the LPST.VXL hull, one per facing, on a 384 canvas
-                                (ShapeSize 48) at the TS voxel density 6.4/12 (ts_pack_memp.py).
-  BuildIcon_TS_SensorArray.tga, the base RA_TSLPST / RA_TSDPSA entries and the ModText rows.
-The sensor's own art (TSDPSA, TSDPSAMAKE) is its HD rebuild, packed by scripts/ts_pack_hd_buildings.py.
-Art, cameo, tiles and sidebar entries go to the tree asset_packs.py routes each name to (the
-TS-Graphics-Pack); the ModText rows to the mod's own ModText.csv.
-
-Render (the voxel ledger in docs/launcher-render-contracts.md):
-  vxl_render.py LPST.VXL renders_lpst --frames 32 --yaw0 90 --px-per-voxel 12
-      --team-green 0,380,0 --elev 32 --hva LPST.HVA --canvas 720
-(0,380,0: TS painted it in dark remap shades; the fleet's 0,200,0 read at half the APC's team colour)
-Follow with scripts/ts_reshadow.py TSLPST, then the cameo badge and variant scripts.
-
-Inputs (set TS_ART_DIR): renders_lpst, .raw/LPSTICON.SHP and CAMEO.PAL (scripts/ts_rebuild_art.sh extracts them all).
+Inputs (set TS_ART_DIR): .raw/LPSTICON.SHP and CAMEO.PAL (scripts/ts_rebuild_art.sh extracts them).
 
 License: GPL v3.
 """
@@ -28,7 +19,6 @@ import asset_packs
 import ts_shp
 import ts_pack_infantry as inf
 import ts_pack_limpet as limp
-from ts_pack_memp import vox_frames
 
 ART = inf.ART
 RAW = f"{ART}/.raw"
@@ -47,11 +37,6 @@ def cameo():
 
 
 def main():
-    unit = vox_frames("renders_lpst")
-    inf.write_zip(asset_packs.art_zip("TSLPST", "UNITS"), "tslpst", unit)
-    inf.patch_tileset("TSLPST", len(unit))
-
-
     cameo()
     inf.sidebar("TSLPST", "BuildIcon_TS_SensorArray")
     inf.text_rows("TSLPST", "Mobile Sensor Array",

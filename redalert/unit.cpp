@@ -2897,7 +2897,7 @@ int UnitClass::Shape_Number(void) const
         **	as packed, so both index straight off the step counter.
         */
         if (Is_Subterranean() && TunnelState == TUNNEL_TUNNELING) {
-            return (112); // owner-side disturbed-earth marker (scripts/ts_add_underground_marker.py)
+            return (112); // owner-side disturbed-earth marker, the art's last frame
         }
         if (Is_Subterranean() && TunnelStep >= 1 && TunnelStep <= 5) {
             if (TunnelState == TUNNEL_DIGGING_IN || TunnelState == TUNNEL_ABORTING) {

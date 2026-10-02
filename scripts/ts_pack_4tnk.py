@@ -1,60 +1,28 @@
 #!/usr/bin/env python3
-"""Package the old TS Mammoth Tank (TS [4TNK], TechLevel -1 in TS) as TS4TNK.
+"""The old TS Mammoth Tank (TS [4TNK], TechLevel -1 in TS) as TS4TNK: its cannon and tusk sounds
+and its fire points. Its art is the HD rebuild's, packed by scripts/ts_pack_hd_buildings.py: 64
+frames, hull 0-31 + turret 32-63, on a 512 canvas with the voxel origin at the centre, at the TS
+voxel density 6.4/12 (the size the fire points below are projected at).
 
-TS4TNK.ZIP is 64 frames: hull 0-31 + turret 32-63 (the TSSONIC layout), on a 512
-canvas (ShapeSize 64), each render scaled by the TS voxel density 6.4/12 around the
-voxel origin at the canvas centre (the vox_frames recipe in ts_pack_units_wave.py).
-The turret renders carry the barrel in the same depth-sorted pass (vxl_render.py
---attach), so it hides and is hidden correctly at every facing. Also writes the
-TS_UNITS.XML tile run and the cannon + tusk reports under their own names, each in the
-tree asset_packs.py routes its name to (the TS packs).
-
-Renders (the voxel ledger in docs/launcher-render-contracts.md, one canvas for both):
-  vxl_render.py 4TNK.VXL    renders_4tnk    --frames 32 --yaw0 90 --px-per-voxel 12
-      --team-green 0,139,0 --elev 32 --hva 4TNK.HVA --canvas 720
-  vxl_render.py 4TNKTUR.VXL renders_4tnktur (same) --hva 4TNKTUR.HVA
-      --attach 4TNKBARL.VXL --attach-hva 4TNKBARL.HVA
-TS painted 77% of this hull in remap (the Disruptor: 24%), and its remap voxels are
-brighter than the fleet's, so the fleet's 0,200,0 would clip it. 0,139,0 puts its team
-pixels at the APC's median brightness, so it wears the same team colour as the APC. The
-hull keeps TS's all-team look.
-Follow with scripts/ts_reshadow.py TS4TNK.
-
-Also writes redalert/ts4tnk_muzzle.h, the per-frame fire points Fire_Coord reads: TS's
+Writes redalert/ts4tnk_muzzle.h, the per-frame fire points Fire_Coord reads: TS's
 FLHs projected through the same camera, so the shells and tusk missiles leave the barrel
-tips and pods the art shows. `ts_pack_4tnk.py muzzle` writes only the header: it reads no
-art, though TS_ART_DIR must still be set for the shared packer import.
+tips and pods the art shows. `ts_pack_4tnk.py muzzle` writes only the header; TS_ART_DIR must
+still be set for the shared packer import.
 
-Inputs (set TS_ART_DIR): $TS_ART_DIR/renders_4tnk*, $TS_ART_DIR/.raw/{120MMX9,MISL1}.AUD.
+Inputs (set TS_ART_DIR): $TS_ART_DIR/.raw/{120MMX9,MISL1}.AUD.
 
 License: GPL v3.
 """
 import math, os, subprocess, sys
-from PIL import Image
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import asset_packs
-from ts_pack_pods import ART, RAW, write_zip, patch_tileset
+from ts_pack_pods import RAW
 
-CANVAS = 512
 # The TS voxel density 6.4/12 draws the Mk. I at the RA Mammoth Tank's size (34.6 x 24.4
-# classic px, measured off EA's 4TNK); SCALE stays as the dial if that ever needs retuning.
-SCALE = 1.00
-F_VOX = 6.4 / 12 * SCALE
-def vox_frames(dirname):
-    out = []
-    for i in range(32):
-        im = Image.open(f"{ART}/{dirname}/frame-{i:04d}.png").convert("RGBA")
-        scaled = im.resize((round(im.width * F_VOX), round(im.height * F_VOX)), Image.LANCZOS)
-        fr = Image.new("RGBA", (CANVAS, CANVAS), (0, 0, 0, 0))
-        ox, oy = round(CANVAS / 2 - scaled.width / 2), round(CANVAS / 2 - scaled.height / 2)
-        b = scaled.getbbox()
-        if b and (ox + b[0] < 0 or oy + b[1] < 0 or ox + b[2] > CANVAS or oy + b[3] > CANVAS):
-            raise SystemExit(f"{dirname} frame {i}: content clipped -- grow the canvas")
-        fr.alpha_composite(scaled, (max(ox, 0), max(oy, 0)))
-        out.append(fr)
-    return out
+# classic px, measured off EA's 4TNK).
+F_VOX = 6.4 / 12
 
 
 # TS [4TNK] fire points in TS leptons (forward, left, height): the cannon's fire point
@@ -106,9 +74,6 @@ def write_muzzle_header():
 
 
 def main():
-    frames = vox_frames("renders_4tnk") + vox_frames("renders_4tnktur")
-    write_zip(asset_packs.art_zip("TS4TNK", "UNITS"), "ts4tnk", frames)
-    patch_tileset(asset_packs.tileset_xml("TS4TNK", "UNITS"), "TS4TNK", len(frames))
     for aud in ("120MMX9", "MISL1"):
         pcm = f"{RAW}/{aud}.pcm.wav"
         out_wav = asset_packs.sound_wav(f"TS{aud}")

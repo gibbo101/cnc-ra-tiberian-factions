@@ -80,9 +80,9 @@ EA_ALPHA = 191
 # hull's reads as float rather than as error. Keep its approved values.
 OFFSET_OVERRIDE = {"TSHVR": (5, 17)}
 
-# TSTITN, TSHARV, TSMCV and TSSMEC carry their HD art's own shadows (scripts/ts_pack_hd_buildings.py);
-# none is re-shadowed here.
-UNITS = ["TS4TNK", "TSAPC", "TSHVR", "TSLPST", "TSMEMP", "TSMWAR", "TSSONIC"]
+# The TS units carry their HD art's own shadows (scripts/ts_pack_hd_buildings.py) and are never
+# re-shadowed here; the pass and drop_shadow serve the RA2 and C&C3 tank packers.
+UNITS = []
 
 # Whether a unit currently carries a shadow is DETECTED from the art (a flat
 # pure-black alpha plateau), never hardcoded -- that keeps the pass idempotent
@@ -253,4 +253,7 @@ if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     dry = "--dry-run" in sys.argv
     for u in (args or UNITS):
+        if asset_packs.hd_owned(u):
+            print(f"{u}: skipped, its HD art carries its own shadow")
+            continue
         process(u, dry)

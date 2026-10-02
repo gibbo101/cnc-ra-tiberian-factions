@@ -45,13 +45,7 @@ CANVAS_PER_CLASSIC_PX = 16.0 / 3.0
 
 # The objects scripts/ts_pack_hd_buildings.py packs from their HD rebuilds. This script still composes some of
 # them (the Mobile War Factory takes the war factory's affine), but never writes their art, tiles or stubs.
-import ts_pack_hd_buildings as _hd
-HD_OWNED = set(_hd.BUILDINGS) | set(_hd.UNITS) | set(_hd.APRONS)
-
-
-def hd_owned(name):
-    n = name.upper()
-    return n in HD_OWNED or (n.endswith("MAKE") and n[:-4] in HD_OWNED)
+from asset_packs import hd_owned  # noqa: E402
 
 # The affine scale each packed building actually shipped at (the fit's clamps
 # applied), for satellite art that must match — an addon plug's placement

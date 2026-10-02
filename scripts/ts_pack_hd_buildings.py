@@ -236,13 +236,33 @@ BUILDINGS["TSWEAPNU"] = BUILDINGS["TSWEAPNF"]
 
 # ini: the source folder and the frames (path prefix, count) on the unit's own canvas. root
 # overrides the folder the source sits in, digits the frame number's width, and muzzle names the
-# art's table of barrel tips (frame, facing, canvas x, canvas y) for the generated header.
+# art's table of barrel tips (frame, facing, canvas x, canvas y) for the generated header. kind is
+# the art folder (UNITS unless named); centred crops every frame about the canvas centre.
+def _voxel_unit(src, count, **extra):
+    return dict(root=UNITS_SRC, src=src, frames=(f"frames/{src}", count), digits=4, centred=True, **extra)
+
+
 UNITS = {
     "TSHARV": dict(src="tsproc", frames=("harvester/harvester", 64)),
     "TSTITN": dict(root=UNITS_SRC, src="tstitn", frames=("frames/tstitn", 128), digits=4,
                    muzzle="3d/muzzle.txt"),
     "TSMCV": dict(root=UNITS_SRC, src="tsmcv", frames=("frames/tsmcv", 32), digits=4),
     "TSSMEC": dict(root=UNITS_SRC, src="tssmec", frames=("frames/tssmec", 128), digits=4),
+    "TS4TNK": _voxel_unit("ts4tnk", 64),
+    "TSAPC": _voxel_unit("tsapc", 64),
+    "TSCARRY": _voxel_unit("tscarry", 32),
+    "TSHMEC": _voxel_unit("tshmec", 256),
+    "TSHVR": _voxel_unit("tshvr", 96),
+    "TSLPST": _voxel_unit("tslpst", 32),
+    "TSMEMP": _voxel_unit("tsmemp", 32),
+    "TSMEMPFX": dict(root=UNITS_SRC, src="tsmemp", frames=("fx/tsmempfx", 12), digits=4, centred=True, kind="VFX"),
+    "TSMWAR": _voxel_unit("tsmwar", 32),
+    "TSORCA": _voxel_unit("tsorca", 32),
+    "TSORCAB": _voxel_unit("tsorcab", 32),
+    "TSSAPC": _voxel_unit("tssapc", 113),
+    "TSSONIC": _voxel_unit("tssonic", 64),
+    "TSSUBTANK": _voxel_unit("tssubtank", 113),
+    "TSDSHP": dict(root=UNITS_SRC, src="tsdshp", frames=("frames/tsdshp", 4), digits=4, kind="VFX"),
 }
 
 # smudge ini: the source folder, the apron's layer on its building's canvas, where the smudge's
@@ -334,8 +354,18 @@ def canvas_for(imgs):
     return w + (-w % 16), h + (-h % 16)
 
 
-def write_zip(path, name, frames):
+def centred_box(b, width, height):
+    """The smallest box holding b whose centre is the canvas centre."""
+    rx = max(width / 2 - b[0], b[2] - width / 2)
+    ry = max(height / 2 - b[1], b[3] - height / 2)
+    x0, y0 = max(0, math.floor(width / 2 - rx)), max(0, math.floor(height / 2 - ry))
+    return x0, y0, width - x0, height - y0
+
+
+def write_zip(path, name, frames, centred=False):
     """Each frame cropped to its content, with a .meta giving the canvas and the crop box.
+    centred crops each frame to a box centred on the canvas, so the frame lands in the same
+    place whether the launcher anchors the canvas centre or the crop's centre.
     Entries carry a fixed date, so the same frames always pack to the same bytes."""
     def put(z, member, data):
         z.writestr(zipfile.ZipInfo(member, date_time=(1980, 1, 1, 0, 0, 0)), data, zipfile.ZIP_DEFLATED)
@@ -344,6 +374,8 @@ def write_zip(path, name, frames):
         for i, img in enumerate(frames):
             base = f"{name}-{i:04d}"
             b = img.getbbox() or (0, 0, img.width, img.height)
+            if centred:
+                b = centred_box(b, img.width, img.height)
             buf = io.BytesIO()
             img.crop(b).save(buf, format="TGA")
             put(z, base + ".tga", buf.getvalue())
@@ -392,8 +424,9 @@ def pack_unit(name, spec):
     src = os.path.join(spec.get("root", SRC), spec["src"])
     digits = spec.get("digits", 2)
     tiles = [Image.open(os.path.join(src, f"{path}-{i:0{digits}d}.png")).convert("RGBA") for i in range(count)]
-    write_zip(asset_packs.art_zip(name, "UNITS"), name.lower(), [clean(i) for i in tiles])
-    patch_in_place(name, count, asset_packs.tileset_xml(name, "UNITS"))
+    kind = spec.get("kind", "UNITS")
+    write_zip(asset_packs.art_zip(name, kind), name.lower(), [clean(i) for i in tiles], spec.get("centred", False))
+    patch_in_place(name, count, asset_packs.tileset_xml(name, kind))
     if spec.get("muzzle"):
         write_muzzle(name, os.path.join(src, spec["muzzle"]), tiles[0].size)
 

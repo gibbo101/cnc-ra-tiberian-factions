@@ -53,10 +53,23 @@ PACKS = {
 # so an object's MAKE, door, lamp, turret and apron layers travel with it
 TS_HD = ("TSWALL", "TSNWALL", "TSGATEH", "TSGATEV", "TSNGATEH", "TSNGATEV", "TSCTWR", "TSVULC", "TSROCK", "TSCSAM",
          "TSFACT", "TSPILE", "TSPOWR", "TSSILO", "TSTECH", "TSTURB", "TSPROC", "TSWEAP", "TSHARV", "TSTITN",
-         "TSMCV", "TSSMEC", "TSRADR", "TSDPSA", "TSDEPT", "TSHPAD", "TSDROP")
+         "TSMCV", "TSSMEC", "TSRADR", "TSDPSA", "TSDEPT", "TSHPAD", "TSDROP", "TS4TNK", "TSAPC", "TSCARRY",
+         "TSDSHP", "TSHMEC", "TSHVR", "TSLPST", "TSMEMP", "TSMWAR", "TSORCA", "TSSAPC", "TSSUBTANK")
+# ...and these names exactly: other art that starts with them stays in the TS pack (the Disruptor's
+# sonic wave, TSSONICW and TSSONICP)
+TS_HD_EXACT = ("TSSONIC",)
 
 # tileset kinds: RA_<KIND>.XML in the mod; art folder under RED_ALERT/
 KINDS = ("UNITS", "STRUCTURES", "VFX", "TERRAIN_TEMPERATE", "TERRAIN_SNOW", "TERRAIN_INTERIOR")
+
+
+def hd_owned(name):
+    """True for art that scripts/ts_pack_hd_buildings.py packs from the HD rebuilds; no other packer
+    writes its zip, tiles or stub."""
+    import ts_pack_hd_buildings as hd
+    owned = set(hd.BUILDINGS) | set(hd.UNITS) | set(hd.APRONS)
+    n = name.upper()
+    return n in owned or (n.endswith("MAKE") and n[:-4] in owned)
 
 
 def graphics_pack(name):
@@ -65,7 +78,7 @@ def graphics_pack(name):
     if n.startswith("TSLA"):
         return None
     if n.startswith("TS") or n == "RAILFX":
-        if n.startswith(TS_HD):
+        if n.startswith(TS_HD) or n in TS_HD_EXACT:
             return "TS-HD-Graphics-Pack"
         return "TS-Graphics-Pack"
     if n.startswith("R2"):

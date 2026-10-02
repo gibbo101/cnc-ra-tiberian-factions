@@ -37,9 +37,25 @@ circle of radius 49 into the roof) are in each file's extras.
 | `mcv.glb` | MCV | TSMCV | tracks, hull, right_deck, cab, crane, left_deck, hitch | |
 | `titan.glb` | MMCH | TSTITN | legs; upper_body with the cannon and a muzzle marker | walk (12 steps, 0.2 s each, looping) |
 | `wolverine.glb` | SMECH | TSSMEC | body (with muzzle_left and muzzle_right markers), legs | walk (12 steps, 0.133 s each, looping), stance (firing) |
+| `mammoth-mk1.glb` | 4TNK | TS4TNK | hull; turret (with the barrels and tusk pods) | |
+| `mammoth-mk2.glb` | HMEC | TSHMEC | body, four legs (upper, lower, foot each) | walk |
+| `disruptor.glb` | SONIC | TSSONIC | hull; turret (seated 6 px aft, as the mod draws it) | |
+| `hover-mlrs.glb` | HVR | TSHVR | hull; rack (at TS's place; the mod seats it per facing) | |
+| `apc.glb`, `apc-water.glb` | APC | TSAPC | land hull; water hull (the hull TS swaps in on water) | |
+| `subterranean-apc.glb` | SAPC | TSSAPC | hull | |
+| `devils-tongue.glb` | SUBTANK | TSSUBTANK | hull | |
+| `mobile-sensor-array.glb` | LPST | TSLPST | hull | |
+| `mobile-emp-cannon.glb` | MOBILEMP | TSMEMP | hull | |
+| `mobile-war-factory.glb` | MOBWARG | TSMWAR | hull | |
+| `orca-fighter.glb` | ORCA | TSORCA | hull | |
+| `orca-bomber.glb` | ORCAB | TSORCAB | hull | |
+| `carryall.glb` | TRNSPORT | TSCARRY | hull | |
+| `dropship.glb` | DSHP | TSDSHP | hull | |
 
-Units face east (+x) with their position at the origin, on the ground. For a sprite in 32 facings (0 north, 8 west,
-16 south, 24 east), facing f is the model turned (f - 24) x 11.25 degrees counter-clockwise seen from above.
+Units face east (+x) with their position at the origin, on the ground; the aircraft's origin is the voxel's own. For a
+sprite in 32 facings (0 north, 8 west, 16 south, 24 east), facing f is the model turned (f - 24) x 11.25 degrees
+counter-clockwise seen from above. The units rebuilt from TS's voxels keep each voxel's step: every section is boxes
+cut at 45 degrees along its convex edges.
 
 ## Conventions
 
@@ -54,11 +70,13 @@ Units face east (+x) with their position at the origin, on the ground. For a spr
 - **Cameras:** buildings carry two orthographic cameras. `camera-ra-grid` is Red Alert Remastered's view (32 degrees
   above the ground, 128 px per cell) and frames the HD art's RA-grid canvas exactly. `camera-ts-angle` is
   Tiberian Sun's view (30 degrees above the ground, looking north-west). Units carry `camera_ra_grid` (the
-  harvester `camera-unit`). The pack's frames are lit from the north-west and above (direction toward the light:
+  harvester `camera-unit`, the units rebuilt from TS's voxels `camera_mod`, which frames the unit's own canvas
+  exactly). The pack's frames are lit from the north-west and above (direction toward the light:
   x -0.451, y 0.702, z -0.551).
 - **Meshes:** the buildings were sampled on a 2-unit grid and meshed by marching cubes, with every vertex
   coloured by the building's materials. The MCV's parts are exact solids cut from their planes. The Titan's and
-  Wolverine's parts are separate meshes under their own nodes, so the walk can move them.
+  Wolverine's parts are separate meshes under their own nodes, so the walk can move them. The units rebuilt from
+  TS's voxels are exact: each voxel section's boxes, subdivided so the vertex colours carry TS's colours.
 
 ## Credits
 
