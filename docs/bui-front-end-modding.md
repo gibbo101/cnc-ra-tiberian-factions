@@ -110,6 +110,19 @@ ClientG embeds a ClickScript bytecode VM and a full Lua (pglua) VM, and there's 
 
 ---
 
+## Combo-box drop-downs: mouse area and row height (2026-10-02)
+
+A combo box's list answers the mouse only inside the group that holds the combo (in a lobby slot,
+`PlayerFactionGroup` and its siblings). A list stretched past that group draws fine but its lower
+rows close the list and take no clicks. The fix is to grow the group (and, if needed, the slot's
+`Slot_Content_Group`), scaling the other widgets' y and height so nothing moves on screen
+(`bui_lobby_build.py slot_room`). The list's row height is list-box micro-chunk `05` in the list's
+property leaf (id 4): a fraction of the **combo's** height (TD 0.1711, RA 0.0975). Grow the combo
+and the rows grow with it unless that value is scaled down to match. Property names come from
+Petroglyph's 9-Bit Armies GUI editor (`ModTools/GUIEditor` on the M.2:
+`GUI_LIST_BOX_ROW_HEIGHT_MICRO_CHUNK`, `GUI_COMBO_BOX_MAX_ITEMS_SHOWN_CHUNK`,
+`GUI_COMBO_BOX_OPEN_UP_MICRO_CHUNK`), which reads the same chunk format.
+
 ## Risks & the safe-edit envelope
 
 - **Boot crash on size change** is the dominant risk — never let a member's outer byte size drift from base. The pad-to-exact-size step is mandatory.

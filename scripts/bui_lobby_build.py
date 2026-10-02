@@ -25,6 +25,11 @@ Workshop map browser at TD's, whose green panels match the mod's menu.
                                drop-down list (Combo_Listbox) is three rows tall for TD's factions,
                                with a blank scroll bar; it is made tall enough for the nine entries the launcher lists (each RA
                                country and Random), measured on screen: 8.3 of TD's row heights.
+  UI_GAMELOBBY_PLAYERSLOT.BUI  the list answers the mouse only inside the slot's faction group, so the group
+                               takes the whole slot content area, grown to hold the nine rows, with every
+                               widget in the slot kept at its on-screen place and size. The combo box's
+                               children and its list's row height (a fraction of the combo's height) shrink
+                               to match, so the rows stay TD's size.
 
 Each file keeps its byte size (bui_tree.py).
 """
@@ -33,8 +38,8 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from bui_tree import (headers, leaves, load, micro_floats, replace_texture_set, string_body,  # noqa: E402
-                      string_value, write_same_size)
+from bui_tree import (find_headers, headers, leaves, load, micro_floats, replace_texture_set,  # noqa: E402
+                      string_body, string_value, write_same_size)
 
 BACKDROP = (b'ui_mainmenubg_01', b'ui_ra_menu_bg')
 HEADER_BUTTONS = (b'FlatGreenTextButton', b'TF_MainMenuSteelButton_Textures')
@@ -45,6 +50,60 @@ RA_SIZED_QUAD = (0.1332, 0.0417, 0.7442, 0.1231)
 FACTION_LIST = b'Combo_Listbox'
 STOCK_LIST = (0.0426, 0.2097, 0.7234, 0.5774)
 LIST_ROWS = (3, 8.3)
+SLOT_CONTENT = b'Slot_Content_Group'
+CONTENT_H = (6.8966, 8.4)
+FACTION_GROUP = b'PlayerFactionGroup'
+STOCK_FACTION_GROUP = (0.5181, 0.005, 0.1618, 0.6575)
+STOCK_ROW_HEIGHT = 0.1711
+
+
+def faction_group_scale():
+    """How much smaller the faction combo's children must be, against its grown group, to keep their size."""
+    k = CONTENT_H[0] / CONTENT_H[1]
+    y, h = STOCK_FACTION_GROUP[1], STOCK_FACTION_GROUP[3]
+    return (h * CONTENT_H[0]) / ((1.0 - y * k) * CONTENT_H[1])
+
+
+def is_header(node):
+    """A widget header: an id 0 or 0x0b container whose first child is the rect/tint leaf."""
+    return node[0] in (0, 0x0b) and isinstance(node[1], list) and node[1] and not isinstance(node[1][0][1], list)
+
+
+def widget_of(roots, name):
+    """The widget node whose header is named `name`: [header, then [1][4] holders of child widgets]."""
+    def walk(node):
+        body = node[1]
+        if not isinstance(body, list):
+            return []
+        if body and is_header(body[0]) and find_headers(body[0], name):
+            return [node]
+        return [w for child in body for w in walk(child)]
+    found = [w for r in roots for w in walk(r)]
+    assert len(found) == 1, f'found {len(found)} {name!r} widgets'
+    return found[0]
+
+
+def child_headers(widget):
+    """The headers of a widget's direct child widgets. A child sits in a [1][4] holder, either as
+    its own widget node or, for a text widget such as the slot number, as the holder's first leaf."""
+    out = []
+    for c in widget[1][1:]:
+        if c[0] != 1 or not isinstance(c[1], list):
+            continue
+        for g in c[1]:
+            if g[0] != 4 or not isinstance(g[1], list) or not g[1]:
+                continue
+            if is_header(g[1][0]):
+                out.append(g[1][0])
+            else:
+                out += [w[1][0] for w in g[1] if isinstance(w[1], list) and w[1] and is_header(w[1][0])]
+    return out
+
+
+def scale_y(header, factor):
+    widget, at = micro_floats(header, 0x02)
+    x, y, w, h = struct.unpack_from('<4f', widget, at)
+    struct.pack_into('<4f', widget, at, x, y * factor, w, h * factor)
 
 
 def td_screen(green_buttons, header_labels):
@@ -104,11 +163,60 @@ def faction_quad(roots):
     assert got == STOCK_LIST, f'faction list rect is {got}'
     x, y, w, h = struct.unpack_from('<4f', widget, at)
     struct.pack_into('<4f', widget, at, x, y, w, h * LIST_ROWS[1] / LIST_ROWS[0])
+    for name in (b'Combo_Button', FACTION_QUAD, FACTION_LIST):
+        found = headers(roots, name)
+        assert len(found) == 1, f'found {len(found)} {name!r}'
+        scale_y(found[0], faction_group_scale())
+    holder, at = row_height(roots)
+    got = round(struct.unpack_from('<f', holder, at)[0], 4)
+    assert got == STOCK_ROW_HEIGHT, f'faction list row height is {got}'
+    struct.pack_into('<f', holder, at, STOCK_ROW_HEIGHT * faction_group_scale())
+
+
+def row_height(roots):
+    """The list's row height (list box micro-chunk 05), a fraction of the combo box's height: the
+    list box's property leaf (id 4) sits in the holder beside the Combo_Listbox widget."""
+    def walk(node):
+        body = node[1]
+        if not isinstance(body, list):
+            return []
+        if node[0] == 4 and any(isinstance(c[1], list) and c[1] and is_header(c[1][0])
+                                and find_headers(c[1][0], FACTION_LIST) for c in body):
+            return [c[1] for c in body if c[0] == 4 and not isinstance(c[1], list) and bytes(c[1][:2]) == b'\x05\x04']
+        return [x for child in body for x in walk(child)]
+    found = [x for r in roots for x in walk(r)]
+    assert len(found) == 1, f'found {len(found)} faction list property leaves'
+    return found[0], 2
+
+
+def slot_room(roots):
+    """The faction drop-down answers the mouse only inside its slot's PlayerFactionGroup, which TD
+    sizes for three rows; nine rows ran past it, so the lower ones closed the list and took no
+    clicks. The slot's content area grows to hold the nine, every widget in it keeps its on-screen
+    place and size, and the faction group takes the whole area, as the colour group already does."""
+    content = headers(roots, SLOT_CONTENT)
+    assert len(content) == 1, f'found {len(content)} slot content groups'
+    widget, at = micro_floats(content[0], 0x02)
+    x, y, w, h = struct.unpack_from('<4f', widget, at)
+    assert round(h, 4) == CONTENT_H[0], f'slot content height is {h}'
+    struct.pack_into('<4f', widget, at, x, y, w, CONTENT_H[1])
+    k = CONTENT_H[0] / CONTENT_H[1]
+    scaled = 0
+    for header in child_headers(widget_of(roots, SLOT_CONTENT)):
+        scale_y(header, k)
+        scaled += 1
+    assert scaled == 9, f'scaled {scaled} slot widgets, expected 9'
+    faction = headers(roots, FACTION_GROUP)
+    assert len(faction) == 1, f'found {len(faction)} faction groups'
+    widget, at = micro_floats(faction[0], 0x02)
+    x, y, w, h = struct.unpack_from('<4f', widget, at)
+    assert abs(h - STOCK_FACTION_GROUP[3] * k) < 1e-4, f'faction group height is {h}'
+    struct.pack_into('<4f', widget, at, x, y, w, 1.0 - y)
 
 
 EDITS = {'UI_SKIRMISH_GAMELOBBY': td_screen(4, 4), 'UI_LAN_GAMELOBBY': td_screen(5, 4),
          'UI_LAN_MULTIPLAYERMENU': td_screen(3, 3), 'UI_WORKSHOPMAP_BROWSE': td_screen(0, 0),
-         'BUTTONFACTIONCOMBOBOX': faction_quad,
+         'BUTTONFACTIONCOMBOBOX': faction_quad, 'UI_GAMELOBBY_PLAYERSLOT': slot_room,
          'BUTTONPLAYERNAMECOMBOBOX': green_fonts([(b'Combo_Text', b'G16')]),
          'BUTTONTEAMCOMBOBOX': green_fonts([(b'Combo_Text', b'G18')]),
          'UI_LISTBOX_MAPSELECT_ENTRY': green_fonts([(b'Map_Name_Text', b'G16'), (b'Map_Climate_Text', b'G16'),
