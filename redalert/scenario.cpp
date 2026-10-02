@@ -926,6 +926,32 @@ bool Read_Scenario(char* name)
     }
 #endif
 
+#if 0 // TF DEV TOGGLE: RA2 tanks: an Apocalypse and a Prism Tank beside the player's MCV. Flip to 1 for testing.
+    /*
+    **  Spawns the two crate-only RA2 tanks for the player two rows south of the MCV, side by side
+    **  and facing south, so their art, turrets and weapons can be checked without a crate.
+    */
+    if (Session.Type != GAME_NORMAL && PlayerPtr != NULL) {
+        CELL home = 0;
+        for (int i = 0; i < Units.Count(); i++) {
+            if (Units.Ptr(i)->House == PlayerPtr && (*Units.Ptr(i) == UNIT_MCV || *Units.Ptr(i) == UNIT_TSMCV)) {
+                home = Coord_Cell(Units.Ptr(i)->Center_Coord());
+                break;
+            }
+        }
+        if (home != 0) {
+            static UnitType const _ra2[] = {UNIT_R2APOC, UNIT_R2PRIS};
+            for (int k = 0; k < (int)ARRAY_SIZE(_ra2); k++) {
+                CELL cell = Map.Nearby_Location(home + 2 * MAP_CELL_W - 1 + 2 * k, SPEED_TRACK, -1, MZONE_NORMAL);
+                UnitClass* tank = new UnitClass(_ra2[k], PlayerPtr->Class->House);
+                if (tank != NULL && (cell == 0 || !tank->Unlimbo(Cell_Coord(cell), DIR_S))) {
+                    delete tank;
+                }
+            }
+        }
+    }
+#endif
+
 #if 0 // TF DEV TOGGLE: Sensor Array test: a sleeping enemy Stealth Tank, a digging Sub APC and a deployed sensor. Flip to 1 for testing.
     /*
     **  Spawns an enemy TD Stealth Tank eight rows south of the player's MCV, told to sleep so it
