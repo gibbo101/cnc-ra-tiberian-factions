@@ -246,16 +246,17 @@ meta `crop` offset) and divide by the density. For reference, TS's 1x1 buildings
 +12 classic px below the cell centre, and unit shadows sit further out again the taller the unit
 (Wolverine +13.9, Juggernaut deployed +18, Titan +22.8).
 
-## 15. Unit selection boxes follow EA's convention (2026-09-26)
+## 15. Vehicle hulls are centred on the unit (2026-10-02, replaces the 2026-09-26 ground-line rule)
 
-The launcher centres a unit's box on the unit. EA's vehicle art stands on a common ground line
-(+7.7 classic px, measured off 4TNK/HTNK) with the art above centre, and the box is sized so its
-top and sides hug the art while the slack falls below. Never move art onto the box centre: size
-the box in `UnitTypeClass::Dimensions` (`_art_boxes`) as width = art width, height = 2 × the
-art's reach above (or below) centre.
-
-Lowering the art onto the box centre makes a snug box but stands the unit about 7 classic px
-below EA's vehicles in the same cell row.
+EA's HD vehicles centre the hull's opaque pixels on the unit to within 1.5 classic px (21 RA and
+TD vehicles measured; the Mammoths sit 2.6 high). Turrets and barrels stick up past it, and art
+bottoms vary from +6 to +14 classic px with size. The launcher centres the box on the unit, so a
+centred hull gets a box that hugs it. Our voxel packers put the model's ground point at the canvas
+centre, which drew hulls 3 to 7 px high: above EA's vehicles in the same row, with the box's slack
+below. `scripts/unit_centring.py` centres them after packing and records the drop for
+`Fire_Coord`. Size boxes from its printout (width = art width, height = 2 × the art's reach from
+centre). The 09-26 "+7.7 ground line" came from measuring only the two Mammoths. The
+`unit-art-placement` skill (`.claude/skills/`) walks through a new or re-packed unit.
 
 Proven 2026-09-26: the launcher places a unit's box at the unit's centre and ignores
 `CenterCoordY` and `Altitude` for it, alone or together (as it ignores them for buildings,

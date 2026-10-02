@@ -118,9 +118,10 @@ private:
     */
     static SearchDriveType* First;
     /*
-    ** This is a copy of the unparsed search path list
+    ** This is a copy of the unparsed search path list. The Remastered launcher passes every
+    ** enabled mod's path in one list; a list too long to copy is left out, never overrun.
     */
-    static char RawPath[512];
+    static char RawPath[16384];
 
     /*
     ** The drive letter of the current cd drive

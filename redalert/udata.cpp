@@ -2783,39 +2783,39 @@ void UnitTypeClass::Dimensions(int& width, int& height) const
 {
     /*
     **	Tiberian Factions -- the HD voxel and walker units size their selection boxes the way
-    **	EA's own vehicles are boxed: the box is centred on the unit and its art stands on the
-    **	common ground line, so the box is as wide as the art and twice as tall as the art
-    **	reaches above the unit's centre (or below it, when that is further): the health bar
-    **	sits on the box's top edge and must clear the whole unit, masts and antennas
+    **	EA's own vehicles are boxed: the box is centred on the unit, as is a vehicle's hull
+    **	(scripts/unit_centring.py), so the box is as wide as the art and twice as tall as the
+    **	art reaches above the unit's centre (or below it, when that is further): the health
+    **	bar sits on the box's top edge and must clear the whole unit, masts and antennas
     **	included. Values are the median over each unit's facings, in classic pixels, with
     **	turrets at their draw seats (Hover_Rack_Seat, Sonic_Turret_Seat) and the Titan's
-    **	12 px draw lift applied.
+    **	12 px draw lift applied; unit_centring.py prints them for the vehicles it centres.
     */
     static const struct {
         UnitType type;
         short width;
         short height;
     } _art_boxes[] = {
-        {UNIT_R2APOC, 36, 39},
-        {UNIT_R2PRIS, 34, 42},
-        {UNIT_C3MK3, 52, 41},
-        {UNIT_C3PRED, 32, 28},
-        {UNIT_TS4TNK, 35, 38},
-        {UNIT_TSSONIC, 38, 39},
+        {UNIT_R2APOC, 35, 30},
+        {UNIT_R2PRIS, 33, 34},
+        {UNIT_C3MK3, 53, 33},
+        {UNIT_C3PRED, 32, 22},
+        {UNIT_TS4TNK, 33, 30},
+        {UNIT_TSSONIC, 37, 32},
         {UNIT_TSHMEC, 42, 41},
         {UNIT_TSHARV, 37, 28},
         {UNIT_TSSMEC, 14, 27},
         {UNIT_TSJUGG, 31, 32},
-        {UNIT_TSSUBTANK, 38, 35},
-        {UNIT_TSSAPC, 29, 29},
+        {UNIT_TSSUBTANK, 36, 26},
+        {UNIT_TSSAPC, 28, 20},
         {UNIT_TSHVR, 30, 28},
         {UNIT_TSTITN, 29, 61},
-        {UNIT_TSAPC, 31, 31},
-        {UNIT_TSMCV, 36, 29},
+        {UNIT_TSAPC, 30, 22},
+        {UNIT_TSMCV, 35, 23},
         {UNIT_TSLIMP, 8, 22},
-        {UNIT_TSMEMP, 34, 35},
-        {UNIT_TSLPST, 32, 34},
-        {UNIT_TSMWAR, 34, 38},
+        {UNIT_TSMEMP, 33, 22},
+        {UNIT_TSLPST, 30, 23},
+        {UNIT_TSMWAR, 33, 28},
     };
     for (int i = 0; i < (int)ARRAY_SIZE(_art_boxes); i++) {
         if (_art_boxes[i].type == Type) {

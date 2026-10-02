@@ -558,6 +558,35 @@ def pack_apron(name, spec):
         patch_in_place(name, len(tiles), asset_packs.tileset_xml(name, f"TERRAIN_{theatre}"))
 
 
+def keep_centred(packed):
+    """The vehicles scripts/unit_centring.py centres are centred again after a re-pack (their hull's
+    offset measured and the drop recorded, as that script does), and art that rides with a vehicle
+    (the deployed sensor) moves by its vehicle's recorded drop."""
+    import unit_centring as uc
+    drops = json.load(open(uc.DROPS_JSON))
+    moved = False
+    for name, (hull_frames, _, _, _, partners) in uc.UNITS.items():
+        if name in packed:
+            path = asset_packs.art_zip(name, "UNITS")
+            _, data = uc.read_zip(path)
+            offset = uc.hull_offset(data, hull_frames)
+            if abs(offset) >= uc.TOLERANCE:
+                dy = -round(offset * uc.UNIT_DENSITY)
+                uc.shift_zip(path, dy)
+                drops[name] = dy
+                moved = True
+                print(f"{name}: hull centred, moved {dy:+d} canvas px")
+        for partner, kind, density in partners:
+            if (partner in packed or partner.removesuffix("MAKE") in packed) and name in drops:
+                uc.shift_zip(asset_packs.art_zip(partner, kind), round(drops[name] / uc.UNIT_DENSITY * density))
+                print(f"{partner}: moved with {name}")
+    if moved:
+        with open(uc.DROPS_JSON, "w") as f:
+            json.dump(dict(sorted(drops.items())), f, indent=2)
+            f.write("\n")
+        uc.write_header(drops)
+
+
 def main(argv):
     every = list(BUILDINGS) + list(UNITS) + list(APRONS)
     asked = [a for a in argv if a in every] or every
@@ -593,6 +622,7 @@ def main(argv):
     with open(STUB_MANIFEST, "w") as f:
         json.dump(stubs, f, indent=1)
         f.write("\n")
+    keep_centred(asked)
 
 
 if __name__ == "__main__":

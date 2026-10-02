@@ -135,6 +135,7 @@
 #include "tstitn_muzzle.h"
 #include "ts4tnk_muzzle.h"
 #include "r2tanks_muzzle.h"
+#include "unit_art_drop.h"
 #include "c3tanks.h"
 #include "tsjugg_muzzle.h"
 #include "tsctwr_muzzle.h"
@@ -545,6 +546,24 @@ FireDataType TechnoClass::Fire_Data(int which) const
     return {coord, dist};
 }
 
+/*
+**	Tiberian Factions -- how far scripts/unit_centring.py moved a unit's art down to centre its
+**	hull on the unit, in leptons south; zero for anything it left in place.
+*/
+static int TF_Art_Drop(TechnoClass const* techno)
+{
+    if (techno->What_Am_I() != RTTI_UNIT) {
+        return (0);
+    }
+    UnitType type = ((UnitClass const*)techno)->Class->Type;
+    for (int i = 0; i < (int)ARRAY_SIZE(_unit_art_drop); i++) {
+        if (_unit_art_drop[i].Type == type) {
+            return (_unit_art_drop[i].Drop);
+        }
+    }
+    return (0);
+}
+
 COORDINATE TechnoClass::Fire_Coord(int which) const
 {
     assert(IsActive);
@@ -573,7 +592,17 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
     **  zeroed; the real error was the missing FORWARD offset, so it could never seat on
     **  the nozzles. Removed 2026-05-30 -- fix PrimaryOffset in udata, no special case.)
     */
-    COORDINATE coord = Coord_Move(Center_Coord(), DIR_N, tclass->VerticalOffset + Height);
+    /*
+    **  Tiberian Factions -- fire points are measured on the art as packed; a unit whose art was
+    **  moved down to centre its hull fires from that much further south.
+    */
+    COORDINATE centre_art = Center_Coord();
+    int art_drop = TF_Art_Drop(this);
+    if (art_drop != 0) {
+        centre_art = XY_Coord(Coord_X(centre_art), Coord_Y(centre_art) + art_drop);
+    }
+
+    COORDINATE coord = Coord_Move(centre_art, DIR_N, tclass->VerticalOffset + Height);
     coord = Coord_Move(coord, DIR_E, tclass->HorizontalOffset);
 
     /*
@@ -606,7 +635,7 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
     if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_TSJUGG) {
         int fi = TechnoClass::BodyShape[Dir_To_32(dir)];
         short const* m = _tsjugg_muzzle[Target_Legal(TarCom) ? 1 : 0][fi];
-        COORDINATE centre = Center_Coord();
+        COORDINATE centre = centre_art;
         return XY_Coord((int)Coord_X(centre) + m[0], (int)Coord_Y(centre) + m[1]);
     }
 
@@ -618,7 +647,7 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
     if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_TS4TNK) {
         int fi = TechnoClass::BodyShape[Dir_To_32(dir)];
         short const* m = _ts4tnk_muzzle[which != 0][IsSecondShot ? 1 : 0][fi];
-        COORDINATE centre = Center_Coord();
+        COORDINATE centre = centre_art;
         return XY_Coord((int)Coord_X(centre) + m[0], (int)Coord_Y(centre) + m[1]);
     }
 
@@ -630,12 +659,12 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
     if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_R2APOC) {
         int fi = TechnoClass::BodyShape[Dir_To_32(dir)];
         short const* m = _r2apoc_muzzle[which != 0][IsSecondShot ? 1 : 0][fi];
-        COORDINATE centre = Center_Coord();
+        COORDINATE centre = centre_art;
         return XY_Coord((int)Coord_X(centre) + m[0], (int)Coord_Y(centre) + m[1]);
     }
     if (What_Am_I() == RTTI_UNIT && ((UnitClass const*)this)->Class->Type == UNIT_R2PRIS) {
         short const* m = _r2pris_muzzle[TechnoClass::BodyShape[Dir_To_32(dir)]];
-        COORDINATE centre = Center_Coord();
+        COORDINATE centre = centre_art;
         return XY_Coord((int)Coord_X(centre) + m[0], (int)Coord_Y(centre) + m[1]);
     }
 
@@ -652,7 +681,7 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
         int fi = TechnoClass::BodyShape[Dir_To_32(dir)];
         short const* seat = mk3 ? _c3mk3_seat_lep[hull] : _c3pred_seat_lep[hull];
         short const* m = mk3 ? _c3mk3_fire[which != 0][IsSecondShot ? 1 : 0][fi] : _c3pred_fire[0][0][fi];
-        COORDINATE centre = Center_Coord();
+        COORDINATE centre = centre_art;
         return XY_Coord((int)Coord_X(centre) + seat[0] + m[0], (int)Coord_Y(centre) + seat[1] + m[1]);
     }
 
@@ -670,7 +699,7 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
             short const* m = (stype == STRUCT_TSVULC)   ? _tsvulc_fire[fi][side]
                              : (stype == STRUCT_TSROCK) ? _tsrock_fire[fi][side]
                                                         : _tscsam_fire[fi][0];
-            COORDINATE centre = Center_Coord();
+            COORDINATE centre = centre_art;
             return XY_Coord((int)Coord_X(centre) + m[0], (int)Coord_Y(centre) + m[1]);
         }
     }
@@ -693,7 +722,7 @@ COORDINATE TechnoClass::Fire_Coord(int which) const
         int hy = (int)floor(-HORN_FWD_PX * cos(t) * PITCH_PCT / 100.0 + 0.5);
         int px = sx + hx;
         int py = sy + hy - HORN_LIFT_PX;
-        COORDINATE centre = Center_Coord();
+        COORDINATE centre = centre_art;
         return XY_Coord((int)Coord_X(centre) + (px * CELL_LEPTON_W) / 24, (int)Coord_Y(centre) + (py * CELL_LEPTON_H) / 24);
     }
 

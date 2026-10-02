@@ -37,6 +37,15 @@ SUBFOLDER_NAME="Vanilla_RA"
 #
 # The fifth faction (Tiberian Sun GDI) ships: TF_TS_GDI_FACTION keeps its default of 1, so the
 # DLL and the repo's CONFIG.MEG and picker art are already in release shape.
+
+# A re-packed vehicle comes out of its packer with the hull drawn high; unit_centring.py moves
+# it onto the unit and records the drop the fire points need. Refuse to ship one it hasn't seen.
+if ! python3 scripts/unit_centring.py --check > /dev/null; then
+    python3 scripts/unit_centring.py --check >&2
+    echo "ERROR: a vehicle's hull is off centre. Run scripts/unit_centring.py and rebuild." >&2
+    exit 1
+fi
+
 echo "==> Release build (TF_DEV_BUILD=0 — dev cheats compiled out)"
 CMAKE_TOOLCHAIN_FILE=cmake/i686-mingw-w64-toolchain.cmake \
   VC_CXX_FLAGS="-w;-fpermissive;-DTF_DEV_BUILD=0" \
