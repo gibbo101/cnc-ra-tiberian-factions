@@ -24,11 +24,18 @@ All files are glTF 2.0 binary (`.glb`), which Blender, Godot and most engines op
 | `dropship-bay.glb` | GADROP (cut from the game) | TSDROP | pad, pad-damaged | pad-centre |
 | `sensor-array.glb` | GADPSA (art GTDPSA) | TSDPSA | sensor-array, -damaged (deployed), sensor-array-stowed (mast down, outriggers in) | mast-pivot (the mast swings about the north-south axis through it), dish-centre |
 | `upgrade-center.glb` | GAPLUG (art GTPLUG) | TSPLUG, with TSPION, TSPODS, TSSEEK | upgrade-center, -damaged (with the dish); plug-drop-pod-node, plug-seeker-control, plug-ion-cannon-uplink (each in the east socket; 1.0 west for the west socket) | socket-west, socket-east, dish-pivot, slot-top, slot-bottom, lamp-low, lamp-high |
+| `pulse-cannon.glb` | NAPULS | TSPULS, TSPULST | pulse-cannon, -damaged (both without the head); head | head-pivot (the head turns on the drum about its vertical axis) |
+| `firestorm-generator.glb` | GAFIRE (art GTFIRE) | TSFGEN | firestorm-generator, -damaged (both without the arm and dome); arm-dome (closed over the pit) | arm-pivot, pit (the emitter's tip), lamp-1, lamp-2 |
+| `firestorm-wall.glb` | GAFSDF (art GTFSDF) | TSFSDF | section-alone, -end, -straight, -corner, -tee, -cross, each on its own cell 1.5 cells apart along x | |
+| `limpet-mine.glb` | DLIMPET (the Limpet Drone dug in) | TSDLIMP | limpet-mine (dug in), -damaged; limpet-drone (hovering, its claws out, as in the build-up before it digs in) | lens (the top that flashes), lamp |
 
 The war factory is Tiberian Sun's own shape, its door facing east (+x). The refinery's dock is on its east side,
 as in Tiberian Sun. The dropship bay's deck carries GDI's weathered eagle in its vertex colours, where the game
 draws it, across the deck inside the band; on the damaged pad it is burnt away in the blast. The radar's dish sweep and the war factory door's track (straight up 40 units, then a quarter
-circle of radius 49 into the roof) are in each file's extras.
+circle of radius 49 into the roof) are in each file's extras. So are the Firestorm generator's dome lift (68 units
+over the 20 frames of GTFIRE_A) and the Firestorm wall's frame numbering: a section's frame is its neighbours as a
+mask (north 1, east 2, south 4, west 8), plus 16 damaged and 32 with the field on. The six meshes are masks 0, 1, 5,
+3, 7 and 15, and every other mask is one of them turned.
 
 ## Units
 

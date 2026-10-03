@@ -16,7 +16,7 @@ Tiberian Sun GDI buildings, units, walls, gates and component towers, rebuilt as
 
 **Terrain (interior)** (2): TSPROCBB, TSWEAPBB
 
-**3D models** (36): apc, apc-water, barracks, carryall, construction-yard, devils-tongue, disruptor, dropship, dropship-bay, harvester, helipad, hover-mlrs, hunter-seeker, juggernaut, juggernaut-deployed, limpet-drone, mammoth-mk1, mammoth-mk2, mcv, mobile-emp-cannon, mobile-sensor-array, mobile-war-factory, orca-bomber, orca-fighter, power-plant, radar, refinery, sensor-array, service-depot, silo, subterranean-apc, tech-center, titan, upgrade-center, war-factory, wolverine. The HD rebuilds as glTF models, in `3d/`; `3d/README.md` lists their parts and conventions. The game does not use them.
+**3D models** (40): apc, apc-water, barracks, carryall, construction-yard, devils-tongue, disruptor, dropship, dropship-bay, firestorm-generator, firestorm-wall, harvester, helipad, hover-mlrs, hunter-seeker, juggernaut, juggernaut-deployed, limpet-drone, limpet-mine, mammoth-mk1, mammoth-mk2, mcv, mobile-emp-cannon, mobile-sensor-array, mobile-war-factory, orca-bomber, orca-fighter, power-plant, pulse-cannon, radar, refinery, sensor-array, service-depot, silo, subterranean-apc, tech-center, titan, upgrade-center, war-factory, wolverine. The HD rebuilds as glTF models, in `3d/`; `3d/README.md` lists their parts and conventions. The game does not use them.
 
 ## Using it
 
