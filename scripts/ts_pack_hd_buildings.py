@@ -149,6 +149,7 @@ def tiberium(img):
 # centres on the building's plot); crop=(x0, y0, x1, y1) cuts every frame to that box, which holds all the art. repeat=n plays the frames n times over (one set for both states), and
 # recolour / make_recolour apply a function to every tileset / build-up frame as it loads, and decal=dict(art, centre,
 # width, from_make) paints a flat emblem on the deck (source canvas px), the build-up from frame from_make on.
+# make_pick takes those build-up frames, in that order, instead of all of them.
 # Paths take -NN.png.
 BUILDINGS = {
     "TSFACT": dict(src="tsfact", make=("build-up/construction-yard-build", 32),
@@ -246,6 +247,24 @@ BUILDINGS = {
     "TSSEEK": dict(src="tsplug", make=None, frames=("plugs/seeker-control/seeker-control", 16), pick=(0, 15)),
     "TSDROP": dict(src="tsdrop", make=("build-up/dropbay-build", 19), frames=("building/dropbay", 2),
                    crop=(192, 226, 576, 482), decal=dict(art=EAGLE, centre=(384, 338), width=180, from_make=14)),
+    # The EMP cannon's mound on its 2x2 plot, healthy and damaged, with the head as its own layer. The
+    # build-up is every other frame of the 24 delivered, ending on the finished mound: 13 frames, the last
+    # three of which carry the head (building.cpp seats it from build-up stage 10).
+    "TSPULS": dict(src="tspuls", make=("build-up/pulse-cannon-build", 24), make_pick=[*range(0, 24, 2), 23],
+                   frames=("building/pulse-cannon", 2)),
+    # The head in 32 facings, drawn in place over the mound on the mound's canvas. building.cpp draws it
+    # TSPULS_TURRET_Y (10 classic px, 53 canvas px) lower than the mound, so it is packed 53 px higher.
+    "TSPULST": dict(src="tspuls", make=None, frames=("head/pulse-cannon-head", 32), crop_top=53, pad_bottom=53),
+    # The Firestorm generator on its 3x2 plot: the dome raised, the pit's lightning and the fins' lamps
+    # playing (48), healthy then damaged.
+    "TSFGEN": dict(src="tsfgen", make=("build-up/firestorm-generator-build", 19),
+                   frames=("loop/firestorm-generator-loop", 96)),
+    # A Firestorm wall section on its cell, in the wall view: the neighbour mask (N1 E2 S4 W8), +16
+    # damaged, +32 with the field on.
+    "TSFSDF": dict(src="tsfsdf", make=None, frames=("wall/firestorm-wall", 64)),
+    # The limpet mine dug in on its cell: its lens flashing (10), healthy then damaged. The build-up is
+    # all 42 of TS's DLIMPMK frames, the drone landing and digging in.
+    "TSDLIMP": dict(src="tsdlimp", make=("build-up/limpet-mine-build", 42), frames=("loop/limpet-mine-loop", 20)),
 }
 # The open-door near face is the same layer: the door is its own layer here.
 BUILDINGS["TSWEAPNU"] = BUILDINGS["TSWEAPNF"]
@@ -373,7 +392,7 @@ def frames(src, spec):
     make = []
     if spec["make"]:
         path, count = spec["make"]
-        make = [load(path, i) for i in range(count)]
+        make = [load(path, i) for i in spec.get("make_pick", range(count))]
     if spec.get("recolour"):
         tiles = [spec["recolour"](i) for i in tiles]
     if spec.get("make_recolour"):

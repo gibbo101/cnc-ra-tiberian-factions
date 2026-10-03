@@ -391,7 +391,7 @@ PACK_ARGS+=("$TMPDIR/tspilemk_stub.shp:TSPILEMAKE.SHP")
 # TS Limpet Mine on a 48x48 stub (the build-up's standing drone overhangs the 1x1 plot).
 ts_stub TSDLIMP "$TMPDIR/tsdlimp_stub.shp" 48 48 20
 PACK_ARGS+=("$TMPDIR/tsdlimp_stub.shp:TSDLIMP.SHP")
-ts_stub TSDLIMP "$TMPDIR/tsdlimpmk_stub.shp" 48 48 19
+ts_stub TSDLIMP "$TMPDIR/tsdlimpmk_stub.shp" 48 48 42
 PACK_ARGS+=("$TMPDIR/tsdlimpmk_stub.shp:TSDLIMPMAKE.SHP")
 ts_stub TSDPSA "$TMPDIR/tsdpsa_stub.shp" 48 78 10
 PACK_ARGS+=("$TMPDIR/tsdpsa_stub.shp:TSDPSA.SHP")
@@ -423,13 +423,14 @@ PACK_ARGS+=("$TMPDIR/tsdropmk_stub.shp:TSDROPMAKE.SHP")
 # tower rising into the headroom above it.
 ts_stub TSPOWR "$TMPDIR/tspowr_stub.shp" 48 51 2
 PACK_ARGS+=("$TMPDIR/tspowr_stub.shp:TSPOWR.SHP")
-# TS EMP cannon: static base (healthy + damaged) on the 2x2 48x48 box; the PULSCAN
-# turret is the TSPULST layer (32 facings).
-ts_stub TSPULS "$TMPDIR/tspuls_stub.shp" 48 48 2
-ts_stub TSPULS "$TMPDIR/tspulst_stub.shp" 48 48 32
+# TSPULS 48x60 = the HD EMP cannon's 256x320 canvas centred on its 2x2 plot, the head rising into the
+# headroom above: the mound (healthy + damaged) and the head as the TSPULST layer (32 facings), on the
+# same canvas.
+ts_stub TSPULS "$TMPDIR/tspuls_stub.shp" 48 60 2
+ts_stub TSPULS "$TMPDIR/tspulst_stub.shp" 48 60 32
 PACK_ARGS+=("$TMPDIR/tspulst_stub.shp:TSPULST.SHP")
 PACK_ARGS+=("$TMPDIR/tspuls_stub.shp:TSPULS.SHP")
-ts_stub TSPULS "$TMPDIR/tspulsmk_stub.shp" 48 48 13
+ts_stub TSPULS "$TMPDIR/tspulsmk_stub.shp" 48 60 13
 PACK_ARGS+=("$TMPDIR/tspulsmk_stub.shp:TSPULSMAKE.SHP")
 ts_stub TSPOWR "$TMPDIR/tspowrmk_stub.shp" 48 51 24
 PACK_ARGS+=("$TMPDIR/tspowrmk_stub.shp:TSPOWRMAKE.SHP")

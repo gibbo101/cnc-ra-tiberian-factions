@@ -194,12 +194,15 @@ def sounds():
 
 
 def main():
-    mine = mine_frames()
-    inf.write_zip(asset_packs.art_zip("TSDLIMP", "STRUCTURES"), "tsdlimp", mine)
-    patch_struct_tileset("TSDLIMP", len(mine))
-    make = make_frames()
-    inf.write_zip(asset_packs.art_zip("TSDLIMPMAKE", "STRUCTURES"), "tsdlimpmake", make)
-    patch_struct_tileset("TSDLIMPMAKE", len(make))
+    if asset_packs.hd_owned("TSDLIMP"):
+        print("TSDLIMP: HD art (ts_pack_hd_buildings.py), not written")
+    else:
+        mine = mine_frames()
+        inf.write_zip(asset_packs.art_zip("TSDLIMP", "STRUCTURES"), "tsdlimp", mine)
+        patch_struct_tileset("TSDLIMP", len(mine))
+        make = make_frames()
+        inf.write_zip(asset_packs.art_zip("TSDLIMPMAKE", "STRUCTURES"), "tsdlimpmake", make)
+        patch_struct_tileset("TSDLIMPMAKE", len(make))
     cameo()
     inf.sidebar("TSLIMP", "BuildIcon_TS_LimpetDrone")
     inf.text_rows("TSLIMP", "Limpet Drone",

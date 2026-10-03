@@ -187,7 +187,7 @@ def build(base):
     return frames
 
 
-def main():
+def write_sections():
     normal, live = build(0), build(32)
     frames = normal + normal + live + live
     out_zip = asset_packs.art_zip("TSFSDF", "STRUCTURES")
@@ -200,6 +200,13 @@ def main():
             z.writestr(f"tsfsdf-{i:04d}.meta", json.dumps({"size": [CW, CH], "crop": list(bbox)}))
     print(f"wrote {out_zip} ({len(frames)} frames)")
     W.patch_tileset(asset_packs.tileset_xml("TSFSDF", "STRUCTURES"), "TSFSDF", len(frames))
+
+
+def main():
+    if asset_packs.hd_owned("TSFSDF"):
+        print("TSFSDF: HD art (ts_pack_hd_buildings.py), not written")
+    else:
+        write_sections()
 
     icon = os.path.join(ART, "shp_fspicon", "frame-0000.png")
     if os.path.exists(icon):
