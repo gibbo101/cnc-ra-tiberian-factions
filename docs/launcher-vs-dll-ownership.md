@@ -1,62 +1,64 @@
 # Launcher vs DLL — the ownership map
 
-**Status:** Mapped 2026-05-28 from the GPL interface source (`redalert/dllinterface.{h,cpp}`) + `strings ClientG.exe`. No decompile required; every conclusion below is evidence-backed. This is the "ends the guessing" reference — when a behavior is unclear, check here before assuming whether it's launcher- or DLL-controlled.
+The launcher/DLL boundary map: is a behaviour owned by the launcher (`ClientG.exe`) or by our
+DLL, and can a mod reach it? Check here before assuming either way. Four levers reach
+launcher-owned behaviour: CONFIG.MEG data, loose texture files, the sim's writes into ClientG
+memory, and code patches from the DLL copy ClientG loads at startup.
 
-Complements `building-sound-routing.md` (credit-tick / per-event audio detail), `td-audio-routing-recipe.md` (SFXEvent mechanics), and `reference-td-eva-routing` (EVA voices).
+Complements `building-sound-routing.md` (per-event audio) and `td-audio-routing-recipe.md`
+(SFXEvent mechanics and EVA voices).
 
 ---
 
 ## TL;DR — the governing principle
 
-The Remastered front-end (Petroglyph "Mobius" engine, **native C++**) is **faction-blind**. It talks to our DLL over a narrow, fixed C ABI. Three rules follow:
+The Remastered front-end (Petroglyph "Mobius" engine, **native C++**) is **faction-blind**. It talks to the sim over a narrow, fixed C ABI. Three rules follow:
 
 1. **The launcher only knows what crosses the boundary.** If a piece of state (faction/side, render mode, a specific sound trigger) isn't in an interface struct or the callback, the launcher cannot act on it.
-2. **Faction-aware behavior is DLL-emitter-only.** The launcher plays audio and renders UI from the *name/value* the DLL hands it; it never branches on the player's faction itself. The single lever for GDI/Nod-specific behavior is **the DLL choosing the name/value (keyed on `ActLike`) before it crosses**. This is exactly how our shipped radar / EVA / unit-voice routing works.
-3. **Whatever the launcher does autonomously is not mod-controllable from the DLL** — the credit-counter animation + tick, the classic/remaster view toggle. (This is the *code* boundary — see the DATA caveat below. Sidebar *layout* turned out to be data: each faction's `FACTIONS.XML` entry names its tactical scene, so GDI/Nod load TD's HUD, `faction-select-identity.md`.)
+2. **Faction-aware behaviour starts in the DLL.** The launcher plays audio and renders UI from the *name/value* the DLL hands it; it never branches on the player's faction itself. The lever for per-faction behaviour is **the DLL choosing the name/value (keyed on `ActLike`) before it crosses**, which is how the radar, EVA, unit-voice and credit-tick routing work.
+3. **What the launcher does by itself needs one of the four levers below.** "Launcher-owned" does not mean "unmoddable"; it means the sim alone cannot change it.
 
-**The DATA lever (added 2026-05-28).** Rules 1–3 are about launcher *code*. The *data the launcher reads from `CONFIG.MEG`* — faction defs (`FACTIONS.XML`), Mission Select (`INSTANCES.XML`), localized strings (`MASTERTEXTFILE`), theatres/tilesets, GUI lists — **is moddable AND Workshop-shippable**: a mod ships its own `Data/CONFIG.MEG` and the launcher loads it over the base (proven on the Deck). So **"launcher-owned" ≠ "unmoddable"** — ask whether a behaviour is driven by CONFIG.MEG **data** (moddable) or hardcoded in `ClientG.exe` **code** (not). Canonical: `config-meg-mod-delivery.md`.
+**The data lever.** The data the launcher reads from `CONFIG.MEG` (faction defs in `FACTIONS.XML`, Mission Select in `INSTANCES.XML`, `MASTERTEXTFILE` strings, theatres, GUI lists, `.bui` screens) ships in the mod's own `Data/CONFIG.MEG`, which the launcher loads over the base; `Data/XML/GameConstants_Mod.xml` merges over GameConstants. Ask whether a behaviour is driven by data (moddable) before calling it a code lock. Canonical: `config-meg-mod-delivery.md`, `config-meg-lever-audit.md`.
 
-**The UI-image lever (added 2026-05-29).** Launcher 2D UI *images* — the sidebar faction crest, lobby logos, flags, buttons — live in the `MT_COMMANDBAR_COMMON.TGA` atlas and are **moddable** via a byte-edited loose `.TGA` in `Data/ART/TEXTURES/SRGB/` (vanilla, **no EMC**, proven on the Deck). So the real test is a **trichotomy**: CONFIG.MEG *data* and texture-atlas *images* are both moddable; only `ClientG.exe` *code* is the true lock. (The in-game sidebar emblem was first mis-filed as a code lock — it's an atlas image, `UI_SIDEBAR_FACTIONLOGO_ALLIES`.) Canonical: `ui-atlas-modding.md`.
+**The image lever.** Launcher 2D UI images (the sidebar crest, lobby logos, flags, buttons, menus) come from the `MT_COMMANDBAR_COMMON.TGA` atlas or standalone textures, and a loose copy in `Data/ART/TEXTURES/SRGB/` overrides them in the shell and in game. Canonical: `ui-atlas-modding.md`.
 
-**The RAM lever (added 2026-09-02).** A fourth bucket sits between atlas images and ClientG code:
-ClientG's *runtime state* is writable from the DLL (`OpenProcess` + `WriteProcessMemory` into the
-sibling process, proven under Proton). Two walls fell this way: launcher-owned EVA lines
-(overwrite the cached sample blob, `eva-ram-patch-spike.md`) and the side-keyed radar crest /
-sidebar (re-point the cached per-region UV record, `radar-crest-ram-spike.md`). What it can do:
-change what an existing launcher-drawn element samples or plays. What it cannot: add widgets,
-change layout or behaviour — those remain code. Probe with `scripts/clientg_region_probe.py`.
+**The RAM lever.** On the host, the sim's DLL opens ClientG (`TF_Open_ClientG`, `OpenProcess` + `ReadProcessMemory`/`WriteProcessMemory`) and rewrites its runtime state: the cached EVA sample blobs (`eva-ram-patch-spike.md`) and the cached per-region UV records behind the radar crest and sidebar (`radar-crest-ram-spike.md`). It changes what an existing launcher-drawn element samples or plays, never layout. Probe with `scripts/clientg_region_probe.py`.
+
+**The code-patch lever.** ClientG loads our DLL at its own startup on every machine, and `DllMain` patches ClientG's code in-process: the superweapon click specials, the key dispatcher and the plugin-event hook. The same copy applies the RAM lever for its own player in LAN games. See "Launcher-resident patches" below.
 
 ---
 
-## The process model (runtime-confirmed 2026-07-11)
+## The process model
 
-The Remastered runs **three processes**, and this is the foundation under every row of the ownership map. Confirmed at runtime via `/proc` on the live game (Deck) + static RE + a 3-way adversarial spike ([[spike-launcher-process-model]]):
+The Remastered runs **three processes**:
 
 ```
 ClientLauncherG.exe   — outer bootstrap/menu shell; spawns the other two
         ├── ClientG.exe          — THE "LAUNCHER"/front-end: renderer, UI, input,
         │                          faction picker, hotkeys. Imports d3d11/d3d9/bink2/mss32.
-        │                          Hosts NO game DLL — its ONLY contact with our RedAlert.dll
-        │                          is a version handshake: LoadLibraryA → GetProcAddress("CNC_Version")
-        │                          → compare 0x102 → FreeLibrary.
+        │                          Loads our RedAlert.dll at startup for a version handshake
+        │                          (CNC_Version); our DllMain patches ClientG's code and pins
+        │                          the DLL so it stays loaded.
         │        │  loopback TCP :16000 — encrypted + HMAC'd + CRC'd (CryptoPP), fixed message set
         │        ▼
-        └── InstanceServerG.exe   — the SIM server; the ONLY process that hosts our mod DLL
-                                   (LoadLibrary of .../Mods/Red_Alert/Vanilla_RA/Data/RedAlert.dll +
-                                   the full CNC_Init/Advance_Instance/Get_Game_State/Handle_* interface).
-                                   Maps only our DLL + crypto/ssl/curl/steam_api/tbb — ZERO rendering/UI code.
+        └── InstanceServerG.exe   — the SIM server. On the hosting machine it loads our DLL
+                                   (.../Mods/Red_Alert/Vanilla_RA/Data/RedAlert.dll) and runs the
+                                   full CNC_Init/Advance_Instance/Get_Game_State/Handle_* interface.
+                                   No rendering or UI code.
 ```
 
-`ClientG` dials **out** to `InstanceServerG` (the server on `CLIENT_PORT=16000`). The C&C payload on that socket is a **1:1 serialization of the CNC ABI**: the 13-member `EventCallback` union outbound (`GamePluginClass::Event_Callback` → `SERVER_TO_CLIENT_EXTERNAL_GAME_PLUGIN_EVENT`), and the `CNC_Get_Game_State` structs pulled inbound (`Export_State`/`Import_State`). ClientG's receiver (`IncomingExternalGamePluginEventClass::Execute`) is a **fixed compiled switch** over exactly those types — **no passthrough branch**; unknown payloads are dropped.
+The sim runs in InstanceServerG, which loads the DLL on the hosting machine only (in LAN, only the host simulates). ClientG loads the DLL at startup on every machine; `DllMain` there (`TF_Patch_Launcher_At_Load`) patches launcher code and pins the DLL, and a worker thread woken by the host's `@@TFL:` message applies the faction patches for that machine's own player. On the host, the sim's DLL also patches ClientG across processes.
 
-**Consequence — the CNC ABI *is* the process-boundary wire format, not a soft convention.** Our DLL runs only in `InstanceServerG` and cannot reach `ClientG`'s memory (separate process; no shared game-data segment — the only shared `/dev/shm` objects are Steam-IPC + wine-fsync infra). Our DLL can even patch its own host in-process, but that's inert: the receiver lives in the unmoddable `ClientG` binary and the BitStream is positional (appended fields desync + fail CRC). **Anything the front-end has no compiled handler for cannot be created by the running DLL, no matter what it emits** — new factions, new UI structure, new hotkey classification are all off the table at runtime. To "open up more options" you feed `ClientG` richer **data files at load** (CONFIG.MEG/FACTIONS.XML/textures) — there is no runtime channel. Adversarially verified 2026-07-11: 3 independent break attempts (socket-forge, data-file side-channel, in-process host-patch) all failed. Live lead for shell-UI reshaping: `ClientG`'s front-end is **Lua 5.1 + ClickScript VM + XML/.bui** data-driven — a *data* avenue, not a DLL one, and unprobed.
+`ClientG` dials **out** to `InstanceServerG` (the server on `CLIENT_PORT=16000`). The C&C payload on that socket is a **1:1 serialization of the CNC ABI**: the 13-member `EventCallback` union outbound (`GamePluginClass::Event_Callback` → `SERVER_TO_CLIENT_EXTERNAL_GAME_PLUGIN_EVENT`), and the `CNC_Get_Game_State` structs pulled inbound (`Export_State`/`Import_State`). ClientG's receiver (`IncomingExternalGamePluginEventClass::Execute`) is a **fixed compiled switch** over exactly those types, with no passthrough branch; unknown payloads are dropped.
+
+**Consequence: the CNC ABI is the wire format between sim and launcher.** The BitStream is positional (appended fields desync and fail the CRC), so nothing the sim emits can create launcher behaviour ClientG has no handler for. Launcher behaviour changes only through the four levers above. ClientG's front-end embeds Lua 5.1 and a ClickScript VM, but no `.lua` ships in any MEG and the CNC callback has no ClickScript member (`bui-front-end-modding.md`).
 
 ---
 
 ## Binary facts (so we never re-investigate tooling)
 
 - `ClientG.exe` (34 MB), `ClientLauncherG.exe`, `InstanceServerG.exe` are **native PE32 C++** — no CLR header (`mscoree` / `coreclr` / `hostfxr` all absent). **ILSpy/dnSpy do not apply.**
-- The **only** managed .NET binary in the install is `CnCTDRAMapEditor.exe` (.NET Framework 4.6.2 WinForms; source is already public on GitHub). The `System.*` / `Newtonsoft.Json` / `Pfim` DLLs in `bin/` are **the map editor's** dependencies — *not* evidence that the launcher is managed. (This was the false lead in the original "crack the launcher" memory note: .NET assemblies present in `bin/` ≠ managed launcher.)
+- The **only** managed .NET binary in the install is `CnCTDRAMapEditor.exe` (.NET Framework 4.6.2 WinForms; source is already public on GitHub). The `System.*` / `Newtonsoft.Json` / `Pfim` DLLs in `bin/` are **the map editor's** dependencies — *not* evidence that the launcher is managed.
 - Engine identity from strings: `pgaudio` (`SFXEventManagerClass`, `SFXEventClass`), build paths `c:\buildsystem\...\mobius\qa\libs\pgaudio\...`.
 - Native RE tooling on this machine: `objdump`, `strings` only (no Ghidra/rizin/wine). A *targeted* Ghidra dive is possible but currently unwarranted — see the last section.
 
@@ -86,9 +88,9 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 
 ### State pulled via `CNC_Get_Game_State`
 
-- **`CNCSidebarStruct`** (`dllinterface.h:344`): `Credits`, **`CreditsCounter`** *(animated display value — `= PlayerPtr->VisibleCredits.Current`, `dllinterface.cpp:4829`)*, `Tiberium`, `PowerProduced/Drained`, `MissionTimer`, kill/loss counters, button-enable flags, `RadarMapActive`, + variable `Entries[]`.
+- **`CNCSidebarStruct`** (`dllinterface.h:344`): `Credits`, **`CreditsCounter`** *(animated display value, `PlayerPtr->VisibleCredits.Current`)*, `Tiberium`, `PowerProduced/Drained`, `MissionTimer`, kill/loss counters, button-enable flags, `RadarMapActive`, + variable `Entries[]`.
 - **`CNCObjectStruct` / `CNCDynamicMapStruct` / `CNCMapDataStruct` / `CNCShroudStruct`**: render data.
-- **`CNCPlayerInfoStruct`** (`dllinterface.h:760`): `House` crosses here — **the only place faction-ish identity reaches the launcher** — but it's the raw RA house. GDI=`HOUSE_GOOD` / Nod=`HOUSE_BAD` collapse to Allied/Soviet for the launcher's purposes.
+- **`CNCPlayerInfoStruct`** (`dllinterface.h`): `House` crosses here, **the only place faction-ish identity reaches the launcher**, but it is the raw RA country house. GDI, Nod and TS GDI ride country houses (Spain, Greece, Germany), so the launcher sees Allied or Soviet.
 
 ---
 
@@ -97,16 +99,18 @@ Everything the DLL tells the launcher flows through the single `CNC_Event_Callba
 | Feature | Owner | Faction-routable from DLL? | Evidence |
 |---|---|---|---|
 | Gameplay SFX (weapons, placement, construction) | DLL emits by name | **Yes** — key on `ActLike` before `On_Sound_Effect` | `dllinterface.cpp:2553` |
-| EVA / speech | DLL emits by name | **Yes** — `SpeechTD[]` | `On_Speech`; `reference-td-eva-routing` |
+| EVA / speech | DLL emits by name | **Yes** — `SpeechTD[]` | `On_Speech`; `td-audio-routing-recipe.md` |
 | Radar on/off SFX | DLL emits by name | **Yes (shipped)** | `dllinterface.cpp:2553` (`VOC_RADAR_ON/OFF` branch) |
 | Unit acknowledgment voices | DLL emits by name | **Yes (shipped)** | `dllinterface.cpp:2638` |
-| **Credit counter + tick** | **Launcher** | **No** — global; launcher fires `RAR_SFX_CASHUP1` itself | `credits.cpp:102`; strings `GUI_Credits_Up_Tick`, `RAR_SFX_CASHUP1`; `building-sound-routing.md` |
-| **Classic/remaster view toggle (spacebar)** | **Launcher** | **No** — and the DLL cannot even *observe* it (see below) | `Legacy_Render_Enabled`; no input enum |
+| Credit counter animation | Launcher | No | strings `GUI_Credits_Up_Tick` |
+| Credit tick | DLL emits by name; the launcher's own `RAR_SFX_CASHUP1` is silenced | **Yes (shipped)**, addressed to the house whose credits moved | `CreditClass::AI` → `TF_Fire_Credit_Tick`; `building-sound-routing.md` |
+| **Classic/remaster view toggle (spacebar)** | **Launcher** | No, but data locks it out (`CNCDisableLegacyGraphicsOption`); the DLL cannot *observe* it (see below) | `GameConstants_Mod.xml`; no input enum |
 | Sidebar build icons / cost / progress | DLL supplies per-entry; launcher renders | **Partial** — DLL owns `AssetName`/cost/etc. | `CNCSidebarEntryStruct` |
 | HUD credit/power/timer **values** | DLL supplies values; launcher renders | Values yes, rendering no | `CNCSidebarStruct` |
-| Superweapon `$cost` line suppression | Launcher (`SW_` whitelist) | No | `reference-launcher-superweapon-cost-suppression` |
+| Superweapon `$cost` line suppression | Launcher (keyed on the AssetName string) | Only by choosing the AssetName | see "Superweapon $cost line" below |
 | **Superweapon targeted-vs-instant firing** | **Launcher** (compiled: the cameo left-click handler forks on the entry being a superweapon) | **Yes, by a runtime code patch of ClientG** (every player; see "Launcher-resident patches"). Data levers are dead; see below | `TF_Patch_ClientG_Click_Specials`; see below |
-| Win/lose stings, "under attack", low-power GUI SFX | Launcher (`Faction_Event_GUI_SFX_*`) | No (Allied/Soviet only — see below) | strings |
+| Launcher-played EVA lines (mission won/lost, select target, low power, cannot deploy, battle control terminated) | Launcher (`Faction_Event_GUI_SFX_*`) | **Yes (shipped)**, by overwriting the cached samples at match start | `eva-ram-patch-spike.md` |
+| Other launcher GUI stings | Launcher | No (Allied/Soviet only, see below) | strings |
 
 ---
 
@@ -144,54 +148,21 @@ for the name family before touching records.**
 
 1. **No GDI/Nod faction exists in the launcher.** The only C&C faction tokens are `ALLIED` / `SOVIET`. The `GDI` string hits are Windows **G**raphics **D**evice **I**nterface — *"render target is not compatible with GDI"* — false positives; there is **no `NOD` token at all.**
 2. **Much of `FactionType` is dormant cross-title engine code.** Sibling events like `Currency_Wood_Stolen`, `Animal_Stolen`, `EpicConstructed`, Metagame-AI build orders, `Coordinator_Quick_Match` are from Petroglyph's *other* Mobius-engine titles — present in the shared lib, not wired up for RA.
-3. **Our factions are ActLike-hijacked**, so even where the launcher *is* faction-aware it sees Allied/Soviet, not GDI/Nod. And the credit **tick** (`RAR_SFX_CASHUP1`) is not faction-prefixed anyway — it's a single global event.
+3. **Our factions are ActLike-hijacked**, so even where the launcher *is* faction-aware it sees Allied/Soviet, not GDI/Nod. And the launcher's credit **tick** (`RAR_SFX_CASHUP1`) is a single global event; the mod silences it and the DLL fires its own.
 
 **Consequence for the future genuine-houses arc:** even if we someday add real `HOUSE_GDI`/`HOUSE_NOD` engine houses, the launcher still won't gain GDI/Nod faction-audio slots (they don't exist in the binary), so faction UI/audio would *still* be DLL-emitter-routed. The launcher's `FactionType` table is a dead end for our purposes regardless.
 
 ---
 
-## Select-all (`a`) and Deploy (`/`) unit classification — RESOLVED (2026-06-03)
+## Select-all (`a`) and Deploy (`/`): the DLL owns both keys
 
-**Question:** the `a` "select all combat units" and `/` "deploy" hotkeys ignore our TD-faction harvester (`TDHARV`) and MCV (`TDMCV`) — recognising only RA's `HARV`/`MCV`. Is there a moddable lever?
+The launcher classifies units for these two hotkeys by hardcoded identity, and no data reaches it:
 
-**Both levers are closed. The classification is compiled into `ClientG.exe`.**
-
-### The launcher's component-object model (`strings ClientG.exe`)
-`ClientG.exe` runs Petroglyph's Mobius **component model**: it imports each game object from our DLL and maps it into native components via an `ExportBits.*` bitfield. Relevant components: `ResourceHarvesterComponentClass` (harvesters), `LocomotorComponentClass` (move), `TurretComponentBaseClass` (turret), `SelectBaseComponentClass` (selectable), `StructureConstructionComponentClass` (deploy/build). The hotkey commands exist as `COMMAND_CNC_SELECT_ALL_ON_SCREEN` / `_IN_WORLD` and `COMMAND_CNC_DEPLOY_SELECTED_MCV`, dispatched through `RTSInputManagerClass`. **The mapping from our narrow `CNCObjectStruct` fields → these components is hardcoded in the binary** — we control only the `CNCObjectStruct` fields, never the mapping.
-
-### Data lever (CONFIG.MEG): DEAD — proven negative
-Extracted + enumerated CONFIG.MEG (`scripts/meg_extract.py`). The only per-unit table is `DATA/XML/OBJECTS/UNITS/RABUILDABLES.XML`, and **all 189 entries share an identical 3-field schema** — `<CNCEncyclopediaComponent>` with `ObjectNameTextID` / `ObjectDescriptionTextID` / `BuildIcon` only. There is **no role / combat / deployable / harvester / selectable / category field on any entry**: `RA_HARV`, `RA_MCV`, the deployable `RA_MNLY`, and a plain `RA_1TNK` tank are byte-for-byte the same field set. `BUILDABLECATEGORIES.XML` = three sidebar display groups (no per-unit map). `OBJECTSTATES.XML` defines state-type *classes* (`Harvester`, `IsDeployed`, `Refinery`) but **never binds them to specific units** — that binding is made at runtime by the DLL/engine. **Conclusion: select-all/deploy classification is NOT in CONFIG.MEG data; shipping a modded `Data/CONFIG.MEG` cannot reach it.**
-
-### Binary lever: hardcoded by identity, not a settable flag
-The MCV is recognised by IniName/numeric type, not an exported capability bit: `CNCObjectStruct.CanDeploy` / `IsDeployable` are **declared but never populated** by us *or* EA (grepped both trees), yet RA's MCV deploys fine — so the launcher does **not** gate on them; they're vestigial. The MCV-deploy spike already tried the one DLL lever (spoof `TypeName="MCV"` for `TDMCV`) and the deploy key still ignored it ([[project-mcv-deploy-hotkey-spike]]).
-
-### What this means
-- **BOTH the harvester AND the MCV leak on `a`** — Deck-confirmed 2026-06-03 (Luke). This **disproves** the earlier guess that `CanHarvest=true` (exported for `TDHARV`) would get the harvester excluded. The launcher's `a`-exclusion does **not** read the `CanHarvest` bit; it recognises RA's `HARV`/`MCV` by **hardcoded identity** (which is why the RA units don't leak but `TDHARV`/`TDMCV` do). The `ResourceHarvesterComponent` mapping evidently drives other harvester behaviour (resource UI/cursor), not the select-all filter.
-- **`a`-exclusion and `/`-deploy: SOLVED 2026-09-02 on the DLL side — see the section below.**
-- **The DLL-routed drag-box select IS fixed** — `should_exclude_from_selection` (display.cpp ~2827) now lists `UNIT_TDMCV`; `TDHARV` covered by `IsToHarvest`. Only the launcher-driven `a`/`/` army paths remain gated.
-
-### The `/` and `a` walls are DOWN (2026-09-02) — the DLL owns both keys
-
-**Deploy (`/`, backslash by default):** the launcher's `COMMAND_CNC_DEPLOY_SELECTED_MCV`
-self-clicks the selected unit (it sends `INPUT_REQUEST_COMMAND_AT_POSITION` at the unit) **only
-when the exported `AssetName` AND `TypeName` are both exactly "MCV"** — proven live: aliasing
-both made a GDI MCV deploy by key; `TypeName` alone did not. (The 2026-06-03 "spoofs are a dead
-end" verdict was a bad test — that spoof never reached the launcher, the art stayed TD.) Since
-`AssetName` drives the art, the shipped fix bypasses the launcher: `TF_Deploy_Key_Tick`
-(`dllinterface.cpp`, per frame from `CNC_Advance_Instance`) polls `GetAsyncKeyState` for
-`VK_OEM_5` (backslash, the launcher's default deploy binding) — the DLL's InstanceServerG shares the Wine/Windows session with ClientG,
-so the key is visible cross-process — and on a fresh press runs `TF_Self_Action_Selected()`, the
-mod-command-1 rule (every selected object asked `What_Action(self)`, acted on only for
-`ACTION_SELF`). MCVs of every faction deploy, APCs/transports/Chinooks unload, minelayers lay,
-TS deployables follow for free. No binding, no XML, no RAM patch.
-
-**Select-all (`a`):** launcher-driven — ClientG picks the objects and hands them to
-`CNC_Clear_Object_Selection` + `CNC_Select_Object` one by one, excluding only the stock HARV/MCV
-by interned name id (ClientG interns unit names at startup; that object holds "HARV" at +0xaf8
-and "MCV" at +0xafc). The DLL now applies the engine's own band-select rule at the hand-over:
-`TF_Select_All_Excludes` refuses harvesters (`IsToHarvest`) and any `Is_MCV()` while A is down or
-was pressed within the last 10 frames (the launcher's round trip lands a frame or two after the
-key). Verified: minigunner selected by A, GDI MCV and GDI harvester not.
+- **Component model:** ClientG maps each exported object into native components (`ResourceHarvesterComponentClass`, `LocomotorComponentClass`, `SelectBaseComponentClass`, `StructureConstructionComponentClass`) through an `ExportBits.*` bitfield. The commands are `COMMAND_CNC_SELECT_ALL_ON_SCREEN` / `_IN_WORLD` and `COMMAND_CNC_DEPLOY_SELECTED_MCV`, dispatched by `RTSInputManagerClass`. The mapping from `CNCObjectStruct` fields to components is compiled in.
+- **No data lever:** the only per-unit table in CONFIG.MEG, `RABUILDABLES.XML`, has three fields per entry (name, description, build icon) and no role, deployable or harvester field. `OBJECTSTATES.XML` defines state classes but never binds them to units. `CNCObjectStruct.CanDeploy` / `IsDeployable` are never populated by EA or by us, and select-all does not read `CanHarvest`.
+- **Deploy:** `COMMAND_CNC_DEPLOY_SELECTED_MCV` self-clicks the selected unit only when its exported `AssetName` and `TypeName` are both exactly "MCV"; the art follows `AssetName`, so aliasing is no fix. Instead `TF_Deploy_Key_Tick` reads backslash (`VK_OEM_5`, the launcher's default deploy binding) with `GetAsyncKeyState`, which works because InstanceServerG and ClientG share one Wine/Windows session, and runs `TF_Self_Action_Selected`. Each selected object whose self-click answers `ACTION_SELF` acts on it: MCVs deploy, transports unload, minelayers lay, a selected group deploys together (`TF_DeployKeyBatch`), and a deployed Mobile War Factory packs up by this key only. A press counts once per house, because on the host it also arrives through the launcher's patched deploy command.
+- **Select-all:** ClientG picks the objects and hands them over through `CNC_Clear_Object_Selection` + `CNC_Select_Object`, excluding only the stock HARV and MCV by interned name id (an object holding "HARV" at +0xaf8 and "MCV" at +0xafc). `TF_Select_All_Excludes` drops harvesters (`IsToHarvest`) and any `Is_MCV()` from that hand-over for 10 frames after an A press (read from the keyboard) or after mod command 2, which the patched launcher sends just before its own select-all. The drag-box select is DLL-routed and filtered in `should_exclude_from_selection` (`display.cpp`).
+- In LAN games every player's deploy and select-all keys reach the host through the launcher-resident key patch ("The keys", below).
 
 ClientG facts for next time: command ids deploy = `0x1020`, select-all-on-screen = `0x101b`
 (name-registered at 0x14b1xxx); `CNC_Handle_*` strings are NOT in ClientG (InstanceServerG calls
@@ -244,7 +215,7 @@ launcher gets it too (see "Launcher-resident patches" below).
 
 ### Launcher-resident patches: LAN joiners get every launcher patch (2026-09-30)
 
-Only the host simulates a LAN game ([[reference-lan-mp-host-only-sim]]), so everything the DLL
+Only the host simulates a LAN game, so everything the DLL
 did to a launcher (crest, TD tab icons, era EVA lines, click specials) used to reach the host's
 launcher only. **But ClientG loads the mod's DLL itself, briefly, at its own startup, on every
 machine** (dev `tf_dll_load.log`: `attach ... ClientG.exe`, then `detach` a moment later). That
@@ -321,17 +292,15 @@ exhausts; plus `Text_String` off-by-one rejected the last slot -> NULL -> CTD. F
 25->128; dedup by id in TechnoTypeClass::Read_INI; inline.h `<`->`<=`; NULL-guard OverrideDisplayName in
 dllinterface.cpp. Only after this could the roster keep growing.
 
-### Classic-mode toggle: DENIABLE via launcher DATA (proven in-game 2026-07-21)
+### Classic-mode toggle: locked out by launcher DATA
 
 **`GAMECONSTANTS.XML` → `<CNCDisableLegacyGraphicsOption network="client"> True </...>`
 removes classic graphics from the game.** EA added it as a mod option in 2020 ("Community-
 requested Mod option so that players can't access legacy graphics"). Verified on the desktop:
 the toggle is gone from the Options menu **and the spacebar no longer switches modes**.
 
-Delivery is the channel the pixel-perfect zoom factors already use — the edit is applied by
-`scripts/gameconstants_build.py`, shipped both as loose `Data/XML/GAMECONSTANTS.XML` and inside
-the mod's `Data/CONFIG.MEG`, under the same-size rule (the replacement is byte-length-neutral:
-` False ` → ` True  `).
+It ships in `Data/XML/GameConstants_Mod.xml`, which ClientG merges over the base GameConstants
+(additive, no same-size rule).
 
 **This is the trichotomy in action, and a caution about how the section below reads.** Every
 finding under it remains true — the *DLL* still cannot detect, suppress, or even observe the
@@ -340,11 +309,9 @@ DLL-side routes plus a RAM probe were spent before anyone checked the launcher's
 a switch that had been sitting there since 2020. When a behaviour is launcher-owned, search
 `CONFIG.MEG` **first**; `ClientG.exe` code is the only real lock.
 
-### The DLL still cannot detect classic mode AT ALL (measured 2026-07-19)
+### The DLL cannot detect classic mode at all
 
-Previously recorded as "launcher-owned, DLL only gates availability". In-game testing
-hardened that considerably — a mod cannot even tell whether classic mode is on screen,
-let alone react to it.
+A mod cannot tell whether classic mode is on screen, let alone react to it.
 
 - **Refusing the page does not suppress the toggle.** Returning false from
   `CNC_Get_Visible_Page` makes the launcher switch to classic and render an empty
@@ -381,5 +348,5 @@ between samples, and a running RTS changes vast amounts of memory for unrelated 
 so coincidental survivors swamp the signal. Doing it properly needs live iterative
 filtering (hold the candidate set in memory, re-filter on every toggle, ~a dozen rounds)
 rather than offline diffing of a few snapshots. Not worth it for a cosmetic notice;
-revisit only if classic-mode detection is ever needed for something substantial.
-Tooling kept: session scratchpad `ram_toggle_probe.py` + `watch_candidates.py`.
+revisit only if classic-mode detection is ever needed for something substantial. It is moot
+while classic mode is locked out.
