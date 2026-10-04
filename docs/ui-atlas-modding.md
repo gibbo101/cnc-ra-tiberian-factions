@@ -53,6 +53,25 @@ Native `UI_SIDEBAR_FACTIONLOGO_GDI`/`_NOD`/`_DINO` regions exist (Tiberian Dawn)
 
 Our TD building/unit sprites (`Data/ART/TEXTURES/SRGB/RED_ALERT/.../*.ZIP`) render via our **DLL's tileset-XML pipeline** (the MFCD-donor path) — a different mechanism. The UI atlas is launcher-internal and needed the loose-`.TGA` override this doc establishes.
 
+## Growing the atlas (proven 2026-09-11, not adopted)
+
+When every region is taken, the atlas can grow. The `.MTD` stores pixel boxes only, with no
+atlas size, and ClientG carries no size constant: it divides by the real texture size. An
+8192x8192 atlas, with the stock art at its own coordinates and the rest padded, loads; the menu,
+lobby and TD sidebar draw correctly, ClientG's cached region records read W=H=8192, and the TS Nod
+emblem painted at 7000,100 drew as the live radar crest.
+
+- **The new space has no names.** A loose `.MTD` is ignored, so new pixels are reached only by
+  re-pointing a cached region record at runtime (`radar-crest-ram-spike.md`).
+- **Adopting it** means moving everything that hardcodes 6871x6716 to the new size: the crest
+  needles in `dllinterface.cpp` (`const double W = 6871.0, H = 6716.0`), and
+  `crest_atlas_paint.py`, `picker_emblems_paint.py`, `frontend_atlas_build.py`,
+  `title_logo_build.py` and `clientg_region_probe.py`'s default. The loose file grows from 184 to
+  268 MB.
+- **Probe tools:** `scripts/atlas_grow_probe.py` builds the grown copy, `scripts/clientg_ratio_scan.py`
+  prints each record's effective W,H during a match, and `ATLAS_W`/`ATLAS_H` override
+  `clientg_region_probe.py`'s size.
+
 ## Payload
 
 The atlas is ~176 MB uncompressed (one loose `.TGA`). A **single** ship covers *all* UI-image edits (crest + flags + buttons + menus). Byte-editing keeps each iteration's rsync delta tiny.

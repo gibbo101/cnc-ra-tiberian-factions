@@ -36,13 +36,13 @@ that cost the faction names earlier the same day.
 
 **It is the only `_Mod` overlay.** No `InputTranslatorConfigurations_Mod.xml` exists in the
 binary, which is the independent confirmation that mod hotkey *bindings* cannot be shipped and
-must be bound by the player. See `todo.md`.
+must be bound by the player (Tier 1 item 1 below).
 
 ## Tier 1 — actionable levers
 
-### 1. Mod hotkey commands (chain complete; SUPERSEDED 2026-09-02 for deploy — the DLL polls the key directly, see launcher-vs-dll-ownership.md)
+### 1. Mod hotkey commands (in use)
 
-EA built a mod hotkey path and left the hook in our own source. We have never connected it:
+EA built a mod hotkey path and left the hook in our own source:
 
 1. **`GAMECONSTANTS.XML`** — `CNCEnableModHotKeyGameCommands`, commented *"Community-requested
    Mod option so that players can have customized mod hotkey commands"*.
@@ -55,13 +55,26 @@ EA built a mod hotkey path and left the hook in our own source. We have never co
    `// TBD: For our ever-awesome Community Modders!` with a suggested
    `PlayerPtr->Handle_Mod_Game_Command(cell, index)`.
 
-So the launcher will deliver four modder-defined keypresses **with a map cell**; only our handler
-is missing. **First target: the MCV deploy hotkey**, currently a shipped known limitation.
+So the launcher delivers four modder-defined keypresses **with a map cell**.
 
-**Test the binding half first.** Our edits to `INPUTTRANSLATORCONFIGURATIONS.XML` have never been
-proven to take effect — the one attempt rebound the classic-mode spacebar and failed, which is
-consistent with that key being client-hardcoded but is not evidence either way. Bind one key, log
-from the DLL case, confirm arrival, then build.
+**What ships:** `CNCEnableModHotKeyGameCommands` is on in `GameConstants_Mod.xml`, and the handler
+in `dllinterface.cpp` (`INPUT_REQUEST_MOD_GAME_COMMAND_1..4_AT_POSITION`) uses two of them. Mod
+Command 1 runs each selected object's self-action (MCVs deploy, transports unload), as an
+optional player-bound alias: the deploy key itself is read straight from the keyboard
+(`launcher-vs-dll-ownership.md`). Mod Command 2 is sent by the patched launcher key code just
+before its own select-all (`TF_Patch_Launcher_Keys_In`), so the DLL can filter harvesters and
+MCVs out of the selection.
+
+**A mod cannot ship a default binding (2026-07-21 to 07-23).** Four attempts all left Mod
+Command 1 unbound: the binding in `INPUTTRANSLATORCONFIGURATIONS.XML` inside the mod's
+CONFIG.MEG; the same file loose in `Data/XML/`; Options > Controls "Restore Defaults"; and a
+freshly created profile. Our unbind of the launcher's own deploy command was ignored too, so
+the client reads none of that file. Kushan's PPM guide (2020) describes player-bound mod
+commands as the intended flow. The settings-file route is not worth taking either:
+`userdata/<id>/1213210/remote/Player_RA_settings_1.bin` is a ChunkFile with a nested `CH`+zlib
+chunk inside, each layer with a header hash that matches no standard algorithm; a first binding
+inserts 64 bytes, so the same-size trick does not apply; and the file is global RA settings,
+Steam Cloud synced and kept after unsubscribe, so it is the wrong file for a mod to write.
 
 ### 2. Campaigns are a faction-bound data layer
 

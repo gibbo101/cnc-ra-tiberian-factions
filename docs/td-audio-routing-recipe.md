@@ -169,6 +169,24 @@ User can toggle at runtime via Options → Audio. Without both aliases, one mode
 
 Reilsss's reference mod uses `<entry> TDC_SFX_OBELRAY1.WAV </entry>` with spaces inside. We've replicated this pattern for safety, though unclear if the launcher is whitespace-strict.
 
+### An inaudible sound: check the event's preset and mixer before the sample
+
+When a routed sound plays silent, walk the chain after the sample first: event → preset → mixer.
+The TS credit tick's preset pinned its volume at 5 of 100, and eight rounds went on the sample
+before anyone looked.
+
+### The VOC enum and `SoundEffectName[]` are order-coupled
+
+`VocType` in `defines.h` indexes `SoundEffectName[]` in `audio.cpp` by position. Append a new
+sound to both, in the same order; an entry out of step plays its neighbour's sound.
+
+### Never repoint the silenced radar events
+
+The launcher fires `RA?_SFX_RADARON2` / `RADARDN1` itself, so those events point at 44-byte
+silent WAVs and the DLL plays the faction's pair (`building-sound-routing.md`). Repointing the
+stubbed events un-silences the launcher's copy and the sound plays twice. A new era gets its own
+event pair and a route in the DLL.
+
 ---
 
 ## Reference precedent

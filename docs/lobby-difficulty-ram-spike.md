@@ -38,7 +38,7 @@ plain solo skirmish hits it from the second match of a session onward. Fix = a d
 re-scan from `CNC_Advance_Instance` (`TF_Lobby_Difficulty_Retry`, 4 attempts 90 frames apart)
 that requires **two consecutive agreeing scans**, because the rebuild passes through
 half-written states that are briefly self-consistent (`E M H M` was caught reading `E M M M`).
-Evidence and the failure census: `known-issues.md` "Per-slot difficulty goes stale".
+Evidence and the failure census: `git show b6d3b52c:docs/known-issues.md`, "Per-slot difficulty goes stale".
 
 **`GlyphxID` cannot discriminate live from stale arrays** — the IDs are fixed per slot index
 (slot 1 read `1055504538` in two sessions hours apart), not generated per lobby.
@@ -61,7 +61,7 @@ lobbies" previously recorded here was diagnosed on the assumption that the scann
 array was saved config. That assumption is wrong (measurement 2), so the reasoning
 behind that bug does not hold. Re-test before treating it as real.
 
-Companion findings and session narrative: `todo.md` Phase 1 block, `ai-upgrade-plan.md`
+Companion findings and session narrative: `git show b6d3b52c:docs/todo.md` Phase 1 block, `ai-upgrade-plan.md`
 §6 Phase 1 STATUS.
 
 **Implementation notes (what shipped, all in `redalert/dllinterface.cpp`):**

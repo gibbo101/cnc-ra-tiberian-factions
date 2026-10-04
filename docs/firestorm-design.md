@@ -16,7 +16,7 @@ Open, in order:
 2. ~~LAN~~ DONE (5a7fb2a9, 8f85c28e, 4a447d6c, LAN-verified).
 3. **Placement-preview probe** for the line fill (can the DLL see the cursor cell while a wall
    is placed; `INPUT_REQUEST_MOUSE_MOVE` returns early without legacy rendering).
-4. Enemy-side checks are on main's LAN test list (`docs/todo.md` item 2).
+4. Enemy-side checks wait for a LAN game (`docs/todo.md`, "Needs a LAN game with a second human").
 5. **TS Service Depot** (2026-09-30, played on the Deck): the pad glow (TSDEPTRP = GTDEPT_D frames
    0-13, drawn while BSTATE_ACTIVE; GADEPT_C1-C3 exist in no TS mix) works. The depot's 3x3 is solid,
    so a vehicle standing on it may cross its cells to leave, the gantry cells (west column, top two:
@@ -28,7 +28,7 @@ Open, in order:
    ring is centred on the middle cell, TS_DEPOT_SEAT_EAST_PX/SOUTH_PX go to 0 and the drive-on rail
    comes out. Glide approaches (Roll_On_Seat) were tried and rejected by Luke.
 6. **Light orange selection box on a limpeted unit:** moved to post-release (Luke, 2026-09-30),
-   `docs/todo.md` "Post-release".
+   `docs/todo.md` "Next version: first jobs".
 7. **Wall-section seam watch:** the launcher places a sprite half its classic stub width from its
    centre, so an odd stub width lands ~2.7 HD px east. TSFSDF is 33x60 (`build_tfassets.sh`, ~line
    544). The walls branch moved the TS walls and towers to 192-wide canvases (stub 36) for this; if a

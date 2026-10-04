@@ -1629,6 +1629,41 @@ clause. Same literal-chain audit was needed for repair
   already shipped; ship call is Luke's (`ts-asset-import-spike.md` legal
   note).
 
+**TS infantry, Firestorm units and aircraft (2026-09-13 to 09-17):**
+- **The launcher places the selection box and health bar from the first shape
+  an object draws, plus its exported centre.** The export Type and Altitude do
+  nothing for them. An airborne jumpjet draws its body before its shadow and
+  lifts `CenterCoordY` by Height.
+- **Engine checks that assume only aircraft fly**, each exempting jumpjets now:
+  `MissionClass::AI` returns early for infantry, units and vessels with
+  Height > 0, so no mission runs in flight; `TechnoClass`'s target maintenance
+  (and the attack-move check) drops a non-aircraft's target that is out of
+  range in another zone; a move click is pulled back into the unit's own zone
+  (`Nearby_Location`); the SAM state machines take only aircraft (a jumpjet goes
+  through the airborne test at `building.cpp:191`).
+- **`Good_Fire_Location`'s ring search starts a cell inside weapon range**, so
+  it never runs for a weapon under about 3 cells (the Orca Bomber's 1.5-cell
+  bomb). Short weapons fly straight over the target.
+- **RA's `::Distance()` is an approximation.** An arc flown on it landed about
+  290 leptons long (Juggernaut); ballistic shots use the true distance.
+- **TS barrel pitch 64 is level**; TS rests barrels level and raises them only
+  while aiming.
+- **TS aircraft renders already start at north and run counter-clockwise**; no
+  +8 facing offset (`scripts/ts_pack_aircraft.py`).
+- **The landing-zone rewrite clears the Carryall's NavCom**, so the vehicle it
+  was sent for is remembered separately.
+- **A new barracks needs its own exit pixel and exit list.** TSPILE reused the
+  RA tent's (24,47) on a 2x1 plot and spawned infantry a cell below the door
+  (`ExitTsPile`).
+- **Decode TS cameos with `--no-remap`:** the house-colour remap turns palette
+  16-31 green.
+- **`ts_mk2_cooldown_cameos.py` rewrites its whole block** and wipes any
+  hand-written entry inside it; keep hand entries outside.
+- **Firestorm assets are in `expand01.mix`:** SHPs in the inner `ECACHE01.MIX`,
+  AUDs in `SOUNDS01.MIX`, voxels at the top level.
+- **Railgun colours are TS's own:** the Ghost Stalker's `SmallRailgunSys` is
+  orange (255,128,0), the Mk. II's `LargeRailgunSys` blue (25,20,255).
+
 ## Open queue (consolidated; re-verified at session close 2026-08-14 ~00:20)
 
 **Gameplay / engine:**

@@ -194,6 +194,23 @@ Visit the item URL in a browser (logged in), accept the Workshop Contributor Agr
 
 ---
 
+## Player crash reports
+
+- **Ask for `<game install>/log/CrashLog.txt`.** It has one line per crash naming the faulting
+  process and address, which separates the renderer (`ClientG.exe`) from the sim
+  (`InstanceServerG.exe`).
+- **A ClientG crash can still be ours.** The DLL imports no d3d11, dxgi or gdi32, so it cannot
+  reach the GPU, but it patches ClientG's memory and code, and mod data has crashed ClientG
+  before: a wrong-size CONFIG.MEG member, an unreadable WAV, and the EVA cache patch writing over
+  heap headers on skirmish load (fixed in 5.0.0). "Video Card Driver Crash Detected!" and
+  `DXGI_ERROR_DEVICE_REMOVED` are EA's own dialog text, so a player quoting them has lost the
+  D3D11 device; that alone does not clear the mod.
+- **There is no graphics or VRAM setting to offer.** `GAMECONSTANTS.XML` has none, and the
+  mod's UI atlas is the same size as EA's (about 184 MB).
+- **Workshop comments are capped at 1,000 characters.** Draft replies to fit.
+
+---
+
 ## Don't-dos
 
 - Don't re-create the item shell for an existing release — `publishedfileid` is allocated once per item.

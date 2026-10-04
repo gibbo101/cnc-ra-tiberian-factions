@@ -7,8 +7,9 @@ yet** — this is the data + analysis + proposed plan for the v1.x balance pass.
 > **⭐ v4.0 BALANCE PASS APPLIED 2026-06-19 (uncommitted on `main`, DLL built clean).**
 > All locked v4.0 tweaks are now in `rules.ini` (+ one DLL change for F8):
 > **F6** TDORCA+TDHELI `Cost 1200→950`; **F7** Nod SAM `TDNike ROF 50→20`;
-> **F8** new `WARHEAD_TDAGT` (TDHE clone, vs-heavy 25→50) in `defines.h`+`rules.cpp`+`[TDAGT]`,
-> `TDTowTwo` repointed (AGT-only, no collateral); **F3** `TD75mm ROF 60→40`;
+> **F8** new `WARHEAD_TDAGT` (TDHE clone) in `defines.h`+`rules.cpp`+`[TDAGT]`, `TDTowTwo`
+> repointed (AGT-only, no collateral); its vs-heavy 25→50 was reverted 2026-07-13 (see "Base
+> defences" below); **F3** `TD75mm ROF 60→40`;
 > **F1** GDI Mammoth `Speed 5→4` (Cost kept 1500); GDI APC `Speed 10→8` (Cost kept 700);
 > Minigunner `TDM16 Range 2→3` + `TDE1 Speed 3→4`; Nod Turret `TDTurretGun ROF 60→50`.
 > All target weapons are single-user (zero collateral). Needs playtest to confirm magnitudes.
@@ -358,6 +359,22 @@ infantry *swarms* (the exact Obelisk weakness).
 
 Result: Nod gets the anti-armor Turret + anti-infantry Flame Pillbox pair every
 other faction has — parity, not power-creep (warheads don't overlap: AP vs Fire).
+
+### Base defences: the AGT, the Obelisk and Nod's defensive economy (2026-07-13)
+
+- **The AGT's anti-tank buff (F8) is reverted.** `[TDAGT]` reads plain TDHE again, 25% vs
+  heavy. The tower is already strong for its price: 1000 credits, −20 power, Burst=2, and it
+  hits ground and air. `WARHEAD_TDAGT` stays separate so the AGT can be tuned without touching
+  the other TDHE weapons.
+- **The Obelisk's 7.5-cell reach is shorter than the Tesla Coil's 8.5 on purpose:** it hits
+  harder and reaches less.
+- **Nod pays far more than GDI to defend.** One AGT covers ground and air for 1000 credits and
+  −20 power. Nod needs an Obelisk (1500, −150, ground only) plus a SAM (750, −20): about 2.25
+  times the cost and 8.5 times the power. Nod's light vehicles and Apaches are what the AGT
+  beats. Levers if a GDI-vs-Nod game shows it: the AGT's cost or power, or cheaper Nod
+  defences. Not the AGT warhead: vs-light was never changed. Stood down for now.
+- **RA's Tesla Coil does not chain** (one target, `Spread=1`); its crowd-clearing feel is the
+  Super warhead one-shotting infantry. An arc to nearby targets would be new code. Parked.
 
 ---
 

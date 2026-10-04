@@ -546,6 +546,29 @@ Research complete (agent report, §7). Two routes for staging-then-blob:
    precedent (AI Boost wishlisted it, never built it) — original work. NOTE: the shared
    transport is the RA LST (VESSEL_TRANSPORT, fully wired); the parked TDLST hull is NOT
    wired into the transport switches (vessel.cpp:357/1613/1885) — wire it only if revived.
+   - **Traps the naval build hit (all fixed, shipped in 5.0.0).** Vanilla never ran a skirmish
+     navy, so each of these sat dormant in EA's code:
+     - `Exit_Object`'s vessel case returned "abort and refund" when the one-cell exit ring was
+       occupied, so a finished ship at a blocked slipway was silently deleted (44 ship
+       `PROD start`s made a 3-ship fleet). A blocked slipway now retries, and the house's own
+       parked ships are moved off the ring (`0593113`, `YARD-EXIT` diag).
+     - `Can_Fire` returns `FIRE_MOVING` for any turretless hull with a NavCom, and a patrolling
+       ship always has one, so subs never fought. AI ships drop the NavCom when a target is in
+       range (`VesselClass::Combat_AI`, `05f2436`).
+     - `MISSION_HUNT` is terminal: a hunter with an unreachable target parks at the shore for
+       good, the fleet count stays at the cap and production stops. Hunt supervision sends
+       stalled hunters back to guard (`7a11419`).
+     - The vanilla sell table puts the naval yards at `URGENCY_LOW`, the top of the fire-sale
+       order, and LOW fires on any dip under 100 credits: build, half-price sell, rebuild every
+       90 s. Pool-rebuilt buildings can't sell at LOW (`82510bc`, `1b1dda1`, `EXPERT-SELL` diag).
+     - Ferry and fleet statics survived into the next match of a session (a stale beach rally
+       could satisfy the MCV gate); they reset in `HouseClass::Init`.
+     - A naval yard and its parked fleet can seal their own channel, and zones ignore buildings,
+       so no zone check sees it (the open harbour-seal item in `todo.md`).
+   - **Testing:** `MOD_DEBUG_AI.txt` is written to `USERPROFILE`, which some runs resolve to
+     `pfx/drive_c/users/steamuser/` rather than `Documents/CnCRemastered/`; check both. Before a
+     deploy, wait for a full game exit with `pgrep 'InstanceServerG[.]exe'` (a bare
+     `pgrep -f InstanceServer` matches itself). Restarting a match does not end InstanceServerG.
 3. **Superweapons for RA factions:** Iron Curtain + Chronosphere AI dispatch + AI-aware
    targeting (P3b/3c — currently reads the mouse; AI Boost has working IC/Chrono usage as
    reference); parabomb ungate (P3d) — delivers the MISSED Soviet parabombs item from v4.0.

@@ -500,15 +500,11 @@ rules.ini now holds the **verbatim TD-source STRNTH** and the engine doubles it 
 
 ---
 
-### 3.23 — The Deploy/Unload keyboard shortcut is GlyphX-side and dead for every new TD unit type (PARKED)
+### 3.23 — The deploy key comes free with a working self-click
 
-**Trap:** the in-game **Deploy keyboard shortcut** works for the RA MCV but not `UNIT_TDMCV`, even though every DLL-side deploy path (`What_Action` self, `Try_To_Deploy`, mission AI, `MCV_Deploy_Building`) handles TDMCV. The hotkey lives in the **closed GlyphX C# runtime** (the shipped SOURCECODE only includes the map-editor C#). It is NOT routed through `CNC_Handle_Unit_Request` (no deploy case in our fork or EA's), and `CNCObjectStruct.CanDeploy`/`IsDeployable` are vestigial (never populated by us or EA).
+**The launcher's own deploy command** self-clicks the selected unit only when its exported `AssetName` and `TypeName` are both exactly "MCV", so on its own it is dead for every new unit type. The DLL reads the deploy key itself (`TF_Deploy_Key_Tick`, `GetAsyncKeyState` on backslash) and the launcher's deploy command is patched into mod command 1 on every machine; both run `TF_Self_Action_Selected()`, which acts on each selected object whose self-click answers `ACTION_SELF` (`launcher-vs-dll-ownership.md`, "The `/` and `a` walls are DOWN").
 
-**Confirmed second instance — `UNIT_TDAPC` unload (2026-06-01):** the APC's **unload keyboard shortcut** has the identical failure. The mouse path works fine (click the loaded APC on itself → `ACTION_SELF` → `Player_Assign_Mission(MISSION_UNLOAD)`, fully DLL-routed), so loading/unloading by mouse is 100% functional — but the keyboard *deploy/unload* key does nothing for TDAPC, exactly as for TDMCV. This generalizes the trap: the GlyphX deploy/unload **hotkey gate keys on the unit's type identity and only recognizes the vanilla RA enum values**, so it is dead for *any* TD-separated `UNIT_TD*` that uses the deploy-key affordance (MCV deploy, APC/transport unload, and any future minelayer-style self-action). The DLL-side `ACTION_SELF` (mouse) path always works; only the keyboard shortcut is lost.
-
-**Status:** PARKED (low priority — the mouse affordance is a complete substitute). Spoofing `CNCObjectStruct.TypeName = "MCV"` for TDMCV did NOT fix it, so GlyphX isn't keying purely on the `TypeName` string. Next spike hypothesis: GlyphX keys on the numeric `DllObjectTypeEnum Type`. Full log in memory `[[project-mcv-deploy-hotkey-spike]]`.
-
-**Lesson:** before chasing a hotkey/UI bug for a TD-ported entity, determine whether the behavior lives in the DLL or GlyphX. If GlyphX, it may be unfixable from the mod side (cf. §3.x classic-mode spacebar limitation). Confirm the keying mechanism before investing time. For deploy/unload specifically: don't re-chase the STOCK key per-unit — it's one shared GlyphX gate, dead for all new TD types; the real route is the MOD-DEFINED hotkey lever (`config-meg-lever-audit.md` Tier 1 — chain complete, only our DLL handler missing; queued in `todo.md`). Until then, document the mouse-click workaround for the player.
+**Lesson:** a new deployable (MCV, transport unload, minelayer-style self-action) needs only a working `ACTION_SELF` in `What_Action` and its `Active_Click_With` handler; the key follows. Don't add per-unit key handling, and don't spoof `TypeName` (the art follows `AssetName`).
 
 ---
 
@@ -597,6 +593,14 @@ if ((td_single || tech->Health_Ratio() <= EngineerCaptureLevel) && iscapturable)
 **Cause:** when the path bends, the track chosen from `Path[0]`/`Path[1]` can be a two-cell curve (`TrackControl[...].Flag & F_D`). Then `dest` moves on to the *second* cell (`dest = Adjacent_Cell(dest, nextface)`), so a unit whose curve ends on the target cell never has it as the first `dest`.
 
 **Fix:** also check whether the cell after `dest` (`Adjacent_Cell(dest, Path[1])`) is the target, and if so force a straight step into the cell before it (`nextface = facing`). The next `Start_Of_Move` then sees the target as `dest`. Worked example: `straight_in` in `drive.cpp`.
+
+### 3.29 — A TD-port arcing or dropping bullet must not set `IsFalling` (double gravity)
+
+**Symptom:** the A-10's napalm (`BULLET_TDNAPALM`) hit the ground in about 9 frames instead of TD's 22.
+
+**Cause:** with `IsFalling` set, RA's `ObjectClass::AI()` integrates the fall with `Rule.Gravity`, and `BulletClass::AI_TD()`'s TD-verbatim branch integrates it again, so the bullet falls twice per frame.
+
+**Fix:** `Unlimbo_TD` leaves `IsFalling` clear for TD-port ballistic bullets, so `AI_TD` is the only integrator. Because `Limbo()` removes the bullet from the layer `In_Which_Layer()` reports (Height-based), `AI_TD` does the same `Map.Remove`/`Submit` on a layer change that the base does, or removal misses and leaves a dangling pointer. Any new arcing or dropping TD-port bullet goes through the same path (`bullet.cpp`).
 
 ---
 

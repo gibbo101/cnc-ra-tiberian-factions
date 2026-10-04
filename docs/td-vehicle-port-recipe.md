@@ -157,11 +157,8 @@ The GDI APC (`UNIT_TDAPC`, TD `UnitAPC` udata.cpp:907) is the first **transport*
   draw the door frames as a "turret." Tileset donor = the APC's own 38-frame block (no slicing).
 - **`Crewed=no`** (TD source "crew inside? false") — the 5 passengers spill on death, no extra survivor; the
   §traps Crew_Type trap doesn't apply.
-- **Deploy/unload keyboard shortcut is dead** (playbook §3.23) — the GlyphX hotkey only knows vanilla enum
-  values, so it no-ops for `UNIT_TDAPC` (same as TDMCV deploy). The **mouse** unload (click loaded APC on
-  itself) works fully. Don't re-chase the STOCK key per-unit — but a MOD-DEFINED hotkey is available
-  (`config-meg-lever-audit.md` Tier 1: the chain is mod-data end to end, only our DLL handler is missing;
-  queued in `todo.md`). Until that ships, tell the player to use the mouse.
+- **Deploy/unload key:** works for any unit whose self-click deploys or unloads (playbook §3.23); the
+  DLL reads the key and runs the self-action, so a new transport needs no key work.
 
 > ⚠️ **`build_tfassets.sh` must run BEFORE the DLL build, or the deploy ships a stale MIX** (cost a cycle on
 > the APC, 2026-06-01). The DLL build's POST_BUILD stages `resources/` → `build/`; if you rebuild

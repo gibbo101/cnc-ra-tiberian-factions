@@ -64,7 +64,7 @@ in range, buildings too (Luke).
 deployed or not, locked cameo with the red X. Deployed = a TS war factory to the code
 (`Is_TS_War_Factory`), packed on the War Factory's exact affine; satisfies War Factory
 prerequisites (Firestorm PrerequisiteFactory). Pack-up is the deploy key only; self-click =
-primary, move = rally point. OPEN: the doorway (see main's `docs/todo.md` resume block).
+primary, move = rally point. The doorway layering was fixed and verified in play (`2062873f`).
 
 **Art habits agreed:** a labelled facings sheet goes to Luke's Desktop BEFORE a unit goes in
 game; building geometry is settled on a sheet first. Dark-remap TS hulls need a stronger team

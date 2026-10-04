@@ -2595,8 +2595,8 @@ static BuildingTypeClass const ClassObelisk(STRUCT_TDOBLI,
 // Tiberian Factions mod: Nod Stealth Generator (STRUCT_TDSTEALTH). Reuses the RA Gap
 // Generator sprite/footprint (Image=GAP in rules.ini) but drops the gap-shroud behaviour
 // (that logic is keyed on `*this == STRUCT_GAP`, which this type never matches). Instead it
-// hosts a cloak driver that hides friendly buildings+units in radius (see docs/todo.md
-// stealth-gen spec). Modeled verbatim on ClassGapGenerator.
+// hosts a cloak driver that hides friendly buildings+units in radius (see
+// docs/stealth-generator-spec.md). Modeled verbatim on ClassGapGenerator.
 static BuildingTypeClass const ClassTdStealth(STRUCT_TDSTEALTH,
                       TXT_NONE,               // Display name token; rules.ini Name= overrides.
                       "TDSTEAL",              // IniName (own TS NASTLH-derived art: TDSTEAL tileset).

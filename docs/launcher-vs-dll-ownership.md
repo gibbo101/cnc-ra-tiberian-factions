@@ -276,9 +276,15 @@ the same command numbered as mod command 2 (0x1033), which latches that house's 
 filter on the host (`TF_Select_All_Excludes`), then run the stock handler. Verified in LAN
 2026-09-30. Still host-only: the dev cheats (they follow the host's local player).
 
-**Superseded (2026-09-03):** the screen-rectangle click reader (`GetAsyncKeyState` +
-`GetCursorPos`, 1080p only) and the "report it as an unfinished build item" routes. The Hunter
-Seeker launches itself on ready because no click route existed then.
+Dead routes for a one-click super: reading the click from the screen (`GetAsyncKeyState` +
+`GetCursorPos`), and reporting the super as an unfinished build item.
+
+**Aiming is invisible to the sim.** With all 44 exports hooked (probe 2026-09-27), the traffic
+while a superweapon is being aimed matched idle: the sim hears only
+`SUPERWEAPON_REQUEST_PLACE_SUPER_WEAPON`, or `SIDEBAR_CANCEL_PLACE (-1,-1)` when targeting ends.
+Anything that must know a player is aiming (an aiming-only range ring for the E.M. Pulse) reads
+the input-mode global `0x20F1C90` from inside that player's launcher, through the startup-load
+copy of the DLL. How a reading there reaches the sim's drawing is not worked out.
 
 **Cameo art is independent of the click-detect mechanism and is normal AssetName wiring**: give
 the super its own `RA_SW_<name>` entry in `RABUILDABLES.XML` with its own `BuildIcon`, and export
