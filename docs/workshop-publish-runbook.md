@@ -41,18 +41,24 @@ not draw attention to. The changelog is the engineering record; the listing is t
 Publishing first and correcting after means editing live on a public page. It happened on 4.1.0
 and cost six edits across five re-uploads.
 
-### 1. Build the mod
+### 1. Prepare the release on main, in the main checkout
 
-```bash
-# From repo root
-CMAKE_TOOLCHAIN_FILE=cmake/i686-mingw-w64-toolchain.cmake \
-  VC_CXX_FLAGS="-w;-fpermissive" \
-  cmake --workflow --preset remaster
-```
+Package from the **main checkout**, not a worktree: two release files are gitignored and only the
+main checkout is guaranteed to hold the current ones.
 
-Result lands at `build/remaster/Vanilla_RA/` — contains `ccmod.json`, `Data/`, `CCDATA/`.
+- **Version:** `resources/remaster_mods/Vanilla_RA/ccmod.json`, `version_high = X`,
+  `version_low = Y*10 + Z` (5.0.0 is high 5, low 0). Update its `description` if the headline changed.
+- **Copy:** the dated `## [X.Y.Z]` section in `CHANGELOG.md`, the one-line listing entry and any
+  feature/limitation changes in `tools/workshop-uploader/workshop.json`'s description,
+  `docs/moddb-page-copy.md`, and README.md ("Coming in the next release" folds into the feature list).
+- **Gitignored inputs present:** the UI atlas
+  `resources/remaster_mods/Vanilla_RA/Data/ART/TEXTURES/SRGB/MT_COMMANDBAR_COMMON.TGA` (regenerated
+  by the front-end art scripts; compare its md5 with the copy last played) and the startup intro
+  `Data/ART/MOVIES/RA/REDINTRO.BK2` (the packager refuses a cut that does not match
+  `scripts/intro_work/REDINTRO.md5`).
+- **Asset packs clean:** `python3 scripts/asset_packs.py check` prints nothing.
 
-### 2. Stage the wrapper folder
+### 2. Build and stage the release: `./package-for-workshop.sh`
 
 The Workshop scanner for App 1213210 requires the mod to live in a NAMED SUBFOLDER inside the uploaded content (i.e. `<workshop-item>/Vanilla_RA/ccmod.json`, not `<workshop-item>/ccmod.json`). Subscribers who pull a mod with `ccmod.json` at the root will never see it in the in-game mod list, even though the content downloads correctly.
 
@@ -60,7 +66,22 @@ The Workshop scanner for App 1213210 requires the mod to live in a NAMED SUBFOLD
 ./package-for-workshop.sh
 ```
 
-This creates `dist/workshop-content/Vanilla_RA` as a symlink to `build/remaster/Vanilla_RA/`. Idempotent — run again after every rebuild (the symlink is stable; only the underlying build content changes). SteamUGC follows symlinks during content enumeration, confirmed 2026-05-20.
+It makes the release build itself (`TF_DEV_BUILD=0`: dev cheats compiled out; the fifth
+faction ships), stages the mod folder from scratch (the mod's own tree, the asset packs, the DLL)
+so files left in `build/` by earlier work cannot ship, mirrors it into
+`dist/workshop-content/Vanilla_RA` as a **real folder** (a symlink there broke installs on
+2026-05-20: SteamUGC uploads symlinks as symlinks), checks the intro and strips the DLL.
+
+Check the staged package before going further:
+
+```bash
+P=dist/workshop-content/Vanilla_RA
+grep -E '"version_(high|low)"' $P/ccmod.json             # the release version
+strings -a $P/Data/RedAlert.dll | grep -c tf_dev_off.flag  # 0: no dev code
+```
+
+Every machine in a LAN test gets **this one package**: the DLL's md5 changes on every relink
+(the PE timestamp), so two builds of the same source are not byte-identical.
 
 ### 3. Update `tools/workshop-uploader/workshop.json`
 
@@ -69,9 +90,9 @@ Schema (matches EA's original `.workshop.json` format so existing tutorials rema
 | Field | What to set |
 |---|---|
 | `publishedfileid` | Steam-allocated item ID. Leave empty for first publish — the tool calls `CreateItem` and persists the new ID back. |
-| `contentfolder` | Path to the built mod folder. Relative paths resolve from the JSON file's directory. `"../../build/remaster/Vanilla_RA"` is the canonical value. |
+| `contentfolder` | The folder that holds the named subfolder. Relative paths resolve from the JSON file's directory. `"../../dist/workshop-content"` is the canonical value. |
 | `previewfile` | Path to preview JPG/PNG. < 1 MB. `""` or omitted = keep existing preview. |
-| `visibility` | `0`=Public, `1`=Friends Only, `2`=Private, `3`=Unlisted. **Use `1` for first publish of each release**, promote to `0` after self-test. |
+| `visibility` | `0`=Public, `1`=Friends Only, `2`=Private, `3`=Unlisted. The mod's item is Public, so updates keep `0`. A **new** item (an asset pack) is created at `2` and promoted after a self-test. |
 | `title` | Display title — keep consistent across versions. |
 | `description` | Steam BBCode supported: `[b]…[/b]`, `[h2]…[/h2]`, `[list][*]…[/list]`, `[url=…]…[/url]`. |
 | `tags` | Array. Valid for App 1213210: `RA`, `RedAlertMod`, `TD`, `TiberianDawnMod`, `FFA`, `1v1`, `2v2`. |
@@ -96,7 +117,7 @@ Hit 2026-07-22 on the 4.1.0 publish at 8660 characters. When a new version block
 collapse the oldest per-version changelog blocks to a one-line summary each; the listing already
 links the full changelog on GitHub.
 
-### 3. (Optional) Refresh preview screenshot
+### 3b. (Optional) Refresh preview screenshot
 
 Pull a fresh in-game shot from the Deck:
 
@@ -137,6 +158,17 @@ Time scales with upload bandwidth. 89 MB takes ~21s on a ~50 Mbit upstream.
    - **Deck:** `/home/deck/.steam/steam/steamapps/compatdata/1213210/pfx/drive_c/users/steamuser/Documents/CnCRemastered/Mods/Red_Alert/<itemid>/`
 4. Launch the game (on the Deck), enable the mod, smoke-test the headline feature.
 5. If self-test passes: promote visibility to Public via the Workshop website's Owner Controls panel (no need to re-run the uploader for visibility-only changes).
+
+### 6. Tag, GitHub release, post-release bump
+
+```bash
+git tag vX.Y.Z && git push origin vX.Y.Z
+(cd dist/workshop-content && zip -qr ../TiberianFactions-vX.Y.Z.zip Vanilla_RA)
+gh release create vX.Y.Z dist/TiberianFactions-vX.Y.Z.zip --title "vX.Y.Z" --notes-file <the CHANGELOG section>
+```
+
+The zip has `Vanilla_RA/` at its root (ModDB links to it). Then bump the local `ccmod.json`
+`version_low` by one patch so the working tree is always ahead of what is published.
 
 ---
 
