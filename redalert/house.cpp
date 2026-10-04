@@ -10988,24 +10988,12 @@ int HouseClass::AI_Building(void)
         int level = Control.TechLevel;
         bool tf_td = (ActLike == HOUSE_GOOD || ActLike == HOUSE_BAD);
         unsigned tf_refqty = TF_Role_Quantity(BQuantity, STRUCT_REFINERY);
-        // GDI/Nod tier-2 economy gate, shared by the comm centre, the tech centre and the
-        // repair bay. Each is affordable long before it is affordable *and* worth having,
-        // and the vanilla urgencies race them against the war factory, so a house can tech
-        // up while still on one harvester's income and never field an army. Requiring an
-        // expanded economy first orders the build as refinery -> production -> tech.
-        // The refinery branch below is hard-blocked while tiberium is short, so a house on
-        // a depleted map can never reach the second refinery. Treat that as satisfying the
-        // economy requirement rather than locking the upper tier away for the whole match.
+        // TF: the economy gate that radar, the repair bay, GDI/Nod tech, air and naval builds wait for: two
+        // refineries and a war factory. A tiberium-short map counts as ready, as no more refineries are built there.
         unsigned tf_weapqty = TF_Role_Quantity(BQuantity, STRUCT_WEAP);
         bool tf_economy_ready = ((tf_refqty >= 2 || IsTiberiumShort) && tf_weapqty >= 1);
-        // Tiberian Factions: count harvesters the RELIABLE way. UQuantity reads 0 even
-        // with live, earning harvesters because a TD harvester docking at its refinery is
-        // Limbo()'d + Attach()'d into the building as cargo (unit.cpp ~1830) -> dropped
-        // from the active UQuantity count. But it's still a live object in the Units heap,
-        // so we scan that: a docked harvester still counts, while a *destroyed* harvester
-        // is gone from the heap and reads 0. So hasincome stays true while harvesters
-        // merely dock, but correctly goes false if the faction's harvesters are all wiped
-        // out (the UQuantity term couldn't tell those two cases apart -- both read 0).
+        // TF: harvesters are counted through the Units heap. UQuantity can't count TD or TS harvesters: types
+        // past UNIT_RA_COUNT fold onto vanilla slots, and UQuantity has only UNIT_RA_COUNT - 3 entries.
         int tf_harv_count = 0;
         for (int hindex = 0; hindex < Units.Count(); hindex++) {
             UnitClass const* hu = Units.Ptr(hindex);
@@ -11131,16 +11119,8 @@ int HouseClass::AI_Building(void)
             enemy = HouseClass::As_Pointer(Enemy);
         }
 
-        /*
-        **	Tiberian Factions: air-build count cap. Vanilla capped the airfield/helipad count off
-        **	the single designated Enemy only, so a human (or any non-designated opponent) building
-        **	an air force was invisible to it. Scan every non-allied active house (all humans
-        **	included) and mirror the STRONGEST single air opponent's air-structure count for the
-        **	cap. Max (not a sum) on purpose: summing every enemy's structures would make each AI
-        **	chase a combined multi-enemy total it can never catch. Matching the biggest single
-        **	opponent settles once drawn level. (Air-build *urgency* is deliberately LOW below, so
-        **	this governs the eventual amount, not the priority -- see the helipad/airstrip blocks.)
-        */
+        // TF: the air-structure cap follows the strongest single non-allied opponent, humans included, not just
+        // Enemy. The maximum, not a sum, so the house can draw level with it.
         int enemy_airstrips = 0;
         int enemy_helipads = 0;
         for (HousesType eh = HOUSE_FIRST; eh < HOUSE_COUNT; eh++) {
@@ -11180,6 +11160,8 @@ int HouseClass::AI_Building(void)
         /*
         **	Build a refinery if there isn't one already available.
         */
+        // TF: the refinery target is the larger of the ratio rule and the match-time pace, and a house below the
+        // pace asks at HIGH.
         unsigned int current = tf_refqty;
         unsigned tf_refwant = Round_Up(Rule.RefineryRatio * fixed(CurBuildings));
         unsigned tf_reftime = (unsigned)TF_Eco_Refinery_Target();
@@ -11191,8 +11173,6 @@ int HouseClass::AI_Building(void)
             if (Can_Build(b, ActLike) && (money > b->Cost_Of() || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
-                    // Below the match-time pace the refinery is the income engine and
-                    // outranks tech; past it the ratio rule fills in at MEDIUM as before.
                     *choiceptr = BuildChoiceClass(
                         (tf_refqty == 0 || current < tf_reftime) ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
                 }
@@ -11251,12 +11231,7 @@ int HouseClass::AI_Building(void)
             }
         }
 
-        /*
-        **	Nod: build one Stealth Generator once the Temple of Nod is up (Can_Build enforces
-        **	the TDTMPL prerequisite). The vanilla gap-generator slot above is an Allied building
-        **	a Nod house can't build, so our own STRUCT_TDSTEALTH gets its own slot. Gated on full
-        **	power and income so cloaking the base never comes at the cost of the economy.
-        */
+        // TF: Nod builds one Stealth Generator in its own slot, as the gap generator slot above is Allied.
         if (ActLike == HOUSE_BAD) {
             current = BQuantity[STRUCT_TDSTEALTH];
             if (current < 1 && Power_Fraction() >= 1 && hasincome) {
@@ -11286,15 +11261,8 @@ int HouseClass::AI_Building(void)
             }
         }
 
-        /*
-        **  Radar, proactively, for EVERY faction once the refinery and power are
-        **  up. TDHQ is GDI/Nod's tech gate (advanced defence, tech centres, the
-        **  superweapon tier). For the RA sides the dome is the helipad/airstrip
-        **  prerequisite -- and vanilla built it only REACTIVELY, in the
-        **  air-defense branch below, gated on an enemy that ALREADY flies. In an
-        **  AI-vs-AI match nobody ever flies first, so no house ever built a dome
-        **  and no house ever fielded air power at all.
-        */
+        // TF: every faction builds radar once the economy gate passes. It gates GDI/Nod tech and RA air, and the
+        // air-defence branch below asks for it only once an enemy flies.
         {
             int tf_hq = TF_Skirmish_Type(STRUCT_RADAR, ActLike);
             current = BQuantity[STRUCT_RADAR] + (tf_hq >= 0 ? BQuantity[tf_hq] : 0);
@@ -11310,32 +11278,14 @@ int HouseClass::AI_Building(void)
         }
 
         {
-            /*
-            **  Service depot, every faction: vehicle repair + a PREREQUISITE twice
-            **  over -- the GDI Mammoth Tank (TDFIX) and the RA sides' MCV (FIX),
-            **  which the ferry's forward-fortress ride needs to exist at all.
-            **  Vanilla's repair-bay build is #ifdef OLD, so without this branch the
-            **  RA factions never field a depot or an MCV.
-            */
+            // TF: every faction builds a service depot once the economy gate passes. It gates the GDI Mammoth (TDFIX)
+            // and the RA MCV (FIX), so GDI asks at HIGH.
             current = TF_Role_Quantity(BQuantity, STRUCT_REPAIR);
-            // A repair bay only pays for itself once there are vehicles to repair, so it
-            // shares the economy gate above. That gate lives here rather than in the
-            // urgency because URGENCY_LOW is never reached at all (the consumer builds one
-            // highest-urgency pick per cycle and the defense branch holds MEDIUM), which
-            // would strand the GDI Mammoth behind a prerequisite that never gets built.
             if (current < 1 && tf_economy_ready && Power_Fraction() >= 1) {
                 b = TF_Skirmish_Pick(STRUCT_REPAIR, ActLike);
                 if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                     choiceptr = BuildChoice.Alloc();
                     if (choiceptr != NULL) {
-                        // The build-choice consumer (~house.cpp:6715) builds only the single
-                        // HIGHEST-urgency pick per cycle, and the defense branch stays MEDIUM
-                        // as long as CurBuildings grows -- so URGENCY_LOW was permanently
-                        // outranked and the repair bay never got built. For GDI that's fatal:
-                        // the Mammoth Tank is prereq-gated on TDFIX, so no repair bay = no
-                        // Mammoths ever. Promote it to HIGH for GDI (unlock the tier promptly;
-                        // current<1 makes it a one-shot, no spam) and MEDIUM for Nod (gets
-                        // built like the radar, but nothing is gated on it).
                         *choiceptr = BuildChoiceClass(ActLike == HOUSE_GOOD ? URGENCY_HIGH : URGENCY_MEDIUM, b->Type);
                     }
                 }
@@ -11345,33 +11295,15 @@ int HouseClass::AI_Building(void)
         /*
         **	Always build up some base defense.
         */
+        // TF: the ratio counts the base without its defences, a base under half its wanted defence asks at HIGH,
+        // and Nod alternates its Turret and Flame Bunker.
         int tf_def = TF_Skirmish_Type(STRUCT_FLAME_TURRET, ActLike);
         current = BQuantity[STRUCT_PILLBOX] + BQuantity[STRUCT_CAMOPILLBOX] + BQuantity[STRUCT_TURRET]
                   + BQuantity[STRUCT_FLAME_TURRET] + BQuantity[STRUCT_TDFBNK] + (tf_def >= 0 ? BQuantity[tf_def] : 0);
-        /*
-        **	The ratio is taken against the base the defences protect, not against a
-        **	count that includes the defences themselves -- otherwise every tower
-        **	built asks for the next one (Docklands 2026-09-02: 14 of 30 buildings).
-        */
         unsigned tf_defbase = (CurBuildings > current) ? (CurBuildings - current) : 0;
         unsigned tf_defwant = Round_Up(Rule.DefenseRatio * fixed(tf_defbase));
         if (current < tf_defwant && current < (unsigned)Rule.DefenseLimit) {
-            /*
-            **	Defence competes with refineries, radar, power and the repair bay at
-            **	MEDIUM, and among equals the earlier scan entry wins, so a base can
-            **	reach a dozen buildings on a single turret (A/B 2026-09-02: one gun
-            **	turret all game, the bunker lost five cycles running). A base carrying
-            **	less than half the defence it wants claims HIGH; the rest of the way
-            **	to the ratio stays MEDIUM so the economy is not spent on towers.
-            */
             UrgencyType tf_defurg = (current * 2 < tf_defwant) ? URGENCY_HIGH : URGENCY_MEDIUM;
-            /*
-            **  Nod fields BOTH its anti-armor Turret (tf_def -> TDGUN) and its anti-infantry
-            **  Flame Bunker. Interleave them: build a Flame Bunker whenever Nod has strictly
-            **  fewer bunkers than turrets, so the defence budget alternates turret, bunker,
-            **  turret, ... Can_Build enforces the Hand of Nod prerequisite; before it's up (or
-            **  for GDI, which can't build the bunker) this falls through to the normal pick.
-            */
             b = NULL;
             if (ActLike == HOUSE_BAD && tf_def >= 0
                 && (unsigned)BQuantity[STRUCT_TDFBNK] < (unsigned)BQuantity[tf_def]) {
@@ -11485,9 +11417,9 @@ int HouseClass::AI_Building(void)
         }
 
         /*
-        **	Build a tech center as soon as possible -- but for GDI/Nod, not before the
-        **	economy that pays for what the tech unlocks. RA houses keep vanilla timing.
+        **	Build a tech center as soon as possible.
         */
+        // TF: counts and picks the faction's own tech centre. GDI and Nod also wait for the economy gate.
         int tf_tech = TF_Skirmish_Type(STRUCT_ADVANCED_TECH, ActLike);
         current = BQuantity[STRUCT_ADVANCED_TECH] + BQuantity[STRUCT_SOVIET_TECH] + (tf_tech >= 0 ? BQuantity[tf_tech] : 0);
         if (current < 1 && (!tf_td || tf_economy_ready)) {
@@ -11518,16 +11450,8 @@ int HouseClass::AI_Building(void)
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
-                    /*
-                    **	Air production holds behind the ground base, then competes normally.
-                    **	A pick resolves among the highest urgency present and power, refinery
-                    **	and defence keep a MEDIUM candidate available indefinitely, so a
-                    **	permanent LOW is never merely deprioritised -- it is unreachable, and
-                    **	the house fields no aircraft for the whole match. Staying LOW until the
-                    **	refineries and war factory are up is what keeps air from outranking the
-                    **	core base; promoting afterwards is what lets it happen at all. The
-                    **	count above still caps to the strongest air opponent.
-                    */
+                    // TF: LOW until the economy gate passes, then MEDIUM. Power, refinery and defence always offer a
+                    // MEDIUM candidate, so a permanent LOW would never win and the house would field no aircraft.
                     *choiceptr = BuildChoiceClass(tf_economy_ready ? URGENCY_MEDIUM : URGENCY_LOW, b->Type);
                 }
             }
@@ -11543,23 +11467,14 @@ int HouseClass::AI_Building(void)
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
                 choiceptr = BuildChoice.Alloc();
                 if (choiceptr != NULL) {
-                    /*
-                    **	Same escalation as the helipad above, and for the same reason: the
-                    **	ground base comes first, but air has to become reachable once it
-                    **	exists. Covers GDI's airfield (STRUCT_AIRSTRIP -> TDGAFLD via
-                    **	TF_Skirmish_Pick) as well as the RA airfields.
-                    */
+                    // TF: the same escalation as the helipad above.
                     *choiceptr = BuildChoiceClass(tf_economy_ready ? URGENCY_MEDIUM : URGENCY_LOW, b->Type);
                 }
             }
         }
 
-        /*
-        **	The TS dropship bay: the only door the Mammoth Mk. II and the Mech Division come
-        **	through. One per house -- BQuantity counts it from production start, so a second
-        **	is never queued while the first is still on the yard's line. The economy comes
-        **	first, as for air production above.
-        */
+        // TF: the dropship bay delivers the Mammoth Mk. II and the Mech Division. BQuantity counts a bay from
+        // production start, so a second is never queued while the first is on the yard's line.
         if (BQuantity[STRUCT_TSDROP] == 0) {
             b = &BuildingTypeClass::As_Reference(STRUCT_TSDROP);
             if (Can_Build(b, ActLike) && (b->Cost_Of() < money || hasincome)) {
@@ -11570,11 +11485,8 @@ int HouseClass::AI_Building(void)
             }
         }
 
-        /*
-        **	The TS Upgrade Centre and its plugs, for a house that can fire superweapons: the
-        **	centre once, then one plug at a time as TF_AI_Upgrade_Plug asks for them. A plug
-        **	queued before its centre stands fails Can_Build and waits a pass.
-        */
+        // TF: with superweapon IQ, the TS Upgrade Centre once, then one plug at a time from TF_AI_Upgrade_Plug.
+        // A plug queued before its centre stands fails Can_Build and waits a pass.
         if (IQ >= Rule.IQSuperWeapons) {
             if (BQuantity[STRUCT_TSPLUG] == 0) {
                 b = &BuildingTypeClass::As_Reference(STRUCT_TSPLUG);
@@ -11590,17 +11502,8 @@ int HouseClass::AI_Building(void)
             }
         }
 
-        /*
-        **	W5.1: a naval yard, once the water evaluation says a navy can matter here.
-        **	Deliberately NOT gated on having discovered an enemy shore: naval presence
-        **	is map control a human takes proactively, the patrol the yard enables is
-        **	itself the discovery vector on water-split maps, and a discovery gate
-        **	would hand recon-special factions (spy plane / recon flight) a standing
-        **	naval head start over GPS-era ones. Fleet SIZE scales with discovery
-        **	instead -- see AI_Vessel. Economy first for the same reason as air
-        **	production above; scan order puts this behind the core base and the
-        **	anti-starvation ageing brings it up.
-        */
+        // TF: a naval yard once the economy gate passes and the water evaluation says a navy matters here. Not
+        // gated on discovery: on a water-split map the patrol it enables is how the enemy gets found.
         current = TF_Role_Quantity(BQuantity, STRUCT_SHIP_YARD);
         if (current < 1 && tf_economy_ready) {
             int tf_nzone = 0;
@@ -11634,29 +11537,10 @@ int HouseClass::AI_Building(void)
 #endif
 
         /*
-        **	Pick the most urgent choice. Among equal urgency the EARLIER candidate wins: the
-        **	pool is assembled in a deliberate order -- advanced power, power, refinery,
-        **	barracks, war factory -- and that scan order is the intended build priority, which
-        **	is what produces the familiar opening. Ties are the normal case rather than the
-        **	exception here (most branches emit URGENCY_MEDIUM), so resolving them at random
-        **	hands the whole opening build order to a coin flip, and a house can open with a
-        **	repair bay it has no army to use.
-        **
-        **	Scan order alone can starve a candidate outright, though -- a temple that always
-        **	sits last at the winning urgency never wins, for tens of thousands of frames. So
-        **	age the losers: a candidate passed over while it was AT the winning urgency takes
-        **	a strike, and once it has taken enough it jumps the queue for one cycle. Ordinary
-        **	priority holds, and nothing starves forever.
+        **	Pick the choice that is the most urgent.
         */
-        /*
-        **	Starvation rescue is a LAST RESORT, not a rotation. Measure the wait in frames
-        **	rather than decision cycles: with most branches offering URGENCY_MEDIUM there are
-        **	half a dozen tied candidates, so a small cycle count lets the late-scan-order
-        **	entries -- which is exactly what the defences are -- take turns jumping the queue,
-        **	and the house spends its economy on guard towers instead of refineries. The case
-        **	this exists for is a temple sitting unbuilt for tens of thousands of frames, so
-        **	the threshold belongs on that scale.
-        */
+        // TF: ties go to the earliest candidate, as scan order is the intended build order. A candidate that has
+        // waited STARVE_FRAMES since it first lost a tie jumps the queue once, so nothing starves.
         enum
         {
             STARVE_FRAMES = 7500
@@ -11780,11 +11664,7 @@ enum
     TF_ECO_GARRISON_VEHICLES = 2,
     TF_ECO_GARRISON_INFANTRY = 4
 };
-/*
-**	The garrison grows with the match so a base that has spent ten minutes on
-**	its economy is not still defended by its opening squad: one more soldier a
-**	minute, one more vehicle every two.
-*/
+// The garrison grows with the match: one more soldier a minute, one more vehicle every two minutes.
 static int TF_Eco_Garrison_Infantry(void)
 {
     return (TF_ECO_GARRISON_INFANTRY + (int)(Frame / TICKS_PER_MINUTE));
@@ -11837,11 +11717,8 @@ int HouseClass::AI_Unit(void)
 {
     assert(Houses.ID(this) == ID);
 
-    /*
-    **	A delivery the dropship bay would refuse (reloading, or the Mk. II allowance in
-    **	use), or has no bay to come through, is dropped: every unit factory declines it,
-    **	so unit production would stall behind it.
-    */
+    // TF: a dropship delivery with no bay, or one the bay would refuse, is dropped: every unit factory declines
+    // it, so unit production would stall behind it.
     if (BuildUnit != UNIT_NONE && TF_Is_Dropship_Delivered(&UnitTypeClass::As_Reference(BuildUnit))
         && (!Has_Building_Active(STRUCT_TSDROP) || TF_Delivery_Order_Refused(this, RTTI_UNITTYPE, BuildUnit))) {
         BuildUnit = UNIT_NONE;
@@ -11856,18 +11733,12 @@ int HouseClass::AI_Unit(void)
     **	A computer controlled house will try to build a replacement
     **	harvester if possible.
     */
+    // TF: builds the faction's own harvester up to the tier's fleet target, counted through the Units heap
+    // (TF_Harvesters_Owned): UQuantity folds types past UNIT_RA_COUNT onto vanilla slots, so can't count them.
     int tf_proc_t = TF_Skirmish_Type(STRUCT_REFINERY, ActLike);
     unsigned tf_refq = BQuantity[STRUCT_REFINERY] + (tf_proc_t >= 0 ? BQuantity[tf_proc_t] : 0);
     UnitType tf_harv = Is_TS_GDI(ActLike) ? UNIT_TSHARV : ((tf_proc_t >= 0) ? UNIT_TDHARV : UNIT_HARVESTER);
-    // Tiberian Factions: count harvesters via the Units heap, not UQuantity. UQuantity
-    // reads 0 for docked TD harvesters (Limbo+Attach into the refinery), so the old
-    // `tf_refq > UQuantity[tf_harv]` was ALWAYS true -> the AI spammed harvesters (e.g.
-    // 11 for 3 refineries) -> broke -> power-starved -> upper tier blocked. The heap scan
-    // counts docked + active (but not destroyed) harvesters, capping production at ~one
-    // per refinery and rebuilding only genuine losses.
     int tf_harv_owned = TF_Harvesters_Owned();
-    // The fleet target scales with the tier (Hard works every refinery with two
-    // harvesters, Medium three per two, Easy the vanilla one each).
     if (IQ >= Rule.IQHarvester && !IsTiberiumShort && !IsHuman && TF_Eco_Harvester_Target((int)tf_refq) > tf_harv_owned
         && Difficulty != DIFF_HARD) {
         if (UnitTypeClass::As_Reference(tf_harv).Level <= (unsigned)Control.TechLevel) {
@@ -11961,23 +11832,15 @@ int HouseClass::AI_Unit(void)
 
     if (IsBaseBuilding) {
 
-        /*
-        **	Economy first: while the refinery or harvester fleet is below its target
-        **	the combat pick yields (a small garrison excepted), so the credits reach
-        **	the yard's refinery order and the harvester order above instead of
-        **	draining into tier-one units the moment they arrive.
-        */
+        // TF: economy first. Past the garrison, combat vehicles wait while the house is below its refinery or
+        // harvester target.
         if (Session.Type != GAME_NORMAL && CurUnits - tf_harv_owned >= TF_Eco_Garrison_Vehicles()
             && TF_Eco_Below_Target()) {
             TF_Eco_Hold_Diag(this, "vehicle");
             return (TICKS_PER_SECOND * 2);
         }
 
-        /*
-        **	W5.3: a beachhead that is holding gets a base. The expansion MCV jumps the
-        **	ordinary combat pick -- the ferry gives it the first berth on the next ride
-        **	and the beachhead sweep deploys it at the rally.
-        */
+        // TF: a holding beachhead gets an expansion MCV ahead of the combat pick; the ferry carries it first.
         if (TF_Ferry_Wants_MCV()) {
             UnitType mcv = TF_Ferry_MCV_Type();
             if (mcv != UNIT_NONE) {
@@ -12001,23 +11864,12 @@ int HouseClass::AI_Unit(void)
         UnitType index;
         for (index = UNIT_FIRST; index < UNIT_COUNT; index++) {
             UnitTypeClass const* utype = &UnitTypeClass::As_Reference(index);
-            // Tiberian Factions: exclude the TD harvester too. This Can_Build-driven
-            // loop is the skirmish combat-vehicle producer (armed types weighted x20,
-            // random pick) and now fields the full TD vehicle roster for GDI/Nod
-            // automatically. UNIT_TDHARV must stay excluded or it gets lumped in with
-            // combat picks and the AI spams harvesters, burning income. Vanilla only
-            // excluded UNIT_HARVESTER.
-            // The Mobile EM-Pulse, Mobile Sensor Array, Mobile War Factory and Limpet Drone are
-            // excluded as well: the AI has no logic to discharge or deploy them. Limpet Drones are
-            // for human players and scripted mission events.
+            // TF: harvesters and the units the AI cannot use (Mobile EM-Pulse, Sensor Array, War Factory, Limpet
+            // Drone) stay out of the combat pick. Dropship deliveries weigh as armed: the Mech Division lands mechs.
             if (Can_Build(utype, ActLike) && utype->Type != UNIT_HARVESTER
                 && utype->Type != UNIT_TDHARV && utype->Type != UNIT_TSHARV && utype->Type != UNIT_TSMEMP
                 && utype->Type != UNIT_TSLPST && utype->Type != UNIT_TSMWAR && utype->Type != UNIT_TSLIMP
                 && !TF_Delivery_Order_Refused(this, RTTI_UNITTYPE, utype->Type)) {
-                /*
-                **	The dropship bay's deliveries weigh as combat units: the Mech Division
-                **	is a token with no weapon of its own, but it lands five armed mechs.
-                */
                 if (utype->PrimaryWeapon != NULL || TF_Is_Dropship_Delivered(utype)) {
                     counter[index] = 20;
                 } else {
@@ -12151,28 +12003,13 @@ int HouseClass::AI_Vessel(void)
     if (IsBaseBuilding) {
         BuildVessel = VESSEL_NONE;
 
-        /*
-        **	W5.1 step 3: skirmish vessel production. Vanilla unconditionally cleared any
-        **	pick here, so a skirmish AI never built a navy at all. Same weighted-random
-        **	shape as AI_Unit's combat-vehicle block: every armed vessel Can_Build allows
-        **	for the house's faction, picked uniformly. Unarmed transports are excluded
-        **	until the ferry controller exists -- an LST with no loading logic just sits
-        **	against the yard. Fleet size scales with what the house knows: a small
-        **	patrol while no enemy shore has been discovered (the patrol is the
-        **	discovery vector -- see the dispatcher in Expert_AI), then a fleet scaled
-        **	to the strongest opponent navy this house has actually seen once the
-        **	water demonstrably leads somewhere (TF_Naval_Fleet_Cap).
-        */
+        // TF: once the water evaluation passes, skirmish builds the ferry's transport when it asks for one, else a
+        // random armed vessel while armed hulls, transports never counted, are under TF_Naval_Fleet_Cap.
         if (Session.Type != GAME_NORMAL && TF_Role_Quantity(BQuantity, STRUCT_SHIP_YARD) > 0) {
             int tzone = 0;
             int tsize = 0;
             bool tcoastal = false;
             int tenavy = 0;
-            /*
-            **	W5.2: the ferry transport rides outside the armed-fleet cap -- it is
-            **	logistics, not fleet strength, and on a water-split map it is the only
-            **	way any ground unit ever reaches the enemy.
-            */
             bool tok = TF_Naval_Assessment(tzone, tsize, tcoastal);
             if (tok && TF_Ferry_Wants_Transport()) {
                 BuildVessel = VESSEL_TRANSPORT;
@@ -12187,12 +12024,6 @@ int HouseClass::AI_Vessel(void)
                 }
 #endif
             } else if (tok) {
-                /*
-                **	The armed-fleet cap gates ARMED hulls only. Transports ride outside
-                **	the cap by design, but CurVessels counts them -- a house holding a
-                **	four-LST convoy read as "at cap" and never built another warship
-                **	(final verify match: "a lack of ship building, only transports").
-                */
                 int armedv = 0;
                 for (int avi = 0; avi < Vessels.Count(); avi++) {
                     VesselClass const* av = Vessels.Ptr(avi);
@@ -12361,11 +12192,8 @@ int HouseClass::AI_Infantry(void)
     }
 
     if (IsBaseBuilding) {
-        /*
-        **	Economy first (see AI_Unit): infantry is the cheapest drain on a
-        **	starved treasury, so it waits behind the refinery and harvester targets
-        **	once a small garrison stands.
-        */
+        // TF: economy first, as in AI_Unit: past the garrison, infantry waits for the refinery and harvester
+        // targets.
         if (Session.Type != GAME_NORMAL && CurInfantry >= TF_Eco_Garrison_Infantry() && TF_Eco_Below_Target()) {
             TF_Eco_Hold_Diag(this, "infantry");
             return (TICKS_PER_SECOND * 2);
@@ -12430,26 +12258,8 @@ int HouseClass::AI_Infantry(void)
                         typetrack[count].Value = 1 - max(IQuantity[index], 0);
                         break;
 
-                    /*
-                    **	Tiberian Factions mod — GDI/Nod can only build the TD infantry
-                    **	roster (their TD barracks gate out the RA E1..E4 above), so every
-                    **	TD type fell through to the default Value=0 and the weighted picker
-                    **	never chose one — the AI fielded tanks but ZERO infantry. Weights
-                    **	mirror the closest RA analog so the mix philosophy is unchanged:
-                    **	  TDE1 minigunner ~ E1(3), TDE2 grenadier ~ E2(5),
-                    **	  TDE3 rocket ~ E3(2), TDE4 flame ~ E4(5), TDE5 chem ~ flame(5),
-                    **	  TDE6 engineer ~ RENOVATOR, TDRMBO commando ~ TANYA.
-                    **	The engineer/commando "1 - count" build-one heuristic uses the
-                    **	clip-safe QuantityI() accessor (raw IQuantity[index] would read
-                    **	past INFANTRY_RA_COUNT for the TD slots). Balance of the resulting
-                    **	mix is a post-v1.0 item (see docs/balance-v1-notes.md).
-                    */
-                    /*
-                    **	The TS Barracks roster takes the same weights by analog: TSE1 light
-                    **	infantry ~ E1(3), TSE2 disc thrower ~ E2(5), TSJUMPJET ~ E3(2) as the
-                    **	specialist, the TS engineer and Ghost Stalker with the engineer and
-                    **	commando below, and up to two TS medics once there are six infantry.
-                    */
+                    // TF: TD and TS infantry take the weight of their nearest RA analog. Count them with QuantityI():
+                    // IQuantity[] is sized for RA infantry, so indexing it with these types reads past its end.
                     case INFANTRY_TDE1:
                     case INFANTRY_TSE1:
                         typetrack[count].Value = 3;
@@ -12552,14 +12362,8 @@ int HouseClass::AI_Aircraft(void)
         if (CurAircraft >= Control.MaxAircraft)
             return (TICKS_PER_SECOND);
 
-        /*
-        **	Tiberian Factions mod — GDI/Nod helicopters. The RA cases below only
-        **	know LONGBOW/HIND/MIG/YAK (none of which GDI/Nod can build) and count
-        **	the RA STRUCT_HELIPAD they never own, so the TD factions produced ZERO
-        **	aircraft. GDI flies the Orca (AIRCRAFT_TDORCA), Nod the Apache
-        **	(AIRCRAFT_TDAPACHE); both are built from the TD helipad (STRUCT_TDHPAD).
-        **	Cap one airframe per pad, mirroring the RA "pads > built" gate.
-        */
+        // TF: GDI and Nod fly the Orca and Apache, TS GDI the Orca Fighter and Bomber (every third slot), and
+        // GDI the A-10 from its airfield; one airframe per pad or airfield, as in the RA cases below.
         if (Can_Build(&AircraftTypeClass::As_Reference(AIRCRAFT_TDORCA), ActLike)
             && AircraftTypeClass::As_Reference(AIRCRAFT_TDORCA).Level <= (unsigned)Control.TechLevel
             && BQuantity[STRUCT_TDHPAD] + BQuantity[STRUCT_TDGHPAD]
@@ -12576,10 +12380,6 @@ int HouseClass::AI_Aircraft(void)
             return (TICKS_PER_SECOND);
         }
 
-        /*
-        **	TS GDI flies the Orca Fighter and, with a Tech Center, the Orca Bomber, both from the
-        **	TS Helipad; one airframe per pad, the bomber taking every third slot.
-        */
         if (Can_Build(&AircraftTypeClass::As_Reference(AIRCRAFT_TSORCA), ActLike)
             && AircraftTypeClass::As_Reference(AIRCRAFT_TSORCA).Level <= (unsigned)Control.TechLevel
             && BQuantity[STRUCT_TSHPAD] > AQuantity[AIRCRAFT_TSORCA] + AQuantity[AIRCRAFT_TSORCAB]) {
@@ -12589,12 +12389,6 @@ int HouseClass::AI_Aircraft(void)
             BuildAircraft = bomber ? AIRCRAFT_TSORCAB : AIRCRAFT_TSORCA;
             return (TICKS_PER_SECOND);
         }
-        /*
-        **	GDI A-10 -- the fixed-wing analog of the Orca case above. RA's MiG/Yak cases
-        **	key on STRUCT_AIRSTRIP, which GDI never owns, so without this the GDI AI built
-        **	no fixed-wing at all. Keyed to the separated GDI Airfield (STRUCT_TDGAFLD);
-        **	one A-10 per airfield, mirroring the RA one-per-airstrip gate.
-        */
         if (Can_Build(&AircraftTypeClass::As_Reference(AIRCRAFT_TDA10), ActLike)
             && AircraftTypeClass::As_Reference(AIRCRAFT_TDA10).Level <= (unsigned)Control.TechLevel
             && BQuantity[STRUCT_TDGAFLD] > AQuantity[AIRCRAFT_TDA10]) {
@@ -14046,12 +13840,8 @@ CELL HouseClass::Find_Cell_In_Zone(TechnoClass const* techno, ZoneType zone) con
 #endif
             continue;
         }
-        /*
-        **	Restrict the sweep to the requested zone, so the zone the defence
-        **	rating picked is where the building actually lands and each pass of
-        **	the try-any-zone fallback searches fresh ground instead of
-        **	re-scanning one identical candidate set.
-        */
+        // TF: only cells in the requested zone, so a building lands in the zone the defence rating chose and each
+        // pass of the any-zone fallback searches new ground.
         if (Which_Zone(cell) != zone) {
 #if TF_DEV_BUILD
             TF_PlaceScan.Zone++;
@@ -14095,17 +13885,8 @@ CELL HouseClass::Find_Cell_In_Zone(TechnoClass const* techno, ZoneType zone) con
     return (bestcell);
 }
 
-/***********************************************************************************************
- * HouseClass::TF_Find_Naval_Cell -- Finds a coastal placement cell for a water-bound building.*
- *                                                                                             *
- *    Visits the whole map with the same legality + proximity predicates as the zone scan and  *
- *    picks the legal cell nearest the base centre, preferring cells on the water zone the     *
- *    naval assessment chose (the water that reaches the enemy) over any other qualifying      *
- *    water. Ponds are never accepted: a yard whose ships can't leave their puddle is dead     *
- *    money however close it is.                                                               *
- *                                                                                             *
- * OUTPUT:  The cell to place at, or 0 if no legal coastal cell exists.                        *
- *=============================================================================================*/
+// Returns the legal placement cell nearest the base centre for a water-bound building, preferring the water
+// zone the naval assessment chose; pond cells never qualify. 0 when no cell does.
 CELL HouseClass::TF_Find_Naval_Cell(BuildingClass const* building) const
 {
     assert(Houses.ID(this) == ID);
@@ -14194,16 +13975,8 @@ CELL HouseClass::TF_Find_Naval_Cell(BuildingClass const* building) const
     return (bestcell);
 }
 
-/***********************************************************************************************
- * HouseClass::TF_Naval_Patrol_Cell -- Picks a random cell of the given water zone.            *
- *                                                                                             *
- *    Destination source for the blind naval patrol: any cell of the zone is reachable by      *
- *    every ship already on that zone (connectedness is what a zone id means), so patrol       *
- *    orders can never feed the unreachable-target pathfinder storm that land waypoints        *
- *    would. Two passes -- count then fetch -- so only one synced random number is consumed.   *
- *                                                                                             *
- * OUTPUT:  A cell of the zone, or 0 if the zone id matches no radar cell.                     *
- *=============================================================================================*/
+// Returns a random radar cell of water zone wzone, or 0. Every ship on that zone can reach it, so a patrol
+// order never sends a ship at an unreachable cell.
 CELL HouseClass::TF_Naval_Patrol_Cell(int wzone) const
 {
     if (wzone <= 0) {
