@@ -1,12 +1,9 @@
 # Lobby difficulty ambiguity — overnight findings (2026-07-23)
 
-**Status: discriminator FOUND and validated over 28 ambiguous reproductions (0 wrong, 0
-undecided). Resolver is APPLIED on `main` (2026-07-23) — an ambiguous read now resolves
-instead of falling back, with branch U keeping the old fail-closed behaviour. NOT yet
-released: it rides the AI milestone release rather than its own patch, because 4.2.0's
-on-screen readout already made the fallback visible and the difficulty tiers do not carry
-much behavioural weight until W7 lands (Luke, 2026-07-23). That gives it a long local soak
-and a Windows confirmation window before it reaches players.**
+**Status:** Reference; the resolver ships in 5.0.0 (`2d3fc4de`, and the V branch in `ec3324a3`
+under an unrelated message). It resolved all 28
+ambiguous reproductions here (0 wrong, 0 undecided) and 46/46 in the offline harness; the
+vector-triple branch has never been needed live. Branch `U` keeps the old fail-closed fallback.
 
 Companion to `lobby-ambiguity-work-order.md` (the plan) and `lobby-difficulty-ram-spike.md`
 (the subsystem). Everything below was measured under Proton on the desktop prefix, dev DLL,
@@ -119,7 +116,7 @@ freshness, same outcome.)
 
 ## Outcome
 
-Promoted with all three branches (Luke, 2026-07-23), keeping fail-closed as branch U and
+Promoted with all three branches, keeping fail-closed as branch U and
 the 4.2.0 on-screen readout surfacing any residual fallback. All-branches rather than
 R-only was judged safe because no branch can pick a stale over a live copy — the worst
 case is the fallback we already shipped — and because holding the release until the AI
@@ -176,10 +173,8 @@ difficulty-only-flip → relaunch cycles on the resolver build. **43/43 reads co
 and post-F11.5k-match flips included), so the V branch has still never fired live.
 Scripted single-session cycling does not provoke the ambiguity under Proton; the
 corpus stands as a base-path regression result, and one live stale TEAM-field copy
-was observed (Luke's session), proving stale survival without difficulty divergence.
-Note: the V-branch DLL code was swept into commit `ec3324a` (unrelated message) by
-the parallel session on 07-31 and is pushed; this doc + the harness stayed uncommitted.
+was observed in a played session, proving stale survival without difficulty divergence.
+The V-branch DLL code rode into commit `ec3324a` under an unrelated message.
 
-**Windows caveat:** DCJD's replication is believed to be native Windows — Luke is
-asking them to confirm in the next reply (`lobby-ambiguity-data/dcjd-forum-reply-2-draft.md`).
-If confirmed, the "Windows observation" owed above is discharged by their samples.
+**Windows caveat:** DCJD's replication is believed to be native Windows. No confirmation is
+recorded, so the Windows observation owed above stands.

@@ -1,54 +1,28 @@
 # AI Improvements — Research Findings
 
-> **⭐ RE-AUDIT 2026-07-16 (verified against HEAD `953c32e`, start of the AI-focus milestone).**
-> Every problem below was re-verified against current code + git history. Statuses:
->
-> | # | Finding | Status |
-> |---|---|---|
-> | 1 | Radar Dome only on airthreat | ✅ FIXED `f8351de` — proactive TDHQ build (house.cpp:6647), covers all AI factions (all skirmish AIs are GDI/Nod-typed) |
-> | 2 | AI never builds naval | 🔴 OPEN — `AI_Vessel` still fully campaign-gated (house.cpp:7102) |
-> | 3 | Superweapon AI | 🟡 PARTIAL — TD Ion/Nuke DO auto-fire (house.cpp:2179/2219); vanilla IC/Chrono have no AI dispatch (3b) and their Place_Special_Blast still reads the mouse (3c, house.cpp:3442/3477); parabomb still campaign-gated (3d, house.cpp:2296) |
-> | 4 | Harvesters permanently stuck | 🟡 MOSTLY FIXED (latch reset unit.cpp:4166 + anti-stuck watchdog unit.cpp:577) — remnants: GOINGTOIDLE fall-through (unit.cpp:4334), `!IsHuman` re-queue gate (unit.cpp:5171), both masked by the watchdog |
-> | 5 | No threat-aware ore pick | ✅ FIXED `2f80f76` (custom enemy-proximity scan, unit.cpp:2826) |
-> | 6 | Sticky refinery cache | ✅ FIXED `5e14772` (load-balancing Find_Best_Refinery, unit.cpp:6190) |
-> | 7 | Greatest_Threat bestval bug | 🔴 OPEN — all 4 ring branches still never update bestval (techno.cpp:2359-2421) |
-> | 8 | Expert_AI stubs | 🔴 OPEN — DEFENSE/OFFENSE/INCOME/ENGINEER checks + 5 builders still stubs (house.cpp:5779+/5969+) |
-> | 9 | AI_Base_Defense compiled out | 🔴 OPEN — still `#ifdef NEVER` (house.cpp:6169) |
-> | 10 | Difficulty selector no-op | 🔴 OPEN — GAME_NORMAL gate (dllinterface.cpp:2159) + `Difficulty != DIFF_HARD` harvester gate (house.cpp:6960) |
-> | 11 | Computer_Paranoid gated | 🔴 OPEN (house.cpp:8857) |
-> | 12 | Threat map dead in skirmish | 🔴 OPEN (object.cpp:1858/1871) |
-> | 13 | Repair Bay / naval queues | 🟡 PARTIAL — Repair Bay FIXED `f8351de` (TDFIX, house.cpp:6665); Sub Pen/Shipyard build queues still absent (prereq remaps exist, nothing builds them) |
-> | 14 | TeamType Recruit gated | 🔴 OPEN (team.cpp:666) |
-> | 15 | Friendly-fire: buildings only | 🔴 OPEN (techno.cpp:1533-1569) |
-> | 16 | Enemy fixation | 🔴 OPEN (house.cpp:5472) |
-> | 17 | Minor bugs (`\|` power-urgency typo, IsScanLimited) | 🔴 OPEN (house.cpp:5762; foot.cpp:2060) |
-> | A-Cheat 1/2 | AI targets through fog (units + superweapons) | 🔴 OPEN (techno.cpp:1713; house.cpp:3180) — note the TD Ion/Nuke dispatch now uses the fog-blind picker too |
-> | A-Cheat 3 | AI MCV deploy shoves own units | 🔴 OPEN, low (unit.cpp:2017) |
-> | P3 Tier1 #13 | Spy/Thief/Dog never built | 🔴 OPEN (house.cpp:7350+ default Value=0) |
->
-> `ai-targeting.md` is **OBE**: TD buildings are all first-class engine types now and its Option-A
-> fix (per-building `Points=`) is implemented in rules.ini. Retained as how-to reference only.
->
-> **New reference resource: AI Boost 3.2 source** (Bast75/xXMini FrankiXx, GPL, built on CFE 1.8)
-> cloned to `reference/ai-boost2/`. Working implementations that overlap our OPEN list: skirmish
-> naval AI + naval-war detection (P2/P13b), IC/Chrono AI usage incl. AI-aware targeting (P3b/3c),
-> special-unit AI incl. spies/thieves/engineers/MAD tank (Tier1 #13), dynamic counter-building,
-> AI MCV expansion bases, primary-factory production, power sell-excess management, scatter-on-
-> attack-launch (relevant to the stuck-in-base thread). Its difficulty levers (economy multiplier
-> on unload, production-speed hack %) are CHEATS — study mechanisms, never port the boost levers
-> ([[feedback-difficulty-philosophy]]). Player-facing tunables ship in an AIBOOST.INI.
-> **Licence verified 2026-07-16:** their License.txt = EA's GPL v3 + Section-7 terms verbatim
-> (formatting-only diff vs EA's LICENSE.md) — port-compatible with this repo. **Attribution:** add
-> Bast75 & xXMini FrankiXx to the Workshop acknowledgements when the FIRST AI Boost port ships
-> (CFE authors already credited; their fork bundles CFE 1.8, so attribute per-feature to the
-> right author).
+**Status:** Reference. The problem inventory behind `ai-upgrade-plan.md`; line numbers below
+predate 5.0.0.
+**Fixed:** 1 (radar dome), 2 (naval), 4 (stuck harvesters), 5 (threat-aware ore), 6 (sticky
+refinery cache), 7 (`Greatest_Threat`), 10 (difficulty), 13 (repair bay and naval queues), 17's
+power-urgency test, fog cheats A-1 and A-2, the parabomb AI.
+**Open:** 3 (Iron Curtain and Chronosphere AI), 8 (Expert_AI stubs), 9 (`AI_Base_Defense`
+compiled out), 11 (`Computer_Paranoid` gated), 12 (threat map dead in skirmish), 14 (TeamType
+recruit gated), 15 (friendly fire on buildings only), 16 (enemy fixation), 17's `IsScanLimited`,
+A-Cheat 3 (MCV deploy shoves own units), spy/thief/dog production.
+
+`ai-targeting.md` is reference only: every TD building is a first-class engine type and the
+per-building `Points=` fix is in rules.ini.
+
+**Reference source: AI Boost 3.2** (Bast75 and xXMini FrankiXx, GPL v3 with EA's terms, built on
+CFE 1.8) in `reference/ai-boost2/`. It has working skirmish naval AI, Iron Curtain and
+Chronosphere use with AI-aware targeting, special-unit AI, counter-building, MCV expansion,
+primary-factory production, power sell-off and scatter-on-launch. Its difficulty levers (an
+economy multiplier and a production-speed hack) are cheats: study its mechanisms, never port the
+boosts (difficulty is behavioural). Both authors are credited in the Workshop and ModDB text.
 
 Investigation of three long-standing AI behaviour gaps in vanilla Red Alert
 Remastered skirmish. All three trace back to the same architectural issue and
 all are **pure DLL changes** — no INI path exists for any of them.
-
-**Status:** Research complete. Implementation deferred until four-faction core
-(GDI/Nod buildings) is landed and stable.
 
 ---
 
@@ -610,7 +584,7 @@ skirmish instead of scattering into hunt mode. Risks: interacts with team
 coordination logic (`Coordinate_Attack`), so needs its own playtest soak; keep it
 behavioural per the difficulty philosophy (no stat biases).
 
-**Why this matters for difficulty (Luke, 2026-06-13):** the player-facing attack-move
+**Why this matters for difficulty:** the player-facing attack-move
 got a threat-response layer during playtest — a unit hammering a passive building
 disengages to deal with defences / enemy units that come into range, then resumes
 (docs/cfe-port-plan.md §1.2). Today the AI's big weakness is the opposite: an AI raid
@@ -622,8 +596,7 @@ difficulty win (no stat biases), so it fits the difficulty philosophy cleanly. T
 per-unit plumbing AND the threat-response are already built and player-verified; the
 only new work is the AI dispatch hook.
 
-Status: idea logged at Luke's direction (2026-06-11), reinforced 2026-06-13 after the
-threat-response landed. Not scheduled. Pairs well with the A*-stage-2 reservation-layer
+Status: an idea, not scheduled. Pairs well with the A*-stage-2 reservation-layer
 work since both touch movement cooperation.
 
 # Broad-sweep findings (combat, strategy, difficulty, misc)
@@ -1526,8 +1499,7 @@ gate actually unlock?
 - Enumerate every `IQ >=` / `IQ <` check in the codebase.
 - For each, what behaviour does it gate? Is the threshold reasonable?
 - Does IQ actually ramp during a game, or is it set once?
-- Could the IQ system be the primary lever for behavioural difficulty
-  (per [[feedback-difficulty-philosophy]])?
+- Could the IQ system be the primary lever for behavioural difficulty?
 
 **Expected output:** Section as "IQ system map" — a table of each IQ
 threshold, what it gates, the default value, and proposed difficulty-tier
