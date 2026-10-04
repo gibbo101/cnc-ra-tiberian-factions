@@ -72,10 +72,8 @@ char const* Missions[MISSION_COUNT] = {"Sleep",   "Attack", "Move",    "QMove", 
                                        "Sticky",  "Enter",  "Capture", "Harvest", "Area Guard", "Return",
                                        "Stop",    "Ambush", "Hunt",    "Unload",  "Sabotage",   "Construction",
                                        "Selling", "Repair", "Rescue",  "Missile", "Harmless",
-                                       /*
-                                       ** TF: attack-move (CFE port). Both strings must exist -- a missing entry
-                                       ** here is UB in the INI mission-string lookup (CFE bugfix e30323e).
-                                       */
+                                       // TF: attack-move (CFE port). Every mission needs a name here: a missing
+                                       // one is NULL, and Mission_From_Name crashes on it.
                                        "Attack-Move", "Attack-QMove"};
 
 /***************************************************************************

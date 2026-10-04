@@ -102,7 +102,7 @@ extern int LParam;
 
 extern int Frame;
 CELL Coord_Cell(COORDINATE coord);
-bool Is_Refinery_Dock_Cell(CELL cell); // TF Layer B: harvester-only refinery dock pad
+bool Is_Refinery_Dock_Cell(CELL cell); // harvester-only refinery dock pad
 bool TF_Orbit_Probe(void);             // dev: from-orbit arrival probe, armed by tf_orbit.flag
 bool TF_Dev_Rich_Start(void);          // dev: 1,000,000 credits at skirmish start, armed by tf_cheap.flag
 bool Is_TS_Weap_Exit_Cell(CELL cell);  // TS war factory doorstep: kept clear for the leaving vehicle
@@ -174,9 +174,11 @@ extern bool TF_Limpet_Attach(TechnoClass* mine, int which); // a limpet mine's s
 extern bool TF_Heal_Affects(TechnoClass const* healer, ObjectClass const* target); // the healer's heal changes the target's strength (techno.cpp)
 extern bool TF_Mwar_At_Cap(HouseClass const* house); // House already fields its Mobile War Factory (house.cpp; heap-counted)
 extern bool TF_Ghost_At_Cap(HouseClass const* house); // House already fields its Ghost Stalker (house.cpp; heap-counted)
-extern bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id); // Begin_Production would turn this order away (bay reloading / Mk. II cap / Ghost Stalker cap); gates the EVA ack too (house.cpp)
+// Begin_Production would turn this order away (bay reloading, or the Mk. II, Ghost Stalker or Mobile War
+// Factory cap); gates the EVA ack too (house.cpp)
+extern bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id);
 extern int TF_AI_IQ_From_Difficulty(DiffType diff); // lobby difficulty -> AI house IQ tier (behavioural difficulty)
-extern bool TFLobbyAIDifficultySet; // true once CNC_Set_Difficulty has delivered a lobby value this match
+extern bool TFLobbyAIDifficultySet; // true once CNC_Set_Difficulty has delivered a lobby value; never cleared
 
 /*
 ** For WIN32, replace the assert macro so we get an error on the debugger screen
@@ -276,9 +278,8 @@ char const* Name_From_Source(SourceType source);
 FacingType KN_To_Facing(int input);
 void const* Get_Radar_Icon(void const* shapefile, int shapenum, int frames, int zoomfactor);
 
-// Tiberian Factions mod: line-draw routing (Obelisk laser-beam render).
-// Routes via DLL_Draw_Line_Intercept in Remastered mode, LogicPage->Draw_Line
-// in classic mode. Ported from TD's conquer.cpp:2602.
+// TF: draws a line (the Obelisk laser) through DLL_Draw_Line_Intercept for the virtual window in the
+// Remastered build, else on LogicPage. Ported from TD's CC_Draw_Line.
 void CC_Draw_Line(int x, int y, int x1, int y1, unsigned char color, int frame, WindowNumberType window);
 // void CC_Draw_Shape(ObjectClass *object, void const * shapefile, int shapenum, int x, int y, WindowNumberType window,
 // ShapeFlags_Type flags, void const * fadingdata=0, void const * ghostdata=0, DirType rotation=DIR_N, long

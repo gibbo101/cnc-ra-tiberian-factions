@@ -118,9 +118,9 @@ private:
     */
     static SearchDriveType* First;
     /*
-    ** This is a copy of the unparsed search path list. The Remastered launcher passes every
-    ** enabled mod's path in one list; a list too long to copy is left out, never overrun.
+    ** This is a copy of the unparsed search path list
     */
+    // TF: the launcher passes every enabled mod's path in one list; a list too long to fit is left out.
     static char RawPath[16384];
 
     /*

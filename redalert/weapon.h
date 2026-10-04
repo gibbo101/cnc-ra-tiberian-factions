@@ -111,43 +111,24 @@ public:
     */
     unsigned IsElectric : 1;
 
-    /*
-    **	Tiberian Factions mod: marker for TD-ported weapons. Per
-    **	[[project-td-port-architecture]] (Option A). When set, Read_INI parses
-    **	`Speed=` as raw MPHType (TD source convention) instead of RA's 0..100
-    **	percentage. Lets TD-source values be copied directly into rules.ini.
-    */
+    // TF: a TD-ported weapon. Read_INI takes its Speed= as a raw MPHType, as TD's source writes it, and it
+    // fires on TD's salvo timing (Rearm_Delay).
     unsigned IsTDPort : 1;
 
-    /*
-    **	Tiberian Factions mod: TS railgun behavior (TS rules `IsRailgun=true`).
-    **	The shot applies AmbientDamage to EVERY object along the source->target
-    **	line (piercing), renders a beam + particle helix instead of the Obelisk
-    **	red laser, and the projectile's own payload stays 0 (TS convention:
-    **	`Damage=0` -- the line pass is the damage).
-    */
+    // TF: a TS railgun (IsRailgun=). The shot deals AmbientDamage to every object on the line and draws a
+    // beam and spark coil; the projectile itself carries no damage (Damage=0).
     unsigned IsRailgun : 1;
 
-    /*
-    **	Tiberian Factions mod: TS sonic behavior (TS rules `IsSonic=Yes`, the
-    **	Disruptor's SonicZap). Same piercing-line damage sweep as IsRailgun,
-    **	but rendered as the green sonic beam with no spark helix.
-    */
+    // TF: a TS sonic weapon (IsSonic=, the Disruptor). The shot lays a band of wave anims along the line,
+    // and they deal its AmbientDamage.
     unsigned IsSonic : 1;
 
-    /*
-    **	Tiberian Factions mod: RA2 prism beam (the Prism Tank's Comet). The shot
-    **	draws RA2's magenta beam from the muzzle to the target and forks
-    **	AmbientDamage onto up to five enemies near the impact, each through the
-    **	weapon's own warhead.
-    */
+    // TF: an RA2 prism beam (the Prism Tank). The beam forks from the impact onto up to five nearby enemies,
+    // each taking AmbientDamage through the weapon's warhead.
     unsigned IsPrismBeam : 1;
 
-    /*
-    **	Tiberian Factions mod: TS `AmbientDamage=` -- the per-object damage the
-    **	railgun/sonic line pass applies, or each prism fork's damage. Only
-    **	meaningful when IsRailgun, IsSonic or IsPrismBeam is set.
-    */
+    // TF: TS AmbientDamage=: what a railgun deals each object on its line, a sonic band in total, or each
+    // prism fork.
     int AmbientDamage;
 
     /*
@@ -197,10 +178,7 @@ public:
     */
     LEPTON Range;
 
-    /*
-    **	Tiberian Factions: the range inside which the weapon cannot fire (TS MinimumRange);
-    **	zero for every weapon without the key.
-    */
+    // TF: the range inside which the weapon cannot fire (TS MinimumRange); zero without the key.
     LEPTON MinRange;
 
     /*

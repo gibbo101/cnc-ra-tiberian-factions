@@ -1772,10 +1772,7 @@ ObjectClass* MapClass::Close_Object(COORDINATE coord) const
         }
     }
 
-    /*
-    ** Airborne jumpjets in the top layer are off the cell lists too; measure them where they
-    ** are drawn, lifted by their height.
-    */
+    // TF: airborne jumpjets are off the cell lists too; measure them where they are drawn, lifted by their height.
     for (int index = 0; index < Infantry.Count(); index++) {
         InfantryClass* inf = Infantry.Ptr(index);
         if (inf->IsActive && !inf->IsInLimbo && inf->Is_Airborne_Jumpjet() && inf->In_Which_Layer() != LAYER_GROUND
@@ -1877,11 +1874,9 @@ bool MapClass::Zone_Reset(int method)
     }
 
     /*
-    **	Water based zone recalcuation. Tiberian Factions: record each water zone's
-    **	cell count as it is discovered -- Zone_Span computes it anyway, and the naval
-    **	AI's pond-vs-sea judgement is exactly this number. Water zones ignore
-    **	buildings, so the histogram is stable for the whole match once computed.
+    **	Water based zone recalcuation.
     */
+    // TF: also records each water zone's cell count, which the naval AI uses to tell a pond from open sea.
     if (method & MZONEF_WATER) {
         int zone = 1; // Starting zone number.
         memset(TF_WaterZoneSize, 0, sizeof(TF_WaterZoneSize));
@@ -1897,9 +1892,7 @@ bool MapClass::Zone_Reset(int method)
         TF_WaterZoneCount = min(zone - 1, (int)ARRAY_SIZE(TF_WaterZoneSize) - 1);
     }
 
-    /*
-    **	Hover zone recalculation (TS-spike): spans land AND water in one zone.
-    */
+    // TF: hover zones span land and water as one zone.
     if (method & MZONEF_HOVER) {
         int zone = 1; // Starting zone number.
         for (CELL cell = 0; cell < MAP_CELL_TOTAL; cell++) {

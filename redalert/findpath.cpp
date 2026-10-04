@@ -417,11 +417,7 @@ bool FootClass::Register_Cell(PathType* path, CELL cell, FacingType dir, int cos
  * HISTORY:                                                                                    *
  *   07/08/1991  CY : Created.                                                                 *
  *=============================================================================================*/
-/***********************************************************************************************
- * Euclidian_Cell_Distance_Estimate -- Straight-line cell distance, for A* heuristic.          *
- *                                                                                             *
- * CFE Patch Redux A* support (ChthonVII / cfehunter). Admissible heuristic for Find_Path_AStar.*
- *=============================================================================================*/
+// Straight-line distance between two cells, in cells, and its square: the A* heuristic (CFE Patch Redux port).
 float Euclidian_Cell_Distance_Estimate_Sqrd(const CELL source, const CELL dest)
 {
     const float x = abs(Cell_X(dest) - Cell_X(source));
@@ -434,12 +430,8 @@ float Euclidian_Cell_Distance_Estimate(const CELL source, const CELL dest)
     return sqrtf(Euclidian_Cell_Distance_Estimate_Sqrd(source, dest));
 }
 
-/***********************************************************************************************
- * FootClass::Find_Passable_Position_Near -- Spiral search for a passable cell near a target.  *
- *                                                                                             *
- * CFE Patch Redux A* support. When the A* destination is impassable, look outward in growing  *
- * rings for the nearest passable cell so the unit can path to an adjacent spot.               *
- *=============================================================================================*/
+// Nearest passable cell to target, searched in square rings out to maxRadius, or 0 if none (CFE Patch Redux
+// port). Find_Path_AStar heads for it in place of an impassable destination.
 CELL FootClass::Find_Passable_Position_Near(const CELL target, const int maxRadius, const MoveType threshhold, const int threat)
 {
     if (Passable_Cell(target, FACING_NONE, threat, threshhold)) {
@@ -459,28 +451,24 @@ CELL FootClass::Find_Passable_Position_Near(const CELL target, const int maxRadi
         const int top = targetY - curDistance;
         const int bottom = targetY + curDistance;
 
-        //Test top row
         for (int x = left; x <= right; ++x) {
             const CELL currentCell = XY_Cell(x, top);
             if (validate_cell(currentCell))
                 return currentCell;
         }
 
-        //Test bottom row
         for (int x = left; x <= right; ++x) {
             const CELL currentCell = XY_Cell(x, bottom);
             if (validate_cell(currentCell))
                 return currentCell;
         }
 
-        //Test left column
         for (int y = top + 1; y < bottom; ++y) {
             const CELL currentCell = XY_Cell(y, left);
             if (validate_cell(currentCell))
                 return currentCell;
         }
 
-        //Test the right column
         for (int y = top + 1; y < bottom; ++y) {
             const CELL currentCell = XY_Cell(y, right);
             if (validate_cell(currentCell))
@@ -491,27 +479,8 @@ CELL FootClass::Find_Passable_Position_Near(const CELL target, const int maxRadi
     return 0;
 }
 
-/***********************************************************************************************
- * FootClass::Find_Spread_Cell -- Pick a distinct free cell near a group-move destination.      *
- *                                                                                             *
- * A* stage 2 (Tiberian Factions, GPL v3). Vanilla RA gives every unit of a non-formation      *
- * group move the SAME clicked cell; the first unit takes it and the rest find it occupied,    *
- * A* bails on the close-impassable destination, and they jitter (the 1-wide jam). This fans   *
- * a group out: spiral from the clicked cell and return the nearest currently-free             *
- * (Can_Enter_Cell == MOVE_OK), in-radar cell that no earlier unit has already claimed, then   *
- * record it in `claimed` so the next unit gets a different one. The clicked cell itself is     *
- * candidate radius 0, so whoever is allocated first keeps the exact destination.              *
- *                                                                                             *
- * Per-unit (uses this unit's own Can_Enter_Cell), so a mixed infantry/vehicle group spreads   *
- * onto cells each member can actually stand on.                                               *
- *                                                                                             *
- * INPUT:   target    -- the clicked destination cell.                                         *
- *          maxRadius -- how far out to spiral before giving up.                               *
- *          claimed   -- cells already handed to earlier units; the chosen cell is appended.   *
- *                                                                                             *
- * OUTPUT:  a distinct free cell, or 0 if none free within maxRadius (caller falls back to     *
- *          the raw clicked cell = vanilla behaviour for that one unit).                        *
- *=============================================================================================*/
+// Claims for one unit of a group move the nearest cell to target, out to maxRadius, that it can enter now,
+// that no earlier unit claimed, and in target's movement zone so none is sent round a cliff. 0 if none.
 CELL FootClass::Find_Spread_Cell(const CELL target, const int maxRadius, DynamicVectorClass<CELL>& claimed)
 {
     const auto is_claimed = [&claimed](const CELL cell) {
@@ -523,13 +492,6 @@ CELL FootClass::Find_Spread_Cell(const CELL target, const int maxRadius, Dynamic
         return false;
     };
 
-    /*
-    ** Reachability gate: a spread cell is only acceptable if it lies in the SAME
-    ** movement zone as the clicked cell. Without this, on a cliff/maze map the
-    ** nearest free cell can be on the far side of a rock wall, so the assigned
-    ** unit traces all the way around the cliff to reach it (or parks on the wrong
-    ** side). Same idiom used by the A* arrival / attack-move zone checks.
-    */
     const int mz = Techno_Type_Class()->MZone;
     const unsigned char destZone = Map[target].Zones[mz];
 
@@ -538,7 +500,6 @@ CELL FootClass::Find_Spread_Cell(const CELL target, const int maxRadius, Dynamic
                && Map[cell].Zones[mz] == destZone && !is_claimed(cell);
     };
 
-    // Radius 0: the clicked cell itself.
     if (validate_cell(target)) {
         claimed.Add(target);
         return target;
@@ -586,17 +547,6 @@ CELL FootClass::Find_Spread_Cell(const CELL target, const int maxRadius, Dynamic
     return 0;
 }
 
-/***********************************************************************************************
- * FootClass::Find_Path_AStar -- A* pathfinder (replaces the legacy "crash and turn" search).  *
- *                                                                                             *
- * Ported from CFE Patch Redux (ChthonVII / cfehunter), including the 1.8 path-scrub fix (stop *
- * one element short of maxLen to avoid an out-of-bounds write of the END terminator) and the  *
- * lepton-vs-cell distance bugfix in the impassable-target handling. Cost weights come from    *
- * Passable_Cell (MOVE_OK=1, MOVE_MOVING_BLOCK=3, MOVE_DESTROYABLE=8, MOVE_TEMP=10, 0=impass).  *
- *                                                                                             *
- * OUTPUT:  total path length in cells (0 = no path). If resultPath is non-null it is filled    *
- *          with the move command list (truncated to maxLen) and Optimize_Moves'd.             *
- *=============================================================================================*/
 #if TF_DEV_BUILD
 // TF DEV: how many A* searches gave up on the expansion budget rather than on an
 // exhausted open list. Reported alongside the success/fallback tally in Find_Path so a
@@ -604,6 +554,8 @@ CELL FootClass::Find_Spread_Cell(const CELL target, const int maxRadius, Dynamic
 static long TF_AStar_Cap_Trips = 0;
 #endif
 
+// A* path from source to dest (CFE Patch Redux port): its length in cells, 0 if none. resultPath, if given,
+// takes the moves, cut to maxLen. Costs build on Passable_Cell's; infantry avoid TD Tiberium (docs/cfe-port-plan.md).
 int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CELL dest, const int maxLen, const MoveType threshhold, const int threat)
 {
     struct AStarCell {
@@ -620,20 +572,16 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
         return lhs_cost > rhs_cost;
     };
 
-    //General error case early exits
     if (maxLen <= 0 || source == dest) {
         return 0;
     }
 
-    //Target is impassable, try to account for that by finding a position nearby, or staying still if already close
     if (!Passable_Cell(dest, FACING_NONE, threat, threshhold)) {
         static const int impassableCloseEnough = 3;
-        // CFE bugfix: Distance() returns leptons here, not cells, so convert before comparing to the cell radius.
         const int distanceToDest = Lepton_To_Cell(::Distance(Cell_Coord(source), Cell_Coord(dest)));
         if (distanceToDest > impassableCloseEnough) {
             const CELL nearbyDest = Find_Passable_Position_Near(dest, impassableCloseEnough, threshhold, threat);
 
-            //Failed to find a passable position at or near the target or nearby position is further away or equidistant to our current position, so just stay put
             if (nearbyDest == 0 || Lepton_To_Cell(::Distance(Cell_Coord(dest), Cell_Coord(nearbyDest))) >= distanceToDest) {
                 return 0;
             } else {
@@ -648,25 +596,11 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
     static std::vector<AStarCell*> open_list;
     open_list.clear();
 
-    //Add the source cell to the open list (a single element is already a valid heap)
     open_list.push_back(&visited_cells.emplace(source, AStarCell()).first->second);
     open_list.back()->position = source;
 
     AStarCell* dest_result = nullptr;
 
-    /*
-    **	Tiberian Factions -- node-expansion budget. Without it, a search for an
-    **	unreachable destination exhausts the entire reachable component (~16K cells at
-    **	128x128), and Find_Path retries the whole search up to four times with escalating
-    **	threat tolerance -- so one stuck unit costs four full map floods per order, every
-    **	order. The cap turns that worst case into a bounded miss that falls through to the
-    **	legacy edge-follower, which is the same outcome the search was heading for anyway.
-    **
-    **	A pure node count is deterministic, so every peer caps on the same node and the
-    **	result stays MP-safe. The budget is generous relative to any legitimate route on a
-    **	128x128 map; if the diagnostic log ever shows caps tripping on paths that should
-    **	have succeeded, raise it rather than removing it.
-    */
     static const int ASTAR_MAX_EXPANSIONS = 4096;
     int expansions = 0;
 
@@ -690,39 +624,18 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
         for (FacingType facing = FACING_FIRST; facing < FACING_COUNT; ++facing) {
             const CELL adjacent_cell_id = Adjacent_Cell(prev_cell.position, facing);
 
-            //Passable cell returns 0 if the object can't enter the cell from this direction
             float cell_cost = (float)Passable_Cell(adjacent_cell_id, facing, threat, threshhold);
-            // Ignore friendly units in motion unless they're really close, on the assumption they'll move before we arrive (CFE).
-            if (cell_cost == 3) { //MOVE_MOVING_BLOCK is 3
+            if (cell_cost == 3) { // Passable_Cell's cost for MOVE_MOVING_BLOCK
                 if (prev_cell.cell_distance_from_start > 4) {
                     cell_cost = 1;
                 } else if (prev_cell.cell_distance_from_start > 2) {
                     cell_cost = 2;
                 }
             }
-            // diagonal moves cost more because Pythagoras
             if ((cell_cost) > 0 && ((facing == FACING_NE) || (facing == FACING_SE) || (facing == FACING_SW) || (facing == FACING_NW))) {
                 cell_cost += 0.41f;
             }
 
-            /*
-            **	Tiberian Factions -- Infantry Tiberium Aversion (ported from CFE Patch
-            **	Redux, ChthonVII). Infantry route AROUND TD Tiberium when a reasonable
-            **	detour exists, because Tiberium poisons them (infantry.cpp). The penalty
-            **	is finite (TIB_AVERSION_COST cells) so they still cross a wide field with
-            **	no shorter way round rather than refuse the order.
-            **
-            **	Two RA-specific deviations from CFE, both deliberate:
-            **	  1. Keyed on OVERLAY_TIB01 specifically, NOT Land_Type()==LAND_TIBERIUM.
-            **	     In RA, Ore and Gems are engine-Tiberium too (they share LAND_TIBERIUM)
-            **	     but are harmless, so the land-type test would wrongly repel infantry
-            **	     from ore fields. Same lesson as the damage hook in infantry.cpp.
-            **	  2. No chem-warrior (E5) exemption. CFE exempts the Tiberium-immune chem
-            **	     soldier, but OUR Tiberium damages ALL infantry, so ALL infantry avoid
-            **	     it -- aversion tracks damage. (If the chem warrior is ever made
-            **	     Tiberium-immune for TD authenticity, exempt it in BOTH places.)
-            **	Vehicles/harvesters (non-RTTI_INFANTRY) are unaffected.
-            */
             static const float TIB_AVERSION_COST = 2.0f;
             if (cell_cost > 0 && What_Am_I() == RTTI_INFANTRY
                 && Map[adjacent_cell_id].Overlay == OVERLAY_TIB01) {
@@ -731,8 +644,6 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
 
             if (cell_cost > 0) {
                 cell_cost += prev_cell.cost_from_start;
-                // try_emplace is unavailable on this toolchain's libstdc++; emplace is equivalent here
-                // (AStarCell is cheap to default-construct, and an existing key returns {iter, false}).
                 auto emplace_result = visited_cells.emplace(adjacent_cell_id, AStarCell());
                 AStarCell& current_cell = emplace_result.first->second;
                 if (emplace_result.second || cell_cost < current_cell.cost_from_start) {
@@ -742,16 +653,6 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
                     current_cell.cost_from_start = cell_cost;
                     current_cell.estimated_cost_to_end = Euclidian_Cell_Distance_Estimate(adjacent_cell_id, dest);
 
-                    /*
-                    **	Push onto a binary heap ordered so the cheapest node sits at the
-                    **	back after pop_heap. The previous sorted-vector insert was O(n) per
-                    **	node, making the whole search O(n^2); this is O(log n).
-                    **
-                    **	Re-relaxing a node already on the heap leaves a stale duplicate
-                    **	entry behind (classic lazy decrease-key). That was equally true of
-                    **	the sorted-vector version and is harmless: the duplicate is simply
-                    **	re-expanded later against its already-improved cost.
-                    */
                     open_list.push_back(&current_cell);
                     std::push_heap(open_list.begin(), open_list.end(), inverse_node_sort);
                 }
@@ -762,16 +663,13 @@ int FootClass::Find_Path_AStar(PathType* const resultPath, const CELL source, CE
     if (dest_result) {
         const int total_path_length = dest_result->cell_distance_from_start;
 
-        //If we don't have a path to fill in, then just return here
         if (resultPath == nullptr)
             return total_path_length;
 
-        //Cost is used for comparing paths with different threat thresholds, so use the overall cost regardless of truncation
-        resultPath->Cost = (int)(dest_result->cost_from_start + 0.5f); // +0.5 then cast == round (PathType::Cost is int)
+        resultPath->Cost = (int)(dest_result->cost_from_start + 0.5f);
 
-        //Scrub back to the max path length to store.
-        // CFE fix: maxLen is the buffer size, so stop 1 short to leave room for the END terminator (else OOB write here
-        // and OOB reads/writes in Optimize_Moves).
+        // maxLen is the buffer size: stop one short so the END terminator fits, or this write and
+        // Optimize_Moves run past the buffer.
         while (dest_result->prev && dest_result->cell_distance_from_start >= maxLen) {
             dest_result = dest_result->prev;
         }
@@ -851,12 +749,7 @@ PathType* FootClass::Find_Path(CELL dest, FacingType* final_moves, int maxlen, M
 
     memset(path.Overlap, 0, sizeof(MainOverlap));
 
-    /*
-    ** A* pathfinding (CFE Patch Redux port, hard-enabled). Try the A* search first, escalating
-    ** through the same threat tolerance stages the legacy pathfinder uses. On success we return
-    ** the optimised path immediately; on failure we fall through to the original "crash and turn"
-    ** edge-follower below as a fallback.
-    */
+    // TF: an A* search (CFE Patch Redux port) runs first, and the edge-follower below only when it finds no path.
     {
         int asThreat = threat;
         int as_threat_stage = threat_stage;
@@ -927,15 +820,8 @@ PathType* FootClass::Find_Path(CELL dest, FacingType* final_moves, int maxlen, M
             return (&path);
         }
 
-        /*
-        ** A* failed. Before taking the legacy "crash and turn" edge-follower -- which produces the
-        ** cliff-hugging detours and strands harvesters / infantry that are queued at a busy pinch --
-        ** check whether our route is blocked by a temporary chokepoint CLAIM (a pinch currently owned
-        ** by traffic, NOT permanent terrain). If so, return an EMPTY path so the caller HOLDS and
-        ** re-paths cleanly the instant the lane clears, instead of detouring or churning. Shared by
-        ** infantry, harvesters and vehicles (FootClass). TTL-bounded (75 frames), so a genuinely clear
-        ** route never trips this -- the claim ages out and A* succeeds on the next pass.
-        */
+        // TF: with a live corridor claim on the straight line to dest (docs/chokepoint-reservation-design.md),
+        // return an empty path, so the unit waits for the pinch to clear rather than detour round it.
         if (!result) {
             CELL probe = source;
             for (int s = 0; s < 14 && probe != dest; s++) {
@@ -953,15 +839,12 @@ PathType* FootClass::Find_Path(CELL dest, FacingType* final_moves, int maxlen, M
                     path.Command = final_moves;
                     path.Command[0] = END;
                     BEnd(BENCH_FINDPATH);
-                    return (&path); // queued behind a busy pinch -> wait, do not cliff-detour
+                    return (&path);
                 }
                 probe = nx;
             }
         }
 
-        /*
-        ** A* failed; reset the path structure for the legacy fallback below.
-        */
         path.Start = source;
         path.Cost = 0;
         path.Length = 0;
