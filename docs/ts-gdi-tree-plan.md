@@ -46,7 +46,7 @@ superweapon payload, or dormant.
 | TSPROC | PROC | 1 | 2000 | 900 | TSFACT, TSPOWR | 4x3, free TSHARV |
 | TSSILO | GASILO | 1 | 150 | 300 | TSPROC | |
 | TSPILE | GAPILE | 1 | 300 | 800 | TSFACT, TSPOWR | barracks |
-| TSWEAP | GAWEAP | 2 | 2000 | 1000 | TSPROC, TSPILE | 4x3, the sandwich |
+| TSWEAP | GAWEAP | 2 | 2000 | 1000 | TSPROC, TSPILE | 4x3, layered door |
 | TSRADR | GARADR | 3 | 1000 | 1000 | TSPROC | south-row footprint |
 | TSHPAD | GAHPAD | 5 | 500 | 600 | TSRADR | no free aircraft |
 | TSTECH | GATECH | 6 | 1500 | 500 | TSWEAP, TSRADR | |
@@ -126,7 +126,8 @@ superweapon payload, or dormant.
 ### The Upgrade Center's superweapons
 
 Nine Upgrade Center art blocks cover every state (`BuildingClass::Shape_Number`): the
-one-of-each rule bars two plugs of one type, so no other combination can occur.
+one-of-each rule bars two superweapon plugs of one type, so no other combination can occur.
+Resource plugs stack by design (`Can_Upgrade`): the power plant takes two turbines.
 
 - **Drop pods** (`SPC_TS_DROPPODS`): altitude draws as a northward screen shift, so only east and
   west approaches read as a 45° fall; from the south a pod would draw two drop-heights off-screen
@@ -161,11 +162,13 @@ both the tower and the plug (`Refund_Amount`). Weapons
 
 ### War factory (TSWEAP)
 
-**The sandwich:** the base carries the bay interior and the overlay (`TSWEAP2`) the whole hangar,
-RA's and TD's scheme (`building.cpp` states the convention), so a vehicle is hidden behind the shut
-door and revealed as it opens. GTWEAP frames 0/1/2 are healthy / LIGHT / HEAVY; the door is its own
-SHP (`DoorAnim=GAWEAP_D`, `DoorStages=9`, `UnderDoorAnim=GAWEAP_1`), and `GTWEAP_D` frames 9-17 are
-magenta placeholders.
+**The layers** (`building.cpp`'s TS war factory draw; the Mobile War Factory's are the same under
+`TSDWEAP*`): the body `TSWEAP` is the bay interior, the opening's back wall. While unloading, the
+under-door floor `TSWEAPUD` (TS's `UnderDoorAnim=GAWEAP_1`) draws over it. The near face, the whole
+hangar minus the opening at the idle phase (`TSWEAPNF`, or `TSWEAPNU` while unloading), stands in
+front of a vehicle in the bay, and the roll-up shutter `TSWEAPDR` (`DoorAnim=GAWEAP_D`,
+`DoorStages=9`, then the damaged run) draws over that. GTWEAP frames 0/1/2 are healthy / LIGHT /
+HEAVY, and `GTWEAP_D` frames 9-17 are magenta placeholders.
 
 - **Exit seats:** `TSWEAP_SEAT_MOUTH_MECH` for walkers and `TSWEAP_SEAT_MOUTH` for tracked and
   wheeled hulls (`building.cpp`, `bdata.cpp`), dialled by eye one build per nudge; do not
@@ -176,16 +179,19 @@ magenta placeholders.
   `scripts/wf_spawn_preview.py` reads the spawn markers from the Aseprite sheet and writes
   `tsweap_exit_track{,_titan}.inc` and `tsweap_exit_seats.inc`, used by both `bdata.cpp` and
   `building.cpp`; it errors on any seat drift.
-- **Exit clamp:** the factory stamps `TsExitSortClamp` (its Sort_Y + 64 leptons, under the overlay's
-  key) on the unit when it assigns the rail, and the export clamps the unit's base draw while
-  `On_TS_Exit_Track()`, so the hangar clips it for the whole glide. The Titan's rail releases 32
-  leptons south of the bay mouth (`On_TS_Titan_Exit_Track()`); wide hulls keep the full-rail clamp.
-- **Layers above the door:** `TSWEAP2L`, the overlay's bottom 62 canvas rows (ramp lip, frame feet,
-  shutter bottoms), sorts one notch under the exit clamp so emerging units pass over the floor
-  furniture; `TSWEAPLT`, the lamps, holds only the pixels that change against idle phase 0 (a full
-  face per phase double-blended the seam over exiting units) and ping-pongs with the body (14
-  frames: 0-7 then 6-1). The sort band must reach the building's southern edge: `dllinterface.cpp`
-  biases `TSWEAP2` 384 leptons south, keyed on AssetName.
+- **No exit sort clamp:** the rail runs unclamped. The near face has no pixels along the exit path
+  below the awning, and a pinned sort key put the unit under the front-row pad tile.
+  (`TsExitSortClamp` is no longer assigned.) The Titan's rail releases 32 leptons south of the bay
+  mouth (`On_TS_Titan_Exit_Track()`).
+- **The factory keeps its centred sort** (`Sort_Y`): sorting the whole factory south covers every
+  poke-through but hides a vehicle in the bay.
+- **Sort** (`dllinterface.cpp`'s draw intercept): the near face and shutter sort just south of the
+  door-mouth seat (`NF`/`NU` at Sort_Y + 192, `DR` at + 200), so the shut door covers a seated
+  vehicle and the rising door reveals it. The back wall sorts at the plot's north edge
+  (Sort_Y − 384), under anything in the bay. The under-door floor keeps the building's own line
+  (Sort_Y, the plot centre), so it draws under a vehicle that has rolled forward of centre and over
+  one behind it. A vehicle on the way out draws over the shutter once its own sort line passes
+  Sort_Y + 192.
 - **Four coupled constraints** for any resize, solved on paper before one build: containment (art
   at least as tall as the tallest exiting unit; the Titan is 52.2 classic px), the box (centred on
   the plot), ghost honesty (the ghost covers every cell the ground art touches; hard-clipping the
@@ -216,7 +222,8 @@ magenta placeholders.
   `RA_TERRAIN_<theatre>`, not `RA_STRUCTURES`, and a mod tileset replaces the base file, so the mod
   ships a full `RA_TERRAIN_SNOW.XML`.
 - `Is_Clear_To_Build` refuses to build over any bib; aprons are exempt (`Is_TS_Apron_Cell` vetoes
-  the plot and leaves the 5th column free, where the concrete tapers past the plot).
+  the plot and leaves the 5th column free, where the concrete tapers past the plot). The whole apron
+  row is vetoed because the placement preview claims the full bottom row of the 4x3 refinery.
 - **The hazard stripes are baked gold:** the launcher house-remaps building sprites, never ground
   art.
 - **A third apron moves five things together:** `SmudgeType` in `defines.h` and its class in

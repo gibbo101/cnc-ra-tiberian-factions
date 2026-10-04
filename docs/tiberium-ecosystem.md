@@ -11,6 +11,11 @@ land type and are harmless. Spreading runs on `Rule.GrowthRate`, in multiplayer 
 lobby's Tiberium option is on. Tiberium and Ore never convert each other where their fields meet
 (`CellClass::Spread_Tiberium`); the official-map hybrids rely on that (`official-map-hybrids.md`).
 
+The launcher's minimap keys resource pips off the vanilla resource range, so TIB01 is exported as
+`OVERLAY_GEMS3` for the overlay model and radar, with AssetName `TIB01` so the map still draws
+Tiberium. `Get_Map_Cell`'s `IsResource` check names TIB01, so a new resource overlay has to be added
+there too.
+
 ## Blossom trees
 
 A blossom tree is a building, `STRUCT_TDBLOSSOM`, owned by `HOUSE_NEUTRAL`. On each growth tick it

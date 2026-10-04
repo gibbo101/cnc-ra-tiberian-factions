@@ -68,6 +68,10 @@ TD-matched, 4 = close to RA's instant dump.
 
 ## Docking traps
 
+- **Dock pads are reserved for harvesters** (`Is_Refinery_Dock_Cell`): the cell south of an RA
+  refinery's centre, south-west of a TD one's, and a TS refinery's centre. Every other unit treats
+  the pad as impassable, because an idle unit on a pad blocks unloading and gridlocks the economy.
+
 - **The park** (`Mission_Unload`, TD and TS harvesters): the fume plume is attached to the refinery
   (`Attach_To`) so it draws above the refinery and below the harvester (a free anim lands in
   `LAYER_AIR`). It is sized at dock start to end with the unload, and `Loops` is set after
