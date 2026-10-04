@@ -272,6 +272,10 @@ JPG copies under 1 MB in `jpg/`): the main menu, skirmish lobby, loading screen,
 a Mammoth Mk. II, TS units at a Tiberium crossroads, a TS GDI base with Firestorm and its gate, a
 Soviet base with the Tesla gate. Not captured: an EMP pulse.
 
+**Intro video:** https://youtu.be/rqk9Q1sgvAc (YouTube, 2026-10-04; also on the Workshop page, whose
+media only takes YouTube links). The 1080p MP4 for ModDB is rendered from the intro pipeline's own
+frames and music (`intro_cut.py ... frames`, then H.264 CRF 16 + AAC), not decoded from the Bink.
+
 ## Per-release update checklist (Luke in browser)
 
 1. Edit the mod page: replace the description, refresh the limitations list.
