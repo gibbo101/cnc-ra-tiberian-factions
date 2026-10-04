@@ -12,8 +12,6 @@
 # IMPORTANT: must NOT use a symlink for the subfolder. SteamUGC preserves
 # symlinks AS symlinks in the depot, and the Deck (and other Linux clients)
 # fail to install with "Disk write failure" trying to materialise them.
-# Confirmed 2026-05-20: the symlink-based first attempt broke the published
-# item until re-uploaded with a real-dir copy.
 #
 # License: GPL v3 (inherited from Vanilla Conquer base).
 
@@ -49,6 +47,12 @@ fi
 # A release ships with its docs closed out to the rules in docs/README.md.
 if ! python3 scripts/docs_check.py >&2; then
     echo "ERROR: the docs break the rules in docs/README.md. Fix them before packaging." >&2
+    exit 1
+fi
+
+# A release ships with its code comments to the rules in CLAUDE.md (no names, no dates, no missing docs).
+if ! python3 scripts/code_check.py >&2; then
+    echo "ERROR: code comments break the rules in CLAUDE.md. Fix them before packaging." >&2
     exit 1
 fi
 
@@ -93,7 +97,6 @@ echo "✓ Startup intro is the locked cut ($WANT_INTRO)"
 # Proton DLL, and our runtime diagnostics are fprintf-based — compiled into
 # .text, so they survive stripping. Strip ONLY this staged Workshop copy;
 # build/ and the Deck deploy keep full symbols for local debugging.
-# (DontCryJustDie Workshop report 2026-06-04: "27mb when the original is 1.17mb".)
 STRIP_BIN="$(command -v i686-w64-mingw32-strip || true)"
 STAGED_DLL="$STAGE_DIR/$SUBFOLDER_NAME/Data/RedAlert.dll"
 if [[ -n "$STRIP_BIN" && -f "$STAGED_DLL" ]]; then
