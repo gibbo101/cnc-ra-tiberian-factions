@@ -1531,13 +1531,8 @@ void TF_Wall_Line_Fill(HouseClass* house, StructType type, CELL cell)
     }
 }
 
-/***********************************************************************************************
- * HouseClass::Yard_Factions -- Which factions' construction yards does this house own?         *
- *                                                                                             *
- *    Returns the HOUSEF_ bits for every faction construction yard the house currently has      *
- *    standing. A yard grants its faction's tree to whoever holds it, so this is the set that   *
- *    Can_Build tests an object's Owner= against.                                               *
- *=============================================================================================*/
+// Returns the HOUSEF_ bits of every faction construction yard the house has standing.
+// A yard grants its faction's tree to whoever holds it, so Can_Build tests Owner= against this.
 int HouseClass::Yard_Factions(void) const
 {
     int yards = 0;
@@ -1553,24 +1548,16 @@ int HouseClass::Yard_Factions(void) const
     if (Has_Building_Active(STRUCT_SFACT)) {
         yards |= HOUSEF_SOVIET;
     }
-    /*
-    **	With the fifth faction switched off (TF_TS_GDI_FACTION 0) HOUSEF_TSGDI is empty, so
-    **	a TS yard grants nothing here -- which is what we want. It must NOT fall back to the
-    **	Germany bit: Germany is an Allied country again in that build, and a TS yard would
-    **	then unlock the whole Allied tree for whoever crated the MCV.
-    */
+    // HOUSEF_TSGDI is empty when TF_TS_GDI_FACTION is 0. Never fall back to the Germany bit: Germany
+    // is Allied in that build, so a TS yard would unlock the whole Allied tree.
     if (Has_Building_Active(STRUCT_TSFACT)) {
         yards |= HOUSEF_TSGDI;
     }
     return (yards);
 }
 
-/*
-**	The single verdict on whether a capped order would be turned away: the dropship
-**	bay is still reloading, the house already fields its Mk. II allowance, or its
-**	Ghost Stalker or Mobile War Factory is alive. Begin_Production enforces it; the sidebar click handlers
-**	consult it first so EVA never acknowledges an order that is about to be refused.
-*/
+// True when a capped order would be refused: the dropship bay is reloading, or the house is at its Mk. II,
+// Ghost Stalker or Mobile War Factory cap. Sidebar clicks ask first so EVA never acknowledges a refused order.
 bool TF_Delivery_Order_Refused(HouseClass const* house, RTTIType type, int id)
 {
     if (house == NULL) {
@@ -1601,23 +1588,11 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
     assert(Houses.ID(this) == ID);
     assert(type != NULL);
 
-    /*
-    **	The dropship delivery cooldown and the Mk. II field cap do NOT refuse
-    **	here. Can_Build is the sidebar's OFFER test (Update_Buildables), so a
-    **	pause expressed here makes the cameo vanish instead of greying -- and a
-    **	bay rebuilt while a pause runs re-offers its cargo through this test,
-    **	so the cameos never came back at all. Order refusal belongs to
-    **	TF_Delivery_Order_Refused (Begin_Production and the click handlers);
-    **	the countdown / locked dress is painted by the sidebar fill itself.
-    */
+    // TF: caps and delivery cooldowns never refuse here. This is the sidebar's offer test, so a refusal
+    // hides the cameo rather than greying it; TF_Delivery_Order_Refused refuses the order instead.
 
-    /*
-    **	An addon plug (TS PowersUpBuilding) is only offered while the house owns
-    **	a live building of its host type — there is nowhere to install it
-    **	otherwise. Checked structurally here because prereq tokens won't do it:
-    **	the era rule cross-satisfies infrastructure tokens (an RA power plant
-    **	satisfies a TSPOWR prereq), but a plug needs the literal host.
-    */
+    // TF: an addon plug is offered only while its host building stands. Prerequisite tokens can't say
+    // this: the era rule lets another era's building satisfy a token, and a plug needs its real host.
     if (type->What_Am_I() == RTTI_BUILDINGTYPE) {
         BuildingTypeClass const* btype = (BuildingTypeClass const*)type;
         if (btype->PowersUpBuilding != STRUCT_NONE && !Has_Building_Active(btype->PowersUpBuilding)) {
@@ -1727,11 +1702,6 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
 #endif
 
     /*
-    **	The Ghost Stalker's one-per-house limit does not refuse here either: the cameo stays
-    **	and reads LOCKED, and the order is turned away by TF_Delivery_Order_Refused.
-    */
-
-    /*
     **	The computer can always build everything.
     */
     if (!IsHuman && Session.Type == GAME_NORMAL)
@@ -1744,17 +1714,9 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
 
     /*
     **	Check to see if this owner can build the object type specified.
-    **
-    **	Tiberian Factions -- a construction yard grants its tree, not the faction the
-    **	player picked (Luke, 2026-09-04). So a Soviet who takes a GDI yard builds GDI
-    **	buildings from it, and the same in every other direction. Owning a yard whose
-    **	faction appears in this type's Owner= therefore satisfies the test as well as
-    **	being that faction. The yard requirement itself is enforced below, so this only
-    **	widens WHO may hold the yard, never what a yard unlocks.
-    **
-    **	Sandbags are the one wall no yard lists for the TS tree, so a TS yard satisfies
-    **	the test for them whatever the holder's faction.
     */
+    // TF: a construction yard grants its faction's tree to whoever holds it, so holding a yard listed in
+    // Owner= also passes. A standing TS yard passes for sandbags, whose Owner= lists no TS faction.
     bool yard_grants = ((own & Yard_Factions()) != 0);
     if (TF_Is_TS_Yard_Wall(type) && Has_Building_Active(STRUCT_TSFACT)) {
         yard_grants = true;
@@ -1763,12 +1725,7 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         return (false);
     }
 
-    /*
-    **	W2 b3: skirmish/multiplayer builds the four faction MCVs; the vanilla
-    **	pair (UNIT_MCV / UNIT_TDMCV) is stock-campaign-only. Gate both
-    **	directions on session type so a campaign sidebar never shows a faction
-    **	MCV and a skirmish sidebar never shows a vanilla one.
-    */
+    // TF: skirmish builds the faction MCVs and the campaigns build the vanilla pair, never both.
     if (type->What_Am_I() == RTTI_UNITTYPE && ((UnitTypeClass const*)type)->Is_MCV()) {
         UnitType ut = ((UnitTypeClass const*)type)->Type;
         bool vanilla = (ut == UNIT_MCV || ut == UNIT_TDMCV);
@@ -1777,10 +1734,7 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         }
     }
 
-    /*
-    **	W2 (c): the same quartet-swap for the war factory — skirmish builds the
-    **	faction pair (AWEAP/SWEAP), campaign the shared vanilla WEAP.
-    */
+    // TF: the same split for war factories and helipads: faction ones in skirmish, vanilla in campaigns.
     if (type->What_Am_I() == RTTI_BUILDINGTYPE) {
         StructType st = (StructType)((BuildingTypeClass const*)type)->Type;
         bool vanilla_b = (st == STRUCT_WEAP || st == STRUCT_HELIPAD || st == STRUCT_TDHPAD);
@@ -1791,67 +1745,19 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         }
     }
 
-    /*
-    **	A house builds from its OWN faction's construction yard. Another lineage's yard does
-    **	not unlock this faction's tree -- no prerequisite, no build.
-    **
-    **	This cannot be expressed in rules.ini. The TD chain roots at TDNUKE, which names no
-    **	prerequisite at all, so every TD structure was reachable with nothing but a power
-    **	plant; and TDNUKE / TDPROC / TDHQ / TDFIX are shared by GDI and Nod, so an AND-only
-    **	token list can never say "GDI yard OR Nod yard". Hence the gate lives here.
-    **
-    **	It shows in Unholy Alliance, where a house holds a yard of every faction from the
-    **	start: a Nod house must wait for its own yard before the Hand of Nod is legal instead
-    **	of inheriting the tree from whichever yard deployed first.
-    **
-    **	Skirmish and multiplayer only -- the stock campaigns own the pre-split shared yards
-    **	(STRUCT_CONST, STRUCT_TDFACT) and have to keep teching from them.
-    */
+    // TF: in skirmish a building needs a standing yard of a faction in its Owner=, except TS-tree buildings
+    // and sandbags, which the TS yard gates. rules.ini can't say this: prerequisites are AND-only.
     if (type->What_Am_I() == RTTI_BUILDINGTYPE && Session.Type != GAME_NORMAL) {
         BuildingTypeClass const* btype = (BuildingTypeClass const*)type;
-        /*
-        **	Yards themselves arrive by MCV deploy rather than construction, so exempt them:
-        **	gating a yard on owning a yard would be circular.
-        */
         if (!btype->Is_Construction_Yard()) {
-            /*
-            **	One dropship bay per house. The bay is a delivery point rather than a factory
-            **	floor, so a second one would land two Mammoth Mk. IIs at once and the delivery
-            **	cooldown would stop constraining anything. Returning false here greys the
-            **	cameo through the sidebar's existing disabled path, with no new UI.
-            **
-            **	The cap counts STANDING bays only. Get_Quantity would count the bay still on
-            **	the assembly line (Tracking_Add runs in the BuildingClass constructor, at
-            **	production start), which flips this false mid-production -- and the sidebar's
-            **	prereq-aware Recalc then evicts the cameo out from under its own live factory,
-            **	stranding the completed building with no way to place or cancel it.
-            */
+            // One dropship bay per house, counting standing bays only. Get_Quantity also counts a bay in
+            // production, and the sidebar would then evict the cameo from its own factory, stranding the bay.
             if (btype->Type == STRUCT_TSDROP && Has_Building_Active(STRUCT_TSDROP)) {
                 return (false);
             }
 
-            /* (TS-tree test defined below at TF_Is_TS_Tree_Type.) */
-            /*
-            **	A yard opens the tree of the faction it belongs to. So the test is not "do I
-            **	own MY yard" but "do I own a yard belonging to a faction that can build this"
-            **	-- which lets the shared structures through on either yard while keeping the
-            **	faction-exclusive ones shut. [TDNUKE] is Owner=GoodGuy,BadGuy, so a GDI yard
-            **	provides the power plant; [TDHAND] is Owner=BadGuy, so it does not provide
-            **	the Hand of Nod.
-            */
-            /*
-            **	TS-tree buildings (Prerequisite= names a TS-tree building) are
-            **	faction-agnostic by design: the TS yard itself is the gate,
-            **	enforced by the normal prerequisite check below. Demanding a
-            **	faction yard here would relock the tree for a house whose ONLY
-            **	yard is the TS one (the crate-find case).
-            */
             bool ts_tree = TF_Is_TS_Tree_Type((TechnoTypeClass const*)type);
 
-            /*
-            **	A TS yard satisfies the yard requirement for SANDBAGS (TF_Is_TS_Yard_Wall).
-            **	Everything else still needs a yard whose faction can build it.
-            */
             bool ts_walls = TF_Is_TS_Yard_Wall(type) && Has_Building_Active(STRUCT_TSFACT);
 
             int const factions = HOUSEF_GDI | HOUSEF_NOD | HOUSEF_ALLIES | HOUSEF_SOVIET | HOUSEF_TSGDI;
@@ -1865,13 +1771,8 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         }
     }
 
-    /*
-    **	The TS tree is its own lineage in every game type: each TS building needs the house's
-    **	TS yard standing, not just the chain of TS buildings above it. Without this a TD or RA
-    **	yard would build TS buildings whose prerequisites the shared pool satisfies (a TD
-    **	refinery stands in for TSPROC), and keep extending a TS base (uplink, drop pod node,
-    **	seeker control) after the TS yard is gone.
-    */
+    // TF: every TS building needs the house's TS yard standing, in every game type. Otherwise shared
+    // prerequisites (a TD refinery for TSPROC) let other yards build and extend a TS base.
     if (type->What_Am_I() == RTTI_BUILDINGTYPE && !((BuildingTypeClass const*)type)->Is_Construction_Yard()) {
         StructType const st = ((BuildingTypeClass const*)type)->Type;
         bool const ts_building = (st == STRUCT_TSPOWR || (st >= STRUCT_TS_TREE_FIRST && st <= STRUCT_TS_TREE_LAST));
@@ -1880,12 +1781,8 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
         }
     }
 
-    /*
-    **	Prereq satisfaction: every populated slot in Prerequisite[] must
-    **	correspond to a building Type the house currently owns (active +
-    **	unlimbo'd). ActiveBQuantity is the heap-sized counter that handles
-    **	mod IniNames whose Type exceeds the 32-bit ActiveBScan range.
-    */
+    // TF: prerequisites are checked per type with Has_Building_Active, because mod building types run
+    // past the 32 bits of ActiveBScan.
     int const* pre = ((TechnoTypeClass const*)type)->Prerequisite;
 
     int level = Control.TechLevel;
@@ -1919,56 +1816,27 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
 
         /*
         **	Advanced power also serves as a prerequisite for normal power.
-        **	These vanilla equivalences are due to be replaced with a
-        **	BehavesLike= rules.ini field in D2; until then, special-case here.
-        **
-        **	DELIBERATE VANILLA DEVIATION (Luke, 2026-07-19): the multiplayer
-        **	either-tech-center-counts rule (atek<->stek) is REMOVED. Tech
-        **	centers are faction identity — Soviet Mammoths need the Soviet
-        **	tech center, Chronosphere tech the Allied one. Capture still
-        **	works: a captured tech center satisfies its own faction's token.
         */
         if (t == STRUCT_POWER && Has_Building_Active(STRUCT_ADVANCED_POWER))
             continue;
-        /*
-        **	The Missile Silo is both RA sides' (Owner=soviet,allies) but names only the Soviet
-        **	tech center, so a house holding an Allied yard builds it from its own Advanced Tech
-        **	Center.
-        */
+        // TF: tech centres are faction identity: neither stands in for the other, unlike vanilla multiplayer.
+        // The Missile Silo is the exception, since it names only the Soviet one but both RA sides own it.
         if (t == STRUCT_SOVIET_TECH && type->What_Am_I() == RTTI_BUILDINGTYPE
             && ((BuildingTypeClass const*)type)->Type == STRUCT_MSLO && (Yard_Factions() & HOUSEF_ALLIES) != 0
             && Has_Building_Active(STRUCT_ADVANCED_TECH))
             continue;
-        /*
-        **	A deployed Mobile War Factory is a war factory for every prerequisite (Firestorm
-        **	[General] PrerequisiteFactory / PrerequisiteGDIFactory list DGWEAP beside GAWEAP).
-        */
+        // TF: a deployed Mobile War Factory counts as a war factory, as in TS Firestorm.
         if (t == STRUCT_TSWEAP && Has_Building_Active(STRUCT_TSDWEAP))
             continue;
-        /*
-        **	The vanilla 'fact' token ([POWR]'s Prerequisite=fact). Post-split a house owns
-        **	its faction's yard, never STRUCT_CONST, so without a remap the whole tech tree
-        **	dies at the power plant.
-        **
-        **	Only the house's OWN faction yard counts. Another lineage's yard does not unlock
-        **	this faction's tree -- no prerequisite, no build. It matters in Unholy Alliance,
-        **	where a house holds a yard of every faction from the start: a Nod house must wait
-        **	for its Nod yard before the Hand of Nod becomes legal, rather than inheriting the
-        **	tree from whichever yard happened to deploy first.
-        */
+        // TF: any faction yard satisfies the vanilla 'fact' token. Houses own faction yards, never
+        // STRUCT_CONST, so without this the whole tree stops at the power plant.
         if (t == STRUCT_CONST
             && (Has_Building_Active(STRUCT_AFACT) || Has_Building_Active(STRUCT_SFACT)
                 || Has_Building_Active(STRUCT_TDFACT) || Has_Building_Active(STRUCT_TDGFACT)
                 || Has_Building_Active(STRUCT_TDNFACT)))
             continue;
-        /*
-        **  Tiberian Factions: TD-themed barracks satisfy vanilla barracks
-        **  prereqs so HOUSE_GOOD (TDPYLE) and HOUSE_BAD (TDHAND) can build
-        **  the inherited Allied / Soviet infantry rosters. Lookup is by
-        **  IniName via the heap-aware As_Pointer; Types are cached after
-        **  first resolution since they're stable for the rest of the run.
-        **  Pre-D2 stopgap — proper fix is a BehavesLike= rules.ini field.
-        */
+        // TF: other eras' and factions' buildings satisfy vanilla tokens: production tokens within one faction,
+        // power and refinery across eras. Radar never substitutes; tech centres only for TD types on 'atek'.
         {
             static int tdpyle_type = -2;  // -2 = unresolved, -1 = absent
             static int tdhand_type = -2;
@@ -2045,32 +1913,16 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                 BuildingTypeClass const* p = BuildingTypeClass::As_Pointer("TDNUK2");
                 tdnuk2_type = p ? p->Type : -1;
             }
-            // PRODUCTION tokens are faction identity (Luke, 2026-07-20): each
-            // equivalence below is scoped to entities the substitute's faction
-            // can own, so a GDI barracks never satisfies 'tent' for an Allied
-            // pillbox, an Allied war factory never satisfies 'weap' for a
-            // Tesla coil, and so on. INFRASTRUCTURE tokens (powr/proc/fix/
-            // dome) stay cross-era both ways — see the block further down.
             if (t == STRUCT_TENT && (own & HOUSEF_GDI) && tdpyle_type >= 0 && Has_Building_Active(tdpyle_type))
                 continue;
             if (t == STRUCT_BARRACKS && (own & HOUSEF_NOD) && tdhand_type >= 0 && Has_Building_Active(tdhand_type))
                 continue;
-            // TDPYLE ↔ TDHAND mutual equivalence — for SHARED entities only
-            // (Luke, 2026-07-20): an entity both TD factions can build (the
-            // legacy TDHPAD, Prerequisite=TDPYLE) accepts either barracks; a
-            // single-faction entity requires its own (GDI guard tower needs
-            // TDPYLE, the Nod turret/SAM/flame bunker TDHAND, the faction
-            // helipads their own — the GDI-barracks-unlocks-Nod-helipad leak).
             if (tdpyle_type >= 0 && tdhand_type >= 0 && (own & HOUSEF_GDI) && (own & HOUSEF_NOD)) {
                 if (t == tdpyle_type && Has_Building_Active(tdhand_type))
                     continue;
                 if (t == tdhand_type && Has_Building_Active(tdpyle_type))
                     continue;
             }
-            // STRUCT_WEAP (RA War Factory) — satisfied by TDWEAP (GDI) or
-            // TDAFLD (Nod airstrip stopgap). TDAFLD uses Logic=WEAP donor for
-            // vehicle-factory behaviour, but its heap Type is past STRUCT_COUNT
-            // so it doesn't match STRUCT_WEAP automatically.
             if (t == STRUCT_WEAP) {
                 if ((own & HOUSEF_GDI) && tdweap_type >= 0 && Has_Building_Active(tdweap_type))
                     continue;
@@ -2081,15 +1933,9 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                 if ((own & HOUSEF_SOVIET) && Has_Building_Active(STRUCT_SWEAP))
                     continue;
             }
-            // STRUCT_HELIPAD — satisfied by TDHPAD (separated TD helipad).
-            // RA's Hind/Longbow/etc. all require STRUCTF_HELIPAD; without this
-            // equivalence, players who built a TDHPAD can't see helicopters
-            // in the sidebar because the prereq check rejects them.
             if (t == STRUCT_HELIPAD) {
                 if ((own & (HOUSEF_GDI | HOUSEF_NOD)) && tdhpad_type >= 0 && Has_Building_Active(tdhpad_type))
                     continue;
-                // W2 (d): each faction's helipad satisfies 'hpad' for that
-                // faction's entities only.
                 if ((own & HOUSEF_ALLIES) && Has_Building_Active(STRUCT_AHPAD))
                     continue;
                 if ((own & HOUSEF_SOVIET) && Has_Building_Active(STRUCT_SHPAD))
@@ -2099,51 +1945,24 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                 if ((own & HOUSEF_NOD) && Has_Building_Active(STRUCT_TDNHPAD))
                     continue;
             }
-            // STRUCT_RADAR ('dome') and TDHQ are SEPARATE (Luke, 2026-07-20):
-            // radar is faction tech like the tech centres, not shared
-            // infrastructure — no cross-equivalence in either direction. TD
-            // entities carry explicit TDHQ tokens in rules.ini.
-            // STRUCT_REFINERY — satisfied by TDPROC (separated TD refinery).
-            // RA's harvester (Prerequisite=proc) becomes buildable when a TDPROC
-            // is owned (both GDI and Nod build it).
             if (t == STRUCT_REFINERY) {
                 if (tdproc_type >= 0 && Has_Building_Active(tdproc_type))
                     continue;
                 if (Has_Building_Active(STRUCT_TSPROC))
                     continue;
             }
-            // STRUCT_ADVANCED_TECH — satisfied by the faction high-tech building:
-            // GDI Advanced Comm (TDEYE) or Nod Temple (TDTMPL). TD's UnitMCV
-            // requires STRUCTF_EYE; "atek" maps here and these are the per-faction
-            // equivalents (basic comm TDHQ does NOT count). NOTE: Has_Building_Active
-            // tests ActiveBQuantity[type], not the BScan bitmask — so a per-type
-            // remap like this is required; shadowing STRUCTF_ADVANCED_TECH into
-            // BScan does nothing for prereq checks.
-            // Tech centres are FACTION IDENTITY (Luke, 2026-07-20): 'atek' on an
-            // RA entity means the Allied tech centre and nothing else (the GDI
-            // Adv Comm satisfying an Allied Cruiser was the reported leak).
-            // Single-faction TD entities carry explicit TDEYE/TDTMPL tokens in
-            // rules.ini; this equivalence remains ONLY for TD-era entities still
-            // on 'atek' (TDRMBO — shared by both TD factions, and a prereq list
-            // is AND-only so "either TD tech centre" can't be spelled there).
             if (t == STRUCT_ADVANCED_TECH && type->IniName[0] == 'T' && type->IniName[1] == 'D') {
                 if (tdeye_type >= 0 && Has_Building_Active(tdeye_type))
                     continue;
                 if (tdtmpl_type >= 0 && Has_Building_Active(tdtmpl_type))
                     continue;
             }
-            // STRUCT_REPAIR — satisfied by TDFIX (GDI service depot). TD's Mammoth
-            // Tank (Prerequisite=fix) needs the repair bay; TDFIX is the GDI equivalent.
             if (t == STRUCT_REPAIR) {
                 if (tdfix_type >= 0 && Has_Building_Active(tdfix_type))
                     continue;
                 if (Has_Building_Active(STRUCT_TSDEPT))
                     continue;
             }
-            // STRUCT_POWER — satisfied by the TD power plants (TDNUKE / TDNUK2). GDI/Nod never build
-            // RA's POWR/APWR (those are allies,soviet), so RA structures keyed to Prerequisite=powr —
-            // e.g. the owner-opened Allied Shipyard (SYRD) for the GDI Gunboat — would otherwise be
-            // unbuildable for GDI. v4.0.
             if (t == STRUCT_POWER) {
                 if (tdnuke_type >= 0 && Has_Building_Active(tdnuke_type))
                     continue;
@@ -2152,25 +1971,12 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                 if (Has_Building_Active(STRUCT_TSPOWR))
                     continue;
             }
-            // v4.0 separated naval/air production buildings satisfy the RA-token prereqs of the
-            // units they build: syrd->TDGYARD (GDI Gunboat/Hovercraft), spen->TDNPEN (Nod subs/
-            // Hovercraft), afld->TDGAFLD (GDI A-10). Same pattern as hpad->TDHPAD etc.
             if (t == STRUCT_SHIP_YARD && (own & HOUSEF_GDI) && tdgyard_type >= 0 && Has_Building_Active(tdgyard_type))
                 continue;
             if (t == STRUCT_SUB_PEN && (own & HOUSEF_NOD) && tdnpen_type >= 0 && Has_Building_Active(tdnpen_type))
                 continue;
             if (t == STRUCT_AIRSTRIP && (own & HOUSEF_GDI) && tdgafld_type >= 0 && Has_Building_Active(tdgafld_type))
                 continue;
-            // Cross-era infrastructure equivalence (Luke, 2026-07-19): either
-            // era's power plant or refinery satisfies BOTH eras' tokens, so a
-            // captured tech tree never demands a duplicate of a basic the
-            // house already runs. The RA-token direction (powr/proc ->
-            // satisfied by TD buildings) is above; this is the TD-token
-            // direction (TDNUKE/TDPROC <- satisfied by RA buildings). The
-            // advanced plants count as power on both sides, mirroring the
-            // vanilla POWER<-ADVANCED_POWER rule. (Repair bay needs no clause:
-            // nothing requires "TDFIX" by name — all repair-bay gating uses
-            // the vanilla 'fix' token, remapped above.)
             if (t == tdnuke_type
                 && (Has_Building_Active(STRUCT_POWER) || Has_Building_Active(STRUCT_ADVANCED_POWER)
                     || (tdnuk2_type >= 0 && Has_Building_Active(tdnuk2_type))
@@ -2178,12 +1984,6 @@ bool HouseClass::Can_Build(ObjectTypeClass const* type, HousesType house) const
                 continue;
             if (t == tdproc_type && (Has_Building_Active(STRUCT_REFINERY) || Has_Building_Active(STRUCT_TSPROC)))
                 continue;
-            // The TS era joins the same infrastructure pool (Luke, 2026-08-30):
-            // a house running RA or TD power and refining does not have to
-            // duplicate them to open the TS tree, and TS plants/refineries keep
-            // the RA/TD trees fed. TS-token direction here; the RA/TD-token
-            // directions are in the clauses above. Radar and tech centres stay
-            // faction identity in every era.
             if (t == STRUCT_TSPOWR
                 && (Has_Building_Active(STRUCT_POWER) || Has_Building_Active(STRUCT_ADVANCED_POWER)
                     || (tdnuke_type >= 0 && Has_Building_Active(tdnuke_type))
