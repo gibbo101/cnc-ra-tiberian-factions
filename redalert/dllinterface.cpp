@@ -269,10 +269,8 @@ public:
                                    const char* shape_file_name = NULL,
                                    char override_owner = HOUSE_NONE);
     static void DLL_Draw_Pip_Intercept(const ObjectClass* object, int pip);
-    // Tiberian Factions mod: ported from tiberiandawn/dllinterface.cpp. RA's
-    // DLL didn't expose line drawing to the launcher (only TD did), but the
-    // launcher's CNCObjectStruct already has Lines[]/NumLines fields. Needed
-    // for the TD Obelisk laser-beam render (techno.cpp BULLET_LASER branch).
+    // TF: line drawing, ported from TD's DLL: the launcher reads CNCObjectStruct's Lines[] for RA too. Beam
+    // weapons such as the Obelisk's laser draw through it.
     static void DLL_Draw_Line_Intercept(int x, int y, int x1, int y1, unsigned char color, int frame);
     static bool Place(uint64 player_id, int buildable_type, int buildable_id, short cell_x, short cell_y);
     static bool Cancel_Placement(uint64 player_id, int buildable_type, int buildable_id);
@@ -510,69 +508,40 @@ int MPlayerStartLocations[MAX_PLAYERS];
 extern FILE* TF_AI_Diag_File(void);
 #endif
 
-// Tiberian Factions -- number of human players in the current match, set by
-// CNC_Set_Multiplayer_Data. Used to keep AI difficulty deterministic in
-// multiplayer: with 2+ humans every peer must derive the same AI IQ or the
-// lockstep sim desyncs, so the per-machine difficulty lever (tf_ai_difficulty.txt)
-// is ignored and all peers fall to the built-in default. See
-// docs/lobby-difficulty-ram-spike.md (host-broadcast design supersedes this guard).
+// Human players in this match, set by CNC_Set_Multiplayer_Data. The ambiguity resolver sizes the lobby array
+// by it and finds the array's base by it, as human records precede the AI ones.
 int TF_HumanPlayerCount = 1;
 
-// Tiberian Factions -- lobby AI slot number per multiplayer house (index =
-// house - HOUSE_MULTI1, value = n from the client's "AIPLAYERn" slot name,
-// 0 = none). The house-assign loop replaces the AI houses' IniName with the
-// "Computer" display name, so the slot key is captured here before it is lost;
-// the per-slot difficulty read in CNC_Set_Difficulty keys off it.
+// Lobby AI slot n (from "AIPLAYERn") per multiplayer house, index house - HOUSE_MULTI1, 0 = none. Captured in
+// GlyphX_Assign_Houses before IniName becomes "Computer"; the per-slot difficulty keys off it.
 static int TF_AILobbySlotByHouse[MAX_PLAYERS];
 
-// Per-slot lobby AI difficulty RAM scan (see the block above CNC_Set_Difficulty).
+// Per-slot lobby AI difficulty: ClientG's AIPLAYERn record layout (docs/lobby-difficulty-ram-spike.md).
 #define TF_LOBBY_MAX_AI_SLOTS 16
 #define TF_LOBBY_RECORD_STRIDE 0xA8
-/*
-**	+0x50 is the slot's TEAM (DontCryJustDie, 2026-07-22): 0-7 for a real team, 8 for
-**	"random". It is not a slot index and never was -- that misreading is what made the
-**	first record of every array fail a `< 1` floor. Range-checked only; the roster's own
-**	Team values are not a safe equality test because a random pick resolves before we
-**	see it.
-*/
+// +0x50 is the team: 0-7, or 8 for a random pick. Range-checked only.
 #define TF_LOBBY_OFF_TEAM 0x50
 #define TF_LOBBY_MAX_TEAM 8
 #define TF_LOBBY_OFF_DIFF 0x64
-/*
-**	+0x68 is the slot's COLOUR, not a second copy of the slot index (DontCryJustDie,
-**	2026-07-21): changing an AI's lobby colour breaks a `slot == slot2` match while a
-**	colour-range test keeps working. Default lobbies hand out colours in slot order,
-**	which is why the two were indistinguishable at first and why reads failed once
-**	anyone touched a colour. It doubles as the liveness key -- CNC_Set_Multiplayer_Data
-**	gives us this match's colours, so only the array carrying them is the live one.
-*/
+// +0x68 is the lobby colour, which ties a record array to this match.
 #define TF_LOBBY_OFF_COLOR 0x68
 #define TF_LOBBY_MAX_COLORS 8
 
-/*
-**	+0x54 is the AI's house / ActLike in the CLIENT's numbering, which in RA is our
-**	HousesType plus 2 (DontCryJustDie, 2026-07-22); 42 means the lobby pick was "random".
-**	Confirmed against both logged samples: an all-Soviet lobby read 4,4,4 (HOUSE_USSR) and
-**	a GDI/Nod/Allied lobby read 2,9,3 (Spain/Turkey/Greece, our two hijacked country slots
-**	plus Greece). That makes it a second liveness key alongside colour -- a stale array from
-**	a lobby whose colours happened to match is still rejected if its factions do not.
-*/
+// +0x54 is the AI's country in the client's numbering, HousesType + 2, or 42 for a random pick.
 #define TF_LOBBY_OFF_HOUSE 0x54
 #define TF_LOBBY_HOUSE_BIAS 2
 #define TF_LOBBY_HOUSE_RANDOM 42
 
-// Bit n set = the current lobby contains an AI named AIPLAYERn (client AI numbering
-// persists across lobbies, so n rarely starts at 1 after a session's first lobby).
-// Captured at CNC_Set_Multiplayer_Data; anchors the per-slot difficulty RAM scan.
+// Bit n set = this lobby has an AI named AIPLAYERn; the client's AI numbering runs on across lobbies. Captured
+// at CNC_Set_Multiplayer_Data; anchors the lobby scan.
 static unsigned TF_LobbyAIRosterMask = 0;
 
 // Lobby colour per AI slot for the CURRENT match, captured alongside the roster mask.
 // -1 = unknown, in which case the scan falls back to a plain range check.
 static int TF_LobbyAIColorBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
 
-// Lobby country per AI slot for the CURRENT match, captured alongside the colour and
-// BEFORE the Spain/Turkey hijack rewrites it, so it can be checked against the client's
-// own +0x54 numbering. -1 = unknown, in which case that gate is skipped.
+// Lobby country per AI slot for the current match, taken before the Spain/Greece hijack rewrites it, to check
+// against the record's +0x54. -1 = unknown, which skips that gate.
 static int TF_LobbyAIHouseBySlot[TF_LOBBY_MAX_AI_SLOTS + 1];
 
 // Diagnostic: the raw +0x54 field of the last validated record per slot, logged so the
@@ -588,21 +557,8 @@ static int TF_LobbyProbeTag = 0;
 static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot); // fwd decl for the early probe
 #endif
 
-/*
-**	Deferred re-scan state. The client tears down and rebuilds its AIPLAYERn records
-**	as a match launches, so a scan can land in a window where they are absent or only
-**	half-rewritten -- the read then finds nothing, or finds a fresh array that
-**	disagrees with a surviving stale one, and reports failure. The values are correct
-**	and unanimous either side of that window, so a failed read is retried on a later
-**	frame rather than abandoned to the global tier.
-**
-**	A re-scan is only trusted once two consecutive scans agree: the rebuild passes
-**	through half-written states that are briefly self-consistent (a lobby set to
-**	Easy/Medium/Hard/Medium was observed reading Easy/Medium/Medium/Medium mid-write),
-**	and settled values never change again for the life of the match. The last attempt
-**	accepts an unconfirmed read rather than discarding it -- an unconfirmed read is
-**	still better evidence of the player's choice than the default tier.
-*/
+// Deferred re-scan state: the match-start read can land while the client rebuilds its records, so a failed
+// read is retried (TF_Lobby_Difficulty_Retry, docs/lobby-difficulty-ram-spike.md).
 #define TF_LOBBY_RETRY_ATTEMPTS 4
 #define TF_LOBBY_RETRY_FRAME_GAP 90
 static DiffType TFLobbyGlobalDiff = DIFF_HARD;
@@ -985,14 +941,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
 
     Special.IsShadowGrow = game_options.MPlayerShadowRegrow;
 
-    // The lobby's Capture the Flag GAME TYPE carries Unholy Alliance (relabelled in
-    // MASTERTEXTFILE). A game type rather than a checkbox because the Mode list is
-    // exclusive: the mode cannot be chosen alongside a bases-off game and then sit there
-    // doing nothing, which a checkbox could -- the launcher only greys out options it was
-    // compiled to know about, and it has no reason to grey ours.
-    //
-    // The flag game is switched off wholesale rather than gated at each of its call
-    // sites, so no flag spots, flag attachment or truck spawns can half-run underneath.
+    // TF: the lobby's Capture the Flag game type is Unholy Alliance (scripts/loc_work/mastertext.edits.txt). The
+    // flag game itself is switched off whole, so none of its parts half-run.
     TF_UnholyAlliance = game_options.CaptureTheFlag;
     Special.IsCaptureTheFlag = false;
 
@@ -1042,18 +992,13 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
     for (int i = 0; i < num_players; i++) {
         CNCPlayerInfoStruct& player_info = player_list[i];
 
-        // Roster mask for the RAM scan: which AIPLAYERn names this lobby actually
-        // contains (client AI numbering persists across lobbies, so n rarely starts
-        // at 1 after the first lobby of a session).
+        // TF: note this lobby's AIPLAYERn names, colours and countries for the difficulty scan, the country before
+        // the Spain/Greece hijack below, as the client's records hold the country as picked.
         if (player_info.IsAI) {
             int roster_n = 0;
             if (sscanf(player_info.Name, "AIPLAYER%d", &roster_n) == 1 && roster_n >= 1
                 && roster_n <= TF_LOBBY_MAX_AI_SLOTS) {
                 TF_LobbyAIRosterMask |= (1u << roster_n);
-                // The client's record for this AI carries its lobby colour and country, so
-                // the values we are handed here identify which resident array belongs to
-                // THIS match. The country must be read before the hijack below rewrites
-                // Spain/Turkey, because the client's record holds the country as picked.
                 TF_LobbyAIColorBySlot[roster_n] = player_info.ColorIndex;
                 TF_LobbyAIHouseBySlot[roster_n] = player_info.House;
             }
@@ -1063,15 +1008,8 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Set_Multiplayer_Data(int scena
         strncpy(who->Name, player_info.Name, MPLAYER_NAME_MAX);
         who->Name[MPLAYER_NAME_MAX - 1] = 0; // Make sure it's terminated
 
-        // Tiberian Factions mod: hijack two of the RA country slots so the closed-source
-        // Remastered country picker can route to HOUSE_GOOD / HOUSE_BAD. The picker lists
-        // countries in enum order and that order is launcher-owned, so the slots are chosen
-        // for where they sit in the list: Spain (first row) is GDI, Greece (second row) is
-        // Nod, then USSR and England read as the Soviet and Allied entries, and the
-        // remaining countries are duplicates wearing the same crests (Luke, 2026-09-02).
-        // Both hijacked countries are Allied-side to the launcher, which is what Nod needs
-        // (it draws the ALLIES HUD slot). Cosmetic relabels live in the mod's string-table
-        // overrides (scripts/loc_work/mastertext.edits.txt).
+        // TF: the lobby's Spain row plays GDI and its Greece row Nod; the launcher orders the rows by country enum
+        // (docs/faction-select-identity.md).
         if (player_info.House == HOUSE_SPAIN) {
             player_info.House = HOUSE_GOOD;
         }
@@ -1492,9 +1430,8 @@ void GlyphX_Assign_Houses(void)
                 }
             }
             strncpy(housep->IniName, Text_String(TXT_COMPUTER), HOUSE_NAME_MAX);
-            // Lobby AI difficulty (stored in Scen.CDifficulty by CNC_Set_Difficulty)
-            // drives the IQ tier; stat handicaps stay at 1.0x. CNC_Set_Difficulty
-            // also retro-applies in case the client sends difficulty after start.
+            // TF: a provisional IQ tier from the last global difficulty; CNC_Set_Difficulty re-tiers each AI from
+            // its lobby slot.
             housep->IQ = TF_AI_IQ_From_Difficulty(Scen.CDifficulty);
             // housep->Control.TechLevel = _build_tech[BuildLevel];
         } else {
@@ -1656,8 +1593,6 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Start_Instance(int scenario_in
  * History: 1/7/2019 5:20PM - ST
  **************************************************************************************************/
 static void TF_Mailbox_Write_EVA_Voice(void);
-// The crest patch ships in release builds (its call sites below are unguarded), so its
-// declarations must not sit behind TF_DEV_BUILD -- only the two probes are dev-only.
 static void TF_Patch_ClientG_Crest(void);
 static void TF_Patch_ClientG_Click_Specials(void);
 static void TF_Tell_Launchers_Start(void);
@@ -2134,28 +2069,14 @@ bool Debug_Write_Shape(const char* file_name, void const* shapefile, int shapenu
 // the difficulty code below, driven per-frame from CNC_Advance_Instance.
 static void TF_Lobby_Difficulty_Retry();
 
-/*
-**	Tiberian Factions -- the deploy key, owned by the DLL.
-**
-**	The launcher's COMMAND_CNC_DEPLOY_SELECTED_MCV only acts on a unit whose exported
-**	names are exactly "MCV" (ClientG compares an interned name id), so every faction MCV,
-**	APC, transport and minelayer lost its key. Instead of teaching the launcher, the DLL
-**	reads the keyboard itself: both processes share one Wine/Windows session, so
-**	GetAsyncKeyState sees the key from InstanceServerG. Each fresh press asks every
-**	selected object for its own self-action and acts only on ACTION_SELF -- the same rule
-**	as a self-click, so MCVs deploy, APCs / transports / Chinooks unload, minelayers lay,
-**	and anything deployable added later is covered. The key is the launcher's own default
-**	deploy binding (backslash, VK_OEM_5), so the stock MCV and every faction unit share it.
-*/
+// The deploy key, read by the DLL: the launcher's own deploy command acts only on a unit named "MCV"
+// (docs/launcher-vs-dll-ownership.md).
 bool TF_DeployKeyBatch = false; // set while the deploy key runs its selected-object loop (techno.cpp What_Action)
 
+// Runs the self-action of every selected object answering ACTION_SELF, voices held (TS units say one
+// "deploying"). Once per press per house: on the host a press also arrives as its launcher's deploy command.
 static int TF_Self_Action_Selected(void)
 {
-    /*
-    **	On the host one press arrives twice, from the keyboard read and from its own launcher's
-    **	deploy command (TF_Patch_Click_Specials_In); it counts once per house, so a Mobile War
-    **	Factory that has just deployed is not packed straight back up.
-    */
     static long last_press[HOUSE_COUNT];
     if (PlayerPtr != NULL) {
         long& last = last_press[PlayerPtr->Class->House];
@@ -2167,10 +2088,6 @@ static int TF_Self_Action_Selected(void)
 
     int acted = 0;
     bool ts_unit = false;
-    /*
-    **	Every selected object deploys together with its own voice held, and TS units answer
-    **	with the crew's single "deploying" (TS's DeploySound), as TS's deploy key does.
-    */
     TF_DeployKeyBatch = true;
     AllowVoice = false;
     for (int index = 0; index < CurrentObject.Count(); index++) {
@@ -2179,10 +2096,6 @@ static int TF_Self_Action_Selected(void)
             continue;
         }
         ActionType answer = object->What_Action(object);
-        /*
-        **	A deployed Mobile War Factory answers a self-click as a factory (make it primary),
-        **	so its pack-up is the deploy key's alone, and only while its bay is empty.
-        */
         if (object->What_Am_I() == RTTI_BUILDING && *(BuildingClass*)object == STRUCT_TSDWEAP
             && ((BuildingClass*)object)->BState != BSTATE_CONSTRUCTION && !((BuildingClass*)object)->In_Radio_Contact()) {
             answer = ACTION_SELF;
@@ -2235,6 +2148,8 @@ static void TF_Sidebar_Log(const char* fmt, ...)
 #endif
 }
 
+// Per frame: runs the deploy key on a fresh press of backslash, and holds an 'A' press for ten frames, since
+// the launcher's select-all reaches CNC_Select_Object a frame or two after the key goes down.
 static void TF_Deploy_Key_Tick(void)
 {
     static bool _was_down = false;
@@ -2291,20 +2206,13 @@ static void TF_Deploy_Key_Tick(void)
     }
     _was_down = down;
 
-    // The launcher's select-all reaches CNC_Select_Object a frame or two after the key
-    // goes down, so remember a press briefly rather than requiring the key to still be held.
     if ((GetAsyncKeyState('A') & 0x8000) != 0 && PlayerPtr != NULL) {
         TF_SelectAllLatchUntil[PlayerPtr->Class->House] = (long)Frame + 10;
     }
 }
 
-/*
-**	Select-all ('A') is launcher-driven: ClientG picks the objects and hands them to
-**	CNC_Select_Object one by one, excluding only the stock harvester and MCV by name id, so
-**	every faction harvester and MCV leaked into the army selection. For a moment after a
-**	house's select-all order (its launcher's mod command 2, or on the host its own 'A' key),
-**	the DLL applies the engine's own band-select rule to what that house's launcher hands over.
-*/
+// For a moment after a house's select-all order (its launcher's mod command 2, or the host's 'A' key), drops
+// the harvesters and MCVs its launcher hands over; the launcher itself leaves out only the stock pair.
 static bool TF_Select_All_Excludes(ObjectClass* object)
 {
     long const until = (PlayerPtr != NULL) ? TF_SelectAllLatchUntil[PlayerPtr->Class->House] : 0;
@@ -2315,9 +2223,8 @@ static bool TF_Select_All_Excludes(ObjectClass* object)
            && (((UnitClass*)object)->Class->IsToHarvest || ((UnitClass*)object)->Class->Is_MCV());
 }
 
-// Player-facing announcements of the tier each AI actually got, queued at
-// difficulty-set time (client not rendering yet) and flushed from
-// CNC_Advance_Instance once the match is on screen.
+// The on-screen difficulty announcements, queued when the tiers are applied and shown from CNC_Advance_Instance
+// once the match renders.
 static char TFHelloPending[MAX_PLAYERS][128];
 static int TFHelloPendingCount = 0;
 
@@ -2394,29 +2301,20 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Advance_Instance(uint64 player
         DLLExportClass::Set_Player_Context(DLLExportClass::GlyphxPlayerIDs[0]);
     }
 
-    // Re-read the lobby's per-slot AI difficulties if the match-start read failed.
-    // Runs before the HELLO flush so a successful re-scan's announcements reach the
-    // screen on the same frame they are queued.
+    // TF: per-frame mod work. The lobby re-scan runs before the announcement flush so its results show this frame;
+    // announcements wait for frame 30, as messages sent before the match renders are dropped.
     TF_Lobby_Difficulty_Retry();
 
-    // Keep the per-faction radar crest pointed at the picked side's crest (RAM patch).
     TF_Crest_Tick();
 
-    // Tell every player's launcher which house its player is (TF_Tell_Launchers).
     TF_Tell_Launchers_Tick();
 
-    // The deploy key, read straight from the keyboard (see TF_Deploy_Key_Tick).
     TF_Deploy_Key_Tick();
 
-    // Sensor Array sightings: "cloaked unit detected" / "subterranean unit detected".
     TF_Sensor_Tick();
 
-    // Dev: the Sensor Array test's Sub APC digging under the player's base.
     TF_Dev_Tunneller_Tick();
 
-
-    // Flush the queued difficulty announcements once the match is actually
-    // rendering (messages sent at difficulty-set time are dropped).
     if (TFHelloPendingCount > 0 && Frame >= 30) {
         for (int hello_index = 0; hello_index < TFHelloPendingCount; hello_index++) {
             On_Message(TFHelloPending[hello_index], 30.0f, -1);
@@ -2693,37 +2591,9 @@ extern "C" __declspec(dllexport) bool __cdecl CNC_Save_Load(bool save,
     return result;
 }
 
-/*
-**	---------------- Per-slot lobby AI difficulty (client-process read) ----------------
-**
-**	The GlyphX client never passes the lobby's per-slot Easy/Medium/Hard picks into the
-**	DLL: CNC_Set_Difficulty receives one global value (always 1 in skirmish) and the
-**	player-info structs carry no difficulty field. The picker state does live in the
-**	client process's heap for the whole match, one record per AI slot:
-**
-**	    +0x00  ASCII "AIPLAYERn\0"  (the same name the AI house gets as IniName)
-**	    +0x50  int32 slot index, ZERO-based (AIPLAYER1 reads 0)
-**	    +0x54  int32 house / faction, client numbering
-**	    +0x64  int32 difficulty     1=Easy 2=Medium 3=Hard
-**	    +0x68  int32 lobby colour   0-7
-**	    record stride 0xA8, slots ascending from AIPLAYER1
-**
-**	The array is located by signature scan over the client's private writable memory --
-**	heap addresses differ every run, only the record shape is stable. The scan is
-**	read-only, runs once per match start, and any failure (no client process, no
-**	validated array, conflicting candidates) leaves the caller on the global
-**	difficulty source. Full design: docs/lobby-difficulty-ram-spike.md.
-*/
+// Per-slot lobby AI difficulty, read from ClientG's AIPLAYERn records: the client passes the DLL no per-slot
+// value. Read-only; a failed read leaves the global tier (docs/lobby-difficulty-ram-spike.md).
 
-/*
-**	Validates a prospective record array (`len` bytes already read into `rec`) and fills
-**	diff_by_n[] keyed by each record's own AIPLAYERn number. Records must be exactly
-**	"AIPLAYER<n>" at the record stride with strictly ascending n and an in-range
-**	difficulty. The +0x50/+0x68 slot ints are only checked for self-consistency: with
-**	persistent AI names it is unproven whether they renumber positionally, so name n is
-**	the key. Returns validated record count; found_mask gets
-**	bit n per validated record.
-*/
 #if TF_DEV_BUILD // TF_AI_DIAG -- raw record dump.
 /*
 **	Per-scan budget for the raw record dump below. Every candidate the signature scan
@@ -2759,6 +2629,8 @@ static void TF_Log_Lobby_Record(int k, int n, int team, int diff, int color, int
 }
 #endif
 
+// Validates the records in rec, stopping at the first bad one: fills diff_by_n[] by AIPLAYERn number and
+// found_mask with bit n, and returns the count. Gates: docs/lobby-difficulty-ram-spike.md.
 static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* diff_by_n, unsigned* found_mask)
 {
     int count = 0;
@@ -2795,11 +2667,6 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
         memcpy(&color, r + TF_LOBBY_OFF_COLOR, sizeof(color));
         int rec_house = 0;
         memcpy(&rec_house, r + TF_LOBBY_OFF_HOUSE, sizeof(rec_house));
-        // Range checks only, and only on fields whose meaning is established. An equality
-        // test against an assumed field is what broke this read twice; identity comes from
-        // the roster-corroborated gates below. Team counts from ZERO and reaches 8 for a
-        // random pick, so any floor above 0 rejects the first record of an array and, since
-        // validation stops at the first bad record, discards the whole array with it.
         if (team < 0 || team > TF_LOBBY_MAX_TEAM || diff < 1 || diff > 3 || color < 0
             || color >= TF_LOBBY_MAX_COLORS) {
 #if TF_DEV_BUILD
@@ -2807,19 +2674,12 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
 #endif
             break;
         }
-        // Colour is what ties an array to THIS match rather than a lobby that has been
-        // and gone, so where the roster gave us a colour for this slot it must agree.
         if (TF_LobbyAIColorBySlot[n] >= 0 && TF_LobbyAIColorBySlot[n] != color) {
 #if TF_DEV_BUILD
             TF_Log_Lobby_Record(k, n, team, diff, color, rec_house, "REJECT colour-mismatch");
 #endif
             break;
         }
-        // Country is the second liveness key: a stale array whose colours happen to match
-        // this match's is still rejected if its factions do not. Skipped when the pick was
-        // random (the client resolves that before handing us the roster, so the record and
-        // the roster legitimately disagree) or when the value is outside RA's range, so an
-        // unexpected encoding degrades to the colour-only gate rather than failing the read.
         if (TF_LobbyAIHouseBySlot[n] >= 0 && rec_house != TF_LOBBY_HOUSE_RANDOM
             && rec_house >= TF_LOBBY_HOUSE_BIAS
             && rec_house <= TF_LOBBY_HOUSE_BIAS + (int)HOUSE_TURKEY
@@ -2842,19 +2702,8 @@ static int TF_Validate_Lobby_Records(const unsigned char* rec, SIZE_T len, int* 
     return count;
 }
 
-/*
-**	Registry of every validated FULL-ROSTER candidate a scan finds, with enough raw
-**	context to tell the live array from stale copies:
-**	  refeq  -- how many aligned 32-bit pointers in the client's writable memory point
-**	            AT this candidate's base. The live array is referenced by the client
-**	            code that reads it; stale copies are orphaned.
-**	  refwin -- pointers into a window around the record. A stale copy was the ACTIVE
-**	            match's array moments ago and still carries its leftover references, so
-**	            a HIGH refwin means stale and the LOW cluster is the freshly-made live
-**	            array. A freshness signal, not a popularity one.
-**	The raw record bytes (rec2/pre) are kept for the dev-build forensic dump only; the
-**	resolver itself reads none of them (docs/lobby-ambiguity-findings.md, Route A dead).
-*/
+// Every validated full-roster array a scan finds, for the ambiguity resolver (docs/lobby-ambiguity-findings.md).
+// pre, rec2 and the region fields feed only the dev-build log.
 #define TF_LOBBY_MAX_CANDIDATES 24
 #define TF_LOBBY_PRE_BYTES 32
 struct TF_LobbyCandRec {
@@ -2872,14 +2721,8 @@ static TF_LobbyCandRec TF_LobbyCands[TF_LOBBY_MAX_CANDIDATES];
 static int TF_LobbyCandN = 0;
 static DWORD TF_LobbyScanPid = 0; // pid of the process currently being scanned
 
-// Route B: count aligned 32-bit words in `pid`'s writable private memory that equal
-// the half-open window [lo, hi). The client process is 32-bit, so a genuine pointer
-// is a 4-byte aligned word. A pointer to the array lands near the anchor record but
-// not necessarily ON it -- human player records precede AIPLAYER1, so the array base
-// sits some strides before the anchor. Widening to a window catches that reference.
-// When hit_addrs is given, the address of each matching word is recorded (up to
-// max_hits) so the caller can inspect the referrer's neighbours; counting continues
-// past the cap. Returns -1 if the process can't be opened.
+// Counts the aligned 32-bit words in pid's private writable memory that fall in [lo, hi), recording up to
+// max_hits of their addresses in hit_addrs. Returns -1 if the process cannot be opened.
 static int TF_Count_Referrers(DWORD pid, SIZE_T lo, SIZE_T hi, unsigned char* scratch, SIZE_T scratch_size,
                               SIZE_T* hit_addrs = NULL, int max_hits = 0, int* hit_count = NULL)
 {
@@ -2928,16 +2771,8 @@ static int TF_Count_Referrers(DWORD pid, SIZE_T lo, SIZE_T hi, unsigned char* sc
     return refs;
 }
 
-/*
-**	Route B upgrade (DontCryJustDie, 2026-07-25): the client's stable referrers to the
-**	LIVE array are vector triples -- at referrer address R, [R] is the begin pointer,
-**	[R+4] the end pointer, [R+8] the capacity pointer, and (end - begin) / 168 is the
-**	number of players in the match. They point at the ARRAY BASE (the first HUMAN
-**	record), which sits TF_HumanPlayerCount strides before the AIPLAYER anchor. A raw
-**	value hit is a coincidence-prone integer match; a hit whose neighbours form a
-**	triple sized to this match's roster is a structural identification of the live
-**	array, and no stale copy can carry one.
-*/
+// A vector triple: a referrer to the live lobby array holds its begin, end and capacity pointers, and
+// (end - begin) / 0xA8 is the match's player count. A stale copy carries none.
 #define TF_LOBBY_MAX_TRIPLES 8
 struct TF_VecTriple {
     SIZE_T ref;              // address of the begin-pointer word inside the client
@@ -2948,9 +2783,8 @@ struct TF_VecTriple {
     bool ok;                 // structurally valid AND sized to this match's roster
 };
 
-// Reads the 12 bytes at `ref` and judges them as a vector triple over `base`.
-// Fills `out` with whatever was read (for the forensic log) even on a reject;
-// returns out->ok. `expected_players` = humans + roster AIs for THIS match.
+// Reads the 12 bytes at ref as a vector triple over base, filling out even on a reject. True when the triple
+// begins at base and spans expected_players records.
 static bool TF_Read_Vector_Triple(HANDLE proc, SIZE_T ref, SIZE_T base, int expected_players, TF_VecTriple* out)
 {
     out->ref = ref;
@@ -2990,30 +2824,11 @@ static bool TF_Cand_Same_Vec(int a, int b, unsigned roster)
     return true;
 }
 
-/*
-**	Ambiguity resolver (docs/lobby-ambiguity-findings.md). The client's heap can hold a
-**	stale copy of the lobby array that agrees with the live one on colour and country --
-**	so corroboration passes and the difficulty read is ambiguous. Given the candidates
-**	that disagree, decide which one is LIVE, or report undecided.
-**	Branches, in order (each requires its survivors to agree, so a stale is never picked
-**	over a live one; worst case 'U' == the fail-closed fallback this replaced):
-**	  V  vector triple   -- a referrer at the candidate's array base whose begin/end/
-**	                        capacity neighbours form a vector sized to this match's
-**	                        roster. Structural identification, not a value coincidence;
-**	                        a stale copy can never carry one.
-**	  R  exact referrer  -- the client keeps one pointer to the LIVE array's base;
-**	                        a unique difficulty among refeq>0 candidates is live.
-**	  F  freshness       -- a stale copy is a previously-ACTIVE array carrying many more
-**	                        neighbourhood pointers (refwin) than a freshly-made live one;
-**	                        the low-refwin cluster is live.
-**	  M  strict majority -- plurality difficulty vector (no other vector ties it).
-**	  U  undecided       -- caller fails closed.
-**	Returns the branch letter; fills out[] (roster slots) when decided.
-*/
+// Picks the live one of disagreeing candidates: vector triple (V), exact referrer (R), freshness (F), strict
+// majority (M), else 'U' and the caller fails closed. Fills out[] (docs/lobby-ambiguity-findings.md).
 static char TF_Resolve_Lobby_Ambiguity(const int* vecref, const int* refeq, const int* refwin,
                                        int ncand, unsigned roster, int* out)
 {
-    // 1. validated vector triple at the array base
     int vrep = -1;
     bool vconflict = false;
     for (int c = 0; c < ncand; c++) {
@@ -3030,7 +2845,6 @@ static char TF_Resolve_Lobby_Ambiguity(const int* vecref, const int* refeq, cons
         return 'V';
     }
 
-    // 2. exact referrer
     int rep = -1;
     bool conflict = false;
     for (int c = 0; c < ncand; c++) {
@@ -3047,7 +2861,6 @@ static char TF_Resolve_Lobby_Ambiguity(const int* vecref, const int* refeq, cons
         return 'R';
     }
 
-    // 3. freshness cluster (low refwin = freshly allocated = live)
     int minrw = 0x7fffffff;
     for (int c = 0; c < ncand; c++) if (refwin[c] < minrw) minrw = refwin[c];
     int thresh = minrw * 4 + 2;
@@ -3067,7 +2880,6 @@ static char TF_Resolve_Lobby_Ambiguity(const int* vecref, const int* refeq, cons
         return 'F';
     }
 
-    // 4. strict majority
     int bestc = -1, bestn = 0;
     for (int c = 0; c < ncand; c++) {
         int cnt = 0;
@@ -3090,11 +2902,8 @@ static char TF_Resolve_Lobby_Ambiguity(const int* vecref, const int* refeq, cons
     return 'U';
 }
 
-/*
-**	Scans one process's private writable regions for the record array. Every validated
-**	candidate must agree; disagreement flags the whole read as ambiguous (memory can
-**	hold stale copies of lobby data -- agreement is the safety condition).
-*/
+// Scans one ClientG's private writable memory for full-roster record arrays, registering each for the resolver;
+// best takes the first one's difficulties and ambiguous is set when a later one disagrees on a roster slot.
 static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                                                  int* best,
                                                  int* best_count,
@@ -3102,9 +2911,6 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                                                  unsigned char* scratch,
                                                  SIZE_T scratch_size)
 {
-    // Anchor on the current roster's lowest-numbered AI name: an array holding the
-    // roster can start there, or hold it mid-array (a stale wider array from an
-    // earlier lobby edit) -- both produce a signature hit and get validated.
     unsigned roster = TF_LobbyAIRosterMask;
     if (roster == 0) {
         return;
@@ -3140,8 +2946,6 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                     if (memcmp(scratch + i, sig, sig_len) != 0) {
                         continue;
                     }
-                    // Candidate hit: re-read the full prospective array straight from
-                    // the process so validation never depends on chunk boundaries.
                     unsigned char rec[TF_LOBBY_MAX_AI_SLOTS * TF_LOBBY_RECORD_STRIDE];
                     SIZE_T rec_got = 0;
                     ReadProcessMemory(proc, (LPCVOID)(region_base + off + i), rec, sizeof(rec), &rec_got);
@@ -3157,8 +2961,6 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                     if (cand_count <= 0) {
                         continue;
                     }
-                    // A voting candidate must cover the whole roster; partial or stale
-                    // fragments are logged above but don't participate.
                     if ((cand_mask & TF_LobbyAIRosterMask) != TF_LobbyAIRosterMask) {
 #if TF_DEV_BUILD
                         TF_Log_Lobby_Record(-1,
@@ -3171,8 +2973,6 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
 #endif
                         continue;
                     }
-                    // Register the candidate: the resolver needs its address and vector,
-                    // the raw bytes ride along for the dev-build forensic dump.
                     if (TF_LobbyCandN < TF_LOBBY_MAX_CANDIDATES) {
                         TF_LobbyCandRec& c = TF_LobbyCands[TF_LobbyCandN++];
                         c.pid = TF_LobbyScanPid;
@@ -3195,8 +2995,6 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
                             }
                         }
                     }
-                    // Agreement is judged on the roster's slots only -- non-roster
-                    // leftovers in a wider array carry no signal.
                     if (*best_count == 0) {
                         memcpy(best, cand, (TF_LOBBY_MAX_AI_SLOTS + 1) * sizeof(int));
                         *best_count = cand_count;
@@ -3218,19 +3016,15 @@ static void TF_Scan_Process_For_Lobby_Difficulty(HANDLE proc,
     }
 }
 
-/*
-**	Reads the lobby's per-slot AI difficulties out of the client process(es). Fills
-**	diff_by_slot[1..TF_LOBBY_MAX_AI_SLOTS] (1=Easy 2=Medium 3=Hard, 0=unknown) and
-**	returns the number of slots read; 0 = scan failed, caller stays on the global
-**	difficulty source. Read-only against the target process.
-*/
+// Reads the lobby's per-slot AI difficulties from ClientG into diff_by_slot[] (1 Easy, 2 Medium, 3 Hard,
+// 0 none). Returns the roster slots read; 0 = failed, and the caller keeps the global tier.
 static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
 {
     int best[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
     int best_count = 0;
     bool ambiguous = false;
 
-    // 1 MB scan chunk; static so repeated match starts reuse one allocation.
+    // Static: a 1 MB buffer would overflow the game's 1 MB thread stack.
     static unsigned char scratch[1 << 20];
 
 #if TF_DEV_BUILD
@@ -3284,14 +3078,6 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
     }
 #endif
 
-    /*
-    **	Resolve an ambiguous read rather than abandoning it. A stale copy that agrees
-    **	with the live one on colour and country passes corroboration, so agreement
-    **	alone cannot settle which array is current -- and abandoning the read applies
-    **	the default difficulty, which is exactly wrong for the player who just lowered
-    **	it between matches. Identify the live copy from its referrer profile instead;
-    **	an undecided verdict still falls back.
-    */
     static int cand_vecref[TF_LOBBY_MAX_CANDIDATES];
     static int cand_refeq[TF_LOBBY_MAX_CANDIDATES];
     static int cand_refwin[TF_LOBBY_MAX_CANDIDATES];
@@ -3308,9 +3094,6 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
         cand_ntrip[a] = 0;
     }
     if (ambiguous && TF_LobbyCandN > 0) {
-        // The live array's referrers are vector triples over its BASE (the first
-        // human record, TF_HumanPlayerCount strides before the AIPLAYER anchor),
-        // sized humans + roster AIs. See TF_Read_Vector_Triple.
         int roster_ais = 0;
         for (int n = 1; n <= TF_LOBBY_MAX_AI_SLOTS; n++) {
             if (TF_LobbyAIRosterMask & (1u << n)) {
@@ -3320,10 +3103,6 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
         int expected_players = TF_HumanPlayerCount + roster_ais;
         for (int a = 0; a < TF_LobbyCandN; a++) {
             TF_LobbyCandRec& c = TF_LobbyCands[a];
-            // vecref = referrers at the array base whose neighbours validate as a
-            // vector triple. refeq = pointers landing exactly ON the anchor record.
-            // refwin = pointers into a window running from 4 records before the
-            // anchor through the roster.
             SIZE_T back = (SIZE_T)TF_HumanPlayerCount * TF_LOBBY_RECORD_STRIDE;
             cand_vecref[a] = 0;
             if (c.address > back) {
@@ -3455,11 +3234,8 @@ static int TF_Read_Lobby_AI_Difficulties(int* diff_by_slot)
     return roster_read;
 }
 
-/*
-**	Applies a difficulty set to every AI house: per-slot where the lobby read supplied
-**	a tier for that house's slot, the global tier otherwise. Safe to call again later
-**	in a match -- houses are simply re-tiered, which is what the deferred re-scan does.
-*/
+// Sets each AI house's IQ from its lobby slot's difficulty, else the global tier, and queues the on-screen
+// announcements. Safe to call again mid-match: the deferred re-scan re-tiers the houses this way.
 static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff, int slots_read, bool is_retry)
 {
     Scen.CDifficulty = global_diff;
@@ -3469,11 +3245,6 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
     for (int index = 0; index < Houses.Count(); index++) {
         HouseClass* housep = Houses.Ptr(index);
         if (housep != NULL && housep->IsActive && !housep->IsHuman && housep->Class->House >= HOUSE_MULTI1) {
-            // Each AI house's lobby slot number was captured at house-assign time
-            // (TF_AILobbySlotByHouse -- IniName itself is renamed to "Computer"),
-            // keying it to the client's per-slot record regardless of the
-            // color-order house assignment. Houses without a slot record use the
-            // global tier.
             DiffType house_diff = global_diff;
             bool per_slot = false;
             int house_index = (int)housep->Class->House - (int)HOUSE_MULTI1;
@@ -3521,8 +3292,6 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
                 }
             }
 #endif
-            // On-screen readout of each AI's applied tier, so a fallback to the
-            // global difficulty is visible to the player rather than silent.
             if (TFHelloPendingCount < ARRAY_SIZE(TFHelloPending)) {
                 const char* mode_nice =
                     (house_diff == DIFF_EASY) ? "Easy" : (house_diff == DIFF_HARD) ? "Hard" : "Medium";
@@ -3564,12 +3333,8 @@ static void TF_Apply_AI_Difficulties(DiffType global_diff, const int* slot_diff,
 #endif
 }
 
-/*
-**	Runs a deferred re-scan when the match-start read failed. Called every frame;
-**	does nothing unless a retry is owed and its frame has arrived. A successful
-**	re-scan re-tiers the AI houses and disarms; running out of attempts leaves the
-**	houses on the global tier, which is the shipped fallback behaviour.
-*/
+// Called every frame: runs an owed lobby re-scan, TF_LOBBY_RETRY_FRAME_GAP frames apart. A read is applied
+// once two in a row agree, or on the last attempt; running out leaves the global tier.
 static void TF_Lobby_Difficulty_Retry()
 {
     if (TFLobbyRetriesLeft <= 0 || Frame < TFLobbyRetryFrame) {
@@ -3614,30 +3379,11 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
         return;
     }
 
-    /*
-    **	Skirmish/multiplayer: the GlyphX client always sends 1 (Normal) here no
-    **	matter what the lobby slots or the campaign difficulty option are set to --
-    **	per-AI difficulty only ever existed client-side. The player's real choice
-    **	therefore comes from an optional settings file, re-read at every match
-    **	start so it can be changed between matches without restarting the game:
-    **
-    **	  Documents/CnCRemastered/tf_ai_difficulty.txt   containing one word:
-    **	  easy | normal | hard        (also accepts 0 | 1 | 2)
-    **
-    **	No file means hard -- the strength skirmish AIs shipped with (MaxIQ);
-    **	the file only ever opts the AI downward. The selected tier is stored for
-    **	houses created later and retro-applied to AI houses that already exist
-    **	(the client may call this either side of match start). IQ is the only
-    **	thing that changes -- combat and economy handicaps are untouched at
-    **	every difficulty.
-    */
+    // TF: skirmish and LAN AI difficulty, per lobby slot from ClientG, else tf_ai_difficulty.txt, else Hard. Only
+    // the host simulates, so nothing needs syncing (docs/lobby-difficulty-ram-spike.md).
     DiffType diff = DIFF_HARD;
     char tf_diff_source = 'd'; // d=default, f=file
 
-    // Global difficulty fallback, used when the per-slot lobby read is unavailable.
-    // Honoured in multiplayer as well as solo: only the host simulates a LAN match,
-    // so the host's flag file is the only one that can reach the simulation and there
-    // is no second peer to disagree with it.
     {
         const char* up = getenv("USERPROFILE");
         char p[600];
@@ -3661,15 +3407,6 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
         }
     }
 
-    // Per-slot difficulty read from the client process, overriding the global
-    // source house-by-house. Applies in solo and multiplayer alike.
-    //
-    // No cross-peer agreement is needed. Mods load in LAN games only, and a LAN
-    // match runs a single simulation, hosted by the machine that owns the lobby --
-    // a joiner's client renders streamed state and never executes this DLL at all.
-    // So whenever this code runs it is running on the host, reading the host's own
-    // live lobby, which is by definition the authoritative one. There is no second
-    // sim to diverge from and therefore nothing to broadcast or reconcile.
     int slot_diff[TF_LOBBY_MAX_AI_SLOTS + 1] = {0};
     int slots_read = TF_Read_Lobby_AI_Difficulties(slot_diff);
 
@@ -3680,8 +3417,6 @@ extern "C" __declspec(dllexport) void __cdecl CNC_Set_Difficulty(int difficulty)
 
     TF_Apply_AI_Difficulties(diff, slot_diff, slots_read, false);
 
-    // A failed read here is usually the client rebuilding its records as the match
-    // launches rather than a lobby with nothing to read, so arm a deferred re-scan.
     if (slots_read <= 0 && TF_LobbyAIRosterMask != 0) {
         TFLobbyRetriesLeft = TF_LOBBY_RETRY_ATTEMPTS;
         TFLobbyRetryFrame = Frame + TF_LOBBY_RETRY_FRAME_GAP;
@@ -3940,43 +3675,10 @@ void DLLExportClass::Shutdown(void)
  *
  * History: 2/20/2020 2:03PM - ST
  **************************************************************************************************/
-/*
-** Tiberian Factions -- self-install bundled custom maps. A Workshop mod
-** cannot ship files into the user's Documents, and the official skirmish
-** list cannot take new maps (InstanceServerG resolves instances from BASE
-** data; slot-hijacking was rejected over the wrong lobby thumbnail). So
-** bundled map triplets (mpr+tga+json, synthetic UGC names) ship in
-** <mod>/CustomMaps/ and are copied into Local_Custom_Maps/Red_Alert/ when
-** the launcher registers the mod's CCDATA path -- they then appear in the
-** lobby's CUSTOM list with OUR preview art. Existing copies are overwritten
-** (bundled maps stay in sync with the mod version); other filenames are
-** never touched. The maps themselves are vanilla-safe via the [TFTDTiles]
-** side-channel (display.cpp), so they degrade gracefully if the mod is
-** later disabled. With TF_TD_MAPS at 0 nothing is copied and the installed
-** copies are deleted instead.
-*/
-/*
-** Tiberian Factions -- era-voice mailbox for the launcher's self-fired EVA
-** lines. "Cannot deploy here" (the placement-reject click is swallowed
-** client-side) and "battle control terminated" (fired during teardown) never
-** pass through On_Speech, so they cannot be faction-routed at dispatch. Their
-** samples, however, resolve from loose files under <mod>\Data\AUDIO\EN-US\,
-** so whenever a match starts the DLL copies the era-correct recording over
-** those sample names: the launcher stays faction-blind yet speaks the picked
-** side's voice. TD-era sides (ActLike GDI/Nod) get the TD lines, everyone
-** else the RA originals. The shipped TF_MBX_* files carry both sets of bytes;
-** the destination names are only ever created by this write, so a fresh
-** install falls back to the base MEG's RA samples until the first match. In
-** LAN games only the host machine runs the DLL: clients keep the RA voice for
-** these two lines (same limit as the faction credit tick).
-*/
 static char TF_ModRootPath[MAX_PATH]; // "<mod>\" incl. trailing separator
 
-/*
-**	The house the local player picked. In the simulation that is the local human house; in a
-**	launcher (where TF_Launcher_Resident_Install keeps a copy of this DLL) it is what the host
-**	last told that launcher, HOUSE_NONE until then.
-*/
+// The local player's side: in the simulation, the local human house's ActLike; in a launcher, the side the
+// host last sent it (TF_Tell_Launchers), HOUSE_NONE until then.
 static bool TF_InLauncher = false;
 static volatile LONG TF_LauncherActLike = HOUSE_NONE;
 
@@ -4020,13 +3722,8 @@ static unsigned char* TF_Read_Whole_File(const char* path, long* len_out)
     return buf;
 }
 
-/*
-**	Writes the correct file over a copy of the wrong one, only when every byte at dest is that
-**	copy. A needle hit can also land in a freed buffer that once held the file (Wine's CopyFile
-**	works through heap buffers) and is now partly reused; writing a whole file there overwrites
-**	the heap's own block headers. The full compare passes for the launcher's cached sample and
-**	fails for any copy something else has written into since. Both files must be the same length.
-*/
+// Writes correct_path's bytes over a copy of wrong_path at dest, only when the files are one length and every
+// byte there is that copy: a needle can also hit a freed, reused heap buffer, where a write corrupts the heap.
 static bool TF_Replace_File_In_Process(HANDLE proc, SIZE_T dest, const char* wrong_path, const char* correct_path)
 {
     long wrong_len = 0;
@@ -4062,11 +3759,7 @@ static bool TF_Replace_File_In_Process(HANDLE proc, SIZE_T dest, const char* wro
     return ok;
 }
 
-/*
-**	Which announcer a house hears. The generated table carries one payload per era for
-**	every launcher-fired line, so adding TS Nod's CABAL or RA2's announcers is a row in
-**	scripts/eva_mailbox_build.py's ERAS plus its recordings -- not another branch here.
-*/
+// The EVA era a side hears: a payload column of TF_EvaMailboxLines, generated by scripts/eva_mailbox_build.py.
 static int TF_Eva_Era(HousesType act_like)
 {
     if (Is_TS_GDI(act_like)) {
@@ -4078,6 +3771,8 @@ static int TF_Eva_Era(HousesType act_like)
     return TF_EVA_ERA_RA;
 }
 
+// Copies the local side's era recordings over the launcher-fired EVA samples in <mod>\Data\AUDIO\EN-US and
+// over ClientG's cached copies, so the launcher speaks the picked side's voice (docs/eva-ram-patch-spike.md).
 static void TF_Mailbox_Write_EVA_Voice(void)
 {
     if (TF_ModRootPath[0] == 0) {
@@ -4100,11 +3795,11 @@ static void TF_Mailbox_Write_EVA_Voice(void)
         CopyFileA(src, dst, FALSE);
     }
 
-    // Also overwrite any already-cached copy in ClientG's memory, so an in-session faction
-    // switch corrects lines heard (and cached) before the switch (docs/eva-ram-patch-spike.md).
     TF_Patch_ClientG_Cache(era);
 }
 
+// Finds each cached copy of another era's EVA payload in ClientG and writes ours over it where the whole copy
+// is still there. A line's payloads are all one length, so the write covers the copy exactly.
 static void TF_Patch_ClientG_Cache(int era)
 {
     if (TF_ModRootPath[0] == 0) {
@@ -4113,13 +3808,6 @@ static void TF_Patch_ClientG_Cache(int era)
     char dir[MAX_PATH];
     snprintf(dir, sizeof(dir), "%sData\\AUDIO\\EN-US", TF_ModRootPath);
 
-    /*
-    **	One row per line per era we are NOT playing: hunt that era's distinctive bytes, and
-    **	whatever they are found in is a cached copy of that era's payload, so the blob starts
-    **	at (hit - its file offset) and our own era's file is written over it. Every era's
-    **	payload for a line is the same byte length, so the write covers that copy exactly; it
-    **	goes ahead only where the whole copy is still there (TF_Replace_File_In_Process).
-    */
     struct PatchRow
     {
         const unsigned char* wrong_needle;
@@ -4143,11 +3831,6 @@ static void TF_Patch_ClientG_Cache(int era)
         }
     }
 
-    /*
-    **	Bucket the needles by their first byte. The heap walk below is the expensive part and
-    **	it used to be re-scanned once per row, which was tolerable at two eras and would not be
-    **	at six: this keeps the per-byte cost at roughly one compare however many eras exist.
-    */
     int bucket_start[257];
     int bucket_rows[(sizeof(TF_EvaMailboxLines) / sizeof(TF_EvaMailboxLines[0])) * TF_EVA_ERA_COUNT];
     {
@@ -4268,30 +3951,17 @@ static void TF_Patch_ClientG_Cache(int era)
     }
 }
 
-/*
-** Tiberian Factions -- per-faction radar crest (docs/radar-crest-ram-spike.md).
-** GDI and Nod load TD's HUD scene (FACTIONS.XML scene lists, scripts/factions_build.py),
-** which draws the TD logo regions directly but picks between them by RA side: Allied ->
-** UI_SIDEBAR_FACTIONLOGO_GDI, Soviet -> _NOD. Nod is an Allied-side country, so it would
-** draw the eagle. ClientG keeps one small cached record per referenced atlas region -- four
-** floats {v0, u0, w/W, h/H} of MT_COMMANDBAR_COMMON.TGA -- in writable heap, sampled every
-** frame; re-pointing the eagle record at the scorpion rect swaps the drawn crest with no
-** pixel data (the atlas lives only on the GPU after launch). The record is created lazily on
-** the first radar draw and a fresh per-match copy appears each match, so the patch is driven
-** per-frame for a short window from CNC_Advance_Instance (TF_Crest_Tick). RA sides load RA's
-** scene, whose crests are side-correct already; for them every slot wants its stock rect.
-*/
+// Per-faction radar crest: sides on TD's HUD scene, which picks its crest by RA side, get theirs by re-pointing
+// ClientG's cached atlas-region records (docs/radar-crest-ram-spike.md).
 struct TF_AtlasRect
 {
     int x, y, w, h;
 };
 
+// ClientG's cached UV record for an atlas rect, computed as ClientG does so the bytes match its copies. nudge
+// moves u0 a sub-pixel per slot, so slots sharing a target each restore to their own stock rect.
 static void TF_Atlas_UV_Record(const TF_AtlasRect& r, float out[4], int nudge = 0)
 {
-    // Same arithmetic the launcher used to build the record (double divide, cast to float),
-    // so the bytes match its cached copies exactly. A rect we WRITE carries a per-slot
-    // sub-pixel nudge on u0 (nudge * 0.007 px; invisible) so two slots that share a target
-    // still leave distinguishable records and each restores to its own stock rect.
     const double W = 6871.0, H = 6716.0; // MT_COMMANDBAR_COMMON.TGA
     out[0] = (float)(r.y / H);
     out[1] = (float)(r.x / W + nudge * 1e-6);
