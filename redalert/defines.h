@@ -1182,7 +1182,7 @@ inline HousesType operator++(HousesType& ht)
 }
 
 // TF: GDI and Nod leave the Allied and Soviet umbrellas. TS GDI plays as Germany, so the picker row clicked is
-// the house they play. See docs/ts-factions-feasibility.md.
+// the house they play. See docs/ts-gdi-faction.md.
 
 // TF_TS_GDI_FACTION 0 builds the DLL without the fifth faction: Germany is Allied again, Is_TS_GDI() is false.
 // Build the front end with TF_TS_GDI_FACTION=0 too, so the picker matches (docs/ts-gdi-faction.md).
