@@ -271,7 +271,7 @@ bool RadarClass::Radar_Activate(int control)
         if (Map.IsSidebarActive) {
             if (!IsRadarActivating && !IsRadarActive) {
 #ifndef REMASTER_BUILD
-                // MBL 07.20.2020: see VOC_RADAR_OFF block above (case 0).
+                // MBL 07.20.2020: These are never being sent to the client, so handled there; Disabling here for good measure.
                 Sound_Effect(VOC_RADAR_ON);
 #endif
                 IsRadarActivating = true;
