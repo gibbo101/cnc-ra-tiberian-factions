@@ -6696,10 +6696,7 @@ BuildingClass* HouseClass::Find_Building(StructType type, ZoneType zone) const
     return (NULL);
 }
 
-/*
-**	A building of this house that the given addon plug would install into, or NULL: a
-**	bare component tower for a tower plug, a power plant with a free slot for the turbine.
-*/
+// A standing building of this house that the addon plug would install into (Can_Upgrade), or NULL.
 static BuildingClass* TF_Plug_Host(HouseClass const* house, BuildingTypeClass const* plug)
 {
     if (plug == NULL || plug->PowersUpBuilding == STRUCT_NONE) {
@@ -6715,10 +6712,8 @@ static BuildingClass* TF_Plug_Host(HouseClass const* house, BuildingTypeClass co
     return (NULL);
 }
 
-/*
-**	Tallies a building this house has chosen or has in production against the slots for one
-**	host type: a host on its way brings its slots, a plug for that host claims one.
-*/
+// Counts one building this house has chosen or has in production against a host type's slots: a host
+// on its way adds its slots, a plug for that host takes one.
 static void TF_Plug_Commitment(StructType type, StructType host, int slots, int& room)
 {
     if (type == host) {
@@ -6728,12 +6723,8 @@ static void TF_Plug_Commitment(StructType type, StructType host, int slots, int&
     }
 }
 
-/*
-**	How many more of this addon plug the house has room for: free slots on its standing hosts,
-**	plus the slots of hosts it has chosen or has in production, less the plugs for that host
-**	type it has chosen or has in production. A plug queued before its host stands fails
-**	Can_Build and waits a pass.
-*/
+// How many more of this plug the house has room for: free slots on standing hosts, plus the slots of
+// hosts chosen or in production, less the plugs for that host type chosen or in production.
 static int TF_Plug_Room(HouseClass const* house, BuildingTypeClass const* plug)
 {
     StructType host = plug->PowersUpBuilding;
@@ -6778,9 +6769,7 @@ COORDINATE HouseClass::Find_Build_Location(BuildingClass* building) const
 {
     assert(Houses.ID(this) == ID);
 
-    /*
-    **	An addon plug goes onto a building of its host type, never onto open ground.
-    */
+    // TF: an addon plug goes onto a building of its host type, never onto open ground.
     if (building->Class->PowersUpBuilding != STRUCT_NONE) {
         BuildingClass const* host = TF_Plug_Host(this, building->Class);
         if (host != NULL) {
@@ -6794,12 +6783,8 @@ COORDINATE HouseClass::Find_Build_Location(BuildingClass* building) const
         return (0);
     }
 
-    /*
-    **	Water-bound buildings can't use the defence-zone rings below: the zones are
-    **	land rings around the base centre, and on most maps every legal coastal cell
-    **	lies outside all of them, so the ring scan fails without saying why. Place
-    **	on the assessed water directly instead. W5.1.
-    */
+    // TF: water-bound buildings go on the assessed water. The defence zones are land rings around the base
+    // centre, and on most maps no legal coastal cell lies inside them.
     if (building->Class->Speed == SPEED_FLOAT) {
         CELL navalcell = TF_Find_Naval_Cell(building);
         if (navalcell) {
@@ -6903,7 +6888,7 @@ COORDINATE HouseClass::Find_Build_Location(BuildingClass* building) const
         ZoneType tryzone = _zones[(zz + start) % ARRAY_SIZE(_zones)];
         zcell = Find_Cell_In_Zone(building, tryzone);
         if (zcell)
-            return (Cell_Coord(zcell));
+            return (Cell_Coord(zcell)); // TF: a coordinate, as the preferred-zone return above.
     }
 
     return (0);
@@ -6926,10 +6911,7 @@ COORDINATE HouseClass::Find_Build_Location(BuildingClass* building) const
  * HISTORY:                                                                                    *
  *   09/28/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-/*
-**	W5.3 expansion bases: which of the house's construction yards does a position
-**	belong to? A building is a member of the cluster around its nearest yard.
-*/
+// Index of the yard in yards[] nearest pos: a building belongs to the cluster around its nearest yard.
 static int TF_Nearest_Yard(COORDINATE pos, COORDINATE const* yards, int count)
 {
     int best = 0;
@@ -6972,16 +6954,8 @@ void HouseClass::Recalc_Center(void)
         int quantity = 0;
         int index;
 
-        /*
-        **	W5.3 expansion bases: with construction yards on two landmasses, averaging
-        **	EVERY building drags Center into the sea between the bases and the zone
-        **	rings collapse for both (the collapsed-geometry class of placement
-        **	failure). The base brain therefore tracks only the DOMINANT cluster --
-        **	each building belongs to its nearest yard, the heaviest cluster is the
-        **	main base, and everything in the other clusters is invisible to Center/
-        **	Radius/zone math. A remote yard places its own products around itself
-        **	(see the remote-anchor branch in building.cpp).
-        */
+        // TF: with yards far apart, only the heaviest cluster around one yard is the base. Averaging every
+        // building would put Center between the bases and collapse the zone rings for both.
         COORDINATE yardpos[8];
         int yardcount = 0;
         for (index = 0; index < Buildings.Count() && yardcount < 8; index++) {
@@ -7069,10 +7043,10 @@ void HouseClass::Recalc_Center(void)
         /*
         **	If there were any buildings discovered as legal to consider as part of the base,
         **	then figure out the general average radius of the building disposition as it
-        **	relates to the center of the base. The cost weighting applies to the center
-        **	only — the radius is a plain mean over the buildings, so it is divided by the
-        **	building quantity, not the weighted count.
+        **	relates to the center of the base.
         */
+        // TF: the radius is a plain mean over buildings; divided by the cost-weighted count it comes out too
+        // small for Which_Zone to admit build sites (docs/ai-placement-session-handover.md).
         if (quantity > 1) {
             int radius = 0;
 
@@ -7114,13 +7088,8 @@ void HouseClass::Recalc_Center(void)
     }
 }
 
-/*
-**	W5.4 fleet doctrine state: once the enemy coast is discovered the fleet stops
-**	trickling onto patrol one hull at a time (each ship met the shore defences
-**	alone and died alone) and masses at a rally instead -- the naval mirror of the
-**	land attack wave. The rally is wherever the first massing ship happens to
-**	stand, and it clears when the wave releases so each new wave gathers fresh.
-*/
+// Per-house fleet rally: once the enemy coast is known, warships mass where the first one stands and sail
+// as one hunting wave. The rally clears on release so each wave gathers fresh.
 static int const TF_NAVAL_WAVE_MIN = 3;     // smallest fleet worth releasing as a wave.
 static int const TF_NAVAL_RALLY_RADIUS = 4; // cells; counts as massed at the rally.
 static CELL _tf_fleet_rally[HOUSE_COUNT];
@@ -7164,16 +7133,8 @@ int HouseClass::Expert_AI(void)
         }
     }
 
-    /*
-    **	Blind-scout dispatcher: with the fair-fog intel layer a house that has
-    **	sighted no enemy building would otherwise wait forever -- AI_Attack sends
-    **	hunters only rarely (and usually reshuffles instead), and the blind-hunt
-    **	probe in Mission_Hunt can't run without hunters. So while blind, keep a
-    **	small scout detail on MISSION_HUNT; the probe walks them across the map's
-    **	start locations until contact is made, after which the normal attack
-    **	pipeline has real targets to work with. MCVs (whose hunt order deploys
-    **	the base!) and harvesters never scout.
-    */
+    // TF: while a house has sighted no enemy building, keep two armed units hunting so Mission_Hunt's blind
+    // probe finds the enemy. MCVs (a hunt order deploys them) and harvesters never scout.
     if (Session.Type != GAME_NORMAL && IsStarted && !TF_Knows_Any_Enemy_Building()) {
         enum
         {
@@ -7244,36 +7205,14 @@ int HouseClass::Expert_AI(void)
         }
     }
 
-    /*
-    **	W5.1 naval patrol dispatcher: idle armed ships sail to random cells of the
-    **	assessed water zone -- the naval counterpart of the blind-scout detail
-    **	above. While blind it is the mechanism that DISCOVERS the enemy coast on
-    **	maps ground scouts can't cross; after discovery it keeps the fleet moving
-    **	across contested water, which is what brings guard-mode weapons within
-    **	range of enemy hulls and shore targets -- a parked navy never fights.
-    **	The land dispatcher's hunt waypoints must never be used here: a ship
-    **	ordered to a land cell is a permanently unreachable destination (the
-    **	pathfinder-storm profile), while any cell of the ship's own water zone is
-    **	reachable by what a zone id means. Ships go idle on arrival, so each
-    **	Expert_AI pass deals the next leg. Dedicated naval attack doctrine
-    **	(concentrating on the enemy fleet, shore bombardment) is later W5 work.
-    */
+    // TF: idle warships patrol their own water zone while blind and mass into one wave once the enemy coast
+    // is known. Never send a ship to a land cell such as a hunt waypoint: it can never arrive.
     if (Session.Type != GAME_NORMAL && IsStarted && Vessels.Count() > 0) {
         int pzone = 0;
         int psize = 0;
         bool pcoastal = false;
         if (TF_Naval_Assessment(pzone, psize, pcoastal)) {
             int fhidx = (int)Class->House;
-            /*
-            **	W5.4: while the fleet is BLIND (no enemy coast discovered) every idle
-            **	warship patrols -- the patrol IS the discovery vector, and the blind
-            **	fleet cap keeps it to a couple of hulls. Once the enemy coast is
-            **	known, patrol wandering stops: the fleet masses at a rally and
-            **	releases as one hunting wave at strength. An ENGAGED ship is never
-            **	re-ordered either way -- guard-mode combat keeps Mission == GUARD,
-            **	and a fresh NavCom re-arms the FIRE_MOVING gate on turretless hulls
-            **	(a sub ripped off its target sails past enemies forever).
-            */
             int massed = 0;
             if (pcoastal && fhidx >= 0 && fhidx < HOUSE_COUNT && _tf_fleet_rally[fhidx] != 0) {
                 for (int vindex = 0; vindex < Vessels.Count(); vindex++) {
@@ -7313,15 +7252,7 @@ int HouseClass::Expert_AI(void)
                 bool vidle = (v->Mission == MISSION_GUARD || v->Mission == MISSION_GUARD_AREA);
                 bool vzone = (Map[Coord_Cell(v->Center_Coord())].Zones[MZONE_WATER] == pzone);
                 if (!vidle || !vzone) {
-                    /*
-                    **	Hunt supervision: MISSION_HUNT is terminal -- a ship whose chosen
-                    **	target no water route or weapon range can ever reach parks at the
-                    **	shore forever, invisible to a dispatcher that only deals to guard
-                    **	ships, and the fleet bleeds out of rotation one wave at a time
-                    **	("naval gone dead", verify match 2). A hunter that is not moving
-                    **	and cannot hit its target goes back to guard: it re-scans,
-                    **	re-masses and sails with the next wave instead of statue duty.
-                    */
+                    // MISSION_HUNT never ends on its own: a hunter that can't reach or hit its target parks for good.
                     if (v->Mission == MISSION_HUNT && !v->IsDriving
                         && (!Target_Legal(v->TarCom)
                             || !v->In_Range(v->TarCom, v->What_Weapon_Should_I_Use(v->TarCom)))) {
@@ -7356,10 +7287,7 @@ int HouseClass::Expert_AI(void)
                     continue;
                 }
                 {
-                    /*
-                    **	Fighting ships fight on; ships with an enemy already in weapon
-                    **	range pick it up and fight instead of sailing.
-                    */
+                    // Never re-order an engaged ship: a NavCom makes Can_Fire return FIRE_MOVING on turretless hulls.
                     if (Target_Legal(v->TarCom) || v->Target_Something_Nearby(THREAT_RANGE)) {
                         continue;
                     }
@@ -7402,10 +7330,6 @@ int HouseClass::Expert_AI(void)
 #endif
                         continue;
                     }
-                    /*
-                    **	Massing: the first holder plants the rally where it stands;
-                    **	everyone else closes on it and waits in guard.
-                    */
                     if (_tf_fleet_rally[fhidx] == 0) {
                         _tf_fleet_rally[fhidx] = Coord_Cell(v->Center_Coord());
 #if TF_DEV_BUILD // TF_AI_DIAG
@@ -7433,15 +7357,11 @@ int HouseClass::Expert_AI(void)
         }
     }
 
-    /*
-    **	W5.2: the ferry op state machine -- delivers ground force across water when
-    **	the designated enemy is land-unreachable. Gates itself on session/type.
-    */
+    // TF: ferry ground forces by sea: always when the enemy is across water, and on Hard as a second
+    // front once the enemy is known to share our sea.
     TF_Ferry_AI();
 
-    /*
-    **	Attack-wave gathering: release a staged wave once it has assembled.
-    */
+    // TF: tick the attack wave: release it once gathered, then shepherd its strike.
     TF_Wave_AI();
 
     /*
@@ -7735,10 +7655,10 @@ UrgencyType HouseClass::Check_Build_Power(void) const
             urgency = URGENCY_MEDIUM;
 
         /*
-        **	When under attack and there is a need for power in defense
-        **	(an armed building present that cannot fire without power),
+        **	When under attack and there is a need for power in defense,
         **	then consider power building a higher priority.
         */
+        // TF: only while the house owns an armed building that needs power to fire.
         if (State == STATE_THREATENED || State == STATE_ATTACKED) {
             for (int i = STRUCT_FIRST; i < STRUCT_COUNT; i++) {
                 BuildingTypeClass const& btype = BuildingTypeClass::As_Reference((StructType)i);
@@ -7891,16 +7811,8 @@ UrgencyType HouseClass::Check_Raise_Power(void) const
     return (urgency);
 }
 
-/*
-**	Counts the units this house could actually commit to an attack wave: armed
-**	ground units, armed infantry and armed aircraft. Harvesters and MCVs are
-**	excluded because sending either is never an attack, and engineers are
-**	excluded because they carry no combat power even though a launching wave
-**	does take them along. `value` (optional) receives the same army priced at
-**	list cost, so a wave can be judged by what it is worth and not just by how
-**	many heads it has: twenty minigunners and eight medium tanks are both "20"
-**	by count and nothing alike in a fight.
-*/
+// Counts the armed units, infantry and aircraft this house could commit to an attack wave (no harvesters,
+// MCVs or engineers); value, if given, receives that army's worth at list cost.
 int HouseClass::TF_Committable_Army(int* value) const
 {
     assert(Houses.ID(this) == ID);
@@ -7941,11 +7853,8 @@ int HouseClass::TF_Committable_Army(int* value) const
 static unsigned TF_Role_Quantity(unsigned const* bquantity, StructType ra);
 static int TF_House_Landmass(COORDINATE center);
 
-/*
-**	Harvesters this house owns, counted through the Units heap. UQuantity reads
-**	zero for a TD harvester docked inside its refinery (Limbo + attach), so the
-**	heap is the only count that sees the whole fleet.
-*/
+// Counts this house's harvesters of every lineage on the Units heap; the per-type UQuantity counters fold
+// mod units onto vanilla slots and can't be trusted for them.
 int HouseClass::TF_Harvesters_Owned(void) const
 {
     assert(Houses.ID(this) == ID);
@@ -7961,15 +7870,8 @@ int HouseClass::TF_Harvesters_Owned(void) const
     return (owned);
 }
 
-/*
-**	Economy targets. Vanilla sizes the refinery count as a fraction of the base
-**	(RefineryRatio) and fields one harvester per refinery, so a computer house
-**	sits on two refineries and three harvesters from the fourth minute to the
-**	end of the match while a human doubles that (A/B 2026-09-02: ~1.8k/min every
-**	game, the human at 2-3x). The refinery target is now paced by match time as
-**	a player paces it, with the ratio rule kept as a floor, and the harvester
-**	fleet scales with the tier: a Hard AI works every refinery with two.
-*/
+// Refineries this house should have by this point in the match, capped at RefineryLimit. AI_Building
+// takes the larger of this and the vanilla RefineryRatio target.
 int HouseClass::TF_Eco_Refinery_Target(void) const
 {
     assert(Houses.ID(this) == ID);
@@ -7990,6 +7892,7 @@ int HouseClass::TF_Eco_Refinery_Target(void) const
     return (want);
 }
 
+// Harvesters to field for this many refineries: two each on Hard, one and a half on Medium, one on Easy.
 int HouseClass::TF_Eco_Harvester_Target(int refineries) const
 {
     assert(Houses.ID(this) == ID);
@@ -8003,12 +7906,8 @@ int HouseClass::TF_Eco_Harvester_Target(int refineries) const
     return (refineries);
 }
 
-/*
-**	True while the house has fewer refineries or harvesters than its targets and
-**	could still do something about it (ore on the map). Production of combat
-**	units yields to the economy while this holds, so the income arrives before
-**	the army that is supposed to spend it.
-*/
+// True while the house is below its refinery or harvester target and ore remains, so combat production
+// yields to the economy. A hit in the last two minutes lifts the hold; an unbroken hold lapses at four.
 bool HouseClass::TF_Eco_Below_Target(int* refwant, int* harvwant, int* refhave) const
 {
     assert(Houses.ID(this) == ID);
@@ -8028,21 +7927,11 @@ bool HouseClass::TF_Eco_Below_Target(int* refwant, int* harvwant, int* refhave) 
     if (IsTiberiumShort) {
         return (false);
     }
-    /*
-    **	A house under attack builds soldiers, not harvesters: a hit in the last
-    **	two minutes lifts the hold outright.
-    */
     if (LATime != 0 && (long)Frame - (long)LATime < TICKS_PER_MINUTE * 2) {
         return (false);
     }
     bool below = (refq < rwant || TF_Harvesters_Owned() < hwant);
 
-    /*
-    **	Safety valve: a refinery that cannot be placed, or a harvester that
-    **	cannot be afforded, must not hold the army back for the rest of the
-    **	match. A continuous hold expires after four minutes and only re-arms
-    **	once the targets have been met in between.
-    */
     enum
     {
         TF_ECO_HOLD_MAX = TICKS_PER_MINUTE * 4
@@ -8070,26 +7959,8 @@ bool HouseClass::TF_Eco_Below_Target(int* refwant, int* harvwant, int* refhave) 
     return (true);
 }
 
-/*
-**	Attack-wave pacing dials, keyed off the house IQ (Easy 3, Medium 4,
-**	Hard 5). Difficulty moves frequency and responsiveness ONLY: a harder AI
-**	looks again sooner, commits more readily and rebuilds its wave faster, so
-**	it is more aggressive at every stage of the match rather than merely later
-**	and bigger. The floor is deliberately NOT a difficulty dial -- attacking
-**	with a token force is incompetence rather than mercy, and since IQ does
-**	not gate production (rules.ini [IQ] Production=3) every tier reaches a
-**	given army size at much the same minute, so a lower floor would only make
-**	the easier AI attack FIRST.
-*/
-/*
-**	Attack-wave staging. A launch used to be N individual hunt orders from
-**	wherever each unit stood, so the wave arrived as a line and died in detail
-**	(A/B 2026-09-02, all three games). Now the committed units march to a
-**	staging cell a few cells short of the nearest enemy building the house has
-**	actually seen, gather there, and are released together. Per-house state
-**	lives in file statics (the HouseClass layout is left alone) and is cleared
-**	on every scenario load.
-*/
+// Attack-wave staging: committed units march to a cell short of the nearest known enemy building, gather
+// and are released together. Per-house state lives in file statics, cleared on every scenario load.
 enum
 {
     TF_WAVE_MAX = 96,                                 // roster capacity per house
@@ -8114,6 +7985,7 @@ enum
 };
 static TFWaveStruct _tf_wave[HOUSE_COUNT];
 
+// True when f is on the roster of the house's gathering or striking attack wave.
 static bool TF_Wave_Member(FootClass const* f, HouseClass const* house)
 {
     if (f == NULL || house == NULL) {
@@ -8136,6 +8008,7 @@ static bool TF_Wave_Member(FootClass const* f, HouseClass const* house)
     return (false);
 }
 
+// Clears every house's attack wave.
 void TF_Wave_Reset(void)
 {
     for (int h = 0; h < HOUSE_COUNT; h++) {
@@ -8148,11 +8021,7 @@ void TF_Wave_Reset(void)
     }
 }
 
-/*
-**	The enemy building nearest this house's base among those the house has
-**	discovered (fair fog: a building it has never seen is not a destination).
-**	Zero when the house is still blind.
-*/
+// The discovered enemy building nearest this house's base centre, or 0 while the house has seen none.
 COORDINATE HouseClass::TF_Wave_Known_Enemy_Coord(void) const
 {
     assert(Houses.ID(this) == ID);
@@ -8173,13 +8042,8 @@ COORDINATE HouseClass::TF_Wave_Known_Enemy_Coord(void) const
     return (best);
 }
 
-/*
-**	Where the wave gathers: on the line from our base to the nearest known
-**	enemy building, TF_WAVE_STAGE_BACK cells short of it (halfway if the two
-**	are closer than that), snapped to a passable cell on our own landmass.
-**	Zero when there is nothing to stage against, in which case the launch
-**	falls back to plain hunt orders.
-*/
+// Where the wave gathers: TF_WAVE_STAGE_BACK cells short of the nearest known enemy building (halfway if
+// nearer), on our own landmass. 0 when there is nothing to stage against or the enemy is across water.
 CELL HouseClass::TF_Wave_Stage_Cell(void) const
 {
     assert(Houses.ID(this) == ID);
@@ -8199,12 +8063,6 @@ CELL HouseClass::TF_Wave_Stage_Cell(void) const
     if (along < dist / 2) {
         along = dist / 2;
     }
-    /*
-    **	Only stage against an enemy on our own landmass. Across water the wave
-    **	would walk at the shore and die there (Docklands, 2026-09-02: 31 staged,
-    **	none arrived); the ferry doctrine owns that delivery, and the plain hunt
-    **	order it drafts from is what the launch falls back to.
-    */
     int ourland = TF_House_Landmass(Center);
     CELL ecell = Coord_Cell(enemy);
     if (ourland <= 0 || ecell <= 0 || !Map.In_Radar(ecell) || Map[ecell].Zones[MZONE_NORMAL] != ourland) {
@@ -8219,12 +8077,8 @@ CELL HouseClass::TF_Wave_Stage_Cell(void) const
     return (cell);
 }
 
-/*
-**	Gathering tick: once enough of the roster stands at the staging cell, or
-**	the stragglers have had their two minutes, every survivor is released to
-**	hunt together. Runs from the Expert_AI cadence beside the ferry state
-**	machine.
-*/
+// Ticks the attack wave: releases a gathering wave once TF_WAVE_GATHER_MIN_PCT has arrived or time runs
+// out, then turns a striking wave's members to hunt as their attack-move ends.
 void HouseClass::TF_Wave_AI(void)
 {
     assert(Houses.ID(this) == ID);
@@ -8235,13 +8089,6 @@ void HouseClass::TF_Wave_AI(void)
     }
     TFWaveStruct& wave = _tf_wave[hidx];
 
-    /*
-    **	Striking phase (Hard): the wave went out on attack-move, which fights
-    **	everything on the way and then drops the unit into guard at the
-    **	destination. Anyone who has finished the attack-move is switched to
-    **	hunt so the wave carries on through the base instead of standing at
-    **	its door. Shepherding stops when the roster is dead or after a while.
-    */
     if (wave.Striking) {
         int living = 0;
         int converted = 0;
@@ -8306,14 +8153,6 @@ void HouseClass::TF_Wave_AI(void)
         return;
     }
 
-    /*
-    **	Hard releases on attack-move (CFE port, the player's shift-click): the
-    **	wave advances on the known enemy building as one body, engaging what it
-    **	meets on the way and keeping its destination through every detour
-    **	fight. Lower tiers hunt from the staging cell as before. The objective
-    **	is a CELL, not the building, so its destruction mid-march does not
-    **	cancel the order.
-    */
     COORDINATE objective = (IQ >= 5) ? TF_Wave_Known_Enemy_Coord() : 0;
     TARGET objtarget = (objective != 0) ? ::As_Target(Coord_Cell(objective)) : TARGET_NONE;
     for (int i = 0; i < wave.Count; i++) {
@@ -8373,17 +8212,12 @@ struct TFWaveDialsStruct
     int IntervalScale; // Percent scale on the post-launch interval.
 };
 
+// Attack-wave pacing by IQ (Easy 3, Medium 4, Hard 5). Difficulty moves frequency only; the floors are the
+// same at every tier, since a token wave just dies in detail (docs/ai-upgrade-plan.md).
 static TFWaveDialsStruct TF_Wave_Dials(int iq)
 {
     TFWaveDialsStruct dials;
 
-    /*
-    **	The value floor is the same at every tier for the same reason the count
-    **	floor is: a wave worth less than a handful of tanks dies in detail against
-    **	any real defence, and letting an easier AI throw one earlier is not mercy.
-    **	The value ceiling scales like the count ceiling so the harder AI is the
-    **	one that stops hoarding first.
-    */
     if (iq <= 3) {
         dials.Floor = 10;
         dials.FloorValue = 8000;
@@ -8417,37 +8251,14 @@ bool HouseClass::AI_Attack(UrgencyType)
 {
     assert(Houses.ID(this) == ID);
 
-    /*
-    **	Decide whether this opportunity becomes a wave. Vanilla rolled a flat
-    **	33% here and, win or lose, then slept for the full attack interval --
-    **	so a declined roll cost minutes and the first wave routinely landed
-    **	tens of thousands of frames in. The decision is now conditioned on the
-    **	size of the army that could actually be committed: below the floor the
-    **	house deliberately holds rather than feeding units in piecemeal, at or
-    **	above the ceiling it must commit rather than hoard, and only between
-    **	the two does the roll decide. A declined opportunity costs seconds
-    **	instead of minutes, because it was declined for a reason that will
-    **	change shortly.
-    */
+    // TF: launch on army size and worth rather than a flat roll: hold below the floor, commit at the ceiling,
+    // roll between, and recheck a decline sooner than a launch (docs/ai-upgrade-plan.md).
     TFWaveDialsStruct dials = TF_Wave_Dials(IQ);
     int worth = 0;
     int army = TF_Committable_Army(&worth);
 
-    /*
-    **	Stage gate: no wave before the house can build vehicles. An army raised
-    **	from a barracks alone is a rush of tier-one infantry and scout cars, and
-    **	measured against a human with a war factory it simply feeds the enemy
-    **	(A/B 2026-09-02: 18 then 15 units thrown at medium tanks at four minutes,
-    **	then nothing left to defend with). The wave waits for the factory.
-    */
     bool has_factory = (TF_Role_Quantity(ActiveBQuantity, STRUCT_WEAP) > 0);
 
-    /*
-    **	A house whose economy has been crippled might never reach the floor and
-    **	would then sit passive for the rest of the match. Past the decay mark
-    **	the floor gives way a unit at a time so that whatever force it has left
-    **	eventually commits.
-    */
     enum
     {
         TF_WAVE_FLOOR_MIN = 4,
@@ -8456,12 +8267,6 @@ bool HouseClass::AI_Attack(UrgencyType)
     };
     int floor = dials.Floor;
     int floorvalue = dials.FloorValue;
-    /*
-    **	The decay is for a house whose economy has been crippled, so that it
-    **	still commits what it has. A house with a working economy keeps the
-    **	full floor however long the match runs; otherwise the late game turns
-    **	back into a trickle of four-unit waves (Docklands 2026-09-02).
-    */
     bool strangled = (IsTiberiumShort || TF_Role_Quantity(BQuantity, STRUCT_REFINERY) < 2
                       || TF_Harvesters_Owned() < 2);
     if (strangled && Frame > TF_WAVE_FLOOR_DECAY_START) {
@@ -8470,7 +8275,6 @@ bool HouseClass::AI_Attack(UrgencyType)
         if (floor < TF_WAVE_FLOOR_MIN) {
             floor = TF_WAVE_FLOOR_MIN;
         }
-        // The value floor gives way in step with the count floor.
         floorvalue = (dials.FloorValue * floor) / dials.Floor;
     }
 
@@ -8488,11 +8292,6 @@ bool HouseClass::AI_Attack(UrgencyType)
         launch = true;
         reason = "desperation";
     } else if (wave_gathering) {
-        /*
-        **	A wave is still assembling at its staging cell. Launching again now
-        **	would re-roster the same units to a new cell and reset their clock,
-        **	so the decision waits for the release.
-        */
         launch = false;
         reason = "staging";
     } else if (!has_factory && CurBuildings) {
@@ -8514,22 +8313,10 @@ bool HouseClass::AI_Attack(UrgencyType)
     bool shuffle = !launch;
     bool forced = (CurBuildings == 0);
 
-    /*
-    **	Declining now costs seconds rather than minutes, so this routine runs
-    **	several times more often than it used to. The idle-guard repositioning
-    **	below must not speed up with it: it walks Nearby_Location per unit, and
-    **	at recheck cadence the home guard would visibly jitter. Gate it so it
-    **	keeps happening about every two minutes whatever the recheck period is.
-    */
+    // TF: idle guards reposition about every two minutes, however short the recheck.
     bool reposition = launch || Percent_Chance((dials.Recheck * 100) / (TICKS_PER_SECOND * 120));
 
-    /*
-    **	How much of the army joins the wave scales with how defended the base
-    **	is: a lightly-defended base keeps a real home guard on GUARD_AREA, a
-    **	well-fortified one commits everything. Defences are counted
-    **	generically (any armed building) so all four factions measure
-    **	correctly. (AI Boost 3.2 send-percentage, Bast75 & xXMini FrankiXx.)
-    */
+    // TF: the share of the army sent grows with the base's armed buildings (AI Boost 3.2's send percentage).
     enum
     {
         TF_SEND_PERCENT_LOW = 80,
@@ -8579,12 +8366,8 @@ bool HouseClass::AI_Attack(UrgencyType)
     }
 #endif
 
-    /*
-    **	Staging: a launch with a known enemy building marches the committed
-    **	ground units to a staging cell and gathers them there (TF_Wave_AI
-    **	releases them). Without one -- the house is still blind -- the old
-    **	per-unit hunt order stands, which is also what finds the enemy.
-    */
+    // TF: a launch gathers its ground units at a staging cell for TF_Wave_AI to release together. Without
+    // one, a Hard house attack-moves on a known enemy building on its own landmass; the rest hunt.
     CELL stage = 0;
     TFWaveStruct* wave = NULL;
     TARGET direct = TARGET_NONE; // Hard, no staging cell: attack-move from home
@@ -8602,11 +8385,6 @@ bool HouseClass::AI_Attack(UrgencyType)
                 wave->Deadline = (long)Frame + TF_WAVE_GATHER_TIMEOUT;
                 wave->Gathering = true;
             } else if (IQ >= 5) {
-                /*
-                **	No staging cell (the known enemy is too close, or off our
-                **	landmass): a Hard house still goes out on attack-move rather
-                **	than as loose hunters, and is shepherded like a released wave.
-                */
                 COORDINATE objective = TF_Wave_Known_Enemy_Coord();
                 CELL ocell = (objective != 0) ? Coord_Cell(objective) : 0;
                 int ourland = TF_House_Landmass(Center);
@@ -8637,22 +8415,13 @@ bool HouseClass::AI_Attack(UrgencyType)
 
         if (u != NULL && !u->IsInLimbo && u->House == this && u->Strength > 0) {
 
-            /*
-            **	Already out on a previous wave (attack-moving or hunting): a new
-            **	launch must not pull it back to a staging cell.
-            */
+            // TF: a unit already attack-moving or hunting stays on its wave rather than return to a staging cell.
             if (!shuffle && (u->AttackMove || u->Mission == MISSION_HUNT || u->Mission == MISSION_ATTACK)) {
                 continue;
             }
 
-            /*
-            **	Nudge every ground unit as the wave launches so anything wedged
-            **	in base congestion breaks free instead of freezing the wave.
-            **	Harvesters are exempt: a forced scatter can yank one off the
-            **	dock approach mid-choreography, and the harvester recovery
-            **	systems already handle their stuck cases.
-            **	(AI Boost 3.2 scatter-on-launch.)
-            */
+            // TF: scatter on launch frees units wedged in the base (AI Boost 3.2). Never harvesters: a scatter
+            // can pull one off its dock approach mid-sequence.
             if (!shuffle && !u->Class->IsToHarvest) {
                 u->Scatter(0, true, true);
             }
@@ -8673,9 +8442,7 @@ bool HouseClass::AI_Attack(UrgencyType)
                 }
             } else if (!shuffle && u->Is_Weapon_Equipped()) {
 
-                /*
-                **	Not sent this wave: stand home guard.
-                */
+                // TF: armed units left out of the wave stand home guard.
                 if (u->Mission != MISSION_GUARD_AREA) {
                     u->Assign_Mission(MISSION_GUARD_AREA);
                 }
@@ -8696,7 +8463,7 @@ bool HouseClass::AI_Attack(UrgencyType)
         InfantryClass* i = Infantry.Ptr(index);
 
         if (i != NULL && !i->IsInLimbo && i->House == this && i->Strength > 0) {
-
+            // TF: as for vehicles: wave members stay on their wave, and a launch scatters the rest.
             if (!shuffle && (i->AttackMove || i->Mission == MISSION_HUNT || i->Mission == MISSION_ATTACK)) {
                 continue;
             }
@@ -8704,11 +8471,7 @@ bool HouseClass::AI_Attack(UrgencyType)
                 i->Scatter(0, true, true);
             }
 
-            /*
-            **	Engineers join the wave so Mission_Hunt can dispatch them to
-            **	capture: RENOVATOR is vanilla; TDE6 is the GDI/Nod engineer and
-            **	TSENGINEER the TS one, and both belong in the same clause.
-            */
+            // TF: the TD and TS engineers join the wave like RENOVATOR, so Mission_Hunt can send them to capture.
             if (!shuffle
                 && (i->Is_Weapon_Equipped() || *i == INFANTRY_RENOVATOR || *i == INFANTRY_TDE6
                     || *i == INFANTRY_TSENGINEER)
@@ -8729,9 +8492,7 @@ bool HouseClass::AI_Attack(UrgencyType)
                 }
             } else if (!shuffle && i->Is_Weapon_Equipped()) {
 
-                /*
-                **	Not sent this wave: stand home guard.
-                */
+                // TF: armed infantry left out of the wave stand home guard.
                 if (i->Mission != MISSION_GUARD_AREA) {
                     i->Assign_Mission(MISSION_GUARD_AREA);
                 }
@@ -8771,12 +8532,7 @@ bool HouseClass::AI_Attack(UrgencyType)
         wave->Stage = 0;
     }
 
-    /*
-    **	A launched wave takes the full interval to rebuild; a declined one is
-    **	rechecked shortly, since the army it was waiting on is still growing.
-    **	The launch interval stays keyed to Rule.AttackInterval so the rules.ini
-    **	value keeps its authority, scaled by difficulty rather than replaced.
-    */
+    // TF: a launch waits the rules.ini AttackInterval scaled by difficulty; a decline is rechecked sooner.
     if (launch) {
         int interval = Rule.AttackInterval * Random_Pick(TICKS_PER_MINUTE / 2, TICKS_PER_MINUTE * 2);
         Attack = (interval * dials.IntervalScale) / 100;
