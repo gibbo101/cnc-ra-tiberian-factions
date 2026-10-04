@@ -336,18 +336,10 @@ void SidebarGlyphxClass::StripClass::Init_Clear(void)
  * HISTORY:                                                                                    *
  *   12/31/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-/*
-**	Sidebar ordering key (Luke, 2026-07-20): every entry ordered by price,
-**	cheapest first. Keyed off the type's Cost so an entry's place is stable
-**	across sidebar recalcs — a captured tree's cameo lands at its price slot
-**	instead of appending wherever the recalc found it.
-*/
+// Sidebar order key: price, cheapest first, so a cameo keeps its place across recalcs and a captured tree's cameo
+// lands at its price slot. Superweapons, with no cost, sort first.
 static int TF_Sidebar_Sort_Key(RTTIType type, int id)
 {
-    /*
-    **	Superweapons have no TechnoTypeClass and no build cost, so they sort
-    **	ahead of the priced entries in a stable, arbitrary order.
-    */
     if (type == RTTI_SPECIAL) {
         return (0);
     }
@@ -361,8 +353,7 @@ static int TF_Sidebar_Sort_Key(RTTIType type, int id)
 
 bool SidebarGlyphxClass::StripClass::Add(RTTIType type, int id, bool via_capture)
 {
-    /* < not <=: at count==MAX the write lands out of bounds (EA off-by-one,
-    ** first hit when a multi-tree game pushed a column past 75 entries). */
+    // TF: < not <=: at BuildableCount == MAX_BUILDABLES the write lands out of bounds.
     if (BuildableCount < MAX_BUILDABLES) {
         for (int index = 0; index < BuildableCount; index++) {
             if (Buildables[index].BuildableType == type && Buildables[index].BuildableID == id) {
@@ -372,11 +363,8 @@ bool SidebarGlyphxClass::StripClass::Add(RTTIType type, int id, bool via_capture
         if (!ScenarioInit && type != RTTI_SPECIAL) {
             Speak(VOX_NEW_CONSTRUCT);
         }
-        /*
-        **	Sorted insertion by the grouping key. Entries move as whole
-        **	structs (the Factory ref travels along), and clicks reference
-        **	Type/ID rather than positions, so mid-game inserts are safe.
-        */
+        // TF: insert sorted by price. Entries move whole, their Factory with them, and clicks name Type and ID,
+        // never positions, so inserting mid-game is safe.
         int key = TF_Sidebar_Sort_Key(type, id);
         int at = BuildableCount;
         while (at > 0 && TF_Sidebar_Sort_Key(Buildables[at - 1].BuildableType, Buildables[at - 1].BuildableID) > key) {
@@ -445,11 +433,8 @@ bool SidebarGlyphxClass::StripClass::AI(KeyNumType& input, int, int)
                             case RTTI_VESSEL:
                             case RTTI_UNIT:
                             case RTTI_AIRCRAFT: {
-                                /*
-                                **	A dropship bay delivery names the bay's own factory slot in the
-                                **	event's cell, so it is never confused with a war factory unit
-                                **	finished in the same frame.
-                                */
+                                // TF: a dropship bay delivery names the bay's own factory slot in the event's
+                                // cell, so it is never taken for a war factory unit finished in the same frame.
                                 bool bay = pending->What_Am_I() == RTTI_UNIT
                                            && TF_Is_Dropship_Delivered(((UnitClass*)pending)->Class);
                                 OutList.Add(EventClass(EventClass::PLACE, pending->What_Am_I(), (CELL)(bay ? TF_PLACE_BAY : -1)));
@@ -513,36 +498,19 @@ bool SidebarGlyphxClass::StripClass::Recalc(void)
     **	Sweep through all objects listed in the sidebar. If any of those object can
     **	not be created -- even in theory -- then they must be removed form the sidebar and
     **	any current production must be abandoned.
-    **
-    **	Tiberian Factions: eviction is prereq-aware (legal=true). A cameo survives only
-    **	while a factory that could LEGALLY build it still stands -- the same test
-    **	Update_Buildables uses to offer it, evaluated against that factory's ActLike.
-    **	With legal=false the check degenerated to "any factory of the right RTTI", so a
-    **	cameo offered by a captured faction factory stayed live after that factory was
-    **	lost (an RA war factory kept building TD units), and losing a prerequisite never
-    **	withdrew anything. Symmetric add/evict is what makes captured-factory rosters
-    **	behave; it also withdraws vanilla cameos when their prerequisite dies.
     */
+    // TF: eviction is prereq-aware: a cameo stays only while a factory that could legally build it stands, the test
+    // Update_Buildables offers it by, so losing a captured factory or a prerequisite withdraws its cameos.
     for (int index = 0; index < BuildableCount; index++) {
-        /*
-        **	An entry with production in flight is never evicted, whatever the legality
-        **	check says: the placement and cancel paths resolve through this entry, so
-        **	removing it strands the factory -- the player can neither place nor abandon
-        **	the finished object, and that category of the sidebar wedges permanently.
-        **	Legality is re-judged as usual once the factory resolves and unlinks.
-        */
+        // TF: never evict an entry with production in flight: placing and cancelling resolve through it, and
+        // removing it strands the factory and wedges that sidebar column.
         if (Buildables[index].Factory != -1) {
             continue;
         }
         TechnoTypeClass const* tech = Fetch_Techno_Type(Buildables[index].BuildableType, Buildables[index].BuildableID);
         if (tech) {
             ok = tech->Who_Can_Build_Me(true, true, ParentSidebar->SidebarPlayerPtr->Class->House) != NULL;
-            /*
-            **	Bay cargo is refused by Can_Build while the bay's cooldown runs or the
-            **	Mk. II cap holds. Those are pauses, not lost prerequisites: the cameo
-            **	greys and counts down through the disabled path, so it stays on the
-            **	strip as long as a bay that could legally deliver it still stands.
-            */
+            // TF: dropship bay cargo stays while a bay that could deliver it stands, even when Can_Build refuses it.
             if (!ok && tech->What_Am_I() == RTTI_UNITTYPE && TF_Is_Dropship_Delivered((UnitTypeClass const*)tech)) {
                 ok = tech->Who_Can_Build_Me(true, false, ParentSidebar->SidebarPlayerPtr->Class->House) != NULL;
             }

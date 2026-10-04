@@ -242,15 +242,8 @@ public:
     };
     int TryTryAgain; // Number of retry attempts remaining.
 
-    /*
-    **	No-progress detector (Tiberian Factions). The engine's give-up logic only aborts a
-    **	destination on a movement-zone mismatch, but zones ignore buildings, so a walled-off
-    **	(or own-cell) destination retries forever. Keyed on the SOURCE CELL alone — mission
-    **	logic rotates a stuck unit through different (equally unreachable) destinations every
-    **	few attempts, so destination-pair keying never accumulates. A unit whose paths keep
-    **	failing from the same cell, with no long quiet gap between failures, is stuck no matter
-    **	where it is currently being sent. Reset on any successful path or any movement.
-    */
+    // TF: no-progress detector (docs/path-failure-livelock-design.md), keyed on the source cell alone, as a stuck
+    // unit's mission keeps rotating its unreachable destination. Any movement or found path resets it.
     CELL TF_NoProgSrc;
     long TF_NoProgStart;
     long TF_NoProgLast;
@@ -374,7 +367,7 @@ public:
     virtual void Override_Mission(MissionType mission, TARGET tarcom, TARGET navcom);
     virtual bool Restore_Mission(void);
     CELL Adjust_Dest(CELL cell) const;
-    CELL Find_Spread_Cell(CELL target, int maxRadius, DynamicVectorClass<CELL>& claimed); // A* stage 2: group-move destination spread
+    CELL Find_Spread_Cell(CELL target, int maxRadius, DynamicVectorClass<CELL>& claimed); // group-move spread
 
     /*
     **	File I/O.
@@ -390,8 +383,7 @@ private:
     CELL Find_Passable_Position_Near(CELL target, int maxRadius, MoveType threshhold, int threat);
 
 protected:
-    // TF: exposed to UnitClass::Goto_Tiberium for travel-distance-aware ore-field selection
-    // (pass resultPath=NULL to query just the around-obstacles path length cheaply).
+    // TF: protected for the unit and jumpjet path-length queries; a NULL resultPath measures the length alone.
     int Find_Path_AStar(PathType* resultPath, CELL source, CELL dest, int maxLen, MoveType threshhold, int threat);
 
 private:

@@ -48,12 +48,8 @@ enum JumpjetStateType : unsigned char
     JJ_DESCENDING
 };
 
-/*
-**	Jumpjet flight tuning, TS RULES.INI [JumpjetControls]: Speed 14, Climb 5, Acceleration 2,
-**	TurnRate 4, WobblesPerSecond .15, WobbleDeviation 40. The cruise height is set against RA's
-**	FLIGHT_LEVEL instead of TS's CruiseHeight 500: at 200 leptons a hovering jumpjet sits in the
-**	top map layer (the boundary is 170) and below the helicopters (256), and the bob scales with it.
-*/
+// Jumpjet flight tuning, TS RULES.INI [JumpjetControls]. Cruise is 200 leptons, not TS's 500: in the top map layer
+// and below the helicopters' flight level, with the bob scaled to match.
 enum JumpjetTuningType
 {
     JUMPJET_CRUISE = 200,        // cruise height, leptons
@@ -137,10 +133,8 @@ public:
     */
     CELL LookCell;
 
-    /*
-    **	Jumpjet flight (INFANTRY_TSJUMPJET only): the flight state, the ground speed in quarter
-    **	leptons per tick, and the ground spot reserved to land on (0 when none).
-    */
+    // TF: jumpjet flight (INFANTRY_TSJUMPJET only): the flight state, the ground speed in quarter leptons per tick,
+    // and the ground spot reserved to land on (0 when none).
     JumpjetStateType JumpjetState;
     short JumpjetSpeed;
     COORDINATE JumpjetLanding;
@@ -253,9 +247,7 @@ public:
     void Doing_AI(void);
     void Movement_AI(void);
 
-    /*
-    **	TS jumpjet flight (INFANTRY_TSJUMPJET).
-    */
+    // TF: TS jumpjet flight (INFANTRY_TSJUMPJET).
     bool Is_Jumpjet(void) const
     {
         return (Class->Type == INFANTRY_TSJUMPJET);
