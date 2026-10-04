@@ -53,6 +53,28 @@ Jumpjet Infantry; the Upgrade Center's missing RA slab. Then the LAN Limpet test
 
 ## Post-release (after the next Workshop release)
 
+- **Shrink the package** (Luke, 2026-10-04). 5.0.0 is 1,456 MB unpacked (the GitHub zip 1.0 GB;
+  4.0.0's zip was 404 MB). Where it goes: 398 MB of sidebar cameos (1,196 loose `BuildIcon_*`
+  TGAs, every one uncompressed 341x256 RGBA at 349 KB, many of them badge variants), 405 MB of
+  building art (the TS Upgrade Center's `TSPLUG.ZIP` alone is 91 MB, next is the Mk. II at 30 MB),
+  200 MB of unit art, the 177 MB UI atlas (same size as EA's, so it replaces like with like), 67 MB
+  of movies, 51 MB of lobby thumbnails (same-size swaps for EA's), 49 MB of VFX, 43 MB CONFIG.MEG.
+  Leads, cheapest first: list which cameo variants anything references and drop the rest
+  (`scripts/cameo_variants_build.py` makes them); test whether the launcher takes an RLE TGA or a
+  DXT DDS for a loose cameo (a quarter of the size, or less); see why TSPLUG's plug combinations
+  cost 91 MB. Any format change gets an in-game check of every faction's sidebar.
+  It grows from here: TS Nod (21 buildings and 19 units in the HD hand-offs) and the TS HD
+  rebuilds. The HD buildings merged so far cost about what they replace (the `ts-buildings-hd`
+  build's building art is 398 MB against main's 405 MB). That build folder also still holds the
+  removed TD terrain and maps (182 MB), so restage it clean (`stage_asset_packs.py --full`, as
+  `package-for-workshop.sh` does) before measuring or deploying from it.
+- **"Unable to comply, building in progress" is still RA's voice for every faction** (Luke, heard
+  again on the 5.0.0 Windows check, 2026-10-04). The launcher plays `PROGRES1` itself, so the DLL's
+  speech routing never sees it (`known-issues.md`, 2026-09-26 entry). Route: add the line to the
+  EVA cache patch's rows (`scripts/eva_mailbox_build.py` ERAS, regenerating `tf_eva_mailbox.h`)
+  with the TD (`TDBLDG1`) and TS (`TSNOFACT1`) payloads padded to one length, plus its loose seed
+  files, then check the swap in a session that changes era between matches
+  (`eva-ram-patch-spike.md`).
 - **Light orange selection box on a limpeted unit** (Luke, 2026-09-30). TS draws a limpeted
   object's selection bracket from another frame set (OpenTS techno.cpp:1455). In the Remastered
   launcher the box is `CNC_SELECT_BOX.TGA` (white, atlas 3027,4088 128x128), tinted as it is drawn;
