@@ -75,7 +75,7 @@ License: GPL v3 (inherited from Vanilla Conquer base).
 
 TDNUKE = {
     "ininame":     "TDNUKE",
-    # MIGRATED to STRUCT_TDNUKE in bdata.cpp Init_Heap (M2 Tier 1, 2026-05-21).
+    # Native STRUCT_TDNUKE in bdata.cpp Init_Heap.
     "logic":       None,
     "td_asset":       "NUKE",
     "footprint":   "NUKE",
@@ -107,7 +107,7 @@ TDNUKE = {
 
 TDNUK2 = {
     "ininame":     "TDNUK2",
-    # MIGRATED to STRUCT_TDNUK2 in bdata.cpp Init_Heap (M2 Tier 1, 2026-05-21).
+    # Native STRUCT_TDNUK2 in bdata.cpp Init_Heap.
     "logic":       None,
     "td_asset":       "NUK2",
     "footprint":   "NUK2",
@@ -140,7 +140,7 @@ TDNUK2 = {
 
 TDHQ = {
     "ininame":     "TDHQ",
-    # MIGRATED to STRUCT_TDHQ in bdata.cpp Init_Heap (M4 Tier 3, 2026-05-26).
+    # Native STRUCT_TDHQ in bdata.cpp Init_Heap.
     "logic":       None,
     "td_asset":    "HQ",
     "footprint":   "HQ",
@@ -175,7 +175,7 @@ TDHQ = {
 
 TDPROC = {
     "ininame":     "TDPROC",
-    "logic":       None,          # M4 Tier 3 separated 2026-05-27 — STRUCT_TDPROC native.
+    "logic":       None,          # STRUCT_TDPROC native.
     "td_asset":    "PROC",
     "footprint":   None,          # ClassTdProc uses native TdListProc + TdOListProc (TD-source exact shape).
     "shape_size":  (72, 72),
@@ -209,7 +209,7 @@ TDPROC = {
 
 TDSILO = {
     "ininame":     "TDSILO",
-    # MIGRATED to STRUCT_TDSILO in bdata.cpp Init_Heap (M2 Tier 1, 2026-05-21).
+    # Native STRUCT_TDSILO in bdata.cpp Init_Heap.
     "logic":       None,
     "td_asset":    "SILO",
     # RA SILO donor is BSIZE_11 (1×1) which made TDSILO render 1×1; override to
@@ -248,7 +248,7 @@ TDSILO = {
 
 TDFIX = {
     "ininame":     "TDFIX",
-    # MIGRATED to STRUCT_TDFIX in bdata.cpp Init_Heap (M4 Tier 3, 2026-05-25).
+    # Native STRUCT_TDFIX in bdata.cpp Init_Heap.
     "logic":       None,
     "td_asset":    "FIX",
     "footprint":   None,  # RA FIX donor is 3x3 (BSIZE_33); inherit donor shape.
@@ -283,7 +283,7 @@ TDFIX = {
 
 TDWEAP = {
     "ininame":     "TDWEAP",
-    "logic":       None,         # M4 Tier 3 separated 2026-05-27 — STRUCT_TDWEAP native, no engine alias.
+    "logic":       None,         # STRUCT_TDWEAP native, no engine alias.
     "td_asset":    "WEAP",
     "footprint":   None,         # ClassTdWeap uses RA's ExitWeap/ListWeap/OListWeap (same shape as TD WEAP).
     "shape_size":  (72, 72),
@@ -317,7 +317,7 @@ TDWEAP = {
 
 TDHPAD = {
     "ininame":     "TDHPAD",
-    # MIGRATED to STRUCT_TDHPAD in bdata.cpp Init_Heap (M4 Tier 3, 2026-05-25).
+    # Native STRUCT_TDHPAD in bdata.cpp Init_Heap.
     "logic":       None,
     "td_asset":    "HPAD",
     "footprint":   None,  # RA HPAD donor matches TD (2x2 BSIZE_22).
@@ -352,7 +352,7 @@ TDHPAD = {
 
 TDGTWR = {
     "ininame":     "TDGTWR",
-    # MIGRATED to STRUCT_TDGTWR in bdata.cpp Init_Heap (M3 Tier 2, 2026-05-21).
+    # Native STRUCT_TDGTWR in bdata.cpp Init_Heap.
     "logic":       None,
     "td_asset":    "GTWR",
     "footprint":   None,  # 1x1 (BSIZE_11) — matches TD ClassGTower.
@@ -389,7 +389,7 @@ TDGTWR = {
 
 TDATWR = {
     "ininame":     "TDATWR",
-    # MIGRATED to STRUCT_TDATWR in bdata.cpp Init_Heap (M3 Tier 2, 2026-05-21).
+    # Native STRUCT_TDATWR in bdata.cpp Init_Heap.
     "logic":       None,
     "td_asset":    "ATWR",
     "footprint":   None,  # RA AGUN donor is 1x2 (BSIZE_12); matches TD.
@@ -427,11 +427,7 @@ TDATWR = {
 
 TDEYE = {
     "ininame":     "TDEYE",
-    # MIGRATED to STRUCT_TDEYE in bdata.cpp Init_Heap (M5 Tier 4, 2026-05-26).
-    # Logic=MSLO previously granted RA AtomBomb super as a placeholder; the
-    # Ion Cannon superweapon proper lands in Phase E2/E3 (see
-    # docs/building-separation-plan.md M5 entries). Phase E1 (this commit)
-    # ships the building structurally only — no super, no Ion Cannon visual.
+    # Native STRUCT_TDEYE in bdata.cpp Init_Heap.
     "logic":       None,
     "td_asset":    "EYE",
     # RA MSLO donor is BSIZE_21 (2x1); TD EYE is BSIZE_22 with the L-shape
@@ -469,7 +465,7 @@ TDEYE = {
 
 TDFACT = {
     "ininame":     "TDFACT",
-    "logic":       None,         # M4 Tier 3 separated 2026-05-27 — STRUCT_TDFACT native.
+    "logic":       None,         # STRUCT_TDFACT native.
     "td_asset":    "FACT",
     "footprint":   None,         # ClassTdFact uses native BSIZE_32 + List32 (TD-authentic 3x2; RA's STRUCT_CONST is BSIZE_33).
     "shape_size":  (72, 72),
@@ -576,7 +572,7 @@ TDNFACT = {
 
 TDPYLE = {
     "ininame":     "TDPYLE",
-    # MIGRATED to STRUCT_TDPYLE in bdata.cpp Init_Heap (M2 Tier 1, 2026-05-21).
+    # Native STRUCT_TDPYLE in bdata.cpp Init_Heap.
     "logic":       None,
     "td_asset":       "PYLE",
     "footprint":   "PYLE",
@@ -609,7 +605,7 @@ TDPYLE = {
 
 TDGUN = {
     "ininame":     "TDGUN",
-    # MIGRATED to STRUCT_TDGUN in bdata.cpp Init_Heap (M3 Tier 2, 2026-05-21).
+    # Native STRUCT_TDGUN in bdata.cpp Init_Heap.
     "logic":       None,
     "td_asset":    "GUN",
     "footprint":   "",
@@ -646,7 +642,7 @@ TDGUN = {
 
 TDSAM = {
     "ininame":     "TDSAM",
-    # MIGRATED to STRUCT_TDSAM in bdata.cpp Init_Heap (M3 Tier 2, 2026-05-21).
+    # Native STRUCT_TDSAM in bdata.cpp Init_Heap.
     "logic":       None,
     "td_asset":    "SAM",
     "footprint":   "",
@@ -682,8 +678,7 @@ TDSAM = {
 }
 
 
-# SEPARATED 2026-05-21: TDOBLI is the first fully-separated building.
-# It now exists as STRUCT_TDOBLI in defines.h with ClassObelisk in
+# TDOBLI is a fully-separated building: STRUCT_TDOBLI in defines.h with ClassObelisk in
 # bdata.cpp's Init_Heap. The [TDOBLI] rules.ini section is still
 # Read_INI'd to populate Cost/Power/etc, but no Logic= alias.
 # Asset bundling via this manifest entry still applies (extract ZIPs,
@@ -731,7 +726,7 @@ TDOBLI = {
 
 TDTMPL = {
     "ininame":     "TDTMPL",
-    # MIGRATED to STRUCT_TDTMPL in bdata.cpp Init_Heap (M5 Tier 4, 2026-05-26).
+    # Native STRUCT_TDTMPL in bdata.cpp Init_Heap.
     # Logic=MSLO previously granted RA AtomBomb as the placeholder super; the
     # Nuclear Strike (SPC_TD_NUKE) proper lands in Phase T2 via HouseClass.
     # Phase T1 ships the building structurally only — no super attached.
@@ -769,7 +764,7 @@ TDTMPL = {
 
 TDAFLD = {
     "ininame":     "TDAFLD",
-    "logic":       None,         # M4 Tier 3 separated 2026-05-27 — STRUCT_TDAFLD native, no engine alias.
+    "logic":       None,         # STRUCT_TDAFLD native, no engine alias.
     "td_asset":    "AFLD",
     "footprint":   None,         # ClassTdAfld uses native TdList42 + TdExitAirstrip (BSIZE_42 4x2 flat, TD-authentic).
     "shape_size":  (96, 48),
@@ -802,7 +797,7 @@ TDAFLD = {
 
 TDHAND = {
     "ininame":     "TDHAND",
-    # MIGRATED to STRUCT_TDHAND in bdata.cpp Init_Heap (M4 Tier 3, 2026-05-25).
+    # Native STRUCT_TDHAND in bdata.cpp Init_Heap.
     "logic":       None,
     "td_asset":    "HAND",
     "footprint":   "HAND",

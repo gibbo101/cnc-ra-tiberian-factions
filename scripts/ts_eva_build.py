@@ -13,7 +13,7 @@ launcher prefixes RAC_ or RAR_ for classic and remastered audio. Only one
 recording exists per line, so both prefixes resolve to the same file -- the
 same compromise the TD voice set ships with.
 
-Sample names are novel: the dormant-host constraint was falsified 2026-08-31.
+Sample names are novel: the dormant-host constraint does not apply.
 What matters is the FORMAT (MS-ADPCM, never plain PCM, which crashes ClientG)
 and that localized samples sit under a locale directory with the XML naming
 them .MP3 while the file on disk is .WAV.
@@ -83,8 +83,7 @@ LINES = {
     "MISNLST":  ("00-I286", None,                         "you have lost"),
 }
 
-# The localized EVA channel: MS-ADPCM, stereo, 44077 Hz -- the shape proven in
-# game 2026-08-31. Plain PCM crashes ClientG's ADPCM block maths.
+# The localized EVA channel: MS-ADPCM, stereo, 44077 Hz. Plain PCM crashes ClientG's ADPCM block maths.
 RATE = 44077
 
 

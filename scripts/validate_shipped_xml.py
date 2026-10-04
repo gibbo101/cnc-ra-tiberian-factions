@@ -3,7 +3,7 @@
 
 The launcher does not skip a bad override -- it asserts and the game dies at startup
 (`pglib\\xml.cpp:1227`). That is what a `--` inside an XML comment did to
-GameConstants_Mod.xml on 2026-07-21: illegal in XML, fatal to the client, and invisible
+GameConstants_Mod.xml: illegal in XML, fatal to the client, and invisible
 until launch because plain resources are copied rather than built.
 
 Files inherited from the game are checked too but only warned about: some ship

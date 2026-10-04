@@ -27,7 +27,7 @@ names come from scripts/cameo_work/plain_icon_map.json.
 Idempotent. Re-running replaces the generated block rather than stacking it.
 
 WARNING: hand-written entries placed INSIDE the generated block are wiped by a
-re-run (2026-08-30: the TS base entries were). Keep hand entries outside the
+re-run (the TS base entries were). Keep hand entries outside the
 BEGIN/END markers, and diff entry names before committing a regenerated file.
 TS-tree _G variants are appended by hand in their own block, not by this tool.
 
