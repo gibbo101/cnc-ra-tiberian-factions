@@ -94,6 +94,7 @@ extern char const* Speech[VOX_COUNT];
 extern char const* SpeechTD[VOX_COUNT];
 extern void Init_SpeechTD(void);
 #include "tf_eva_mailbox.h"
+#include "tf_launcher.h"
 // Tiberian Sun GDI's EVA (audio.cpp Init_SpeechTS). NULL slots fall back to SpeechTD[].
 extern char const* SpeechTS[VOX_COUNT];
 extern void Init_SpeechTS(void);
@@ -4955,6 +4956,7 @@ void TF_Patch_Launcher_At_Load(void)
         TF_Click_Specials_Log("launcher load", TF_Patch_Click_Specials_In(GetCurrentProcess()));
         TF_Click_Specials_Log("launcher load", TF_Launcher_Resident_Install());
         TF_Click_Specials_Log("launcher load", TF_Patch_Launcher_Keys_In());
+        TF_Click_Specials_Log("launcher load", TF_Launcher_Menu_Install());
     }
 }
 
