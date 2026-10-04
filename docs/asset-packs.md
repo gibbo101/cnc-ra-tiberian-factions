@@ -24,8 +24,8 @@ asset-packs/TS-Graphics-Pack/
 
 | Pack | Holds |
 |---|---|
-| TS-Graphics-Pack | TS unit, structure, effect and apron art; plain TS cameos |
-| TS-HD-Graphics-Pack | HD rebuilds of TS objects (GDI buildings, units, walls, gates, component towers) and their 3D models |
+| TS-Graphics-Pack | TS structure, effect and apron art; plain TS cameos |
+| TS-HD-Graphics-Pack | HD rebuilds of TS objects (GDI buildings, units, infantry, walls, gates, component towers) and their 3D models |
 | TS-SFX-Pack, TS-EVA-eng, TS-Voices-eng | TS effects, EVA lines, unit voices |
 | RA2-Graphics-Pack, RA2-SFX-Pack, RA2-Voices-eng | RA2 tanks, their weapon and engine sounds, their crews |
 | CNC3-Graphics-Pack, CNC3-SFX-Pack, CNC3-Voices-eng | C&C3 tanks, their weapon takes, their crews |

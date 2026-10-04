@@ -1,10 +1,8 @@
 # TS-Graphics-Pack
 
-Tiberian Sun units, structures, effects and sidebar cameos as HD sprites, for Command & Conquer Remastered Collection mods (Red Alert). One of the asset packs from [Tiberian Factions](https://github.com/gibbo101/cnc-ra-tiberian-factions).
+Tiberian Sun structures, effects and sidebar cameos as HD sprites, for Command & Conquer Remastered Collection mods (Red Alert). One of the asset packs from [Tiberian Factions](https://github.com/gibbo101/cnc-ra-tiberian-factions).
 
 ## Contents
-
-**Units** (6): TSE1, TSE2, TSENGINEER, TSGHOST, TSJUMPJET, TSMEDIC
 
 **Structures** (6): TSDWEAP, TSDWEAPDR, TSDWEAPMAKE, TSDWEAPNF, TSDWEAPNU, TSDWEAPUD
 

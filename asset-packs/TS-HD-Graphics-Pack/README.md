@@ -1,10 +1,10 @@
 # TS-HD-Graphics-Pack
 
-Tiberian Sun GDI buildings, units, walls, gates and component towers, rebuilt as HD art, for Command & Conquer Remastered Collection mods (Red Alert). One of the asset packs from [Tiberian Factions](https://github.com/gibbo101/cnc-ra-tiberian-factions).
+Tiberian Sun GDI buildings, units, infantry, walls, gates and component towers, rebuilt as HD art, for Command & Conquer Remastered Collection mods (Red Alert). One of the asset packs from [Tiberian Factions](https://github.com/gibbo101/cnc-ra-tiberian-factions).
 
 ## Contents
 
-**Units** (20): TS4TNK, TSAPC, TSCARRY, TSHARV, TSHMEC, TSHUNT, TSHVR, TSJUGG, TSLIMP, TSLPST, TSMCV, TSMEMP, TSMWAR, TSORCA, TSORCAB, TSSAPC, TSSMEC, TSSONIC, TSSUBTANK, TSTITN
+**Units** (26): TS4TNK, TSAPC, TSCARRY, TSE1, TSE2, TSENGINEER, TSGHOST, TSHARV, TSHMEC, TSHUNT, TSHVR, TSJUGG, TSJUMPJET, TSLIMP, TSLPST, TSMCV, TSMEDIC, TSMEMP, TSMWAR, TSORCA, TSORCAB, TSSAPC, TSSMEC, TSSONIC, TSSUBTANK, TSTITN
 
 **Structures** (79): TSCSAM, TSCSAMMAKE, TSCSAMT, TSCTWR, TSCTWRMAKE, TSCTWRX, TSDEPT, TSDEPTMAKE, TSDEPTRP, TSDLIMP, TSDLIMPMAKE, TSDPSA, TSDPSAMAKE, TSDROP, TSDROPMAKE, TSFACT, TSFACTMAKE, TSFGEN, TSFGENMAKE, TSFSDF, TSGATEH, TSGATEHL, TSGATEHMAKE, TSGATEHX, TSGATEV, TSGATEVL, TSGATEVMAKE, TSGATEVX, TSHPAD, TSHPADMAKE, TSNGATEH, TSNGATEHL, TSNGATEHMAKE, TSNGATEHX, TSNGATEV, TSNGATEVL, TSNGATEVMAKE, TSNGATEVX, TSNWALL, TSPILE, TSPILEMAKE, TSPION, TSPLUG, TSPLUGMAKE, TSPODS, TSPOWR, TSPOWRMAKE, TSPROC, TSPROCFR, TSPROCLD, TSPROCMAKE, TSPROCNF, TSPULS, TSPULSMAKE, TSPULST, TSRADR, TSRADRMAKE, TSROCK, TSROCKMAKE, TSROCKT, TSSEEK, TSSILO, TSSILOMAKE, TSTECH, TSTECHMAKE, TSTURB, TSVULC, TSVULCMAKE, TSVULCT, TSWALL, TSWEAP, TSWEAP2, TSWEAP2L, TSWEAPDR, TSWEAPLT, TSWEAPMAKE, TSWEAPNF, TSWEAPNU, TSWEAPUD
 
@@ -16,7 +16,7 @@ Tiberian Sun GDI buildings, units, walls, gates and component towers, rebuilt as
 
 **Terrain (interior)** (2): TSPROCBB, TSWEAPBB
 
-**3D models** (40): apc, apc-water, barracks, carryall, construction-yard, devils-tongue, disruptor, dropship, dropship-bay, firestorm-generator, firestorm-wall, harvester, helipad, hover-mlrs, hunter-seeker, juggernaut, juggernaut-deployed, limpet-drone, limpet-mine, mammoth-mk1, mammoth-mk2, mcv, mobile-emp-cannon, mobile-sensor-array, mobile-war-factory, orca-bomber, orca-fighter, power-plant, pulse-cannon, radar, refinery, sensor-array, service-depot, silo, subterranean-apc, tech-center, titan, upgrade-center, war-factory, wolverine. The HD rebuilds as glTF models, in `3d/`; `3d/README.md` lists their parts and conventions. The game does not use them.
+**3D models** (46): apc, apc-water, barracks, carryall, construction-yard, devils-tongue, disc-thrower, disruptor, dropship, dropship-bay, engineer, firestorm-generator, firestorm-wall, ghost-stalker, harvester, helipad, hover-mlrs, hunter-seeker, juggernaut, juggernaut-deployed, jumpjet-infantry, light-infantry, limpet-drone, limpet-mine, mammoth-mk1, mammoth-mk2, mcv, medic, mobile-emp-cannon, mobile-sensor-array, mobile-war-factory, orca-bomber, orca-fighter, power-plant, pulse-cannon, radar, refinery, sensor-array, service-depot, silo, subterranean-apc, tech-center, titan, upgrade-center, war-factory, wolverine. The HD rebuilds as glTF models, in `3d/`; `3d/README.md` lists their parts and conventions. The game does not use them.
 
 ## Using it
 

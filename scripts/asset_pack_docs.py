@@ -42,8 +42,8 @@ GAMES = {
 }
 
 ABOUT = {
-    "TS-Graphics-Pack": "Tiberian Sun units, structures, effects and sidebar cameos as HD sprites",
-    "TS-HD-Graphics-Pack": "Tiberian Sun GDI buildings, units, walls, gates and component towers, rebuilt as HD art",
+    "TS-Graphics-Pack": "Tiberian Sun structures, effects and sidebar cameos as HD sprites",
+    "TS-HD-Graphics-Pack": "Tiberian Sun GDI buildings, units, infantry, walls, gates and component towers, rebuilt as HD art",
     "TS-SFX-Pack": "Tiberian Sun weapon, unit and structure sound effects",
     "TS-EVA-eng": "Tiberian Sun EVA announcer lines (English)",
     "TS-Voices-eng": "Tiberian Sun unit voice lines (English)",

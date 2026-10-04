@@ -1,6 +1,6 @@
 {
     "name": "TS-Graphics-Pack",
-    "description": "Tiberian Sun units, structures, effects and sidebar cameos as HD sprites, for Red Alert Remastered mods.",
+    "description": "Tiberian Sun structures, effects and sidebar cameos as HD sprites, for Red Alert Remastered mods.",
     "author": "gibbo101",
     "load_order": 2,
     "version_high": 1,
